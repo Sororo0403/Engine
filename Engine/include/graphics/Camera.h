@@ -22,6 +22,12 @@ class Camera {
 	/// </summary>
 	const DirectX::XMFLOAT4X4 &GetProjectionMatrix() const;
 
+	/// <summary>
+	/// カメラの位置と注視点を同じ量だけ移動する
+	/// </summary>
+	/// <param name="offset">ワールド座標での移動量</param>
+	void Translate(const DirectX::XMFLOAT3 &offset);
+
   private:
 	DirectX::XMFLOAT3 position_{0.0f, 0.0f, -2.0f};
 	DirectX::XMFLOAT3 target_{0.0f, 0.0f, 0.0f};

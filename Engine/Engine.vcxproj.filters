@@ -115,9 +115,6 @@
     <ClInclude Include="include\graphics\Vertex.h">
       <Filter>include\graphics</Filter>
     </ClInclude>
-    <ClInclude Include="include\graphics\Transform.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="include\graphics\Camera.h">
       <Filter>include\graphics</Filter>
     </ClInclude>
@@ -126,6 +123,9 @@
     </ClInclude>
     <ClInclude Include="include\platform\windows\Keyboard.h">
       <Filter>include\platform\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\Transform.h">
+      <Filter>include\graphics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -29,3 +29,13 @@ const DirectX::XMFLOAT4X4 &Camera::GetViewMatrix() const { return viewMatrix_; }
 const DirectX::XMFLOAT4X4 &Camera::GetProjectionMatrix() const {
 	return projectionMatrix_;
 }
+
+void Camera::Translate(const DirectX::XMFLOAT3 &offset) {
+	position_.x += offset.x;
+	position_.y += offset.y;
+	position_.z += offset.z;
+
+	target_.x += offset.x;
+	target_.y += offset.y;
+	target_.z += offset.z;
+}

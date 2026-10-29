@@ -4,11 +4,13 @@
 #include "graphics/D3D12Graphics.h"
 #include "graphics/ShaderCompiler.h"
 #include "graphics/TriangleRenderer.h"
+#include "platform/windows/Keyboard.h"
 #include "platform/windows/PathUtils.h"
 #include "platform/windows/StringConversion.h"
 #include "platform/windows/WinApp.h"
 
 #include <Windows.h>
+#include <cmath>
 #include <filesystem>
 #include <format>
 
@@ -72,6 +74,8 @@ int RunEngine(HINSTANCE hInstance) {
 
 	FrameTimer frameTimer;
 
+	Keyboard keyboard;
+
 	while (app.ProcessMessages()) {
 		const int width = app.GetWidth();
 		const int height = app.GetHeight();
@@ -89,13 +93,43 @@ int RunEngine(HINSTANCE hInstance) {
 			break;
 		}
 
+		const float deltaTime = frameTimer.Tick();
+
+		keyboard.Update(app.GetHwnd());
+
+		float moveX = 0.0f;
+		float moveZ = 0.0f;
+
+		if (keyboard.IsDown('W')) {
+			moveZ += 1.0f;
+		}
+		if (keyboard.IsDown('S')) {
+			moveZ -= 1.0f;
+		}
+		if (keyboard.IsDown('A')) {
+			moveX -= 1.0f;
+		}
+		if (keyboard.IsDown('D')) {
+			moveX += 1.0f;
+		}
+
+		// 斜め移動でも同じ速さになるようにする
+		const float length = std::sqrt(moveX * moveX + moveZ * moveZ);
+
+		if (length > 0.0f) {
+			constexpr float moveSpeed = 2.0f;
+			const float distance = moveSpeed * deltaTime;
+
+			camera.Translate(
+			    {moveX / length * distance, 0.0f, moveZ / length * distance});
+		}
+
+		// 移動後の位置で行列を更新する
 		if (!camera.Update(width, height)) {
 			Logger::Error("カメラの更新に失敗しました。");
 			exitCode = -1;
 			break;
 		}
-
-		const float deltaTime = frameTimer.Tick();
 
 		// 1秒あたり1ラジアン回転する
 		constexpr float rotationSpeed = 1.0f;
