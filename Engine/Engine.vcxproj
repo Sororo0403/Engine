@@ -12,6 +12,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\platform\windows\Keyboard.cpp" />
     <ClCompile Include="src\core\FrameTimer.cpp" />
     <ClCompile Include="src\graphics\Camera.cpp" />
     <ClCompile Include="src\platform\windows\PathUtils.cpp" />
@@ -39,6 +40,7 @@
     <ClInclude Include="include\core\Logger.h" />
     <ClInclude Include="include\platform\windows\StringConversion.h" />
     <ClInclude Include="include\platform\windows\PathUtils.h" />
+    <ClInclude Include="include\platform\windows\Keyboard.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
