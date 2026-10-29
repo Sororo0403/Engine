@@ -12,6 +12,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\graphics\Camera.cpp" />
     <ClCompile Include="src\platform\windows\PathUtils.cpp" />
     <ClCompile Include="src\core\DateTime.cpp" />
     <ClCompile Include="src\core\Logger.cpp" />
@@ -24,6 +25,7 @@
     <ClCompile Include="src\platform\windows\StringConversion.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\graphics\Camera.h" />
     <ClInclude Include="include\core\DateTime.h" />
     <ClInclude Include="include\graphics\D3D12Graphics.h" />
     <ClInclude Include="include\graphics\Transform.h" />

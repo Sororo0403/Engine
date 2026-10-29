@@ -1,5 +1,6 @@
 #include "graphics/TriangleRenderer.h"
 #include "core/Logger.h"
+#include "graphics/Camera.h"
 #include "graphics/Vertex.h"
 
 #include <cstddef>
@@ -27,7 +28,7 @@ bool TriangleRenderer::Initialize(ID3D12Device *device, IDxcBlob *vertexShader,
 	return true;
 }
 
-void TriangleRenderer::Update() {
+void TriangleRenderer::Update(const Camera &camera) {
 	if (!mappedWorld_) {
 		Logger::Error("TriangleRenderer::Update: 定数バッファが未初期化です。");
 		return;
@@ -48,7 +49,14 @@ void TriangleRenderer::Update() {
 	// 拡大縮小 → 回転 → 移動の順で適用する
 	const XMMATRIX world = scale * rotation * translation;
 
-	XMStoreFloat4x4(mappedWorld_, world);
+	const XMMATRIX view = XMLoadFloat4x4(&camera.GetViewMatrix());
+
+	const XMMATRIX projection = XMLoadFloat4x4(&camera.GetProjectionMatrix());
+
+	// 物体の変形 → カメラから見た座標 → 投影
+	const XMMATRIX wvp = world * view * projection;
+
+	XMStoreFloat4x4(mappedWorld_, wvp);
 }
 
 void TriangleRenderer::Draw(ID3D12GraphicsCommandList *commandList) {

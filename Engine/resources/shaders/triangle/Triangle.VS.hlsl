@@ -2,7 +2,7 @@
 
 cbuffer Transformation : register(b0)
 {
-	row_major float4x4 world;
+	row_major float4x4 worldViewProjection;
 };
 
 struct VertexInput
@@ -14,7 +14,7 @@ struct VertexInput
 VertexOutput VSMain(VertexInput input)
 {
 	VertexOutput output;
-	output.position = mul(float4(input.position, 1.0f), world);
+	output.position = mul(float4(input.position, 1.0f), worldViewProjection);
 	output.color = input.color;
 	return output;
 }

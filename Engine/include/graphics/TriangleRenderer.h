@@ -7,6 +7,8 @@
 #include <dxcapi.h>
 #include <wrl/client.h>
 
+class Camera;
+
 class TriangleRenderer {
   public:
 	/// <summary>
@@ -20,9 +22,10 @@ class TriangleRenderer {
 	                IDxcBlob *pixelShader);
 
 	/// <summary>
-	/// 変形情報から行列を作成し、定数バッファを更新する
+	/// カメラを反映した変換行列を定数バッファへ書き込む
 	/// </summary>
-	void Update();
+	/// <param name="camera">更新済みのカメラ</param>
+	void Update(const Camera &camera);
 
 	/// <summary>
 	/// 三角形の描画命令を記録する

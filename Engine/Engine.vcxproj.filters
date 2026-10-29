@@ -74,6 +74,9 @@
     <ClCompile Include="src\platform\windows\PathUtils.cpp">
       <Filter>src\platform\windows</Filter>
     </ClCompile>
+    <ClCompile Include="src\graphics\Camera.cpp">
+      <Filter>src\graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\platform\windows\Window.h">
@@ -108,6 +111,9 @@
     </ClInclude>
     <ClInclude Include="include\graphics\Transform.h">
       <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\Camera.h">
+      <Filter>include\graphics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

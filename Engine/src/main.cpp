@@ -1,6 +1,5 @@
-#include <Windows.h>
-
 #include "core/Logger.h"
+#include "graphics/Camera.h"
 #include "graphics/D3D12Graphics.h"
 #include "graphics/ShaderCompiler.h"
 #include "graphics/TriangleRenderer.h"
@@ -8,6 +7,7 @@
 #include "platform/windows/StringConversion.h"
 #include "platform/windows/WinApp.h"
 
+#include <Windows.h>
 #include <filesystem>
 #include <format>
 
@@ -67,6 +67,8 @@ int RunEngine(HINSTANCE hInstance) {
 
 	triangle.SetTransform(transform);
 
+	Camera camera;
+
 	while (app.ProcessMessages()) {
 		const int width = app.GetWidth();
 		const int height = app.GetHeight();
@@ -83,7 +85,13 @@ int RunEngine(HINSTANCE hInstance) {
 			break;
 		}
 
-		triangle.Update();
+		if (!camera.Update(width, height)) {
+			Logger::Error("カメラの更新に失敗しました。");
+			exitCode = -1;
+			break;
+		}
+
+		triangle.Update(camera);
 
 		if (!graphics.BeginFrame(clearColor)) {
 			exitCode = -1;
