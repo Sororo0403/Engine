@@ -53,6 +53,9 @@
     <ClCompile Include="src\graphics\ShaderCompiler.cpp">
       <Filter>src\graphics</Filter>
     </ClCompile>
+    <ClCompile Include="src\graphics\TriangleRenderer.cpp">
+      <Filter>src\graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\platform\windows\Window.h">
@@ -65,6 +68,9 @@
       <Filter>include\graphics</Filter>
     </ClInclude>
     <ClInclude Include="include\graphics\ShaderCompiler.h">
+      <Filter>include\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\TriangleRenderer.h">
       <Filter>include\graphics</Filter>
     </ClInclude>
   </ItemGroup>

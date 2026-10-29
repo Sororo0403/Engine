@@ -17,12 +17,14 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\platform\windows\Window.cpp" />
     <ClCompile Include="src\platform\windows\WinApp.cpp" />
+    <ClCompile Include="src\graphics\TriangleRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\graphics\D3D12Graphics.h" />
     <ClInclude Include="include\platform\windows\Window.h" />
     <ClInclude Include="include\platform\windows\WinApp.h" />
     <ClInclude Include="include\graphics\ShaderCompiler.h" />
+    <ClInclude Include="include\graphics\TriangleRenderer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

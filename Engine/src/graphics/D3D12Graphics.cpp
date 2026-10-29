@@ -21,29 +21,105 @@ bool D3D12Graphics::Initialize(HWND hwnd, int width, int height) {
 		return false;
 	}
 
+	viewport_ = {};
+	viewport_.Width = static_cast<float>(width);
+	viewport_.Height = static_cast<float>(height);
+	viewport_.MinDepth = 0.0f;
+	viewport_.MaxDepth = 1.0f;
+
+	scissor_ = {};
+	scissor_.right = static_cast<LONG>(width);
+	scissor_.bottom = static_cast<LONG>(height);
+
 	return true;
 }
 
-bool D3D12Graphics::Render() {
-	const UINT bufferIndex = swapChain_->GetCurrentBackBufferIndex();
+bool D3D12Graphics::BeginFrame(const float(&clearColor)[4]) {
+	bufferIndex_ = swapChain_->GetCurrentBackBufferIndex();
 
-	if (!RecordCommands(bufferIndex)) {
-		return false;
-	}
-
-	// 記録した命令をGPUへ送る
-	ID3D12CommandList *lists[] = {commandList_.Get()};
-	commandQueue_->ExecuteCommandLists(1, lists);
-
-	// 垂直同期を有効にして表示する
-	HRESULT hr = swapChain_->Present(1, 0);
+	// 前フレームのGPU処理はEndFrameで完了を待っている
+	HRESULT hr = commandAllocator_->Reset();
 
 	if (FAILED(hr)) {
 		return false;
 	}
 
-	// 次のフレームでアロケーターを再利用できるように待つ
-	return WaitForGpu();
+	// コマンドの記録を開始する
+	hr = commandList_->Reset(commandAllocator_.Get(), nullptr);
+
+	if (FAILED(hr)) {
+		return false;
+	}
+
+	// バックバッファを表示用から描画用に切り替える
+	D3D12_RESOURCE_BARRIER barrier{};
+	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	barrier.Transition.pResource = backBuffers_[bufferIndex_].Get();
+	barrier.Transition.Subresource =
+		D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+
+	commandList_->ResourceBarrier(1, &barrier);
+
+	// 今回使うRTVを取得する
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle =
+		rtvHeap_->GetCPUDescriptorHandleForHeapStart();
+
+	rtvHandle.ptr +=
+		static_cast<SIZE_T>(bufferIndex_) * rtvDescriptorSize_;
+
+	commandList_->ClearRenderTargetView(
+		rtvHandle,
+		clearColor,
+		0,
+		nullptr
+	);
+
+	// 描画先を設定する
+	commandList_->OMSetRenderTargets(
+		1,
+		&rtvHandle,
+		FALSE,
+		nullptr
+	);
+
+	commandList_->RSSetViewports(1, &viewport_);
+	commandList_->RSSetScissorRects(1, &scissor_);
+
+	return true;
+}
+
+bool D3D12Graphics::EndFrame() {
+	// バックバッファを描画用から表示用に戻す
+	D3D12_RESOURCE_BARRIER barrier{};
+	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	barrier.Transition.pResource = backBuffers_[bufferIndex_].Get();
+	barrier.Transition.Subresource =
+		D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+
+	commandList_->ResourceBarrier(1, &barrier);
+
+	// 記録を終了する
+	HRESULT hr = commandList_->Close();
+
+	if (FAILED(hr)) {
+		return false;
+	}
+
+	// GPUへ命令を送る
+	ID3D12CommandList *lists[] = {commandList_.Get()};
+	commandQueue_->ExecuteCommandLists(1, lists);
+
+	// 描画した画像を表示する
+	const HRESULT presentResult = swapChain_->Present(1, 0);
+
+	// 表示に失敗した場合も、送信済みのGPU処理の完了を確認する
+	const bool gpuCompleted = WaitForGpu();
+
+	return SUCCEEDED(presentResult) && gpuCompleted;
 }
 
 void D3D12Graphics::Finalize() {
@@ -73,6 +149,14 @@ void D3D12Graphics::Finalize() {
 	commandQueue_.Reset();
 	device_.Reset();
 	factory_.Reset();
+}
+
+ID3D12Device *D3D12Graphics::GetDevice() const {
+	return device_.Get();
+}
+
+ID3D12GraphicsCommandList *D3D12Graphics::GetCommandList() const {
+	return commandList_.Get();
 }
 
 bool D3D12Graphics::CreateFactory() {
@@ -326,59 +410,6 @@ bool D3D12Graphics::WaitForGpu() {
 
 	// GPUの異常による待機解除も確認する
 	return SUCCEEDED(device_->GetDeviceRemovedReason());
-}
-
-bool D3D12Graphics::RecordCommands(UINT bufferIndex) {
-	// 前回のGPU処理完了後に、記録用メモリを再利用する
-	HRESULT hr = commandAllocator_->Reset();
-
-	if (FAILED(hr)) {
-		return false;
-	}
-
-	hr = commandList_->Reset(commandAllocator_.Get(), nullptr);
-
-	if (FAILED(hr)) {
-		return false;
-	}
-
-	// バックバッファを表示用から描画用に切り替える
-	D3D12_RESOURCE_BARRIER barrier{};
-	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	barrier.Transition.pResource = backBuffers_[bufferIndex].Get();
-	barrier.Transition.Subresource =
-		D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-
-	commandList_->ResourceBarrier(1, &barrier);
-
-	// 今回描画するバッファに対応したRTVを取得する
-	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle =
-		rtvHeap_->GetCPUDescriptorHandleForHeapStart();
-
-	rtvHandle.ptr +=
-		static_cast<SIZE_T>(bufferIndex) * rtvDescriptorSize_;
-
-	const float clearColor[] = {0.1f, 0.2f, 0.6f, 1.0f};
-
-	commandList_->ClearRenderTargetView(
-		rtvHandle,
-		clearColor,
-		0,
-		nullptr
-	);
-
-	// 描画が終わったら表示用に戻す
-	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-
-	commandList_->ResourceBarrier(1, &barrier);
-
-	// 命令の記録を終了する
-	hr = commandList_->Close();
-
-	return SUCCEEDED(hr);
 }
 
 void D3D12Graphics::EnableDebugLayer() {

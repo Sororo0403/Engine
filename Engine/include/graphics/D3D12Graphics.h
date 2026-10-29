@@ -19,15 +19,34 @@ public:
 	bool Initialize(HWND hwnd, int width, int height);
 
 	/// <summary>
-	/// 画面をクリアして表示する
+	/// フレームの記録を開始し、指定した色で画面をクリアする
+	/// </summary>
+	/// <param name="clearColor">赤・緑・青・アルファの4要素の配列</param>
+	/// <returns>true:成功 false:失敗</returns>
+	bool BeginFrame(const float(&clearColor)[4]);
+
+	/// <summary>
+	/// 描画命令を実行して表示し、GPUの完了を待機する
 	/// </summary>
 	/// <returns>true:成功 false:失敗</returns>
-	bool Render();
+	bool EndFrame();
 
 	/// <summary>
 	/// GPUリソースを解放し、描画基盤を終了する
 	/// </summary>
 	void Finalize();
+
+	/// <summary>
+	/// D3D12デバイスを取得する
+	/// </summary>
+	/// <returns>デバイスへの借用ポインタ</returns>
+	ID3D12Device *GetDevice() const;
+
+	/// <summary>
+	/// 描画命令の記録先を取得する
+	/// </summary>
+	/// <returns>BeginFrame成功後からEndFrame前まで使用するコマンドリスト</returns>
+	ID3D12GraphicsCommandList *GetCommandList() const;
 
 private:
 	/// <summary>
@@ -82,13 +101,6 @@ private:
 	bool WaitForGpu();
 
 	/// <summary>
-	/// 指定したバックバッファへの描画命令を記録する
-	/// </summary>
-	/// <param name="bufferIndex">バックバッファの番号</param>
-	/// <returns>true:成功 false:失敗</returns>
-	bool RecordCommands(UINT bufferIndex);
-
-	/// <summary>
 	/// Debugビルド時にD3D12のデバッグレイヤーを有効にする
 	/// </summary>
 	void EnableDebugLayer();
@@ -105,6 +117,9 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> backBuffers_[kBufferCount];
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvHeap_;
 	UINT rtvDescriptorSize_ = 0;
+	UINT bufferIndex_ = 0;
+	D3D12_VIEWPORT viewport_{};
+	D3D12_RECT scissor_{};
 
 	Microsoft::WRL::ComPtr<ID3D12Fence> fence_;
 	UINT64 fenceValue_ = 0;
