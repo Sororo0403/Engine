@@ -21,6 +21,12 @@
     <Filter Include="src\platform\windows">
       <UniqueIdentifier>{94c8b68b-dafd-4dff-9c7e-53125e2dc731}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\graphics">
+      <UniqueIdentifier>{2863ad82-f0ca-480a-9e63-ad2d47c7b7f1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\graphics">
+      <UniqueIdentifier>{649f9f1e-b45e-4ad1-b26a-bf795b3be8c4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -32,6 +38,9 @@
     <ClCompile Include="src\platform\windows\WinApp.cpp">
       <Filter>src\platform\windows</Filter>
     </ClCompile>
+    <ClCompile Include="src\graphics\D3D12Graphics.cpp">
+      <Filter>src\graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\platform\windows\Window.h">
@@ -39,6 +48,9 @@
     </ClInclude>
     <ClInclude Include="include\platform\windows\WinApp.h">
       <Filter>include\platform\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\D3D12Graphics.h">
+      <Filter>include\graphics</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
