@@ -26,6 +26,23 @@ bool Window::Create(HINSTANCE hInstance, const std::wstring &title, int width, i
 
 	isClassRegistered_ = true;
 
+	RECT rect{
+		0,
+		0,
+		width,
+		height
+	};
+
+	if (!AdjustWindowRectEx(
+		&rect,
+		WS_OVERLAPPEDWINDOW,
+		FALSE,
+		0
+	)) {
+		Destroy();
+		return false;
+	}
+
 	hwnd_ = CreateWindowEx(
 		0,
 		kClassName_.c_str(),
@@ -33,8 +50,8 @@ bool Window::Create(HINSTANCE hInstance, const std::wstring &title, int width, i
 		WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
-		width,
-		height,
+		rect.right - rect.left,
+		rect.bottom - rect.top,
 		nullptr,
 		nullptr,
 		hInstance_,
