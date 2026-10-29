@@ -95,6 +95,9 @@
     <ClCompile Include="src\platform\windows\WindowsInputBackend.cpp">
       <Filter>src\platform\windows</Filter>
     </ClCompile>
+    <ClCompile Include="src\input\Gamepad.cpp">
+      <Filter>src\input</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\platform\windows\Window.h">
@@ -153,6 +156,15 @@
     </ClInclude>
     <ClInclude Include="include\platform\windows\WindowsInputBackend.h">
       <Filter>include\platform\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="include\input\GamepadButton.h">
+      <Filter>include\input</Filter>
+    </ClInclude>
+    <ClInclude Include="include\input\GamepadState.h">
+      <Filter>include\input</Filter>
+    </ClInclude>
+    <ClInclude Include="include\input\Gamepad.h">
+      <Filter>include\input</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

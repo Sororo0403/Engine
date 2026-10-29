@@ -1,5 +1,6 @@
 #pragma once
 
+#include "input/GamepadState.h"
 #include "input/Keyboard.h"
 
 /// <summary>
@@ -9,4 +10,5 @@ struct InputState {
 	bool active = false;
 
 	Keyboard::State keyboard{};
+	GamepadState gamepad{};
 };

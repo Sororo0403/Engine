@@ -87,11 +87,43 @@ int RunEngine(HINSTANCE hInstance) {
 	FrameTimer frameTimer;
 
 	const Keyboard &keyboard = input.GetKeyboard();
+	const Gamepad &gamepad = input.GetGamepad();
+	bool wasGamepadConnected = false;
 
 	while (app.ProcessMessages()) {
 		if (!input.Update()) {
 			exitCode = -1;
 			break;
+		}
+		// 接続状態が変わったときだけ出力する
+		const bool connected = gamepad.IsConnected();
+
+		if (connected != wasGamepadConnected) {
+			Logger::Info(connected ? "コントローラーを接続しました。"
+			                       : "コントローラーを切断しました。");
+
+			wasGamepadConnected = connected;
+		}
+
+		// 下側のボタン（XboxのAなど）
+		if (gamepad.IsPressed(GamepadButton::SOUTH)) {
+			Logger::Info("コントローラーの下側ボタンが押されました。");
+		}
+
+		if (gamepad.IsReleased(GamepadButton::SOUTH)) {
+			Logger::Info("コントローラーの下側ボタンが離されました。");
+		}
+
+		// MENUを押した瞬間のスティック・トリガーの値を確認する
+		if (gamepad.IsPressed(GamepadButton::MENU)) {
+			const GamepadState &state = gamepad.GetState();
+
+			Logger::Info(std::format("左スティック=({:.2f}, {:.2f}) "
+			                         "右スティック=({:.2f}, {:.2f}) "
+			                         "左トリガー={:.2f} 右トリガー={:.2f}",
+			                         state.leftStick.x, state.leftStick.y,
+			                         state.rightStick.x, state.rightStick.y,
+			                         state.leftTrigger, state.rightTrigger));
 		}
 
 		// この後に既存のサイズ確認・描画処理を続ける

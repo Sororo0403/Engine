@@ -15,11 +15,13 @@ class Camera {
 	/// <summary>
 	/// 更新済みのビュー行列を取得する
 	/// </summary>
+	/// <returns>このカメラが保持するビュー行列への読み取り専用参照</returns>
 	const DirectX::XMFLOAT4X4 &GetViewMatrix() const;
 
 	/// <summary>
 	/// 更新済みの投影行列を取得する
 	/// </summary>
+	/// <returns>このカメラが保持する投影行列への読み取り専用参照</returns>
 	const DirectX::XMFLOAT4X4 &GetProjectionMatrix() const;
 
 	/// <summary>

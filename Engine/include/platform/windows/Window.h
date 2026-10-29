@@ -16,8 +16,7 @@ class Window {
 	/// <summary>
 	/// ウィンドウを生成する
 	/// </summary>
-	/// <param
-	/// name="hInstance">Windowsアプリケーションのインスタンスを表すハンドル</param>
+	/// <param name="hInstance">Windowsアプリケーションのインスタンスを表すハンドル</param>
 	/// <param name="title">ウィンドウのタイトル</param>
 	/// <param name="width">ウィンドウの幅</param>
 	/// <param name="height">ウィンドウの高さ</param>
@@ -62,7 +61,7 @@ class Window {
 	/// <param name="msg">メッセージ番号</param>
 	/// <param name="wParam">追加情報1</param>
 	/// <param name="lParam">追加情報2</param>
-	/// <returns></returns>
+	/// <returns>メッセージの処理結果。未処理のメッセージはDefWindowProcWの戻り値</returns>
 	static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam,
 	                                LPARAM lParam);
 

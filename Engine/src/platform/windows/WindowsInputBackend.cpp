@@ -45,39 +45,12 @@ bool WindowsInputBackend::Update(InputState &state) {
 		return true;
 	}
 
-	Microsoft::WRL::ComPtr<GameInput::v4::IGameInputReading> reading;
-
-	// 最新のキーボード状態を取得する
-	const HRESULT hr = gameInput_->GetCurrentReading(
-	    GameInput::v4::GameInputKindKeyboard, nullptr, reading.GetAddressOf());
-
-	if (hr == GameInput::v4::GAMEINPUT_E_READING_NOT_FOUND ||
-	    hr == GameInput::v4::GAMEINPUT_E_DEVICE_NOT_FOUND ||
-	    hr == GameInput::v4::GAMEINPUT_E_DEVICE_DISCONNECTED) {
-		return true;
-	}
-
-	if (FAILED(hr)) {
-		Logger::Error(
-		    std::format("キーボード状態の取得に失敗しました。HRESULT=0x{:08X}",
-		                static_cast<unsigned long>(hr)));
+	if (!ReadKeyboard(state.keyboard)) {
 		return false;
 	}
 
-	const uint32_t keyCount = reading->GetKeyCount();
-
-	if (keyCount > 0) {
-		std::vector<GameInput::v4::GameInputKeyState> keyStates(keyCount);
-
-		const uint32_t count = reading->GetKeyState(keyCount, keyStates.data());
-
-		for (uint32_t i = 0; i < count; ++i) {
-			const Key key = ToKey(keyStates[i].virtualKey);
-
-			if (key != Key::UNKNOWN) {
-				state.keyboard[static_cast<std::size_t>(key)] = true;
-			}
-		}
+	if (!ReadGamepad(state.gamepad)) {
+		return false;
 	}
 
 	state.active = true;
@@ -138,4 +111,121 @@ Key WindowsInputBackend::ToKey(unsigned int virtualKey) {
 	default:
 		return Key::UNKNOWN;
 	}
+}
+
+bool WindowsInputBackend::ReadKeyboard(Keyboard::State &states) {
+	states.fill(false);
+
+	Microsoft::WRL::ComPtr<GameInput::v4::IGameInputReading> reading;
+
+	const HRESULT hr = gameInput_->GetCurrentReading(
+	    GameInput::v4::GameInputKindKeyboard, nullptr, reading.GetAddressOf());
+
+	if (hr == GameInput::v4::GAMEINPUT_E_READING_NOT_FOUND ||
+	    hr == GameInput::v4::GAMEINPUT_E_DEVICE_NOT_FOUND ||
+	    hr == GameInput::v4::GAMEINPUT_E_DEVICE_DISCONNECTED) {
+		return true;
+	}
+
+	if (FAILED(hr)) {
+		Logger::Error(
+		    std::format("キーボード状態の取得に失敗しました。HRESULT=0x{:08X}",
+		                static_cast<unsigned long>(hr)));
+		return false;
+	}
+
+	const uint32_t keyCount = reading->GetKeyCount();
+
+	if (keyCount > 0) {
+		std::vector<GameInput::v4::GameInputKeyState> keyStates(keyCount);
+
+		const uint32_t count = reading->GetKeyState(keyCount, keyStates.data());
+
+		for (uint32_t i = 0; i < count; ++i) {
+			const Key key = ToKey(keyStates[i].virtualKey);
+
+			if (key != Key::UNKNOWN) {
+				states[static_cast<std::size_t>(key)] = true;
+			}
+		}
+	}
+
+	return true;
+}
+
+bool WindowsInputBackend::ReadGamepad(GamepadState &state) {
+	using namespace GameInput::v4;
+
+	state = {};
+
+	Microsoft::WRL::ComPtr<IGameInputReading> reading;
+
+	const HRESULT hr = gameInput_->GetCurrentReading(
+	    GameInputKindGamepad, nullptr, reading.GetAddressOf());
+
+	if (hr == GAMEINPUT_E_READING_NOT_FOUND ||
+	    hr == GAMEINPUT_E_DEVICE_NOT_FOUND ||
+	    hr == GAMEINPUT_E_DEVICE_DISCONNECTED) {
+		return true;
+	}
+
+	if (FAILED(hr)) {
+		Logger::Error(std::format(
+		    "コントローラー状態の取得に失敗しました。HRESULT=0x{:08X}",
+		    static_cast<unsigned long>(hr)));
+		return false;
+	}
+
+	GameInputGamepadState nativeState{};
+
+	if (!reading->GetGamepadState(&nativeState)) {
+		Logger::Error("コントローラー状態の読み取りに失敗しました。");
+		return false;
+	}
+
+	// 共通ボタンとGameInputのボタンの対応表
+	struct ButtonMapping {
+		GamepadButton button;
+		GameInputGamepadButtons flag;
+	};
+
+	static constexpr ButtonMapping mappings[] = {
+	    {GamepadButton::SOUTH, GameInputGamepadA},
+	    {GamepadButton::EAST, GameInputGamepadB},
+	    {GamepadButton::WEST, GameInputGamepadX},
+	    {GamepadButton::NORTH, GameInputGamepadY},
+
+	    {GamepadButton::DPAD_UP, GameInputGamepadDPadUp},
+	    {GamepadButton::DPAD_DOWN, GameInputGamepadDPadDown},
+	    {GamepadButton::DPAD_LEFT, GameInputGamepadDPadLeft},
+	    {GamepadButton::DPAD_RIGHT, GameInputGamepadDPadRight},
+
+	    {GamepadButton::LEFT_SHOULDER, GameInputGamepadLeftShoulder},
+	    {GamepadButton::RIGHT_SHOULDER, GameInputGamepadRightShoulder},
+
+	    {GamepadButton::LEFT_STICK, GameInputGamepadLeftThumbstick},
+	    {GamepadButton::RIGHT_STICK, GameInputGamepadRightThumbstick},
+
+	    {GamepadButton::MENU, GameInputGamepadMenu},
+	    {GamepadButton::VIEW, GameInputGamepadView},
+	};
+
+	for (const auto &mapping : mappings) {
+		const auto index = static_cast<std::size_t>(mapping.button);
+
+		state.buttons[index] =
+		    (nativeState.buttons & mapping.flag) != GameInputGamepadNone;
+	}
+
+	state.leftStick = {nativeState.leftThumbstickX,
+	                   nativeState.leftThumbstickY};
+
+	state.rightStick = {nativeState.rightThumbstickX,
+	                    nativeState.rightThumbstickY};
+
+	state.leftTrigger = nativeState.leftTrigger;
+	state.rightTrigger = nativeState.rightTrigger;
+	state.connected = true;
+
+	return true;
 }

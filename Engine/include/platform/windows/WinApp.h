@@ -7,8 +7,7 @@ class WinApp {
 	/// <summary>
 	/// アプリケーションの初期化処理
 	/// </summary>
-	/// <param
-	/// name="hInstance">Windowsアプリケーションのインスタンスを表すハンドル</param>
+	/// <param name="hInstance">Windowsアプリケーションのインスタンスを表すハンドル</param>
 	/// <param name="title">ウィンドウのタイトル</param>
 	/// <param name="width">ウィンドウの幅</param>
 	/// <param name="height">ウィンドウの高さ</param>

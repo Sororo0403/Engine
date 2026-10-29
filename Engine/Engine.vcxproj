@@ -12,6 +12,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\input\Gamepad.cpp" />
     <ClCompile Include="src\input\InputSystem.cpp" />
     <ClCompile Include="src\input\Keyboard.cpp" />
     <ClCompile Include="src\core\FrameTimer.cpp" />
@@ -29,6 +30,9 @@
     <ClCompile Include="src\platform\windows\WindowsInputBackend.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\input\Gamepad.h" />
+    <ClInclude Include="include\input\GamepadState.h" />
+    <ClInclude Include="include\input\GamepadButton.h" />
     <ClInclude Include="include\input\IInputBackend.h" />
     <ClInclude Include="include\core\FrameTimer.h" />
     <ClInclude Include="include\graphics\Camera.h" />
