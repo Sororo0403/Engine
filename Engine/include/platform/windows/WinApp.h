@@ -25,6 +25,12 @@ public:
 	/// </summary>
 	void Finalize();
 
+	/// <summary>
+	/// ウィンドウハンドルを取得
+	/// </summary>
+	/// <returns>ウィンドウハンドル</returns>
+	HWND GetHwnd() const;
+
 private:
 	Window window_;
 };

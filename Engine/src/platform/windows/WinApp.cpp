@@ -22,3 +22,7 @@ bool WinApp::ProcessMessages() {
 void WinApp::Finalize() {
 	window_.Destroy();
 }
+
+HWND WinApp::GetHwnd() const {
+	return window_.GetHwnd();
+}
