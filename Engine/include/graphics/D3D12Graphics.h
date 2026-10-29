@@ -32,6 +32,14 @@ public:
 	bool EndFrame();
 
 	/// <summary>
+	/// バックバッファと描画領域のサイズを変更する
+	/// </summary>
+	/// <param name="width">変更後の幅（ピクセル）</param>
+	/// <param name="height">変更後の高さ（ピクセル）</param>
+	/// <returns>true:成功 false:失敗。失敗時は描画を継続しないこと</returns>
+	bool Resize(int width, int height);
+
+	/// <summary>
 	/// GPUリソースを解放し、描画基盤を終了する
 	/// </summary>
 	void Finalize();
@@ -104,6 +112,13 @@ private:
 	/// Debugビルド時にD3D12のデバッグレイヤーを有効にする
 	/// </summary>
 	void EnableDebugLayer();
+
+	/// <summary>
+	/// ビューポートとシザーのサイズを更新する
+	/// </summary>
+	/// <param name="width">描画領域の幅</param>
+	/// <param name="height">描画領域の高さ</param>
+	void UpdateViewport(int width, int height);
 
 private:
 	Microsoft::WRL::ComPtr<IDXGIFactory6> factory_;

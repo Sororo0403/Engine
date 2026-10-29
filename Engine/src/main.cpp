@@ -70,6 +70,21 @@ namespace {
 		Logger::Info("メインループを開始しました。");
 
 		while (app.ProcessMessages()) {
+			const int width = app.GetWidth();
+			const int height = app.GetHeight();
+
+			// 最小化中は描画せず、次のメッセージを待つ
+			if (width <= 0 || height <= 0) {
+				WaitMessage();
+				continue;
+			}
+
+			// サイズが変わっていたら描画領域を作り直す
+			if (!graphics.Resize(width, height)) {
+				exitCode = -1;
+				break;
+			}
+
 			if (!graphics.BeginFrame(clearColor)) {
 				exitCode = -1;
 				break;

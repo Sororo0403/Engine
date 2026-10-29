@@ -26,15 +26,7 @@ bool D3D12Graphics::Initialize(HWND hwnd, int width, int height) {
 		return false;
 	}
 
-	viewport_ = {};
-	viewport_.Width = static_cast<float>(width);
-	viewport_.Height = static_cast<float>(height);
-	viewport_.MinDepth = 0.0f;
-	viewport_.MaxDepth = 1.0f;
-
-	scissor_ = {};
-	scissor_.right = static_cast<LONG>(width);
-	scissor_.bottom = static_cast<LONG>(height);
+	UpdateViewport(width, height);
 
 	Logger::Info(std::format("D3D12の描画基盤を初期化しました。{}x{}、バッファ数={}",
 		width, height, kBufferCount));
@@ -137,6 +129,64 @@ bool D3D12Graphics::EndFrame() {
 	const bool gpuCompleted = WaitForGpu();
 
 	return SUCCEEDED(presentResult) && gpuCompleted;
+}
+
+bool D3D12Graphics::Resize(int width, int height) {
+	if (!device_ || !swapChain_ || width <= 0 || height <= 0) {
+		Logger::Error("Resize: 初期化状態、またはサイズが無効です。");
+		return false;
+	}
+
+	// サイズが変わっていなければ何もしない
+	if (scissor_.right == width && scissor_.bottom == height) {
+		return true;
+	}
+
+	if (!WaitForGpu()) {
+		return false;
+	}
+
+	// 古いバックバッファへの参照を解放する
+	for (auto &buffer : backBuffers_) {
+		buffer.Reset();
+	}
+
+	rtvHeap_.Reset();
+	rtvDescriptorSize_ = 0;
+
+	HRESULT hr = swapChain_->ResizeBuffers(
+		kBufferCount,
+		static_cast<UINT>(width),
+		static_cast<UINT>(height),
+		DXGI_FORMAT_UNKNOWN,
+		0
+	);
+
+	if (FAILED(hr)) {
+		Logger::Error(std::format(
+			"ResizeBuffersに失敗しました。{}x{}、HRESULT=0x{:08X}",
+			width,
+			height,
+			static_cast<unsigned long>(hr)
+		));
+		return false;
+	}
+
+	// 新しいバックバッファを取得してRTVを作り直す
+	if (!CreateRenderTargets()) {
+		return false;
+	}
+
+	bufferIndex_ = swapChain_->GetCurrentBackBufferIndex();
+	UpdateViewport(width, height);
+
+	Logger::Info(std::format(
+		"描画領域をリサイズしました。{}x{}",
+		width,
+		height
+	));
+
+	return true;
 }
 
 void D3D12Graphics::Finalize() {
@@ -492,8 +542,7 @@ bool D3D12Graphics::WaitForGpu() {
 			if (result == WAIT_FAILED) {
 				const DWORD error = GetLastError();
 				Logger::Error(std::format("GPU完了待機に失敗しました。Win32=0x{:08X}", error));
-			}
-			else {
+			} else {
 				Logger::Error(std::format("GPU完了待機が予期しない結果を返しました。result=0x{:08X}", result));
 			}
 			return false;
@@ -522,10 +571,21 @@ void D3D12Graphics::EnableDebugLayer() {
 	if (SUCCEEDED(hr)) {
 		debug->EnableDebugLayer();
 		Logger::Info("D3D12のデバッグレイヤーを有効にしました。");
-	}
-	else {
+	} else {
 		Logger::Warning(std::format("D3D12のデバッグレイヤーを有効にできませんでした。HRESULT=0x{:08X}",
 			static_cast<unsigned long>(hr)));
 	}
 #endif
+}
+
+void D3D12Graphics::UpdateViewport(int width, int height) {
+	viewport_ = {};
+	viewport_.Width = static_cast<float>(width);
+	viewport_.Height = static_cast<float>(height);
+	viewport_.MinDepth = 0.0f;
+	viewport_.MaxDepth = 1.0f;
+
+	scissor_ = {};
+	scissor_.right = static_cast<LONG>(width);
+	scissor_.bottom = static_cast<LONG>(height);
 }
