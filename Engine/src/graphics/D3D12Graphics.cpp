@@ -1,10 +1,14 @@
 #include "graphics/D3D12Graphics.h"
 
+#include <d3d12sdklayers.h>
+
 bool D3D12Graphics::Initialize(HWND hwnd, int width, int height) {
 	if (!hwnd || width <= 0 || height <= 0 ||
 		factory_ || device_ || commandQueue_ || swapChain_) {
 		return false;
 	}
+
+	EnableDebugLayer();
 
 	if (!CreateFactory() ||
 		!CreateDevice() ||
@@ -375,4 +379,18 @@ bool D3D12Graphics::RecordCommands(UINT bufferIndex) {
 	hr = commandList_->Close();
 
 	return SUCCEEDED(hr);
+}
+
+void D3D12Graphics::EnableDebugLayer() {
+#if defined(_DEBUG)
+	Microsoft::WRL::ComPtr<ID3D12Debug> debug;
+
+	HRESULT hr = D3D12GetDebugInterface(
+		IID_PPV_ARGS(debug.GetAddressOf())
+	);
+
+	if (SUCCEEDED(hr)) {
+		debug->EnableDebugLayer();
+	}
+#endif
 }

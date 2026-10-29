@@ -88,7 +88,11 @@ private:
 	/// <returns>true:成功 false:失敗</returns>
 	bool RecordCommands(UINT bufferIndex);
 
-private:
+	/// <summary>
+	/// Debugビルド時にD3D12のデバッグレイヤーを有効にする
+	/// </summary>
+	void EnableDebugLayer();
+
 private:
 	Microsoft::WRL::ComPtr<IDXGIFactory6> factory_;
 	Microsoft::WRL::ComPtr<ID3D12Device> device_;
