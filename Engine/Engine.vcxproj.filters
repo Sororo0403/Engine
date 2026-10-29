@@ -27,6 +27,15 @@
     <Filter Include="src\graphics">
       <UniqueIdentifier>{649f9f1e-b45e-4ad1-b26a-bf795b3be8c4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="resources">
+      <UniqueIdentifier>{5c78554c-b4c5-456a-b834-225692ded83e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="resources\shaders">
+      <UniqueIdentifier>{c1143765-a207-4f02-bd8b-220bba90e40a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="resources\shaders\triangle">
+      <UniqueIdentifier>{fa1964fb-a7bf-400d-8015-0bfeae514235}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -41,6 +50,9 @@
     <ClCompile Include="src\graphics\D3D12Graphics.cpp">
       <Filter>src\graphics</Filter>
     </ClCompile>
+    <ClCompile Include="src\graphics\ShaderCompiler.cpp">
+      <Filter>src\graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\platform\windows\Window.h">
@@ -52,5 +64,22 @@
     <ClInclude Include="include\graphics\D3D12Graphics.h">
       <Filter>include\graphics</Filter>
     </ClInclude>
+    <ClInclude Include="include\graphics\ShaderCompiler.h">
+      <Filter>include\graphics</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="resources\shaders\triangle\Triangle.PS.hlsl">
+      <Filter>resources\shaders\triangle</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\shaders\triangle\Triangle.VS.hlsl">
+      <Filter>resources\shaders\triangle</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="resources\shaders\triangle\Triangle.hlsli">
+      <Filter>resources\shaders\triangle</Filter>
+    </None>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>
