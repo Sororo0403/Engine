@@ -5,7 +5,7 @@
 
 class Window {
 private:
-	const std::wstring kClassName_ = L"GameWindow";
+	inline static const std::wstring kClassName_ = L"GameWindow";
 public:
 	/// <summary>
 	/// デストラクタ
@@ -71,7 +71,6 @@ private:
 	HWND hwnd_ = nullptr;
 	HINSTANCE hInstance_ = nullptr;
 	bool isClassRegistered_ = false;
-
 	int width_ = 0;
 	int height_ = 0;
 };

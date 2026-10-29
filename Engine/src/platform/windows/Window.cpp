@@ -9,6 +9,10 @@ bool Window::Create(HINSTANCE hInstance, const std::wstring &title, int width, i
 		return false;
 	}
 
+	if (width <= 0 || height <= 0) {
+		return false;
+	}
+
 	hInstance_ = hInstance;
 
 	WNDCLASSEX wc{};
@@ -43,6 +47,9 @@ bool Window::Create(HINSTANCE hInstance, const std::wstring &title, int width, i
 		return false;
 	}
 
+	width_ = width;
+	height_ = height;
+
 	hwnd_ = CreateWindowEx(
 		0,
 		kClassName_.c_str(),
@@ -63,9 +70,6 @@ bool Window::Create(HINSTANCE hInstance, const std::wstring &title, int width, i
 		return false;
 	}
 
-	width_ = width;
-	height_ = height;
-
 	ShowWindow(hwnd_, SW_SHOW);
 
 	return true;
@@ -81,16 +85,14 @@ void Window::Destroy() {
 	}
 
 	if (isClassRegistered_) {
-		if (hInstance_) {
-			if (!UnregisterClass(kClassName_.c_str(), hInstance_)) {
-				return;
-			}
-
-			isClassRegistered_ = false;
+		if (!UnregisterClass(kClassName_.c_str(), hInstance_)) {
+			return;
 		}
 
-		hInstance_ = nullptr;
+		isClassRegistered_ = false;
 	}
+
+	hInstance_ = nullptr;
 
 	width_ = 0;
 	height_ = 0;
@@ -140,6 +142,16 @@ LRESULT CALLBACK Window::WndProc(
 		}
 
 		return 0;
+	case WM_NCDESTROY:
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
+
+		if (window) {
+			window->hwnd_ = nullptr;
+			window->width_ = 0;
+			window->height_ = 0;
+		}
+
+		break;
 	}
 
 	return DefWindowProc(hwnd, msg, wParam, lParam);
