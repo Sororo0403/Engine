@@ -13,9 +13,11 @@
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\platform\windows\Window.cpp" />
+    <ClCompile Include="src\platform\windows\WinApp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\platform\windows\Window.h" />
+    <ClInclude Include="include\platform\windows\WinApp.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>
