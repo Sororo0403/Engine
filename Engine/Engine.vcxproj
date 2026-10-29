@@ -12,19 +12,25 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\core\DateTime.cpp" />
+    <ClCompile Include="src\core\Logger.cpp" />
     <ClCompile Include="src\graphics\ShaderCompiler.cpp" />
     <ClCompile Include="src\graphics\D3D12Graphics.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\platform\windows\Window.cpp" />
     <ClCompile Include="src\platform\windows\WinApp.cpp" />
     <ClCompile Include="src\graphics\TriangleRenderer.cpp" />
+    <ClCompile Include="src\platform\windows\StringConversion.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\core\DateTime.h" />
     <ClInclude Include="include\graphics\D3D12Graphics.h" />
     <ClInclude Include="include\platform\windows\Window.h" />
     <ClInclude Include="include\platform\windows\WinApp.h" />
     <ClInclude Include="include\graphics\ShaderCompiler.h" />
     <ClInclude Include="include\graphics\TriangleRenderer.h" />
+    <ClInclude Include="include\core\Logger.h" />
+    <ClInclude Include="include\platform\windows\StringConversion.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
