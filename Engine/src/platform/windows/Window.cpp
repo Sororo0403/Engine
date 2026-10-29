@@ -25,7 +25,7 @@ bool Window::Create(HINSTANCE hInstance, const std::wstring &title, int width, i
 	wc.style = CS_HREDRAW | CS_VREDRAW;
 	wc.lpfnWndProc = Window::WndProc;
 	wc.hInstance = hInstance_;
-	wc.lpszClassName = kClassName_.c_str();
+	wc.lpszClassName = kClassName.c_str();
 
 	if (!RegisterClassEx(&wc)) {
 		hInstance_ = nullptr;
@@ -56,7 +56,7 @@ bool Window::Create(HINSTANCE hInstance, const std::wstring &title, int width, i
 
 	hwnd_ = CreateWindowEx(
 		0,
-		kClassName_.c_str(),
+		kClassName.c_str(),
 		title.c_str(),
 		WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT,
@@ -89,7 +89,7 @@ void Window::Destroy() {
 	}
 
 	if (isClassRegistered_) {
-		if (!UnregisterClass(kClassName_.c_str(), hInstance_)) {
+		if (!UnregisterClass(kClassName.c_str(), hInstance_)) {
 			return;
 		}
 

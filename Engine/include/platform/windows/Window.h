@@ -5,7 +5,7 @@
 
 class Window {
 private:
-	inline static const std::wstring kClassName_ = L"GameWindow";
+	inline static const std::wstring kClassName = L"GameWindow";
 public:
 	/// <summary>
 	/// デストラクタ

@@ -21,10 +21,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int) {
 	}
 
 	while (app.ProcessMessages()) {
-		// ゲームの更新
-		// ゲームの描画
+		if (!graphics.Render()) {
+			break;
+		}
 	}
 
+	graphics.Finalize();
 	app.Finalize();
 
 	return 0;
