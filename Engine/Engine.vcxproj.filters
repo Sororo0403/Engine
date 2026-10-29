@@ -9,6 +9,18 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
+    <Filter Include="include\platform">
+      <UniqueIdentifier>{a587a74a-dc59-4e50-bc24-711ebcb0614e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\platform\windows">
+      <UniqueIdentifier>{2c4ff4df-9cd9-487e-8bcf-587d750f8ece}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\platform">
+      <UniqueIdentifier>{aa27e90a-de97-4b6f-8df8-7ec96f375278}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\platform\windows">
+      <UniqueIdentifier>{94c8b68b-dafd-4dff-9c7e-53125e2dc731}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
