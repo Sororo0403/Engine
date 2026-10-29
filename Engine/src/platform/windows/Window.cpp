@@ -13,6 +13,10 @@ bool Window::Create(HINSTANCE hInstance, const std::wstring &title, int width, i
 		return false;
 	}
 
+	if (!hInstance) {
+		return false;
+	}
+
 	hInstance_ = hInstance;
 
 	WNDCLASSEX wc{};
