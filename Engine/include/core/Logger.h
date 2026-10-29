@@ -5,7 +5,7 @@
 #include <string_view>
 
 class Logger {
-public:
+  public:
 	/// <summary>
 	/// ログファイルを開く
 	/// </summary>
@@ -36,12 +36,8 @@ public:
 	/// <param name="message">UTF-8のメッセージ</param>
 	static void Error(std::string_view message);
 
-private:
-	enum class Level {
-		LOG_INFO,
-		LOG_WARNING,
-		LOG_ERROR
-	};
+  private:
+	enum class Level { LOG_INFO, LOG_WARNING, LOG_ERROR };
 
 	/// <summary>
 	/// 時刻とレベルを付けて、出力ウィンドウとファイルに書き込む
@@ -50,6 +46,6 @@ private:
 	/// <param name="message">UTF-8のメッセージ</param>
 	static void Write(Level level, std::string_view message);
 
-private:
+  private:
 	inline static std::ofstream logFile_;
 };

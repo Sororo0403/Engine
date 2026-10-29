@@ -4,9 +4,10 @@
 #include <string>
 
 class Window {
-private:
+  private:
 	inline static const std::wstring kClassName = L"GameWindow";
-public:
+
+  public:
 	/// <summary>
 	/// デストラクタ
 	/// </summary>
@@ -15,12 +16,14 @@ public:
 	/// <summary>
 	/// ウィンドウを生成する
 	/// </summary>
-	/// <param name="hInstance">Windowsアプリケーションのインスタンスを表すハンドル</param>
+	/// <param
+	/// name="hInstance">Windowsアプリケーションのインスタンスを表すハンドル</param>
 	/// <param name="title">ウィンドウのタイトル</param>
 	/// <param name="width">ウィンドウの幅</param>
 	/// <param name="height">ウィンドウの高さ</param>
 	/// <returns>true:生成成功 false:生成失敗</returns>
-	bool Create(HINSTANCE hInstance, const std::wstring &title, int width, int height);
+	bool Create(HINSTANCE hInstance, const std::wstring &title, int width,
+	            int height);
 
 	/// <summary>
 	/// ウィンドウを廃棄する
@@ -45,13 +48,13 @@ public:
 	/// <returns>ウィンドウの高さ</returns>
 	int GetHeight() const;
 
-public:
+  public:
 	// コピーを禁止する
 	Window(const Window &) = delete;
 	Window &operator=(const Window &) = delete;
 	Window() = default;
 
-private:
+  private:
 	/// <summary>
 	/// ウィンドプロシージャ
 	/// </summary>
@@ -60,18 +63,13 @@ private:
 	/// <param name="wParam">追加情報1</param>
 	/// <param name="lParam">追加情報2</param>
 	/// <returns></returns>
-	static LRESULT CALLBACK WndProc(
-		HWND hwnd,
-		UINT msg,
-		WPARAM wParam,
-		LPARAM lParam
-	);
+	static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam,
+	                                LPARAM lParam);
 
-private:
+  private:
 	HWND hwnd_ = nullptr;
 	HINSTANCE hInstance_ = nullptr;
 	bool isClassRegistered_ = false;
 	int width_ = 0;
 	int height_ = 0;
 };
-

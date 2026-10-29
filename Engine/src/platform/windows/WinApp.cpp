@@ -1,7 +1,8 @@
 #include "platform/windows/WinApp.h"
 #include "core/Logger.h"
 
-bool WinApp::Initialize(HINSTANCE hInstance, const std::wstring &title, int width, int height) {
+bool WinApp::Initialize(HINSTANCE hInstance, const std::wstring &title,
+                        int width, int height) {
 	return window_.Create(hInstance, title, width, height);
 }
 
@@ -21,18 +22,10 @@ bool WinApp::ProcessMessages() {
 	return true;
 }
 
-void WinApp::Finalize() {
-	window_.Destroy();
-}
+void WinApp::Finalize() { window_.Destroy(); }
 
-HWND WinApp::GetHwnd() const {
-	return window_.GetHwnd();
-}
+HWND WinApp::GetHwnd() const { return window_.GetHwnd(); }
 
-int WinApp::GetWidth() const {
-	return window_.GetWidth();
-}
+int WinApp::GetWidth() const { return window_.GetWidth(); }
 
-int WinApp::GetHeight() const {
-	return window_.GetHeight();
-}
+int WinApp::GetHeight() const { return window_.GetHeight(); }

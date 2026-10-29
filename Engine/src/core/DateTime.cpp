@@ -5,8 +5,7 @@
 
 std::string DateTime::GetCurrentTimeString() {
 	const auto now = std::chrono::system_clock::now();
-	const std::time_t time =
-		std::chrono::system_clock::to_time_t(now);
+	const std::time_t time = std::chrono::system_clock::to_time_t(now);
 
 	std::tm localTime{};
 
@@ -17,12 +16,7 @@ std::string DateTime::GetCurrentTimeString() {
 	// 時刻8文字と終端文字の分
 	char buffer[9]{};
 
-	if (std::strftime(
-		buffer,
-		sizeof(buffer),
-		"%H:%M:%S",
-		&localTime
-	) == 0) {
+	if (std::strftime(buffer, sizeof(buffer), "%H:%M:%S", &localTime) == 0) {
 		return {};
 	}
 

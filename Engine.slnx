@@ -3,6 +3,7 @@
     <Platform Name="x64" />
   </Configurations>
   <Folder Name="/Solution Items/">
+    <File Path=".clang-format" />
     <File Path=".editorconfig" />
   </Folder>
   <Project Path="Engine/Engine.vcxproj" Id="b5695b53-5c1d-4b30-887f-99386dedafcd" />

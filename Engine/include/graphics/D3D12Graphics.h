@@ -2,13 +2,14 @@
 
 #include <Windows.h>
 #include <d3d12.h>
-#include <wrl/client.h>
 #include <dxgi1_6.h>
+#include <wrl/client.h>
 
 class D3D12Graphics {
-private:
+  private:
 	static constexpr UINT kBufferCount = 2;
-public:
+
+  public:
 	/// <summary>
 	/// Direct3D12の描画基盤を初期化する
 	/// </summary>
@@ -23,7 +24,7 @@ public:
 	/// </summary>
 	/// <param name="clearColor">赤・緑・青・アルファの4要素の配列</param>
 	/// <returns>true:成功 false:失敗</returns>
-	bool BeginFrame(const float(&clearColor)[4]);
+	bool BeginFrame(const float (&clearColor)[4]);
 
 	/// <summary>
 	/// 描画命令を実行して表示し、GPUの完了を待機する
@@ -56,7 +57,7 @@ public:
 	/// <returns>BeginFrame成功後からEndFrame前まで使用するコマンドリスト</returns>
 	ID3D12GraphicsCommandList *GetCommandList() const;
 
-private:
+  private:
 	/// <summary>
 	/// DXGIファクトリを作成する
 	/// </summary>
@@ -120,7 +121,7 @@ private:
 	/// <param name="height">描画領域の高さ</param>
 	void UpdateViewport(int width, int height);
 
-private:
+  private:
 	Microsoft::WRL::ComPtr<IDXGIFactory6> factory_;
 	Microsoft::WRL::ComPtr<ID3D12Device> device_;
 

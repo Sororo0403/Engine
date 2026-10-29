@@ -26,6 +26,8 @@
   <ItemGroup>
     <ClInclude Include="include\core\DateTime.h" />
     <ClInclude Include="include\graphics\D3D12Graphics.h" />
+    <ClInclude Include="include\graphics\Transform.h" />
+    <ClInclude Include="include\graphics\Vertex.h" />
     <ClInclude Include="include\platform\windows\Window.h" />
     <ClInclude Include="include\platform\windows\WinApp.h" />
     <ClInclude Include="include\graphics\ShaderCompiler.h" />

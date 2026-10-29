@@ -1,23 +1,20 @@
 #include "Triangle.hlsli"
 
-VertexOutput VSMain(uint vertexId : SV_VertexID)
+cbuffer Transformation : register(b0)
 {
-    const float2 positions[3] =
-    {
-        float2(0.0f, 0.5f),
-		float2(0.5f, -0.5f),
-		float2(-0.5f, -0.5f)
-    };
+	row_major float4x4 world;
+};
 
-    const float3 colors[3] =
-    {
-        float3(1.0f, 0.0f, 0.0f),
-		float3(0.0f, 1.0f, 0.0f),
-		float3(0.0f, 0.0f, 1.0f)
-    };
+struct VertexInput
+{
+	float3 position : POSITION0;
+	float4 color : COLOR0;
+};
 
-    VertexOutput output;
-    output.position = float4(positions[vertexId], 0.0f, 1.0f);
-    output.color = float4(colors[vertexId], 1.0f);
-    return output;
+VertexOutput VSMain(VertexInput input)
+{
+	VertexOutput output;
+	output.position = mul(float4(input.position, 1.0f), world);
+	output.color = input.color;
+	return output;
 }

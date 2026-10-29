@@ -3,16 +3,18 @@
 #include "platform/windows/Window.h"
 
 class WinApp {
-public:
+  public:
 	/// <summary>
 	/// アプリケーションの初期化処理
 	/// </summary>
-	/// <param name="hInstance">Windowsアプリケーションのインスタンスを表すハンドル</param>
+	/// <param
+	/// name="hInstance">Windowsアプリケーションのインスタンスを表すハンドル</param>
 	/// <param name="title">ウィンドウのタイトル</param>
 	/// <param name="width">ウィンドウの幅</param>
 	/// <param name="height">ウィンドウの高さ</param>
 	/// <returns>true:初期化成功 false:初期化失敗</returns>
-	bool Initialize(HINSTANCE hInstance, const std::wstring &title, int width, int height);
+	bool Initialize(HINSTANCE hInstance, const std::wstring &title, int width,
+	                int height);
 
 	/// <summary>
 	/// Windowsメッセージを処理する
@@ -43,6 +45,6 @@ public:
 	/// <returns>高さ(ピクセル)</returns>
 	int GetHeight() const;
 
-private:
+  private:
 	Window window_;
 };

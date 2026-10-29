@@ -1,21 +1,21 @@
 #include "platform/windows/Window.h"
-#include "platform/windows/StringConversion.h"
 #include "core/Logger.h"
+#include "platform/windows/StringConversion.h"
 
 #include <format>
 
-Window::~Window() {
-	Destroy();
-}
+Window::~Window() { Destroy(); }
 
-bool Window::Create(HINSTANCE hInstance, const std::wstring &title, int width, int height) {
+bool Window::Create(HINSTANCE hInstance, const std::wstring &title, int width,
+                    int height) {
 	if (hwnd_ || isClassRegistered_) {
 		Logger::Error("Window::Create: ウィンドウはすでに作成されています。");
 		return false;
 	}
 
 	if (width <= 0 || height <= 0) {
-		Logger::Error(std::format("Window::Create: 不正なサイズです。{}x{}", width, height));
+		Logger::Error(std::format("Window::Create: 不正なサイズです。{}x{}",
+		                          width, height));
 		return false;
 	}
 
@@ -36,28 +36,20 @@ bool Window::Create(HINSTANCE hInstance, const std::wstring &title, int width, i
 
 	if (!RegisterClassEx(&wc)) {
 		const DWORD error = GetLastError();
-		Logger::Error(std::format("RegisterClassExに失敗しました。Win32=0x{:08X}", error));
+		Logger::Error(std::format(
+		    "RegisterClassExに失敗しました。Win32=0x{:08X}", error));
 		hInstance_ = nullptr;
 		return false;
 	}
 
 	isClassRegistered_ = true;
 
-	RECT rect{
-		0,
-		0,
-		width,
-		height
-	};
+	RECT rect{0, 0, width, height};
 
-	if (!AdjustWindowRectEx(
-		&rect,
-		WS_OVERLAPPEDWINDOW,
-		FALSE,
-		0
-	)) {
+	if (!AdjustWindowRectEx(&rect, WS_OVERLAPPEDWINDOW, FALSE, 0)) {
 		const DWORD error = GetLastError();
-		Logger::Error(std::format("AdjustWindowRectExに失敗しました。Win32=0x{:08X}", error));
+		Logger::Error(std::format(
+		    "AdjustWindowRectExに失敗しました。Win32=0x{:08X}", error));
 		Destroy();
 		return false;
 	}
@@ -65,31 +57,23 @@ bool Window::Create(HINSTANCE hInstance, const std::wstring &title, int width, i
 	width_ = width;
 	height_ = height;
 
-	hwnd_ = CreateWindowEx(
-		0,
-		kClassName.c_str(),
-		title.c_str(),
-		WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT,
-		CW_USEDEFAULT,
-		rect.right - rect.left,
-		rect.bottom - rect.top,
-		nullptr,
-		nullptr,
-		hInstance_,
-		this
-	);
+	hwnd_ = CreateWindowEx(0, kClassName.c_str(), title.c_str(),
+	                       WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
+	                       rect.right - rect.left, rect.bottom - rect.top,
+	                       nullptr, nullptr, hInstance_, this);
 
 	if (!hwnd_) {
 		const DWORD error = GetLastError();
-		Logger::Error(std::format("CreateWindowExに失敗しました。Win32=0x{:08X}", error));
+		Logger::Error(
+		    std::format("CreateWindowExに失敗しました。Win32=0x{:08X}", error));
 		Destroy();
 		return false;
 	}
 
 	ShowWindow(hwnd_, SW_SHOW);
 	Logger::Info(std::format("ウィンドウを作成しました: {} ({}x{})",
-		StringConversion::WideToUtf8(title), width_, height_));
+	                         StringConversion::WideToUtf8(title), width_,
+	                         height_));
 
 	return true;
 }
@@ -99,7 +83,8 @@ void Window::Destroy() {
 	if (hwnd_) {
 		if (!DestroyWindow(hwnd_)) {
 			const DWORD error = GetLastError();
-			Logger::Error(std::format("DestroyWindowに失敗しました。Win32=0x{:08X}", error));
+			Logger::Error(std::format(
+			    "DestroyWindowに失敗しました。Win32=0x{:08X}", error));
 			return;
 		}
 
@@ -109,7 +94,8 @@ void Window::Destroy() {
 	if (isClassRegistered_) {
 		if (!UnregisterClass(kClassName.c_str(), hInstance_)) {
 			const DWORD error = GetLastError();
-			Logger::Error(std::format("UnregisterClassに失敗しました。Win32=0x{:08X}", error));
+			Logger::Error(std::format(
+			    "UnregisterClassに失敗しました。Win32=0x{:08X}", error));
 			return;
 		}
 
@@ -125,38 +111,24 @@ void Window::Destroy() {
 	}
 }
 
-HWND Window::GetHwnd() const {
-	return hwnd_;
-}
+HWND Window::GetHwnd() const { return hwnd_; }
 
-int Window::GetWidth() const {
-	return width_;
-}
+int Window::GetWidth() const { return width_; }
 
-int Window::GetHeight() const {
-	return height_;
-}
+int Window::GetHeight() const { return height_; }
 
-LRESULT CALLBACK Window::WndProc(
-	HWND hwnd,
-	UINT msg,
-	WPARAM wParam,
-	LPARAM lParam
-) {
+LRESULT CALLBACK Window::WndProc(HWND hwnd, UINT msg, WPARAM wParam,
+                                 LPARAM lParam) {
 	if (msg == WM_NCCREATE) {
 		auto *cs = reinterpret_cast<CREATESTRUCT *>(lParam);
 		auto *window = static_cast<Window *>(cs->lpCreateParams);
 
-		SetWindowLongPtr(
-			hwnd,
-			GWLP_USERDATA,
-			reinterpret_cast<LONG_PTR>(window)
-		);
+		SetWindowLongPtr(hwnd, GWLP_USERDATA,
+		                 reinterpret_cast<LONG_PTR>(window));
 	}
 
-	auto *window = reinterpret_cast<Window *>(
-		GetWindowLongPtr(hwnd, GWLP_USERDATA)
-		);
+	auto *window =
+	    reinterpret_cast<Window *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
 
 	switch (msg) {
 	case WM_DESTROY:

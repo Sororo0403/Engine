@@ -72,7 +72,7 @@
       <Filter>src\core</Filter>
     </ClCompile>
     <ClCompile Include="src\platform\windows\PathUtils.cpp">
-      <Filter>src</Filter>
+      <Filter>src\platform\windows</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -101,6 +101,12 @@
       <Filter>include\core</Filter>
     </ClInclude>
     <ClInclude Include="include\platform\windows\PathUtils.h">
+      <Filter>include\platform\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\Vertex.h">
+      <Filter>include\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\Transform.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>

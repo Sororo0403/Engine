@@ -6,42 +6,42 @@
 #include <format>
 
 bool D3D12Graphics::Initialize(HWND hwnd, int width, int height) {
-	if (!hwnd || width <= 0 || height <= 0 ||
-		factory_ || device_ || commandQueue_ || swapChain_) {
-		Logger::Error(std::format("D3D12Graphics::Initialize: 引数が無効、または初期化済みです。サイズ={}x{}",
-			width, height));
+	if (!hwnd || width <= 0 || height <= 0 || factory_ || device_ ||
+	    commandQueue_ || swapChain_) {
+		Logger::Error(
+		    std::format("D3D12Graphics::Initialize: "
+		                "引数が無効、または初期化済みです。サイズ={}x{}",
+		                width, height));
 		return false;
 	}
 
 	EnableDebugLayer();
 
-	if (!CreateFactory() ||
-		!CreateDevice() ||
-		!CreateCommandQueue() ||
-		!CreateSwapChain(hwnd, width, height) ||
-		!CreateRenderTargets() ||
-		!CreateCommandObjects() ||
-		!CreateSynchronizationObjects()) {
+	if (!CreateFactory() || !CreateDevice() || !CreateCommandQueue() ||
+	    !CreateSwapChain(hwnd, width, height) || !CreateRenderTargets() ||
+	    !CreateCommandObjects() || !CreateSynchronizationObjects()) {
 		Finalize();
 		return false;
 	}
 
 	UpdateViewport(width, height);
 
-	Logger::Info(std::format("D3D12の描画基盤を初期化しました。{}x{}、バッファ数={}",
-		width, height, kBufferCount));
+	Logger::Info(
+	    std::format("D3D12の描画基盤を初期化しました。{}x{}、バッファ数={}",
+	                width, height, kBufferCount));
 	return true;
 }
 
-bool D3D12Graphics::BeginFrame(const float(&clearColor)[4]) {
+bool D3D12Graphics::BeginFrame(const float (&clearColor)[4]) {
 	bufferIndex_ = swapChain_->GetCurrentBackBufferIndex();
 
 	// 前フレームのGPU処理はEndFrameで完了を待っている
 	HRESULT hr = commandAllocator_->Reset();
 
 	if (FAILED(hr)) {
-		Logger::Error(std::format("コマンドアロケーターのResetに失敗しました。HRESULT=0x{:08X}",
-			static_cast<unsigned long>(hr)));
+		Logger::Error(std::format(
+		    "コマンドアロケーターのResetに失敗しました。HRESULT=0x{:08X}",
+		    static_cast<unsigned long>(hr)));
 		return false;
 	}
 
@@ -49,8 +49,9 @@ bool D3D12Graphics::BeginFrame(const float(&clearColor)[4]) {
 	hr = commandList_->Reset(commandAllocator_.Get(), nullptr);
 
 	if (FAILED(hr)) {
-		Logger::Error(std::format("コマンドリストのResetに失敗しました。HRESULT=0x{:08X}",
-			static_cast<unsigned long>(hr)));
+		Logger::Error(
+		    std::format("コマンドリストのResetに失敗しました。HRESULT=0x{:08X}",
+		                static_cast<unsigned long>(hr)));
 		return false;
 	}
 
@@ -58,8 +59,7 @@ bool D3D12Graphics::BeginFrame(const float(&clearColor)[4]) {
 	D3D12_RESOURCE_BARRIER barrier{};
 	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 	barrier.Transition.pResource = backBuffers_[bufferIndex_].Get();
-	barrier.Transition.Subresource =
-		D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
 	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
 
@@ -67,25 +67,14 @@ bool D3D12Graphics::BeginFrame(const float(&clearColor)[4]) {
 
 	// 今回使うRTVを取得する
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle =
-		rtvHeap_->GetCPUDescriptorHandleForHeapStart();
+	    rtvHeap_->GetCPUDescriptorHandleForHeapStart();
 
-	rtvHandle.ptr +=
-		static_cast<SIZE_T>(bufferIndex_) * rtvDescriptorSize_;
+	rtvHandle.ptr += static_cast<SIZE_T>(bufferIndex_) * rtvDescriptorSize_;
 
-	commandList_->ClearRenderTargetView(
-		rtvHandle,
-		clearColor,
-		0,
-		nullptr
-	);
+	commandList_->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
 
 	// 描画先を設定する
-	commandList_->OMSetRenderTargets(
-		1,
-		&rtvHandle,
-		FALSE,
-		nullptr
-	);
+	commandList_->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 
 	commandList_->RSSetViewports(1, &viewport_);
 	commandList_->RSSetScissorRects(1, &scissor_);
@@ -98,8 +87,7 @@ bool D3D12Graphics::EndFrame() {
 	D3D12_RESOURCE_BARRIER barrier{};
 	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 	barrier.Transition.pResource = backBuffers_[bufferIndex_].Get();
-	barrier.Transition.Subresource =
-		D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 
@@ -109,8 +97,9 @@ bool D3D12Graphics::EndFrame() {
 	HRESULT hr = commandList_->Close();
 
 	if (FAILED(hr)) {
-		Logger::Error(std::format("フレームのコマンドリストを閉じられませんでした。HRESULT=0x{:08X}",
-			static_cast<unsigned long>(hr)));
+		Logger::Error(std::format(
+		    "フレームのコマンドリストを閉じられませんでした。HRESULT=0x{:08X}",
+		    static_cast<unsigned long>(hr)));
 		return false;
 	}
 
@@ -121,8 +110,9 @@ bool D3D12Graphics::EndFrame() {
 	// 描画した画像を表示する
 	const HRESULT presentResult = swapChain_->Present(1, 0);
 	if (FAILED(presentResult)) {
-		Logger::Error(std::format("スワップチェーンのPresentに失敗しました。HRESULT=0x{:08X}",
-			static_cast<unsigned long>(presentResult)));
+		Logger::Error(std::format(
+		    "スワップチェーンのPresentに失敗しました。HRESULT=0x{:08X}",
+		    static_cast<unsigned long>(presentResult)));
 	}
 
 	// 表示に失敗した場合も、送信済みのGPU処理の完了を確認する
@@ -155,20 +145,13 @@ bool D3D12Graphics::Resize(int width, int height) {
 	rtvDescriptorSize_ = 0;
 
 	HRESULT hr = swapChain_->ResizeBuffers(
-		kBufferCount,
-		static_cast<UINT>(width),
-		static_cast<UINT>(height),
-		DXGI_FORMAT_UNKNOWN,
-		0
-	);
+	    kBufferCount, static_cast<UINT>(width), static_cast<UINT>(height),
+	    DXGI_FORMAT_UNKNOWN, 0);
 
 	if (FAILED(hr)) {
-		Logger::Error(std::format(
-			"ResizeBuffersに失敗しました。{}x{}、HRESULT=0x{:08X}",
-			width,
-			height,
-			static_cast<unsigned long>(hr)
-		));
+		Logger::Error(
+		    std::format("ResizeBuffersに失敗しました。{}x{}、HRESULT=0x{:08X}",
+		                width, height, static_cast<unsigned long>(hr)));
 		return false;
 	}
 
@@ -180,17 +163,15 @@ bool D3D12Graphics::Resize(int width, int height) {
 	bufferIndex_ = swapChain_->GetCurrentBackBufferIndex();
 	UpdateViewport(width, height);
 
-	Logger::Info(std::format(
-		"描画領域をリサイズしました。{}x{}",
-		width,
-		height
-	));
+	Logger::Info(
+	    std::format("描画領域をリサイズしました。{}x{}", width, height));
 
 	return true;
 }
 
 void D3D12Graphics::Finalize() {
-	const bool hadResources = factory_ || device_ || commandQueue_ || swapChain_;
+	const bool hadResources =
+	    factory_ || device_ || commandQueue_ || swapChain_;
 	if (device_ && commandQueue_ && fence_ && fenceEvent_) {
 		WaitForGpu();
 	}
@@ -222,23 +203,19 @@ void D3D12Graphics::Finalize() {
 	}
 }
 
-ID3D12Device *D3D12Graphics::GetDevice() const {
-	return device_.Get();
-}
+ID3D12Device *D3D12Graphics::GetDevice() const { return device_.Get(); }
 
 ID3D12GraphicsCommandList *D3D12Graphics::GetCommandList() const {
 	return commandList_.Get();
 }
 
 bool D3D12Graphics::CreateFactory() {
-	HRESULT hr = CreateDXGIFactory2(
-		0,
-		IID_PPV_ARGS(factory_.GetAddressOf())
-	);
+	HRESULT hr = CreateDXGIFactory2(0, IID_PPV_ARGS(factory_.GetAddressOf()));
 
 	if (FAILED(hr)) {
-		Logger::Error(std::format("CreateDXGIFactory2に失敗しました。HRESULT=0x{:08X}",
-			static_cast<unsigned long>(hr)));
+		Logger::Error(
+		    std::format("CreateDXGIFactory2に失敗しました。HRESULT=0x{:08X}",
+		                static_cast<unsigned long>(hr)));
 		return false;
 	}
 
@@ -246,23 +223,22 @@ bool D3D12Graphics::CreateFactory() {
 }
 
 bool D3D12Graphics::CreateDevice() {
-	for (UINT index = 0; ; ++index) {
+	for (UINT index = 0;; ++index) {
 		Microsoft::WRL::ComPtr<IDXGIAdapter1> adapter;
 
 		// 高性能なGPUを優先して取得する
 		HRESULT hr = factory_->EnumAdapterByGpuPreference(
-			index,
-			DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE,
-			IID_PPV_ARGS(adapter.GetAddressOf())
-		);
+		    index, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE,
+		    IID_PPV_ARGS(adapter.GetAddressOf()));
 
 		if (hr == DXGI_ERROR_NOT_FOUND) {
 			break;
 		}
 
 		if (FAILED(hr)) {
-			Logger::Error(std::format("EnumAdapterByGpuPreferenceに失敗しました。index={}、HRESULT=0x{:08X}",
-				index, static_cast<unsigned long>(hr)));
+			Logger::Error(std::format("EnumAdapterByGpuPreferenceに失敗しました"
+			                          "。index={}、HRESULT=0x{:08X}",
+			                          index, static_cast<unsigned long>(hr)));
 			return false;
 		}
 
@@ -271,8 +247,9 @@ bool D3D12Graphics::CreateDevice() {
 		hr = adapter->GetDesc1(&desc);
 
 		if (FAILED(hr)) {
-			Logger::Warning(std::format("GPU情報を取得できないため候補をスキップします。index={}、HRESULT=0x{:08X}",
-				index, static_cast<unsigned long>(hr)));
+			Logger::Warning(std::format("GPU情報を取得できないため候補をスキッ"
+			                            "プします。index={}、HRESULT=0x{:08X}",
+			                            index, static_cast<unsigned long>(hr)));
 			continue;
 		}
 
@@ -282,20 +259,21 @@ bool D3D12Graphics::CreateDevice() {
 		}
 
 		// このGPUでデバイスの作成を試す
-		hr = D3D12CreateDevice(
-			adapter.Get(),
-			D3D_FEATURE_LEVEL_11_0,
-			IID_PPV_ARGS(device_.GetAddressOf())
-		);
+		hr = D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0,
+		                       IID_PPV_ARGS(device_.GetAddressOf()));
 
 		if (SUCCEEDED(hr)) {
-			Logger::Info(std::format("GPUを選択しました: {} (Feature Level 11.0以上を要求)",
-				StringConversion::WideToUtf8(desc.Description)));
+			Logger::Info(std::format(
+			    "GPUを選択しました: {} (Feature Level 11.0以上を要求)",
+			    StringConversion::WideToUtf8(desc.Description)));
 			return true;
 		}
 
-		Logger::Warning(std::format("D3D12CreateDeviceに失敗したため、次のGPUを試します: {} HRESULT=0x{:08X}",
-			StringConversion::WideToUtf8(desc.Description), static_cast<unsigned long>(hr)));
+		Logger::Warning(
+		    std::format("D3D12CreateDeviceに失敗したため、次のGPUを試します: "
+		                "{} HRESULT=0x{:08X}",
+		                StringConversion::WideToUtf8(desc.Description),
+		                static_cast<unsigned long>(hr)));
 	}
 
 	Logger::Error("D3D12で使用できるハードウェアGPUが見つかりませんでした。");
@@ -309,13 +287,12 @@ bool D3D12Graphics::CreateCommandQueue() {
 	desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 
 	HRESULT hr = device_->CreateCommandQueue(
-		&desc,
-		IID_PPV_ARGS(commandQueue_.GetAddressOf())
-	);
+	    &desc, IID_PPV_ARGS(commandQueue_.GetAddressOf()));
 
 	if (FAILED(hr)) {
-		Logger::Error(std::format("CreateCommandQueueに失敗しました。HRESULT=0x{:08X}",
-			static_cast<unsigned long>(hr)));
+		Logger::Error(
+		    std::format("CreateCommandQueueに失敗しました。HRESULT=0x{:08X}",
+		                static_cast<unsigned long>(hr)));
 		return false;
 	}
 
@@ -336,30 +313,23 @@ bool D3D12Graphics::CreateSwapChain(HWND hwnd, int width, int height) {
 
 	Microsoft::WRL::ComPtr<IDXGISwapChain1> swapChain;
 
-	HRESULT hr = factory_->CreateSwapChainForHwnd(
-		commandQueue_.Get(),
-		hwnd,
-		&desc,
-		nullptr,
-		nullptr,
-		swapChain.GetAddressOf()
-	);
+	HRESULT hr = factory_->CreateSwapChainForHwnd(commandQueue_.Get(), hwnd,
+	                                              &desc, nullptr, nullptr,
+	                                              swapChain.GetAddressOf());
 
 	if (FAILED(hr)) {
-		Logger::Error(std::format("CreateSwapChainForHwndに失敗しました。HRESULT=0x{:08X}",
-			static_cast<unsigned long>(hr)));
+		Logger::Error(std::format(
+		    "CreateSwapChainForHwndに失敗しました。HRESULT=0x{:08X}",
+		    static_cast<unsigned long>(hr)));
 		return false;
 	}
 
-
-	hr = factory_->MakeWindowAssociation(
-		hwnd,
-		DXGI_MWA_NO_ALT_ENTER
-	);
+	hr = factory_->MakeWindowAssociation(hwnd, DXGI_MWA_NO_ALT_ENTER);
 
 	if (FAILED(hr)) {
-		Logger::Error(std::format("MakeWindowAssociationに失敗しました。HRESULT=0x{:08X}",
-			static_cast<unsigned long>(hr)));
+		Logger::Error(
+		    std::format("MakeWindowAssociationに失敗しました。HRESULT=0x{:08X}",
+		                static_cast<unsigned long>(hr)));
 		return false;
 	}
 
@@ -367,8 +337,9 @@ bool D3D12Graphics::CreateSwapChain(HWND hwnd, int width, int height) {
 	hr = swapChain.As(&swapChain_);
 
 	if (FAILED(hr)) {
-		Logger::Error(std::format("IDXGISwapChain3を取得できませんでした。HRESULT=0x{:08X}",
-			static_cast<unsigned long>(hr)));
+		Logger::Error(std::format(
+		    "IDXGISwapChain3を取得できませんでした。HRESULT=0x{:08X}",
+		    static_cast<unsigned long>(hr)));
 		return false;
 	}
 
@@ -383,43 +354,37 @@ bool D3D12Graphics::CreateRenderTargets() {
 	desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 
 	HRESULT hr = device_->CreateDescriptorHeap(
-		&desc,
-		IID_PPV_ARGS(rtvHeap_.GetAddressOf())
-	);
+	    &desc, IID_PPV_ARGS(rtvHeap_.GetAddressOf()));
 
 	if (FAILED(hr)) {
-		Logger::Error(std::format("RTV用CreateDescriptorHeapに失敗しました。HRESULT=0x{:08X}",
-			static_cast<unsigned long>(hr)));
+		Logger::Error(std::format(
+		    "RTV用CreateDescriptorHeapに失敗しました。HRESULT=0x{:08X}",
+		    static_cast<unsigned long>(hr)));
 		return false;
 	}
 
 	rtvDescriptorSize_ = device_->GetDescriptorHandleIncrementSize(
-		D3D12_DESCRIPTOR_HEAP_TYPE_RTV
-	);
+	    D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
 	// 最初のRTVの格納位置
 	D3D12_CPU_DESCRIPTOR_HANDLE handle =
-		rtvHeap_->GetCPUDescriptorHandleForHeapStart();
+	    rtvHeap_->GetCPUDescriptorHandleForHeapStart();
 
 	for (UINT index = 0; index < kBufferCount; ++index) {
 		// スワップチェーンから画像を取得する
 		hr = swapChain_->GetBuffer(
-			index,
-			IID_PPV_ARGS(backBuffers_[index].GetAddressOf())
-		);
+		    index, IID_PPV_ARGS(backBuffers_[index].GetAddressOf()));
 
 		if (FAILED(hr)) {
-			Logger::Error(std::format("バックバッファの取得に失敗しました。index={}、HRESULT=0x{:08X}",
-				index, static_cast<unsigned long>(hr)));
+			Logger::Error(std::format("バックバッファの取得に失敗しました。inde"
+			                          "x={}、HRESULT=0x{:08X}",
+			                          index, static_cast<unsigned long>(hr)));
 			return false;
 		}
 
 		// この画像に対応するRTVを作成する
-		device_->CreateRenderTargetView(
-			backBuffers_[index].Get(),
-			nullptr,
-			handle
-		);
+		device_->CreateRenderTargetView(backBuffers_[index].Get(), nullptr,
+		                                handle);
 
 		// 次のRTVの格納位置へ進む
 		handle.ptr += rtvDescriptorSize_;
@@ -430,27 +395,24 @@ bool D3D12Graphics::CreateRenderTargets() {
 
 bool D3D12Graphics::CreateCommandObjects() {
 	HRESULT hr = device_->CreateCommandAllocator(
-		D3D12_COMMAND_LIST_TYPE_DIRECT,
-		IID_PPV_ARGS(commandAllocator_.GetAddressOf())
-	);
+	    D3D12_COMMAND_LIST_TYPE_DIRECT,
+	    IID_PPV_ARGS(commandAllocator_.GetAddressOf()));
 
 	if (FAILED(hr)) {
-		Logger::Error(std::format("CreateCommandAllocatorに失敗しました。HRESULT=0x{:08X}",
-			static_cast<unsigned long>(hr)));
+		Logger::Error(std::format(
+		    "CreateCommandAllocatorに失敗しました。HRESULT=0x{:08X}",
+		    static_cast<unsigned long>(hr)));
 		return false;
 	}
 
-	hr = device_->CreateCommandList(
-		0,
-		D3D12_COMMAND_LIST_TYPE_DIRECT,
-		commandAllocator_.Get(),
-		nullptr,
-		IID_PPV_ARGS(commandList_.GetAddressOf())
-	);
+	hr = device_->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT,
+	                                commandAllocator_.Get(), nullptr,
+	                                IID_PPV_ARGS(commandList_.GetAddressOf()));
 
 	if (FAILED(hr)) {
-		Logger::Error(std::format("CreateCommandListに失敗しました。HRESULT=0x{:08X}",
-			static_cast<unsigned long>(hr)));
+		Logger::Error(
+		    std::format("CreateCommandListに失敗しました。HRESULT=0x{:08X}",
+		                static_cast<unsigned long>(hr)));
 		return false;
 	}
 
@@ -458,8 +420,9 @@ bool D3D12Graphics::CreateCommandObjects() {
 	hr = commandList_->Close();
 
 	if (FAILED(hr)) {
-		Logger::Error(std::format("作成直後のコマンドリストを閉じられませんでした。HRESULT=0x{:08X}",
-			static_cast<unsigned long>(hr)));
+		Logger::Error(std::format(
+		    "作成直後のコマンドリストを閉じられませんでした。HRESULT=0x{:08X}",
+		    static_cast<unsigned long>(hr)));
 		return false;
 	}
 
@@ -469,29 +432,22 @@ bool D3D12Graphics::CreateCommandObjects() {
 bool D3D12Graphics::CreateSynchronizationObjects() {
 	fenceValue_ = 0;
 
-	HRESULT hr = device_->CreateFence(
-		fenceValue_,
-		D3D12_FENCE_FLAG_NONE,
-		IID_PPV_ARGS(fence_.GetAddressOf())
-	);
+	HRESULT hr = device_->CreateFence(fenceValue_, D3D12_FENCE_FLAG_NONE,
+	                                  IID_PPV_ARGS(fence_.GetAddressOf()));
 
 	if (FAILED(hr)) {
 		Logger::Error(std::format("CreateFenceに失敗しました。HRESULT=0x{:08X}",
-			static_cast<unsigned long>(hr)));
+		                          static_cast<unsigned long>(hr)));
 		return false;
 	}
 
 	// 初期状態は未通知の、自動リセットイベントを作成する
-	fenceEvent_ = CreateEventW(
-		nullptr,
-		FALSE,
-		FALSE,
-		nullptr
-	);
+	fenceEvent_ = CreateEventW(nullptr, FALSE, FALSE, nullptr);
 
 	if (!fenceEvent_) {
 		const DWORD error = GetLastError();
-		Logger::Error(std::format("GPU待機用CreateEventWに失敗しました。Win32=0x{:08X}", error));
+		Logger::Error(std::format(
+		    "GPU待機用CreateEventWに失敗しました。Win32=0x{:08X}", error));
 		return false;
 	}
 
@@ -500,39 +456,38 @@ bool D3D12Graphics::CreateSynchronizationObjects() {
 
 bool D3D12Graphics::WaitForGpu() {
 	if (!device_ || !commandQueue_ || !fence_ || !fenceEvent_) {
-		Logger::Error("WaitForGpu: GPUとの同期に必要なオブジェクトがありません。");
+		Logger::Error(
+		    "WaitForGpu: GPUとの同期に必要なオブジェクトがありません。");
 		return false;
 	}
 
 	const UINT64 targetValue = ++fenceValue_;
 
 	// 先に送った命令の実行後、フェンスをこの値に更新させる
-	HRESULT hr = commandQueue_->Signal(
-		fence_.Get(),
-		targetValue
-	);
+	HRESULT hr = commandQueue_->Signal(fence_.Get(), targetValue);
 
 	if (FAILED(hr)) {
-		Logger::Error(std::format("コマンドキューのSignalに失敗しました。fence={}、HRESULT=0x{:08X}",
-			targetValue, static_cast<unsigned long>(hr)));
+		Logger::Error(std::format(
+		    "コマンドキューのSignalに失敗しました。fence={}、HRESULT=0x{:08X}",
+		    targetValue, static_cast<unsigned long>(hr)));
 		const HRESULT reason = device_->GetDeviceRemovedReason();
 		if (FAILED(reason)) {
-			Logger::Error(std::format("GPUデバイスが使用できなくなりました。reason=0x{:08X}",
-				static_cast<unsigned long>(reason)));
+			Logger::Error(std::format(
+			    "GPUデバイスが使用できなくなりました。reason=0x{:08X}",
+			    static_cast<unsigned long>(reason)));
 		}
 		return false;
 	}
 
 	// まだ完了していなければ、イベントを使って待つ
 	if (fence_->GetCompletedValue() < targetValue) {
-		hr = fence_->SetEventOnCompletion(
-			targetValue,
-			fenceEvent_
-		);
+		hr = fence_->SetEventOnCompletion(targetValue, fenceEvent_);
 
 		if (FAILED(hr)) {
-			Logger::Error(std::format("SetEventOnCompletionに失敗しました。fence={}、HRESULT=0x{:08X}",
-				targetValue, static_cast<unsigned long>(hr)));
+			Logger::Error(std::format("SetEventOnCompletionに失敗しました。fenc"
+			                          "e={}、HRESULT=0x{:08X}",
+			                          targetValue,
+			                          static_cast<unsigned long>(hr)));
 			return false;
 		}
 
@@ -541,9 +496,12 @@ bool D3D12Graphics::WaitForGpu() {
 		if (result != WAIT_OBJECT_0) {
 			if (result == WAIT_FAILED) {
 				const DWORD error = GetLastError();
-				Logger::Error(std::format("GPU完了待機に失敗しました。Win32=0x{:08X}", error));
+				Logger::Error(std::format(
+				    "GPU完了待機に失敗しました。Win32=0x{:08X}", error));
 			} else {
-				Logger::Error(std::format("GPU完了待機が予期しない結果を返しました。result=0x{:08X}", result));
+				Logger::Error(std::format(
+				    "GPU完了待機が予期しない結果を返しました。result=0x{:08X}",
+				    result));
 			}
 			return false;
 		}
@@ -552,8 +510,9 @@ bool D3D12Graphics::WaitForGpu() {
 	// GPUの異常による待機解除も確認する
 	hr = device_->GetDeviceRemovedReason();
 	if (FAILED(hr)) {
-		Logger::Error(std::format("GPUデバイスが使用できなくなりました。reason=0x{:08X}",
-			static_cast<unsigned long>(hr)));
+		Logger::Error(
+		    std::format("GPUデバイスが使用できなくなりました。reason=0x{:08X}",
+		                static_cast<unsigned long>(hr)));
 		return false;
 	}
 
@@ -564,16 +523,15 @@ void D3D12Graphics::EnableDebugLayer() {
 #if defined(_DEBUG)
 	Microsoft::WRL::ComPtr<ID3D12Debug> debug;
 
-	HRESULT hr = D3D12GetDebugInterface(
-		IID_PPV_ARGS(debug.GetAddressOf())
-	);
+	HRESULT hr = D3D12GetDebugInterface(IID_PPV_ARGS(debug.GetAddressOf()));
 
 	if (SUCCEEDED(hr)) {
 		debug->EnableDebugLayer();
 		Logger::Info("D3D12のデバッグレイヤーを有効にしました。");
 	} else {
-		Logger::Warning(std::format("D3D12のデバッグレイヤーを有効にできませんでした。HRESULT=0x{:08X}",
-			static_cast<unsigned long>(hr)));
+		Logger::Warning(std::format(
+		    "D3D12のデバッグレイヤーを有効にできませんでした。HRESULT=0x{:08X}",
+		    static_cast<unsigned long>(hr)));
 	}
 #endif
 }
