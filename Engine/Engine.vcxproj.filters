@@ -26,5 +26,13 @@
     <ClCompile Include="src\main.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\platform\windows\Window.cpp">
+      <Filter>src\platform\windows</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\platform\windows\Window.h">
+      <Filter>include\platform\windows</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
