@@ -42,6 +42,12 @@
     <Filter Include="src\core">
       <UniqueIdentifier>{b440b5b1-cb9f-4aa0-aa98-86d0fc720741}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\input">
+      <UniqueIdentifier>{b36cfa81-804d-488b-80c4-0d18f4e3785f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\input">
+      <UniqueIdentifier>{b5f29ab0-0cbb-4173-9b1a-3bc61b54f874}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -80,7 +86,13 @@
     <ClCompile Include="src\core\FrameTimer.cpp">
       <Filter>src\core</Filter>
     </ClCompile>
-    <ClCompile Include="src\platform\windows\Keyboard.cpp">
+    <ClCompile Include="src\input\Keyboard.cpp">
+      <Filter>src\input</Filter>
+    </ClCompile>
+    <ClCompile Include="src\input\InputSystem.cpp">
+      <Filter>src\input</Filter>
+    </ClCompile>
+    <ClCompile Include="src\platform\windows\WindowsInputBackend.cpp">
       <Filter>src\platform\windows</Filter>
     </ClCompile>
   </ItemGroup>
@@ -121,11 +133,26 @@
     <ClInclude Include="include\core\FrameTimer.h">
       <Filter>include\core</Filter>
     </ClInclude>
-    <ClInclude Include="include\platform\windows\Keyboard.h">
-      <Filter>include\platform\windows</Filter>
-    </ClInclude>
     <ClInclude Include="include\graphics\Transform.h">
       <Filter>include\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\input\Key.h">
+      <Filter>include\input</Filter>
+    </ClInclude>
+    <ClInclude Include="include\input\Keyboard.h">
+      <Filter>include\input</Filter>
+    </ClInclude>
+    <ClInclude Include="include\input\InputState.h">
+      <Filter>include\input</Filter>
+    </ClInclude>
+    <ClInclude Include="include\input\InputSystem.h">
+      <Filter>include\input</Filter>
+    </ClInclude>
+    <ClInclude Include="include\input\IInputBackend.h">
+      <Filter>include\input</Filter>
+    </ClInclude>
+    <ClInclude Include="include\platform\windows\WindowsInputBackend.h">
+      <Filter>include\platform\windows</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

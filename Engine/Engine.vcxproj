@@ -12,7 +12,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\platform\windows\Keyboard.cpp" />
+    <ClCompile Include="src\input\InputSystem.cpp" />
+    <ClCompile Include="src\input\Keyboard.cpp" />
     <ClCompile Include="src\core\FrameTimer.cpp" />
     <ClCompile Include="src\graphics\Camera.cpp" />
     <ClCompile Include="src\platform\windows\PathUtils.cpp" />
@@ -25,8 +26,10 @@
     <ClCompile Include="src\platform\windows\WinApp.cpp" />
     <ClCompile Include="src\graphics\TriangleRenderer.cpp" />
     <ClCompile Include="src\platform\windows\StringConversion.cpp" />
+    <ClCompile Include="src\platform\windows\WindowsInputBackend.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\input\IInputBackend.h" />
     <ClInclude Include="include\core\FrameTimer.h" />
     <ClInclude Include="include\graphics\Camera.h" />
     <ClInclude Include="include\core\DateTime.h" />
@@ -40,7 +43,11 @@
     <ClInclude Include="include\core\Logger.h" />
     <ClInclude Include="include\platform\windows\StringConversion.h" />
     <ClInclude Include="include\platform\windows\PathUtils.h" />
-    <ClInclude Include="include\platform\windows\Keyboard.h" />
+    <ClInclude Include="include\input\Keyboard.h" />
+    <ClInclude Include="include\input\Key.h" />
+    <ClInclude Include="include\input\InputState.h" />
+    <ClInclude Include="include\input\InputSystem.h" />
+    <ClInclude Include="include\platform\windows\WindowsInputBackend.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -155,6 +162,7 @@ dxgi.lib;%(AdditionalDependencies)</AdditionalDependencies>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\Microsoft.Direct3D.DXC.1.9.2609.5\build\native\Microsoft.Direct3D.DXC.targets" Condition="Exists('..\packages\Microsoft.Direct3D.DXC.1.9.2609.5\build\native\Microsoft.Direct3D.DXC.targets')" />
+    <Import Project="..\packages\Microsoft.GameInput.4.0.306\build\native\targets\Microsoft.GameInput.targets" Condition="Exists('..\packages\Microsoft.GameInput.4.0.306\build\native\targets\Microsoft.GameInput.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -162,5 +170,6 @@ dxgi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Microsoft.Direct3D.DXC.1.9.2609.5\build\native\Microsoft.Direct3D.DXC.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Direct3D.DXC.1.9.2609.5\build\native\Microsoft.Direct3D.DXC.props'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Direct3D.DXC.1.9.2609.5\build\native\Microsoft.Direct3D.DXC.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Direct3D.DXC.1.9.2609.5\build\native\Microsoft.Direct3D.DXC.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.GameInput.4.0.306\build\native\targets\Microsoft.GameInput.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.GameInput.4.0.306\build\native\targets\Microsoft.GameInput.targets'))" />
   </Target>
 </Project>

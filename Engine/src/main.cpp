@@ -4,15 +4,17 @@
 #include "graphics/D3D12Graphics.h"
 #include "graphics/ShaderCompiler.h"
 #include "graphics/TriangleRenderer.h"
-#include "platform/windows/Keyboard.h"
+#include "input/InputSystem.h"
 #include "platform/windows/PathUtils.h"
 #include "platform/windows/StringConversion.h"
 #include "platform/windows/WinApp.h"
+#include "platform/windows/WindowsInputBackend.h"
 
 #include <Windows.h>
 #include <cmath>
 #include <filesystem>
 #include <format>
+#include <memory>
 
 namespace {
 int RunEngine(HINSTANCE hInstance) {
@@ -59,6 +61,16 @@ int RunEngine(HINSTANCE hInstance) {
 		return -1;
 	}
 
+	InputSystem input;
+
+	if (!input.Initialize(
+	        std::make_unique<WindowsInputBackend>(app.GetHwnd()))) {
+		graphics.Finalize();
+		triangle.Finalize();
+		app.Finalize();
+		return -1;
+	}
+
 	const float clearColor[4] = {0.1f, 0.2f, 0.6f, 1.0f};
 	int exitCode = 0;
 	Logger::Info("メインループを開始しました。");
@@ -74,9 +86,15 @@ int RunEngine(HINSTANCE hInstance) {
 
 	FrameTimer frameTimer;
 
-	Keyboard keyboard;
+	const Keyboard &keyboard = input.GetKeyboard();
 
 	while (app.ProcessMessages()) {
+		if (!input.Update()) {
+			exitCode = -1;
+			break;
+		}
+
+		// この後に既存のサイズ確認・描画処理を続ける
 		const int width = app.GetWidth();
 		const int height = app.GetHeight();
 
@@ -95,21 +113,19 @@ int RunEngine(HINSTANCE hInstance) {
 
 		const float deltaTime = frameTimer.Tick();
 
-		keyboard.Update(app.GetHwnd());
-
 		float moveX = 0.0f;
 		float moveZ = 0.0f;
 
-		if (keyboard.IsDown('W')) {
+		if (keyboard.IsDown(Key::W)) {
 			moveZ += 1.0f;
 		}
-		if (keyboard.IsDown('S')) {
+		if (keyboard.IsDown(Key::S)) {
 			moveZ -= 1.0f;
 		}
-		if (keyboard.IsDown('A')) {
+		if (keyboard.IsDown(Key::A)) {
 			moveX -= 1.0f;
 		}
-		if (keyboard.IsDown('D')) {
+		if (keyboard.IsDown(Key::D)) {
 			moveX += 1.0f;
 		}
 
@@ -151,6 +167,7 @@ int RunEngine(HINSTANCE hInstance) {
 		}
 	}
 
+	input.Finalize();
 	graphics.Finalize();
 	triangle.Finalize();
 	app.Finalize();
