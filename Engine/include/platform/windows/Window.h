@@ -33,6 +33,18 @@ public:
 	/// <returns>ウィンドウハンドル</returns>
 	HWND GetHwnd() const;
 
+	/// <summary>
+	/// ウィンドウの幅を取得
+	/// </summary>
+	/// <returns>ウィンドウの幅</returns>
+	int GetWidth() const;
+
+	/// <summary>
+	/// ウィンドウの高さを取得
+	/// </summary>
+	/// <returns>ウィンドウの高さ</returns>
+	int GetHeight() const;
+
 public:
 	// コピーを禁止する
 	Window(const Window &) = delete;
@@ -58,7 +70,9 @@ private:
 private:
 	HWND hwnd_ = nullptr;
 	HINSTANCE hInstance_ = nullptr;
-
 	bool isClassRegistered_ = false;
+
+	int width_ = 0;
+	int height_ = 0;
 };
 

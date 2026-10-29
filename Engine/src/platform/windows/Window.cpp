@@ -55,13 +55,16 @@ bool Window::Create(HINSTANCE hInstance, const std::wstring &title, int width, i
 		nullptr,
 		nullptr,
 		hInstance_,
-		nullptr
+		this
 	);
 
 	if (!hwnd_) {
 		Destroy();
 		return false;
 	}
+
+	width_ = width;
+	height_ = height;
 
 	ShowWindow(hwnd_, SW_SHOW);
 
@@ -88,10 +91,21 @@ void Window::Destroy() {
 
 		hInstance_ = nullptr;
 	}
+
+	width_ = 0;
+	height_ = 0;
 }
 
 HWND Window::GetHwnd() const {
 	return hwnd_;
+}
+
+int Window::GetWidth() const {
+	return width_;
+}
+
+int Window::GetHeight() const {
+	return height_;
 }
 
 LRESULT CALLBACK Window::WndProc(
@@ -100,9 +114,31 @@ LRESULT CALLBACK Window::WndProc(
 	WPARAM wParam,
 	LPARAM lParam
 ) {
+	if (msg == WM_NCCREATE) {
+		auto *cs = reinterpret_cast<CREATESTRUCT *>(lParam);
+		auto *window = static_cast<Window *>(cs->lpCreateParams);
+
+		SetWindowLongPtr(
+			hwnd,
+			GWLP_USERDATA,
+			reinterpret_cast<LONG_PTR>(window)
+		);
+	}
+
+	auto *window = reinterpret_cast<Window *>(
+		GetWindowLongPtr(hwnd, GWLP_USERDATA)
+		);
+
 	switch (msg) {
 	case WM_DESTROY:
 		PostQuitMessage(0);
+		return 0;
+	case WM_SIZE:
+		if (window) {
+			window->width_ = LOWORD(lParam);
+			window->height_ = HIWORD(lParam);
+		}
+
 		return 0;
 	}
 
