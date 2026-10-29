@@ -1,3 +1,4 @@
+#include "core/FrameTimer.h"
 #include "core/Logger.h"
 #include "graphics/Camera.h"
 #include "graphics/D3D12Graphics.h"
@@ -69,6 +70,8 @@ int RunEngine(HINSTANCE hInstance) {
 
 	Camera camera;
 
+	FrameTimer frameTimer;
+
 	while (app.ProcessMessages()) {
 		const int width = app.GetWidth();
 		const int height = app.GetHeight();
@@ -76,6 +79,7 @@ int RunEngine(HINSTANCE hInstance) {
 		// 最小化中は描画せず、次のメッセージを待つ
 		if (width <= 0 || height <= 0) {
 			WaitMessage();
+			frameTimer.Reset();
 			continue;
 		}
 
@@ -91,6 +95,13 @@ int RunEngine(HINSTANCE hInstance) {
 			break;
 		}
 
+		const float deltaTime = frameTimer.Tick();
+
+		// 1秒あたり1ラジアン回転する
+		constexpr float rotationSpeed = 1.0f;
+		transform.rotation.z += rotationSpeed * deltaTime;
+
+		triangle.SetTransform(transform);
 		triangle.Update(camera);
 
 		if (!graphics.BeginFrame(clearColor)) {
