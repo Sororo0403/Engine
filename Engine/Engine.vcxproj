@@ -12,6 +12,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\platform\windows\PathUtils.cpp" />
     <ClCompile Include="src\core\DateTime.cpp" />
     <ClCompile Include="src\core\Logger.cpp" />
     <ClCompile Include="src\graphics\ShaderCompiler.cpp" />
@@ -31,6 +32,7 @@
     <ClInclude Include="include\graphics\TriangleRenderer.h" />
     <ClInclude Include="include\core\Logger.h" />
     <ClInclude Include="include\platform\windows\StringConversion.h" />
+    <ClInclude Include="include\platform\windows\PathUtils.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -6,10 +6,13 @@
 #include <Windows.h>
 
 #include <filesystem>
+#include <format>
+#include <cerrno>
 #include <sstream>
 
 bool Logger::Initialize(const std::string &filePath) {
 	if (logFile_.is_open() || filePath.empty()) {
+		Error("Logger::Initialize: 初期化済み、または保存先パスが空です。");
 		return false;
 	}
 
@@ -17,6 +20,7 @@ bool Logger::Initialize(const std::string &filePath) {
 		StringConversion::Utf8ToWide(filePath);
 
 	if (widePath.empty()) {
+		Error("Logger::Initialize: 保存先パスをUTF-16に変換できませんでした。");
 		return false;
 	}
 
@@ -32,6 +36,8 @@ bool Logger::Initialize(const std::string &filePath) {
 		);
 
 		if (error) {
+			Error(std::format("ログフォルダを作成できませんでした: {} (code={})",
+				filePath, error.value()));
 			return false;
 		}
 	}
@@ -41,7 +47,13 @@ bool Logger::Initialize(const std::string &filePath) {
 	// 既存のログの末尾に追記する
 	logFile_.open(path, std::ios::out | std::ios::app);
 
-	return logFile_.is_open();
+	if (!logFile_.is_open()) {
+		const int error = errno;
+		Error(std::format("ログファイルを開けませんでした: {} (errno={})", filePath, error));
+		return false;
+	}
+
+	return true;
 }
 
 void Logger::Finalize() {

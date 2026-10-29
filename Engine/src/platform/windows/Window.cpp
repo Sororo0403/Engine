@@ -1,4 +1,8 @@
 #include "platform/windows/Window.h"
+#include "platform/windows/StringConversion.h"
+#include "core/Logger.h"
+
+#include <format>
 
 Window::~Window() {
 	Destroy();
@@ -6,14 +10,17 @@ Window::~Window() {
 
 bool Window::Create(HINSTANCE hInstance, const std::wstring &title, int width, int height) {
 	if (hwnd_ || isClassRegistered_) {
+		Logger::Error("Window::Create: ウィンドウはすでに作成されています。");
 		return false;
 	}
 
 	if (width <= 0 || height <= 0) {
+		Logger::Error(std::format("Window::Create: 不正なサイズです。{}x{}", width, height));
 		return false;
 	}
 
 	if (!hInstance) {
+		Logger::Error("Window::Create: hInstanceが無効です。");
 		return false;
 	}
 
@@ -28,6 +35,8 @@ bool Window::Create(HINSTANCE hInstance, const std::wstring &title, int width, i
 	wc.lpszClassName = kClassName.c_str();
 
 	if (!RegisterClassEx(&wc)) {
+		const DWORD error = GetLastError();
+		Logger::Error(std::format("RegisterClassExに失敗しました。Win32=0x{:08X}", error));
 		hInstance_ = nullptr;
 		return false;
 	}
@@ -47,6 +56,8 @@ bool Window::Create(HINSTANCE hInstance, const std::wstring &title, int width, i
 		FALSE,
 		0
 	)) {
+		const DWORD error = GetLastError();
+		Logger::Error(std::format("AdjustWindowRectExに失敗しました。Win32=0x{:08X}", error));
 		Destroy();
 		return false;
 	}
@@ -70,18 +81,25 @@ bool Window::Create(HINSTANCE hInstance, const std::wstring &title, int width, i
 	);
 
 	if (!hwnd_) {
+		const DWORD error = GetLastError();
+		Logger::Error(std::format("CreateWindowExに失敗しました。Win32=0x{:08X}", error));
 		Destroy();
 		return false;
 	}
 
 	ShowWindow(hwnd_, SW_SHOW);
+	Logger::Info(std::format("ウィンドウを作成しました: {} ({}x{})",
+		StringConversion::WideToUtf8(title), width_, height_));
 
 	return true;
 }
 
 void Window::Destroy() {
+	const bool hadResources = hwnd_ || isClassRegistered_;
 	if (hwnd_) {
 		if (!DestroyWindow(hwnd_)) {
+			const DWORD error = GetLastError();
+			Logger::Error(std::format("DestroyWindowに失敗しました。Win32=0x{:08X}", error));
 			return;
 		}
 
@@ -90,6 +108,8 @@ void Window::Destroy() {
 
 	if (isClassRegistered_) {
 		if (!UnregisterClass(kClassName.c_str(), hInstance_)) {
+			const DWORD error = GetLastError();
+			Logger::Error(std::format("UnregisterClassに失敗しました。Win32=0x{:08X}", error));
 			return;
 		}
 
@@ -100,6 +120,9 @@ void Window::Destroy() {
 
 	width_ = 0;
 	height_ = 0;
+	if (hadResources) {
+		Logger::Info("ウィンドウのリソースを解放しました。");
+	}
 }
 
 HWND Window::GetHwnd() const {

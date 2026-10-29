@@ -31,6 +31,18 @@ public:
 	/// <returns>ウィンドウハンドル</returns>
 	HWND GetHwnd() const;
 
+	/// <summary>
+	/// クライアント領域の幅を取得する
+	/// </summary>
+	/// <returns>幅(ピクセル)</returns>
+	int GetWidth() const;
+
+	/// <summary>
+	/// クライアント領域の高さを取得する
+	/// </summary>
+	/// <returns>高さ(ピクセル)</returns>
+	int GetHeight() const;
+
 private:
 	Window window_;
 };

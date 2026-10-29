@@ -1,10 +1,14 @@
 #include "graphics/ShaderCompiler.h"
+#include "core/Logger.h"
+#include "platform/windows/StringConversion.h"
 
 #include <filesystem>
+#include <format>
 #include <iterator>
 
 bool ShaderCompiler::Initialize() {
 	if (utils_ || compiler_ || includeHandler_) {
+		Logger::Error("ShaderCompiler::Initialize: 初期化済みです。");
 		return false;
 	}
 
@@ -14,6 +18,8 @@ bool ShaderCompiler::Initialize() {
 	);
 
 	if (FAILED(hr)) {
+		Logger::Error(std::format("DxcCreateInstance(DxcUtils)に失敗しました。HRESULT=0x{:08X}",
+			static_cast<unsigned long>(hr)));
 		Finalize();
 		return false;
 	}
@@ -24,6 +30,8 @@ bool ShaderCompiler::Initialize() {
 	);
 
 	if (FAILED(hr)) {
+		Logger::Error(std::format("DxcCreateInstance(DxcCompiler)に失敗しました。HRESULT=0x{:08X}",
+			static_cast<unsigned long>(hr)));
 		Finalize();
 		return false;
 	}
@@ -33,10 +41,13 @@ bool ShaderCompiler::Initialize() {
 	);
 
 	if (FAILED(hr)) {
+		Logger::Error(std::format("CreateDefaultIncludeHandlerに失敗しました。HRESULT=0x{:08X}",
+			static_cast<unsigned long>(hr)));
 		Finalize();
 		return false;
 	}
 
+	Logger::Info("DXCを初期化しました。");
 	return true;
 }
 
@@ -46,8 +57,19 @@ Microsoft::WRL::ComPtr<IDxcBlob> ShaderCompiler::Compile(
 	const std::wstring &profile
 ) {
 	if (!utils_ || !compiler_ || !includeHandler_) {
+		Logger::Error("ShaderCompiler::Compile: DXCが初期化されていません。");
 		return nullptr;
 	}
+
+	if (filePath.empty() || entryPoint.empty() || profile.empty()) {
+		Logger::Error("ShaderCompiler::Compile: パス、エントリーポイント、プロファイルを指定してください。");
+		return nullptr;
+	}
+
+	const std::string context = std::format("{} (entry={}, profile={})",
+		StringConversion::WideToUtf8(filePath),
+		StringConversion::WideToUtf8(entryPoint),
+		StringConversion::WideToUtf8(profile));
 
 	// HLSLファイルを読み込む
 	Microsoft::WRL::ComPtr<IDxcBlobEncoding> source;
@@ -59,6 +81,8 @@ Microsoft::WRL::ComPtr<IDxcBlob> ShaderCompiler::Compile(
 	);
 
 	if (FAILED(hr)) {
+		Logger::Error(std::format("HLSLファイルを読み込めませんでした: {} HRESULT=0x{:08X}",
+			context, static_cast<unsigned long>(hr)));
 		return nullptr;
 	}
 
@@ -102,6 +126,8 @@ Microsoft::WRL::ComPtr<IDxcBlob> ShaderCompiler::Compile(
 	);
 
 	if (FAILED(hr)) {
+		Logger::Error(std::format("IDxcCompiler3::Compileの呼び出しに失敗しました: {} HRESULT=0x{:08X}",
+			context, static_cast<unsigned long>(hr)));
 		return nullptr;
 	}
 
@@ -109,7 +135,45 @@ Microsoft::WRL::ComPtr<IDxcBlob> ShaderCompiler::Compile(
 	HRESULT status = E_FAIL;
 	hr = result->GetStatus(&status);
 
-	if (FAILED(hr) || FAILED(status)) {
+	if (FAILED(hr)) {
+		Logger::Error(std::format("IDxcResult::GetStatusに失敗しました: {} HRESULT=0x{:08X}",
+			context, static_cast<unsigned long>(hr)));
+		return nullptr;
+	}
+
+	// コンパイル失敗時の詳細と、成功時の警告をどちらも残す。
+	Microsoft::WRL::ComPtr<IDxcBlobUtf8> messages;
+	hr = result->GetOutput(
+		DXC_OUT_ERRORS,
+		IID_PPV_ARGS(messages.GetAddressOf()),
+		nullptr
+	);
+
+	if (FAILED(hr)) {
+		Logger::Error(std::format("DXCの診断メッセージを取得できませんでした: {} HRESULT=0x{:08X}",
+			context, static_cast<unsigned long>(hr)));
+		return nullptr;
+	}
+
+	if (messages && messages->GetStringLength() > 0) {
+		std::string_view diagnostics(messages->GetStringPointer(), messages->GetStringLength());
+		while (!diagnostics.empty() &&
+			(diagnostics.back() == '\n' || diagnostics.back() == '\r')) {
+			diagnostics.remove_suffix(1);
+		}
+
+		const std::string message = std::format("HLSL診断: {}\n{}", context, diagnostics);
+		if (FAILED(status)) {
+			Logger::Error(message);
+		}
+		else {
+			Logger::Warning(message);
+		}
+	}
+
+	if (FAILED(status)) {
+		Logger::Error(std::format("HLSLのコンパイルに失敗しました: {} HRESULT=0x{:08X}",
+			context, static_cast<unsigned long>(status)));
 		return nullptr;
 	}
 
@@ -123,9 +187,12 @@ Microsoft::WRL::ComPtr<IDxcBlob> ShaderCompiler::Compile(
 	);
 
 	if (FAILED(hr)) {
+		Logger::Error(std::format("コンパイル済みシェーダーを取得できませんでした: {} HRESULT=0x{:08X}",
+			context, static_cast<unsigned long>(hr)));
 		return nullptr;
 	}
 
+	Logger::Info(std::format("シェーダーをコンパイルしました: {}", context));
 	return shader;
 }
 

@@ -1,4 +1,7 @@
 #include "graphics/TriangleRenderer.h"
+#include "core/Logger.h"
+
+#include <format>
 
 bool TriangleRenderer::Initialize(
 	ID3D12Device *device,
@@ -7,6 +10,7 @@ bool TriangleRenderer::Initialize(
 ) {
 	if (!device || !vertexShader || !pixelShader ||
 		rootSignature_ || pipelineState_) {
+		Logger::Error("TriangleRenderer::Initialize: 引数が無効、または初期化済みです。");
 		return false;
 	}
 
@@ -16,6 +20,7 @@ bool TriangleRenderer::Initialize(
 		return false;
 	}
 
+	Logger::Info("三角形のルートシグネチャとPSOを作成しました。");
 	return true;
 }
 
@@ -51,13 +56,20 @@ bool TriangleRenderer::CreateRootSignature(ID3D12Device *device) {
 		errors.GetAddressOf()
 	);
 
-	if (errors) {
-		OutputDebugStringA(
-			static_cast<const char *>(errors->GetBufferPointer())
-		);
+	if (errors && errors->GetBufferSize() > 1) {
+		const std::string message = std::format("ルートシグネチャの診断: {}",
+			static_cast<const char *>(errors->GetBufferPointer()));
+		if (FAILED(hr)) {
+			Logger::Error(message);
+		}
+		else {
+			Logger::Warning(message);
+		}
 	}
 
 	if (FAILED(hr)) {
+		Logger::Error(std::format("D3D12SerializeRootSignatureに失敗しました。HRESULT=0x{:08X}",
+			static_cast<unsigned long>(hr)));
 		return false;
 	}
 
@@ -69,7 +81,13 @@ bool TriangleRenderer::CreateRootSignature(ID3D12Device *device) {
 		IID_PPV_ARGS(rootSignature_.GetAddressOf())
 	);
 
-	return SUCCEEDED(hr);
+	if (FAILED(hr)) {
+		Logger::Error(std::format("CreateRootSignatureに失敗しました。HRESULT=0x{:08X}",
+			static_cast<unsigned long>(hr)));
+		return false;
+	}
+
+	return true;
 }
 
 bool TriangleRenderer::CreatePipelineState(
@@ -132,5 +150,11 @@ bool TriangleRenderer::CreatePipelineState(
 		IID_PPV_ARGS(pipelineState_.GetAddressOf())
 	);
 
-	return SUCCEEDED(hr);
+	if (FAILED(hr)) {
+		Logger::Error(std::format("CreateGraphicsPipelineStateに失敗しました。HRESULT=0x{:08X}",
+			static_cast<unsigned long>(hr)));
+		return false;
+	}
+
+	return true;
 }
