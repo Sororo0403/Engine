@@ -3,11 +3,10 @@
 #include "graphics/Camera.h"
 #include "graphics/D3D12Graphics.h"
 #include "graphics/DirectionalLight.h"
-#include "graphics/Material.h"
-#include "graphics/MeshInstance.h"
 #include "graphics/MeshRenderer.h"
 #include "graphics/Model.h"
 #include "graphics/ModelData.h"
+#include "graphics/ModelInstance.h"
 #include "graphics/ModelLoader.h"
 #include "graphics/ShaderCompiler.h"
 #include "graphics/Transform.h"
@@ -18,12 +17,12 @@
 #include "platform/windows/WindowsInputBackend.h"
 
 #include <Windows.h>
+#include <array>
 #include <cmath>
 #include <cstddef>
 #include <format>
 #include <memory>
 #include <objbase.h>
-#include <vector>
 
 namespace {
 
@@ -68,11 +67,10 @@ int RunEngine(HINSTANCE hInstance) {
 		return -1;
 	}
 
-	// 左右の物体で共有するモデル
+	// 左右の物体が共有する形状・画像・SRV
 	Model model;
 
 	{
-		// GPUリソースの作成が終わったら、CPU側の読み込み結果は破棄する
 		ModelData modelData;
 
 		if (!ModelLoader::Load(L"resources/models/box.glb", modelData) ||
@@ -96,58 +94,15 @@ int RunEngine(HINSTANCE hInstance) {
 		return -1;
 	}
 
-	const std::size_t meshCount = model.GetMeshCount();
-	const std::size_t materialCount = model.GetMaterialCount();
-
-	// 画像は共有し、材質の定数バッファは物体ごとに持つ
-	std::vector<Material> materials(objectCount * materialCount);
-	std::vector<MaterialData> materialData(materials.size());
-
-	for (std::size_t i = 0; i < materials.size(); ++i) {
-		const std::size_t modelMaterialIndex = i % materialCount;
-
-		materialData[i] = model.GetDefaultMaterialData(modelMaterialIndex);
-
-		if (!materials[i].Initialize(graphics.GetDevice(),
-		                             model.GetTextureSrv(modelMaterialIndex)) ||
-		    !materials[i].Update(materialData[i])) {
-			graphics.Finalize();
-
-			for (auto &material : materials) {
-				material.Finalize();
-			}
-
-			renderer.Finalize();
-			model.Finalize();
-			app.Finalize();
-			return -1;
-		}
-	}
-
-	// 左右それぞれに、全メッシュの描画インスタンスを作る
-	std::vector<MeshInstance> instances(objectCount * meshCount);
+	// それぞれが独立した変形と材質を持つ
+	std::array<ModelInstance, objectCount> instances;
 
 	for (std::size_t i = 0; i < instances.size(); ++i) {
-		const std::size_t objectIndex = i / meshCount;
-		const std::size_t meshIndex = i % meshCount;
-
-		const std::size_t modelMaterialIndex =
-		    model.GetMeshMaterialIndex(meshIndex);
-
-		const std::size_t materialIndex =
-		    objectIndex * materialCount + modelMaterialIndex;
-
-		if (!instances[i].Initialize(graphics.GetDevice(),
-		                             model.GetMesh(meshIndex),
-		                             materials[materialIndex])) {
+		if (!instances[i].Initialize(graphics.GetDevice(), model)) {
 			graphics.Finalize();
 
 			for (auto &instance : instances) {
 				instance.Finalize();
-			}
-
-			for (auto &material : materials) {
-				material.Finalize();
 			}
 
 			renderer.Finalize();
@@ -159,7 +114,7 @@ int RunEngine(HINSTANCE hInstance) {
 		Transform transform{};
 		transform.scale = {0.45f, 0.45f, 0.45f};
 		transform.rotation = {0.3f, 0.4f, 0.0f};
-		transform.translation.x = (objectIndex == 0) ? -0.6f : 0.6f;
+		transform.translation.x = (i == 0) ? -0.6f : 0.6f;
 
 		instances[i].SetTransform(transform);
 	}
@@ -172,10 +127,6 @@ int RunEngine(HINSTANCE hInstance) {
 
 		for (auto &instance : instances) {
 			instance.Finalize();
-		}
-
-		for (auto &material : materials) {
-			material.Finalize();
 		}
 
 		renderer.Finalize();
@@ -192,10 +143,6 @@ int RunEngine(HINSTANCE hInstance) {
 
 		for (auto &instance : instances) {
 			instance.Finalize();
-		}
-
-		for (auto &material : materials) {
-			material.Finalize();
 		}
 
 		renderer.Finalize();
@@ -311,30 +258,25 @@ int RunEngine(HINSTANCE hInstance) {
 			break;
 		}
 
-		// 同じ物体を構成するメッシュには、同じ回転を適用する
-		for (std::size_t i = 0; i < instances.size(); ++i) {
-			const std::size_t objectIndex = i / meshCount;
+		bool instancesUpdated = true;
 
+		for (std::size_t i = 0; i < instances.size(); ++i) {
 			Transform transform = instances[i].GetTransform();
 
-			const float rotationSpeed = (objectIndex == 0) ? 1.0f : -0.7f;
+			const float rotationSpeed = (i == 0) ? 1.0f : -0.7f;
 
 			transform.rotation.y += rotationSpeed * deltaTime;
 
 			instances[i].SetTransform(transform);
-			instances[i].Update(camera);
-		}
 
-		bool materialUpdateSucceeded = true;
-
-		for (std::size_t i = 0; i < materials.size(); ++i) {
-			if (!materials[i].Update(materialData[i])) {
-				materialUpdateSucceeded = false;
+			// 全メッシュの変換行列と、全材質をまとめて更新する
+			if (!instances[i].Update(camera)) {
+				instancesUpdated = false;
 				break;
 			}
 		}
 
-		if (!materialUpdateSucceeded) {
+		if (!instancesUpdated) {
 			exitCode = -1;
 			break;
 		}
@@ -346,12 +288,9 @@ int RunEngine(HINSTANCE hInstance) {
 
 		auto *commandList = graphics.GetCommandList();
 
-		ID3D12DescriptorHeap *heaps[] = {model.GetDescriptorHeap()};
-
-		commandList->SetDescriptorHeaps(1, heaps);
-
+		// 各物体がSRVヒープの設定と全メッシュの描画を行う
 		for (const auto &instance : instances) {
-			renderer.Draw(commandList, instance, light);
+			instance.Draw(commandList, renderer, light);
 		}
 
 		if (!graphics.EndFrame()) {
@@ -362,15 +301,11 @@ int RunEngine(HINSTANCE hInstance) {
 
 	input.Finalize();
 
-	// GPUの利用完了を待ってから、参照する側から順に解放する
+	// GPUの利用完了を待ってから、物体、共有モデルの順に解放する
 	graphics.Finalize();
 
 	for (auto &instance : instances) {
 		instance.Finalize();
-	}
-
-	for (auto &material : materials) {
-		material.Finalize();
 	}
 
 	light.Finalize();

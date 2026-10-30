@@ -119,6 +119,9 @@
     <ClCompile Include="src\graphics\Model.cpp">
       <Filter>src\graphics</Filter>
     </ClCompile>
+    <ClCompile Include="src\graphics\ModelInstance.cpp">
+      <Filter>src\graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\platform\windows\Window.h">
@@ -212,6 +215,9 @@
       <Filter>include\graphics</Filter>
     </ClInclude>
     <ClInclude Include="include\graphics\Model.h">
+      <Filter>include\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\ModelInstance.h">
       <Filter>include\graphics</Filter>
     </ClInclude>
   </ItemGroup>
