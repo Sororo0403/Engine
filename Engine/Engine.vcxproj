@@ -12,6 +12,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\graphics\Mesh.cpp" />
     <ClCompile Include="src\input\Gamepad.cpp" />
     <ClCompile Include="src\input\InputSystem.cpp" />
     <ClCompile Include="src\input\Keyboard.cpp" />
@@ -25,7 +26,7 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\platform\windows\Window.cpp" />
     <ClCompile Include="src\platform\windows\WinApp.cpp" />
-    <ClCompile Include="src\graphics\TriangleRenderer.cpp" />
+    <ClCompile Include="src\graphics\MeshRenderer.cpp" />
     <ClCompile Include="src\platform\windows\StringConversion.cpp" />
     <ClCompile Include="src\platform\windows\WindowsInputBackend.cpp" />
     <ClCompile Include="src\graphics\Texture.cpp" />
@@ -44,7 +45,7 @@
     <ClInclude Include="include\platform\windows\Window.h" />
     <ClInclude Include="include\platform\windows\WinApp.h" />
     <ClInclude Include="include\graphics\ShaderCompiler.h" />
-    <ClInclude Include="include\graphics\TriangleRenderer.h" />
+    <ClInclude Include="include\graphics\MeshRenderer.h" />
     <ClInclude Include="include\core\Logger.h" />
     <ClInclude Include="include\platform\windows\StringConversion.h" />
     <ClInclude Include="include\platform\windows\PathUtils.h" />
@@ -54,6 +55,7 @@
     <ClInclude Include="include\input\InputSystem.h" />
     <ClInclude Include="include\platform\windows\WindowsInputBackend.h" />
     <ClInclude Include="include\graphics\Texture.h" />
+    <ClInclude Include="include\graphics\Mesh.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

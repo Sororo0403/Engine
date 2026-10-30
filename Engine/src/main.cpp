@@ -2,9 +2,12 @@
 #include "core/Logger.h"
 #include "graphics/Camera.h"
 #include "graphics/D3D12Graphics.h"
+#include "graphics/Mesh.h"
+#include "graphics/MeshRenderer.h"
 #include "graphics/ShaderCompiler.h"
 #include "graphics/Texture.h"
-#include "graphics/TriangleRenderer.h"
+#include "graphics/Transform.h"
+#include "graphics/Vertex.h"
 #include "input/InputSystem.h"
 #include "platform/windows/PathUtils.h"
 #include "platform/windows/StringConversion.h"
@@ -16,16 +19,74 @@
 
 #include <Windows.h>
 #include <cmath>
+#include <cstdint>
 #include <exception>
-#include <filesystem>
 #include <format>
 #include <memory>
 #include <objbase.h>
 
 namespace {
+
+/// <summary>
+/// 各面にテクスチャ座標を持つ立方体のメッシュを作成する
+/// </summary>
+/// <param name="device">D3D12デバイス</param>
+/// <param name="mesh">初期化するメッシュ</param>
+/// <returns>true:成功 false:失敗</returns>
+bool CreateCubeMesh(ID3D12Device *device, Mesh &mesh) {
+	const DirectX::XMFLOAT4 white{1.0f, 1.0f, 1.0f, 1.0f};
+
+	const Vertex vertices[] = {// 手前の面
+	                           {{-0.5f, 0.5f, -0.5f}, white, {0.0f, 0.0f}},
+	                           {{0.5f, 0.5f, -0.5f}, white, {1.0f, 0.0f}},
+	                           {{0.5f, -0.5f, -0.5f}, white, {1.0f, 1.0f}},
+	                           {{-0.5f, -0.5f, -0.5f}, white, {0.0f, 1.0f}},
+
+	                           // 奥の面
+	                           {{0.5f, 0.5f, 0.5f}, white, {0.0f, 0.0f}},
+	                           {{-0.5f, 0.5f, 0.5f}, white, {1.0f, 0.0f}},
+	                           {{-0.5f, -0.5f, 0.5f}, white, {1.0f, 1.0f}},
+	                           {{0.5f, -0.5f, 0.5f}, white, {0.0f, 1.0f}},
+
+	                           // 左の面
+	                           {{-0.5f, 0.5f, 0.5f}, white, {0.0f, 0.0f}},
+	                           {{-0.5f, 0.5f, -0.5f}, white, {1.0f, 0.0f}},
+	                           {{-0.5f, -0.5f, -0.5f}, white, {1.0f, 1.0f}},
+	                           {{-0.5f, -0.5f, 0.5f}, white, {0.0f, 1.0f}},
+
+	                           // 右の面
+	                           {{0.5f, 0.5f, -0.5f}, white, {0.0f, 0.0f}},
+	                           {{0.5f, 0.5f, 0.5f}, white, {1.0f, 0.0f}},
+	                           {{0.5f, -0.5f, 0.5f}, white, {1.0f, 1.0f}},
+	                           {{0.5f, -0.5f, -0.5f}, white, {0.0f, 1.0f}},
+
+	                           // 上の面
+	                           {{-0.5f, 0.5f, 0.5f}, white, {0.0f, 0.0f}},
+	                           {{0.5f, 0.5f, 0.5f}, white, {1.0f, 0.0f}},
+	                           {{0.5f, 0.5f, -0.5f}, white, {1.0f, 1.0f}},
+	                           {{-0.5f, 0.5f, -0.5f}, white, {0.0f, 1.0f}},
+
+	                           // 下の面
+	                           {{-0.5f, -0.5f, -0.5f}, white, {0.0f, 0.0f}},
+	                           {{0.5f, -0.5f, -0.5f}, white, {1.0f, 0.0f}},
+	                           {{0.5f, -0.5f, 0.5f}, white, {1.0f, 1.0f}},
+	                           {{-0.5f, -0.5f, 0.5f}, white, {0.0f, 1.0f}}};
+
+	const std::uint16_t indices[] = {
+	    0,  1,  2,  0,  2,  3,  4,  5,  6,  4,  6,  7,  8,  9,  10, 8,  10, 11,
+	    12, 13, 14, 12, 14, 15, 16, 17, 18, 16, 18, 19, 20, 21, 22, 20, 22, 23};
+
+	return mesh.Initialize(device, vertices, indices);
+}
+
+/// <summary>
+/// エンジンの初期化・メインループ・終了処理を実行する
+/// </summary>
+/// <param name="hInstance">アプリケーションのインスタンスハンドル</param>
+/// <returns>0:正常終了 -1:異常終了</returns>
 int RunEngine(HINSTANCE hInstance) {
-	int windowWidth = 1280;
-	int windowHeight = 720;
+	constexpr int windowWidth = 1280;
+	constexpr int windowHeight = 720;
 
 	ShaderCompiler shaderCompiler;
 
@@ -58,6 +119,14 @@ int RunEngine(HINSTANCE hInstance) {
 		return -1;
 	}
 
+	Mesh cubeMesh;
+
+	if (!CreateCubeMesh(graphics.GetDevice(), cubeMesh)) {
+		graphics.Finalize();
+		app.Finalize();
+		return -1;
+	}
+
 	Texture texture;
 
 	if (!texture.Load(graphics.GetDevice(), graphics.GetCommandQueue(),
@@ -67,15 +136,13 @@ int RunEngine(HINSTANCE hInstance) {
 		return -1;
 	}
 
-	// シェーダーから参照できるディスクリプタヒープ
 	std::unique_ptr<DirectX::DescriptorHeap> srvHeap;
 
 	try {
-		// SRVを1個格納できるヒープを作成する
+		// シェーダーから参照できるSRVを1個格納する
 		srvHeap =
 		    std::make_unique<DirectX::DescriptorHeap>(graphics.GetDevice(), 1);
 
-		// ヒープの0番に、テクスチャを読むためのSRVを作成する
 		DirectX::CreateShaderResourceView(graphics.GetDevice(),
 		                                  texture.GetResource(),
 		                                  srvHeap->GetCpuHandle(0));
@@ -90,9 +157,9 @@ int RunEngine(HINSTANCE hInstance) {
 
 	Logger::Info("テクスチャ用SRVを作成しました。");
 
-	TriangleRenderer triangle;
+	MeshRenderer renderer;
 
-	if (!triangle.Initialize(graphics.GetDevice(), vertexShader.Get(),
+	if (!renderer.Initialize(graphics.GetDevice(), vertexShader.Get(),
 	                         pixelShader.Get())) {
 		graphics.Finalize();
 		app.Finalize();
@@ -104,35 +171,37 @@ int RunEngine(HINSTANCE hInstance) {
 	if (!input.Initialize(
 	        std::make_unique<WindowsInputBackend>(app.GetHwnd()))) {
 		graphics.Finalize();
-		triangle.Finalize();
+		renderer.Finalize();
 		app.Finalize();
 		return -1;
 	}
-
-	const float clearColor[4] = {0.1f, 0.2f, 0.6f, 1.0f};
-	int exitCode = 0;
-	Logger::Info("メインループを開始しました。");
 
 	Transform transform{};
 	transform.scale = {0.7f, 0.7f, 0.7f};
 	transform.rotation = {0.3f, 0.4f, 0.0f};
 	transform.translation = {0.0f, 0.0f, 0.0f};
 
-	triangle.SetTransform(transform);
+	renderer.SetTransform(transform);
 
 	Camera camera;
-
 	FrameTimer frameTimer;
 
 	const Keyboard &keyboard = input.GetKeyboard();
 	const Gamepad &gamepad = input.GetGamepad();
+
 	bool wasGamepadConnected = false;
+
+	const float clearColor[4] = {0.1f, 0.2f, 0.6f, 1.0f};
+	int exitCode = 0;
+
+	Logger::Info("メインループを開始しました。");
 
 	while (app.ProcessMessages()) {
 		if (!input.Update()) {
 			exitCode = -1;
 			break;
 		}
+
 		// 接続状態が変わったときだけ出力する
 		const bool connected = gamepad.IsConnected();
 
@@ -143,7 +212,6 @@ int RunEngine(HINSTANCE hInstance) {
 			wasGamepadConnected = connected;
 		}
 
-		// 下側のボタン（XboxのAなど）
 		if (gamepad.IsPressed(GamepadButton::SOUTH)) {
 			Logger::Info("コントローラーの下側ボタンが押されました。");
 		}
@@ -152,7 +220,6 @@ int RunEngine(HINSTANCE hInstance) {
 			Logger::Info("コントローラーの下側ボタンが離されました。");
 		}
 
-		// MENUを押した瞬間のスティック・トリガーの値を確認する
 		if (gamepad.IsPressed(GamepadButton::MENU)) {
 			const GamepadState &state = gamepad.GetState();
 
@@ -164,7 +231,6 @@ int RunEngine(HINSTANCE hInstance) {
 			                         state.leftTrigger, state.rightTrigger));
 		}
 
-		// この後に既存のサイズ確認・描画処理を続ける
 		const int width = app.GetWidth();
 		const int height = app.GetHeight();
 
@@ -175,7 +241,6 @@ int RunEngine(HINSTANCE hInstance) {
 			continue;
 		}
 
-		// サイズが変わっていたら描画領域を作り直す
 		if (!graphics.Resize(width, height)) {
 			exitCode = -1;
 			break;
@@ -210,19 +275,17 @@ int RunEngine(HINSTANCE hInstance) {
 			    {moveX / length * distance, 0.0f, moveZ / length * distance});
 		}
 
-		// 移動後の位置で行列を更新する
 		if (!camera.Update(width, height)) {
 			Logger::Error("カメラの更新に失敗しました。");
 			exitCode = -1;
 			break;
 		}
 
-		// X軸・Y軸で回転させて、各面を確認する
 		transform.rotation.x += 0.6f * deltaTime;
 		transform.rotation.y += 1.0f * deltaTime;
 
-		triangle.SetTransform(transform);
-		triangle.Update(camera);
+		renderer.SetTransform(transform);
+		renderer.Update(camera);
 
 		if (!graphics.BeginFrame(clearColor)) {
 			exitCode = -1;
@@ -231,12 +294,10 @@ int RunEngine(HINSTANCE hInstance) {
 
 		auto *commandList = graphics.GetCommandList();
 
-		// 使用するSRVヒープを設定する
 		ID3D12DescriptorHeap *heaps[] = {srvHeap->Heap()};
 		commandList->SetDescriptorHeaps(1, heaps);
 
-		// ヒープの0番にあるテクスチャを渡す
-		triangle.Draw(commandList, srvHeap->GetGpuHandle(0));
+		renderer.Draw(commandList, cubeMesh, srvHeap->GetGpuHandle(0));
 
 		if (!graphics.EndFrame()) {
 			exitCode = -1;
@@ -245,12 +306,21 @@ int RunEngine(HINSTANCE hInstance) {
 	}
 
 	input.Finalize();
+
+	// GPUの処理完了を待って描画基盤を終了する
 	graphics.Finalize();
-	triangle.Finalize();
+
+	// GPUの利用が終わったリソースを解放する
+	renderer.Finalize();
+	cubeMesh.Finalize();
+	srvHeap.reset();
+	texture.Finalize();
+
 	app.Finalize();
 
 	return exitCode;
 }
+
 } // namespace
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int) {
@@ -269,7 +339,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int) {
 
 	Logger::Info("Engineを起動しました。");
 
-	// RunEngine内のオブジェクトが破棄されるまでログを有効にする。
 	const HRESULT comResult = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 
 	if (FAILED(comResult)) {
@@ -280,6 +349,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int) {
 		return -1;
 	}
 
+	// RunEngine内のオブジェクトが破棄されるまでCOMとLoggerを維持する
 	const int exitCode = RunEngine(hInstance);
 
 	CoUninitialize();

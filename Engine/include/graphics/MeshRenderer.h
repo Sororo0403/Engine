@@ -8,16 +8,17 @@
 #include <wrl/client.h>
 
 class Camera;
+class Mesh;
 
-class TriangleRenderer {
+class MeshRenderer {
   public:
 	/// <summary>
-	/// 三角形の描画に必要なオブジェクトを初期化する
+	/// メッシュ描画用のシェーダー設定と定数バッファを初期化する
 	/// </summary>
 	/// <param name="device">D3D12デバイス</param>
 	/// <param name="vertexShader">コンパイル済み頂点シェーダー</param>
 	/// <param name="pixelShader">コンパイル済みピクセルシェーダー</param>
-	/// <returns>true:成功 false:失敗</returns>
+	/// <returns>true:成功 false:引数が無効、初期化済み、または作成失敗</returns>
 	bool Initialize(ID3D12Device *device, IDxcBlob *vertexShader,
 	                IDxcBlob *pixelShader);
 
@@ -28,20 +29,21 @@ class TriangleRenderer {
 	void Update(const Camera &camera);
 
 	/// <summary>
-	/// 指定したテクスチャで三角形の描画命令を記録する
+	/// 指定したメッシュとテクスチャで描画命令を記録する
 	/// </summary>
 	/// <param name="commandList">テクスチャ用ヒープが設定済みの記録中のコマンドリスト</param>
-	/// <param name="textureSrv">描画に使用するテクスチャのGPU側SRVハンドル</param>
-	void Draw(ID3D12GraphicsCommandList *commandList,
+	/// <param name="mesh">初期化済みの描画するメッシュ</param>
+	/// <param name="textureSrv">テクスチャのGPU側SRVハンドル</param>
+	void Draw(ID3D12GraphicsCommandList *commandList, const Mesh &mesh,
 	          D3D12_GPU_DESCRIPTOR_HANDLE textureSrv);
 
 	/// <summary>
-	/// 描画用オブジェクトを解放する
+	/// 描画用オブジェクトを解放する。GPUの利用完了後に呼び出す
 	/// </summary>
 	void Finalize();
 
 	/// <summary>
-	/// 三角形の変形情報を設定する
+	/// 描画する物体の変形情報を設定する
 	/// </summary>
 	/// <param name="transform">拡大率・回転角・移動量</param>
 	void SetTransform(const Transform &transform);
@@ -55,7 +57,7 @@ class TriangleRenderer {
 	bool CreateRootSignature(ID3D12Device *device);
 
 	/// <summary>
-	/// 三角形描画用のパイプラインステートを作成する
+	/// メッシュ描画用のパイプラインステートを作成する
 	/// </summary>
 	/// <param name="device">D3D12デバイス</param>
 	/// <param name="vertexShader">コンパイル済み頂点シェーダー</param>
@@ -65,36 +67,14 @@ class TriangleRenderer {
 	                         IDxcBlob *pixelShader);
 
 	/// <summary>
-	/// 三角形の頂点データを格納するバッファを作成する
-	/// </summary>
-	/// <param name="device">D3D12デバイス</param>
-	/// <returns>true:成功 false:失敗</returns>
-	bool CreateVertexBuffer(ID3D12Device *device);
-
-	/// <summary>
 	/// 変換行列を格納する定数バッファを作成する
 	/// </summary>
 	/// <param name="device">D3D12デバイス</param>
 	/// <returns>true:成功 false:失敗</returns>
 	bool CreateConstantBuffer(ID3D12Device *device);
 
-	/// <summary>
-	/// 描画する頂点の番号を格納するバッファを作成する
-	/// </summary>
-	/// <param name="device">D3D12デバイス</param>
-	/// <returns>true:成功 false:失敗</returns>
-	bool CreateIndexBuffer(ID3D12Device *device);
-
-  private:
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature_;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState_;
-
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexBuffer_;
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
-
-	Microsoft::WRL::ComPtr<ID3D12Resource> indexBuffer_;
-	D3D12_INDEX_BUFFER_VIEW indexBufferView_{};
-	UINT indexCount_ = 0;
 
 	Transform transform_{};
 	Microsoft::WRL::ComPtr<ID3D12Resource> constantBuffer_;
