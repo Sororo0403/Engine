@@ -1,4 +1,4 @@
-#include "graphics/Material.h"
+#include "graphics/material/Material.h"
 #include "core/Logger.h"
 
 #include <directxtk12/BufferHelpers.h>

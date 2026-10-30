@@ -1,7 +1,7 @@
 #pragma once
 
-#include "graphics/Material.h"
-#include "graphics/MeshInstance.h"
+#include "graphics/material/Material.h"
+#include "graphics/mesh/MeshInstance.h"
 #include "graphics/Transform.h"
 
 #include <cstddef>

@@ -1,4 +1,4 @@
-#include "graphics/Mesh.h"
+#include "graphics/mesh/Mesh.h"
 #include "core/Logger.h"
 
 #include <directxtk12/BufferHelpers.h>

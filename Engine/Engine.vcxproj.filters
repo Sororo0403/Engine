@@ -48,6 +48,36 @@
     <Filter Include="src\input">
       <UniqueIdentifier>{b5f29ab0-0cbb-4173-9b1a-3bc61b54f874}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\graphics\render">
+      <UniqueIdentifier>{c987445d-ab0e-40f5-ae6c-099d321406b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\graphics\mesh">
+      <UniqueIdentifier>{6743ed91-428a-466e-9a06-8bdcac236f2f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\graphics\model">
+      <UniqueIdentifier>{0b4bc0a5-eeee-4242-b632-9c77f0025b4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\graphics\material">
+      <UniqueIdentifier>{b5bf8445-8a58-435c-9830-b72d234f5587}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\graphics\debug">
+      <UniqueIdentifier>{69866afe-a38b-425c-873b-e8bb741377b8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\graphics\render">
+      <UniqueIdentifier>{53c7a0e0-1b1f-4dde-825c-6d9302ae4f46}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\graphics\mesh">
+      <UniqueIdentifier>{d7b8d57b-fab5-4652-a6e6-0c4fa9d2f256}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\graphics\model">
+      <UniqueIdentifier>{ba6bb3e7-62af-4294-8645-96316caf465a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\graphics\material">
+      <UniqueIdentifier>{0f505ce6-0383-42d8-af66-8626ed764eb9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\graphics\debug">
+      <UniqueIdentifier>{13ed71b3-1e2a-4f3d-a867-02c652be7b96}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -59,14 +89,14 @@
     <ClCompile Include="src\platform\windows\WinApp.cpp">
       <Filter>src\platform\windows</Filter>
     </ClCompile>
-    <ClCompile Include="src\graphics\D3D12Graphics.cpp">
-      <Filter>src\graphics</Filter>
+    <ClCompile Include="src\graphics\render\D3D12Graphics.cpp">
+      <Filter>src\graphics\render</Filter>
     </ClCompile>
-    <ClCompile Include="src\graphics\ShaderCompiler.cpp">
-      <Filter>src\graphics</Filter>
+    <ClCompile Include="src\graphics\render\ShaderCompiler.cpp">
+      <Filter>src\graphics\render</Filter>
     </ClCompile>
-    <ClCompile Include="src\graphics\MeshRenderer.cpp">
-      <Filter>src\graphics</Filter>
+    <ClCompile Include="src\graphics\render\MeshRenderer.cpp">
+      <Filter>src\graphics\render</Filter>
     </ClCompile>
     <ClCompile Include="src\core\Logger.cpp">
       <Filter>src\core</Filter>
@@ -98,29 +128,32 @@
     <ClCompile Include="src\input\Gamepad.cpp">
       <Filter>src\input</Filter>
     </ClCompile>
-    <ClCompile Include="src\graphics\Texture.cpp">
-      <Filter>src\graphics</Filter>
+    <ClCompile Include="src\graphics\material\Texture.cpp">
+      <Filter>src\graphics\material</Filter>
     </ClCompile>
-    <ClCompile Include="src\graphics\Mesh.cpp">
-      <Filter>src\graphics</Filter>
+    <ClCompile Include="src\graphics\mesh\Mesh.cpp">
+      <Filter>src\graphics\mesh</Filter>
     </ClCompile>
-    <ClCompile Include="src\graphics\MeshInstance.cpp">
-      <Filter>src\graphics</Filter>
+    <ClCompile Include="src\graphics\mesh\MeshInstance.cpp">
+      <Filter>src\graphics\mesh</Filter>
     </ClCompile>
     <ClCompile Include="src\graphics\DirectionalLight.cpp">
       <Filter>src\graphics</Filter>
     </ClCompile>
-    <ClCompile Include="src\graphics\Material.cpp">
-      <Filter>src\graphics</Filter>
+    <ClCompile Include="src\graphics\material\Material.cpp">
+      <Filter>src\graphics\material</Filter>
     </ClCompile>
-    <ClCompile Include="src\graphics\ModelLoader.cpp">
-      <Filter>src\graphics</Filter>
+    <ClCompile Include="src\graphics\model\ModelLoader.cpp">
+      <Filter>src\graphics\model</Filter>
     </ClCompile>
-    <ClCompile Include="src\graphics\Model.cpp">
-      <Filter>src\graphics</Filter>
+    <ClCompile Include="src\graphics\model\Model.cpp">
+      <Filter>src\graphics\model</Filter>
     </ClCompile>
-    <ClCompile Include="src\graphics\ModelInstance.cpp">
-      <Filter>src\graphics</Filter>
+    <ClCompile Include="src\graphics\model\ModelInstance.cpp">
+      <Filter>src\graphics\model</Filter>
+    </ClCompile>
+    <ClCompile Include="src\graphics\debug\DebugUI.cpp">
+      <Filter>src\graphics\debug</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -130,14 +163,14 @@
     <ClInclude Include="include\platform\windows\WinApp.h">
       <Filter>include\platform\windows</Filter>
     </ClInclude>
-    <ClInclude Include="include\graphics\D3D12Graphics.h">
-      <Filter>include\graphics</Filter>
+    <ClInclude Include="include\graphics\render\D3D12Graphics.h">
+      <Filter>include\graphics\render</Filter>
     </ClInclude>
-    <ClInclude Include="include\graphics\ShaderCompiler.h">
-      <Filter>include\graphics</Filter>
+    <ClInclude Include="include\graphics\render\ShaderCompiler.h">
+      <Filter>include\graphics\render</Filter>
     </ClInclude>
-    <ClInclude Include="include\graphics\MeshRenderer.h">
-      <Filter>include\graphics</Filter>
+    <ClInclude Include="include\graphics\render\MeshRenderer.h">
+      <Filter>include\graphics\render</Filter>
     </ClInclude>
     <ClInclude Include="include\core\Logger.h">
       <Filter>include\core</Filter>
@@ -151,8 +184,8 @@
     <ClInclude Include="include\platform\windows\PathUtils.h">
       <Filter>include\platform\windows</Filter>
     </ClInclude>
-    <ClInclude Include="include\graphics\Vertex.h">
-      <Filter>include\graphics</Filter>
+    <ClInclude Include="include\graphics\mesh\Vertex.h">
+      <Filter>include\graphics\mesh</Filter>
     </ClInclude>
     <ClInclude Include="include\graphics\Camera.h">
       <Filter>include\graphics</Filter>
@@ -190,35 +223,38 @@
     <ClInclude Include="include\input\Gamepad.h">
       <Filter>include\input</Filter>
     </ClInclude>
-    <ClInclude Include="include\graphics\Texture.h">
-      <Filter>include\graphics</Filter>
+    <ClInclude Include="include\graphics\material\Texture.h">
+      <Filter>include\graphics\material</Filter>
     </ClInclude>
-    <ClInclude Include="include\graphics\Mesh.h">
-      <Filter>include\graphics</Filter>
+    <ClInclude Include="include\graphics\mesh\Mesh.h">
+      <Filter>include\graphics\mesh</Filter>
     </ClInclude>
-    <ClInclude Include="include\graphics\MeshInstance.h">
-      <Filter>include\graphics</Filter>
+    <ClInclude Include="include\graphics\mesh\MeshInstance.h">
+      <Filter>include\graphics\mesh</Filter>
     </ClInclude>
     <ClInclude Include="include\graphics\DirectionalLight.h">
       <Filter>include\graphics</Filter>
     </ClInclude>
-    <ClInclude Include="include\graphics\Material.h">
-      <Filter>include\graphics</Filter>
+    <ClInclude Include="include\graphics\material\Material.h">
+      <Filter>include\graphics\material</Filter>
     </ClInclude>
-    <ClInclude Include="include\graphics\MeshData.h">
-      <Filter>include\graphics</Filter>
+    <ClInclude Include="include\graphics\mesh\MeshData.h">
+      <Filter>include\graphics\mesh</Filter>
     </ClInclude>
-    <ClInclude Include="include\graphics\ModelLoader.h">
-      <Filter>include\graphics</Filter>
+    <ClInclude Include="include\graphics\model\ModelLoader.h">
+      <Filter>include\graphics\model</Filter>
     </ClInclude>
-    <ClInclude Include="include\graphics\ModelData.h">
-      <Filter>include\graphics</Filter>
+    <ClInclude Include="include\graphics\model\ModelData.h">
+      <Filter>include\graphics\model</Filter>
     </ClInclude>
-    <ClInclude Include="include\graphics\Model.h">
-      <Filter>include\graphics</Filter>
+    <ClInclude Include="include\graphics\model\Model.h">
+      <Filter>include\graphics\model</Filter>
     </ClInclude>
-    <ClInclude Include="include\graphics\ModelInstance.h">
-      <Filter>include\graphics</Filter>
+    <ClInclude Include="include\graphics\model\ModelInstance.h">
+      <Filter>include\graphics\model</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\debug\DebugUI.h">
+      <Filter>include\graphics\debug</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

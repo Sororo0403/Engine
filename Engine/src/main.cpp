@@ -1,14 +1,15 @@
 #include "core/FrameTimer.h"
 #include "core/Logger.h"
 #include "graphics/Camera.h"
-#include "graphics/D3D12Graphics.h"
+#include "graphics/render/D3D12Graphics.h"
+#include "graphics/debug/DebugUI.h"
 #include "graphics/DirectionalLight.h"
-#include "graphics/MeshRenderer.h"
-#include "graphics/Model.h"
-#include "graphics/ModelData.h"
-#include "graphics/ModelInstance.h"
-#include "graphics/ModelLoader.h"
-#include "graphics/ShaderCompiler.h"
+#include "graphics/render/MeshRenderer.h"
+#include "graphics/model/Model.h"
+#include "graphics/model/ModelData.h"
+#include "graphics/model/ModelInstance.h"
+#include "graphics/model/ModelLoader.h"
+#include "graphics/render/ShaderCompiler.h"
 #include "graphics/Transform.h"
 #include "input/InputSystem.h"
 #include "platform/windows/PathUtils.h"
@@ -21,6 +22,7 @@
 #include <cmath>
 #include <cstddef>
 #include <format>
+#include <imgui.h>
 #include <memory>
 #include <objbase.h>
 
@@ -151,6 +153,25 @@ int RunEngine(HINSTANCE hInstance) {
 		return -1;
 	}
 
+	DebugUI debugUI;
+
+	if (!debugUI.Initialize(app.GetHwnd(), graphics.GetDevice(),
+	                        graphics.GetCommandQueue())) {
+		input.Finalize();
+		graphics.Finalize();
+		debugUI.Finalize();
+
+		for (auto &instance : instances) {
+			instance.Finalize();
+		}
+
+		light.Finalize();
+		renderer.Finalize();
+		model.Finalize();
+		app.Finalize();
+		return -1;
+	}
+
 	DirectionalLightData lightData{};
 	lightData.direction = {1.0f, -1.0f, 1.0f};
 	lightData.intensity = 0.8f;
@@ -221,20 +242,31 @@ int RunEngine(HINSTANCE hInstance) {
 
 		const float deltaTime = frameTimer.Tick();
 
+		if (!debugUI.BeginFrame()) {
+			exitCode = -1;
+			break;
+		}
+
+		// ImGuiに用意されている操作例を表示する
+		ImGui::ShowDemoWindow();
+
 		float moveX = 0.0f;
 		float moveZ = 0.0f;
 
-		if (keyboard.IsDown(Key::W)) {
-			moveZ += 1.0f;
-		}
-		if (keyboard.IsDown(Key::S)) {
-			moveZ -= 1.0f;
-		}
-		if (keyboard.IsDown(Key::A)) {
-			moveX -= 1.0f;
-		}
-		if (keyboard.IsDown(Key::D)) {
-			moveX += 1.0f;
+		// UIがキーボード入力を使用している間は、カメラを動かさない
+		if (!debugUI.WantsKeyboard()) {
+			if (keyboard.IsDown(Key::W)) {
+				moveZ += 1.0f;
+			}
+			if (keyboard.IsDown(Key::S)) {
+				moveZ -= 1.0f;
+			}
+			if (keyboard.IsDown(Key::A)) {
+				moveX -= 1.0f;
+			}
+			if (keyboard.IsDown(Key::D)) {
+				moveX += 1.0f;
+			}
 		}
 
 		const float length = std::sqrt(moveX * moveX + moveZ * moveZ);
@@ -293,6 +325,11 @@ int RunEngine(HINSTANCE hInstance) {
 			instance.Draw(commandList, renderer, light);
 		}
 
+		if (!debugUI.Render(commandList)) {
+			exitCode = -1;
+			break;
+		}
+
 		if (!graphics.EndFrame()) {
 			exitCode = -1;
 			break;
@@ -301,8 +338,11 @@ int RunEngine(HINSTANCE hInstance) {
 
 	input.Finalize();
 
-	// GPUの利用完了を待ってから、物体、共有モデルの順に解放する
+	// GPUの利用完了を待つ
 	graphics.Finalize();
+
+	// UIのGPUリソースとコンテキストを解放する
+	debugUI.Finalize();
 
 	for (auto &instance : instances) {
 		instance.Finalize();

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "graphics/MeshData.h"
+#include "graphics/mesh/MeshData.h"
 
 #include <DirectXMath.h>
 #include <cstdint>

@@ -1,10 +1,10 @@
-#include "graphics/MeshRenderer.h"
+#include "graphics/render/MeshRenderer.h"
 #include "core/Logger.h"
 #include "graphics/DirectionalLight.h"
-#include "graphics/Material.h"
-#include "graphics/Mesh.h"
-#include "graphics/MeshInstance.h"
-#include "graphics/Vertex.h"
+#include "graphics/material/Material.h"
+#include "graphics/mesh/Mesh.h"
+#include "graphics/mesh/MeshInstance.h"
+#include "graphics/mesh/Vertex.h"
 
 #include <cstddef>
 #include <format>

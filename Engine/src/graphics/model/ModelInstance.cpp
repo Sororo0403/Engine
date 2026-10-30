@@ -1,9 +1,9 @@
-#include "graphics/ModelInstance.h"
+#include "graphics/model/ModelInstance.h"
 #include "core/Logger.h"
 #include "graphics/Camera.h"
 #include "graphics/DirectionalLight.h"
-#include "graphics/MeshRenderer.h"
-#include "graphics/Model.h"
+#include "graphics/render/MeshRenderer.h"
+#include "graphics/model/Model.h"
 
 #include <cmath>
 #include <exception>

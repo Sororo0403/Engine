@@ -1,4 +1,4 @@
-#include "graphics/Texture.h"
+#include "graphics/material/Texture.h"
 #include "core/Logger.h"
 #include "platform/windows/StringConversion.h"
 

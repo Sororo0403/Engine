@@ -12,13 +12,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\graphics\ModelInstance.cpp" />
-    <ClCompile Include="src\graphics\Model.cpp" />
-    <ClCompile Include="src\graphics\ModelLoader.cpp" />
-    <ClCompile Include="src\graphics\Material.cpp" />
+    <ClCompile Include="src\graphics\debug\DebugUI.cpp" />
+    <ClCompile Include="src\graphics\model\ModelInstance.cpp" />
+    <ClCompile Include="src\graphics\model\Model.cpp" />
+    <ClCompile Include="src\graphics\model\ModelLoader.cpp" />
+    <ClCompile Include="src\graphics\material\Material.cpp" />
     <ClCompile Include="src\graphics\DirectionalLight.cpp" />
-    <ClCompile Include="src\graphics\MeshInstance.cpp" />
-    <ClCompile Include="src\graphics\Mesh.cpp" />
+    <ClCompile Include="src\graphics\mesh\MeshInstance.cpp" />
+    <ClCompile Include="src\graphics\mesh\Mesh.cpp" />
     <ClCompile Include="src\input\Gamepad.cpp" />
     <ClCompile Include="src\input\InputSystem.cpp" />
     <ClCompile Include="src\input\Keyboard.cpp" />
@@ -27,17 +28,18 @@
     <ClCompile Include="src\platform\windows\PathUtils.cpp" />
     <ClCompile Include="src\core\DateTime.cpp" />
     <ClCompile Include="src\core\Logger.cpp" />
-    <ClCompile Include="src\graphics\ShaderCompiler.cpp" />
-    <ClCompile Include="src\graphics\D3D12Graphics.cpp" />
+    <ClCompile Include="src\graphics\render\ShaderCompiler.cpp" />
+    <ClCompile Include="src\graphics\render\D3D12Graphics.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\platform\windows\Window.cpp" />
     <ClCompile Include="src\platform\windows\WinApp.cpp" />
-    <ClCompile Include="src\graphics\MeshRenderer.cpp" />
+    <ClCompile Include="src\graphics\render\MeshRenderer.cpp" />
     <ClCompile Include="src\platform\windows\StringConversion.cpp" />
     <ClCompile Include="src\platform\windows\WindowsInputBackend.cpp" />
-    <ClCompile Include="src\graphics\Texture.cpp" />
+    <ClCompile Include="src\graphics\material\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\graphics\debug\DebugUI.h" />
     <ClInclude Include="include\graphics\DirectionalLight.h" />
     <ClInclude Include="include\input\Gamepad.h" />
     <ClInclude Include="include\input\GamepadState.h" />
@@ -46,13 +48,13 @@
     <ClInclude Include="include\core\FrameTimer.h" />
     <ClInclude Include="include\graphics\Camera.h" />
     <ClInclude Include="include\core\DateTime.h" />
-    <ClInclude Include="include\graphics\D3D12Graphics.h" />
+    <ClInclude Include="include\graphics\render\D3D12Graphics.h" />
     <ClInclude Include="include\graphics\Transform.h" />
-    <ClInclude Include="include\graphics\Vertex.h" />
+    <ClInclude Include="include\graphics\mesh\Vertex.h" />
     <ClInclude Include="include\platform\windows\Window.h" />
     <ClInclude Include="include\platform\windows\WinApp.h" />
-    <ClInclude Include="include\graphics\ShaderCompiler.h" />
-    <ClInclude Include="include\graphics\MeshRenderer.h" />
+    <ClInclude Include="include\graphics\render\ShaderCompiler.h" />
+    <ClInclude Include="include\graphics\render\MeshRenderer.h" />
     <ClInclude Include="include\core\Logger.h" />
     <ClInclude Include="include\platform\windows\StringConversion.h" />
     <ClInclude Include="include\platform\windows\PathUtils.h" />
@@ -61,15 +63,15 @@
     <ClInclude Include="include\input\InputState.h" />
     <ClInclude Include="include\input\InputSystem.h" />
     <ClInclude Include="include\platform\windows\WindowsInputBackend.h" />
-    <ClInclude Include="include\graphics\Texture.h" />
-    <ClInclude Include="include\graphics\Mesh.h" />
-    <ClInclude Include="include\graphics\MeshInstance.h" />
-    <ClInclude Include="include\graphics\Material.h" />
-    <ClInclude Include="include\graphics\MeshData.h" />
-    <ClInclude Include="include\graphics\ModelLoader.h" />
-    <ClInclude Include="include\graphics\ModelData.h" />
-    <ClInclude Include="include\graphics\Model.h" />
-    <ClInclude Include="include\graphics\ModelInstance.h" />
+    <ClInclude Include="include\graphics\material\Texture.h" />
+    <ClInclude Include="include\graphics\mesh\Mesh.h" />
+    <ClInclude Include="include\graphics\mesh\MeshInstance.h" />
+    <ClInclude Include="include\graphics\material\Material.h" />
+    <ClInclude Include="include\graphics\mesh\MeshData.h" />
+    <ClInclude Include="include\graphics\model\ModelLoader.h" />
+    <ClInclude Include="include\graphics\model\ModelData.h" />
+    <ClInclude Include="include\graphics\model\Model.h" />
+    <ClInclude Include="include\graphics\model\ModelInstance.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -1,4 +1,4 @@
-#include "graphics/ModelLoader.h"
+#include "graphics/model/ModelLoader.h"
 #include "core/Logger.h"
 
 #include <assimp/Importer.hpp>

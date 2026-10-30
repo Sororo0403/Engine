@@ -1,6 +1,6 @@
-#include "graphics/Model.h"
+#include "graphics/model/Model.h"
 #include "core/Logger.h"
-#include "graphics/ModelData.h"
+#include "graphics/model/ModelData.h"
 
 #include <directxtk12/DirectXHelpers.h>
 

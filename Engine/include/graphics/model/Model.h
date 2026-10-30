@@ -1,8 +1,8 @@
 #pragma once
 
-#include "graphics/Material.h"
-#include "graphics/Mesh.h"
-#include "graphics/Texture.h"
+#include "graphics/material/Material.h"
+#include "graphics/mesh/Mesh.h"
+#include "graphics/material/Texture.h"
 
 #include <directxtk12/DescriptorHeap.h>
 
