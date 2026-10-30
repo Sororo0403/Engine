@@ -2,16 +2,20 @@
 #include "core/Logger.h"
 
 #include <assimp/Importer.hpp>
+#include <assimp/material.h>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
+#include <assimp/texture.h>
 
+#include <cstddef>
 #include <cstdint>
 #include <format>
 #include <string>
+#include <string_view>
 #include <utility>
 
 bool ModelLoader::Load(const std::filesystem::path &filePath,
-                       MeshData &meshData) {
+                       ModelData &modelData) {
 	if (filePath.empty()) {
 		Logger::Error("ModelLoader::Load: パスが空です。");
 		return false;
@@ -40,8 +44,31 @@ bool ModelLoader::Load(const std::filesystem::path &filePath,
 		return false;
 	}
 
-	// 最後まで成功してから呼び出し元へ反映する
-	MeshData result;
+	// 全メッシュの読み込みに成功してから呼び出し元へ反映する
+	ModelData result;
+
+	// 材質番号が変わらないよう、元の順番で全材質を保存する
+	for (unsigned int i = 0; i < scene->mNumMaterials; ++i) {
+		const aiMaterial &source = *scene->mMaterials[i];
+
+		aiColor4D color{1.0f, 1.0f, 1.0f, 1.0f};
+
+		// Base Colorを優先し、なければDiffuse Colorを使用する
+		if (source.Get(AI_MATKEY_BASE_COLOR, color) != AI_SUCCESS &&
+		    source.Get(AI_MATKEY_COLOR_DIFFUSE, color) != AI_SUCCESS) {
+			color = aiColor4D{1.0f, 1.0f, 1.0f, 1.0f};
+		}
+
+		ModelMaterialData material;
+		material.baseColor = {color.r, color.g, color.b, color.a};
+
+		if (!LoadBaseColorTexture(*scene, source, filePath,
+		                          material.baseColorTexture)) {
+			return false;
+		}
+
+		result.materials.push_back(std::move(material));
+	}
 
 	for (unsigned int meshIndex = 0; meshIndex < scene->mNumMeshes;
 	     ++meshIndex) {
@@ -52,21 +79,26 @@ bool ModelLoader::Load(const std::filesystem::path &filePath,
 			continue;
 		}
 
-		if (!source.HasPositions() || !source.HasNormals()) {
-			Logger::Error("モデルの頂点座標または法線がありません。");
+		if (!source.HasPositions() || !source.HasNormals() ||
+		    !source.HasFaces()) {
+			Logger::Error("モデルの頂点座標・法線・面の情報が不足しています。");
 			return false;
 		}
 
-		// 結合後の頂点番号を32ビットで表せるか確認する
-		if (source.mNumVertices > UINT32_MAX - result.vertices.size()) {
-			Logger::Error("モデルの頂点数が多すぎます。");
+		if (source.mMaterialIndex >= scene->mNumMaterials) {
+			Logger::Error("モデルの材質番号が範囲外です。");
 			return false;
 		}
 
-		// このメッシュの頂点が始まる位置
-		const auto vertexOffset =
-		    static_cast<std::uint32_t>(result.vertices.size());
+		ModelMeshData part;
+		part.materialIndex = source.mMaterialIndex;
 
+		MeshData &mesh = part.mesh;
+
+		mesh.vertices.reserve(source.mNumVertices);
+		mesh.indices.reserve(static_cast<std::size_t>(source.mNumFaces) * 3);
+
+		// このメッシュの頂点を読み込む
 		for (unsigned int i = 0; i < source.mNumVertices; ++i) {
 			Vertex vertex{};
 
@@ -91,9 +123,10 @@ bool ModelLoader::Load(const std::filesystem::path &filePath,
 				vertex.texcoord = {texcoord.x, texcoord.y};
 			}
 
-			result.vertices.push_back(vertex);
+			mesh.vertices.push_back(vertex);
 		}
 
+		// 頂点番号は、このメッシュ内の番号のまま保存する
 		for (unsigned int i = 0; i < source.mNumFaces; ++i) {
 			const aiFace &face = source.mFaces[i];
 
@@ -110,20 +143,123 @@ bool ModelLoader::Load(const std::filesystem::path &filePath,
 					return false;
 				}
 
-				result.indices.push_back(vertexOffset + index);
+				mesh.indices.push_back(index);
 			}
 		}
+
+		result.meshes.push_back(std::move(part));
 	}
 
-	if (result.vertices.empty() || result.indices.empty()) {
+	if (result.meshes.empty()) {
 		Logger::Error("モデルに描画できる三角形がありません。");
 		return false;
 	}
 
-	Logger::Info(std::format(
-	    "モデルを読み込みました。ファイル={}、頂点数={}、インデックス数={}",
-	    path, result.vertices.size(), result.indices.size()));
+	Logger::Info(
+	    std::format("モデルを読み込みました。ファイル={}、メッシュ数={}", path,
+	                result.meshes.size()));
 
-	meshData = std::move(result);
+	modelData = std::move(result);
+	return true;
+}
+
+bool ModelLoader::LoadBaseColorTexture(const aiScene &scene,
+                                       const aiMaterial &material,
+                                       const std::filesystem::path &modelPath,
+                                       ModelTextureData &textureData) {
+	aiString texturePath;
+
+	aiTextureMapping mapping = aiTextureMapping_UV;
+	unsigned int uvIndex = 0;
+
+	if (material.GetTexture(aiTextureType_BASE_COLOR, 0, &texturePath, &mapping,
+	                        &uvIndex) != AI_SUCCESS &&
+	    material.GetTexture(aiTextureType_DIFFUSE, 0, &texturePath, &mapping,
+	                        &uvIndex) != AI_SUCCESS) {
+		textureData = {};
+		return true;
+	}
+
+	// 現在のVertexは、UVを1組だけ保持する
+	if (mapping != aiTextureMapping_UV || uvIndex != 0) {
+		Logger::Error("基本色テクスチャにはUV0を使用してください。");
+		return false;
+	}
+
+	ModelTextureData result;
+
+	const aiTexture *embedded = scene.GetEmbeddedTexture(texturePath.C_Str());
+
+	if (embedded) {
+		if (!embedded->pcData || embedded->mWidth == 0) {
+			Logger::Error("埋め込み画像のデータが無効です。");
+			return false;
+		}
+
+		if (embedded->mHeight == 0) {
+			// mHeightが0の場合、mWidthは画像データのバイト数
+			result.source = ModelTextureSource::ENCODED;
+
+			const auto *begin =
+			    reinterpret_cast<const std::uint8_t *>(embedded->pcData);
+
+			result.bytes.assign(begin, begin + embedded->mWidth);
+		} else {
+			// 非圧縮画像はRGBA8へ変換する
+			result.source = ModelTextureSource::RGBA8;
+			result.width = embedded->mWidth;
+			result.height = embedded->mHeight;
+
+			const std::size_t pixelCount =
+			    static_cast<std::size_t>(result.width) * result.height;
+
+			if (pixelCount > result.bytes.max_size() / 4) {
+				Logger::Error("埋め込み画像が大きすぎます。");
+				return false;
+			}
+
+			const std::string_view format = embedded->achFormatHint;
+
+			if (format == "rgba8888") {
+				const auto *begin =
+				    reinterpret_cast<const std::uint8_t *>(embedded->pcData);
+
+				result.bytes.assign(begin, begin + pixelCount * 4);
+			} else if (format.empty() || format == "bgra8888") {
+				result.bytes.resize(pixelCount * 4);
+
+				for (std::size_t i = 0; i < pixelCount; ++i) {
+					const aiTexel &pixel = embedded->pcData[i];
+
+					result.bytes[i * 4 + 0] = pixel.r;
+					result.bytes[i * 4 + 1] = pixel.g;
+					result.bytes[i * 4 + 2] = pixel.b;
+					result.bytes[i * 4 + 3] = pixel.a;
+				}
+			} else {
+				Logger::Error("埋め込み画像の非圧縮形式が未対応です。");
+				return false;
+			}
+		}
+	} else {
+		const std::string name = texturePath.C_Str();
+
+		if (name.empty() || name.front() == '*') {
+			Logger::Error("テクスチャの参照先が無効です。");
+			return false;
+		}
+
+		// UTF-8の画像名からファイルパスを作る
+		const std::u8string utf8Name(name.begin(), name.end());
+
+		result.source = ModelTextureSource::FILE;
+
+		// 相対パスはモデルファイルのフォルダを基準にする
+		result.filePath =
+		    (modelPath.parent_path() / std::filesystem::path(utf8Name))
+		        .lexically_normal();
+	}
+
+	textureData = std::move(result);
 	return true;
 }

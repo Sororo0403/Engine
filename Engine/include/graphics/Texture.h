@@ -1,7 +1,9 @@
 #pragma once
 
+#include <cstdint>
 #include <d3d12.h>
 #include <filesystem>
+#include <span>
 #include <wrl/client.h>
 
 class Texture {
@@ -15,6 +17,29 @@ class Texture {
 	/// <returns>true:成功 false:引数が無効、読み込み済み、または読み込み・転送失敗</returns>
 	bool Load(ID3D12Device *device, ID3D12CommandQueue *commandQueue,
 	          const std::filesystem::path &filePath);
+
+	/// <summary>
+	/// メモリ上の画像を読み込み、GPUへの転送完了まで待機する
+	/// </summary>
+	/// <param name="device">D3D12デバイス</param>
+	/// <param name="commandQueue">同じデバイスのDIRECT型コマンドキュー</param>
+	/// <param name="imageData">PNGやJPEGなど、WIC対応形式の画像データ</param>
+	/// <returns>true:成功 false:引数が無効、読み込み済み、または読み込み・転送失敗</returns>
+	bool LoadFromMemory(ID3D12Device *device, ID3D12CommandQueue *commandQueue,
+	                    std::span<const std::uint8_t> imageData);
+
+	/// <summary>
+	/// RGBA8の画素からテクスチャを作成し、GPUへの転送完了まで待機する
+	/// </summary>
+	/// <param name="device">D3D12デバイス</param>
+	/// <param name="commandQueue">同じデバイスのDIRECT型コマンドキュー</param>
+	/// <param name="width">画像の幅</param>
+	/// <param name="height">画像の高さ</param>
+	/// <param name="pixels">左上から行順に並べたRGBA各8ビットの画素。行間の余白は不要</param>
+	/// <returns>true:成功 false:引数が無効、読み込み済み、または作成・転送失敗</returns>
+	bool CreateFromRGBA(ID3D12Device *device, ID3D12CommandQueue *commandQueue,
+	                    UINT width, UINT height,
+	                    std::span<const std::uint8_t> pixels);
 
 	/// <summary>
 	/// テクスチャを解放する。描画に使用している場合はGPUの利用完了後に呼び出す

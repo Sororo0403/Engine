@@ -205,6 +205,9 @@
     <ClInclude Include="include\graphics\ModelLoader.h">
       <Filter>include\graphics</Filter>
     </ClInclude>
+    <ClInclude Include="include\graphics\ModelData.h">
+      <Filter>include\graphics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resources\shaders\triangle\Triangle.PS.hlsl">

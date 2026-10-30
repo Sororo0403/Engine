@@ -7,6 +7,7 @@
 #include "graphics/Mesh.h"
 #include "graphics/MeshInstance.h"
 #include "graphics/MeshRenderer.h"
+#include "graphics/ModelData.h"
 #include "graphics/ModelLoader.h"
 #include "graphics/ShaderCompiler.h"
 #include "graphics/Texture.h"
@@ -29,6 +30,7 @@
 #include <format>
 #include <memory>
 #include <objbase.h>
+#include <vector>
 
 namespace {
 
@@ -72,25 +74,73 @@ int RunEngine(HINSTANCE hInstance) {
 		return -1;
 	}
 
-	Mesh modelMesh;
-	MeshData meshData;
+	ModelData modelData;
 
-	if (!ModelLoader::Load(L"resources/models/box.glb", meshData) ||
-	    !modelMesh.Initialize(graphics.GetDevice(), meshData.vertices,
-	                          meshData.indices)) {
+	if (!ModelLoader::Load(L"resources/models/box.glb", modelData)) {
 		graphics.Finalize();
 		app.Finalize();
 		return -1;
 	}
 
-	std::array<Texture, 2> textures;
+	// 各メッシュに対応するGPUバッファを作る
+	std::vector<Mesh> meshes(modelData.meshes.size());
 
-	const wchar_t *texturePaths[] = {L"resources/textures/sample.png",
-	                                 L"resources/textures/sample2.png"};
+	for (std::size_t i = 0; i < meshes.size(); ++i) {
+		const MeshData &meshData = modelData.meshes[i].mesh;
 
-	for (std::size_t i = 0; i < textures.size(); ++i) {
-		if (!textures[i].Load(graphics.GetDevice(), graphics.GetCommandQueue(),
-		                      texturePaths[i])) {
+		if (!meshes[i].Initialize(graphics.GetDevice(), meshData.vertices,
+		                          meshData.indices)) {
+			graphics.Finalize();
+			app.Finalize();
+			return -1;
+		}
+	}
+
+	const std::size_t materialCount = modelData.materials.size();
+
+	// 0番は画像なし用の白、それ以降は各材質の画像
+	std::vector<Texture> textures(materialCount + 1);
+
+	const std::array<std::uint8_t, 4> white{255, 255, 255, 255};
+
+	if (!textures[0].CreateFromRGBA(graphics.GetDevice(),
+	                                graphics.GetCommandQueue(), 1, 1, white)) {
+		graphics.Finalize();
+		app.Finalize();
+		return -1;
+	}
+
+	for (std::size_t i = 0; i < materialCount; ++i) {
+		const ModelTextureData &image = modelData.materials[i].baseColorTexture;
+
+		Texture &texture = textures[i + 1];
+		bool loaded = false;
+
+		switch (image.source) {
+		case ModelTextureSource::NONE:
+			continue;
+
+		case ModelTextureSource::FILE:
+			loaded = texture.Load(graphics.GetDevice(),
+			                      graphics.GetCommandQueue(), image.filePath);
+			break;
+
+		case ModelTextureSource::ENCODED:
+			loaded = texture.LoadFromMemory(
+			    graphics.GetDevice(), graphics.GetCommandQueue(), image.bytes);
+			break;
+
+		case ModelTextureSource::RGBA8:
+			loaded = texture.CreateFromRGBA(
+			    graphics.GetDevice(), graphics.GetCommandQueue(), image.width,
+			    image.height, image.bytes);
+			break;
+		}
+
+		if (!loaded) {
+			Logger::Error(
+			    std::format("材質{}のテクスチャを読み込めませんでした。", i));
+
 			graphics.Finalize();
 			app.Finalize();
 			return -1;
@@ -100,25 +150,30 @@ int RunEngine(HINSTANCE hInstance) {
 	std::unique_ptr<DirectX::DescriptorHeap> srvHeap;
 
 	try {
-		// テクスチャの枚数分、SRVの格納場所を用意する
+		// 材質ごとにSRVを1つ用意する
 		srvHeap = std::make_unique<DirectX::DescriptorHeap>(
-		    graphics.GetDevice(), textures.size());
+		    graphics.GetDevice(), materialCount);
 
-		for (std::size_t i = 0; i < textures.size(); ++i) {
-			DirectX::CreateShaderResourceView(graphics.GetDevice(),
-			                                  textures[i].GetResource(),
+		for (std::size_t i = 0; i < materialCount; ++i) {
+			ID3D12Resource *resource = textures[i + 1].GetResource();
+
+			if (!resource) {
+				resource = textures[0].GetResource();
+			}
+
+			DirectX::CreateShaderResourceView(graphics.GetDevice(), resource,
 			                                  srvHeap->GetCpuHandle(i));
 		}
 	} catch (const std::exception &error) {
-		Logger::Error(std::format("テクスチャ用SRVの作成に失敗しました: {}",
-		                          error.what()));
+		Logger::Error(
+		    std::format("モデル用SRVの作成に失敗しました: {}", error.what()));
 
 		graphics.Finalize();
 		app.Finalize();
 		return -1;
 	}
 
-	Logger::Info("テクスチャ用SRVを作成しました。");
+	Logger::Info("モデル用のテクスチャとSRVを作成しました。");
 
 	// 全物体で共有する描画設定
 	MeshRenderer renderer;
@@ -130,17 +185,20 @@ int RunEngine(HINSTANCE hInstance) {
 		return -1;
 	}
 
-	std::array<Material, 2> materials;
-	std::array<MaterialData, 2> materialData{};
+	constexpr std::size_t objectCount = 2;
 
-	materialData[0].uvScale = {2.0f, 2.0f};
-
-	materialData[0].baseColor = {1.0f, 1.0f, 1.0f, 1.0f};
-	materialData[1].baseColor = {1.0f, 1.0f, 1.0f, 1.0f};
+	std::vector<Material> materials(objectCount * materialCount);
+	std::vector<MaterialData> materialData(materials.size());
 
 	for (std::size_t i = 0; i < materials.size(); ++i) {
-		if (!materials[i].Initialize(graphics.GetDevice(),
-		                             srvHeap->GetGpuHandle(i)) ||
+		const std::size_t modelMaterialIndex = i % materialCount;
+
+		materialData[i].baseColor =
+		    modelData.materials[modelMaterialIndex].baseColor;
+
+		if (!materials[i].Initialize(
+		        graphics.GetDevice(),
+		        srvHeap->GetGpuHandle(modelMaterialIndex)) ||
 		    !materials[i].Update(materialData[i])) {
 			graphics.Finalize();
 
@@ -154,12 +212,20 @@ int RunEngine(HINSTANCE hInstance) {
 		}
 	}
 
-	// 各物体がそれぞれ変形と定数バッファを持つ
-	std::array<MeshInstance, 2> instances;
+	std::vector<MeshInstance> instances(meshes.size() * objectCount);
 
 	for (std::size_t i = 0; i < instances.size(); ++i) {
-		if (!instances[i].Initialize(graphics.GetDevice(), modelMesh,
-		                             materials[i])) {
+		const std::size_t objectIndex = i / meshes.size();
+		const std::size_t meshIndex = i % meshes.size();
+
+		const std::size_t modelMaterialIndex =
+		    modelData.meshes[meshIndex].materialIndex;
+
+		const std::size_t materialIndex =
+		    objectIndex * materialCount + modelMaterialIndex;
+
+		if (!instances[i].Initialize(graphics.GetDevice(), meshes[meshIndex],
+		                             materials[materialIndex])) {
 			graphics.Finalize();
 
 			for (auto &instance : instances) {
@@ -178,7 +244,7 @@ int RunEngine(HINSTANCE hInstance) {
 		Transform transform{};
 		transform.scale = {0.45f, 0.45f, 0.45f};
 		transform.rotation = {0.3f, 0.4f, 0.0f};
-		transform.translation.x = (i == 0) ? -0.6f : 0.6f;
+		transform.translation.x = (objectIndex == 0) ? -0.6f : 0.6f;
 
 		instances[i].SetTransform(transform);
 	}
@@ -306,7 +372,7 @@ int RunEngine(HINSTANCE hInstance) {
 		if (keyboard.IsDown(Key::D)) {
 			moveX += 1.0f;
 		}
-
+		// カメラを移動する
 		const float length = std::sqrt(moveX * moveX + moveZ * moveZ);
 
 		if (length > 0.0f) {
@@ -328,21 +394,19 @@ int RunEngine(HINSTANCE hInstance) {
 			break;
 		}
 
-		// 物体ごとに別々の変換行列を更新する
+		// カメラの更新後に、各メッシュの変換行列を更新する
 		for (std::size_t i = 0; i < instances.size(); ++i) {
+			const std::size_t objectIndex = i / meshes.size();
+
 			Transform transform = instances[i].GetTransform();
 
-			const float rotationSpeed = (i == 0) ? 1.0f : -0.7f;
+			const float rotationSpeed = (objectIndex == 0) ? 1.0f : -0.7f;
 
 			transform.rotation.y += rotationSpeed * deltaTime;
 
 			instances[i].SetTransform(transform);
 			instances[i].Update(camera);
 		}
-
-		// 右の物体では、テクスチャを横方向にスクロールさせる
-		materialData[1].uvOffset.x =
-		    std::fmod(materialData[1].uvOffset.x + 0.25f * deltaTime, 1.0f);
 
 		bool materialUpdateSucceeded = true;
 
@@ -393,7 +457,9 @@ int RunEngine(HINSTANCE hInstance) {
 
 	light.Finalize();
 	renderer.Finalize();
-	modelMesh.Finalize();
+	for (auto &mesh : meshes) {
+		mesh.Finalize();
+	}
 	srvHeap.reset();
 	for (auto &texture : textures) {
 		texture.Finalize();
