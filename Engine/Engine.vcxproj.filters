@@ -113,6 +113,9 @@
     <ClCompile Include="src\graphics\Material.cpp">
       <Filter>src\graphics</Filter>
     </ClCompile>
+    <ClCompile Include="src\graphics\ModelLoader.cpp">
+      <Filter>src\graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\platform\windows\Window.h">
@@ -194,6 +197,12 @@
       <Filter>include\graphics</Filter>
     </ClInclude>
     <ClInclude Include="include\graphics\Material.h">
+      <Filter>include\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\MeshData.h">
+      <Filter>include\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\ModelLoader.h">
       <Filter>include\graphics</Filter>
     </ClInclude>
   </ItemGroup>

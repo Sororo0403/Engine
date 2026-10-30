@@ -17,7 +17,7 @@ class Mesh {
 	/// <param name="indices">頂点番号。要素数は3の倍数</param>
 	/// <returns>true:成功 false:引数が無効、初期化済み、または作成失敗</returns>
 	bool Initialize(ID3D12Device *device, std::span<const Vertex> vertices,
-	                std::span<const std::uint16_t> indices);
+	                std::span<const std::uint32_t> indices);
 
 	/// <summary>
 	/// 頂点・インデックスバッファを設定し、描画命令を記録する

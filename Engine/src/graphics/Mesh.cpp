@@ -8,7 +8,7 @@
 #include <utility>
 
 bool Mesh::Initialize(ID3D12Device *device, std::span<const Vertex> vertices,
-                      std::span<const std::uint16_t> indices) {
+                      std::span<const std::uint32_t> indices) {
 	if (!device || vertices.empty() || indices.empty() ||
 	    indices.size() % 3 != 0) {
 		Logger::Error("Mesh::Initialize: 引数が無効です。");
@@ -67,7 +67,7 @@ bool Mesh::Initialize(ID3D12Device *device, std::span<const Vertex> vertices,
 
 	indexBufferView_.BufferLocation = indexBuffer_->GetGPUVirtualAddress();
 	indexBufferView_.SizeInBytes = static_cast<UINT>(indices.size_bytes());
-	indexBufferView_.Format = DXGI_FORMAT_R16_UINT;
+	indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
 
 	indexCount_ = static_cast<UINT>(indices.size());
 

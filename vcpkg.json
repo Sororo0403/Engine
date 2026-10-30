@@ -1,5 +1,6 @@
 {
   "dependencies": [
-    "directxtk12"
+    "directxtk12",
+    "assimp"
   ]
 }

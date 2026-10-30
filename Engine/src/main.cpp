@@ -7,6 +7,7 @@
 #include "graphics/Mesh.h"
 #include "graphics/MeshInstance.h"
 #include "graphics/MeshRenderer.h"
+#include "graphics/ModelLoader.h"
 #include "graphics/ShaderCompiler.h"
 #include "graphics/Texture.h"
 #include "graphics/Transform.h"
@@ -30,75 +31,6 @@
 #include <objbase.h>
 
 namespace {
-
-/// <summary>
-/// 各面にテクスチャ座標を持つ立方体のメッシュを作成する
-/// </summary>
-/// <param name="device">D3D12デバイス</param>
-/// <param name="mesh">初期化するメッシュ</param>
-/// <returns>true:成功 false:失敗</returns>
-bool CreateCubeMesh(ID3D12Device *device, Mesh &mesh) {
-	const DirectX::XMFLOAT4 white{1.0f, 1.0f, 1.0f, 1.0f};
-
-	Vertex vertices[] = {// 手前の面
-	                     {{-0.5f, 0.5f, -0.5f}, white, {0.0f, 0.0f}},
-	                     {{0.5f, 0.5f, -0.5f}, white, {1.0f, 0.0f}},
-	                     {{0.5f, -0.5f, -0.5f}, white, {1.0f, 1.0f}},
-	                     {{-0.5f, -0.5f, -0.5f}, white, {0.0f, 1.0f}},
-
-	                     // 奥の面
-	                     {{0.5f, 0.5f, 0.5f}, white, {0.0f, 0.0f}},
-	                     {{-0.5f, 0.5f, 0.5f}, white, {1.0f, 0.0f}},
-	                     {{-0.5f, -0.5f, 0.5f}, white, {1.0f, 1.0f}},
-	                     {{0.5f, -0.5f, 0.5f}, white, {0.0f, 1.0f}},
-
-	                     // 左の面
-	                     {{-0.5f, 0.5f, 0.5f}, white, {0.0f, 0.0f}},
-	                     {{-0.5f, 0.5f, -0.5f}, white, {1.0f, 0.0f}},
-	                     {{-0.5f, -0.5f, -0.5f}, white, {1.0f, 1.0f}},
-	                     {{-0.5f, -0.5f, 0.5f}, white, {0.0f, 1.0f}},
-
-	                     // 右の面
-	                     {{0.5f, 0.5f, -0.5f}, white, {0.0f, 0.0f}},
-	                     {{0.5f, 0.5f, 0.5f}, white, {1.0f, 0.0f}},
-	                     {{0.5f, -0.5f, 0.5f}, white, {1.0f, 1.0f}},
-	                     {{0.5f, -0.5f, -0.5f}, white, {0.0f, 1.0f}},
-
-	                     // 上の面
-	                     {{-0.5f, 0.5f, 0.5f}, white, {0.0f, 0.0f}},
-	                     {{0.5f, 0.5f, 0.5f}, white, {1.0f, 0.0f}},
-	                     {{0.5f, 0.5f, -0.5f}, white, {1.0f, 1.0f}},
-	                     {{-0.5f, 0.5f, -0.5f}, white, {0.0f, 1.0f}},
-
-	                     // 下の面
-	                     {{-0.5f, -0.5f, -0.5f}, white, {0.0f, 0.0f}},
-	                     {{0.5f, -0.5f, -0.5f}, white, {1.0f, 0.0f}},
-	                     {{0.5f, -0.5f, 0.5f}, white, {1.0f, 1.0f}},
-	                     {{-0.5f, -0.5f, 0.5f}, white, {0.0f, 1.0f}}};
-
-	const std::uint16_t indices[] = {
-	    0,  1,  2,  0,  2,  3,  4,  5,  6,  4,  6,  7,  8,  9,  10, 8,  10, 11,
-	    12, 13, 14, 12, 14, 15, 16, 17, 18, 16, 18, 19, 20, 21, 22, 20, 22, 23};
-
-	// 頂点配列と同じ面の順番
-	const DirectX::XMFLOAT3 normals[] = {
-	    {0.0f, 0.0f, -1.0f}, // 手前
-	    {0.0f, 0.0f, 1.0f},  // 奥
-	    {-1.0f, 0.0f, 0.0f}, // 左
-	    {1.0f, 0.0f, 0.0f},  // 右
-	    {0.0f, 1.0f, 0.0f},  // 上
-	    {0.0f, -1.0f, 0.0f}  // 下
-	};
-
-	// 各面の4頂点に、同じ法線を設定する
-	for (std::size_t face = 0; face < 6; ++face) {
-		for (std::size_t corner = 0; corner < 4; ++corner) {
-			vertices[face * 4 + corner].normal = normals[face];
-		}
-	}
-
-	return mesh.Initialize(device, vertices, indices);
-}
 
 /// <summary>
 /// エンジンの初期化・メインループ・終了処理を実行する
@@ -140,10 +72,12 @@ int RunEngine(HINSTANCE hInstance) {
 		return -1;
 	}
 
-	// 全物体で共有する立方体の形状
-	Mesh cubeMesh;
+	Mesh modelMesh;
+	MeshData meshData;
 
-	if (!CreateCubeMesh(graphics.GetDevice(), cubeMesh)) {
+	if (!ModelLoader::Load(L"resources/models/box.glb", meshData) ||
+	    !modelMesh.Initialize(graphics.GetDevice(), meshData.vertices,
+	                          meshData.indices)) {
 		graphics.Finalize();
 		app.Finalize();
 		return -1;
@@ -224,7 +158,7 @@ int RunEngine(HINSTANCE hInstance) {
 	std::array<MeshInstance, 2> instances;
 
 	for (std::size_t i = 0; i < instances.size(); ++i) {
-		if (!instances[i].Initialize(graphics.GetDevice(), cubeMesh,
+		if (!instances[i].Initialize(graphics.GetDevice(), modelMesh,
 		                             materials[i])) {
 			graphics.Finalize();
 
@@ -459,7 +393,7 @@ int RunEngine(HINSTANCE hInstance) {
 
 	light.Finalize();
 	renderer.Finalize();
-	cubeMesh.Finalize();
+	modelMesh.Finalize();
 	srvHeap.reset();
 	for (auto &texture : textures) {
 		texture.Finalize();
