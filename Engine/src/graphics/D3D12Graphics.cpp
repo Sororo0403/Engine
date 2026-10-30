@@ -209,6 +209,10 @@ ID3D12GraphicsCommandList *D3D12Graphics::GetCommandList() const {
 	return commandList_.Get();
 }
 
+ID3D12CommandQueue *D3D12Graphics::GetCommandQueue() const {
+	return commandQueue_.Get();
+}
+
 bool D3D12Graphics::CreateFactory() {
 	HRESULT hr = CreateDXGIFactory2(0, IID_PPV_ARGS(factory_.GetAddressOf()));
 

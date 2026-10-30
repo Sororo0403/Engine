@@ -28,10 +28,12 @@ class TriangleRenderer {
 	void Update(const Camera &camera);
 
 	/// <summary>
-	/// 三角形の描画命令を記録する
+	/// 指定したテクスチャで三角形の描画命令を記録する
 	/// </summary>
-	/// <param name="commandList">記録中のコマンドリスト</param>
-	void Draw(ID3D12GraphicsCommandList *commandList);
+	/// <param name="commandList">テクスチャ用ヒープが設定済みの記録中のコマンドリスト</param>
+	/// <param name="textureSrv">描画に使用するテクスチャのGPU側SRVハンドル</param>
+	void Draw(ID3D12GraphicsCommandList *commandList,
+	          D3D12_GPU_DESCRIPTOR_HANDLE textureSrv);
 
 	/// <summary>
 	/// 描画用オブジェクトを解放する

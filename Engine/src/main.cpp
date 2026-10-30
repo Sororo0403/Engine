@@ -3,6 +3,7 @@
 #include "graphics/Camera.h"
 #include "graphics/D3D12Graphics.h"
 #include "graphics/ShaderCompiler.h"
+#include "graphics/Texture.h"
 #include "graphics/TriangleRenderer.h"
 #include "input/InputSystem.h"
 #include "platform/windows/PathUtils.h"
@@ -10,11 +11,16 @@
 #include "platform/windows/WinApp.h"
 #include "platform/windows/WindowsInputBackend.h"
 
+#include <directxtk12/DescriptorHeap.h>
+#include <directxtk12/DirectXHelpers.h>
+
 #include <Windows.h>
 #include <cmath>
+#include <exception>
 #include <filesystem>
 #include <format>
 #include <memory>
+#include <objbase.h>
 
 namespace {
 int RunEngine(HINSTANCE hInstance) {
@@ -51,6 +57,38 @@ int RunEngine(HINSTANCE hInstance) {
 		app.Finalize();
 		return -1;
 	}
+
+	Texture texture;
+
+	if (!texture.Load(graphics.GetDevice(), graphics.GetCommandQueue(),
+	                  L"resources/textures/sample.png")) {
+		graphics.Finalize();
+		app.Finalize();
+		return -1;
+	}
+
+	// シェーダーから参照できるディスクリプタヒープ
+	std::unique_ptr<DirectX::DescriptorHeap> srvHeap;
+
+	try {
+		// SRVを1個格納できるヒープを作成する
+		srvHeap =
+		    std::make_unique<DirectX::DescriptorHeap>(graphics.GetDevice(), 1);
+
+		// ヒープの0番に、テクスチャを読むためのSRVを作成する
+		DirectX::CreateShaderResourceView(graphics.GetDevice(),
+		                                  texture.GetResource(),
+		                                  srvHeap->GetCpuHandle(0));
+	} catch (const std::exception &error) {
+		Logger::Error(std::format("テクスチャ用SRVの作成に失敗しました: {}",
+		                          error.what()));
+
+		graphics.Finalize();
+		app.Finalize();
+		return -1;
+	}
+
+	Logger::Info("テクスチャ用SRVを作成しました。");
 
 	TriangleRenderer triangle;
 
@@ -191,7 +229,14 @@ int RunEngine(HINSTANCE hInstance) {
 			break;
 		}
 
-		triangle.Draw(graphics.GetCommandList());
+		auto *commandList = graphics.GetCommandList();
+
+		// 使用するSRVヒープを設定する
+		ID3D12DescriptorHeap *heaps[] = {srvHeap->Heap()};
+		commandList->SetDescriptorHeaps(1, heaps);
+
+		// ヒープの0番にあるテクスチャを渡す
+		triangle.Draw(commandList, srvHeap->GetGpuHandle(0));
 
 		if (!graphics.EndFrame()) {
 			exitCode = -1;
@@ -225,7 +270,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int) {
 	Logger::Info("Engineを起動しました。");
 
 	// RunEngine内のオブジェクトが破棄されるまでログを有効にする。
+	const HRESULT comResult = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+
+	if (FAILED(comResult)) {
+		Logger::Error(std::format("COMの初期化に失敗しました。HRESULT=0x{:08X}",
+		                          static_cast<unsigned long>(comResult)));
+
+		Logger::Finalize();
+		return -1;
+	}
+
 	const int exitCode = RunEngine(hInstance);
+
+	CoUninitialize();
 
 	if (exitCode == 0) {
 		Logger::Info("Engineを正常終了しました。");

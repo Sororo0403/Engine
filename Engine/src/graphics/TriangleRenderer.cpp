@@ -59,17 +59,20 @@ void TriangleRenderer::Update(const Camera &camera) {
 	XMStoreFloat4x4(mappedWorld_, wvp);
 }
 
-void TriangleRenderer::Draw(ID3D12GraphicsCommandList *commandList) {
+void TriangleRenderer::Draw(ID3D12GraphicsCommandList *commandList,
+                            D3D12_GPU_DESCRIPTOR_HANDLE textureSrv) {
 	commandList->SetGraphicsRootSignature(rootSignature_.Get());
+	commandList->SetPipelineState(pipelineState_.Get());
 
+	// ルートパラメーター0：変換行列
 	commandList->SetGraphicsRootConstantBufferView(
 	    0, constantBuffer_->GetGPUVirtualAddress());
 
-	commandList->SetPipelineState(pipelineState_.Get());
+	// ルートパラメーター1：テクスチャ
+	commandList->SetGraphicsRootDescriptorTable(1, textureSrv);
 
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	// スロット0へ頂点バッファを設定する
 	commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
 
 	commandList->DrawInstanced(3, 1, 0, 0);
@@ -95,16 +98,48 @@ void TriangleRenderer::SetTransform(const Transform &transform) {
 }
 
 bool TriangleRenderer::CreateRootSignature(ID3D12Device *device) {
-	// VSのb0へ定数バッファを渡す
-	D3D12_ROOT_PARAMETER parameter{};
-	parameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-	parameter.Descriptor.ShaderRegister = 0;
-	parameter.Descriptor.RegisterSpace = 0;
-	parameter.ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+	// テクスチャ1枚を、PSのt0へ渡す
+	D3D12_DESCRIPTOR_RANGE range{};
+	range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	range.NumDescriptors = 1;
+	range.BaseShaderRegister = 0;
+	range.RegisterSpace = 0;
+	range.OffsetInDescriptorsFromTableStart =
+	    D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	D3D12_ROOT_PARAMETER parameters[2]{};
+
+	// ルートパラメーター0：VSのb0（変換行列）
+	parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	parameters[0].Descriptor.ShaderRegister = 0;
+	parameters[0].Descriptor.RegisterSpace = 0;
+	parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+
+	// ルートパラメーター1：PSのt0（テクスチャ）
+	parameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	parameters[1].DescriptorTable.NumDescriptorRanges = 1;
+	parameters[1].DescriptorTable.pDescriptorRanges = &range;
+	parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+	// PSのs0：画像の補間方法・範囲外の扱いを指定する
+	D3D12_STATIC_SAMPLER_DESC sampler{};
+	sampler.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+	sampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	sampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	sampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	sampler.MaxAnisotropy = 1;
+	sampler.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+	sampler.MinLOD = 0.0f;
+	sampler.MaxLOD = D3D12_FLOAT32_MAX;
+	sampler.ShaderRegister = 0;
+	sampler.RegisterSpace = 0;
+	sampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
 	D3D12_ROOT_SIGNATURE_DESC desc{};
-	desc.NumParameters = 1;
-	desc.pParameters = &parameter;
+	desc.NumParameters = 2;
+	desc.pParameters = parameters;
+	desc.NumStaticSamplers = 1;
+	desc.pStaticSamplers = &sampler;
 	desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
 	Microsoft::WRL::ComPtr<ID3DBlob> serialized;
@@ -188,8 +223,13 @@ bool TriangleRenderer::CreatePipelineState(ID3D12Device *device,
 	    {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,
 	     static_cast<UINT>(offsetof(Vertex, position)),
 	     D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+
 	    {"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0,
 	     static_cast<UINT>(offsetof(Vertex, color)),
+	     D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+
+	    {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0,
+	     static_cast<UINT>(offsetof(Vertex, texcoord)),
 	     D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}};
 
 	desc.InputLayout = {inputElements,
@@ -219,9 +259,11 @@ bool TriangleRenderer::CreatePipelineState(ID3D12Device *device,
 
 bool TriangleRenderer::CreateVertexBuffer(ID3D12Device *device) {
 	const Vertex vertices[] = {
-	    {{0.0f, 0.5f, 0.0f}, {1.0f, 0.0f, 0.0f, 1.0f}},
-	    {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f, 1.0f}},
-	    {{-0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f, 1.0f}}};
+	    {{0.0f, 0.5f, 0.0f}, {1.0f, 0.0f, 0.0f, 1.0f}, {0.5f, 0.0f}},
+
+	    {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+
+	    {{-0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}};
 
 	// CPUから書き込めるメモリを使う
 	D3D12_HEAP_PROPERTIES heapProperties{};

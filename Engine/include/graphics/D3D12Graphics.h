@@ -57,6 +57,12 @@ class D3D12Graphics {
 	/// <returns>BeginFrame成功後からEndFrame前まで使用するコマンドリスト</returns>
 	ID3D12GraphicsCommandList *GetCommandList() const;
 
+	/// <summary>
+	/// 描画用のコマンドキューを取得する
+	/// </summary>
+	/// <returns>コマンドキューへの借用ポインタ。未初期化の場合はnullptr</returns>
+	ID3D12CommandQueue *GetCommandQueue() const;
+
   private:
 	/// <summary>
 	/// DXGIファクトリを作成する
