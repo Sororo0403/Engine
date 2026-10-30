@@ -8,8 +8,22 @@ float4 PSMain(VertexOutput input) : SV_Target0
 	float4 textureColor =
 	    texture0.Sample(sampler0, input.texcoord);
 
-	// 法線の-1～1を、色の0～1に変換する
-	float3 normalColor = normalize(input.normal) * 0.5f + 0.5f;
+	// 補間された法線を長さ1にする
+	float3 normal = normalize(input.normal);
 
-	return textureColor * float4(normalColor, 1.0f);
+	// ワールド座標での、光が進む方向
+	float3 lightDirection =
+	    normalize(float3(1.0f, -1.0f, 1.0f));
+
+	// 面から光源へ向かう方向と比較する
+	float diffuse = saturate(dot(normal, -lightDirection));
+
+	// 光が当たらない面にも少し明るさを残す
+	float ambient = 0.2f;
+	float brightness = ambient + diffuse * 0.8f;
+
+	float3 color =
+	    textureColor.rgb * input.color.rgb * brightness;
+
+	return float4(color, textureColor.a * input.color.a);
 }

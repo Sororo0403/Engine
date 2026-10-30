@@ -11,6 +11,10 @@ bool MeshInstance::Initialize(ID3D12Device *device, const Mesh &mesh) {
 		return false;
 	}
 
+	// 行列2個で128バイト。確保する256バイト以内に収める
+	static_assert(sizeof(TransformationConstants) <=
+	              D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
+
 	D3D12_HEAP_PROPERTIES heapProperties{};
 	heapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;
 	heapProperties.CreationNodeMask = 1;
@@ -51,17 +55,29 @@ bool MeshInstance::Initialize(ID3D12Device *device, const Mesh &mesh) {
 		return false;
 	}
 
-	mappedWorld_ = static_cast<DirectX::XMFLOAT4X4 *>(mapped);
+	mappedConstants_ = static_cast<TransformationConstants *>(mapped);
+
 	mesh_ = &mesh;
 
-	DirectX::XMStoreFloat4x4(mappedWorld_, DirectX::XMMatrixIdentity());
+	DirectX::XMStoreFloat4x4(&mappedConstants_->worldViewProjection,
+	                         DirectX::XMMatrixIdentity());
+
+	DirectX::XMStoreFloat4x4(&mappedConstants_->worldInverseTranspose,
+	                         DirectX::XMMatrixIdentity());
 
 	return true;
 }
 
 void MeshInstance::Update(const Camera &camera) {
-	if (!mappedWorld_) {
+	if (!mappedConstants_) {
 		Logger::Error("MeshInstance::Update: 未初期化です。");
+		return;
+	}
+
+	// 拡大率が0だと逆行列を作れない
+	if (transform_.scale.x == 0.0f || transform_.scale.y == 0.0f ||
+	    transform_.scale.z == 0.0f) {
+		Logger::Error("MeshInstance::Update: 拡大率に0は指定できません。");
 		return;
 	}
 
@@ -81,7 +97,16 @@ void MeshInstance::Update(const Camera &camera) {
 	const XMMATRIX view = XMLoadFloat4x4(&camera.GetViewMatrix());
 	const XMMATRIX projection = XMLoadFloat4x4(&camera.GetProjectionMatrix());
 
-	XMStoreFloat4x4(mappedWorld_, world * view * projection);
+	// 頂点位置を画面へ投影する行列
+	XMStoreFloat4x4(&mappedConstants_->worldViewProjection,
+	                world * view * projection);
+
+	// 法線をワールド座標へ変換する行列
+	const XMMATRIX worldInverseTranspose =
+	    XMMatrixTranspose(XMMatrixInverse(nullptr, world));
+
+	XMStoreFloat4x4(&mappedConstants_->worldInverseTranspose,
+	                worldInverseTranspose);
 }
 
 void MeshInstance::SetTransform(const Transform &transform) {
@@ -102,11 +127,11 @@ MeshInstance::GetConstantBufferAddress() const {
 }
 
 void MeshInstance::Finalize() {
-	if (constantBuffer_ && mappedWorld_) {
+	if (constantBuffer_ && mappedConstants_) {
 		constantBuffer_->Unmap(0, nullptr);
 	}
 
-	mappedWorld_ = nullptr;
+	mappedConstants_ = nullptr;
 	constantBuffer_.Reset();
 	mesh_ = nullptr;
 }

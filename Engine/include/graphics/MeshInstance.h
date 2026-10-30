@@ -9,6 +9,15 @@ class Camera;
 class Mesh;
 
 class MeshInstance {
+  private:
+	/// <summary>
+	/// GPUへ渡す、頂点位置と法線の変換行列
+	/// </summary>
+	struct TransformationConstants {
+		DirectX::XMFLOAT4X4 worldViewProjection;
+		DirectX::XMFLOAT4X4 worldInverseTranspose;
+	};
+
   public:
 	/// <summary>
 	/// 使用するメッシュを指定し、物体用の定数バッファを作成する
@@ -19,7 +28,7 @@ class MeshInstance {
 	bool Initialize(ID3D12Device *device, const Mesh &mesh);
 
 	/// <summary>
-	/// カメラを反映した変換行列を定数バッファへ書き込む
+	/// 頂点位置と法線の変換行列を定数バッファへ書き込む
 	/// </summary>
 	/// <param name="camera">更新済みのカメラ</param>
 	void Update(const Camera &camera);
@@ -58,5 +67,5 @@ class MeshInstance {
 
 	Transform transform_{};
 	Microsoft::WRL::ComPtr<ID3D12Resource> constantBuffer_;
-	DirectX::XMFLOAT4X4 *mappedWorld_ = nullptr;
+	TransformationConstants *mappedConstants_ = nullptr;
 };
