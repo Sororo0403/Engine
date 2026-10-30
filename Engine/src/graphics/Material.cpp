@@ -14,7 +14,7 @@ bool Material::Initialize(ID3D12Device *device,
 		return false;
 	}
 
-	static_assert(sizeof(MaterialData) == 16);
+	static_assert(sizeof(MaterialData) == 32);
 
 	HRESULT hr = DirectX::CreateUploadBuffer(
 	    device, nullptr, 1, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT,
@@ -62,6 +62,16 @@ bool Material::Update(const MaterialData &data) {
 	for (const float channel : channels) {
 		if (!std::isfinite(channel) || channel < 0.0f || channel > 1.0f) {
 			Logger::Error("Material::Update: 色の値が無効です。");
+			return false;
+		}
+	}
+
+	const float uvValues[] = {data.uvScale.x, data.uvScale.y, data.uvOffset.x,
+	                          data.uvOffset.y};
+
+	for (const float value : uvValues) {
+		if (!std::isfinite(value)) {
+			Logger::Error("Material::Update: UVの値が無効です。");
 			return false;
 		}
 	}

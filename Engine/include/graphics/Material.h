@@ -10,6 +10,12 @@
 struct MaterialData {
 	// テクスチャの色に掛けるRGBA
 	DirectX::XMFLOAT4 baseColor{1.0f, 1.0f, 1.0f, 1.0f};
+
+	// UV座標に掛ける倍率
+	DirectX::XMFLOAT2 uvScale{1.0f, 1.0f};
+
+	// UV座標に加える移動量
+	DirectX::XMFLOAT2 uvOffset{0.0f, 0.0f};
 };
 
 class Material {
@@ -26,7 +32,7 @@ class Material {
 	/// <summary>
 	/// 材質情報を定数バッファへ書き込む
 	/// </summary>
-	/// <param name="data">RGBAの各成分を0～1で指定した材質情報</param>
+	/// <param name="data">RGBAの各成分が0～1で、UVの倍率と移動量が有限値の材質情報</param>
 	/// <returns>true:成功 false:未初期化、またはデータが無効</returns>
 	bool Update(const MaterialData &data);
 

@@ -199,6 +199,8 @@ int RunEngine(HINSTANCE hInstance) {
 	std::array<Material, 2> materials;
 	std::array<MaterialData, 2> materialData{};
 
+	materialData[0].uvScale = {2.0f, 2.0f};
+
 	materialData[0].baseColor = {1.0f, 1.0f, 1.0f, 1.0f};
 	materialData[1].baseColor = {1.0f, 1.0f, 1.0f, 1.0f};
 
@@ -402,6 +404,24 @@ int RunEngine(HINSTANCE hInstance) {
 
 			instances[i].SetTransform(transform);
 			instances[i].Update(camera);
+		}
+
+		// 右の物体では、テクスチャを横方向にスクロールさせる
+		materialData[1].uvOffset.x =
+		    std::fmod(materialData[1].uvOffset.x + 0.25f * deltaTime, 1.0f);
+
+		bool materialUpdateSucceeded = true;
+
+		for (std::size_t i = 0; i < materials.size(); ++i) {
+			if (!materials[i].Update(materialData[i])) {
+				materialUpdateSucceeded = false;
+				break;
+			}
+		}
+
+		if (!materialUpdateSucceeded) {
+			exitCode = -1;
+			break;
 		}
 
 		if (!graphics.BeginFrame(clearColor)) {

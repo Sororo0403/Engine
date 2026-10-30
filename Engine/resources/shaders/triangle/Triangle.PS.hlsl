@@ -15,12 +15,15 @@ cbuffer DirectionalLightBuffer : register(b1)
 cbuffer MaterialBuffer : register(b2)
 {
 	float4 baseColor;
+	float2 uvScale;
+	float2 uvOffset;
 };
 
 float4 PSMain(VertexOutput input) : SV_Target0
 {
-	float4 textureColor =
-	    texture0.Sample(sampler0, input.texcoord);
+	float2 texcoord = input.texcoord * uvScale + uvOffset;
+
+	float4 textureColor = texture0.Sample(sampler0, texcoord);
 
 	float3 normal = normalize(input.normal);
 	float3 toLight = -normalize(lightDirection);
