@@ -3,6 +3,7 @@
 #include "graphics/Camera.h"
 #include "graphics/D3D12Graphics.h"
 #include "graphics/Mesh.h"
+#include "graphics/MeshInstance.h"
 #include "graphics/MeshRenderer.h"
 #include "graphics/ShaderCompiler.h"
 #include "graphics/Texture.h"
@@ -18,6 +19,7 @@
 #include <directxtk12/DirectXHelpers.h>
 
 #include <Windows.h>
+#include <array>
 #include <cmath>
 #include <cstdint>
 #include <exception>
@@ -119,6 +121,7 @@ int RunEngine(HINSTANCE hInstance) {
 		return -1;
 	}
 
+	// 全物体で共有する立方体の形状
 	Mesh cubeMesh;
 
 	if (!CreateCubeMesh(graphics.GetDevice(), cubeMesh)) {
@@ -127,6 +130,7 @@ int RunEngine(HINSTANCE hInstance) {
 		return -1;
 	}
 
+	// 全物体で共有する画像
 	Texture texture;
 
 	if (!texture.Load(graphics.GetDevice(), graphics.GetCommandQueue(),
@@ -139,7 +143,6 @@ int RunEngine(HINSTANCE hInstance) {
 	std::unique_ptr<DirectX::DescriptorHeap> srvHeap;
 
 	try {
-		// シェーダーから参照できるSRVを1個格納する
 		srvHeap =
 		    std::make_unique<DirectX::DescriptorHeap>(graphics.GetDevice(), 1);
 
@@ -157,6 +160,7 @@ int RunEngine(HINSTANCE hInstance) {
 
 	Logger::Info("テクスチャ用SRVを作成しました。");
 
+	// 全物体で共有する描画設定
 	MeshRenderer renderer;
 
 	if (!renderer.Initialize(graphics.GetDevice(), vertexShader.Get(),
@@ -166,22 +170,44 @@ int RunEngine(HINSTANCE hInstance) {
 		return -1;
 	}
 
+	// 各物体がそれぞれ変形と定数バッファを持つ
+	std::array<MeshInstance, 2> instances;
+
+	for (std::size_t i = 0; i < instances.size(); ++i) {
+		if (!instances[i].Initialize(graphics.GetDevice(), cubeMesh)) {
+			graphics.Finalize();
+
+			for (auto &instance : instances) {
+				instance.Finalize();
+			}
+
+			renderer.Finalize();
+			app.Finalize();
+			return -1;
+		}
+
+		Transform transform{};
+		transform.scale = {0.45f, 0.45f, 0.45f};
+		transform.rotation = {0.3f, 0.4f, 0.0f};
+		transform.translation.x = (i == 0) ? -0.6f : 0.6f;
+
+		instances[i].SetTransform(transform);
+	}
+
 	InputSystem input;
 
 	if (!input.Initialize(
 	        std::make_unique<WindowsInputBackend>(app.GetHwnd()))) {
 		graphics.Finalize();
+
+		for (auto &instance : instances) {
+			instance.Finalize();
+		}
+
 		renderer.Finalize();
 		app.Finalize();
 		return -1;
 	}
-
-	Transform transform{};
-	transform.scale = {0.7f, 0.7f, 0.7f};
-	transform.rotation = {0.3f, 0.4f, 0.0f};
-	transform.translation = {0.0f, 0.0f, 0.0f};
-
-	renderer.SetTransform(transform);
 
 	Camera camera;
 	FrameTimer frameTimer;
@@ -202,7 +228,6 @@ int RunEngine(HINSTANCE hInstance) {
 			break;
 		}
 
-		// 接続状態が変わったときだけ出力する
 		const bool connected = gamepad.IsConnected();
 
 		if (connected != wasGamepadConnected) {
@@ -264,7 +289,6 @@ int RunEngine(HINSTANCE hInstance) {
 			moveX += 1.0f;
 		}
 
-		// 斜め移動でも同じ速さになるようにする
 		const float length = std::sqrt(moveX * moveX + moveZ * moveZ);
 
 		if (length > 0.0f) {
@@ -281,11 +305,17 @@ int RunEngine(HINSTANCE hInstance) {
 			break;
 		}
 
-		transform.rotation.x += 0.6f * deltaTime;
-		transform.rotation.y += 1.0f * deltaTime;
+		// 物体ごとに別々の変換行列を更新する
+		for (std::size_t i = 0; i < instances.size(); ++i) {
+			Transform transform = instances[i].GetTransform();
 
-		renderer.SetTransform(transform);
-		renderer.Update(camera);
+			const float rotationSpeed = (i == 0) ? 1.0f : -0.7f;
+
+			transform.rotation.y += rotationSpeed * deltaTime;
+
+			instances[i].SetTransform(transform);
+			instances[i].Update(camera);
+		}
 
 		if (!graphics.BeginFrame(clearColor)) {
 			exitCode = -1;
@@ -297,7 +327,10 @@ int RunEngine(HINSTANCE hInstance) {
 		ID3D12DescriptorHeap *heaps[] = {srvHeap->Heap()};
 		commandList->SetDescriptorHeaps(1, heaps);
 
-		renderer.Draw(commandList, cubeMesh, srvHeap->GetGpuHandle(0));
+		// メッシュ・PSO・テクスチャを共有して各物体を描く
+		for (const auto &instance : instances) {
+			renderer.Draw(commandList, instance, srvHeap->GetGpuHandle(0));
+		}
 
 		if (!graphics.EndFrame()) {
 			exitCode = -1;
@@ -307,10 +340,13 @@ int RunEngine(HINSTANCE hInstance) {
 
 	input.Finalize();
 
-	// GPUの処理完了を待って描画基盤を終了する
+	// GPUの利用が終わってから各物体のリソースを解放する
 	graphics.Finalize();
 
-	// GPUの利用が終わったリソースを解放する
+	for (auto &instance : instances) {
+		instance.Finalize();
+	}
+
 	renderer.Finalize();
 	cubeMesh.Finalize();
 	srvHeap.reset();
@@ -349,7 +385,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int) {
 		return -1;
 	}
 
-	// RunEngine内のオブジェクトが破棄されるまでCOMとLoggerを維持する
+	// RunEngine内の全オブジェクトが破棄されるまで維持する
 	const int exitCode = RunEngine(hInstance);
 
 	CoUninitialize();

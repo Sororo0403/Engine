@@ -1,7 +1,7 @@
 #include "graphics/MeshRenderer.h"
 #include "core/Logger.h"
-#include "graphics/Camera.h"
 #include "graphics/Mesh.h"
+#include "graphics/MeshInstance.h"
 #include "graphics/Vertex.h"
 
 #include <cstddef>
@@ -12,15 +12,14 @@
 bool MeshRenderer::Initialize(ID3D12Device *device, IDxcBlob *vertexShader,
                               IDxcBlob *pixelShader) {
 	if (!device || !vertexShader || !pixelShader || rootSignature_ ||
-	    pipelineState_ || constantBuffer_) {
+	    pipelineState_) {
 		Logger::Error(
 		    "MeshRenderer::Initialize: 引数が無効、または初期化済みです。");
 		return false;
 	}
 
 	if (!CreateRootSignature(device) ||
-	    !CreatePipelineState(device, vertexShader, pixelShader) ||
-	    !CreateConstantBuffer(device)) {
+	    !CreatePipelineState(device, vertexShader, pixelShader)) {
 		Finalize();
 		return false;
 	}
@@ -29,42 +28,14 @@ bool MeshRenderer::Initialize(ID3D12Device *device, IDxcBlob *vertexShader,
 	return true;
 }
 
-void MeshRenderer::Update(const Camera &camera) {
-	if (!mappedWorld_) {
-		Logger::Error("MeshRenderer::Update: 定数バッファが未初期化です。");
-		return;
-	}
-
-	using namespace DirectX;
-
-	const XMMATRIX scale = XMMatrixScaling(
-	    transform_.scale.x, transform_.scale.y, transform_.scale.z);
-
-	const XMMATRIX rotation = XMMatrixRotationRollPitchYaw(
-	    transform_.rotation.x, transform_.rotation.y, transform_.rotation.z);
-
-	const XMMATRIX translation =
-	    XMMatrixTranslation(transform_.translation.x, transform_.translation.y,
-	                        transform_.translation.z);
-
-	// 拡大縮小 → 回転 → 移動
-	const XMMATRIX world = scale * rotation * translation;
-
-	const XMMATRIX view = XMLoadFloat4x4(&camera.GetViewMatrix());
-
-	const XMMATRIX projection = XMLoadFloat4x4(&camera.GetProjectionMatrix());
-
-	// 物体の変形 → カメラから見た座標 → 投影
-	const XMMATRIX worldViewProjection = world * view * projection;
-
-	XMStoreFloat4x4(mappedWorld_, worldViewProjection);
-}
-
 void MeshRenderer::Draw(ID3D12GraphicsCommandList *commandList,
-                        const Mesh &mesh,
+                        const MeshInstance &instance,
                         D3D12_GPU_DESCRIPTOR_HANDLE textureSrv) {
-	if (!commandList || !rootSignature_ || !pipelineState_ ||
-	    !constantBuffer_ || textureSrv.ptr == 0) {
+	const Mesh *mesh = instance.GetMesh();
+	const auto constantBufferAddress = instance.GetConstantBufferAddress();
+
+	if (!commandList || !rootSignature_ || !pipelineState_ || !mesh ||
+	    constantBufferAddress == 0 || textureSrv.ptr == 0) {
 		Logger::Error("MeshRenderer::Draw: 引数が無効、または未初期化です。");
 		return;
 	}
@@ -72,35 +43,22 @@ void MeshRenderer::Draw(ID3D12GraphicsCommandList *commandList,
 	commandList->SetGraphicsRootSignature(rootSignature_.Get());
 	commandList->SetPipelineState(pipelineState_.Get());
 
-	// ルートパラメーター0：VSのb0へ変換行列を渡す
-	commandList->SetGraphicsRootConstantBufferView(
-	    0, constantBuffer_->GetGPUVirtualAddress());
+	// 物体ごとの変換行列をVSのb0へ渡す
+	commandList->SetGraphicsRootConstantBufferView(0, constantBufferAddress);
 
-	// ルートパラメーター1：PSのt0へテクスチャを渡す
+	// テクスチャをPSのt0へ渡す
 	commandList->SetGraphicsRootDescriptorTable(1, textureSrv);
 
-	// 頂点・インデックスの設定と描画をMeshに任せる
-	mesh.Draw(commandList);
+	mesh->Draw(commandList);
 }
 
 void MeshRenderer::Finalize() {
-	if (constantBuffer_ && mappedWorld_) {
-		constantBuffer_->Unmap(0, nullptr);
-	}
-
-	mappedWorld_ = nullptr;
-	constantBuffer_.Reset();
-
 	pipelineState_.Reset();
 	rootSignature_.Reset();
 }
 
-void MeshRenderer::SetTransform(const Transform &transform) {
-	transform_ = transform;
-}
-
 bool MeshRenderer::CreateRootSignature(ID3D12Device *device) {
-	// PSのt0でテクスチャ1枚を参照する
+	// PSのt0で参照するテクスチャ
 	D3D12_DESCRIPTOR_RANGE range{};
 	range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	range.NumDescriptors = 1;
@@ -111,7 +69,7 @@ bool MeshRenderer::CreateRootSignature(ID3D12Device *device) {
 
 	D3D12_ROOT_PARAMETER parameters[2]{};
 
-	// ルートパラメーター0：変換行列
+	// ルートパラメーター0：物体ごとの変換行列
 	parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	parameters[0].Descriptor.ShaderRegister = 0;
 	parameters[0].Descriptor.RegisterSpace = 0;
@@ -147,7 +105,6 @@ bool MeshRenderer::CreateRootSignature(ID3D12Device *device) {
 	Microsoft::WRL::ComPtr<ID3DBlob> serialized;
 	Microsoft::WRL::ComPtr<ID3DBlob> errors;
 
-	// 設定をデバイスへ渡せるバイナリ形式に変換する
 	HRESULT hr = D3D12SerializeRootSignature(
 	    &desc, D3D_ROOT_SIGNATURE_VERSION_1, serialized.GetAddressOf(),
 	    errors.GetAddressOf());
@@ -255,53 +212,5 @@ bool MeshRenderer::CreatePipelineState(ID3D12Device *device,
 		return false;
 	}
 
-	return true;
-}
-
-bool MeshRenderer::CreateConstantBuffer(ID3D12Device *device) {
-	D3D12_HEAP_PROPERTIES heapProperties{};
-	heapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;
-	heapProperties.CreationNodeMask = 1;
-	heapProperties.VisibleNodeMask = 1;
-
-	// 行列1個は64バイトだが、定数バッファは256バイト確保する
-	D3D12_RESOURCE_DESC desc{};
-	desc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-	desc.Width = D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT;
-	desc.Height = 1;
-	desc.DepthOrArraySize = 1;
-	desc.MipLevels = 1;
-	desc.SampleDesc.Count = 1;
-	desc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-
-	HRESULT hr = device->CreateCommittedResource(
-	    &heapProperties, D3D12_HEAP_FLAG_NONE, &desc,
-	    D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
-	    IID_PPV_ARGS(constantBuffer_.GetAddressOf()));
-
-	if (FAILED(hr)) {
-		Logger::Error(
-		    std::format("定数バッファの作成に失敗しました。HRESULT=0x{:08X}",
-		                static_cast<unsigned long>(hr)));
-		return false;
-	}
-
-	void *mapped = nullptr;
-	const D3D12_RANGE readRange{0, 0};
-
-	hr = constantBuffer_->Map(0, &readRange, &mapped);
-
-	if (FAILED(hr)) {
-		Logger::Error(
-		    std::format("定数バッファのMapに失敗しました。HRESULT=0x{:08X}",
-		                static_cast<unsigned long>(hr)));
-		return false;
-	}
-
-	mappedWorld_ = static_cast<DirectX::XMFLOAT4X4 *>(mapped);
-
-	DirectX::XMStoreFloat4x4(mappedWorld_, DirectX::XMMatrixIdentity());
-
-	Logger::Info("変換行列用の定数バッファを作成しました。");
 	return true;
 }

@@ -104,6 +104,9 @@
     <ClCompile Include="src\graphics\Mesh.cpp">
       <Filter>src\graphics</Filter>
     </ClCompile>
+    <ClCompile Include="src\graphics\MeshInstance.cpp">
+      <Filter>src\graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\platform\windows\Window.h">
@@ -176,6 +179,9 @@
       <Filter>include\graphics</Filter>
     </ClInclude>
     <ClInclude Include="include\graphics\Mesh.h">
+      <Filter>include\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\MeshInstance.h">
       <Filter>include\graphics</Filter>
     </ClInclude>
   </ItemGroup>
