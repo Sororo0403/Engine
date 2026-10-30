@@ -7,6 +7,7 @@
 
 class Camera;
 class Mesh;
+class Material;
 
 class MeshInstance {
   private:
@@ -20,12 +21,14 @@ class MeshInstance {
 
   public:
 	/// <summary>
-	/// 使用するメッシュを指定し、物体用の定数バッファを作成する
+	/// 使用するメッシュと材質を指定し、物体用の定数バッファを作成する
 	/// </summary>
 	/// <param name="device">D3D12デバイス</param>
-	/// <param name="mesh">使用する初期化済みのメッシュ。この物体より長く保持すること</param>
+	/// <param name="mesh">初期化済みのメッシュ。この物体より長く保持すること</param>
+	/// <param name="material">初期化済みの材質。この物体より長く保持すること</param>
 	/// <returns>true:成功 false:引数が無効、初期化済み、または作成失敗</returns>
-	bool Initialize(ID3D12Device *device, const Mesh &mesh);
+	bool Initialize(ID3D12Device *device, const Mesh &mesh,
+	                const Material &material);
 
 	/// <summary>
 	/// 頂点位置と法線の変換行列を定数バッファへ書き込む
@@ -52,6 +55,12 @@ class MeshInstance {
 	const Mesh *GetMesh() const;
 
 	/// <summary>
+	/// 使用する材質を取得する
+	/// </summary>
+	/// <returns>材質への借用ポインタ。未初期化の場合はnullptr</returns>
+	const Material *GetMaterial() const;
+
+	/// <summary>
 	/// 物体用の定数バッファのGPUアドレスを取得する
 	/// </summary>
 	/// <returns>GPUアドレス。未初期化の場合は0</returns>
@@ -64,6 +73,7 @@ class MeshInstance {
 
   private:
 	const Mesh *mesh_ = nullptr;
+	const Material *material_ = nullptr;
 
 	Transform transform_{};
 	Microsoft::WRL::ComPtr<ID3D12Resource> constantBuffer_;

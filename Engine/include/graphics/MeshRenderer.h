@@ -21,15 +21,13 @@ class MeshRenderer {
 	                IDxcBlob *pixelShader);
 
 	/// <summary>
-	/// 指定した物体を、平行光源とテクスチャを使って描画する
+	/// 物体が指定するメッシュと材質を使い、平行光源を反映して描画する
 	/// </summary>
-	/// <param name="commandList">テクスチャ用ヒープが設定済みの記録中のコマンドリスト</param>
+	/// <param name="commandList">材質のテクスチャ用ヒープが設定済みの記録中のコマンドリスト</param>
 	/// <param name="instance">初期化・更新済みの物体</param>
 	/// <param name="light">初期化・更新済みの平行光源</param>
-	/// <param name="textureSrv">テクスチャのGPU側SRVハンドル</param>
 	void Draw(ID3D12GraphicsCommandList *commandList,
-	          const MeshInstance &instance, const DirectionalLight &light,
-	          D3D12_GPU_DESCRIPTOR_HANDLE textureSrv);
+	          const MeshInstance &instance, const DirectionalLight &light);
 
 	/// <summary>
 	/// 描画用オブジェクトを解放する。GPUの利用完了後に呼び出す

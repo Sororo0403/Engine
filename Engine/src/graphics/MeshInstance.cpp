@@ -1,11 +1,15 @@
 #include "graphics/MeshInstance.h"
 #include "core/Logger.h"
 #include "graphics/Camera.h"
+#include "graphics/Material.h"
 
 #include <format>
 
-bool MeshInstance::Initialize(ID3D12Device *device, const Mesh &mesh) {
-	if (!device || constantBuffer_ || mesh_) {
+bool MeshInstance::Initialize(ID3D12Device *device, const Mesh &mesh,
+                              const Material &material) {
+	if (!device || constantBuffer_ || mesh_ || material_ ||
+	    material.GetConstantBufferAddress() == 0 ||
+	    material.GetTextureSrv().ptr == 0) {
 		Logger::Error(
 		    "MeshInstance::Initialize: 引数が無効、または初期化済みです。");
 		return false;
@@ -58,6 +62,7 @@ bool MeshInstance::Initialize(ID3D12Device *device, const Mesh &mesh) {
 	mappedConstants_ = static_cast<TransformationConstants *>(mapped);
 
 	mesh_ = &mesh;
+	material_ = &material;
 
 	DirectX::XMStoreFloat4x4(&mappedConstants_->worldViewProjection,
 	                         DirectX::XMMatrixIdentity());
@@ -117,6 +122,8 @@ const Transform &MeshInstance::GetTransform() const { return transform_; }
 
 const Mesh *MeshInstance::GetMesh() const { return mesh_; }
 
+const Material *MeshInstance::GetMaterial() const { return material_; }
+
 D3D12_GPU_VIRTUAL_ADDRESS
 MeshInstance::GetConstantBufferAddress() const {
 	if (!constantBuffer_) {
@@ -134,4 +141,5 @@ void MeshInstance::Finalize() {
 	mappedConstants_ = nullptr;
 	constantBuffer_.Reset();
 	mesh_ = nullptr;
+	material_ = nullptr;
 }

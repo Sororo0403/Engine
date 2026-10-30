@@ -3,6 +3,7 @@
 #include "graphics/Camera.h"
 #include "graphics/D3D12Graphics.h"
 #include "graphics/DirectionalLight.h"
+#include "graphics/Material.h"
 #include "graphics/Mesh.h"
 #include "graphics/MeshInstance.h"
 #include "graphics/MeshRenderer.h"
@@ -148,25 +149,32 @@ int RunEngine(HINSTANCE hInstance) {
 		return -1;
 	}
 
-	// 全物体で共有する画像
-	Texture texture;
+	std::array<Texture, 2> textures;
 
-	if (!texture.Load(graphics.GetDevice(), graphics.GetCommandQueue(),
-	                  L"resources/textures/sample.png")) {
-		graphics.Finalize();
-		app.Finalize();
-		return -1;
+	const wchar_t *texturePaths[] = {L"resources/textures/sample.png",
+	                                 L"resources/textures/sample2.png"};
+
+	for (std::size_t i = 0; i < textures.size(); ++i) {
+		if (!textures[i].Load(graphics.GetDevice(), graphics.GetCommandQueue(),
+		                      texturePaths[i])) {
+			graphics.Finalize();
+			app.Finalize();
+			return -1;
+		}
 	}
 
 	std::unique_ptr<DirectX::DescriptorHeap> srvHeap;
 
 	try {
-		srvHeap =
-		    std::make_unique<DirectX::DescriptorHeap>(graphics.GetDevice(), 1);
+		// テクスチャの枚数分、SRVの格納場所を用意する
+		srvHeap = std::make_unique<DirectX::DescriptorHeap>(
+		    graphics.GetDevice(), textures.size());
 
-		DirectX::CreateShaderResourceView(graphics.GetDevice(),
-		                                  texture.GetResource(),
-		                                  srvHeap->GetCpuHandle(0));
+		for (std::size_t i = 0; i < textures.size(); ++i) {
+			DirectX::CreateShaderResourceView(graphics.GetDevice(),
+			                                  textures[i].GetResource(),
+			                                  srvHeap->GetCpuHandle(i));
+		}
 	} catch (const std::exception &error) {
 		Logger::Error(std::format("テクスチャ用SRVの作成に失敗しました: {}",
 		                          error.what()));
@@ -188,15 +196,42 @@ int RunEngine(HINSTANCE hInstance) {
 		return -1;
 	}
 
+	std::array<Material, 2> materials;
+	std::array<MaterialData, 2> materialData{};
+
+	materialData[0].baseColor = {1.0f, 1.0f, 1.0f, 1.0f};
+	materialData[1].baseColor = {1.0f, 1.0f, 1.0f, 1.0f};
+
+	for (std::size_t i = 0; i < materials.size(); ++i) {
+		if (!materials[i].Initialize(graphics.GetDevice(),
+		                             srvHeap->GetGpuHandle(i)) ||
+		    !materials[i].Update(materialData[i])) {
+			graphics.Finalize();
+
+			for (auto &material : materials) {
+				material.Finalize();
+			}
+
+			renderer.Finalize();
+			app.Finalize();
+			return -1;
+		}
+	}
+
 	// 各物体がそれぞれ変形と定数バッファを持つ
 	std::array<MeshInstance, 2> instances;
 
 	for (std::size_t i = 0; i < instances.size(); ++i) {
-		if (!instances[i].Initialize(graphics.GetDevice(), cubeMesh)) {
+		if (!instances[i].Initialize(graphics.GetDevice(), cubeMesh,
+		                             materials[i])) {
 			graphics.Finalize();
 
 			for (auto &instance : instances) {
 				instance.Finalize();
+			}
+
+			for (auto &material : materials) {
+				material.Finalize();
 			}
 
 			renderer.Finalize();
@@ -222,6 +257,10 @@ int RunEngine(HINSTANCE hInstance) {
 			instance.Finalize();
 		}
 
+		for (auto &material : materials) {
+			material.Finalize();
+		}
+
 		renderer.Finalize();
 		app.Finalize();
 		return -1;
@@ -235,6 +274,10 @@ int RunEngine(HINSTANCE hInstance) {
 
 		for (auto &instance : instances) {
 			instance.Finalize();
+		}
+
+		for (auto &material : materials) {
+			material.Finalize();
 		}
 
 		renderer.Finalize();
@@ -372,8 +415,7 @@ int RunEngine(HINSTANCE hInstance) {
 		commandList->SetDescriptorHeaps(1, heaps);
 
 		for (const auto &instance : instances) {
-			renderer.Draw(commandList, instance, light,
-			              srvHeap->GetGpuHandle(0));
+			renderer.Draw(commandList, instance, light);
 		}
 
 		if (!graphics.EndFrame()) {
@@ -391,11 +433,17 @@ int RunEngine(HINSTANCE hInstance) {
 		instance.Finalize();
 	}
 
+	for (auto &material : materials) {
+		material.Finalize();
+	}
+
 	light.Finalize();
 	renderer.Finalize();
 	cubeMesh.Finalize();
 	srvHeap.reset();
-	texture.Finalize();
+	for (auto &texture : textures) {
+		texture.Finalize();
+	}
 
 	app.Finalize();
 

@@ -1,6 +1,7 @@
 #include "graphics/MeshRenderer.h"
 #include "core/Logger.h"
 #include "graphics/DirectionalLight.h"
+#include "graphics/Material.h"
 #include "graphics/Mesh.h"
 #include "graphics/MeshInstance.h"
 #include "graphics/Vertex.h"
@@ -31,32 +32,41 @@ bool MeshRenderer::Initialize(ID3D12Device *device, IDxcBlob *vertexShader,
 
 void MeshRenderer::Draw(ID3D12GraphicsCommandList *commandList,
                         const MeshInstance &instance,
-                        const DirectionalLight &light,
-                        D3D12_GPU_DESCRIPTOR_HANDLE textureSrv) {
+                        const DirectionalLight &light) {
 	const Mesh *mesh = instance.GetMesh();
-
-	const auto objectBufferAddress = instance.GetConstantBufferAddress();
-
-	const auto lightBufferAddress = light.GetConstantBufferAddress();
+	const Material *material = instance.GetMaterial();
 
 	if (!commandList || !rootSignature_ || !pipelineState_ || !mesh ||
-	    objectBufferAddress == 0 || lightBufferAddress == 0 ||
-	    textureSrv.ptr == 0) {
+	    !material) {
 		Logger::Error("MeshRenderer::Draw: 引数が無効、または未初期化です。");
+		return;
+	}
+
+	const auto objectAddress = instance.GetConstantBufferAddress();
+	const auto lightAddress = light.GetConstantBufferAddress();
+	const auto materialAddress = material->GetConstantBufferAddress();
+	const auto textureSrv = material->GetTextureSrv();
+
+	if (objectAddress == 0 || lightAddress == 0 || materialAddress == 0 ||
+	    textureSrv.ptr == 0) {
+		Logger::Error("MeshRenderer::Draw: 描画リソースが未初期化です。");
 		return;
 	}
 
 	commandList->SetGraphicsRootSignature(rootSignature_.Get());
 	commandList->SetPipelineState(pipelineState_.Get());
 
-	// VSのb0：物体ごとの変換行列
-	commandList->SetGraphicsRootConstantBufferView(0, objectBufferAddress);
+	// VSのb0：物体の変換行列
+	commandList->SetGraphicsRootConstantBufferView(0, objectAddress);
 
-	// PSのt0：テクスチャ
+	// PSのt0：材質が使うテクスチャ
 	commandList->SetGraphicsRootDescriptorTable(1, textureSrv);
 
 	// PSのb1：平行光源
-	commandList->SetGraphicsRootConstantBufferView(2, lightBufferAddress);
+	commandList->SetGraphicsRootConstantBufferView(2, lightAddress);
+
+	// PSのb2：材質情報
+	commandList->SetGraphicsRootConstantBufferView(3, materialAddress);
 
 	mesh->Draw(commandList);
 }
@@ -76,7 +86,7 @@ bool MeshRenderer::CreateRootSignature(ID3D12Device *device) {
 	range.OffsetInDescriptorsFromTableStart =
 	    D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	D3D12_ROOT_PARAMETER parameters[3]{};
+	D3D12_ROOT_PARAMETER parameters[4]{};
 
 	// ルートパラメーター0：物体ごとの変換行列
 	parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
@@ -95,6 +105,12 @@ bool MeshRenderer::CreateRootSignature(ID3D12Device *device) {
 	parameters[2].Descriptor.ShaderRegister = 1;
 	parameters[2].Descriptor.RegisterSpace = 0;
 	parameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+	// ルートパラメーター3：PSのb2へ材質情報を渡す
+	parameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	parameters[3].Descriptor.ShaderRegister = 2;
+	parameters[3].Descriptor.RegisterSpace = 0;
+	parameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
 	// PSのs0で使用する固定サンプラー
 	D3D12_STATIC_SAMPLER_DESC sampler{};
