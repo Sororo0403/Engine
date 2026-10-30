@@ -6,6 +6,7 @@
 #include <wrl/client.h>
 
 class MeshInstance;
+class DirectionalLight;
 
 class MeshRenderer {
   public:
@@ -20,13 +21,14 @@ class MeshRenderer {
 	                IDxcBlob *pixelShader);
 
 	/// <summary>
-	/// 指定した物体とテクスチャで描画命令を記録する
+	/// 指定した物体を、平行光源とテクスチャを使って描画する
 	/// </summary>
 	/// <param name="commandList">テクスチャ用ヒープが設定済みの記録中のコマンドリスト</param>
 	/// <param name="instance">初期化・更新済みの物体</param>
+	/// <param name="light">初期化・更新済みの平行光源</param>
 	/// <param name="textureSrv">テクスチャのGPU側SRVハンドル</param>
 	void Draw(ID3D12GraphicsCommandList *commandList,
-	          const MeshInstance &instance,
+	          const MeshInstance &instance, const DirectionalLight &light,
 	          D3D12_GPU_DESCRIPTOR_HANDLE textureSrv);
 
 	/// <summary>

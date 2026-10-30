@@ -2,6 +2,7 @@
 #include "core/Logger.h"
 #include "graphics/Camera.h"
 #include "graphics/D3D12Graphics.h"
+#include "graphics/DirectionalLight.h"
 #include "graphics/Mesh.h"
 #include "graphics/MeshInstance.h"
 #include "graphics/MeshRenderer.h"
@@ -226,6 +227,27 @@ int RunEngine(HINSTANCE hInstance) {
 		return -1;
 	}
 
+	DirectionalLight light;
+
+	if (!light.Initialize(graphics.GetDevice())) {
+		input.Finalize();
+		graphics.Finalize();
+
+		for (auto &instance : instances) {
+			instance.Finalize();
+		}
+
+		renderer.Finalize();
+		app.Finalize();
+		return -1;
+	}
+
+	DirectionalLightData lightData{};
+	lightData.direction = {1.0f, -1.0f, 1.0f};
+	lightData.intensity = 0.8f;
+	lightData.color = {1.0f, 1.0f, 1.0f};
+	lightData.ambient = 0.2f;
+
 	Camera camera;
 	FrameTimer frameTimer;
 
@@ -322,6 +344,11 @@ int RunEngine(HINSTANCE hInstance) {
 			break;
 		}
 
+		if (!light.Update(lightData)) {
+			exitCode = -1;
+			break;
+		}
+
 		// 物体ごとに別々の変換行列を更新する
 		for (std::size_t i = 0; i < instances.size(); ++i) {
 			Transform transform = instances[i].GetTransform();
@@ -344,9 +371,9 @@ int RunEngine(HINSTANCE hInstance) {
 		ID3D12DescriptorHeap *heaps[] = {srvHeap->Heap()};
 		commandList->SetDescriptorHeaps(1, heaps);
 
-		// メッシュ・PSO・テクスチャを共有して各物体を描く
 		for (const auto &instance : instances) {
-			renderer.Draw(commandList, instance, srvHeap->GetGpuHandle(0));
+			renderer.Draw(commandList, instance, light,
+			              srvHeap->GetGpuHandle(0));
 		}
 
 		if (!graphics.EndFrame()) {
@@ -364,6 +391,7 @@ int RunEngine(HINSTANCE hInstance) {
 		instance.Finalize();
 	}
 
+	light.Finalize();
 	renderer.Finalize();
 	cubeMesh.Finalize();
 	srvHeap.reset();

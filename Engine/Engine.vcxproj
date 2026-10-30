@@ -12,6 +12,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\graphics\DirectionalLight.cpp" />
     <ClCompile Include="src\graphics\MeshInstance.cpp" />
     <ClCompile Include="src\graphics\Mesh.cpp" />
     <ClCompile Include="src\input\Gamepad.cpp" />
@@ -33,6 +34,7 @@
     <ClCompile Include="src\graphics\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\graphics\DirectionalLight.h" />
     <ClInclude Include="include\input\Gamepad.h" />
     <ClInclude Include="include\input\GamepadState.h" />
     <ClInclude Include="include\input\GamepadButton.h" />

@@ -1,5 +1,6 @@
 #include "graphics/MeshRenderer.h"
 #include "core/Logger.h"
+#include "graphics/DirectionalLight.h"
 #include "graphics/Mesh.h"
 #include "graphics/MeshInstance.h"
 #include "graphics/Vertex.h"
@@ -30,12 +31,17 @@ bool MeshRenderer::Initialize(ID3D12Device *device, IDxcBlob *vertexShader,
 
 void MeshRenderer::Draw(ID3D12GraphicsCommandList *commandList,
                         const MeshInstance &instance,
+                        const DirectionalLight &light,
                         D3D12_GPU_DESCRIPTOR_HANDLE textureSrv) {
 	const Mesh *mesh = instance.GetMesh();
-	const auto constantBufferAddress = instance.GetConstantBufferAddress();
+
+	const auto objectBufferAddress = instance.GetConstantBufferAddress();
+
+	const auto lightBufferAddress = light.GetConstantBufferAddress();
 
 	if (!commandList || !rootSignature_ || !pipelineState_ || !mesh ||
-	    constantBufferAddress == 0 || textureSrv.ptr == 0) {
+	    objectBufferAddress == 0 || lightBufferAddress == 0 ||
+	    textureSrv.ptr == 0) {
 		Logger::Error("MeshRenderer::Draw: 引数が無効、または未初期化です。");
 		return;
 	}
@@ -43,11 +49,14 @@ void MeshRenderer::Draw(ID3D12GraphicsCommandList *commandList,
 	commandList->SetGraphicsRootSignature(rootSignature_.Get());
 	commandList->SetPipelineState(pipelineState_.Get());
 
-	// 物体ごとの変換行列をVSのb0へ渡す
-	commandList->SetGraphicsRootConstantBufferView(0, constantBufferAddress);
+	// VSのb0：物体ごとの変換行列
+	commandList->SetGraphicsRootConstantBufferView(0, objectBufferAddress);
 
-	// テクスチャをPSのt0へ渡す
+	// PSのt0：テクスチャ
 	commandList->SetGraphicsRootDescriptorTable(1, textureSrv);
+
+	// PSのb1：平行光源
+	commandList->SetGraphicsRootConstantBufferView(2, lightBufferAddress);
 
 	mesh->Draw(commandList);
 }
@@ -67,7 +76,7 @@ bool MeshRenderer::CreateRootSignature(ID3D12Device *device) {
 	range.OffsetInDescriptorsFromTableStart =
 	    D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	D3D12_ROOT_PARAMETER parameters[2]{};
+	D3D12_ROOT_PARAMETER parameters[3]{};
 
 	// ルートパラメーター0：物体ごとの変換行列
 	parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
@@ -80,6 +89,12 @@ bool MeshRenderer::CreateRootSignature(ID3D12Device *device) {
 	parameters[1].DescriptorTable.NumDescriptorRanges = 1;
 	parameters[1].DescriptorTable.pDescriptorRanges = &range;
 	parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+	// ルートパラメーター2：PSのb1へ平行光源を渡す
+	parameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	parameters[2].Descriptor.ShaderRegister = 1;
+	parameters[2].Descriptor.RegisterSpace = 0;
+	parameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
 	// PSのs0で使用する固定サンプラー
 	D3D12_STATIC_SAMPLER_DESC sampler{};
@@ -152,9 +167,8 @@ bool MeshRenderer::CreatePipelineState(ID3D12Device *device,
 
 	desc.PS = {pixelShader->GetBufferPointer(), pixelShader->GetBufferSize()};
 
-	// 面を塗りつぶす。現段階では裏面も描画する
 	desc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
-	desc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+	desc.RasterizerState.CullMode = D3D12_CULL_MODE_BACK;
 	desc.RasterizerState.DepthClipEnable = TRUE;
 
 	// 色の混合を無効にする
