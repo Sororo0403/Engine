@@ -4,29 +4,22 @@
 #include "graphics/D3D12Graphics.h"
 #include "graphics/DirectionalLight.h"
 #include "graphics/Material.h"
-#include "graphics/Mesh.h"
 #include "graphics/MeshInstance.h"
 #include "graphics/MeshRenderer.h"
+#include "graphics/Model.h"
 #include "graphics/ModelData.h"
 #include "graphics/ModelLoader.h"
 #include "graphics/ShaderCompiler.h"
-#include "graphics/Texture.h"
 #include "graphics/Transform.h"
-#include "graphics/Vertex.h"
 #include "input/InputSystem.h"
 #include "platform/windows/PathUtils.h"
 #include "platform/windows/StringConversion.h"
 #include "platform/windows/WinApp.h"
 #include "platform/windows/WindowsInputBackend.h"
 
-#include <directxtk12/DescriptorHeap.h>
-#include <directxtk12/DirectXHelpers.h>
-
 #include <Windows.h>
-#include <array>
 #include <cmath>
-#include <cstdint>
-#include <exception>
+#include <cstddef>
 #include <format>
 #include <memory>
 #include <objbase.h>
@@ -42,6 +35,7 @@ namespace {
 int RunEngine(HINSTANCE hInstance) {
 	constexpr int windowWidth = 1280;
 	constexpr int windowHeight = 720;
+	constexpr std::size_t objectCount = 2;
 
 	ShaderCompiler shaderCompiler;
 
@@ -74,131 +68,48 @@ int RunEngine(HINSTANCE hInstance) {
 		return -1;
 	}
 
-	ModelData modelData;
+	// 左右の物体で共有するモデル
+	Model model;
 
-	if (!ModelLoader::Load(L"resources/models/box.glb", modelData)) {
-		graphics.Finalize();
-		app.Finalize();
-		return -1;
-	}
+	{
+		// GPUリソースの作成が終わったら、CPU側の読み込み結果は破棄する
+		ModelData modelData;
 
-	// 各メッシュに対応するGPUバッファを作る
-	std::vector<Mesh> meshes(modelData.meshes.size());
-
-	for (std::size_t i = 0; i < meshes.size(); ++i) {
-		const MeshData &meshData = modelData.meshes[i].mesh;
-
-		if (!meshes[i].Initialize(graphics.GetDevice(), meshData.vertices,
-		                          meshData.indices)) {
+		if (!ModelLoader::Load(L"resources/models/box.glb", modelData) ||
+		    !model.Initialize(graphics.GetDevice(), graphics.GetCommandQueue(),
+		                      modelData)) {
 			graphics.Finalize();
+			model.Finalize();
 			app.Finalize();
 			return -1;
 		}
 	}
 
-	const std::size_t materialCount = modelData.materials.size();
-
-	// 0番は画像なし用の白、それ以降は各材質の画像
-	std::vector<Texture> textures(materialCount + 1);
-
-	const std::array<std::uint8_t, 4> white{255, 255, 255, 255};
-
-	if (!textures[0].CreateFromRGBA(graphics.GetDevice(),
-	                                graphics.GetCommandQueue(), 1, 1, white)) {
-		graphics.Finalize();
-		app.Finalize();
-		return -1;
-	}
-
-	for (std::size_t i = 0; i < materialCount; ++i) {
-		const ModelTextureData &image = modelData.materials[i].baseColorTexture;
-
-		Texture &texture = textures[i + 1];
-		bool loaded = false;
-
-		switch (image.source) {
-		case ModelTextureSource::NONE:
-			continue;
-
-		case ModelTextureSource::FILE:
-			loaded = texture.Load(graphics.GetDevice(),
-			                      graphics.GetCommandQueue(), image.filePath);
-			break;
-
-		case ModelTextureSource::ENCODED:
-			loaded = texture.LoadFromMemory(
-			    graphics.GetDevice(), graphics.GetCommandQueue(), image.bytes);
-			break;
-
-		case ModelTextureSource::RGBA8:
-			loaded = texture.CreateFromRGBA(
-			    graphics.GetDevice(), graphics.GetCommandQueue(), image.width,
-			    image.height, image.bytes);
-			break;
-		}
-
-		if (!loaded) {
-			Logger::Error(
-			    std::format("材質{}のテクスチャを読み込めませんでした。", i));
-
-			graphics.Finalize();
-			app.Finalize();
-			return -1;
-		}
-	}
-
-	std::unique_ptr<DirectX::DescriptorHeap> srvHeap;
-
-	try {
-		// 材質ごとにSRVを1つ用意する
-		srvHeap = std::make_unique<DirectX::DescriptorHeap>(
-		    graphics.GetDevice(), materialCount);
-
-		for (std::size_t i = 0; i < materialCount; ++i) {
-			ID3D12Resource *resource = textures[i + 1].GetResource();
-
-			if (!resource) {
-				resource = textures[0].GetResource();
-			}
-
-			DirectX::CreateShaderResourceView(graphics.GetDevice(), resource,
-			                                  srvHeap->GetCpuHandle(i));
-		}
-	} catch (const std::exception &error) {
-		Logger::Error(
-		    std::format("モデル用SRVの作成に失敗しました: {}", error.what()));
-
-		graphics.Finalize();
-		app.Finalize();
-		return -1;
-	}
-
-	Logger::Info("モデル用のテクスチャとSRVを作成しました。");
-
-	// 全物体で共有する描画設定
 	MeshRenderer renderer;
 
 	if (!renderer.Initialize(graphics.GetDevice(), vertexShader.Get(),
 	                         pixelShader.Get())) {
 		graphics.Finalize();
+		renderer.Finalize();
+		model.Finalize();
 		app.Finalize();
 		return -1;
 	}
 
-	constexpr std::size_t objectCount = 2;
+	const std::size_t meshCount = model.GetMeshCount();
+	const std::size_t materialCount = model.GetMaterialCount();
 
+	// 画像は共有し、材質の定数バッファは物体ごとに持つ
 	std::vector<Material> materials(objectCount * materialCount);
 	std::vector<MaterialData> materialData(materials.size());
 
 	for (std::size_t i = 0; i < materials.size(); ++i) {
 		const std::size_t modelMaterialIndex = i % materialCount;
 
-		materialData[i].baseColor =
-		    modelData.materials[modelMaterialIndex].baseColor;
+		materialData[i] = model.GetDefaultMaterialData(modelMaterialIndex);
 
-		if (!materials[i].Initialize(
-		        graphics.GetDevice(),
-		        srvHeap->GetGpuHandle(modelMaterialIndex)) ||
+		if (!materials[i].Initialize(graphics.GetDevice(),
+		                             model.GetTextureSrv(modelMaterialIndex)) ||
 		    !materials[i].Update(materialData[i])) {
 			graphics.Finalize();
 
@@ -207,24 +118,27 @@ int RunEngine(HINSTANCE hInstance) {
 			}
 
 			renderer.Finalize();
+			model.Finalize();
 			app.Finalize();
 			return -1;
 		}
 	}
 
-	std::vector<MeshInstance> instances(meshes.size() * objectCount);
+	// 左右それぞれに、全メッシュの描画インスタンスを作る
+	std::vector<MeshInstance> instances(objectCount * meshCount);
 
 	for (std::size_t i = 0; i < instances.size(); ++i) {
-		const std::size_t objectIndex = i / meshes.size();
-		const std::size_t meshIndex = i % meshes.size();
+		const std::size_t objectIndex = i / meshCount;
+		const std::size_t meshIndex = i % meshCount;
 
 		const std::size_t modelMaterialIndex =
-		    modelData.meshes[meshIndex].materialIndex;
+		    model.GetMeshMaterialIndex(meshIndex);
 
 		const std::size_t materialIndex =
 		    objectIndex * materialCount + modelMaterialIndex;
 
-		if (!instances[i].Initialize(graphics.GetDevice(), meshes[meshIndex],
+		if (!instances[i].Initialize(graphics.GetDevice(),
+		                             model.GetMesh(meshIndex),
 		                             materials[materialIndex])) {
 			graphics.Finalize();
 
@@ -237,6 +151,7 @@ int RunEngine(HINSTANCE hInstance) {
 			}
 
 			renderer.Finalize();
+			model.Finalize();
 			app.Finalize();
 			return -1;
 		}
@@ -264,6 +179,7 @@ int RunEngine(HINSTANCE hInstance) {
 		}
 
 		renderer.Finalize();
+		model.Finalize();
 		app.Finalize();
 		return -1;
 	}
@@ -283,6 +199,7 @@ int RunEngine(HINSTANCE hInstance) {
 		}
 
 		renderer.Finalize();
+		model.Finalize();
 		app.Finalize();
 		return -1;
 	}
@@ -372,7 +289,7 @@ int RunEngine(HINSTANCE hInstance) {
 		if (keyboard.IsDown(Key::D)) {
 			moveX += 1.0f;
 		}
-		// カメラを移動する
+
 		const float length = std::sqrt(moveX * moveX + moveZ * moveZ);
 
 		if (length > 0.0f) {
@@ -394,9 +311,9 @@ int RunEngine(HINSTANCE hInstance) {
 			break;
 		}
 
-		// カメラの更新後に、各メッシュの変換行列を更新する
+		// 同じ物体を構成するメッシュには、同じ回転を適用する
 		for (std::size_t i = 0; i < instances.size(); ++i) {
-			const std::size_t objectIndex = i / meshes.size();
+			const std::size_t objectIndex = i / meshCount;
 
 			Transform transform = instances[i].GetTransform();
 
@@ -429,7 +346,8 @@ int RunEngine(HINSTANCE hInstance) {
 
 		auto *commandList = graphics.GetCommandList();
 
-		ID3D12DescriptorHeap *heaps[] = {srvHeap->Heap()};
+		ID3D12DescriptorHeap *heaps[] = {model.GetDescriptorHeap()};
+
 		commandList->SetDescriptorHeaps(1, heaps);
 
 		for (const auto &instance : instances) {
@@ -444,7 +362,7 @@ int RunEngine(HINSTANCE hInstance) {
 
 	input.Finalize();
 
-	// GPUの利用が終わってから各物体のリソースを解放する
+	// GPUの利用完了を待ってから、参照する側から順に解放する
 	graphics.Finalize();
 
 	for (auto &instance : instances) {
@@ -457,14 +375,7 @@ int RunEngine(HINSTANCE hInstance) {
 
 	light.Finalize();
 	renderer.Finalize();
-	for (auto &mesh : meshes) {
-		mesh.Finalize();
-	}
-	srvHeap.reset();
-	for (auto &texture : textures) {
-		texture.Finalize();
-	}
-
+	model.Finalize();
 	app.Finalize();
 
 	return exitCode;
@@ -498,7 +409,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int) {
 		return -1;
 	}
 
-	// RunEngine内の全オブジェクトが破棄されるまで維持する
+	// RunEngine内の全オブジェクトが破棄されるまでCOMを維持する
 	const int exitCode = RunEngine(hInstance);
 
 	CoUninitialize();

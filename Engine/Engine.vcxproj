@@ -12,6 +12,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\graphics\Model.cpp" />
     <ClCompile Include="src\graphics\ModelLoader.cpp" />
     <ClCompile Include="src\graphics\Material.cpp" />
     <ClCompile Include="src\graphics\DirectionalLight.cpp" />
@@ -66,6 +67,7 @@
     <ClInclude Include="include\graphics\MeshData.h" />
     <ClInclude Include="include\graphics\ModelLoader.h" />
     <ClInclude Include="include\graphics\ModelData.h" />
+    <ClInclude Include="include\graphics\Model.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
