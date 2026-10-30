@@ -190,6 +190,10 @@ bool MeshRenderer::CreatePipelineState(ID3D12Device *device,
 
 	    {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0,
 	     static_cast<UINT>(offsetof(Vertex, texcoord)),
+	     D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+
+	    {"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,
+	     static_cast<UINT>(offsetof(Vertex, normal)),
 	     D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}};
 
 	desc.InputLayout = {inputElements,
