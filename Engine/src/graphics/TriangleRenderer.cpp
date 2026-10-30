@@ -268,11 +268,17 @@ bool TriangleRenderer::CreatePipelineState(ID3D12Device *device,
 
 bool TriangleRenderer::CreateVertexBuffer(ID3D12Device *device) {
 	const Vertex vertices[] = {
-	    {{0.0f, 0.5f, 0.0f}, {1.0f, 0.0f, 0.0f, 1.0f}, {0.5f, 0.0f}},
+	    // 0：左上
+	    {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}},
 
-	    {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+	    // 1：右上
+	    {{0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}},
 
-	    {{-0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}};
+	    // 2：右下
+	    {{0.5f, -0.5f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
+
+	    // 3：左下
+	    {{-0.5f, -0.5f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}};
 
 	// CPUから書き込めるメモリを使う
 	D3D12_HEAP_PROPERTIES heapProperties{};
@@ -384,8 +390,7 @@ bool TriangleRenderer::CreateConstantBuffer(ID3D12Device *device) {
 }
 
 bool TriangleRenderer::CreateIndexBuffer(ID3D12Device *device) {
-	// 頂点配列の0番、1番、2番を使って三角形を描く
-	const std::uint16_t indices[] = {0, 1, 2};
+	const std::uint16_t indices[] = {0, 1, 2, 0, 2, 3};
 
 	const HRESULT hr = DirectX::CreateUploadBuffer(
 	    device, indices, std::size(indices), indexBuffer_.GetAddressOf());
