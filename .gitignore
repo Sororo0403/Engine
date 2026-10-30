@@ -374,3 +374,6 @@ vcpkg_installed/
 # Debug UI source directories
 !/Engine/include/graphics/debug/
 !/Engine/src/graphics/debug/
+
+# ImGuiの個人設定
+imgui.ini

@@ -12,6 +12,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\scene\GameScene.cpp" />
+    <ClCompile Include="src\scene\SceneManager.cpp" />
     <ClCompile Include="src\graphics\debug\DebugUI.cpp" />
     <ClCompile Include="src\graphics\model\ModelInstance.cpp" />
     <ClCompile Include="src\graphics\model\Model.cpp" />
@@ -39,6 +41,7 @@
     <ClCompile Include="src\graphics\material\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\scene\GameScene.h" />
     <ClInclude Include="include\graphics\debug\DebugUI.h" />
     <ClInclude Include="include\graphics\DirectionalLight.h" />
     <ClInclude Include="include\input\Gamepad.h" />
@@ -72,6 +75,8 @@
     <ClInclude Include="include\graphics\model\ModelData.h" />
     <ClInclude Include="include\graphics\model\Model.h" />
     <ClInclude Include="include\graphics\model\ModelInstance.h" />
+    <ClInclude Include="include\scene\IScene.h" />
+    <ClInclude Include="include\scene\SceneManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

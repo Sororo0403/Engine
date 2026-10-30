@@ -1,42 +1,32 @@
 #include "core/FrameTimer.h"
 #include "core/Logger.h"
-#include "graphics/Camera.h"
-#include "graphics/render/D3D12Graphics.h"
 #include "graphics/debug/DebugUI.h"
-#include "graphics/DirectionalLight.h"
+#include "graphics/render/D3D12Graphics.h"
 #include "graphics/render/MeshRenderer.h"
-#include "graphics/model/Model.h"
-#include "graphics/model/ModelData.h"
-#include "graphics/model/ModelInstance.h"
-#include "graphics/model/ModelLoader.h"
 #include "graphics/render/ShaderCompiler.h"
-#include "graphics/Transform.h"
 #include "input/InputSystem.h"
 #include "platform/windows/PathUtils.h"
 #include "platform/windows/StringConversion.h"
 #include "platform/windows/WinApp.h"
 #include "platform/windows/WindowsInputBackend.h"
+#include "scene/GameScene.h"
+#include "scene/SceneManager.h"
 
 #include <Windows.h>
-#include <array>
-#include <cmath>
-#include <cstddef>
 #include <format>
-#include <imgui.h>
 #include <memory>
 #include <objbase.h>
 
 namespace {
 
 /// <summary>
-/// エンジンの初期化・メインループ・終了処理を実行する
+/// 共通機能の初期化・メインループ・終了処理を実行する
 /// </summary>
 /// <param name="hInstance">アプリケーションのインスタンスハンドル</param>
 /// <returns>0:正常終了 -1:異常終了</returns>
 int RunEngine(HINSTANCE hInstance) {
 	constexpr int windowWidth = 1280;
 	constexpr int windowHeight = 720;
-	constexpr std::size_t objectCount = 2;
 
 	ShaderCompiler shaderCompiler;
 
@@ -69,56 +59,14 @@ int RunEngine(HINSTANCE hInstance) {
 		return -1;
 	}
 
-	// 左右の物体が共有する形状・画像・SRV
-	Model model;
-
-	{
-		ModelData modelData;
-
-		if (!ModelLoader::Load(L"resources/models/box.glb", modelData) ||
-		    !model.Initialize(graphics.GetDevice(), graphics.GetCommandQueue(),
-		                      modelData)) {
-			graphics.Finalize();
-			model.Finalize();
-			app.Finalize();
-			return -1;
-		}
-	}
-
 	MeshRenderer renderer;
 
 	if (!renderer.Initialize(graphics.GetDevice(), vertexShader.Get(),
 	                         pixelShader.Get())) {
 		graphics.Finalize();
 		renderer.Finalize();
-		model.Finalize();
 		app.Finalize();
 		return -1;
-	}
-
-	// それぞれが独立した変形と材質を持つ
-	std::array<ModelInstance, objectCount> instances;
-
-	for (std::size_t i = 0; i < instances.size(); ++i) {
-		if (!instances[i].Initialize(graphics.GetDevice(), model)) {
-			graphics.Finalize();
-
-			for (auto &instance : instances) {
-				instance.Finalize();
-			}
-
-			renderer.Finalize();
-			model.Finalize();
-			app.Finalize();
-			return -1;
-		}
-
-		Transform transform{};
-		transform.scale = {0.45f, 0.45f, 0.45f};
-		transform.rotation = {0.3f, 0.4f, 0.0f};
-		transform.translation.x = (i == 0) ? -0.6f : 0.6f;
-
-		instances[i].SetTransform(transform);
 	}
 
 	InputSystem input;
@@ -126,29 +74,8 @@ int RunEngine(HINSTANCE hInstance) {
 	if (!input.Initialize(
 	        std::make_unique<WindowsInputBackend>(app.GetHwnd()))) {
 		graphics.Finalize();
-
-		for (auto &instance : instances) {
-			instance.Finalize();
-		}
-
-		renderer.Finalize();
-		model.Finalize();
-		app.Finalize();
-		return -1;
-	}
-
-	DirectionalLight light;
-
-	if (!light.Initialize(graphics.GetDevice())) {
 		input.Finalize();
-		graphics.Finalize();
-
-		for (auto &instance : instances) {
-			instance.Finalize();
-		}
-
 		renderer.Finalize();
-		model.Finalize();
 		app.Finalize();
 		return -1;
 	}
@@ -157,33 +84,33 @@ int RunEngine(HINSTANCE hInstance) {
 
 	if (!debugUI.Initialize(app.GetHwnd(), graphics.GetDevice(),
 	                        graphics.GetCommandQueue())) {
-		input.Finalize();
 		graphics.Finalize();
 		debugUI.Finalize();
-
-		for (auto &instance : instances) {
-			instance.Finalize();
-		}
-
-		light.Finalize();
+		input.Finalize();
 		renderer.Finalize();
-		model.Finalize();
 		app.Finalize();
 		return -1;
 	}
 
-	DirectionalLightData lightData{};
-	lightData.direction = {1.0f, -1.0f, 1.0f};
-	lightData.intensity = 0.8f;
-	lightData.color = {1.0f, 1.0f, 1.0f};
-	lightData.ambient = 0.2f;
+	// シーンより先に、シーンが参照する共通機能を初期化しておく
+	SceneManager sceneManager;
 
-	Camera camera;
+	if (!sceneManager.RequestChange(std::make_unique<GameScene>(
+	        graphics, renderer, input, app, debugUI)) ||
+	    !sceneManager.ApplyPendingChange()) {
+		graphics.Finalize();
+		sceneManager.Finalize();
+		debugUI.Finalize();
+		input.Finalize();
+		renderer.Finalize();
+		app.Finalize();
+		return -1;
+	}
+
+	// 最初のシーンの読み込みが終わってから計測を開始する
 	FrameTimer frameTimer;
 
-	const Keyboard &keyboard = input.GetKeyboard();
 	const Gamepad &gamepad = input.GetGamepad();
-
 	bool wasGamepadConnected = false;
 
 	const float clearColor[4] = {0.1f, 0.2f, 0.6f, 1.0f};
@@ -228,7 +155,7 @@ int RunEngine(HINSTANCE hInstance) {
 		const int width = app.GetWidth();
 		const int height = app.GetHeight();
 
-		// 最小化中は描画せず、次のメッセージを待つ
+		// 最小化中はシーンの更新・描画を止める
 		if (width <= 0 || height <= 0) {
 			WaitMessage();
 			frameTimer.Reset();
@@ -242,73 +169,23 @@ int RunEngine(HINSTANCE hInstance) {
 
 		const float deltaTime = frameTimer.Tick();
 
+		// 前フレームのEndFrameでGPUの完了を待っているため、
+		// UIや描画を開始する前のここでシーンを切り替える
+		if (!sceneManager.ApplyPendingChange()) {
+			exitCode = -1;
+			break;
+		}
+
+		// シーンの読み込み時間を、次フレームの経過時間から除く
+		frameTimer.Reset();
+
 		if (!debugUI.BeginFrame()) {
 			exitCode = -1;
 			break;
 		}
 
-		// ImGuiに用意されている操作例を表示する
-		ImGui::ShowDemoWindow();
-
-		float moveX = 0.0f;
-		float moveZ = 0.0f;
-
-		// UIがキーボード入力を使用している間は、カメラを動かさない
-		if (!debugUI.WantsKeyboard()) {
-			if (keyboard.IsDown(Key::W)) {
-				moveZ += 1.0f;
-			}
-			if (keyboard.IsDown(Key::S)) {
-				moveZ -= 1.0f;
-			}
-			if (keyboard.IsDown(Key::A)) {
-				moveX -= 1.0f;
-			}
-			if (keyboard.IsDown(Key::D)) {
-				moveX += 1.0f;
-			}
-		}
-
-		const float length = std::sqrt(moveX * moveX + moveZ * moveZ);
-
-		if (length > 0.0f) {
-			constexpr float moveSpeed = 2.0f;
-			const float distance = moveSpeed * deltaTime;
-
-			camera.Translate(
-			    {moveX / length * distance, 0.0f, moveZ / length * distance});
-		}
-
-		if (!camera.Update(width, height)) {
-			Logger::Error("カメラの更新に失敗しました。");
-			exitCode = -1;
-			break;
-		}
-
-		if (!light.Update(lightData)) {
-			exitCode = -1;
-			break;
-		}
-
-		bool instancesUpdated = true;
-
-		for (std::size_t i = 0; i < instances.size(); ++i) {
-			Transform transform = instances[i].GetTransform();
-
-			const float rotationSpeed = (i == 0) ? 1.0f : -0.7f;
-
-			transform.rotation.y += rotationSpeed * deltaTime;
-
-			instances[i].SetTransform(transform);
-
-			// 全メッシュの変換行列と、全材質をまとめて更新する
-			if (!instances[i].Update(camera)) {
-				instancesUpdated = false;
-				break;
-			}
-		}
-
-		if (!instancesUpdated) {
+		// GameScene内でUIを構築し、物体・カメラ・ライトを更新する
+		if (!sceneManager.Update(deltaTime)) {
 			exitCode = -1;
 			break;
 		}
@@ -318,39 +195,29 @@ int RunEngine(HINSTANCE hInstance) {
 			break;
 		}
 
-		auto *commandList = graphics.GetCommandList();
+		sceneManager.Draw();
 
-		// 各物体がSRVヒープの設定と全メッシュの描画を行う
-		for (const auto &instance : instances) {
-			instance.Draw(commandList, renderer, light);
-		}
-
-		if (!debugUI.Render(commandList)) {
+		// シーンの描画後に、UIを重ねる
+		if (!debugUI.Render(graphics.GetCommandList())) {
 			exitCode = -1;
 			break;
 		}
 
+		// 描画を実行し、GPUの完了まで待機する
 		if (!graphics.EndFrame()) {
 			exitCode = -1;
 			break;
 		}
 	}
 
-	input.Finalize();
-
-	// GPUの利用完了を待つ
+	// GPUの利用完了を待ってから、シーンを解放する
 	graphics.Finalize();
 
-	// UIのGPUリソースとコンテキストを解放する
+	// シーンが参照している共通機能は、その後に終了する
+	sceneManager.Finalize();
 	debugUI.Finalize();
-
-	for (auto &instance : instances) {
-		instance.Finalize();
-	}
-
-	light.Finalize();
+	input.Finalize();
 	renderer.Finalize();
-	model.Finalize();
 	app.Finalize();
 
 	return exitCode;
@@ -384,7 +251,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int) {
 		return -1;
 	}
 
-	// RunEngine内の全オブジェクトが破棄されるまでCOMを維持する
 	const int exitCode = RunEngine(hInstance);
 
 	CoUninitialize();
