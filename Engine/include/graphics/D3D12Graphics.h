@@ -127,6 +127,14 @@ class D3D12Graphics {
 	/// <param name="height">描画領域の高さ</param>
 	void UpdateViewport(int width, int height);
 
+	/// <summary>
+	/// 描画領域と同じサイズの深度バッファとDSVを作成する
+	/// </summary>
+	/// <param name="width">描画領域の幅（ピクセル）</param>
+	/// <param name="height">描画領域の高さ（ピクセル）</param>
+	/// <returns>true:成功 false:作成失敗</returns>
+	bool CreateDepthBuffer(int width, int height);
+
   private:
 	Microsoft::WRL::ComPtr<IDXGIFactory6> factory_;
 	Microsoft::WRL::ComPtr<ID3D12Device> device_;
@@ -146,4 +154,7 @@ class D3D12Graphics {
 	Microsoft::WRL::ComPtr<ID3D12Fence> fence_;
 	UINT64 fenceValue_ = 0;
 	HANDLE fenceEvent_ = nullptr;
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> depthBuffer_;
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvHeap_;
 };

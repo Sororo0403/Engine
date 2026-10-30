@@ -114,9 +114,9 @@ int RunEngine(HINSTANCE hInstance) {
 	Logger::Info("メインループを開始しました。");
 
 	Transform transform{};
-	transform.scale = {0.7f, 0.7f, 1.0f};
-	transform.rotation.z = 0.5f;
-	transform.translation.x = 0.2f;
+	transform.scale = {0.7f, 0.7f, 0.7f};
+	transform.rotation = {0.3f, 0.4f, 0.0f};
+	transform.translation = {0.0f, 0.0f, 0.0f};
 
 	triangle.SetTransform(transform);
 
@@ -217,9 +217,9 @@ int RunEngine(HINSTANCE hInstance) {
 			break;
 		}
 
-		// 1秒あたり1ラジアン回転する
-		constexpr float rotationSpeed = 1.0f;
-		transform.rotation.z += rotationSpeed * deltaTime;
+		// X軸・Y軸で回転させて、各面を確認する
+		transform.rotation.x += 0.6f * deltaTime;
+		transform.rotation.y += 1.0f * deltaTime;
 
 		triangle.SetTransform(transform);
 		triangle.Update(camera);

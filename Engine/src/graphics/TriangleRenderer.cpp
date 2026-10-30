@@ -222,11 +222,13 @@ bool TriangleRenderer::CreatePipelineState(ID3D12Device *device,
 		target.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 	}
 
-	// 今回は奥行き判定とステンシルを使わない
-	desc.DepthStencilState.DepthEnable = FALSE;
-	desc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
-	desc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+	// 保存されている深度より手前なら描画し、深度も更新する
+	desc.DepthStencilState.DepthEnable = TRUE;
+	desc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+	desc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
 	desc.DepthStencilState.StencilEnable = FALSE;
+
+	desc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 
 	const D3D12_INPUT_ELEMENT_DESC inputElements[] = {
 	    {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,
@@ -267,18 +269,43 @@ bool TriangleRenderer::CreatePipelineState(ID3D12Device *device,
 }
 
 bool TriangleRenderer::CreateVertexBuffer(ID3D12Device *device) {
-	const Vertex vertices[] = {
-	    // 0：左上
-	    {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}},
+	const DirectX::XMFLOAT4 white{1.0f, 1.0f, 1.0f, 1.0f};
 
-	    // 1：右上
-	    {{0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}},
+	const Vertex vertices[] = {// 手前の面（Zが負）
+	                           {{-0.5f, 0.5f, -0.5f}, white, {0.0f, 0.0f}},
+	                           {{0.5f, 0.5f, -0.5f}, white, {1.0f, 0.0f}},
+	                           {{0.5f, -0.5f, -0.5f}, white, {1.0f, 1.0f}},
+	                           {{-0.5f, -0.5f, -0.5f}, white, {0.0f, 1.0f}},
 
-	    // 2：右下
-	    {{0.5f, -0.5f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
+	                           // 奥の面（Zが正）
+	                           {{0.5f, 0.5f, 0.5f}, white, {0.0f, 0.0f}},
+	                           {{-0.5f, 0.5f, 0.5f}, white, {1.0f, 0.0f}},
+	                           {{-0.5f, -0.5f, 0.5f}, white, {1.0f, 1.0f}},
+	                           {{0.5f, -0.5f, 0.5f}, white, {0.0f, 1.0f}},
 
-	    // 3：左下
-	    {{-0.5f, -0.5f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}};
+	                           // 左の面
+	                           {{-0.5f, 0.5f, 0.5f}, white, {0.0f, 0.0f}},
+	                           {{-0.5f, 0.5f, -0.5f}, white, {1.0f, 0.0f}},
+	                           {{-0.5f, -0.5f, -0.5f}, white, {1.0f, 1.0f}},
+	                           {{-0.5f, -0.5f, 0.5f}, white, {0.0f, 1.0f}},
+
+	                           // 右の面
+	                           {{0.5f, 0.5f, -0.5f}, white, {0.0f, 0.0f}},
+	                           {{0.5f, 0.5f, 0.5f}, white, {1.0f, 0.0f}},
+	                           {{0.5f, -0.5f, 0.5f}, white, {1.0f, 1.0f}},
+	                           {{0.5f, -0.5f, -0.5f}, white, {0.0f, 1.0f}},
+
+	                           // 上の面
+	                           {{-0.5f, 0.5f, 0.5f}, white, {0.0f, 0.0f}},
+	                           {{0.5f, 0.5f, 0.5f}, white, {1.0f, 0.0f}},
+	                           {{0.5f, 0.5f, -0.5f}, white, {1.0f, 1.0f}},
+	                           {{-0.5f, 0.5f, -0.5f}, white, {0.0f, 1.0f}},
+
+	                           // 下の面
+	                           {{-0.5f, -0.5f, -0.5f}, white, {0.0f, 0.0f}},
+	                           {{0.5f, -0.5f, -0.5f}, white, {1.0f, 0.0f}},
+	                           {{0.5f, -0.5f, 0.5f}, white, {1.0f, 1.0f}},
+	                           {{-0.5f, -0.5f, 0.5f}, white, {0.0f, 1.0f}}};
 
 	// CPUから書き込めるメモリを使う
 	D3D12_HEAP_PROPERTIES heapProperties{};
@@ -390,7 +417,23 @@ bool TriangleRenderer::CreateConstantBuffer(ID3D12Device *device) {
 }
 
 bool TriangleRenderer::CreateIndexBuffer(ID3D12Device *device) {
-	const std::uint16_t indices[] = {0, 1, 2, 0, 2, 3};
+	const std::uint16_t indices[] = {// 手前
+	                                 0, 1, 2, 0, 2, 3,
+
+	                                 // 奥
+	                                 4, 5, 6, 4, 6, 7,
+
+	                                 // 左
+	                                 8, 9, 10, 8, 10, 11,
+
+	                                 // 右
+	                                 12, 13, 14, 12, 14, 15,
+
+	                                 // 上
+	                                 16, 17, 18, 16, 18, 19,
+
+	                                 // 下
+	                                 20, 21, 22, 20, 22, 23};
 
 	const HRESULT hr = DirectX::CreateUploadBuffer(
 	    device, indices, std::size(indices), indexBuffer_.GetAddressOf());

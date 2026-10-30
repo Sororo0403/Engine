@@ -19,7 +19,8 @@ bool D3D12Graphics::Initialize(HWND hwnd, int width, int height) {
 
 	if (!CreateFactory() || !CreateDevice() || !CreateCommandQueue() ||
 	    !CreateSwapChain(hwnd, width, height) || !CreateRenderTargets() ||
-	    !CreateCommandObjects() || !CreateSynchronizationObjects()) {
+	    !CreateDepthBuffer(width, height) || !CreateCommandObjects() ||
+	    !CreateSynchronizationObjects()) {
 		Finalize();
 		return false;
 	}
@@ -74,7 +75,15 @@ bool D3D12Graphics::BeginFrame(const float (&clearColor)[4]) {
 	commandList_->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
 
 	// 描画先を設定する
-	commandList_->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
+	const D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle =
+	    dsvHeap_->GetCPUDescriptorHandleForHeapStart();
+
+	// 前フレームの奥行きを消す
+	commandList_->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f,
+	                                    0, 0, nullptr);
+
+	// 色の描画先と、深度の書き込み先を設定する
+	commandList_->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
 
 	commandList_->RSSetViewports(1, &viewport_);
 	commandList_->RSSetScissorRects(1, &scissor_);
@@ -144,6 +153,9 @@ bool D3D12Graphics::Resize(int width, int height) {
 	rtvHeap_.Reset();
 	rtvDescriptorSize_ = 0;
 
+	depthBuffer_.Reset();
+	dsvHeap_.Reset();
+
 	HRESULT hr = swapChain_->ResizeBuffers(
 	    kBufferCount, static_cast<UINT>(width), static_cast<UINT>(height),
 	    DXGI_FORMAT_UNKNOWN, 0);
@@ -155,8 +167,7 @@ bool D3D12Graphics::Resize(int width, int height) {
 		return false;
 	}
 
-	// 新しいバックバッファを取得してRTVを作り直す
-	if (!CreateRenderTargets()) {
+	if (!CreateRenderTargets() || !CreateDepthBuffer(width, height)) {
 		return false;
 	}
 
@@ -193,6 +204,9 @@ void D3D12Graphics::Finalize() {
 
 	rtvHeap_.Reset();
 	rtvDescriptorSize_ = 0;
+
+	depthBuffer_.Reset();
+	dsvHeap_.Reset();
 
 	swapChain_.Reset();
 	commandQueue_.Reset();
@@ -550,4 +564,68 @@ void D3D12Graphics::UpdateViewport(int width, int height) {
 	scissor_ = {};
 	scissor_.right = static_cast<LONG>(width);
 	scissor_.bottom = static_cast<LONG>(height);
+}
+
+bool D3D12Graphics::CreateDepthBuffer(int width, int height) {
+	// DSVを1個格納するヒープ
+	D3D12_DESCRIPTOR_HEAP_DESC heapDesc{};
+	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+	heapDesc.NumDescriptors = 1;
+
+	HRESULT hr = device_->CreateDescriptorHeap(
+	    &heapDesc, IID_PPV_ARGS(dsvHeap_.GetAddressOf()));
+
+	if (FAILED(hr)) {
+		Logger::Error(
+		    std::format("DSVヒープの作成に失敗しました。HRESULT=0x{:08X}",
+		                static_cast<unsigned long>(hr)));
+		return false;
+	}
+
+	// GPU側のメモリに作成する
+	D3D12_HEAP_PROPERTIES heapProperties{};
+	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
+	heapProperties.CreationNodeMask = 1;
+	heapProperties.VisibleNodeMask = 1;
+
+	D3D12_RESOURCE_DESC desc{};
+	desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	desc.Width = static_cast<UINT64>(width);
+	desc.Height = static_cast<UINT>(height);
+	desc.DepthOrArraySize = 1;
+	desc.MipLevels = 1;
+	desc.Format = DXGI_FORMAT_D32_FLOAT;
+	desc.SampleDesc.Count = 1;
+	desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+	desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+
+	// 通常の深度判定では1が最も奥
+	D3D12_CLEAR_VALUE clearValue{};
+	clearValue.Format = DXGI_FORMAT_D32_FLOAT;
+	clearValue.DepthStencil.Depth = 1.0f;
+
+	hr = device_->CreateCommittedResource(
+	    &heapProperties, D3D12_HEAP_FLAG_NONE, &desc,
+	    D3D12_RESOURCE_STATE_DEPTH_WRITE, &clearValue,
+	    IID_PPV_ARGS(depthBuffer_.GetAddressOf()));
+
+	if (FAILED(hr)) {
+		Logger::Error(
+		    std::format("深度バッファの作成に失敗しました。HRESULT=0x{:08X}",
+		                static_cast<unsigned long>(hr)));
+		return false;
+	}
+
+	D3D12_DEPTH_STENCIL_VIEW_DESC viewDesc{};
+	viewDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	viewDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+
+	device_->CreateDepthStencilView(
+	    depthBuffer_.Get(), &viewDesc,
+	    dsvHeap_->GetCPUDescriptorHandleForHeapStart());
+
+	Logger::Info(
+	    std::format("深度バッファを作成しました。{}x{}", width, height));
+
+	return true;
 }
