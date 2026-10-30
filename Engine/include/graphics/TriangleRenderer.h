@@ -78,12 +78,23 @@ class TriangleRenderer {
 	/// <returns>true:成功 false:失敗</returns>
 	bool CreateConstantBuffer(ID3D12Device *device);
 
+	/// <summary>
+	/// 描画する頂点の番号を格納するバッファを作成する
+	/// </summary>
+	/// <param name="device">D3D12デバイス</param>
+	/// <returns>true:成功 false:失敗</returns>
+	bool CreateIndexBuffer(ID3D12Device *device);
+
   private:
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature_;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState_;
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexBuffer_;
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> indexBuffer_;
+	D3D12_INDEX_BUFFER_VIEW indexBufferView_{};
+	UINT indexCount_ = 0;
 
 	Transform transform_{};
 	Microsoft::WRL::ComPtr<ID3D12Resource> constantBuffer_;

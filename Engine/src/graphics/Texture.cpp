@@ -36,7 +36,6 @@ bool Texture::Load(ID3D12Device *device, ID3D12CommandQueue *commandQueue,
 		Microsoft::WRL::ComPtr<ID3D12Resource> texture;
 
 		// 画像を読み込み、GPUへの転送を記録する
-		// 最後のtrueは、対応する形式でのミップマップ生成を要求する
 		const HRESULT hr = DirectX::CreateWICTextureFromFile(
 		    device, upload, filePath.c_str(), texture.GetAddressOf(), true);
 

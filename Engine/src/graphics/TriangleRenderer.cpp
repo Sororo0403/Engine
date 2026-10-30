@@ -3,7 +3,10 @@
 #include "graphics/Camera.h"
 #include "graphics/Vertex.h"
 
+#include <directxtk12/BufferHelpers.h>
+
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <format>
 #include <iterator>
@@ -19,7 +22,8 @@ bool TriangleRenderer::Initialize(ID3D12Device *device, IDxcBlob *vertexShader,
 
 	if (!CreateRootSignature(device) ||
 	    !CreatePipelineState(device, vertexShader, pixelShader) ||
-	    !CreateVertexBuffer(device) || !CreateConstantBuffer(device)) {
+	    !CreateVertexBuffer(device) || !CreateIndexBuffer(device) ||
+	    !CreateConstantBuffer(device)) {
 		Finalize();
 		return false;
 	}
@@ -74,8 +78,9 @@ void TriangleRenderer::Draw(ID3D12GraphicsCommandList *commandList,
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
+	commandList->IASetIndexBuffer(&indexBufferView_);
 
-	commandList->DrawInstanced(3, 1, 0, 0);
+	commandList->DrawIndexedInstanced(indexCount_, 1, 0, 0, 0);
 }
 
 void TriangleRenderer::Finalize() {
@@ -88,6 +93,10 @@ void TriangleRenderer::Finalize() {
 
 	vertexBuffer_.Reset();
 	vertexBufferView_ = {};
+
+	indexBuffer_.Reset();
+	indexBufferView_ = {};
+	indexCount_ = 0;
 
 	pipelineState_.Reset();
 	rootSignature_.Reset();
@@ -371,5 +380,32 @@ bool TriangleRenderer::CreateConstantBuffer(ID3D12Device *device) {
 
 	Logger::Info("変換行列用の定数バッファを作成しました。");
 
+	return true;
+}
+
+bool TriangleRenderer::CreateIndexBuffer(ID3D12Device *device) {
+	// 頂点配列の0番、1番、2番を使って三角形を描く
+	const std::uint16_t indices[] = {0, 1, 2};
+
+	const HRESULT hr = DirectX::CreateUploadBuffer(
+	    device, indices, std::size(indices), indexBuffer_.GetAddressOf());
+
+	if (FAILED(hr)) {
+		Logger::Error(std::format(
+		    "インデックスバッファの作成に失敗しました。HRESULT=0x{:08X}",
+		    static_cast<unsigned long>(hr)));
+		return false;
+	}
+
+	indexBufferView_.BufferLocation = indexBuffer_->GetGPUVirtualAddress();
+
+	indexBufferView_.SizeInBytes = static_cast<UINT>(sizeof(indices));
+
+	// インデックス1個を16ビットの符号なし整数として読む
+	indexBufferView_.Format = DXGI_FORMAT_R16_UINT;
+
+	indexCount_ = static_cast<UINT>(std::size(indices));
+
+	Logger::Info("インデックスバッファを作成しました。");
 	return true;
 }
