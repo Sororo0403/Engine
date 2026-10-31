@@ -2,6 +2,8 @@
 #include "core/Logger.h"
 
 #include "graphics/render/D3D12Graphics.h"
+#include "platform/windows/PathUtils.h"
+#include "platform/windows/StringConversion.h"
 #include "platform/windows/WinApp.h"
 
 #include <directxtk12/DescriptorHeap.h>
@@ -15,9 +17,11 @@
 #include <cstddef>
 #include <d3d12.h>
 #include <exception>
+#include <filesystem>
 #include <format>
 #include <memory>
 #include <stdexcept>
+#include <string>
 #include <wrl/client.h>
 
 // この関数はバックエンドのヘッダー内で宣言が無効化されているため、
@@ -120,6 +124,9 @@ struct DebugUI::Impl {
 	bool win32Initialized_ = false;
 	bool rendererInitialized_ = false;
 	bool frameStarted_ = false;
+
+	// ImGuiが参照する保存先の文字列を、コンテキストの破棄まで保持する
+	std::string iniFilePath_;
 };
 
 DebugUI::DebugUI() : impl_(std::make_unique<Impl>()) {}
@@ -154,6 +161,29 @@ bool DebugUI::Initialize(const WinApp &app, D3D12Graphics &graphics,
 	}
 
 	try {
+		const auto executableDirectory = PathUtils::GetExecutableDirectory();
+
+		if (executableDirectory.empty()) {
+			Logger::Error("DebugUI::Initialize: 実行ファイルのフォルダを"
+			              "取得できませんでした。");
+			return false;
+		}
+
+		const auto configDirectory = executableDirectory / L"config";
+
+		// 保存先フォルダがなければ作成する
+		std::filesystem::create_directories(configDirectory);
+
+		const auto iniPath = configDirectory / L"imgui.ini";
+
+		impl_->iniFilePath_ = StringConversion::WideToUtf8(iniPath.wstring());
+
+		if (impl_->iniFilePath_.empty()) {
+			Logger::Error("DebugUI::Initialize: 設定ファイルのパスを"
+			              "UTF-8に変換できませんでした。");
+			return false;
+		}
+
 		impl_->graphics_ = &graphics;
 		impl_->hwnd_ = hwnd;
 
@@ -179,6 +209,10 @@ bool DebugUI::Initialize(const WinApp &app, D3D12Graphics &graphics,
 		ImGui::SetCurrentContext(impl_->context_);
 
 		ImGuiIO &io = ImGui::GetIO();
+
+		// UI配置設定を実行ファイルの隣のconfigフォルダへ保存する
+		io.IniFilename = impl_->iniFilePath_.c_str();
+
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
 		ImGui::StyleColorsDark();
@@ -474,7 +508,10 @@ void DebugUI::Finalize() {
 		impl_->context_ = nullptr;
 	}
 
+	impl_->iniFilePath_.clear();
+
 	impl_->srvHeap_.reset();
+
 	impl_->descriptorUsed_.fill(false);
 
 	impl_->commandQueue_.Reset();

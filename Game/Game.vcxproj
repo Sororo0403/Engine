@@ -132,6 +132,12 @@ exit /b 0</Command>
       <Message>
       </Message>
     </PostBuildEvent>
+    <Link>
+      <ProgramDatabaseFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)$(TargetName).pdb </ProgramDatabaseFile>
+    </Link>
+    <Link>
+      <ProgramDatabaseFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)$(TargetName).pdb </ProgramDatabaseFile>
+    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ProjectReference Include="..\Engine\Engine.vcxproj">
