@@ -1,9 +1,9 @@
 #pragma once
 
+#include "graphics/buffer/ConstantBuffer.h"
 #include "math/Transform.h"
 
 #include <d3d12.h>
-#include <wrl/client.h>
 
 class Camera;
 class Mesh;
@@ -76,6 +76,5 @@ class MeshInstance {
 	const Material *material_ = nullptr;
 
 	Transform transform_{};
-	Microsoft::WRL::ComPtr<ID3D12Resource> constantBuffer_;
-	TransformationConstants *mappedConstants_ = nullptr;
+	ConstantBuffer<TransformationConstants> constantBuffer_;
 };

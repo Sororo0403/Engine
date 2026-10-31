@@ -5,7 +5,6 @@
 #include "graphics/render/RenderTexture.h"
 #include "graphics/ui/DockLayout.h"
 #include "platform/windows/PathUtils.h"
-#include "platform/windows/StringConversion.h"
 #include "platform/windows/WinApp.h"
 
 #include <directxtk12/DescriptorHeap.h>
@@ -58,6 +57,19 @@ struct ImGuiSystem::Impl {
 	}
 
 	/// <summary>
+	/// 未使用のSRV番号を探す。使用中への変更は呼び出し元で行う
+	/// </summary>
+	/// <returns>未使用の番号。空きがない場合は例外</returns>
+	UINT FindFreeDescriptor() const {
+		for (UINT i = 0; i < kDescriptorCount; ++i) {
+			if (!descriptorUsed_[i]) {
+				return i;
+			}
+		}
+		throw std::runtime_error("ImGuiSystem: SRV descriptor heap is full.");
+	}
+
+	/// <summary>
 	/// ImGui用のSRVを割り当てる
 	/// </summary>
 	/// <param name="info">初期化情報。UserDataから内部実装を取得する</param>
@@ -68,17 +80,10 @@ struct ImGuiSystem::Impl {
 	                        D3D12_GPU_DESCRIPTOR_HANDLE *gpuHandle) {
 		auto *ui = static_cast<Impl *>(info->UserData);
 
-		for (UINT i = 0; i < kDescriptorCount; ++i) {
-			if (!ui->descriptorUsed_[i]) {
-				ui->descriptorUsed_[i] = true;
-
-				*cpuHandle = ui->srvHeap_->GetCpuHandle(i);
-				*gpuHandle = ui->srvHeap_->GetGpuHandle(i);
-				return;
-			}
-		}
-
-		throw std::runtime_error("ImGuiSystem: SRV descriptor heap is full.");
+		const UINT index = ui->FindFreeDescriptor();
+		ui->descriptorUsed_[index] = true;
+		*cpuHandle = ui->srvHeap_->GetCpuHandle(index);
+		*gpuHandle = ui->srvHeap_->GetGpuHandle(index);
 	}
 
 	/// <summary>
@@ -144,14 +149,12 @@ ImGuiSystem::~ImGuiSystem() {
 	Finalize();
 }
 
-bool ImGuiSystem::Initialize(const WinApp &app, D3D12Graphics &graphics,
-                             int framesInFlight) {
+bool ImGuiSystem::Initialize(const WinApp &app, D3D12Graphics &graphics) {
 	const HWND hwnd = app.GetHwnd();
 	auto *device = graphics.GetDevice();
 	auto *commandQueue = graphics.GetCommandQueue();
 
-	if (!hwnd || !IsWindow(hwnd) || !device || !commandQueue ||
-	    framesInFlight <= 0) {
+	if (!hwnd || !IsWindow(hwnd) || !device || !commandQueue) {
 		Logger::Error("ImGuiSystem::Initialize: 引数が無効です。");
 		return false;
 	}
@@ -185,7 +188,7 @@ bool ImGuiSystem::Initialize(const WinApp &app, D3D12Graphics &graphics,
 
 		const auto iniPath = configDirectory / L"imgui.ini";
 
-		impl_->iniFilePath_ = StringConversion::WideToUtf8(iniPath.wstring());
+		impl_->iniFilePath_ = PathUtils::ToUtf8(iniPath);
 
 		if (impl_->iniFilePath_.empty()) {
 			Logger::Error("ImGuiSystem::Initialize: 設定ファイルのパスを"
@@ -238,11 +241,11 @@ bool ImGuiSystem::Initialize(const WinApp &app, D3D12Graphics &graphics,
 		ImGui_ImplDX12_InitInfo info{};
 		info.Device = impl_->device_.Get();
 		info.CommandQueue = impl_->commandQueue_.Get();
-		info.NumFramesInFlight = framesInFlight;
+		info.NumFramesInFlight = static_cast<int>(graphics.GetBufferCount());
 
 		// 現在のD3D12Graphicsの描画形式に合わせる
-		info.RTVFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
-		info.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+		info.RTVFormat = graphics.GetRenderTargetFormat();
+		info.DSVFormat = graphics.GetDepthStencilFormat();
 
 		info.UserData = impl_.get();
 		info.SrvDescriptorHeap = impl_->srvHeap_->Heap();
@@ -608,36 +611,25 @@ void ImGuiSystem::Image(const RenderTexture &texture, float width,
 		    "ImGuiSystem::Image: 描画基盤が異なる、または画像が未作成です。");
 	}
 
-	for (UINT i = 0; i < Impl::kDescriptorCount; ++i) {
-		if (impl_->descriptorUsed_[i]) {
-			continue;
-		}
+	const UINT index = impl_->FindFreeDescriptor();
 
-		// 格納先の確保に成功してから、使用中として扱う
-		impl_->imageDescriptors_.push_back(i);
-		impl_->descriptorUsed_[i] = true;
+	// 配列の確保に成功してから、SRVを使用中にする
+	impl_->imageDescriptors_.push_back(index);
+	impl_->descriptorUsed_[index] = true;
 
-		D3D12_SHADER_RESOURCE_VIEW_DESC desc{};
-		desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-		desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-		desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-		desc.Texture2D.MipLevels = 1;
+	D3D12_SHADER_RESOURCE_VIEW_DESC desc{};
+	desc.Format = texture.GetColorResource()->GetDesc().Format;
+	desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	desc.Texture2D.MipLevels = 1;
 
-		// ImGuiが使用するヒープ内に画像のSRVを作成する
-		impl_->device_->CreateShaderResourceView(
-		    texture.GetColorResource(), &desc,
-		    impl_->srvHeap_->GetCpuHandle(i));
+	impl_->device_->CreateShaderResourceView(
+	    texture.GetColorResource(), &desc,
+	    impl_->srvHeap_->GetCpuHandle(index));
 
-		const auto gpuHandle = impl_->srvHeap_->GetGpuHandle(i);
-
-		ImGui::Image(ImTextureRef(static_cast<ImTextureID>(gpuHandle.ptr)),
-		             ImVec2(width, height));
-
-		return;
-	}
-
-	throw std::runtime_error(
-	    "ImGuiSystem::Image: SRV descriptor heap is full.");
+	const auto gpuHandle = impl_->srvHeap_->GetGpuHandle(index);
+	ImGui::Image(ImTextureRef(static_cast<ImTextureID>(gpuHandle.ptr)),
+	             ImVec2(width, height));
 }
 
 bool ImGuiSystem::HandleMessage(void *nativeWindow, std::uint32_t message,

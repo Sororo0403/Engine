@@ -12,7 +12,9 @@
 #include <string>
 
 bool MeshRenderer::Initialize(ID3D12Device *device, IDxcBlob *vertexShader,
-                              IDxcBlob *pixelShader) {
+                              IDxcBlob *pixelShader,
+                              DXGI_FORMAT renderTargetFormat,
+                              DXGI_FORMAT depthStencilFormat) {
 	if (!device || !vertexShader || !pixelShader || rootSignature_ ||
 	    pipelineState_) {
 		Logger::Error(
@@ -21,7 +23,8 @@ bool MeshRenderer::Initialize(ID3D12Device *device, IDxcBlob *vertexShader,
 	}
 
 	if (!CreateRootSignature(device) ||
-	    !CreatePipelineState(device, vertexShader, pixelShader)) {
+	    !CreatePipelineState(device, vertexShader, pixelShader,
+	                         renderTargetFormat, depthStencilFormat)) {
 		Finalize();
 		return false;
 	}
@@ -175,7 +178,9 @@ bool MeshRenderer::CreateRootSignature(ID3D12Device *device) {
 
 bool MeshRenderer::CreatePipelineState(ID3D12Device *device,
                                        IDxcBlob *vertexShader,
-                                       IDxcBlob *pixelShader) {
+                                       IDxcBlob *pixelShader,
+                                       DXGI_FORMAT renderTargetFormat,
+                                       DXGI_FORMAT depthStencilFormat) {
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC desc{};
 	desc.pRootSignature = rootSignature_.Get();
 
@@ -207,7 +212,7 @@ bool MeshRenderer::CreatePipelineState(ID3D12Device *device,
 	desc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
 	desc.DepthStencilState.StencilEnable = FALSE;
 
-	desc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+	desc.DSVFormat = depthStencilFormat;
 
 	const D3D12_INPUT_ELEMENT_DESC inputElements[] = {
 	    {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,
@@ -232,7 +237,7 @@ bool MeshRenderer::CreatePipelineState(ID3D12Device *device,
 	desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 
 	desc.NumRenderTargets = 1;
-	desc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+	desc.RTVFormats[0] = renderTargetFormat;
 	desc.SampleMask = 0xffffffffu;
 	desc.SampleDesc.Count = 1;
 

@@ -9,6 +9,8 @@
 #include "scene/Scene.h"
 #include "scene/SceneRenderer.h"
 
+#include <filesystem>
+
 struct EngineContext;
 
 class InputSystem;
@@ -53,6 +55,7 @@ class EditorScene final : public IScene {
 	/// </summary>
 	void Finalize() override;
 
+  private:
 	/// <summary>
 	/// シーンの保存・読み込み用UIを表示する
 	/// </summary>
@@ -65,6 +68,7 @@ class EditorScene final : public IScene {
 
 	// 描画側が参照するため、SceneRendererより先に宣言する
 	Scene scene_;
+	std::filesystem::path sceneFilePath_ = L"scenes/Main.scene.json";
 	SceneRenderer renderer_;
 
 	// 各パネルのタイトルと、初期配置の割合

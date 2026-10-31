@@ -93,6 +93,12 @@
     <Filter Include="src\graphics\ui">
       <UniqueIdentifier>{13ed71b3-1e2a-4f3d-a867-02c652be7b96}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\math">
+      <UniqueIdentifier>{db56d359-6110-4881-9bdd-5d920e5ae41e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\graphics\buffer">
+      <UniqueIdentifier>{3aa98116-2d67-4ee5-88e5-0506f3c6039c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\platform\windows\Window.cpp">
@@ -384,6 +390,29 @@
   <ItemGroup>
     <ClInclude Include="include\graphics\ui\DockLayout.h">
       <Filter>include\graphics\ui</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\math\MathUtils.cpp">
+      <Filter>src\math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\math\TransformUtils.cpp">
+      <Filter>src\math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\graphics\render\D3D12Helpers.cpp">
+      <Filter>src\graphics\render</Filter>
+    </ClCompile>
+    <ClInclude Include="include\math\MathUtils.h">
+      <Filter>include\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\math\TransformUtils.h">
+      <Filter>include\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\render\D3D12Helpers.h">
+      <Filter>include\graphics\render</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\buffer\ConstantBuffer.h">
+      <Filter>include\graphics\buffer</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

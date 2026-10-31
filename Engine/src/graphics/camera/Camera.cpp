@@ -1,5 +1,7 @@
 #include "graphics/camera/Camera.h"
 
+#include "math/MathUtils.h"
+
 #include <cmath>
 
 bool Camera::Update(int width, int height) {
@@ -43,13 +45,8 @@ void Camera::Translate(const DirectX::XMFLOAT3 &offset) {
 }
 
 bool Camera::SetPose(const CameraPose &pose) {
-	const auto isFinite = [](const DirectX::XMFLOAT3 &value) {
-		return std::isfinite(value.x) && std::isfinite(value.y) &&
-		       std::isfinite(value.z);
-	};
-
-	if (!isFinite(pose.position) || !isFinite(pose.target) ||
-	    !isFinite(pose.up)) {
+	if (!MathUtils::IsFinite(pose.position) ||
+	    !MathUtils::IsFinite(pose.target) || !MathUtils::IsFinite(pose.up)) {
 		return false;
 	}
 

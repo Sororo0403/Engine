@@ -70,20 +70,7 @@ ModelHandle ModelManager::Load(const std::filesystem::path &filePath) {
 
 	try {
 		// 相対パスは実行ファイルのフォルダを基準に解決する
-		std::filesystem::path resolvedPath = filePath;
-
-		if (resolvedPath.is_relative()) {
-			const auto executableDirectory =
-			    PathUtils::GetExecutableDirectory();
-
-			if (executableDirectory.empty()) {
-				Logger::Error("ModelManager::Load: 実行ファイルのフォルダを"
-				              "取得できませんでした。");
-				return {};
-			}
-
-			resolvedPath = executableDirectory / resolvedPath;
-		}
+		const auto resolvedPath = PathUtils::ResolveFromExecutable(filePath);
 
 		// 実在するファイルの正規化済み絶対パスをキャッシュのキーにする
 		const std::filesystem::path key =

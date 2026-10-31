@@ -2,6 +2,7 @@
 
 #include "core/Logger.h"
 #include "graphics/render/D3D12Graphics.h"
+#include "graphics/render/D3D12Helpers.h"
 
 #include <d3d12.h>
 #include <wrl/client.h>
@@ -56,7 +57,7 @@ struct RenderTexture::Impl {
 		desc.Height = static_cast<UINT>(height);
 		desc.DepthOrArraySize = 1;
 		desc.MipLevels = 1;
-		desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		desc.Format = graphics.GetRenderTargetFormat();
 		desc.SampleDesc.Count = 1;
 		desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
 		desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
@@ -79,7 +80,7 @@ struct RenderTexture::Impl {
 		    color.Get(), nullptr,
 		    rtvHeap->GetCPUDescriptorHandleForHeapStart());
 
-		desc.Format = DXGI_FORMAT_D32_FLOAT;
+		desc.Format = graphics.GetDepthStencilFormat();
 		desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 
 		D3D12_CLEAR_VALUE depthClear{};
@@ -94,7 +95,7 @@ struct RenderTexture::Impl {
 		}
 
 		D3D12_DEPTH_STENCIL_VIEW_DESC depthView{};
-		depthView.Format = DXGI_FORMAT_D32_FLOAT;
+		depthView.Format = graphics.GetDepthStencilFormat();
 		depthView.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 
 		device->CreateDepthStencilView(
@@ -166,14 +167,9 @@ bool RenderTexture::Begin(const float (&clearColor)[4]) {
 		return false;
 	}
 
-	D3D12_RESOURCE_BARRIER barrier{};
-	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	barrier.Transition.pResource = impl_->color.Get();
-	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-
-	commandList->ResourceBarrier(1, &barrier);
+	D3D12Helpers::TransitionResource(commandList, impl_->color.Get(),
+	                                 D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+	                                 D3D12_RESOURCE_STATE_RENDER_TARGET);
 
 	const auto rtv = impl_->rtvHeap->GetCPUDescriptorHandleForHeapStart();
 	const auto dsv = impl_->dsvHeap->GetCPUDescriptorHandleForHeapStart();
@@ -202,14 +198,9 @@ bool RenderTexture::Begin(const float (&clearColor)[4]) {
 void RenderTexture::End() {
 	auto *commandList = impl_->graphics.GetCommandList();
 
-	D3D12_RESOURCE_BARRIER barrier{};
-	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	barrier.Transition.pResource = impl_->color.Get();
-	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-
-	commandList->ResourceBarrier(1, &barrier);
+	D3D12Helpers::TransitionResource(
+	    commandList, impl_->color.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET,
+	    D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
 	impl_->graphics.BindBackBuffer();
 }

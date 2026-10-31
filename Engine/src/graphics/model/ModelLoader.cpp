@@ -1,5 +1,6 @@
 #include "graphics/model/ModelLoader.h"
 #include "core/Logger.h"
+#include "platform/windows/PathUtils.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/material.h>
@@ -22,10 +23,7 @@ bool ModelLoader::Load(const std::filesystem::path &filePath,
 	}
 
 	// Assimpへ渡すパスをUTF-8にする
-	const auto utf8Path = filePath.u8string();
-
-	const std::string path(reinterpret_cast<const char *>(utf8Path.data()),
-	                       utf8Path.size());
+	const std::string path = PathUtils::ToUtf8(filePath);
 
 	Assimp::Importer importer;
 
@@ -250,14 +248,11 @@ bool ModelLoader::LoadBaseColorTexture(const aiScene &scene,
 		}
 
 		// UTF-8の画像名からファイルパスを作る
-		const std::u8string utf8Name(name.begin(), name.end());
-
 		result.source = ModelTextureSource::FILE;
 
 		// 相対パスはモデルファイルのフォルダを基準にする
-		result.filePath =
-		    (modelPath.parent_path() / std::filesystem::path(utf8Name))
-		        .lexically_normal();
+		result.filePath = (modelPath.parent_path() / PathUtils::FromUtf8(name))
+		                      .lexically_normal();
 	}
 
 	textureData = std::move(result);

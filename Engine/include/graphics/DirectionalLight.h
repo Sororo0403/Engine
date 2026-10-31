@@ -1,9 +1,9 @@
 #pragma once
 
 #include "graphics/DirectionalLightData.h"
+#include "graphics/buffer/ConstantBuffer.h"
 
 #include <d3d12.h>
-#include <wrl/client.h>
 
 class DirectionalLight {
   public:
@@ -33,6 +33,5 @@ class DirectionalLight {
 	void Finalize();
 
   private:
-	Microsoft::WRL::ComPtr<ID3D12Resource> constantBuffer_;
-	DirectionalLightData *mappedData_ = nullptr;
+	ConstantBuffer<DirectionalLightData> constantBuffer_;
 };

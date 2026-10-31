@@ -1,6 +1,7 @@
 #include "panels/InspectorPanel.h"
 
 #include "graphics/ui/ImGuiSystem.h"
+#include "platform/windows/PathUtils.h"
 #include "scene/Scene.h"
 
 #include <DirectXMath.h>
@@ -57,10 +58,7 @@ void InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 			ui.Text("No model assigned.");
 		} else {
 			// パスをUTF-8へ変換して表示する
-			const auto path = object->modelPath.generic_u8string();
-
-			ui.Text(std::string_view(
-			    reinterpret_cast<const char *>(path.data()), path.size()));
+			ui.Text(PathUtils::ToUtf8(object->modelPath));
 		}
 	}
 

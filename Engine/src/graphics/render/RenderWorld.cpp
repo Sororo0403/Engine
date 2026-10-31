@@ -1,14 +1,13 @@
 #include "graphics/render/RenderWorld.h"
 #include "core/Logger.h"
-
 #include "graphics/DirectionalLight.h"
 #include "graphics/camera/Camera.h"
 #include "graphics/model/Model.h"
 #include "graphics/model/ModelInstance.h"
 #include "graphics/render/D3D12Graphics.h"
 #include "graphics/render/MeshRenderer.h"
+#include "math/MathUtils.h"
 
-#include <cmath>
 #include <cstdint>
 #include <exception>
 #include <format>
@@ -266,8 +265,7 @@ const DirectionalLightData &RenderWorld::GetLight() const {
 }
 
 void RenderWorld::MoveCamera(const DirectX::XMFLOAT3 &offset) {
-	if (!std::isfinite(offset.x) || !std::isfinite(offset.y) ||
-	    !std::isfinite(offset.z)) {
+	if (!MathUtils::IsFinite(offset)) {
 		throw std::invalid_argument(
 		    "RenderWorld::MoveCamera: 移動量が無効です。");
 	}

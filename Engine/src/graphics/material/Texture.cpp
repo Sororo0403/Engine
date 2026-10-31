@@ -1,6 +1,6 @@
 #include "graphics/material/Texture.h"
 #include "core/Logger.h"
-#include "platform/windows/StringConversion.h"
+#include "platform/windows/PathUtils.h"
 
 #include <directxtk12/ResourceUploadBatch.h>
 #include <directxtk12/WICTextureLoader.h>
@@ -26,8 +26,7 @@ bool Texture::Load(ID3D12Device *device, ID3D12CommandQueue *commandQueue,
 		return false;
 	}
 
-	const std::string pathText =
-	    StringConversion::WideToUtf8(filePath.wstring());
+	const std::string pathText = PathUtils::ToUtf8(filePath);
 
 	try {
 		DirectX::ResourceUploadBatch upload(device);

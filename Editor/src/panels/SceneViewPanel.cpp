@@ -1,11 +1,10 @@
 #include "panels/SceneViewPanel.h"
-
-#include "graphics/ui/ImGuiSystem.h"
 #include "graphics/render/RenderSystem.h"
 #include "graphics/render/RenderTexture.h"
+#include "graphics/ui/ImGuiSystem.h"
+#include "math/MathUtils.h"
 
 #include <algorithm>
-#include <cmath>
 
 SceneViewPanel::SceneViewPanel(RenderSystem &render) : render_(render) {}
 
@@ -24,8 +23,7 @@ bool SceneViewPanel::DrawUI(const ImGuiSystem &ui) {
 
 	const auto size = ui.GetContentSize();
 
-	if (!std::isfinite(size.x) || !std::isfinite(size.y) || size.x < 1.0f ||
-	    size.y < 1.0f) {
+	if (!MathUtils::IsFinite(size) || size.x < 1.0f || size.y < 1.0f) {
 		ui.EndWindow();
 		return true;
 	}

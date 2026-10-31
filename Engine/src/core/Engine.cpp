@@ -3,15 +3,14 @@
 #include "core/EngineContext.h"
 #include "core/FrameTimer.h"
 #include "core/Logger.h"
-#include "graphics/ui/ImGuiSystem.h"
 #include "graphics/model/ModelManager.h"
 #include "graphics/render/D3D12Graphics.h"
 #include "graphics/render/MeshRenderer.h"
 #include "graphics/render/RenderSystem.h"
 #include "graphics/render/ShaderCompiler.h"
+#include "graphics/ui/ImGuiSystem.h"
 #include "input/InputSystem.h"
 #include "platform/windows/PathUtils.h"
-#include "platform/windows/StringConversion.h"
 #include "platform/windows/WinApp.h"
 #include "platform/windows/WindowsInputBackend.h"
 #include "scene/SceneManager.h"
@@ -120,7 +119,9 @@ struct Engine::Impl {
 		graphicsInitialized_ = true;
 
 		if (!meshRenderer_.Initialize(graphics_.GetDevice(), vertexShader.Get(),
-		                              pixelShader.Get())) {
+		                              pixelShader.Get(),
+		                              graphics_.GetRenderTargetFormat(),
+		                              graphics_.GetDepthStencilFormat())) {
 			return false;
 		}
 
@@ -259,7 +260,7 @@ int Engine::Run(const EngineConfig &config, SceneFactory sceneFactory) {
 
 	const auto logPath = executableDirectory / L"logs" / L"Engine.log";
 
-	if (!Logger::Initialize(StringConversion::WideToUtf8(logPath.wstring()))) {
+	if (!Logger::Initialize(PathUtils::ToUtf8(logPath))) {
 		return -1;
 	}
 

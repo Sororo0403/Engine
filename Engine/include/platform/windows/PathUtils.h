@@ -1,6 +1,8 @@
 #pragma once
 
 #include <filesystem>
+#include <string>
+#include <string_view>
 
 namespace PathUtils {
 /// <summary>
@@ -14,4 +16,25 @@ std::filesystem::path GetExecutablePath();
 /// </summary>
 /// <returns>フォルダのパス。取得失敗時は空のパス</returns>
 std::filesystem::path GetExecutableDirectory();
+
+/// <summary>
+/// 実行ファイルのフォルダを基準にパスを解決する。ファイルの存在は確認しない
+/// </summary>
+/// <param name="path">絶対パス、またはドライブ名や先頭の区切り文字を持たない相対パス</param>
+/// <returns>正規化した絶対パス。引数が無効、または取得失敗時は例外</returns>
+std::filesystem::path ResolveFromExecutable(const std::filesystem::path &path);
+
+/// <summary>
+/// ファイルパスをUTF-8の文字列に変換する
+/// </summary>
+/// <param name="path">変換するパス。空のパスも使用できる</param>
+/// <returns>区切り文字にスラッシュを使うUTF-8文字列</returns>
+std::string ToUtf8(const std::filesystem::path &path);
+
+/// <summary>
+/// UTF-8の文字列をファイルパスに変換する
+/// </summary>
+/// <param name="text">UTF-8の文字列。空文字列も使用できる</param>
+/// <returns>変換したパス。UTF-8が無効な場合は例外</returns>
+std::filesystem::path FromUtf8(std::string_view text);
 } // namespace PathUtils

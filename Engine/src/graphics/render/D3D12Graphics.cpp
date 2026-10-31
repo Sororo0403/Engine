@@ -1,5 +1,6 @@
 #include "graphics/render/D3D12Graphics.h"
 #include "core/Logger.h"
+#include "graphics/render/D3D12Helpers.h"
 #include "platform/windows/StringConversion.h"
 
 #include <d3d12sdklayers.h>
@@ -57,14 +58,9 @@ bool D3D12Graphics::BeginFrame(const float (&clearColor)[4]) {
 	}
 
 	// バックバッファを表示用から描画用に切り替える
-	D3D12_RESOURCE_BARRIER barrier{};
-	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	barrier.Transition.pResource = backBuffers_[bufferIndex_].Get();
-	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-
-	commandList_->ResourceBarrier(1, &barrier);
+	D3D12Helpers::TransitionResource(
+	    commandList_.Get(), backBuffers_[bufferIndex_].Get(),
+	    D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
 	// 今回使うRTVを取得する
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle =
@@ -93,14 +89,9 @@ bool D3D12Graphics::BeginFrame(const float (&clearColor)[4]) {
 
 bool D3D12Graphics::EndFrame() {
 	// バックバッファを描画用から表示用に戻す
-	D3D12_RESOURCE_BARRIER barrier{};
-	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	barrier.Transition.pResource = backBuffers_[bufferIndex_].Get();
-	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-
-	commandList_->ResourceBarrier(1, &barrier);
+	D3D12Helpers::TransitionResource(
+	    commandList_.Get(), backBuffers_[bufferIndex_].Get(),
+	    D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 
 	// 記録を終了する
 	HRESULT hr = commandList_->Close();
@@ -333,7 +324,7 @@ bool D3D12Graphics::CreateSwapChain(HWND hwnd, int width, int height) {
 	DXGI_SWAP_CHAIN_DESC1 desc{};
 	desc.Width = static_cast<UINT>(width);
 	desc.Height = static_cast<UINT>(height);
-	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	desc.Format = GetRenderTargetFormat();
 	desc.SampleDesc.Count = 1;
 	desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	desc.BufferCount = kBufferCount;
@@ -606,14 +597,14 @@ bool D3D12Graphics::CreateDepthBuffer(int width, int height) {
 	desc.Height = static_cast<UINT>(height);
 	desc.DepthOrArraySize = 1;
 	desc.MipLevels = 1;
-	desc.Format = DXGI_FORMAT_D32_FLOAT;
+	desc.Format = GetDepthStencilFormat();
 	desc.SampleDesc.Count = 1;
 	desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
 	desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 
 	// 通常の深度判定では1が最も奥
 	D3D12_CLEAR_VALUE clearValue{};
-	clearValue.Format = DXGI_FORMAT_D32_FLOAT;
+	clearValue.Format = GetDepthStencilFormat();
 	clearValue.DepthStencil.Depth = 1.0f;
 
 	hr = device_->CreateCommittedResource(
@@ -629,7 +620,7 @@ bool D3D12Graphics::CreateDepthBuffer(int width, int height) {
 	}
 
 	D3D12_DEPTH_STENCIL_VIEW_DESC viewDesc{};
-	viewDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	viewDesc.Format = GetDepthStencilFormat();
 	viewDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 
 	device_->CreateDepthStencilView(
@@ -640,4 +631,14 @@ bool D3D12Graphics::CreateDepthBuffer(int width, int height) {
 	    std::format("深度バッファを作成しました。{}x{}", width, height));
 
 	return true;
+}
+
+UINT D3D12Graphics::GetBufferCount() const { return kBufferCount; }
+
+DXGI_FORMAT D3D12Graphics::GetRenderTargetFormat() const {
+	return kRenderTargetFormat;
+}
+
+DXGI_FORMAT D3D12Graphics::GetDepthStencilFormat() const {
+	return kDepthStencilFormat;
 }

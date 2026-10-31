@@ -30,10 +30,8 @@ class ImGuiSystem {
 	/// </summary>
 	/// <param name="app">UIを表示するアプリケーション</param>
 	/// <param name="graphics">初期化済みの描画基盤。このクラスより長く保持すること</param>
-	/// <param name="framesInFlight">描画バッファ数。GPU処理中のフレーム数以上にする</param>
 	/// <returns>true:成功 false:引数が無効、初期化済み、または作成失敗</returns>
-	bool Initialize(const WinApp &app, D3D12Graphics &graphics,
-	                int framesInFlight = 2);
+	bool Initialize(const WinApp &app, D3D12Graphics &graphics);
 
 	/// <summary>
 	/// UIのフレームを開始する。

@@ -4,6 +4,7 @@
 #include "core/Logger.h"
 #include "graphics/render/RenderTexture.h"
 #include "graphics/ui/ImGuiSystem.h"
+#include "platform/windows/PathUtils.h"
 #include "scene/SceneSerializer.h"
 
 #include <cmath>
@@ -101,14 +102,14 @@ void EditorScene::DrawSceneFileControls() {
 		return;
 	}
 
-	ui_.Text("scenes/Main.scene.json");
+	ui_.Text(PathUtils::ToUtf8(sceneFilePath_));
 
 	if (ui_.Button("Save Scene")) {
-		SceneSerializer::Save(scene_, L"scenes/Main.scene.json");
+		SceneSerializer::Save(scene_, sceneFilePath_);
 	}
 
 	if (ui_.Button("Load Scene")) {
-		if (SceneSerializer::Load(scene_, L"scenes/Main.scene.json")) {
+		if (SceneSerializer::Load(scene_, sceneFilePath_)) {
 			// 読み込み前に選択していた物体のIDを解除する
 			selectedObjectId_ = 0;
 		}

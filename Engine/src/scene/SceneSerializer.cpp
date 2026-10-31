@@ -1,12 +1,13 @@
 #include "scene/SceneSerializer.h"
 
 #include "core/Logger.h"
+#include "math/MathUtils.h"
+#include "math/TransformUtils.h"
 #include "platform/windows/PathUtils.h"
 #include "scene/Scene.h"
 
 #include <json.hpp>
 
-#include <cmath>
 #include <exception>
 #include <format>
 #include <fstream>
@@ -17,84 +18,6 @@
 
 namespace {
 using Json = nlohmann::json;
-
-/// <summary>
-/// 実行ファイルのフォルダを基準にファイルの絶対パスを求める
-/// </summary>
-/// <param name="filePath">絶対パスまたは相対パス</param>
-/// <returns>正規化した絶対パス</returns>
-std::filesystem::path ResolveFilePath(const std::filesystem::path &filePath) {
-	if (filePath.empty()) {
-		throw std::invalid_argument("ファイルのパスが空です。");
-	}
-
-	if (filePath.is_absolute()) {
-		return filePath.lexically_normal();
-	}
-
-	const auto directory = PathUtils::GetExecutableDirectory();
-
-	if (directory.empty()) {
-		throw std::runtime_error(
-		    "実行ファイルのフォルダを取得できませんでした。");
-	}
-
-	return (directory / filePath).lexically_normal();
-}
-
-/// <summary>
-/// ファイルパスをUTF-8の文字列に変換する
-/// </summary>
-/// <param name="path">変換するパス</param>
-/// <returns>区切り文字にスラッシュを使うUTF-8文字列</returns>
-std::string PathToUtf8(const std::filesystem::path &path) {
-	const auto text = path.generic_u8string();
-
-	return std::string(reinterpret_cast<const char *>(text.data()),
-	                   text.size());
-}
-
-/// <summary>
-/// UTF-8の文字列をファイルパスに変換する
-/// </summary>
-/// <param name="text">UTF-8の文字列</param>
-/// <returns>変換したパス</returns>
-std::filesystem::path PathFromUtf8(const std::string &text) {
-	std::u8string utf8;
-	utf8.reserve(text.size());
-
-	for (const unsigned char character : text) {
-		utf8.push_back(static_cast<char8_t>(character));
-	}
-
-	return std::filesystem::path(utf8);
-}
-
-/// <summary>
-/// 3成分がすべて有限の値か確認する
-/// </summary>
-/// <param name="value">確認する値</param>
-/// <returns>true:すべて有限 false:無限大または非数を含む</returns>
-bool IsFinite(const DirectX::XMFLOAT3 &value) {
-	return std::isfinite(value.x) && std::isfinite(value.y) &&
-	       std::isfinite(value.z);
-}
-
-/// <summary>
-/// 保存・読み込みする変形情報が有効か確認する
-/// </summary>
-/// <param name="transform">確認する変形情報</param>
-void ValidateTransform(const Transform &transform) {
-	if (!IsFinite(transform.translation) || !IsFinite(transform.rotation) ||
-	    !IsFinite(transform.scale)) {
-		throw std::runtime_error("Transformに無効な数値が含まれています。");
-	}
-
-	if (transform.scale.x == 0.0f || transform.scale.y == 0.0f ||
-	    transform.scale.z == 0.0f) {
-		throw std::runtime_error("Transformの拡大率に0は指定できません。");
-	}
-}
 
 /// <summary>
 /// 3成分の値をJSON配列に変換する
@@ -128,7 +51,7 @@ DirectX::XMFLOAT3 ReadFloat3(const Json &value) {
 	    value.at(2).get<float>(),
 	};
 
-	if (!IsFinite(result)) {
+	if (!MathUtils::IsFinite(result)) {
 		throw std::runtime_error(
 		    "Transformの値がfloatの有効範囲を超えています。");
 	}
@@ -140,17 +63,19 @@ DirectX::XMFLOAT3 ReadFloat3(const Json &value) {
 bool SceneSerializer::Save(const Scene &scene,
                            const std::filesystem::path &filePath) {
 	try {
-		const auto targetPath = ResolveFilePath(filePath);
+		const auto targetPath = PathUtils::ResolveFromExecutable(filePath);
 
 		Json objects = Json::array();
 
 		for (const auto &[id, object] : scene.GetObjects()) {
-			ValidateTransform(object.transform);
+			if (!TransformUtils::IsValid(object.transform)) {
+				throw std::runtime_error("Transformが無効です。");
+			}
 
 			objects.push_back({
 			    {"id", id},
 			    {"name", object.name},
-			    {"model", PathToUtf8(object.modelPath)},
+			    {"model", PathUtils::ToUtf8(object.modelPath)},
 			    {"transform",
 			     {
 			         {"translation", ToJson(object.transform.translation)},
@@ -197,7 +122,7 @@ bool SceneSerializer::Save(const Scene &scene,
 bool SceneSerializer::Load(Scene &scene,
                            const std::filesystem::path &filePath) {
 	try {
-		const auto sourcePath = ResolveFilePath(filePath);
+		const auto sourcePath = PathUtils::ResolveFromExecutable(filePath);
 
 		std::ifstream input(sourcePath, std::ios::binary);
 
@@ -241,7 +166,7 @@ bool SceneSerializer::Load(Scene &scene,
 			}
 
 			object.modelPath =
-			    PathFromUtf8(item.at("model").get<std::string>());
+			    PathUtils::FromUtf8(item.at("model").get<std::string>());
 
 			const Json &transform = item.at("transform");
 
@@ -250,7 +175,9 @@ bool SceneSerializer::Load(Scene &scene,
 			object.transform.rotation = ReadFloat3(transform.at("rotation"));
 			object.transform.scale = ReadFloat3(transform.at("scale"));
 
-			ValidateTransform(object.transform);
+			if (!TransformUtils::IsValid(object.transform)) {
+				throw std::runtime_error("Transformが無効です。");
+			}
 
 			const bool inserted = objects.emplace(id, std::move(object)).second;
 

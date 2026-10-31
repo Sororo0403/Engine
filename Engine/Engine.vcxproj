@@ -11,6 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\math\MathUtils.cpp" />
+    <ClCompile Include="src\math\TransformUtils.cpp" />
+    <ClCompile Include="src\graphics\render\D3D12Helpers.cpp" />
     <ClCompile Include="src\scene\SceneSerializer.cpp" />
     <ClCompile Include="src\input\Mouse.cpp" />
     <ClCompile Include="src\graphics\render\RenderTexture.cpp" />
@@ -47,6 +50,10 @@
     <ClCompile Include="src\graphics\material\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\math\MathUtils.h" />
+    <ClInclude Include="include\math\TransformUtils.h" />
+    <ClInclude Include="include\graphics\render\D3D12Helpers.h" />
+    <ClInclude Include="include\graphics\buffer\ConstantBuffer.h" />
     <ClInclude Include="include\core\EngineConfig.h" />
     <ClInclude Include="include\graphics\DirectionalLightData.h" />
     <ClInclude Include="include\core\Engine.h" />
@@ -163,7 +170,7 @@
   <PropertyGroup Label="UserMacros" />
   <!-- 外部ヘッダーとして扱い、ライブラリ側の警告レベルを分ける -->
   <PropertyGroup>
-    <ExternalIncludePath>$(EngineExternalRoot)gameinput\include;$(EngineExternalRoot)dxc\include;$(EngineExternalRoot)directxtk12\include;$(EngineExternalRoot)assimp\include;$(EngineExternalRoot)imgui\include;$(EngineExternalRoot)directxmath\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>$(EngineExternalRoot)nlohmann\include;$(EngineExternalRoot)gameinput\include;$(EngineExternalRoot)dxc\include;$(EngineExternalRoot)directxtk12\include;$(EngineExternalRoot)assimp\include;$(EngineExternalRoot)imgui\include;$(EngineExternalRoot)directxmath\include;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)build\lib\$(Configuration)\</OutDir>

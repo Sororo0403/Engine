@@ -4,8 +4,8 @@
 #include "graphics/camera/Camera.h"
 #include "graphics/model/Model.h"
 #include "graphics/render/MeshRenderer.h"
+#include "math/TransformUtils.h"
 
-#include <cmath>
 #include <exception>
 #include <format>
 
@@ -86,24 +86,8 @@ bool ModelInstance::Update(const Camera &camera) {
 		return false;
 	}
 
-	// 無限大やNaNを変換行列へ渡さない
-	const float values[] = {transform_.scale.x,       transform_.scale.y,
-	                        transform_.scale.z,       transform_.rotation.x,
-	                        transform_.rotation.y,    transform_.rotation.z,
-	                        transform_.translation.x, transform_.translation.y,
-	                        transform_.translation.z};
-
-	for (const float value : values) {
-		if (!std::isfinite(value)) {
-			Logger::Error("ModelInstance::Update: 変形情報が無効です。");
-			return false;
-		}
-	}
-
-	// 法線の変換に逆行列を使うため、拡大率0は禁止する
-	if (transform_.scale.x == 0.0f || transform_.scale.y == 0.0f ||
-	    transform_.scale.z == 0.0f) {
-		Logger::Error("ModelInstance::Update: 拡大率に0は指定できません。");
+	if (!TransformUtils::IsValid(transform_)) {
+		Logger::Error("ModelInstance::Update: 変形情報が無効です。");
 		return false;
 	}
 

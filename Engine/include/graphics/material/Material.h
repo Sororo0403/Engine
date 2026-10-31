@@ -1,9 +1,9 @@
 #pragma once
 
+#include "graphics/buffer/ConstantBuffer.h"
 #include "graphics/material/MaterialData.h"
 
 #include <d3d12.h>
-#include <wrl/client.h>
 
 class Material {
   public:
@@ -43,6 +43,5 @@ class Material {
   private:
 	D3D12_GPU_DESCRIPTOR_HANDLE textureSrv_{};
 
-	Microsoft::WRL::ComPtr<ID3D12Resource> constantBuffer_;
-	MaterialData *mappedData_ = nullptr;
+	ConstantBuffer<MaterialData> constantBuffer_;
 };

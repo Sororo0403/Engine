@@ -8,6 +8,9 @@
 class D3D12Graphics {
   private:
 	static constexpr UINT kBufferCount = 2;
+	static constexpr DXGI_FORMAT kRenderTargetFormat =
+	    DXGI_FORMAT_R8G8B8A8_UNORM;
+	static constexpr DXGI_FORMAT kDepthStencilFormat = DXGI_FORMAT_D32_FLOAT;
 
   public:
 	/// <summary>
@@ -74,6 +77,24 @@ class D3D12Graphics {
 	/// </summary>
 	/// <returns>コマンドキューへの借用ポインタ。未初期化の場合はnullptr</returns>
 	ID3D12CommandQueue *GetCommandQueue() const;
+
+	/// <summary>
+	/// バックバッファ数を取得する
+	/// </summary>
+	/// <returns>スワップチェーンのバッファ数</returns>
+	UINT GetBufferCount() const;
+
+	/// <summary>
+	/// メッシュ描画に使うカラーバッファの形式を取得する
+	/// </summary>
+	/// <returns>描画先のカラー形式</returns>
+	DXGI_FORMAT GetRenderTargetFormat() const;
+
+	/// <summary>
+	/// メッシュ描画に使う深度バッファの形式を取得する
+	/// </summary>
+	/// <returns>描画先の深度形式</returns>
+	DXGI_FORMAT GetDepthStencilFormat() const;
 
   private:
 	/// <summary>
