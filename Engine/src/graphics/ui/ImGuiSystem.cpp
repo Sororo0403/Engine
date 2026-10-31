@@ -3,7 +3,6 @@
 #include "core/Logger.h"
 #include "graphics/render/D3D12Graphics.h"
 #include "graphics/render/RenderTexture.h"
-#include "graphics/ui/DockLayout.h"
 #include "platform/windows/PathUtils.h"
 #include "platform/windows/WinApp.h"
 
@@ -55,6 +54,18 @@ struct ImGuiSystem::Impl {
 		}
 
 		ImGui::SetCurrentContext(context_);
+	}
+
+	/// <summary>
+	/// UIフレームとドッキングの有効状態を確認する
+	/// </summary>
+	void UseDocking() const {
+		UseFrame();
+		if ((ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_DockingEnable) ==
+		    0) {
+			throw std::logic_error(
+			    "ImGuiSystem: ドッキングが有効ではありません。");
+		}
 	}
 
 	/// <summary>
@@ -356,84 +367,105 @@ bool ImGuiSystem::EnableDocking() const {
 	return true;
 }
 
-void ImGuiSystem::DrawDockSpace(const DockLayout &layout,
-                                bool resetLayout) const {
-	impl_->UseFrame();
-
-	const ImGuiIO &io = ImGui::GetIO();
-
-	if ((io.ConfigFlags & ImGuiConfigFlags_DockingEnable) == 0) {
-		throw std::logic_error(
-		    "ImGuiSystem::DrawDockSpace: ドッキングが有効ではありません。");
-	}
-
-	if (!layout.name || !*layout.name || !layout.leftWindow ||
-	    !*layout.leftWindow || !layout.centerWindow || !*layout.centerWindow ||
-	    !layout.rightWindow || !*layout.rightWindow ||
-	    !std::isfinite(layout.leftRatio) || !std::isfinite(layout.rightRatio) ||
-	    layout.leftRatio <= 0.0f || layout.rightRatio <= 0.0f ||
-	    layout.leftRatio + layout.rightRatio >= 1.0f) {
+std::uint32_t ImGuiSystem::GetDockSpaceId(const char *name) const {
+	impl_->UseDocking();
+	if (!name || !*name) {
 		throw std::invalid_argument(
-		    "ImGuiSystem::DrawDockSpace: 配置情報が無効です。");
+		    "ImGuiSystem::GetDockSpaceId: 名前が空です。");
 	}
-
-	if (layout.bottomWindow &&
-	    (!*layout.bottomWindow || !std::isfinite(layout.bottomRatio) ||
-	     layout.bottomRatio <= 0.0f || layout.bottomRatio >= 1.0f)) {
+	const ImGuiID id = ImHashStr(name);
+	if (id == 0) {
 		throw std::invalid_argument(
-		    "ImGuiSystem::DrawDockSpace: 下部の配置情報が無効です。");
+		    "ImGuiSystem::GetDockSpaceId: IDが無効です。");
 	}
+	return id;
+}
 
+bool ImGuiSystem::HasDockNode(std::uint32_t nodeId) const {
+	impl_->UseDocking();
+	return nodeId != 0 && ImGui::DockBuilderGetNode(nodeId) != nullptr;
+}
+
+bool ImGuiSystem::ResetDockSpace(std::uint32_t dockspaceId) const {
+	impl_->UseDocking();
+	if (dockspaceId == 0) {
+		throw std::invalid_argument(
+		    "ImGuiSystem::ResetDockSpace: IDが無効です。");
+	}
 	const ImGuiViewport *viewport = ImGui::GetMainViewport();
+	if (viewport->WorkSize.x <= 0.0f || viewport->WorkSize.y <= 0.0f) {
+		return false;
+	}
+	ImGui::DockBuilderRemoveNode(dockspaceId);
+	ImGui::DockBuilderAddNode(dockspaceId, ImGuiDockNodeFlags_DockSpace);
+	ImGui::DockBuilderSetNodeSize(dockspaceId, viewport->WorkSize);
+	return true;
+}
 
+void ImGuiSystem::SplitDockNode(std::uint32_t nodeId, DockDirection direction,
+                                float ratio, std::uint32_t &splitId,
+                                std::uint32_t &remainingId) const {
+	impl_->UseDocking();
+	if (!HasDockNode(nodeId) || !std::isfinite(ratio) || ratio <= 0.0f ||
+	    ratio >= 1.0f || &splitId == &remainingId) {
+		throw std::invalid_argument(
+		    "ImGuiSystem::SplitDockNode: 分割情報が無効です。");
+	}
+	ImGuiDir nativeDirection;
+	switch (direction) {
+	case DockDirection::LEFT:
+		nativeDirection = ImGuiDir_Left;
+		break;
+	case DockDirection::RIGHT:
+		nativeDirection = ImGuiDir_Right;
+		break;
+	case DockDirection::UP:
+		nativeDirection = ImGuiDir_Up;
+		break;
+	case DockDirection::DOWN:
+		nativeDirection = ImGuiDir_Down;
+		break;
+	default:
+		throw std::invalid_argument(
+		    "ImGuiSystem::SplitDockNode: 分割方向が無効です。");
+	}
+	ImGuiID nativeSplitId = 0;
+	ImGuiID nativeRemainingId = 0;
+	ImGui::DockBuilderSplitNode(nodeId, nativeDirection, ratio, &nativeSplitId,
+	                            &nativeRemainingId);
+	splitId = nativeSplitId;
+	remainingId = nativeRemainingId;
+}
+
+void ImGuiSystem::DockWindow(const char *windowName,
+                             std::uint32_t nodeId) const {
+	impl_->UseDocking();
+	if (!windowName || !*windowName || !HasDockNode(nodeId)) {
+		throw std::invalid_argument(
+		    "ImGuiSystem::DockWindow: 配置情報が無効です。");
+	}
+	ImGui::DockBuilderDockWindow(windowName, nodeId);
+}
+
+void ImGuiSystem::FinishDockLayout(std::uint32_t dockspaceId) const {
+	impl_->UseDocking();
+	if (!HasDockNode(dockspaceId)) {
+		throw std::invalid_argument(
+		    "ImGuiSystem::FinishDockLayout: 領域が存在しません。");
+	}
+	ImGui::DockBuilderFinish(dockspaceId);
+}
+
+void ImGuiSystem::DrawDockSpace(std::uint32_t dockspaceId) const {
+	impl_->UseDocking();
+	if (dockspaceId == 0) {
+		throw std::invalid_argument(
+		    "ImGuiSystem::DrawDockSpace: IDが無効です。");
+	}
+	const ImGuiViewport *viewport = ImGui::GetMainViewport();
 	if (viewport->WorkSize.x <= 0.0f || viewport->WorkSize.y <= 0.0f) {
 		return;
 	}
-
-	const ImGuiID dockspaceId = ImHashStr(layout.name);
-
-	if (resetLayout || ImGui::DockBuilderGetNode(dockspaceId) == nullptr) {
-		ImGui::DockBuilderRemoveNode(dockspaceId);
-
-		ImGui::DockBuilderAddNode(dockspaceId, ImGuiDockNodeFlags_DockSpace);
-
-		ImGui::DockBuilderSetNodeSize(dockspaceId, viewport->WorkSize);
-
-		ImGuiID upperId = dockspaceId;
-		ImGuiID bottomId = 0;
-
-		// 最初に下部を分割し、残った上部を左右に分ける
-		if (layout.bottomWindow) {
-			ImGui::DockBuilderSplitNode(upperId, ImGuiDir_Down,
-			                            layout.bottomRatio, &bottomId,
-			                            &upperId);
-		}
-
-		ImGuiID centerId = upperId;
-		ImGuiID leftId = 0;
-		ImGuiID rightId = 0;
-
-		ImGui::DockBuilderSplitNode(centerId, ImGuiDir_Left, layout.leftRatio,
-		                            &leftId, &centerId);
-
-		const float rightRatio = layout.rightRatio / (1.0f - layout.leftRatio);
-
-		ImGui::DockBuilderSplitNode(centerId, ImGuiDir_Right, rightRatio,
-		                            &rightId, &centerId);
-
-		ImGui::DockBuilderDockWindow(layout.leftWindow, leftId);
-
-		ImGui::DockBuilderDockWindow(layout.centerWindow, centerId);
-
-		ImGui::DockBuilderDockWindow(layout.rightWindow, rightId);
-
-		if (layout.bottomWindow) {
-			ImGui::DockBuilderDockWindow(layout.bottomWindow, bottomId);
-		}
-
-		ImGui::DockBuilderFinish(dockspaceId);
-	}
-
 	ImGui::DockSpaceOverViewport(dockspaceId, viewport,
 	                             ImGuiDockNodeFlags_None);
 }

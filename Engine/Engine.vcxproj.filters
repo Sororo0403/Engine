@@ -388,7 +388,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\graphics\ui\DockLayout.h">
+    <ClInclude Include="include\graphics\ui\DockDirection.h">
       <Filter>include\graphics\ui</Filter>
     </ClInclude>
   </ItemGroup>

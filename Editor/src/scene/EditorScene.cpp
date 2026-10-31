@@ -64,7 +64,7 @@ bool EditorScene::Update(float deltaTime) {
 
 	FileAction action = DrawMenuBar();
 
-	ui_.DrawDockSpace(dockLayout_, resetDockLayout_);
+	dockLayout_.Draw(ui_, resetDockLayout_);
 	resetDockLayout_ = false;
 
 	const bool wasBusy = IsBusy();

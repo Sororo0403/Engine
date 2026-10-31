@@ -1,5 +1,6 @@
 #pragma once
 
+#include "graphics/ui/DockDirection.h"
 #include "graphics/ui/ViewportInput.h"
 
 #include <DirectXMath.h>
@@ -7,8 +8,6 @@
 #include <memory>
 #include <string>
 #include <string_view>
-
-struct DockLayout;
 
 class D3D12Graphics;
 class RenderTexture;
@@ -55,13 +54,56 @@ class ImGuiSystem {
 	bool EnableDocking() const;
 
 	/// <summary>
-	/// メインウィンドウ全体にドッキング領域を作成する。
-	/// 各パネルのBeginWindowより前に、毎フレーム呼び出す
+	/// 名前からドッキング領域のIDを取得する
 	/// </summary>
-	/// <param name="layout">領域の識別情報と初期配置</param>
-	/// <param name="resetLayout">保存済みの配置を破棄し、初期配置へ戻すか</param>
-	void DrawDockSpace(const DockLayout &layout,
-	                   bool resetLayout = false) const;
+	/// <param name="name">保存設定と対応する、空でない識別名</param>
+	/// <returns>ドッキング領域のID</returns>
+	std::uint32_t GetDockSpaceId(const char *name) const;
+
+	/// <summary>
+	/// ドッキング領域が存在するか取得する
+	/// </summary>
+	/// <param name="nodeId">確認する領域のID</param>
+	/// <returns>true:存在する false:存在しない</returns>
+	bool HasDockNode(std::uint32_t nodeId) const;
+
+	/// <summary>
+	/// ドッキング領域を作り直し、メインビューポートの作業領域と同じサイズにする
+	/// </summary>
+	/// <param name="dockspaceId">作り直す領域のID</param>
+	/// <returns>true:作成成功 false:作業領域に有効なサイズがない</returns>
+	bool ResetDockSpace(std::uint32_t dockspaceId) const;
+
+	/// <summary>
+	/// ドッキング領域を指定方向に分割する
+	/// </summary>
+	/// <param name="nodeId">分割元の領域のID</param>
+	/// <param name="direction">切り出す方向</param>
+	/// <param name="ratio">分割元に対する切り出す割合。0より大きく1未満</param>
+	/// <param name="splitId">切り出した領域のID</param>
+	/// <param name="remainingId">残った領域のID。splitIdとは別の変数を指定する</param>
+	void SplitDockNode(std::uint32_t nodeId, DockDirection direction,
+	                   float ratio, std::uint32_t &splitId,
+	                   std::uint32_t &remainingId) const;
+
+	/// <summary>
+	/// ウィンドウを指定した領域に配置する
+	/// </summary>
+	/// <param name="windowName">BeginWindowへ渡すウィンドウ名</param>
+	/// <param name="nodeId">配置先の領域のID</param>
+	void DockWindow(const char *windowName, std::uint32_t nodeId) const;
+
+	/// <summary>
+	/// ドッキング領域の配置構築を完了する
+	/// </summary>
+	/// <param name="dockspaceId">構築したドッキング領域のID</param>
+	void FinishDockLayout(std::uint32_t dockspaceId) const;
+
+	/// <summary>
+	/// メインビューポートにドッキング領域を表示する。各パネルの表示前に毎フレーム呼ぶ
+	/// </summary>
+	/// <param name="dockspaceId">表示するドッキング領域のID</param>
+	void DrawDockSpace(std::uint32_t dockspaceId) const;
 
 	/// <summary>
 	/// UIウィンドウを開始する。戻り値にかかわらずEndWindowを呼び出す

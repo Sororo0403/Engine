@@ -121,6 +121,7 @@
     <ClInclude Include="include\assets\AssetDatabase.h" />
     <ClInclude Include="include\camera\EditorCameraController.h" />
     <ClInclude Include="include\panels\HierarchyPanel.h" />
+    <ClInclude Include="include\layout\EditorDockLayout.h" />
     <ClInclude Include="include\scene\EditorScene.h" />
     <ClInclude Include="include\panels\InspectorPanel.h" />
     <ClInclude Include="include\panels\SceneViewPanel.h" />
@@ -139,6 +140,7 @@
     <ClCompile Include="src\panels\InspectorPanel.cpp" />
     <ClCompile Include="src\panels\HierarchyPanel.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\layout\EditorDockLayout.cpp" />
     <ClCompile Include="src\scene\EditorScene.cpp" />
   </ItemGroup>
   <ItemDefinitionGroup>

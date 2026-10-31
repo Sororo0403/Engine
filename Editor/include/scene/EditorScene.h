@@ -4,7 +4,7 @@
 #include "camera/EditorCameraController.h"
 #include "dialogs/SaveChangesDialog.h"
 #include "dialogs/SceneFileDialog.h"
-#include "graphics/ui/DockLayout.h"
+#include "layout/EditorDockLayout.h"
 #include "panels/AssetsPanel.h"
 #include "panels/HierarchyPanel.h"
 #include "panels/InspectorPanel.h"
@@ -164,10 +164,7 @@ class EditorScene final : public IScene {
 	SceneDocument document_;
 	SceneRenderer renderer_;
 
-	DockLayout dockLayout_{
-	    "EditorDockSpace", "Hierarchy", "Scene", "Inspector", 0.20f, 0.25f,
-	    "Assets",          0.25f,
-	};
+	EditorDockLayout dockLayout_;
 
 	bool resetDockLayout_ = false;
 

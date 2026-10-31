@@ -39,6 +39,12 @@
     <Filter Include="src\assets">
       <UniqueIdentifier>{deba47c2-d5b4-46c1-8150-b426ec4693d6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\layout">
+      <UniqueIdentifier>{dfc2173b-c30d-448a-8622-cecda21f3294}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\layout">
+      <UniqueIdentifier>{e9a99b99-7eb8-4202-b065-24adc5126f2c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -119,5 +125,13 @@
     <None Include="resources\models\box.glb">
       <Filter>resources\models</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\layout\EditorDockLayout.h">
+      <Filter>include\layout</Filter>
+    </ClInclude>
+    <ClCompile Include="src\layout\EditorDockLayout.cpp">
+      <Filter>src\layout</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

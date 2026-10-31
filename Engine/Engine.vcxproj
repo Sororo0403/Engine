@@ -61,7 +61,7 @@
     <ClInclude Include="include\graphics\camera\CameraPose.h" />
     <ClInclude Include="include\graphics\render\RenderObjectHandle.h" />
     <ClInclude Include="include\graphics\ui\ImGuiSystem.h" />
-    <ClInclude Include="include\graphics\ui\DockLayout.h" />
+    <ClInclude Include="include\graphics\ui\DockDirection.h" />
     <ClInclude Include="include\graphics\DirectionalLight.h" />
     <ClInclude Include="include\math\Transform.h" />
     <ClInclude Include="include\input\MouseState.h" />
