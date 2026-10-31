@@ -9,6 +9,8 @@ WindowsInputBackend::WindowsInputBackend(HWND hwnd) : hwnd_(hwnd) {}
 WindowsInputBackend::~WindowsInputBackend() { Finalize(); }
 
 bool WindowsInputBackend::Initialize() {
+	using namespace GameInput::v4;
+
 	if (gameInput_) {
 		Logger::Error("WindowsInputBackend::Initialize: 初期化済みです。");
 		return false;
@@ -19,8 +21,7 @@ bool WindowsInputBackend::Initialize() {
 		return false;
 	}
 
-	const HRESULT hr =
-	    GameInput::v4::GameInputCreate(gameInput_.GetAddressOf());
+	HRESULT hr = GameInputCreate(gameInput_.GetAddressOf());
 
 	if (FAILED(hr)) {
 		Logger::Error(
@@ -29,7 +30,23 @@ bool WindowsInputBackend::Initialize() {
 		return false;
 	}
 
-	Logger::Info("GameInputを初期化しました。");
+	hr = gameInput_->CreateAggregateDevice(GameInputKindKeyboard,
+	                                       &keyboardDeviceId_);
+
+	if (FAILED(hr)) {
+		Logger::Error(std::format("キーボードの集約デバイス作成に失敗しました。"
+		                          "HRESULT=0x{:08X}",
+		                          static_cast<unsigned long>(hr)));
+
+		Finalize();
+		return false;
+	}
+
+	keyboardAggregateCreated_ = true;
+	keyboardHadReading_ = false;
+
+	// デバイスのインターフェース取得は、入力更新時に行う
+	Logger::Info("GameInputとキーボードの集約機能を初期化しました。");
 	return true;
 }
 
@@ -59,6 +76,23 @@ bool WindowsInputBackend::Update(InputState &state) {
 
 void WindowsInputBackend::Finalize() {
 	ResetMouseReading();
+
+	keyboardDevice_.Reset();
+	keyboardHadReading_ = false;
+
+	if (gameInput_ && keyboardAggregateCreated_) {
+		const HRESULT hr =
+		    gameInput_->DisableAggregateDevice(&keyboardDeviceId_);
+
+		if (FAILED(hr)) {
+			Logger::Warning(std::format("キーボードの集約解除に失敗しました。"
+			                            "HRESULT=0x{:08X}",
+			                            static_cast<unsigned long>(hr)));
+		}
+	}
+
+	keyboardAggregateCreated_ = false;
+	keyboardDeviceId_ = {};
 
 	if (gameInput_) {
 		gameInput_.Reset();
@@ -116,16 +150,58 @@ Key WindowsInputBackend::ToKey(unsigned int virtualKey) {
 }
 
 bool WindowsInputBackend::ReadKeyboard(Keyboard::State &states) {
+	using namespace GameInput::v4;
+
 	states.fill(false);
 
-	Microsoft::WRL::ComPtr<GameInput::v4::IGameInputReading> reading;
+	if (!gameInput_ || !keyboardAggregateCreated_) {
+		Logger::Error("WindowsInputBackend::ReadKeyboard: 未初期化です。");
+		return false;
+	}
+
+	if (!keyboardDevice_) {
+		const HRESULT hr = gameInput_->FindDeviceFromId(
+		    &keyboardDeviceId_, keyboardDevice_.GetAddressOf());
+
+		// 作成直後など、まだ取得できない場合は次フレームに再試行する
+		if (hr == GAMEINPUT_E_DEVICE_NOT_FOUND ||
+		    hr == GAMEINPUT_E_DEVICE_DISCONNECTED) {
+			return true;
+		}
+
+		if (FAILED(hr)) {
+			Logger::Error(std::format("集約キーボードの取得に失敗しました。"
+			                          "HRESULT=0x{:08X}",
+			                          static_cast<unsigned long>(hr)));
+			return false;
+		}
+
+		if (!keyboardDevice_) {
+			return true;
+		}
+	}
+
+	Microsoft::WRL::ComPtr<IGameInputReading> reading;
 
 	const HRESULT hr = gameInput_->GetCurrentReading(
-	    GameInput::v4::GameInputKindKeyboard, nullptr, reading.GetAddressOf());
+	    GameInputKindKeyboard, keyboardDevice_.Get(), reading.GetAddressOf());
 
-	if (hr == GameInput::v4::GAMEINPUT_E_READING_NOT_FOUND ||
-	    hr == GameInput::v4::GAMEINPUT_E_DEVICE_NOT_FOUND ||
-	    hr == GameInput::v4::GAMEINPUT_E_DEVICE_DISCONNECTED) {
+	if (hr == GAMEINPUT_E_READING_NOT_FOUND ||
+	    hr == GAMEINPUT_E_DEVICE_NOT_FOUND ||
+	    hr == GAMEINPUT_E_DEVICE_DISCONNECTED) {
+		// 毎フレーム出力せず、取得できていた状態から途切れた時だけ記録する
+		if (keyboardHadReading_) {
+			Logger::Warning(std::format("キーボードの入力取得が途切れました。"
+			                            "HRESULT=0x{:08X}",
+			                            static_cast<unsigned long>(hr)));
+		}
+
+		keyboardHadReading_ = false;
+
+		if (hr != GAMEINPUT_E_READING_NOT_FOUND) {
+			keyboardDevice_.Reset();
+		}
+
 		return true;
 	}
 
@@ -136,19 +212,27 @@ bool WindowsInputBackend::ReadKeyboard(Keyboard::State &states) {
 		return false;
 	}
 
+	if (!keyboardHadReading_) {
+		Logger::Info("集約キーボードの入力取得を開始しました。");
+	}
+
+	keyboardHadReading_ = true;
+
 	const uint32_t keyCount = reading->GetKeyCount();
 
-	if (keyCount > 0) {
-		std::vector<GameInput::v4::GameInputKeyState> keyStates(keyCount);
+	if (keyCount == 0) {
+		return true;
+	}
 
-		const uint32_t count = reading->GetKeyState(keyCount, keyStates.data());
+	std::vector<GameInputKeyState> keyStates(keyCount);
 
-		for (uint32_t i = 0; i < count; ++i) {
-			const Key key = ToKey(keyStates[i].virtualKey);
+	const uint32_t count = reading->GetKeyState(keyCount, keyStates.data());
 
-			if (key != Key::UNKNOWN) {
-				states[static_cast<std::size_t>(key)] = true;
-			}
+	for (uint32_t i = 0; i < count; ++i) {
+		const Key key = ToKey(keyStates[i].virtualKey);
+
+		if (key != Key::UNKNOWN) {
+			states[static_cast<std::size_t>(key)] = true;
 		}
 	}
 

@@ -73,6 +73,15 @@ class WindowsInputBackend final : public IInputBackend {
 
 	Microsoft::WRL::ComPtr<GameInput::v4::IGameInput> gameInput_;
 
+	// 全キーボードの入力を集約する仮想デバイス
+	APP_LOCAL_DEVICE_ID keyboardDeviceId_{};
+
+	Microsoft::WRL::ComPtr<GameInput::v4::IGameInputDevice> keyboardDevice_;
+
+	bool keyboardAggregateCreated_ = false;
+
+	bool keyboardHadReading_ = false;
+
 	Microsoft::WRL::ComPtr<GameInput::v4::IGameInputDevice> mouseDevice_;
 
 	GameInput::v4::GameInputMouseState previousMouseState_{};
