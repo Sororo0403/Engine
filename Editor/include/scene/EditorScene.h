@@ -53,6 +53,11 @@ class EditorScene final : public IScene {
 	/// </summary>
 	void Finalize() override;
 
+	/// <summary>
+	/// シーンの保存・読み込み用UIを表示する
+	/// </summary>
+	void DrawSceneFileControls();
+
   private:
 	// 参照先はEditorSceneより長く保持する
 	const ImGuiSystem &ui_;
@@ -64,12 +69,7 @@ class EditorScene final : public IScene {
 
 	// 各パネルのタイトルと、初期配置の割合
 	DockLayout dockLayout_{
-	    "EditorDockSpace",
-	    "Hierarchy",
-	    "Scene",
-	    "Inspector",
-	    0.20f,
-	    0.25f,
+	    "EditorDockSpace", "Hierarchy", "Scene", "Inspector", 0.20f, 0.25f,
 	};
 
 	bool resetDockLayout_ = false;

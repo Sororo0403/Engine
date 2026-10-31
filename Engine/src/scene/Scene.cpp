@@ -56,3 +56,24 @@ const std::map<SceneObjectId, SceneObject> &Scene::GetObjects() const {
 }
 
 void Scene::Clear() { objects_.clear(); }
+
+void Scene::ReplaceObjects(std::map<SceneObjectId, SceneObject> objects) {
+	SceneObjectId nextId = nextObjectId_;
+
+	for (const auto &entry : objects) {
+		const SceneObjectId id = entry.first;
+
+		if (id == 0 || id == (std::numeric_limits<SceneObjectId>::max)()) {
+			throw std::invalid_argument(
+			    "Scene::ReplaceObjects: 物体のIDが無効です。");
+		}
+
+		if (id >= nextId) {
+			nextId = id + 1;
+		}
+	}
+
+	// 全IDの確認が終わってから、保持している物体を置き換える
+	objects_.swap(objects);
+	nextObjectId_ = nextId;
+}

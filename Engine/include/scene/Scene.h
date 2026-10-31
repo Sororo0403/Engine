@@ -65,6 +65,12 @@ class Scene {
 	/// </summary>
 	void Clear();
 
+	/// <summary>
+	/// 全物体を指定したデータに置き換える。取得済みのポインターは無効になる
+	/// </summary>
+	/// <param name="objects">置き換え後の物体一覧。IDには0と最大値を使用できない</param>
+	void ReplaceObjects(std::map<SceneObjectId, SceneObject> objects);
+
   private:
 	std::map<SceneObjectId, SceneObject> objects_;
 	SceneObjectId nextObjectId_ = 1;

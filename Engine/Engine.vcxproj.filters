@@ -194,6 +194,9 @@
     <ClCompile Include="src\input\Mouse.cpp">
       <Filter>src\input</Filter>
     </ClCompile>
+    <ClCompile Include="src\scene\SceneSerializer.cpp">
+      <Filter>src\scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\platform\windows\Window.h">
@@ -360,6 +363,9 @@
     </ClInclude>
     <ClInclude Include="include\math\Transform.h">
       <Filter>include\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scene\SceneSerializer.h">
+      <Filter>include\scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

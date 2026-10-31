@@ -2,8 +2,9 @@
 
 #include "core/EngineContext.h"
 #include "core/Logger.h"
-#include "graphics/ui/ImGuiSystem.h"
 #include "graphics/render/RenderTexture.h"
+#include "graphics/ui/ImGuiSystem.h"
+#include "scene/SceneSerializer.h"
 
 #include <cmath>
 
@@ -48,6 +49,8 @@ bool EditorScene::Update(float deltaTime) {
 	ui_.DrawDockSpace(dockLayout_, resetDockLayout_);
 	resetDockLayout_ = false;
 
+	DrawSceneFileControls();
+
 	hierarchyPanel_.Draw(ui_, scene_, selectedObjectId_);
 	inspectorPanel_.Draw(ui_, scene_, selectedObjectId_);
 
@@ -90,4 +93,26 @@ void EditorScene::Finalize() {
 	selectedObjectId_ = 0;
 
 	cameraController_.Reset();
+}
+
+void EditorScene::DrawSceneFileControls() {
+	if (!ui_.BeginWindow("Scene File")) {
+		ui_.EndWindow();
+		return;
+	}
+
+	ui_.Text("scenes/Main.scene.json");
+
+	if (ui_.Button("Save Scene")) {
+		SceneSerializer::Save(scene_, L"scenes/Main.scene.json");
+	}
+
+	if (ui_.Button("Load Scene")) {
+		if (SceneSerializer::Load(scene_, L"scenes/Main.scene.json")) {
+			// 読み込み前に選択していた物体のIDを解除する
+			selectedObjectId_ = 0;
+		}
+	}
+
+	ui_.EndWindow();
 }

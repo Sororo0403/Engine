@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\scene\SceneSerializer.cpp" />
     <ClCompile Include="src\input\Mouse.cpp" />
     <ClCompile Include="src\graphics\render\RenderTexture.cpp" />
     <ClCompile Include="src\scene\SceneRenderer.cpp" />
@@ -102,6 +103,7 @@
     <ClInclude Include="include\graphics\render\RenderTexture.h" />
     <ClInclude Include="include\input\MouseButton.h" />
     <ClInclude Include="include\input\Mouse.h" />
+    <ClInclude Include="include\scene\SceneSerializer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\shaders\triangle\Triangle.hlsli">
@@ -181,7 +183,7 @@
       <TreatWarningAsError>true</TreatWarningAsError>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(EngineExternalRoot)gameinput\include;$(EngineExternalRoot)dxc\include;$(EngineExternalRoot)directxtk12\include;$(EngineExternalRoot)assimp\include;$(EngineExternalRoot)imgui\include;$(EngineExternalRoot)directxmath\include;$(ProjectDir)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)nlohmann\include;$(EngineExternalRoot)gameinput\include;$(EngineExternalRoot)dxc\include;$(EngineExternalRoot)directxtk12\include;$(EngineExternalRoot)assimp\include;$(EngineExternalRoot)imgui\include;$(EngineExternalRoot)directxmath\include;$(ProjectDir)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
     </ClCompile>
@@ -206,7 +208,7 @@
       <TreatWarningAsError>true</TreatWarningAsError>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(EngineExternalRoot)gameinput\include;$(EngineExternalRoot)dxc\include;$(EngineExternalRoot)directxtk12\include;$(EngineExternalRoot)assimp\include;$(EngineExternalRoot)imgui\include;$(EngineExternalRoot)directxmath\include;$(ProjectDir)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)nlohmann\include;$(EngineExternalRoot)gameinput\include;$(EngineExternalRoot)dxc\include;$(EngineExternalRoot)directxtk12\include;$(EngineExternalRoot)assimp\include;$(EngineExternalRoot)imgui\include;$(EngineExternalRoot)directxmath\include;$(ProjectDir)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
     </ClCompile>
