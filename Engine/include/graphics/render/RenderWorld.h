@@ -1,7 +1,8 @@
 #pragma once
 
 #include "graphics/DirectionalLightData.h"
-#include "graphics/Transform.h"
+#include "math/Transform.h"
+#include "graphics/camera/CameraPose.h"
 #include "graphics/material/MaterialData.h"
 #include "graphics/model/ModelHandle.h"
 #include "graphics/render/RenderObjectHandle.h"
@@ -106,6 +107,13 @@ class RenderWorld {
 	/// 全物体を削除し、カメラとライト情報を戻す。GPUの利用完了後に呼び出す
 	/// </summary>
 	void Clear();
+
+	/// <summary>
+	/// 描画に使用するカメラの姿勢を設定する
+	/// </summary>
+	/// <param name="pose">設定する姿勢</param>
+	/// <returns>true:成功 false:姿勢が無効</returns>
+	bool SetCameraPose(const CameraPose &pose);
 
   private:
 	friend class RenderSystem;

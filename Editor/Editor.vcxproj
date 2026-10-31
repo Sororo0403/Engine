@@ -117,12 +117,14 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\camera\EditorCameraController.h" />
     <ClInclude Include="include\panels\HierarchyPanel.h" />
     <ClInclude Include="include\scene\EditorScene.h" />
     <ClInclude Include="include\panels\InspectorPanel.h" />
     <ClInclude Include="include\panels\SceneViewPanel.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\camera\EditorCameraController.cpp" />
     <ClCompile Include="src\panels\SceneViewPanel.cpp" />
     <ClCompile Include="src\panels\InspectorPanel.cpp" />
     <ClCompile Include="src\panels\HierarchyPanel.cpp" />
@@ -142,6 +144,18 @@
       <Project>{b5695b53-5c1d-4b30-887f-99386dedafcd}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="resources\models\box.glb" />
+  </ItemGroup>
+  <!-- 全構成のビルド後イベントで、Editorが所有するリソースを配置する -->
+  <ItemDefinitionGroup>
+    <PostBuildEvent>
+      <Command>robocopy "$(ProjectDir)resources" "$(OutDir)resources\editor" /E /R:1 /W:1 /NFL /NDL /NJH /NJS /NP
+if errorlevel 8 exit /b %errorlevel%
+exit /b 0</Command>
+      <Message>Editorのリソースを配置しています。</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
 </Project>

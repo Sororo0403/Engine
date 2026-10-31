@@ -42,14 +42,14 @@ bool WindowsInputBackend::Update(InputState &state) {
 	}
 
 	if (GetForegroundWindow() != hwnd_) {
+		// 復帰時に非アクティブ中の移動量を反映しない
+		ResetMouseReading();
 		return true;
 	}
 
-	if (!ReadKeyboard(state.keyboard)) {
-		return false;
-	}
-
-	if (!ReadGamepad(state.gamepad)) {
+	if (!ReadKeyboard(state.keyboard) || !ReadMouse(state.mouse) ||
+	    !ReadGamepad(state.gamepad)) {
+		ResetMouseReading();
 		return false;
 	}
 
@@ -58,6 +58,8 @@ bool WindowsInputBackend::Update(InputState &state) {
 }
 
 void WindowsInputBackend::Finalize() {
+	ResetMouseReading();
+
 	if (gameInput_) {
 		gameInput_.Reset();
 		Logger::Info("GameInputを終了しました。");
@@ -228,4 +230,93 @@ bool WindowsInputBackend::ReadGamepad(GamepadState &state) {
 	state.connected = true;
 
 	return true;
+}
+
+bool WindowsInputBackend::ReadMouse(MouseState &state) {
+	using namespace GameInput::v4;
+
+	state = {};
+
+	Microsoft::WRL::ComPtr<IGameInputReading> reading;
+
+	const HRESULT hr = gameInput_->GetCurrentReading(
+	    GameInputKindMouse, mouseDevice_.Get(), reading.GetAddressOf());
+
+	if (hr == GAMEINPUT_E_READING_NOT_FOUND ||
+	    hr == GAMEINPUT_E_DEVICE_NOT_FOUND ||
+	    hr == GAMEINPUT_E_DEVICE_DISCONNECTED) {
+		ResetMouseReading();
+		return true;
+	}
+
+	if (FAILED(hr)) {
+		ResetMouseReading();
+
+		Logger::Error(
+		    std::format("マウス状態の取得に失敗しました。HRESULT=0x{:08X}",
+		                static_cast<unsigned long>(hr)));
+		return false;
+	}
+
+	GameInputMouseState nativeState{};
+
+	if (!reading->GetMouseState(&nativeState)) {
+		ResetMouseReading();
+		Logger::Error("マウス状態の読み取りに失敗しました。");
+		return false;
+	}
+
+	if (!mouseDevice_) {
+		reading->GetDevice(mouseDevice_.GetAddressOf());
+	}
+
+	struct ButtonMapping {
+		MouseButton button;
+		GameInputMouseButtons flag;
+	};
+
+	static constexpr ButtonMapping mappings[] = {
+	    {MouseButton::LEFT, GameInputMouseLeftButton},
+	    {MouseButton::RIGHT, GameInputMouseRightButton},
+	    {MouseButton::MIDDLE, GameInputMouseMiddleButton},
+	    {MouseButton::BUTTON4, GameInputMouseButton4},
+	    {MouseButton::BUTTON5, GameInputMouseButton5},
+	};
+
+	for (const auto &mapping : mappings) {
+		const auto index = static_cast<std::size_t>(mapping.button);
+
+		state.buttons[index] =
+		    (nativeState.buttons & mapping.flag) != GameInputMouseNone;
+	}
+
+	// GameInputの累積値から、前回取得時との差分を求める
+	if (mouseReadingValid_) {
+		state.deltaX = nativeState.positionX - previousMouseState_.positionX;
+		state.deltaY = nativeState.positionY - previousMouseState_.positionY;
+
+		state.wheelX = nativeState.wheelX - previousMouseState_.wheelX;
+		state.wheelY = nativeState.wheelY - previousMouseState_.wheelY;
+	}
+
+	previousMouseState_ = nativeState;
+	mouseReadingValid_ = true;
+
+	// UIなどで使うカーソル座標は、相対移動量とは別に取得する
+	POINT position{};
+
+	if (GetCursorPos(&position) && ScreenToClient(hwnd_, &position)) {
+		state.positionValid = true;
+		state.positionX = position.x;
+		state.positionY = position.y;
+	}
+
+	state.connected = true;
+	return true;
+}
+
+void WindowsInputBackend::ResetMouseReading() {
+	mouseDevice_.Reset();
+	previousMouseState_ = {};
+	mouseReadingValid_ = false;
 }

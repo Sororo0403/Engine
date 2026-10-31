@@ -1,8 +1,8 @@
 #include "graphics/render/RenderWorld.h"
 #include "core/Logger.h"
 
-#include "graphics/Camera.h"
 #include "graphics/DirectionalLight.h"
+#include "graphics/camera/Camera.h"
 #include "graphics/model/Model.h"
 #include "graphics/model/ModelInstance.h"
 #include "graphics/render/D3D12Graphics.h"
@@ -285,6 +285,15 @@ void RenderWorld::Clear() {
 	impl_->camera_ = Camera{};
 	impl_->lightData_ = DirectionalLightData{};
 	impl_->prepared_ = false;
+}
+
+bool RenderWorld::SetCameraPose(const CameraPose &pose) {
+	if (!impl_->camera_.SetPose(pose)) {
+		return false;
+	}
+
+	impl_->prepared_ = false;
+	return true;
 }
 
 bool RenderWorld::Update(int width, int height) {

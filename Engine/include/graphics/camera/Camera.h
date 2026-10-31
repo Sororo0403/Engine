@@ -1,5 +1,7 @@
 #pragma once
 
+#include "graphics/camera/CameraPose.h"
+
 #include <DirectXMath.h>
 
 class Camera {
@@ -29,6 +31,13 @@ class Camera {
 	/// </summary>
 	/// <param name="offset">ワールド座標での移動量</param>
 	void Translate(const DirectX::XMFLOAT3 &offset);
+
+	/// <summary>
+	/// カメラの位置・注視点・上方向を設定する
+	/// </summary>
+	/// <param name="pose">設定する姿勢</param>
+	/// <returns>true:成功 false:値が無効、または視線を計算できない</returns>
+	bool SetPose(const CameraPose &pose);
 
   private:
 	DirectX::XMFLOAT3 position_{0.0f, 0.0f, -2.0f};

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "graphics/camera/CameraPose.h"
 #include "graphics/render/RenderObjectHandle.h"
 #include "scene/SceneObjectId.h"
 
@@ -59,6 +60,14 @@ class SceneRenderer {
 	/// 描画リソースを解放する。GPUの利用完了後に呼び出す
 	/// </summary>
 	void Finalize();
+
+	/// <summary>
+	/// シーンの描画に使用するカメラの姿勢を設定する。
+	/// Updateより前に呼び出す
+	/// </summary>
+	/// <param name="pose">設定する姿勢</param>
+	/// <returns>true:成功 false:未初期化、または姿勢が無効</returns>
+	bool SetCameraPose(const CameraPose &pose);
 
   private:
 	/// <summary>

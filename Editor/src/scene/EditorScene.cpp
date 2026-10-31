@@ -8,7 +8,7 @@
 #include <cmath>
 
 EditorScene::EditorScene(const EngineContext &context)
-    : debugUI_(context.debugUI),
+    : debugUI_(context.debugUI), input_(context.input),
       renderer_(scene_, context.models, context.render),
       sceneViewPanel_(context.render) {}
 
@@ -17,6 +17,17 @@ EditorScene::~EditorScene() = default;
 bool EditorScene::Initialize() {
 	if (!renderer_.Initialize()) {
 		return false;
+	}
+
+	cameraController_.Reset();
+
+	// カメラ操作とInspectorの確認用にモデルを配置する
+	selectedObjectId_ =
+	    scene_.CreateObject("Box", L"resources/editor/models/box.glb");
+
+	if (auto *object = scene_.FindObject(selectedObjectId_)) {
+		object->transform.scale = {0.45f, 0.45f, 0.45f};
+		object->transform.rotation = {0.3f, 0.4f, 0.0f};
 	}
 
 	Logger::Info("EditorSceneを初期化しました。");
@@ -36,14 +47,21 @@ bool EditorScene::Update(float deltaTime) {
 		return false;
 	}
 
+	// 非表示の場合も更新し、継続中のカメラ操作を終了させる
+	cameraController_.Update(input_, sceneViewPanel_.GetInput(), deltaTime);
+
 	const auto *target = sceneViewPanel_.GetRenderTexture();
 
-	// パネルが折りたたまれている間は描画の準備を行わない
 	if (!target) {
 		return true;
 	}
 
-	// ウィンドウ全体ではなく、Sceneの描画サイズを使用する
+	// カメラの姿勢を設定してから描画用データを更新する
+	if (!renderer_.SetCameraPose(cameraController_.GetPose())) {
+		Logger::Error("EditorScene: カメラの姿勢が無効です。");
+		return false;
+	}
+
 	return renderer_.Update(target->GetWidth(), target->GetHeight());
 }
 
@@ -62,4 +80,6 @@ void EditorScene::Finalize() {
 
 	scene_.Clear();
 	selectedObjectId_ = 0;
+
+	cameraController_.Reset();
 }

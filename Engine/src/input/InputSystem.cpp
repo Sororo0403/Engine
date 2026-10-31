@@ -22,7 +22,9 @@ bool InputSystem::Initialize(std::unique_ptr<IInputBackend> backend) {
 	}
 
 	backend_ = std::move(backend);
+
 	keyboard_.Reset();
+	mouse_.Reset();
 	gamepad_.Reset();
 
 	return true;
@@ -38,17 +40,20 @@ bool InputSystem::Update() {
 
 	if (!backend_->Update(state)) {
 		keyboard_.Reset();
+		mouse_.Reset();
 		gamepad_.Reset();
 		return false;
 	}
 
 	if (!state.active) {
 		keyboard_.Reset();
+		mouse_.Reset();
 		gamepad_.Reset();
 		return true;
 	}
 
 	keyboard_.Update(state.keyboard);
+	mouse_.Update(state.mouse);
 	gamepad_.Update(state.gamepad);
 
 	return true;
@@ -56,6 +61,7 @@ bool InputSystem::Update() {
 
 void InputSystem::Finalize() {
 	keyboard_.Reset();
+	mouse_.Reset();
 	gamepad_.Reset();
 
 	if (backend_) {
@@ -65,5 +71,7 @@ void InputSystem::Finalize() {
 }
 
 const Keyboard &InputSystem::GetKeyboard() const { return keyboard_; }
+
+const Mouse &InputSystem::GetMouse() const { return mouse_; }
 
 const Gamepad &InputSystem::GetGamepad() const { return gamepad_; }

@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\input\Mouse.cpp" />
     <ClCompile Include="src\graphics\render\RenderTexture.cpp" />
     <ClCompile Include="src\scene\SceneRenderer.cpp" />
     <ClCompile Include="src\scene\Scene.cpp" />
@@ -31,7 +32,7 @@
     <ClCompile Include="src\input\InputSystem.cpp" />
     <ClCompile Include="src\input\Keyboard.cpp" />
     <ClCompile Include="src\core\FrameTimer.cpp" />
-    <ClCompile Include="src\graphics\Camera.cpp" />
+    <ClCompile Include="src\graphics\camera\Camera.cpp" />
     <ClCompile Include="src\platform\windows\PathUtils.cpp" />
     <ClCompile Include="src\core\DateTime.cpp" />
     <ClCompile Include="src\core\Logger.cpp" />
@@ -49,19 +50,22 @@
     <ClInclude Include="include\graphics\DirectionalLightData.h" />
     <ClInclude Include="include\core\Engine.h" />
     <ClInclude Include="include\core\EngineContext.h" />
+    <ClInclude Include="include\graphics\camera\CameraPose.h" />
     <ClInclude Include="include\graphics\render\RenderObjectHandle.h" />
     <ClInclude Include="include\graphics\debug\DebugUI.h" />
     <ClInclude Include="include\graphics\DirectionalLight.h" />
+    <ClInclude Include="include\math\Transform.h" />
+    <ClInclude Include="include\input\MouseState.h" />
     <ClInclude Include="include\input\Gamepad.h" />
     <ClInclude Include="include\input\GamepadState.h" />
     <ClInclude Include="include\input\GamepadButton.h" />
     <ClInclude Include="include\input\IInputBackend.h" />
     <ClInclude Include="include\core\FrameTimer.h" />
-    <ClInclude Include="include\graphics\Camera.h" />
+    <ClInclude Include="include\graphics\camera\Camera.h" />
     <ClInclude Include="include\core\DateTime.h" />
     <ClInclude Include="include\graphics\render\D3D12Graphics.h" />
-    <ClInclude Include="include\graphics\Transform.h" />
     <ClInclude Include="include\graphics\mesh\Vertex.h" />
+    <ClInclude Include="include\graphics\debug\ViewportInput.h" />
     <ClInclude Include="include\platform\windows\Window.h" />
     <ClInclude Include="include\platform\windows\WinApp.h" />
     <ClInclude Include="include\graphics\render\ShaderCompiler.h" />
@@ -95,6 +99,8 @@
     <ClInclude Include="include\scene\Scene.h" />
     <ClInclude Include="include\scene\SceneRenderer.h" />
     <ClInclude Include="include\graphics\render\RenderTexture.h" />
+    <ClInclude Include="include\input\MouseButton.h" />
+    <ClInclude Include="include\input\Mouse.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\shaders\triangle\Triangle.hlsli">

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "camera/EditorCameraController.h"
 #include "panels/HierarchyPanel.h"
 #include "panels/InspectorPanel.h"
 #include "panels/SceneViewPanel.h"
@@ -9,6 +10,7 @@
 
 struct EngineContext;
 
+class InputSystem;
 class DebugUI;
 
 /// <summary>
@@ -53,6 +55,7 @@ class EditorScene final : public IScene {
   private:
 	// 参照先はEditorSceneより長く保持する
 	const DebugUI &debugUI_;
+	const InputSystem &input_;
 
 	// 描画側が参照するため、SceneRendererより先に宣言する
 	Scene scene_;
@@ -61,6 +64,8 @@ class EditorScene final : public IScene {
 	HierarchyPanel hierarchyPanel_;
 	InspectorPanel inspectorPanel_;
 	SceneViewPanel sceneViewPanel_;
+
+	EditorCameraController cameraController_;
 
 	SceneObjectId selectedObjectId_ = 0;
 };

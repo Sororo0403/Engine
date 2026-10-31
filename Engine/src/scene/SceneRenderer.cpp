@@ -142,3 +142,12 @@ void SceneRenderer::Finalize() {
 	world_.reset();
 	objects_.clear();
 }
+
+bool SceneRenderer::SetCameraPose(const CameraPose &pose) {
+	if (!world_) {
+		Logger::Error("SceneRenderer::SetCameraPose: 未初期化です。");
+		return false;
+	}
+
+	return world_->SetCameraPose(pose);
+}

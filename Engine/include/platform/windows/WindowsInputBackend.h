@@ -56,7 +56,25 @@ class WindowsInputBackend final : public IInputBackend {
 	/// <returns>true:取得成功、または入力なし false:取得失敗</returns>
 	bool ReadGamepad(GamepadState &state);
 
+	/// <summary>
+	/// マウスの入力状態を取得する
+	/// </summary>
+	/// <param name="state">取得結果の出力先</param>
+	/// <returns>true:取得成功、または入力なし false:取得失敗</returns>
+	bool ReadMouse(MouseState &state);
+
+	/// <summary>
+	/// マウスの取得対象と累積値の基準をクリアする
+	/// </summary>
+	void ResetMouseReading();
+
+  private:
 	HWND hwnd_ = nullptr;
 
 	Microsoft::WRL::ComPtr<GameInput::v4::IGameInput> gameInput_;
+
+	Microsoft::WRL::ComPtr<GameInput::v4::IGameInputDevice> mouseDevice_;
+
+	GameInput::v4::GameInputMouseState previousMouseState_{};
+	bool mouseReadingValid_ = false;
 };

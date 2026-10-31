@@ -21,6 +21,12 @@
     <Filter Include="src\panels">
       <UniqueIdentifier>{c832e020-a369-4d18-958b-5b2c6873f816}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\camera">
+      <UniqueIdentifier>{324c9c95-ee49-4c69-8e03-1355168ac609}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\camera">
+      <UniqueIdentifier>{1f06db44-c768-4176-aea9-8f03639b9702}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -38,6 +44,9 @@
     <ClCompile Include="src\panels\SceneViewPanel.cpp">
       <Filter>src\panels</Filter>
     </ClCompile>
+    <ClCompile Include="src\camera\EditorCameraController.cpp">
+      <Filter>src\camera</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\scene\EditorScene.h">
@@ -52,5 +61,21 @@
     <ClInclude Include="include\panels\SceneViewPanel.h">
       <Filter>include\panels</Filter>
     </ClInclude>
+    <ClInclude Include="include\camera\EditorCameraController.h">
+      <Filter>include\camera</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="resources">
+      <UniqueIdentifier>{08524f4f-4a3d-40c9-9c9d-0682323603aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="resources\models">
+      <UniqueIdentifier>{28effc9b-3fd3-4769-9168-f54d604d67db}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="resources\models\box.glb">
+      <Filter>resources\models</Filter>
+    </None>
   </ItemGroup>
 </Project>

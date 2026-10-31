@@ -1,5 +1,7 @@
 #pragma once
 
+#include "graphics/debug/ViewportInput.h"
+
 #include <memory>
 
 class DebugUI;
@@ -37,6 +39,12 @@ class SceneViewPanel {
 	RenderTexture *GetRenderTexture() const;
 
 	/// <summary>
+	/// Scene画像に対する操作の可否を取得する
+	/// </summary>
+	/// <returns>DrawUIで取得した状態。非表示の場合は空の状態</returns>
+	const ViewportInput &GetInput() const;
+
+	/// <summary>
 	/// 描画先を解放する。GPUの利用完了後に呼び出す
 	/// </summary>
 	void Finalize();
@@ -46,5 +54,7 @@ class SceneViewPanel {
 	RenderSystem &render_;
 
 	std::unique_ptr<RenderTexture> texture_;
+	ViewportInput input_{};
+
 	bool visible_ = false;
 };

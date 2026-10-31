@@ -2,6 +2,7 @@
 
 #include "input/GamepadState.h"
 #include "input/Keyboard.h"
+#include "input/MouseState.h"
 
 /// <summary>
 /// バックエンドが取得した入力状態
@@ -10,5 +11,6 @@ struct InputState {
 	bool active = false;
 
 	Keyboard::State keyboard{};
+	MouseState mouse{};
 	GamepadState gamepad{};
 };

@@ -84,6 +84,15 @@
     <Filter Include="src\scene">
       <UniqueIdentifier>{43a873c1-39bc-4942-815a-3e3e34e9eb88}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\graphics\camera">
+      <UniqueIdentifier>{a57aa792-14e7-48c5-b010-17841f508923}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\graphics\camera">
+      <UniqueIdentifier>{f9a465a2-9640-471d-9dd9-603dd9bd434e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\math">
+      <UniqueIdentifier>{3d3e1a26-4171-4721-b7fb-30f2da789895}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\platform\windows\Window.cpp">
@@ -112,9 +121,6 @@
     </ClCompile>
     <ClCompile Include="src\platform\windows\PathUtils.cpp">
       <Filter>src\platform\windows</Filter>
-    </ClCompile>
-    <ClCompile Include="src\graphics\Camera.cpp">
-      <Filter>src\graphics</Filter>
     </ClCompile>
     <ClCompile Include="src\core\FrameTimer.cpp">
       <Filter>src\core</Filter>
@@ -182,6 +188,12 @@
     <ClCompile Include="src\graphics\render\RenderTexture.cpp">
       <Filter>src\graphics\render</Filter>
     </ClCompile>
+    <ClCompile Include="src\graphics\camera\Camera.cpp">
+      <Filter>src\graphics\camera</Filter>
+    </ClCompile>
+    <ClCompile Include="src\input\Mouse.cpp">
+      <Filter>src\input</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\platform\windows\Window.h">
@@ -214,14 +226,8 @@
     <ClInclude Include="include\graphics\mesh\Vertex.h">
       <Filter>include\graphics\mesh</Filter>
     </ClInclude>
-    <ClInclude Include="include\graphics\Camera.h">
-      <Filter>include\graphics</Filter>
-    </ClInclude>
     <ClInclude Include="include\core\FrameTimer.h">
       <Filter>include\core</Filter>
-    </ClInclude>
-    <ClInclude Include="include\graphics\Transform.h">
-      <Filter>include\graphics</Filter>
     </ClInclude>
     <ClInclude Include="include\input\Key.h">
       <Filter>include\input</Filter>
@@ -333,6 +339,27 @@
     </ClInclude>
     <ClInclude Include="include\graphics\render\RenderTexture.h">
       <Filter>include\graphics\render</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\camera\Camera.h">
+      <Filter>include\graphics\camera</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\camera\CameraPose.h">
+      <Filter>include\graphics\camera</Filter>
+    </ClInclude>
+    <ClInclude Include="include\input\MouseButton.h">
+      <Filter>include\input</Filter>
+    </ClInclude>
+    <ClInclude Include="include\input\Mouse.h">
+      <Filter>include\input</Filter>
+    </ClInclude>
+    <ClInclude Include="include\input\MouseState.h">
+      <Filter>include\input</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\debug\ViewportInput.h">
+      <Filter>include\graphics\debug</Filter>
+    </ClInclude>
+    <ClInclude Include="include\math\Transform.h">
+      <Filter>include\math</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

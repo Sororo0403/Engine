@@ -495,6 +495,20 @@ DirectX::XMFLOAT2 DebugUI::GetContentSize() const {
 	return {size.x, size.y};
 }
 
+ViewportInput DebugUI::GetViewportInput() const {
+	impl_->UseFrame();
+
+	const ImGuiIO &io = ImGui::GetIO();
+
+	ViewportInput input;
+	input.imageHovered = ImGui::IsItemHovered();
+	input.windowFocused = ImGui::IsWindowFocused();
+	input.applicationFocused = !io.AppFocusLost;
+	input.widgetActive = io.WantTextInput || ImGui::IsAnyItemActive();
+
+	return input;
+}
+
 void DebugUI::Image(const RenderTexture &texture, float width,
                     float height) const {
 	impl_->UseFrame();
@@ -674,5 +688,7 @@ void DebugUI::SetNextWindowSize(float, float) const {}
 DirectX::XMFLOAT2 DebugUI::GetContentSize() const { return {}; }
 
 void DebugUI::Image(const RenderTexture &, float, float) const {}
+
+ViewportInput DebugUI::GetViewportInput() const { return {}; }
 
 #endif

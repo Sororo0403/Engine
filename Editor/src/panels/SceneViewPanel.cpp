@@ -13,6 +13,7 @@ SceneViewPanel::~SceneViewPanel() = default;
 
 bool SceneViewPanel::DrawUI(const DebugUI &ui) {
 	visible_ = false;
+	input_ = {};
 
 	ui.SetNextWindowSize(800.0f, 500.0f);
 
@@ -48,6 +49,9 @@ bool SceneViewPanel::DrawUI(const DebugUI &ui) {
 	// リサイズを済ませてから、UIの画像として登録する
 	ui.Image(*texture_, static_cast<float>(width), static_cast<float>(height));
 
+	// 最後に表示した項目が画像である間に取得する
+	input_ = ui.GetViewportInput();
+
 	visible_ = true;
 
 	ui.EndWindow();
@@ -58,7 +62,10 @@ RenderTexture *SceneViewPanel::GetRenderTexture() const {
 	return visible_ ? texture_.get() : nullptr;
 }
 
+const ViewportInput &SceneViewPanel::GetInput() const { return input_; }
+
 void SceneViewPanel::Finalize() {
 	texture_.reset();
+	input_ = {};
 	visible_ = false;
 }

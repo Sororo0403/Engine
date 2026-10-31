@@ -1,5 +1,7 @@
 #pragma once
 
+#include "graphics/debug/ViewportInput.h"
+
 #include <DirectXMath.h>
 #include <cstdint>
 #include <memory>
@@ -175,6 +177,13 @@ class DebugUI {
 	/// </summary>
 	/// <returns>横方向・縦方向の使用可能サイズ</returns>
 	DirectX::XMFLOAT2 GetContentSize() const;
+
+	/// <summary>
+	/// 最後に表示した画像に対する操作の可否を取得する
+	/// </summary>
+	/// <returns>画像と、その画像を表示しているウィンドウの状態</returns>
+	/// <remarks>Imageの直後、EndWindowより前に呼び出す</remarks>
+	ViewportInput GetViewportInput() const;
 
 	/// <summary>
 	/// 描画先テクスチャを画像として表示する

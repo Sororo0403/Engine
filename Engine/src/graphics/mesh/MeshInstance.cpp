@@ -1,6 +1,6 @@
 #include "graphics/mesh/MeshInstance.h"
 #include "core/Logger.h"
-#include "graphics/Camera.h"
+#include "graphics/camera/Camera.h"
 #include "graphics/material/Material.h"
 
 #include <format>

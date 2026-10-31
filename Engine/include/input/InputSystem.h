@@ -3,6 +3,7 @@
 #include "input/Gamepad.h"
 #include "input/IInputBackend.h"
 #include "input/Keyboard.h"
+#include "input/Mouse.h"
 
 #include <memory>
 
@@ -40,9 +41,16 @@ class InputSystem {
 	/// <returns>この入力システムが所有するコントローラーへの読み取り専用参照</returns>
 	const Gamepad &GetGamepad() const;
 
+	/// <summary>
+	/// マウスの状態を取得する
+	/// </summary>
+	/// <returns>この入力システムが所有するマウスへの読み取り専用参照</returns>
+	const Mouse &GetMouse() const;
+
   private:
 	std::unique_ptr<IInputBackend> backend_;
 
 	Keyboard keyboard_;
+	Mouse mouse_;
 	Gamepad gamepad_;
 };
