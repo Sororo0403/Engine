@@ -1,0 +1,21 @@
+#pragma once
+
+#include "scene/SceneObjectId.h"
+
+class DebugUI;
+class Scene;
+
+/// <summary>
+/// シーン上の物体の一覧・選択・作成・削除を管理する
+/// </summary>
+class HierarchyPanel {
+  public:
+	/// <summary>
+	/// 物体の一覧と操作用UIを構築する
+	/// </summary>
+	/// <param name="ui">フレーム開始済みのUI</param>
+	/// <param name="scene">編集対象のシーン</param>
+	/// <param name="selectedObjectId">選択中の物体ID。未選択は0</param>
+	void Draw(const DebugUI &ui, Scene &scene,
+	          SceneObjectId &selectedObjectId) const;
+};

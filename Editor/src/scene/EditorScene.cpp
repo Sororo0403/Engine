@@ -2,11 +2,13 @@
 
 #include "core/EngineContext.h"
 #include "core/Logger.h"
+#include "graphics/debug/DebugUI.h"
 
 #include <cmath>
 
 EditorScene::EditorScene(const EngineContext &context)
-    : renderer_(scene_, context.models, context.render) {}
+    : debugUI_(context.debugUI),
+      renderer_(scene_, context.models, context.render) {}
 
 EditorScene::~EditorScene() = default;
 
@@ -25,7 +27,8 @@ bool EditorScene::Update(float deltaTime) {
 		return false;
 	}
 
-	// HierarchyやInspectorによる編集処理は、この位置に追加する
+	hierarchyPanel_.Draw(debugUI_, scene_, selectedObjectId_);
+	inspectorPanel_.Draw(debugUI_, scene_, selectedObjectId_);
 
 	// 全ての編集を終えてから描画側へ反映する
 	return renderer_.Update();

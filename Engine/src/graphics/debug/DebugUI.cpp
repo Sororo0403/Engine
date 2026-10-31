@@ -432,6 +432,16 @@ void DebugUI::Separator() const {
 	ImGui::Separator();
 }
 
+bool DebugUI::Button(const char *label) const {
+	impl_->UseFrame();
+	return ImGui::Button(label);
+}
+
+bool DebugUI::Selectable(const char *label, bool selected) const {
+	impl_->UseFrame();
+	return ImGui::Selectable(label, selected);
+}
+
 void DebugUI::Text(std::string_view text) const {
 	impl_->UseFrame();
 
@@ -585,5 +595,9 @@ bool DebugUI::HandleMessage(void *, std::uint32_t, std::uintptr_t,
 }
 
 void DebugUI::Finalize() {}
+
+bool DebugUI::Button(const char *) const { return false; }
+
+bool DebugUI::Selectable(const char *, bool) const { return false; }
 
 #endif

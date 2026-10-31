@@ -1,10 +1,14 @@
 #pragma once
 
+#include "panels/HierarchyPanel.h"
+#include "panels/InspectorPanel.h"
 #include "scene/IScene.h"
 #include "scene/Scene.h"
 #include "scene/SceneRenderer.h"
 
 struct EngineContext;
+
+class DebugUI;
 
 /// <summary>
 /// エディターのシーンデータと編集処理を管理する
@@ -29,7 +33,7 @@ class EditorScene final : public IScene {
 	bool Initialize() override;
 
 	/// <summary>
-	/// 編集状態を更新し、シーンデータを描画側へ反映する
+	/// 編集UIを構築し、シーンデータを描画側へ反映する
 	/// </summary>
 	/// <param name="deltaTime">前フレームからの経過時間。単位は秒</param>
 	/// <returns>true:成功 false:未初期化、引数が無効、または更新失敗</returns>
@@ -46,9 +50,15 @@ class EditorScene final : public IScene {
 	void Finalize() override;
 
   private:
+	// 参照先はEditorSceneより長く保持する
+	const DebugUI &debugUI_;
+
 	// 描画側が参照するため、SceneRendererより先に宣言する
 	Scene scene_;
 	SceneRenderer renderer_;
+
+	HierarchyPanel hierarchyPanel_;
+	InspectorPanel inspectorPanel_;
 
 	SceneObjectId selectedObjectId_ = 0;
 };

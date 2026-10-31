@@ -130,6 +130,21 @@ class DebugUI {
 	void Separator() const;
 
 	/// <summary>
+	/// ボタンを表示する
+	/// </summary>
+	/// <param name="label">ボタンのラベル</param>
+	/// <returns>true:押された false:押されていない</returns>
+	bool Button(const char *label) const;
+
+	/// <summary>
+	/// 選択可能な項目を表示する
+	/// </summary>
+	/// <param name="label">項目のラベル</param>
+	/// <param name="selected">現在選択されているか</param>
+	/// <returns>true:押された false:押されていない</returns>
+	bool Selectable(const char *label, bool selected) const;
+
+	/// <summary>
 	/// 書式として解釈せず、そのまま文字列を表示する
 	/// </summary>
 	/// <param name="text">表示する文字列</param>

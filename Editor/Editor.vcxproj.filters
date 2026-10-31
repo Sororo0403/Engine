@@ -15,6 +15,12 @@
     <Filter Include="src\scene">
       <UniqueIdentifier>{adc031ed-fe6b-4266-bbf4-f68d21fcb057}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\panels">
+      <UniqueIdentifier>{b52d65f2-777f-4cc6-8a92-5e53dc10a69e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\panels">
+      <UniqueIdentifier>{c832e020-a369-4d18-958b-5b2c6873f816}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -23,10 +29,22 @@
     <ClCompile Include="src\scene\EditorScene.cpp">
       <Filter>src\scene</Filter>
     </ClCompile>
+    <ClCompile Include="src\panels\HierarchyPanel.cpp">
+      <Filter>src\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="src\panels\InspectorPanel.cpp">
+      <Filter>src\panels</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\scene\EditorScene.h">
       <Filter>include\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="include\panels\HierarchyPanel.h">
+      <Filter>include\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="include\panels\InspectorPanel.h">
+      <Filter>include\panels</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

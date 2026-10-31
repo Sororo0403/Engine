@@ -117,9 +117,13 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\panels\HierarchyPanel.h" />
     <ClInclude Include="include\scene\EditorScene.h" />
+    <ClInclude Include="include\panels\InspectorPanel.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\panels\InspectorPanel.cpp" />
+    <ClCompile Include="src\panels\HierarchyPanel.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\scene\EditorScene.cpp" />
   </ItemGroup>
