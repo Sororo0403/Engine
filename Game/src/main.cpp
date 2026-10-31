@@ -18,5 +18,10 @@ std::unique_ptr<IScene> CreateInitialScene(const EngineContext &context) {
 } // namespace
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
-	return Engine::Run(CreateInitialScene);
+	EngineConfig config;
+	config.windowTitle = L"MyGame";
+	config.windowWidth = 1280;
+	config.windowHeight = 720;
+
+	return Engine::Run(config, CreateInitialScene);
 }

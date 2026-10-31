@@ -18,6 +18,7 @@
 
 #include <Windows.h>
 #include <exception>
+#include <filesystem>
 #include <format>
 #include <memory>
 #include <objbase.h>
@@ -82,20 +83,22 @@ struct Engine::Impl {
 	/// <summary>
 	/// 共通機能と最初のシーンを初期化する
 	/// </summary>
-	bool Initialize(HINSTANCE hInstance, SceneFactory sceneFactory) {
-		constexpr int windowWidth = 1280;
-		constexpr int windowHeight = 720;
-
+	bool Initialize(HINSTANCE hInstance, const EngineConfig &config,
+	                SceneFactory sceneFactory,
+	                const std::filesystem::path &executableDirectory) {
 		if (!shaderCompiler_.Initialize()) {
 			return false;
 		}
 
+		const auto shaderDirectory = executableDirectory / L"resources" /
+		                             L"engine" / L"shaders" / L"triangle";
+
 		auto vertexShader = shaderCompiler_.Compile(
-		    L"resources/engine/shaders/triangle/Triangle.VS.hlsl", L"VSMain",
+		    (shaderDirectory / L"Triangle.VS.hlsl").wstring(), L"VSMain",
 		    L"vs_6_0");
 
 		auto pixelShader = shaderCompiler_.Compile(
-		    L"resources/engine/shaders/triangle/Triangle.PS.hlsl", L"PSMain",
+		    (shaderDirectory / L"Triangle.PS.hlsl").wstring(), L"PSMain",
 		    L"ps_6_0");
 
 		shaderCompiler_.Finalize();
@@ -104,11 +107,13 @@ struct Engine::Impl {
 			return false;
 		}
 
-		if (!app_.Initialize(hInstance, L"MyGame", windowWidth, windowHeight)) {
+		if (!app_.Initialize(hInstance, config.windowTitle, config.windowWidth,
+		                     config.windowHeight)) {
 			return false;
 		}
 
-		if (!graphics_.Initialize(app_.GetHwnd(), windowWidth, windowHeight)) {
+		if (!graphics_.Initialize(app_.GetHwnd(), config.windowWidth,
+		                          config.windowHeight)) {
 			return false;
 		}
 
@@ -241,8 +246,8 @@ struct Engine::Impl {
 	bool graphicsInitialized_ = false;
 };
 
-int Engine::Run(SceneFactory sceneFactory) {
-	if (!sceneFactory) {
+int Engine::Run(const EngineConfig &config, SceneFactory sceneFactory) {
+	if (!sceneFactory || config.windowWidth <= 0 || config.windowHeight <= 0) {
 		return -1;
 	}
 
@@ -279,7 +284,8 @@ int Engine::Run(SceneFactory sceneFactory) {
 				} else {
 					Impl engine;
 
-					if (engine.Initialize(hInstance, sceneFactory)) {
+					if (engine.Initialize(hInstance, config, sceneFactory,
+					                      executableDirectory)) {
 						exitCode = engine.MainLoop();
 					}
 

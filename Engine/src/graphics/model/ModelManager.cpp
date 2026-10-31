@@ -5,6 +5,7 @@
 #include "graphics/model/ModelData.h"
 #include "graphics/model/ModelLoader.h"
 #include "graphics/render/D3D12Graphics.h"
+#include "platform/windows/PathUtils.h"
 
 #include <exception>
 #include <format>
@@ -68,8 +69,25 @@ ModelHandle ModelManager::Load(const std::filesystem::path &filePath) {
 	}
 
 	try {
-		// 相対パスを絶対パスへ変換し、"."・".."・シンボリックリンクを解決する
-		const std::filesystem::path key = std::filesystem::canonical(filePath);
+		// 相対パスは実行ファイルのフォルダを基準に解決する
+		std::filesystem::path resolvedPath = filePath;
+
+		if (resolvedPath.is_relative()) {
+			const auto executableDirectory =
+			    PathUtils::GetExecutableDirectory();
+
+			if (executableDirectory.empty()) {
+				Logger::Error("ModelManager::Load: 実行ファイルのフォルダを"
+				              "取得できませんでした。");
+				return {};
+			}
+
+			resolvedPath = executableDirectory / resolvedPath;
+		}
+
+		// 実在するファイルの正規化済み絶対パスをキャッシュのキーにする
+		const std::filesystem::path key =
+		    std::filesystem::canonical(resolvedPath);
 
 		// 読み込み済みなら、同じモデルへの共有参照を返す
 		const auto found = impl_->cache.find(key);

@@ -26,7 +26,7 @@ class ModelManager {
 	/// <summary>
 	/// モデルを読み込む。同じ正規化パスはキャッシュを共有する
 	/// </summary>
-	/// <param name="filePath">モデルファイルのパス</param>
+	/// <param name="filePath">モデルの絶対パス、または実行ファイルのフォルダを基準にした相対パス</param>
 	/// <returns>成功:モデルの共有参照 失敗:空のハンドル</returns>
 	ModelHandle Load(const std::filesystem::path &filePath);
 

@@ -307,6 +307,9 @@
     <ClInclude Include="include\graphics\render\RenderObjectHandle.h">
       <Filter>include\graphics\render</Filter>
     </ClInclude>
+    <ClInclude Include="include\core\EngineConfig.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resources\shaders\triangle\Triangle.PS.hlsl">

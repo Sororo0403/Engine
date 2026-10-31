@@ -42,6 +42,7 @@
     <ClCompile Include="src\graphics\material\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\core\EngineConfig.h" />
     <ClInclude Include="include\graphics\DirectionalLightData.h" />
     <ClInclude Include="include\core\Engine.h" />
     <ClInclude Include="include\core\EngineContext.h" />
