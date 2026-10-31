@@ -1,16 +1,13 @@
 #pragma once
 
 #include "scene/IScene.h"
-
-#include <memory>
+#include "scene/Scene.h"
+#include "scene/SceneRenderer.h"
 
 struct EngineContext;
 
-class RenderSystem;
-class RenderWorld;
-
 /// <summary>
-/// エディターの描画ワールドと編集処理を管理する
+/// エディターのシーンデータと編集処理を管理する
 /// </summary>
 class EditorScene final : public IScene {
   public:
@@ -26,20 +23,20 @@ class EditorScene final : public IScene {
 	EditorScene &operator=(const EditorScene &) = delete;
 
 	/// <summary>
-	/// 編集用の描画ワールドを初期化する
+	/// 編集用シーンの描画機能を初期化する
 	/// </summary>
 	/// <returns>true:成功 false:初期化済み、または作成失敗</returns>
 	bool Initialize() override;
 
 	/// <summary>
-	/// 編集状態と描画用データを更新する
+	/// 編集状態を更新し、シーンデータを描画側へ反映する
 	/// </summary>
 	/// <param name="deltaTime">前フレームからの経過時間。単位は秒</param>
 	/// <returns>true:成功 false:未初期化、引数が無効、または更新失敗</returns>
 	bool Update(float deltaTime) override;
 
 	/// <summary>
-	/// 編集中のワールドを描画する。描画基盤のBeginFrame後に呼び出す
+	/// 編集中のシーンを描画する。描画基盤のBeginFrame後に呼び出す
 	/// </summary>
 	void Draw() const override;
 
@@ -49,7 +46,9 @@ class EditorScene final : public IScene {
 	void Finalize() override;
 
   private:
-	// 参照先はEditorSceneより長く保持する
-	RenderSystem &render_;
-	std::unique_ptr<RenderWorld> world_;
+	// 描画側が参照するため、SceneRendererより先に宣言する
+	Scene scene_;
+	SceneRenderer renderer_;
+
+	SceneObjectId selectedObjectId_ = 0;
 };

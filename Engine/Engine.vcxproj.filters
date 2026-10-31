@@ -173,6 +173,12 @@
     <ClCompile Include="src\graphics\render\RenderSystem.cpp">
       <Filter>src\graphics\render</Filter>
     </ClCompile>
+    <ClCompile Include="src\scene\Scene.cpp">
+      <Filter>src\scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scene\SceneRenderer.cpp">
+      <Filter>src\scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\platform\windows\Window.h">
@@ -307,8 +313,20 @@
     <ClInclude Include="include\graphics\render\RenderObjectHandle.h">
       <Filter>include\graphics\render</Filter>
     </ClInclude>
+    <ClInclude Include="include\scene\SceneObject.h">
+      <Filter>include\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scene\SceneObjectId.h">
+      <Filter>include\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scene\Scene.h">
+      <Filter>include\scene</Filter>
+    </ClInclude>
     <ClInclude Include="include\core\EngineConfig.h">
-      <Filter>include</Filter>
+      <Filter>include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scene\SceneRenderer.h">
+      <Filter>include\scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

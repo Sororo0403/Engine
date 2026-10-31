@@ -2,25 +2,16 @@
 
 #include "core/EngineContext.h"
 #include "core/Logger.h"
-#include "graphics/render/RenderSystem.h"
-#include "graphics/render/RenderWorld.h"
 
 #include <cmath>
 
-EditorScene::EditorScene(const EngineContext &context) : render_(context.render) {}
+EditorScene::EditorScene(const EngineContext &context)
+    : renderer_(scene_, context.models, context.render) {}
 
 EditorScene::~EditorScene() = default;
 
 bool EditorScene::Initialize() {
-	if (world_) {
-		Logger::Error("EditorScene::Initialize: 初期化済みです。");
-		return false;
-	}
-
-	world_ = render_.CreateWorld();
-
-	if (!world_) {
-		Logger::Error("EditorScene: 描画ワールドの作成に失敗しました。");
+	if (!renderer_.Initialize()) {
 		return false;
 	}
 
@@ -29,29 +20,23 @@ bool EditorScene::Initialize() {
 }
 
 bool EditorScene::Update(float deltaTime) {
-	if (!world_) {
-		Logger::Error("EditorScene::Update: 未初期化です。");
-		return false;
-	}
-
 	if (!std::isfinite(deltaTime) || deltaTime < 0.0f) {
 		Logger::Error("EditorScene::Update: 経過時間が無効です。");
 		return false;
 	}
 
-	return render_.Update(*world_);
+	// HierarchyやInspectorによる編集処理は、この位置に追加する
+
+	// 全ての編集を終えてから描画側へ反映する
+	return renderer_.Update();
 }
 
-void EditorScene::Draw() const {
-	if (!world_) {
-		Logger::Error("EditorScene::Draw: 未初期化です。");
-		return;
-	}
-
-	render_.Draw(*world_);
-}
+void EditorScene::Draw() const { renderer_.Draw(); }
 
 void EditorScene::Finalize() {
-	// GPUの利用完了後に描画ワールドを解放する
-	world_.reset();
+	// GPUの利用完了後、参照している描画側から終了する
+	renderer_.Finalize();
+
+	scene_.Clear();
+	selectedObjectId_ = 0;
 }

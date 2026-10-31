@@ -11,6 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\scene\SceneRenderer.cpp" />
+    <ClCompile Include="src\scene\Scene.cpp" />
     <ClCompile Include="src\graphics\render\RenderSystem.cpp" />
     <ClCompile Include="src\graphics\render\RenderWorld.cpp" />
     <ClCompile Include="src\graphics\model\ModelManager.cpp" />
@@ -87,6 +89,10 @@
     <ClInclude Include="include\graphics\material\MaterialData.h" />
     <ClInclude Include="include\graphics\render\RenderWorld.h" />
     <ClInclude Include="include\graphics\render\RenderSystem.h" />
+    <ClInclude Include="include\scene\SceneObject.h" />
+    <ClInclude Include="include\scene\SceneObjectId.h" />
+    <ClInclude Include="include\scene\Scene.h" />
+    <ClInclude Include="include\scene\SceneRenderer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\shaders\triangle\Triangle.hlsli">

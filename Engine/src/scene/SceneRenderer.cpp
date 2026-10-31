@@ -1,0 +1,128 @@
+#include "scene/SceneRenderer.h"
+
+#include "core/Logger.h"
+#include "graphics/model/ModelManager.h"
+#include "graphics/render/RenderSystem.h"
+#include "graphics/render/RenderWorld.h"
+#include "scene/Scene.h"
+
+#include <exception>
+#include <format>
+#include <utility>
+
+SceneRenderer::SceneRenderer(const Scene &scene, ModelManager &models,
+                             RenderSystem &render)
+    : scene_(scene), models_(models), render_(render) {}
+
+SceneRenderer::~SceneRenderer() = default;
+
+bool SceneRenderer::Initialize() {
+	if (world_) {
+		Logger::Error("SceneRenderer::Initialize: 初期化済みです。");
+		return false;
+	}
+
+	world_ = render_.CreateWorld();
+
+	if (!world_) {
+		Logger::Error("SceneRenderer: 描画ワールドの作成に失敗しました。");
+		return false;
+	}
+
+	return true;
+}
+
+bool SceneRenderer::Update() {
+	if (!world_) {
+		Logger::Error("SceneRenderer::Update: 未初期化です。");
+		return false;
+	}
+
+	try {
+		if (!SynchronizeObjects()) {
+			return false;
+		}
+
+		return render_.Update(*world_);
+	} catch (const std::exception &error) {
+		Logger::Error(std::format(
+		    "SceneRendererの更新中に例外が発生しました: {}", error.what()));
+
+		return false;
+	}
+}
+
+bool SceneRenderer::SynchronizeObjects() {
+	// 削除された物体、またはモデルを持たなくなった物体を取り除く
+	for (auto it = objects_.begin(); it != objects_.end();) {
+		const SceneObject *object = scene_.FindObject(it->first);
+
+		if (!object || object->modelPath.empty()) {
+			world_->DestroyObject(it->second.handle);
+			it = objects_.erase(it);
+		} else {
+			++it;
+		}
+	}
+
+	for (const auto &[id, object] : scene_.GetObjects()) {
+		if (object.modelPath.empty()) {
+			continue;
+		}
+
+		// 描画物体を作る前に、対応情報の格納先を確保する
+		auto it = objects_.try_emplace(id).first;
+		Object &renderObject = it->second;
+
+		const bool needsCreate = !world_->Contains(renderObject.handle) ||
+		                         renderObject.modelPath != object.modelPath;
+
+		if (needsCreate) {
+			// パスのコピーはGPUリソースを作成する前に済ませる
+			std::filesystem::path modelPath = object.modelPath;
+
+			const auto model = models_.Load(modelPath);
+
+			if (!model) {
+				Logger::Error(std::format(
+				    "SceneRenderer: 物体{}のモデル読み込みに失敗しました。",
+				    id));
+				return false;
+			}
+
+			const auto handle = world_->CreateObject(model);
+
+			if (!world_->Contains(handle)) {
+				Logger::Error(std::format(
+				    "SceneRenderer: 物体{}の描画物体作成に失敗しました。", id));
+				return false;
+			}
+
+			// 新しい描画物体の作成に成功してから、以前の物体を削除する
+			world_->DestroyObject(renderObject.handle);
+
+			renderObject.modelPath = std::move(modelPath);
+			renderObject.handle = handle;
+		}
+
+		// シーン側の変形情報を描画側へ反映する
+		world_->GetTransform(renderObject.handle) = object.transform;
+	}
+
+	return true;
+}
+
+void SceneRenderer::Draw() const {
+	if (!world_) {
+		Logger::Error("SceneRenderer::Draw: 未初期化です。");
+		return;
+	}
+
+	render_.Draw(*world_);
+}
+
+void SceneRenderer::Finalize() {
+	// GPUの利用完了後に描画ワールドを解放する
+	world_.reset();
+	objects_.clear();
+}
