@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\Microsoft.Direct3D.DXC.1.9.2609.5\build\native\Microsoft.Direct3D.DXC.props" Condition="Exists('..\packages\Microsoft.Direct3D.DXC.1.9.2609.5\build\native\Microsoft.Direct3D.DXC.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
@@ -12,7 +11,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\scene\GameScene.cpp" />
+    <ClCompile Include="src\graphics\render\RenderSystem.cpp" />
+    <ClCompile Include="src\graphics\render\RenderWorld.cpp" />
+    <ClCompile Include="src\graphics\model\ModelManager.cpp" />
+    <ClCompile Include="src\core\Engine.cpp" />
     <ClCompile Include="src\scene\SceneManager.cpp" />
     <ClCompile Include="src\graphics\debug\DebugUI.cpp" />
     <ClCompile Include="src\graphics\model\ModelInstance.cpp" />
@@ -32,7 +34,6 @@
     <ClCompile Include="src\core\Logger.cpp" />
     <ClCompile Include="src\graphics\render\ShaderCompiler.cpp" />
     <ClCompile Include="src\graphics\render\D3D12Graphics.cpp" />
-    <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\platform\windows\Window.cpp" />
     <ClCompile Include="src\platform\windows\WinApp.cpp" />
     <ClCompile Include="src\graphics\render\MeshRenderer.cpp" />
@@ -41,7 +42,10 @@
     <ClCompile Include="src\graphics\material\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\scene\GameScene.h" />
+    <ClInclude Include="include\graphics\DirectionalLightData.h" />
+    <ClInclude Include="include\core\Engine.h" />
+    <ClInclude Include="include\core\EngineContext.h" />
+    <ClInclude Include="include\graphics\render\RenderObjectHandle.h" />
     <ClInclude Include="include\graphics\debug\DebugUI.h" />
     <ClInclude Include="include\graphics\DirectionalLight.h" />
     <ClInclude Include="include\input\Gamepad.h" />
@@ -77,9 +81,13 @@
     <ClInclude Include="include\graphics\model\ModelInstance.h" />
     <ClInclude Include="include\scene\IScene.h" />
     <ClInclude Include="include\scene\SceneManager.h" />
+    <ClInclude Include="include\graphics\model\ModelManager.h" />
+    <ClInclude Include="include\graphics\model\ModelHandle.h" />
+    <ClInclude Include="include\graphics\material\MaterialData.h" />
+    <ClInclude Include="include\graphics\render\RenderWorld.h" />
+    <ClInclude Include="include\graphics\render\RenderSystem.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="resources\shaders\triangle\Triangle.hlsli">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -105,23 +113,19 @@
     <ProjectGuid>{b5695b53-5c1d-4b30-887f-99386dedafcd}</ProjectGuid>
     <RootNamespace>Engine</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-  </PropertyGroup>
-  <PropertyGroup Label="Vcpkg">
-    <VcpkgEnabled>true</VcpkgEnabled>
-    <VcpkgEnableManifest>true</VcpkgEnableManifest>
-    <VcpkgTriplet>x64-windows-static-md</VcpkgTriplet>
-    <VcpkgManifestInstall>true</VcpkgManifestInstall>
-    <VcpkgAutoLink>true</VcpkgAutoLink>
+    <EngineExternalRoot>$(MSBuildThisFileDirectory)external\</EngineExternalRoot>
+    <!-- PC側のvcpkg連携設定があっても、このプロジェクトでは使用しない -->
+    <VcpkgEnabled>false</VcpkgEnabled>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -139,6 +143,10 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <!-- 外部ヘッダーとして扱い、ライブラリ側の警告レベルを分ける -->
+  <PropertyGroup>
+    <ExternalIncludePath>$(EngineExternalRoot)gameinput\include;$(EngineExternalRoot)dxc\include;$(EngineExternalRoot)directxtk12\include;$(EngineExternalRoot)assimp\include;$(EngineExternalRoot)imgui\include;$(EngineExternalRoot)directxmath\include;$(ExternalIncludePath)</ExternalIncludePath>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)build\bin\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)build\obj\$(ProjectName)\$(Configuration)\</IntDir>
@@ -157,13 +165,14 @@
       <TreatWarningAsError>true</TreatWarningAsError>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(ProjectDir)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)gameinput\include;$(EngineExternalRoot)dxc\include;$(EngineExternalRoot)directxtk12\include;$(EngineExternalRoot)assimp\include;$(EngineExternalRoot)imgui\include;$(EngineExternalRoot)directxmath\include;$(ProjectDir)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
-      <AdditionalDependencies>d3d12.lib;dxgi.lib;ole32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
       <EnableSegmentHeap>true</EnableSegmentHeap>
@@ -181,29 +190,35 @@
       <TreatWarningAsError>true</TreatWarningAsError>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(ProjectDir)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)gameinput\include;$(EngineExternalRoot)dxc\include;$(EngineExternalRoot)directxtk12\include;$(EngineExternalRoot)assimp\include;$(EngineExternalRoot)imgui\include;$(EngineExternalRoot)directxmath\include;$(ProjectDir)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
-      <AdditionalDependencies>d3d12.lib;dxgi.lib;ole32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
       <EnableSegmentHeap>true</EnableSegmentHeap>
     </Manifest>
   </ItemDefinitionGroup>
+  <!-- 全構成のビルド後イベントで、Engineが所有するファイルを配置する -->
+  <ItemDefinitionGroup>
+    <PostBuildEvent>
+      <Command>robocopy "$(EngineExternalRoot)dxc\bin\x64" "$(OutDir)." dxcompiler.dll dxil.dll /R:1 /W:1 /NFL /NDL /NJH /NJS /NP
+if errorlevel 8 exit /b %errorlevel%
+robocopy "$(EngineExternalRoot)gameinput\bin\x64" "$(OutDir)." GameInputRedist.dll GameInputRawInputProxy.exe /R:1 /W:1 /NFL /NDL /NJH /NJS /NP
+if errorlevel 8 exit /b %errorlevel%
+robocopy "$(ProjectDir)resources" "$(OutDir)resources\engine" /E /R:1 /W:1 /NFL /NDL /NJH /NJS /NP
+if errorlevel 8 exit /b %errorlevel%
+robocopy "$(EngineExternalRoot)." "$(OutDir)licenses" LICENSE*.txt NOTICE*.txt /S /R:1 /W:1 /NFL /NDL /NJH /NJS /NP
+if errorlevel 8 exit /b %errorlevel%
+exit /b 0</Command>
+      <Message>
+      </Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\Microsoft.Direct3D.DXC.1.9.2609.5\build\native\Microsoft.Direct3D.DXC.targets" Condition="Exists('..\packages\Microsoft.Direct3D.DXC.1.9.2609.5\build\native\Microsoft.Direct3D.DXC.targets')" />
-    <Import Project="..\packages\Microsoft.GameInput.4.0.306\build\native\targets\Microsoft.GameInput.targets" Condition="Exists('..\packages\Microsoft.GameInput.4.0.306\build\native\targets\Microsoft.GameInput.targets')" />
-  </ImportGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>このプロジェクトは、このコンピューター上にない NuGet パッケージを参照しています。それらのパッケージをダウンロードするには、[NuGet パッケージの復元] を使用します。詳細については、http://go.microsoft.com/fwlink/?LinkID=322105 を参照してください。見つからないファイルは {0} です。</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Microsoft.Direct3D.DXC.1.9.2609.5\build\native\Microsoft.Direct3D.DXC.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Direct3D.DXC.1.9.2609.5\build\native\Microsoft.Direct3D.DXC.props'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.Direct3D.DXC.1.9.2609.5\build\native\Microsoft.Direct3D.DXC.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Direct3D.DXC.1.9.2609.5\build\native\Microsoft.Direct3D.DXC.targets'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.GameInput.4.0.306\build\native\targets\Microsoft.GameInput.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.GameInput.4.0.306\build\native\targets\Microsoft.GameInput.targets'))" />
-  </Target>
+  <ImportGroup Label="ExtensionTargets" />
 </Project>

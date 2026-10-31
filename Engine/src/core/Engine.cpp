@@ -1,0 +1,312 @@
+#include "core/Engine.h"
+
+#include "core/EngineContext.h"
+#include "core/FrameTimer.h"
+#include "core/Logger.h"
+#include "graphics/debug/DebugUI.h"
+#include "graphics/model/ModelManager.h"
+#include "graphics/render/D3D12Graphics.h"
+#include "graphics/render/MeshRenderer.h"
+#include "graphics/render/RenderSystem.h"
+#include "graphics/render/ShaderCompiler.h"
+#include "input/InputSystem.h"
+#include "platform/windows/PathUtils.h"
+#include "platform/windows/StringConversion.h"
+#include "platform/windows/WinApp.h"
+#include "platform/windows/WindowsInputBackend.h"
+#include "scene/SceneManager.h"
+
+#include <Windows.h>
+#include <exception>
+#include <format>
+#include <memory>
+#include <objbase.h>
+
+namespace {
+
+/// <summary>
+/// COMの初期化と終了処理を対応させる
+/// </summary>
+class ComScope {
+  public:
+	ComScope() : result_(CoInitializeEx(nullptr, COINIT_MULTITHREADED)) {}
+
+	~ComScope() {
+		if (SUCCEEDED(result_)) {
+			CoUninitialize();
+		}
+	}
+
+	ComScope(const ComScope &) = delete;
+	ComScope &operator=(const ComScope &) = delete;
+
+	HRESULT GetResult() const { return result_; }
+
+  private:
+	HRESULT result_;
+};
+
+} // namespace
+
+/// <summary>
+/// エンジン内部の共通機能と、その実行処理
+/// </summary>
+struct Engine::Impl {
+	Impl() : models_(graphics_), render_(graphics_, meshRenderer_, app_) {}
+
+	~Impl() {
+		// シーンや共有リソースを解放する前にGPUの完了を待つ
+		if (graphicsInitialized_) {
+			if (!graphics_.WaitForGpu()) {
+				Logger::Error("終了時のGPU完了待機に失敗しました。");
+			}
+		}
+
+		// 参照している側から順に終了する
+		sceneManager_.Finalize();
+		models_.Finalize();
+
+		debugUI_.Finalize();
+		input_.Finalize();
+
+		meshRenderer_.Finalize();
+		shaderCompiler_.Finalize();
+
+		graphics_.Finalize();
+		app_.Finalize();
+	}
+
+	Impl(const Impl &) = delete;
+	Impl &operator=(const Impl &) = delete;
+
+	/// <summary>
+	/// 共通機能と最初のシーンを初期化する
+	/// </summary>
+	bool Initialize(HINSTANCE hInstance, SceneFactory sceneFactory) {
+		constexpr int windowWidth = 1280;
+		constexpr int windowHeight = 720;
+
+		if (!shaderCompiler_.Initialize()) {
+			return false;
+		}
+
+		auto vertexShader = shaderCompiler_.Compile(
+		    L"resources/engine/shaders/triangle/Triangle.VS.hlsl", L"VSMain",
+		    L"vs_6_0");
+
+		auto pixelShader = shaderCompiler_.Compile(
+		    L"resources/engine/shaders/triangle/Triangle.PS.hlsl", L"PSMain",
+		    L"ps_6_0");
+
+		shaderCompiler_.Finalize();
+
+		if (!vertexShader || !pixelShader) {
+			return false;
+		}
+
+		if (!app_.Initialize(hInstance, L"MyGame", windowWidth, windowHeight)) {
+			return false;
+		}
+
+		if (!graphics_.Initialize(app_.GetHwnd(), windowWidth, windowHeight)) {
+			return false;
+		}
+
+		graphicsInitialized_ = true;
+
+		if (!meshRenderer_.Initialize(graphics_.GetDevice(), vertexShader.Get(),
+		                              pixelShader.Get())) {
+			return false;
+		}
+
+		if (!input_.Initialize(
+		        std::make_unique<WindowsInputBackend>(app_.GetHwnd()))) {
+			return false;
+		}
+
+		if (!debugUI_.Initialize(app_, graphics_)) {
+			return false;
+		}
+
+		// アプリへ公開する機能だけを渡す
+		context_ = std::make_unique<EngineContext>(EngineContext{
+		    models_,
+		    render_,
+		    input_,
+		    debugUI_,
+		});
+
+		if (!sceneManager_.RequestChange(sceneFactory(*context_)) ||
+		    !sceneManager_.ApplyPendingChange()) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/// <summary>
+	/// ウィンドウが閉じられるまで更新・描画を実行する
+	/// </summary>
+	/// <returns>0:正常終了 -1:異常終了</returns>
+	int MainLoop() {
+		// 最初のシーンの読み込みが終わってから計測を開始する
+		FrameTimer frameTimer;
+
+		const float clearColor[4] = {
+		    0.1f,
+		    0.2f,
+		    0.6f,
+		    1.0f,
+		};
+
+		Logger::Info("メインループを開始しました。");
+
+		while (app_.ProcessMessages()) {
+			if (!input_.Update()) {
+				return -1;
+			}
+
+			const int width = app_.GetWidth();
+			const int height = app_.GetHeight();
+
+			// 最小化中はシーンの更新・描画を止める
+			if (width <= 0 || height <= 0) {
+				WaitMessage();
+				frameTimer.Reset();
+				continue;
+			}
+
+			if (!graphics_.Resize(width, height)) {
+				return -1;
+			}
+
+			const float deltaTime = frameTimer.Tick();
+
+			// 前フレームのEndFrameでGPUの完了を待っているため、
+			// フレーム開始前のここでシーンを切り替える
+			if (!sceneManager_.ApplyPendingChange()) {
+				return -1;
+			}
+
+			// シーンの読み込み時間を次フレームの経過時間から除く
+			frameTimer.Reset();
+
+			if (!debugUI_.BeginFrame()) {
+				return -1;
+			}
+
+			// シーン側で操作・UI・物体の更新と描画準備を行う
+			if (!sceneManager_.Update(deltaTime)) {
+				return -1;
+			}
+
+			if (!graphics_.BeginFrame(clearColor)) {
+				return -1;
+			}
+
+			sceneManager_.Draw();
+
+			// シーンの描画後にUIを重ねる
+			if (!debugUI_.Render()) {
+				return -1;
+			}
+
+			// 描画を実行し、GPUの完了まで待機する
+			if (!graphics_.EndFrame()) {
+				return -1;
+			}
+		}
+
+		return 0;
+	}
+
+  private:
+	// 参照先の機能を、参照する機能より先に宣言する
+	WinApp app_;
+	D3D12Graphics graphics_;
+	ShaderCompiler shaderCompiler_;
+	MeshRenderer meshRenderer_;
+
+	InputSystem input_;
+	DebugUI debugUI_;
+
+	// コンストラクターでは依存先の参照だけを保持する
+	ModelManager models_;
+	RenderSystem render_;
+
+	// シーンがコンテキストを参照しても寿命を保証できるよう保持する
+	std::unique_ptr<EngineContext> context_;
+	SceneManager sceneManager_;
+
+	bool graphicsInitialized_ = false;
+};
+
+int Engine::Run(SceneFactory sceneFactory) {
+	if (!sceneFactory) {
+		return -1;
+	}
+
+	const auto executableDirectory = PathUtils::GetExecutableDirectory();
+
+	if (executableDirectory.empty()) {
+		return -1;
+	}
+
+	const auto logPath = executableDirectory / L"logs" / L"Engine.log";
+
+	if (!Logger::Initialize(StringConversion::WideToUtf8(logPath.wstring()))) {
+		return -1;
+	}
+
+	Logger::Info("Engineを起動しました。");
+
+	int exitCode = -1;
+
+	{
+		ComScope com;
+
+		if (FAILED(com.GetResult())) {
+			Logger::Error(
+			    std::format("COMの初期化に失敗しました。HRESULT=0x{:08X}",
+			                static_cast<unsigned long>(com.GetResult())));
+		} else {
+			try {
+				const HINSTANCE hInstance = GetModuleHandleW(nullptr);
+
+				if (!hInstance) {
+					Logger::Error("アプリケーションのインスタンスハンドルを"
+					              "取得できませんでした。");
+				} else {
+					Impl engine;
+
+					if (engine.Initialize(hInstance, sceneFactory)) {
+						exitCode = engine.MainLoop();
+					}
+
+					// このスコープを抜けると共通機能を終了する
+				}
+			} catch (const std::exception &error) {
+				Logger::Error(std::format(
+				    "Engineの実行中に例外が発生しました: {}", error.what()));
+
+				exitCode = -1;
+			} catch (...) {
+				Logger::Error("Engineの実行中に不明な例外が発生しました。");
+
+				exitCode = -1;
+			}
+		}
+
+		// 共通機能の終了後にCOMを終了する
+	}
+
+	if (exitCode == 0) {
+		Logger::Info("Engineを正常終了しました。");
+	} else {
+		Logger::Error(
+		    std::format("Engineを異常終了しました。終了コード={}", exitCode));
+	}
+
+	Logger::Finalize();
+	return exitCode;
+}

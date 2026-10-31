@@ -86,9 +86,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\main.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\platform\windows\Window.cpp">
       <Filter>src\platform\windows</Filter>
     </ClCompile>
@@ -164,8 +161,17 @@
     <ClCompile Include="src\scene\SceneManager.cpp">
       <Filter>src\scene</Filter>
     </ClCompile>
-    <ClCompile Include="src\scene\GameScene.cpp">
-      <Filter>src\scene</Filter>
+    <ClCompile Include="src\core\Engine.cpp">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\graphics\model\ModelManager.cpp">
+      <Filter>src\graphics\model</Filter>
+    </ClCompile>
+    <ClCompile Include="src\graphics\render\RenderWorld.cpp">
+      <Filter>src\graphics\render</Filter>
+    </ClCompile>
+    <ClCompile Include="src\graphics\render\RenderSystem.cpp">
+      <Filter>src\graphics\render</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -274,8 +280,32 @@
     <ClInclude Include="include\scene\SceneManager.h">
       <Filter>include\scene</Filter>
     </ClInclude>
-    <ClInclude Include="include\scene\GameScene.h">
-      <Filter>include\scene</Filter>
+    <ClInclude Include="include\core\Engine.h">
+      <Filter>include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\core\EngineContext.h">
+      <Filter>include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\model\ModelManager.h">
+      <Filter>include\graphics\model</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\model\ModelHandle.h">
+      <Filter>include\graphics\model</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\material\MaterialData.h">
+      <Filter>include\graphics\material</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\DirectionalLightData.h">
+      <Filter>include\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\render\RenderWorld.h">
+      <Filter>include\graphics\render</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\render\RenderSystem.h">
+      <Filter>include\graphics\render</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\render\RenderObjectHandle.h">
+      <Filter>include\graphics\render</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -290,6 +320,5 @@
     <None Include="resources\shaders\triangle\Triangle.hlsli">
       <Filter>resources\shaders\triangle</Filter>
     </None>
-    <None Include="packages.config" />
   </ItemGroup>
 </Project>

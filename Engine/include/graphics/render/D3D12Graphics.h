@@ -41,6 +41,12 @@ class D3D12Graphics {
 	bool Resize(int width, int height);
 
 	/// <summary>
+	/// コマンドキューへ送信済みの処理が完了するまで待機する
+	/// </summary>
+	/// <returns>true:成功 false:失敗</returns>
+	bool WaitForGpu();
+
+	/// <summary>
 	/// GPUリソースを解放し、描画基盤を終了する
 	/// </summary>
 	void Finalize();
@@ -108,12 +114,6 @@ class D3D12Graphics {
 	/// </summary>
 	/// <returns>true:成功 false:失敗</returns>
 	bool CreateSynchronizationObjects();
-
-	/// <summary>
-	/// コマンドキューへ送信済みの処理が完了するまで待機する
-	/// </summary>
-	/// <returns>true:成功 false:失敗</returns>
-	bool WaitForGpu();
 
 	/// <summary>
 	/// Debugビルド時にD3D12のデバッグレイヤーを有効にする

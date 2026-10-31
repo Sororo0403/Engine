@@ -365,9 +365,6 @@ FodyWeavers.xsd
 # Build
 build/
 
-# vcpkg
-vcpkg_installed/
-
 # モデル用のOBJファイルは追跡する
 !/Engine/resources/models/**/*.obj
 
@@ -377,3 +374,6 @@ vcpkg_installed/
 
 # ImGuiの個人設定
 imgui.ini
+
+# 直接管理する外部ライブラリのヘッダー・lib・DLL
+!/Engine/external/**
