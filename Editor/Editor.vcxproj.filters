@@ -27,6 +27,12 @@
     <Filter Include="src\camera">
       <UniqueIdentifier>{1f06db44-c768-4176-aea9-8f03639b9702}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\dialogs">
+      <UniqueIdentifier>{9fc14955-4373-4a53-97fe-6294a2542792}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\dialogs">
+      <UniqueIdentifier>{15fd40e1-3768-4218-bd06-5b902b77c2db}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -47,6 +53,15 @@
     <ClCompile Include="src\camera\EditorCameraController.cpp">
       <Filter>src\camera</Filter>
     </ClCompile>
+    <ClCompile Include="src\dialogs\SaveChangesDialog.cpp">
+      <Filter>src\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dialogs\SceneFileDialog.cpp">
+      <Filter>src\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scene\SceneDocument.cpp">
+      <Filter>src\scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\scene\EditorScene.h">
@@ -63,6 +78,15 @@
     </ClInclude>
     <ClInclude Include="include\camera\EditorCameraController.h">
       <Filter>include\camera</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dialogs\SaveChangesDialog.h">
+      <Filter>include\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dialogs\SceneFileDialog.h">
+      <Filter>include\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scene\SceneDocument.h">
+      <Filter>include\dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

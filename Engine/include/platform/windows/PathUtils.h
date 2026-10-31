@@ -37,4 +37,14 @@ std::string ToUtf8(const std::filesystem::path &path);
 /// <param name="text">UTF-8の文字列。空文字列も使用できる</param>
 /// <returns>変換したパス。UTF-8が無効な場合は例外</returns>
 std::filesystem::path FromUtf8(std::string_view text);
+
+/// <summary>
+/// ファイルの拡張子を、ASCIIの英字の大文字・小文字を区別せず比較する
+/// </summary>
+/// <param name="path">確認するパス</param>
+/// <param name="extension">先頭のドットを含む拡張子。例：.json</param>
+/// <returns>true:一致 false:不一致</returns>
+bool HasExtension(const std::filesystem::path &path,
+                  std::string_view extension);
+
 } // namespace PathUtils

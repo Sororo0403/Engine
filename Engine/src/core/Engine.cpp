@@ -11,6 +11,7 @@
 #include "graphics/ui/ImGuiSystem.h"
 #include "input/InputSystem.h"
 #include "platform/windows/PathUtils.h"
+#include "platform/windows/StringConversion.h"
 #include "platform/windows/WinApp.h"
 #include "platform/windows/WindowsInputBackend.h"
 #include "scene/SceneManager.h"
@@ -21,6 +22,7 @@
 #include <format>
 #include <memory>
 #include <objbase.h>
+#include <string>
 
 namespace {
 
@@ -155,8 +157,8 @@ struct Engine::Impl {
 	/// </summary>
 	/// <returns>0:正常終了 -1:異常終了</returns>
 	int MainLoop() {
-		// 最初のシーンの読み込みが終わってから計測を開始する
 		FrameTimer frameTimer;
+		std::string lastWindowTitle;
 
 		const float clearColor[4] = {
 		    0.1f,
@@ -168,6 +170,21 @@ struct Engine::Impl {
 		Logger::Info("メインループを開始しました。");
 
 		while (app_.ProcessMessages()) {
+			if (app_.ConsumeCloseRequest()) {
+				if (sceneManager_.RequestClose()) {
+					return 0;
+				}
+
+				// 最小化中でも保存確認を表示できるようにする
+				if (IsIconic(app_.GetHwnd())) {
+					ShowWindow(app_.GetHwnd(), SW_RESTORE);
+				}
+			}
+
+			if (sceneManager_.IsCloseApproved()) {
+				return 0;
+			}
+
 			if (!input_.Update()) {
 				return -1;
 			}
@@ -175,7 +192,6 @@ struct Engine::Impl {
 			const int width = app_.GetWidth();
 			const int height = app_.GetHeight();
 
-			// 最小化中はシーンの更新・描画を止める
 			if (width <= 0 || height <= 0) {
 				WaitMessage();
 				frameTimer.Reset();
@@ -188,22 +204,32 @@ struct Engine::Impl {
 
 			const float deltaTime = frameTimer.Tick();
 
-			// 前フレームのEndFrameでGPUの完了を待っているため、
-			// フレーム開始前のここでシーンを切り替える
 			if (!sceneManager_.ApplyPendingChange()) {
 				return -1;
 			}
 
-			// シーンの読み込み時間を次フレームの経過時間から除く
 			frameTimer.Reset();
 
 			if (!ui_.BeginFrame()) {
 				return -1;
 			}
 
-			// シーン側で操作・UI・物体の更新と描画準備を行う
+			// 終了確認中も更新と描画を継続する
 			if (!sceneManager_.Update(deltaTime)) {
 				return -1;
+			}
+
+			const std::string title = sceneManager_.GetWindowTitle();
+
+			if (!title.empty() && title != lastWindowTitle) {
+				const auto wideTitle = StringConversion::Utf8ToWide(title);
+
+				if (wideTitle.empty() || !app_.SetTitle(wideTitle)) {
+					Logger::Error("ウィンドウタイトルの変更に失敗しました。");
+					return -1;
+				}
+
+				lastWindowTitle = title;
 			}
 
 			if (!graphics_.BeginFrame(clearColor)) {
@@ -212,12 +238,10 @@ struct Engine::Impl {
 
 			sceneManager_.Draw();
 
-			// シーンの描画後にUIを重ねる
 			if (!ui_.Render()) {
 				return -1;
 			}
 
-			// 描画を実行し、GPUの完了まで待機する
 			if (!graphics_.EndFrame()) {
 				return -1;
 			}

@@ -5,25 +5,30 @@
 
 #include <format>
 
-void HierarchyPanel::Draw(const ImGuiSystem &ui, Scene &scene,
+bool HierarchyPanel::Draw(const ImGuiSystem &ui, Scene &scene,
                           SceneObjectId &selectedObjectId) const {
-	// 外部の操作で削除された物体を選択したままにしない
 	if (!scene.Contains(selectedObjectId)) {
 		selectedObjectId = 0;
 	}
 
 	if (!ui.BeginWindow("Hierarchy")) {
 		ui.EndWindow();
-		return;
+		return false;
 	}
+
+	bool changed = false;
 
 	if (ui.Button("Create Empty")) {
 		selectedObjectId = scene.CreateObject();
+		changed = true;
 	}
 
-	// 一覧の走査前に削除し、走査中のイテレーターを無効にしない
+	// 一覧の走査前に削除する
 	if (selectedObjectId != 0 && ui.Button("Delete Selected")) {
-		scene.DestroyObject(selectedObjectId);
+		if (scene.DestroyObject(selectedObjectId)) {
+			changed = true;
+		}
+
 		selectedObjectId = 0;
 	}
 
@@ -36,8 +41,7 @@ void HierarchyPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 	}
 
 	for (const auto &[id, object] : objects) {
-		// 表示名が同じでも、物体IDで項目を区別する。
-		// ###以降は表示せず、UI内部の識別に使用する
+		// 表示名が変わっても物体IDで項目を識別する
 		const auto label =
 		    std::format("{}###SceneObject{}",
 		                object.name.empty() ? "Object" : object.name, id);
@@ -48,4 +52,5 @@ void HierarchyPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 	}
 
 	ui.EndWindow();
+	return changed;
 }

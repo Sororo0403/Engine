@@ -3,6 +3,7 @@
 #include "scene/IScene.h"
 
 #include <memory>
+#include <string>
 
 /// <summary>
 /// 現在のシーンと、シーン切り替えの予約を管理する
@@ -49,6 +50,24 @@ class SceneManager {
 	/// 現在のシーンと切り替え予約を解放する。GPUの利用完了後に呼び出す
 	/// </summary>
 	void Finalize();
+
+	/// <summary>
+	/// 現在のシーンへ終了要求を渡す
+	/// </summary>
+	/// <returns>true:直ちに終了可能 false:終了を保留または取り消す</returns>
+	bool RequestClose();
+
+	/// <summary>
+	/// 保留していた終了が許可されたか取得する
+	/// </summary>
+	/// <returns>true:終了可能 false:終了しない</returns>
+	bool IsCloseApproved() const;
+
+	/// <summary>
+	/// 現在のシーンが指定するウィンドウタイトルを取得する
+	/// </summary>
+	/// <returns>UTF-8のタイトル。指定がない場合は空文字列</returns>
+	std::string GetWindowTitle() const;
 
   private:
 	std::unique_ptr<IScene> currentScene_;

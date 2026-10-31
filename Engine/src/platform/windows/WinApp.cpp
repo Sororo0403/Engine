@@ -22,6 +22,12 @@ bool WinApp::ProcessMessages() {
 	return true;
 }
 
+bool WinApp::ConsumeCloseRequest() { return window_.ConsumeCloseRequest(); }
+
+bool WinApp::SetTitle(const std::wstring &title) {
+	return window_.SetTitle(title);
+}
+
 void WinApp::Finalize() { window_.Destroy(); }
 
 HWND WinApp::GetHwnd() const { return window_.GetHwnd(); }

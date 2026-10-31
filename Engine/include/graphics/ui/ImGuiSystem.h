@@ -5,6 +5,7 @@
 #include <DirectXMath.h>
 #include <cstdint>
 #include <memory>
+#include <string>
 #include <string_view>
 
 struct DockLayout;
@@ -164,6 +165,67 @@ class ImGuiSystem {
 	bool Selectable(const char *label, bool selected) const;
 
 	/// <summary>
+	/// モーダルを開く。対応するBeginPopupModalと同じIDの範囲で呼び出す
+	/// </summary>
+	/// <param name="name">モーダルの識別名</param>
+	void OpenPopup(const char *name) const;
+
+	/// <summary>
+	/// モーダルの内容を構築する
+	/// </summary>
+	/// <param name="name">モーダルの識別名</param>
+	/// <returns>true:構築可能 false:表示していない</returns>
+	bool BeginPopupModal(const char *name) const;
+
+	/// <summary>
+	/// 開始済みのモーダルを終了する
+	/// </summary>
+	void EndPopup() const;
+
+	/// <summary>
+	/// 現在構築中のモーダルを閉じる
+	/// </summary>
+	void CloseCurrentPopup() const;
+
+	/// <summary>
+	/// 文字列の入力欄を表示する
+	/// </summary>
+	/// <param name="label">項目の名前</param>
+	/// <param name="value">編集するUTF-8文字列</param>
+	/// <returns>true:変更あり false:変更なし</returns>
+	bool InputText(const char *label, std::string &value) const;
+
+	/// <summary>
+	/// スクロール可能な子領域を開始する。戻り値にかかわらずEndChildを呼び出す
+	/// </summary>
+	/// <param name="name">領域の識別名</param>
+	/// <param name="width">領域の幅</param>
+	/// <param name="height">領域の高さ</param>
+	/// <returns>true:構築可能 false:構築しない</returns>
+	bool BeginChild(const char *name, float width, float height) const;
+
+	/// <summary>
+	/// 開始済みの子領域を終了する
+	/// </summary>
+	void EndChild() const;
+
+	/// <summary>
+	/// 後続のUIを操作不可にする範囲を開始する
+	/// </summary>
+	/// <param name="disabled">操作不可にするか</param>
+	void BeginDisabled(bool disabled) const;
+
+	/// <summary>
+	/// 操作不可にする範囲を終了する
+	/// </summary>
+	void EndDisabled() const;
+
+	/// <summary>
+	/// 次の項目を同じ行へ配置する
+	/// </summary>
+	void SameLine() const;
+
+	/// <summary>
 	/// 書式として解釈せず、そのまま文字列を表示する
 	/// </summary>
 	/// <param name="text">表示する文字列</param>
@@ -212,6 +274,45 @@ class ImGuiSystem {
 	/// テクスチャのリサイズ・破棄を行わないこと
 	/// </remarks>
 	void Image(const RenderTexture &texture, float width, float height) const;
+
+	/// <summary>
+	/// 画面上部のメニューバーを開始する
+	/// </summary>
+	/// <returns>true:構築可能 false:構築しない</returns>
+	bool BeginMainMenuBar() const;
+
+	/// <summary>
+	/// 開始済みのメニューバーを終了する
+	/// </summary>
+	void EndMainMenuBar() const;
+
+	/// <summary>
+	/// メニューを開始する
+	/// </summary>
+	/// <param name="label">メニューの名前</param>
+	/// <returns>true:展開中 false:閉じている</returns>
+	bool BeginMenu(const char *label) const;
+
+	/// <summary>
+	/// 展開中のメニューを終了する
+	/// </summary>
+	void EndMenu() const;
+
+	/// <summary>
+	/// メニュー項目を表示する
+	/// </summary>
+	/// <param name="label">項目の名前</param>
+	/// <param name="shortcut">表示するショートカット。入力判定は別途行う</param>
+	/// <param name="enabled">項目を操作可能にするか</param>
+	/// <returns>true:選択された false:選択されていない</returns>
+	bool MenuItem(const char *label, const char *shortcut = nullptr,
+	              bool enabled = true) const;
+
+	/// <summary>
+	/// UIが文字入力を行っているか取得する
+	/// </summary>
+	/// <returns>true:文字入力中 false:それ以外</returns>
+	bool IsTextInputActive() const;
 
 	/// <summary>
 	/// UIを終了する。GPUの利用完了後、ウィンドウを破棄する前に呼び出す

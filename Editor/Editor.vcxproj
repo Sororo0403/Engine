@@ -122,8 +122,14 @@
     <ClInclude Include="include\scene\EditorScene.h" />
     <ClInclude Include="include\panels\InspectorPanel.h" />
     <ClInclude Include="include\panels\SceneViewPanel.h" />
+    <ClInclude Include="include\dialogs\SaveChangesDialog.h" />
+    <ClInclude Include="include\dialogs\SceneFileDialog.h" />
+    <ClInclude Include="include\scene\SceneDocument.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\scene\SceneDocument.cpp" />
+    <ClCompile Include="src\dialogs\SaveChangesDialog.cpp" />
+    <ClCompile Include="src\dialogs\SceneFileDialog.cpp" />
     <ClCompile Include="src\camera\EditorCameraController.cpp" />
     <ClCompile Include="src\panels\SceneViewPanel.cpp" />
     <ClCompile Include="src\panels\InspectorPanel.cpp" />

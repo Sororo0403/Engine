@@ -66,3 +66,29 @@ std::filesystem::path PathUtils::FromUtf8(std::string_view text) {
 
 	return std::filesystem::path(wide);
 }
+
+bool PathUtils::HasExtension(const std::filesystem::path &path,
+                             std::string_view extension) {
+	const std::string actual = ToUtf8(path.extension());
+
+	if (actual.size() != extension.size()) {
+		return false;
+	}
+
+	for (std::size_t i = 0; i < actual.size(); ++i) {
+		const auto toLowerAscii = [](unsigned char value) {
+			if (value >= 'A' && value <= 'Z') {
+				return static_cast<unsigned char>(value + ('a' - 'A'));
+			}
+
+			return value;
+		};
+
+		if (toLowerAscii(static_cast<unsigned char>(actual[i])) !=
+		    toLowerAscii(static_cast<unsigned char>(extension[i]))) {
+			return false;
+		}
+	}
+
+	return true;
+}

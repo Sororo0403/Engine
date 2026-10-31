@@ -30,6 +30,19 @@ class Window {
 	void Destroy();
 
 	/// <summary>
+	/// ウィンドウを閉じる要求を取得し、要求をクリアする
+	/// </summary>
+	/// <returns>true:要求あり false:要求なし</returns>
+	bool ConsumeCloseRequest();
+
+	/// <summary>
+	/// ウィンドウのタイトルを変更する
+	/// </summary>
+	/// <param name="title">変更後のタイトル</param>
+	/// <returns>true:成功 false:変更失敗</returns>
+	bool SetTitle(const std::wstring &title);
+
+	/// <summary>
 	/// ウィンドウハンドルを取得
 	/// </summary>
 	/// <returns>ウィンドウハンドル</returns>
@@ -71,4 +84,5 @@ class Window {
 	bool isClassRegistered_ = false;
 	int width_ = 0;
 	int height_ = 0;
+	bool closeRequested_ = false;
 };

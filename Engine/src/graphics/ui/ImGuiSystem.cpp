@@ -22,6 +22,7 @@
 #include <exception>
 #include <filesystem>
 #include <format>
+#include <imgui_stdlib.h>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -536,6 +537,62 @@ bool ImGuiSystem::Selectable(const char *label, bool selected) const {
 	return ImGui::Selectable(label, selected);
 }
 
+void ImGuiSystem::OpenPopup(const char *name) const {
+	impl_->UseFrame();
+	ImGui::OpenPopup(name);
+}
+
+bool ImGuiSystem::BeginPopupModal(const char *name) const {
+	impl_->UseFrame();
+
+	return ImGui::BeginPopupModal(name, nullptr,
+	                              ImGuiWindowFlags_AlwaysAutoResize |
+	                                  ImGuiWindowFlags_NoSavedSettings);
+}
+
+void ImGuiSystem::EndPopup() const {
+	impl_->UseFrame();
+	ImGui::EndPopup();
+}
+
+void ImGuiSystem::CloseCurrentPopup() const {
+	impl_->UseFrame();
+	ImGui::CloseCurrentPopup();
+}
+
+bool ImGuiSystem::InputText(const char *label, std::string &value) const {
+	impl_->UseFrame();
+	return ImGui::InputText(label, &value);
+}
+
+bool ImGuiSystem::BeginChild(const char *name, float width,
+                             float height) const {
+	impl_->UseFrame();
+
+	return ImGui::BeginChild(name, ImVec2(width, height),
+	                         ImGuiChildFlags_Borders);
+}
+
+void ImGuiSystem::EndChild() const {
+	impl_->UseFrame();
+	ImGui::EndChild();
+}
+
+void ImGuiSystem::BeginDisabled(bool disabled) const {
+	impl_->UseFrame();
+	ImGui::BeginDisabled(disabled);
+}
+
+void ImGuiSystem::EndDisabled() const {
+	impl_->UseFrame();
+	ImGui::EndDisabled();
+}
+
+void ImGuiSystem::SameLine() const {
+	impl_->UseFrame();
+	ImGui::SameLine();
+}
+
 void ImGuiSystem::Text(std::string_view text) const {
 	impl_->UseFrame();
 
@@ -630,6 +687,37 @@ void ImGuiSystem::Image(const RenderTexture &texture, float width,
 	const auto gpuHandle = impl_->srvHeap_->GetGpuHandle(index);
 	ImGui::Image(ImTextureRef(static_cast<ImTextureID>(gpuHandle.ptr)),
 	             ImVec2(width, height));
+}
+
+bool ImGuiSystem::BeginMainMenuBar() const {
+	impl_->UseFrame();
+	return ImGui::BeginMainMenuBar();
+}
+
+void ImGuiSystem::EndMainMenuBar() const {
+	impl_->UseFrame();
+	ImGui::EndMainMenuBar();
+}
+
+bool ImGuiSystem::BeginMenu(const char *label) const {
+	impl_->UseFrame();
+	return ImGui::BeginMenu(label);
+}
+
+void ImGuiSystem::EndMenu() const {
+	impl_->UseFrame();
+	ImGui::EndMenu();
+}
+
+bool ImGuiSystem::MenuItem(const char *label, const char *shortcut,
+                           bool enabled) const {
+	impl_->UseFrame();
+	return ImGui::MenuItem(label, shortcut, false, enabled);
+}
+
+bool ImGuiSystem::IsTextInputActive() const {
+	impl_->UseFrame();
+	return ImGui::GetIO().WantTextInput;
 }
 
 bool ImGuiSystem::HandleMessage(void *nativeWindow, std::uint32_t message,

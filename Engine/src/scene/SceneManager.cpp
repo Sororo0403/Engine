@@ -96,3 +96,15 @@ void SceneManager::Finalize() {
 		currentScene_.reset();
 	}
 }
+
+bool SceneManager::RequestClose() {
+	return !currentScene_ || currentScene_->RequestClose();
+}
+
+bool SceneManager::IsCloseApproved() const {
+	return currentScene_ && currentScene_->IsCloseApproved();
+}
+
+std::string SceneManager::GetWindowTitle() const {
+	return currentScene_ ? currentScene_->GetWindowTitle() : std::string{};
+}

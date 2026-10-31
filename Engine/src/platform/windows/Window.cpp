@@ -27,6 +27,8 @@ bool Window::Create(HINSTANCE hInstance, const std::wstring &title, int width,
 
 	hInstance_ = hInstance;
 
+	closeRequested_ = false;
+
 	WNDCLASSEX wc{};
 	wc.cbSize = sizeof(WNDCLASSEX);
 
@@ -107,9 +109,20 @@ void Window::Destroy() {
 
 	width_ = 0;
 	height_ = 0;
+	closeRequested_ = false;
 	if (hadResources) {
 		Logger::Info("ウィンドウのリソースを解放しました。");
 	}
+}
+
+bool Window::ConsumeCloseRequest() {
+	const bool requested = closeRequested_;
+	closeRequested_ = false;
+	return requested;
+}
+
+bool Window::SetTitle(const std::wstring &title) {
+	return hwnd_ && SetWindowTextW(hwnd_, title.c_str()) != FALSE;
 }
 
 HWND Window::GetHwnd() const { return hwnd_; }
@@ -153,6 +166,13 @@ LRESULT CALLBACK Window::WndProc(HWND hwnd, UINT msg, WPARAM wParam,
 			window->hwnd_ = nullptr;
 			window->width_ = 0;
 			window->height_ = 0;
+		}
+
+		break;
+	case WM_CLOSE:
+		if (window) {
+			window->closeRequested_ = true;
+			return 0;
 		}
 
 		break;

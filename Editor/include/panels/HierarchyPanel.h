@@ -16,6 +16,7 @@ class HierarchyPanel {
 	/// <param name="ui">フレーム開始済みのUI</param>
 	/// <param name="scene">編集対象のシーン</param>
 	/// <param name="selectedObjectId">選択中の物体ID。未選択は0</param>
-	void Draw(const ImGuiSystem &ui, Scene &scene,
+	/// <returns>true:物体を作成・削除した false:シーンへの変更なし</returns>
+	bool Draw(const ImGuiSystem &ui, Scene &scene,
 	          SceneObjectId &selectedObjectId) const;
 };
