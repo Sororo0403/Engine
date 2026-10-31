@@ -377,6 +377,13 @@ void ImGuiSystem::DrawDockSpace(const DockLayout &layout,
 		    "ImGuiSystem::DrawDockSpace: 配置情報が無効です。");
 	}
 
+	if (layout.bottomWindow &&
+	    (!*layout.bottomWindow || !std::isfinite(layout.bottomRatio) ||
+	     layout.bottomRatio <= 0.0f || layout.bottomRatio >= 1.0f)) {
+		throw std::invalid_argument(
+		    "ImGuiSystem::DrawDockSpace: 下部の配置情報が無効です。");
+	}
+
 	const ImGuiViewport *viewport = ImGui::GetMainViewport();
 
 	if (viewport->WorkSize.x <= 0.0f || viewport->WorkSize.y <= 0.0f) {
@@ -385,7 +392,6 @@ void ImGuiSystem::DrawDockSpace(const DockLayout &layout,
 
 	const ImGuiID dockspaceId = ImHashStr(layout.name);
 
-	// 保存済みの領域があれば、ユーザーが変更した配置を維持する
 	if (resetLayout || ImGui::DockBuilderGetNode(dockspaceId) == nullptr) {
 		ImGui::DockBuilderRemoveNode(dockspaceId);
 
@@ -393,22 +399,37 @@ void ImGuiSystem::DrawDockSpace(const DockLayout &layout,
 
 		ImGui::DockBuilderSetNodeSize(dockspaceId, viewport->WorkSize);
 
-		ImGuiID centerId = dockspaceId;
+		ImGuiID upperId = dockspaceId;
+		ImGuiID bottomId = 0;
+
+		// 最初に下部を分割し、残った上部を左右に分ける
+		if (layout.bottomWindow) {
+			ImGui::DockBuilderSplitNode(upperId, ImGuiDir_Down,
+			                            layout.bottomRatio, &bottomId,
+			                            &upperId);
+		}
+
+		ImGuiID centerId = upperId;
 		ImGuiID leftId = 0;
 		ImGuiID rightId = 0;
 
 		ImGui::DockBuilderSplitNode(centerId, ImGuiDir_Left, layout.leftRatio,
 		                            &leftId, &centerId);
 
-		// 左領域を除いた残りの幅に対する割合へ変換する
 		const float rightRatio = layout.rightRatio / (1.0f - layout.leftRatio);
 
 		ImGui::DockBuilderSplitNode(centerId, ImGuiDir_Right, rightRatio,
 		                            &rightId, &centerId);
 
 		ImGui::DockBuilderDockWindow(layout.leftWindow, leftId);
+
 		ImGui::DockBuilderDockWindow(layout.centerWindow, centerId);
+
 		ImGui::DockBuilderDockWindow(layout.rightWindow, rightId);
+
+		if (layout.bottomWindow) {
+			ImGui::DockBuilderDockWindow(layout.bottomWindow, bottomId);
+		}
 
 		ImGui::DockBuilderFinish(dockspaceId);
 	}

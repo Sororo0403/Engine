@@ -1,9 +1,11 @@
 #pragma once
 
+#include "assets/AssetDatabase.h"
 #include "camera/EditorCameraController.h"
 #include "dialogs/SaveChangesDialog.h"
 #include "dialogs/SceneFileDialog.h"
 #include "graphics/ui/DockLayout.h"
+#include "panels/AssetsPanel.h"
 #include "panels/HierarchyPanel.h"
 #include "panels/InspectorPanel.h"
 #include "panels/SceneViewPanel.h"
@@ -11,12 +13,14 @@
 #include "scene/SceneDocument.h"
 #include "scene/SceneRenderer.h"
 
+#include <filesystem>
 #include <string>
 
 struct EngineContext;
 
 class InputSystem;
 class ImGuiSystem;
+class ModelManager;
 
 /// <summary>
 /// シーンの編集と、ファイル操作の進行を管理する
@@ -145,9 +149,16 @@ class EditorScene final : public IScene {
 	/// <returns>true:操作中 false:操作なし</returns>
 	bool IsBusy() const;
 
+	/// <summary>
+	/// モデルの読み込みを確認してからシーンへ配置する
+	/// </summary>
+	/// <param name="modelPath">実行ファイル基準のモデルの相対パス</param>
+	void PlaceModel(const std::filesystem::path &modelPath);
+
   private:
 	const ImGuiSystem &ui_;
 	const InputSystem &input_;
+	ModelManager &models_;
 
 	// 描画側の参照より先に宣言する
 	SceneDocument document_;
@@ -155,6 +166,7 @@ class EditorScene final : public IScene {
 
 	DockLayout dockLayout_{
 	    "EditorDockSpace", "Hierarchy", "Scene", "Inspector", 0.20f, 0.25f,
+	    "Assets",          0.25f,
 	};
 
 	bool resetDockLayout_ = false;
@@ -163,6 +175,9 @@ class EditorScene final : public IScene {
 	InspectorPanel inspectorPanel_;
 	SceneViewPanel sceneViewPanel_;
 	EditorCameraController cameraController_;
+
+	AssetDatabase assets_{L"resources/editor"};
+	AssetsPanel assetsPanel_;
 
 	SceneObjectId selectedObjectId_ = 0;
 

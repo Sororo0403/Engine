@@ -2,6 +2,7 @@
 
 #include "core/EngineContext.h"
 #include "core/Logger.h"
+#include "graphics/model/ModelManager.h"
 #include "graphics/render/RenderTexture.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "input/InputSystem.h"
@@ -9,11 +10,12 @@
 #include "platform/windows/PathUtils.h"
 
 #include <cmath>
+#include <exception>
 #include <format>
 #include <utility>
 
 EditorScene::EditorScene(const EngineContext &context)
-    : ui_(context.ui), input_(context.input),
+    : ui_(context.ui), input_(context.input), models_(context.models),
       renderer_(document_.GetScene(), context.models, context.render),
       sceneViewPanel_(context.render) {}
 
@@ -37,18 +39,13 @@ bool EditorScene::Initialize() {
 	errorOpenRequested_ = false;
 	errorMessage_.clear();
 
-	// 動作確認用のモデルを配置する
-	Scene &scene = document_.GetScene();
+	document_.New();
+	selectedObjectId_ = 0;
 
-	selectedObjectId_ =
-	    scene.CreateObject("Box", L"resources/editor/models/box.glb");
+	assetsPanel_.Clear();
 
-	if (auto *object = scene.FindObject(selectedObjectId_)) {
-		object->transform.scale = {0.45f, 0.45f, 0.45f};
-		object->transform.rotation = {0.3f, 0.4f, 0.0f};
-	}
-
-	document_.MarkModified();
+	// 検索失敗時もEditorは起動し、Assetsパネルにエラーを表示する
+	assets_.Refresh();
 
 	Logger::Info("EditorSceneを初期化しました。");
 	return true;
@@ -60,7 +57,6 @@ bool EditorScene::Update(float deltaTime) {
 		return false;
 	}
 
-	// ダイアログの構築は、UIフレーム開始後のここから行う
 	if (exitQueued_ && stage_ == DialogStage::IDLE) {
 		exitQueued_ = false;
 		StartAction(FileAction::EXIT);
@@ -75,7 +71,6 @@ bool EditorScene::Update(float deltaTime) {
 
 	Scene &scene = document_.GetScene();
 
-	// モーダルを開く最初のフレームも、背後を編集させない
 	ui_.BeginDisabled(wasBusy);
 
 	const bool hierarchyChanged =
@@ -83,6 +78,8 @@ bool EditorScene::Update(float deltaTime) {
 
 	const bool inspectorChanged =
 	    inspectorPanel_.Draw(ui_, scene, selectedObjectId_);
+
+	const auto requestedModelPath = assetsPanel_.Draw(ui_, assets_);
 
 	const bool sceneViewReady = sceneViewPanel_.DrawUI(ui_);
 
@@ -97,26 +94,29 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	if (!wasBusy) {
+		if (!requestedModelPath.empty()) {
+			PlaceModel(requestedModelPath);
+		}
+
 		if (action == FileAction::NONE) {
 			action = ReadShortcut();
 		}
 
-		// 今フレームの変更を記録してから保存を開始する
+		// 配置やTransformの変更を反映してから保存する
 		if (action != FileAction::NONE) {
 			StartAction(action);
 		}
 	}
 
-	// パネルの外、毎フレーム同じIDの範囲で構築する
 	UpdateDialogs();
 
 	ViewportInput viewport = sceneViewPanel_.GetInput();
 
-	if (wasBusy || IsBusy() || action != FileAction::NONE) {
+	if (wasBusy || IsBusy() || action != FileAction::NONE ||
+	    !requestedModelPath.empty()) {
 		viewport = {};
 	}
 
-	// 空の入力を渡す場合も更新し、継続中のカメラ操作を終了させる
 	cameraController_.Update(input_, viewport, deltaTime);
 
 	const auto *target = sceneViewPanel_.GetRenderTexture();
@@ -154,6 +154,9 @@ void EditorScene::Finalize() {
 	closeApproved_ = false;
 	errorOpenRequested_ = false;
 	errorMessage_.clear();
+
+	assetsPanel_.Clear();
+	assets_.Clear();
 
 	cameraController_.Reset();
 }
@@ -211,6 +214,14 @@ EditorScene::FileAction EditorScene::DrawMenuBar() {
 
 		if (ui_.MenuItem("Exit", nullptr, enabled)) {
 			action = FileAction::EXIT;
+		}
+
+		ui_.EndMenu();
+	}
+
+	if (ui_.BeginMenu("View")) {
+		if (ui_.MenuItem("Reset Layout", nullptr, !IsBusy())) {
+			resetDockLayout_ = true;
 		}
 
 		ui_.EndMenu();
@@ -434,4 +445,33 @@ void EditorScene::ShowError(std::string message) {
 
 bool EditorScene::IsBusy() const {
 	return stage_ != DialogStage::IDLE || exitQueued_ || closeApproved_;
+}
+
+void EditorScene::PlaceModel(const std::filesystem::path &modelPath) {
+	try {
+		if (modelPath.empty()) {
+			return;
+		}
+
+		const std::string name = PathUtils::ToUtf8(modelPath.stem());
+
+		// ファイル読み込みに失敗したモデルはシーンへ追加しない
+		const auto model = models_.Load(modelPath);
+
+		if (!model) {
+			ShowError("Could not load the model. See the log for details.");
+			return;
+		}
+
+		Scene &scene = document_.GetScene();
+
+		// Transformの初期値に従い、原点へ配置する
+		selectedObjectId_ = scene.CreateObject(name, modelPath);
+
+		document_.MarkModified();
+	} catch (const std::exception &error) {
+		Logger::Error(std::format("EditorScene::PlaceModel: {}", error.what()));
+
+		ShowError("Could not place the model. See the log for details.");
+	}
 }

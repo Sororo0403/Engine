@@ -33,6 +33,12 @@
     <Filter Include="src\dialogs">
       <UniqueIdentifier>{15fd40e1-3768-4218-bd06-5b902b77c2db}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\assets">
+      <UniqueIdentifier>{f4316011-8985-4e38-b94a-d37aecfeaddb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\assets">
+      <UniqueIdentifier>{deba47c2-d5b4-46c1-8150-b426ec4693d6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -62,6 +68,12 @@
     <ClCompile Include="src\scene\SceneDocument.cpp">
       <Filter>src\scene</Filter>
     </ClCompile>
+    <ClCompile Include="src\assets\AssetDatabase.cpp">
+      <Filter>src\assets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\panels\AssetsPanel.cpp">
+      <Filter>src\panels</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\scene\EditorScene.h">
@@ -87,6 +99,12 @@
     </ClInclude>
     <ClInclude Include="include\scene\SceneDocument.h">
       <Filter>include\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="include\assets\AssetDatabase.h">
+      <Filter>include\assets</Filter>
+    </ClInclude>
+    <ClInclude Include="include\panels\AssetsPanel.h">
+      <Filter>include\panels</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
