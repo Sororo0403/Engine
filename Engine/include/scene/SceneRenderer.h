@@ -11,6 +11,7 @@ class ModelManager;
 class RenderSystem;
 class RenderWorld;
 class Scene;
+class RenderTexture;
 
 /// <summary>
 /// シーンの物体データを描画ワールドへ反映し、描画を実行する
@@ -42,14 +43,17 @@ class SceneRenderer {
 	/// 物体データを反映し、GPU用データを更新する。
 	/// 全ての編集後、GPUの利用完了後、BeginFrame前に呼び出す
 	/// </summary>
+	/// <param name="width">描画領域の幅。高さと共に0の場合はウィンドウサイズ</param>
+	/// <param name="height">描画領域の高さ。幅と共に0の場合はウィンドウサイズ</param>
 	/// <returns>true:成功 false:未初期化、または更新失敗</returns>
-	bool Update();
+	bool Update(int width = 0, int height = 0);
 
 	/// <summary>
 	/// シーンを描画する。
 	/// Update成功後、BeginFrameとEndFrameの間に一度呼び出す
 	/// </summary>
-	void Draw() const;
+	/// <param name="target">描画先。nullptrの場合は現在の描画先を使用する</param>
+	void Draw(RenderTexture *target = nullptr) const;
 
 	/// <summary>
 	/// 描画リソースを解放する。GPUの利用完了後に呼び出す

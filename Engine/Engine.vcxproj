@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\graphics\render\RenderTexture.cpp" />
     <ClCompile Include="src\scene\SceneRenderer.cpp" />
     <ClCompile Include="src\scene\Scene.cpp" />
     <ClCompile Include="src\graphics\render\RenderSystem.cpp" />
@@ -93,6 +94,7 @@
     <ClInclude Include="include\scene\SceneObjectId.h" />
     <ClInclude Include="include\scene\Scene.h" />
     <ClInclude Include="include\scene\SceneRenderer.h" />
+    <ClInclude Include="include\graphics\render\RenderTexture.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\shaders\triangle\Triangle.hlsli">

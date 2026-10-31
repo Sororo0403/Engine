@@ -179,6 +179,9 @@
     <ClCompile Include="src\scene\SceneRenderer.cpp">
       <Filter>src\scene</Filter>
     </ClCompile>
+    <ClCompile Include="src\graphics\render\RenderTexture.cpp">
+      <Filter>src\graphics\render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\platform\windows\Window.h">
@@ -327,6 +330,9 @@
     </ClInclude>
     <ClInclude Include="include\scene\SceneRenderer.h">
       <Filter>include\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\render\RenderTexture.h">
+      <Filter>include\graphics\render</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

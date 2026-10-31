@@ -7,6 +7,7 @@
 class D3D12Graphics;
 class MeshRenderer;
 class WinApp;
+class RenderTexture;
 
 /// <summary>
 /// 描画ワールドの生成・描画準備・描画の実行を担当する
@@ -26,20 +27,46 @@ class RenderSystem {
 	RenderSystem &operator=(const RenderSystem &) = delete;
 
 	/// <summary>
+	/// テクスチャへの描画先を作成する
+	/// </summary>
+	/// <param name="width">描画領域の幅</param>
+	/// <param name="height">描画領域の高さ</param>
+	/// <returns>成功:描画先 失敗:nullptr</returns>
+	std::unique_ptr<RenderTexture> CreateRenderTexture(int width, int height);
+
+	/// <summary>
+	/// 指定した描画サイズでGPU用データを更新する
+	/// </summary>
+	/// <param name="world">更新するワールド</param>
+	/// <param name="width">描画領域の幅</param>
+	/// <param name="height">描画領域の高さ</param>
+	/// <returns>true:成功 false:描画基盤が異なる、または更新失敗</returns>
+	bool Update(RenderWorld &world, int width, int height);
+
+	/// <summary>
+	/// テクスチャへ描画し、描画先をバックバッファへ戻す
+	/// </summary>
+	/// <param name="world">描画するワールド</param>
+	/// <param name="target">描画先</param>
+	/// <param name="clearColor">赤・緑・青・アルファの4要素</param>
+	void Draw(const RenderWorld &world, RenderTexture &target,
+	          const float (&clearColor)[4]) const;
+
+	/// <summary>
 	/// シーン専用の描画ワールドを作成する
 	/// </summary>
 	/// <returns>成功:初期化済みのワールド 失敗:nullptr</returns>
 	std::unique_ptr<RenderWorld> CreateWorld();
 
 	/// <summary>
-	/// GPU用データを更新する。全ての編集後、BeginFrame前に呼び出す
+	/// ウィンドウの描画サイズでGPU用データを更新する
 	/// </summary>
 	/// <param name="world">更新するワールド</param>
 	/// <returns>true:成功 false:描画基盤が異なる、または更新失敗</returns>
 	bool Update(RenderWorld &world);
 
 	/// <summary>
-	/// 描画命令を記録する。Update成功後、BeginFrameとEndFrameの間に一度呼び出す
+	/// 現在の描画先へワールドの描画命令を記録する
 	/// </summary>
 	/// <param name="world">描画するワールド</param>
 	void Draw(const RenderWorld &world) const;

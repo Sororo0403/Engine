@@ -180,6 +180,18 @@ bool D3D12Graphics::Resize(int width, int height) {
 	return true;
 }
 
+void D3D12Graphics::BindBackBuffer() {
+	auto rtv = rtvHeap_->GetCPUDescriptorHandleForHeapStart();
+
+	rtv.ptr += static_cast<SIZE_T>(bufferIndex_) * rtvDescriptorSize_;
+
+	const auto dsv = dsvHeap_->GetCPUDescriptorHandleForHeapStart();
+
+	commandList_->OMSetRenderTargets(1, &rtv, FALSE, &dsv);
+	commandList_->RSSetViewports(1, &viewport_);
+	commandList_->RSSetScissorRects(1, &scissor_);
+}
+
 void D3D12Graphics::Finalize() {
 	const bool hadResources =
 	    factory_ || device_ || commandQueue_ || swapChain_;

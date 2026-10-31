@@ -47,6 +47,12 @@ class D3D12Graphics {
 	bool WaitForGpu();
 
 	/// <summary>
+	/// バックバッファを描画先に設定する。クリアは行わない
+	/// </summary>
+	/// <remarks>BeginFrame成功後からEndFrame前までに呼び出す</remarks>
+	void BindBackBuffer();
+
+	/// <summary>
 	/// GPUリソースを解放し、描画基盤を終了する
 	/// </summary>
 	void Finalize();

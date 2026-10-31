@@ -2,6 +2,7 @@
 
 #include "panels/HierarchyPanel.h"
 #include "panels/InspectorPanel.h"
+#include "panels/SceneViewPanel.h"
 #include "scene/IScene.h"
 #include "scene/Scene.h"
 #include "scene/SceneRenderer.h"
@@ -59,6 +60,7 @@ class EditorScene final : public IScene {
 
 	HierarchyPanel hierarchyPanel_;
 	InspectorPanel inspectorPanel_;
+	SceneViewPanel sceneViewPanel_;
 
 	SceneObjectId selectedObjectId_ = 0;
 };

@@ -5,6 +5,7 @@
 #include "core/Logger.h"
 
 #include "graphics/render/D3D12Graphics.h"
+#include "graphics/render/RenderTexture.h"
 #include "platform/windows/PathUtils.h"
 #include "platform/windows/StringConversion.h"
 #include "platform/windows/WinApp.h"
@@ -25,6 +26,7 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <vector>
 #include <wrl/client.h>
 
 // この関数はバックエンドのヘッダー内で宣言が無効化されているため、
@@ -130,6 +132,9 @@ struct DebugUI::Impl {
 
 	// ImGuiが参照する保存先の文字列を、コンテキストの破棄まで保持する
 	std::string iniFilePath_;
+
+	// このフレームの画像表示に使用しているSRVの格納位置
+	std::vector<UINT> imageDescriptors_;
 };
 
 DebugUI::DebugUI() : impl_(std::make_unique<Impl>()) {}
@@ -274,6 +279,12 @@ bool DebugUI::BeginFrame() {
 		    "DebugUI::BeginFrame: 未初期化、またはフレーム開始済みです。");
 		return false;
 	}
+
+	for (const UINT index : impl_->imageDescriptors_) {
+		impl_->descriptorUsed_[index] = false;
+	}
+
+	impl_->imageDescriptors_.clear();
 
 	ImGui::SetCurrentContext(impl_->context_);
 
@@ -471,6 +482,63 @@ bool DebugUI::WantsMouse() const {
 	return ImGui::GetIO().WantCaptureMouse;
 }
 
+void DebugUI::SetNextWindowSize(float width, float height) const {
+	impl_->UseFrame();
+
+	ImGui::SetNextWindowSize(ImVec2(width, height), ImGuiCond_FirstUseEver);
+}
+
+DirectX::XMFLOAT2 DebugUI::GetContentSize() const {
+	impl_->UseFrame();
+
+	const ImVec2 size = ImGui::GetContentRegionAvail();
+	return {size.x, size.y};
+}
+
+void DebugUI::Image(const RenderTexture &texture, float width,
+                    float height) const {
+	impl_->UseFrame();
+
+	if (width <= 0.0f || height <= 0.0f) {
+		return;
+	}
+
+	if (!texture.Uses(*impl_->graphics_) || !texture.GetColorResource()) {
+		throw std::logic_error(
+		    "DebugUI::Image: 描画基盤が異なる、または画像が未作成です。");
+	}
+
+	for (UINT i = 0; i < Impl::kDescriptorCount; ++i) {
+		if (impl_->descriptorUsed_[i]) {
+			continue;
+		}
+
+		// 格納先の確保に成功してから、使用中として扱う
+		impl_->imageDescriptors_.push_back(i);
+		impl_->descriptorUsed_[i] = true;
+
+		D3D12_SHADER_RESOURCE_VIEW_DESC desc{};
+		desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+		desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		desc.Texture2D.MipLevels = 1;
+
+		// ImGuiが使用するヒープ内に画像のSRVを作成する
+		impl_->device_->CreateShaderResourceView(
+		    texture.GetColorResource(), &desc,
+		    impl_->srvHeap_->GetCpuHandle(i));
+
+		const auto gpuHandle = impl_->srvHeap_->GetGpuHandle(i);
+
+		ImGui::Image(ImTextureRef(static_cast<ImTextureID>(gpuHandle.ptr)),
+		             ImVec2(width, height));
+
+		return;
+	}
+
+	throw std::runtime_error("DebugUI::Image: SRV descriptor heap is full.");
+}
+
 bool DebugUI::HandleMessage(void *nativeWindow, std::uint32_t message,
                             std::uintptr_t wParam, std::intptr_t lParam) {
 	auto *ui = Impl::active_;
@@ -525,6 +593,7 @@ void DebugUI::Finalize() {
 
 	impl_->srvHeap_.reset();
 
+	impl_->imageDescriptors_.clear();
 	impl_->descriptorUsed_.fill(false);
 
 	impl_->commandQueue_.Reset();
@@ -599,5 +668,11 @@ void DebugUI::Finalize() {}
 bool DebugUI::Button(const char *) const { return false; }
 
 bool DebugUI::Selectable(const char *, bool) const { return false; }
+
+void DebugUI::SetNextWindowSize(float, float) const {}
+
+DirectX::XMFLOAT2 DebugUI::GetContentSize() const { return {}; }
+
+void DebugUI::Image(const RenderTexture &, float, float) const {}
 
 #endif

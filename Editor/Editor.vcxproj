@@ -120,8 +120,10 @@
     <ClInclude Include="include\panels\HierarchyPanel.h" />
     <ClInclude Include="include\scene\EditorScene.h" />
     <ClInclude Include="include\panels\InspectorPanel.h" />
+    <ClInclude Include="include\panels\SceneViewPanel.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\panels\SceneViewPanel.cpp" />
     <ClCompile Include="src\panels\InspectorPanel.cpp" />
     <ClCompile Include="src\panels\HierarchyPanel.cpp" />
     <ClCompile Include="src\main.cpp" />

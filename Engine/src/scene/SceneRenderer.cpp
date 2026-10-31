@@ -3,6 +3,7 @@
 #include "core/Logger.h"
 #include "graphics/model/ModelManager.h"
 #include "graphics/render/RenderSystem.h"
+#include "graphics/render/RenderTexture.h"
 #include "graphics/render/RenderWorld.h"
 #include "scene/Scene.h"
 
@@ -32,7 +33,7 @@ bool SceneRenderer::Initialize() {
 	return true;
 }
 
-bool SceneRenderer::Update() {
+bool SceneRenderer::Update(int width, int height) {
 	if (!world_) {
 		Logger::Error("SceneRenderer::Update: 未初期化です。");
 		return false;
@@ -43,12 +44,36 @@ bool SceneRenderer::Update() {
 			return false;
 		}
 
-		return render_.Update(*world_);
+		if (width == 0 && height == 0) {
+			return render_.Update(*world_);
+		}
+
+		return render_.Update(*world_, width, height);
 	} catch (const std::exception &error) {
 		Logger::Error(std::format(
 		    "SceneRendererの更新中に例外が発生しました: {}", error.what()));
 
 		return false;
+	}
+}
+
+void SceneRenderer::Draw(RenderTexture *target) const {
+	if (!world_) {
+		Logger::Error("SceneRenderer::Draw: 未初期化です。");
+		return;
+	}
+
+	if (target) {
+		const float clearColor[4] = {
+		    0.1f,
+		    0.1f,
+		    0.1f,
+		    1.0f,
+		};
+
+		render_.Draw(*world_, *target, clearColor);
+	} else {
+		render_.Draw(*world_);
 	}
 }
 
@@ -110,15 +135,6 @@ bool SceneRenderer::SynchronizeObjects() {
 	}
 
 	return true;
-}
-
-void SceneRenderer::Draw() const {
-	if (!world_) {
-		Logger::Error("SceneRenderer::Draw: 未初期化です。");
-		return;
-	}
-
-	render_.Draw(*world_);
 }
 
 void SceneRenderer::Finalize() {

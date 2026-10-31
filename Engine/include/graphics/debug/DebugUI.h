@@ -8,6 +8,7 @@
 class D3D12Graphics;
 class WinApp;
 class Window;
+class RenderTexture;
 
 /// <summary>
 /// デバッグUIの初期化・操作・描画を管理する。
@@ -161,6 +162,27 @@ class DebugUI {
 	/// </summary>
 	/// <returns>true:UI操作を優先する false:それ以外</returns>
 	bool WantsMouse() const;
+
+	/// <summary>
+	/// 次に開始するウィンドウの初期サイズを設定する
+	/// </summary>
+	/// <param name="width">幅</param>
+	/// <param name="height">高さ</param>
+	void SetNextWindowSize(float width, float height) const;
+
+	/// <summary>
+	/// 現在のウィンドウで使用できる内容領域のサイズを取得する
+	/// </summary>
+	/// <returns>横方向・縦方向の使用可能サイズ</returns>
+	DirectX::XMFLOAT2 GetContentSize() const;
+
+	/// <summary>
+	/// 描画先テクスチャを画像として表示する
+	/// </summary>
+	/// <param name="texture">表示するテクスチャ</param>
+	/// <param name="width">表示する幅</param>
+	/// <param name="height">表示する高さ</param>
+	void Image(const RenderTexture &texture, float width, float height) const;
 
 	/// <summary>
 	/// UIを終了する。GPUの利用完了後、ウィンドウを破棄する前に呼び出す
