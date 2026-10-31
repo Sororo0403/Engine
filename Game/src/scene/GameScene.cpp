@@ -85,8 +85,10 @@ bool GameScene::Update(float deltaTime) {
 		return false;
 	}
 
-	// 全ての編集が終わってからGPU用データを更新する
+#if defined(_DEBUG)
 	DrawDebugControls();
+#endif
+
 	UpdateCamera(deltaTime);
 
 	if (autoRotate_) {
@@ -150,6 +152,8 @@ void GameScene::Draw() const {
 
 	render_.Draw(*world_);
 }
+
+#if defined(_DEBUG)
 
 void GameScene::DrawDebugControls() {
 	if (!debugUI_.BeginWindow("Game Scene")) {
@@ -215,6 +219,8 @@ void GameScene::DrawDebugControls() {
 
 	debugUI_.EndWindow();
 }
+
+#endif
 
 void GameScene::Finalize() {
 	// GPUの利用完了後、物体を所有するワールドから解放する

@@ -10,7 +10,8 @@ class WinApp;
 class Window;
 
 /// <summary>
-/// デバッグUIの初期化・操作・描画を管理する
+/// デバッグUIの初期化・操作・描画を管理する。
+/// Debug構成で有効になり、Release構成では何も行わない。
 /// </summary>
 class DebugUI {
   public:

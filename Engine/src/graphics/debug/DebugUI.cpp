@@ -1,4 +1,7 @@
 #include "graphics/debug/DebugUI.h"
+
+#if defined(_DEBUG)
+
 #include "core/Logger.h"
 
 #include "graphics/render/D3D12Graphics.h"
@@ -520,3 +523,67 @@ void DebugUI::Finalize() {
 	impl_->graphics_ = nullptr;
 	impl_->hwnd_ = nullptr;
 }
+
+#else
+
+/// <summary>
+/// Release構成ではUIリソースを保持しない
+/// </summary>
+struct DebugUI::Impl {};
+
+DebugUI::DebugUI() = default;
+
+DebugUI::~DebugUI() = default;
+
+bool DebugUI::Initialize(const WinApp &, D3D12Graphics &, int) { return true; }
+
+bool DebugUI::BeginFrame() { return true; }
+
+bool DebugUI::Render() { return true; }
+
+bool DebugUI::BeginWindow(const char *) const { return false; }
+
+void DebugUI::EndWindow() const {}
+
+bool DebugUI::Checkbox(const char *, bool &) const { return false; }
+
+bool DebugUI::CollapsingHeader(const char *, bool) const { return false; }
+
+bool DebugUI::SliderFloat(const char *, float &, float, float,
+                          const char *) const {
+	return false;
+}
+
+bool DebugUI::DragFloat3(const char *, DirectX::XMFLOAT3 &, float, float, float,
+                         const char *) const {
+	return false;
+}
+
+bool DebugUI::ColorEdit3(const char *, DirectX::XMFLOAT3 &) const {
+	return false;
+}
+
+bool DebugUI::ColorEdit4(const char *, DirectX::XMFLOAT4 &) const {
+	return false;
+}
+
+void DebugUI::PushID(int) const {}
+
+void DebugUI::PopID() const {}
+
+void DebugUI::Separator() const {}
+
+void DebugUI::Text(std::string_view) const {}
+
+bool DebugUI::WantsKeyboard() const { return false; }
+
+bool DebugUI::WantsMouse() const { return false; }
+
+bool DebugUI::HandleMessage(void *, std::uint32_t, std::uintptr_t,
+                            std::intptr_t) {
+	return false;
+}
+
+void DebugUI::Finalize() {}
+
+#endif
