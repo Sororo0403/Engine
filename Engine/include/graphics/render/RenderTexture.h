@@ -5,7 +5,7 @@
 struct ID3D12Resource;
 
 class D3D12Graphics;
-class DebugUI;
+class ImGuiSystem;
 class RenderSystem;
 
 /// <summary>
@@ -44,7 +44,7 @@ class RenderTexture {
 
   private:
 	friend class RenderSystem;
-	friend class DebugUI;
+	friend class ImGuiSystem;
 
 	explicit RenderTexture(D3D12Graphics &graphics);
 

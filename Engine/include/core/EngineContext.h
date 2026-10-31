@@ -3,7 +3,7 @@
 class ModelManager;
 class RenderSystem;
 class InputSystem;
-class DebugUI;
+class ImGuiSystem;
 
 /// <summary>
 /// アプリ側が使用できるエンジンの共通機能への参照
@@ -12,5 +12,5 @@ struct EngineContext {
 	ModelManager &models;
 	RenderSystem &render;
 	const InputSystem &input;
-	DebugUI &debugUI;
+	ImGuiSystem &ui;
 };

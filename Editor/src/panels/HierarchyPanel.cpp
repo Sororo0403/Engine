@@ -1,11 +1,11 @@
 #include "panels/HierarchyPanel.h"
 
-#include "graphics/debug/DebugUI.h"
+#include "graphics/ui/ImGuiSystem.h"
 #include "scene/Scene.h"
 
 #include <format>
 
-void HierarchyPanel::Draw(const DebugUI &ui, Scene &scene,
+void HierarchyPanel::Draw(const ImGuiSystem &ui, Scene &scene,
                           SceneObjectId &selectedObjectId) const {
 	// 外部の操作で削除された物体を選択したままにしない
 	if (!scene.Contains(selectedObjectId)) {

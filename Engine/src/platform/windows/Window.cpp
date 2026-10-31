@@ -1,6 +1,6 @@
 #include "platform/windows/Window.h"
 #include "core/Logger.h"
-#include "graphics/debug/DebugUI.h"
+#include "graphics/ui/ImGuiSystem.h"
 #include "platform/windows/StringConversion.h"
 
 #include <format>
@@ -120,7 +120,7 @@ int Window::GetHeight() const { return height_; }
 
 LRESULT CALLBACK Window::WndProc(HWND hwnd, UINT msg, WPARAM wParam,
                                  LPARAM lParam) {
-	if (DebugUI::HandleMessage(hwnd, msg, wParam, lParam)) {
+	if (ImGuiSystem::HandleMessage(hwnd, msg, wParam, lParam)) {
 		return 1;
 	}
 

@@ -2,19 +2,23 @@
 
 #include "core/EngineContext.h"
 #include "core/Logger.h"
-#include "graphics/debug/DebugUI.h"
+#include "graphics/ui/ImGuiSystem.h"
 #include "graphics/render/RenderTexture.h"
 
 #include <cmath>
 
 EditorScene::EditorScene(const EngineContext &context)
-    : debugUI_(context.debugUI), input_(context.input),
+    : ui_(context.ui), input_(context.input),
       renderer_(scene_, context.models, context.render),
       sceneViewPanel_(context.render) {}
 
 EditorScene::~EditorScene() = default;
 
 bool EditorScene::Initialize() {
+	if (!ui_.EnableDocking()) {
+		return false;
+	}
+
 	if (!renderer_.Initialize()) {
 		return false;
 	}
@@ -40,10 +44,14 @@ bool EditorScene::Update(float deltaTime) {
 		return false;
 	}
 
-	hierarchyPanel_.Draw(debugUI_, scene_, selectedObjectId_);
-	inspectorPanel_.Draw(debugUI_, scene_, selectedObjectId_);
+	// 配置対象のパネルを表示する前に、ドッキング領域を作成する
+	ui_.DrawDockSpace(dockLayout_, resetDockLayout_);
+	resetDockLayout_ = false;
 
-	if (!sceneViewPanel_.DrawUI(debugUI_)) {
+	hierarchyPanel_.Draw(ui_, scene_, selectedObjectId_);
+	inspectorPanel_.Draw(ui_, scene_, selectedObjectId_);
+
+	if (!sceneViewPanel_.DrawUI(ui_)) {
 		return false;
 	}
 

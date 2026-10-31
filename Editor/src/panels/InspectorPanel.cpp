@@ -1,12 +1,12 @@
 #include "panels/InspectorPanel.h"
 
-#include "graphics/debug/DebugUI.h"
+#include "graphics/ui/ImGuiSystem.h"
 #include "scene/Scene.h"
 
 #include <DirectXMath.h>
 #include <format>
 
-void InspectorPanel::Draw(const DebugUI &ui, Scene &scene,
+void InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
                           SceneObjectId selectedObjectId) const {
 	if (!ui.BeginWindow("Inspector")) {
 		ui.EndWindow();

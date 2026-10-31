@@ -1,6 +1,6 @@
 #include "camera/EditorCameraController.h"
 
-#include "graphics/debug/ViewportInput.h"
+#include "graphics/ui/ViewportInput.h"
 #include "input/InputSystem.h"
 #include "input/Key.h"
 #include "input/MouseButton.h"

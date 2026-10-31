@@ -60,9 +60,6 @@
     <Filter Include="include\graphics\material">
       <UniqueIdentifier>{b5bf8445-8a58-435c-9830-b72d234f5587}</UniqueIdentifier>
     </Filter>
-    <Filter Include="include\graphics\debug">
-      <UniqueIdentifier>{69866afe-a38b-425c-873b-e8bb741377b8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="src\graphics\render">
       <UniqueIdentifier>{53c7a0e0-1b1f-4dde-825c-6d9302ae4f46}</UniqueIdentifier>
     </Filter>
@@ -74,9 +71,6 @@
     </Filter>
     <Filter Include="src\graphics\material">
       <UniqueIdentifier>{0f505ce6-0383-42d8-af66-8626ed764eb9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\graphics\debug">
-      <UniqueIdentifier>{13ed71b3-1e2a-4f3d-a867-02c652be7b96}</UniqueIdentifier>
     </Filter>
     <Filter Include="include\scene">
       <UniqueIdentifier>{cb22ad81-3762-4fa9-9230-d86c48ad75b4}</UniqueIdentifier>
@@ -92,6 +86,12 @@
     </Filter>
     <Filter Include="include\math">
       <UniqueIdentifier>{3d3e1a26-4171-4721-b7fb-30f2da789895}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\graphics\ui">
+      <UniqueIdentifier>{69866afe-a38b-425c-873b-e8bb741377b8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\graphics\ui">
+      <UniqueIdentifier>{13ed71b3-1e2a-4f3d-a867-02c652be7b96}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -161,8 +161,8 @@
     <ClCompile Include="src\graphics\model\ModelInstance.cpp">
       <Filter>src\graphics\model</Filter>
     </ClCompile>
-    <ClCompile Include="src\graphics\debug\DebugUI.cpp">
-      <Filter>src\graphics\debug</Filter>
+    <ClCompile Include="src\graphics\ui\ImGuiSystem.cpp">
+      <Filter>src\graphics\ui</Filter>
     </ClCompile>
     <ClCompile Include="src\scene\SceneManager.cpp">
       <Filter>src\scene</Filter>
@@ -286,8 +286,8 @@
     <ClInclude Include="include\graphics\model\ModelInstance.h">
       <Filter>include\graphics\model</Filter>
     </ClInclude>
-    <ClInclude Include="include\graphics\debug\DebugUI.h">
-      <Filter>include\graphics\debug</Filter>
+    <ClInclude Include="include\graphics\ui\ImGuiSystem.h">
+      <Filter>include\graphics\ui</Filter>
     </ClInclude>
     <ClInclude Include="include\scene\IScene.h">
       <Filter>include\scene</Filter>
@@ -355,8 +355,8 @@
     <ClInclude Include="include\input\MouseState.h">
       <Filter>include\input</Filter>
     </ClInclude>
-    <ClInclude Include="include\graphics\debug\ViewportInput.h">
-      <Filter>include\graphics\debug</Filter>
+    <ClInclude Include="include\graphics\ui\ViewportInput.h">
+      <Filter>include\graphics\ui</Filter>
     </ClInclude>
     <ClInclude Include="include\math\Transform.h">
       <Filter>include\math</Filter>
@@ -374,5 +374,10 @@
     <None Include="resources\shaders\triangle\Triangle.hlsli">
       <Filter>resources\shaders\triangle</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\graphics\ui\DockLayout.h">
+      <Filter>include\graphics\ui</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,31 +1,32 @@
 #pragma once
 
-#include "graphics/debug/ViewportInput.h"
+#include "graphics/ui/ViewportInput.h"
 
 #include <DirectXMath.h>
 #include <cstdint>
 #include <memory>
 #include <string_view>
 
+struct DockLayout;
+
 class D3D12Graphics;
+class RenderTexture;
 class WinApp;
 class Window;
-class RenderTexture;
 
 /// <summary>
-/// デバッグUIの初期化・操作・描画を管理する。
-/// Debug構成で有効になり、Release構成では何も行わない。
+/// ImGuiの初期化・UI操作・描画を管理する
 /// </summary>
-class DebugUI {
+class ImGuiSystem {
   public:
-	DebugUI();
-	~DebugUI();
+	ImGuiSystem();
+	~ImGuiSystem();
 
-	DebugUI(const DebugUI &) = delete;
-	DebugUI &operator=(const DebugUI &) = delete;
+	ImGuiSystem(const ImGuiSystem &) = delete;
+	ImGuiSystem &operator=(const ImGuiSystem &) = delete;
 
 	/// <summary>
-	/// デバッグUIと描画用リソースを初期化する
+	/// UIと描画用リソースを初期化する
 	/// </summary>
 	/// <param name="app">UIを表示するアプリケーション</param>
 	/// <param name="graphics">初期化済みの描画基盤。このクラスより長く保持すること</param>
@@ -35,7 +36,8 @@ class DebugUI {
 	                int framesInFlight = 2);
 
 	/// <summary>
-	/// UIのフレームを開始する。この後でウィジェットを作成する
+	/// UIのフレームを開始する。
+	/// 前フレームのGPU処理完了後に呼び出す
 	/// </summary>
 	/// <returns>true:成功 false:未初期化、またはフレーム開始済み</returns>
 	bool BeginFrame();
@@ -45,6 +47,22 @@ class DebugUI {
 	/// </summary>
 	/// <returns>true:成功 false:未初期化、フレームの状態が無効、または描画処理失敗</returns>
 	bool Render();
+
+	/// <summary>
+	/// ウィンドウのドッキングを有効にする。
+	/// UIの初期化後、フレーム開始前に呼び出す
+	/// </summary>
+	/// <returns>true:成功 false:未初期化、またはフレーム開始済み</returns>
+	bool EnableDocking() const;
+
+	/// <summary>
+	/// メインウィンドウ全体にドッキング領域を作成する。
+	/// 各パネルのBeginWindowより前に、毎フレーム呼び出す
+	/// </summary>
+	/// <param name="layout">領域の識別情報と初期配置</param>
+	/// <param name="resetLayout">保存済みの配置を破棄し、初期配置へ戻すか</param>
+	void DrawDockSpace(const DockLayout &layout,
+	                   bool resetLayout = false) const;
 
 	/// <summary>
 	/// UIウィンドウを開始する。戻り値にかかわらずEndWindowを呼び出す
@@ -191,6 +209,10 @@ class DebugUI {
 	/// <param name="texture">表示するテクスチャ</param>
 	/// <param name="width">表示する幅</param>
 	/// <param name="height">表示する高さ</param>
+	/// <remarks>
+	/// 呼び出しからフレームのGPU処理完了まで、
+	/// テクスチャのリサイズ・破棄を行わないこと
+	/// </remarks>
 	void Image(const RenderTexture &texture, float width, float height) const;
 
 	/// <summary>

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "graphics/debug/ViewportInput.h"
+#include "graphics/ui/ViewportInput.h"
 
 #include <memory>
 
-class DebugUI;
+class ImGuiSystem;
 class RenderSystem;
 class RenderTexture;
 
@@ -30,7 +30,7 @@ class SceneViewPanel {
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
 	/// <returns>true:成功または非表示 false:描画先の作成失敗</returns>
-	bool DrawUI(const DebugUI &ui);
+	bool DrawUI(const ImGuiSystem &ui);
 
 	/// <summary>
 	/// このフレームで描画するテクスチャを取得する

@@ -3,7 +3,7 @@
 #include "core/EngineContext.h"
 #include "core/FrameTimer.h"
 #include "core/Logger.h"
-#include "graphics/debug/DebugUI.h"
+#include "graphics/ui/ImGuiSystem.h"
 #include "graphics/model/ModelManager.h"
 #include "graphics/render/D3D12Graphics.h"
 #include "graphics/render/MeshRenderer.h"
@@ -67,7 +67,7 @@ struct Engine::Impl {
 		sceneManager_.Finalize();
 		models_.Finalize();
 
-		debugUI_.Finalize();
+		ui_.Finalize();
 		input_.Finalize();
 
 		meshRenderer_.Finalize();
@@ -129,7 +129,7 @@ struct Engine::Impl {
 			return false;
 		}
 
-		if (!debugUI_.Initialize(app_, graphics_)) {
+		if (!ui_.Initialize(app_, graphics_)) {
 			return false;
 		}
 
@@ -138,7 +138,7 @@ struct Engine::Impl {
 		    models_,
 		    render_,
 		    input_,
-		    debugUI_,
+		    ui_,
 		});
 
 		if (!sceneManager_.RequestChange(sceneFactory(*context_)) ||
@@ -196,7 +196,7 @@ struct Engine::Impl {
 			// シーンの読み込み時間を次フレームの経過時間から除く
 			frameTimer.Reset();
 
-			if (!debugUI_.BeginFrame()) {
+			if (!ui_.BeginFrame()) {
 				return -1;
 			}
 
@@ -212,7 +212,7 @@ struct Engine::Impl {
 			sceneManager_.Draw();
 
 			// シーンの描画後にUIを重ねる
-			if (!debugUI_.Render()) {
+			if (!ui_.Render()) {
 				return -1;
 			}
 
@@ -233,7 +233,7 @@ struct Engine::Impl {
 	MeshRenderer meshRenderer_;
 
 	InputSystem input_;
-	DebugUI debugUI_;
+	ImGuiSystem ui_;
 
 	// コンストラクターでは依存先の参照だけを保持する
 	ModelManager models_;

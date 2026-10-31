@@ -1,6 +1,7 @@
 #pragma once
 
 #include "camera/EditorCameraController.h"
+#include "graphics/ui/DockLayout.h"
 #include "panels/HierarchyPanel.h"
 #include "panels/InspectorPanel.h"
 #include "panels/SceneViewPanel.h"
@@ -11,7 +12,7 @@
 struct EngineContext;
 
 class InputSystem;
-class DebugUI;
+class ImGuiSystem;
 
 /// <summary>
 /// エディターのシーンデータと編集処理を管理する
@@ -54,12 +55,24 @@ class EditorScene final : public IScene {
 
   private:
 	// 参照先はEditorSceneより長く保持する
-	const DebugUI &debugUI_;
+	const ImGuiSystem &ui_;
 	const InputSystem &input_;
 
 	// 描画側が参照するため、SceneRendererより先に宣言する
 	Scene scene_;
 	SceneRenderer renderer_;
+
+	// 各パネルのタイトルと、初期配置の割合
+	DockLayout dockLayout_{
+	    "EditorDockSpace",
+	    "Hierarchy",
+	    "Scene",
+	    "Inspector",
+	    0.20f,
+	    0.25f,
+	};
+
+	bool resetDockLayout_ = false;
 
 	HierarchyPanel hierarchyPanel_;
 	InspectorPanel inspectorPanel_;

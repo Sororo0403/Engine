@@ -2,7 +2,7 @@
 
 #include "scene/SceneObjectId.h"
 
-class DebugUI;
+class ImGuiSystem;
 class Scene;
 
 /// <summary>
@@ -16,6 +16,6 @@ class HierarchyPanel {
 	/// <param name="ui">フレーム開始済みのUI</param>
 	/// <param name="scene">編集対象のシーン</param>
 	/// <param name="selectedObjectId">選択中の物体ID。未選択は0</param>
-	void Draw(const DebugUI &ui, Scene &scene,
+	void Draw(const ImGuiSystem &ui, Scene &scene,
 	          SceneObjectId &selectedObjectId) const;
 };

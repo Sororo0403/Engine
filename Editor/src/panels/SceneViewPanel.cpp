@@ -1,6 +1,6 @@
 #include "panels/SceneViewPanel.h"
 
-#include "graphics/debug/DebugUI.h"
+#include "graphics/ui/ImGuiSystem.h"
 #include "graphics/render/RenderSystem.h"
 #include "graphics/render/RenderTexture.h"
 
@@ -11,7 +11,7 @@ SceneViewPanel::SceneViewPanel(RenderSystem &render) : render_(render) {}
 
 SceneViewPanel::~SceneViewPanel() = default;
 
-bool SceneViewPanel::DrawUI(const DebugUI &ui) {
+bool SceneViewPanel::DrawUI(const ImGuiSystem &ui) {
 	visible_ = false;
 	input_ = {};
 

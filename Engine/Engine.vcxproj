@@ -20,7 +20,7 @@
     <ClCompile Include="src\graphics\model\ModelManager.cpp" />
     <ClCompile Include="src\core\Engine.cpp" />
     <ClCompile Include="src\scene\SceneManager.cpp" />
-    <ClCompile Include="src\graphics\debug\DebugUI.cpp" />
+    <ClCompile Include="src\graphics\ui\ImGuiSystem.cpp" />
     <ClCompile Include="src\graphics\model\ModelInstance.cpp" />
     <ClCompile Include="src\graphics\model\Model.cpp" />
     <ClCompile Include="src\graphics\model\ModelLoader.cpp" />
@@ -52,7 +52,8 @@
     <ClInclude Include="include\core\EngineContext.h" />
     <ClInclude Include="include\graphics\camera\CameraPose.h" />
     <ClInclude Include="include\graphics\render\RenderObjectHandle.h" />
-    <ClInclude Include="include\graphics\debug\DebugUI.h" />
+    <ClInclude Include="include\graphics\ui\ImGuiSystem.h" />
+    <ClInclude Include="include\graphics\ui\DockLayout.h" />
     <ClInclude Include="include\graphics\DirectionalLight.h" />
     <ClInclude Include="include\math\Transform.h" />
     <ClInclude Include="include\input\MouseState.h" />
@@ -65,7 +66,7 @@
     <ClInclude Include="include\core\DateTime.h" />
     <ClInclude Include="include\graphics\render\D3D12Graphics.h" />
     <ClInclude Include="include\graphics\mesh\Vertex.h" />
-    <ClInclude Include="include\graphics\debug\ViewportInput.h" />
+    <ClInclude Include="include\graphics\ui\ViewportInput.h" />
     <ClInclude Include="include\platform\windows\Window.h" />
     <ClInclude Include="include\platform\windows\WinApp.h" />
     <ClInclude Include="include\graphics\render\ShaderCompiler.h" />

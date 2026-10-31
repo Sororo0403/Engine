@@ -7,6 +7,5 @@
     <File Path=".editorconfig" />
   </Folder>
   <Project Path="Engine/Engine.vcxproj" Id="b5695b53-5c1d-4b30-887f-99386dedafcd" />
-  <Project Path="Game/Game.vcxproj" Id="c09d135a-d647-4bcd-847e-c50d3d56d89d" />
   <Project Path="Editor/Editor.vcxproj" Id="9463d484-3e81-4a35-810b-2ded320811de" />
 </Solution>

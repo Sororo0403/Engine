@@ -1,11 +1,9 @@
-#include "graphics/debug/DebugUI.h"
-
-#if defined(_DEBUG)
+#include "graphics/ui/ImGuiSystem.h"
 
 #include "core/Logger.h"
-
 #include "graphics/render/D3D12Graphics.h"
 #include "graphics/render/RenderTexture.h"
+#include "graphics/ui/DockLayout.h"
 #include "platform/windows/PathUtils.h"
 #include "platform/windows/StringConversion.h"
 #include "platform/windows/WinApp.h"
@@ -15,9 +13,11 @@
 #include <imgui.h>
 #include <imgui_impl_dx12.h>
 #include <imgui_impl_win32.h>
+#include <imgui_internal.h>
 
 #include <Windows.h>
 #include <array>
+#include <cmath>
 #include <cstddef>
 #include <d3d12.h>
 #include <exception>
@@ -39,7 +39,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd,
 /// <summary>
 /// UIのコンテキストと描画用リソースを保持する
 /// </summary>
-struct DebugUI::Impl {
+struct ImGuiSystem::Impl {
 	static constexpr UINT kDescriptorCount = 128;
 
 	// 現在の構成では、同時に使用するUIコンテキストは1つ
@@ -51,7 +51,7 @@ struct DebugUI::Impl {
 	void UseFrame() const {
 		if (!context_ || !frameStarted_) {
 			throw std::logic_error(
-			    "DebugUI: ウィジェットの操作にはBeginFrameが必要です。");
+			    "ImGuiSystem: ウィジェットの操作にはBeginFrameが必要です。");
 		}
 
 		ImGui::SetCurrentContext(context_);
@@ -78,7 +78,7 @@ struct DebugUI::Impl {
 			}
 		}
 
-		throw std::runtime_error("DebugUI: SRV descriptor heap is full.");
+		throw std::runtime_error("ImGuiSystem: SRV descriptor heap is full.");
 	}
 
 	/// <summary>
@@ -98,7 +98,7 @@ struct DebugUI::Impl {
 
 		if (increment == 0 || cpuHandle.ptr < first ||
 		    (cpuHandle.ptr - first) % increment != 0) {
-			Logger::Error("DebugUI::FreeSrv: ハンドルが無効です。");
+			Logger::Error("ImGuiSystem::FreeSrv: ハンドルが無効です。");
 			return;
 		}
 
@@ -106,7 +106,7 @@ struct DebugUI::Impl {
 
 		if (index >= kDescriptorCount || !ui->descriptorUsed_[index] ||
 		    gpuHandle.ptr != ui->srvHeap_->GetGpuHandle(index).ptr) {
-			Logger::Error("DebugUI::FreeSrv: SRVの解放情報が無効です。");
+			Logger::Error("ImGuiSystem::FreeSrv: SRVの解放情報が無効です。");
 			return;
 		}
 
@@ -116,7 +116,7 @@ struct DebugUI::Impl {
 	ImGuiContext *context_ = nullptr;
 	HWND hwnd_ = nullptr;
 
-	// 参照先はDebugUIより長く保持する
+	// 参照先はImGuiSystemより長く保持する
 	D3D12Graphics *graphics_ = nullptr;
 
 	// バックエンドが参照している間、デバイスとキューを保持する
@@ -137,34 +137,35 @@ struct DebugUI::Impl {
 	std::vector<UINT> imageDescriptors_;
 };
 
-DebugUI::DebugUI() : impl_(std::make_unique<Impl>()) {}
+ImGuiSystem::ImGuiSystem() : impl_(std::make_unique<Impl>()) {}
 
-DebugUI::~DebugUI() {
+ImGuiSystem::~ImGuiSystem() {
 	// 呼び出し側でGPUの利用完了を保証してから破棄する
 	Finalize();
 }
 
-bool DebugUI::Initialize(const WinApp &app, D3D12Graphics &graphics,
-                         int framesInFlight) {
+bool ImGuiSystem::Initialize(const WinApp &app, D3D12Graphics &graphics,
+                             int framesInFlight) {
 	const HWND hwnd = app.GetHwnd();
 	auto *device = graphics.GetDevice();
 	auto *commandQueue = graphics.GetCommandQueue();
 
 	if (!hwnd || !IsWindow(hwnd) || !device || !commandQueue ||
 	    framesInFlight <= 0) {
-		Logger::Error("DebugUI::Initialize: 引数が無効です。");
+		Logger::Error("ImGuiSystem::Initialize: 引数が無効です。");
 		return false;
 	}
 
 	if (impl_->context_ || impl_->srvHeap_ || Impl::active_ ||
 	    ImGui::GetCurrentContext()) {
-		Logger::Error("DebugUI::Initialize: ImGuiはすでに初期化されています。");
+		Logger::Error(
+		    "ImGuiSystem::Initialize: ImGuiはすでに初期化されています。");
 		return false;
 	}
 
 	if (commandQueue->GetDesc().Type != D3D12_COMMAND_LIST_TYPE_DIRECT) {
 		Logger::Error(
-		    "DebugUI::Initialize: DIRECT型のコマンドキューが必要です。");
+		    "ImGuiSystem::Initialize: DIRECT型のコマンドキューが必要です。");
 		return false;
 	}
 
@@ -172,7 +173,7 @@ bool DebugUI::Initialize(const WinApp &app, D3D12Graphics &graphics,
 		const auto executableDirectory = PathUtils::GetExecutableDirectory();
 
 		if (executableDirectory.empty()) {
-			Logger::Error("DebugUI::Initialize: 実行ファイルのフォルダを"
+			Logger::Error("ImGuiSystem::Initialize: 実行ファイルのフォルダを"
 			              "取得できませんでした。");
 			return false;
 		}
@@ -187,7 +188,7 @@ bool DebugUI::Initialize(const WinApp &app, D3D12Graphics &graphics,
 		impl_->iniFilePath_ = StringConversion::WideToUtf8(iniPath.wstring());
 
 		if (impl_->iniFilePath_.empty()) {
-			Logger::Error("DebugUI::Initialize: 設定ファイルのパスを"
+			Logger::Error("ImGuiSystem::Initialize: 設定ファイルのパスを"
 			              "UTF-8に変換できませんでした。");
 			return false;
 		}
@@ -202,6 +203,7 @@ bool DebugUI::Initialize(const WinApp &app, D3D12Graphics &graphics,
 		    device, Impl::kDescriptorCount);
 
 		impl_->descriptorUsed_.fill(false);
+		impl_->imageDescriptors_.clear();
 
 		IMGUI_CHECKVERSION();
 		impl_->context_ = ImGui::CreateContext();
@@ -261,25 +263,27 @@ bool DebugUI::Initialize(const WinApp &app, D3D12Graphics &graphics,
 			return false;
 		}
 	} catch (const std::exception &error) {
-		Logger::Error(std::format("DebugUIの初期化中に例外が発生しました: {}",
-		                          error.what()));
+		Logger::Error(std::format(
+		    "ImGuiSystemの初期化中に例外が発生しました: {}", error.what()));
 
 		Finalize();
 		return false;
 	}
 
-	Logger::Info("DebugUIを初期化しました。");
+	Logger::Info("ImGuiSystemを初期化しました。");
 	return true;
 }
 
-bool DebugUI::BeginFrame() {
+bool ImGuiSystem::BeginFrame() {
 	if (!impl_->context_ || !impl_->win32Initialized_ ||
 	    !impl_->rendererInitialized_ || impl_->frameStarted_) {
 		Logger::Error(
-		    "DebugUI::BeginFrame: 未初期化、またはフレーム開始済みです。");
+		    "ImGuiSystem::BeginFrame: 未初期化、またはフレーム開始済みです。");
 		return false;
 	}
 
+	// 前フレームのGPU処理完了後なので、
+	// 画像表示に使用したSRVを再利用できる
 	for (const UINT index : impl_->imageDescriptors_) {
 		impl_->descriptorUsed_[index] = false;
 	}
@@ -296,18 +300,18 @@ bool DebugUI::BeginFrame() {
 	return true;
 }
 
-bool DebugUI::Render() {
+bool ImGuiSystem::Render() {
 	if (!impl_->graphics_ || !impl_->context_ || !impl_->rendererInitialized_ ||
 	    !impl_->frameStarted_) {
 		Logger::Error(
-		    "DebugUI::Render: 未初期化、またはフレームの状態が無効です。");
+		    "ImGuiSystem::Render: 未初期化、またはフレームの状態が無効です。");
 		return false;
 	}
 
 	auto *commandList = impl_->graphics_->GetCommandList();
 
 	if (!commandList) {
-		Logger::Error("DebugUI::Render: コマンドリストがありません。");
+		Logger::Error("ImGuiSystem::Render: コマンドリストがありません。");
 		return false;
 	}
 
@@ -326,31 +330,105 @@ bool DebugUI::Render() {
 
 		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 	} catch (const std::exception &error) {
-		Logger::Error(
-		    std::format("DebugUIの描画処理に失敗しました: {}", error.what()));
-
+		Logger::Error(std::format("ImGuiSystemの描画処理に失敗しました: {}",
+		                          error.what()));
 		return false;
 	}
 
 	return true;
 }
 
-bool DebugUI::BeginWindow(const char *title) const {
+bool ImGuiSystem::EnableDocking() const {
+	if (!impl_->context_ || impl_->frameStarted_) {
+		Logger::Error("ImGuiSystem::EnableDocking: "
+		              "未初期化、またはフレーム開始済みです。");
+		return false;
+	}
+
+	ImGui::SetCurrentContext(impl_->context_);
+
+	ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
+	return true;
+}
+
+void ImGuiSystem::DrawDockSpace(const DockLayout &layout,
+                                bool resetLayout) const {
+	impl_->UseFrame();
+
+	const ImGuiIO &io = ImGui::GetIO();
+
+	if ((io.ConfigFlags & ImGuiConfigFlags_DockingEnable) == 0) {
+		throw std::logic_error(
+		    "ImGuiSystem::DrawDockSpace: ドッキングが有効ではありません。");
+	}
+
+	if (!layout.name || !*layout.name || !layout.leftWindow ||
+	    !*layout.leftWindow || !layout.centerWindow || !*layout.centerWindow ||
+	    !layout.rightWindow || !*layout.rightWindow ||
+	    !std::isfinite(layout.leftRatio) || !std::isfinite(layout.rightRatio) ||
+	    layout.leftRatio <= 0.0f || layout.rightRatio <= 0.0f ||
+	    layout.leftRatio + layout.rightRatio >= 1.0f) {
+		throw std::invalid_argument(
+		    "ImGuiSystem::DrawDockSpace: 配置情報が無効です。");
+	}
+
+	const ImGuiViewport *viewport = ImGui::GetMainViewport();
+
+	if (viewport->WorkSize.x <= 0.0f || viewport->WorkSize.y <= 0.0f) {
+		return;
+	}
+
+	const ImGuiID dockspaceId = ImHashStr(layout.name);
+
+	// 保存済みの領域があれば、ユーザーが変更した配置を維持する
+	if (resetLayout || ImGui::DockBuilderGetNode(dockspaceId) == nullptr) {
+		ImGui::DockBuilderRemoveNode(dockspaceId);
+
+		ImGui::DockBuilderAddNode(dockspaceId, ImGuiDockNodeFlags_DockSpace);
+
+		ImGui::DockBuilderSetNodeSize(dockspaceId, viewport->WorkSize);
+
+		ImGuiID centerId = dockspaceId;
+		ImGuiID leftId = 0;
+		ImGuiID rightId = 0;
+
+		ImGui::DockBuilderSplitNode(centerId, ImGuiDir_Left, layout.leftRatio,
+		                            &leftId, &centerId);
+
+		// 左領域を除いた残りの幅に対する割合へ変換する
+		const float rightRatio = layout.rightRatio / (1.0f - layout.leftRatio);
+
+		ImGui::DockBuilderSplitNode(centerId, ImGuiDir_Right, rightRatio,
+		                            &rightId, &centerId);
+
+		ImGui::DockBuilderDockWindow(layout.leftWindow, leftId);
+		ImGui::DockBuilderDockWindow(layout.centerWindow, centerId);
+		ImGui::DockBuilderDockWindow(layout.rightWindow, rightId);
+
+		ImGui::DockBuilderFinish(dockspaceId);
+	}
+
+	ImGui::DockSpaceOverViewport(dockspaceId, viewport,
+	                             ImGuiDockNodeFlags_None);
+}
+
+bool ImGuiSystem::BeginWindow(const char *title) const {
 	impl_->UseFrame();
 	return ImGui::Begin(title);
 }
 
-void DebugUI::EndWindow() const {
+void ImGuiSystem::EndWindow() const {
 	impl_->UseFrame();
 	ImGui::End();
 }
 
-bool DebugUI::Checkbox(const char *label, bool &value) const {
+bool ImGuiSystem::Checkbox(const char *label, bool &value) const {
 	impl_->UseFrame();
 	return ImGui::Checkbox(label, &value);
 }
 
-bool DebugUI::CollapsingHeader(const char *label, bool defaultOpen) const {
+bool ImGuiSystem::CollapsingHeader(const char *label, bool defaultOpen) const {
 	impl_->UseFrame();
 
 	const ImGuiTreeNodeFlags flags =
@@ -359,17 +437,17 @@ bool DebugUI::CollapsingHeader(const char *label, bool defaultOpen) const {
 	return ImGui::CollapsingHeader(label, flags);
 }
 
-bool DebugUI::SliderFloat(const char *label, float &value, float minimum,
-                          float maximum, const char *format) const {
+bool ImGuiSystem::SliderFloat(const char *label, float &value, float minimum,
+                              float maximum, const char *format) const {
 	impl_->UseFrame();
 
 	return ImGui::SliderFloat(label, &value, minimum, maximum, format,
 	                          ImGuiSliderFlags_AlwaysClamp);
 }
 
-bool DebugUI::DragFloat3(const char *label, DirectX::XMFLOAT3 &value,
-                         float speed, float minimum, float maximum,
-                         const char *format) const {
+bool ImGuiSystem::DragFloat3(const char *label, DirectX::XMFLOAT3 &value,
+                             float speed, float minimum, float maximum,
+                             const char *format) const {
 	impl_->UseFrame();
 
 	float values[] = {
@@ -387,7 +465,8 @@ bool DebugUI::DragFloat3(const char *label, DirectX::XMFLOAT3 &value,
 	return true;
 }
 
-bool DebugUI::ColorEdit3(const char *label, DirectX::XMFLOAT3 &color) const {
+bool ImGuiSystem::ColorEdit3(const char *label,
+                             DirectX::XMFLOAT3 &color) const {
 	impl_->UseFrame();
 
 	float values[] = {
@@ -404,7 +483,8 @@ bool DebugUI::ColorEdit3(const char *label, DirectX::XMFLOAT3 &color) const {
 	return true;
 }
 
-bool DebugUI::ColorEdit4(const char *label, DirectX::XMFLOAT4 &color) const {
+bool ImGuiSystem::ColorEdit4(const char *label,
+                             DirectX::XMFLOAT4 &color) const {
 	impl_->UseFrame();
 
 	float values[] = {
@@ -428,32 +508,32 @@ bool DebugUI::ColorEdit4(const char *label, DirectX::XMFLOAT4 &color) const {
 	return true;
 }
 
-void DebugUI::PushID(int id) const {
+void ImGuiSystem::PushID(int id) const {
 	impl_->UseFrame();
 	ImGui::PushID(id);
 }
 
-void DebugUI::PopID() const {
+void ImGuiSystem::PopID() const {
 	impl_->UseFrame();
 	ImGui::PopID();
 }
 
-void DebugUI::Separator() const {
+void ImGuiSystem::Separator() const {
 	impl_->UseFrame();
 	ImGui::Separator();
 }
 
-bool DebugUI::Button(const char *label) const {
+bool ImGuiSystem::Button(const char *label) const {
 	impl_->UseFrame();
 	return ImGui::Button(label);
 }
 
-bool DebugUI::Selectable(const char *label, bool selected) const {
+bool ImGuiSystem::Selectable(const char *label, bool selected) const {
 	impl_->UseFrame();
 	return ImGui::Selectable(label, selected);
 }
 
-void DebugUI::Text(std::string_view text) const {
+void ImGuiSystem::Text(std::string_view text) const {
 	impl_->UseFrame();
 
 	if (text.empty()) {
@@ -464,7 +544,7 @@ void DebugUI::Text(std::string_view text) const {
 	ImGui::TextUnformatted(text.data(), text.data() + text.size());
 }
 
-bool DebugUI::WantsKeyboard() const {
+bool ImGuiSystem::WantsKeyboard() const {
 	if (!impl_->context_) {
 		return false;
 	}
@@ -473,7 +553,7 @@ bool DebugUI::WantsKeyboard() const {
 	return ImGui::GetIO().WantCaptureKeyboard;
 }
 
-bool DebugUI::WantsMouse() const {
+bool ImGuiSystem::WantsMouse() const {
 	if (!impl_->context_) {
 		return false;
 	}
@@ -482,20 +562,20 @@ bool DebugUI::WantsMouse() const {
 	return ImGui::GetIO().WantCaptureMouse;
 }
 
-void DebugUI::SetNextWindowSize(float width, float height) const {
+void ImGuiSystem::SetNextWindowSize(float width, float height) const {
 	impl_->UseFrame();
 
 	ImGui::SetNextWindowSize(ImVec2(width, height), ImGuiCond_FirstUseEver);
 }
 
-DirectX::XMFLOAT2 DebugUI::GetContentSize() const {
+DirectX::XMFLOAT2 ImGuiSystem::GetContentSize() const {
 	impl_->UseFrame();
 
 	const ImVec2 size = ImGui::GetContentRegionAvail();
 	return {size.x, size.y};
 }
 
-ViewportInput DebugUI::GetViewportInput() const {
+ViewportInput ImGuiSystem::GetViewportInput() const {
 	impl_->UseFrame();
 
 	const ImGuiIO &io = ImGui::GetIO();
@@ -504,14 +584,20 @@ ViewportInput DebugUI::GetViewportInput() const {
 	input.imageHovered = ImGui::IsItemHovered();
 	input.windowFocused = ImGui::IsWindowFocused();
 	input.applicationFocused = !io.AppFocusLost;
+
 	input.widgetActive = io.WantTextInput || ImGui::IsAnyItemActive();
 
 	return input;
 }
 
-void DebugUI::Image(const RenderTexture &texture, float width,
-                    float height) const {
+void ImGuiSystem::Image(const RenderTexture &texture, float width,
+                        float height) const {
 	impl_->UseFrame();
+
+	if (!std::isfinite(width) || !std::isfinite(height)) {
+		throw std::invalid_argument(
+		    "ImGuiSystem::Image: 表示サイズが無効です。");
+	}
 
 	if (width <= 0.0f || height <= 0.0f) {
 		return;
@@ -519,7 +605,7 @@ void DebugUI::Image(const RenderTexture &texture, float width,
 
 	if (!texture.Uses(*impl_->graphics_) || !texture.GetColorResource()) {
 		throw std::logic_error(
-		    "DebugUI::Image: 描画基盤が異なる、または画像が未作成です。");
+		    "ImGuiSystem::Image: 描画基盤が異なる、または画像が未作成です。");
 	}
 
 	for (UINT i = 0; i < Impl::kDescriptorCount; ++i) {
@@ -550,11 +636,12 @@ void DebugUI::Image(const RenderTexture &texture, float width,
 		return;
 	}
 
-	throw std::runtime_error("DebugUI::Image: SRV descriptor heap is full.");
+	throw std::runtime_error(
+	    "ImGuiSystem::Image: SRV descriptor heap is full.");
 }
 
-bool DebugUI::HandleMessage(void *nativeWindow, std::uint32_t message,
-                            std::uintptr_t wParam, std::intptr_t lParam) {
+bool ImGuiSystem::HandleMessage(void *nativeWindow, std::uint32_t message,
+                                std::uintptr_t wParam, std::intptr_t lParam) {
 	auto *ui = Impl::active_;
 
 	if (!ui || !ui->context_ || !ui->win32Initialized_) {
@@ -574,7 +661,7 @@ bool DebugUI::HandleMessage(void *nativeWindow, std::uint32_t message,
 	                                      static_cast<LPARAM>(lParam)) != 0;
 }
 
-void DebugUI::Finalize() {
+void ImGuiSystem::Finalize() {
 	// 終了処理中は、ウィンドウからのメッセージを転送しない
 	if (Impl::active_ == impl_.get()) {
 		Impl::active_ = nullptr;
@@ -606,7 +693,6 @@ void DebugUI::Finalize() {
 	impl_->iniFilePath_.clear();
 
 	impl_->srvHeap_.reset();
-
 	impl_->imageDescriptors_.clear();
 	impl_->descriptorUsed_.fill(false);
 
@@ -616,79 +702,3 @@ void DebugUI::Finalize() {
 	impl_->graphics_ = nullptr;
 	impl_->hwnd_ = nullptr;
 }
-
-#else
-
-/// <summary>
-/// Release構成ではUIリソースを保持しない
-/// </summary>
-struct DebugUI::Impl {};
-
-DebugUI::DebugUI() = default;
-
-DebugUI::~DebugUI() = default;
-
-bool DebugUI::Initialize(const WinApp &, D3D12Graphics &, int) { return true; }
-
-bool DebugUI::BeginFrame() { return true; }
-
-bool DebugUI::Render() { return true; }
-
-bool DebugUI::BeginWindow(const char *) const { return false; }
-
-void DebugUI::EndWindow() const {}
-
-bool DebugUI::Checkbox(const char *, bool &) const { return false; }
-
-bool DebugUI::CollapsingHeader(const char *, bool) const { return false; }
-
-bool DebugUI::SliderFloat(const char *, float &, float, float,
-                          const char *) const {
-	return false;
-}
-
-bool DebugUI::DragFloat3(const char *, DirectX::XMFLOAT3 &, float, float, float,
-                         const char *) const {
-	return false;
-}
-
-bool DebugUI::ColorEdit3(const char *, DirectX::XMFLOAT3 &) const {
-	return false;
-}
-
-bool DebugUI::ColorEdit4(const char *, DirectX::XMFLOAT4 &) const {
-	return false;
-}
-
-void DebugUI::PushID(int) const {}
-
-void DebugUI::PopID() const {}
-
-void DebugUI::Separator() const {}
-
-void DebugUI::Text(std::string_view) const {}
-
-bool DebugUI::WantsKeyboard() const { return false; }
-
-bool DebugUI::WantsMouse() const { return false; }
-
-bool DebugUI::HandleMessage(void *, std::uint32_t, std::uintptr_t,
-                            std::intptr_t) {
-	return false;
-}
-
-void DebugUI::Finalize() {}
-
-bool DebugUI::Button(const char *) const { return false; }
-
-bool DebugUI::Selectable(const char *, bool) const { return false; }
-
-void DebugUI::SetNextWindowSize(float, float) const {}
-
-DirectX::XMFLOAT2 DebugUI::GetContentSize() const { return {}; }
-
-void DebugUI::Image(const RenderTexture &, float, float) const {}
-
-ViewportInput DebugUI::GetViewportInput() const { return {}; }
-
-#endif
