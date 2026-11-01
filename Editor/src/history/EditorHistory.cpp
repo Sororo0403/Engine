@@ -152,9 +152,20 @@ EditorHistory::CreateObjects(std::vector<SceneObject> objects) {
 		return {};
 	}
 
+	bool hasPrimary =
+	    std::ranges::any_of(scene_.GetObjects(), [](const auto &entry) {
+		    return entry.second.camera && entry.second.camera->primary;
+	    });
+
 	for (auto &object : objects) {
-		if (!TransformUtils::IsValid(object.transform)) {
+		if (!TransformUtils::IsValid(object.transform) ||
+		    (object.camera && !object.camera->IsValid())) {
 			return {};
+		}
+
+		if (object.camera && object.camera->primary) {
+			object.camera->primary = !hasPrimary;
+			hasPrimary = true;
 		}
 
 		if (object.name.empty()) {
@@ -1480,6 +1491,56 @@ bool EditorHistory::SetCamera(SceneObjectId id,
 
 	if (!object || (value && !value->IsValid())) {
 		return false;
+	}
+
+	if (value && value->primary) {
+		if (object->camera && !object->camera->IsValid()) {
+			return false;
+		}
+
+		const bool adding = !object->camera;
+		const bool activating = adding || !object->camera->primary;
+		std::vector<CommandGroup::Command> commands;
+		CameraCommand target{id, object->camera, value};
+
+		if (target.HasChanges()) {
+			commands.emplace_back(std::move(target));
+		}
+
+		bool clearedOther = false;
+
+		for (const auto &[otherId, other] : scene_.GetObjects()) {
+			if (otherId == id || !other.camera || !other.camera->primary) {
+				continue;
+			}
+
+			if (!other.camera->IsValid()) {
+				return false;
+			}
+
+			auto disabled = *other.camera;
+			disabled.primary = false;
+			commands.emplace_back(
+			    CameraCommand{otherId, other.camera, disabled});
+			clearedOther = true;
+		}
+
+		if (commands.empty()) {
+			return true;
+		}
+
+		CommandGroup group{std::move(commands)};
+		const auto next = PrepareAppend();
+
+		if (!group.Redo(scene_)) {
+			return false;
+		}
+
+		AppendPrepared(Command{std::move(group)}, next,
+		               adding                       ? "Add Camera"
+		               : activating || clearedOther ? "Set Primary Camera"
+		                                            : "Edit Camera");
+		return true;
 	}
 
 	const bool adding = !object->camera;

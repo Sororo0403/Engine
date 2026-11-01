@@ -113,14 +113,13 @@ void InspectorPanel::Clear() {
 	displayedRotation_ = {0.0f, 0.0f, 0.0f, 1.0f};
 	modelRequest_ = {};
 	visibilityRequest_ = {};
-	transformRequest_ = {};
+	objectRequest_ = {};
 	colliderFitRequest_ = 0;
 	assetRevealPath_.clear();
 }
 
-const InspectorPanel::TransformRequest &
-InspectorPanel::GetTransformRequest() const {
-	return transformRequest_;
+const InspectorPanel::ObjectRequest &InspectorPanel::GetObjectRequest() const {
+	return objectRequest_;
 }
 
 const InspectorPanel::ModelRequest &InspectorPanel::GetModelRequest() const {
@@ -143,7 +142,7 @@ SceneObjectId InspectorPanel::GetColliderFitRequest() const {
 bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
                           SceneObjectId selectedObjectId,
                           EditorHistory &history, bool canPasteTransform) {
-	transformRequest_ = {};
+	objectRequest_ = {};
 	colliderFitRequest_ = 0;
 	modelRequest_ = {};
 	assetRevealPath_.clear();
@@ -233,15 +232,15 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 		ImGui::TextDisabled("Inspected object only");
 
 		if (ui.MenuItem("Copy Transform", nullptr, true)) {
-			transformRequest_ = {TransformAction::COPY, inspectedObjectId};
+			objectRequest_ = {ObjectAction::COPY_TRANSFORM, inspectedObjectId};
 		}
 
 		if (ui.MenuItem("Paste Transform", nullptr, canPasteTransform)) {
-			transformRequest_ = {TransformAction::PASTE, inspectedObjectId};
+			objectRequest_ = {ObjectAction::PASTE_TRANSFORM, inspectedObjectId};
 		}
 
 		if (ui.MenuItem("Reset Transform", nullptr, true)) {
-			transformRequest_ = {TransformAction::RESET, inspectedObjectId};
+			objectRequest_ = {ObjectAction::RESET_TRANSFORM, inspectedObjectId};
 		}
 
 		ImGui::EndPopup();
@@ -371,7 +370,7 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 		}
 
 		if (ui.MenuItem("Camera", nullptr, !object->camera)) {
-			changed |= history.SetCamera(inspectedObjectId, CameraComponent{});
+			objectRequest_ = {ObjectAction::ADD_CAMERA, inspectedObjectId};
 		}
 
 		if (ui.MenuItem("Follow Camera", nullptr, !object->followCamera)) {
@@ -390,13 +389,16 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 
 	changed |= ColliderInspector{}.Draw(ui, inspectedObjectId, *object, history,
 	                                    colliderFitRequest_);
-	SceneObjectId cameraAlignRequest = 0;
+	CameraInspector::Request cameraRequest;
 	changed |= CameraInspector{}.Draw(ui, inspectedObjectId, *object, history,
-	                                  cameraAlignRequest);
+	                                  cameraRequest);
 
-	if (cameraAlignRequest != 0) {
-		transformRequest_ = {TransformAction::ALIGN_CAMERA_VIEW,
-		                     cameraAlignRequest};
+	if (cameraRequest.action == CameraInspector::Action::ALIGN_VIEW) {
+		objectRequest_ = {ObjectAction::ALIGN_CAMERA_VIEW,
+		                  cameraRequest.objectId};
+	} else if (cameraRequest.action == CameraInspector::Action::MAKE_PRIMARY) {
+		objectRequest_ = {ObjectAction::MAKE_PRIMARY_CAMERA,
+		                  cameraRequest.objectId};
 	}
 
 	changed |= GameplayInspector{}.Draw(ui, scene, inspectedObjectId, *object,

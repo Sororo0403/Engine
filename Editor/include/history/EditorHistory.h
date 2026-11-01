@@ -157,7 +157,8 @@ class EditorHistory {
 	                           std::filesystem::path modelPath = {});
 
 	/// <summary>
-	/// 全物体を作成し、1操作として履歴へ記録する。編集中の内容は先に確定する
+	/// 全物体を作成し、1操作として履歴へ記録する。編集中の内容は先に確定する。
+	/// 既存のPrimary Cameraを優先し、なければ入力中の最初のPrimaryだけを保持する
 	/// </summary>
 	/// <param name="objects">作成する物体のデータ一覧</param>
 	/// <returns>作成順のID一覧。対象なし、またはデータが無効な場合は空</returns>
@@ -172,8 +173,8 @@ class EditorHistory {
 	bool DeleteObject(SceneObjectId objectId);
 
 	/// <summary>
-	/// 物体の全データを複製し、その追加を履歴へ記録する。
-	/// 編集中の変形情報は先に確定する
+	/// 物体を複製し、その追加を履歴へ記録する。
+	/// 編集中の変形情報は先に確定し、Primary Cameraは既存の物体を優先する
 	/// </summary>
 	/// <param name="objectId">複製元の物体ID</param>
 	/// <returns>成功:複製した物体のID 対象なし:0</returns>
@@ -203,11 +204,13 @@ class EditorHistory {
 	bool BeginCollider(SceneObjectId objectId);
 
 	/// <summary>
-	/// Cameraコンポーネントを追加・変更・削除して履歴へ記録する
+	/// Cameraコンポーネントを追加・変更・削除して履歴へ記録する。
+	/// Primaryを指定する場合は他のCameraを解除し、全変更を1操作にまとめる
 	/// </summary>
 	/// <param name="objectId">対象ID</param>
 	/// <param name="value">変更後。未指定は削除</param>
 	/// <returns>true:成功または同値 false:対象または設定が無効</returns>
+	/// <remarks>Primary指定時は物体一覧を置き換えるため、保持している物体参照は取得し直す</remarks>
 	bool SetCamera(SceneObjectId objectId,
 	               std::optional<CameraComponent> value);
 
@@ -285,7 +288,7 @@ class EditorHistory {
 
 	/// <summary>
 	/// 指定した全物体を複製し、1操作として履歴へ記録する。
-	/// 編集中の内容は先に確定する
+	/// 編集中の内容は先に確定し、Primary Cameraは既存の物体を優先する
 	/// </summary>
 	/// <param name="objectIds">重複のない複製元ID一覧</param>
 	/// <returns>入力順に対応する複製先ID一覧。対象が無効な場合は空</returns>

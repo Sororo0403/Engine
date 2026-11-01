@@ -20,29 +20,31 @@ class InspectorPanel {
 	void Clear();
 
 	/// <summary>
-	/// Transform見出しとCameraから要求する操作
+	/// Inspector描画後に表示対象の物体へ適用する操作
 	/// </summary>
-	enum class TransformAction {
+	enum class ObjectAction {
 		NONE,
-		COPY,
-		PASTE,
-		RESET,
+		COPY_TRANSFORM,
+		PASTE_TRANSFORM,
+		RESET_TRANSFORM,
 		ALIGN_CAMERA_VIEW,
+		ADD_CAMERA,
+		MAKE_PRIMARY_CAMERA,
 	};
 
 	/// <summary>
-	/// Inspectorに表示中の物体だけを対象としたTransform操作の要求
+	/// Inspectorに表示中の物体だけを対象とした操作の要求
 	/// </summary>
-	struct TransformRequest {
-		TransformAction action = TransformAction::NONE;
+	struct ObjectRequest {
+		ObjectAction action = ObjectAction::NONE;
 		SceneObjectId objectId = 0;
 	};
 
 	/// <summary>
-	/// このフレームのTransform操作要求を取得する
+	/// このフレームの物体操作要求を取得する
 	/// </summary>
 	/// <returns>操作要求。操作がない場合はNONE</returns>
-	const TransformRequest &GetTransformRequest() const;
+	const ObjectRequest &GetObjectRequest() const;
 
 	/// <summary>
 	/// 表示対象のモデルの差し替え、または参照解除の要求
@@ -113,6 +115,6 @@ class InspectorPanel {
 	ModelRequest modelRequest_;
 	VisibilityRequest visibilityRequest_;
 	std::filesystem::path assetRevealPath_;
-	TransformRequest transformRequest_;
+	ObjectRequest objectRequest_;
 	SceneObjectId colliderFitRequest_ = 0;
 };

@@ -224,6 +224,11 @@ void ControlsPanel::Draw() {
 	         "Use Transform for a fixed view. Set vertical FOV and clipping "
 	         "distances; mark one Camera as Primary. Add Follow Camera to make "
 	         "it track a target."},
+	        {"Inspector > Camera > Primary",
+	         "Turning Primary on clears it on other Cameras in one Undo "
+	         "operation. Leave all Cameras non-Primary to use the Scene view "
+	         "camera at Play start. Adding a Camera makes it Primary; "
+	         "duplicate and pasted Cameras keep the existing Primary."},
 	        {"Inspector > Camera > Align to Scene View",
 	         "Copy the Scene view position and direction to the inspected "
 	         "Camera. Follow Camera uses world Y as up and updates its offsets "

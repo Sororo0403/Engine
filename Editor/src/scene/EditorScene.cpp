@@ -185,9 +185,9 @@ bool EditorScene::Update(float deltaTime) {
 	                  sceneViewPanel_.IsSelecting());
 	inspectorPanel_.Draw(ui_, scene, selection_.GetActiveId(), history,
 	                     clipboard_.GetTransform() != nullptr);
-	const auto &transformRequest = inspectorPanel_.GetTransformRequest();
-	const bool hasTransformRequest =
-	    transformRequest.action != InspectorPanel::TransformAction::NONE;
+	const auto &objectRequest = inspectorPanel_.GetObjectRequest();
+	const bool hasObjectRequest =
+	    objectRequest.action != InspectorPanel::ObjectAction::NONE;
 	const auto &modelRequest = inspectorPanel_.GetModelRequest();
 	const auto &visibilityRequest = inspectorPanel_.GetVisibilityRequest();
 	const auto colliderFitRequest = inspectorPanel_.GetColliderFitRequest();
@@ -317,7 +317,7 @@ bool EditorScene::Update(float deltaTime) {
 		if (!IsBusy() && action == EditorAction::NONE &&
 		    !requestedInstances.empty() && requestedModelPath.empty() &&
 		    modelDrop.path.empty() && modelRequest.objectId == 0 &&
-		    visibilityRequest.objectId == 0 && !hasTransformRequest &&
+		    visibilityRequest.objectId == 0 && !hasObjectRequest &&
 		    !historyRequest &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 			SelectModelInstances(requestedInstances);
@@ -340,9 +340,9 @@ bool EditorScene::Update(float deltaTime) {
 			                 visibilityRequest.visible);
 		}
 
-		if (!IsBusy() && action == EditorAction::NONE && hasTransformRequest &&
+		if (!IsBusy() && action == EditorAction::NONE && hasObjectRequest &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
-			ApplyInspectorTransform(transformRequest);
+			ApplyInspectorRequest(objectRequest);
 		}
 
 		if (!IsBusy()) {
@@ -350,7 +350,7 @@ bool EditorScene::Update(float deltaTime) {
 			    colliderFitRequest == 0 && requestedModelPath.empty() &&
 			    requestedInstances.empty() && modelDrop.path.empty() &&
 			    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
-			    !hasTransformRequest &&
+			    !hasObjectRequest &&
 			    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 				RestoreHistory(*historyRequest);
 			}
@@ -358,7 +358,7 @@ bool EditorScene::Update(float deltaTime) {
 			if (action == EditorAction::NONE && colliderFitRequest == 0 &&
 			    requestedInstances.empty() && modelDrop.path.empty() &&
 			    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
-			    !hasTransformRequest && !historyRequest) {
+			    !hasObjectRequest && !historyRequest) {
 				const bool objectPanelFocused =
 				    hierarchyRequest.windowFocused ||
 				    sceneViewPanel_.GetInput().windowFocused;
@@ -384,7 +384,7 @@ bool EditorScene::Update(float deltaTime) {
 	    !requestedModelPath.empty() || !requestedInstances.empty() ||
 	    !modelDrop.path.empty() || modelRequest.objectId != 0 ||
 	    visibilityRequest.objectId != 0 || colliderFitRequest != 0 ||
-	    hasTransformRequest || historyRequest.has_value() ||
+	    hasObjectRequest || historyRequest.has_value() ||
 	    hierarchyRequest.action != HierarchyPanel::Action::NONE;
 
 	ViewportInput viewport = sceneViewPanel_.GetInput();
@@ -1843,9 +1843,9 @@ bool EditorScene::IsBusy() const {
 	return stage_ != DialogStage::IDLE || exitQueued_ || closeApproved_;
 }
 
-void EditorScene::ApplyInspectorTransform(
-    const InspectorPanel::TransformRequest &request) {
-	if (request.action == InspectorPanel::TransformAction::NONE) {
+void EditorScene::ApplyInspectorRequest(
+    const InspectorPanel::ObjectRequest &request) {
+	if (request.action == InspectorPanel::ObjectAction::NONE) {
 		return;
 	}
 
@@ -1854,11 +1854,11 @@ void EditorScene::ApplyInspectorTransform(
 		const auto *object = document_.GetScene().FindObject(request.objectId);
 
 		if (!object) {
-			ShowError("Could not find the object to edit its Transform.");
+			ShowError("Could not find the object to edit.");
 			return;
 		}
 
-		if (request.action == InspectorPanel::TransformAction::COPY) {
+		if (request.action == InspectorPanel::ObjectAction::COPY_TRANSFORM) {
 			if (!clipboard_.CopyTransform(object->transform)) {
 				ShowError("Could not copy an invalid Transform.");
 			}
@@ -1869,29 +1869,50 @@ void EditorScene::ApplyInspectorTransform(
 		bool applied = false;
 		const std::span<const SceneObjectId> ids{&request.objectId, 1};
 
-		if (request.action == InspectorPanel::TransformAction::PASTE) {
+		if (request.action == InspectorPanel::ObjectAction::PASTE_TRANSFORM) {
 			if (const auto *copied = clipboard_.GetTransform()) {
 				applied = document_.GetHistory().SetTransforms(ids, *copied);
 			}
-		} else if (request.action == InspectorPanel::TransformAction::RESET) {
+		} else if (request.action ==
+		           InspectorPanel::ObjectAction::RESET_TRANSFORM) {
 			applied = document_.GetHistory().ResetTransforms(ids);
 		} else if (request.action ==
-		           InspectorPanel::TransformAction::ALIGN_CAMERA_VIEW) {
+		           InspectorPanel::ObjectAction::ALIGN_CAMERA_VIEW) {
 			applied = document_.GetHistory().AlignCameraView(
 			    request.objectId, cameraController_.GetPose());
+		} else if (request.action == InspectorPanel::ObjectAction::ADD_CAMERA &&
+		           !object->camera) {
+			applied = document_.GetHistory().SetCamera(request.objectId,
+			                                           CameraComponent{});
+		} else if (request.action ==
+		               InspectorPanel::ObjectAction::MAKE_PRIMARY_CAMERA &&
+		           object->camera) {
+			auto camera = *object->camera;
+			camera.primary = true;
+			applied =
+			    document_.GetHistory().SetCamera(request.objectId, camera);
 		}
 
 		if (!applied) {
-			ShowError(request.action ==
-			                  InspectorPanel::TransformAction::ALIGN_CAMERA_VIEW
-			              ? "Could not align the Camera. Check its Transform "
-			                "and Follow Camera target and settings."
-			              : "Could not change the object's Transform.");
+			if (request.action ==
+			    InspectorPanel::ObjectAction::ALIGN_CAMERA_VIEW) {
+				ShowError("Could not align the Camera. Check its Transform and "
+				          "Follow Camera target and settings.");
+			} else if (request.action ==
+			               InspectorPanel::ObjectAction::ADD_CAMERA ||
+			           request.action ==
+			               InspectorPanel::ObjectAction::MAKE_PRIMARY_CAMERA) {
+				ShowError("Could not update the Camera. Check its component "
+				          "settings.");
+			} else {
+				ShowError("Could not change the object's Transform.");
+			}
 		}
 	} catch (const std::exception &error) {
-		Logger::Error(std::format("EditorScene::ApplyInspectorTransform: {}",
+		Logger::Error(std::format("EditorScene::ApplyInspectorRequest: {}",
 		                          error.what()));
-		ShowError("Could not edit the Transform. See the log for details.");
+		ShowError(
+		    "Could not apply the Inspector action. See the log for details.");
 	}
 }
 

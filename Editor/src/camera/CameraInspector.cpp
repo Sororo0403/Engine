@@ -7,7 +7,7 @@
 
 bool CameraInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
                            SceneObject &object, EditorHistory &history,
-                           SceneObjectId &alignRequest) const {
+                           Request &request) const {
 	if (!object.camera) {
 		return false;
 	}
@@ -21,7 +21,11 @@ bool CameraInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		auto edited = *object.camera;
 
 		if (ImGui::Checkbox("Primary", &edited.primary)) {
-			changed |= history.SetCamera(id, edited);
+			if (edited.primary) {
+				request = {Action::MAKE_PRIMARY, id};
+			} else {
+				changed |= history.SetCamera(id, edited);
+			}
 		}
 
 		auto field = [&](const char *label, float CameraSettings::*member,
@@ -52,7 +56,7 @@ bool CameraInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		field("Far Clip", &CameraSettings::farClip, 0.1f, 0.002f, 100000);
 
 		if (ui.Button("Align to Scene View")) {
-			alignRequest = id;
+			request = {Action::ALIGN_VIEW, id};
 		}
 
 		if (ui.Button("Remove Camera")) {

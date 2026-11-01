@@ -300,11 +300,10 @@ class EditorScene final : public IScene {
 	void RestoreHistory(std::size_t index);
 
 	/// <summary>
-	/// Inspectorに表示中の物体へのTransform操作を反映する
+	/// Inspectorに表示中の物体へのTransform・Camera操作を反映する
 	/// </summary>
-	/// <param name="request">コピー・貼り付け・リセットの操作要求</param>
-	void
-	ApplyInspectorTransform(const InspectorPanel::TransformRequest &request);
+	/// <param name="request">Transform操作、Camera追加、Primary切り替えなどの要求</param>
+	void ApplyInspectorRequest(const InspectorPanel::ObjectRequest &request);
 
 	/// <summary>
 	/// 編集中の内容を履歴へ確定し、ギズモ操作を中止する
