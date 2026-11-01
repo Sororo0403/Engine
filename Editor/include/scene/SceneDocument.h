@@ -4,6 +4,7 @@
 #include "scene/Scene.h"
 
 #include <filesystem>
+#include <functional>
 
 /// <summary>
 /// 編集中のシーン・保存先・未保存の変更を管理する
@@ -50,11 +51,13 @@ class SceneDocument {
 	void New();
 
 	/// <summary>
-	/// シーンを読み込む。失敗時は現在の内容と保存状態を保持する
+	/// 候補シーンを読み込み、事前確認の成功後に反映する。失敗時は現在の状態を保持する
 	/// </summary>
 	/// <param name="filePath">読み込むファイルのパス</param>
-	/// <returns>true:成功 false:読み込み失敗</returns>
-	bool Open(const std::filesystem::path &filePath);
+	/// <param name="validate">候補の事前確認（省略可）。現在のドキュメントは変更しない</param>
+	/// <returns>true:成功 false:読み込み・事前確認の失敗。編集履歴と保存状態は保持する</returns>
+	bool Open(const std::filesystem::path &filePath,
+	          const std::function<bool(const Scene &)> &validate = {});
 
 	/// <summary>
 	/// 現在の保存先へシーンを保存する

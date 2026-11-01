@@ -1101,8 +1101,19 @@ void EditorScene::UpdateDialogs() {
 }
 
 void EditorScene::OpenScene(const std::filesystem::path &path) {
-	if (!document_.Open(path)) {
-		ShowError("Could not open the scene. See the log for details.");
+	const bool opened = document_.Open(path, [this](const Scene &candidate) {
+		for (const auto &[id, object] : candidate.GetObjects()) {
+			// 非表示のモデルは、再表示を要求されたときに読み込む
+			if (object.visible && !object.modelPath.empty() && !models_.Load(object.modelPath)) {
+				Logger::Error(std::format("EditorScene::OpenScene: 物体{}のモデルを読み込めません: {}",
+				                          id, PathUtils::ToUtf8(object.modelPath)));
+				return false;
+			}
+		}
+		return true;
+	});
+	if (!opened) {
+		ShowError("Could not open the scene. The current scene was kept. See the log for details.");
 		return;
 	}
 	FinishEdit();

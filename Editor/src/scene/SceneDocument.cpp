@@ -29,11 +29,23 @@ void SceneDocument::New() {
 	history_.Reset();
 }
 
-bool SceneDocument::Open(const std::filesystem::path &filePath) {
+bool SceneDocument::Open(const std::filesystem::path &filePath,
+                         const std::function<bool(const Scene &)> &validate) {
 	try {
 		auto resolvedPath = PathUtils::ResolveFromExecutable(filePath);
 
-		if (!SceneSerializer::Load(scene_, resolvedPath)) {
+		// 読み込みと事前確認は一時シーンで実行し、両方成功した場合だけ置き換える
+		const bool loaded = scene_.ApplyTransaction([&](Scene &candidate) {
+			if (!SceneSerializer::Load(candidate, resolvedPath)) {
+				return false;
+			}
+			if (validate && !validate(candidate)) {
+				Logger::Error("SceneDocument::Open: シーンの事前確認に失敗しました。");
+				return false;
+			}
+			return true;
+		});
+		if (!loaded) {
 			return false;
 		}
 
