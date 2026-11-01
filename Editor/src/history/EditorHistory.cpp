@@ -197,37 +197,74 @@ bool EditorHistory::BeginTransforms(std::span<const SceneObjectId> objectIds) {
 	return true;
 }
 
-bool EditorHistory::UpdateTranslation(const DirectX::XMFLOAT3 &offset) {
-	if (!pendingTransforms_) {
+bool EditorHistory::UpdateTransforms(
+    const Transform &beforePivot, const Transform &afterPivot) {
+	if (!pendingTransforms_ || !TransformUtils::IsValid(beforePivot) ||
+	    !TransformUtils::IsValid(afterPivot)) {
 		return false;
 	}
 
-	// 全件を検証してから反映し、途中まで移動した状態を作らない
-	for (const auto &snapshot : *pendingTransforms_) {
-		const SceneObject *object = scene_.FindObject(snapshot.objectId);
-		if (!object) {
-			return false;
+	using namespace DirectX;
+	const XMVECTOR beforeRotation =
+	    XMQuaternionNormalize(XMLoadFloat4(&beforePivot.rotation));
+	const XMVECTOR afterRotation =
+	    XMQuaternionNormalize(XMLoadFloat4(&afterPivot.rotation));
+	const XMVECTOR deltaRotation = XMQuaternionNormalize(
+	    XMQuaternionMultiply(XMQuaternionConjugate(beforeRotation),
+	                         afterRotation));
+	const XMVECTOR beforeCenter = XMLoadFloat3(&beforePivot.translation);
+	const XMVECTOR afterCenter = XMLoadFloat3(&afterPivot.translation);
+
+	Transform beforeOrientation;
+	beforeOrientation.rotation = beforePivot.rotation;
+	Transform afterOrientation;
+	afterOrientation.rotation = afterPivot.rotation;
+	const bool rotated =
+	    !TransformUtils::AreEqual(beforeOrientation, afterOrientation);
+
+	const auto makeEdited = [&](const TransformSnapshot &snapshot) {
+		Transform edited = snapshot.before;
+		if (!rotated) {
+			// 移動だけの場合は、中心との減算・加算による位置の誤差を避ける
+			edited.translation = {
+			    snapshot.before.translation.x +
+			        (afterPivot.translation.x - beforePivot.translation.x),
+			    snapshot.before.translation.y +
+			        (afterPivot.translation.y - beforePivot.translation.y),
+			    snapshot.before.translation.z +
+			        (afterPivot.translation.z - beforePivot.translation.z),
+			};
+			return edited;
 		}
 
-		Transform edited = object->transform;
-		edited.translation = {
-		    snapshot.before.translation.x + offset.x,
-		    snapshot.before.translation.y + offset.y,
-		    snapshot.before.translation.z + offset.z,
-		};
-		if (!TransformUtils::IsValid(edited)) {
+		// 開始時点の中心からの位置と、物体自身の向きを同じ差分で回す
+		const XMVECTOR relativePosition = XMVectorSubtract(
+		    XMLoadFloat3(&snapshot.before.translation), beforeCenter);
+		XMStoreFloat3(
+		    &edited.translation,
+		    XMVectorAdd(afterCenter,
+		                XMVector3Rotate(relativePosition, deltaRotation)));
+
+		const XMVECTOR originalRotation =
+		    XMQuaternionNormalize(XMLoadFloat4(&snapshot.before.rotation));
+		// DirectXMathでは第1引数の回転の後に第2引数の回転を適用する
+		XMStoreFloat4(
+		    &edited.rotation,
+		    XMQuaternionNormalize(
+		        XMQuaternionMultiply(originalRotation, deltaRotation)));
+		return edited;
+	};
+
+	// 全件の検証が終わるまで、現在のシーンを変更しない
+	for (const auto &snapshot : *pendingTransforms_) {
+		if (!scene_.Contains(snapshot.objectId) ||
+		    !TransformUtils::IsValid(makeEdited(snapshot))) {
 			return false;
 		}
 	}
 
 	for (const auto &snapshot : *pendingTransforms_) {
-		SceneObject *object = scene_.FindObject(snapshot.objectId);
-		// フレームごとの加算を避け、開始時点からの移動量で更新する
-		object->transform.translation = {
-		    snapshot.before.translation.x + offset.x,
-		    snapshot.before.translation.y + offset.y,
-		    snapshot.before.translation.z + offset.z,
-		};
+		scene_.FindObject(snapshot.objectId)->transform = makeEdited(snapshot);
 	}
 	return true;
 }

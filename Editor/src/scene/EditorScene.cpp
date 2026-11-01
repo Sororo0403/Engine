@@ -272,7 +272,7 @@ bool EditorScene::Update(float deltaTime) {
 					    "EditorScene: 複数物体の編集履歴を開始できませんでした。");
 					return false;
 				}
-				selectionGizmoStart_ = beforeGizmo.translation;
+				selectionGizmoStart_ = beforeGizmo;
 			} else if (!history.BeginTransform(activeId, beforeGizmo)) {
 				Logger::Error(
 				    "EditorScene: ギズモの編集履歴を開始できませんでした。");
@@ -284,17 +284,13 @@ bool EditorScene::Update(float deltaTime) {
 
 		bool applied = true;
 		if (multipleSelection) {
-			const DirectX::XMFLOAT3 offset{
-			    selectionGizmoTransform_.translation.x - selectionGizmoStart_.x,
-			    selectionGizmoTransform_.translation.y - selectionGizmoStart_.y,
-			    selectionGizmoTransform_.translation.z - selectionGizmoStart_.z,
-			};
-			applied = history.UpdateTranslation(offset);
+			applied = history.UpdateTransforms(
+			    selectionGizmoStart_, selectionGizmoTransform_);
 			if (!applied) {
-				// 無効な移動は反映せず、直前の有効な位置で編集を確定する
+				// 無効な変形は反映せず、直前の有効な状態で編集を確定する
 				selectionGizmoTransform_ = beforeGizmo;
 				FinishEdit();
-				Logger::Error("EditorScene: 複数物体の移動量が無効です。");
+				Logger::Error("EditorScene: 複数物体の変形情報が無効です。");
 			}
 		}
 

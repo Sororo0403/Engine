@@ -9,7 +9,7 @@
 class TransformGizmo {
   public:
 	/// <summary>
-	/// ギズモの選択対象。複数選択ではワールド座標での移動を使用する
+	/// ギズモの選択対象。複数選択ではワールド座標での移動・回転を使用する
 	/// </summary>
 	enum class SelectionMode {
 		SINGLE,

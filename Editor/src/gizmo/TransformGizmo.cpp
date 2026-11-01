@@ -13,39 +13,34 @@ void TransformGizmo::BeginFrame() {
 }
 
 void TransformGizmo::DrawToolbar(SelectionMode selectionMode) {
-	if (selectionMode == SelectionMode::MULTIPLE) {
-		// 単一選択用の操作種別を保持し、複数選択では移動だけを表示する
-		ImGui::BeginDisabled();
-		ImGui::RadioButton("Move", true);
-		ImGui::SameLine();
-		ImGui::RadioButton("Rotate", false);
-		ImGui::SameLine();
-		ImGui::RadioButton("Scale", false);
-		ImGui::EndDisabled();
-		ImGui::SameLine();
-		ImGui::TextUnformatted("Multiple selection: move only.");
-		return;
-	}
+	const bool multiple = selectionMode == SelectionMode::MULTIPLE;
+	const Operation effectiveOperation =
+	    multiple && operation_ == Operation::SCALE ? Operation::TRANSLATE
+	                                              : operation_;
+	// 複数選択で使用できないScaleは保持し、表示はMoveへ切り替える
+	// MoveかRotateを選んだ場合だけ、保持する操作種別を更新する
 
 	// ドラッグ中に操作種別を切り替えない
 	ImGui::BeginDisabled(using_);
 
-	if (ImGui::RadioButton("Move", operation_ == Operation::TRANSLATE)) {
+	if (ImGui::RadioButton("Move", effectiveOperation == Operation::TRANSLATE)) {
 		operation_ = Operation::TRANSLATE;
 	}
 
 	ImGui::SameLine();
 
-	if (ImGui::RadioButton("Rotate", operation_ == Operation::ROTATE)) {
+	if (ImGui::RadioButton("Rotate", effectiveOperation == Operation::ROTATE)) {
 		operation_ = Operation::ROTATE;
 	}
 
 	ImGui::SameLine();
 
-	if (ImGui::RadioButton("Scale", operation_ == Operation::SCALE)) {
+	ImGui::BeginDisabled(multiple);
+	if (ImGui::RadioButton("Scale", effectiveOperation == Operation::SCALE)) {
 		operation_ = Operation::SCALE;
 	}
 
+	ImGui::EndDisabled();
 	ImGui::EndDisabled();
 }
 
@@ -95,8 +90,9 @@ TransformGizmo::Result TransformGizmo::Draw(
 	}
 
 	const Operation effectiveOperation =
-	    selectionMode == SelectionMode::MULTIPLE ? Operation::TRANSLATE
-	                                             : operation_;
+	    selectionMode == SelectionMode::MULTIPLE && operation_ == Operation::SCALE
+	        ? Operation::TRANSLATE
+	        : operation_;
 	ImGuizmo::OPERATION operation = ImGuizmo::TRANSLATE;
 
 	switch (effectiveOperation) {

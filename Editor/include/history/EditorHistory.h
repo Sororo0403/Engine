@@ -155,11 +155,14 @@ class EditorHistory {
 	bool BeginTransforms(std::span<const SceneObjectId> objectIds);
 
 	/// <summary>
-	/// 編集開始時点からの移動量を、編集中の全物体へ適用する
+	/// ギズモの移動・回転を、編集開始時点の全物体へ適用する。
+	/// 拡大率は変更しない
 	/// </summary>
-	/// <param name="offset">編集開始時点からのワールド座標での移動量</param>
+	/// <param name="beforePivot">編集開始時点のギズモの変形情報</param>
+	/// <param name="afterPivot">現在のギズモの変形情報</param>
 	/// <returns>true:全件適用成功 false:複数編集なし、対象なし、または値が無効</returns>
-	bool UpdateTranslation(const DirectX::XMFLOAT3 &offset);
+	bool UpdateTransforms(const Transform &beforePivot,
+	                      const Transform &afterPivot);
 
   private:
 	// 単独の編集操作、または複数の編集操作を保持する
