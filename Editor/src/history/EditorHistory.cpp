@@ -404,6 +404,38 @@ bool EditorHistory::SetVisibility(std::span<const SceneObjectId> objectIds, bool
 	return true;
 }
 
+bool EditorHistory::SetTransforms(std::span<const SceneObjectId> objectIds, const Transform &transform) {
+	CommitEdit();
+	Transform after = transform;
+	if (objectIds.empty() || !TransformUtils::IsValid(after) ||
+	    !TransformUtils::TryNormalizeRotation(after.rotation, after.rotation)) {
+		return false;
+	}
+	std::set<SceneObjectId> seen;
+	std::vector<CommandGroup::Command> commands;
+	commands.reserve(objectIds.size());
+	for (const auto id : objectIds) {
+		const auto *object = scene_.FindObject(id);
+		if (!object || !seen.insert(id).second || !TransformUtils::IsValid(object->transform)) {
+			return false;
+		}
+		if (!TransformUtils::AreEqual(object->transform, after)) {
+			commands.emplace_back(TransformCommand{id, object->transform, after});
+		}
+	}
+	if (commands.empty()) {
+		return true;
+	}
+	CommandGroup group{std::move(commands)};
+	const auto next = PrepareAppend();
+	if (!group.Redo(scene_)) {
+		return false;
+	}
+	AppendPrepared(Command{std::move(group)}, next,
+	               objectIds.size() == 1 ? "Transform Object" : "Transform Objects");
+	return true;
+}
+
 bool EditorHistory::HasPendingChanges() const {
 	if (pendingTransforms_) {
 		for (const auto &snapshot : *pendingTransforms_) {

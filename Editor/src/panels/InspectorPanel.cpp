@@ -101,6 +101,10 @@ void InspectorPanel::RequestRename(SceneObjectId objectId) {
 	renameObjectId_ = objectId;
 }
 
+const InspectorPanel::TransformRequest &InspectorPanel::GetTransformRequest() const {
+	return transformRequest_;
+}
+
 const InspectorPanel::ModelRequest &InspectorPanel::GetModelRequest() const {
 	return modelRequest_;
 }
@@ -115,7 +119,8 @@ const InspectorPanel::VisibilityRequest &InspectorPanel::GetVisibilityRequest() 
 
 bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
                           SceneObjectId selectedObjectId,
-                          EditorHistory &history) {
+                          EditorHistory &history, bool canPasteTransform) {
+	transformRequest_ = {};
 	modelRequest_ = {};
 	assetRevealPath_.clear();
 	visibilityRequest_ = {};
@@ -170,7 +175,21 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 	ImGui::SetItemTooltip("Render this object's model. Hidden models are excluded from Scene picking.");
 	ui.Separator();
 
-	if (ui.CollapsingHeader("Transform")) {
+	const bool transformExpanded = ui.CollapsingHeader("Transform");
+	if (ImGui::BeginPopupContextItem("TransformTools")) {
+		ImGui::TextDisabled("Active object only");
+		if (ui.MenuItem("Copy Transform", nullptr, true)) {
+			transformRequest_ = {TransformAction::COPY, selectedObjectId};
+		}
+		if (ui.MenuItem("Paste Transform", nullptr, canPasteTransform)) {
+			transformRequest_ = {TransformAction::PASTE, selectedObjectId};
+		}
+		if (ui.MenuItem("Reset Transform", nullptr, true)) {
+			transformRequest_ = {TransformAction::RESET, selectedObjectId};
+		}
+		ImGui::EndPopup();
+	}
+	if (transformExpanded) {
 		Transform &transform = object->transform;
 
 		{

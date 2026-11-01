@@ -15,6 +15,30 @@ class EditorHistory;
 class InspectorPanel {
   public:
 	/// <summary>
+	/// Transform見出しから要求する操作
+	/// </summary>
+	enum class TransformAction {
+		NONE,
+		COPY,
+		PASTE,
+		RESET,
+	};
+
+	/// <summary>
+	/// アクティブ物体だけを対象としたTransform操作の要求
+	/// </summary>
+	struct TransformRequest {
+		TransformAction action = TransformAction::NONE;
+		SceneObjectId objectId = 0;
+	};
+
+	/// <summary>
+	/// このフレームのTransform操作要求を取得する
+	/// </summary>
+	/// <returns>操作要求。操作がない場合はNONE</returns>
+	const TransformRequest &GetTransformRequest() const;
+
+	/// <summary>
 	/// 選択物体のモデルの差し替え、または参照解除の要求
 	/// </summary>
 	struct ModelRequest {
@@ -60,9 +84,11 @@ class InspectorPanel {
 	/// <param name="scene">編集対象のシーン</param>
 	/// <param name="selectedObjectId">選択中の物体ID。未選択は0</param>
 	/// <param name="history">編集内容を記録する履歴</param>
+	/// <param name="canPasteTransform">貼り付けるTransformを保持しているか</param>
 	/// <returns>true:物体を編集した false:シーンへの変更なし</returns>
 	bool Draw(const ImGuiSystem &ui, Scene &scene,
-	          SceneObjectId selectedObjectId, EditorHistory &history);
+	          SceneObjectId selectedObjectId, EditorHistory &history,
+	          bool canPasteTransform = false);
 
   private:
 	// 表示用の角度を保持し、編集中のオイラー角の切り替わりを防ぐ
@@ -73,4 +99,5 @@ class InspectorPanel {
 	ModelRequest modelRequest_;
 	VisibilityRequest visibilityRequest_;
 	std::filesystem::path assetRevealPath_;
+	TransformRequest transformRequest_;
 };

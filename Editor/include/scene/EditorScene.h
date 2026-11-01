@@ -234,6 +234,12 @@ class EditorScene final : public IScene {
 	void ShowAllModels();
 
 	/// <summary>
+	/// Inspectorのアクティブ物体へのTransform操作を反映する
+	/// </summary>
+	/// <param name="request">コピー・貼り付け・リセットの操作要求</param>
+	void ApplyInspectorTransform(const InspectorPanel::TransformRequest &request);
+
+	/// <summary>
 	/// 編集中の内容を履歴へ確定し、ギズモ操作を中止する
 	/// </summary>
 	void FinishEdit();

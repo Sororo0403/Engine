@@ -208,6 +208,14 @@ class EditorHistory {
 	/// <returns>true:変更成功、または変更なし false:対象なし、重複、存在しないIDあり</returns>
 	bool SetVisibility(std::span<const SceneObjectId> objectIds, bool visible);
 
+	/// <summary>
+	/// 指定物体へ同じ変形情報を適用し、1操作として記録する。編集中の内容は先に確定する
+	/// </summary>
+	/// <param name="objectIds">重複のない対象ID一覧</param>
+	/// <param name="transform">適用する有効な変形情報</param>
+	/// <returns>true:成功、または変更なし false:対象や変形情報が無効</returns>
+	bool SetTransforms(std::span<const SceneObjectId> objectIds, const Transform &transform);
+
   private:
 	// 単独の編集操作、または複数の編集操作を保持する
 	using Command = std::variant<TransformCommand, ObjectCommand, RenameCommand,

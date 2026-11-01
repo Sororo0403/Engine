@@ -93,6 +93,7 @@ void ControlsPanel::Draw() {
 	    {"Scale center handle", "Scale multiple selected objects uniformly."},
 	    {"Z / Center / Active", "For multiple selection, use the mean of object origins or the active object's origin as the gizmo pivot."},
 	    {"Edit > Reset Transform", "Reset position, rotation and scale of selected objects."},
+	    {"Right-click Transform", "Copy, paste or reset the active object's Transform. Transform copies keep the object clipboard intact."},
 	});
 	DrawSection("Model assets", {
 	    {"Assets > Add to Scene", "Place the selected model at the world origin."},

@@ -33,4 +33,19 @@ std::span<const SceneObject> EditorClipboard::GetObjects() const {
 
 bool EditorClipboard::HasObjects() const { return !objects_.empty(); }
 
-void EditorClipboard::Clear() { objects_.clear(); }
+bool EditorClipboard::CopyTransform(const Transform &transform) {
+	if (!TransformUtils::IsValid(transform)) {
+		return false;
+	}
+	transform_ = transform;
+	return true;
+}
+
+const Transform *EditorClipboard::GetTransform() const {
+	return transform_ ? &*transform_ : nullptr;
+}
+
+void EditorClipboard::Clear() {
+	objects_.clear();
+	transform_.reset();
+}

@@ -120,7 +120,10 @@ bool EditorScene::Update(float deltaTime) {
 	// ギズモ操作とInspectorの編集を、同じ履歴として混在させない
 	ui_.BeginDisabled(gizmo_.IsUsing() || gizmoEditActive_ ||
 	                  sceneViewPanel_.IsSelecting());
-	inspectorPanel_.Draw(ui_, scene, selection_.GetActiveId(), history);
+	inspectorPanel_.Draw(ui_, scene, selection_.GetActiveId(), history,
+	                     clipboard_.GetTransform() != nullptr);
+	const auto &transformRequest = inspectorPanel_.GetTransformRequest();
+	const bool hasTransformRequest = transformRequest.action != InspectorPanel::TransformAction::NONE;
 	const auto &modelRequest = inspectorPanel_.GetModelRequest();
 	const auto &visibilityRequest = inspectorPanel_.GetVisibilityRequest();
 	ui_.EndDisabled();
@@ -211,10 +214,14 @@ bool EditorScene::Update(float deltaTime) {
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 			ChangeVisibility({&visibilityRequest.objectId, 1}, visibilityRequest.visible);
 		}
+		if (!IsBusy() && action == EditorAction::NONE && hasTransformRequest &&
+		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
+			ApplyInspectorTransform(transformRequest);
+		}
 
 		if (!IsBusy()) {
 			if (action == EditorAction::NONE && modelDrop.path.empty() &&
-			    modelRequest.objectId == 0 && visibilityRequest.objectId == 0) {
+			    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 && !hasTransformRequest) {
 				const bool objectPanelFocused =
 				    hierarchyRequest.windowFocused ||
 				    sceneViewPanel_.GetInput().windowFocused;
@@ -241,6 +248,7 @@ bool EditorScene::Update(float deltaTime) {
 	    !modelDrop.path.empty() ||
 	    modelRequest.objectId != 0 ||
 	    visibilityRequest.objectId != 0 ||
+	    hasTransformRequest ||
 	    hierarchyRequest.action != HierarchyPanel::Action::NONE;
 
 	ViewportInput viewport = sceneViewPanel_.GetInput();
@@ -1149,6 +1157,41 @@ void EditorScene::ShowError(std::string message) {
 
 bool EditorScene::IsBusy() const {
 	return stage_ != DialogStage::IDLE || exitQueued_ || closeApproved_;
+}
+
+void EditorScene::ApplyInspectorTransform(const InspectorPanel::TransformRequest &request) {
+	if (request.action == InspectorPanel::TransformAction::NONE) {
+		return;
+	}
+	try {
+		FinishEdit();
+		const auto *object = document_.GetScene().FindObject(request.objectId);
+		if (!object) {
+			ShowError("Could not find the object to edit its Transform.");
+			return;
+		}
+		if (request.action == InspectorPanel::TransformAction::COPY) {
+			if (!clipboard_.CopyTransform(object->transform)) {
+				ShowError("Could not copy an invalid Transform.");
+			}
+			return;
+		}
+		bool applied = false;
+		const std::span<const SceneObjectId> ids{&request.objectId, 1};
+		if (request.action == InspectorPanel::TransformAction::PASTE) {
+			if (const auto *copied = clipboard_.GetTransform()) {
+				applied = document_.GetHistory().SetTransforms(ids, *copied);
+			}
+		} else if (request.action == InspectorPanel::TransformAction::RESET) {
+			applied = document_.GetHistory().ResetTransforms(ids);
+		}
+		if (!applied) {
+			ShowError("Could not change the object's Transform.");
+		}
+	} catch (const std::exception &error) {
+		Logger::Error(std::format("EditorScene::ApplyInspectorTransform: {}", error.what()));
+		ShowError("Could not edit the Transform. See the log for details.");
+	}
 }
 
 void EditorScene::ShowAllModels() {
