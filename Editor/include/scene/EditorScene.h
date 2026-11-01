@@ -7,6 +7,7 @@
 #include "gizmo/TransformGizmo.h"
 #include "layout/EditorDockLayout.h"
 #include "panels/AssetsPanel.h"
+#include "panels/ControlsPanel.h"
 #include "panels/HierarchyPanel.h"
 #include "panels/InspectorPanel.h"
 #include "panels/SceneViewPanel.h"
@@ -353,4 +354,5 @@ class EditorScene final : public IScene {
 	SelectionBounds selectionBounds_;
 
 	SceneGrid sceneGrid_;
+	ControlsPanel controlsPanel_;
 };

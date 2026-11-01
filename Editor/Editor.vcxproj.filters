@@ -107,6 +107,9 @@
     <ClCompile Include="src\assets\AssetDatabase.cpp">
       <Filter>src\assets</Filter>
     </ClCompile>
+    <ClCompile Include="src\panels\ControlsPanel.cpp">
+      <Filter>src\panels</Filter>
+    </ClCompile>
     <ClCompile Include="src\panels\AssetsPanel.cpp">
       <Filter>src\panels</Filter>
     </ClCompile>
@@ -186,6 +189,9 @@
     </ClInclude>
     <ClInclude Include="include\assets\AssetDatabase.h">
       <Filter>include\assets</Filter>
+    </ClInclude>
+    <ClInclude Include="include\panels\ControlsPanel.h">
+      <Filter>include\panels</Filter>
     </ClInclude>
     <ClInclude Include="include\panels\AssetsPanel.h">
       <Filter>include\panels</Filter>

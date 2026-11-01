@@ -100,6 +100,7 @@ bool EditorScene::Update(float deltaTime) {
 
 	dockLayout_.Draw(ui_, resetDockLayout_);
 	resetDockLayout_ = false;
+	controlsPanel_.Draw();
 
 	const bool wasBusy = IsBusy();
 
@@ -632,6 +633,12 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		ui_.EndMenu();
 	}
 
+	if (ui_.BeginMenu("Help")) {
+		if (ui_.MenuItem("Controls...", nullptr, !IsBusy())) {
+			controlsPanel_.Show();
+		}
+		ui_.EndMenu();
+	}
 	ui_.EndMainMenuBar();
 	return action;
 }
