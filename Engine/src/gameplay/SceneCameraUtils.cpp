@@ -2,8 +2,12 @@
 
 #include "gameplay/FollowCameraSettings.h"
 #include "graphics/camera/Camera.h"
+#include "math/MathUtils.h"
 #include "math/TransformUtils.h"
 #include "scene/Scene.h"
+#include <algorithm>
+#include <cmath>
+#include <limits>
 
 /// <summary>
 /// 追従対象からカメラ位置と注視点を計算する
@@ -103,5 +107,80 @@ bool SceneCameraUtils::GetInitialPose(const Scene &scene, SceneObjectId id,
 	}
 
 	pose = result;
+	return true;
+}
+
+bool SceneCameraUtils::MatchFollowPose(const CameraPose &pose,
+                                       const DirectX::XMFLOAT3 &target,
+                                       FollowCameraSettings &settings) {
+	Camera validator;
+
+	if (!settings.IsValid() || !MathUtils::IsFinite(target) ||
+	    !validator.SetPose(pose)) {
+		return false;
+	}
+
+	using namespace DirectX;
+	XMFLOAT3 direction;
+	XMStoreFloat3(&direction, XMVector3Normalize(XMVectorSubtract(
+	                              XMLoadFloat3(&pose.target),
+	                              XMLoadFloat3(&pose.position))));
+	const double horizontal =
+	    std::hypot(double(direction.x), double(direction.z));
+
+	if (horizontal == 0) {
+		return false;
+	}
+
+	auto result = settings;
+	result.offset = {pose.position.x - target.x, pose.position.y - target.y,
+	                 pose.position.z - target.z};
+	double maximumDistance = (std::numeric_limits<double>::max)();
+	const float offsets[]{result.offset.x, result.offset.y, result.offset.z};
+	const float directions[]{direction.x, direction.y, direction.z};
+
+	// 設定可能なボックスから視線が出るまでの距離を求める。
+	for (unsigned int i = 0; i < 3; ++i) {
+		if (!std::isfinite(offsets[i]) ||
+		    std::abs(offsets[i]) > FollowCameraSettings::kMaximumOffset) {
+			return false;
+		}
+
+		if (directions[i] != 0) {
+			const double boundary = directions[i] > 0
+			                            ? FollowCameraSettings::kMaximumOffset
+			                            : -FollowCameraSettings::kMaximumOffset;
+			maximumDistance =
+			    (std::min)(maximumDistance,
+			               (boundary - offsets[i]) / directions[i]);
+		}
+	}
+
+	const double originalDistance =
+	    std::hypot(double(settings.lookOffset.x) - settings.offset.x,
+	               double(settings.lookOffset.y) - settings.offset.y,
+	               double(settings.lookOffset.z) - settings.offset.z);
+	// 最小水平距離には余裕を持たせ、設定の境界では収まる距離へ短縮する。
+	const double minimumDistance =
+	    std::sqrt(FollowCameraSettings::kMinimumHorizontalDistanceSquared) /
+	    horizontal;
+	const double distance =
+	    (std::min)(maximumDistance,
+	               (std::max)(originalDistance, minimumDistance * 2));
+
+	if (!std::isfinite(distance) || distance <= 0) {
+		return false;
+	}
+
+	result.lookOffset = {
+	    static_cast<float>(result.offset.x + direction.x * distance),
+	    static_cast<float>(result.offset.y + direction.y * distance),
+	    static_cast<float>(result.offset.z + direction.z * distance)};
+
+	if (!result.IsValid()) {
+		return false;
+	}
+
+	settings = result;
 	return true;
 }

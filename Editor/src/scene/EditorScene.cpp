@@ -1875,10 +1875,18 @@ void EditorScene::ApplyInspectorTransform(
 			}
 		} else if (request.action == InspectorPanel::TransformAction::RESET) {
 			applied = document_.GetHistory().ResetTransforms(ids);
+		} else if (request.action ==
+		           InspectorPanel::TransformAction::ALIGN_CAMERA_VIEW) {
+			applied = document_.GetHistory().AlignCameraView(
+			    request.objectId, cameraController_.GetPose());
 		}
 
 		if (!applied) {
-			ShowError("Could not change the object's Transform.");
+			ShowError(request.action ==
+			                  InspectorPanel::TransformAction::ALIGN_CAMERA_VIEW
+			              ? "Could not align the Camera. Check its Transform "
+			                "and Follow Camera target and settings."
+			              : "Could not change the object's Transform.");
 		}
 	} catch (const std::exception &error) {
 		Logger::Error(std::format("EditorScene::ApplyInspectorTransform: {}",

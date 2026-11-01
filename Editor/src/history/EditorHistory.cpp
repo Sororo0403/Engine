@@ -1,6 +1,7 @@
 #include "history/EditorHistory.h"
 
 #include "core/Logger.h"
+#include "gameplay/SceneCameraUtils.h"
 #include "math/MathUtils.h"
 #include "math/TransformUtils.h"
 #include "physics/BoxColliderUtils.h"
@@ -490,6 +491,70 @@ bool EditorHistory::SetVisibility(std::span<const SceneObjectId> objectIds,
 
 	AppendPrepared(Command{std::move(group)}, next,
 	               visible ? "Show Models" : "Hide Models");
+	return true;
+}
+
+bool EditorHistory::AlignCameraView(SceneObjectId id, const CameraPose &pose) {
+	CommitEdit();
+	const auto *object = scene_.FindObject(id);
+
+	if (!object || !object->camera || !object->camera->IsValid() ||
+	    !TransformUtils::IsValid(object->transform)) {
+		return false;
+	}
+
+	auto after = object->transform;
+
+	if (!SceneCameraUtils::ApplyPose(pose, after) ||
+	    !TransformUtils::IsValid(after)) {
+		return false;
+	}
+
+	auto follow = object->followCamera;
+
+	if (follow) {
+		const auto *target = scene_.FindObject(follow->target);
+
+		if (object->character || follow->target == id || !target ||
+		    !MathUtils::IsFinite(target->transform.translation)) {
+			return false;
+		}
+
+		if (!SceneCameraUtils::MatchFollowPose(
+		        pose, target->transform.translation, *follow) ||
+		    !SceneCameraUtils::ApplyPose(
+		        SceneCameraUtils::MakeFollowPose(target->transform.translation,
+		                                         *follow),
+		        after)) {
+			return false;
+		}
+	}
+
+	std::vector<CommandGroup::Command> commands;
+	commands.reserve(2);
+
+	if (!TransformUtils::AreEqual(object->transform, after)) {
+		commands.emplace_back(TransformCommand{id, object->transform, after});
+	}
+
+	if (object->followCamera != follow) {
+		commands.emplace_back(
+		    FollowCameraCommand{id, object->followCamera, follow});
+	}
+
+	if (commands.empty()) {
+		return true;
+	}
+
+	CommandGroup group{std::move(commands)};
+	const auto next = PrepareAppend();
+
+	if (!group.Redo(scene_)) {
+		return false;
+	}
+
+	AppendPrepared(Command{std::move(group)}, next,
+	               "Align Camera to Scene View");
 	return true;
 }
 

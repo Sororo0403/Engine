@@ -8,6 +8,10 @@
 /// 対象の位置に追従するカメラの設定。オフセットはワールド座標で指定する
 /// </summary>
 struct FollowCameraSettings {
+	// オフセットの範囲と、視線が上方向と平行になることを避ける最小水平距離
+	static constexpr float kMaximumOffset = 10000.0f;
+	static constexpr double kMinimumHorizontalDistanceSquared = 0.000001;
+
 	SceneObjectId target = 0;
 	DirectX::XMFLOAT3 offset{0.0f, 3.0f, -7.0f};
 	DirectX::XMFLOAT3 lookOffset{0.0f, 1.0f, 0.0f};
@@ -21,12 +25,14 @@ struct FollowCameraSettings {
 		const double dx = double(offset.x) - lookOffset.x,
 		             dz = double(offset.z) - lookOffset.z;
 		return MathUtils::IsFinite(offset) && MathUtils::IsFinite(lookOffset) &&
-		       std::abs(offset.x) <= 10000 && std::abs(offset.y) <= 10000 &&
-		       std::abs(offset.z) <= 10000 && std::abs(lookOffset.x) <= 10000 &&
-		       std::abs(lookOffset.y) <= 10000 &&
-		       std::abs(lookOffset.z) <= 10000 &&
-		       dx * dx + dz * dz > 0.000001 && std::isfinite(smoothing) &&
-		       smoothing >= 0 && smoothing <= 100;
+		       std::abs(offset.x) <= kMaximumOffset &&
+		       std::abs(offset.y) <= kMaximumOffset &&
+		       std::abs(offset.z) <= kMaximumOffset &&
+		       std::abs(lookOffset.x) <= kMaximumOffset &&
+		       std::abs(lookOffset.y) <= kMaximumOffset &&
+		       std::abs(lookOffset.z) <= kMaximumOffset &&
+		       dx * dx + dz * dz > kMinimumHorizontalDistanceSquared &&
+		       std::isfinite(smoothing) && smoothing >= 0 && smoothing <= 100;
 	}
 
 	/// <summary>

@@ -20,13 +20,14 @@ class InspectorPanel {
 	void Clear();
 
 	/// <summary>
-	/// Transform見出しから要求する操作
+	/// Transform見出しとCameraから要求する操作
 	/// </summary>
 	enum class TransformAction {
 		NONE,
 		COPY,
 		PASTE,
 		RESET,
+		ALIGN_CAMERA_VIEW,
 	};
 
 	/// <summary>

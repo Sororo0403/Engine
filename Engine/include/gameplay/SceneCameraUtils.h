@@ -40,4 +40,13 @@ bool ApplyPose(const CameraPose &pose, Transform &transform);
 /// <param name="pose">成功時に更新する描画姿勢。失敗時は保持する</param>
 /// <returns>true:成功 false:Cameraなし、無効な姿勢・設定、または追従先なし</returns>
 bool GetInitialPose(const Scene &scene, SceneObjectId id, CameraPose &pose);
+/// <summary>
+/// 位置と視線方向に合う追従オフセットを求める。元の注視距離を基準に設定範囲内の注視点を選ぶ
+/// </summary>
+/// <param name="pose">合わせる位置と視線方向。上方向はFollow Cameraと同じワールドYを基準とする</param>
+/// <param name="target">追従対象のワールド位置</param>
+/// <param name="settings">成功時に更新する設定。対象ID・追従速度と、失敗時の値は保持する</param>
+/// <returns>true:成功 false:姿勢が表現できない、または設定・位置が無効</returns>
+bool MatchFollowPose(const CameraPose &pose, const DirectX::XMFLOAT3 &target,
+                     FollowCameraSettings &settings);
 } // namespace SceneCameraUtils

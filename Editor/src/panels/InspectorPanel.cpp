@@ -390,7 +390,15 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 
 	changed |= ColliderInspector{}.Draw(ui, inspectedObjectId, *object, history,
 	                                    colliderFitRequest_);
-	changed |= CameraInspector{}.Draw(ui, inspectedObjectId, *object, history);
+	SceneObjectId cameraAlignRequest = 0;
+	changed |= CameraInspector{}.Draw(ui, inspectedObjectId, *object, history,
+	                                  cameraAlignRequest);
+
+	if (cameraAlignRequest != 0) {
+		transformRequest_ = {TransformAction::ALIGN_CAMERA_VIEW,
+		                     cameraAlignRequest};
+	}
+
 	changed |= GameplayInspector{}.Draw(ui, scene, inspectedObjectId, *object,
 	                                    history);
 

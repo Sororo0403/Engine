@@ -6,7 +6,8 @@
 #include <string>
 
 bool CameraInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
-                           SceneObject &object, EditorHistory &history) const {
+                           SceneObject &object, EditorHistory &history,
+                           SceneObjectId &alignRequest) const {
 	if (!object.camera) {
 		return false;
 	}
@@ -49,6 +50,10 @@ bool CameraInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		      179);
 		field("Near Clip", &CameraSettings::nearClip, 0.001f, 0.001f, 100000);
 		field("Far Clip", &CameraSettings::farClip, 0.1f, 0.002f, 100000);
+
+		if (ui.Button("Align to Scene View")) {
+			alignRequest = id;
+		}
 
 		if (ui.Button("Remove Camera")) {
 			changed |= history.SetCamera(id, std::nullopt);

@@ -7,7 +7,7 @@ class EditorHistory;
 struct SceneObject;
 
 /// <summary>
-/// 描画用Cameraコンポーネントの投影とPrimary設定を編集する
+/// 描画用Cameraの設定編集と、Sceneビューへの姿勢合わせの要求を管理する
 /// </summary>
 class CameraInspector {
   public:
@@ -18,7 +18,8 @@ class CameraInspector {
 	/// <param name="id">対象物体のID</param>
 	/// <param name="object">編集する物体</param>
 	/// <param name="history">編集履歴</param>
-	/// <returns>true:変更あり false:変更なし</returns>
+	/// <param name="alignRequest">Sceneビューへの姿勢合わせを要求したID。要求なしの場合は呼び出し前の値を保つ</param>
+	/// <returns>true:設定変更あり false:変更なし、または姿勢合わせの要求のみ</returns>
 	bool Draw(const ImGuiSystem &ui, SceneObjectId id, SceneObject &object,
-	          EditorHistory &history) const;
+	          EditorHistory &history, SceneObjectId &alignRequest) const;
 };

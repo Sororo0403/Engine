@@ -114,13 +114,15 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		}
 
 		auto edited = *object.followCamera;
-		bool value =
-		    ui.DragFloat3("Camera Offset", edited.offset, 0.01f, -10000, 10000);
+		bool value = ui.DragFloat3("Camera Offset", edited.offset, 0.01f,
+		                           -FollowCameraSettings::kMaximumOffset,
+		                           FollowCameraSettings::kMaximumOffset);
 		changed |= ApplyField(history, id, object.followCamera, edited, value,
 		                      &EditorHistory::BeginFollowCamera);
 		edited = *object.followCamera;
-		value = ui.DragFloat3("Look Offset", edited.lookOffset, 0.01f, -10000,
-		                      10000);
+		value = ui.DragFloat3("Look Offset", edited.lookOffset, 0.01f,
+		                      -FollowCameraSettings::kMaximumOffset,
+		                      FollowCameraSettings::kMaximumOffset);
 		changed |= ApplyField(history, id, object.followCamera, edited, value,
 		                      &EditorHistory::BeginFollowCamera);
 		edited = *object.followCamera;

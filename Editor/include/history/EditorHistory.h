@@ -1,5 +1,6 @@
 #pragma once
 
+#include "graphics/camera/CameraPose.h"
 #include "history/AlignmentAxis.h"
 #include "history/ColliderCommand.h"
 #include "history/CommandGroup.h"
@@ -209,6 +210,15 @@ class EditorHistory {
 	/// <returns>true:成功または同値 false:対象または設定が無効</returns>
 	bool SetCamera(SceneObjectId objectId,
 	               std::optional<CameraComponent> value);
+
+	/// <summary>
+	/// Cameraの位置と向きをSceneビューへ合わせ、追従オフセットも1操作として記録する。
+	/// 拡大率・投影設定・追従速度は保持し、編集中の内容は先に確定する
+	/// </summary>
+	/// <param name="objectId">Cameraを持つ対象ID</param>
+	/// <param name="pose">Sceneビューの姿勢。Follow Cameraの上方向はワールドYを基準とする</param>
+	/// <returns>true:成功または同値 false:対象・姿勢・追従先・オフセットが無効。配置は変更しない</returns>
+	bool AlignCameraView(SceneObjectId objectId, const CameraPose &pose);
 
 	/// <summary>
 	/// カメラの連続編集を開始する
