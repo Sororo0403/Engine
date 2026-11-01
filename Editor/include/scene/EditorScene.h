@@ -202,6 +202,14 @@ class EditorScene final : public IScene {
 	                const DirectX::XMFLOAT3 &position = {});
 
 	/// <summary>
+	/// 読み込みを確認してから、物体のモデル参照だけを変更する
+	/// </summary>
+	/// <param name="objectId">変更する物体のID</param>
+	/// <param name="modelPath">変更先のモデル。空の場合は参照を解除する</param>
+	/// <returns>true:成功 false:物体がない、読み込みまたは変更に失敗</returns>
+	bool AssignModel(SceneObjectId objectId, const std::filesystem::path &modelPath);
+
+	/// <summary>
 	/// 編集中の内容を履歴へ確定し、ギズモ操作を中止する
 	/// </summary>
 	void FinishEdit();

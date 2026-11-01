@@ -1,6 +1,7 @@
 #pragma once
 
 #include "history/CommandGroup.h"
+#include "history/ModelPathCommand.h"
 #include "history/ObjectCommand.h"
 #include "history/RenameCommand.h"
 #include "history/TransformCommand.h"
@@ -190,10 +191,18 @@ class EditorHistory {
 	/// <returns>true:成功、または変更なし false:対象なし、重複、またはデータが無効</returns>
 	bool ResetTransforms(std::span<const SceneObjectId> objectIds);
 
+	/// <summary>
+	/// モデル参照を差し替え、その変更を1操作として履歴に記録する
+	/// </summary>
+	/// <param name="objectId">対象物体のID</param>
+	/// <param name="modelPath">変更先のモデル。空の場合は参照を解除する</param>
+	/// <returns>true:変更成功、または変更なし false:物体が存在しない</returns>
+	bool SetModelPath(SceneObjectId objectId, std::filesystem::path modelPath);
+
   private:
 	// 単独の編集操作、または複数の編集操作を保持する
 	using Command = std::variant<TransformCommand, ObjectCommand, RenameCommand,
-	                             CommandGroup>;
+	                             ModelPathCommand, CommandGroup>;
 
 	/// <summary>
 	/// 操作と、その前後の状態を識別する情報

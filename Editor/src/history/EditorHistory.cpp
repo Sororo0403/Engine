@@ -357,6 +357,24 @@ bool EditorHistory::ResetTransforms(std::span<const SceneObjectId> objectIds) {
 	return true;
 }
 
+bool EditorHistory::SetModelPath(SceneObjectId objectId, std::filesystem::path modelPath) {
+	CommitEdit();
+	const auto *object = scene_.FindObject(objectId);
+	if (!object) {
+		return false;
+	}
+	ModelPathCommand command{objectId, object->modelPath, std::move(modelPath)};
+	if (!command.HasChanges()) {
+		return true;
+	}
+	const auto next = PrepareAppend();
+	if (!command.Redo(scene_)) {
+		return false;
+	}
+	AppendPrepared(Command{std::move(command)}, next, "Change Model");
+	return true;
+}
+
 bool EditorHistory::HasPendingChanges() const {
 	if (pendingTransforms_) {
 		for (const auto &snapshot : *pendingTransforms_) {

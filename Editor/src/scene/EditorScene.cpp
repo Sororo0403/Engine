@@ -115,6 +115,7 @@ bool EditorScene::Update(float deltaTime) {
 	ui_.BeginDisabled(gizmo_.IsUsing() || gizmoEditActive_ ||
 	                  sceneViewPanel_.IsSelecting());
 	inspectorPanel_.Draw(ui_, scene, selection_.GetActiveId(), history);
+	const auto &modelRequest = inspectorPanel_.GetModelRequest();
 	ui_.EndDisabled();
 
 	const auto requestedModelPath = assetsPanel_.Draw(ui_, assets_);
@@ -183,9 +184,13 @@ bool EditorScene::Update(float deltaTime) {
 		if (!IsBusy() && !requestedModelPath.empty()) {
 			PlaceModel(requestedModelPath);
 		}
+		if (!IsBusy() && action == EditorAction::NONE && modelRequest.objectId != 0 &&
+		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
+			AssignModel(modelRequest.objectId, modelRequest.path);
+		}
 
-		if (!IsBusy() && modelDrop.path.empty()) {
-			if (action == EditorAction::NONE) {
+		if (!IsBusy()) {
+			if (action == EditorAction::NONE && modelDrop.path.empty() && modelRequest.objectId == 0) {
 				const bool objectPanelFocused =
 				    hierarchyRequest.windowFocused ||
 				    sceneViewPanel_.GetInput().windowFocused;
@@ -210,6 +215,7 @@ bool EditorScene::Update(float deltaTime) {
 	    wasBusy || IsBusy() || action != EditorAction::NONE ||
 	    !requestedModelPath.empty() ||
 	    !modelDrop.path.empty() ||
+	    modelRequest.objectId != 0 ||
 	    hierarchyRequest.action != HierarchyPanel::Action::NONE;
 
 	ViewportInput viewport = sceneViewPanel_.GetInput();
@@ -1030,6 +1036,25 @@ void EditorScene::ShowError(std::string message) {
 
 bool EditorScene::IsBusy() const {
 	return stage_ != DialogStage::IDLE || exitQueued_ || closeApproved_;
+}
+
+bool EditorScene::AssignModel(SceneObjectId objectId, const std::filesystem::path &modelPath) {
+	try {
+		FinishEdit();
+		if (!modelPath.empty() && !models_.Load(modelPath)) {
+			ShowError("Could not load the model. The current model was kept.");
+			return false;
+		}
+		if (!document_.GetHistory().SetModelPath(objectId, modelPath)) {
+			ShowError("Could not change the object's model.");
+			return false;
+		}
+		return true;
+	} catch (const std::exception &error) {
+		Logger::Error(std::format("EditorScene::AssignModel: {}", error.what()));
+		ShowError("Could not change the object's model. See the log for details.");
+		return false;
+	}
 }
 
 bool EditorScene::PlaceModel(const std::filesystem::path &modelPath,

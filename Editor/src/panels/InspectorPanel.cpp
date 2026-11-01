@@ -1,5 +1,6 @@
 #include "panels/InspectorPanel.h"
 
+#include "assets/ModelAssetDragDrop.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "history/EditorHistory.h"
 #include "math/TransformUtils.h"
@@ -11,6 +12,7 @@
 #include <DirectXMath.h>
 #include <format>
 #include <string>
+#include <utility>
 
 namespace {
 
@@ -99,9 +101,14 @@ void InspectorPanel::RequestRename(SceneObjectId objectId) {
 	renameObjectId_ = objectId;
 }
 
+const InspectorPanel::ModelRequest &InspectorPanel::GetModelRequest() const {
+	return modelRequest_;
+}
+
 bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
                           SceneObjectId selectedObjectId,
                           EditorHistory &history) {
+	modelRequest_ = {};
 	const bool focusName = renameObjectId_ != 0 &&
 	                       renameObjectId_ == selectedObjectId;
 	if (focusName) {
@@ -222,11 +229,21 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 	}
 
 	if (ui.CollapsingHeader("Model")) {
-		if (object->modelPath.empty()) {
-			ui.Text("No model assigned.");
-		} else {
-			ui.Text(PathUtils::ToUtf8(object->modelPath));
+		const auto label = std::format("{}###ModelAsset{}",
+		    object->modelPath.empty() ? "Drop model here" : PathUtils::ToUtf8(object->modelPath.filename()),
+		    selectedObjectId);
+		ImGui::Button(label.c_str(), {ImGui::GetContentRegionAvail().x, 0.0f});
+		if (auto path = ModelAssetDragDrop::AcceptTarget(); !path.empty()) {
+			modelRequest_ = {selectedObjectId, std::move(path)};
 		}
+		ImGui::SetItemTooltip("%s", object->modelPath.empty()
+		    ? "Drag a model from Assets to assign it."
+		    : PathUtils::ToUtf8(object->modelPath).c_str());
+		ImGui::BeginDisabled(object->modelPath.empty());
+		if (ImGui::Button("Remove Model")) {
+			modelRequest_ = {selectedObjectId, {}};
+		}
+		ImGui::EndDisabled();
 	}
 
 	ui.EndWindow();

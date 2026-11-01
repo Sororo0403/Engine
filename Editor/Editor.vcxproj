@@ -143,6 +143,7 @@
     <ClInclude Include="include\selection\SelectionFrustum.h" />
     <ClInclude Include="include\scene\SceneGrid.h" />
     <ClInclude Include="include\history\RenameCommand.h" />
+    <ClInclude Include="include\history\ModelPathCommand.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\history\CommandGroup.cpp" />
@@ -151,6 +152,7 @@
     <ClCompile Include="src\settings\EditorPreferences.cpp" />
     <ClCompile Include="src\settings\RecentScenes.cpp" />
     <ClCompile Include="src\history\RenameCommand.cpp" />
+    <ClCompile Include="src\history\ModelPathCommand.cpp" />
     <ClCompile Include="src\scene\SceneGrid.cpp" />
     <ClCompile Include="src\history\ObjectCommand.cpp" />
     <ClCompile Include="src\history\EditorHistory.cpp" />

@@ -3,15 +3,30 @@
 #include "math/Transform.h"
 #include "scene/SceneObjectId.h"
 
+#include <filesystem>
+
 class ImGuiSystem;
 class Scene;
 class EditorHistory;
 
 /// <summary>
-/// 選択した物体の情報表示と変形情報の編集を管理する
+/// 選択した物体の情報表示と編集要求を管理する
 /// </summary>
 class InspectorPanel {
   public:
+	/// <summary>
+	/// 選択物体のモデルの差し替え、または参照解除の要求
+	/// </summary>
+	struct ModelRequest {
+		SceneObjectId objectId = 0;
+		std::filesystem::path path;
+	};
+
+	/// <summary>
+	/// このフレームのモデル参照の変更要求を取得する
+	/// </summary>
+	/// <returns>変更要求。操作がない場合のIDは0、参照解除の場合のパスは空</returns>
+	const ModelRequest &GetModelRequest() const;
 	/// <summary>
 	/// 指定した物体の名前欄へのフォーカスを、次の描画時に予約する
 	/// </summary>
@@ -35,4 +50,5 @@ class InspectorPanel {
 	DirectX::XMFLOAT3 rotationDegrees_{};
 	DirectX::XMFLOAT4 displayedRotation_{0.0f, 0.0f, 0.0f, 1.0f};
 	SceneObjectId renameObjectId_ = 0;
+	ModelRequest modelRequest_;
 };
