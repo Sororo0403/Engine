@@ -323,6 +323,37 @@ bool EditorHistory::UpdateTransforms(
 	return true;
 }
 
+bool EditorHistory::ResetTransforms(std::span<const SceneObjectId> objectIds) {
+	CommitEdit();
+	if (objectIds.empty()) {
+		return false;
+	}
+	std::set<SceneObjectId> seen;
+	std::vector<CommandGroup::Command> commands;
+	commands.reserve(objectIds.size());
+	const Transform reset;
+	for (const SceneObjectId id : objectIds) {
+		const SceneObject *object = scene_.FindObject(id);
+		if (id == 0 || !seen.insert(id).second || !object ||
+		    !TransformUtils::IsValid(object->transform)) {
+			return false;
+		}
+		if (!TransformUtils::AreEqual(object->transform, reset)) {
+			commands.emplace_back(TransformCommand{id, object->transform, reset});
+		}
+	}
+	if (commands.empty()) {
+		return true;
+	}
+	CommandGroup group{std::move(commands)};
+	const std::uint64_t next = PrepareAppend();
+	if (!group.Redo(scene_)) {
+		return false;
+	}
+	AppendPrepared(Command{std::move(group)}, next);
+	return true;
+}
+
 bool EditorHistory::HasPendingChanges() const {
 	if (pendingTransforms_) {
 		for (const auto &snapshot : *pendingTransforms_) {

@@ -170,6 +170,13 @@ class EditorHistory {
 	bool UpdateTransforms(const Transform &beforePivot,
 	                      const Transform &afterPivot);
 
+	/// <summary>
+	/// 全物体の位置・回転・拡大率を初期値へ戻し、1操作として記録する
+	/// </summary>
+	/// <param name="objectIds">重複のない編集対象ID一覧</param>
+	/// <returns>true:成功、または変更なし false:対象なし、重複、またはデータが無効</returns>
+	bool ResetTransforms(std::span<const SceneObjectId> objectIds);
+
   private:
 	// 単独の編集操作、または複数の編集操作を保持する
 	using Command = std::variant<TransformCommand, ObjectCommand, RenameCommand,

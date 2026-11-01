@@ -110,6 +110,7 @@ class EditorScene final : public IScene {
 		COPY_OBJECTS,
 		CUT_OBJECTS,
 		PASTE_OBJECTS,
+		RESET_TRANSFORMS,
 	};
 
 	/// <summary>
@@ -244,6 +245,11 @@ class EditorScene final : public IScene {
 	/// コピーした物体を1操作として貼り付け、作成した物体を選択する
 	/// </summary>
 	void PasteObjects();
+
+	/// <summary>
+	/// 選択した全物体のTransformを初期値へ戻す
+	/// </summary>
+	void ResetSelectedTransforms();
 
 	/// <summary>
 	/// シーンに存在する物体が1つ以上選択されているか確認する

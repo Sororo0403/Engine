@@ -492,6 +492,9 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		if (ui_.MenuItem("Delete", "Delete", objectEnabled)) {
 			action = EditorAction::DELETE_OBJECTS;
 		}
+		if (ui_.MenuItem("Reset Transform", nullptr, objectEnabled)) {
+			action = EditorAction::RESET_TRANSFORMS;
+		}
 
 		ui_.EndMenu();
 	}
@@ -613,6 +616,9 @@ void EditorScene::StartAction(EditorAction action) {
 	FinishEdit();
 
 	switch (action) {
+	case EditorAction::RESET_TRANSFORMS:
+		ResetSelectedTransforms();
+		return;
 	case EditorAction::COPY_OBJECTS:
 		CopySelectedObjects(false);
 		return;
@@ -1134,6 +1140,21 @@ void EditorScene::PasteObjects() {
 		Logger::Error(std::format("EditorScene: 物体の貼り付けに失敗しました: {}",
 		                          error.what()));
 		ShowError("Could not paste objects. See the log for details.");
+	}
+}
+
+void EditorScene::ResetSelectedTransforms() {
+	if (!HasSelection()) {
+		return;
+	}
+	try {
+		if (!document_.GetHistory().ResetTransforms(selection_.GetIds())) {
+			ShowError("Could not reset the selected transforms.");
+		}
+	} catch (const std::exception &error) {
+		Logger::Error(std::format("EditorScene: Transformの初期化に失敗しました: {}",
+		                          error.what()));
+		ShowError("Could not reset transforms. See the log for details.");
 	}
 }
 
