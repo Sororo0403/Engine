@@ -11,11 +11,11 @@
 #include "platform/windows/PathUtils.h"
 #include "scene/Scene.h"
 
-#include <imgui.h>
-
+#include <array>
 #include <cmath>
 #include <exception>
 #include <format>
+#include <imgui.h>
 #include <utility>
 
 EditorScene::EditorScene(const EngineContext &context)
@@ -209,6 +209,26 @@ bool EditorScene::Update(float deltaTime) {
 	if (!renderer_.GetCameraMatrices(view, projection)) {
 		Logger::Error("EditorScene: カメラ行列を取得できませんでした。");
 		return false;
+	}
+
+	if (!inputBlocked &&
+	    ReadFrameSelectedShortcut(viewport, hierarchyRequest.windowFocused) &&
+	    FrameSelected(projection)) {
+		// 移動後のカメラを、ギズモや選択判定にも同じフレームで反映する
+		if (!renderer_.SetCameraPose(cameraController_.GetPose())) {
+			Logger::Error("EditorScene: 移動後のカメラの姿勢が無効です。");
+			return false;
+		}
+
+		if (!renderer_.Update(target->GetWidth(), target->GetHeight())) {
+			return false;
+		}
+
+		if (!renderer_.GetCameraMatrices(view, projection)) {
+			Logger::Error(
+			    "EditorScene: 移動後のカメラ行列を取得できませんでした。");
+			return false;
+		}
 	}
 
 	SceneObject *selected = scene.FindObject(selectedObjectId_);
@@ -687,4 +707,42 @@ void EditorScene::FinishTransformEdit() {
 
 	gizmo_.Cancel();
 	gizmoEditActive_ = false;
+}
+
+bool EditorScene::ReadFrameSelectedShortcut(const ViewportInput &viewport,
+                                            bool hierarchyFocused) const {
+	if (IsBusy() || selectedObjectId_ == 0 || !viewport.applicationFocused ||
+	    (!viewport.windowFocused && !hierarchyFocused) ||
+	    viewport.widgetActive || viewport.rightDown ||
+	    ui_.IsTextInputActive() || ImGui::IsAnyItemActive() ||
+	    gizmo_.IsUsing() || document_.GetHistory().IsEditing()) {
+		return false;
+	}
+
+	const Keyboard &keyboard = input_.GetKeyboard();
+
+	// 修飾キー付きの操作とは区別する
+	if (keyboard.IsDown(Key::CTRL) || keyboard.IsDown(Key::ALT) ||
+	    keyboard.IsDown(Key::SHIFT)) {
+		return false;
+	}
+
+	return keyboard.IsPressed(Key::F);
+}
+
+bool EditorScene::FrameSelected(const DirectX::XMFLOAT4X4 &projection) {
+	std::array<DirectX::XMFLOAT3, 8> corners{};
+
+	// 未選択や、モデルを持たない空の物体では移動しない
+	if (!renderer_.GetObjectBounds(selectedObjectId_, corners)) {
+		return false;
+	}
+
+	if (!cameraController_.FrameBounds(corners, projection)) {
+		Logger::Warning(
+		    "EditorScene: 選択モデルを現在の描画範囲に収められませんでした。");
+		return false;
+	}
+
+	return true;
 }

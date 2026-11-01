@@ -4,6 +4,7 @@
 #include "scene/Scene.h"
 
 #include <format>
+#include <imgui.h>
 
 HierarchyPanel::Result
 HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
@@ -46,6 +47,11 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 			selectedObjectId = id;
 		}
 	}
+
+	// ポップアップや別のドッキングパネルのフォーカスは含めない
+	result.windowFocused =
+	    ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows |
+	                           ImGuiFocusedFlags_NoPopupHierarchy);
 
 	ui.EndWindow();
 	return result;

@@ -2,6 +2,8 @@
 
 #include "graphics/camera/CameraPose.h"
 
+#include <array>
+
 struct ViewportInput;
 
 class InputSystem;
@@ -31,6 +33,15 @@ class EditorCameraController {
 	/// </summary>
 	void Reset();
 
+	/// <summary>
+	/// 現在の向きを保ち、指定されたボックス全体が収まる位置へ移動する
+	/// </summary>
+	/// <param name="corners">ワールド座標のボックスの8頂点</param>
+	/// <param name="projection">描画に使用する中央対称の左手系透視投影行列</param>
+	/// <returns>true:成功 false:値が無効、または描画範囲に収まらない</returns>
+	bool FrameBounds(const std::array<DirectX::XMFLOAT3, 8> &corners,
+	                 const DirectX::XMFLOAT4X4 &projection);
+
   private:
 	/// <summary>
 	/// 現在の回転角から前方向を計算する
@@ -49,4 +60,13 @@ class EditorCameraController {
 	float moveSpeed_ = 3.0f;
 	float fastMultiplier_ = 4.0f;
 	float mouseSensitivity_ = 0.003f;
+
+	// 選択物体を画面に収めるときの余白と最小距離
+	static constexpr double kFramePadding = 1.1;
+	static constexpr double kMinimumFrameDistance = 0.25;
+
+	// クリップ面ぎりぎりへの配置を避ける
+	static constexpr double kFrameClipPadding = 1.01;
+
+	static constexpr double kMinimumPoseLengthSquared = 0.00000001;
 };

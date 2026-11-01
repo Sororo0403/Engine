@@ -20,6 +20,7 @@
 #include <string>
 
 struct EngineContext;
+struct ViewportInput;
 
 class InputSystem;
 class ImGuiSystem;
@@ -164,6 +165,22 @@ class EditorScene final : public IScene {
 	/// 編集中の変形情報を履歴へ確定し、ギズモ操作を中止する
 	/// </summary>
 	void FinishTransformEdit();
+
+	/// <summary>
+	/// 選択モデルへカメラを寄せるショートカットを判定する
+	/// </summary>
+	/// <param name="viewport">Sceneビューの入力状態</param>
+	/// <param name="hierarchyFocused">Hierarchyにフォーカスがあるか</param>
+	/// <returns>true:Fキーによる移動要求あり false:要求なし</returns>
+	bool ReadFrameSelectedShortcut(const ViewportInput &viewport,
+	                               bool hierarchyFocused) const;
+
+	/// <summary>
+	/// 選択モデル全体が収まる位置へ編集用カメラを移動する
+	/// </summary>
+	/// <param name="projection">Sceneビューの更新済み投影行列</param>
+	/// <returns>true:カメラを移動した false:対象なし、または移動できない</returns>
+	bool FrameSelected(const DirectX::XMFLOAT4X4 &projection);
 
   private:
 	const ImGuiSystem &ui_;

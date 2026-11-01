@@ -3,9 +3,11 @@
 #include "graphics/ui/ViewportInput.h"
 #include "input/InputSystem.h"
 #include "input/Key.h"
+#include "math/MathUtils.h"
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
 void EditorCameraController::Update(const InputSystem &input,
                                     const ViewportInput &viewport,
@@ -120,6 +122,168 @@ void EditorCameraController::Update(const InputSystem &input,
 	position_.z += movement.z * distance;
 }
 
+bool EditorCameraController::FrameBounds(
+    const std::array<DirectX::XMFLOAT3, 8> &corners,
+    const DirectX::XMFLOAT4X4 &projection) {
+	const double horizontalScale = projection._11;
+	const double verticalScale = projection._22;
+	const double depthScale = projection._33;
+	const double depthOffset = projection._43;
+
+	if (!std::isfinite(horizontalScale) || !std::isfinite(verticalScale) ||
+	    !std::isfinite(depthScale) || !std::isfinite(depthOffset) ||
+	    horizontalScale <= 0.0 || verticalScale <= 0.0 || depthScale <= 1.0 ||
+	    depthOffset >= 0.0) {
+		return false;
+	}
+
+	// 現在のCameraが使用する、中央対称・通常深度の透視投影を対象にする
+	if (projection._34 != 1.0f || projection._44 != 0.0f ||
+	    projection._31 != 0.0f || projection._32 != 0.0f) {
+		return false;
+	}
+
+	const double nearClip = -depthOffset / depthScale;
+	const double farClip = -depthOffset / (depthScale - 1.0);
+
+	if (!std::isfinite(nearClip) || !std::isfinite(farClip) ||
+	    nearClip <= 0.0 || farClip <= nearClip) {
+		return false;
+	}
+
+	// ワールド座標の8頂点から、ボックスの中心を求める
+	double centerX = 0.0;
+	double centerY = 0.0;
+	double centerZ = 0.0;
+
+	const double inverseCount = 1.0 / static_cast<double>(corners.size());
+
+	for (const auto &corner : corners) {
+		if (!MathUtils::IsFinite(corner)) {
+			return false;
+		}
+
+		centerX += static_cast<double>(corner.x) * inverseCount;
+		centerY += static_cast<double>(corner.y) * inverseCount;
+		centerZ += static_cast<double>(corner.z) * inverseCount;
+	}
+
+	using namespace DirectX;
+
+	XMFLOAT3 forward = GetForward();
+
+	if (!MathUtils::IsFinite(forward)) {
+		return false;
+	}
+
+	const XMVECTOR forwardVector = XMVector3Normalize(XMLoadFloat3(&forward));
+
+	const XMVECTOR rightVector = XMVector3Normalize(
+	    XMVector3Cross(XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f), forwardVector));
+
+	const XMVECTOR upVector =
+	    XMVector3Normalize(XMVector3Cross(forwardVector, rightVector));
+
+	XMFLOAT3 right;
+	XMFLOAT3 up;
+
+	XMStoreFloat3(&forward, forwardVector);
+	XMStoreFloat3(&right, rightVector);
+	XMStoreFloat3(&up, upVector);
+
+	if (!MathUtils::IsFinite(forward) || !MathUtils::IsFinite(right) ||
+	    !MathUtils::IsFinite(up)) {
+		return false;
+	}
+
+	const double nearLimit = nearClip * kFrameClipPadding;
+	const double farLimit = farClip / kFrameClipPadding;
+
+	double distance = kMinimumFrameDistance;
+	double maximumDepth = (std::numeric_limits<double>::lowest)();
+
+	for (const auto &corner : corners) {
+		const double offsetX = static_cast<double>(corner.x) - centerX;
+		const double offsetY = static_cast<double>(corner.y) - centerY;
+		const double offsetZ = static_cast<double>(corner.z) - centerZ;
+
+		// 中心からのずれを、現在のカメラの向きで表す
+		const double x =
+		    offsetX * right.x + offsetY * right.y + offsetZ * right.z;
+
+		const double y = offsetX * up.x + offsetY * up.y + offsetZ * up.z;
+
+		const double z =
+		    offsetX * forward.x + offsetY * forward.y + offsetZ * forward.z;
+
+		// 各頂点が左右・上下・手前のクリップ面に収まる距離を求める
+		distance =
+		    (std::max)(distance,
+		               std::abs(x) * horizontalScale * kFramePadding - z);
+
+		distance = (std::max)(distance,
+		                      std::abs(y) * verticalScale * kFramePadding - z);
+
+		distance = (std::max)(distance, nearLimit - z);
+
+		maximumDepth = (std::max)(maximumDepth, z);
+	}
+
+	// 遠方のクリップ面に収まらない場合は、現在位置を維持する
+	if (!std::isfinite(distance) || distance + maximumDepth >= farLimit) {
+		return false;
+	}
+
+	const double newX = centerX - forward.x * distance;
+	const double newY = centerY - forward.y * distance;
+	const double newZ = centerZ - forward.z * distance;
+
+	const double maximumFloat = (std::numeric_limits<float>::max)();
+
+	if (!std::isfinite(newX) || !std::isfinite(newY) || !std::isfinite(newZ) ||
+	    std::abs(newX) > maximumFloat || std::abs(newY) > maximumFloat ||
+	    std::abs(newZ) > maximumFloat) {
+		return false;
+	}
+
+	const XMFLOAT3 newPosition{
+	    static_cast<float>(newX),
+	    static_cast<float>(newY),
+	    static_cast<float>(newZ),
+	};
+
+	// GetPoseで有効な視線を作れる座標精度があるか確認する
+	const XMFLOAT3 target{
+	    newPosition.x + forward.x,
+	    newPosition.y + forward.y,
+	    newPosition.z + forward.z,
+	};
+
+	if (!MathUtils::IsFinite(target)) {
+		return false;
+	}
+
+	const double directionX = static_cast<double>(target.x) - newPosition.x;
+	const double directionY = static_cast<double>(target.y) - newPosition.y;
+	const double directionZ = static_cast<double>(target.z) - newPosition.z;
+
+	const double directionLengthSquared = directionX * directionX +
+	                                      directionY * directionY +
+	                                      directionZ * directionZ;
+
+	const double rightLengthSquared =
+	    directionX * directionX + directionZ * directionZ;
+
+	if (directionLengthSquared <= kMinimumPoseLengthSquared ||
+	    rightLengthSquared <= kMinimumPoseLengthSquared) {
+		return false;
+	}
+
+	position_ = newPosition;
+	navigating_ = false;
+
+	return true;
+}
 DirectX::XMFLOAT3 EditorCameraController::GetForward() const {
 	const float cosPitch = std::cos(pitch_);
 

@@ -20,11 +20,13 @@ class HierarchyPanel {
 	};
 
 	/// <summary>
-	/// Hierarchyから要求された操作と、その対象
+	/// Hierarchyの操作要求と入力状態
 	/// </summary>
 	struct Result {
 		Action action = Action::NONE;
 		SceneObjectId objectId = 0;
+
+		bool windowFocused = false;
 	};
 
 	/// <summary>
