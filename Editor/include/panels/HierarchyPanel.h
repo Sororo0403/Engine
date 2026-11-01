@@ -6,17 +6,35 @@ class ImGuiSystem;
 class Scene;
 
 /// <summary>
-/// シーン上の物体の一覧・選択・作成・削除を管理する
+/// シーン上の物体の一覧・選択・操作要求を管理する
 /// </summary>
 class HierarchyPanel {
   public:
 	/// <summary>
-	/// 物体の一覧と操作用UIを構築する
+	/// Hierarchyから要求する操作
+	/// </summary>
+	enum class Action {
+		NONE,
+		CREATE_EMPTY,
+		DELETE_OBJECT,
+	};
+
+	/// <summary>
+	/// Hierarchyから要求された操作と、その対象
+	/// </summary>
+	struct Result {
+		Action action = Action::NONE;
+		SceneObjectId objectId = 0;
+	};
+
+	/// <summary>
+	/// 物体の一覧と操作用UIを構築する。
+	/// 物体の追加・削除は実行せず、要求として返す
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
-	/// <param name="scene">編集対象のシーン</param>
+	/// <param name="scene">表示対象のシーン</param>
 	/// <param name="selectedObjectId">選択中の物体ID。未選択は0</param>
-	/// <returns>true:物体を作成・削除した false:シーンへの変更なし</returns>
-	bool Draw(const ImGuiSystem &ui, Scene &scene,
-	          SceneObjectId &selectedObjectId) const;
+	/// <returns>要求された操作</returns>
+	Result Draw(const ImGuiSystem &ui, const Scene &scene,
+	            SceneObjectId &selectedObjectId) const;
 };

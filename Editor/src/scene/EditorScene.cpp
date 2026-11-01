@@ -85,15 +85,10 @@ bool EditorScene::Update(float deltaTime) {
 
 	const SceneObjectId previousSelection = selectedObjectId_;
 
-	const bool hierarchyChanged =
+	const auto hierarchyRequest =
 	    hierarchyPanel_.Draw(ui_, scene, selectedObjectId_);
 
-	if (hierarchyChanged) {
-		FinishTransformEdit();
-
-		// 物体の追加・削除は、今回は履歴対象外
-		document_.MarkModified();
-	} else if (previousSelection != selectedObjectId_) {
+	if (previousSelection != selectedObjectId_) {
 		FinishTransformEdit();
 	}
 
@@ -109,30 +104,69 @@ bool EditorScene::Update(float deltaTime) {
 		return false;
 	}
 
-	// Inspectorが閉じられた場合や、フォーカスを失った場合にも確定する
 	if (!gizmoEditActive_ && !ImGui::IsAnyItemActive()) {
 		history.CommitTransform();
 	}
 
 	if (!wasBusy) {
-		if (!requestedModelPath.empty()) {
+		if (hierarchyRequest.action != HierarchyPanel::Action::NONE) {
+			// 削除対象の変形編集を、物体を消す前に確定する
+			FinishTransformEdit();
+
+			try {
+				switch (hierarchyRequest.action) {
+				case HierarchyPanel::Action::CREATE_EMPTY:
+					selectedObjectId_ = history.CreateObject();
+					break;
+
+				case HierarchyPanel::Action::DELETE_OBJECT:
+					if (history.DeleteObject(hierarchyRequest.objectId)) {
+						if (selectedObjectId_ == hierarchyRequest.objectId) {
+							selectedObjectId_ = 0;
+						}
+					} else {
+						ShowError("Could not delete the object.");
+					}
+					break;
+
+				case HierarchyPanel::Action::NONE:
+					break;
+				}
+			} catch (const std::exception &error) {
+				Logger::Error(std::format(
+				    "EditorScene: 物体の編集に失敗しました: {}", error.what()));
+
+				ShowError(
+				    "Could not edit the object. See the log for details.");
+			}
+		}
+
+		if (!IsBusy() && !requestedModelPath.empty()) {
 			PlaceModel(requestedModelPath);
 		}
 
-		if (action == EditorAction::NONE) {
-			action = ReadShortcut();
-		}
+		if (!IsBusy()) {
+			if (action == EditorAction::NONE) {
+				action = ReadShortcut();
+			}
 
-		if (action != EditorAction::NONE) {
-			StartAction(action);
+			if (action != EditorAction::NONE) {
+				StartAction(action);
+			}
 		}
 	}
 
 	UpdateDialogs();
 
-	const bool inputBlocked = wasBusy || IsBusy() ||
-	                          action != EditorAction::NONE ||
-	                          !requestedModelPath.empty();
+	// Undoで選択物体が削除された場合も、選択を解除する
+	if (!scene.Contains(selectedObjectId_)) {
+		selectedObjectId_ = 0;
+	}
+
+	const bool inputBlocked =
+	    wasBusy || IsBusy() || action != EditorAction::NONE ||
+	    !requestedModelPath.empty() ||
+	    hierarchyRequest.action != HierarchyPanel::Action::NONE;
 
 	ViewportInput viewport = sceneViewPanel_.GetInput();
 
@@ -142,7 +176,6 @@ bool EditorScene::Update(float deltaTime) {
 
 	ViewportInput cameraInput = viewport;
 
-	// ギズモのドラッグ中にカメラ操作へ切り替わらないようにする
 	if (gizmo_.IsUsing()) {
 		cameraInput = {};
 	}
@@ -152,7 +185,6 @@ bool EditorScene::Update(float deltaTime) {
 	auto *target = sceneViewPanel_.GetRenderTexture();
 
 	if (!target) {
-		// Scene非表示による中断は、ギズモの編集だけを確定する
 		if (gizmoEditActive_) {
 			history.CommitTransform();
 			gizmoEditActive_ = false;
@@ -187,7 +219,6 @@ bool EditorScene::Update(float deltaTime) {
 		transform = &selected->transform;
 	}
 
-	// 最初に値が変化したフレームの、変更前の状態を保持する
 	const Transform beforeGizmo = transform ? *transform : Transform{};
 
 	const bool gizmoEnabled = !inputBlocked && viewport.applicationFocused &&
@@ -209,19 +240,16 @@ bool EditorScene::Update(float deltaTime) {
 			gizmoEditActive_ = true;
 		}
 
-		// ギズモの変更を、このフレームの描画へ反映する
 		if (!renderer_.Update(target->GetWidth(), target->GetHeight())) {
 			return false;
 		}
 	}
 
-	// ボタンを離した場合や、操作が中止された場合に1操作として確定する
 	if (gizmoEditActive_ && !gizmo_.IsUsing()) {
 		history.CommitTransform();
 		gizmoEditActive_ = false;
 	}
 
-	// ギズモを掴んだクリックでは、モデル選択を変更しない
 	if (!gizmoResult.blocksSelection && viewport.imageHovered &&
 	    viewport.imagePositionValid && viewport.applicationFocused &&
 	    !viewport.widgetActive && viewport.leftPressed && !viewport.rightDown) {
@@ -619,7 +647,7 @@ void EditorScene::PlaceModel(const std::filesystem::path &modelPath) {
 
 		const std::string name = PathUtils::ToUtf8(modelPath.stem());
 
-		// ファイル読み込みに失敗したモデルはシーンへ追加しない
+		// 読み込みを確認してから、シーンと履歴へ追加する
 		const auto model = models_.Load(modelPath);
 
 		if (!model) {
@@ -627,12 +655,8 @@ void EditorScene::PlaceModel(const std::filesystem::path &modelPath) {
 			return;
 		}
 
-		Scene &scene = document_.GetScene();
-
-		// Transformの初期値に従い、原点へ配置する
-		selectedObjectId_ = scene.CreateObject(name, modelPath);
-
-		document_.MarkModified();
+		selectedObjectId_ =
+		    document_.GetHistory().CreateObject(name, modelPath);
 	} catch (const std::exception &error) {
 		Logger::Error(std::format("EditorScene::PlaceModel: {}", error.what()));
 

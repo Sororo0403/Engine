@@ -1,12 +1,75 @@
 #include "history/EditorHistory.h"
 
+#include "core/Logger.h"
 #include "math/TransformUtils.h"
 #include "scene/Scene.h"
 
+#include <cassert>
+#include <exception>
+#include <format>
 #include <limits>
 #include <stdexcept>
+#include <type_traits>
+#include <utility>
 
 EditorHistory::EditorHistory(Scene &scene) noexcept : scene_(scene) {}
+
+SceneObjectId EditorHistory::CreateObject(std::string name,
+                                          std::filesystem::path modelPath) {
+	CommitTransform();
+
+	if (name.empty()) {
+		name = "Object";
+	}
+
+	SceneObject object;
+	object.name = std::move(name);
+	object.modelPath = std::move(modelPath);
+
+	const std::uint64_t next = PrepareAppend();
+
+	// Scene::CreateObjectと同じ初期Transformの物体を作成する
+	const SceneObjectId id = scene_.CreateObject(object.name, object.modelPath);
+
+	AppendPrepared(Command{ObjectCommand{
+	                   id,
+	                   std::move(object),
+	                   ObjectCommand::Kind::CREATE,
+	               }},
+	               next);
+
+	return id;
+}
+
+bool EditorHistory::DeleteObject(SceneObjectId objectId) {
+	CommitTransform();
+
+	const SceneObject *object = scene_.FindObject(objectId);
+
+	if (!object) {
+		return false;
+	}
+
+	// 削除する前に、名前・モデル参照・Transformをコピーする
+	Command command{ObjectCommand{
+	    objectId,
+	    *object,
+	    ObjectCommand::Kind::DELETE,
+	}};
+
+	const std::uint64_t next = PrepareAppend();
+
+	const bool deleted = std::visit(
+	    [this](const auto &operation) { return operation.Redo(scene_); },
+	    command);
+
+	if (!deleted) {
+		return false;
+	}
+
+	AppendPrepared(std::move(command), next);
+	return true;
+}
 
 bool EditorHistory::BeginTransform(SceneObjectId objectId,
                                    const Transform &before) {
@@ -14,7 +77,6 @@ bool EditorHistory::BeginTransform(SceneObjectId objectId,
 		return false;
 	}
 
-	// 別の編集が残っていた場合は、その編集を先に確定する
 	CommitTransform();
 
 	pending_ = PendingTransform{objectId, before};
@@ -44,23 +106,9 @@ void EditorHistory::CommitTransform() {
 		return;
 	}
 
-	const std::uint64_t next = AllocateState();
+	const std::uint64_t next = PrepareAppend();
 
-	// 確保に成功してからRedo側の履歴を取り除く
-	entries_.reserve(cursor_ + 1);
-
-	entries_.erase(entries_.begin() + static_cast<std::ptrdiff_t>(cursor_),
-	               entries_.end());
-
-	entries_.push_back(Entry{
-	    command,
-	    currentState_,
-	    next,
-	});
-
-	++cursor_;
-	currentState_ = next;
-
+	AppendPrepared(Command{command}, next);
 	pending_.reset();
 }
 
@@ -77,17 +125,27 @@ bool EditorHistory::Undo() {
 		return false;
 	}
 
-	const Entry &entry = entries_[cursor_ - 1];
+	try {
+		const Entry &entry = entries_[cursor_ - 1];
 
-	if (!entry.command.Undo(scene_)) {
-		Invalidate();
+		const bool succeeded = std::visit(
+		    [this](const auto &command) { return command.Undo(scene_); },
+		    entry.command);
+
+		if (!succeeded) {
+			Invalidate();
+			return false;
+		}
+
+		currentState_ = entry.beforeState;
+		--cursor_;
+
+		return true;
+	} catch (const std::exception &error) {
+		// 復元時の確保失敗では、再試行できるよう履歴を保持する
+		Logger::Error(std::format("EditorHistory::Undo: {}", error.what()));
 		return false;
 	}
-
-	currentState_ = entry.beforeState;
-	--cursor_;
-
-	return true;
 }
 
 bool EditorHistory::Redo() {
@@ -95,17 +153,26 @@ bool EditorHistory::Redo() {
 		return false;
 	}
 
-	const Entry &entry = entries_[cursor_];
+	try {
+		const Entry &entry = entries_[cursor_];
 
-	if (!entry.command.Redo(scene_)) {
-		Invalidate();
+		const bool succeeded = std::visit(
+		    [this](const auto &command) { return command.Redo(scene_); },
+		    entry.command);
+
+		if (!succeeded) {
+			Invalidate();
+			return false;
+		}
+
+		currentState_ = entry.afterState;
+		++cursor_;
+
+		return true;
+	} catch (const std::exception &error) {
+		Logger::Error(std::format("EditorHistory::Redo: {}", error.what()));
 		return false;
 	}
-
-	currentState_ = entry.afterState;
-	++cursor_;
-
-	return true;
 }
 
 bool EditorHistory::IsModified() const {
@@ -134,7 +201,6 @@ void EditorHistory::Invalidate() {
 	entries_.clear();
 	cursor_ = 0;
 
-	// 保存地点とは異なる、新しい状態として扱う
 	currentState_ = AllocateState();
 }
 
@@ -147,6 +213,47 @@ void EditorHistory::Reset() {
 	currentState_ = 0;
 	savedState_ = 0;
 	nextState_ = 1;
+}
+
+std::uint64_t EditorHistory::PrepareAppend() {
+	// シーン変更後の記録では、メモリ確保を発生させない
+	static_assert(std::is_nothrow_move_constructible_v<Entry>);
+
+	if (cursor_ == entries_.capacity()) {
+		const std::size_t capacity = entries_.capacity();
+		const std::size_t maximum = entries_.max_size();
+
+		if (capacity == maximum) {
+			throw std::length_error(
+			    "EditorHistory: 履歴件数の上限に達しました。");
+		}
+
+		const std::size_t nextCapacity =
+		    capacity == 0 ? 1
+		                  : (capacity > maximum / 2 ? maximum : capacity * 2);
+
+		entries_.reserve(nextCapacity);
+	}
+
+	return AllocateState();
+}
+
+void EditorHistory::AppendPrepared(Command command,
+                                   std::uint64_t nextState) noexcept {
+	assert(cursor_ < entries_.capacity());
+
+	// Undo後の新しい編集では、Redo側の履歴を取り除く
+	entries_.erase(entries_.begin() + static_cast<std::ptrdiff_t>(cursor_),
+	               entries_.end());
+
+	entries_.push_back(Entry{
+	    std::move(command),
+	    currentState_,
+	    nextState,
+	});
+
+	++cursor_;
+	currentState_ = nextState;
 }
 
 std::uint64_t EditorHistory::AllocateState() {

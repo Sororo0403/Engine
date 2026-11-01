@@ -1,10 +1,14 @@
 #pragma once
 
+#include "history/ObjectCommand.h"
 #include "history/TransformCommand.h"
 
 #include <cstddef>
 #include <cstdint>
+#include <filesystem>
 #include <optional>
+#include <string>
+#include <variant>
 #include <vector>
 
 class Scene;
@@ -88,12 +92,33 @@ class EditorHistory {
 	/// </summary>
 	void Reset();
 
+	/// <summary>
+	/// 物体を作成し、その追加を履歴へ記録する。
+	/// 編集中の変形情報は先に確定する
+	/// </summary>
+	/// <param name="name">物体の名前</param>
+	/// <param name="modelPath">モデルの参照先。空の場合はモデルなし</param>
+	/// <returns>作成した物体のID</returns>
+	SceneObjectId CreateObject(std::string name = "Object",
+	                           std::filesystem::path modelPath = {});
+
+	/// <summary>
+	/// 指定した物体を削除し、その削除を履歴へ記録する。
+	/// 編集中の変形情報は先に確定する
+	/// </summary>
+	/// <param name="objectId">削除する物体のID</param>
+	/// <returns>true:削除成功 false:物体が存在しない</returns>
+	bool DeleteObject(SceneObjectId objectId);
+
   private:
+	// Transformの変更、または物体の追加・削除を保持する
+	using Command = std::variant<TransformCommand, ObjectCommand>;
+
 	/// <summary>
 	/// 操作と、その前後の状態を識別する情報
 	/// </summary>
 	struct Entry {
-		TransformCommand command;
+		Command command;
 
 		std::uint64_t beforeState = 0;
 		std::uint64_t afterState = 0;
@@ -107,12 +132,28 @@ class EditorHistory {
 		Transform before;
 	};
 
+  private:
 	/// <summary>
 	/// 新しい状態の識別番号を発行する
 	/// </summary>
 	/// <returns>過去の状態と重複しない番号</returns>
 	std::uint64_t AllocateState();
 
+	/// <summary>
+	/// 次の操作を記録する領域と状態番号を確保する。
+	/// シーンを変更する前に呼び出す
+	/// </summary>
+	/// <returns>次の操作に割り当てる状態番号</returns>
+	std::uint64_t PrepareAppend();
+
+	/// <summary>
+	/// シーンへ反映済みの操作を、確保済みの領域へ記録する
+	/// </summary>
+	/// <param name="command">反映済みの操作</param>
+	/// <param name="nextState">PrepareAppendで取得した状態番号</param>
+	void AppendPrepared(Command command, std::uint64_t nextState) noexcept;
+
+  private:
 	Scene &scene_;
 
 	std::vector<Entry> entries_;

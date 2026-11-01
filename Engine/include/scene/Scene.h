@@ -71,6 +71,15 @@ class Scene {
 	/// <param name="objects">置き換え後の物体一覧。IDには0と最大値を使用できない</param>
 	void ReplaceObjects(std::map<SceneObjectId, SceneObject> objects);
 
+	/// <summary>
+	/// 発行済みのIDを使って、削除した物体を復元する。
+	/// 描画リソースは作成しない
+	/// </summary>
+	/// <param name="id">このシーンで発行済みの物体ID</param>
+	/// <param name="object">復元する物体データ</param>
+	/// <returns>true:復元成功 false:未発行のID、または同じIDの物体が存在する</returns>
+	bool RestoreObject(SceneObjectId id, const SceneObject &object);
+
   private:
 	std::map<SceneObjectId, SceneObject> objects_;
 	SceneObjectId nextObjectId_ = 1;

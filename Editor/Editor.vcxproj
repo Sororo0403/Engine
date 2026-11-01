@@ -131,8 +131,10 @@
     <ClInclude Include="include\scene\SceneDocument.h" />
     <ClInclude Include="include\gizmo\TransformGizmo.h" />
     <ClInclude Include="include\history\TransformCommand.h" />
+    <ClInclude Include="include\history\ObjectCommand.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\history\ObjectCommand.cpp" />
     <ClCompile Include="src\history\EditorHistory.cpp" />
     <ClCompile Include="src\panels\AssetsPanel.cpp" />
     <ClCompile Include="src\assets\AssetDatabase.cpp" />

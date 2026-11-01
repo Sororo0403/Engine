@@ -77,3 +77,11 @@ void Scene::ReplaceObjects(std::map<SceneObjectId, SceneObject> objects) {
 	objects_.swap(objects);
 	nextObjectId_ = nextId;
 }
+
+bool Scene::RestoreObject(SceneObjectId id, const SceneObject &object) {
+	if (id == 0 || id >= nextObjectId_ || objects_.contains(id)) {
+		return false;
+	}
+
+	return objects_.emplace(id, object).second;
+}

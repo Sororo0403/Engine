@@ -5,31 +5,27 @@
 
 #include <format>
 
-bool HierarchyPanel::Draw(const ImGuiSystem &ui, Scene &scene,
-                          SceneObjectId &selectedObjectId) const {
+HierarchyPanel::Result
+HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
+                     SceneObjectId &selectedObjectId) const {
+	Result result;
+
 	if (!scene.Contains(selectedObjectId)) {
 		selectedObjectId = 0;
 	}
 
 	if (!ui.BeginWindow("Hierarchy")) {
 		ui.EndWindow();
-		return false;
+		return result;
 	}
-
-	bool changed = false;
 
 	if (ui.Button("Create Empty")) {
-		selectedObjectId = scene.CreateObject();
-		changed = true;
+		result.action = Action::CREATE_EMPTY;
 	}
 
-	// 一覧の走査前に削除する
 	if (selectedObjectId != 0 && ui.Button("Delete Selected")) {
-		if (scene.DestroyObject(selectedObjectId)) {
-			changed = true;
-		}
-
-		selectedObjectId = 0;
+		result.action = Action::DELETE_OBJECT;
+		result.objectId = selectedObjectId;
 	}
 
 	ui.Separator();
@@ -52,5 +48,5 @@ bool HierarchyPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 	}
 
 	ui.EndWindow();
-	return changed;
+	return result;
 }

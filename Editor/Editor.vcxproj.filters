@@ -101,6 +101,9 @@
     <ClCompile Include="src\history\EditorHistory.cpp">
       <Filter>src\history</Filter>
     </ClCompile>
+    <ClCompile Include="src\history\ObjectCommand.cpp">
+      <Filter>src\history</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\scene\EditorScene.h">
@@ -140,6 +143,9 @@
       <Filter>include\history</Filter>
     </ClInclude>
     <ClInclude Include="include\history\EditorHistory.h">
+      <Filter>include\history</Filter>
+    </ClInclude>
+    <ClInclude Include="include\history\ObjectCommand.h">
       <Filter>include\history</Filter>
     </ClInclude>
   </ItemGroup>
