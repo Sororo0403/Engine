@@ -216,6 +216,12 @@ void ControlsPanel::Draw() {
 	        {"Inspector > Add Component",
 	         "Add Box Collider, Character Controller, Camera, Follow Camera or "
 	         "Respawn. Changes support Undo and scene saving."},
+	        {"Edit > Box Colliders",
+	         "Apply to all selected objects, including hidden ones. Add "
+	         "Missing keeps existing collider shapes. Fit All to Models "
+	         "replaces or adds shapes; objects without models use a unit box. "
+	         "Remove All keeps other components. Each operation supports one "
+	         "Undo/Redo; a failed operation changes no colliders."},
 	        {"File > New Sample Stage",
 	         "Create an editable floor, walls, player and follow camera. "
 	         "Unsaved work prompts before replacement."},

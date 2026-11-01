@@ -37,6 +37,8 @@
 #include <span>
 #include <string>
 
+struct BoxCollider;
+struct SceneObject;
 struct EngineContext;
 struct ViewportInput;
 
@@ -135,6 +137,9 @@ class EditorScene final : public IScene {
 		PASTE_OBJECTS,
 		RESET_TRANSFORMS,
 		DROP_TO_GROUND,
+		ADD_COLLIDERS,
+		FIT_COLLIDERS,
+		REMOVE_COLLIDERS,
 		ALIGN_X,
 		ALIGN_Y,
 		ALIGN_Z,
@@ -243,6 +248,25 @@ class EditorScene final : public IScene {
 	/// </summary>
 	/// <param name="id">対象物体ID</param>
 	void FitCollider(SceneObjectId id);
+
+	/// <summary>
+	/// 選択物体へ一括適用する衝突形状の操作
+	/// </summary>
+	enum class ColliderOperation { ADD_MISSING, FIT_ALL, REMOVE_ALL };
+
+	/// <summary>
+	/// モデルに合うローカル形状を作る。モデルなしは単位ボックスを使用する
+	/// </summary>
+	/// <param name="object">形状を作る物体</param>
+	/// <param name="collider">成功時に設定する形状</param>
+	/// <returns>true:取得成功 false:モデルまたは外接ボックスを取得できない</returns>
+	bool GetFittedCollider(const SceneObject &object, BoxCollider &collider);
+
+	/// <summary>
+	/// 選択全体の衝突形状を準備し、全件成功時だけ1操作として反映する
+	/// </summary>
+	/// <param name="operation">追加・全件の形状合わせ・削除のいずれか</param>
+	void ConfigureSelectedColliders(ColliderOperation operation);
 
 	/// <summary>
 	/// 現在のダイアログを描画し、選択結果を処理する

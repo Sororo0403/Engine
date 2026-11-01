@@ -202,6 +202,22 @@ class EditorHistory {
 	                 std::optional<BoxCollider> collider);
 
 	/// <summary>
+	/// 1物体の衝突形状の変更内容
+	/// </summary>
+	struct ColliderEdit {
+		SceneObjectId objectId = 0;
+		std::optional<BoxCollider> collider;
+	};
+
+	/// <summary>
+	/// 複数物体の衝突形状を一括変更し、1回のUndo操作として記録する
+	/// </summary>
+	/// <param name="edits">重複しない対象IDと変更後の形状。未指定の形状は削除</param>
+	/// <returns>true:全件成功または同値 false:対象なし、重複、または変更前後の形状が無効</returns>
+	/// <remarks>変更を適用すると物体一覧を置き換えるため、保持している物体参照は取得し直す</remarks>
+	bool SetColliders(std::span<const ColliderEdit> edits);
+
+	/// <summary>
 	/// 衝突形状の連続編集を開始する
 	/// </summary>
 	/// <param name="objectId">衝突形状を持つ対象のID</param>

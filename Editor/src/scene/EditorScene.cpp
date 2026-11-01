@@ -897,6 +897,34 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			action = EditorAction::DROP_TO_GROUND;
 		}
 
+		if (ui_.BeginMenu("Box Colliders")) {
+			bool hasCollider = false;
+			bool hasMissing = false;
+
+			for (const auto id : selection_.GetIds()) {
+				if (const auto *object = document_.GetScene().FindObject(id)) {
+					hasCollider |= object->collider.has_value();
+					hasMissing |= !object->collider.has_value();
+				}
+			}
+
+			if (ui_.MenuItem("Add Missing", nullptr,
+			                 objectEnabled && hasMissing)) {
+				action = EditorAction::ADD_COLLIDERS;
+			}
+
+			if (ui_.MenuItem("Fit All to Models", nullptr, objectEnabled)) {
+				action = EditorAction::FIT_COLLIDERS;
+			}
+
+			if (ui_.MenuItem("Remove All", nullptr,
+			                 objectEnabled && hasCollider)) {
+				action = EditorAction::REMOVE_COLLIDERS;
+			}
+
+			ui_.EndMenu();
+		}
+
 		if (ui_.MenuItem("Align X to Active", nullptr,
 		                 objectEnabled && selection_.GetCount() > 1)) {
 			action = EditorAction::ALIGN_X;
@@ -1283,6 +1311,16 @@ void EditorScene::StartAction(EditorAction action) {
 	case EditorAction::DROP_TO_GROUND:
 		DropSelectionToGround();
 		return;
+	case EditorAction::ADD_COLLIDERS:
+		ConfigureSelectedColliders(ColliderOperation::ADD_MISSING);
+		return;
+	case EditorAction::FIT_COLLIDERS:
+		ConfigureSelectedColliders(ColliderOperation::FIT_ALL);
+		return;
+	case EditorAction::REMOVE_COLLIDERS:
+		ConfigureSelectedColliders(ColliderOperation::REMOVE_ALL);
+		return;
+
 	case EditorAction::ALIGN_X:
 		AlignSelection(AlignmentAxis::X);
 		return;
@@ -1525,16 +1563,10 @@ void EditorScene::FitCollider(SceneObjectId id) {
 
 		BoxCollider collider;
 
-		if (!object->modelPath.empty()) {
-			const auto model = models_.Load(object->modelPath);
-			std::array<DirectX::XMFLOAT3, 8> corners;
-
-			if (!models_.GetLocalBounds(model, corners) ||
-			    !BoxColliderUtils::FitToPoints(corners, collider)) {
-				ShowError("Could not fit the collider to the model. See the "
-				          "log for details.");
-				return;
-			}
+		if (!GetFittedCollider(*object, collider)) {
+			ShowError("Could not fit the collider to the model. See the log "
+			          "for details.");
+			return;
 		}
 
 		if (!document_.GetHistory().SetCollider(id, collider)) {
@@ -1544,6 +1576,74 @@ void EditorScene::FitCollider(SceneObjectId id) {
 		Logger::Error(
 		    std::format("EditorScene::FitCollider: {}", error.what()));
 		ShowError("Could not configure the collider. See the log for details.");
+	}
+}
+
+bool EditorScene::GetFittedCollider(const SceneObject &object,
+                                    BoxCollider &collider) {
+	BoxCollider fitted;
+
+	if (!object.modelPath.empty()) {
+		const auto model = models_.Load(object.modelPath);
+		std::array<DirectX::XMFLOAT3, 8> corners;
+
+		if (!models_.GetLocalBounds(model, corners) ||
+		    !BoxColliderUtils::FitToPoints(corners, fitted)) {
+			return false;
+		}
+	}
+
+	collider = fitted;
+	return true;
+}
+
+void EditorScene::ConfigureSelectedColliders(ColliderOperation operation) {
+	if (!HasSelection()) {
+		return;
+	}
+
+	try {
+		FinishEdit();
+		std::vector<EditorHistory::ColliderEdit> edits;
+		edits.reserve(selection_.GetCount());
+
+		for (const auto id : selection_.GetIds()) {
+			const auto &object = *document_.GetScene().FindObject(id);
+
+			if ((operation == ColliderOperation::ADD_MISSING &&
+			     object.collider) ||
+			    (operation == ColliderOperation::REMOVE_ALL &&
+			     !object.collider)) {
+				continue;
+			}
+
+			std::optional<BoxCollider> collider;
+
+			if (operation != ColliderOperation::REMOVE_ALL) {
+				BoxCollider fitted;
+
+				if (!GetFittedCollider(object, fitted)) {
+					ShowError(std::format("Could not fit a collider to '{}'. "
+					                      "No colliders were changed.",
+					                      object.name));
+					return;
+				}
+
+				collider = fitted;
+			}
+
+			edits.push_back({id, collider});
+		}
+
+		if (!edits.empty() && !document_.GetHistory().SetColliders(edits)) {
+			ShowError("Could not configure the selected colliders. No "
+			          "colliders were changed.");
+		}
+	} catch (const std::exception &error) {
+		Logger::Error(std::format("EditorScene::ConfigureSelectedColliders: {}",
+		                          error.what()));
+		ShowError("Could not configure the selected colliders. See the log for "
+		          "details.");
 	}
 }
 

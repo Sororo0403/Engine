@@ -475,6 +475,62 @@ bool EditorHistory::SetCollider(SceneObjectId objectId,
 	return true;
 }
 
+bool EditorHistory::SetColliders(std::span<const ColliderEdit> edits) {
+	CommitEdit();
+
+	if (edits.empty()) {
+		return false;
+	}
+
+	std::set<SceneObjectId> seen;
+	std::vector<CommandGroup::Command> commands;
+	commands.reserve(edits.size());
+	bool addingOnly = true;
+	bool removingOnly = true;
+
+	for (const auto &edit : edits) {
+		const auto *object = scene_.FindObject(edit.objectId);
+
+		if (!object || !seen.insert(edit.objectId).second ||
+		    (object->collider &&
+		     !BoxColliderUtils::IsValid(*object->collider))) {
+			return false;
+		}
+
+		AxisAlignedBox bounds;
+
+		if (edit.collider && !BoxColliderUtils::GetWorldBounds(
+		                         *edit.collider, object->transform, bounds)) {
+			return false;
+		}
+
+		ColliderCommand command{edit.objectId, object->collider, edit.collider};
+
+		if (command.HasChanges()) {
+			addingOnly &= !object->collider.has_value();
+			removingOnly &= !edit.collider.has_value();
+			commands.emplace_back(std::move(command));
+		}
+	}
+
+	if (commands.empty()) {
+		return true;
+	}
+
+	CommandGroup group{std::move(commands)};
+	const auto next = PrepareAppend();
+
+	if (!group.Redo(scene_)) {
+		return false;
+	}
+
+	AppendPrepared(Command{std::move(group)}, next,
+	               addingOnly     ? "Add Box Colliders"
+	               : removingOnly ? "Remove Box Colliders"
+	                              : "Edit Box Colliders");
+	return true;
+}
+
 bool EditorHistory::BeginCollider(SceneObjectId objectId) {
 	CommitEdit();
 	const auto *object = scene_.FindObject(objectId);
