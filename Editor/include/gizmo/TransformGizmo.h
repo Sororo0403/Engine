@@ -9,6 +9,14 @@
 class TransformGizmo {
   public:
 	/// <summary>
+	/// ギズモの選択対象。複数選択ではワールド座標での移動を使用する
+	/// </summary>
+	enum class SelectionMode {
+		SINGLE,
+		MULTIPLE,
+	};
+
+	/// <summary>
 	/// ギズモ操作の結果
 	/// </summary>
 	struct Result {
@@ -27,7 +35,8 @@ class TransformGizmo {
 	/// <summary>
 	/// 移動・回転・拡大縮小の切り替えUIを表示する
 	/// </summary>
-	void DrawToolbar();
+	/// <param name="selectionMode">単一選択または複数選択</param>
+	void DrawToolbar(SelectionMode selectionMode);
 
 	/// <summary>
 	/// 現在のウィンドウへ選択物体の変形ギズモを表示する
@@ -39,12 +48,14 @@ class TransformGizmo {
 	/// <param name="objectId">選択物体のID。0の場合は選択なし</param>
 	/// <param name="transform">編集する変形情報。選択なしの場合はnullptr</param>
 	/// <param name="enabled">操作を受け付けるか</param>
+	/// <param name="selectionMode">単一選択または複数選択</param>
 	/// <returns>変形の変更と、モデル選択を止めるかの情報</returns>
 	Result Draw(const DirectX::XMFLOAT4X4 &view,
 	            const DirectX::XMFLOAT4X4 &projection,
 	            const DirectX::XMFLOAT2 &imageMinimum,
 	            const DirectX::XMFLOAT2 &imageSize, SceneObjectId objectId,
-	            Transform *transform, bool enabled);
+	            Transform *transform, bool enabled,
+	            SelectionMode selectionMode);
 
 	/// <summary>
 	/// ギズモをドラッグしているか取得する
@@ -70,5 +81,6 @@ class TransformGizmo {
 	Operation operation_ = Operation::TRANSLATE;
 
 	SceneObjectId objectId_ = 0;
+	SelectionMode selectionMode_ = SelectionMode::SINGLE;
 	bool using_ = false;
 };

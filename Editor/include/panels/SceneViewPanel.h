@@ -31,8 +31,10 @@ class SceneViewPanel {
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
 	/// <param name="gizmo">操作切り替えUIを表示するギズモ</param>
+	/// <param name="selectionMode">単一選択または複数選択</param>
 	/// <returns>true:成功または非表示 false:描画先の作成失敗</returns>
-	bool DrawUI(const ImGuiSystem &ui, TransformGizmo &gizmo);
+	bool DrawUI(const ImGuiSystem &ui, TransformGizmo &gizmo,
+	            TransformGizmo::SelectionMode selectionMode);
 
 	/// <summary>
 	/// このフレームに表示したScene画像へ変形ギズモを重ねる
@@ -44,13 +46,15 @@ class SceneViewPanel {
 	/// <param name="objectId">選択物体のID</param>
 	/// <param name="transform">編集する変形情報。選択なしの場合はnullptr</param>
 	/// <param name="enabled">操作を受け付けるか</param>
+	/// <param name="selectionMode">単一選択または複数選択</param>
 	/// <returns>ギズモの操作結果</returns>
 	TransformGizmo::Result DrawGizmo(const ImGuiSystem &ui,
 	                                 TransformGizmo &gizmo,
 	                                 const DirectX::XMFLOAT4X4 &view,
 	                                 const DirectX::XMFLOAT4X4 &projection,
 	                                 SceneObjectId objectId,
-	                                 Transform *transform, bool enabled) const;
+	                                 Transform *transform, bool enabled,
+	                                 TransformGizmo::SelectionMode selectionMode) const;
 
 	/// <summary>
 	/// このフレームで描画するテクスチャを取得する

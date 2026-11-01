@@ -171,6 +171,13 @@ class EditorScene final : public IScene {
 	void FinishEdit();
 
 	/// <summary>
+	/// 選択物体の原点の平均位置に、複数移動用の変形情報を作成する
+	/// </summary>
+	/// <param name="transform">成功した場合に設定する変形情報</param>
+	/// <returns>true:成功 false:複数選択ではない、または対象が無効</returns>
+	bool MakeSelectionTransform(Transform &transform) const;
+
+	/// <summary>
 	/// 選択モデルへカメラを寄せるショートカットを判定する
 	/// </summary>
 	/// <param name="viewport">Sceneビューの入力状態</param>
@@ -248,6 +255,10 @@ class EditorScene final : public IScene {
 
 	TransformGizmo gizmo_;
 	bool gizmoEditActive_ = false;
+
+	// 複数選択用のギズモ位置と、ドラッグ開始時点の位置
+	Transform selectionGizmoTransform_;
+	DirectX::XMFLOAT3 selectionGizmoStart_{};
 
 	SelectionBounds selectionBounds_;
 

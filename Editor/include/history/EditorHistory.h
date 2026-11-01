@@ -146,6 +146,21 @@ class EditorHistory {
 	std::vector<SceneObjectId>
 	DuplicateObjects(std::span<const SceneObjectId> objectIds);
 
+	/// <summary>
+	/// 全物体の現在の変形情報を保持し、連続した変形編集を開始する。
+	/// 編集中の内容は先に確定する
+	/// </summary>
+	/// <param name="objectIds">重複のない編集対象ID一覧</param>
+	/// <returns>true:開始成功 false:対象なし、重複、または変形情報が無効</returns>
+	bool BeginTransforms(std::span<const SceneObjectId> objectIds);
+
+	/// <summary>
+	/// 編集開始時点からの移動量を、編集中の全物体へ適用する
+	/// </summary>
+	/// <param name="offset">編集開始時点からのワールド座標での移動量</param>
+	/// <returns>true:全件適用成功 false:複数編集なし、対象なし、または値が無効</returns>
+	bool UpdateTranslation(const DirectX::XMFLOAT3 &offset);
+
   private:
 	// 単独の編集操作、または複数の編集操作を保持する
 	using Command = std::variant<TransformCommand, ObjectCommand, RenameCommand,
@@ -169,6 +184,14 @@ class EditorHistory {
 
 		// Transformの場合は変形編集、文字列の場合は名前編集
 		std::variant<Transform, std::string> before;
+	};
+
+	/// <summary>
+	/// 複数物体の編集開始時点の変形情報
+	/// </summary>
+	struct TransformSnapshot {
+		SceneObjectId objectId = 0;
+		Transform before;
 	};
 
   private:
@@ -213,6 +236,7 @@ class EditorHistory {
 	std::size_t cursor_ = 0;
 
 	std::optional<PendingEdit> pending_;
+	std::optional<std::vector<TransformSnapshot>> pendingTransforms_;
 
 	std::uint64_t currentState_ = 0;
 	std::uint64_t savedState_ = 0;

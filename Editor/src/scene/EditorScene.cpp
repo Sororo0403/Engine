@@ -8,6 +8,7 @@
 #include "history/EditorHistory.h"
 #include "input/InputSystem.h"
 #include "input/Key.h"
+#include "math/TransformUtils.h"
 #include "platform/windows/PathUtils.h"
 #include "scene/Scene.h"
 
@@ -90,11 +91,17 @@ bool EditorScene::Update(float deltaTime) {
 		FinishEdit();
 	}
 
+	// ギズモ操作とInspectorの編集を、同じ履歴として混在させない
+	ui_.BeginDisabled(gizmo_.IsUsing() || gizmoEditActive_);
 	inspectorPanel_.Draw(ui_, scene, selection_.GetActiveId(), history);
+	ui_.EndDisabled();
 
 	const auto requestedModelPath = assetsPanel_.Draw(ui_, assets_);
 
-	const bool sceneViewReady = sceneViewPanel_.DrawUI(ui_, gizmo_);
+	const auto toolbarMode = selection_.GetCount() > 1
+	                             ? TransformGizmo::SelectionMode::MULTIPLE
+	                             : TransformGizmo::SelectionMode::SINGLE;
+	const bool sceneViewReady = sceneViewPanel_.DrawUI(ui_, gizmo_, toolbarMode);
 
 	ui_.EndDisabled();
 
@@ -226,30 +233,47 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	const SceneObjectId activeId = selection_.GetActiveId();
+	const bool multipleSelection = selection_.GetCount() > 1;
+	const auto selectionMode = multipleSelection
+	                               ? TransformGizmo::SelectionMode::MULTIPLE
+	                               : TransformGizmo::SelectionMode::SINGLE;
 
 	SceneObject *selected = scene.FindObject(activeId);
 
 	Transform *transform = nullptr;
 
-	// 複数物体のギズモ操作を実装するまでは、単一選択に限定する
-	if (selection_.GetCount() == 1 && selected &&
-	    !selected->modelPath.empty()) {
+	if (multipleSelection) {
+		if (gizmoEditActive_ ||
+		    MakeSelectionTransform(selectionGizmoTransform_)) {
+			transform = &selectionGizmoTransform_;
+		}
+	} else if (HasSingleSelection() && selected &&
+	           !selected->modelPath.empty()) {
 		transform = &selected->transform;
 	}
 
 	const Transform beforeGizmo = transform ? *transform : Transform{};
 
-	const bool gizmoEnabled = !inputBlocked && selection_.GetCount() == 1 &&
+	const bool gizmoEnabled = !inputBlocked && transform != nullptr &&
 	                          viewport.applicationFocused &&
 	                          !viewport.rightDown &&
 	                          (!viewport.widgetActive || gizmo_.IsUsing());
 
 	const auto gizmoResult = sceneViewPanel_.DrawGizmo(
-	    ui_, gizmo_, view, projection, activeId, transform, gizmoEnabled);
+	    ui_, gizmo_, view, projection, activeId, transform, gizmoEnabled,
+	    selectionMode);
 
 	if (gizmoResult.changed) {
 		if (!gizmoEditActive_) {
-			if (!history.BeginTransform(activeId, beforeGizmo)) {
+			if (multipleSelection) {
+				// ギズモ用の値だけが変わった段階で、全物体の開始値を保持する
+				if (!history.BeginTransforms(selection_.GetIds())) {
+					Logger::Error(
+					    "EditorScene: 複数物体の編集履歴を開始できませんでした。");
+					return false;
+				}
+				selectionGizmoStart_ = beforeGizmo.translation;
+			} else if (!history.BeginTransform(activeId, beforeGizmo)) {
 				Logger::Error(
 				    "EditorScene: ギズモの編集履歴を開始できませんでした。");
 				return false;
@@ -258,7 +282,24 @@ bool EditorScene::Update(float deltaTime) {
 			gizmoEditActive_ = true;
 		}
 
-		if (!renderer_.Update(target->GetWidth(), target->GetHeight())) {
+		bool applied = true;
+		if (multipleSelection) {
+			const DirectX::XMFLOAT3 offset{
+			    selectionGizmoTransform_.translation.x - selectionGizmoStart_.x,
+			    selectionGizmoTransform_.translation.y - selectionGizmoStart_.y,
+			    selectionGizmoTransform_.translation.z - selectionGizmoStart_.z,
+			};
+			applied = history.UpdateTranslation(offset);
+			if (!applied) {
+				// 無効な移動は反映せず、直前の有効な位置で編集を確定する
+				selectionGizmoTransform_ = beforeGizmo;
+				FinishEdit();
+				Logger::Error("EditorScene: 複数物体の移動量が無効です。");
+			}
+		}
+
+		if (applied &&
+		    !renderer_.Update(target->GetWidth(), target->GetHeight())) {
 			return false;
 		}
 	}
@@ -754,6 +795,40 @@ void EditorScene::FinishEdit() {
 
 	gizmo_.Cancel();
 	gizmoEditActive_ = false;
+}
+
+bool EditorScene::MakeSelectionTransform(Transform &transform) const {
+	if (selection_.GetCount() < 2) {
+		return false;
+	}
+
+	const Scene &scene = document_.GetScene();
+	double x = 0.0;
+	double y = 0.0;
+	double z = 0.0;
+	for (const SceneObjectId id : selection_.GetIds()) {
+		const SceneObject *object = scene.FindObject(id);
+		if (!object || !TransformUtils::IsValid(object->transform)) {
+			return false;
+		}
+		x += object->transform.translation.x;
+		y += object->transform.translation.y;
+		z += object->transform.translation.z;
+	}
+
+	const double count = static_cast<double>(selection_.GetCount());
+	Transform result;
+	result.translation = {
+	    static_cast<float>(x / count),
+	    static_cast<float>(y / count),
+	    static_cast<float>(z / count),
+	};
+	if (!TransformUtils::IsValid(result)) {
+		return false;
+	}
+
+	transform = result;
+	return true;
 }
 
 bool EditorScene::ReadFrameSelectedShortcut(const ViewportInput &viewport,

@@ -11,7 +11,8 @@ SceneViewPanel::SceneViewPanel(RenderSystem &render) : render_(render) {}
 
 SceneViewPanel::~SceneViewPanel() = default;
 
-bool SceneViewPanel::DrawUI(const ImGuiSystem &ui, TransformGizmo &gizmo) {
+bool SceneViewPanel::DrawUI(const ImGuiSystem &ui, TransformGizmo &gizmo,
+                            TransformGizmo::SelectionMode selectionMode) {
 	visible_ = false;
 	input_ = {};
 	imageMinimum_ = {};
@@ -24,7 +25,7 @@ bool SceneViewPanel::DrawUI(const ImGuiSystem &ui, TransformGizmo &gizmo) {
 		return true;
 	}
 
-	gizmo.DrawToolbar();
+	gizmo.DrawToolbar(selectionMode);
 
 	const auto size = ui.GetContentSize();
 
@@ -72,7 +73,8 @@ bool SceneViewPanel::DrawUI(const ImGuiSystem &ui, TransformGizmo &gizmo) {
 TransformGizmo::Result SceneViewPanel::DrawGizmo(
     const ImGuiSystem &ui, TransformGizmo &gizmo,
     const DirectX::XMFLOAT4X4 &view, const DirectX::XMFLOAT4X4 &projection,
-    SceneObjectId objectId, Transform *transform, bool enabled) const {
+    SceneObjectId objectId, Transform *transform, bool enabled,
+    TransformGizmo::SelectionMode selectionMode) const {
 	if (!visible_ || !enabled || !transform) {
 		gizmo.Cancel();
 		return {};
@@ -86,7 +88,7 @@ TransformGizmo::Result SceneViewPanel::DrawGizmo(
 	}
 
 	const auto result = gizmo.Draw(view, projection, imageMinimum_, imageSize_,
-	                               objectId, transform, enabled);
+	                               objectId, transform, enabled, selectionMode);
 
 	ui.EndWindow();
 	return result;

@@ -12,7 +12,21 @@ void TransformGizmo::BeginFrame() {
 	ImGuizmo::BeginFrame();
 }
 
-void TransformGizmo::DrawToolbar() {
+void TransformGizmo::DrawToolbar(SelectionMode selectionMode) {
+	if (selectionMode == SelectionMode::MULTIPLE) {
+		// 単一選択用の操作種別を保持し、複数選択では移動だけを表示する
+		ImGui::BeginDisabled();
+		ImGui::RadioButton("Move", true);
+		ImGui::SameLine();
+		ImGui::RadioButton("Rotate", false);
+		ImGui::SameLine();
+		ImGui::RadioButton("Scale", false);
+		ImGui::EndDisabled();
+		ImGui::SameLine();
+		ImGui::TextUnformatted("Multiple selection: move only.");
+		return;
+	}
+
 	// ドラッグ中に操作種別を切り替えない
 	ImGui::BeginDisabled(using_);
 
@@ -38,7 +52,8 @@ void TransformGizmo::DrawToolbar() {
 TransformGizmo::Result TransformGizmo::Draw(
     const DirectX::XMFLOAT4X4 &view, const DirectX::XMFLOAT4X4 &projection,
     const DirectX::XMFLOAT2 &imageMinimum, const DirectX::XMFLOAT2 &imageSize,
-    SceneObjectId objectId, Transform *transform, bool enabled) {
+    SceneObjectId objectId, Transform *transform, bool enabled,
+    SelectionMode selectionMode) {
 	Result result;
 
 	if (!enabled || objectId == 0 || !transform ||
@@ -56,9 +71,10 @@ TransformGizmo::Result TransformGizmo::Draw(
 		return result;
 	}
 
-	if (objectId_ != objectId) {
+	if (objectId_ != objectId || selectionMode_ != selectionMode) {
 		Cancel();
 		objectId_ = objectId;
+		selectionMode_ = selectionMode;
 	}
 
 	using namespace DirectX;
@@ -78,9 +94,12 @@ TransformGizmo::Result TransformGizmo::Draw(
 		return result;
 	}
 
+	const Operation effectiveOperation =
+	    selectionMode == SelectionMode::MULTIPLE ? Operation::TRANSLATE
+	                                             : operation_;
 	ImGuizmo::OPERATION operation = ImGuizmo::TRANSLATE;
 
-	switch (operation_) {
+	switch (effectiveOperation) {
 	case Operation::TRANSLATE:
 		operation = ImGuizmo::TRANSLATE;
 		break;
@@ -103,8 +122,11 @@ TransformGizmo::Result TransformGizmo::Draw(
 	// ウィンドウ全体ではなく、Scene画像の範囲を指定する
 	ImGuizmo::SetRect(imageMinimum.x, imageMinimum.y, imageSize.x, imageSize.y);
 
+	const ImGuizmo::MODE mode = selectionMode == SelectionMode::MULTIPLE
+	                                ? ImGuizmo::WORLD
+	                                : ImGuizmo::LOCAL;
 	const bool manipulated = ImGuizmo::Manipulate(
-	    &view._11, &projection._11, operation, ImGuizmo::LOCAL, &matrix._11);
+	    &view._11, &projection._11, operation, mode, &matrix._11);
 
 	using_ = ImGuizmo::IsUsing();
 
@@ -124,7 +146,7 @@ TransformGizmo::Result TransformGizmo::Draw(
 	Transform edited = *transform;
 
 	// 操作対象以外の成分へ、分解による誤差を蓄積させない
-	switch (operation_) {
+	switch (effectiveOperation) {
 	case Operation::TRANSLATE:
 		edited.translation = decomposed.translation;
 		break;

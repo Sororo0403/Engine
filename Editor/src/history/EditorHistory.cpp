@@ -169,7 +169,81 @@ EditorHistory::DuplicateObjects(std::span<const SceneObjectId> objectIds) {
 	return createdIds;
 }
 
+bool EditorHistory::BeginTransforms(std::span<const SceneObjectId> objectIds) {
+	CommitEdit();
+
+	if (objectIds.empty()) {
+		return false;
+	}
+
+	std::set<SceneObjectId> seen;
+	std::vector<TransformSnapshot> snapshots;
+	snapshots.reserve(objectIds.size());
+
+	for (const SceneObjectId id : objectIds) {
+		if (id == 0 || !seen.insert(id).second) {
+			return false;
+		}
+
+		const SceneObject *object = scene_.FindObject(id);
+		if (!object || !TransformUtils::IsValid(object->transform)) {
+			return false;
+		}
+
+		snapshots.push_back(TransformSnapshot{id, object->transform});
+	}
+
+	pendingTransforms_ = std::move(snapshots);
+	return true;
+}
+
+bool EditorHistory::UpdateTranslation(const DirectX::XMFLOAT3 &offset) {
+	if (!pendingTransforms_) {
+		return false;
+	}
+
+	// 全件を検証してから反映し、途中まで移動した状態を作らない
+	for (const auto &snapshot : *pendingTransforms_) {
+		const SceneObject *object = scene_.FindObject(snapshot.objectId);
+		if (!object) {
+			return false;
+		}
+
+		Transform edited = object->transform;
+		edited.translation = {
+		    snapshot.before.translation.x + offset.x,
+		    snapshot.before.translation.y + offset.y,
+		    snapshot.before.translation.z + offset.z,
+		};
+		if (!TransformUtils::IsValid(edited)) {
+			return false;
+		}
+	}
+
+	for (const auto &snapshot : *pendingTransforms_) {
+		SceneObject *object = scene_.FindObject(snapshot.objectId);
+		// フレームごとの加算を避け、開始時点からの移動量で更新する
+		object->transform.translation = {
+		    snapshot.before.translation.x + offset.x,
+		    snapshot.before.translation.y + offset.y,
+		    snapshot.before.translation.z + offset.z,
+		};
+	}
+	return true;
+}
+
 bool EditorHistory::HasPendingChanges() const {
+	if (pendingTransforms_) {
+		for (const auto &snapshot : *pendingTransforms_) {
+			const SceneObject *object = scene_.FindObject(snapshot.objectId);
+			if (!object ||
+			    !TransformUtils::AreEqual(snapshot.before, object->transform)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	if (!pending_) {
 		return false;
 	}
@@ -232,6 +306,37 @@ bool EditorHistory::BeginTransform(SceneObjectId objectId,
 }
 
 void EditorHistory::CommitEdit() {
+	if (pendingTransforms_) {
+		std::vector<CommandGroup::Command> commands;
+		commands.reserve(pendingTransforms_->size());
+
+		for (const auto &snapshot : *pendingTransforms_) {
+			const SceneObject *object = scene_.FindObject(snapshot.objectId);
+			if (!object || !TransformUtils::IsValid(object->transform)) {
+				Invalidate();
+				return;
+			}
+			if (TransformUtils::AreEqual(snapshot.before, object->transform)) {
+				continue;
+			}
+
+			commands.emplace_back(TransformCommand{
+			    snapshot.objectId, snapshot.before, object->transform});
+		}
+
+		// 元の位置へ戻った場合は履歴へ追加しない
+		if (commands.empty()) {
+			pendingTransforms_.reset();
+			return;
+		}
+
+		Command command{CommandGroup{std::move(commands)}};
+		const std::uint64_t next = PrepareAppend();
+		AppendPrepared(std::move(command), next);
+		pendingTransforms_.reset();
+		return;
+	}
+
 	if (!pending_) {
 		return;
 	}
@@ -293,12 +398,14 @@ void EditorHistory::CommitEdit() {
 	pending_.reset();
 }
 
-bool EditorHistory::IsEditing() const { return pending_.has_value(); }
+bool EditorHistory::IsEditing() const {
+	return pending_.has_value() || pendingTransforms_.has_value();
+}
 
-bool EditorHistory::CanUndo() const { return !pending_ && cursor_ > 0; }
+bool EditorHistory::CanUndo() const { return !IsEditing() && cursor_ > 0; }
 
 bool EditorHistory::CanRedo() const {
-	return !pending_ && cursor_ < entries_.size();
+	return !IsEditing() && cursor_ < entries_.size();
 }
 
 bool EditorHistory::Undo() {
@@ -367,6 +474,7 @@ void EditorHistory::MarkSaved() {
 
 void EditorHistory::Invalidate() {
 	pending_.reset();
+	pendingTransforms_.reset();
 
 	entries_.clear();
 	cursor_ = 0;
@@ -376,6 +484,7 @@ void EditorHistory::Invalidate() {
 
 void EditorHistory::Reset() {
 	pending_.reset();
+	pendingTransforms_.reset();
 
 	entries_.clear();
 	cursor_ = 0;
