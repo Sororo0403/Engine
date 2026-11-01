@@ -103,6 +103,7 @@ class EditorScene final : public IScene {
 		OPEN,
 		SAVE,
 		SAVE_AS,
+		SAVE_COPY,
 		EXIT,
 		UNDO,
 		REDO,
@@ -148,6 +149,7 @@ class EditorScene final : public IScene {
 		CONFIRM_SAVE,
 		OPEN_FILE,
 		SAVE_FILE,
+		SAVE_COPY_FILE,
 		BATCH_RENAME,
 		ERROR,
 	};
@@ -197,6 +199,11 @@ class EditorScene final : public IScene {
 	/// </summary>
 	/// <param name="saveAs">保存先を必ず選択するか</param>
 	void StartSave(bool saveAs);
+
+	/// <summary>
+	/// 現在の保存先と保存地点を保持するコピーの保存先選択を開始する
+	/// </summary>
+	void StartSaveCopy();
 
 	/// <summary>
 	/// 現在のダイアログを描画し、選択結果を処理する

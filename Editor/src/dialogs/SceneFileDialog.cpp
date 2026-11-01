@@ -35,7 +35,7 @@ void SceneFileDialog::Show(SceneFileDialogMode mode,
 			}
 		}
 
-		if (mode_ == SceneFileDialogMode::SAVE && fileName_.empty()) {
+		if (mode_ != SceneFileDialogMode::OPEN && fileName_.empty()) {
 			fileName_ = "Untitled.scene.json";
 		}
 
@@ -49,7 +49,9 @@ void SceneFileDialog::Show(SceneFileDialogMode mode,
 SceneFileDialogResult SceneFileDialog::Draw(const ImGuiSystem &ui) {
 	const char *title = mode_ == SceneFileDialogMode::OPEN
 	                        ? "Open Scene###SceneFileDialog"
-	                        : "Save Scene###SceneFileDialog";
+	                        : mode_ == SceneFileDialogMode::SAVE_COPY
+	                              ? "Save Copy###SceneFileDialog"
+	                              : "Save Scene###SceneFileDialog";
 
 	if (openRequested_) {
 		ui.OpenPopup(title);
@@ -152,7 +154,9 @@ SceneFileDialogResult SceneFileDialog::Draw(const ImGuiSystem &ui) {
 		ui.Separator();
 
 		const char *button =
-		    mode_ == SceneFileDialogMode::OPEN ? "Open" : "Save";
+		    mode_ == SceneFileDialogMode::OPEN
+	            ? "Open"
+	            : mode_ == SceneFileDialogMode::SAVE_COPY ? "Save Copy" : "Save";
 
 		if (ui.Button(button) && AcceptSelection()) {
 			result = SceneFileDialogResult::ACCEPTED;
@@ -280,7 +284,7 @@ bool SceneFileDialog::AcceptSelection() {
 			return false;
 		}
 
-		if (mode_ == SceneFileDialogMode::SAVE && !name.has_extension()) {
+		if (mode_ != SceneFileDialogMode::OPEN && !name.has_extension()) {
 			name += ".scene.json";
 		}
 
@@ -312,7 +316,7 @@ bool SceneFileDialog::AcceptSelection() {
 
 		selectedPath_.swap(candidate);
 
-		if (mode_ == SceneFileDialogMode::SAVE && exists) {
+		if (mode_ != SceneFileDialogMode::OPEN && exists) {
 			confirmOverwrite_ = true;
 			return false;
 		}

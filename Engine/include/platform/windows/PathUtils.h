@@ -25,6 +25,15 @@ std::filesystem::path GetExecutableDirectory();
 std::filesystem::path ResolveFromExecutable(const std::filesystem::path &path);
 
 /// <summary>
+/// 正規化したパスを大文字・小文字を区別せず比較し、既存ファイルの別名も照合する
+/// </summary>
+/// <param name="first">比較するパス。相対パスは実行ファイルのフォルダ基準</param>
+/// <param name="second">比較対象のパス</param>
+/// <returns>true:同じパスまたはファイル false:一致を確認できない。無効なパスは例外</returns>
+bool IsSameFile(const std::filesystem::path &first,
+                const std::filesystem::path &second);
+
+/// <summary>
 /// ファイルパスをUTF-8の文字列に変換する
 /// </summary>
 /// <param name="path">変換するパス。空のパスも使用できる</param>

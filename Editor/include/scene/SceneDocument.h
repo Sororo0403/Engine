@@ -73,6 +73,13 @@ class SceneDocument {
 	bool SaveAs(const std::filesystem::path &filePath);
 
 	/// <summary>
+	/// 編集を確定し、現在の保存先と保存地点を保持したまま別ファイルへ保存する
+	/// </summary>
+	/// <param name="filePath">コピー先のファイルパス。現在の保存先の別名は使用できない</param>
+	/// <returns>true:成功 false:コピー先が無効、または保存失敗</returns>
+	bool SaveCopy(const std::filesystem::path &filePath);
+
+	/// <summary>
 	/// 編集中のシーンに対応する履歴を取得する
 	/// </summary>
 	/// <returns>編集履歴への参照</returns>

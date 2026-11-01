@@ -12,6 +12,7 @@ class ImGuiSystem;
 enum class SceneFileDialogMode {
 	OPEN,
 	SAVE,
+	SAVE_COPY,
 };
 
 /// <summary>
@@ -31,7 +32,7 @@ class SceneFileDialog {
 	/// <summary>
 	/// ファイル選択の表示を予約する
 	/// </summary>
-	/// <param name="mode">開く、または保存</param>
+	/// <param name="mode">開く、保存、またはコピーを保存</param>
 	/// <param name="initialPath">初期ファイルまたはフォルダ。空の場合は実行ファイルのフォルダ</param>
 	void Show(SceneFileDialogMode mode,
 	          const std::filesystem::path &initialPath = {});

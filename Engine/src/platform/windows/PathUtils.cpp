@@ -54,6 +54,20 @@ std::string PathUtils::ToUtf8(const std::filesystem::path &path) {
 	                   text.size());
 }
 
+bool PathUtils::IsSameFile(const std::filesystem::path &first,
+                           const std::filesystem::path &second) {
+	auto firstPath = ResolveFromExecutable(first);
+	auto secondPath = ResolveFromExecutable(second);
+	firstPath.make_preferred();
+	secondPath.make_preferred();
+	if (CompareStringOrdinal(firstPath.c_str(), -1, secondPath.c_str(), -1,
+	                         TRUE) == CSTR_EQUAL) {
+		return true;
+	}
+	std::error_code error;
+	return std::filesystem::equivalent(firstPath, secondPath, error);
+}
+
 std::filesystem::path PathUtils::FromUtf8(std::string_view text) {
 	if (text.empty()) {
 		return {};

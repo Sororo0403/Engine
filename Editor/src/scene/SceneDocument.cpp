@@ -68,6 +68,28 @@ bool SceneDocument::Save() {
 	return SaveAs(filePath_);
 }
 
+bool SceneDocument::SaveCopy(const std::filesystem::path &filePath) {
+	try {
+		const auto resolvedPath = PathUtils::ResolveFromExecutable(filePath);
+		// 書き込み用の一時ファイルも、現在の保存先と別のファイルであることを確認する
+		auto temporaryPath = resolvedPath;
+		temporaryPath += ".tmp";
+		if (resolvedPath.native().find(L'\0') != std::wstring::npos ||
+		    (!filePath_.empty() &&
+		     (PathUtils::IsSameFile(resolvedPath, filePath_) ||
+		      PathUtils::IsSameFile(temporaryPath, filePath_)))) {
+			Logger::Error("SceneDocument::SaveCopy: 現在の保存先とは別の有効なパスを指定してください。");
+			return false;
+		}
+
+		history_.CommitEdit();
+		return SceneSerializer::Save(scene_, resolvedPath);
+	} catch (const std::exception &error) {
+		Logger::Error(std::format("SceneDocument::SaveCopy: {}", error.what()));
+		return false;
+	}
+}
+
 bool SceneDocument::SaveAs(const std::filesystem::path &filePath) {
 	try {
 		auto resolvedPath = PathUtils::ResolveFromExecutable(filePath);

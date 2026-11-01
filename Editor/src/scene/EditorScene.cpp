@@ -614,6 +614,10 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			action = EditorAction::SAVE_AS;
 		}
 
+		if (ui_.MenuItem("Save Copy...", nullptr, enabled)) {
+			action = EditorAction::SAVE_COPY;
+		}
+
 		ui_.Separator();
 
 		if (ui_.MenuItem("Exit", nullptr, enabled)) {
@@ -1069,6 +1073,11 @@ void EditorScene::StartAction(EditorAction action) {
 		pendingAction_ = EditorAction::NONE;
 		StartSave(true);
 		return;
+
+	case EditorAction::SAVE_COPY:
+		pendingAction_ = EditorAction::NONE;
+		StartSaveCopy();
+		return;
 	case EditorAction::DUPLICATE_OBJECTS:
 		DuplicateSelectedObjects();
 		return;
@@ -1136,6 +1145,22 @@ void EditorScene::StartSave(bool saveAs) {
 	stage_ = DialogStage::SAVE_FILE;
 }
 
+void EditorScene::StartSaveCopy() {
+	try {
+		const auto &currentPath = document_.GetFilePath();
+		auto copyPath = currentPath.empty()
+		                    ? std::filesystem::path(L"Untitled.copy.scene.json")
+		                    : currentPath.parent_path() /
+		                          (currentPath.stem().native() + L".copy" +
+		                           currentPath.extension().native());
+		fileDialog_.Show(SceneFileDialogMode::SAVE_COPY, copyPath);
+		stage_ = DialogStage::SAVE_COPY_FILE;
+	} catch (const std::exception &error) {
+		Logger::Error(std::format("EditorScene::StartSaveCopy: {}", error.what()));
+		ShowError("Could not select a copy destination. See the log for details.");
+	}
+}
+
 void EditorScene::UpdateDialogs() {
 	switch (stage_) {
 	case DialogStage::IDLE:
@@ -1199,6 +1224,21 @@ void EditorScene::UpdateDialogs() {
 			}
 		}
 
+		return;
+	}
+
+	case DialogStage::SAVE_COPY_FILE: {
+		const auto result = fileDialog_.Draw(ui_);
+		if (result == SceneFileDialogResult::CANCELLED) {
+			stage_ = DialogStage::IDLE;
+		} else if (result == SceneFileDialogResult::ACCEPTED) {
+			if (document_.SaveCopy(fileDialog_.GetSelectedPath())) {
+				recentScenes_.Add(fileDialog_.GetSelectedPath());
+				stage_ = DialogStage::IDLE;
+			} else {
+				ShowError("Could not save a copy. Choose a destination different from the active scene. See the log for details.");
+			}
+		}
 		return;
 	}
 
