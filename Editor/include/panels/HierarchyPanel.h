@@ -5,6 +5,7 @@
 #include <span>
 #include <string>
 #include <string_view>
+#include <vector>
 
 class ImGuiSystem;
 class Scene;
@@ -67,7 +68,7 @@ class HierarchyPanel {
 	            EditorSelection &selection);
 
 	/// <summary>
-	/// 検索・表示条件・表示要求・範囲選択の基準をクリアする。選択状態は変更しない
+	/// 検索・並び順・表示条件・表示要求・範囲選択の基準をクリアする。選択状態は変更しない
 	/// </summary>
 	void Clear();
 
@@ -80,6 +81,18 @@ class HierarchyPanel {
 	bool SelectAllVisible(const Scene &scene, EditorSelection &selection);
 
   private:
+	/// <summary>
+	/// 一覧の表示順。同名の物体はIDの昇順を維持する
+	/// </summary>
+	enum class SortMode { CREATION, NAME_ASCENDING, NAME_DESCENDING };
+
+	/// <summary>
+	/// 絞り込み条件と並び順に沿った表示対象を作る
+	/// </summary>
+	/// <param name="scene">表示するシーン</param>
+	/// <returns>現在の表示順の物体ID一覧</returns>
+	std::vector<SceneObjectId> GetVisibleIds(const Scene &scene) const;
+
 	/// <summary>
 	/// Hierarchyに届いた移動キーを、表示順に沿って選択へ反映する
 	/// </summary>
@@ -112,6 +125,7 @@ class HierarchyPanel {
 	                  bool control, bool shift, EditorSelection &selection);
 
 	std::string filter_;
+	SortMode sortMode_ = SortMode::CREATION;
 	bool hiddenOnly_ = false;
 	SceneObjectId rangeAnchorId_ = 0;
 	SceneObjectId lastActiveId_ = 0;

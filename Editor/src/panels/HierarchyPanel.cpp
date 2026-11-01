@@ -11,6 +11,28 @@
 #include <utility>
 #include <vector>
 
+namespace {
+/// <summary>
+/// ASCII英字の大文字・小文字を区別せず表示名を比較する。ほかの文字はUTF-8の順序を使う
+/// </summary>
+/// <param name="first">比較する表示名</param>
+/// <param name="second">比較対象の表示名</param>
+/// <returns>負:前に並ぶ 0:同じ名前 正:後に並ぶ</returns>
+int CompareNames(std::string_view first, std::string_view second) {
+	const auto lower = [](unsigned char value) {
+		return value >= 'A' && value <= 'Z' ? value + ('a' - 'A') : value;
+	};
+	for (std::size_t i = 0; i < (std::min)(first.size(), second.size()); ++i) {
+		const auto a = lower(static_cast<unsigned char>(first[i]));
+		const auto b = lower(static_cast<unsigned char>(second[i]));
+		if (a != b) {
+			return a < b ? -1 : 1;
+		}
+	}
+	return first.size() == second.size() ? 0 : first.size() < second.size() ? -1 : 1;
+}
+} // namespace
+
 void HierarchyPanel::RequestReveal(SceneObjectId objectId) {
 	scrollToId_ = objectId;
 	revealRequested_ = objectId != 0;
@@ -66,6 +88,14 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 	ui.EndDisabled();
 
 	ImGui::Checkbox("Hidden only", &hiddenOnly_);
+	int sort = static_cast<int>(sortMode_);
+	if (ImGui::Combo("Sort", &sort, "Creation order\0Name A-Z\0Name Z-A\0")) {
+		sortMode_ = static_cast<SortMode>(sort);
+		// 並び順を変えた後の範囲選択は、現在のアクティブ物体を基準にする
+		rangeAnchorId_ = selection.GetActiveId();
+		scrollToId_ = selection.GetActiveId();
+	}
+	ImGui::SetItemTooltip("Names ignore ASCII letter case; ties keep creation order. Selection is kept.");
 	const SceneObject *active = scene.FindObject(selection.GetActiveId());
 
 	if (active) {
@@ -119,18 +149,7 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 	const bool drawObjects = ui.BeginChild("HierarchyObjects", 0.0f, 0.0f);
 
 	if (drawObjects) {
-		std::vector<SceneObjectId> visibleIds;
-		visibleIds.reserve(objects.size());
-
-		for (const auto &[id, object] : objects) {
-			const std::string_view name = object.name.empty()
-			                                  ? std::string_view{"Object"}
-			                                  : std::string_view{object.name};
-
-			if (MatchesFilter(name, object.visible)) {
-				visibleIds.push_back(id);
-			}
-		}
+		const auto visibleIds = GetVisibleIds(scene);
 
 		// 描画と範囲選択で同じ表示一覧を使用し、検索で隠れた項目を除く
 		SceneObjectId keyboardFocusId = 0;
@@ -271,6 +290,7 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 
 void HierarchyPanel::Clear() {
 	filter_.clear();
+	sortMode_ = SortMode::CREATION;
 	hiddenOnly_ = false;
 	rangeAnchorId_ = 0;
 	lastActiveId_ = 0;
@@ -283,17 +303,44 @@ bool HierarchyPanel::MatchesFilter(std::string_view name, bool visible) const {
 	       (filter_.empty() || name.find(filter_) != std::string_view::npos);
 }
 
-bool HierarchyPanel::SelectAllVisible(const Scene &scene,
-                                     EditorSelection &selection) {
+std::vector<SceneObjectId> HierarchyPanel::GetVisibleIds(const Scene &scene) const {
 	std::vector<SceneObjectId> ids;
+	ids.reserve(scene.GetObjects().size());
 	for (const auto &[id, object] : scene.GetObjects()) {
-		const std::string_view name = object.name.empty()
-		                                  ? std::string_view{"Object"}
-		                                  : std::string_view{object.name};
+		const std::string_view name = object.name.empty() ? std::string_view{"Object"} : object.name;
 		if (MatchesFilter(name, object.visible)) {
 			ids.push_back(id);
 		}
 	}
+	if (sortMode_ == SortMode::CREATION) {
+		return ids;
+	}
+	struct Item {
+		SceneObjectId id;
+		std::string_view name;
+	};
+	std::vector<Item> items;
+	items.reserve(ids.size());
+	for (const auto id : ids) {
+		const auto &name = scene.GetObjects().at(id).name;
+		items.push_back({id, name.empty() ? std::string_view{"Object"} : name});
+	}
+	std::sort(items.begin(), items.end(), [&](const Item &a, const Item &b) {
+		const int order = CompareNames(a.name, b.name);
+		if (order == 0) {
+			return a.id < b.id;
+		}
+		return sortMode_ == SortMode::NAME_ASCENDING ? order < 0 : order > 0;
+	});
+	for (std::size_t i = 0; i < items.size(); ++i) {
+		ids[i] = items[i].id;
+	}
+	return ids;
+}
+
+bool HierarchyPanel::SelectAllVisible(const Scene &scene,
+                                     EditorSelection &selection) {
+	auto ids = GetVisibleIds(scene);
 	const auto current = selection.GetIds();
 	if (std::equal(current.begin(), current.end(), ids.begin(), ids.end())) {
 		return false;
