@@ -706,6 +706,7 @@ ViewportInput ImGuiSystem::GetViewportInput() const {
 	input.applicationFocused = !io.AppFocusLost;
 
 	input.leftPressed = ImGui::IsMouseClicked(ImGuiMouseButton_Left);
+	input.leftDown = ImGui::IsMouseDown(ImGuiMouseButton_Left);
 	input.rightPressed = ImGui::IsMouseClicked(ImGuiMouseButton_Right);
 	input.rightDown = ImGui::IsMouseDown(ImGuiMouseButton_Right);
 	input.middlePressed = ImGui::IsMouseClicked(ImGuiMouseButton_Middle);

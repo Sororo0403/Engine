@@ -126,6 +126,7 @@ SceneViewPanel::SelectionRequest SceneViewPanel::UpdateSelection(
 	if (!enabled || !visible_ || !input_.applicationFocused ||
 	    !input_.windowFocused || input_.widgetActive ||
 	    input_.rightDown || input_.middleDown ||
+	    io.KeyAlt ||
 	    ImGui::IsKeyPressed(ImGuiKey_Escape, false) ||
 	    !ImGui::IsMousePosValid()) {
 		CancelSelection();

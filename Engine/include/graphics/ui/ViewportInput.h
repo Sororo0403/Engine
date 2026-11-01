@@ -18,6 +18,7 @@ struct ViewportInput {
 
 	// UIと同じタイミングで取得したマウスボタンの状態
 	bool leftPressed = false;
+	bool leftDown = false;
 	bool rightPressed = false;
 	bool rightDown = false;
 	bool middlePressed = false;

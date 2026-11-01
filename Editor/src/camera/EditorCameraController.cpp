@@ -10,7 +10,7 @@
 #include <limits>
 
 bool EditorCameraController::SetSettings(const Settings &settings) {
-	if (navigating_ || panning_ || !std::isfinite(settings.moveSpeed) ||
+	if (navigating_ || panning_ || orbiting_ || !std::isfinite(settings.moveSpeed) ||
 	    settings.moveSpeed <= 0.0f || settings.moveSpeed > kMaximumMoveSpeed ||
 	    !std::isfinite(settings.fastMultiplier) || settings.fastMultiplier < 1.0f ||
 	    settings.fastMultiplier > kMaximumFastMultiplier ||
@@ -32,10 +32,11 @@ EditorCameraController::Settings EditorCameraController::GetSettings() const {
 
 void EditorCameraController::Update(const InputSystem &input,
                                     const ViewportInput &viewport,
-                                    float deltaTime) {
+                                    float deltaTime, const DirectX::XMFLOAT3 *orbitTarget) {
 	if (!std::isfinite(deltaTime) || deltaTime < 0.0f) {
 		navigating_ = false;
 		panning_ = false;
+		orbiting_ = false;
 		return;
 	}
 
@@ -48,8 +49,57 @@ void EditorCameraController::Update(const InputSystem &input,
 	    keyboard.IsPressed(Key::ESCAPE)) {
 		navigating_ = false;
 		panning_ = false;
+		orbiting_ = false;
 		return;
 	}
+
+	if (!viewport.rightDown && !viewport.middleDown && viewport.leftDown &&
+	    keyboard.IsDown(Key::ALT)) {
+		navigating_ = false;
+		panning_ = false;
+		if (!orbiting_) {
+			if (!viewport.leftPressed || !viewport.imageHovered || !orbitTarget ||
+			    !MathUtils::IsFinite(*orbitTarget)) {
+				return;
+			}
+			const double x = static_cast<double>(position_.x) - orbitTarget->x;
+			const double y = static_cast<double>(position_.y) - orbitTarget->y;
+			const double z = static_cast<double>(position_.z) - orbitTarget->z;
+			if (x * x + y * y + z * z <= kMinimumPoseLengthSquared ||
+			    std::abs(x) > (std::numeric_limits<float>::max)() ||
+			    std::abs(y) > (std::numeric_limits<float>::max)() ||
+			    std::abs(z) > (std::numeric_limits<float>::max)()) {
+				return;
+			}
+			orbitCenter_ = *orbitTarget;
+			orbiting_ = true;
+			// 押す前の移動量は使わず、開始時のカメラの向きも保持する
+			return;
+		}
+		const auto &state = mouse.GetState();
+		const float yawDelta = std::remainder(
+		    static_cast<float>(state.deltaX) * settings_.mouseSensitivity, DirectX::XM_2PI);
+		const float nextYaw = std::remainder(yaw_ + yawDelta, DirectX::XM_2PI);
+		const float nextPitch = std::clamp(
+		    pitch_ - static_cast<float>(state.deltaY) * settings_.mouseSensitivity,
+		    -kPitchLimit, kPitchLimit);
+		using namespace DirectX;
+		const XMFLOAT3 right{std::cos(nextYaw), 0.0f, -std::sin(nextYaw)};
+		const auto rotation = XMMatrixRotationY(yawDelta) *
+		                      XMMatrixRotationAxis(XMLoadFloat3(&right), -(nextPitch - pitch_));
+		// 位置と視線に同じ回転を掛け、注視対象の画面上の位置を保つ
+		const auto offset = XMVectorSubtract(XMLoadFloat3(&position_), XMLoadFloat3(&orbitCenter_));
+		XMFLOAT3 next;
+		XMStoreFloat3(&next, XMVectorAdd(XMLoadFloat3(&orbitCenter_),
+		                               XMVector3TransformNormal(offset, rotation)));
+		if (MathUtils::IsFinite(next)) {
+			position_ = next;
+			yaw_ = nextYaw;
+			pitch_ = nextPitch;
+		}
+		return;
+	}
+	orbiting_ = false;
 
 	if (!viewport.rightDown) {
 		navigating_ = false;
@@ -119,8 +169,6 @@ void EditorCameraController::Update(const InputSystem &input,
 		pitch_ -= static_cast<float>(mouseState.deltaY) * settings_.mouseSensitivity;
 
 		yaw_ = std::remainder(yaw_, DirectX::XM_2PI);
-
-		constexpr float kPitchLimit = DirectX::XM_PIDIV2 - 0.01f;
 
 		// 視線と上方向が平行にならないよう制限する
 		pitch_ = std::clamp(pitch_, -kPitchLimit, kPitchLimit);
@@ -351,6 +399,7 @@ bool EditorCameraController::FrameBounds(
 	position_ = newPosition;
 	navigating_ = false;
 	panning_ = false;
+	orbiting_ = false;
 
 	return true;
 }
@@ -385,4 +434,5 @@ void EditorCameraController::Reset() {
 	pitch_ = 0.0f;
 	navigating_ = false;
 	panning_ = false;
+	orbiting_ = false;
 }

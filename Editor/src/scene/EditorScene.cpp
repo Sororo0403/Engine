@@ -263,7 +263,19 @@ bool EditorScene::Update(float deltaTime) {
 		cameraInput = {};
 	}
 
-	cameraController_.Update(input_, cameraInput, deltaTime);
+	Transform orbitTransform;
+	const DirectX::XMFLOAT3 *orbitTarget = nullptr;
+	if (cameraInput.leftPressed && input_.GetKeyboard().IsDown(Key::ALT)) {
+		if (selection_.GetCount() == 1) {
+			if (const auto *object = scene.FindObject(selection_.GetActiveId())) {
+				orbitTransform = object->transform;
+				orbitTarget = &orbitTransform.translation;
+			}
+		} else if (SelectionPivot::Make(scene, selection_, SelectionPivot::Mode::CENTER, orbitTransform)) {
+			orbitTarget = &orbitTransform.translation;
+		}
+	}
+	cameraController_.Update(input_, cameraInput, deltaTime, orbitTarget);
 
 	auto *target = sceneViewPanel_.GetRenderTexture();
 
@@ -361,6 +373,7 @@ bool EditorScene::Update(float deltaTime) {
 	const bool gizmoEnabled = !inputBlocked && transform != nullptr &&
 	                          viewport.applicationFocused &&
 	                          !viewport.rightDown && !viewport.middleDown &&
+	                          !ImGui::GetIO().KeyAlt &&
 	                          (!viewport.widgetActive || gizmo_.IsUsing());
 
 	const auto gizmoResult = sceneViewPanel_.DrawGizmo(

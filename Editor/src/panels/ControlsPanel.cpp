@@ -66,6 +66,7 @@ void ControlsPanel::Draw() {
 	    {"Right mouse + Q / E", "Move down / up."},
 	    {"Right mouse + Shift", "Move faster while navigating."},
 	    {"Middle-drag", "Pan the camera."},
+	    {"Alt + left-drag", "Orbit around the center of selected object origins without snapping the starting view."},
 	    {"Mouse wheel", "Move forward / backward. Click Scene first if it is not focused."},
 	    {"F / Shift + F", "Frame selected models / all models."},
 	    {"Hierarchy double-click", "Frame the clicked model."},
