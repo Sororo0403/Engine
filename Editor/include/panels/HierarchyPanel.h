@@ -16,6 +16,12 @@ class EditorSelection;
 class HierarchyPanel {
   public:
 	/// <summary>
+	/// 検索・表示条件を解除し、指定物体を表示する。選択状態は変更しない
+	/// </summary>
+	/// <param name="objectId">表示する物体のID。0の場合は表示要求を取り消す</param>
+	void RequestReveal(SceneObjectId objectId);
+
+	/// <summary>
 	/// Hierarchyから要求する操作
 	/// </summary>
 	enum class Action {
@@ -54,7 +60,7 @@ class HierarchyPanel {
 	            EditorSelection &selection);
 
 	/// <summary>
-	/// 検索・表示条件と範囲選択の基準をクリアする。物体の選択状態は変更しない
+	/// 検索・表示条件・表示要求・範囲選択の基準をクリアする。選択状態は変更しない
 	/// </summary>
 	void Clear();
 
@@ -92,4 +98,6 @@ class HierarchyPanel {
 	bool hiddenOnly_ = false;
 	SceneObjectId rangeAnchorId_ = 0;
 	SceneObjectId lastActiveId_ = 0;
+	SceneObjectId scrollToId_ = 0;
+	bool revealRequested_ = false;
 };

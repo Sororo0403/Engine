@@ -599,6 +599,9 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		if (ui_.MenuItem("Deselect All", "Esc", enabled && HasSelection())) {
 			action = EditorAction::DESELECT_ALL;
 		}
+		if (ui_.MenuItem("Reveal Active in Hierarchy", nullptr, objectEnabled)) {
+			action = EditorAction::REVEAL_ACTIVE;
+		}
 		const auto &objects = document_.GetScene().GetObjects();
 		const bool hasHidden = std::any_of(objects.begin(), objects.end(),
 		    [](const auto &entry) { return !entry.second.visible; });
@@ -859,6 +862,9 @@ void EditorScene::StartAction(EditorAction action) {
 		return;
 	case EditorAction::SHOW_ALL_MODELS:
 		ShowAllModels();
+		return;
+	case EditorAction::REVEAL_ACTIVE:
+		hierarchyPanel_.RequestReveal(selection_.GetActiveId());
 		return;
 	case EditorAction::COPY_OBJECTS:
 		CopySelectedObjects(false);

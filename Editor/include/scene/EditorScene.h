@@ -121,6 +121,7 @@ class EditorScene final : public IScene {
 		RENAME_OBJECT,
 		OPEN_RECENT,
 		SHOW_ALL_MODELS,
+		REVEAL_ACTIVE,
 	};
 
 	/// <summary>

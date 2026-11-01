@@ -82,6 +82,7 @@ void ControlsPanel::Draw() {
 	    {"Visible / Hierarchy menu", "Show or hide models without deleting objects. Visibility changes support Undo / Redo."},
 	    {"Hierarchy > Hidden only", "List hidden models. Search and range selection use this filtered list."},
 	    {"Edit > Show All Models", "Restore every hidden model in one undoable operation without changing selection."},
+	    {"Edit > Reveal Active", "Clear Hierarchy filters and scroll to the active object without changing visibility or selection."},
 	    {"Ctrl + D / Delete", "Duplicate / delete the selected objects."},
 	    {"Ctrl + C / X / V", "Copy / cut / paste scene objects."},
 	});

@@ -11,6 +11,11 @@
 #include <utility>
 #include <vector>
 
+void HierarchyPanel::RequestReveal(SceneObjectId objectId) {
+	scrollToId_ = objectId;
+	revealRequested_ = objectId != 0;
+}
+
 HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
                                             const Scene &scene,
                                             EditorSelection &selection) {
@@ -23,16 +28,30 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 	const SceneObjectId activeId = selection.GetActiveId();
 	if (activeId != lastActiveId_) {
 		rangeAnchorId_ = activeId;
+		if (!revealRequested_) {
+			scrollToId_ = activeId;
+		}
 	}
 	if (!scene.Contains(rangeAnchorId_)) {
 		rangeAnchorId_ = 0;
 	}
 	lastActiveId_ = activeId;
+	if (!scene.Contains(scrollToId_)) {
+		scrollToId_ = 0;
+		revealRequested_ = false;
+	}
+	if (revealRequested_) {
+		filter_.clear();
+		hiddenOnly_ = false;
+		ImGui::SetNextWindowCollapsed(false);
+		ImGui::SetNextWindowFocus();
+	}
 
 	if (!ui.BeginWindow("Hierarchy")) {
 		ui.EndWindow();
 		return result;
 	}
+	revealRequested_ = false;
 
 	ui.InputText("Search", filter_);
 
@@ -130,22 +149,33 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 			if (ui.Selectable(label.c_str(), selection.Contains(id))) {
 				const bool changed = SelectObject(
 				    id, visibleIds, io.KeyCtrl, io.KeyShift, selection);
+				scrollToId_ = 0;
 
 				if (changed) {
 					result.selectionChanged = true;
 				}
+			}
+			// マウス操作中の一覧を動かさず、表示対象の位置へスクロールする
+			if (scrollToId_ == id && !ImGui::IsAnyItemActive() &&
+			    !ImGui::IsMouseDown(ImGuiMouseButton_Left) &&
+			    !ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
+			    !ImGui::IsMouseDown(ImGuiMouseButton_Middle)) {
+				ImGui::SetScrollHereY(0.5f);
+				scrollToId_ = 0;
 			}
 			if (object.visible && !object.modelPath.empty() && ImGui::IsItemHovered() &&
 			    ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) &&
 			    !io.KeyCtrl && !io.KeyShift && !io.KeyAlt) {
 				result.selectionChanged |= SelectObject(id, visibleIds, false, false, selection);
 				result.action = Action::FRAME_SELECTED;
+				scrollToId_ = 0;
 			}
 			if (ImGui::BeginPopupContextItem()) {
 				// 選択済みの項目ではグループを保ち、未選択の項目だけ選び直す
 				if (!selection.Contains(id)) {
 					result.selectionChanged |= selection.SelectOnly(id);
 					rangeAnchorId_ = id;
+					scrollToId_ = 0;
 				}
 				if (ui.MenuItem("Copy", "Ctrl+C", true)) {
 					result.action = Action::COPY_OBJECTS;
@@ -216,6 +246,8 @@ void HierarchyPanel::Clear() {
 	hiddenOnly_ = false;
 	rangeAnchorId_ = 0;
 	lastActiveId_ = 0;
+	scrollToId_ = 0;
+	revealRequested_ = false;
 }
 
 bool HierarchyPanel::MatchesFilter(std::string_view name, bool visible) const {
