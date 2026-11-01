@@ -4,7 +4,7 @@
 #include "graphics/render/RenderTexture.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "input/InputSystem.h"
-#include <algorithm>
+#include "layout/GameViewLayout.h"
 #include <cmath>
 #include <imgui.h>
 
@@ -67,19 +67,19 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 	}
 
 	if (IsPlaying()) {
-		const auto size = ui.GetContentSize();
+		const auto layout =
+		    GameViewLayout::Fit(ui.GetContentSize(), gameWidth_, gameHeight_);
 
-		if (std::isfinite(size.x) && std::isfinite(size.y) && size.x >= 1 &&
-		    size.y >= 1) {
-			const int width = int(std::clamp(size.x, 1.0f, 8192.0f)),
-			          height = int(std::clamp(size.y, 1.0f, 8192.0f));
-
+		if (layout) {
 			if (!texture_) {
-				texture_ = render_.CreateRenderTexture(width, height);
+				texture_ = render_.CreateRenderTexture(gameWidth_, gameHeight_);
 			}
 
-			if (texture_ && texture_->Resize(width, height)) {
-				ui.Image(*texture_, float(width), float(height));
+			if (texture_ && texture_->Resize(gameWidth_, gameHeight_)) {
+				const auto cursor = ImGui::GetCursorPos();
+				ImGui::SetCursorPos(
+				    {cursor.x + layout->offset.x, cursor.y + layout->offset.y});
+				ui.Image(*texture_, layout->size.x, layout->size.y);
 				viewport_ = ui.GetViewportInput();
 				visible_ = true;
 			} else {
@@ -93,11 +93,20 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 }
 
 bool EditorPlayMode::Start(const Scene &scene, std::string &error,
-                           const CameraPose &fallbackPose) {
+                           const CameraPose &fallbackPose,
+                           const GameConfig &config) {
+	if (config.width < 1 || config.width > 8192 || config.height < 1 ||
+	    config.height > 8192) {
+		error = "Game resolution must be between 1 and 8192 pixels.";
+		return false;
+	}
+
 	if (!simulation_.Start(scene, error, fallbackPose)) {
 		return false;
 	}
 
+	gameWidth_ = config.width;
+	gameHeight_ = config.height;
 	clock_.Reset();
 	focusRequested_ = true;
 	return true;

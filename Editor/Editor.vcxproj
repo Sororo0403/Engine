@@ -287,4 +287,7 @@ exit /b 0</Command>
     <ClInclude Include="include\dialogs\GameExportDialog.h" />
     <ClCompile Include="src\dialogs\GameExportDialog.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\layout\GameViewLayout.h" />
+  </ItemGroup>
 </Project>

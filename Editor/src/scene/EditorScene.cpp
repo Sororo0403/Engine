@@ -128,7 +128,7 @@ bool EditorScene::Update(float deltaTime) {
 		std::string error;
 
 		if (!playMode_.Start(document_.GetScene(), error,
-		                     cameraController_.GetPose())) {
+		                     cameraController_.GetPose(), exportConfig_)) {
 			ShowError(std::move(error));
 		}
 	}

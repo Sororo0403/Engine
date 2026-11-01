@@ -1,5 +1,6 @@
 #pragma once
 
+#include "gameplay/GameConfig.h"
 #include "gameplay/PlaybackClock.h"
 #include "gameplay/SceneSimulation.h"
 #include "graphics/ui/ViewportInput.h"
@@ -48,10 +49,12 @@ class EditorPlayMode {
 	/// </summary>
 	/// <param name="scene">編集シーン</param>
 	/// <param name="error">追加済みコンポーネントの設定や配置エラー</param>
-	/// <param name="fallbackPose">追従カメラがない場合に使用するSceneビューの姿勢</param>
+	/// <param name="fallbackPose">Primary Cameraがない場合に使用するSceneビューの姿勢</param>
+	/// <param name="config">出力設定。Gameビューの描画幅と高さを使用する</param>
 	/// <returns>true:開始成功 false:設定が無効</returns>
 	bool Start(const Scene &scene, std::string &error,
-	           const CameraPose &fallbackPose = CameraPose{});
+	           const CameraPose &fallbackPose = CameraPose{},
+	           const GameConfig &config = GameConfig{});
 
 	/// <summary>
 	/// 再生シーンを破棄する。編集シーンとUndo履歴は保持する
@@ -91,5 +94,7 @@ class EditorPlayMode {
 	RenderSystem &render_;
 	std::unique_ptr<RenderTexture> texture_;
 	ViewportInput viewport_{};
+	int gameWidth_ = 1280;
+	int gameHeight_ = 720;
 	bool visible_ = false, focusRequested_ = false, ready_ = false;
 };

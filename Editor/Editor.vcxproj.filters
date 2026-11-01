@@ -473,4 +473,9 @@
       <UniqueIdentifier>{03327432-75ef-44c7-b912-21ac66f34d5d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\layout\GameViewLayout.h">
+      <Filter>include\layout</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>
