@@ -17,6 +17,7 @@
 #include "selection/EditorSelection.h"
 #include "selection/EditorClipboard.h"
 #include "selection/SelectionBounds.h"
+#include "settings/EditorPreferences.h"
 
 #include <filesystem>
 #include <string>
@@ -278,6 +279,8 @@ class EditorScene final : public IScene {
 	bool resetDockLayout_ = false;
 	bool showGrid_ = true;
 	bool showSelectionBounds_ = true;
+	EditorPreferences preferences_;
+	bool canSavePreferences_ = false;
 	FrameRequest frameRequest_ = FrameRequest::NONE;
 	bool hierarchySelectionScope_ = false;
 

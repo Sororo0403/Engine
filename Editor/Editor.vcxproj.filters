@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <Filter Include="include\settings">
+      <UniqueIdentifier>{8bc170cb-2ac2-4749-b75f-71c3626b52e1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\settings">
+      <UniqueIdentifier>{88d35339-66a0-48d8-a19d-111dba7ccfb4}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src">
       <UniqueIdentifier>{c639f4eb-a031-4e56-a43d-a72ebb7e226e}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
@@ -128,6 +134,9 @@
     <ClCompile Include="src\selection\EditorClipboard.cpp">
       <Filter>src\selection</Filter>
     </ClCompile>
+    <ClCompile Include="src\settings\EditorPreferences.cpp">
+      <Filter>src\settings</Filter>
+    </ClCompile>
     <ClCompile Include="src\history\CommandGroup.cpp">
       <Filter>src\history</Filter>
     </ClCompile>
@@ -192,6 +201,9 @@
     </ClInclude>
     <ClInclude Include="include\selection\EditorClipboard.h">
       <Filter>include\selection</Filter>
+    </ClInclude>
+    <ClInclude Include="include\settings\EditorPreferences.h">
+      <Filter>include\settings</Filter>
     </ClInclude>
     <ClInclude Include="include\history\CommandGroup.h">
       <Filter>include\history</Filter>

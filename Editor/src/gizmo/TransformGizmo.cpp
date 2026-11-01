@@ -17,6 +17,16 @@ bool TransformGizmo::SetSnapping(bool enabled) {
 	return true;
 }
 
+TransformGizmo::Operation TransformGizmo::GetOperation() const {
+	return operation_;
+}
+
+bool TransformGizmo::IsSnapping() const { return snapping_; }
+
+TransformGizmo::SnapSettings TransformGizmo::GetSnapSettings() const {
+	return snapSettings_;
+}
+
 bool TransformGizmo::SetSnapSettings(const SnapSettings &settings) {
 	if (using_ || !MathUtils::IsFinite(settings.translation) ||
 	    settings.translation.x <= 0.0f || settings.translation.y <= 0.0f ||

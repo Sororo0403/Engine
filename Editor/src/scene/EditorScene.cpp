@@ -40,6 +40,13 @@ bool EditorScene::Initialize() {
 
 	gizmo_.Cancel();
 	gizmoEditActive_ = false;
+	preferences_ = EditorPreferences{};
+	canSavePreferences_ = preferences_.Load();
+	showGrid_ = preferences_.showGrid;
+	showSelectionBounds_ = preferences_.showSelectionBounds;
+	gizmo_.SetSnapSettings(preferences_.snap);
+	gizmo_.SetSnapping(preferences_.snapping);
+	gizmo_.SetOperation(preferences_.operation);
 
 	cameraController_.Reset();
 
@@ -378,6 +385,17 @@ void EditorScene::Draw() const {
 
 void EditorScene::Finalize() {
 	FinishEdit();
+	if (canSavePreferences_) {
+		EditorPreferences current;
+		current.showGrid = showGrid_;
+		current.showSelectionBounds = showSelectionBounds_;
+		current.operation = gizmo_.GetOperation();
+		current.snapping = gizmo_.IsSnapping();
+		current.snap = gizmo_.GetSnapSettings();
+		if (!(current == preferences_) && current.Save()) {
+			preferences_ = current;
+		}
+	}
 
 	sceneViewPanel_.Finalize();
 	renderer_.Finalize();

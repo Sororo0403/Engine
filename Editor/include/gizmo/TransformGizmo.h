@@ -56,6 +56,24 @@ class TransformGizmo {
 	bool SetSnapSettings(const SnapSettings &settings);
 
 	/// <summary>
+	/// 現在の操作種別を取得する
+	/// </summary>
+	/// <returns>移動・回転・拡縮の種別</returns>
+	Operation GetOperation() const;
+
+	/// <summary>
+	/// スナップの有効状態を取得する
+	/// </summary>
+	/// <returns>true:有効 false:無効</returns>
+	bool IsSnapping() const;
+
+	/// <summary>
+	/// 現在のスナップ間隔を取得する
+	/// </summary>
+	/// <returns>移動・回転・拡縮の間隔</returns>
+	SnapSettings GetSnapSettings() const;
+
+	/// <summary>
 	/// ギズモ操作の結果
 	/// </summary>
 	struct Result {
