@@ -199,10 +199,12 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 				}
 				bool canHide = false;
 				bool canShow = false;
+				bool canGround = false;
 				for (const auto selectedId : selection.GetIds()) {
 					if (const auto *selected = scene.FindObject(selectedId)) {
 						canHide |= selected->visible;
 						canShow |= !selected->visible;
+						canGround |= selected->visible && !selected->modelPath.empty();
 					}
 				}
 				if (ui.MenuItem("Hide Selected", nullptr, canHide)) {
@@ -217,6 +219,9 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 				}
 				if (ui.MenuItem("Reset Transform", nullptr, true)) {
 					result.action = Action::RESET_TRANSFORMS;
+				}
+				if (ui.MenuItem("Drop to Ground", "Shift+G", canGround)) {
+					result.action = Action::DROP_TO_GROUND;
 				}
 				ImGui::EndPopup();
 			}

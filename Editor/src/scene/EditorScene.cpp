@@ -181,6 +181,9 @@ bool EditorScene::Update(float deltaTime) {
 				case HierarchyPanel::Action::RESET_TRANSFORMS:
 					ResetSelectedTransforms();
 					break;
+				case HierarchyPanel::Action::DROP_TO_GROUND:
+					DropSelectionToGround();
+					break;
 				case HierarchyPanel::Action::RENAME_OBJECT:
 					inspectorPanel_.RequestRename(selection_.GetActiveId());
 					break;
@@ -659,6 +662,9 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		if (ui_.MenuItem("Reset Transform", nullptr, objectEnabled)) {
 			action = EditorAction::RESET_TRANSFORMS;
 		}
+		if (ui_.MenuItem("Drop to Ground", "Shift+G", objectEnabled && HasVisibleSelectedModel())) {
+			action = EditorAction::DROP_TO_GROUND;
+		}
 		if (ui_.MenuItem("Rename", "F2", objectEnabled && HasSingleSelection())) {
 			action = EditorAction::RENAME_OBJECT;
 		}
@@ -793,6 +799,10 @@ EditorScene::ReadShortcut(bool objectPanelFocused) const {
 	    !ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
 	    !ImGui::IsMouseDown(ImGuiMouseButton_Middle);
 	const bool objectEnabled = selectionEnabled && HasSelection();
+	if (objectEnabled && !control && shift && !alt && keyboard.IsPressed(Key::G) &&
+	    HasVisibleSelectedModel()) {
+		return EditorAction::DROP_TO_GROUND;
+	}
 	if (objectEnabled && !control && !shift && !alt) {
 		if (HasSingleSelection() && keyboard.IsPressed(Key::F2)) {
 			return EditorAction::RENAME_OBJECT;
@@ -891,6 +901,9 @@ void EditorScene::StartAction(EditorAction action) {
 		return;
 	case EditorAction::RESET_TRANSFORMS:
 		ResetSelectedTransforms();
+		return;
+	case EditorAction::DROP_TO_GROUND:
+		DropSelectionToGround();
 		return;
 	case EditorAction::SHOW_ALL_MODELS:
 		ShowAllModels();
@@ -1553,6 +1566,53 @@ void EditorScene::ResetSelectedTransforms() {
 		Logger::Error(std::format("EditorScene: Transformの初期化に失敗しました: {}",
 		                          error.what()));
 		ShowError("Could not reset transforms. See the log for details.");
+	}
+}
+
+bool EditorScene::HasVisibleSelectedModel() const {
+	if (!HasSelection()) {
+		return false;
+	}
+	const auto &scene = document_.GetScene();
+	return std::any_of(selection_.GetIds().begin(), selection_.GetIds().end(), [&](auto id) {
+		const auto *object = scene.FindObject(id);
+		return object && object->visible && !object->modelPath.empty();
+	});
+}
+
+void EditorScene::DropSelectionToGround() {
+	if (!HasVisibleSelectedModel()) {
+		return;
+	}
+	try {
+		FinishEdit();
+		// 同じフレームで確定した変形も、外接ボックスの計算へ反映する
+		if (!renderer_.Update()) {
+			ShowError("Could not update model bounds. The selection was not moved.");
+			return;
+		}
+		std::vector<std::array<DirectX::XMFLOAT3, 8>> bounds;
+		bounds.reserve(selection_.GetCount());
+		for (const auto id : selection_.GetIds()) {
+			const auto *object = document_.GetScene().FindObject(id);
+			if (!object || !object->visible || object->modelPath.empty()) {
+				continue;
+			}
+			std::array<DirectX::XMFLOAT3, 8> corners;
+			if (!renderer_.GetObjectBounds(id, corners)) {
+				ShowError("Could not read selected model bounds. The selection was not moved.");
+				return;
+			}
+			bounds.push_back(corners);
+		}
+		DirectX::XMFLOAT3 translation;
+		if (!ModelPlacement::GetGroundTranslation(bounds, translation) ||
+		    !document_.GetHistory().TranslateObjects(selection_.GetIds(), translation)) {
+			ShowError("Could not move the selection to the ground.");
+		}
+	} catch (const std::exception &error) {
+		Logger::Error(std::format("EditorScene::DropSelectionToGround: {}", error.what()));
+		ShowError("Could not move the selection to the ground. See the log for details.");
 	}
 }
 

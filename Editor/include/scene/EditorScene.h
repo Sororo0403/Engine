@@ -118,6 +118,7 @@ class EditorScene final : public IScene {
 		CUT_OBJECTS,
 		PASTE_OBJECTS,
 		RESET_TRANSFORMS,
+		DROP_TO_GROUND,
 		RESET_CAMERA,
 		RENAME_OBJECT,
 		OPEN_RECENT,
@@ -314,6 +315,17 @@ class EditorScene final : public IScene {
 	/// 選択した全物体のTransformを初期値へ戻す
 	/// </summary>
 	void ResetSelectedTransforms();
+
+	/// <summary>
+	/// 表示中の選択モデルの最下端をY=0へ合わせ、全選択物体を同じ距離だけ移動する
+	/// </summary>
+	void DropSelectionToGround();
+
+	/// <summary>
+	/// 選択に、表示中でモデルを持つ物体があるか確認する
+	/// </summary>
+	/// <returns>true:有効な全選択の中に対象あり false:対象なし、または選択が無効</returns>
+	bool HasVisibleSelectedModel() const;
 
 	/// <summary>
 	/// シーンに存在する物体が1つ以上選択されているか確認する

@@ -246,6 +246,15 @@ class EditorHistory {
 	/// <returns>true:成功、または変更なし false:対象や変形情報が無効</returns>
 	bool SetTransforms(std::span<const SceneObjectId> objectIds, const Transform &transform);
 
+	/// <summary>
+	/// 全対象へ同じ移動量を加え、1操作として記録する。編集中の内容は先に確定する
+	/// </summary>
+	/// <param name="objectIds">重複のない対象ID一覧</param>
+	/// <param name="translation">ワールド座標での移動量</param>
+	/// <returns>true:成功、または変更なし false:対象や値が無効。全件を変更しない</returns>
+	bool TranslateObjects(std::span<const SceneObjectId> objectIds,
+	                      const DirectX::XMFLOAT3 &translation);
+
   private:
 	// 単独の編集操作、または複数の編集操作を保持する
 	using Command = std::variant<TransformCommand, ObjectCommand, RenameCommand,

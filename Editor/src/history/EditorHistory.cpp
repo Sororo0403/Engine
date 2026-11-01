@@ -2,6 +2,7 @@
 
 #include "core/Logger.h"
 #include "math/TransformUtils.h"
+#include "math/MathUtils.h"
 #include "scene/Scene.h"
 
 #include <cassert>
@@ -433,6 +434,43 @@ bool EditorHistory::SetTransforms(std::span<const SceneObjectId> objectIds, cons
 	}
 	AppendPrepared(Command{std::move(group)}, next,
 	               objectIds.size() == 1 ? "Transform Object" : "Transform Objects");
+	return true;
+}
+
+bool EditorHistory::TranslateObjects(std::span<const SceneObjectId> objectIds,
+                                     const DirectX::XMFLOAT3 &translation) {
+	CommitEdit();
+	if (objectIds.empty() || !MathUtils::IsFinite(translation)) {
+		return false;
+	}
+	std::set<SceneObjectId> seen;
+	std::vector<CommandGroup::Command> commands;
+	commands.reserve(objectIds.size());
+	for (const auto id : objectIds) {
+		const auto *object = scene_.FindObject(id);
+		if (!object || !seen.insert(id).second || !TransformUtils::IsValid(object->transform)) {
+			return false;
+		}
+		Transform after = object->transform;
+		after.translation = {after.translation.x + translation.x,
+		                     after.translation.y + translation.y,
+		                     after.translation.z + translation.z};
+		if (!TransformUtils::IsValid(after)) {
+			return false;
+		}
+		if (!TransformUtils::AreEqual(object->transform, after)) {
+			commands.emplace_back(TransformCommand{id, object->transform, after});
+		}
+	}
+	if (commands.empty()) {
+		return true;
+	}
+	CommandGroup group{std::move(commands)};
+	const auto next = PrepareAppend();
+	if (!group.Redo(scene_)) {
+		return false;
+	}
+	AppendPrepared(Command{std::move(group)}, next, objectIds.size() == 1 ? "Move Object" : "Move Objects");
 	return true;
 }
 
