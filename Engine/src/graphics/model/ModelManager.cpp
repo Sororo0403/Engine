@@ -128,3 +128,7 @@ void ModelManager::Finalize() {
 	// 終了後の再読み込みは禁止する
 	impl_->finalized = true;
 }
+
+bool ModelManager::GetLocalBounds(const ModelHandle &model, std::array<DirectX::XMFLOAT3, 8> &corners) const {
+	return model.model_ && model.graphics_ == &impl_->graphics && model.model_->GetBoundsCorners(corners);
+}

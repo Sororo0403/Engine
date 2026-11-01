@@ -75,6 +75,7 @@ void ControlsPanel::Draw() {
 	});
 	DrawSection("Selection and objects", {
 	    {"Hierarchy > Sort", "Choose creation order or name A-Z / Z-A. Range selection, Select All and arrow keys follow the displayed order; changing sort keeps the selection."},
+	    {"Inspector > Add Component > Box Collider", "Add a collider fitted to the model, edit its local center and half size, fit again or remove it. Green Scene bounds show the collision shape. Each drag is one Undo operation."},
 	    {"Assets > Select Instances", "Select all scene objects using the chosen model, including hidden objects. Also available from a model row context menu; reveals the active result in Hierarchy."},
 	    {"Assets folders / Up / Root", "Open a folder or return to its parent or the Assets root. Search finds model paths across all folders."},
 	    {"Click / Ctrl + click", "Select one object / toggle an object in the selection."},

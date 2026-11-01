@@ -76,6 +76,12 @@ class InspectorPanel {
 	/// </summary>
 	/// <returns>変更要求。操作がない場合のIDは0</returns>
 	const VisibilityRequest &GetVisibilityRequest() const;
+
+	/// <summary>
+	/// このフレームに衝突形状の追加・モデル合わせを要求した物体を取得する
+	/// </summary>
+	/// <returns>対象ID。要求なしの場合は0</returns>
+	SceneObjectId GetColliderFitRequest() const;
 	/// <summary>
 	/// 表示の固定を解除し、指定した選択物体の名前欄へのフォーカスを次の描画時に予約する
 	/// </summary>
@@ -106,4 +112,5 @@ class InspectorPanel {
 	VisibilityRequest visibilityRequest_;
 	std::filesystem::path assetRevealPath_;
 	TransformRequest transformRequest_;
+	SceneObjectId colliderFitRequest_ = 0;
 };

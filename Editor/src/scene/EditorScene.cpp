@@ -15,6 +15,7 @@
 #include "math/TransformUtils.h"
 #include "platform/windows/PathUtils.h"
 #include "scene/Scene.h"
+#include "physics/BoxColliderUtils.h"
 #include "selection/SelectionFrustum.h"
 
 #include <algorithm>
@@ -131,6 +132,7 @@ bool EditorScene::Update(float deltaTime) {
 	const bool hasTransformRequest = transformRequest.action != InspectorPanel::TransformAction::NONE;
 	const auto &modelRequest = inspectorPanel_.GetModelRequest();
 	const auto &visibilityRequest = inspectorPanel_.GetVisibilityRequest();
+	const auto colliderFitRequest = inspectorPanel_.GetColliderFitRequest();
 	ui_.EndDisabled();
 
 	if (!wasBusy && !inspectorPanel_.GetAssetRevealPath().empty()) {
@@ -240,6 +242,11 @@ bool EditorScene::Update(float deltaTime) {
 			}
 		}
 
+		if (!IsBusy() && action == EditorAction::NONE && colliderFitRequest != 0 &&
+		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
+			FitCollider(colliderFitRequest);
+		}
+
 		if (!IsBusy() && action == EditorAction::NONE && !requestedInstances.empty() &&
 		    requestedModelPath.empty() && modelDrop.path.empty() && modelRequest.objectId == 0 &&
 		    visibilityRequest.objectId == 0 && !hasTransformRequest && !historyRequest &&
@@ -264,12 +271,12 @@ bool EditorScene::Update(float deltaTime) {
 		}
 
 		if (!IsBusy()) {
-			if (historyRequest && action == EditorAction::NONE && requestedModelPath.empty() && requestedInstances.empty() &&
+			if (historyRequest && action == EditorAction::NONE && colliderFitRequest == 0 && requestedModelPath.empty() && requestedInstances.empty() &&
 			    modelDrop.path.empty() && modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
 			    !hasTransformRequest && hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 				RestoreHistory(*historyRequest);
 			}
-			if (action == EditorAction::NONE && requestedInstances.empty() && modelDrop.path.empty() &&
+			if (action == EditorAction::NONE && colliderFitRequest == 0 && requestedInstances.empty() && modelDrop.path.empty() &&
 			    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 && !hasTransformRequest && !historyRequest) {
 				const bool objectPanelFocused =
 				    hierarchyRequest.windowFocused ||
@@ -296,7 +303,7 @@ bool EditorScene::Update(float deltaTime) {
 	    !requestedModelPath.empty() || !requestedInstances.empty() ||
 	    !modelDrop.path.empty() ||
 	    modelRequest.objectId != 0 ||
-	    visibilityRequest.objectId != 0 ||
+	    visibilityRequest.objectId != 0 || colliderFitRequest != 0 ||
 	    hasTransformRequest ||
 	    historyRequest.has_value() ||
 	    hierarchyRequest.action != HierarchyPanel::Action::NONE;
@@ -493,6 +500,10 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	for (const SceneObjectId id : selection_.GetIds()) {
+		if (const auto *object = scene.FindObject(id); object && !colliderBounds_.Update(renderer_, *object)) {
+			Logger::Error("EditorScene: 衝突形状を表示できませんでした。");
+			return false;
+		}
 		if (showSelectionBounds_ && !selectionBounds_.Update(renderer_, id)) {
 			Logger::Error(
 			    "EditorScene: 選択物体の外接ボックスを登録できませんでした。");
@@ -1212,6 +1223,29 @@ void EditorScene::StartSave(bool saveAs) {
 	fileDialog_.Show(SceneFileDialogMode::SAVE, document_.GetFilePath());
 
 	stage_ = DialogStage::SAVE_FILE;
+}
+
+void EditorScene::FitCollider(SceneObjectId id) {
+	try {
+		FinishEdit();
+		const auto *object = document_.GetScene().FindObject(id);
+		if (!object) return;
+		BoxCollider collider;
+		if (!object->modelPath.empty()) {
+			const auto model = models_.Load(object->modelPath);
+			std::array<DirectX::XMFLOAT3, 8> corners;
+			if (!models_.GetLocalBounds(model, corners) || !BoxColliderUtils::FitToPoints(corners, collider)) {
+				ShowError("Could not fit the collider to the model. See the log for details.");
+				return;
+			}
+		}
+		if (!document_.GetHistory().SetCollider(id, collider)) {
+			ShowError("Could not set a collider at this transform.");
+		}
+	} catch (const std::exception &error) {
+		Logger::Error(std::format("EditorScene::FitCollider: {}", error.what()));
+		ShowError("Could not configure the collider. See the log for details.");
+	}
 }
 
 void EditorScene::SelectModelInstances(const std::filesystem::path &path) {

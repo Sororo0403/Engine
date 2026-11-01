@@ -240,6 +240,14 @@ exit /b 0</Command>
     <ClInclude Include="include\dialogs\SceneReloadDialog.h" />
     <ClCompile Include="src\dialogs\SceneReloadDialog.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\history\ColliderCommand.h" />
+    <ClCompile Include="src\history\ColliderCommand.cpp" />
+    <ClInclude Include="include\physics\ColliderInspector.h" />
+    <ClCompile Include="src\physics\ColliderInspector.cpp" />
+    <ClInclude Include="include\physics\ColliderBounds.h" />
+    <ClCompile Include="src\physics\ColliderBounds.cpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
 </Project>

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "history/CommandGroup.h"
+#include "history/ColliderCommand.h"
 #include "history/AlignmentAxis.h"
 #include "history/ModelPathCommand.h"
 #include "history/ObjectCommand.h"
@@ -184,6 +185,21 @@ class EditorHistory {
 	bool BeginRename(SceneObjectId objectId);
 
 	/// <summary>
+	/// 衝突形状を追加・変更・削除し、1操作として記録する
+	/// </summary>
+	/// <param name="objectId">対象ID</param>
+	/// <param name="collider">変更後の形状。未指定は削除</param>
+	/// <returns>true:成功または変更なし false:対象なし、または形状が無効</returns>
+	bool SetCollider(SceneObjectId objectId, std::optional<BoxCollider> collider);
+
+	/// <summary>
+	/// 衝突形状の連続編集を開始する
+	/// </summary>
+	/// <param name="objectId">衝突形状を持つ対象のID</param>
+	/// <returns>true:開始成功 false:対象または衝突形状なし</returns>
+	bool BeginCollider(SceneObjectId objectId);
+
+	/// <summary>
 	/// 指定した全物体を削除し、1操作として履歴へ記録する。
 	/// 編集中の内容は先に確定する
 	/// </summary>
@@ -285,7 +301,7 @@ class EditorHistory {
   private:
 	// 単独の編集操作、または複数の編集操作を保持する
 	using Command = std::variant<TransformCommand, ObjectCommand, RenameCommand,
-	                             ModelPathCommand, VisibilityCommand, CommandGroup>;
+	                             ModelPathCommand, VisibilityCommand, ColliderCommand, CommandGroup>;
 
 	/// <summary>
 	/// 操作と、その前後の状態を識別する情報
@@ -304,8 +320,8 @@ class EditorHistory {
 	struct PendingEdit {
 		SceneObjectId objectId = 0;
 
-		// Transformの場合は変形編集、文字列の場合は名前編集
-		std::variant<Transform, std::string> before;
+		// 変形・名前・衝突形状の編集開始時点の値
+		std::variant<Transform, std::string, std::optional<BoxCollider>> before;
 	};
 
 	/// <summary>

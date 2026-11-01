@@ -365,4 +365,32 @@
       <Filter>src\dialogs</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Filter Include="include\physics">
+      <UniqueIdentifier>{60d467e6-7ba0-41c8-b33c-c16fa06cb6c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\physics">
+      <UniqueIdentifier>{1b60f6be-7625-4769-bb97-39f2c4d021f8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\history\ColliderCommand.h">
+      <Filter>include\history</Filter>
+    </ClInclude>
+    <ClCompile Include="src\history\ColliderCommand.cpp">
+      <Filter>src\history</Filter>
+    </ClCompile>
+    <ClInclude Include="include\physics\ColliderInspector.h">
+      <Filter>include\physics</Filter>
+    </ClInclude>
+    <ClCompile Include="src\physics\ColliderInspector.cpp">
+      <Filter>src\physics</Filter>
+    </ClCompile>
+    <ClInclude Include="include\physics\ColliderBounds.h">
+      <Filter>include\physics</Filter>
+    </ClInclude>
+    <ClCompile Include="src\physics\ColliderBounds.cpp">
+      <Filter>src\physics</Filter>
+    </ClCompile>
+  </ItemGroup>
 </Project>

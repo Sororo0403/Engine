@@ -50,6 +50,14 @@
   <ItemGroup>
     <ClCompile Include="GameplayTests.cpp" />
     <ClCompile Include="CharacterTests.cpp" />
+    <ClCompile Include="ColliderEditingTests.cpp" />
+    <ClCompile Include="..\Editor\src\history\EditorHistory.cpp" />
+    <ClCompile Include="..\Editor\src\history\CommandGroup.cpp" />
+    <ClCompile Include="..\Editor\src\history\ColliderCommand.cpp" />
+    <ClCompile Include="..\Editor\src\history\TransformCommand.cpp" />
+    <ClCompile Include="..\Editor\src\history\RenameCommand.cpp" />
+    <ClCompile Include="..\Editor\src\history\ModelPathCommand.cpp" />
+    <ClCompile Include="..\Editor\src\history\VisibilityCommand.cpp" />
     <ClCompile Include="..\Editor\src\history\ObjectCommand.cpp" />
   </ItemGroup>
   <ItemGroup>

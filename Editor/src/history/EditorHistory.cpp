@@ -4,6 +4,7 @@
 #include "math/TransformUtils.h"
 #include "math/MathUtils.h"
 #include "scene/Scene.h"
+#include "physics/BoxColliderUtils.h"
 
 #include <algorithm>
 #include <cassert>
@@ -359,6 +360,30 @@ bool EditorHistory::ResetTransforms(std::span<const SceneObjectId> objectIds) {
 	return true;
 }
 
+bool EditorHistory::SetCollider(SceneObjectId objectId, std::optional<BoxCollider> collider) {
+	CommitEdit();
+	const auto *object = scene_.FindObject(objectId);
+	if (!object) return false;
+	AxisAlignedBox bounds;
+	if (collider && !BoxColliderUtils::GetWorldBounds(*collider, object->transform, bounds)) return false;
+	const bool adding = !object->collider;
+	ColliderCommand command{objectId, object->collider, collider};
+	if (!command.HasChanges()) return true;
+	const auto next = PrepareAppend();
+	if (!command.Redo(scene_)) return false;
+	AppendPrepared(Command{std::move(command)}, next, !collider ? "Remove Box Collider" :
+	    adding ? "Add Box Collider" : "Edit Box Collider");
+	return true;
+}
+
+bool EditorHistory::BeginCollider(SceneObjectId objectId) {
+	CommitEdit();
+	const auto *object = scene_.FindObject(objectId);
+	if (!object || !object->collider) return false;
+	pending_ = PendingEdit{objectId, object->collider};
+	return true;
+}
+
 bool EditorHistory::SetModelPath(SceneObjectId objectId, std::filesystem::path modelPath) {
 	CommitEdit();
 	const auto *object = scene_.FindObject(objectId);
@@ -648,6 +673,8 @@ bool EditorHistory::HasPendingChanges() const {
 
 		    if constexpr (std::is_same_v<Before, Transform>) {
 			    return !TransformUtils::AreEqual(before, object->transform);
+		    } else if constexpr (std::is_same_v<Before, std::optional<BoxCollider>>) {
+			    return before != object->collider;
 		    } else {
 			    return before != object->name;
 		    }
@@ -743,6 +770,14 @@ void EditorHistory::CommitEdit() {
 		return;
 	}
 
+	if (std::holds_alternative<std::optional<BoxCollider>>(pending_->before) && object->collider) {
+		AxisAlignedBox bounds;
+		if (!BoxColliderUtils::GetWorldBounds(*object->collider, object->transform, bounds)) {
+			Invalidate();
+			return;
+		}
+	}
+
 	// 空の名前で確定した場合は、編集開始時点の名前へ戻す
 	if (std::holds_alternative<std::string>(pending_->before) &&
 	    object->name.empty()) {
@@ -771,6 +806,8 @@ void EditorHistory::CommitEdit() {
 			        before,
 			        object->transform,
 			    }};
+		    } else if constexpr (std::is_same_v<Before, std::optional<BoxCollider>>) {
+			    return Command{ColliderCommand{objectId, before, object->collider}};
 		    } else {
 			    return Command{RenameCommand{
 			        objectId,
@@ -785,7 +822,8 @@ void EditorHistory::CommitEdit() {
 
 	AppendPrepared(std::move(command), next,
 	               std::holds_alternative<Transform>(pending_->before)
-	                   ? "Transform Object" : "Rename Object");
+	                   ? "Transform Object" : std::holds_alternative<std::string>(pending_->before)
+	                   ? "Rename Object" : "Edit Box Collider");
 	pending_.reset();
 }
 

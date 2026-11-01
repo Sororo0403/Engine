@@ -17,6 +17,7 @@
 #include "panels/PerformancePanel.h"
 #include "panels/InspectorPanel.h"
 #include "panels/SceneViewPanel.h"
+#include "physics/ColliderBounds.h"
 #include "scene/IScene.h"
 #include "scene/SceneDocument.h"
 #include "scene/SceneGrid.h"
@@ -226,6 +227,12 @@ class EditorScene final : public IScene {
 	/// </summary>
 	/// <param name="path">検索するモデルのパス</param>
 	void SelectModelInstances(const std::filesystem::path &path);
+
+	/// <summary>
+	/// モデルに合う衝突形状を設定する。モデルなしは単位ボックスを設定する
+	/// </summary>
+	/// <param name="id">対象物体ID</param>
+	void FitCollider(SceneObjectId id);
 
 	/// <summary>
 	/// 現在のダイアログを描画し、選択結果を処理する
@@ -452,6 +459,7 @@ class EditorScene final : public IScene {
 	Transform selectionGizmoStart_;
 
 	SelectionBounds selectionBounds_;
+	ColliderBounds colliderBounds_;
 
 	SceneGrid sceneGrid_;
 	ControlsPanel controlsPanel_;

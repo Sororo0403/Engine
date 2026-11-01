@@ -4,6 +4,8 @@
 #include "physics/AxisAlignedBox.h"
 #include "physics/BoxCollider.h"
 
+#include <span>
+
 namespace BoxColliderUtils {
 
 /// <summary>
@@ -12,6 +14,16 @@ namespace BoxColliderUtils {
 /// <param name="collider">確認する衝突形状</param>
 /// <returns>true:有効 false:無効</returns>
 bool IsValid(const BoxCollider &collider);
+
+/// <summary>
+/// モデルなどのローカル座標の頂点を囲む衝突形状を作る
+/// </summary>
+/// <param name="points">有限のローカル座標の頂点</param>
+/// <param name="collider">成功時に設定する形状</param>
+/// <param name="minimumHalfExtent">厚みのない軸にも設定する半分の大きさ</param>
+/// <returns>true:成功 false:頂点なし、または値が無効。失敗時は出力を保持する</returns>
+bool FitToPoints(std::span<const DirectX::XMFLOAT3> points, BoxCollider &collider,
+                 float minimumHalfExtent = 0.001f);
 
 /// <summary>
 /// 回転・拡縮・移動を反映し、形状を囲むワールド座標のボックスを作る

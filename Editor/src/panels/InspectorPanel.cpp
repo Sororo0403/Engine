@@ -6,6 +6,7 @@
 #include "math/TransformUtils.h"
 #include "platform/windows/PathUtils.h"
 #include "scene/Scene.h"
+#include "physics/ColliderInspector.h"
 
 #include <imgui.h>
 
@@ -111,6 +112,7 @@ void InspectorPanel::Clear() {
 	modelRequest_ = {};
 	visibilityRequest_ = {};
 	transformRequest_ = {};
+	colliderFitRequest_ = 0;
 	assetRevealPath_.clear();
 }
 
@@ -130,10 +132,13 @@ const InspectorPanel::VisibilityRequest &InspectorPanel::GetVisibilityRequest() 
 	return visibilityRequest_;
 }
 
+SceneObjectId InspectorPanel::GetColliderFitRequest() const { return colliderFitRequest_; }
+
 bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
                           SceneObjectId selectedObjectId,
                           EditorHistory &history, bool canPasteTransform) {
 	transformRequest_ = {};
+	colliderFitRequest_ = 0;
 	modelRequest_ = {};
 	assetRevealPath_.clear();
 	visibilityRequest_ = {};
@@ -312,6 +317,17 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 		}
 		ImGui::EndDisabled();
 	}
+
+	const auto componentScope = std::to_string(inspectedObjectId);
+	ImGui::PushID(componentScope.c_str());
+	if (ui.Button("Add Component")) ImGui::OpenPopup("AddComponentMenu");
+	if (ImGui::BeginPopup("AddComponentMenu")) {
+		if (ui.MenuItem("Box Collider", nullptr, !object->collider)) colliderFitRequest_ = inspectedObjectId;
+		ImGui::EndPopup();
+	}
+	ImGui::PopID();
+
+	changed |= ColliderInspector{}.Draw(ui, inspectedObjectId, *object, history, colliderFitRequest_);
 
 	ui.EndWindow();
 	return changed;

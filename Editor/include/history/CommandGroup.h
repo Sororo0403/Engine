@@ -1,6 +1,7 @@
 #pragma once
 
 #include "history/ObjectCommand.h"
+#include "history/ColliderCommand.h"
 #include "history/ModelPathCommand.h"
 #include "history/RenameCommand.h"
 #include "history/TransformCommand.h"
@@ -18,7 +19,7 @@ class CommandGroup {
   public:
 	using Command =
 	    std::variant<TransformCommand, ObjectCommand, RenameCommand, ModelPathCommand,
-	                 VisibilityCommand>;
+	                 VisibilityCommand, ColliderCommand>;
 
 	/// <summary>
 	/// 実行順に並んだ操作を保持する。シーンへの反映は行わない
