@@ -11,13 +11,16 @@
 #include "math/TransformUtils.h"
 #include "platform/windows/PathUtils.h"
 #include "scene/Scene.h"
+#include "selection/SelectionFrustum.h"
 
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <exception>
 #include <format>
 #include <imgui.h>
 #include <utility>
+#include <vector>
 
 EditorScene::EditorScene(const EngineContext &context)
     : ui_(context.ui), input_(context.input), models_(context.models),
@@ -92,7 +95,8 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	// ギズモ操作とInspectorの編集を、同じ履歴として混在させない
-	ui_.BeginDisabled(gizmo_.IsUsing() || gizmoEditActive_);
+	ui_.BeginDisabled(gizmo_.IsUsing() || gizmoEditActive_ ||
+	                  sceneViewPanel_.IsSelecting());
 	inspectorPanel_.Draw(ui_, scene, selection_.GetActiveId(), history);
 	ui_.EndDisabled();
 
@@ -177,7 +181,7 @@ bool EditorScene::Update(float deltaTime) {
 
 	ViewportInput cameraInput = viewport;
 
-	if (gizmo_.IsUsing()) {
+	if (gizmo_.IsUsing() || sceneViewPanel_.IsSelecting()) {
 		cameraInput = {};
 	}
 
@@ -186,6 +190,7 @@ bool EditorScene::Update(float deltaTime) {
 	auto *target = sceneViewPanel_.GetRenderTexture();
 
 	if (!target) {
+		sceneViewPanel_.CancelSelection();
 		if (gizmoEditActive_) {
 			history.CommitEdit();
 			gizmoEditActive_ = false;
@@ -305,18 +310,17 @@ bool EditorScene::Update(float deltaTime) {
 		gizmoEditActive_ = false;
 	}
 
-	if (!gizmoResult.blocksSelection && viewport.imageHovered &&
-	    viewport.imagePositionValid && viewport.applicationFocused &&
-	    !viewport.widgetActive && viewport.leftPressed && !viewport.rightDown) {
-		const SceneObjectId picked =
-		    renderer_.Pick(viewport.imageX, viewport.imageY);
-
-		const bool changed = ImGui::GetIO().KeyCtrl
-		                         ? selection_.Toggle(picked)
-		                         : selection_.SelectOnly(picked);
-
-		if (changed) {
-			FinishEdit();
+	const auto selectionRequest = sceneViewPanel_.UpdateSelection(
+	    ui_, !inputBlocked, gizmoResult.blocksSelection);
+	if (selectionRequest.action != SceneViewPanel::SelectionRequest::Action::NONE) {
+		try {
+			if (ApplySceneSelection(selectionRequest, view, projection)) {
+				FinishEdit();
+			}
+		} catch (const std::exception &error) {
+			Logger::Error(std::format("EditorScene: 物体の選択に失敗しました: {}",
+			                          error.what()));
+			ShowError("Could not select objects. See the log for details.");
 		}
 	}
 
@@ -437,7 +441,8 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		const EditorHistory &history = document_.GetHistory();
 
 		const bool enabled =
-		    !IsBusy() && !history.IsEditing() && !gizmo_.IsUsing();
+		    !IsBusy() && !history.IsEditing() && !gizmo_.IsUsing() &&
+		    !sceneViewPanel_.IsSelecting();
 
 		if (ui_.MenuItem("Undo", "Ctrl+Z", enabled && history.CanUndo())) {
 			action = EditorAction::UNDO;
@@ -480,6 +485,7 @@ EditorScene::EditorAction
 EditorScene::ReadShortcut(bool objectPanelFocused) const {
 	// 文字入力中の操作は、ImGuiの入力欄へ任せる
 	if (IsBusy() || ui_.IsTextInputActive() || gizmo_.IsUsing() ||
+	    sceneViewPanel_.IsSelecting() ||
 	    document_.GetHistory().IsEditing()) {
 		return EditorAction::NONE;
 	}
@@ -791,6 +797,48 @@ void EditorScene::FinishEdit() {
 
 	gizmo_.Cancel();
 	gizmoEditActive_ = false;
+	sceneViewPanel_.CancelSelection();
+}
+
+bool EditorScene::ApplySceneSelection(
+    const SceneViewPanel::SelectionRequest &request,
+    const DirectX::XMFLOAT4X4 &view,
+    const DirectX::XMFLOAT4X4 &projection) {
+	using Action = SceneViewPanel::SelectionRequest::Action;
+	if (request.action == Action::CLICK) {
+		const SceneObjectId picked =
+		    renderer_.Pick(request.minimum.x, request.minimum.y);
+		return request.additive ? selection_.Toggle(picked)
+		                        : selection_.SelectOnly(picked);
+	}
+	if (request.action != Action::BOX) {
+		return false;
+	}
+	SelectionFrustum volume;
+	if (!volume.Initialize(view, projection, request.minimum, request.maximum)) {
+		return false;
+	}
+
+	std::vector<SceneObjectId> ids;
+	if (request.additive) {
+		const auto current = selection_.GetIds();
+		ids.assign(current.begin(), current.end());
+	}
+	for (const auto &[id, object] : document_.GetScene().GetObjects()) {
+		if (object.modelPath.empty()) {
+			continue;
+		}
+		std::array<DirectX::XMFLOAT3, 8> corners;
+		if (renderer_.GetObjectBounds(id, corners) && volume.Intersects(corners) &&
+		    std::find(ids.begin(), ids.end(), id) == ids.end()) {
+			ids.push_back(id);
+		}
+	}
+	const auto current = selection_.GetIds();
+	if (std::equal(current.begin(), current.end(), ids.begin(), ids.end())) {
+		return false;
+	}
+	return selection_.Set(std::move(ids));
 }
 
 bool EditorScene::MakeSelectionTransform(Transform &transform) const {
@@ -834,7 +882,8 @@ bool EditorScene::ReadFrameSelectedShortcut(const ViewportInput &viewport,
 	    (!viewport.windowFocused && !hierarchyFocused) ||
 	    viewport.widgetActive || viewport.rightDown ||
 	    ui_.IsTextInputActive() || ImGui::IsAnyItemActive() ||
-	    gizmo_.IsUsing() || document_.GetHistory().IsEditing()) {
+	    gizmo_.IsUsing() || sceneViewPanel_.IsSelecting() ||
+	    document_.GetHistory().IsEditing()) {
 		return false;
 	}
 

@@ -15,6 +15,17 @@ class RenderTexture;
 class SceneViewPanel {
   public:
 	/// <summary>
+	/// Scene画像で確定した選択操作
+	/// </summary>
+	struct SelectionRequest {
+		enum class Action { NONE, CLICK, BOX };
+		Action action = Action::NONE;
+		DirectX::XMFLOAT2 minimum{};
+		DirectX::XMFLOAT2 maximum{};
+		bool additive = false;
+	};
+
+	/// <summary>
 	/// 描画機能への参照を保持する
 	/// </summary>
 	/// <param name="render">このパネルより長く保持する描画機能</param>
@@ -69,6 +80,27 @@ class SceneViewPanel {
 	const ViewportInput &GetInput() const;
 
 	/// <summary>
+	/// ギズモ判定後に選択入力を更新し、ドラッグ中の矩形を表示する
+	/// </summary>
+	/// <param name="ui">フレーム開始済みのUI</param>
+	/// <param name="enabled">選択操作を受け付けるか</param>
+	/// <param name="gizmoBlocksSelection">押下をギズモの操作として扱うか</param>
+	/// <returns>ボタンを離したときに確定したクリックまたは範囲選択</returns>
+	SelectionRequest UpdateSelection(const ImGuiSystem &ui, bool enabled,
+	                                 bool gizmoBlocksSelection);
+
+	/// <summary>
+	/// 選択操作の押下またはドラッグを継続しているか確認する
+	/// </summary>
+	/// <returns>true:選択操作中 false:操作なし</returns>
+	bool IsSelecting() const;
+
+	/// <summary>
+	/// 確定していない選択操作を中止する
+	/// </summary>
+	void CancelSelection();
+
+	/// <summary>
 	/// 描画先を解放する。GPUの利用完了後に呼び出す
 	/// </summary>
 	void Finalize();
@@ -84,4 +116,12 @@ class SceneViewPanel {
 
 	DirectX::XMFLOAT2 imageMinimum_{};
 	DirectX::XMFLOAT2 imageSize_{};
+
+	bool selecting_ = false;
+	bool selectionDragging_ = false;
+	bool selectionAdditive_ = false;
+	DirectX::XMFLOAT2 selectionStart_{};
+	DirectX::XMFLOAT2 selectionPressPosition_{};
+	DirectX::XMFLOAT2 selectionImageMinimum_{};
+	DirectX::XMFLOAT2 selectionImageSize_{};
 };

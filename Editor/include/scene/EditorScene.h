@@ -178,6 +178,17 @@ class EditorScene final : public IScene {
 	bool MakeSelectionTransform(Transform &transform) const;
 
 	/// <summary>
+	/// Sceneビューで確定したクリックまたは範囲選択を反映する
+	/// </summary>
+	/// <param name="request">画像内の正規化した選択操作</param>
+	/// <param name="view">更新済みのビュー行列</param>
+	/// <param name="projection">更新済みの投影行列</param>
+	/// <returns>true:選択変更あり false:変更なし、または無効な範囲</returns>
+	bool ApplySceneSelection(const SceneViewPanel::SelectionRequest &request,
+	                         const DirectX::XMFLOAT4X4 &view,
+	                         const DirectX::XMFLOAT4X4 &projection);
+
+	/// <summary>
 	/// 選択モデルへカメラを寄せるショートカットを判定する
 	/// </summary>
 	/// <param name="viewport">Sceneビューの入力状態</param>

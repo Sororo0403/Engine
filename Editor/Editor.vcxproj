@@ -135,6 +135,7 @@
     <ClInclude Include="include\history\TransformCommand.h" />
     <ClInclude Include="include\history\ObjectCommand.h" />
     <ClInclude Include="include\selection\SelectionBounds.h" />
+    <ClInclude Include="include\selection\SelectionFrustum.h" />
     <ClInclude Include="include\scene\SceneGrid.h" />
     <ClInclude Include="include\history\RenameCommand.h" />
   </ItemGroup>
@@ -160,11 +161,12 @@
     <ClCompile Include="src\gizmo\TransformGizmo.cpp" />
     <ClCompile Include="src\history\TransformCommand.cpp" />
     <ClCompile Include="src\selection\SelectionBounds.cpp" />
+    <ClCompile Include="src\selection\SelectionFrustum.cpp" />
   </ItemGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir)external\imguizmo\include;$(EngineExternalRoot)imgui\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).compile.pdb</ProgramDataBaseFileName>
     </ClCompile>
     <Link>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>

@@ -113,6 +113,9 @@
     <ClCompile Include="src\selection\SelectionBounds.cpp">
       <Filter>src\selection</Filter>
     </ClCompile>
+    <ClCompile Include="src\selection\SelectionFrustum.cpp">
+      <Filter>src\selection</Filter>
+    </ClCompile>
     <ClCompile Include="src\scene\SceneGrid.cpp">
       <Filter>src\scene</Filter>
     </ClCompile>
@@ -170,6 +173,9 @@
       <Filter>include\history</Filter>
     </ClInclude>
     <ClInclude Include="include\selection\SelectionBounds.h">
+      <Filter>include\selection</Filter>
+    </ClInclude>
+    <ClInclude Include="include\selection\SelectionFrustum.h">
       <Filter>include\selection</Filter>
     </ClInclude>
     <ClInclude Include="include\scene\SceneGrid.h">
