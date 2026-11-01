@@ -4,6 +4,8 @@
 
 #include <DirectXMath.h>
 
+struct Ray;
+
 class Camera {
   public:
 	/// <summary>
@@ -38,6 +40,15 @@ class Camera {
 	/// <param name="pose">設定する姿勢</param>
 	/// <returns>true:成功 false:値が無効、または視線を計算できない</returns>
 	bool SetPose(const CameraPose &pose);
+
+	/// <summary>
+	/// 更新済みの行列から、画像内の位置を通るレイを作成する
+	/// </summary>
+	/// <param name="imageX">画像内の横位置。左端0、右端1</param>
+	/// <param name="imageY">画像内の縦位置。上端0、下端1</param>
+	/// <param name="ray">成功した場合に設定するワールド座標のレイ</param>
+	/// <returns>true:成功 false:位置または行列が無効</returns>
+	bool CreatePickingRay(float imageX, float imageY, Ray &ray) const;
 
   private:
 	DirectX::XMFLOAT3 position_{0.0f, 0.0f, -2.0f};

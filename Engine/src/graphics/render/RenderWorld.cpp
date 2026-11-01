@@ -7,7 +7,10 @@
 #include "graphics/render/D3D12Graphics.h"
 #include "graphics/render/MeshRenderer.h"
 #include "math/MathUtils.h"
+#include "math/Ray.h"
+#include "math/TransformUtils.h"
 
+#include <cmath>
 #include <cstdint>
 #include <exception>
 #include <format>
@@ -356,4 +359,92 @@ void RenderWorld::Draw(MeshRenderer &renderer) const {
 
 bool RenderWorld::Uses(const D3D12Graphics &graphics) const {
 	return &impl_->graphics_ == &graphics;
+}
+
+RenderObjectHandle RenderWorld::Pick(float imageX, float imageY) const {
+	if (!impl_->initialized_ || !impl_->prepared_) {
+		return {};
+	}
+
+	Ray worldRay;
+
+	if (!impl_->camera_.CreatePickingRay(imageX, imageY, worldRay)) {
+		return {};
+	}
+
+	using namespace DirectX;
+
+	const XMVECTOR worldOrigin = XMLoadFloat3(&worldRay.origin);
+	const XMVECTOR worldDirection = XMLoadFloat3(&worldRay.direction);
+
+	float nearestDistance = worldRay.maxDistance;
+	RenderObjectHandle nearestHandle;
+
+	for (std::size_t index = 0; index < impl_->slots_.size(); ++index) {
+		const auto &slot = impl_->slots_[index];
+
+		if (!slot.object_) {
+			continue;
+		}
+
+		const auto &object = *slot.object_;
+
+		if (!object.model_.model_ ||
+		    !TransformUtils::IsValid(object.transform_)) {
+			continue;
+		}
+
+		const XMMATRIX world =
+		    TransformUtils::MakeWorldMatrix(object.transform_);
+
+		XMVECTOR determinant;
+		const XMMATRIX inverseWorld = XMMatrixInverse(&determinant, world);
+
+		const float determinantValue = XMVectorGetX(determinant);
+
+		if (!std::isfinite(determinantValue) || determinantValue == 0.0f) {
+			continue;
+		}
+
+		// レイをモデルのローカル座標へ変換する
+		const XMVECTOR localOrigin =
+		    XMVector3TransformCoord(worldOrigin, inverseWorld);
+
+		const XMVECTOR localDirection =
+		    XMVector3TransformNormal(worldDirection, inverseWorld);
+
+		const float directionLength =
+		    XMVectorGetX(XMVector3Length(localDirection));
+
+		if (!std::isfinite(directionLength) || directionLength <= 0.0f) {
+			continue;
+		}
+
+		Ray localRay;
+		XMStoreFloat3(&localRay.origin, localOrigin);
+		XMStoreFloat3(&localRay.direction,
+		              XMVectorScale(localDirection, 1.0f / directionLength));
+
+		float localDistance = 0.0f;
+
+		if (!object.model_.model_->Raycast(localRay, localDistance)) {
+			continue;
+		}
+
+		// ローカル座標の距離を、ワールド座標の距離へ戻す
+		const float worldDistance = localDistance / directionLength;
+
+		if (!std::isfinite(worldDistance) || worldDistance < 0.0f ||
+		    worldDistance >= nearestDistance) {
+			continue;
+		}
+
+		nearestDistance = worldDistance;
+
+		nearestHandle.worldId_ = impl_->worldId_;
+		nearestHandle.index_ = index;
+		nearestHandle.generation_ = slot.generation_;
+	}
+
+	return nearestHandle;
 }

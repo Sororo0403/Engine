@@ -240,6 +240,9 @@ bool ImGuiSystem::Initialize(const WinApp &app, D3D12Graphics &graphics) {
 
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
+		// 画像内のドラッグでウィンドウを移動させない
+		io.ConfigWindowsMoveFromTitleBarOnly = true;
+
 		ImGui::StyleColorsDark();
 
 		if (!ImGui_ImplWin32_Init(hwnd)) {
@@ -692,13 +695,59 @@ ViewportInput ImGuiSystem::GetViewportInput() const {
 	impl_->UseFrame();
 
 	const ImGuiIO &io = ImGui::GetIO();
+	const ImGuiContext &context = *ImGui::GetCurrentContext();
+	const ImGuiWindow *window = ImGui::GetCurrentWindow();
 
 	ViewportInput input;
-	input.imageHovered = ImGui::IsItemHovered();
-	input.windowFocused = ImGui::IsWindowFocused();
+
+	// キーボードナビゲーションではなく、マウス位置で判定する
+	input.imageHovered = ImGui::IsItemHovered(ImGuiHoveredFlags_NoNavOverride);
+
 	input.applicationFocused = !io.AppFocusLost;
 
-	input.widgetActive = io.WantTextInput || ImGui::IsAnyItemActive();
+	input.leftPressed = ImGui::IsMouseClicked(ImGuiMouseButton_Left);
+	input.rightPressed = ImGui::IsMouseClicked(ImGuiMouseButton_Right);
+	input.rightDown = ImGui::IsMouseDown(ImGuiMouseButton_Right);
+
+	// 画像など、IDを持たない項目をクリックしてもMoveIdが設定される。
+	// 実際の移動・ドッキング・無効項目の操作は除外しない。
+	const bool backgroundActive =
+	    context.ActiveId == window->MoveId && context.MovingWindow == nullptr &&
+	    !context.DragDropActive && context.ActiveIdDisabledId == 0;
+
+	// 入力欄や他のウィジェットを操作している場合は画像操作を止める
+	input.widgetActive = ImGui::IsAnyItemActive() && !backgroundActive;
+
+	if (input.imageHovered && ImGui::IsMousePosValid()) {
+		const ImVec2 minimum = ImGui::GetItemRectMin();
+		const ImVec2 maximum = ImGui::GetItemRectMax();
+		const ImVec2 mouse = ImGui::GetMousePos();
+
+		const float width = maximum.x - minimum.x;
+		const float height = maximum.y - minimum.y;
+
+		if (std::isfinite(width) && std::isfinite(height) && width > 0.0f &&
+		    height > 0.0f) {
+			const float x = (mouse.x - minimum.x) / width;
+			const float y = (mouse.y - minimum.y) / height;
+
+			if (std::isfinite(x) && std::isfinite(y) && x >= 0.0f && x < 1.0f &&
+			    y >= 0.0f && y < 1.0f) {
+				input.imagePositionValid = true;
+				input.imageX = x;
+				input.imageY = y;
+			}
+		}
+	}
+
+	// フレーム末尾の処理を待たず、クリックした画像のウィンドウへ
+	// フォーカスを移してからカメラの開始条件を判定できるようにする
+	if (input.applicationFocused && input.imagePositionValid &&
+	    !input.widgetActive && (input.leftPressed || input.rightPressed)) {
+		ImGui::SetWindowFocus();
+	}
+
+	input.windowFocused = ImGui::IsWindowFocused();
 
 	return input;
 }

@@ -1,10 +1,13 @@
 #include "graphics/model/Model.h"
 #include "core/Logger.h"
 #include "graphics/model/ModelData.h"
+#include "math/MathUtils.h"
+#include "math/Ray.h"
 
 #include <directxtk12/DirectXHelpers.h>
 
 #include <array>
+#include <cmath>
 #include <cstdint>
 #include <exception>
 #include <format>
@@ -79,6 +82,25 @@ bool Model::CreateMeshes(ID3D12Device *device, const ModelData &data) {
 		}
 
 		part.materialIndex = source.materialIndex;
+
+		// 選択判定には座標と頂点番号だけを保持する
+		part.positions.reserve(source.mesh.vertices.size());
+
+		for (const auto &vertex : source.mesh.vertices) {
+			if (!MathUtils::IsFinite(vertex.position)) {
+				Logger::Error(
+				    std::format("Model: メッシュ{}の頂点座標が無効です。", i));
+				return false;
+			}
+
+			part.positions.push_back(vertex.position);
+		}
+
+		part.indices = source.mesh.indices;
+
+		DirectX::BoundingBox::CreateFromPoints(
+		    part.bounds, part.positions.size(), part.positions.data(),
+		    sizeof(DirectX::XMFLOAT3));
 	}
 
 	return true;
@@ -179,6 +201,62 @@ Model::GetTextureSrv(std::size_t materialIndex) const {
 
 ID3D12DescriptorHeap *Model::GetDescriptorHeap() const {
 	return srvHeap_ ? srvHeap_->Heap() : nullptr;
+}
+
+bool Model::Raycast(const Ray &ray, float &distance) const {
+	if (!MathUtils::IsFinite(ray.origin) ||
+	    !MathUtils::IsFinite(ray.direction) ||
+	    !std::isfinite(ray.maxDistance) || ray.maxDistance <= 0.0f) {
+		return false;
+	}
+
+	using namespace DirectX;
+
+	const XMVECTOR origin = XMLoadFloat3(&ray.origin);
+	const XMVECTOR rawDirection = XMLoadFloat3(&ray.direction);
+
+	const float lengthSquared = XMVectorGetX(XMVector3LengthSq(rawDirection));
+
+	if (!std::isfinite(lengthSquared) || lengthSquared <= 0.0f) {
+		return false;
+	}
+
+	const XMVECTOR direction = XMVector3Normalize(rawDirection);
+
+	float nearestDistance = ray.maxDistance;
+	bool hit = false;
+
+	for (const auto &part : parts_) {
+		float boxDistance = 0.0f;
+
+		// 外接ボックスに当たらないメッシュは三角形を調べない
+		if (!part.bounds.Intersects(origin, direction, boxDistance)) {
+			continue;
+		}
+
+		for (std::size_t i = 0; i + 2 < part.indices.size(); i += 3) {
+			const auto &p0 = part.positions[part.indices[i]];
+			const auto &p1 = part.positions[part.indices[i + 1]];
+			const auto &p2 = part.positions[part.indices[i + 2]];
+
+			float triangleDistance = 0.0f;
+
+			if (TriangleTests::Intersects(origin, direction, XMLoadFloat3(&p0),
+			                              XMLoadFloat3(&p1), XMLoadFloat3(&p2),
+			                              triangleDistance) &&
+			    std::isfinite(triangleDistance) && triangleDistance >= 0.0f &&
+			    triangleDistance < nearestDistance) {
+				nearestDistance = triangleDistance;
+				hit = true;
+			}
+		}
+	}
+
+	if (hit) {
+		distance = nearestDistance;
+	}
+
+	return hit;
 }
 
 void Model::Finalize() {

@@ -1,11 +1,11 @@
 #pragma once
 
 #include "graphics/DirectionalLightData.h"
-#include "math/Transform.h"
 #include "graphics/camera/CameraPose.h"
 #include "graphics/material/MaterialData.h"
 #include "graphics/model/ModelHandle.h"
 #include "graphics/render/RenderObjectHandle.h"
+#include "math/Transform.h"
 
 #include <DirectXMath.h>
 #include <cstddef>
@@ -115,6 +115,15 @@ class RenderWorld {
 	/// <returns>true:成功 false:姿勢が無効</returns>
 	bool SetCameraPose(const CameraPose &pose);
 
+	/// <summary>
+	/// 画像内の位置から、最も近くで交差する描画物体を取得する
+	/// </summary>
+	/// <param name="imageX">画像内の横位置。左端0、右端1</param>
+	/// <param name="imageY">画像内の縦位置。上端0、下端1</param>
+	/// <returns>交差した物体のハンドル。交差なし、または更新前の場合は未設定</returns>
+	/// <remarks>Update成功後、Drawより前に呼び出す</remarks>
+	RenderObjectHandle Pick(float imageX, float imageY) const;
+
   private:
 	friend class RenderSystem;
 
@@ -147,6 +156,7 @@ class RenderWorld {
 	/// <returns>true:一致 false:不一致</returns>
 	bool Uses(const D3D12Graphics &graphics) const;
 
+  private:
 	struct Impl;
 	std::unique_ptr<Impl> impl_;
 };

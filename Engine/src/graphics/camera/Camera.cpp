@@ -1,6 +1,7 @@
 #include "graphics/camera/Camera.h"
 
 #include "math/MathUtils.h"
+#include "math/Ray.h"
 
 #include <cmath>
 
@@ -74,5 +75,59 @@ bool Camera::SetPose(const CameraPose &pose) {
 	target_ = pose.target;
 	up_ = pose.up;
 
+	return true;
+}
+
+bool Camera::CreatePickingRay(float imageX, float imageY, Ray &ray) const {
+	if (!std::isfinite(imageX) || !std::isfinite(imageY) || imageX < 0.0f ||
+	    imageX > 1.0f || imageY < 0.0f || imageY > 1.0f) {
+		return false;
+	}
+
+	using namespace DirectX;
+
+	const XMMATRIX view = XMLoadFloat4x4(&viewMatrix_);
+	const XMMATRIX projection = XMLoadFloat4x4(&projectionMatrix_);
+
+	XMVECTOR determinant;
+	const XMMATRIX inverseViewProjection =
+	    XMMatrixInverse(&determinant, view * projection);
+
+	const float determinantValue = XMVectorGetX(determinant);
+
+	if (!std::isfinite(determinantValue) || determinantValue == 0.0f) {
+		return false;
+	}
+
+	// UIの左上原点を、クリップ空間の座標へ変換する
+	const float x = imageX * 2.0f - 1.0f;
+	const float y = 1.0f - imageY * 2.0f;
+
+	const XMVECTOR nearPoint = XMVector3TransformCoord(
+	    XMVectorSet(x, y, 0.0f, 1.0f), inverseViewProjection);
+
+	const XMVECTOR farPoint = XMVector3TransformCoord(
+	    XMVectorSet(x, y, 1.0f, 1.0f), inverseViewProjection);
+
+	const XMVECTOR difference = XMVectorSubtract(farPoint, nearPoint);
+
+	const float length = XMVectorGetX(XMVector3Length(difference));
+
+	if (!std::isfinite(length) || length <= 0.0f) {
+		return false;
+	}
+
+	Ray result;
+	XMStoreFloat3(&result.origin, nearPoint);
+	XMStoreFloat3(&result.direction, XMVectorScale(difference, 1.0f / length));
+
+	result.maxDistance = length;
+
+	if (!MathUtils::IsFinite(result.origin) ||
+	    !MathUtils::IsFinite(result.direction)) {
+		return false;
+	}
+
+	ray = result;
 	return true;
 }

@@ -7,6 +7,7 @@
 #include "graphics/ui/ImGuiSystem.h"
 #include "input/InputSystem.h"
 #include "input/Key.h"
+#include "input/MouseButton.h"
 #include "platform/windows/PathUtils.h"
 
 #include <cmath>
@@ -102,7 +103,6 @@ bool EditorScene::Update(float deltaTime) {
 			action = ReadShortcut();
 		}
 
-		// 配置やTransformの変更を反映してから保存する
 		if (action != FileAction::NONE) {
 			StartAction(action);
 		}
@@ -130,7 +130,19 @@ bool EditorScene::Update(float deltaTime) {
 		return false;
 	}
 
-	return renderer_.Update(target->GetWidth(), target->GetHeight());
+	// 最新のカメラ・Transform・描画サイズを判定へ反映する
+	if (!renderer_.Update(target->GetWidth(), target->GetHeight())) {
+		return false;
+	}
+
+	if (viewport.imageHovered && viewport.imagePositionValid &&
+	    viewport.applicationFocused && !viewport.widgetActive &&
+	    viewport.leftPressed && !viewport.rightDown) {
+		// 空白をクリックした場合は0となり、選択を解除する
+		selectedObjectId_ = renderer_.Pick(viewport.imageX, viewport.imageY);
+	}
+
+	return true;
 }
 
 void EditorScene::Draw() const {

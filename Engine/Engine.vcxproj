@@ -51,6 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\math\MathUtils.h" />
+    <ClInclude Include="include\math\Ray.h" />
     <ClInclude Include="include\math\TransformUtils.h" />
     <ClInclude Include="include\graphics\render\D3D12Helpers.h" />
     <ClInclude Include="include\graphics\buffer\ConstantBuffer.h" />

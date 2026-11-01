@@ -69,6 +69,15 @@ class SceneRenderer {
 	/// <returns>true:成功 false:未初期化、または姿勢が無効</returns>
 	bool SetCameraPose(const CameraPose &pose);
 
+	/// <summary>
+	/// 画像内の位置から、最も近くで交差するシーン上の物体を取得する
+	/// </summary>
+	/// <param name="imageX">画像内の横位置。左端0、右端1</param>
+	/// <param name="imageY">画像内の縦位置。上端0、下端1</param>
+	/// <returns>交差した物体のID。交差なしの場合は0</returns>
+	/// <remarks>Update成功後、Drawより前に呼び出す</remarks>
+	SceneObjectId Pick(float imageX, float imageY) const;
+
   private:
 	/// <summary>
 	/// シーン上の物体と対応する描画物体の情報

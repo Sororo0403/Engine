@@ -1,16 +1,19 @@
 #pragma once
 
 #include "graphics/material/Material.h"
-#include "graphics/mesh/Mesh.h"
 #include "graphics/material/Texture.h"
+#include "graphics/mesh/Mesh.h"
 
 #include <directxtk12/DescriptorHeap.h>
 
+#include <DirectXCollision.h>
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <vector>
 
 struct ModelData;
+struct Ray;
 
 /// <summary>
 /// モデルの描画に使用する共有リソースを保持する
@@ -18,11 +21,17 @@ struct ModelData;
 class Model {
   private:
 	/// <summary>
-	/// GPU側のメッシュと、そのメッシュが使用する材質番号
+	/// メッシュのGPUリソース・材質番号・選択判定用の形状
 	/// </summary>
 	struct MeshPart {
 		Mesh mesh;
 		std::size_t materialIndex = 0;
+
+		std::vector<DirectX::XMFLOAT3> positions;
+		std::vector<std::uint32_t> indices;
+
+		// モデルのローカル座標で表す外接ボックス
+		DirectX::BoundingBox bounds;
 	};
 
   public:
@@ -81,6 +90,14 @@ class Model {
 	/// </summary>
 	/// <returns>ヒープへの借用ポインタ。未初期化の場合はnullptr</returns>
 	ID3D12DescriptorHeap *GetDescriptorHeap() const;
+
+	/// <summary>
+	/// モデルのローカル座標で、レイと三角形の交差を判定する
+	/// </summary>
+	/// <param name="ray">ローカル座標のレイ。方向は長さ1</param>
+	/// <param name="distance">交差した場合に設定する、始点からの距離</param>
+	/// <returns>true:交差あり false:交差なし、またはレイが無効</returns>
+	bool Raycast(const Ray &ray, float &distance) const;
 
 	/// <summary>
 	/// GPUリソースを解放する。GPUの利用完了後、参照する物体より後に呼び出す

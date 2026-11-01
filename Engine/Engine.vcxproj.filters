@@ -373,6 +373,9 @@
     <ClInclude Include="include\scene\SceneSerializer.h">
       <Filter>include\scene</Filter>
     </ClInclude>
+    <ClInclude Include="include\math\Ray.h">
+      <Filter>include\math</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resources\shaders\triangle\Triangle.PS.hlsl">

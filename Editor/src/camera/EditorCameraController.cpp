@@ -3,7 +3,6 @@
 #include "graphics/ui/ViewportInput.h"
 #include "input/InputSystem.h"
 #include "input/Key.h"
-#include "input/MouseButton.h"
 
 #include <algorithm>
 #include <cmath>
@@ -21,8 +20,8 @@ void EditorCameraController::Update(const InputSystem &input,
 
 	// 他のUI操作やフォーカス喪失を優先する
 	if (!viewport.applicationFocused || !viewport.windowFocused ||
-	    viewport.widgetActive || !mouse.IsConnected() ||
-	    !mouse.IsDown(MouseButton::RIGHT) || keyboard.IsPressed(Key::ESCAPE)) {
+	    viewport.widgetActive || !mouse.IsConnected() || !viewport.rightDown ||
+	    keyboard.IsPressed(Key::ESCAPE)) {
 		navigating_ = false;
 		return;
 	}
@@ -31,7 +30,7 @@ void EditorCameraController::Update(const InputSystem &input,
 
 	if (!navigating_) {
 		// Scene画像以外で押した右ボタンでは操作を開始しない
-		if (!viewport.imageHovered || !mouse.IsPressed(MouseButton::RIGHT)) {
+		if (!viewport.imageHovered || !viewport.rightPressed) {
 			return;
 		}
 
