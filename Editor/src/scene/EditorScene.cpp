@@ -121,6 +121,7 @@ bool EditorScene::Update(float deltaTime) {
 	                  sceneViewPanel_.IsSelecting());
 	inspectorPanel_.Draw(ui_, scene, selection_.GetActiveId(), history);
 	const auto &modelRequest = inspectorPanel_.GetModelRequest();
+	const auto &visibilityRequest = inspectorPanel_.GetVisibilityRequest();
 	ui_.EndDisabled();
 
 	const auto requestedModelPath = assetsPanel_.Draw(ui_, assets_);
@@ -177,6 +178,12 @@ bool EditorScene::Update(float deltaTime) {
 				case HierarchyPanel::Action::FRAME_SELECTED:
 					frameRequest_ = FrameRequest::SELECTED;
 					break;
+				case HierarchyPanel::Action::HIDE_OBJECTS:
+					ChangeVisibility(selection_.GetIds(), false);
+					break;
+				case HierarchyPanel::Action::SHOW_OBJECTS:
+					ChangeVisibility(selection_.GetIds(), true);
+					break;
 				case HierarchyPanel::Action::NONE:
 					break;
 				}
@@ -196,9 +203,14 @@ bool EditorScene::Update(float deltaTime) {
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 			AssignModel(modelRequest.objectId, modelRequest.path);
 		}
+		if (!IsBusy() && action == EditorAction::NONE && visibilityRequest.objectId != 0 &&
+		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
+			ChangeVisibility({&visibilityRequest.objectId, 1}, visibilityRequest.visible);
+		}
 
 		if (!IsBusy()) {
-			if (action == EditorAction::NONE && modelDrop.path.empty() && modelRequest.objectId == 0) {
+			if (action == EditorAction::NONE && modelDrop.path.empty() &&
+			    modelRequest.objectId == 0 && visibilityRequest.objectId == 0) {
 				const bool objectPanelFocused =
 				    hierarchyRequest.windowFocused ||
 				    sceneViewPanel_.GetInput().windowFocused;
@@ -224,6 +236,7 @@ bool EditorScene::Update(float deltaTime) {
 	    !requestedModelPath.empty() ||
 	    !modelDrop.path.empty() ||
 	    modelRequest.objectId != 0 ||
+	    visibilityRequest.objectId != 0 ||
 	    hierarchyRequest.action != HierarchyPanel::Action::NONE;
 
 	ViewportInput viewport = sceneViewPanel_.GetInput();
@@ -861,7 +874,7 @@ void EditorScene::StartAction(EditorAction action) {
 		} else {
 			std::vector<SceneObjectId> ids;
 			for (const auto &[id, object] : document_.GetScene().GetObjects()) {
-				if (!object.modelPath.empty()) {
+				if (object.visible && !object.modelPath.empty()) {
 					ids.push_back(id);
 				}
 			}
@@ -1103,6 +1116,34 @@ bool EditorScene::IsBusy() const {
 	return stage_ != DialogStage::IDLE || exitQueued_ || closeApproved_;
 }
 
+bool EditorScene::ChangeVisibility(std::span<const SceneObjectId> objectIds, bool visible) {
+	try {
+		FinishEdit();
+		// 全モデルを確認してから、一括変更を履歴へ反映する
+		for (const auto id : objectIds) {
+			const auto *object = document_.GetScene().FindObject(id);
+			if (!object) {
+				ShowError("Could not find an object to change its visibility.");
+				return false;
+			}
+			if (visible && !object->visible && !object->modelPath.empty() &&
+			    !models_.Load(object->modelPath)) {
+				ShowError("Could not load a model. Visibility was kept unchanged.");
+				return false;
+			}
+		}
+		if (!document_.GetHistory().SetVisibility(objectIds, visible)) {
+			ShowError("Could not change model visibility.");
+			return false;
+		}
+		return true;
+	} catch (const std::exception &error) {
+		Logger::Error(std::format("EditorScene::ChangeVisibility: {}", error.what()));
+		ShowError("Could not change model visibility. See the log for details.");
+		return false;
+	}
+}
+
 bool EditorScene::AssignModel(SceneObjectId objectId, const std::filesystem::path &modelPath) {
 	try {
 		FinishEdit();
@@ -1194,7 +1235,7 @@ bool EditorScene::ApplySceneSelection(
 		ids.assign(current.begin(), current.end());
 	}
 	for (const auto &[id, object] : document_.GetScene().GetObjects()) {
-		if (object.modelPath.empty()) {
+		if (!object.visible || object.modelPath.empty()) {
 			continue;
 		}
 		std::array<DirectX::XMFLOAT3, 8> corners;
@@ -1239,7 +1280,7 @@ bool EditorScene::FrameObjects(
 	DirectX::XMFLOAT3 maximum{};
 	bool found = false;
 	for (const auto &[id, object] : document_.GetScene().GetObjects()) {
-		if (object.modelPath.empty() ||
+		if (!object.visible || object.modelPath.empty() ||
 		    (request == FrameRequest::SELECTED && !selection_.Contains(id))) {
 			continue;
 		}

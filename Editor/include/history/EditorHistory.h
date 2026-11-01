@@ -5,6 +5,7 @@
 #include "history/ObjectCommand.h"
 #include "history/RenameCommand.h"
 #include "history/TransformCommand.h"
+#include "history/VisibilityCommand.h"
 #include "scene/SceneObject.h"
 
 #include <cstddef>
@@ -199,10 +200,18 @@ class EditorHistory {
 	/// <returns>true:変更成功、または変更なし false:物体が存在しない</returns>
 	bool SetModelPath(SceneObjectId objectId, std::filesystem::path modelPath);
 
+	/// <summary>
+	/// 選択物体の表示状態をまとめて変更し、1操作として記録する
+	/// </summary>
+	/// <param name="objectIds">重複のない対象ID一覧</param>
+	/// <param name="visible">変更後の表示状態</param>
+	/// <returns>true:変更成功、または変更なし false:対象なし、重複、存在しないIDあり</returns>
+	bool SetVisibility(std::span<const SceneObjectId> objectIds, bool visible);
+
   private:
 	// 単独の編集操作、または複数の編集操作を保持する
 	using Command = std::variant<TransformCommand, ObjectCommand, RenameCommand,
-	                             ModelPathCommand, CommandGroup>;
+	                             ModelPathCommand, VisibilityCommand, CommandGroup>;
 
 	/// <summary>
 	/// 操作と、その前後の状態を識別する情報

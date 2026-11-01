@@ -4,6 +4,7 @@
 #include "history/ModelPathCommand.h"
 #include "history/RenameCommand.h"
 #include "history/TransformCommand.h"
+#include "history/VisibilityCommand.h"
 
 #include <variant>
 #include <vector>
@@ -16,7 +17,8 @@ class Scene;
 class CommandGroup {
   public:
 	using Command =
-	    std::variant<TransformCommand, ObjectCommand, RenameCommand, ModelPathCommand>;
+	    std::variant<TransformCommand, ObjectCommand, RenameCommand, ModelPathCommand,
+	                 VisibilityCommand>;
 
 	/// <summary>
 	/// 実行順に並んだ操作を保持する。シーンへの反映は行わない

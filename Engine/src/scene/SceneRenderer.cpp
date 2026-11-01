@@ -78,11 +78,11 @@ void SceneRenderer::Draw(RenderTexture *target) const {
 }
 
 bool SceneRenderer::SynchronizeObjects() {
-	// 削除された物体、またはモデルを持たなくなった物体を取り除く
+	// 削除・非表示・モデルなしの物体を描画ワールドから取り除く
 	for (auto it = objects_.begin(); it != objects_.end();) {
 		const SceneObject *object = scene_.FindObject(it->first);
 
-		if (!object || object->modelPath.empty()) {
+		if (!object || !object->visible || object->modelPath.empty()) {
 			world_->DestroyObject(it->second.handle);
 			it = objects_.erase(it);
 		} else {
@@ -91,7 +91,7 @@ bool SceneRenderer::SynchronizeObjects() {
 	}
 
 	for (const auto &[id, object] : scene_.GetObjects()) {
-		if (object.modelPath.empty()) {
+		if (!object.visible || object.modelPath.empty()) {
 			continue;
 		}
 
@@ -183,7 +183,8 @@ bool SceneRenderer::GetCameraMatrices(DirectX::XMFLOAT4X4 &view,
 
 bool SceneRenderer::GetObjectBounds(
     SceneObjectId objectId, std::array<DirectX::XMFLOAT3, 8> &corners) const {
-	if (!world_ || !scene_.Contains(objectId)) {
+	const auto *object = scene_.FindObject(objectId);
+	if (!world_ || !object || !object->visible) {
 		return false;
 	}
 

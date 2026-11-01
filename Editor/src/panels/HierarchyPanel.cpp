@@ -121,8 +121,9 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 
 			// アクティブ物体に印を付けても、項目のIDは変えない
 			const auto label = std::format(
-			    "{}{}###SceneObject{}",
-			    selection.GetActiveId() == id ? "> " : "  ", name, id);
+			    "{}{}{}###SceneObject{}",
+			    selection.GetActiveId() == id ? "> " : "  ",
+			    object.visible ? "" : "[Hidden] ", name, id);
 
 			const auto &io = ImGui::GetIO();
 			if (ui.Selectable(label.c_str(), selection.Contains(id))) {
@@ -133,7 +134,7 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 					result.selectionChanged = true;
 				}
 			}
-			if (!object.modelPath.empty() && ImGui::IsItemHovered() &&
+			if (object.visible && !object.modelPath.empty() && ImGui::IsItemHovered() &&
 			    ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) &&
 			    !io.KeyCtrl && !io.KeyShift && !io.KeyAlt) {
 				result.selectionChanged |= SelectObject(id, visibleIds, false, false, selection);
@@ -159,6 +160,20 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 				}
 				if (ui.MenuItem("Duplicate", "Ctrl+D", true)) {
 					result.action = Action::DUPLICATE_OBJECTS;
+				}
+				bool canHide = false;
+				bool canShow = false;
+				for (const auto selectedId : selection.GetIds()) {
+					if (const auto *selected = scene.FindObject(selectedId)) {
+						canHide |= selected->visible;
+						canShow |= !selected->visible;
+					}
+				}
+				if (ui.MenuItem("Hide Selected", nullptr, canHide)) {
+					result.action = Action::HIDE_OBJECTS;
+				}
+				if (ui.MenuItem("Show Selected", nullptr, canShow)) {
+					result.action = Action::SHOW_OBJECTS;
 				}
 				ui.Separator();
 				if (ui.MenuItem("Delete", "Delete", true)) {

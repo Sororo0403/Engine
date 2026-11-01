@@ -28,6 +28,8 @@ class HierarchyPanel {
 		RESET_TRANSFORMS,
 		RENAME_OBJECT,
 		FRAME_SELECTED,
+		HIDE_OBJECTS,
+		SHOW_OBJECTS,
 	};
 
 	/// <summary>

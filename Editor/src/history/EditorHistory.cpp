@@ -375,6 +375,35 @@ bool EditorHistory::SetModelPath(SceneObjectId objectId, std::filesystem::path m
 	return true;
 }
 
+bool EditorHistory::SetVisibility(std::span<const SceneObjectId> objectIds, bool visible) {
+	CommitEdit();
+	if (objectIds.empty()) {
+		return false;
+	}
+	std::set<SceneObjectId> seen;
+	std::vector<CommandGroup::Command> commands;
+	commands.reserve(objectIds.size());
+	for (const auto id : objectIds) {
+		const auto *object = scene_.FindObject(id);
+		if (!object || !seen.insert(id).second) {
+			return false;
+		}
+		if (object->visible != visible) {
+			commands.emplace_back(VisibilityCommand{id, object->visible, visible});
+		}
+	}
+	if (commands.empty()) {
+		return true;
+	}
+	CommandGroup group{std::move(commands)};
+	const auto next = PrepareAppend();
+	if (!group.Redo(scene_)) {
+		return false;
+	}
+	AppendPrepared(Command{std::move(group)}, next, visible ? "Show Models" : "Hide Models");
+	return true;
+}
+
 bool EditorHistory::HasPendingChanges() const {
 	if (pendingTransforms_) {
 		for (const auto &snapshot : *pendingTransforms_) {

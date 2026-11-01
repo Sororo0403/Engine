@@ -79,6 +79,7 @@ void ControlsPanel::Draw() {
 	    {"Ctrl + A", "Select visible Hierarchy items, or all models when Scene is focused."},
 	    {"Esc", "Clear selection, or cancel a selection rectangle."},
 	    {"F2", "Rename the single selected object in Inspector."},
+	    {"Visible / Hierarchy menu", "Show or hide models without deleting objects. Visibility changes support Undo / Redo."},
 	    {"Ctrl + D / Delete", "Duplicate / delete the selected objects."},
 	    {"Ctrl + C / X / V", "Copy / cut / paste scene objects."},
 	});

@@ -105,10 +105,15 @@ const InspectorPanel::ModelRequest &InspectorPanel::GetModelRequest() const {
 	return modelRequest_;
 }
 
+const InspectorPanel::VisibilityRequest &InspectorPanel::GetVisibilityRequest() const {
+	return visibilityRequest_;
+}
+
 bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
                           SceneObjectId selectedObjectId,
                           EditorHistory &history) {
 	modelRequest_ = {};
+	visibilityRequest_ = {};
 	const bool focusName = renameObjectId_ != 0 &&
 	                       renameObjectId_ == selectedObjectId;
 	if (focusName) {
@@ -153,6 +158,11 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 	}
 
 	ui.Text(std::format("ID: {}", selectedObjectId));
+	bool visible = object->visible;
+	if (ImGui::Checkbox("Visible", &visible)) {
+		visibilityRequest_ = {selectedObjectId, visible};
+	}
+	ImGui::SetItemTooltip("Render this object's model. Hidden models are excluded from Scene picking.");
 	ui.Separator();
 
 	if (ui.CollapsingHeader("Transform")) {

@@ -106,7 +106,7 @@ class SceneRenderer {
 	/// </summary>
 	/// <param name="objectId">対象物体のID</param>
 	/// <param name="corners">成功した場合に設定する8頂点</param>
-	/// <returns>true:成功 false:未初期化、物体なし、またはモデルなし</returns>
+	/// <returns>true:成功 false:未初期化、物体なし、非表示、またはモデルなし</returns>
 	/// <remarks>シーンの変更をUpdateで反映した後に呼び出す</remarks>
 	bool GetObjectBounds(SceneObjectId objectId,
 	                     std::array<DirectX::XMFLOAT3, 8> &corners) const;

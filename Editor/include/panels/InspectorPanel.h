@@ -27,6 +27,20 @@ class InspectorPanel {
 	/// </summary>
 	/// <returns>変更要求。操作がない場合のIDは0、参照解除の場合のパスは空</returns>
 	const ModelRequest &GetModelRequest() const;
+
+	/// <summary>
+	/// 選択物体のモデルの表示状態の変更要求
+	/// </summary>
+	struct VisibilityRequest {
+		SceneObjectId objectId = 0;
+		bool visible = true;
+	};
+
+	/// <summary>
+	/// このフレームの表示状態の変更要求を取得する
+	/// </summary>
+	/// <returns>変更要求。操作がない場合のIDは0</returns>
+	const VisibilityRequest &GetVisibilityRequest() const;
 	/// <summary>
 	/// 指定した物体の名前欄へのフォーカスを、次の描画時に予約する
 	/// </summary>
@@ -51,4 +65,5 @@ class InspectorPanel {
 	DirectX::XMFLOAT4 displayedRotation_{0.0f, 0.0f, 0.0f, 1.0f};
 	SceneObjectId renameObjectId_ = 0;
 	ModelRequest modelRequest_;
+	VisibilityRequest visibilityRequest_;
 };

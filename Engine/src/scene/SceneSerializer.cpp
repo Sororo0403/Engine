@@ -116,6 +116,7 @@ bool SceneSerializer::Save(const Scene &scene,
 			    {"id", id},
 			    {"name", object.name},
 			    {"model", PathUtils::ToUtf8(object.modelPath)},
+			    {"visible", object.visible},
 			    {"transform",
 			     {
 			         {"translation", ToJson(object.transform.translation)},
@@ -127,7 +128,7 @@ bool SceneSerializer::Save(const Scene &scene,
 
 		const Json document{
 		    {"format", "EngineScene"},
-		    {"version", 2},
+		    {"version", 3},
 		    {"objects", std::move(objects)},
 		};
 
@@ -176,7 +177,8 @@ bool SceneSerializer::Load(Scene &scene,
 
 		if (!document.is_object() || document.at("format") != "EngineScene" ||
 		    !document.at("version").is_number_integer() ||
-		    (document.at("version") != 1 && document.at("version") != 2)) {
+		    (document.at("version") != 1 && document.at("version") != 2 &&
+		     document.at("version") != 3)) {
 			throw std::runtime_error("未対応のシーンファイル形式です。");
 		}
 
@@ -201,6 +203,9 @@ bool SceneSerializer::Load(Scene &scene,
 			const SceneObjectId id = idValue.get<SceneObjectId>();
 
 			SceneObject object;
+			if (version >= 3) {
+				object.visible = item.at("visible").get<bool>();
+			}
 			object.name = item.at("name").get<std::string>();
 
 			if (object.name.empty()) {

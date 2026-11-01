@@ -22,6 +22,7 @@
 #include "settings/RecentScenes.h"
 
 #include <filesystem>
+#include <span>
 #include <string>
 
 struct EngineContext;
@@ -216,6 +217,14 @@ class EditorScene final : public IScene {
 	/// <param name="modelPath">変更先のモデル。空の場合は参照を解除する</param>
 	/// <returns>true:成功 false:物体がない、読み込みまたは変更に失敗</returns>
 	bool AssignModel(SceneObjectId objectId, const std::filesystem::path &modelPath);
+
+	/// <summary>
+	/// 表示するモデルの読み込みを確認し、表示状態をまとめて変更する
+	/// </summary>
+	/// <param name="objectIds">変更する物体のID一覧</param>
+	/// <param name="visible">変更後の表示状態</param>
+	/// <returns>true:成功 false:読み込みまたは変更に失敗</returns>
+	bool ChangeVisibility(std::span<const SceneObjectId> objectIds, bool visible);
 
 	/// <summary>
 	/// 編集中の内容を履歴へ確定し、ギズモ操作を中止する
