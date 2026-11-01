@@ -5,11 +5,13 @@
 #include "graphics/model/ModelManager.h"
 #include "graphics/render/RenderTexture.h"
 #include "graphics/ui/ImGuiSystem.h"
+#include "history/EditorHistory.h"
 #include "input/InputSystem.h"
 #include "input/Key.h"
-#include "input/MouseButton.h"
 #include "platform/windows/PathUtils.h"
 #include "scene/Scene.h"
+
+#include <imgui.h>
 
 #include <cmath>
 #include <exception>
@@ -32,10 +34,13 @@ bool EditorScene::Initialize() {
 		return false;
 	}
 
+	gizmo_.Cancel();
+	gizmoEditActive_ = false;
+
 	cameraController_.Reset();
 
 	stage_ = DialogStage::IDLE;
-	pendingAction_ = FileAction::NONE;
+	pendingAction_ = EditorAction::NONE;
 	exitQueued_ = false;
 	closeApproved_ = false;
 	errorOpenRequested_ = false;
@@ -59,15 +64,14 @@ bool EditorScene::Update(float deltaTime) {
 		return false;
 	}
 
-	// Engine側で開始したImGuiフレームに続けて開始する
 	gizmo_.BeginFrame();
 
 	if (exitQueued_ && stage_ == DialogStage::IDLE) {
 		exitQueued_ = false;
-		StartAction(FileAction::EXIT);
+		StartAction(EditorAction::EXIT);
 	}
 
-	FileAction action = DrawMenuBar();
+	EditorAction action = DrawMenuBar();
 
 	dockLayout_.Draw(ui_, resetDockLayout_);
 	resetDockLayout_ = false;
@@ -75,14 +79,25 @@ bool EditorScene::Update(float deltaTime) {
 	const bool wasBusy = IsBusy();
 
 	Scene &scene = document_.GetScene();
+	EditorHistory &history = document_.GetHistory();
 
 	ui_.BeginDisabled(wasBusy);
+
+	const SceneObjectId previousSelection = selectedObjectId_;
 
 	const bool hierarchyChanged =
 	    hierarchyPanel_.Draw(ui_, scene, selectedObjectId_);
 
-	const bool inspectorChanged =
-	    inspectorPanel_.Draw(ui_, scene, selectedObjectId_);
+	if (hierarchyChanged) {
+		FinishTransformEdit();
+
+		// 物体の追加・削除は、今回は履歴対象外
+		document_.MarkModified();
+	} else if (previousSelection != selectedObjectId_) {
+		FinishTransformEdit();
+	}
+
+	inspectorPanel_.Draw(ui_, scene, selectedObjectId_, history);
 
 	const auto requestedModelPath = assetsPanel_.Draw(ui_, assets_);
 
@@ -94,8 +109,9 @@ bool EditorScene::Update(float deltaTime) {
 		return false;
 	}
 
-	if (hierarchyChanged || inspectorChanged) {
-		document_.MarkModified();
+	// Inspectorが閉じられた場合や、フォーカスを失った場合にも確定する
+	if (!gizmoEditActive_ && !ImGui::IsAnyItemActive()) {
+		history.CommitTransform();
 	}
 
 	if (!wasBusy) {
@@ -103,11 +119,11 @@ bool EditorScene::Update(float deltaTime) {
 			PlaceModel(requestedModelPath);
 		}
 
-		if (action == FileAction::NONE) {
+		if (action == EditorAction::NONE) {
 			action = ReadShortcut();
 		}
 
-		if (action != FileAction::NONE) {
+		if (action != EditorAction::NONE) {
 			StartAction(action);
 		}
 	}
@@ -115,7 +131,7 @@ bool EditorScene::Update(float deltaTime) {
 	UpdateDialogs();
 
 	const bool inputBlocked = wasBusy || IsBusy() ||
-	                          action != FileAction::NONE ||
+	                          action != EditorAction::NONE ||
 	                          !requestedModelPath.empty();
 
 	ViewportInput viewport = sceneViewPanel_.GetInput();
@@ -126,7 +142,7 @@ bool EditorScene::Update(float deltaTime) {
 
 	ViewportInput cameraInput = viewport;
 
-	// ギズモのドラッグ中に、カメラ操作へ切り替わらないようにする
+	// ギズモのドラッグ中にカメラ操作へ切り替わらないようにする
 	if (gizmo_.IsUsing()) {
 		cameraInput = {};
 	}
@@ -136,6 +152,12 @@ bool EditorScene::Update(float deltaTime) {
 	auto *target = sceneViewPanel_.GetRenderTexture();
 
 	if (!target) {
+		// Scene非表示による中断は、ギズモの編集だけを確定する
+		if (gizmoEditActive_) {
+			history.CommitTransform();
+			gizmoEditActive_ = false;
+		}
+
 		gizmo_.Cancel();
 		return true;
 	}
@@ -145,7 +167,6 @@ bool EditorScene::Update(float deltaTime) {
 		return false;
 	}
 
-	// ギズモと選択判定に使うカメラ・描画物体を更新する
 	if (!renderer_.Update(target->GetWidth(), target->GetHeight())) {
 		return false;
 	}
@@ -166,6 +187,9 @@ bool EditorScene::Update(float deltaTime) {
 		transform = &selected->transform;
 	}
 
+	// 最初に値が変化したフレームの、変更前の状態を保持する
+	const Transform beforeGizmo = transform ? *transform : Transform{};
+
 	const bool gizmoEnabled = !inputBlocked && viewport.applicationFocused &&
 	                          !viewport.rightDown &&
 	                          (!viewport.widgetActive || gizmo_.IsUsing());
@@ -175,19 +199,39 @@ bool EditorScene::Update(float deltaTime) {
 	                              selectedObjectId_, transform, gizmoEnabled);
 
 	if (gizmoResult.changed) {
-		document_.MarkModified();
+		if (!gizmoEditActive_) {
+			if (!history.BeginTransform(selectedObjectId_, beforeGizmo)) {
+				Logger::Error(
+				    "EditorScene: ギズモの編集履歴を開始できませんでした。");
+				return false;
+			}
 
-		// ギズモによる変更を、このフレームの描画へ反映する
+			gizmoEditActive_ = true;
+		}
+
+		// ギズモの変更を、このフレームの描画へ反映する
 		if (!renderer_.Update(target->GetWidth(), target->GetHeight())) {
 			return false;
 		}
+	}
+
+	// ボタンを離した場合や、操作が中止された場合に1操作として確定する
+	if (gizmoEditActive_ && !gizmo_.IsUsing()) {
+		history.CommitTransform();
+		gizmoEditActive_ = false;
 	}
 
 	// ギズモを掴んだクリックでは、モデル選択を変更しない
 	if (!gizmoResult.blocksSelection && viewport.imageHovered &&
 	    viewport.imagePositionValid && viewport.applicationFocused &&
 	    !viewport.widgetActive && viewport.leftPressed && !viewport.rightDown) {
-		selectedObjectId_ = renderer_.Pick(viewport.imageX, viewport.imageY);
+		const SceneObjectId picked =
+		    renderer_.Pick(viewport.imageX, viewport.imageY);
+
+		if (picked != selectedObjectId_) {
+			FinishTransformEdit();
+			selectedObjectId_ = picked;
+		}
 	}
 
 	return true;
@@ -202,6 +246,8 @@ void EditorScene::Draw() const {
 }
 
 void EditorScene::Finalize() {
+	FinishTransformEdit();
+
 	sceneViewPanel_.Finalize();
 	renderer_.Finalize();
 
@@ -209,7 +255,7 @@ void EditorScene::Finalize() {
 	selectedObjectId_ = 0;
 
 	stage_ = DialogStage::IDLE;
-	pendingAction_ = FileAction::NONE;
+	pendingAction_ = EditorAction::NONE;
 	exitQueued_ = false;
 	closeApproved_ = false;
 	errorOpenRequested_ = false;
@@ -222,8 +268,8 @@ void EditorScene::Finalize() {
 }
 
 bool EditorScene::RequestClose() {
-	// 終了確認中・終了許可済みの場合は重複して予約しない
-	if (!closeApproved_ && pendingAction_ != FileAction::EXIT) {
+	// ほかのダイアログ中の終了要求は、操作完了まで保持する
+	if (!closeApproved_ && pendingAction_ != EditorAction::EXIT) {
 		exitQueued_ = true;
 	}
 
@@ -242,8 +288,8 @@ std::string EditorScene::GetWindowTitle() const {
 	                   document_.IsModified() ? "*" : "");
 }
 
-EditorScene::FileAction EditorScene::DrawMenuBar() {
-	FileAction action = FileAction::NONE;
+EditorScene::EditorAction EditorScene::DrawMenuBar() {
+	EditorAction action = EditorAction::NONE;
 
 	if (!ui_.BeginMainMenuBar()) {
 		return action;
@@ -253,27 +299,44 @@ EditorScene::FileAction EditorScene::DrawMenuBar() {
 		const bool enabled = !IsBusy();
 
 		if (ui_.MenuItem("New", "Ctrl+N", enabled)) {
-			action = FileAction::NEW;
+			action = EditorAction::NEW;
 		}
 
 		if (ui_.MenuItem("Open...", "Ctrl+O", enabled)) {
-			action = FileAction::OPEN;
+			action = EditorAction::OPEN;
 		}
 
 		ui_.Separator();
 
 		if (ui_.MenuItem("Save", "Ctrl+S", enabled)) {
-			action = FileAction::SAVE;
+			action = EditorAction::SAVE;
 		}
 
 		if (ui_.MenuItem("Save As...", "Ctrl+Shift+S", enabled)) {
-			action = FileAction::SAVE_AS;
+			action = EditorAction::SAVE_AS;
 		}
 
 		ui_.Separator();
 
 		if (ui_.MenuItem("Exit", nullptr, enabled)) {
-			action = FileAction::EXIT;
+			action = EditorAction::EXIT;
+		}
+
+		ui_.EndMenu();
+	}
+
+	if (ui_.BeginMenu("Edit")) {
+		const EditorHistory &history = document_.GetHistory();
+
+		const bool enabled =
+		    !IsBusy() && !history.IsEditing() && !gizmo_.IsUsing();
+
+		if (ui_.MenuItem("Undo", "Ctrl+Z", enabled && history.CanUndo())) {
+			action = EditorAction::UNDO;
+		}
+
+		if (ui_.MenuItem("Redo", "Ctrl+Y", enabled && history.CanRedo())) {
+			action = EditorAction::REDO;
 		}
 
 		ui_.EndMenu();
@@ -291,42 +354,72 @@ EditorScene::FileAction EditorScene::DrawMenuBar() {
 	return action;
 }
 
-EditorScene::FileAction EditorScene::ReadShortcut() const {
-	if (IsBusy() || ui_.IsTextInputActive()) {
-		return FileAction::NONE;
+EditorScene::EditorAction EditorScene::ReadShortcut() const {
+	// 文字入力中のCtrl+Zは、ImGuiの入力欄へ任せる
+	if (IsBusy() || ui_.IsTextInputActive() || gizmo_.IsUsing() ||
+	    document_.GetHistory().IsEditing()) {
+		return EditorAction::NONE;
 	}
 
 	const Keyboard &keyboard = input_.GetKeyboard();
 
 	if (!keyboard.IsDown(Key::CTRL)) {
-		return FileAction::NONE;
+		return EditorAction::NONE;
+	}
+
+	if (keyboard.IsPressed(Key::Z)) {
+		return keyboard.IsDown(Key::SHIFT) ? EditorAction::REDO
+		                                   : EditorAction::UNDO;
+	}
+
+	if (keyboard.IsPressed(Key::Y)) {
+		return EditorAction::REDO;
 	}
 
 	if (keyboard.IsPressed(Key::S)) {
-		return keyboard.IsDown(Key::SHIFT) ? FileAction::SAVE_AS
-		                                   : FileAction::SAVE;
+		return keyboard.IsDown(Key::SHIFT) ? EditorAction::SAVE_AS
+		                                   : EditorAction::SAVE;
 	}
 
 	if (keyboard.IsPressed(Key::O)) {
-		return FileAction::OPEN;
+		return EditorAction::OPEN;
 	}
 
 	if (keyboard.IsPressed(Key::N)) {
-		return FileAction::NEW;
+		return EditorAction::NEW;
 	}
 
-	return FileAction::NONE;
+	return EditorAction::NONE;
 }
 
-void EditorScene::StartAction(FileAction action) {
-	if (stage_ != DialogStage::IDLE || closeApproved_) {
+void EditorScene::StartAction(EditorAction action) {
+	if (stage_ != DialogStage::IDLE || closeApproved_ ||
+	    action == EditorAction::NONE) {
 		return;
 	}
 
+	// 保存やUndoを実行する前に、編集中の値を確定する
+	FinishTransformEdit();
+
 	switch (action) {
-	case FileAction::NEW:
-	case FileAction::OPEN:
-	case FileAction::EXIT:
+	case EditorAction::UNDO:
+		if (document_.GetHistory().CanUndo() &&
+		    !document_.GetHistory().Undo()) {
+			ShowError("Could not undo the edit.");
+		}
+		return;
+
+	case EditorAction::REDO:
+		if (document_.GetHistory().CanRedo() &&
+		    !document_.GetHistory().Redo()) {
+			ShowError("Could not redo the edit.");
+		}
+		return;
+
+	case EditorAction::NEW:
+	case EditorAction::OPEN:
+	case EditorAction::EXIT:
+		// 保存確認が終わるまで、実際の操作は保留する
 		pendingAction_ = action;
 
 		if (document_.IsModified()) {
@@ -342,40 +435,45 @@ void EditorScene::StartAction(FileAction action) {
 		}
 		return;
 
-	case FileAction::SAVE:
-		pendingAction_ = FileAction::NONE;
+	case EditorAction::SAVE:
+		pendingAction_ = EditorAction::NONE;
 		StartSave(false);
 		return;
 
-	case FileAction::SAVE_AS:
-		pendingAction_ = FileAction::NONE;
+	case EditorAction::SAVE_AS:
+		pendingAction_ = EditorAction::NONE;
 		StartSave(true);
 		return;
 
-	case FileAction::NONE:
+	case EditorAction::NONE:
 		return;
 	}
 }
 
 void EditorScene::ExecutePendingAction() {
-	const FileAction action = pendingAction_;
-	pendingAction_ = FileAction::NONE;
+	const EditorAction action = pendingAction_;
+
+	pendingAction_ = EditorAction::NONE;
 	stage_ = DialogStage::IDLE;
 
 	switch (action) {
-	case FileAction::NEW:
+	case EditorAction::NEW:
 		document_.New();
+
+		gizmo_.Cancel();
+		gizmoEditActive_ = false;
+
 		selectedObjectId_ = 0;
 		cameraController_.Reset();
 		return;
 
-	case FileAction::OPEN:
+	case EditorAction::OPEN:
 		fileDialog_.Show(SceneFileDialogMode::OPEN, document_.GetFilePath());
 
 		stage_ = DialogStage::OPEN_FILE;
 		return;
 
-	case FileAction::EXIT:
+	case EditorAction::EXIT:
 		closeApproved_ = true;
 		return;
 
@@ -418,7 +516,7 @@ void EditorScene::UpdateDialogs() {
 			break;
 
 		case SaveChangesResult::CANCEL:
-			pendingAction_ = FileAction::NONE;
+			pendingAction_ = EditorAction::NONE;
 			stage_ = DialogStage::IDLE;
 			break;
 
@@ -439,6 +537,9 @@ void EditorScene::UpdateDialogs() {
 
 		if (result == SceneFileDialogResult::ACCEPTED) {
 			if (document_.Open(fileDialog_.GetSelectedPath())) {
+				gizmo_.Cancel();
+				gizmoEditActive_ = false;
+
 				selectedObjectId_ = 0;
 				cameraController_.Reset();
 				stage_ = DialogStage::IDLE;
@@ -455,7 +556,7 @@ void EditorScene::UpdateDialogs() {
 
 		if (result == SceneFileDialogResult::CANCELLED) {
 			// 保存先選択を取り消した場合は、NewやExitも取り消す
-			pendingAction_ = FileAction::NONE;
+			pendingAction_ = EditorAction::NONE;
 			stage_ = DialogStage::IDLE;
 			return;
 		}
@@ -499,7 +600,8 @@ void EditorScene::UpdateDialogs() {
 void EditorScene::ShowError(std::string message) {
 	errorMessage_ = std::move(message);
 	errorOpenRequested_ = true;
-	pendingAction_ = FileAction::NONE;
+
+	pendingAction_ = EditorAction::NONE;
 	stage_ = DialogStage::ERROR;
 }
 
@@ -512,6 +614,8 @@ void EditorScene::PlaceModel(const std::filesystem::path &modelPath) {
 		if (modelPath.empty()) {
 			return;
 		}
+
+		FinishTransformEdit();
 
 		const std::string name = PathUtils::ToUtf8(modelPath.stem());
 
@@ -534,4 +638,11 @@ void EditorScene::PlaceModel(const std::filesystem::path &modelPath) {
 
 		ShowError("Could not place the model. See the log for details.");
 	}
+}
+
+void EditorScene::FinishTransformEdit() {
+	document_.GetHistory().CommitTransform();
+
+	gizmo_.Cancel();
+	gizmoEditActive_ = false;
 }

@@ -117,6 +117,7 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\history\EditorHistory.h" />
     <ClInclude Include="include\panels\AssetsPanel.h" />
     <ClInclude Include="include\assets\AssetDatabase.h" />
     <ClInclude Include="include\camera\EditorCameraController.h" />
@@ -129,8 +130,10 @@
     <ClInclude Include="include\dialogs\SceneFileDialog.h" />
     <ClInclude Include="include\scene\SceneDocument.h" />
     <ClInclude Include="include\gizmo\TransformGizmo.h" />
+    <ClInclude Include="include\history\TransformCommand.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\history\EditorHistory.cpp" />
     <ClCompile Include="src\panels\AssetsPanel.cpp" />
     <ClCompile Include="src\assets\AssetDatabase.cpp" />
     <ClCompile Include="src\scene\SceneDocument.cpp" />
@@ -144,6 +147,7 @@
     <ClCompile Include="src\layout\EditorDockLayout.cpp" />
     <ClCompile Include="src\scene\EditorScene.cpp" />
     <ClCompile Include="src\gizmo\TransformGizmo.cpp" />
+    <ClCompile Include="src\history\TransformCommand.cpp" />
   </ItemGroup>
   <ItemDefinitionGroup>
     <ClCompile>

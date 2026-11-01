@@ -26,4 +26,12 @@ DirectX::XMMATRIX MakeWorldMatrix(const Transform &transform);
 bool TryFromWorldMatrix(const DirectX::XMFLOAT4X4 &matrix,
                         Transform &transform);
 
+/// <summary>
+/// 2つの変形情報の全成分が一致するか確認する
+/// </summary>
+/// <param name="left">比較する変形情報</param>
+/// <param name="right">比較する変形情報</param>
+/// <returns>true:一致 false:不一致</returns>
+bool AreEqual(const Transform &left, const Transform &right);
+
 } // namespace TransformUtils

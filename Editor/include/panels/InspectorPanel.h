@@ -4,6 +4,7 @@
 
 class ImGuiSystem;
 class Scene;
+class EditorHistory;
 
 /// <summary>
 /// 選択した物体の情報表示と変形情報の編集を管理する
@@ -16,7 +17,8 @@ class InspectorPanel {
 	/// <param name="ui">フレーム開始済みのUI</param>
 	/// <param name="scene">編集対象のシーン</param>
 	/// <param name="selectedObjectId">選択中の物体ID。未選択は0</param>
+	/// <param name="history">編集内容を記録する履歴</param>
 	/// <returns>true:物体を編集した false:シーンへの変更なし</returns>
 	bool Draw(const ImGuiSystem &ui, Scene &scene,
-	          SceneObjectId selectedObjectId) const;
+	          SceneObjectId selectedObjectId, EditorHistory &history) const;
 };

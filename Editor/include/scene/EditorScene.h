@@ -82,15 +82,17 @@ class EditorScene final : public IScene {
 
   private:
 	/// <summary>
-	/// メニューやショートカットから要求される操作
+	/// メニューやショートカットから要求される編集操作
 	/// </summary>
-	enum class FileAction {
+	enum class EditorAction {
 		NONE,
 		NEW,
 		OPEN,
 		SAVE,
 		SAVE_AS,
 		EXIT,
+		UNDO,
+		REDO,
 	};
 
 	/// <summary>
@@ -108,19 +110,19 @@ class EditorScene final : public IScene {
 	/// メニューバーを構築する
 	/// </summary>
 	/// <returns>選択された操作</returns>
-	FileAction DrawMenuBar();
+	EditorAction DrawMenuBar();
 
 	/// <summary>
 	/// ファイル操作用ショートカットを判定する
 	/// </summary>
 	/// <returns>要求された操作</returns>
-	FileAction ReadShortcut() const;
+	EditorAction ReadShortcut() const;
 
 	/// <summary>
 	/// ファイル操作を開始する
 	/// </summary>
 	/// <param name="action">開始する操作</param>
-	void StartAction(FileAction action);
+	void StartAction(EditorAction action);
 
 	/// <summary>
 	/// 保存確認後に保留していた操作を実行する
@@ -156,6 +158,11 @@ class EditorScene final : public IScene {
 	/// <param name="modelPath">実行ファイル基準のモデルの相対パス</param>
 	void PlaceModel(const std::filesystem::path &modelPath);
 
+	/// <summary>
+	/// 編集中の変形情報を履歴へ確定し、ギズモ操作を中止する
+	/// </summary>
+	void FinishTransformEdit();
+
   private:
 	const ImGuiSystem &ui_;
 	const InputSystem &input_;
@@ -183,7 +190,7 @@ class EditorScene final : public IScene {
 	SceneFileDialog fileDialog_;
 
 	DialogStage stage_ = DialogStage::IDLE;
-	FileAction pendingAction_ = FileAction::NONE;
+	EditorAction pendingAction_ = EditorAction::NONE;
 
 	std::string errorMessage_;
 	bool errorOpenRequested_ = false;
@@ -193,4 +200,6 @@ class EditorScene final : public IScene {
 	bool closeApproved_ = false;
 
 	TransformGizmo gizmo_;
+
+	bool gizmoEditActive_ = false;
 };

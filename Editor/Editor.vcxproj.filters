@@ -51,6 +51,12 @@
     <Filter Include="src\gizmo">
       <UniqueIdentifier>{e8097b4d-80a9-4110-af3f-1e144fc6edf8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\history">
+      <UniqueIdentifier>{29484448-1044-4ac2-b607-f544790fda87}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\history">
+      <UniqueIdentifier>{b6eec9e8-cfd7-44a8-9d12-27c98ea7b962}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -89,6 +95,12 @@
     <ClCompile Include="src\gizmo\TransformGizmo.cpp">
       <Filter>src\gizmo</Filter>
     </ClCompile>
+    <ClCompile Include="src\history\TransformCommand.cpp">
+      <Filter>src\history</Filter>
+    </ClCompile>
+    <ClCompile Include="src\history\EditorHistory.cpp">
+      <Filter>src\history</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\scene\EditorScene.h">
@@ -123,6 +135,12 @@
     </ClInclude>
     <ClInclude Include="include\gizmo\TransformGizmo.h">
       <Filter>include\gizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="include\history\TransformCommand.h">
+      <Filter>include\history</Filter>
+    </ClInclude>
+    <ClInclude Include="include\history\EditorHistory.h">
+      <Filter>include\history</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

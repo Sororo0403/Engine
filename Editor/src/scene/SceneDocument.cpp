@@ -15,14 +15,18 @@ const std::filesystem::path &SceneDocument::GetFilePath() const {
 	return filePath_;
 }
 
-bool SceneDocument::IsModified() const { return modified_; }
+EditorHistory &SceneDocument::GetHistory() { return history_; }
 
-void SceneDocument::MarkModified() { modified_ = true; }
+const EditorHistory &SceneDocument::GetHistory() const { return history_; }
+
+bool SceneDocument::IsModified() const { return history_.IsModified(); }
+
+void SceneDocument::MarkModified() { history_.Invalidate(); }
 
 void SceneDocument::New() {
 	scene_.Clear();
 	filePath_.clear();
-	modified_ = false;
+	history_.Reset();
 }
 
 bool SceneDocument::Open(const std::filesystem::path &filePath) {
@@ -35,7 +39,7 @@ bool SceneDocument::Open(const std::filesystem::path &filePath) {
 
 		// 読み込み成功後に、保存先と変更状態を更新する
 		filePath_.swap(resolvedPath);
-		modified_ = false;
+		history_.Reset();
 		return true;
 	} catch (const std::exception &error) {
 		Logger::Error(std::format("SceneDocument::Open: {}", error.what()));
@@ -62,7 +66,7 @@ bool SceneDocument::SaveAs(const std::filesystem::path &filePath) {
 
 		// 保存失敗時は、元の保存先と変更状態を保持する
 		filePath_.swap(resolvedPath);
-		modified_ = false;
+		history_.MarkSaved();
 		return true;
 	} catch (const std::exception &error) {
 		Logger::Error(std::format("SceneDocument::SaveAs: {}", error.what()));

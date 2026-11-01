@@ -103,3 +103,14 @@ bool TransformUtils::TryFromWorldMatrix(const DirectX::XMFLOAT4X4 &matrix,
 	transform = result;
 	return true;
 }
+
+bool TransformUtils::AreEqual(const Transform &left, const Transform &right) {
+	const auto equal = [](const DirectX::XMFLOAT3 &a,
+	                      const DirectX::XMFLOAT3 &b) {
+		return a.x == b.x && a.y == b.y && a.z == b.z;
+	};
+
+	return equal(left.translation, right.translation) &&
+	       equal(left.rotation, right.rotation) &&
+	       equal(left.scale, right.scale);
+}

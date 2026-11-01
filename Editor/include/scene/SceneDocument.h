@@ -1,5 +1,6 @@
 #pragma once
 
+#include "history/EditorHistory.h"
 #include "scene/Scene.h"
 
 #include <filesystem>
@@ -39,7 +40,7 @@ class SceneDocument {
 	bool IsModified() const;
 
 	/// <summary>
-	/// シーンに未保存の変更があることを記録する
+	/// 履歴対象外の変更を記録し、それ以前の編集履歴をクリアする
 	/// </summary>
 	void MarkModified();
 
@@ -68,8 +69,21 @@ class SceneDocument {
 	/// <returns>true:成功 false:保存失敗</returns>
 	bool SaveAs(const std::filesystem::path &filePath);
 
+	/// <summary>
+	/// 編集中のシーンに対応する履歴を取得する
+	/// </summary>
+	/// <returns>編集履歴への参照</returns>
+	EditorHistory &GetHistory();
+
+	/// <summary>
+	/// 読み取り専用の編集履歴を取得する
+	/// </summary>
+	/// <returns>編集履歴への読み取り専用参照</returns>
+	const EditorHistory &GetHistory() const;
+
   private:
 	Scene scene_;
+	EditorHistory history_{scene_};
+
 	std::filesystem::path filePath_;
-	bool modified_ = false;
 };
