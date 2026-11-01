@@ -135,17 +135,34 @@ EditorHistory::DuplicateObjects(std::span<const SceneObjectId> objectIds) {
 		copies.push_back(std::move(object));
 	}
 
+	return CreateObjects(std::move(copies));
+}
+
+std::vector<SceneObjectId>
+EditorHistory::CreateObjects(std::vector<SceneObject> objects) {
+	CommitEdit();
+	if (objects.empty()) {
+		return {};
+	}
+	for (auto &object : objects) {
+		if (!TransformUtils::IsValid(object.transform)) {
+			return {};
+		}
+		if (object.name.empty()) {
+			object.name = "Object";
+		}
+	}
 	std::vector<SceneObjectId> createdIds;
-	createdIds.reserve(copies.size());
+	createdIds.reserve(objects.size());
 
 	std::vector<CommandGroup::Command> commands;
-	commands.reserve(copies.size());
+	commands.reserve(objects.size());
 
 	const std::uint64_t next = PrepareAppend();
 
 	const bool created = scene_.ApplyTransaction(
-	    [&copies, &createdIds, &commands](Scene &working) {
-		    for (auto &object : copies) {
+	    [&objects, &createdIds, &commands](Scene &working) {
+		    for (auto &object : objects) {
 			    const SceneObjectId id = working.CreateObject(object);
 
 			    commands.emplace_back(ObjectCommand{

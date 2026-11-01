@@ -58,6 +58,7 @@ bool EditorScene::Initialize() {
 
 	// 検索失敗時もEditorは起動し、Assetsパネルにエラーを表示する
 	assets_.Refresh();
+	clipboard_.Clear();
 
 	Logger::Info("EditorSceneを初期化しました。");
 	return true;
@@ -383,6 +384,7 @@ void EditorScene::Finalize() {
 
 	assetsPanel_.Clear();
 	assets_.Clear();
+	clipboard_.Clear();
 
 	cameraController_.Reset();
 }
@@ -472,6 +474,16 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			action = EditorAction::DESELECT_ALL;
 		}
 		ui_.Separator();
+		if (ui_.MenuItem("Copy", "Ctrl+C", objectEnabled)) {
+			action = EditorAction::COPY_OBJECTS;
+		}
+		if (ui_.MenuItem("Cut", "Ctrl+X", objectEnabled)) {
+			action = EditorAction::CUT_OBJECTS;
+		}
+		if (ui_.MenuItem("Paste", "Ctrl+V", enabled && clipboard_.HasObjects())) {
+			action = EditorAction::PASTE_OBJECTS;
+		}
+		ui_.Separator();
 
 		if (ui_.MenuItem("Duplicate", "Ctrl+D", objectEnabled)) {
 			action = EditorAction::DUPLICATE_OBJECTS;
@@ -543,6 +555,17 @@ EditorScene::ReadShortcut(bool objectPanelFocused) const {
 	    keyboard.IsPressed(Key::A)) {
 		return EditorAction::SELECT_ALL;
 	}
+	if (selectionEnabled && control && !shift && !alt) {
+		if (objectEnabled && keyboard.IsPressed(Key::C)) {
+			return EditorAction::COPY_OBJECTS;
+		}
+		if (objectEnabled && keyboard.IsPressed(Key::X)) {
+			return EditorAction::CUT_OBJECTS;
+		}
+		if (clipboard_.HasObjects() && keyboard.IsPressed(Key::V)) {
+			return EditorAction::PASTE_OBJECTS;
+		}
+	}
 
 	if (objectEnabled && !control && !shift && !alt &&
 	    keyboard.IsPressed(Key::DELETE_KEY)) {
@@ -590,6 +613,15 @@ void EditorScene::StartAction(EditorAction action) {
 	FinishEdit();
 
 	switch (action) {
+	case EditorAction::COPY_OBJECTS:
+		CopySelectedObjects(false);
+		return;
+	case EditorAction::CUT_OBJECTS:
+		CopySelectedObjects(true);
+		return;
+	case EditorAction::PASTE_OBJECTS:
+		PasteObjects();
+		return;
 	case EditorAction::GIZMO_MOVE:
 		gizmo_.SetOperation(TransformGizmo::Operation::TRANSLATE);
 		return;
@@ -1060,6 +1092,48 @@ void EditorScene::DeleteSelectedObjects() {
 
 		ShowError("Could not delete the selected objects. "
 		          "See the log for details.");
+	}
+}
+
+void EditorScene::CopySelectedObjects(bool cut) {
+	if (!HasSelection()) {
+		return;
+	}
+	try {
+		if (!clipboard_.Copy(document_.GetScene(), selection_.GetIds())) {
+			ShowError("Could not copy the selected objects.");
+			return;
+		}
+		if (cut) {
+			DeleteSelectedObjects();
+		}
+	} catch (const std::exception &error) {
+		Logger::Error(std::format("EditorScene: 物体のコピーに失敗しました: {}",
+		                          error.what()));
+		ShowError("Could not copy objects. See the log for details.");
+	}
+}
+
+void EditorScene::PasteObjects() {
+	if (!clipboard_.HasObjects()) {
+		return;
+	}
+	try {
+		const auto copied = clipboard_.GetObjects();
+		std::vector<SceneObject> objects(copied.begin(), copied.end());
+		for (auto &object : objects) {
+			object.name += " Copy";
+		}
+		auto ids = document_.GetHistory().CreateObjects(std::move(objects));
+		if (ids.empty()) {
+			ShowError("Could not paste the copied objects.");
+			return;
+		}
+		selection_.Set(std::move(ids));
+	} catch (const std::exception &error) {
+		Logger::Error(std::format("EditorScene: 物体の貼り付けに失敗しました: {}",
+		                          error.what()));
+		ShowError("Could not paste objects. See the log for details.");
 	}
 }
 

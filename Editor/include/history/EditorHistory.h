@@ -107,6 +107,13 @@ class EditorHistory {
 	                           std::filesystem::path modelPath = {});
 
 	/// <summary>
+	/// 全物体を作成し、1操作として履歴へ記録する。編集中の内容は先に確定する
+	/// </summary>
+	/// <param name="objects">作成する物体のデータ一覧</param>
+	/// <returns>作成順のID一覧。対象なし、またはデータが無効な場合は空</returns>
+	std::vector<SceneObjectId> CreateObjects(std::vector<SceneObject> objects);
+
+	/// <summary>
 	/// 指定した物体を削除し、その削除を履歴へ記録する。
 	/// 編集中の変形情報は先に確定する
 	/// </summary>

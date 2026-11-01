@@ -15,6 +15,7 @@
 #include "scene/SceneGrid.h"
 #include "scene/SceneRenderer.h"
 #include "selection/EditorSelection.h"
+#include "selection/EditorClipboard.h"
 #include "selection/SelectionBounds.h"
 
 #include <filesystem>
@@ -106,6 +107,9 @@ class EditorScene final : public IScene {
 		GIZMO_MOVE,
 		GIZMO_ROTATE,
 		GIZMO_SCALE,
+		COPY_OBJECTS,
+		CUT_OBJECTS,
+		PASTE_OBJECTS,
 	};
 
 	/// <summary>
@@ -231,6 +235,17 @@ class EditorScene final : public IScene {
 	void DeleteSelectedObjects();
 
 	/// <summary>
+	/// 選択物体をEditor内へコピーし、必要に応じて元の物体を削除する
+	/// </summary>
+	/// <param name="cut">コピー成功後に元の物体を削除するか</param>
+	void CopySelectedObjects(bool cut);
+
+	/// <summary>
+	/// コピーした物体を1操作として貼り付け、作成した物体を選択する
+	/// </summary>
+	void PasteObjects();
+
+	/// <summary>
 	/// シーンに存在する物体が1つ以上選択されているか確認する
 	/// </summary>
 	/// <returns>true:有効な選択あり false:未選択、または存在しないIDあり</returns>
@@ -266,6 +281,7 @@ class EditorScene final : public IScene {
 	AssetsPanel assetsPanel_;
 
 	EditorSelection selection_;
+	EditorClipboard clipboard_;
 
 	SaveChangesDialog saveChangesDialog_;
 	SceneFileDialog fileDialog_;

@@ -125,6 +125,9 @@
     <ClCompile Include="src\selection\EditorSelection.cpp">
       <Filter>src\selection</Filter>
     </ClCompile>
+    <ClCompile Include="src\selection\EditorClipboard.cpp">
+      <Filter>src\selection</Filter>
+    </ClCompile>
     <ClCompile Include="src\history\CommandGroup.cpp">
       <Filter>src\history</Filter>
     </ClCompile>
@@ -185,6 +188,9 @@
       <Filter>include\history</Filter>
     </ClInclude>
     <ClInclude Include="include\selection\EditorSelection.h">
+      <Filter>include\selection</Filter>
+    </ClInclude>
+    <ClInclude Include="include\selection\EditorClipboard.h">
       <Filter>include\selection</Filter>
     </ClInclude>
     <ClInclude Include="include\history\CommandGroup.h">
