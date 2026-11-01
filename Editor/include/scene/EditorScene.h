@@ -99,7 +99,14 @@ class EditorScene final : public IScene {
 		REDO,
 		DUPLICATE_OBJECTS,
 		DELETE_OBJECTS,
+		FRAME_SELECTED,
+		FRAME_ALL,
 	};
+
+	/// <summary>
+	/// カメラへ収める物体の範囲
+	/// </summary>
+	enum class FrameRequest { NONE, SELECTED, ALL };
 
 	/// <summary>
 	/// ファイル操作の進行状態
@@ -189,20 +196,22 @@ class EditorScene final : public IScene {
 	                         const DirectX::XMFLOAT4X4 &projection);
 
 	/// <summary>
-	/// 選択モデルへカメラを寄せるショートカットを判定する
+	/// 選択モデルまたはシーン全体へカメラを寄せる操作を判定する
 	/// </summary>
 	/// <param name="viewport">Sceneビューの入力状態</param>
 	/// <param name="hierarchyFocused">Hierarchyにフォーカスがあるか</param>
-	/// <returns>true:Fキーによる移動要求あり false:要求なし</returns>
-	bool ReadFrameSelectedShortcut(const ViewportInput &viewport,
+	/// <returns>FキーまたはShift＋Fキーで要求された表示範囲</returns>
+	FrameRequest ReadFrameShortcut(const ViewportInput &viewport,
 	                               bool hierarchyFocused) const;
 
 	/// <summary>
-	/// 選択モデル全体が収まる位置へ編集用カメラを移動する
+	/// 指定したモデル全体が収まる位置へ編集用カメラを移動する
 	/// </summary>
+	/// <param name="request">選択モデルまたはシーン全体</param>
 	/// <param name="projection">Sceneビューの更新済み投影行列</param>
 	/// <returns>true:カメラを移動した false:対象なし、または移動できない</returns>
-	bool FrameSelected(const DirectX::XMFLOAT4X4 &projection);
+	bool FrameObjects(FrameRequest request,
+	                  const DirectX::XMFLOAT4X4 &projection);
 
 	/// <summary>
 	/// 選択中の全物体を複製し、複製した物体を選択する
@@ -240,6 +249,7 @@ class EditorScene final : public IScene {
 	EditorDockLayout dockLayout_;
 
 	bool resetDockLayout_ = false;
+	FrameRequest frameRequest_ = FrameRequest::NONE;
 
 	HierarchyPanel hierarchyPanel_;
 	InspectorPanel inspectorPanel_;

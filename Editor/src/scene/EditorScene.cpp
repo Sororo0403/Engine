@@ -217,9 +217,12 @@ bool EditorScene::Update(float deltaTime) {
 		return false;
 	}
 
-	if (!inputBlocked &&
-	    ReadFrameSelectedShortcut(viewport, hierarchyRequest.windowFocused) &&
-	    FrameSelected(projection)) {
+	FrameRequest frameRequest = frameRequest_;
+	frameRequest_ = FrameRequest::NONE;
+	if (!inputBlocked && frameRequest == FrameRequest::NONE) {
+		frameRequest = ReadFrameShortcut(viewport, hierarchyRequest.windowFocused);
+	}
+	if (frameRequest != FrameRequest::NONE && FrameObjects(frameRequest, projection)) {
 		// 移動後のカメラを、ギズモや選択判定にも同じフレームで反映する
 		if (!renderer_.SetCameraPose(cameraController_.GetPose())) {
 			Logger::Error("EditorScene: 移動後のカメラの姿勢が無効です。");
@@ -470,6 +473,15 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 	}
 
 	if (ui_.BeginMenu("View")) {
+		const bool enabled = !IsBusy() && !document_.GetHistory().IsEditing() &&
+		                     !gizmo_.IsUsing() && !sceneViewPanel_.IsSelecting();
+		if (ui_.MenuItem("Frame Selected", "F", enabled && HasSelection())) {
+			action = EditorAction::FRAME_SELECTED;
+		}
+		if (ui_.MenuItem("Frame All", "Shift+F", enabled)) {
+			action = EditorAction::FRAME_ALL;
+		}
+		ui_.Separator();
 		if (ui_.MenuItem("Reset Layout", nullptr, !IsBusy())) {
 			resetDockLayout_ = true;
 		}
@@ -546,6 +558,12 @@ void EditorScene::StartAction(EditorAction action) {
 	FinishEdit();
 
 	switch (action) {
+	case EditorAction::FRAME_SELECTED:
+		frameRequest_ = FrameRequest::SELECTED;
+		return;
+	case EditorAction::FRAME_ALL:
+		frameRequest_ = FrameRequest::ALL;
+		return;
 	case EditorAction::UNDO:
 		if (document_.GetHistory().CanUndo() &&
 		    !document_.GetHistory().Undo()) {
@@ -875,43 +893,68 @@ bool EditorScene::MakeSelectionTransform(Transform &transform) const {
 	return true;
 }
 
-bool EditorScene::ReadFrameSelectedShortcut(const ViewportInput &viewport,
-                                            bool hierarchyFocused) const {
-	if (IsBusy() || selection_.GetActiveId() == 0 ||
-	    !viewport.applicationFocused ||
-	    (!viewport.windowFocused && !hierarchyFocused) ||
-	    viewport.widgetActive || viewport.rightDown ||
-	    ui_.IsTextInputActive() || ImGui::IsAnyItemActive() ||
+EditorScene::FrameRequest EditorScene::ReadFrameShortcut(
+    const ViewportInput &viewport, bool hierarchyFocused) const {
+	if (IsBusy() || !viewport.applicationFocused ||
+	    (!viewport.windowFocused && !hierarchyFocused) || viewport.widgetActive ||
+	    viewport.rightDown || ui_.IsTextInputActive() || ImGui::IsAnyItemActive() ||
 	    gizmo_.IsUsing() || sceneViewPanel_.IsSelecting() ||
 	    document_.GetHistory().IsEditing()) {
-		return false;
+		return FrameRequest::NONE;
 	}
-
 	const Keyboard &keyboard = input_.GetKeyboard();
-
-	// 修飾キー付きの操作とは区別する
 	if (keyboard.IsDown(Key::CTRL) || keyboard.IsDown(Key::ALT) ||
-	    keyboard.IsDown(Key::SHIFT)) {
-		return false;
+	    !keyboard.IsPressed(Key::F)) {
+		return FrameRequest::NONE;
 	}
-
-	return keyboard.IsPressed(Key::F);
+	return keyboard.IsDown(Key::SHIFT) ? FrameRequest::ALL
+	                                 : FrameRequest::SELECTED;
 }
 
-bool EditorScene::FrameSelected(const DirectX::XMFLOAT4X4 &projection) {
-	std::array<DirectX::XMFLOAT3, 8> corners{};
-
-	// 未選択や、モデルを持たない空の物体では移動しない
-	if (!renderer_.GetObjectBounds(selection_.GetActiveId(), corners)) {
+bool EditorScene::FrameObjects(
+    FrameRequest request, const DirectX::XMFLOAT4X4 &projection) {
+	DirectX::XMFLOAT3 minimum{};
+	DirectX::XMFLOAT3 maximum{};
+	bool found = false;
+	for (const auto &[id, object] : document_.GetScene().GetObjects()) {
+		if (object.modelPath.empty() ||
+		    (request == FrameRequest::SELECTED && !selection_.Contains(id))) {
+			continue;
+		}
+		std::array<DirectX::XMFLOAT3, 8> corners;
+		if (!renderer_.GetObjectBounds(id, corners)) {
+			continue;
+		}
+		for (const auto &corner : corners) {
+			if (!found) {
+				minimum = maximum = corner;
+				found = true;
+			} else {
+				minimum.x = (std::min)(minimum.x, corner.x);
+				minimum.y = (std::min)(minimum.y, corner.y);
+				minimum.z = (std::min)(minimum.z, corner.z);
+				maximum.x = (std::max)(maximum.x, corner.x);
+				maximum.y = (std::max)(maximum.y, corner.y);
+				maximum.z = (std::max)(maximum.z, corner.z);
+			}
+		}
+	}
+	if (!found) {
 		return false;
 	}
-
+	std::array<DirectX::XMFLOAT3, 8> corners;
+	for (std::size_t i = 0; i < corners.size(); ++i) {
+		corners[i] = {
+		    (i & 1) ? maximum.x : minimum.x,
+		    (i & 2) ? maximum.y : minimum.y,
+		    (i & 4) ? maximum.z : minimum.z,
+		};
+	}
 	if (!cameraController_.FrameBounds(corners, projection)) {
 		Logger::Warning(
-		    "EditorScene: 選択モデルを現在の描画範囲に収められませんでした。");
+		    "EditorScene: 対象モデルを現在の描画範囲に収められませんでした。");
 		return false;
 	}
-
 	return true;
 }
 
