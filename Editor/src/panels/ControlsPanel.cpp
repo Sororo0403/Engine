@@ -216,6 +216,11 @@ void ControlsPanel::Draw() {
 	        {"Inspector > Add Component",
 	         "Add Box Collider, Character Controller, Camera, Follow Camera or "
 	         "Respawn. Changes support Undo and scene saving."},
+	        {"View > Colliders",
+	         "Show collider outlines for None, Selected or All objects in "
+	         "Scene. All includes hidden models and objects without models. "
+	         "The outlines match world-axis collision boxes and never appear "
+	         "in Game. This display setting is saved with Editor preferences."},
 	        {"Edit > Box Colliders",
 	         "Apply to all selected objects, including hidden ones. Add "
 	         "Missing keeps existing collider shapes. Fit All to Models "

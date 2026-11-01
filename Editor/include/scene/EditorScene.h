@@ -501,6 +501,7 @@ class EditorScene final : public IScene {
 
 	SelectionBounds selectionBounds_;
 	ColliderBounds colliderBounds_;
+	ColliderBounds::Mode colliderDisplay_ = ColliderBounds::Mode::SELECTED;
 	RespawnPreview respawnPreview_;
 	CameraFrustum cameraFrustum_;
 

@@ -62,6 +62,7 @@ bool EditorScene::Initialize() {
 	showGrid_ = preferences_.showGrid;
 	sceneGrid_.SetSettings(preferences_.grid);
 	showSelectionBounds_ = preferences_.showSelectionBounds;
+	colliderDisplay_ = preferences_.colliderDisplay;
 	gizmo_.SetSnapSettings(preferences_.snap);
 	gizmo_.SetSnapping(preferences_.snapping);
 	gizmo_.SetOperation(preferences_.operation);
@@ -597,13 +598,13 @@ bool EditorScene::Update(float deltaTime) {
 		return false;
 	}
 
-	for (const SceneObjectId id : selection_.GetIds()) {
-		if (const auto *object = scene.FindObject(id);
-		    object && !colliderBounds_.Update(renderer_, *object)) {
-			Logger::Error("EditorScene: 衝突形状を表示できませんでした。");
-			return false;
-		}
+	if (!colliderBounds_.Update(renderer_, scene, selection_.GetIds(),
+	                            colliderDisplay_)) {
+		Logger::Error("EditorScene: 衝突形状を表示できませんでした。");
+		return false;
+	}
 
+	for (const SceneObjectId id : selection_.GetIds()) {
 		if (const auto *object = scene.FindObject(id);
 		    object && !respawnPreview_.Update(renderer_, *object)) {
 			Logger::Error(
@@ -654,6 +655,7 @@ void EditorScene::Finalize() {
 		EditorPreferences current;
 		current.showGrid = showGrid_;
 		current.showSelectionBounds = showSelectionBounds_;
+		current.colliderDisplay = colliderDisplay_;
 		current.operation = gizmo_.GetOperation();
 		current.space = gizmo_.GetSpace();
 		current.pivotMode = gizmo_.GetPivotMode();
@@ -1020,6 +1022,20 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 
 		ImGui::MenuItem("Selection Bounds", nullptr, &showSelectionBounds_,
 		                !IsBusy());
+		if (ui_.BeginMenu("Colliders")) {
+			const auto item = [&](const char *label,
+			                      ColliderBounds::Mode mode) {
+				if (ImGui::MenuItem(label, nullptr, colliderDisplay_ == mode,
+				                    !IsBusy())) {
+					colliderDisplay_ = mode;
+				}
+			};
+			item("None", ColliderBounds::Mode::NONE);
+			item("Selected", ColliderBounds::Mode::SELECTED);
+			item("All", ColliderBounds::Mode::ALL);
+			ui_.EndMenu();
+		}
+
 		ui_.Separator();
 
 		if (ui_.MenuItem("Reset Layout", nullptr, !IsBusy())) {

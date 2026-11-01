@@ -3,6 +3,7 @@
 #include "camera/EditorCameraController.h"
 #include "gameplay/GameConfig.h"
 #include "gizmo/TransformGizmo.h"
+#include "physics/ColliderBounds.h"
 #include "scene/SceneGrid.h"
 
 #include <filesystem>
@@ -15,6 +16,7 @@ class EditorPreferences {
   public:
 	bool showGrid = true;
 	bool showSelectionBounds = true;
+	ColliderBounds::Mode colliderDisplay = ColliderBounds::Mode::SELECTED;
 	bool snapping = false;
 	TransformGizmo::Operation operation = TransformGizmo::Operation::TRANSLATE;
 	TransformGizmo::Space space = TransformGizmo::Space::LOCAL;

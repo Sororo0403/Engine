@@ -37,6 +37,21 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 		EditorPreferences loaded;
 		loaded.showGrid = json.at("showGrid").get<bool>();
 		loaded.showSelectionBounds = json.at("showSelectionBounds").get<bool>();
+		// 旧設定には従来と同じ選択物体のみの表示を適用する。
+		if (json.contains("colliderDisplay")) {
+			const auto mode = json.at("colliderDisplay").get<std::string>();
+
+			if (mode == "none") {
+				loaded.colliderDisplay = ColliderBounds::Mode::NONE;
+			} else if (mode == "selected") {
+				loaded.colliderDisplay = ColliderBounds::Mode::SELECTED;
+			} else if (mode == "all") {
+				loaded.colliderDisplay = ColliderBounds::Mode::ALL;
+			} else {
+				throw std::runtime_error("衝突形状の表示範囲が無効です。");
+			}
+		}
+
 		loaded.snapping = json.at("snapping").get<bool>();
 		const auto tool = json.at("tool").get<std::string>();
 
@@ -203,7 +218,10 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		    !validator.SetOperation(operation) || !validator.SetSpace(space) ||
 		    !validator.SetPivotMode(pivotMode) ||
 		    !cameraValidator.SetSettings(camera) ||
-		    !gridValidator.SetSettings(grid) || !gameExport.IsValid()) {
+		    !gridValidator.SetSettings(grid) || !gameExport.IsValid() ||
+		    (colliderDisplay != ColliderBounds::Mode::NONE &&
+		     colliderDisplay != ColliderBounds::Mode::SELECTED &&
+		     colliderDisplay != ColliderBounds::Mode::ALL)) {
 			throw std::runtime_error("保存するEditor設定が無効です。");
 		}
 
@@ -237,6 +255,10 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		      {"height", gameExport.height}}},
 		    {"showGrid", showGrid},
 		    {"showSelectionBounds", showSelectionBounds},
+		    {"colliderDisplay",
+		     colliderDisplay == ColliderBounds::Mode::NONE  ? "none"
+		     : colliderDisplay == ColliderBounds::Mode::ALL ? "all"
+		                                                    : "selected"},
 		    {"snapping", snapping},
 		    {"tool", tool},
 		    {"space",
@@ -277,7 +299,8 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 }
 
 bool EditorPreferences::operator==(const EditorPreferences &other) const {
-	return pivotMode == other.pivotMode && grid == other.grid &&
+	return colliderDisplay == other.colliderDisplay &&
+	       pivotMode == other.pivotMode && grid == other.grid &&
 	       recentScenes == other.recentScenes &&
 	       gameExport.title == other.gameExport.title &&
 	       gameExport.width == other.gameExport.width &&
