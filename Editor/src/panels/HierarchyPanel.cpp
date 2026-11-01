@@ -223,6 +223,15 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 				if (ui.MenuItem("Drop to Ground", "Shift+G", canGround)) {
 					result.action = Action::DROP_TO_GROUND;
 				}
+				if (ui.MenuItem("Align X to Active", nullptr, selection.GetCount() > 1)) {
+					result.action = Action::ALIGN_X;
+				}
+				if (ui.MenuItem("Align Y to Active", nullptr, selection.GetCount() > 1)) {
+					result.action = Action::ALIGN_Y;
+				}
+				if (ui.MenuItem("Align Z to Active", nullptr, selection.GetCount() > 1)) {
+					result.action = Action::ALIGN_Z;
+				}
 				ImGui::EndPopup();
 			}
 		}

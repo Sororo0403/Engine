@@ -6,6 +6,7 @@
 #include "dialogs/BatchRenameDialog.h"
 #include "dialogs/SceneFileDialog.h"
 #include "gizmo/TransformGizmo.h"
+#include "history/AlignmentAxis.h"
 #include "layout/EditorDockLayout.h"
 #include "panels/AssetsPanel.h"
 #include "panels/ControlsPanel.h"
@@ -120,6 +121,9 @@ class EditorScene final : public IScene {
 		PASTE_OBJECTS,
 		RESET_TRANSFORMS,
 		DROP_TO_GROUND,
+		ALIGN_X,
+		ALIGN_Y,
+		ALIGN_Z,
 		RESET_CAMERA,
 		RENAME_OBJECT,
 		OPEN_RECENT,
@@ -327,6 +331,12 @@ class EditorScene final : public IScene {
 	/// 選択した全物体の名前を保持し、一括リネームのプレビューを開く
 	/// </summary>
 	void StartBatchRename();
+
+	/// <summary>
+	/// 選択物体の原点を、アクティブ物体の指定軸の座標へそろえる
+	/// </summary>
+	/// <param name="axis">ワールド座標のX・Y・Zのいずれか</param>
+	void AlignSelection(AlignmentAxis axis);
 
 	/// <summary>
 	/// 選択に、表示中でモデルを持つ物体があるか確認する

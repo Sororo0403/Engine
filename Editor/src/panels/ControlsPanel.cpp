@@ -89,6 +89,7 @@ void ControlsPanel::Draw() {
 	    {"Edit > Reveal Active", "Clear Hierarchy filters and scroll to the active object without changing visibility or selection."},
 	    {"Ctrl + D / Delete", "Duplicate / delete the selected objects."},
 	    {"Shift + G", "Drop the selection to Y=0 using the lowest visible selected model bounds. Empty and hidden objects move with the group; relative positions are preserved."},
+	    {"Align X / Y / Z to Active", "Use Edit or the Hierarchy menu to align selected origins to the active object's world coordinate on one axis. Other axes, rotation and scale stay unchanged."},
 	    {"Ctrl + C / X / V", "Copy / cut / paste scene objects."},
 	});
 	DrawSection("Transform gizmo", {

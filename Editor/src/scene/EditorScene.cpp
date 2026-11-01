@@ -184,6 +184,15 @@ bool EditorScene::Update(float deltaTime) {
 				case HierarchyPanel::Action::DROP_TO_GROUND:
 					DropSelectionToGround();
 					break;
+				case HierarchyPanel::Action::ALIGN_X:
+					AlignSelection(AlignmentAxis::X);
+					break;
+				case HierarchyPanel::Action::ALIGN_Y:
+					AlignSelection(AlignmentAxis::Y);
+					break;
+				case HierarchyPanel::Action::ALIGN_Z:
+					AlignSelection(AlignmentAxis::Z);
+					break;
 				case HierarchyPanel::Action::RENAME_OBJECT:
 					if (HasSingleSelection()) {
 						inspectorPanel_.RequestRename(selection_.GetActiveId());
@@ -669,6 +678,15 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		if (ui_.MenuItem("Drop to Ground", "Shift+G", objectEnabled && HasVisibleSelectedModel())) {
 			action = EditorAction::DROP_TO_GROUND;
 		}
+		if (ui_.MenuItem("Align X to Active", nullptr, objectEnabled && selection_.GetCount() > 1)) {
+			action = EditorAction::ALIGN_X;
+		}
+		if (ui_.MenuItem("Align Y to Active", nullptr, objectEnabled && selection_.GetCount() > 1)) {
+			action = EditorAction::ALIGN_Y;
+		}
+		if (ui_.MenuItem("Align Z to Active", nullptr, objectEnabled && selection_.GetCount() > 1)) {
+			action = EditorAction::ALIGN_Z;
+		}
 		if (ui_.MenuItem("Rename", "F2", objectEnabled)) {
 			action = EditorAction::RENAME_OBJECT;
 		}
@@ -910,6 +928,15 @@ void EditorScene::StartAction(EditorAction action) {
 		return;
 	case EditorAction::DROP_TO_GROUND:
 		DropSelectionToGround();
+		return;
+	case EditorAction::ALIGN_X:
+		AlignSelection(AlignmentAxis::X);
+		return;
+	case EditorAction::ALIGN_Y:
+		AlignSelection(AlignmentAxis::Y);
+		return;
+	case EditorAction::ALIGN_Z:
+		AlignSelection(AlignmentAxis::Z);
 		return;
 	case EditorAction::SHOW_ALL_MODELS:
 		ShowAllModels();
@@ -1608,6 +1635,21 @@ void EditorScene::StartBatchRename() {
 	} catch (const std::exception &error) {
 		Logger::Error(std::format("EditorScene::StartBatchRename: {}", error.what()));
 		ShowError("Could not prepare object names. See the log for details.");
+	}
+}
+
+void EditorScene::AlignSelection(AlignmentAxis axis) {
+	if (!HasSelection() || selection_.GetCount() < 2) {
+		return;
+	}
+	try {
+		FinishEdit();
+		if (!document_.GetHistory().AlignObjects(selection_.GetIds(), selection_.GetActiveId(), axis)) {
+			ShowError("Could not align the selected objects.");
+		}
+	} catch (const std::exception &error) {
+		Logger::Error(std::format("EditorScene::AlignSelection: {}", error.what()));
+		ShowError("Could not align the selected objects. See the log for details.");
 	}
 }
 

@@ -5,6 +5,7 @@
 #include "math/MathUtils.h"
 #include "scene/Scene.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <exception>
@@ -501,6 +502,54 @@ bool EditorHistory::RenameObjects(std::span<const ObjectRename> renames) {
 		return false;
 	}
 	AppendPrepared(Command{std::move(group)}, next, renames.size() == 1 ? "Rename Object" : "Rename Objects");
+	return true;
+}
+
+bool EditorHistory::AlignObjects(std::span<const SceneObjectId> objectIds,
+                                 SceneObjectId referenceId, AlignmentAxis axis) {
+	CommitEdit();
+	const auto *reference = scene_.FindObject(referenceId);
+	if (!reference || !TransformUtils::IsValid(reference->transform) ||
+	    std::find(objectIds.begin(), objectIds.end(), referenceId) == objectIds.end() ||
+	    (axis != AlignmentAxis::X && axis != AlignmentAxis::Y && axis != AlignmentAxis::Z)) {
+		return false;
+	}
+	const auto position = reference->transform.translation;
+	std::set<SceneObjectId> seen;
+	std::vector<CommandGroup::Command> commands;
+	commands.reserve(objectIds.size());
+	for (const auto id : objectIds) {
+		const auto *object = scene_.FindObject(id);
+		if (!object || !seen.insert(id).second || !TransformUtils::IsValid(object->transform)) {
+			return false;
+		}
+		Transform after = object->transform;
+		switch (axis) {
+		case AlignmentAxis::X:
+			after.translation.x = position.x;
+			break;
+		case AlignmentAxis::Y:
+			after.translation.y = position.y;
+			break;
+		case AlignmentAxis::Z:
+			after.translation.z = position.z;
+			break;
+		}
+		if (!TransformUtils::AreEqual(object->transform, after)) {
+			commands.emplace_back(TransformCommand{id, object->transform, after});
+		}
+	}
+	if (commands.empty()) {
+		return true;
+	}
+	CommandGroup group{std::move(commands)};
+	const auto next = PrepareAppend();
+	if (!group.Redo(scene_)) {
+		return false;
+	}
+	AppendPrepared(Command{std::move(group)}, next,
+	               axis == AlignmentAxis::X ? "Align X to Active" :
+	               axis == AlignmentAxis::Y ? "Align Y to Active" : "Align Z to Active");
 	return true;
 }
 

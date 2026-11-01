@@ -247,6 +247,9 @@
     <ClInclude Include="include\history\ObjectRename.h">
       <Filter>include\history</Filter>
     </ClInclude>
+    <ClInclude Include="include\history\AlignmentAxis.h">
+      <Filter>include\history</Filter>
+    </ClInclude>
     <ClInclude Include="include\selection\SelectionPivot.h">
       <Filter>include\selection</Filter>
     </ClInclude>

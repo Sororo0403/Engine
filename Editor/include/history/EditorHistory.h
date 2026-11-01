@@ -1,6 +1,7 @@
 #pragma once
 
 #include "history/CommandGroup.h"
+#include "history/AlignmentAxis.h"
 #include "history/ModelPathCommand.h"
 #include "history/ObjectCommand.h"
 #include "history/ObjectRename.h"
@@ -262,6 +263,16 @@ class EditorHistory {
 	/// <param name="renames">重複のない対象と変更前後の名前。変更後の名前は空にしない</param>
 	/// <returns>true:成功、または変更なし false:対象や名前が無効、またはプレビューから名前が変わっている</returns>
 	bool RenameObjects(std::span<const ObjectRename> renames);
+
+	/// <summary>
+	/// 全対象の原点を基準物体の指定軸の座標へそろえ、1操作として記録する。編集中の内容は先に確定する
+	/// </summary>
+	/// <param name="objectIds">重複のない対象ID一覧</param>
+	/// <param name="referenceId">一覧に含まれる基準物体のID</param>
+	/// <param name="axis">ワールド座標のX・Y・Zのいずれか</param>
+	/// <returns>true:成功、または変更なし false:対象や値が無効。全件を変更しない</returns>
+	bool AlignObjects(std::span<const SceneObjectId> objectIds,
+	                  SceneObjectId referenceId, AlignmentAxis axis);
 
   private:
 	// 単独の編集操作、または複数の編集操作を保持する
