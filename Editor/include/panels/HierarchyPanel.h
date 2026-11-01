@@ -27,6 +27,7 @@ class HierarchyPanel {
 		DUPLICATE_OBJECTS,
 		RESET_TRANSFORMS,
 		RENAME_OBJECT,
+		FRAME_SELECTED,
 	};
 
 	/// <summary>

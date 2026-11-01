@@ -46,8 +46,6 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 
 	ui.EndDisabled();
 
-	ui.Text(std::format("Selected: {}", selection.GetCount()));
-
 	const SceneObject *active = scene.FindObject(selection.GetActiveId());
 
 	if (active) {
@@ -56,6 +54,8 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 		                                  : std::string_view{active->name};
 
 		ui.Text(std::format("Active: {}", name));
+	} else {
+		ui.Text("Active: None");
 	}
 
 	std::size_t hiddenCount = 0;
@@ -76,13 +76,9 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 		}
 	}
 
-	if (hiddenCount != 0) {
-		ui.Text(std::format("Hidden selections: {}", hiddenCount));
-	}
-
-	if (selection.GetCount() > 1) {
-		ui.Text("Inspector: active object only.");
-	}
+	// 選択状態に関係なく行数を保ち、クリック中に一覧の位置を動かさない
+	ui.Text(std::format("Selected: {} (hidden: {})", selection.GetCount(), hiddenCount));
+	ImGui::SetItemTooltip("The Inspector edits the active object. Ctrl adds or removes objects; Shift selects a range.");
 
 	if (ui.Button("Create Empty")) {
 		result.action = Action::CREATE_EMPTY;
@@ -128,14 +124,20 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 			    "{}{}###SceneObject{}",
 			    selection.GetActiveId() == id ? "> " : "  ", name, id);
 
+			const auto &io = ImGui::GetIO();
 			if (ui.Selectable(label.c_str(), selection.Contains(id))) {
-				const auto &io = ImGui::GetIO();
 				const bool changed = SelectObject(
 				    id, visibleIds, io.KeyCtrl, io.KeyShift, selection);
 
 				if (changed) {
 					result.selectionChanged = true;
 				}
+			}
+			if (!object.modelPath.empty() && ImGui::IsItemHovered() &&
+			    ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) &&
+			    !io.KeyCtrl && !io.KeyShift && !io.KeyAlt) {
+				result.selectionChanged |= SelectObject(id, visibleIds, false, false, selection);
+				result.action = Action::FRAME_SELECTED;
 			}
 			if (ImGui::BeginPopupContextItem()) {
 				// 選択済みの項目ではグループを保ち、未選択の項目だけ選び直す
@@ -145,6 +147,9 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 				}
 				if (ui.MenuItem("Copy", "Ctrl+C", true)) {
 					result.action = Action::COPY_OBJECTS;
+				}
+				if (ui.MenuItem("Frame Selected", "F", true)) {
+					result.action = Action::FRAME_SELECTED;
 				}
 				if (ui.MenuItem("Rename", "F2", selection.GetCount() == 1)) {
 					result.action = Action::RENAME_OBJECT;

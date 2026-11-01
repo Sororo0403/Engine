@@ -172,6 +172,9 @@ bool EditorScene::Update(float deltaTime) {
 				case HierarchyPanel::Action::RENAME_OBJECT:
 					inspectorPanel_.RequestRename(selection_.GetActiveId());
 					break;
+				case HierarchyPanel::Action::FRAME_SELECTED:
+					frameRequest_ = FrameRequest::SELECTED;
+					break;
 				case HierarchyPanel::Action::NONE:
 					break;
 				}
