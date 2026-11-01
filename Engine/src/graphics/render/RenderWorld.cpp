@@ -5,6 +5,7 @@
 #include "graphics/model/Model.h"
 #include "graphics/model/ModelInstance.h"
 #include "graphics/render/D3D12Graphics.h"
+#include "graphics/render/DebugLineBatch.h"
 #include "graphics/render/DebugLineRenderer.h"
 #include "graphics/render/MeshRenderer.h"
 #include "math/MathUtils.h"
@@ -116,6 +117,8 @@ struct RenderWorld::Impl {
 	std::vector<Slot> slots_;
 
 	std::vector<DebugLine> debugLines_;
+	DebugLineBatch debugLineBatch_;
+	bool debugLinesUpdated_ = true;
 
 	Camera camera_;
 	DirectionalLight light_;
@@ -182,6 +185,26 @@ bool RenderWorld::AddDebugLine(const DebugLine &line) {
 	}
 
 	impl_->debugLines_.push_back(line);
+	impl_->debugLinesUpdated_ = false;
+
+	return true;
+}
+
+bool RenderWorld::UpdateDebugLines() {
+	if (!impl_->initialized_ || !impl_->prepared_) {
+		Logger::Error(
+		    "RenderWorld::UpdateDebugLines: 描画データが更新されていません。");
+		return false;
+	}
+
+	impl_->debugLinesUpdated_ = false;
+
+	if (!impl_->debugLineBatch_.Update(impl_->graphics_.GetDevice(),
+	                                   impl_->debugLines_)) {
+		return false;
+	}
+
+	impl_->debugLinesUpdated_ = true;
 	return true;
 }
 
@@ -342,6 +365,8 @@ void RenderWorld::MoveCamera(const DirectX::XMFLOAT3 &offset) {
 
 void RenderWorld::Clear() {
 	impl_->debugLines_.clear();
+	impl_->debugLineBatch_.Clear();
+	impl_->debugLinesUpdated_ = true;
 
 	for (auto &slot : impl_->slots_) {
 		impl_->ReleaseSlot(slot);
@@ -363,8 +388,11 @@ bool RenderWorld::SetCameraPose(const CameraPose &pose) {
 }
 
 bool RenderWorld::Update(int width, int height) {
-	impl_->debugLines_.clear();
 	impl_->prepared_ = false;
+
+	impl_->debugLines_.clear();
+	impl_->debugLineBatch_.Clear();
+	impl_->debugLinesUpdated_ = true;
 
 	if (!impl_->initialized_) {
 		Logger::Error("RenderWorld::Update: 未初期化です。");
@@ -400,8 +428,9 @@ bool RenderWorld::Update(int width, int height) {
 
 void RenderWorld::Draw(MeshRenderer &renderer,
                        DebugLineRenderer &debugRenderer) const {
-	if (!impl_->prepared_) {
-		Logger::Error("RenderWorld::Draw: 描画準備が完了していません。");
+	if (!impl_->prepared_ || !impl_->debugLinesUpdated_) {
+		Logger::Error(
+		    "RenderWorld::Draw: 物体または線の更新が完了していません。");
 		return;
 	}
 
@@ -423,12 +452,14 @@ void RenderWorld::Draw(MeshRenderer &renderer,
 		slot.object_->instance_.Draw(commandList, renderer, impl_->light_);
 	}
 
-	// モデルを描画した後、その深度を使って線を描画する
-	debugRenderer.Draw(commandList, impl_->debugLines_,
+	// モデルの深度を使い、登録された線をまとめて描画する
+	debugRenderer.Draw(commandList, impl_->debugLineBatch_,
 	                   impl_->camera_.GetViewMatrix(),
 	                   impl_->camera_.GetProjectionMatrix());
 
 	impl_->debugLines_.clear();
+	impl_->debugLineBatch_.Clear();
+	impl_->debugLinesUpdated_ = true;
 }
 
 bool RenderWorld::Uses(const D3D12Graphics &graphics) const {

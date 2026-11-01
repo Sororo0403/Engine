@@ -209,6 +209,9 @@
     <ClCompile Include="src\graphics\render\DebugLineRenderer.cpp">
       <Filter>src\graphics\render</Filter>
     </ClCompile>
+    <ClCompile Include="src\graphics\render\DebugLineBatch.cpp">
+      <Filter>src\graphics\render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\platform\windows\Window.h">
@@ -386,6 +389,12 @@
       <Filter>include\graphics\render</Filter>
     </ClInclude>
     <ClInclude Include="include\graphics\render\DebugLineRenderer.h">
+      <Filter>include\graphics\render</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\render\DebugLineVertex.h">
+      <Filter>include\graphics\render</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\render\DebugLineBatch.h">
       <Filter>include\graphics\render</Filter>
     </ClInclude>
   </ItemGroup>

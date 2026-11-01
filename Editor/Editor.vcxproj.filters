@@ -113,6 +113,9 @@
     <ClCompile Include="src\selection\SelectionBounds.cpp">
       <Filter>src\selection</Filter>
     </ClCompile>
+    <ClCompile Include="src\scene\SceneGrid.cpp">
+      <Filter>src\scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\scene\EditorScene.h">
@@ -159,6 +162,9 @@
     </ClInclude>
     <ClInclude Include="include\selection\SelectionBounds.h">
       <Filter>include\selection</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scene\SceneGrid.h">
+      <Filter>include\scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

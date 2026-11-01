@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\graphics\render\DebugLineBatch.cpp" />
     <ClCompile Include="src\graphics\render\DebugLineRenderer.cpp" />
     <ClCompile Include="src\math\MathUtils.cpp" />
     <ClCompile Include="src\math\TransformUtils.cpp" />
@@ -51,6 +52,8 @@
     <ClCompile Include="src\graphics\material\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\graphics\render\DebugLineBatch.h" />
+    <ClInclude Include="include\graphics\render\DebugLineVertex.h" />
     <ClInclude Include="include\graphics\render\DebugLineRenderer.h" />
     <ClInclude Include="include\graphics\render\DebugLine.h" />
     <ClInclude Include="include\math\MathUtils.h" />

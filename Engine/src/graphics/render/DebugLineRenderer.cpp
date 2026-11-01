@@ -1,8 +1,12 @@
 #include "graphics/render/DebugLineRenderer.h"
 
 #include "core/Logger.h"
+#include "graphics/render/DebugLineBatch.h"
+#include "graphics/render/DebugLineVertex.h"
 
+#include <cstddef>
 #include <format>
+#include <iterator>
 
 bool DebugLineRenderer::Initialize(ID3D12Device *device, IDxcBlob *vertexShader,
                                    IDxcBlob *pixelShader,
@@ -27,10 +31,10 @@ bool DebugLineRenderer::Initialize(ID3D12Device *device, IDxcBlob *vertexShader,
 }
 
 void DebugLineRenderer::Draw(ID3D12GraphicsCommandList *commandList,
-                             std::span<const DebugLine> lines,
+                             const DebugLineBatch &batch,
                              const DirectX::XMFLOAT4X4 &view,
                              const DirectX::XMFLOAT4X4 &projection) const {
-	if (lines.empty()) {
+	if (batch.GetVertexCount() == 0) {
 		return;
 	}
 
@@ -49,21 +53,18 @@ void DebugLineRenderer::Draw(ID3D12GraphicsCommandList *commandList,
 
 	commandList->SetGraphicsRootSignature(rootSignature_.Get());
 	commandList->SetPipelineState(pipelineState_.Get());
+
+	commandList->SetGraphicsRoot32BitConstants(0, kConstantCount, &constants,
+	                                           0);
+
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
 
-	for (const auto &line : lines) {
-		constants.start = {line.start.x, line.start.y, line.start.z, 1.0f};
+	const auto &vertexBufferView = batch.GetVertexBufferView();
 
-		constants.end = {line.end.x, line.end.y, line.end.z, 1.0f};
+	commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
 
-		constants.color = line.color;
-
-		// 描画ごとの値をコマンドリストへ記録する
-		commandList->SetGraphicsRoot32BitConstants(0, kConstantCount,
-		                                           &constants, 0);
-
-		commandList->DrawInstanced(2, 1, 0, 0);
-	}
+	// グリッドや選択ボックスの全頂点をまとめて描画する
+	commandList->DrawInstanced(batch.GetVertexCount(), 1, 0, 0);
 }
 
 void DebugLineRenderer::Finalize() {
@@ -178,8 +179,32 @@ bool DebugLineRenderer::CreatePipelineState(ID3D12Device *device,
 	desc.DepthStencilState.FrontFace = stencil;
 	desc.DepthStencilState.BackFace = stencil;
 
-	// 頂点はSV_VertexIDとルート定数から求める
-	desc.InputLayout = {nullptr, 0};
+	const D3D12_INPUT_ELEMENT_DESC inputElements[] = {
+	    {
+	        "POSITION",
+	        0,
+	        DXGI_FORMAT_R32G32B32_FLOAT,
+	        0,
+	        static_cast<UINT>(offsetof(DebugLineVertex, position)),
+	        D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
+	        0,
+	    },
+	    {
+	        "COLOR",
+	        0,
+	        DXGI_FORMAT_R32G32B32A32_FLOAT,
+	        0,
+	        static_cast<UINT>(offsetof(DebugLineVertex, color)),
+	        D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
+	        0,
+	    },
+	};
+
+	desc.InputLayout = {
+	    inputElements,
+	    static_cast<UINT>(std::size(inputElements)),
+	};
+
 	desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
 
 	desc.NumRenderTargets = 1;

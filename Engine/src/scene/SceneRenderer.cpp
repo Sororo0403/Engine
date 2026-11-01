@@ -195,3 +195,18 @@ bool SceneRenderer::GetObjectBounds(
 bool SceneRenderer::AddDebugLine(const DebugLine &line) {
 	return world_ && world_->AddDebugLine(line);
 }
+
+bool SceneRenderer::UpdateDebugLines() {
+	if (!world_) {
+		Logger::Error("SceneRenderer::UpdateDebugLines: 未初期化です。");
+		return false;
+	}
+
+	try {
+		return world_->UpdateDebugLines();
+	} catch (const std::exception &error) {
+		Logger::Error(
+		    std::format("線の更新中に例外が発生しました: {}", error.what()));
+		return false;
+	}
+}

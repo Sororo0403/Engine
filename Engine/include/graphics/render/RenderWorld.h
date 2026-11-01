@@ -151,8 +151,16 @@ class RenderWorld {
 	/// </summary>
 	/// <param name="line">ワールド座標の線</param>
 	/// <returns>true:成功 false:更新前、または座標・色が無効</returns>
-	/// <remarks>最後のUpdate成功後、Drawより前に呼び出す。登録は次のUpdateで消去される</remarks>
+	/// <remarks>最後のUpdate成功後に登録し、全て登録後にUpdateDebugLinesを呼び出す</remarks>
 	bool AddDebugLine(const DebugLine &line);
+
+	/// <summary>
+	/// 登録された全ての線をGPU用の頂点バッファへ転送する。
+	/// GPUの利用完了後、BeginFrame前に呼び出す
+	/// </summary>
+	/// <returns>true:成功 false:更新前、または転送失敗</returns>
+	/// <remarks>最後のAddDebugLine後、Drawより前に呼び出す</remarks>
+	bool UpdateDebugLines();
 
   private:
 	friend class RenderSystem;

@@ -3,19 +3,22 @@
 cbuffer LineConstants : register(b0)
 {
 	row_major float4x4 viewProjection;
-	float4 lineStart;
-	float4 lineEnd;
-	float4 lineColor;
 };
 
-DebugLineOutput VSMain(uint vertexId : SV_VertexID)
+struct VertexInput
+{
+	float3 position : POSITION0;
+	float4 color : COLOR0;
+};
+
+DebugLineOutput VSMain(VertexInput input)
 {
 	DebugLineOutput output;
 
-	float4 position = vertexId == 0 ? lineStart : lineEnd;
+	output.position =
+	    mul(float4(input.position, 1.0f), viewProjection);
 
-	output.position = mul(position, viewProjection);
-	output.color = lineColor;
+	output.color = input.color;
 
 	return output;
 }

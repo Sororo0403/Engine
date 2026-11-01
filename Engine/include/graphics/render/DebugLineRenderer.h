@@ -1,17 +1,17 @@
 #pragma once
 
-#include "graphics/render/DebugLine.h"
-
 #include <Windows.h>
 #include <d3d12.h>
 #include <dxcapi.h>
 #include <wrl/client.h>
 
+#include <DirectXMath.h>
 #include <cstdint>
-#include <span>
+
+class DebugLineBatch;
 
 /// <summary>
-/// ワールド座標の線を描画する
+/// ワールド座標の線をまとめて描画する
 /// </summary>
 class DebugLineRenderer {
   public:
@@ -34,14 +34,14 @@ class DebugLineRenderer {
 	                DXGI_FORMAT depthStencilFormat);
 
 	/// <summary>
-	/// 指定したカメラ行列を使い、線の描画命令を記録する
+	/// 更新済みの線を1回の描画命令で描画する
 	/// </summary>
 	/// <param name="commandList">描画先とビューポートが設定済みのコマンドリスト</param>
-	/// <param name="lines">各座標と色が有限値の線</param>
+	/// <param name="batch">今回描画する更新済みの頂点バッファ</param>
 	/// <param name="view">ビュー行列</param>
 	/// <param name="projection">投影行列</param>
 	void Draw(ID3D12GraphicsCommandList *commandList,
-	          std::span<const DebugLine> lines, const DirectX::XMFLOAT4X4 &view,
+	          const DebugLineBatch &batch, const DirectX::XMFLOAT4X4 &view,
 	          const DirectX::XMFLOAT4X4 &projection) const;
 
 	/// <summary>
@@ -51,22 +51,19 @@ class DebugLineRenderer {
 
   private:
 	/// <summary>
-	/// シェーダーへルート定数で渡す情報
+	/// シェーダーへルート定数で渡すカメラ行列
 	/// </summary>
 	struct Constants {
 		DirectX::XMFLOAT4X4 viewProjection{};
-		DirectX::XMFLOAT4 start{};
-		DirectX::XMFLOAT4 end{};
-		DirectX::XMFLOAT4 color{};
 	};
 
 	static constexpr UINT kConstantCount =
 	    static_cast<UINT>(sizeof(Constants) / sizeof(std::uint32_t));
 
-	static_assert(kConstantCount == 28);
+	static_assert(kConstantCount == 16);
 
 	/// <summary>
-	/// 線の描画情報を渡すルートシグネチャを作成する
+	/// カメラ行列を渡すルートシグネチャを作成する
 	/// </summary>
 	/// <param name="device">D3D12デバイス</param>
 	/// <returns>true:成功 false:作成失敗</returns>

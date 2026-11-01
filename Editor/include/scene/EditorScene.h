@@ -12,6 +12,7 @@
 #include "panels/SceneViewPanel.h"
 #include "scene/IScene.h"
 #include "scene/SceneDocument.h"
+#include "scene/SceneGrid.h"
 #include "scene/SceneRenderer.h"
 #include "selection/SelectionBounds.h"
 
@@ -204,4 +205,6 @@ class EditorScene final : public IScene {
 	bool gizmoEditActive_ = false;
 
 	SelectionBounds selectionBounds_;
+
+	SceneGrid sceneGrid_;
 };

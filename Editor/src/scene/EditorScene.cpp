@@ -263,9 +263,20 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	// ギズモによる再更新とクリック選択が終わってから登録する
+	if (!sceneGrid_.Update(renderer_)) {
+		Logger::Error("EditorScene: グリッドを登録できませんでした。");
+		return false;
+	}
+
 	if (!selectionBounds_.Update(renderer_, selectedObjectId_)) {
 		Logger::Error(
 		    "EditorScene: 選択物体の外接ボックスを登録できませんでした。");
+		return false;
+	}
+
+	// 全ての線を登録した後、一度だけ頂点バッファへ転送する
+	if (!renderer_.UpdateDebugLines()) {
+		Logger::Error("EditorScene: 線の頂点バッファを更新できませんでした。");
 		return false;
 	}
 

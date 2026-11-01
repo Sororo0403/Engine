@@ -133,8 +133,10 @@
     <ClInclude Include="include\history\TransformCommand.h" />
     <ClInclude Include="include\history\ObjectCommand.h" />
     <ClInclude Include="include\selection\SelectionBounds.h" />
+    <ClInclude Include="include\scene\SceneGrid.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\scene\SceneGrid.cpp" />
     <ClCompile Include="src\history\ObjectCommand.cpp" />
     <ClCompile Include="src\history\EditorHistory.cpp" />
     <ClCompile Include="src\panels\AssetsPanel.cpp" />
