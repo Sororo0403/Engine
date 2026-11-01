@@ -164,6 +164,27 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 			throw std::runtime_error("グリッドの設定が無効です。");
 		}
 
+		// 出力設定がない旧ファイルでは初期値を使う
+		if (json.contains("gameExport")) {
+			const auto &settings = json.at("gameExport");
+			const auto &width = settings.at("width");
+			const auto &height = settings.at("height");
+
+			if (!width.is_number_integer() || !height.is_number_integer() ||
+			    width < 1 || width > 8192 || height < 1 || height > 8192) {
+				throw std::runtime_error("ゲーム出力の画面サイズが無効です。");
+			}
+
+			loaded.gameExport.title = settings.at("title").get<std::string>();
+			loaded.gameExport.width = width.get<int>();
+			loaded.gameExport.height = height.get<int>();
+
+			if (!loaded.gameExport.IsValid()) {
+				throw std::runtime_error(
+				    "ゲーム出力のタイトル・画面サイズが無効です。");
+			}
+		}
+
 		*this = loaded;
 		return true;
 	} catch (const std::exception &error) {
@@ -182,7 +203,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		    !validator.SetOperation(operation) || !validator.SetSpace(space) ||
 		    !validator.SetPivotMode(pivotMode) ||
 		    !cameraValidator.SetSettings(camera) ||
-		    !gridValidator.SetSettings(grid)) {
+		    !gridValidator.SetSettings(grid) || !gameExport.IsValid()) {
 			throw std::runtime_error("保存するEditor設定が無効です。");
 		}
 
@@ -210,6 +231,10 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 
 		const nlohmann::json json{
 		    {"version", 1},
+		    {"gameExport",
+		     {{"title", gameExport.title},
+		      {"width", gameExport.width},
+		      {"height", gameExport.height}}},
 		    {"showGrid", showGrid},
 		    {"showSelectionBounds", showSelectionBounds},
 		    {"snapping", snapping},
@@ -253,7 +278,11 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 
 bool EditorPreferences::operator==(const EditorPreferences &other) const {
 	return pivotMode == other.pivotMode && grid == other.grid &&
-	       recentScenes == other.recentScenes && showGrid == other.showGrid &&
+	       recentScenes == other.recentScenes &&
+	       gameExport.title == other.gameExport.title &&
+	       gameExport.width == other.gameExport.width &&
+	       gameExport.height == other.gameExport.height &&
+	       showGrid == other.showGrid &&
 	       showSelectionBounds == other.showSelectionBounds &&
 	       snapping == other.snapping && operation == other.operation &&
 	       space == other.space &&

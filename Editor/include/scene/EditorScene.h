@@ -450,6 +450,7 @@ class EditorScene final : public IScene {
 	BatchRenameDialog batchRenameDialog_;
 	SceneFileDialog fileDialog_;
 	GameExportDialog exportDialog_;
+	GameConfig exportConfig_;
 	SceneReloadDialog sceneReloadDialog_;
 
 	DialogStage stage_ = DialogStage::IDLE;

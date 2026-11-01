@@ -1,6 +1,7 @@
 #pragma once
 
 #include "camera/EditorCameraController.h"
+#include "gameplay/GameConfig.h"
 #include "gizmo/TransformGizmo.h"
 #include "scene/SceneGrid.h"
 
@@ -8,7 +9,7 @@
 #include <vector>
 
 /// <summary>
-/// シーンとは独立したEditorの表示・ギズモ設定を保存する
+/// シーンとは独立したEditorの表示・ギズモ・ゲーム出力設定を保存する
 /// </summary>
 class EditorPreferences {
   public:
@@ -21,6 +22,10 @@ class EditorPreferences {
 	TransformGizmo::SnapSettings snap;
 	EditorCameraController::Settings camera;
 	SceneGrid::Settings grid;
+
+	// タイトルと画面サイズだけを保存し、起動シーンとカメラ姿勢は出力時に決める
+	GameConfig gameExport;
+
 	std::vector<std::filesystem::path> recentScenes;
 
 	/// <summary>

@@ -51,6 +51,7 @@ bool EditorScene::Initialize() {
 	performancePanel_.Reset();
 	preferences_ = EditorPreferences{};
 	canSavePreferences_ = preferences_.Load();
+	exportConfig_ = preferences_.gameExport;
 	recentScenes_.Clear();
 
 	for (auto it = preferences_.recentScenes.rbegin();
@@ -646,6 +647,7 @@ void EditorScene::Finalize() {
 		current.snap = gizmo_.GetSnapSettings();
 		current.camera = cameraController_.GetSettings();
 		current.grid = sceneGrid_.GetSettings();
+		current.gameExport = exportConfig_;
 		const auto recent = recentScenes_.GetPaths();
 		current.recentScenes.assign(recent.begin(), recent.end());
 
@@ -1217,6 +1219,7 @@ void EditorScene::StartAction(EditorAction action) {
 #endif
 		options.resourceDirectory = root / L"resources";
 		options.destination = root / L"exports" / L"Game";
+		options.config = exportConfig_;
 		options.config.fallbackCamera = cameraController_.GetPose();
 		exportDialog_.Show(std::move(options));
 		stage_ = DialogStage::EXPORT_GAME;
@@ -1728,6 +1731,7 @@ void EditorScene::UpdateDialogs() {
 				Logger::Info(
 				    "Game exported to " +
 				    PathUtils::ToUtf8(exportDialog_.GetOptions().destination));
+				exportConfig_ = exportDialog_.GetOptions().config;
 				stage_ = DialogStage::IDLE;
 			} else {
 				ShowError(std::move(error));
