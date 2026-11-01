@@ -44,6 +44,17 @@ bool ApplyPose(const CameraPose &pose, Transform &transform);
 bool GetInitialPose(const Scene &scene, SceneObjectId id, CameraPose &pose);
 
 /// <summary>
+/// 追従先の変更後に、対象の不在や自己参照・循環が生じないか確認する。
+/// 位置・レンズ・追従オフセットの検証は行わない
+/// </summary>
+/// <param name="scene">参照するシーン。値は変更しない</param>
+/// <param name="id">追従元の物体ID。シーン内に存在すること</param>
+/// <param name="target">設定する追従先。0は追従先の解除</param>
+/// <returns>true:参照を設定可能 false:物体なし、または追従先から続く参照が不在・循環</returns>
+bool CanSetFollowTarget(const Scene &scene, SceneObjectId id,
+                        SceneObjectId target);
+
+/// <summary>
 /// 全Follow Cameraを検証し、追従先のCameraが先に現れる更新順を作る
 /// </summary>
 /// <param name="scene">検証するシーン。値は変更しない</param>

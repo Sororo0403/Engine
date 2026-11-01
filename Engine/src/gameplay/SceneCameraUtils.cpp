@@ -154,6 +154,38 @@ bool SceneCameraUtils::GetInitialPose(const Scene &scene, SceneObjectId id,
 	return true;
 }
 
+bool SceneCameraUtils::CanSetFollowTarget(const Scene &scene, SceneObjectId id,
+                                          SceneObjectId target) {
+	if (!scene.Contains(id)) {
+		return false;
+	}
+
+	// シーンの物体数を上限にして、既に存在する循環でも必ず停止する。
+	for (std::size_t count = 0; count < scene.GetObjects().size(); ++count) {
+		if (target == 0) {
+			return true;
+		}
+
+		if (target == id) {
+			return false;
+		}
+
+		const auto *object = scene.FindObject(target);
+
+		if (!object) {
+			return false;
+		}
+
+		if (!object->followCamera) {
+			return true;
+		}
+
+		target = object->followCamera->target;
+	}
+
+	return false;
+}
+
 bool SceneCameraUtils::GetFollowOrder(const Scene &scene,
                                       std::vector<SceneObjectId> &order,
                                       std::string &error) {

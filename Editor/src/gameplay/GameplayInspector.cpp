@@ -1,4 +1,5 @@
 #include "gameplay/GameplayInspector.h"
+#include "gameplay/SceneCameraUtils.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "history/EditorHistory.h"
 #include "scene/Scene.h"
@@ -85,16 +86,29 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		}
 
 		const auto *target = scene.FindObject(object.followCamera->target);
-		const auto preview = target ? target->name : "Choose target";
+		const auto preview =
+		    target ? target->name + " (ID " +
+		                 std::to_string(object.followCamera->target) + ")"
+		    : object.followCamera->target == 0
+		        ? std::string{"None"}
+		        : "Missing target (ID " +
+		              std::to_string(object.followCamera->target) + ")";
 
 		if (ImGui::BeginCombo("Target", preview.c_str())) {
-			for (const auto &[targetId, candidate] : scene.GetObjects()) {
-				if (targetId == id) {
-					continue;
-				}
+			if (ImGui::Selectable("None###NoFollowTarget",
+			                      object.followCamera->target == 0)) {
+				auto edited = *object.followCamera;
+				edited.target = 0;
+				changed |= history.SetFollowCamera(id, edited);
+			}
 
-				const auto label =
-				    candidate.name + "###" + std::to_string(targetId);
+			for (const auto &[targetId, candidate] : scene.GetObjects()) {
+				const auto label = candidate.name + " (ID " +
+				                   std::to_string(targetId) + ")###" +
+				                   std::to_string(targetId);
+				const bool allowed =
+				    SceneCameraUtils::CanSetFollowTarget(scene, id, targetId);
+				ImGui::BeginDisabled(!allowed);
 
 				if (ImGui::Selectable(label.c_str(),
 				                      targetId ==
@@ -103,12 +117,17 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 					edited.target = targetId;
 					changed |= history.SetFollowCamera(id, edited);
 				}
+
+				ImGui::EndDisabled();
 			}
 
 			ImGui::EndCombo();
 		}
 
-		if (!target || object.followCamera->target == id) {
+		const auto *currentTarget =
+		    scene.FindObject(object.followCamera->target);
+
+		if (!currentTarget || object.followCamera->target == id) {
 			ImGui::TextWrapped(
 			    "Choose another object in this scene before Play.");
 		}

@@ -1465,7 +1465,9 @@ bool EditorHistory::SetFollowCamera(SceneObjectId id,
 	CommitEdit();
 	auto *object = scene_.FindObject(id);
 
-	if (!object || (value && !value->IsValid())) {
+	if (!object ||
+	    (value && (!value->IsValid() || !SceneCameraUtils::CanSetFollowTarget(
+	                                        scene_, id, value->target)))) {
 		return false;
 	}
 

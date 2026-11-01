@@ -245,7 +245,11 @@ void ControlsPanel::Draw() {
 	         "its starting view using the current target position."},
 	        {"Inspector > Follow Camera",
 	         "Offsets use world coordinates. Follow Smoothing 0 follows "
-	         "immediately. Choose the target object in the same scene."},
+	         "immediately. Choose the target object in the same scene; IDs "
+	         "distinguish matching names. None clears the target. "
+	         "Self-reference, "
+	         "circular chains and broken target chains cannot be selected. "
+	         "Target changes support Undo/Redo."},
 	        {"Selected Respawn in Scene",
 	         "The cyan cross marks the respawn position. The red square marks "
 	         "Fall Below Y near that point; the height applies everywhere, "

@@ -253,6 +253,7 @@ class EditorHistory {
 
 	/// <summary>
 	/// FollowCameraコンポーネントを追加・変更・削除して履歴へ記録する
+	/// 対象の不在や自己参照・循環する追従先は設定せず、0は追従先の解除として扱う
 	/// </summary>
 	/// <param name="objectId">対象ID</param>
 	/// <param name="value">新しい設定。未指定は削除</param>
