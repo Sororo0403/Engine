@@ -17,6 +17,22 @@ class TransformGizmo {
 	};
 
 	/// <summary>
+	/// ギズモで編集する変形成分
+	/// </summary>
+	enum class Operation {
+		TRANSLATE,
+		ROTATE,
+		SCALE,
+	};
+
+	/// <summary>
+	/// ギズモの操作種別を設定する。ドラッグ中は切り替えない
+	/// </summary>
+	/// <param name="operation">移動・回転・拡大縮小の種別</param>
+	/// <returns>true:設定成功 false:ドラッグ中、または無効な種別</returns>
+	bool SetOperation(Operation operation);
+
+	/// <summary>
 	/// ギズモ操作の結果
 	/// </summary>
 	struct Result {
@@ -69,15 +85,6 @@ class TransformGizmo {
 	void Cancel();
 
   private:
-	/// <summary>
-	/// ギズモで編集する変形成分
-	/// </summary>
-	enum class Operation {
-		TRANSLATE,
-		ROTATE,
-		SCALE,
-	};
-
 	Operation operation_ = Operation::TRANSLATE;
 
 	SceneObjectId objectId_ = 0;

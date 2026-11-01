@@ -524,6 +524,17 @@ EditorScene::ReadShortcut(bool objectPanelFocused) const {
 	    objectPanelFocused && !ImGui::IsAnyItemActive() &&
 	    !ImGui::IsMouseDown(ImGuiMouseButton_Right);
 	const bool objectEnabled = selectionEnabled && HasSelection();
+	if (objectEnabled && !control && !shift && !alt) {
+		if (keyboard.IsPressed(Key::W)) {
+			return EditorAction::GIZMO_MOVE;
+		}
+		if (keyboard.IsPressed(Key::E)) {
+			return EditorAction::GIZMO_ROTATE;
+		}
+		if (keyboard.IsPressed(Key::R)) {
+			return EditorAction::GIZMO_SCALE;
+		}
+	}
 	if (selectionEnabled && !control && !shift && !alt &&
 	    keyboard.IsPressed(Key::ESCAPE)) {
 		return EditorAction::DESELECT_ALL;
@@ -579,6 +590,15 @@ void EditorScene::StartAction(EditorAction action) {
 	FinishEdit();
 
 	switch (action) {
+	case EditorAction::GIZMO_MOVE:
+		gizmo_.SetOperation(TransformGizmo::Operation::TRANSLATE);
+		return;
+	case EditorAction::GIZMO_ROTATE:
+		gizmo_.SetOperation(TransformGizmo::Operation::ROTATE);
+		return;
+	case EditorAction::GIZMO_SCALE:
+		gizmo_.SetOperation(TransformGizmo::Operation::SCALE);
+		return;
 	case EditorAction::SELECT_ALL: {
 		if (hierarchySelectionScope_) {
 			hierarchyPanel_.SelectAllVisible(document_.GetScene(), selection_);

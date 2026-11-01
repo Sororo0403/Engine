@@ -7,6 +7,20 @@
 
 #include <ImGuizmo.h>
 
+bool TransformGizmo::SetOperation(Operation operation) {
+	if (using_) {
+		return false;
+	}
+	switch (operation) {
+	case Operation::TRANSLATE:
+	case Operation::ROTATE:
+	case Operation::SCALE:
+		operation_ = operation;
+		return true;
+	}
+	return false;
+}
+
 void TransformGizmo::BeginFrame() {
 	ImGuizmo::SetImGuiContext(ImGui::GetCurrentContext());
 	ImGuizmo::BeginFrame();
@@ -21,18 +35,21 @@ void TransformGizmo::DrawToolbar(SelectionMode selectionMode) {
 	if (ImGui::RadioButton("Move", operation_ == Operation::TRANSLATE)) {
 		operation_ = Operation::TRANSLATE;
 	}
+	ImGui::SetItemTooltip("Move (W)");
 
 	ImGui::SameLine();
 
 	if (ImGui::RadioButton("Rotate", operation_ == Operation::ROTATE)) {
 		operation_ = Operation::ROTATE;
 	}
+	ImGui::SetItemTooltip("Rotate (E)");
 
 	ImGui::SameLine();
 
 	if (ImGui::RadioButton("Scale", operation_ == Operation::SCALE)) {
 		operation_ = Operation::SCALE;
 	}
+	ImGui::SetItemTooltip("Scale (R)");
 
 	ImGui::EndDisabled();
 

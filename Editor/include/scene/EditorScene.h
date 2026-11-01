@@ -103,6 +103,9 @@ class EditorScene final : public IScene {
 		FRAME_ALL,
 		SELECT_ALL,
 		DESELECT_ALL,
+		GIZMO_MOVE,
+		GIZMO_ROTATE,
+		GIZMO_SCALE,
 	};
 
 	/// <summary>
