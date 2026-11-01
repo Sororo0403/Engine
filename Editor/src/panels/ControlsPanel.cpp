@@ -74,6 +74,7 @@ void ControlsPanel::Draw() {
 	    {"Hierarchy double-click", "Frame the clicked model."},
 	});
 	DrawSection("Selection and objects", {
+	    {"Assets > Select Instances", "Select all scene objects using the chosen model, including hidden objects. Also available from a model row context menu; reveals the active result in Hierarchy."},
 	    {"Assets folders / Up / Root", "Open a folder or return to its parent or the Assets root. Search finds model paths across all folders."},
 	    {"Click / Ctrl + click", "Select one object / toggle an object in the selection."},
 	    {"Drag in Scene", "Select models inside the rectangle."},

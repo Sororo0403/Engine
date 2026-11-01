@@ -219,6 +219,12 @@ class EditorScene final : public IScene {
 	void SetCameraView(CameraView view);
 
 	/// <summary>
+	/// 指定モデルを使用する物体をまとめて選択し、Hierarchyで表示する
+	/// </summary>
+	/// <param name="path">検索するモデルのパス</param>
+	void SelectModelInstances(const std::filesystem::path &path);
+
+	/// <summary>
 	/// 現在のダイアログを描画し、選択結果を処理する
 	/// </summary>
 	void UpdateDialogs();

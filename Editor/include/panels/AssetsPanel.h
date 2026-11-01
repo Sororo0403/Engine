@@ -26,6 +26,12 @@ class AssetsPanel {
 	std::filesystem::path Draw(const ImGuiSystem &ui, AssetDatabase &assets);
 
 	/// <summary>
+	/// このフレームに使用物体の選択を要求したモデルを取得する
+	/// </summary>
+	/// <returns>モデルの相対パス。要求なしの場合は空。次のDrawまたはClearまで有効</returns>
+	const std::filesystem::path &GetInstanceSelectionRequest() const;
+
+	/// <summary>
 	/// 選択・検索・表示要求をクリアし、検索先のルートフォルダへ戻る
 	/// </summary>
 	void Clear();
@@ -46,6 +52,7 @@ class AssetsPanel {
 	bool SelectModel(const std::filesystem::path &path, const AssetDatabase &assets);
 
 	std::filesystem::path selectedPath_;
+	std::filesystem::path instanceSelectionPath_;
 	std::filesystem::path currentDirectory_;
 	std::string filter_;
 	std::filesystem::path revealPath_;

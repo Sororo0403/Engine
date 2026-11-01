@@ -1,6 +1,7 @@
 #include "scene/EditorScene.h"
 
 #include "assets/ModelPlacement.h"
+#include "assets/ModelUsage.h"
 #include "core/EngineContext.h"
 #include "core/Logger.h"
 #include "graphics/model/ModelManager.h"
@@ -136,6 +137,7 @@ bool EditorScene::Update(float deltaTime) {
 		assetsPanel_.RequestReveal(inspectorPanel_.GetAssetRevealPath());
 	}
 	const auto requestedModelPath = assetsPanel_.Draw(ui_, assets_);
+	const auto requestedInstances = assetsPanel_.GetInstanceSelectionRequest();
 	const auto historyRequest = historyPanel_.Draw(ui_, history,
 	    !wasBusy && !gizmo_.IsUsing() && !gizmoEditActive_ && !sceneViewPanel_.IsSelecting());
 
@@ -238,6 +240,13 @@ bool EditorScene::Update(float deltaTime) {
 			}
 		}
 
+		if (!IsBusy() && action == EditorAction::NONE && !requestedInstances.empty() &&
+		    requestedModelPath.empty() && modelDrop.path.empty() && modelRequest.objectId == 0 &&
+		    visibilityRequest.objectId == 0 && !hasTransformRequest && !historyRequest &&
+		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
+			SelectModelInstances(requestedInstances);
+		}
+
 		if (!IsBusy() && !requestedModelPath.empty()) {
 			PlaceModel(requestedModelPath);
 		}
@@ -255,12 +264,12 @@ bool EditorScene::Update(float deltaTime) {
 		}
 
 		if (!IsBusy()) {
-			if (historyRequest && action == EditorAction::NONE && requestedModelPath.empty() &&
+			if (historyRequest && action == EditorAction::NONE && requestedModelPath.empty() && requestedInstances.empty() &&
 			    modelDrop.path.empty() && modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
 			    !hasTransformRequest && hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 				RestoreHistory(*historyRequest);
 			}
-			if (action == EditorAction::NONE && modelDrop.path.empty() &&
+			if (action == EditorAction::NONE && requestedInstances.empty() && modelDrop.path.empty() &&
 			    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 && !hasTransformRequest && !historyRequest) {
 				const bool objectPanelFocused =
 				    hierarchyRequest.windowFocused ||
@@ -284,7 +293,7 @@ bool EditorScene::Update(float deltaTime) {
 
 	const bool inputBlocked =
 	    wasBusy || IsBusy() || action != EditorAction::NONE ||
-	    !requestedModelPath.empty() ||
+	    !requestedModelPath.empty() || !requestedInstances.empty() ||
 	    !modelDrop.path.empty() ||
 	    modelRequest.objectId != 0 ||
 	    visibilityRequest.objectId != 0 ||
@@ -1192,6 +1201,20 @@ void EditorScene::StartSave(bool saveAs) {
 	fileDialog_.Show(SceneFileDialogMode::SAVE, document_.GetFilePath());
 
 	stage_ = DialogStage::SAVE_FILE;
+}
+
+void EditorScene::SelectModelInstances(const std::filesystem::path &path) {
+	FinishEdit();
+	try {
+		const auto count = ModelUsage::SelectObjects(document_.GetScene(), path, selection_);
+		hierarchyPanel_.RequestReveal(selection_.GetActiveId());
+		if (count == 0) {
+			Logger::Info("このモデルを使用する物体はシーン内にありません。");
+		}
+	} catch (const std::exception &error) {
+		Logger::Error(std::format("EditorScene::SelectModelInstances: {}", error.what()));
+		ShowError("Could not select model instances. See the log for details.");
+	}
 }
 
 void EditorScene::SetCameraView(CameraView view) {

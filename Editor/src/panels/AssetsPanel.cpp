@@ -59,6 +59,7 @@ bool AssetsPanel::SelectModel(const std::filesystem::path &path, const AssetData
 
 std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
                                         AssetDatabase &assets) {
+	instanceSelectionPath_.clear();
 	if (!revealPath_.empty()) {
 		ImGui::SetNextWindowCollapsed(false);
 		ImGui::SetNextWindowFocus();
@@ -134,7 +135,10 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 	}
 
 	const auto contentSize = ui.GetContentSize();
-	const float listHeight = std::max(1.0f, contentSize.y - 90.0f);
+	const float footerHeight = ImGui::GetTextLineHeightWithSpacing() +
+	                           ImGui::GetFrameHeightWithSpacing() * 2.0f +
+	                           ImGui::GetStyle().ItemSpacing.y;
+	const float listHeight = std::max(1.0f, contentSize.y - footerHeight);
 
 	const bool drawModels = ui.BeginChild("ModelAssets", 0.0f, listHeight);
 	std::filesystem::path nextDirectory;
@@ -189,6 +193,16 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 				scrollToSelected_ = false;
 				revealMessage_.clear();
 			}
+			if (ImGui::BeginPopupContextItem()) {
+				selectedPath_ = modelPath;
+				scrollToSelected_ = false;
+				revealMessage_.clear();
+				if (ui.MenuItem("Select Instances", nullptr, true)) {
+					instanceSelectionPath_ = modelPath;
+				}
+				ImGui::SetItemTooltip("Select all objects using this model, including hidden objects.");
+				ImGui::EndPopup();
+			}
 			if (scrollToSelected_ && selectedPath_ == modelPath) {
 				ImGui::SetScrollHereY(0.5f);
 				scrollToSelected_ = false;
@@ -222,6 +236,10 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 	if (ui.Button("Add to Scene")) {
 		requestedPath = selectedPath_;
 	}
+	if (ui.Button("Select Instances")) {
+		instanceSelectionPath_ = selectedPath_;
+	}
+	ImGui::SetItemTooltip("Select all objects using this model, including hidden objects.");
 
 	ui.EndDisabled();
 
@@ -229,8 +247,13 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 	return requestedPath;
 }
 
+const std::filesystem::path &AssetsPanel::GetInstanceSelectionRequest() const {
+	return instanceSelectionPath_;
+}
+
 void AssetsPanel::Clear() {
 	selectedPath_.clear();
+	instanceSelectionPath_.clear();
 	currentDirectory_.clear();
 	filter_.clear();
 	revealPath_.clear();
