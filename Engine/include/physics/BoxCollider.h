@@ -15,8 +15,10 @@ struct BoxCollider {
 	/// <param name="other">比較対象</param>
 	/// <returns>true:一致 false:不一致</returns>
 	bool operator==(const BoxCollider &other) const {
-		return center.x == other.center.x && center.y == other.center.y && center.z == other.center.z &&
-		       halfExtents.x == other.halfExtents.x && halfExtents.y == other.halfExtents.y &&
+		return center.x == other.center.x && center.y == other.center.y &&
+		       center.z == other.center.z &&
+		       halfExtents.x == other.halfExtents.x &&
+		       halfExtents.y == other.halfExtents.y &&
 		       halfExtents.z == other.halfExtents.z;
 	}
 };

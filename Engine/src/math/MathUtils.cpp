@@ -4,10 +4,13 @@
 #include <limits>
 
 bool MathUtils::SnapToGrid(const DirectX::XMFLOAT3 &position,
-                          const DirectX::XMFLOAT3 &step, DirectX::XMFLOAT3 &snapped) {
-	if (!IsFinite(position) || !IsFinite(step) || step.x <= 0.0f || step.y <= 0.0f || step.z <= 0.0f) {
+                           const DirectX::XMFLOAT3 &step,
+                           DirectX::XMFLOAT3 &snapped) {
+	if (!IsFinite(position) || !IsFinite(step) || step.x <= 0.0f ||
+	    step.y <= 0.0f || step.z <= 0.0f) {
 		return false;
 	}
+
 	const auto roundComponent = [](float value, float increment) {
 		return std::round(static_cast<double>(value) / increment) * increment;
 	};
@@ -15,11 +18,14 @@ bool MathUtils::SnapToGrid(const DirectX::XMFLOAT3 &position,
 	const double y = roundComponent(position.y, step.y);
 	const double z = roundComponent(position.z, step.z);
 	const double limit = (std::numeric_limits<float>::max)();
+
 	if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(z) ||
 	    std::abs(x) > limit || std::abs(y) > limit || std::abs(z) > limit) {
 		return false;
 	}
-	snapped = {static_cast<float>(x), static_cast<float>(y), static_cast<float>(z)};
+
+	snapped = {static_cast<float>(x), static_cast<float>(y),
+	           static_cast<float>(z)};
 	return true;
 }
 

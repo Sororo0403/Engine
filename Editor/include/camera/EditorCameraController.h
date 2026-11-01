@@ -46,7 +46,8 @@ class EditorCameraController {
 	/// <param name="deltaTime">前フレームからの経過時間。単位は秒</param>
 	/// <param name="orbitTarget">Alt＋左ドラッグの回転中心。nullptrは開始不可。開始後は中心を固定する</param>
 	void Update(const InputSystem &input, const ViewportInput &viewport,
-	            float deltaTime, const DirectX::XMFLOAT3 *orbitTarget = nullptr);
+	            float deltaTime,
+	            const DirectX::XMFLOAT3 *orbitTarget = nullptr);
 
 	/// <summary>
 	/// 現在のカメラの姿勢を取得する

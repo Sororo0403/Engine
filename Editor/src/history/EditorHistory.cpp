@@ -1,10 +1,10 @@
 #include "history/EditorHistory.h"
 
 #include "core/Logger.h"
-#include "math/TransformUtils.h"
 #include "math/MathUtils.h"
-#include "scene/Scene.h"
+#include "math/TransformUtils.h"
 #include "physics/BoxColliderUtils.h"
+#include "scene/Scene.h"
 
 #include <algorithm>
 #include <cassert>
@@ -17,7 +17,8 @@
 #include <type_traits>
 #include <utility>
 
-EditorHistory::EditorHistory(Scene &scene) noexcept : scene_(scene) {}
+EditorHistory::EditorHistory(Scene &scene) noexcept : scene_(scene) {
+}
 
 SceneObjectId EditorHistory::CreateObject(std::string name,
                                           std::filesystem::path modelPath) {
@@ -145,17 +146,21 @@ EditorHistory::DuplicateObjects(std::span<const SceneObjectId> objectIds) {
 std::vector<SceneObjectId>
 EditorHistory::CreateObjects(std::vector<SceneObject> objects) {
 	CommitEdit();
+
 	if (objects.empty()) {
 		return {};
 	}
+
 	for (auto &object : objects) {
 		if (!TransformUtils::IsValid(object.transform)) {
 			return {};
 		}
+
 		if (object.name.empty()) {
 			object.name = "Object";
 		}
 	}
+
 	std::vector<SceneObjectId> createdIds;
 	createdIds.reserve(objects.size());
 
@@ -209,6 +214,7 @@ bool EditorHistory::BeginTransforms(std::span<const SceneObjectId> objectIds) {
 		}
 
 		const SceneObject *object = scene_.FindObject(id);
+
 		if (!object || !TransformUtils::IsValid(object->transform)) {
 			return false;
 		}
@@ -220,8 +226,8 @@ bool EditorHistory::BeginTransforms(std::span<const SceneObjectId> objectIds) {
 	return true;
 }
 
-bool EditorHistory::UpdateTransforms(
-    const Transform &beforePivot, const Transform &afterPivot) {
+bool EditorHistory::UpdateTransforms(const Transform &beforePivot,
+                                     const Transform &afterPivot) {
 	if (!pendingTransforms_ || !TransformUtils::IsValid(beforePivot) ||
 	    !TransformUtils::IsValid(afterPivot)) {
 		return false;
@@ -233,19 +239,22 @@ bool EditorHistory::UpdateTransforms(
 	    afterPivot.scale.y <= 0.0f || afterPivot.scale.z <= 0.0f) {
 		return false;
 	}
-	const double ratioX = static_cast<double>(afterPivot.scale.x) /
-	                      beforePivot.scale.x;
-	const double ratioY = static_cast<double>(afterPivot.scale.y) /
-	                      beforePivot.scale.y;
-	const double ratioZ = static_cast<double>(afterPivot.scale.z) /
-	                      beforePivot.scale.z;
+
+	const double ratioX =
+	    static_cast<double>(afterPivot.scale.x) / beforePivot.scale.x;
+	const double ratioY =
+	    static_cast<double>(afterPivot.scale.y) / beforePivot.scale.y;
+	const double ratioZ =
+	    static_cast<double>(afterPivot.scale.z) / beforePivot.scale.z;
 	const float scaleRatio = static_cast<float>(ratioX);
 	const double tolerance = 0.00001 * ratioX;
+
 	if (!std::isfinite(scaleRatio) || scaleRatio <= 0.0f ||
 	    std::abs(ratioY - ratioX) > tolerance ||
 	    std::abs(ratioZ - ratioX) > tolerance) {
 		return false;
 	}
+
 	const bool scaled = scaleRatio != 1.0f;
 
 	using namespace DirectX;
@@ -253,9 +262,8 @@ bool EditorHistory::UpdateTransforms(
 	    XMQuaternionNormalize(XMLoadFloat4(&beforePivot.rotation));
 	const XMVECTOR afterRotation =
 	    XMQuaternionNormalize(XMLoadFloat4(&afterPivot.rotation));
-	const XMVECTOR deltaRotation = XMQuaternionNormalize(
-	    XMQuaternionMultiply(XMQuaternionConjugate(beforeRotation),
-	                         afterRotation));
+	const XMVECTOR deltaRotation = XMQuaternionNormalize(XMQuaternionMultiply(
+	    XMQuaternionConjugate(beforeRotation), afterRotation));
 	const XMVECTOR beforeCenter = XMLoadFloat3(&beforePivot.translation);
 	const XMVECTOR afterCenter = XMLoadFloat3(&afterPivot.translation);
 
@@ -268,6 +276,7 @@ bool EditorHistory::UpdateTransforms(
 
 	const auto makeEdited = [&](const TransformSnapshot &snapshot) {
 		Transform edited = snapshot.before;
+
 		if (scaled) {
 			// 元の軸ごとの比率と符号を保ったまま、同じ倍率を適用する
 			edited.scale = {
@@ -276,6 +285,7 @@ bool EditorHistory::UpdateTransforms(
 			    snapshot.before.scale.z * scaleRatio,
 			};
 		}
+
 		if (!rotated && !scaled) {
 			// 移動だけの場合は、中心との減算・加算による位置の誤差を避ける
 			edited.translation = {
@@ -292,25 +302,27 @@ bool EditorHistory::UpdateTransforms(
 		// 開始時点の中心からの距離にも、同じ拡縮・回転を適用する
 		XMVECTOR relativePosition = XMVectorSubtract(
 		    XMLoadFloat3(&snapshot.before.translation), beforeCenter);
+
 		if (scaled) {
 			relativePosition = XMVectorScale(relativePosition, scaleRatio);
 		}
+
 		if (rotated) {
 			relativePosition = XMVector3Rotate(relativePosition, deltaRotation);
 		}
-		XMStoreFloat3(
-		    &edited.translation,
-		    XMVectorAdd(afterCenter, relativePosition));
+
+		XMStoreFloat3(&edited.translation,
+		              XMVectorAdd(afterCenter, relativePosition));
 
 		if (rotated) {
 			const XMVECTOR originalRotation =
 			    XMQuaternionNormalize(XMLoadFloat4(&snapshot.before.rotation));
 			// DirectXMathでは第1引数の回転の後に第2引数の回転を適用する
-			XMStoreFloat4(
-			    &edited.rotation,
-			    XMQuaternionNormalize(
-			        XMQuaternionMultiply(originalRotation, deltaRotation)));
+			XMStoreFloat4(&edited.rotation,
+			              XMQuaternionNormalize(XMQuaternionMultiply(
+			                  originalRotation, deltaRotation)));
 		}
+
 		return edited;
 	};
 
@@ -325,230 +337,328 @@ bool EditorHistory::UpdateTransforms(
 	for (const auto &snapshot : *pendingTransforms_) {
 		scene_.FindObject(snapshot.objectId)->transform = makeEdited(snapshot);
 	}
+
 	return true;
 }
 
 bool EditorHistory::ResetTransforms(std::span<const SceneObjectId> objectIds) {
 	CommitEdit();
+
 	if (objectIds.empty()) {
 		return false;
 	}
+
 	std::set<SceneObjectId> seen;
 	std::vector<CommandGroup::Command> commands;
 	commands.reserve(objectIds.size());
 	const Transform reset;
+
 	for (const SceneObjectId id : objectIds) {
 		const SceneObject *object = scene_.FindObject(id);
+
 		if (id == 0 || !seen.insert(id).second || !object ||
 		    !TransformUtils::IsValid(object->transform)) {
 			return false;
 		}
+
 		if (!TransformUtils::AreEqual(object->transform, reset)) {
-			commands.emplace_back(TransformCommand{id, object->transform, reset});
+			commands.emplace_back(
+			    TransformCommand{id, object->transform, reset});
 		}
 	}
+
 	if (commands.empty()) {
 		return true;
 	}
+
 	CommandGroup group{std::move(commands)};
 	const std::uint64_t next = PrepareAppend();
+
 	if (!group.Redo(scene_)) {
 		return false;
 	}
+
 	AppendPrepared(Command{std::move(group)}, next,
-	               objectIds.size() == 1 ? "Reset Transform" : "Reset Transforms");
+	               objectIds.size() == 1 ? "Reset Transform"
+	                                     : "Reset Transforms");
 	return true;
 }
 
-bool EditorHistory::SetCollider(SceneObjectId objectId, std::optional<BoxCollider> collider) {
+bool EditorHistory::SetCollider(SceneObjectId objectId,
+                                std::optional<BoxCollider> collider) {
 	CommitEdit();
 	const auto *object = scene_.FindObject(objectId);
-	if (!object) return false;
+
+	if (!object)
+		return false;
+
 	AxisAlignedBox bounds;
-	if (collider && !BoxColliderUtils::GetWorldBounds(*collider, object->transform, bounds)) return false;
+
+	if (collider &&
+	    !BoxColliderUtils::GetWorldBounds(*collider, object->transform, bounds))
+		return false;
+
 	const bool adding = !object->collider;
 	ColliderCommand command{objectId, object->collider, collider};
-	if (!command.HasChanges()) return true;
+
+	if (!command.HasChanges())
+		return true;
+
 	const auto next = PrepareAppend();
-	if (!command.Redo(scene_)) return false;
-	AppendPrepared(Command{std::move(command)}, next, !collider ? "Remove Box Collider" :
-	    adding ? "Add Box Collider" : "Edit Box Collider");
+
+	if (!command.Redo(scene_))
+		return false;
+
+	AppendPrepared(Command{std::move(command)}, next,
+	               !collider ? "Remove Box Collider"
+	               : adding  ? "Add Box Collider"
+	                         : "Edit Box Collider");
 	return true;
 }
 
 bool EditorHistory::BeginCollider(SceneObjectId objectId) {
 	CommitEdit();
 	const auto *object = scene_.FindObject(objectId);
-	if (!object || !object->collider) return false;
+
+	if (!object || !object->collider)
+		return false;
+
 	pending_ = PendingEdit{objectId, object->collider};
 	return true;
 }
 
-bool EditorHistory::SetModelPath(SceneObjectId objectId, std::filesystem::path modelPath) {
+bool EditorHistory::SetModelPath(SceneObjectId objectId,
+                                 std::filesystem::path modelPath) {
 	CommitEdit();
 	const auto *object = scene_.FindObject(objectId);
+
 	if (!object) {
 		return false;
 	}
+
 	ModelPathCommand command{objectId, object->modelPath, std::move(modelPath)};
+
 	if (!command.HasChanges()) {
 		return true;
 	}
+
 	const auto next = PrepareAppend();
+
 	if (!command.Redo(scene_)) {
 		return false;
 	}
+
 	AppendPrepared(Command{std::move(command)}, next, "Change Model");
 	return true;
 }
 
-bool EditorHistory::SetVisibility(std::span<const SceneObjectId> objectIds, bool visible) {
+bool EditorHistory::SetVisibility(std::span<const SceneObjectId> objectIds,
+                                  bool visible) {
 	CommitEdit();
+
 	if (objectIds.empty()) {
 		return false;
 	}
+
 	std::set<SceneObjectId> seen;
 	std::vector<CommandGroup::Command> commands;
 	commands.reserve(objectIds.size());
+
 	for (const auto id : objectIds) {
 		const auto *object = scene_.FindObject(id);
+
 		if (!object || !seen.insert(id).second) {
 			return false;
 		}
+
 		if (object->visible != visible) {
-			commands.emplace_back(VisibilityCommand{id, object->visible, visible});
+			commands.emplace_back(
+			    VisibilityCommand{id, object->visible, visible});
 		}
 	}
+
 	if (commands.empty()) {
 		return true;
 	}
+
 	CommandGroup group{std::move(commands)};
 	const auto next = PrepareAppend();
+
 	if (!group.Redo(scene_)) {
 		return false;
 	}
-	AppendPrepared(Command{std::move(group)}, next, visible ? "Show Models" : "Hide Models");
+
+	AppendPrepared(Command{std::move(group)}, next,
+	               visible ? "Show Models" : "Hide Models");
 	return true;
 }
 
-bool EditorHistory::SetTransforms(std::span<const SceneObjectId> objectIds, const Transform &transform) {
+bool EditorHistory::SetTransforms(std::span<const SceneObjectId> objectIds,
+                                  const Transform &transform) {
 	CommitEdit();
 	Transform after = transform;
+
 	if (objectIds.empty() || !TransformUtils::IsValid(after) ||
 	    !TransformUtils::TryNormalizeRotation(after.rotation, after.rotation)) {
 		return false;
 	}
+
 	std::set<SceneObjectId> seen;
 	std::vector<CommandGroup::Command> commands;
 	commands.reserve(objectIds.size());
+
 	for (const auto id : objectIds) {
 		const auto *object = scene_.FindObject(id);
-		if (!object || !seen.insert(id).second || !TransformUtils::IsValid(object->transform)) {
+
+		if (!object || !seen.insert(id).second ||
+		    !TransformUtils::IsValid(object->transform)) {
 			return false;
 		}
+
 		if (!TransformUtils::AreEqual(object->transform, after)) {
-			commands.emplace_back(TransformCommand{id, object->transform, after});
+			commands.emplace_back(
+			    TransformCommand{id, object->transform, after});
 		}
 	}
+
 	if (commands.empty()) {
 		return true;
 	}
+
 	CommandGroup group{std::move(commands)};
 	const auto next = PrepareAppend();
+
 	if (!group.Redo(scene_)) {
 		return false;
 	}
+
 	AppendPrepared(Command{std::move(group)}, next,
-	               objectIds.size() == 1 ? "Transform Object" : "Transform Objects");
+	               objectIds.size() == 1 ? "Transform Object"
+	                                     : "Transform Objects");
 	return true;
 }
 
 bool EditorHistory::TranslateObjects(std::span<const SceneObjectId> objectIds,
                                      const DirectX::XMFLOAT3 &translation) {
 	CommitEdit();
+
 	if (objectIds.empty() || !MathUtils::IsFinite(translation)) {
 		return false;
 	}
+
 	std::set<SceneObjectId> seen;
 	std::vector<CommandGroup::Command> commands;
 	commands.reserve(objectIds.size());
+
 	for (const auto id : objectIds) {
 		const auto *object = scene_.FindObject(id);
-		if (!object || !seen.insert(id).second || !TransformUtils::IsValid(object->transform)) {
+
+		if (!object || !seen.insert(id).second ||
+		    !TransformUtils::IsValid(object->transform)) {
 			return false;
 		}
+
 		Transform after = object->transform;
 		after.translation = {after.translation.x + translation.x,
 		                     after.translation.y + translation.y,
 		                     after.translation.z + translation.z};
+
 		if (!TransformUtils::IsValid(after)) {
 			return false;
 		}
+
 		if (!TransformUtils::AreEqual(object->transform, after)) {
-			commands.emplace_back(TransformCommand{id, object->transform, after});
+			commands.emplace_back(
+			    TransformCommand{id, object->transform, after});
 		}
 	}
+
 	if (commands.empty()) {
 		return true;
 	}
+
 	CommandGroup group{std::move(commands)};
 	const auto next = PrepareAppend();
+
 	if (!group.Redo(scene_)) {
 		return false;
 	}
-	AppendPrepared(Command{std::move(group)}, next, objectIds.size() == 1 ? "Move Object" : "Move Objects");
+
+	AppendPrepared(Command{std::move(group)}, next,
+	               objectIds.size() == 1 ? "Move Object" : "Move Objects");
 	return true;
 }
 
 bool EditorHistory::RenameObjects(std::span<const ObjectRename> renames) {
 	CommitEdit();
+
 	if (renames.empty()) {
 		return false;
 	}
+
 	std::set<SceneObjectId> seen;
 	std::vector<CommandGroup::Command> commands;
 	commands.reserve(renames.size());
+
 	for (const auto &rename : renames) {
 		const auto *object = scene_.FindObject(rename.objectId);
-		if (!object || !seen.insert(rename.objectId).second || rename.after.empty() ||
-		    object->name != rename.before) {
+
+		if (!object || !seen.insert(rename.objectId).second ||
+		    rename.after.empty() || object->name != rename.before) {
 			return false;
 		}
+
 		if (rename.before != rename.after) {
-			commands.emplace_back(RenameCommand{rename.objectId, rename.before, rename.after});
+			commands.emplace_back(
+			    RenameCommand{rename.objectId, rename.before, rename.after});
 		}
 	}
+
 	if (commands.empty()) {
 		return true;
 	}
+
 	CommandGroup group{std::move(commands)};
 	const auto next = PrepareAppend();
+
 	if (!group.Redo(scene_)) {
 		return false;
 	}
-	AppendPrepared(Command{std::move(group)}, next, renames.size() == 1 ? "Rename Object" : "Rename Objects");
+
+	AppendPrepared(Command{std::move(group)}, next,
+	               renames.size() == 1 ? "Rename Object" : "Rename Objects");
 	return true;
 }
 
 bool EditorHistory::AlignObjects(std::span<const SceneObjectId> objectIds,
-                                 SceneObjectId referenceId, AlignmentAxis axis) {
+                                 SceneObjectId referenceId,
+                                 AlignmentAxis axis) {
 	CommitEdit();
 	const auto *reference = scene_.FindObject(referenceId);
+
 	if (!reference || !TransformUtils::IsValid(reference->transform) ||
-	    std::find(objectIds.begin(), objectIds.end(), referenceId) == objectIds.end() ||
-	    (axis != AlignmentAxis::X && axis != AlignmentAxis::Y && axis != AlignmentAxis::Z)) {
+	    std::find(objectIds.begin(), objectIds.end(), referenceId) ==
+	        objectIds.end() ||
+	    (axis != AlignmentAxis::X && axis != AlignmentAxis::Y &&
+	     axis != AlignmentAxis::Z)) {
 		return false;
 	}
+
 	const auto position = reference->transform.translation;
 	std::set<SceneObjectId> seen;
 	std::vector<CommandGroup::Command> commands;
 	commands.reserve(objectIds.size());
+
 	for (const auto id : objectIds) {
 		const auto *object = scene_.FindObject(id);
-		if (!object || !seen.insert(id).second || !TransformUtils::IsValid(object->transform)) {
+
+		if (!object || !seen.insert(id).second ||
+		    !TransformUtils::IsValid(object->transform)) {
 			return false;
 		}
+
 		Transform after = object->transform;
+
 		switch (axis) {
 		case AlignmentAxis::X:
 			after.translation.x = position.x;
@@ -560,59 +670,80 @@ bool EditorHistory::AlignObjects(std::span<const SceneObjectId> objectIds,
 			after.translation.z = position.z;
 			break;
 		}
+
 		if (!TransformUtils::AreEqual(object->transform, after)) {
-			commands.emplace_back(TransformCommand{id, object->transform, after});
+			commands.emplace_back(
+			    TransformCommand{id, object->transform, after});
 		}
 	}
+
 	if (commands.empty()) {
 		return true;
 	}
+
 	CommandGroup group{std::move(commands)};
 	const auto next = PrepareAppend();
+
 	if (!group.Redo(scene_)) {
 		return false;
 	}
+
 	AppendPrepared(Command{std::move(group)}, next,
-	               axis == AlignmentAxis::X ? "Align X to Active" :
-	               axis == AlignmentAxis::Y ? "Align Y to Active" : "Align Z to Active");
+	               axis == AlignmentAxis::X   ? "Align X to Active"
+	               : axis == AlignmentAxis::Y ? "Align Y to Active"
+	                                          : "Align Z to Active");
 	return true;
 }
 
-bool EditorHistory::DistributeObjects(std::span<const SceneObjectId> objectIds, AlignmentAxis axis) {
+bool EditorHistory::DistributeObjects(std::span<const SceneObjectId> objectIds,
+                                      AlignmentAxis axis) {
 	CommitEdit();
+
 	if (objectIds.size() < 3 ||
-	    (axis != AlignmentAxis::X && axis != AlignmentAxis::Y && axis != AlignmentAxis::Z)) {
+	    (axis != AlignmentAxis::X && axis != AlignmentAxis::Y &&
+	     axis != AlignmentAxis::Z)) {
 		return false;
 	}
+
 	std::set<SceneObjectId> seen;
 	std::vector<TransformSnapshot> snapshots;
 	snapshots.reserve(objectIds.size());
+
 	for (const auto id : objectIds) {
 		const auto *object = scene_.FindObject(id);
-		if (!object || !seen.insert(id).second || !TransformUtils::IsValid(object->transform)) {
+
+		if (!object || !seen.insert(id).second ||
+		    !TransformUtils::IsValid(object->transform)) {
 			return false;
 		}
+
 		snapshots.push_back({id, object->transform});
 	}
+
 	const auto coordinate = [axis](const Transform &transform) {
-		return axis == AlignmentAxis::X ? transform.translation.x :
-		       axis == AlignmentAxis::Y ? transform.translation.y : transform.translation.z;
+		return axis == AlignmentAxis::X   ? transform.translation.x
+		       : axis == AlignmentAxis::Y ? transform.translation.y
+		                                  : transform.translation.z;
 	};
-	std::sort(snapshots.begin(), snapshots.end(), [&](const auto &a, const auto &b) {
-		const auto x = coordinate(a.before);
-		const auto y = coordinate(b.before);
-		return x != y ? x < y : a.objectId < b.objectId;
-	});
+	std::sort(snapshots.begin(), snapshots.end(),
+	          [&](const auto &a, const auto &b) {
+		          const auto x = coordinate(a.before);
+		          const auto y = coordinate(b.before);
+		          return x != y ? x < y : a.objectId < b.objectId;
+	          });
 	const double first = coordinate(snapshots.front().before);
 	const double last = coordinate(snapshots.back().before);
 	std::vector<CommandGroup::Command> commands;
 	commands.reserve(snapshots.size() - 2);
+
 	for (std::size_t i = 1; i + 1 < snapshots.size(); ++i) {
 		const auto &snapshot = snapshots[i];
 		Transform after = snapshot.before;
-		const double ratio = static_cast<double>(i) / static_cast<double>(snapshots.size() - 1);
+		const double ratio =
+		    static_cast<double>(i) / static_cast<double>(snapshots.size() - 1);
 		// floatの両端の差が桁あふれしないよう、doubleで補間する
 		const float value = static_cast<float>(std::lerp(first, last, ratio));
+
 		switch (axis) {
 		case AlignmentAxis::X:
 			after.translation.x = value;
@@ -624,24 +755,32 @@ bool EditorHistory::DistributeObjects(std::span<const SceneObjectId> objectIds, 
 			after.translation.z = value;
 			break;
 		}
+
 		if (!TransformUtils::IsValid(after)) {
 			return false;
 		}
+
 		if (!TransformUtils::AreEqual(snapshot.before, after)) {
-			commands.emplace_back(TransformCommand{snapshot.objectId, snapshot.before, after});
+			commands.emplace_back(
+			    TransformCommand{snapshot.objectId, snapshot.before, after});
 		}
 	}
+
 	if (commands.empty()) {
 		return true;
 	}
+
 	CommandGroup group{std::move(commands)};
 	const auto next = PrepareAppend();
+
 	if (!group.Redo(scene_)) {
 		return false;
 	}
+
 	AppendPrepared(Command{std::move(group)}, next,
-	               axis == AlignmentAxis::X ? "Distribute X" :
-	               axis == AlignmentAxis::Y ? "Distribute Y" : "Distribute Z");
+	               axis == AlignmentAxis::X   ? "Distribute X"
+	               : axis == AlignmentAxis::Y ? "Distribute Y"
+	                                          : "Distribute Z");
 	return true;
 }
 
@@ -649,11 +788,13 @@ bool EditorHistory::HasPendingChanges() const {
 	if (pendingTransforms_) {
 		for (const auto &snapshot : *pendingTransforms_) {
 			const SceneObject *object = scene_.FindObject(snapshot.objectId);
+
 			if (!object ||
 			    !TransformUtils::AreEqual(snapshot.before, object->transform)) {
 				return true;
 			}
 		}
+
 		return false;
 	}
 
@@ -673,7 +814,8 @@ bool EditorHistory::HasPendingChanges() const {
 
 		    if constexpr (std::is_same_v<Before, Transform>) {
 			    return !TransformUtils::AreEqual(before, object->transform);
-		    } else if constexpr (std::is_same_v<Before, std::optional<BoxCollider>>) {
+		    } else if constexpr (std::is_same_v<Before,
+		                                        std::optional<BoxCollider>>) {
 			    return before != object->collider;
 		    } else if constexpr (std::is_same_v<
 		                             Before, std::optional<CameraComponent>>) {
@@ -741,10 +883,12 @@ void EditorHistory::CommitEdit() {
 
 		for (const auto &snapshot : *pendingTransforms_) {
 			const SceneObject *object = scene_.FindObject(snapshot.objectId);
+
 			if (!object || !TransformUtils::IsValid(object->transform)) {
 				Invalidate();
 				return;
 			}
+
 			if (TransformUtils::AreEqual(snapshot.before, object->transform)) {
 				continue;
 			}
@@ -788,6 +932,7 @@ void EditorHistory::CommitEdit() {
 	if (std::holds_alternative<std::optional<BoxCollider>>(pending_->before) &&
 	    object->collider) {
 		AxisAlignedBox bounds;
+
 		if (!BoxColliderUtils::GetWorldBounds(*object->collider,
 		                                      object->transform, bounds)) {
 			Invalidate();
@@ -801,24 +946,28 @@ void EditorHistory::CommitEdit() {
 		Invalidate();
 		return;
 	}
+
 	if (std::holds_alternative<std::optional<FollowCameraSettings>>(
 	        pending_->before) &&
 	    object->followCamera && !object->followCamera->IsValid()) {
 		Invalidate();
 		return;
 	}
+
 	if (std::holds_alternative<std::optional<RespawnSettings>>(
 	        pending_->before) &&
 	    object->respawn && !object->respawn->IsValid()) {
 		Invalidate();
 		return;
 	}
+
 	if (std::holds_alternative<std::optional<CameraComponent>>(
 	        pending_->before) &&
 	    object->camera && !object->camera->IsValid()) {
 		Invalidate();
 		return;
 	}
+
 	// 空の名前で確定した場合は、編集開始時点の名前へ戻す
 	if (std::holds_alternative<std::string>(pending_->before) &&
 	    object->name.empty()) {
@@ -883,6 +1032,7 @@ void EditorHistory::CommitEdit() {
 	const auto description = std::visit(
 	    [](const auto &before) -> std::string_view {
 		    using T = std::decay_t<decltype(before)>;
+
 		    if constexpr (std::is_same_v<T, Transform>) {
 			    return "Transform Object";
 		    } else if constexpr (std::is_same_v<T, std::string>) {
@@ -912,7 +1062,9 @@ bool EditorHistory::IsEditing() const {
 	return pending_.has_value() || pendingTransforms_.has_value();
 }
 
-bool EditorHistory::CanUndo() const { return !IsEditing() && cursor_ > 0; }
+bool EditorHistory::CanUndo() const {
+	return !IsEditing() && cursor_ > 0;
+}
 
 bool EditorHistory::CanRedo() const {
 	return !IsEditing() && cursor_ < entries_.size();
@@ -926,14 +1078,20 @@ std::string_view EditorHistory::GetRedoDescription() const {
 	return CanRedo() ? entries_[cursor_].description : std::string_view{};
 }
 
-std::size_t EditorHistory::GetStateCount() const { return entries_.size() + 1; }
+std::size_t EditorHistory::GetStateCount() const {
+	return entries_.size() + 1;
+}
 
-std::optional<EditorHistory::State> EditorHistory::GetState(std::size_t index) const {
+std::optional<EditorHistory::State>
+EditorHistory::GetState(std::size_t index) const {
 	if (index > entries_.size()) {
 		return std::nullopt;
 	}
-	const auto state = index == 0 ? (entries_.empty() ? currentState_ : entries_.front().beforeState)
-	                              : entries_[index - 1].afterState;
+
+	const auto state =
+	    index == 0
+	        ? (entries_.empty() ? currentState_ : entries_.front().beforeState)
+	        : entries_[index - 1].afterState;
 	return State{index == 0 ? "History Start" : entries_[index - 1].description,
 	             index == cursor_, state == savedState_};
 }
@@ -942,33 +1100,46 @@ bool EditorHistory::MoveTo(std::size_t index) {
 	if (IsEditing() || index > entries_.size()) {
 		return false;
 	}
+
 	if (index == cursor_) {
 		return true;
 	}
+
 	try {
-		const bool succeeded = scene_.ApplyTransaction([this, index](Scene &working) {
-			if (index < cursor_) {
-				for (auto i = cursor_; i > index; --i) {
-					if (!std::visit([&working](const auto &command) { return command.Undo(working); },
-					                entries_[i - 1].command)) {
-						return false;
-					}
-				}
-			} else {
-				for (auto i = cursor_; i < index; ++i) {
-					if (!std::visit([&working](const auto &command) { return command.Redo(working); },
-					                entries_[i].command)) {
-						return false;
-					}
-				}
-			}
-			return true;
-		});
+		const bool succeeded =
+		    scene_.ApplyTransaction([this, index](Scene &working) {
+			    if (index < cursor_) {
+				    for (auto i = cursor_; i > index; --i) {
+					    if (!std::visit(
+					            [&working](const auto &command) {
+						            return command.Undo(working);
+					            },
+					            entries_[i - 1].command)) {
+						    return false;
+					    }
+				    }
+			    } else {
+				    for (auto i = cursor_; i < index; ++i) {
+					    if (!std::visit(
+					            [&working](const auto &command) {
+						            return command.Redo(working);
+					            },
+					            entries_[i].command)) {
+						    return false;
+					    }
+				    }
+			    }
+
+			    return true;
+		    });
+
 		if (!succeeded) {
 			Invalidate();
 			return false;
 		}
-		currentState_ = index == 0 ? entries_.front().beforeState : entries_[index - 1].afterState;
+
+		currentState_ = index == 0 ? entries_.front().beforeState
+		                           : entries_[index - 1].afterState;
 		cursor_ = index;
 		return true;
 	} catch (const std::exception &error) {
@@ -1086,8 +1257,7 @@ std::uint64_t EditorHistory::PrepareAppend() {
 	return AllocateState();
 }
 
-void EditorHistory::AppendPrepared(Command command,
-                                   std::uint64_t nextState,
+void EditorHistory::AppendPrepared(Command command, std::uint64_t nextState,
                                    std::string_view description) noexcept {
 	assert(cursor_ < entries_.capacity());
 
@@ -1116,97 +1286,124 @@ std::uint64_t EditorHistory::AllocateState() {
 }
 
 bool EditorHistory::SetCharacter(SceneObjectId id,
-	                             std::optional<CharacterSettings> value) {
+                                 std::optional<CharacterSettings> value) {
 	CommitEdit();
 	auto *object = scene_.FindObject(id);
+
 	if (!object || (value && !value->IsValid())) {
 		return false;
 	}
+
 	const bool adding = !object->character;
 	CharacterCommand command{id, object->character, value};
+
 	if (!command.HasChanges()) {
 		return true;
 	}
+
 	const auto next = PrepareAppend();
+
 	if (!command.Redo(scene_)) {
 		return false;
 	}
+
 	AppendPrepared(Command{std::move(command)}, next,
-		           !value   ? "Remove Character Controller"
-		           : adding ? "Add Character Controller"
-		                    : "Edit Character Controller");
+	               !value   ? "Remove Character Controller"
+	               : adding ? "Add Character Controller"
+	                        : "Edit Character Controller");
 	return true;
 }
+
 bool EditorHistory::BeginCharacter(SceneObjectId id) {
 	CommitEdit();
 	const auto *object = scene_.FindObject(id);
+
 	if (!object || !object->character) {
 		return false;
 	}
+
 	pending_ = PendingEdit{id, object->character};
 	return true;
 }
 
 bool EditorHistory::SetFollowCamera(SceneObjectId id,
-	                                std::optional<FollowCameraSettings> value) {
+                                    std::optional<FollowCameraSettings> value) {
 	CommitEdit();
 	auto *object = scene_.FindObject(id);
+
 	if (!object || (value && !value->IsValid())) {
 		return false;
 	}
+
 	const bool adding = !object->followCamera;
 	FollowCameraCommand command{id, object->followCamera, value};
+
 	if (!command.HasChanges()) {
 		return true;
 	}
+
 	const auto next = PrepareAppend();
+
 	if (!command.Redo(scene_)) {
 		return false;
 	}
+
 	AppendPrepared(Command{std::move(command)}, next,
-		           !value   ? "Remove Follow Camera"
-		           : adding ? "Add Follow Camera"
-		                    : "Edit Follow Camera");
+	               !value   ? "Remove Follow Camera"
+	               : adding ? "Add Follow Camera"
+	                        : "Edit Follow Camera");
 	return true;
 }
+
 bool EditorHistory::BeginFollowCamera(SceneObjectId id) {
 	CommitEdit();
 	const auto *object = scene_.FindObject(id);
+
 	if (!object || !object->followCamera) {
 		return false;
 	}
+
 	pending_ = PendingEdit{id, object->followCamera};
 	return true;
 }
 
 bool EditorHistory::SetRespawn(SceneObjectId id,
-	                           std::optional<RespawnSettings> value) {
+                               std::optional<RespawnSettings> value) {
 	CommitEdit();
 	auto *object = scene_.FindObject(id);
+
 	if (!object || (value && !value->IsValid())) {
 		return false;
 	}
+
 	const bool adding = !object->respawn;
 	RespawnCommand command{id, object->respawn, value};
+
 	if (!command.HasChanges()) {
 		return true;
 	}
+
 	const auto next = PrepareAppend();
+
 	if (!command.Redo(scene_)) {
 		return false;
 	}
+
 	AppendPrepared(Command{std::move(command)}, next,
-		           !value   ? "Remove Respawn"
-		           : adding ? "Add Respawn"
-		                    : "Edit Respawn");
+	               !value   ? "Remove Respawn"
+	               : adding ? "Add Respawn"
+	                        : "Edit Respawn");
 	return true;
 }
+
 bool EditorHistory::BeginRespawn(SceneObjectId id) {
 	CommitEdit();
 	const auto *object = scene_.FindObject(id);
+
 	if (!object || !object->respawn) {
 		return false;
 	}
+
 	pending_ = PendingEdit{id, object->respawn};
 	return true;
 }
@@ -1215,30 +1412,39 @@ bool EditorHistory::SetCamera(SceneObjectId id,
                               std::optional<CameraComponent> value) {
 	CommitEdit();
 	auto *object = scene_.FindObject(id);
+
 	if (!object || (value && !value->IsValid())) {
 		return false;
 	}
+
 	const bool adding = !object->camera;
 	CameraCommand command{id, object->camera, value};
+
 	if (!command.HasChanges()) {
 		return true;
 	}
+
 	const auto next = PrepareAppend();
+
 	if (!command.Redo(scene_)) {
 		return false;
 	}
+
 	AppendPrepared(Command{std::move(command)}, next,
 	               !value   ? "Remove Camera"
 	               : adding ? "Add Camera"
 	                        : "Edit Camera");
 	return true;
 }
+
 bool EditorHistory::BeginCamera(SceneObjectId id) {
 	CommitEdit();
 	const auto *object = scene_.FindObject(id);
+
 	if (!object || !object->camera) {
 		return false;
 	}
+
 	pending_ = PendingEdit{id, object->camera};
 	return true;
 }

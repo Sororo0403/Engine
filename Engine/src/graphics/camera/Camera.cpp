@@ -30,7 +30,9 @@ bool Camera::Update(int width, int height) {
 	return true;
 }
 
-const DirectX::XMFLOAT4X4 &Camera::GetViewMatrix() const { return viewMatrix_; }
+const DirectX::XMFLOAT4X4 &Camera::GetViewMatrix() const {
+	return viewMatrix_;
+}
 
 const DirectX::XMFLOAT4X4 &Camera::GetProjectionMatrix() const {
 	return projectionMatrix_;
@@ -137,6 +139,7 @@ bool Camera::SetSettings(const CameraSettings &settings) {
 	if (!settings.IsValid()) {
 		return false;
 	}
+
 	settings_ = settings;
 	return true;
 }

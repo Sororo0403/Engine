@@ -197,9 +197,13 @@ bool Texture::CreateFromRGBA(ID3D12Device *device,
 	return true;
 }
 
-void Texture::Finalize() { resource_.Reset(); }
+void Texture::Finalize() {
+	resource_.Reset();
+}
 
-ID3D12Resource *Texture::GetResource() const { return resource_.Get(); }
+ID3D12Resource *Texture::GetResource() const {
+	return resource_.Get();
+}
 
 UINT Texture::GetWidth() const {
 	if (!resource_) {

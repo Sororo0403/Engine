@@ -49,9 +49,9 @@ void SceneFileDialog::Show(SceneFileDialogMode mode,
 SceneFileDialogResult SceneFileDialog::Draw(const ImGuiSystem &ui) {
 	const char *title = mode_ == SceneFileDialogMode::OPEN
 	                        ? "Open Scene###SceneFileDialog"
-	                        : mode_ == SceneFileDialogMode::SAVE_COPY
-	                              ? "Save Copy###SceneFileDialog"
-	                              : "Save Scene###SceneFileDialog";
+	                    : mode_ == SceneFileDialogMode::SAVE_COPY
+	                        ? "Save Copy###SceneFileDialog"
+	                        : "Save Scene###SceneFileDialog";
 
 	if (openRequested_) {
 		ui.OpenPopup(title);
@@ -153,10 +153,10 @@ SceneFileDialogResult SceneFileDialog::Draw(const ImGuiSystem &ui) {
 
 		ui.Separator();
 
-		const char *button =
-		    mode_ == SceneFileDialogMode::OPEN
-	            ? "Open"
-	            : mode_ == SceneFileDialogMode::SAVE_COPY ? "Save Copy" : "Save";
+		const char *button = mode_ == SceneFileDialogMode::OPEN ? "Open"
+		                     : mode_ == SceneFileDialogMode::SAVE_COPY
+		                         ? "Save Copy"
+		                         : "Save";
 
 		if (ui.Button(button) && AcceptSelection()) {
 			result = SceneFileDialogResult::ACCEPTED;

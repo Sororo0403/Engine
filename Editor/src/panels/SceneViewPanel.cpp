@@ -6,10 +6,11 @@
 #include "math/MathUtils.h"
 
 #include <algorithm>
-#include <utility>
 #include <imgui.h>
+#include <utility>
 
-SceneViewPanel::SceneViewPanel(RenderSystem &render) : render_(render) {}
+SceneViewPanel::SceneViewPanel(RenderSystem &render) : render_(render) {
+}
 
 SceneViewPanel::~SceneViewPanel() = default;
 
@@ -69,16 +70,20 @@ bool SceneViewPanel::DrawUI(const ImGuiSystem &ui, TransformGizmo &gizmo,
 	};
 
 	input_ = ui.GetViewportInput();
+
 	if (auto path = ModelAssetDragDrop::AcceptTarget(); !path.empty()) {
 		// ドラッグ元がアクティブな間は通常のホバー判定を使わない
 		const auto mouse = ImGui::GetMousePos();
-		if (ImGui::IsMousePosValid() && mouse.x >= minimum.x && mouse.x < maximum.x &&
-		    mouse.y >= minimum.y && mouse.y < maximum.y) {
+
+		if (ImGui::IsMousePosValid() && mouse.x >= minimum.x &&
+		    mouse.x < maximum.x && mouse.y >= minimum.y &&
+		    mouse.y < maximum.y) {
 			modelDrop_.path = std::move(path);
 			modelDrop_.imagePosition = {(mouse.x - minimum.x) / imageSize_.x,
 			                            (mouse.y - minimum.y) / imageSize_.y};
 		}
 	}
+
 	visible_ = true;
 
 	ui.EndWindow();
@@ -113,31 +118,33 @@ RenderTexture *SceneViewPanel::GetRenderTexture() const {
 	return visible_ ? texture_.get() : nullptr;
 }
 
-const ViewportInput &SceneViewPanel::GetInput() const { return input_; }
+const ViewportInput &SceneViewPanel::GetInput() const {
+	return input_;
+}
 
 const SceneViewPanel::ModelDropRequest &SceneViewPanel::GetModelDrop() const {
 	return modelDrop_;
 }
 
-SceneViewPanel::SelectionRequest SceneViewPanel::UpdateSelection(
-    const ImGuiSystem &ui, bool enabled, bool gizmoBlocksSelection) {
+SceneViewPanel::SelectionRequest
+SceneViewPanel::UpdateSelection(const ImGuiSystem &ui, bool enabled,
+                                bool gizmoBlocksSelection) {
 	SelectionRequest request;
 	const auto &io = ImGui::GetIO();
+
 	if (!enabled || !visible_ || !input_.applicationFocused ||
-	    !input_.windowFocused || input_.widgetActive ||
-	    input_.rightDown || input_.middleDown ||
-	    io.KeyAlt ||
+	    !input_.windowFocused || input_.widgetActive || input_.rightDown ||
+	    input_.middleDown || io.KeyAlt ||
 	    ImGui::IsKeyPressed(ImGuiKey_Escape, false) ||
 	    !ImGui::IsMousePosValid()) {
 		CancelSelection();
 		return request;
 	}
 
-	if (selecting_ &&
-	    (imageMinimum_.x != selectionImageMinimum_.x ||
-	     imageMinimum_.y != selectionImageMinimum_.y ||
-	     imageSize_.x != selectionImageSize_.x ||
-	     imageSize_.y != selectionImageSize_.y)) {
+	if (selecting_ && (imageMinimum_.x != selectionImageMinimum_.x ||
+	                   imageMinimum_.y != selectionImageMinimum_.y ||
+	                   imageSize_.x != selectionImageSize_.x ||
+	                   imageSize_.y != selectionImageSize_.y)) {
 		// レイアウトが変わった場合は、異なる画像範囲の座標を混在させない
 		CancelSelection();
 		return request;
@@ -148,6 +155,7 @@ SceneViewPanel::SelectionRequest SceneViewPanel::UpdateSelection(
 		    !input_.imageHovered || !input_.imagePositionValid) {
 			return request;
 		}
+
 		selecting_ = true;
 		selectionDragging_ = false;
 		selectionAdditive_ = io.KeyCtrl;
@@ -160,12 +168,16 @@ SceneViewPanel::SelectionRequest SceneViewPanel::UpdateSelection(
 	const float dx = io.MousePos.x - selectionPressPosition_.x;
 	const float dy = io.MousePos.y - selectionPressPosition_.y;
 	const float threshold = io.MouseDragThreshold;
+
 	if (dx * dx + dy * dy > threshold * threshold) {
 		selectionDragging_ = true;
 	}
+
 	const DirectX::XMFLOAT2 current{
-	    std::clamp((io.MousePos.x - imageMinimum_.x) / imageSize_.x, 0.0f, 1.0f),
-	    std::clamp((io.MousePos.y - imageMinimum_.y) / imageSize_.y, 0.0f, 1.0f),
+	    std::clamp((io.MousePos.x - imageMinimum_.x) / imageSize_.x, 0.0f,
+	               1.0f),
+	    std::clamp((io.MousePos.y - imageMinimum_.y) / imageSize_.y, 0.0f,
+	               1.0f),
 	};
 	const DirectX::XMFLOAT2 minimum{
 	    (std::min)(selectionStart_.x, current.x),
@@ -178,6 +190,7 @@ SceneViewPanel::SelectionRequest SceneViewPanel::UpdateSelection(
 
 	if (ImGui::IsMouseReleased(ImGuiMouseButton_Left)) {
 		request.additive = selectionAdditive_;
+
 		if (selectionDragging_) {
 			request.action = SelectionRequest::Action::BOX;
 			request.minimum = minimum;
@@ -187,9 +200,11 @@ SceneViewPanel::SelectionRequest SceneViewPanel::UpdateSelection(
 			request.minimum = selectionStart_;
 			request.maximum = selectionStart_;
 		}
+
 		CancelSelection();
 		return request;
 	}
+
 	if (!ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
 		CancelSelection();
 		return request;
@@ -210,18 +225,22 @@ SceneViewPanel::SelectionRequest SceneViewPanel::UpdateSelection(
 			    imageMinimum_.x + maximum.x * imageSize_.x,
 			    imageMinimum_.y + maximum.y * imageSize_.y,
 			};
-			drawList->PushClipRect(
-			    {imageMinimum_.x, imageMinimum_.y}, imageMaximum, true);
+			drawList->PushClipRect({imageMinimum_.x, imageMinimum_.y},
+			                       imageMaximum, true);
 			drawList->AddRectFilled(start, end, IM_COL32(70, 150, 255, 40));
 			drawList->AddRect(start, end, IM_COL32(90, 170, 255, 230));
 			drawList->PopClipRect();
 		}
+
 		ui.EndWindow();
 	}
+
 	return request;
 }
 
-bool SceneViewPanel::IsSelecting() const { return selecting_; }
+bool SceneViewPanel::IsSelecting() const {
+	return selecting_;
+}
 
 void SceneViewPanel::CancelSelection() {
 	selecting_ = false;

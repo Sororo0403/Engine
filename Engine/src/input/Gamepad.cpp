@@ -19,7 +19,9 @@ void Gamepad::Update(const GamepadState &state) {
 	state_.rightTrigger = std::clamp(state.rightTrigger, 0.0f, 1.0f);
 }
 
-bool Gamepad::IsConnected() const { return state_.connected; }
+bool Gamepad::IsConnected() const {
+	return state_.connected;
+}
 
 bool Gamepad::IsDown(GamepadButton button) const {
 	const auto index = static_cast<std::size_t>(button);
@@ -51,7 +53,9 @@ bool Gamepad::IsReleased(GamepadButton button) const {
 	return !state_.buttons[index] && previousState_.buttons[index];
 }
 
-const GamepadState &Gamepad::GetState() const { return state_; }
+const GamepadState &Gamepad::GetState() const {
+	return state_;
+}
 
 void Gamepad::Reset() {
 	state_ = {};

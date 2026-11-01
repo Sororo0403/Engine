@@ -32,7 +32,8 @@ void DestroyModel(Model *model) {
 /// モデルのキャッシュと描画基盤への参照を保持する
 /// </summary>
 struct ModelManager::Impl {
-	explicit Impl(D3D12Graphics &graphics) : graphics(graphics) {}
+	explicit Impl(D3D12Graphics &graphics) : graphics(graphics) {
+	}
 
 	// 参照先はModelManagerより長く保持する
 	D3D12Graphics &graphics;
@@ -45,9 +46,12 @@ struct ModelManager::Impl {
 };
 
 ModelManager::ModelManager(D3D12Graphics &graphics)
-    : impl_(std::make_unique<Impl>(graphics)) {}
+    : impl_(std::make_unique<Impl>(graphics)) {
+}
 
-ModelManager::~ModelManager() { Finalize(); }
+ModelManager::~ModelManager() {
+	Finalize();
+}
 
 ModelHandle ModelManager::Load(const std::filesystem::path &filePath) {
 	if (impl_->finalized) {
@@ -129,6 +133,8 @@ void ModelManager::Finalize() {
 	impl_->finalized = true;
 }
 
-bool ModelManager::GetLocalBounds(const ModelHandle &model, std::array<DirectX::XMFLOAT3, 8> &corners) const {
-	return model.model_ && model.graphics_ == &impl_->graphics && model.model_->GetBoundsCorners(corners);
+bool ModelManager::GetLocalBounds(
+    const ModelHandle &model, std::array<DirectX::XMFLOAT3, 8> &corners) const {
+	return model.model_ && model.graphics_ == &impl_->graphics &&
+	       model.model_->GetBoundsCorners(corners);
 }

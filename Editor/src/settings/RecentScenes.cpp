@@ -13,9 +13,11 @@ bool RecentScenes::Add(const std::filesystem::path &path) {
 		auto paths = paths_;
 		std::erase(paths, resolved);
 		paths.insert(paths.begin(), resolved);
+
 		if (paths.size() > kMaximumCount) {
 			paths.resize(kMaximumCount);
 		}
+
 		paths_.swap(paths);
 		return true;
 	} catch (const std::exception &error) {
@@ -28,4 +30,6 @@ std::span<const std::filesystem::path> RecentScenes::GetPaths() const {
 	return paths_;
 }
 
-void RecentScenes::Clear() { paths_.clear(); }
+void RecentScenes::Clear() {
+	paths_.clear();
+}

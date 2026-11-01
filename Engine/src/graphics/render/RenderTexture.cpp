@@ -15,7 +15,8 @@
 /// 描画先の色・深度バッファと、それぞれのビューを保持する
 /// </summary>
 struct RenderTexture::Impl {
-	explicit Impl(D3D12Graphics &graphics) : graphics(graphics) {}
+	explicit Impl(D3D12Graphics &graphics) : graphics(graphics) {
+	}
 
 	/// <summary>
 	/// 色・深度バッファとビューを作成する
@@ -121,7 +122,8 @@ struct RenderTexture::Impl {
 };
 
 RenderTexture::RenderTexture(D3D12Graphics &graphics)
-    : impl_(std::make_unique<Impl>(graphics)) {}
+    : impl_(std::make_unique<Impl>(graphics)) {
+}
 
 RenderTexture::~RenderTexture() = default;
 
@@ -155,9 +157,13 @@ bool RenderTexture::Resize(int width, int height) {
 	}
 }
 
-int RenderTexture::GetWidth() const { return impl_->width_; }
+int RenderTexture::GetWidth() const {
+	return impl_->width_;
+}
 
-int RenderTexture::GetHeight() const { return impl_->height_; }
+int RenderTexture::GetHeight() const {
+	return impl_->height_;
+}
 
 bool RenderTexture::Begin(const float (&clearColor)[4]) {
 	auto *commandList = impl_->graphics.GetCommandList();

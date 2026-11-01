@@ -36,17 +36,23 @@ class IScene {
 	/// アプリケーションの終了要求を受け取る。UIフレーム開始前に呼び出す
 	/// </summary>
 	/// <returns>true:直ちに終了可能 false:終了を保留または取り消す</returns>
-	virtual bool RequestClose() { return true; }
+	virtual bool RequestClose() {
+		return true;
+	}
 
 	/// <summary>
 	/// 保留していた終了が許可されたか取得する
 	/// </summary>
 	/// <returns>true:終了可能 false:終了しない</returns>
-	virtual bool IsCloseApproved() const { return false; }
+	virtual bool IsCloseApproved() const {
+		return false;
+	}
 
 	/// <summary>
 	/// メインウィンドウへ表示するタイトルを取得する
 	/// </summary>
 	/// <returns>UTF-8のタイトル。空の場合は現在のタイトルを維持する</returns>
-	virtual std::string GetWindowTitle() const { return {}; }
+	virtual std::string GetWindowTitle() const {
+		return {};
+	}
 };

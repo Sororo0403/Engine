@@ -77,7 +77,9 @@ void DebugLineBatch::Clear() {
 	vertexBufferView_.SizeInBytes = 0;
 }
 
-UINT DebugLineBatch::GetVertexCount() const { return vertexCount_; }
+UINT DebugLineBatch::GetVertexCount() const {
+	return vertexCount_;
+}
 
 const D3D12_VERTEX_BUFFER_VIEW &DebugLineBatch::GetVertexBufferView() const {
 	return vertexBufferView_;

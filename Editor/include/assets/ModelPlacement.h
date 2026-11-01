@@ -25,8 +25,9 @@ class ModelPlacement {
 	/// <param name="bounds">回転・拡縮を反映済みのワールド座標の8頂点一覧</param>
 	/// <param name="translation">成功した場合に設定する移動量。XとZは0</param>
 	/// <returns>true:成功 false:対象なし、または値が無効。失敗時は出力を変更しない</returns>
-	static bool GetGroundTranslation(std::span<const std::array<DirectX::XMFLOAT3, 8>> bounds,
-	                                 DirectX::XMFLOAT3 &translation);
+	static bool GetGroundTranslation(
+	    std::span<const std::array<DirectX::XMFLOAT3, 8>> bounds,
+	    DirectX::XMFLOAT3 &translation);
 
   private:
 	static constexpr float kGroundTolerance = 0.00001f;

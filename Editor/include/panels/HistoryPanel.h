@@ -23,7 +23,9 @@ class HistoryPanel {
 	/// <param name="history">表示する編集履歴</param>
 	/// <param name="enabled">履歴の移動を受け付けるか。編集中は常に無効</param>
 	/// <returns>選択された状態番号。要求がない場合はnullopt</returns>
-	std::optional<std::size_t> Draw(const ImGuiSystem &ui, const EditorHistory &history, bool enabled = true);
+	std::optional<std::size_t> Draw(const ImGuiSystem &ui,
+	                                const EditorHistory &history,
+	                                bool enabled = true);
 
   private:
 	bool open_ = false;

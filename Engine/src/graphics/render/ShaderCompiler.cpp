@@ -155,6 +155,7 @@ ShaderCompiler::Compile(const std::wstring &filePath,
 	if (messages && messages->GetStringLength() > 0) {
 		std::string_view diagnostics(messages->GetStringPointer(),
 		                             messages->GetStringLength());
+
 		while (!diagnostics.empty() &&
 		       (diagnostics.back() == '\n' || diagnostics.back() == '\r')) {
 			diagnostics.remove_suffix(1);
@@ -162,6 +163,7 @@ ShaderCompiler::Compile(const std::wstring &filePath,
 
 		const std::string message =
 		    std::format("HLSL診断: {}\n{}", context, diagnostics);
+
 		if (FAILED(status)) {
 			Logger::Error(message);
 		} else {

@@ -85,7 +85,9 @@ void SceneManager::Draw() const {
 	currentScene_->Draw();
 }
 
-bool SceneManager::HasScene() const { return currentScene_ != nullptr; }
+bool SceneManager::HasScene() const {
+	return currentScene_ != nullptr;
+}
 
 void SceneManager::Finalize() {
 	// 予約中のシーンは未初期化なので、そのまま破棄する

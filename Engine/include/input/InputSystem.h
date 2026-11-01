@@ -34,11 +34,14 @@ class InputSystem {
 	/// </summary>
 	/// <returns>この入力システムが所有するキーボードへの読み取り専用参照</returns>
 	const Keyboard &GetKeyboard() const;
+
 	/// <summary>
 	/// 最新の入力更新でアプリが操作を受け付けているか確認する
 	/// </summary>
 	/// <returns>true:入力可能 false:未初期化、取得失敗、または非アクティブ</returns>
-	bool IsActive() const { return active_; }
+	bool IsActive() const {
+		return active_;
+	}
 
 	/// <summary>
 	/// コントローラーの状態を取得する

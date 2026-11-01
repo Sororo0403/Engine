@@ -25,7 +25,9 @@ class ColliderCommand {
 	/// 設定が変わる操作か確認する
 	/// </summary>
 	/// <returns>true:変更あり false:変更なし</returns>
-	bool HasChanges() const { return before_ != after_; }
+	bool HasChanges() const {
+		return before_ != after_;
+	}
 
 	/// <summary>
 	/// 衝突設定を元に戻す

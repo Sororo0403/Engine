@@ -23,7 +23,9 @@ void Mouse::Update(const MouseState &state) {
 	}
 }
 
-bool Mouse::IsConnected() const { return state_.connected; }
+bool Mouse::IsConnected() const {
+	return state_.connected;
+}
 
 bool Mouse::IsDown(MouseButton button) const {
 	const auto index = static_cast<std::size_t>(button);
@@ -55,7 +57,9 @@ bool Mouse::IsReleased(MouseButton button) const {
 	return !state_.buttons[index] && previousButtons_[index];
 }
 
-const MouseState &Mouse::GetState() const { return state_; }
+const MouseState &Mouse::GetState() const {
+	return state_;
+}
 
 void Mouse::Reset() {
 	state_ = {};

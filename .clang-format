@@ -4,3 +4,15 @@ IndentWidth: 4
 TabWidth: 4
 
 ReflowComments: Never
+
+# 関数定義の間に空行を入れる
+SeparateDefinitionBlocks: Always
+
+# 短い関数やブロックも複数行にする
+AllowShortFunctionsOnASingleLine: None
+AllowShortBlocksOnASingleLine: Never
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+
+# 空行は最大1行まで残す
+MaxEmptyLinesToKeep: 1

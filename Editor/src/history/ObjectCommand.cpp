@@ -7,7 +7,8 @@
 
 ObjectCommand::ObjectCommand(SceneObjectId objectId, SceneObject object,
                              Kind kind) noexcept
-    : objectId_(objectId), object_(std::move(object)), kind_(kind) {}
+    : objectId_(objectId), object_(std::move(object)), kind_(kind) {
+}
 
 bool ObjectCommand::Undo(Scene &scene) const {
 	if (kind_ == Kind::CREATE) {

@@ -49,7 +49,8 @@ class AssetsPanel {
 	/// <param name="path">探すモデルのパス</param>
 	/// <param name="assets">確認するアセット一覧</param>
 	/// <returns>true:選択成功 false:一覧に該当なし</returns>
-	bool SelectModel(const std::filesystem::path &path, const AssetDatabase &assets);
+	bool SelectModel(const std::filesystem::path &path,
+	                 const AssetDatabase &assets);
 
 	std::filesystem::path selectedPath_;
 	std::filesystem::path instanceSelectionPath_;

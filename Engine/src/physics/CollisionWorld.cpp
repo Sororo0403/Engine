@@ -49,30 +49,37 @@ bool Sweep(const Vector &minimum, const Vector &maximum, const Vector &movement,
 	double entry = -(std::numeric_limits<double>::infinity)();
 	double exit = (std::numeric_limits<double>::infinity)();
 	axes = 0;
+
 	for (std::size_t axis = 0; axis < 3; ++axis) {
 		if (movement[axis] == 0.0) {
 			if (maximum[axis] <= low[axis] || minimum[axis] >= high[axis]) {
 				return false;
 			}
+
 			continue;
 		}
+
 		const double near = movement[axis] > 0.0
 		                        ? (low[axis] - maximum[axis]) / movement[axis]
 		                        : (high[axis] - minimum[axis]) / movement[axis];
 		const double far = movement[axis] > 0.0
 		                       ? (high[axis] - minimum[axis]) / movement[axis]
 		                       : (low[axis] - maximum[axis]) / movement[axis];
+
 		if (near > entry) {
 			entry = near;
 			axes = 1u << axis;
 		} else if (near == entry) {
 			axes |= 1u << axis;
 		}
+
 		exit = (std::min)(exit, far);
 	}
+
 	if (entry < 0.0 || entry > 1.0 || entry >= exit) {
 		return false;
 	}
+
 	time = entry;
 	return axes != 0;
 }
@@ -80,17 +87,22 @@ bool Sweep(const Vector &minimum, const Vector &maximum, const Vector &movement,
 
 bool CollisionWorld::Rebuild(const Scene &scene, SceneObjectId ignoredObject) {
 	std::vector<AxisAlignedBox> candidate;
+
 	for (const auto &[id, object] : scene.GetObjects()) {
 		if (id == ignoredObject || !object.collider) {
 			continue;
 		}
+
 		AxisAlignedBox bounds;
+
 		if (!BoxColliderUtils::GetWorldBounds(*object.collider,
 		                                      object.transform, bounds)) {
 			return false;
 		}
+
 		candidate.push_back(bounds);
 	}
+
 	obstacles_.swap(candidate);
 	return true;
 }
@@ -99,6 +111,7 @@ bool CollisionWorld::CanPlace(const AxisAlignedBox &body) const {
 	if (!Valid(body)) {
 		return false;
 	}
+
 	for (const auto &box : obstacles_) {
 		if (body.minimum.x < box.maximum.x && body.maximum.x > box.minimum.x &&
 		    body.minimum.y < box.maximum.y && body.maximum.y > box.minimum.y &&
@@ -106,6 +119,7 @@ bool CollisionWorld::CanPlace(const AxisAlignedBox &body) const {
 			return false;
 		}
 	}
+
 	return true;
 }
 
@@ -115,24 +129,31 @@ bool CollisionWorld::Move(const AxisAlignedBox &body,
 	if (!CanPlace(body) || !MathUtils::IsFinite(displacement)) {
 		return false;
 	}
+
 	Vector moved{}, remaining = ToVector(displacement);
 	const auto initialMin = ToVector(body.minimum),
 	           initialMax = ToVector(body.maximum);
 	CollisionMoveResult candidate;
+
 	for (int iteration = 0; iteration < kMaximumSlideIterations; ++iteration) {
 		Vector minimum{}, maximum{};
+
 		for (std::size_t axis = 0; axis < 3; ++axis) {
 			minimum[axis] = initialMin[axis] + moved[axis];
 			maximum[axis] = initialMax[axis] + moved[axis];
 		}
+
 		double first = 1.0;
 		unsigned int blocked = 0;
+
 		for (const auto &obstacle : obstacles_) {
 			double time;
 			unsigned int axes;
+
 			if (!Sweep(minimum, maximum, remaining, obstacle, time, axes)) {
 				continue;
 			}
+
 			if (time < first) {
 				first = time;
 				blocked = axes;
@@ -140,12 +161,15 @@ bool CollisionWorld::Move(const AxisAlignedBox &body,
 				blocked |= axes;
 			}
 		}
+
 		if (blocked == 0) {
 			for (std::size_t axis = 0; axis < 3; ++axis) {
 				moved[axis] += remaining[axis];
 			}
+
 			break;
 		}
+
 		const double largest =
 		    (std::max)({std::abs(remaining[0]), std::abs(remaining[1]),
 		                std::abs(remaining[2])});
@@ -153,6 +177,7 @@ bool CollisionWorld::Move(const AxisAlignedBox &body,
 		candidate.hitWall |= (blocked & 5u) != 0;
 		candidate.grounded |= (blocked & 2u) != 0 && remaining[1] < 0.0;
 		candidate.hitCeiling |= (blocked & 2u) != 0 && remaining[1] > 0.0;
+
 		for (std::size_t axis = 0; axis < 3; ++axis) {
 			moved[axis] += remaining[axis] * fraction;
 			remaining[axis] = (blocked & (1u << axis))
@@ -160,25 +185,31 @@ bool CollisionWorld::Move(const AxisAlignedBox &body,
 			                      : remaining[axis] * (1.0 - fraction);
 		}
 	}
+
 	AxisAlignedBox finalBox;
 	auto finalMin = ToVector(body.minimum), finalMax = ToVector(body.maximum);
+
 	for (std::size_t axis = 0; axis < 3; ++axis) {
 		finalMin[axis] += moved[axis];
 		finalMax[axis] += moved[axis];
+
 		if (std::abs(finalMin[axis]) > (std::numeric_limits<float>::max)() ||
 		    std::abs(finalMax[axis]) > (std::numeric_limits<float>::max)()) {
 			return false;
 		}
 	}
+
 	finalBox.minimum = {static_cast<float>(finalMin[0]),
 	                    static_cast<float>(finalMin[1]),
 	                    static_cast<float>(finalMin[2])};
 	finalBox.maximum = {static_cast<float>(finalMax[0]),
 	                    static_cast<float>(finalMax[1]),
 	                    static_cast<float>(finalMax[2])};
+
 	if (!CanPlace(finalBox)) {
 		return false;
 	}
+
 	candidate.displacement = {static_cast<float>(moved[0]),
 	                          static_cast<float>(moved[1]),
 	                          static_cast<float>(moved[2])};

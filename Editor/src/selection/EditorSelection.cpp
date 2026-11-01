@@ -57,7 +57,9 @@ bool EditorSelection::Contains(SceneObjectId objectId) const {
 	return std::find(ids_.begin(), ids_.end(), objectId) != ids_.end();
 }
 
-std::size_t EditorSelection::GetCount() const { return ids_.size(); }
+std::size_t EditorSelection::GetCount() const {
+	return ids_.size();
+}
 
 SceneObjectId EditorSelection::GetActiveId() const {
 	return ids_.empty() ? 0 : ids_.back();

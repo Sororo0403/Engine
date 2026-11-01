@@ -6,7 +6,8 @@
 TransformCommand::TransformCommand(SceneObjectId objectId,
                                    const Transform &before,
                                    const Transform &after) noexcept
-    : objectId_(objectId), before_(before), after_(after) {}
+    : objectId_(objectId), before_(before), after_(after) {
+}
 
 bool TransformCommand::HasChanges() const {
 	return !TransformUtils::AreEqual(before_, after_);

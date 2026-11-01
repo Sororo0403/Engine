@@ -24,14 +24,17 @@ template <typename T> class ConstantBuffer {
 	ConstantBuffer() = default;
 
 	// 解放前にGPUの利用を完了させること
-	~ConstantBuffer() { Finalize(); }
+	~ConstantBuffer() {
+		Finalize();
+	}
 
 	ConstantBuffer(const ConstantBuffer &) = delete;
 	ConstantBuffer &operator=(const ConstantBuffer &) = delete;
 
 	ConstantBuffer(ConstantBuffer &&other) noexcept
 	    : resource_(std::move(other.resource_)),
-	      mappedData_(std::exchange(other.mappedData_, nullptr)) {}
+	      mappedData_(std::exchange(other.mappedData_, nullptr)) {
+	}
 
 	/// <summary>
 	/// 所有権を移動する。移動先のバッファはGPUの利用完了後に置き換える
@@ -44,6 +47,7 @@ template <typename T> class ConstantBuffer {
 			resource_ = std::move(other.resource_);
 			mappedData_ = std::exchange(other.mappedData_, nullptr);
 		}
+
 		return *this;
 	}
 
@@ -67,6 +71,7 @@ template <typename T> class ConstantBuffer {
 		Microsoft::WRL::ComPtr<ID3D12Resource> resource;
 		HRESULT hr = DirectX::CreateUploadBuffer(device, nullptr, 1, size,
 		                                         resource.GetAddressOf());
+
 		if (FAILED(hr)) {
 			Logger::Error(std::format(
 			    "定数バッファの作成に失敗しました。HRESULT=0x{:08X}",
@@ -77,6 +82,7 @@ template <typename T> class ConstantBuffer {
 		void *mapped = nullptr;
 		const D3D12_RANGE readRange{0, 0};
 		hr = resource->Map(0, &readRange, &mapped);
+
 		if (FAILED(hr)) {
 			Logger::Error(
 			    std::format("定数バッファのMapに失敗しました。HRESULT=0x{:08X}",
@@ -100,6 +106,7 @@ template <typename T> class ConstantBuffer {
 			Logger::Error("ConstantBuffer::Update: 未初期化です。");
 			return false;
 		}
+
 		std::memcpy(mappedData_, &value, sizeof(T));
 		return true;
 	}
@@ -108,7 +115,9 @@ template <typename T> class ConstantBuffer {
 	/// 初期化が完了しているか取得する
 	/// </summary>
 	/// <returns>true:初期化済み false:未初期化</returns>
-	bool IsInitialized() const { return mappedData_ != nullptr; }
+	bool IsInitialized() const {
+		return mappedData_ != nullptr;
+	}
 
 	/// <summary>
 	/// 定数バッファのGPUアドレスを取得する
@@ -125,6 +134,7 @@ template <typename T> class ConstantBuffer {
 		if (resource_ && mappedData_) {
 			resource_->Unmap(0, nullptr);
 		}
+
 		mappedData_ = nullptr;
 		resource_.Reset();
 	}

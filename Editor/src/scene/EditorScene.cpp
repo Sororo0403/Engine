@@ -32,7 +32,8 @@ EditorScene::EditorScene(const EngineContext &context)
     : ui_(context.ui), input_(context.input), models_(context.models),
       renderer_(document_.GetScene(), context.models, context.render),
       playMode_(context.models, context.render),
-      sceneViewPanel_(context.render) {}
+      sceneViewPanel_(context.render) {
+}
 
 EditorScene::~EditorScene() = default;
 
@@ -51,10 +52,12 @@ bool EditorScene::Initialize() {
 	preferences_ = EditorPreferences{};
 	canSavePreferences_ = preferences_.Load();
 	recentScenes_.Clear();
+
 	for (auto it = preferences_.recentScenes.rbegin();
 	     it != preferences_.recentScenes.rend(); ++it) {
 		recentScenes_.Add(*it);
 	}
+
 	showGrid_ = preferences_.showGrid;
 	sceneGrid_.SetSettings(preferences_.grid);
 	showSelectionBounds_ = preferences_.showSelectionBounds;
@@ -102,26 +105,33 @@ bool EditorScene::Update(float deltaTime) {
 	EditorAction action = DrawMenuBar();
 	dockLayout_.Draw(ui_, resetDockLayout_);
 	resetDockLayout_ = false;
+
 	if (exitQueued_ && playMode_.IsPlaying()) {
 		playMode_.Stop();
 	}
+
 	const auto playAction = playMode_.DrawUI(ui_, !IsBusy());
+
 	if (playAction == EditorPlayMode::Action::STOP) {
 		playMode_.Stop();
 	}
+
 	if (playAction == EditorPlayMode::Action::RENDER_ERROR) {
 		playMode_.Stop();
 		ShowError("Could not create or resize the Game render target.");
 	}
+
 	if (playAction == EditorPlayMode::Action::PLAY && !IsBusy()) {
 		FinishEdit();
 		sceneViewPanel_.CancelSelection();
 		std::string error;
+
 		if (!playMode_.Start(document_.GetScene(), error,
 		                     cameraController_.GetPose())) {
 			ShowError(std::move(error));
 		}
 	}
+
 	if (playMode_.IsPlaying()) {
 		playFrame_ = true;
 
@@ -134,11 +144,13 @@ bool EditorScene::Update(float deltaTime) {
 		assetsPanel_.Draw(ui_, assets_);
 		historyPanel_.Draw(ui_, document_.GetHistory(), false);
 		ui_.EndDisabled();
+
 		if (!playMode_.Update(deltaTime, input_)) {
 			playMode_.Stop();
 			ShowError("Play stopped because simulation or Game rendering "
 			          "failed. Your editing scene is unchanged.");
 		}
+
 		UpdateDialogs();
 		return true;
 	}
@@ -173,7 +185,8 @@ bool EditorScene::Update(float deltaTime) {
 	inspectorPanel_.Draw(ui_, scene, selection_.GetActiveId(), history,
 	                     clipboard_.GetTransform() != nullptr);
 	const auto &transformRequest = inspectorPanel_.GetTransformRequest();
-	const bool hasTransformRequest = transformRequest.action != InspectorPanel::TransformAction::NONE;
+	const bool hasTransformRequest =
+	    transformRequest.action != InspectorPanel::TransformAction::NONE;
 	const auto &modelRequest = inspectorPanel_.GetModelRequest();
 	const auto &visibilityRequest = inspectorPanel_.GetVisibilityRequest();
 	const auto colliderFitRequest = inspectorPanel_.GetColliderFitRequest();
@@ -182,16 +195,21 @@ bool EditorScene::Update(float deltaTime) {
 	if (!wasBusy && !inspectorPanel_.GetAssetRevealPath().empty()) {
 		assetsPanel_.RequestReveal(inspectorPanel_.GetAssetRevealPath());
 	}
+
 	const auto requestedModelPath = assetsPanel_.Draw(ui_, assets_);
 	const auto requestedInstances = assetsPanel_.GetInstanceSelectionRequest();
-	const auto historyRequest = historyPanel_.Draw(ui_, history,
-	    !wasBusy && !gizmo_.IsUsing() && !gizmoEditActive_ && !sceneViewPanel_.IsSelecting());
+	const auto historyRequest =
+	    historyPanel_.Draw(ui_, history,
+	                       !wasBusy && !gizmo_.IsUsing() && !gizmoEditActive_ &&
+	                           !sceneViewPanel_.IsSelecting());
 
 	const auto toolbarMode = selection_.GetCount() > 1
 	                             ? TransformGizmo::SelectionMode::MULTIPLE
 	                             : TransformGizmo::SelectionMode::SINGLE;
-	const bool sceneViewReady = sceneViewPanel_.DrawUI(ui_, gizmo_, toolbarMode);
+	const bool sceneViewReady =
+	    sceneViewPanel_.DrawUI(ui_, gizmo_, toolbarMode);
 	const auto &modelDrop = sceneViewPanel_.GetModelDrop();
+
 	if (hierarchyRequest.windowFocused) {
 		hierarchySelectionScope_ = true;
 	} else if (sceneViewPanel_.GetInput().windowFocused) {
@@ -203,10 +221,12 @@ bool EditorScene::Update(float deltaTime) {
 	if (!sceneViewReady) {
 		return false;
 	}
+
 	const auto *performanceTarget = sceneViewPanel_.GetRenderTexture();
-	performancePanel_.Draw(ui_, scene, selection_,
-	                       performanceTarget ? performanceTarget->GetWidth() : 0,
-	                       performanceTarget ? performanceTarget->GetHeight() : 0);
+	performancePanel_.Draw(
+	    ui_, scene, selection_,
+	    performanceTarget ? performanceTarget->GetWidth() : 0,
+	    performanceTarget ? performanceTarget->GetHeight() : 0);
 
 	if (!gizmoEditActive_ && !ImGui::IsAnyItemActive()) {
 		history.CommitEdit();
@@ -264,6 +284,7 @@ bool EditorScene::Update(float deltaTime) {
 					} else {
 						StartBatchRename();
 					}
+
 					break;
 				case HierarchyPanel::Action::FRAME_SELECTED:
 					frameRequest_ = FrameRequest::SELECTED;
@@ -286,14 +307,17 @@ bool EditorScene::Update(float deltaTime) {
 			}
 		}
 
-		if (!IsBusy() && action == EditorAction::NONE && colliderFitRequest != 0 &&
+		if (!IsBusy() && action == EditorAction::NONE &&
+		    colliderFitRequest != 0 &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 			FitCollider(colliderFitRequest);
 		}
 
-		if (!IsBusy() && action == EditorAction::NONE && !requestedInstances.empty() &&
-		    requestedModelPath.empty() && modelDrop.path.empty() && modelRequest.objectId == 0 &&
-		    visibilityRequest.objectId == 0 && !hasTransformRequest && !historyRequest &&
+		if (!IsBusy() && action == EditorAction::NONE &&
+		    !requestedInstances.empty() && requestedModelPath.empty() &&
+		    modelDrop.path.empty() && modelRequest.objectId == 0 &&
+		    visibilityRequest.objectId == 0 && !hasTransformRequest &&
+		    !historyRequest &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 			SelectModelInstances(requestedInstances);
 		}
@@ -301,27 +325,39 @@ bool EditorScene::Update(float deltaTime) {
 		if (!IsBusy() && !requestedModelPath.empty()) {
 			PlaceModel(requestedModelPath);
 		}
-		if (!IsBusy() && action == EditorAction::NONE && modelRequest.objectId != 0 &&
+
+		if (!IsBusy() && action == EditorAction::NONE &&
+		    modelRequest.objectId != 0 &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 			AssignModel(modelRequest.objectId, modelRequest.path);
 		}
-		if (!IsBusy() && action == EditorAction::NONE && visibilityRequest.objectId != 0 &&
+
+		if (!IsBusy() && action == EditorAction::NONE &&
+		    visibilityRequest.objectId != 0 &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
-			ChangeVisibility({&visibilityRequest.objectId, 1}, visibilityRequest.visible);
+			ChangeVisibility({&visibilityRequest.objectId, 1},
+			                 visibilityRequest.visible);
 		}
+
 		if (!IsBusy() && action == EditorAction::NONE && hasTransformRequest &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 			ApplyInspectorTransform(transformRequest);
 		}
 
 		if (!IsBusy()) {
-			if (historyRequest && action == EditorAction::NONE && colliderFitRequest == 0 && requestedModelPath.empty() && requestedInstances.empty() &&
-			    modelDrop.path.empty() && modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
-			    !hasTransformRequest && hierarchyRequest.action == HierarchyPanel::Action::NONE) {
+			if (historyRequest && action == EditorAction::NONE &&
+			    colliderFitRequest == 0 && requestedModelPath.empty() &&
+			    requestedInstances.empty() && modelDrop.path.empty() &&
+			    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
+			    !hasTransformRequest &&
+			    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 				RestoreHistory(*historyRequest);
 			}
-			if (action == EditorAction::NONE && colliderFitRequest == 0 && requestedInstances.empty() && modelDrop.path.empty() &&
-			    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 && !hasTransformRequest && !historyRequest) {
+
+			if (action == EditorAction::NONE && colliderFitRequest == 0 &&
+			    requestedInstances.empty() && modelDrop.path.empty() &&
+			    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
+			    !hasTransformRequest && !historyRequest) {
 				const bool objectPanelFocused =
 				    hierarchyRequest.windowFocused ||
 				    sceneViewPanel_.GetInput().windowFocused;
@@ -345,11 +381,9 @@ bool EditorScene::Update(float deltaTime) {
 	const bool inputBlocked =
 	    wasBusy || IsBusy() || action != EditorAction::NONE ||
 	    !requestedModelPath.empty() || !requestedInstances.empty() ||
-	    !modelDrop.path.empty() ||
-	    modelRequest.objectId != 0 ||
+	    !modelDrop.path.empty() || modelRequest.objectId != 0 ||
 	    visibilityRequest.objectId != 0 || colliderFitRequest != 0 ||
-	    hasTransformRequest ||
-	    historyRequest.has_value() ||
+	    hasTransformRequest || historyRequest.has_value() ||
 	    hierarchyRequest.action != HierarchyPanel::Action::NONE;
 
 	ViewportInput viewport = sceneViewPanel_.GetInput();
@@ -366,22 +400,28 @@ bool EditorScene::Update(float deltaTime) {
 
 	Transform orbitTransform;
 	const DirectX::XMFLOAT3 *orbitTarget = nullptr;
+
 	if (cameraInput.leftPressed && input_.GetKeyboard().IsDown(Key::ALT)) {
 		if (selection_.GetCount() == 1) {
-			if (const auto *object = scene.FindObject(selection_.GetActiveId())) {
+			if (const auto *object =
+			        scene.FindObject(selection_.GetActiveId())) {
 				orbitTransform = object->transform;
 				orbitTarget = &orbitTransform.translation;
 			}
-		} else if (SelectionPivot::Make(scene, selection_, SelectionPivot::Mode::CENTER, orbitTransform)) {
+		} else if (SelectionPivot::Make(scene, selection_,
+		                                SelectionPivot::Mode::CENTER,
+		                                orbitTransform)) {
 			orbitTarget = &orbitTransform.translation;
 		}
 	}
+
 	cameraController_.Update(input_, cameraInput, deltaTime, orbitTarget);
 
 	auto *target = sceneViewPanel_.GetRenderTexture();
 
 	if (!target) {
 		sceneViewPanel_.CancelSelection();
+
 		if (gizmoEditActive_) {
 			history.CommitEdit();
 			gizmoEditActive_ = false;
@@ -410,10 +450,14 @@ bool EditorScene::Update(float deltaTime) {
 
 	FrameRequest frameRequest = frameRequest_;
 	frameRequest_ = FrameRequest::NONE;
+
 	if (!inputBlocked && frameRequest == FrameRequest::NONE) {
-		frameRequest = ReadFrameShortcut(viewport, hierarchyRequest.windowFocused);
+		frameRequest =
+		    ReadFrameShortcut(viewport, hierarchyRequest.windowFocused);
 	}
-	if (frameRequest != FrameRequest::NONE && FrameObjects(frameRequest, projection)) {
+
+	if (frameRequest != FrameRequest::NONE &&
+	    FrameObjects(frameRequest, projection)) {
 		// 移動後のカメラを、ギズモや選択判定にも同じフレームで反映する
 		if (!renderer_.SetCameraPose(cameraController_.GetPose())) {
 			Logger::Error("EditorScene: 移動後のカメラの姿勢が無効です。");
@@ -432,15 +476,20 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	if (!wasBusy && !IsBusy() && action == EditorAction::NONE &&
-	    hierarchyRequest.action == HierarchyPanel::Action::NONE && !modelDrop.path.empty()) {
+	    hierarchyRequest.action == HierarchyPanel::Action::NONE &&
+	    !modelDrop.path.empty()) {
 		Ray ray;
 		DirectX::XMFLOAT3 position;
-		bool positionReady = renderer_.CreatePickingRay(
-		    modelDrop.imagePosition.x, modelDrop.imagePosition.y, ray) &&
+		bool positionReady =
+		    renderer_.CreatePickingRay(modelDrop.imagePosition.x,
+		                               modelDrop.imagePosition.y, ray) &&
 		    ModelPlacement::GetPosition(ray, position);
+
 		if (positionReady && gizmo_.IsSnapping()) {
-			positionReady = MathUtils::SnapToGrid(position, gizmo_.GetSnapSettings().translation, position);
+			positionReady = MathUtils::SnapToGrid(
+			    position, gizmo_.GetSnapSettings().translation, position);
 		}
+
 		if (!positionReady) {
 			ShowError("Could not determine the model placement position.");
 		} else if (PlaceModel(modelDrop.path, position) &&
@@ -471,25 +520,25 @@ bool EditorScene::Update(float deltaTime) {
 
 	const Transform beforeGizmo = transform ? *transform : Transform{};
 
-	const bool gizmoEnabled = !inputBlocked && transform != nullptr &&
-	                          viewport.applicationFocused &&
-	                          !viewport.rightDown && !viewport.middleDown &&
-	                          !ImGui::GetIO().KeyAlt &&
-	                          (!viewport.widgetActive || gizmo_.IsUsing());
+	const bool gizmoEnabled =
+	    !inputBlocked && transform != nullptr && viewport.applicationFocused &&
+	    !viewport.rightDown && !viewport.middleDown && !ImGui::GetIO().KeyAlt &&
+	    (!viewport.widgetActive || gizmo_.IsUsing());
 
-	const auto gizmoResult = sceneViewPanel_.DrawGizmo(
-	    ui_, gizmo_, view, projection, activeId, transform, gizmoEnabled,
-	    selectionMode);
+	const auto gizmoResult =
+	    sceneViewPanel_.DrawGizmo(ui_, gizmo_, view, projection, activeId,
+	                              transform, gizmoEnabled, selectionMode);
 
 	if (gizmoResult.changed) {
 		if (!gizmoEditActive_) {
 			if (multipleSelection) {
 				// ギズモ用の値だけが変わった段階で、全物体の開始値を保持する
 				if (!history.BeginTransforms(selection_.GetIds())) {
-					Logger::Error(
-					    "EditorScene: 複数物体の編集履歴を開始できませんでした。");
+					Logger::Error("EditorScene: "
+					              "複数物体の編集履歴を開始できませんでした。");
 					return false;
 				}
+
 				selectionGizmoStart_ = beforeGizmo;
 			} else if (!history.BeginTransform(activeId, beforeGizmo)) {
 				Logger::Error(
@@ -501,9 +550,11 @@ bool EditorScene::Update(float deltaTime) {
 		}
 
 		bool applied = true;
+
 		if (multipleSelection) {
-			applied = history.UpdateTransforms(
-			    selectionGizmoStart_, selectionGizmoTransform_);
+			applied = history.UpdateTransforms(selectionGizmoStart_,
+			                                   selectionGizmoTransform_);
+
 			if (!applied) {
 				// 無効な変形は反映せず、直前の有効な状態で編集を確定する
 				selectionGizmoTransform_ = beforeGizmo;
@@ -525,14 +576,16 @@ bool EditorScene::Update(float deltaTime) {
 
 	const auto selectionRequest = sceneViewPanel_.UpdateSelection(
 	    ui_, !inputBlocked, gizmoResult.blocksSelection);
-	if (selectionRequest.action != SceneViewPanel::SelectionRequest::Action::NONE) {
+
+	if (selectionRequest.action !=
+	    SceneViewPanel::SelectionRequest::Action::NONE) {
 		try {
 			if (ApplySceneSelection(selectionRequest, view, projection)) {
 				FinishEdit();
 			}
 		} catch (const std::exception &error) {
-			Logger::Error(std::format("EditorScene: 物体の選択に失敗しました: {}",
-			                          error.what()));
+			Logger::Error(std::format(
+			    "EditorScene: 物体の選択に失敗しました: {}", error.what()));
 			ShowError("Could not select objects. See the log for details.");
 		}
 	}
@@ -544,10 +597,12 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	for (const SceneObjectId id : selection_.GetIds()) {
-		if (const auto *object = scene.FindObject(id); object && !colliderBounds_.Update(renderer_, *object)) {
+		if (const auto *object = scene.FindObject(id);
+		    object && !colliderBounds_.Update(renderer_, *object)) {
 			Logger::Error("EditorScene: 衝突形状を表示できませんでした。");
 			return false;
 		}
+
 		if (showSelectionBounds_ && !selectionBounds_.Update(renderer_, id)) {
 			Logger::Error(
 			    "EditorScene: 選択物体の外接ボックスを登録できませんでした。");
@@ -569,6 +624,7 @@ void EditorScene::Draw() const {
 		playMode_.Draw();
 		return;
 	}
+
 	auto *target = sceneViewPanel_.GetRenderTexture();
 
 	if (target) {
@@ -578,6 +634,7 @@ void EditorScene::Draw() const {
 
 void EditorScene::Finalize() {
 	FinishEdit();
+
 	if (canSavePreferences_) {
 		EditorPreferences current;
 		current.showGrid = showGrid_;
@@ -591,6 +648,7 @@ void EditorScene::Finalize() {
 		current.grid = sceneGrid_.GetSettings();
 		const auto recent = recentScenes_.GetPaths();
 		current.recentScenes.assign(recent.begin(), recent.end());
+
 		if (!(current == preferences_) && current.Save()) {
 			preferences_ = current;
 		}
@@ -630,7 +688,9 @@ bool EditorScene::RequestClose() {
 	return false;
 }
 
-bool EditorScene::IsCloseApproved() const { return closeApproved_; }
+bool EditorScene::IsCloseApproved() const {
+	return closeApproved_;
+}
 
 std::string EditorScene::GetWindowTitle() const {
 	const std::string name =
@@ -650,6 +710,7 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 	}
 
 	ui_.BeginDisabled(playMode_.IsPlaying());
+
 	if (ui_.BeginMenu("File")) {
 		const bool enabled = !IsBusy();
 
@@ -664,25 +725,35 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		if (ui_.MenuItem("Open...", "Ctrl+O", enabled)) {
 			action = EditorAction::OPEN;
 		}
+
 		ui_.BeginDisabled(!enabled || recentScenes_.GetPaths().empty());
+
 		if (ui_.BeginMenu("Open Recent")) {
 			std::size_t index = 0;
+
 			for (const auto &path : recentScenes_.GetPaths()) {
-				const auto label = std::format("{}###RecentScene{}",
-				                               PathUtils::ToUtf8(path.filename()), index++);
+				const auto label =
+				    std::format("{}###RecentScene{}",
+				                PathUtils::ToUtf8(path.filename()), index++);
+
 				if (ui_.MenuItem(label.c_str(), nullptr, enabled)) {
 					// 保存確認中に一覧が更新されても、開くパスは変えない
 					recentOpenPath_ = path;
 					action = EditorAction::OPEN_RECENT;
 				}
+
 				ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(path).c_str());
 			}
+
 			ui_.Separator();
+
 			if (ui_.MenuItem("Clear Recent", nullptr, enabled)) {
 				recentScenes_.Clear();
 			}
+
 			ui_.EndMenu();
 		}
+
 		ui_.EndDisabled();
 
 		ui_.Separator();
@@ -698,6 +769,7 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		if (ui_.MenuItem("Save Copy...", nullptr, enabled)) {
 			action = EditorAction::SAVE_COPY;
 		}
+
 		if (ui_.MenuItem("Export Game...", nullptr, enabled)) {
 			action = EditorAction::EXPORT_GAME;
 		}
@@ -719,21 +791,26 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 	if (ui_.BeginMenu("Edit")) {
 		const EditorHistory &history = document_.GetHistory();
 
-		const bool enabled =
-		    !IsBusy() && !history.IsEditing() && !gizmo_.IsUsing() &&
-		    !sceneViewPanel_.IsSelecting();
+		const bool enabled = !IsBusy() && !history.IsEditing() &&
+		                     !gizmo_.IsUsing() &&
+		                     !sceneViewPanel_.IsSelecting();
 
 		const auto undo = history.GetUndoDescription();
 		const auto redo = history.GetRedoDescription();
-		const auto undoLabel = undo.empty() ? std::string("Undo###Undo")
-		                                    : std::format("Undo {}###Undo", undo);
-		const auto redoLabel = redo.empty() ? std::string("Redo###Redo")
-		                                    : std::format("Redo {}###Redo", redo);
-		if (ui_.MenuItem(undoLabel.c_str(), "Ctrl+Z", enabled && history.CanUndo())) {
+		const auto undoLabel = undo.empty()
+		                           ? std::string("Undo###Undo")
+		                           : std::format("Undo {}###Undo", undo);
+		const auto redoLabel = redo.empty()
+		                           ? std::string("Redo###Redo")
+		                           : std::format("Redo {}###Redo", redo);
+
+		if (ui_.MenuItem(undoLabel.c_str(), "Ctrl+Z",
+		                 enabled && history.CanUndo())) {
 			action = EditorAction::UNDO;
 		}
 
-		if (ui_.MenuItem(redoLabel.c_str(), "Ctrl+Y", enabled && history.CanRedo())) {
+		if (ui_.MenuItem(redoLabel.c_str(), "Ctrl+Y",
+		                 enabled && history.CanRedo())) {
 			action = EditorAction::REDO;
 		}
 
@@ -741,33 +818,46 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 
 		const bool objectEnabled =
 		    enabled && !ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
-		    !ImGui::IsMouseDown(ImGuiMouseButton_Middle) &&
-		    HasSelection();
+		    !ImGui::IsMouseDown(ImGuiMouseButton_Middle) && HasSelection();
+
 		if (ui_.MenuItem("Select All", "Ctrl+A", enabled)) {
 			action = EditorAction::SELECT_ALL;
 		}
+
 		if (ui_.MenuItem("Deselect All", "Esc", enabled && HasSelection())) {
 			action = EditorAction::DESELECT_ALL;
 		}
-		if (ui_.MenuItem("Reveal Active in Hierarchy", nullptr, objectEnabled)) {
+
+		if (ui_.MenuItem("Reveal Active in Hierarchy", nullptr,
+		                 objectEnabled)) {
 			action = EditorAction::REVEAL_ACTIVE;
 		}
+
 		const auto &objects = document_.GetScene().GetObjects();
-		const bool hasHidden = std::any_of(objects.begin(), objects.end(),
-		    [](const auto &entry) { return !entry.second.visible; });
+		const bool hasHidden =
+		    std::any_of(objects.begin(), objects.end(), [](const auto &entry) {
+			    return !entry.second.visible;
+		    });
+
 		if (ui_.MenuItem("Show All Models", nullptr, enabled && hasHidden)) {
 			action = EditorAction::SHOW_ALL_MODELS;
 		}
+
 		ui_.Separator();
+
 		if (ui_.MenuItem("Copy", "Ctrl+C", objectEnabled)) {
 			action = EditorAction::COPY_OBJECTS;
 		}
+
 		if (ui_.MenuItem("Cut", "Ctrl+X", objectEnabled)) {
 			action = EditorAction::CUT_OBJECTS;
 		}
-		if (ui_.MenuItem("Paste", "Ctrl+V", enabled && clipboard_.HasObjects())) {
+
+		if (ui_.MenuItem("Paste", "Ctrl+V",
+		                 enabled && clipboard_.HasObjects())) {
 			action = EditorAction::PASTE_OBJECTS;
 		}
+
 		ui_.Separator();
 
 		if (ui_.MenuItem("Duplicate", "Ctrl+D", objectEnabled)) {
@@ -777,30 +867,46 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		if (ui_.MenuItem("Delete", "Delete", objectEnabled)) {
 			action = EditorAction::DELETE_OBJECTS;
 		}
+
 		if (ui_.MenuItem("Reset Transform", nullptr, objectEnabled)) {
 			action = EditorAction::RESET_TRANSFORMS;
 		}
-		if (ui_.MenuItem("Drop to Ground", "Shift+G", objectEnabled && HasVisibleSelectedModel())) {
+
+		if (ui_.MenuItem("Drop to Ground", "Shift+G",
+		                 objectEnabled && HasVisibleSelectedModel())) {
 			action = EditorAction::DROP_TO_GROUND;
 		}
-		if (ui_.MenuItem("Align X to Active", nullptr, objectEnabled && selection_.GetCount() > 1)) {
+
+		if (ui_.MenuItem("Align X to Active", nullptr,
+		                 objectEnabled && selection_.GetCount() > 1)) {
 			action = EditorAction::ALIGN_X;
 		}
-		if (ui_.MenuItem("Align Y to Active", nullptr, objectEnabled && selection_.GetCount() > 1)) {
+
+		if (ui_.MenuItem("Align Y to Active", nullptr,
+		                 objectEnabled && selection_.GetCount() > 1)) {
 			action = EditorAction::ALIGN_Y;
 		}
-		if (ui_.MenuItem("Align Z to Active", nullptr, objectEnabled && selection_.GetCount() > 1)) {
+
+		if (ui_.MenuItem("Align Z to Active", nullptr,
+		                 objectEnabled && selection_.GetCount() > 1)) {
 			action = EditorAction::ALIGN_Z;
 		}
-		if (ui_.MenuItem("Distribute X", nullptr, objectEnabled && selection_.GetCount() > 2)) {
+
+		if (ui_.MenuItem("Distribute X", nullptr,
+		                 objectEnabled && selection_.GetCount() > 2)) {
 			action = EditorAction::DISTRIBUTE_X;
 		}
-		if (ui_.MenuItem("Distribute Y", nullptr, objectEnabled && selection_.GetCount() > 2)) {
+
+		if (ui_.MenuItem("Distribute Y", nullptr,
+		                 objectEnabled && selection_.GetCount() > 2)) {
 			action = EditorAction::DISTRIBUTE_Y;
 		}
-		if (ui_.MenuItem("Distribute Z", nullptr, objectEnabled && selection_.GetCount() > 2)) {
+
+		if (ui_.MenuItem("Distribute Z", nullptr,
+		                 objectEnabled && selection_.GetCount() > 2)) {
 			action = EditorAction::DISTRIBUTE_Z;
 		}
+
 		if (ui_.MenuItem("Rename", "F2", objectEnabled)) {
 			action = EditorAction::RENAME_OBJECT;
 		}
@@ -810,56 +916,76 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 
 	if (ui_.BeginMenu("View")) {
 		const bool enabled = !IsBusy() && !document_.GetHistory().IsEditing() &&
-		                     !gizmo_.IsUsing() && !sceneViewPanel_.IsSelecting();
+		                     !gizmo_.IsUsing() &&
+		                     !sceneViewPanel_.IsSelecting();
+
 		if (ui_.MenuItem("Frame Selected", "F", enabled && HasSelection())) {
 			action = EditorAction::FRAME_SELECTED;
 		}
+
 		if (ui_.MenuItem("Frame All", "Shift+F", enabled)) {
 			action = EditorAction::FRAME_ALL;
 		}
+
 		if (ui_.BeginMenu("Camera View")) {
 			if (ui_.MenuItem("Front (-Z)", nullptr, enabled)) {
 				action = EditorAction::VIEW_FRONT;
 			}
+
 			if (ui_.MenuItem("Back (+Z)", nullptr, enabled)) {
 				action = EditorAction::VIEW_BACK;
 			}
+
 			if (ui_.MenuItem("Left (-X)", nullptr, enabled)) {
 				action = EditorAction::VIEW_LEFT;
 			}
+
 			if (ui_.MenuItem("Right (+X)", nullptr, enabled)) {
 				action = EditorAction::VIEW_RIGHT;
 			}
+
 			if (ui_.MenuItem("Top (+Y)", nullptr, enabled)) {
 				action = EditorAction::VIEW_TOP;
 			}
+
 			if (ui_.MenuItem("Bottom (-Y)", nullptr, enabled)) {
 				action = EditorAction::VIEW_BOTTOM;
 			}
+
 			ui_.EndMenu();
 		}
+
 		if (ui_.MenuItem("Reset Camera", nullptr, enabled)) {
 			action = EditorAction::RESET_CAMERA;
 		}
+
 		if (ui_.MenuItem("Camera Settings...", nullptr, enabled)) {
 			cameraSettingsRequested_ = true;
 		}
+
 		ui_.Separator();
 		ImGui::MenuItem("Grid", nullptr, &showGrid_, !IsBusy());
+
 		if (ui_.MenuItem("Grid Settings...", nullptr, !IsBusy())) {
 			gridSettingsRequested_ = true;
 		}
-		ImGui::MenuItem("Selection Bounds", nullptr, &showSelectionBounds_, !IsBusy());
+
+		ImGui::MenuItem("Selection Bounds", nullptr, &showSelectionBounds_,
+		                !IsBusy());
 		ui_.Separator();
+
 		if (ui_.MenuItem("Reset Layout", nullptr, !IsBusy())) {
 			resetDockLayout_ = true;
 		}
+
 		if (ui_.MenuItem("History...", nullptr, !IsBusy())) {
 			historyPanel_.Show();
 		}
+
 		if (ui_.MenuItem("Console...", nullptr, !IsBusy())) {
 			consolePanel_.Show();
 		}
+
 		if (ui_.MenuItem("Performance...", nullptr, !IsBusy())) {
 			performancePanel_.Show();
 		}
@@ -873,8 +999,10 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		if (ui_.MenuItem("Controls...", nullptr, !IsBusy())) {
 			controlsPanel_.Show();
 		}
+
 		ui_.EndMenu();
 	}
+
 	ui_.EndMainMenuBar();
 	return action;
 }
@@ -884,27 +1012,33 @@ void EditorScene::DrawGridSettings() {
 		ImGui::OpenPopup("EditorGridSettings");
 		gridSettingsRequested_ = false;
 	}
+
 	if (!ImGui::BeginPopup("EditorGridSettings")) {
 		return;
 	}
-	ImGui::BeginDisabled(IsBusy() || gizmo_.IsUsing() || sceneViewPanel_.IsSelecting());
+
+	ImGui::BeginDisabled(IsBusy() || gizmo_.IsUsing() ||
+	                     sceneViewPanel_.IsSelecting());
 	ImGui::Checkbox("Show grid", &showGrid_);
 	auto settings = sceneGrid_.GetSettings();
-	bool changed = ImGui::DragFloat("Spacing", &settings.spacing, 0.01f,
-	                                0.001f, SceneGrid::kMaximumSpacing, "%.3f");
+	bool changed = ImGui::DragFloat("Spacing", &settings.spacing, 0.01f, 0.001f,
+	                                SceneGrid::kMaximumSpacing, "%.3f");
 	ImGui::SetItemTooltip("Distance between grid lines.");
-	changed |= ImGui::SliderInt("Cells per side", &settings.halfLineCount,
-	                            1, SceneGrid::kMaximumHalfLineCount);
+	changed |= ImGui::SliderInt("Cells per side", &settings.halfLineCount, 1,
+	                            SceneGrid::kMaximumHalfLineCount);
 	ImGui::SetItemTooltip("Number of cells from the origin to either edge.");
 	changed |= ImGui::SliderInt("Major line every", &settings.majorLineInterval,
 	                            1, SceneGrid::kMaximumMajorLineInterval);
+
 	if (ImGui::Button("Restore Defaults")) {
 		settings = SceneGrid::Settings{};
 		changed = true;
 	}
+
 	if (changed) {
 		sceneGrid_.SetSettings(settings);
 	}
+
 	ImGui::EndDisabled();
 	ImGui::EndPopup();
 }
@@ -914,32 +1048,38 @@ void EditorScene::DrawCameraSettings() {
 		ImGui::OpenPopup("EditorCameraSettings");
 		cameraSettingsRequested_ = false;
 	}
+
 	if (!ImGui::BeginPopup("EditorCameraSettings")) {
 		return;
 	}
+
 	ImGui::BeginDisabled(gizmo_.IsUsing() || sceneViewPanel_.IsSelecting() ||
 	                     ImGui::IsMouseDown(ImGuiMouseButton_Right) ||
 	                     ImGui::IsMouseDown(ImGuiMouseButton_Middle));
 	auto settings = cameraController_.GetSettings();
-	bool changed = ImGui::DragFloat("Move speed", &settings.moveSpeed,
-	                                0.1f, 0.01f, 10000.0f, "%.2f");
+	bool changed = ImGui::DragFloat("Move speed", &settings.moveSpeed, 0.1f,
+	                                0.01f, 10000.0f, "%.2f");
 	changed |= ImGui::DragFloat("Shift multiplier", &settings.fastMultiplier,
-	                           0.1f, 1.0f, 100.0f, "%.2f");
+	                            0.1f, 1.0f, 100.0f, "%.2f");
 	changed |= ImGui::DragFloat("Mouse sensitivity", &settings.mouseSensitivity,
-	                           0.0001f, 0.00001f, 1.0f, "%.5f");
+	                            0.0001f, 0.00001f, 1.0f, "%.5f");
 	changed |= ImGui::DragFloat("Wheel distance", &settings.wheelDistance,
-	                           0.01f, 0.01f, 10000.0f);
-	ImGui::SetItemTooltip("Distance per wheel step. Scroll over the Scene to move forward or backward.");
+	                            0.01f, 0.01f, 10000.0f);
+	ImGui::SetItemTooltip("Distance per wheel step. Scroll over the Scene to "
+	                      "move forward or backward.");
 	changed |= ImGui::DragFloat("Pan sensitivity", &settings.panSensitivity,
-	                           0.0001f, 0.00001f, 100.0f, "%.5f");
+	                            0.0001f, 0.00001f, 100.0f, "%.5f");
 	ImGui::SetItemTooltip("Middle-drag the Scene to pan the camera.");
+
 	if (ImGui::Button("Restore Defaults")) {
 		settings = EditorCameraController::Settings{};
 		changed = true;
 	}
+
 	if (changed) {
 		cameraController_.SetSettings(settings);
 	}
+
 	ImGui::EndDisabled();
 	ImGui::EndPopup();
 }
@@ -948,8 +1088,7 @@ EditorScene::EditorAction
 EditorScene::ReadShortcut(bool objectPanelFocused) const {
 	// 文字入力中の操作は、ImGuiの入力欄へ任せる
 	if (IsBusy() || ui_.IsTextInputActive() || gizmo_.IsUsing() ||
-	    sceneViewPanel_.IsSelecting() ||
-	    document_.GetHistory().IsEditing()) {
+	    sceneViewPanel_.IsSelecting() || document_.GetHistory().IsEditing()) {
 		return EditorAction::NONE;
 	}
 
@@ -959,51 +1098,64 @@ EditorScene::ReadShortcut(bool objectPanelFocused) const {
 	const bool shift = keyboard.IsDown(Key::SHIFT);
 	const bool alt = keyboard.IsDown(Key::ALT);
 
-	const bool selectionEnabled =
-	    objectPanelFocused && !ImGui::IsAnyItemActive() &&
-	    !ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
-	    !ImGui::IsMouseDown(ImGuiMouseButton_Middle);
+	const bool selectionEnabled = objectPanelFocused &&
+	                              !ImGui::IsAnyItemActive() &&
+	                              !ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
+	                              !ImGui::IsMouseDown(ImGuiMouseButton_Middle);
 	const bool objectEnabled = selectionEnabled && HasSelection();
-	if (objectEnabled && !control && shift && !alt && keyboard.IsPressed(Key::G) &&
-	    HasVisibleSelectedModel()) {
+
+	if (objectEnabled && !control && shift && !alt &&
+	    keyboard.IsPressed(Key::G) && HasVisibleSelectedModel()) {
 		return EditorAction::DROP_TO_GROUND;
 	}
+
 	if (objectEnabled && !control && !shift && !alt) {
 		if (keyboard.IsPressed(Key::F2)) {
 			return EditorAction::RENAME_OBJECT;
 		}
+
 		if (keyboard.IsPressed(Key::W)) {
 			return EditorAction::GIZMO_MOVE;
 		}
+
 		if (keyboard.IsPressed(Key::E)) {
 			return EditorAction::GIZMO_ROTATE;
 		}
+
 		if (keyboard.IsPressed(Key::R)) {
 			return EditorAction::GIZMO_SCALE;
 		}
+
 		if (selection_.GetCount() > 1 && keyboard.IsPressed(Key::Z)) {
 			return EditorAction::GIZMO_PIVOT;
 		}
-		if (HasSingleSelection() && gizmo_.GetOperation() != TransformGizmo::Operation::SCALE &&
+
+		if (HasSingleSelection() &&
+		    gizmo_.GetOperation() != TransformGizmo::Operation::SCALE &&
 		    keyboard.IsPressed(Key::X)) {
 			return EditorAction::GIZMO_SPACE;
 		}
 	}
+
 	if (selectionEnabled && !control && !shift && !alt &&
 	    keyboard.IsPressed(Key::ESCAPE)) {
 		return EditorAction::DESELECT_ALL;
 	}
+
 	if (selectionEnabled && control && !shift && !alt &&
 	    keyboard.IsPressed(Key::A)) {
 		return EditorAction::SELECT_ALL;
 	}
+
 	if (selectionEnabled && control && !shift && !alt) {
 		if (objectEnabled && keyboard.IsPressed(Key::C)) {
 			return EditorAction::COPY_OBJECTS;
 		}
+
 		if (objectEnabled && keyboard.IsPressed(Key::X)) {
 			return EditorAction::CUT_OBJECTS;
 		}
+
 		if (clipboard_.HasObjects() && keyboard.IsPressed(Key::V)) {
 			return EditorAction::PASTE_OBJECTS;
 		}
@@ -1076,6 +1228,7 @@ void EditorScene::StartAction(EditorAction action) {
 		} else {
 			StartBatchRename();
 		}
+
 		return;
 	case EditorAction::VIEW_FRONT:
 		SetCameraView(CameraView::FRONT);
@@ -1148,25 +1301,31 @@ void EditorScene::StartAction(EditorAction action) {
 		gizmo_.SetOperation(TransformGizmo::Operation::SCALE);
 		return;
 	case EditorAction::GIZMO_PIVOT:
-		gizmo_.SetPivotMode(gizmo_.GetPivotMode() == SelectionPivot::Mode::CENTER
-		                        ? SelectionPivot::Mode::ACTIVE : SelectionPivot::Mode::CENTER);
+		gizmo_.SetPivotMode(gizmo_.GetPivotMode() ==
+		                            SelectionPivot::Mode::CENTER
+		                        ? SelectionPivot::Mode::ACTIVE
+		                        : SelectionPivot::Mode::CENTER);
 		return;
 	case EditorAction::GIZMO_SPACE:
 		gizmo_.SetSpace(gizmo_.GetSpace() == TransformGizmo::Space::LOCAL
-		                    ? TransformGizmo::Space::WORLD : TransformGizmo::Space::LOCAL);
+		                    ? TransformGizmo::Space::WORLD
+		                    : TransformGizmo::Space::LOCAL);
 		return;
 	case EditorAction::SELECT_ALL: {
 		if (hierarchySelectionScope_) {
 			hierarchyPanel_.SelectAllVisible(document_.GetScene(), selection_);
 		} else {
 			std::vector<SceneObjectId> ids;
+
 			for (const auto &[id, object] : document_.GetScene().GetObjects()) {
 				if (object.visible && !object.modelPath.empty()) {
 					ids.push_back(id);
 				}
 			}
+
 			selection_.Set(std::move(ids));
 		}
+
 		return;
 	}
 	case EditorAction::DESELECT_ALL:
@@ -1183,6 +1342,7 @@ void EditorScene::StartAction(EditorAction action) {
 		    !document_.GetHistory().Undo()) {
 			ShowError("Could not undo the edit.");
 		}
+
 		return;
 
 	case EditorAction::REDO:
@@ -1190,6 +1350,7 @@ void EditorScene::StartAction(EditorAction action) {
 		    !document_.GetHistory().Redo()) {
 			ShowError("Could not redo the edit.");
 		}
+
 		return;
 
 	case EditorAction::NEW:
@@ -1211,6 +1372,7 @@ void EditorScene::StartAction(EditorAction action) {
 		} else {
 			ExecutePendingAction();
 		}
+
 		return;
 
 	case EditorAction::SAVE:
@@ -1225,10 +1387,13 @@ void EditorScene::StartAction(EditorAction action) {
 
 	case EditorAction::RELOAD_SCENE:
 		pendingAction_ = EditorAction::NONE;
+
 		if (!document_.GetFilePath().empty()) {
-			sceneReloadDialog_.Show(PathUtils::ToUtf8(document_.GetFilePath().filename()));
+			sceneReloadDialog_.Show(
+			    PathUtils::ToUtf8(document_.GetFilePath().filename()));
 			stage_ = DialogStage::CONFIRM_RELOAD;
 		}
+
 		return;
 
 	case EditorAction::SAVE_COPY:
@@ -1260,17 +1425,21 @@ void EditorScene::ExecutePendingAction() {
 			auto objects = action == EditorAction::NEW_SAMPLE
 			                   ? SampleStage::Create()
 			                   : std::map<SceneObjectId, SceneObject>{};
+
 			if (action == EditorAction::NEW_SAMPLE &&
 			    !models_.Load(L"resources/editor/models/box.glb")) {
 				ShowError("Could not load the sample box model. See the log "
 				          "for details.");
 				return;
 			}
+
 			document_.New();
+
 			if (action == EditorAction::NEW_SAMPLE) {
 				document_.GetScene().ReplaceObjects(std::move(objects));
 				document_.MarkModified();
 			}
+
 			gizmo_.Cancel();
 			gizmoEditActive_ = false;
 			selection_.Clear();
@@ -1281,6 +1450,7 @@ void EditorScene::ExecutePendingAction() {
 			Logger::Error(error.what());
 			ShowError("Could not create the scene. See the log for details.");
 		}
+
 		return;
 	}
 
@@ -1323,58 +1493,81 @@ void EditorScene::FitCollider(SceneObjectId id) {
 	try {
 		FinishEdit();
 		const auto *object = document_.GetScene().FindObject(id);
-		if (!object) return;
+
+		if (!object)
+			return;
+
 		BoxCollider collider;
+
 		if (!object->modelPath.empty()) {
 			const auto model = models_.Load(object->modelPath);
 			std::array<DirectX::XMFLOAT3, 8> corners;
-			if (!models_.GetLocalBounds(model, corners) || !BoxColliderUtils::FitToPoints(corners, collider)) {
-				ShowError("Could not fit the collider to the model. See the log for details.");
+
+			if (!models_.GetLocalBounds(model, corners) ||
+			    !BoxColliderUtils::FitToPoints(corners, collider)) {
+				ShowError("Could not fit the collider to the model. See the "
+				          "log for details.");
 				return;
 			}
 		}
+
 		if (!document_.GetHistory().SetCollider(id, collider)) {
 			ShowError("Could not set a collider at this transform.");
 		}
 	} catch (const std::exception &error) {
-		Logger::Error(std::format("EditorScene::FitCollider: {}", error.what()));
+		Logger::Error(
+		    std::format("EditorScene::FitCollider: {}", error.what()));
 		ShowError("Could not configure the collider. See the log for details.");
 	}
 }
 
 void EditorScene::SelectModelInstances(const std::filesystem::path &path) {
 	FinishEdit();
+
 	try {
-		const auto count = ModelUsage::SelectObjects(document_.GetScene(), path, selection_);
+		const auto count =
+		    ModelUsage::SelectObjects(document_.GetScene(), path, selection_);
 		hierarchyPanel_.RequestReveal(selection_.GetActiveId());
+
 		if (count == 0) {
 			Logger::Info("このモデルを使用する物体はシーン内にありません。");
 		}
 	} catch (const std::exception &error) {
-		Logger::Error(std::format("EditorScene::SelectModelInstances: {}", error.what()));
+		Logger::Error(
+		    std::format("EditorScene::SelectModelInstances: {}", error.what()));
 		ShowError("Could not select model instances. See the log for details.");
 	}
 }
 
 void EditorScene::SetCameraView(CameraView view) {
 	DirectX::XMFLOAT3 center{};
+
 	if (selection_.GetCount() == 1) {
-		const auto *object = document_.GetScene().FindObject(selection_.GetActiveId());
+		const auto *object =
+		    document_.GetScene().FindObject(selection_.GetActiveId());
+
 		if (!object) {
 			return;
 		}
+
 		center = object->transform.translation;
 	} else if (selection_.GetCount() > 1) {
 		Transform pivot;
-		if (!SelectionPivot::Make(document_.GetScene(), selection_, SelectionPivot::Mode::CENTER, pivot)) {
+
+		if (!SelectionPivot::Make(document_.GetScene(), selection_,
+		                          SelectionPivot::Mode::CENTER, pivot)) {
 			return;
 		}
+
 		center = pivot.translation;
 	}
+
 	if (!cameraController_.SetView(view, center)) {
-		Logger::Warning("EditorScene: 指定した方向へカメラを切り替えられませんでした。");
+		Logger::Warning(
+		    "EditorScene: 指定した方向へカメラを切り替えられませんでした。");
 		return;
 	}
+
 	frameRequest_ = FrameRequest::NONE;
 }
 
@@ -1389,8 +1582,10 @@ void EditorScene::StartSaveCopy() {
 		fileDialog_.Show(SceneFileDialogMode::SAVE_COPY, copyPath);
 		stage_ = DialogStage::SAVE_COPY_FILE;
 	} catch (const std::exception &error) {
-		Logger::Error(std::format("EditorScene::StartSaveCopy: {}", error.what()));
-		ShowError("Could not select a copy destination. See the log for details.");
+		Logger::Error(
+		    std::format("EditorScene::StartSaveCopy: {}", error.what()));
+		ShowError(
+		    "Could not select a copy destination. See the log for details.");
 	}
 }
 
@@ -1462,16 +1657,19 @@ void EditorScene::UpdateDialogs() {
 
 	case DialogStage::CONFIRM_RELOAD: {
 		const auto result = sceneReloadDialog_.Draw(ui_);
+
 		if (result == SceneReloadResult::CANCELLED) {
 			stage_ = DialogStage::IDLE;
 		} else if (result == SceneReloadResult::RELOAD) {
 			OpenScene(document_.GetFilePath());
 		}
+
 		return;
 	}
 
 	case DialogStage::SAVE_COPY_FILE: {
 		const auto result = fileDialog_.Draw(ui_);
+
 		if (result == SceneFileDialogResult::CANCELLED) {
 			stage_ = DialogStage::IDLE;
 		} else if (result == SceneFileDialogResult::ACCEPTED) {
@@ -1479,38 +1677,52 @@ void EditorScene::UpdateDialogs() {
 				recentScenes_.Add(fileDialog_.GetSelectedPath());
 				stage_ = DialogStage::IDLE;
 			} else {
-				ShowError("Could not save a copy. Choose a destination different from the active scene. See the log for details.");
+				ShowError(
+				    "Could not save a copy. Choose a destination different "
+				    "from the active scene. See the log for details.");
 			}
 		}
+
 		return;
 	}
 
 	case DialogStage::BATCH_RENAME: {
 		const auto result = batchRenameDialog_.Draw(ui_);
+
 		if (result == BatchRenameResult::NONE) {
 			return;
 		}
+
 		stage_ = DialogStage::IDLE;
+
 		if (result == BatchRenameResult::ACCEPTED) {
 			try {
-				if (!document_.GetHistory().RenameObjects(batchRenameDialog_.GetRenames())) {
-					ShowError("The rename targets changed. No object names were changed.");
+				if (!document_.GetHistory().RenameObjects(
+				        batchRenameDialog_.GetRenames())) {
+					ShowError("The rename targets changed. No object names "
+					          "were changed.");
 				}
 			} catch (const std::exception &error) {
-				Logger::Error(std::format("EditorScene::BatchRename: {}", error.what()));
-				ShowError("Could not rename the objects. See the log for details.");
+				Logger::Error(
+				    std::format("EditorScene::BatchRename: {}", error.what()));
+				ShowError(
+				    "Could not rename the objects. See the log for details.");
 			}
 		}
+
 		return;
 	}
 
 	case DialogStage::EXPORT_GAME: {
 		const auto result = exportDialog_.Draw(ui_);
+
 		if (result == GameExportResult::CANCELLED) {
 			stage_ = DialogStage::IDLE;
 		}
+
 		if (result == GameExportResult::ACCEPTED) {
 			std::string error;
+
 			if (GameExporter::Export(document_.GetScene(),
 			                         exportDialog_.GetOptions(), error)) {
 				Logger::Info(
@@ -1521,11 +1733,11 @@ void EditorScene::UpdateDialogs() {
 				ShowError(std::move(error));
 			}
 		}
+
 		return;
 	}
 	case DialogStage::ERROR: {
-		constexpr const char *kTitle =
-		    "Operation failed###SceneOperationError";
+		constexpr const char *kTitle = "Operation failed###SceneOperationError";
 
 		if (errorOpenRequested_) {
 			ui_.OpenPopup(kTitle);
@@ -1552,18 +1764,25 @@ void EditorScene::OpenScene(const std::filesystem::path &path) {
 	const bool opened = document_.Open(path, [this](const Scene &candidate) {
 		for (const auto &[id, object] : candidate.GetObjects()) {
 			// 非表示のモデルは、再表示を要求されたときに読み込む
-			if (object.visible && !object.modelPath.empty() && !models_.Load(object.modelPath)) {
-				Logger::Error(std::format("EditorScene::OpenScene: 物体{}のモデルを読み込めません: {}",
-				                          id, PathUtils::ToUtf8(object.modelPath)));
+			if (object.visible && !object.modelPath.empty() &&
+			    !models_.Load(object.modelPath)) {
+				Logger::Error(std::format("EditorScene::OpenScene: "
+				                          "物体{}のモデルを読み込めません: {}",
+				                          id,
+				                          PathUtils::ToUtf8(object.modelPath)));
 				return false;
 			}
 		}
+
 		return true;
 	});
+
 	if (!opened) {
-		ShowError("Could not open the scene. The current scene was kept. See the log for details.");
+		ShowError("Could not open the scene. The current scene was kept. See "
+		          "the log for details.");
 		return;
 	}
+
 	FinishEdit();
 	selection_.Clear();
 	cameraController_.Reset();
@@ -1585,25 +1804,32 @@ bool EditorScene::IsBusy() const {
 	return stage_ != DialogStage::IDLE || exitQueued_ || closeApproved_;
 }
 
-void EditorScene::ApplyInspectorTransform(const InspectorPanel::TransformRequest &request) {
+void EditorScene::ApplyInspectorTransform(
+    const InspectorPanel::TransformRequest &request) {
 	if (request.action == InspectorPanel::TransformAction::NONE) {
 		return;
 	}
+
 	try {
 		FinishEdit();
 		const auto *object = document_.GetScene().FindObject(request.objectId);
+
 		if (!object) {
 			ShowError("Could not find the object to edit its Transform.");
 			return;
 		}
+
 		if (request.action == InspectorPanel::TransformAction::COPY) {
 			if (!clipboard_.CopyTransform(object->transform)) {
 				ShowError("Could not copy an invalid Transform.");
 			}
+
 			return;
 		}
+
 		bool applied = false;
 		const std::span<const SceneObjectId> ids{&request.objectId, 1};
+
 		if (request.action == InspectorPanel::TransformAction::PASTE) {
 			if (const auto *copied = clipboard_.GetTransform()) {
 				applied = document_.GetHistory().SetTransforms(ids, *copied);
@@ -1611,11 +1837,13 @@ void EditorScene::ApplyInspectorTransform(const InspectorPanel::TransformRequest
 		} else if (request.action == InspectorPanel::TransformAction::RESET) {
 			applied = document_.GetHistory().ResetTransforms(ids);
 		}
+
 		if (!applied) {
 			ShowError("Could not change the object's Transform.");
 		}
 	} catch (const std::exception &error) {
-		Logger::Error(std::format("EditorScene::ApplyInspectorTransform: {}", error.what()));
+		Logger::Error(std::format("EditorScene::ApplyInspectorTransform: {}",
+		                          error.what()));
 		ShowError("Could not edit the Transform. See the log for details.");
 	}
 }
@@ -1623,11 +1851,14 @@ void EditorScene::ApplyInspectorTransform(const InspectorPanel::TransformRequest
 void EditorScene::RestoreHistory(std::size_t index) {
 	try {
 		FinishEdit();
+
 		if (!document_.GetHistory().MoveTo(index)) {
-			ShowError("Could not restore the selected history state. The scene was not changed.");
+			ShowError("Could not restore the selected history state. The scene "
+			          "was not changed.");
 		}
 	} catch (const std::exception &error) {
-		Logger::Error(std::format("EditorScene::RestoreHistory: {}", error.what()));
+		Logger::Error(
+		    std::format("EditorScene::RestoreHistory: {}", error.what()));
 		ShowError("Could not restore history. See the log for details.");
 	}
 }
@@ -1635,69 +1866,87 @@ void EditorScene::RestoreHistory(std::size_t index) {
 void EditorScene::ShowAllModels() {
 	try {
 		std::vector<SceneObjectId> ids;
+
 		for (const auto &[id, object] : document_.GetScene().GetObjects()) {
 			if (!object.visible) {
 				ids.push_back(id);
 			}
 		}
+
 		if (!ids.empty()) {
 			ChangeVisibility(ids, true);
 		}
 	} catch (const std::exception &error) {
-		Logger::Error(std::format("EditorScene::ShowAllModels: {}", error.what()));
+		Logger::Error(
+		    std::format("EditorScene::ShowAllModels: {}", error.what()));
 		ShowError("Could not show all models. See the log for details.");
 	}
 }
 
-bool EditorScene::ChangeVisibility(std::span<const SceneObjectId> objectIds, bool visible) {
+bool EditorScene::ChangeVisibility(std::span<const SceneObjectId> objectIds,
+                                   bool visible) {
 	try {
 		FinishEdit();
+
 		// 全モデルを確認してから、一括変更を履歴へ反映する
 		for (const auto id : objectIds) {
 			const auto *object = document_.GetScene().FindObject(id);
+
 			if (!object) {
 				ShowError("Could not find an object to change its visibility.");
 				return false;
 			}
+
 			if (visible && !object->visible && !object->modelPath.empty() &&
 			    !models_.Load(object->modelPath)) {
-				ShowError("Could not load a model. Visibility was kept unchanged.");
+				ShowError(
+				    "Could not load a model. Visibility was kept unchanged.");
 				return false;
 			}
 		}
+
 		if (!document_.GetHistory().SetVisibility(objectIds, visible)) {
 			ShowError("Could not change model visibility.");
 			return false;
 		}
+
 		return true;
 	} catch (const std::exception &error) {
-		Logger::Error(std::format("EditorScene::ChangeVisibility: {}", error.what()));
-		ShowError("Could not change model visibility. See the log for details.");
+		Logger::Error(
+		    std::format("EditorScene::ChangeVisibility: {}", error.what()));
+		ShowError(
+		    "Could not change model visibility. See the log for details.");
 		return false;
 	}
 }
 
-bool EditorScene::AssignModel(SceneObjectId objectId, const std::filesystem::path &modelPath) {
+bool EditorScene::AssignModel(SceneObjectId objectId,
+                              const std::filesystem::path &modelPath) {
 	try {
 		FinishEdit();
+
 		if (!modelPath.empty() && !models_.Load(modelPath)) {
 			ShowError("Could not load the model. The current model was kept.");
 			return false;
 		}
+
 		if (!document_.GetHistory().SetModelPath(objectId, modelPath)) {
 			ShowError("Could not change the object's model.");
 			return false;
 		}
+
 		return true;
 	} catch (const std::exception &error) {
-		Logger::Error(std::format("EditorScene::AssignModel: {}", error.what()));
-		ShowError("Could not change the object's model. See the log for details.");
+		Logger::Error(
+		    std::format("EditorScene::AssignModel: {}", error.what()));
+		ShowError(
+		    "Could not change the object's model. See the log for details.");
 		return false;
 	}
 }
 
 bool EditorScene::PlaceModel(const std::filesystem::path &modelPath,
-                            const DirectX::XMFLOAT3 &position) {
+                             const DirectX::XMFLOAT3 &position) {
 	try {
 		if (modelPath.empty()) {
 			return false;
@@ -1721,10 +1970,12 @@ bool EditorScene::PlaceModel(const std::filesystem::path &modelPath,
 		object.transform.translation = position;
 		// 配置位置も追加時のスナップショットへ含め、1回のUndo・Redoで復元する
 		auto ids = document_.GetHistory().CreateObjects({std::move(object)});
+
 		if (ids.empty()) {
 			ShowError("Could not create the model object.");
 			return false;
 		}
+
 		selection_.Set(std::move(ids));
 		return true;
 	} catch (const std::exception &error) {
@@ -1745,82 +1996,103 @@ void EditorScene::FinishEdit() {
 
 bool EditorScene::ApplySceneSelection(
     const SceneViewPanel::SelectionRequest &request,
-    const DirectX::XMFLOAT4X4 &view,
-    const DirectX::XMFLOAT4X4 &projection) {
+    const DirectX::XMFLOAT4X4 &view, const DirectX::XMFLOAT4X4 &projection) {
 	using Action = SceneViewPanel::SelectionRequest::Action;
+
 	if (request.action == Action::CLICK) {
 		const SceneObjectId picked =
 		    renderer_.Pick(request.minimum.x, request.minimum.y);
 		return request.additive ? selection_.Toggle(picked)
 		                        : selection_.SelectOnly(picked);
 	}
+
 	if (request.action != Action::BOX) {
 		return false;
 	}
+
 	SelectionFrustum volume;
-	if (!volume.Initialize(view, projection, request.minimum, request.maximum)) {
+
+	if (!volume.Initialize(view, projection, request.minimum,
+	                       request.maximum)) {
 		return false;
 	}
 
 	std::vector<SceneObjectId> ids;
+
 	if (request.additive) {
 		const auto current = selection_.GetIds();
 		ids.assign(current.begin(), current.end());
 	}
+
 	for (const auto &[id, object] : document_.GetScene().GetObjects()) {
 		if (!object.visible || object.modelPath.empty()) {
 			continue;
 		}
+
 		std::array<DirectX::XMFLOAT3, 8> corners;
-		if (renderer_.GetObjectBounds(id, corners) && volume.Intersects(corners) &&
+
+		if (renderer_.GetObjectBounds(id, corners) &&
+		    volume.Intersects(corners) &&
 		    std::find(ids.begin(), ids.end(), id) == ids.end()) {
 			ids.push_back(id);
 		}
 	}
+
 	const auto current = selection_.GetIds();
+
 	if (std::equal(current.begin(), current.end(), ids.begin(), ids.end())) {
 		return false;
 	}
+
 	return selection_.Set(std::move(ids));
 }
 
 bool EditorScene::MakeSelectionTransform(Transform &transform) const {
-	return SelectionPivot::Make(document_.GetScene(), selection_, gizmo_.GetPivotMode(), transform);
+	return SelectionPivot::Make(document_.GetScene(), selection_,
+	                            gizmo_.GetPivotMode(), transform);
 }
 
-EditorScene::FrameRequest EditorScene::ReadFrameShortcut(
-    const ViewportInput &viewport, bool hierarchyFocused) const {
+EditorScene::FrameRequest
+EditorScene::ReadFrameShortcut(const ViewportInput &viewport,
+                               bool hierarchyFocused) const {
 	if (IsBusy() || !viewport.applicationFocused ||
-	    (!viewport.windowFocused && !hierarchyFocused) || viewport.widgetActive ||
-	    viewport.rightDown || viewport.middleDown || ui_.IsTextInputActive() ||
-	    ImGui::IsAnyItemActive() ||
+	    (!viewport.windowFocused && !hierarchyFocused) ||
+	    viewport.widgetActive || viewport.rightDown || viewport.middleDown ||
+	    ui_.IsTextInputActive() || ImGui::IsAnyItemActive() ||
 	    gizmo_.IsUsing() || sceneViewPanel_.IsSelecting() ||
 	    document_.GetHistory().IsEditing()) {
 		return FrameRequest::NONE;
 	}
+
 	const Keyboard &keyboard = input_.GetKeyboard();
+
 	if (keyboard.IsDown(Key::CTRL) || keyboard.IsDown(Key::ALT) ||
 	    !keyboard.IsPressed(Key::F)) {
 		return FrameRequest::NONE;
 	}
+
 	return keyboard.IsDown(Key::SHIFT) ? FrameRequest::ALL
-	                                 : FrameRequest::SELECTED;
+	                                   : FrameRequest::SELECTED;
 }
 
-bool EditorScene::FrameObjects(
-    FrameRequest request, const DirectX::XMFLOAT4X4 &projection) {
+bool EditorScene::FrameObjects(FrameRequest request,
+                               const DirectX::XMFLOAT4X4 &projection) {
 	DirectX::XMFLOAT3 minimum{};
 	DirectX::XMFLOAT3 maximum{};
 	bool found = false;
+
 	for (const auto &[id, object] : document_.GetScene().GetObjects()) {
 		if (!object.visible || object.modelPath.empty() ||
 		    (request == FrameRequest::SELECTED && !selection_.Contains(id))) {
 			continue;
 		}
+
 		std::array<DirectX::XMFLOAT3, 8> corners;
+
 		if (!renderer_.GetObjectBounds(id, corners)) {
 			continue;
 		}
+
 		for (const auto &corner : corners) {
 			if (!found) {
 				minimum = maximum = corner;
@@ -1835,10 +2107,13 @@ bool EditorScene::FrameObjects(
 			}
 		}
 	}
+
 	if (!found) {
 		return false;
 	}
+
 	std::array<DirectX::XMFLOAT3, 8> corners;
+
 	for (std::size_t i = 0; i < corners.size(); ++i) {
 		corners[i] = {
 		    (i & 1) ? maximum.x : minimum.x,
@@ -1846,11 +2121,13 @@ bool EditorScene::FrameObjects(
 		    (i & 4) ? maximum.z : minimum.z,
 		};
 	}
+
 	if (!cameraController_.FrameBounds(corners, projection)) {
 		Logger::Warning(
 		    "EditorScene: 対象モデルを現在の描画範囲に収められませんでした。");
 		return false;
 	}
+
 	return true;
 }
 
@@ -1905,11 +2182,13 @@ void EditorScene::CopySelectedObjects(bool cut) {
 	if (!HasSelection()) {
 		return;
 	}
+
 	try {
 		if (!clipboard_.Copy(document_.GetScene(), selection_.GetIds())) {
 			ShowError("Could not copy the selected objects.");
 			return;
 		}
+
 		if (cut) {
 			DeleteSelectedObjects();
 		}
@@ -1924,21 +2203,26 @@ void EditorScene::PasteObjects() {
 	if (!clipboard_.HasObjects()) {
 		return;
 	}
+
 	try {
 		const auto copied = clipboard_.GetObjects();
 		std::vector<SceneObject> objects(copied.begin(), copied.end());
+
 		for (auto &object : objects) {
 			object.name += " Copy";
 		}
+
 		auto ids = document_.GetHistory().CreateObjects(std::move(objects));
+
 		if (ids.empty()) {
 			ShowError("Could not paste the copied objects.");
 			return;
 		}
+
 		selection_.Set(std::move(ids));
 	} catch (const std::exception &error) {
-		Logger::Error(std::format("EditorScene: 物体の貼り付けに失敗しました: {}",
-		                          error.what()));
+		Logger::Error(std::format(
+		    "EditorScene: 物体の貼り付けに失敗しました: {}", error.what()));
 		ShowError("Could not paste objects. See the log for details.");
 	}
 }
@@ -1947,13 +2231,14 @@ void EditorScene::ResetSelectedTransforms() {
 	if (!HasSelection()) {
 		return;
 	}
+
 	try {
 		if (!document_.GetHistory().ResetTransforms(selection_.GetIds())) {
 			ShowError("Could not reset the selected transforms.");
 		}
 	} catch (const std::exception &error) {
-		Logger::Error(std::format("EditorScene: Transformの初期化に失敗しました: {}",
-		                          error.what()));
+		Logger::Error(std::format(
+		    "EditorScene: Transformの初期化に失敗しました: {}", error.what()));
 		ShowError("Could not reset transforms. See the log for details.");
 	}
 }
@@ -1962,15 +2247,20 @@ void EditorScene::StartBatchRename() {
 	if (!HasSelection()) {
 		return;
 	}
+
 	try {
 		FinishEdit();
-		if (!batchRenameDialog_.Show(document_.GetScene(), selection_.GetIds())) {
+
+		if (!batchRenameDialog_.Show(document_.GetScene(),
+		                             selection_.GetIds())) {
 			ShowError("Could not prepare the selected objects for renaming.");
 			return;
 		}
+
 		stage_ = DialogStage::BATCH_RENAME;
 	} catch (const std::exception &error) {
-		Logger::Error(std::format("EditorScene::StartBatchRename: {}", error.what()));
+		Logger::Error(
+		    std::format("EditorScene::StartBatchRename: {}", error.what()));
 		ShowError("Could not prepare object names. See the log for details.");
 	}
 }
@@ -1979,14 +2269,19 @@ void EditorScene::AlignSelection(AlignmentAxis axis) {
 	if (!HasSelection() || selection_.GetCount() < 2) {
 		return;
 	}
+
 	try {
 		FinishEdit();
-		if (!document_.GetHistory().AlignObjects(selection_.GetIds(), selection_.GetActiveId(), axis)) {
+
+		if (!document_.GetHistory().AlignObjects(
+		        selection_.GetIds(), selection_.GetActiveId(), axis)) {
 			ShowError("Could not align the selected objects.");
 		}
 	} catch (const std::exception &error) {
-		Logger::Error(std::format("EditorScene::AlignSelection: {}", error.what()));
-		ShowError("Could not align the selected objects. See the log for details.");
+		Logger::Error(
+		    std::format("EditorScene::AlignSelection: {}", error.what()));
+		ShowError(
+		    "Could not align the selected objects. See the log for details.");
 	}
 }
 
@@ -1994,14 +2289,19 @@ void EditorScene::DistributeSelection(AlignmentAxis axis) {
 	if (!HasSelection() || selection_.GetCount() < 3) {
 		return;
 	}
+
 	try {
 		FinishEdit();
-		if (!document_.GetHistory().DistributeObjects(selection_.GetIds(), axis)) {
+
+		if (!document_.GetHistory().DistributeObjects(selection_.GetIds(),
+		                                              axis)) {
 			ShowError("Could not distribute the selected objects.");
 		}
 	} catch (const std::exception &error) {
-		Logger::Error(std::format("EditorScene::DistributeSelection: {}", error.what()));
-		ShowError("Could not distribute the selected objects. See the log for details.");
+		Logger::Error(
+		    std::format("EditorScene::DistributeSelection: {}", error.what()));
+		ShowError("Could not distribute the selected objects. See the log for "
+		          "details.");
 	}
 }
 
@@ -2009,46 +2309,63 @@ bool EditorScene::HasVisibleSelectedModel() const {
 	if (!HasSelection()) {
 		return false;
 	}
+
 	const auto &scene = document_.GetScene();
-	return std::any_of(selection_.GetIds().begin(), selection_.GetIds().end(), [&](auto id) {
-		const auto *object = scene.FindObject(id);
-		return object && object->visible && !object->modelPath.empty();
-	});
+	return std::any_of(
+	    selection_.GetIds().begin(), selection_.GetIds().end(), [&](auto id) {
+		    const auto *object = scene.FindObject(id);
+		    return object && object->visible && !object->modelPath.empty();
+	    });
 }
 
 void EditorScene::DropSelectionToGround() {
 	if (!HasVisibleSelectedModel()) {
 		return;
 	}
+
 	try {
 		FinishEdit();
+
 		// 同じフレームで確定した変形も、外接ボックスの計算へ反映する
 		if (!renderer_.Update()) {
-			ShowError("Could not update model bounds. The selection was not moved.");
+			ShowError(
+			    "Could not update model bounds. The selection was not moved.");
 			return;
 		}
+
 		std::vector<std::array<DirectX::XMFLOAT3, 8>> bounds;
 		bounds.reserve(selection_.GetCount());
+
 		for (const auto id : selection_.GetIds()) {
 			const auto *object = document_.GetScene().FindObject(id);
+
 			if (!object || !object->visible || object->modelPath.empty()) {
 				continue;
 			}
+
 			std::array<DirectX::XMFLOAT3, 8> corners;
+
 			if (!renderer_.GetObjectBounds(id, corners)) {
-				ShowError("Could not read selected model bounds. The selection was not moved.");
+				ShowError("Could not read selected model bounds. The selection "
+				          "was not moved.");
 				return;
 			}
+
 			bounds.push_back(corners);
 		}
+
 		DirectX::XMFLOAT3 translation;
+
 		if (!ModelPlacement::GetGroundTranslation(bounds, translation) ||
-		    !document_.GetHistory().TranslateObjects(selection_.GetIds(), translation)) {
+		    !document_.GetHistory().TranslateObjects(selection_.GetIds(),
+		                                             translation)) {
 			ShowError("Could not move the selection to the ground.");
 		}
 	} catch (const std::exception &error) {
-		Logger::Error(std::format("EditorScene::DropSelectionToGround: {}", error.what()));
-		ShowError("Could not move the selection to the ground. See the log for details.");
+		Logger::Error(std::format("EditorScene::DropSelectionToGround: {}",
+		                          error.what()));
+		ShowError("Could not move the selection to the ground. See the log for "
+		          "details.");
 	}
 }
 

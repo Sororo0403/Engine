@@ -191,7 +191,8 @@ class EditorHistory {
 	/// <param name="objectId">対象ID</param>
 	/// <param name="collider">変更後の形状。未指定は削除</param>
 	/// <returns>true:成功または変更なし false:対象なし、または形状が無効</returns>
-	bool SetCollider(SceneObjectId objectId, std::optional<BoxCollider> collider);
+	bool SetCollider(SceneObjectId objectId,
+	                 std::optional<BoxCollider> collider);
 
 	/// <summary>
 	/// 衝突形状の連続編集を開始する
@@ -199,6 +200,7 @@ class EditorHistory {
 	/// <param name="objectId">衝突形状を持つ対象のID</param>
 	/// <returns>true:開始成功 false:対象または衝突形状なし</returns>
 	bool BeginCollider(SceneObjectId objectId);
+
 	/// <summary>
 	/// Cameraコンポーネントを追加・変更・削除して履歴へ記録する
 	/// </summary>
@@ -207,6 +209,7 @@ class EditorHistory {
 	/// <returns>true:成功または同値 false:対象または設定が無効</returns>
 	bool SetCamera(SceneObjectId objectId,
 	               std::optional<CameraComponent> value);
+
 	/// <summary>
 	/// カメラの連続編集を開始する
 	/// </summary>
@@ -222,6 +225,7 @@ class EditorHistory {
 	/// <returns>true:成功または同値 false:対象または設定が無効</returns>
 	bool SetRespawn(SceneObjectId objectId,
 	                std::optional<RespawnSettings> value);
+
 	/// <summary>
 	/// Respawnの連続編集を開始する
 	/// </summary>
@@ -237,6 +241,7 @@ class EditorHistory {
 	/// <returns>true:成功または同値 false:対象または設定が無効</returns>
 	bool SetFollowCamera(SceneObjectId objectId,
 	                     std::optional<FollowCameraSettings> value);
+
 	/// <summary>
 	/// FollowCameraの連続編集を開始する
 	/// </summary>
@@ -252,6 +257,7 @@ class EditorHistory {
 	/// <returns>true:成功または同値 false:対象または設定が無効</returns>
 	bool SetCharacter(SceneObjectId objectId,
 	                  std::optional<CharacterSettings> value);
+
 	/// <summary>
 	/// Characterの連続編集を開始する
 	/// </summary>
@@ -322,7 +328,8 @@ class EditorHistory {
 	/// <param name="objectIds">重複のない対象ID一覧</param>
 	/// <param name="transform">適用する有効な変形情報</param>
 	/// <returns>true:成功、または変更なし false:対象や変形情報が無効</returns>
-	bool SetTransforms(std::span<const SceneObjectId> objectIds, const Transform &transform);
+	bool SetTransforms(std::span<const SceneObjectId> objectIds,
+	                   const Transform &transform);
 
 	/// <summary>
 	/// 全対象へ同じ移動量を加え、1操作として記録する。編集中の内容は先に確定する
@@ -356,7 +363,8 @@ class EditorHistory {
 	/// <param name="objectIds">重複のない3件以上の対象ID一覧。編集中の内容は先に確定する</param>
 	/// <param name="axis">ワールド座標のX・Y・Zのいずれか。同じ座標ではID順を使用する</param>
 	/// <returns>true:成功、または変更なし false:対象や値が無効。全件を変更しない</returns>
-	bool DistributeObjects(std::span<const SceneObjectId> objectIds, AlignmentAxis axis);
+	bool DistributeObjects(std::span<const SceneObjectId> objectIds,
+	                       AlignmentAxis axis);
 
   private:
 	// 単独の編集操作、または複数の編集操作を保持する

@@ -21,6 +21,7 @@ struct RespawnSettings {
 		       std::abs(position.x) <= 100000 &&
 		       std::abs(position.y) <= 100000 && std::abs(position.z) <= 100000;
 	}
+
 	/// <summary>
 	/// 設定が一致するか確認する
 	/// </summary>

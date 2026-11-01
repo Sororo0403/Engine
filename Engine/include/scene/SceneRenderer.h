@@ -73,6 +73,7 @@ class SceneRenderer {
 	/// <param name="pose">設定する姿勢</param>
 	/// <returns>true:成功 false:未初期化、または姿勢が無効</returns>
 	bool SetCameraPose(const CameraPose &pose);
+
 	/// <summary>
 	/// 描画カメラの投影設定を次の更新へ反映する
 	/// </summary>

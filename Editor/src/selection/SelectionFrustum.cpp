@@ -4,17 +4,18 @@
 
 #include <cmath>
 
-bool SelectionFrustum::Initialize(
-    const DirectX::XMFLOAT4X4 &view,
-    const DirectX::XMFLOAT4X4 &projection,
-    const DirectX::XMFLOAT2 &minimum,
-    const DirectX::XMFLOAT2 &maximum) {
+bool SelectionFrustum::Initialize(const DirectX::XMFLOAT4X4 &view,
+                                  const DirectX::XMFLOAT4X4 &projection,
+                                  const DirectX::XMFLOAT2 &minimum,
+                                  const DirectX::XMFLOAT2 &maximum) {
 	initialized_ = false;
+
 	if (!MathUtils::IsFinite(minimum) || !MathUtils::IsFinite(maximum) ||
 	    minimum.x < 0.0f || minimum.y < 0.0f || maximum.x > 1.0f ||
 	    maximum.y > 1.0f || minimum.x >= maximum.x || minimum.y >= maximum.y) {
 		return false;
 	}
+
 	for (int row = 0; row < 4; ++row) {
 		for (int column = 0; column < 4; ++column) {
 			if (!std::isfinite(view.m[row][column]) ||
@@ -23,6 +24,7 @@ bool SelectionFrustum::Initialize(
 			}
 		}
 	}
+
 	if (projection._11 <= 0.0f || projection._22 <= 0.0f ||
 	    projection._33 <= 1.0f || projection._43 >= 0.0f ||
 	    projection._34 != 1.0f || projection._44 != 0.0f) {
@@ -33,6 +35,7 @@ bool SelectionFrustum::Initialize(
 	XMVECTOR determinant;
 	const XMMATRIX inverseView =
 	    XMMatrixInverse(&determinant, XMLoadFloat4x4(&view));
+
 	if (!std::isfinite(XMVectorGetX(determinant)) ||
 	    std::abs(XMVectorGetX(determinant)) < 0.000001f) {
 		return false;
@@ -40,7 +43,8 @@ bool SelectionFrustum::Initialize(
 
 	BoundingFrustum cameraFrustum;
 	BoundingFrustum::CreateFromMatrix(cameraFrustum,
-	                                 XMLoadFloat4x4(&projection));
+	                                  XMLoadFloat4x4(&projection));
+
 	if (!std::isfinite(cameraFrustum.Near) ||
 	    !std::isfinite(cameraFrustum.Far) || cameraFrustum.Near <= 0.0f ||
 	    cameraFrustum.Far <= cameraFrustum.Near) {
@@ -67,6 +71,7 @@ bool SelectionFrustum::Intersects(
 	if (!initialized_) {
 		return false;
 	}
+
 	for (const auto &corner : corners) {
 		if (!MathUtils::IsFinite(corner)) {
 			return false;
@@ -76,10 +81,12 @@ bool SelectionFrustum::Intersects(
 	DirectX::BoundingOrientedBox bounds;
 	DirectX::BoundingOrientedBox::CreateFromPoints(
 	    bounds, corners.size(), corners.data(), sizeof(corners.front()));
+
 	if (!MathUtils::IsFinite(bounds.Center) ||
 	    !MathUtils::IsFinite(bounds.Extents) ||
 	    !MathUtils::IsFinite(bounds.Orientation)) {
 		return false;
 	}
+
 	return frustum_.Intersects(bounds);
 }

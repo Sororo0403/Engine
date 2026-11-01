@@ -9,7 +9,8 @@
 RenderSystem::RenderSystem(D3D12Graphics &graphics, MeshRenderer &renderer,
                            DebugLineRenderer &debugRenderer, const WinApp &app)
     : graphics_(graphics), renderer_(renderer), debugRenderer_(debugRenderer),
-      app_(app) {}
+      app_(app) {
+}
 
 std::unique_ptr<RenderTexture> RenderSystem::CreateRenderTexture(int width,
                                                                  int height) {

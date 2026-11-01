@@ -16,6 +16,7 @@ class SceneGrid {
 		float spacing = 1.0f;
 		int halfLineCount = 20;
 		int majorLineInterval = 5;
+
 		/// <summary>
 		/// 設定の値がすべて一致するか確認する
 		/// </summary>
@@ -40,6 +41,7 @@ class SceneGrid {
 	/// </summary>
 	/// <returns>線間隔・セル数・強調線の周期</returns>
 	Settings GetSettings() const;
+
 	/// <summary>
 	/// 今回の描画へグリッドと座標軸の線を登録する
 	/// </summary>

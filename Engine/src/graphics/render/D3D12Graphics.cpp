@@ -109,6 +109,7 @@ bool D3D12Graphics::EndFrame() {
 
 	// 描画した画像を表示する
 	const HRESULT presentResult = swapChain_->Present(1, 0);
+
 	if (FAILED(presentResult)) {
 		Logger::Error(std::format(
 		    "スワップチェーンのPresentに失敗しました。HRESULT=0x{:08X}",
@@ -186,6 +187,7 @@ void D3D12Graphics::BindBackBuffer() {
 void D3D12Graphics::Finalize() {
 	const bool hadResources =
 	    factory_ || device_ || commandQueue_ || swapChain_;
+
 	if (device_ && commandQueue_ && fence_ && fenceEvent_) {
 		WaitForGpu();
 	}
@@ -215,12 +217,15 @@ void D3D12Graphics::Finalize() {
 	commandQueue_.Reset();
 	device_.Reset();
 	factory_.Reset();
+
 	if (hadResources) {
 		Logger::Info("D3D12の描画リソースを解放しました。");
 	}
 }
 
-ID3D12Device *D3D12Graphics::GetDevice() const { return device_.Get(); }
+ID3D12Device *D3D12Graphics::GetDevice() const {
+	return device_.Get();
+}
 
 ID3D12GraphicsCommandList *D3D12Graphics::GetCommandList() const {
 	return commandList_.Get();
@@ -492,11 +497,13 @@ bool D3D12Graphics::WaitForGpu() {
 		    "コマンドキューのSignalに失敗しました。fence={}、HRESULT=0x{:08X}",
 		    targetValue, static_cast<unsigned long>(hr)));
 		const HRESULT reason = device_->GetDeviceRemovedReason();
+
 		if (FAILED(reason)) {
 			Logger::Error(std::format(
 			    "GPUデバイスが使用できなくなりました。reason=0x{:08X}",
 			    static_cast<unsigned long>(reason)));
 		}
+
 		return false;
 	}
 
@@ -524,12 +531,14 @@ bool D3D12Graphics::WaitForGpu() {
 				    "GPU完了待機が予期しない結果を返しました。result=0x{:08X}",
 				    result));
 			}
+
 			return false;
 		}
 	}
 
 	// GPUの異常による待機解除も確認する
 	hr = device_->GetDeviceRemovedReason();
+
 	if (FAILED(hr)) {
 		Logger::Error(
 		    std::format("GPUデバイスが使用できなくなりました。reason=0x{:08X}",
@@ -633,7 +642,9 @@ bool D3D12Graphics::CreateDepthBuffer(int width, int height) {
 	return true;
 }
 
-UINT D3D12Graphics::GetBufferCount() const { return kBufferCount; }
+UINT D3D12Graphics::GetBufferCount() const {
+	return kBufferCount;
+}
 
 DXGI_FORMAT D3D12Graphics::GetRenderTargetFormat() const {
 	return kRenderTargetFormat;

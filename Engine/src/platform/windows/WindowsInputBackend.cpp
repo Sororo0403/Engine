@@ -4,9 +4,12 @@
 #include <format>
 #include <vector>
 
-WindowsInputBackend::WindowsInputBackend(HWND hwnd) : hwnd_(hwnd) {}
+WindowsInputBackend::WindowsInputBackend(HWND hwnd) : hwnd_(hwnd) {
+}
 
-WindowsInputBackend::~WindowsInputBackend() { Finalize(); }
+WindowsInputBackend::~WindowsInputBackend() {
+	Finalize();
+}
 
 bool WindowsInputBackend::Initialize() {
 	using namespace GameInput::v4;
@@ -45,8 +48,7 @@ bool WindowsInputBackend::Initialize() {
 	keyboardAggregateCreated_ = true;
 	keyboardHadReading_ = false;
 
-	hr = gameInput_->CreateAggregateDevice(GameInputKindMouse,
-	                                       &mouseDeviceId_);
+	hr = gameInput_->CreateAggregateDevice(GameInputKindMouse, &mouseDeviceId_);
 
 	if (FAILED(hr)) {
 		Logger::Error(std::format("マウスの集約デバイス作成に失敗しました。"
@@ -95,8 +97,7 @@ void WindowsInputBackend::Finalize() {
 	keyboardHadReading_ = false;
 
 	if (gameInput_ && mouseAggregateCreated_) {
-		const HRESULT hr =
-		    gameInput_->DisableAggregateDevice(&mouseDeviceId_);
+		const HRESULT hr = gameInput_->DisableAggregateDevice(&mouseDeviceId_);
 
 		if (FAILED(hr)) {
 			Logger::Warning(std::format("マウスの集約解除に失敗しました。"

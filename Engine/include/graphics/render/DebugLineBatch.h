@@ -20,7 +20,9 @@ class DebugLineBatch {
 	DebugLineBatch() = default;
 
 	// 呼び出し側でGPUの利用完了を保証してから破棄する
-	~DebugLineBatch() { Finalize(); }
+	~DebugLineBatch() {
+		Finalize();
+	}
 
 	DebugLineBatch(const DebugLineBatch &) = delete;
 	DebugLineBatch &operator=(const DebugLineBatch &) = delete;

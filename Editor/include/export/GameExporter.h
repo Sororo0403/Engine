@@ -1,7 +1,9 @@
 #pragma once
+
 #include "gameplay/GameConfig.h"
 #include <filesystem>
 #include <string>
+
 class Scene;
 
 /// <summary>

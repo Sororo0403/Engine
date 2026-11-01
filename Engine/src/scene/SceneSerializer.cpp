@@ -3,8 +3,8 @@
 #include "core/Logger.h"
 #include "math/MathUtils.h"
 #include "math/TransformUtils.h"
-#include "platform/windows/PathUtils.h"
 #include "physics/BoxColliderUtils.h"
+#include "platform/windows/PathUtils.h"
 #include "scene/Scene.h"
 
 #include <json.hpp>
@@ -93,6 +93,7 @@ DirectX::XMFLOAT4 ReadRotation(const Json &value) {
 	};
 
 	DirectX::XMFLOAT4 normalized;
+
 	if (!TransformUtils::TryNormalizeRotation(rotation, normalized)) {
 		throw std::runtime_error("回転クォータニオンが無効です。");
 	}
@@ -112,9 +113,12 @@ bool SceneSerializer::Save(const Scene &scene,
 			if (!TransformUtils::IsValid(object.transform)) {
 				throw std::runtime_error("Transformが無効です。");
 			}
+
 			if (object.collider) {
 				AxisAlignedBox bounds;
-				if (!BoxColliderUtils::GetWorldBounds(*object.collider, object.transform, bounds)) {
+
+				if (!BoxColliderUtils::GetWorldBounds(
+				        *object.collider, object.transform, bounds)) {
 					throw std::runtime_error("衝突用ボックスが無効です。");
 				}
 			}
@@ -139,10 +143,13 @@ bool SceneSerializer::Save(const Scene &scene,
 			         {"scale", ToJson(object.transform.scale)},
 			     }},
 			});
+
 			if (object.collider) {
-				objects.back()["collider"] = {{"center", ToJson(object.collider->center)},
-				                              {"halfExtents", ToJson(object.collider->halfExtents)}};
+				objects.back()["collider"] = {
+				    {"center", ToJson(object.collider->center)},
+				    {"halfExtents", ToJson(object.collider->halfExtents)}};
 			}
+
 			if (object.camera) {
 				const auto &v = *object.camera;
 				objects.back()["camera"] = {
@@ -151,6 +158,7 @@ bool SceneSerializer::Save(const Scene &scene,
 				    {"nearClip", v.settings.nearClip},
 				    {"farClip", v.settings.farClip}};
 			}
+
 			if (object.character) {
 				const auto &v = *object.character;
 				objects.back()["character"] = {
@@ -159,6 +167,7 @@ bool SceneSerializer::Save(const Scene &scene,
 				    {"gravity", v.gravity},
 				    {"terminalSpeed", v.terminalSpeed}};
 			}
+
 			if (object.followCamera) {
 				const auto &v = *object.followCamera;
 				objects.back()["followCamera"] = {
@@ -167,6 +176,7 @@ bool SceneSerializer::Save(const Scene &scene,
 				    {"lookOffset", ToJson(v.lookOffset)},
 				    {"smoothing", v.smoothing}};
 			}
+
 			if (object.respawn) {
 				const auto &v = *object.respawn;
 				objects.back()["respawn"] = {
@@ -254,9 +264,11 @@ bool SceneSerializer::Load(Scene &scene,
 			const SceneObjectId id = idValue.get<SceneObjectId>();
 
 			SceneObject object;
+
 			if (version >= 3) {
 				object.visible = item.at("visible").get<bool>();
 			}
+
 			object.name = item.at("name").get<std::string>();
 
 			if (object.name.empty()) {
@@ -268,12 +280,14 @@ bool SceneSerializer::Load(Scene &scene,
 
 			if (version >= 4 && item.contains("collider")) {
 				const auto &collider = item.at("collider");
-				object.collider = BoxCollider{ReadFloat3(collider.at("center")),
-				                              ReadFloat3(collider.at("halfExtents"))};
+				object.collider =
+				    BoxCollider{ReadFloat3(collider.at("center")),
+				                ReadFloat3(collider.at("halfExtents"))};
 			}
 
 			if (version >= 6 && item.contains("camera")) {
 				const auto &v = item.at("camera");
+
 				for (const auto *key :
 				     {"verticalFovDegrees", "nearClip", "farClip"}) {
 					if (!v.at(key).is_number()) {
@@ -281,14 +295,17 @@ bool SceneSerializer::Load(Scene &scene,
 						    "カメラの描画設定には数値が必要です。");
 					}
 				}
+
 				object.camera = CameraComponent{
 				    v.at("primary").get<bool>(),
 				    CameraSettings{v.at("verticalFovDegrees").get<float>(),
 				                   v.at("nearClip").get<float>(),
 				                   v.at("farClip").get<float>()}};
 			}
+
 			if (version >= 5 && item.contains("character")) {
 				const auto &v = item.at("character");
+
 				for (const auto *key :
 				     {"moveSpeed", "jumpSpeed", "gravity", "terminalSpeed"}) {
 					if (!v.at(key).is_number()) {
@@ -296,36 +313,45 @@ bool SceneSerializer::Load(Scene &scene,
 						    "移動設定には数値が必要です。");
 					}
 				}
+
 				object.character =
 				    CharacterSettings{v.at("moveSpeed").get<float>(),
 				                      v.at("jumpSpeed").get<float>(),
 				                      v.at("gravity").get<float>(),
 				                      v.at("terminalSpeed").get<float>()};
 			}
+
 			if (version >= 5 && item.contains("followCamera")) {
 				const auto &v = item.at("followCamera");
+
 				if (!v.at("target").is_number_unsigned() ||
 				    !v.at("smoothing").is_number()) {
 					throw std::runtime_error("追従カメラの設定が無効です。");
 				}
+
 				object.followCamera = FollowCameraSettings{
 				    v.at("target").get<SceneObjectId>(),
 				    ReadFloat3(v.at("offset")), ReadFloat3(v.at("lookOffset")),
 				    v.at("smoothing").get<float>()};
 			}
+
 			if (version <= 5 && object.followCamera) {
 				object.camera = CameraComponent{};
 			}
+
 			if (version >= 5 && item.contains("respawn")) {
 				const auto &v = item.at("respawn");
+
 				if (!v.at("minimumY").is_number()) {
 					throw std::runtime_error("落下高度には数値が必要です。");
 				}
+
 				object.respawn =
 				    RespawnSettings{v.at("minimumY").get<float>(),
 				                    v.at("useStartPosition").get<bool>(),
 				                    ReadFloat3(v.at("position"))};
 			}
+
 			if ((object.camera && !object.camera->IsValid()) ||
 			    (object.character && !object.character->IsValid()) ||
 			    (object.followCamera && !object.followCamera->IsValid()) ||
@@ -340,18 +366,20 @@ bool SceneSerializer::Load(Scene &scene,
 			    ReadFloat3(transform.at("translation"));
 			// 旧形式のオイラー角は、従来と同じ回転順序で変換する
 			object.transform.rotation =
-			    version == 1
-			        ? TransformUtils::RotationFromEuler(
-			              ReadFloat3(transform.at("rotation")))
-			        : ReadRotation(transform.at("rotation"));
+			    version == 1 ? TransformUtils::RotationFromEuler(
+			                       ReadFloat3(transform.at("rotation")))
+			                 : ReadRotation(transform.at("rotation"));
 			object.transform.scale = ReadFloat3(transform.at("scale"));
 
 			if (!TransformUtils::IsValid(object.transform)) {
 				throw std::runtime_error("Transformが無効です。");
 			}
+
 			if (object.collider) {
 				AxisAlignedBox bounds;
-				if (!BoxColliderUtils::GetWorldBounds(*object.collider, object.transform, bounds)) {
+
+				if (!BoxColliderUtils::GetWorldBounds(
+				        *object.collider, object.transform, bounds)) {
 					throw std::runtime_error("衝突用ボックスが無効です。");
 				}
 			}

@@ -271,7 +271,8 @@ class EditorScene final : public IScene {
 	/// <param name="objectId">変更する物体のID</param>
 	/// <param name="modelPath">変更先のモデル。空の場合は参照を解除する</param>
 	/// <returns>true:成功 false:物体がない、読み込みまたは変更に失敗</returns>
-	bool AssignModel(SceneObjectId objectId, const std::filesystem::path &modelPath);
+	bool AssignModel(SceneObjectId objectId,
+	                 const std::filesystem::path &modelPath);
 
 	/// <summary>
 	/// 表示するモデルの読み込みを確認し、表示状態をまとめて変更する
@@ -279,7 +280,8 @@ class EditorScene final : public IScene {
 	/// <param name="objectIds">変更する物体のID一覧</param>
 	/// <param name="visible">変更後の表示状態</param>
 	/// <returns>true:成功 false:読み込みまたは変更に失敗</returns>
-	bool ChangeVisibility(std::span<const SceneObjectId> objectIds, bool visible);
+	bool ChangeVisibility(std::span<const SceneObjectId> objectIds,
+	                      bool visible);
 
 	/// <summary>
 	/// 非表示の物体を全て再表示する。選択状態は変更しない
@@ -296,7 +298,8 @@ class EditorScene final : public IScene {
 	/// Inspectorに表示中の物体へのTransform操作を反映する
 	/// </summary>
 	/// <param name="request">コピー・貼り付け・リセットの操作要求</param>
-	void ApplyInspectorTransform(const InspectorPanel::TransformRequest &request);
+	void
+	ApplyInspectorTransform(const InspectorPanel::TransformRequest &request);
 
 	/// <summary>
 	/// 編集中の内容を履歴へ確定し、ギズモ操作を中止する

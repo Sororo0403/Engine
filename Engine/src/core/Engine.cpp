@@ -32,7 +32,8 @@ namespace {
 /// </summary>
 class ComScope {
   public:
-	ComScope() : result_(CoInitializeEx(nullptr, COINIT_MULTITHREADED)) {}
+	ComScope() : result_(CoInitializeEx(nullptr, COINIT_MULTITHREADED)) {
+	}
 
 	~ComScope() {
 		if (SUCCEEDED(result_)) {
@@ -43,7 +44,9 @@ class ComScope {
 	ComScope(const ComScope &) = delete;
 	ComScope &operator=(const ComScope &) = delete;
 
-	HRESULT GetResult() const { return result_; }
+	HRESULT GetResult() const {
+		return result_;
+	}
 
   private:
 	HRESULT result_;
@@ -57,7 +60,8 @@ class ComScope {
 struct Engine::Impl {
 	Impl()
 	    : models_(graphics_),
-	      render_(graphics_, meshRenderer_, debugLineRenderer_, app_) {}
+	      render_(graphics_, meshRenderer_, debugLineRenderer_, app_) {
+	}
 
 	~Impl() {
 		// シーンや共有リソースを解放する前にGPUの完了を待つ
@@ -156,6 +160,7 @@ struct Engine::Impl {
 		}
 
 		uiEnabled_ = config.enableUI;
+
 		if (uiEnabled_ && !ui_.Initialize(app_, graphics_)) {
 			return false;
 		}

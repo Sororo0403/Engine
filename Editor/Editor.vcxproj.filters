@@ -395,32 +395,82 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ClInclude Include="include\history\ComponentCommand.h"><Filter>include\history</Filter></ClInclude>
-    <ClInclude Include="include\gameplay\GameplayInspector.h"><Filter>include\gameplay</Filter></ClInclude>
-    <ClCompile Include="src\gameplay\GameplayInspector.cpp"><Filter>src\gameplay</Filter></ClCompile>
+    <ClInclude Include="include\history\ComponentCommand.h">
+      <Filter>include\history</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gameplay\GameplayInspector.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
+    <ClCompile Include="src\gameplay\GameplayInspector.cpp">
+      <Filter>src\gameplay</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\gameplay\EditorPlayMode.h"><Filter>include\gameplay</Filter></ClInclude>
-    <ClCompile Include="src\gameplay\EditorPlayMode.cpp"><Filter>src\gameplay</Filter></ClCompile>
+    <ClInclude Include="include\gameplay\EditorPlayMode.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
+    <ClCompile Include="src\gameplay\EditorPlayMode.cpp">
+      <Filter>src\gameplay</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\gameplay\SampleStage.h"><Filter>include\gameplay</Filter></ClInclude>
-    <ClCompile Include="src\gameplay\SampleStage.cpp"><Filter>src\gameplay</Filter></ClCompile>
+    <ClInclude Include="include\gameplay\SampleStage.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
+    <ClCompile Include="src\gameplay\SampleStage.cpp">
+      <Filter>src\gameplay</Filter>
+    </ClCompile>
   </ItemGroup>
-  <ItemGroup><ClInclude Include="include\gameplay\GameplayInput.h"><Filter>include\gameplay</Filter></ClInclude></ItemGroup>
-  <ItemGroup><Filter Include="include\gameplay"><UniqueIdentifier>{c5865e24-7645-4529-ab24-c4eb0c329ee7}</UniqueIdentifier></Filter></ItemGroup>
-  <ItemGroup><Filter Include="src\gameplay"><UniqueIdentifier>{21f0698d-1cae-498a-918a-7f3c108d0570}</UniqueIdentifier></Filter></ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\camera\CameraInspector.h"><Filter>include\camera</Filter></ClInclude>
-    <ClCompile Include="src\camera\CameraInspector.cpp"><Filter>src\camera</Filter></ClCompile>
+    <ClInclude Include="include\gameplay\GameplayInput.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
   </ItemGroup>
-  <ItemGroup><ClInclude Include="include\gameplay\PlaybackClock.h"><Filter>include\gameplay</Filter></ClInclude></ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\export\GameExporter.h"><Filter>include\export</Filter></ClInclude>
-    <ClCompile Include="src\export\GameExporter.cpp"><Filter>src\export</Filter></ClCompile>
-    <ClInclude Include="include\dialogs\GameExportDialog.h"><Filter>include\dialogs</Filter></ClInclude>
-    <ClCompile Include="src\dialogs\GameExportDialog.cpp"><Filter>src\dialogs</Filter></ClCompile>
+    <Filter Include="include\gameplay">
+      <UniqueIdentifier>{c5865e24-7645-4529-ab24-c4eb0c329ee7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
-<ItemGroup><Filter Include="include\export"><UniqueIdentifier>{c84302bf-808d-4fcf-80da-286af995aaf0}</UniqueIdentifier></Filter></ItemGroup>
-<ItemGroup><Filter Include="src\export"><UniqueIdentifier>{03327432-75ef-44c7-b912-21ac66f34d5d}</UniqueIdentifier></Filter></ItemGroup>
+  <ItemGroup>
+    <Filter Include="src\gameplay">
+      <UniqueIdentifier>{21f0698d-1cae-498a-918a-7f3c108d0570}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\camera\CameraInspector.h">
+      <Filter>include\camera</Filter>
+    </ClInclude>
+    <ClCompile Include="src\camera\CameraInspector.cpp">
+      <Filter>src\camera</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\gameplay\PlaybackClock.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\export\GameExporter.h">
+      <Filter>include\export</Filter>
+    </ClInclude>
+    <ClCompile Include="src\export\GameExporter.cpp">
+      <Filter>src\export</Filter>
+    </ClCompile>
+    <ClInclude Include="include\dialogs\GameExportDialog.h">
+      <Filter>include\dialogs</Filter>
+    </ClInclude>
+    <ClCompile Include="src\dialogs\GameExportDialog.cpp">
+      <Filter>src\dialogs</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="include\export">
+      <UniqueIdentifier>{c84302bf-808d-4fcf-80da-286af995aaf0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="src\export">
+      <UniqueIdentifier>{03327432-75ef-44c7-b912-21ac66f34d5d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
 </Project>

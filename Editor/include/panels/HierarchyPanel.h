@@ -121,8 +121,8 @@ class HierarchyPanel {
 	/// <param name="selection">変更する選択状態</param>
 	/// <returns>true:選択変更あり false:変更なし、または対象が表示されていない</returns>
 	bool SelectObject(SceneObjectId objectId,
-	                  std::span<const SceneObjectId> visibleIds,
-	                  bool control, bool shift, EditorSelection &selection);
+	                  std::span<const SceneObjectId> visibleIds, bool control,
+	                  bool shift, EditorSelection &selection);
 
 	std::string filter_;
 	SortMode sortMode_ = SortMode::CREATION;

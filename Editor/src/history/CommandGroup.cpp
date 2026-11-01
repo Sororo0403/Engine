@@ -5,7 +5,8 @@
 #include <utility>
 
 CommandGroup::CommandGroup(std::vector<Command> commands) noexcept
-    : commands_(std::move(commands)) {}
+    : commands_(std::move(commands)) {
+}
 
 bool CommandGroup::Undo(Scene &scene) const {
 	if (commands_.empty()) {

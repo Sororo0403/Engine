@@ -1,4 +1,5 @@
 #pragma once
+
 #include "gameplay/CharacterController.h"
 #include "graphics/camera/CameraPose.h"
 #include "physics/CollisionWorld.h"
@@ -19,10 +20,12 @@ class SceneSimulation {
 	/// <returns>true:再生開始 false:追加済みコンポーネントの設定や配置、または描画姿勢が無効</returns>
 	bool Start(const Scene &source, std::string &error,
 	           const CameraPose &fallbackPose = CameraPose{});
+
 	/// <summary>
 	/// 再生を終了して複製データを破棄する
 	/// </summary>
 	void Stop();
+
 	/// <summary>
 	/// 再生用シーンを入力と時間から更新する
 	/// </summary>
@@ -30,26 +33,38 @@ class SceneSimulation {
 	/// <param name="input">ワールドX/Z方向の移動とジャンプ</param>
 	/// <returns>true:更新成功 false:未再生または更新失敗</returns>
 	bool Update(float seconds, const CharacterInput &input);
+
 	/// <summary>
 	/// 再生状態を確認する
 	/// </summary>
 	/// <returns>true:再生中 false:停止中</returns>
-	bool IsPlaying() const { return playing_; }
+	bool IsPlaying() const {
+		return playing_;
+	}
+
 	/// <summary>
 	/// Rendererから参照できる、アドレスが変わらない再生用シーンを取得する
 	/// </summary>
 	/// <returns>編集データとは独立したシーン</returns>
-	const Scene &GetScene() const { return scene_; }
+	const Scene &GetScene() const {
+		return scene_;
+	}
+
 	/// <summary>
 	/// 追従カメラ、または開始時に指定した固定カメラの姿勢を取得する
 	/// </summary>
 	/// <returns>再生時の描画姿勢</returns>
-	const CameraPose &GetCameraPose() const { return pose_; }
+	const CameraPose &GetCameraPose() const {
+		return pose_;
+	}
+
 	/// <summary>
 	/// 描画カメラの投影設定を取得する。Primary Cameraがなければ標準設定を返す
 	/// </summary>
 	/// <returns>再生中の縦視野角と表示距離</returns>
-	const CameraSettings &GetCameraSettings() const { return cameraSettings_; }
+	const CameraSettings &GetCameraSettings() const {
+		return cameraSettings_;
+	}
 
   private:
 	Scene scene_;

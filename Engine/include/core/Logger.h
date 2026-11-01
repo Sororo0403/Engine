@@ -2,8 +2,8 @@
 
 #include "core/LogEntry.h"
 
-#include <fstream>
 #include <deque>
+#include <fstream>
 #include <mutex>
 #include <string>
 #include <string_view>
@@ -47,7 +47,8 @@ class Logger {
 	/// <param name="revision">前回取得した版。初回は0。取得成功後に現在の版へ更新する</param>
 	/// <param name="entries">取得先。返されたログはLoggerから独立して保持できる</param>
 	/// <returns>true:取得先を更新 false:変更なし。確保失敗時は両引数を変更せず例外を送出する</returns>
-	static bool ReadEntries(std::uint64_t &revision, std::vector<LogEntry> &entries);
+	static bool ReadEntries(std::uint64_t &revision,
+	                        std::vector<LogEntry> &entries);
 
 	/// <summary>
 	/// 参照用の直近ログをクリアする。ファイルの出力内容は保持する

@@ -13,7 +13,8 @@
 
 SceneRenderer::SceneRenderer(const Scene &scene, ModelManager &models,
                              RenderSystem &render)
-    : scene_(scene), models_(models), render_(render) {}
+    : scene_(scene), models_(models), render_(render) {
+}
 
 SceneRenderer::~SceneRenderer() = default;
 
@@ -172,7 +173,8 @@ SceneObjectId SceneRenderer::Pick(float imageX, float imageY) const {
 	return 0;
 }
 
-bool SceneRenderer::CreatePickingRay(float imageX, float imageY, Ray &ray) const {
+bool SceneRenderer::CreatePickingRay(float imageX, float imageY,
+                                     Ray &ray) const {
 	return world_ && world_->CreatePickingRay(imageX, imageY, ray);
 }
 
@@ -184,6 +186,7 @@ bool SceneRenderer::GetCameraMatrices(DirectX::XMFLOAT4X4 &view,
 bool SceneRenderer::GetObjectBounds(
     SceneObjectId objectId, std::array<DirectX::XMFLOAT3, 8> &corners) const {
 	const auto *object = scene_.FindObject(objectId);
+
 	if (!world_ || !object || !object->visible) {
 		return false;
 	}

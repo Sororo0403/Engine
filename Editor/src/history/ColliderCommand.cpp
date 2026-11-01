@@ -16,12 +16,15 @@ bool Apply(Scene &scene, SceneObjectId id,
            const std::optional<BoxCollider> &expected,
            const std::optional<BoxCollider> &value) {
 	auto *object = scene.FindObject(id);
+
 	if (!object || object->collider != expected) {
 		return false;
 	}
+
 	if (value && !BoxColliderUtils::IsValid(*value)) {
 		return false;
 	}
+
 	object->collider = value;
 	return true;
 }
@@ -30,11 +33,13 @@ bool Apply(Scene &scene, SceneObjectId id,
 ColliderCommand::ColliderCommand(SceneObjectId objectId,
                                  std::optional<BoxCollider> before,
                                  std::optional<BoxCollider> after)
-    : objectId_(objectId), before_(before), after_(after) {}
+    : objectId_(objectId), before_(before), after_(after) {
+}
 
 bool ColliderCommand::Undo(Scene &scene) const {
 	return Apply(scene, objectId_, after_, before_);
 }
+
 bool ColliderCommand::Redo(Scene &scene) const {
 	return Apply(scene, objectId_, before_, after_);
 }

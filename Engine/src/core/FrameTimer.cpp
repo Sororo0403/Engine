@@ -1,6 +1,8 @@
 #include "core/FrameTimer.h"
 
-void FrameTimer::Reset() { previousTime_ = Clock::now(); }
+void FrameTimer::Reset() {
+	previousTime_ = Clock::now();
+}
 
 float FrameTimer::Tick() {
 	const auto now = Clock::now();

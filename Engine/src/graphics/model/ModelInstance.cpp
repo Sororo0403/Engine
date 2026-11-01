@@ -135,7 +135,9 @@ void ModelInstance::SetTransform(const Transform &transform) {
 	transform_ = transform;
 }
 
-const Transform &ModelInstance::GetTransform() const { return transform_; }
+const Transform &ModelInstance::GetTransform() const {
+	return transform_;
+}
 
 std::size_t ModelInstance::GetMaterialCount() const {
 	return materials_.size();

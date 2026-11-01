@@ -42,9 +42,14 @@ SceneObjectId Scene::CreateObject(SceneObject object) {
 	++nextObjectId_;
 	return id;
 }
-bool Scene::DestroyObject(SceneObjectId id) { return objects_.erase(id) != 0; }
 
-bool Scene::Contains(SceneObjectId id) const { return objects_.contains(id); }
+bool Scene::DestroyObject(SceneObjectId id) {
+	return objects_.erase(id) != 0;
+}
+
+bool Scene::Contains(SceneObjectId id) const {
+	return objects_.contains(id);
+}
 
 SceneObject *Scene::FindObject(SceneObjectId id) {
 	const auto found = objects_.find(id);
@@ -70,7 +75,9 @@ const std::map<SceneObjectId, SceneObject> &Scene::GetObjects() const {
 	return objects_;
 }
 
-void Scene::Clear() { objects_.clear(); }
+void Scene::Clear() {
+	objects_.clear();
+}
 
 void Scene::ReplaceObjects(std::map<SceneObjectId, SceneObject> objects) {
 	SceneObjectId nextId = nextObjectId_;

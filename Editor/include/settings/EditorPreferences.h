@@ -1,7 +1,7 @@
 #pragma once
 
-#include "gizmo/TransformGizmo.h"
 #include "camera/EditorCameraController.h"
+#include "gizmo/TransformGizmo.h"
 #include "scene/SceneGrid.h"
 
 #include <filesystem>
@@ -35,7 +35,8 @@ class EditorPreferences {
 	/// </summary>
 	/// <param name="filePath">実行ファイル基準の設定ファイル</param>
 	/// <returns>true:保存成功 false:データが無効、または保存失敗</returns>
-	bool Save(const std::filesystem::path &filePath = L"config/editor.json") const;
+	bool
+	Save(const std::filesystem::path &filePath = L"config/editor.json") const;
 
 	/// <summary>
 	/// 保存する設定の値が一致するか確認する

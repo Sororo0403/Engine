@@ -12,15 +12,18 @@
 
 bool Logger::Initialize(const std::string &filePath) {
 	const std::scoped_lock lock(mutex_);
+
 	if (logFile_.is_open() || filePath.empty()) {
-		Write(LogLevel::LOG_ERROR, "Logger::Initialize: 初期化済み、または保存先パスが空です。");
+		Write(LogLevel::LOG_ERROR,
+		      "Logger::Initialize: 初期化済み、または保存先パスが空です。");
 		return false;
 	}
 
 	const std::wstring widePath = StringConversion::Utf8ToWide(filePath);
 
 	if (widePath.empty()) {
-		Write(LogLevel::LOG_ERROR, "Logger::Initialize: 保存先パスをUTF-16に変換できませんでした。");
+		Write(LogLevel::LOG_ERROR,
+		      "Logger::Initialize: 保存先パスをUTF-16に変換できませんでした。");
 		return false;
 	}
 
@@ -33,7 +36,8 @@ bool Logger::Initialize(const std::string &filePath) {
 		std::filesystem::create_directories(path.parent_path(), error);
 
 		if (error) {
-			Write(LogLevel::LOG_ERROR,
+			Write(
+			    LogLevel::LOG_ERROR,
 			    std::format("ログフォルダを作成できませんでした: {} (code={})",
 			                filePath, error.value()));
 			return false;
@@ -47,7 +51,8 @@ bool Logger::Initialize(const std::string &filePath) {
 
 	if (!logFile_.is_open()) {
 		const int error = errno;
-		Write(LogLevel::LOG_ERROR, std::format("ログファイルを開けませんでした: {} (errno={})",
+		Write(LogLevel::LOG_ERROR,
+		      std::format("ログファイルを開けませんでした: {} (errno={})",
 		                  filePath, error));
 		return false;
 	}
@@ -57,6 +62,7 @@ bool Logger::Initialize(const std::string &filePath) {
 
 void Logger::Finalize() {
 	const std::scoped_lock lock(mutex_);
+
 	if (logFile_.is_open()) {
 		logFile_.close();
 	}
@@ -95,15 +101,17 @@ void Logger::Write(LogLevel level, std::string_view message) {
 	// 時刻・レベル・メッセージを1行にまとめる
 	const auto timestamp = DateTime::GetCurrentTimeString();
 	std::ostringstream stream;
-	stream << '[' << timestamp << "] [" << levelName
-	       << "] " << message << '\n';
+	stream << '[' << timestamp << "] [" << levelName << "] " << message << '\n';
 
 	const std::string line = stream.str();
 
-	entries_.push_back(LogEntry{revision_ + 1, level, timestamp, std::string(message)});
+	entries_.push_back(
+	    LogEntry{revision_ + 1, level, timestamp, std::string(message)});
+
 	if (entries_.size() > kMaximumEntries) {
 		entries_.pop_front();
 	}
+
 	++revision_;
 
 	// Visual Studioの出力ウィンドウへ出力する
@@ -120,12 +128,14 @@ void Logger::Write(LogLevel level, std::string_view message) {
 	}
 }
 
-
-bool Logger::ReadEntries(std::uint64_t &revision, std::vector<LogEntry> &entries) {
+bool Logger::ReadEntries(std::uint64_t &revision,
+                         std::vector<LogEntry> &entries) {
 	const std::scoped_lock lock(mutex_);
+
 	if (revision == revision_) {
 		return false;
 	}
+
 	std::vector<LogEntry> snapshot(entries_.begin(), entries_.end());
 	entries.swap(snapshot);
 	revision = revision_;

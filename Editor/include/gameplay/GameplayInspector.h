@@ -1,5 +1,7 @@
 #pragma once
+
 #include "scene/SceneObjectId.h"
+
 class ImGuiSystem;
 class Scene;
 class EditorHistory;

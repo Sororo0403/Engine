@@ -18,7 +18,9 @@ class ModelHandle {
 	/// モデルを参照しているか取得する
 	/// </summary>
 	/// <returns>true:参照あり false:空のハンドル</returns>
-	explicit operator bool() const { return model_ != nullptr; }
+	explicit operator bool() const {
+		return model_ != nullptr;
+	}
 
   private:
 	friend class ModelManager;

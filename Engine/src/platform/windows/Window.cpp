@@ -5,7 +5,9 @@
 
 #include <format>
 
-Window::~Window() { Destroy(); }
+Window::~Window() {
+	Destroy();
+}
 
 bool Window::Create(HINSTANCE hInstance, const std::wstring &title, int width,
                     int height) {
@@ -83,6 +85,7 @@ bool Window::Create(HINSTANCE hInstance, const std::wstring &title, int width,
 
 void Window::Destroy() {
 	const bool hadResources = hwnd_ || isClassRegistered_;
+
 	if (hwnd_) {
 		if (!DestroyWindow(hwnd_)) {
 			const DWORD error = GetLastError();
@@ -110,6 +113,7 @@ void Window::Destroy() {
 	width_ = 0;
 	height_ = 0;
 	closeRequested_ = false;
+
 	if (hadResources) {
 		Logger::Info("ウィンドウのリソースを解放しました。");
 	}
@@ -125,11 +129,17 @@ bool Window::SetTitle(const std::wstring &title) {
 	return hwnd_ && SetWindowTextW(hwnd_, title.c_str()) != FALSE;
 }
 
-HWND Window::GetHwnd() const { return hwnd_; }
+HWND Window::GetHwnd() const {
+	return hwnd_;
+}
 
-int Window::GetWidth() const { return width_; }
+int Window::GetWidth() const {
+	return width_;
+}
 
-int Window::GetHeight() const { return height_; }
+int Window::GetHeight() const {
+	return height_;
+}
 
 LRESULT CALLBACK Window::WndProc(HWND hwnd, UINT msg, WPARAM wParam,
                                  LPARAM lParam) {

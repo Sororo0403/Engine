@@ -47,19 +47,25 @@ class CharacterController {
 	/// 描画とシーンへ反映する現在の姿勢を取得する
 	/// </summary>
 	/// <returns>現在の姿勢</returns>
-	const Transform &GetTransform() const { return transform_; }
+	const Transform &GetTransform() const {
+		return transform_;
+	}
 
 	/// <summary>
 	/// 地面に接しているか取得する
 	/// </summary>
 	/// <returns>true:接地 false:空中または未初期化</returns>
-	bool IsGrounded() const { return grounded_; }
+	bool IsGrounded() const {
+		return grounded_;
+	}
 
 	/// <summary>
 	/// 上向きを正とする現在の鉛直速度を取得する
 	/// </summary>
 	/// <returns>ワールド座標の速度（毎秒）</returns>
-	float GetVerticalVelocity() const { return verticalVelocity_; }
+	float GetVerticalVelocity() const {
+		return verticalVelocity_;
+	}
 
   private:
 	/// <summary>

@@ -3,8 +3,7 @@
 Texture2D<float4> texture0 : register(t0);
 SamplerState sampler0 : register(s0);
 
-cbuffer DirectionalLightBuffer : register(b1)
-{
+cbuffer DirectionalLightBuffer : register(b1) {
 	float3 lightDirection;
 	float lightIntensity;
 
@@ -12,15 +11,13 @@ cbuffer DirectionalLightBuffer : register(b1)
 	float ambient;
 };
 
-cbuffer MaterialBuffer : register(b2)
-{
+cbuffer MaterialBuffer : register(b2) {
 	float4 baseColor;
 	float2 uvScale;
 	float2 uvOffset;
 };
 
-float4 PSMain(VertexOutput input) : SV_Target0
-{
+float4 PSMain(VertexOutput input) : SV_Target0 {
 	float2 texcoord = input.texcoord * uvScale + uvOffset;
 
 	float4 textureColor = texture0.Sample(sampler0, texcoord);
@@ -29,17 +26,12 @@ float4 PSMain(VertexOutput input) : SV_Target0
 	float3 toLight = -normalize(lightDirection);
 	float diffuse = saturate(dot(normal, toLight));
 
-	float3 lighting =
-	    lightColor * lightIntensity * diffuse + ambient;
+	float3 lighting = lightColor * lightIntensity * diffuse + ambient;
 
 	float3 color =
-	    textureColor.rgb *
-	    input.color.rgb *
-	    baseColor.rgb *
-	    lighting;
+	    textureColor.rgb * input.color.rgb * baseColor.rgb * lighting;
 
-	float alpha =
-	    textureColor.a * input.color.a * baseColor.a;
+	float alpha = textureColor.a * input.color.a * baseColor.a;
 
 	return float4(color, alpha);
 }

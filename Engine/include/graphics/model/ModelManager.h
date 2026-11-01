@@ -2,9 +2,9 @@
 
 #include "graphics/model/ModelHandle.h"
 
-#include <filesystem>
-#include <array>
 #include <DirectXMath.h>
+#include <array>
+#include <filesystem>
 #include <memory>
 
 class D3D12Graphics;
@@ -43,7 +43,8 @@ class ModelManager {
 	/// <param name="model">このマネージャーの描画基盤で読み込んだモデル</param>
 	/// <param name="corners">成功時に設定する8頂点</param>
 	/// <returns>true:成功 false:ハンドルが無効、または頂点なし</returns>
-	bool GetLocalBounds(const ModelHandle &model, std::array<DirectX::XMFLOAT3, 8> &corners) const;
+	bool GetLocalBounds(const ModelHandle &model,
+	                    std::array<DirectX::XMFLOAT3, 8> &corners) const;
 
   private:
 	struct Impl;

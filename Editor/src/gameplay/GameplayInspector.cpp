@@ -23,17 +23,22 @@ bool ApplyField(EditorHistory &history, SceneObjectId id,
 	if (ImGui::IsItemActivated() && !(history.*begin)(id)) {
 		return false;
 	}
+
 	bool applied = false;
+
 	if (changed && edited.IsValid() && current && *current != edited) {
 		if (!history.IsEditing() && !(history.*begin)(id)) {
 			return false;
 		}
+
 		current = edited;
 		applied = true;
 	}
+
 	if (ImGui::IsItemDeactivated() && !ImGui::IsAnyItemActive()) {
 		history.CommitEdit();
 	}
+
 	return applied;
 }
 } // namespace
@@ -45,10 +50,12 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 	ImGui::PushID(scope.c_str());
 	ImGui::PushID("GameplayInspector");
 	bool changed = false;
+
 	if (object.character && ui.CollapsingHeader("Character Controller")) {
 		if (!object.collider) {
 			ImGui::TextWrapped("Box Collider is missing.");
 		}
+
 		auto field = [&](const char *label, float CharacterSettings::*member,
 		                 float maximum) {
 			auto edited = *object.character;
@@ -66,23 +73,29 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		      CharacterSettings::kMaximumGravity);
 		field("Terminal Speed", &CharacterSettings::terminalSpeed,
 		      CharacterSettings::kMaximumSpeed);
+
 		if (ui.Button("Remove Character Controller")) {
 			changed |= history.SetCharacter(id, std::nullopt);
 		}
 	}
+
 	if (object.followCamera && ui.CollapsingHeader("Follow Camera")) {
 		if (!object.camera) {
 			ImGui::TextWrapped("Camera is missing.");
 		}
+
 		const auto *target = scene.FindObject(object.followCamera->target);
 		const auto preview = target ? target->name : "Choose target";
+
 		if (ImGui::BeginCombo("Target", preview.c_str())) {
 			for (const auto &[targetId, candidate] : scene.GetObjects()) {
 				if (targetId == id) {
 					continue;
 				}
+
 				const auto label =
 				    candidate.name + "###" + std::to_string(targetId);
+
 				if (ImGui::Selectable(label.c_str(),
 				                      targetId ==
 				                          object.followCamera->target)) {
@@ -91,12 +104,15 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 					changed |= history.SetFollowCamera(id, edited);
 				}
 			}
+
 			ImGui::EndCombo();
 		}
+
 		if (!target || object.followCamera->target == id) {
 			ImGui::TextWrapped(
 			    "Choose another object in this scene before Play.");
 		}
+
 		auto edited = *object.followCamera;
 		bool value =
 		    ui.DragFloat3("Camera Offset", edited.offset, 0.01f, -10000, 10000);
@@ -112,14 +128,17 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		                         0, 100, "%.2f", ImGuiSliderFlags_AlwaysClamp);
 		changed |= ApplyField(history, id, object.followCamera, edited, value,
 		                      &EditorHistory::BeginFollowCamera);
+
 		if (ui.Button("Remove Follow Camera")) {
 			changed |= history.SetFollowCamera(id, std::nullopt);
 		}
 	}
+
 	if (object.respawn && ui.CollapsingHeader("Respawn")) {
 		if (!object.character) {
 			ImGui::TextWrapped("Add a Character Controller before Play.");
 		}
+
 		auto edited = *object.respawn;
 		bool value =
 		    ImGui::DragFloat("Fall Below Y", &edited.minimumY, 0.1f, -100000,
@@ -127,25 +146,30 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		changed |= ApplyField(history, id, object.respawn, edited, value,
 		                      &EditorHistory::BeginRespawn);
 		edited = *object.respawn;
+
 		if (ImGui::Checkbox("Use Start Position", &edited.useStartPosition)) {
 			changed |= history.SetRespawn(id, edited);
 		}
+
 		if (!object.respawn->useStartPosition) {
 			edited = *object.respawn;
 			value = ui.DragFloat3("Respawn Position", edited.position, 0.01f,
 			                      -100000, 100000);
 			changed |= ApplyField(history, id, object.respawn, edited, value,
 			                      &EditorHistory::BeginRespawn);
+
 			if (ui.Button("Use Current Position")) {
 				edited = *object.respawn;
 				edited.position = object.transform.translation;
 				changed |= history.SetRespawn(id, edited);
 			}
 		}
+
 		if (ui.Button("Remove Respawn")) {
 			changed |= history.SetRespawn(id, std::nullopt);
 		}
 	}
+
 	ImGui::PopID();
 	ImGui::PopID();
 	return changed;

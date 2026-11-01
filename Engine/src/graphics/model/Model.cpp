@@ -184,7 +184,9 @@ bool Model::CreateShaderResourceViews(ID3D12Device *device) {
 	return true;
 }
 
-std::size_t Model::GetMeshCount() const { return parts_.size(); }
+std::size_t Model::GetMeshCount() const {
+	return parts_.size();
+}
 
 const Mesh &Model::GetMesh(std::size_t index) const {
 	return parts_.at(index).mesh;
@@ -194,7 +196,9 @@ std::size_t Model::GetMeshMaterialIndex(std::size_t meshIndex) const {
 	return parts_.at(meshIndex).materialIndex;
 }
 
-std::size_t Model::GetMaterialCount() const { return defaultMaterials_.size(); }
+std::size_t Model::GetMaterialCount() const {
+	return defaultMaterials_.size();
+}
 
 const MaterialData &
 Model::GetDefaultMaterialData(std::size_t materialIndex) const {

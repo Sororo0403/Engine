@@ -63,11 +63,17 @@ void MeshInstance::SetTransform(const Transform &transform) {
 	transform_ = transform;
 }
 
-const Transform &MeshInstance::GetTransform() const { return transform_; }
+const Transform &MeshInstance::GetTransform() const {
+	return transform_;
+}
 
-const Mesh *MeshInstance::GetMesh() const { return mesh_; }
+const Mesh *MeshInstance::GetMesh() const {
+	return mesh_;
+}
 
-const Material *MeshInstance::GetMaterial() const { return material_; }
+const Material *MeshInstance::GetMaterial() const {
+	return material_;
+}
 
 D3D12_GPU_VIRTUAL_ADDRESS
 MeshInstance::GetConstantBufferAddress() const {

@@ -3,7 +3,9 @@
 
 #include <utility>
 
-InputSystem::~InputSystem() { Finalize(); }
+InputSystem::~InputSystem() {
+	Finalize();
+}
 
 bool InputSystem::Initialize(std::unique_ptr<IInputBackend> backend) {
 	if (backend_) {
@@ -32,6 +34,7 @@ bool InputSystem::Initialize(std::unique_ptr<IInputBackend> backend) {
 
 bool InputSystem::Update() {
 	active_ = false;
+
 	if (!backend_) {
 		Logger::Error("InputSystem::Update: 初期化されていません。");
 		return false;
@@ -73,8 +76,14 @@ void InputSystem::Finalize() {
 	}
 }
 
-const Keyboard &InputSystem::GetKeyboard() const { return keyboard_; }
+const Keyboard &InputSystem::GetKeyboard() const {
+	return keyboard_;
+}
 
-const Mouse &InputSystem::GetMouse() const { return mouse_; }
+const Mouse &InputSystem::GetMouse() const {
+	return mouse_;
+}
 
-const Gamepad &InputSystem::GetGamepad() const { return gamepad_; }
+const Gamepad &InputSystem::GetGamepad() const {
+	return gamepad_;
+}

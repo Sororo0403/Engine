@@ -48,4 +48,6 @@ DirectionalLight::GetConstantBufferAddress() const {
 	return constantBuffer_.GetGPUVirtualAddress();
 }
 
-void DirectionalLight::Finalize() { constantBuffer_.Finalize(); }
+void DirectionalLight::Finalize() {
+	constantBuffer_.Finalize();
+}

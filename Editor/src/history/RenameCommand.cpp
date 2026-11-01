@@ -7,9 +7,12 @@
 RenameCommand::RenameCommand(SceneObjectId objectId, std::string before,
                              std::string after) noexcept
     : objectId_(objectId), before_(std::move(before)),
-      after_(std::move(after)) {}
+      after_(std::move(after)) {
+}
 
-bool RenameCommand::HasChanges() const { return before_ != after_; }
+bool RenameCommand::HasChanges() const {
+	return before_ != after_;
+}
 
 bool RenameCommand::Undo(Scene &scene) const {
 	SceneObject *object = scene.FindObject(objectId_);

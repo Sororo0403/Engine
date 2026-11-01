@@ -118,7 +118,8 @@ void InspectorPanel::Clear() {
 	assetRevealPath_.clear();
 }
 
-const InspectorPanel::TransformRequest &InspectorPanel::GetTransformRequest() const {
+const InspectorPanel::TransformRequest &
+InspectorPanel::GetTransformRequest() const {
 	return transformRequest_;
 }
 
@@ -130,11 +131,14 @@ const std::filesystem::path &InspectorPanel::GetAssetRevealPath() const {
 	return assetRevealPath_;
 }
 
-const InspectorPanel::VisibilityRequest &InspectorPanel::GetVisibilityRequest() const {
+const InspectorPanel::VisibilityRequest &
+InspectorPanel::GetVisibilityRequest() const {
 	return visibilityRequest_;
 }
 
-SceneObjectId InspectorPanel::GetColliderFitRequest() const { return colliderFitRequest_; }
+SceneObjectId InspectorPanel::GetColliderFitRequest() const {
+	return colliderFitRequest_;
+}
 
 bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
                           SceneObjectId selectedObjectId,
@@ -144,33 +148,42 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 	modelRequest_ = {};
 	assetRevealPath_.clear();
 	visibilityRequest_ = {};
+
 	if (lockedObjectId_ != 0 && !scene.Contains(lockedObjectId_)) {
 		lockedObjectId_ = 0;
 	}
-	const bool focusName = renameObjectId_ != 0 &&
-	                       renameObjectId_ == selectedObjectId;
+
+	const bool focusName =
+	    renameObjectId_ != 0 && renameObjectId_ == selectedObjectId;
+
 	if (focusName) {
 		ImGui::SetNextWindowCollapsed(false);
 		ImGui::SetNextWindowFocus();
 	} else {
 		renameObjectId_ = 0;
 	}
+
 	if (!ui.BeginWindow("Inspector")) {
 		ui.EndWindow();
 		return false;
 	}
 
-	const auto previousTarget = lockedObjectId_ != 0 ? lockedObjectId_ : selectedObjectId;
+	const auto previousTarget =
+	    lockedObjectId_ != 0 ? lockedObjectId_ : selectedObjectId;
 	bool locked = lockedObjectId_ != 0;
 	ImGui::BeginDisabled(!scene.Contains(previousTarget));
+
 	if (ImGui::Checkbox("Lock Inspector", &locked)) {
 		history.CommitEdit();
 		lockedObjectId_ = locked ? previousTarget : 0;
 		rotationObjectId_ = 0;
 	}
+
 	ImGui::EndDisabled();
-	ImGui::SetItemTooltip("Keep editing this object when selection changes. F2 for one selected object unlocks Inspector.");
-	const SceneObjectId inspectedObjectId = lockedObjectId_ != 0 ? lockedObjectId_ : selectedObjectId;
+	ImGui::SetItemTooltip("Keep editing this object when selection changes. F2 "
+	                      "for one selected object unlocks Inspector.");
+	const SceneObjectId inspectedObjectId =
+	    lockedObjectId_ != 0 ? lockedObjectId_ : selectedObjectId;
 	SceneObject *object = scene.FindObject(inspectedObjectId);
 
 	if (!object) {
@@ -187,12 +200,14 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 		std::string edited = object->name;
 
 		// 名前や選択物体が変わっても、別の入力欄の編集状態を引き継がない
-		const auto label = std::format("Name###ObjectName{}", inspectedObjectId);
+		const auto label =
+		    std::format("Name###ObjectName{}", inspectedObjectId);
 
 		if (focusName) {
 			ImGui::SetKeyboardFocusHere();
 			renameObjectId_ = 0;
 		}
+
 		const bool editedValue = ui.InputText(label.c_str(), edited);
 
 		if (ApplyNameEdit(history, inspectedObjectId, edited, editedValue,
@@ -203,26 +218,35 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 
 	ui.Text(std::format("ID: {}", inspectedObjectId));
 	bool visible = object->visible;
+
 	if (ImGui::Checkbox("Visible", &visible)) {
 		visibilityRequest_ = {inspectedObjectId, visible};
 	}
-	ImGui::SetItemTooltip("Render this object's model. Hidden models are excluded from Scene picking.");
+
+	ImGui::SetItemTooltip("Render this object's model. Hidden models are "
+	                      "excluded from Scene picking.");
 	ui.Separator();
 
 	const bool transformExpanded = ui.CollapsingHeader("Transform");
+
 	if (ImGui::BeginPopupContextItem("TransformTools")) {
 		ImGui::TextDisabled("Inspected object only");
+
 		if (ui.MenuItem("Copy Transform", nullptr, true)) {
 			transformRequest_ = {TransformAction::COPY, inspectedObjectId};
 		}
+
 		if (ui.MenuItem("Paste Transform", nullptr, canPasteTransform)) {
 			transformRequest_ = {TransformAction::PASTE, inspectedObjectId};
 		}
+
 		if (ui.MenuItem("Reset Transform", nullptr, true)) {
 			transformRequest_ = {TransformAction::RESET, inspectedObjectId};
 		}
+
 		ImGui::EndPopup();
 	}
+
 	if (transformExpanded) {
 		Transform &transform = object->transform;
 
@@ -297,53 +321,75 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 	}
 
 	if (ui.CollapsingHeader("Model")) {
-		const auto label = std::format("{}###ModelAsset{}",
-		    object->modelPath.empty() ? "Drop model here" : PathUtils::ToUtf8(object->modelPath.filename()),
-		    inspectedObjectId);
-		if (ImGui::Button(label.c_str(), {ImGui::GetContentRegionAvail().x, 0.0f}) &&
+		const auto label =
+		    std::format("{}###ModelAsset{}",
+		                object->modelPath.empty()
+		                    ? "Drop model here"
+		                    : PathUtils::ToUtf8(object->modelPath.filename()),
+		                inspectedObjectId);
+
+		if (ImGui::Button(label.c_str(),
+		                  {ImGui::GetContentRegionAvail().x, 0.0f}) &&
 		    !object->modelPath.empty()) {
 			assetRevealPath_ = object->modelPath;
 		}
+
 		if (auto path = ModelAssetDragDrop::AcceptTarget(); !path.empty()) {
 			modelRequest_ = {inspectedObjectId, std::move(path)};
 		}
+
 		if (object->modelPath.empty()) {
 			ImGui::SetItemTooltip("Drag a model from Assets to assign it.");
 		} else {
-			ImGui::SetItemTooltip("%s\nClick to reveal in Assets. Drop a model here to replace it.",
+			ImGui::SetItemTooltip("%s\nClick to reveal in Assets. Drop a model "
+			                      "here to replace it.",
 			                      PathUtils::ToUtf8(object->modelPath).c_str());
 		}
+
 		ImGui::BeginDisabled(object->modelPath.empty());
+
 		if (ImGui::Button("Remove Model")) {
 			modelRequest_ = {inspectedObjectId, {}};
 		}
+
 		ImGui::EndDisabled();
 	}
 
 	const auto componentScope = std::to_string(inspectedObjectId);
 	ImGui::PushID(componentScope.c_str());
-	if (ui.Button("Add Component")) ImGui::OpenPopup("AddComponentMenu");
+
+	if (ui.Button("Add Component"))
+		ImGui::OpenPopup("AddComponentMenu");
+
 	if (ImGui::BeginPopup("AddComponentMenu")) {
-		if (ui.MenuItem("Box Collider", nullptr, !object->collider)) colliderFitRequest_ = inspectedObjectId;
+		if (ui.MenuItem("Box Collider", nullptr, !object->collider))
+			colliderFitRequest_ = inspectedObjectId;
+
 		if (ui.MenuItem("Character Controller", nullptr, !object->character)) {
 			changed |=
 			    history.SetCharacter(inspectedObjectId, CharacterSettings{});
 		}
+
 		if (ui.MenuItem("Camera", nullptr, !object->camera)) {
 			changed |= history.SetCamera(inspectedObjectId, CameraComponent{});
 		}
+
 		if (ui.MenuItem("Follow Camera", nullptr, !object->followCamera)) {
 			changed |= history.SetFollowCamera(inspectedObjectId,
 			                                   FollowCameraSettings{});
 		}
+
 		if (ui.MenuItem("Respawn", nullptr, !object->respawn)) {
 			changed |= history.SetRespawn(inspectedObjectId, RespawnSettings{});
 		}
+
 		ImGui::EndPopup();
 	}
+
 	ImGui::PopID();
 
-	changed |= ColliderInspector{}.Draw(ui, inspectedObjectId, *object, history, colliderFitRequest_);
+	changed |= ColliderInspector{}.Draw(ui, inspectedObjectId, *object, history,
+	                                    colliderFitRequest_);
 	changed |= CameraInspector{}.Draw(ui, inspectedObjectId, *object, history);
 	changed |= GameplayInspector{}.Draw(ui, scene, inspectedObjectId, *object,
 	                                    history);

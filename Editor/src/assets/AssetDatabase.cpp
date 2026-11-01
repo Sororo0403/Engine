@@ -11,7 +11,8 @@
 #include <utility>
 
 AssetDatabase::AssetDatabase(std::filesystem::path rootDirectory)
-    : rootDirectory_(std::move(rootDirectory).lexically_normal()) {}
+    : rootDirectory_(std::move(rootDirectory).lexically_normal()) {
+}
 
 bool AssetDatabase::Refresh() {
 	try {
@@ -58,11 +59,15 @@ bool AssetDatabase::Refresh() {
 			}
 
 			const bool directory = entry.is_directory(typeError);
+
 			if (typeError) {
-				throw std::system_error(typeError, "アセットのフォルダを確認できませんでした。");
+				throw std::system_error(
+				    typeError, "アセットのフォルダを確認できませんでした。");
 			}
+
 			if (directory) {
-				directories.push_back(entry.path().lexically_relative(executableDirectory));
+				directories.push_back(
+				    entry.path().lexically_relative(executableDirectory));
 			}
 
 			if (regularFile) {
@@ -118,9 +123,12 @@ const std::vector<std::filesystem::path> &AssetDatabase::GetModels() const {
 	return models_;
 }
 
-const std::string &AssetDatabase::GetError() const { return error_; }
+const std::string &AssetDatabase::GetError() const {
+	return error_;
+}
 
-const std::vector<std::filesystem::path> &AssetDatabase::GetDirectories() const {
+const std::vector<std::filesystem::path> &
+AssetDatabase::GetDirectories() const {
 	return directories_;
 }
 

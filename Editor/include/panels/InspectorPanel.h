@@ -82,6 +82,7 @@ class InspectorPanel {
 	/// </summary>
 	/// <returns>対象ID。要求なしの場合は0</returns>
 	SceneObjectId GetColliderFitRequest() const;
+
 	/// <summary>
 	/// 表示の固定を解除し、指定した選択物体の名前欄へのフォーカスを次の描画時に予約する
 	/// </summary>

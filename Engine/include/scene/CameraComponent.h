@@ -7,11 +7,15 @@
 struct CameraComponent {
 	bool primary = true;
 	CameraSettings settings{};
+
 	/// <summary>
 	/// 描画設定が有効か確認する。Primaryの重複は再生開始時に確認する
 	/// </summary>
 	/// <returns>true:有効 false:投影設定が無効</returns>
-	bool IsValid() const { return settings.IsValid(); }
+	bool IsValid() const {
+		return settings.IsValid();
+	}
+
 	/// <summary>
 	/// カメラ設定が一致するか確認する
 	/// </summary>

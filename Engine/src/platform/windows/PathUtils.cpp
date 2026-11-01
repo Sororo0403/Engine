@@ -40,6 +40,7 @@ PathUtils::ResolveFromExecutable(const std::filesystem::path &path) {
 	}
 
 	const auto directory = GetExecutableDirectory();
+
 	if (directory.empty()) {
 		throw std::runtime_error(
 		    "実行ファイルのフォルダを取得できませんでした。");
@@ -60,10 +61,12 @@ bool PathUtils::IsSameFile(const std::filesystem::path &first,
 	auto secondPath = ResolveFromExecutable(second);
 	firstPath.make_preferred();
 	secondPath.make_preferred();
+
 	if (CompareStringOrdinal(firstPath.c_str(), -1, secondPath.c_str(), -1,
 	                         TRUE) == CSTR_EQUAL) {
 		return true;
 	}
+
 	std::error_code error;
 	return std::filesystem::equivalent(firstPath, secondPath, error);
 }
@@ -74,6 +77,7 @@ std::filesystem::path PathUtils::FromUtf8(std::string_view text) {
 	}
 
 	const auto wide = StringConversion::Utf8ToWide(text);
+
 	if (wide.empty() || text.find('\0') != std::string_view::npos) {
 		throw std::invalid_argument("ファイルパスのUTF-8文字列が無効です。");
 	}

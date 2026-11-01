@@ -41,6 +41,7 @@ class Camera {
 	/// <param name="pose">設定する姿勢</param>
 	/// <returns>true:成功 false:値が無効、または視線を計算できない</returns>
 	bool SetPose(const CameraPose &pose);
+
 	/// <summary>
 	/// 次のUpdateで使用する透視投影の設定を変更する
 	/// </summary>

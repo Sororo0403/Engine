@@ -20,11 +20,13 @@ bool CharacterController::Initialize(const Transform &transform,
                                      const CharacterSettings &settings,
                                      const CollisionWorld &world) {
 	AxisAlignedBox body;
+
 	if (!settings.IsValid() ||
 	    !BoxColliderUtils::GetWorldBounds(collider, transform, body) ||
 	    !world.CanPlace(body)) {
 		return false;
 	}
+
 	transform_ = transform;
 	collider_ = collider;
 	settings_ = settings;
@@ -44,6 +46,7 @@ bool CharacterController::Teleport(const DirectX::XMFLOAT3 &position,
 	if (!initialized_) {
 		return false;
 	}
+
 	auto transform = transform_;
 	transform.translation = position;
 	return Initialize(transform, collider_, settings_, world);
@@ -55,15 +58,19 @@ bool CharacterController::Update(float deltaTime, const CharacterInput &input,
 	    !std::isfinite(input.moveX) || !std::isfinite(input.moveZ)) {
 		return false;
 	}
+
 	auto candidate = *this;
 	candidate.jumpPending_ |= input.jumpPressed;
 	candidate.accumulatedTime_ += (std::min)(deltaTime, kMaximumFrameSeconds);
+
 	while (candidate.accumulatedTime_ >= kFixedStepSeconds) {
 		if (!candidate.Step(input, world)) {
 			return false;
 		}
+
 		candidate.accumulatedTime_ -= kFixedStepSeconds;
 	}
+
 	*this = candidate;
 	return true;
 }
@@ -71,17 +78,21 @@ bool CharacterController::Update(float deltaTime, const CharacterInput &input,
 bool CharacterController::Step(const CharacterInput &input,
                                const CollisionWorld &world) {
 	AxisAlignedBox body;
+
 	if (!BoxColliderUtils::GetWorldBounds(collider_, transform_, body)) {
 		return false;
 	}
+
 	CollisionMoveResult ground;
 	grounded_ = verticalVelocity_ <= 0.0f &&
 	            world.Move(body, {0.0f, -kGroundProbeDistance, 0.0f}, ground) &&
 	            ground.grounded;
+
 	if (jumpPending_ && grounded_) {
 		verticalVelocity_ = settings_.jumpSpeed;
 		grounded_ = false;
 	}
+
 	jumpPending_ = false;
 	const float step = static_cast<float>(kFixedStepSeconds);
 	verticalVelocity_ =
@@ -97,22 +108,28 @@ bool CharacterController::Step(const CharacterInput &input,
 	    static_cast<float>(input.moveZ / magnitude * settings_.moveSpeed *
 	                       step)};
 	CollisionMoveResult movement;
+
 	if (!world.Move(body, requested, movement)) {
 		return false;
 	}
+
 	auto transform = transform_;
 	transform.translation.x += movement.displacement.x;
 	transform.translation.y += movement.displacement.y;
 	transform.translation.z += movement.displacement.z;
 	AxisAlignedBox movedBody;
+
 	if (!BoxColliderUtils::GetWorldBounds(collider_, transform, movedBody) ||
 	    !world.CanPlace(movedBody)) {
 		return false;
 	}
+
 	transform_ = transform;
 	grounded_ = movement.grounded;
+
 	if (movement.grounded || movement.hitCeiling) {
 		verticalVelocity_ = 0.0f;
 	}
+
 	return true;
 }

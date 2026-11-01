@@ -19,24 +19,34 @@ class ComponentCommand {
 	/// <param name="after">変更後の設定</param>
 	ComponentCommand(SceneObjectId id, std::optional<T> before,
 	                 std::optional<T> after)
-	    : id_(id), before_(before), after_(after) {}
+	    : id_(id), before_(before), after_(after) {
+	}
+
 	/// <summary>
 	/// 変更の有無を確認する
 	/// </summary>
 	/// <returns>true:変更あり false:同値</returns>
-	bool HasChanges() const { return before_ != after_; }
+	bool HasChanges() const {
+		return before_ != after_;
+	}
+
 	/// <summary>
 	/// 編集前の設定へ戻す
 	/// </summary>
 	/// <param name="scene">対象シーン</param>
 	/// <returns>true:成功 false:対象・想定値・設定が無効</returns>
-	bool Undo(Scene &scene) const { return Apply(scene, after_, before_); }
+	bool Undo(Scene &scene) const {
+		return Apply(scene, after_, before_);
+	}
+
 	/// <summary>
 	/// 編集後の設定を再適用する
 	/// </summary>
 	/// <param name="scene">対象シーン</param>
 	/// <returns>true:成功 false:対象・想定値・設定が無効</returns>
-	bool Redo(Scene &scene) const { return Apply(scene, before_, after_); }
+	bool Redo(Scene &scene) const {
+		return Apply(scene, before_, after_);
+	}
 
   private:
 	/// <summary>
@@ -49,13 +59,16 @@ class ComponentCommand {
 	bool Apply(Scene &scene, const std::optional<T> &expected,
 	           const std::optional<T> &value) const {
 		auto *object = scene.FindObject(id_);
+
 		if (!object || object->*Member != expected ||
 		    (value && !value->IsValid())) {
 			return false;
 		}
+
 		object->*Member = value;
 		return true;
 	}
+
 	SceneObjectId id_;
 	std::optional<T> before_, after_;
 };

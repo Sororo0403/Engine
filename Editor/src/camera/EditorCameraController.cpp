@@ -11,18 +11,24 @@
 #include <limits>
 
 bool EditorCameraController::SetSettings(const Settings &settings) {
-	if (navigating_ || panning_ || orbiting_ || !std::isfinite(settings.moveSpeed) ||
-	    settings.moveSpeed <= 0.0f || settings.moveSpeed > kMaximumMoveSpeed ||
-	    !std::isfinite(settings.fastMultiplier) || settings.fastMultiplier < 1.0f ||
+	if (navigating_ || panning_ || orbiting_ ||
+	    !std::isfinite(settings.moveSpeed) || settings.moveSpeed <= 0.0f ||
+	    settings.moveSpeed > kMaximumMoveSpeed ||
+	    !std::isfinite(settings.fastMultiplier) ||
+	    settings.fastMultiplier < 1.0f ||
 	    settings.fastMultiplier > kMaximumFastMultiplier ||
-	    !std::isfinite(settings.mouseSensitivity) || settings.mouseSensitivity <= 0.0f ||
+	    !std::isfinite(settings.mouseSensitivity) ||
+	    settings.mouseSensitivity <= 0.0f ||
 	    settings.mouseSensitivity > kMaximumMouseSensitivity ||
-	    !std::isfinite(settings.wheelDistance) || settings.wheelDistance <= 0.0f ||
+	    !std::isfinite(settings.wheelDistance) ||
+	    settings.wheelDistance <= 0.0f ||
 	    settings.wheelDistance > kMaximumWheelDistance ||
-	    !std::isfinite(settings.panSensitivity) || settings.panSensitivity <= 0.0f ||
+	    !std::isfinite(settings.panSensitivity) ||
+	    settings.panSensitivity <= 0.0f ||
 	    settings.panSensitivity > kMaximumPanSensitivity) {
 		return false;
 	}
+
 	settings_ = settings;
 	return true;
 }
@@ -33,7 +39,8 @@ EditorCameraController::Settings EditorCameraController::GetSettings() const {
 
 void EditorCameraController::Update(const InputSystem &input,
                                     const ViewportInput &viewport,
-                                    float deltaTime, const DirectX::XMFLOAT3 *orbitTarget) {
+                                    float deltaTime,
+                                    const DirectX::XMFLOAT3 *orbitTarget) {
 	if (!std::isfinite(deltaTime) || deltaTime < 0.0f) {
 		navigating_ = false;
 		panning_ = false;
@@ -58,92 +65,122 @@ void EditorCameraController::Update(const InputSystem &input,
 	    keyboard.IsDown(Key::ALT)) {
 		navigating_ = false;
 		panning_ = false;
+
 		if (!orbiting_) {
-			if (!viewport.leftPressed || !viewport.imageHovered || !orbitTarget ||
-			    !MathUtils::IsFinite(*orbitTarget)) {
+			if (!viewport.leftPressed || !viewport.imageHovered ||
+			    !orbitTarget || !MathUtils::IsFinite(*orbitTarget)) {
 				return;
 			}
+
 			const double x = static_cast<double>(position_.x) - orbitTarget->x;
 			const double y = static_cast<double>(position_.y) - orbitTarget->y;
 			const double z = static_cast<double>(position_.z) - orbitTarget->z;
+
 			if (x * x + y * y + z * z <= kMinimumPoseLengthSquared ||
 			    std::abs(x) > (std::numeric_limits<float>::max)() ||
 			    std::abs(y) > (std::numeric_limits<float>::max)() ||
 			    std::abs(z) > (std::numeric_limits<float>::max)()) {
 				return;
 			}
+
 			orbitCenter_ = *orbitTarget;
 			orbiting_ = true;
 			// 押す前の移動量は使わず、開始時のカメラの向きも保持する
 			return;
 		}
+
 		const auto &state = mouse.GetState();
-		const float yawDelta = std::remainder(
-		    static_cast<float>(state.deltaX) * settings_.mouseSensitivity, DirectX::XM_2PI);
+		const float yawDelta = std::remainder(static_cast<float>(state.deltaX) *
+		                                          settings_.mouseSensitivity,
+		                                      DirectX::XM_2PI);
 		const float nextYaw = std::remainder(yaw_ + yawDelta, DirectX::XM_2PI);
-		const float nextPitch = std::clamp(
-		    pitch_ - static_cast<float>(state.deltaY) * settings_.mouseSensitivity,
-		    -kPitchLimit, kPitchLimit);
+		const float nextPitch =
+		    std::clamp(pitch_ - static_cast<float>(state.deltaY) *
+		                            settings_.mouseSensitivity,
+		               -kPitchLimit, kPitchLimit);
 		using namespace DirectX;
 		const XMFLOAT3 right{std::cos(nextYaw), 0.0f, -std::sin(nextYaw)};
-		const auto rotation = XMMatrixRotationY(yawDelta) *
-		                      XMMatrixRotationAxis(XMLoadFloat3(&right), -(nextPitch - pitch_));
+		const auto rotation =
+		    XMMatrixRotationY(yawDelta) *
+		    XMMatrixRotationAxis(XMLoadFloat3(&right), -(nextPitch - pitch_));
 		// 位置と視線に同じ回転を掛け、注視対象の画面上の位置を保つ
-		const auto offset = XMVectorSubtract(XMLoadFloat3(&position_), XMLoadFloat3(&orbitCenter_));
+		const auto offset = XMVectorSubtract(XMLoadFloat3(&position_),
+		                                     XMLoadFloat3(&orbitCenter_));
 		XMFLOAT3 next;
-		XMStoreFloat3(&next, XMVectorAdd(XMLoadFloat3(&orbitCenter_),
-		                               XMVector3TransformNormal(offset, rotation)));
+		XMStoreFloat3(&next,
+		              XMVectorAdd(XMLoadFloat3(&orbitCenter_),
+		                          XMVector3TransformNormal(offset, rotation)));
+
 		if (MathUtils::IsFinite(next)) {
 			position_ = next;
 			yaw_ = nextYaw;
 			pitch_ = nextPitch;
 		}
+
 		return;
 	}
+
 	orbiting_ = false;
 
 	if (!viewport.rightDown) {
 		navigating_ = false;
+
 		if (viewport.middleDown) {
 			const bool started = !panning_;
-			if (started && (!viewport.imageHovered || !viewport.middlePressed)) {
+
+			if (started &&
+			    (!viewport.imageHovered || !viewport.middlePressed)) {
 				return;
 			}
+
 			panning_ = true;
+
 			if (!started) {
 				const auto forward = GetForward();
-				const DirectX::XMFLOAT3 right{std::cos(yaw_), 0.0f, -std::sin(yaw_)};
+				const DirectX::XMFLOAT3 right{std::cos(yaw_), 0.0f,
+				                              -std::sin(yaw_)};
 				DirectX::XMFLOAT3 up;
 				DirectX::XMStoreFloat3(&up, DirectX::XMVector3Cross(
-				    DirectX::XMLoadFloat3(&forward), DirectX::XMLoadFloat3(&right)));
+				                                DirectX::XMLoadFloat3(&forward),
+				                                DirectX::XMLoadFloat3(&right)));
 				const auto &state = mouse.GetState();
 				// ドラッグした方向に景色が動く。相対移動量には時間を掛けない
-				const float x = -static_cast<float>(state.deltaX) * settings_.panSensitivity;
-				const float y = static_cast<float>(state.deltaY) * settings_.panSensitivity;
-				const DirectX::XMFLOAT3 next{position_.x + right.x * x + up.x * y,
-				                             position_.y + right.y * x + up.y * y,
-				                             position_.z + right.z * x + up.z * y};
+				const float x = -static_cast<float>(state.deltaX) *
+				                settings_.panSensitivity;
+				const float y =
+				    static_cast<float>(state.deltaY) * settings_.panSensitivity;
+				const DirectX::XMFLOAT3 next{
+				    position_.x + right.x * x + up.x * y,
+				    position_.y + right.y * x + up.y * y,
+				    position_.z + right.z * x + up.z * y};
+
 				if (MathUtils::IsFinite(next)) {
 					position_ = next;
 				}
 			}
+
 			return;
 		}
+
 		panning_ = false;
+
 		if (viewport.imageHovered && std::isfinite(viewport.wheelDelta) &&
 		    viewport.wheelDelta != 0.0f) {
 			// ホイールはフレーム内の変化量なので、deltaTimeを掛けない
 			const float distance =
-			    std::clamp(viewport.wheelDelta, -kMaximumWheelDelta, kMaximumWheelDelta) *
+			    std::clamp(viewport.wheelDelta, -kMaximumWheelDelta,
+			               kMaximumWheelDelta) *
 			    settings_.wheelDistance;
 			const auto forward = GetForward();
 			const DirectX::XMFLOAT3 next{position_.x + forward.x * distance,
 			                             position_.y + forward.y * distance,
 			                             position_.z + forward.z * distance};
+
 			if (MathUtils::IsFinite(next)) {
 				position_ = next;
 			}
 		}
+
 		return;
 	}
 
@@ -165,9 +202,11 @@ void EditorCameraController::Update(const InputSystem &input,
 		const MouseState &mouseState = mouse.GetState();
 
 		// 相対移動量にはdeltaTimeを掛けない
-		yaw_ += static_cast<float>(mouseState.deltaX) * settings_.mouseSensitivity;
+		yaw_ +=
+		    static_cast<float>(mouseState.deltaX) * settings_.mouseSensitivity;
 
-		pitch_ -= static_cast<float>(mouseState.deltaY) * settings_.mouseSensitivity;
+		pitch_ -=
+		    static_cast<float>(mouseState.deltaY) * settings_.mouseSensitivity;
 
 		yaw_ = std::remainder(yaw_, DirectX::XM_2PI);
 
@@ -297,7 +336,8 @@ bool EditorCameraController::FrameBounds(
 	const XMVECTOR forwardVector = XMVector3Normalize(XMLoadFloat3(&forward));
 
 	// 真上・真下でも使えるよう、ヨー角から右方向を作る
-	const XMVECTOR rightVector = XMVectorSet(std::cos(yaw_), 0.0f, -std::sin(yaw_), 0.0f);
+	const XMVECTOR rightVector =
+	    XMVectorSet(std::cos(yaw_), 0.0f, -std::sin(yaw_), 0.0f);
 
 	const XMVECTOR upVector =
 	    XMVector3Normalize(XMVector3Cross(forwardVector, rightVector));
@@ -385,6 +425,7 @@ bool EditorCameraController::FrameBounds(
 	pose.position = newPosition;
 	pose.target = target;
 	Camera validation;
+
 	if (!validation.SetPose(pose)) {
 		return false;
 	}
@@ -396,11 +437,13 @@ bool EditorCameraController::FrameBounds(
 
 	return true;
 }
+
 DirectX::XMFLOAT3 EditorCameraController::GetForward() const {
 	// 端の角度ではcosの丸め誤差を残さず、軸に平行な視線を作る
 	if (pitch_ == kPitchLimit || pitch_ == -kPitchLimit) {
 		return {0.0f, std::copysign(1.0f, pitch_), 0.0f};
 	}
+
 	const float cosPitch = std::cos(pitch_);
 
 	return {
@@ -423,8 +466,9 @@ CameraPose EditorCameraController::GetPose() const {
 	};
 	// 視線がワールドのY軸に平行でも、視線と直交する上方向を作る
 	const DirectX::XMFLOAT3 right{std::cos(yaw_), 0.0f, -std::sin(yaw_)};
-	DirectX::XMStoreFloat3(&pose.up, DirectX::XMVector3Cross(
-	    DirectX::XMLoadFloat3(&forward), DirectX::XMLoadFloat3(&right)));
+	DirectX::XMStoreFloat3(
+	    &pose.up, DirectX::XMVector3Cross(DirectX::XMLoadFloat3(&forward),
+	                                      DirectX::XMLoadFloat3(&right)));
 
 	return pose;
 }
@@ -434,36 +478,57 @@ bool EditorCameraController::SetView(CameraView view,
 	if (!MathUtils::IsFinite(center)) {
 		return false;
 	}
+
 	auto candidate = *this;
 	candidate.yaw_ = 0.0f;
 	candidate.pitch_ = 0.0f;
+
 	switch (view) {
-	case CameraView::FRONT: break;
-	case CameraView::BACK: candidate.yaw_ = DirectX::XM_PI; break;
-	case CameraView::LEFT: candidate.yaw_ = DirectX::XM_PIDIV2; break;
-	case CameraView::RIGHT: candidate.yaw_ = -DirectX::XM_PIDIV2; break;
-	case CameraView::TOP: candidate.pitch_ = -kPitchLimit; break;
-	case CameraView::BOTTOM: candidate.pitch_ = kPitchLimit; break;
-	default: return false;
+	case CameraView::FRONT:
+		break;
+	case CameraView::BACK:
+		candidate.yaw_ = DirectX::XM_PI;
+		break;
+	case CameraView::LEFT:
+		candidate.yaw_ = DirectX::XM_PIDIV2;
+		break;
+	case CameraView::RIGHT:
+		candidate.yaw_ = -DirectX::XM_PIDIV2;
+		break;
+	case CameraView::TOP:
+		candidate.pitch_ = -kPitchLimit;
+		break;
+	case CameraView::BOTTOM:
+		candidate.pitch_ = kPitchLimit;
+		break;
+	default:
+		return false;
 	}
-	const double distance = (std::max)(kMinimumFrameDistance,
-	    std::hypot(static_cast<double>(position_.x) - center.x,
-	               static_cast<double>(position_.y) - center.y,
-	               static_cast<double>(position_.z) - center.z));
+
+	const double distance =
+	    (std::max)(kMinimumFrameDistance,
+	               std::hypot(static_cast<double>(position_.x) - center.x,
+	                          static_cast<double>(position_.y) - center.y,
+	                          static_cast<double>(position_.z) - center.z));
 	const auto forward = candidate.GetForward();
 	const double x = center.x - forward.x * distance;
 	const double y = center.y - forward.y * distance;
 	const double z = center.z - forward.z * distance;
 	const double maximum = (std::numeric_limits<float>::max)();
+
 	if (!std::isfinite(distance) || std::abs(x) > maximum ||
 	    std::abs(y) > maximum || std::abs(z) > maximum) {
 		return false;
 	}
-	candidate.position_ = {static_cast<float>(x), static_cast<float>(y), static_cast<float>(z)};
+
+	candidate.position_ = {static_cast<float>(x), static_cast<float>(y),
+	                       static_cast<float>(z)};
 	Camera validation;
+
 	if (!validation.SetPose(candidate.GetPose())) {
 		return false;
 	}
+
 	candidate.navigating_ = false;
 	candidate.panning_ = false;
 	candidate.orbiting_ = false;

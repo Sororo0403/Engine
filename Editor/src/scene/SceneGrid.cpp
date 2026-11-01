@@ -8,20 +8,26 @@
 bool SceneGrid::SetSettings(const Settings &settings) {
 	if (!std::isfinite(settings.spacing) || settings.spacing <= 0.0f ||
 	    settings.spacing > kMaximumSpacing || settings.halfLineCount < 1 ||
-	    settings.halfLineCount > kMaximumHalfLineCount || settings.majorLineInterval < 1 ||
+	    settings.halfLineCount > kMaximumHalfLineCount ||
+	    settings.majorLineInterval < 1 ||
 	    settings.majorLineInterval > kMaximumMajorLineInterval) {
 		return false;
 	}
+
 	settings_ = settings;
 	return true;
 }
 
-SceneGrid::Settings SceneGrid::GetSettings() const { return settings_; }
+SceneGrid::Settings SceneGrid::GetSettings() const {
+	return settings_;
+}
 
 bool SceneGrid::Update(SceneRenderer &renderer) const {
-	const float extent = static_cast<float>(settings_.halfLineCount) * settings_.spacing;
+	const float extent =
+	    static_cast<float>(settings_.halfLineCount) * settings_.spacing;
 
-	for (int index = -settings_.halfLineCount; index <= settings_.halfLineCount; ++index) {
+	for (int index = -settings_.halfLineCount; index <= settings_.halfLineCount;
+	     ++index) {
 		// 原点を通る線は、後で座標軸の色で登録する
 		if (index == 0) {
 			continue;
@@ -29,8 +35,9 @@ bool SceneGrid::Update(SceneRenderer &renderer) const {
 
 		const float offset = static_cast<float>(index) * settings_.spacing;
 
-		const auto &color =
-		    index % settings_.majorLineInterval == 0 ? majorColor_ : minorColor_;
+		const auto &color = index % settings_.majorLineInterval == 0
+		                        ? majorColor_
+		                        : minorColor_;
 
 		const DebugLine xLine{
 		    {-extent, kHeight, offset},

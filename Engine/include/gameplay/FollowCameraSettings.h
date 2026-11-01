@@ -28,6 +28,7 @@ struct FollowCameraSettings {
 		       dx * dx + dz * dz > 0.000001 && std::isfinite(smoothing) &&
 		       smoothing >= 0 && smoothing <= 100;
 	}
+
 	/// <summary>
 	/// 設定が一致するか確認する
 	/// </summary>

@@ -68,13 +68,12 @@ class SceneViewPanel {
 	/// <param name="enabled">操作を受け付けるか</param>
 	/// <param name="selectionMode">単一選択または複数選択</param>
 	/// <returns>ギズモの操作結果</returns>
-	TransformGizmo::Result DrawGizmo(const ImGuiSystem &ui,
-	                                 TransformGizmo &gizmo,
-	                                 const DirectX::XMFLOAT4X4 &view,
-	                                 const DirectX::XMFLOAT4X4 &projection,
-	                                 SceneObjectId objectId,
-	                                 Transform *transform, bool enabled,
-	                                 TransformGizmo::SelectionMode selectionMode) const;
+	TransformGizmo::Result
+	DrawGizmo(const ImGuiSystem &ui, TransformGizmo &gizmo,
+	          const DirectX::XMFLOAT4X4 &view,
+	          const DirectX::XMFLOAT4X4 &projection, SceneObjectId objectId,
+	          Transform *transform, bool enabled,
+	          TransformGizmo::SelectionMode selectionMode) const;
 
 	/// <summary>
 	/// このフレームで描画するテクスチャを取得する

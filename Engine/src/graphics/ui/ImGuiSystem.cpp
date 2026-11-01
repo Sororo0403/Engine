@@ -61,6 +61,7 @@ struct ImGuiSystem::Impl {
 	/// </summary>
 	void UseDocking() const {
 		UseFrame();
+
 		if ((ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_DockingEnable) ==
 		    0) {
 			throw std::logic_error(
@@ -78,6 +79,7 @@ struct ImGuiSystem::Impl {
 				return i;
 			}
 		}
+
 		throw std::runtime_error("ImGuiSystem: SRV descriptor heap is full.");
 	}
 
@@ -154,7 +156,8 @@ struct ImGuiSystem::Impl {
 	std::vector<UINT> imageDescriptors_;
 };
 
-ImGuiSystem::ImGuiSystem() : impl_(std::make_unique<Impl>()) {}
+ImGuiSystem::ImGuiSystem() : impl_(std::make_unique<Impl>()) {
+}
 
 ImGuiSystem::~ImGuiSystem() {
 	// 呼び出し側でGPUの利用完了を保証してから破棄する
@@ -372,15 +375,19 @@ bool ImGuiSystem::EnableDocking() const {
 
 std::uint32_t ImGuiSystem::GetDockSpaceId(const char *name) const {
 	impl_->UseDocking();
+
 	if (!name || !*name) {
 		throw std::invalid_argument(
 		    "ImGuiSystem::GetDockSpaceId: 名前が空です。");
 	}
+
 	const ImGuiID id = ImHashStr(name);
+
 	if (id == 0) {
 		throw std::invalid_argument(
 		    "ImGuiSystem::GetDockSpaceId: IDが無効です。");
 	}
+
 	return id;
 }
 
@@ -391,14 +398,18 @@ bool ImGuiSystem::HasDockNode(std::uint32_t nodeId) const {
 
 bool ImGuiSystem::ResetDockSpace(std::uint32_t dockspaceId) const {
 	impl_->UseDocking();
+
 	if (dockspaceId == 0) {
 		throw std::invalid_argument(
 		    "ImGuiSystem::ResetDockSpace: IDが無効です。");
 	}
+
 	const ImGuiViewport *viewport = ImGui::GetMainViewport();
+
 	if (viewport->WorkSize.x <= 0.0f || viewport->WorkSize.y <= 0.0f) {
 		return false;
 	}
+
 	ImGui::DockBuilderRemoveNode(dockspaceId);
 	ImGui::DockBuilderAddNode(dockspaceId, ImGuiDockNodeFlags_DockSpace);
 	ImGui::DockBuilderSetNodeSize(dockspaceId, viewport->WorkSize);
@@ -409,12 +420,15 @@ void ImGuiSystem::SplitDockNode(std::uint32_t nodeId, DockDirection direction,
                                 float ratio, std::uint32_t &splitId,
                                 std::uint32_t &remainingId) const {
 	impl_->UseDocking();
+
 	if (!HasDockNode(nodeId) || !std::isfinite(ratio) || ratio <= 0.0f ||
 	    ratio >= 1.0f || &splitId == &remainingId) {
 		throw std::invalid_argument(
 		    "ImGuiSystem::SplitDockNode: 分割情報が無効です。");
 	}
+
 	ImGuiDir nativeDirection;
+
 	switch (direction) {
 	case DockDirection::LEFT:
 		nativeDirection = ImGuiDir_Left;
@@ -432,6 +446,7 @@ void ImGuiSystem::SplitDockNode(std::uint32_t nodeId, DockDirection direction,
 		throw std::invalid_argument(
 		    "ImGuiSystem::SplitDockNode: 分割方向が無効です。");
 	}
+
 	ImGuiID nativeSplitId = 0;
 	ImGuiID nativeRemainingId = 0;
 	ImGui::DockBuilderSplitNode(nodeId, nativeDirection, ratio, &nativeSplitId,
@@ -443,32 +458,40 @@ void ImGuiSystem::SplitDockNode(std::uint32_t nodeId, DockDirection direction,
 void ImGuiSystem::DockWindow(const char *windowName,
                              std::uint32_t nodeId) const {
 	impl_->UseDocking();
+
 	if (!windowName || !*windowName || !HasDockNode(nodeId)) {
 		throw std::invalid_argument(
 		    "ImGuiSystem::DockWindow: 配置情報が無効です。");
 	}
+
 	ImGui::DockBuilderDockWindow(windowName, nodeId);
 }
 
 void ImGuiSystem::FinishDockLayout(std::uint32_t dockspaceId) const {
 	impl_->UseDocking();
+
 	if (!HasDockNode(dockspaceId)) {
 		throw std::invalid_argument(
 		    "ImGuiSystem::FinishDockLayout: 領域が存在しません。");
 	}
+
 	ImGui::DockBuilderFinish(dockspaceId);
 }
 
 void ImGuiSystem::DrawDockSpace(std::uint32_t dockspaceId) const {
 	impl_->UseDocking();
+
 	if (dockspaceId == 0) {
 		throw std::invalid_argument(
 		    "ImGuiSystem::DrawDockSpace: IDが無効です。");
 	}
+
 	const ImGuiViewport *viewport = ImGui::GetMainViewport();
+
 	if (viewport->WorkSize.x <= 0.0f || viewport->WorkSize.y <= 0.0f) {
 		return;
 	}
+
 	ImGui::DockSpaceOverViewport(dockspaceId, viewport,
 	                             ImGuiDockNodeFlags_None);
 }

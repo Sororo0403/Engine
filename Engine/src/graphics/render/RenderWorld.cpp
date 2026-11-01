@@ -67,7 +67,8 @@ struct RenderWorld::Impl {
 	};
 
 	explicit Impl(D3D12Graphics &graphics)
-	    : graphics_(graphics), worldId_(AllocateWorldId()) {}
+	    : graphics_(graphics), worldId_(AllocateWorldId()) {
+	}
 
 	bool Contains(RenderObjectHandle handle) const {
 		if (handle.worldId_ != worldId_ || handle.index_ >= slots_.size()) {
@@ -209,7 +210,8 @@ bool RenderWorld::UpdateDebugLines() {
 }
 
 RenderWorld::RenderWorld(D3D12Graphics &graphics)
-    : impl_(std::make_unique<Impl>(graphics)) {}
+    : impl_(std::make_unique<Impl>(graphics)) {
+}
 
 RenderWorld::~RenderWorld() {
 	// 呼び出し側でGPUの利用完了を保証してから破棄する
@@ -563,6 +565,7 @@ bool RenderWorld::SetCameraSettings(const CameraSettings &settings) {
 	if (!impl_->camera_.SetSettings(settings)) {
 		return false;
 	}
+
 	impl_->prepared_ = false;
 	return true;
 }

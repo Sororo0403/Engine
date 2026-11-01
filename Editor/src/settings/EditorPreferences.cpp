@@ -6,8 +6,8 @@
 
 #include <json.hpp>
 
-#include <exception>
 #include <algorithm>
+#include <exception>
 #include <format>
 #include <fstream>
 #include <stdexcept>
@@ -15,23 +15,31 @@
 bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 	try {
 		const auto path = PathUtils::ResolveFromExecutable(filePath);
+
 		if (!std::filesystem::exists(path)) {
 			return true;
 		}
+
 		std::ifstream input(path, std::ios::binary);
+
 		if (!input) {
 			throw std::runtime_error("Editor設定ファイルを開けませんでした。");
 		}
+
 		input.exceptions(std::ios::badbit);
 		const auto json = nlohmann::json::parse(input);
-		if (json.at("version") != 1 || !json.at("version").is_number_integer()) {
+
+		if (json.at("version") != 1 ||
+		    !json.at("version").is_number_integer()) {
 			throw std::runtime_error("未対応のEditor設定形式です。");
 		}
+
 		EditorPreferences loaded;
 		loaded.showGrid = json.at("showGrid").get<bool>();
 		loaded.showSelectionBounds = json.at("showSelectionBounds").get<bool>();
 		loaded.snapping = json.at("snapping").get<bool>();
 		const auto tool = json.at("tool").get<std::string>();
+
 		if (tool == "move") {
 			loaded.operation = TransformGizmo::Operation::TRANSLATE;
 		} else if (tool == "rotate") {
@@ -41,83 +49,121 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 		} else {
 			throw std::runtime_error("Editor設定のツールが無効です。");
 		}
+
 		const auto &move = json.at("moveStep");
+
 		if (json.contains("pivotMode")) {
 			const auto name = json.at("pivotMode").get<std::string>();
+
 			if (name != "center" && name != "active") {
 				throw std::runtime_error("Editor設定の支点が無効です。");
 			}
+
 			loaded.pivotMode = name == "active" ? SelectionPivot::Mode::ACTIVE
 			                                    : SelectionPivot::Mode::CENTER;
 		}
+
 		if (json.contains("space")) {
 			const auto spaceName = json.at("space").get<std::string>();
+
 			if (spaceName != "local" && spaceName != "world") {
 				throw std::runtime_error("Editor設定の座標系が無効です。");
 			}
+
 			loaded.space = spaceName == "world" ? TransformGizmo::Space::WORLD
-			                               : TransformGizmo::Space::LOCAL;
+			                                    : TransformGizmo::Space::LOCAL;
 		}
+
 		if (!move.is_array() || move.size() != 3) {
 			throw std::runtime_error("移動スナップには3成分が必要です。");
 		}
-		loaded.snap.translation = {move.at(0).get<float>(), move.at(1).get<float>(),
+
+		loaded.snap.translation = {move.at(0).get<float>(),
+		                           move.at(1).get<float>(),
 		                           move.at(2).get<float>()};
-		loaded.snap.rotationDegrees = json.at("rotationStepDegrees").get<float>();
+		loaded.snap.rotationDegrees =
+		    json.at("rotationStepDegrees").get<float>();
 		loaded.snap.scaleRatio = json.at("scaleStepRatio").get<float>();
 		TransformGizmo validator;
+
 		if (!validator.SetSnapSettings(loaded.snap)) {
 			throw std::runtime_error("Editor設定のスナップ間隔が無効です。");
 		}
+
 		// カメラ設定がない旧設定ファイルには初期値を使用する
 		if (json.contains("camera")) {
 			const auto &settings = json.at("camera");
 			loaded.camera.moveSpeed = settings.at("moveSpeed").get<float>();
-			loaded.camera.fastMultiplier = settings.at("fastMultiplier").get<float>();
-			loaded.camera.mouseSensitivity = settings.at("mouseSensitivity").get<float>();
+			loaded.camera.fastMultiplier =
+			    settings.at("fastMultiplier").get<float>();
+			loaded.camera.mouseSensitivity =
+			    settings.at("mouseSensitivity").get<float>();
+
 			if (settings.contains("wheelDistance")) {
-				loaded.camera.wheelDistance = settings.at("wheelDistance").get<float>();
+				loaded.camera.wheelDistance =
+				    settings.at("wheelDistance").get<float>();
 			}
+
 			if (settings.contains("panSensitivity")) {
-				loaded.camera.panSensitivity = settings.at("panSensitivity").get<float>();
+				loaded.camera.panSensitivity =
+				    settings.at("panSensitivity").get<float>();
 			}
 		}
+
 		EditorCameraController cameraValidator;
+
 		if (!cameraValidator.SetSettings(loaded.camera)) {
 			throw std::runtime_error("Editor設定のカメラ操作設定が無効です。");
 		}
+
 		if (json.contains("recentScenes")) {
 			const auto &paths = json.at("recentScenes");
+
 			if (!paths.is_array()) {
-				throw std::runtime_error("最近開いたシーンには配列が必要です。");
+				throw std::runtime_error(
+				    "最近開いたシーンには配列が必要です。");
 			}
+
 			RecentScenes recent;
-			const auto count = (std::min)(paths.size(), RecentScenes::kMaximumCount);
+			const auto count =
+			    (std::min)(paths.size(), RecentScenes::kMaximumCount);
+
 			for (std::size_t i = count; i > 0; --i) {
-				if (!recent.Add(PathUtils::FromUtf8(paths.at(i - 1).get<std::string>()))) {
-					throw std::runtime_error("最近開いたシーンのパスが無効です。");
+				if (!recent.Add(PathUtils::FromUtf8(
+				        paths.at(i - 1).get<std::string>()))) {
+					throw std::runtime_error(
+					    "最近開いたシーンのパスが無効です。");
 				}
 			}
+
 			const auto normalized = recent.GetPaths();
 			loaded.recentScenes.assign(normalized.begin(), normalized.end());
 		}
+
 		// グリッド設定がない旧ファイルでは初期値を使う
 		if (json.contains("grid")) {
 			const auto &settings = json.at("grid");
 			const auto &count = settings.at("halfLineCount");
 			const auto &major = settings.at("majorLineInterval");
-			if (!count.is_number_integer() || count < 1 || count > SceneGrid::kMaximumHalfLineCount ||
-			    !major.is_number_integer() || major < 1 || major > SceneGrid::kMaximumMajorLineInterval) {
+
+			if (!count.is_number_integer() || count < 1 ||
+			    count > SceneGrid::kMaximumHalfLineCount ||
+			    !major.is_number_integer() || major < 1 ||
+			    major > SceneGrid::kMaximumMajorLineInterval) {
 				throw std::runtime_error("グリッドのセル数・周期が無効です。");
 			}
+
 			loaded.grid.spacing = settings.at("spacing").get<float>();
 			loaded.grid.halfLineCount = count.get<int>();
 			loaded.grid.majorLineInterval = major.get<int>();
 		}
+
 		SceneGrid gridValidator;
+
 		if (!gridValidator.SetSettings(loaded.grid)) {
 			throw std::runtime_error("グリッドの設定が無効です。");
 		}
+
 		*this = loaded;
 		return true;
 	} catch (const std::exception &error) {
@@ -131,46 +177,62 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		TransformGizmo validator;
 		EditorCameraController cameraValidator;
 		SceneGrid gridValidator;
-		if (!validator.SetSnapSettings(snap) || !validator.SetOperation(operation) ||
-		    !validator.SetSpace(space) || !validator.SetPivotMode(pivotMode) ||
+
+		if (!validator.SetSnapSettings(snap) ||
+		    !validator.SetOperation(operation) || !validator.SetSpace(space) ||
+		    !validator.SetPivotMode(pivotMode) ||
 		    !cameraValidator.SetSettings(camera) ||
 		    !gridValidator.SetSettings(grid)) {
 			throw std::runtime_error("保存するEditor設定が無効です。");
 		}
+
 		const auto path = PathUtils::ResolveFromExecutable(filePath);
-		const char *tool = operation == TransformGizmo::Operation::TRANSLATE
-		                       ? "move"
-		                       : operation == TransformGizmo::Operation::ROTATE
-		                             ? "rotate"
-		                             : "scale";
+		const char *tool =
+		    operation == TransformGizmo::Operation::TRANSLATE ? "move"
+		    : operation == TransformGizmo::Operation::ROTATE  ? "rotate"
+		                                                      : "scale";
 		RecentScenes recent;
-		const auto count = (std::min)(recentScenes.size(), RecentScenes::kMaximumCount);
+		const auto count =
+		    (std::min)(recentScenes.size(), RecentScenes::kMaximumCount);
+
 		for (std::size_t i = count; i > 0; --i) {
 			if (!recent.Add(recentScenes[i - 1])) {
-				throw std::runtime_error("保存する最近のシーンのパスが無効です。");
+				throw std::runtime_error(
+				    "保存する最近のシーンのパスが無効です。");
 			}
 		}
+
 		auto recentJson = nlohmann::json::array();
+
 		for (const auto &recentPath : recent.GetPaths()) {
 			recentJson.push_back(PathUtils::ToUtf8(recentPath));
 		}
+
 		const nlohmann::json json{
-		    {"version", 1}, {"showGrid", showGrid},
-		    {"showSelectionBounds", showSelectionBounds}, {"snapping", snapping},
+		    {"version", 1},
+		    {"showGrid", showGrid},
+		    {"showSelectionBounds", showSelectionBounds},
+		    {"snapping", snapping},
 		    {"tool", tool},
-		    {"space", space == TransformGizmo::Space::WORLD ? "world" : "local"},
-		    {"pivotMode", pivotMode == SelectionPivot::Mode::ACTIVE ? "active" : "center"},
-		    {"moveStep", {snap.translation.x, snap.translation.y, snap.translation.z}},
+		    {"space",
+		     space == TransformGizmo::Space::WORLD ? "world" : "local"},
+		    {"pivotMode",
+		     pivotMode == SelectionPivot::Mode::ACTIVE ? "active" : "center"},
+		    {"moveStep",
+		     {snap.translation.x, snap.translation.y, snap.translation.z}},
 		    {"rotationStepDegrees", snap.rotationDegrees},
 		    {"scaleStepRatio", snap.scaleRatio},
 		    {"recentScenes", recentJson},
-		    {"grid", {{"spacing", grid.spacing}, {"halfLineCount", grid.halfLineCount},
-		              {"majorLineInterval", grid.majorLineInterval}}},
-		    {"camera", {{"moveSpeed", camera.moveSpeed},
-		                {"fastMultiplier", camera.fastMultiplier},
-		                {"mouseSensitivity", camera.mouseSensitivity},
-		                {"wheelDistance", camera.wheelDistance},
-		                {"panSensitivity", camera.panSensitivity}}},
+		    {"grid",
+		     {{"spacing", grid.spacing},
+		      {"halfLineCount", grid.halfLineCount},
+		      {"majorLineInterval", grid.majorLineInterval}}},
+		    {"camera",
+		     {{"moveSpeed", camera.moveSpeed},
+		      {"fastMultiplier", camera.fastMultiplier},
+		      {"mouseSensitivity", camera.mouseSensitivity},
+		      {"wheelDistance", camera.wheelDistance},
+		      {"panSensitivity", camera.panSensitivity}}},
 		};
 		const std::string text = json.dump(2);
 		std::filesystem::create_directories(path.parent_path());
@@ -193,7 +255,8 @@ bool EditorPreferences::operator==(const EditorPreferences &other) const {
 	return pivotMode == other.pivotMode && grid == other.grid &&
 	       recentScenes == other.recentScenes && showGrid == other.showGrid &&
 	       showSelectionBounds == other.showSelectionBounds &&
-	       snapping == other.snapping && operation == other.operation && space == other.space &&
+	       snapping == other.snapping && operation == other.operation &&
+	       space == other.space &&
 	       snap.translation.x == other.snap.translation.x &&
 	       snap.translation.y == other.snap.translation.y &&
 	       snap.translation.z == other.snap.translation.z &&

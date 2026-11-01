@@ -22,8 +22,8 @@ bool IsValid(const BoxCollider &collider);
 /// <param name="collider">成功時に設定する形状</param>
 /// <param name="minimumHalfExtent">厚みのない軸にも設定する半分の大きさ</param>
 /// <returns>true:成功 false:頂点なし、または値が無効。失敗時は出力を保持する</returns>
-bool FitToPoints(std::span<const DirectX::XMFLOAT3> points, BoxCollider &collider,
-                 float minimumHalfExtent = 0.001f);
+bool FitToPoints(std::span<const DirectX::XMFLOAT3> points,
+                 BoxCollider &collider, float minimumHalfExtent = 0.001f);
 
 /// <summary>
 /// 回転・拡縮・移動を反映し、形状を囲むワールド座標のボックスを作る

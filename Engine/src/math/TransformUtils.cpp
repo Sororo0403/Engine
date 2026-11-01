@@ -18,18 +18,18 @@ bool TransformUtils::IsValid(const Transform &transform) {
 	       transform.scale.y != 0.0f && transform.scale.z != 0.0f;
 }
 
-bool TransformUtils::TryNormalizeRotation(
-    const DirectX::XMFLOAT4 &rotation, DirectX::XMFLOAT4 &normalized) {
+bool TransformUtils::TryNormalizeRotation(const DirectX::XMFLOAT4 &rotation,
+                                          DirectX::XMFLOAT4 &normalized) {
 	if (!MathUtils::IsFinite(rotation)) {
 		return false;
 	}
 
 	// doubleで計算し、floatの大きな値や小さな値でも長さを求める
-	const double length = std::sqrt(
-	    static_cast<double>(rotation.x) * rotation.x +
-	    static_cast<double>(rotation.y) * rotation.y +
-	    static_cast<double>(rotation.z) * rotation.z +
-	    static_cast<double>(rotation.w) * rotation.w);
+	const double length =
+	    std::sqrt(static_cast<double>(rotation.x) * rotation.x +
+	              static_cast<double>(rotation.y) * rotation.y +
+	              static_cast<double>(rotation.z) * rotation.z +
+	              static_cast<double>(rotation.w) * rotation.w);
 
 	if (length == 0.0) {
 		return false;
@@ -44,24 +44,24 @@ bool TransformUtils::TryNormalizeRotation(
 	return true;
 }
 
-DirectX::XMFLOAT4 TransformUtils::RotationFromEuler(
-    const DirectX::XMFLOAT3 &radians) {
+DirectX::XMFLOAT4
+TransformUtils::RotationFromEuler(const DirectX::XMFLOAT3 &radians) {
 	DirectX::XMFLOAT4 rotation;
-	DirectX::XMStoreFloat4(
-	    &rotation, DirectX::XMQuaternionNormalize(
-	                   DirectX::XMQuaternionRotationRollPitchYaw(
-	                       radians.x, radians.y, radians.z)));
+	DirectX::XMStoreFloat4(&rotation,
+	                       DirectX::XMQuaternionNormalize(
+	                           DirectX::XMQuaternionRotationRollPitchYaw(
+	                               radians.x, radians.y, radians.z)));
 	return rotation;
 }
 
-DirectX::XMFLOAT3 TransformUtils::RotationToEuler(
-    const DirectX::XMFLOAT4 &rotation) {
+DirectX::XMFLOAT3
+TransformUtils::RotationToEuler(const DirectX::XMFLOAT4 &rotation) {
 	// 特異点付近で小さな行列成分の精度を失わないようdoubleで求める
-	const double length = std::sqrt(
-	    static_cast<double>(rotation.x) * rotation.x +
-	    static_cast<double>(rotation.y) * rotation.y +
-	    static_cast<double>(rotation.z) * rotation.z +
-	    static_cast<double>(rotation.w) * rotation.w);
+	const double length =
+	    std::sqrt(static_cast<double>(rotation.x) * rotation.x +
+	              static_cast<double>(rotation.y) * rotation.y +
+	              static_cast<double>(rotation.z) * rotation.z +
+	              static_cast<double>(rotation.w) * rotation.w);
 	const double x = rotation.x / length;
 	const double y = rotation.y / length;
 	const double z = rotation.z / length;
@@ -175,6 +175,7 @@ bool TransformUtils::AreEqual(const Transform &left, const Transform &right) {
 
 	DirectX::XMFLOAT4 a;
 	DirectX::XMFLOAT4 b;
+
 	if (!TryNormalizeRotation(left.rotation, a) ||
 	    !TryNormalizeRotation(right.rotation, b)) {
 		return false;
@@ -184,8 +185,8 @@ bool TransformUtils::AreEqual(const Transform &left, const Transform &right) {
 	const auto close = [](float x, float y) {
 		return std::abs(x - y) <= 0.000001f;
 	};
-	const bool same = close(a.x, b.x) && close(a.y, b.y) &&
-	                  close(a.z, b.z) && close(a.w, b.w);
+	const bool same = close(a.x, b.x) && close(a.y, b.y) && close(a.z, b.z) &&
+	                  close(a.w, b.w);
 	const bool opposite = close(a.x, -b.x) && close(a.y, -b.y) &&
 	                      close(a.z, -b.z) && close(a.w, -b.w);
 

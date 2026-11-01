@@ -7,21 +7,33 @@
 #include <exception>
 #include <format>
 
-Scene &SceneDocument::GetScene() { return scene_; }
+Scene &SceneDocument::GetScene() {
+	return scene_;
+}
 
-const Scene &SceneDocument::GetScene() const { return scene_; }
+const Scene &SceneDocument::GetScene() const {
+	return scene_;
+}
 
 const std::filesystem::path &SceneDocument::GetFilePath() const {
 	return filePath_;
 }
 
-EditorHistory &SceneDocument::GetHistory() { return history_; }
+EditorHistory &SceneDocument::GetHistory() {
+	return history_;
+}
 
-const EditorHistory &SceneDocument::GetHistory() const { return history_; }
+const EditorHistory &SceneDocument::GetHistory() const {
+	return history_;
+}
 
-bool SceneDocument::IsModified() const { return history_.IsModified(); }
+bool SceneDocument::IsModified() const {
+	return history_.IsModified();
+}
 
-void SceneDocument::MarkModified() { history_.Invalidate(); }
+void SceneDocument::MarkModified() {
+	history_.Invalidate();
+}
 
 void SceneDocument::New() {
 	scene_.Clear();
@@ -39,12 +51,16 @@ bool SceneDocument::Open(const std::filesystem::path &filePath,
 			if (!SceneSerializer::Load(candidate, resolvedPath)) {
 				return false;
 			}
+
 			if (validate && !validate(candidate)) {
-				Logger::Error("SceneDocument::Open: シーンの事前確認に失敗しました。");
+				Logger::Error(
+				    "SceneDocument::Open: シーンの事前確認に失敗しました。");
 				return false;
 			}
+
 			return true;
 		});
+
 		if (!loaded) {
 			return false;
 		}
@@ -74,11 +90,13 @@ bool SceneDocument::SaveCopy(const std::filesystem::path &filePath) {
 		// 書き込み用の一時ファイルも、現在の保存先と別のファイルであることを確認する
 		auto temporaryPath = resolvedPath;
 		temporaryPath += ".tmp";
+
 		if (resolvedPath.native().find(L'\0') != std::wstring::npos ||
 		    (!filePath_.empty() &&
 		     (PathUtils::IsSameFile(resolvedPath, filePath_) ||
 		      PathUtils::IsSameFile(temporaryPath, filePath_)))) {
-			Logger::Error("SceneDocument::SaveCopy: 現在の保存先とは別の有効なパスを指定してください。");
+			Logger::Error("SceneDocument::SaveCopy: "
+			              "現在の保存先とは別の有効なパスを指定してください。");
 			return false;
 		}
 
