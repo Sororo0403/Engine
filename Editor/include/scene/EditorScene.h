@@ -2,28 +2,29 @@
 
 #include "assets/AssetDatabase.h"
 #include "camera/EditorCameraController.h"
-#include "dialogs/SaveChangesDialog.h"
 #include "dialogs/BatchRenameDialog.h"
+#include "dialogs/SaveChangesDialog.h"
 #include "dialogs/SceneFileDialog.h"
 #include "dialogs/SceneReloadDialog.h"
+#include "gameplay/EditorPlayMode.h"
 #include "gizmo/TransformGizmo.h"
 #include "history/AlignmentAxis.h"
 #include "layout/EditorDockLayout.h"
 #include "panels/AssetsPanel.h"
-#include "panels/ControlsPanel.h"
 #include "panels/ConsolePanel.h"
+#include "panels/ControlsPanel.h"
 #include "panels/HierarchyPanel.h"
 #include "panels/HistoryPanel.h"
-#include "panels/PerformancePanel.h"
 #include "panels/InspectorPanel.h"
+#include "panels/PerformancePanel.h"
 #include "panels/SceneViewPanel.h"
 #include "physics/ColliderBounds.h"
 #include "scene/IScene.h"
 #include "scene/SceneDocument.h"
 #include "scene/SceneGrid.h"
 #include "scene/SceneRenderer.h"
-#include "selection/EditorSelection.h"
 #include "selection/EditorClipboard.h"
+#include "selection/EditorSelection.h"
 #include "selection/SelectionBounds.h"
 #include "settings/EditorPreferences.h"
 #include "settings/RecentScenes.h"
@@ -103,6 +104,7 @@ class EditorScene final : public IScene {
 	enum class EditorAction {
 		NONE,
 		NEW,
+		NEW_SAMPLE,
 		OPEN,
 		SAVE,
 		SAVE_AS,
@@ -410,6 +412,8 @@ class EditorScene final : public IScene {
 	// 描画側の参照より先に宣言する
 	SceneDocument document_;
 	SceneRenderer renderer_;
+	EditorPlayMode playMode_;
+	bool playFrame_ = false;
 
 	EditorDockLayout dockLayout_;
 

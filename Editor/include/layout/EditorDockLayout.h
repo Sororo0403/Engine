@@ -21,6 +21,7 @@ class EditorDockLayout {
 	std::string dockspaceName_ = "EditorDockSpace";
 	std::string hierarchyWindow_ = "Hierarchy";
 	std::string sceneWindow_ = "Scene";
+	std::string gameWindow_ = "Game";
 	std::string inspectorWindow_ = "Inspector";
 	std::string assetsWindow_ = "Assets";
 	std::string historyWindow_ = "History";

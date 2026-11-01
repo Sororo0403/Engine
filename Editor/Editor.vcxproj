@@ -250,4 +250,19 @@ exit /b 0</Command>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
+
+  <ItemGroup>
+    <ClInclude Include="include\history\ComponentCommand.h" />
+    <ClInclude Include="include\gameplay\GameplayInspector.h" />
+    <ClCompile Include="src\gameplay\GameplayInspector.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\gameplay\EditorPlayMode.h" />
+    <ClCompile Include="src\gameplay\EditorPlayMode.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\gameplay\SampleStage.h" />
+    <ClCompile Include="src\gameplay\SampleStage.cpp" />
+  </ItemGroup>
+  <ItemGroup><ClInclude Include="include\gameplay\GameplayInput.h" /></ItemGroup>
 </Project>

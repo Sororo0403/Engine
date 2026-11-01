@@ -504,4 +504,13 @@
       <Filter>src\gameplay</Filter>
     </ClCompile>
   </ItemGroup>
+
+  <ItemGroup>
+    <ClInclude Include="include\gameplay\FollowCameraSettings.h"><Filter>include\gameplay</Filter></ClInclude>
+    <ClInclude Include="include\gameplay\RespawnSettings.h"><Filter>include\gameplay</Filter></ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\gameplay\SceneSimulation.h"><Filter>include\gameplay</Filter></ClInclude>
+    <ClCompile Include="src\gameplay\SceneSimulation.cpp"><Filter>src\gameplay</Filter></ClCompile>
+  </ItemGroup>
 </Project>

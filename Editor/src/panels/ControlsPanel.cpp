@@ -115,6 +115,21 @@ void ControlsPanel::Draw() {
 	    {"Click Inspector Model", "Find and select that model in Assets without changing the scene."},
 	    {"Inspector > Remove Model", "Remove the model reference while keeping the object."},
 	});
+	DrawSection(
+	    "Game authoring and playback",
+	    {
+	        {"Inspector > Add Component",
+	         "Add Box Collider, Character Controller, Follow Camera or "
+	         "Respawn. Changes support Undo and scene saving."},
+	        {"File > New Sample Stage",
+	         "Create an editable floor, walls, player and follow camera. "
+	         "Unsaved work prompts before replacement."},
+	        {"Game > Play / Stop", "Run a separate scene copy. Editing data "
+	                               "and Undo history are preserved."},
+	        {"WASD / Space",
+	         "Move on world X/Z and jump while Game is focused."},
+	        {"Esc (Game focused)", "Stop playback and return to editing."},
+	    });
 	DrawSection("Files and history", {
 	    {"Ctrl + N / Ctrl + O", "Create a scene / open a scene."},
 	    {"Ctrl + S", "Save the scene."},

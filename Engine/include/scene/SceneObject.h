@@ -1,5 +1,8 @@
 #pragma once
 
+#include "gameplay/CharacterSettings.h"
+#include "gameplay/FollowCameraSettings.h"
+#include "gameplay/RespawnSettings.h"
 #include "math/Transform.h"
 #include "physics/BoxCollider.h"
 
@@ -22,4 +25,11 @@ struct SceneObject {
 
 	// 指定した物体は衝突判定に使用する。未指定の場合は衝突形状を持たない
 	std::optional<BoxCollider> collider;
+
+	// 再生時に入力・重力で動かす物体。衝突形状も必要
+	std::optional<CharacterSettings> character;
+	// 再生時のカメラ。対象IDは同じシーンの物体を指定する
+	std::optional<FollowCameraSettings> followCamera;
+	// 落下時の復帰。Character Controllerを持つ物体に使用する
+	std::optional<RespawnSettings> respawn;
 };

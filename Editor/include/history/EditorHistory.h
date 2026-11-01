@@ -1,8 +1,9 @@
 #pragma once
 
-#include "history/CommandGroup.h"
-#include "history/ColliderCommand.h"
 #include "history/AlignmentAxis.h"
+#include "history/ColliderCommand.h"
+#include "history/CommandGroup.h"
+#include "history/ComponentCommand.h"
 #include "history/ModelPathCommand.h"
 #include "history/ObjectCommand.h"
 #include "history/ObjectRename.h"
@@ -46,7 +47,7 @@ class EditorHistory {
 	bool BeginTransform(SceneObjectId objectId, const Transform &before);
 
 	/// <summary>
-	/// 編集中の名前または変形情報を1操作として記録する。
+	/// 編集中の名前・変形情報・コンポーネント設定を1操作として記録する。
 	/// 変更がなければ履歴には追加しない
 	/// </summary>
 	void CommitEdit();
@@ -198,6 +199,50 @@ class EditorHistory {
 	/// <param name="objectId">衝突形状を持つ対象のID</param>
 	/// <returns>true:開始成功 false:対象または衝突形状なし</returns>
 	bool BeginCollider(SceneObjectId objectId);
+	/// <summary>
+	/// Respawnコンポーネントを追加・変更・削除して履歴へ記録する
+	/// </summary>
+	/// <param name="objectId">対象ID</param>
+	/// <param name="value">新しい設定。未指定は削除</param>
+	/// <returns>true:成功または同値 false:対象または設定が無効</returns>
+	bool SetRespawn(SceneObjectId objectId,
+	                std::optional<RespawnSettings> value);
+	/// <summary>
+	/// Respawnの連続編集を開始する
+	/// </summary>
+	/// <param name="objectId">対象ID</param>
+	/// <returns>true:開始成功 false:対象またはコンポーネントなし</returns>
+	bool BeginRespawn(SceneObjectId objectId);
+
+	/// <summary>
+	/// FollowCameraコンポーネントを追加・変更・削除して履歴へ記録する
+	/// </summary>
+	/// <param name="objectId">対象ID</param>
+	/// <param name="value">新しい設定。未指定は削除</param>
+	/// <returns>true:成功または同値 false:対象または設定が無効</returns>
+	bool SetFollowCamera(SceneObjectId objectId,
+	                     std::optional<FollowCameraSettings> value);
+	/// <summary>
+	/// FollowCameraの連続編集を開始する
+	/// </summary>
+	/// <param name="objectId">対象ID</param>
+	/// <returns>true:開始成功 false:対象またはコンポーネントなし</returns>
+	bool BeginFollowCamera(SceneObjectId objectId);
+
+	/// <summary>
+	/// Characterコンポーネントを追加・変更・削除して履歴へ記録する
+	/// </summary>
+	/// <param name="objectId">対象ID</param>
+	/// <param name="value">新しい設定。未指定は削除</param>
+	/// <returns>true:成功または同値 false:対象または設定が無効</returns>
+	bool SetCharacter(SceneObjectId objectId,
+	                  std::optional<CharacterSettings> value);
+	/// <summary>
+	/// Characterの連続編集を開始する
+	/// </summary>
+	/// <param name="objectId">対象ID</param>
+	/// <returns>true:開始成功 false:対象またはコンポーネントなし</returns>
+	bool BeginCharacter(SceneObjectId objectId);
 
 	/// <summary>
 	/// 指定した全物体を削除し、1操作として履歴へ記録する。
@@ -300,8 +345,11 @@ class EditorHistory {
 
   private:
 	// 単独の編集操作、または複数の編集操作を保持する
-	using Command = std::variant<TransformCommand, ObjectCommand, RenameCommand,
-	                             ModelPathCommand, VisibilityCommand, ColliderCommand, CommandGroup>;
+	using Command =
+	    std::variant<TransformCommand, ObjectCommand, RenameCommand,
+	                 ModelPathCommand, VisibilityCommand, ColliderCommand,
+	                 CharacterCommand, FollowCameraCommand, RespawnCommand,
+	                 CommandGroup>;
 
 	/// <summary>
 	/// 操作と、その前後の状態を識別する情報
@@ -320,8 +368,12 @@ class EditorHistory {
 	struct PendingEdit {
 		SceneObjectId objectId = 0;
 
-		// 変形・名前・衝突形状の編集開始時点の値
-		std::variant<Transform, std::string, std::optional<BoxCollider>> before;
+		// 変形・名前・各コンポーネントの編集開始時点の値
+		std::variant<Transform, std::string, std::optional<BoxCollider>,
+		             std::optional<CharacterSettings>,
+		             std::optional<FollowCameraSettings>,
+		             std::optional<RespawnSettings>>
+		    before;
 	};
 
 	/// <summary>

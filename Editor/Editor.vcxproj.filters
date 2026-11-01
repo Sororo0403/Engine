@@ -393,4 +393,21 @@
       <Filter>src\physics</Filter>
     </ClCompile>
   </ItemGroup>
+
+  <ItemGroup>
+    <ClInclude Include="include\history\ComponentCommand.h"><Filter>include\history</Filter></ClInclude>
+    <ClInclude Include="include\gameplay\GameplayInspector.h"><Filter>include\gameplay</Filter></ClInclude>
+    <ClCompile Include="src\gameplay\GameplayInspector.cpp"><Filter>src\gameplay</Filter></ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\gameplay\EditorPlayMode.h"><Filter>include\gameplay</Filter></ClInclude>
+    <ClCompile Include="src\gameplay\EditorPlayMode.cpp"><Filter>src\gameplay</Filter></ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\gameplay\SampleStage.h"><Filter>include\gameplay</Filter></ClInclude>
+    <ClCompile Include="src\gameplay\SampleStage.cpp"><Filter>src\gameplay</Filter></ClCompile>
+  </ItemGroup>
+  <ItemGroup><ClInclude Include="include\gameplay\GameplayInput.h"><Filter>include\gameplay</Filter></ClInclude></ItemGroup>
+  <ItemGroup><Filter Include="include\gameplay"><UniqueIdentifier>{c5865e24-7645-4529-ab24-c4eb0c329ee7}</UniqueIdentifier></Filter></ItemGroup>
+  <ItemGroup><Filter Include="src\gameplay"><UniqueIdentifier>{21f0698d-1cae-498a-918a-7f3c108d0570}</UniqueIdentifier></Filter></ItemGroup>
 </Project>

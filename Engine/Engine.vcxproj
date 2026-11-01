@@ -291,4 +291,13 @@ exit /b 0</Command>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
+
+  <ItemGroup>
+    <ClInclude Include="include\gameplay\FollowCameraSettings.h" />
+    <ClInclude Include="include\gameplay\RespawnSettings.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\gameplay\SceneSimulation.h" />
+    <ClCompile Include="src\gameplay\SceneSimulation.cpp" />
+  </ItemGroup>
 </Project>

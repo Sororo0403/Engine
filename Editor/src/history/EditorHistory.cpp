@@ -675,6 +675,17 @@ bool EditorHistory::HasPendingChanges() const {
 			    return !TransformUtils::AreEqual(before, object->transform);
 		    } else if constexpr (std::is_same_v<Before, std::optional<BoxCollider>>) {
 			    return before != object->collider;
+		    } else if constexpr (std::is_same_v<
+		                             Before, std::optional<RespawnSettings>>) {
+			    return before != object->respawn;
+		    } else if constexpr (std::is_same_v<
+		                             Before,
+		                             std::optional<FollowCameraSettings>>) {
+			    return before != object->followCamera;
+		    } else if constexpr (std::is_same_v<
+		                             Before,
+		                             std::optional<CharacterSettings>>) {
+			    return before != object->character;
 		    } else {
 			    return before != object->name;
 		    }
@@ -748,7 +759,8 @@ void EditorHistory::CommitEdit() {
 		Command command{CommandGroup{std::move(commands)}};
 		const std::uint64_t next = PrepareAppend();
 		AppendPrepared(std::move(command), next,
-		               pendingTransforms_->size() == 1 ? "Transform Object" : "Transform Objects");
+		               pendingTransforms_->size() == 1 ? "Transform Object"
+		                                               : "Transform Objects");
 		pendingTransforms_.reset();
 		return;
 	}
@@ -770,14 +782,34 @@ void EditorHistory::CommitEdit() {
 		return;
 	}
 
-	if (std::holds_alternative<std::optional<BoxCollider>>(pending_->before) && object->collider) {
+	if (std::holds_alternative<std::optional<BoxCollider>>(pending_->before) &&
+	    object->collider) {
 		AxisAlignedBox bounds;
-		if (!BoxColliderUtils::GetWorldBounds(*object->collider, object->transform, bounds)) {
+		if (!BoxColliderUtils::GetWorldBounds(*object->collider,
+		                                      object->transform, bounds)) {
 			Invalidate();
 			return;
 		}
 	}
 
+	if (std::holds_alternative<std::optional<CharacterSettings>>(
+	        pending_->before) &&
+	    object->character && !object->character->IsValid()) {
+		Invalidate();
+		return;
+	}
+	if (std::holds_alternative<std::optional<FollowCameraSettings>>(
+	        pending_->before) &&
+	    object->followCamera && !object->followCamera->IsValid()) {
+		Invalidate();
+		return;
+	}
+	if (std::holds_alternative<std::optional<RespawnSettings>>(
+	        pending_->before) &&
+	    object->respawn && !object->respawn->IsValid()) {
+		Invalidate();
+		return;
+	}
 	// 空の名前で確定した場合は、編集開始時点の名前へ戻す
 	if (std::holds_alternative<std::string>(pending_->before) &&
 	    object->name.empty()) {
@@ -806,8 +838,24 @@ void EditorHistory::CommitEdit() {
 			        before,
 			        object->transform,
 			    }};
-		    } else if constexpr (std::is_same_v<Before, std::optional<BoxCollider>>) {
-			    return Command{ColliderCommand{objectId, before, object->collider}};
+		    } else if constexpr (std::is_same_v<Before,
+		                                        std::optional<BoxCollider>>) {
+			    return Command{
+			        ColliderCommand{objectId, before, object->collider}};
+		    } else if constexpr (std::is_same_v<
+		                             Before, std::optional<RespawnSettings>>) {
+			    return Command{
+			        RespawnCommand{objectId, before, object->respawn}};
+		    } else if constexpr (std::is_same_v<
+		                             Before,
+		                             std::optional<FollowCameraSettings>>) {
+			    return Command{FollowCameraCommand{objectId, before,
+			                                       object->followCamera}};
+		    } else if constexpr (std::is_same_v<
+		                             Before,
+		                             std::optional<CharacterSettings>>) {
+			    return Command{
+			        CharacterCommand{objectId, before, object->character}};
 		    } else {
 			    return Command{RenameCommand{
 			        objectId,
@@ -820,10 +868,28 @@ void EditorHistory::CommitEdit() {
 
 	const std::uint64_t next = PrepareAppend();
 
-	AppendPrepared(std::move(command), next,
-	               std::holds_alternative<Transform>(pending_->before)
-	                   ? "Transform Object" : std::holds_alternative<std::string>(pending_->before)
-	                   ? "Rename Object" : "Edit Box Collider");
+	const auto description = std::visit(
+	    [](const auto &before) -> std::string_view {
+		    using T = std::decay_t<decltype(before)>;
+		    if constexpr (std::is_same_v<T, Transform>) {
+			    return "Transform Object";
+		    } else if constexpr (std::is_same_v<T, std::string>) {
+			    return "Rename Object";
+		    } else if constexpr (std::is_same_v<T,
+		                                        std::optional<BoxCollider>>) {
+			    return "Edit Box Collider";
+		    } else if constexpr (std::is_same_v<
+		                             T, std::optional<CharacterSettings>>) {
+			    return "Edit Character Controller";
+		    } else if constexpr (std::is_same_v<
+		                             T, std::optional<FollowCameraSettings>>) {
+			    return "Edit Follow Camera";
+		    } else {
+			    return "Edit Respawn";
+		    }
+	    },
+	    pending_->before);
+	AppendPrepared(std::move(command), next, description);
 	pending_.reset();
 }
 
@@ -1032,4 +1098,100 @@ std::uint64_t EditorHistory::AllocateState() {
 	}
 
 	return nextState_++;
+}
+
+bool EditorHistory::SetCharacter(SceneObjectId id,
+	                             std::optional<CharacterSettings> value) {
+	CommitEdit();
+	auto *object = scene_.FindObject(id);
+	if (!object || (value && !value->IsValid())) {
+		return false;
+	}
+	const bool adding = !object->character;
+	CharacterCommand command{id, object->character, value};
+	if (!command.HasChanges()) {
+		return true;
+	}
+	const auto next = PrepareAppend();
+	if (!command.Redo(scene_)) {
+		return false;
+	}
+	AppendPrepared(Command{std::move(command)}, next,
+		           !value   ? "Remove Character Controller"
+		           : adding ? "Add Character Controller"
+		                    : "Edit Character Controller");
+	return true;
+}
+bool EditorHistory::BeginCharacter(SceneObjectId id) {
+	CommitEdit();
+	const auto *object = scene_.FindObject(id);
+	if (!object || !object->character) {
+		return false;
+	}
+	pending_ = PendingEdit{id, object->character};
+	return true;
+}
+
+bool EditorHistory::SetFollowCamera(SceneObjectId id,
+	                                std::optional<FollowCameraSettings> value) {
+	CommitEdit();
+	auto *object = scene_.FindObject(id);
+	if (!object || (value && !value->IsValid())) {
+		return false;
+	}
+	const bool adding = !object->followCamera;
+	FollowCameraCommand command{id, object->followCamera, value};
+	if (!command.HasChanges()) {
+		return true;
+	}
+	const auto next = PrepareAppend();
+	if (!command.Redo(scene_)) {
+		return false;
+	}
+	AppendPrepared(Command{std::move(command)}, next,
+		           !value   ? "Remove Follow Camera"
+		           : adding ? "Add Follow Camera"
+		                    : "Edit Follow Camera");
+	return true;
+}
+bool EditorHistory::BeginFollowCamera(SceneObjectId id) {
+	CommitEdit();
+	const auto *object = scene_.FindObject(id);
+	if (!object || !object->followCamera) {
+		return false;
+	}
+	pending_ = PendingEdit{id, object->followCamera};
+	return true;
+}
+
+bool EditorHistory::SetRespawn(SceneObjectId id,
+	                           std::optional<RespawnSettings> value) {
+	CommitEdit();
+	auto *object = scene_.FindObject(id);
+	if (!object || (value && !value->IsValid())) {
+		return false;
+	}
+	const bool adding = !object->respawn;
+	RespawnCommand command{id, object->respawn, value};
+	if (!command.HasChanges()) {
+		return true;
+	}
+	const auto next = PrepareAppend();
+	if (!command.Redo(scene_)) {
+		return false;
+	}
+	AppendPrepared(Command{std::move(command)}, next,
+		           !value   ? "Remove Respawn"
+		           : adding ? "Add Respawn"
+		                    : "Edit Respawn");
+	return true;
+}
+bool EditorHistory::BeginRespawn(SceneObjectId id) {
+	CommitEdit();
+	const auto *object = scene_.FindObject(id);
+	if (!object || !object->respawn) {
+		return false;
+	}
+	pending_ = PendingEdit{id, object->respawn};
+	return true;
 }

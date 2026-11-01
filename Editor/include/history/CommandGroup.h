@@ -1,8 +1,9 @@
 #pragma once
 
-#include "history/ObjectCommand.h"
 #include "history/ColliderCommand.h"
+#include "history/ComponentCommand.h"
 #include "history/ModelPathCommand.h"
+#include "history/ObjectCommand.h"
 #include "history/RenameCommand.h"
 #include "history/TransformCommand.h"
 #include "history/VisibilityCommand.h"
@@ -18,8 +19,9 @@ class Scene;
 class CommandGroup {
   public:
 	using Command =
-	    std::variant<TransformCommand, ObjectCommand, RenameCommand, ModelPathCommand,
-	                 VisibilityCommand, ColliderCommand>;
+	    std::variant<TransformCommand, ObjectCommand, RenameCommand,
+	                 ModelPathCommand, VisibilityCommand, ColliderCommand,
+	                 CharacterCommand, FollowCameraCommand, RespawnCommand>;
 
 	/// <summary>
 	/// 実行順に並んだ操作を保持する。シーンへの反映は行わない

@@ -18,6 +18,7 @@
 
 void RunCharacterTests();
 void RunColliderEditingTests();
+void RunSceneSimulationTests();
 
 namespace {
 void Require(bool condition, const char *message) {
@@ -101,7 +102,7 @@ void ColliderSerializationTests() {
 	SceneFile file;
 	Require(SceneSerializer::Save(source, file.path), "save collider scene");
 	const auto document = file.Read();
-	Require(document.at("version") == 4, "collider scene version");
+	Require(document.at("version") == 5, "collider scene version");
 	Scene loaded;
 	Require(SceneSerializer::Load(loaded, file.path) &&
 	        loaded.FindObject(solid)->collider == source.FindObject(solid)->collider &&
@@ -136,7 +137,16 @@ void ColliderSerializationTests() {
 	source.FindObject(solid)->collider->halfExtents.x = 0;
 	Require(!SceneSerializer::Save(source, file.path) && file.Read() == document,
 	        "invalid collider save damaged file");
-	std::cout << "PASS: version 4 collider persistence, v1/v2/v3 compatibility and atomic invalid-data failures\n";
+	auto version4 = document;
+	version4["version"] = 4;
+	file.Write(version4);
+	Scene legacy4;
+	Require(SceneSerializer::Load(legacy4, file.path) &&
+	            legacy4.FindObject(solid)->collider &&
+	            legacy4.FindObject(solid)->collider->halfExtents.x == 2,
+	        "v4 collider compatibility");
+	std::cout << "PASS: version 5 collider persistence, v1/v2/v3 compatibility "
+	             "and atomic invalid-data failures\n";
 }
 
 void ColliderObjectHistoryTests() {
@@ -161,6 +171,7 @@ int main() {
 		ColliderObjectHistoryTests();
 		RunCharacterTests();
 		RunColliderEditingTests();
+		RunSceneSimulationTests();
 		std::cout << "ALL PASS\n";
 		return 0;
 	} catch (const std::exception &error) {

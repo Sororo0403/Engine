@@ -29,8 +29,12 @@ bool ObjectCommand::Remove(Scene &scene) const {
 	const SceneObject *current = scene.FindObject(objectId_);
 
 	if (!current || current->name != object_.name ||
-	    current->modelPath != object_.modelPath || current->visible != object_.visible ||
+	    current->modelPath != object_.modelPath ||
+	    current->visible != object_.visible ||
 	    current->collider != object_.collider ||
+	    current->character != object_.character ||
+	    current->followCamera != object_.followCamera ||
+	    current->respawn != object_.respawn ||
 	    !TransformUtils::AreEqual(current->transform, object_.transform)) {
 		return false;
 	}

@@ -1,12 +1,13 @@
 #include "panels/InspectorPanel.h"
 
 #include "assets/ModelAssetDragDrop.h"
+#include "gameplay/GameplayInspector.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "history/EditorHistory.h"
 #include "math/TransformUtils.h"
+#include "physics/ColliderInspector.h"
 #include "platform/windows/PathUtils.h"
 #include "scene/Scene.h"
-#include "physics/ColliderInspector.h"
 
 #include <imgui.h>
 
@@ -323,11 +324,24 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 	if (ui.Button("Add Component")) ImGui::OpenPopup("AddComponentMenu");
 	if (ImGui::BeginPopup("AddComponentMenu")) {
 		if (ui.MenuItem("Box Collider", nullptr, !object->collider)) colliderFitRequest_ = inspectedObjectId;
+		if (ui.MenuItem("Character Controller", nullptr, !object->character)) {
+			changed |=
+			    history.SetCharacter(inspectedObjectId, CharacterSettings{});
+		}
+		if (ui.MenuItem("Follow Camera", nullptr, !object->followCamera)) {
+			changed |= history.SetFollowCamera(inspectedObjectId,
+			                                   FollowCameraSettings{});
+		}
+		if (ui.MenuItem("Respawn", nullptr, !object->respawn)) {
+			changed |= history.SetRespawn(inspectedObjectId, RespawnSettings{});
+		}
 		ImGui::EndPopup();
 	}
 	ImGui::PopID();
 
 	changed |= ColliderInspector{}.Draw(ui, inspectedObjectId, *object, history, colliderFitRequest_);
+	changed |= GameplayInspector{}.Draw(ui, scene, inspectedObjectId, *object,
+	                                    history);
 
 	ui.EndWindow();
 	return changed;

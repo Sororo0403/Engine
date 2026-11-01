@@ -119,6 +119,13 @@ bool SceneSerializer::Save(const Scene &scene,
 				}
 			}
 
+			if ((object.character && !object.character->IsValid()) ||
+			    (object.followCamera && !object.followCamera->IsValid()) ||
+			    (object.respawn && !object.respawn->IsValid())) {
+				throw std::runtime_error(
+				    "ゲーム用コンポーネントの設定が無効です。");
+			}
+
 			objects.push_back({
 			    {"id", id},
 			    {"name", object.name},
@@ -135,11 +142,34 @@ bool SceneSerializer::Save(const Scene &scene,
 				objects.back()["collider"] = {{"center", ToJson(object.collider->center)},
 				                              {"halfExtents", ToJson(object.collider->halfExtents)}};
 			}
+			if (object.character) {
+				const auto &v = *object.character;
+				objects.back()["character"] = {
+				    {"moveSpeed", v.moveSpeed},
+				    {"jumpSpeed", v.jumpSpeed},
+				    {"gravity", v.gravity},
+				    {"terminalSpeed", v.terminalSpeed}};
+			}
+			if (object.followCamera) {
+				const auto &v = *object.followCamera;
+				objects.back()["followCamera"] = {
+				    {"target", v.target},
+				    {"offset", ToJson(v.offset)},
+				    {"lookOffset", ToJson(v.lookOffset)},
+				    {"smoothing", v.smoothing}};
+			}
+			if (object.respawn) {
+				const auto &v = *object.respawn;
+				objects.back()["respawn"] = {
+				    {"minimumY", v.minimumY},
+				    {"useStartPosition", v.useStartPosition},
+				    {"position", ToJson(v.position)}};
+			}
 		}
 
 		const Json document{
 		    {"format", "EngineScene"},
-		    {"version", 4},
+		    {"version", 5},
 		    {"objects", std::move(objects)},
 		};
 
@@ -189,7 +219,8 @@ bool SceneSerializer::Load(Scene &scene,
 		if (!document.is_object() || document.at("format") != "EngineScene" ||
 		    !document.at("version").is_number_integer() ||
 		    (document.at("version") != 1 && document.at("version") != 2 &&
-		     document.at("version") != 3 && document.at("version") != 4)) {
+		     document.at("version") != 3 && document.at("version") != 4 &&
+		     document.at("version") != 5)) {
 			throw std::runtime_error("未対応のシーンファイル形式です。");
 		}
 
@@ -230,6 +261,49 @@ bool SceneSerializer::Load(Scene &scene,
 				const auto &collider = item.at("collider");
 				object.collider = BoxCollider{ReadFloat3(collider.at("center")),
 				                              ReadFloat3(collider.at("halfExtents"))};
+			}
+
+			if (version >= 5 && item.contains("character")) {
+				const auto &v = item.at("character");
+				for (const auto *key :
+				     {"moveSpeed", "jumpSpeed", "gravity", "terminalSpeed"}) {
+					if (!v.at(key).is_number()) {
+						throw std::runtime_error(
+						    "移動設定には数値が必要です。");
+					}
+				}
+				object.character =
+				    CharacterSettings{v.at("moveSpeed").get<float>(),
+				                      v.at("jumpSpeed").get<float>(),
+				                      v.at("gravity").get<float>(),
+				                      v.at("terminalSpeed").get<float>()};
+			}
+			if (version >= 5 && item.contains("followCamera")) {
+				const auto &v = item.at("followCamera");
+				if (!v.at("target").is_number_unsigned() ||
+				    !v.at("smoothing").is_number()) {
+					throw std::runtime_error("追従カメラの設定が無効です。");
+				}
+				object.followCamera = FollowCameraSettings{
+				    v.at("target").get<SceneObjectId>(),
+				    ReadFloat3(v.at("offset")), ReadFloat3(v.at("lookOffset")),
+				    v.at("smoothing").get<float>()};
+			}
+			if (version >= 5 && item.contains("respawn")) {
+				const auto &v = item.at("respawn");
+				if (!v.at("minimumY").is_number()) {
+					throw std::runtime_error("落下高度には数値が必要です。");
+				}
+				object.respawn =
+				    RespawnSettings{v.at("minimumY").get<float>(),
+				                    v.at("useStartPosition").get<bool>(),
+				                    ReadFloat3(v.at("position"))};
+			}
+			if ((object.character && !object.character->IsValid()) ||
+			    (object.followCamera && !object.followCamera->IsValid()) ||
+			    (object.respawn && !object.respawn->IsValid())) {
+				throw std::runtime_error(
+				    "ゲーム用コンポーネントの設定が無効です。");
 			}
 
 			const Json &transform = item.at("transform");

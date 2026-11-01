@@ -4,18 +4,19 @@
 #include "assets/ModelUsage.h"
 #include "core/EngineContext.h"
 #include "core/Logger.h"
+#include "gameplay/SampleStage.h"
 #include "graphics/model/ModelManager.h"
 #include "graphics/render/RenderTexture.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "history/EditorHistory.h"
 #include "input/InputSystem.h"
 #include "input/Key.h"
-#include "math/Ray.h"
 #include "math/MathUtils.h"
+#include "math/Ray.h"
 #include "math/TransformUtils.h"
+#include "physics/BoxColliderUtils.h"
 #include "platform/windows/PathUtils.h"
 #include "scene/Scene.h"
-#include "physics/BoxColliderUtils.h"
 #include "selection/SelectionFrustum.h"
 
 #include <algorithm>
@@ -30,6 +31,7 @@
 EditorScene::EditorScene(const EngineContext &context)
     : ui_(context.ui), input_(context.input), models_(context.models),
       renderer_(document_.GetScene(), context.models, context.render),
+      playMode_(context.models, context.render),
       sceneViewPanel_(context.render) {}
 
 EditorScene::~EditorScene() = default;
@@ -39,7 +41,7 @@ bool EditorScene::Initialize() {
 		return false;
 	}
 
-	if (!renderer_.Initialize()) {
+	if (!renderer_.Initialize() || !playMode_.Initialize()) {
 		return false;
 	}
 
@@ -93,20 +95,66 @@ bool EditorScene::Update(float deltaTime) {
 		return false;
 	}
 
+	playFrame_ = false;
 	performancePanel_.Record(deltaTime);
 	gizmo_.BeginFrame();
+
+	ui_.BeginDisabled(playMode_.IsPlaying());
+	EditorAction action = DrawMenuBar();
+	ui_.EndDisabled();
+	dockLayout_.Draw(ui_, resetDockLayout_);
+	resetDockLayout_ = false;
+	if (exitQueued_ && playMode_.IsPlaying()) {
+		playMode_.Stop();
+	}
+	const auto playAction = playMode_.DrawUI(ui_, !IsBusy());
+	if (playAction == EditorPlayMode::Action::STOP) {
+		playMode_.Stop();
+	}
+	if (playAction == EditorPlayMode::Action::RENDER_ERROR) {
+		playMode_.Stop();
+		ShowError("Could not create or resize the Game render target.");
+	}
+	if (playAction == EditorPlayMode::Action::PLAY && !IsBusy()) {
+		FinishEdit();
+		sceneViewPanel_.CancelSelection();
+		std::string error;
+		if (!playMode_.Start(document_.GetScene(), error)) {
+			ShowError(std::move(error));
+		}
+	}
+	if (playAction == EditorPlayMode::Action::SAMPLE && !IsBusy()) {
+		StartAction(EditorAction::NEW_SAMPLE);
+	}
+	if (playMode_.IsPlaying()) {
+		playFrame_ = true;
+
+		consolePanel_.Draw(ui_);
+		controlsPanel_.Draw();
+		ui_.BeginDisabled(true);
+		hierarchyPanel_.Draw(ui_, document_.GetScene(), selection_);
+		inspectorPanel_.Draw(ui_, document_.GetScene(),
+		                     selection_.GetActiveId(), document_.GetHistory());
+		assetsPanel_.Draw(ui_, assets_);
+		historyPanel_.Draw(ui_, document_.GetHistory(), false);
+		ui_.EndDisabled();
+		if (!playMode_.Update(deltaTime, input_)) {
+			playMode_.Stop();
+			ShowError("Play stopped because simulation or Game rendering "
+			          "failed. Your editing scene is unchanged.");
+		}
+		UpdateDialogs();
+		return true;
+	}
 
 	if (exitQueued_ && stage_ == DialogStage::IDLE) {
 		exitQueued_ = false;
 		StartAction(EditorAction::EXIT);
 	}
 
-	EditorAction action = DrawMenuBar();
 	DrawCameraSettings();
 	DrawGridSettings();
 
-	dockLayout_.Draw(ui_, resetDockLayout_);
-	resetDockLayout_ = false;
 	controlsPanel_.Draw();
 	consolePanel_.Draw(ui_);
 
@@ -521,6 +569,10 @@ bool EditorScene::Update(float deltaTime) {
 }
 
 void EditorScene::Draw() const {
+	if (playFrame_) {
+		playMode_.Draw();
+		return;
+	}
 	auto *target = sceneViewPanel_.GetRenderTexture();
 
 	if (target) {
@@ -549,6 +601,7 @@ void EditorScene::Finalize() {
 	}
 
 	performancePanel_.Reset();
+	playMode_.Finalize();
 	sceneViewPanel_.Finalize();
 	renderer_.Finalize();
 
@@ -605,6 +658,10 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 
 		if (ui_.MenuItem("New", "Ctrl+N", enabled)) {
 			action = EditorAction::NEW;
+		}
+
+		if (ui_.MenuItem("New Sample Stage...", nullptr, enabled)) {
+			action = EditorAction::NEW_SAMPLE;
 		}
 
 		if (ui_.MenuItem("Open...", "Ctrl+O", enabled)) {
@@ -1117,6 +1174,7 @@ void EditorScene::StartAction(EditorAction action) {
 		return;
 
 	case EditorAction::NEW:
+	case EditorAction::NEW_SAMPLE:
 	case EditorAction::OPEN:
 	case EditorAction::OPEN_RECENT:
 	case EditorAction::EXIT:
@@ -1177,18 +1235,35 @@ void EditorScene::ExecutePendingAction() {
 	stage_ = DialogStage::IDLE;
 
 	switch (action) {
-	case EditorAction::NEW:
-		document_.New();
-
-		gizmo_.Cancel();
-		gizmoEditActive_ = false;
-
-		selection_.Clear();
-		cameraController_.Reset();
-		hierarchyPanel_.Clear();
-		inspectorPanel_.Clear();
-
+	case EditorAction::NEW_SAMPLE:
+	case EditorAction::NEW: {
+		try {
+			auto objects = action == EditorAction::NEW_SAMPLE
+			                   ? SampleStage::Create()
+			                   : std::map<SceneObjectId, SceneObject>{};
+			if (action == EditorAction::NEW_SAMPLE &&
+			    !models_.Load(L"resources/editor/models/box.glb")) {
+				ShowError("Could not load the sample box model. See the log "
+				          "for details.");
+				return;
+			}
+			document_.New();
+			if (action == EditorAction::NEW_SAMPLE) {
+				document_.GetScene().ReplaceObjects(std::move(objects));
+				document_.MarkModified();
+			}
+			gizmo_.Cancel();
+			gizmoEditActive_ = false;
+			selection_.Clear();
+			cameraController_.Reset();
+			hierarchyPanel_.Clear();
+			inspectorPanel_.Clear();
+		} catch (const std::exception &error) {
+			Logger::Error(error.what());
+			ShowError("Could not create the scene. See the log for details.");
+		}
 		return;
+	}
 
 	case EditorAction::OPEN:
 		fileDialog_.Show(SceneFileDialogMode::OPEN, document_.GetFilePath());
