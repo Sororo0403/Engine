@@ -97,6 +97,7 @@ class EditorScene final : public IScene {
 		UNDO,
 		REDO,
 		DUPLICATE_OBJECT,
+		DELETE_OBJECT,
 	};
 
 	/// <summary>
@@ -124,7 +125,7 @@ class EditorScene final : public IScene {
 	EditorAction ReadShortcut(bool objectPanelFocused) const;
 
 	/// <summary>
-	/// ファイル操作を開始する
+	/// 編集操作を開始する
 	/// </summary>
 	/// <param name="action">開始する操作</param>
 	void StartAction(EditorAction action);
@@ -183,6 +184,13 @@ class EditorScene final : public IScene {
 	/// <param name="projection">Sceneビューの更新済み投影行列</param>
 	/// <returns>true:カメラを移動した false:対象なし、または移動できない</returns>
 	bool FrameSelected(const DirectX::XMFLOAT4X4 &projection);
+
+	/// <summary>
+	/// 物体の削除を履歴へ記録し、選択状態を更新する
+	/// </summary>
+	/// <param name="objectId">削除する物体のID</param>
+	/// <remarks>呼び出し前にFinishEditを呼び出す</remarks>
+	void DeleteObject(SceneObjectId objectId);
 
   private:
 	const ImGuiSystem &ui_;

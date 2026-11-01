@@ -120,15 +120,8 @@ bool EditorScene::Update(float deltaTime) {
 					break;
 
 				case HierarchyPanel::Action::DELETE_OBJECT:
-					if (history.DeleteObject(hierarchyRequest.objectId)) {
-						if (selectedObjectId_ == hierarchyRequest.objectId) {
-							selectedObjectId_ = 0;
-						}
-					} else {
-						ShowError("Could not delete the object.");
-					}
+					DeleteObject(hierarchyRequest.objectId);
 					break;
-
 				case HierarchyPanel::Action::NONE:
 					break;
 				}
@@ -411,11 +404,16 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 
 		ui_.Separator();
 
-		const bool canDuplicate =
-		    enabled && document_.GetScene().Contains(selectedObjectId_);
+		const bool objectEnabled =
+		    enabled && !ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
+		    document_.GetScene().Contains(selectedObjectId_);
 
-		if (ui_.MenuItem("Duplicate", "Ctrl+D", canDuplicate)) {
+		if (ui_.MenuItem("Duplicate", "Ctrl+D", objectEnabled)) {
 			action = EditorAction::DUPLICATE_OBJECT;
+		}
+
+		if (ui_.MenuItem("Delete", "Delete", objectEnabled)) {
+			action = EditorAction::DELETE_OBJECT;
 		}
 
 		ui_.EndMenu();
@@ -435,7 +433,7 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 
 EditorScene::EditorAction
 EditorScene::ReadShortcut(bool objectPanelFocused) const {
-	// 文字入力中のCtrl+Zは、ImGuiの入力欄へ任せる
+	// 文字入力中の操作は、ImGuiの入力欄へ任せる
 	if (IsBusy() || ui_.IsTextInputActive() || gizmo_.IsUsing() ||
 	    document_.GetHistory().IsEditing()) {
 		return EditorAction::NONE;
@@ -443,21 +441,31 @@ EditorScene::ReadShortcut(bool objectPanelFocused) const {
 
 	const Keyboard &keyboard = input_.GetKeyboard();
 
-	if (!keyboard.IsDown(Key::CTRL)) {
+	const bool control = keyboard.IsDown(Key::CTRL);
+	const bool shift = keyboard.IsDown(Key::SHIFT);
+	const bool alt = keyboard.IsDown(Key::ALT);
+
+	const bool objectEnabled = objectPanelFocused &&
+	                           !ImGui::IsAnyItemActive() &&
+	                           !ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
+	                           document_.GetScene().Contains(selectedObjectId_);
+
+	// 修飾キーなしのDeleteだけを、物体削除として扱う
+	if (objectEnabled && !control && !shift && !alt &&
+	    keyboard.IsPressed(Key::DELETE_KEY)) {
+		return EditorAction::DELETE_OBJECT;
+	}
+
+	if (!control) {
 		return EditorAction::NONE;
 	}
 
-	if (keyboard.IsPressed(Key::D) && !keyboard.IsDown(Key::SHIFT) &&
-	    !keyboard.IsDown(Key::ALT) && objectPanelFocused &&
-	    !ImGui::IsAnyItemActive() &&
-	    !ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
-	    document_.GetScene().Contains(selectedObjectId_)) {
+	if (objectEnabled && !shift && !alt && keyboard.IsPressed(Key::D)) {
 		return EditorAction::DUPLICATE_OBJECT;
 	}
 
 	if (keyboard.IsPressed(Key::Z)) {
-		return keyboard.IsDown(Key::SHIFT) ? EditorAction::REDO
-		                                   : EditorAction::UNDO;
+		return shift ? EditorAction::REDO : EditorAction::UNDO;
 	}
 
 	if (keyboard.IsPressed(Key::Y)) {
@@ -465,8 +473,7 @@ EditorScene::ReadShortcut(bool objectPanelFocused) const {
 	}
 
 	if (keyboard.IsPressed(Key::S)) {
-		return keyboard.IsDown(Key::SHIFT) ? EditorAction::SAVE_AS
-		                                   : EditorAction::SAVE;
+		return shift ? EditorAction::SAVE_AS : EditorAction::SAVE;
 	}
 
 	if (keyboard.IsPressed(Key::O)) {
@@ -552,6 +559,9 @@ void EditorScene::StartAction(EditorAction action) {
 		}
 		return;
 	}
+	case EditorAction::DELETE_OBJECT:
+		DeleteObject(selectedObjectId_);
+		return;
 	case EditorAction::NONE:
 		return;
 	}
@@ -786,4 +796,26 @@ bool EditorScene::FrameSelected(const DirectX::XMFLOAT4X4 &projection) {
 	}
 
 	return true;
+}
+
+void EditorScene::DeleteObject(SceneObjectId objectId) {
+	if (!document_.GetScene().Contains(objectId)) {
+		return;
+	}
+
+	try {
+		if (!document_.GetHistory().DeleteObject(objectId)) {
+			ShowError("Could not delete the object.");
+			return;
+		}
+
+		if (selectedObjectId_ == objectId) {
+			selectedObjectId_ = 0;
+		}
+	} catch (const std::exception &error) {
+		Logger::Error(std::format("EditorScene: 物体の削除に失敗しました: {}",
+		                          error.what()));
+
+		ShowError("Could not delete the object. See the log for details.");
+	}
 }
