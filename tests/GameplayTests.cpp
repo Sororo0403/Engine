@@ -20,6 +20,7 @@ void RunCharacterTests();
 void RunColliderEditingTests();
 void RunSceneSimulationTests();
 void RunCameraComponentTests();
+void RunPlaybackTests();
 
 namespace {
 void Require(bool condition, const char *message) {
@@ -174,6 +175,7 @@ int main() {
 		RunColliderEditingTests();
 		RunSceneSimulationTests();
 		RunCameraComponentTests();
+		RunPlaybackTests();
 		std::cout << "ALL PASS\n";
 		return 0;
 	} catch (const std::exception &error) {

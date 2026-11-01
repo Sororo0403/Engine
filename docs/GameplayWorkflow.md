@@ -40,3 +40,7 @@ Character ControllerとFollow Cameraはそれぞれ任意で、追加する場�
 シーン形式はversion 6。version 1〜5も読み込める。version 5のFollow CameraにはCameraを補って移行する。古い実行ファイルが新しいコンポーネントを失った状態で上書き保存しないよう、形式番号を更新している。
 
 Character Controllerを使う物体にはBox Colliderが必要。Character Controllerがないシーンにはこの条件はなく、空のシーンやモデルだけのシーンもそのままPlayできる。
+
+## 一時停止とフレーム実行
+
+Play中はGameの`Pause`でゲーム時間を止め、`Resume`で再開する。停止中もGameの描画とサイズ変更は行える。`Step`は一時停止中だけ有効で、1回につきゲーム時間を1/60秒進めて停止状態を保つ。StopしてPlayし直すと一時停止と未処理のStep要求を解除する。

@@ -414,4 +414,5 @@
     <ClInclude Include="include\camera\CameraInspector.h"><Filter>include\camera</Filter></ClInclude>
     <ClCompile Include="src\camera\CameraInspector.cpp"><Filter>src\camera</Filter></ClCompile>
   </ItemGroup>
+  <ItemGroup><ClInclude Include="include\gameplay\PlaybackClock.h"><Filter>include\gameplay</Filter></ClInclude></ItemGroup>
 </Project>

@@ -31,6 +31,16 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 		if (ui.Button("Stop")) {
 			action = Action::STOP;
 		}
+		ImGui::SameLine();
+		if (ui.Button(clock_.IsPaused() ? "Resume" : "Pause")) {
+			clock_.TogglePause();
+		}
+		ImGui::SameLine();
+		ui.BeginDisabled(!clock_.IsPaused());
+		if (ui.Button("Step")) {
+			clock_.RequestStep();
+		}
+		ui.EndDisabled();
 	} else {
 		ui.BeginDisabled(!canStart);
 		if (ui.Button("Play")) {
@@ -64,11 +74,13 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
 	if (!simulation_.Start(scene, error, fallbackPose)) {
 		return false;
 	}
+	clock_.Reset();
 	focusRequested_ = true;
 	return true;
 }
 void EditorPlayMode::Stop() {
 	simulation_.Stop();
+	clock_.Reset();
 	ready_ = false;
 	viewport_ = {};
 }
@@ -90,7 +102,11 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input) {
 	if (!visible_ || !viewport_.applicationFocused) {
 		return true;
 	}
-	if (!simulation_.Update(seconds, controls)) {
+	if (!std::isfinite(seconds) || seconds < 0) {
+		return false;
+	}
+	const auto gameTime = clock_.Advance(seconds);
+	if (gameTime && !simulation_.Update(*gameTime, controls)) {
 		return false;
 	}
 	if (!renderer_.SetCameraPose(simulation_.GetCameraPose()) ||

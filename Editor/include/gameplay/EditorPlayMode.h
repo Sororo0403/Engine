@@ -1,4 +1,5 @@
 #pragma once
+#include "gameplay/PlaybackClock.h"
 #include "gameplay/SceneSimulation.h"
 #include "graphics/ui/ViewportInput.h"
 #include "scene/SceneRenderer.h"
@@ -72,6 +73,7 @@ class EditorPlayMode {
 
   private:
 	SceneSimulation simulation_;
+	PlaybackClock clock_;
 	SceneRenderer renderer_;
 	RenderSystem &render_;
 	std::unique_ptr<RenderTexture> texture_;

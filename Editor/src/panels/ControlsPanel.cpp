@@ -139,6 +139,10 @@ void ControlsPanel::Draw() {
 	        {"WASD / Space",
 	         "Click the Game image to focus it. Move on world X/Z and jump "
 	         "when the object has a Character Controller."},
+	        {"Game > Pause / Resume",
+	         "Freeze game time or continue from the paused state."},
+	        {"Game > Step", "While paused, advance one game frame (1/60 "
+	                        "second). Stay paused afterwards."},
 	        {"Esc (Game focused)", "Stop playback and return to editing."},
 	    });
 	DrawSection("Files and history", {
