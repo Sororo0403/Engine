@@ -9,6 +9,7 @@
 #include "dialogs/SceneFileDialog.h"
 #include "dialogs/SceneReloadDialog.h"
 #include "gameplay/EditorPlayMode.h"
+#include "gameplay/RespawnPreview.h"
 #include "gizmo/TransformGizmo.h"
 #include "history/AlignmentAxis.h"
 #include "layout/EditorDockLayout.h"
@@ -476,6 +477,7 @@ class EditorScene final : public IScene {
 
 	SelectionBounds selectionBounds_;
 	ColliderBounds colliderBounds_;
+	RespawnPreview respawnPreview_;
 
 	SceneGrid sceneGrid_;
 	ControlsPanel controlsPanel_;

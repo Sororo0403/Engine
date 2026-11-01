@@ -254,7 +254,9 @@ exit /b 0</Command>
   <ItemGroup>
     <ClInclude Include="include\history\ComponentCommand.h" />
     <ClInclude Include="include\gameplay\GameplayInspector.h" />
+    <ClInclude Include="include\gameplay\RespawnPreview.h" />
     <ClCompile Include="src\gameplay\GameplayInspector.cpp" />
+    <ClCompile Include="src\gameplay\RespawnPreview.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\gameplay\EditorPlayMode.h" />

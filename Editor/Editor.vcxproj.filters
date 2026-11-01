@@ -401,7 +401,13 @@
     <ClInclude Include="include\gameplay\GameplayInspector.h">
       <Filter>include\gameplay</Filter>
     </ClInclude>
+    <ClInclude Include="include\gameplay\RespawnPreview.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
     <ClCompile Include="src\gameplay\GameplayInspector.cpp">
+      <Filter>src\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gameplay\RespawnPreview.cpp">
       <Filter>src\gameplay</Filter>
     </ClCompile>
   </ItemGroup>

@@ -227,6 +227,11 @@ void ControlsPanel::Draw() {
 	        {"Inspector > Follow Camera",
 	         "Offsets use world coordinates. Follow Smoothing 0 follows "
 	         "immediately. Choose the target object in the same scene."},
+	        {"Selected Respawn in Scene",
+	         "The cyan cross marks the respawn position. The red square marks "
+	         "Fall Below Y near that point; the height applies everywhere, "
+	         "not just inside the square. This preview is not a collider and "
+	         "does not appear in Game."},
 	        {"WASD / Space",
 	         "Click the Game image to focus it. Move on world X/Z and jump "
 	         "when the object has a Character Controller."},

@@ -604,6 +604,13 @@ bool EditorScene::Update(float deltaTime) {
 			return false;
 		}
 
+		if (const auto *object = scene.FindObject(id);
+		    object && !respawnPreview_.Update(renderer_, *object)) {
+			Logger::Error(
+			    "EditorScene: 落下復帰のプレビューを登録できませんでした。");
+			return false;
+		}
+
 		if (showSelectionBounds_ && !selectionBounds_.Update(renderer_, id)) {
 			Logger::Error(
 			    "EditorScene: 選択物体の外接ボックスを登録できませんでした。");
