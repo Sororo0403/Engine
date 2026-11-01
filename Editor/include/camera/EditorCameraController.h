@@ -1,5 +1,6 @@
 #pragma once
 
+#include "camera/CameraView.h"
 #include "graphics/camera/CameraPose.h"
 
 #include <array>
@@ -59,6 +60,14 @@ class EditorCameraController {
 	void Reset();
 
 	/// <summary>
+	/// 指定中心までの距離を保ち、ワールド軸の方向から中心を見る。操作状態はリセットする
+	/// </summary>
+	/// <param name="view">対象を見る方向</param>
+	/// <param name="center">注視する中心。現在位置と同じ場合は最小距離を使用する</param>
+	/// <returns>true:成功 false:値や姿勢が無効。失敗時は現在の状態を保持する</returns>
+	bool SetView(CameraView view, const DirectX::XMFLOAT3 &center);
+
+	/// <summary>
 	/// 現在の向きを保ち、指定されたボックス全体が収まる位置へ移動する
 	/// </summary>
 	/// <param name="corners">ワールド座標のボックスの8頂点</param>
@@ -86,7 +95,7 @@ class EditorCameraController {
 
 	// カメラ操作の設定
 	Settings settings_;
-	static constexpr float kPitchLimit = DirectX::XM_PIDIV2 - 0.01f;
+	static constexpr float kPitchLimit = DirectX::XM_PIDIV2;
 	static constexpr float kMaximumMoveSpeed = 10000.0f;
 	static constexpr float kMaximumFastMultiplier = 100.0f;
 	static constexpr float kMaximumMouseSensitivity = 1.0f;

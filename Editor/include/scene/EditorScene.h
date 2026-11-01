@@ -130,6 +130,12 @@ class EditorScene final : public IScene {
 		DISTRIBUTE_Y,
 		DISTRIBUTE_Z,
 		RESET_CAMERA,
+		VIEW_FRONT,
+		VIEW_BACK,
+		VIEW_LEFT,
+		VIEW_RIGHT,
+		VIEW_TOP,
+		VIEW_BOTTOM,
 		RENAME_OBJECT,
 		OPEN_RECENT,
 		SHOW_ALL_MODELS,
@@ -204,6 +210,12 @@ class EditorScene final : public IScene {
 	/// 現在の保存先と保存地点を保持するコピーの保存先選択を開始する
 	/// </summary>
 	void StartSaveCopy();
+
+	/// <summary>
+	/// 選択物体の原点の平均位置、選択なしの場合はワールド原点を指定方向から見る
+	/// </summary>
+	/// <param name="view">対象を見る方向</param>
+	void SetCameraView(CameraView view);
 
 	/// <summary>
 	/// 現在のダイアログを描画し、選択結果を処理する

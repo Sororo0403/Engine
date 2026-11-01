@@ -1,5 +1,6 @@
 #include "camera/EditorCameraController.h"
 
+#include "graphics/camera/Camera.h"
 #include "graphics/ui/ViewportInput.h"
 #include "input/InputSystem.h"
 #include "input/Key.h"
@@ -170,7 +171,7 @@ void EditorCameraController::Update(const InputSystem &input,
 
 		yaw_ = std::remainder(yaw_, DirectX::XM_2PI);
 
-		// 視線と上方向が平行にならないよう制限する
+		// 上下の端を越えてカメラが反転しないよう制限する
 		pitch_ = std::clamp(pitch_, -kPitchLimit, kPitchLimit);
 	}
 
@@ -295,8 +296,8 @@ bool EditorCameraController::FrameBounds(
 
 	const XMVECTOR forwardVector = XMVector3Normalize(XMLoadFloat3(&forward));
 
-	const XMVECTOR rightVector = XMVector3Normalize(
-	    XMVector3Cross(XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f), forwardVector));
+	// 真上・真下でも使えるよう、ヨー角から右方向を作る
+	const XMVECTOR rightVector = XMVectorSet(std::cos(yaw_), 0.0f, -std::sin(yaw_), 0.0f);
 
 	const XMVECTOR upVector =
 	    XMVector3Normalize(XMVector3Cross(forwardVector, rightVector));
@@ -380,19 +381,11 @@ bool EditorCameraController::FrameBounds(
 		return false;
 	}
 
-	const double directionX = static_cast<double>(target.x) - newPosition.x;
-	const double directionY = static_cast<double>(target.y) - newPosition.y;
-	const double directionZ = static_cast<double>(target.z) - newPosition.z;
-
-	const double directionLengthSquared = directionX * directionX +
-	                                      directionY * directionY +
-	                                      directionZ * directionZ;
-
-	const double rightLengthSquared =
-	    directionX * directionX + directionZ * directionZ;
-
-	if (directionLengthSquared <= kMinimumPoseLengthSquared ||
-	    rightLengthSquared <= kMinimumPoseLengthSquared) {
+	auto pose = GetPose();
+	pose.position = newPosition;
+	pose.target = target;
+	Camera validation;
+	if (!validation.SetPose(pose)) {
 		return false;
 	}
 
@@ -404,6 +397,10 @@ bool EditorCameraController::FrameBounds(
 	return true;
 }
 DirectX::XMFLOAT3 EditorCameraController::GetForward() const {
+	// 端の角度ではcosの丸め誤差を残さず、軸に平行な視線を作る
+	if (pitch_ == kPitchLimit || pitch_ == -kPitchLimit) {
+		return {0.0f, std::copysign(1.0f, pitch_), 0.0f};
+	}
 	const float cosPitch = std::cos(pitch_);
 
 	return {
@@ -424,8 +421,54 @@ CameraPose EditorCameraController::GetPose() const {
 	    position_.y + forward.y,
 	    position_.z + forward.z,
 	};
+	// 視線がワールドのY軸に平行でも、視線と直交する上方向を作る
+	const DirectX::XMFLOAT3 right{std::cos(yaw_), 0.0f, -std::sin(yaw_)};
+	DirectX::XMStoreFloat3(&pose.up, DirectX::XMVector3Cross(
+	    DirectX::XMLoadFloat3(&forward), DirectX::XMLoadFloat3(&right)));
 
 	return pose;
+}
+
+bool EditorCameraController::SetView(CameraView view,
+                                     const DirectX::XMFLOAT3 &center) {
+	if (!MathUtils::IsFinite(center)) {
+		return false;
+	}
+	auto candidate = *this;
+	candidate.yaw_ = 0.0f;
+	candidate.pitch_ = 0.0f;
+	switch (view) {
+	case CameraView::FRONT: break;
+	case CameraView::BACK: candidate.yaw_ = DirectX::XM_PI; break;
+	case CameraView::LEFT: candidate.yaw_ = DirectX::XM_PIDIV2; break;
+	case CameraView::RIGHT: candidate.yaw_ = -DirectX::XM_PIDIV2; break;
+	case CameraView::TOP: candidate.pitch_ = -kPitchLimit; break;
+	case CameraView::BOTTOM: candidate.pitch_ = kPitchLimit; break;
+	default: return false;
+	}
+	const double distance = (std::max)(kMinimumFrameDistance,
+	    std::hypot(static_cast<double>(position_.x) - center.x,
+	               static_cast<double>(position_.y) - center.y,
+	               static_cast<double>(position_.z) - center.z));
+	const auto forward = candidate.GetForward();
+	const double x = center.x - forward.x * distance;
+	const double y = center.y - forward.y * distance;
+	const double z = center.z - forward.z * distance;
+	const double maximum = (std::numeric_limits<float>::max)();
+	if (!std::isfinite(distance) || std::abs(x) > maximum ||
+	    std::abs(y) > maximum || std::abs(z) > maximum) {
+		return false;
+	}
+	candidate.position_ = {static_cast<float>(x), static_cast<float>(y), static_cast<float>(z)};
+	Camera validation;
+	if (!validation.SetPose(candidate.GetPose())) {
+		return false;
+	}
+	candidate.navigating_ = false;
+	candidate.panning_ = false;
+	candidate.orbiting_ = false;
+	*this = candidate;
+	return true;
 }
 
 void EditorCameraController::Reset() {

@@ -728,6 +728,27 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		if (ui_.MenuItem("Frame All", "Shift+F", enabled)) {
 			action = EditorAction::FRAME_ALL;
 		}
+		if (ui_.BeginMenu("Camera View")) {
+			if (ui_.MenuItem("Front (-Z)", nullptr, enabled)) {
+				action = EditorAction::VIEW_FRONT;
+			}
+			if (ui_.MenuItem("Back (+Z)", nullptr, enabled)) {
+				action = EditorAction::VIEW_BACK;
+			}
+			if (ui_.MenuItem("Left (-X)", nullptr, enabled)) {
+				action = EditorAction::VIEW_LEFT;
+			}
+			if (ui_.MenuItem("Right (+X)", nullptr, enabled)) {
+				action = EditorAction::VIEW_RIGHT;
+			}
+			if (ui_.MenuItem("Top (+Y)", nullptr, enabled)) {
+				action = EditorAction::VIEW_TOP;
+			}
+			if (ui_.MenuItem("Bottom (-Y)", nullptr, enabled)) {
+				action = EditorAction::VIEW_BOTTOM;
+			}
+			ui_.EndMenu();
+		}
 		if (ui_.MenuItem("Reset Camera", nullptr, enabled)) {
 			action = EditorAction::RESET_CAMERA;
 		}
@@ -947,6 +968,24 @@ void EditorScene::StartAction(EditorAction action) {
 			StartBatchRename();
 		}
 		return;
+	case EditorAction::VIEW_FRONT:
+		SetCameraView(CameraView::FRONT);
+		return;
+	case EditorAction::VIEW_BACK:
+		SetCameraView(CameraView::BACK);
+		return;
+	case EditorAction::VIEW_LEFT:
+		SetCameraView(CameraView::LEFT);
+		return;
+	case EditorAction::VIEW_RIGHT:
+		SetCameraView(CameraView::RIGHT);
+		return;
+	case EditorAction::VIEW_TOP:
+		SetCameraView(CameraView::TOP);
+		return;
+	case EditorAction::VIEW_BOTTOM:
+		SetCameraView(CameraView::BOTTOM);
+		return;
 	case EditorAction::RESET_CAMERA:
 		cameraController_.Reset();
 		frameRequest_ = FrameRequest::NONE;
@@ -1143,6 +1182,28 @@ void EditorScene::StartSave(bool saveAs) {
 	fileDialog_.Show(SceneFileDialogMode::SAVE, document_.GetFilePath());
 
 	stage_ = DialogStage::SAVE_FILE;
+}
+
+void EditorScene::SetCameraView(CameraView view) {
+	DirectX::XMFLOAT3 center{};
+	if (selection_.GetCount() == 1) {
+		const auto *object = document_.GetScene().FindObject(selection_.GetActiveId());
+		if (!object) {
+			return;
+		}
+		center = object->transform.translation;
+	} else if (selection_.GetCount() > 1) {
+		Transform pivot;
+		if (!SelectionPivot::Make(document_.GetScene(), selection_, SelectionPivot::Mode::CENTER, pivot)) {
+			return;
+		}
+		center = pivot.translation;
+	}
+	if (!cameraController_.SetView(view, center)) {
+		Logger::Warning("EditorScene: 指定した方向へカメラを切り替えられませんでした。");
+		return;
+	}
+	frameRequest_ = FrameRequest::NONE;
 }
 
 void EditorScene::StartSaveCopy() {

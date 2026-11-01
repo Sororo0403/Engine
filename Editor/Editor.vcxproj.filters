@@ -184,6 +184,9 @@
     <ClInclude Include="include\panels\SceneViewPanel.h">
       <Filter>include\panels</Filter>
     </ClInclude>
+    <ClInclude Include="include\camera\CameraView.h">
+      <Filter>include\camera</Filter>
+    </ClInclude>
     <ClInclude Include="include\camera\EditorCameraController.h">
       <Filter>include\camera</Filter>
     </ClInclude>
