@@ -14,6 +14,7 @@
 #include "scene/SceneDocument.h"
 #include "scene/SceneGrid.h"
 #include "scene/SceneRenderer.h"
+#include "selection/EditorSelection.h"
 #include "selection/SelectionBounds.h"
 
 #include <filesystem>
@@ -192,6 +193,12 @@ class EditorScene final : public IScene {
 	/// <remarks>呼び出し前にFinishEditを呼び出す</remarks>
 	void DeleteObject(SceneObjectId objectId);
 
+	/// <summary>
+	/// シーンに存在する物体が1つだけ選択されているか確認する
+	/// </summary>
+	/// <returns>true:単一選択 false:未選択、複数選択、または物体なし</returns>
+	bool HasSingleSelection() const;
+
   private:
 	const ImGuiSystem &ui_;
 	const InputSystem &input_;
@@ -213,7 +220,7 @@ class EditorScene final : public IScene {
 	AssetDatabase assets_{L"resources/editor"};
 	AssetsPanel assetsPanel_;
 
-	SceneObjectId selectedObjectId_ = 0;
+	EditorSelection selection_;
 
 	SaveChangesDialog saveChangesDialog_;
 	SceneFileDialog fileDialog_;

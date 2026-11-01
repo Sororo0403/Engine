@@ -7,6 +7,7 @@
 
 class ImGuiSystem;
 class Scene;
+class EditorSelection;
 
 /// <summary>
 /// シーン上の物体の一覧・検索・選択・操作要求を管理する
@@ -30,6 +31,7 @@ class HierarchyPanel {
 		SceneObjectId objectId = 0;
 
 		bool windowFocused = false;
+		bool selectionChanged = false;
 	};
 
 	/// <summary>
@@ -38,10 +40,10 @@ class HierarchyPanel {
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
 	/// <param name="scene">表示対象のシーン</param>
-	/// <param name="selectedObjectId">選択中の物体ID。未選択は0</param>
+	/// <param name="selection">Editorの選択状態</param>
 	/// <returns>要求された操作と入力状態</returns>
 	Result Draw(const ImGuiSystem &ui, const Scene &scene,
-	            SceneObjectId &selectedObjectId);
+	            EditorSelection &selection);
 
 	/// <summary>
 	/// 検索文字列をクリアする。物体の選択状態は変更しない

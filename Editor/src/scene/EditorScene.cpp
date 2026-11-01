@@ -47,7 +47,7 @@ bool EditorScene::Initialize() {
 	errorMessage_.clear();
 
 	document_.New();
-	selectedObjectId_ = 0;
+	selection_.Clear();
 
 	hierarchyPanel_.Clear();
 	assetsPanel_.Clear();
@@ -84,16 +84,13 @@ bool EditorScene::Update(float deltaTime) {
 
 	ui_.BeginDisabled(wasBusy);
 
-	const SceneObjectId previousSelection = selectedObjectId_;
+	const auto hierarchyRequest = hierarchyPanel_.Draw(ui_, scene, selection_);
 
-	const auto hierarchyRequest =
-	    hierarchyPanel_.Draw(ui_, scene, selectedObjectId_);
-
-	if (previousSelection != selectedObjectId_) {
+	if (hierarchyRequest.selectionChanged) {
 		FinishEdit();
 	}
 
-	inspectorPanel_.Draw(ui_, scene, selectedObjectId_, history);
+	inspectorPanel_.Draw(ui_, scene, selection_.GetActiveId(), history);
 
 	const auto requestedModelPath = assetsPanel_.Draw(ui_, assets_);
 
@@ -117,7 +114,7 @@ bool EditorScene::Update(float deltaTime) {
 			try {
 				switch (hierarchyRequest.action) {
 				case HierarchyPanel::Action::CREATE_EMPTY:
-					selectedObjectId_ = history.CreateObject();
+					selection_.SelectOnly(history.CreateObject());
 					break;
 				case HierarchyPanel::Action::DELETE_OBJECT:
 					DeleteObject(hierarchyRequest.objectId);
@@ -155,9 +152,9 @@ bool EditorScene::Update(float deltaTime) {
 
 	UpdateDialogs();
 
-	// Undoで選択物体が削除された場合も、選択を解除する
-	if (!scene.Contains(selectedObjectId_)) {
-		selectedObjectId_ = 0;
+	// 消えた物体だけを除き、残っている選択は維持する
+	if (selection_.RemoveMissing(scene)) {
+		FinishEdit();
 	}
 
 	const bool inputBlocked =
@@ -228,27 +225,31 @@ bool EditorScene::Update(float deltaTime) {
 		}
 	}
 
-	SceneObject *selected = scene.FindObject(selectedObjectId_);
+	const SceneObjectId activeId = selection_.GetActiveId();
+
+	SceneObject *selected = scene.FindObject(activeId);
 
 	Transform *transform = nullptr;
 
-	if (selected && !selected->modelPath.empty()) {
+	// 複数物体のギズモ操作を実装するまでは、単一選択に限定する
+	if (selection_.GetCount() == 1 && selected &&
+	    !selected->modelPath.empty()) {
 		transform = &selected->transform;
 	}
 
 	const Transform beforeGizmo = transform ? *transform : Transform{};
 
-	const bool gizmoEnabled = !inputBlocked && viewport.applicationFocused &&
+	const bool gizmoEnabled = !inputBlocked && selection_.GetCount() == 1 &&
+	                          viewport.applicationFocused &&
 	                          !viewport.rightDown &&
 	                          (!viewport.widgetActive || gizmo_.IsUsing());
 
-	const auto gizmoResult =
-	    sceneViewPanel_.DrawGizmo(ui_, gizmo_, view, projection,
-	                              selectedObjectId_, transform, gizmoEnabled);
+	const auto gizmoResult = sceneViewPanel_.DrawGizmo(
+	    ui_, gizmo_, view, projection, activeId, transform, gizmoEnabled);
 
 	if (gizmoResult.changed) {
 		if (!gizmoEditActive_) {
-			if (!history.BeginTransform(selectedObjectId_, beforeGizmo)) {
+			if (!history.BeginTransform(activeId, beforeGizmo)) {
 				Logger::Error(
 				    "EditorScene: ギズモの編集履歴を開始できませんでした。");
 				return false;
@@ -273,9 +274,12 @@ bool EditorScene::Update(float deltaTime) {
 		const SceneObjectId picked =
 		    renderer_.Pick(viewport.imageX, viewport.imageY);
 
-		if (picked != selectedObjectId_) {
+		const bool changed = ImGui::GetIO().KeyCtrl
+		                         ? selection_.Toggle(picked)
+		                         : selection_.SelectOnly(picked);
+
+		if (changed) {
 			FinishEdit();
-			selectedObjectId_ = picked;
 		}
 	}
 
@@ -285,10 +289,12 @@ bool EditorScene::Update(float deltaTime) {
 		return false;
 	}
 
-	if (!selectionBounds_.Update(renderer_, selectedObjectId_)) {
-		Logger::Error(
-		    "EditorScene: 選択物体の外接ボックスを登録できませんでした。");
-		return false;
+	for (const SceneObjectId id : selection_.GetIds()) {
+		if (!selectionBounds_.Update(renderer_, id)) {
+			Logger::Error(
+			    "EditorScene: 選択物体の外接ボックスを登録できませんでした。");
+			return false;
+		}
 	}
 
 	// 全ての線を登録した後、一度だけ頂点バッファへ転送する
@@ -315,7 +321,7 @@ void EditorScene::Finalize() {
 	renderer_.Finalize();
 
 	document_.New();
-	selectedObjectId_ = 0;
+	selection_.Clear();
 
 	hierarchyPanel_.Clear();
 
@@ -408,7 +414,7 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 
 		const bool objectEnabled =
 		    enabled && !ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
-		    document_.GetScene().Contains(selectedObjectId_);
+		    HasSingleSelection();
 
 		if (ui_.MenuItem("Duplicate", "Ctrl+D", objectEnabled)) {
 			action = EditorAction::DUPLICATE_OBJECT;
@@ -447,10 +453,9 @@ EditorScene::ReadShortcut(bool objectPanelFocused) const {
 	const bool shift = keyboard.IsDown(Key::SHIFT);
 	const bool alt = keyboard.IsDown(Key::ALT);
 
-	const bool objectEnabled = objectPanelFocused &&
-	                           !ImGui::IsAnyItemActive() &&
-	                           !ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
-	                           document_.GetScene().Contains(selectedObjectId_);
+	const bool objectEnabled =
+	    objectPanelFocused && !ImGui::IsAnyItemActive() &&
+	    !ImGui::IsMouseDown(ImGuiMouseButton_Right) && HasSingleSelection();
 
 	// 修飾キーなしのDeleteだけを、物体削除として扱う
 	if (objectEnabled && !control && !shift && !alt &&
@@ -542,16 +547,21 @@ void EditorScene::StartAction(EditorAction action) {
 		StartSave(true);
 		return;
 	case EditorAction::DUPLICATE_OBJECT: {
+		if (!HasSingleSelection()) {
+			return;
+		}
+
 		try {
 			const SceneObjectId duplicatedId =
-			    document_.GetHistory().DuplicateObject(selectedObjectId_);
+			    document_.GetHistory().DuplicateObject(
+			        selection_.GetActiveId());
 
 			if (duplicatedId == 0) {
 				ShowError("Could not duplicate the object.");
 				return;
 			}
 
-			selectedObjectId_ = duplicatedId;
+			selection_.SelectOnly(duplicatedId);
 		} catch (const std::exception &error) {
 			Logger::Error(std::format(
 			    "EditorScene: 物体の複製に失敗しました: {}", error.what()));
@@ -562,7 +572,7 @@ void EditorScene::StartAction(EditorAction action) {
 		return;
 	}
 	case EditorAction::DELETE_OBJECT:
-		DeleteObject(selectedObjectId_);
+		DeleteObject(selection_.GetActiveId());
 		return;
 	case EditorAction::NONE:
 		return;
@@ -582,7 +592,7 @@ void EditorScene::ExecutePendingAction() {
 		gizmo_.Cancel();
 		gizmoEditActive_ = false;
 
-		selectedObjectId_ = 0;
+		selection_.Clear();
 		cameraController_.Reset();
 		hierarchyPanel_.Clear();
 
@@ -661,7 +671,7 @@ void EditorScene::UpdateDialogs() {
 				gizmo_.Cancel();
 				gizmoEditActive_ = false;
 
-				selectedObjectId_ = 0;
+				selection_.Clear();
 				cameraController_.Reset();
 				hierarchyPanel_.Clear();
 
@@ -750,8 +760,10 @@ void EditorScene::PlaceModel(const std::filesystem::path &modelPath) {
 			return;
 		}
 
-		selectedObjectId_ =
+		const SceneObjectId createdId =
 		    document_.GetHistory().CreateObject(name, modelPath);
+
+		selection_.SelectOnly(createdId);
 	} catch (const std::exception &error) {
 		Logger::Error(std::format("EditorScene::PlaceModel: {}", error.what()));
 
@@ -768,7 +780,8 @@ void EditorScene::FinishEdit() {
 
 bool EditorScene::ReadFrameSelectedShortcut(const ViewportInput &viewport,
                                             bool hierarchyFocused) const {
-	if (IsBusy() || selectedObjectId_ == 0 || !viewport.applicationFocused ||
+	if (IsBusy() || selection_.GetActiveId() == 0 ||
+	    !viewport.applicationFocused ||
 	    (!viewport.windowFocused && !hierarchyFocused) ||
 	    viewport.widgetActive || viewport.rightDown ||
 	    ui_.IsTextInputActive() || ImGui::IsAnyItemActive() ||
@@ -791,7 +804,7 @@ bool EditorScene::FrameSelected(const DirectX::XMFLOAT4X4 &projection) {
 	std::array<DirectX::XMFLOAT3, 8> corners{};
 
 	// 未選択や、モデルを持たない空の物体では移動しない
-	if (!renderer_.GetObjectBounds(selectedObjectId_, corners)) {
+	if (!renderer_.GetObjectBounds(selection_.GetActiveId(), corners)) {
 		return false;
 	}
 
@@ -805,7 +818,7 @@ bool EditorScene::FrameSelected(const DirectX::XMFLOAT4X4 &projection) {
 }
 
 void EditorScene::DeleteObject(SceneObjectId objectId) {
-	if (!document_.GetScene().Contains(objectId)) {
+	if (!HasSingleSelection() || selection_.GetActiveId() != objectId) {
 		return;
 	}
 
@@ -815,13 +828,16 @@ void EditorScene::DeleteObject(SceneObjectId objectId) {
 			return;
 		}
 
-		if (selectedObjectId_ == objectId) {
-			selectedObjectId_ = 0;
-		}
+		selection_.Remove(objectId);
 	} catch (const std::exception &error) {
 		Logger::Error(std::format("EditorScene: 物体の削除に失敗しました: {}",
 		                          error.what()));
 
 		ShowError("Could not delete the object. See the log for details.");
 	}
+}
+
+bool EditorScene::HasSingleSelection() const {
+	return selection_.GetCount() == 1 &&
+	       document_.GetScene().Contains(selection_.GetActiveId());
 }

@@ -119,6 +119,9 @@
     <ClCompile Include="src\history\RenameCommand.cpp">
       <Filter>src\history</Filter>
     </ClCompile>
+    <ClCompile Include="src\selection\EditorSelection.cpp">
+      <Filter>src\selection</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\scene\EditorScene.h">
@@ -171,6 +174,9 @@
     </ClInclude>
     <ClInclude Include="include\history\RenameCommand.h">
       <Filter>include\history</Filter>
+    </ClInclude>
+    <ClInclude Include="include\selection\EditorSelection.h">
+      <Filter>include\selection</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

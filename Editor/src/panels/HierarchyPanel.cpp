@@ -2,6 +2,7 @@
 
 #include "graphics/ui/ImGuiSystem.h"
 #include "scene/Scene.h"
+#include "selection/EditorSelection.h"
 
 #include <imgui.h>
 
@@ -9,13 +10,11 @@
 
 HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
                                             const Scene &scene,
-                                            SceneObjectId &selectedObjectId) {
+                                            EditorSelection &selection) {
 	Result result;
 
-	// 検索で隠れただけの場合は、選択を解除しない
-	if (!scene.Contains(selectedObjectId)) {
-		selectedObjectId = 0;
-	}
+	// 検索で隠れた物体は残し、削除済みの物体だけ取り除く
+	result.selectionChanged = selection.RemoveMissing(scene);
 
 	if (!ui.BeginWindow("Hierarchy")) {
 		ui.EndWindow();
@@ -33,27 +32,57 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 
 	ui.EndDisabled();
 
-	// 非表示の物体が選択されている場合も、削除対象を確認できるようにする
-	const SceneObject *selected = scene.FindObject(selectedObjectId);
+	ui.Text(std::format("Selected: {}", selection.GetCount()));
 
-	if (selected) {
-		const std::string_view name = selected->name.empty()
+	const SceneObject *active = scene.FindObject(selection.GetActiveId());
+
+	if (active) {
+		const std::string_view name = active->name.empty()
 		                                  ? std::string_view{"Object"}
-		                                  : std::string_view{selected->name};
+		                                  : std::string_view{active->name};
+
+		ui.Text(std::format("Active: {}", name));
+	}
+
+	std::size_t hiddenCount = 0;
+
+	for (const SceneObjectId id : selection.GetIds()) {
+		const SceneObject *object = scene.FindObject(id);
+
+		if (!object) {
+			continue;
+		}
+
+		const std::string_view name = object->name.empty()
+		                                  ? std::string_view{"Object"}
+		                                  : std::string_view{object->name};
 
 		if (!MatchesFilter(name)) {
-			ui.Text(std::format("Selected (hidden): {}", name));
+			++hiddenCount;
 		}
+	}
+
+	if (hiddenCount != 0) {
+		ui.Text(std::format("Hidden selections: {}", hiddenCount));
+	}
+
+	if (selection.GetCount() > 1) {
+		ui.Text("Inspector: active object only.");
 	}
 
 	if (ui.Button("Create Empty")) {
 		result.action = Action::CREATE_EMPTY;
 	}
 
-	if (selectedObjectId != 0 && ui.Button("Delete Selected")) {
+	// 一括削除を実装するまでは、1つだけ選択した場合に限定する
+	ui.BeginDisabled(selection.GetCount() != 1);
+
+	if (ui.Button("Delete Selected")) {
 		result.action = Action::DELETE_OBJECT;
-		result.objectId = selectedObjectId;
+		result.objectId = selection.GetActiveId();
 	}
+
+	ui.EndDisabled();
 
 	ui.Separator();
 
@@ -75,11 +104,19 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 
 			anyVisible = true;
 
-			// 名前や検索条件が変わっても、物体IDで項目を識別する
-			const auto label = std::format("{}###SceneObject{}", name, id);
+			// アクティブ物体に印を付けても、項目のIDは変えない
+			const auto label = std::format(
+			    "{}{}###SceneObject{}",
+			    selection.GetActiveId() == id ? "> " : "  ", name, id);
 
-			if (ui.Selectable(label.c_str(), selectedObjectId == id)) {
-				selectedObjectId = id;
+			if (ui.Selectable(label.c_str(), selection.Contains(id))) {
+				const bool changed = ImGui::GetIO().KeyCtrl
+				                         ? selection.Toggle(id)
+				                         : selection.SelectOnly(id);
+
+				if (changed) {
+					result.selectionChanged = true;
+				}
 			}
 		}
 
@@ -88,10 +125,8 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 		}
 	}
 
-	// BeginChildがfalseを返した場合も終了処理を呼び出す
 	ui.EndChild();
 
-	// 一覧の子領域にフォーカスがある場合もHierarchyの操作として扱う
 	result.windowFocused =
 	    ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows |
 	                           ImGuiFocusedFlags_NoPopupHierarchy);
