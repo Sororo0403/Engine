@@ -299,7 +299,7 @@ bool EditorScene::Update(float deltaTime) {
 
 	const bool gizmoEnabled = !inputBlocked && transform != nullptr &&
 	                          viewport.applicationFocused &&
-	                          !viewport.rightDown &&
+	                          !viewport.rightDown && !viewport.middleDown &&
 	                          (!viewport.widgetActive || gizmo_.IsUsing());
 
 	const auto gizmoResult = sceneViewPanel_.DrawGizmo(
@@ -529,6 +529,7 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 
 		const bool objectEnabled =
 		    enabled && !ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
+		    !ImGui::IsMouseDown(ImGuiMouseButton_Middle) &&
 		    HasSelection();
 		if (ui_.MenuItem("Select All", "Ctrl+A", enabled)) {
 			action = EditorAction::SELECT_ALL;
@@ -604,7 +605,8 @@ void EditorScene::DrawCameraSettings() {
 		return;
 	}
 	ImGui::BeginDisabled(gizmo_.IsUsing() || sceneViewPanel_.IsSelecting() ||
-	                     ImGui::IsMouseDown(ImGuiMouseButton_Right));
+	                     ImGui::IsMouseDown(ImGuiMouseButton_Right) ||
+	                     ImGui::IsMouseDown(ImGuiMouseButton_Middle));
 	auto settings = cameraController_.GetSettings();
 	bool changed = ImGui::DragFloat("Move speed", &settings.moveSpeed,
 	                                0.1f, 0.01f, 10000.0f, "%.2f");
@@ -615,6 +617,9 @@ void EditorScene::DrawCameraSettings() {
 	changed |= ImGui::DragFloat("Wheel distance", &settings.wheelDistance,
 	                           0.01f, 0.01f, 10000.0f);
 	ImGui::SetItemTooltip("Distance per wheel step. Scroll over the Scene to move forward or backward.");
+	changed |= ImGui::DragFloat("Pan sensitivity", &settings.panSensitivity,
+	                           0.0001f, 0.00001f, 100.0f, "%.5f");
+	ImGui::SetItemTooltip("Middle-drag the Scene to pan the camera.");
 	if (ImGui::Button("Restore Defaults")) {
 		settings = EditorCameraController::Settings{};
 		changed = true;
@@ -643,7 +648,8 @@ EditorScene::ReadShortcut(bool objectPanelFocused) const {
 
 	const bool selectionEnabled =
 	    objectPanelFocused && !ImGui::IsAnyItemActive() &&
-	    !ImGui::IsMouseDown(ImGuiMouseButton_Right);
+	    !ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
+	    !ImGui::IsMouseDown(ImGuiMouseButton_Middle);
 	const bool objectEnabled = selectionEnabled && HasSelection();
 	if (objectEnabled && !control && !shift && !alt) {
 		if (HasSingleSelection() && keyboard.IsPressed(Key::F2)) {
@@ -1119,7 +1125,8 @@ EditorScene::FrameRequest EditorScene::ReadFrameShortcut(
     const ViewportInput &viewport, bool hierarchyFocused) const {
 	if (IsBusy() || !viewport.applicationFocused ||
 	    (!viewport.windowFocused && !hierarchyFocused) || viewport.widgetActive ||
-	    viewport.rightDown || ui_.IsTextInputActive() || ImGui::IsAnyItemActive() ||
+	    viewport.rightDown || viewport.middleDown || ui_.IsTextInputActive() ||
+	    ImGui::IsAnyItemActive() ||
 	    gizmo_.IsUsing() || sceneViewPanel_.IsSelecting() ||
 	    document_.GetHistory().IsEditing()) {
 		return FrameRequest::NONE;

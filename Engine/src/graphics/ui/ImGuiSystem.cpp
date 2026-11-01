@@ -708,6 +708,8 @@ ViewportInput ImGuiSystem::GetViewportInput() const {
 	input.leftPressed = ImGui::IsMouseClicked(ImGuiMouseButton_Left);
 	input.rightPressed = ImGui::IsMouseClicked(ImGuiMouseButton_Right);
 	input.rightDown = ImGui::IsMouseDown(ImGuiMouseButton_Right);
+	input.middlePressed = ImGui::IsMouseClicked(ImGuiMouseButton_Middle);
+	input.middleDown = ImGui::IsMouseDown(ImGuiMouseButton_Middle);
 	input.wheelDelta = io.MouseWheel;
 
 	// 画像など、IDを持たない項目をクリックしてもMoveIdが設定される。
@@ -744,7 +746,8 @@ ViewportInput ImGuiSystem::GetViewportInput() const {
 	// フレーム末尾の処理を待たず、クリックした画像のウィンドウへ
 	// フォーカスを移してからカメラの開始条件を判定できるようにする
 	if (input.applicationFocused && input.imagePositionValid &&
-	    !input.widgetActive && (input.leftPressed || input.rightPressed)) {
+	    !input.widgetActive &&
+	    (input.leftPressed || input.rightPressed || input.middlePressed)) {
 		ImGui::SetWindowFocus();
 	}
 

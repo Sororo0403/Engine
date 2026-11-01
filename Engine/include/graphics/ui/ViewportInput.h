@@ -20,6 +20,8 @@ struct ViewportInput {
 	bool leftPressed = false;
 	bool rightPressed = false;
 	bool rightDown = false;
+	bool middlePressed = false;
+	bool middleDown = false;
 
 	// 縦ホイールの変化量。上方向が正で、通常の1刻みは1。小数も含む
 	float wheelDelta = 0.0f;

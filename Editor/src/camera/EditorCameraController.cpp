@@ -10,14 +10,16 @@
 #include <limits>
 
 bool EditorCameraController::SetSettings(const Settings &settings) {
-	if (navigating_ || !std::isfinite(settings.moveSpeed) ||
+	if (navigating_ || panning_ || !std::isfinite(settings.moveSpeed) ||
 	    settings.moveSpeed <= 0.0f || settings.moveSpeed > kMaximumMoveSpeed ||
 	    !std::isfinite(settings.fastMultiplier) || settings.fastMultiplier < 1.0f ||
 	    settings.fastMultiplier > kMaximumFastMultiplier ||
 	    !std::isfinite(settings.mouseSensitivity) || settings.mouseSensitivity <= 0.0f ||
 	    settings.mouseSensitivity > kMaximumMouseSensitivity ||
 	    !std::isfinite(settings.wheelDistance) || settings.wheelDistance <= 0.0f ||
-	    settings.wheelDistance > kMaximumWheelDistance) {
+	    settings.wheelDistance > kMaximumWheelDistance ||
+	    !std::isfinite(settings.panSensitivity) || settings.panSensitivity <= 0.0f ||
+	    settings.panSensitivity > kMaximumPanSensitivity) {
 		return false;
 	}
 	settings_ = settings;
@@ -33,6 +35,7 @@ void EditorCameraController::Update(const InputSystem &input,
                                     float deltaTime) {
 	if (!std::isfinite(deltaTime) || deltaTime < 0.0f) {
 		navigating_ = false;
+		panning_ = false;
 		return;
 	}
 
@@ -44,11 +47,38 @@ void EditorCameraController::Update(const InputSystem &input,
 	    viewport.widgetActive || !mouse.IsConnected() ||
 	    keyboard.IsPressed(Key::ESCAPE)) {
 		navigating_ = false;
+		panning_ = false;
 		return;
 	}
 
 	if (!viewport.rightDown) {
 		navigating_ = false;
+		if (viewport.middleDown) {
+			const bool started = !panning_;
+			if (started && (!viewport.imageHovered || !viewport.middlePressed)) {
+				return;
+			}
+			panning_ = true;
+			if (!started) {
+				const auto forward = GetForward();
+				const DirectX::XMFLOAT3 right{std::cos(yaw_), 0.0f, -std::sin(yaw_)};
+				DirectX::XMFLOAT3 up;
+				DirectX::XMStoreFloat3(&up, DirectX::XMVector3Cross(
+				    DirectX::XMLoadFloat3(&forward), DirectX::XMLoadFloat3(&right)));
+				const auto &state = mouse.GetState();
+				// ドラッグした方向に景色が動く。相対移動量には時間を掛けない
+				const float x = -static_cast<float>(state.deltaX) * settings_.panSensitivity;
+				const float y = static_cast<float>(state.deltaY) * settings_.panSensitivity;
+				const DirectX::XMFLOAT3 next{position_.x + right.x * x + up.x * y,
+				                             position_.y + right.y * x + up.y * y,
+				                             position_.z + right.z * x + up.z * y};
+				if (MathUtils::IsFinite(next)) {
+					position_ = next;
+				}
+			}
+			return;
+		}
+		panning_ = false;
 		if (viewport.imageHovered && std::isfinite(viewport.wheelDelta) &&
 		    viewport.wheelDelta != 0.0f) {
 			// ホイールはフレーム内の変化量なので、deltaTimeを掛けない
@@ -66,6 +96,7 @@ void EditorCameraController::Update(const InputSystem &input,
 		return;
 	}
 
+	panning_ = false;
 	bool started = false;
 
 	if (!navigating_) {
@@ -319,6 +350,7 @@ bool EditorCameraController::FrameBounds(
 
 	position_ = newPosition;
 	navigating_ = false;
+	panning_ = false;
 
 	return true;
 }
@@ -352,4 +384,5 @@ void EditorCameraController::Reset() {
 	yaw_ = 0.0f;
 	pitch_ = 0.0f;
 	navigating_ = false;
+	panning_ = false;
 }

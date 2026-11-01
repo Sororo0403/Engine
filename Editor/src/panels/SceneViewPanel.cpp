@@ -107,7 +107,8 @@ SceneViewPanel::SelectionRequest SceneViewPanel::UpdateSelection(
 	SelectionRequest request;
 	const auto &io = ImGui::GetIO();
 	if (!enabled || !visible_ || !input_.applicationFocused ||
-	    !input_.windowFocused || input_.widgetActive || input_.rightDown ||
+	    !input_.windowFocused || input_.widgetActive ||
+	    input_.rightDown || input_.middleDown ||
 	    ImGui::IsKeyPressed(ImGuiKey_Escape, false) ||
 	    !ImGui::IsMousePosValid()) {
 		CancelSelection();
