@@ -14,34 +14,32 @@ void TransformGizmo::BeginFrame() {
 
 void TransformGizmo::DrawToolbar(SelectionMode selectionMode) {
 	const bool multiple = selectionMode == SelectionMode::MULTIPLE;
-	const Operation effectiveOperation =
-	    multiple && operation_ == Operation::SCALE ? Operation::TRANSLATE
-	                                              : operation_;
-	// 複数選択で使用できないScaleは保持し、表示はMoveへ切り替える
-	// MoveかRotateを選んだ場合だけ、保持する操作種別を更新する
 
 	// ドラッグ中に操作種別を切り替えない
 	ImGui::BeginDisabled(using_);
 
-	if (ImGui::RadioButton("Move", effectiveOperation == Operation::TRANSLATE)) {
+	if (ImGui::RadioButton("Move", operation_ == Operation::TRANSLATE)) {
 		operation_ = Operation::TRANSLATE;
 	}
 
 	ImGui::SameLine();
 
-	if (ImGui::RadioButton("Rotate", effectiveOperation == Operation::ROTATE)) {
+	if (ImGui::RadioButton("Rotate", operation_ == Operation::ROTATE)) {
 		operation_ = Operation::ROTATE;
 	}
 
 	ImGui::SameLine();
 
-	ImGui::BeginDisabled(multiple);
-	if (ImGui::RadioButton("Scale", effectiveOperation == Operation::SCALE)) {
+	if (ImGui::RadioButton("Scale", operation_ == Operation::SCALE)) {
 		operation_ = Operation::SCALE;
 	}
 
 	ImGui::EndDisabled();
-	ImGui::EndDisabled();
+
+	if (multiple && operation_ == Operation::SCALE) {
+		ImGui::SameLine();
+		ImGui::TextUnformatted("Drag the center to scale uniformly.");
+	}
 }
 
 TransformGizmo::Result TransformGizmo::Draw(
@@ -89,10 +87,9 @@ TransformGizmo::Result TransformGizmo::Draw(
 		return result;
 	}
 
-	const Operation effectiveOperation =
-	    selectionMode == SelectionMode::MULTIPLE && operation_ == Operation::SCALE
-	        ? Operation::TRANSLATE
-	        : operation_;
+	const Operation effectiveOperation = operation_;
+	const bool uniformScale = selectionMode == SelectionMode::MULTIPLE &&
+	                          effectiveOperation == Operation::SCALE;
 	ImGuizmo::OPERATION operation = ImGuizmo::TRANSLATE;
 
 	switch (effectiveOperation) {
@@ -121,6 +118,8 @@ TransformGizmo::Result TransformGizmo::Draw(
 	const ImGuizmo::MODE mode = selectionMode == SelectionMode::MULTIPLE
 	                                ? ImGuizmo::WORLD
 	                                : ImGuizmo::LOCAL;
+	// 複数選択の拡縮は軸を隠し、均等拡縮用の中央ハンドルだけを使用する
+	ImGuizmo::SetAxisMask(uniformScale, uniformScale, uniformScale);
 	const bool manipulated = ImGuizmo::Manipulate(
 	    &view._11, &projection._11, operation, mode, &matrix._11);
 
@@ -128,6 +127,7 @@ TransformGizmo::Result TransformGizmo::Draw(
 
 	// 引数ありのIsOverで、現在の操作に対する当たり判定を取得する
 	result.blocksSelection = wasUsing || using_ || ImGuizmo::IsOver(operation);
+	ImGuizmo::SetAxisMask(false, false, false);
 
 	if (!manipulated) {
 		return result;
@@ -152,7 +152,11 @@ TransformGizmo::Result TransformGizmo::Draw(
 		break;
 
 	case Operation::SCALE:
-		edited.scale = decomposed.scale;
+		// 行列分解の誤差で、複数選択の各軸に異なる倍率を蓄積させない
+		edited.scale = uniformScale
+		                   ? XMFLOAT3{decomposed.scale.x, decomposed.scale.x,
+		                              decomposed.scale.x}
+		                   : decomposed.scale;
 		break;
 	}
 

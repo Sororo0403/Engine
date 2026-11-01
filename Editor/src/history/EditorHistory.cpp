@@ -5,6 +5,7 @@
 #include "scene/Scene.h"
 
 #include <cassert>
+#include <cmath>
 #include <exception>
 #include <format>
 #include <limits>
@@ -204,6 +205,27 @@ bool EditorHistory::UpdateTransforms(
 		return false;
 	}
 
+	// ピボットの各軸の倍率を確認し、軸別の拡縮や符号反転を受け入れない
+	if (beforePivot.scale.x <= 0.0f || beforePivot.scale.y <= 0.0f ||
+	    beforePivot.scale.z <= 0.0f || afterPivot.scale.x <= 0.0f ||
+	    afterPivot.scale.y <= 0.0f || afterPivot.scale.z <= 0.0f) {
+		return false;
+	}
+	const double ratioX = static_cast<double>(afterPivot.scale.x) /
+	                      beforePivot.scale.x;
+	const double ratioY = static_cast<double>(afterPivot.scale.y) /
+	                      beforePivot.scale.y;
+	const double ratioZ = static_cast<double>(afterPivot.scale.z) /
+	                      beforePivot.scale.z;
+	const float scaleRatio = static_cast<float>(ratioX);
+	const double tolerance = 0.00001 * ratioX;
+	if (!std::isfinite(scaleRatio) || scaleRatio <= 0.0f ||
+	    std::abs(ratioY - ratioX) > tolerance ||
+	    std::abs(ratioZ - ratioX) > tolerance) {
+		return false;
+	}
+	const bool scaled = scaleRatio != 1.0f;
+
 	using namespace DirectX;
 	const XMVECTOR beforeRotation =
 	    XMQuaternionNormalize(XMLoadFloat4(&beforePivot.rotation));
@@ -224,7 +246,15 @@ bool EditorHistory::UpdateTransforms(
 
 	const auto makeEdited = [&](const TransformSnapshot &snapshot) {
 		Transform edited = snapshot.before;
-		if (!rotated) {
+		if (scaled) {
+			// 元の軸ごとの比率と符号を保ったまま、同じ倍率を適用する
+			edited.scale = {
+			    snapshot.before.scale.x * scaleRatio,
+			    snapshot.before.scale.y * scaleRatio,
+			    snapshot.before.scale.z * scaleRatio,
+			};
+		}
+		if (!rotated && !scaled) {
 			// 移動だけの場合は、中心との減算・加算による位置の誤差を避ける
 			edited.translation = {
 			    snapshot.before.translation.x +
@@ -237,21 +267,28 @@ bool EditorHistory::UpdateTransforms(
 			return edited;
 		}
 
-		// 開始時点の中心からの位置と、物体自身の向きを同じ差分で回す
-		const XMVECTOR relativePosition = XMVectorSubtract(
+		// 開始時点の中心からの距離にも、同じ拡縮・回転を適用する
+		XMVECTOR relativePosition = XMVectorSubtract(
 		    XMLoadFloat3(&snapshot.before.translation), beforeCenter);
+		if (scaled) {
+			relativePosition = XMVectorScale(relativePosition, scaleRatio);
+		}
+		if (rotated) {
+			relativePosition = XMVector3Rotate(relativePosition, deltaRotation);
+		}
 		XMStoreFloat3(
 		    &edited.translation,
-		    XMVectorAdd(afterCenter,
-		                XMVector3Rotate(relativePosition, deltaRotation)));
+		    XMVectorAdd(afterCenter, relativePosition));
 
-		const XMVECTOR originalRotation =
-		    XMQuaternionNormalize(XMLoadFloat4(&snapshot.before.rotation));
-		// DirectXMathでは第1引数の回転の後に第2引数の回転を適用する
-		XMStoreFloat4(
-		    &edited.rotation,
-		    XMQuaternionNormalize(
-		        XMQuaternionMultiply(originalRotation, deltaRotation)));
+		if (rotated) {
+			const XMVECTOR originalRotation =
+			    XMQuaternionNormalize(XMLoadFloat4(&snapshot.before.rotation));
+			// DirectXMathでは第1引数の回転の後に第2引数の回転を適用する
+			XMStoreFloat4(
+			    &edited.rotation,
+			    XMQuaternionNormalize(
+			        XMQuaternionMultiply(originalRotation, deltaRotation)));
+		}
 		return edited;
 	};
 

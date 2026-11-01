@@ -155,11 +155,10 @@ class EditorHistory {
 	bool BeginTransforms(std::span<const SceneObjectId> objectIds);
 
 	/// <summary>
-	/// ギズモの移動・回転を、編集開始時点の全物体へ適用する。
-	/// 拡大率は変更しない
+	/// ギズモの移動・回転・均等拡縮を、編集開始時点の全物体へ適用する
 	/// </summary>
-	/// <param name="beforePivot">編集開始時点のギズモの変形情報</param>
-	/// <param name="afterPivot">現在のギズモの変形情報</param>
+	/// <param name="beforePivot">編集開始時点のギズモの変形情報。拡大率は正</param>
+	/// <param name="afterPivot">現在のギズモの変形情報。各軸の倍率は同じ正の値</param>
 	/// <returns>true:全件適用成功 false:複数編集なし、対象なし、または値が無効</returns>
 	bool UpdateTransforms(const Transform &beforePivot,
 	                      const Transform &afterPivot);
