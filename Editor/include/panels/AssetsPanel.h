@@ -26,13 +26,19 @@ class AssetsPanel {
 	std::filesystem::path Draw(const ImGuiSystem &ui, AssetDatabase &assets);
 
 	/// <summary>
-	/// 選択・検索・表示要求をクリアする
+	/// 選択・検索・表示要求をクリアし、検索先のルートフォルダへ戻る
 	/// </summary>
 	void Clear();
 
   private:
 	/// <summary>
-	/// 同じファイルを指す一覧の項目を選択し、検索を解除する
+	/// 表示するフォルダを切り替え、選択・検索を解除する
+	/// </summary>
+	/// <param name="directory">アセットの検索先を基準にしたパス。空は検索先自身</param>
+	void OpenDirectory(std::filesystem::path directory);
+
+	/// <summary>
+	/// 同じファイルを指す一覧の項目を選択し、親フォルダを開いて検索を解除する
 	/// </summary>
 	/// <param name="path">探すモデルのパス</param>
 	/// <param name="assets">確認するアセット一覧</param>
@@ -40,8 +46,10 @@ class AssetsPanel {
 	bool SelectModel(const std::filesystem::path &path, const AssetDatabase &assets);
 
 	std::filesystem::path selectedPath_;
+	std::filesystem::path currentDirectory_;
 	std::string filter_;
 	std::filesystem::path revealPath_;
 	std::string revealMessage_;
 	bool scrollToSelected_ = false;
+	bool scrollToTop_ = true;
 };

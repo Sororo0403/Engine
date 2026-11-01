@@ -5,7 +5,7 @@
 #include <vector>
 
 /// <summary>
-/// Editorが使用するモデルアセットの一覧を管理する
+/// Editorが使用するモデルアセットとフォルダの一覧を管理する
 /// </summary>
 class AssetDatabase {
   public:
@@ -37,6 +37,12 @@ class AssetDatabase {
 	const std::vector<std::filesystem::path> &GetModels() const;
 
 	/// <summary>
+	/// 空のフォルダを含む、検索先配下のフォルダ一覧を取得する
+	/// </summary>
+	/// <returns>実行ファイルのフォルダを基準にした相対パスの一覧。検索先自身は含まない</returns>
+	const std::vector<std::filesystem::path> &GetDirectories() const;
+
+	/// <summary>
 	/// 最後の検索で発生したエラーを取得する
 	/// </summary>
 	/// <returns>エラーメッセージ。成功時は空文字列</returns>
@@ -50,5 +56,6 @@ class AssetDatabase {
   private:
 	std::filesystem::path rootDirectory_;
 	std::vector<std::filesystem::path> models_;
+	std::vector<std::filesystem::path> directories_;
 	std::string error_;
 };

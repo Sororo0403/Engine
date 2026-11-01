@@ -72,6 +72,7 @@ void ControlsPanel::Draw() {
 	    {"Hierarchy double-click", "Frame the clicked model."},
 	});
 	DrawSection("Selection and objects", {
+	    {"Assets folders / Up / Root", "Open a folder or return to its parent or the Assets root. Search finds model paths across all folders."},
 	    {"Click / Ctrl + click", "Select one object / toggle an object in the selection."},
 	    {"Drag in Scene", "Select models inside the rectangle."},
 	    {"Ctrl + drag in Scene", "Add models inside the rectangle to the selection."},

@@ -41,6 +41,7 @@ bool AssetDatabase::Refresh() {
 		}
 
 		std::vector<std::filesystem::path> models;
+		std::vector<std::filesystem::path> directories;
 
 		std::filesystem::recursive_directory_iterator iterator(root, error);
 		const std::filesystem::recursive_directory_iterator end;
@@ -54,6 +55,14 @@ bool AssetDatabase::Refresh() {
 			if (typeError) {
 				throw std::system_error(
 				    typeError, "アセットの種類を確認できませんでした。");
+			}
+
+			const bool directory = entry.is_directory(typeError);
+			if (typeError) {
+				throw std::system_error(typeError, "アセットのフォルダを確認できませんでした。");
+			}
+			if (directory) {
+				directories.push_back(entry.path().lexically_relative(executableDirectory));
 			}
 
 			if (regularFile) {
@@ -85,12 +94,15 @@ bool AssetDatabase::Refresh() {
 		}
 
 		std::sort(models.begin(), models.end());
+		std::sort(directories.begin(), directories.end());
 
 		models_.swap(models);
+		directories_.swap(directories);
 		error_.clear();
 		return true;
 	} catch (const std::exception &error) {
 		models_.clear();
+		directories_.clear();
 		error_ = error.what();
 
 		Logger::Error(std::format("AssetDatabase::Refresh: {}", error_));
@@ -108,7 +120,12 @@ const std::vector<std::filesystem::path> &AssetDatabase::GetModels() const {
 
 const std::string &AssetDatabase::GetError() const { return error_; }
 
+const std::vector<std::filesystem::path> &AssetDatabase::GetDirectories() const {
+	return directories_;
+}
+
 void AssetDatabase::Clear() {
 	models_.clear();
+	directories_.clear();
 	error_.clear();
 }

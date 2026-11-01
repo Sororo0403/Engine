@@ -12,9 +12,19 @@
 #include <imgui.h>
 #include <stdexcept>
 #include <system_error>
+#include <utility>
 
 void AssetsPanel::RequestReveal(const std::filesystem::path &path) {
 	revealPath_ = path;
+}
+
+void AssetsPanel::OpenDirectory(std::filesystem::path directory) {
+	currentDirectory_.swap(directory);
+	selectedPath_.clear();
+	filter_.clear();
+	revealMessage_.clear();
+	scrollToSelected_ = false;
+	scrollToTop_ = true;
 }
 
 bool AssetsPanel::SelectModel(const std::filesystem::path &path, const AssetDatabase &assets) {
@@ -38,9 +48,12 @@ bool AssetsPanel::SelectModel(const std::filesystem::path &path, const AssetData
 		return false;
 	}
 	auto selected = *found;
+	auto folder = selected.lexically_relative(assets.GetRootDirectory()).parent_path();
 	selectedPath_.swap(selected);
+	currentDirectory_.swap(folder);
 	filter_.clear();
 	scrollToSelected_ = true;
+	scrollToTop_ = false;
 	return true;
 }
 
@@ -62,8 +75,6 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 		revealMessage_.clear();
 	}
 
-	ui.SameLine();
-	ui.Text(PathUtils::ToUtf8(assets.GetRootDirectory()));
 	if (!revealPath_.empty()) {
 		try {
 			if (SelectModel(revealPath_, assets) || (assets.Refresh() && SelectModel(revealPath_, assets))) {
@@ -77,13 +88,35 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 		}
 		revealPath_.clear();
 	}
+	const auto &directories = assets.GetDirectories();
+	if (!currentDirectory_.empty() && std::none_of(directories.begin(), directories.end(), [&](const auto &directory) {
+		    return directory.lexically_relative(assets.GetRootDirectory()) == currentDirectory_;
+		})) {
+		// 更新で開いていたフォルダが消えた場合は、検索先自身へ戻る
+		OpenDirectory({});
+	}
+	ui.SameLine();
+	ui.BeginDisabled(currentDirectory_.empty() && filter_.empty());
+	if (ui.Button("Root")) {
+		OpenDirectory({});
+	}
+	ui.EndDisabled();
+	ui.SameLine();
+	ui.BeginDisabled(currentDirectory_.empty());
+	if (ui.Button("Up")) {
+		OpenDirectory(currentDirectory_.parent_path());
+	}
+	ui.EndDisabled();
+	ui.Text(PathUtils::ToUtf8(assets.GetRootDirectory() / currentDirectory_));
 
 	if (ui.InputText("Search", filter_)) {
+		scrollToTop_ = true;
 		// 検索で隠れたモデルを誤って配置しないよう選択を解除する
 		selectedPath_.clear();
 		scrollToSelected_ = false;
 		revealMessage_.clear();
 	}
+	ImGui::TextDisabled("%s", filter_.empty() ? "Click a folder to open it." : "Searching all folders.");
 
 	const auto &models = assets.GetModels();
 
@@ -104,9 +137,31 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 	const float listHeight = std::max(1.0f, contentSize.y - 90.0f);
 
 	const bool drawModels = ui.BeginChild("ModelAssets", 0.0f, listHeight);
+	std::filesystem::path nextDirectory;
+	bool openRequested = false;
 
 	if (drawModels) {
+		if (scrollToTop_) {
+			ImGui::SetScrollY(0.0f);
+			scrollToTop_ = false;
+		}
 		bool anyVisible = false;
+		if (filter_.empty()) {
+			for (const auto &directory : directories) {
+				const auto relative = directory.lexically_relative(assets.GetRootDirectory());
+				if (relative.parent_path() != currentDirectory_) {
+					continue;
+				}
+				anyVisible = true;
+				const auto label = std::format("[Folder] {}", PathUtils::ToUtf8(relative.filename()));
+				ImGui::PushID(PathUtils::ToUtf8(directory).c_str());
+				if (ui.Selectable(label.c_str(), false)) {
+					nextDirectory = relative;
+					openRequested = true;
+				}
+				ImGui::PopID();
+			}
+		}
 
 		for (std::size_t i = 0; i < models.size(); ++i) {
 			const auto &modelPath = models[i];
@@ -114,16 +169,20 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 			// パネル内では、アセットフォルダからのパスを表示する
 			const auto displayPath =
 			    modelPath.lexically_relative(assets.GetRootDirectory());
+			if (filter_.empty() && displayPath.parent_path() != currentDirectory_) {
+				continue;
+			}
 
-			const std::string label = PathUtils::ToUtf8(displayPath);
+			const std::string searchPath = PathUtils::ToUtf8(displayPath);
 
-			if (!filter_.empty() && label.find(filter_) == std::string::npos) {
+			if (!filter_.empty() && searchPath.find(filter_) == std::string::npos) {
 				continue;
 			}
 
 			anyVisible = true;
 
 			ui.PushID(static_cast<int>(i));
+			const auto label = filter_.empty() ? PathUtils::ToUtf8(displayPath.filename()) : searchPath;
 
 			if (ui.Selectable(label.c_str(), selectedPath_ == modelPath)) {
 				selectedPath_ = modelPath;
@@ -142,11 +201,14 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 		}
 
 		if (!anyVisible) {
-			ui.Text("No models found.");
+			ui.Text(filter_.empty() ? "No folders or models." : "No matching models.");
 		}
 	}
 
 	ui.EndChild();
+	if (openRequested) {
+		OpenDirectory(std::move(nextDirectory));
+	}
 
 	if (!selectedPath_.empty()) {
 		const auto displayPath =
@@ -169,8 +231,10 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 
 void AssetsPanel::Clear() {
 	selectedPath_.clear();
+	currentDirectory_.clear();
 	filter_.clear();
 	revealPath_.clear();
 	revealMessage_.clear();
 	scrollToSelected_ = false;
+	scrollToTop_ = true;
 }
