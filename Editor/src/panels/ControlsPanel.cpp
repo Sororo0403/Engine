@@ -247,6 +247,10 @@ void ControlsPanel::Draw() {
 	         "Confirm to reload the active file from disk. Success resets "
 	         "selection, camera and undo history; a failed load keeps the "
 	         "edited scene."},
+	        {"File > Game Settings",
+	         "Set the game title and render size before Play or export. Apply "
+	         "keeps the scene and its undo history unchanged. Settings are "
+	         "saved when Editor closes."},
 	        {"File > Export Game",
 	         "Choose a new folder, game title and window size. Build Release "
 	         "first. Export keeps the active scene and saved state; run "

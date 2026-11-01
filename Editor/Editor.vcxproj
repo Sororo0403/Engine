@@ -290,4 +290,8 @@ exit /b 0</Command>
   <ItemGroup>
     <ClInclude Include="include\layout\GameViewLayout.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\dialogs\GameSettingsDialog.h" />
+    <ClCompile Include="src\dialogs\GameSettingsDialog.cpp" />
+  </ItemGroup>
 </Project>

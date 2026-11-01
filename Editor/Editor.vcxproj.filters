@@ -478,4 +478,12 @@
       <Filter>include\layout</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\dialogs\GameSettingsDialog.h">
+      <Filter>include\dialogs</Filter>
+    </ClInclude>
+    <ClCompile Include="src\dialogs\GameSettingsDialog.cpp">
+      <Filter>src\dialogs</Filter>
+    </ClCompile>
+  </ItemGroup>
 </Project>

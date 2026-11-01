@@ -772,6 +772,10 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			action = EditorAction::SAVE_COPY;
 		}
 
+		if (ui_.MenuItem("Game Settings...", nullptr, enabled)) {
+			action = EditorAction::GAME_SETTINGS;
+		}
+
 		if (ui_.MenuItem("Export Game...", nullptr, enabled)) {
 			action = EditorAction::EXPORT_GAME;
 		}
@@ -1209,6 +1213,10 @@ void EditorScene::StartAction(EditorAction action) {
 	FinishEdit();
 
 	switch (action) {
+	case EditorAction::GAME_SETTINGS:
+		gameSettingsDialog_.Show(exportConfig_);
+		stage_ = DialogStage::GAME_SETTINGS;
+		return;
 	case EditorAction::EXPORT_GAME: {
 		GameExportOptions options;
 		const auto root = PathUtils::GetExecutableDirectory();
@@ -1716,6 +1724,19 @@ void EditorScene::UpdateDialogs() {
 		return;
 	}
 
+	case DialogStage::GAME_SETTINGS: {
+		const auto result = gameSettingsDialog_.Draw(ui_);
+
+		if (result == GameSettingsResult::ACCEPTED) {
+			exportConfig_ = gameSettingsDialog_.GetConfig();
+		}
+
+		if (result != GameSettingsResult::NONE) {
+			stage_ = DialogStage::IDLE;
+		}
+
+		return;
+	}
 	case DialogStage::EXPORT_GAME: {
 		const auto result = exportDialog_.Draw(ui_);
 

@@ -4,6 +4,7 @@
 #include "camera/EditorCameraController.h"
 #include "dialogs/BatchRenameDialog.h"
 #include "dialogs/GameExportDialog.h"
+#include "dialogs/GameSettingsDialog.h"
 #include "dialogs/SaveChangesDialog.h"
 #include "dialogs/SceneFileDialog.h"
 #include "dialogs/SceneReloadDialog.h"
@@ -111,6 +112,7 @@ class EditorScene final : public IScene {
 		SAVE_AS,
 		SAVE_COPY,
 		EXPORT_GAME,
+		GAME_SETTINGS,
 		RELOAD_SCENE,
 		EXIT,
 		UNDO,
@@ -156,7 +158,7 @@ class EditorScene final : public IScene {
 	enum class FrameRequest { NONE, SELECTED, ALL };
 
 	/// <summary>
-	/// ファイル操作の進行状態
+	/// ファイル操作と設定ダイアログの進行状態
 	/// </summary>
 	enum class DialogStage {
 		IDLE,
@@ -165,6 +167,7 @@ class EditorScene final : public IScene {
 		SAVE_FILE,
 		SAVE_COPY_FILE,
 		EXPORT_GAME,
+		GAME_SETTINGS,
 		CONFIRM_RELOAD,
 		BATCH_RENAME,
 		ERROR,
@@ -450,6 +453,7 @@ class EditorScene final : public IScene {
 	BatchRenameDialog batchRenameDialog_;
 	SceneFileDialog fileDialog_;
 	GameExportDialog exportDialog_;
+	GameSettingsDialog gameSettingsDialog_;
 	GameConfig exportConfig_;
 	SceneReloadDialog sceneReloadDialog_;
 
