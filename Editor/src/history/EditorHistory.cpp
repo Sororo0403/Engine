@@ -474,6 +474,36 @@ bool EditorHistory::TranslateObjects(std::span<const SceneObjectId> objectIds,
 	return true;
 }
 
+bool EditorHistory::RenameObjects(std::span<const ObjectRename> renames) {
+	CommitEdit();
+	if (renames.empty()) {
+		return false;
+	}
+	std::set<SceneObjectId> seen;
+	std::vector<CommandGroup::Command> commands;
+	commands.reserve(renames.size());
+	for (const auto &rename : renames) {
+		const auto *object = scene_.FindObject(rename.objectId);
+		if (!object || !seen.insert(rename.objectId).second || rename.after.empty() ||
+		    object->name != rename.before) {
+			return false;
+		}
+		if (rename.before != rename.after) {
+			commands.emplace_back(RenameCommand{rename.objectId, rename.before, rename.after});
+		}
+	}
+	if (commands.empty()) {
+		return true;
+	}
+	CommandGroup group{std::move(commands)};
+	const auto next = PrepareAppend();
+	if (!group.Redo(scene_)) {
+		return false;
+	}
+	AppendPrepared(Command{std::move(group)}, next, renames.size() == 1 ? "Rename Object" : "Rename Objects");
+	return true;
+}
+
 bool EditorHistory::HasPendingChanges() const {
 	if (pendingTransforms_) {
 		for (const auto &snapshot : *pendingTransforms_) {

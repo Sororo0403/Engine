@@ -3,6 +3,7 @@
 #include "assets/AssetDatabase.h"
 #include "camera/EditorCameraController.h"
 #include "dialogs/SaveChangesDialog.h"
+#include "dialogs/BatchRenameDialog.h"
 #include "dialogs/SceneFileDialog.h"
 #include "gizmo/TransformGizmo.h"
 #include "layout/EditorDockLayout.h"
@@ -139,6 +140,7 @@ class EditorScene final : public IScene {
 		CONFIRM_SAVE,
 		OPEN_FILE,
 		SAVE_FILE,
+		BATCH_RENAME,
 		ERROR,
 	};
 
@@ -322,6 +324,11 @@ class EditorScene final : public IScene {
 	void DropSelectionToGround();
 
 	/// <summary>
+	/// 選択した全物体の名前を保持し、一括リネームのプレビューを開く
+	/// </summary>
+	void StartBatchRename();
+
+	/// <summary>
 	/// 選択に、表示中でモデルを持つ物体があるか確認する
 	/// </summary>
 	/// <returns>true:有効な全選択の中に対象あり false:対象なし、または選択が無効</returns>
@@ -374,6 +381,7 @@ class EditorScene final : public IScene {
 	EditorClipboard clipboard_;
 
 	SaveChangesDialog saveChangesDialog_;
+	BatchRenameDialog batchRenameDialog_;
 	SceneFileDialog fileDialog_;
 
 	DialogStage stage_ = DialogStage::IDLE;

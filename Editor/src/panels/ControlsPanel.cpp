@@ -82,7 +82,7 @@ void ControlsPanel::Draw() {
 	    {"Ctrl + Shift + click", "Add a Hierarchy range to the current selection."},
 	    {"Ctrl + A", "Select visible Hierarchy items, or all models when Scene is focused."},
 	    {"Esc", "Clear selection, or cancel a selection rectangle."},
-	    {"F2", "Rename the single selected object in Inspector."},
+	    {"F2", "Rename one object in Inspector, or preview numbered names for multiple selected objects. Batch rename follows Hierarchy order and supports Undo / Redo."},
 	    {"Visible / Hierarchy menu", "Show or hide models without deleting objects. Visibility changes support Undo / Redo."},
 	    {"Hierarchy > Hidden only", "List hidden models. Search and range selection use this filtered list."},
 	    {"Edit > Show All Models", "Restore every hidden model in one undoable operation without changing selection."},

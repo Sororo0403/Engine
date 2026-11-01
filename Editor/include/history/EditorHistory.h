@@ -3,6 +3,7 @@
 #include "history/CommandGroup.h"
 #include "history/ModelPathCommand.h"
 #include "history/ObjectCommand.h"
+#include "history/ObjectRename.h"
 #include "history/RenameCommand.h"
 #include "history/TransformCommand.h"
 #include "history/VisibilityCommand.h"
@@ -254,6 +255,13 @@ class EditorHistory {
 	/// <returns>true:成功、または変更なし false:対象や値が無効。全件を変更しない</returns>
 	bool TranslateObjects(std::span<const SceneObjectId> objectIds,
 	                      const DirectX::XMFLOAT3 &translation);
+
+	/// <summary>
+	/// 全対象の名前を変更し、1操作として記録する。編集中の内容は先に確定する
+	/// </summary>
+	/// <param name="renames">重複のない対象と変更前後の名前。変更後の名前は空にしない</param>
+	/// <returns>true:成功、または変更なし false:対象や名前が無効、またはプレビューから名前が変わっている</returns>
+	bool RenameObjects(std::span<const ObjectRename> renames);
 
   private:
 	// 単独の編集操作、または複数の編集操作を保持する

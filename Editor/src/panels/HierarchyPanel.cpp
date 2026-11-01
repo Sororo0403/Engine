@@ -188,7 +188,7 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 				if (ui.MenuItem("Frame Selected", "F", true)) {
 					result.action = Action::FRAME_SELECTED;
 				}
-				if (ui.MenuItem("Rename", "F2", selection.GetCount() == 1)) {
+				if (ui.MenuItem("Rename", "F2", selection.GetCount() != 0)) {
 					result.action = Action::RENAME_OBJECT;
 				}
 				if (ui.MenuItem("Cut", "Ctrl+X", true)) {

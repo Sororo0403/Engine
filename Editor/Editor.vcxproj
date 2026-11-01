@@ -137,6 +137,8 @@
     <ClInclude Include="include\panels\InspectorPanel.h" />
     <ClInclude Include="include\panels\SceneViewPanel.h" />
     <ClInclude Include="include\dialogs\SaveChangesDialog.h" />
+    <ClInclude Include="include\dialogs\BatchRenameDialog.h" />
+    <ClInclude Include="include\history\ObjectRename.h" />
     <ClInclude Include="include\dialogs\SceneFileDialog.h" />
     <ClInclude Include="include\scene\SceneDocument.h" />
     <ClInclude Include="include\gizmo\TransformGizmo.h" />
@@ -170,6 +172,7 @@
     <ClCompile Include="src\assets\ModelPlacement.cpp" />
     <ClCompile Include="src\scene\SceneDocument.cpp" />
     <ClCompile Include="src\dialogs\SaveChangesDialog.cpp" />
+    <ClCompile Include="src\dialogs\BatchRenameDialog.cpp" />
     <ClCompile Include="src\dialogs\SceneFileDialog.cpp" />
     <ClCompile Include="src\camera\EditorCameraController.cpp" />
     <ClCompile Include="src\panels\SceneViewPanel.cpp" />

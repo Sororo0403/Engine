@@ -185,7 +185,11 @@ bool EditorScene::Update(float deltaTime) {
 					DropSelectionToGround();
 					break;
 				case HierarchyPanel::Action::RENAME_OBJECT:
-					inspectorPanel_.RequestRename(selection_.GetActiveId());
+					if (HasSingleSelection()) {
+						inspectorPanel_.RequestRename(selection_.GetActiveId());
+					} else {
+						StartBatchRename();
+					}
 					break;
 				case HierarchyPanel::Action::FRAME_SELECTED:
 					frameRequest_ = FrameRequest::SELECTED;
@@ -665,7 +669,7 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		if (ui_.MenuItem("Drop to Ground", "Shift+G", objectEnabled && HasVisibleSelectedModel())) {
 			action = EditorAction::DROP_TO_GROUND;
 		}
-		if (ui_.MenuItem("Rename", "F2", objectEnabled && HasSingleSelection())) {
+		if (ui_.MenuItem("Rename", "F2", objectEnabled)) {
 			action = EditorAction::RENAME_OBJECT;
 		}
 
@@ -804,7 +808,7 @@ EditorScene::ReadShortcut(bool objectPanelFocused) const {
 		return EditorAction::DROP_TO_GROUND;
 	}
 	if (objectEnabled && !control && !shift && !alt) {
-		if (HasSingleSelection() && keyboard.IsPressed(Key::F2)) {
+		if (keyboard.IsPressed(Key::F2)) {
 			return EditorAction::RENAME_OBJECT;
 		}
 		if (keyboard.IsPressed(Key::W)) {
@@ -893,6 +897,8 @@ void EditorScene::StartAction(EditorAction action) {
 	case EditorAction::RENAME_OBJECT:
 		if (HasSingleSelection()) {
 			inspectorPanel_.RequestRename(selection_.GetActiveId());
+		} else {
+			StartBatchRename();
 		}
 		return;
 	case EditorAction::RESET_CAMERA:
@@ -1135,9 +1141,28 @@ void EditorScene::UpdateDialogs() {
 		return;
 	}
 
+	case DialogStage::BATCH_RENAME: {
+		const auto result = batchRenameDialog_.Draw(ui_);
+		if (result == BatchRenameResult::NONE) {
+			return;
+		}
+		stage_ = DialogStage::IDLE;
+		if (result == BatchRenameResult::ACCEPTED) {
+			try {
+				if (!document_.GetHistory().RenameObjects(batchRenameDialog_.GetRenames())) {
+					ShowError("The rename targets changed. No object names were changed.");
+				}
+			} catch (const std::exception &error) {
+				Logger::Error(std::format("EditorScene::BatchRename: {}", error.what()));
+				ShowError("Could not rename the objects. See the log for details.");
+			}
+		}
+		return;
+	}
+
 	case DialogStage::ERROR: {
 		constexpr const char *kTitle =
-		    "File operation failed###SceneOperationError";
+		    "Operation failed###SceneOperationError";
 
 		if (errorOpenRequested_) {
 			ui_.OpenPopup(kTitle);
@@ -1566,6 +1591,23 @@ void EditorScene::ResetSelectedTransforms() {
 		Logger::Error(std::format("EditorScene: Transformの初期化に失敗しました: {}",
 		                          error.what()));
 		ShowError("Could not reset transforms. See the log for details.");
+	}
+}
+
+void EditorScene::StartBatchRename() {
+	if (!HasSelection()) {
+		return;
+	}
+	try {
+		FinishEdit();
+		if (!batchRenameDialog_.Show(document_.GetScene(), selection_.GetIds())) {
+			ShowError("Could not prepare the selected objects for renaming.");
+			return;
+		}
+		stage_ = DialogStage::BATCH_RENAME;
+	} catch (const std::exception &error) {
+		Logger::Error(std::format("EditorScene::StartBatchRename: {}", error.what()));
+		ShowError("Could not prepare object names. See the log for details.");
 	}
 }
 

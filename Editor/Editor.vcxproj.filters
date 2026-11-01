@@ -92,6 +92,9 @@
     <ClCompile Include="src\dialogs\SaveChangesDialog.cpp">
       <Filter>src\dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="src\dialogs\BatchRenameDialog.cpp">
+      <Filter>src\dialogs</Filter>
+    </ClCompile>
     <ClCompile Include="src\dialogs\SceneFileDialog.cpp">
       <Filter>src\dialogs</Filter>
     </ClCompile>
@@ -184,6 +187,9 @@
     <ClInclude Include="include\dialogs\SaveChangesDialog.h">
       <Filter>include\dialogs</Filter>
     </ClInclude>
+    <ClInclude Include="include\dialogs\BatchRenameDialog.h">
+      <Filter>include\dialogs</Filter>
+    </ClInclude>
     <ClInclude Include="include\dialogs\SceneFileDialog.h">
       <Filter>include\dialogs</Filter>
     </ClInclude>
@@ -236,6 +242,9 @@
       <Filter>include\history</Filter>
     </ClInclude>
     <ClInclude Include="include\history\RenameCommand.h">
+      <Filter>include\history</Filter>
+    </ClInclude>
+    <ClInclude Include="include\history\ObjectRename.h">
       <Filter>include\history</Filter>
     </ClInclude>
     <ClInclude Include="include\selection\SelectionPivot.h">
