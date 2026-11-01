@@ -224,6 +224,10 @@ void ControlsPanel::Draw() {
 	         "Use Transform for a fixed view. Set vertical FOV and clipping "
 	         "distances; mark one Camera as Primary. Add Follow Camera to make "
 	         "it track a target."},
+	        {"Selected Camera in Scene",
+	         "The gold wireframe shows Near/Far Clip and the field of view "
+	         "at the aspect ratio in Game Settings. Follow Camera previews "
+	         "its starting view using the current target position."},
 	        {"Inspector > Follow Camera",
 	         "Offsets use world coordinates. Follow Smoothing 0 follows "
 	         "immediately. Choose the target object in the same scene."},

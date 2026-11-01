@@ -298,7 +298,9 @@ exit /b 0</Command>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\gameplay\SceneSimulation.h" />
+    <ClInclude Include="include\gameplay\SceneCameraUtils.h" />
     <ClCompile Include="src\gameplay\SceneSimulation.cpp" />
+    <ClCompile Include="src\gameplay\SceneCameraUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\graphics\camera\CameraSettings.h" />

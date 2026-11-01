@@ -1,6 +1,7 @@
 #pragma once
 
 #include "assets/AssetDatabase.h"
+#include "camera/CameraFrustum.h"
 #include "camera/EditorCameraController.h"
 #include "dialogs/BatchRenameDialog.h"
 #include "dialogs/GameExportDialog.h"
@@ -478,6 +479,7 @@ class EditorScene final : public IScene {
 	SelectionBounds selectionBounds_;
 	ColliderBounds colliderBounds_;
 	RespawnPreview respawnPreview_;
+	CameraFrustum cameraFrustum_;
 
 	SceneGrid sceneGrid_;
 	ControlsPanel controlsPanel_;

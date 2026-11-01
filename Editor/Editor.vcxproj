@@ -271,7 +271,9 @@ exit /b 0</Command>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\camera\CameraInspector.h" />
+    <ClInclude Include="include\camera\CameraFrustum.h" />
     <ClCompile Include="src\camera\CameraInspector.cpp" />
+    <ClCompile Include="src\camera\CameraFrustum.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\gameplay\PlaybackClock.h" />

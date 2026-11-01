@@ -611,6 +611,13 @@ bool EditorScene::Update(float deltaTime) {
 			return false;
 		}
 
+		if (!cameraFrustum_.Update(renderer_, scene, id, exportConfig_.width,
+		                           exportConfig_.height)) {
+			Logger::Error(
+			    "EditorScene: カメラの撮影範囲を登録できませんでした。");
+			return false;
+		}
+
 		if (showSelectionBounds_ && !selectionBounds_.Update(renderer_, id)) {
 			Logger::Error(
 			    "EditorScene: 選択物体の外接ボックスを登録できませんでした。");

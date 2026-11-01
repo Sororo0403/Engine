@@ -517,7 +517,13 @@
     <ClInclude Include="include\gameplay\SceneSimulation.h">
       <Filter>include\gameplay</Filter>
     </ClInclude>
+    <ClInclude Include="include\gameplay\SceneCameraUtils.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
     <ClCompile Include="src\gameplay\SceneSimulation.cpp">
+      <Filter>src\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gameplay\SceneCameraUtils.cpp">
       <Filter>src\gameplay</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,78 +1,11 @@
 #include "gameplay/SceneSimulation.h"
+#include "gameplay/SceneCameraUtils.h"
 #include "graphics/camera/Camera.h"
 #include "math/TransformUtils.h"
 #include "physics/BoxColliderUtils.h"
 #include <algorithm>
 #include <cmath>
 #include <exception>
-
-namespace {
-/// <summary>
-/// 追従対象からカメラ位置と注視点を計算する
-/// </summary>
-/// <param name="target">対象位置</param>
-/// <param name="settings">カメラ設定</param>
-/// <returns>ワールド座標のカメラ姿勢</returns>
-CameraPose MakePose(const DirectX::XMFLOAT3 &target,
-                    const FollowCameraSettings &settings) {
-	CameraPose result;
-	result.position = {target.x + settings.offset.x,
-	                   target.y + settings.offset.y,
-	                   target.z + settings.offset.z};
-	result.target = {target.x + settings.lookOffset.x,
-	                 target.y + settings.lookOffset.y,
-	                 target.z + settings.lookOffset.z};
-	return result;
-}
-
-/// <summary>
-/// Transformの位置と回転から、+Zを前、+Yを上とする描画姿勢を作る
-/// </summary>
-/// <param name="transform">カメラ物体の姿勢。拡大率は描画姿勢へ適用しない</param>
-/// <returns>ワールド座標のカメラ姿勢</returns>
-CameraPose FromTransform(const Transform &transform) {
-	using namespace DirectX;
-	CameraPose pose;
-	pose.position = transform.translation;
-	const auto q = XMLoadFloat4(&transform.rotation);
-	XMFLOAT3 forward;
-	XMStoreFloat3(&forward, XMVector3Rotate(XMVectorSet(0, 0, 1, 0), q));
-	XMStoreFloat3(&pose.up, XMVector3Rotate(XMVectorSet(0, 1, 0, 0), q));
-	pose.target = {pose.position.x + forward.x, pose.position.y + forward.y,
-	               pose.position.z + forward.z};
-	return pose;
-}
-
-/// <summary>
-/// 追従結果を物体のTransformへ反映する
-/// </summary>
-/// <param name="pose">追従結果の位置・注視点・上方向</param>
-/// <param name="transform">位置と回転を更新するTransform。拡大率は保持する</param>
-/// <returns>true:成功 false:描画姿勢が無効</returns>
-bool ApplyPose(const CameraPose &pose, Transform &transform) {
-	Camera validator;
-
-	if (!validator.SetPose(pose)) {
-		return false;
-	}
-
-	using namespace DirectX;
-	const auto view =
-	    XMMatrixLookAtLH(XMLoadFloat3(&pose.position),
-	                     XMLoadFloat3(&pose.target), XMLoadFloat3(&pose.up));
-	const auto world = XMMatrixInverse(nullptr, view);
-	XMFLOAT4 rotation;
-	XMStoreFloat4(&rotation, XMQuaternionRotationMatrix(world));
-
-	if (!TransformUtils::TryNormalizeRotation(rotation, rotation)) {
-		return false;
-	}
-
-	transform.translation = pose.position;
-	transform.rotation = rotation;
-	return true;
-}
-} // namespace
 
 bool SceneSimulation::Start(const Scene &source, std::string &error,
                             const CameraPose &fallbackPose) {
@@ -186,17 +119,20 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 
 		if (follow) {
 			const auto &settings = *objects.at(follow).followCamera;
-			followPose = MakePose(
+			followPose = SceneCameraUtils::MakeFollowPose(
 			    objects.at(settings.target).transform.translation, settings);
 
-			if (!ApplyPose(followPose, objects.at(follow).transform)) {
+			if (!SceneCameraUtils::ApplyPose(followPose,
+			                                 objects.at(follow).transform)) {
 				error = "Follow Camera pose is invalid.";
 				return false;
 			}
 		}
 
 		auto pose =
-		    camera ? FromTransform(objects.at(camera).transform) : fallbackPose;
+		    camera
+		        ? SceneCameraUtils::FromTransform(objects.at(camera).transform)
+		        : fallbackPose;
 		auto lens =
 		    camera ? objects.at(camera).camera->settings : CameraSettings{};
 		Camera validator;
@@ -276,10 +212,10 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input) {
 			return false;
 		}
 
-		const auto desired = MakePose(settings.target == character_
-		                                  ? next.GetTransform().translation
+		const auto desired = SceneCameraUtils::MakeFollowPose(
+		    settings.target == character_ ? next.GetTransform().translation
 		                                  : target->transform.translation,
-		                              settings);
+		    settings);
 		const float blend =
 		    respawned || settings.smoothing == 0
 		        ? 1.0f
@@ -294,7 +230,7 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input) {
 		lerp(followPose.target, desired.target);
 		followTransform = cameraObject->transform;
 
-		if (!ApplyPose(followPose, followTransform)) {
+		if (!SceneCameraUtils::ApplyPose(followPose, followTransform)) {
 			return false;
 		}
 	}
@@ -312,7 +248,7 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input) {
 		                        : camera_ == character_
 		                            ? next.GetTransform()
 		                            : cameraObject->transform;
-		pose = FromTransform(transform);
+		pose = SceneCameraUtils::FromTransform(transform);
 		Camera validator;
 
 		if (!validator.SetPose(pose)) {

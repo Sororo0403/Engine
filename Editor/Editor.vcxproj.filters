@@ -446,7 +446,13 @@
     <ClInclude Include="include\camera\CameraInspector.h">
       <Filter>include\camera</Filter>
     </ClInclude>
+    <ClInclude Include="include\camera\CameraFrustum.h">
+      <Filter>include\camera</Filter>
+    </ClInclude>
     <ClCompile Include="src\camera\CameraInspector.cpp">
+      <Filter>src\camera</Filter>
+    </ClCompile>
+    <ClCompile Include="src\camera\CameraFrustum.cpp">
       <Filter>src\camera</Filter>
     </ClCompile>
   </ItemGroup>
