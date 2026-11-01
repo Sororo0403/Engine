@@ -29,12 +29,38 @@ bool EditorClipboard::Copy(const Scene &scene,
 		objects.push_back(*object);
 	}
 
+	std::vector<SceneObjectId> sourceIds(objectIds.begin(), objectIds.end());
+	std::vector<std::size_t> externalReferences;
+
+	for (std::size_t i = 0; i < objects.size(); ++i) {
+		if (objects[i].followCamera && objects[i].followCamera->target != 0 &&
+		    !seen.contains(objects[i].followCamera->target)) {
+			externalReferences.push_back(i);
+		}
+	}
+
 	objects_.swap(objects);
+	sourceIds_.swap(sourceIds);
+	externalReferences_.swap(externalReferences);
 	return true;
 }
 
 std::span<const SceneObject> EditorClipboard::GetObjects() const {
 	return objects_;
+}
+
+std::span<const SceneObjectId> EditorClipboard::GetSourceIds() const {
+	return sourceIds_;
+}
+
+void EditorClipboard::DetachExternalReferences() noexcept {
+	for (const auto index : externalReferences_) {
+		if (objects_[index].followCamera) {
+			objects_[index].followCamera->target = 0;
+		}
+	}
+
+	externalReferences_.clear();
 }
 
 bool EditorClipboard::HasObjects() const {
@@ -56,5 +82,7 @@ const Transform *EditorClipboard::GetTransform() const {
 
 void EditorClipboard::Clear() {
 	objects_.clear();
+	sourceIds_.clear();
+	externalReferences_.clear();
 	transform_.reset();
 }

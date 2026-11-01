@@ -13,6 +13,7 @@
 #include <exception>
 #include <format>
 #include <limits>
+#include <map>
 #include <set>
 #include <stdexcept>
 #include <type_traits>
@@ -141,15 +142,29 @@ EditorHistory::DuplicateObjects(std::span<const SceneObjectId> objectIds) {
 		copies.push_back(std::move(object));
 	}
 
-	return CreateObjects(std::move(copies));
+	return CreateObjects(std::move(copies), objectIds);
 }
 
 std::vector<SceneObjectId>
-EditorHistory::CreateObjects(std::vector<SceneObject> objects) {
+EditorHistory::CreateObjects(std::vector<SceneObject> objects,
+                             std::span<const SceneObjectId> sourceIds) {
 	CommitEdit();
 
 	if (objects.empty()) {
 		return {};
+	}
+
+	if (!sourceIds.empty() && sourceIds.size() != objects.size()) {
+		return {};
+	}
+
+	std::map<SceneObjectId, SceneObjectId> remap;
+
+	for (const auto id : sourceIds) {
+		if (id == 0 || id == (std::numeric_limits<SceneObjectId>::max)() ||
+		    !remap.emplace(id, 0).second) {
+			return {};
+		}
 	}
 
 	bool hasPrimary =
@@ -181,22 +196,37 @@ EditorHistory::CreateObjects(std::vector<SceneObject> objects) {
 
 	const std::uint64_t next = PrepareAppend();
 
-	const bool created = scene_.ApplyTransaction(
-	    [&objects, &createdIds, &commands](Scene &working) {
-		    for (auto &object : objects) {
-			    const SceneObjectId id = working.CreateObject(object);
+	const bool created = scene_.ApplyTransaction([&objects, &createdIds,
+	                                              &commands, &remap,
+	                                              sourceIds](Scene &working) {
+		// 全IDが決まってから参照を解決し、入力順に依存しないようにする。
+		for (std::size_t i = 0; i < objects.size(); ++i) {
+			const auto id = working.CreateObject(objects[i]);
+			createdIds.push_back(id);
 
-			    commands.emplace_back(ObjectCommand{
-			        id,
-			        std::move(object),
-			        ObjectCommand::Kind::CREATE,
-			    });
+			if (!sourceIds.empty()) {
+				remap.at(sourceIds[i]) = id;
+			}
+		}
 
-			    createdIds.push_back(id);
-		    }
+		for (std::size_t i = 0; i < objects.size(); ++i) {
+			auto &object = objects[i];
 
-		    return true;
-	    });
+			if (object.followCamera) {
+				if (const auto found = remap.find(object.followCamera->target);
+				    found != remap.end()) {
+					object.followCamera->target = found->second;
+					working.FindObject(createdIds[i])->followCamera =
+					    object.followCamera;
+				}
+			}
+
+			commands.emplace_back(ObjectCommand{
+			    createdIds[i], std::move(object), ObjectCommand::Kind::CREATE});
+		}
+
+		return true;
+	});
 
 	if (!created) {
 		return {};

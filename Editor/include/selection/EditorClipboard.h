@@ -3,6 +3,7 @@
 #include "scene/SceneObject.h"
 #include "scene/SceneObjectId.h"
 
+#include <cstddef>
 #include <optional>
 #include <span>
 #include <vector>
@@ -27,6 +28,18 @@ class EditorClipboard {
 	/// </summary>
 	/// <returns>次のCopy成功またはClearまで有効なデータ一覧</returns>
 	std::span<const SceneObject> GetObjects() const;
+
+	/// <summary>
+	/// コピーしたデータと同じ順序の複製元IDを取得する
+	/// </summary>
+	/// <returns>コピー範囲内の参照を付け替えるためのID一覧。次のCopy成功またはClearまで有効</returns>
+	std::span<const SceneObjectId> GetSourceIds() const;
+
+	/// <summary>
+	/// 元のシーンの置き換えに合わせ、コピー範囲外の物体への参照を解除する。
+	/// コピー範囲内の参照とTransformのコピーは保持する
+	/// </summary>
+	void DetachExternalReferences() noexcept;
 
 	/// <summary>
 	/// 貼り付け可能な物体を保持しているか確認する
@@ -54,5 +67,8 @@ class EditorClipboard {
 
   private:
 	std::vector<SceneObject> objects_;
+	std::vector<SceneObjectId> sourceIds_;
+	// シーンを置き換えた後に確保を行わず、外部参照だけを解除するための添字
+	std::vector<std::size_t> externalReferences_;
 	std::optional<Transform> transform_;
 };

@@ -1459,6 +1459,7 @@ void EditorScene::ExecutePendingAction() {
 			}
 
 			document_.New();
+			clipboard_.DetachExternalReferences();
 
 			if (action == EditorAction::NEW_SAMPLE) {
 				document_.GetScene().ReplaceObjects(std::move(objects));
@@ -1822,6 +1823,7 @@ void EditorScene::OpenScene(const std::filesystem::path &path) {
 		return;
 	}
 
+	clipboard_.DetachExternalReferences();
 	FinishEdit();
 	selection_.Clear();
 	cameraController_.Reset();
@@ -2280,7 +2282,8 @@ void EditorScene::PasteObjects() {
 			object.name += " Copy";
 		}
 
-		auto ids = document_.GetHistory().CreateObjects(std::move(objects));
+		auto ids = document_.GetHistory().CreateObjects(
+		    std::move(objects), clipboard_.GetSourceIds());
 
 		if (ids.empty()) {
 			ShowError("Could not paste the copied objects.");

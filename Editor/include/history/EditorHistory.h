@@ -161,8 +161,11 @@ class EditorHistory {
 	/// 既存のPrimary Cameraを優先し、なければ入力中の最初のPrimaryだけを保持する
 	/// </summary>
 	/// <param name="objects">作成する物体のデータ一覧</param>
+	/// <param name="sourceIds">入力順の重複しない複製元ID。指定時は入力内への参照を作成先へ付け替える。空なら付け替えなし</param>
 	/// <returns>作成順のID一覧。対象なし、またはデータが無効な場合は空</returns>
-	std::vector<SceneObjectId> CreateObjects(std::vector<SceneObject> objects);
+	std::vector<SceneObjectId>
+	CreateObjects(std::vector<SceneObject> objects,
+	              std::span<const SceneObjectId> sourceIds = {});
 
 	/// <summary>
 	/// 指定した物体を削除し、その削除を履歴へ記録する。
@@ -174,7 +177,8 @@ class EditorHistory {
 
 	/// <summary>
 	/// 物体を複製し、その追加を履歴へ記録する。
-	/// 編集中の変形情報は先に確定し、Primary Cameraは既存の物体を優先する
+	/// 編集中の変形情報は先に確定し、Primary Cameraは既存の物体を優先する。
+	/// 複製範囲外への参照は元の物体を指す
 	/// </summary>
 	/// <param name="objectId">複製元の物体ID</param>
 	/// <returns>成功:複製した物体のID 対象なし:0</returns>
@@ -288,7 +292,8 @@ class EditorHistory {
 
 	/// <summary>
 	/// 指定した全物体を複製し、1操作として履歴へ記録する。
-	/// 編集中の内容は先に確定し、Primary Cameraは既存の物体を優先する
+	/// 編集中の内容は先に確定し、Primary Cameraは既存の物体を優先する。
+	/// 複製する物体どうしの参照は、対応する複製先へ付け替える
 	/// </summary>
 	/// <param name="objectIds">重複のない複製元ID一覧</param>
 	/// <returns>入力順に対応する複製先ID一覧。対象が無効な場合は空</returns>

@@ -265,6 +265,10 @@ void ControlsPanel::Draw() {
 	DrawSection(
 	    "Files and history",
 	    {
+	        {"References when duplicating / pasting",
+	         "References between copied objects point to the new copies. Other "
+	         "targets stay unchanged in the same scene. New/Open/Reload clears "
+	         "clipboard references to objects outside the copied group."},
 	        {"Ctrl + N / Ctrl + O", "Create a scene / open a scene."},
 	        {"Ctrl + S", "Save the scene."},
 	        {"Ctrl + Shift + S", "Save the scene under another name."},
