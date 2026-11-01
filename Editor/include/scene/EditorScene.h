@@ -9,6 +9,7 @@
 #include "panels/AssetsPanel.h"
 #include "panels/ControlsPanel.h"
 #include "panels/HierarchyPanel.h"
+#include "panels/HistoryPanel.h"
 #include "panels/InspectorPanel.h"
 #include "panels/SceneViewPanel.h"
 #include "scene/IScene.h"
@@ -234,6 +235,12 @@ class EditorScene final : public IScene {
 	void ShowAllModels();
 
 	/// <summary>
+	/// 編集を確定し、履歴パネルで選択した状態へ戻す
+	/// </summary>
+	/// <param name="index">履歴の開始地点を0とした移動先</param>
+	void RestoreHistory(std::size_t index);
+
+	/// <summary>
 	/// Inspectorのアクティブ物体へのTransform操作を反映する
 	/// </summary>
 	/// <param name="request">コピー・貼り付け・リセットの操作要求</param>
@@ -378,4 +385,5 @@ class EditorScene final : public IScene {
 
 	SceneGrid sceneGrid_;
 	ControlsPanel controlsPanel_;
+	HistoryPanel historyPanel_;
 };

@@ -112,6 +112,7 @@ void ControlsPanel::Draw() {
 	    {"Ctrl + Shift + S", "Save the scene under another name."},
 	    {"Ctrl + Z", "Undo the last edit."},
 	    {"Ctrl + Y / Ctrl + Shift + Z", "Redo an edit."},
+	    {"View > History", "Inspect operations, current and saved states. Click a state to undo or redo to that point."},
 	    {"File > Open Recent", "Reopen a recently used scene, with a save prompt for unsaved changes."},
 	});
 	DrawSection("Editor settings", {

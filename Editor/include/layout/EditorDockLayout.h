@@ -23,6 +23,7 @@ class EditorDockLayout {
 	std::string sceneWindow_ = "Scene";
 	std::string inspectorWindow_ = "Inspector";
 	std::string assetsWindow_ = "Assets";
+	std::string historyWindow_ = "History";
 
 	// 全体の幅に対する割合。左右の合計は1未満にする
 	float leftRatio_ = 0.20f;

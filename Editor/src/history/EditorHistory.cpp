@@ -623,6 +623,57 @@ std::string_view EditorHistory::GetRedoDescription() const {
 	return CanRedo() ? entries_[cursor_].description : std::string_view{};
 }
 
+std::size_t EditorHistory::GetStateCount() const { return entries_.size() + 1; }
+
+std::optional<EditorHistory::State> EditorHistory::GetState(std::size_t index) const {
+	if (index > entries_.size()) {
+		return std::nullopt;
+	}
+	const auto state = index == 0 ? (entries_.empty() ? currentState_ : entries_.front().beforeState)
+	                              : entries_[index - 1].afterState;
+	return State{index == 0 ? "History Start" : entries_[index - 1].description,
+	             index == cursor_, state == savedState_};
+}
+
+bool EditorHistory::MoveTo(std::size_t index) {
+	if (IsEditing() || index > entries_.size()) {
+		return false;
+	}
+	if (index == cursor_) {
+		return true;
+	}
+	try {
+		const bool succeeded = scene_.ApplyTransaction([this, index](Scene &working) {
+			if (index < cursor_) {
+				for (auto i = cursor_; i > index; --i) {
+					if (!std::visit([&working](const auto &command) { return command.Undo(working); },
+					                entries_[i - 1].command)) {
+						return false;
+					}
+				}
+			} else {
+				for (auto i = cursor_; i < index; ++i) {
+					if (!std::visit([&working](const auto &command) { return command.Redo(working); },
+					                entries_[i].command)) {
+						return false;
+					}
+				}
+			}
+			return true;
+		});
+		if (!succeeded) {
+			Invalidate();
+			return false;
+		}
+		currentState_ = index == 0 ? entries_.front().beforeState : entries_[index - 1].afterState;
+		cursor_ = index;
+		return true;
+	} catch (const std::exception &error) {
+		Logger::Error(std::format("EditorHistory::MoveTo: {}", error.what()));
+		return false;
+	}
+}
+
 bool EditorHistory::Undo() {
 	if (!CanUndo()) {
 		return false;

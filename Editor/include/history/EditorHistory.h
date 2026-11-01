@@ -79,6 +79,36 @@ class EditorHistory {
 	std::string_view GetRedoDescription() const;
 
 	/// <summary>
+	/// 履歴内の状態の表示情報。編集中の値は含まない
+	/// </summary>
+	struct State {
+		std::string_view description;
+		bool current = false;
+		bool saved = false;
+	};
+
+	/// <summary>
+	/// 履歴の開始地点を含む状態数を取得する
+	/// </summary>
+	/// <returns>記録済みの操作数＋1</returns>
+	std::size_t GetStateCount() const;
+
+	/// <summary>
+	/// 履歴の指定地点の表示情報を取得する
+	/// </summary>
+	/// <param name="index">開始地点を0とした状態番号</param>
+	/// <returns>状態の表示情報。範囲外はnullopt。表示名は静的な寿命を持つ</returns>
+	std::optional<State> GetState(std::size_t index) const;
+
+	/// <summary>
+	/// 指定された履歴の状態へまとめて移動する。途中で失敗した場合はシーンを変更しない
+	/// </summary>
+	/// <param name="index">開始地点を0とした移動先の状態番号</param>
+	/// <returns>true:成功、または現在地点 false:編集中、範囲外、または復元失敗</returns>
+	/// <remarks>シーンとの不一致があれば履歴を無効化する。確保失敗時は履歴を保持する</remarks>
+	bool MoveTo(std::size_t index);
+
+	/// <summary>
 	/// 直前の操作を元に戻す
 	/// </summary>
 	/// <returns>true:成功 false:実行不可、または履歴とシーンが一致しない</returns>

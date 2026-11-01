@@ -132,6 +132,8 @@ bool EditorScene::Update(float deltaTime) {
 		assetsPanel_.RequestReveal(inspectorPanel_.GetAssetRevealPath());
 	}
 	const auto requestedModelPath = assetsPanel_.Draw(ui_, assets_);
+	const auto historyRequest = historyPanel_.Draw(ui_, history,
+	    !wasBusy && !gizmo_.IsUsing() && !gizmoEditActive_ && !sceneViewPanel_.IsSelecting());
 
 	const auto toolbarMode = selection_.GetCount() > 1
 	                             ? TransformGizmo::SelectionMode::MULTIPLE
@@ -220,8 +222,13 @@ bool EditorScene::Update(float deltaTime) {
 		}
 
 		if (!IsBusy()) {
+			if (historyRequest && action == EditorAction::NONE && requestedModelPath.empty() &&
+			    modelDrop.path.empty() && modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
+			    !hasTransformRequest && hierarchyRequest.action == HierarchyPanel::Action::NONE) {
+				RestoreHistory(*historyRequest);
+			}
 			if (action == EditorAction::NONE && modelDrop.path.empty() &&
-			    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 && !hasTransformRequest) {
+			    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 && !hasTransformRequest && !historyRequest) {
 				const bool objectPanelFocused =
 				    hierarchyRequest.windowFocused ||
 				    sceneViewPanel_.GetInput().windowFocused;
@@ -249,6 +256,7 @@ bool EditorScene::Update(float deltaTime) {
 	    modelRequest.objectId != 0 ||
 	    visibilityRequest.objectId != 0 ||
 	    hasTransformRequest ||
+	    historyRequest.has_value() ||
 	    hierarchyRequest.action != HierarchyPanel::Action::NONE;
 
 	ViewportInput viewport = sceneViewPanel_.GetInput();
@@ -682,6 +690,9 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		ui_.Separator();
 		if (ui_.MenuItem("Reset Layout", nullptr, !IsBusy())) {
 			resetDockLayout_ = true;
+		}
+		if (ui_.MenuItem("History...", nullptr, !IsBusy())) {
+			historyPanel_.Show();
 		}
 
 		ui_.EndMenu();
@@ -1204,6 +1215,18 @@ void EditorScene::ApplyInspectorTransform(const InspectorPanel::TransformRequest
 	} catch (const std::exception &error) {
 		Logger::Error(std::format("EditorScene::ApplyInspectorTransform: {}", error.what()));
 		ShowError("Could not edit the Transform. See the log for details.");
+	}
+}
+
+void EditorScene::RestoreHistory(std::size_t index) {
+	try {
+		FinishEdit();
+		if (!document_.GetHistory().MoveTo(index)) {
+			ShowError("Could not restore the selected history state. The scene was not changed.");
+		}
+	} catch (const std::exception &error) {
+		Logger::Error(std::format("EditorScene::RestoreHistory: {}", error.what()));
+		ShowError("Could not restore history. See the log for details.");
 	}
 }
 
