@@ -93,6 +93,23 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 			const auto normalized = recent.GetPaths();
 			loaded.recentScenes.assign(normalized.begin(), normalized.end());
 		}
+		// グリッド設定がない旧ファイルでは初期値を使う
+		if (json.contains("grid")) {
+			const auto &settings = json.at("grid");
+			const auto &count = settings.at("halfLineCount");
+			const auto &major = settings.at("majorLineInterval");
+			if (!count.is_number_integer() || count < 1 || count > SceneGrid::kMaximumHalfLineCount ||
+			    !major.is_number_integer() || major < 1 || major > SceneGrid::kMaximumMajorLineInterval) {
+				throw std::runtime_error("グリッドのセル数・周期が無効です。");
+			}
+			loaded.grid.spacing = settings.at("spacing").get<float>();
+			loaded.grid.halfLineCount = count.get<int>();
+			loaded.grid.majorLineInterval = major.get<int>();
+		}
+		SceneGrid gridValidator;
+		if (!gridValidator.SetSettings(loaded.grid)) {
+			throw std::runtime_error("グリッドの設定が無効です。");
+		}
 		*this = loaded;
 		return true;
 	} catch (const std::exception &error) {
@@ -105,8 +122,10 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 	try {
 		TransformGizmo validator;
 		EditorCameraController cameraValidator;
+		SceneGrid gridValidator;
 		if (!validator.SetSnapSettings(snap) || !validator.SetOperation(operation) ||
-		    !validator.SetSpace(space) || !cameraValidator.SetSettings(camera)) {
+		    !validator.SetSpace(space) || !cameraValidator.SetSettings(camera) ||
+		    !gridValidator.SetSettings(grid)) {
 			throw std::runtime_error("保存するEditor設定が無効です。");
 		}
 		const auto path = PathUtils::ResolveFromExecutable(filePath);
@@ -135,6 +154,8 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		    {"rotationStepDegrees", snap.rotationDegrees},
 		    {"scaleStepRatio", snap.scaleRatio},
 		    {"recentScenes", recentJson},
+		    {"grid", {{"spacing", grid.spacing}, {"halfLineCount", grid.halfLineCount},
+		              {"majorLineInterval", grid.majorLineInterval}}},
 		    {"camera", {{"moveSpeed", camera.moveSpeed},
 		                {"fastMultiplier", camera.fastMultiplier},
 		                {"mouseSensitivity", camera.mouseSensitivity},
@@ -159,7 +180,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 }
 
 bool EditorPreferences::operator==(const EditorPreferences &other) const {
-	return recentScenes == other.recentScenes && showGrid == other.showGrid &&
+	return grid == other.grid && recentScenes == other.recentScenes && showGrid == other.showGrid &&
 	       showSelectionBounds == other.showSelectionBounds &&
 	       snapping == other.snapping && operation == other.operation && space == other.space &&
 	       snap.translation.x == other.snap.translation.x &&

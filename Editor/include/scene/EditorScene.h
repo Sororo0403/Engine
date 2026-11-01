@@ -147,6 +147,11 @@ class EditorScene final : public IScene {
 	void DrawCameraSettings();
 
 	/// <summary>
+	/// グリッドの表示・間隔・表示範囲を設定するUIを構築する
+	/// </summary>
+	void DrawGridSettings();
+
+	/// <summary>
 	/// 編集操作用ショートカットを判定する
 	/// </summary>
 	/// <param name="objectPanelFocused">HierarchyかSceneにフォーカスがあるか</param>
@@ -308,6 +313,7 @@ class EditorScene final : public IScene {
 	EditorPreferences preferences_;
 	bool canSavePreferences_ = false;
 	bool cameraSettingsRequested_ = false;
+	bool gridSettingsRequested_ = false;
 	RecentScenes recentScenes_;
 	std::filesystem::path recentOpenPath_;
 	FrameRequest frameRequest_ = FrameRequest::NONE;

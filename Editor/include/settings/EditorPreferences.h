@@ -2,6 +2,7 @@
 
 #include "gizmo/TransformGizmo.h"
 #include "camera/EditorCameraController.h"
+#include "scene/SceneGrid.h"
 
 #include <filesystem>
 #include <vector>
@@ -18,6 +19,7 @@ class EditorPreferences {
 	TransformGizmo::Space space = TransformGizmo::Space::LOCAL;
 	TransformGizmo::SnapSettings snap;
 	EditorCameraController::Settings camera;
+	SceneGrid::Settings grid;
 	std::vector<std::filesystem::path> recentScenes;
 
 	/// <summary>

@@ -50,6 +50,7 @@ bool EditorScene::Initialize() {
 		recentScenes_.Add(*it);
 	}
 	showGrid_ = preferences_.showGrid;
+	sceneGrid_.SetSettings(preferences_.grid);
 	showSelectionBounds_ = preferences_.showSelectionBounds;
 	gizmo_.SetSnapSettings(preferences_.snap);
 	gizmo_.SetSnapping(preferences_.snapping);
@@ -95,6 +96,7 @@ bool EditorScene::Update(float deltaTime) {
 
 	EditorAction action = DrawMenuBar();
 	DrawCameraSettings();
+	DrawGridSettings();
 
 	dockLayout_.Draw(ui_, resetDockLayout_);
 	resetDockLayout_ = false;
@@ -428,6 +430,7 @@ void EditorScene::Finalize() {
 		current.snapping = gizmo_.IsSnapping();
 		current.snap = gizmo_.GetSnapSettings();
 		current.camera = cameraController_.GetSettings();
+		current.grid = sceneGrid_.GetSettings();
 		const auto recent = recentScenes_.GetPaths();
 		current.recentScenes.assign(recent.begin(), recent.end());
 		if (!(current == preferences_) && current.Save()) {
@@ -614,6 +617,9 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		}
 		ui_.Separator();
 		ImGui::MenuItem("Grid", nullptr, &showGrid_, !IsBusy());
+		if (ui_.MenuItem("Grid Settings...", nullptr, !IsBusy())) {
+			gridSettingsRequested_ = true;
+		}
 		ImGui::MenuItem("Selection Bounds", nullptr, &showSelectionBounds_, !IsBusy());
 		ui_.Separator();
 		if (ui_.MenuItem("Reset Layout", nullptr, !IsBusy())) {
@@ -625,6 +631,36 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 
 	ui_.EndMainMenuBar();
 	return action;
+}
+
+void EditorScene::DrawGridSettings() {
+	if (gridSettingsRequested_) {
+		ImGui::OpenPopup("EditorGridSettings");
+		gridSettingsRequested_ = false;
+	}
+	if (!ImGui::BeginPopup("EditorGridSettings")) {
+		return;
+	}
+	ImGui::BeginDisabled(IsBusy() || gizmo_.IsUsing() || sceneViewPanel_.IsSelecting());
+	ImGui::Checkbox("Show grid", &showGrid_);
+	auto settings = sceneGrid_.GetSettings();
+	bool changed = ImGui::DragFloat("Spacing", &settings.spacing, 0.01f,
+	                                0.001f, SceneGrid::kMaximumSpacing, "%.3f");
+	ImGui::SetItemTooltip("Distance between grid lines.");
+	changed |= ImGui::SliderInt("Cells per side", &settings.halfLineCount,
+	                            1, SceneGrid::kMaximumHalfLineCount);
+	ImGui::SetItemTooltip("Number of cells from the origin to either edge.");
+	changed |= ImGui::SliderInt("Major line every", &settings.majorLineInterval,
+	                            1, SceneGrid::kMaximumMajorLineInterval);
+	if (ImGui::Button("Restore Defaults")) {
+		settings = SceneGrid::Settings{};
+		changed = true;
+	}
+	if (changed) {
+		sceneGrid_.SetSettings(settings);
+	}
+	ImGui::EndDisabled();
+	ImGui::EndPopup();
 }
 
 void EditorScene::DrawCameraSettings() {
