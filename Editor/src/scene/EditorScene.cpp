@@ -155,6 +155,9 @@ bool EditorScene::Update(float deltaTime) {
 				case HierarchyPanel::Action::RESET_TRANSFORMS:
 					ResetSelectedTransforms();
 					break;
+				case HierarchyPanel::Action::RENAME_OBJECT:
+					inspectorPanel_.RequestRename(selection_.GetActiveId());
+					break;
 				case HierarchyPanel::Action::NONE:
 					break;
 				}
@@ -525,6 +528,9 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		if (ui_.MenuItem("Reset Transform", nullptr, objectEnabled)) {
 			action = EditorAction::RESET_TRANSFORMS;
 		}
+		if (ui_.MenuItem("Rename", "F2", objectEnabled && HasSingleSelection())) {
+			action = EditorAction::RENAME_OBJECT;
+		}
 
 		ui_.EndMenu();
 	}
@@ -576,6 +582,9 @@ EditorScene::ReadShortcut(bool objectPanelFocused) const {
 	    !ImGui::IsMouseDown(ImGuiMouseButton_Right);
 	const bool objectEnabled = selectionEnabled && HasSelection();
 	if (objectEnabled && !control && !shift && !alt) {
+		if (HasSingleSelection() && keyboard.IsPressed(Key::F2)) {
+			return EditorAction::RENAME_OBJECT;
+		}
 		if (keyboard.IsPressed(Key::W)) {
 			return EditorAction::GIZMO_MOVE;
 		}
@@ -652,6 +661,11 @@ void EditorScene::StartAction(EditorAction action) {
 	FinishEdit();
 
 	switch (action) {
+	case EditorAction::RENAME_OBJECT:
+		if (HasSingleSelection()) {
+			inspectorPanel_.RequestRename(selection_.GetActiveId());
+		}
+		return;
 	case EditorAction::RESET_CAMERA:
 		cameraController_.Reset();
 		frameRequest_ = FrameRequest::NONE;

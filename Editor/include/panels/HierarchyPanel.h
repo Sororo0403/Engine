@@ -26,6 +26,7 @@ class HierarchyPanel {
 		CUT_OBJECTS,
 		DUPLICATE_OBJECTS,
 		RESET_TRANSFORMS,
+		RENAME_OBJECT,
 	};
 
 	/// <summary>

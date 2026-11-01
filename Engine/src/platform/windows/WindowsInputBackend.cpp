@@ -142,6 +142,8 @@ Key WindowsInputBackend::ToKey(unsigned int virtualKey) {
 	switch (virtualKey) {
 	case VK_SPACE:
 		return Key::SPACE;
+	case VK_F2:
+		return Key::F2;
 	case VK_RETURN:
 		return Key::ENTER;
 	case VK_ESCAPE:

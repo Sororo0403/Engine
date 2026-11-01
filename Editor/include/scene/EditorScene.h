@@ -113,6 +113,7 @@ class EditorScene final : public IScene {
 		PASTE_OBJECTS,
 		RESET_TRANSFORMS,
 		RESET_CAMERA,
+		RENAME_OBJECT,
 	};
 
 	/// <summary>

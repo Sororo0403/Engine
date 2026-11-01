@@ -13,6 +13,12 @@ class EditorHistory;
 class InspectorPanel {
   public:
 	/// <summary>
+	/// 指定した物体の名前欄へのフォーカスを、次の描画時に予約する
+	/// </summary>
+	/// <param name="objectId">名前を編集する選択物体のID</param>
+	void RequestRename(SceneObjectId objectId);
+
+	/// <summary>
 	/// 選択した物体の編集用UIを構築する
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
@@ -28,4 +34,5 @@ class InspectorPanel {
 	SceneObjectId rotationObjectId_ = 0;
 	DirectX::XMFLOAT3 rotationDegrees_{};
 	DirectX::XMFLOAT4 displayedRotation_{0.0f, 0.0f, 0.0f, 1.0f};
+	SceneObjectId renameObjectId_ = 0;
 };

@@ -146,6 +146,9 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 				if (ui.MenuItem("Copy", "Ctrl+C", true)) {
 					result.action = Action::COPY_OBJECTS;
 				}
+				if (ui.MenuItem("Rename", "F2", selection.GetCount() == 1)) {
+					result.action = Action::RENAME_OBJECT;
+				}
 				if (ui.MenuItem("Cut", "Ctrl+X", true)) {
 					result.action = Action::CUT_OBJECTS;
 				}

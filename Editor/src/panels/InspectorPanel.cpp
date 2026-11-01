@@ -95,9 +95,21 @@ bool ApplyTransformEdit(EditorHistory &history, SceneObjectId objectId,
 
 } // namespace
 
+void InspectorPanel::RequestRename(SceneObjectId objectId) {
+	renameObjectId_ = objectId;
+}
+
 bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
                           SceneObjectId selectedObjectId,
                           EditorHistory &history) {
+	const bool focusName = renameObjectId_ != 0 &&
+	                       renameObjectId_ == selectedObjectId;
+	if (focusName) {
+		ImGui::SetNextWindowCollapsed(false);
+		ImGui::SetNextWindowFocus();
+	} else {
+		renameObjectId_ = 0;
+	}
 	if (!ui.BeginWindow("Inspector")) {
 		ui.EndWindow();
 		return false;
@@ -106,6 +118,7 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 	SceneObject *object = scene.FindObject(selectedObjectId);
 
 	if (!object) {
+		renameObjectId_ = 0;
 		rotationObjectId_ = 0;
 		ui.Text("No object selected.");
 		ui.EndWindow();
@@ -120,6 +133,10 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 		// 名前や選択物体が変わっても、別の入力欄の編集状態を引き継がない
 		const auto label = std::format("Name###ObjectName{}", selectedObjectId);
 
+		if (focusName) {
+			ImGui::SetKeyboardFocusHere();
+			renameObjectId_ = 0;
+		}
 		const bool editedValue = ui.InputText(label.c_str(), edited);
 
 		if (ApplyNameEdit(history, selectedObjectId, edited, editedValue,
