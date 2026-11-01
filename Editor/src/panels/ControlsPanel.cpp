@@ -233,6 +233,11 @@ void ControlsPanel::Draw() {
 	        {"Game > Play / Stop",
 	         "Run the current scene, including empty scenes. Stop returns to "
 	         "editing and keeps your changes and Undo history."},
+	        {"Game > Restart",
+	         "Reset the player, physics and cameras to the state captured when "
+	         "Play started. The first frame shows that initial state. Restart "
+	         "keeps Pause, discards a queued Step and returns focus to Game. "
+	         "The editing scene and Undo history stay unchanged."},
 	        {"Game without Primary Camera",
 	         "Use the Scene view camera position at Play start."},
 	        {"Inspector > Camera",

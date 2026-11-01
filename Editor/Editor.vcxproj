@@ -260,7 +260,9 @@ exit /b 0</Command>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\gameplay\EditorPlayMode.h" />
+    <ClInclude Include="include\gameplay\EditorPlaySession.h" />
     <ClCompile Include="src\gameplay\EditorPlayMode.cpp" />
+    <ClCompile Include="src\gameplay\EditorPlaySession.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\gameplay\SampleStage.h" />

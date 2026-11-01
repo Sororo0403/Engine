@@ -498,4 +498,12 @@
       <Filter>src\dialogs</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\gameplay\EditorPlaySession.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
+    <ClCompile Include="src\gameplay\EditorPlaySession.cpp">
+      <Filter>src\gameplay</Filter>
+    </ClCompile>
+  </ItemGroup>
 </Project>

@@ -134,6 +134,15 @@ bool EditorScene::Update(float deltaTime) {
 		}
 	}
 
+	if (playAction == EditorPlayMode::Action::RESTART &&
+	    playMode_.IsPlaying()) {
+		std::string error;
+
+		if (!playMode_.Restart(error)) {
+			ShowError(std::move(error));
+		}
+	}
+
 	if (playMode_.IsPlaying()) {
 		playFrame_ = true;
 

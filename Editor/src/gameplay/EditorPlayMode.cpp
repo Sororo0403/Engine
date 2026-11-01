@@ -9,7 +9,7 @@
 #include <imgui.h>
 
 EditorPlayMode::EditorPlayMode(ModelManager &models, RenderSystem &render)
-    : renderer_(simulation_.GetScene(), models, render), render_(render) {
+    : renderer_(session_.GetScene(), models, render), render_(render) {
 }
 
 EditorPlayMode::~EditorPlayMode() = default;
@@ -44,15 +44,21 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 
 		ImGui::SameLine();
 
-		if (ui.Button(clock_.IsPaused() ? "Resume" : "Pause")) {
-			clock_.TogglePause();
+		if (ui.Button("Restart")) {
+			action = Action::RESTART;
 		}
 
 		ImGui::SameLine();
-		ui.BeginDisabled(!clock_.IsPaused());
+
+		if (ui.Button(session_.IsPaused() ? "Resume" : "Pause")) {
+			session_.TogglePause();
+		}
+
+		ImGui::SameLine();
+		ui.BeginDisabled(!session_.IsPaused());
 
 		if (ui.Button("Step")) {
-			clock_.RequestStep();
+			session_.RequestStep();
 		}
 
 		ui.EndDisabled();
@@ -101,21 +107,36 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
 		return false;
 	}
 
-	if (!simulation_.Start(scene, error, fallbackPose)) {
+	if (!session_.Start(scene, error, fallbackPose)) {
 		return false;
 	}
 
 	gameWidth_ = config.width;
 	gameHeight_ = config.height;
-	clock_.Reset();
+	ready_ = false;
+	visible_ = false;
+	viewport_ = {};
+	focusRequested_ = true;
+	return true;
+}
+
+bool EditorPlayMode::Restart(std::string &error) {
+	if (!session_.Restart(error)) {
+		return false;
+	}
+
+	ready_ = false;
+	visible_ = false;
+	viewport_ = {};
 	focusRequested_ = true;
 	return true;
 }
 
 void EditorPlayMode::Stop() {
-	simulation_.Stop();
-	clock_.Reset();
+	session_.Stop();
 	ready_ = false;
+	visible_ = false;
+	focusRequested_ = false;
 	viewport_ = {};
 }
 
@@ -146,14 +167,12 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input) {
 		return false;
 	}
 
-	const auto gameTime = clock_.Advance(seconds);
-
-	if (gameTime && !simulation_.Update(*gameTime, controls)) {
+	if (!session_.Update(seconds, controls)) {
 		return false;
 	}
 
-	if (!renderer_.SetCameraPose(simulation_.GetCameraPose()) ||
-	    !renderer_.SetCameraSettings(simulation_.GetCameraSettings()) ||
+	if (!renderer_.SetCameraPose(session_.GetCameraPose()) ||
+	    !renderer_.SetCameraSettings(session_.GetCameraSettings()) ||
 	    !renderer_.Update(texture_->GetWidth(), texture_->GetHeight())) {
 		return false;
 	}

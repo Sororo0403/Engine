@@ -1,8 +1,7 @@
 #pragma once
 
+#include "gameplay/EditorPlaySession.h"
 #include "gameplay/GameConfig.h"
-#include "gameplay/PlaybackClock.h"
-#include "gameplay/SceneSimulation.h"
 #include "graphics/ui/ViewportInput.h"
 #include "scene/SceneRenderer.h"
 #include <memory>
@@ -18,9 +17,15 @@ class InputSystem;
 class EditorPlayMode {
   public:
 	/// <summary>
-	/// Gameパネルから要求する再生・停止・描画エラーの通知
+	/// Gameパネルから要求する再生・再実行・停止・描画エラーの通知
 	/// </summary>
-	enum class Action { NONE, PLAY, STOP, RENDER_ERROR };
+	enum class Action {
+		NONE,
+		PLAY,
+		RESTART,
+		STOP,
+		RENDER_ERROR,
+	};
 
 	/// <summary>
 	/// 共通描画機能を参照し、再生シーンを保持する
@@ -37,7 +42,7 @@ class EditorPlayMode {
 	bool Initialize();
 
 	/// <summary>
-	/// Gameパネルを構築して再生・停止の要求を取得する
+	/// Gameパネルを構築して再生・再実行・停止の要求を取得する
 	/// </summary>
 	/// <param name="ui">UI機能</param>
 	/// <param name="canStart">再生開始を受け付けるか</param>
@@ -55,6 +60,13 @@ class EditorPlayMode {
 	bool Start(const Scene &scene, std::string &error,
 	           const CameraPose &fallbackPose = CameraPose{},
 	           const GameConfig &config = GameConfig{});
+
+	/// <summary>
+	/// Play開始時の状態から再実行し、Gameパネルへフォーカスを戻す。一時停止状態は保持する
+	/// </summary>
+	/// <param name="error">失敗理由。成功時は空</param>
+	/// <returns>true:再実行成功 false:未再生または初期化失敗</returns>
+	bool Restart(std::string &error);
 
 	/// <summary>
 	/// 再生シーンを破棄する。編集シーンとUndo履歴は保持する
@@ -84,12 +96,11 @@ class EditorPlayMode {
 	/// </summary>
 	/// <returns>true:再生中 false:停止中</returns>
 	bool IsPlaying() const {
-		return simulation_.IsPlaying();
+		return session_.IsPlaying();
 	}
 
   private:
-	SceneSimulation simulation_;
-	PlaybackClock clock_;
+	EditorPlaySession session_;
 	SceneRenderer renderer_;
 	RenderSystem &render_;
 	std::unique_ptr<RenderTexture> texture_;
