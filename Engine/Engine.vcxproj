@@ -87,6 +87,7 @@
     <ClInclude Include="include\graphics\render\ShaderCompiler.h" />
     <ClInclude Include="include\graphics\render\MeshRenderer.h" />
     <ClInclude Include="include\core\Logger.h" />
+    <ClInclude Include="include\core\LogEntry.h" />
     <ClInclude Include="include\platform\windows\StringConversion.h" />
     <ClInclude Include="include\platform\windows\PathUtils.h" />
     <ClInclude Include="include\input\Keyboard.h" />

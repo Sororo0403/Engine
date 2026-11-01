@@ -1,8 +1,13 @@
 #pragma once
 
+#include "core/LogEntry.h"
+
 #include <fstream>
+#include <deque>
+#include <mutex>
 #include <string>
 #include <string_view>
+#include <vector>
 
 class Logger {
   public:
@@ -36,16 +41,31 @@ class Logger {
 	/// <param name="message">UTF-8のメッセージ</param>
 	static void Error(std::string_view message);
 
-  private:
-	enum class Level { LOG_INFO, LOG_WARNING, LOG_ERROR };
+	/// <summary>
+	/// 直近最大1,000件のログを、変更がある場合だけ出力順にコピーする
+	/// </summary>
+	/// <param name="revision">前回取得した版。初回は0。取得成功後に現在の版へ更新する</param>
+	/// <param name="entries">取得先。返されたログはLoggerから独立して保持できる</param>
+	/// <returns>true:取得先を更新 false:変更なし。確保失敗時は両引数を変更せず例外を送出する</returns>
+	static bool ReadEntries(std::uint64_t &revision, std::vector<LogEntry> &entries);
 
 	/// <summary>
-	/// 時刻とレベルを付けて、出力ウィンドウとファイルに書き込む
+	/// 参照用の直近ログをクリアする。ファイルの出力内容は保持する
+	/// </summary>
+	static void ClearEntries();
+
+  private:
+	/// <summary>
+	/// 時刻とレベルを付けて出力し、直近のログへ追加する。呼び出し元でmutexを保持する
 	/// </summary>
 	/// <param name="level">ログレベル</param>
 	/// <param name="message">UTF-8のメッセージ</param>
-	static void Write(Level level, std::string_view message);
+	static void Write(LogLevel level, std::string_view message);
 
   private:
 	inline static std::ofstream logFile_;
+	inline static std::mutex mutex_;
+	inline static std::deque<LogEntry> entries_;
+	inline static std::uint64_t revision_ = 1;
+	static constexpr std::size_t kMaximumEntries = 1000;
 };

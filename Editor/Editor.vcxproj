@@ -127,6 +127,7 @@
     <ClInclude Include="include\panels\AssetsPanel.h" />
     <ClInclude Include="include\panels\ControlsPanel.h" />
     <ClInclude Include="include\panels\HistoryPanel.h" />
+    <ClInclude Include="include\panels\ConsolePanel.h" />
     <ClInclude Include="include\assets\AssetDatabase.h" />
     <ClInclude Include="include\assets\ModelAssetDragDrop.h" />
     <ClInclude Include="include\assets\ModelPlacement.h" />
@@ -168,6 +169,7 @@
     <ClCompile Include="src\panels\AssetsPanel.cpp" />
     <ClCompile Include="src\panels\ControlsPanel.cpp" />
     <ClCompile Include="src\panels\HistoryPanel.cpp" />
+    <ClCompile Include="src\panels\ConsolePanel.cpp" />
     <ClCompile Include="src\assets\AssetDatabase.cpp" />
     <ClCompile Include="src\assets\ModelAssetDragDrop.cpp" />
     <ClCompile Include="src\assets\ModelPlacement.cpp" />

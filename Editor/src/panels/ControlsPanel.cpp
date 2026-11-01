@@ -117,6 +117,7 @@ void ControlsPanel::Draw() {
 	    {"Ctrl + Z", "Undo the last edit."},
 	    {"Ctrl + Y / Ctrl + Shift + Z", "Redo an edit."},
 	    {"View > History", "Inspect operations, current and saved states. Click a state to undo or redo to that point."},
+	    {"View > Console", "Filter recent logs by level or text, read details and copy messages. Clear Console resets recent messages while file output is kept."},
 	    {"File > Open Recent", "Reopen a recently used scene, with a save prompt for unsaved changes."},
 	});
 	DrawSection("Editor settings", {

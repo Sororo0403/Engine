@@ -43,6 +43,7 @@ void EditorDockLayout::Draw(const ImGuiSystem &ui, bool resetLayout) const {
 		ui.DockWindow(inspectorWindow_.c_str(), rightId);
 		ui.DockWindow(assetsWindow_.c_str(), bottomId);
 		ui.DockWindow(historyWindow_.c_str(), bottomId);
+		ui.DockWindow(consoleWindow_.c_str(), bottomId);
 		ui.FinishDockLayout(dockspaceId);
 	}
 

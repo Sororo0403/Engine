@@ -10,6 +10,7 @@
 #include "layout/EditorDockLayout.h"
 #include "panels/AssetsPanel.h"
 #include "panels/ControlsPanel.h"
+#include "panels/ConsolePanel.h"
 #include "panels/HierarchyPanel.h"
 #include "panels/HistoryPanel.h"
 #include "panels/InspectorPanel.h"
@@ -424,5 +425,6 @@ class EditorScene final : public IScene {
 
 	SceneGrid sceneGrid_;
 	ControlsPanel controlsPanel_;
+	ConsolePanel consolePanel_;
 	HistoryPanel historyPanel_;
 };

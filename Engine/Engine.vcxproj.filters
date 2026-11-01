@@ -232,6 +232,9 @@
     <ClInclude Include="include\core\Logger.h">
       <Filter>include\core</Filter>
     </ClInclude>
+    <ClInclude Include="include\core\LogEntry.h">
+      <Filter>include\core</Filter>
+    </ClInclude>
     <ClInclude Include="include\platform\windows\StringConversion.h">
       <Filter>include\platform\windows</Filter>
     </ClInclude>

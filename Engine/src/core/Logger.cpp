@@ -11,15 +11,16 @@
 #include <sstream>
 
 bool Logger::Initialize(const std::string &filePath) {
+	const std::scoped_lock lock(mutex_);
 	if (logFile_.is_open() || filePath.empty()) {
-		Error("Logger::Initialize: 初期化済み、または保存先パスが空です。");
+		Write(LogLevel::LOG_ERROR, "Logger::Initialize: 初期化済み、または保存先パスが空です。");
 		return false;
 	}
 
 	const std::wstring widePath = StringConversion::Utf8ToWide(filePath);
 
 	if (widePath.empty()) {
-		Error("Logger::Initialize: 保存先パスをUTF-16に変換できませんでした。");
+		Write(LogLevel::LOG_ERROR, "Logger::Initialize: 保存先パスをUTF-16に変換できませんでした。");
 		return false;
 	}
 
@@ -32,7 +33,7 @@ bool Logger::Initialize(const std::string &filePath) {
 		std::filesystem::create_directories(path.parent_path(), error);
 
 		if (error) {
-			Error(
+			Write(LogLevel::LOG_ERROR,
 			    std::format("ログフォルダを作成できませんでした: {} (code={})",
 			                filePath, error.value()));
 			return false;
@@ -46,7 +47,7 @@ bool Logger::Initialize(const std::string &filePath) {
 
 	if (!logFile_.is_open()) {
 		const int error = errno;
-		Error(std::format("ログファイルを開けませんでした: {} (errno={})",
+		Write(LogLevel::LOG_ERROR, std::format("ログファイルを開けませんでした: {} (errno={})",
 		                  filePath, error));
 		return false;
 	}
@@ -55,42 +56,55 @@ bool Logger::Initialize(const std::string &filePath) {
 }
 
 void Logger::Finalize() {
+	const std::scoped_lock lock(mutex_);
 	if (logFile_.is_open()) {
 		logFile_.close();
 	}
 }
 
-void Logger::Info(std::string_view message) { Write(Level::LOG_INFO, message); }
+void Logger::Info(std::string_view message) {
+	const std::scoped_lock lock(mutex_);
+	Write(LogLevel::LOG_INFO, message);
+}
 
 void Logger::Warning(std::string_view message) {
-	Write(Level::LOG_WARNING, message);
+	const std::scoped_lock lock(mutex_);
+	Write(LogLevel::LOG_WARNING, message);
 }
 
 void Logger::Error(std::string_view message) {
-	Write(Level::LOG_ERROR, message);
+	const std::scoped_lock lock(mutex_);
+	Write(LogLevel::LOG_ERROR, message);
 }
 
-void Logger::Write(Level level, std::string_view message) {
+void Logger::Write(LogLevel level, std::string_view message) {
 	const char *levelName = "";
 
 	switch (level) {
-	case Level::LOG_INFO:
+	case LogLevel::LOG_INFO:
 		levelName = "INFO";
 		break;
-	case Level::LOG_WARNING:
+	case LogLevel::LOG_WARNING:
 		levelName = "WARNING";
 		break;
-	case Level::LOG_ERROR:
+	case LogLevel::LOG_ERROR:
 		levelName = "ERROR";
 		break;
 	}
 
 	// 時刻・レベル・メッセージを1行にまとめる
+	const auto timestamp = DateTime::GetCurrentTimeString();
 	std::ostringstream stream;
-	stream << '[' << DateTime::GetCurrentTimeString() << "] [" << levelName
+	stream << '[' << timestamp << "] [" << levelName
 	       << "] " << message << '\n';
 
 	const std::string line = stream.str();
+
+	entries_.push_back(LogEntry{revision_ + 1, level, timestamp, std::string(message)});
+	if (entries_.size() > kMaximumEntries) {
+		entries_.pop_front();
+	}
+	++revision_;
 
 	// Visual Studioの出力ウィンドウへ出力する
 	const std::wstring wideLine = StringConversion::Utf8ToWide(line);
@@ -104,4 +118,22 @@ void Logger::Write(Level level, std::string_view message) {
 		logFile_ << line;
 		logFile_.flush();
 	}
+}
+
+
+bool Logger::ReadEntries(std::uint64_t &revision, std::vector<LogEntry> &entries) {
+	const std::scoped_lock lock(mutex_);
+	if (revision == revision_) {
+		return false;
+	}
+	std::vector<LogEntry> snapshot(entries_.begin(), entries_.end());
+	entries.swap(snapshot);
+	revision = revision_;
+	return true;
+}
+
+void Logger::ClearEntries() {
+	const std::scoped_lock lock(mutex_);
+	entries_.clear();
+	++revision_;
 }
