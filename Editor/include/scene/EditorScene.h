@@ -111,6 +111,7 @@ class EditorScene final : public IScene {
 		CUT_OBJECTS,
 		PASTE_OBJECTS,
 		RESET_TRANSFORMS,
+		RESET_CAMERA,
 	};
 
 	/// <summary>
@@ -275,6 +276,8 @@ class EditorScene final : public IScene {
 	EditorDockLayout dockLayout_;
 
 	bool resetDockLayout_ = false;
+	bool showGrid_ = true;
+	bool showSelectionBounds_ = true;
 	FrameRequest frameRequest_ = FrameRequest::NONE;
 	bool hierarchySelectionScope_ = false;
 

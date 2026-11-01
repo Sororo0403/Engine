@@ -346,13 +346,13 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	// ギズモによる再更新とクリック選択が終わってから登録する
-	if (!sceneGrid_.Update(renderer_)) {
+	if (showGrid_ && !sceneGrid_.Update(renderer_)) {
 		Logger::Error("EditorScene: グリッドを登録できませんでした。");
 		return false;
 	}
 
 	for (const SceneObjectId id : selection_.GetIds()) {
-		if (!selectionBounds_.Update(renderer_, id)) {
+		if (showSelectionBounds_ && !selectionBounds_.Update(renderer_, id)) {
 			Logger::Error(
 			    "EditorScene: 選択物体の外接ボックスを登録できませんでした。");
 			return false;
@@ -520,6 +520,12 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		if (ui_.MenuItem("Frame All", "Shift+F", enabled)) {
 			action = EditorAction::FRAME_ALL;
 		}
+		if (ui_.MenuItem("Reset Camera", nullptr, enabled)) {
+			action = EditorAction::RESET_CAMERA;
+		}
+		ui_.Separator();
+		ImGui::MenuItem("Grid", nullptr, &showGrid_, !IsBusy());
+		ImGui::MenuItem("Selection Bounds", nullptr, &showSelectionBounds_, !IsBusy());
 		ui_.Separator();
 		if (ui_.MenuItem("Reset Layout", nullptr, !IsBusy())) {
 			resetDockLayout_ = true;
@@ -628,6 +634,10 @@ void EditorScene::StartAction(EditorAction action) {
 	FinishEdit();
 
 	switch (action) {
+	case EditorAction::RESET_CAMERA:
+		cameraController_.Reset();
+		frameRequest_ = FrameRequest::NONE;
+		return;
 	case EditorAction::RESET_TRANSFORMS:
 		ResetSelectedTransforms();
 		return;
