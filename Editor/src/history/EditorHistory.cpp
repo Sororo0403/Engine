@@ -553,6 +553,73 @@ bool EditorHistory::AlignObjects(std::span<const SceneObjectId> objectIds,
 	return true;
 }
 
+bool EditorHistory::DistributeObjects(std::span<const SceneObjectId> objectIds, AlignmentAxis axis) {
+	CommitEdit();
+	if (objectIds.size() < 3 ||
+	    (axis != AlignmentAxis::X && axis != AlignmentAxis::Y && axis != AlignmentAxis::Z)) {
+		return false;
+	}
+	std::set<SceneObjectId> seen;
+	std::vector<TransformSnapshot> snapshots;
+	snapshots.reserve(objectIds.size());
+	for (const auto id : objectIds) {
+		const auto *object = scene_.FindObject(id);
+		if (!object || !seen.insert(id).second || !TransformUtils::IsValid(object->transform)) {
+			return false;
+		}
+		snapshots.push_back({id, object->transform});
+	}
+	const auto coordinate = [axis](const Transform &transform) {
+		return axis == AlignmentAxis::X ? transform.translation.x :
+		       axis == AlignmentAxis::Y ? transform.translation.y : transform.translation.z;
+	};
+	std::sort(snapshots.begin(), snapshots.end(), [&](const auto &a, const auto &b) {
+		const auto x = coordinate(a.before);
+		const auto y = coordinate(b.before);
+		return x != y ? x < y : a.objectId < b.objectId;
+	});
+	const double first = coordinate(snapshots.front().before);
+	const double last = coordinate(snapshots.back().before);
+	std::vector<CommandGroup::Command> commands;
+	commands.reserve(snapshots.size() - 2);
+	for (std::size_t i = 1; i + 1 < snapshots.size(); ++i) {
+		const auto &snapshot = snapshots[i];
+		Transform after = snapshot.before;
+		const double ratio = static_cast<double>(i) / static_cast<double>(snapshots.size() - 1);
+		// floatの両端の差が桁あふれしないよう、doubleで補間する
+		const float value = static_cast<float>(std::lerp(first, last, ratio));
+		switch (axis) {
+		case AlignmentAxis::X:
+			after.translation.x = value;
+			break;
+		case AlignmentAxis::Y:
+			after.translation.y = value;
+			break;
+		case AlignmentAxis::Z:
+			after.translation.z = value;
+			break;
+		}
+		if (!TransformUtils::IsValid(after)) {
+			return false;
+		}
+		if (!TransformUtils::AreEqual(snapshot.before, after)) {
+			commands.emplace_back(TransformCommand{snapshot.objectId, snapshot.before, after});
+		}
+	}
+	if (commands.empty()) {
+		return true;
+	}
+	CommandGroup group{std::move(commands)};
+	const auto next = PrepareAppend();
+	if (!group.Redo(scene_)) {
+		return false;
+	}
+	AppendPrepared(Command{std::move(group)}, next,
+	               axis == AlignmentAxis::X ? "Distribute X" :
+	               axis == AlignmentAxis::Y ? "Distribute Y" : "Distribute Z");
+	return true;
+}
+
 bool EditorHistory::HasPendingChanges() const {
 	if (pendingTransforms_) {
 		for (const auto &snapshot : *pendingTransforms_) {

@@ -124,6 +124,9 @@ class EditorScene final : public IScene {
 		ALIGN_X,
 		ALIGN_Y,
 		ALIGN_Z,
+		DISTRIBUTE_X,
+		DISTRIBUTE_Y,
+		DISTRIBUTE_Z,
 		RESET_CAMERA,
 		RENAME_OBJECT,
 		OPEN_RECENT,
@@ -337,6 +340,12 @@ class EditorScene final : public IScene {
 	/// </summary>
 	/// <param name="axis">ワールド座標のX・Y・Zのいずれか</param>
 	void AlignSelection(AlignmentAxis axis);
+
+	/// <summary>
+	/// 選択物体の原点を指定軸の方向で等間隔に配置する。両端は固定する
+	/// </summary>
+	/// <param name="axis">ワールド座標のX・Y・Zのいずれか</param>
+	void DistributeSelection(AlignmentAxis axis);
 
 	/// <summary>
 	/// 選択に、表示中でモデルを持つ物体があるか確認する

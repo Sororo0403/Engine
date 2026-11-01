@@ -193,6 +193,15 @@ bool EditorScene::Update(float deltaTime) {
 				case HierarchyPanel::Action::ALIGN_Z:
 					AlignSelection(AlignmentAxis::Z);
 					break;
+				case HierarchyPanel::Action::DISTRIBUTE_X:
+					DistributeSelection(AlignmentAxis::X);
+					break;
+				case HierarchyPanel::Action::DISTRIBUTE_Y:
+					DistributeSelection(AlignmentAxis::Y);
+					break;
+				case HierarchyPanel::Action::DISTRIBUTE_Z:
+					DistributeSelection(AlignmentAxis::Z);
+					break;
 				case HierarchyPanel::Action::RENAME_OBJECT:
 					if (HasSingleSelection()) {
 						inspectorPanel_.RequestRename(selection_.GetActiveId());
@@ -687,6 +696,15 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		if (ui_.MenuItem("Align Z to Active", nullptr, objectEnabled && selection_.GetCount() > 1)) {
 			action = EditorAction::ALIGN_Z;
 		}
+		if (ui_.MenuItem("Distribute X", nullptr, objectEnabled && selection_.GetCount() > 2)) {
+			action = EditorAction::DISTRIBUTE_X;
+		}
+		if (ui_.MenuItem("Distribute Y", nullptr, objectEnabled && selection_.GetCount() > 2)) {
+			action = EditorAction::DISTRIBUTE_Y;
+		}
+		if (ui_.MenuItem("Distribute Z", nullptr, objectEnabled && selection_.GetCount() > 2)) {
+			action = EditorAction::DISTRIBUTE_Z;
+		}
 		if (ui_.MenuItem("Rename", "F2", objectEnabled)) {
 			action = EditorAction::RENAME_OBJECT;
 		}
@@ -937,6 +955,15 @@ void EditorScene::StartAction(EditorAction action) {
 		return;
 	case EditorAction::ALIGN_Z:
 		AlignSelection(AlignmentAxis::Z);
+		return;
+	case EditorAction::DISTRIBUTE_X:
+		DistributeSelection(AlignmentAxis::X);
+		return;
+	case EditorAction::DISTRIBUTE_Y:
+		DistributeSelection(AlignmentAxis::Y);
+		return;
+	case EditorAction::DISTRIBUTE_Z:
+		DistributeSelection(AlignmentAxis::Z);
 		return;
 	case EditorAction::SHOW_ALL_MODELS:
 		ShowAllModels();
@@ -1650,6 +1677,21 @@ void EditorScene::AlignSelection(AlignmentAxis axis) {
 	} catch (const std::exception &error) {
 		Logger::Error(std::format("EditorScene::AlignSelection: {}", error.what()));
 		ShowError("Could not align the selected objects. See the log for details.");
+	}
+}
+
+void EditorScene::DistributeSelection(AlignmentAxis axis) {
+	if (!HasSelection() || selection_.GetCount() < 3) {
+		return;
+	}
+	try {
+		FinishEdit();
+		if (!document_.GetHistory().DistributeObjects(selection_.GetIds(), axis)) {
+			ShowError("Could not distribute the selected objects.");
+		}
+	} catch (const std::exception &error) {
+		Logger::Error(std::format("EditorScene::DistributeSelection: {}", error.what()));
+		ShowError("Could not distribute the selected objects. See the log for details.");
 	}
 }
 

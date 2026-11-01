@@ -232,6 +232,15 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 				if (ui.MenuItem("Align Z to Active", nullptr, selection.GetCount() > 1)) {
 					result.action = Action::ALIGN_Z;
 				}
+				if (ui.MenuItem("Distribute X", nullptr, selection.GetCount() > 2)) {
+					result.action = Action::DISTRIBUTE_X;
+				}
+				if (ui.MenuItem("Distribute Y", nullptr, selection.GetCount() > 2)) {
+					result.action = Action::DISTRIBUTE_Y;
+				}
+				if (ui.MenuItem("Distribute Z", nullptr, selection.GetCount() > 2)) {
+					result.action = Action::DISTRIBUTE_Z;
+				}
 				ImGui::EndPopup();
 			}
 		}

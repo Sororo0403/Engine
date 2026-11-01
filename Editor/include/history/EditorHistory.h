@@ -274,6 +274,14 @@ class EditorHistory {
 	bool AlignObjects(std::span<const SceneObjectId> objectIds,
 	                  SceneObjectId referenceId, AlignmentAxis axis);
 
+	/// <summary>
+	/// 指定軸の座標順で両端を固定し、間の原点を等間隔に配置して1操作として記録する
+	/// </summary>
+	/// <param name="objectIds">重複のない3件以上の対象ID一覧。編集中の内容は先に確定する</param>
+	/// <param name="axis">ワールド座標のX・Y・Zのいずれか。同じ座標ではID順を使用する</param>
+	/// <returns>true:成功、または変更なし false:対象や値が無効。全件を変更しない</returns>
+	bool DistributeObjects(std::span<const SceneObjectId> objectIds, AlignmentAxis axis);
+
   private:
 	// 単独の編集操作、または複数の編集操作を保持する
 	using Command = std::variant<TransformCommand, ObjectCommand, RenameCommand,
