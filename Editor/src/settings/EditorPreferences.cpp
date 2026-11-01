@@ -59,6 +59,9 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 			loaded.camera.moveSpeed = settings.at("moveSpeed").get<float>();
 			loaded.camera.fastMultiplier = settings.at("fastMultiplier").get<float>();
 			loaded.camera.mouseSensitivity = settings.at("mouseSensitivity").get<float>();
+			if (settings.contains("wheelDistance")) {
+				loaded.camera.wheelDistance = settings.at("wheelDistance").get<float>();
+			}
 		}
 		EditorCameraController cameraValidator;
 		if (!cameraValidator.SetSettings(loaded.camera)) {
@@ -122,7 +125,8 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		    {"recentScenes", recentJson},
 		    {"camera", {{"moveSpeed", camera.moveSpeed},
 		                {"fastMultiplier", camera.fastMultiplier},
-		                {"mouseSensitivity", camera.mouseSensitivity}}},
+		                {"mouseSensitivity", camera.mouseSensitivity},
+		                {"wheelDistance", camera.wheelDistance}}},
 		};
 		const std::string text = json.dump(2);
 		std::filesystem::create_directories(path.parent_path());
@@ -152,5 +156,6 @@ bool EditorPreferences::operator==(const EditorPreferences &other) const {
 	       snap.scaleRatio == other.snap.scaleRatio &&
 	       camera.moveSpeed == other.camera.moveSpeed &&
 	       camera.fastMultiplier == other.camera.fastMultiplier &&
-	       camera.mouseSensitivity == other.camera.mouseSensitivity;
+	       camera.mouseSensitivity == other.camera.mouseSensitivity &&
+	       camera.wheelDistance == other.camera.wheelDistance;
 }

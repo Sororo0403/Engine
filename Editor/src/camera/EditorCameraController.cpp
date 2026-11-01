@@ -15,7 +15,9 @@ bool EditorCameraController::SetSettings(const Settings &settings) {
 	    !std::isfinite(settings.fastMultiplier) || settings.fastMultiplier < 1.0f ||
 	    settings.fastMultiplier > kMaximumFastMultiplier ||
 	    !std::isfinite(settings.mouseSensitivity) || settings.mouseSensitivity <= 0.0f ||
-	    settings.mouseSensitivity > kMaximumMouseSensitivity) {
+	    settings.mouseSensitivity > kMaximumMouseSensitivity ||
+	    !std::isfinite(settings.wheelDistance) || settings.wheelDistance <= 0.0f ||
+	    settings.wheelDistance > kMaximumWheelDistance) {
 		return false;
 	}
 	settings_ = settings;
@@ -39,9 +41,28 @@ void EditorCameraController::Update(const InputSystem &input,
 
 	// 他のUI操作やフォーカス喪失を優先する
 	if (!viewport.applicationFocused || !viewport.windowFocused ||
-	    viewport.widgetActive || !mouse.IsConnected() || !viewport.rightDown ||
+	    viewport.widgetActive || !mouse.IsConnected() ||
 	    keyboard.IsPressed(Key::ESCAPE)) {
 		navigating_ = false;
+		return;
+	}
+
+	if (!viewport.rightDown) {
+		navigating_ = false;
+		if (viewport.imageHovered && std::isfinite(viewport.wheelDelta) &&
+		    viewport.wheelDelta != 0.0f) {
+			// ホイールはフレーム内の変化量なので、deltaTimeを掛けない
+			const float distance =
+			    std::clamp(viewport.wheelDelta, -kMaximumWheelDelta, kMaximumWheelDelta) *
+			    settings_.wheelDistance;
+			const auto forward = GetForward();
+			const DirectX::XMFLOAT3 next{position_.x + forward.x * distance,
+			                             position_.y + forward.y * distance,
+			                             position_.z + forward.z * distance};
+			if (MathUtils::IsFinite(next)) {
+				position_ = next;
+			}
+		}
 		return;
 	}
 

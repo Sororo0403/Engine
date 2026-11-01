@@ -708,6 +708,7 @@ ViewportInput ImGuiSystem::GetViewportInput() const {
 	input.leftPressed = ImGui::IsMouseClicked(ImGuiMouseButton_Left);
 	input.rightPressed = ImGui::IsMouseClicked(ImGuiMouseButton_Right);
 	input.rightDown = ImGui::IsMouseDown(ImGuiMouseButton_Right);
+	input.wheelDelta = io.MouseWheel;
 
 	// 画像など、IDを持たない項目をクリックしてもMoveIdが設定される。
 	// 実際の移動・ドッキング・無効項目の操作は除外しない。

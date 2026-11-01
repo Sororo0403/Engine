@@ -612,6 +612,9 @@ void EditorScene::DrawCameraSettings() {
 	                           0.1f, 1.0f, 100.0f, "%.2f");
 	changed |= ImGui::DragFloat("Mouse sensitivity", &settings.mouseSensitivity,
 	                           0.0001f, 0.00001f, 1.0f, "%.5f");
+	changed |= ImGui::DragFloat("Wheel distance", &settings.wheelDistance,
+	                           0.01f, 0.01f, 10000.0f);
+	ImGui::SetItemTooltip("Distance per wheel step. Scroll over the Scene to move forward or backward.");
 	if (ImGui::Button("Restore Defaults")) {
 		settings = EditorCameraController::Settings{};
 		changed = true;
