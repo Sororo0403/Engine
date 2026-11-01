@@ -1,6 +1,7 @@
 #pragma once
 
 #include "history/ObjectCommand.h"
+#include "history/RenameCommand.h"
 #include "history/TransformCommand.h"
 #include "scene/SceneObject.h"
 
@@ -37,13 +38,13 @@ class EditorHistory {
 	bool BeginTransform(SceneObjectId objectId, const Transform &before);
 
 	/// <summary>
-	/// 編集中の変形情報を1操作として記録する。
+	/// 編集中の名前または変形情報を1操作として記録する。
 	/// 変更がなければ履歴には追加しない
 	/// </summary>
-	void CommitTransform();
+	void CommitEdit();
 
 	/// <summary>
-	/// 連続した変形編集の途中か確認する
+	/// 連続した編集の途中か確認する
 	/// </summary>
 	/// <returns>true:編集中 false:編集なし</returns>
 	bool IsEditing() const;
@@ -119,9 +120,17 @@ class EditorHistory {
 	/// <returns>成功:複製した物体のID 対象なし:0</returns>
 	SceneObjectId DuplicateObject(SceneObjectId objectId);
 
+	/// <summary>
+	/// 現在の名前を保持し、連続した名前編集を開始する
+	/// </summary>
+	/// <param name="objectId">編集する物体のID</param>
+	/// <returns>true:開始成功 false:物体がない</returns>
+	bool BeginRename(SceneObjectId objectId);
+
   private:
-	// Transformの変更、または物体の追加・削除を保持する
-	using Command = std::variant<TransformCommand, ObjectCommand>;
+	// 名前・変形情報の変更、または物体の追加・削除を保持する
+	using Command =
+	    std::variant<TransformCommand, ObjectCommand, RenameCommand>;
 
 	/// <summary>
 	/// 操作と、その前後の状態を識別する情報
@@ -136,9 +145,11 @@ class EditorHistory {
 	/// <summary>
 	/// 連続した編集を開始した時点の情報
 	/// </summary>
-	struct PendingTransform {
+	struct PendingEdit {
 		SceneObjectId objectId = 0;
-		Transform before;
+
+		// Transformの場合は変形編集、文字列の場合は名前編集
+		std::variant<Transform, std::string> before;
 	};
 
   private:
@@ -167,8 +178,14 @@ class EditorHistory {
 	/// </summary>
 	/// <param name="object">作成する物体のデータ</param>
 	/// <returns>作成した物体のID</returns>
-	/// <remarks>呼び出し前にCommitTransformを呼び出す</remarks>
+	/// <remarks>呼び出し前にCommitEditを呼び出す</remarks>
 	SceneObjectId CreateObjectWithHistory(SceneObject object);
+
+	/// <summary>
+	/// 編集開始時点から値が変わっているか確認する
+	/// </summary>
+	/// <returns>true:変更あり、または対象がない false:変更なし</returns>
+	bool HasPendingChanges() const;
 
   private:
 	Scene &scene_;
@@ -176,7 +193,7 @@ class EditorHistory {
 	std::vector<Entry> entries_;
 	std::size_t cursor_ = 0;
 
-	std::optional<PendingTransform> pending_;
+	std::optional<PendingEdit> pending_;
 
 	std::uint64_t currentState_ = 0;
 	std::uint64_t savedState_ = 0;

@@ -89,7 +89,7 @@ bool EditorScene::Update(float deltaTime) {
 	    hierarchyPanel_.Draw(ui_, scene, selectedObjectId_);
 
 	if (previousSelection != selectedObjectId_) {
-		FinishTransformEdit();
+		FinishEdit();
 	}
 
 	inspectorPanel_.Draw(ui_, scene, selectedObjectId_, history);
@@ -105,13 +105,13 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	if (!gizmoEditActive_ && !ImGui::IsAnyItemActive()) {
-		history.CommitTransform();
+		history.CommitEdit();
 	}
 
 	if (!wasBusy) {
 		if (hierarchyRequest.action != HierarchyPanel::Action::NONE) {
-			// 削除対象の変形編集を、物体を消す前に確定する
-			FinishTransformEdit();
+			// 編集中の内容を、物体を消す前に確定する
+			FinishEdit();
 
 			try {
 				switch (hierarchyRequest.action) {
@@ -190,7 +190,7 @@ bool EditorScene::Update(float deltaTime) {
 
 	if (!target) {
 		if (gizmoEditActive_) {
-			history.CommitTransform();
+			history.CommitEdit();
 			gizmoEditActive_ = false;
 		}
 
@@ -270,7 +270,7 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	if (gizmoEditActive_ && !gizmo_.IsUsing()) {
-		history.CommitTransform();
+		history.CommitEdit();
 		gizmoEditActive_ = false;
 	}
 
@@ -281,7 +281,7 @@ bool EditorScene::Update(float deltaTime) {
 		    renderer_.Pick(viewport.imageX, viewport.imageY);
 
 		if (picked != selectedObjectId_) {
-			FinishTransformEdit();
+			FinishEdit();
 			selectedObjectId_ = picked;
 		}
 	}
@@ -316,7 +316,7 @@ void EditorScene::Draw() const {
 }
 
 void EditorScene::Finalize() {
-	FinishTransformEdit();
+	FinishEdit();
 
 	sceneViewPanel_.Finalize();
 	renderer_.Finalize();
@@ -487,7 +487,7 @@ void EditorScene::StartAction(EditorAction action) {
 	}
 
 	// 保存やUndoを実行する前に、編集中の値を確定する
-	FinishTransformEdit();
+	FinishEdit();
 
 	switch (action) {
 	case EditorAction::UNDO:
@@ -722,7 +722,7 @@ void EditorScene::PlaceModel(const std::filesystem::path &modelPath) {
 			return;
 		}
 
-		FinishTransformEdit();
+		FinishEdit();
 
 		const std::string name = PathUtils::ToUtf8(modelPath.stem());
 
@@ -743,8 +743,8 @@ void EditorScene::PlaceModel(const std::filesystem::path &modelPath) {
 	}
 }
 
-void EditorScene::FinishTransformEdit() {
-	document_.GetHistory().CommitTransform();
+void EditorScene::FinishEdit() {
+	document_.GetHistory().CommitEdit();
 
 	gizmo_.Cancel();
 	gizmoEditActive_ = false;

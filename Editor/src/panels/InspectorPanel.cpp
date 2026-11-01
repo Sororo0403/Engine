@@ -10,8 +10,47 @@
 
 #include <DirectXMath.h>
 #include <format>
+#include <string>
 
 namespace {
+
+/// <summary>
+/// 直前の編集UIの開始・変更・終了を名前と履歴へ反映する
+/// </summary>
+/// <param name="history">編集内容を記録する履歴</param>
+/// <param name="objectId">編集する物体のID</param>
+/// <param name="edited">UIで編集した名前</param>
+/// <param name="changed">UIが値を変更したか</param>
+/// <param name="target">変更を反映する名前</param>
+/// <returns>true:値を変更した false:変更なし</returns>
+bool ApplyNameEdit(EditorHistory &history, SceneObjectId objectId,
+                   std::string &edited, bool changed, std::string &target) {
+	const bool activated = ImGui::IsItemActivated();
+	const bool deactivated = ImGui::IsItemDeactivated();
+
+	if (activated && !history.BeginRename(objectId)) {
+		return false;
+	}
+
+	bool applied = false;
+
+	if (changed && target != edited) {
+		// 保存などで確定した後、同じ入力欄で編集を続ける場合にも対応する
+		if (!history.IsEditing() && !history.BeginRename(objectId)) {
+			return false;
+		}
+
+		target.swap(edited);
+		applied = true;
+	}
+
+	// 別の項目へ操作が移った場合は、新しい編集を途中で確定しない
+	if (deactivated && !ImGui::IsAnyItemActive()) {
+		history.CommitEdit();
+	}
+
+	return applied;
+}
 
 /// <summary>
 /// 直前の編集UIの開始・変更・終了を変形情報と履歴へ反映する
@@ -48,7 +87,7 @@ bool ApplyTransformEdit(EditorHistory &history, SceneObjectId objectId,
 
 	// 別の項目へ操作が移った場合は、新しい編集を途中で確定しない
 	if (deactivated && !ImGui::IsAnyItemActive()) {
-		history.CommitTransform();
+		history.CommitEdit();
 	}
 
 	return applied;
@@ -74,7 +113,20 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 
 	bool changed = false;
 
-	ui.Text(object->name);
+	{
+		std::string edited = object->name;
+
+		// 名前や選択物体が変わっても、別の入力欄の編集状態を引き継がない
+		const auto label = std::format("Name###ObjectName{}", selectedObjectId);
+
+		const bool editedValue = ui.InputText(label.c_str(), edited);
+
+		if (ApplyNameEdit(history, selectedObjectId, edited, editedValue,
+		                  object->name)) {
+			changed = true;
+		}
+	}
+
 	ui.Text(std::format("ID: {}", selectedObjectId));
 	ui.Separator();
 

@@ -164,9 +164,9 @@ class EditorScene final : public IScene {
 	void PlaceModel(const std::filesystem::path &modelPath);
 
 	/// <summary>
-	/// 編集中の変形情報を履歴へ確定し、ギズモ操作を中止する
+	/// 編集中の内容を履歴へ確定し、ギズモ操作を中止する
 	/// </summary>
-	void FinishTransformEdit();
+	void FinishEdit();
 
 	/// <summary>
 	/// 選択モデルへカメラを寄せるショートカットを判定する

@@ -60,13 +60,17 @@ bool SceneDocument::SaveAs(const std::filesystem::path &filePath) {
 	try {
 		auto resolvedPath = PathUtils::ResolveFromExecutable(filePath);
 
+		// 名前の空欄処理などを、保存するデータへ先に反映する
+		history_.CommitEdit();
+
 		if (!SceneSerializer::Save(scene_, resolvedPath)) {
 			return false;
 		}
 
-		// 保存失敗時は、元の保存先と変更状態を保持する
+		// 保存成功後に、保存先と保存地点を更新する
 		filePath_.swap(resolvedPath);
 		history_.MarkSaved();
+
 		return true;
 	} catch (const std::exception &error) {
 		Logger::Error(std::format("SceneDocument::SaveAs: {}", error.what()));

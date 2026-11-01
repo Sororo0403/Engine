@@ -134,8 +134,10 @@
     <ClInclude Include="include\history\ObjectCommand.h" />
     <ClInclude Include="include\selection\SelectionBounds.h" />
     <ClInclude Include="include\scene\SceneGrid.h" />
+    <ClInclude Include="include\history\RenameCommand.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\history\RenameCommand.cpp" />
     <ClCompile Include="src\scene\SceneGrid.cpp" />
     <ClCompile Include="src\history\ObjectCommand.cpp" />
     <ClCompile Include="src\history\EditorHistory.cpp" />

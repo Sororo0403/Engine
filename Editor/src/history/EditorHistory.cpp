@@ -16,7 +16,7 @@ EditorHistory::EditorHistory(Scene &scene) noexcept : scene_(scene) {}
 
 SceneObjectId EditorHistory::CreateObject(std::string name,
                                           std::filesystem::path modelPath) {
-	CommitTransform();
+	CommitEdit();
 
 	SceneObject object;
 	object.name = std::move(name);
@@ -26,7 +26,7 @@ SceneObjectId EditorHistory::CreateObject(std::string name,
 }
 
 bool EditorHistory::DeleteObject(SceneObjectId objectId) {
-	CommitTransform();
+	CommitEdit();
 
 	const SceneObject *object = scene_.FindObject(objectId);
 
@@ -56,7 +56,7 @@ bool EditorHistory::DeleteObject(SceneObjectId objectId) {
 }
 
 SceneObjectId EditorHistory::DuplicateObject(SceneObjectId objectId) {
-	CommitTransform();
+	CommitEdit();
 
 	const SceneObject *source = scene_.FindObject(objectId);
 
@@ -74,6 +74,48 @@ SceneObjectId EditorHistory::DuplicateObject(SceneObjectId objectId) {
 	object.name += " Copy";
 
 	return CreateObjectWithHistory(std::move(object));
+}
+
+bool EditorHistory::BeginRename(SceneObjectId objectId) {
+	const SceneObject *object = scene_.FindObject(objectId);
+
+	if (!object) {
+		return false;
+	}
+
+	CommitEdit();
+
+	PendingEdit edit{
+	    objectId,
+	    object->name,
+	};
+
+	pending_ = std::move(edit);
+	return true;
+}
+
+bool EditorHistory::HasPendingChanges() const {
+	if (!pending_) {
+		return false;
+	}
+
+	const SceneObject *object = scene_.FindObject(pending_->objectId);
+
+	if (!object) {
+		return true;
+	}
+
+	return std::visit(
+	    [object](const auto &before) {
+		    using Before = std::decay_t<decltype(before)>;
+
+		    if constexpr (std::is_same_v<Before, Transform>) {
+			    return !TransformUtils::AreEqual(before, object->transform);
+		    } else {
+			    return before != object->name;
+		    }
+	    },
+	    pending_->before);
 }
 
 SceneObjectId EditorHistory::CreateObjectWithHistory(SceneObject object) {
@@ -103,38 +145,76 @@ bool EditorHistory::BeginTransform(SceneObjectId objectId,
 		return false;
 	}
 
-	CommitTransform();
+	PendingEdit edit{
+	    objectId,
+	    before,
+	};
 
-	pending_ = PendingTransform{objectId, before};
+	CommitEdit();
+	pending_ = std::move(edit);
+
 	return true;
 }
 
-void EditorHistory::CommitTransform() {
+void EditorHistory::CommitEdit() {
 	if (!pending_) {
 		return;
 	}
 
-	const SceneObject *object = scene_.FindObject(pending_->objectId);
+	SceneObject *object = scene_.FindObject(pending_->objectId);
 
-	if (!object || !TransformUtils::IsValid(object->transform)) {
+	if (!object) {
 		Invalidate();
 		return;
 	}
 
-	const TransformCommand command{
-	    pending_->objectId,
-	    pending_->before,
-	    object->transform,
-	};
+	if (std::holds_alternative<Transform>(pending_->before) &&
+	    !TransformUtils::IsValid(object->transform)) {
+		Invalidate();
+		return;
+	}
 
-	if (!command.HasChanges()) {
+	// 空の名前で確定した場合は、編集開始時点の名前へ戻す
+	if (std::holds_alternative<std::string>(pending_->before) &&
+	    object->name.empty()) {
+		auto &before = std::get<std::string>(pending_->before);
+
+		object->name.swap(before);
 		pending_.reset();
 		return;
 	}
 
+	if (!HasPendingChanges()) {
+		pending_.reset();
+		return;
+	}
+
+	const SceneObjectId objectId = pending_->objectId;
+
+	// 記録内容の作成に成功してから、履歴へ追加する
+	Command command = std::visit(
+	    [objectId, object](const auto &before) -> Command {
+		    using Before = std::decay_t<decltype(before)>;
+
+		    if constexpr (std::is_same_v<Before, Transform>) {
+			    return Command{TransformCommand{
+			        objectId,
+			        before,
+			        object->transform,
+			    }};
+		    } else {
+			    return Command{RenameCommand{
+			        objectId,
+			        before,
+			        object->name,
+			    }};
+		    }
+	    },
+	    pending_->before);
+
 	const std::uint64_t next = PrepareAppend();
 
-	AppendPrepared(Command{command}, next);
+	AppendPrepared(std::move(command), next);
 	pending_.reset();
 }
 
@@ -202,22 +282,11 @@ bool EditorHistory::Redo() {
 }
 
 bool EditorHistory::IsModified() const {
-	if (currentState_ != savedState_) {
-		return true;
-	}
-
-	if (!pending_) {
-		return false;
-	}
-
-	const SceneObject *object = scene_.FindObject(pending_->objectId);
-
-	return !object ||
-	       !TransformUtils::AreEqual(pending_->before, object->transform);
+	return currentState_ != savedState_ || HasPendingChanges();
 }
 
 void EditorHistory::MarkSaved() {
-	CommitTransform();
+	CommitEdit();
 	savedState_ = currentState_;
 }
 
