@@ -33,6 +33,29 @@ class TransformGizmo {
 	bool SetOperation(Operation operation);
 
 	/// <summary>
+	/// ギズモのスナップ間隔
+	/// </summary>
+	struct SnapSettings {
+		DirectX::XMFLOAT3 translation{1.0f, 1.0f, 1.0f};
+		float rotationDegrees = 15.0f;
+		float scaleRatio = 0.1f;
+	};
+
+	/// <summary>
+	/// スナップの有効・無効を設定する。ドラッグ中は切り替えない
+	/// </summary>
+	/// <param name="enabled">スナップを使用するか</param>
+	/// <returns>true:設定成功 false:ドラッグ中</returns>
+	bool SetSnapping(bool enabled);
+
+	/// <summary>
+	/// 有限で正のスナップ間隔を設定する。回転角は360度以下とする
+	/// </summary>
+	/// <param name="settings">移動・回転・拡縮の間隔</param>
+	/// <returns>true:設定成功 false:ドラッグ中、または無効な間隔</returns>
+	bool SetSnapSettings(const SnapSettings &settings);
+
+	/// <summary>
 	/// ギズモ操作の結果
 	/// </summary>
 	struct Result {
@@ -90,4 +113,6 @@ class TransformGizmo {
 	SceneObjectId objectId_ = 0;
 	SelectionMode selectionMode_ = SelectionMode::SINGLE;
 	bool using_ = false;
+	bool snapping_ = false;
+	SnapSettings snapSettings_;
 };

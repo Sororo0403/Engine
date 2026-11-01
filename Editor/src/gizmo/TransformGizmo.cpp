@@ -7,6 +7,28 @@
 
 #include <ImGuizmo.h>
 
+#include <cmath>
+
+bool TransformGizmo::SetSnapping(bool enabled) {
+	if (using_) {
+		return false;
+	}
+	snapping_ = enabled;
+	return true;
+}
+
+bool TransformGizmo::SetSnapSettings(const SnapSettings &settings) {
+	if (using_ || !MathUtils::IsFinite(settings.translation) ||
+	    settings.translation.x <= 0.0f || settings.translation.y <= 0.0f ||
+	    settings.translation.z <= 0.0f || !std::isfinite(settings.rotationDegrees) ||
+	    settings.rotationDegrees <= 0.0f || settings.rotationDegrees > 360.0f ||
+	    !std::isfinite(settings.scaleRatio) || settings.scaleRatio <= 0.0f) {
+		return false;
+	}
+	snapSettings_ = settings;
+	return true;
+}
+
 bool TransformGizmo::SetOperation(Operation operation) {
 	if (using_) {
 		return false;
@@ -50,8 +72,29 @@ void TransformGizmo::DrawToolbar(SelectionMode selectionMode) {
 		operation_ = Operation::SCALE;
 	}
 	ImGui::SetItemTooltip("Scale (R)");
+	ImGui::SameLine();
+	ImGui::Checkbox("Snap", &snapping_);
+	ImGui::SameLine();
+	if (ImGui::Button("Snap Settings")) {
+		ImGui::OpenPopup("GizmoSnapSettings");
+	}
 
 	ImGui::EndDisabled();
+	if (ImGui::BeginPopup("GizmoSnapSettings")) {
+		ImGui::BeginDisabled(using_);
+		SnapSettings edited = snapSettings_;
+		bool changed = ImGui::DragFloat3("Move step", &edited.translation.x,
+		                                0.1f, 0.001f, 10000.0f, "%.3f");
+		changed |= ImGui::DragFloat("Rotation step", &edited.rotationDegrees,
+		                           0.5f, 0.1f, 360.0f, "%.1f deg");
+		changed |= ImGui::DragFloat("Scale step (ratio)", &edited.scaleRatio,
+		                           0.01f, 0.001f, 10.0f, "%.3f");
+		if (changed) {
+			SetSnapSettings(edited);
+		}
+		ImGui::EndDisabled();
+		ImGui::EndPopup();
+	}
 
 	if (multiple && operation_ == Operation::SCALE) {
 		ImGui::SameLine();
@@ -137,8 +180,22 @@ TransformGizmo::Result TransformGizmo::Draw(
 	                                : ImGuizmo::LOCAL;
 	// 複数選択の拡縮は軸を隠し、均等拡縮用の中央ハンドルだけを使用する
 	ImGuizmo::SetAxisMask(uniformScale, uniformScale, uniformScale);
+	const float *snap = nullptr;
+	if (snapping_) {
+		switch (effectiveOperation) {
+		case Operation::TRANSLATE:
+			snap = &snapSettings_.translation.x;
+			break;
+		case Operation::ROTATE:
+			snap = &snapSettings_.rotationDegrees;
+			break;
+		case Operation::SCALE:
+			snap = &snapSettings_.scaleRatio;
+			break;
+		}
+	}
 	const bool manipulated = ImGuizmo::Manipulate(
-	    &view._11, &projection._11, operation, mode, &matrix._11);
+	    &view._11, &projection._11, operation, mode, &matrix._11, nullptr, snap);
 
 	using_ = ImGuizmo::IsUsing();
 
