@@ -6,7 +6,10 @@
 
 #include <imgui.h>
 
+#include <algorithm>
 #include <format>
+#include <utility>
+#include <vector>
 
 HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
                                             const Scene &scene,
@@ -15,6 +18,16 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 
 	// 検索で隠れた物体は残し、削除済みの物体だけ取り除く
 	result.selectionChanged = selection.RemoveMissing(scene);
+
+	// Sceneビューや複製など、Hierarchy以外で変わった選択も基準へ反映する
+	const SceneObjectId activeId = selection.GetActiveId();
+	if (activeId != lastActiveId_) {
+		rangeAnchorId_ = activeId;
+	}
+	if (!scene.Contains(rangeAnchorId_)) {
+		rangeAnchorId_ = 0;
+	}
+	lastActiveId_ = activeId;
 
 	if (!ui.BeginWindow("Hierarchy")) {
 		ui.EndWindow();
@@ -27,7 +40,8 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 	ui.BeginDisabled(filter_.empty());
 
 	if (ui.Button("Clear")) {
-		Clear();
+		// 検索だけを解除し、範囲選択の基準は保持する
+		filter_.clear();
 	}
 
 	ui.EndDisabled();
@@ -89,18 +103,25 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 	const bool drawObjects = ui.BeginChild("HierarchyObjects", 0.0f, 0.0f);
 
 	if (drawObjects) {
-		bool anyVisible = false;
+		std::vector<SceneObjectId> visibleIds;
+		visibleIds.reserve(objects.size());
 
 		for (const auto &[id, object] : objects) {
 			const std::string_view name = object.name.empty()
 			                                  ? std::string_view{"Object"}
 			                                  : std::string_view{object.name};
 
-			if (!MatchesFilter(name)) {
-				continue;
+			if (MatchesFilter(name)) {
+				visibleIds.push_back(id);
 			}
+		}
 
-			anyVisible = true;
+		// 描画と範囲選択で同じ表示一覧を使用し、検索で隠れた項目を除く
+		for (const SceneObjectId id : visibleIds) {
+			const SceneObject &object = objects.at(id);
+			const std::string_view name = object.name.empty()
+			                                  ? std::string_view{"Object"}
+			                                  : std::string_view{object.name};
 
 			// アクティブ物体に印を付けても、項目のIDは変えない
 			const auto label = std::format(
@@ -108,9 +129,9 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 			    selection.GetActiveId() == id ? "> " : "  ", name, id);
 
 			if (ui.Selectable(label.c_str(), selection.Contains(id))) {
-				const bool changed = ImGui::GetIO().KeyCtrl
-				                         ? selection.Toggle(id)
-				                         : selection.SelectOnly(id);
+				const auto &io = ImGui::GetIO();
+				const bool changed = SelectObject(
+				    id, visibleIds, io.KeyCtrl, io.KeyShift, selection);
 
 				if (changed) {
 					result.selectionChanged = true;
@@ -118,7 +139,7 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 			}
 		}
 
-		if (!anyVisible) {
+		if (visibleIds.empty()) {
 			ui.Text(objects.empty() ? "No objects." : "No matching objects.");
 		}
 	}
@@ -130,11 +151,61 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 	                           ImGuiFocusedFlags_NoPopupHierarchy);
 
 	ui.EndWindow();
+	lastActiveId_ = selection.GetActiveId();
 	return result;
 }
 
-void HierarchyPanel::Clear() { filter_.clear(); }
+void HierarchyPanel::Clear() {
+	filter_.clear();
+	rangeAnchorId_ = 0;
+	lastActiveId_ = 0;
+}
 
 bool HierarchyPanel::MatchesFilter(std::string_view name) const {
 	return filter_.empty() || name.find(filter_) != std::string_view::npos;
+}
+
+bool HierarchyPanel::SelectObject(
+    SceneObjectId objectId, std::span<const SceneObjectId> visibleIds,
+    bool control, bool shift, EditorSelection &selection) {
+	const auto clicked = std::find(visibleIds.begin(), visibleIds.end(), objectId);
+	if (clicked == visibleIds.end()) {
+		return false;
+	}
+	if (!shift) {
+		rangeAnchorId_ = objectId;
+		return control ? selection.Toggle(objectId)
+		               : selection.SelectOnly(objectId);
+	}
+
+	auto anchor =
+	    std::find(visibleIds.begin(), visibleIds.end(), rangeAnchorId_);
+	if (anchor == visibleIds.end()) {
+		// 基準が非表示、未指定、または削除済みならクリック先から開始する
+		anchor = clicked;
+		rangeAnchorId_ = objectId;
+	}
+	const auto [first, last] = std::minmax(anchor, clicked);
+
+	std::vector<SceneObjectId> ids;
+	if (control) {
+		const auto current = selection.GetIds();
+		ids.assign(current.begin(), current.end());
+	}
+
+	// クリック先は末尾に置き、逆方向の範囲選択でもアクティブにする
+	std::erase(ids, objectId);
+	for (auto it = first; it != last + 1; ++it) {
+		if (*it != objectId &&
+		    std::find(ids.begin(), ids.end(), *it) == ids.end()) {
+			ids.push_back(*it);
+		}
+	}
+	ids.push_back(objectId);
+
+	const auto current = selection.GetIds();
+	if (std::equal(current.begin(), current.end(), ids.begin(), ids.end())) {
+		return false;
+	}
+	return selection.Set(std::move(ids));
 }

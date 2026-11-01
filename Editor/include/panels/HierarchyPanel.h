@@ -2,6 +2,7 @@
 
 #include "scene/SceneObjectId.h"
 
+#include <span>
 #include <string>
 #include <string_view>
 
@@ -45,7 +46,7 @@ class HierarchyPanel {
 	            EditorSelection &selection);
 
 	/// <summary>
-	/// 検索文字列をクリアする。物体の選択状態は変更しない
+	/// 検索文字列と範囲選択の基準をクリアする。物体の選択状態は変更しない
 	/// </summary>
 	void Clear();
 
@@ -57,5 +58,20 @@ class HierarchyPanel {
 	/// <returns>true:一致、または検索条件なし false:不一致</returns>
 	bool MatchesFilter(std::string_view name) const;
 
+	/// <summary>
+	/// 表示項目へのクリックを、修飾キーに応じて選択へ反映する
+	/// </summary>
+	/// <param name="objectId">クリックした物体ID</param>
+	/// <param name="visibleIds">現在の表示順の物体ID一覧</param>
+	/// <param name="control">Ctrlキーが押されているか</param>
+	/// <param name="shift">Shiftキーが押されているか</param>
+	/// <param name="selection">変更する選択状態</param>
+	/// <returns>true:選択変更あり false:変更なし、または対象が表示されていない</returns>
+	bool SelectObject(SceneObjectId objectId,
+	                  std::span<const SceneObjectId> visibleIds,
+	                  bool control, bool shift, EditorSelection &selection);
+
 	std::string filter_;
+	SceneObjectId rangeAnchorId_ = 0;
+	SceneObjectId lastActiveId_ = 0;
 };
