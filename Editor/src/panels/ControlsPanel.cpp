@@ -80,6 +80,8 @@ void ControlsPanel::Draw() {
 	    {"Esc", "Clear selection, or cancel a selection rectangle."},
 	    {"F2", "Rename the single selected object in Inspector."},
 	    {"Visible / Hierarchy menu", "Show or hide models without deleting objects. Visibility changes support Undo / Redo."},
+	    {"Hierarchy > Hidden only", "List hidden models. Search and range selection use this filtered list."},
+	    {"Edit > Show All Models", "Restore every hidden model in one undoable operation without changing selection."},
 	    {"Ctrl + D / Delete", "Duplicate / delete the selected objects."},
 	    {"Ctrl + C / X / V", "Copy / cut / paste scene objects."},
 	});

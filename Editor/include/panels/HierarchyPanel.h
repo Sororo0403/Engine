@@ -54,12 +54,12 @@ class HierarchyPanel {
 	            EditorSelection &selection);
 
 	/// <summary>
-	/// 検索文字列と範囲選択の基準をクリアする。物体の選択状態は変更しない
+	/// 検索・表示条件と範囲選択の基準をクリアする。物体の選択状態は変更しない
 	/// </summary>
 	void Clear();
 
 	/// <summary>
-	/// 現在の検索条件に一致する物体を全て選択する
+	/// 現在の絞り込み条件に一致する物体を全て選択する
 	/// </summary>
 	/// <param name="scene">表示対象のシーン</param>
 	/// <param name="selection">変更する選択状態</param>
@@ -68,11 +68,12 @@ class HierarchyPanel {
 
   private:
 	/// <summary>
-	/// 表示名が現在の検索条件に一致するか確認する
+	/// 表示名と表示状態が現在の絞り込み条件に一致するか確認する
 	/// </summary>
 	/// <param name="name">物体の表示名</param>
-	/// <returns>true:一致、または検索条件なし false:不一致</returns>
-	bool MatchesFilter(std::string_view name) const;
+	/// <param name="visible">モデルの表示状態</param>
+	/// <returns>true:すべての条件に一致 false:不一致</returns>
+	bool MatchesFilter(std::string_view name, bool visible) const;
 
 	/// <summary>
 	/// 表示項目へのクリックを、修飾キーに応じて選択へ反映する
@@ -88,6 +89,7 @@ class HierarchyPanel {
 	                  bool control, bool shift, EditorSelection &selection);
 
 	std::string filter_;
+	bool hiddenOnly_ = false;
 	SceneObjectId rangeAnchorId_ = 0;
 	SceneObjectId lastActiveId_ = 0;
 };

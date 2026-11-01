@@ -46,6 +46,7 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 
 	ui.EndDisabled();
 
+	ImGui::Checkbox("Hidden only", &hiddenOnly_);
 	const SceneObject *active = scene.FindObject(selection.GetActiveId());
 
 	if (active) {
@@ -58,7 +59,7 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 		ui.Text("Active: None");
 	}
 
-	std::size_t hiddenCount = 0;
+	std::size_t filteredCount = 0;
 
 	for (const SceneObjectId id : selection.GetIds()) {
 		const SceneObject *object = scene.FindObject(id);
@@ -71,13 +72,13 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 		                                  ? std::string_view{"Object"}
 		                                  : std::string_view{object->name};
 
-		if (!MatchesFilter(name)) {
-			++hiddenCount;
+		if (!MatchesFilter(name, object->visible)) {
+			++filteredCount;
 		}
 	}
 
 	// 選択状態に関係なく行数を保ち、クリック中に一覧の位置を動かさない
-	ui.Text(std::format("Selected: {} (hidden: {})", selection.GetCount(), hiddenCount));
+	ui.Text(std::format("Selected: {} | filtered: {}", selection.GetCount(), filteredCount));
 	ImGui::SetItemTooltip("The Inspector edits the active object. Ctrl adds or removes objects; Shift selects a range.");
 
 	if (ui.Button("Create Empty")) {
@@ -107,7 +108,7 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 			                                  ? std::string_view{"Object"}
 			                                  : std::string_view{object.name};
 
-			if (MatchesFilter(name)) {
+			if (MatchesFilter(name, object.visible)) {
 				visibleIds.push_back(id);
 			}
 		}
@@ -212,12 +213,14 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 
 void HierarchyPanel::Clear() {
 	filter_.clear();
+	hiddenOnly_ = false;
 	rangeAnchorId_ = 0;
 	lastActiveId_ = 0;
 }
 
-bool HierarchyPanel::MatchesFilter(std::string_view name) const {
-	return filter_.empty() || name.find(filter_) != std::string_view::npos;
+bool HierarchyPanel::MatchesFilter(std::string_view name, bool visible) const {
+	return (!hiddenOnly_ || !visible) &&
+	       (filter_.empty() || name.find(filter_) != std::string_view::npos);
 }
 
 bool HierarchyPanel::SelectAllVisible(const Scene &scene,
@@ -227,7 +230,7 @@ bool HierarchyPanel::SelectAllVisible(const Scene &scene,
 		const std::string_view name = object.name.empty()
 		                                  ? std::string_view{"Object"}
 		                                  : std::string_view{object.name};
-		if (MatchesFilter(name)) {
+		if (MatchesFilter(name, object.visible)) {
 			ids.push_back(id);
 		}
 	}

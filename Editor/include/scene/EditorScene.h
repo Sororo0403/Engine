@@ -120,6 +120,7 @@ class EditorScene final : public IScene {
 		RESET_CAMERA,
 		RENAME_OBJECT,
 		OPEN_RECENT,
+		SHOW_ALL_MODELS,
 	};
 
 	/// <summary>
@@ -225,6 +226,11 @@ class EditorScene final : public IScene {
 	/// <param name="visible">変更後の表示状態</param>
 	/// <returns>true:成功 false:読み込みまたは変更に失敗</returns>
 	bool ChangeVisibility(std::span<const SceneObjectId> objectIds, bool visible);
+
+	/// <summary>
+	/// 非表示の物体を全て再表示する。選択状態は変更しない
+	/// </summary>
+	void ShowAllModels();
 
 	/// <summary>
 	/// 編集中の内容を履歴へ確定し、ギズモ操作を中止する

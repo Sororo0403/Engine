@@ -590,6 +590,12 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		if (ui_.MenuItem("Deselect All", "Esc", enabled && HasSelection())) {
 			action = EditorAction::DESELECT_ALL;
 		}
+		const auto &objects = document_.GetScene().GetObjects();
+		const bool hasHidden = std::any_of(objects.begin(), objects.end(),
+		    [](const auto &entry) { return !entry.second.visible; });
+		if (ui_.MenuItem("Show All Models", nullptr, enabled && hasHidden)) {
+			action = EditorAction::SHOW_ALL_MODELS;
+		}
 		ui_.Separator();
 		if (ui_.MenuItem("Copy", "Ctrl+C", objectEnabled)) {
 			action = EditorAction::COPY_OBJECTS;
@@ -841,6 +847,9 @@ void EditorScene::StartAction(EditorAction action) {
 		return;
 	case EditorAction::RESET_TRANSFORMS:
 		ResetSelectedTransforms();
+		return;
+	case EditorAction::SHOW_ALL_MODELS:
+		ShowAllModels();
 		return;
 	case EditorAction::COPY_OBJECTS:
 		CopySelectedObjects(false);
@@ -1114,6 +1123,23 @@ void EditorScene::ShowError(std::string message) {
 
 bool EditorScene::IsBusy() const {
 	return stage_ != DialogStage::IDLE || exitQueued_ || closeApproved_;
+}
+
+void EditorScene::ShowAllModels() {
+	try {
+		std::vector<SceneObjectId> ids;
+		for (const auto &[id, object] : document_.GetScene().GetObjects()) {
+			if (!object.visible) {
+				ids.push_back(id);
+			}
+		}
+		if (!ids.empty()) {
+			ChangeVisibility(ids, true);
+		}
+	} catch (const std::exception &error) {
+		Logger::Error(std::format("EditorScene::ShowAllModels: {}", error.what()));
+		ShowError("Could not show all models. See the log for details.");
+	}
 }
 
 bool EditorScene::ChangeVisibility(std::span<const SceneObjectId> objectIds, bool visible) {
