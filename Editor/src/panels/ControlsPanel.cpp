@@ -88,7 +88,7 @@ void ControlsPanel::Draw() {
 	DrawSection("Transform gizmo", {
 	    {"W / E / R", "Switch to Move / Rotate / Scale when not navigating the camera."},
 	    {"X", "Toggle Local / World for single-object Move and Rotate."},
-	    {"Scene toolbar", "Enable Snap and set movement, rotation and scale increments."},
+	    {"Scene toolbar", "Enable Snap and set movement, rotation and scale increments. Model drops also use the Move step."},
 	    {"Scale center handle", "Scale multiple selected objects uniformly."},
 	    {"Z / Center / Active", "For multiple selection, use the mean of object origins or the active object's origin as the gizmo pivot."},
 	    {"Edit > Reset Transform", "Reset position, rotation and scale of selected objects."},

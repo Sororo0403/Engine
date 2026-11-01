@@ -115,6 +115,7 @@ void TransformGizmo::DrawToolbar(SelectionMode selectionMode) {
 	                                   : "Toggle Local / World (X)");
 	ImGui::SameLine();
 	ImGui::Checkbox("Snap", &snapping_);
+	ImGui::SetItemTooltip("Snap gizmo edits and model drops. Drops use the Move step in world coordinates.");
 	ImGui::SameLine();
 	ImGui::BeginDisabled(!multiple);
 	const bool activePivot = !multiple || pivotMode_ == SelectionPivot::Mode::ACTIVE;

@@ -10,6 +10,7 @@
 #include "input/InputSystem.h"
 #include "input/Key.h"
 #include "math/Ray.h"
+#include "math/MathUtils.h"
 #include "math/TransformUtils.h"
 #include "platform/windows/PathUtils.h"
 #include "scene/Scene.h"
@@ -313,8 +314,13 @@ bool EditorScene::Update(float deltaTime) {
 	    hierarchyRequest.action == HierarchyPanel::Action::NONE && !modelDrop.path.empty()) {
 		Ray ray;
 		DirectX::XMFLOAT3 position;
-		if (!renderer_.CreatePickingRay(modelDrop.imagePosition.x, modelDrop.imagePosition.y, ray) ||
-		    !ModelPlacement::GetPosition(ray, position)) {
+		bool positionReady = renderer_.CreatePickingRay(
+		    modelDrop.imagePosition.x, modelDrop.imagePosition.y, ray) &&
+		    ModelPlacement::GetPosition(ray, position);
+		if (positionReady && gizmo_.IsSnapping()) {
+			positionReady = MathUtils::SnapToGrid(position, gizmo_.GetSnapSettings().translation, position);
+		}
+		if (!positionReady) {
 			ShowError("Could not determine the model placement position.");
 		} else if (PlaceModel(modelDrop.path, position) &&
 		           !renderer_.Update(target->GetWidth(), target->GetHeight())) {
