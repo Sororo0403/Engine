@@ -357,4 +357,12 @@
       <Filter>src\assets</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\dialogs\SceneReloadDialog.h">
+      <Filter>include\dialogs</Filter>
+    </ClInclude>
+    <ClCompile Include="src\dialogs\SceneReloadDialog.cpp">
+      <Filter>src\dialogs</Filter>
+    </ClCompile>
+  </ItemGroup>
 </Project>

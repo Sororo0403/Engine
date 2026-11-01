@@ -5,6 +5,7 @@
 #include "dialogs/SaveChangesDialog.h"
 #include "dialogs/BatchRenameDialog.h"
 #include "dialogs/SceneFileDialog.h"
+#include "dialogs/SceneReloadDialog.h"
 #include "gizmo/TransformGizmo.h"
 #include "history/AlignmentAxis.h"
 #include "layout/EditorDockLayout.h"
@@ -105,6 +106,7 @@ class EditorScene final : public IScene {
 		SAVE,
 		SAVE_AS,
 		SAVE_COPY,
+		RELOAD_SCENE,
 		EXIT,
 		UNDO,
 		REDO,
@@ -157,6 +159,7 @@ class EditorScene final : public IScene {
 		OPEN_FILE,
 		SAVE_FILE,
 		SAVE_COPY_FILE,
+		CONFIRM_RELOAD,
 		BATCH_RENAME,
 		ERROR,
 	};
@@ -429,6 +432,7 @@ class EditorScene final : public IScene {
 	SaveChangesDialog saveChangesDialog_;
 	BatchRenameDialog batchRenameDialog_;
 	SceneFileDialog fileDialog_;
+	SceneReloadDialog sceneReloadDialog_;
 
 	DialogStage stage_ = DialogStage::IDLE;
 	EditorAction pendingAction_ = EditorAction::NONE;

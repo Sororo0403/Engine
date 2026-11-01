@@ -633,6 +633,9 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		if (ui_.MenuItem("Save Copy...", nullptr, enabled)) {
 			action = EditorAction::SAVE_COPY;
 		}
+		if (ui_.MenuItem("Reload Scene...", nullptr, enabled && !document_.GetFilePath().empty())) {
+			action = EditorAction::RELOAD_SCENE;
+		}
 
 		ui_.Separator();
 
@@ -1132,6 +1135,14 @@ void EditorScene::StartAction(EditorAction action) {
 		StartSave(true);
 		return;
 
+	case EditorAction::RELOAD_SCENE:
+		pendingAction_ = EditorAction::NONE;
+		if (!document_.GetFilePath().empty()) {
+			sceneReloadDialog_.Show(PathUtils::ToUtf8(document_.GetFilePath().filename()));
+			stage_ = DialogStage::CONFIRM_RELOAD;
+		}
+		return;
+
 	case EditorAction::SAVE_COPY:
 		pendingAction_ = EditorAction::NONE;
 		StartSaveCopy();
@@ -1318,6 +1329,16 @@ void EditorScene::UpdateDialogs() {
 			}
 		}
 
+		return;
+	}
+
+	case DialogStage::CONFIRM_RELOAD: {
+		const auto result = sceneReloadDialog_.Draw(ui_);
+		if (result == SceneReloadResult::CANCELLED) {
+			stage_ = DialogStage::IDLE;
+		} else if (result == SceneReloadResult::RELOAD) {
+			OpenScene(document_.GetFilePath());
+		}
 		return;
 	}
 
