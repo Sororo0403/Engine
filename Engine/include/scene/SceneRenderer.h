@@ -16,6 +16,7 @@ class RenderSystem;
 class RenderWorld;
 class Scene;
 class RenderTexture;
+struct Ray;
 
 /// <summary>
 /// シーンの物体データを描画ワールドへ反映し、描画を実行する
@@ -80,6 +81,15 @@ class SceneRenderer {
 	/// <returns>交差した物体のID。交差なしの場合は0</returns>
 	/// <remarks>Update成功後、Drawより前に呼び出す</remarks>
 	SceneObjectId Pick(float imageX, float imageY) const;
+
+	/// <summary>
+	/// シーンの描画カメラから、画像内の位置を通るレイを作成する
+	/// </summary>
+	/// <param name="imageX">画像内の横位置。左端0、右端1</param>
+	/// <param name="imageY">画像内の縦位置。上端0、下端1</param>
+	/// <param name="ray">成功した場合に設定するワールド座標のレイ</param>
+	/// <returns>true:成功 false:更新前、または位置が無効</returns>
+	bool CreatePickingRay(float imageX, float imageY, Ray &ray) const;
 
 	/// <summary>
 	/// シーンの描画に使用する更新済みのカメラ行列を取得する

@@ -1,6 +1,7 @@
 #include "panels/AssetsPanel.h"
 
 #include "assets/AssetDatabase.h"
+#include "assets/ModelAssetDragDrop.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "platform/windows/PathUtils.h"
 
@@ -64,6 +65,9 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 			ui.PushID(static_cast<int>(i));
 
 			if (ui.Selectable(label.c_str(), selectedPath_ == modelPath)) {
+				selectedPath_ = modelPath;
+			}
+			if (ModelAssetDragDrop::DrawSource(modelPath)) {
 				selectedPath_ = modelPath;
 			}
 

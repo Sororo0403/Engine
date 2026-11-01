@@ -17,6 +17,7 @@ class D3D12Graphics;
 class MeshRenderer;
 class RenderSystem;
 class DebugLineRenderer;
+struct Ray;
 
 /// <summary>
 /// シーンごとの描画物体・カメラ・ライトを管理する
@@ -126,6 +127,15 @@ class RenderWorld {
 	/// <returns>交差した物体のハンドル。交差なし、または更新前の場合は未設定</returns>
 	/// <remarks>Update成功後、Drawより前に呼び出す</remarks>
 	RenderObjectHandle Pick(float imageX, float imageY) const;
+
+	/// <summary>
+	/// 更新済みの描画カメラから、画像内の位置を通るレイを作成する
+	/// </summary>
+	/// <param name="imageX">画像内の横位置。左端0、右端1</param>
+	/// <param name="imageY">画像内の縦位置。上端0、下端1</param>
+	/// <param name="ray">成功した場合に設定するワールド座標のレイ</param>
+	/// <returns>true:成功 false:更新前、または位置が無効</returns>
+	bool CreatePickingRay(float imageX, float imageY, Ray &ray) const;
 
 	/// <summary>
 	/// 更新済みの描画カメラの行列を取得する

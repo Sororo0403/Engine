@@ -1,5 +1,6 @@
 #include "scene/EditorScene.h"
 
+#include "assets/ModelPlacement.h"
 #include "core/EngineContext.h"
 #include "core/Logger.h"
 #include "graphics/model/ModelManager.h"
@@ -8,6 +9,7 @@
 #include "history/EditorHistory.h"
 #include "input/InputSystem.h"
 #include "input/Key.h"
+#include "math/Ray.h"
 #include "math/TransformUtils.h"
 #include "platform/windows/PathUtils.h"
 #include "scene/Scene.h"
@@ -121,6 +123,7 @@ bool EditorScene::Update(float deltaTime) {
 	                             ? TransformGizmo::SelectionMode::MULTIPLE
 	                             : TransformGizmo::SelectionMode::SINGLE;
 	const bool sceneViewReady = sceneViewPanel_.DrawUI(ui_, gizmo_, toolbarMode);
+	const auto &modelDrop = sceneViewPanel_.GetModelDrop();
 	if (hierarchyRequest.windowFocused) {
 		hierarchySelectionScope_ = true;
 	} else if (sceneViewPanel_.GetInput().windowFocused) {
@@ -181,7 +184,7 @@ bool EditorScene::Update(float deltaTime) {
 			PlaceModel(requestedModelPath);
 		}
 
-		if (!IsBusy()) {
+		if (!IsBusy() && modelDrop.path.empty()) {
 			if (action == EditorAction::NONE) {
 				const bool objectPanelFocused =
 				    hierarchyRequest.windowFocused ||
@@ -206,6 +209,7 @@ bool EditorScene::Update(float deltaTime) {
 	const bool inputBlocked =
 	    wasBusy || IsBusy() || action != EditorAction::NONE ||
 	    !requestedModelPath.empty() ||
+	    !modelDrop.path.empty() ||
 	    hierarchyRequest.action != HierarchyPanel::Action::NONE;
 
 	ViewportInput viewport = sceneViewPanel_.GetInput();
@@ -271,6 +275,19 @@ bool EditorScene::Update(float deltaTime) {
 		if (!renderer_.GetCameraMatrices(view, projection)) {
 			Logger::Error(
 			    "EditorScene: 移動後のカメラ行列を取得できませんでした。");
+			return false;
+		}
+	}
+
+	if (!wasBusy && !IsBusy() && action == EditorAction::NONE &&
+	    hierarchyRequest.action == HierarchyPanel::Action::NONE && !modelDrop.path.empty()) {
+		Ray ray;
+		DirectX::XMFLOAT3 position;
+		if (!renderer_.CreatePickingRay(modelDrop.imagePosition.x, modelDrop.imagePosition.y, ray) ||
+		    !ModelPlacement::GetPosition(ray, position)) {
+			ShowError("Could not determine the model placement position.");
+		} else if (PlaceModel(modelDrop.path, position) &&
+		           !renderer_.Update(target->GetWidth(), target->GetHeight())) {
 			return false;
 		}
 	}
@@ -1015,10 +1032,11 @@ bool EditorScene::IsBusy() const {
 	return stage_ != DialogStage::IDLE || exitQueued_ || closeApproved_;
 }
 
-void EditorScene::PlaceModel(const std::filesystem::path &modelPath) {
+bool EditorScene::PlaceModel(const std::filesystem::path &modelPath,
+                            const DirectX::XMFLOAT3 &position) {
 	try {
 		if (modelPath.empty()) {
-			return;
+			return false;
 		}
 
 		FinishEdit();
@@ -1030,17 +1048,26 @@ void EditorScene::PlaceModel(const std::filesystem::path &modelPath) {
 
 		if (!model) {
 			ShowError("Could not load the model. See the log for details.");
-			return;
+			return false;
 		}
 
-		const SceneObjectId createdId =
-		    document_.GetHistory().CreateObject(name, modelPath);
-
-		selection_.SelectOnly(createdId);
+		SceneObject object;
+		object.name = name;
+		object.modelPath = modelPath;
+		object.transform.translation = position;
+		// 配置位置も追加時のスナップショットへ含め、1回のUndo・Redoで復元する
+		auto ids = document_.GetHistory().CreateObjects({std::move(object)});
+		if (ids.empty()) {
+			ShowError("Could not create the model object.");
+			return false;
+		}
+		selection_.Set(std::move(ids));
+		return true;
 	} catch (const std::exception &error) {
 		Logger::Error(std::format("EditorScene::PlaceModel: {}", error.what()));
 
 		ShowError("Could not place the model. See the log for details.");
+		return false;
 	}
 }
 

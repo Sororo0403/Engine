@@ -466,6 +466,11 @@ bool RenderWorld::Uses(const D3D12Graphics &graphics) const {
 	return &impl_->graphics_ == &graphics;
 }
 
+bool RenderWorld::CreatePickingRay(float imageX, float imageY, Ray &ray) const {
+	return impl_->initialized_ && impl_->prepared_ &&
+	       impl_->camera_.CreatePickingRay(imageX, imageY, ray);
+}
+
 RenderObjectHandle RenderWorld::Pick(float imageX, float imageY) const {
 	if (!impl_->initialized_ || !impl_->prepared_) {
 		return {};
@@ -473,7 +478,7 @@ RenderObjectHandle RenderWorld::Pick(float imageX, float imageY) const {
 
 	Ray worldRay;
 
-	if (!impl_->camera_.CreatePickingRay(imageX, imageY, worldRay)) {
+	if (!CreatePickingRay(imageX, imageY, worldRay)) {
 		return {};
 	}
 

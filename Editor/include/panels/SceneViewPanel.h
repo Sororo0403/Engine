@@ -3,6 +3,7 @@
 #include "gizmo/TransformGizmo.h"
 #include "graphics/ui/ViewportInput.h"
 
+#include <filesystem>
 #include <memory>
 
 class ImGuiSystem;
@@ -23,6 +24,14 @@ class SceneViewPanel {
 		DirectX::XMFLOAT2 minimum{};
 		DirectX::XMFLOAT2 maximum{};
 		bool additive = false;
+	};
+
+	/// <summary>
+	/// Scene画像へ確定したモデルの配置要求
+	/// </summary>
+	struct ModelDropRequest {
+		std::filesystem::path path;
+		DirectX::XMFLOAT2 imagePosition{};
 	};
 
 	/// <summary>
@@ -80,6 +89,12 @@ class SceneViewPanel {
 	const ViewportInput &GetInput() const;
 
 	/// <summary>
+	/// このフレームのモデルのドロップを取得する
+	/// </summary>
+	/// <returns>配置要求。操作がない場合はパスが空</returns>
+	const ModelDropRequest &GetModelDrop() const;
+
+	/// <summary>
 	/// ギズモ判定後に選択入力を更新し、ドラッグ中の矩形を表示する
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
@@ -111,6 +126,7 @@ class SceneViewPanel {
 
 	std::unique_ptr<RenderTexture> texture_;
 	ViewportInput input_{};
+	ModelDropRequest modelDrop_;
 
 	bool visible_ = false;
 

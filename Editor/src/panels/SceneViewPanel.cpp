@@ -1,10 +1,12 @@
 #include "panels/SceneViewPanel.h"
+#include "assets/ModelAssetDragDrop.h"
 #include "graphics/render/RenderSystem.h"
 #include "graphics/render/RenderTexture.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "math/MathUtils.h"
 
 #include <algorithm>
+#include <utility>
 #include <imgui.h>
 
 SceneViewPanel::SceneViewPanel(RenderSystem &render) : render_(render) {}
@@ -15,6 +17,7 @@ bool SceneViewPanel::DrawUI(const ImGuiSystem &ui, TransformGizmo &gizmo,
                             TransformGizmo::SelectionMode selectionMode) {
 	visible_ = false;
 	input_ = {};
+	modelDrop_ = {};
 	imageMinimum_ = {};
 	imageSize_ = {};
 
@@ -66,6 +69,16 @@ bool SceneViewPanel::DrawUI(const ImGuiSystem &ui, TransformGizmo &gizmo,
 	};
 
 	input_ = ui.GetViewportInput();
+	if (auto path = ModelAssetDragDrop::AcceptTarget(); !path.empty()) {
+		// ドラッグ元がアクティブな間は通常のホバー判定を使わない
+		const auto mouse = ImGui::GetMousePos();
+		if (ImGui::IsMousePosValid() && mouse.x >= minimum.x && mouse.x < maximum.x &&
+		    mouse.y >= minimum.y && mouse.y < maximum.y) {
+			modelDrop_.path = std::move(path);
+			modelDrop_.imagePosition = {(mouse.x - minimum.x) / imageSize_.x,
+			                            (mouse.y - minimum.y) / imageSize_.y};
+		}
+	}
 	visible_ = true;
 
 	ui.EndWindow();
@@ -101,6 +114,10 @@ RenderTexture *SceneViewPanel::GetRenderTexture() const {
 }
 
 const ViewportInput &SceneViewPanel::GetInput() const { return input_; }
+
+const SceneViewPanel::ModelDropRequest &SceneViewPanel::GetModelDrop() const {
+	return modelDrop_;
+}
 
 SceneViewPanel::SelectionRequest SceneViewPanel::UpdateSelection(
     const ImGuiSystem &ui, bool enabled, bool gizmoBlocksSelection) {
@@ -214,5 +231,6 @@ void SceneViewPanel::Finalize() {
 	CancelSelection();
 	texture_.reset();
 	input_ = {};
+	modelDrop_ = {};
 	visible_ = false;
 }

@@ -172,6 +172,10 @@ SceneObjectId SceneRenderer::Pick(float imageX, float imageY) const {
 	return 0;
 }
 
+bool SceneRenderer::CreatePickingRay(float imageX, float imageY, Ray &ray) const {
+	return world_ && world_->CreatePickingRay(imageX, imageY, ray);
+}
+
 bool SceneRenderer::GetCameraMatrices(DirectX::XMFLOAT4X4 &view,
                                       DirectX::XMFLOAT4X4 &projection) const {
 	return world_ && world_->GetCameraMatrices(view, projection);

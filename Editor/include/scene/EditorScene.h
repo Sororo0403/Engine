@@ -196,7 +196,10 @@ class EditorScene final : public IScene {
 	/// モデルの読み込みを確認してからシーンへ配置する
 	/// </summary>
 	/// <param name="modelPath">実行ファイル基準のモデルの相対パス</param>
-	void PlaceModel(const std::filesystem::path &modelPath);
+	/// <param name="position">配置するワールド座標</param>
+	/// <returns>true:配置成功 false:読み込みまたは追加に失敗</returns>
+	bool PlaceModel(const std::filesystem::path &modelPath,
+	                const DirectX::XMFLOAT3 &position = {});
 
 	/// <summary>
 	/// 編集中の内容を履歴へ確定し、ギズモ操作を中止する
