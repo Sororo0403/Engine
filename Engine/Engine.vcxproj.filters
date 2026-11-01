@@ -473,4 +473,35 @@
       <Filter>src\physics</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Filter Include="include\gameplay">
+      <UniqueIdentifier>{62ad0a75-787c-41cf-b779-ecd100cff0c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\gameplay">
+      <UniqueIdentifier>{90cc2609-9351-4802-bbde-4a7a4b4c6eca}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\physics\CollisionMoveResult.h">
+      <Filter>include\physics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\physics\CollisionWorld.h">
+      <Filter>include\physics</Filter>
+    </ClInclude>
+    <ClCompile Include="src\physics\CollisionWorld.cpp">
+      <Filter>src\physics</Filter>
+    </ClCompile>
+    <ClInclude Include="include\gameplay\CharacterInput.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gameplay\CharacterSettings.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gameplay\CharacterController.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
+    <ClCompile Include="src\gameplay\CharacterController.cpp">
+      <Filter>src\gameplay</Filter>
+    </ClCompile>
+  </ItemGroup>
 </Project>

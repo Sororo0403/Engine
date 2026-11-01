@@ -280,6 +280,15 @@ exit /b 0</Command>
     <ClInclude Include="include\physics\BoxColliderUtils.h" />
     <ClCompile Include="src\physics\BoxColliderUtils.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\physics\CollisionMoveResult.h" />
+    <ClInclude Include="include\physics\CollisionWorld.h" />
+    <ClCompile Include="src\physics\CollisionWorld.cpp" />
+    <ClInclude Include="include\gameplay\CharacterInput.h" />
+    <ClInclude Include="include\gameplay\CharacterSettings.h" />
+    <ClInclude Include="include\gameplay\CharacterController.h" />
+    <ClCompile Include="src\gameplay\CharacterController.cpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
 </Project>

@@ -16,6 +16,8 @@
 #include <stdexcept>
 #include <vector>
 
+void RunCharacterTests();
+
 namespace {
 void Require(bool condition, const char *message) {
 	if (!condition) {
@@ -156,6 +158,7 @@ int main() {
 		ColliderBoundsTests();
 		ColliderSerializationTests();
 		ColliderObjectHistoryTests();
+		RunCharacterTests();
 		std::cout << "ALL PASS\n";
 		return 0;
 	} catch (const std::exception &error) {

@@ -49,6 +49,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="GameplayTests.cpp" />
+    <ClCompile Include="CharacterTests.cpp" />
     <ClCompile Include="..\Editor\src\history\ObjectCommand.cpp" />
   </ItemGroup>
   <ItemGroup>
