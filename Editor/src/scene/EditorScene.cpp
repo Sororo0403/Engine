@@ -698,7 +698,12 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		if (ui_.MenuItem("Save Copy...", nullptr, enabled)) {
 			action = EditorAction::SAVE_COPY;
 		}
-		if (ui_.MenuItem("Reload Scene...", nullptr, enabled && !document_.GetFilePath().empty())) {
+		if (ui_.MenuItem("Export Game...", nullptr, enabled)) {
+			action = EditorAction::EXPORT_GAME;
+		}
+
+		if (ui_.MenuItem("Reload Scene...", nullptr,
+		                 enabled && !document_.GetFilePath().empty())) {
 			action = EditorAction::RELOAD_SCENE;
 		}
 
@@ -1050,6 +1055,21 @@ void EditorScene::StartAction(EditorAction action) {
 	FinishEdit();
 
 	switch (action) {
+	case EditorAction::EXPORT_GAME: {
+		GameExportOptions options;
+		const auto root = PathUtils::GetExecutableDirectory();
+#if defined(_DEBUG)
+		options.runtimeDirectory = root.parent_path() / L"Release";
+#else
+		options.runtimeDirectory = root;
+#endif
+		options.resourceDirectory = root / L"resources";
+		options.destination = root / L"exports" / L"Game";
+		options.config.fallbackCamera = cameraController_.GetPose();
+		exportDialog_.Show(std::move(options));
+		stage_ = DialogStage::EXPORT_GAME;
+		return;
+	}
 	case EditorAction::RENAME_OBJECT:
 		if (HasSingleSelection()) {
 			inspectorPanel_.RequestRename(selection_.GetActiveId());
@@ -1484,6 +1504,25 @@ void EditorScene::UpdateDialogs() {
 		return;
 	}
 
+	case DialogStage::EXPORT_GAME: {
+		const auto result = exportDialog_.Draw(ui_);
+		if (result == GameExportResult::CANCELLED) {
+			stage_ = DialogStage::IDLE;
+		}
+		if (result == GameExportResult::ACCEPTED) {
+			std::string error;
+			if (GameExporter::Export(document_.GetScene(),
+			                         exportDialog_.GetOptions(), error)) {
+				Logger::Info(
+				    "Game exported to " +
+				    PathUtils::ToUtf8(exportDialog_.GetOptions().destination));
+				stage_ = DialogStage::IDLE;
+			} else {
+				ShowError(std::move(error));
+			}
+		}
+		return;
+	}
 	case DialogStage::ERROR: {
 		constexpr const char *kTitle =
 		    "Operation failed###SceneOperationError";

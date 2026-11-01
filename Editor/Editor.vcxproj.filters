@@ -415,4 +415,12 @@
     <ClCompile Include="src\camera\CameraInspector.cpp"><Filter>src\camera</Filter></ClCompile>
   </ItemGroup>
   <ItemGroup><ClInclude Include="include\gameplay\PlaybackClock.h"><Filter>include\gameplay</Filter></ClInclude></ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\export\GameExporter.h"><Filter>include\export</Filter></ClInclude>
+    <ClCompile Include="src\export\GameExporter.cpp"><Filter>src\export</Filter></ClCompile>
+    <ClInclude Include="include\dialogs\GameExportDialog.h"><Filter>include\dialogs</Filter></ClInclude>
+    <ClCompile Include="src\dialogs\GameExportDialog.cpp"><Filter>src\dialogs</Filter></ClCompile>
+  </ItemGroup>
+<ItemGroup><Filter Include="include\export"><UniqueIdentifier>{c84302bf-808d-4fcf-80da-286af995aaf0}</UniqueIdentifier></Filter></ItemGroup>
+<ItemGroup><Filter Include="src\export"><UniqueIdentifier>{03327432-75ef-44c7-b912-21ac66f34d5d}</UniqueIdentifier></Filter></ItemGroup>
 </Project>

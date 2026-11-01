@@ -1,5 +1,5 @@
 #pragma once
-#include "gameplay/CharacterInput.h"
+#include "gameplay/CharacterInputReader.h"
 #include "graphics/ui/ViewportInput.h"
 #include "input/Keyboard.h"
 
@@ -17,8 +17,6 @@ inline CharacterInput Read(const Keyboard &keys, const ViewportInput &viewport,
 	    viewport.widgetActive || textEditing) {
 		return {};
 	}
-	return {float(keys.IsDown(Key::D)) - float(keys.IsDown(Key::A)),
-	        float(keys.IsDown(Key::W)) - float(keys.IsDown(Key::S)),
-	        keys.IsPressed(Key::SPACE)};
+	return CharacterInputReader::Read(keys);
 }
 } // namespace GameplayInput

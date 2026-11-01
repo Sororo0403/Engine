@@ -517,4 +517,6 @@
     <ClInclude Include="include\graphics\camera\CameraSettings.h"><Filter>include\graphics\camera</Filter></ClInclude>
     <ClInclude Include="include\scene\CameraComponent.h"><Filter>include\scene</Filter></ClInclude>
   </ItemGroup>
+  <ItemGroup><ClInclude Include="include\gameplay\GameConfig.h"><Filter>include\gameplay</Filter></ClInclude><ClCompile Include="src\gameplay\GameConfig.cpp"><Filter>src\gameplay</Filter></ClCompile></ItemGroup>
+<ItemGroup><ClInclude Include="include\gameplay\CharacterInputReader.h"><Filter>include\gameplay</Filter></ClInclude></ItemGroup>
 </Project>

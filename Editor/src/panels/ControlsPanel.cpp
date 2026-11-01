@@ -150,6 +150,7 @@ void ControlsPanel::Draw() {
 	    {"Ctrl + S", "Save the scene."},
 	    {"Ctrl + Shift + S", "Save the scene under another name."},
 	    {"File > Reload Scene", "Confirm to reload the active file from disk. Success resets selection, camera and undo history; a failed load keeps the edited scene."},
+	    {"File > Export Game", "Choose a new folder, game title and window size. Build Release first. Export keeps the active scene and saved state; run Game.exe from the exported folder."},
 	    {"File > Save Copy", "Save a separate scene file and keep the active file and saved state."},
 	    {"Ctrl + Z", "Undo the last edit."},
 	    {"Ctrl + Y / Ctrl + Shift + Z", "Redo an edit."},

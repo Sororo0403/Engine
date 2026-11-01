@@ -1,0 +1,51 @@
+#pragma once
+#include "gameplay/GameConfig.h"
+#include "gameplay/SceneSimulation.h"
+#include "scene/IScene.h"
+#include "scene/SceneRenderer.h"
+struct EngineContext;
+class InputSystem;
+
+/// <summary>
+/// 出力されたシーンをEditorなしで更新・描画する
+/// </summary>
+class RuntimeScene final : public IScene {
+  public:
+	/// <summary>
+	/// 共通機能と起動設定を保持する
+	/// </summary>
+	/// <param name="context">初期化済みの共通機能</param>
+	/// <param name="config">検証済みのゲーム起動設定</param>
+	RuntimeScene(const EngineContext &context, GameConfig config);
+	/// <summary>
+	/// 出力されたシーンを読み込み、実行と描画を初期化する
+	/// </summary>
+	/// <returns>true:成功 false:ファイル・設定・描画の初期化失敗</returns>
+	bool Initialize() override;
+	/// <summary>
+	/// アクティブ時に共通入力とゲーム時間を反映し、描画を更新する
+	/// </summary>
+	/// <param name="seconds">経過秒数</param>
+	/// <returns>true:成功 false:実行または描画更新失敗</returns>
+	bool Update(float seconds) override;
+	/// <summary>
+	/// バックバッファへゲームを描画する
+	/// </summary>
+	void Draw() const override;
+	/// <summary>
+	/// GPUの利用完了後に実行・描画用データを解放する
+	/// </summary>
+	void Finalize() override;
+	/// <summary>
+	/// Escによる終了要求を確認する
+	/// </summary>
+	/// <returns>true:終了する false:継続する</returns>
+	bool IsCloseApproved() const override;
+
+  private:
+	const InputSystem &input_;
+	GameConfig config_;
+	SceneSimulation simulation_;
+	SceneRenderer renderer_;
+	bool close_ = false;
+};

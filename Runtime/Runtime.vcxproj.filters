@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<ItemGroup><Filter Include="include"><UniqueIdentifier>{da469647-88bb-445c-80bb-231a85c7632d}</UniqueIdentifier></Filter><Filter Include="src"><UniqueIdentifier>{debbf85c-03a6-4931-9ebf-62a7b83746ab}</UniqueIdentifier></Filter></ItemGroup>
+<ItemGroup><ClInclude Include="include\RuntimeScene.h"><Filter>include</Filter></ClInclude><ClCompile Include="src\RuntimeScene.cpp"><Filter>src</Filter></ClCompile><ClCompile Include="src\main.cpp"><Filter>src</Filter></ClCompile></ItemGroup>
+</Project>

@@ -270,4 +270,11 @@ exit /b 0</Command>
     <ClCompile Include="src\camera\CameraInspector.cpp" />
   </ItemGroup>
   <ItemGroup><ClInclude Include="include\gameplay\PlaybackClock.h" /></ItemGroup>
+  <ItemGroup><ProjectReference Include="..\Runtime\Runtime.vcxproj"><Project>{6ac69269-de64-452b-8a7e-605c3a214f1a}</Project><LinkLibraryDependencies>false</LinkLibraryDependencies><ReferenceOutputAssembly>false</ReferenceOutputAssembly></ProjectReference></ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\export\GameExporter.h" />
+    <ClCompile Include="src\export\GameExporter.cpp" />
+    <ClInclude Include="include\dialogs\GameExportDialog.h" />
+    <ClCompile Include="src\dialogs\GameExportDialog.cpp" />
+  </ItemGroup>
 </Project>

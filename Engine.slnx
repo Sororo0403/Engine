@@ -8,4 +8,5 @@
   </Folder>
   <Project Path="Engine/Engine.vcxproj" Id="b5695b53-5c1d-4b30-887f-99386dedafcd" />
   <Project Path="Editor/Editor.vcxproj" Id="9463d484-3e81-4a35-810b-2ded320811de" />
+  <Project Path="Runtime/Runtime.vcxproj" Id="6ac69269-de64-452b-8a7e-605c3a214f1a" />
 </Solution>

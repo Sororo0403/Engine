@@ -3,6 +3,7 @@
 #include "assets/AssetDatabase.h"
 #include "camera/EditorCameraController.h"
 #include "dialogs/BatchRenameDialog.h"
+#include "dialogs/GameExportDialog.h"
 #include "dialogs/SaveChangesDialog.h"
 #include "dialogs/SceneFileDialog.h"
 #include "dialogs/SceneReloadDialog.h"
@@ -109,6 +110,7 @@ class EditorScene final : public IScene {
 		SAVE,
 		SAVE_AS,
 		SAVE_COPY,
+		EXPORT_GAME,
 		RELOAD_SCENE,
 		EXIT,
 		UNDO,
@@ -162,6 +164,7 @@ class EditorScene final : public IScene {
 		OPEN_FILE,
 		SAVE_FILE,
 		SAVE_COPY_FILE,
+		EXPORT_GAME,
 		CONFIRM_RELOAD,
 		BATCH_RENAME,
 		ERROR,
@@ -443,6 +446,7 @@ class EditorScene final : public IScene {
 	SaveChangesDialog saveChangesDialog_;
 	BatchRenameDialog batchRenameDialog_;
 	SceneFileDialog fileDialog_;
+	GameExportDialog exportDialog_;
 	SceneReloadDialog sceneReloadDialog_;
 
 	DialogStage stage_ = DialogStage::IDLE;

@@ -31,6 +31,7 @@ bool InputSystem::Initialize(std::unique_ptr<IInputBackend> backend) {
 }
 
 bool InputSystem::Update() {
+	active_ = false;
 	if (!backend_) {
 		Logger::Error("InputSystem::Update: 初期化されていません。");
 		return false;
@@ -52,6 +53,7 @@ bool InputSystem::Update() {
 		return true;
 	}
 
+	active_ = true;
 	keyboard_.Update(state.keyboard);
 	mouse_.Update(state.mouse);
 	gamepad_.Update(state.gamepad);
@@ -60,6 +62,7 @@ bool InputSystem::Update() {
 }
 
 void InputSystem::Finalize() {
+	active_ = false;
 	keyboard_.Reset();
 	mouse_.Reset();
 	gamepad_.Reset();

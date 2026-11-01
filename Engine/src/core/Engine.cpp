@@ -155,7 +155,8 @@ struct Engine::Impl {
 			return false;
 		}
 
-		if (!ui_.Initialize(app_, graphics_)) {
+		uiEnabled_ = config.enableUI;
+		if (uiEnabled_ && !ui_.Initialize(app_, graphics_)) {
 			return false;
 		}
 
@@ -233,7 +234,7 @@ struct Engine::Impl {
 
 			frameTimer.Reset();
 
-			if (!ui_.BeginFrame()) {
+			if (uiEnabled_ && !ui_.BeginFrame()) {
 				return -1;
 			}
 
@@ -261,7 +262,7 @@ struct Engine::Impl {
 
 			sceneManager_.Draw();
 
-			if (!ui_.Render()) {
+			if (uiEnabled_ && !ui_.Render()) {
 				return -1;
 			}
 
@@ -293,6 +294,7 @@ struct Engine::Impl {
 	SceneManager sceneManager_;
 
 	bool graphicsInitialized_ = false;
+	bool uiEnabled_ = false;
 };
 
 int Engine::Run(const EngineConfig &config, SceneFactory sceneFactory) {
