@@ -97,7 +97,7 @@ bool ApplyTransformEdit(EditorHistory &history, SceneObjectId objectId,
 
 bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
                           SceneObjectId selectedObjectId,
-                          EditorHistory &history) const {
+                          EditorHistory &history) {
 	if (!ui.BeginWindow("Inspector")) {
 		ui.EndWindow();
 		return false;
@@ -106,6 +106,7 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 	SceneObject *object = scene.FindObject(selectedObjectId);
 
 	if (!object) {
+		rotationObjectId_ = 0;
 		ui.Text("No object selected.");
 		ui.EndWindow();
 		return false;
@@ -150,28 +151,43 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 			const Transform before = transform;
 			Transform edited = before;
 
-			DirectX::XMFLOAT3 degrees{
-			    DirectX::XMConvertToDegrees(before.rotation.x),
-			    DirectX::XMConvertToDegrees(before.rotation.y),
-			    DirectX::XMConvertToDegrees(before.rotation.z),
-			};
+			Transform displayed;
+			displayed.rotation = displayedRotation_;
+			Transform current;
+			current.rotation = before.rotation;
 
-			const bool editedValue = ui.DragFloat3("Rotation", degrees, 0.5f,
-			                                       -360.0f, 360.0f, "%.1f");
+			// 選択変更、Undo・Redo、ギズモ操作などの外部変更だけ再変換する
+			if (rotationObjectId_ != selectedObjectId ||
+			    !TransformUtils::AreEqual(displayed, current)) {
+				const auto radians =
+				    TransformUtils::RotationToEuler(before.rotation);
 
-			// 表示は度数、シーンの保持値はラジアン
-			if (editedValue) {
-				edited.rotation = {
-				    DirectX::XMConvertToRadians(degrees.x),
-				    DirectX::XMConvertToRadians(degrees.y),
-				    DirectX::XMConvertToRadians(degrees.z),
+				rotationDegrees_ = {
+				    DirectX::XMConvertToDegrees(radians.x),
+				    DirectX::XMConvertToDegrees(radians.y),
+				    DirectX::XMConvertToDegrees(radians.z),
 				};
+				rotationObjectId_ = selectedObjectId;
+			}
+
+			const bool editedValue = ui.DragFloat3(
+			    "Rotation", rotationDegrees_, 0.5f, -360.0f, 360.0f, "%.1f");
+
+			// 表示は度数、シーンの保持値は単位クォータニオン
+			if (editedValue) {
+				edited.rotation = TransformUtils::RotationFromEuler({
+				    DirectX::XMConvertToRadians(rotationDegrees_.x),
+				    DirectX::XMConvertToRadians(rotationDegrees_.y),
+				    DirectX::XMConvertToRadians(rotationDegrees_.z),
+				});
 			}
 
 			if (ApplyTransformEdit(history, selectedObjectId, before, edited,
 			                       editedValue, transform)) {
 				changed = true;
 			}
+
+			displayedRotation_ = transform.rotation;
 		}
 
 		{

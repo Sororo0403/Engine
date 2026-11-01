@@ -1,5 +1,6 @@
 #pragma once
 
+#include "math/Transform.h"
 #include "scene/SceneObjectId.h"
 
 class ImGuiSystem;
@@ -20,5 +21,11 @@ class InspectorPanel {
 	/// <param name="history">編集内容を記録する履歴</param>
 	/// <returns>true:物体を編集した false:シーンへの変更なし</returns>
 	bool Draw(const ImGuiSystem &ui, Scene &scene,
-	          SceneObjectId selectedObjectId, EditorHistory &history) const;
+	          SceneObjectId selectedObjectId, EditorHistory &history);
+
+  private:
+	// 表示用の角度を保持し、編集中のオイラー角の切り替わりを防ぐ
+	SceneObjectId rotationObjectId_ = 0;
+	DirectX::XMFLOAT3 rotationDegrees_{};
+	DirectX::XMFLOAT4 displayedRotation_{0.0f, 0.0f, 0.0f, 1.0f};
 };

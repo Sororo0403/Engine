@@ -50,7 +50,7 @@ class ModelInstance {
 	/// <summary>
 	/// 物体全体の変形情報を設定する
 	/// </summary>
-	/// <param name="transform">拡大率・回転角・移動量</param>
+	/// <param name="transform">拡大率・回転クォータニオン・移動量</param>
 	void SetTransform(const Transform &transform);
 
 	/// <summary>

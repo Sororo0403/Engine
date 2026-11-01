@@ -29,6 +29,15 @@ Json ToJson(const DirectX::XMFLOAT3 &value) {
 }
 
 /// <summary>
+/// クォータニオンをJSON配列に変換する
+/// </summary>
+/// <param name="value">変換する回転</param>
+/// <returns>x・y・z・wの順に並べたJSON配列</returns>
+Json ToJson(const DirectX::XMFLOAT4 &value) {
+	return Json::array({value.x, value.y, value.z, value.w});
+}
+
+/// <summary>
 /// JSON配列から3成分の値を読み込む
 /// </summary>
 /// <param name="value">数値を3つ持つJSON配列</param>
@@ -57,6 +66,37 @@ DirectX::XMFLOAT3 ReadFloat3(const Json &value) {
 	}
 
 	return result;
+}
+
+/// <summary>
+/// JSON配列から回転クォータニオンを読み込んで正規化する
+/// </summary>
+/// <param name="value">数値を4つ持つJSON配列</param>
+/// <returns>読み込んだ単位クォータニオン</returns>
+DirectX::XMFLOAT4 ReadRotation(const Json &value) {
+	if (!value.is_array() || value.size() != 4) {
+		throw std::runtime_error("回転には要素数4の配列が必要です。");
+	}
+
+	for (const auto &component : value) {
+		if (!component.is_number()) {
+			throw std::runtime_error("回転の配列に数値以外が含まれています。");
+		}
+	}
+
+	const DirectX::XMFLOAT4 rotation{
+	    value.at(0).get<float>(),
+	    value.at(1).get<float>(),
+	    value.at(2).get<float>(),
+	    value.at(3).get<float>(),
+	};
+
+	DirectX::XMFLOAT4 normalized;
+	if (!TransformUtils::TryNormalizeRotation(rotation, normalized)) {
+		throw std::runtime_error("回転クォータニオンが無効です。");
+	}
+
+	return normalized;
 }
 } // namespace
 
@@ -87,7 +127,7 @@ bool SceneSerializer::Save(const Scene &scene,
 
 		const Json document{
 		    {"format", "EngineScene"},
-		    {"version", 1},
+		    {"version", 2},
 		    {"objects", std::move(objects)},
 		};
 
@@ -136,9 +176,11 @@ bool SceneSerializer::Load(Scene &scene,
 
 		if (!document.is_object() || document.at("format") != "EngineScene" ||
 		    !document.at("version").is_number_integer() ||
-		    document.at("version") != 1) {
+		    (document.at("version") != 1 && document.at("version") != 2)) {
 			throw std::runtime_error("未対応のシーンファイル形式です。");
 		}
+
+		const int version = document.at("version").get<int>();
 
 		const Json &items = document.at("objects");
 
@@ -172,7 +214,12 @@ bool SceneSerializer::Load(Scene &scene,
 
 			object.transform.translation =
 			    ReadFloat3(transform.at("translation"));
-			object.transform.rotation = ReadFloat3(transform.at("rotation"));
+			// 旧形式のオイラー角は、従来と同じ回転順序で変換する
+			object.transform.rotation =
+			    version == 1
+			        ? TransformUtils::RotationFromEuler(
+			              ReadFloat3(transform.at("rotation")))
+			        : ReadRotation(transform.at("rotation"));
 			object.transform.scale = ReadFloat3(transform.at("scale"));
 
 			if (!TransformUtils::IsValid(object.transform)) {
