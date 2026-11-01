@@ -2,6 +2,7 @@
 
 #include "history/ObjectCommand.h"
 #include "history/TransformCommand.h"
+#include "scene/SceneObject.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -110,6 +111,14 @@ class EditorHistory {
 	/// <returns>true:削除成功 false:物体が存在しない</returns>
 	bool DeleteObject(SceneObjectId objectId);
 
+	/// <summary>
+	/// 物体の全データを複製し、その追加を履歴へ記録する。
+	/// 編集中の変形情報は先に確定する
+	/// </summary>
+	/// <param name="objectId">複製元の物体ID</param>
+	/// <returns>成功:複製した物体のID 対象なし:0</returns>
+	SceneObjectId DuplicateObject(SceneObjectId objectId);
+
   private:
 	// Transformの変更、または物体の追加・削除を保持する
 	using Command = std::variant<TransformCommand, ObjectCommand>;
@@ -152,6 +161,14 @@ class EditorHistory {
 	/// <param name="command">反映済みの操作</param>
 	/// <param name="nextState">PrepareAppendで取得した状態番号</param>
 	void AppendPrepared(Command command, std::uint64_t nextState) noexcept;
+
+	/// <summary>
+	/// 物体の全データを使って作成し、追加操作を履歴へ記録する
+	/// </summary>
+	/// <param name="object">作成する物体のデータ</param>
+	/// <returns>作成した物体のID</returns>
+	/// <remarks>呼び出し前にCommitTransformを呼び出す</remarks>
+	SceneObjectId CreateObjectWithHistory(SceneObject object);
 
   private:
 	Scene &scene_;

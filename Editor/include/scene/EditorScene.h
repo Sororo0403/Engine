@@ -96,6 +96,7 @@ class EditorScene final : public IScene {
 		EXIT,
 		UNDO,
 		REDO,
+		DUPLICATE_OBJECT,
 	};
 
 	/// <summary>
@@ -116,10 +117,11 @@ class EditorScene final : public IScene {
 	EditorAction DrawMenuBar();
 
 	/// <summary>
-	/// ファイル操作用ショートカットを判定する
+	/// 編集操作用ショートカットを判定する
 	/// </summary>
+	/// <param name="objectPanelFocused">HierarchyかSceneにフォーカスがあるか</param>
 	/// <returns>要求された操作</returns>
-	EditorAction ReadShortcut() const;
+	EditorAction ReadShortcut(bool objectPanelFocused) const;
 
 	/// <summary>
 	/// ファイル操作を開始する

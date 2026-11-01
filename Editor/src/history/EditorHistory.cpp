@@ -18,27 +18,11 @@ SceneObjectId EditorHistory::CreateObject(std::string name,
                                           std::filesystem::path modelPath) {
 	CommitTransform();
 
-	if (name.empty()) {
-		name = "Object";
-	}
-
 	SceneObject object;
 	object.name = std::move(name);
 	object.modelPath = std::move(modelPath);
 
-	const std::uint64_t next = PrepareAppend();
-
-	// Scene::CreateObjectと同じ初期Transformの物体を作成する
-	const SceneObjectId id = scene_.CreateObject(object.name, object.modelPath);
-
-	AppendPrepared(Command{ObjectCommand{
-	                   id,
-	                   std::move(object),
-	                   ObjectCommand::Kind::CREATE,
-	               }},
-	               next);
-
-	return id;
+	return CreateObjectWithHistory(std::move(object));
 }
 
 bool EditorHistory::DeleteObject(SceneObjectId objectId) {
@@ -69,6 +53,48 @@ bool EditorHistory::DeleteObject(SceneObjectId objectId) {
 
 	AppendPrepared(std::move(command), next);
 	return true;
+}
+
+SceneObjectId EditorHistory::DuplicateObject(SceneObjectId objectId) {
+	CommitTransform();
+
+	const SceneObject *source = scene_.FindObject(objectId);
+
+	if (!source) {
+		return 0;
+	}
+
+	// 複製元とは独立した物体データを作る
+	SceneObject object = *source;
+
+	if (object.name.empty()) {
+		object.name = "Object";
+	}
+
+	object.name += " Copy";
+
+	return CreateObjectWithHistory(std::move(object));
+}
+
+SceneObjectId EditorHistory::CreateObjectWithHistory(SceneObject object) {
+	if (object.name.empty()) {
+		object.name = "Object";
+	}
+
+	// シーン変更後の履歴記録で、メモリ確保を発生させない
+	const std::uint64_t next = PrepareAppend();
+
+	// 履歴用のデータを保持したまま、完成した状態の物体を作成する
+	const SceneObjectId id = scene_.CreateObject(object);
+
+	AppendPrepared(Command{ObjectCommand{
+	                   id,
+	                   std::move(object),
+	                   ObjectCommand::Kind::CREATE,
+	               }},
+	               next);
+
+	return id;
 }
 
 bool EditorHistory::BeginTransform(SceneObjectId objectId,

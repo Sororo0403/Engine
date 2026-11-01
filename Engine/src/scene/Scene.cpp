@@ -1,32 +1,47 @@
 #include "scene/Scene.h"
 
+#include "math/TransformUtils.h"
+
 #include <limits>
 #include <stdexcept>
 #include <utility>
 
 SceneObjectId Scene::CreateObject(std::string name,
                                   std::filesystem::path modelPath) {
-	if (nextObjectId_ == (std::numeric_limits<SceneObjectId>::max)()) {
-		throw std::overflow_error("Scene: 物体番号の上限に達しました。");
-	}
-
-	if (name.empty()) {
-		name = "Object";
-	}
-
 	SceneObject object;
 	object.name = std::move(name);
 	object.modelPath = std::move(modelPath);
 
-	const SceneObjectId id = nextObjectId_;
-
-	// 格納に成功してから次の番号へ進める
-	objects_.emplace(id, std::move(object));
-	++nextObjectId_;
-
-	return id;
+	return CreateObject(std::move(object));
 }
 
+SceneObjectId Scene::CreateObject(SceneObject object) {
+	if (nextObjectId_ == (std::numeric_limits<SceneObjectId>::max)()) {
+		throw std::overflow_error("Scene: 物体番号の上限に達しました。");
+	}
+
+	if (!TransformUtils::IsValid(object.transform)) {
+		throw std::invalid_argument(
+		    "Scene::CreateObject: 変形情報が無効です。");
+	}
+
+	if (object.name.empty()) {
+		object.name = "Object";
+	}
+
+	const SceneObjectId id = nextObjectId_;
+
+	// 全データの格納に成功してから次の番号へ進める
+	const bool inserted = objects_.emplace(id, std::move(object)).second;
+
+	if (!inserted) {
+		throw std::logic_error(
+		    "Scene::CreateObject: 物体のIDが重複しています。");
+	}
+
+	++nextObjectId_;
+	return id;
+}
 bool Scene::DestroyObject(SceneObjectId id) { return objects_.erase(id) != 0; }
 
 bool Scene::Contains(SceneObjectId id) const { return objects_.contains(id); }

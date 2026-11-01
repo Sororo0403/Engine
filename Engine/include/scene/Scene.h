@@ -27,6 +27,14 @@ class Scene {
 	                           std::filesystem::path modelPath = {});
 
 	/// <summary>
+	/// 指定した物体データに新しいIDを割り当てて作成する。
+	/// 描画リソースは作成しない
+	/// </summary>
+	/// <param name="object">名前・変形情報・モデルの参照先</param>
+	/// <returns>このシーン内で新しく発行した物体のID</returns>
+	SceneObjectId CreateObject(SceneObject object);
+
+	/// <summary>
 	/// 指定した物体を削除する
 	/// </summary>
 	/// <param name="id">削除する物体のID</param>

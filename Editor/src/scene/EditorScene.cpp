@@ -147,7 +147,11 @@ bool EditorScene::Update(float deltaTime) {
 
 		if (!IsBusy()) {
 			if (action == EditorAction::NONE) {
-				action = ReadShortcut();
+				const bool objectPanelFocused =
+				    hierarchyRequest.windowFocused ||
+				    sceneViewPanel_.GetInput().windowFocused;
+
+				action = ReadShortcut(objectPanelFocused);
 			}
 
 			if (action != EditorAction::NONE) {
@@ -405,6 +409,15 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			action = EditorAction::REDO;
 		}
 
+		ui_.Separator();
+
+		const bool canDuplicate =
+		    enabled && document_.GetScene().Contains(selectedObjectId_);
+
+		if (ui_.MenuItem("Duplicate", "Ctrl+D", canDuplicate)) {
+			action = EditorAction::DUPLICATE_OBJECT;
+		}
+
 		ui_.EndMenu();
 	}
 
@@ -420,7 +433,8 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 	return action;
 }
 
-EditorScene::EditorAction EditorScene::ReadShortcut() const {
+EditorScene::EditorAction
+EditorScene::ReadShortcut(bool objectPanelFocused) const {
 	// 文字入力中のCtrl+Zは、ImGuiの入力欄へ任せる
 	if (IsBusy() || ui_.IsTextInputActive() || gizmo_.IsUsing() ||
 	    document_.GetHistory().IsEditing()) {
@@ -431,6 +445,14 @@ EditorScene::EditorAction EditorScene::ReadShortcut() const {
 
 	if (!keyboard.IsDown(Key::CTRL)) {
 		return EditorAction::NONE;
+	}
+
+	if (keyboard.IsPressed(Key::D) && !keyboard.IsDown(Key::SHIFT) &&
+	    !keyboard.IsDown(Key::ALT) && objectPanelFocused &&
+	    !ImGui::IsAnyItemActive() &&
+	    !ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
+	    document_.GetScene().Contains(selectedObjectId_)) {
+		return EditorAction::DUPLICATE_OBJECT;
 	}
 
 	if (keyboard.IsPressed(Key::Z)) {
@@ -510,7 +532,26 @@ void EditorScene::StartAction(EditorAction action) {
 		pendingAction_ = EditorAction::NONE;
 		StartSave(true);
 		return;
+	case EditorAction::DUPLICATE_OBJECT: {
+		try {
+			const SceneObjectId duplicatedId =
+			    document_.GetHistory().DuplicateObject(selectedObjectId_);
 
+			if (duplicatedId == 0) {
+				ShowError("Could not duplicate the object.");
+				return;
+			}
+
+			selectedObjectId_ = duplicatedId;
+		} catch (const std::exception &error) {
+			Logger::Error(std::format(
+			    "EditorScene: 物体の複製に失敗しました: {}", error.what()));
+
+			ShowError(
+			    "Could not duplicate the object. See the log for details.");
+		}
+		return;
+	}
 	case EditorAction::NONE:
 		return;
 	}
