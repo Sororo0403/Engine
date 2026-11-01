@@ -327,4 +327,26 @@
       <Filter>external\licenses</Filter>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Filter Include="include\diagnostics">
+      <UniqueIdentifier>{fb208ca8-320a-4362-86a9-413f3651124b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\diagnostics">
+      <UniqueIdentifier>{2ee87000-213f-43c2-b30b-e7985ea73640}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\diagnostics\FrameTimingHistory.h">
+      <Filter>include\diagnostics</Filter>
+    </ClInclude>
+    <ClCompile Include="src\diagnostics\FrameTimingHistory.cpp">
+      <Filter>src\diagnostics</Filter>
+    </ClCompile>
+    <ClInclude Include="include\panels\PerformancePanel.h">
+      <Filter>include\panels</Filter>
+    </ClInclude>
+    <ClCompile Include="src\panels\PerformancePanel.cpp">
+      <Filter>src\panels</Filter>
+    </ClCompile>
+  </ItemGroup>
 </Project>

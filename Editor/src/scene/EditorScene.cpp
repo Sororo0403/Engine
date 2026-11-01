@@ -43,6 +43,7 @@ bool EditorScene::Initialize() {
 
 	gizmo_.Cancel();
 	gizmoEditActive_ = false;
+	performancePanel_.Reset();
 	preferences_ = EditorPreferences{};
 	canSavePreferences_ = preferences_.Load();
 	recentScenes_.Clear();
@@ -90,6 +91,7 @@ bool EditorScene::Update(float deltaTime) {
 		return false;
 	}
 
+	performancePanel_.Record(deltaTime);
 	gizmo_.BeginFrame();
 
 	if (exitQueued_ && stage_ == DialogStage::IDLE) {
@@ -153,6 +155,10 @@ bool EditorScene::Update(float deltaTime) {
 	if (!sceneViewReady) {
 		return false;
 	}
+	const auto *performanceTarget = sceneViewPanel_.GetRenderTexture();
+	performancePanel_.Draw(ui_, scene, selection_,
+	                       performanceTarget ? performanceTarget->GetWidth() : 0,
+	                       performanceTarget ? performanceTarget->GetHeight() : 0);
 
 	if (!gizmoEditActive_ && !ImGui::IsAnyItemActive()) {
 		history.CommitEdit();
@@ -522,6 +528,7 @@ void EditorScene::Finalize() {
 		}
 	}
 
+	performancePanel_.Reset();
 	sceneViewPanel_.Finalize();
 	renderer_.Finalize();
 
@@ -770,6 +777,9 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		}
 		if (ui_.MenuItem("Console...", nullptr, !IsBusy())) {
 			consolePanel_.Show();
+		}
+		if (ui_.MenuItem("Performance...", nullptr, !IsBusy())) {
+			performancePanel_.Show();
 		}
 
 		ui_.EndMenu();

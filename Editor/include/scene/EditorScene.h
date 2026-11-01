@@ -13,6 +13,7 @@
 #include "panels/ConsolePanel.h"
 #include "panels/HierarchyPanel.h"
 #include "panels/HistoryPanel.h"
+#include "panels/PerformancePanel.h"
 #include "panels/InspectorPanel.h"
 #include "panels/SceneViewPanel.h"
 #include "scene/IScene.h"
@@ -446,4 +447,5 @@ class EditorScene final : public IScene {
 	ControlsPanel controlsPanel_;
 	ConsolePanel consolePanel_;
 	HistoryPanel historyPanel_;
+	PerformancePanel performancePanel_;
 };

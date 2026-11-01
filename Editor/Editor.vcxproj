@@ -226,6 +226,12 @@ exit /b 0</Command>
       <Message>Editorのリソースとライセンスを配置しています。</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="include\diagnostics\FrameTimingHistory.h" />
+    <ClCompile Include="src\diagnostics\FrameTimingHistory.cpp" />
+    <ClInclude Include="include\panels\PerformancePanel.h" />
+    <ClCompile Include="src\panels\PerformancePanel.cpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
 </Project>
