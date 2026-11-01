@@ -6,12 +6,13 @@
 #include <algorithm>
 #include <cmath>
 #include <exception>
+#include <map>
 
 bool SceneSimulation::Start(const Scene &source, std::string &error,
                             const CameraPose &fallbackPose) {
 	try {
 		error.clear();
-		SceneObjectId character = 0, camera = 0, follow = 0;
+		SceneObjectId character = 0, camera = 0;
 
 		for (const auto &[id, object] : source.GetObjects()) {
 			if (object.character) {
@@ -47,27 +48,18 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 				}
 			}
 
-			if (object.followCamera) {
-				const auto &settings = *object.followCamera;
-
-				if (follow || !object.camera || object.character ||
-				    !settings.IsValid() || settings.target == id ||
-				    !source.Contains(settings.target)) {
-					error = "Use one Follow Camera on a Camera object, with a "
-					        "valid target and no Character Controller on the "
-					        "same object.";
-					return false;
-				}
-
-				follow = id;
-			}
-
 			if (object.respawn &&
 			    (!object.character || !object.respawn->IsValid())) {
 				error = "Respawn requires a Character Controller and valid "
 				        "settings.";
 				return false;
 			}
+		}
+
+		std::vector<SceneObjectId> followOrder;
+
+		if (!SceneCameraUtils::GetFollowOrder(source, followOrder, error)) {
+			return false;
 		}
 
 		CollisionWorld world;
@@ -115,19 +107,39 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 		}
 
 		auto objects = source.GetObjects();
-		CameraPose followPose{};
+		std::vector<FollowState> follows;
+		follows.reserve(followOrder.size());
+		std::map<SceneObjectId, std::size_t> indices;
+		std::optional<std::size_t> cameraFollow;
 
-		if (follow) {
-			const auto &settings = *objects.at(follow).followCamera;
-			followPose = SceneCameraUtils::MakeFollowPose(
+		for (const auto id : followOrder) {
+			auto &object = objects.at(id);
+			const auto &settings = *object.followCamera;
+			const auto followPose = SceneCameraUtils::MakeFollowPose(
 			    objects.at(settings.target).transform.translation, settings);
 
-			if (!SceneCameraUtils::ApplyPose(followPose,
-			                                 objects.at(follow).transform)) {
+			if (!SceneCameraUtils::ApplyPose(followPose, object.transform)) {
 				error = "Follow Camera pose is invalid.";
 				return false;
 			}
+
+			std::optional<std::size_t> parent;
+
+			if (const auto found = indices.find(settings.target);
+			    found != indices.end()) {
+				parent = found->second;
+			}
+
+			if (id == camera) {
+				cameraFollow = follows.size();
+			}
+
+			indices.emplace(id, follows.size());
+			follows.push_back(
+			    {id, settings.target, parent, followPose, object.transform});
 		}
+
+		auto nextFollows = follows;
 
 		auto pose =
 		    camera
@@ -147,8 +159,9 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 		controller_ = controller;
 		character_ = character;
 		camera_ = camera;
-		follow_ = follow;
-		followPose_ = followPose;
+		cameraFollow_ = cameraFollow;
+		follows_ = std::move(follows);
+		nextFollows_ = std::move(nextFollows);
 		cameraSettings_ = lens;
 		spawn_ = spawn;
 		pose_ = pose;
@@ -163,7 +176,10 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 void SceneSimulation::Stop() {
 	playing_ = false;
 	scene_.ReplaceObjects({});
-	character_ = camera_ = follow_ = 0;
+	character_ = camera_ = 0;
+	cameraFollow_.reset();
+	follows_.clear();
+	nextFollows_.clear();
 }
 
 bool SceneSimulation::Update(float seconds, const CharacterInput &input) {
@@ -195,27 +211,28 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input) {
 		}
 	}
 
-	auto followPose = followPose_;
-	Transform followTransform;
+	std::copy(follows_.begin(), follows_.end(), nextFollows_.begin());
 
-	if (follow_) {
-		const auto *cameraObject = scene_.FindObject(follow_);
+	for (std::size_t i = 0; i < nextFollows_.size(); ++i) {
+		auto &state = nextFollows_[i];
+		const auto *cameraObject = scene_.FindObject(state.objectId);
+		const auto *target = scene_.FindObject(state.targetId);
 
-		if (!cameraObject || !cameraObject->followCamera) {
+		if (!cameraObject || !cameraObject->camera ||
+		    !cameraObject->followCamera || !target ||
+		    cameraObject->followCamera->target != state.targetId ||
+		    (state.targetFollow && *state.targetFollow >= i)) {
 			return false;
 		}
 
 		const auto &settings = *cameraObject->followCamera;
-		const auto *target = scene_.FindObject(settings.target);
-
-		if (!target) {
-			return false;
-		}
-
-		const auto desired = SceneCameraUtils::MakeFollowPose(
-		    settings.target == character_ ? next.GetTransform().translation
-		                                  : target->transform.translation,
-		    settings);
+		const auto targetPosition =
+		    state.targetFollow
+		        ? nextFollows_[*state.targetFollow].transform.translation
+		    : state.targetId == character_ ? next.GetTransform().translation
+		                                   : target->transform.translation;
+		const auto desired =
+		    SceneCameraUtils::MakeFollowPose(targetPosition, settings);
 		const float blend =
 		    respawned || settings.smoothing == 0
 		        ? 1.0f
@@ -226,11 +243,11 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input) {
 			a.y += (b.y - a.y) * blend;
 			a.z += (b.z - a.z) * blend;
 		};
-		lerp(followPose.position, desired.position);
-		lerp(followPose.target, desired.target);
-		followTransform = cameraObject->transform;
+		lerp(state.pose.position, desired.position);
+		lerp(state.pose.target, desired.target);
+		state.transform = cameraObject->transform;
 
-		if (!SceneCameraUtils::ApplyPose(followPose, followTransform)) {
+		if (!SceneCameraUtils::ApplyPose(state.pose, state.transform)) {
 			return false;
 		}
 	}
@@ -244,9 +261,9 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input) {
 			return false;
 		}
 
-		const auto &transform = camera_ == follow_ ? followTransform
-		                        : camera_ == character_
-		                            ? next.GetTransform()
+		const auto &transform =
+		    cameraFollow_           ? nextFollows_[*cameraFollow_].transform
+		    : camera_ == character_ ? next.GetTransform()
 		                            : cameraObject->transform;
 		pose = SceneCameraUtils::FromTransform(transform);
 		Camera validator;
@@ -263,10 +280,10 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input) {
 	}
 
 	pose_ = pose;
-	followPose_ = followPose;
+	follows_.swap(nextFollows_);
 
-	if (follow_) {
-		scene_.FindObject(follow_)->transform = followTransform;
+	for (const auto &state : follows_) {
+		scene_.FindObject(state.objectId)->transform = state.transform;
 	}
 
 	return true;

@@ -247,6 +247,11 @@ void ControlsPanel::Draw() {
 	         "Fall Below Y near that point; the height applies everywhere, "
 	         "not just inside the square. This preview is not a collider and "
 	         "does not appear in Game."},
+	        {"Multiple Follow Cameras",
+	         "Each Camera keeps its own smoothing state. Targets that are also "
+	         "Follow Cameras update first. Circular target chains must be "
+	         "corrected before Play. Choose the rendered Camera using "
+	         "Primary."},
 	        {"WASD / Space",
 	         "Click the Game image to focus it. Move on world X/Z and jump "
 	         "when the object has a Character Controller."},

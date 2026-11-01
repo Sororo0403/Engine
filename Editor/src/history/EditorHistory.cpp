@@ -531,11 +531,22 @@ bool EditorHistory::AlignCameraView(SceneObjectId id, const CameraPose &pose) {
 			return false;
 		}
 
-		if (!SceneCameraUtils::MatchFollowPose(
-		        pose, target->transform.translation, *follow) ||
+		auto targetPosition = target->transform.translation;
+
+		if (target->followCamera) {
+			CameraPose targetPose;
+
+			if (!SceneCameraUtils::GetInitialPose(scene_, follow->target,
+			                                      targetPose)) {
+				return false;
+			}
+
+			targetPosition = targetPose.position;
+		}
+
+		if (!SceneCameraUtils::MatchFollowPose(pose, targetPosition, *follow) ||
 		    !SceneCameraUtils::ApplyPose(
-		        SceneCameraUtils::MakeFollowPose(target->transform.translation,
-		                                         *follow),
+		        SceneCameraUtils::MakeFollowPose(targetPosition, *follow),
 		        after)) {
 			return false;
 		}

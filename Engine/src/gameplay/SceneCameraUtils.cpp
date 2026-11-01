@@ -8,6 +8,9 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <map>
+#include <set>
+#include <utility>
 
 /// <summary>
 /// 追従対象からカメラ位置と注視点を計算する
@@ -76,6 +79,28 @@ bool SceneCameraUtils::ApplyPose(const CameraPose &pose, Transform &transform) {
 	return true;
 }
 
+namespace {
+/// <summary>
+/// 追従元のCameraと設定を検証し、自己参照でない追従先を取得する
+/// </summary>
+/// <param name="scene">参照するシーン</param>
+/// <param name="id">Follow CameraのID</param>
+/// <returns>有効な追従先。設定や対象が無効ならnullptr</returns>
+const SceneObject *FollowTarget(const Scene &scene, SceneObjectId id) {
+	const auto *object = scene.FindObject(id);
+
+	if (!object || !object->followCamera || !object->camera ||
+	    object->character || !object->camera->IsValid() ||
+	    !TransformUtils::IsValid(object->transform) ||
+	    !object->followCamera->IsValid() ||
+	    object->followCamera->target == id) {
+		return nullptr;
+	}
+
+	return scene.FindObject(object->followCamera->target);
+}
+} // namespace
+
 bool SceneCameraUtils::GetInitialPose(const Scene &scene, SceneObjectId id,
                                       CameraPose &pose) {
 	const auto *object = scene.FindObject(id);
@@ -86,17 +111,36 @@ bool SceneCameraUtils::GetInitialPose(const Scene &scene, SceneObjectId id,
 	}
 
 	auto transform = object->transform;
+	std::vector<const SceneObject *> chain;
+	std::set<SceneObjectId> visited;
+	auto currentId = id;
+	const auto *current = object;
 
-	if (object->followCamera) {
-		const auto &settings = *object->followCamera;
-		const auto *target = scene.FindObject(settings.target);
+	// 再帰を使わず末端までたどり、循環があれば結果を変更しない。
+	while (current->followCamera) {
+		const auto *target = FollowTarget(scene, currentId);
 
-		if (object->character || settings.target == id || !target ||
-		    !settings.IsValid() ||
-		    !ApplyPose(MakeFollowPose(target->transform.translation, settings),
-		               transform)) {
+		if (!target || !visited.insert(currentId).second) {
 			return false;
 		}
+
+		chain.push_back(current);
+		currentId = current->followCamera->target;
+		current = target;
+	}
+
+	auto position = current->transform.translation;
+
+	for (auto it = chain.rbegin(); it != chain.rend(); ++it) {
+		auto resolved = (*it)->transform;
+
+		if (!ApplyPose(MakeFollowPose(position, *(*it)->followCamera),
+		               resolved)) {
+			return false;
+		}
+
+		position = resolved.translation;
+		transform = resolved;
 	}
 
 	const auto result = FromTransform(transform);
@@ -107,6 +151,61 @@ bool SceneCameraUtils::GetInitialPose(const Scene &scene, SceneObjectId id,
 	}
 
 	pose = result;
+	return true;
+}
+
+bool SceneCameraUtils::GetFollowOrder(const Scene &scene,
+                                      std::vector<SceneObjectId> &order,
+                                      std::string &error) {
+	error.clear();
+	std::map<SceneObjectId, std::vector<SceneObjectId>> dependents;
+	std::set<SceneObjectId> ready;
+	std::size_t count = 0;
+
+	for (const auto &[id, object] : scene.GetObjects()) {
+		if (!object.followCamera) {
+			continue;
+		}
+
+		const auto *target = FollowTarget(scene, id);
+
+		if (!target) {
+			error = "Follow Camera requires a valid Camera, a target in this "
+			        "scene, and no Character Controller on the same object. "
+			        "Object ID: " +
+			        std::to_string(id);
+			return false;
+		}
+
+		++count;
+
+		if (target->followCamera) {
+			dependents[object.followCamera->target].push_back(id);
+		} else {
+			ready.insert(id);
+		}
+	}
+
+	std::vector<SceneObjectId> result;
+	result.reserve(count);
+
+	while (!ready.empty()) {
+		const auto id = *ready.begin();
+		ready.erase(ready.begin());
+		result.push_back(id);
+
+		if (const auto found = dependents.find(id); found != dependents.end()) {
+			ready.insert(found->second.begin(), found->second.end());
+		}
+	}
+
+	if (result.size() != count) {
+		error = "Follow Camera targets form a cycle. Choose targets without a "
+		        "circular chain.";
+		return false;
+	}
+
+	order = std::move(result);
 	return true;
 }
 

@@ -4,7 +4,10 @@
 #include "graphics/camera/CameraPose.h"
 #include "physics/CollisionWorld.h"
 #include "scene/Scene.h"
+#include <cstddef>
+#include <optional>
 #include <string>
+#include <vector>
 
 /// <summary>
 /// 編集シーンから独立した再生用シーンで、移動・追従・復帰を実行する
@@ -51,7 +54,7 @@ class SceneSimulation {
 	}
 
 	/// <summary>
-	/// 追従カメラ、または開始時に指定した固定カメラの姿勢を取得する
+	/// Primary Camera、または開始時に指定した固定カメラの姿勢を取得する
 	/// </summary>
 	/// <returns>再生時の描画姿勢</returns>
 	const CameraPose &GetCameraPose() const {
@@ -67,13 +70,27 @@ class SceneSimulation {
 	}
 
   private:
+	/// <summary>
+	/// 依存順に並ぶ1つのFollow Cameraの追従状態と、計算済みのTransform
+	/// </summary>
+	struct FollowState {
+		SceneObjectId objectId = 0;
+		SceneObjectId targetId = 0;
+		std::optional<std::size_t> targetFollow;
+		CameraPose pose{};
+		Transform transform{};
+	};
+
 	Scene scene_;
 	CollisionWorld world_;
 	CharacterController controller_;
-	SceneObjectId character_ = 0, camera_ = 0, follow_ = 0;
+	SceneObjectId character_ = 0, camera_ = 0;
+	std::optional<std::size_t> cameraFollow_;
+	std::vector<FollowState> follows_;
+	// 毎フレームの確保と失敗時の部分更新を避けるため、次の状態を別バッファで計算する
+	std::vector<FollowState> nextFollows_;
 	DirectX::XMFLOAT3 spawn_{};
 	CameraPose pose_{};
-	CameraPose followPose_{};
 	CameraSettings cameraSettings_{};
 	bool playing_ = false;
 };

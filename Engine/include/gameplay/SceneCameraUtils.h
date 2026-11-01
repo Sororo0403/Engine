@@ -2,6 +2,8 @@
 
 #include "graphics/camera/CameraPose.h"
 #include "scene/SceneObjectId.h"
+#include <string>
+#include <vector>
 
 class Scene;
 struct Transform;
@@ -33,13 +35,24 @@ CameraPose MakeFollowPose(const DirectX::XMFLOAT3 &target,
 bool ApplyPose(const CameraPose &pose, Transform &transform);
 
 /// <summary>
-/// 指定したCameraの開始姿勢を求める。Follow Cameraは追従先から計算する
+/// 指定したCameraの開始姿勢を求める。Follow Cameraは追従先の連鎖を解決する
 /// </summary>
 /// <param name="scene">参照する編集シーン。値は変更しない</param>
 /// <param name="id">Primaryの指定によらず、姿勢を求めるCameraのID</param>
 /// <param name="pose">成功時に更新する描画姿勢。失敗時は保持する</param>
 /// <returns>true:成功 false:Cameraなし、無効な姿勢・設定、または追従先なし</returns>
 bool GetInitialPose(const Scene &scene, SceneObjectId id, CameraPose &pose);
+
+/// <summary>
+/// 全Follow Cameraを検証し、追従先のCameraが先に現れる更新順を作る
+/// </summary>
+/// <param name="scene">検証するシーン。値は変更しない</param>
+/// <param name="order">成功時に置き換えるCameraのID一覧。失敗時は保持する</param>
+/// <param name="error">不正な設定・対象・循環の失敗理由。成功時は空</param>
+/// <returns>true:成功 false:追従設定または依存関係が無効</returns>
+bool GetFollowOrder(const Scene &scene, std::vector<SceneObjectId> &order,
+                    std::string &error);
+
 /// <summary>
 /// 位置と視線方向に合う追従オフセットを求める。元の注視距離を基準に設定範囲内の注視点を選ぶ
 /// </summary>
