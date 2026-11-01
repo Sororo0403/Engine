@@ -122,6 +122,9 @@
     <ClCompile Include="src\selection\EditorSelection.cpp">
       <Filter>src\selection</Filter>
     </ClCompile>
+    <ClCompile Include="src\history\CommandGroup.cpp">
+      <Filter>src\history</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\scene\EditorScene.h">
@@ -177,6 +180,9 @@
     </ClInclude>
     <ClInclude Include="include\selection\EditorSelection.h">
       <Filter>include\selection</Filter>
+    </ClInclude>
+    <ClInclude Include="include\history\CommandGroup.h">
+      <Filter>include\history</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

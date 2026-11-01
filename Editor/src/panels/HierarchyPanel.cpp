@@ -74,12 +74,10 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 		result.action = Action::CREATE_EMPTY;
 	}
 
-	// 一括削除を実装するまでは、1つだけ選択した場合に限定する
-	ui.BeginDisabled(selection.GetCount() != 1);
+	ui.BeginDisabled(selection.GetCount() == 0);
 
 	if (ui.Button("Delete Selected")) {
-		result.action = Action::DELETE_OBJECT;
-		result.objectId = selection.GetActiveId();
+		result.action = Action::DELETE_OBJECTS;
 	}
 
 	ui.EndDisabled();

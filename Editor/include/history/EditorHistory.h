@@ -1,5 +1,6 @@
 #pragma once
 
+#include "history/CommandGroup.h"
 #include "history/ObjectCommand.h"
 #include "history/RenameCommand.h"
 #include "history/TransformCommand.h"
@@ -9,6 +10,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <optional>
+#include <span>
 #include <string>
 #include <variant>
 #include <vector>
@@ -127,10 +129,27 @@ class EditorHistory {
 	/// <returns>true:開始成功 false:物体がない</returns>
 	bool BeginRename(SceneObjectId objectId);
 
+	/// <summary>
+	/// 指定した全物体を削除し、1操作として履歴へ記録する。
+	/// 編集中の内容は先に確定する
+	/// </summary>
+	/// <param name="objectIds">重複のない削除対象ID一覧</param>
+	/// <returns>true:全件削除成功 false:対象なし、重複、または存在しないIDあり</returns>
+	bool DeleteObjects(std::span<const SceneObjectId> objectIds);
+
+	/// <summary>
+	/// 指定した全物体を複製し、1操作として履歴へ記録する。
+	/// 編集中の内容は先に確定する
+	/// </summary>
+	/// <param name="objectIds">重複のない複製元ID一覧</param>
+	/// <returns>入力順に対応する複製先ID一覧。対象が無効な場合は空</returns>
+	std::vector<SceneObjectId>
+	DuplicateObjects(std::span<const SceneObjectId> objectIds);
+
   private:
-	// 名前・変形情報の変更、または物体の追加・削除を保持する
-	using Command =
-	    std::variant<TransformCommand, ObjectCommand, RenameCommand>;
+	// 単独の編集操作、または複数の編集操作を保持する
+	using Command = std::variant<TransformCommand, ObjectCommand, RenameCommand,
+	                             CommandGroup>;
 
 	/// <summary>
 	/// 操作と、その前後の状態を識別する情報

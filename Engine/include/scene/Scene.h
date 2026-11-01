@@ -4,6 +4,7 @@
 #include "scene/SceneObjectId.h"
 
 #include <filesystem>
+#include <functional>
 #include <map>
 #include <string>
 
@@ -87,6 +88,14 @@ class Scene {
 	/// <param name="object">復元する物体データ</param>
 	/// <returns>true:復元成功 false:未発行のID、または同じIDの物体が存在する</returns>
 	bool RestoreObject(SceneObjectId id, const SceneObject &object);
+
+	/// <summary>
+	/// 一時シーンへ操作を適用し、成功した場合だけ現在のシーンへ反映する
+	/// </summary>
+	/// <param name="operation">引数で渡される一時シーンだけを変更する処理</param>
+	/// <returns>true:反映成功 false:操作未指定、または操作失敗</returns>
+	/// <remarks>成功後、取得済みの物体ポインターとイテレーターは無効になる</remarks>
+	bool ApplyTransaction(const std::function<bool(Scene &)> &operation);
 
   private:
 	std::map<SceneObjectId, SceneObject> objects_;

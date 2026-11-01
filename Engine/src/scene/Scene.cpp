@@ -100,3 +100,26 @@ bool Scene::RestoreObject(SceneObjectId id, const SceneObject &object) {
 
 	return objects_.emplace(id, object).second;
 }
+
+bool Scene::ApplyTransaction(const std::function<bool(Scene &)> &operation) {
+	if (!operation) {
+		return false;
+	}
+
+	Scene working;
+
+	working.objects_ = objects_;
+
+	// 削除済み物体のIDも復元できるよう、発行済み番号を引き継ぐ
+	working.nextObjectId_ = nextObjectId_;
+
+	if (!operation(working)) {
+		return false;
+	}
+
+	// 全操作が成功してから、保持するデータを置き換える
+	objects_.swap(working.objects_);
+	nextObjectId_ = working.nextObjectId_;
+
+	return true;
+}

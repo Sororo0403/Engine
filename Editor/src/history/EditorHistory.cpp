@@ -8,6 +8,7 @@
 #include <exception>
 #include <format>
 #include <limits>
+#include <set>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
@@ -26,54 +27,14 @@ SceneObjectId EditorHistory::CreateObject(std::string name,
 }
 
 bool EditorHistory::DeleteObject(SceneObjectId objectId) {
-	CommitEdit();
-
-	const SceneObject *object = scene_.FindObject(objectId);
-
-	if (!object) {
-		return false;
-	}
-
-	// 削除する前に、名前・モデル参照・Transformをコピーする
-	Command command{ObjectCommand{
-	    objectId,
-	    *object,
-	    ObjectCommand::Kind::DELETE,
-	}};
-
-	const std::uint64_t next = PrepareAppend();
-
-	const bool deleted = std::visit(
-	    [this](const auto &operation) { return operation.Redo(scene_); },
-	    command);
-
-	if (!deleted) {
-		return false;
-	}
-
-	AppendPrepared(std::move(command), next);
-	return true;
+	return DeleteObjects(std::span<const SceneObjectId>{&objectId, 1});
 }
 
 SceneObjectId EditorHistory::DuplicateObject(SceneObjectId objectId) {
-	CommitEdit();
+	auto createdIds =
+	    DuplicateObjects(std::span<const SceneObjectId>{&objectId, 1});
 
-	const SceneObject *source = scene_.FindObject(objectId);
-
-	if (!source) {
-		return 0;
-	}
-
-	// 複製元とは独立した物体データを作る
-	SceneObject object = *source;
-
-	if (object.name.empty()) {
-		object.name = "Object";
-	}
-
-	object.name += " Copy";
-
-	return CreateObjectWithHistory(std::move(object));
+	return createdIds.empty() ? 0 : createdIds.front();
 }
 
 bool EditorHistory::BeginRename(SceneObjectId objectId) {
@@ -92,6 +53,120 @@ bool EditorHistory::BeginRename(SceneObjectId objectId) {
 
 	pending_ = std::move(edit);
 	return true;
+}
+
+bool EditorHistory::DeleteObjects(std::span<const SceneObjectId> objectIds) {
+	CommitEdit();
+
+	if (objectIds.empty()) {
+		return false;
+	}
+
+	std::set<SceneObjectId> seen;
+
+	std::vector<CommandGroup::Command> commands;
+	commands.reserve(objectIds.size());
+
+	for (const SceneObjectId id : objectIds) {
+		if (id == 0 || !seen.insert(id).second) {
+			return false;
+		}
+
+		const SceneObject *object = scene_.FindObject(id);
+
+		if (!object) {
+			return false;
+		}
+
+		// 削除前の全データを保持する
+		commands.emplace_back(ObjectCommand{
+		    id,
+		    *object,
+		    ObjectCommand::Kind::DELETE,
+		});
+	}
+
+	CommandGroup group{std::move(commands)};
+
+	// シーンを変更する前に、履歴を記録する領域を確保する
+	const std::uint64_t next = PrepareAppend();
+
+	if (!group.Redo(scene_)) {
+		return false;
+	}
+
+	AppendPrepared(Command{std::move(group)}, next);
+	return true;
+}
+
+std::vector<SceneObjectId>
+EditorHistory::DuplicateObjects(std::span<const SceneObjectId> objectIds) {
+	CommitEdit();
+
+	if (objectIds.empty()) {
+		return {};
+	}
+
+	std::set<SceneObjectId> seen;
+
+	std::vector<SceneObject> copies;
+	copies.reserve(objectIds.size());
+
+	for (const SceneObjectId id : objectIds) {
+		if (id == 0 || !seen.insert(id).second) {
+			return {};
+		}
+
+		const SceneObject *source = scene_.FindObject(id);
+
+		if (!source) {
+			return {};
+		}
+
+		SceneObject object = *source;
+
+		if (object.name.empty()) {
+			object.name = "Object";
+		}
+
+		object.name += " Copy";
+
+		copies.push_back(std::move(object));
+	}
+
+	std::vector<SceneObjectId> createdIds;
+	createdIds.reserve(copies.size());
+
+	std::vector<CommandGroup::Command> commands;
+	commands.reserve(copies.size());
+
+	const std::uint64_t next = PrepareAppend();
+
+	const bool created = scene_.ApplyTransaction(
+	    [&copies, &createdIds, &commands](Scene &working) {
+		    for (auto &object : copies) {
+			    const SceneObjectId id = working.CreateObject(object);
+
+			    commands.emplace_back(ObjectCommand{
+			        id,
+			        std::move(object),
+			        ObjectCommand::Kind::CREATE,
+			    });
+
+			    createdIds.push_back(id);
+		    }
+
+		    return true;
+	    });
+
+	if (!created) {
+		return {};
+	}
+
+	// 操作後は、確保済みのデータを移動して履歴へ記録する
+	AppendPrepared(Command{CommandGroup{std::move(commands)}}, next);
+
+	return createdIds;
 }
 
 bool EditorHistory::HasPendingChanges() const {

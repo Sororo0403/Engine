@@ -20,7 +20,7 @@ class HierarchyPanel {
 	enum class Action {
 		NONE,
 		CREATE_EMPTY,
-		DELETE_OBJECT,
+		DELETE_OBJECTS,
 	};
 
 	/// <summary>
@@ -28,7 +28,6 @@ class HierarchyPanel {
 	/// </summary>
 	struct Result {
 		Action action = Action::NONE;
-		SceneObjectId objectId = 0;
 
 		bool windowFocused = false;
 		bool selectionChanged = false;

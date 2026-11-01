@@ -117,6 +117,7 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\history\CommandGroup.h" />
     <ClInclude Include="include\selection\EditorSelection.h" />
     <ClInclude Include="include\history\EditorHistory.h" />
     <ClInclude Include="include\panels\AssetsPanel.h" />
@@ -138,6 +139,7 @@
     <ClInclude Include="include\history\RenameCommand.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\history\CommandGroup.cpp" />
     <ClCompile Include="src\selection\EditorSelection.cpp" />
     <ClCompile Include="src\history\RenameCommand.cpp" />
     <ClCompile Include="src\scene\SceneGrid.cpp" />

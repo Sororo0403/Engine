@@ -116,8 +116,8 @@ bool EditorScene::Update(float deltaTime) {
 				case HierarchyPanel::Action::CREATE_EMPTY:
 					selection_.SelectOnly(history.CreateObject());
 					break;
-				case HierarchyPanel::Action::DELETE_OBJECT:
-					DeleteObject(hierarchyRequest.objectId);
+				case HierarchyPanel::Action::DELETE_OBJECTS:
+					DeleteSelectedObjects();
 					break;
 				case HierarchyPanel::Action::NONE:
 					break;
@@ -414,14 +414,14 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 
 		const bool objectEnabled =
 		    enabled && !ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
-		    HasSingleSelection();
+		    HasSelection();
 
 		if (ui_.MenuItem("Duplicate", "Ctrl+D", objectEnabled)) {
-			action = EditorAction::DUPLICATE_OBJECT;
+			action = EditorAction::DUPLICATE_OBJECTS;
 		}
 
 		if (ui_.MenuItem("Delete", "Delete", objectEnabled)) {
-			action = EditorAction::DELETE_OBJECT;
+			action = EditorAction::DELETE_OBJECTS;
 		}
 
 		ui_.EndMenu();
@@ -455,12 +455,11 @@ EditorScene::ReadShortcut(bool objectPanelFocused) const {
 
 	const bool objectEnabled =
 	    objectPanelFocused && !ImGui::IsAnyItemActive() &&
-	    !ImGui::IsMouseDown(ImGuiMouseButton_Right) && HasSingleSelection();
+	    !ImGui::IsMouseDown(ImGuiMouseButton_Right) && HasSelection();
 
-	// 修飾キーなしのDeleteだけを、物体削除として扱う
 	if (objectEnabled && !control && !shift && !alt &&
 	    keyboard.IsPressed(Key::DELETE_KEY)) {
-		return EditorAction::DELETE_OBJECT;
+		return EditorAction::DELETE_OBJECTS;
 	}
 
 	if (!control) {
@@ -468,7 +467,7 @@ EditorScene::ReadShortcut(bool objectPanelFocused) const {
 	}
 
 	if (objectEnabled && !shift && !alt && keyboard.IsPressed(Key::D)) {
-		return EditorAction::DUPLICATE_OBJECT;
+		return EditorAction::DUPLICATE_OBJECTS;
 	}
 
 	if (keyboard.IsPressed(Key::Z)) {
@@ -546,33 +545,12 @@ void EditorScene::StartAction(EditorAction action) {
 		pendingAction_ = EditorAction::NONE;
 		StartSave(true);
 		return;
-	case EditorAction::DUPLICATE_OBJECT: {
-		if (!HasSingleSelection()) {
-			return;
-		}
-
-		try {
-			const SceneObjectId duplicatedId =
-			    document_.GetHistory().DuplicateObject(
-			        selection_.GetActiveId());
-
-			if (duplicatedId == 0) {
-				ShowError("Could not duplicate the object.");
-				return;
-			}
-
-			selection_.SelectOnly(duplicatedId);
-		} catch (const std::exception &error) {
-			Logger::Error(std::format(
-			    "EditorScene: 物体の複製に失敗しました: {}", error.what()));
-
-			ShowError(
-			    "Could not duplicate the object. See the log for details.");
-		}
+	case EditorAction::DUPLICATE_OBJECTS:
+		DuplicateSelectedObjects();
 		return;
-	}
-	case EditorAction::DELETE_OBJECT:
-		DeleteObject(selection_.GetActiveId());
+
+	case EditorAction::DELETE_OBJECTS:
+		DeleteSelectedObjects();
 		return;
 	case EditorAction::NONE:
 		return;
@@ -817,24 +795,67 @@ bool EditorScene::FrameSelected(const DirectX::XMFLOAT4X4 &projection) {
 	return true;
 }
 
-void EditorScene::DeleteObject(SceneObjectId objectId) {
-	if (!HasSingleSelection() || selection_.GetActiveId() != objectId) {
+void EditorScene::DuplicateSelectedObjects() {
+	if (!HasSelection()) {
 		return;
 	}
 
 	try {
-		if (!document_.GetHistory().DeleteObject(objectId)) {
-			ShowError("Could not delete the object.");
+		auto createdIds =
+		    document_.GetHistory().DuplicateObjects(selection_.GetIds());
+
+		if (createdIds.empty()) {
+			ShowError("Could not duplicate the selected objects.");
 			return;
 		}
 
-		selection_.Remove(objectId);
+		if (!selection_.Set(std::move(createdIds))) {
+			ShowError("Could not select the duplicated objects.");
+		}
 	} catch (const std::exception &error) {
-		Logger::Error(std::format("EditorScene: 物体の削除に失敗しました: {}",
-		                          error.what()));
+		Logger::Error(std::format(
+		    "EditorScene: 物体の一括複製に失敗しました: {}", error.what()));
 
-		ShowError("Could not delete the object. See the log for details.");
+		ShowError("Could not duplicate the selected objects. "
+		          "See the log for details.");
 	}
+}
+
+void EditorScene::DeleteSelectedObjects() {
+	if (!HasSelection()) {
+		return;
+	}
+
+	try {
+		if (!document_.GetHistory().DeleteObjects(selection_.GetIds())) {
+			ShowError("Could not delete the selected objects.");
+			return;
+		}
+
+		selection_.Clear();
+	} catch (const std::exception &error) {
+		Logger::Error(std::format(
+		    "EditorScene: 物体の一括削除に失敗しました: {}", error.what()));
+
+		ShowError("Could not delete the selected objects. "
+		          "See the log for details.");
+	}
+}
+
+bool EditorScene::HasSelection() const {
+	if (selection_.GetCount() == 0) {
+		return false;
+	}
+
+	const Scene &scene = document_.GetScene();
+
+	for (const SceneObjectId id : selection_.GetIds()) {
+		if (!scene.Contains(id)) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 bool EditorScene::HasSingleSelection() const {

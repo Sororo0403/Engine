@@ -97,8 +97,8 @@ class EditorScene final : public IScene {
 		EXIT,
 		UNDO,
 		REDO,
-		DUPLICATE_OBJECT,
-		DELETE_OBJECT,
+		DUPLICATE_OBJECTS,
+		DELETE_OBJECTS,
 	};
 
 	/// <summary>
@@ -187,11 +187,22 @@ class EditorScene final : public IScene {
 	bool FrameSelected(const DirectX::XMFLOAT4X4 &projection);
 
 	/// <summary>
-	/// 物体の削除を履歴へ記録し、選択状態を更新する
+	/// 選択中の全物体を複製し、複製した物体を選択する
 	/// </summary>
-	/// <param name="objectId">削除する物体のID</param>
 	/// <remarks>呼び出し前にFinishEditを呼び出す</remarks>
-	void DeleteObject(SceneObjectId objectId);
+	void DuplicateSelectedObjects();
+
+	/// <summary>
+	/// 選択中の全物体を削除し、選択を解除する
+	/// </summary>
+	/// <remarks>呼び出し前にFinishEditを呼び出す</remarks>
+	void DeleteSelectedObjects();
+
+	/// <summary>
+	/// シーンに存在する物体が1つ以上選択されているか確認する
+	/// </summary>
+	/// <returns>true:有効な選択あり false:未選択、または存在しないIDあり</returns>
+	bool HasSelection() const;
 
 	/// <summary>
 	/// シーンに存在する物体が1つだけ選択されているか確認する

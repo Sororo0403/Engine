@@ -72,6 +72,13 @@ class EditorSelection {
 	/// <returns>次の選択変更まで有効な読み取り専用の一覧</returns>
 	std::span<const SceneObjectId> GetIds() const;
 
+	/// <summary>
+	/// 指定した順の物体ID一覧で選択を置き換える
+	/// </summary>
+	/// <param name="objectIds">選択する物体ID一覧。末尾をアクティブにする</param>
+	/// <returns>true:設定成功 false:0または重複したIDを含む</returns>
+	bool Set(std::vector<SceneObjectId> objectIds) noexcept;
+
   private:
 	// 重複と0を含まず、末尾をアクティブ物体として扱う
 	std::vector<SceneObjectId> ids_;
