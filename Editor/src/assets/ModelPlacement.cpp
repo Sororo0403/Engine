@@ -20,7 +20,7 @@ bool ModelPlacement::GetGroundTranslation(
 			bottom = (std::min)(bottom, corner.y);
 		}
 	}
-	translation = {0.0f, -bottom, 0.0f};
+	translation = {0.0f, std::abs(bottom) <= kGroundTolerance ? 0.0f : -bottom, 0.0f};
 	return true;
 }
 

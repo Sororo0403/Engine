@@ -20,7 +20,7 @@ class ModelPlacement {
 	static bool GetPosition(const Ray &ray, DirectX::XMFLOAT3 &position);
 
 	/// <summary>
-	/// 全ボックスの最下端を地面へ合わせる、共通の上下移動量を求める
+	/// 全ボックスの最下端を地面へ合わせる、共通の上下移動量を求める。微小な誤差は移動なしとする
 	/// </summary>
 	/// <param name="bounds">回転・拡縮を反映済みのワールド座標の8頂点一覧</param>
 	/// <param name="translation">成功した場合に設定する移動量。XとZは0</param>
@@ -29,6 +29,7 @@ class ModelPlacement {
 	                                 DirectX::XMFLOAT3 &translation);
 
   private:
+	static constexpr float kGroundTolerance = 0.00001f;
 	static constexpr float kDefaultDistance = 3.0f;
 	static constexpr float kParallelTolerance = 0.000001f;
 	static constexpr float kDirectionTolerance = 0.001f;
