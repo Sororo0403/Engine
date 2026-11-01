@@ -15,6 +15,7 @@ class EditorPreferences {
 	bool showSelectionBounds = true;
 	bool snapping = false;
 	TransformGizmo::Operation operation = TransformGizmo::Operation::TRANSLATE;
+	TransformGizmo::Space space = TransformGizmo::Space::LOCAL;
 	TransformGizmo::SnapSettings snap;
 	EditorCameraController::Settings camera;
 	std::vector<std::filesystem::path> recentScenes;

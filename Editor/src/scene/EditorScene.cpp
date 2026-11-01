@@ -54,6 +54,7 @@ bool EditorScene::Initialize() {
 	gizmo_.SetSnapSettings(preferences_.snap);
 	gizmo_.SetSnapping(preferences_.snapping);
 	gizmo_.SetOperation(preferences_.operation);
+	gizmo_.SetSpace(preferences_.space);
 
 	cameraController_.Reset();
 	cameraController_.SetSettings(preferences_.camera);
@@ -423,6 +424,7 @@ void EditorScene::Finalize() {
 		current.showGrid = showGrid_;
 		current.showSelectionBounds = showSelectionBounds_;
 		current.operation = gizmo_.GetOperation();
+		current.space = gizmo_.GetSpace();
 		current.snapping = gizmo_.IsSnapping();
 		current.snap = gizmo_.GetSnapSettings();
 		current.camera = cameraController_.GetSettings();
@@ -693,6 +695,10 @@ EditorScene::ReadShortcut(bool objectPanelFocused) const {
 		if (keyboard.IsPressed(Key::R)) {
 			return EditorAction::GIZMO_SCALE;
 		}
+		if (HasSingleSelection() && gizmo_.GetOperation() != TransformGizmo::Operation::SCALE &&
+		    keyboard.IsPressed(Key::X)) {
+			return EditorAction::GIZMO_SPACE;
+		}
 	}
 	if (selectionEnabled && !control && !shift && !alt &&
 	    keyboard.IsPressed(Key::ESCAPE)) {
@@ -789,6 +795,10 @@ void EditorScene::StartAction(EditorAction action) {
 		return;
 	case EditorAction::GIZMO_SCALE:
 		gizmo_.SetOperation(TransformGizmo::Operation::SCALE);
+		return;
+	case EditorAction::GIZMO_SPACE:
+		gizmo_.SetSpace(gizmo_.GetSpace() == TransformGizmo::Space::LOCAL
+		                    ? TransformGizmo::Space::WORLD : TransformGizmo::Space::LOCAL);
 		return;
 	case EditorAction::SELECT_ALL: {
 		if (hierarchySelectionScope_) {

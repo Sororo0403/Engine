@@ -42,6 +42,14 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 			throw std::runtime_error("Editor設定のツールが無効です。");
 		}
 		const auto &move = json.at("moveStep");
+		if (json.contains("space")) {
+			const auto spaceName = json.at("space").get<std::string>();
+			if (spaceName != "local" && spaceName != "world") {
+				throw std::runtime_error("Editor設定の座標系が無効です。");
+			}
+			loaded.space = spaceName == "world" ? TransformGizmo::Space::WORLD
+			                               : TransformGizmo::Space::LOCAL;
+		}
 		if (!move.is_array() || move.size() != 3) {
 			throw std::runtime_error("移動スナップには3成分が必要です。");
 		}
@@ -98,7 +106,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		TransformGizmo validator;
 		EditorCameraController cameraValidator;
 		if (!validator.SetSnapSettings(snap) || !validator.SetOperation(operation) ||
-		    !cameraValidator.SetSettings(camera)) {
+		    !validator.SetSpace(space) || !cameraValidator.SetSettings(camera)) {
 			throw std::runtime_error("保存するEditor設定が無効です。");
 		}
 		const auto path = PathUtils::ResolveFromExecutable(filePath);
@@ -122,6 +130,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		    {"version", 1}, {"showGrid", showGrid},
 		    {"showSelectionBounds", showSelectionBounds}, {"snapping", snapping},
 		    {"tool", tool},
+		    {"space", space == TransformGizmo::Space::WORLD ? "world" : "local"},
 		    {"moveStep", {snap.translation.x, snap.translation.y, snap.translation.z}},
 		    {"rotationStepDegrees", snap.rotationDegrees},
 		    {"scaleStepRatio", snap.scaleRatio},
@@ -152,7 +161,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 bool EditorPreferences::operator==(const EditorPreferences &other) const {
 	return recentScenes == other.recentScenes && showGrid == other.showGrid &&
 	       showSelectionBounds == other.showSelectionBounds &&
-	       snapping == other.snapping && operation == other.operation &&
+	       snapping == other.snapping && operation == other.operation && space == other.space &&
 	       snap.translation.x == other.snap.translation.x &&
 	       snap.translation.y == other.snap.translation.y &&
 	       snap.translation.z == other.snap.translation.z &&

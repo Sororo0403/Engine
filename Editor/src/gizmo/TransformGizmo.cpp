@@ -17,6 +17,16 @@ bool TransformGizmo::SetSnapping(bool enabled) {
 	return true;
 }
 
+bool TransformGizmo::SetSpace(Space space) {
+	if (using_ || (space != Space::LOCAL && space != Space::WORLD)) {
+		return false;
+	}
+	space_ = space;
+	return true;
+}
+
+TransformGizmo::Space TransformGizmo::GetSpace() const { return space_; }
+
 TransformGizmo::Operation TransformGizmo::GetOperation() const {
 	return operation_;
 }
@@ -82,6 +92,17 @@ void TransformGizmo::DrawToolbar(SelectionMode selectionMode) {
 		operation_ = Operation::SCALE;
 	}
 	ImGui::SetItemTooltip("Scale (R)");
+	ImGui::SameLine();
+	const bool fixedSpace = multiple || operation_ == Operation::SCALE;
+	const bool world = multiple || (!fixedSpace && space_ == Space::WORLD);
+	ImGui::BeginDisabled(fixedSpace);
+	if (ImGui::Button(world ? "World###GizmoSpace" : "Local###GizmoSpace")) {
+		SetSpace(space_ == Space::LOCAL ? Space::WORLD : Space::LOCAL);
+	}
+	ImGui::EndDisabled();
+	ImGui::SetItemTooltip(multiple ? "Multiple selection uses world axes."
+	    : operation_ == Operation::SCALE ? "Single-object scale uses local axes."
+	                                   : "Toggle Local / World (X)");
 	ImGui::SameLine();
 	ImGui::Checkbox("Snap", &snapping_);
 	ImGui::SameLine();
@@ -185,9 +206,9 @@ TransformGizmo::Result TransformGizmo::Draw(
 	// ウィンドウ全体ではなく、Scene画像の範囲を指定する
 	ImGuizmo::SetRect(imageMinimum.x, imageMinimum.y, imageSize.x, imageSize.y);
 
-	const ImGuizmo::MODE mode = selectionMode == SelectionMode::MULTIPLE
-	                                ? ImGuizmo::WORLD
-	                                : ImGuizmo::LOCAL;
+	const bool world = selectionMode == SelectionMode::MULTIPLE ||
+	                   (effectiveOperation != Operation::SCALE && space_ == Space::WORLD);
+	const ImGuizmo::MODE mode = world ? ImGuizmo::WORLD : ImGuizmo::LOCAL;
 	// 複数選択の拡縮は軸を隠し、均等拡縮用の中央ハンドルだけを使用する
 	ImGuizmo::SetAxisMask(uniformScale, uniformScale, uniformScale);
 	const float *snap = nullptr;

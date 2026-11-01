@@ -109,6 +109,7 @@ class EditorScene final : public IScene {
 		GIZMO_MOVE,
 		GIZMO_ROTATE,
 		GIZMO_SCALE,
+		GIZMO_SPACE,
 		COPY_OBJECTS,
 		CUT_OBJECTS,
 		PASTE_OBJECTS,

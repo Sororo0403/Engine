@@ -26,6 +26,27 @@ class TransformGizmo {
 	};
 
 	/// <summary>
+	/// 単一物体の移動・回転に使用する座標系
+	/// </summary>
+	enum class Space {
+		LOCAL,
+		WORLD,
+	};
+
+	/// <summary>
+	/// 座標系の設定を変更する。ドラッグ中は切り替えない
+	/// </summary>
+	/// <param name="space">物体のローカル座標、またはワールド座標</param>
+	/// <returns>true:設定成功 false:ドラッグ中、または値が無効</returns>
+	bool SetSpace(Space space);
+
+	/// <summary>
+	/// 単一物体の移動・回転用に保持している座標系の設定を取得する
+	/// </summary>
+	/// <returns>座標系の設定。複数選択と拡縮の座標系には影響しない</returns>
+	Space GetSpace() const;
+
+	/// <summary>
 	/// ギズモの操作種別を設定する。ドラッグ中は切り替えない
 	/// </summary>
 	/// <param name="operation">移動・回転・拡大縮小の種別</param>
@@ -127,6 +148,7 @@ class TransformGizmo {
 
   private:
 	Operation operation_ = Operation::TRANSLATE;
+	Space space_ = Space::LOCAL;
 
 	SceneObjectId objectId_ = 0;
 	SelectionMode selectionMode_ = SelectionMode::SINGLE;
