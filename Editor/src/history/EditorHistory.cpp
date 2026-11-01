@@ -71,26 +71,36 @@ bool EditorHistory::DeleteObjects(std::span<const SceneObjectId> objectIds) {
 
 	std::set<SceneObjectId> seen;
 
+	for (const auto id : objectIds) {
+		if (id == 0 || !seen.insert(id).second || !scene_.Contains(id)) {
+			return false;
+		}
+	}
+
 	std::vector<CommandGroup::Command> commands;
 	commands.reserve(objectIds.size());
 
-	for (const SceneObjectId id : objectIds) {
-		if (id == 0 || !seen.insert(id).second) {
+	// Undoでは削除物体を先に復元し、その後で残る物体の参照を戻す。
+	for (const auto &[id, object] : scene_.GetObjects()) {
+		if (seen.contains(id) || !object.followCamera ||
+		    !seen.contains(object.followCamera->target)) {
+			continue;
+		}
+
+		if (!object.followCamera->IsValid()) {
 			return false;
 		}
 
-		const SceneObject *object = scene_.FindObject(id);
+		auto cleared = *object.followCamera;
+		cleared.target = 0;
+		commands.emplace_back(
+		    FollowCameraCommand{id, object.followCamera, cleared});
+	}
 
-		if (!object) {
-			return false;
-		}
-
-		// 削除前の全データを保持する
-		commands.emplace_back(ObjectCommand{
-		    id,
-		    *object,
-		    ObjectCommand::Kind::DELETE,
-		});
+	for (const auto id : objectIds) {
+		// 削除する物体同士の参照も含め、削除前の全データを保持する。
+		commands.emplace_back(ObjectCommand{id, *scene_.FindObject(id),
+		                                    ObjectCommand::Kind::DELETE});
 	}
 
 	CommandGroup group{std::move(commands)};
@@ -176,6 +186,13 @@ EditorHistory::CreateObjects(std::vector<SceneObject> objects,
 		if (!TransformUtils::IsValid(object.transform) ||
 		    (object.camera && !object.camera->IsValid())) {
 			return {};
+		}
+
+		if (!sourceIds.empty() && object.followCamera &&
+		    !remap.contains(object.followCamera->target) &&
+		    !scene_.Contains(object.followCamera->target)) {
+			// コピー範囲外の対象が既に削除されていたら、貼り付け先では未設定にする。
+			object.followCamera->target = 0;
 		}
 
 		if (object.camera && object.camera->primary) {

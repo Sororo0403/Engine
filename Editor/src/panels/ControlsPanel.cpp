@@ -155,6 +155,10 @@ void ControlsPanel::Draw() {
 	         "Clear Hierarchy filters and scroll to the active object without "
 	         "changing visibility or selection."},
 	        {"Ctrl + D / Delete", "Duplicate / delete the selected objects."},
+	        {"Deleting referenced objects",
+	         "Remaining Follow Cameras lose targets that were deleted. Undo "
+	         "restores the objects and their links together. Pasting a copy "
+	         "keeps outside targets only if they still exist."},
 	        {"Shift + G",
 	         "Drop the selection to Y=0 using the lowest visible selected "
 	         "model bounds. Empty and hidden objects move with the group; "

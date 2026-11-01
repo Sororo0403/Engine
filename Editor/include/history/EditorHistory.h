@@ -162,13 +162,14 @@ class EditorHistory {
 	/// </summary>
 	/// <param name="objects">作成する物体のデータ一覧</param>
 	/// <param name="sourceIds">入力順の重複しない複製元ID。指定時は入力内への参照を作成先へ付け替える。空なら付け替えなし</param>
+	/// <remarks>複製元IDの指定時、入力範囲外への参照は作成前のシーンに対象が存在するときだけ保持する</remarks>
 	/// <returns>作成順のID一覧。対象なし、またはデータが無効な場合は空</returns>
 	std::vector<SceneObjectId>
 	CreateObjects(std::vector<SceneObject> objects,
 	              std::span<const SceneObjectId> sourceIds = {});
 
 	/// <summary>
-	/// 指定した物体を削除し、その削除を履歴へ記録する。
+	/// 指定した物体を削除し、残る物体からの追従参照の解除も1操作として記録する。
 	/// 編集中の変形情報は先に確定する
 	/// </summary>
 	/// <param name="objectId">削除する物体のID</param>
@@ -283,11 +284,11 @@ class EditorHistory {
 	bool BeginCharacter(SceneObjectId objectId);
 
 	/// <summary>
-	/// 指定した全物体を削除し、1操作として履歴へ記録する。
-	/// 編集中の内容は先に確定する
+	/// 指定した全物体を削除し、残る物体からの追従参照の解除も1操作として記録する。
+	/// 編集中の内容は先に確定し、Undoでは物体と参照をまとめて復元する
 	/// </summary>
 	/// <param name="objectIds">重複のない削除対象ID一覧</param>
-	/// <returns>true:全件削除成功 false:対象なし、重複、または存在しないIDあり</returns>
+	/// <returns>true:全件削除成功 false:対象なし、重複、存在しないID、または解除する追従設定が無効</returns>
 	bool DeleteObjects(std::span<const SceneObjectId> objectIds);
 
 	/// <summary>
