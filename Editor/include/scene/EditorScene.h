@@ -101,6 +101,8 @@ class EditorScene final : public IScene {
 		DELETE_OBJECTS,
 		FRAME_SELECTED,
 		FRAME_ALL,
+		SELECT_ALL,
+		DESELECT_ALL,
 	};
 
 	/// <summary>
@@ -250,6 +252,7 @@ class EditorScene final : public IScene {
 
 	bool resetDockLayout_ = false;
 	FrameRequest frameRequest_ = FrameRequest::NONE;
+	bool hierarchySelectionScope_ = false;
 
 	HierarchyPanel hierarchyPanel_;
 	InspectorPanel inspectorPanel_;

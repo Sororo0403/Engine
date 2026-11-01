@@ -165,6 +165,27 @@ bool HierarchyPanel::MatchesFilter(std::string_view name) const {
 	return filter_.empty() || name.find(filter_) != std::string_view::npos;
 }
 
+bool HierarchyPanel::SelectAllVisible(const Scene &scene,
+                                     EditorSelection &selection) {
+	std::vector<SceneObjectId> ids;
+	for (const auto &[id, object] : scene.GetObjects()) {
+		const std::string_view name = object.name.empty()
+		                                  ? std::string_view{"Object"}
+		                                  : std::string_view{object.name};
+		if (MatchesFilter(name)) {
+			ids.push_back(id);
+		}
+	}
+	const auto current = selection.GetIds();
+	if (std::equal(current.begin(), current.end(), ids.begin(), ids.end())) {
+		return false;
+	}
+	rangeAnchorId_ = ids.empty() ? 0 : ids.front();
+	const bool changed = selection.Set(std::move(ids));
+	lastActiveId_ = selection.GetActiveId();
+	return changed;
+}
+
 bool HierarchyPanel::SelectObject(
     SceneObjectId objectId, std::span<const SceneObjectId> visibleIds,
     bool control, bool shift, EditorSelection &selection) {

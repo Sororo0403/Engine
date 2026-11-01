@@ -50,6 +50,14 @@ class HierarchyPanel {
 	/// </summary>
 	void Clear();
 
+	/// <summary>
+	/// 現在の検索条件に一致する物体を全て選択する
+	/// </summary>
+	/// <param name="scene">表示対象のシーン</param>
+	/// <param name="selection">変更する選択状態</param>
+	/// <returns>true:選択変更あり false:変更なし</returns>
+	bool SelectAllVisible(const Scene &scene, EditorSelection &selection);
+
   private:
 	/// <summary>
 	/// 表示名が現在の検索条件に一致するか確認する

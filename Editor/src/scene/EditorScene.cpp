@@ -106,6 +106,11 @@ bool EditorScene::Update(float deltaTime) {
 	                             ? TransformGizmo::SelectionMode::MULTIPLE
 	                             : TransformGizmo::SelectionMode::SINGLE;
 	const bool sceneViewReady = sceneViewPanel_.DrawUI(ui_, gizmo_, toolbarMode);
+	if (hierarchyRequest.windowFocused) {
+		hierarchySelectionScope_ = true;
+	} else if (sceneViewPanel_.GetInput().windowFocused) {
+		hierarchySelectionScope_ = false;
+	}
 
 	ui_.EndDisabled();
 
@@ -460,6 +465,13 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		const bool objectEnabled =
 		    enabled && !ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
 		    HasSelection();
+		if (ui_.MenuItem("Select All", "Ctrl+A", enabled)) {
+			action = EditorAction::SELECT_ALL;
+		}
+		if (ui_.MenuItem("Deselect All", "Esc", enabled && HasSelection())) {
+			action = EditorAction::DESELECT_ALL;
+		}
+		ui_.Separator();
 
 		if (ui_.MenuItem("Duplicate", "Ctrl+D", objectEnabled)) {
 			action = EditorAction::DUPLICATE_OBJECTS;
@@ -508,9 +520,18 @@ EditorScene::ReadShortcut(bool objectPanelFocused) const {
 	const bool shift = keyboard.IsDown(Key::SHIFT);
 	const bool alt = keyboard.IsDown(Key::ALT);
 
-	const bool objectEnabled =
+	const bool selectionEnabled =
 	    objectPanelFocused && !ImGui::IsAnyItemActive() &&
-	    !ImGui::IsMouseDown(ImGuiMouseButton_Right) && HasSelection();
+	    !ImGui::IsMouseDown(ImGuiMouseButton_Right);
+	const bool objectEnabled = selectionEnabled && HasSelection();
+	if (selectionEnabled && !control && !shift && !alt &&
+	    keyboard.IsPressed(Key::ESCAPE)) {
+		return EditorAction::DESELECT_ALL;
+	}
+	if (selectionEnabled && control && !shift && !alt &&
+	    keyboard.IsPressed(Key::A)) {
+		return EditorAction::SELECT_ALL;
+	}
 
 	if (objectEnabled && !control && !shift && !alt &&
 	    keyboard.IsPressed(Key::DELETE_KEY)) {
@@ -558,6 +579,23 @@ void EditorScene::StartAction(EditorAction action) {
 	FinishEdit();
 
 	switch (action) {
+	case EditorAction::SELECT_ALL: {
+		if (hierarchySelectionScope_) {
+			hierarchyPanel_.SelectAllVisible(document_.GetScene(), selection_);
+		} else {
+			std::vector<SceneObjectId> ids;
+			for (const auto &[id, object] : document_.GetScene().GetObjects()) {
+				if (!object.modelPath.empty()) {
+					ids.push_back(id);
+				}
+			}
+			selection_.Set(std::move(ids));
+		}
+		return;
+	}
+	case EditorAction::DESELECT_ALL:
+		selection_.Clear();
+		return;
 	case EditorAction::FRAME_SELECTED:
 		frameRequest_ = FrameRequest::SELECTED;
 		return;
