@@ -15,7 +15,7 @@ class SceneSimulation {
 	/// </summary>
 	/// <param name="source">変更しない編集シーン</param>
 	/// <param name="error">失敗理由。成功時は空</param>
-	/// <param name="fallbackPose">追従カメラがない場合に使用する固定の描画姿勢</param>
+	/// <param name="fallbackPose">Primary Cameraがない場合に使用する固定の描画姿勢</param>
 	/// <returns>true:再生開始 false:追加済みコンポーネントの設定や配置、または描画姿勢が無効</returns>
 	bool Start(const Scene &source, std::string &error,
 	           const CameraPose &fallbackPose = CameraPose{});
@@ -45,13 +45,20 @@ class SceneSimulation {
 	/// </summary>
 	/// <returns>再生時の描画姿勢</returns>
 	const CameraPose &GetCameraPose() const { return pose_; }
+	/// <summary>
+	/// 描画カメラの投影設定を取得する。Primary Cameraがなければ標準設定を返す
+	/// </summary>
+	/// <returns>再生中の縦視野角と表示距離</returns>
+	const CameraSettings &GetCameraSettings() const { return cameraSettings_; }
 
   private:
 	Scene scene_;
 	CollisionWorld world_;
 	CharacterController controller_;
-	SceneObjectId character_ = 0, camera_ = 0;
+	SceneObjectId character_ = 0, camera_ = 0, follow_ = 0;
 	DirectX::XMFLOAT3 spawn_{};
 	CameraPose pose_{};
+	CameraPose followPose_{};
+	CameraSettings cameraSettings_{};
 	bool playing_ = false;
 };

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "graphics/camera/CameraPose.h"
+#include "graphics/camera/CameraSettings.h"
 #include "graphics/render/DebugLine.h"
 #include "graphics/render/RenderObjectHandle.h"
 #include "scene/SceneObjectId.h"
@@ -72,6 +73,12 @@ class SceneRenderer {
 	/// <param name="pose">設定する姿勢</param>
 	/// <returns>true:成功 false:未初期化、または姿勢が無効</returns>
 	bool SetCameraPose(const CameraPose &pose);
+	/// <summary>
+	/// 描画カメラの投影設定を次の更新へ反映する
+	/// </summary>
+	/// <param name="settings">有効な視野角と表示距離</param>
+	/// <returns>true:成功 false:未初期化、または設定が無効</returns>
+	bool SetCameraSettings(const CameraSettings &settings);
 
 	/// <summary>
 	/// 画像内の位置から、最も近くで交差するシーン上の物体を取得する

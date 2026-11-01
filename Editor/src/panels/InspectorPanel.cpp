@@ -1,6 +1,7 @@
 #include "panels/InspectorPanel.h"
 
 #include "assets/ModelAssetDragDrop.h"
+#include "camera/CameraInspector.h"
 #include "gameplay/GameplayInspector.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "history/EditorHistory.h"
@@ -328,6 +329,9 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 			changed |=
 			    history.SetCharacter(inspectedObjectId, CharacterSettings{});
 		}
+		if (ui.MenuItem("Camera", nullptr, !object->camera)) {
+			changed |= history.SetCamera(inspectedObjectId, CameraComponent{});
+		}
 		if (ui.MenuItem("Follow Camera", nullptr, !object->followCamera)) {
 			changed |= history.SetFollowCamera(inspectedObjectId,
 			                                   FollowCameraSettings{});
@@ -340,6 +344,7 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 	ImGui::PopID();
 
 	changed |= ColliderInspector{}.Draw(ui, inspectedObjectId, *object, history, colliderFitRequest_);
+	changed |= CameraInspector{}.Draw(ui, inspectedObjectId, *object, history);
 	changed |= GameplayInspector{}.Draw(ui, scene, inspectedObjectId, *object,
 	                                    history);
 

@@ -215,3 +215,7 @@ bool SceneRenderer::UpdateDebugLines() {
 		return false;
 	}
 }
+
+bool SceneRenderer::SetCameraSettings(const CameraSettings &settings) {
+	return world_ && world_->SetCameraSettings(settings);
+}

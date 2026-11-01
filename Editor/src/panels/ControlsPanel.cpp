@@ -119,16 +119,26 @@ void ControlsPanel::Draw() {
 	    "Game authoring and playback",
 	    {
 	        {"Inspector > Add Component",
-	         "Add Box Collider, Character Controller, Follow Camera or "
+	         "Add Box Collider, Character Controller, Camera, Follow Camera or "
 	         "Respawn. Changes support Undo and scene saving."},
 	        {"File > New Sample Stage",
 	         "Create an editable floor, walls, player and follow camera. "
 	         "Unsaved work prompts before replacement."},
-	        {"Game > Play / Stop", "Run the current scene, including empty scenes. Stop returns to editing and keeps your changes and Undo history."},
-        {"Game without Follow Camera", "Use the Scene view camera position at Play start."},
-        {"Inspector > Follow Camera", "Offsets use world coordinates. Follow Smoothing 0 follows immediately. Choose the target object in the same scene."},
+	        {"Game > Play / Stop",
+	         "Run the current scene, including empty scenes. Stop returns to "
+	         "editing and keeps your changes and Undo history."},
+	        {"Game without Primary Camera",
+	         "Use the Scene view camera position at Play start."},
+	        {"Inspector > Camera",
+	         "Use Transform for a fixed view. Set vertical FOV and clipping "
+	         "distances; mark one Camera as Primary. Add Follow Camera to make "
+	         "it track a target."},
+	        {"Inspector > Follow Camera",
+	         "Offsets use world coordinates. Follow Smoothing 0 follows "
+	         "immediately. Choose the target object in the same scene."},
 	        {"WASD / Space",
-	         "Click the Game image to focus it. Move on world X/Z and jump when the object has a Character Controller."},
+	         "Click the Game image to focus it. Move on world X/Z and jump "
+	         "when the object has a Character Controller."},
 	        {"Esc (Game focused)", "Stop playback and return to editing."},
 	    });
 	DrawSection("Files and history", {

@@ -94,6 +94,7 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input) {
 		return false;
 	}
 	if (!renderer_.SetCameraPose(simulation_.GetCameraPose()) ||
+	    !renderer_.SetCameraSettings(simulation_.GetCameraSettings()) ||
 	    !renderer_.Update(texture_->GetWidth(), texture_->GetHeight())) {
 		return false;
 	}

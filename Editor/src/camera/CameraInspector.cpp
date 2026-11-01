@@ -1,0 +1,52 @@
+#include "camera/CameraInspector.h"
+#include "graphics/ui/ImGuiSystem.h"
+#include "history/EditorHistory.h"
+#include "scene/SceneObject.h"
+#include <imgui.h>
+#include <string>
+
+bool CameraInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
+                           SceneObject &object, EditorHistory &history) const {
+	if (!object.camera) {
+		return false;
+	}
+	const auto scope = std::to_string(id);
+	ImGui::PushID(scope.c_str());
+	ImGui::PushID("CameraInspector");
+	bool changed = false;
+	if (ui.CollapsingHeader("Camera")) {
+		auto edited = *object.camera;
+		if (ImGui::Checkbox("Primary", &edited.primary)) {
+			changed |= history.SetCamera(id, edited);
+		}
+		auto field = [&](const char *label, float CameraSettings::*member,
+		                 float speed, float minimum, float maximum) {
+			auto value = *object.camera;
+			const bool edited = ImGui::DragFloat(
+			    label, &(value.settings.*member), speed, minimum, maximum,
+			    "%.3f", ImGuiSliderFlags_AlwaysClamp);
+			if (ImGui::IsItemActivated()) {
+				history.BeginCamera(id);
+			}
+			if (edited && value.IsValid() && value != *object.camera) {
+				if (history.IsEditing() || history.BeginCamera(id)) {
+					object.camera = value;
+					changed = true;
+				}
+			}
+			if (ImGui::IsItemDeactivated() && !ImGui::IsAnyItemActive()) {
+				history.CommitEdit();
+			}
+		};
+		field("Vertical FOV", &CameraSettings::verticalFovDegrees, 0.1f, 1,
+		      179);
+		field("Near Clip", &CameraSettings::nearClip, 0.001f, 0.001f, 100000);
+		field("Far Clip", &CameraSettings::farClip, 0.1f, 0.002f, 100000);
+		if (ui.Button("Remove Camera")) {
+			changed |= history.SetCamera(id, std::nullopt);
+		}
+	}
+	ImGui::PopID();
+	ImGui::PopID();
+	return changed;
+}

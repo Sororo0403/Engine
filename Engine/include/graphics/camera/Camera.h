@@ -1,6 +1,7 @@
 #pragma once
 
 #include "graphics/camera/CameraPose.h"
+#include "graphics/camera/CameraSettings.h"
 
 #include <DirectXMath.h>
 
@@ -40,6 +41,12 @@ class Camera {
 	/// <param name="pose">設定する姿勢</param>
 	/// <returns>true:成功 false:値が無効、または視線を計算できない</returns>
 	bool SetPose(const CameraPose &pose);
+	/// <summary>
+	/// 次のUpdateで使用する透視投影の設定を変更する
+	/// </summary>
+	/// <param name="settings">縦視野角と表示距離</param>
+	/// <returns>true:成功 false:設定が無効。失敗時は現在値を保持する</returns>
+	bool SetSettings(const CameraSettings &settings);
 
 	/// <summary>
 	/// 更新済みの行列から、画像内の位置を通るレイを作成する
@@ -55,9 +62,7 @@ class Camera {
 	DirectX::XMFLOAT3 target_{0.0f, 0.0f, 0.0f};
 	DirectX::XMFLOAT3 up_{0.0f, 1.0f, 0.0f};
 
-	float fovY_ = DirectX::XM_PIDIV4;
-	float nearZ_ = 0.1f;
-	float farZ_ = 100.0f;
+	CameraSettings settings_{};
 
 	DirectX::XMFLOAT4X4 viewMatrix_{};
 	DirectX::XMFLOAT4X4 projectionMatrix_{};

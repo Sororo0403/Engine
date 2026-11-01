@@ -60,6 +60,8 @@ class ComponentCommand {
 	std::optional<T> before_, after_;
 };
 
+using CameraCommand = ComponentCommand<CameraComponent, &SceneObject::camera>;
+
 using CharacterCommand =
     ComponentCommand<CharacterSettings, &SceneObject::character>;
 using FollowCameraCommand =

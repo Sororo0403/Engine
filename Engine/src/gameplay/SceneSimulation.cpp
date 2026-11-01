@@ -1,5 +1,6 @@
 #include "gameplay/SceneSimulation.h"
 #include "graphics/camera/Camera.h"
+#include "math/TransformUtils.h"
 #include "physics/BoxColliderUtils.h"
 #include <algorithm>
 #include <cmath>
@@ -23,13 +24,55 @@ CameraPose MakePose(const DirectX::XMFLOAT3 &target,
 	                 target.z + settings.lookOffset.z};
 	return result;
 }
+/// <summary>
+/// Transformの位置と回転から、+Zを前、+Yを上とする描画姿勢を作る
+/// </summary>
+/// <param name="transform">カメラ物体の姿勢。拡大率は描画姿勢へ適用しない</param>
+/// <returns>ワールド座標のカメラ姿勢</returns>
+CameraPose FromTransform(const Transform &transform) {
+	using namespace DirectX;
+	CameraPose pose;
+	pose.position = transform.translation;
+	const auto q = XMLoadFloat4(&transform.rotation);
+	XMFLOAT3 forward;
+	XMStoreFloat3(&forward, XMVector3Rotate(XMVectorSet(0, 0, 1, 0), q));
+	XMStoreFloat3(&pose.up, XMVector3Rotate(XMVectorSet(0, 1, 0, 0), q));
+	pose.target = {pose.position.x + forward.x, pose.position.y + forward.y,
+	               pose.position.z + forward.z};
+	return pose;
+}
+/// <summary>
+/// 追従結果を物体のTransformへ反映する
+/// </summary>
+/// <param name="pose">追従結果の位置・注視点・上方向</param>
+/// <param name="transform">位置と回転を更新するTransform。拡大率は保持する</param>
+/// <returns>true:成功 false:描画姿勢が無効</returns>
+bool ApplyPose(const CameraPose &pose, Transform &transform) {
+	Camera validator;
+	if (!validator.SetPose(pose)) {
+		return false;
+	}
+	using namespace DirectX;
+	const auto view =
+	    XMMatrixLookAtLH(XMLoadFloat3(&pose.position),
+	                     XMLoadFloat3(&pose.target), XMLoadFloat3(&pose.up));
+	const auto world = XMMatrixInverse(nullptr, view);
+	XMFLOAT4 rotation;
+	XMStoreFloat4(&rotation, XMQuaternionRotationMatrix(world));
+	if (!TransformUtils::TryNormalizeRotation(rotation, rotation)) {
+		return false;
+	}
+	transform.translation = pose.position;
+	transform.rotation = rotation;
+	return true;
+}
 } // namespace
 
 bool SceneSimulation::Start(const Scene &source, std::string &error,
                             const CameraPose &fallbackPose) {
 	try {
 		error.clear();
-		SceneObjectId character = 0, camera = 0;
+		SceneObjectId character = 0, camera = 0, follow = 0;
 		for (const auto &[id, object] : source.GetObjects()) {
 			if (object.character) {
 				if (character) {
@@ -44,15 +87,31 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 				}
 				character = id;
 			}
-			if (object.followCamera) {
-				const auto &settings = *object.followCamera;
-				if (camera || !settings.IsValid() || settings.target == id ||
-				    !source.Contains(settings.target)) {
-					error = "Use one Follow Camera with a valid target in this "
-					        "scene.";
+			if (object.camera) {
+				if (!object.camera->IsValid() ||
+				    !TransformUtils::IsValid(object.transform)) {
+					error = "Camera settings or transform are invalid.";
 					return false;
 				}
-				camera = id;
+				if (object.camera->primary) {
+					if (camera) {
+						error = "Only one Camera can be marked Primary.";
+						return false;
+					}
+					camera = id;
+				}
+			}
+			if (object.followCamera) {
+				const auto &settings = *object.followCamera;
+				if (follow || !object.camera || object.character ||
+				    !settings.IsValid() || settings.target == id ||
+				    !source.Contains(settings.target)) {
+					error = "Use one Follow Camera on a Camera object, with a "
+					        "valid target and no Character Controller on the "
+					        "same object.";
+					return false;
+				}
+				follow = id;
 			}
 			if (object.respawn &&
 			    (!object.character || !object.respawn->IsValid())) {
@@ -95,26 +154,34 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 				}
 			}
 		}
-		auto pose = fallbackPose;
-		if (camera) {
-			const auto &settings = *source.FindObject(camera)->followCamera;
-			pose = MakePose(
-			    source.FindObject(settings.target)->transform.translation,
-			    settings);
+		auto objects = source.GetObjects();
+		CameraPose followPose{};
+		if (follow) {
+			const auto &settings = *objects.at(follow).followCamera;
+			followPose = MakePose(
+			    objects.at(settings.target).transform.translation, settings);
+			if (!ApplyPose(followPose, objects.at(follow).transform)) {
+				error = "Follow Camera pose is invalid.";
+				return false;
+			}
 		}
+		auto pose =
+		    camera ? FromTransform(objects.at(camera).transform) : fallbackPose;
+		auto lens =
+		    camera ? objects.at(camera).camera->settings : CameraSettings{};
 		Camera validator;
-		if (!validator.SetPose(pose)) {
-			error = camera ? "The Follow Camera pose cannot be represented. "
-			                 "Adjust offsets or target position."
-			               : "The Scene view camera pose is invalid.";
+		if (!validator.SetPose(pose) || !validator.SetSettings(lens)) {
+			error = "Camera pose or projection is invalid.";
 			return false;
 		}
-		auto objects = source.GetObjects();
 		scene_.ReplaceObjects(std::move(objects));
 		world_ = std::move(world);
 		controller_ = controller;
 		character_ = character;
 		camera_ = camera;
+		follow_ = follow;
+		followPose_ = followPose;
+		cameraSettings_ = lens;
 		spawn_ = spawn;
 		pose_ = pose;
 		playing_ = true;
@@ -127,7 +194,7 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 void SceneSimulation::Stop() {
 	playing_ = false;
 	scene_.ReplaceObjects({});
-	character_ = camera_ = 0;
+	character_ = camera_ = follow_ = 0;
 }
 bool SceneSimulation::Update(float seconds, const CharacterInput &input) {
 	if (!playing_ || !std::isfinite(seconds) || seconds < 0) {
@@ -152,9 +219,10 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input) {
 			respawned = true;
 		}
 	}
-	auto pose = pose_;
-	if (camera_) {
-		const auto *cameraObject = scene_.FindObject(camera_);
+	auto followPose = followPose_;
+	Transform followTransform;
+	if (follow_) {
+		const auto *cameraObject = scene_.FindObject(follow_);
 		if (!cameraObject || !cameraObject->followCamera) {
 			return false;
 		}
@@ -177,8 +245,24 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input) {
 			a.y += (b.y - a.y) * blend;
 			a.z += (b.z - a.z) * blend;
 		};
-		lerp(pose.position, desired.position);
-		lerp(pose.target, desired.target);
+		lerp(followPose.position, desired.position);
+		lerp(followPose.target, desired.target);
+		followTransform = cameraObject->transform;
+		if (!ApplyPose(followPose, followTransform)) {
+			return false;
+		}
+	}
+	auto pose = pose_;
+	if (camera_) {
+		const auto *cameraObject = scene_.FindObject(camera_);
+		if (!cameraObject || !cameraObject->camera) {
+			return false;
+		}
+		const auto &transform = camera_ == follow_ ? followTransform
+		                        : camera_ == character_
+		                            ? next.GetTransform()
+		                            : cameraObject->transform;
+		pose = FromTransform(transform);
 		Camera validator;
 		if (!validator.SetPose(pose)) {
 			return false;
@@ -189,5 +273,9 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input) {
 		scene_.FindObject(character_)->transform = next.GetTransform();
 	}
 	pose_ = pose;
+	followPose_ = followPose;
+	if (follow_) {
+		scene_.FindObject(follow_)->transform = followTransform;
+	}
 	return true;
 }

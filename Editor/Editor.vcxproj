@@ -265,4 +265,8 @@ exit /b 0</Command>
     <ClCompile Include="src\gameplay\SampleStage.cpp" />
   </ItemGroup>
   <ItemGroup><ClInclude Include="include\gameplay\GameplayInput.h" /></ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\camera\CameraInspector.h" />
+    <ClCompile Include="src\camera\CameraInspector.cpp" />
+  </ItemGroup>
 </Project>

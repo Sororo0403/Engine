@@ -676,6 +676,9 @@ bool EditorHistory::HasPendingChanges() const {
 		    } else if constexpr (std::is_same_v<Before, std::optional<BoxCollider>>) {
 			    return before != object->collider;
 		    } else if constexpr (std::is_same_v<
+		                             Before, std::optional<CameraComponent>>) {
+			    return before != object->camera;
+		    } else if constexpr (std::is_same_v<
 		                             Before, std::optional<RespawnSettings>>) {
 			    return before != object->respawn;
 		    } else if constexpr (std::is_same_v<
@@ -810,6 +813,12 @@ void EditorHistory::CommitEdit() {
 		Invalidate();
 		return;
 	}
+	if (std::holds_alternative<std::optional<CameraComponent>>(
+	        pending_->before) &&
+	    object->camera && !object->camera->IsValid()) {
+		Invalidate();
+		return;
+	}
 	// 空の名前で確定した場合は、編集開始時点の名前へ戻す
 	if (std::holds_alternative<std::string>(pending_->before) &&
 	    object->name.empty()) {
@@ -856,6 +865,9 @@ void EditorHistory::CommitEdit() {
 		                             std::optional<CharacterSettings>>) {
 			    return Command{
 			        CharacterCommand{objectId, before, object->character}};
+		    } else if constexpr (std::is_same_v<
+		                             Before, std::optional<CameraComponent>>) {
+			    return Command{CameraCommand{objectId, before, object->camera}};
 		    } else {
 			    return Command{RenameCommand{
 			        objectId,
@@ -884,6 +896,9 @@ void EditorHistory::CommitEdit() {
 		    } else if constexpr (std::is_same_v<
 		                             T, std::optional<FollowCameraSettings>>) {
 			    return "Edit Follow Camera";
+		    } else if constexpr (std::is_same_v<
+		                             T, std::optional<CameraComponent>>) {
+			    return "Edit Camera";
 		    } else {
 			    return "Edit Respawn";
 		    }
@@ -1193,5 +1208,37 @@ bool EditorHistory::BeginRespawn(SceneObjectId id) {
 		return false;
 	}
 	pending_ = PendingEdit{id, object->respawn};
+	return true;
+}
+
+bool EditorHistory::SetCamera(SceneObjectId id,
+                              std::optional<CameraComponent> value) {
+	CommitEdit();
+	auto *object = scene_.FindObject(id);
+	if (!object || (value && !value->IsValid())) {
+		return false;
+	}
+	const bool adding = !object->camera;
+	CameraCommand command{id, object->camera, value};
+	if (!command.HasChanges()) {
+		return true;
+	}
+	const auto next = PrepareAppend();
+	if (!command.Redo(scene_)) {
+		return false;
+	}
+	AppendPrepared(Command{std::move(command)}, next,
+	               !value   ? "Remove Camera"
+	               : adding ? "Add Camera"
+	                        : "Edit Camera");
+	return true;
+}
+bool EditorHistory::BeginCamera(SceneObjectId id) {
+	CommitEdit();
+	const auto *object = scene_.FindObject(id);
+	if (!object || !object->camera) {
+		return false;
+	}
+	pending_ = PendingEdit{id, object->camera};
 	return true;
 }

@@ -22,3 +22,5 @@ Editorの衝突設定については、モデル頂点からの形状合わせ�
 コンポーネントがない空のシーン、モデルだけ、Character Controllerだけ、Follow Cameraだけの再生を検証する。追従カメラがない場合の固定描画姿勢、再生し直した際の状態初期化、不正な描画姿勢での状態保持も含む。
 
 Character ControllerのBox Collider必須条件、不足時の再生状態保持、Character Controllerを外したシーンや空のシーンではPlayを開始・更新できることを検証する。
+
+Cameraの固定位置・回転・投影設定、Primaryの選択・重複拒否、非Primaryの追従動作、コンポーネントのUndo・複製・削除、version 6保存とversion 5追従カメラの移行を検証する。

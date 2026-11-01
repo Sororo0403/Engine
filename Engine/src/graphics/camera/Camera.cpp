@@ -20,8 +20,9 @@ bool Camera::Update(int width, int height) {
 	    static_cast<float>(width) / static_cast<float>(height);
 
 	// 縦方向の視野角・縦横比・表示する距離から投影行列を作る
-	const XMMATRIX projection =
-	    XMMatrixPerspectiveFovLH(fovY_, aspectRatio, nearZ_, farZ_);
+	const XMMATRIX projection = XMMatrixPerspectiveFovLH(
+	    XMConvertToRadians(settings_.verticalFovDegrees), aspectRatio,
+	    settings_.nearClip, settings_.farClip);
 
 	XMStoreFloat4x4(&viewMatrix_, view);
 	XMStoreFloat4x4(&projectionMatrix_, projection);
@@ -129,5 +130,13 @@ bool Camera::CreatePickingRay(float imageX, float imageY, Ray &ray) const {
 	}
 
 	ray = result;
+	return true;
+}
+
+bool Camera::SetSettings(const CameraSettings &settings) {
+	if (!settings.IsValid()) {
+		return false;
+	}
+	settings_ = settings;
 	return true;
 }

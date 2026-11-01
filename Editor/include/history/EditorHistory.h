@@ -200,6 +200,21 @@ class EditorHistory {
 	/// <returns>true:開始成功 false:対象または衝突形状なし</returns>
 	bool BeginCollider(SceneObjectId objectId);
 	/// <summary>
+	/// Cameraコンポーネントを追加・変更・削除して履歴へ記録する
+	/// </summary>
+	/// <param name="objectId">対象ID</param>
+	/// <param name="value">変更後。未指定は削除</param>
+	/// <returns>true:成功または同値 false:対象または設定が無効</returns>
+	bool SetCamera(SceneObjectId objectId,
+	               std::optional<CameraComponent> value);
+	/// <summary>
+	/// カメラの連続編集を開始する
+	/// </summary>
+	/// <param name="objectId">対象ID</param>
+	/// <returns>true:開始成功 false:対象またはCameraなし</returns>
+	bool BeginCamera(SceneObjectId objectId);
+
+	/// <summary>
 	/// Respawnコンポーネントを追加・変更・削除して履歴へ記録する
 	/// </summary>
 	/// <param name="objectId">対象ID</param>
@@ -349,7 +364,7 @@ class EditorHistory {
 	    std::variant<TransformCommand, ObjectCommand, RenameCommand,
 	                 ModelPathCommand, VisibilityCommand, ColliderCommand,
 	                 CharacterCommand, FollowCameraCommand, RespawnCommand,
-	                 CommandGroup>;
+	                 CameraCommand, CommandGroup>;
 
 	/// <summary>
 	/// 操作と、その前後の状態を識別する情報
@@ -372,6 +387,7 @@ class EditorHistory {
 		std::variant<Transform, std::string, std::optional<BoxCollider>,
 		             std::optional<CharacterSettings>,
 		             std::optional<FollowCameraSettings>,
+		             std::optional<CameraComponent>,
 		             std::optional<RespawnSettings>>
 		    before;
 	};

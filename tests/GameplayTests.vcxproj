@@ -52,6 +52,7 @@
     <ClCompile Include="CharacterTests.cpp" />
     <ClCompile Include="ColliderEditingTests.cpp" />
     <ClCompile Include="SceneSimulationTests.cpp" />
+    <ClCompile Include="CameraComponentTests.cpp" />
     <ClCompile Include="..\Editor\src\gameplay\SampleStage.cpp" />
     <ClCompile Include="..\Editor\src\scene\SceneDocument.cpp" />
     <ClCompile Include="..\Editor\src\history\EditorHistory.cpp" />

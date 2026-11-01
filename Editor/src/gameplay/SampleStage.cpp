@@ -21,6 +21,7 @@ std::map<SceneObjectId, SceneObject> SampleStage::Create() {
 	objects.at(5).respawn = RespawnSettings{};
 	SceneObject camera;
 	camera.name = "Follow Camera";
+	camera.camera = CameraComponent{};
 	camera.followCamera = FollowCameraSettings{};
 	camera.followCamera->target = 5;
 	objects.emplace(6, std::move(camera));

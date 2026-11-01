@@ -21,7 +21,8 @@ class CommandGroup {
 	using Command =
 	    std::variant<TransformCommand, ObjectCommand, RenameCommand,
 	                 ModelPathCommand, VisibilityCommand, ColliderCommand,
-	                 CharacterCommand, FollowCameraCommand, RespawnCommand>;
+	                 CharacterCommand, FollowCameraCommand, RespawnCommand,
+	                 CameraCommand>;
 
 	/// <summary>
 	/// 実行順に並んだ操作を保持する。シーンへの反映は行わない

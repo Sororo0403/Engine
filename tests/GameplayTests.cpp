@@ -19,6 +19,7 @@
 void RunCharacterTests();
 void RunColliderEditingTests();
 void RunSceneSimulationTests();
+void RunCameraComponentTests();
 
 namespace {
 void Require(bool condition, const char *message) {
@@ -102,7 +103,7 @@ void ColliderSerializationTests() {
 	SceneFile file;
 	Require(SceneSerializer::Save(source, file.path), "save collider scene");
 	const auto document = file.Read();
-	Require(document.at("version") == 5, "collider scene version");
+	Require(document.at("version") == 6, "collider scene version");
 	Scene loaded;
 	Require(SceneSerializer::Load(loaded, file.path) &&
 	        loaded.FindObject(solid)->collider == source.FindObject(solid)->collider &&
@@ -145,7 +146,7 @@ void ColliderSerializationTests() {
 	            legacy4.FindObject(solid)->collider &&
 	            legacy4.FindObject(solid)->collider->halfExtents.x == 2,
 	        "v4 collider compatibility");
-	std::cout << "PASS: version 5 collider persistence, v1/v2/v3 compatibility "
+	std::cout << "PASS: version 6 collider persistence, v1/v2/v3 compatibility "
 	             "and atomic invalid-data failures\n";
 }
 
@@ -172,6 +173,7 @@ int main() {
 		RunCharacterTests();
 		RunColliderEditingTests();
 		RunSceneSimulationTests();
+		RunCameraComponentTests();
 		std::cout << "ALL PASS\n";
 		return 0;
 	} catch (const std::exception &error) {

@@ -166,6 +166,7 @@ void OptionalComponents() {
 
 	SceneObject camera;
 	camera.name = "Static follow";
+	camera.camera = CameraComponent{};
 	camera.followCamera = FollowCameraSettings{};
 	camera.followCamera->target = target;
 	const auto cameraId = visual.CreateObject(camera);

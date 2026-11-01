@@ -5,6 +5,7 @@
 #include "gameplay/RespawnSettings.h"
 #include "math/Transform.h"
 #include "physics/BoxCollider.h"
+#include "scene/CameraComponent.h"
 
 #include <filesystem>
 #include <optional>
@@ -28,7 +29,9 @@ struct SceneObject {
 
 	// 再生時に入力・重力で動かす物体。衝突形状も必要
 	std::optional<CharacterSettings> character;
-	// 再生時のカメラ。対象IDは同じシーンの物体を指定する
+	// Transformを描画カメラとして使う設定
+	std::optional<CameraComponent> camera;
+	// カメラの追従動作。対象IDは同じシーンの物体を指定する
 	std::optional<FollowCameraSettings> followCamera;
 	// 落下時の復帰。Character Controllerを持つ物体に使用する
 	std::optional<RespawnSettings> respawn;

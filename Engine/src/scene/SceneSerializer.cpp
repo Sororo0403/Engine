@@ -119,7 +119,8 @@ bool SceneSerializer::Save(const Scene &scene,
 				}
 			}
 
-			if ((object.character && !object.character->IsValid()) ||
+			if ((object.camera && !object.camera->IsValid()) ||
+			    (object.character && !object.character->IsValid()) ||
 			    (object.followCamera && !object.followCamera->IsValid()) ||
 			    (object.respawn && !object.respawn->IsValid())) {
 				throw std::runtime_error(
@@ -141,6 +142,14 @@ bool SceneSerializer::Save(const Scene &scene,
 			if (object.collider) {
 				objects.back()["collider"] = {{"center", ToJson(object.collider->center)},
 				                              {"halfExtents", ToJson(object.collider->halfExtents)}};
+			}
+			if (object.camera) {
+				const auto &v = *object.camera;
+				objects.back()["camera"] = {
+				    {"primary", v.primary},
+				    {"verticalFovDegrees", v.settings.verticalFovDegrees},
+				    {"nearClip", v.settings.nearClip},
+				    {"farClip", v.settings.farClip}};
 			}
 			if (object.character) {
 				const auto &v = *object.character;
@@ -169,7 +178,7 @@ bool SceneSerializer::Save(const Scene &scene,
 
 		const Json document{
 		    {"format", "EngineScene"},
-		    {"version", 5},
+		    {"version", 6},
 		    {"objects", std::move(objects)},
 		};
 
@@ -220,7 +229,7 @@ bool SceneSerializer::Load(Scene &scene,
 		    !document.at("version").is_number_integer() ||
 		    (document.at("version") != 1 && document.at("version") != 2 &&
 		     document.at("version") != 3 && document.at("version") != 4 &&
-		     document.at("version") != 5)) {
+		     document.at("version") != 5 && document.at("version") != 6)) {
 			throw std::runtime_error("未対応のシーンファイル形式です。");
 		}
 
@@ -263,6 +272,21 @@ bool SceneSerializer::Load(Scene &scene,
 				                              ReadFloat3(collider.at("halfExtents"))};
 			}
 
+			if (version >= 6 && item.contains("camera")) {
+				const auto &v = item.at("camera");
+				for (const auto *key :
+				     {"verticalFovDegrees", "nearClip", "farClip"}) {
+					if (!v.at(key).is_number()) {
+						throw std::runtime_error(
+						    "カメラの描画設定には数値が必要です。");
+					}
+				}
+				object.camera = CameraComponent{
+				    v.at("primary").get<bool>(),
+				    CameraSettings{v.at("verticalFovDegrees").get<float>(),
+				                   v.at("nearClip").get<float>(),
+				                   v.at("farClip").get<float>()}};
+			}
 			if (version >= 5 && item.contains("character")) {
 				const auto &v = item.at("character");
 				for (const auto *key :
@@ -289,6 +313,9 @@ bool SceneSerializer::Load(Scene &scene,
 				    ReadFloat3(v.at("offset")), ReadFloat3(v.at("lookOffset")),
 				    v.at("smoothing").get<float>()};
 			}
+			if (version <= 5 && object.followCamera) {
+				object.camera = CameraComponent{};
+			}
 			if (version >= 5 && item.contains("respawn")) {
 				const auto &v = item.at("respawn");
 				if (!v.at("minimumY").is_number()) {
@@ -299,7 +326,8 @@ bool SceneSerializer::Load(Scene &scene,
 				                    v.at("useStartPosition").get<bool>(),
 				                    ReadFloat3(v.at("position"))};
 			}
-			if ((object.character && !object.character->IsValid()) ||
+			if ((object.camera && !object.camera->IsValid()) ||
+			    (object.character && !object.character->IsValid()) ||
 			    (object.followCamera && !object.followCamera->IsValid()) ||
 			    (object.respawn && !object.respawn->IsValid())) {
 				throw std::runtime_error(

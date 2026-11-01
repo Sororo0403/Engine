@@ -558,3 +558,11 @@ RenderObjectHandle RenderWorld::Pick(float imageX, float imageY) const {
 
 	return nearestHandle;
 }
+
+bool RenderWorld::SetCameraSettings(const CameraSettings &settings) {
+	if (!impl_->camera_.SetSettings(settings)) {
+		return false;
+	}
+	impl_->prepared_ = false;
+	return true;
+}

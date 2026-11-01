@@ -71,6 +71,9 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		}
 	}
 	if (object.followCamera && ui.CollapsingHeader("Follow Camera")) {
+		if (!object.camera) {
+			ImGui::TextWrapped("Camera is missing.");
+		}
 		const auto *target = scene.FindObject(object.followCamera->target);
 		const auto preview = target ? target->name : "Choose target";
 		if (ImGui::BeginCombo("Target", preview.c_str())) {
