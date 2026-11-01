@@ -30,6 +30,7 @@ bool ObjectCommand::Remove(Scene &scene) const {
 
 	if (!current || current->name != object_.name ||
 	    current->modelPath != object_.modelPath || current->visible != object_.visible ||
+	    current->collider != object_.collider ||
 	    !TransformUtils::AreEqual(current->transform, object_.transform)) {
 		return false;
 	}

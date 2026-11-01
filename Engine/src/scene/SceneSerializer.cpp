@@ -4,6 +4,7 @@
 #include "math/MathUtils.h"
 #include "math/TransformUtils.h"
 #include "platform/windows/PathUtils.h"
+#include "physics/BoxColliderUtils.h"
 #include "scene/Scene.h"
 
 #include <json.hpp>
@@ -111,6 +112,12 @@ bool SceneSerializer::Save(const Scene &scene,
 			if (!TransformUtils::IsValid(object.transform)) {
 				throw std::runtime_error("Transformが無効です。");
 			}
+			if (object.collider) {
+				AxisAlignedBox bounds;
+				if (!BoxColliderUtils::GetWorldBounds(*object.collider, object.transform, bounds)) {
+					throw std::runtime_error("衝突用ボックスが無効です。");
+				}
+			}
 
 			objects.push_back({
 			    {"id", id},
@@ -124,11 +131,15 @@ bool SceneSerializer::Save(const Scene &scene,
 			         {"scale", ToJson(object.transform.scale)},
 			     }},
 			});
+			if (object.collider) {
+				objects.back()["collider"] = {{"center", ToJson(object.collider->center)},
+				                              {"halfExtents", ToJson(object.collider->halfExtents)}};
+			}
 		}
 
 		const Json document{
 		    {"format", "EngineScene"},
-		    {"version", 3},
+		    {"version", 4},
 		    {"objects", std::move(objects)},
 		};
 
@@ -178,7 +189,7 @@ bool SceneSerializer::Load(Scene &scene,
 		if (!document.is_object() || document.at("format") != "EngineScene" ||
 		    !document.at("version").is_number_integer() ||
 		    (document.at("version") != 1 && document.at("version") != 2 &&
-		     document.at("version") != 3)) {
+		     document.at("version") != 3 && document.at("version") != 4)) {
 			throw std::runtime_error("未対応のシーンファイル形式です。");
 		}
 
@@ -215,6 +226,12 @@ bool SceneSerializer::Load(Scene &scene,
 			object.modelPath =
 			    PathUtils::FromUtf8(item.at("model").get<std::string>());
 
+			if (version >= 4 && item.contains("collider")) {
+				const auto &collider = item.at("collider");
+				object.collider = BoxCollider{ReadFloat3(collider.at("center")),
+				                              ReadFloat3(collider.at("halfExtents"))};
+			}
+
 			const Json &transform = item.at("transform");
 
 			object.transform.translation =
@@ -229,6 +246,12 @@ bool SceneSerializer::Load(Scene &scene,
 
 			if (!TransformUtils::IsValid(object.transform)) {
 				throw std::runtime_error("Transformが無効です。");
+			}
+			if (object.collider) {
+				AxisAlignedBox bounds;
+				if (!BoxColliderUtils::GetWorldBounds(*object.collider, object.transform, bounds)) {
+					throw std::runtime_error("衝突用ボックスが無効です。");
+				}
 			}
 
 			const bool inserted = objects.emplace(id, std::move(object)).second;

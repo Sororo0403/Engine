@@ -451,4 +451,26 @@
       <Filter>include\graphics\buffer</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <Filter Include="include\physics">
+      <UniqueIdentifier>{4787cbcc-056b-4cac-b08c-605f846819fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\physics">
+      <UniqueIdentifier>{458a40c3-e32e-4905-bf96-f6dd29a63b09}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\physics\AxisAlignedBox.h">
+      <Filter>include\physics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\physics\BoxCollider.h">
+      <Filter>include\physics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\physics\BoxColliderUtils.h">
+      <Filter>include\physics</Filter>
+    </ClInclude>
+    <ClCompile Include="src\physics\BoxColliderUtils.cpp">
+      <Filter>src\physics</Filter>
+    </ClCompile>
+  </ItemGroup>
 </Project>

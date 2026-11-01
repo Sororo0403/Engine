@@ -274,6 +274,12 @@ exit /b 0</Command>
       <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
     </ClCompile>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="include\physics\AxisAlignedBox.h" />
+    <ClInclude Include="include\physics\BoxCollider.h" />
+    <ClInclude Include="include\physics\BoxColliderUtils.h" />
+    <ClCompile Include="src\physics\BoxColliderUtils.cpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
 </Project>
