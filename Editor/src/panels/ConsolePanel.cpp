@@ -9,6 +9,22 @@
 
 namespace {
 /// <summary>
+/// クリップボードの文字列終端になるNULを表記へ変換し、メッセージを追加する
+/// </summary>
+/// <param name="text">追加先の文字列</param>
+/// <param name="message">追加するUTF-8メッセージ</param>
+void AppendClipboardMessage(std::string &text, std::string_view message) {
+	std::size_t start = 0;
+	for (auto end = message.find('\0'); end != std::string_view::npos;
+	     end = message.find('\0', start)) {
+		text.append(message.substr(start, end - start));
+		text += "\\0";
+		start = end + 1;
+	}
+	text.append(message.substr(start));
+}
+
+/// <summary>
 /// ログの重要度を表示名へ変換する
 /// </summary>
 /// <param name="level">重要度</param>
@@ -41,6 +57,18 @@ bool ConsolePanel::MatchesFilter(const LogEntry &entry) const {
 	return filter_.empty() || entry.message.find(filter_) != std::string::npos;
 }
 
+std::string ConsolePanel::BuildFilteredText() const {
+	std::string text;
+	for (const auto &entry : entries_) {
+		if (MatchesFilter(entry)) {
+			text += std::format("[{}] {}: ", entry.timestamp, LevelName(entry.level));
+			AppendClipboardMessage(text, entry.message);
+			text += '\n';
+		}
+	}
+	return text;
+}
+
 void ConsolePanel::Draw(const ImGuiSystem &ui) {
 	if (!open_) {
 		return;
@@ -71,6 +99,16 @@ void ConsolePanel::Draw(const ImGuiSystem &ui) {
 	ImGui::Checkbox("Errors", &showErrors_);
 	ui.InputText("Search", filter_);
 	Logger::ReadEntries(revision_, entries_);
+	const auto matchingCount = std::count_if(entries_.begin(), entries_.end(),
+	    [this](const auto &entry) { return MatchesFilter(entry); });
+	ImGui::BeginDisabled(matchingCount == 0);
+	if (ui.Button("Copy Filtered Logs")) {
+		const auto text = BuildFilteredText();
+		ImGui::SetClipboardText(text.c_str());
+	}
+	ImGui::EndDisabled();
+	ImGui::SetItemTooltip("Copy all matching recent messages, including rows outside the scroll area.");
+	ui.Text(std::format("Matching: {} / {} recent messages", matchingCount, entries_.size()));
 	const auto content = ui.GetContentSize();
 	const bool drawMessages = ui.BeginChild("ConsoleMessages", 0.0f, (std::max)(1.0f, content.y * 0.6f));
 	if (drawMessages) {
@@ -121,7 +159,9 @@ void ConsolePanel::Draw(const ImGuiSystem &ui) {
 	if (drawDetails) {
 		if (selected != entries_.end()) {
 			if (ui.Button("Copy Message")) {
-				ImGui::SetClipboardText(selected->message.c_str());
+				std::string text;
+				AppendClipboardMessage(text, selected->message);
+				ImGui::SetClipboardText(text.c_str());
 			}
 			ui.SameLine();
 			ui.Text(std::format("[{}] {}", selected->timestamp, LevelName(selected->level)));

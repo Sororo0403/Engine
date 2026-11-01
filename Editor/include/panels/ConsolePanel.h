@@ -32,6 +32,12 @@ class ConsolePanel {
 	/// <returns>true:表示する false:非表示</returns>
 	bool MatchesFilter(const LogEntry &entry) const;
 
+	/// <summary>
+	/// 現在の絞り込みに一致するログを時刻・重要度付きでまとめる
+	/// </summary>
+	/// <returns>コピー用のUTF-8文字列。メッセージのNUL文字は\0へ変換する</returns>
+	std::string BuildFilteredText() const;
+
 	bool open_ = false;
 	bool focusRequested_ = false;
 	bool autoScroll_ = true;
