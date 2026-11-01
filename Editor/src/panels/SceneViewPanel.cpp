@@ -5,14 +5,17 @@
 #include "math/MathUtils.h"
 
 #include <algorithm>
+#include <imgui.h>
 
 SceneViewPanel::SceneViewPanel(RenderSystem &render) : render_(render) {}
 
 SceneViewPanel::~SceneViewPanel() = default;
 
-bool SceneViewPanel::DrawUI(const ImGuiSystem &ui) {
+bool SceneViewPanel::DrawUI(const ImGuiSystem &ui, TransformGizmo &gizmo) {
 	visible_ = false;
 	input_ = {};
+	imageMinimum_ = {};
+	imageSize_ = {};
 
 	ui.SetNextWindowSize(800.0f, 500.0f);
 
@@ -20,6 +23,8 @@ bool SceneViewPanel::DrawUI(const ImGuiSystem &ui) {
 		ui.EndWindow();
 		return true;
 	}
+
+	gizmo.DrawToolbar();
 
 	const auto size = ui.GetContentSize();
 
@@ -30,6 +35,7 @@ bool SceneViewPanel::DrawUI(const ImGuiSystem &ui) {
 
 	// 極端なパネルサイズで巨大な描画先を作らないよう制限する
 	const int width = static_cast<int>(std::clamp(size.x, 1.0f, 8192.0f));
+
 	const int height = static_cast<int>(std::clamp(size.y, 1.0f, 8192.0f));
 
 	if (!texture_) {
@@ -44,16 +50,46 @@ bool SceneViewPanel::DrawUI(const ImGuiSystem &ui) {
 		return false;
 	}
 
-	// リサイズを済ませてから、UIの画像として登録する
 	ui.Image(*texture_, static_cast<float>(width), static_cast<float>(height));
 
 	// 最後に表示した項目が画像である間に取得する
-	input_ = ui.GetViewportInput();
+	const ImVec2 minimum = ImGui::GetItemRectMin();
+	const ImVec2 maximum = ImGui::GetItemRectMax();
 
+	imageMinimum_ = {minimum.x, minimum.y};
+	imageSize_ = {
+	    maximum.x - minimum.x,
+	    maximum.y - minimum.y,
+	};
+
+	input_ = ui.GetViewportInput();
 	visible_ = true;
 
 	ui.EndWindow();
 	return true;
+}
+
+TransformGizmo::Result SceneViewPanel::DrawGizmo(
+    const ImGuiSystem &ui, TransformGizmo &gizmo,
+    const DirectX::XMFLOAT4X4 &view, const DirectX::XMFLOAT4X4 &projection,
+    SceneObjectId objectId, Transform *transform, bool enabled) const {
+	if (!visible_ || !enabled || !transform) {
+		gizmo.Cancel();
+		return {};
+	}
+
+	// 同じフレームのSceneウィンドウへ、ギズモの描画だけを追加する
+	if (!ui.BeginWindow("Scene")) {
+		ui.EndWindow();
+		gizmo.Cancel();
+		return {};
+	}
+
+	const auto result = gizmo.Draw(view, projection, imageMinimum_, imageSize_,
+	                               objectId, transform, enabled);
+
+	ui.EndWindow();
+	return result;
 }
 
 RenderTexture *SceneViewPanel::GetRenderTexture() const {

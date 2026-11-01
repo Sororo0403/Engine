@@ -16,4 +16,14 @@ bool IsValid(const Transform &transform);
 /// <param name="transform">有効な変形情報。回転角の単位はラジアン</param>
 /// <returns>ワールド行列</returns>
 DirectX::XMMATRIX MakeWorldMatrix(const Transform &transform);
+
+/// <summary>
+/// 拡大・回転・移動で表現できるワールド行列を変形情報へ戻す
+/// </summary>
+/// <param name="matrix">分解するワールド行列</param>
+/// <param name="transform">成功した場合に設定する変形情報。回転角はラジアン</param>
+/// <returns>true:成功 false:無効な行列、または拡大・回転・移動で表現できない</returns>
+bool TryFromWorldMatrix(const DirectX::XMFLOAT4X4 &matrix,
+                        Transform &transform);
+
 } // namespace TransformUtils

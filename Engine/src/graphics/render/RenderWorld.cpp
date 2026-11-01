@@ -122,6 +122,18 @@ struct RenderWorld::Impl {
 	bool prepared_ = false;
 };
 
+bool RenderWorld::GetCameraMatrices(DirectX::XMFLOAT4X4 &view,
+                                    DirectX::XMFLOAT4X4 &projection) const {
+	if (!impl_->initialized_ || !impl_->prepared_) {
+		return false;
+	}
+
+	view = impl_->camera_.GetViewMatrix();
+	projection = impl_->camera_.GetProjectionMatrix();
+
+	return true;
+}
+
 RenderWorld::RenderWorld(D3D12Graphics &graphics)
     : impl_(std::make_unique<Impl>(graphics)) {}
 

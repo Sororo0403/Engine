@@ -45,6 +45,12 @@
     <Filter Include="src\layout">
       <UniqueIdentifier>{e9a99b99-7eb8-4202-b065-24adc5126f2c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\gizmo">
+      <UniqueIdentifier>{48ad3392-2d33-490b-a7c1-1cece7a98698}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\gizmo">
+      <UniqueIdentifier>{e8097b4d-80a9-4110-af3f-1e144fc6edf8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -80,6 +86,9 @@
     <ClCompile Include="src\panels\AssetsPanel.cpp">
       <Filter>src\panels</Filter>
     </ClCompile>
+    <ClCompile Include="src\gizmo\TransformGizmo.cpp">
+      <Filter>src\gizmo</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\scene\EditorScene.h">
@@ -112,6 +121,9 @@
     <ClInclude Include="include\panels\AssetsPanel.h">
       <Filter>include\panels</Filter>
     </ClInclude>
+    <ClInclude Include="include\gizmo\TransformGizmo.h">
+      <Filter>include\gizmo</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">
@@ -133,5 +145,33 @@
     <ClCompile Include="src\layout\EditorDockLayout.cpp">
       <Filter>src\layout</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="external">
+      <UniqueIdentifier>{eeaa8ed1-299e-4f23-a29b-77360a34125a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="external\imguizmo">
+      <UniqueIdentifier>{7aad8538-57de-43ca-96f2-28b349cf9260}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="external\imguizmo\include">
+      <UniqueIdentifier>{1823a9f4-1886-4b81-865e-c92684d8f995}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="external\imguizmo\src">
+      <UniqueIdentifier>{320dd245-c205-4743-a1ff-6ff21e3e8031}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="external\licenses">
+      <UniqueIdentifier>{153a2042-ebb3-443b-9eb5-bdb4a5d00a6a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="external\imguizmo\include\ImGuizmo.h">
+      <Filter>external\imguizmo\include</Filter>
+    </ClInclude>
+    <ClCompile Include="external\imguizmo\src\ImGuizmo.cpp">
+      <Filter>external\imguizmo\src</Filter>
+    </ClCompile>
+    <None Include="external\licenses\imguizmo-LICENSE.txt">
+      <Filter>external\licenses</Filter>
+    </None>
   </ItemGroup>
 </Project>

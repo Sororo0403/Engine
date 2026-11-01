@@ -9,6 +9,7 @@
 #include "input/Key.h"
 #include "input/MouseButton.h"
 #include "platform/windows/PathUtils.h"
+#include "scene/Scene.h"
 
 #include <cmath>
 #include <exception>
@@ -58,6 +59,9 @@ bool EditorScene::Update(float deltaTime) {
 		return false;
 	}
 
+	// Engine側で開始したImGuiフレームに続けて開始する
+	gizmo_.BeginFrame();
+
 	if (exitQueued_ && stage_ == DialogStage::IDLE) {
 		exitQueued_ = false;
 		StartAction(FileAction::EXIT);
@@ -82,7 +86,7 @@ bool EditorScene::Update(float deltaTime) {
 
 	const auto requestedModelPath = assetsPanel_.Draw(ui_, assets_);
 
-	const bool sceneViewReady = sceneViewPanel_.DrawUI(ui_);
+	const bool sceneViewReady = sceneViewPanel_.DrawUI(ui_, gizmo_);
 
 	ui_.EndDisabled();
 
@@ -110,18 +114,29 @@ bool EditorScene::Update(float deltaTime) {
 
 	UpdateDialogs();
 
+	const bool inputBlocked = wasBusy || IsBusy() ||
+	                          action != FileAction::NONE ||
+	                          !requestedModelPath.empty();
+
 	ViewportInput viewport = sceneViewPanel_.GetInput();
 
-	if (wasBusy || IsBusy() || action != FileAction::NONE ||
-	    !requestedModelPath.empty()) {
+	if (inputBlocked) {
 		viewport = {};
 	}
 
-	cameraController_.Update(input_, viewport, deltaTime);
+	ViewportInput cameraInput = viewport;
 
-	const auto *target = sceneViewPanel_.GetRenderTexture();
+	// ギズモのドラッグ中に、カメラ操作へ切り替わらないようにする
+	if (gizmo_.IsUsing()) {
+		cameraInput = {};
+	}
+
+	cameraController_.Update(input_, cameraInput, deltaTime);
+
+	auto *target = sceneViewPanel_.GetRenderTexture();
 
 	if (!target) {
+		gizmo_.Cancel();
 		return true;
 	}
 
@@ -130,15 +145,48 @@ bool EditorScene::Update(float deltaTime) {
 		return false;
 	}
 
-	// 最新のカメラ・Transform・描画サイズを判定へ反映する
+	// ギズモと選択判定に使うカメラ・描画物体を更新する
 	if (!renderer_.Update(target->GetWidth(), target->GetHeight())) {
 		return false;
 	}
 
-	if (viewport.imageHovered && viewport.imagePositionValid &&
-	    viewport.applicationFocused && !viewport.widgetActive &&
-	    viewport.leftPressed && !viewport.rightDown) {
-		// 空白をクリックした場合は0となり、選択を解除する
+	DirectX::XMFLOAT4X4 view;
+	DirectX::XMFLOAT4X4 projection;
+
+	if (!renderer_.GetCameraMatrices(view, projection)) {
+		Logger::Error("EditorScene: カメラ行列を取得できませんでした。");
+		return false;
+	}
+
+	SceneObject *selected = scene.FindObject(selectedObjectId_);
+
+	Transform *transform = nullptr;
+
+	if (selected && !selected->modelPath.empty()) {
+		transform = &selected->transform;
+	}
+
+	const bool gizmoEnabled = !inputBlocked && viewport.applicationFocused &&
+	                          !viewport.rightDown &&
+	                          (!viewport.widgetActive || gizmo_.IsUsing());
+
+	const auto gizmoResult =
+	    sceneViewPanel_.DrawGizmo(ui_, gizmo_, view, projection,
+	                              selectedObjectId_, transform, gizmoEnabled);
+
+	if (gizmoResult.changed) {
+		document_.MarkModified();
+
+		// ギズモによる変更を、このフレームの描画へ反映する
+		if (!renderer_.Update(target->GetWidth(), target->GetHeight())) {
+			return false;
+		}
+	}
+
+	// ギズモを掴んだクリックでは、モデル選択を変更しない
+	if (!gizmoResult.blocksSelection && viewport.imageHovered &&
+	    viewport.imagePositionValid && viewport.applicationFocused &&
+	    !viewport.widgetActive && viewport.leftPressed && !viewport.rightDown) {
 		selectedObjectId_ = renderer_.Pick(viewport.imageX, viewport.imageY);
 	}
 

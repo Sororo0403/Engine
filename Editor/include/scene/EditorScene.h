@@ -4,6 +4,7 @@
 #include "camera/EditorCameraController.h"
 #include "dialogs/SaveChangesDialog.h"
 #include "dialogs/SceneFileDialog.h"
+#include "gizmo/TransformGizmo.h"
 #include "layout/EditorDockLayout.h"
 #include "panels/AssetsPanel.h"
 #include "panels/HierarchyPanel.h"
@@ -190,4 +191,6 @@ class EditorScene final : public IScene {
 	// ほかのダイアログ中の終了要求も、操作完了まで保持する
 	bool exitQueued_ = false;
 	bool closeApproved_ = false;
+
+	TransformGizmo gizmo_;
 };

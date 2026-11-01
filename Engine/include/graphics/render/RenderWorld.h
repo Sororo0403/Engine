@@ -124,6 +124,16 @@ class RenderWorld {
 	/// <remarks>Update成功後、Drawより前に呼び出す</remarks>
 	RenderObjectHandle Pick(float imageX, float imageY) const;
 
+	/// <summary>
+	/// 更新済みの描画カメラの行列を取得する
+	/// </summary>
+	/// <param name="view">成功した場合に設定するビュー行列</param>
+	/// <param name="projection">成功した場合に設定する投影行列</param>
+	/// <returns>true:成功 false:未初期化、または更新前</returns>
+	/// <remarks>Update成功後、Drawより前に呼び出す</remarks>
+	bool GetCameraMatrices(DirectX::XMFLOAT4X4 &view,
+	                       DirectX::XMFLOAT4X4 &projection) const;
+
   private:
 	friend class RenderSystem;
 
