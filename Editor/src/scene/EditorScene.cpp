@@ -49,6 +49,7 @@ bool EditorScene::Initialize() {
 	gizmo_.SetOperation(preferences_.operation);
 
 	cameraController_.Reset();
+	cameraController_.SetSettings(preferences_.camera);
 
 	stage_ = DialogStage::IDLE;
 	pendingAction_ = EditorAction::NONE;
@@ -85,6 +86,7 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	EditorAction action = DrawMenuBar();
+	DrawCameraSettings();
 
 	dockLayout_.Draw(ui_, resetDockLayout_);
 	resetDockLayout_ = false;
@@ -395,6 +397,7 @@ void EditorScene::Finalize() {
 		current.operation = gizmo_.GetOperation();
 		current.snapping = gizmo_.IsSnapping();
 		current.snap = gizmo_.GetSnapSettings();
+		current.camera = cameraController_.GetSettings();
 		if (!(current == preferences_) && current.Save()) {
 			preferences_ = current;
 		}
@@ -547,6 +550,9 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		if (ui_.MenuItem("Reset Camera", nullptr, enabled)) {
 			action = EditorAction::RESET_CAMERA;
 		}
+		if (ui_.MenuItem("Camera Settings...", nullptr, enabled)) {
+			cameraSettingsRequested_ = true;
+		}
 		ui_.Separator();
 		ImGui::MenuItem("Grid", nullptr, &showGrid_, !IsBusy());
 		ImGui::MenuItem("Selection Bounds", nullptr, &showSelectionBounds_, !IsBusy());
@@ -560,6 +566,34 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 
 	ui_.EndMainMenuBar();
 	return action;
+}
+
+void EditorScene::DrawCameraSettings() {
+	if (cameraSettingsRequested_) {
+		ImGui::OpenPopup("EditorCameraSettings");
+		cameraSettingsRequested_ = false;
+	}
+	if (!ImGui::BeginPopup("EditorCameraSettings")) {
+		return;
+	}
+	ImGui::BeginDisabled(gizmo_.IsUsing() || sceneViewPanel_.IsSelecting() ||
+	                     ImGui::IsMouseDown(ImGuiMouseButton_Right));
+	auto settings = cameraController_.GetSettings();
+	bool changed = ImGui::DragFloat("Move speed", &settings.moveSpeed,
+	                                0.1f, 0.01f, 10000.0f, "%.2f");
+	changed |= ImGui::DragFloat("Shift multiplier", &settings.fastMultiplier,
+	                           0.1f, 1.0f, 100.0f, "%.2f");
+	changed |= ImGui::DragFloat("Mouse sensitivity", &settings.mouseSensitivity,
+	                           0.0001f, 0.00001f, 1.0f, "%.5f");
+	if (ImGui::Button("Restore Defaults")) {
+		settings = EditorCameraController::Settings{};
+		changed = true;
+	}
+	if (changed) {
+		cameraController_.SetSettings(settings);
+	}
+	ImGui::EndDisabled();
+	ImGui::EndPopup();
 }
 
 EditorScene::EditorAction

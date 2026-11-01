@@ -9,6 +9,23 @@
 #include <cmath>
 #include <limits>
 
+bool EditorCameraController::SetSettings(const Settings &settings) {
+	if (navigating_ || !std::isfinite(settings.moveSpeed) ||
+	    settings.moveSpeed <= 0.0f || settings.moveSpeed > kMaximumMoveSpeed ||
+	    !std::isfinite(settings.fastMultiplier) || settings.fastMultiplier < 1.0f ||
+	    settings.fastMultiplier > kMaximumFastMultiplier ||
+	    !std::isfinite(settings.mouseSensitivity) || settings.mouseSensitivity <= 0.0f ||
+	    settings.mouseSensitivity > kMaximumMouseSensitivity) {
+		return false;
+	}
+	settings_ = settings;
+	return true;
+}
+
+EditorCameraController::Settings EditorCameraController::GetSettings() const {
+	return settings_;
+}
+
 void EditorCameraController::Update(const InputSystem &input,
                                     const ViewportInput &viewport,
                                     float deltaTime) {
@@ -45,9 +62,9 @@ void EditorCameraController::Update(const InputSystem &input,
 		const MouseState &mouseState = mouse.GetState();
 
 		// 相対移動量にはdeltaTimeを掛けない
-		yaw_ += static_cast<float>(mouseState.deltaX) * mouseSensitivity_;
+		yaw_ += static_cast<float>(mouseState.deltaX) * settings_.mouseSensitivity;
 
-		pitch_ -= static_cast<float>(mouseState.deltaY) * mouseSensitivity_;
+		pitch_ -= static_cast<float>(mouseState.deltaY) * settings_.mouseSensitivity;
 
 		yaw_ = std::remainder(yaw_, DirectX::XM_2PI);
 
@@ -108,14 +125,14 @@ void EditorCameraController::Update(const InputSystem &input,
 	}
 
 	const float multiplier =
-	    keyboard.IsDown(Key::SHIFT) ? fastMultiplier_ : 1.0f;
+	    keyboard.IsDown(Key::SHIFT) ? settings_.fastMultiplier : 1.0f;
 
 	// 処理落ちや停止からの復帰で大きく移動しないよう制限する
 	const float time = std::min(deltaTime, 0.1f);
 
 	// 斜め方向でも移動速度が増えないよう正規化する
 	const float distance =
-	    moveSpeed_ * multiplier * time / std::sqrt(lengthSquared);
+	    settings_.moveSpeed * multiplier * time / std::sqrt(lengthSquared);
 
 	position_.x += movement.x * distance;
 	position_.y += movement.y * distance;

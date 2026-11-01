@@ -14,6 +14,28 @@ class InputSystem;
 class EditorCameraController {
   public:
 	/// <summary>
+	/// カメラの移動速度・加速倍率・回転感度
+	/// </summary>
+	struct Settings {
+		float moveSpeed = 3.0f;
+		float fastMultiplier = 4.0f;
+		float mouseSensitivity = 0.003f;
+	};
+
+	/// <summary>
+	/// 有効な操作設定を反映する。カメラ操作中は変更しない
+	/// </summary>
+	/// <param name="settings">有限で正の設定。加速倍率は1以上</param>
+	/// <returns>true:成功 false:操作中、または値が指定範囲外</returns>
+	bool SetSettings(const Settings &settings);
+
+	/// <summary>
+	/// 現在の操作設定を取得する
+	/// </summary>
+	/// <returns>移動速度・加速倍率・マウス感度</returns>
+	Settings GetSettings() const;
+
+	/// <summary>
 	/// Sceneビューへの入力からカメラの姿勢を更新する
 	/// </summary>
 	/// <param name="input">マウスとキーボードの入力状態</param>
@@ -57,9 +79,10 @@ class EditorCameraController {
 	bool navigating_ = false;
 
 	// カメラ操作の設定
-	float moveSpeed_ = 3.0f;
-	float fastMultiplier_ = 4.0f;
-	float mouseSensitivity_ = 0.003f;
+	Settings settings_;
+	static constexpr float kMaximumMoveSpeed = 10000.0f;
+	static constexpr float kMaximumFastMultiplier = 100.0f;
+	static constexpr float kMaximumMouseSensitivity = 1.0f;
 
 	// 選択物体を画面に収めるときの余白と最小距離
 	static constexpr double kFramePadding = 1.1;

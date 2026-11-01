@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gizmo/TransformGizmo.h"
+#include "camera/EditorCameraController.h"
 
 #include <filesystem>
 
@@ -14,6 +15,7 @@ class EditorPreferences {
 	bool snapping = false;
 	TransformGizmo::Operation operation = TransformGizmo::Operation::TRANSLATE;
 	TransformGizmo::SnapSettings snap;
+	EditorCameraController::Settings camera;
 
 	/// <summary>
 	/// 設定を読み込む。ファイルがない場合は現在の値を保持する

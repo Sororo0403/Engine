@@ -139,6 +139,11 @@ class EditorScene final : public IScene {
 	EditorAction DrawMenuBar();
 
 	/// <summary>
+	/// カメラ操作設定のポップアップを描画する
+	/// </summary>
+	void DrawCameraSettings();
+
+	/// <summary>
 	/// 編集操作用ショートカットを判定する
 	/// </summary>
 	/// <param name="objectPanelFocused">HierarchyかSceneにフォーカスがあるか</param>
@@ -282,6 +287,7 @@ class EditorScene final : public IScene {
 	bool showSelectionBounds_ = true;
 	EditorPreferences preferences_;
 	bool canSavePreferences_ = false;
+	bool cameraSettingsRequested_ = false;
 	FrameRequest frameRequest_ = FrameRequest::NONE;
 	bool hierarchySelectionScope_ = false;
 

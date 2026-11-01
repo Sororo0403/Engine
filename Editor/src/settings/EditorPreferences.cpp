@@ -51,6 +51,17 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 		if (!validator.SetSnapSettings(loaded.snap)) {
 			throw std::runtime_error("Editor設定のスナップ間隔が無効です。");
 		}
+		// カメラ設定がない旧設定ファイルには初期値を使用する
+		if (json.contains("camera")) {
+			const auto &settings = json.at("camera");
+			loaded.camera.moveSpeed = settings.at("moveSpeed").get<float>();
+			loaded.camera.fastMultiplier = settings.at("fastMultiplier").get<float>();
+			loaded.camera.mouseSensitivity = settings.at("mouseSensitivity").get<float>();
+		}
+		EditorCameraController cameraValidator;
+		if (!cameraValidator.SetSettings(loaded.camera)) {
+			throw std::runtime_error("Editor設定のカメラ操作設定が無効です。");
+		}
 		*this = loaded;
 		return true;
 	} catch (const std::exception &error) {
@@ -62,7 +73,9 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 	try {
 		TransformGizmo validator;
-		if (!validator.SetSnapSettings(snap) || !validator.SetOperation(operation)) {
+		EditorCameraController cameraValidator;
+		if (!validator.SetSnapSettings(snap) || !validator.SetOperation(operation) ||
+		    !cameraValidator.SetSettings(camera)) {
 			throw std::runtime_error("保存するEditor設定が無効です。");
 		}
 		const auto path = PathUtils::ResolveFromExecutable(filePath);
@@ -78,6 +91,9 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		    {"moveStep", {snap.translation.x, snap.translation.y, snap.translation.z}},
 		    {"rotationStepDegrees", snap.rotationDegrees},
 		    {"scaleStepRatio", snap.scaleRatio},
+		    {"camera", {{"moveSpeed", camera.moveSpeed},
+		                {"fastMultiplier", camera.fastMultiplier},
+		                {"mouseSensitivity", camera.mouseSensitivity}}},
 		};
 		const std::string text = json.dump(2);
 		std::filesystem::create_directories(path.parent_path());
@@ -104,5 +120,8 @@ bool EditorPreferences::operator==(const EditorPreferences &other) const {
 	       snap.translation.y == other.snap.translation.y &&
 	       snap.translation.z == other.snap.translation.z &&
 	       snap.rotationDegrees == other.snap.rotationDegrees &&
-	       snap.scaleRatio == other.snap.scaleRatio;
+	       snap.scaleRatio == other.snap.scaleRatio &&
+	       camera.moveSpeed == other.camera.moveSpeed &&
+	       camera.fastMultiplier == other.camera.fastMultiplier &&
+	       camera.mouseSensitivity == other.camera.mouseSensitivity;
 }
