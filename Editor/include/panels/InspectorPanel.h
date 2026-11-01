@@ -29,6 +29,12 @@ class InspectorPanel {
 	const ModelRequest &GetModelRequest() const;
 
 	/// <summary>
+	/// このフレームでAssetsへの表示を要求したモデルを取得する
+	/// </summary>
+	/// <returns>対象モデルのパス。要求なしの場合は空</returns>
+	const std::filesystem::path &GetAssetRevealPath() const;
+
+	/// <summary>
 	/// 選択物体のモデルの表示状態の変更要求
 	/// </summary>
 	struct VisibilityRequest {
@@ -66,4 +72,5 @@ class InspectorPanel {
 	SceneObjectId renameObjectId_ = 0;
 	ModelRequest modelRequest_;
 	VisibilityRequest visibilityRequest_;
+	std::filesystem::path assetRevealPath_;
 };

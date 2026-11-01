@@ -124,6 +124,9 @@ bool EditorScene::Update(float deltaTime) {
 	const auto &visibilityRequest = inspectorPanel_.GetVisibilityRequest();
 	ui_.EndDisabled();
 
+	if (!wasBusy && !inspectorPanel_.GetAssetRevealPath().empty()) {
+		assetsPanel_.RequestReveal(inspectorPanel_.GetAssetRevealPath());
+	}
 	const auto requestedModelPath = assetsPanel_.Draw(ui_, assets_);
 
 	const auto toolbarMode = selection_.GetCount() > 1

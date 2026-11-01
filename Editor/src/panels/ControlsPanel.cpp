@@ -97,6 +97,7 @@ void ControlsPanel::Draw() {
 	    {"Assets > Add to Scene", "Place the selected model at the world origin."},
 	    {"Drag Assets into Scene", "Place a model at the drop position and select it."},
 	    {"Drag into Inspector Model", "Replace the active object's model while keeping its transform."},
+	    {"Click Inspector Model", "Find and select that model in Assets without changing the scene."},
 	    {"Inspector > Remove Model", "Remove the model reference while keeping the object."},
 	});
 	DrawSection("Files and history", {
