@@ -137,10 +137,42 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 					result.selectionChanged = true;
 				}
 			}
+			if (ImGui::BeginPopupContextItem()) {
+				// 選択済みの項目ではグループを保ち、未選択の項目だけ選び直す
+				if (!selection.Contains(id)) {
+					result.selectionChanged |= selection.SelectOnly(id);
+					rangeAnchorId_ = id;
+				}
+				if (ui.MenuItem("Copy", "Ctrl+C", true)) {
+					result.action = Action::COPY_OBJECTS;
+				}
+				if (ui.MenuItem("Cut", "Ctrl+X", true)) {
+					result.action = Action::CUT_OBJECTS;
+				}
+				if (ui.MenuItem("Duplicate", "Ctrl+D", true)) {
+					result.action = Action::DUPLICATE_OBJECTS;
+				}
+				ui.Separator();
+				if (ui.MenuItem("Delete", "Delete", true)) {
+					result.action = Action::DELETE_OBJECTS;
+				}
+				if (ui.MenuItem("Reset Transform", nullptr, true)) {
+					result.action = Action::RESET_TRANSFORMS;
+				}
+				ImGui::EndPopup();
+			}
 		}
 
 		if (visibleIds.empty()) {
 			ui.Text(objects.empty() ? "No objects." : "No matching objects.");
+		}
+		if (ImGui::BeginPopupContextWindow(
+		        "HierarchyBackground", ImGuiPopupFlags_MouseButtonRight |
+		                                   ImGuiPopupFlags_NoOpenOverItems)) {
+			if (ui.MenuItem("Create Empty", nullptr, true)) {
+				result.action = Action::CREATE_EMPTY;
+			}
+			ImGui::EndPopup();
 		}
 	}
 

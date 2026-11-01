@@ -22,6 +22,10 @@ class HierarchyPanel {
 		NONE,
 		CREATE_EMPTY,
 		DELETE_OBJECTS,
+		COPY_OBJECTS,
+		CUT_OBJECTS,
+		DUPLICATE_OBJECTS,
+		RESET_TRANSFORMS,
 	};
 
 	/// <summary>

@@ -136,6 +136,18 @@ bool EditorScene::Update(float deltaTime) {
 				case HierarchyPanel::Action::DELETE_OBJECTS:
 					DeleteSelectedObjects();
 					break;
+				case HierarchyPanel::Action::COPY_OBJECTS:
+					CopySelectedObjects(false);
+					break;
+				case HierarchyPanel::Action::CUT_OBJECTS:
+					CopySelectedObjects(true);
+					break;
+				case HierarchyPanel::Action::DUPLICATE_OBJECTS:
+					DuplicateSelectedObjects();
+					break;
+				case HierarchyPanel::Action::RESET_TRANSFORMS:
+					ResetSelectedTransforms();
+					break;
 				case HierarchyPanel::Action::NONE:
 					break;
 				}
