@@ -111,6 +111,7 @@ class EditorScene final : public IScene {
 		GIZMO_ROTATE,
 		GIZMO_SCALE,
 		GIZMO_SPACE,
+		GIZMO_PIVOT,
 		COPY_OBJECTS,
 		CUT_OBJECTS,
 		PASTE_OBJECTS,
@@ -222,7 +223,7 @@ class EditorScene final : public IScene {
 	void FinishEdit();
 
 	/// <summary>
-	/// 選択物体の原点の平均位置に、複数編集用の変形情報を作成する
+	/// 選択した支点の設定で、複数編集用の変形情報を作成する
 	/// </summary>
 	/// <param name="transform">成功した場合に設定する変形情報</param>
 	/// <returns>true:成功 false:複数選択ではない、または対象が無効</returns>

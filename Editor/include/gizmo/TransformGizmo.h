@@ -2,6 +2,7 @@
 
 #include "math/Transform.h"
 #include "scene/SceneObjectId.h"
+#include "selection/SelectionPivot.h"
 
 /// <summary>
 /// Sceneビューに表示する変形ギズモの操作を管理する
@@ -45,6 +46,19 @@ class TransformGizmo {
 	/// </summary>
 	/// <returns>座標系の設定。複数選択と拡縮の座標系には影響しない</returns>
 	Space GetSpace() const;
+
+	/// <summary>
+	/// 複数選択の支点を設定する。ドラッグ中は切り替えない
+	/// </summary>
+	/// <param name="mode">原点の平均位置、またはアクティブ物体の原点</param>
+	/// <returns>true:設定成功 false:ドラッグ中、または値が無効</returns>
+	bool SetPivotMode(SelectionPivot::Mode mode);
+
+	/// <summary>
+	/// 複数選択の支点の設定を取得する
+	/// </summary>
+	/// <returns>保持している支点の設定</returns>
+	SelectionPivot::Mode GetPivotMode() const;
 
 	/// <summary>
 	/// ギズモの操作種別を設定する。ドラッグ中は切り替えない
@@ -149,6 +163,7 @@ class TransformGizmo {
   private:
 	Operation operation_ = Operation::TRANSLATE;
 	Space space_ = Space::LOCAL;
+	SelectionPivot::Mode pivotMode_ = SelectionPivot::Mode::CENTER;
 
 	SceneObjectId objectId_ = 0;
 	SelectionMode selectionMode_ = SelectionMode::SINGLE;

@@ -42,6 +42,14 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 			throw std::runtime_error("Editor設定のツールが無効です。");
 		}
 		const auto &move = json.at("moveStep");
+		if (json.contains("pivotMode")) {
+			const auto name = json.at("pivotMode").get<std::string>();
+			if (name != "center" && name != "active") {
+				throw std::runtime_error("Editor設定の支点が無効です。");
+			}
+			loaded.pivotMode = name == "active" ? SelectionPivot::Mode::ACTIVE
+			                                    : SelectionPivot::Mode::CENTER;
+		}
 		if (json.contains("space")) {
 			const auto spaceName = json.at("space").get<std::string>();
 			if (spaceName != "local" && spaceName != "world") {
@@ -124,7 +132,8 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		EditorCameraController cameraValidator;
 		SceneGrid gridValidator;
 		if (!validator.SetSnapSettings(snap) || !validator.SetOperation(operation) ||
-		    !validator.SetSpace(space) || !cameraValidator.SetSettings(camera) ||
+		    !validator.SetSpace(space) || !validator.SetPivotMode(pivotMode) ||
+		    !cameraValidator.SetSettings(camera) ||
 		    !gridValidator.SetSettings(grid)) {
 			throw std::runtime_error("保存するEditor設定が無効です。");
 		}
@@ -150,6 +159,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		    {"showSelectionBounds", showSelectionBounds}, {"snapping", snapping},
 		    {"tool", tool},
 		    {"space", space == TransformGizmo::Space::WORLD ? "world" : "local"},
+		    {"pivotMode", pivotMode == SelectionPivot::Mode::ACTIVE ? "active" : "center"},
 		    {"moveStep", {snap.translation.x, snap.translation.y, snap.translation.z}},
 		    {"rotationStepDegrees", snap.rotationDegrees},
 		    {"scaleStepRatio", snap.scaleRatio},
@@ -180,7 +190,8 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 }
 
 bool EditorPreferences::operator==(const EditorPreferences &other) const {
-	return grid == other.grid && recentScenes == other.recentScenes && showGrid == other.showGrid &&
+	return pivotMode == other.pivotMode && grid == other.grid &&
+	       recentScenes == other.recentScenes && showGrid == other.showGrid &&
 	       showSelectionBounds == other.showSelectionBounds &&
 	       snapping == other.snapping && operation == other.operation && space == other.space &&
 	       snap.translation.x == other.snap.translation.x &&

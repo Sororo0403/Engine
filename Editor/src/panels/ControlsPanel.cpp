@@ -87,6 +87,7 @@ void ControlsPanel::Draw() {
 	    {"X", "Toggle Local / World for single-object Move and Rotate."},
 	    {"Scene toolbar", "Enable Snap and set movement, rotation and scale increments."},
 	    {"Scale center handle", "Scale multiple selected objects uniformly."},
+	    {"Z / Center / Active", "For multiple selection, use the mean of object origins or the active object's origin as the gizmo pivot."},
 	    {"Edit > Reset Transform", "Reset position, rotation and scale of selected objects."},
 	});
 	DrawSection("Model assets", {

@@ -119,6 +119,7 @@
   <ItemGroup>
     <ClInclude Include="include\history\CommandGroup.h" />
     <ClInclude Include="include\selection\EditorSelection.h" />
+    <ClInclude Include="include\selection\SelectionPivot.h" />
     <ClInclude Include="include\selection\EditorClipboard.h" />
     <ClInclude Include="include\settings\EditorPreferences.h" />
     <ClInclude Include="include\settings\RecentScenes.h" />
@@ -149,6 +150,7 @@
   <ItemGroup>
     <ClCompile Include="src\history\CommandGroup.cpp" />
     <ClCompile Include="src\selection\EditorSelection.cpp" />
+    <ClCompile Include="src\selection\SelectionPivot.cpp" />
     <ClCompile Include="src\selection\EditorClipboard.cpp" />
     <ClCompile Include="src\settings\EditorPreferences.cpp" />
     <ClCompile Include="src\settings\RecentScenes.cpp" />

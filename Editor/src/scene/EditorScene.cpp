@@ -56,6 +56,7 @@ bool EditorScene::Initialize() {
 	gizmo_.SetSnapping(preferences_.snapping);
 	gizmo_.SetOperation(preferences_.operation);
 	gizmo_.SetSpace(preferences_.space);
+	gizmo_.SetPivotMode(preferences_.pivotMode);
 
 	cameraController_.Reset();
 	cameraController_.SetSettings(preferences_.camera);
@@ -431,6 +432,7 @@ void EditorScene::Finalize() {
 		current.showSelectionBounds = showSelectionBounds_;
 		current.operation = gizmo_.GetOperation();
 		current.space = gizmo_.GetSpace();
+		current.pivotMode = gizmo_.GetPivotMode();
 		current.snapping = gizmo_.IsSnapping();
 		current.snap = gizmo_.GetSnapSettings();
 		current.camera = cameraController_.GetSettings();
@@ -741,6 +743,9 @@ EditorScene::ReadShortcut(bool objectPanelFocused) const {
 		if (keyboard.IsPressed(Key::R)) {
 			return EditorAction::GIZMO_SCALE;
 		}
+		if (selection_.GetCount() > 1 && keyboard.IsPressed(Key::Z)) {
+			return EditorAction::GIZMO_PIVOT;
+		}
 		if (HasSingleSelection() && gizmo_.GetOperation() != TransformGizmo::Operation::SCALE &&
 		    keyboard.IsPressed(Key::X)) {
 			return EditorAction::GIZMO_SPACE;
@@ -841,6 +846,10 @@ void EditorScene::StartAction(EditorAction action) {
 		return;
 	case EditorAction::GIZMO_SCALE:
 		gizmo_.SetOperation(TransformGizmo::Operation::SCALE);
+		return;
+	case EditorAction::GIZMO_PIVOT:
+		gizmo_.SetPivotMode(gizmo_.GetPivotMode() == SelectionPivot::Mode::CENTER
+		                        ? SelectionPivot::Mode::ACTIVE : SelectionPivot::Mode::CENTER);
 		return;
 	case EditorAction::GIZMO_SPACE:
 		gizmo_.SetSpace(gizmo_.GetSpace() == TransformGizmo::Space::LOCAL
@@ -1202,37 +1211,7 @@ bool EditorScene::ApplySceneSelection(
 }
 
 bool EditorScene::MakeSelectionTransform(Transform &transform) const {
-	if (selection_.GetCount() < 2) {
-		return false;
-	}
-
-	const Scene &scene = document_.GetScene();
-	double x = 0.0;
-	double y = 0.0;
-	double z = 0.0;
-	for (const SceneObjectId id : selection_.GetIds()) {
-		const SceneObject *object = scene.FindObject(id);
-		if (!object || !TransformUtils::IsValid(object->transform)) {
-			return false;
-		}
-		x += object->transform.translation.x;
-		y += object->transform.translation.y;
-		z += object->transform.translation.z;
-	}
-
-	const double count = static_cast<double>(selection_.GetCount());
-	Transform result;
-	result.translation = {
-	    static_cast<float>(x / count),
-	    static_cast<float>(y / count),
-	    static_cast<float>(z / count),
-	};
-	if (!TransformUtils::IsValid(result)) {
-		return false;
-	}
-
-	transform = result;
-	return true;
+	return SelectionPivot::Make(document_.GetScene(), selection_, gizmo_.GetPivotMode(), transform);
 }
 
 EditorScene::FrameRequest EditorScene::ReadFrameShortcut(

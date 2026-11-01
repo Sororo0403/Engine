@@ -27,6 +27,16 @@ bool TransformGizmo::SetSpace(Space space) {
 
 TransformGizmo::Space TransformGizmo::GetSpace() const { return space_; }
 
+bool TransformGizmo::SetPivotMode(SelectionPivot::Mode mode) {
+	if (using_ || (mode != SelectionPivot::Mode::CENTER && mode != SelectionPivot::Mode::ACTIVE)) {
+		return false;
+	}
+	pivotMode_ = mode;
+	return true;
+}
+
+SelectionPivot::Mode TransformGizmo::GetPivotMode() const { return pivotMode_; }
+
 TransformGizmo::Operation TransformGizmo::GetOperation() const {
 	return operation_;
 }
@@ -105,6 +115,17 @@ void TransformGizmo::DrawToolbar(SelectionMode selectionMode) {
 	                                   : "Toggle Local / World (X)");
 	ImGui::SameLine();
 	ImGui::Checkbox("Snap", &snapping_);
+	ImGui::SameLine();
+	ImGui::BeginDisabled(!multiple);
+	const bool activePivot = !multiple || pivotMode_ == SelectionPivot::Mode::ACTIVE;
+	if (ImGui::Button(activePivot ? "Active###GizmoPivot" : "Center###GizmoPivot")) {
+		SetPivotMode(pivotMode_ == SelectionPivot::Mode::CENTER
+		                 ? SelectionPivot::Mode::ACTIVE : SelectionPivot::Mode::CENTER);
+	}
+	ImGui::EndDisabled();
+	ImGui::SetItemTooltip(multiple
+	    ? "Center: mean of object origins. Active: active object's origin."
+	    : "A single object uses its own origin.");
 	ImGui::SameLine();
 	if (ImGui::Button("Snap Settings")) {
 		ImGui::OpenPopup("GizmoSnapSettings");

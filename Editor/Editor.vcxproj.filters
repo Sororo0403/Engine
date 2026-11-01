@@ -140,6 +140,9 @@
     <ClCompile Include="src\history\RenameCommand.cpp">
       <Filter>src\history</Filter>
     </ClCompile>
+    <ClCompile Include="src\selection\SelectionPivot.cpp">
+      <Filter>src\selection</Filter>
+    </ClCompile>
     <ClCompile Include="src\selection\EditorSelection.cpp">
       <Filter>src\selection</Filter>
     </ClCompile>
@@ -222,6 +225,9 @@
     </ClInclude>
     <ClInclude Include="include\history\RenameCommand.h">
       <Filter>include\history</Filter>
+    </ClInclude>
+    <ClInclude Include="include\selection\SelectionPivot.h">
+      <Filter>include\selection</Filter>
     </ClInclude>
     <ClInclude Include="include\selection\EditorSelection.h">
       <Filter>include\selection</Filter>

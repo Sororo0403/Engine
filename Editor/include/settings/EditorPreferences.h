@@ -17,6 +17,7 @@ class EditorPreferences {
 	bool snapping = false;
 	TransformGizmo::Operation operation = TransformGizmo::Operation::TRANSLATE;
 	TransformGizmo::Space space = TransformGizmo::Space::LOCAL;
+	SelectionPivot::Mode pivotMode = SelectionPivot::Mode::CENTER;
 	TransformGizmo::SnapSettings snap;
 	EditorCameraController::Settings camera;
 	SceneGrid::Settings grid;
