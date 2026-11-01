@@ -121,6 +121,7 @@
     <ClInclude Include="include\selection\EditorSelection.h" />
     <ClInclude Include="include\selection\EditorClipboard.h" />
     <ClInclude Include="include\settings\EditorPreferences.h" />
+    <ClInclude Include="include\settings\RecentScenes.h" />
     <ClInclude Include="include\history\EditorHistory.h" />
     <ClInclude Include="include\panels\AssetsPanel.h" />
     <ClInclude Include="include\assets\AssetDatabase.h" />
@@ -146,6 +147,7 @@
     <ClCompile Include="src\selection\EditorSelection.cpp" />
     <ClCompile Include="src\selection\EditorClipboard.cpp" />
     <ClCompile Include="src\settings\EditorPreferences.cpp" />
+    <ClCompile Include="src\settings\RecentScenes.cpp" />
     <ClCompile Include="src\history\RenameCommand.cpp" />
     <ClCompile Include="src\scene\SceneGrid.cpp" />
     <ClCompile Include="src\history\ObjectCommand.cpp" />

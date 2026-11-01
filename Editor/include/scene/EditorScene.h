@@ -18,6 +18,7 @@
 #include "selection/EditorClipboard.h"
 #include "selection/SelectionBounds.h"
 #include "settings/EditorPreferences.h"
+#include "settings/RecentScenes.h"
 
 #include <filesystem>
 #include <string>
@@ -114,6 +115,7 @@ class EditorScene final : public IScene {
 		RESET_TRANSFORMS,
 		RESET_CAMERA,
 		RENAME_OBJECT,
+		OPEN_RECENT,
 	};
 
 	/// <summary>
@@ -160,6 +162,12 @@ class EditorScene final : public IScene {
 	/// 保存確認後に保留していた操作を実行する
 	/// </summary>
 	void ExecutePendingAction();
+
+	/// <summary>
+	/// シーンを読み込み、成功した場合に選択・カメラ・最近の一覧を更新する
+	/// </summary>
+	/// <param name="path">読み込むシーンのパス</param>
+	void OpenScene(const std::filesystem::path &path);
 
 	/// <summary>
 	/// 保存を開始する。保存先がない場合は選択ダイアログを開く
@@ -288,6 +296,8 @@ class EditorScene final : public IScene {
 	EditorPreferences preferences_;
 	bool canSavePreferences_ = false;
 	bool cameraSettingsRequested_ = false;
+	RecentScenes recentScenes_;
+	std::filesystem::path recentOpenPath_;
 	FrameRequest frameRequest_ = FrameRequest::NONE;
 	bool hierarchySelectionScope_ = false;
 

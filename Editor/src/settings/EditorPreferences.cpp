@@ -2,10 +2,12 @@
 
 #include "core/Logger.h"
 #include "platform/windows/PathUtils.h"
+#include "settings/RecentScenes.h"
 
 #include <json.hpp>
 
 #include <exception>
+#include <algorithm>
 #include <format>
 #include <fstream>
 #include <stdexcept>
@@ -62,6 +64,21 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 		if (!cameraValidator.SetSettings(loaded.camera)) {
 			throw std::runtime_error("Editor設定のカメラ操作設定が無効です。");
 		}
+		if (json.contains("recentScenes")) {
+			const auto &paths = json.at("recentScenes");
+			if (!paths.is_array()) {
+				throw std::runtime_error("最近開いたシーンには配列が必要です。");
+			}
+			RecentScenes recent;
+			const auto count = (std::min)(paths.size(), RecentScenes::kMaximumCount);
+			for (std::size_t i = count; i > 0; --i) {
+				if (!recent.Add(PathUtils::FromUtf8(paths.at(i - 1).get<std::string>()))) {
+					throw std::runtime_error("最近開いたシーンのパスが無効です。");
+				}
+			}
+			const auto normalized = recent.GetPaths();
+			loaded.recentScenes.assign(normalized.begin(), normalized.end());
+		}
 		*this = loaded;
 		return true;
 	} catch (const std::exception &error) {
@@ -84,6 +101,17 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		                       : operation == TransformGizmo::Operation::ROTATE
 		                             ? "rotate"
 		                             : "scale";
+		RecentScenes recent;
+		const auto count = (std::min)(recentScenes.size(), RecentScenes::kMaximumCount);
+		for (std::size_t i = count; i > 0; --i) {
+			if (!recent.Add(recentScenes[i - 1])) {
+				throw std::runtime_error("保存する最近のシーンのパスが無効です。");
+			}
+		}
+		auto recentJson = nlohmann::json::array();
+		for (const auto &recentPath : recent.GetPaths()) {
+			recentJson.push_back(PathUtils::ToUtf8(recentPath));
+		}
 		const nlohmann::json json{
 		    {"version", 1}, {"showGrid", showGrid},
 		    {"showSelectionBounds", showSelectionBounds}, {"snapping", snapping},
@@ -91,6 +119,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		    {"moveStep", {snap.translation.x, snap.translation.y, snap.translation.z}},
 		    {"rotationStepDegrees", snap.rotationDegrees},
 		    {"scaleStepRatio", snap.scaleRatio},
+		    {"recentScenes", recentJson},
 		    {"camera", {{"moveSpeed", camera.moveSpeed},
 		                {"fastMultiplier", camera.fastMultiplier},
 		                {"mouseSensitivity", camera.mouseSensitivity}}},
@@ -113,7 +142,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 }
 
 bool EditorPreferences::operator==(const EditorPreferences &other) const {
-	return showGrid == other.showGrid &&
+	return recentScenes == other.recentScenes && showGrid == other.showGrid &&
 	       showSelectionBounds == other.showSelectionBounds &&
 	       snapping == other.snapping && operation == other.operation &&
 	       snap.translation.x == other.snap.translation.x &&

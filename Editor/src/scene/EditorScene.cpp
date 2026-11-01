@@ -42,6 +42,11 @@ bool EditorScene::Initialize() {
 	gizmoEditActive_ = false;
 	preferences_ = EditorPreferences{};
 	canSavePreferences_ = preferences_.Load();
+	recentScenes_.Clear();
+	for (auto it = preferences_.recentScenes.rbegin();
+	     it != preferences_.recentScenes.rend(); ++it) {
+		recentScenes_.Add(*it);
+	}
 	showGrid_ = preferences_.showGrid;
 	showSelectionBounds_ = preferences_.showSelectionBounds;
 	gizmo_.SetSnapSettings(preferences_.snap);
@@ -398,6 +403,8 @@ void EditorScene::Finalize() {
 		current.snapping = gizmo_.IsSnapping();
 		current.snap = gizmo_.GetSnapSettings();
 		current.camera = cameraController_.GetSettings();
+		const auto recent = recentScenes_.GetPaths();
+		current.recentScenes.assign(recent.begin(), recent.end());
 		if (!(current == preferences_) && current.Save()) {
 			preferences_ = current;
 		}
@@ -463,6 +470,26 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		if (ui_.MenuItem("Open...", "Ctrl+O", enabled)) {
 			action = EditorAction::OPEN;
 		}
+		ui_.BeginDisabled(!enabled || recentScenes_.GetPaths().empty());
+		if (ui_.BeginMenu("Open Recent")) {
+			std::size_t index = 0;
+			for (const auto &path : recentScenes_.GetPaths()) {
+				const auto label = std::format("{}###RecentScene{}",
+				                               PathUtils::ToUtf8(path.filename()), index++);
+				if (ui_.MenuItem(label.c_str(), nullptr, enabled)) {
+					// 保存確認中に一覧が更新されても、開くパスは変えない
+					recentOpenPath_ = path;
+					action = EditorAction::OPEN_RECENT;
+				}
+				ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(path).c_str());
+			}
+			ui_.Separator();
+			if (ui_.MenuItem("Clear Recent", nullptr, enabled)) {
+				recentScenes_.Clear();
+			}
+			ui_.EndMenu();
+		}
+		ui_.EndDisabled();
 
 		ui_.Separator();
 
@@ -764,6 +791,7 @@ void EditorScene::StartAction(EditorAction action) {
 
 	case EditorAction::NEW:
 	case EditorAction::OPEN:
+	case EditorAction::OPEN_RECENT:
 	case EditorAction::EXIT:
 		// 保存確認が終わるまで、実際の操作は保留する
 		pendingAction_ = action;
@@ -826,6 +854,9 @@ void EditorScene::ExecutePendingAction() {
 
 		stage_ = DialogStage::OPEN_FILE;
 		return;
+	case EditorAction::OPEN_RECENT:
+		OpenScene(recentOpenPath_);
+		return;
 
 	case EditorAction::EXIT:
 		closeApproved_ = true;
@@ -839,6 +870,7 @@ void EditorScene::ExecutePendingAction() {
 void EditorScene::StartSave(bool saveAs) {
 	if (!saveAs && !document_.GetFilePath().empty()) {
 		if (document_.Save()) {
+			recentScenes_.Add(document_.GetFilePath());
 			ExecutePendingAction();
 		} else {
 			ShowError("Could not save the scene. See the log for details.");
@@ -890,18 +922,7 @@ void EditorScene::UpdateDialogs() {
 		}
 
 		if (result == SceneFileDialogResult::ACCEPTED) {
-			if (document_.Open(fileDialog_.GetSelectedPath())) {
-				gizmo_.Cancel();
-				gizmoEditActive_ = false;
-
-				selection_.Clear();
-				cameraController_.Reset();
-				hierarchyPanel_.Clear();
-
-				stage_ = DialogStage::IDLE;
-			} else {
-				ShowError("Could not open the scene. See the log for details.");
-			}
+			OpenScene(fileDialog_.GetSelectedPath());
 		}
 
 		return;
@@ -919,6 +940,7 @@ void EditorScene::UpdateDialogs() {
 
 		if (result == SceneFileDialogResult::ACCEPTED) {
 			if (document_.SaveAs(fileDialog_.GetSelectedPath())) {
+				recentScenes_.Add(document_.GetFilePath());
 				ExecutePendingAction();
 			} else {
 				ShowError("Could not save the scene. See the log for details.");
@@ -951,6 +973,19 @@ void EditorScene::UpdateDialogs() {
 		return;
 	}
 	}
+}
+
+void EditorScene::OpenScene(const std::filesystem::path &path) {
+	if (!document_.Open(path)) {
+		ShowError("Could not open the scene. See the log for details.");
+		return;
+	}
+	FinishEdit();
+	selection_.Clear();
+	cameraController_.Reset();
+	hierarchyPanel_.Clear();
+	recentScenes_.Add(document_.GetFilePath());
+	stage_ = DialogStage::IDLE;
 }
 
 void EditorScene::ShowError(std::string message) {

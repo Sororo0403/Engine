@@ -4,6 +4,7 @@
 #include "camera/EditorCameraController.h"
 
 #include <filesystem>
+#include <vector>
 
 /// <summary>
 /// シーンとは独立したEditorの表示・ギズモ設定を保存する
@@ -16,6 +17,7 @@ class EditorPreferences {
 	TransformGizmo::Operation operation = TransformGizmo::Operation::TRANSLATE;
 	TransformGizmo::SnapSettings snap;
 	EditorCameraController::Settings camera;
+	std::vector<std::filesystem::path> recentScenes;
 
 	/// <summary>
 	/// 設定を読み込む。ファイルがない場合は現在の値を保持する

@@ -137,6 +137,9 @@
     <ClCompile Include="src\settings\EditorPreferences.cpp">
       <Filter>src\settings</Filter>
     </ClCompile>
+    <ClCompile Include="src\settings\RecentScenes.cpp">
+      <Filter>src\settings</Filter>
+    </ClCompile>
     <ClCompile Include="src\history\CommandGroup.cpp">
       <Filter>src\history</Filter>
     </ClCompile>
@@ -203,6 +206,9 @@
       <Filter>include\selection</Filter>
     </ClInclude>
     <ClInclude Include="include\settings\EditorPreferences.h">
+      <Filter>include\settings</Filter>
+    </ClInclude>
+    <ClInclude Include="include\settings\RecentScenes.h">
       <Filter>include\settings</Filter>
     </ClInclude>
     <ClInclude Include="include\history\CommandGroup.h">
