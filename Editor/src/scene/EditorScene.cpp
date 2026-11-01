@@ -49,6 +49,7 @@ bool EditorScene::Initialize() {
 	document_.New();
 	selectedObjectId_ = 0;
 
+	hierarchyPanel_.Clear();
 	assetsPanel_.Clear();
 
 	// 検索失敗時もEditorは起動し、Assetsパネルにエラーを表示する
@@ -118,7 +119,6 @@ bool EditorScene::Update(float deltaTime) {
 				case HierarchyPanel::Action::CREATE_EMPTY:
 					selectedObjectId_ = history.CreateObject();
 					break;
-
 				case HierarchyPanel::Action::DELETE_OBJECT:
 					DeleteObject(hierarchyRequest.objectId);
 					break;
@@ -316,6 +316,8 @@ void EditorScene::Finalize() {
 
 	document_.New();
 	selectedObjectId_ = 0;
+
+	hierarchyPanel_.Clear();
 
 	stage_ = DialogStage::IDLE;
 	pendingAction_ = EditorAction::NONE;
@@ -582,6 +584,8 @@ void EditorScene::ExecutePendingAction() {
 
 		selectedObjectId_ = 0;
 		cameraController_.Reset();
+		hierarchyPanel_.Clear();
+
 		return;
 
 	case EditorAction::OPEN:
@@ -659,6 +663,8 @@ void EditorScene::UpdateDialogs() {
 
 				selectedObjectId_ = 0;
 				cameraController_.Reset();
+				hierarchyPanel_.Clear();
+
 				stage_ = DialogStage::IDLE;
 			} else {
 				ShowError("Could not open the scene. See the log for details.");
