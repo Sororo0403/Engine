@@ -74,6 +74,16 @@ class HierarchyPanel {
 
   private:
 	/// <summary>
+	/// Hierarchyに届いた移動キーを、表示順に沿って選択へ反映する
+	/// </summary>
+	/// <param name="visibleIds">現在の表示順の物体ID一覧</param>
+	/// <param name="selection">変更する選択状態</param>
+	/// <param name="focusId">キーボードで移動した項目。操作がない場合は0</param>
+	/// <returns>true:選択変更あり false:変更なし、または入力対象外</returns>
+	bool NavigateSelection(std::span<const SceneObjectId> visibleIds,
+	                       EditorSelection &selection, SceneObjectId &focusId);
+
+	/// <summary>
 	/// 表示名と表示状態が現在の絞り込み条件に一致するか確認する
 	/// </summary>
 	/// <param name="name">物体の表示名</param>

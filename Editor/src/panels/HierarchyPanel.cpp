@@ -98,7 +98,7 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 
 	// 選択状態に関係なく行数を保ち、クリック中に一覧の位置を動かさない
 	ui.Text(std::format("Selected: {} | filtered: {}", selection.GetCount(), filteredCount));
-	ImGui::SetItemTooltip("The Inspector edits the active object. Ctrl adds or removes objects; Shift selects a range.");
+	ImGui::SetItemTooltip("The Inspector edits the active object. Up/Down and Home/End navigate the filtered list; Shift selects a range. Ctrl+click toggles objects.");
 
 	if (ui.Button("Create Empty")) {
 		result.action = Action::CREATE_EMPTY;
@@ -133,6 +133,8 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 		}
 
 		// 描画と範囲選択で同じ表示一覧を使用し、検索で隠れた項目を除く
+		SceneObjectId keyboardFocusId = 0;
+		result.selectionChanged |= NavigateSelection(visibleIds, selection, keyboardFocusId);
 		for (const SceneObjectId id : visibleIds) {
 			const SceneObject &object = objects.at(id);
 			const std::string_view name = object.name.empty()
@@ -154,6 +156,9 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 				if (changed) {
 					result.selectionChanged = true;
 				}
+			}
+			if (keyboardFocusId == id) {
+				ImGui::SetKeyboardFocusHere(-1);
 			}
 			// マウス操作中の一覧を動かさず、表示対象の位置へスクロールする
 			if (scrollToId_ == id && !ImGui::IsAnyItemActive() &&
@@ -274,6 +279,59 @@ bool HierarchyPanel::SelectAllVisible(const Scene &scene,
 	const bool changed = selection.Set(std::move(ids));
 	lastActiveId_ = selection.GetActiveId();
 	return changed;
+}
+
+bool HierarchyPanel::NavigateSelection(
+    std::span<const SceneObjectId> visibleIds, EditorSelection &selection,
+    SceneObjectId &focusId) {
+	focusId = 0;
+	const auto &io = ImGui::GetIO();
+	if (io.AppFocusLost || io.WantTextInput || io.KeyAlt ||
+	    ImGui::IsAnyItemActive() || (ImGui::GetItemFlags() & ImGuiItemFlags_Disabled) != 0 ||
+	    !ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows |
+	                            ImGuiFocusedFlags_NoPopupHierarchy) ||
+	    ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopupId)) {
+		return false;
+	}
+	for (const auto button : {ImGuiMouseButton_Left, ImGuiMouseButton_Right, ImGuiMouseButton_Middle}) {
+		if (ImGui::IsMouseDown(button) || ImGui::IsMouseReleased(button)) {
+			return false;
+		}
+	}
+
+	ImGuiKey pressed = ImGuiKey_None;
+	bool control = false;
+	bool shift = false;
+	const auto flags = ImGuiInputFlags_Repeat | ImGuiInputFlags_RouteFromRootWindow;
+	for (const auto key : {ImGuiKey_UpArrow, ImGuiKey_DownArrow, ImGuiKey_Home, ImGuiKey_End}) {
+		// 修飾キーを同時に押した最初のフレームにも届くよう、全ての組み合わせを登録する
+		const bool plain = ImGui::Shortcut(key, flags);
+		const bool range = ImGui::Shortcut(ImGuiMod_Shift | key, flags);
+		const bool addRange = ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiMod_Shift | key, flags);
+		if (pressed == ImGuiKey_None && (plain || range || addRange)) {
+			pressed = key;
+			control = addRange;
+			shift = range || addRange;
+		}
+	}
+	if (pressed == ImGuiKey_None || visibleIds.empty()) {
+		return false;
+	}
+	const auto active = std::find(visibleIds.begin(), visibleIds.end(), selection.GetActiveId());
+	std::size_t index = 0;
+	if (pressed == ImGuiKey_End || (active == visibleIds.end() && pressed == ImGuiKey_UpArrow)) {
+		index = visibleIds.size() - 1;
+	} else if (pressed != ImGuiKey_Home && active != visibleIds.end()) {
+		index = static_cast<std::size_t>(active - visibleIds.begin());
+		if (pressed == ImGuiKey_UpArrow && index > 0) {
+			--index;
+		} else if (pressed == ImGuiKey_DownArrow && index + 1 < visibleIds.size()) {
+			++index;
+		}
+	}
+	focusId = visibleIds[index];
+	scrollToId_ = focusId;
+	return SelectObject(focusId, visibleIds, control, shift, selection);
 }
 
 bool HierarchyPanel::SelectObject(

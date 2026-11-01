@@ -76,6 +76,8 @@ void ControlsPanel::Draw() {
 	    {"Drag in Scene", "Select models inside the rectangle."},
 	    {"Ctrl + drag in Scene", "Add models inside the rectangle to the selection."},
 	    {"Shift + click", "Select a range in Hierarchy. Search results limit the range."},
+	    {"Up / Down / Home / End", "Select a Hierarchy item in the filtered display order. Home / End select the first / last item."},
+	    {"Shift + navigation key", "Extend or shrink the Hierarchy range. Add Ctrl to keep the existing selection."},
 	    {"Ctrl + Shift + click", "Add a Hierarchy range to the current selection."},
 	    {"Ctrl + A", "Select visible Hierarchy items, or all models when Scene is focused."},
 	    {"Esc", "Clear selection, or cancel a selection rectangle."},
