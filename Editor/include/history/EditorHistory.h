@@ -12,6 +12,7 @@
 #include <optional>
 #include <span>
 #include <string>
+#include <string_view>
 #include <variant>
 #include <vector>
 
@@ -62,6 +63,18 @@ class EditorHistory {
 	/// </summary>
 	/// <returns>true:実行可能 false:編集中、または履歴なし</returns>
 	bool CanRedo() const;
+
+	/// <summary>
+	/// 次に元に戻す操作の表示名を取得する
+	/// </summary>
+	/// <returns>操作の表示名。Undoできない場合は空</returns>
+	std::string_view GetUndoDescription() const;
+
+	/// <summary>
+	/// 次にやり直す操作の表示名を取得する
+	/// </summary>
+	/// <returns>操作の表示名。Redoできない場合は空</returns>
+	std::string_view GetRedoDescription() const;
 
 	/// <summary>
 	/// 直前の操作を元に戻す
@@ -190,6 +203,7 @@ class EditorHistory {
 
 		std::uint64_t beforeState = 0;
 		std::uint64_t afterState = 0;
+		std::string_view description;
 	};
 
 	/// <summary>
@@ -229,7 +243,9 @@ class EditorHistory {
 	/// </summary>
 	/// <param name="command">反映済みの操作</param>
 	/// <param name="nextState">PrepareAppendで取得した状態番号</param>
-	void AppendPrepared(Command command, std::uint64_t nextState) noexcept;
+	/// <param name="description">静的な寿命を持つ操作の表示名</param>
+	void AppendPrepared(Command command, std::uint64_t nextState,
+	                    std::string_view description) noexcept;
 
 	/// <summary>
 	/// 物体の全データを使って作成し、追加操作を履歴へ記録する

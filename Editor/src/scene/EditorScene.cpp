@@ -517,11 +517,17 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		    !IsBusy() && !history.IsEditing() && !gizmo_.IsUsing() &&
 		    !sceneViewPanel_.IsSelecting();
 
-		if (ui_.MenuItem("Undo", "Ctrl+Z", enabled && history.CanUndo())) {
+		const auto undo = history.GetUndoDescription();
+		const auto redo = history.GetRedoDescription();
+		const auto undoLabel = undo.empty() ? std::string("Undo###Undo")
+		                                    : std::format("Undo {}###Undo", undo);
+		const auto redoLabel = redo.empty() ? std::string("Redo###Redo")
+		                                    : std::format("Redo {}###Redo", redo);
+		if (ui_.MenuItem(undoLabel.c_str(), "Ctrl+Z", enabled && history.CanUndo())) {
 			action = EditorAction::UNDO;
 		}
 
-		if (ui_.MenuItem("Redo", "Ctrl+Y", enabled && history.CanRedo())) {
+		if (ui_.MenuItem(redoLabel.c_str(), "Ctrl+Y", enabled && history.CanRedo())) {
 			action = EditorAction::REDO;
 		}
 

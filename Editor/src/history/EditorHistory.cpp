@@ -96,7 +96,8 @@ bool EditorHistory::DeleteObjects(std::span<const SceneObjectId> objectIds) {
 		return false;
 	}
 
-	AppendPrepared(Command{std::move(group)}, next);
+	AppendPrepared(Command{std::move(group)}, next,
+	               objectIds.size() == 1 ? "Delete Object" : "Delete Objects");
 	return true;
 }
 
@@ -182,7 +183,8 @@ EditorHistory::CreateObjects(std::vector<SceneObject> objects) {
 	}
 
 	// 操作後は、確保済みのデータを移動して履歴へ記録する
-	AppendPrepared(Command{CommandGroup{std::move(commands)}}, next);
+	AppendPrepared(Command{CommandGroup{std::move(commands)}}, next,
+	               createdIds.size() == 1 ? "Create Object" : "Create Objects");
 
 	return createdIds;
 }
@@ -350,7 +352,8 @@ bool EditorHistory::ResetTransforms(std::span<const SceneObjectId> objectIds) {
 	if (!group.Redo(scene_)) {
 		return false;
 	}
-	AppendPrepared(Command{std::move(group)}, next);
+	AppendPrepared(Command{std::move(group)}, next,
+	               objectIds.size() == 1 ? "Reset Transform" : "Reset Transforms");
 	return true;
 }
 
@@ -405,7 +408,7 @@ SceneObjectId EditorHistory::CreateObjectWithHistory(SceneObject object) {
 	                   std::move(object),
 	                   ObjectCommand::Kind::CREATE,
 	               }},
-	               next);
+	               next, "Create Object");
 
 	return id;
 }
@@ -454,7 +457,8 @@ void EditorHistory::CommitEdit() {
 
 		Command command{CommandGroup{std::move(commands)}};
 		const std::uint64_t next = PrepareAppend();
-		AppendPrepared(std::move(command), next);
+		AppendPrepared(std::move(command), next,
+		               pendingTransforms_->size() == 1 ? "Transform Object" : "Transform Objects");
 		pendingTransforms_.reset();
 		return;
 	}
@@ -516,7 +520,9 @@ void EditorHistory::CommitEdit() {
 
 	const std::uint64_t next = PrepareAppend();
 
-	AppendPrepared(std::move(command), next);
+	AppendPrepared(std::move(command), next,
+	               std::holds_alternative<Transform>(pending_->before)
+	                   ? "Transform Object" : "Rename Object");
 	pending_.reset();
 }
 
@@ -528,6 +534,14 @@ bool EditorHistory::CanUndo() const { return !IsEditing() && cursor_ > 0; }
 
 bool EditorHistory::CanRedo() const {
 	return !IsEditing() && cursor_ < entries_.size();
+}
+
+std::string_view EditorHistory::GetUndoDescription() const {
+	return CanUndo() ? entries_[cursor_ - 1].description : std::string_view{};
+}
+
+std::string_view EditorHistory::GetRedoDescription() const {
+	return CanRedo() ? entries_[cursor_].description : std::string_view{};
 }
 
 bool EditorHistory::Undo() {
@@ -640,7 +654,8 @@ std::uint64_t EditorHistory::PrepareAppend() {
 }
 
 void EditorHistory::AppendPrepared(Command command,
-                                   std::uint64_t nextState) noexcept {
+                                   std::uint64_t nextState,
+                                   std::string_view description) noexcept {
 	assert(cursor_ < entries_.capacity());
 
 	// Undo後の新しい編集では、Redo側の履歴を取り除く
@@ -651,6 +666,7 @@ void EditorHistory::AppendPrepared(Command command,
 	    std::move(command),
 	    currentState_,
 	    nextState,
+	    description,
 	});
 
 	++cursor_;
