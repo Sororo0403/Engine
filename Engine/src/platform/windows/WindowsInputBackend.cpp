@@ -45,8 +45,22 @@ bool WindowsInputBackend::Initialize() {
 	keyboardAggregateCreated_ = true;
 	keyboardHadReading_ = false;
 
+	hr = gameInput_->CreateAggregateDevice(GameInputKindMouse,
+	                                       &mouseDeviceId_);
+
+	if (FAILED(hr)) {
+		Logger::Error(std::format("マウスの集約デバイス作成に失敗しました。"
+		                          "HRESULT=0x{:08X}",
+		                          static_cast<unsigned long>(hr)));
+		Finalize();
+		return false;
+	}
+
+	mouseAggregateCreated_ = true;
+	mouseHadReading_ = false;
+
 	// デバイスのインターフェース取得は、入力更新時に行う
-	Logger::Info("GameInputとキーボードの集約機能を初期化しました。");
+	Logger::Info("GameInputとキーボード・マウスの集約機能を初期化しました。");
 	return true;
 }
 
@@ -79,6 +93,20 @@ void WindowsInputBackend::Finalize() {
 
 	keyboardDevice_.Reset();
 	keyboardHadReading_ = false;
+
+	if (gameInput_ && mouseAggregateCreated_) {
+		const HRESULT hr =
+		    gameInput_->DisableAggregateDevice(&mouseDeviceId_);
+
+		if (FAILED(hr)) {
+			Logger::Warning(std::format("マウスの集約解除に失敗しました。"
+			                            "HRESULT=0x{:08X}",
+			                            static_cast<unsigned long>(hr)));
+		}
+	}
+
+	mouseAggregateCreated_ = false;
+	mouseDeviceId_ = {};
 
 	if (gameInput_ && keyboardAggregateCreated_) {
 		const HRESULT hr =
@@ -321,6 +349,33 @@ bool WindowsInputBackend::ReadMouse(MouseState &state) {
 
 	state = {};
 
+	if (!gameInput_ || !mouseAggregateCreated_) {
+		Logger::Error("WindowsInputBackend::ReadMouse: 未初期化です。");
+		return false;
+	}
+
+	if (!mouseDevice_) {
+		const HRESULT hr = gameInput_->FindDeviceFromId(
+		    &mouseDeviceId_, mouseDevice_.GetAddressOf());
+
+		// 集約デバイスの準備が完了するまで、次フレームに再試行する
+		if (hr == GAMEINPUT_E_DEVICE_NOT_FOUND ||
+		    hr == GAMEINPUT_E_DEVICE_DISCONNECTED) {
+			return true;
+		}
+
+		if (FAILED(hr)) {
+			Logger::Error(std::format("集約マウスの取得に失敗しました。"
+			                          "HRESULT=0x{:08X}",
+			                          static_cast<unsigned long>(hr)));
+			return false;
+		}
+
+		if (!mouseDevice_) {
+			return true;
+		}
+	}
+
 	Microsoft::WRL::ComPtr<IGameInputReading> reading;
 
 	const HRESULT hr = gameInput_->GetCurrentReading(
@@ -329,6 +384,12 @@ bool WindowsInputBackend::ReadMouse(MouseState &state) {
 	if (hr == GAMEINPUT_E_READING_NOT_FOUND ||
 	    hr == GAMEINPUT_E_DEVICE_NOT_FOUND ||
 	    hr == GAMEINPUT_E_DEVICE_DISCONNECTED) {
+		if (mouseHadReading_) {
+			Logger::Warning(std::format("マウスの入力取得が途切れました。"
+			                            "HRESULT=0x{:08X}",
+			                            static_cast<unsigned long>(hr)));
+		}
+
 		ResetMouseReading();
 		return true;
 	}
@@ -350,9 +411,11 @@ bool WindowsInputBackend::ReadMouse(MouseState &state) {
 		return false;
 	}
 
-	if (!mouseDevice_) {
-		reading->GetDevice(mouseDevice_.GetAddressOf());
+	if (!mouseHadReading_) {
+		Logger::Info("集約マウスの入力取得を開始しました。");
 	}
+
+	mouseHadReading_ = true;
 
 	struct ButtonMapping {
 		MouseButton button;
@@ -403,4 +466,5 @@ void WindowsInputBackend::ResetMouseReading() {
 	mouseDevice_.Reset();
 	previousMouseState_ = {};
 	mouseReadingValid_ = false;
+	mouseHadReading_ = false;
 }

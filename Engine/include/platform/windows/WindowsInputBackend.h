@@ -64,7 +64,7 @@ class WindowsInputBackend final : public IInputBackend {
 	bool ReadMouse(MouseState &state);
 
 	/// <summary>
-	/// マウスの取得対象と累積値の基準をクリアする
+	/// マウスの取得済みインターフェースと累積値の基準をクリアする
 	/// </summary>
 	void ResetMouseReading();
 
@@ -82,7 +82,13 @@ class WindowsInputBackend final : public IInputBackend {
 
 	bool keyboardHadReading_ = false;
 
+	// 全マウスの入力を集約する仮想デバイス
+	APP_LOCAL_DEVICE_ID mouseDeviceId_{};
+
 	Microsoft::WRL::ComPtr<GameInput::v4::IGameInputDevice> mouseDevice_;
+
+	bool mouseAggregateCreated_ = false;
+	bool mouseHadReading_ = false;
 
 	GameInput::v4::GameInputMouseState previousMouseState_{};
 	bool mouseReadingValid_ = false;
