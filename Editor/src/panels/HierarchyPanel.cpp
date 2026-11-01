@@ -98,7 +98,7 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 
 	// 選択状態に関係なく行数を保ち、クリック中に一覧の位置を動かさない
 	ui.Text(std::format("Selected: {} | filtered: {}", selection.GetCount(), filteredCount));
-	ImGui::SetItemTooltip("The Inspector edits the active object. Up/Down and Home/End navigate the filtered list; Shift selects a range. Ctrl+click toggles objects.");
+	ImGui::SetItemTooltip("Up/Down and Home/End navigate the filtered list; Shift selects a range. Ctrl+click toggles objects.");
 
 	if (ui.Button("Create Empty")) {
 		result.action = Action::CREATE_EMPTY;

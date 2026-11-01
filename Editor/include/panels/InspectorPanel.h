@@ -10,10 +10,15 @@ class Scene;
 class EditorHistory;
 
 /// <summary>
-/// 選択した物体の情報表示と編集要求を管理する
+/// 選択に追従、または固定した物体の情報表示と編集要求を管理する
 /// </summary>
 class InspectorPanel {
   public:
+	/// <summary>
+	/// 表示の固定・名前欄のフォーカス・編集要求・回転の表示状態をクリアする
+	/// </summary>
+	void Clear();
+
 	/// <summary>
 	/// Transform見出しから要求する操作
 	/// </summary>
@@ -25,7 +30,7 @@ class InspectorPanel {
 	};
 
 	/// <summary>
-	/// アクティブ物体だけを対象としたTransform操作の要求
+	/// Inspectorに表示中の物体だけを対象としたTransform操作の要求
 	/// </summary>
 	struct TransformRequest {
 		TransformAction action = TransformAction::NONE;
@@ -39,7 +44,7 @@ class InspectorPanel {
 	const TransformRequest &GetTransformRequest() const;
 
 	/// <summary>
-	/// 選択物体のモデルの差し替え、または参照解除の要求
+	/// 表示対象のモデルの差し替え、または参照解除の要求
 	/// </summary>
 	struct ModelRequest {
 		SceneObjectId objectId = 0;
@@ -59,7 +64,7 @@ class InspectorPanel {
 	const std::filesystem::path &GetAssetRevealPath() const;
 
 	/// <summary>
-	/// 選択物体のモデルの表示状態の変更要求
+	/// 表示対象のモデルの表示状態の変更要求
 	/// </summary>
 	struct VisibilityRequest {
 		SceneObjectId objectId = 0;
@@ -72,17 +77,17 @@ class InspectorPanel {
 	/// <returns>変更要求。操作がない場合のIDは0</returns>
 	const VisibilityRequest &GetVisibilityRequest() const;
 	/// <summary>
-	/// 指定した物体の名前欄へのフォーカスを、次の描画時に予約する
+	/// 表示の固定を解除し、指定した選択物体の名前欄へのフォーカスを次の描画時に予約する
 	/// </summary>
 	/// <param name="objectId">名前を編集する選択物体のID</param>
 	void RequestRename(SceneObjectId objectId);
 
 	/// <summary>
-	/// 選択した物体の編集用UIを構築する
+	/// 選択に追従、または固定した物体の編集用UIを構築する
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
 	/// <param name="scene">編集対象のシーン</param>
-	/// <param name="selectedObjectId">選択中の物体ID。未選択は0</param>
+	/// <param name="selectedObjectId">追従先の選択物体ID。未選択は0。固定中は固定先を編集する</param>
 	/// <param name="history">編集内容を記録する履歴</param>
 	/// <param name="canPasteTransform">貼り付けるTransformを保持しているか</param>
 	/// <returns>true:物体を編集した false:シーンへの変更なし</returns>
@@ -91,6 +96,7 @@ class InspectorPanel {
 	          bool canPasteTransform = false);
 
   private:
+	SceneObjectId lockedObjectId_ = 0;
 	// 表示用の角度を保持し、編集中のオイラー角の切り替わりを防ぐ
 	SceneObjectId rotationObjectId_ = 0;
 	DirectX::XMFLOAT3 rotationDegrees_{};

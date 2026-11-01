@@ -73,6 +73,7 @@ bool EditorScene::Initialize() {
 	selection_.Clear();
 
 	hierarchyPanel_.Clear();
+	inspectorPanel_.Clear();
 	assetsPanel_.Clear();
 
 	// 検索失敗時もEditorは起動し、Assetsパネルにエラーを表示する
@@ -527,6 +528,7 @@ void EditorScene::Finalize() {
 	selection_.Clear();
 
 	hierarchyPanel_.Clear();
+	inspectorPanel_.Clear();
 
 	stage_ = DialogStage::IDLE;
 	pendingAction_ = EditorAction::NONE;
@@ -1091,6 +1093,7 @@ void EditorScene::ExecutePendingAction() {
 		selection_.Clear();
 		cameraController_.Reset();
 		hierarchyPanel_.Clear();
+		inspectorPanel_.Clear();
 
 		return;
 
@@ -1259,6 +1262,7 @@ void EditorScene::OpenScene(const std::filesystem::path &path) {
 	selection_.Clear();
 	cameraController_.Reset();
 	hierarchyPanel_.Clear();
+	inspectorPanel_.Clear();
 	recentScenes_.Add(document_.GetFilePath());
 	stage_ = DialogStage::IDLE;
 }

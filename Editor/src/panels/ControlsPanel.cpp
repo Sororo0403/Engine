@@ -82,6 +82,7 @@ void ControlsPanel::Draw() {
 	    {"Ctrl + Shift + click", "Add a Hierarchy range to the current selection."},
 	    {"Ctrl + A", "Select visible Hierarchy items, or all models when Scene is focused."},
 	    {"Esc", "Clear selection, or cancel a selection rectangle."},
+	    {"Inspector > Lock Inspector", "Keep showing and editing one object while selection changes. F2 for one object unlocks Inspector; switching scenes clears the lock."},
 	    {"F2", "Rename one object in Inspector, or preview numbered names for multiple selected objects. Batch rename follows Hierarchy order and supports Undo / Redo."},
 	    {"Visible / Hierarchy menu", "Show or hide models without deleting objects. Visibility changes support Undo / Redo."},
 	    {"Hierarchy > Hidden only", "List hidden models. Search and range selection use this filtered list."},
@@ -100,7 +101,7 @@ void ControlsPanel::Draw() {
 	    {"Scale center handle", "Scale multiple selected objects uniformly."},
 	    {"Z / Center / Active", "For multiple selection, use the mean of object origins or the active object's origin as the gizmo pivot."},
 	    {"Edit > Reset Transform", "Reset position, rotation and scale of selected objects."},
-	    {"Right-click Transform", "Copy, paste or reset the active object's Transform. Transform copies keep the object clipboard intact."},
+	    {"Right-click Transform", "Copy, paste or reset the inspected object's Transform. Transform copies keep the object clipboard intact."},
 	});
 	DrawSection("Model assets", {
 	    {"Assets > Add to Scene", "Place the selected model at the world origin."},

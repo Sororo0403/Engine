@@ -98,7 +98,20 @@ bool ApplyTransformEdit(EditorHistory &history, SceneObjectId objectId,
 } // namespace
 
 void InspectorPanel::RequestRename(SceneObjectId objectId) {
+	lockedObjectId_ = 0;
 	renameObjectId_ = objectId;
+}
+
+void InspectorPanel::Clear() {
+	lockedObjectId_ = 0;
+	renameObjectId_ = 0;
+	rotationObjectId_ = 0;
+	rotationDegrees_ = {};
+	displayedRotation_ = {0.0f, 0.0f, 0.0f, 1.0f};
+	modelRequest_ = {};
+	visibilityRequest_ = {};
+	transformRequest_ = {};
+	assetRevealPath_.clear();
 }
 
 const InspectorPanel::TransformRequest &InspectorPanel::GetTransformRequest() const {
@@ -124,6 +137,9 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 	modelRequest_ = {};
 	assetRevealPath_.clear();
 	visibilityRequest_ = {};
+	if (lockedObjectId_ != 0 && !scene.Contains(lockedObjectId_)) {
+		lockedObjectId_ = 0;
+	}
 	const bool focusName = renameObjectId_ != 0 &&
 	                       renameObjectId_ == selectedObjectId;
 	if (focusName) {
@@ -137,7 +153,18 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 		return false;
 	}
 
-	SceneObject *object = scene.FindObject(selectedObjectId);
+	const auto previousTarget = lockedObjectId_ != 0 ? lockedObjectId_ : selectedObjectId;
+	bool locked = lockedObjectId_ != 0;
+	ImGui::BeginDisabled(!scene.Contains(previousTarget));
+	if (ImGui::Checkbox("Lock Inspector", &locked)) {
+		history.CommitEdit();
+		lockedObjectId_ = locked ? previousTarget : 0;
+		rotationObjectId_ = 0;
+	}
+	ImGui::EndDisabled();
+	ImGui::SetItemTooltip("Keep editing this object when selection changes. F2 for one selected object unlocks Inspector.");
+	const SceneObjectId inspectedObjectId = lockedObjectId_ != 0 ? lockedObjectId_ : selectedObjectId;
+	SceneObject *object = scene.FindObject(inspectedObjectId);
 
 	if (!object) {
 		renameObjectId_ = 0;
@@ -153,7 +180,7 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 		std::string edited = object->name;
 
 		// 名前や選択物体が変わっても、別の入力欄の編集状態を引き継がない
-		const auto label = std::format("Name###ObjectName{}", selectedObjectId);
+		const auto label = std::format("Name###ObjectName{}", inspectedObjectId);
 
 		if (focusName) {
 			ImGui::SetKeyboardFocusHere();
@@ -161,31 +188,31 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 		}
 		const bool editedValue = ui.InputText(label.c_str(), edited);
 
-		if (ApplyNameEdit(history, selectedObjectId, edited, editedValue,
+		if (ApplyNameEdit(history, inspectedObjectId, edited, editedValue,
 		                  object->name)) {
 			changed = true;
 		}
 	}
 
-	ui.Text(std::format("ID: {}", selectedObjectId));
+	ui.Text(std::format("ID: {}", inspectedObjectId));
 	bool visible = object->visible;
 	if (ImGui::Checkbox("Visible", &visible)) {
-		visibilityRequest_ = {selectedObjectId, visible};
+		visibilityRequest_ = {inspectedObjectId, visible};
 	}
 	ImGui::SetItemTooltip("Render this object's model. Hidden models are excluded from Scene picking.");
 	ui.Separator();
 
 	const bool transformExpanded = ui.CollapsingHeader("Transform");
 	if (ImGui::BeginPopupContextItem("TransformTools")) {
-		ImGui::TextDisabled("Active object only");
+		ImGui::TextDisabled("Inspected object only");
 		if (ui.MenuItem("Copy Transform", nullptr, true)) {
-			transformRequest_ = {TransformAction::COPY, selectedObjectId};
+			transformRequest_ = {TransformAction::COPY, inspectedObjectId};
 		}
 		if (ui.MenuItem("Paste Transform", nullptr, canPasteTransform)) {
-			transformRequest_ = {TransformAction::PASTE, selectedObjectId};
+			transformRequest_ = {TransformAction::PASTE, inspectedObjectId};
 		}
 		if (ui.MenuItem("Reset Transform", nullptr, true)) {
-			transformRequest_ = {TransformAction::RESET, selectedObjectId};
+			transformRequest_ = {TransformAction::RESET, inspectedObjectId};
 		}
 		ImGui::EndPopup();
 	}
@@ -199,7 +226,7 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 			const bool editedValue = ui.DragFloat3(
 			    "Position", edited.translation, 0.01f, -10000.0f, 10000.0f);
 
-			if (ApplyTransformEdit(history, selectedObjectId, before, edited,
+			if (ApplyTransformEdit(history, inspectedObjectId, before, edited,
 			                       editedValue, transform)) {
 				changed = true;
 			}
@@ -215,7 +242,7 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 			current.rotation = before.rotation;
 
 			// 選択変更、Undo・Redo、ギズモ操作などの外部変更だけ再変換する
-			if (rotationObjectId_ != selectedObjectId ||
+			if (rotationObjectId_ != inspectedObjectId ||
 			    !TransformUtils::AreEqual(displayed, current)) {
 				const auto radians =
 				    TransformUtils::RotationToEuler(before.rotation);
@@ -225,7 +252,7 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 				    DirectX::XMConvertToDegrees(radians.y),
 				    DirectX::XMConvertToDegrees(radians.z),
 				};
-				rotationObjectId_ = selectedObjectId;
+				rotationObjectId_ = inspectedObjectId;
 			}
 
 			const bool editedValue = ui.DragFloat3(
@@ -240,7 +267,7 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 				});
 			}
 
-			if (ApplyTransformEdit(history, selectedObjectId, before, edited,
+			if (ApplyTransformEdit(history, inspectedObjectId, before, edited,
 			                       editedValue, transform)) {
 				changed = true;
 			}
@@ -255,7 +282,7 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 			const bool editedValue =
 			    ui.DragFloat3("Scale", edited.scale, 0.01f, 0.001f, 1000.0f);
 
-			if (ApplyTransformEdit(history, selectedObjectId, before, edited,
+			if (ApplyTransformEdit(history, inspectedObjectId, before, edited,
 			                       editedValue, transform)) {
 				changed = true;
 			}
@@ -265,13 +292,13 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 	if (ui.CollapsingHeader("Model")) {
 		const auto label = std::format("{}###ModelAsset{}",
 		    object->modelPath.empty() ? "Drop model here" : PathUtils::ToUtf8(object->modelPath.filename()),
-		    selectedObjectId);
+		    inspectedObjectId);
 		if (ImGui::Button(label.c_str(), {ImGui::GetContentRegionAvail().x, 0.0f}) &&
 		    !object->modelPath.empty()) {
 			assetRevealPath_ = object->modelPath;
 		}
 		if (auto path = ModelAssetDragDrop::AcceptTarget(); !path.empty()) {
-			modelRequest_ = {selectedObjectId, std::move(path)};
+			modelRequest_ = {inspectedObjectId, std::move(path)};
 		}
 		if (object->modelPath.empty()) {
 			ImGui::SetItemTooltip("Drag a model from Assets to assign it.");
@@ -281,7 +308,7 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 		}
 		ImGui::BeginDisabled(object->modelPath.empty());
 		if (ImGui::Button("Remove Model")) {
-			modelRequest_ = {selectedObjectId, {}};
+			modelRequest_ = {inspectedObjectId, {}};
 		}
 		ImGui::EndDisabled();
 	}

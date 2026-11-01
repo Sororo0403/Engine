@@ -251,7 +251,7 @@ class EditorScene final : public IScene {
 	void RestoreHistory(std::size_t index);
 
 	/// <summary>
-	/// Inspectorのアクティブ物体へのTransform操作を反映する
+	/// Inspectorに表示中の物体へのTransform操作を反映する
 	/// </summary>
 	/// <param name="request">コピー・貼り付け・リセットの操作要求</param>
 	void ApplyInspectorTransform(const InspectorPanel::TransformRequest &request);
