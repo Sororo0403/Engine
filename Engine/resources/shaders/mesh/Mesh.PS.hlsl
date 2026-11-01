@@ -1,4 +1,4 @@
-#include "Triangle.hlsli"
+#include "Mesh.hlsli"
 
 Texture2D<float4> texture0 : register(t0);
 SamplerState sampler0 : register(s0);

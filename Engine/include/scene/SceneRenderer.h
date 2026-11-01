@@ -1,10 +1,12 @@
 #pragma once
 
 #include "graphics/camera/CameraPose.h"
+#include "graphics/render/DebugLine.h"
 #include "graphics/render/RenderObjectHandle.h"
 #include "scene/SceneObjectId.h"
 
 #include <DirectXMath.h>
+#include <array>
 #include <filesystem>
 #include <map>
 #include <memory>
@@ -88,6 +90,24 @@ class SceneRenderer {
 	/// <remarks>Update成功後、Drawより前に呼び出す</remarks>
 	bool GetCameraMatrices(DirectX::XMFLOAT4X4 &view,
 	                       DirectX::XMFLOAT4X4 &projection) const;
+
+	/// <summary>
+	/// シーン上の物体を囲むボックスの頂点をワールド座標で取得する
+	/// </summary>
+	/// <param name="objectId">対象物体のID</param>
+	/// <param name="corners">成功した場合に設定する8頂点</param>
+	/// <returns>true:成功 false:未初期化、物体なし、またはモデルなし</returns>
+	/// <remarks>シーンの変更をUpdateで反映した後に呼び出す</remarks>
+	bool GetObjectBounds(SceneObjectId objectId,
+	                     std::array<DirectX::XMFLOAT3, 8> &corners) const;
+
+	/// <summary>
+	/// 今回のシーン描画で表示する線を登録する
+	/// </summary>
+	/// <param name="line">ワールド座標の線</param>
+	/// <returns>true:成功 false:未初期化、更新前、または線が無効</returns>
+	/// <remarks>最後のUpdate成功後、Drawより前に呼び出す</remarks>
+	bool AddDebugLine(const DebugLine &line);
 
   private:
 	/// <summary>

@@ -8,6 +8,7 @@ class D3D12Graphics;
 class MeshRenderer;
 class WinApp;
 class RenderTexture;
+class DebugLineRenderer;
 
 /// <summary>
 /// 描画ワールドの生成・描画準備・描画の実行を担当する
@@ -19,9 +20,10 @@ class RenderSystem {
 	/// </summary>
 	/// <param name="graphics">描画基盤</param>
 	/// <param name="renderer">メッシュ描画クラス</param>
+	/// <param name="debugRenderer">線描画クラス</param>
 	/// <param name="app">表示先のアプリケーション</param>
 	RenderSystem(D3D12Graphics &graphics, MeshRenderer &renderer,
-	             const WinApp &app);
+	             DebugLineRenderer &debugRenderer, const WinApp &app);
 
 	RenderSystem(const RenderSystem &) = delete;
 	RenderSystem &operator=(const RenderSystem &) = delete;
@@ -75,5 +77,6 @@ class RenderSystem {
 	// 参照先はRenderSystemより長く保持する
 	D3D12Graphics &graphics_;
 	MeshRenderer &renderer_;
+	DebugLineRenderer &debugRenderer_;
 	const WinApp &app_;
 };

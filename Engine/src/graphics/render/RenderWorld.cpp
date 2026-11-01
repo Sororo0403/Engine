@@ -5,6 +5,7 @@
 #include "graphics/model/Model.h"
 #include "graphics/model/ModelInstance.h"
 #include "graphics/render/D3D12Graphics.h"
+#include "graphics/render/DebugLineRenderer.h"
 #include "graphics/render/MeshRenderer.h"
 #include "math/MathUtils.h"
 #include "math/Ray.h"
@@ -114,6 +115,8 @@ struct RenderWorld::Impl {
 
 	std::vector<Slot> slots_;
 
+	std::vector<DebugLine> debugLines_;
+
 	Camera camera_;
 	DirectionalLight light_;
 	DirectionalLightData lightData_{};
@@ -131,6 +134,54 @@ bool RenderWorld::GetCameraMatrices(DirectX::XMFLOAT4X4 &view,
 	view = impl_->camera_.GetViewMatrix();
 	projection = impl_->camera_.GetProjectionMatrix();
 
+	return true;
+}
+
+bool RenderWorld::GetObjectBounds(
+    RenderObjectHandle handle,
+    std::array<DirectX::XMFLOAT3, 8> &corners) const {
+	if (!impl_->initialized_ || !impl_->Contains(handle)) {
+		return false;
+	}
+
+	const Impl &impl = *impl_;
+	const auto &object = impl.GetObject(handle);
+
+	if (!object.model_.model_ || !TransformUtils::IsValid(object.transform_)) {
+		return false;
+	}
+
+	std::array<DirectX::XMFLOAT3, 8> transformed{};
+
+	if (!object.model_.model_->GetBoundsCorners(transformed)) {
+		return false;
+	}
+
+	using namespace DirectX;
+
+	const XMMATRIX world = TransformUtils::MakeWorldMatrix(object.transform_);
+
+	for (auto &corner : transformed) {
+		XMStoreFloat3(&corner,
+		              XMVector3TransformCoord(XMLoadFloat3(&corner), world));
+
+		if (!MathUtils::IsFinite(corner)) {
+			return false;
+		}
+	}
+
+	corners = transformed;
+	return true;
+}
+
+bool RenderWorld::AddDebugLine(const DebugLine &line) {
+	if (!impl_->initialized_ || !impl_->prepared_ ||
+	    !MathUtils::IsFinite(line.start) || !MathUtils::IsFinite(line.end) ||
+	    !MathUtils::IsFinite(line.color)) {
+		return false;
+	}
+
+	impl_->debugLines_.push_back(line);
 	return true;
 }
 
@@ -290,6 +341,8 @@ void RenderWorld::MoveCamera(const DirectX::XMFLOAT3 &offset) {
 }
 
 void RenderWorld::Clear() {
+	impl_->debugLines_.clear();
+
 	for (auto &slot : impl_->slots_) {
 		impl_->ReleaseSlot(slot);
 	}
@@ -310,6 +363,7 @@ bool RenderWorld::SetCameraPose(const CameraPose &pose) {
 }
 
 bool RenderWorld::Update(int width, int height) {
+	impl_->debugLines_.clear();
 	impl_->prepared_ = false;
 
 	if (!impl_->initialized_) {
@@ -344,7 +398,8 @@ bool RenderWorld::Update(int width, int height) {
 	return true;
 }
 
-void RenderWorld::Draw(MeshRenderer &renderer) const {
+void RenderWorld::Draw(MeshRenderer &renderer,
+                       DebugLineRenderer &debugRenderer) const {
 	if (!impl_->prepared_) {
 		Logger::Error("RenderWorld::Draw: 描画準備が完了していません。");
 		return;
@@ -367,6 +422,13 @@ void RenderWorld::Draw(MeshRenderer &renderer) const {
 
 		slot.object_->instance_.Draw(commandList, renderer, impl_->light_);
 	}
+
+	// モデルを描画した後、その深度を使って線を描画する
+	debugRenderer.Draw(commandList, impl_->debugLines_,
+	                   impl_->camera_.GetViewMatrix(),
+	                   impl_->camera_.GetProjectionMatrix());
+
+	impl_->debugLines_.clear();
 }
 
 bool RenderWorld::Uses(const D3D12Graphics &graphics) const {

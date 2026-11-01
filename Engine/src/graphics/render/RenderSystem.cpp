@@ -7,8 +7,9 @@
 #include <format>
 
 RenderSystem::RenderSystem(D3D12Graphics &graphics, MeshRenderer &renderer,
-                           const WinApp &app)
-    : graphics_(graphics), renderer_(renderer), app_(app) {}
+                           DebugLineRenderer &debugRenderer, const WinApp &app)
+    : graphics_(graphics), renderer_(renderer), debugRenderer_(debugRenderer),
+      app_(app) {}
 
 std::unique_ptr<RenderTexture> RenderSystem::CreateRenderTexture(int width,
                                                                  int height) {
@@ -48,7 +49,7 @@ void RenderSystem::Draw(const RenderWorld &world, RenderTexture &target,
 		return;
 	}
 
-	world.Draw(renderer_);
+	world.Draw(renderer_, debugRenderer_);
 
 	target.End();
 }
@@ -81,5 +82,5 @@ void RenderSystem::Draw(const RenderWorld &world) const {
 		return;
 	}
 
-	world.Draw(renderer_);
+	world.Draw(renderer_, debugRenderer_);
 }

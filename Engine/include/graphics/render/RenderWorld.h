@@ -4,16 +4,19 @@
 #include "graphics/camera/CameraPose.h"
 #include "graphics/material/MaterialData.h"
 #include "graphics/model/ModelHandle.h"
+#include "graphics/render/DebugLine.h"
 #include "graphics/render/RenderObjectHandle.h"
 #include "math/Transform.h"
 
 #include <DirectXMath.h>
+#include <array>
 #include <cstddef>
 #include <memory>
 
 class D3D12Graphics;
 class MeshRenderer;
 class RenderSystem;
+class DebugLineRenderer;
 
 /// <summary>
 /// シーンごとの描画物体・カメラ・ライトを管理する
@@ -134,6 +137,23 @@ class RenderWorld {
 	bool GetCameraMatrices(DirectX::XMFLOAT4X4 &view,
 	                       DirectX::XMFLOAT4X4 &projection) const;
 
+	/// <summary>
+	/// 物体を囲むボックスの頂点をワールド座標で取得する
+	/// </summary>
+	/// <param name="handle">対象物体のハンドル</param>
+	/// <param name="corners">成功した場合に設定する8頂点</param>
+	/// <returns>true:成功 false:物体、モデル、または変形情報が無効</returns>
+	bool GetObjectBounds(RenderObjectHandle handle,
+	                     std::array<DirectX::XMFLOAT3, 8> &corners) const;
+
+	/// <summary>
+	/// 今回の描画で表示する線を登録する
+	/// </summary>
+	/// <param name="line">ワールド座標の線</param>
+	/// <returns>true:成功 false:更新前、または座標・色が無効</returns>
+	/// <remarks>最後のUpdate成功後、Drawより前に呼び出す。登録は次のUpdateで消去される</remarks>
+	bool AddDebugLine(const DebugLine &line);
+
   private:
 	friend class RenderSystem;
 
@@ -154,10 +174,11 @@ class RenderWorld {
 	bool Update(int width, int height);
 
 	/// <summary>
-	/// 全物体の描画命令を記録する
+	/// 全物体と登録された線の描画命令を記録する
 	/// </summary>
 	/// <param name="renderer">初期化済みのメッシュ描画クラス</param>
-	void Draw(MeshRenderer &renderer) const;
+	/// <param name="debugRenderer">初期化済みの線描画クラス</param>
+	void Draw(MeshRenderer &renderer, DebugLineRenderer &debugRenderer) const;
 
 	/// <summary>
 	/// 指定した描画基盤を使用しているか取得する

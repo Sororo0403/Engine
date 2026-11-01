@@ -33,7 +33,7 @@
     <Filter Include="resources\shaders">
       <UniqueIdentifier>{c1143765-a207-4f02-bd8b-220bba90e40a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="resources\shaders\triangle">
+    <Filter Include="resources\shaders\mesh">
       <UniqueIdentifier>{fa1964fb-a7bf-400d-8015-0bfeae514235}</UniqueIdentifier>
     </Filter>
     <Filter Include="include\core">
@@ -98,6 +98,9 @@
     </Filter>
     <Filter Include="include\graphics\buffer">
       <UniqueIdentifier>{3aa98116-2d67-4ee5-88e5-0506f3c6039c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="resources\shaders\debug">
+      <UniqueIdentifier>{8d9be229-9f80-4c72-bf3b-5d4e69b43f20}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -202,6 +205,9 @@
     </ClCompile>
     <ClCompile Include="src\scene\SceneSerializer.cpp">
       <Filter>src\scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\graphics\render\DebugLineRenderer.cpp">
+      <Filter>src\graphics\render</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -376,18 +382,33 @@
     <ClInclude Include="include\math\Ray.h">
       <Filter>include\math</Filter>
     </ClInclude>
+    <ClInclude Include="include\graphics\render\DebugLine.h">
+      <Filter>include\graphics\render</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\render\DebugLineRenderer.h">
+      <Filter>include\graphics\render</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="resources\shaders\triangle\Triangle.PS.hlsl">
-      <Filter>resources\shaders\triangle</Filter>
+    <FxCompile Include="resources\shaders\mesh\Mesh.PS.hlsl">
+      <Filter>resources\shaders\mesh</Filter>
     </FxCompile>
-    <FxCompile Include="resources\shaders\triangle\Triangle.VS.hlsl">
-      <Filter>resources\shaders\triangle</Filter>
+    <FxCompile Include="resources\shaders\mesh\Mesh.VS.hlsl">
+      <Filter>resources\shaders\mesh</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\shaders\debug\DebugLine.VS.hlsl">
+      <Filter>resources\shaders\debug</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="resources\shaders\triangle\Triangle.hlsli">
-      <Filter>resources\shaders\triangle</Filter>
+    <None Include="resources\shaders\mesh\Mesh.hlsli">
+      <Filter>resources\shaders\mesh</Filter>
+    </None>
+    <None Include="resources\shaders\debug\DebugLine.hlsli">
+      <Filter>resources\shaders\debug</Filter>
+    </None>
+    <None Include="resources\shaders\debug\DebugLine.PS.hlsl">
+      <Filter>resources\shaders\debug</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

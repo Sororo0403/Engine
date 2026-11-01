@@ -1,4 +1,4 @@
-#include "Triangle.hlsli"
+#include "Mesh.hlsli"
 
 cbuffer Transformation : register(b0)
 {

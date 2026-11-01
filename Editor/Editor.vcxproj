@@ -132,6 +132,7 @@
     <ClInclude Include="include\gizmo\TransformGizmo.h" />
     <ClInclude Include="include\history\TransformCommand.h" />
     <ClInclude Include="include\history\ObjectCommand.h" />
+    <ClInclude Include="include\selection\SelectionBounds.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\history\ObjectCommand.cpp" />
@@ -150,6 +151,7 @@
     <ClCompile Include="src\scene\EditorScene.cpp" />
     <ClCompile Include="src\gizmo\TransformGizmo.cpp" />
     <ClCompile Include="src\history\TransformCommand.cpp" />
+    <ClCompile Include="src\selection\SelectionBounds.cpp" />
   </ItemGroup>
   <ItemDefinitionGroup>
     <ClCompile>

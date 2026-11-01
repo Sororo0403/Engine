@@ -101,6 +101,17 @@ bool Model::CreateMeshes(ID3D12Device *device, const ModelData &data) {
 		DirectX::BoundingBox::CreateFromPoints(
 		    part.bounds, part.positions.size(), part.positions.data(),
 		    sizeof(DirectX::XMFLOAT3));
+
+		// 最初のメッシュを基準に、モデル全体の範囲を広げる
+		if (i == 0) {
+			bounds_ = part.bounds;
+		} else {
+			DirectX::BoundingBox merged;
+
+			DirectX::BoundingBox::CreateMerged(merged, bounds_, part.bounds);
+
+			bounds_ = merged;
+		}
 	}
 
 	return true;
@@ -259,6 +270,15 @@ bool Model::Raycast(const Ray &ray, float &distance) const {
 	return hit;
 }
 
+bool Model::GetBoundsCorners(std::array<DirectX::XMFLOAT3, 8> &corners) const {
+	if (parts_.empty()) {
+		return false;
+	}
+
+	bounds_.GetCorners(corners.data());
+	return true;
+}
+
 void Model::Finalize() {
 	srvHeap_.reset();
 
@@ -267,6 +287,8 @@ void Model::Finalize() {
 	}
 
 	parts_.clear();
+
+	bounds_ = {};
 
 	for (auto &texture : textures_) {
 		texture.Finalize();

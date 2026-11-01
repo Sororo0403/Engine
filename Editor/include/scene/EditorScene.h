@@ -13,6 +13,7 @@
 #include "scene/IScene.h"
 #include "scene/SceneDocument.h"
 #include "scene/SceneRenderer.h"
+#include "selection/SelectionBounds.h"
 
 #include <filesystem>
 #include <string>
@@ -200,6 +201,7 @@ class EditorScene final : public IScene {
 	bool closeApproved_ = false;
 
 	TransformGizmo gizmo_;
-
 	bool gizmoEditActive_ = false;
+
+	SelectionBounds selectionBounds_;
 };

@@ -5,6 +5,7 @@
 #include "core/Logger.h"
 #include "graphics/model/ModelManager.h"
 #include "graphics/render/D3D12Graphics.h"
+#include "graphics/render/DebugLineRenderer.h"
 #include "graphics/render/MeshRenderer.h"
 #include "graphics/render/RenderSystem.h"
 #include "graphics/render/ShaderCompiler.h"
@@ -54,7 +55,9 @@ class ComScope {
 /// エンジン内部の共通機能と、その実行処理
 /// </summary>
 struct Engine::Impl {
-	Impl() : models_(graphics_), render_(graphics_, meshRenderer_, app_) {}
+	Impl()
+	    : models_(graphics_),
+	      render_(graphics_, meshRenderer_, debugLineRenderer_, app_) {}
 
 	~Impl() {
 		// シーンや共有リソースを解放する前にGPUの完了を待つ
@@ -71,6 +74,7 @@ struct Engine::Impl {
 		ui_.Finalize();
 		input_.Finalize();
 
+		debugLineRenderer_.Finalize();
 		meshRenderer_.Finalize();
 		shaderCompiler_.Finalize();
 
@@ -92,19 +96,31 @@ struct Engine::Impl {
 		}
 
 		const auto shaderDirectory = executableDirectory / L"resources" /
-		                             L"engine" / L"shaders" / L"triangle";
+		                             L"engine" / L"shaders" / L"mesh";
 
 		auto vertexShader = shaderCompiler_.Compile(
-		    (shaderDirectory / L"Triangle.VS.hlsl").wstring(), L"VSMain",
+		    (shaderDirectory / L"Mesh.VS.hlsl").wstring(), L"VSMain",
 		    L"vs_6_0");
 
 		auto pixelShader = shaderCompiler_.Compile(
-		    (shaderDirectory / L"Triangle.PS.hlsl").wstring(), L"PSMain",
+		    (shaderDirectory / L"Mesh.PS.hlsl").wstring(), L"PSMain",
+		    L"ps_6_0");
+
+		const auto debugShaderDirectory = executableDirectory / L"resources" /
+		                                  L"engine" / L"shaders" / L"debug";
+
+		auto debugVertexShader = shaderCompiler_.Compile(
+		    (debugShaderDirectory / L"DebugLine.VS.hlsl").wstring(), L"VSMain",
+		    L"vs_6_0");
+
+		auto debugPixelShader = shaderCompiler_.Compile(
+		    (debugShaderDirectory / L"DebugLine.PS.hlsl").wstring(), L"PSMain",
 		    L"ps_6_0");
 
 		shaderCompiler_.Finalize();
 
-		if (!vertexShader || !pixelShader) {
+		if (!vertexShader || !pixelShader || !debugVertexShader ||
+		    !debugPixelShader) {
 			return false;
 		}
 
@@ -124,6 +140,13 @@ struct Engine::Impl {
 		                              pixelShader.Get(),
 		                              graphics_.GetRenderTargetFormat(),
 		                              graphics_.GetDepthStencilFormat())) {
+			return false;
+		}
+
+		if (!debugLineRenderer_.Initialize(
+		        graphics_.GetDevice(), debugVertexShader.Get(),
+		        debugPixelShader.Get(), graphics_.GetRenderTargetFormat(),
+		        graphics_.GetDepthStencilFormat())) {
 			return false;
 		}
 
@@ -256,6 +279,7 @@ struct Engine::Impl {
 	D3D12Graphics graphics_;
 	ShaderCompiler shaderCompiler_;
 	MeshRenderer meshRenderer_;
+	DebugLineRenderer debugLineRenderer_;
 
 	InputSystem input_;
 	ImGuiSystem ui_;

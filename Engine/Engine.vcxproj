@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\graphics\render\DebugLineRenderer.cpp" />
     <ClCompile Include="src\math\MathUtils.cpp" />
     <ClCompile Include="src\math\TransformUtils.cpp" />
     <ClCompile Include="src\graphics\render\D3D12Helpers.cpp" />
@@ -50,6 +51,8 @@
     <ClCompile Include="src\graphics\material\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\graphics\render\DebugLineRenderer.h" />
+    <ClInclude Include="include\graphics\render\DebugLine.h" />
     <ClInclude Include="include\math\MathUtils.h" />
     <ClInclude Include="include\math\Ray.h" />
     <ClInclude Include="include\math\TransformUtils.h" />
@@ -114,19 +117,31 @@
     <ClInclude Include="include\scene\SceneSerializer.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="resources\shaders\triangle\Triangle.hlsli">
+    <None Include="resources\shaders\debug\DebugLine.hlsli">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="resources\shaders\debug\DebugLine.PS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="resources\shaders\mesh\Mesh.hlsli">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="resources\shaders\triangle\Triangle.PS.hlsl">
+    <FxCompile Include="resources\shaders\debug\DebugLine.VS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="resources\shaders\mesh\Mesh.PS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="resources\shaders\triangle\Triangle.VS.hlsl">
+    <FxCompile Include="resources\shaders\mesh\Mesh.VS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

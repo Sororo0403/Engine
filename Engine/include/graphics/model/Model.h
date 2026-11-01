@@ -7,6 +7,7 @@
 #include <directxtk12/DescriptorHeap.h>
 
 #include <DirectXCollision.h>
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -100,6 +101,13 @@ class Model {
 	bool Raycast(const Ray &ray, float &distance) const;
 
 	/// <summary>
+	/// モデル全体を囲むボックスの頂点をローカル座標で取得する
+	/// </summary>
+	/// <param name="corners">成功した場合に設定する8頂点</param>
+	/// <returns>true:成功 false:メッシュなし</returns>
+	bool GetBoundsCorners(std::array<DirectX::XMFLOAT3, 8> &corners) const;
+
+	/// <summary>
 	/// GPUリソースを解放する。GPUの利用完了後、参照する物体より後に呼び出す
 	/// </summary>
 	void Finalize();
@@ -131,6 +139,9 @@ class Model {
 	bool CreateShaderResourceViews(ID3D12Device *device);
 
   private:
+	// 全メッシュを囲む、モデルのローカル座標のボックス
+	DirectX::BoundingBox bounds_{};
+
 	std::vector<MeshPart> parts_;
 	std::vector<Texture> textures_;
 

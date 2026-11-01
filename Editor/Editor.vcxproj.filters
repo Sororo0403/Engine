@@ -57,6 +57,12 @@
     <Filter Include="include\history">
       <UniqueIdentifier>{b6eec9e8-cfd7-44a8-9d12-27c98ea7b962}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\selection">
+      <UniqueIdentifier>{648f03ce-2a40-4177-bf85-389b2b506460}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\selection">
+      <UniqueIdentifier>{141248d8-68a7-440d-9455-dc29c6aec408}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -104,6 +110,9 @@
     <ClCompile Include="src\history\ObjectCommand.cpp">
       <Filter>src\history</Filter>
     </ClCompile>
+    <ClCompile Include="src\selection\SelectionBounds.cpp">
+      <Filter>src\selection</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\scene\EditorScene.h">
@@ -147,6 +156,9 @@
     </ClInclude>
     <ClInclude Include="include\history\ObjectCommand.h">
       <Filter>include\history</Filter>
+    </ClInclude>
+    <ClInclude Include="include\selection\SelectionBounds.h">
+      <Filter>include\selection</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

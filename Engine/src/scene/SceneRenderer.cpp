@@ -176,3 +176,22 @@ bool SceneRenderer::GetCameraMatrices(DirectX::XMFLOAT4X4 &view,
                                       DirectX::XMFLOAT4X4 &projection) const {
 	return world_ && world_->GetCameraMatrices(view, projection);
 }
+
+bool SceneRenderer::GetObjectBounds(
+    SceneObjectId objectId, std::array<DirectX::XMFLOAT3, 8> &corners) const {
+	if (!world_ || !scene_.Contains(objectId)) {
+		return false;
+	}
+
+	const auto it = objects_.find(objectId);
+
+	if (it == objects_.end()) {
+		return false;
+	}
+
+	return world_->GetObjectBounds(it->second.handle, corners);
+}
+
+bool SceneRenderer::AddDebugLine(const DebugLine &line) {
+	return world_ && world_->AddDebugLine(line);
+}

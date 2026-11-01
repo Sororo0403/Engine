@@ -372,6 +372,9 @@ build/
 !/Engine/include/graphics/debug/
 !/Engine/src/graphics/debug/
 
+# Debug shaders
+!/Engine/resources/shaders/debug/
+
 # ImGuiの個人設定
 imgui.ini
 
