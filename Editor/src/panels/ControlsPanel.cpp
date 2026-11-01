@@ -75,7 +75,7 @@ void ControlsPanel::Draw() {
 	});
 	DrawSection("Selection and objects", {
 	    {"Hierarchy > Sort", "Choose creation order or name A-Z / Z-A. Range selection, Select All and arrow keys follow the displayed order; changing sort keeps the selection."},
-	    {"Inspector > Add Component > Box Collider", "Add a collider fitted to the model, edit its local center and half size, fit again or remove it. Green Scene bounds show the collision shape. Each drag is one Undo operation."},
+	    {"Inspector > Add Component > Box Collider", "Add a collider fitted to the model, edit its local center and half size, fit again or remove it. Green Scene bounds show the world-axis-aligned collision shape. Each drag is one Undo operation."},
 	    {"Assets > Select Instances", "Select all scene objects using the chosen model, including hidden objects. Also available from a model row context menu; reveals the active result in Hierarchy."},
 	    {"Assets folders / Up / Root", "Open a folder or return to its parent or the Assets root. Search finds model paths across all folders."},
 	    {"Click / Ctrl + click", "Select one object / toggle an object in the selection."},
@@ -124,10 +124,11 @@ void ControlsPanel::Draw() {
 	        {"File > New Sample Stage",
 	         "Create an editable floor, walls, player and follow camera. "
 	         "Unsaved work prompts before replacement."},
-	        {"Game > Play / Stop", "Run a separate scene copy. Editing data "
-	                               "and Undo history are preserved."},
+	        {"Game > Play / Stop", "Run the current scene, including empty scenes. Stop returns to editing and keeps your changes and Undo history."},
+        {"Game without Follow Camera", "Use the Scene view camera position at Play start."},
+        {"Inspector > Follow Camera", "Offsets use world coordinates. Follow Smoothing 0 follows immediately. Choose the target object in the same scene."},
 	        {"WASD / Space",
-	         "Move on world X/Z and jump while Game is focused."},
+	         "Click the Game image to focus it. Move on world X/Z and jump when the object has a Character Controller."},
 	        {"Esc (Game focused)", "Stop playback and return to editing."},
 	    });
 	DrawSection("Files and history", {

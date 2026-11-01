@@ -15,8 +15,10 @@ class SceneSimulation {
 	/// </summary>
 	/// <param name="source">変更しない編集シーン</param>
 	/// <param name="error">失敗理由。成功時は空</param>
-	/// <returns>true:再生開始 false:不足する設定または配置が無効</returns>
-	bool Start(const Scene &source, std::string &error);
+	/// <param name="fallbackPose">追従カメラがない場合に使用する固定の描画姿勢</param>
+	/// <returns>true:再生開始 false:追加済みコンポーネントの設定や配置、または描画姿勢が無効</returns>
+	bool Start(const Scene &source, std::string &error,
+	           const CameraPose &fallbackPose = CameraPose{});
 	/// <summary>
 	/// 再生を終了して複製データを破棄する
 	/// </summary>
@@ -39,7 +41,7 @@ class SceneSimulation {
 	/// <returns>編集データとは独立したシーン</returns>
 	const Scene &GetScene() const { return scene_; }
 	/// <summary>
-	/// 追従カメラの現在の姿勢を取得する
+	/// 追従カメラ、または開始時に指定した固定カメラの姿勢を取得する
 	/// </summary>
 	/// <returns>再生時の描画姿勢</returns>
 	const CameraPose &GetCameraPose() const { return pose_; }

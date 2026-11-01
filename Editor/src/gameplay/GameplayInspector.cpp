@@ -46,10 +46,8 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 	ImGui::PushID("GameplayInspector");
 	bool changed = false;
 	if (object.character && ui.CollapsingHeader("Character Controller")) {
-		ImGui::TextWrapped("WASD: world X/Z movement. Space: jump. Add a Box "
-		                   "Collider to define the body.");
 		if (!object.collider) {
-			ImGui::TextWrapped("A Box Collider is required before Play.");
+			ImGui::TextWrapped("Box Collider is missing.");
 		}
 		auto field = [&](const char *label, float CharacterSettings::*member,
 		                 float maximum) {
@@ -111,9 +109,6 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		                         0, 100, "%.2f", ImGuiSliderFlags_AlwaysClamp);
 		changed |= ApplyField(history, id, object.followCamera, edited, value,
 		                      &EditorHistory::BeginFollowCamera);
-		ImGui::TextWrapped(
-		    "Offsets use world coordinates. Smoothing 0 snaps immediately. One "
-		    "Follow Camera is used during Play.");
 		if (ui.Button("Remove Follow Camera")) {
 			changed |= history.SetFollowCamera(id, std::nullopt);
 		}

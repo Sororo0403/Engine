@@ -31,23 +31,12 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 		if (ui.Button("Stop")) {
 			action = Action::STOP;
 		}
-		ImGui::SameLine();
-		ImGui::TextUnformatted(
-		    "WASD: move | Space: jump | Esc: stop. Click Game to control.");
 	} else {
 		ui.BeginDisabled(!canStart);
 		if (ui.Button("Play")) {
 			action = Action::PLAY;
 		}
-		ImGui::SameLine();
-		if (ui.Button("New Sample Stage...")) {
-			action = Action::SAMPLE;
-		}
 		ui.EndDisabled();
-		ImGui::TextWrapped(
-		    "Add Box Collider, Character Controller, Follow Camera and Respawn "
-		    "in Inspector. Play uses a separate copy; Stop keeps your edits "
-		    "and Undo history.");
 	}
 	if (IsPlaying()) {
 		const auto size = ui.GetContentSize();
@@ -70,8 +59,9 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 	ui.EndWindow();
 	return action;
 }
-bool EditorPlayMode::Start(const Scene &scene, std::string &error) {
-	if (!simulation_.Start(scene, error)) {
+bool EditorPlayMode::Start(const Scene &scene, std::string &error,
+                           const CameraPose &fallbackPose) {
+	if (!simulation_.Start(scene, error, fallbackPose)) {
 		return false;
 	}
 	focusRequested_ = true;

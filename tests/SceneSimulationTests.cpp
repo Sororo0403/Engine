@@ -113,6 +113,147 @@ void Components() {
 	            scene.FindObject(id)->character->moveSpeed == 9,
 	        "delete Undo components");
 }
+void OptionalComponents() {
+	Scene empty;
+	SceneSimulation play;
+	std::string error;
+	CameraPose fallback;
+	fallback.position = {4, 6, -12};
+	fallback.target = {1, 2, 0};
+	auto samePose = [](const CameraPose &a, const CameraPose &b) {
+		return a.position.x == b.position.x && a.position.y == b.position.y &&
+		       a.position.z == b.position.z && a.target.x == b.target.x &&
+		       a.target.y == b.target.y && a.target.z == b.target.z &&
+		       a.up.x == b.up.x && a.up.y == b.up.y && a.up.z == b.up.z;
+	};
+	Require(play.Start(empty, error, fallback) && error.empty() &&
+	            play.IsPlaying(),
+	        "empty scene could not Play");
+	Require(samePose(play.GetCameraPose(), fallback),
+	        "empty scene ignored fallback camera");
+	for (int i = 0; i < 120; ++i) {
+		Require(play.Update(1.f / 120, {1, 1, true}),
+		        "empty scene update failed");
+	}
+	Require(play.GetScene().GetObjects().empty() &&
+	            samePose(play.GetCameraPose(), fallback),
+	        "empty scene generated objects or changed camera");
+	Require(!play.Update(-1, {}) && play.IsPlaying(),
+	        "empty scene accepted invalid time");
+	play.Stop();
+	Require(play.Start(empty, error), "empty scene default camera failed");
+	Require(samePose(play.GetCameraPose(), CameraPose{}),
+	        "empty restart retained old camera");
+
+	Scene visual;
+	SceneObject object;
+	object.name = "Display only";
+	object.modelPath = "resources/editor/models/box.glb";
+	object.transform.translation = {3, 4, 5};
+	const auto target = visual.CreateObject(object);
+	Require(play.Start(visual, error, fallback),
+	        "model-only scene could not Play");
+	for (int i = 0; i < 120; ++i) {
+		Require(play.Update(1.f / 120, {1, 1, true}),
+		        "model-only update failed");
+	}
+	Require(
+	    TransformUtils::AreEqual(play.GetScene().FindObject(target)->transform,
+	                             object.transform) &&
+	        TransformUtils::AreEqual(visual.FindObject(target)->transform,
+	                                 object.transform),
+	    "model without behavior moved");
+
+	SceneObject camera;
+	camera.name = "Static follow";
+	camera.followCamera = FollowCameraSettings{};
+	camera.followCamera->target = target;
+	const auto cameraId = visual.CreateObject(camera);
+	auto invalid = fallback;
+	invalid.position = invalid.target;
+	Require(play.Start(visual, error, invalid),
+	        "Follow Camera unnecessarily required character or valid unused "
+	        "fallback");
+	for (int i = 0; i < 120; ++i) {
+		Require(play.Update(1.f / 120, {}), "camera-only update failed");
+	}
+	Require(Near(play.GetCameraPose().position.x, 3) &&
+	            Near(play.GetCameraPose().position.y, 7) &&
+	            Near(play.GetCameraPose().position.z, -2),
+	        "camera-only pose wrong");
+	visual.DestroyObject(cameraId);
+	const auto cameraBefore = play.GetCameraPose();
+	Require(!play.Start(visual, error, invalid) && !error.empty() &&
+	            play.IsPlaying() &&
+	            samePose(play.GetCameraPose(), cameraBefore),
+	        "invalid fallback destroyed running session");
+
+	Scene actor;
+	auto objects = SampleStage::Create();
+	objects.erase(6);
+	objects.at(5).respawn.reset();
+	actor.ReplaceObjects(std::move(objects));
+	Require(play.Start(actor, error, fallback),
+	        "character without camera/respawn could not Play");
+	for (int i = 0; i < 120; ++i) {
+		Require(play.Update(1.f / 120, {}), "character-only settling failed");
+	}
+	const auto ground = play.GetScene().FindObject(5)->transform.translation;
+	Require(Near(ground.y, 0.9f), "character without camera did not land");
+	Require(play.Update(1.f / 120, {1, 0, true}), "character-only jump failed");
+	for (int i = 0; i < 24; ++i) {
+		Require(play.Update(1.f / 120, {1, 0, false}),
+		        "character-only movement failed");
+	}
+	const auto moved = play.GetScene().FindObject(5)->transform.translation;
+	Require(moved.x > ground.x + 0.5f && moved.y > ground.y + 0.5f &&
+	            samePose(play.GetCameraPose(), fallback),
+	        "character-only movement changed fallback camera or failed");
+	Require(
+	    play.Start(empty, error, fallback) && play.Update(1.f / 120, {}),
+	    "restart without former character/camera retained stale components");
+	play.Stop();
+	std::cout << "PASS: empty/model-only/character-only/camera-only Play, "
+	             "fallback camera, restart and invalid-pose preservation\n";
+}
+
+void CharacterRequiresCollider() {
+	Scene scene;
+	scene.ReplaceObjects(SampleStage::Create());
+	SceneSimulation play;
+	std::string error;
+	Require(play.Start(scene, error), "valid character startup failed");
+	Require(play.Update(1.f / 120, {}), "valid character update failed");
+	const auto before = play.GetScene().FindObject(5)->transform;
+	scene.FindObject(5)->collider.reset();
+	Require(!play.Start(scene, error) && !error.empty() &&
+	            error.find("Box Collider") != std::string::npos,
+	        "character without collider was accepted or error missing");
+	Require(play.IsPlaying() &&
+	            TransformUtils::AreEqual(
+	                play.GetScene().FindObject(5)->transform, before),
+	        "missing collider replaced active runtime");
+	play.Stop();
+	Require(!play.Start(scene, error) && !play.IsPlaying(),
+	        "invalid character started stopped runtime");
+	// The requirement belongs to CharacterController, not to Play itself.
+	scene.FindObject(5)->character.reset();
+	scene.FindObject(5)->respawn.reset();
+	Require(play.Start(scene, error) && error.empty() &&
+	            play.Update(1.f / 120, {}),
+	        "scene without character incorrectly requires a collider");
+	Require(!play.GetScene().FindObject(5)->collider,
+	        "missing collider was silently created");
+	play.Stop();
+	Scene empty;
+	Require(play.Start(empty, error) && error.empty() &&
+	            play.Update(1.f / 120, {}),
+	        "empty scene could not Play after validation failure");
+	std::cout << "PASS: CharacterController requires Box Collider; missing "
+	             "dependency preserves runtime; scenes without character still "
+	             "Play\n";
+}
+
 void SimulationAndDocument() {
 	SceneDocument document;
 	document.GetScene().ReplaceObjects(SampleStage::Create());
@@ -199,7 +340,7 @@ void SimulationAndDocument() {
 	// Invalid starts must preserve an already running session.
 	Scene bad;
 	bad.ReplaceObjects(original);
-	bad.FindObject(5)->collider.reset();
+	bad.FindObject(5)->character->gravity = 0;
 	const auto runtimeBefore = play.GetScene().FindObject(5)->transform;
 	Require(!play.Start(bad, error) && !error.empty() && play.IsPlaying() &&
 	            TransformUtils::AreEqual(
@@ -272,6 +413,8 @@ void SimulationAndDocument() {
 void RunSceneSimulationTests() {
 	InputRouting();
 	Components();
+	OptionalComponents();
+	CharacterRequiresCollider();
 	SimulationAndDocument();
 	std::cout << "PASS: component authoring/history, save/load, sample Play, "
 	             "floor/wall/jump, camera, fall/respawn, Stop isolation and "

@@ -58,9 +58,6 @@ bool ColliderInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 			    "The collider cannot be represented at this transform. Adjust "
 			    "position or scale, or fit the collider again.");
 		}
-		ImGui::TextWrapped(
-		    "The green box is the world-axis-aligned collision shape. Center "
-		    "and Half Size use object-local coordinates.");
 		auto edited = *object.collider;
 		bool valueChanged = ui.DragFloat3("Collider Center", edited.center,
 		                                  0.01f, -10000, 10000);

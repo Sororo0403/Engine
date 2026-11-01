@@ -14,9 +14,9 @@ class InputSystem;
 class EditorPlayMode {
   public:
 	/// <summary>
-	/// Gameパネルから要求する再生・停止・サンプル作成・描画エラーの通知
+	/// Gameパネルから要求する再生・停止・描画エラーの通知
 	/// </summary>
-	enum class Action { NONE, PLAY, STOP, SAMPLE, RENDER_ERROR };
+	enum class Action { NONE, PLAY, STOP, RENDER_ERROR };
 	/// <summary>
 	/// 共通描画機能を参照し、再生シーンを保持する
 	/// </summary>
@@ -30,19 +30,21 @@ class EditorPlayMode {
 	/// <returns>true:成功 false:作成失敗</returns>
 	bool Initialize();
 	/// <summary>
-	/// Gameパネルを構築して再生・停止・サンプル作成の要求を取得する
+	/// Gameパネルを構築して再生・停止の要求を取得する
 	/// </summary>
 	/// <param name="ui">UI機能</param>
-	/// <param name="canStart">再生とサンプル作成を受け付けるか</param>
+	/// <param name="canStart">再生開始を受け付けるか</param>
 	/// <returns>ユーザーが要求した操作</returns>
 	Action DrawUI(const ImGuiSystem &ui, bool canStart);
 	/// <summary>
 	/// 編集シーンを変更せずに再生を始める
 	/// </summary>
 	/// <param name="scene">編集シーン</param>
-	/// <param name="error">設定の不足や配置エラー</param>
+	/// <param name="error">追加済みコンポーネントの設定や配置エラー</param>
+	/// <param name="fallbackPose">追従カメラがない場合に使用するSceneビューの姿勢</param>
 	/// <returns>true:開始成功 false:設定が無効</returns>
-	bool Start(const Scene &scene, std::string &error);
+	bool Start(const Scene &scene, std::string &error,
+	           const CameraPose &fallbackPose = CameraPose{});
 	/// <summary>
 	/// 再生シーンを破棄する。編集シーンとUndo履歴は保持する
 	/// </summary>

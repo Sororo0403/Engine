@@ -99,9 +99,7 @@ bool EditorScene::Update(float deltaTime) {
 	performancePanel_.Record(deltaTime);
 	gizmo_.BeginFrame();
 
-	ui_.BeginDisabled(playMode_.IsPlaying());
 	EditorAction action = DrawMenuBar();
-	ui_.EndDisabled();
 	dockLayout_.Draw(ui_, resetDockLayout_);
 	resetDockLayout_ = false;
 	if (exitQueued_ && playMode_.IsPlaying()) {
@@ -119,12 +117,10 @@ bool EditorScene::Update(float deltaTime) {
 		FinishEdit();
 		sceneViewPanel_.CancelSelection();
 		std::string error;
-		if (!playMode_.Start(document_.GetScene(), error)) {
+		if (!playMode_.Start(document_.GetScene(), error,
+		                     cameraController_.GetPose())) {
 			ShowError(std::move(error));
 		}
-	}
-	if (playAction == EditorPlayMode::Action::SAMPLE && !IsBusy()) {
-		StartAction(EditorAction::NEW_SAMPLE);
 	}
 	if (playMode_.IsPlaying()) {
 		playFrame_ = true;
@@ -653,6 +649,7 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		return action;
 	}
 
+	ui_.BeginDisabled(playMode_.IsPlaying());
 	if (ui_.BeginMenu("File")) {
 		const bool enabled = !IsBusy();
 
@@ -864,6 +861,8 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 
 		ui_.EndMenu();
 	}
+
+	ui_.EndDisabled();
 
 	if (ui_.BeginMenu("Help")) {
 		if (ui_.MenuItem("Controls...", nullptr, !IsBusy())) {

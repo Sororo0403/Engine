@@ -25,7 +25,8 @@ CameraPose MakePose(const DirectX::XMFLOAT3 &target,
 }
 } // namespace
 
-bool SceneSimulation::Start(const Scene &source, std::string &error) {
+bool SceneSimulation::Start(const Scene &source, std::string &error,
+                            const CameraPose &fallbackPose) {
 	try {
 		error.clear();
 		SceneObjectId character = 0, camera = 0;
@@ -37,8 +38,8 @@ bool SceneSimulation::Start(const Scene &source, std::string &error) {
 					return false;
 				}
 				if (!object.collider || !object.character->IsValid()) {
-					error = "Character Controller requires a valid Box "
-					        "Collider and movement settings.";
+					error = "Character Controller requires a Box Collider and "
+					        "valid movement settings.";
 					return false;
 				}
 				character = id;
@@ -60,49 +61,52 @@ bool SceneSimulation::Start(const Scene &source, std::string &error) {
 				return false;
 			}
 		}
-		if (!character || !camera) {
-			error = "Add a Character Controller and a Follow Camera, then "
-			        "choose the camera target.";
-			return false;
-		}
 		CollisionWorld world;
 		if (!world.Rebuild(source, character)) {
 			error = "A scene collider cannot be represented at its transform.";
 			return false;
 		}
-		const auto &object = *source.FindObject(character);
 		CharacterController controller;
-		if (!controller.Initialize(object.transform, *object.collider,
-		                           *object.character, world)) {
-			error = "The character starts inside a collider or has an invalid "
-			        "transform.";
-			return false;
-		}
-		auto spawn = object.transform.translation;
-		if (object.respawn) {
-			const auto &settings = *object.respawn;
-			if (!settings.useStartPosition) {
-				spawn = settings.position;
-			}
-			if (spawn.y <= settings.minimumY ||
-			    object.transform.translation.y <= settings.minimumY ||
-			    !controller.Teleport(spawn, world)) {
-				error = "The character and its respawn point must be above "
-				        "Fall Below Y and outside solid colliders.";
+		DirectX::XMFLOAT3 spawn{};
+		if (character) {
+			const auto &object = *source.FindObject(character);
+			if (!controller.Initialize(object.transform, *object.collider,
+			                           *object.character, world)) {
+				error =
+				    "The character starts inside a collider or has an invalid "
+				    "transform.";
 				return false;
 			}
-			if (!controller.Teleport(object.transform.translation, world)) {
-				return false;
+			spawn = object.transform.translation;
+			if (object.respawn) {
+				const auto &settings = *object.respawn;
+				if (!settings.useStartPosition) {
+					spawn = settings.position;
+				}
+				if (spawn.y <= settings.minimumY ||
+				    object.transform.translation.y <= settings.minimumY ||
+				    !controller.Teleport(spawn, world)) {
+					error = "The character and its respawn point must be above "
+					        "Fall Below Y and outside solid colliders.";
+					return false;
+				}
+				if (!controller.Teleport(object.transform.translation, world)) {
+					return false;
+				}
 			}
 		}
-		const auto &cameraSettings = *source.FindObject(camera)->followCamera;
-		const auto pose = MakePose(
-		    source.FindObject(cameraSettings.target)->transform.translation,
-		    cameraSettings);
+		auto pose = fallbackPose;
+		if (camera) {
+			const auto &settings = *source.FindObject(camera)->followCamera;
+			pose = MakePose(
+			    source.FindObject(settings.target)->transform.translation,
+			    settings);
+		}
 		Camera validator;
 		if (!validator.SetPose(pose)) {
-			error = "The Follow Camera pose cannot be represented. Adjust "
-			        "offsets or target position.";
+			error = camera ? "The Follow Camera pose cannot be represented. "
+			                 "Adjust offsets or target position."
+			               : "The Scene view camera pose is invalid.";
 			return false;
 		}
 		auto objects = source.GetObjects();
@@ -130,53 +134,60 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input) {
 		return false;
 	}
 	auto next = controller_;
-	if (!next.Update(seconds, input, world_)) {
-		return false;
-	}
-	const auto *object = scene_.FindObject(character_);
-	if (!object) {
-		return false;
-	}
 	bool respawned = false;
-	if (object->respawn &&
-	    next.GetTransform().translation.y < object->respawn->minimumY) {
-		if (!next.Teleport(spawn_, world_)) {
+	if (character_) {
+		if (!next.Update(seconds, input, world_)) {
 			return false;
 		}
-		respawned = true;
+		const auto *object = scene_.FindObject(character_);
+		if (!object) {
+			return false;
+		}
+
+		if (object->respawn &&
+		    next.GetTransform().translation.y < object->respawn->minimumY) {
+			if (!next.Teleport(spawn_, world_)) {
+				return false;
+			}
+			respawned = true;
+		}
 	}
-	const auto *cameraObject = scene_.FindObject(camera_);
-	if (!cameraObject || !cameraObject->followCamera) {
-		return false;
-	}
-	const auto &settings = *cameraObject->followCamera;
-	const auto *target = scene_.FindObject(settings.target);
-	if (!target) {
-		return false;
-	}
-	const auto desired =
-	    MakePose(settings.target == character_ ? next.GetTransform().translation
-	                                           : target->transform.translation,
-	             settings);
-	const float blend =
-	    respawned || settings.smoothing == 0
-	        ? 1.0f
-	        : static_cast<float>(-std::expm1(-double(settings.smoothing) *
-	                                         std::min(seconds, 0.1f)));
 	auto pose = pose_;
-	auto lerp = [blend](auto &a, const auto &b) {
-		a.x += (b.x - a.x) * blend;
-		a.y += (b.y - a.y) * blend;
-		a.z += (b.z - a.z) * blend;
-	};
-	lerp(pose.position, desired.position);
-	lerp(pose.target, desired.target);
-	Camera validator;
-	if (!validator.SetPose(pose)) {
-		return false;
+	if (camera_) {
+		const auto *cameraObject = scene_.FindObject(camera_);
+		if (!cameraObject || !cameraObject->followCamera) {
+			return false;
+		}
+		const auto &settings = *cameraObject->followCamera;
+		const auto *target = scene_.FindObject(settings.target);
+		if (!target) {
+			return false;
+		}
+		const auto desired = MakePose(settings.target == character_
+		                                  ? next.GetTransform().translation
+		                                  : target->transform.translation,
+		                              settings);
+		const float blend =
+		    respawned || settings.smoothing == 0
+		        ? 1.0f
+		        : static_cast<float>(-std::expm1(-double(settings.smoothing) *
+		                                         std::min(seconds, 0.1f)));
+		auto lerp = [blend](auto &a, const auto &b) {
+			a.x += (b.x - a.x) * blend;
+			a.y += (b.y - a.y) * blend;
+			a.z += (b.z - a.z) * blend;
+		};
+		lerp(pose.position, desired.position);
+		lerp(pose.target, desired.target);
+		Camera validator;
+		if (!validator.SetPose(pose)) {
+			return false;
+		}
 	}
 	controller_ = next;
-	scene_.FindObject(character_)->transform = next.GetTransform();
+	if (character_) {
+		scene_.FindObject(character_)->transform = next.GetTransform();
+	}
 	pose_ = pose;
 	return true;
 }

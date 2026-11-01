@@ -18,3 +18,7 @@ msbuild Engine.slnx /m:1 /p:Configuration=Release /p:Platform=x64
 Editorの衝突設定については、モデル頂点からの形状合わせ、コンポーネント追加・連続編集・削除のUndo／Redo、未保存状態、複製・削除後の形状保持も検証する。
 
 シーン制作の統合テストでは、サンプルを保存して読み戻し、Playで着地・ジャンプ・壁への衝突・追従・落下復帰を確認する。Stop後の編集シーン・履歴・保存地点の保持、2回目のPlayの初期化、無効な開始状態と復帰先の拒否、Game以外への入力漏れも検証する。
+
+コンポーネントがない空のシーン、モデルだけ、Character Controllerだけ、Follow Cameraだけの再生を検証する。追従カメラがない場合の固定描画姿勢、再生し直した際の状態初期化、不正な描画姿勢での状態保持も含む。
+
+Character ControllerのBox Collider必須条件、不足時の再生状態保持、Character Controllerを外したシーンや空のシーンではPlayを開始・更新できることを検証する。
