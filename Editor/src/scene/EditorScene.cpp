@@ -266,8 +266,12 @@ bool EditorScene::Update(float deltaTime) {
 			          "editing scene is unchanged.");
 		}
 
-		inspectorPanel_.DrawReadOnly(ui_, playMode_.GetSession().GetScene(),
-		                             playSelection_.GetActiveId());
+		if (const auto copied = inspectorPanel_.DrawReadOnly(
+		        ui_, playMode_.GetSession().GetScene(),
+		        playSelection_.GetActiveId());
+		    copied && !clipboard_.CopyTransform(*copied)) {
+			ShowError("Could not copy an invalid runtime Transform.");
+		}
 
 		playStatePanel_.Draw(ui_, playMode_.GetSession());
 

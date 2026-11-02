@@ -427,11 +427,12 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 	return changed;
 }
 
-void InspectorPanel::DrawReadOnly(const ImGuiSystem &ui, const Scene &scene,
-                                  SceneObjectId selectedObjectId) const {
+std::optional<Transform>
+InspectorPanel::DrawReadOnly(const ImGuiSystem &ui, const Scene &scene,
+                             SceneObjectId selectedObjectId) const {
 	if (!ui.BeginWindow("Inspector")) {
 		ui.EndWindow();
-		return;
+		return std::nullopt;
 	}
 
 	const auto *object = scene.FindObject(selectedObjectId);
@@ -439,7 +440,7 @@ void InspectorPanel::DrawReadOnly(const ImGuiSystem &ui, const Scene &scene,
 	if (!object) {
 		ui.Text("No object selected.");
 		ui.EndWindow();
-		return;
+		return std::nullopt;
 	}
 
 	ui.Text(std::format("Name: {}", object->name));
@@ -449,7 +450,17 @@ void InspectorPanel::DrawReadOnly(const ImGuiSystem &ui, const Scene &scene,
 	ui.Checkbox("Visible", visible);
 	ui.EndDisabled();
 
+	std::optional<Transform> copied;
+
 	if (ui.CollapsingHeader("Transform")) {
+		ui.BeginDisabled(!TransformUtils::IsValid(object->transform));
+
+		if (ui.Button("Copy Transform")) {
+			copied = object->transform;
+		}
+
+		ui.EndDisabled();
+
 		auto transform = object->transform;
 		auto rotation = TransformUtils::RotationToEuler(transform.rotation);
 		rotation = {DirectX::XMConvertToDegrees(rotation.x),
@@ -523,4 +534,5 @@ void InspectorPanel::DrawReadOnly(const ImGuiSystem &ui, const Scene &scene,
 	}
 
 	ui.EndWindow();
+	return copied;
 }

@@ -5,6 +5,7 @@
 #include "scene/SceneObjectId.h"
 
 #include <filesystem>
+#include <optional>
 
 class ImGuiSystem;
 class Scene;
@@ -114,13 +115,15 @@ class InspectorPanel {
 	          bool canPasteTransform = false);
 
 	/// <summary>
-	/// 選択した再生物体の現在値だけを表示する。編集用の固定先・要求・履歴は変更しない
+	/// 選択した再生物体の現在値を表示し、Transformのコピーを返す。編集用の固定先・要求・履歴は変更しない
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
 	/// <param name="scene">変更しない再生シーン</param>
 	/// <param name="selectedObjectId">観察する物体ID。0または不在の場合は未選択を表示する</param>
-	void DrawReadOnly(const ImGuiSystem &ui, const Scene &scene,
-	                  SceneObjectId selectedObjectId) const;
+	/// <returns>コピー操作をした時点のTransform。操作なし、対象なし、または無効な値ではnullopt</returns>
+	std::optional<Transform> DrawReadOnly(const ImGuiSystem &ui,
+	                                      const Scene &scene,
+	                                      SceneObjectId selectedObjectId) const;
 
   private:
 	GameplayInspector gameplayInspector_;

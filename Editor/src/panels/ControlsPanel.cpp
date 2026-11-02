@@ -308,6 +308,15 @@ void ControlsPanel::Draw() {
 	         "Use without Ctrl, Shift or Alt. Shortcuts are ignored while "
 	         "editing text or fields, dragging, showing a popup, or when "
 	         "Editor is not active. Holding a key does not repeat the action."},
+	        {"Play > Inspector > Copy Transform",
+	         "Copy the active runtime object's current position, rotation and "
+	         "scale while running or paused. Stop, inspect the desired editing "
+	         "object, then right-click Transform > Paste Transform. Paste is "
+	         "one Undo operation. The copy is a snapshot: later motion, "
+	         "Restart and Stop do not change it. Object clipboard contents "
+	         "are kept; copying alone changes neither scene nor Undo history. "
+	         "Component settings such as Follow Camera offsets are not "
+	         "copied."},
 	        {"Runtime selection",
 	         "Select running objects in Scene or Hierarchy to inspect their "
 	         "current Transform and component values. Click, Ctrl-click and "
