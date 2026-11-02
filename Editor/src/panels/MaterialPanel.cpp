@@ -3,10 +3,67 @@
 #include "graphics/ui/ImGuiSystem.h"
 #include "platform/windows/PathUtils.h"
 #include <algorithm>
+#include <cmath>
 #include <format>
 #include <imgui.h>
 #include <stdexcept>
 #include <string_view>
+#include <type_traits>
+
+bool MaterialPanel::DraftState::Matches(const MaterialAsset &value,
+                                        const std::string &text,
+                                        bool valid) const {
+	const auto same = [](float a, float b) {
+		return a == b || (std::isnan(a) && std::isnan(b));
+	};
+	const auto &a = asset.data;
+	const auto &b = value.data;
+	return texture == text && textureValid == valid &&
+	       asset.baseColorTexture == value.baseColorTexture &&
+	       a.shadingMode == b.shadingMode &&
+	       same(a.baseColor.x, b.baseColor.x) &&
+	       same(a.baseColor.y, b.baseColor.y) &&
+	       same(a.baseColor.z, b.baseColor.z) &&
+	       same(a.baseColor.w, b.baseColor.w) &&
+	       same(a.uvScale.x, b.uvScale.x) && same(a.uvScale.y, b.uvScale.y) &&
+	       same(a.uvOffset.x, b.uvOffset.x) && same(a.uvOffset.y, b.uvOffset.y);
+}
+
+void MaterialPanel::CommitDraft() {
+	if (states_.empty()) {
+		return;
+	}
+
+	if (!draftStates_.empty() &&
+	    draftStates_[draftCursor_].Matches(draft_, texture_, textureValid_)) {
+		return;
+	}
+
+	DraftState next{draft_, texture_, textureValid_};
+	static_assert(std::is_nothrow_move_constructible_v<DraftState>);
+	const auto index = draftStates_.empty() ? 0 : draftCursor_ + 1;
+	draftStates_.reserve(index + 1);
+	draftStates_.erase(draftStates_.begin() +
+	                       static_cast<std::ptrdiff_t>(index),
+	                   draftStates_.end());
+	draftStates_.push_back(std::move(next));
+	draftCursor_ = index;
+}
+
+bool MaterialPanel::RestoreDraft(std::size_t index) {
+	if (index >= draftStates_.size()) {
+		return false;
+	}
+
+	auto next = draftStates_[index];
+	static_assert(std::is_nothrow_move_assignable_v<MaterialAsset>);
+	draft_ = std::move(next.asset);
+	texture_.swap(next.texture);
+	textureValid_ = next.textureValid;
+	draftCursor_ = index;
+	error_.clear();
+	return true;
+}
 
 bool MaterialPanel::Open(const std::filesystem::path &path,
                          bool discardChanges) {
@@ -25,11 +82,14 @@ bool MaterialPanel::Open(const std::filesystem::path &path,
 	auto selected = path;
 	auto texture = PathUtils::ToUtf8(asset.baseColorTexture);
 	std::vector<MaterialAsset> history{asset};
+	std::vector<DraftState> draftHistory{{asset, texture, true}};
 	path_.swap(selected);
 	texture_.swap(texture);
 	draft_ = std::move(asset);
 	textureValid_ = true;
 	states_.swap(history);
+	draftStates_.swap(draftHistory);
+	draftCursor_ = 0;
 	cursor_ = 0;
 	return true;
 }
@@ -101,7 +161,11 @@ bool MaterialPanel::Save() {
 		return false;
 	}
 
+	std::vector<DraftState> draftHistory{{draft_, texture_, true}};
+
 	if (disk == draft_) {
+		draftStates_.swap(draftHistory);
+		draftCursor_ = 0;
 		return true;
 	}
 
@@ -125,6 +189,8 @@ bool MaterialPanel::Save() {
 	              states_.end());
 	states_.push_back(std::move(next));
 	++cursor_;
+	draftStates_.swap(draftHistory);
+	draftCursor_ = 0;
 	return true;
 }
 
@@ -144,6 +210,7 @@ bool MaterialPanel::Restore(std::size_t index) {
 
 	auto restored = states_[index];
 	auto texture = PathUtils::ToUtf8(restored.baseColorTexture);
+	std::vector<DraftState> draftHistory{{restored, texture, true}};
 
 	if (!MaterialSerializer::Save(path_, restored, error_)) {
 		return false;
@@ -152,6 +219,8 @@ bool MaterialPanel::Restore(std::size_t index) {
 	draft_ = std::move(restored);
 	texture_.swap(texture);
 	cursor_ = index;
+	draftStates_.swap(draftHistory);
+	draftCursor_ = 0;
 	return true;
 }
 
@@ -276,6 +345,7 @@ bool MaterialPanel::CreateMaterial(AssetDatabase &assets, bool duplicate) {
 		// 保存後の文書切り替えに必要なデータを、ファイルの作成前に全て用意する。
 		auto texture = PathUtils::ToUtf8(next.baseColorTexture);
 		std::vector<MaterialAsset> history{next};
+		std::vector<DraftState> draftHistory{{next, texture, true}};
 		std::filesystem::create_directories(destination.parent_path());
 
 		if (!MaterialSerializer::Save(path, next, error_, false)) {
@@ -286,6 +356,8 @@ bool MaterialPanel::CreateMaterial(AssetDatabase &assets, bool duplicate) {
 		texture_.swap(texture);
 		draft_ = std::move(next);
 		states_.swap(history);
+		draftStates_.swap(draftHistory);
+		draftCursor_ = 0;
 		cursor_ = 0;
 		textureValid_ = true;
 		error_.clear();
@@ -440,6 +512,10 @@ void MaterialPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				ImGui::EndCombo();
 			}
 
+			if (!ImGui::IsAnyItemActive()) {
+				CommitDraft();
+			}
+
 			{
 				const DisabledScope disabled(ui, !textureValid_ ||
 				                                     !draft_.IsValid());
@@ -451,12 +527,35 @@ void MaterialPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			ui.SameLine();
 
 			if (ui.Button("Revert Draft")) {
+				CommitDraft();
 				auto restored = states_[cursor_];
 				auto texture = PathUtils::ToUtf8(restored.baseColorTexture);
 				draft_ = std::move(restored);
 				textureValid_ = true;
 				texture_.swap(texture);
 				error_.clear();
+				CommitDraft();
+			}
+
+			{
+				const DisabledScope disabled(ui, draftCursor_ == 0);
+
+				if (ui.Button("Undo Draft")) {
+					CommitDraft();
+					if (draftCursor_ > 0) {
+						RestoreDraft(draftCursor_ - 1);
+					}
+				}
+			}
+			ui.SameLine();
+			{
+				const DisabledScope disabled(ui, draftCursor_ + 1 >=
+				                                     draftStates_.size());
+
+				if (ui.Button("Redo Draft")) {
+					CommitDraft();
+					RestoreDraft(draftCursor_ + 1);
+				}
 			}
 
 			const bool edited = HasUnsavedChanges();

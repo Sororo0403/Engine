@@ -463,6 +463,17 @@ void ControlsPanel::Draw() {
 	         "UV and texture behavior stay the same. Old version 1 materials "
 	         "load as Lit; saved assets use version 2. Game export keeps the "
 	         "saved shading mode and the matching shader."},
+	        {"Materials > Undo Draft / Redo Draft",
+	         "Undo or redo unsaved color, UV, shading and texture edits. "
+	         "Draft actions do not write files. A drag or text edit is one "
+	         "step when input finishes. Revert Draft is also undoable. "
+	         "History keeps invalid texture text for later correction. "
+	         "New edits after Undo clear draft Redo. Saving, loading or "
+	         "creating a material starts a new draft history. Undo Material "
+	         "and Redo Material restore saved file versions and affect "
+	         "all users of the shared asset. Finish or revert draft edits "
+	         "before using them. Draft actions leave scene history and "
+	         "saved material history unchanged."},
 	        {"Materials > Duplicate and Assign Slot to Selection",
 	         "Copy the saved material using New Material Name and assign it "
 	         "to Material Slot on all selected objects. Select one object "

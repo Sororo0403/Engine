@@ -82,6 +82,38 @@ class MaterialPanel {
 
   private:
 	/// <summary>
+	/// 未保存の材質と、未解釈の入力を含む画像パス欄の状態
+	/// </summary>
+	struct DraftState {
+		MaterialAsset asset;
+		std::string texture;
+		bool textureValid = true;
+
+		/// <summary>
+		/// 表示と設定が一致するか確認する。同じNaN値の入力は変更とみなさない
+		/// </summary>
+		/// <param name="value">比較する材質の設定</param>
+		/// <param name="text">比較する画像パスの入力文字列</param>
+		/// <param name="valid">画像パスの解釈に成功しているか</param>
+		/// <returns>true:一致 false:不一致</returns>
+		bool Matches(const MaterialAsset &value, const std::string &text,
+		             bool valid) const;
+	};
+
+	/// <summary>
+	/// 現在の下書きを1操作として記録する。同値なら何もしない。新規編集ではRedoを解除する
+	/// </summary>
+	/// <remarks>ドラッグや入力の確定後に呼ぶ。メモリ確保に失敗した場合は下書きと既存履歴を保持する</remarks>
+	void CommitDraft();
+
+	/// <summary>
+	/// 下書き履歴の状態へ戻す。ファイルと保存済みの材質履歴は変更しない
+	/// </summary>
+	/// <param name="index">確定済みの下書き履歴の移動先</param>
+	/// <returns>true:復元成功 false:範囲外。値の準備に失敗した場合は現在値を保持して例外を送出する</returns>
+	bool RestoreDraft(std::size_t index);
+
+	/// <summary>
 	/// 保存済みの材質またはモデル既定材質を、現在指定したスロットへ割り当てる要求を用意する
 	/// </summary>
 	/// <param name="reset">明示的な割り当てを解除する場合はtrue。材質のファイルは変更しない</param>
@@ -118,6 +150,9 @@ class MaterialPanel {
 	bool focusRequested_ = false;
 	std::string newName_ = "New Material";
 	std::string error_;
+	// ファイルへ保存した状態の履歴と、未保存の編集履歴は独立して保持する。
+	std::vector<DraftState> draftStates_;
+	std::size_t draftCursor_ = 0;
 	std::vector<MaterialAsset> states_;
 	std::size_t cursor_ = 0;
 	int assignmentSlot_ = 0;
