@@ -19,6 +19,30 @@ class MaterialPanel {
 	/// <param name="assets">材質ファイルを列挙するアセット管理</param>
 	void Draw(const ImGuiSystem &ui, AssetDatabase &assets);
 
+	/// <summary>
+	/// 現在の編集を保存する。外部変更がある場合は上書きせず失敗する
+	/// </summary>
+	/// <returns>true:保存成功 false:設定や保存先が無効</returns>
+	bool Save();
+
+	/// <summary>
+	/// 保存した材質と異なる編集、または未解釈のテクスチャ入力が残っているか確認する
+	/// </summary>
+	/// <returns>true:未保存の編集あり false:保存済み、または材質を選択していない</returns>
+	bool HasUnsavedChanges() const;
+
+	/// <summary>
+	/// 編集している材質の保存先を取得する
+	/// </summary>
+	/// <returns>材質ファイルのパス。未選択の場合は空</returns>
+	const std::filesystem::path &GetFilePath() const;
+
+	/// <summary>
+	/// 材質の読み込み・編集・保存で発生した最後のエラーを取得する
+	/// </summary>
+	/// <returns>失敗理由。エラーなしの場合は空</returns>
+	const std::string &GetError() const;
+
   private:
 	/// <summary>
 	/// 未保存の編集がない場合に、指定した材質を読み込む
@@ -26,12 +50,6 @@ class MaterialPanel {
 	/// <param name="path">実行ファイル基準の材質パス</param>
 	/// <returns>true:選択成功 false:編集中または読み込み失敗</returns>
 	bool Select(const std::filesystem::path &path);
-
-	/// <summary>
-	/// 現在の編集を保存する。外部変更がある場合は上書きせず失敗する
-	/// </summary>
-	/// <returns>true:保存成功 false:設定や保存先が無効</returns>
-	bool Save();
 
 	/// <summary>
 	/// このパネルで保存した材質の状態へ戻す。外部変更は上書きしない
@@ -43,6 +61,7 @@ class MaterialPanel {
 	std::filesystem::path path_;
 	MaterialAsset draft_;
 	std::string texture_;
+	bool textureValid_ = true;
 	std::string newName_ = "New Material";
 	std::string error_;
 	std::vector<MaterialAsset> states_;

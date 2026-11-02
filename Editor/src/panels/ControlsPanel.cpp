@@ -342,7 +342,11 @@ void ControlsPanel::Draw() {
 	         "edit "
 	         "asset files. Revert Draft discards unsaved edits. Reload "
 	         "Material "
-	         "accepts external changes. Play displays assignments read-only. "
+	         "accepts external changes. The title marks unsaved material "
+	         "drafts. "
+	         "Closing asks to save material and scene changes separately; "
+	         "Cancel keeps pending drafts and a failed save keeps Editor open. "
+	         "Play displays assignments read-only. "
 	         "Game export includes assigned material files and their "
 	         "textures."},
 	        {"Inspector > Color Tint",

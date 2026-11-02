@@ -884,8 +884,10 @@ std::string EditorScene::GetWindowTitle() const {
 	        ? "Untitled"
 	        : PathUtils::ToUtf8(document_.GetFilePath().filename());
 
-	return std::format("{}{} - Editor", name,
-	                   document_.IsModified() ? "*" : "");
+	return std::format(
+	    "{}{} - Editor", name,
+	    document_.IsModified() || materialPanel_.HasUnsavedChanges() ? "*"
+	                                                                 : "");
 }
 
 EditorScene::EditorAction EditorScene::DrawMenuBar() {
@@ -1710,16 +1712,13 @@ void EditorScene::StartAction(EditorAction action) {
 		// 保存確認が終わるまで、実際の操作は保留する
 		pendingAction_ = action;
 
-		if (document_.IsModified()) {
-			const std::string name =
-			    document_.GetFilePath().empty()
-			        ? "Untitled"
-			        : PathUtils::ToUtf8(document_.GetFilePath().filename());
-
-			saveChangesDialog_.Show(name);
-			stage_ = DialogStage::CONFIRM_SAVE;
+		if (action == EditorAction::EXIT &&
+		    materialPanel_.HasUnsavedChanges()) {
+			saveChangesDialog_.Show(
+			    PathUtils::ToUtf8(materialPanel_.GetFilePath().filename()));
+			stage_ = DialogStage::CONFIRM_MATERIAL_SAVE;
 		} else {
-			ExecutePendingAction();
+			ConfirmSceneChanges();
 		}
 
 		return;
@@ -1768,6 +1767,19 @@ void EditorScene::StartAction(EditorAction action) {
 		return;
 	case EditorAction::NONE:
 		return;
+	}
+}
+
+void EditorScene::ConfirmSceneChanges() {
+	if (document_.IsModified()) {
+		const auto name =
+		    document_.GetFilePath().empty()
+		        ? std::string("Untitled")
+		        : PathUtils::ToUtf8(document_.GetFilePath().filename());
+		saveChangesDialog_.Show(name);
+		stage_ = DialogStage::CONFIRM_SAVE;
+	} else {
+		ExecutePendingAction();
 	}
 }
 
@@ -2075,6 +2087,34 @@ void EditorScene::UpdateDialogs() {
 	switch (stage_) {
 	case DialogStage::IDLE:
 		return;
+
+	case DialogStage::CONFIRM_MATERIAL_SAVE: {
+		const auto result = saveChangesDialog_.Draw(ui_);
+
+		if (result == SaveChangesResult::SAVE) {
+			try {
+				if (materialPanel_.Save()) {
+					ConfirmSceneChanges();
+				} else {
+					ShowError("Could not save the material: " +
+					          materialPanel_.GetError());
+				}
+			} catch (const std::exception &error) {
+				Logger::Error(
+				    std::format("EditorScene::SaveMaterial: {}", error.what()));
+				ShowError("Could not save the material. Your edits were kept. "
+				          "See the log for details.");
+			}
+		} else if (result == SaveChangesResult::DISCARD) {
+			// 後続のシーン確認でCancelした場合に備え、材質の編集中の値はまだ破棄しない。
+			ConfirmSceneChanges();
+		} else if (result == SaveChangesResult::CANCEL) {
+			pendingAction_ = EditorAction::NONE;
+			stage_ = DialogStage::IDLE;
+		}
+
+		return;
+	}
 
 	case DialogStage::CONFIRM_SAVE: {
 		const auto result = saveChangesDialog_.Draw(ui_);

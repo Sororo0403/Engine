@@ -186,6 +186,7 @@ class EditorScene final : public IScene {
 	enum class DialogStage {
 		IDLE,
 		CONFIRM_SAVE,
+		CONFIRM_MATERIAL_SAVE,
 		OPEN_FILE,
 		SAVE_FILE,
 		SAVE_COPY_FILE,
@@ -229,6 +230,11 @@ class EditorScene final : public IScene {
 	/// 保存確認後に保留していた操作を実行する
 	/// </summary>
 	void ExecutePendingAction();
+
+	/// <summary>
+	/// 保留中のNew・Open・Exitに対してシーンの保存を確認し、変更がなければ操作を続ける
+	/// </summary>
+	void ConfirmSceneChanges();
 
 	/// <summary>
 	/// シーンを読み込み、成功した場合に選択・カメラ・最近の一覧を更新する

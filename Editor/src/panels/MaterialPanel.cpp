@@ -7,7 +7,7 @@
 #include <stdexcept>
 
 bool MaterialPanel::Select(const std::filesystem::path &path) {
-	if (!states_.empty() && draft_ != states_[cursor_]) {
+	if (HasUnsavedChanges()) {
 		error_ =
 		    "Save or revert the current material before selecting another.";
 		return false;
@@ -25,13 +25,14 @@ bool MaterialPanel::Select(const std::filesystem::path &path) {
 	path_.swap(selected);
 	texture_.swap(texture);
 	draft_ = std::move(asset);
+	textureValid_ = true;
 	states_.swap(history);
 	cursor_ = 0;
 	return true;
 }
 
 bool MaterialPanel::Save() {
-	if (states_.empty() || !draft_.IsValid()) {
+	if (states_.empty() || !textureValid_ || !draft_.IsValid()) {
 		error_ = "Invalid material values or texture path.";
 		return false;
 	}
@@ -76,7 +77,7 @@ bool MaterialPanel::Save() {
 }
 
 bool MaterialPanel::Restore(std::size_t index) {
-	if (index >= states_.size() || draft_ != states_[cursor_]) {
+	if (index >= states_.size() || HasUnsavedChanges()) {
 		return false;
 	}
 
@@ -128,7 +129,7 @@ void MaterialPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets) {
 	}
 
 	try {
-		const bool dirty = !states_.empty() && draft_ != states_[cursor_];
+		const bool dirty = HasUnsavedChanges();
 		{
 			const DisabledScope disabled(ui, dirty);
 			ui.InputText("New Material Name", newName_);
@@ -175,11 +176,14 @@ void MaterialPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets) {
 			ImGui::DragFloat2("UV Offset", &draft_.data.uvOffset.x, 0.01f);
 
 			if (ui.InputText("Texture", texture_)) {
+				textureValid_ = false;
 				draft_.baseColorTexture = PathUtils::FromUtf8(texture_);
+				textureValid_ = true;
 			}
 
 			{
-				const DisabledScope disabled(ui, !draft_.IsValid());
+				const DisabledScope disabled(ui, !textureValid_ ||
+				                                     !draft_.IsValid());
 
 				if (ui.Button("Save Material")) {
 					Save();
@@ -191,11 +195,12 @@ void MaterialPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets) {
 				auto restored = states_[cursor_];
 				auto texture = PathUtils::ToUtf8(restored.baseColorTexture);
 				draft_ = std::move(restored);
+				textureValid_ = true;
 				texture_.swap(texture);
 				error_.clear();
 			}
 
-			const bool edited = draft_ != states_[cursor_];
+			const bool edited = HasUnsavedChanges();
 			{
 				const DisabledScope disabled(ui, edited || cursor_ == 0);
 
@@ -229,4 +234,16 @@ void MaterialPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets) {
 	}
 
 	ui.EndWindow();
+}
+
+bool MaterialPanel::HasUnsavedChanges() const {
+	return !states_.empty() && (!textureValid_ || draft_ != states_[cursor_]);
+}
+
+const std::filesystem::path &MaterialPanel::GetFilePath() const {
+	return path_;
+}
+
+const std::string &MaterialPanel::GetError() const {
+	return error_;
 }
