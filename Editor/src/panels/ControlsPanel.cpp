@@ -254,6 +254,15 @@ void ControlsPanel::Draw() {
 	         "Ctrl+A and range selection use the filtered list. Existing "
 	         "selections remain selected when filtered out; Reveal Active "
 	         "clears filters to show the active object."},
+	        {"Edit > Drop Colliders to Surface",
+	         "Move selected Box Colliders straight down until the first one "
+	         "reaches another collider's top surface. Selection spacing is "
+	         "preserved; hidden colliders also count. Collision uses the same "
+	         "world-axis boxes as Play, with a tiny clearance. All selected "
+	         "objects need colliders. No surface or an existing overlap leaves "
+	         "them unchanged. The action supports Undo/Redo; Hierarchy's "
+	         "context menu has the same command. Drop to Ground still aligns "
+	         "visible model bounds to Y=0."},
 	        {"Edit > Box Colliders",
 	         "Apply to all selected objects, including hidden ones. Add "
 	         "Missing keeps existing collider shapes. Fit All to Models "

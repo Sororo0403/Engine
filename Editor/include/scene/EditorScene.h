@@ -142,6 +142,7 @@ class EditorScene final : public IScene {
 		PASTE_OBJECTS,
 		RESET_TRANSFORMS,
 		DROP_TO_GROUND,
+		DROP_TO_SURFACE,
 		ADD_COLLIDERS,
 		FIT_COLLIDERS,
 		REMOVE_COLLIDERS,
@@ -425,6 +426,11 @@ class EditorScene final : public IScene {
 	/// 表示中の選択モデルの最下端をY=0へ合わせ、全選択物体を同じ距離だけ移動する
 	/// </summary>
 	void DropSelectionToGround();
+
+	/// <summary>
+	/// 選択した全Colliderを、配置関係を保って真下の別Collider上面へ下ろす。全変更を1操作として記録する
+	/// </summary>
+	void DropSelectionToSurface();
 
 	/// <summary>
 	/// 選択した全物体の名前を保持し、一括リネームのプレビューを開く

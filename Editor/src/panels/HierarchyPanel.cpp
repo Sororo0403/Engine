@@ -2,6 +2,7 @@
 
 #include "gameplay/FollowCameraUsage.h"
 #include "graphics/ui/ImGuiSystem.h"
+#include "physics/ColliderPlacement.h"
 #include "scene/Scene.h"
 #include "selection/EditorSelection.h"
 
@@ -303,6 +304,12 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 
 				if (ui.MenuItem("Drop to Ground", "Shift+G", canGround)) {
 					result.action = Action::DROP_TO_GROUND;
+				}
+
+				if (ui.MenuItem("Drop Colliders to Surface", nullptr,
+				                ColliderPlacement::CanDrop(
+				                    scene, selection.GetIds()))) {
+					result.action = Action::DROP_TO_SURFACE;
 				}
 
 				if (ui.MenuItem("Align X to Active", nullptr,

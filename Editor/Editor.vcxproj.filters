@@ -578,4 +578,12 @@
       <Filter>src\gameplay</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\physics\ColliderPlacement.h">
+      <Filter>include\physics</Filter>
+    </ClInclude>
+    <ClCompile Include="src\physics\ColliderPlacement.cpp">
+      <Filter>src\physics</Filter>
+    </ClCompile>
+  </ItemGroup>
 </Project>

@@ -18,6 +18,7 @@
 #include "math/Ray.h"
 #include "math/TransformUtils.h"
 #include "physics/BoxColliderUtils.h"
+#include "physics/ColliderPlacement.h"
 #include "platform/windows/PathUtils.h"
 #include "scene/PrimitiveObjects.h"
 #include "scene/Scene.h"
@@ -317,6 +318,9 @@ bool EditorScene::Update(float deltaTime) {
 					break;
 				case HierarchyPanel::Action::DROP_TO_GROUND:
 					DropSelectionToGround();
+					break;
+				case HierarchyPanel::Action::DROP_TO_SURFACE:
+					DropSelectionToSurface();
 					break;
 				case HierarchyPanel::Action::ALIGN_X:
 					AlignSelection(AlignmentAxis::X);
@@ -972,6 +976,13 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			action = EditorAction::DROP_TO_GROUND;
 		}
 
+		if (ui_.MenuItem("Drop Colliders to Surface", nullptr,
+		                 objectEnabled &&
+		                     ColliderPlacement::CanDrop(document_.GetScene(),
+		                                                selection_.GetIds()))) {
+			action = EditorAction::DROP_TO_SURFACE;
+		}
+
 		if (ui_.BeginMenu("Box Colliders")) {
 			bool hasCollider = false;
 			bool hasMissing = false;
@@ -1429,6 +1440,9 @@ void EditorScene::StartAction(EditorAction action) {
 		return;
 	case EditorAction::DROP_TO_GROUND:
 		DropSelectionToGround();
+		return;
+	case EditorAction::DROP_TO_SURFACE:
+		DropSelectionToSurface();
 		return;
 	case EditorAction::ADD_COLLIDERS:
 		ConfigureSelectedColliders(ColliderOperation::ADD_MISSING);
@@ -2754,6 +2768,35 @@ void EditorScene::DropSelectionToGround() {
 		                          error.what()));
 		ShowError("Could not move the selection to the ground. See the log for "
 		          "details.");
+	}
+}
+
+void EditorScene::DropSelectionToSurface() {
+	if (!HasSelection()) {
+		return;
+	}
+
+	try {
+		FinishEdit();
+		DirectX::XMFLOAT3 translation;
+		std::string error;
+
+		if (!ColliderPlacement::GetDropTranslation(document_.GetScene(),
+		                                           selection_.GetIds(),
+		                                           translation, error)) {
+			ShowError(std::move(error));
+			return;
+		}
+
+		if (!document_.GetHistory().TranslateObjects(selection_.GetIds(),
+		                                             translation)) {
+			ShowError("Could not drop the selection to a collider surface.");
+		}
+	} catch (const std::exception &error) {
+		Logger::Error(std::format("EditorScene::DropSelectionToSurface: {}",
+		                          error.what()));
+		ShowError("Could not drop the selection to a collider surface. See the "
+		          "log for details.");
 	}
 }
 
