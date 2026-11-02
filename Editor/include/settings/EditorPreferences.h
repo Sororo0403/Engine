@@ -16,6 +16,8 @@ class EditorPreferences {
   public:
 	bool showGrid = true;
 	bool showSelectionBounds = true;
+	bool showCameraGuides = true;
+	bool showRespawnGuides = true;
 	ColliderBounds::Mode colliderDisplay = ColliderBounds::Mode::SELECTED;
 	bool snapping = false;
 	TransformGizmo::Operation operation = TransformGizmo::Operation::TRANSLATE;

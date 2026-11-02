@@ -37,6 +37,10 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 		EditorPreferences loaded;
 		loaded.showGrid = json.at("showGrid").get<bool>();
 		loaded.showSelectionBounds = json.at("showSelectionBounds").get<bool>();
+		// 補助線の表示設定がない旧ファイルでは、従来どおり表示する。
+		loaded.showCameraGuides = json.value("showCameraGuides", true);
+		loaded.showRespawnGuides = json.value("showRespawnGuides", true);
+
 		// 旧設定には従来と同じ選択物体のみの表示を適用する。
 		if (json.contains("colliderDisplay")) {
 			const auto mode = json.at("colliderDisplay").get<std::string>();
@@ -255,6 +259,8 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		      {"height", gameExport.height}}},
 		    {"showGrid", showGrid},
 		    {"showSelectionBounds", showSelectionBounds},
+		    {"showCameraGuides", showCameraGuides},
+		    {"showRespawnGuides", showRespawnGuides},
 		    {"colliderDisplay",
 		     colliderDisplay == ColliderBounds::Mode::NONE  ? "none"
 		     : colliderDisplay == ColliderBounds::Mode::ALL ? "all"
@@ -307,6 +313,8 @@ bool EditorPreferences::operator==(const EditorPreferences &other) const {
 	       gameExport.height == other.gameExport.height &&
 	       showGrid == other.showGrid &&
 	       showSelectionBounds == other.showSelectionBounds &&
+	       showCameraGuides == other.showCameraGuides &&
+	       showRespawnGuides == other.showRespawnGuides &&
 	       snapping == other.snapping && operation == other.operation &&
 	       space == other.space &&
 	       snap.translation.x == other.snap.translation.x &&

@@ -300,6 +300,11 @@ void ControlsPanel::Draw() {
 	         "in one Undo operation. Lens, scale and follow smoothing are "
 	         "preserved. Follow Camera needs a target, a view not straight up "
 	         "or down, and offsets within its allowed range."},
+	        {"View > Camera Guides / Respawn Guides",
+	         "Toggle selected Camera frustums and follow links, or Respawn "
+	         "position and fall-height markers. Each setting is saved for "
+	         "the next Editor session. These settings affect only Scene "
+	         "guides; they do not change Game rendering or gameplay."},
 	        {"Selected Camera in Scene",
 	         "The gold wireframe shows Near/Far Clip and the field of view "
 	         "at the aspect ratio in Game Settings. Follow Camera previews "

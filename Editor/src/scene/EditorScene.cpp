@@ -67,6 +67,8 @@ bool EditorScene::Initialize() {
 	showGrid_ = preferences_.showGrid;
 	sceneGrid_.SetSettings(preferences_.grid);
 	showSelectionBounds_ = preferences_.showSelectionBounds;
+	showCameraGuides_ = preferences_.showCameraGuides;
+	showRespawnGuides_ = preferences_.showRespawnGuides;
 	colliderDisplay_ = preferences_.colliderDisplay;
 	gizmo_.SetSnapSettings(preferences_.snap);
 	gizmo_.SetSnapping(preferences_.snapping);
@@ -655,20 +657,23 @@ bool EditorScene::Update(float deltaTime) {
 
 	for (const SceneObjectId id : selection_.GetIds()) {
 		if (const auto *object = scene.FindObject(id);
-		    object && !respawnPreview_.Update(renderer_, *object)) {
+		    showRespawnGuides_ && object &&
+		    !respawnPreview_.Update(renderer_, *object)) {
 			Logger::Error(
 			    "EditorScene: 落下復帰のプレビューを登録できませんでした。");
 			return false;
 		}
 
-		if (!cameraFrustum_.Update(renderer_, scene, id, exportConfig_.width,
+		if (showCameraGuides_ &&
+		    !cameraFrustum_.Update(renderer_, scene, id, exportConfig_.width,
 		                           exportConfig_.height)) {
 			Logger::Error(
 			    "EditorScene: カメラの撮影範囲を登録できませんでした。");
 			return false;
 		}
 
-		if (!followCameraPreview_.Update(renderer_, scene, id)) {
+		if (showCameraGuides_ &&
+		    !followCameraPreview_.Update(renderer_, scene, id)) {
 			Logger::Error(
 			    "EditorScene: カメラの追従関係を登録できませんでした。");
 			return false;
@@ -711,6 +716,8 @@ void EditorScene::Finalize() {
 		EditorPreferences current;
 		current.showGrid = showGrid_;
 		current.showSelectionBounds = showSelectionBounds_;
+		current.showCameraGuides = showCameraGuides_;
+		current.showRespawnGuides = showRespawnGuides_;
 		current.colliderDisplay = colliderDisplay_;
 		current.operation = gizmo_.GetOperation();
 		current.space = gizmo_.GetSpace();
@@ -1101,6 +1108,11 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 
 		ImGui::MenuItem("Selection Bounds", nullptr, &showSelectionBounds_,
 		                !IsBusy());
+		ImGui::MenuItem("Camera Guides", nullptr, &showCameraGuides_,
+		                !IsBusy());
+		ImGui::MenuItem("Respawn Guides", nullptr, &showRespawnGuides_,
+		                !IsBusy());
+
 		if (ui_.BeginMenu("Colliders")) {
 			const auto item = [&](const char *label,
 			                      ColliderBounds::Mode mode) {
