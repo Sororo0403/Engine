@@ -7,6 +7,7 @@
 #include "history/ComponentCommand.h"
 #include "history/MaterialSlotsCommand.h"
 #include "history/ModelPathCommand.h"
+#include "history/ObjectArraySettings.h"
 #include "history/ObjectCommand.h"
 #include "history/ObjectRename.h"
 #include "history/RenameCommand.h"
@@ -156,6 +157,16 @@ class EditorHistory {
 	/// <returns>作成した物体のID</returns>
 	SceneObjectId CreateObject(std::string name = "Object",
 	                           std::filesystem::path modelPath = {});
+
+	/// <summary>
+	/// 選択物体を一定間隔で複製し、全ての組を1回のUndo操作へまとめる
+	/// </summary>
+	/// <param name="objectIds">元の物体ID。重複不可。組内の追従先は同じ複製組へ付け替える</param>
+	/// <param name="settings">追加する組数とワールド座標の間隔。元の物体は移動しない</param>
+	/// <returns>組ごとに元の入力順で並べた新規ID一覧。無効な対象・設定は空。作成失敗時は物体を追加しない</returns>
+	std::vector<SceneObjectId>
+	DuplicateObjectsInArray(std::span<const SceneObjectId> objectIds,
+	                        const ObjectArraySettings &settings);
 
 	/// <summary>
 	/// 全物体を作成し、1操作として履歴へ記録する。編集中の内容は先に確定する。
@@ -514,6 +525,16 @@ class EditorHistory {
 	/// </summary>
 	/// <returns>過去の状態と重複しない番号</returns>
 	std::uint64_t AllocateState();
+
+	/// <summary>
+	/// 物体を一括作成し、元IDの並びを各組で共有して追従参照を解決する
+	/// </summary>
+	/// <param name="objects">組単位で並んだ作成データ</param>
+	/// <param name="sourceIds">1組分の元ID。空の場合は参照を付け替えない</param>
+	/// <returns>作成したID一覧。無効なデータや作成失敗の場合は空</returns>
+	std::vector<SceneObjectId>
+	CreateObjectGroups(std::vector<SceneObject> objects,
+	                   std::span<const SceneObjectId> sourceIds);
 
 	/// <summary>
 	/// 次の操作を記録する領域と状態番号を確保する。

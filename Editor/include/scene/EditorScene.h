@@ -6,6 +6,7 @@
 #include "dialogs/BatchRenameDialog.h"
 #include "dialogs/GameExportDialog.h"
 #include "dialogs/GameSettingsDialog.h"
+#include "dialogs/ObjectArrayDialog.h"
 #include "dialogs/SaveChangesDialog.h"
 #include "dialogs/SceneFileDialog.h"
 #include "dialogs/SceneReloadDialog.h"
@@ -131,6 +132,7 @@ class EditorScene final : public IScene {
 		CREATE_BOX,
 		CREATE_CAMERA,
 		DUPLICATE_OBJECTS,
+		DUPLICATE_ARRAY,
 		DELETE_OBJECTS,
 		FRAME_SELECTED,
 		FRAME_ALL,
@@ -195,6 +197,7 @@ class EditorScene final : public IScene {
 		GAME_SETTINGS,
 		CONFIRM_RELOAD,
 		BATCH_RENAME,
+		OBJECT_ARRAY,
 		ERROR,
 	};
 
@@ -507,6 +510,11 @@ class EditorScene final : public IScene {
 	void StartBatchRename();
 
 	/// <summary>
+	/// 選択物体を等間隔で複製するダイアログを開始する
+	/// </summary>
+	void StartObjectArray();
+
+	/// <summary>
 	/// 選択物体の原点を、アクティブ物体の指定軸の座標へそろえる
 	/// </summary>
 	/// <param name="axis">ワールド座標のX・Y・Zのいずれか</param>
@@ -588,6 +596,7 @@ class EditorScene final : public IScene {
 
 	SaveChangesDialog saveChangesDialog_;
 	BatchRenameDialog batchRenameDialog_;
+	ObjectArrayDialog objectArrayDialog_;
 	SceneFileDialog fileDialog_;
 	GameExportDialog exportDialog_;
 	GameSettingsDialog gameSettingsDialog_;

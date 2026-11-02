@@ -399,6 +399,9 @@ bool EditorScene::Update(float deltaTime) {
 				case HierarchyPanel::Action::CUT_OBJECTS:
 					CopySelectedObjects(true);
 					break;
+				case HierarchyPanel::Action::DUPLICATE_ARRAY:
+					StartObjectArray();
+					break;
 				case HierarchyPanel::Action::DUPLICATE_OBJECTS:
 					DuplicateSelectedObjects();
 					break;
@@ -1081,6 +1084,10 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 
 		if (ui_.MenuItem("Duplicate", "Ctrl+D", objectEnabled)) {
 			action = EditorAction::DUPLICATE_OBJECTS;
+		}
+
+		if (ui_.MenuItem("Duplicate with Offset...", nullptr, objectEnabled)) {
+			action = EditorAction::DUPLICATE_ARRAY;
 		}
 
 		if (ui_.MenuItem("Delete", "Delete", objectEnabled)) {
@@ -1789,6 +1796,10 @@ void EditorScene::StartAction(EditorAction action) {
 		CreateCameraFromView();
 		return;
 
+	case EditorAction::DUPLICATE_ARRAY:
+		StartObjectArray();
+		return;
+
 	case EditorAction::DUPLICATE_OBJECTS:
 		DuplicateSelectedObjects();
 		return;
@@ -2331,6 +2342,39 @@ void EditorScene::UpdateDialogs() {
 				ShowError(
 				    "Could not save a copy. Choose a destination different "
 				    "from the active scene. See the log for details.");
+			}
+		}
+
+		return;
+	}
+
+	case DialogStage::OBJECT_ARRAY: {
+		const auto result = objectArrayDialog_.Draw(ui_);
+
+		if (result == ObjectArrayResult::NONE) {
+			return;
+		}
+
+		stage_ = DialogStage::IDLE;
+
+		if (result == ObjectArrayResult::ACCEPTED) {
+			try {
+				auto ids = document_.GetHistory().DuplicateObjectsInArray(
+				    objectArrayDialog_.GetSourceIds(),
+				    objectArrayDialog_.GetSettings());
+
+				if (ids.empty()) {
+					ShowError("Could not create the offset copies. Check the "
+					          "targets and coordinates.");
+				} else {
+					selection_.Set(std::move(ids));
+					hierarchyPanel_.RequestReveal(selection_.GetActiveId());
+				}
+			} catch (const std::exception &error) {
+				Logger::Error(
+				    std::format("EditorScene::ObjectArray: {}", error.what()));
+				ShowError("Could not create the offset copies. See the log for "
+				          "details.");
 			}
 		}
 
@@ -3513,4 +3557,28 @@ bool EditorScene::HasSelection() const {
 bool EditorScene::HasSingleSelection() const {
 	return selection_.GetCount() == 1 &&
 	       document_.GetScene().Contains(selection_.GetActiveId());
+}
+
+void EditorScene::StartObjectArray() {
+	if (IsBusy() || !HasSelection()) {
+		return;
+	}
+
+	try {
+		FinishEdit();
+
+		if (!objectArrayDialog_.Show(document_.GetScene(),
+		                             selection_.GetIds())) {
+			ShowError("Could not prepare the selected objects for offset "
+			          "duplication.");
+			return;
+		}
+
+		stage_ = DialogStage::OBJECT_ARRAY;
+	} catch (const std::exception &error) {
+		Logger::Error(
+		    std::format("EditorScene::StartObjectArray: {}", error.what()));
+		ShowError(
+		    "Could not prepare offset duplication. See the log for details.");
+	}
 }

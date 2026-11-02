@@ -358,4 +358,9 @@ exit /b 0</Command>
     <ClInclude Include="include\assets\MaterialUsage.h"></ClInclude>
     <ClCompile Include="src\assets\MaterialUsage.cpp"></ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\history\ObjectArraySettings.h"></ClInclude>
+    <ClInclude Include="include\dialogs\ObjectArrayDialog.h"></ClInclude>
+    <ClCompile Include="src\dialogs\ObjectArrayDialog.cpp"></ClCompile>
+  </ItemGroup>
 </Project>

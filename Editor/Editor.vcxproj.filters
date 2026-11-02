@@ -630,4 +630,9 @@
     <ClInclude Include="include\assets\MaterialUsage.h"><Filter>include\assets</Filter></ClInclude>
     <ClCompile Include="src\assets\MaterialUsage.cpp"><Filter>src\assets</Filter></ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\history\ObjectArraySettings.h"><Filter>include\history</Filter></ClInclude>
+    <ClInclude Include="include\dialogs\ObjectArrayDialog.h"><Filter>include\dialogs</Filter></ClInclude>
+    <ClCompile Include="src\dialogs\ObjectArrayDialog.cpp"><Filter>src\dialogs</Filter></ClCompile>
+  </ItemGroup>
 </Project>

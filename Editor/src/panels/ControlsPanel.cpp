@@ -205,6 +205,17 @@ void ControlsPanel::Draw() {
 	         "For three or more selected objects, space origins evenly in "
 	         "world coordinate order with both endpoints fixed. Other axes, "
 	         "rotation and scale stay unchanged."},
+	        {"Edit > Duplicate with Offset",
+	         "Repeat selected objects as a group in world coordinates. Copies "
+	         "counts additional groups; group 1 uses World Offset, group 2 "
+	         "uses twice that offset, and so on. Originals stay unchanged. "
+	         "Hidden objects and all components are copied; follow targets "
+	         "inside each group point to that group's copies. External targets "
+	         "and explicit Respawn positions stay unchanged. Existing Primary "
+	         "Cameras are kept. Up to 100 groups and 10000 new objects can be "
+	         "created in one Undo/Redo. New objects are selected and revealed "
+	         "in Hierarchy. Cancel changes nothing. The Hierarchy context menu "
+	         "has the same action."},
 	        {"Ctrl + C / X / V", "Copy / cut / paste scene objects."},
 	    });
 

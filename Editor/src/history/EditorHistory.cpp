@@ -159,24 +159,85 @@ EditorHistory::DuplicateObjects(std::span<const SceneObjectId> objectIds) {
 }
 
 std::vector<SceneObjectId>
+EditorHistory::DuplicateObjectsInArray(std::span<const SceneObjectId> objectIds,
+                                       const ObjectArraySettings &settings) {
+	CommitEdit();
+
+	if (!settings.IsValid(objectIds.size())) {
+		return {};
+	}
+
+	std::set<SceneObjectId> seen;
+
+	for (const auto id : objectIds) {
+		if (!scene_.Contains(id) || !seen.insert(id).second) {
+			return {};
+		}
+	}
+
+	std::vector<SceneObject> copies;
+	copies.reserve(objectIds.size() *
+	               static_cast<std::size_t>(settings.copies));
+
+	for (int copy = 1; copy <= settings.copies; ++copy) {
+		for (const auto id : objectIds) {
+			auto object = *scene_.FindObject(id);
+			object.name =
+			    std::format("{} Copy {}",
+			                object.name.empty() ? "Object" : object.name, copy);
+			auto &position = object.transform.translation;
+			position = {static_cast<float>(
+			                static_cast<double>(position.x) +
+			                static_cast<double>(settings.offset.x) * copy),
+			            static_cast<float>(
+			                static_cast<double>(position.y) +
+			                static_cast<double>(settings.offset.y) * copy),
+			            static_cast<float>(
+			                static_cast<double>(position.z) +
+			                static_cast<double>(settings.offset.z) * copy)};
+			copies.push_back(std::move(object));
+		}
+	}
+
+	return CreateObjectGroups(std::move(copies), objectIds);
+}
+
+std::vector<SceneObjectId>
 EditorHistory::CreateObjects(std::vector<SceneObject> objects,
                              std::span<const SceneObjectId> sourceIds) {
+	CommitEdit();
+
+	if (!sourceIds.empty() && sourceIds.size() != objects.size()) {
+		return {};
+	}
+
+	return CreateObjectGroups(std::move(objects), sourceIds);
+}
+
+std::vector<SceneObjectId>
+EditorHistory::CreateObjectGroups(std::vector<SceneObject> objects,
+                                  std::span<const SceneObjectId> sourceIds) {
 	CommitEdit();
 
 	if (objects.empty()) {
 		return {};
 	}
 
-	if (!sourceIds.empty() && sourceIds.size() != objects.size()) {
+	if (!sourceIds.empty() && objects.size() % sourceIds.size() != 0) {
 		return {};
 	}
 
-	std::map<SceneObjectId, SceneObjectId> remap;
+	const auto groupSize =
+	    sourceIds.empty() ? objects.size() : sourceIds.size();
+	std::vector<std::map<SceneObjectId, SceneObjectId>> remaps(objects.size() /
+	                                                           groupSize);
 
-	for (const auto id : sourceIds) {
-		if (id == 0 || id == (std::numeric_limits<SceneObjectId>::max)() ||
-		    !remap.emplace(id, 0).second) {
-			return {};
+	for (auto &remap : remaps) {
+		for (const auto id : sourceIds) {
+			if (id == 0 || id == (std::numeric_limits<SceneObjectId>::max)() ||
+			    !remap.emplace(id, 0).second) {
+				return {};
+			}
 		}
 	}
 
@@ -185,7 +246,10 @@ EditorHistory::CreateObjects(std::vector<SceneObject> objects,
 		    return entry.second.camera && entry.second.camera->primary;
 	    });
 
-	for (auto &object : objects) {
+	for (std::size_t i = 0; i < objects.size(); ++i) {
+		auto &object = objects[i];
+		auto &remap = remaps[i / groupSize];
+
 		if (!TransformUtils::IsValid(object.transform) ||
 		    (object.camera && !object.camera->IsValid())) {
 			return {};
@@ -217,7 +281,7 @@ EditorHistory::CreateObjects(std::vector<SceneObject> objects,
 	const std::uint64_t next = PrepareAppend();
 
 	const bool created = scene_.ApplyTransaction([&objects, &createdIds,
-	                                              &commands, &remap,
+	                                              &commands, &remaps, groupSize,
 	                                              sourceIds](Scene &working) {
 		// 全IDが決まってから参照を解決し、入力順に依存しないようにする。
 		for (std::size_t i = 0; i < objects.size(); ++i) {
@@ -225,12 +289,13 @@ EditorHistory::CreateObjects(std::vector<SceneObject> objects,
 			createdIds.push_back(id);
 
 			if (!sourceIds.empty()) {
-				remap.at(sourceIds[i]) = id;
+				remaps[i / groupSize].at(sourceIds[i % groupSize]) = id;
 			}
 		}
 
 		for (std::size_t i = 0; i < objects.size(); ++i) {
 			auto &object = objects[i];
+			auto &remap = remaps[i / groupSize];
 
 			if (object.followCamera) {
 				if (const auto found = remap.find(object.followCamera->target);

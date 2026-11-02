@@ -278,6 +278,10 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 					result.action = Action::DUPLICATE_OBJECTS;
 				}
 
+				if (ui.MenuItem("Duplicate with Offset...", nullptr, true)) {
+					result.action = Action::DUPLICATE_ARRAY;
+				}
+
 				bool canHide = false;
 				bool canShow = false;
 				bool canGround = false;
