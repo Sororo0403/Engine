@@ -22,6 +22,8 @@ class HierarchyFilter {
 		FOLLOW_CAMERA,
 		RESPAWN,
 		COLOR_TINT,
+		MESH,
+		MESH_RENDERER,
 	};
 
 	std::string text;

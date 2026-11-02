@@ -34,7 +34,7 @@ bool HierarchyFilter::Matches(SceneObjectId id,
 		}
 	}
 
-	if ((hiddenOnly && object.visible) || !matchesText) {
+	if ((hiddenOnly && !object.IsHidden()) || !matchesText) {
 		return false;
 	}
 
@@ -44,7 +44,7 @@ bool HierarchyFilter::Matches(SceneObjectId id,
 	case Component::BOX_COLLIDER:
 		return object.collider.has_value();
 	case Component::MODELS_WITHOUT_COLLIDER:
-		return !object.modelPath.empty() && !object.collider;
+		return object.HasMesh() && !object.collider;
 	case Component::CHARACTER:
 		return object.character.has_value();
 	case Component::CAMERA:
@@ -53,6 +53,10 @@ bool HierarchyFilter::Matches(SceneObjectId id,
 		return object.followCamera.has_value();
 	case Component::RESPAWN:
 		return object.respawn.has_value();
+	case Component::MESH:
+		return object.mesh.has_value();
+	case Component::MESH_RENDERER:
+		return object.meshRenderer.has_value();
 	case Component::COLOR_TINT:
 		return object.colorTint.has_value();
 	default:

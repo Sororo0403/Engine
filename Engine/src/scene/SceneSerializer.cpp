@@ -101,6 +101,42 @@ DirectX::XMFLOAT4 ReadRotation(const Json &value) {
 
 	return normalized;
 }
+
+/// <summary>
+/// 材質スロットの配列を読み込み、番号順へ揃えて重複と参照先を検証する
+/// </summary>
+/// <param name="bindings">スロット番号と材質パスの配列</param>
+/// <returns>検証済みの材質割り当て。無効な場合は例外</returns>
+MaterialBindings ReadBindings(const Json &bindings) {
+	if (!bindings.is_array()) {
+		throw std::runtime_error("材質の割り当て配列が無効です。");
+	}
+
+	MaterialBindings result;
+
+	for (const auto &binding : bindings) {
+		const auto &slot = binding.at("slot");
+
+		if (!slot.is_number_unsigned() ||
+		    slot.get<std::uint64_t>() > UINT32_MAX) {
+			throw std::runtime_error("材質スロットの番号が無効です。");
+		}
+
+		result.slots.emplace_back(
+		    slot.get<std::uint32_t>(),
+		    PathUtils::FromUtf8(binding.at("path").get<std::string>()));
+	}
+
+	std::sort(result.slots.begin(), result.slots.end(),
+	          [](const auto &a, const auto &b) { return a.first < b.first; });
+
+	if (!result.IsValid()) {
+		throw std::runtime_error(
+		    "材質の参照先が無効、またはスロットが重複しています。");
+	}
+
+	return result;
+}
 } // namespace
 
 bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
@@ -112,8 +148,10 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 				throw std::runtime_error("Transformが無効です。");
 			}
 
-			if (!object.materials.IsValid()) {
-				throw std::runtime_error("材質の割り当てが無効です。");
+			if ((object.mesh && !object.mesh->IsValid()) ||
+			    (object.meshRenderer && !object.meshRenderer->IsValid())) {
+				throw std::runtime_error(
+				    "MeshまたはMesh Rendererの設定が無効です。");
 			}
 
 			if (object.colorTint && !object.colorTint->IsValid()) {
@@ -140,8 +178,6 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 			objects.push_back({
 			    {"id", id},
 			    {"name", object.name},
-			    {"model", PathUtils::ToUtf8(object.modelPath)},
-			    {"visible", object.visible},
 			    {"transform",
 			     {
 			         {"translation", ToJson(object.transform.translation)},
@@ -150,15 +186,23 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 			     }},
 			});
 
-			if (!object.materials.slots.empty()) {
+			if (object.mesh) {
+				objects.back()["mesh"] = {
+				    {"model", PathUtils::ToUtf8(object.mesh->modelPath)}};
+			}
+
+			if (object.meshRenderer) {
 				auto bindings = Json::array();
 
-				for (const auto &[slot, path] : object.materials.slots) {
+				for (const auto &[slot, path] :
+				     object.meshRenderer->materials.slots) {
 					bindings.push_back(
 					    {{"slot", slot}, {"path", PathUtils::ToUtf8(path)}});
 				}
 
-				objects.back()["materials"] = std::move(bindings);
+				objects.back()["meshRenderer"] = {
+				    {"visible", object.meshRenderer->visible},
+				    {"materials", std::move(bindings)}};
 			}
 
 			if (object.colorTint) {
@@ -210,7 +254,7 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 
 		const Json document{
 		    {"format", "EngineScene"},
-		    {"version", 8},
+		    {"version", 9},
 		    {"objects", std::move(objects)},
 		};
 
@@ -283,7 +327,8 @@ bool SceneSerializer::Load(Scene &scene,
 		    (document.at("version") != 1 && document.at("version") != 2 &&
 		     document.at("version") != 3 && document.at("version") != 4 &&
 		     document.at("version") != 5 && document.at("version") != 6 &&
-		     document.at("version") != 7 && document.at("version") != 8)) {
+		     document.at("version") != 7 && document.at("version") != 8 &&
+		     document.at("version") != 9)) {
 			throw std::runtime_error("未対応のシーンファイル形式です。");
 		}
 
@@ -309,50 +354,48 @@ bool SceneSerializer::Load(Scene &scene,
 
 			SceneObject object;
 
-			if (version >= 3) {
-				object.visible = item.at("visible").get<bool>();
-			}
-
 			object.name = item.at("name").get<std::string>();
 
 			if (object.name.empty()) {
 				object.name = "Object";
 			}
 
-			object.modelPath =
-			    PathUtils::FromUtf8(item.at("model").get<std::string>());
-
-			if (version >= 8 && item.contains("materials")) {
-				const auto &bindings = item.at("materials");
-
-				if (!bindings.is_array()) {
-					throw std::runtime_error("材質の割り当て配列が無効です。");
+			if (version >= 9) {
+				if (item.contains("mesh")) {
+					object.mesh = MeshComponent{PathUtils::FromUtf8(
+					    item.at("mesh").at("model").get<std::string>())};
 				}
 
-				for (const auto &binding : bindings) {
-					const auto &slot = binding.at("slot");
+				if (item.contains("meshRenderer")) {
+					const auto &renderer = item.at("meshRenderer");
+					object.meshRenderer = MeshRendererComponent{
+					    renderer.at("visible").get<bool>(),
+					    ReadBindings(renderer.at("materials"))};
+				}
+			} else {
+				const auto path =
+				    PathUtils::FromUtf8(item.at("model").get<std::string>());
+				const bool visible =
+				    version < 3 || item.at("visible").get<bool>();
+				const auto bindings = version >= 8 && item.contains("materials")
+				                          ? ReadBindings(item.at("materials"))
+				                          : MaterialBindings{};
 
-					if (!slot.is_number_unsigned() ||
-					    slot.get<std::uint64_t>() > UINT32_MAX) {
-						throw std::runtime_error(
-						    "材質スロットの番号が無効です。");
-					}
-
-					object.materials.slots.emplace_back(
-					    slot.get<std::uint32_t>(),
-					    PathUtils::FromUtf8(
-					        binding.at("path").get<std::string>()));
+				if (!path.empty()) {
+					object.mesh = MeshComponent{path};
 				}
 
-				std::sort(object.materials.slots.begin(),
-				          object.materials.slots.end(),
-				          [](const auto &a, const auto &b) {
-					          return a.first < b.first;
-				          });
-
-				if (!object.materials.IsValid()) {
-					throw std::runtime_error("材質の参照先が無効です。");
+				// 形状がなくても、旧形式の非表示や材質の割り当てを失わない。
+				if (object.mesh || !visible || !bindings.slots.empty()) {
+					object.meshRenderer =
+					    MeshRendererComponent{visible, bindings};
 				}
+			}
+
+			if ((object.mesh && !object.mesh->IsValid()) ||
+			    (object.meshRenderer && !object.meshRenderer->IsValid())) {
+				throw std::runtime_error(
+				    "MeshまたはMesh Rendererの設定が無効です。");
 			}
 
 			if (version >= 7 && item.contains("colorTint")) {

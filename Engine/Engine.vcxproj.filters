@@ -569,4 +569,8 @@
     <ClInclude Include="include\graphics\material\MaterialBindings.h"><Filter>include\graphics\material</Filter></ClInclude>
     <ClCompile Include="src\graphics\material\MaterialBindings.cpp"><Filter>src\graphics\material</Filter></ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\scene\MeshComponent.h"><Filter>include\scene</Filter></ClInclude>
+    <ClInclude Include="include\scene\MeshRendererComponent.h"><Filter>include\scene</Filter></ClInclude>
+  </ItemGroup>
 </Project>

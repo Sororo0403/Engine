@@ -1026,7 +1026,7 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		const auto &objects = document_.GetScene().GetObjects();
 		const bool hasHidden =
 		    std::any_of(objects.begin(), objects.end(), [](const auto &entry) {
-			    return !entry.second.visible;
+			    return entry.second.IsHidden();
 		    });
 
 		if (ui_.MenuItem("Show All Models", nullptr, enabled && hasHidden)) {
@@ -1667,7 +1667,7 @@ void EditorScene::StartAction(EditorAction action) {
 			std::vector<SceneObjectId> ids;
 
 			for (const auto &[id, object] : document_.GetScene().GetObjects()) {
-				if (object.visible && !object.modelPath.empty()) {
+				if (object.IsRenderable()) {
 					ids.push_back(id);
 				}
 			}
@@ -1868,7 +1868,7 @@ void EditorScene::CreateObject(SceneObject object) {
 	try {
 		FinishEdit();
 
-		if (object.collider && !object.modelPath.empty()) {
+		if (object.collider && object.HasMesh()) {
 			BoxCollider fitted;
 
 			if (!GetFittedCollider(object, fitted)) {
@@ -1926,8 +1926,8 @@ bool EditorScene::GetFittedCollider(const SceneObject &object,
                                     BoxCollider &collider) {
 	BoxCollider fitted;
 
-	if (!object.modelPath.empty()) {
-		const auto model = models_.Load(object.modelPath);
+	if (object.HasMesh()) {
+		const auto model = models_.Load(object.mesh->modelPath);
 		std::array<DirectX::XMFLOAT3, 8> corners;
 
 		if (!models_.GetLocalBounds(model, corners) ||
@@ -2283,12 +2283,12 @@ void EditorScene::OpenScene(const std::filesystem::path &path) {
 	const bool opened = document_.Open(path, [this](const Scene &candidate) {
 		for (const auto &[id, object] : candidate.GetObjects()) {
 			// 非表示のモデルは、再表示を要求されたときに読み込む
-			if (object.visible && !object.modelPath.empty() &&
-			    !models_.Load(object.modelPath)) {
-				Logger::Error(std::format("EditorScene::OpenScene: "
-				                          "物体{}のモデルを読み込めません: {}",
-				                          id,
-				                          PathUtils::ToUtf8(object.modelPath)));
+			if (object.IsRenderable() &&
+			    !models_.Load(object.mesh->modelPath)) {
+				Logger::Error(
+				    std::format("EditorScene::OpenScene: "
+				                "物体{}のモデルを読み込めません: {}",
+				                id, PathUtils::ToUtf8(object.mesh->modelPath)));
 				return false;
 			}
 		}
@@ -2339,6 +2339,43 @@ void EditorScene::ApplyInspectorRequest(
 
 		if (!object) {
 			ShowError("Could not find the object to edit.");
+			return;
+		}
+
+		if (request.action == InspectorPanel::ObjectAction::ADD_MESH ||
+		    request.action == InspectorPanel::ObjectAction::REMOVE_MESH ||
+		    request.action == InspectorPanel::ObjectAction::ADD_MESH_RENDERER ||
+		    request.action ==
+		        InspectorPanel::ObjectAction::REMOVE_MESH_RENDERER) {
+			auto &history = document_.GetHistory();
+			bool applied = false;
+
+			switch (request.action) {
+			case InspectorPanel::ObjectAction::ADD_MESH:
+				applied = object->mesh ||
+				          history.SetMesh(request.objectId, MeshComponent{});
+				break;
+			case InspectorPanel::ObjectAction::REMOVE_MESH:
+				applied = history.SetMesh(request.objectId, std::nullopt);
+				break;
+			case InspectorPanel::ObjectAction::ADD_MESH_RENDERER:
+				applied = object->meshRenderer ||
+				          history.SetMeshRenderer(request.objectId,
+				                                  MeshRendererComponent{});
+				break;
+			case InspectorPanel::ObjectAction::REMOVE_MESH_RENDERER:
+				applied =
+				    history.SetMeshRenderer(request.objectId, std::nullopt);
+				break;
+			default:
+				break;
+			}
+
+			if (!applied) {
+				ShowError(
+				    "Could not change the Mesh or Mesh Renderer component.");
+			}
+
 			return;
 		}
 
@@ -2491,7 +2528,7 @@ void EditorScene::ShowAllModels() {
 		std::vector<SceneObjectId> ids;
 
 		for (const auto &[id, object] : document_.GetScene().GetObjects()) {
-			if (!object.visible) {
+			if (object.IsHidden()) {
 				ids.push_back(id);
 			}
 		}
@@ -2520,8 +2557,8 @@ bool EditorScene::ChangeVisibility(std::span<const SceneObjectId> objectIds,
 				return false;
 			}
 
-			if (visible && !object->visible && !object->modelPath.empty() &&
-			    !models_.Load(object->modelPath)) {
+			if (visible && object->IsHidden() && object->HasMesh() &&
+			    !models_.Load(object->mesh->modelPath)) {
 				ShowError(
 				    "Could not load a model. Visibility was kept unchanged.");
 				return false;
@@ -2589,7 +2626,8 @@ bool EditorScene::PlaceModel(const std::filesystem::path &modelPath,
 
 		SceneObject object;
 		object.name = name;
-		object.modelPath = modelPath;
+		object.mesh = MeshComponent{modelPath};
+		object.meshRenderer = MeshRendererComponent{};
 		object.transform.translation = position;
 		// 配置位置も追加時のスナップショットへ含め、1回のUndo・Redoで復元する
 		auto ids = document_.GetHistory().CreateObjects({std::move(object)});
@@ -2721,10 +2759,10 @@ bool EditorScene::ApplySceneSelection(
 	for (const auto &[id, object] : scene.GetObjects()) {
 		std::array<DirectX::XMFLOAT3, 8> corners;
 		const bool boundsReady =
-		    object.modelPath.empty()
+		    (!object.HasMesh() || !object.meshRenderer)
 		        ? showObjectMarkers_ &&
 		              ObjectMarkers::GetBounds(object, corners)
-		        : object.visible && renderer.GetObjectBounds(id, corners);
+		        : !object.IsHidden() && renderer.GetObjectBounds(id, corners);
 
 		if (boundsReady && volume.Intersects(corners) &&
 		    std::find(ids.begin(), ids.end(), id) == ids.end()) {
@@ -2803,14 +2841,14 @@ bool EditorScene::FrameObjects(FrameRequest request,
 	bool found = false;
 
 	for (const auto &[id, object] : scene.GetObjects()) {
-		if ((!object.visible && !object.modelPath.empty()) ||
+		if ((object.IsHidden() && object.HasMesh()) ||
 		    (request == FrameRequest::SELECTED && !selection.Contains(id))) {
 			continue;
 		}
 
 		std::array<DirectX::XMFLOAT3, 8> corners;
 
-		const bool boundsReady = object.modelPath.empty()
+		const bool boundsReady = (!object.HasMesh() || !object.meshRenderer)
 		                             ? ObjectFrameBounds::Get(object, corners)
 		                             : renderer.GetObjectBounds(id, corners);
 
@@ -3137,11 +3175,11 @@ bool EditorScene::HasVisibleSelectedModel() const {
 	}
 
 	const auto &scene = document_.GetScene();
-	return std::any_of(
-	    selection_.GetIds().begin(), selection_.GetIds().end(), [&](auto id) {
-		    const auto *object = scene.FindObject(id);
-		    return object && object->visible && !object->modelPath.empty();
-	    });
+	return std::any_of(selection_.GetIds().begin(), selection_.GetIds().end(),
+	                   [&](auto id) {
+		                   const auto *object = scene.FindObject(id);
+		                   return object && object->IsRenderable();
+	                   });
 }
 
 void EditorScene::DropSelectionToGround() {
@@ -3165,7 +3203,7 @@ void EditorScene::DropSelectionToGround() {
 		for (const auto id : selection_.GetIds()) {
 			const auto *object = document_.GetScene().FindObject(id);
 
-			if (!object || !object->visible || object->modelPath.empty()) {
+			if (!object || !object->IsRenderable()) {
 				continue;
 			}
 

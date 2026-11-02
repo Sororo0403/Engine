@@ -10,7 +10,10 @@ SceneObjectId Scene::CreateObject(std::string name,
                                   std::filesystem::path modelPath) {
 	SceneObject object;
 	object.name = std::move(name);
-	object.modelPath = std::move(modelPath);
+	if (!modelPath.empty()) {
+		object.mesh = MeshComponent{std::move(modelPath)};
+		object.meshRenderer = MeshRendererComponent{};
+	}
 
 	return CreateObject(std::move(object));
 }

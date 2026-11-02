@@ -313,10 +313,24 @@ void ControlsPanel::Draw() {
 	         "replaces or adds shapes; objects without models use a unit box. "
 	         "Remove All keeps other components. Each operation supports one "
 	         "Undo/Redo; a failed operation changes no colliders."},
+	        {"Mesh and Mesh Renderer components",
+	         "Mesh stores the model's geometry reference. Mesh Renderer stores "
+	         "visibility and material slot assignments. Add or remove them "
+	         "independently from Inspector. Removing Mesh Renderer keeps the "
+	         "Mesh reference; removing Mesh keeps the renderer settings. Both "
+	         "components and an assigned Mesh are needed to draw. Clear Mesh "
+	         "Reference keeps the Mesh component. Asset placement creates "
+	         "both. "
+	         "Component changes, visibility and material assignments support "
+	         "Undo/Redo. Older scenes are converted on load. Objects with Mesh "
+	         "alone can still be selected and framed using their editor "
+	         "marker. "
+	         "Hierarchy component filters find Mesh and Mesh Renderer "
+	         "separately."},
 	        {"Materials and material slots",
 	         "Create a .material.json asset in Materials, edit Base Color, UV "
 	         "and Texture, then Save Material. Texture paths are relative to "
-	         "the material file; empty uses white. Inspector > Materials "
+	         "the material file; empty uses white. Inspector > Mesh Renderer "
 	         "assigns "
 	         "an asset to each model slot; Model Default restores its imported "
 	         "material. One asset can be shared by different objects and "

@@ -20,11 +20,12 @@ bool MaterialSlotsCommand::Apply(Scene &scene, const MaterialBindings &expected,
                                  const MaterialBindings &value) const {
 	auto *object = scene.FindObject(id_);
 
-	if (!object || object->materials != expected || !value.IsValid()) {
+	if (!object || !object->meshRenderer ||
+	    object->meshRenderer->materials != expected || !value.IsValid()) {
 		return false;
 	}
 
 	auto next = value;
-	object->materials.slots.swap(next.slots);
+	object->meshRenderer->materials.slots.swap(next.slots);
 	return true;
 }

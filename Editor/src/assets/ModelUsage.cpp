@@ -22,17 +22,19 @@ ModelUsage::FindObjects(const Scene &scene,
 	std::unordered_map<std::filesystem::path, bool> matches;
 
 	for (const auto &[id, object] : scene.GetObjects()) {
-		if (object.modelPath.empty() ||
-		    object.modelPath.native().find(L'\0') != std::wstring::npos) {
+		if (!object.HasMesh() ||
+		    object.mesh->modelPath.native().find(L'\0') != std::wstring::npos) {
 			continue;
 		}
 
 		// 同じ参照先を使う物体では、パスの正規化とファイルの照合結果を再利用する
-		auto [found, inserted] = matches.try_emplace(object.modelPath, false);
+		auto [found, inserted] =
+		    matches.try_emplace(object.mesh->modelPath, false);
 
 		if (inserted) {
 			try {
-				found->second = PathUtils::IsSameFile(target, object.modelPath);
+				found->second =
+				    PathUtils::IsSameFile(target, object.mesh->modelPath);
 			} catch (const std::invalid_argument &) {
 				// ほかの物体に不正な参照先があっても、有効な参照の検索を続ける
 				found->second = false;

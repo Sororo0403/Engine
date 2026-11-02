@@ -11,7 +11,7 @@ struct SceneObject;
 struct Ray;
 
 /// <summary>
-/// モデルを持たない物体の原点をScene上に表示し、目印の範囲で選択を判定する
+/// 描画用のMeshとMesh Rendererがそろっていない物体の原点をScene上に表示し、目印の範囲で選択を判定する
 /// </summary>
 class ObjectMarkers {
   public:
@@ -21,15 +21,15 @@ class ObjectMarkers {
 	/// <summary>
 	/// 原点を囲む固定サイズの目印の8頂点を作る。Colliderの大きさや表示状態には依存しない
 	/// </summary>
-	/// <param name="object">モデルを持たない編集物体</param>
+	/// <param name="object">描画用のMeshとMesh Rendererがそろっていない編集物体</param>
 	/// <param name="corners">成功時に設定する範囲。失敗時は保持する</param>
-	/// <returns>true:取得成功 false:モデルあり、変形が無効、または範囲を表現できない</returns>
+	/// <returns>true:取得成功 false:描画用のMeshとMesh Rendererあり、変形が無効、または範囲を表現できない</returns>
 	static bool GetBounds(const SceneObject &object, Corners &corners);
 
 	/// <summary>
 	/// 目印をCamera・Collider・空の物体の色で組み立てる。選択中は強調色を使う
 	/// </summary>
-	/// <param name="object">モデルを持たない編集物体</param>
+	/// <param name="object">描画用のMeshとMesh Rendererがそろっていない編集物体</param>
 	/// <param name="selected">現在選択されているか</param>
 	/// <param name="lines">成功時に設定する線。失敗時は保持する</param>
 	/// <returns>true:作成成功 false:表示対象なし、または無効な範囲</returns>

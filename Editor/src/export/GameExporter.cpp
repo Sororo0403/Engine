@@ -768,28 +768,32 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 		auto objects = scene.GetObjects();
 
 		for (auto &[id, object] : objects) {
-			for (auto &[slot, path] : object.materials.slots) {
-				const auto input =
-				    path.is_absolute()
-				        ? path
-				        : resourceRoot /
-				              RelativeInside(fs::path(L"resources"),
-				                             path.lexically_normal());
-				path = fs::path(L"resources") /
-				       RelativeInside(resourceRoot, assets.AddMaterial(input));
+			if (object.meshRenderer) {
+				for (auto &[slot, path] :
+				     object.meshRenderer->materials.slots) {
+					const auto input =
+					    path.is_absolute()
+					        ? path
+					        : resourceRoot /
+					              RelativeInside(fs::path(L"resources"),
+					                             path.lexically_normal());
+					path =
+					    fs::path(L"resources") /
+					    RelativeInside(resourceRoot, assets.AddMaterial(input));
+				}
 			}
 
-			if (!object.modelPath.empty()) {
+			if (object.HasMesh()) {
 				const auto path =
-				    object.modelPath.is_absolute()
-				        ? object.modelPath
+				    object.mesh->modelPath.is_absolute()
+				        ? object.mesh->modelPath
 				        : resourceRoot /
 				              RelativeInside(
 				                  fs::path(L"resources"),
-				                  object.modelPath.lexically_normal());
+				                  object.mesh->modelPath.lexically_normal());
 				const auto model = assets.AddModel(path);
-				object.modelPath = fs::path(L"resources") /
-				                   RelativeInside(resourceRoot, model);
+				object.mesh->modelPath = fs::path(L"resources") /
+				                         RelativeInside(resourceRoot, model);
 			}
 		}
 
@@ -871,12 +875,15 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 		Assets exportedAssets(fs::canonical(destination / L"resources"));
 
 		for (const auto &[id, object] : snapshot.GetObjects()) {
-			for (const auto &[slot, path] : object.materials.slots) {
-				exportedAssets.AddMaterial(destination / path);
+			if (object.meshRenderer) {
+				for (const auto &[slot, path] :
+				     object.meshRenderer->materials.slots) {
+					exportedAssets.AddMaterial(destination / path);
+				}
 			}
 
-			if (!object.modelPath.empty()) {
-				exportedAssets.AddModel(destination / object.modelPath);
+			if (object.HasMesh()) {
+				exportedAssets.AddModel(destination / object.mesh->modelPath);
 			}
 		}
 

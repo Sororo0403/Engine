@@ -4,10 +4,11 @@
 #include "gameplay/FollowCameraSettings.h"
 #include "gameplay/RespawnSettings.h"
 #include "graphics/material/ColorTint.h"
-#include "graphics/material/MaterialBindings.h"
 #include "math/Transform.h"
 #include "physics/BoxCollider.h"
 #include "scene/CameraComponent.h"
+#include "scene/MeshComponent.h"
+#include "scene/MeshRendererComponent.h"
 
 #include <filesystem>
 #include <optional>
@@ -20,14 +21,8 @@ struct SceneObject {
 	std::string name = "Object";
 	Transform transform{};
 
-	// 空の場合はモデルを持たない物体として扱う
-	std::filesystem::path modelPath;
-
-	// 材質スロットごとの差し替え。モデルの形状や既定材質は変更しない
-	MaterialBindings materials;
-
-	// falseの場合はモデルを描画せず、Scene上の選択判定にも使用しない
-	bool visible = true;
+	std::optional<MeshComponent> mesh;
+	std::optional<MeshRendererComponent> meshRenderer;
 
 	// 指定時は、モデルの全材質のRGBへこの色を掛ける
 	std::optional<ColorTint> colorTint;
@@ -43,4 +38,28 @@ struct SceneObject {
 	std::optional<FollowCameraSettings> followCamera;
 	// 落下時の復帰。Character Controllerを持つ物体に使用する
 	std::optional<RespawnSettings> respawn;
+
+	/// <summary>
+	/// Meshに形状の参照が割り当てられているか確認する
+	/// </summary>
+	/// <returns>true:参照あり false:コンポーネントなし、または未割り当て</returns>
+	bool HasMesh() const {
+		return mesh && !mesh->modelPath.empty();
+	}
+
+	/// <summary>
+	/// Mesh Rendererで表示を無効にしているか確認する
+	/// </summary>
+	/// <returns>true:非表示 false:表示が有効、またはMesh Rendererなし</returns>
+	bool IsHidden() const {
+		return meshRenderer && !meshRenderer->visible;
+	}
+
+	/// <summary>
+	/// MeshとMesh Rendererがそろい、形状を描画できる設定か確認する
+	/// </summary>
+	/// <returns>true:描画対象 false:コンポーネント・形状の未設定、または非表示</returns>
+	bool IsRenderable() const {
+		return HasMesh() && meshRenderer && meshRenderer->visible;
+	}
 };

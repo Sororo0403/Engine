@@ -6,7 +6,7 @@
 #include "scene/SceneObject.h"
 
 bool ObjectFrameBounds::Get(const SceneObject &object, Corners &corners) {
-	if (!object.modelPath.empty() ||
+	if ((object.HasMesh() && object.meshRenderer) ||
 	    !TransformUtils::IsValid(object.transform)) {
 		return false;
 	}

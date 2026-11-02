@@ -103,9 +103,9 @@ void PerformancePanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 	std::size_t emptyObjects = 0;
 
 	for (const auto &[id, object] : scene.GetObjects()) {
-		if (object.modelPath.empty()) {
+		if (!object.HasMesh()) {
 			++emptyObjects;
-		} else if (object.visible) {
+		} else if (object.IsRenderable()) {
 			++visibleModels;
 		} else {
 			++hiddenModels;

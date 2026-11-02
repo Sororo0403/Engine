@@ -10,21 +10,23 @@ VisibilityCommand::VisibilityCommand(SceneObjectId objectId, bool before,
 bool VisibilityCommand::Undo(Scene &scene) const {
 	auto *object = scene.FindObject(objectId_);
 
-	if (!object || object->visible != after_) {
+	if (!object || !object->meshRenderer ||
+	    object->meshRenderer->visible != after_) {
 		return false;
 	}
 
-	object->visible = before_;
+	object->meshRenderer->visible = before_;
 	return true;
 }
 
 bool VisibilityCommand::Redo(Scene &scene) const {
 	auto *object = scene.FindObject(objectId_);
 
-	if (!object || object->visible != before_) {
+	if (!object || !object->meshRenderer ||
+	    object->meshRenderer->visible != before_) {
 		return false;
 	}
 
-	object->visible = after_;
+	object->meshRenderer->visible = after_;
 	return true;
 }

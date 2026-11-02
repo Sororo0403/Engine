@@ -109,7 +109,8 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 	if (ImGui::Combo(
 	        "Component", &component,
 	        "All objects\0Box Collider\0Models without Collider\0Character "
-	        "Controller\0Camera\0Follow Camera\0Respawn\0Color Tint\0")) {
+	        "Controller\0Camera\0Follow Camera\0Respawn\0Color "
+	        "Tint\0Mesh\0Mesh Renderer\0")) {
 		filter_.component = static_cast<HierarchyFilter::Component>(component);
 	}
 
@@ -201,7 +202,7 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 			const auto label =
 			    std::format("{}{}{}###SceneObject{}",
 			                selection.GetActiveId() == id ? "> " : "  ",
-			                object.visible ? "" : "[Hidden] ", name, id);
+			                !object.IsHidden() ? "" : "[Hidden] ", name, id);
 
 			const auto &io = ImGui::GetIO();
 
@@ -228,7 +229,7 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 				scrollToId_ = 0;
 			}
 
-			if ((object.visible || object.modelPath.empty()) &&
+			if ((!object.IsHidden() || !object.HasMesh()) &&
 			    ImGui::IsItemHovered() &&
 			    ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) &&
 			    !io.KeyCtrl && !io.KeyShift && !io.KeyAlt) {
@@ -283,10 +284,10 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 
 				for (const auto selectedId : selection.GetIds()) {
 					if (const auto *selected = scene.FindObject(selectedId)) {
-						canHide |= selected->visible;
-						canShow |= !selected->visible;
-						canGround |=
-						    selected->visible && !selected->modelPath.empty();
+						canHide |=
+						    selected->meshRenderer && !selected->IsHidden();
+						canShow |= selected->IsHidden();
+						canGround |= selected->IsRenderable();
 					}
 				}
 

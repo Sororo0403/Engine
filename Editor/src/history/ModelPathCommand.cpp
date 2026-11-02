@@ -5,8 +5,8 @@
 #include <utility>
 
 ModelPathCommand::ModelPathCommand(SceneObjectId objectId,
-                                   std::filesystem::path before,
-                                   std::filesystem::path after) noexcept
+                                   std::optional<MeshComponent> before,
+                                   std::optional<MeshComponent> after) noexcept
     : objectId_(objectId), before_(std::move(before)),
       after_(std::move(after)) {
 }
@@ -18,24 +18,24 @@ bool ModelPathCommand::HasChanges() const {
 bool ModelPathCommand::Undo(Scene &scene) const {
 	auto *object = scene.FindObject(objectId_);
 
-	if (!object || object->modelPath != after_) {
+	if (!object || object->mesh != after_ || (before_ && !before_->IsValid())) {
 		return false;
 	}
 
 	// コピーに成功してから参照先だけを置き換える
 	auto restored = before_;
-	object->modelPath.swap(restored);
+	object->mesh.swap(restored);
 	return true;
 }
 
 bool ModelPathCommand::Redo(Scene &scene) const {
 	auto *object = scene.FindObject(objectId_);
 
-	if (!object || object->modelPath != before_) {
+	if (!object || object->mesh != before_ || (after_ && !after_->IsValid())) {
 		return false;
 	}
 
 	auto restored = after_;
-	object->modelPath.swap(restored);
+	object->mesh.swap(restored);
 	return true;
 }

@@ -397,6 +397,23 @@ class EditorHistory {
 	bool SetModelPath(SceneObjectId objectId, std::filesystem::path modelPath);
 
 	/// <summary>
+	/// Meshコンポーネントを追加・変更・削除する。描画設定は保持する
+	/// </summary>
+	/// <param name="id">対象の物体</param>
+	/// <param name="value">設定するMesh。nulloptは削除</param>
+	/// <returns>true:変更成功または同値 false:対象や設定が無効</returns>
+	bool SetMesh(SceneObjectId id, std::optional<MeshComponent> value);
+
+	/// <summary>
+	/// Mesh Rendererを追加・変更・削除する。Meshの参照は保持する
+	/// </summary>
+	/// <param name="id">対象の物体</param>
+	/// <param name="value">設定する描画情報。nulloptは削除</param>
+	/// <returns>true:変更成功または同値 false:対象や設定が無効</returns>
+	bool SetMeshRenderer(SceneObjectId id,
+	                     std::optional<MeshRendererComponent> value);
+
+	/// <summary>
 	/// 選択物体の表示状態をまとめて変更し、1操作として記録する
 	/// </summary>
 	/// <param name="objectIds">重複のない対象ID一覧</param>
@@ -454,8 +471,8 @@ class EditorHistory {
 	    std::variant<TransformCommand, ObjectCommand, RenameCommand,
 	                 ModelPathCommand, VisibilityCommand, ColliderCommand,
 	                 CharacterCommand, FollowCameraCommand, RespawnCommand,
-	                 CameraCommand, ColorTintCommand, MaterialSlotsCommand,
-	                 CommandGroup>;
+	                 CameraCommand, MeshRendererCommand, ColorTintCommand,
+	                 MaterialSlotsCommand, CommandGroup>;
 
 	/// <summary>
 	/// 操作と、その前後の状態を識別する情報

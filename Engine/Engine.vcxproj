@@ -328,4 +328,8 @@ exit /b 0</Command>
     <ClInclude Include="include\graphics\material\MaterialBindings.h" />
     <ClCompile Include="src\graphics\material\MaterialBindings.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\scene\MeshComponent.h"></ClInclude>
+    <ClInclude Include="include\scene\MeshRendererComponent.h"></ClInclude>
+  </ItemGroup>
 </Project>

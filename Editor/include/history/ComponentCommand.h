@@ -2,6 +2,7 @@
 
 #include "scene/Scene.h"
 #include <optional>
+#include <type_traits>
 
 /// <summary>
 /// 独立した任意コンポーネントの追加・変更・削除を記録する
@@ -65,7 +66,10 @@ class ComponentCommand {
 			return false;
 		}
 
-		object->*Member = value;
+		// 材質の配列などを先にコピーし、確保失敗時に現在のコンポーネントを保持する。
+		auto next = value;
+		static_assert(std::is_nothrow_swappable_v<std::optional<T>>);
+		(object->*Member).swap(next);
 		return true;
 	}
 
@@ -82,3 +86,6 @@ using FollowCameraCommand =
 using RespawnCommand = ComponentCommand<RespawnSettings, &SceneObject::respawn>;
 
 using ColorTintCommand = ComponentCommand<ColorTint, &SceneObject::colorTint>;
+
+using MeshRendererCommand =
+    ComponentCommand<MeshRendererComponent, &SceneObject::meshRenderer>;

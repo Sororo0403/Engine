@@ -233,14 +233,6 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 	}
 
 	ui.Text(std::format("ID: {}", inspectedObjectId));
-	bool visible = object->visible;
-
-	if (ImGui::Checkbox("Visible", &visible)) {
-		visibilityRequest_ = {inspectedObjectId, visible};
-	}
-
-	ImGui::SetItemTooltip("Render this object's model. Hidden models are "
-	                      "excluded from Scene picking.");
 	ui.Separator();
 
 	const bool transformExpanded = ui.CollapsingHeader("Transform");
@@ -336,39 +328,44 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 		}
 	}
 
-	if (ui.CollapsingHeader("Model")) {
-		const auto label =
-		    std::format("{}###ModelAsset{}",
-		                object->modelPath.empty()
-		                    ? "Drop model here"
-		                    : PathUtils::ToUtf8(object->modelPath.filename()),
-		                inspectedObjectId);
+	if (object->mesh && ui.CollapsingHeader("Mesh")) {
+		const auto label = std::format(
+		    "{}###MeshAsset{}",
+		    object->mesh->modelPath.empty()
+		        ? "Drop model here"
+		        : PathUtils::ToUtf8(object->mesh->modelPath.filename()),
+		    inspectedObjectId);
 
 		if (ImGui::Button(label.c_str(),
 		                  {ImGui::GetContentRegionAvail().x, 0.0f}) &&
-		    !object->modelPath.empty()) {
-			assetRevealPath_ = object->modelPath;
+		    !object->mesh->modelPath.empty()) {
+			assetRevealPath_ = object->mesh->modelPath;
 		}
 
 		if (auto path = ModelAssetDragDrop::AcceptTarget(); !path.empty()) {
 			modelRequest_ = {inspectedObjectId, std::move(path)};
 		}
 
-		if (object->modelPath.empty()) {
+		if (object->mesh->modelPath.empty()) {
 			ImGui::SetItemTooltip("Drag a model from Assets to assign it.");
 		} else {
-			ImGui::SetItemTooltip("%s\nClick to reveal in Assets. Drop a model "
-			                      "here to replace it.",
-			                      PathUtils::ToUtf8(object->modelPath).c_str());
+			ImGui::SetItemTooltip(
+			    "%s\nClick to reveal in Assets. Drop a model "
+			    "here to replace it.",
+			    PathUtils::ToUtf8(object->mesh->modelPath).c_str());
 		}
 
-		ImGui::BeginDisabled(object->modelPath.empty());
+		ImGui::BeginDisabled(object->mesh->modelPath.empty());
 
-		if (ImGui::Button("Remove Model")) {
+		if (ImGui::Button("Clear Mesh Reference")) {
 			modelRequest_ = {inspectedObjectId, {}};
 		}
 
 		ImGui::EndDisabled();
+
+		if (ui.Button("Remove Mesh")) {
+			objectRequest_ = {ObjectAction::REMOVE_MESH, inspectedObjectId};
+		}
 	}
 
 	const auto componentScope = std::to_string(inspectedObjectId);
@@ -378,6 +375,15 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 		ImGui::OpenPopup("AddComponentMenu");
 
 	if (ImGui::BeginPopup("AddComponentMenu")) {
+		if (ui.MenuItem("Mesh", nullptr, !object->mesh)) {
+			objectRequest_ = {ObjectAction::ADD_MESH, inspectedObjectId};
+		}
+
+		if (ui.MenuItem("Mesh Renderer", nullptr, !object->meshRenderer)) {
+			objectRequest_ = {ObjectAction::ADD_MESH_RENDERER,
+			                  inspectedObjectId};
+		}
+
 		if (ui.MenuItem("Box Collider", nullptr, !object->collider))
 			colliderFitRequest_ = inspectedObjectId;
 
@@ -408,9 +414,22 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 
 	ImGui::PopID();
 
-	if (models && assets) {
-		changed |= MaterialSlotInspector{}.Draw(ui, inspectedObjectId, *object,
-		                                        history, *models, *assets);
+	if (object->meshRenderer && ui.CollapsingHeader("Mesh Renderer")) {
+		bool visible = object->meshRenderer->visible;
+
+		if (ImGui::Checkbox("Visible", &visible)) {
+			visibilityRequest_ = {inspectedObjectId, visible};
+		}
+
+		if (models && assets) {
+			changed |= MaterialSlotInspector{}.Draw(
+			    ui, inspectedObjectId, *object, history, *models, *assets);
+		}
+
+		if (ui.Button("Remove Mesh Renderer")) {
+			objectRequest_ = {ObjectAction::REMOVE_MESH_RENDERER,
+			                  inspectedObjectId};
+		}
 	}
 
 	changed |=
@@ -483,10 +502,6 @@ InspectorPanel::DrawReadOnly(const ImGuiSystem &ui, const Scene &scene,
 
 	ui.Text(std::format("Name: {}", object->name));
 	ui.Text(std::format("ID: {}", selectedObjectId));
-	bool visible = object->visible;
-	ui.BeginDisabled(true);
-	ui.Checkbox("Visible", visible);
-	ui.EndDisabled();
 
 	std::optional<Transform> copied;
 
@@ -511,9 +526,20 @@ InspectorPanel::DrawReadOnly(const ImGuiSystem &ui, const Scene &scene,
 		ui.EndDisabled();
 	}
 
-	if (!object->modelPath.empty()) {
-		ImGui::TextWrapped("Model: %s",
-		                   PathUtils::ToUtf8(object->modelPath).c_str());
+	if (object->mesh && ui.CollapsingHeader("Mesh")) {
+		ui.Text(object->HasMesh() ? PathUtils::ToUtf8(object->mesh->modelPath)
+		                          : "None");
+	}
+
+	if (object->meshRenderer && ui.CollapsingHeader("Mesh Renderer")) {
+		bool visible = object->meshRenderer->visible;
+		ui.BeginDisabled(true);
+		ui.Checkbox("Visible", visible);
+		ui.EndDisabled();
+
+		for (const auto &[slot, path] : object->meshRenderer->materials.slots) {
+			ui.Text(std::format("Slot {}: {}", slot, PathUtils::ToUtf8(path)));
+		}
 	}
 
 	if (object->collider && ui.CollapsingHeader("Box Collider")) {
@@ -543,12 +569,6 @@ InspectorPanel::DrawReadOnly(const ImGuiSystem &ui, const Scene &scene,
 		ImGui::DragFloat("Near Clip", &camera.settings.nearClip);
 		ImGui::DragFloat("Far Clip", &camera.settings.farClip);
 		ui.EndDisabled();
-	}
-
-	if (!object->materials.slots.empty() && ui.CollapsingHeader("Materials")) {
-		for (const auto &[slot, path] : object->materials.slots) {
-			ui.Text(std::format("Slot {}: {}", slot, PathUtils::ToUtf8(path)));
-		}
 	}
 
 	if (object->colorTint && ui.CollapsingHeader("Color Tint")) {

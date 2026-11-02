@@ -84,7 +84,7 @@ bool SceneRenderer::SynchronizeObjects() {
 	for (auto it = objects_.begin(); it != objects_.end();) {
 		const SceneObject *object = scene_.FindObject(it->first);
 
-		if (!object || !object->visible || object->modelPath.empty()) {
+		if (!object || !object->IsRenderable()) {
 			world_->DestroyObject(it->second.handle);
 			it = objects_.erase(it);
 		} else {
@@ -93,7 +93,7 @@ bool SceneRenderer::SynchronizeObjects() {
 	}
 
 	for (const auto &[id, object] : scene_.GetObjects()) {
-		if (!object.visible || object.modelPath.empty()) {
+		if (!object.IsRenderable()) {
 			continue;
 		}
 
@@ -101,12 +101,13 @@ bool SceneRenderer::SynchronizeObjects() {
 		auto it = objects_.try_emplace(id).first;
 		Object &renderObject = it->second;
 
-		const bool needsCreate = !world_->Contains(renderObject.handle) ||
-		                         renderObject.modelPath != object.modelPath;
+		const bool needsCreate =
+		    !world_->Contains(renderObject.handle) ||
+		    renderObject.modelPath != object.mesh->modelPath;
 
 		if (needsCreate) {
 			// パスのコピーはGPUリソースを作成する前に済ませる
-			std::filesystem::path modelPath = object.modelPath;
+			std::filesystem::path modelPath = object.mesh->modelPath;
 
 			const auto model = models_.Load(modelPath);
 
@@ -135,10 +136,11 @@ bool SceneRenderer::SynchronizeObjects() {
 		for (std::size_t slot = 0;
 		     slot < world_->GetMaterialCount(renderObject.handle); ++slot) {
 			const auto found = std::find_if(
-			    object.materials.slots.begin(), object.materials.slots.end(),
+			    object.meshRenderer->materials.slots.begin(),
+			    object.meshRenderer->materials.slots.end(),
 			    [slot](const auto &binding) { return binding.first == slot; });
 			const auto material =
-			    found == object.materials.slots.end()
+			    found == object.meshRenderer->materials.slots.end()
 			        ? MaterialHandle{}
 			        : render_.GetMaterials().Load(found->second);
 
@@ -216,7 +218,7 @@ bool SceneRenderer::GetObjectBounds(
     SceneObjectId objectId, std::array<DirectX::XMFLOAT3, 8> &corners) const {
 	const auto *object = scene_.FindObject(objectId);
 
-	if (!world_ || !object || !object->visible) {
+	if (!world_ || !object || !object->IsRenderable()) {
 		return false;
 	}
 

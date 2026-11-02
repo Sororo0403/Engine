@@ -28,7 +28,10 @@ SceneObjectId EditorHistory::CreateObject(std::string name,
 
 	SceneObject object;
 	object.name = std::move(name);
-	object.modelPath = std::move(modelPath);
+	if (!modelPath.empty()) {
+		object.mesh = MeshComponent{std::move(modelPath)};
+		object.meshRenderer = MeshRendererComponent{};
+	}
 
 	return CreateObjectWithHistory(std::move(object));
 }
@@ -544,14 +547,20 @@ bool EditorHistory::BeginCollider(SceneObjectId objectId) {
 
 bool EditorHistory::SetModelPath(SceneObjectId objectId,
                                  std::filesystem::path modelPath) {
-	CommitEdit();
-	const auto *object = scene_.FindObject(objectId);
+	return SetMesh(objectId, MeshComponent{std::move(modelPath)});
+}
 
-	if (!object) {
+bool EditorHistory::SetMesh(SceneObjectId id,
+                            std::optional<MeshComponent> value) {
+	CommitEdit();
+	const auto *object = scene_.FindObject(id);
+
+	if (!object || (value && !value->IsValid())) {
 		return false;
 	}
 
-	ModelPathCommand command{objectId, object->modelPath, std::move(modelPath)};
+	const bool adding = !object->mesh;
+	ModelPathCommand command{id, object->mesh, value};
 
 	if (!command.HasChanges()) {
 		return true;
@@ -563,7 +572,39 @@ bool EditorHistory::SetModelPath(SceneObjectId objectId,
 		return false;
 	}
 
-	AppendPrepared(Command{std::move(command)}, next, "Change Model");
+	AppendPrepared(Command{std::move(command)}, next,
+	               !value   ? "Remove Mesh"
+	               : adding ? "Add Mesh"
+	                        : "Change Mesh");
+	return true;
+}
+
+bool EditorHistory::SetMeshRenderer(
+    SceneObjectId id, std::optional<MeshRendererComponent> value) {
+	CommitEdit();
+	const auto *object = scene_.FindObject(id);
+
+	if (!object || (value && !value->IsValid())) {
+		return false;
+	}
+
+	const bool adding = !object->meshRenderer;
+	MeshRendererCommand command{id, object->meshRenderer, value};
+
+	if (!command.HasChanges()) {
+		return true;
+	}
+
+	const auto next = PrepareAppend();
+
+	if (!command.Redo(scene_)) {
+		return false;
+	}
+
+	AppendPrepared(Command{std::move(command)}, next,
+	               !value   ? "Remove Mesh Renderer"
+	               : adding ? "Add Mesh Renderer"
+	                        : "Edit Mesh Renderer");
 	return true;
 }
 
@@ -586,9 +627,9 @@ bool EditorHistory::SetVisibility(std::span<const SceneObjectId> objectIds,
 			return false;
 		}
 
-		if (object->visible != visible) {
+		if (object->meshRenderer && object->meshRenderer->visible != visible) {
 			commands.emplace_back(
-			    VisibilityCommand{id, object->visible, visible});
+			    VisibilityCommand{id, object->meshRenderer->visible, visible});
 		}
 	}
 
@@ -1818,11 +1859,11 @@ bool EditorHistory::SetMaterialPath(SceneObjectId id, std::uint32_t slot,
 	CommitEdit();
 	const auto *object = scene_.FindObject(id);
 
-	if (!object || !object->materials.IsValid()) {
+	if (!object || !object->meshRenderer || !object->meshRenderer->IsValid()) {
 		return false;
 	}
 
-	auto next = object->materials;
+	auto next = object->meshRenderer->materials;
 
 	std::erase_if(next.slots,
 	              [slot](const auto &entry) { return entry.first == slot; });
@@ -1838,11 +1879,12 @@ bool EditorHistory::SetMaterialPath(SceneObjectId id, std::uint32_t slot,
 		return false;
 	}
 
-	if (object->materials == next) {
+	if (object->meshRenderer->materials == next) {
 		return true;
 	}
 
-	MaterialSlotsCommand command{id, object->materials, std::move(next)};
+	MaterialSlotsCommand command{id, object->meshRenderer->materials,
+	                             std::move(next)};
 	const auto state = PrepareAppend();
 
 	if (!command.Redo(scene_)) {
