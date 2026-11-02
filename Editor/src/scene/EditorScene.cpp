@@ -2557,6 +2557,29 @@ void EditorScene::ApplyInspectorRequest(
 			return;
 		}
 
+		if (request.action ==
+		    InspectorPanel::ObjectAction::PASTE_RESPAWN_POSITION) {
+			const auto *copied = clipboard_.GetTransform();
+
+			if (!object->respawn || !copied) {
+				ShowError("Copy a Transform and inspect an object with Respawn "
+				          "before pasting its position.");
+				return;
+			}
+
+			auto settings = *object->respawn;
+			settings.useStartPosition = false;
+			settings.position = copied->translation;
+
+			if (!document_.GetHistory().SetRespawn(request.objectId,
+			                                       settings)) {
+				ShowError("Could not paste the Respawn position. Coordinates "
+				          "must be within -100000 and 100000.");
+			}
+
+			return;
+		}
+
 		if (request.action == InspectorPanel::ObjectAction::FRAME_RESPAWN ||
 		    request.action == InspectorPanel::ObjectAction::FRAME_COLLIDER) {
 			std::array<DirectX::XMFLOAT3, 8> corners;

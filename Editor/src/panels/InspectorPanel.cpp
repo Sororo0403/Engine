@@ -468,11 +468,17 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 	}
 
 	SceneObjectId targetSelectionRequest = 0;
-	changed |= gameplayInspector_.Draw(ui, scene, inspectedObjectId, *object,
-	                                   history, targetSelectionRequest);
+	changed |=
+	    gameplayInspector_.Draw(ui, scene, inspectedObjectId, *object, history,
+	                            targetSelectionRequest, canPasteTransform);
 
 	if (targetSelectionRequest != 0) {
 		objectRequest_ = {ObjectAction::SELECT_OBJECT, targetSelectionRequest};
+	}
+
+	if (const auto pasteId = gameplayInspector_.GetRespawnPasteRequest();
+	    pasteId != 0) {
+		objectRequest_ = {ObjectAction::PASTE_RESPAWN_POSITION, pasteId};
 	}
 
 	if (const auto frameId = gameplayInspector_.GetRespawnFrameRequest();

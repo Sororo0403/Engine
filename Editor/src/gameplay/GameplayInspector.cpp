@@ -49,8 +49,10 @@ bool ApplyField(EditorHistory &history, SceneObjectId id,
 bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
                              SceneObjectId id, SceneObject &object,
                              EditorHistory &history,
-                             SceneObjectId &targetSelectionRequest) {
+                             SceneObjectId &targetSelectionRequest,
+                             bool canPasteTransform) {
 	targetSelectionRequest = 0;
+	respawnPasteRequest_ = 0;
 	respawnFrameRequest_ = 0;
 	respawnBlockersRequest_ = 0;
 	const auto scope = std::to_string(id);
@@ -184,6 +186,14 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 			}
 		}
 
+		ui.BeginDisabled(!canPasteTransform);
+
+		if (ui.Button("Paste Respawn Position")) {
+			respawnPasteRequest_ = id;
+		}
+
+		ui.EndDisabled();
+
 		std::array<DirectX::XMFLOAT3, 8> frameBounds;
 		ui.BeginDisabled(!RespawnPreview::GetFrameBounds(object, frameBounds));
 
@@ -222,6 +232,7 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 void GameplayInspector::Clear() noexcept {
 	targetPicker_.Clear();
+	respawnPasteRequest_ = 0;
 	respawnFrameRequest_ = 0;
 	respawnBlockersRequest_ = 0;
 }
@@ -232,4 +243,8 @@ SceneObjectId GameplayInspector::GetRespawnFrameRequest() const {
 
 SceneObjectId GameplayInspector::GetRespawnBlockersRequest() const {
 	return respawnBlockersRequest_;
+}
+
+SceneObjectId GameplayInspector::GetRespawnPasteRequest() const {
+	return respawnPasteRequest_;
 }
