@@ -341,7 +341,8 @@ bool EditorScene::Update(float deltaTime) {
 	inspectorPanel_.Draw(ui_, scene, selection_.GetActiveId(), history,
 	                     clipboard_.GetTransform() != nullptr, &models_,
 	                     &assets_, clipboard_.GetCollider() != nullptr,
-	                     clipboard_.GetCameraLens() != nullptr);
+	                     clipboard_.GetCameraLens() != nullptr,
+	                     clipboard_.GetCharacterSettings() != nullptr);
 	const auto &objectRequest = inspectorPanel_.GetObjectRequest();
 	const bool hasObjectRequest =
 	    objectRequest.action != InspectorPanel::ObjectAction::NONE;
@@ -2704,6 +2705,30 @@ void EditorScene::ApplyInspectorRequest(
 			if (!applied) {
 				ShowError(
 				    "Could not change the Mesh or Mesh Renderer component.");
+			}
+
+			return;
+		}
+
+		if (request.action ==
+		    InspectorPanel::ObjectAction::COPY_CHARACTER_SETTINGS) {
+			if (!object->character ||
+			    !clipboard_.CopyCharacterSettings(*object->character)) {
+				ShowError(
+				    "Could not copy invalid Character Controller settings.");
+			}
+
+			return;
+		}
+
+		if (request.action ==
+		    InspectorPanel::ObjectAction::PASTE_CHARACTER_SETTINGS) {
+			const auto *copied = clipboard_.GetCharacterSettings();
+
+			if (!copied || !document_.GetHistory().SetCharacter(
+			                   request.objectId, *copied)) {
+				ShowError("Could not paste Character Controller settings. Copy "
+				          "valid settings first.");
 			}
 
 			return;

@@ -156,7 +156,8 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
                           SceneObjectId selectedObjectId,
                           EditorHistory &history, bool canPasteTransform,
                           ModelManager *models, const AssetDatabase *assets,
-                          bool canPasteCollider, bool canPasteCameraLens) {
+                          bool canPasteCollider, bool canPasteCameraLens,
+                          bool canPasteCharacter) {
 	objectRequest_ = {};
 	colliderFitRequest_ = 0;
 	modelRequest_ = {};
@@ -404,6 +405,12 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 			    history.SetCharacter(inspectedObjectId, CharacterSettings{});
 		}
 
+		if (ui.MenuItem("Paste Character Settings", nullptr,
+		                canPasteCharacter && !object->character)) {
+			objectRequest_ = {ObjectAction::PASTE_CHARACTER_SETTINGS,
+			                  inspectedObjectId};
+		}
+
 		if (ui.MenuItem("Camera", nullptr, !object->camera)) {
 			objectRequest_ = {ObjectAction::ADD_CAMERA, inspectedObjectId};
 		}
@@ -493,9 +500,20 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 	}
 
 	SceneObjectId targetSelectionRequest = 0;
-	changed |=
-	    gameplayInspector_.Draw(ui, scene, inspectedObjectId, *object, history,
-	                            targetSelectionRequest, canPasteTransform);
+	changed |= gameplayInspector_.Draw(ui, scene, inspectedObjectId, *object,
+	                                   history, targetSelectionRequest,
+	                                   canPasteTransform, canPasteCharacter);
+
+	const auto characterRequest = gameplayInspector_.GetCharacterRequest();
+
+	if (characterRequest.action == GameplayInspector::CharacterAction::COPY) {
+		objectRequest_ = {ObjectAction::COPY_CHARACTER_SETTINGS,
+		                  characterRequest.objectId};
+	} else if (characterRequest.action ==
+	           GameplayInspector::CharacterAction::PASTE) {
+		objectRequest_ = {ObjectAction::PASTE_CHARACTER_SETTINGS,
+		                  characterRequest.objectId};
+	}
 
 	if (targetSelectionRequest != 0) {
 		objectRequest_ = {ObjectAction::SELECT_OBJECT, targetSelectionRequest};

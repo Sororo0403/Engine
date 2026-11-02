@@ -691,6 +691,18 @@ void ControlsPanel::Draw() {
 	         "Restore the default FOV and Near/Far Clip in one Undo operation. "
 	         "Primary, Transform and Follow Camera settings stay unchanged. "
 	         "Pending edits finish first. Default values add no history."},
+	        {"Inspector > Copy / Paste Character Settings",
+	         "Copy movement speed, jump speed, gravity and terminal speed, "
+	         "then paste onto the inspected Character Controller. Add "
+	         "Component "
+	         "> Paste Character Settings adds a missing controller. Transform, "
+	         "Collider, Camera and Respawn settings stay unchanged; a Collider "
+	         "is still required for Play. Each paste is one Undo/Redo; "
+	         "identical "
+	         "settings add no history. The copy is independent of other "
+	         "clipboards and survives New/Open. Inspector locks are respected "
+	         "and selection is kept. Pending edits finish first. Editing is "
+	         "unavailable during Play."},
 	        {"Inspector > Reset Character / Follow / Respawn Settings",
 	         "Reset this component to defaults in one Undo operation. "
 	         "Follow Camera keeps its target; offsets and smoothing reset. "

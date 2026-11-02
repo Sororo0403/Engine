@@ -50,8 +50,9 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
                              SceneObjectId id, SceneObject &object,
                              EditorHistory &history,
                              SceneObjectId &targetSelectionRequest,
-                             bool canPasteTransform) {
+                             bool canPasteTransform, bool canPasteCharacter) {
 	targetSelectionRequest = 0;
+	characterRequest_ = {};
 	respawnPasteRequest_ = 0;
 	respawnFrameRequest_ = 0;
 	respawnBlockersRequest_ = 0;
@@ -82,6 +83,22 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		      CharacterSettings::kMaximumGravity);
 		field("Terminal Speed", &CharacterSettings::terminalSpeed,
 		      CharacterSettings::kMaximumSpeed);
+
+		ui.BeginDisabled(!object.character->IsValid());
+
+		if (ui.Button("Copy Character Settings")) {
+			characterRequest_ = {CharacterAction::COPY, id};
+		}
+
+		ui.EndDisabled();
+		ui.SameLine();
+		ui.BeginDisabled(!canPasteCharacter);
+
+		if (ui.Button("Paste Character Settings")) {
+			characterRequest_ = {CharacterAction::PASTE, id};
+		}
+
+		ui.EndDisabled();
 
 		if (ui.Button("Reset Character Settings")) {
 			const auto before = object.character;
@@ -232,9 +249,15 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 void GameplayInspector::Clear() noexcept {
 	targetPicker_.Clear();
+	characterRequest_ = {};
 	respawnPasteRequest_ = 0;
 	respawnFrameRequest_ = 0;
 	respawnBlockersRequest_ = 0;
+}
+
+GameplayInspector::CharacterRequest
+GameplayInspector::GetCharacterRequest() const {
+	return characterRequest_;
 }
 
 SceneObjectId GameplayInspector::GetRespawnFrameRequest() const {

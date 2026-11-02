@@ -11,7 +11,7 @@
 class Scene;
 
 /// <summary>
-/// コピーした物体・Transform・Box Collider・Cameraのレンズ設定を、元のシーンと独立して保持する
+/// コピーした物体・Transform・Box Collider・Cameraのレンズ設定・Character設定を、元のシーンと独立して保持する
 /// </summary>
 class EditorClipboard {
   public:
@@ -37,7 +37,7 @@ class EditorClipboard {
 
 	/// <summary>
 	/// 元のシーンの置き換えに合わせ、コピー範囲外の物体への参照を解除する。
-	/// コピー範囲内の参照とTransform・Box Collider・レンズ設定のコピーは保持する
+	/// コピー範囲内の参照とTransform・Box Collider・レンズ設定・Character設定のコピーは保持する
 	/// </summary>
 	void DetachExternalReferences() noexcept;
 
@@ -87,6 +87,19 @@ class EditorClipboard {
 	const CameraSettings *GetCameraLens() const;
 
 	/// <summary>
+	/// Character Controllerの設定をコピーする。他のコピー内容は変更しない
+	/// </summary>
+	/// <param name="settings">移動速度・ジャンプ速度・重力・終端速度の有効な設定</param>
+	/// <returns>true:コピー成功 false:無効な設定。以前の内容は保持する</returns>
+	bool CopyCharacterSettings(const CharacterSettings &settings);
+
+	/// <summary>
+	/// コピーしたCharacter Controllerの設定を取得する
+	/// </summary>
+	/// <returns>次のCopyCharacterSettings成功またはClearまで有効な値。未設定はnullptr</returns>
+	const CharacterSettings *GetCharacterSettings() const;
+
+	/// <summary>
 	/// コピーしたデータを破棄する
 	/// </summary>
 	void Clear();
@@ -99,4 +112,5 @@ class EditorClipboard {
 	std::optional<Transform> transform_;
 	std::optional<BoxCollider> collider_;
 	std::optional<CameraSettings> cameraLens_;
+	std::optional<CharacterSettings> characterSettings_;
 };

@@ -14,6 +14,19 @@ struct SceneObject;
 class GameplayInspector {
   public:
 	/// <summary>
+	/// 描画後に表示対象のCharacter設定へ適用する操作
+	/// </summary>
+	enum class CharacterAction { NONE, COPY, PASTE };
+
+	/// <summary>
+	/// Character設定の操作と、Inspectorに表示している対象ID
+	/// </summary>
+	struct CharacterRequest {
+		CharacterAction action = CharacterAction::NONE;
+		SceneObjectId objectId = 0;
+	};
+
+	/// <summary>
 	/// 存在するコンポーネントを表示し、編集を履歴へ記録する
 	/// </summary>
 	/// <param name="ui">描画用UI</param>
@@ -23,11 +36,12 @@ class GameplayInspector {
 	/// <param name="history">編集履歴</param>
 	/// <param name="targetSelectionRequest">追従先の選択要求。要求なしの場合は0。シーンの選択変更は描画後に行う</param>
 	/// <param name="canPasteTransform">復帰先へ貼り付けるTransformを保持しているか</param>
+	/// <param name="canPasteCharacter">貼り付けるCharacter設定を保持しているか</param>
 	/// <returns>true:変更あり false:変更なし。選択・貼り付け要求だけでは変更ありにしない</returns>
 	bool Draw(const ImGuiSystem &ui, const Scene &scene, SceneObjectId id,
 	          SceneObject &object, EditorHistory &history,
 	          SceneObjectId &targetSelectionRequest,
-	          bool canPasteTransform = false);
+	          bool canPasteTransform = false, bool canPasteCharacter = false);
 	/// <summary>
 	/// コンポーネント選択UIの検索状態を解除する
 	/// </summary>
@@ -51,7 +65,14 @@ class GameplayInspector {
 	/// <returns>Inspectorの表示対象ID。要求なしは0。貼り付けは描画後に行う</returns>
 	SceneObjectId GetRespawnPasteRequest() const;
 
+	/// <summary>
+	/// このフレームに要求したCharacter設定のコピー・貼り付けを取得する
+	/// </summary>
+	/// <returns>表示対象への要求。要求なしはNONE。実際の操作は描画後に行う</returns>
+	CharacterRequest GetCharacterRequest() const;
+
   private:
+	CharacterRequest characterRequest_;
 	FollowTargetPicker targetPicker_;
 	SceneObjectId respawnPasteRequest_ = 0;
 	SceneObjectId respawnFrameRequest_ = 0;

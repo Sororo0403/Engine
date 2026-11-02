@@ -107,6 +107,19 @@ const CameraSettings *EditorClipboard::GetCameraLens() const {
 	return cameraLens_ ? &*cameraLens_ : nullptr;
 }
 
+bool EditorClipboard::CopyCharacterSettings(const CharacterSettings &settings) {
+	if (!settings.IsValid()) {
+		return false;
+	}
+
+	characterSettings_ = settings;
+	return true;
+}
+
+const CharacterSettings *EditorClipboard::GetCharacterSettings() const {
+	return characterSettings_ ? &*characterSettings_ : nullptr;
+}
+
 void EditorClipboard::Clear() {
 	objects_.clear();
 	sourceIds_.clear();
@@ -114,4 +127,5 @@ void EditorClipboard::Clear() {
 	transform_.reset();
 	collider_.reset();
 	cameraLens_.reset();
+	characterSettings_.reset();
 }
