@@ -350,7 +350,7 @@ bool EditorScene::Update(float deltaTime) {
 	const auto &modelRequest = inspectorPanel_.GetModelRequest();
 	const auto &visibilityRequest = inspectorPanel_.GetVisibilityRequest();
 	const auto colliderFitRequest = inspectorPanel_.GetColliderFitRequest();
-	const auto &materialEditPath = inspectorPanel_.GetMaterialEditRequest();
+	auto materialEditPath = inspectorPanel_.GetMaterialEditRequest();
 	ui_.EndDisabled();
 
 	if (!wasBusy && !inspectorPanel_.GetAssetRevealPath().empty()) {
@@ -359,6 +359,11 @@ bool EditorScene::Update(float deltaTime) {
 
 	const auto requestedModelPath = assetsPanel_.Draw(ui_, assets_);
 	const auto requestedInstances = assetsPanel_.GetInstanceSelectionRequest();
+
+	if (materialEditPath.empty()) {
+		materialEditPath = assetsPanel_.GetMaterialEditRequest();
+	}
+
 	const bool canAssignMaterial =
 	    HasSelection() && !gizmo_.IsUsing() && !gizmoEditActive_ &&
 	    !sceneViewPanel_.IsSelecting() &&
@@ -368,8 +373,13 @@ bool EditorScene::Update(float deltaTime) {
 	    });
 	materialPanel_.Draw(ui_, assets_, canAssignMaterial);
 	const auto &materialAssignment = materialPanel_.GetAssignmentRequest();
-	const auto &requestedMaterialUsers =
-	    materialPanel_.GetUsageSelectionRequest();
+	auto requestedMaterialUsers = materialPanel_.GetUsageSelectionRequest();
+
+	if (requestedMaterialUsers.empty()) {
+		requestedMaterialUsers =
+		    assetsPanel_.GetMaterialUsageSelectionRequest();
+	}
+
 	const auto historyRequest =
 	    historyPanel_.Draw(ui_, history,
 	                       !wasBusy && !gizmo_.IsUsing() && !gizmoEditActive_ &&

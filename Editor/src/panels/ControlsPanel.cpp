@@ -138,7 +138,7 @@ void ControlsPanel::Draw() {
 	         "reveals the active result in Hierarchy."},
 	        {"Assets folders / Up / Root",
 	         "Open a folder or return to its parent or the Assets root. Search "
-	         "finds model paths across all folders."},
+	         "finds paths of the selected Asset Type across all folders."},
 	        {"Click / Ctrl + click",
 	         "Select one object / toggle an object in the selection."},
 	        {"Drag in Scene", "Select models inside the rectangle."},
@@ -251,6 +251,17 @@ void ControlsPanel::Draw() {
 	DrawSection(
 	    "Model assets",
 	    {
+	        {"Assets > Asset Type > Materials",
+	         "Browse material assets by folder or search across all folders. "
+	         "Double-click a material, choose Open Material, or use its "
+	         "context "
+	         "menu to edit it in Materials. Switching materials asks about "
+	         "unsaved edits; opening the same material keeps its draft. Select "
+	         "Instances selects its users, including hidden objects, without "
+	         "editing the scene or history. Type changes clear the asset "
+	         "selection while keeping the folder and search. Material rows "
+	         "never place models. Inspector model reveal returns to Models. "
+	         "These operations are unavailable during Play."},
 	        {"Assets > Add to Scene",
 	         "Place the selected model at the world origin."},
 	        {"Drag Assets into Scene",

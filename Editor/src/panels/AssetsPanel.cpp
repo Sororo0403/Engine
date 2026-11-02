@@ -18,6 +18,21 @@ void AssetsPanel::RequestReveal(const std::filesystem::path &path) {
 	revealPath_ = path;
 }
 
+void AssetsPanel::SetAssetType(AssetType type) {
+	if (type_ == type) {
+		return;
+	}
+
+	type_ = type;
+	selectedPath_.clear();
+	instanceSelectionPath_.clear();
+	materialEditPath_.clear();
+	materialUsageSelectionPath_.clear();
+	revealMessage_.clear();
+	scrollToSelected_ = false;
+	scrollToTop_ = true;
+}
+
 void AssetsPanel::OpenDirectory(std::filesystem::path directory) {
 	currentDirectory_.swap(directory);
 	selectedPath_.clear();
@@ -59,6 +74,7 @@ bool AssetsPanel::SelectModel(const std::filesystem::path &path,
 	auto selected = *found;
 	auto folder =
 	    selected.lexically_relative(assets.GetRootDirectory()).parent_path();
+	SetAssetType(AssetType::MODEL);
 	selectedPath_.swap(selected);
 	currentDirectory_.swap(folder);
 	filter_.clear();
@@ -70,6 +86,8 @@ bool AssetsPanel::SelectModel(const std::filesystem::path &path,
 std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
                                         AssetDatabase &assets) {
 	instanceSelectionPath_.clear();
+	materialEditPath_.clear();
+	materialUsageSelectionPath_.clear();
 
 	if (!revealPath_.empty()) {
 		ImGui::SetNextWindowCollapsed(false);
@@ -135,10 +153,25 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 
 	ui.EndDisabled();
 	ui.Text(PathUtils::ToUtf8(assets.GetRootDirectory() / currentDirectory_));
+	ImGui::SetNextItemWidth(160.0f);
+
+	if (ImGui::BeginCombo("Asset Type",
+	                      type_ == AssetType::MODEL ? "Models" : "Materials")) {
+		for (const auto type : {AssetType::MODEL, AssetType::MATERIAL}) {
+			const auto *label =
+			    type == AssetType::MODEL ? "Models" : "Materials";
+
+			if (ui.Selectable(label, type_ == type)) {
+				SetAssetType(type);
+			}
+		}
+
+		ImGui::EndCombo();
+	}
 
 	if (ui.InputText("Search", filter_)) {
 		scrollToTop_ = true;
-		// 検索で隠れたモデルを誤って配置しないよう選択を解除する
+		// 検索で隠れたアセットを誤って操作しないよう選択を解除する
 		selectedPath_.clear();
 		scrollToSelected_ = false;
 		revealMessage_.clear();
@@ -147,10 +180,11 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 	ImGui::TextDisabled("%s", filter_.empty() ? "Click a folder to open it."
 	                                          : "Searching all folders.");
 
-	const auto &models = assets.GetModels();
+	const auto &entries =
+	    type_ == AssetType::MODEL ? assets.GetModels() : assets.GetMaterials();
 
-	if (!selectedPath_.empty() && std::find(models.begin(), models.end(),
-	                                        selectedPath_) == models.end()) {
+	if (!selectedPath_.empty() && std::find(entries.begin(), entries.end(),
+	                                        selectedPath_) == entries.end()) {
 		selectedPath_.clear();
 		scrollToSelected_ = false;
 	}
@@ -169,11 +203,11 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 	                           ImGui::GetStyle().ItemSpacing.y;
 	const float listHeight = std::max(1.0f, contentSize.y - footerHeight);
 
-	const bool drawModels = ui.BeginChild("ModelAssets", 0.0f, listHeight);
+	const bool drawEntries = ui.BeginChild("AssetEntries", 0.0f, listHeight);
 	std::filesystem::path nextDirectory;
 	bool openRequested = false;
 
-	if (drawModels) {
+	if (drawEntries) {
 		if (scrollToTop_) {
 			ImGui::SetScrollY(0.0f);
 			scrollToTop_ = false;
@@ -204,12 +238,12 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 			}
 		}
 
-		for (std::size_t i = 0; i < models.size(); ++i) {
-			const auto &modelPath = models[i];
+		for (std::size_t i = 0; i < entries.size(); ++i) {
+			const auto &assetPath = entries[i];
 
 			// パネル内では、アセットフォルダからのパスを表示する
 			const auto displayPath =
-			    modelPath.lexically_relative(assets.GetRootDirectory());
+			    assetPath.lexically_relative(assets.GetRootDirectory());
 
 			if (filter_.empty() &&
 			    displayPath.parent_path() != currentDirectory_) {
@@ -230,41 +264,56 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 			                       ? PathUtils::ToUtf8(displayPath.filename())
 			                       : searchPath;
 
-			if (ui.Selectable(label.c_str(), selectedPath_ == modelPath)) {
-				selectedPath_ = modelPath;
+			if (ui.Selectable(label.c_str(), selectedPath_ == assetPath)) {
+				selectedPath_ = assetPath;
 				scrollToSelected_ = false;
 				revealMessage_.clear();
+
+				if (type_ == AssetType::MATERIAL &&
+				    ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+					materialEditPath_ = assetPath;
+				}
 			}
 
 			if (ImGui::BeginPopupContextItem()) {
-				selectedPath_ = modelPath;
+				selectedPath_ = assetPath;
 				scrollToSelected_ = false;
 				revealMessage_.clear();
 
-				if (ui.MenuItem("Select Instances", nullptr, true)) {
-					instanceSelectionPath_ = modelPath;
+				if (type_ == AssetType::MATERIAL &&
+				    ui.MenuItem("Open Material", nullptr, true)) {
+					materialEditPath_ = assetPath;
 				}
 
-				ImGui::SetItemTooltip("Select all objects using this model, "
+				if (ui.MenuItem("Select Instances", nullptr, true)) {
+					if (type_ == AssetType::MODEL) {
+						instanceSelectionPath_ = assetPath;
+					} else {
+						materialUsageSelectionPath_ = assetPath;
+					}
+				}
+
+				ImGui::SetItemTooltip("Select all objects using this asset, "
 				                      "including hidden objects.");
 				ImGui::EndPopup();
 			}
 
-			if (scrollToSelected_ && selectedPath_ == modelPath) {
+			if (scrollToSelected_ && selectedPath_ == assetPath) {
 				ImGui::SetScrollHereY(0.5f);
 				scrollToSelected_ = false;
 			}
 
-			if (ModelAssetDragDrop::DrawSource(modelPath)) {
-				selectedPath_ = modelPath;
+			if (type_ == AssetType::MODEL &&
+			    ModelAssetDragDrop::DrawSource(assetPath)) {
+				selectedPath_ = assetPath;
 			}
 
 			ui.PopID();
 		}
 
 		if (!anyVisible) {
-			ui.Text(filter_.empty() ? "No folders or models."
-			                        : "No matching models.");
+			ui.Text(filter_.empty() ? "No folders or assets."
+			                        : "No matching assets.");
 		}
 	}
 
@@ -283,16 +332,24 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 
 	ui.BeginDisabled(selectedPath_.empty());
 
-	if (ui.Button("Add to Scene")) {
-		requestedPath = selectedPath_;
+	if (type_ == AssetType::MODEL) {
+		if (ui.Button("Add to Scene")) {
+			requestedPath = selectedPath_;
+		}
+	} else if (ui.Button("Open Material")) {
+		materialEditPath_ = selectedPath_;
 	}
 
 	if (ui.Button("Select Instances")) {
-		instanceSelectionPath_ = selectedPath_;
+		if (type_ == AssetType::MODEL) {
+			instanceSelectionPath_ = selectedPath_;
+		} else {
+			materialUsageSelectionPath_ = selectedPath_;
+		}
 	}
 
 	ImGui::SetItemTooltip(
-	    "Select all objects using this model, including hidden objects.");
+	    "Select all objects using this asset, including hidden objects.");
 
 	ui.EndDisabled();
 
@@ -304,7 +361,19 @@ const std::filesystem::path &AssetsPanel::GetInstanceSelectionRequest() const {
 	return instanceSelectionPath_;
 }
 
+const std::filesystem::path &AssetsPanel::GetMaterialEditRequest() const {
+	return materialEditPath_;
+}
+
+const std::filesystem::path &
+AssetsPanel::GetMaterialUsageSelectionRequest() const {
+	return materialUsageSelectionPath_;
+}
+
 void AssetsPanel::Clear() {
+	type_ = AssetType::MODEL;
+	materialEditPath_.clear();
+	materialUsageSelectionPath_.clear();
 	selectedPath_.clear();
 	instanceSelectionPath_.clear();
 	currentDirectory_.clear();

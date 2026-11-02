@@ -7,7 +7,7 @@ class AssetDatabase;
 class ImGuiSystem;
 
 /// <summary>
-/// モデルアセットの一覧・検索・選択と、配置要求を管理する
+/// モデル・材質アセットの一覧・検索・選択と、配置・材質編集要求を管理する
 /// </summary>
 class AssetsPanel {
   public:
@@ -32,11 +32,34 @@ class AssetsPanel {
 	const std::filesystem::path &GetInstanceSelectionRequest() const;
 
 	/// <summary>
-	/// 選択・検索・表示要求をクリアし、検索先のルートフォルダへ戻る
+	/// このフレームに編集を要求した材質を取得する
+	/// </summary>
+	/// <returns>材質の相対パス。要求なしは空。次のDrawまたはClearまで有効</returns>
+	const std::filesystem::path &GetMaterialEditRequest() const;
+
+	/// <summary>
+	/// このフレームに使用物体の選択を要求した材質を取得する
+	/// </summary>
+	/// <returns>材質の相対パス。要求なしは空。次のDrawまたはClearまで有効</returns>
+	const std::filesystem::path &GetMaterialUsageSelectionRequest() const;
+
+	/// <summary>
+	/// 選択・検索・表示要求をクリアし、モデル一覧と検索先のルートフォルダへ戻る
 	/// </summary>
 	void Clear();
 
   private:
+	/// <summary>
+	/// 一覧に表示するアセットの種類
+	/// </summary>
+	enum class AssetType { MODEL, MATERIAL };
+
+	/// <summary>
+	/// 表示の種類を切り替え、前の種類の選択と操作要求を解除する
+	/// </summary>
+	/// <param name="type">表示するモデルまたは材質</param>
+	void SetAssetType(AssetType type);
+
 	/// <summary>
 	/// 表示するフォルダを切り替え、選択・検索を解除する
 	/// </summary>
@@ -52,6 +75,9 @@ class AssetsPanel {
 	bool SelectModel(const std::filesystem::path &path,
 	                 const AssetDatabase &assets);
 
+	AssetType type_ = AssetType::MODEL;
+	std::filesystem::path materialEditPath_;
+	std::filesystem::path materialUsageSelectionPath_;
 	std::filesystem::path selectedPath_;
 	std::filesystem::path instanceSelectionPath_;
 	std::filesystem::path currentDirectory_;
