@@ -42,26 +42,6 @@ bool ApplyField(EditorHistory &history, SceneObjectId id,
 	return applied;
 }
 
-/// <summary>
-/// 数値編集を先に確定し、初期設定への変更を独立した1回のUndo操作として記録する
-/// </summary>
-/// <typeparam name="T">リセットするコンポーネントの設定型</typeparam>
-/// <param name="history">既存の連続編集も確定する履歴</param>
-/// <param name="id">設定を戻す物体ID</param>
-/// <param name="current">変更するコンポーネント。参照先のIDは呼び出し側で保持する</param>
-/// <param name="defaults">変更後の初期設定</param>
-/// <param name="begin">対応するコンポーネントの編集開始関数</param>
-/// <returns>true:設定を変更した false:同値、または編集開始に失敗した</returns>
-template <class T>
-bool ResetSettings(EditorHistory &history, SceneObjectId id,
-                   std::optional<T> &current, const T &defaults,
-                   bool (EditorHistory::*begin)(SceneObjectId)) {
-	history.CommitEdit();
-	const bool changed =
-	    ApplyField(history, id, current, defaults, true, begin);
-	history.CommitEdit();
-	return changed;
-}
 } // namespace
 
 bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
@@ -98,9 +78,10 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		      CharacterSettings::kMaximumSpeed);
 
 		if (ui.Button("Reset Character Settings")) {
-			changed |= ResetSettings(history, id, object.character,
-			                         CharacterSettings{},
-			                         &EditorHistory::BeginCharacter);
+			const auto before = object.character;
+			changed |= history.ResetComponentSettings(
+			               id, EditorHistory::ComponentSettings::CHARACTER) &&
+			           object.character != before;
 		}
 
 		if (ui.Button("Remove Character Controller")) {
@@ -156,10 +137,11 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		                      &EditorHistory::BeginFollowCamera);
 
 		if (ui.Button("Reset Follow Settings")) {
-			FollowCameraSettings defaults;
-			defaults.target = object.followCamera->target;
-			changed |= ResetSettings(history, id, object.followCamera, defaults,
-			                         &EditorHistory::BeginFollowCamera);
+			const auto before = object.followCamera;
+			changed |=
+			    history.ResetComponentSettings(
+			        id, EditorHistory::ComponentSettings::FOLLOW_CAMERA) &&
+			    object.followCamera != before;
 		}
 
 		if (ui.Button("Remove Follow Camera")) {
@@ -199,9 +181,10 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		}
 
 		if (ui.Button("Reset Respawn Settings")) {
-			changed |=
-			    ResetSettings(history, id, object.respawn, RespawnSettings{},
-			                  &EditorHistory::BeginRespawn);
+			const auto before = object.respawn;
+			changed |= history.ResetComponentSettings(
+			               id, EditorHistory::ComponentSettings::RESPAWN) &&
+			           object.respawn != before;
 		}
 
 		if (ui.Button("Remove Respawn")) {

@@ -56,16 +56,10 @@ bool CameraInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		field("Far Clip", &CameraSettings::farClip, 0.1f, 0.002f, 100000);
 
 		if (ui.Button("Reset Lens Settings")) {
-			history.CommitEdit();
-			const CameraSettings defaults;
-
-			// Primaryを切り替えず、レンズだけの変更を独立した履歴にする。
-			if (object.camera->settings != defaults &&
-			    history.BeginCamera(id)) {
-				object.camera->settings = defaults;
-				history.CommitEdit();
-				changed = true;
-			}
+			const auto before = object.camera;
+			changed |= history.ResetComponentSettings(
+			               id, EditorHistory::ComponentSettings::CAMERA_LENS) &&
+			           object.camera != before;
 		}
 
 		if (ui.Button("Align to Scene View")) {

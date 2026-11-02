@@ -1690,3 +1690,69 @@ bool EditorHistory::BeginCamera(SceneObjectId id) {
 	pending_ = PendingEdit{id, object->camera};
 	return true;
 }
+
+bool EditorHistory::ResetComponentSettings(SceneObjectId id,
+                                           ComponentSettings settings) {
+	CommitEdit();
+	const auto *object = scene_.FindObject(id);
+
+	if (!object) {
+		return false;
+	}
+
+	const auto reset = [&](auto command, std::string_view description) {
+		if (!command.HasChanges()) {
+			return true;
+		}
+
+		const auto next = PrepareAppend();
+
+		if (!command.Redo(scene_)) {
+			return false;
+		}
+
+		AppendPrepared(Command{std::move(command)}, next, description);
+		return true;
+	};
+
+	switch (settings) {
+	case ComponentSettings::CHARACTER:
+		if (!object->character || !object->character->IsValid()) {
+			return false;
+		}
+
+		return reset(
+		    CharacterCommand{id, object->character, CharacterSettings{}},
+		    "Reset Character Settings");
+	case ComponentSettings::FOLLOW_CAMERA: {
+		if (!object->followCamera || !object->followCamera->IsValid()) {
+			return false;
+		}
+
+		FollowCameraSettings defaults;
+		// 参照を変更しないため、不在や循環が残っていても数値設定だけを戻せる。
+		defaults.target = object->followCamera->target;
+		return reset(FollowCameraCommand{id, object->followCamera, defaults},
+		             "Reset Follow Settings");
+	}
+	case ComponentSettings::RESPAWN:
+		if (!object->respawn || !object->respawn->IsValid()) {
+			return false;
+		}
+
+		return reset(RespawnCommand{id, object->respawn, RespawnSettings{}},
+		             "Reset Respawn Settings");
+	case ComponentSettings::CAMERA_LENS: {
+		if (!object->camera || !object->camera->IsValid()) {
+			return false;
+		}
+
+		auto defaults = *object->camera;
+		defaults.settings = CameraSettings{};
+		return reset(CameraCommand{id, object->camera, defaults},
+		             "Reset Lens Settings");
+	}
+	default:
+		return false;
+	}
+}

@@ -186,6 +186,26 @@ class EditorHistory {
 	SceneObjectId DuplicateObject(SceneObjectId objectId);
 
 	/// <summary>
+	/// 初期設定へ戻すコンポーネントの範囲
+	/// </summary>
+	enum class ComponentSettings {
+		CHARACTER,
+		FOLLOW_CAMERA,
+		RESPAWN,
+		CAMERA_LENS,
+	};
+
+	/// <summary>
+	/// 指定した設定を初期値へ戻し、1操作として記録する。連続編集は先に確定する。
+	/// Follow Cameraの追従先と、CameraのPrimaryは保持する
+	/// </summary>
+	/// <param name="id">設定を戻す物体ID</param>
+	/// <param name="settings">リセットする設定の範囲</param>
+	/// <returns>true:変更成功または同値 false:対象や設定が無効。失敗時はリセットを適用しない</returns>
+	/// <remarks>履歴の領域を変更前に確保する。同値ではRedo側の履歴を保持する</remarks>
+	bool ResetComponentSettings(SceneObjectId id, ComponentSettings settings);
+
+	/// <summary>
 	/// 現在の名前を保持し、連続した名前編集を開始する
 	/// </summary>
 	/// <param name="objectId">編集する物体のID</param>
