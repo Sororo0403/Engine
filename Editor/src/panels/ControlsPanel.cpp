@@ -291,6 +291,15 @@ void ControlsPanel::Draw() {
 	         "them unchanged. The action supports Undo/Redo; Hierarchy's "
 	         "context menu has the same command. Drop to Ground still aligns "
 	         "visible model bounds to Y=0."},
+	        {"Box Colliders > Place Next to Active",
+	         "Select at least two Box Colliders. The active object stays "
+	         "fixed; the other selected objects move as one group to its "
+	         "Right, Left, Above, Below, Front or Behind face in world axes. "
+	         "This uses the same axis-aligned collider bounds as Play, "
+	         "including rotation, scale and hidden objects, with a tiny "
+	         "clearance for rounding. Group spacing and other axes are kept. "
+	         "Already aligned faces add no history. The move is one Undo/Redo "
+	         "operation."},
 	        {"Edit > Box Colliders",
 	         "Apply to all selected objects, including hidden ones. Add "
 	         "Missing keeps existing collider shapes. Fit All to Models "

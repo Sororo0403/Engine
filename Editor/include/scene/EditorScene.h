@@ -25,6 +25,7 @@
 #include "panels/PlayStatePanel.h"
 #include "panels/SceneViewPanel.h"
 #include "physics/ColliderBounds.h"
+#include "physics/ColliderPlacement.h"
 #include "scene/IScene.h"
 #include "scene/SceneDocument.h"
 #include "scene/SceneGrid.h"
@@ -147,6 +148,12 @@ class EditorScene final : public IScene {
 		ADD_COLLIDERS,
 		FIT_COLLIDERS,
 		REMOVE_COLLIDERS,
+		PLACE_COLLIDERS_RIGHT,
+		PLACE_COLLIDERS_LEFT,
+		PLACE_COLLIDERS_ABOVE,
+		PLACE_COLLIDERS_BELOW,
+		PLACE_COLLIDERS_FRONT,
+		PLACE_COLLIDERS_BACK,
 		ALIGN_X,
 		ALIGN_Y,
 		ALIGN_Z,
@@ -451,6 +458,12 @@ class EditorScene final : public IScene {
 	/// 選択した全Colliderを、配置関係を保って真下の別Collider上面へ下ろす。全変更を1操作として記録する
 	/// </summary>
 	void DropSelectionToSurface();
+
+	/// <summary>
+	/// アクティブ物体を基準にし、残りの選択Colliderを指定側の面へまとめて配置する。1操作として記録する
+	/// </summary>
+	/// <param name="face">基準物体に対するワールド座標の方向</param>
+	void PlaceSelectionNextToActive(ColliderPlacement::Face face);
 
 	/// <summary>
 	/// 選択した全物体の名前を保持し、一括リネームのプレビューを開く

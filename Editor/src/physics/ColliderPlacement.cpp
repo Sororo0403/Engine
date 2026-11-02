@@ -144,3 +144,156 @@ bool ColliderPlacement::GetDropTranslation(
 	translation = {0.0f, movedAny ? -drop : 0.0f, 0.0f};
 	return true;
 }
+
+bool ColliderPlacement::GetAdjacentTranslation(
+    const Scene &scene, std::span<const SceneObjectId> objectIds,
+    SceneObjectId referenceId, Face face, DirectX::XMFLOAT3 &translation,
+    std::string &error) {
+	error.clear();
+	std::size_t axis = 0;
+	bool positive = true;
+
+	switch (face) {
+	case Face::RIGHT:
+		break;
+	case Face::LEFT:
+		positive = false;
+		break;
+	case Face::ABOVE:
+		axis = 1;
+		break;
+	case Face::BELOW:
+		axis = 1;
+		positive = false;
+		break;
+	case Face::FRONT:
+		axis = 2;
+		break;
+	case Face::BACK:
+		axis = 2;
+		positive = false;
+		break;
+	default:
+		error = "Choose a valid collider face.";
+		return false;
+	}
+
+	if (objectIds.size() < 2 || !CanDrop(scene, objectIds)) {
+		error = "Select at least two objects with Box Colliders.";
+		return false;
+	}
+
+	const std::set<SceneObjectId> selected(objectIds.begin(), objectIds.end());
+
+	if (selected.size() != objectIds.size() ||
+	    !selected.contains(referenceId)) {
+		error = "The active collider must be included once in the selection.";
+		return false;
+	}
+
+	const auto component = [axis](const DirectX::XMFLOAT3 &value) -> double {
+		return axis == 0 ? value.x : axis == 1 ? value.y : value.z;
+	};
+	double referenceFace = 0;
+	double movingFace = positive ? (std::numeric_limits<double>::infinity)()
+	                             : -(std::numeric_limits<double>::infinity)();
+
+	for (const auto id : objectIds) {
+		const auto &object = *scene.FindObject(id);
+		AxisAlignedBox bounds;
+
+		if (!BoxColliderUtils::GetWorldBounds(*object.collider,
+		                                      object.transform, bounds)) {
+			error =
+			    std::format("Invalid Box Collider on object: \"{}\" (ID {}).",
+			                object.name, id);
+			return false;
+		}
+
+		if (id == referenceId) {
+			referenceFace =
+			    component(positive ? bounds.maximum : bounds.minimum);
+		} else {
+			movingFace =
+			    positive ? (std::min)(movingFace, component(bounds.minimum))
+			             : (std::max)(movingFace, component(bounds.maximum));
+		}
+	}
+
+	// すでに接している面では、丸め誤差だけの再配置で履歴を増やさない。
+	const double tolerance =
+	    kSurfaceClearance +
+	    kFaceRoundoffFactor * std::numeric_limits<float>::epsilon() *
+	        (std::max)({1.0, std::abs(referenceFace), std::abs(movingFace)});
+	const double gap =
+	    positive ? movingFace - referenceFace : referenceFace - movingFace;
+
+	if (gap >= 0.0 && gap <= tolerance) {
+		translation = {};
+		return true;
+	}
+
+	const double distance = referenceFace - movingFace +
+	                        (positive ? kSurfaceClearance : -kSurfaceClearance);
+
+	if (!std::isfinite(distance) ||
+	    std::abs(distance) > (std::numeric_limits<float>::max)()) {
+		error = "The collider placement distance cannot be represented.";
+		return false;
+	}
+
+	DirectX::XMFLOAT3 movement{};
+
+	if (axis == 0) {
+		movement.x = static_cast<float>(distance);
+	} else if (axis == 1) {
+		movement.y = static_cast<float>(distance);
+	} else {
+		movement.z = static_cast<float>(distance);
+	}
+
+	// 履歴と同じfloat加算で、配置後の全Colliderが基準の指定側に収まることを確認する。
+	double placedFace = positive ? (std::numeric_limits<double>::infinity)()
+	                             : -(std::numeric_limits<double>::infinity)();
+
+	for (const auto id : objectIds) {
+		if (id == referenceId) {
+			continue;
+		}
+
+		const auto &object = *scene.FindObject(id);
+		auto transform = object.transform;
+		transform.translation = {transform.translation.x + movement.x,
+		                         transform.translation.y + movement.y,
+		                         transform.translation.z + movement.z};
+		AxisAlignedBox bounds;
+
+		if (!BoxColliderUtils::GetWorldBounds(*object.collider, transform,
+		                                      bounds) ||
+		    (positive ? component(bounds.minimum) < referenceFace
+		              : component(bounds.maximum) > referenceFace)) {
+			error = "The collider face placement cannot be represented at "
+			        "these transforms.";
+			return false;
+		}
+		placedFace = positive
+		                 ? (std::min)(placedFace, component(bounds.minimum))
+		                 : (std::max)(placedFace, component(bounds.maximum));
+	}
+
+	const double finalGap =
+	    positive ? placedFace - referenceFace : referenceFace - placedFace;
+	const double finalTolerance =
+	    kSurfaceClearance +
+	    kFaceRoundoffFactor * std::numeric_limits<float>::epsilon() *
+	        (std::max)({1.0, std::abs(referenceFace), std::abs(placedFace)});
+
+	if (finalGap > finalTolerance) {
+		error =
+		    "The collider face cannot be aligned at this coordinate precision.";
+		return false;
+	}
+
+	translation = movement;
+	return true;
+}
