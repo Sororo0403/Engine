@@ -9,20 +9,37 @@
 #include <imgui.h>
 
 EditorPlayMode::EditorPlayMode(ModelManager &models, RenderSystem &render)
-    : renderer_(session_.GetScene(), models, render), render_(render) {
+    : renderer_(session_.GetScene(), models, render),
+      previewRenderer_(preview_.GetScene(), models, render), render_(render) {
 }
 
 EditorPlayMode::~EditorPlayMode() = default;
 
 bool EditorPlayMode::Initialize() {
-	return renderer_.Initialize();
+	if (!renderer_.Initialize()) {
+		return false;
+	}
+
+	if (!previewRenderer_.Initialize()) {
+		renderer_.Finalize();
+		return false;
+	}
+
+	return true;
 }
 
 EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
-                                              bool canStart) {
+                                              bool canStart,
+                                              const GameConfig &config) {
 	visible_ = false;
 	ready_ = false;
 	viewport_ = {};
+
+	if (!IsPlaying()) {
+		gameWidth_ = config.width;
+		gameHeight_ = config.height;
+	}
+
 	ui.SetNextWindowSize(800, 500);
 
 	if (focusRequested_) {
@@ -73,7 +90,7 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 		ui.EndDisabled();
 	}
 
-	if (IsPlaying()) {
+	{
 		const auto layout =
 		    GameViewLayout::Fit(ui.GetContentSize(), gameWidth_, gameHeight_);
 
@@ -190,13 +207,38 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input) {
 		return false;
 	}
 
+	previewFrame_ = false;
+	ready_ = true;
+	return true;
+}
+
+bool EditorPlayMode::UpdatePreview(const Scene &scene,
+                                   const CameraPose &fallback) {
+	if (IsPlaying() || !visible_ || !texture_) {
+		return true;
+	}
+
+	// 無効なカメラでは過去のシーンを捨て、空のワールドを描画して古い画像を残さない。
+	preview_.Prepare(scene, fallback);
+
+	if (!previewRenderer_.SetCameraPose(preview_.GetPose()) ||
+	    !previewRenderer_.SetCameraSettings(preview_.GetSettings()) ||
+	    !previewRenderer_.Update(texture_->GetWidth(), texture_->GetHeight())) {
+		return false;
+	}
+
+	previewFrame_ = true;
 	ready_ = true;
 	return true;
 }
 
 void EditorPlayMode::Draw() const {
-	if (ready_ && IsPlaying() && texture_) {
-		renderer_.Draw(texture_.get());
+	if (ready_ && texture_) {
+		if (previewFrame_) {
+			previewRenderer_.Draw(texture_.get());
+		} else if (IsPlaying()) {
+			renderer_.Draw(texture_.get());
+		}
 	}
 }
 
@@ -208,4 +250,7 @@ void EditorPlayMode::Finalize() {
 	Stop();
 	texture_.reset();
 	renderer_.Finalize();
+	previewRenderer_.Finalize();
+	preview_.Reset();
+	previewFrame_ = false;
 }

@@ -314,4 +314,8 @@ exit /b 0</Command>
     <ClInclude Include="include\camera\CameraObjects.h" />
     <ClCompile Include="src\camera\CameraObjects.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\gameplay\EditorGamePreview.h" />
+    <ClCompile Include="src\gameplay\EditorGamePreview.cpp" />
+  </ItemGroup>
 </Project>

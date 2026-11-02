@@ -250,6 +250,13 @@ void ControlsPanel::Draw() {
 	        {"File > New Sample Stage",
 	         "Create an editable floor, walls, player and follow camera. "
 	         "Unsaved work prompts before replacement."},
+	        {"Game while editing",
+	         "Preview the authored scene from the Primary Camera without "
+	         "running physics. Follow Cameras show their starting poses. "
+	         "Without a Primary, use the Scene view position. The image uses "
+	         "Game Settings resolution and aspect. Invalid camera chains clear "
+	         "the preview; incomplete movement/collider settings do not "
+	         "require Play."},
 	        {"Game > Play / Stop",
 	         "Run the current scene, including empty scenes. Stop returns to "
 	         "editing and keeps your changes and Undo history."},

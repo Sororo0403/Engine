@@ -1,5 +1,6 @@
 #pragma once
 
+#include "gameplay/EditorGamePreview.h"
 #include "gameplay/EditorPlayAction.h"
 #include "gameplay/EditorPlaySession.h"
 #include "gameplay/GameConfig.h"
@@ -41,8 +42,10 @@ class EditorPlayMode {
 	/// </summary>
 	/// <param name="ui">UI機能</param>
 	/// <param name="canStart">再生開始を受け付けるか</param>
+	/// <param name="config">編集中のプレビューに使用する描画幅と高さ。再生中は開始時のサイズを保持する</param>
 	/// <returns>ユーザーが要求した操作</returns>
-	Action DrawUI(const ImGuiSystem &ui, bool canStart);
+	Action DrawUI(const ImGuiSystem &ui, bool canStart,
+	              const GameConfig &config = GameConfig{});
 
 	/// <summary>
 	/// 編集シーンを変更せずに再生を始める
@@ -93,6 +96,14 @@ class EditorPlayMode {
 	bool Update(float seconds, const InputSystem &input);
 
 	/// <summary>
+	/// 編集中のGame画像を更新する。非表示時と再生中は何もせず、物理演算は実行しない
+	/// </summary>
+	/// <param name="scene">全ての編集を反映したシーン</param>
+	/// <param name="fallback">Primary Cameraがない場合のSceneビューの姿勢</param>
+	/// <returns>true:更新成功または更新不要 false:描画リソースの更新失敗。無効なカメラ設定は空の画像に戻す</returns>
+	bool UpdatePreview(const Scene &scene, const CameraPose &fallback);
+
+	/// <summary>
 	/// 更新したGame画像を描画する
 	/// </summary>
 	void Draw() const;
@@ -118,11 +129,14 @@ class EditorPlayMode {
 
   private:
 	EditorPlaySession session_;
+	EditorGamePreview preview_;
 	SceneRenderer renderer_;
+	SceneRenderer previewRenderer_;
 	RenderSystem &render_;
 	std::unique_ptr<RenderTexture> texture_;
 	ViewportInput viewport_{};
 	int gameWidth_ = 1280;
 	int gameHeight_ = 720;
 	bool visible_ = false, focusRequested_ = false, ready_ = false;
+	bool previewFrame_ = false;
 };

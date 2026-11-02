@@ -117,7 +117,7 @@ bool EditorScene::Update(float deltaTime) {
 		playMode_.Stop();
 	}
 
-	auto playAction = playMode_.DrawUI(ui_, !IsBusy());
+	auto playAction = playMode_.DrawUI(ui_, !IsBusy(), exportConfig_);
 	const bool playShortcutEnabled =
 	    input_.IsActive() && playInputWasActive_ && !exitQueued_ &&
 	    action == EditorAction::NONE && !cameraSettingsRequested_ &&
@@ -479,7 +479,7 @@ bool EditorScene::Update(float deltaTime) {
 		}
 
 		gizmo_.Cancel();
-		return true;
+		return playMode_.UpdatePreview(scene, cameraController_.GetPose());
 	}
 
 	if (!renderer_.SetCameraPose(cameraController_.GetPose())) {
@@ -681,12 +681,13 @@ bool EditorScene::Update(float deltaTime) {
 		return false;
 	}
 
-	return true;
+	return playMode_.UpdatePreview(scene, cameraController_.GetPose());
 }
 
 void EditorScene::Draw() const {
+	playMode_.Draw();
+
 	if (playFrame_) {
-		playMode_.Draw();
 		return;
 	}
 
