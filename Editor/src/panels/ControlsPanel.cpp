@@ -596,6 +596,16 @@ void ControlsPanel::Draw() {
 	         "direction. "
 	         "Follow chains use their resolved starting positions. "
 	         "These guides appear only in Scene and do not change the scene."},
+	        {"Inspector > Camera > Copy / Paste Lens Settings",
+	         "Copy Vertical FOV and Near/Far Clip, then paste onto the "
+	         "inspected Camera. A locked Inspector uses its displayed object. "
+	         "Primary, Transform, Follow Camera, other components and other "
+	         "cameras stay unchanged. Add Component > Paste Camera Lens adds "
+	         "a missing Camera with Primary off. Each paste is one Undo/Redo; "
+	         "identical settings add no history. The lens copy is independent "
+	         "of copied objects, transforms and colliders and survives "
+	         "New/Open. "
+	         "Pending edits finish first. Editing is unavailable during Play."},
 	        {"Inspector > Camera > Reset Lens Settings",
 	         "Restore the default FOV and Near/Far Clip in one Undo operation. "
 	         "Primary, Transform and Follow Camera settings stay unchanged. "

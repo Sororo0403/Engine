@@ -36,6 +36,8 @@ class InspectorPanel {
 		ALIGN_CAMERA_VIEW,
 		ADD_CAMERA,
 		MAKE_PRIMARY_CAMERA,
+		COPY_CAMERA_LENS,
+		PASTE_CAMERA_LENS,
 		SELECT_OBJECT,
 		PASTE_RESPAWN_POSITION,
 		FRAME_RESPAWN,
@@ -131,12 +133,13 @@ class InspectorPanel {
 	/// <param name="models">材質スロットを表示する場合のモデル管理</param>
 	/// <param name="assets">材質スロットを表示する場合のアセット一覧</param>
 	/// <param name="canPasteCollider">貼り付けるBox Colliderのコピーを保持しているか</param>
+	/// <param name="canPasteCameraLens">貼り付けるCameraのレンズ設定を保持しているか</param>
 	/// <returns>true:物体を編集した false:シーンへの変更なし</returns>
 	bool Draw(const ImGuiSystem &ui, Scene &scene,
 	          SceneObjectId selectedObjectId, EditorHistory &history,
 	          bool canPasteTransform = false, ModelManager *models = nullptr,
 	          const AssetDatabase *assets = nullptr,
-	          bool canPasteCollider = false);
+	          bool canPasteCollider = false, bool canPasteCameraLens = false);
 
 	/// <summary>
 	/// 選択した再生物体の現在値を表示し、Transformのコピーを返す。編集用の固定先・要求・履歴は変更しない

@@ -94,10 +94,24 @@ const BoxCollider *EditorClipboard::GetCollider() const {
 	return collider_ ? &*collider_ : nullptr;
 }
 
+bool EditorClipboard::CopyCameraLens(const CameraSettings &settings) {
+	if (!settings.IsValid()) {
+		return false;
+	}
+
+	cameraLens_ = settings;
+	return true;
+}
+
+const CameraSettings *EditorClipboard::GetCameraLens() const {
+	return cameraLens_ ? &*cameraLens_ : nullptr;
+}
+
 void EditorClipboard::Clear() {
 	objects_.clear();
 	sourceIds_.clear();
 	externalReferences_.clear();
 	transform_.reset();
 	collider_.reset();
+	cameraLens_.reset();
 }

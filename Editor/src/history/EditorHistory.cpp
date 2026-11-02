@@ -1841,6 +1841,34 @@ bool EditorHistory::SetCamera(SceneObjectId id,
 	return true;
 }
 
+bool EditorHistory::SetCameraLens(SceneObjectId objectId,
+                                  const CameraSettings &settings) {
+	CommitEdit();
+	const auto *object = scene_.FindObject(objectId);
+
+	if (!object || !settings.IsValid() ||
+	    (object->camera && !object->camera->IsValid())) {
+		return false;
+	}
+
+	auto next = object->camera.value_or(CameraComponent{false, {}});
+	next.settings = settings;
+	CameraCommand command{objectId, object->camera, next};
+
+	if (!command.HasChanges()) {
+		return true;
+	}
+
+	const auto state = PrepareAppend();
+
+	if (!command.Redo(scene_)) {
+		return false;
+	}
+
+	AppendPrepared(Command{std::move(command)}, state, "Paste Camera Lens");
+	return true;
+}
+
 bool EditorHistory::BeginCamera(SceneObjectId id) {
 	CommitEdit();
 	const auto *object = scene_.FindObject(id);

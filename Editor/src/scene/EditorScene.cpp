@@ -332,7 +332,8 @@ bool EditorScene::Update(float deltaTime) {
 	                  sceneViewPanel_.IsSelecting());
 	inspectorPanel_.Draw(ui_, scene, selection_.GetActiveId(), history,
 	                     clipboard_.GetTransform() != nullptr, &models_,
-	                     &assets_, clipboard_.GetCollider() != nullptr);
+	                     &assets_, clipboard_.GetCollider() != nullptr,
+	                     clipboard_.GetCameraLens() != nullptr);
 	const auto &objectRequest = inspectorPanel_.GetObjectRequest();
 	const bool hasObjectRequest =
 	    objectRequest.action != InspectorPanel::ObjectAction::NONE;
@@ -2666,6 +2667,27 @@ void EditorScene::ApplyInspectorRequest(
 			if (!applied) {
 				ShowError(
 				    "Could not change the Mesh or Mesh Renderer component.");
+			}
+
+			return;
+		}
+
+		if (request.action == InspectorPanel::ObjectAction::COPY_CAMERA_LENS) {
+			if (!object->camera ||
+			    !clipboard_.CopyCameraLens(object->camera->settings)) {
+				ShowError("Could not copy invalid Camera lens settings.");
+			}
+
+			return;
+		}
+
+		if (request.action == InspectorPanel::ObjectAction::PASTE_CAMERA_LENS) {
+			const auto *copied = clipboard_.GetCameraLens();
+
+			if (!copied || !document_.GetHistory().SetCameraLens(
+			                   request.objectId, *copied)) {
+				ShowError("Could not paste Camera lens settings. Copy a valid "
+				          "lens and check the target Camera settings.");
 			}
 
 			return;

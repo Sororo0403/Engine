@@ -156,7 +156,7 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
                           SceneObjectId selectedObjectId,
                           EditorHistory &history, bool canPasteTransform,
                           ModelManager *models, const AssetDatabase *assets,
-                          bool canPasteCollider) {
+                          bool canPasteCollider, bool canPasteCameraLens) {
 	objectRequest_ = {};
 	colliderFitRequest_ = 0;
 	modelRequest_ = {};
@@ -408,6 +408,12 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 			objectRequest_ = {ObjectAction::ADD_CAMERA, inspectedObjectId};
 		}
 
+		if (ui.MenuItem("Paste Camera Lens", nullptr,
+		                canPasteCameraLens && !object->camera)) {
+			objectRequest_ = {ObjectAction::PASTE_CAMERA_LENS,
+			                  inspectedObjectId};
+		}
+
 		if (ui.MenuItem("Follow Camera", nullptr, !object->followCamera)) {
 			changed |= history.SetFollowCamera(inspectedObjectId,
 			                                   FollowCameraSettings{});
@@ -470,13 +476,19 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 
 	CameraInspector::Request cameraRequest;
 	changed |= CameraInspector{}.Draw(ui, inspectedObjectId, *object, history,
-	                                  cameraRequest);
+	                                  cameraRequest, canPasteCameraLens);
 
 	if (cameraRequest.action == CameraInspector::Action::ALIGN_VIEW) {
 		objectRequest_ = {ObjectAction::ALIGN_CAMERA_VIEW,
 		                  cameraRequest.objectId};
 	} else if (cameraRequest.action == CameraInspector::Action::MAKE_PRIMARY) {
 		objectRequest_ = {ObjectAction::MAKE_PRIMARY_CAMERA,
+		                  cameraRequest.objectId};
+	} else if (cameraRequest.action == CameraInspector::Action::COPY_LENS) {
+		objectRequest_ = {ObjectAction::COPY_CAMERA_LENS,
+		                  cameraRequest.objectId};
+	} else if (cameraRequest.action == CameraInspector::Action::PASTE_LENS) {
+		objectRequest_ = {ObjectAction::PASTE_CAMERA_LENS,
 		                  cameraRequest.objectId};
 	}
 

@@ -268,6 +268,14 @@ class EditorHistory {
 	               std::optional<CameraComponent> value);
 
 	/// <summary>
+	/// レンズ設定だけを変更する。Cameraがない場合はPrimaryを無効にして追加する
+	/// </summary>
+	/// <param name="objectId">対象物体。既存CameraのPrimary・姿勢・追従設定は保持する</param>
+	/// <param name="settings">有効な縦視野角とNear／Far Clip</param>
+	/// <returns>true:成功または同値 false:対象または変更前後のレンズ設定が無効</returns>
+	bool SetCameraLens(SceneObjectId objectId, const CameraSettings &settings);
+
+	/// <summary>
 	/// Cameraの位置と向きをSceneビューへ合わせ、追従オフセットも1操作として記録する。
 	/// 拡大率・投影設定・追従速度は保持し、編集中の内容は先に確定する
 	/// </summary>
