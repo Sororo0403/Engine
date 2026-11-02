@@ -329,7 +329,8 @@ bool EditorScene::Update(float deltaTime) {
 
 	const auto hierarchyRequest = hierarchyPanel_.Draw(
 	    ui_, scene, selection_, true, clipboard_.GetCollider() != nullptr,
-	    clipboard_.GetCameraLens() != nullptr);
+	    clipboard_.GetCameraLens() != nullptr,
+	    clipboard_.GetRespawnSettings() != nullptr);
 
 	if (hierarchyRequest.selectionChanged) {
 		FinishEdit();
@@ -460,6 +461,9 @@ bool EditorScene::Update(float deltaTime) {
 					break;
 				case HierarchyPanel::Action::PASTE_CAMERA_LENSES:
 					PasteCameraLensesToSelection();
+					break;
+				case HierarchyPanel::Action::PASTE_RESPAWN_SETTINGS:
+					PasteRespawnSettingsToSelection();
 					break;
 				case HierarchyPanel::Action::DUPLICATE_ARRAY:
 					StartObjectArray();
@@ -1210,6 +1214,12 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		                 objectEnabled &&
 		                     clipboard_.GetCameraLens() != nullptr)) {
 			action = EditorAction::PASTE_CAMERA_LENSES;
+		}
+
+		if (ui_.MenuItem("Paste Respawn Settings", nullptr,
+		                 objectEnabled &&
+		                     clipboard_.GetRespawnSettings() != nullptr)) {
+			action = EditorAction::PASTE_RESPAWN_SETTINGS;
 		}
 
 		if (ui_.BeginMenu("Box Colliders")) {
@@ -1973,6 +1983,10 @@ void EditorScene::StartAction(EditorAction action) {
 
 	case EditorAction::PASTE_CAMERA_LENSES:
 		PasteCameraLensesToSelection();
+		return;
+
+	case EditorAction::PASTE_RESPAWN_SETTINGS:
+		PasteRespawnSettingsToSelection();
 		return;
 
 	case EditorAction::PASTE_COLLIDERS:
@@ -4060,6 +4074,30 @@ void EditorScene::PasteCameraLensesToSelection() {
 		    "EditorScene::PasteCameraLensesToSelection: {}", error.what()));
 		ShowError(
 		    "Could not paste the Camera lenses. See the log for details.");
+	}
+}
+
+void EditorScene::PasteRespawnSettingsToSelection() {
+	const auto *settings = clipboard_.GetRespawnSettings();
+
+	if (!HasSelection() || !settings) {
+		return;
+	}
+
+	try {
+		FinishEdit();
+
+		if (!document_.GetHistory().SetRespawnSettings(selection_.GetIds(),
+		                                               *settings)) {
+			ShowError(
+			    "Could not paste all Respawn settings. Check the selected "
+			    "objects and Respawn settings. No objects were changed.");
+		}
+	} catch (const std::exception &error) {
+		Logger::Error(std::format(
+		    "EditorScene::PasteRespawnSettingsToSelection: {}", error.what()));
+		ShowError(
+		    "Could not paste the Respawn settings. See the log for details.");
 	}
 }
 

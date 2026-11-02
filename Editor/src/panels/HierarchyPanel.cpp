@@ -48,7 +48,8 @@ void HierarchyPanel::RequestReveal(SceneObjectId objectId) {
 HierarchyPanel::Result
 HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
                      EditorSelection &selection, bool editable,
-                     bool canPasteCollider, bool canPasteCameraLens) {
+                     bool canPasteCollider, bool canPasteCameraLens,
+                     bool canPasteRespawn) {
 	Result result;
 
 	// 検索で隠れた物体は残し、削除済みの物体だけ取り除く
@@ -292,6 +293,11 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 				                canPasteCameraLens &&
 				                    selection.GetCount() != 0)) {
 					result.action = Action::PASTE_CAMERA_LENSES;
+				}
+
+				if (ui.MenuItem("Paste Respawn Settings", nullptr,
+				                canPasteRespawn && selection.GetCount() != 0)) {
+					result.action = Action::PASTE_RESPAWN_SETTINGS;
 				}
 
 				bool canHide = false;
