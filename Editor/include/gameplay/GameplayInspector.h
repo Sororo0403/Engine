@@ -77,6 +77,12 @@ class GameplayInspector {
 	void Clear() noexcept;
 
 	/// <summary>
+	/// このフレームでSceneカメラへジャンプ軌跡を収めることを要求した主人公を取得する
+	/// </summary>
+	/// <returns>Inspectorの表示対象ID。要求なしは0。計算とカメラ移動は描画後に行う</returns>
+	SceneObjectId GetJumpFrameRequest() const;
+
+	/// <summary>
 	/// このフレームでSceneカメラへ収めることを要求した復帰設定の物体を取得する
 	/// </summary>
 	/// <returns>Inspectorの表示対象ID。要求なしは0。選択やシーンは変更しない</returns>
@@ -119,5 +125,6 @@ class GameplayInspector {
 	FollowTargetPicker targetPicker_;
 	SceneObjectId respawnPasteRequest_ = 0;
 	SceneObjectId respawnFrameRequest_ = 0;
+	SceneObjectId jumpFrameRequest_ = 0;
 	SceneObjectId respawnBlockersRequest_ = 0;
 };

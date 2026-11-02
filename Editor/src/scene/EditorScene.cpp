@@ -2968,6 +2968,24 @@ void EditorScene::ApplyInspectorRequest(
 			return;
 		}
 
+		if (request.action == InspectorPanel::ObjectAction::FRAME_JUMP) {
+			std::array<DirectX::XMFLOAT3, 8> corners;
+
+			if (!jumpPreview_.GetFrameBounds(document_.GetScene(),
+			                                 request.objectId, corners)) {
+				ShowError(
+				    "Could not frame the jump. Check the Character Controller, "
+				    "Collider and grounded starting position.");
+				return;
+			}
+
+			frameObject_ = request.objectId;
+			frameRequest_ = FrameRequest::JUMP;
+			ImGui::SetWindowCollapsed("Scene", false);
+			ImGui::SetWindowFocus("Scene");
+			return;
+		}
+
 		if (request.action == InspectorPanel::ObjectAction::FRAME_RESPAWN ||
 		    request.action == InspectorPanel::ObjectAction::FRAME_COLLIDER) {
 			std::array<DirectX::XMFLOAT3, 8> corners;
@@ -3394,14 +3412,20 @@ bool EditorScene::FrameObjects(FrameRequest request,
 	const auto &scene =
 	    runtimeScene ? playMode_.GetSession().GetScene() : document_.GetScene();
 
-	if (request == FrameRequest::RESPAWN || request == FrameRequest::COLLIDER) {
-		const auto *object = scene.FindObject(frameObject_);
+	if (request == FrameRequest::RESPAWN || request == FrameRequest::COLLIDER ||
+	    request == FrameRequest::JUMP) {
 		std::array<DirectX::XMFLOAT3, 8> corners;
+		bool ready = false;
 
-		if (!object ||
-		    !(request == FrameRequest::RESPAWN
-		          ? RespawnPreview::GetFrameBounds(*object, corners)
-		          : ColliderBounds::GetFrameBounds(*object, corners))) {
+		if (request == FrameRequest::JUMP) {
+			ready = jumpPreview_.GetFrameBounds(scene, frameObject_, corners);
+		} else if (const auto *object = scene.FindObject(frameObject_)) {
+			ready = request == FrameRequest::RESPAWN
+			            ? RespawnPreview::GetFrameBounds(*object, corners)
+			            : ColliderBounds::GetFrameBounds(*object, corners);
+		}
+
+		if (!ready) {
 			return false;
 		}
 

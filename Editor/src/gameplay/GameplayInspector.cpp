@@ -58,6 +58,7 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 	respawnRequest_ = {};
 	respawnPasteRequest_ = 0;
 	respawnFrameRequest_ = 0;
+	jumpFrameRequest_ = 0;
 	respawnBlockersRequest_ = 0;
 	const auto scope = std::to_string(id);
 	ImGui::PushID(scope.c_str());
@@ -93,6 +94,14 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		field("Jump Buffer Time (s)", &CharacterSettings::jumpBufferTime,
 		      CharacterSettings::kMaximumJumpGraceSeconds, 0.0f, 0.005f,
 		      "%.3f");
+
+		ui.BeginDisabled(!object.collider || !object.character->IsValid());
+
+		if (ui.Button("Frame Jump")) {
+			jumpFrameRequest_ = id;
+		}
+
+		ui.EndDisabled();
 
 		ui.BeginDisabled(!object.character->IsValid());
 
@@ -296,6 +305,7 @@ void GameplayInspector::Clear() noexcept {
 	characterRequest_ = {};
 	respawnPasteRequest_ = 0;
 	respawnFrameRequest_ = 0;
+	jumpFrameRequest_ = 0;
 	respawnBlockersRequest_ = 0;
 }
 
@@ -322,4 +332,8 @@ SceneObjectId GameplayInspector::GetRespawnPasteRequest() const {
 
 GameplayInspector::RespawnRequest GameplayInspector::GetRespawnRequest() const {
 	return respawnRequest_;
+}
+
+SceneObjectId GameplayInspector::GetJumpFrameRequest() const {
+	return jumpFrameRequest_;
 }

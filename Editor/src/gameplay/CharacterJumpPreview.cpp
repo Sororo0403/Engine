@@ -1,9 +1,11 @@
 #include "gameplay/CharacterJumpPreview.h"
 
 #include "gameplay/CharacterController.h"
+#include "math/MathUtils.h"
 #include "physics/CollisionWorld.h"
 #include "scene/Scene.h"
 #include "scene/SceneRenderer.h"
+#include <algorithm>
 
 bool CharacterJumpPreview::BuildPaths(const Scene &scene, SceneObjectId id,
                                       Paths &paths) const {
@@ -66,6 +68,46 @@ bool CharacterJumpPreview::BuildPaths(const Scene &scene, SceneObjectId id,
 	}
 
 	paths = result;
+	return true;
+}
+
+bool CharacterJumpPreview::GetFrameBounds(
+    const Scene &scene, SceneObjectId id,
+    std::array<DirectX::XMFLOAT3, 8> &corners) const {
+	Paths paths;
+
+	if (!BuildPaths(scene, id, paths)) {
+		return false;
+	}
+
+	auto minimum = paths[0].points[0];
+	auto maximum = minimum;
+
+	for (const auto &path : paths) {
+		for (std::size_t i = 0; i < path.count; ++i) {
+			const auto point = path.points[i];
+			minimum.x = (std::min)(minimum.x, point.x - kMarkerRadius);
+			minimum.y = (std::min)(minimum.y, point.y - kMarkerRadius);
+			minimum.z = (std::min)(minimum.z, point.z - kMarkerRadius);
+			maximum.x = (std::max)(maximum.x, point.x + kMarkerRadius);
+			maximum.y = (std::max)(maximum.y, point.y + kMarkerRadius);
+			maximum.z = (std::max)(maximum.z, point.z + kMarkerRadius);
+		}
+	}
+
+	if (!MathUtils::IsFinite(minimum) || !MathUtils::IsFinite(maximum)) {
+		return false;
+	}
+
+	std::array<DirectX::XMFLOAT3, 8> result;
+
+	for (std::size_t i = 0; i < result.size(); ++i) {
+		result[i] = {(i & 1) ? maximum.x : minimum.x,
+		             (i & 2) ? maximum.y : minimum.y,
+		             (i & 4) ? maximum.z : minimum.z};
+	}
+
+	corners = result;
 	return true;
 }
 

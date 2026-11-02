@@ -46,6 +46,16 @@ class CharacterJumpPreview {
 	bool BuildPaths(const Scene &scene, SceneObjectId id, Paths &paths) const;
 
 	/// <summary>
+	/// 全方向のジャンプ軌跡と終点の目印を囲む8頂点を取得する
+	/// </summary>
+	/// <param name="scene">変更しない編集シーン</param>
+	/// <param name="id">接地した有効な主人公のID</param>
+	/// <param name="corners">成功時に置き換えるワールド座標の8頂点</param>
+	/// <returns>true:取得成功 false:軌跡または範囲が無効。失敗時は出力を保持する</returns>
+	bool GetFrameBounds(const Scene &scene, SceneObjectId id,
+	                    std::array<DirectX::XMFLOAT3, 8> &corners) const;
+
+	/// <summary>
 	/// ジャンプ軌跡と、着地は緑・落下判定は赤・時間上限は黄の終点を描画へ登録する
 	/// </summary>
 	/// <param name="renderer">更新済みのScene描画先</param>

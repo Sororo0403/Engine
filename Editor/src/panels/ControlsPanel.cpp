@@ -802,6 +802,17 @@ void ControlsPanel::Draw() {
 	         "survives "
 	         "New/Open. Inspector locks and selection are preserved. Pending "
 	         "edits finish first. Editing is unavailable during Play."},
+	        {"Inspector > Character Controller > Frame Jump",
+	         "Fit the inspected character's five predicted jump paths and "
+	         "endpoint markers into Scene. A valid Character Controller, "
+	         "Collider and grounded starting position are required. A locked "
+	         "Inspector uses its displayed object. The Scene tab opens when "
+	         "needed. Uses the current camera direction and Scene aspect "
+	         "ratio. Selection, Inspector lock, guide visibility, scene data "
+	         "and history stay unchanged. Unavailable during Play or modal "
+	         "operations. If the trajectory cannot be calculated, the camera "
+	         "stays in place and an error is shown. Use View > Character Jump "
+	         "Guide to display paths for the active selection."},
 	        {"View > Character Jump Guide",
 	         "Preview a jump from the active selected Character Controller "
 	         "at rest: white stays in place, red moves along world X and blue "
