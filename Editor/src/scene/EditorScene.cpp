@@ -20,6 +20,7 @@
 #include "math/TransformUtils.h"
 #include "physics/BoxColliderUtils.h"
 #include "physics/ColliderPlacement.h"
+#include "physics/CollisionWorld.h"
 #include "platform/windows/PathUtils.h"
 #include "scene/PrimitiveObjects.h"
 #include "scene/Scene.h"
@@ -2364,13 +2365,34 @@ void EditorScene::ApplyInspectorRequest(
 		}
 
 		if (request.action ==
-		    InspectorPanel::ObjectAction::SELECT_RESPAWN_BLOCKERS) {
+		        InspectorPanel::ObjectAction::SELECT_RESPAWN_BLOCKERS ||
+		    request.action ==
+		        InspectorPanel::ObjectAction::SELECT_COLLIDER_OVERLAPS) {
 			std::vector<SceneObjectId> objects;
+			const bool respawn =
+			    request.action ==
+			    InspectorPanel::ObjectAction::SELECT_RESPAWN_BLOCKERS;
+			bool inspected = false;
 
-			if (!RespawnPreview::FindBlockingObjects(
-			        document_.GetScene(), request.objectId, objects)) {
-				ShowError("Could not inspect the respawn colliders. Check the "
-				          "collider shapes and transforms.");
+			if (respawn) {
+				inspected = RespawnPreview::FindBlockingObjects(
+				    document_.GetScene(), request.objectId, objects);
+			} else {
+				AxisAlignedBox body;
+				inspected =
+				    object->collider &&
+				    BoxColliderUtils::GetWorldBounds(*object->collider,
+				                                     object->transform, body) &&
+				    CollisionWorld::FindOverlaps(document_.GetScene(), body,
+				                                 objects, request.objectId);
+			}
+
+			if (!inspected) {
+				ShowError(respawn
+				              ? "Could not inspect the respawn colliders. "
+				                "Check the collider shapes and transforms."
+				              : "Could not inspect the overlapping colliders. "
+				                "Check the collider shapes and transforms.");
 				return;
 			}
 

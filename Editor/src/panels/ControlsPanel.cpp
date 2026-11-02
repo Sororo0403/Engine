@@ -313,6 +313,16 @@ void ControlsPanel::Draw() {
 	         "replaces or adds shapes; objects without models use a unit box. "
 	         "Remove All keeps other components. Each operation supports one "
 	         "Undo/Redo; a failed operation changes no colliders."},
+	        {"Inspector > Box Collider > Select Overlapping Colliders",
+	         "Select the other colliders sharing volume with the inspected "
+	         "object at its current position. Use this to find solids around "
+	         "a character's start position. Hidden objects count; self and "
+	         "face-only contact do not. No overlaps keeps the current "
+	         "selection. Hierarchy reveals the active result and Inspector "
+	         "locks are preserved. View > Colliders > Selected shows selected "
+	         "shapes even when their models are hidden. Selecting adds no "
+	         "history; pending edits finish first. Static obstacles may "
+	         "intentionally overlap each other."},
 	        {"File > New Sample Stage",
 	         "Create an editable floor, walls, player and follow camera. "
 	         "Unsaved work prompts before replacement."},
@@ -408,7 +418,8 @@ void ControlsPanel::Draw() {
 	         "Select every Box Collider overlapping the inspected object's "
 	         "recovery shape, including hidden objects. The character itself "
 	         "and face-only contact are excluded. Hierarchy reveals the active "
-	         "result; F frames the selection. Inspector locks are preserved. "
+	         "result. View > Colliders > Selected shows its shape even when "
+	         "the model is hidden. Inspector locks are preserved. "
 	         "No overlaps leaves the selection unchanged. Invalid collider "
 	         "data reports an error without changing selection. Selecting "
 	         "does not edit the scene or add history; pending edits finish "

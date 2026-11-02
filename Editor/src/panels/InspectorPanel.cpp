@@ -401,8 +401,18 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 
 	ImGui::PopID();
 
+	ColliderInspector::Request colliderRequest;
 	changed |= ColliderInspector{}.Draw(ui, inspectedObjectId, *object, history,
-	                                    colliderFitRequest_);
+	                                    colliderRequest);
+
+	if (colliderRequest.action == ColliderInspector::Action::FIT_TO_MODEL) {
+		colliderFitRequest_ = colliderRequest.objectId;
+	} else if (colliderRequest.action ==
+	           ColliderInspector::Action::SELECT_OVERLAPS) {
+		objectRequest_ = {ObjectAction::SELECT_COLLIDER_OVERLAPS,
+		                  colliderRequest.objectId};
+	}
+
 	CameraInspector::Request cameraRequest;
 	changed |= CameraInspector{}.Draw(ui, inspectedObjectId, *object, history,
 	                                  cameraRequest);

@@ -35,6 +35,7 @@ class InspectorPanel {
 		SELECT_OBJECT,
 		FRAME_RESPAWN,
 		SELECT_RESPAWN_BLOCKERS,
+		SELECT_COLLIDER_OVERLAPS,
 	};
 
 	/// <summary>

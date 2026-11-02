@@ -47,7 +47,9 @@ bool ApplyEdit(EditorHistory &history, SceneObjectId id, SceneObject &object,
 
 bool ColliderInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
                              SceneObject &object, EditorHistory &history,
-                             SceneObjectId &fitRequest) const {
+                             Request &request) const {
+	request = {};
+
 	if (!object.collider) {
 		return false;
 	}
@@ -77,11 +79,20 @@ bool ColliderInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		changed |= ApplyEdit(history, id, object, edited, valueChanged);
 
 		if (ui.Button("Fit Collider to Model")) {
-			fitRequest = id;
+			request = {Action::FIT_TO_MODEL, id};
 		}
 
 		ImGui::SetItemTooltip(
 		    "Use the model's local bounds. Empty objects use a unit box.");
+
+		ui.BeginDisabled(!BoxColliderUtils::GetWorldBounds(
+		    *object.collider, object.transform, bounds));
+
+		if (ui.Button("Select Overlapping Colliders")) {
+			request = {Action::SELECT_OVERLAPS, id};
+		}
+
+		ui.EndDisabled();
 
 		if (ui.Button("Remove Box Collider")) {
 			changed |= history.SetCollider(id, std::nullopt);
