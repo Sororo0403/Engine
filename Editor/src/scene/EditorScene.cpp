@@ -343,7 +343,8 @@ bool EditorScene::Update(float deltaTime) {
 	                     &assets_, clipboard_.GetCollider() != nullptr,
 	                     clipboard_.GetCameraLens() != nullptr,
 	                     clipboard_.GetCharacterSettings() != nullptr,
-	                     clipboard_.GetFollowSettings() != nullptr);
+	                     clipboard_.GetFollowSettings() != nullptr,
+	                     clipboard_.GetRespawnSettings() != nullptr);
 	const auto &objectRequest = inspectorPanel_.GetObjectRequest();
 	const bool hasObjectRequest =
 	    objectRequest.action != InspectorPanel::ObjectAction::NONE;
@@ -2787,6 +2788,29 @@ void EditorScene::ApplyInspectorRequest(
 			if (!applied) {
 				ShowError(
 				    "Could not change the Mesh or Mesh Renderer component.");
+			}
+
+			return;
+		}
+
+		if (request.action ==
+		    InspectorPanel::ObjectAction::COPY_RESPAWN_SETTINGS) {
+			if (!object->respawn ||
+			    !clipboard_.CopyRespawnSettings(*object->respawn)) {
+				ShowError("Could not copy invalid Respawn settings.");
+			}
+
+			return;
+		}
+
+		if (request.action ==
+		    InspectorPanel::ObjectAction::PASTE_RESPAWN_SETTINGS) {
+			const auto *copied = clipboard_.GetRespawnSettings();
+
+			if (!copied ||
+			    !document_.GetHistory().SetRespawn(request.objectId, *copied)) {
+				ShowError("Could not paste Respawn settings. Copy valid "
+				          "settings first.");
 			}
 
 			return;

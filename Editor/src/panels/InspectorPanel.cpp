@@ -157,7 +157,8 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
                           EditorHistory &history, bool canPasteTransform,
                           ModelManager *models, const AssetDatabase *assets,
                           bool canPasteCollider, bool canPasteCameraLens,
-                          bool canPasteCharacter, bool canPasteFollow) {
+                          bool canPasteCharacter, bool canPasteFollow,
+                          bool canPasteRespawn) {
 	objectRequest_ = {};
 	colliderFitRequest_ = 0;
 	modelRequest_ = {};
@@ -436,6 +437,12 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 			changed |= history.SetRespawn(inspectedObjectId, RespawnSettings{});
 		}
 
+		if (ui.MenuItem("Paste Respawn Settings", nullptr,
+		                canPasteRespawn && !object->respawn)) {
+			objectRequest_ = {ObjectAction::PASTE_RESPAWN_SETTINGS,
+			                  inspectedObjectId};
+		}
+
 		ImGui::EndPopup();
 	}
 
@@ -508,7 +515,7 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 	SceneObjectId targetSelectionRequest = 0;
 	changed |= gameplayInspector_.Draw(
 	    ui, scene, inspectedObjectId, *object, history, targetSelectionRequest,
-	    canPasteTransform, canPasteCharacter, canPasteFollow);
+	    canPasteTransform, canPasteCharacter, canPasteFollow, canPasteRespawn);
 
 	const auto characterRequest = gameplayInspector_.GetCharacterRequest();
 
@@ -529,6 +536,17 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 	} else if (followRequest.action == GameplayInspector::FollowAction::PASTE) {
 		objectRequest_ = {ObjectAction::PASTE_FOLLOW_SETTINGS,
 		                  followRequest.objectId};
+	}
+
+	const auto respawnRequest = gameplayInspector_.GetRespawnRequest();
+
+	if (respawnRequest.action == GameplayInspector::RespawnAction::COPY) {
+		objectRequest_ = {ObjectAction::COPY_RESPAWN_SETTINGS,
+		                  respawnRequest.objectId};
+	} else if (respawnRequest.action ==
+	           GameplayInspector::RespawnAction::PASTE) {
+		objectRequest_ = {ObjectAction::PASTE_RESPAWN_SETTINGS,
+		                  respawnRequest.objectId};
 	}
 
 	if (targetSelectionRequest != 0) {

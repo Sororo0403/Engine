@@ -51,10 +51,11 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
                              EditorHistory &history,
                              SceneObjectId &targetSelectionRequest,
                              bool canPasteTransform, bool canPasteCharacter,
-                             bool canPasteFollow) {
+                             bool canPasteFollow, bool canPasteRespawn) {
 	targetSelectionRequest = 0;
 	characterRequest_ = {};
 	followRequest_ = {};
+	respawnRequest_ = {};
 	respawnPasteRequest_ = 0;
 	respawnFrameRequest_ = 0;
 	respawnBlockersRequest_ = 0;
@@ -248,6 +249,22 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 		ui.EndDisabled();
 
+		ui.BeginDisabled(!object.respawn->IsValid());
+
+		if (ui.Button("Copy Respawn Settings")) {
+			respawnRequest_ = {RespawnAction::COPY, id};
+		}
+
+		ui.EndDisabled();
+		ui.SameLine();
+		ui.BeginDisabled(!canPasteRespawn);
+
+		if (ui.Button("Paste Respawn Settings")) {
+			respawnRequest_ = {RespawnAction::PASTE, id};
+		}
+
+		ui.EndDisabled();
+
 		if (ui.Button("Reset Respawn Settings")) {
 			const auto before = object.respawn;
 			changed |= history.ResetComponentSettings(
@@ -268,6 +285,7 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 void GameplayInspector::Clear() noexcept {
 	targetPicker_.Clear();
 	followRequest_ = {};
+	respawnRequest_ = {};
 	characterRequest_ = {};
 	respawnPasteRequest_ = 0;
 	respawnFrameRequest_ = 0;
@@ -293,4 +311,8 @@ SceneObjectId GameplayInspector::GetRespawnBlockersRequest() const {
 
 SceneObjectId GameplayInspector::GetRespawnPasteRequest() const {
 	return respawnPasteRequest_;
+}
+
+GameplayInspector::RespawnRequest GameplayInspector::GetRespawnRequest() const {
+	return respawnRequest_;
 }

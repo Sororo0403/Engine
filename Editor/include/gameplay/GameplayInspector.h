@@ -40,6 +40,19 @@ class GameplayInspector {
 	};
 
 	/// <summary>
+	/// 描画後に表示対象の復帰設定へ適用する操作
+	/// </summary>
+	enum class RespawnAction { NONE, COPY, PASTE };
+
+	/// <summary>
+	/// 復帰設定の操作と、Inspectorに表示している対象ID
+	/// </summary>
+	struct RespawnRequest {
+		RespawnAction action = RespawnAction::NONE;
+		SceneObjectId objectId = 0;
+	};
+
+	/// <summary>
 	/// 存在するコンポーネントを表示し、編集を履歴へ記録する
 	/// </summary>
 	/// <param name="ui">描画用UI</param>
@@ -51,12 +64,13 @@ class GameplayInspector {
 	/// <param name="canPasteTransform">復帰先へ貼り付けるTransformを保持しているか</param>
 	/// <param name="canPasteCharacter">貼り付けるCharacter設定を保持しているか</param>
 	/// <param name="canPasteFollow">貼り付ける追従設定を保持しているか</param>
+	/// <param name="canPasteRespawn">貼り付ける復帰設定を保持しているか</param>
 	/// <returns>true:変更あり false:変更なし。選択・貼り付け要求だけでは変更ありにしない</returns>
 	bool Draw(const ImGuiSystem &ui, const Scene &scene, SceneObjectId id,
 	          SceneObject &object, EditorHistory &history,
 	          SceneObjectId &targetSelectionRequest,
 	          bool canPasteTransform = false, bool canPasteCharacter = false,
-	          bool canPasteFollow = false);
+	          bool canPasteFollow = false, bool canPasteRespawn = false);
 	/// <summary>
 	/// コンポーネント選択UIの検索状態を解除する
 	/// </summary>
@@ -92,7 +106,14 @@ class GameplayInspector {
 	/// <returns>表示対象への要求。要求なしはNONE。実際の操作は描画後に行う</returns>
 	FollowRequest GetFollowRequest() const;
 
+	/// <summary>
+	/// このフレームに要求した復帰設定のコピー・貼り付けを取得する
+	/// </summary>
+	/// <returns>表示対象への要求。要求なしはNONE。実際の操作は描画後に行う</returns>
+	RespawnRequest GetRespawnRequest() const;
+
   private:
+	RespawnRequest respawnRequest_;
 	FollowRequest followRequest_;
 	CharacterRequest characterRequest_;
 	FollowTargetPicker targetPicker_;

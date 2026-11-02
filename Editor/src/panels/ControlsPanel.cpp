@@ -765,6 +765,19 @@ void ControlsPanel::Draw() {
 	         "Restore the default FOV and Near/Far Clip in one Undo operation. "
 	         "Primary, Transform and Follow Camera settings stay unchanged. "
 	         "Pending edits finish first. Default values add no history."},
+	        {"Inspector > Copy / Paste Respawn Settings",
+	         "Copy the fall height, Use Start Position option and explicit "
+	         "respawn position. Paste replaces only Respawn settings on the "
+	         "inspected object, including a locked Inspector. Add Component > "
+	         "Paste Respawn Settings adds a missing Respawn component. Each "
+	         "paste is one Undo step; identical settings add no history. "
+	         "Transform, Character Controller and Collider stay unchanged. "
+	         "Use Start Position uses each destination's own starting "
+	         "position; "
+	         "explicit positions keep the copied world coordinates. Check "
+	         "respawn placement before Play. The copy survives New and Open. "
+	         "Unavailable during Play or modal operations. Paste Respawn "
+	         "Position still uses the separate Transform copy."},
 	        {"Inspector > Copy / Paste Follow Settings",
 	         "Copy Camera Offset, Look Offset and Follow Smoothing. Pasting "
 	         "keeps the destination Follow Camera target, Camera lens, Primary "

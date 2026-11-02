@@ -29,6 +29,8 @@ class InspectorPanel {
 	enum class ObjectAction {
 		NONE,
 		COPY_TRANSFORM,
+		COPY_RESPAWN_SETTINGS,
+		PASTE_RESPAWN_SETTINGS,
 		COPY_FOLLOW_SETTINGS,
 		PASTE_FOLLOW_SETTINGS,
 		COPY_CHARACTER_SETTINGS,
@@ -140,13 +142,15 @@ class InspectorPanel {
 	/// <param name="canPasteCameraLens">貼り付けるCameraのレンズ設定を保持しているか</param>
 	/// <param name="canPasteCharacter">貼り付けるCharacter設定を保持しているか</param>
 	/// <param name="canPasteFollow">貼り付ける追従設定を保持しているか</param>
+	/// <param name="canPasteRespawn">貼り付ける復帰設定を保持しているか</param>
 	/// <returns>true:物体を編集した false:シーンへの変更なし</returns>
 	bool Draw(const ImGuiSystem &ui, Scene &scene,
 	          SceneObjectId selectedObjectId, EditorHistory &history,
 	          bool canPasteTransform = false, ModelManager *models = nullptr,
 	          const AssetDatabase *assets = nullptr,
 	          bool canPasteCollider = false, bool canPasteCameraLens = false,
-	          bool canPasteCharacter = false, bool canPasteFollow = false);
+	          bool canPasteCharacter = false, bool canPasteFollow = false,
+	          bool canPasteRespawn = false);
 
 	/// <summary>
 	/// 選択した再生物体の現在値を表示し、Transformのコピーを返す。編集用の固定先・要求・履歴は変更しない

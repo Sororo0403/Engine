@@ -136,6 +136,19 @@ const FollowCameraSettings *EditorClipboard::GetFollowSettings() const {
 	return followSettings_ ? &*followSettings_ : nullptr;
 }
 
+bool EditorClipboard::CopyRespawnSettings(const RespawnSettings &settings) {
+	if (!settings.IsValid()) {
+		return false;
+	}
+
+	respawnSettings_ = settings;
+	return true;
+}
+
+const RespawnSettings *EditorClipboard::GetRespawnSettings() const {
+	return respawnSettings_ ? &*respawnSettings_ : nullptr;
+}
+
 void EditorClipboard::Clear() {
 	objects_.clear();
 	sourceIds_.clear();
@@ -145,4 +158,5 @@ void EditorClipboard::Clear() {
 	cameraLens_.reset();
 	characterSettings_.reset();
 	followSettings_.reset();
+	respawnSettings_.reset();
 }
