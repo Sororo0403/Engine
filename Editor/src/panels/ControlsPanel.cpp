@@ -313,6 +313,15 @@ void ControlsPanel::Draw() {
 	         "replaces or adds shapes; objects without models use a unit box. "
 	         "Remove All keeps other components. Each operation supports one "
 	         "Undo/Redo; a failed operation changes no colliders."},
+	        {"Inspector > Box Collider > Frame Collider",
+	         "Bring the inspected collider's actual collision box into Scene "
+	         "view, including its center offset, rotation and scale. Models "
+	         "may be hidden or absent; a locked Inspector uses its fixed "
+	         "object. The Scene tab opens if necessary. Selection, collider "
+	         "display, object data and Undo history stay unchanged. View > "
+	         "Colliders > All shows hidden or unselected shapes. Invalid "
+	         "colliders disable the action. Bounds outside the camera's "
+	         "clipping range leave the camera unchanged."},
 	        {"Inspector > Box Collider > Select Overlapping Colliders",
 	         "Select the other colliders sharing volume with the inspected "
 	         "object at its current position. Use this to find solids around "

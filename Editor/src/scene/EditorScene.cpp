@@ -98,7 +98,7 @@ bool EditorScene::Initialize() {
 
 	document_.New();
 	frameRequest_ = FrameRequest::NONE;
-	respawnFrameObject_ = 0;
+	frameObject_ = 0;
 	selection_.Clear();
 	ClearPlaySelection();
 
@@ -171,7 +171,7 @@ bool EditorScene::Update(float deltaTime) {
 
 	if (playAction == EditorPlayMode::Action::PLAY && !IsBusy()) {
 		frameRequest_ = FrameRequest::NONE;
-		respawnFrameObject_ = 0;
+		frameObject_ = 0;
 		FinishEdit();
 		sceneViewPanel_.CancelSelection();
 		std::string error;
@@ -842,7 +842,7 @@ void EditorScene::Finalize() {
 
 	document_.New();
 	frameRequest_ = FrameRequest::NONE;
-	respawnFrameObject_ = 0;
+	frameObject_ = 0;
 	selection_.Clear();
 
 	hierarchyPanel_.Clear();
@@ -1792,7 +1792,7 @@ void EditorScene::ExecutePendingAction() {
 
 			document_.New();
 			frameRequest_ = FrameRequest::NONE;
-			respawnFrameObject_ = 0;
+			frameObject_ = 0;
 			clipboard_.DetachExternalReferences();
 
 			if (action == EditorAction::NEW_SAMPLE) {
@@ -2302,7 +2302,7 @@ void EditorScene::OpenScene(const std::filesystem::path &path) {
 
 	clipboard_.DetachExternalReferences();
 	frameRequest_ = FrameRequest::NONE;
-	respawnFrameObject_ = 0;
+	frameObject_ = 0;
 	FinishEdit();
 	selection_.Clear();
 	cameraController_.Reset();
@@ -2348,16 +2348,25 @@ void EditorScene::ApplyInspectorRequest(
 			return;
 		}
 
-		if (request.action == InspectorPanel::ObjectAction::FRAME_RESPAWN) {
+		if (request.action == InspectorPanel::ObjectAction::FRAME_RESPAWN ||
+		    request.action == InspectorPanel::ObjectAction::FRAME_COLLIDER) {
 			std::array<DirectX::XMFLOAT3, 8> corners;
+			const bool respawn =
+			    request.action == InspectorPanel::ObjectAction::FRAME_RESPAWN;
+			const bool ready =
+			    respawn ? RespawnPreview::GetFrameBounds(*object, corners)
+			            : ColliderBounds::GetFrameBounds(*object, corners);
 
-			if (!RespawnPreview::GetFrameBounds(*object, corners)) {
-				ShowError("Could not determine the respawn frame bounds.");
+			if (!ready) {
+				ShowError(
+				    respawn ? "Could not determine the respawn frame bounds."
+				            : "Could not determine the collider frame bounds.");
 				return;
 			}
 
-			respawnFrameObject_ = request.objectId;
-			frameRequest_ = FrameRequest::RESPAWN;
+			frameObject_ = request.objectId;
+			frameRequest_ =
+			    respawn ? FrameRequest::RESPAWN : FrameRequest::COLLIDER;
 			// ドックの別タブにある場合も、次のフレームでSceneの描画サイズを取得する。
 			ImGui::SetWindowCollapsed("Scene", false);
 			ImGui::SetWindowFocus("Scene");
@@ -2764,12 +2773,25 @@ bool EditorScene::FrameObjects(FrameRequest request,
 	const auto &scene =
 	    runtimeScene ? playMode_.GetSession().GetScene() : document_.GetScene();
 
-	if (request == FrameRequest::RESPAWN) {
-		const auto *object = scene.FindObject(respawnFrameObject_);
+	if (request == FrameRequest::RESPAWN || request == FrameRequest::COLLIDER) {
+		const auto *object = scene.FindObject(frameObject_);
 		std::array<DirectX::XMFLOAT3, 8> corners;
 
-		return object && RespawnPreview::GetFrameBounds(*object, corners) &&
-		       cameraController_.FrameBounds(corners, projection);
+		if (!object ||
+		    !(request == FrameRequest::RESPAWN
+		          ? RespawnPreview::GetFrameBounds(*object, corners)
+		          : ColliderBounds::GetFrameBounds(*object, corners))) {
+			return false;
+		}
+
+		if (!cameraController_.FrameBounds(corners, projection)) {
+			Logger::Warning(
+			    "EditorScene: "
+			    "コンポーネントの範囲を現在の描画範囲に収められませんでした。");
+			return false;
+		}
+
+		return true;
 	}
 
 	auto &renderer = runtimeScene ? playSceneRenderer_ : renderer_;

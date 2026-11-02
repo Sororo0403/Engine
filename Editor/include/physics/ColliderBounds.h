@@ -27,6 +27,15 @@ class ColliderBounds {
 	using Lines = std::array<DebugLine, 12>;
 
 	/// <summary>
+	/// 衝突判定と同じボックスの8頂点を、Sceneカメラへ収めるために取得する
+	/// </summary>
+	/// <param name="object">Colliderを持つ物体。モデルの有無や表示状態には依存しない</param>
+	/// <param name="corners">成功時に設定するワールド座標の8頂点</param>
+	/// <returns>true:取得成功 false:形状や変形が無効。失敗時は出力を保持する</returns>
+	static bool GetFrameBounds(const SceneObject &object,
+	                           std::array<DirectX::XMFLOAT3, 8> &corners);
+
+	/// <summary>
 	/// 指定範囲の衝突形状をScene描画へ登録する。非表示物体の形状も対象とする
 	/// </summary>
 	/// <param name="renderer">更新済みのScene描画先</param>

@@ -411,6 +411,9 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 	           ColliderInspector::Action::SELECT_OVERLAPS) {
 		objectRequest_ = {ObjectAction::SELECT_COLLIDER_OVERLAPS,
 		                  colliderRequest.objectId};
+	} else if (colliderRequest.action == ColliderInspector::Action::FRAME) {
+		objectRequest_ = {ObjectAction::FRAME_COLLIDER,
+		                  colliderRequest.objectId};
 	}
 
 	CameraInspector::Request cameraRequest;

@@ -88,6 +88,10 @@ bool ColliderInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		ui.BeginDisabled(!BoxColliderUtils::GetWorldBounds(
 		    *object.collider, object.transform, bounds));
 
+		if (ui.Button("Frame Collider")) {
+			request = {Action::FRAME, id};
+		}
+
 		if (ui.Button("Select Overlapping Colliders")) {
 			request = {Action::SELECT_OVERLAPS, id};
 		}
