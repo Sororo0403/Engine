@@ -347,6 +347,12 @@ void ControlsPanel::Draw() {
 	         "Closing asks to save material and scene changes separately; "
 	         "Cancel keeps pending drafts and a failed save keeps Editor open. "
 	         "Play displays assignments read-only. "
+	         "Edit Material on a slot opens its assigned asset in Materials, "
+	         "including unused assignments. The fixed Inspector uses its own "
+	         "object. Opening another asset asks to save pending material "
+	         "edits; "
+	         "Cancel or a failed load keeps them. Opening the same material "
+	         "focuses its existing draft. Model Default has no editable asset. "
 	         "Game export includes assigned material files and their "
 	         "textures."},
 	        {"Inspector > Color Tint",

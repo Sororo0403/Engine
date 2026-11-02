@@ -43,14 +43,20 @@ class MaterialPanel {
 	/// <returns>失敗理由。エラーなしの場合は空</returns>
 	const std::string &GetError() const;
 
-  private:
 	/// <summary>
-	/// 未保存の編集がない場合に、指定した材質を読み込む
+	/// 材質を読み込み、成功した場合だけ編集中のデータと履歴を置き換える
 	/// </summary>
-	/// <param name="path">実行ファイル基準の材質パス</param>
-	/// <returns>true:選択成功 false:編集中または読み込み失敗</returns>
-	bool Select(const std::filesystem::path &path);
+	/// <param name="path">実行ファイル基準または絶対パスの材質ファイル</param>
+	/// <param name="discardChanges">保存確認で破棄を選択した場合のみtrueを指定する</param>
+	/// <returns>true:成功 false:未保存編集あり、または読み込み失敗。失敗時は現在値を保持する</returns>
+	bool Open(const std::filesystem::path &path, bool discardChanges = false);
 
+	/// <summary>
+	/// 次の描画で材質パネルを開き、フォーカスする。編集中の値は変更しない
+	/// </summary>
+	void RequestFocus();
+
+  private:
 	/// <summary>
 	/// このパネルで保存した材質の状態へ戻す。外部変更は上書きしない
 	/// </summary>
@@ -62,6 +68,7 @@ class MaterialPanel {
 	MaterialAsset draft_;
 	std::string texture_;
 	bool textureValid_ = true;
+	bool focusRequested_ = false;
 	std::string newName_ = "New Material";
 	std::string error_;
 	std::vector<MaterialAsset> states_;

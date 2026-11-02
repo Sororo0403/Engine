@@ -187,6 +187,7 @@ class EditorScene final : public IScene {
 		IDLE,
 		CONFIRM_SAVE,
 		CONFIRM_MATERIAL_SAVE,
+		CONFIRM_MATERIAL_OPEN,
 		OPEN_FILE,
 		SAVE_FILE,
 		SAVE_COPY_FILE,
@@ -235,6 +236,18 @@ class EditorScene final : public IScene {
 	/// 保留中のNew・Open・Exitに対してシーンの保存を確認し、変更がなければ操作を続ける
 	/// </summary>
 	void ConfirmSceneChanges();
+
+	/// <summary>
+	/// 割り当てた材質の編集を開始する。別の材質を編集中なら保存を確認する
+	/// </summary>
+	/// <param name="path">Inspectorから開く材質のパス</param>
+	void OpenMaterialForEdit(const std::filesystem::path &path);
+
+	/// <summary>
+	/// 保留した材質を読み込み、成功した場合だけ編集対象を切り替える
+	/// </summary>
+	/// <param name="discardChanges">確認で破棄を選択したか</param>
+	void CompleteMaterialOpen(bool discardChanges);
 
 	/// <summary>
 	/// シーンを読み込み、成功した場合に選択・カメラ・最近の一覧を更新する
@@ -577,6 +590,7 @@ class EditorScene final : public IScene {
 
 	DialogStage stage_ = DialogStage::IDLE;
 	EditorAction pendingAction_ = EditorAction::NONE;
+	std::filesystem::path pendingMaterialPath_;
 
 	std::string errorMessage_;
 	SceneObjectId errorObjectId_ = 0;

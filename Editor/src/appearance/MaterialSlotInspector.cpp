@@ -12,7 +12,9 @@
 bool MaterialSlotInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
                                  SceneObject &object, EditorHistory &history,
                                  ModelManager &models,
-                                 const AssetDatabase &assets) const {
+                                 const AssetDatabase &assets,
+                                 Request &request) const {
+	request = {};
 	if (!object.meshRenderer) {
 		return false;
 	}
@@ -68,6 +70,18 @@ bool MaterialSlotInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 				ImGui::EndCombo();
 			}
 
+			const auto assigned = std::find_if(
+			    object.meshRenderer->materials.slots.begin(),
+			    object.meshRenderer->materials.slots.end(),
+			    [slot](const auto &binding) { return binding.first == slot; });
+			ui.BeginDisabled(assigned ==
+			                 object.meshRenderer->materials.slots.end());
+
+			if (ui.Button("Edit Material")) {
+				request.editMaterial = assigned->second;
+			}
+
+			ui.EndDisabled();
 			ImGui::PopID();
 		}
 
@@ -91,6 +105,16 @@ bool MaterialSlotInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 				                     return binding.first == slot;
 			                     })
 			            ->second)));
+
+			if (ui.Button("Edit Material")) {
+				request.editMaterial =
+				    std::find_if(object.meshRenderer->materials.slots.begin(),
+				                 object.meshRenderer->materials.slots.end(),
+				                 [slot](const auto &binding) {
+					                 return binding.first == slot;
+				                 })
+				        ->second;
+			}
 
 			if (ui.Button("Clear Assignment")) {
 				changed |= history.SetMaterialPath(id, slot, {});

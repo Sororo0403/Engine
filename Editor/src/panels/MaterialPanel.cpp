@@ -6,8 +6,9 @@
 #include <imgui.h>
 #include <stdexcept>
 
-bool MaterialPanel::Select(const std::filesystem::path &path) {
-	if (HasUnsavedChanges()) {
+bool MaterialPanel::Open(const std::filesystem::path &path,
+                         bool discardChanges) {
+	if (HasUnsavedChanges() && !discardChanges) {
 		error_ =
 		    "Save or revert the current material before selecting another.";
 		return false;
@@ -123,6 +124,12 @@ class DisabledScope {
 } // namespace
 
 void MaterialPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets) {
+	if (focusRequested_) {
+		ImGui::SetNextWindowCollapsed(false);
+		ImGui::SetNextWindowFocus();
+		focusRequested_ = false;
+	}
+
 	if (!ui.BeginWindow("Materials")) {
 		ui.EndWindow();
 		return;
@@ -150,7 +157,7 @@ void MaterialPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets) {
 					if (MaterialSerializer::Save(path, MaterialAsset{}, error_,
 					                             false)) {
 						assets.Refresh();
-						Select(path);
+						Open(path);
 					}
 				}
 			}
@@ -163,7 +170,7 @@ void MaterialPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets) {
 				const auto label = PathUtils::ToUtf8(path);
 
 				if (ui.Selectable(label.c_str(), path == path_)) {
-					Select(path);
+					Open(path);
 				}
 			}
 		}
@@ -221,7 +228,7 @@ void MaterialPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets) {
 				const DisabledScope disabled(ui, edited);
 
 				if (ui.Button("Reload Material")) {
-					Select(path_);
+					Open(path_);
 				}
 			}
 		}
@@ -246,4 +253,8 @@ const std::filesystem::path &MaterialPanel::GetFilePath() const {
 
 const std::string &MaterialPanel::GetError() const {
 	return error_;
+}
+
+void MaterialPanel::RequestFocus() {
+	focusRequested_ = true;
 }

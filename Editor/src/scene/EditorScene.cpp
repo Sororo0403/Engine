@@ -90,6 +90,7 @@ bool EditorScene::Initialize() {
 
 	stage_ = DialogStage::IDLE;
 	pendingAction_ = EditorAction::NONE;
+	pendingMaterialPath_.clear();
 	exitQueued_ = false;
 	closeApproved_ = false;
 	errorOpenRequested_ = false;
@@ -326,6 +327,7 @@ bool EditorScene::Update(float deltaTime) {
 	const auto &modelRequest = inspectorPanel_.GetModelRequest();
 	const auto &visibilityRequest = inspectorPanel_.GetVisibilityRequest();
 	const auto colliderFitRequest = inspectorPanel_.GetColliderFitRequest();
+	const auto &materialEditPath = inspectorPanel_.GetMaterialEditRequest();
 	ui_.EndDisabled();
 
 	if (!wasBusy && !inspectorPanel_.GetAssetRevealPath().empty()) {
@@ -493,12 +495,20 @@ bool EditorScene::Update(float deltaTime) {
 			ApplyInspectorRequest(objectRequest);
 		}
 
+		if (!IsBusy() && action == EditorAction::NONE &&
+		    !materialEditPath.empty() && !hasObjectRequest &&
+		    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
+		    colliderFitRequest == 0 &&
+		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
+			OpenMaterialForEdit(materialEditPath);
+		}
+
 		if (!IsBusy()) {
 			if (historyRequest && action == EditorAction::NONE &&
 			    colliderFitRequest == 0 && requestedModelPath.empty() &&
 			    requestedInstances.empty() && modelDrop.path.empty() &&
 			    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
-			    !hasObjectRequest &&
+			    !hasObjectRequest && materialEditPath.empty() &&
 			    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 				RestoreHistory(*historyRequest);
 			}
@@ -506,7 +516,8 @@ bool EditorScene::Update(float deltaTime) {
 			if (action == EditorAction::NONE && colliderFitRequest == 0 &&
 			    requestedInstances.empty() && modelDrop.path.empty() &&
 			    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
-			    !hasObjectRequest && !historyRequest) {
+			    !hasObjectRequest && materialEditPath.empty() &&
+			    !historyRequest) {
 				const bool objectPanelFocused =
 				    hierarchyRequest.windowFocused ||
 				    sceneViewPanel_.GetInput().windowFocused;
@@ -852,6 +863,7 @@ void EditorScene::Finalize() {
 
 	stage_ = DialogStage::IDLE;
 	pendingAction_ = EditorAction::NONE;
+	pendingMaterialPath_.clear();
 	exitQueued_ = false;
 	closeApproved_ = false;
 	errorOpenRequested_ = false;
@@ -1725,16 +1737,19 @@ void EditorScene::StartAction(EditorAction action) {
 
 	case EditorAction::SAVE:
 		pendingAction_ = EditorAction::NONE;
+		pendingMaterialPath_.clear();
 		StartSave(false);
 		return;
 
 	case EditorAction::SAVE_AS:
 		pendingAction_ = EditorAction::NONE;
+		pendingMaterialPath_.clear();
 		StartSave(true);
 		return;
 
 	case EditorAction::RELOAD_SCENE:
 		pendingAction_ = EditorAction::NONE;
+		pendingMaterialPath_.clear();
 
 		if (!document_.GetFilePath().empty()) {
 			sceneReloadDialog_.Show(
@@ -1746,6 +1761,7 @@ void EditorScene::StartAction(EditorAction action) {
 
 	case EditorAction::SAVE_COPY:
 		pendingAction_ = EditorAction::NONE;
+		pendingMaterialPath_.clear();
 		StartSaveCopy();
 		return;
 	case EditorAction::CREATE_EMPTY:
@@ -1770,6 +1786,55 @@ void EditorScene::StartAction(EditorAction action) {
 	}
 }
 
+void EditorScene::OpenMaterialForEdit(const std::filesystem::path &path) {
+	if (IsBusy() || path.empty()) {
+		return;
+	}
+
+	try {
+		FinishEdit();
+
+		if (!materialPanel_.GetFilePath().empty() &&
+		    PathUtils::IsSameFile(path, materialPanel_.GetFilePath())) {
+			materialPanel_.RequestFocus();
+			return;
+		}
+
+		pendingMaterialPath_ = path;
+
+		if (materialPanel_.HasUnsavedChanges()) {
+			saveChangesDialog_.Show(
+			    PathUtils::ToUtf8(materialPanel_.GetFilePath().filename()));
+			stage_ = DialogStage::CONFIRM_MATERIAL_OPEN;
+		} else {
+			CompleteMaterialOpen(false);
+		}
+	} catch (const std::exception &error) {
+		Logger::Error(
+		    std::format("EditorScene::OpenMaterialForEdit: {}", error.what()));
+		ShowError("Could not open the material. Your edits were kept. See the "
+		          "log for details.");
+	}
+}
+
+void EditorScene::CompleteMaterialOpen(bool discardChanges) {
+	try {
+		if (materialPanel_.Open(pendingMaterialPath_, discardChanges)) {
+			pendingMaterialPath_.clear();
+			stage_ = DialogStage::IDLE;
+			materialPanel_.RequestFocus();
+		} else {
+			ShowError("Could not open the material: " +
+			          materialPanel_.GetError());
+		}
+	} catch (const std::exception &error) {
+		Logger::Error(
+		    std::format("EditorScene::CompleteMaterialOpen: {}", error.what()));
+		ShowError("Could not open the material. Your edits were kept. See the "
+		          "log for details.");
+	}
+}
+
 void EditorScene::ConfirmSceneChanges() {
 	if (document_.IsModified()) {
 		const auto name =
@@ -1787,6 +1852,7 @@ void EditorScene::ExecutePendingAction() {
 	const EditorAction action = pendingAction_;
 
 	pendingAction_ = EditorAction::NONE;
+	pendingMaterialPath_.clear();
 	stage_ = DialogStage::IDLE;
 
 	switch (action) {
@@ -2088,6 +2154,33 @@ void EditorScene::UpdateDialogs() {
 	case DialogStage::IDLE:
 		return;
 
+	case DialogStage::CONFIRM_MATERIAL_OPEN: {
+		const auto result = saveChangesDialog_.Draw(ui_);
+
+		if (result == SaveChangesResult::SAVE) {
+			try {
+				if (materialPanel_.Save()) {
+					CompleteMaterialOpen(false);
+				} else {
+					ShowError("Could not save the material: " +
+					          materialPanel_.GetError());
+				}
+			} catch (const std::exception &error) {
+				Logger::Error(
+				    std::format("EditorScene::SaveMaterial: {}", error.what()));
+				ShowError("Could not save the material. Your edits were kept. "
+				          "See the log for details.");
+			}
+		} else if (result == SaveChangesResult::DISCARD) {
+			CompleteMaterialOpen(true);
+		} else if (result == SaveChangesResult::CANCEL) {
+			pendingMaterialPath_.clear();
+			stage_ = DialogStage::IDLE;
+		}
+
+		return;
+	}
+
 	case DialogStage::CONFIRM_MATERIAL_SAVE: {
 		const auto result = saveChangesDialog_.Draw(ui_);
 
@@ -2110,6 +2203,7 @@ void EditorScene::UpdateDialogs() {
 			ConfirmSceneChanges();
 		} else if (result == SaveChangesResult::CANCEL) {
 			pendingAction_ = EditorAction::NONE;
+			pendingMaterialPath_.clear();
 			stage_ = DialogStage::IDLE;
 		}
 
@@ -2130,6 +2224,7 @@ void EditorScene::UpdateDialogs() {
 
 		case SaveChangesResult::CANCEL:
 			pendingAction_ = EditorAction::NONE;
+			pendingMaterialPath_.clear();
 			stage_ = DialogStage::IDLE;
 			break;
 
@@ -2161,6 +2256,7 @@ void EditorScene::UpdateDialogs() {
 		if (result == SceneFileDialogResult::CANCELLED) {
 			// 保存先選択を取り消した場合は、NewやExitも取り消す
 			pendingAction_ = EditorAction::NONE;
+			pendingMaterialPath_.clear();
 			stage_ = DialogStage::IDLE;
 			return;
 		}
@@ -2360,6 +2456,7 @@ void EditorScene::ShowError(std::string message, SceneObjectId objectId) {
 	errorOpenRequested_ = true;
 
 	pendingAction_ = EditorAction::NONE;
+	pendingMaterialPath_.clear();
 	stage_ = DialogStage::ERROR;
 }
 

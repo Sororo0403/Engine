@@ -128,6 +128,7 @@ void InspectorPanel::Clear() {
 	objectRequest_ = {};
 	colliderFitRequest_ = 0;
 	assetRevealPath_.clear();
+	materialEditPath_.clear();
 }
 
 const InspectorPanel::ObjectRequest &InspectorPanel::GetObjectRequest() const {
@@ -159,6 +160,7 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 	colliderFitRequest_ = 0;
 	modelRequest_ = {};
 	assetRevealPath_.clear();
+	materialEditPath_.clear();
 	visibilityRequest_ = {};
 
 	if (lockedObjectId_ != 0 && !scene.Contains(lockedObjectId_)) {
@@ -422,8 +424,11 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 		}
 
 		if (models && assets) {
-			changed |= MaterialSlotInspector{}.Draw(
-			    ui, inspectedObjectId, *object, history, *models, *assets);
+			MaterialSlotInspector::Request request;
+			changed |= MaterialSlotInspector{}.Draw(ui, inspectedObjectId,
+			                                        *object, history, *models,
+			                                        *assets, request);
+			materialEditPath_ = std::move(request.editMaterial);
 		}
 
 		if (ui.Button("Remove Mesh Renderer")) {
@@ -606,4 +611,8 @@ InspectorPanel::DrawReadOnly(const ImGuiSystem &ui, const Scene &scene,
 
 	ui.EndWindow();
 	return copied;
+}
+
+const std::filesystem::path &InspectorPanel::GetMaterialEditRequest() const {
+	return materialEditPath_;
 }

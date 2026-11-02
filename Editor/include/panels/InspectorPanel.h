@@ -80,6 +80,12 @@ class InspectorPanel {
 	const std::filesystem::path &GetAssetRevealPath() const;
 
 	/// <summary>
+	/// このフレームに材質編集パネルで開くことを要求したファイルを取得する
+	/// </summary>
+	/// <returns>材質パス。要求なしの場合は空。次のDrawまたはClearまで有効</returns>
+	const std::filesystem::path &GetMaterialEditRequest() const;
+
+	/// <summary>
 	/// 表示対象のモデルの表示状態の変更要求
 	/// </summary>
 	struct VisibilityRequest {
@@ -150,6 +156,7 @@ class InspectorPanel {
 	ModelRequest modelRequest_;
 	VisibilityRequest visibilityRequest_;
 	std::filesystem::path assetRevealPath_;
+	std::filesystem::path materialEditPath_;
 	ObjectRequest objectRequest_;
 	SceneObjectId colliderFitRequest_ = 0;
 };
