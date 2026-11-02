@@ -639,4 +639,10 @@
     <ClInclude Include="include\panels\SceneCheckPanel.h"><Filter>include\panels</Filter></ClInclude>
     <ClCompile Include="src\panels\SceneCheckPanel.cpp"><Filter>src\panels</Filter></ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\assets\AssetDependencies.h"><Filter>include\assets</Filter></ClInclude>
+    <ClCompile Include="src\assets\AssetDependencies.cpp"><Filter>src\assets</Filter></ClCompile>
+    <ClInclude Include="include\assets\SceneAssetValidation.h"><Filter>include\assets</Filter></ClInclude>
+    <ClCompile Include="src\assets\SceneAssetValidation.cpp"><Filter>src\assets</Filter></ClCompile>
+  </ItemGroup>
 </Project>

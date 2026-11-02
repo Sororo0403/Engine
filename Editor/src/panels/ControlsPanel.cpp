@@ -424,7 +424,13 @@ void ControlsPanel::Draw() {
 	         "after edits. Fix invalid prerequisites before rechecking "
 	         "dependent "
 	         "collision rules. Empty scenes are valid. This checks playback "
-	         "settings, not asset files or GPU rendering. Scene data and Undo "
+	         "settings plus model/material loading and dependency-file "
+	         "existence. "
+	         "Hidden meshes, renderer-only material assignments and unused "
+	         "slots are included. Model dependencies include OBJ material "
+	         "files and glTF buffers and images. Shared file results are "
+	         "reused during each check. Image decoding, GPU rendering and "
+	         "export-folder restrictions are not checked. Scene data and Undo "
 	         "history are preserved."},
 	        {"Game > Play / Stop",
 	         "Run the current scene, including empty scenes. Stop returns to "

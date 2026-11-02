@@ -7,7 +7,7 @@ class ImGuiSystem;
 class Scene;
 
 /// <summary>
-/// 編集シーンの再生設定を手動検証し、結果と対象物体への選択要求を表示する
+/// 編集シーンの再生設定とアセット参照を手動検証し、結果と対象物体への選択要求を表示する
 /// </summary>
 class SceneCheckPanel {
   public:
@@ -22,7 +22,7 @@ class SceneCheckPanel {
 	void Reset();
 
 	/// <summary>
-	/// 現在の編集シーンを検証し、全ての結果をまとめて置き換える
+	/// 現在の編集シーンの再生設定・モデル・材質・依存ファイルを検証し、全ての結果をまとめて置き換える
 	/// </summary>
 	/// <param name="scene">変更しない検証対象</param>
 	/// <param name="fallback">Primary Cameraがない場合のSceneカメラ姿勢</param>

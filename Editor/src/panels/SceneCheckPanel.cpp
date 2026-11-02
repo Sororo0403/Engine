@@ -1,10 +1,11 @@
 #include "panels/SceneCheckPanel.h"
-
+#include "assets/SceneAssetValidation.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "scene/Scene.h"
 #include <exception>
 #include <format>
 #include <imgui.h>
+#include <iterator>
 
 void SceneCheckPanel::Show() {
 	open_ = true;
@@ -18,6 +19,9 @@ void SceneCheckPanel::Reset() {
 
 void SceneCheckPanel::Check(const Scene &scene, const CameraPose &fallback) {
 	auto issues = SceneValidation::Inspect(scene, fallback);
+	auto assets = SceneAssetValidation::Inspect(scene);
+	issues.insert(issues.end(), std::make_move_iterator(assets.begin()),
+	              std::make_move_iterator(assets.end()));
 	issues_.swap(issues);
 	error_.clear();
 	checked_ = true;

@@ -367,4 +367,10 @@ exit /b 0</Command>
     <ClInclude Include="include\panels\SceneCheckPanel.h"></ClInclude>
     <ClCompile Include="src\panels\SceneCheckPanel.cpp"></ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\assets\AssetDependencies.h"></ClInclude>
+    <ClCompile Include="src\assets\AssetDependencies.cpp"></ClCompile>
+    <ClInclude Include="include\assets\SceneAssetValidation.h"></ClInclude>
+    <ClCompile Include="src\assets\SceneAssetValidation.cpp"></ClCompile>
+  </ItemGroup>
 </Project>
