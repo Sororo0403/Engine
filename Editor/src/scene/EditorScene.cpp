@@ -96,6 +96,8 @@ bool EditorScene::Initialize() {
 	errorObjectId_ = 0;
 
 	document_.New();
+	frameRequest_ = FrameRequest::NONE;
+	respawnFrameObject_ = 0;
 	selection_.Clear();
 	ClearPlaySelection();
 
@@ -167,6 +169,8 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	if (playAction == EditorPlayMode::Action::PLAY && !IsBusy()) {
+		frameRequest_ = FrameRequest::NONE;
+		respawnFrameObject_ = 0;
 		FinishEdit();
 		sceneViewPanel_.CancelSelection();
 		std::string error;
@@ -836,6 +840,8 @@ void EditorScene::Finalize() {
 	renderer_.Finalize();
 
 	document_.New();
+	frameRequest_ = FrameRequest::NONE;
+	respawnFrameObject_ = 0;
 	selection_.Clear();
 
 	hierarchyPanel_.Clear();
@@ -1784,6 +1790,8 @@ void EditorScene::ExecutePendingAction() {
 			}
 
 			document_.New();
+			frameRequest_ = FrameRequest::NONE;
+			respawnFrameObject_ = 0;
 			clipboard_.DetachExternalReferences();
 
 			if (action == EditorAction::NEW_SAMPLE) {
@@ -2292,6 +2300,8 @@ void EditorScene::OpenScene(const std::filesystem::path &path) {
 	}
 
 	clipboard_.DetachExternalReferences();
+	frameRequest_ = FrameRequest::NONE;
+	respawnFrameObject_ = 0;
 	FinishEdit();
 	selection_.Clear();
 	cameraController_.Reset();
@@ -2334,6 +2344,22 @@ void EditorScene::ApplyInspectorRequest(
 				ShowError("Could not copy an invalid Transform.");
 			}
 
+			return;
+		}
+
+		if (request.action == InspectorPanel::ObjectAction::FRAME_RESPAWN) {
+			std::array<DirectX::XMFLOAT3, 8> corners;
+
+			if (!RespawnPreview::GetFrameBounds(*object, corners)) {
+				ShowError("Could not determine the respawn frame bounds.");
+				return;
+			}
+
+			respawnFrameObject_ = request.objectId;
+			frameRequest_ = FrameRequest::RESPAWN;
+			// ドックの別タブにある場合も、次のフレームでSceneの描画サイズを取得する。
+			ImGui::SetWindowCollapsed("Scene", false);
+			ImGui::SetWindowFocus("Scene");
 			return;
 		}
 
@@ -2696,6 +2722,15 @@ bool EditorScene::FrameObjects(FrameRequest request,
                                bool runtimeScene) {
 	const auto &scene =
 	    runtimeScene ? playMode_.GetSession().GetScene() : document_.GetScene();
+
+	if (request == FrameRequest::RESPAWN) {
+		const auto *object = scene.FindObject(respawnFrameObject_);
+		std::array<DirectX::XMFLOAT3, 8> corners;
+
+		return object && RespawnPreview::GetFrameBounds(*object, corners) &&
+		       cameraController_.FrameBounds(corners, projection);
+	}
+
 	auto &renderer = runtimeScene ? playSceneRenderer_ : renderer_;
 	const auto &selection = runtimeScene ? playSelection_ : selection_;
 	DirectX::XMFLOAT3 minimum{};

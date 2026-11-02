@@ -33,6 +33,7 @@ class InspectorPanel {
 		ADD_CAMERA,
 		MAKE_PRIMARY_CAMERA,
 		SELECT_OBJECT,
+		FRAME_RESPAWN,
 	};
 
 	/// <summary>

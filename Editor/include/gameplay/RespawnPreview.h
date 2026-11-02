@@ -47,6 +47,16 @@ class RespawnPreview {
 	bool BuildLines(const SceneObject &object, Lines &lines) const;
 
 	/// <summary>
+	/// 復帰先の目印とColliderを囲む、カメラへ収めるための8頂点を求める。
+	/// 配置可否に依存せず、Colliderが無効な場合は位置の目印だけを囲む
+	/// </summary>
+	/// <param name="object">表示する編集物体。位置・回転・拡縮と復帰設定は変更しない</param>
+	/// <param name="corners">成功時に設定するワールド座標の8頂点。落下判定の面は含めない</param>
+	/// <returns>true:取得成功 false:復帰設定・位置・範囲が無効。失敗時は出力を保持する</returns>
+	static bool GetFrameBounds(const SceneObject &object,
+	                           std::array<DirectX::XMFLOAT3, 8> &corners);
+
+	/// <summary>
 	/// 復帰設定がある場合だけ、Scene描画にプレビューの線を登録する
 	/// </summary>
 	/// <param name="renderer">更新済みのScene描画先</param>

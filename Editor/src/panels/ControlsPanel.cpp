@@ -396,6 +396,14 @@ void ControlsPanel::Draw() {
 	         "The gold wireframe shows Near/Far Clip and the field of view "
 	         "at the aspect ratio in Game Settings. Follow Camera previews "
 	         "its starting view using the current target position."},
+	        {"Inspector > Respawn > Frame Respawn",
+	         "Bring the recovery position and its collider into Scene view "
+	         "without changing the scene, selection, Inspector lock or Undo "
+	         "history. The inspected object is used even when Inspector is "
+	         "locked. Invalid or missing colliders frame the position marker; "
+	         "blocked positions can still be inspected. Fall Below Y is not "
+	         "included in the view bounds. The command also works with "
+	         "Respawn Guides hidden and opens the Scene tab if necessary."},
 	        {"Selected Respawn in Scene",
 	         "The cross marks the recovery position and the wire box shows "
 	         "the character's collider there, including rotation and scale. "
@@ -404,8 +412,9 @@ void ControlsPanel::Draw() {
 	         "colliders; red means it cannot be used. Hidden colliders count "
 	         "and the character's own collider is ignored. Face contact is "
 	         "allowed. Invalid shapes show only the red position marker. "
-	         "The orange plane marks Fall Below Y. These guides check the "
-	         "recovery position, not every condition required for Play."},
+	         "The orange plane marks Fall Below Y across the whole scene, "
+	         "not only inside the square. These guides check the recovery "
+	         "position, not every condition required for Play."},
 	        {"Selected Follow Camera in Scene",
 	         "The cyan cross marks the target's starting position. "
 	         "The cyan line connects it to the Camera. "
@@ -451,11 +460,6 @@ void ControlsPanel::Draw() {
 	         "target. Search and cancellation do not change the scene; "
 	         "choosing a different target creates one Undo operation. "
 	         "Reopening starts a fresh search."},
-	        {"Selected Respawn in Scene",
-	         "The cyan cross marks the respawn position. The red square marks "
-	         "Fall Below Y near that point; the height applies everywhere, "
-	         "not just inside the square. This preview is not a collider and "
-	         "does not appear in Game."},
 	        {"Multiple Follow Cameras",
 	         "Each Camera keeps its own smoothing state. Targets that are also "
 	         "Follow Cameras update first. Circular target chains must be "

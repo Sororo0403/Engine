@@ -1,4 +1,5 @@
 #include "gameplay/GameplayInspector.h"
+#include "gameplay/RespawnPreview.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "history/EditorHistory.h"
 #include "scene/Scene.h"
@@ -49,6 +50,7 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
                              EditorHistory &history,
                              SceneObjectId &targetSelectionRequest) {
 	targetSelectionRequest = 0;
+	respawnFrameRequest_ = 0;
 	const auto scope = std::to_string(id);
 	ImGui::PushID(scope.c_str());
 	ImGui::PushID("GameplayInspector");
@@ -180,6 +182,15 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 			}
 		}
 
+		std::array<DirectX::XMFLOAT3, 8> frameBounds;
+		ui.BeginDisabled(!RespawnPreview::GetFrameBounds(object, frameBounds));
+
+		if (ui.Button("Frame Respawn")) {
+			respawnFrameRequest_ = id;
+		}
+
+		ui.EndDisabled();
+
 		if (ui.Button("Reset Respawn Settings")) {
 			const auto before = object.respawn;
 			changed |= history.ResetComponentSettings(
@@ -199,4 +210,9 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 void GameplayInspector::Clear() noexcept {
 	targetPicker_.Clear();
+	respawnFrameRequest_ = 0;
+}
+
+SceneObjectId GameplayInspector::GetRespawnFrameRequest() const {
+	return respawnFrameRequest_;
 }

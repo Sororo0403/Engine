@@ -177,7 +177,7 @@ class EditorScene final : public IScene {
 	/// <summary>
 	/// カメラへ収める物体の範囲
 	/// </summary>
-	enum class FrameRequest { NONE, SELECTED, ALL };
+	enum class FrameRequest { NONE, SELECTED, ALL, RESPAWN };
 
 	/// <summary>
 	/// ファイル操作と設定ダイアログの進行状態
@@ -408,7 +408,7 @@ class EditorScene final : public IScene {
 	/// <summary>
 	/// モデル・Collider・空の物体の範囲が収まる位置へ編集用カメラを移動する
 	/// </summary>
-	/// <param name="request">選択物体またはシーン全体。非表示モデルは対象外</param>
+	/// <param name="request">選択物体・シーン全体・要求された復帰位置。物体のフレーミングは非表示モデルを除く</param>
 	/// <param name="projection">Sceneビューの更新済み投影行列</param>
 	/// <param name="runtimeScene">再生シーンの現在の配置を使用するか。falseは編集シーン</param>
 	/// <returns>true:カメラを移動した false:対象なし、または移動できない</returns>
@@ -541,6 +541,7 @@ class EditorScene final : public IScene {
 	RecentScenes recentScenes_;
 	std::filesystem::path recentOpenPath_;
 	FrameRequest frameRequest_ = FrameRequest::NONE;
+	SceneObjectId respawnFrameObject_ = 0;
 	bool hierarchySelectionScope_ = false;
 
 	HierarchyPanel hierarchyPanel_;

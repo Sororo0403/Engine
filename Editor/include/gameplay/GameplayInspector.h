@@ -31,6 +31,13 @@ class GameplayInspector {
 	/// </summary>
 	void Clear() noexcept;
 
+	/// <summary>
+	/// このフレームでSceneカメラへ収めることを要求した復帰設定の物体を取得する
+	/// </summary>
+	/// <returns>Inspectorの表示対象ID。要求なしは0。選択やシーンは変更しない</returns>
+	SceneObjectId GetRespawnFrameRequest() const;
+
   private:
 	FollowTargetPicker targetPicker_;
+	SceneObjectId respawnFrameRequest_ = 0;
 };

@@ -6,6 +6,7 @@
 #include "scene/Scene.h"
 #include "scene/SceneObject.h"
 #include "scene/SceneRenderer.h"
+#include <algorithm>
 
 bool RespawnPreview::BuildGeometry(const Scene &scene, SceneObjectId id,
                                    Geometry &geometry) const {
@@ -101,6 +102,56 @@ bool RespawnPreview::BuildLines(const SceneObject &object, Lines &lines) const {
 	result[8] = {corners[0], corners[2], fallColor_};
 	result[9] = {corners[1], corners[3], fallColor_};
 	lines = result;
+	return true;
+}
+
+bool RespawnPreview::GetFrameBounds(const SceneObject &object,
+                                    std::array<DirectX::XMFLOAT3, 8> &corners) {
+	if (!object.respawn || !object.respawn->IsValid()) {
+		return false;
+	}
+
+	auto transform = object.transform;
+	transform.translation = object.respawn->useStartPosition
+	                            ? transform.translation
+	                            : object.respawn->position;
+	const auto &position = transform.translation;
+
+	if (!MathUtils::IsFinite(position)) {
+		return false;
+	}
+
+	AxisAlignedBox box{{position.x - kMarkerRadius, position.y - kMarkerRadius,
+	                    position.z - kMarkerRadius},
+	                   {position.x + kMarkerRadius, position.y + kMarkerRadius,
+	                    position.z + kMarkerRadius}};
+	AxisAlignedBox body;
+
+	if (object.collider &&
+	    BoxColliderUtils::GetWorldBounds(*object.collider, transform, body)) {
+		box.minimum = {(std::min)(box.minimum.x, body.minimum.x),
+		               (std::min)(box.minimum.y, body.minimum.y),
+		               (std::min)(box.minimum.z, body.minimum.z)};
+		box.maximum = {(std::max)(box.maximum.x, body.maximum.x),
+		               (std::max)(box.maximum.y, body.maximum.y),
+		               (std::max)(box.maximum.z, body.maximum.z)};
+	}
+
+	if (!MathUtils::IsFinite(box.minimum) ||
+	    !MathUtils::IsFinite(box.maximum) || box.minimum.x >= box.maximum.x ||
+	    box.minimum.y >= box.maximum.y || box.minimum.z >= box.maximum.z) {
+		return false;
+	}
+
+	std::array<DirectX::XMFLOAT3, 8> result;
+
+	for (std::size_t i = 0; i < result.size(); ++i) {
+		result[i] = {(i & 1) ? box.maximum.x : box.minimum.x,
+		             (i & 2) ? box.maximum.y : box.minimum.y,
+		             (i & 4) ? box.maximum.z : box.minimum.z};
+	}
+
+	corners = result;
 	return true;
 }
 

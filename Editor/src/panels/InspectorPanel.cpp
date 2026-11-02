@@ -423,6 +423,11 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 		objectRequest_ = {ObjectAction::SELECT_OBJECT, targetSelectionRequest};
 	}
 
+	if (const auto frameId = gameplayInspector_.GetRespawnFrameRequest();
+	    frameId != 0) {
+		objectRequest_ = {ObjectAction::FRAME_RESPAWN, frameId};
+	}
+
 	ui.EndWindow();
 	return changed;
 }
