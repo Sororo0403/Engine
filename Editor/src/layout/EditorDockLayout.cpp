@@ -46,6 +46,7 @@ void EditorDockLayout::Draw(const ImGuiSystem &ui, bool resetLayout) const {
 		ui.DockWindow(historyWindow_.c_str(), bottomId);
 		ui.DockWindow(consoleWindow_.c_str(), bottomId);
 		ui.DockWindow(performanceWindow_.c_str(), bottomId);
+		ui.DockWindow(playStateWindow_.c_str(), rightId);
 		ui.FinishDockLayout(dockspaceId);
 	}
 

@@ -288,3 +288,14 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input) {
 
 	return true;
 }
+
+std::optional<CharacterRuntimeState>
+SceneSimulation::GetCharacterState() const {
+	if (!playing_ || character_ == 0) {
+		return std::nullopt;
+	}
+
+	return CharacterRuntimeState{
+	    character_, controller_.GetTransform().translation,
+	    controller_.GetVerticalVelocity(), controller_.IsGrounded()};
+}

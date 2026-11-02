@@ -89,6 +89,11 @@ bool EditorPlaySession::IsPaused() const {
 	return IsPlaying() && clock_.IsPaused();
 }
 
+std::optional<CharacterRuntimeState>
+EditorPlaySession::GetCharacterState() const {
+	return simulation_.GetCharacterState();
+}
+
 const Scene &EditorPlaySession::GetScene() const {
 	return simulation_.GetScene();
 }

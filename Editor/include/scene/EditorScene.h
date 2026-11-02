@@ -21,6 +21,7 @@
 #include "panels/HistoryPanel.h"
 #include "panels/InspectorPanel.h"
 #include "panels/PerformancePanel.h"
+#include "panels/PlayStatePanel.h"
 #include "panels/SceneViewPanel.h"
 #include "physics/ColliderBounds.h"
 #include "scene/IScene.h"
@@ -513,4 +514,5 @@ class EditorScene final : public IScene {
 	ConsolePanel consolePanel_;
 	HistoryPanel historyPanel_;
 	PerformancePanel performancePanel_;
+	PlayStatePanel playStatePanel_;
 };

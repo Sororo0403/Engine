@@ -200,6 +200,10 @@ void EditorPlayMode::Draw() const {
 	}
 }
 
+const EditorPlaySession &EditorPlayMode::GetSession() const {
+	return session_;
+}
+
 void EditorPlayMode::Finalize() {
 	Stop();
 	texture_.reset();

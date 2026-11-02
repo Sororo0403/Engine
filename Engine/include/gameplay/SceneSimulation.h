@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gameplay/CharacterController.h"
+#include "gameplay/CharacterRuntimeState.h"
 #include "graphics/camera/CameraPose.h"
 #include "physics/CollisionWorld.h"
 #include "scene/Scene.h"
@@ -44,6 +45,12 @@ class SceneSimulation {
 	bool IsPlaying() const {
 		return playing_;
 	}
+
+	/// <summary>
+	/// 最後に成功した初期化・更新で確定した主人公の状態を取得する
+	/// </summary>
+	/// <returns>再生中の主人公の値。停止中、または主人公なしの場合はnullopt</returns>
+	std::optional<CharacterRuntimeState> GetCharacterState() const;
 
 	/// <summary>
 	/// Rendererから参照できる、アドレスが変わらない再生用シーンを取得する

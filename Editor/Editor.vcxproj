@@ -232,6 +232,8 @@ exit /b 0</Command>
     <ClInclude Include="include\diagnostics\FrameTimingHistory.h" />
     <ClCompile Include="src\diagnostics\FrameTimingHistory.cpp" />
     <ClInclude Include="include\panels\PerformancePanel.h" />
+    <ClInclude Include="include\panels\PlayStatePanel.h" />
+    <ClCompile Include="src\panels\PlayStatePanel.cpp" />
     <ClCompile Include="src\panels\PerformancePanel.cpp" />
   </ItemGroup>
   <ItemGroup>

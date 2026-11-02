@@ -62,6 +62,12 @@ class EditorPlaySession {
 	bool IsPaused() const;
 
 	/// <summary>
+	/// 最後に確定した主人公の再生状態を取得する。一時停止中も値を保持する
+	/// </summary>
+	/// <returns>再生中の主人公の値。停止中、または主人公なしの場合はnullopt</returns>
+	std::optional<CharacterRuntimeState> GetCharacterState() const;
+
+	/// <summary>
 	/// 描画用の再生シーンを取得する。再実行してもシーン本体のアドレスは変わらない
 	/// </summary>
 	/// <returns>編集シーンから独立した再生シーン</returns>

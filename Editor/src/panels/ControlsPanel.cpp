@@ -244,6 +244,12 @@ void ControlsPanel::Draw() {
 	         "Use without Ctrl, Shift or Alt. Shortcuts are ignored while "
 	         "editing text or fields, dragging, showing a popup, or when "
 	         "Editor is not active. Holding a key does not repeat the action."},
+	        {"View > Play State",
+	         "Inspect the live character position, vertical velocity and "
+	         "grounded state, plus the rendered camera pose and lens. The "
+	         "panel is read-only and can be opened during Play. Pause freezes "
+	         "the values; Step shows the next simulated frame. Stop clears the "
+	         "live display."},
 	        {"Game > Restart",
 	         "Reset the player, physics and cameras to the state captured when "
 	         "Play started. The first frame shows that initial state. Restart "

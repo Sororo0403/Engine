@@ -110,6 +110,12 @@ class EditorPlayMode {
 		return session_.IsPlaying();
 	}
 
+	/// <summary>
+	/// 状態表示用に再生セッションを取得する
+	/// </summary>
+	/// <returns>この再生モードの生存中に有効な読み取り専用のセッション</returns>
+	const EditorPlaySession &GetSession() const;
+
   private:
 	EditorPlaySession session_;
 	SceneRenderer renderer_;

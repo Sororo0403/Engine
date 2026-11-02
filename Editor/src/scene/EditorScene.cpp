@@ -50,6 +50,7 @@ bool EditorScene::Initialize() {
 	gizmo_.Cancel();
 	gizmoEditActive_ = false;
 	performancePanel_.Reset();
+	playStatePanel_.Reset();
 	playInputWasActive_ = false;
 	preferences_ = EditorPreferences{};
 	canSavePreferences_ = preferences_.Load();
@@ -190,6 +191,8 @@ bool EditorScene::Update(float deltaTime) {
 			          "failed. Your editing scene is unchanged.");
 		}
 
+		playStatePanel_.Draw(ui_, playMode_.GetSession());
+
 		UpdateDialogs();
 		return true;
 	}
@@ -204,6 +207,7 @@ bool EditorScene::Update(float deltaTime) {
 
 	controlsPanel_.Draw();
 	consolePanel_.Draw(ui_);
+	playStatePanel_.Draw(ui_, playMode_.GetSession());
 
 	const bool wasBusy = IsBusy();
 
@@ -710,6 +714,7 @@ void EditorScene::Finalize() {
 	}
 
 	performancePanel_.Reset();
+	playStatePanel_.Reset();
 	playMode_.Finalize();
 	sceneViewPanel_.Finalize();
 	renderer_.Finalize();
@@ -1001,6 +1006,8 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		ui_.EndMenu();
 	}
 
+	ui_.EndDisabled();
+
 	if (ui_.BeginMenu("View")) {
 		const bool enabled = !IsBusy() && !document_.GetHistory().IsEditing() &&
 		                     !gizmo_.IsUsing() &&
@@ -1091,10 +1098,13 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			performancePanel_.Show();
 		}
 
+		if (ui_.MenuItem("Play State...", nullptr,
+		                 stage_ == DialogStage::IDLE && !exitQueued_)) {
+			playStatePanel_.Show();
+		}
+
 		ui_.EndMenu();
 	}
-
-	ui_.EndDisabled();
 
 	if (ui_.BeginMenu("Help")) {
 		if (ui_.MenuItem("Controls...", nullptr, !IsBusy())) {

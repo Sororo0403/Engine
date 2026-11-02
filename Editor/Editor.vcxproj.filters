@@ -522,4 +522,12 @@
       <Filter>src\panels</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\panels\PlayStatePanel.h">
+      <Filter>include\panels</Filter>
+    </ClInclude>
+    <ClCompile Include="src\panels\PlayStatePanel.cpp">
+      <Filter>src\panels</Filter>
+    </ClCompile>
+  </ItemGroup>
 </Project>
