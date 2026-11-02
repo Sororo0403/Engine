@@ -249,6 +249,11 @@ class EditorScene final : public IScene {
 	void SelectModelInstances(const std::filesystem::path &path);
 
 	/// <summary>
+	/// 選択物体を直接追従するFollow Cameraをまとめて選択し、Hierarchyで表示する
+	/// </summary>
+	void SelectFollowingCameras();
+
+	/// <summary>
 	/// Sceneビューの位置と向きから固定Cameraを作り、選択とHierarchy表示を更新する
 	/// </summary>
 	void CreateCameraFromView();

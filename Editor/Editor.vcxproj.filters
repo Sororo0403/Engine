@@ -570,4 +570,12 @@
       <Filter>src\gameplay</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\gameplay\FollowCameraUsage.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
+    <ClCompile Include="src\gameplay\FollowCameraUsage.cpp">
+      <Filter>src\gameplay</Filter>
+    </ClCompile>
+  </ItemGroup>
 </Project>

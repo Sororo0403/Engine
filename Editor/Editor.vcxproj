@@ -326,4 +326,8 @@ exit /b 0</Command>
     <ClInclude Include="include\gameplay\FollowCameraPreview.h" />
     <ClCompile Include="src\gameplay\FollowCameraPreview.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\gameplay\FollowCameraUsage.h" />
+    <ClCompile Include="src\gameplay\FollowCameraUsage.cpp" />
+  </ItemGroup>
 </Project>

@@ -333,6 +333,15 @@ void ControlsPanel::Draw() {
 	         "Self-reference, "
 	         "circular chains and broken target chains cannot be selected. "
 	         "Target changes support Undo/Redo."},
+	        {"Hierarchy menu > Select Follow Cameras",
+	         "Select objects that directly follow any selected target. "
+	         "Hidden objects and incomplete Follow Camera components are "
+	         "included. "
+	         "Indirect followers are not included. Hierarchy filters clear "
+	         "to reveal the result; visibility and Inspector locks stay "
+	         "unchanged. "
+	         "Selection adds no Undo operation and pending edits finish "
+	         "first."},
 	        {"Inspector > Follow Camera > Select Target",
 	         "Select only the referenced object and reveal it in Hierarchy. "
 	         "This clears Hierarchy filters but keeps hidden models hidden. "

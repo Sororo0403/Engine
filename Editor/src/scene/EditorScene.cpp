@@ -5,6 +5,7 @@
 #include "camera/CameraObjects.h"
 #include "core/EngineContext.h"
 #include "core/Logger.h"
+#include "gameplay/FollowCameraUsage.h"
 #include "gameplay/PlayShortcuts.h"
 #include "gameplay/SampleStage.h"
 #include "graphics/model/ModelManager.h"
@@ -341,6 +342,9 @@ bool EditorScene::Update(float deltaTime) {
 					break;
 				case HierarchyPanel::Action::FRAME_SELECTED:
 					frameRequest_ = FrameRequest::SELECTED;
+					break;
+				case HierarchyPanel::Action::SELECT_FOLLOW_CAMERAS:
+					SelectFollowingCameras();
 					break;
 				case HierarchyPanel::Action::HIDE_OBJECTS:
 					ChangeVisibility(selection_.GetIds(), false);
@@ -1827,6 +1831,19 @@ void EditorScene::SelectModelInstances(const std::filesystem::path &path) {
 		Logger::Error(
 		    std::format("EditorScene::SelectModelInstances: {}", error.what()));
 		ShowError("Could not select model instances. See the log for details.");
+	}
+}
+
+void EditorScene::SelectFollowingCameras() {
+	FinishEdit();
+
+	try {
+		FollowCameraUsage::SelectObjects(document_.GetScene(), selection_);
+		hierarchyPanel_.RequestReveal(selection_.GetActiveId());
+	} catch (const std::exception &error) {
+		Logger::Error(std::format("EditorScene::SelectFollowingCameras: {}",
+		                          error.what()));
+		ShowError("Could not select Follow Cameras. See the log for details.");
 	}
 }
 
