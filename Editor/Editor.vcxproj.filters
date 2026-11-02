@@ -594,4 +594,12 @@
       <Filter>src\camera</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\selection\ObjectMarkers.h">
+      <Filter>include\selection</Filter>
+    </ClInclude>
+    <ClCompile Include="src\selection\ObjectMarkers.cpp">
+      <Filter>src\selection</Filter>
+    </ClCompile>
+  </ItemGroup>
 </Project>

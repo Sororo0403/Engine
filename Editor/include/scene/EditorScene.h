@@ -31,6 +31,7 @@
 #include "scene/SceneRenderer.h"
 #include "selection/EditorClipboard.h"
 #include "selection/EditorSelection.h"
+#include "selection/ObjectMarkers.h"
 #include "selection/SelectionBounds.h"
 #include "settings/EditorPreferences.h"
 #include "settings/RecentScenes.h"
@@ -485,6 +486,7 @@ class EditorScene final : public IScene {
 	bool showSelectionBounds_ = true;
 	bool showCameraGuides_ = true;
 	bool showRespawnGuides_ = true;
+	bool showObjectMarkers_ = true;
 	// フォーカス復帰直後の押しっぱなしを、再生操作の押下として扱わない。
 	bool playInputWasActive_ = false;
 
@@ -535,6 +537,7 @@ class EditorScene final : public IScene {
 	Transform selectionGizmoStart_;
 
 	SelectionBounds selectionBounds_;
+	ObjectMarkers objectMarkers_;
 	ColliderBounds colliderBounds_;
 	ColliderBounds::Mode colliderDisplay_ = ColliderBounds::Mode::SELECTED;
 	RespawnPreview respawnPreview_;

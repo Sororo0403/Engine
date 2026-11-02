@@ -338,4 +338,8 @@ exit /b 0</Command>
     <ClInclude Include="include\camera\ObjectFrameBounds.h" />
     <ClCompile Include="src\camera\ObjectFrameBounds.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\selection\ObjectMarkers.h" />
+    <ClCompile Include="src\selection\ObjectMarkers.cpp" />
+  </ItemGroup>
 </Project>

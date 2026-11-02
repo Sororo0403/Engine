@@ -86,9 +86,11 @@ class SceneRenderer {
 	/// </summary>
 	/// <param name="imageX">画像内の横位置。左端0、右端1</param>
 	/// <param name="imageY">画像内の縦位置。上端0、下端1</param>
+	/// <param name="distance">指定時はレイ始点から交点までのワールド距離を設定する。交差なしの場合は保持する</param>
 	/// <returns>交差した物体のID。交差なしの場合は0</returns>
 	/// <remarks>Update成功後、Drawより前に呼び出す</remarks>
-	SceneObjectId Pick(float imageX, float imageY) const;
+	SceneObjectId Pick(float imageX, float imageY,
+	                   float *distance = nullptr) const;
 
 	/// <summary>
 	/// シーンの描画カメラから、画像内の位置を通るレイを作成する

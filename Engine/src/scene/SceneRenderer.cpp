@@ -153,12 +153,14 @@ bool SceneRenderer::SetCameraPose(const CameraPose &pose) {
 	return world_->SetCameraPose(pose);
 }
 
-SceneObjectId SceneRenderer::Pick(float imageX, float imageY) const {
+SceneObjectId SceneRenderer::Pick(float imageX, float imageY,
+                                  float *distance) const {
 	if (!world_) {
 		return 0;
 	}
 
-	const auto handle = world_->Pick(imageX, imageY);
+	float hitDistance = 0;
+	const auto handle = world_->Pick(imageX, imageY, &hitDistance);
 
 	if (!world_->Contains(handle)) {
 		return 0;
@@ -166,6 +168,10 @@ SceneObjectId SceneRenderer::Pick(float imageX, float imageY) const {
 
 	for (const auto &[id, object] : objects_) {
 		if (object.handle == handle) {
+			if (distance) {
+				*distance = hitDistance;
+			}
+
 			return id;
 		}
 	}

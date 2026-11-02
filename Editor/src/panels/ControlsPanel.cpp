@@ -93,6 +93,17 @@ void ControlsPanel::Draw() {
 	         "Inspect recent frame intervals, FPS and live scene counts. Pause "
 	         "timing to freeze samples; Clear Timing starts a fresh sample "
 	         "window."},
+	        {"View > Object Markers",
+	         "Show small origin boxes for objects without models. Camera "
+	         "markers are cyan, Collider markers green and Empty markers "
+	         "gray; selected markers turn yellow. Click or box-select these "
+	         "markers in Scene, using Ctrl to add or toggle selection. "
+	         "The nearest model or marker wins a click. The marker size stays "
+	         "fixed when the object is scaled; it does not represent collision "
+	         "size. Turning markers off also disables their Scene selection. "
+	         "Visibility applies to models; model-free markers remain "
+	         "available. "
+	         "Markers appear only in Scene and the display choice is saved."},
 	        {"Model-free objects",
 	         "Select Cameras, collider-only objects or Empty objects in "
 	         "Hierarchy, then use the Scene gizmo to move, rotate or scale "
@@ -100,7 +111,7 @@ void ControlsPanel::Draw() {
 	         "present, otherwise a unit box around the object origin. "
 	         "Frame All includes model-free objects. These controls do not "
 	         "add a model or collider; gizmo edits support Undo/Redo. "
-	         "Scene clicking still selects visible models."},
+	         "Scene clicking also selects model-free object markers."},
 	        {"View > Camera View",
 	         "Look from the front, back, left, right, top or bottom in "
 	         "perspective. Center on selected object origins, or the world "

@@ -31,6 +31,7 @@
 #include <exception>
 #include <format>
 #include <imgui.h>
+#include <limits>
 #include <utility>
 #include <vector>
 
@@ -72,6 +73,7 @@ bool EditorScene::Initialize() {
 	showSelectionBounds_ = preferences_.showSelectionBounds;
 	showCameraGuides_ = preferences_.showCameraGuides;
 	showRespawnGuides_ = preferences_.showRespawnGuides;
+	showObjectMarkers_ = preferences_.showObjectMarkers;
 	colliderDisplay_ = preferences_.colliderDisplay;
 	gizmo_.SetSnapSettings(preferences_.snap);
 	gizmo_.SetSnapping(preferences_.snapping);
@@ -667,6 +669,12 @@ bool EditorScene::Update(float deltaTime) {
 		return false;
 	}
 
+	if (showObjectMarkers_ &&
+	    !objectMarkers_.Update(renderer_, scene, selection_.GetIds())) {
+		Logger::Error("EditorScene: 物体の目印を登録できませんでした。");
+		return false;
+	}
+
 	for (const SceneObjectId id : selection_.GetIds()) {
 		if (const auto *object = scene.FindObject(id);
 		    showRespawnGuides_ && object &&
@@ -730,6 +738,7 @@ void EditorScene::Finalize() {
 		current.showSelectionBounds = showSelectionBounds_;
 		current.showCameraGuides = showCameraGuides_;
 		current.showRespawnGuides = showRespawnGuides_;
+		current.showObjectMarkers = showObjectMarkers_;
 		current.colliderDisplay = colliderDisplay_;
 		current.operation = gizmo_.GetOperation();
 		current.space = gizmo_.GetSpace();
@@ -1131,6 +1140,8 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		ImGui::MenuItem("Camera Guides", nullptr, &showCameraGuides_,
 		                !IsBusy());
 		ImGui::MenuItem("Respawn Guides", nullptr, &showRespawnGuides_,
+		                !IsBusy());
+		ImGui::MenuItem("Object Markers", nullptr, &showObjectMarkers_,
 		                !IsBusy());
 
 		if (ui_.BeginMenu("Colliders")) {
@@ -2401,8 +2412,20 @@ bool EditorScene::ApplySceneSelection(
 	using Action = SceneViewPanel::SelectionRequest::Action;
 
 	if (request.action == Action::CLICK) {
-		const SceneObjectId picked =
-		    renderer_.Pick(request.minimum.x, request.minimum.y);
+		float modelDistance = (std::numeric_limits<float>::max)();
+		SceneObjectId picked = renderer_.Pick(
+		    request.minimum.x, request.minimum.y, &modelDistance);
+		Ray ray;
+
+		if (showObjectMarkers_ &&
+		    renderer_.CreatePickingRay(request.minimum.x, request.minimum.y,
+		                               ray)) {
+			if (const auto marker = ObjectMarkers::Pick(document_.GetScene(),
+			                                            ray, modelDistance)) {
+				picked = marker;
+			}
+		}
+
 		return request.additive ? selection_.Toggle(picked)
 		                        : selection_.SelectOnly(picked);
 	}
@@ -2426,14 +2449,14 @@ bool EditorScene::ApplySceneSelection(
 	}
 
 	for (const auto &[id, object] : document_.GetScene().GetObjects()) {
-		if (!object.visible || object.modelPath.empty()) {
-			continue;
-		}
-
 		std::array<DirectX::XMFLOAT3, 8> corners;
+		const bool boundsReady =
+		    object.modelPath.empty()
+		        ? showObjectMarkers_ &&
+		              ObjectMarkers::GetBounds(object, corners)
+		        : object.visible && renderer_.GetObjectBounds(id, corners);
 
-		if (renderer_.GetObjectBounds(id, corners) &&
-		    volume.Intersects(corners) &&
+		if (boundsReady && volume.Intersects(corners) &&
 		    std::find(ids.begin(), ids.end(), id) == ids.end()) {
 			ids.push_back(id);
 		}

@@ -473,7 +473,8 @@ bool RenderWorld::CreatePickingRay(float imageX, float imageY, Ray &ray) const {
 	       impl_->camera_.CreatePickingRay(imageX, imageY, ray);
 }
 
-RenderObjectHandle RenderWorld::Pick(float imageX, float imageY) const {
+RenderObjectHandle RenderWorld::Pick(float imageX, float imageY,
+                                     float *distance) const {
 	if (!impl_->initialized_ || !impl_->prepared_) {
 		return {};
 	}
@@ -556,6 +557,10 @@ RenderObjectHandle RenderWorld::Pick(float imageX, float imageY) const {
 		nearestHandle.worldId_ = impl_->worldId_;
 		nearestHandle.index_ = index;
 		nearestHandle.generation_ = slot.generation_;
+	}
+
+	if (distance && Contains(nearestHandle)) {
+		*distance = nearestDistance;
 	}
 
 	return nearestHandle;
