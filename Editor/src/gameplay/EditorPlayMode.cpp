@@ -30,7 +30,8 @@ bool EditorPlayMode::Initialize() {
 
 EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
                                               bool canStart,
-                                              const GameConfig &config) {
+                                              const GameConfig &config,
+                                              bool canKeepTransforms) {
 	visible_ = false;
 	ready_ = false;
 	viewport_ = {};
@@ -77,6 +78,13 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 
 		if (ui.Button("Step")) {
 			action = Action::STEP;
+		}
+
+		ui.EndDisabled();
+		ui.BeginDisabled(!canKeepTransforms);
+
+		if (ui.Button("Stop and Keep Selected Transforms")) {
+			action = Action::STOP_AND_KEEP_TRANSFORMS;
 		}
 
 		ui.EndDisabled();

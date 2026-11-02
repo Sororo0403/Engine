@@ -471,6 +471,22 @@ class EditorHistory {
 	                   const Transform &transform);
 
 	/// <summary>
+	/// 物体ごとに指定する変更後の変形情報
+	/// </summary>
+	struct TransformEdit {
+		SceneObjectId objectId = 0;
+		Transform transform{};
+	};
+
+	/// <summary>
+	/// 物体ごとに異なる変形情報を一括適用し、1操作として記録する。編集中の値は先に確定する
+	/// </summary>
+	/// <param name="edits">重複しない対象IDと有効な変形情報。回転は正規化して使用する</param>
+	/// <returns>true:全件成功または同値 false:対象・値が無効。失敗時は全対象を保持する</returns>
+	/// <remarks>成功時は物体参照を取得し直す。Transform以外のコンポーネントは保持する</remarks>
+	bool SetTransforms(std::span<const TransformEdit> edits);
+
+	/// <summary>
 	/// 全対象へ同じ移動量を加え、1操作として記録する。編集中の内容は先に確定する
 	/// </summary>
 	/// <param name="objectIds">重複のない対象ID一覧</param>

@@ -8,6 +8,7 @@ enum class EditorPlayAction {
 	PLAY,
 	RESTART,
 	STOP,
+	STOP_AND_KEEP_TRANSFORMS,
 	TOGGLE_PAUSE,
 	STEP,
 	RENDER_ERROR,

@@ -392,6 +392,19 @@ void ControlsPanel::Draw() {
 	         "exported without requiring a scene save. "
 	         "Game export includes assigned material files and their "
 	         "textures."},
+	        {"Game > Stop and Keep Selected Transforms",
+	         "Select objects in the playing Hierarchy or Scene, then stop "
+	         "with this button to keep their current position, rotation and "
+	         "scale in the editing scene. All selected objects must exist "
+	         "in both scenes and have valid Transforms. Failure keeps Play "
+	         "and all editing Transforms unchanged. One Undo/Redo restores "
+	         "the batch; identical values stop without adding history. "
+	         "Other objects, components, editing selection, Inspector locks "
+	         "and clipboard data are preserved. Follow Camera offsets and "
+	         "Respawn settings are not copied. Normal Stop discards runtime "
+	         "changes. No automatic save occurs. Pause first to inspect a "
+	         "specific frame. Unavailable without runtime selection or while "
+	         "another dialog is open."},
 	        {"Materials > Shading",
 	         "Lit applies directional and ambient lighting. Unlit shows the "
 	         "texture, Base Color and per-object Color Tint without lighting; "

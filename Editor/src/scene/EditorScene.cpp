@@ -141,7 +141,9 @@ bool EditorScene::Update(float deltaTime) {
 		playMode_.Stop();
 	}
 
-	auto playAction = playMode_.DrawUI(ui_, !IsBusy(), exportConfig_);
+	auto playAction = playMode_.DrawUI(ui_, !IsBusy(), exportConfig_,
+	                                   !IsBusy() && playSelectionActive_ &&
+	                                       playSelection_.GetCount() != 0);
 	const bool playShortcutEnabled =
 	    input_.IsActive() && playInputWasActive_ && !exitQueued_ &&
 	    action == EditorAction::NONE && !cameraSettingsRequested_ &&
@@ -161,6 +163,11 @@ bool EditorScene::Update(float deltaTime) {
 		playAction =
 		    PlayShortcuts::Read(input_.GetKeyboard(), playMode_.IsPlaying(),
 		                        playMode_.IsPaused(), playShortcutEnabled);
+	}
+
+	if (playAction == EditorPlayMode::Action::STOP_AND_KEEP_TRANSFORMS &&
+	    !IsBusy()) {
+		StopAndKeepSelectedTransforms();
 	}
 
 	if (playAction == EditorPlayMode::Action::STOP) {
@@ -3367,6 +3374,47 @@ bool EditorScene::UpdatePlaySceneView(float deltaTime, EditorAction action,
 
 	playSceneReady_ = playSceneRenderer_.UpdateDebugLines();
 	return playSceneReady_;
+}
+
+void EditorScene::StopAndKeepSelectedTransforms() {
+	if (!playMode_.IsPlaying() || !playSelectionActive_ ||
+	    playSelection_.GetCount() == 0) {
+		return;
+	}
+
+	try {
+		const auto &runtime = playMode_.GetSession().GetScene();
+		std::vector<EditorHistory::TransformEdit> edits;
+		edits.reserve(playSelection_.GetCount());
+
+		for (const auto id : playSelection_.GetIds()) {
+			const auto *object = runtime.FindObject(id);
+
+			if (!object) {
+				ShowError("Could not find every selected runtime object. "
+				          "Play and the editing scene were kept.");
+				return;
+			}
+
+			edits.push_back({id, object->transform});
+		}
+
+		FinishEdit();
+
+		if (!document_.GetHistory().SetTransforms(edits)) {
+			ShowError("Could not keep all selected Transforms. Check the "
+			          "runtime and editing objects. Play and the editing scene "
+			          "were kept.");
+			return;
+		}
+
+		playMode_.Stop();
+	} catch (const std::exception &error) {
+		Logger::Error(std::format(
+		    "EditorScene::StopAndKeepSelectedTransforms: {}", error.what()));
+		ShowError("Could not keep the runtime Transforms. Play was kept. "
+		          "See the log for details.");
+	}
 }
 
 void EditorScene::ClearPlaySelection() {

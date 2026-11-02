@@ -487,6 +487,11 @@ class EditorScene final : public IScene {
 	void ClearPlaySelection();
 
 	/// <summary>
+	/// 選択中の再生物体のTransformを全件検証して編集シーンへ1操作で反映し、成功時だけ停止する
+	/// </summary>
+	void StopAndKeepSelectedTransforms();
+
+	/// <summary>
 	/// 選択中の全物体を複製し、複製した物体を選択する
 	/// </summary>
 	/// <remarks>呼び出し前にFinishEditを呼び出す</remarks>
