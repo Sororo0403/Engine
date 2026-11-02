@@ -145,7 +145,23 @@ bool MaterialPanel::SelectTexture(const std::filesystem::path &path) {
 		}
 
 		auto text = PathUtils::ToUtf8(relative);
-		// パスと表示文字列の準備が全て成功してから、編集中の設定を置き換える。
+		DraftState next{draft_, text, true};
+		next.asset.baseColorTexture = relative;
+
+		if (next.Matches(draft_, texture_, textureValid_)) {
+			error_.clear();
+			return true;
+		}
+
+		CommitDraft();
+		const auto index = draftCursor_ + 1;
+		draftStates_.reserve(index + 1);
+		draftStates_.erase(draftStates_.begin() +
+		                       static_cast<std::ptrdiff_t>(index),
+		                   draftStates_.end());
+		draftStates_.push_back(std::move(next));
+		draftCursor_ = index;
+		// 履歴と表示文字列の準備が全て成功してから、編集中の値を置き換える。
 		draft_.baseColorTexture.swap(relative);
 		texture_.swap(text);
 		textureValid_ = true;

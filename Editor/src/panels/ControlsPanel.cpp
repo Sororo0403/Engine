@@ -251,6 +251,16 @@ void ControlsPanel::Draw() {
 	DrawSection(
 	    "Model assets",
 	    {
+	        {"Assets > Asset Type > Textures",
+	         "Browse images by folder or search across all folders. Open a "
+	         "material first, then double-click an image or use Use Texture "
+	         "in Material to set its base-color image. The row context menu "
+	         "has the same action. This edits the draft in one Undo/Redo step; "
+	         "it does not save the material or change scene history. Paths "
+	         "are relative to the material file. The image stays shared. "
+	         "Identical choices add no history. Missing files keep the current "
+	         "draft and show an error in Materials. Actions are unavailable "
+	         "without an open material, during Play or modal operations."},
 	        {"Assets > Asset Type > Materials",
 	         "Browse material assets by folder or search across all folders. "
 	         "Double-click a material, choose Open Material, or use its "

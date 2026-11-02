@@ -357,13 +357,20 @@ bool EditorScene::Update(float deltaTime) {
 		assetsPanel_.RequestReveal(inspectorPanel_.GetAssetRevealPath());
 	}
 
-	const auto requestedModelPath = assetsPanel_.Draw(ui_, assets_);
+	const bool canSetTexture = !materialPanel_.GetFilePath().empty() &&
+	                           !gizmo_.IsUsing() && !gizmoEditActive_ &&
+	                           !sceneViewPanel_.IsSelecting();
+	const auto requestedModelPath =
+	    assetsPanel_.Draw(ui_, assets_, canSetTexture);
+	const auto requestedTexture = assetsPanel_.GetTextureSelectionRequest();
 	const auto requestedInstances = assetsPanel_.GetInstanceSelectionRequest();
 
 	if (materialEditPath.empty()) {
 		materialEditPath = assetsPanel_.GetMaterialEditRequest();
 	}
 
+	const bool materialEditRequested =
+	    !materialEditPath.empty() || !requestedTexture.empty();
 	const bool canAssignMaterial =
 	    HasSelection() && !gizmo_.IsUsing() && !gizmoEditActive_ &&
 	    !sceneViewPanel_.IsSelecting() &&
@@ -533,7 +540,7 @@ bool EditorScene::Update(float deltaTime) {
 		    requestedInstances.empty() && requestedModelPath.empty() &&
 		    modelDrop.path.empty() && modelRequest.objectId == 0 &&
 		    visibilityRequest.objectId == 0 && colliderFitRequest == 0 &&
-		    !hasObjectRequest && materialEditPath.empty() && !historyRequest &&
+		    !hasObjectRequest && !materialEditRequested && !historyRequest &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 			AssignMaterialToSelection(*materialAssignment);
 		}
@@ -543,7 +550,7 @@ bool EditorScene::Update(float deltaTime) {
 		    requestedModelPath.empty() && modelDrop.path.empty() &&
 		    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
 		    colliderFitRequest == 0 && !hasObjectRequest &&
-		    materialEditPath.empty() && !historyRequest &&
+		    !materialEditRequested && !historyRequest &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 			SelectMaterialUsers(requestedMaterialUsers);
 		}
@@ -578,6 +585,22 @@ bool EditorScene::Update(float deltaTime) {
 			OpenMaterialForEdit(materialEditPath);
 		}
 
+		if (!IsBusy() && action == EditorAction::NONE &&
+		    !requestedTexture.empty() && materialEditPath.empty() &&
+		    !hasObjectRequest && modelRequest.objectId == 0 &&
+		    visibilityRequest.objectId == 0 && colliderFitRequest == 0 &&
+		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
+			try {
+				materialPanel_.SelectTexture(requestedTexture);
+				materialPanel_.RequestFocus();
+			} catch (const std::exception &error) {
+				Logger::Error(std::format("EditorScene::SelectTexture: {}",
+				                          error.what()));
+				ShowError("Could not select the texture. Your material draft "
+				          "was kept.");
+			}
+		}
+
 		if (!IsBusy()) {
 			if (historyRequest && action == EditorAction::NONE &&
 			    colliderFitRequest == 0 && requestedModelPath.empty() &&
@@ -585,7 +608,7 @@ bool EditorScene::Update(float deltaTime) {
 			    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
 			    !hasObjectRequest && !materialAssignment &&
 			    checkedObject == 0 && requestedMaterialUsers.empty() &&
-			    materialEditPath.empty() &&
+			    !materialEditRequested &&
 			    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 				RestoreHistory(*historyRequest);
 			}
@@ -595,7 +618,7 @@ bool EditorScene::Update(float deltaTime) {
 			    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
 			    !hasObjectRequest && !materialAssignment &&
 			    checkedObject == 0 && requestedMaterialUsers.empty() &&
-			    materialEditPath.empty() && !historyRequest) {
+			    !materialEditRequested && !historyRequest) {
 				const bool objectPanelFocused =
 				    hierarchyRequest.windowFocused ||
 				    sceneViewPanel_.GetInput().windowFocused;
@@ -617,13 +640,13 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	const bool inputBlocked =
-	    wasBusy || IsBusy() || action != EditorAction::NONE ||
-	    checkedObject != 0 || materialAssignment.has_value() ||
-	    !requestedModelPath.empty() || !requestedInstances.empty() ||
-	    !requestedMaterialUsers.empty() || !modelDrop.path.empty() ||
-	    modelRequest.objectId != 0 || visibilityRequest.objectId != 0 ||
-	    colliderFitRequest != 0 || hasObjectRequest ||
-	    historyRequest.has_value() ||
+	    wasBusy || IsBusy() || materialEditRequested ||
+	    action != EditorAction::NONE || checkedObject != 0 ||
+	    materialAssignment.has_value() || !requestedModelPath.empty() ||
+	    !requestedInstances.empty() || !requestedMaterialUsers.empty() ||
+	    !modelDrop.path.empty() || modelRequest.objectId != 0 ||
+	    visibilityRequest.objectId != 0 || colliderFitRequest != 0 ||
+	    hasObjectRequest || historyRequest.has_value() ||
 	    hierarchyRequest.action != HierarchyPanel::Action::NONE;
 
 	ViewportInput viewport = sceneViewPanel_.GetInput();

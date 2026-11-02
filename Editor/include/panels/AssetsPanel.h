@@ -7,7 +7,7 @@ class AssetDatabase;
 class ImGuiSystem;
 
 /// <summary>
-/// モデル・材質アセットの一覧・検索・選択と、配置・材質編集要求を管理する
+/// モデル・材質・画像アセットの一覧・検索・選択と、配置・材質編集要求を管理する
 /// </summary>
 class AssetsPanel {
   public:
@@ -22,8 +22,10 @@ class AssetsPanel {
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
 	/// <param name="assets">一覧を表示するアセットデータベース</param>
+	/// <param name="canSetTexture">材質の下書きへ画像を設定する操作を許可するか</param>
 	/// <returns>配置を要求したモデルの相対パス。要求がない場合は空のパス</returns>
-	std::filesystem::path Draw(const ImGuiSystem &ui, AssetDatabase &assets);
+	std::filesystem::path Draw(const ImGuiSystem &ui, AssetDatabase &assets,
+	                           bool canSetTexture = false);
 
 	/// <summary>
 	/// このフレームに使用物体の選択を要求したモデルを取得する
@@ -44,6 +46,12 @@ class AssetsPanel {
 	const std::filesystem::path &GetMaterialUsageSelectionRequest() const;
 
 	/// <summary>
+	/// このフレームに材質の下書きへ設定することを要求した画像を取得する
+	/// </summary>
+	/// <returns>画像の相対パス。要求なしは空。次のDrawまたはClearまで有効</returns>
+	const std::filesystem::path &GetTextureSelectionRequest() const;
+
+	/// <summary>
 	/// 選択・検索・表示要求をクリアし、モデル一覧と検索先のルートフォルダへ戻る
 	/// </summary>
 	void Clear();
@@ -52,12 +60,12 @@ class AssetsPanel {
 	/// <summary>
 	/// 一覧に表示するアセットの種類
 	/// </summary>
-	enum class AssetType { MODEL, MATERIAL };
+	enum class AssetType { MODEL, MATERIAL, TEXTURE };
 
 	/// <summary>
 	/// 表示の種類を切り替え、前の種類の選択と操作要求を解除する
 	/// </summary>
-	/// <param name="type">表示するモデルまたは材質</param>
+	/// <param name="type">表示するモデル・材質・画像</param>
 	void SetAssetType(AssetType type);
 
 	/// <summary>
@@ -76,6 +84,7 @@ class AssetsPanel {
 	                 const AssetDatabase &assets);
 
 	AssetType type_ = AssetType::MODEL;
+	std::filesystem::path textureSelectionPath_;
 	std::filesystem::path materialEditPath_;
 	std::filesystem::path materialUsageSelectionPath_;
 	std::filesystem::path selectedPath_;

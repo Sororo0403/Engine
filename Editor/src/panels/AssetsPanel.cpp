@@ -28,6 +28,7 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	instanceSelectionPath_.clear();
 	materialEditPath_.clear();
 	materialUsageSelectionPath_.clear();
+	textureSelectionPath_.clear();
 	revealMessage_.clear();
 	scrollToSelected_ = false;
 	scrollToTop_ = true;
@@ -84,10 +85,12 @@ bool AssetsPanel::SelectModel(const std::filesystem::path &path,
 }
 
 std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
-                                        AssetDatabase &assets) {
+                                        AssetDatabase &assets,
+                                        bool canSetTexture) {
 	instanceSelectionPath_.clear();
 	materialEditPath_.clear();
 	materialUsageSelectionPath_.clear();
+	textureSelectionPath_.clear();
 
 	if (!revealPath_.empty()) {
 		ImGui::SetNextWindowCollapsed(false);
@@ -155,13 +158,16 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 	ui.Text(PathUtils::ToUtf8(assets.GetRootDirectory() / currentDirectory_));
 	ImGui::SetNextItemWidth(160.0f);
 
-	if (ImGui::BeginCombo("Asset Type",
-	                      type_ == AssetType::MODEL ? "Models" : "Materials")) {
-		for (const auto type : {AssetType::MODEL, AssetType::MATERIAL}) {
-			const auto *label =
-			    type == AssetType::MODEL ? "Models" : "Materials";
+	const auto typeLabel = [](AssetType type) {
+		return type == AssetType::MODEL      ? "Models"
+		       : type == AssetType::MATERIAL ? "Materials"
+		                                     : "Textures";
+	};
 
-			if (ui.Selectable(label, type_ == type)) {
+	if (ImGui::BeginCombo("Asset Type", typeLabel(type_))) {
+		for (const auto type :
+		     {AssetType::MODEL, AssetType::MATERIAL, AssetType::TEXTURE}) {
+			if (ui.Selectable(typeLabel(type), type_ == type)) {
 				SetAssetType(type);
 			}
 		}
@@ -180,8 +186,9 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 	ImGui::TextDisabled("%s", filter_.empty() ? "Click a folder to open it."
 	                                          : "Searching all folders.");
 
-	const auto &entries =
-	    type_ == AssetType::MODEL ? assets.GetModels() : assets.GetMaterials();
+	const auto &entries = type_ == AssetType::MODEL      ? assets.GetModels()
+	                      : type_ == AssetType::MATERIAL ? assets.GetMaterials()
+	                                                     : assets.GetTextures();
 
 	if (!selectedPath_.empty() && std::find(entries.begin(), entries.end(),
 	                                        selectedPath_) == entries.end()) {
@@ -272,6 +279,9 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 				if (type_ == AssetType::MATERIAL &&
 				    ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
 					materialEditPath_ = assetPath;
+				} else if (type_ == AssetType::TEXTURE && canSetTexture &&
+				           ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+					textureSelectionPath_ = assetPath;
 				}
 			}
 
@@ -285,16 +295,24 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 					materialEditPath_ = assetPath;
 				}
 
-				if (ui.MenuItem("Select Instances", nullptr, true)) {
-					if (type_ == AssetType::MODEL) {
-						instanceSelectionPath_ = assetPath;
-					} else {
-						materialUsageSelectionPath_ = assetPath;
+				if (type_ == AssetType::TEXTURE) {
+					if (ui.MenuItem("Use Texture in Material", nullptr,
+					                canSetTexture)) {
+						textureSelectionPath_ = assetPath;
 					}
-				}
+				} else {
+					if (ui.MenuItem("Select Instances", nullptr, true)) {
+						if (type_ == AssetType::MODEL) {
+							instanceSelectionPath_ = assetPath;
+						} else {
+							materialUsageSelectionPath_ = assetPath;
+						}
+					}
 
-				ImGui::SetItemTooltip("Select all objects using this asset, "
-				                      "including hidden objects.");
+					ImGui::SetItemTooltip(
+					    "Select all objects using this asset, "
+					    "including hidden objects.");
+				}
 				ImGui::EndPopup();
 			}
 
@@ -336,21 +354,30 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 		if (ui.Button("Add to Scene")) {
 			requestedPath = selectedPath_;
 		}
-	} else if (ui.Button("Open Material")) {
+	} else if (type_ == AssetType::MATERIAL && ui.Button("Open Material")) {
 		materialEditPath_ = selectedPath_;
 	}
 
-	if (ui.Button("Select Instances")) {
-		if (type_ == AssetType::MODEL) {
-			instanceSelectionPath_ = selectedPath_;
-		} else {
-			materialUsageSelectionPath_ = selectedPath_;
+	if (type_ == AssetType::TEXTURE) {
+		ui.BeginDisabled(!canSetTexture);
+
+		if (ui.Button("Use Texture in Material")) {
+			textureSelectionPath_ = selectedPath_;
 		}
+
+		ui.EndDisabled();
+	} else {
+		if (ui.Button("Select Instances")) {
+			if (type_ == AssetType::MODEL) {
+				instanceSelectionPath_ = selectedPath_;
+			} else {
+				materialUsageSelectionPath_ = selectedPath_;
+			}
+		}
+
+		ImGui::SetItemTooltip(
+		    "Select all objects using this asset, including hidden objects.");
 	}
-
-	ImGui::SetItemTooltip(
-	    "Select all objects using this asset, including hidden objects.");
-
 	ui.EndDisabled();
 
 	ui.EndWindow();
@@ -370,10 +397,15 @@ AssetsPanel::GetMaterialUsageSelectionRequest() const {
 	return materialUsageSelectionPath_;
 }
 
+const std::filesystem::path &AssetsPanel::GetTextureSelectionRequest() const {
+	return textureSelectionPath_;
+}
+
 void AssetsPanel::Clear() {
 	type_ = AssetType::MODEL;
 	materialEditPath_.clear();
 	materialUsageSelectionPath_.clear();
+	textureSelectionPath_.clear();
 	selectedPath_.clear();
 	instanceSelectionPath_.clear();
 	currentDirectory_.clear();
