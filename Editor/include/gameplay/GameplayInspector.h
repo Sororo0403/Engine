@@ -1,5 +1,6 @@
 #pragma once
 
+#include "gameplay/FollowTargetPicker.h"
 #include "scene/SceneObjectId.h"
 
 class ImGuiSystem;
@@ -22,5 +23,12 @@ class GameplayInspector {
 	/// <param name="history">編集履歴</param>
 	/// <returns>true:変更あり false:変更なし</returns>
 	bool Draw(const ImGuiSystem &ui, const Scene &scene, SceneObjectId id,
-	          SceneObject &object, EditorHistory &history) const;
+	          SceneObject &object, EditorHistory &history);
+	/// <summary>
+	/// コンポーネント選択UIの検索状態を解除する
+	/// </summary>
+	void Clear() noexcept;
+
+  private:
+	FollowTargetPicker targetPicker_;
 };

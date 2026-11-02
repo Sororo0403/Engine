@@ -106,6 +106,7 @@ void InspectorPanel::RequestRename(SceneObjectId objectId) {
 }
 
 void InspectorPanel::Clear() {
+	gameplayInspector_.Clear();
 	lockedObjectId_ = 0;
 	renameObjectId_ = 0;
 	rotationObjectId_ = 0;
@@ -401,8 +402,8 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 		                  cameraRequest.objectId};
 	}
 
-	changed |= GameplayInspector{}.Draw(ui, scene, inspectedObjectId, *object,
-	                                    history);
+	changed |=
+	    gameplayInspector_.Draw(ui, scene, inspectedObjectId, *object, history);
 
 	ui.EndWindow();
 	return changed;

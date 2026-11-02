@@ -304,6 +304,12 @@ void ControlsPanel::Draw() {
 	         "Self-reference, "
 	         "circular chains and broken target chains cannot be selected. "
 	         "Target changes support Undo/Redo."},
+	        {"Inspector > Follow Camera > Target > Search",
+	         "Filter targets by name or ID. ASCII letter case is ignored. "
+	         "Hidden objects remain valid candidates. None always clears the "
+	         "target. Search and cancellation do not change the scene; "
+	         "choosing a different target creates one Undo operation. "
+	         "Reopening starts a fresh search."},
 	        {"Selected Respawn in Scene",
 	         "The cyan cross marks the respawn position. The red square marks "
 	         "Fall Below Y near that point; the height applies everywhere, "

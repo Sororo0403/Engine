@@ -1,5 +1,4 @@
 #include "gameplay/GameplayInspector.h"
-#include "gameplay/SceneCameraUtils.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "history/EditorHistory.h"
 #include "scene/Scene.h"
@@ -46,7 +45,7 @@ bool ApplyField(EditorHistory &history, SceneObjectId id,
 
 bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
                              SceneObjectId id, SceneObject &object,
-                             EditorHistory &history) const {
+                             EditorHistory &history) {
 	const auto scope = std::to_string(id);
 	ImGui::PushID(scope.c_str());
 	ImGui::PushID("GameplayInspector");
@@ -85,43 +84,12 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 			ImGui::TextWrapped("Camera is missing.");
 		}
 
-		const auto *target = scene.FindObject(object.followCamera->target);
-		const auto preview =
-		    target ? target->name + " (ID " +
-		                 std::to_string(object.followCamera->target) + ")"
-		    : object.followCamera->target == 0
-		        ? std::string{"None"}
-		        : "Missing target (ID " +
-		              std::to_string(object.followCamera->target) + ")";
-
-		if (ImGui::BeginCombo("Target", preview.c_str())) {
-			if (ImGui::Selectable("None###NoFollowTarget",
-			                      object.followCamera->target == 0)) {
-				auto edited = *object.followCamera;
-				edited.target = 0;
-				changed |= history.SetFollowCamera(id, edited);
-			}
-
-			for (const auto &[targetId, candidate] : scene.GetObjects()) {
-				const auto label = candidate.name + " (ID " +
-				                   std::to_string(targetId) + ")###" +
-				                   std::to_string(targetId);
-				const bool allowed =
-				    SceneCameraUtils::CanSetFollowTarget(scene, id, targetId);
-				ImGui::BeginDisabled(!allowed);
-
-				if (ImGui::Selectable(label.c_str(),
-				                      targetId ==
-				                          object.followCamera->target)) {
-					auto edited = *object.followCamera;
-					edited.target = targetId;
-					changed |= history.SetFollowCamera(id, edited);
-				}
-
-				ImGui::EndDisabled();
-			}
-
-			ImGui::EndCombo();
+		if (const auto target =
+		        targetPicker_.Draw(ui, scene, id, object.followCamera->target);
+		    target && *target != object.followCamera->target) {
+			auto edited = *object.followCamera;
+			edited.target = *target;
+			changed |= history.SetFollowCamera(id, edited);
 		}
 
 		const auto *currentTarget =
@@ -194,4 +162,8 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 	ImGui::PopID();
 	ImGui::PopID();
 	return changed;
+}
+
+void GameplayInspector::Clear() noexcept {
+	targetPicker_.Clear();
 }
