@@ -18,6 +18,7 @@ class EditorPreferences {
 	bool showSelectionBounds = true;
 	bool showCameraGuides = true;
 	bool showRespawnGuides = true;
+	bool showJumpGuide = false;
 	bool showObjectMarkers = true;
 	ColliderBounds::Mode colliderDisplay = ColliderBounds::Mode::SELECTED;
 	bool snapping = false;

@@ -41,6 +41,7 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 		// 補助線の表示設定がない旧ファイルでは、従来どおり表示する。
 		loaded.showCameraGuides = json.value("showCameraGuides", true);
 		loaded.showRespawnGuides = json.value("showRespawnGuides", true);
+		loaded.showJumpGuide = json.value("showJumpGuide", false);
 		loaded.showObjectMarkers = json.value("showObjectMarkers", true);
 
 		// 旧設定には従来と同じ選択物体のみの表示を適用する。
@@ -263,6 +264,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		    {"showSelectionBounds", showSelectionBounds},
 		    {"showCameraGuides", showCameraGuides},
 		    {"showRespawnGuides", showRespawnGuides},
+		    {"showJumpGuide", showJumpGuide},
 		    {"showObjectMarkers", showObjectMarkers},
 		    {"colliderDisplay",
 		     colliderDisplay == ColliderBounds::Mode::NONE  ? "none"
@@ -316,6 +318,7 @@ bool EditorPreferences::operator==(const EditorPreferences &other) const {
 	       showSelectionBounds == other.showSelectionBounds &&
 	       showCameraGuides == other.showCameraGuides &&
 	       showRespawnGuides == other.showRespawnGuides &&
+	       showJumpGuide == other.showJumpGuide &&
 	       showObjectMarkers == other.showObjectMarkers &&
 	       snapping == other.snapping && operation == other.operation &&
 	       space == other.space &&

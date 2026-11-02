@@ -802,6 +802,18 @@ void ControlsPanel::Draw() {
 	         "survives "
 	         "New/Open. Inspector locks and selection are preserved. Pending "
 	         "edits finish first. Editing is unavailable during Play."},
+	        {"View > Character Jump Guide",
+	         "Preview a jump from the active selected Character Controller "
+	         "at rest: white stays in place, red moves along world X and blue "
+	         "along world Z. A valid Collider and grounded starting position "
+	         "are required. Lines follow the object origin using actual "
+	         "120 Hz movement and all static Colliders, including hidden ones. "
+	         "Green endpoints land, red endpoints reach the Respawn fall "
+	         "height, and yellow endpoints reach the 3-second preview limit. "
+	         "The preview does not teleport, replay current input or validate "
+	         "the whole scene. It changes no scene data, selection or history. "
+	         "Off by default; the preference is saved. Available while editing "
+	         "only. Use Play to test other movement directions and timing."},
 	        {"Inspector > Character Controller > Jump Grace",
 	         "Coyote Time allows jumping shortly after leaving a platform. "
 	         "Jump Buffer Time keeps a press made before landing and consumes "

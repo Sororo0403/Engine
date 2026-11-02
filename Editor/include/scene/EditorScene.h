@@ -10,6 +10,7 @@
 #include "dialogs/SaveChangesDialog.h"
 #include "dialogs/SceneFileDialog.h"
 #include "dialogs/SceneReloadDialog.h"
+#include "gameplay/CharacterJumpPreview.h"
 #include "gameplay/EditorPlayMode.h"
 #include "gameplay/FollowCameraPreview.h"
 #include "gameplay/RespawnPreview.h"
@@ -614,6 +615,7 @@ class EditorScene final : public IScene {
 	bool showSelectionBounds_ = true;
 	bool showCameraGuides_ = true;
 	bool showRespawnGuides_ = true;
+	bool showJumpGuide_ = false;
 	bool showObjectMarkers_ = true;
 	// フォーカス復帰直後の押しっぱなしを、再生操作の押下として扱わない。
 	bool playInputWasActive_ = false;
@@ -680,6 +682,7 @@ class EditorScene final : public IScene {
 	ColliderBounds colliderBounds_;
 	ColliderBounds::Mode colliderDisplay_ = ColliderBounds::Mode::SELECTED;
 	RespawnPreview respawnPreview_;
+	CharacterJumpPreview jumpPreview_;
 	CameraFrustum cameraFrustum_;
 	FollowCameraPreview followCameraPreview_;
 

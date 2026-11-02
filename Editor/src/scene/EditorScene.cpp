@@ -78,6 +78,7 @@ bool EditorScene::Initialize() {
 	showSelectionBounds_ = preferences_.showSelectionBounds;
 	showCameraGuides_ = preferences_.showCameraGuides;
 	showRespawnGuides_ = preferences_.showRespawnGuides;
+	showJumpGuide_ = preferences_.showJumpGuide;
 	showObjectMarkers_ = preferences_.showObjectMarkers;
 	colliderDisplay_ = preferences_.colliderDisplay;
 	gizmo_.SetSnapSettings(preferences_.snap);
@@ -902,6 +903,12 @@ bool EditorScene::Update(float deltaTime) {
 		}
 	}
 
+	if (showJumpGuide_ &&
+	    !jumpPreview_.Update(renderer_, scene, selection_.GetActiveId())) {
+		Logger::Error("EditorScene: ジャンプ軌跡を登録できませんでした。");
+		return false;
+	}
+
 	// 全ての線を登録した後、一度だけ頂点バッファへ転送する
 	if (!renderer_.UpdateDebugLines()) {
 		Logger::Error("EditorScene: 線の頂点バッファを更新できませんでした。");
@@ -939,6 +946,7 @@ void EditorScene::Finalize() {
 		current.showSelectionBounds = showSelectionBounds_;
 		current.showCameraGuides = showCameraGuides_;
 		current.showRespawnGuides = showRespawnGuides_;
+		current.showJumpGuide = showJumpGuide_;
 		current.showObjectMarkers = showObjectMarkers_;
 		current.colliderDisplay = colliderDisplay_;
 		current.operation = gizmo_.GetOperation();
@@ -1425,6 +1433,8 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		ImGui::MenuItem("Camera Guides", nullptr, &showCameraGuides_,
 		                !IsBusy());
 		ImGui::MenuItem("Respawn Guides", nullptr, &showRespawnGuides_,
+		                !IsBusy());
+		ImGui::MenuItem("Character Jump Guide", nullptr, &showJumpGuide_,
 		                !IsBusy());
 		ImGui::MenuItem("Object Markers", nullptr, &showObjectMarkers_,
 		                !IsBusy());
