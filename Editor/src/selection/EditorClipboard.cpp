@@ -120,6 +120,22 @@ const CharacterSettings *EditorClipboard::GetCharacterSettings() const {
 	return characterSettings_ ? &*characterSettings_ : nullptr;
 }
 
+bool EditorClipboard::CopyFollowSettings(const FollowCameraSettings &settings) {
+	if (!settings.IsValid()) {
+		return false;
+	}
+
+	// 別シーンで同じIDが使われても、元の追従対象を参照させない。
+	auto value = settings;
+	value.target = 0;
+	followSettings_ = value;
+	return true;
+}
+
+const FollowCameraSettings *EditorClipboard::GetFollowSettings() const {
+	return followSettings_ ? &*followSettings_ : nullptr;
+}
+
 void EditorClipboard::Clear() {
 	objects_.clear();
 	sourceIds_.clear();
@@ -128,4 +144,5 @@ void EditorClipboard::Clear() {
 	collider_.reset();
 	cameraLens_.reset();
 	characterSettings_.reset();
+	followSettings_.reset();
 }

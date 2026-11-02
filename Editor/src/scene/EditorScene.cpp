@@ -342,7 +342,8 @@ bool EditorScene::Update(float deltaTime) {
 	                     clipboard_.GetTransform() != nullptr, &models_,
 	                     &assets_, clipboard_.GetCollider() != nullptr,
 	                     clipboard_.GetCameraLens() != nullptr,
-	                     clipboard_.GetCharacterSettings() != nullptr);
+	                     clipboard_.GetCharacterSettings() != nullptr,
+	                     clipboard_.GetFollowSettings() != nullptr);
 	const auto &objectRequest = inspectorPanel_.GetObjectRequest();
 	const bool hasObjectRequest =
 	    objectRequest.action != InspectorPanel::ObjectAction::NONE;
@@ -2705,6 +2706,37 @@ void EditorScene::ApplyInspectorRequest(
 			if (!applied) {
 				ShowError(
 				    "Could not change the Mesh or Mesh Renderer component.");
+			}
+
+			return;
+		}
+
+		if (request.action ==
+		    InspectorPanel::ObjectAction::COPY_FOLLOW_SETTINGS) {
+			if (!object->followCamera ||
+			    !clipboard_.CopyFollowSettings(*object->followCamera)) {
+				ShowError("Could not copy invalid Follow Camera settings.");
+			}
+
+			return;
+		}
+
+		if (request.action ==
+		    InspectorPanel::ObjectAction::PASTE_FOLLOW_SETTINGS) {
+			const auto *copied = clipboard_.GetFollowSettings();
+
+			if (!copied) {
+				ShowError("Copy valid Follow Camera settings before pasting.");
+				return;
+			}
+
+			auto value = *copied;
+			value.target =
+			    object->followCamera ? object->followCamera->target : 0;
+
+			if (!document_.GetHistory().SetFollowCamera(request.objectId,
+			                                            value)) {
+				ShowError("Could not paste Follow Camera settings.");
 			}
 
 			return;

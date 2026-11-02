@@ -11,7 +11,7 @@
 class Scene;
 
 /// <summary>
-/// コピーした物体・Transform・Box Collider・Cameraのレンズ設定・Character設定を、元のシーンと独立して保持する
+/// コピーした物体・Transform・Box Collider・Cameraのレンズ設定・Character設定・追従設定を、元のシーンと独立して保持する
 /// </summary>
 class EditorClipboard {
   public:
@@ -37,7 +37,7 @@ class EditorClipboard {
 
 	/// <summary>
 	/// 元のシーンの置き換えに合わせ、コピー範囲外の物体への参照を解除する。
-	/// コピー範囲内の参照とTransform・Box Collider・レンズ設定・Character設定のコピーは保持する
+	/// コピー範囲内の参照とTransform・Box Collider・レンズ設定・Character設定・追従設定のコピーは保持する
 	/// </summary>
 	void DetachExternalReferences() noexcept;
 
@@ -100,6 +100,19 @@ class EditorClipboard {
 	const CharacterSettings *GetCharacterSettings() const;
 
 	/// <summary>
+	/// Follow Cameraのオフセットと平滑化設定をコピーする。追従対象は保存せず、他のコピー内容は変更しない
+	/// </summary>
+	/// <param name="settings">有効なカメラ位置・注視位置のオフセットと追従速度</param>
+	/// <returns>true:コピー成功 false:無効な設定。以前の内容は保持する</returns>
+	bool CopyFollowSettings(const FollowCameraSettings &settings);
+
+	/// <summary>
+	/// コピーしたFollow Cameraの設定を取得する。追従対象は常に未指定
+	/// </summary>
+	/// <returns>次のCopyFollowSettings成功またはClearまで有効な値。未設定はnullptr</returns>
+	const FollowCameraSettings *GetFollowSettings() const;
+
+	/// <summary>
 	/// コピーしたデータを破棄する
 	/// </summary>
 	void Clear();
@@ -113,4 +126,5 @@ class EditorClipboard {
 	std::optional<BoxCollider> collider_;
 	std::optional<CameraSettings> cameraLens_;
 	std::optional<CharacterSettings> characterSettings_;
+	std::optional<FollowCameraSettings> followSettings_;
 };

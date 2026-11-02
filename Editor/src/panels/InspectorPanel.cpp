@@ -157,7 +157,7 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
                           EditorHistory &history, bool canPasteTransform,
                           ModelManager *models, const AssetDatabase *assets,
                           bool canPasteCollider, bool canPasteCameraLens,
-                          bool canPasteCharacter) {
+                          bool canPasteCharacter, bool canPasteFollow) {
 	objectRequest_ = {};
 	colliderFitRequest_ = 0;
 	modelRequest_ = {};
@@ -426,6 +426,12 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 			                                   FollowCameraSettings{});
 		}
 
+		if (ui.MenuItem("Paste Follow Settings", nullptr,
+		                canPasteFollow && !object->followCamera)) {
+			objectRequest_ = {ObjectAction::PASTE_FOLLOW_SETTINGS,
+			                  inspectedObjectId};
+		}
+
 		if (ui.MenuItem("Respawn", nullptr, !object->respawn)) {
 			changed |= history.SetRespawn(inspectedObjectId, RespawnSettings{});
 		}
@@ -500,9 +506,9 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 	}
 
 	SceneObjectId targetSelectionRequest = 0;
-	changed |= gameplayInspector_.Draw(ui, scene, inspectedObjectId, *object,
-	                                   history, targetSelectionRequest,
-	                                   canPasteTransform, canPasteCharacter);
+	changed |= gameplayInspector_.Draw(
+	    ui, scene, inspectedObjectId, *object, history, targetSelectionRequest,
+	    canPasteTransform, canPasteCharacter, canPasteFollow);
 
 	const auto characterRequest = gameplayInspector_.GetCharacterRequest();
 
@@ -513,6 +519,16 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 	           GameplayInspector::CharacterAction::PASTE) {
 		objectRequest_ = {ObjectAction::PASTE_CHARACTER_SETTINGS,
 		                  characterRequest.objectId};
+	}
+
+	const auto followRequest = gameplayInspector_.GetFollowRequest();
+
+	if (followRequest.action == GameplayInspector::FollowAction::COPY) {
+		objectRequest_ = {ObjectAction::COPY_FOLLOW_SETTINGS,
+		                  followRequest.objectId};
+	} else if (followRequest.action == GameplayInspector::FollowAction::PASTE) {
+		objectRequest_ = {ObjectAction::PASTE_FOLLOW_SETTINGS,
+		                  followRequest.objectId};
 	}
 
 	if (targetSelectionRequest != 0) {

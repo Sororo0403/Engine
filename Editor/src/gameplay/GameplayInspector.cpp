@@ -50,9 +50,11 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
                              SceneObjectId id, SceneObject &object,
                              EditorHistory &history,
                              SceneObjectId &targetSelectionRequest,
-                             bool canPasteTransform, bool canPasteCharacter) {
+                             bool canPasteTransform, bool canPasteCharacter,
+                             bool canPasteFollow) {
 	targetSelectionRequest = 0;
 	characterRequest_ = {};
+	followRequest_ = {};
 	respawnPasteRequest_ = 0;
 	respawnFrameRequest_ = 0;
 	respawnBlockersRequest_ = 0;
@@ -159,6 +161,22 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		changed |= ApplyField(history, id, object.followCamera, edited, value,
 		                      &EditorHistory::BeginFollowCamera);
 
+		ui.BeginDisabled(!object.followCamera->IsValid());
+
+		if (ui.Button("Copy Follow Settings")) {
+			followRequest_ = {FollowAction::COPY, id};
+		}
+
+		ui.EndDisabled();
+		ui.SameLine();
+		ui.BeginDisabled(!canPasteFollow);
+
+		if (ui.Button("Paste Follow Settings")) {
+			followRequest_ = {FollowAction::PASTE, id};
+		}
+
+		ui.EndDisabled();
+
 		if (ui.Button("Reset Follow Settings")) {
 			const auto before = object.followCamera;
 			changed |=
@@ -249,6 +267,7 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 void GameplayInspector::Clear() noexcept {
 	targetPicker_.Clear();
+	followRequest_ = {};
 	characterRequest_ = {};
 	respawnPasteRequest_ = 0;
 	respawnFrameRequest_ = 0;
@@ -258,6 +277,10 @@ void GameplayInspector::Clear() noexcept {
 GameplayInspector::CharacterRequest
 GameplayInspector::GetCharacterRequest() const {
 	return characterRequest_;
+}
+
+GameplayInspector::FollowRequest GameplayInspector::GetFollowRequest() const {
+	return followRequest_;
 }
 
 SceneObjectId GameplayInspector::GetRespawnFrameRequest() const {

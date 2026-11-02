@@ -691,6 +691,18 @@ void ControlsPanel::Draw() {
 	         "Restore the default FOV and Near/Far Clip in one Undo operation. "
 	         "Primary, Transform and Follow Camera settings stay unchanged. "
 	         "Pending edits finish first. Default values add no history."},
+	        {"Inspector > Copy / Paste Follow Settings",
+	         "Copy Camera Offset, Look Offset and Follow Smoothing. Pasting "
+	         "keeps the destination Follow Camera target, Camera lens, Primary "
+	         "flag, Transform and other components. Add Component > Paste "
+	         "Follow "
+	         "Settings adds a missing Follow Camera with no target; choose its "
+	         "target and add a Camera before Play. The source target is never "
+	         "copied. Each paste is one Undo/Redo; identical values add no "
+	         "history. The copy is independent of other clipboards and "
+	         "survives "
+	         "New/Open. Inspector locks and selection are preserved. Pending "
+	         "edits finish first. Editing is unavailable during Play."},
 	        {"Inspector > Copy / Paste Character Settings",
 	         "Copy movement speed, jump speed, gravity and terminal speed, "
 	         "then paste onto the inspected Character Controller. Add "
