@@ -392,6 +392,17 @@ void ControlsPanel::Draw() {
 	         "exported without requiring a scene save. "
 	         "Game export includes assigned material files and their "
 	         "textures."},
+	        {"Materials > Assign Slot to Selection",
+	         "Save the material, choose its zero-based Material Slot, then "
+	         "assign it to all selected objects. Every selected object needs "
+	         "Mesh Renderer; Mesh is optional. Hidden objects and unused "
+	         "slots are included. Reset Slot to Model Default removes only "
+	         "that slot override, even while a material draft is pending. "
+	         "Other slots, visibility, meshes, transforms, selection and "
+	         "Inspector locks are kept. Each batch is one Undo/Redo; identical "
+	         "values add no history. External material changes require reload "
+	         "before assigning. Material files and drafts are not edited by "
+	         "scene Undo/Redo."},
 	        {"Inspector > Color Tint",
 	         "Add Color Tint from Add Component to multiply the model's "
 	         "original material and texture by an RGB color. White restores "

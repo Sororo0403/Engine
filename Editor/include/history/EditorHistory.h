@@ -318,6 +318,17 @@ class EditorHistory {
 	                     const std::filesystem::path &path);
 
 	/// <summary>
+	/// 全対象の同じ材質スロットを変更し、1回のUndo操作へまとめる。編集中の値は先に確定する
+	/// </summary>
+	/// <param name="ids">重複しない対象ID。全物体に有効なMesh Rendererが必要</param>
+	/// <param name="slot">変更するスロット番号。モデルで未使用の番号も保持できる</param>
+	/// <param name="path">材質ファイル。空はそのスロットの明示的な割り当てだけを解除する</param>
+	/// <returns>true:全件成功または同値 false:対象・設定が無効。失敗時は割り当てを変更しない</returns>
+	bool SetMaterialPaths(std::span<const SceneObjectId> ids,
+	                      std::uint32_t slot,
+	                      const std::filesystem::path &path);
+
+	/// <summary>
 	/// 色の連続編集を開始し、編集前の設定を保持する
 	/// </summary>
 	/// <param name="objectId">色の設定を持つ物体</param>

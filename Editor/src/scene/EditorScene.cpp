@@ -348,7 +348,15 @@ bool EditorScene::Update(float deltaTime) {
 
 	const auto requestedModelPath = assetsPanel_.Draw(ui_, assets_);
 	const auto requestedInstances = assetsPanel_.GetInstanceSelectionRequest();
-	materialPanel_.Draw(ui_, assets_);
+	const bool canAssignMaterial =
+	    HasSelection() && !gizmo_.IsUsing() && !gizmoEditActive_ &&
+	    !sceneViewPanel_.IsSelecting() &&
+	    std::ranges::all_of(selection_.GetIds(), [&](const auto id) {
+		    const auto *object = scene.FindObject(id);
+		    return object && object->meshRenderer.has_value();
+	    });
+	materialPanel_.Draw(ui_, assets_, canAssignMaterial);
+	const auto &materialAssignment = materialPanel_.GetAssignmentRequest();
 	const auto &requestedMaterialUsers =
 	    materialPanel_.GetUsageSelectionRequest();
 	const auto historyRequest =
@@ -493,6 +501,16 @@ bool EditorScene::Update(float deltaTime) {
 			SelectModelInstances(requestedInstances);
 		}
 
+		if (!IsBusy() && action == EditorAction::NONE && materialAssignment &&
+		    checkedObject == 0 && requestedMaterialUsers.empty() &&
+		    requestedInstances.empty() && requestedModelPath.empty() &&
+		    modelDrop.path.empty() && modelRequest.objectId == 0 &&
+		    visibilityRequest.objectId == 0 && colliderFitRequest == 0 &&
+		    !hasObjectRequest && materialEditPath.empty() && !historyRequest &&
+		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
+			AssignMaterialToSelection(*materialAssignment);
+		}
+
 		if (!IsBusy() && action == EditorAction::NONE &&
 		    !requestedMaterialUsers.empty() && requestedInstances.empty() &&
 		    requestedModelPath.empty() && modelDrop.path.empty() &&
@@ -538,8 +556,9 @@ bool EditorScene::Update(float deltaTime) {
 			    colliderFitRequest == 0 && requestedModelPath.empty() &&
 			    requestedInstances.empty() && modelDrop.path.empty() &&
 			    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
-			    !hasObjectRequest && checkedObject == 0 &&
-			    requestedMaterialUsers.empty() && materialEditPath.empty() &&
+			    !hasObjectRequest && !materialAssignment &&
+			    checkedObject == 0 && requestedMaterialUsers.empty() &&
+			    materialEditPath.empty() &&
 			    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 				RestoreHistory(*historyRequest);
 			}
@@ -547,9 +566,9 @@ bool EditorScene::Update(float deltaTime) {
 			if (action == EditorAction::NONE && colliderFitRequest == 0 &&
 			    requestedInstances.empty() && modelDrop.path.empty() &&
 			    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
-			    !hasObjectRequest && checkedObject == 0 &&
-			    requestedMaterialUsers.empty() && materialEditPath.empty() &&
-			    !historyRequest) {
+			    !hasObjectRequest && !materialAssignment &&
+			    checkedObject == 0 && requestedMaterialUsers.empty() &&
+			    materialEditPath.empty() && !historyRequest) {
 				const bool objectPanelFocused =
 				    hierarchyRequest.windowFocused ||
 				    sceneViewPanel_.GetInput().windowFocused;
@@ -572,11 +591,12 @@ bool EditorScene::Update(float deltaTime) {
 
 	const bool inputBlocked =
 	    wasBusy || IsBusy() || action != EditorAction::NONE ||
-	    checkedObject != 0 || !requestedModelPath.empty() ||
-	    !requestedInstances.empty() || !requestedMaterialUsers.empty() ||
-	    !modelDrop.path.empty() || modelRequest.objectId != 0 ||
-	    visibilityRequest.objectId != 0 || colliderFitRequest != 0 ||
-	    hasObjectRequest || historyRequest.has_value() ||
+	    checkedObject != 0 || materialAssignment.has_value() ||
+	    !requestedModelPath.empty() || !requestedInstances.empty() ||
+	    !requestedMaterialUsers.empty() || !modelDrop.path.empty() ||
+	    modelRequest.objectId != 0 || visibilityRequest.objectId != 0 ||
+	    colliderFitRequest != 0 || hasObjectRequest ||
+	    historyRequest.has_value() ||
 	    hierarchyRequest.action != HierarchyPanel::Action::NONE;
 
 	ViewportInput viewport = sceneViewPanel_.GetInput();
@@ -3703,5 +3723,27 @@ void EditorScene::ContinueAfterMaterialConfirmation() {
 		    std::format("EditorScene::ContinueExport: {}", error.what()));
 		ShowError("Could not open game export. Your edits were kept. See the "
 		          "log for details.");
+	}
+}
+
+void EditorScene::AssignMaterialToSelection(
+    const MaterialPanel::AssignmentRequest &request) {
+	if (!HasSelection()) {
+		return;
+	}
+
+	try {
+		FinishEdit();
+
+		if (!document_.GetHistory().SetMaterialPaths(
+		        selection_.GetIds(), request.slot, request.path)) {
+			ShowError("Could not assign the material to all selected objects. "
+			          "Every target needs valid Mesh Renderer settings. No "
+			          "assignments were changed.");
+		}
+	} catch (const std::exception &error) {
+		Logger::Error(std::format("EditorScene::AssignMaterialToSelection: {}",
+		                          error.what()));
+		ShowError("Could not assign the material. See the log for details.");
 	}
 }

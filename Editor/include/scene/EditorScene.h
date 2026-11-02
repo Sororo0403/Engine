@@ -342,6 +342,13 @@ class EditorScene final : public IScene {
 	void PasteCollidersToSelection();
 
 	/// <summary>
+	/// 保存済み材質の同じスロットへの割り当てを、全選択へ1回のUndo操作で適用する
+	/// </summary>
+	/// <param name="request">材質パスとスロット。空のパスはモデル既定材質へ戻す</param>
+	void
+	AssignMaterialToSelection(const MaterialPanel::AssignmentRequest &request);
+
+	/// <summary>
 	/// 現在のダイアログを描画し、選択結果を処理する
 	/// </summary>
 	void UpdateDialogs();

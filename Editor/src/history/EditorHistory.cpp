@@ -1959,3 +1959,61 @@ bool EditorHistory::SetMaterialPath(SceneObjectId id, std::uint32_t slot,
 	AppendPrepared(Command{std::move(command)}, state, "Assign Material");
 	return true;
 }
+
+bool EditorHistory::SetMaterialPaths(std::span<const SceneObjectId> ids,
+                                     std::uint32_t slot,
+                                     const std::filesystem::path &path) {
+	CommitEdit();
+
+	if (ids.empty()) {
+		return false;
+	}
+
+	std::set<SceneObjectId> seen;
+	std::vector<CommandGroup::Command> commands;
+	commands.reserve(ids.size());
+
+	for (const auto id : ids) {
+		const auto *object = scene_.FindObject(id);
+
+		if (!seen.insert(id).second || !object || !object->meshRenderer ||
+		    !object->meshRenderer->IsValid()) {
+			return false;
+		}
+
+		auto next = object->meshRenderer->materials;
+		std::erase_if(next.slots, [slot](const auto &binding) {
+			return binding.first == slot;
+		});
+
+		if (!path.empty()) {
+			next.slots.emplace_back(slot, path);
+			std::sort(
+			    next.slots.begin(), next.slots.end(),
+			    [](const auto &a, const auto &b) { return a.first < b.first; });
+		}
+
+		if (!next.IsValid()) {
+			return false;
+		}
+
+		if (next != object->meshRenderer->materials) {
+			commands.emplace_back(MaterialSlotsCommand{
+			    id, object->meshRenderer->materials, std::move(next)});
+		}
+	}
+
+	if (commands.empty()) {
+		return true;
+	}
+
+	CommandGroup group{std::move(commands)};
+	const auto next = PrepareAppend();
+
+	if (!group.Redo(scene_)) {
+		return false;
+	}
+
+	AppendPrepared(Command{std::move(group)}, next, "Assign Materials");
+	return true;
+}

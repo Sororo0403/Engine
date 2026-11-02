@@ -1,7 +1,9 @@
 #pragma once
 
 #include "graphics/material/MaterialAsset.h"
+#include <cstdint>
 #include <filesystem>
+#include <optional>
 #include <string>
 #include <vector>
 class ImGuiSystem;
@@ -17,7 +19,9 @@ class MaterialPanel {
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
 	/// <param name="assets">材質ファイルを列挙するアセット管理</param>
-	void Draw(const ImGuiSystem &ui, AssetDatabase &assets);
+	/// <param name="canAssignMaterial">選択した全物体へ材質を割り当てる操作を許可するか</param>
+	void Draw(const ImGuiSystem &ui, AssetDatabase &assets,
+	          bool canAssignMaterial = false);
 
 	/// <summary>
 	/// 現在の編集を保存する。外部変更がある場合は上書きせず失敗する
@@ -62,7 +66,28 @@ class MaterialPanel {
 	/// <returns>材質パス。要求なしの場合は空。次のDrawまで有効</returns>
 	const std::filesystem::path &GetUsageSelectionRequest() const;
 
+	/// <summary>
+	/// 選択物体の材質スロットへ適用する要求。シーンの変更は描画後に行う
+	/// </summary>
+	struct AssignmentRequest {
+		std::uint32_t slot = 0;
+		std::filesystem::path path;
+	};
+
+	/// <summary>
+	/// この描画で要求した材質の一括割り当てを取得する
+	/// </summary>
+	/// <returns>次のDrawまで有効な要求。pathが空の場合はモデル既定材質へ戻す。要求なしはnullopt</returns>
+	const std::optional<AssignmentRequest> &GetAssignmentRequest() const;
+
   private:
+	/// <summary>
+	/// 保存済みの材質またはモデル既定材質を、現在指定したスロットへ割り当てる要求を用意する
+	/// </summary>
+	/// <param name="reset">明示的な割り当てを解除する場合はtrue。材質のファイルは変更しない</param>
+	/// <returns>true:要求を準備 false:未保存編集・外部変更・無効なスロット。現在の下書きは保持する</returns>
+	bool RequestAssignment(bool reset);
+
 	/// <summary>
 	/// 新しい材質を作成して開く。複製時は保存済みの設定と画像参照を引き継ぐ
 	/// </summary>
@@ -95,4 +120,6 @@ class MaterialPanel {
 	std::string error_;
 	std::vector<MaterialAsset> states_;
 	std::size_t cursor_ = 0;
+	int assignmentSlot_ = 0;
+	std::optional<AssignmentRequest> assignmentRequest_;
 };

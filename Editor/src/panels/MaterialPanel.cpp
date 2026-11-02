@@ -302,7 +302,9 @@ bool MaterialPanel::CreateMaterial(AssetDatabase &assets, bool duplicate) {
 	}
 }
 
-void MaterialPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets) {
+void MaterialPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
+                         bool canAssignMaterial) {
+	assignmentRequest_.reset();
 	usageSelectionPath_.clear();
 	if (focusRequested_) {
 		ImGui::SetNextWindowCollapsed(false);
@@ -351,6 +353,23 @@ void MaterialPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets) {
 			ui.Text(PathUtils::ToUtf8(path_) + (dirty ? " *" : ""));
 			if (ui.Button("Select Objects Using Material")) {
 				usageSelectionPath_ = path_;
+			}
+
+			ImGui::InputInt("Material Slot", &assignmentSlot_);
+			{
+				const DisabledScope noSelection(ui, !canAssignMaterial ||
+				                                        assignmentSlot_ < 0);
+				{
+					const DisabledScope unsaved(ui, dirty);
+
+					if (ui.Button("Assign Slot to Selection")) {
+						RequestAssignment(false);
+					}
+				}
+
+				if (ui.Button("Reset Slot to Model Default")) {
+					RequestAssignment(true);
+				}
 			}
 
 			ui.ColorEdit4("Base Color", draft_.data.baseColor);
@@ -468,4 +487,47 @@ void MaterialPanel::RequestFocus() {
 
 const std::filesystem::path &MaterialPanel::GetUsageSelectionRequest() const {
 	return usageSelectionPath_;
+}
+
+bool MaterialPanel::RequestAssignment(bool reset) {
+	assignmentRequest_.reset();
+
+	try {
+		if (states_.empty() || assignmentSlot_ < 0) {
+			throw std::runtime_error(
+			    "Open a material and choose a non-negative slot.");
+		}
+
+		if (!reset) {
+			if (HasUnsavedChanges()) {
+				throw std::runtime_error(
+				    "Save or revert the material before assigning it.");
+			}
+
+			MaterialAsset disk;
+
+			if (!MaterialSerializer::Load(path_, disk, error_)) {
+				return false;
+			}
+
+			if (disk != states_[cursor_]) {
+				throw std::runtime_error("The material changed outside this "
+				                         "editor. Reload before assigning.");
+			}
+		}
+
+		assignmentRequest_ =
+		    AssignmentRequest{static_cast<std::uint32_t>(assignmentSlot_),
+		                      reset ? std::filesystem::path{} : path_};
+		error_.clear();
+		return true;
+	} catch (const std::exception &error) {
+		error_ = error.what();
+		return false;
+	}
+}
+
+const std::optional<MaterialPanel::AssignmentRequest> &
+MaterialPanel::GetAssignmentRequest() const {
+	return assignmentRequest_;
 }
