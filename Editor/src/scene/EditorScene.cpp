@@ -4,6 +4,7 @@
 #include "assets/ModelUsage.h"
 #include "core/EngineContext.h"
 #include "core/Logger.h"
+#include "gameplay/PlayShortcuts.h"
 #include "gameplay/SampleStage.h"
 #include "graphics/model/ModelManager.h"
 #include "graphics/render/RenderTexture.h"
@@ -49,6 +50,7 @@ bool EditorScene::Initialize() {
 	gizmo_.Cancel();
 	gizmoEditActive_ = false;
 	performancePanel_.Reset();
+	playInputWasActive_ = false;
 	preferences_ = EditorPreferences{};
 	canSavePreferences_ = preferences_.Load();
 	exportConfig_ = preferences_.gameExport;
@@ -112,7 +114,27 @@ bool EditorScene::Update(float deltaTime) {
 		playMode_.Stop();
 	}
 
-	const auto playAction = playMode_.DrawUI(ui_, !IsBusy());
+	auto playAction = playMode_.DrawUI(ui_, !IsBusy());
+	const bool playShortcutEnabled =
+	    input_.IsActive() && playInputWasActive_ && !exitQueued_ &&
+	    action == EditorAction::NONE && !cameraSettingsRequested_ &&
+	    !gridSettingsRequested_ && stage_ == DialogStage::IDLE &&
+	    !ui_.IsTextInputActive() && !ImGui::IsAnyItemActive() &&
+	    !ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopupId |
+	                                     ImGuiPopupFlags_AnyPopupLevel) &&
+	    !gizmo_.IsUsing() && !gizmoEditActive_ &&
+	    !sceneViewPanel_.IsSelecting() && !document_.GetHistory().IsEditing() &&
+	    !ImGui::IsMouseDown(ImGuiMouseButton_Left) &&
+	    !ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
+	    !ImGui::IsMouseDown(ImGuiMouseButton_Middle);
+
+	playInputWasActive_ = input_.IsActive();
+
+	if (playAction == EditorPlayMode::Action::NONE) {
+		playAction =
+		    PlayShortcuts::Read(input_.GetKeyboard(), playMode_.IsPlaying(),
+		                        playMode_.IsPaused(), playShortcutEnabled);
+	}
 
 	if (playAction == EditorPlayMode::Action::STOP) {
 		playMode_.Stop();
@@ -141,6 +163,12 @@ bool EditorScene::Update(float deltaTime) {
 		if (!playMode_.Restart(error)) {
 			ShowError(std::move(error));
 		}
+	}
+
+	if (playAction == EditorPlayMode::Action::TOGGLE_PAUSE) {
+		playMode_.TogglePause();
+	} else if (playAction == EditorPlayMode::Action::STEP) {
+		playMode_.RequestStep();
 	}
 
 	if (playMode_.IsPlaying()) {

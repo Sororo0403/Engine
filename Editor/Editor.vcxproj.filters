@@ -506,4 +506,12 @@
       <Filter>src\gameplay</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\gameplay\EditorPlayAction.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gameplay\PlayShortcuts.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>

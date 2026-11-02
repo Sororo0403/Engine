@@ -1,5 +1,6 @@
 #pragma once
 
+#include "gameplay/EditorPlayAction.h"
 #include "gameplay/EditorPlaySession.h"
 #include "gameplay/GameConfig.h"
 #include "graphics/ui/ViewportInput.h"
@@ -19,13 +20,7 @@ class EditorPlayMode {
 	/// <summary>
 	/// Gameパネルから要求する再生・再実行・停止・描画エラーの通知
 	/// </summary>
-	enum class Action {
-		NONE,
-		PLAY,
-		RESTART,
-		STOP,
-		RENDER_ERROR,
-	};
+	using Action = EditorPlayAction;
 
 	/// <summary>
 	/// 共通描画機能を参照し、再生シーンを保持する
@@ -67,6 +62,22 @@ class EditorPlayMode {
 	/// <param name="error">失敗理由。成功時は空</param>
 	/// <returns>true:再実行成功 false:未再生または初期化失敗</returns>
 	bool Restart(std::string &error);
+
+	/// <summary>
+	/// 再生中の一時停止と再開を切り替える
+	/// </summary>
+	void TogglePause();
+
+	/// <summary>
+	/// 一時停止中の1フレーム実行を予約する
+	/// </summary>
+	void RequestStep();
+
+	/// <summary>
+	/// 再生中の一時停止状態を取得する
+	/// </summary>
+	/// <returns>true:一時停止中 false:通常再生または停止中</returns>
+	bool IsPaused() const;
 
 	/// <summary>
 	/// 再生シーンを破棄する。編集シーンとUndo履歴は保持する

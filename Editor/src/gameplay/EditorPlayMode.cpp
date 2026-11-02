@@ -26,6 +26,7 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 	ui.SetNextWindowSize(800, 500);
 
 	if (focusRequested_) {
+		ImGui::SetNextWindowCollapsed(false);
 		ImGui::SetNextWindowFocus();
 		focusRequested_ = false;
 	}
@@ -51,14 +52,14 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 		ImGui::SameLine();
 
 		if (ui.Button(session_.IsPaused() ? "Resume" : "Pause")) {
-			session_.TogglePause();
+			action = Action::TOGGLE_PAUSE;
 		}
 
 		ImGui::SameLine();
 		ui.BeginDisabled(!session_.IsPaused());
 
 		if (ui.Button("Step")) {
-			session_.RequestStep();
+			action = Action::STEP;
 		}
 
 		ui.EndDisabled();
@@ -130,6 +131,18 @@ bool EditorPlayMode::Restart(std::string &error) {
 	viewport_ = {};
 	focusRequested_ = true;
 	return true;
+}
+
+void EditorPlayMode::TogglePause() {
+	session_.TogglePause();
+}
+
+void EditorPlayMode::RequestStep() {
+	session_.RequestStep();
+}
+
+bool EditorPlayMode::IsPaused() const {
+	return session_.IsPaused();
 }
 
 void EditorPlayMode::Stop() {

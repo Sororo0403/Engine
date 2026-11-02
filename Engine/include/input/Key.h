@@ -54,5 +54,9 @@ enum class Key : std::size_t {
 	CTRL,
 	ALT,
 	F2,
+	F5,
+	F6,
+	F7,
+	F8,
 	COUNT
 };

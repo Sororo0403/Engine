@@ -145,6 +145,14 @@ Key WindowsInputBackend::ToKey(unsigned int virtualKey) {
 		return Key::SPACE;
 	case VK_F2:
 		return Key::F2;
+	case VK_F5:
+		return Key::F5;
+	case VK_F6:
+		return Key::F6;
+	case VK_F7:
+		return Key::F7;
+	case VK_F8:
+		return Key::F8;
 	case VK_RETURN:
 		return Key::ENTER;
 	case VK_ESCAPE:

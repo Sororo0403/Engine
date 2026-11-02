@@ -454,6 +454,9 @@ class EditorScene final : public IScene {
 	bool resetDockLayout_ = false;
 	bool showGrid_ = true;
 	bool showSelectionBounds_ = true;
+	// フォーカス復帰直後の押しっぱなしを、再生操作の押下として扱わない。
+	bool playInputWasActive_ = false;
+
 	EditorPreferences preferences_;
 	bool canSavePreferences_ = false;
 	bool cameraSettingsRequested_ = false;

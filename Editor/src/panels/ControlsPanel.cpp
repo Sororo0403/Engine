@@ -233,6 +233,11 @@ void ControlsPanel::Draw() {
 	        {"Game > Play / Stop",
 	         "Run the current scene, including empty scenes. Stop returns to "
 	         "editing and keeps your changes and Undo history."},
+	        {"F5 / F6 / F7 / F8",
+	         "Play or Stop / Pause or Resume / Step while paused / Restart. "
+	         "Use without Ctrl, Shift or Alt. Shortcuts are ignored while "
+	         "editing text or fields, dragging, showing a popup, or when "
+	         "Editor is not active. Holding a key does not repeat the action."},
 	        {"Game > Restart",
 	         "Reset the player, physics and cameras to the state captured when "
 	         "Play started. The first frame shows that initial state. Restart "
