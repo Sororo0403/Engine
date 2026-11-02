@@ -1,6 +1,7 @@
 #include "selection/EditorClipboard.h"
 
 #include "math/TransformUtils.h"
+#include "physics/BoxColliderUtils.h"
 #include "scene/Scene.h"
 
 #include <set>
@@ -80,9 +81,23 @@ const Transform *EditorClipboard::GetTransform() const {
 	return transform_ ? &*transform_ : nullptr;
 }
 
+bool EditorClipboard::CopyCollider(const BoxCollider &collider) {
+	if (!BoxColliderUtils::IsValid(collider)) {
+		return false;
+	}
+
+	collider_ = collider;
+	return true;
+}
+
+const BoxCollider *EditorClipboard::GetCollider() const {
+	return collider_ ? &*collider_ : nullptr;
+}
+
 void EditorClipboard::Clear() {
 	objects_.clear();
 	sourceIds_.clear();
 	externalReferences_.clear();
 	transform_.reset();
+	collider_.reset();
 }

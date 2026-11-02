@@ -386,6 +386,16 @@ void ControlsPanel::Draw() {
 	         "saving, duplication and Play. Objects sharing one model keep "
 	         "independent colors. Hierarchy > Component > Color Tint finds "
 	         "objects with the component. During Play it is read-only."},
+	        {"Inspector > Box Collider > Copy / Paste Box Collider",
+	         "Copy the local Center and Half Size, then paste them onto the "
+	         "inspected object. Add Component > Paste Box Collider adds a "
+	         "missing component. The target's Transform, other components, "
+	         "selection and Inspector lock stay unchanged; target rotation and "
+	         "scale still determine the world collision box. Paste supports "
+	         "one Undo/Redo; identical values add no history. Invalid target "
+	         "bounds reject the paste. Object and Transform clipboards are "
+	         "independent and are kept. The collider copy also survives scene "
+	         "changes. These editing actions are unavailable during Play."},
 	        {"Inspector > Box Collider > Frame Collider",
 	         "Bring the inspected collider's actual collision box into Scene "
 	         "view, including its center offset, rotation and scale. Models "

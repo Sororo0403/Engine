@@ -29,6 +29,8 @@ class InspectorPanel {
 	enum class ObjectAction {
 		NONE,
 		COPY_TRANSFORM,
+		COPY_COLLIDER,
+		PASTE_COLLIDER,
 		PASTE_TRANSFORM,
 		RESET_TRANSFORM,
 		ALIGN_CAMERA_VIEW,
@@ -128,11 +130,13 @@ class InspectorPanel {
 	/// <param name="canPasteTransform">貼り付けるTransformを保持しているか</param>
 	/// <param name="models">材質スロットを表示する場合のモデル管理</param>
 	/// <param name="assets">材質スロットを表示する場合のアセット一覧</param>
+	/// <param name="canPasteCollider">貼り付けるBox Colliderのコピーを保持しているか</param>
 	/// <returns>true:物体を編集した false:シーンへの変更なし</returns>
 	bool Draw(const ImGuiSystem &ui, Scene &scene,
 	          SceneObjectId selectedObjectId, EditorHistory &history,
 	          bool canPasteTransform = false, ModelManager *models = nullptr,
-	          const AssetDatabase *assets = nullptr);
+	          const AssetDatabase *assets = nullptr,
+	          bool canPasteCollider = false);
 
 	/// <summary>
 	/// 選択した再生物体の現在値を表示し、Transformのコピーを返す。編集用の固定先・要求・履歴は変更しない

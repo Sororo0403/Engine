@@ -47,7 +47,7 @@ bool ApplyEdit(EditorHistory &history, SceneObjectId id, SceneObject &object,
 
 bool ColliderInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
                              SceneObject &object, EditorHistory &history,
-                             Request &request) const {
+                             Request &request, bool canPasteCollider) const {
 	request = {};
 
 	if (!object.collider) {
@@ -77,6 +77,22 @@ bool ColliderInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		valueChanged = ui.DragFloat3("Collider Half Size", edited.halfExtents,
 		                             0.01f, 0.001f, 10000);
 		changed |= ApplyEdit(history, id, object, edited, valueChanged);
+
+		ui.BeginDisabled(!BoxColliderUtils::IsValid(*object.collider));
+
+		if (ui.Button("Copy Box Collider")) {
+			request = {Action::COPY, id};
+		}
+
+		ui.EndDisabled();
+		ui.SameLine();
+		ui.BeginDisabled(!canPasteCollider);
+
+		if (ui.Button("Paste Box Collider")) {
+			request = {Action::PASTE, id};
+		}
+
+		ui.EndDisabled();
 
 		if (ui.Button("Fit Collider to Model")) {
 			request = {Action::FIT_TO_MODEL, id};

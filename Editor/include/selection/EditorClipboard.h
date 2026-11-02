@@ -11,7 +11,7 @@
 class Scene;
 
 /// <summary>
-/// コピーした物体とTransformのデータを、元のシーンと独立して保持する
+/// コピーした物体・Transform・Box Colliderのデータを、元のシーンと独立して保持する
 /// </summary>
 class EditorClipboard {
   public:
@@ -37,7 +37,7 @@ class EditorClipboard {
 
 	/// <summary>
 	/// 元のシーンの置き換えに合わせ、コピー範囲外の物体への参照を解除する。
-	/// コピー範囲内の参照とTransformのコピーは保持する
+	/// コピー範囲内の参照とTransform・Box Colliderのコピーは保持する
 	/// </summary>
 	void DetachExternalReferences() noexcept;
 
@@ -61,6 +61,19 @@ class EditorClipboard {
 	const Transform *GetTransform() const;
 
 	/// <summary>
+	/// Box Colliderのローカル形状をコピーする。物体とTransformのコピーは変更しない
+	/// </summary>
+	/// <param name="collider">中心と半寸法が有効な衝突形状。元のTransformは保持しない</param>
+	/// <returns>true:コピー成功 false:無効な形状。以前のコピー内容は保持する</returns>
+	bool CopyCollider(const BoxCollider &collider);
+
+	/// <summary>
+	/// コピーしたBox Colliderのローカル形状を取得する
+	/// </summary>
+	/// <returns>次のCopyCollider成功またはClearまで有効な値。未設定はnullptr</returns>
+	const BoxCollider *GetCollider() const;
+
+	/// <summary>
 	/// コピーしたデータを破棄する
 	/// </summary>
 	void Clear();
@@ -71,4 +84,5 @@ class EditorClipboard {
 	// シーンを置き換えた後に確保を行わず、外部参照だけを解除するための添字
 	std::vector<std::size_t> externalReferences_;
 	std::optional<Transform> transform_;
+	std::optional<BoxCollider> collider_;
 };

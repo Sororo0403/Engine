@@ -14,7 +14,14 @@ class ColliderInspector {
 	/// <summary>
 	/// 描画後に実行する衝突形状の操作
 	/// </summary>
-	enum class Action { NONE, FIT_TO_MODEL, SELECT_OVERLAPS, FRAME };
+	enum class Action {
+		NONE,
+		FIT_TO_MODEL,
+		SELECT_OVERLAPS,
+		FRAME,
+		COPY,
+		PASTE
+	};
 
 	/// <summary>
 	/// 表示対象の物体へ適用する操作要求
@@ -31,8 +38,10 @@ class ColliderInspector {
 	/// <param name="id">表示している物体のID</param>
 	/// <param name="object">表示している物体</param>
 	/// <param name="history">編集を記録する履歴</param>
-	/// <param name="request">操作要求。操作がなければNONEへ戻す。検索・形状合わせ・カメラ移動は描画後に行う</param>
+	/// <param name="request">操作要求。操作がなければNONEへ戻す。検索・形状合わせ・カメラ移動・コピー・貼り付けは描画後に行う</param>
+	/// <param name="canPasteCollider">貼り付けるBox Colliderのコピーを保持しているか</param>
 	/// <returns>true:設定を編集した false:設定への変更なし。操作要求だけでは編集扱いにしない</returns>
 	bool Draw(const ImGuiSystem &ui, SceneObjectId id, SceneObject &object,
-	          EditorHistory &history, Request &request) const;
+	          EditorHistory &history, Request &request,
+	          bool canPasteCollider = false) const;
 };

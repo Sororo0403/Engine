@@ -331,7 +331,7 @@ bool EditorScene::Update(float deltaTime) {
 	                  sceneViewPanel_.IsSelecting());
 	inspectorPanel_.Draw(ui_, scene, selection_.GetActiveId(), history,
 	                     clipboard_.GetTransform() != nullptr, &models_,
-	                     &assets_);
+	                     &assets_, clipboard_.GetCollider() != nullptr);
 	const auto &objectRequest = inspectorPanel_.GetObjectRequest();
 	const bool hasObjectRequest =
 	    objectRequest.action != InspectorPanel::ObjectAction::NONE;
@@ -2607,6 +2607,27 @@ void EditorScene::ApplyInspectorRequest(
 			if (!applied) {
 				ShowError(
 				    "Could not change the Mesh or Mesh Renderer component.");
+			}
+
+			return;
+		}
+
+		if (request.action == InspectorPanel::ObjectAction::COPY_COLLIDER) {
+			if (!object->collider ||
+			    !clipboard_.CopyCollider(*object->collider)) {
+				ShowError("Could not copy an invalid Box Collider.");
+			}
+
+			return;
+		}
+
+		if (request.action == InspectorPanel::ObjectAction::PASTE_COLLIDER) {
+			const auto *copied = clipboard_.GetCollider();
+
+			if (!copied || !document_.GetHistory().SetCollider(request.objectId,
+			                                                   *copied)) {
+				ShowError("Could not paste the Box Collider. Copy a valid "
+				          "shape and check the target Transform.");
 			}
 
 			return;

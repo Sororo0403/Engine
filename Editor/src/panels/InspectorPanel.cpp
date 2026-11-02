@@ -155,7 +155,8 @@ SceneObjectId InspectorPanel::GetColliderFitRequest() const {
 bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
                           SceneObjectId selectedObjectId,
                           EditorHistory &history, bool canPasteTransform,
-                          ModelManager *models, const AssetDatabase *assets) {
+                          ModelManager *models, const AssetDatabase *assets,
+                          bool canPasteCollider) {
 	objectRequest_ = {};
 	colliderFitRequest_ = 0;
 	modelRequest_ = {};
@@ -389,6 +390,11 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 		if (ui.MenuItem("Box Collider", nullptr, !object->collider))
 			colliderFitRequest_ = inspectedObjectId;
 
+		if (ui.MenuItem("Paste Box Collider", nullptr,
+		                canPasteCollider && !object->collider)) {
+			objectRequest_ = {ObjectAction::PASTE_COLLIDER, inspectedObjectId};
+		}
+
 		if (ui.MenuItem("Color Tint", nullptr, !object->colorTint)) {
 			changed |= history.SetColorTint(inspectedObjectId, ColorTint{});
 		}
@@ -442,9 +448,16 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 
 	ColliderInspector::Request colliderRequest;
 	changed |= ColliderInspector{}.Draw(ui, inspectedObjectId, *object, history,
-	                                    colliderRequest);
+	                                    colliderRequest, canPasteCollider);
 
-	if (colliderRequest.action == ColliderInspector::Action::FIT_TO_MODEL) {
+	if (colliderRequest.action == ColliderInspector::Action::COPY) {
+		objectRequest_ = {ObjectAction::COPY_COLLIDER,
+		                  colliderRequest.objectId};
+	} else if (colliderRequest.action == ColliderInspector::Action::PASTE) {
+		objectRequest_ = {ObjectAction::PASTE_COLLIDER,
+		                  colliderRequest.objectId};
+	} else if (colliderRequest.action ==
+	           ColliderInspector::Action::FIT_TO_MODEL) {
 		colliderFitRequest_ = colliderRequest.objectId;
 	} else if (colliderRequest.action ==
 	           ColliderInspector::Action::SELECT_OVERLAPS) {
