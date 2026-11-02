@@ -5,6 +5,7 @@
 #include <array>
 #include <span>
 
+struct AxisAlignedBox;
 class SceneRenderer;
 class Scene;
 struct SceneObject;
@@ -43,6 +44,14 @@ class ColliderBounds {
 	/// <param name="lines">成功時に設定する線。対象なし・無効な場合は保持する</param>
 	/// <returns>true:作成成功 false:衝突形状なし、またはワールド形状が無効</returns>
 	bool BuildLines(const SceneObject &object, Lines &lines) const;
+
+	/// <summary>
+	/// 有効なワールド座標のボックスを12本の線へ変換する
+	/// </summary>
+	/// <param name="box">各軸の大きさが正で有限なボックス</param>
+	/// <param name="lines">成功時に設定する線。失敗時は保持する</param>
+	/// <returns>true:作成成功 false:座標や大きさが無効</returns>
+	bool BuildLines(const AxisAlignedBox &box, Lines &lines) const;
 
 	/// <summary>
 	/// 物体の衝突形状を緑の線で登録する

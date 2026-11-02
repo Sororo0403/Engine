@@ -1,6 +1,7 @@
 #include "physics/ColliderBounds.h"
 
 #include "graphics/render/DebugLine.h"
+#include "math/MathUtils.h"
 #include "physics/BoxColliderUtils.h"
 #include "scene/Scene.h"
 #include "scene/SceneRenderer.h"
@@ -44,6 +45,16 @@ bool ColliderBounds::BuildLines(const SceneObject &object, Lines &lines) const {
 
 	if (!BoxColliderUtils::GetWorldBounds(*object.collider, object.transform,
 	                                      box)) {
+		return false;
+	}
+
+	return BuildLines(box, lines);
+}
+
+bool ColliderBounds::BuildLines(const AxisAlignedBox &box, Lines &lines) const {
+	if (!MathUtils::IsFinite(box.minimum) ||
+	    !MathUtils::IsFinite(box.maximum) || box.minimum.x >= box.maximum.x ||
+	    box.minimum.y >= box.maximum.y || box.minimum.z >= box.maximum.z) {
 		return false;
 	}
 

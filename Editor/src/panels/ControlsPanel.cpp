@@ -396,6 +396,16 @@ void ControlsPanel::Draw() {
 	         "The gold wireframe shows Near/Far Clip and the field of view "
 	         "at the aspect ratio in Game Settings. Follow Camera previews "
 	         "its starting view using the current target position."},
+	        {"Selected Respawn in Scene",
+	         "The cross marks the recovery position and the wire box shows "
+	         "the character's collider there, including rotation and scale. "
+	         "Cyan means the recovery position is above Fall Below Y, has "
+	         "valid Character Controller settings and is clear of solid "
+	         "colliders; red means it cannot be used. Hidden colliders count "
+	         "and the character's own collider is ignored. Face contact is "
+	         "allowed. Invalid shapes show only the red position marker. "
+	         "The orange plane marks Fall Below Y. These guides check the "
+	         "recovery position, not every condition required for Play."},
 	        {"Selected Follow Camera in Scene",
 	         "The cyan cross marks the target's starting position. "
 	         "The cyan line connects it to the Camera. "

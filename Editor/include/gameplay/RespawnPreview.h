@@ -1,8 +1,12 @@
 #pragma once
 
 #include "graphics/render/DebugLine.h"
+#include "physics/ColliderBounds.h"
+#include "scene/SceneObjectId.h"
 #include <array>
+#include <optional>
 
+class Scene;
 class SceneRenderer;
 struct SceneObject;
 
@@ -12,6 +16,27 @@ struct SceneObject;
 class RespawnPreview {
   public:
 	using Lines = std::array<DebugLine, 10>;
+
+	/// <summary>
+	/// 復帰位置・判定高度の目印と、復帰先での主人公の衝突形状
+	/// </summary>
+	struct Geometry {
+		Lines markers{};
+		std::optional<ColliderBounds::Lines> collider;
+		// 復帰先の高さ・移動設定・衝突形状・障害物との重なりだけを確認する。シーン全体のPlay可否ではない。
+		bool canRespawn = false;
+	};
+
+	/// <summary>
+	/// 復帰先の衝突形状を作り、Playと同じ障害物で配置を確認する。
+	/// 配置可能な目印と形状は水色、配置不可は赤とする
+	/// </summary>
+	/// <param name="scene">編集シーン。モデルの表示状態には依存しない</param>
+	/// <param name="id">確認する物体。自身のColliderは障害物から除く</param>
+	/// <param name="geometry">成功時に設定する表示データ。形状を表現できない場合も赤い位置の目印は表示する</param>
+	/// <returns>true:作成成功 false:対象なし、または復帰設定・位置の目印が無効。失敗時は出力を保持する</returns>
+	bool BuildGeometry(const Scene &scene, SceneObjectId id,
+	                   Geometry &geometry) const;
 
 	/// <summary>
 	/// 復帰位置の十字と、判定高度の局所的な水平面をワールド座標で組み立てる
@@ -25,13 +50,16 @@ class RespawnPreview {
 	/// 復帰設定がある場合だけ、Scene描画にプレビューの線を登録する
 	/// </summary>
 	/// <param name="renderer">更新済みのScene描画先</param>
-	/// <param name="object">表示する物体。値は変更しない</param>
+	/// <param name="scene">編集シーン。値は変更しない</param>
+	/// <param name="id">表示する物体のID</param>
 	/// <returns>true:登録成功または表示対象なし false:線の登録失敗</returns>
-	bool Update(SceneRenderer &renderer, const SceneObject &object) const;
+	bool Update(SceneRenderer &renderer, const Scene &scene,
+	            SceneObjectId id) const;
 
   private:
 	static constexpr float kMarkerRadius = 0.5f;
 	static constexpr float kFallPlaneHalfExtent = 5.0f;
+	DirectX::XMFLOAT4 invalidColor_{1.0f, 0.2f, 0.2f, 1.0f};
 	DirectX::XMFLOAT4 positionColor_{0.2f, 0.85f, 1.0f, 1.0f};
 	DirectX::XMFLOAT4 fallColor_{1.0f, 0.35f, 0.25f, 1.0f};
 };

@@ -743,7 +743,7 @@ bool EditorScene::Update(float deltaTime) {
 	for (const SceneObjectId id : selection_.GetIds()) {
 		if (const auto *object = scene.FindObject(id);
 		    showRespawnGuides_ && object &&
-		    !respawnPreview_.Update(renderer_, *object)) {
+		    !respawnPreview_.Update(renderer_, scene, id)) {
 			Logger::Error(
 			    "EditorScene: 落下復帰のプレビューを登録できませんでした。");
 			return false;

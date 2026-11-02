@@ -1,8 +1,60 @@
 #include "gameplay/RespawnPreview.h"
 
 #include "math/MathUtils.h"
+#include "physics/BoxColliderUtils.h"
+#include "physics/CollisionWorld.h"
+#include "scene/Scene.h"
 #include "scene/SceneObject.h"
 #include "scene/SceneRenderer.h"
+
+bool RespawnPreview::BuildGeometry(const Scene &scene, SceneObjectId id,
+                                   Geometry &geometry) const {
+	const auto *object = scene.FindObject(id);
+	Geometry result;
+
+	if (!object || !BuildLines(*object, result.markers)) {
+		return false;
+	}
+
+	const auto &settings = *object->respawn;
+	auto transform = object->transform;
+	transform.translation =
+	    settings.useStartPosition ? transform.translation : settings.position;
+	AxisAlignedBox body;
+
+	if (object->collider &&
+	    BoxColliderUtils::GetWorldBounds(*object->collider, transform, body)) {
+		ColliderBounds::Lines outline;
+		ColliderBounds bounds;
+
+		if (bounds.BuildLines(body, outline)) {
+			result.collider = outline;
+		}
+
+		if (object->character && object->character->IsValid() &&
+		    transform.translation.y > settings.minimumY) {
+			CollisionWorld world;
+			result.canRespawn =
+			    world.Rebuild(scene, id) && world.CanPlace(body);
+		}
+	}
+
+	const auto color = result.canRespawn ? positionColor_ : invalidColor_;
+
+	// 判定高度の色は変えず、復帰位置の十字と接続線だけに配置可否を反映する。
+	for (std::size_t i = 0; i < 4; ++i) {
+		result.markers[i].color = color;
+	}
+
+	if (result.collider) {
+		for (auto &line : *result.collider) {
+			line.color = color;
+		}
+	}
+
+	geometry = result;
+	return true;
+}
 
 bool RespawnPreview::BuildLines(const SceneObject &object, Lines &lines) const {
 	if (!object.respawn || !object.respawn->IsValid()) {
@@ -52,17 +104,25 @@ bool RespawnPreview::BuildLines(const SceneObject &object, Lines &lines) const {
 	return true;
 }
 
-bool RespawnPreview::Update(SceneRenderer &renderer,
-                            const SceneObject &object) const {
-	Lines lines;
+bool RespawnPreview::Update(SceneRenderer &renderer, const Scene &scene,
+                            SceneObjectId id) const {
+	Geometry geometry;
 
-	if (!BuildLines(object, lines)) {
+	if (!BuildGeometry(scene, id, geometry)) {
 		return true;
 	}
 
-	for (const auto &line : lines) {
+	for (const auto &line : geometry.markers) {
 		if (!renderer.AddDebugLine(line)) {
 			return false;
+		}
+	}
+
+	if (geometry.collider) {
+		for (const auto &line : *geometry.collider) {
+			if (!renderer.AddDebugLine(line)) {
+				return false;
+			}
 		}
 	}
 
