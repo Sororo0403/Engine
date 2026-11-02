@@ -189,7 +189,12 @@ bool SceneCameraUtils::CanSetFollowTarget(const Scene &scene, SceneObjectId id,
 
 bool SceneCameraUtils::GetFollowOrder(const Scene &scene,
                                       std::vector<SceneObjectId> &order,
-                                      std::string &error) {
+                                      std::string &error,
+                                      SceneObjectId *invalidObject) {
+	if (invalidObject) {
+		*invalidObject = 0;
+	}
+
 	error.clear();
 	std::map<SceneObjectId, std::vector<SceneObjectId>> dependents;
 	std::set<SceneObjectId> ready;
@@ -210,6 +215,11 @@ bool SceneCameraUtils::GetFollowOrder(const Scene &scene,
 			                "Object: \"{}\" (ID {}). Target ID: {}.",
 			                object.name.empty() ? "Object" : object.name, id,
 			                object.followCamera->target);
+
+			if (invalidObject) {
+				*invalidObject = id;
+			}
+
 			return false;
 		}
 
@@ -256,6 +266,11 @@ bool SceneCameraUtils::GetFollowOrder(const Scene &scene,
 		                "without a circular chain. "
 		                "Cycle contains object: \"{}\" (ID {}).",
 		                object.name.empty() ? "Object" : object.name, cycle);
+
+		if (invalidObject) {
+			*invalidObject = cycle;
+		}
+
 		return false;
 	}
 

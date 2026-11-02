@@ -89,6 +89,12 @@ class InspectorPanel {
 	SceneObjectId GetColliderFitRequest() const;
 
 	/// <summary>
+	/// 表示の固定を解除し、選択済み物体のInspectorを次の描画時に開く。選択自体は変更しない
+	/// </summary>
+	/// <param name="objectId">表示する選択物体ID。0は表示予約を取り消す</param>
+	void RequestInspect(SceneObjectId objectId);
+
+	/// <summary>
 	/// 表示の固定を解除し、指定した選択物体の名前欄へのフォーカスを次の描画時に予約する
 	/// </summary>
 	/// <param name="objectId">名前を編集する選択物体のID</param>
@@ -115,6 +121,7 @@ class InspectorPanel {
 	DirectX::XMFLOAT3 rotationDegrees_{};
 	DirectX::XMFLOAT4 displayedRotation_{0.0f, 0.0f, 0.0f, 1.0f};
 	SceneObjectId renameObjectId_ = 0;
+	SceneObjectId inspectObjectId_ = 0;
 	ModelRequest modelRequest_;
 	VisibilityRequest visibilityRequest_;
 	std::filesystem::path assetRevealPath_;

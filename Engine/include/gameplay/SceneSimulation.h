@@ -21,9 +21,11 @@ class SceneSimulation {
 	/// <param name="source">変更しない編集シーン</param>
 	/// <param name="error">失敗理由。成功時は空</param>
 	/// <param name="fallbackPose">Primary Cameraがない場合に使用する固定の描画姿勢</param>
+	/// <param name="invalidObject">指定時は問題の物体IDを設定する。成功時や物体に紐付かない失敗では0</param>
 	/// <returns>true:再生開始 false:追加済みコンポーネントの設定や配置、または描画姿勢が無効</returns>
 	bool Start(const Scene &source, std::string &error,
-	           const CameraPose &fallbackPose = CameraPose{});
+	           const CameraPose &fallbackPose = CameraPose{},
+	           SceneObjectId *invalidObject = nullptr);
 
 	/// <summary>
 	/// 再生を終了して複製データを破棄する

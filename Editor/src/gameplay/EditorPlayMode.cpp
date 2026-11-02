@@ -118,14 +118,19 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 
 bool EditorPlayMode::Start(const Scene &scene, std::string &error,
                            const CameraPose &fallbackPose,
-                           const GameConfig &config) {
+                           const GameConfig &config,
+                           SceneObjectId *invalidObject) {
+	if (invalidObject) {
+		*invalidObject = 0;
+	}
+
 	if (config.width < 1 || config.width > 8192 || config.height < 1 ||
 	    config.height > 8192) {
 		error = "Game resolution must be between 1 and 8192 pixels.";
 		return false;
 	}
 
-	if (!session_.Start(scene, error, fallbackPose)) {
+	if (!session_.Start(scene, error, fallbackPose, invalidObject)) {
 		return false;
 	}
 

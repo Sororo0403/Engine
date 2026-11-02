@@ -5,13 +5,18 @@
 #include <utility>
 
 bool EditorPlaySession::Start(const Scene &scene, std::string &error,
-                              const CameraPose &fallbackPose) {
+                              const CameraPose &fallbackPose,
+                              SceneObjectId *invalidObject) {
+	if (invalidObject) {
+		*invalidObject = 0;
+	}
+
 	try {
 		// 再生状態を置き換える前に、再実行用の領域を確保する。
 		auto snapshot = std::make_unique<Scene>();
 		snapshot->ReplaceObjects(scene.GetObjects());
 
-		if (!simulation_.Start(*snapshot, error, fallbackPose)) {
+		if (!simulation_.Start(*snapshot, error, fallbackPose, invalidObject)) {
 			return false;
 		}
 

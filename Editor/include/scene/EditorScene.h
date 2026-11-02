@@ -299,7 +299,8 @@ class EditorScene final : public IScene {
 	/// 操作を中止してエラー表示を予約する
 	/// </summary>
 	/// <param name="message">表示するメッセージ</param>
-	void ShowError(std::string message);
+	/// <param name="objectId">表示する問題の物体。0は物体選択の操作なし</param>
+	void ShowError(std::string message, SceneObjectId objectId = 0);
 
 	/// <summary>
 	/// 編集操作を保留しているか取得する
@@ -513,6 +514,7 @@ class EditorScene final : public IScene {
 	EditorAction pendingAction_ = EditorAction::NONE;
 
 	std::string errorMessage_;
+	SceneObjectId errorObjectId_ = 0;
 	bool errorOpenRequested_ = false;
 
 	// ほかのダイアログ中の終了要求も、操作完了まで保持する

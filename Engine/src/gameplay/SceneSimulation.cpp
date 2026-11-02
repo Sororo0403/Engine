@@ -11,7 +11,12 @@
 #include <string_view>
 
 bool SceneSimulation::Start(const Scene &source, std::string &error,
-                            const CameraPose &fallbackPose) {
+                            const CameraPose &fallbackPose,
+                            SceneObjectId *invalidObject) {
+	if (invalidObject) {
+		*invalidObject = 0;
+	}
+
 	try {
 		error.clear();
 		SceneObjectId character = 0, camera = 0;
@@ -22,6 +27,11 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 			    object ? std::string_view{object->name} : std::string_view{};
 			error = std::format("{} Object: \"{}\" (ID {}).", reason,
 			                    name.empty() ? "Object" : name, id);
+
+			if (invalidObject) {
+				*invalidObject = id;
+			}
+
 			return false;
 		};
 
@@ -72,7 +82,8 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 
 		std::vector<SceneObjectId> followOrder;
 
-		if (!SceneCameraUtils::GetFollowOrder(source, followOrder, error)) {
+		if (!SceneCameraUtils::GetFollowOrder(source, followOrder, error,
+		                                      invalidObject)) {
 			return false;
 		}
 

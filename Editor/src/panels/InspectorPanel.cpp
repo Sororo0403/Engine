@@ -100,13 +100,22 @@ bool ApplyTransformEdit(EditorHistory &history, SceneObjectId objectId,
 
 } // namespace
 
+void InspectorPanel::RequestInspect(SceneObjectId objectId) {
+	lockedObjectId_ = 0;
+	renameObjectId_ = 0;
+	rotationObjectId_ = 0;
+	inspectObjectId_ = objectId;
+}
+
 void InspectorPanel::RequestRename(SceneObjectId objectId) {
+	inspectObjectId_ = 0;
 	lockedObjectId_ = 0;
 	renameObjectId_ = objectId;
 }
 
 void InspectorPanel::Clear() {
 	gameplayInspector_.Clear();
+	inspectObjectId_ = 0;
 	lockedObjectId_ = 0;
 	renameObjectId_ = 0;
 	rotationObjectId_ = 0;
@@ -155,8 +164,12 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 
 	const bool focusName =
 	    renameObjectId_ != 0 && renameObjectId_ == selectedObjectId;
+	const bool focusInspect = inspectObjectId_ != 0 &&
+	                          inspectObjectId_ == selectedObjectId &&
+	                          scene.Contains(inspectObjectId_);
+	inspectObjectId_ = 0;
 
-	if (focusName) {
+	if (focusName || focusInspect) {
 		ImGui::SetNextWindowCollapsed(false);
 		ImGui::SetNextWindowFocus();
 	} else {

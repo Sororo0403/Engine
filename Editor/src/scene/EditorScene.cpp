@@ -86,6 +86,7 @@ bool EditorScene::Initialize() {
 	closeApproved_ = false;
 	errorOpenRequested_ = false;
 	errorMessage_.clear();
+	errorObjectId_ = 0;
 
 	document_.New();
 	selection_.Clear();
@@ -156,9 +157,12 @@ bool EditorScene::Update(float deltaTime) {
 		sceneViewPanel_.CancelSelection();
 		std::string error;
 
+		SceneObjectId invalidObject = 0;
+
 		if (!playMode_.Start(document_.GetScene(), error,
-		                     cameraController_.GetPose(), exportConfig_)) {
-			ShowError(std::move(error));
+		                     cameraController_.GetPose(), exportConfig_,
+		                     &invalidObject)) {
+			ShowError(std::move(error), invalidObject);
 		}
 	}
 
@@ -757,6 +761,7 @@ void EditorScene::Finalize() {
 	closeApproved_ = false;
 	errorOpenRequested_ = false;
 	errorMessage_.clear();
+	errorObjectId_ = 0;
 
 	assetsPanel_.Clear();
 	assets_.Clear();
@@ -2069,8 +2074,31 @@ void EditorScene::UpdateDialogs() {
 		if (ui_.BeginPopupModal(kTitle)) {
 			ui_.Text(errorMessage_);
 
+			if (document_.GetScene().Contains(errorObjectId_)) {
+				if (ui_.Button("Show Object")) {
+					try {
+						FinishEdit();
+						selection_.SelectOnly(errorObjectId_);
+						inspectorPanel_.Clear();
+						inspectorPanel_.RequestInspect(errorObjectId_);
+						hierarchyPanel_.RequestReveal(errorObjectId_);
+						ui_.CloseCurrentPopup();
+						errorObjectId_ = 0;
+						stage_ = DialogStage::IDLE;
+					} catch (const std::exception &error) {
+						Logger::Error(std::format(
+						    "EditorScene::ShowErrorObject: {}", error.what()));
+						errorMessage_ = "Could not select the object. See the "
+						                "log for details.";
+					}
+				}
+
+				ui_.SameLine();
+			}
+
 			if (ui_.Button("OK")) {
 				ui_.CloseCurrentPopup();
+				errorObjectId_ = 0;
 				stage_ = DialogStage::IDLE;
 			}
 
@@ -2115,8 +2143,9 @@ void EditorScene::OpenScene(const std::filesystem::path &path) {
 	stage_ = DialogStage::IDLE;
 }
 
-void EditorScene::ShowError(std::string message) {
+void EditorScene::ShowError(std::string message, SceneObjectId objectId) {
 	errorMessage_ = std::move(message);
+	errorObjectId_ = document_.GetScene().Contains(objectId) ? objectId : 0;
 	errorOpenRequested_ = true;
 
 	pendingAction_ = EditorAction::NONE;

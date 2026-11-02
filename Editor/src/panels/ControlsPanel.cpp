@@ -146,6 +146,12 @@ void ControlsPanel::Draw() {
 	        {"Visible / Hierarchy menu",
 	         "Show or hide models without deleting objects. Visibility changes "
 	         "support Undo / Redo."},
+	        {"Play error > Show Object",
+	         "Select the object reported by Play validation and reveal it in "
+	         "Hierarchy. Inspector unlocks to show its settings. "
+	         "Visibility is preserved and no Undo operation is added. "
+	         "This action appears only for an existing object tied to the "
+	         "error."},
 	        {"Hierarchy > Search",
 	         "Search names by case-sensitive substring. Enter id:42 to find "
 	         "one exact object ID from a Play error or Inspector. "
