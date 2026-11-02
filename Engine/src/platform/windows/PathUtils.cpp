@@ -110,3 +110,48 @@ bool PathUtils::HasExtension(const std::filesystem::path &path,
 
 	return true;
 }
+
+std::filesystem::path PathUtils::DecodeRelativeUri(std::string_view uri) {
+	const auto hex = [](char value) -> int {
+		if (value >= '0' && value <= '9') {
+			return value - '0';
+		}
+
+		if (value >= 'a' && value <= 'f') {
+			return value - 'a' + 10;
+		}
+
+		if (value >= 'A' && value <= 'F') {
+			return value - 'A' + 10;
+		}
+
+		return -1;
+	};
+	std::string decoded;
+	decoded.reserve(uri.size());
+
+	for (std::size_t i = 0; i < uri.size(); ++i) {
+		if (uri[i] != '%') {
+			decoded += uri[i];
+			continue;
+		}
+
+		if (i + 2 >= uri.size() || hex(uri[i + 1]) < 0 || hex(uri[i + 2]) < 0) {
+			throw std::invalid_argument("相対URIのパーセント表記が無効です。");
+		}
+
+		decoded += static_cast<char>(hex(uri[i + 1]) * 16 + hex(uri[i + 2]));
+		i += 2;
+	}
+
+	const auto path = FromUtf8(decoded);
+
+	if (path.empty() || path.has_root_path() ||
+	    decoded.find(':') != std::string::npos ||
+	    decoded.find('\0') != std::string::npos) {
+		throw std::invalid_argument(
+		    "URIにはローカルの相対パスを指定してください。");
+	}
+
+	return path;
+}

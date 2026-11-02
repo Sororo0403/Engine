@@ -48,6 +48,13 @@ std::string ToUtf8(const std::filesystem::path &path);
 std::filesystem::path FromUtf8(std::string_view text);
 
 /// <summary>
+/// ローカルの相対URIを復号してファイルパスへ変換する。+は空白へ変換しない
+/// </summary>
+/// <param name="uri">UTF-8とパーセント表記を使う相対URI。親フォルダへの参照も使用できる</param>
+/// <returns>復号した相対パス。無効な表記・UTF-8・NUL・絶対パス・スキームは例外</returns>
+std::filesystem::path DecodeRelativeUri(std::string_view uri);
+
+/// <summary>
 /// ファイルの拡張子を、ASCIIの英字の大文字・小文字を区別せず比較する
 /// </summary>
 /// <param name="path">確認するパス</param>

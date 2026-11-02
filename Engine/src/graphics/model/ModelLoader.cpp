@@ -2,18 +2,104 @@
 #include "core/Logger.h"
 #include "platform/windows/PathUtils.h"
 
+#include <assimp/DefaultIOSystem.h>
 #include <assimp/Importer.hpp>
 #include <assimp/material.h>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 #include <assimp/texture.h>
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <format>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>
+
+namespace {
+/// <summary>
+/// glTFの外部ファイルURIだけを復号し、実ファイルの読み書きはAssimpの標準I/Oへ委譲する
+/// </summary>
+class GltfIOSystem final : public Assimp::IOSystem {
+  public:
+	explicit GltfIOSystem(const std::filesystem::path &model)
+	    : model_(PathUtils::ToUtf8(model)), directory_(model.parent_path()),
+	      prefix_(PathUtils::ToUtf8(directory_)) {
+		if (!prefix_.ends_with('/')) {
+			prefix_ += '/';
+		}
+	}
+
+	bool Exists(const char *file) const override {
+		try {
+			return files_.Exists(Resolve(file).c_str());
+		} catch (const std::invalid_argument &) {
+			return false;
+		}
+	}
+
+	char getOsSeparator() const override {
+		return files_.getOsSeparator();
+	}
+
+	Assimp::IOStream *Open(const char *file, const char *mode = "rb") override {
+		try {
+			return files_.Open(Resolve(file).c_str(), mode);
+		} catch (const std::invalid_argument &) {
+			return nullptr;
+		}
+	}
+
+	void Close(Assimp::IOStream *file) override {
+		files_.Close(file);
+	}
+
+	bool ComparePaths(const char *a, const char *b) const override {
+		try {
+			return files_.ComparePaths(Resolve(a).c_str(), Resolve(b).c_str());
+		} catch (const std::invalid_argument &) {
+			return false;
+		}
+	}
+
+  private:
+	/// <summary>
+	/// モデル本体の実パスを保ち、モデルフォルダに続く外部URI部分だけを復号する
+	/// </summary>
+	/// <param name="file">Assimpが要求したUTF-8パス</param>
+	/// <returns>標準I/Oへ渡すUTF-8の実パス。無効な相対URIは例外</returns>
+	std::string Resolve(const char *file) const {
+		std::string path = file ? file : "";
+		std::replace(path.begin(), path.end(), '\\', '/');
+
+		// フォルダ名やモデル名にある%は、実パスの文字としてそのまま使用する。
+		if (path == model_) {
+			return path;
+		}
+
+		if (path.starts_with(prefix_)) {
+			return PathUtils::ToUtf8(
+			    directory_ /
+			    PathUtils::DecodeRelativeUri(
+			        std::string_view{path}.substr(prefix_.size())));
+		}
+
+		if (!PathUtils::FromUtf8(path).has_root_path()) {
+			return PathUtils::ToUtf8(directory_ /
+			                         PathUtils::DecodeRelativeUri(path));
+		}
+
+		return path;
+	}
+
+	Assimp::DefaultIOSystem files_;
+	std::string model_;
+	std::filesystem::path directory_;
+	std::string prefix_;
+};
+} // namespace
 
 bool ModelLoader::Load(const std::filesystem::path &filePath,
                        ModelData &modelData) {
@@ -23,9 +109,17 @@ bool ModelLoader::Load(const std::filesystem::path &filePath,
 	}
 
 	// Assimpへ渡すパスをUTF-8にする
-	const std::string path = PathUtils::ToUtf8(filePath);
+	const auto absolutePath =
+	    std::filesystem::absolute(filePath).lexically_normal();
+	const std::string path = PathUtils::ToUtf8(absolutePath);
 
 	Assimp::Importer importer;
+
+	if (PathUtils::HasExtension(filePath, ".gltf") ||
+	    PathUtils::HasExtension(filePath, ".glb")) {
+		// ImporterがI/Oハンドラーを所有し、外部バッファのURIを読み込む際にも使用する。
+		importer.SetIOHandler(new GltfIOSystem(absolutePath));
+	}
 
 	const unsigned int flags =
 	    aiProcess_Triangulate | aiProcess_SortByPType |
@@ -251,8 +345,22 @@ bool ModelLoader::LoadBaseColorTexture(const aiScene &scene,
 		result.source = ModelTextureSource::FILE;
 
 		// 相対パスはモデルファイルのフォルダを基準にする
-		result.filePath = (modelPath.parent_path() / PathUtils::FromUtf8(name))
-		                      .lexically_normal();
+		try {
+			auto reference = PathUtils::FromUtf8(name);
+
+			if (!reference.has_root_path() &&
+			    (PathUtils::HasExtension(modelPath, ".gltf") ||
+			     PathUtils::HasExtension(modelPath, ".glb"))) {
+				reference = PathUtils::DecodeRelativeUri(name);
+			}
+
+			result.filePath =
+			    (modelPath.parent_path() / reference).lexically_normal();
+		} catch (const std::invalid_argument &error) {
+			Logger::Error(
+			    std::format("画像の参照先が無効です: {}", error.what()));
+			return false;
+		}
 	}
 
 	textureData = std::move(result);
