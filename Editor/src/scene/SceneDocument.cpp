@@ -6,6 +6,30 @@
 
 #include <exception>
 #include <format>
+#include <fstream>
+#include <iterator>
+#include <stdexcept>
+
+namespace {
+/// <summary>
+/// 保存時の外部変更確認と、読み込みに使用するファイル内容を取得する
+/// </summary>
+/// <param name="path">読み込む絶対パス</param>
+/// <returns>ファイルの内容。開けない場合や読み取り失敗は例外</returns>
+std::string ReadSceneText(const std::filesystem::path &path) {
+	std::ifstream input(path, std::ios::binary);
+
+	if (!input) {
+		throw std::runtime_error(
+		    "Could not read the scene file. It may be missing or locked. "
+		    "Use Save As or Save Copy to a different file.");
+	}
+
+	input.exceptions(std::ios::badbit);
+	return {std::istreambuf_iterator<char>(input),
+	        std::istreambuf_iterator<char>()};
+}
+} // namespace
 
 Scene &SceneDocument::GetScene() {
 	return scene_;
@@ -17,6 +41,10 @@ const Scene &SceneDocument::GetScene() const {
 
 const std::filesystem::path &SceneDocument::GetFilePath() const {
 	return filePath_;
+}
+
+const std::string &SceneDocument::GetError() const {
+	return error_;
 }
 
 EditorHistory &SceneDocument::GetHistory() {
@@ -38,6 +66,8 @@ void SceneDocument::MarkModified() {
 void SceneDocument::New() {
 	scene_.Clear();
 	filePath_.clear();
+	savedText_.clear();
+	error_.clear();
 	history_.Reset();
 }
 
@@ -46,9 +76,15 @@ bool SceneDocument::Open(const std::filesystem::path &filePath,
 	try {
 		auto resolvedPath = PathUtils::ResolveFromExecutable(filePath);
 
+		if (resolvedPath.native().find(L'\0') != std::wstring::npos) {
+			error_ = "Choose a valid scene path.";
+			return false;
+		}
+		auto sourceText = ReadSceneText(resolvedPath);
+
 		// 読み込みと事前確認は一時シーンで実行し、両方成功した場合だけ置き換える
 		const bool loaded = scene_.ApplyTransaction([&](Scene &candidate) {
-			if (!SceneSerializer::Load(candidate, resolvedPath)) {
+			if (!SceneSerializer::Deserialize(candidate, sourceText)) {
 				return false;
 			}
 
@@ -62,21 +98,27 @@ bool SceneDocument::Open(const std::filesystem::path &filePath,
 		});
 
 		if (!loaded) {
+			error_ = "Could not load or validate the scene. See the log for "
+			         "details.";
 			return false;
 		}
 
 		// 読み込み成功後に、保存先と変更状態を更新する
 		filePath_.swap(resolvedPath);
+		savedText_.swap(sourceText);
 		history_.Reset();
+		error_.clear();
 		return true;
 	} catch (const std::exception &error) {
-		Logger::Error(std::format("SceneDocument::Open: {}", error.what()));
+		error_ = error.what();
+		Logger::Error(std::format("SceneDocument::Open: {}", error_));
 		return false;
 	}
 }
 
 bool SceneDocument::Save() {
 	if (filePath_.empty()) {
+		error_ = "Choose a scene destination with Save As first.";
 		Logger::Error("SceneDocument::Save: 保存先が未指定です。");
 		return false;
 	}
@@ -95,15 +137,24 @@ bool SceneDocument::SaveCopy(const std::filesystem::path &filePath) {
 		    (!filePath_.empty() &&
 		     (PathUtils::IsSameFile(resolvedPath, filePath_) ||
 		      PathUtils::IsSameFile(temporaryPath, filePath_)))) {
+			error_ = "Choose a copy destination that does not conflict with "
+			         "the active scene.";
 			Logger::Error("SceneDocument::SaveCopy: "
 			              "現在の保存先とは別の有効なパスを指定してください。");
 			return false;
 		}
 
 		history_.CommitEdit();
-		return SceneSerializer::Save(scene_, resolvedPath);
+		if (!SceneSerializer::Save(scene_, resolvedPath)) {
+			error_ = "Could not save a scene copy. See the log for details.";
+			return false;
+		}
+
+		error_.clear();
+		return true;
 	} catch (const std::exception &error) {
-		Logger::Error(std::format("SceneDocument::SaveCopy: {}", error.what()));
+		error_ = error.what();
+		Logger::Error(std::format("SceneDocument::SaveCopy: {}", error_));
 		return false;
 	}
 }
@@ -112,20 +163,50 @@ bool SceneDocument::SaveAs(const std::filesystem::path &filePath) {
 	try {
 		auto resolvedPath = PathUtils::ResolveFromExecutable(filePath);
 
+		if (resolvedPath.native().find(L'\0') != std::wstring::npos) {
+			error_ = "Choose a valid scene path.";
+			return false;
+		}
+
+		auto temporaryPath = resolvedPath;
+		temporaryPath += ".tmp";
+
+		if (!filePath_.empty() &&
+		    PathUtils::IsSameFile(temporaryPath, filePath_)) {
+			error_ = "Choose another destination. This name conflicts with the "
+			         "active scene.";
+			return false;
+		}
+
+		if (!filePath_.empty() &&
+		    PathUtils::IsSameFile(resolvedPath, filePath_) &&
+		    ReadSceneText(resolvedPath) != savedText_) {
+			error_ = "The scene changed outside the editor. Reload it, or use "
+			         "Save As / Save Copy to a different file.";
+			return false;
+		}
+
 		// 名前の空欄処理などを、保存するデータへ先に反映する
 		history_.CommitEdit();
 
-		if (!SceneSerializer::Save(scene_, resolvedPath)) {
+		std::string savedText;
+
+		if (!SceneSerializer::Serialize(scene_, savedText) ||
+		    !SceneSerializer::Save(scene_, resolvedPath)) {
+			error_ = "Could not save the scene. See the log for details.";
 			return false;
 		}
 
 		// 保存成功後に、保存先と保存地点を更新する
 		filePath_.swap(resolvedPath);
+		savedText_.swap(savedText);
 		history_.MarkSaved();
+		error_.clear();
 
 		return true;
 	} catch (const std::exception &error) {
-		Logger::Error(std::format("SceneDocument::SaveAs: {}", error.what()));
+		error_ = error.what();
+		Logger::Error(std::format("SceneDocument::SaveAs: {}", error_));
 		return false;
 	}
 }

@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <string>
+#include <string_view>
 
 class Scene;
 
@@ -17,6 +18,14 @@ class SceneSerializer {
 	/// <param name="text">成功時に置き換えるJSON文字列。失敗時は保持する</param>
 	/// <returns>true:成功 false:データが無効</returns>
 	static bool Serialize(const Scene &scene, std::string &text);
+
+	/// <summary>
+	/// version 1から9のJSON文字列を読み込む。失敗時は現在のシーンを保持する
+	/// </summary>
+	/// <param name="scene">成功時に置き換えるシーン</param>
+	/// <param name="text">ファイルから取得したJSON。参照する間だけ保持すればよい</param>
+	/// <returns>true:成功 false:形式や設定が無効</returns>
+	static bool Deserialize(Scene &scene, std::string_view text);
 
 	/// <summary>
 	/// 色・描画・ゲーム用コンポーネントを含むversion 9形式で保存する。相対パスは実行ファイル基準

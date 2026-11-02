@@ -307,21 +307,15 @@ bool SceneSerializer::Save(const Scene &scene,
 	}
 }
 
-bool SceneSerializer::Load(Scene &scene,
-                           const std::filesystem::path &filePath) {
+namespace {
+/// <summary>
+/// 解析したシーンドキュメントを検証し、全件成功した場合だけ反映する
+/// </summary>
+/// <param name="scene">読み込み先</param>
+/// <param name="document">version 1から9のJSON</param>
+/// <returns>true:成功 false:内容が無効</returns>
+bool ApplySceneDocument(Scene &scene, const Json &document) {
 	try {
-		const auto sourcePath = PathUtils::ResolveFromExecutable(filePath);
-
-		std::ifstream input(sourcePath, std::ios::binary);
-
-		if (!input) {
-			throw std::runtime_error("シーンファイルを開けませんでした。");
-		}
-
-		input.exceptions(std::ios::badbit);
-
-		const Json document = Json::parse(input);
-
 		if (!document.is_object() || document.at("format") != "EngineScene" ||
 		    !document.at("version").is_number_integer() ||
 		    (document.at("version") != 1 && document.at("version") != 2 &&
@@ -526,8 +520,37 @@ bool SceneSerializer::Load(Scene &scene,
 		Logger::Info("シーンを読み込みました。");
 		return true;
 	} catch (const std::exception &exception) {
+		Logger::Error(std::format("SceneSerializer: {}", exception.what()));
+		return false;
+	}
+}
+
+} // namespace
+
+bool SceneSerializer::Deserialize(Scene &scene, std::string_view text) {
+	try {
+		return ApplySceneDocument(scene, Json::parse(text));
+	} catch (const std::exception &error) {
 		Logger::Error(
-		    std::format("SceneSerializer::Load: {}", exception.what()));
+		    std::format("SceneSerializer::Deserialize: {}", error.what()));
+		return false;
+	}
+}
+
+bool SceneSerializer::Load(Scene &scene,
+                           const std::filesystem::path &filePath) {
+	try {
+		std::ifstream input(PathUtils::ResolveFromExecutable(filePath),
+		                    std::ios::binary);
+
+		if (!input) {
+			throw std::runtime_error("シーンファイルを開けませんでした。");
+		}
+
+		input.exceptions(std::ios::badbit);
+		return ApplySceneDocument(scene, Json::parse(input));
+	} catch (const std::exception &error) {
+		Logger::Error(std::format("SceneSerializer::Load: {}", error.what()));
 		return false;
 	}
 }

@@ -5,6 +5,7 @@
 
 #include <filesystem>
 #include <functional>
+#include <string>
 
 /// <summary>
 /// 編集中のシーン・保存先・未保存の変更を管理する
@@ -35,6 +36,12 @@ class SceneDocument {
 	const std::filesystem::path &GetFilePath() const;
 
 	/// <summary>
+	/// 最後の読み込み・保存の失敗理由を取得する
+	/// </summary>
+	/// <returns>エラー文。Newまたは操作成功後は空</returns>
+	const std::string &GetError() const;
+
+	/// <summary>
 	/// 未保存の変更があるか取得する
 	/// </summary>
 	/// <returns>true:変更あり false:変更なし</returns>
@@ -60,13 +67,13 @@ class SceneDocument {
 	          const std::function<bool(const Scene &)> &validate = {});
 
 	/// <summary>
-	/// 現在の保存先へシーンを保存する
+	/// 現在の保存先が前回の読み込み・保存時と同じ内容の場合だけ保存する
 	/// </summary>
-	/// <returns>true:成功 false:保存先が未指定、または保存失敗</returns>
+	/// <returns>true:成功 false:保存先が未指定、外部変更・削除・読み取り失敗、または保存失敗</returns>
 	bool Save();
 
 	/// <summary>
-	/// 指定先へシーンを保存する。成功した場合だけ保存先を変更する
+	/// 指定先へ保存する。現在の保存先と同じファイルは外部変更を確認し、成功時だけ保存先を変更する
 	/// </summary>
 	/// <param name="filePath">保存先のファイルパス</param>
 	/// <returns>true:成功 false:保存失敗</returns>
@@ -96,4 +103,6 @@ class SceneDocument {
 	EditorHistory history_{scene_};
 
 	std::filesystem::path filePath_;
+	std::string savedText_;
+	std::string error_;
 };

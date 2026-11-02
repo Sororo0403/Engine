@@ -392,6 +392,15 @@ void ControlsPanel::Draw() {
 	         "exported without requiring a scene save. "
 	         "Game export includes assigned material files and their "
 	         "textures."},
+	        {"Scene save conflicts",
+	         "Save compares the active file with its last opened or saved "
+	         "contents. External edits, including formatting changes, block "
+	         "overwriting it. Missing or unreadable active files also block "
+	         "Save. Your scene, destination and saved history point are kept. "
+	         "Use Save As or Save Copy to a different file to preserve your "
+	         "editing work, or Reload to read the external version after "
+	         "confirming unsaved changes. Save Copy keeps the active "
+	         "destination and its comparison baseline."},
 	        {"Game > Playback Speed",
 	         "Slow Play to 0.1x, 0.25x or 0.5x, or return to 1x. Movement, "
 	         "gravity and camera following use the same scaled game time. "

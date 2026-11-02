@@ -2054,7 +2054,7 @@ void EditorScene::StartSave(bool saveAs) {
 			recentScenes_.Add(document_.GetFilePath());
 			ExecutePendingAction();
 		} else {
-			ShowError("Could not save the scene. See the log for details.");
+			ShowError(document_.GetError());
 		}
 
 		return;
@@ -2420,7 +2420,7 @@ void EditorScene::UpdateDialogs() {
 				recentScenes_.Add(document_.GetFilePath());
 				ExecutePendingAction();
 			} else {
-				ShowError("Could not save the scene. See the log for details.");
+				ShowError(document_.GetError());
 			}
 		}
 
@@ -2449,9 +2449,7 @@ void EditorScene::UpdateDialogs() {
 				recentScenes_.Add(fileDialog_.GetSelectedPath());
 				stage_ = DialogStage::IDLE;
 			} else {
-				ShowError(
-				    "Could not save a copy. Choose a destination different "
-				    "from the active scene. See the log for details.");
+				ShowError(document_.GetError());
 			}
 		}
 
