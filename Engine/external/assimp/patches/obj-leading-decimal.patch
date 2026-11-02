@@ -1,0 +1,21 @@
+# Assimp v6.0.4: count unsigned leading-decimal OBJ values as numeric components.
+# Source: https://github.com/assimp/assimp/archive/refs/tags/v6.0.4.zip
+# ZIP SHA256: 1eeb63f3e6f6c9d820cc52f7d44fa6b6557256330f45ddaa903aa658c47fece5
+# Apply: git apply --directory=assimp-6.0.4 obj-leading-decimal.patch
+# Configure: cmake -S assimp-6.0.4 -B assimp-build -G "Visual Studio 18 2026" -A x64 -DBUILD_SHARED_LIBS=OFF -DASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT=OFF -DASSIMP_BUILD_GLTF_IMPORTER=ON -DASSIMP_BUILD_OBJ_IMPORTER=ON -DASSIMP_NO_EXPORT=ON -DASSIMP_BUILD_TESTS=OFF -DASSIMP_BUILD_ASSIMP_TOOLS=OFF -DASSIMP_BUILD_ZLIB=ON -DUSE_STATIC_CRT=OFF -DASSIMP_INSTALL=OFF -DASSIMP_IGNORE_GIT_HASH=ON -DCMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE=OFF -DASSIMP_INSTALL_PDB=ON
+# Build each configuration: cmake --build assimp-build --config Debug --target assimp --parallel 4
+# Release reconfigure: cmake -S assimp-6.0.4 -B assimp-build -DASSIMP_INSTALL_PDB=OFF
+# Release build: cmake --build assimp-build --config Release --target assimp --parallel 4
+
+--- a/code/AssetLib/Obj/ObjFileParser.cpp
++++ b/code/AssetLib/Obj/ObjFileParser.cpp
+@@ -310,7 +310,8 @@
+         if (!SkipSpaces(&tmp, mEnd) || *tmp == '#') {
+             break;
+         }
+-        const bool isNum(IsNumeric(*tmp) || isNanOrInf(tmp));
++        const bool leadingDecimal = *tmp == '.' && tmp + 1 < mEnd && tmp[1] >= '0' && tmp[1] <= '9';
++        const bool isNum(leadingDecimal || IsNumeric(*tmp) || isNanOrInf(tmp));
+         SkipToken(tmp, mEnd);
+         if (isNum) {
+             ++numComponents;
