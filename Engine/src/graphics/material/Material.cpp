@@ -3,6 +3,7 @@
 #include "graphics/material/MaterialResource.h"
 
 #include <cmath>
+#include <cstddef>
 
 bool Material::Initialize(ID3D12Device *device,
                           std::shared_ptr<const MaterialResource> resource) {
@@ -13,7 +14,11 @@ bool Material::Initialize(ID3D12Device *device,
 		return false;
 	}
 
-	static_assert(sizeof(MaterialData) == 32);
+	static_assert(sizeof(MaterialData) == 48);
+	static_assert(offsetof(MaterialData, baseColor) == 0);
+	static_assert(offsetof(MaterialData, uvScale) == 16);
+	static_assert(offsetof(MaterialData, uvOffset) == 24);
+	static_assert(offsetof(MaterialData, shadingMode) == 32);
 
 	if (!constantBuffer_.Initialize(device)) {
 		return false;

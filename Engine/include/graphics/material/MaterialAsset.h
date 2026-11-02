@@ -28,7 +28,7 @@ struct MaterialAsset {
 
 namespace MaterialSerializer {
 /// <summary>
-/// 材質をJSON文字列に変換する。失敗時は出力文字列を保持する
+/// 照明方式を含むversion 2の材質をJSON文字列に変換する。失敗時は出力文字列を保持する
 /// </summary>
 /// <param name="asset">変換する有効な材質</param>
 /// <param name="text">成功時に置き換えるJSON</param>
@@ -38,7 +38,7 @@ bool Serialize(const MaterialAsset &asset, std::string &text,
                std::string &error);
 
 /// <summary>
-/// 独立した材質ファイルを読み込む。失敗時は現在値を保持する
+/// version 1・2の材質を読み込む。version 1はLitとする。失敗時は現在値を保持する
 /// </summary>
 /// <param name="path">絶対パスまたは実行ファイル基準の相対パス</param>
 /// <param name="asset">成功時に置き換える材質</param>

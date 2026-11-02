@@ -11,7 +11,9 @@ bool MaterialData::IsValid() const {
 		}
 	}
 
-	return MathUtils::IsFinite(uvScale) && MathUtils::IsFinite(uvOffset);
+	return MathUtils::IsFinite(uvScale) && MathUtils::IsFinite(uvOffset) &&
+	       (shadingMode == ShadingMode::LIT ||
+	        shadingMode == ShadingMode::UNLIT);
 }
 
 bool MaterialData::operator==(const MaterialData &other) const {
@@ -20,5 +22,5 @@ bool MaterialData::operator==(const MaterialData &other) const {
 	       baseColor.z == other.baseColor.z &&
 	       baseColor.w == other.baseColor.w && uvScale.x == other.uvScale.x &&
 	       uvScale.y == other.uvScale.y && uvOffset.x == other.uvOffset.x &&
-	       uvOffset.y == other.uvOffset.y;
+	       uvOffset.y == other.uvOffset.y && shadingMode == other.shadingMode;
 }

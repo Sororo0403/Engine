@@ -28,7 +28,10 @@ bool MaterialSerializer::Serialize(const MaterialAsset &asset,
 		const auto &v = asset.data;
 		nlohmann::json json{
 		    {"format", "EngineMaterial"},
-		    {"version", 1},
+		    {"version", 2},
+		    {"shading", v.shadingMode == MaterialData::ShadingMode::UNLIT
+		                    ? "Unlit"
+		                    : "Lit"},
 		    {"baseColor",
 		     {v.baseColor.x, v.baseColor.y, v.baseColor.z, v.baseColor.w}},
 		    {"uvScale", {v.uvScale.x, v.uvScale.y}},
@@ -53,7 +56,7 @@ bool MaterialSerializer::Load(const std::filesystem::path &path,
 
 		if (json.at("format") != "EngineMaterial" ||
 		    !json.at("version").is_number_integer() ||
-		    json.at("version") != 1) {
+		    (json.at("version") != 1 && json.at("version") != 2)) {
 			throw std::runtime_error("Unsupported material format or version.");
 		}
 
@@ -81,6 +84,19 @@ bool MaterialSerializer::Load(const std::filesystem::path &path,
 		const auto scale = values("uvScale", 2);
 		const auto offset = values("uvOffset", 2);
 		MaterialAsset loaded;
+
+		if (json.at("version") == 2) {
+			const auto shading = json.at("shading").get<std::string>();
+
+			if (shading == "Lit") {
+				loaded.data.shadingMode = MaterialData::ShadingMode::LIT;
+			} else if (shading == "Unlit") {
+				loaded.data.shadingMode = MaterialData::ShadingMode::UNLIT;
+			} else {
+				throw std::runtime_error("Unsupported material shading mode.");
+			}
+		}
+
 		loaded.data.baseColor = {color[0], color[1], color[2], color[3]};
 		loaded.data.uvScale = {scale[0], scale[1]};
 		loaded.data.uvOffset = {offset[0], offset[1]};

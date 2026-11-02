@@ -15,6 +15,8 @@ cbuffer MaterialBuffer : register(b2) {
 	float4 baseColor;
 	float2 uvScale;
 	float2 uvOffset;
+	uint shadingMode;
+	uint3 materialPadding;
 };
 
 float4 PSMain(VertexOutput input) : SV_Target0 {
@@ -22,11 +24,14 @@ float4 PSMain(VertexOutput input) : SV_Target0 {
 
 	float4 textureColor = texture0.Sample(sampler0, texcoord);
 
-	float3 normal = normalize(input.normal);
-	float3 toLight = -normalize(lightDirection);
-	float diffuse = saturate(dot(normal, toLight));
+	float3 lighting = float3(1.0f, 1.0f, 1.0f);
 
-	float3 lighting = lightColor * lightIntensity * diffuse + ambient;
+	if (shadingMode == 0) {
+		float3 normal = normalize(input.normal);
+		float3 toLight = -normalize(lightDirection);
+		float diffuse = saturate(dot(normal, toLight));
+		lighting = lightColor * lightIntensity * diffuse + ambient;
+	}
 
 	float3 color =
 	    textureColor.rgb * input.color.rgb * baseColor.rgb * lighting;

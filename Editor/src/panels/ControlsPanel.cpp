@@ -392,6 +392,15 @@ void ControlsPanel::Draw() {
 	         "exported without requiring a scene save. "
 	         "Game export includes assigned material files and their "
 	         "textures."},
+	        {"Materials > Shading",
+	         "Lit applies directional and ambient lighting. Unlit shows the "
+	         "texture, Base Color and per-object Color Tint without lighting; "
+	         "it does not cast light onto other objects. Choose a mode, then "
+	         "Save Material to update all shared users. Revert Draft and the "
+	         "material Undo/Redo include this setting. Transparency, depth, "
+	         "UV and texture behavior stay the same. Old version 1 materials "
+	         "load as Lit; saved assets use version 2. Game export keeps the "
+	         "saved shading mode and the matching shader."},
 	        {"Materials > Assign Slot to Selection",
 	         "Save the material, choose its zero-based Material Slot, then "
 	         "assign it to all selected objects. Every selected object needs "

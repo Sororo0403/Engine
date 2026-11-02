@@ -372,6 +372,26 @@ void MaterialPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				}
 			}
 
+			const char *shadingLabel =
+			    draft_.data.shadingMode == MaterialData::ShadingMode::UNLIT
+			        ? "Unlit"
+			        : "Lit";
+
+			if (ImGui::BeginCombo("Shading", shadingLabel)) {
+				if (ui.Selectable("Lit", draft_.data.shadingMode ==
+				                             MaterialData::ShadingMode::LIT)) {
+					draft_.data.shadingMode = MaterialData::ShadingMode::LIT;
+				}
+
+				if (ui.Selectable("Unlit",
+				                  draft_.data.shadingMode ==
+				                      MaterialData::ShadingMode::UNLIT)) {
+					draft_.data.shadingMode = MaterialData::ShadingMode::UNLIT;
+				}
+
+				ImGui::EndCombo();
+			}
+
 			ui.ColorEdit4("Base Color", draft_.data.baseColor);
 			ImGui::DragFloat2("UV Scale", &draft_.data.uvScale.x, 0.01f);
 			ImGui::DragFloat2("UV Offset", &draft_.data.uvOffset.x, 0.01f);

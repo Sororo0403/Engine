@@ -1,11 +1,20 @@
 #pragma once
 
 #include <DirectXMath.h>
+#include <cstdint>
 
 /// <summary>
 /// GPUへ渡す材質の情報
 /// </summary>
 struct MaterialData {
+	/// <summary>
+	/// 材質が照明の影響を受けるかを指定する。GPU側と同じ32ビット値を使用する
+	/// </summary>
+	enum class ShadingMode : std::uint32_t {
+		LIT = 0,
+		UNLIT = 1,
+	};
+
 	// テクスチャの色に掛けるRGBA
 	DirectX::XMFLOAT4 baseColor{1.0f, 1.0f, 1.0f, 1.0f};
 
@@ -15,8 +24,12 @@ struct MaterialData {
 	// UV座標に加える移動量
 	DirectX::XMFLOAT2 uvOffset{0.0f, 0.0f};
 
+	ShadingMode shadingMode = ShadingMode::LIT;
+	// HLSLの定数バッファを16バイト境界へ合わせる予約領域
+	std::uint32_t padding[3]{};
+
 	/// <summary>
-	/// 色が0から1の範囲で、UVの各成分が有限値か確認する
+	/// 色・UV・照明方式が有効か確認する
 	/// </summary>
 	/// <returns>true:有効 false:範囲外または非有限値</returns>
 	bool IsValid() const;
