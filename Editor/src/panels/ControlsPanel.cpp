@@ -316,6 +316,10 @@ void ControlsPanel::Draw() {
 	         "direction. "
 	         "Follow chains use their resolved starting positions. "
 	         "These guides appear only in Scene and do not change the scene."},
+	        {"Inspector > Camera > Reset Lens Settings",
+	         "Restore the default FOV and Near/Far Clip in one Undo operation. "
+	         "Primary, Transform and Follow Camera settings stay unchanged. "
+	         "Pending edits finish first. Default values add no history."},
 	        {"Inspector > Reset Character / Follow / Respawn Settings",
 	         "Reset this component to defaults in one Undo operation. "
 	         "Follow Camera keeps its target; offsets and smoothing reset. "

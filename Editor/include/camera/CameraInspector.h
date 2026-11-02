@@ -29,7 +29,7 @@ class CameraInspector {
 	};
 
 	/// <summary>
-	/// カメラ設定を表示し、編集と削除を履歴へ記録する
+	/// カメラ設定を表示し、レンズの初期化・編集と削除を履歴へ記録する
 	/// </summary>
 	/// <param name="ui">描画用UI</param>
 	/// <param name="id">対象物体のID</param>
