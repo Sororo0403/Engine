@@ -87,16 +87,26 @@ void ControlsPanel::Draw() {
 	                            "origins without snapping the starting view."},
 	        {"Mouse wheel", "Move forward / backward. Click Scene first if it "
 	                        "is not focused."},
-	        {"F / Shift + F", "Frame selected models / all models."},
+	        {"F / Shift + F", "Frame selected objects / all objects. Hidden "
+	                          "models are excluded."},
 	        {"View > Performance",
 	         "Inspect recent frame intervals, FPS and live scene counts. Pause "
 	         "timing to freeze samples; Clear Timing starts a fresh sample "
 	         "window."},
+	        {"Model-free objects",
+	         "Select Cameras, collider-only objects or Empty objects in "
+	         "Hierarchy, then use the Scene gizmo to move, rotate or scale "
+	         "them. F and Hierarchy double-click frame the Collider when "
+	         "present, otherwise a unit box around the object origin. "
+	         "Frame All includes model-free objects. These controls do not "
+	         "add a model or collider; gizmo edits support Undo/Redo. "
+	         "Scene clicking still selects visible models."},
 	        {"View > Camera View",
 	         "Look from the front, back, left, right, top or bottom in "
 	         "perspective. Center on selected object origins, or the world "
 	         "origin when nothing is selected; keep the current distance."},
-	        {"Hierarchy double-click", "Frame the clicked model."},
+	        {"Hierarchy double-click", "Frame the clicked object. Model-free "
+	                                   "objects use their Collider or origin."},
 	    });
 
 	DrawSection(

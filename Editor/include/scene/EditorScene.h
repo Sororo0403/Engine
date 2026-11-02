@@ -377,7 +377,7 @@ class EditorScene final : public IScene {
 	                         const DirectX::XMFLOAT4X4 &projection);
 
 	/// <summary>
-	/// 選択モデルまたはシーン全体へカメラを寄せる操作を判定する
+	/// 選択物体またはシーン全体へカメラを寄せる操作を判定する
 	/// </summary>
 	/// <param name="viewport">Sceneビューの入力状態</param>
 	/// <param name="hierarchyFocused">Hierarchyにフォーカスがあるか</param>
@@ -386,9 +386,9 @@ class EditorScene final : public IScene {
 	                               bool hierarchyFocused) const;
 
 	/// <summary>
-	/// 指定したモデル全体が収まる位置へ編集用カメラを移動する
+	/// モデル・Collider・空の物体の範囲が収まる位置へ編集用カメラを移動する
 	/// </summary>
-	/// <param name="request">選択モデルまたはシーン全体</param>
+	/// <param name="request">選択物体またはシーン全体。非表示モデルは対象外</param>
 	/// <param name="projection">Sceneビューの更新済み投影行列</param>
 	/// <returns>true:カメラを移動した false:対象なし、または移動できない</returns>
 	bool FrameObjects(FrameRequest request,

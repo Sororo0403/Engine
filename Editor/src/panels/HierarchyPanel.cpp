@@ -224,7 +224,7 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 				scrollToId_ = 0;
 			}
 
-			if (object.visible && !object.modelPath.empty() &&
+			if ((object.visible || object.modelPath.empty()) &&
 			    ImGui::IsItemHovered() &&
 			    ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) &&
 			    !io.KeyCtrl && !io.KeyShift && !io.KeyAlt) {

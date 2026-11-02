@@ -586,4 +586,12 @@
       <Filter>src\physics</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\camera\ObjectFrameBounds.h">
+      <Filter>include\camera</Filter>
+    </ClInclude>
+    <ClCompile Include="src\camera\ObjectFrameBounds.cpp">
+      <Filter>src\camera</Filter>
+    </ClCompile>
+  </ItemGroup>
 </Project>

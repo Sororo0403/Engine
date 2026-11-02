@@ -3,6 +3,7 @@
 #include "assets/ModelPlacement.h"
 #include "assets/ModelUsage.h"
 #include "camera/CameraObjects.h"
+#include "camera/ObjectFrameBounds.h"
 #include "core/EngineContext.h"
 #include "core/Logger.h"
 #include "gameplay/FollowCameraUsage.h"
@@ -578,8 +579,7 @@ bool EditorScene::Update(float deltaTime) {
 		    MakeSelectionTransform(selectionGizmoTransform_)) {
 			transform = &selectionGizmoTransform_;
 		}
-	} else if (HasSingleSelection() && selected &&
-	           !selected->modelPath.empty()) {
+	} else if (HasSingleSelection() && selected) {
 		transform = &selected->transform;
 	}
 
@@ -2483,14 +2483,18 @@ bool EditorScene::FrameObjects(FrameRequest request,
 	bool found = false;
 
 	for (const auto &[id, object] : document_.GetScene().GetObjects()) {
-		if (!object.visible || object.modelPath.empty() ||
+		if ((!object.visible && !object.modelPath.empty()) ||
 		    (request == FrameRequest::SELECTED && !selection_.Contains(id))) {
 			continue;
 		}
 
 		std::array<DirectX::XMFLOAT3, 8> corners;
 
-		if (!renderer_.GetObjectBounds(id, corners)) {
+		const bool boundsReady = object.modelPath.empty()
+		                             ? ObjectFrameBounds::Get(object, corners)
+		                             : renderer_.GetObjectBounds(id, corners);
+
+		if (!boundsReady) {
 			continue;
 		}
 
@@ -2525,7 +2529,7 @@ bool EditorScene::FrameObjects(FrameRequest request,
 
 	if (!cameraController_.FrameBounds(corners, projection)) {
 		Logger::Warning(
-		    "EditorScene: 対象モデルを現在の描画範囲に収められませんでした。");
+		    "EditorScene: 対象物体を現在の描画範囲に収められませんでした。");
 		return false;
 	}
 
