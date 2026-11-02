@@ -320,7 +320,8 @@ bool EditorScene::Update(float deltaTime) {
 		hierarchyPanel_.RequestReveal(checkedObject);
 	}
 
-	const auto hierarchyRequest = hierarchyPanel_.Draw(ui_, scene, selection_);
+	const auto hierarchyRequest = hierarchyPanel_.Draw(
+	    ui_, scene, selection_, true, clipboard_.GetCollider() != nullptr);
 
 	if (hierarchyRequest.selectionChanged) {
 		FinishEdit();
@@ -408,6 +409,9 @@ bool EditorScene::Update(float deltaTime) {
 					break;
 				case HierarchyPanel::Action::CUT_OBJECTS:
 					CopySelectedObjects(true);
+					break;
+				case HierarchyPanel::Action::PASTE_COLLIDERS:
+					PasteCollidersToSelection();
 					break;
 				case HierarchyPanel::Action::DUPLICATE_ARRAY:
 					StartObjectArray();
@@ -1142,6 +1146,12 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 				action = EditorAction::FIT_COLLIDERS;
 			}
 
+			if (ui_.MenuItem("Paste Box Colliders", nullptr,
+			                 objectEnabled &&
+			                     clipboard_.GetCollider() != nullptr)) {
+				action = EditorAction::PASTE_COLLIDERS;
+			}
+
 			if (ui_.MenuItem("Remove All", nullptr,
 			                 objectEnabled && hasCollider)) {
 				action = EditorAction::REMOVE_COLLIDERS;
@@ -1811,6 +1821,10 @@ void EditorScene::StartAction(EditorAction action) {
 		return;
 	case EditorAction::CREATE_CAMERA:
 		CreateCameraFromView();
+		return;
+
+	case EditorAction::PASTE_COLLIDERS:
+		PasteCollidersToSelection();
 		return;
 
 	case EditorAction::DUPLICATE_ARRAY:
@@ -3620,5 +3634,33 @@ void EditorScene::StartObjectArray() {
 		    std::format("EditorScene::StartObjectArray: {}", error.what()));
 		ShowError(
 		    "Could not prepare offset duplication. See the log for details.");
+	}
+}
+
+void EditorScene::PasteCollidersToSelection() {
+	const auto *collider = clipboard_.GetCollider();
+
+	if (!HasSelection() || !collider) {
+		return;
+	}
+
+	try {
+		FinishEdit();
+		std::vector<EditorHistory::ColliderEdit> edits;
+		edits.reserve(selection_.GetCount());
+
+		for (const auto id : selection_.GetIds()) {
+			edits.push_back({id, *collider});
+		}
+
+		if (!document_.GetHistory().SetColliders(edits)) {
+			ShowError("Could not paste all Box Colliders. Check the selected "
+			          "shapes and Transforms. No colliders were changed.");
+		}
+	} catch (const std::exception &error) {
+		Logger::Error(std::format("EditorScene::PasteCollidersToSelection: {}",
+		                          error.what()));
+		ShowError(
+		    "Could not paste the Box Colliders. See the log for details.");
 	}
 }

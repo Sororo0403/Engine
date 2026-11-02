@@ -153,6 +153,7 @@ class EditorScene final : public IScene {
 		ADD_COLLIDERS,
 		FIT_COLLIDERS,
 		REMOVE_COLLIDERS,
+		PASTE_COLLIDERS,
 		PLACE_COLLIDERS_RIGHT,
 		PLACE_COLLIDERS_LEFT,
 		PLACE_COLLIDERS_ABOVE,
@@ -329,6 +330,11 @@ class EditorScene final : public IScene {
 	/// </summary>
 	/// <param name="operation">追加・全件の形状合わせ・削除のいずれか</param>
 	void ConfigureSelectedColliders(ColliderOperation operation);
+
+	/// <summary>
+	/// コピーしたローカル衝突形状を全選択へ一括適用する。失敗時は全対象を保持する
+	/// </summary>
+	void PasteCollidersToSelection();
 
 	/// <summary>
 	/// 現在のダイアログを描画し、選択結果を処理する

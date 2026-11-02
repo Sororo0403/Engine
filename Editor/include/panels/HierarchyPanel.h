@@ -36,6 +36,7 @@ class HierarchyPanel {
 		CUT_OBJECTS,
 		DUPLICATE_OBJECTS,
 		DUPLICATE_ARRAY,
+		PASTE_COLLIDERS,
 		RESET_TRANSFORMS,
 		DROP_TO_GROUND,
 		DROP_TO_SURFACE,
@@ -70,9 +71,11 @@ class HierarchyPanel {
 	/// <param name="scene">表示対象のシーン</param>
 	/// <param name="selection">Editorの選択状態</param>
 	/// <param name="editable">追加・削除などの編集要求を許可するか。falseでも選択・検索・フレーミングは許可する</param>
+	/// <param name="canPasteCollider">貼り付けるBox Colliderのコピーを保持しているか</param>
 	/// <returns>要求された操作と入力状態</returns>
 	Result Draw(const ImGuiSystem &ui, const Scene &scene,
-	            EditorSelection &selection, bool editable = true);
+	            EditorSelection &selection, bool editable = true,
+	            bool canPasteCollider = false);
 
 	/// <summary>
 	/// 検索・並び順・表示条件・表示要求・範囲選択の基準をクリアする。選択状態は変更しない

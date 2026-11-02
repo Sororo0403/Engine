@@ -386,6 +386,15 @@ void ControlsPanel::Draw() {
 	         "saving, duplication and Play. Objects sharing one model keep "
 	         "independent colors. Hierarchy > Component > Color Tint finds "
 	         "objects with the component. During Play it is read-only."},
+	        {"Edit > Box Colliders > Paste Box Colliders",
+	         "Apply the copied local collider shape to every selected object, "
+	         "including hidden objects and objects without models. Missing "
+	         "colliders are added; existing shapes are replaced. All targets "
+	         "must accept the shape or none change. Each target keeps its "
+	         "Transform and other components. Selection, Inspector locks and "
+	         "all clipboards are kept. One Undo/Redo restores the whole edit; "
+	         "identical values add no history. Hierarchy has the same action. "
+	         "Copy a Box Collider in Inspector first."},
 	        {"Inspector > Box Collider > Copy / Paste Box Collider",
 	         "Copy the local Center and Half Size, then paste them onto the "
 	         "inspected object. Add Component > Paste Box Collider adds a "
