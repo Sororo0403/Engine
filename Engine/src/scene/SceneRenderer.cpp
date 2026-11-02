@@ -133,6 +133,13 @@ bool SceneRenderer::SynchronizeObjects() {
 
 		// シーン側の変形情報を描画側へ反映する
 		world_->GetTransform(renderObject.handle) = object.transform;
+
+		if (!world_->SetColorTint(renderObject.handle,
+		                          object.colorTint.value_or(ColorTint{}))) {
+			Logger::Error(
+			    std::format("SceneRenderer: 物体{}の色の設定が無効です。", id));
+			return false;
+		}
 	}
 
 	return true;

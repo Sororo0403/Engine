@@ -36,6 +36,10 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 		};
 
 		for (const auto &[id, object] : source.GetObjects()) {
+			if (object.colorTint && !object.colorTint->IsValid()) {
+				return failObject(id, "Color Tint settings are invalid.");
+			}
+
 			if (object.character) {
 				if (character) {
 					return failObject(

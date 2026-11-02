@@ -331,6 +331,9 @@
     <ClInclude Include="include\graphics\material\MaterialData.h">
       <Filter>include\graphics\material</Filter>
     </ClInclude>
+    <ClInclude Include="include\graphics\material\ColorTint.h">
+      <Filter>include\graphics\material</Filter>
+    </ClInclude>
     <ClInclude Include="include\graphics\DirectionalLightData.h">
       <Filter>include\graphics</Filter>
     </ClInclude>

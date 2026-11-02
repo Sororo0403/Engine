@@ -3,6 +3,7 @@
 #include "gameplay/CharacterSettings.h"
 #include "gameplay/FollowCameraSettings.h"
 #include "gameplay/RespawnSettings.h"
+#include "graphics/material/ColorTint.h"
 #include "math/Transform.h"
 #include "physics/BoxCollider.h"
 #include "scene/CameraComponent.h"
@@ -23,6 +24,9 @@ struct SceneObject {
 
 	// falseの場合はモデルを描画せず、Scene上の選択判定にも使用しない
 	bool visible = true;
+
+	// 指定時は、モデルの全材質のRGBへこの色を掛ける
+	std::optional<ColorTint> colorTint;
 
 	// 指定した物体は衝突判定に使用する。未指定の場合は衝突形状を持たない
 	std::optional<BoxCollider> collider;

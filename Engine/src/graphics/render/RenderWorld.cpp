@@ -55,6 +55,7 @@ struct RenderWorld::Impl {
 
 		ModelHandle model_;
 		Transform transform_{};
+		ColorTint tint_{};
 		ModelInstance instance_;
 	};
 
@@ -330,6 +331,22 @@ std::size_t RenderWorld::GetMaterialCount(RenderObjectHandle handle) const {
 	return impl.GetObject(handle).instance_.GetMaterialCount();
 }
 
+bool RenderWorld::SetColorTint(RenderObjectHandle handle,
+                               const ColorTint &tint) {
+	if (!impl_->Contains(handle) || !tint.IsValid()) {
+		return false;
+	}
+
+	impl_->GetObject(handle).tint_ = tint;
+	impl_->prepared_ = false;
+	return true;
+}
+
+ColorTint RenderWorld::GetColorTint(RenderObjectHandle handle) const {
+	const Impl &impl = *impl_;
+	return impl.GetObject(handle).tint_;
+}
+
 MaterialData &RenderWorld::GetMaterial(RenderObjectHandle handle,
                                        std::size_t materialIndex) {
 	auto &object = impl_->GetObject(handle);
@@ -419,7 +436,7 @@ bool RenderWorld::Update(int width, int height) {
 
 		object.instance_.SetTransform(object.transform_);
 
-		if (!object.instance_.Update(impl_->camera_)) {
+		if (!object.instance_.Update(impl_->camera_, object.tint_)) {
 			return false;
 		}
 	}

@@ -602,4 +602,20 @@
       <Filter>src\selection</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Filter Include="include\appearance">
+      <UniqueIdentifier>{ee411b42-d3b1-56da-b24c-2265d1278f0c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\appearance">
+      <UniqueIdentifier>{fdc287ae-5b6e-53a9-9687-2d1bd073af33}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\appearance\ColorTintInspector.h">
+      <Filter>include\appearance</Filter>
+    </ClInclude>
+    <ClCompile Include="src\appearance\ColorTintInspector.cpp">
+      <Filter>src\appearance</Filter>
+    </ClCompile>
+  </ItemGroup>
 </Project>

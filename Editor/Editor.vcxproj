@@ -342,4 +342,8 @@ exit /b 0</Command>
     <ClInclude Include="include\selection\ObjectMarkers.h" />
     <ClCompile Include="src\selection\ObjectMarkers.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\appearance\ColorTintInspector.h" />
+    <ClCompile Include="src\appearance\ColorTintInspector.cpp" />
+  </ItemGroup>
 </Project>

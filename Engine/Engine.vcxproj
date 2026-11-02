@@ -109,6 +109,7 @@
     <ClInclude Include="include\graphics\model\ModelManager.h" />
     <ClInclude Include="include\graphics\model\ModelHandle.h" />
     <ClInclude Include="include\graphics\material\MaterialData.h" />
+    <ClInclude Include="include\graphics\material\ColorTint.h" />
     <ClInclude Include="include\graphics\render\RenderWorld.h" />
     <ClInclude Include="include\graphics\render\RenderSystem.h" />
     <ClInclude Include="include\scene\SceneObject.h" />

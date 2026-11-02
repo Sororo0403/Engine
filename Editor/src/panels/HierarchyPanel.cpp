@@ -109,7 +109,7 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 	if (ImGui::Combo(
 	        "Component", &component,
 	        "All objects\0Box Collider\0Models without Collider\0Character "
-	        "Controller\0Camera\0Follow Camera\0Respawn\0")) {
+	        "Controller\0Camera\0Follow Camera\0Respawn\0Color Tint\0")) {
 		filter_.component = static_cast<HierarchyFilter::Component>(component);
 	}
 

@@ -114,6 +114,10 @@ bool SceneSerializer::Save(const Scene &scene,
 				throw std::runtime_error("Transformが無効です。");
 			}
 
+			if (object.colorTint && !object.colorTint->IsValid()) {
+				throw std::runtime_error("色の設定が無効です。");
+			}
+
 			if (object.collider) {
 				AxisAlignedBox bounds;
 
@@ -143,6 +147,11 @@ bool SceneSerializer::Save(const Scene &scene,
 			         {"scale", ToJson(object.transform.scale)},
 			     }},
 			});
+
+			if (object.colorTint) {
+				objects.back()["colorTint"] = {
+				    {"color", ToJson(object.colorTint->color)}};
+			}
 
 			if (object.collider) {
 				objects.back()["collider"] = {
@@ -188,7 +197,7 @@ bool SceneSerializer::Save(const Scene &scene,
 
 		const Json document{
 		    {"format", "EngineScene"},
-		    {"version", 6},
+		    {"version", 7},
 		    {"objects", std::move(objects)},
 		};
 
@@ -239,7 +248,8 @@ bool SceneSerializer::Load(Scene &scene,
 		    !document.at("version").is_number_integer() ||
 		    (document.at("version") != 1 && document.at("version") != 2 &&
 		     document.at("version") != 3 && document.at("version") != 4 &&
-		     document.at("version") != 5 && document.at("version") != 6)) {
+		     document.at("version") != 5 && document.at("version") != 6 &&
+		     document.at("version") != 7)) {
 			throw std::runtime_error("未対応のシーンファイル形式です。");
 		}
 
@@ -277,6 +287,15 @@ bool SceneSerializer::Load(Scene &scene,
 
 			object.modelPath =
 			    PathUtils::FromUtf8(item.at("model").get<std::string>());
+
+			if (version >= 7 && item.contains("colorTint")) {
+				object.colorTint =
+				    ColorTint{ReadFloat3(item.at("colorTint").at("color"))};
+
+				if (!object.colorTint->IsValid()) {
+					throw std::runtime_error("色の設定が無効です。");
+				}
+			}
 
 			if (version >= 4 && item.contains("collider")) {
 				const auto &collider = item.at("collider");

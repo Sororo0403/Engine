@@ -3,6 +3,7 @@
 #include "graphics/DirectionalLightData.h"
 #include "graphics/camera/CameraPose.h"
 #include "graphics/camera/CameraSettings.h"
+#include "graphics/material/ColorTint.h"
 #include "graphics/material/MaterialData.h"
 #include "graphics/model/ModelHandle.h"
 #include "graphics/render/DebugLine.h"
@@ -71,6 +72,21 @@ class RenderWorld {
 	/// <param name="handle">物体のハンドル</param>
 	/// <returns>材質数</returns>
 	std::size_t GetMaterialCount(RenderObjectHandle handle) const;
+
+	/// <summary>
+	/// 物体全体の材質へ掛ける色を設定する。元の材質や共有モデルは変更しない
+	/// </summary>
+	/// <param name="handle">このワールドの描画物体</param>
+	/// <param name="tint">RGBが0から1の範囲にある有効な設定</param>
+	/// <returns>true:設定成功 false:物体や設定が無効。失敗時は現在の設定を保持する</returns>
+	bool SetColorTint(RenderObjectHandle handle, const ColorTint &tint);
+
+	/// <summary>
+	/// 物体に保持している色の設定を取得する。無効なハンドルの場合は例外を送出する
+	/// </summary>
+	/// <param name="handle">このワールドの描画物体</param>
+	/// <returns>現在の色の設定</returns>
+	ColorTint GetColorTint(RenderObjectHandle handle) const;
 
 	/// <summary>
 	/// 編集用の材質情報を取得する。無効なハンドルや材質番号の場合は例外を送出する

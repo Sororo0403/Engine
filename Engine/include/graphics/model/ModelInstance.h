@@ -1,5 +1,7 @@
 #pragma once
 
+#include "graphics/material/ColorTint.h"
+
 #include "graphics/material/Material.h"
 #include "graphics/mesh/MeshInstance.h"
 #include "math/Transform.h"
@@ -35,8 +37,9 @@ class ModelInstance {
 	/// 各メッシュの変換行列と、材質の定数バッファを更新する
 	/// </summary>
 	/// <param name="camera">更新済みのカメラ</param>
+	/// <param name="tint">元の材質へ掛ける色。材質データ自体には累積しない</param>
 	/// <returns>true:成功 false:未初期化、または材質更新失敗</returns>
-	bool Update(const Camera &camera);
+	bool Update(const Camera &camera, const ColorTint &tint = {});
 
 	/// <summary>
 	/// モデルのSRVヒープを設定し、各メッシュの描画命令を記録する

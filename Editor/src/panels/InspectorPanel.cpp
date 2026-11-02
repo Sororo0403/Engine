@@ -1,4 +1,5 @@
 #include "panels/InspectorPanel.h"
+#include "appearance/ColorTintInspector.h"
 
 #include "assets/ModelAssetDragDrop.h"
 #include "camera/CameraInspector.h"
@@ -378,6 +379,10 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 		if (ui.MenuItem("Box Collider", nullptr, !object->collider))
 			colliderFitRequest_ = inspectedObjectId;
 
+		if (ui.MenuItem("Color Tint", nullptr, !object->colorTint)) {
+			changed |= history.SetColorTint(inspectedObjectId, ColorTint{});
+		}
+
 		if (ui.MenuItem("Character Controller", nullptr, !object->character)) {
 			changed |=
 			    history.SetCharacter(inspectedObjectId, CharacterSettings{});
@@ -400,6 +405,9 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 	}
 
 	ImGui::PopID();
+
+	changed |=
+	    ColorTintInspector{}.Draw(ui, inspectedObjectId, *object, history);
 
 	ColliderInspector::Request colliderRequest;
 	changed |= ColliderInspector{}.Draw(ui, inspectedObjectId, *object, history,
@@ -527,6 +535,13 @@ InspectorPanel::DrawReadOnly(const ImGuiSystem &ui, const Scene &scene,
 		ImGui::DragFloat("Vertical FOV", &camera.settings.verticalFovDegrees);
 		ImGui::DragFloat("Near Clip", &camera.settings.nearClip);
 		ImGui::DragFloat("Far Clip", &camera.settings.farClip);
+		ui.EndDisabled();
+	}
+
+	if (object->colorTint && ui.CollapsingHeader("Color Tint")) {
+		auto color = object->colorTint->color;
+		ui.BeginDisabled(true);
+		ui.ColorEdit3("Color", color);
 		ui.EndDisabled();
 	}
 

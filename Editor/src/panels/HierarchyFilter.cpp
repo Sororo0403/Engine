@@ -53,6 +53,8 @@ bool HierarchyFilter::Matches(SceneObjectId id,
 		return object.followCamera.has_value();
 	case Component::RESPAWN:
 		return object.respawn.has_value();
+	case Component::COLOR_TINT:
+		return object.colorTint.has_value();
 	default:
 		return false;
 	}

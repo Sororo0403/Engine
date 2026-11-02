@@ -80,3 +80,5 @@ using CharacterCommand =
 using FollowCameraCommand =
     ComponentCommand<FollowCameraSettings, &SceneObject::followCamera>;
 using RespawnCommand = ComponentCommand<RespawnSettings, &SceneObject::respawn>;
+
+using ColorTintCommand = ComponentCommand<ColorTint, &SceneObject::colorTint>;

@@ -32,6 +32,7 @@ bool ObjectCommand::Remove(Scene &scene) const {
 	if (!current || current->name != object_.name ||
 	    current->modelPath != object_.modelPath ||
 	    current->visible != object_.visible ||
+	    current->colorTint != object_.colorTint ||
 	    current->collider != object_.collider ||
 	    current->camera != object_.camera ||
 	    current->character != object_.character ||

@@ -10,7 +10,7 @@ class Scene;
 class SceneSerializer {
   public:
 	/// <summary>
-	/// 表示状態と衝突形状を含むversion 4形式で保存する。相対パスは実行ファイル基準
+	/// 色・描画・ゲーム用コンポーネントを含むversion 7形式で保存する。相対パスは実行ファイル基準
 	/// </summary>
 	/// <param name="scene">保存するシーン</param>
 	/// <param name="filePath">保存先のファイルパス</param>
@@ -18,7 +18,7 @@ class SceneSerializer {
 	static bool Save(const Scene &scene, const std::filesystem::path &filePath);
 
 	/// <summary>
-	/// version 1・2・3・4形式のシーンを読み込む。失敗時は現在のシーンを保持する
+	/// version 1から7のシーンを読み込む。失敗時は現在のシーンを保持する
 	/// </summary>
 	/// <param name="scene">読み込み結果を反映するシーン</param>
 	/// <param name="filePath">読み込むファイルのパス。相対パスは実行ファイル基準</param>

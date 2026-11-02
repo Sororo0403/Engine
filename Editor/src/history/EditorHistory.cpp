@@ -1010,6 +1010,9 @@ bool EditorHistory::HasPendingChanges() const {
 		    } else if constexpr (std::is_same_v<
 		                             Before, std::optional<CameraComponent>>) {
 			    return before != object->camera;
+		    } else if constexpr (std::is_same_v<Before,
+		                                        std::optional<ColorTint>>) {
+			    return before != object->colorTint;
 		    } else if constexpr (std::is_same_v<
 		                             Before, std::optional<RespawnSettings>>) {
 			    return before != object->respawn;
@@ -1151,6 +1154,12 @@ void EditorHistory::CommitEdit() {
 		return;
 	}
 
+	if (std::holds_alternative<std::optional<ColorTint>>(pending_->before) &&
+	    object->colorTint && !object->colorTint->IsValid()) {
+		Invalidate();
+		return;
+	}
+
 	if (std::holds_alternative<std::optional<CameraComponent>>(
 	        pending_->before) &&
 	    object->camera && !object->camera->IsValid()) {
@@ -1190,6 +1199,10 @@ void EditorHistory::CommitEdit() {
 		                                        std::optional<BoxCollider>>) {
 			    return Command{
 			        ColliderCommand{objectId, before, object->collider}};
+		    } else if constexpr (std::is_same_v<Before,
+		                                        std::optional<ColorTint>>) {
+			    return Command{
+			        ColorTintCommand{objectId, before, object->colorTint}};
 		    } else if constexpr (std::is_same_v<
 		                             Before, std::optional<RespawnSettings>>) {
 			    return Command{
@@ -1239,6 +1252,8 @@ void EditorHistory::CommitEdit() {
 		    } else if constexpr (std::is_same_v<
 		                             T, std::optional<CameraComponent>>) {
 			    return "Edit Camera";
+		    } else if constexpr (std::is_same_v<T, std::optional<ColorTint>>) {
+			    return "Edit Color Tint";
 		    } else {
 			    return "Edit Respawn";
 		    }
@@ -1597,6 +1612,47 @@ bool EditorHistory::BeginRespawn(SceneObjectId id) {
 	}
 
 	pending_ = PendingEdit{id, object->respawn};
+	return true;
+}
+
+bool EditorHistory::SetColorTint(SceneObjectId id,
+                                 std::optional<ColorTint> value) {
+	CommitEdit();
+	auto *object = scene_.FindObject(id);
+
+	if (!object || (value && !value->IsValid())) {
+		return false;
+	}
+
+	const bool adding = !object->colorTint;
+	ColorTintCommand command{id, object->colorTint, value};
+
+	if (!command.HasChanges()) {
+		return true;
+	}
+
+	const auto next = PrepareAppend();
+
+	if (!command.Redo(scene_)) {
+		return false;
+	}
+
+	AppendPrepared(Command{std::move(command)}, next,
+	               !value   ? "Remove Color Tint"
+	               : adding ? "Add Color Tint"
+	                        : "Edit Color Tint");
+	return true;
+}
+
+bool EditorHistory::BeginColorTint(SceneObjectId id) {
+	CommitEdit();
+	const auto *object = scene_.FindObject(id);
+
+	if (!object || !object->colorTint) {
+		return false;
+	}
+
+	pending_ = PendingEdit{id, object->colorTint};
 	return true;
 }
 

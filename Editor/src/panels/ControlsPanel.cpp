@@ -313,6 +313,14 @@ void ControlsPanel::Draw() {
 	         "replaces or adds shapes; objects without models use a unit box. "
 	         "Remove All keeps other components. Each operation supports one "
 	         "Undo/Redo; a failed operation changes no colliders."},
+	        {"Inspector > Color Tint",
+	         "Add Color Tint from Add Component to multiply the model's "
+	         "original material and texture by an RGB color. White restores "
+	         "the original appearance. Alpha and UV settings are preserved. "
+	         "Color edits, Reset Color and removal support Undo/Redo, scene "
+	         "saving, duplication and Play. Objects sharing one model keep "
+	         "independent colors. Hierarchy > Component > Color Tint finds "
+	         "objects with the component. During Play it is read-only."},
 	        {"Inspector > Box Collider > Frame Collider",
 	         "Bring the inspected collider's actual collision box into Scene "
 	         "view, including its center offset, rotation and scale. Models "

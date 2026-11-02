@@ -288,6 +288,21 @@ class EditorHistory {
 	bool BeginRespawn(SceneObjectId objectId);
 
 	/// <summary>
+	/// モデルの色の追加・変更・削除を1回の履歴操作として適用する
+	/// </summary>
+	/// <param name="objectId">編集する物体</param>
+	/// <param name="value">有効なRGB設定。nulloptは削除</param>
+	/// <returns>true:変更成功または同値 false:対象や設定が無効</returns>
+	bool SetColorTint(SceneObjectId objectId, std::optional<ColorTint> value);
+
+	/// <summary>
+	/// 色の連続編集を開始し、編集前の設定を保持する
+	/// </summary>
+	/// <param name="objectId">色の設定を持つ物体</param>
+	/// <returns>true:開始成功 false:対象や色の設定なし</returns>
+	bool BeginColorTint(SceneObjectId objectId);
+
+	/// <summary>
 	/// FollowCameraコンポーネントを追加・変更・削除して履歴へ記録する
 	/// 対象の不在や自己参照・循環する追従先は設定せず、0は追従先の解除として扱う
 	/// </summary>
@@ -428,7 +443,7 @@ class EditorHistory {
 	    std::variant<TransformCommand, ObjectCommand, RenameCommand,
 	                 ModelPathCommand, VisibilityCommand, ColliderCommand,
 	                 CharacterCommand, FollowCameraCommand, RespawnCommand,
-	                 CameraCommand, CommandGroup>;
+	                 CameraCommand, ColorTintCommand, CommandGroup>;
 
 	/// <summary>
 	/// 操作と、その前後の状態を識別する情報
@@ -452,7 +467,7 @@ class EditorHistory {
 		             std::optional<CharacterSettings>,
 		             std::optional<FollowCameraSettings>,
 		             std::optional<CameraComponent>,
-		             std::optional<RespawnSettings>>
+		             std::optional<RespawnSettings>, std::optional<ColorTint>>
 		    before;
 	};
 

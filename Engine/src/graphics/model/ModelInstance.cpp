@@ -80,7 +80,7 @@ bool ModelInstance::Initialize(ID3D12Device *device, const Model &model) {
 	return true;
 }
 
-bool ModelInstance::Update(const Camera &camera) {
+bool ModelInstance::Update(const Camera &camera, const ColorTint &tint) {
 	if (!model_) {
 		Logger::Error("ModelInstance::Update: 未初期化です。");
 		return false;
@@ -91,8 +91,19 @@ bool ModelInstance::Update(const Camera &camera) {
 		return false;
 	}
 
+	if (!tint.IsValid()) {
+		Logger::Error("ModelInstance::Update: 色の設定が無効です。");
+		return false;
+	}
+
 	for (std::size_t i = 0; i < materials_.size(); ++i) {
-		if (!materials_[i].Update(materialData_[i])) {
+		// 元の材質を保持し、GPUへ渡す今回の値にだけ色を掛ける。
+		auto material = materialData_[i];
+		material.baseColor.x *= tint.color.x;
+		material.baseColor.y *= tint.color.y;
+		material.baseColor.z *= tint.color.z;
+
+		if (!materials_[i].Update(material)) {
 			Logger::Error(
 			    std::format("ModelInstance: 材質{}の更新に失敗しました。", i));
 			return false;
