@@ -65,6 +65,20 @@ bool MaterialPanel::RestoreDraft(std::size_t index) {
 	return true;
 }
 
+bool MaterialPanel::UndoDraft() {
+	CommitDraft();
+	return draftCursor_ > 0 && RestoreDraft(draftCursor_ - 1);
+}
+
+bool MaterialPanel::RedoDraft() {
+	CommitDraft();
+	return RestoreDraft(draftCursor_ + 1);
+}
+
+bool MaterialPanel::HasFocus() const {
+	return focused_;
+}
+
 bool MaterialPanel::Open(const std::filesystem::path &path,
                          bool discardChanges) {
 	if (HasUnsavedChanges() && !discardChanges) {
@@ -384,7 +398,10 @@ void MaterialPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		focusRequested_ = false;
 	}
 
-	if (!ui.BeginWindow("Materials")) {
+	const bool visible = ui.BeginWindow("Materials");
+	focused_ = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
+
+	if (!visible) {
 		ui.EndWindow();
 		return;
 	}
@@ -541,10 +558,7 @@ void MaterialPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				const DisabledScope disabled(ui, draftCursor_ == 0);
 
 				if (ui.Button("Undo Draft")) {
-					CommitDraft();
-					if (draftCursor_ > 0) {
-						RestoreDraft(draftCursor_ - 1);
-					}
+					UndoDraft();
 				}
 			}
 			ui.SameLine();
@@ -553,8 +567,7 @@ void MaterialPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				                                     draftStates_.size());
 
 				if (ui.Button("Redo Draft")) {
-					CommitDraft();
-					RestoreDraft(draftCursor_ + 1);
+					RedoDraft();
 				}
 			}
 

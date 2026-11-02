@@ -24,6 +24,24 @@ class MaterialPanel {
 	          bool canAssignMaterial = false);
 
 	/// <summary>
+	/// 未保存の編集を1操作戻す。現在の入力は先に確定し、ファイルは変更しない
+	/// </summary>
+	/// <returns>true:復元成功 false:下書き履歴なし。メモリ確保失敗は例外を送出し、編集内容は保持する</returns>
+	bool UndoDraft();
+
+	/// <summary>
+	/// 未保存の編集を1操作やり直す。新たな入力があれば先に確定してRedoを解除する
+	/// </summary>
+	/// <returns>true:復元成功 false:やり直す下書き履歴なし。メモリ確保失敗は例外を送出し、編集内容は保持する</returns>
+	bool RedoDraft();
+
+	/// <summary>
+	/// 最後のDrawでMaterialsまたはその子ウィンドウにフォーカスがあったか取得する
+	/// </summary>
+	/// <returns>true:材質編集が入力先 false:別のパネルが入力先</returns>
+	bool HasFocus() const;
+
+	/// <summary>
 	/// 現在の編集を保存する。外部変更がある場合は上書きせず失敗する
 	/// </summary>
 	/// <returns>true:保存成功 false:設定や保存先が無効</returns>
@@ -148,6 +166,7 @@ class MaterialPanel {
 	std::string texture_;
 	bool textureValid_ = true;
 	bool focusRequested_ = false;
+	bool focused_ = false;
 	std::string newName_ = "New Material";
 	std::string error_;
 	// ファイルへ保存した状態の履歴と、未保存の編集履歴は独立して保持する。

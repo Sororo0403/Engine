@@ -1527,8 +1527,9 @@ void EditorScene::DrawCameraSettings() {
 EditorScene::EditorAction
 EditorScene::ReadShortcut(bool objectPanelFocused) const {
 	// 文字入力中の操作は、ImGuiの入力欄へ任せる
-	if (IsBusy() || ui_.IsTextInputActive() || gizmo_.IsUsing() ||
-	    sceneViewPanel_.IsSelecting() || document_.GetHistory().IsEditing()) {
+	if (IsBusy() || ImGui::GetIO().AppFocusLost || ui_.IsTextInputActive() ||
+	    gizmo_.IsUsing() || sceneViewPanel_.IsSelecting() ||
+	    document_.GetHistory().IsEditing()) {
 		return EditorAction::NONE;
 	}
 
@@ -1608,6 +1609,26 @@ EditorScene::ReadShortcut(bool objectPanelFocused) const {
 
 	if (!control) {
 		return EditorAction::NONE;
+	}
+
+	if (materialPanel_.HasFocus()) {
+		const bool available = !alt && !ImGui::IsAnyItemActive();
+
+		if (keyboard.IsPressed(Key::Z)) {
+			return !available ? EditorAction::NONE
+			       : shift    ? EditorAction::REDO_MATERIAL_DRAFT
+			                  : EditorAction::UNDO_MATERIAL_DRAFT;
+		}
+
+		if (keyboard.IsPressed(Key::Y)) {
+			return available ? EditorAction::REDO_MATERIAL_DRAFT
+			                 : EditorAction::NONE;
+		}
+
+		if (keyboard.IsPressed(Key::S)) {
+			return available && !shift ? EditorAction::SAVE_MATERIAL
+			                           : EditorAction::NONE;
+		}
 	}
 
 	if (objectEnabled && !shift && !alt && keyboard.IsPressed(Key::D)) {
@@ -1821,6 +1842,28 @@ void EditorScene::StartAction(EditorAction action) {
 	case EditorAction::FRAME_ALL:
 		frameRequest_ = FrameRequest::ALL;
 		return;
+	case EditorAction::UNDO_MATERIAL_DRAFT:
+	case EditorAction::REDO_MATERIAL_DRAFT:
+	case EditorAction::SAVE_MATERIAL:
+		try {
+			if (action == EditorAction::UNDO_MATERIAL_DRAFT) {
+				materialPanel_.UndoDraft();
+			} else if (action == EditorAction::REDO_MATERIAL_DRAFT) {
+				materialPanel_.RedoDraft();
+			} else if (!materialPanel_.GetFilePath().empty() &&
+			           !materialPanel_.Save()) {
+				ShowError("Could not save the material: " +
+				          materialPanel_.GetError());
+			}
+		} catch (const std::exception &error) {
+			Logger::Error(
+			    std::format("EditorScene::MaterialShortcut: {}", error.what()));
+			ShowError("Could not update the material. Your draft was kept. See "
+			          "the log for details.");
+		}
+
+		return;
+
 	case EditorAction::UNDO:
 		if (document_.GetHistory().CanUndo() &&
 		    !document_.GetHistory().Undo()) {

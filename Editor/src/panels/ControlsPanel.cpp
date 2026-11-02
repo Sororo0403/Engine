@@ -463,6 +463,15 @@ void ControlsPanel::Draw() {
 	         "UV and texture behavior stay the same. Old version 1 materials "
 	         "load as Lit; saved assets use version 2. Game export keeps the "
 	         "saved shading mode and the matching shader."},
+	        {"Materials shortcuts",
+	         "With Materials focused, Ctrl+Z undoes draft edits. Ctrl+Y or "
+	         "Ctrl+Shift+Z redoes them. Ctrl+S saves the material, including "
+	         "shared changes. These keys never fall through to scene history "
+	         "when no draft step is available. Text fields keep ImGui's text "
+	         "editing shortcuts. Finish active drags first. Ctrl+Shift+S and "
+	         "Alt-modified variants do not save the scene from Materials. "
+	         "Other panels retain the scene shortcuts. Unavailable during "
+	         "Play, modal operations or application focus loss."},
 	        {"Materials > Undo Draft / Redo Draft",
 	         "Undo or redo unsaved color, UV, shading and texture edits. "
 	         "Draft actions do not write files. A drag or text edit is one "
