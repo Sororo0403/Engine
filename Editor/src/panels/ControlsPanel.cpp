@@ -316,6 +316,12 @@ void ControlsPanel::Draw() {
 	         "direction. "
 	         "Follow chains use their resolved starting positions. "
 	         "These guides appear only in Scene and do not change the scene."},
+	        {"Inspector > Reset Character / Follow / Respawn Settings",
+	         "Reset this component to defaults in one Undo operation. "
+	         "Follow Camera keeps its target; offsets and smoothing reset. "
+	         "Respawn uses the start position and default fall height. "
+	         "Transform and other components stay unchanged. "
+	         "Pending edits finish first. Default values add no history."},
 	        {"Inspector > Follow Camera",
 	         "Offsets use world coordinates. Follow Smoothing 0 follows "
 	         "immediately. Choose the target object in the same scene; IDs "

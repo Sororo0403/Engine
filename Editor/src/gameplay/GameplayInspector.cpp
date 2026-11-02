@@ -41,6 +41,27 @@ bool ApplyField(EditorHistory &history, SceneObjectId id,
 
 	return applied;
 }
+
+/// <summary>
+/// 数値編集を先に確定し、初期設定への変更を独立した1回のUndo操作として記録する
+/// </summary>
+/// <typeparam name="T">リセットするコンポーネントの設定型</typeparam>
+/// <param name="history">既存の連続編集も確定する履歴</param>
+/// <param name="id">設定を戻す物体ID</param>
+/// <param name="current">変更するコンポーネント。参照先のIDは呼び出し側で保持する</param>
+/// <param name="defaults">変更後の初期設定</param>
+/// <param name="begin">対応するコンポーネントの編集開始関数</param>
+/// <returns>true:設定を変更した false:同値、または編集開始に失敗した</returns>
+template <class T>
+bool ResetSettings(EditorHistory &history, SceneObjectId id,
+                   std::optional<T> &current, const T &defaults,
+                   bool (EditorHistory::*begin)(SceneObjectId)) {
+	history.CommitEdit();
+	const bool changed =
+	    ApplyField(history, id, current, defaults, true, begin);
+	history.CommitEdit();
+	return changed;
+}
 } // namespace
 
 bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
@@ -75,6 +96,12 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		      CharacterSettings::kMaximumGravity);
 		field("Terminal Speed", &CharacterSettings::terminalSpeed,
 		      CharacterSettings::kMaximumSpeed);
+
+		if (ui.Button("Reset Character Settings")) {
+			changed |= ResetSettings(history, id, object.character,
+			                         CharacterSettings{},
+			                         &EditorHistory::BeginCharacter);
+		}
 
 		if (ui.Button("Remove Character Controller")) {
 			changed |= history.SetCharacter(id, std::nullopt);
@@ -128,6 +155,13 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		changed |= ApplyField(history, id, object.followCamera, edited, value,
 		                      &EditorHistory::BeginFollowCamera);
 
+		if (ui.Button("Reset Follow Settings")) {
+			FollowCameraSettings defaults;
+			defaults.target = object.followCamera->target;
+			changed |= ResetSettings(history, id, object.followCamera, defaults,
+			                         &EditorHistory::BeginFollowCamera);
+		}
+
 		if (ui.Button("Remove Follow Camera")) {
 			changed |= history.SetFollowCamera(id, std::nullopt);
 		}
@@ -162,6 +196,12 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 				edited.position = object.transform.translation;
 				changed |= history.SetRespawn(id, edited);
 			}
+		}
+
+		if (ui.Button("Reset Respawn Settings")) {
+			changed |=
+			    ResetSettings(history, id, object.respawn, RespawnSettings{},
+			                  &EditorHistory::BeginRespawn);
 		}
 
 		if (ui.Button("Remove Respawn")) {
