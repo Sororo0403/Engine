@@ -15,8 +15,10 @@ SceneViewPanel::SceneViewPanel(RenderSystem &render) : render_(render) {
 SceneViewPanel::~SceneViewPanel() = default;
 
 bool SceneViewPanel::DrawUI(const ImGuiSystem &ui, TransformGizmo &gizmo,
-                            TransformGizmo::SelectionMode selectionMode) {
+                            TransformGizmo::SelectionMode selectionMode,
+                            bool editable) {
 	visible_ = false;
+	editable_ = editable;
 	input_ = {};
 	modelDrop_ = {};
 	imageMinimum_ = {};
@@ -30,7 +32,12 @@ bool SceneViewPanel::DrawUI(const ImGuiSystem &ui, TransformGizmo &gizmo,
 		return true;
 	}
 
-	gizmo.DrawToolbar(selectionMode);
+	if (editable_) {
+		gizmo.DrawToolbar(selectionMode);
+	} else {
+		gizmo.Cancel();
+		CancelSelection();
+	}
 
 	const auto size = ui.GetContentSize();
 
@@ -71,7 +78,9 @@ bool SceneViewPanel::DrawUI(const ImGuiSystem &ui, TransformGizmo &gizmo,
 
 	input_ = ui.GetViewportInput();
 
-	if (auto path = ModelAssetDragDrop::AcceptTarget(); !path.empty()) {
+	if (auto path = editable_ ? ModelAssetDragDrop::AcceptTarget()
+	                          : std::filesystem::path{};
+	    !path.empty()) {
 		// ドラッグ元がアクティブな間は通常のホバー判定を使わない
 		const auto mouse = ImGui::GetMousePos();
 
@@ -95,7 +104,7 @@ TransformGizmo::Result SceneViewPanel::DrawGizmo(
     const DirectX::XMFLOAT4X4 &view, const DirectX::XMFLOAT4X4 &projection,
     SceneObjectId objectId, Transform *transform, bool enabled,
     TransformGizmo::SelectionMode selectionMode) const {
-	if (!visible_ || !enabled || !transform || selecting_) {
+	if (!editable_ || !visible_ || !enabled || !transform || selecting_) {
 		gizmo.Cancel();
 		return {};
 	}
@@ -132,7 +141,7 @@ SceneViewPanel::UpdateSelection(const ImGuiSystem &ui, bool enabled,
 	SelectionRequest request;
 	const auto &io = ImGui::GetIO();
 
-	if (!enabled || !visible_ || !input_.applicationFocused ||
+	if (!editable_ || !enabled || !visible_ || !input_.applicationFocused ||
 	    !input_.windowFocused || input_.widgetActive || input_.rightDown ||
 	    input_.middleDown || io.KeyAlt ||
 	    ImGui::IsKeyPressed(ImGuiKey_Escape, false) ||

@@ -39,6 +39,8 @@ EditorScene::EditorScene(const EngineContext &context)
     : ui_(context.ui), input_(context.input), models_(context.models),
       renderer_(document_.GetScene(), context.models, context.render),
       playMode_(context.models, context.render),
+      playSceneRenderer_(playMode_.GetSession().GetScene(), context.models,
+                         context.render),
       sceneViewPanel_(context.render) {
 }
 
@@ -49,7 +51,8 @@ bool EditorScene::Initialize() {
 		return false;
 	}
 
-	if (!renderer_.Initialize() || !playMode_.Initialize()) {
+	if (!renderer_.Initialize() || !playMode_.Initialize() ||
+	    !playSceneRenderer_.Initialize()) {
 		return false;
 	}
 
@@ -114,6 +117,7 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	playFrame_ = false;
+	playSceneReady_ = false;
 	performancePanel_.Record(deltaTime);
 	gizmo_.BeginFrame();
 
@@ -187,6 +191,7 @@ bool EditorScene::Update(float deltaTime) {
 
 	if (playMode_.IsPlaying()) {
 		playFrame_ = true;
+		DrawGridSettings();
 
 		consolePanel_.Draw(ui_);
 		controlsPanel_.Draw();
@@ -198,10 +203,23 @@ bool EditorScene::Update(float deltaTime) {
 		historyPanel_.Draw(ui_, document_.GetHistory(), false);
 		ui_.EndDisabled();
 
-		if (!playMode_.Update(deltaTime, input_)) {
+		if (!sceneViewPanel_.DrawUI(
+		        ui_, gizmo_, TransformGizmo::SelectionMode::SINGLE, false)) {
+			playMode_.Stop();
+			ShowError("Could not create or resize the Scene render target.");
+		} else if (!playMode_.Update(deltaTime, input_,
+		                             sceneViewPanel_.GetInput().windowFocused,
+		                             sceneViewPanel_.GetRenderTexture() !=
+		                                 nullptr)) {
 			playMode_.Stop();
 			ShowError("Play stopped because simulation or Game rendering "
 			          "failed. Your editing scene is unchanged.");
+		}
+
+		if (playMode_.IsPlaying() && !UpdatePlaySceneView(deltaTime, action)) {
+			playMode_.Stop();
+			ShowError("Play stopped because Scene rendering failed. Your "
+			          "editing scene is unchanged.");
 		}
 
 		playStatePanel_.Draw(ui_, playMode_.GetSession());
@@ -719,6 +737,11 @@ void EditorScene::Draw() const {
 	playMode_.Draw();
 
 	if (playFrame_) {
+		if (auto *target = sceneViewPanel_.GetRenderTexture();
+		    playSceneReady_ && target) {
+			playSceneRenderer_.Draw(target);
+		}
+
 		return;
 	}
 
@@ -758,6 +781,8 @@ void EditorScene::Finalize() {
 
 	performancePanel_.Reset();
 	playStatePanel_.Reset();
+	playSceneReady_ = false;
+	playSceneRenderer_.Finalize();
 	playMode_.Finalize();
 	sceneViewPanel_.Finalize();
 	renderer_.Finalize();
@@ -1092,6 +1117,8 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			action = EditorAction::FRAME_ALL;
 		}
 
+		ui_.BeginDisabled(playMode_.IsPlaying());
+
 		if (ui_.BeginMenu("Camera View")) {
 			if (ui_.MenuItem("Front (-Z)", nullptr, enabled)) {
 				action = EditorAction::VIEW_FRONT;
@@ -1127,6 +1154,8 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		if (ui_.MenuItem("Camera Settings...", nullptr, enabled)) {
 			cameraSettingsRequested_ = true;
 		}
+
+		ui_.EndDisabled();
 
 		ui_.Separator();
 		ImGui::MenuItem("Grid", nullptr, &showGrid_, !IsBusy());
@@ -2500,12 +2529,16 @@ EditorScene::ReadFrameShortcut(const ViewportInput &viewport,
 }
 
 bool EditorScene::FrameObjects(FrameRequest request,
-                               const DirectX::XMFLOAT4X4 &projection) {
+                               const DirectX::XMFLOAT4X4 &projection,
+                               bool runtimeScene) {
+	const auto &scene =
+	    runtimeScene ? playMode_.GetSession().GetScene() : document_.GetScene();
+	auto &renderer = runtimeScene ? playSceneRenderer_ : renderer_;
 	DirectX::XMFLOAT3 minimum{};
 	DirectX::XMFLOAT3 maximum{};
 	bool found = false;
 
-	for (const auto &[id, object] : document_.GetScene().GetObjects()) {
+	for (const auto &[id, object] : scene.GetObjects()) {
 		if ((!object.visible && !object.modelPath.empty()) ||
 		    (request == FrameRequest::SELECTED && !selection_.Contains(id))) {
 			continue;
@@ -2515,7 +2548,7 @@ bool EditorScene::FrameObjects(FrameRequest request,
 
 		const bool boundsReady = object.modelPath.empty()
 		                             ? ObjectFrameBounds::Get(object, corners)
-		                             : renderer_.GetObjectBounds(id, corners);
+		                             : renderer.GetObjectBounds(id, corners);
 
 		if (!boundsReady) {
 			continue;
@@ -2557,6 +2590,70 @@ bool EditorScene::FrameObjects(FrameRequest request,
 	}
 
 	return true;
+}
+
+bool EditorScene::UpdatePlaySceneView(float deltaTime, EditorAction action) {
+	ViewportInput viewport = sceneViewPanel_.GetInput();
+
+	if (IsBusy() || ui_.IsTextInputActive() || ImGui::IsAnyItemActive()) {
+		viewport = {};
+	}
+
+	const auto &runtime = playMode_.GetSession().GetScene();
+	const auto *active = runtime.FindObject(selection_.GetActiveId());
+	cameraController_.Update(input_, viewport, deltaTime,
+	                         active ? &active->transform.translation : nullptr);
+	auto *target = sceneViewPanel_.GetRenderTexture();
+
+	if (!target) {
+		return true;
+	}
+
+	if (!playSceneRenderer_.SetCameraPose(cameraController_.GetPose()) ||
+	    !playSceneRenderer_.Update(target->GetWidth(), target->GetHeight())) {
+		return false;
+	}
+
+	DirectX::XMFLOAT4X4 view, projection;
+
+	if (!playSceneRenderer_.GetCameraMatrices(view, projection)) {
+		return false;
+	}
+
+	FrameRequest request = action == EditorAction::FRAME_SELECTED
+	                           ? FrameRequest::SELECTED
+	                       : action == EditorAction::FRAME_ALL
+	                           ? FrameRequest::ALL
+	                           : ReadFrameShortcut(viewport, false);
+
+	if (request != FrameRequest::NONE &&
+	    FrameObjects(request, projection, true)) {
+		if (!playSceneRenderer_.SetCameraPose(cameraController_.GetPose()) ||
+		    !playSceneRenderer_.Update(target->GetWidth(),
+		                               target->GetHeight())) {
+			return false;
+		}
+	}
+
+	if ((showGrid_ && !sceneGrid_.Update(playSceneRenderer_)) ||
+	    !colliderBounds_.Update(playSceneRenderer_, runtime,
+	                            selection_.GetIds(), colliderDisplay_) ||
+	    (showObjectMarkers_ &&
+	     !objectMarkers_.Update(playSceneRenderer_, runtime,
+	                            selection_.GetIds()))) {
+		return false;
+	}
+
+	if (showSelectionBounds_) {
+		for (const auto id : selection_.GetIds()) {
+			if (!selectionBounds_.Update(playSceneRenderer_, id)) {
+				return false;
+			}
+		}
+	}
+
+	playSceneReady_ = playSceneRenderer_.UpdateDebugLines();
+	return playSceneReady_;
 }
 
 void EditorScene::DuplicateSelectedObjects() {

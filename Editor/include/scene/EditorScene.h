@@ -391,9 +391,19 @@ class EditorScene final : public IScene {
 	/// </summary>
 	/// <param name="request">選択物体またはシーン全体。非表示モデルは対象外</param>
 	/// <param name="projection">Sceneビューの更新済み投影行列</param>
+	/// <param name="runtimeScene">再生シーンの現在の配置を使用するか。falseは編集シーン</param>
 	/// <returns>true:カメラを移動した false:対象なし、または移動できない</returns>
 	bool FrameObjects(FrameRequest request,
-	                  const DirectX::XMFLOAT4X4 &projection);
+	                  const DirectX::XMFLOAT4X4 &projection,
+	                  bool runtimeScene = false);
+
+	/// <summary>
+	/// 再生シーンを独立したSceneカメラで更新する。編集や再生入力には反映しない
+	/// </summary>
+	/// <param name="deltaTime">Sceneカメラの経過時間。Pause中もカメラ操作には使用する</param>
+	/// <param name="action">メニューから要求されたフレーミング操作</param>
+	/// <returns>true:成功または非表示 false:Scene描画の更新失敗</returns>
+	bool UpdatePlaySceneView(float deltaTime, EditorAction action);
 
 	/// <summary>
 	/// 選択中の全物体を複製し、複製した物体を選択する
@@ -477,7 +487,9 @@ class EditorScene final : public IScene {
 	SceneDocument document_;
 	SceneRenderer renderer_;
 	EditorPlayMode playMode_;
+	SceneRenderer playSceneRenderer_;
 	bool playFrame_ = false;
+	bool playSceneReady_ = false;
 
 	EditorDockLayout dockLayout_;
 

@@ -308,6 +308,17 @@ void ControlsPanel::Draw() {
 	         "Use without Ctrl, Shift or Alt. Shortcuts are ignored while "
 	         "editing text or fields, dragging, showing a popup, or when "
 	         "Editor is not active. Holding a key does not repeat the action."},
+	        {"Scene during Play",
+	         "Observe the live scene from an independent camera. Right-drag "
+	         "and WASD, middle-drag, wheel and Alt-orbit still work, including "
+	         "while paused. F / Shift+F frame current runtime positions. "
+	         "Grid, Collider display, object markers and selection bounds "
+	         "apply only to Scene; Game keeps its own camera and clean image. "
+	         "Editing, selection changes and model drops are disabled. Scene "
+	         "camera controls do not move the player. Play continues when "
+	         "Game is hidden but Scene is visible; hiding both or switching "
+	         "away from the application suspends simulation. Stop restores "
+	         "the unchanged editing scene; the Scene camera view is kept."},
 	        {"View > Play State",
 	         "Inspect the live character position, vertical velocity and "
 	         "grounded state, plus the rendered camera pose and lens. The "

@@ -175,16 +175,20 @@ void EditorPlayMode::Stop() {
 	viewport_ = {};
 }
 
-bool EditorPlayMode::Update(float seconds, const InputSystem &input) {
+bool EditorPlayMode::Update(float seconds, const InputSystem &input,
+                            bool inputBlocked, bool sceneVisible) {
 	if (!IsPlaying()) {
 		return true;
 	}
 
-	const auto controls = GameplayInput::Read(input.GetKeyboard(), viewport_,
-	                                          ImGui::GetIO().WantTextInput);
+	const auto controls =
+	    inputBlocked ? CharacterInput{}
+	                 : GameplayInput::Read(input.GetKeyboard(), viewport_,
+	                                       ImGui::GetIO().WantTextInput);
 
-	if (viewport_.windowFocused && viewport_.applicationFocused &&
-	    !viewport_.widgetActive && !ImGui::GetIO().WantTextInput) {
+	if (!inputBlocked && viewport_.windowFocused &&
+	    viewport_.applicationFocused && !viewport_.widgetActive &&
+	    !ImGui::GetIO().WantTextInput) {
 		const auto &keys = input.GetKeyboard();
 
 		if (keys.IsPressed(Key::ESCAPE)) {
@@ -193,8 +197,9 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input) {
 		}
 	}
 
-	// 非表示やフォーカス喪失時はゲーム時間も止め、復帰時の大きな移動を防ぐ。
-	if (!visible_ || !viewport_.applicationFocused) {
+	// Sceneだけが表示されている間も再生し、アプリ全体のフォーカス喪失時は止める。
+	if ((!visible_ && !sceneVisible) || ImGui::GetIO().AppFocusLost ||
+	    (!sceneVisible && !viewport_.applicationFocused)) {
 		return true;
 	}
 
@@ -204,6 +209,10 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input) {
 
 	if (!session_.Update(seconds, controls)) {
 		return false;
+	}
+
+	if (!visible_) {
+		return true;
 	}
 
 	if (!renderer_.SetCameraPose(session_.GetCameraPose()) ||
