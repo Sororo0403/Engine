@@ -376,6 +376,13 @@ void ControlsPanel::Draw() {
 	         "reveals the result; no users clears selection. Draft material "
 	         "edits, scene data and Undo history are kept. Model Default "
 	         "references are not explicit assignments. "
+	         "Export asks to save a dirty material only when the scene uses "
+	         "it, "
+	         "including hidden objects and unused slots. Save writes the draft "
+	         "before opening export; a failed save keeps the draft and blocks "
+	         "export. Don't Save uses the saved file without discarding the "
+	         "draft. Cancel stops before the export dialog. Scene edits are "
+	         "exported without requiring a scene save. "
 	         "Game export includes assigned material files and their "
 	         "textures."},
 	        {"Inspector > Color Tint",

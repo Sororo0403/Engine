@@ -243,6 +243,11 @@ class EditorScene final : public IScene {
 	void ConfirmSceneChanges();
 
 	/// <summary>
+	/// 材質の保存確認後に保留操作を続ける。ゲーム出力はシーンの保存を要求しない
+	/// </summary>
+	void ContinueAfterMaterialConfirmation();
+
+	/// <summary>
 	/// 割り当てた材質の編集を開始する。別の材質を編集中なら保存を確認する
 	/// </summary>
 	/// <param name="path">Inspectorから開く材質のパス</param>

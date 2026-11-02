@@ -1588,21 +1588,29 @@ void EditorScene::StartAction(EditorAction action) {
 		stage_ = DialogStage::GAME_SETTINGS;
 		return;
 	case EditorAction::EXPORT_GAME: {
-		GameExportOptions options;
-		const auto root = PathUtils::GetExecutableDirectory();
-#if defined(_DEBUG)
-		options.runtimeDirectory = root.parent_path() / L"Release";
-#else
-		options.runtimeDirectory = root;
-#endif
-		options.resourceDirectory = root / L"resources";
-		options.destination = root / L"exports" / L"Game";
-		options.config = exportConfig_;
-		options.config.fallbackCamera = cameraController_.GetPose();
-		exportDialog_.Show(std::move(options));
-		stage_ = DialogStage::EXPORT_GAME;
+		pendingAction_ = action;
+
+		try {
+			if (materialPanel_.HasUnsavedChanges() &&
+			    !MaterialUsage::FindObjects(document_.GetScene(),
+			                                materialPanel_.GetFilePath())
+			         .empty()) {
+				saveChangesDialog_.Show(
+				    PathUtils::ToUtf8(materialPanel_.GetFilePath().filename()));
+				stage_ = DialogStage::CONFIRM_MATERIAL_SAVE;
+			} else {
+				ContinueAfterMaterialConfirmation();
+			}
+		} catch (const std::exception &error) {
+			Logger::Error(
+			    std::format("EditorScene::PrepareExport: {}", error.what()));
+			ShowError("Could not prepare game export. Your edits were kept. "
+			          "See the log for details.");
+		}
+
 		return;
 	}
+
 	case EditorAction::RENAME_OBJECT:
 		if (HasSingleSelection()) {
 			inspectorPanel_.RequestRename(selection_.GetActiveId());
@@ -1913,6 +1921,23 @@ void EditorScene::ExecutePendingAction() {
 	stage_ = DialogStage::IDLE;
 
 	switch (action) {
+	case EditorAction::EXPORT_GAME: {
+		GameExportOptions options;
+		const auto root = PathUtils::GetExecutableDirectory();
+#if defined(_DEBUG)
+		options.runtimeDirectory = root.parent_path() / L"Release";
+#else
+		options.runtimeDirectory = root;
+#endif
+		options.resourceDirectory = root / L"resources";
+		options.destination = root / L"exports" / L"Game";
+		options.config = exportConfig_;
+		options.config.fallbackCamera = cameraController_.GetPose();
+		exportDialog_.Show(std::move(options));
+		stage_ = DialogStage::EXPORT_GAME;
+		return;
+	}
+
 	case EditorAction::NEW_SAMPLE:
 	case EditorAction::NEW: {
 		try {
@@ -2263,7 +2288,7 @@ void EditorScene::UpdateDialogs() {
 		if (result == SaveChangesResult::SAVE) {
 			try {
 				if (materialPanel_.Save()) {
-					ConfirmSceneChanges();
+					ContinueAfterMaterialConfirmation();
 				} else {
 					ShowError("Could not save the material: " +
 					          materialPanel_.GetError());
@@ -2275,8 +2300,8 @@ void EditorScene::UpdateDialogs() {
 				          "See the log for details.");
 			}
 		} else if (result == SaveChangesResult::DISCARD) {
-			// 後続のシーン確認でCancelした場合に備え、材質の編集中の値はまだ破棄しない。
-			ConfirmSceneChanges();
+			// 出力の取消や後続のシーン確認に備え、材質の編集中の値は保持する。
+			ContinueAfterMaterialConfirmation();
 		} else if (result == SaveChangesResult::CANCEL) {
 			pendingAction_ = EditorAction::NONE;
 			pendingMaterialPath_.clear();
@@ -3662,5 +3687,21 @@ void EditorScene::PasteCollidersToSelection() {
 		                          error.what()));
 		ShowError(
 		    "Could not paste the Box Colliders. See the log for details.");
+	}
+}
+
+void EditorScene::ContinueAfterMaterialConfirmation() {
+	if (pendingAction_ != EditorAction::EXPORT_GAME) {
+		ConfirmSceneChanges();
+		return;
+	}
+
+	try {
+		ExecutePendingAction();
+	} catch (const std::exception &error) {
+		Logger::Error(
+		    std::format("EditorScene::ContinueExport: {}", error.what()));
+		ShowError("Could not open game export. Your edits were kept. See the "
+		          "log for details.");
 	}
 }
