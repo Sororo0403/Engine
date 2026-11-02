@@ -37,6 +37,12 @@ class AssetDatabase {
 	const std::vector<std::filesystem::path> &GetModels() const;
 
 	/// <summary>
+	/// モデルから独立した材質ファイルの一覧を取得する
+	/// </summary>
+	/// <returns>実行ファイル基準の.material.jsonファイル一覧</returns>
+	const std::vector<std::filesystem::path> &GetMaterials() const;
+
+	/// <summary>
 	/// 空のフォルダを含む、検索先配下のフォルダ一覧を取得する
 	/// </summary>
 	/// <returns>実行ファイルのフォルダを基準にした相対パスの一覧。検索先自身は含まない</returns>
@@ -56,6 +62,7 @@ class AssetDatabase {
   private:
 	std::filesystem::path rootDirectory_;
 	std::vector<std::filesystem::path> models_;
+	std::vector<std::filesystem::path> materials_;
 	std::vector<std::filesystem::path> directories_;
 	std::string error_;
 };

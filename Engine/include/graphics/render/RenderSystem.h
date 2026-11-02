@@ -1,5 +1,6 @@
 #pragma once
 
+#include "graphics/material/MaterialManager.h"
 #include "graphics/render/RenderWorld.h"
 
 #include <memory>
@@ -73,7 +74,14 @@ class RenderSystem {
 	/// <param name="world">描画するワールド</param>
 	void Draw(const RenderWorld &world) const;
 
+	/// <summary>
+	/// 描画基盤で共有する、モデルから独立した材質管理を取得する
+	/// </summary>
+	/// <returns>GPU完了後に利用する材質管理</returns>
+	MaterialManager &GetMaterials();
+
   private:
+	MaterialManager materials_;
 	// 参照先はRenderSystemより長く保持する
 	D3D12Graphics &graphics_;
 	MeshRenderer &renderer_;

@@ -42,6 +42,7 @@ bool AssetDatabase::Refresh() {
 		}
 
 		std::vector<std::filesystem::path> models;
+		std::vector<std::filesystem::path> materials;
 		std::vector<std::filesystem::path> directories;
 
 		std::filesystem::recursive_directory_iterator iterator(root, error);
@@ -73,6 +74,12 @@ bool AssetDatabase::Refresh() {
 			if (regularFile) {
 				const auto &path = entry.path();
 
+				if (PathUtils::HasExtension(path, ".json") &&
+				    PathUtils::HasExtension(path.stem(), ".material")) {
+					materials.push_back(
+					    path.lexically_relative(executableDirectory));
+				}
+
 				const bool supported = PathUtils::HasExtension(path, ".glb") ||
 				                       PathUtils::HasExtension(path, ".gltf") ||
 				                       PathUtils::HasExtension(path, ".obj");
@@ -99,14 +106,17 @@ bool AssetDatabase::Refresh() {
 		}
 
 		std::sort(models.begin(), models.end());
+		std::sort(materials.begin(), materials.end());
 		std::sort(directories.begin(), directories.end());
 
 		models_.swap(models);
+		materials_.swap(materials);
 		directories_.swap(directories);
 		error_.clear();
 		return true;
 	} catch (const std::exception &error) {
 		models_.clear();
+		materials_.clear();
 		directories_.clear();
 		error_ = error.what();
 
@@ -134,6 +144,11 @@ AssetDatabase::GetDirectories() const {
 
 void AssetDatabase::Clear() {
 	models_.clear();
+	materials_.clear();
 	directories_.clear();
 	error_.clear();
+}
+
+const std::vector<std::filesystem::path> &AssetDatabase::GetMaterials() const {
+	return materials_;
 }

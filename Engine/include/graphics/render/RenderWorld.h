@@ -5,6 +5,7 @@
 #include "graphics/camera/CameraSettings.h"
 #include "graphics/material/ColorTint.h"
 #include "graphics/material/MaterialData.h"
+#include "graphics/material/MaterialHandle.h"
 #include "graphics/model/ModelHandle.h"
 #include "graphics/render/DebugLine.h"
 #include "graphics/render/RenderObjectHandle.h"
@@ -72,6 +73,16 @@ class RenderWorld {
 	/// <param name="handle">物体のハンドル</param>
 	/// <returns>材質数</returns>
 	std::size_t GetMaterialCount(RenderObjectHandle handle) const;
+
+	/// <summary>
+	/// 描画物体の材質スロットに独立した共有材質を割り当てる。GPU完了後に呼び出す
+	/// </summary>
+	/// <param name="handle">このワールドの描画物体</param>
+	/// <param name="slot">モデル内の材質スロット番号</param>
+	/// <param name="material">同じデバイスの共有材質。未設定はモデルの既定材質へ戻す</param>
+	/// <returns>true:成功 false:物体・スロット・描画基盤が無効</returns>
+	bool SetMaterial(RenderObjectHandle handle, std::size_t slot,
+	                 const MaterialHandle &material);
 
 	/// <summary>
 	/// 物体全体の材質へ掛ける色を設定する。元の材質や共有モデルは変更しない

@@ -10,6 +10,8 @@
 class ImGuiSystem;
 class Scene;
 class EditorHistory;
+class ModelManager;
+class AssetDatabase;
 
 /// <summary>
 /// 選択に追従、または固定した物体の情報表示と編集要求を管理する
@@ -113,10 +115,13 @@ class InspectorPanel {
 	/// <param name="selectedObjectId">追従先の選択物体ID。未選択は0。固定中は固定先を編集する</param>
 	/// <param name="history">編集内容を記録する履歴</param>
 	/// <param name="canPasteTransform">貼り付けるTransformを保持しているか</param>
+	/// <param name="models">材質スロットを表示する場合のモデル管理</param>
+	/// <param name="assets">材質スロットを表示する場合のアセット一覧</param>
 	/// <returns>true:物体を編集した false:シーンへの変更なし</returns>
 	bool Draw(const ImGuiSystem &ui, Scene &scene,
 	          SceneObjectId selectedObjectId, EditorHistory &history,
-	          bool canPasteTransform = false);
+	          bool canPasteTransform = false, ModelManager *models = nullptr,
+	          const AssetDatabase *assets = nullptr);
 
 	/// <summary>
 	/// 選択した再生物体の現在値を表示し、Transformのコピーを返す。編集用の固定先・要求・履歴は変更しない

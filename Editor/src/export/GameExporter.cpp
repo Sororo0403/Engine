@@ -1,5 +1,6 @@
 #include "export/GameExporter.h"
 #include "gameplay/SceneSimulation.h"
+#include "graphics/material/MaterialAsset.h"
 #include "graphics/model/ModelLoader.h"
 #include "platform/windows/PathUtils.h"
 #include "scene/SceneSerializer.h"
@@ -166,7 +167,7 @@ class Assets {
 		}
 
 		for (const auto &material : data.materials) {
-			if (material.baseColorTexture.source == ModelTextureSource::FILE) {
+			if (material.baseColorTexture.source == TextureSource::FILE) {
 				AddFile(material.baseColorTexture.filePath);
 			}
 		}
@@ -275,6 +276,23 @@ class Assets {
 		}
 
 		return model;
+	}
+
+	fs::path AddMaterial(const fs::path &input) {
+		const auto file = AddFile(input);
+		MaterialAsset asset;
+		std::string error;
+
+		if (!MaterialSerializer::Load(file, asset, error)) {
+			throw std::runtime_error(
+			    "Invalid material: " + PathUtils::ToUtf8(file) + ": " + error);
+		}
+
+		if (!asset.baseColorTexture.empty()) {
+			AddFile(file.parent_path() / asset.baseColorTexture);
+		}
+
+		return file;
 	}
 
 	const auto &Files() const {
@@ -750,6 +768,17 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 		auto objects = scene.GetObjects();
 
 		for (auto &[id, object] : objects) {
+			for (auto &[slot, path] : object.materials.slots) {
+				const auto input =
+				    path.is_absolute()
+				        ? path
+				        : resourceRoot /
+				              RelativeInside(fs::path(L"resources"),
+				                             path.lexically_normal());
+				path = fs::path(L"resources") /
+				       RelativeInside(resourceRoot, assets.AddMaterial(input));
+			}
+
 			if (!object.modelPath.empty()) {
 				const auto path =
 				    object.modelPath.is_absolute()
@@ -842,6 +871,10 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 		Assets exportedAssets(fs::canonical(destination / L"resources"));
 
 		for (const auto &[id, object] : snapshot.GetObjects()) {
+			for (const auto &[slot, path] : object.materials.slots) {
+				exportedAssets.AddMaterial(destination / path);
+			}
+
 			if (!object.modelPath.empty()) {
 				exportedAssets.AddModel(destination / object.modelPath);
 			}

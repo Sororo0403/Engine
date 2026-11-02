@@ -21,6 +21,7 @@
 #include "panels/HierarchyPanel.h"
 #include "panels/HistoryPanel.h"
 #include "panels/InspectorPanel.h"
+#include "panels/MaterialPanel.h"
 #include "panels/PerformancePanel.h"
 #include "panels/PlayStatePanel.h"
 #include "panels/SceneViewPanel.h"
@@ -549,6 +550,7 @@ class EditorScene final : public IScene {
 	SceneViewPanel sceneViewPanel_;
 	EditorCameraController cameraController_;
 
+	MaterialPanel materialPanel_;
 	AssetDatabase assets_{L"resources/editor"};
 	AssetsPanel assetsPanel_;
 

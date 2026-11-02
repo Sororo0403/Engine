@@ -2,6 +2,7 @@
 #include "core/Logger.h"
 #include "graphics/DirectionalLight.h"
 #include "graphics/material/Material.h"
+#include "graphics/material/MaterialResource.h"
 #include "graphics/mesh/Mesh.h"
 #include "graphics/mesh/MeshInstance.h"
 #include "graphics/mesh/Vertex.h"
@@ -56,6 +57,9 @@ void MeshRenderer::Draw(ID3D12GraphicsCommandList *commandList,
 		return;
 	}
 
+	// メッシュごとに、割り当てられた材質の画像ヒープを使用する。
+	auto *heap = material->GetResource()->GetDescriptorHeap();
+	commandList->SetDescriptorHeaps(1, &heap);
 	commandList->SetGraphicsRootSignature(rootSignature_.Get());
 	commandList->SetPipelineState(pipelineState_.Get());
 

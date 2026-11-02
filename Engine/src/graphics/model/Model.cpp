@@ -20,8 +20,7 @@ bool Model::Initialize(ID3D12Device *device, ID3D12CommandQueue *commandQueue,
 		return false;
 	}
 
-	if (srvHeap_ || !parts_.empty() || !textures_.empty() ||
-	    !defaultMaterials_.empty()) {
+	if (!parts_.empty() || !defaultMaterials_.empty()) {
 		Logger::Error("Model::Initialize: 初期化済みです。");
 		return false;
 	}
@@ -33,16 +32,24 @@ bool Model::Initialize(ID3D12Device *device, ID3D12CommandQueue *commandQueue,
 	}
 
 	try {
-		// 物体ごとの材質を作るための初期値を保存する
-		defaultMaterials_.resize(data.materials.size());
+		// 既定材質も独立した共有リソースとして作成し、モデルは参照だけを持つ。
+		defaultMaterials_.reserve(data.materials.size());
 
-		for (std::size_t i = 0; i < data.materials.size(); ++i) {
-			defaultMaterials_[i].baseColor = data.materials[i].baseColor;
+		for (const auto &source : data.materials) {
+			MaterialData material;
+			material.baseColor = source.baseColor;
+			auto resource = std::make_shared<MaterialResource>();
+
+			if (!resource->Initialize(device, commandQueue, material,
+			                          source.baseColorTexture)) {
+				Finalize();
+				return false;
+			}
+
+			defaultMaterials_.push_back(std::move(resource));
 		}
 
-		if (!CreateMeshes(device, data) ||
-		    !CreateTextures(device, commandQueue, data) ||
-		    !CreateShaderResourceViews(device)) {
+		if (!CreateMeshes(device, data)) {
 			Finalize();
 			return false;
 		}
@@ -117,73 +124,6 @@ bool Model::CreateMeshes(ID3D12Device *device, const ModelData &data) {
 	return true;
 }
 
-bool Model::CreateTextures(ID3D12Device *device,
-                           ID3D12CommandQueue *commandQueue,
-                           const ModelData &data) {
-	// 0番は画像なし用の白、それ以降は各材質の画像
-	textures_.resize(data.materials.size() + 1);
-
-	const std::array<std::uint8_t, 4> white{255, 255, 255, 255};
-
-	if (!textures_[0].CreateFromRGBA(device, commandQueue, 1, 1, white)) {
-		Logger::Error("Model: 白いテクスチャの作成に失敗しました。");
-		return false;
-	}
-
-	for (std::size_t i = 0; i < data.materials.size(); ++i) {
-		const ModelTextureData &image = data.materials[i].baseColorTexture;
-
-		Texture &texture = textures_[i + 1];
-		bool loaded = false;
-
-		switch (image.source) {
-		case ModelTextureSource::NONE:
-			continue;
-
-		case ModelTextureSource::FILE:
-			loaded = texture.Load(device, commandQueue, image.filePath);
-			break;
-
-		case ModelTextureSource::ENCODED:
-			loaded = texture.LoadFromMemory(device, commandQueue, image.bytes);
-			break;
-
-		case ModelTextureSource::RGBA8:
-			loaded = texture.CreateFromRGBA(device, commandQueue, image.width,
-			                                image.height, image.bytes);
-			break;
-		}
-
-		if (!loaded) {
-			Logger::Error(std::format(
-			    "Model: 材質{}のテクスチャ作成に失敗しました。", i));
-			return false;
-		}
-	}
-
-	return true;
-}
-
-bool Model::CreateShaderResourceViews(ID3D12Device *device) {
-	const std::size_t materialCount = defaultMaterials_.size();
-
-	srvHeap_ = std::make_unique<DirectX::DescriptorHeap>(device, materialCount);
-
-	for (std::size_t i = 0; i < materialCount; ++i) {
-		ID3D12Resource *resource = textures_[i + 1].GetResource();
-
-		// 画像が指定されていない材質には白を使用する
-		if (!resource) {
-			resource = textures_[0].GetResource();
-		}
-
-		DirectX::CreateShaderResourceView(device, resource,
-		                                  srvHeap_->GetCpuHandle(i));
-	}
-
-	return true;
-}
-
 std::size_t Model::GetMeshCount() const {
 	return parts_.size();
 }
@@ -202,20 +142,12 @@ std::size_t Model::GetMaterialCount() const {
 
 const MaterialData &
 Model::GetDefaultMaterialData(std::size_t materialIndex) const {
+	return defaultMaterials_.at(materialIndex)->GetData();
+}
+
+const std::shared_ptr<const MaterialResource> &
+Model::GetDefaultMaterial(std::size_t materialIndex) const {
 	return defaultMaterials_.at(materialIndex);
-}
-
-D3D12_GPU_DESCRIPTOR_HANDLE
-Model::GetTextureSrv(std::size_t materialIndex) const {
-	if (!srvHeap_) {
-		return {};
-	}
-
-	return srvHeap_->GetGpuHandle(materialIndex);
-}
-
-ID3D12DescriptorHeap *Model::GetDescriptorHeap() const {
-	return srvHeap_ ? srvHeap_->Heap() : nullptr;
 }
 
 bool Model::Raycast(const Ray &ray, float &distance) const {
@@ -284,8 +216,6 @@ bool Model::GetBoundsCorners(std::array<DirectX::XMFLOAT3, 8> &corners) const {
 }
 
 void Model::Finalize() {
-	srvHeap_.reset();
-
 	for (auto &part : parts_) {
 		part.mesh.Finalize();
 	}
@@ -294,10 +224,5 @@ void Model::Finalize() {
 
 	bounds_ = {};
 
-	for (auto &texture : textures_) {
-		texture.Finalize();
-	}
-
-	textures_.clear();
 	defaultMaterials_.clear();
 }

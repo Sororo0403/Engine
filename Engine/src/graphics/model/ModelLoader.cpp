@@ -258,7 +258,7 @@ bool ModelLoader::Load(const std::filesystem::path &filePath,
 bool ModelLoader::LoadBaseColorTexture(const aiScene &scene,
                                        const aiMaterial &material,
                                        const std::filesystem::path &modelPath,
-                                       ModelTextureData &textureData) {
+                                       TextureData &textureData) {
 	aiString texturePath;
 
 	aiTextureMapping mapping = aiTextureMapping_UV;
@@ -278,7 +278,7 @@ bool ModelLoader::LoadBaseColorTexture(const aiScene &scene,
 		return false;
 	}
 
-	ModelTextureData result;
+	TextureData result;
 
 	const aiTexture *embedded = scene.GetEmbeddedTexture(texturePath.C_Str());
 
@@ -290,7 +290,7 @@ bool ModelLoader::LoadBaseColorTexture(const aiScene &scene,
 
 		if (embedded->mHeight == 0) {
 			// mHeightが0の場合、mWidthは画像データのバイト数
-			result.source = ModelTextureSource::ENCODED;
+			result.source = TextureSource::ENCODED;
 
 			const auto *begin =
 			    reinterpret_cast<const std::uint8_t *>(embedded->pcData);
@@ -298,7 +298,7 @@ bool ModelLoader::LoadBaseColorTexture(const aiScene &scene,
 			result.bytes.assign(begin, begin + embedded->mWidth);
 		} else {
 			// 非圧縮画像はRGBA8へ変換する
-			result.source = ModelTextureSource::RGBA8;
+			result.source = TextureSource::RGBA8;
 			result.width = embedded->mWidth;
 			result.height = embedded->mHeight;
 
@@ -342,7 +342,7 @@ bool ModelLoader::LoadBaseColorTexture(const aiScene &scene,
 		}
 
 		// UTF-8の画像名からファイルパスを作る
-		result.source = ModelTextureSource::FILE;
+		result.source = TextureSource::FILE;
 
 		// 相対パスはモデルファイルのフォルダを基準にする
 		try {

@@ -5,6 +5,7 @@
 #include "history/ColliderCommand.h"
 #include "history/CommandGroup.h"
 #include "history/ComponentCommand.h"
+#include "history/MaterialSlotsCommand.h"
 #include "history/ModelPathCommand.h"
 #include "history/ObjectCommand.h"
 #include "history/ObjectRename.h"
@@ -296,6 +297,16 @@ class EditorHistory {
 	bool SetColorTint(SceneObjectId objectId, std::optional<ColorTint> value);
 
 	/// <summary>
+	/// 物体の材質スロットへの割り当てを1回の履歴として変更する
+	/// </summary>
+	/// <param name="id">編集する物体</param>
+	/// <param name="slot">モデルの材質スロット番号</param>
+	/// <param name="path">材質ファイルの参照先。空はモデルの既定材質へ戻す</param>
+	/// <returns>true:成功または同値 false:対象や設定が無効</returns>
+	bool SetMaterialPath(SceneObjectId id, std::uint32_t slot,
+	                     const std::filesystem::path &path);
+
+	/// <summary>
 	/// 色の連続編集を開始し、編集前の設定を保持する
 	/// </summary>
 	/// <param name="objectId">色の設定を持つ物体</param>
@@ -443,7 +454,8 @@ class EditorHistory {
 	    std::variant<TransformCommand, ObjectCommand, RenameCommand,
 	                 ModelPathCommand, VisibilityCommand, ColliderCommand,
 	                 CharacterCommand, FollowCameraCommand, RespawnCommand,
-	                 CameraCommand, ColorTintCommand, CommandGroup>;
+	                 CameraCommand, ColorTintCommand, MaterialSlotsCommand,
+	                 CommandGroup>;
 
 	/// <summary>
 	/// 操作と、その前後の状態を識別する情報

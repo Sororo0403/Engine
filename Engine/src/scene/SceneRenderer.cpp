@@ -7,6 +7,7 @@
 #include "graphics/render/RenderWorld.h"
 #include "scene/Scene.h"
 
+#include <algorithm>
 #include <exception>
 #include <format>
 #include <utility>
@@ -129,6 +130,21 @@ bool SceneRenderer::SynchronizeObjects() {
 
 			renderObject.modelPath = std::move(modelPath);
 			renderObject.handle = handle;
+		}
+
+		for (std::size_t slot = 0;
+		     slot < world_->GetMaterialCount(renderObject.handle); ++slot) {
+			const auto found = std::find_if(
+			    object.materials.slots.begin(), object.materials.slots.end(),
+			    [slot](const auto &binding) { return binding.first == slot; });
+			const auto material =
+			    found == object.materials.slots.end()
+			        ? MaterialHandle{}
+			        : render_.GetMaterials().Load(found->second);
+
+			if (!world_->SetMaterial(renderObject.handle, slot, material)) {
+				return false;
+			}
 		}
 
 		// シーン側の変形情報を描画側へ反映する

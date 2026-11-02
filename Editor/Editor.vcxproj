@@ -346,4 +346,12 @@ exit /b 0</Command>
     <ClInclude Include="include\appearance\ColorTintInspector.h" />
     <ClCompile Include="src\appearance\ColorTintInspector.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\history\MaterialSlotsCommand.h" />
+    <ClCompile Include="src\history\MaterialSlotsCommand.cpp" />
+    <ClInclude Include="include\appearance\MaterialSlotInspector.h" />
+    <ClCompile Include="src\appearance\MaterialSlotInspector.cpp" />
+    <ClInclude Include="include\panels\MaterialPanel.h" />
+    <ClCompile Include="src\panels\MaterialPanel.cpp" />
+  </ItemGroup>
 </Project>

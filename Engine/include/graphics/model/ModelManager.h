@@ -38,6 +38,13 @@ class ModelManager {
 	void Finalize();
 
 	/// <summary>
+	/// モデルの材質スロット数を取得する
+	/// </summary>
+	/// <param name="model">この描画基盤で読み込んだモデル</param>
+	/// <returns>有効なスロット数。無効なハンドルは0</returns>
+	std::size_t GetMaterialCount(const ModelHandle &model) const;
+
+	/// <summary>
 	/// 読み込み済みモデルのローカル座標の外接ボックスを取得する
 	/// </summary>
 	/// <param name="model">このマネージャーの描画基盤で読み込んだモデル</param>

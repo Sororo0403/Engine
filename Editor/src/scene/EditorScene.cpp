@@ -318,7 +318,8 @@ bool EditorScene::Update(float deltaTime) {
 	ui_.BeginDisabled(gizmo_.IsUsing() || gizmoEditActive_ ||
 	                  sceneViewPanel_.IsSelecting());
 	inspectorPanel_.Draw(ui_, scene, selection_.GetActiveId(), history,
-	                     clipboard_.GetTransform() != nullptr);
+	                     clipboard_.GetTransform() != nullptr, &models_,
+	                     &assets_);
 	const auto &objectRequest = inspectorPanel_.GetObjectRequest();
 	const bool hasObjectRequest =
 	    objectRequest.action != InspectorPanel::ObjectAction::NONE;
@@ -333,6 +334,7 @@ bool EditorScene::Update(float deltaTime) {
 
 	const auto requestedModelPath = assetsPanel_.Draw(ui_, assets_);
 	const auto requestedInstances = assetsPanel_.GetInstanceSelectionRequest();
+	materialPanel_.Draw(ui_, assets_);
 	const auto historyRequest =
 	    historyPanel_.Draw(ui_, history,
 	                       !wasBusy && !gizmo_.IsUsing() && !gizmoEditActive_ &&

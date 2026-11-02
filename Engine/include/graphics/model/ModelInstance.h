@@ -87,6 +87,15 @@ class ModelInstance {
 	/// </summary>
 	void Finalize();
 
+	/// <summary>
+	/// 指定スロットの共有材質を差し替える。メッシュと変形は変更しない
+	/// </summary>
+	/// <param name="slot">材質スロット番号</param>
+	/// <param name="resource">独立した共有材質。空はモデルの既定材質へ戻す</param>
+	/// <returns>true:成功 false:物体やスロット、材質が無効</returns>
+	bool SetMaterial(std::size_t slot,
+	                 const std::shared_ptr<const MaterialResource> &resource);
+
   private:
 	const Model *model_ = nullptr;
 

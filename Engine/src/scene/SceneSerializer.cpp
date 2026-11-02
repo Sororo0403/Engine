@@ -7,6 +7,7 @@
 #include "platform/windows/PathUtils.h"
 #include "scene/Scene.h"
 
+#include <algorithm>
 #include <json.hpp>
 
 #include <exception>
@@ -111,6 +112,10 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 				throw std::runtime_error("Transformが無効です。");
 			}
 
+			if (!object.materials.IsValid()) {
+				throw std::runtime_error("材質の割り当てが無効です。");
+			}
+
 			if (object.colorTint && !object.colorTint->IsValid()) {
 				throw std::runtime_error("色の設定が無効です。");
 			}
@@ -144,6 +149,17 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 			         {"scale", ToJson(object.transform.scale)},
 			     }},
 			});
+
+			if (!object.materials.slots.empty()) {
+				auto bindings = Json::array();
+
+				for (const auto &[slot, path] : object.materials.slots) {
+					bindings.push_back(
+					    {{"slot", slot}, {"path", PathUtils::ToUtf8(path)}});
+				}
+
+				objects.back()["materials"] = std::move(bindings);
+			}
 
 			if (object.colorTint) {
 				objects.back()["colorTint"] = {
@@ -194,7 +210,7 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 
 		const Json document{
 		    {"format", "EngineScene"},
-		    {"version", 7},
+		    {"version", 8},
 		    {"objects", std::move(objects)},
 		};
 
@@ -267,7 +283,7 @@ bool SceneSerializer::Load(Scene &scene,
 		    (document.at("version") != 1 && document.at("version") != 2 &&
 		     document.at("version") != 3 && document.at("version") != 4 &&
 		     document.at("version") != 5 && document.at("version") != 6 &&
-		     document.at("version") != 7)) {
+		     document.at("version") != 7 && document.at("version") != 8)) {
 			throw std::runtime_error("未対応のシーンファイル形式です。");
 		}
 
@@ -305,6 +321,39 @@ bool SceneSerializer::Load(Scene &scene,
 
 			object.modelPath =
 			    PathUtils::FromUtf8(item.at("model").get<std::string>());
+
+			if (version >= 8 && item.contains("materials")) {
+				const auto &bindings = item.at("materials");
+
+				if (!bindings.is_array()) {
+					throw std::runtime_error("材質の割り当て配列が無効です。");
+				}
+
+				for (const auto &binding : bindings) {
+					const auto &slot = binding.at("slot");
+
+					if (!slot.is_number_unsigned() ||
+					    slot.get<std::uint64_t>() > UINT32_MAX) {
+						throw std::runtime_error(
+						    "材質スロットの番号が無効です。");
+					}
+
+					object.materials.slots.emplace_back(
+					    slot.get<std::uint32_t>(),
+					    PathUtils::FromUtf8(
+					        binding.at("path").get<std::string>()));
+				}
+
+				std::sort(object.materials.slots.begin(),
+				          object.materials.slots.end(),
+				          [](const auto &a, const auto &b) {
+					          return a.first < b.first;
+				          });
+
+				if (!object.materials.IsValid()) {
+					throw std::runtime_error("材質の参照先が無効です。");
+				}
+			}
 
 			if (version >= 7 && item.contains("colorTint")) {
 				object.colorTint =

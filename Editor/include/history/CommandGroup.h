@@ -2,6 +2,7 @@
 
 #include "history/ColliderCommand.h"
 #include "history/ComponentCommand.h"
+#include "history/MaterialSlotsCommand.h"
 #include "history/ModelPathCommand.h"
 #include "history/ObjectCommand.h"
 #include "history/RenameCommand.h"
@@ -22,7 +23,7 @@ class CommandGroup {
 	    std::variant<TransformCommand, ObjectCommand, RenameCommand,
 	                 ModelPathCommand, VisibilityCommand, ColliderCommand,
 	                 CharacterCommand, FollowCameraCommand, RespawnCommand,
-	                 CameraCommand>;
+	                 CameraCommand, MaterialSlotsCommand>;
 
 	/// <summary>
 	/// 実行順に並んだ操作を保持する。シーンへの反映は行わない

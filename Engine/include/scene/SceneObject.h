@@ -4,6 +4,7 @@
 #include "gameplay/FollowCameraSettings.h"
 #include "gameplay/RespawnSettings.h"
 #include "graphics/material/ColorTint.h"
+#include "graphics/material/MaterialBindings.h"
 #include "math/Transform.h"
 #include "physics/BoxCollider.h"
 #include "scene/CameraComponent.h"
@@ -21,6 +22,9 @@ struct SceneObject {
 
 	// 空の場合はモデルを持たない物体として扱う
 	std::filesystem::path modelPath;
+
+	// 材質スロットごとの差し替え。モデルの形状や既定材質は変更しない
+	MaterialBindings materials;
 
 	// falseの場合はモデルを描画せず、Scene上の選択判定にも使用しない
 	bool visible = true;

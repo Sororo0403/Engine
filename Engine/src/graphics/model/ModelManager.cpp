@@ -138,3 +138,9 @@ bool ModelManager::GetLocalBounds(
 	return model.model_ && model.graphics_ == &impl_->graphics &&
 	       model.model_->GetBoundsCorners(corners);
 }
+
+std::size_t ModelManager::GetMaterialCount(const ModelHandle &model) const {
+	return model.model_ && model.graphics_ == &impl_->graphics
+	           ? model.model_->GetMaterialCount()
+	           : 0;
+}

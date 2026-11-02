@@ -618,4 +618,12 @@
       <Filter>src\appearance</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\history\MaterialSlotsCommand.h"><Filter>include\history</Filter></ClInclude>
+    <ClCompile Include="src\history\MaterialSlotsCommand.cpp"><Filter>src\history</Filter></ClCompile>
+    <ClInclude Include="include\appearance\MaterialSlotInspector.h"><Filter>include\appearance</Filter></ClInclude>
+    <ClCompile Include="src\appearance\MaterialSlotInspector.cpp"><Filter>src\appearance</Filter></ClCompile>
+    <ClInclude Include="include\panels\MaterialPanel.h"><Filter>include\panels</Filter></ClInclude>
+    <ClCompile Include="src\panels\MaterialPanel.cpp"><Filter>src\panels</Filter></ClCompile>
+  </ItemGroup>
 </Project>

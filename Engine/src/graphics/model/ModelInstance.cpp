@@ -10,8 +10,7 @@
 #include <format>
 
 bool ModelInstance::Initialize(ID3D12Device *device, const Model &model) {
-	if (!device || model.GetMeshCount() == 0 || model.GetMaterialCount() == 0 ||
-	    !model.GetDescriptorHeap()) {
+	if (!device || model.GetMeshCount() == 0 || model.GetMaterialCount() == 0) {
 		Logger::Error("ModelInstance::Initialize: "
 		              "引数が無効、またはモデルが未初期化です。");
 		return false;
@@ -34,7 +33,8 @@ bool ModelInstance::Initialize(ID3D12Device *device, const Model &model) {
 		for (std::size_t i = 0; i < materialCount; ++i) {
 			materialData_[i] = model.GetDefaultMaterialData(i);
 
-			if (!materials_[i].Initialize(device, model.GetTextureSrv(i)) ||
+			if (!materials_[i].Initialize(device,
+			                              model.GetDefaultMaterial(i)) ||
 			    !materials_[i].Update(materialData_[i])) {
 				Logger::Error(std::format(
 				    "ModelInstance: 材質{}の初期化に失敗しました。", i));
@@ -127,16 +127,6 @@ void ModelInstance::Draw(ID3D12GraphicsCommandList *commandList,
 		return;
 	}
 
-	ID3D12DescriptorHeap *heap = model_->GetDescriptorHeap();
-
-	if (!heap) {
-		Logger::Error("ModelInstance::Draw: モデルのSRVヒープがありません。");
-		return;
-	}
-
-	ID3D12DescriptorHeap *heaps[] = {heap};
-	commandList->SetDescriptorHeaps(1, heaps);
-
 	for (const auto &instance : meshInstances_) {
 		renderer.Draw(commandList, instance, light);
 	}
@@ -180,4 +170,24 @@ void ModelInstance::Finalize() {
 
 	model_ = nullptr;
 	transform_ = {};
+}
+
+bool ModelInstance::SetMaterial(
+    std::size_t slot, const std::shared_ptr<const MaterialResource> &resource) {
+	if (!model_ || slot >= materials_.size()) {
+		return false;
+	}
+
+	const auto &next = resource ? resource : model_->GetDefaultMaterial(slot);
+
+	if (materials_[slot].GetResource() == next) {
+		return true;
+	}
+
+	if (!materials_[slot].SetResource(next)) {
+		return false;
+	}
+
+	materialData_[slot] = next->GetData();
+	return true;
 }

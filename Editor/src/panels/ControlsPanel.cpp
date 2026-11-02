@@ -313,6 +313,24 @@ void ControlsPanel::Draw() {
 	         "replaces or adds shapes; objects without models use a unit box. "
 	         "Remove All keeps other components. Each operation supports one "
 	         "Undo/Redo; a failed operation changes no colliders."},
+	        {"Materials and material slots",
+	         "Create a .material.json asset in Materials, edit Base Color, UV "
+	         "and Texture, then Save Material. Texture paths are relative to "
+	         "the material file; empty uses white. Inspector > Materials "
+	         "assigns "
+	         "an asset to each model slot; Model Default restores its imported "
+	         "material. One asset can be shared by different objects and "
+	         "models. "
+	         "Saving updates every user of that asset without changing meshes. "
+	         "Assignment supports scene Undo/Redo. Undo Material and Redo "
+	         "Material "
+	         "restore saves in the Materials panel; scene history does not "
+	         "edit "
+	         "asset files. Revert Draft discards unsaved edits. Reload "
+	         "Material "
+	         "accepts external changes. Play displays assignments read-only. "
+	         "Game export includes assigned material files and their "
+	         "textures."},
 	        {"Inspector > Color Tint",
 	         "Add Color Tint from Add Component to multiply the model's "
 	         "original material and texture by an RGB color. White restores "

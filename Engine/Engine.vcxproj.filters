@@ -556,4 +556,17 @@
       <Filter>include\gameplay</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\graphics\material\MaterialData.cpp"><Filter>src\graphics\material</Filter></ClCompile>
+    <ClInclude Include="include\graphics\material\MaterialAsset.h"><Filter>include\graphics\material</Filter></ClInclude>
+    <ClCompile Include="src\graphics\material\MaterialAsset.cpp"><Filter>src\graphics\material</Filter></ClCompile>
+    <ClInclude Include="include\graphics\material\TextureData.h"><Filter>include\graphics\material</Filter></ClInclude>
+    <ClInclude Include="include\graphics\material\MaterialResource.h"><Filter>include\graphics\material</Filter></ClInclude>
+    <ClCompile Include="src\graphics\material\MaterialResource.cpp"><Filter>src\graphics\material</Filter></ClCompile>
+    <ClInclude Include="include\graphics\material\MaterialHandle.h"><Filter>include\graphics\material</Filter></ClInclude>
+    <ClInclude Include="include\graphics\material\MaterialManager.h"><Filter>include\graphics\material</Filter></ClInclude>
+    <ClCompile Include="src\graphics\material\MaterialManager.cpp"><Filter>src\graphics\material</Filter></ClCompile>
+    <ClInclude Include="include\graphics\material\MaterialBindings.h"><Filter>include\graphics\material</Filter></ClInclude>
+    <ClCompile Include="src\graphics\material\MaterialBindings.cpp"><Filter>src\graphics\material</Filter></ClCompile>
+  </ItemGroup>
 </Project>

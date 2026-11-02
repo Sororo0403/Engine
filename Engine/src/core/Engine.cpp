@@ -74,6 +74,7 @@ struct Engine::Impl {
 		// 参照している側から順に終了する
 		sceneManager_.Finalize();
 		models_.Finalize();
+		render_.GetMaterials().Finalize();
 
 		ui_.Finalize();
 		input_.Finalize();

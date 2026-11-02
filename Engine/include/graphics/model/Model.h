@@ -1,10 +1,7 @@
 #pragma once
 
-#include "graphics/material/Material.h"
-#include "graphics/material/Texture.h"
+#include "graphics/material/MaterialResource.h"
 #include "graphics/mesh/Mesh.h"
-
-#include <directxtk12/DescriptorHeap.h>
 
 #include <DirectXCollision.h>
 #include <array>
@@ -80,17 +77,12 @@ class Model {
 	const MaterialData &GetDefaultMaterialData(std::size_t materialIndex) const;
 
 	/// <summary>
-	/// 材質が使用するテクスチャのSRVを取得する
+	/// 読み込み時の既定材質への共有参照を取得する
 	/// </summary>
-	/// <param name="materialIndex">0以上、GetMaterialCount()未満の材質番号</param>
-	/// <returns>モデルが保持するヒープ内のGPU側SRVハンドル</returns>
-	D3D12_GPU_DESCRIPTOR_HANDLE GetTextureSrv(std::size_t materialIndex) const;
-
-	/// <summary>
-	/// テクスチャのSRVを格納したヒープを取得する
-	/// </summary>
-	/// <returns>ヒープへの借用ポインタ。未初期化の場合はnullptr</returns>
-	ID3D12DescriptorHeap *GetDescriptorHeap() const;
+	/// <param name="materialIndex">モデル内の材質スロット番号</param>
+	/// <returns>メッシュとは独立した既定材質の共有参照</returns>
+	const std::shared_ptr<const MaterialResource> &
+	GetDefaultMaterial(std::size_t materialIndex) const;
 
 	/// <summary>
 	/// モデルのローカル座標で、レイと三角形の交差を判定する
@@ -121,32 +113,12 @@ class Model {
 	/// <returns>true:成功 false:材質番号が無効、または作成失敗</returns>
 	bool CreateMeshes(ID3D12Device *device, const ModelData &data);
 
-	/// <summary>
-	/// 白いテクスチャと、各材質のテクスチャを作成する
-	/// </summary>
-	/// <param name="device">D3D12デバイス</param>
-	/// <param name="commandQueue">同じデバイスのDIRECT型コマンドキュー</param>
-	/// <param name="data">読み込み済みのモデルデータ</param>
-	/// <returns>true:成功 false:読み込みまたは作成失敗</returns>
-	bool CreateTextures(ID3D12Device *device, ID3D12CommandQueue *commandQueue,
-	                    const ModelData &data);
-
-	/// <summary>
-	/// SRVヒープと、各材質のテクスチャを参照するSRVを作成する
-	/// </summary>
-	/// <param name="device">D3D12デバイス</param>
-	/// <returns>true:成功 false:作成失敗。例外はInitializeで処理する</returns>
-	bool CreateShaderResourceViews(ID3D12Device *device);
-
   private:
 	// 全メッシュを囲む、モデルのローカル座標のボックス
 	DirectX::BoundingBox bounds_{};
 
 	std::vector<MeshPart> parts_;
-	std::vector<Texture> textures_;
 
-	// 物体ごとの材質を作るときにコピーする初期値
-	std::vector<MaterialData> defaultMaterials_;
-
-	std::unique_ptr<DirectX::DescriptorHeap> srvHeap_;
+	// モデルから読み込んだ既定材質への参照。画像とSRVは材質側が保持する
+	std::vector<std::shared_ptr<const MaterialResource>> defaultMaterials_;
 };

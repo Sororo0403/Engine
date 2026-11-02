@@ -591,3 +591,19 @@ bool RenderWorld::SetCameraSettings(const CameraSettings &settings) {
 	impl_->prepared_ = false;
 	return true;
 }
+
+bool RenderWorld::SetMaterial(RenderObjectHandle handle, std::size_t slot,
+                              const MaterialHandle &material) {
+	if (!impl_->Contains(handle) ||
+	    (material && material.device_ != impl_->graphics_.GetDevice())) {
+		return false;
+	}
+
+	if (!impl_->GetObject(handle).instance_.SetMaterial(slot,
+	                                                    material.resource_)) {
+		return false;
+	}
+
+	impl_->prepared_ = false;
+	return true;
+}

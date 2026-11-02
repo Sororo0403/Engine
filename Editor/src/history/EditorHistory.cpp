@@ -1812,3 +1812,43 @@ bool EditorHistory::ResetComponentSettings(SceneObjectId id,
 		return false;
 	}
 }
+
+bool EditorHistory::SetMaterialPath(SceneObjectId id, std::uint32_t slot,
+                                    const std::filesystem::path &path) {
+	CommitEdit();
+	const auto *object = scene_.FindObject(id);
+
+	if (!object || !object->materials.IsValid()) {
+		return false;
+	}
+
+	auto next = object->materials;
+
+	std::erase_if(next.slots,
+	              [slot](const auto &entry) { return entry.first == slot; });
+
+	if (!path.empty()) {
+		next.slots.emplace_back(slot, path);
+		std::sort(
+		    next.slots.begin(), next.slots.end(),
+		    [](const auto &a, const auto &b) { return a.first < b.first; });
+	}
+
+	if (!next.IsValid()) {
+		return false;
+	}
+
+	if (object->materials == next) {
+		return true;
+	}
+
+	MaterialSlotsCommand command{id, object->materials, std::move(next)};
+	const auto state = PrepareAppend();
+
+	if (!command.Redo(scene_)) {
+		return false;
+	}
+
+	AppendPrepared(Command{std::move(command)}, state, "Assign Material");
+	return true;
+}

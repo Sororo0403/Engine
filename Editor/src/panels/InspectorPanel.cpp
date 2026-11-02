@@ -1,5 +1,6 @@
 #include "panels/InspectorPanel.h"
 #include "appearance/ColorTintInspector.h"
+#include "appearance/MaterialSlotInspector.h"
 
 #include "assets/ModelAssetDragDrop.h"
 #include "camera/CameraInspector.h"
@@ -152,7 +153,8 @@ SceneObjectId InspectorPanel::GetColliderFitRequest() const {
 
 bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
                           SceneObjectId selectedObjectId,
-                          EditorHistory &history, bool canPasteTransform) {
+                          EditorHistory &history, bool canPasteTransform,
+                          ModelManager *models, const AssetDatabase *assets) {
 	objectRequest_ = {};
 	colliderFitRequest_ = 0;
 	modelRequest_ = {};
@@ -406,6 +408,11 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 
 	ImGui::PopID();
 
+	if (models && assets) {
+		changed |= MaterialSlotInspector{}.Draw(ui, inspectedObjectId, *object,
+		                                        history, *models, *assets);
+	}
+
 	changed |=
 	    ColorTintInspector{}.Draw(ui, inspectedObjectId, *object, history);
 
@@ -536,6 +543,12 @@ InspectorPanel::DrawReadOnly(const ImGuiSystem &ui, const Scene &scene,
 		ImGui::DragFloat("Near Clip", &camera.settings.nearClip);
 		ImGui::DragFloat("Far Clip", &camera.settings.farClip);
 		ui.EndDisabled();
+	}
+
+	if (!object->materials.slots.empty() && ui.CollapsingHeader("Materials")) {
+		for (const auto &[slot, path] : object->materials.slots) {
+			ui.Text(std::format("Slot {}: {}", slot, PathUtils::ToUtf8(path)));
+		}
 	}
 
 	if (object->colorTint && ui.CollapsingHeader("Color Tint")) {

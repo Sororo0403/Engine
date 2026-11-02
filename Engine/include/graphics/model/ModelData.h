@@ -1,5 +1,6 @@
 #pragma once
 
+#include "graphics/material/TextureData.h"
 #include "graphics/mesh/MeshData.h"
 
 #include <DirectXMath.h>
@@ -18,34 +19,12 @@ struct ModelMeshData {
 };
 
 /// <summary>
-/// モデルのテクスチャの保存形式
-/// </summary>
-enum class ModelTextureSource { NONE, FILE, ENCODED, RGBA8 };
-
-/// <summary>
-/// モデルのテクスチャの読み込みに必要な情報
-/// </summary>
-struct ModelTextureData {
-	ModelTextureSource source = ModelTextureSource::NONE;
-
-	// 外部画像のパス
-	std::filesystem::path filePath;
-
-	// PNGなどの画像データ、またはRGBA8の画素データ
-	std::vector<std::uint8_t> bytes;
-
-	// RGBA8の場合の画像サイズ
-	std::uint32_t width = 0;
-	std::uint32_t height = 0;
-};
-
-/// <summary>
 /// モデルファイルから読み込んだ材質の情報
 /// </summary>
 struct ModelMaterialData {
 	DirectX::XMFLOAT4 baseColor{1.0f, 1.0f, 1.0f, 1.0f};
 
-	ModelTextureData baseColorTexture;
+	TextureData baseColorTexture;
 };
 
 /// <summary>
