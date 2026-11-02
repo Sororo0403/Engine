@@ -102,8 +102,8 @@ const SceneObject *FollowTarget(const Scene &scene, SceneObjectId id) {
 }
 } // namespace
 
-bool SceneCameraUtils::GetInitialPose(const Scene &scene, SceneObjectId id,
-                                      CameraPose &pose) {
+bool SceneCameraUtils::GetInitialTransform(const Scene &scene, SceneObjectId id,
+                                           Transform &resultTransform) {
 	const auto *object = scene.FindObject(id);
 
 	if (!object || !object->camera || !object->camera->IsValid() ||
@@ -142,6 +142,18 @@ bool SceneCameraUtils::GetInitialPose(const Scene &scene, SceneObjectId id,
 
 		position = resolved.translation;
 		transform = resolved;
+	}
+
+	resultTransform = transform;
+	return true;
+}
+
+bool SceneCameraUtils::GetInitialPose(const Scene &scene, SceneObjectId id,
+                                      CameraPose &pose) {
+	Transform transform;
+
+	if (!GetInitialTransform(scene, id, transform)) {
+		return false;
 	}
 
 	const auto result = FromTransform(transform);

@@ -573,4 +573,8 @@
     <ClInclude Include="include\scene\MeshComponent.h"><Filter>include\scene</Filter></ClInclude>
     <ClInclude Include="include\scene\MeshRendererComponent.h"><Filter>include\scene</Filter></ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\gameplay\SceneValidation.h"><Filter>include\gameplay</Filter></ClInclude>
+    <ClCompile Include="src\gameplay\SceneValidation.cpp"><Filter>src\gameplay</Filter></ClCompile>
+  </ItemGroup>
 </Project>

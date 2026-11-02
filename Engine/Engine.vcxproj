@@ -332,4 +332,8 @@ exit /b 0</Command>
     <ClInclude Include="include\scene\MeshComponent.h"></ClInclude>
     <ClInclude Include="include\scene\MeshRendererComponent.h"></ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\gameplay\SceneValidation.h"></ClInclude>
+    <ClCompile Include="src\gameplay\SceneValidation.cpp"></ClCompile>
+  </ItemGroup>
 </Project>

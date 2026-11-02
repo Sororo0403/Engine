@@ -1,5 +1,6 @@
 #include "gameplay/SceneSimulation.h"
 #include "gameplay/SceneCameraUtils.h"
+#include "gameplay/SceneValidation.h"
 #include "graphics/camera/Camera.h"
 #include "math/TransformUtils.h"
 #include "physics/BoxColliderUtils.h"
@@ -35,58 +36,25 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 			return false;
 		};
 
+		const auto issues = SceneValidation::Inspect(source, fallbackPose);
+
+		if (!issues.empty()) {
+			error = issues.front().message;
+
+			if (invalidObject) {
+				*invalidObject = issues.front().objectId;
+			}
+
+			return false;
+		}
+
 		for (const auto &[id, object] : source.GetObjects()) {
-			if ((object.mesh && !object.mesh->IsValid()) ||
-			    (object.meshRenderer && !object.meshRenderer->IsValid())) {
-				return failObject(
-				    id, "Mesh or Mesh Renderer settings are invalid.");
-			}
-
-			if (object.colorTint && !object.colorTint->IsValid()) {
-				return failObject(id, "Color Tint settings are invalid.");
-			}
-
 			if (object.character) {
-				if (character) {
-					return failObject(
-					    id, "Only one input-controlled Character Controller is "
-					        "supported per scene. Conflicts with object ID " +
-					            std::to_string(character) + ".");
-				}
-
-				if (!object.collider || !object.character->IsValid()) {
-					return failObject(
-					    id, "Character Controller requires a Box Collider and "
-					        "valid movement settings.");
-				}
-
 				character = id;
 			}
 
-			if (object.camera) {
-				if (!object.camera->IsValid() ||
-				    !TransformUtils::IsValid(object.transform)) {
-					return failObject(
-					    id, "Camera settings or transform are invalid.");
-				}
-
-				if (object.camera->primary) {
-					if (camera) {
-						return failObject(
-						    id, "Only one Camera can be marked Primary. "
-						        "Conflicts with object ID " +
-						            std::to_string(camera) + ".");
-					}
-
-					camera = id;
-				}
-			}
-
-			if (object.respawn &&
-			    (!object.character || !object.respawn->IsValid())) {
-				return failObject(
-				    id, "Respawn requires a Character Controller and valid "
-				        "settings.");
+			if (object.camera && object.camera->primary) {
+				camera = id;
 			}
 		}
 

@@ -99,6 +99,7 @@ bool EditorScene::Initialize() {
 	errorObjectId_ = 0;
 
 	document_.New();
+	sceneCheckPanel_.Reset();
 	frameRequest_ = FrameRequest::NONE;
 	frameObject_ = 0;
 	selection_.Clear();
@@ -309,6 +310,15 @@ bool EditorScene::Update(float deltaTime) {
 	EditorHistory &history = document_.GetHistory();
 
 	ui_.BeginDisabled(wasBusy);
+
+	const auto checkedObject =
+	    sceneCheckPanel_.Draw(ui_, scene, cameraController_.GetPose());
+
+	if (!wasBusy && checkedObject != 0) {
+		FinishEdit();
+		selection_.SelectOnly(checkedObject);
+		hierarchyPanel_.RequestReveal(checkedObject);
+	}
 
 	const auto hierarchyRequest = hierarchyPanel_.Draw(ui_, scene, selection_);
 
@@ -524,8 +534,8 @@ bool EditorScene::Update(float deltaTime) {
 			    colliderFitRequest == 0 && requestedModelPath.empty() &&
 			    requestedInstances.empty() && modelDrop.path.empty() &&
 			    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
-			    !hasObjectRequest && requestedMaterialUsers.empty() &&
-			    materialEditPath.empty() &&
+			    !hasObjectRequest && checkedObject == 0 &&
+			    requestedMaterialUsers.empty() && materialEditPath.empty() &&
 			    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 				RestoreHistory(*historyRequest);
 			}
@@ -533,8 +543,9 @@ bool EditorScene::Update(float deltaTime) {
 			if (action == EditorAction::NONE && colliderFitRequest == 0 &&
 			    requestedInstances.empty() && modelDrop.path.empty() &&
 			    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
-			    !hasObjectRequest && requestedMaterialUsers.empty() &&
-			    materialEditPath.empty() && !historyRequest) {
+			    !hasObjectRequest && checkedObject == 0 &&
+			    requestedMaterialUsers.empty() && materialEditPath.empty() &&
+			    !historyRequest) {
 				const bool objectPanelFocused =
 				    hierarchyRequest.windowFocused ||
 				    sceneViewPanel_.GetInput().windowFocused;
@@ -557,11 +568,11 @@ bool EditorScene::Update(float deltaTime) {
 
 	const bool inputBlocked =
 	    wasBusy || IsBusy() || action != EditorAction::NONE ||
-	    !requestedModelPath.empty() || !requestedInstances.empty() ||
-	    !requestedMaterialUsers.empty() || !modelDrop.path.empty() ||
-	    modelRequest.objectId != 0 || visibilityRequest.objectId != 0 ||
-	    colliderFitRequest != 0 || hasObjectRequest ||
-	    historyRequest.has_value() ||
+	    checkedObject != 0 || !requestedModelPath.empty() ||
+	    !requestedInstances.empty() || !requestedMaterialUsers.empty() ||
+	    !modelDrop.path.empty() || modelRequest.objectId != 0 ||
+	    visibilityRequest.objectId != 0 || colliderFitRequest != 0 ||
+	    hasObjectRequest || historyRequest.has_value() ||
 	    hierarchyRequest.action != HierarchyPanel::Action::NONE;
 
 	ViewportInput viewport = sceneViewPanel_.GetInput();
@@ -872,6 +883,7 @@ void EditorScene::Finalize() {
 	renderer_.Finalize();
 
 	document_.New();
+	sceneCheckPanel_.Reset();
 	frameRequest_ = FrameRequest::NONE;
 	frameObject_ = 0;
 	selection_.Clear();
@@ -1330,6 +1342,11 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 
 		if (ui_.MenuItem("Console...", nullptr, !IsBusy())) {
 			consolePanel_.Show();
+		}
+
+		if (ui_.MenuItem("Scene Check...", nullptr,
+		                 !IsBusy() && !playMode_.IsPlaying())) {
+			sceneCheckPanel_.Show();
 		}
 
 		if (ui_.MenuItem("Performance...", nullptr, !IsBusy())) {
@@ -1897,6 +1914,7 @@ void EditorScene::ExecutePendingAction() {
 			}
 
 			document_.New();
+			sceneCheckPanel_.Reset();
 			frameRequest_ = FrameRequest::NONE;
 			frameObject_ = 0;
 			clipboard_.DetachExternalReferences();
@@ -2515,6 +2533,7 @@ void EditorScene::OpenScene(const std::filesystem::path &path) {
 		return;
 	}
 
+	sceneCheckPanel_.Reset();
 	clipboard_.DetachExternalReferences();
 	frameRequest_ = FrameRequest::NONE;
 	frameObject_ = 0;

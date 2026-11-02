@@ -415,6 +415,17 @@ void ControlsPanel::Draw() {
 	         "Game Settings resolution and aspect. Invalid camera chains clear "
 	         "the preview; incomplete movement/collider settings do not "
 	         "require Play."},
+	        {"View > Scene Check",
+	         "Check the current editing scene without starting Play. Results "
+	         "list component, follow-camera, start-position and recovery-point "
+	         "issues; Select Object reveals a result in Hierarchy and keeps "
+	         "Inspector locks. Results describe the last check: use Check "
+	         "Scene "
+	         "after edits. Fix invalid prerequisites before rechecking "
+	         "dependent "
+	         "collision rules. Empty scenes are valid. This checks playback "
+	         "settings, not asset files or GPU rendering. Scene data and Undo "
+	         "history are preserved."},
 	        {"Game > Play / Stop",
 	         "Run the current scene, including empty scenes. Stop returns to "
 	         "editing and keeps your changes and Undo history."},

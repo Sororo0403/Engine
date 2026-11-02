@@ -25,6 +25,7 @@
 #include "panels/MaterialPanel.h"
 #include "panels/PerformancePanel.h"
 #include "panels/PlayStatePanel.h"
+#include "panels/SceneCheckPanel.h"
 #include "panels/SceneViewPanel.h"
 #include "physics/ColliderBounds.h"
 #include "physics/ColliderPlacement.h"
@@ -632,6 +633,7 @@ class EditorScene final : public IScene {
 
 	SceneGrid sceneGrid_;
 	ControlsPanel controlsPanel_;
+	SceneCheckPanel sceneCheckPanel_;
 	ConsolePanel consolePanel_;
 	HistoryPanel historyPanel_;
 	PerformancePanel performancePanel_;

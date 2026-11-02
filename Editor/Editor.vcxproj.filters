@@ -635,4 +635,8 @@
     <ClInclude Include="include\dialogs\ObjectArrayDialog.h"><Filter>include\dialogs</Filter></ClInclude>
     <ClCompile Include="src\dialogs\ObjectArrayDialog.cpp"><Filter>src\dialogs</Filter></ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\panels\SceneCheckPanel.h"><Filter>include\panels</Filter></ClInclude>
+    <ClCompile Include="src\panels\SceneCheckPanel.cpp"><Filter>src\panels</Filter></ClCompile>
+  </ItemGroup>
 </Project>

@@ -35,6 +35,16 @@ CameraPose MakeFollowPose(const DirectX::XMFLOAT3 &target,
 bool ApplyPose(const CameraPose &pose, Transform &transform);
 
 /// <summary>
+/// 追従の連鎖を解決した開始Transformを取得する。シーンは変更しない
+/// </summary>
+/// <param name="scene">Cameraと追従先が存在するシーン</param>
+/// <param name="id">Cameraを持つ物体ID</param>
+/// <param name="transform">成功時に置き換えるTransform。失敗時は保持する</param>
+/// <returns>true:解決成功 false:設定・対象・連鎖・姿勢が無効</returns>
+bool GetInitialTransform(const Scene &scene, SceneObjectId id,
+                         Transform &transform);
+
+/// <summary>
 /// 指定したCameraの開始姿勢を求める。Follow Cameraは追従先の連鎖を解決する
 /// </summary>
 /// <param name="scene">参照する編集シーン。値は変更しない</param>
