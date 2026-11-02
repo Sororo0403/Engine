@@ -340,7 +340,14 @@ void ControlsPanel::Draw() {
 	         "separately."},
 	        {"Materials and material slots",
 	         "Create a .material.json asset in Materials, edit Base Color, UV "
-	         "and Texture, then Save Material. Texture paths are relative to "
+	         "and Texture, then Save Material. Duplicate Material uses New "
+	         "Material "
+	         "Name to create and open a separate copy of the saved material. "
+	         "Save or revert pending edits first; reload external changes "
+	         "before duplicating. Existing files are never overwritten. "
+	         "Texture references are adjusted for the new file location; "
+	         "the image is shared. Scene slot assignments and the source "
+	         "material are unchanged. Texture paths are relative to "
 	         "the material file; empty uses white. Texture Asset selects PNG, "
 	         "JPEG, BMP, TIFF or GIF from the resource tree; Refresh Textures "
 	         "updates that list without discarding drafts. None clears the "

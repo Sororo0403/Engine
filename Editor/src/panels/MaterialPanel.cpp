@@ -2,9 +2,11 @@
 #include "assets/AssetDatabase.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "platform/windows/PathUtils.h"
+#include <algorithm>
 #include <format>
 #include <imgui.h>
 #include <stdexcept>
+#include <string_view>
 
 bool MaterialPanel::Open(const std::filesystem::path &path,
                          bool discardChanges) {
@@ -155,6 +157,45 @@ bool MaterialPanel::Restore(std::size_t index) {
 
 namespace {
 /// <summary>
+/// フォルダ指定・制御文字・予約されたデバイス名を含まない材質名か確認する
+/// </summary>
+/// <param name="name">拡張子を付ける前の新しい材質名</param>
+/// <returns>true:使用できる名前 false:空、無効な文字、または予約名</returns>
+bool IsValidMaterialName(std::string_view name) {
+	if (name.empty() || name == "." || name == ".." || name.back() == '.' ||
+	    name.back() == ' ' ||
+	    name.find_first_of("<>:\"/\\|?*") != std::string_view::npos ||
+	    std::any_of(name.begin(), name.end(),
+	                [](unsigned char c) { return c < 32; })) {
+		return false;
+	}
+
+	std::string stem(name.substr(0, name.find('.')));
+
+	while (!stem.empty() && stem.back() == ' ') {
+		stem.pop_back();
+	}
+
+	for (auto &c : stem) {
+		if (c >= 'a' && c <= 'z') {
+			c = static_cast<char>(c - 'a' + 'A');
+		}
+	}
+
+	if (stem.starts_with("COM") || stem.starts_with("LPT")) {
+		const auto suffix = std::string_view(stem).substr(3);
+
+		if ((suffix.size() == 1 && suffix.front() >= '1' &&
+		     suffix.front() <= '9') ||
+		    suffix == "¹" || suffix == "²" || suffix == "³") {
+			return false;
+		}
+	}
+
+	return stem != "CON" && stem != "PRN" && stem != "AUX" && stem != "NUL";
+}
+
+/// <summary>
 /// 材質の編集UIで、例外発生時も無効化状態を元へ戻す
 /// </summary>
 class DisabledScope {
@@ -171,6 +212,95 @@ class DisabledScope {
 	const ImGuiSystem &ui_;
 };
 } // namespace
+
+bool MaterialPanel::CreateMaterial(AssetDatabase &assets, bool duplicate) {
+	try {
+		if (HasUnsavedChanges()) {
+			throw std::runtime_error(
+			    "Save or revert the current material before creating another.");
+		}
+
+		if (!IsValidMaterialName(newName_)) {
+			throw std::invalid_argument("Enter a valid file name without a "
+			                            "folder path or reserved device name.");
+		}
+
+		if (assets.GetRootDirectory().empty() ||
+		    assets.GetRootDirectory().has_root_path()) {
+			throw std::invalid_argument(
+			    "Use an executable-relative asset root.");
+		}
+
+		MaterialAsset next;
+
+		if (duplicate) {
+			if (states_.empty()) {
+				throw std::runtime_error(
+				    "Open a material before duplicating it.");
+			}
+
+			if (!MaterialSerializer::Load(path_, next, error_)) {
+				return false;
+			}
+
+			if (next != states_[cursor_]) {
+				throw std::runtime_error("The material changed outside this "
+				                         "editor. Reload before duplicating.");
+			}
+		}
+
+		auto path = assets.GetRootDirectory() / L"materials" /
+		            PathUtils::FromUtf8(newName_ + ".material.json");
+		const auto destination = PathUtils::ResolveFromExecutable(path);
+
+		if (duplicate && !next.baseColorTexture.empty()) {
+			const auto texture =
+			    (PathUtils::ResolveFromExecutable(path_).parent_path() /
+			     next.baseColorTexture)
+			        .lexically_normal();
+
+			if (!std::filesystem::is_regular_file(texture)) {
+				throw std::runtime_error(
+				    "The source material's texture file does not exist.");
+			}
+
+			next.baseColorTexture =
+			    texture.lexically_relative(destination.parent_path());
+
+			if (next.baseColorTexture.empty() || !next.IsValid()) {
+				throw std::runtime_error(
+				    "Could not make a relative texture path for the copy.");
+			}
+		}
+
+		// 保存後の文書切り替えに必要なデータを、ファイルの作成前に全て用意する。
+		auto texture = PathUtils::ToUtf8(next.baseColorTexture);
+		std::vector<MaterialAsset> history{next};
+		std::filesystem::create_directories(destination.parent_path());
+
+		if (!MaterialSerializer::Save(path, next, error_, false)) {
+			return false;
+		}
+
+		path_.swap(path);
+		texture_.swap(texture);
+		draft_ = std::move(next);
+		states_.swap(history);
+		cursor_ = 0;
+		textureValid_ = true;
+		error_.clear();
+		RequestFocus();
+
+		if (!assets.Refresh()) {
+			error_ = assets.GetError();
+		}
+
+		return true;
+	} catch (const std::exception &error) {
+		error_ = error.what();
+		return false;
+	}
+}
 
 void MaterialPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets) {
 	usageSelectionPath_.clear();
@@ -192,23 +322,14 @@ void MaterialPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets) {
 			ui.InputText("New Material Name", newName_);
 
 			if (ui.Button("Create Material")) {
-				if (newName_.empty() || newName_ == "." || newName_ == ".." ||
-				    newName_.find_first_of("<>:\"/\\|?*") !=
-				        std::string::npos ||
-				    newName_.back() == '.' || newName_.back() == ' ') {
-					error_ = "Enter a valid file name without a folder path.";
-				} else {
-					const auto path =
-					    assets.GetRootDirectory() / L"materials" /
-					    PathUtils::FromUtf8(newName_ + ".material.json");
-					std::filesystem::create_directories(
-					    PathUtils::ResolveFromExecutable(path).parent_path());
+				CreateMaterial(assets, false);
+			}
 
-					if (MaterialSerializer::Save(path, MaterialAsset{}, error_,
-					                             false)) {
-						assets.Refresh();
-						Open(path);
-					}
+			{
+				const DisabledScope noMaterial(ui, states_.empty());
+
+				if (ui.Button("Duplicate Material")) {
+					CreateMaterial(assets, true);
 				}
 			}
 

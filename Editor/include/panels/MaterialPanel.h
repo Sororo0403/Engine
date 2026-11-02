@@ -64,6 +64,14 @@ class MaterialPanel {
 
   private:
 	/// <summary>
+	/// 新しい材質を作成して開く。複製時は保存済みの設定と画像参照を引き継ぐ
+	/// </summary>
+	/// <param name="assets">作成先と一覧を管理するアセット管理</param>
+	/// <param name="duplicate">現在の材質を複製する場合はtrue。画像の参照は複製先を基準に変換する</param>
+	/// <returns>true:作成成功 false:未保存の変更・外部変更・無効な名前や参照・作成先の重複。元ファイルは変更しない</returns>
+	bool CreateMaterial(AssetDatabase &assets, bool duplicate);
+
+	/// <summary>
 	/// 画像を材質ファイル基準の相対パスに変換して下書きへ設定する。ファイルは保存しない
 	/// </summary>
 	/// <param name="path">実行ファイル基準または絶対パスの画像。空は白い画像へ戻す</param>
