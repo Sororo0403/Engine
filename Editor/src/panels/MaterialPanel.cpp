@@ -32,6 +32,55 @@ bool MaterialPanel::Open(const std::filesystem::path &path,
 	return true;
 }
 
+bool MaterialPanel::SelectTexture(const std::filesystem::path &path) {
+	try {
+		if (states_.empty()) {
+			throw std::runtime_error(
+			    "Open a material before selecting a texture.");
+		}
+
+		std::filesystem::path relative;
+
+		if (!path.empty()) {
+			if (path.native().find(L'\0') != std::wstring::npos) {
+				throw std::invalid_argument("Invalid texture path.");
+			}
+
+			const auto absolute = PathUtils::ResolveFromExecutable(path);
+
+			if (!std::filesystem::is_regular_file(absolute)) {
+				throw std::runtime_error("The texture file does not exist.");
+			}
+
+			relative = absolute.lexically_relative(
+			    PathUtils::ResolveFromExecutable(path_).parent_path());
+
+			if (relative.empty()) {
+				throw std::runtime_error(
+				    "Choose a texture on the material's drive.");
+			}
+		}
+
+		MaterialAsset candidate;
+		candidate.baseColorTexture = relative;
+
+		if (!candidate.IsValid()) {
+			throw std::invalid_argument("Invalid relative texture path.");
+		}
+
+		auto text = PathUtils::ToUtf8(relative);
+		// パスと表示文字列の準備が全て成功してから、編集中の設定を置き換える。
+		draft_.baseColorTexture.swap(relative);
+		texture_.swap(text);
+		textureValid_ = true;
+		error_.clear();
+		return true;
+	} catch (const std::exception &error) {
+		error_ = error.what();
+		return false;
+	}
+}
+
 bool MaterialPanel::Save() {
 	if (states_.empty() || !textureValid_ || !draft_.IsValid()) {
 		error_ = "Invalid material values or texture path.";
@@ -191,6 +240,38 @@ void MaterialPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets) {
 				textureValid_ = false;
 				draft_.baseColorTexture = PathUtils::FromUtf8(texture_);
 				textureValid_ = true;
+			}
+
+			if (ui.Button("Refresh Textures")) {
+				assets.Refresh();
+			}
+
+			if (ImGui::BeginCombo("Texture Asset", texture_.empty()
+			                                           ? "None"
+			                                           : texture_.c_str())) {
+				if (ui.Selectable("None",
+				                  textureValid_ &&
+				                      draft_.baseColorTexture.empty())) {
+					SelectTexture({});
+				}
+
+				for (const auto &path : assets.GetTextures()) {
+					const auto label = PathUtils::ToUtf8(path);
+					const bool selected =
+					    textureValid_ && draft_.IsValid() &&
+					    !draft_.baseColorTexture.empty() &&
+					    PathUtils::IsSameFile(
+					        PathUtils::ResolveFromExecutable(path_)
+					                .parent_path() /
+					            draft_.baseColorTexture,
+					        path);
+
+					if (ui.Selectable(label.c_str(), selected)) {
+						SelectTexture(path);
+					}
+				}
+
+				ImGui::EndCombo();
 			}
 
 			{

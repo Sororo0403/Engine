@@ -4,6 +4,7 @@
 #include "platform/windows/PathUtils.h"
 
 #include <algorithm>
+#include <array>
 #include <exception>
 #include <format>
 #include <stdexcept>
@@ -43,6 +44,7 @@ bool AssetDatabase::Refresh() {
 
 		std::vector<std::filesystem::path> models;
 		std::vector<std::filesystem::path> materials;
+		std::vector<std::filesystem::path> textures;
 		std::vector<std::filesystem::path> directories;
 
 		std::filesystem::recursive_directory_iterator iterator(root, error);
@@ -80,6 +82,16 @@ bool AssetDatabase::Refresh() {
 					    path.lexically_relative(executableDirectory));
 				}
 
+				constexpr std::array textureExtensions{
+				    ".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff", ".gif"};
+				if (std::ranges::any_of(
+				        textureExtensions, [&](const auto extension) {
+					        return PathUtils::HasExtension(path, extension);
+				        })) {
+					textures.push_back(
+					    path.lexically_relative(executableDirectory));
+				}
+
 				const bool supported = PathUtils::HasExtension(path, ".glb") ||
 				                       PathUtils::HasExtension(path, ".gltf") ||
 				                       PathUtils::HasExtension(path, ".obj");
@@ -107,16 +119,19 @@ bool AssetDatabase::Refresh() {
 
 		std::sort(models.begin(), models.end());
 		std::sort(materials.begin(), materials.end());
+		std::sort(textures.begin(), textures.end());
 		std::sort(directories.begin(), directories.end());
 
 		models_.swap(models);
 		materials_.swap(materials);
+		textures_.swap(textures);
 		directories_.swap(directories);
 		error_.clear();
 		return true;
 	} catch (const std::exception &error) {
 		models_.clear();
 		materials_.clear();
+		textures_.clear();
 		directories_.clear();
 		error_ = error.what();
 
@@ -145,10 +160,15 @@ AssetDatabase::GetDirectories() const {
 void AssetDatabase::Clear() {
 	models_.clear();
 	materials_.clear();
+	textures_.clear();
 	directories_.clear();
 	error_.clear();
 }
 
 const std::vector<std::filesystem::path> &AssetDatabase::GetMaterials() const {
 	return materials_;
+}
+
+const std::vector<std::filesystem::path> &AssetDatabase::GetTextures() const {
+	return textures_;
 }

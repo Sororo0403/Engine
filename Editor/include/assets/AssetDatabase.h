@@ -5,7 +5,7 @@
 #include <vector>
 
 /// <summary>
-/// Editorが使用するモデルアセットとフォルダの一覧を管理する
+/// Editorが使用するモデル・材質・画像アセットとフォルダの一覧を管理する
 /// </summary>
 class AssetDatabase {
   public:
@@ -19,7 +19,7 @@ class AssetDatabase {
 	AssetDatabase &operator=(const AssetDatabase &) = delete;
 
 	/// <summary>
-	/// 配下のフォルダを含めてモデルの一覧を更新する
+	/// 配下のフォルダを含めてアセットの一覧を更新する
 	/// </summary>
 	/// <returns>true:成功 false:検索失敗。失敗時は一覧を空にする</returns>
 	bool Refresh();
@@ -43,6 +43,12 @@ class AssetDatabase {
 	const std::vector<std::filesystem::path> &GetMaterials() const;
 
 	/// <summary>
+	/// 材質で選択する画像ファイルの一覧を取得する
+	/// </summary>
+	/// <returns>実行ファイル基準のPNG・JPEG・BMP・TIFF・GIFファイル一覧</returns>
+	const std::vector<std::filesystem::path> &GetTextures() const;
+
+	/// <summary>
 	/// 空のフォルダを含む、検索先配下のフォルダ一覧を取得する
 	/// </summary>
 	/// <returns>実行ファイルのフォルダを基準にした相対パスの一覧。検索先自身は含まない</returns>
@@ -63,6 +69,7 @@ class AssetDatabase {
 	std::filesystem::path rootDirectory_;
 	std::vector<std::filesystem::path> models_;
 	std::vector<std::filesystem::path> materials_;
+	std::vector<std::filesystem::path> textures_;
 	std::vector<std::filesystem::path> directories_;
 	std::string error_;
 };

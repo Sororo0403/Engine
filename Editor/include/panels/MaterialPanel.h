@@ -64,6 +64,13 @@ class MaterialPanel {
 
   private:
 	/// <summary>
+	/// 画像を材質ファイル基準の相対パスに変換して下書きへ設定する。ファイルは保存しない
+	/// </summary>
+	/// <param name="path">実行ファイル基準または絶対パスの画像。空は白い画像へ戻す</param>
+	/// <returns>true:設定成功 false:材質が未選択、または画像や相対パスが無効。失敗時は現在値を保持する</returns>
+	bool SelectTexture(const std::filesystem::path &path);
+
+	/// <summary>
 	/// このパネルで保存した材質の状態へ戻す。外部変更は上書きしない
 	/// </summary>
 	/// <param name="index">ローカル履歴の移動先</param>
