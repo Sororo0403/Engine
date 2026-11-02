@@ -41,7 +41,7 @@ class EditorPreferences {
 	bool Load(const std::filesystem::path &filePath = L"config/editor.json");
 
 	/// <summary>
-	/// 設定を一時ファイルへ書き込み、成功後に保存先を置き換える
+	/// 設定を新規の一時ファイルへ書き込み、完了後だけ置き換える。既存の一時ファイルは保持する
 	/// </summary>
 	/// <param name="filePath">実行ファイル基準の設定ファイル</param>
 	/// <returns>true:保存成功 false:データが無効、または保存失敗</returns>

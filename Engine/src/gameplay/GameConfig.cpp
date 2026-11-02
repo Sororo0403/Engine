@@ -1,5 +1,6 @@
 #include "gameplay/GameConfig.h"
 #include "graphics/camera/Camera.h"
+#include "platform/windows/FileUtils.h"
 #include "platform/windows/PathUtils.h"
 #include "platform/windows/StringConversion.h"
 #include <fstream>
@@ -90,12 +91,14 @@ bool GameConfig::Save(const std::filesystem::path &path,
 			return false;
 		}
 
-		std::ofstream file;
-		file.exceptions(std::ios::failbit | std::ios::badbit);
-		file.open(path, std::ios::binary | std::ios::trunc);
-		file << text;
-		file.close();
-		return true;
+		if (path.empty()) {
+			throw std::invalid_argument(
+			    "Choose a game configuration destination.");
+		}
+
+		// 起動設定の相対パスは、Loadと同じ作業ディレクトリ基準を保持する。
+		return FileUtils::WriteTextAtomically(std::filesystem::absolute(path),
+		                                      text, error);
 	} catch (const std::exception &e) {
 		error = e.what();
 		return false;

@@ -28,9 +28,9 @@ struct GameConfig {
 	bool Serialize(std::string &text, std::string &error) const;
 
 	/// <summary>
-	/// 起動設定をファイルへ保存する
+	/// 起動設定を新規の一時ファイルへ書き込み、完了後に保存先を置き換える
 	/// </summary>
-	/// <param name="path">書き込み先</param>
+	/// <param name="path">書き込み先。相対パスは作業ディレクトリ基準。親フォルダは事前に作成する</param>
 	/// <param name="error">失敗理由。成功時は空</param>
 	/// <returns>true:成功 false:設定またはファイル操作が無効</returns>
 	bool Save(const std::filesystem::path &path, std::string &error) const;

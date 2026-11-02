@@ -392,7 +392,7 @@ void ControlsPanel::Draw() {
 	         "exported without requiring a scene save. "
 	         "Game export includes assigned material files and their "
 	         "textures."},
-	        {"Scene / Material save failures",
+	        {"Scene / Material / Settings save failures",
 	         "A save uses a newly created file and replaces the destination "
 	         "after writing finishes. An existing staging file is never "
 	         "overwritten or removed. A failed replacement keeps the old "

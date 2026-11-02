@@ -1,6 +1,7 @@
 #include "settings/EditorPreferences.h"
 
 #include "core/Logger.h"
+#include "platform/windows/FileUtils.h"
 #include "platform/windows/PathUtils.h"
 #include "settings/RecentScenes.h"
 
@@ -289,16 +290,14 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		      {"wheelDistance", camera.wheelDistance},
 		      {"panSensitivity", camera.panSensitivity}}},
 		};
-		const std::string text = json.dump(2);
+		const std::string text = json.dump(2) + '\n';
 		std::filesystem::create_directories(path.parent_path());
-		auto temporary = path;
-		temporary += ".tmp";
-		std::ofstream output;
-		output.exceptions(std::ios::failbit | std::ios::badbit);
-		output.open(temporary, std::ios::binary | std::ios::trunc);
-		output << text << '\n';
-		output.close();
-		std::filesystem::rename(temporary, path);
+		std::string saveError;
+
+		if (!FileUtils::WriteTextAtomically(path, text, saveError)) {
+			throw std::runtime_error(saveError);
+		}
+
 		return true;
 	} catch (const std::exception &error) {
 		Logger::Error(std::format("EditorPreferences::Save: {}", error.what()));
