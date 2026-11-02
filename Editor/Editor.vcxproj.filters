@@ -538,4 +538,12 @@
       <Filter>src\scene</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\camera\CameraObjects.h">
+      <Filter>include\camera</Filter>
+    </ClInclude>
+    <ClCompile Include="src\camera\CameraObjects.cpp">
+      <Filter>src\camera</Filter>
+    </ClCompile>
+  </ItemGroup>
 </Project>

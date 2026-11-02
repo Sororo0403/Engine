@@ -342,6 +342,10 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 				result.action = Action::CREATE_BOX;
 			}
 
+			if (ui.MenuItem("Camera from Scene View", nullptr, true)) {
+				result.action = Action::CREATE_CAMERA;
+			}
+
 			ImGui::EndPopup();
 		}
 	}

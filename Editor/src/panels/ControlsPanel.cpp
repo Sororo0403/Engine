@@ -221,6 +221,14 @@ void ControlsPanel::Draw() {
 	         "Scene. All includes hidden models and objects without models. "
 	         "The outlines match world-axis collision boxes and never appear "
 	         "in Game. This display setting is saved with Editor preferences."},
+	        {"Create > Camera from Scene View",
+	         "Create a fixed Camera at the current Scene view position and "
+	         "orientation, using the standard Scene lens settings. It is "
+	         "selected and revealed in Hierarchy in one Undo operation. If no "
+	         "Primary exists, the new Camera becomes Primary; otherwise the "
+	         "existing Primary is kept. Use "
+	         "Inspector > Primary to switch. Hierarchy's background menu has "
+	         "the same command."},
 	        {"Create > Empty / Box",
 	         "Add a normal object at the world origin and reveal it in "
 	         "Hierarchy. Box uses the built-in two-unit model with a matching "

@@ -124,6 +124,7 @@ class EditorScene final : public IScene {
 		REDO,
 		CREATE_EMPTY,
 		CREATE_BOX,
+		CREATE_CAMERA,
 		DUPLICATE_OBJECTS,
 		DELETE_OBJECTS,
 		FRAME_SELECTED,
@@ -245,6 +246,11 @@ class EditorScene final : public IScene {
 	/// </summary>
 	/// <param name="path">検索するモデルのパス</param>
 	void SelectModelInstances(const std::filesystem::path &path);
+
+	/// <summary>
+	/// Sceneビューの位置と向きから固定Cameraを作り、選択とHierarchy表示を更新する
+	/// </summary>
+	void CreateCameraFromView();
 
 	/// <summary>
 	/// 通常の物体を履歴付きで追加し、選択とHierarchy表示を更新する。

@@ -2,6 +2,7 @@
 
 #include "assets/ModelPlacement.h"
 #include "assets/ModelUsage.h"
+#include "camera/CameraObjects.h"
 #include "core/EngineContext.h"
 #include "core/Logger.h"
 #include "gameplay/PlayShortcuts.h"
@@ -288,6 +289,9 @@ bool EditorScene::Update(float deltaTime) {
 					break;
 				case HierarchyPanel::Action::CREATE_BOX:
 					CreateObject(PrimitiveObjects::CreateBox());
+					break;
+				case HierarchyPanel::Action::CREATE_CAMERA:
+					CreateCameraFromView();
 					break;
 				case HierarchyPanel::Action::DELETE_OBJECTS:
 					DeleteSelectedObjects();
@@ -1023,6 +1027,10 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			action = EditorAction::CREATE_BOX;
 		}
 
+		if (ui_.MenuItem("Camera from Scene View", nullptr, enabled)) {
+			action = EditorAction::CREATE_CAMERA;
+		}
+
 		ui_.EndMenu();
 	}
 
@@ -1552,6 +1560,9 @@ void EditorScene::StartAction(EditorAction action) {
 	case EditorAction::CREATE_BOX:
 		CreateObject(PrimitiveObjects::CreateBox());
 		return;
+	case EditorAction::CREATE_CAMERA:
+		CreateCameraFromView();
+		return;
 
 	case EditorAction::DUPLICATE_OBJECTS:
 		DuplicateSelectedObjects();
@@ -1641,6 +1652,19 @@ void EditorScene::StartSave(bool saveAs) {
 	fileDialog_.Show(SceneFileDialogMode::SAVE, document_.GetFilePath());
 
 	stage_ = DialogStage::SAVE_FILE;
+}
+
+void EditorScene::CreateCameraFromView() {
+	const auto object =
+	    CameraObjects::CreateFromView(cameraController_.GetPose());
+
+	if (!object) {
+		ShowError(
+		    "The Scene view camera pose is invalid. No Camera was created.");
+		return;
+	}
+
+	CreateObject(*object);
 }
 
 void EditorScene::CreateObject(SceneObject object) {

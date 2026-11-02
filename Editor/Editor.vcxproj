@@ -310,4 +310,8 @@ exit /b 0</Command>
     <ClInclude Include="include\scene\PrimitiveObjects.h" />
     <ClCompile Include="src\scene\PrimitiveObjects.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\camera\CameraObjects.h" />
+    <ClCompile Include="src\camera\CameraObjects.cpp" />
+  </ItemGroup>
 </Project>
