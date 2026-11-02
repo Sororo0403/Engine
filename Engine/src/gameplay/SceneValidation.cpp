@@ -8,6 +8,8 @@
 #include "physics/CollisionWorld.h"
 #include "scene/Scene.h"
 #include <format>
+#include <map>
+#include <optional>
 #include <string_view>
 
 std::vector<SceneValidationIssue>
@@ -23,6 +25,42 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose) {
 		             : std::string(reason)});
 	};
 	SceneObjectId firstCharacter = 0, primary = 0;
+
+	// 追従先の計算結果を再利用し、正常な連鎖を1回ずつ解決する。
+	std::vector<SceneObjectId> followOrder;
+	std::string followError;
+	const bool ordered =
+	    SceneCameraUtils::GetFollowOrder(scene, followOrder, followError);
+	std::map<SceneObjectId, std::optional<Transform>> followTransforms;
+
+	if (ordered) {
+		for (const auto id : followOrder) {
+			const auto &object = *scene.FindObject(id);
+			const auto &settings = *object.followCamera;
+			auto target =
+			    scene.FindObject(settings.target)->transform.translation;
+
+			if (const auto parent = followTransforms.find(settings.target);
+			    parent != followTransforms.end()) {
+				if (!parent->second) {
+					followTransforms.emplace(id, std::nullopt);
+					continue;
+				}
+
+				target = parent->second->translation;
+			}
+
+			auto transform = object.transform;
+
+			if (SceneCameraUtils::ApplyPose(
+			        SceneCameraUtils::MakeFollowPose(target, settings),
+			        transform)) {
+				followTransforms.emplace(id, transform);
+			} else {
+				followTransforms.emplace(id, std::nullopt);
+			}
+		}
+	}
 
 	for (const auto &[id, object] : scene.GetObjects()) {
 		if ((object.mesh && !object.mesh->IsValid()) ||
@@ -83,7 +121,12 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose) {
 		if (object.followCamera) {
 			Transform resolved;
 
-			if (!SceneCameraUtils::GetInitialTransform(scene, id, resolved)) {
+			// 不正な依存関係は、個別検証で各物体へ報告する。
+			const bool valid = ordered ? followTransforms.at(id).has_value()
+			                           : SceneCameraUtils::GetInitialTransform(
+			                                 scene, id, resolved);
+
+			if (!valid) {
 				add(id, "Follow Camera requires valid Camera settings, a valid "
 				        "target and pose, and no circular or broken chain or "
 				        "Character Controller on the same object.");
