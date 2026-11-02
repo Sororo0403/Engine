@@ -148,6 +148,7 @@ class EditorScene final : public IScene {
 		CUT_OBJECTS,
 		PASTE_OBJECTS,
 		RESET_TRANSFORMS,
+		SNAP_POSITIONS,
 		DROP_TO_GROUND,
 		DROP_TO_SURFACE,
 		ADD_COLLIDERS,
@@ -512,6 +513,11 @@ class EditorScene final : public IScene {
 	/// 選択した全物体のTransformを初期値へ戻す
 	/// </summary>
 	void ResetSelectedTransforms();
+
+	/// <summary>
+	/// 選択物体の原点を、ギズモの移動スナップ間隔で個別に丸めて1操作として記録する
+	/// </summary>
+	void SnapSelectedPositions();
 
 	/// <summary>
 	/// 表示中の選択モデルの最下端をY=0へ合わせ、全選択物体を同じ距離だけ移動する

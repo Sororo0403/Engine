@@ -423,6 +423,9 @@ bool EditorScene::Update(float deltaTime) {
 				case HierarchyPanel::Action::PASTE_COLLIDERS:
 					PasteCollidersToSelection();
 					break;
+				case HierarchyPanel::Action::SNAP_POSITIONS:
+					SnapSelectedPositions();
+					break;
 				case HierarchyPanel::Action::PASTE_CAMERA_LENSES:
 					PasteCameraLensesToSelection();
 					break;
@@ -1137,6 +1140,10 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 
 		if (ui_.MenuItem("Reset Transform", nullptr, objectEnabled)) {
 			action = EditorAction::RESET_TRANSFORMS;
+		}
+
+		if (ui_.MenuItem("Snap Positions to Grid", nullptr, objectEnabled)) {
+			action = EditorAction::SNAP_POSITIONS;
 		}
 
 		if (ui_.MenuItem("Drop to Ground", "Shift+G",
@@ -1860,6 +1867,10 @@ void EditorScene::StartAction(EditorAction action) {
 		return;
 	case EditorAction::CREATE_CAMERA:
 		CreateCameraFromView();
+		return;
+
+	case EditorAction::SNAP_POSITIONS:
+		SnapSelectedPositions();
 		return;
 
 	case EditorAction::PASTE_CAMERA_LENSES:
@@ -3476,6 +3487,27 @@ void EditorScene::ResetSelectedTransforms() {
 		Logger::Error(std::format(
 		    "EditorScene: Transformの初期化に失敗しました: {}", error.what()));
 		ShowError("Could not reset transforms. See the log for details.");
+	}
+}
+
+void EditorScene::SnapSelectedPositions() {
+	if (!HasSelection()) {
+		return;
+	}
+
+	try {
+		FinishEdit();
+
+		if (!document_.GetHistory().SnapObjectsToGrid(
+		        selection_.GetIds(), gizmo_.GetSnapSettings().translation)) {
+			ShowError("Could not snap all selected positions to the grid. "
+			          "Check the Transforms and move snap intervals. No "
+			          "positions were changed.");
+		}
+	} catch (const std::exception &error) {
+		Logger::Error(std::format("EditorScene::SnapSelectedPositions: {}",
+		                          error.what()));
+		ShowError("Could not snap positions. See the log for details.");
 	}
 }
 

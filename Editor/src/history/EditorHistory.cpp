@@ -834,6 +834,55 @@ bool EditorHistory::SetTransforms(std::span<const SceneObjectId> objectIds,
 	return true;
 }
 
+bool EditorHistory::SnapObjectsToGrid(std::span<const SceneObjectId> objectIds,
+                                      const DirectX::XMFLOAT3 &step) {
+	CommitEdit();
+
+	if (objectIds.empty() || !MathUtils::IsFinite(step) || step.x <= 0.0f ||
+	    step.y <= 0.0f || step.z <= 0.0f) {
+		return false;
+	}
+
+	std::set<SceneObjectId> seen;
+	std::vector<CommandGroup::Command> commands;
+	commands.reserve(objectIds.size());
+
+	for (const auto id : objectIds) {
+		const auto *object = scene_.FindObject(id);
+
+		if (!object || !seen.insert(id).second ||
+		    !TransformUtils::IsValid(object->transform)) {
+			return false;
+		}
+
+		Transform after = object->transform;
+
+		if (!MathUtils::SnapToGrid(after.translation, step,
+		                           after.translation)) {
+			return false;
+		}
+
+		if (!TransformUtils::AreEqual(object->transform, after)) {
+			commands.emplace_back(
+			    TransformCommand{id, object->transform, after});
+		}
+	}
+
+	if (commands.empty()) {
+		return true;
+	}
+
+	CommandGroup group{std::move(commands)};
+	const auto state = PrepareAppend();
+
+	if (!group.Redo(scene_)) {
+		return false;
+	}
+
+	AppendPrepared(Command{std::move(group)}, state, "Snap Positions to Grid");
+	return true;
+}
+
 bool EditorHistory::TranslateObjects(std::span<const SceneObjectId> objectIds,
                                      const DirectX::XMFLOAT3 &translation) {
 	CommitEdit();

@@ -480,6 +480,16 @@ class EditorHistory {
 	                      const DirectX::XMFLOAT3 &translation);
 
 	/// <summary>
+	/// 各物体の原点をワールド座標のグリッドへ揃え、全変更を1操作として記録する
+	/// </summary>
+	/// <param name="objectIds">重複のない対象ID。編集中の内容は先に確定する</param>
+	/// <param name="step">各軸の正で有限の間隔。中間点は0から遠い方へ丸める</param>
+	/// <returns>true:全件成功または同値 false:対象・値が無効。失敗時は全対象を保持する</returns>
+	/// <remarks>回転・拡大率・他コンポーネントは保持する。成功時は物体参照を取得し直す</remarks>
+	bool SnapObjectsToGrid(std::span<const SceneObjectId> objectIds,
+	                       const DirectX::XMFLOAT3 &step);
+
+	/// <summary>
 	/// 全対象の名前を変更し、1操作として記録する。編集中の内容は先に確定する
 	/// </summary>
 	/// <param name="renames">重複のない対象と変更前後の名前。変更後の名前は空にしない</param>

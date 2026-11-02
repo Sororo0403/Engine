@@ -606,6 +606,18 @@ void ControlsPanel::Draw() {
 	         "of copied objects, transforms and colliders and survives "
 	         "New/Open. "
 	         "Pending edits finish first. Editing is unavailable during Play."},
+	        {"Edit / Hierarchy > Snap Positions to Grid",
+	         "Round each selected object's world position using Scene > Snap "
+	         "Settings > Move step (X/Y/Z), even when gizmo snapping is off. "
+	         "Halfway values round away from zero. This snaps individual "
+	         "origins, so distances between objects may change; model bounds "
+	         "and collider faces are not aligned. Rotation, scale and other "
+	         "components stay unchanged. Hidden and filtered selections are "
+	         "included; selection and Inspector locks are kept. The visual "
+	         "grid spacing is separate. One Undo/Redo restores the batch; "
+	         "aligned values add no history. Invalid targets cancel all "
+	         "changes. "
+	         "Pending edits finish first. Unavailable during Play."},
 	        {"Edit / Hierarchy > Paste Camera Lenses",
 	         "Copy a Camera lens in Inspector, then paste it onto every "
 	         "selected object with one Undo/Redo. Missing Cameras are added "
