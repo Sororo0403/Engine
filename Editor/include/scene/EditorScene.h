@@ -487,6 +487,11 @@ class EditorScene final : public IScene {
 	void ClearPlaySelection();
 
 	/// <summary>
+	/// 追従中の再生物体の移動量をSceneカメラへ反映する。選択変更時は飛ばさず基準を取り直す
+	/// </summary>
+	void UpdatePlaySelectionFollow();
+
+	/// <summary>
 	/// 選択中の再生物体のTransformを全件検証して編集シーンへ1操作で反映し、成功時だけ停止する
 	/// </summary>
 	void StopAndKeepSelectedTransforms();
@@ -627,6 +632,9 @@ class EditorScene final : public IScene {
 	EditorSelection playSelection_;
 	HierarchyPanel playHierarchyPanel_;
 	bool playSelectionActive_ = false;
+	bool followPlaySelection_ = false;
+	SceneObjectId followedPlayObject_ = 0;
+	DirectX::XMFLOAT3 followedPlayPosition_{};
 	FrameRequest playFrameRequest_ = FrameRequest::NONE;
 	EditorClipboard clipboard_;
 

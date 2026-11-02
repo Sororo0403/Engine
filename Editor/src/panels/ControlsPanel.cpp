@@ -409,6 +409,17 @@ void ControlsPanel::Draw() {
 	         "editing work, or Reload to read the external version after "
 	         "confirming unsaved changes. Save Copy keeps the active "
 	         "destination and its comparison baseline."},
+	        {"View > Follow Active in Play",
+	         "Follow the active runtime object's movement in Scene without "
+	         "changing viewing distance or orientation. Frame it with F first "
+	         "if needed. Orbit, pan and zoom remain available. Selecting "
+	         "another object starts tracking its next movement without jumping "
+	         "the view. Pause holds the tracked position; Step and Restart "
+	         "follow the resulting movement, including teleports. Clearing "
+	         "selection or stopping Play turns tracking off. Invalid positions "
+	         "also turn it off. Game cameras, scene data, settings and history "
+	         "are unchanged. Available only during Play with a selected "
+	         "object."},
 	        {"Game > Playback Speed",
 	         "Slow Play to 0.1x, 0.25x or 0.5x, or return to 1x. Movement, "
 	         "gravity and camera following use the same scaled game time. "

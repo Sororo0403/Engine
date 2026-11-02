@@ -1315,6 +1315,13 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			action = EditorAction::FRAME_ALL;
 		}
 
+		if (ImGui::MenuItem("Follow Active in Play", nullptr,
+		                    &followPlaySelection_,
+		                    enabled && playMode_.IsPlaying() &&
+		                        playSelection_.GetActiveId() != 0)) {
+			followedPlayObject_ = 0;
+		}
+
 		ui_.BeginDisabled(playMode_.IsPlaying());
 
 		if (ui_.BeginMenu("Camera View")) {
@@ -3309,6 +3316,7 @@ bool EditorScene::UpdatePlaySceneView(float deltaTime, EditorAction action,
 
 	const auto &runtime = playMode_.GetSession().GetScene();
 	const auto *active = runtime.FindObject(playSelection_.GetActiveId());
+	UpdatePlaySelectionFollow();
 	cameraController_.Update(input_, viewport, deltaTime,
 	                         active ? &active->transform.translation : nullptr);
 	auto *target = sceneViewPanel_.GetRenderTexture();
@@ -3415,11 +3423,57 @@ void EditorScene::StopAndKeepSelectedTransforms() {
 	}
 }
 
+void EditorScene::UpdatePlaySelectionFollow() {
+	const auto id = playSelection_.GetActiveId();
+	const auto *object = playMode_.GetSession().GetScene().FindObject(id);
+
+	if (!followPlaySelection_ || !playMode_.IsPlaying() || !object ||
+	    !MathUtils::IsFinite(object->transform.translation)) {
+		followPlaySelection_ = false;
+		followedPlayObject_ = 0;
+		return;
+	}
+
+	const auto position = object->transform.translation;
+
+	if (followedPlayObject_ != id) {
+		followedPlayObject_ = id;
+		followedPlayPosition_ = position;
+		return;
+	}
+
+	const double x = double(position.x) - followedPlayPosition_.x;
+	const double y = double(position.y) - followedPlayPosition_.y;
+	const double z = double(position.z) - followedPlayPosition_.z;
+	const double limit = (std::numeric_limits<float>::max)();
+	const bool representable =
+	    std::abs(x) <= limit && std::abs(y) <= limit && std::abs(z) <= limit;
+	DirectX::XMFLOAT3 offset{};
+
+	if (representable) {
+		offset = {static_cast<float>(x), static_cast<float>(y),
+		          static_cast<float>(z)};
+	}
+
+	if (!representable || !cameraController_.Translate(offset)) {
+		followPlaySelection_ = false;
+		followedPlayObject_ = 0;
+		Logger::Warning(
+		    "EditorScene: "
+		    "Sceneカメラの追従先を表現できないため追従を解除しました。");
+		return;
+	}
+
+	followedPlayPosition_ = position;
+}
+
 void EditorScene::ClearPlaySelection() {
 	sceneViewPanel_.CancelSelection();
 	playSelection_.Clear();
 	playHierarchyPanel_.Clear();
 	playSelectionActive_ = false;
+	followPlaySelection_ = false;
+	followedPlayObject_ = 0;
 	playFrameRequest_ = FrameRequest::NONE;
 }
 
