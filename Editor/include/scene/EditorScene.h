@@ -279,6 +279,12 @@ class EditorScene final : public IScene {
 	void SelectModelInstances(const std::filesystem::path &path);
 
 	/// <summary>
+	/// 指定材質を明示的に割り当てた物体をまとめて選択し、Hierarchyで表示する
+	/// </summary>
+	/// <param name="path">使用物体を検索する材質ファイル</param>
+	void SelectMaterialUsers(const std::filesystem::path &path);
+
+	/// <summary>
 	/// 選択物体を直接追従するFollow Cameraをまとめて選択し、Hierarchyで表示する
 	/// </summary>
 	void SelectFollowingCameras();

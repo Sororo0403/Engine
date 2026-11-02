@@ -56,6 +56,12 @@ class MaterialPanel {
 	/// </summary>
 	void RequestFocus();
 
+	/// <summary>
+	/// このフレームに使用物体の選択を要求した材質を取得する
+	/// </summary>
+	/// <returns>材質パス。要求なしの場合は空。次のDrawまで有効</returns>
+	const std::filesystem::path &GetUsageSelectionRequest() const;
+
   private:
 	/// <summary>
 	/// このパネルで保存した材質の状態へ戻す。外部変更は上書きしない
@@ -65,6 +71,7 @@ class MaterialPanel {
 	bool Restore(std::size_t index);
 
 	std::filesystem::path path_;
+	std::filesystem::path usageSelectionPath_;
 	MaterialAsset draft_;
 	std::string texture_;
 	bool textureValid_ = true;

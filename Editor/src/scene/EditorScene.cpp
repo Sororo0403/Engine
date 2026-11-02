@@ -1,5 +1,6 @@
 #include "scene/EditorScene.h"
 
+#include "assets/MaterialUsage.h"
 #include "assets/ModelPlacement.h"
 #include "assets/ModelUsage.h"
 #include "camera/CameraObjects.h"
@@ -337,6 +338,8 @@ bool EditorScene::Update(float deltaTime) {
 	const auto requestedModelPath = assetsPanel_.Draw(ui_, assets_);
 	const auto requestedInstances = assetsPanel_.GetInstanceSelectionRequest();
 	materialPanel_.Draw(ui_, assets_);
+	const auto &requestedMaterialUsers =
+	    materialPanel_.GetUsageSelectionRequest();
 	const auto historyRequest =
 	    historyPanel_.Draw(ui_, history,
 	                       !wasBusy && !gizmo_.IsUsing() && !gizmoEditActive_ &&
@@ -473,6 +476,16 @@ bool EditorScene::Update(float deltaTime) {
 			SelectModelInstances(requestedInstances);
 		}
 
+		if (!IsBusy() && action == EditorAction::NONE &&
+		    !requestedMaterialUsers.empty() && requestedInstances.empty() &&
+		    requestedModelPath.empty() && modelDrop.path.empty() &&
+		    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
+		    colliderFitRequest == 0 && !hasObjectRequest &&
+		    materialEditPath.empty() && !historyRequest &&
+		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
+			SelectMaterialUsers(requestedMaterialUsers);
+		}
+
 		if (!IsBusy() && !requestedModelPath.empty()) {
 			PlaceModel(requestedModelPath);
 		}
@@ -508,7 +521,8 @@ bool EditorScene::Update(float deltaTime) {
 			    colliderFitRequest == 0 && requestedModelPath.empty() &&
 			    requestedInstances.empty() && modelDrop.path.empty() &&
 			    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
-			    !hasObjectRequest && materialEditPath.empty() &&
+			    !hasObjectRequest && requestedMaterialUsers.empty() &&
+			    materialEditPath.empty() &&
 			    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 				RestoreHistory(*historyRequest);
 			}
@@ -516,8 +530,8 @@ bool EditorScene::Update(float deltaTime) {
 			if (action == EditorAction::NONE && colliderFitRequest == 0 &&
 			    requestedInstances.empty() && modelDrop.path.empty() &&
 			    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
-			    !hasObjectRequest && materialEditPath.empty() &&
-			    !historyRequest) {
+			    !hasObjectRequest && requestedMaterialUsers.empty() &&
+			    materialEditPath.empty() && !historyRequest) {
 				const bool objectPanelFocused =
 				    hierarchyRequest.windowFocused ||
 				    sceneViewPanel_.GetInput().windowFocused;
@@ -541,9 +555,10 @@ bool EditorScene::Update(float deltaTime) {
 	const bool inputBlocked =
 	    wasBusy || IsBusy() || action != EditorAction::NONE ||
 	    !requestedModelPath.empty() || !requestedInstances.empty() ||
-	    !modelDrop.path.empty() || modelRequest.objectId != 0 ||
-	    visibilityRequest.objectId != 0 || colliderFitRequest != 0 ||
-	    hasObjectRequest || historyRequest.has_value() ||
+	    !requestedMaterialUsers.empty() || !modelDrop.path.empty() ||
+	    modelRequest.objectId != 0 || visibilityRequest.objectId != 0 ||
+	    colliderFitRequest != 0 || hasObjectRequest ||
+	    historyRequest.has_value() ||
 	    hierarchyRequest.action != HierarchyPanel::Action::NONE;
 
 	ViewportInput viewport = sceneViewPanel_.GetInput();
@@ -2083,6 +2098,24 @@ void EditorScene::SelectModelInstances(const std::filesystem::path &path) {
 		Logger::Error(
 		    std::format("EditorScene::SelectModelInstances: {}", error.what()));
 		ShowError("Could not select model instances. See the log for details.");
+	}
+}
+
+void EditorScene::SelectMaterialUsers(const std::filesystem::path &path) {
+	FinishEdit();
+
+	try {
+		const auto count = MaterialUsage::SelectObjects(document_.GetScene(),
+		                                                path, selection_);
+		hierarchyPanel_.RequestReveal(selection_.GetActiveId());
+
+		if (count == 0) {
+			Logger::Info("この材質を割り当てた物体はシーン内にありません。");
+		}
+	} catch (const std::exception &error) {
+		Logger::Error(
+		    std::format("EditorScene::SelectMaterialUsers: {}", error.what()));
+		ShowError("Could not select material users. See the log for details.");
 	}
 }
 

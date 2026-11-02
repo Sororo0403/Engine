@@ -354,4 +354,8 @@ exit /b 0</Command>
     <ClInclude Include="include\panels\MaterialPanel.h" />
     <ClCompile Include="src\panels\MaterialPanel.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\assets\MaterialUsage.h"></ClInclude>
+    <ClCompile Include="src\assets\MaterialUsage.cpp"></ClCompile>
+  </ItemGroup>
 </Project>

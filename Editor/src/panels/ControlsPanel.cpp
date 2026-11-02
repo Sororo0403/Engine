@@ -353,6 +353,12 @@ void ControlsPanel::Draw() {
 	         "edits; "
 	         "Cancel or a failed load keeps them. Opening the same material "
 	         "focuses its existing draft. Model Default has no editable asset. "
+	         "Select Objects Using Material selects all explicit assignments, "
+	         "including hidden objects, objects without Mesh and unused slots. "
+	         "The current active object is kept when it is a user. Hierarchy "
+	         "reveals the result; no users clears selection. Draft material "
+	         "edits, scene data and Undo history are kept. Model Default "
+	         "references are not explicit assignments. "
 	         "Game export includes assigned material files and their "
 	         "textures."},
 	        {"Inspector > Color Tint",

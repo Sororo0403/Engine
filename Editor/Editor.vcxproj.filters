@@ -626,4 +626,8 @@
     <ClInclude Include="include\panels\MaterialPanel.h"><Filter>include\panels</Filter></ClInclude>
     <ClCompile Include="src\panels\MaterialPanel.cpp"><Filter>src\panels</Filter></ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\assets\MaterialUsage.h"><Filter>include\assets</Filter></ClInclude>
+    <ClCompile Include="src\assets\MaterialUsage.cpp"><Filter>src\assets</Filter></ClCompile>
+  </ItemGroup>
 </Project>

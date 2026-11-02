@@ -124,6 +124,7 @@ class DisabledScope {
 } // namespace
 
 void MaterialPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets) {
+	usageSelectionPath_.clear();
 	if (focusRequested_) {
 		ImGui::SetNextWindowCollapsed(false);
 		ImGui::SetNextWindowFocus();
@@ -178,6 +179,10 @@ void MaterialPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets) {
 		if (!states_.empty()) {
 			ImGui::Separator();
 			ui.Text(PathUtils::ToUtf8(path_) + (dirty ? " *" : ""));
+			if (ui.Button("Select Objects Using Material")) {
+				usageSelectionPath_ = path_;
+			}
+
 			ui.ColorEdit4("Base Color", draft_.data.baseColor);
 			ImGui::DragFloat2("UV Scale", &draft_.data.uvScale.x, 0.01f);
 			ImGui::DragFloat2("UV Offset", &draft_.data.uvOffset.x, 0.01f);
@@ -257,4 +262,8 @@ const std::string &MaterialPanel::GetError() const {
 
 void MaterialPanel::RequestFocus() {
 	focusRequested_ = true;
+}
+
+const std::filesystem::path &MaterialPanel::GetUsageSelectionRequest() const {
+	return usageSelectionPath_;
 }
