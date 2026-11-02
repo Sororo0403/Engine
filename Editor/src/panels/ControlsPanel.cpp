@@ -297,6 +297,13 @@ void ControlsPanel::Draw() {
 	         "The gold wireframe shows Near/Far Clip and the field of view "
 	         "at the aspect ratio in Game Settings. Follow Camera previews "
 	         "its starting view using the current target position."},
+	        {"Selected Follow Camera in Scene",
+	         "The cyan cross marks the target's starting position. "
+	         "The cyan line connects it to the Camera. "
+	         "The gold cross marks Look Offset; its line shows the view "
+	         "direction. "
+	         "Follow chains use their resolved starting positions. "
+	         "These guides appear only in Scene and do not change the scene."},
 	        {"Inspector > Follow Camera",
 	         "Offsets use world coordinates. Follow Smoothing 0 follows "
 	         "immediately. Choose the target object in the same scene; IDs "

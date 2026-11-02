@@ -668,6 +668,12 @@ bool EditorScene::Update(float deltaTime) {
 			return false;
 		}
 
+		if (!followCameraPreview_.Update(renderer_, scene, id)) {
+			Logger::Error(
+			    "EditorScene: カメラの追従関係を登録できませんでした。");
+			return false;
+		}
+
 		if (showSelectionBounds_ && !selectionBounds_.Update(renderer_, id)) {
 			Logger::Error(
 			    "EditorScene: 選択物体の外接ボックスを登録できませんでした。");

@@ -10,6 +10,7 @@
 #include "dialogs/SceneFileDialog.h"
 #include "dialogs/SceneReloadDialog.h"
 #include "gameplay/EditorPlayMode.h"
+#include "gameplay/FollowCameraPreview.h"
 #include "gameplay/RespawnPreview.h"
 #include "gizmo/TransformGizmo.h"
 #include "history/AlignmentAxis.h"
@@ -523,6 +524,7 @@ class EditorScene final : public IScene {
 	ColliderBounds::Mode colliderDisplay_ = ColliderBounds::Mode::SELECTED;
 	RespawnPreview respawnPreview_;
 	CameraFrustum cameraFrustum_;
+	FollowCameraPreview followCameraPreview_;
 
 	SceneGrid sceneGrid_;
 	ControlsPanel controlsPanel_;
