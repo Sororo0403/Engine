@@ -222,6 +222,13 @@ void ControlsPanel::Draw() {
 	        {"Z / Center / Active",
 	         "For multiple selection, use the mean of object origins or the "
 	         "active object's origin as the gizmo pivot."},
+	        {"Mirrored objects",
+	         "Objects with negative Scale can use Move, Rotate and Scale "
+	         "gizmos. Local handles follow the object's rotation; scaling "
+	         "changes "
+	         "the size while keeping each axis's reflection sign. Use the "
+	         "Inspector Scale fields to change reflection signs. Zero scale "
+	         "is not allowed. Gizmo edits support Undo/Redo."},
 	        {"Edit > Reset Transform",
 	         "Reset position, rotation and scale of selected objects."},
 	        {"Right-click Transform",

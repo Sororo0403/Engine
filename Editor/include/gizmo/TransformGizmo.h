@@ -138,7 +138,7 @@ class TransformGizmo {
 	/// <param name="imageMinimum">Scene画像の左上のUI座標</param>
 	/// <param name="imageSize">Scene画像の表示サイズ</param>
 	/// <param name="objectId">選択物体のID。0の場合は選択なし</param>
-	/// <param name="transform">編集する変形情報。選択なしの場合はnullptr</param>
+	/// <param name="transform">編集する変形情報。単独の負の拡大率は符号を保持して操作する。複数選択の共有ピボットは正の拡大率。選択なしはnullptr</param>
 	/// <param name="enabled">操作を受け付けるか</param>
 	/// <param name="selectionMode">単一選択または複数選択</param>
 	/// <returns>変形の変更と、モデル選択を止めるかの情報</returns>

@@ -201,9 +201,10 @@ TransformGizmo::Result TransformGizmo::Draw(
 		return result;
 	}
 
-	// 最初の実装では、正の拡大率を持つ物体を対象にする
-	if (transform->scale.x <= 0.0f || transform->scale.y <= 0.0f ||
-	    transform->scale.z <= 0.0f) {
+	// 複数選択の共有ピボットには、引き続き正の拡大率を使用する。
+	if (selectionMode == SelectionMode::MULTIPLE &&
+	    (transform->scale.x <= 0.0f || transform->scale.y <= 0.0f ||
+	     transform->scale.z <= 0.0f)) {
 		Cancel();
 		return result;
 	}
@@ -216,8 +217,13 @@ TransformGizmo::Result TransformGizmo::Draw(
 
 	using namespace DirectX;
 
+	// 軸の向きは回転から求め、反転の符号は物体側で保持する。
+	Transform gizmoTransform = *transform;
+	gizmoTransform.scale = {std::abs(transform->scale.x),
+	                        std::abs(transform->scale.y),
+	                        std::abs(transform->scale.z)};
 	XMFLOAT4X4 matrix;
-	XMStoreFloat4x4(&matrix, TransformUtils::MakeWorldMatrix(*transform));
+	XMStoreFloat4x4(&matrix, TransformUtils::MakeWorldMatrix(gizmoTransform));
 
 	// 原点が近クリップ面より後ろにある場合は表示しない
 	const XMVECTOR origin =
@@ -297,7 +303,9 @@ TransformGizmo::Result TransformGizmo::Draw(
 
 	Transform decomposed;
 
-	if (!TransformUtils::TryFromWorldMatrix(matrix, decomposed)) {
+	if (!TransformUtils::TryFromWorldMatrix(matrix, decomposed) ||
+	    decomposed.scale.x <= 0.0f || decomposed.scale.y <= 0.0f ||
+	    decomposed.scale.z <= 0.0f) {
 		return result;
 	}
 
@@ -315,15 +323,18 @@ TransformGizmo::Result TransformGizmo::Draw(
 
 	case Operation::SCALE:
 		// 行列分解の誤差で、複数選択の各軸に異なる倍率を蓄積させない
-		edited.scale = uniformScale
-		                   ? XMFLOAT3{decomposed.scale.x, decomposed.scale.x,
-		                              decomposed.scale.x}
-		                   : decomposed.scale;
+		edited.scale =
+		    uniformScale
+		        ? XMFLOAT3{decomposed.scale.x, decomposed.scale.x,
+		                   decomposed.scale.x}
+		        : XMFLOAT3{
+		              std::copysign(decomposed.scale.x, transform->scale.x),
+		              std::copysign(decomposed.scale.y, transform->scale.y),
+		              std::copysign(decomposed.scale.z, transform->scale.z)};
 		break;
 	}
 
-	if (!TransformUtils::IsValid(edited) || edited.scale.x <= 0.0f ||
-	    edited.scale.y <= 0.0f || edited.scale.z <= 0.0f) {
+	if (!TransformUtils::IsValid(edited)) {
 		return result;
 	}
 
