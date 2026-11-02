@@ -514,4 +514,12 @@
       <Filter>include\gameplay</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\panels\HierarchyFilter.h">
+      <Filter>include\panels</Filter>
+    </ClInclude>
+    <ClCompile Include="src\panels\HierarchyFilter.cpp">
+      <Filter>src\panels</Filter>
+    </ClCompile>
+  </ItemGroup>
 </Project>

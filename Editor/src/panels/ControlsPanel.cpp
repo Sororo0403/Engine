@@ -221,6 +221,12 @@ void ControlsPanel::Draw() {
 	         "Scene. All includes hidden models and objects without models. "
 	         "The outlines match world-axis collision boxes and never appear "
 	         "in Game. This display setting is saved with Editor preferences."},
+	        {"Hierarchy > Component",
+	         "Combine component filters with Search and Hidden only. Models "
+	         "without Collider finds model objects missing collision shapes. "
+	         "Ctrl+A and range selection use the filtered list. Existing "
+	         "selections remain selected when filtered out; Reveal Active "
+	         "clears filters to show the active object."},
 	        {"Edit > Box Colliders",
 	         "Apply to all selected objects, including hidden ones. Add "
 	         "Missing keeps existing collider shapes. Fit All to Models "

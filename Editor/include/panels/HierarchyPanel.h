@@ -1,5 +1,6 @@
 #pragma once
 
+#include "panels/HierarchyFilter.h"
 #include "scene/SceneObjectId.h"
 
 #include <span>
@@ -104,14 +105,6 @@ class HierarchyPanel {
 	                       EditorSelection &selection, SceneObjectId &focusId);
 
 	/// <summary>
-	/// 表示名と表示状態が現在の絞り込み条件に一致するか確認する
-	/// </summary>
-	/// <param name="name">物体の表示名</param>
-	/// <param name="visible">モデルの表示状態</param>
-	/// <returns>true:すべての条件に一致 false:不一致</returns>
-	bool MatchesFilter(std::string_view name, bool visible) const;
-
-	/// <summary>
 	/// 表示項目へのクリックを、修飾キーに応じて選択へ反映する
 	/// </summary>
 	/// <param name="objectId">クリックした物体ID</param>
@@ -124,9 +117,8 @@ class HierarchyPanel {
 	                  std::span<const SceneObjectId> visibleIds, bool control,
 	                  bool shift, EditorSelection &selection);
 
-	std::string filter_;
+	HierarchyFilter filter_;
 	SortMode sortMode_ = SortMode::CREATION;
-	bool hiddenOnly_ = false;
 	SceneObjectId rangeAnchorId_ = 0;
 	SceneObjectId lastActiveId_ = 0;
 	SceneObjectId scrollToId_ = 0;

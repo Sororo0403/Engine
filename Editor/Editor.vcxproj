@@ -134,6 +134,8 @@
     <ClInclude Include="include\camera\EditorCameraController.h" />
     <ClInclude Include="include\camera\CameraView.h" />
     <ClInclude Include="include\panels\HierarchyPanel.h" />
+    <ClInclude Include="include\panels\HierarchyFilter.h" />
+    <ClCompile Include="src\panels\HierarchyFilter.cpp" />
     <ClInclude Include="include\layout\EditorDockLayout.h" />
     <ClInclude Include="include\scene\EditorScene.h" />
     <ClInclude Include="include\panels\InspectorPanel.h" />

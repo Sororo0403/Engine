@@ -74,8 +74,7 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 	}
 
 	if (revealRequested_) {
-		filter_.clear();
-		hiddenOnly_ = false;
+		filter_.Clear();
 		ImGui::SetNextWindowCollapsed(false);
 		ImGui::SetNextWindowFocus();
 	}
@@ -87,19 +86,28 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 
 	revealRequested_ = false;
 
-	ui.InputText("Search", filter_);
+	ui.InputText("Search", filter_.text);
 
 	ui.SameLine();
-	ui.BeginDisabled(filter_.empty());
+	ui.BeginDisabled(filter_.text.empty());
 
 	if (ui.Button("Clear")) {
 		// 検索だけを解除し、範囲選択の基準は保持する
-		filter_.clear();
+		filter_.text.clear();
 	}
 
 	ui.EndDisabled();
 
-	ImGui::Checkbox("Hidden only", &hiddenOnly_);
+	ImGui::Checkbox("Hidden only", &filter_.hiddenOnly);
+	int component = static_cast<int>(filter_.component);
+
+	if (ImGui::Combo(
+	        "Component", &component,
+	        "All objects\0Box Collider\0Models without Collider\0Character "
+	        "Controller\0Camera\0Follow Camera\0Respawn\0")) {
+		filter_.component = static_cast<HierarchyFilter::Component>(component);
+	}
+
 	int sort = static_cast<int>(sortMode_);
 
 	if (ImGui::Combo("Sort", &sort, "Creation order\0Name A-Z\0Name Z-A\0")) {
@@ -132,11 +140,7 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 			continue;
 		}
 
-		const std::string_view name = object->name.empty()
-		                                  ? std::string_view{"Object"}
-		                                  : std::string_view{object->name};
-
-		if (!MatchesFilter(name, object->visible)) {
+		if (!filter_.Matches(*object)) {
 			++filteredCount;
 		}
 	}
@@ -344,18 +348,12 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 }
 
 void HierarchyPanel::Clear() {
-	filter_.clear();
+	filter_.Clear();
 	sortMode_ = SortMode::CREATION;
-	hiddenOnly_ = false;
 	rangeAnchorId_ = 0;
 	lastActiveId_ = 0;
 	scrollToId_ = 0;
 	revealRequested_ = false;
-}
-
-bool HierarchyPanel::MatchesFilter(std::string_view name, bool visible) const {
-	return (!hiddenOnly_ || !visible) &&
-	       (filter_.empty() || name.find(filter_) != std::string_view::npos);
 }
 
 std::vector<SceneObjectId>
@@ -364,10 +362,7 @@ HierarchyPanel::GetVisibleIds(const Scene &scene) const {
 	ids.reserve(scene.GetObjects().size());
 
 	for (const auto &[id, object] : scene.GetObjects()) {
-		const std::string_view name =
-		    object.name.empty() ? std::string_view{"Object"} : object.name;
-
-		if (MatchesFilter(name, object.visible)) {
+		if (filter_.Matches(object)) {
 			ids.push_back(id);
 		}
 	}
