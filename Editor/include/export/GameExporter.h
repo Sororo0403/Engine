@@ -18,12 +18,12 @@ struct GameExportOptions {
 
 namespace GameExporter {
 /// <summary>
-/// シーンと必要な依存ファイルを新しいフォルダへ出力する。既存フォルダには書き込まない
+/// シーンと依存ファイルを新規フォルダへ直接出力する。既存フォルダには書き込まない
 /// </summary>
 /// <param name="scene">変更しない編集シーン</param>
 /// <param name="options">出力先・取得元・ゲーム設定</param>
-/// <param name="error">不足ファイルや設定の失敗理由。成功時は空</param>
-/// <returns>true:出力成功 false:失敗。編集シーンと既存出力は保持する</returns>
+/// <param name="error">不足ファイルや設定の失敗理由。後片付けできない場合は残った場所も含む。成功時は空</param>
+/// <returns>true:出力成功 false:失敗。今回作成したものだけを片付け、編集シーンと既存出力は保持する</returns>
 bool Export(const Scene &scene, const GameExportOptions &options,
             std::string &error);
 } // namespace GameExporter

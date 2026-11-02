@@ -20,6 +20,14 @@ struct GameConfig {
 	bool IsValid() const;
 
 	/// <summary>
+	/// 起動設定を検証し、ファイルへ書き込まずJSON文字列に変換する
+	/// </summary>
+	/// <param name="text">成功時に置き換えるJSON文字列。失敗時は保持する</param>
+	/// <param name="error">失敗理由。成功時は空</param>
+	/// <returns>true:成功 false:設定が無効</returns>
+	bool Serialize(std::string &text, std::string &error) const;
+
+	/// <summary>
 	/// 起動設定をファイルへ保存する
 	/// </summary>
 	/// <param name="path">書き込み先</param>

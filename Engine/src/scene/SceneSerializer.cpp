@@ -102,11 +102,8 @@ DirectX::XMFLOAT4 ReadRotation(const Json &value) {
 }
 } // namespace
 
-bool SceneSerializer::Save(const Scene &scene,
-                           const std::filesystem::path &filePath) {
+bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 	try {
-		const auto targetPath = PathUtils::ResolveFromExecutable(filePath);
-
 		Json objects = Json::array();
 
 		for (const auto &[id, object] : scene.GetObjects()) {
@@ -201,8 +198,29 @@ bool SceneSerializer::Save(const Scene &scene,
 		    {"objects", std::move(objects)},
 		};
 
-		// 文字列への変換に成功してから、ファイルの書き込みを始める
-		const std::string text = document.dump(2);
+		// 文字列への変換に成功してから、呼び出し側の出力を置き換える
+		std::string serialized = document.dump(2);
+		serialized += '\n';
+		text = std::move(serialized);
+
+		return true;
+	} catch (const std::exception &exception) {
+		Logger::Error(
+		    std::format("SceneSerializer::Serialize: {}", exception.what()));
+		return false;
+	}
+}
+
+bool SceneSerializer::Save(const Scene &scene,
+                           const std::filesystem::path &filePath) {
+	try {
+		std::string text;
+
+		if (!Serialize(scene, text)) {
+			return false;
+		}
+
+		const auto targetPath = PathUtils::ResolveFromExecutable(filePath);
 
 		std::filesystem::create_directories(targetPath.parent_path());
 
@@ -214,7 +232,7 @@ bool SceneSerializer::Save(const Scene &scene,
 		output.exceptions(std::ios::failbit | std::ios::badbit);
 		output.open(temporaryPath, std::ios::binary | std::ios::trunc);
 
-		output << text << '\n';
+		output << text;
 		output.close();
 
 		// 書き込みとクローズに成功してから保存ファイルを置き換える

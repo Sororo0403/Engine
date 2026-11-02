@@ -1,6 +1,7 @@
 #pragma once
 
 #include <filesystem>
+#include <string>
 
 class Scene;
 
@@ -9,6 +10,14 @@ class Scene;
 /// </summary>
 class SceneSerializer {
   public:
+	/// <summary>
+	/// シーンを検証し、ファイルへ書き込まずJSON文字列に変換する
+	/// </summary>
+	/// <param name="scene">変換するシーン</param>
+	/// <param name="text">成功時に置き換えるJSON文字列。失敗時は保持する</param>
+	/// <returns>true:成功 false:データが無効</returns>
+	static bool Serialize(const Scene &scene, std::string &text);
+
 	/// <summary>
 	/// 色・描画・ゲーム用コンポーネントを含むversion 7形式で保存する。相対パスは実行ファイル基準
 	/// </summary>

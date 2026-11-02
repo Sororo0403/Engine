@@ -49,8 +49,7 @@ bool GameConfig::IsValid() const {
 	return camera.SetPose(fallbackCamera);
 }
 
-bool GameConfig::Save(const std::filesystem::path &path,
-                      std::string &error) const {
+bool GameConfig::Serialize(std::string &text, std::string &error) const {
 	try {
 		error.clear();
 
@@ -72,11 +71,29 @@ bool GameConfig::Save(const std::filesystem::path &path,
 		     {{"position", vector(fallbackCamera.position)},
 		      {"target", vector(fallbackCamera.target)},
 		      {"up", vector(fallbackCamera.up)}}}};
-		const auto text = data.dump(2);
+		std::string serialized = data.dump(2);
+		serialized += '\n';
+		text = std::move(serialized);
+		return true;
+	} catch (const std::exception &e) {
+		error = e.what();
+		return false;
+	}
+}
+
+bool GameConfig::Save(const std::filesystem::path &path,
+                      std::string &error) const {
+	try {
+		std::string text;
+
+		if (!Serialize(text, error)) {
+			return false;
+		}
+
 		std::ofstream file;
 		file.exceptions(std::ios::failbit | std::ios::badbit);
 		file.open(path, std::ios::binary | std::ios::trunc);
-		file << text << '\n';
+		file << text;
 		file.close();
 		return true;
 	} catch (const std::exception &e) {
