@@ -621,20 +621,11 @@ bool EditorScene::Update(float deltaTime) {
 	    hierarchyRequest.action == HierarchyPanel::Action::NONE &&
 	    !modelDrop.path.empty()) {
 		Ray ray;
-		DirectX::XMFLOAT3 position;
-		bool positionReady =
-		    renderer_.CreatePickingRay(modelDrop.imagePosition.x,
-		                               modelDrop.imagePosition.y, ray) &&
-		    ModelPlacement::GetPosition(ray, position);
 
-		if (positionReady && gizmo_.IsSnapping()) {
-			positionReady = MathUtils::SnapToGrid(
-			    position, gizmo_.GetSnapSettings().translation, position);
-		}
-
-		if (!positionReady) {
+		if (!renderer_.CreatePickingRay(modelDrop.imagePosition.x,
+		                                modelDrop.imagePosition.y, ray)) {
 			ShowError("Could not determine the model placement position.");
-		} else if (PlaceModel(modelDrop.path, position) &&
+		} else if (PlaceDroppedModel(modelDrop.path, ray) &&
 		           !renderer_.Update(target->GetWidth(), target->GetHeight())) {
 			return false;
 		}
@@ -2536,6 +2527,60 @@ bool EditorScene::PlaceModel(const std::filesystem::path &modelPath,
 		Logger::Error(std::format("EditorScene::PlaceModel: {}", error.what()));
 
 		ShowError("Could not place the model. See the log for details.");
+		return false;
+	}
+}
+
+bool EditorScene::PlaceDroppedModel(const std::filesystem::path &modelPath,
+                                    const Ray &ray) {
+	try {
+		ModelPlacement::Surface surface;
+		std::array<DirectX::XMFLOAT3, 8> bounds;
+		DirectX::XMFLOAT3 position;
+
+		if (!ModelPlacement::GetSurface(ray, document_.GetScene(), surface)) {
+			ShowError("Could not determine the model placement surface.");
+			return false;
+		}
+
+		const auto model = models_.Load(modelPath);
+
+		if (!models_.GetLocalBounds(model, bounds) ||
+		    !ModelPlacement::GetSurfaceTranslation(surface, bounds, position)) {
+			ShowError(
+			    "Could not determine the model bounds or placement position.");
+			return false;
+		}
+
+		if (gizmo_.IsSnapping()) {
+			DirectX::XMFLOAT3 snapped;
+
+			if (!MathUtils::SnapToGrid(
+			        position, gizmo_.GetSnapSettings().translation, snapped)) {
+				ShowError("Could not snap the model placement position.");
+				return false;
+			}
+
+			// 接地する軸の位置は保ち、面に沿う軸だけをスナップする。
+			if (surface.onSurface) {
+				if (surface.normal.x != 0.0f) {
+					snapped.x = position.x;
+				} else if (surface.normal.y != 0.0f) {
+					snapped.y = position.y;
+				} else {
+					snapped.z = position.z;
+				}
+			}
+
+			position = snapped;
+		}
+
+		return PlaceModel(modelPath, position);
+	} catch (const std::exception &error) {
+		Logger::Error(
+		    std::format("EditorScene::PlaceDroppedModel: {}", error.what()));
+		ShowError(
+		    "Could not place the dropped model. See the log for details.");
 		return false;
 	}
 }

@@ -216,7 +216,8 @@ void ControlsPanel::Draw() {
 	        {"X", "Toggle Local / World for single-object Move and Rotate."},
 	        {"Scene toolbar",
 	         "Enable Snap and set movement, rotation and scale increments. "
-	         "Model drops also use the Move step."},
+	         "Model drops use the Move step along the placement surface. "
+	         "The contact axis keeps its surface position."},
 	        {"Scale center handle",
 	         "Scale multiple selected objects uniformly."},
 	        {"Z / Center / Active",
@@ -242,7 +243,13 @@ void ControlsPanel::Draw() {
 	        {"Assets > Add to Scene",
 	         "Place the selected model at the world origin."},
 	        {"Drag Assets into Scene",
-	         "Place a model at the drop position and select it."},
+	         "Place a model against the nearest Box Collider surface and "
+	         "select it. "
+	         "Collider placement uses the same world-axis box as physics, "
+	         "including hidden objects. Without a Collider hit, use Y=0 or "
+	         "a point in front of the camera. The model bounds stay outside "
+	         "the surface; its rotation stays unchanged. Undo removes the "
+	         "new object and Redo restores its placement."},
 	        {"Drag into Inspector Model",
 	         "Replace the active object's model while keeping its transform."},
 	        {"Click Inspector Model", "Find and select that model in Assets "

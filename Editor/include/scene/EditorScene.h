@@ -42,6 +42,7 @@
 #include <string>
 
 struct BoxCollider;
+struct Ray;
 struct SceneObject;
 struct EngineContext;
 struct ViewportInput;
@@ -325,6 +326,15 @@ class EditorScene final : public IScene {
 	/// <returns>true:配置成功 false:読み込みまたは追加に失敗</returns>
 	bool PlaceModel(const std::filesystem::path &modelPath,
 	                const DirectX::XMFLOAT3 &position = {});
+
+	/// <summary>
+	/// ドラッグ先の面とモデルの外接ボックスから配置位置を求め、1回の履歴操作で追加する
+	/// </summary>
+	/// <param name="modelPath">配置するモデルの参照先</param>
+	/// <param name="ray">Sceneビュー上のドロップ位置から作成したレイ</param>
+	/// <returns>true:配置成功 false:位置の取得・読み込み・追加に失敗</returns>
+	bool PlaceDroppedModel(const std::filesystem::path &modelPath,
+	                       const Ray &ray);
 
 	/// <summary>
 	/// 読み込みを確認してから、物体のモデル参照だけを変更する
