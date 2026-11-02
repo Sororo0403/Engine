@@ -365,6 +365,12 @@ void MaterialPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 					if (ui.Button("Assign Slot to Selection")) {
 						RequestAssignment(false);
 					}
+
+					if (ui.Button("Duplicate and Assign Slot to Selection")) {
+						if (CreateMaterial(assets, true)) {
+							RequestAssignment(false);
+						}
+					}
 				}
 
 				if (ui.Button("Reset Slot to Model Default")) {

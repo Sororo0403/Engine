@@ -463,6 +463,19 @@ void ControlsPanel::Draw() {
 	         "UV and texture behavior stay the same. Old version 1 materials "
 	         "load as Lit; saved assets use version 2. Game export keeps the "
 	         "saved shading mode and the matching shader."},
+	        {"Materials > Duplicate and Assign Slot to Selection",
+	         "Copy the saved material using New Material Name and assign it "
+	         "to Material Slot on all selected objects. Select one object "
+	         "to separate only its material; other users keep the source. "
+	         "The copy preserves shading, color and UV settings. Images "
+	         "stay shared and their relative paths are adjusted. Save or "
+	         "revert edits first; existing files are never overwritten. "
+	         "Every selected object needs a Mesh Renderer. Hidden and "
+	         "filtered selections are included. Slot assignment is one "
+	         "Undo/Redo; the new asset stays on disk after Undo or a failed "
+	         "assignment. Asset creation is independent of scene history. "
+	         "The copy opens for editing. Unavailable during Play or modal "
+	         "operations."},
 	        {"Materials > Assign Slot to Selection",
 	         "Save the material, choose its zero-based Material Slot, then "
 	         "assign it to all selected objects. Every selected object needs "
