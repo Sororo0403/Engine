@@ -321,7 +321,8 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	const auto hierarchyRequest = hierarchyPanel_.Draw(
-	    ui_, scene, selection_, true, clipboard_.GetCollider() != nullptr);
+	    ui_, scene, selection_, true, clipboard_.GetCollider() != nullptr,
+	    clipboard_.GetCameraLens() != nullptr);
 
 	if (hierarchyRequest.selectionChanged) {
 		FinishEdit();
@@ -421,6 +422,9 @@ bool EditorScene::Update(float deltaTime) {
 					break;
 				case HierarchyPanel::Action::PASTE_COLLIDERS:
 					PasteCollidersToSelection();
+					break;
+				case HierarchyPanel::Action::PASTE_CAMERA_LENSES:
+					PasteCameraLensesToSelection();
 					break;
 				case HierarchyPanel::Action::DUPLICATE_ARRAY:
 					StartObjectArray();
@@ -1147,6 +1151,12 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			action = EditorAction::DROP_TO_SURFACE;
 		}
 
+		if (ui_.MenuItem("Paste Camera Lenses", nullptr,
+		                 objectEnabled &&
+		                     clipboard_.GetCameraLens() != nullptr)) {
+			action = EditorAction::PASTE_CAMERA_LENSES;
+		}
+
 		if (ui_.BeginMenu("Box Colliders")) {
 			bool hasCollider = false;
 			bool hasMissing = false;
@@ -1850,6 +1860,10 @@ void EditorScene::StartAction(EditorAction action) {
 		return;
 	case EditorAction::CREATE_CAMERA:
 		CreateCameraFromView();
+		return;
+
+	case EditorAction::PASTE_CAMERA_LENSES:
+		PasteCameraLensesToSelection();
 		return;
 
 	case EditorAction::PASTE_COLLIDERS:
@@ -3729,6 +3743,29 @@ void EditorScene::PasteCollidersToSelection() {
 		                          error.what()));
 		ShowError(
 		    "Could not paste the Box Colliders. See the log for details.");
+	}
+}
+
+void EditorScene::PasteCameraLensesToSelection() {
+	const auto *settings = clipboard_.GetCameraLens();
+
+	if (!HasSelection() || !settings) {
+		return;
+	}
+
+	try {
+		FinishEdit();
+
+		if (!document_.GetHistory().SetCameraLenses(selection_.GetIds(),
+		                                            *settings)) {
+			ShowError("Could not paste all Camera lenses. Check the selected "
+			          "objects and Camera settings. No cameras were changed.");
+		}
+	} catch (const std::exception &error) {
+		Logger::Error(std::format(
+		    "EditorScene::PasteCameraLensesToSelection: {}", error.what()));
+		ShowError(
+		    "Could not paste the Camera lenses. See the log for details.");
 	}
 }
 

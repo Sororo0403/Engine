@@ -45,11 +45,10 @@ void HierarchyPanel::RequestReveal(SceneObjectId objectId) {
 	revealRequested_ = objectId != 0;
 }
 
-HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
-                                            const Scene &scene,
-                                            EditorSelection &selection,
-                                            bool editable,
-                                            bool canPasteCollider) {
+HierarchyPanel::Result
+HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
+                     EditorSelection &selection, bool editable,
+                     bool canPasteCollider, bool canPasteCameraLens) {
 	Result result;
 
 	// 検索で隠れた物体は残し、削除済みの物体だけ取り除く
@@ -287,6 +286,12 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 				                canPasteCollider &&
 				                    selection.GetCount() != 0)) {
 					result.action = Action::PASTE_COLLIDERS;
+				}
+
+				if (ui.MenuItem("Paste Camera Lenses", nullptr,
+				                canPasteCameraLens &&
+				                    selection.GetCount() != 0)) {
+					result.action = Action::PASTE_CAMERA_LENSES;
 				}
 
 				bool canHide = false;

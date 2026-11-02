@@ -154,6 +154,7 @@ class EditorScene final : public IScene {
 		FIT_COLLIDERS,
 		REMOVE_COLLIDERS,
 		PASTE_COLLIDERS,
+		PASTE_CAMERA_LENSES,
 		PLACE_COLLIDERS_RIGHT,
 		PLACE_COLLIDERS_LEFT,
 		PLACE_COLLIDERS_ABOVE,
@@ -340,6 +341,11 @@ class EditorScene final : public IScene {
 	/// コピーしたローカル衝突形状を全選択へ一括適用する。失敗時は全対象を保持する
 	/// </summary>
 	void PasteCollidersToSelection();
+
+	/// <summary>
+	/// コピーしたCameraのレンズを全選択へ1操作で適用する。既存Primary・姿勢・追従設定は保持する
+	/// </summary>
+	void PasteCameraLensesToSelection();
 
 	/// <summary>
 	/// 保存済み材質の同じスロットへの割り当てを、全選択へ1回のUndo操作で適用する

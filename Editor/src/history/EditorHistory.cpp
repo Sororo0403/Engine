@@ -1869,6 +1869,50 @@ bool EditorHistory::SetCameraLens(SceneObjectId objectId,
 	return true;
 }
 
+bool EditorHistory::SetCameraLenses(std::span<const SceneObjectId> ids,
+                                    const CameraSettings &settings) {
+	CommitEdit();
+
+	if (ids.empty() || !settings.IsValid()) {
+		return false;
+	}
+
+	std::set<SceneObjectId> seen;
+	std::vector<CommandGroup::Command> commands;
+	commands.reserve(ids.size());
+
+	for (const auto id : ids) {
+		const auto *object = scene_.FindObject(id);
+
+		if (!seen.insert(id).second || !object ||
+		    (object->camera && !object->camera->IsValid())) {
+			return false;
+		}
+
+		auto next = object->camera.value_or(CameraComponent{false, {}});
+		next.settings = settings;
+		CameraCommand command{id, object->camera, next};
+
+		if (command.HasChanges()) {
+			commands.emplace_back(std::move(command));
+		}
+	}
+
+	if (commands.empty()) {
+		return true;
+	}
+
+	CommandGroup group{std::move(commands)};
+	const auto state = PrepareAppend();
+
+	if (!group.Redo(scene_)) {
+		return false;
+	}
+
+	AppendPrepared(Command{std::move(group)}, state, "Paste Camera Lenses");
+	return true;
+}
+
 bool EditorHistory::BeginCamera(SceneObjectId id) {
 	CommitEdit();
 	const auto *object = scene_.FindObject(id);

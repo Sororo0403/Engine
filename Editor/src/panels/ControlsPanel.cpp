@@ -606,6 +606,15 @@ void ControlsPanel::Draw() {
 	         "of copied objects, transforms and colliders and survives "
 	         "New/Open. "
 	         "Pending edits finish first. Editing is unavailable during Play."},
+	        {"Edit / Hierarchy > Paste Camera Lenses",
+	         "Copy a Camera lens in Inspector, then paste it onto every "
+	         "selected object with one Undo/Redo. Missing Cameras are added "
+	         "with Primary off; existing Primary flags, Transform, Follow "
+	         "Camera, other components, selection and Inspector locks are "
+	         "kept. Hidden objects and selected objects outside the Hierarchy "
+	         "filter are included. Identical values add no history. Invalid "
+	         "targets cancel the entire batch. Pending edits finish first. "
+	         "Unavailable during Play or without a copied lens and selection."},
 	        {"Inspector > Camera > Reset Lens Settings",
 	         "Restore the default FOV and Near/Far Clip in one Undo operation. "
 	         "Primary, Transform and Follow Camera settings stay unchanged. "
