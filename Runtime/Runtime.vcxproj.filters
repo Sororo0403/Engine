@@ -7,16 +7,24 @@
     <Filter Include="src">
       <UniqueIdentifier>{debbf85c-03a6-4931-9ebf-62a7b83746ab}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\scene">
+      <UniqueIdentifier>{ebfe786a-604e-4cb3-bdc8-ea6fb632d8f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\scene">
+      <UniqueIdentifier>{88c7e6ea-dbe6-4849-944f-ff2e31988f51}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\RuntimeScene.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClCompile Include="src\RuntimeScene.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\main.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\scene\RuntimeScene.cpp">
+      <Filter>src\scene</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\scene\RuntimeScene.h">
+      <Filter>include\scene</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

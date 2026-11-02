@@ -141,8 +141,8 @@ exit /b 0</Command>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
   <ItemGroup>
-    <ClInclude Include="include\RuntimeScene.h" />
-    <ClCompile Include="src\RuntimeScene.cpp" />
+    <ClInclude Include="include\scene\RuntimeScene.h" />
+    <ClCompile Include="src\scene\RuntimeScene.cpp" />
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
 </Project>
