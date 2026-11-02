@@ -348,7 +348,37 @@ bool MaterialPanel::CreateMaterial(AssetDatabase &assets, bool duplicate) {
 			}
 		}
 
-		auto path = assets.GetRootDirectory() / L"materials" /
+		auto folder = PathUtils::FromUtf8(newFolder_).lexically_normal();
+
+		if (folder == L".") {
+			folder.clear();
+		}
+
+		if (folder.has_root_path() ||
+		    std::ranges::any_of(folder, [](const auto &part) {
+			    return !IsValidMaterialName(PathUtils::ToUtf8(part));
+		    })) {
+			throw std::invalid_argument("Choose a relative folder inside "
+			                            "Assets with valid folder names.");
+		}
+
+		const auto root =
+		    PathUtils::ResolveFromExecutable(assets.GetRootDirectory());
+		folder = std::filesystem::relative(root / folder, root);
+
+		if (folder.empty() || folder.has_root_path() ||
+		    std::ranges::any_of(
+		        folder, [](const auto &part) { return part == L".."; })) {
+			throw std::invalid_argument(
+			    "The material folder resolves outside the Assets root.");
+		}
+
+		// リンクの参照先もAssets内と確認し、画像参照は実際の保存先を基準にする。
+		if (folder == L".") {
+			folder.clear();
+		}
+
+		auto path = assets.GetRootDirectory() / folder /
 		            PathUtils::FromUtf8(newName_ + ".material.json");
 		const auto destination = PathUtils::ResolveFromExecutable(path);
 
@@ -427,6 +457,9 @@ void MaterialPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		{
 			const DisabledScope disabled(ui, dirty);
 			ui.InputText("New Material Name", newName_);
+			ui.InputText("Material Folder", newFolder_);
+			ImGui::SetItemTooltip(
+			    "Relative to the Assets root. Empty uses the root folder.");
 
 			if (ui.Button("Create Material")) {
 				CreateMaterial(assets, false);

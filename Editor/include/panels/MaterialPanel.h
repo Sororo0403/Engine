@@ -146,7 +146,7 @@ class MaterialPanel {
 	bool RequestAssignment(bool reset);
 
 	/// <summary>
-	/// 新しい材質を作成して開く。複製時は保存済みの設定と画像参照を引き継ぐ
+	/// 指定したAssets内のフォルダへ材質を作成して開く。複製時は保存済みの設定と画像参照を引き継ぐ
 	/// </summary>
 	/// <param name="assets">作成先と一覧を管理するアセット管理</param>
 	/// <param name="duplicate">現在の材質を複製する場合はtrue。画像の参照は複製先を基準に変換する</param>
@@ -168,6 +168,7 @@ class MaterialPanel {
 	bool focusRequested_ = false;
 	bool focused_ = false;
 	std::string newName_ = "New Material";
+	std::string newFolder_ = "materials";
 	std::string error_;
 	// ファイルへ保存した状態の履歴と、未保存の編集履歴は独立して保持する。
 	std::vector<DraftState> draftStates_;

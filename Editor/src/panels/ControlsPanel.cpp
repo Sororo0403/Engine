@@ -473,6 +473,16 @@ void ControlsPanel::Draw() {
 	         "UV and texture behavior stay the same. Old version 1 materials "
 	         "load as Lit; saved assets use version 2. Game export keeps the "
 	         "saved shading mode and the matching shader."},
+	        {"Materials > Material Folder",
+	         "Choose where Create Material, Duplicate Material and Duplicate "
+	         "and Assign write new assets. Enter a folder relative to the "
+	         "Assets root, such as materials/stage. Empty uses the root. "
+	         "Missing child folders are created. The default is materials. "
+	         "Existing files are never overwritten. Absolute paths, invalid "
+	         "folder names and paths outside Assets are rejected. Duplication "
+	         "keeps the source unchanged and adjusts shared image references "
+	         "for the new location. Changing this field does not move or "
+	         "rename an existing material and does not edit scene history."},
 	        {"Materials shortcuts",
 	         "With Materials focused, Ctrl+Z undoes draft edits. Ctrl+Y or "
 	         "Ctrl+Shift+Z redoes them. Ctrl+S saves the material, including "
