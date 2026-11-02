@@ -8,7 +8,7 @@
 class CollisionWorld;
 
 /// <summary>
-/// ボックス形状の主人公を固定刻みで移動させ、重力・着地・ジャンプを処理する
+/// ボックス形状の主人公を固定刻みで移動させ、重力・着地・入力猶予付きのジャンプを処理する
 /// </summary>
 class CharacterController {
   public:
@@ -81,6 +81,8 @@ class CharacterController {
 	CharacterSettings settings_{};
 	float verticalVelocity_ = 0.0f;
 	double accumulatedTime_ = 0.0;
+	double coyoteRemaining_ = 0.0;
+	double jumpBufferRemaining_ = 0.0;
 	bool initialized_ = false;
 	bool grounded_ = false;
 	bool jumpPending_ = false;

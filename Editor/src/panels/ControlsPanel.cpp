@@ -802,8 +802,20 @@ void ControlsPanel::Draw() {
 	         "survives "
 	         "New/Open. Inspector locks and selection are preserved. Pending "
 	         "edits finish first. Editing is unavailable during Play."},
+	        {"Inspector > Character Controller > Jump Grace",
+	         "Coyote Time allows jumping shortly after leaving a platform. "
+	         "Jump Buffer Time keeps a press made before landing and consumes "
+	         "it once on contact. Set seconds from 0 to 1; 0 disables that "
+	         "grace. Both default to 0, including scenes saved before version "
+	         "10. Try 0.1 seconds while tuning a platforming stage. Timers "
+	         "advance with the 120 Hz simulation, pause with Play and reset "
+	         "on Restart or respawn. A jump consumes the ground grace, so it "
+	         "does not enable double jumping. Edits support Undo, copying, "
+	         "scene saving and game export. Play still requires a Collider "
+	         "for a Character Controller."},
 	        {"Inspector > Copy / Paste Character Settings",
-	         "Copy movement speed, jump speed, gravity and terminal speed, "
+	         "Copy movement speed, jump speed, gravity, terminal speed and "
+	         "jump grace, "
 	         "then paste onto the inspected Character Controller. Add "
 	         "Component "
 	         "> Paste Character Settings adds a missing controller. Transform, "

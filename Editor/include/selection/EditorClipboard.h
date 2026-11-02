@@ -89,7 +89,7 @@ class EditorClipboard {
 	/// <summary>
 	/// Character Controllerの設定をコピーする。他のコピー内容は変更しない
 	/// </summary>
-	/// <param name="settings">移動速度・ジャンプ速度・重力・終端速度の有効な設定</param>
+	/// <param name="settings">移動速度・ジャンプ速度・重力・終端速度・ジャンプ猶予の有効な設定</param>
 	/// <returns>true:コピー成功 false:無効な設定。以前の内容は保持する</returns>
 	bool CopyCharacterSettings(const CharacterSettings &settings);
 

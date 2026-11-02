@@ -232,7 +232,9 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 				    {"moveSpeed", v.moveSpeed},
 				    {"jumpSpeed", v.jumpSpeed},
 				    {"gravity", v.gravity},
-				    {"terminalSpeed", v.terminalSpeed}};
+				    {"terminalSpeed", v.terminalSpeed},
+				    {"coyoteTime", v.coyoteTime},
+				    {"jumpBufferTime", v.jumpBufferTime}};
 			}
 
 			if (object.followCamera) {
@@ -255,7 +257,7 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 
 		const Json document{
 		    {"format", "EngineScene"},
-		    {"version", 9},
+		    {"version", 10},
 		    {"objects", std::move(objects)},
 		};
 
@@ -306,7 +308,7 @@ namespace {
 /// 解析したシーンドキュメントを検証し、全件成功した場合だけ反映する
 /// </summary>
 /// <param name="scene">読み込み先</param>
-/// <param name="document">version 1から9のJSON</param>
+/// <param name="document">version 1から10のJSON</param>
 /// <returns>true:成功 false:内容が無効</returns>
 bool ApplySceneDocument(Scene &scene, const Json &document) {
 	try {
@@ -316,7 +318,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document) {
 		     document.at("version") != 3 && document.at("version") != 4 &&
 		     document.at("version") != 5 && document.at("version") != 6 &&
 		     document.at("version") != 7 && document.at("version") != 8 &&
-		     document.at("version") != 9)) {
+		     document.at("version") != 9 && document.at("version") != 10)) {
 			throw std::runtime_error("未対応のシーンファイル形式です。");
 		}
 
@@ -436,6 +438,19 @@ bool ApplySceneDocument(Scene &scene, const Json &document) {
 				                      v.at("jumpSpeed").get<float>(),
 				                      v.at("gravity").get<float>(),
 				                      v.at("terminalSpeed").get<float>()};
+
+				if (version >= 10) {
+					if (!v.at("coyoteTime").is_number() ||
+					    !v.at("jumpBufferTime").is_number()) {
+						throw std::runtime_error(
+						    "ジャンプ猶予には数値が必要です。");
+					}
+
+					object.character->coyoteTime =
+					    v.at("coyoteTime").get<float>();
+					object.character->jumpBufferTime =
+					    v.at("jumpBufferTime").get<float>();
+				}
 			}
 
 			if (version >= 5 && item.contains("followCamera")) {

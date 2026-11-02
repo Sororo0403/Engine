@@ -12,7 +12,11 @@ bool CharacterSettings::IsValid() const {
 	       jumpSpeed > 0.0f && jumpSpeed <= kMaximumSpeed &&
 	       std::isfinite(gravity) && gravity > 0.0f &&
 	       gravity <= kMaximumGravity && std::isfinite(terminalSpeed) &&
-	       terminalSpeed > 0.0f && terminalSpeed <= kMaximumSpeed;
+	       terminalSpeed > 0.0f && terminalSpeed <= kMaximumSpeed &&
+	       std::isfinite(coyoteTime) && coyoteTime >= 0.0f &&
+	       coyoteTime <= kMaximumJumpGraceSeconds &&
+	       std::isfinite(jumpBufferTime) && jumpBufferTime >= 0.0f &&
+	       jumpBufferTime <= kMaximumJumpGraceSeconds;
 }
 
 bool CharacterController::Initialize(const Transform &transform,
@@ -33,11 +37,14 @@ bool CharacterController::Initialize(const Transform &transform,
 	verticalVelocity_ = 0.0f;
 	accumulatedTime_ = 0.0;
 	jumpPending_ = false;
+	coyoteRemaining_ = 0.0;
+	jumpBufferRemaining_ = 0.0;
 	initialized_ = true;
 	CollisionMoveResult contact;
 	grounded_ =
 	    world.Move(body, {0.0f, -kGroundProbeDistance, 0.0f}, contact) &&
 	    contact.grounded;
+	coyoteRemaining_ = grounded_ ? settings_.coyoteTime : 0.0;
 	return true;
 }
 
@@ -88,9 +95,23 @@ bool CharacterController::Step(const CharacterInput &input,
 	            world.Move(body, {0.0f, -kGroundProbeDistance, 0.0f}, ground) &&
 	            ground.grounded;
 
-	if (jumpPending_ && grounded_) {
+	if (grounded_) {
+		coyoteRemaining_ = settings_.coyoteTime;
+	} else {
+		coyoteRemaining_ =
+		    (std::max)(0.0, coyoteRemaining_ - kFixedStepSeconds);
+	}
+
+	if (jumpPending_) {
+		jumpBufferRemaining_ = settings_.jumpBufferTime;
+	}
+
+	if ((jumpPending_ || jumpBufferRemaining_ > 0.0) &&
+	    (grounded_ || coyoteRemaining_ > 0.0)) {
 		verticalVelocity_ = settings_.jumpSpeed;
 		grounded_ = false;
+		coyoteRemaining_ = 0.0;
+		jumpBufferRemaining_ = 0.0;
 	}
 
 	jumpPending_ = false;
@@ -130,6 +151,21 @@ bool CharacterController::Step(const CharacterInput &input,
 	if (movement.grounded || movement.hitCeiling) {
 		verticalVelocity_ = 0.0f;
 	}
+
+	if (grounded_) {
+		coyoteRemaining_ = settings_.coyoteTime;
+
+		// 着地した固定更新内で入力を消費し、次の更新から上昇する。
+		if (jumpBufferRemaining_ > 0.0) {
+			verticalVelocity_ = settings_.jumpSpeed;
+			grounded_ = false;
+			coyoteRemaining_ = 0.0;
+			jumpBufferRemaining_ = 0.0;
+		}
+	}
+
+	jumpBufferRemaining_ =
+	    (std::max)(0.0, jumpBufferRemaining_ - kFixedStepSeconds);
 
 	return true;
 }

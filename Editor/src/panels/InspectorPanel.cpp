@@ -646,6 +646,8 @@ InspectorPanel::DrawReadOnly(const ImGuiSystem &ui, const Scene &scene,
 		ImGui::DragFloat("Jump Speed", &settings.jumpSpeed);
 		ImGui::DragFloat("Gravity", &settings.gravity);
 		ImGui::DragFloat("Terminal Speed", &settings.terminalSpeed);
+		ImGui::DragFloat("Coyote Time (s)", &settings.coyoteTime);
+		ImGui::DragFloat("Jump Buffer Time (s)", &settings.jumpBufferTime);
 		ui.EndDisabled();
 	}
 

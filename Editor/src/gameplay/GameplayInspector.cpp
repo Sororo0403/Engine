@@ -70,11 +70,12 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		}
 
 		auto field = [&](const char *label, float CharacterSettings::*member,
-		                 float maximum) {
+		                 float maximum, float minimum = 0.01f,
+		                 float speed = 0.05f, const char *format = "%.2f") {
 			auto edited = *object.character;
 			const bool value =
-			    ImGui::DragFloat(label, &(edited.*member), 0.05f, 0.01f,
-			                     maximum, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+			    ImGui::DragFloat(label, &(edited.*member), speed, minimum,
+			                     maximum, format, ImGuiSliderFlags_AlwaysClamp);
 			changed |= ApplyField(history, id, object.character, edited, value,
 			                      &EditorHistory::BeginCharacter);
 		};
@@ -86,6 +87,12 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		      CharacterSettings::kMaximumGravity);
 		field("Terminal Speed", &CharacterSettings::terminalSpeed,
 		      CharacterSettings::kMaximumSpeed);
+		field("Coyote Time (s)", &CharacterSettings::coyoteTime,
+		      CharacterSettings::kMaximumJumpGraceSeconds, 0.0f, 0.005f,
+		      "%.3f");
+		field("Jump Buffer Time (s)", &CharacterSettings::jumpBufferTime,
+		      CharacterSettings::kMaximumJumpGraceSeconds, 0.0f, 0.005f,
+		      "%.3f");
 
 		ui.BeginDisabled(!object.character->IsValid());
 

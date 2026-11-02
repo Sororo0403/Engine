@@ -8,12 +8,16 @@ struct CharacterSettings {
 	float jumpSpeed = 7.0f;
 	float gravity = 20.0f;
 	float terminalSpeed = 30.0f;
+	// 足場を離れた後のジャンプ猶予と、着地前の入力保持時間（秒）。0は無効
+	float coyoteTime = 0.0f;
+	float jumpBufferTime = 0.0f;
 
 	static constexpr float kMaximumSpeed = 1000.0f;
 	static constexpr float kMaximumGravity = 1000.0f;
+	static constexpr float kMaximumJumpGraceSeconds = 1.0f;
 
 	/// <summary>
-	/// 各値が有限で正、かつ設定範囲内か確認する
+	/// 移動と重力が有限で正、ジャンプ猶予が有限で0以上、かつ設定範囲内か確認する
 	/// </summary>
 	/// <returns>true:有効 false:無効</returns>
 	bool IsValid() const;
