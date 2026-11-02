@@ -404,6 +404,15 @@ void ControlsPanel::Draw() {
 	         "blocked positions can still be inspected. Fall Below Y is not "
 	         "included in the view bounds. The command also works with "
 	         "Respawn Guides hidden and opens the Scene tab if necessary."},
+	        {"Inspector > Respawn > Select Blocking Colliders",
+	         "Select every Box Collider overlapping the inspected object's "
+	         "recovery shape, including hidden objects. The character itself "
+	         "and face-only contact are excluded. Hierarchy reveals the active "
+	         "result; F frames the selection. Inspector locks are preserved. "
+	         "No overlaps leaves the selection unchanged. Invalid collider "
+	         "data reports an error without changing selection. Selecting "
+	         "does not edit the scene or add history; pending edits finish "
+	         "first. Invalid or missing recovery shapes disable the action."},
 	        {"Selected Respawn in Scene",
 	         "The cross marks the recovery position and the wire box shows "
 	         "the character's collider there, including rotation and scale. "

@@ -18,13 +18,9 @@ bool RespawnPreview::BuildGeometry(const Scene &scene, SceneObjectId id,
 	}
 
 	const auto &settings = *object->respawn;
-	auto transform = object->transform;
-	transform.translation =
-	    settings.useStartPosition ? transform.translation : settings.position;
 	AxisAlignedBox body;
 
-	if (object->collider &&
-	    BoxColliderUtils::GetWorldBounds(*object->collider, transform, body)) {
+	if (GetColliderBounds(*object, body)) {
 		ColliderBounds::Lines outline;
 		ColliderBounds bounds;
 
@@ -33,7 +29,7 @@ bool RespawnPreview::BuildGeometry(const Scene &scene, SceneObjectId id,
 		}
 
 		if (object->character && object->character->IsValid() &&
-		    transform.translation.y > settings.minimumY) {
+		    result.markers[3].start.y > settings.minimumY) {
 			CollisionWorld world;
 			result.canRespawn =
 			    world.Rebuild(scene, id) && world.CanPlace(body);
@@ -127,8 +123,7 @@ bool RespawnPreview::GetFrameBounds(const SceneObject &object,
 	                    position.z + kMarkerRadius}};
 	AxisAlignedBox body;
 
-	if (object.collider &&
-	    BoxColliderUtils::GetWorldBounds(*object.collider, transform, body)) {
+	if (GetColliderBounds(object, body)) {
 		box.minimum = {(std::min)(box.minimum.x, body.minimum.x),
 		               (std::min)(box.minimum.y, body.minimum.y),
 		               (std::min)(box.minimum.z, body.minimum.z)};
@@ -153,6 +148,30 @@ bool RespawnPreview::GetFrameBounds(const SceneObject &object,
 
 	corners = result;
 	return true;
+}
+
+bool RespawnPreview::GetColliderBounds(const SceneObject &object,
+                                       AxisAlignedBox &bounds) {
+	if (!object.respawn || !object.respawn->IsValid() || !object.collider) {
+		return false;
+	}
+
+	auto transform = object.transform;
+	transform.translation = object.respawn->useStartPosition
+	                            ? transform.translation
+	                            : object.respawn->position;
+
+	return BoxColliderUtils::GetWorldBounds(*object.collider, transform,
+	                                        bounds);
+}
+
+bool RespawnPreview::FindBlockingObjects(const Scene &scene, SceneObjectId id,
+                                         std::vector<SceneObjectId> &objects) {
+	const auto *object = scene.FindObject(id);
+	AxisAlignedBox body;
+
+	return object && GetColliderBounds(*object, body) &&
+	       CollisionWorld::FindOverlaps(scene, body, objects, id);
 }
 
 bool RespawnPreview::Update(SceneRenderer &renderer, const Scene &scene,

@@ -428,6 +428,11 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 		objectRequest_ = {ObjectAction::FRAME_RESPAWN, frameId};
 	}
 
+	if (const auto blockerId = gameplayInspector_.GetRespawnBlockersRequest();
+	    blockerId != 0) {
+		objectRequest_ = {ObjectAction::SELECT_RESPAWN_BLOCKERS, blockerId};
+	}
+
 	ui.EndWindow();
 	return changed;
 }

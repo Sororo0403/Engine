@@ -2,6 +2,7 @@
 #include "gameplay/RespawnPreview.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "history/EditorHistory.h"
+#include "physics/AxisAlignedBox.h"
 #include "scene/Scene.h"
 #include <imgui.h>
 #include <string>
@@ -51,6 +52,7 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
                              SceneObjectId &targetSelectionRequest) {
 	targetSelectionRequest = 0;
 	respawnFrameRequest_ = 0;
+	respawnBlockersRequest_ = 0;
 	const auto scope = std::to_string(id);
 	ImGui::PushID(scope.c_str());
 	ImGui::PushID("GameplayInspector");
@@ -191,6 +193,16 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 		ui.EndDisabled();
 
+		AxisAlignedBox respawnBody;
+		ui.BeginDisabled(
+		    !RespawnPreview::GetColliderBounds(object, respawnBody));
+
+		if (ui.Button("Select Blocking Colliders")) {
+			respawnBlockersRequest_ = id;
+		}
+
+		ui.EndDisabled();
+
 		if (ui.Button("Reset Respawn Settings")) {
 			const auto before = object.respawn;
 			changed |= history.ResetComponentSettings(
@@ -211,8 +223,13 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 void GameplayInspector::Clear() noexcept {
 	targetPicker_.Clear();
 	respawnFrameRequest_ = 0;
+	respawnBlockersRequest_ = 0;
 }
 
 SceneObjectId GameplayInspector::GetRespawnFrameRequest() const {
 	return respawnFrameRequest_;
+}
+
+SceneObjectId GameplayInspector::GetRespawnBlockersRequest() const {
+	return respawnBlockersRequest_;
 }

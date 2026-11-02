@@ -2363,6 +2363,25 @@ void EditorScene::ApplyInspectorRequest(
 			return;
 		}
 
+		if (request.action ==
+		    InspectorPanel::ObjectAction::SELECT_RESPAWN_BLOCKERS) {
+			std::vector<SceneObjectId> objects;
+
+			if (!RespawnPreview::FindBlockingObjects(
+			        document_.GetScene(), request.objectId, objects)) {
+				ShowError("Could not inspect the respawn colliders. Check the "
+				          "collider shapes and transforms.");
+				return;
+			}
+
+			if (!objects.empty()) {
+				selection_.Set(std::move(objects));
+				hierarchyPanel_.RequestReveal(selection_.GetActiveId());
+			}
+
+			return;
+		}
+
 		if (request.action == InspectorPanel::ObjectAction::SELECT_OBJECT) {
 			selection_.SelectOnly(request.objectId);
 			hierarchyPanel_.RequestReveal(request.objectId);

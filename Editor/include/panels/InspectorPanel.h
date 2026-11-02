@@ -34,6 +34,7 @@ class InspectorPanel {
 		MAKE_PRIMARY_CAMERA,
 		SELECT_OBJECT,
 		FRAME_RESPAWN,
+		SELECT_RESPAWN_BLOCKERS,
 	};
 
 	/// <summary>

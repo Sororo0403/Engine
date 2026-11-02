@@ -31,6 +31,19 @@ class CollisionWorld {
 	bool CanPlace(const AxisAlignedBox &body) const;
 
 	/// <summary>
+	/// 指定したボックスと体積が重なるColliderの物体IDをシーンから検索する。
+	/// 面・辺・頂点への接触は重なりに含めず、表示状態には依存しない
+	/// </summary>
+	/// <param name="scene">衝突形状を調べるシーン。内容は変更しない</param>
+	/// <param name="body">検索する有効なワールド座標のボックス</param>
+	/// <param name="objects">成功時に置き換えるID昇順の結果。重複なし。該当なしは空</param>
+	/// <param name="ignoredObject">検索から除く物体ID。0は除外なし</param>
+	/// <returns>true:検索成功 false:ボックスや障害物の形状が無効。失敗や例外時は結果を保持する</returns>
+	static bool FindOverlaps(const Scene &scene, const AxisAlignedBox &body,
+	                         std::vector<SceneObjectId> &objects,
+	                         SceneObjectId ignoredObject = 0);
+
+	/// <summary>
 	/// 移動経路で最初に接触する位置を調べ、障害物に沿った滑りを反映する
 	/// </summary>
 	/// <param name="body">開始位置のワールド座標のボックス</param>

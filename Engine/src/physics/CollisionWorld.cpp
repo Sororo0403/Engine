@@ -33,6 +33,18 @@ bool Valid(const AxisAlignedBox &box) {
 }
 
 /// <summary>
+/// 有効な2つのボックスが、境界への接触だけでなく体積を共有しているか調べる
+/// </summary>
+/// <param name="a">1つ目のボックス</param>
+/// <param name="b">2つ目のボックス</param>
+/// <returns>true:体積が重なる false:重ならない</returns>
+bool Overlaps(const AxisAlignedBox &a, const AxisAlignedBox &b) {
+	return a.minimum.x < b.maximum.x && a.maximum.x > b.minimum.x &&
+	       a.minimum.y < b.maximum.y && a.maximum.y > b.minimum.y &&
+	       a.minimum.z < b.maximum.z && a.maximum.z > b.minimum.z;
+}
+
+/// <summary>
 /// 開始位置からの移動経路と、障害物の各軸の交差区間を調べる
 /// </summary>
 /// <param name="minimum">移動するボックスの最小座標</param>
@@ -122,13 +134,42 @@ bool CollisionWorld::CanPlace(const AxisAlignedBox &body) const {
 	}
 
 	for (const auto &box : obstacles_) {
-		if (body.minimum.x < box.maximum.x && body.maximum.x > box.minimum.x &&
-		    body.minimum.y < box.maximum.y && body.maximum.y > box.minimum.y &&
-		    body.minimum.z < box.maximum.z && body.maximum.z > box.minimum.z) {
+		if (Overlaps(body, box)) {
 			return false;
 		}
 	}
 
+	return true;
+}
+
+bool CollisionWorld::FindOverlaps(const Scene &scene,
+                                  const AxisAlignedBox &body,
+                                  std::vector<SceneObjectId> &objects,
+                                  SceneObjectId ignoredObject) {
+	if (!Valid(body)) {
+		return false;
+	}
+
+	std::vector<SceneObjectId> result;
+
+	for (const auto &[id, object] : scene.GetObjects()) {
+		if (id == ignoredObject || !object.collider) {
+			continue;
+		}
+
+		AxisAlignedBox box;
+
+		if (!BoxColliderUtils::GetWorldBounds(*object.collider,
+		                                      object.transform, box)) {
+			return false;
+		}
+
+		if (Overlaps(body, box)) {
+			result.push_back(id);
+		}
+	}
+
+	objects.swap(result);
 	return true;
 }
 

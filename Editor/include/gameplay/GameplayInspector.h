@@ -37,7 +37,14 @@ class GameplayInspector {
 	/// <returns>Inspectorの表示対象ID。要求なしは0。選択やシーンは変更しない</returns>
 	SceneObjectId GetRespawnFrameRequest() const;
 
+	/// <summary>
+	/// このフレームで復帰先を塞ぐColliderの選択を要求した物体を取得する
+	/// </summary>
+	/// <returns>Inspectorの表示対象ID。要求なしは0。検索と選択は描画後に行う</returns>
+	SceneObjectId GetRespawnBlockersRequest() const;
+
   private:
 	FollowTargetPicker targetPicker_;
 	SceneObjectId respawnFrameRequest_ = 0;
+	SceneObjectId respawnBlockersRequest_ = 0;
 };

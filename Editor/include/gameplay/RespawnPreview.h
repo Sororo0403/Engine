@@ -5,6 +5,7 @@
 #include "scene/SceneObjectId.h"
 #include <array>
 #include <optional>
+#include <vector>
 
 class Scene;
 class SceneRenderer;
@@ -55,6 +56,25 @@ class RespawnPreview {
 	/// <returns>true:取得成功 false:復帰設定・位置・範囲が無効。失敗時は出力を保持する</returns>
 	static bool GetFrameBounds(const SceneObject &object,
 	                           std::array<DirectX::XMFLOAT3, 8> &corners);
+
+	/// <summary>
+	/// 復帰位置へ移動した場合のワールド座標の衝突形状を求める。移動設定や配置可否は問わない
+	/// </summary>
+	/// <param name="object">復帰設定とColliderを持つ編集物体</param>
+	/// <param name="bounds">成功時に設定する衝突形状</param>
+	/// <returns>true:取得成功 false:設定・変形・形状が無効。失敗時は出力を保持する</returns>
+	static bool GetColliderBounds(const SceneObject &object,
+	                              AxisAlignedBox &bounds);
+
+	/// <summary>
+	/// 復帰先を塞ぐColliderを検索する。自身の形状と面への接触は除く
+	/// </summary>
+	/// <param name="scene">検索する編集シーン。非表示の物体も対象</param>
+	/// <param name="id">復帰設定を確認する物体</param>
+	/// <param name="objects">成功時に置き換えるID昇順の結果。該当なしは空</param>
+	/// <returns>true:検索成功 false:対象や衝突形状が無効。失敗や例外時は結果を保持する</returns>
+	static bool FindBlockingObjects(const Scene &scene, SceneObjectId id,
+	                                std::vector<SceneObjectId> &objects);
 
 	/// <summary>
 	/// 復帰設定がある場合だけ、Scene描画にプレビューの線を登録する
