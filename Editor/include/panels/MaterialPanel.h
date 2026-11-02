@@ -85,6 +85,12 @@ class MaterialPanel {
 	const std::filesystem::path &GetUsageSelectionRequest() const;
 
 	/// <summary>
+	/// このフレームにAssetsで表示することを要求した材質または画像を取得する
+	/// </summary>
+	/// <returns>実行ファイル基準または絶対パス。要求なしは空。次のDrawまで有効</returns>
+	const std::filesystem::path &GetAssetRevealRequest() const;
+
+	/// <summary>
 	/// 選択物体の材質スロットへ適用する要求。シーンの変更は描画後に行う
 	/// </summary>
 	struct AssignmentRequest {
@@ -162,6 +168,7 @@ class MaterialPanel {
 
 	std::filesystem::path path_;
 	std::filesystem::path usageSelectionPath_;
+	std::filesystem::path assetRevealPath_;
 	MaterialAsset draft_;
 	std::string texture_;
 	bool textureValid_ = true;

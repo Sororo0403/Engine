@@ -379,6 +379,11 @@ bool EditorScene::Update(float deltaTime) {
 		    return object && object->meshRenderer.has_value();
 	    });
 	materialPanel_.Draw(ui_, assets_, canAssignMaterial);
+
+	if (!wasBusy && !materialPanel_.GetAssetRevealRequest().empty()) {
+		assetsPanel_.RequestReveal(materialPanel_.GetAssetRevealRequest());
+	}
+
 	const auto &materialAssignment = materialPanel_.GetAssignmentRequest();
 	auto requestedMaterialUsers = materialPanel_.GetUsageSelectionRequest();
 

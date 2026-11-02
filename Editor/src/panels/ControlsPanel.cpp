@@ -473,6 +473,16 @@ void ControlsPanel::Draw() {
 	         "UV and texture behavior stay the same. Old version 1 materials "
 	         "load as Lit; saved assets use version 2. Game export keeps the "
 	         "saved shading mode and the matching shader."},
+	        {"Materials > Show Material / Texture in Assets",
+	         "Open the asset's parent folder and select it in Assets. The "
+	         "asset type switches automatically and Search is cleared. Show "
+	         "Texture uses the draft image, including unsaved choices. These "
+	         "actions do not save files, change scene selection or add "
+	         "history. "
+	         "Missing entries trigger one index refresh. Assets reports files "
+	         "outside its indexed root or deleted files. An empty or invalid "
+	         "texture input cannot be revealed. Unavailable during Play or "
+	         "modal operations. Inspector model reveal keeps its behavior."},
 	        {"Materials > Material Folder",
 	         "Choose where Create Material, Duplicate Material and Duplicate "
 	         "and Assign write new assets. Enter a folder relative to the "

@@ -12,9 +12,9 @@ class ImGuiSystem;
 class AssetsPanel {
   public:
 	/// <summary>
-	/// モデルをAssets内で選択し、次の描画時に表示する
+	/// モデル・材質・画像をAssets内で選択し、次の描画時に表示する
 	/// </summary>
-	/// <param name="path">表示するモデルの相対パスまたは絶対パス</param>
+	/// <param name="path">表示するアセットの相対パスまたは絶対パス</param>
 	void RequestReveal(const std::filesystem::path &path);
 
 	/// <summary>
@@ -77,10 +77,10 @@ class AssetsPanel {
 	/// <summary>
 	/// 同じファイルを指す一覧の項目を選択し、親フォルダを開いて検索を解除する
 	/// </summary>
-	/// <param name="path">探すモデルのパス</param>
+	/// <param name="path">探すモデル・材質・画像のパス</param>
 	/// <param name="assets">確認するアセット一覧</param>
 	/// <returns>true:選択成功 false:一覧に該当なし</returns>
-	bool SelectModel(const std::filesystem::path &path,
+	bool SelectAsset(const std::filesystem::path &path,
 	                 const AssetDatabase &assets);
 
 	AssetType type_ = AssetType::MODEL;

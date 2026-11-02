@@ -43,8 +43,12 @@ void AssetsPanel::OpenDirectory(std::filesystem::path directory) {
 	scrollToTop_ = true;
 }
 
-bool AssetsPanel::SelectModel(const std::filesystem::path &path,
+bool AssetsPanel::SelectAsset(const std::filesystem::path &path,
                               const AssetDatabase &assets) {
+	if (path.native().find(L'\0') != std::wstring::npos) {
+		throw std::invalid_argument("Invalid asset path.");
+	}
+
 	const auto target = PathUtils::ResolveFromExecutable(path);
 	const auto directory = PathUtils::GetExecutableDirectory();
 
@@ -52,36 +56,50 @@ bool AssetsPanel::SelectModel(const std::filesystem::path &path,
 		throw std::runtime_error("実行ファイルのフォルダを取得できません。");
 	}
 
-	const auto &models = assets.GetModels();
-	auto found =
-	    std::find_if(models.begin(), models.end(), [&](const auto &model) {
-		    return (directory / model).lexically_normal() == target;
-	    });
+	std::error_code error;
 
-	if (found == models.end()) {
-		// パスの大文字・小文字や別名が異なる場合も、実際のファイルで照合する
-		found =
-		    std::find_if(models.begin(), models.end(), [&](const auto &model) {
-			    std::error_code error;
-			    return std::filesystem::equivalent(directory / model, target,
-			                                       error);
-		    });
-	}
-
-	if (found == models.end()) {
+	if (!std::filesystem::is_regular_file(target, error)) {
 		return false;
 	}
 
-	auto selected = *found;
-	auto folder =
-	    selected.lexically_relative(assets.GetRootDirectory()).parent_path();
-	SetAssetType(AssetType::MODEL);
-	selectedPath_.swap(selected);
-	currentDirectory_.swap(folder);
-	filter_.clear();
-	scrollToSelected_ = true;
-	scrollToTop_ = false;
-	return true;
+	const auto select = [&](const auto &paths, AssetType type, bool aliases) {
+		const auto found = std::find_if(
+		    paths.begin(), paths.end(), [&](const auto &candidate) {
+			    if (!aliases) {
+				    return (directory / candidate).lexically_normal() == target;
+			    }
+
+			    std::error_code equivalentError;
+			    return std::filesystem::equivalent(directory / candidate,
+			                                       target, equivalentError);
+		    });
+
+		if (found == paths.end()) {
+			return false;
+		}
+
+		auto selected = *found;
+		auto folder = selected.lexically_relative(assets.GetRootDirectory())
+		                  .parent_path();
+		SetAssetType(type);
+		selectedPath_.swap(selected);
+		currentDirectory_.swap(folder);
+		filter_.clear();
+		scrollToSelected_ = true;
+		scrollToTop_ = false;
+		return true;
+	};
+
+	// 全種類の通常パスを先に探し、別名の場合だけファイルの照合を行う。
+	for (const bool aliases : {false, true}) {
+		if (select(assets.GetModels(), AssetType::MODEL, aliases) ||
+		    select(assets.GetMaterials(), AssetType::MATERIAL, aliases) ||
+		    select(assets.GetTextures(), AssetType::TEXTURE, aliases)) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
@@ -111,17 +129,17 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 
 	if (!revealPath_.empty()) {
 		try {
-			if (SelectModel(revealPath_, assets) ||
-			    (assets.Refresh() && SelectModel(revealPath_, assets))) {
+			if (SelectAsset(revealPath_, assets) ||
+			    (assets.Refresh() && SelectAsset(revealPath_, assets))) {
 				revealMessage_.clear();
 			} else {
-				revealMessage_ = "Model is not in the indexed Assets folder.";
+				revealMessage_ = "Asset is not in the indexed Assets folder.";
 			}
 		} catch (const std::exception &error) {
 			Logger::Error(
 			    std::format("AssetsPanel::RequestReveal: {}", error.what()));
 			revealMessage_ =
-			    "Could not locate the model. See the log for details.";
+			    "Could not locate the asset. See the log for details.";
 		}
 
 		revealPath_.clear();

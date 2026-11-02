@@ -438,6 +438,7 @@ void MaterialPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
                          bool canAssignMaterial) {
 	assignmentRequest_.reset();
 	usageSelectionPath_.clear();
+	assetRevealPath_.clear();
 	if (focusRequested_) {
 		ImGui::SetNextWindowCollapsed(false);
 		ImGui::SetNextWindowFocus();
@@ -489,6 +490,10 @@ void MaterialPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		if (!states_.empty()) {
 			ImGui::Separator();
 			ui.Text(PathUtils::ToUtf8(path_) + (dirty ? " *" : ""));
+			if (ui.Button("Show Material in Assets")) {
+				assetRevealPath_ = path_;
+			}
+
 			if (ui.Button("Select Objects Using Material")) {
 				usageSelectionPath_ = path_;
 			}
@@ -576,6 +581,26 @@ void MaterialPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				}
 
 				ImGui::EndCombo();
+			}
+
+			{
+				const DisabledScope disabled(
+				    ui, !textureValid_ || draft_.baseColorTexture.empty());
+
+				if (ui.Button("Show Texture in Assets")) {
+					MaterialAsset texturePath;
+					texturePath.baseColorTexture = draft_.baseColorTexture;
+
+					if (!texturePath.IsValid()) {
+						throw std::invalid_argument(
+						    "Choose a valid relative texture path first.");
+					}
+
+					assetRevealPath_ =
+					    (PathUtils::ResolveFromExecutable(path_).parent_path() /
+					     draft_.baseColorTexture)
+					        .lexically_normal();
+				}
 			}
 
 			if (!ImGui::IsAnyItemActive()) {
@@ -674,6 +699,10 @@ void MaterialPanel::RequestFocus() {
 
 const std::filesystem::path &MaterialPanel::GetUsageSelectionRequest() const {
 	return usageSelectionPath_;
+}
+
+const std::filesystem::path &MaterialPanel::GetAssetRevealRequest() const {
+	return assetRevealPath_;
 }
 
 bool MaterialPanel::RequestAssignment(bool reset) {
