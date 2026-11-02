@@ -59,7 +59,7 @@ bool CanSetFollowTarget(const Scene &scene, SceneObjectId id,
 /// </summary>
 /// <param name="scene">検証するシーン。値は変更しない</param>
 /// <param name="order">成功時に置き換えるCameraのID一覧。失敗時は保持する</param>
-/// <param name="error">不正な設定・対象・循環の失敗理由。成功時は空</param>
+/// <param name="error">不正な設定・対象・循環の失敗理由と、該当する物体の名前・ID。成功時は空</param>
 /// <returns>true:成功 false:追従設定または依存関係が無効</returns>
 bool GetFollowOrder(const Scene &scene, std::vector<SceneObjectId> &order,
                     std::string &error);

@@ -6,26 +6,38 @@
 #include <algorithm>
 #include <cmath>
 #include <exception>
+#include <format>
 #include <map>
+#include <string_view>
 
 bool SceneSimulation::Start(const Scene &source, std::string &error,
                             const CameraPose &fallbackPose) {
 	try {
 		error.clear();
 		SceneObjectId character = 0, camera = 0;
+		// 検証ルールは変えず、問題の物体を名前とIDで特定できるようにする。
+		const auto failObject = [&](SceneObjectId id, std::string_view reason) {
+			const auto *object = source.FindObject(id);
+			const std::string_view name =
+			    object ? std::string_view{object->name} : std::string_view{};
+			error = std::format("{} Object: \"{}\" (ID {}).", reason,
+			                    name.empty() ? "Object" : name, id);
+			return false;
+		};
 
 		for (const auto &[id, object] : source.GetObjects()) {
 			if (object.character) {
 				if (character) {
-					error = "Only one input-controlled Character Controller is "
-					        "supported per scene.";
-					return false;
+					return failObject(
+					    id, "Only one input-controlled Character Controller is "
+					        "supported per scene. Conflicts with object ID " +
+					            std::to_string(character) + ".");
 				}
 
 				if (!object.collider || !object.character->IsValid()) {
-					error = "Character Controller requires a Box Collider and "
-					        "valid movement settings.";
-					return false;
+					return failObject(
+					    id, "Character Controller requires a Box Collider and "
+					        "valid movement settings.");
 				}
 
 				character = id;
@@ -34,14 +46,16 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 			if (object.camera) {
 				if (!object.camera->IsValid() ||
 				    !TransformUtils::IsValid(object.transform)) {
-					error = "Camera settings or transform are invalid.";
-					return false;
+					return failObject(
+					    id, "Camera settings or transform are invalid.");
 				}
 
 				if (object.camera->primary) {
 					if (camera) {
-						error = "Only one Camera can be marked Primary.";
-						return false;
+						return failObject(
+						    id, "Only one Camera can be marked Primary. "
+						        "Conflicts with object ID " +
+						            std::to_string(camera) + ".");
 					}
 
 					camera = id;
@@ -50,9 +64,9 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 
 			if (object.respawn &&
 			    (!object.character || !object.respawn->IsValid())) {
-				error = "Respawn requires a Character Controller and valid "
-				        "settings.";
-				return false;
+				return failObject(
+				    id, "Respawn requires a Character Controller and valid "
+				        "settings.");
 			}
 		}
 
@@ -64,9 +78,11 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 
 		CollisionWorld world;
 
-		if (!world.Rebuild(source, character)) {
-			error = "A scene collider cannot be represented at its transform.";
-			return false;
+		SceneObjectId invalidCollider = 0;
+		if (!world.Rebuild(source, character, &invalidCollider)) {
+			return failObject(
+			    invalidCollider,
+			    "Box Collider cannot be represented at its transform.");
 		}
 
 		CharacterController controller;
@@ -77,10 +93,10 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 
 			if (!controller.Initialize(object.transform, *object.collider,
 			                           *object.character, world)) {
-				error =
+				return failObject(
+				    character,
 				    "The character starts inside a collider or has an invalid "
-				    "transform.";
-				return false;
+				    "transform or Box Collider.");
 			}
 
 			spawn = object.transform.translation;
@@ -95,13 +111,16 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 				if (spawn.y <= settings.minimumY ||
 				    object.transform.translation.y <= settings.minimumY ||
 				    !controller.Teleport(spawn, world)) {
-					error = "The character and its respawn point must be above "
-					        "Fall Below Y and outside solid colliders.";
-					return false;
+					return failObject(
+					    character,
+					    "The character and its respawn point must be above "
+					    "Fall Below Y and outside solid colliders.");
 				}
 
 				if (!controller.Teleport(object.transform.translation, world)) {
-					return false;
+					return failObject(
+					    character,
+					    "Could not restore the character start position.");
 				}
 			}
 		}
@@ -119,8 +138,7 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 			    objects.at(settings.target).transform.translation, settings);
 
 			if (!SceneCameraUtils::ApplyPose(followPose, object.transform)) {
-				error = "Follow Camera pose is invalid.";
-				return false;
+				return failObject(id, "Follow Camera pose is invalid.");
 			}
 
 			std::optional<std::size_t> parent;
@@ -150,7 +168,11 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 		Camera validator;
 
 		if (!validator.SetPose(pose) || !validator.SetSettings(lens)) {
-			error = "Camera pose or projection is invalid.";
+			if (camera) {
+				return failObject(camera,
+				                  "Camera pose or projection is invalid.");
+			}
+			error = "Fallback Camera pose or projection is invalid.";
 			return false;
 		}
 

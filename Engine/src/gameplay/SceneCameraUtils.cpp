@@ -7,6 +7,7 @@
 #include "scene/Scene.h"
 #include <algorithm>
 #include <cmath>
+#include <format>
 #include <limits>
 #include <map>
 #include <set>
@@ -202,10 +203,13 @@ bool SceneCameraUtils::GetFollowOrder(const Scene &scene,
 		const auto *target = FollowTarget(scene, id);
 
 		if (!target) {
-			error = "Follow Camera requires a valid Camera, a target in this "
-			        "scene, and no Character Controller on the same object. "
-			        "Object ID: " +
-			        std::to_string(id);
+			error =
+			    std::format("Follow Camera requires a valid Camera, a target "
+			                "in this scene, "
+			                "and no Character Controller on the same object. "
+			                "Object: \"{}\" (ID {}). Target ID: {}.",
+			                object.name.empty() ? "Object" : object.name, id,
+			                object.followCamera->target);
 			return false;
 		}
 
@@ -232,8 +236,26 @@ bool SceneCameraUtils::GetFollowOrder(const Scene &scene,
 	}
 
 	if (result.size() != count) {
-		error = "Follow Camera targets form a cycle. Choose targets without a "
-		        "circular chain.";
+		// 更新順に入らなかった物体には循環の後続も含まれる。
+		// 追従先をたどり、再訪した物体だけを循環内の例として通知する。
+		std::set<SceneObjectId> resolved(result.begin(), result.end());
+		SceneObjectId cycle = 0;
+		for (const auto &[id, object] : scene.GetObjects()) {
+			if (object.followCamera && !resolved.contains(id)) {
+				cycle = id;
+				break;
+			}
+		}
+		std::set<SceneObjectId> visited;
+		while (visited.insert(cycle).second) {
+			cycle = scene.FindObject(cycle)->followCamera->target;
+		}
+		const auto &object = *scene.FindObject(cycle);
+		error =
+		    std::format("Follow Camera targets form a cycle. Choose targets "
+		                "without a circular chain. "
+		                "Cycle contains object: \"{}\" (ID {}).",
+		                object.name.empty() ? "Object" : object.name, cycle);
 		return false;
 	}
 

@@ -18,8 +18,10 @@ class CollisionWorld {
 	/// </summary>
 	/// <param name="scene">静的な障害物の設定を持つシーン</param>
 	/// <param name="ignoredObject">主人公など、障害物から除くID。0は除外なし</param>
+	/// <param name="invalidObject">指定時は無効な形状の物体IDを設定する。成功時は0</param>
 	/// <returns>true:成功 false:形状が無効。失敗時は現在の障害物を保持する</returns>
-	bool Rebuild(const Scene &scene, SceneObjectId ignoredObject = 0);
+	bool Rebuild(const Scene &scene, SceneObjectId ignoredObject = 0,
+	             SceneObjectId *invalidObject = nullptr);
 
 	/// <summary>
 	/// 有効なボックスを障害物と重ならず配置できるか確認する。面への接触は許可する

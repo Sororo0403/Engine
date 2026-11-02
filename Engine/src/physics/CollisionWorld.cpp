@@ -85,7 +85,12 @@ bool Sweep(const Vector &minimum, const Vector &maximum, const Vector &movement,
 }
 } // namespace
 
-bool CollisionWorld::Rebuild(const Scene &scene, SceneObjectId ignoredObject) {
+bool CollisionWorld::Rebuild(const Scene &scene, SceneObjectId ignoredObject,
+                             SceneObjectId *invalidObject) {
+	if (invalidObject) {
+		*invalidObject = 0;
+	}
+
 	std::vector<AxisAlignedBox> candidate;
 
 	for (const auto &[id, object] : scene.GetObjects()) {
@@ -97,6 +102,10 @@ bool CollisionWorld::Rebuild(const Scene &scene, SceneObjectId ignoredObject) {
 
 		if (!BoxColliderUtils::GetWorldBounds(*object.collider,
 		                                      object.transform, bounds)) {
+			if (invalidObject) {
+				*invalidObject = id;
+			}
+
 			return false;
 		}
 
