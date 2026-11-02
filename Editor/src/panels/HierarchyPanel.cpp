@@ -47,7 +47,8 @@ void HierarchyPanel::RequestReveal(SceneObjectId objectId) {
 
 HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
                                             const Scene &scene,
-                                            EditorSelection &selection) {
+                                            EditorSelection &selection,
+                                            bool editable) {
 	Result result;
 
 	// 検索で隠れた物体は残し、削除済みの物体だけ取り除く
@@ -155,6 +156,8 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 	ImGui::SetItemTooltip("Up/Down and Home/End navigate the filtered list; "
 	                      "Shift selects a range. Ctrl+click toggles objects.");
 
+	ui.BeginDisabled(!editable);
+
 	if (ui.Button("Create Empty")) {
 		result.action = Action::CREATE_EMPTY;
 	}
@@ -171,6 +174,7 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 		result.action = Action::DELETE_OBJECTS;
 	}
 
+	ui.EndDisabled();
 	ui.EndDisabled();
 
 	ui.Separator();
@@ -242,7 +246,7 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 					scrollToId_ = 0;
 				}
 
-				if (ui.MenuItem("Copy", "Ctrl+C", true)) {
+				if (ui.MenuItem("Copy", "Ctrl+C", editable)) {
 					result.action = Action::COPY_OBJECTS;
 				}
 
@@ -258,6 +262,8 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 				                hasFollowers)) {
 					result.action = Action::SELECT_FOLLOW_CAMERAS;
 				}
+
+				ui.BeginDisabled(!editable);
 
 				if (ui.MenuItem("Rename", "F2", selection.GetCount() != 0)) {
 					result.action = Action::RENAME_OBJECT;
@@ -342,6 +348,7 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 					result.action = Action::DISTRIBUTE_Z;
 				}
 
+				ui.EndDisabled();
 				ImGui::EndPopup();
 			}
 		}
@@ -353,6 +360,8 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 		if (ImGui::BeginPopupContextWindow(
 		        "HierarchyBackground", ImGuiPopupFlags_MouseButtonRight |
 		                                   ImGuiPopupFlags_NoOpenOverItems)) {
+			ui.BeginDisabled(!editable);
+
 			if (ui.MenuItem("Create Empty", nullptr, true)) {
 				result.action = Action::CREATE_EMPTY;
 			}
@@ -365,6 +374,7 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 				result.action = Action::CREATE_CAMERA;
 			}
 
+			ui.EndDisabled();
 			ImGui::EndPopup();
 		}
 	}

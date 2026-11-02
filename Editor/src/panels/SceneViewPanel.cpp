@@ -16,9 +16,10 @@ SceneViewPanel::~SceneViewPanel() = default;
 
 bool SceneViewPanel::DrawUI(const ImGuiSystem &ui, TransformGizmo &gizmo,
                             TransformGizmo::SelectionMode selectionMode,
-                            bool editable) {
+                            bool editable, bool allowReadOnlySelection) {
 	visible_ = false;
 	editable_ = editable;
+	selectionEnabled_ = editable || allowReadOnlySelection;
 	input_ = {};
 	modelDrop_ = {};
 	imageMinimum_ = {};
@@ -36,7 +37,10 @@ bool SceneViewPanel::DrawUI(const ImGuiSystem &ui, TransformGizmo &gizmo,
 		gizmo.DrawToolbar(selectionMode);
 	} else {
 		gizmo.Cancel();
-		CancelSelection();
+
+		if (!selectionEnabled_) {
+			CancelSelection();
+		}
 	}
 
 	const auto size = ui.GetContentSize();
@@ -141,10 +145,10 @@ SceneViewPanel::UpdateSelection(const ImGuiSystem &ui, bool enabled,
 	SelectionRequest request;
 	const auto &io = ImGui::GetIO();
 
-	if (!editable_ || !enabled || !visible_ || !input_.applicationFocused ||
-	    !input_.windowFocused || input_.widgetActive || input_.rightDown ||
-	    input_.middleDown || io.KeyAlt ||
-	    ImGui::IsKeyPressed(ImGuiKey_Escape, false) ||
+	if (!selectionEnabled_ || !enabled || !visible_ ||
+	    !input_.applicationFocused || !input_.windowFocused ||
+	    input_.widgetActive || input_.rightDown || input_.middleDown ||
+	    io.KeyAlt || ImGui::IsKeyPressed(ImGuiKey_Escape, false) ||
 	    !ImGui::IsMousePosValid()) {
 		CancelSelection();
 		return request;

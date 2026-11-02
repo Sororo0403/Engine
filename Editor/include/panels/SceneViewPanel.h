@@ -52,11 +52,12 @@ class SceneViewPanel {
 	/// <param name="ui">フレーム開始済みのUI</param>
 	/// <param name="gizmo">操作切り替えUIを表示するギズモ</param>
 	/// <param name="selectionMode">単一選択または複数選択</param>
-	/// <param name="editable">編集操作を許可するか。falseではツールバー・ドロップ・ギズモ・選択を止め、カメラ入力は保持する</param>
+	/// <param name="editable">編集操作を許可するか。falseではツールバー・ドロップ・ギズモを止める</param>
+	/// <param name="allowReadOnlySelection">編集不可でも、観察用の選択入力を許可するか。カメラ入力はいずれの場合も保持する</param>
 	/// <returns>true:成功または非表示 false:描画先の作成失敗</returns>
 	bool DrawUI(const ImGuiSystem &ui, TransformGizmo &gizmo,
 	            TransformGizmo::SelectionMode selectionMode,
-	            bool editable = true);
+	            bool editable = true, bool allowReadOnlySelection = false);
 
 	/// <summary>
 	/// このフレームに表示したScene画像へ変形ギズモを重ねる
@@ -131,6 +132,7 @@ class SceneViewPanel {
 
 	bool visible_ = false;
 	bool editable_ = true;
+	bool selectionEnabled_ = true;
 
 	DirectX::XMFLOAT2 imageMinimum_{};
 	DirectX::XMFLOAT2 imageSize_{};

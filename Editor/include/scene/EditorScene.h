@@ -372,10 +372,12 @@ class EditorScene final : public IScene {
 	/// <param name="request">画像内の正規化した選択操作</param>
 	/// <param name="view">更新済みのビュー行列</param>
 	/// <param name="projection">更新済みの投影行列</param>
+	/// <param name="runtimeScene">再生シーンと観察用の選択を使用するか。falseは編集シーン</param>
 	/// <returns>true:選択変更あり false:変更なし、または無効な範囲</returns>
 	bool ApplySceneSelection(const SceneViewPanel::SelectionRequest &request,
 	                         const DirectX::XMFLOAT4X4 &view,
-	                         const DirectX::XMFLOAT4X4 &projection);
+	                         const DirectX::XMFLOAT4X4 &projection,
+	                         bool runtimeScene = false);
 
 	/// <summary>
 	/// 選択物体またはシーン全体へカメラを寄せる操作を判定する
@@ -402,8 +404,15 @@ class EditorScene final : public IScene {
 	/// </summary>
 	/// <param name="deltaTime">Sceneカメラの経過時間。Pause中もカメラ操作には使用する</param>
 	/// <param name="action">メニューから要求されたフレーミング操作</param>
+	/// <param name="hierarchyFocused">再生用Hierarchyにフォーカスがあるか</param>
 	/// <returns>true:成功または非表示 false:Scene描画の更新失敗</returns>
-	bool UpdatePlaySceneView(float deltaTime, EditorAction action);
+	bool UpdatePlaySceneView(float deltaTime, EditorAction action,
+	                         bool hierarchyFocused = false);
+
+	/// <summary>
+	/// 観察用の選択・未確定のScene選択・Hierarchy表示をクリアし、次回のPlayで編集時の選択を複製し直す
+	/// </summary>
+	void ClearPlaySelection();
 
 	/// <summary>
 	/// 選択中の全物体を複製し、複製した物体を選択する
@@ -520,6 +529,10 @@ class EditorScene final : public IScene {
 	AssetsPanel assetsPanel_;
 
 	EditorSelection selection_;
+	EditorSelection playSelection_;
+	HierarchyPanel playHierarchyPanel_;
+	bool playSelectionActive_ = false;
+	FrameRequest playFrameRequest_ = FrameRequest::NONE;
 	EditorClipboard clipboard_;
 
 	SaveChangesDialog saveChangesDialog_;

@@ -97,6 +97,7 @@ bool EditorScene::Initialize() {
 
 	document_.New();
 	selection_.Clear();
+	ClearPlaySelection();
 
 	hierarchyPanel_.Clear();
 	inspectorPanel_.Clear();
@@ -118,6 +119,11 @@ bool EditorScene::Update(float deltaTime) {
 
 	playFrame_ = false;
 	playSceneReady_ = false;
+
+	if (!playMode_.IsPlaying() && playSelectionActive_) {
+		ClearPlaySelection();
+	}
+
 	performancePanel_.Record(deltaTime);
 	gizmo_.BeginFrame();
 
@@ -189,26 +195,63 @@ bool EditorScene::Update(float deltaTime) {
 		playMode_.RequestStep();
 	}
 
+	if (!playMode_.IsPlaying() && playSelectionActive_) {
+		ClearPlaySelection();
+	}
+
+	if (playMode_.IsPlaying() && !playSelectionActive_) {
+		try {
+			const auto ids = selection_.GetIds();
+			playSelection_.Set(
+			    std::vector<SceneObjectId>(ids.begin(), ids.end()));
+			playHierarchyPanel_.Clear();
+			playSelectionActive_ = true;
+		} catch (const std::exception &error) {
+			Logger::Error(
+			    std::format("EditorScene::PlaySelection: {}", error.what()));
+			playMode_.Stop();
+			ShowError("Could not prepare runtime selection. Your editing scene "
+			          "is unchanged.");
+		}
+	}
+
 	if (playMode_.IsPlaying()) {
 		playFrame_ = true;
 		DrawGridSettings();
 
 		consolePanel_.Draw(ui_);
 		controlsPanel_.Draw();
+		const auto &runtime = playMode_.GetSession().GetScene();
+		const auto hierarchy =
+		    playHierarchyPanel_.Draw(ui_, runtime, playSelection_, false);
+
+		if (hierarchy.action == HierarchyPanel::Action::FRAME_SELECTED) {
+			action = EditorAction::FRAME_SELECTED;
+		} else if (hierarchy.action ==
+		           HierarchyPanel::Action::SELECT_FOLLOW_CAMERAS) {
+			try {
+				FollowCameraUsage::SelectObjects(runtime, playSelection_);
+				playHierarchyPanel_.RequestReveal(playSelection_.GetActiveId());
+			} catch (const std::exception &error) {
+				Logger::Error(std::format(
+				    "EditorScene::SelectRuntimeFollowers: {}", error.what()));
+				ShowError("Could not select runtime Follow Cameras.");
+			}
+		}
+
 		ui_.BeginDisabled(true);
-		hierarchyPanel_.Draw(ui_, document_.GetScene(), selection_);
-		inspectorPanel_.Draw(ui_, document_.GetScene(),
-		                     selection_.GetActiveId(), document_.GetHistory());
 		assetsPanel_.Draw(ui_, assets_);
 		historyPanel_.Draw(ui_, document_.GetHistory(), false);
 		ui_.EndDisabled();
 
-		if (!sceneViewPanel_.DrawUI(
-		        ui_, gizmo_, TransformGizmo::SelectionMode::SINGLE, false)) {
+		if (!sceneViewPanel_.DrawUI(ui_, gizmo_,
+		                            TransformGizmo::SelectionMode::SINGLE,
+		                            false, true)) {
 			playMode_.Stop();
 			ShowError("Could not create or resize the Scene render target.");
 		} else if (!playMode_.Update(deltaTime, input_,
-		                             sceneViewPanel_.GetInput().windowFocused,
+		                             sceneViewPanel_.GetInput().windowFocused ||
+		                                 hierarchy.windowFocused,
 		                             sceneViewPanel_.GetRenderTexture() !=
 		                                 nullptr)) {
 			playMode_.Stop();
@@ -216,15 +259,24 @@ bool EditorScene::Update(float deltaTime) {
 			          "failed. Your editing scene is unchanged.");
 		}
 
-		if (playMode_.IsPlaying() && !UpdatePlaySceneView(deltaTime, action)) {
+		if (playMode_.IsPlaying() &&
+		    !UpdatePlaySceneView(deltaTime, action, hierarchy.windowFocused)) {
 			playMode_.Stop();
 			ShowError("Play stopped because Scene rendering failed. Your "
 			          "editing scene is unchanged.");
 		}
 
+		inspectorPanel_.DrawReadOnly(ui_, playMode_.GetSession().GetScene(),
+		                             playSelection_.GetActiveId());
+
 		playStatePanel_.Draw(ui_, playMode_.GetSession());
 
 		UpdateDialogs();
+
+		if (!playMode_.IsPlaying()) {
+			ClearPlaySelection();
+		}
+
 		return true;
 	}
 
@@ -782,6 +834,7 @@ void EditorScene::Finalize() {
 	performancePanel_.Reset();
 	playStatePanel_.Reset();
 	playSceneReady_ = false;
+	ClearPlaySelection();
 	playSceneRenderer_.Finalize();
 	playMode_.Finalize();
 	sceneViewPanel_.Finalize();
@@ -1109,7 +1162,10 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		                     !gizmo_.IsUsing() &&
 		                     !sceneViewPanel_.IsSelecting();
 
-		if (ui_.MenuItem("Frame Selected", "F", enabled && HasSelection())) {
+		if (ui_.MenuItem("Frame Selected", "F",
+		                 enabled && (playMode_.IsPlaying()
+		                                 ? playSelection_.GetCount() > 0
+		                                 : HasSelection()))) {
 			action = EditorAction::FRAME_SELECTED;
 		}
 
@@ -2437,26 +2493,31 @@ void EditorScene::FinishEdit() {
 
 bool EditorScene::ApplySceneSelection(
     const SceneViewPanel::SelectionRequest &request,
-    const DirectX::XMFLOAT4X4 &view, const DirectX::XMFLOAT4X4 &projection) {
+    const DirectX::XMFLOAT4X4 &view, const DirectX::XMFLOAT4X4 &projection,
+    bool runtimeScene) {
+	const auto &scene =
+	    runtimeScene ? playMode_.GetSession().GetScene() : document_.GetScene();
+	auto &renderer = runtimeScene ? playSceneRenderer_ : renderer_;
+	auto &selection = runtimeScene ? playSelection_ : selection_;
 	using Action = SceneViewPanel::SelectionRequest::Action;
 
 	if (request.action == Action::CLICK) {
 		float modelDistance = (std::numeric_limits<float>::max)();
-		SceneObjectId picked = renderer_.Pick(
-		    request.minimum.x, request.minimum.y, &modelDistance);
+		SceneObjectId picked =
+		    renderer.Pick(request.minimum.x, request.minimum.y, &modelDistance);
 		Ray ray;
 
 		if (showObjectMarkers_ &&
-		    renderer_.CreatePickingRay(request.minimum.x, request.minimum.y,
-		                               ray)) {
-			if (const auto marker = ObjectMarkers::Pick(document_.GetScene(),
-			                                            ray, modelDistance)) {
+		    renderer.CreatePickingRay(request.minimum.x, request.minimum.y,
+		                              ray)) {
+			if (const auto marker =
+			        ObjectMarkers::Pick(scene, ray, modelDistance)) {
 				picked = marker;
 			}
 		}
 
-		return request.additive ? selection_.Toggle(picked)
-		                        : selection_.SelectOnly(picked);
+		return request.additive ? selection.Toggle(picked)
+		                        : selection.SelectOnly(picked);
 	}
 
 	if (request.action != Action::BOX) {
@@ -2473,17 +2534,17 @@ bool EditorScene::ApplySceneSelection(
 	std::vector<SceneObjectId> ids;
 
 	if (request.additive) {
-		const auto current = selection_.GetIds();
+		const auto current = selection.GetIds();
 		ids.assign(current.begin(), current.end());
 	}
 
-	for (const auto &[id, object] : document_.GetScene().GetObjects()) {
+	for (const auto &[id, object] : scene.GetObjects()) {
 		std::array<DirectX::XMFLOAT3, 8> corners;
 		const bool boundsReady =
 		    object.modelPath.empty()
 		        ? showObjectMarkers_ &&
 		              ObjectMarkers::GetBounds(object, corners)
-		        : object.visible && renderer_.GetObjectBounds(id, corners);
+		        : object.visible && renderer.GetObjectBounds(id, corners);
 
 		if (boundsReady && volume.Intersects(corners) &&
 		    std::find(ids.begin(), ids.end(), id) == ids.end()) {
@@ -2491,13 +2552,13 @@ bool EditorScene::ApplySceneSelection(
 		}
 	}
 
-	const auto current = selection_.GetIds();
+	const auto current = selection.GetIds();
 
 	if (std::equal(current.begin(), current.end(), ids.begin(), ids.end())) {
 		return false;
 	}
 
-	return selection_.Set(std::move(ids));
+	return selection.Set(std::move(ids));
 }
 
 bool EditorScene::MakeSelectionTransform(Transform &transform) const {
@@ -2534,13 +2595,14 @@ bool EditorScene::FrameObjects(FrameRequest request,
 	const auto &scene =
 	    runtimeScene ? playMode_.GetSession().GetScene() : document_.GetScene();
 	auto &renderer = runtimeScene ? playSceneRenderer_ : renderer_;
+	const auto &selection = runtimeScene ? playSelection_ : selection_;
 	DirectX::XMFLOAT3 minimum{};
 	DirectX::XMFLOAT3 maximum{};
 	bool found = false;
 
 	for (const auto &[id, object] : scene.GetObjects()) {
 		if ((!object.visible && !object.modelPath.empty()) ||
-		    (request == FrameRequest::SELECTED && !selection_.Contains(id))) {
+		    (request == FrameRequest::SELECTED && !selection.Contains(id))) {
 			continue;
 		}
 
@@ -2592,15 +2654,33 @@ bool EditorScene::FrameObjects(FrameRequest request,
 	return true;
 }
 
-bool EditorScene::UpdatePlaySceneView(float deltaTime, EditorAction action) {
+bool EditorScene::UpdatePlaySceneView(float deltaTime, EditorAction action,
+                                      bool hierarchyFocused) {
 	ViewportInput viewport = sceneViewPanel_.GetInput();
 
-	if (IsBusy() || ui_.IsTextInputActive() || ImGui::IsAnyItemActive()) {
+	if (IsBusy() || ui_.IsTextInputActive() || ImGui::IsAnyItemActive() ||
+	    sceneViewPanel_.IsSelecting()) {
 		viewport = {};
 	}
 
+	ViewportInput frameInput = viewport;
+
+	if (hierarchyFocused) {
+		frameInput.applicationFocused = !ImGui::GetIO().AppFocusLost;
+	}
+
+	const auto requestedFrame =
+	    action == EditorAction::FRAME_SELECTED ? FrameRequest::SELECTED
+	    : action == EditorAction::FRAME_ALL
+	        ? FrameRequest::ALL
+	        : ReadFrameShortcut(frameInput, hierarchyFocused);
+
+	if (requestedFrame != FrameRequest::NONE) {
+		playFrameRequest_ = requestedFrame;
+	}
+
 	const auto &runtime = playMode_.GetSession().GetScene();
-	const auto *active = runtime.FindObject(selection_.GetActiveId());
+	const auto *active = runtime.FindObject(playSelection_.GetActiveId());
 	cameraController_.Update(input_, viewport, deltaTime,
 	                         active ? &active->transform.translation : nullptr);
 	auto *target = sceneViewPanel_.GetRenderTexture();
@@ -2620,14 +2700,24 @@ bool EditorScene::UpdatePlaySceneView(float deltaTime, EditorAction action) {
 		return false;
 	}
 
-	FrameRequest request = action == EditorAction::FRAME_SELECTED
-	                           ? FrameRequest::SELECTED
-	                       : action == EditorAction::FRAME_ALL
-	                           ? FrameRequest::ALL
-	                           : ReadFrameShortcut(viewport, false);
+	const auto selectionRequest =
+	    sceneViewPanel_.UpdateSelection(ui_, !IsBusy(), false);
 
-	if (request != FrameRequest::NONE &&
-	    FrameObjects(request, projection, true)) {
+	try {
+		if (ApplySceneSelection(selectionRequest, view, projection, true)) {
+			playHierarchyPanel_.RequestReveal(playSelection_.GetActiveId());
+		}
+	} catch (const std::exception &error) {
+		Logger::Error(
+		    std::format("EditorScene::SelectRuntimeObject: {}", error.what()));
+		ShowError("Could not select runtime objects. See the log for details.");
+	}
+
+	const auto frameRequest = playFrameRequest_;
+	playFrameRequest_ = FrameRequest::NONE;
+
+	if (frameRequest != FrameRequest::NONE &&
+	    FrameObjects(frameRequest, projection, true)) {
 		if (!playSceneRenderer_.SetCameraPose(cameraController_.GetPose()) ||
 		    !playSceneRenderer_.Update(target->GetWidth(),
 		                               target->GetHeight())) {
@@ -2637,15 +2727,15 @@ bool EditorScene::UpdatePlaySceneView(float deltaTime, EditorAction action) {
 
 	if ((showGrid_ && !sceneGrid_.Update(playSceneRenderer_)) ||
 	    !colliderBounds_.Update(playSceneRenderer_, runtime,
-	                            selection_.GetIds(), colliderDisplay_) ||
+	                            playSelection_.GetIds(), colliderDisplay_) ||
 	    (showObjectMarkers_ &&
 	     !objectMarkers_.Update(playSceneRenderer_, runtime,
-	                            selection_.GetIds()))) {
+	                            playSelection_.GetIds()))) {
 		return false;
 	}
 
 	if (showSelectionBounds_) {
-		for (const auto id : selection_.GetIds()) {
+		for (const auto id : playSelection_.GetIds()) {
 			if (!selectionBounds_.Update(playSceneRenderer_, id)) {
 				return false;
 			}
@@ -2654,6 +2744,14 @@ bool EditorScene::UpdatePlaySceneView(float deltaTime, EditorAction action) {
 
 	playSceneReady_ = playSceneRenderer_.UpdateDebugLines();
 	return playSceneReady_;
+}
+
+void EditorScene::ClearPlaySelection() {
+	sceneViewPanel_.CancelSelection();
+	playSelection_.Clear();
+	playHierarchyPanel_.Clear();
+	playSelectionActive_ = false;
+	playFrameRequest_ = FrameRequest::NONE;
 }
 
 void EditorScene::DuplicateSelectedObjects() {

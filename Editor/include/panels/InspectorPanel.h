@@ -113,6 +113,15 @@ class InspectorPanel {
 	          SceneObjectId selectedObjectId, EditorHistory &history,
 	          bool canPasteTransform = false);
 
+	/// <summary>
+	/// 選択した再生物体の現在値だけを表示する。編集用の固定先・要求・履歴は変更しない
+	/// </summary>
+	/// <param name="ui">フレーム開始済みのUI</param>
+	/// <param name="scene">変更しない再生シーン</param>
+	/// <param name="selectedObjectId">観察する物体ID。0または不在の場合は未選択を表示する</param>
+	void DrawReadOnly(const ImGuiSystem &ui, const Scene &scene,
+	                  SceneObjectId selectedObjectId) const;
+
   private:
 	GameplayInspector gameplayInspector_;
 	SceneObjectId lockedObjectId_ = 0;

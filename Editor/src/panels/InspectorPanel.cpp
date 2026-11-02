@@ -426,3 +426,101 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 	ui.EndWindow();
 	return changed;
 }
+
+void InspectorPanel::DrawReadOnly(const ImGuiSystem &ui, const Scene &scene,
+                                  SceneObjectId selectedObjectId) const {
+	if (!ui.BeginWindow("Inspector")) {
+		ui.EndWindow();
+		return;
+	}
+
+	const auto *object = scene.FindObject(selectedObjectId);
+
+	if (!object) {
+		ui.Text("No object selected.");
+		ui.EndWindow();
+		return;
+	}
+
+	ui.Text(std::format("Name: {}", object->name));
+	ui.Text(std::format("ID: {}", selectedObjectId));
+	bool visible = object->visible;
+	ui.BeginDisabled(true);
+	ui.Checkbox("Visible", visible);
+	ui.EndDisabled();
+
+	if (ui.CollapsingHeader("Transform")) {
+		auto transform = object->transform;
+		auto rotation = TransformUtils::RotationToEuler(transform.rotation);
+		rotation = {DirectX::XMConvertToDegrees(rotation.x),
+		            DirectX::XMConvertToDegrees(rotation.y),
+		            DirectX::XMConvertToDegrees(rotation.z)};
+		ui.BeginDisabled(true);
+		ui.DragFloat3("Position", transform.translation, 0.01f, 0.0f, 0.0f);
+		ui.DragFloat3("Rotation", rotation, 0.1f, 0.0f, 0.0f);
+		ui.DragFloat3("Scale", transform.scale, 0.01f, 0.0f, 0.0f);
+		ui.EndDisabled();
+	}
+
+	if (!object->modelPath.empty()) {
+		ImGui::TextWrapped("Model: %s",
+		                   PathUtils::ToUtf8(object->modelPath).c_str());
+	}
+
+	if (object->collider && ui.CollapsingHeader("Box Collider")) {
+		auto collider = *object->collider;
+		ui.BeginDisabled(true);
+		ui.DragFloat3("Collider Center", collider.center, 0.01f, 0.0f, 0.0f);
+		ui.DragFloat3("Collider Half Size", collider.halfExtents, 0.01f, 0.0f,
+		              0.0f);
+		ui.EndDisabled();
+	}
+
+	if (object->character && ui.CollapsingHeader("Character Controller")) {
+		auto settings = *object->character;
+		ui.BeginDisabled(true);
+		ImGui::DragFloat("Move Speed", &settings.moveSpeed);
+		ImGui::DragFloat("Jump Speed", &settings.jumpSpeed);
+		ImGui::DragFloat("Gravity", &settings.gravity);
+		ImGui::DragFloat("Terminal Speed", &settings.terminalSpeed);
+		ui.EndDisabled();
+	}
+
+	if (object->camera && ui.CollapsingHeader("Camera")) {
+		auto camera = *object->camera;
+		ui.BeginDisabled(true);
+		ui.Checkbox("Primary", camera.primary);
+		ImGui::DragFloat("Vertical FOV", &camera.settings.verticalFovDegrees);
+		ImGui::DragFloat("Near Clip", &camera.settings.nearClip);
+		ImGui::DragFloat("Far Clip", &camera.settings.farClip);
+		ui.EndDisabled();
+	}
+
+	if (object->followCamera && ui.CollapsingHeader("Follow Camera")) {
+		auto settings = *object->followCamera;
+		const auto *target = scene.FindObject(settings.target);
+		ui.Text(std::format("Target: {} (ID {})",
+		                    target ? target->name : "None", settings.target));
+		ui.BeginDisabled(true);
+		ui.DragFloat3("Camera Offset", settings.offset, 0.01f, 0.0f, 0.0f);
+		ui.DragFloat3("Look Offset", settings.lookOffset, 0.01f, 0.0f, 0.0f);
+		ImGui::DragFloat("Follow Smoothing", &settings.smoothing);
+		ui.EndDisabled();
+	}
+
+	if (object->respawn && ui.CollapsingHeader("Respawn")) {
+		auto settings = *object->respawn;
+		ui.BeginDisabled(true);
+		ImGui::DragFloat("Fall Below Y", &settings.minimumY);
+		ui.Checkbox("Use Start Position", settings.useStartPosition);
+
+		if (!settings.useStartPosition) {
+			ui.DragFloat3("Respawn Position", settings.position, 0.01f, 0.0f,
+			              0.0f);
+		}
+
+		ui.EndDisabled();
+	}
+
+	ui.EndWindow();
+}

@@ -308,13 +308,21 @@ void ControlsPanel::Draw() {
 	         "Use without Ctrl, Shift or Alt. Shortcuts are ignored while "
 	         "editing text or fields, dragging, showing a popup, or when "
 	         "Editor is not active. Holding a key does not repeat the action."},
+	        {"Runtime selection",
+	         "Select running objects in Scene or Hierarchy to inspect their "
+	         "current Transform and component values. Click, Ctrl-click and "
+	         "box/range selection work; F frames the runtime selection. "
+	         "Inspector is read-only during Play. Runtime selection and "
+	         "Hierarchy filters are separate from editing; Stop returns to "
+	         "the original editing selection and Inspector lock. Selecting "
+	         "objects adds no Undo history and cannot change the game."},
 	        {"Scene during Play",
 	         "Observe the live scene from an independent camera. Right-drag "
 	         "and WASD, middle-drag, wheel and Alt-orbit still work, including "
 	         "while paused. F / Shift+F frame current runtime positions. "
 	         "Grid, Collider display, object markers and selection bounds "
 	         "apply only to Scene; Game keeps its own camera and clean image. "
-	         "Editing, selection changes and model drops are disabled. Scene "
+	         "Editing and model drops are disabled. Scene "
 	         "camera controls do not move the player. Play continues when "
 	         "Game is hidden but Scene is visible; hiding both or switching "
 	         "away from the application suspends simulation. Stop restores "
