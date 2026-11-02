@@ -577,4 +577,8 @@
     <ClInclude Include="include\gameplay\SceneValidation.h"><Filter>include\gameplay</Filter></ClInclude>
     <ClCompile Include="src\gameplay\SceneValidation.cpp"><Filter>src\gameplay</Filter></ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\platform\windows\FileUtils.h"><Filter>include\platform\windows</Filter></ClInclude>
+    <ClCompile Include="src\platform\windows\FileUtils.cpp"><Filter>src\platform\windows</Filter></ClCompile>
+  </ItemGroup>
 </Project>

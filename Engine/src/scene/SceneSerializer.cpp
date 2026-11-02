@@ -4,6 +4,7 @@
 #include "math/MathUtils.h"
 #include "math/TransformUtils.h"
 #include "physics/BoxColliderUtils.h"
+#include "platform/windows/FileUtils.h"
 #include "platform/windows/PathUtils.h"
 #include "scene/Scene.h"
 
@@ -284,19 +285,12 @@ bool SceneSerializer::Save(const Scene &scene,
 
 		std::filesystem::create_directories(targetPath.parent_path());
 
-		auto temporaryPath = targetPath;
-		temporaryPath += ".tmp";
+		std::string error;
 
-		// 元の保存ファイルへ直接書き込まず、一時ファイルを使う
-		std::ofstream output;
-		output.exceptions(std::ios::failbit | std::ios::badbit);
-		output.open(temporaryPath, std::ios::binary | std::ios::trunc);
-
-		output << text;
-		output.close();
-
-		// 書き込みとクローズに成功してから保存ファイルを置き換える
-		std::filesystem::rename(temporaryPath, targetPath);
+		if (!FileUtils::WriteTextAtomically(targetPath, text, error)) {
+			Logger::Error(std::format("SceneSerializer::Save: {}", error));
+			return false;
+		}
 
 		Logger::Info("シーンを保存しました。");
 		return true;

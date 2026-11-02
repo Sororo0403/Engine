@@ -1,7 +1,6 @@
 #include "graphics/material/MaterialAsset.h"
+#include "platform/windows/FileUtils.h"
 #include "platform/windows/PathUtils.h"
-#include <Windows.h>
-#include <algorithm>
 #include <fstream>
 #include <json.hpp>
 #include <stdexcept>
@@ -120,73 +119,11 @@ bool MaterialSerializer::Load(const std::filesystem::path &path,
 bool MaterialSerializer::Save(const std::filesystem::path &path,
                               const MaterialAsset &asset, std::string &error,
                               bool overwrite) {
-	std::filesystem::path temporary;
-	HANDLE handle = INVALID_HANDLE_VALUE;
-	bool owned = false;
-	try {
-		std::string text;
+	std::string text;
 
-		if (!Serialize(asset, text, error)) {
-			return false;
-		}
-
-		const auto target = PathUtils::ResolveFromExecutable(path);
-		temporary = target;
-		temporary += L".tmp";
-		handle = CreateFileW(temporary.c_str(), GENERIC_WRITE, 0, nullptr,
-		                     CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
-
-		if (handle == INVALID_HANDLE_VALUE) {
-			throw std::runtime_error(
-			    "Could not create material save file (Windows error " +
-			    std::to_string(GetLastError()) + ").");
-		}
-
-		owned = true;
-		std::size_t offset = 0;
-
-		while (offset < text.size()) {
-			const auto size = static_cast<DWORD>(
-			    (std::min)(text.size() - offset, std::size_t(65536)));
-			DWORD written = 0;
-
-			if (!WriteFile(handle, text.data() + offset, size, &written,
-			               nullptr) ||
-			    written == 0) {
-				throw std::runtime_error("Could not write material file.");
-			}
-
-			offset += written;
-		}
-
-		if (!CloseHandle(handle)) {
-			handle = INVALID_HANDLE_VALUE;
-			throw std::runtime_error("Could not close material file.");
-		}
-
-		handle = INVALID_HANDLE_VALUE;
-
-		if (!MoveFileExW(temporary.c_str(), target.c_str(),
-		                 overwrite ? MOVEFILE_REPLACE_EXISTING : 0)) {
-			throw std::runtime_error(
-			    "Could not save material; the target may already exist or be "
-			    "in use (Windows error " +
-			    std::to_string(GetLastError()) + ").");
-		}
-
-		owned = false;
-		error.clear();
-		return true;
-	} catch (const std::exception &e) {
-		if (handle != INVALID_HANDLE_VALUE) {
-			CloseHandle(handle);
-		}
-
-		if (owned) {
-			DeleteFileW(temporary.c_str());
-		}
-
-		error = e.what();
+	if (!Serialize(asset, text, error)) {
 		return false;
 	}
+
+	return FileUtils::WriteTextAtomically(path, text, error, overwrite);
 }

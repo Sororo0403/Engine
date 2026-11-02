@@ -392,6 +392,14 @@ void ControlsPanel::Draw() {
 	         "exported without requiring a scene save. "
 	         "Game export includes assigned material files and their "
 	         "textures."},
+	        {"Scene / Material save failures",
+	         "A save uses a newly created file and replaces the destination "
+	         "after writing finishes. An existing staging file is never "
+	         "overwritten or removed. A failed replacement keeps the old "
+	         "destination and removes only the file created for this attempt. "
+	         "Close applications that lock the destination, then retry or "
+	         "choose another destination. New material creation also refuses "
+	         "to overwrite an existing asset."},
 	        {"Scene save conflicts",
 	         "Save compares the active file with its last opened or saved "
 	         "contents. External edits, including formatting changes, block "

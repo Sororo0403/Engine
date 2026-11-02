@@ -336,4 +336,8 @@ exit /b 0</Command>
     <ClInclude Include="include\gameplay\SceneValidation.h"></ClInclude>
     <ClCompile Include="src\gameplay\SceneValidation.cpp"></ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\platform\windows\FileUtils.h" />
+    <ClCompile Include="src\platform\windows\FileUtils.cpp" />
+  </ItemGroup>
 </Project>
