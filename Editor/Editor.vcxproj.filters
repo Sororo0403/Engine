@@ -530,4 +530,12 @@
       <Filter>src\panels</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\scene\PrimitiveObjects.h">
+      <Filter>include\scene</Filter>
+    </ClInclude>
+    <ClCompile Include="src\scene\PrimitiveObjects.cpp">
+      <Filter>src\scene</Filter>
+    </ClCompile>
+  </ItemGroup>
 </Project>

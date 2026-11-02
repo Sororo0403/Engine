@@ -221,6 +221,12 @@ void ControlsPanel::Draw() {
 	         "Scene. All includes hidden models and objects without models. "
 	         "The outlines match world-axis collision boxes and never appear "
 	         "in Game. This display setting is saved with Editor preferences."},
+	        {"Create > Empty / Box",
+	         "Add a normal object at the world origin and reveal it in "
+	         "Hierarchy. Box uses the built-in two-unit model with a matching "
+	         "Box Collider. Scale it into floors, walls or platforms. Creation "
+	         "supports Undo/Redo and scene saving. Hierarchy has the same "
+	         "creation controls."},
 	        {"Hierarchy > Component",
 	         "Combine component filters with Search and Hidden only. Models "
 	         "without Collider finds model objects missing collision shapes. "

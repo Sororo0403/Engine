@@ -306,4 +306,8 @@ exit /b 0</Command>
     <ClInclude Include="include\dialogs\GameSettingsDialog.h" />
     <ClCompile Include="src\dialogs\GameSettingsDialog.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\scene\PrimitiveObjects.h" />
+    <ClCompile Include="src\scene\PrimitiveObjects.cpp" />
+  </ItemGroup>
 </Project>

@@ -122,6 +122,8 @@ class EditorScene final : public IScene {
 		EXIT,
 		UNDO,
 		REDO,
+		CREATE_EMPTY,
+		CREATE_BOX,
 		DUPLICATE_OBJECTS,
 		DELETE_OBJECTS,
 		FRAME_SELECTED,
@@ -243,6 +245,13 @@ class EditorScene final : public IScene {
 	/// </summary>
 	/// <param name="path">検索するモデルのパス</param>
 	void SelectModelInstances(const std::filesystem::path &path);
+
+	/// <summary>
+	/// 通常の物体を履歴付きで追加し、選択とHierarchy表示を更新する。
+	/// モデル付きColliderは読み込んだモデルに合わせ、取得失敗時は追加しない
+	/// </summary>
+	/// <param name="object">追加する名前・モデル・コンポーネント</param>
+	void CreateObject(SceneObject object);
 
 	/// <summary>
 	/// モデルに合う衝突形状を設定する。モデルなしは単位ボックスを設定する

@@ -155,6 +155,12 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 		result.action = Action::CREATE_EMPTY;
 	}
 
+	ui.SameLine();
+
+	if (ui.Button("Create Box")) {
+		result.action = Action::CREATE_BOX;
+	}
+
 	ui.BeginDisabled(selection.GetCount() == 0);
 
 	if (ui.Button("Delete Selected")) {
@@ -330,6 +336,10 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 		                                   ImGuiPopupFlags_NoOpenOverItems)) {
 			if (ui.MenuItem("Create Empty", nullptr, true)) {
 				result.action = Action::CREATE_EMPTY;
+			}
+
+			if (ui.MenuItem("Create Box", nullptr, true)) {
+				result.action = Action::CREATE_BOX;
 			}
 
 			ImGui::EndPopup();

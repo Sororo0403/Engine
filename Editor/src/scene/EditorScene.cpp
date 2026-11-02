@@ -17,6 +17,7 @@
 #include "math/TransformUtils.h"
 #include "physics/BoxColliderUtils.h"
 #include "platform/windows/PathUtils.h"
+#include "scene/PrimitiveObjects.h"
 #include "scene/Scene.h"
 #include "selection/SelectionFrustum.h"
 
@@ -283,7 +284,10 @@ bool EditorScene::Update(float deltaTime) {
 			try {
 				switch (hierarchyRequest.action) {
 				case HierarchyPanel::Action::CREATE_EMPTY:
-					selection_.SelectOnly(history.CreateObject());
+					CreateObject(SceneObject{});
+					break;
+				case HierarchyPanel::Action::CREATE_BOX:
+					CreateObject(PrimitiveObjects::CreateBox());
 					break;
 				case HierarchyPanel::Action::DELETE_OBJECTS:
 					DeleteSelectedObjects();
@@ -1006,6 +1010,22 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		ui_.EndMenu();
 	}
 
+	if (ui_.BeginMenu("Create")) {
+		const bool enabled = !IsBusy() && !document_.GetHistory().IsEditing() &&
+		                     !gizmo_.IsUsing() &&
+		                     !sceneViewPanel_.IsSelecting();
+
+		if (ui_.MenuItem("Empty", nullptr, enabled)) {
+			action = EditorAction::CREATE_EMPTY;
+		}
+
+		if (ui_.MenuItem("Box", nullptr, enabled)) {
+			action = EditorAction::CREATE_BOX;
+		}
+
+		ui_.EndMenu();
+	}
+
 	ui_.EndDisabled();
 
 	if (ui_.BeginMenu("View")) {
@@ -1526,6 +1546,13 @@ void EditorScene::StartAction(EditorAction action) {
 		pendingAction_ = EditorAction::NONE;
 		StartSaveCopy();
 		return;
+	case EditorAction::CREATE_EMPTY:
+		CreateObject(SceneObject{});
+		return;
+	case EditorAction::CREATE_BOX:
+		CreateObject(PrimitiveObjects::CreateBox());
+		return;
+
 	case EditorAction::DUPLICATE_OBJECTS:
 		DuplicateSelectedObjects();
 		return;
@@ -1614,6 +1641,38 @@ void EditorScene::StartSave(bool saveAs) {
 	fileDialog_.Show(SceneFileDialogMode::SAVE, document_.GetFilePath());
 
 	stage_ = DialogStage::SAVE_FILE;
+}
+
+void EditorScene::CreateObject(SceneObject object) {
+	try {
+		FinishEdit();
+
+		if (object.collider && !object.modelPath.empty()) {
+			BoxCollider fitted;
+
+			if (!GetFittedCollider(object, fitted)) {
+				ShowError("Could not load the built-in model. No object was "
+				          "created.");
+				return;
+			}
+
+			object.collider = fitted;
+		}
+
+		auto ids = document_.GetHistory().CreateObjects({std::move(object)});
+
+		if (ids.empty()) {
+			ShowError("Could not create the object.");
+			return;
+		}
+
+		selection_.Set(std::move(ids));
+		hierarchyPanel_.RequestReveal(selection_.GetActiveId());
+	} catch (const std::exception &error) {
+		Logger::Error(
+		    std::format("EditorScene::CreateObject: {}", error.what()));
+		ShowError("Could not create the object. See the log for details.");
+	}
 }
 
 void EditorScene::FitCollider(SceneObjectId id) {

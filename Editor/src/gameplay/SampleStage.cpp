@@ -1,16 +1,15 @@
 #include "gameplay/SampleStage.h"
+#include "scene/PrimitiveObjects.h"
 
 std::map<SceneObjectId, SceneObject> SampleStage::Create() {
 	std::map<SceneObjectId, SceneObject> objects;
 
 	auto box = [&](SceneObjectId id, const char *name,
 	               DirectX::XMFLOAT3 position, DirectX::XMFLOAT3 scale) {
-		SceneObject object;
+		auto object = PrimitiveObjects::CreateBox();
 		object.name = name;
-		object.modelPath = L"resources/editor/models/box.glb";
 		object.transform.translation = position;
 		object.transform.scale = scale;
-		object.collider = BoxCollider{{0, 0, 0}, {1, 1, 1}};
 		objects.emplace(id, std::move(object));
 	};
 

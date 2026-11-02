@@ -29,6 +29,7 @@ class HierarchyPanel {
 	enum class Action {
 		NONE,
 		CREATE_EMPTY,
+		CREATE_BOX,
 		DELETE_OBJECTS,
 		COPY_OBJECTS,
 		CUT_OBJECTS,
