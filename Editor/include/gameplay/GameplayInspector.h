@@ -21,9 +21,11 @@ class GameplayInspector {
 	/// <param name="id">表示対象ID</param>
 	/// <param name="object">編集する物体</param>
 	/// <param name="history">編集履歴</param>
-	/// <returns>true:変更あり false:変更なし</returns>
+	/// <param name="targetSelectionRequest">追従先の選択要求。要求なしの場合は0。シーンの選択変更は描画後に行う</param>
+	/// <returns>true:変更あり false:変更なし。選択要求だけでは変更ありにしない</returns>
 	bool Draw(const ImGuiSystem &ui, const Scene &scene, SceneObjectId id,
-	          SceneObject &object, EditorHistory &history);
+	          SceneObject &object, EditorHistory &history,
+	          SceneObjectId &targetSelectionRequest);
 	/// <summary>
 	/// コンポーネント選択UIの検索状態を解除する
 	/// </summary>

@@ -318,6 +318,12 @@ void ControlsPanel::Draw() {
 	         "Self-reference, "
 	         "circular chains and broken target chains cannot be selected. "
 	         "Target changes support Undo/Redo."},
+	        {"Inspector > Follow Camera > Select Target",
+	         "Select only the referenced object and reveal it in Hierarchy. "
+	         "This clears Hierarchy filters but keeps hidden models hidden. "
+	         "An Inspector lock stays on its original object. "
+	         "Selection adds no Undo operation; pending edits finish first. "
+	         "Unavailable when the target is missing or refers to itself."},
 	        {"Inspector > Follow Camera > Target > Search",
 	         "Filter targets by name or ID. ASCII letter case is ignored. "
 	         "Hidden objects remain valid candidates. None always clears the "

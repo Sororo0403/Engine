@@ -21,7 +21,7 @@ class InspectorPanel {
 	void Clear();
 
 	/// <summary>
-	/// Inspector描画後に表示対象の物体へ適用する操作
+	/// Inspector描画後に表示対象または参照先の物体へ適用する操作
 	/// </summary>
 	enum class ObjectAction {
 		NONE,
@@ -31,10 +31,11 @@ class InspectorPanel {
 		ALIGN_CAMERA_VIEW,
 		ADD_CAMERA,
 		MAKE_PRIMARY_CAMERA,
+		SELECT_OBJECT,
 	};
 
 	/// <summary>
-	/// Inspectorに表示中の物体だけを対象とした操作の要求
+	/// Inspectorの表示対象、または選択を要求した参照先の物体への操作
 	/// </summary>
 	struct ObjectRequest {
 		ObjectAction action = ObjectAction::NONE;

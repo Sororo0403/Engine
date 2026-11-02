@@ -402,8 +402,13 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 		                  cameraRequest.objectId};
 	}
 
-	changed |=
-	    gameplayInspector_.Draw(ui, scene, inspectedObjectId, *object, history);
+	SceneObjectId targetSelectionRequest = 0;
+	changed |= gameplayInspector_.Draw(ui, scene, inspectedObjectId, *object,
+	                                   history, targetSelectionRequest);
+
+	if (targetSelectionRequest != 0) {
+		objectRequest_ = {ObjectAction::SELECT_OBJECT, targetSelectionRequest};
+	}
 
 	ui.EndWindow();
 	return changed;

@@ -2121,6 +2121,12 @@ void EditorScene::ApplyInspectorRequest(
 			return;
 		}
 
+		if (request.action == InspectorPanel::ObjectAction::SELECT_OBJECT) {
+			selection_.SelectOnly(request.objectId);
+			hierarchyPanel_.RequestReveal(request.objectId);
+			return;
+		}
+
 		bool applied = false;
 		const std::span<const SceneObjectId> ids{&request.objectId, 1};
 

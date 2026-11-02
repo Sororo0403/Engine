@@ -45,7 +45,9 @@ bool ApplyField(EditorHistory &history, SceneObjectId id,
 
 bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
                              SceneObjectId id, SceneObject &object,
-                             EditorHistory &history) {
+                             EditorHistory &history,
+                             SceneObjectId &targetSelectionRequest) {
+	targetSelectionRequest = 0;
 	const auto scope = std::to_string(id);
 	ImGui::PushID(scope.c_str());
 	ImGui::PushID("GameplayInspector");
@@ -99,6 +101,14 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 			ImGui::TextWrapped(
 			    "Choose another object in this scene before Play.");
 		}
+
+		ui.BeginDisabled(!currentTarget || object.followCamera->target == id);
+
+		if (ui.Button("Select Target")) {
+			targetSelectionRequest = object.followCamera->target;
+		}
+
+		ui.EndDisabled();
 
 		auto edited = *object.followCamera;
 		bool value = ui.DragFloat3("Camera Offset", edited.offset, 0.01f,
