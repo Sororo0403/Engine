@@ -392,6 +392,16 @@ void ControlsPanel::Draw() {
 	         "exported without requiring a scene save. "
 	         "Game export includes assigned material files and their "
 	         "textures."},
+	        {"Game > Playback Speed",
+	         "Slow Play to 0.1x, 0.25x or 0.5x, or return to 1x. Movement, "
+	         "gravity and camera following use the same scaled game time. "
+	         "Pause freezes the simulation; Step always advances 1/60 second "
+	         "at any speed. Restart preserves speed and pause but clears a "
+	         "pending Step. Stop and a new Play reset speed to 1x. Long real "
+	         "frames are capped at 0.1 second before scaling. This is an "
+	         "Editor test control: scene data, movement settings, history, "
+	         "preferences and exported games are unchanged. Speed changes "
+	         "are unavailable while another dialog is open."},
 	        {"Game > Stop and Keep Selected Transforms",
 	         "Select objects in the playing Hierarchy or Scene, then stop "
 	         "with this button to keep their current position, rotation and "

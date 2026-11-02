@@ -42,7 +42,9 @@ bool EditorPlaySession::Restart(std::string &error) {
 	}
 
 	const bool paused = clock_.IsPaused();
+	const auto speed = clock_.GetTimeScale();
 	clock_.Reset();
+	clock_.SetTimeScale(speed);
 
 	if (paused) {
 		clock_.TogglePause();
@@ -70,6 +72,14 @@ void EditorPlaySession::RequestStep() {
 	if (IsPlaying()) {
 		clock_.RequestStep();
 	}
+}
+
+bool EditorPlaySession::SetTimeScale(float scale) {
+	return IsPlaying() && clock_.SetTimeScale(scale);
+}
+
+float EditorPlaySession::GetTimeScale() const {
+	return clock_.GetTimeScale();
 }
 
 bool EditorPlaySession::Update(float seconds, const CharacterInput &input) {

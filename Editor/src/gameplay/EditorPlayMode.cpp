@@ -6,7 +6,9 @@
 #include "input/InputSystem.h"
 #include "layout/GameViewLayout.h"
 #include <cmath>
+#include <format>
 #include <imgui.h>
+#include <initializer_list>
 
 EditorPlayMode::EditorPlayMode(ModelManager &models, RenderSystem &render)
     : renderer_(session_.GetScene(), models, render),
@@ -78,6 +80,24 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 
 		if (ui.Button("Step")) {
 			action = Action::STEP;
+		}
+
+		ui.EndDisabled();
+		ui.BeginDisabled(!canStart);
+		ImGui::SetNextItemWidth(110.0f);
+		const auto speedLabel = std::format("{:g}x", session_.GetTimeScale());
+
+		if (ImGui::BeginCombo("Playback Speed", speedLabel.c_str())) {
+			for (const float speed : {0.1f, 0.25f, 0.5f, 1.0f}) {
+				const auto label = std::format("{:g}x", speed);
+
+				if (ui.Selectable(label.c_str(),
+				                  session_.GetTimeScale() == speed)) {
+					session_.SetTimeScale(speed);
+				}
+			}
+
+			ImGui::EndCombo();
 		}
 
 		ui.EndDisabled();

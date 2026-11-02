@@ -22,7 +22,7 @@ class EditorPlaySession {
 	           SceneObjectId *invalidObject = nullptr);
 
 	/// <summary>
-	/// Play開始時のシーンから再実行する。一時停止状態は保持し、予約済みのStepは破棄する
+	/// Play開始時のシーンから再実行する。一時停止と再生速度は保持し、予約済みのStepは破棄する
 	/// </summary>
 	/// <param name="error">失敗理由。成功時は空</param>
 	/// <returns>true:再実行成功 false:未再生、または初期化失敗。失敗時は現在の状態を保持する</returns>
@@ -42,6 +42,19 @@ class EditorPlaySession {
 	/// 一時停止中の1フレーム実行を予約する
 	/// </summary>
 	void RequestStep();
+
+	/// <summary>
+	/// 再生中の速度を変更する。ゲーム設定と、一時停止・Stepの状態は保持する
+	/// </summary>
+	/// <param name="scale">有限な0.1倍から1倍までの速度</param>
+	/// <returns>true:設定成功 false:停止中、または値が無効</returns>
+	bool SetTimeScale(float scale);
+
+	/// <summary>
+	/// 現在の再生速度を取得する。停止中は1倍を返す
+	/// </summary>
+	/// <returns>実時間に掛ける倍率</returns>
+	float GetTimeScale() const;
 
 	/// <summary>
 	/// 時間制御に従って再生シーンを更新する。開始・再実行後の最初の表示は初期状態を保持する
