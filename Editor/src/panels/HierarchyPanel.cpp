@@ -87,6 +87,8 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 	revealRequested_ = false;
 
 	ui.InputText("Search", filter_.text);
+	ImGui::SetItemTooltip(
+	    "Search by name, or type id:42 for an exact object ID.");
 
 	ui.SameLine();
 	ui.BeginDisabled(filter_.text.empty());
@@ -140,7 +142,7 @@ HierarchyPanel::Result HierarchyPanel::Draw(const ImGuiSystem &ui,
 			continue;
 		}
 
-		if (!filter_.Matches(*object)) {
+		if (!filter_.Matches(id, *object)) {
 			++filteredCount;
 		}
 	}
@@ -376,7 +378,7 @@ HierarchyPanel::GetVisibleIds(const Scene &scene) const {
 	ids.reserve(scene.GetObjects().size());
 
 	for (const auto &[id, object] : scene.GetObjects()) {
-		if (filter_.Matches(object)) {
+		if (filter_.Matches(id, object)) {
 			ids.push_back(id);
 		}
 	}

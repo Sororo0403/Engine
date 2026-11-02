@@ -146,6 +146,13 @@ void ControlsPanel::Draw() {
 	        {"Visible / Hierarchy menu",
 	         "Show or hide models without deleting objects. Visibility changes "
 	         "support Undo / Redo."},
+	        {"Hierarchy > Search",
+	         "Search names by case-sensitive substring. Enter id:42 to find "
+	         "one exact object ID from a Play error or Inspector. "
+	         "The ID prefix ignores letter case and surrounding whitespace. "
+	         "Hidden only and component filters still apply. "
+	         "Invalid or missing IDs show no matches. "
+	         "Filtering never changes the scene or current selection."},
 	        {"Hierarchy > Hidden only", "List hidden models. Search and range "
 	                                    "selection use this filtered list."},
 	        {"Edit > Show All Models",
