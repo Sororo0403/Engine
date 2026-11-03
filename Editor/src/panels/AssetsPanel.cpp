@@ -31,6 +31,7 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	textureSelectionPath_.clear();
 	textureClearRequested_ = false;
 	textureImportRequested_ = false;
+	modelImportRequested_ = false;
 	folderCreateRequested_ = false;
 	texturePreviewPath_.clear();
 	revealMessage_.clear();
@@ -114,6 +115,7 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 	textureSelectionPath_.clear();
 	textureClearRequested_ = false;
 	textureImportRequested_ = false;
+	modelImportRequested_ = false;
 	folderCreateRequested_ = false;
 	texturePreviewPath_.clear();
 
@@ -212,6 +214,14 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 	}
 
 	ui.EndDisabled();
+	ui.SameLine();
+	ui.BeginDisabled(!canEditAssets);
+
+	if (ui.Button("New Folder")) {
+		folderCreateRequested_ = true;
+	}
+
+	ui.EndDisabled();
 	ui.BeginDisabled(!canEditAssets);
 
 	if (ui.Button("Import Texture")) {
@@ -220,8 +230,8 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 
 	ui.SameLine();
 
-	if (ui.Button("New Folder")) {
-		folderCreateRequested_ = true;
+	if (ui.Button("Import Model")) {
+		modelImportRequested_ = true;
 	}
 
 	ui.EndDisabled();
@@ -480,6 +490,7 @@ void AssetsPanel::Clear() {
 	textureSelectionPath_.clear();
 	textureClearRequested_ = false;
 	textureImportRequested_ = false;
+	modelImportRequested_ = false;
 	folderCreateRequested_ = false;
 	texturePreviewPath_.clear();
 	selectedPath_.clear();
@@ -515,4 +526,8 @@ bool AssetsPanel::IsFolderCreateRequested() const {
 void AssetsPanel::RequestOpenDirectory(const std::filesystem::path &folder) {
 	requestedDirectory_ = folder;
 	directoryOpenRequested_ = true;
+}
+
+bool AssetsPanel::IsModelImportRequested() const {
+	return modelImportRequested_;
 }

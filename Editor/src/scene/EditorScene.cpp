@@ -436,6 +436,22 @@ bool EditorScene::Update(float deltaTime) {
 			}
 		}
 
+		if (assetsPanel_.IsModelImportRequested() && !IsBusy() &&
+		    action == EditorAction::NONE &&
+		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
+			try {
+				FinishEdit();
+				modelImportDialog_.Show(assets_,
+				                        assetsPanel_.GetOpenDirectory());
+				stage_ = DialogStage::IMPORT_MODEL;
+			} catch (const std::exception &exception) {
+				Logger::Error(std::format("EditorScene::ImportModel: {}",
+				                          exception.what()));
+				ShowError(
+				    "Could not open model import. See the log for details.");
+			}
+		}
+
 		if (assetsPanel_.IsTextureImportRequested() && !IsBusy() &&
 		    action == EditorAction::NONE &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
@@ -2406,6 +2422,24 @@ void EditorScene::UpdateDialogs() {
 				    assetFolderDialog_.GetCreatedDirectory());
 			}
 		} else if (result == AssetFolderResult::CANCELLED) {
+			stage_ = DialogStage::IDLE;
+		}
+		return;
+	}
+
+	case DialogStage::IMPORT_MODEL: {
+		const auto result = modelImportDialog_.Draw(ui_, models_);
+		if (result == ModelImportResult::ACCEPTED) {
+			stage_ = DialogStage::IDLE;
+			if (!assets_.Refresh()) {
+				ShowError(
+				    "The model was imported, but Assets could not refresh: " +
+				    assets_.GetError());
+			} else {
+				assetsPanel_.RequestReveal(
+				    modelImportDialog_.GetImportedPath());
+			}
+		} else if (result == ModelImportResult::CANCELLED) {
 			stage_ = DialogStage::IDLE;
 		}
 		return;

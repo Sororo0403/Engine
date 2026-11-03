@@ -24,7 +24,7 @@ class AssetsPanel {
 	/// <param name="ui">フレーム開始済みのUI</param>
 	/// <param name="assets">一覧を表示するアセットデータベース</param>
 	/// <param name="canSetTexture">選択物体のスロットへ画像を割り当てる操作を許可するか</param>
-	/// <param name="canEditAssets">画像の取り込みとフォルダ作成を開始できるか</param>
+	/// <param name="canEditAssets">画像・モデルの取り込みとフォルダ作成を開始できるか</param>
 	/// <returns>配置を要求したモデルの相対パス。要求がない場合は空のパス</returns>
 	std::filesystem::path Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	                           bool canSetTexture = false,
@@ -59,6 +59,12 @@ class AssetsPanel {
 	/// </summary>
 	/// <returns>true:要求あり false:要求なし。次のDraw・種類切り替え・Clearで解除する</returns>
 	bool IsTextureImportRequested() const;
+
+	/// <summary>
+	/// このフレームに外部モデルの取り込みを要求したか確認する
+	/// </summary>
+	/// <returns>true:要求あり false:要求なし。次のDraw・種類切り替え・Clearで解除する</returns>
+	bool IsModelImportRequested() const;
 
 	/// <summary>
 	/// このフレームに新しいAssetsフォルダの作成を要求したか確認する
@@ -135,6 +141,7 @@ class AssetsPanel {
 	int textureSlot_ = 0;
 	bool textureClearRequested_ = false;
 	bool textureImportRequested_ = false;
+	bool modelImportRequested_ = false;
 	bool folderCreateRequested_ = false;
 	bool directoryOpenRequested_ = false;
 	std::filesystem::path requestedDirectory_;

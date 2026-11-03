@@ -207,3 +207,37 @@ bool PathUtils::IsValidFileName(const std::filesystem::path &name) {
 
 	return true;
 }
+
+std::filesystem::path
+PathUtils::RelativeInside(const std::filesystem::path &root,
+                          const std::filesystem::path &path) {
+	if (root.empty() || path.empty() ||
+	    root.native().find(L'\0') != std::wstring::npos ||
+	    path.native().find(L'\0') != std::wstring::npos) {
+		throw std::invalid_argument(
+		    "Root and target paths must be nonempty and valid.");
+	}
+
+	auto a = root.begin(), b = path.begin();
+
+	for (; a != root.end(); ++a, ++b) {
+		if (b == path.end() || CompareStringOrdinal(a->c_str(), -1, b->c_str(),
+		                                            -1, TRUE) != CSTR_EQUAL) {
+			throw std::runtime_error("A path is outside the selected root: " +
+			                         PathUtils::ToUtf8(path));
+		}
+	}
+
+	std::filesystem::path relative;
+
+	for (; b != path.end(); ++b) {
+		relative /= *b;
+	}
+
+	return relative;
+}
+
+bool PathUtils::IsModelFile(const std::filesystem::path &path) {
+	return HasExtension(path, ".glb") || HasExtension(path, ".gltf") ||
+	       HasExtension(path, ".obj");
+}

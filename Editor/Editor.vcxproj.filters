@@ -667,4 +667,16 @@
     <ClInclude Include="include\dialogs\AssetFolderDialog.h"><Filter>include\dialogs</Filter></ClInclude>
     <ClCompile Include="src\dialogs\AssetFolderDialog.cpp"><Filter>src\dialogs</Filter></ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Filter Include="include\files"><UniqueIdentifier>{e18f1f02-9928-469a-a46b-9f13723d14ca}</UniqueIdentifier></Filter>
+    <Filter Include="src\files"><UniqueIdentifier>{2c48bb98-2507-436e-90f0-1ba62768123f}</UniqueIdentifier></Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\assets\ModelImporter.h"><Filter>include\assets</Filter></ClInclude>
+    <ClCompile Include="src\assets\ModelImporter.cpp"><Filter>src\assets</Filter></ClCompile>
+    <ClInclude Include="include\dialogs\ModelImportDialog.h"><Filter>include\dialogs</Filter></ClInclude>
+    <ClCompile Include="src\dialogs\ModelImportDialog.cpp"><Filter>src\dialogs</Filter></ClCompile>
+    <ClInclude Include="include\files\OutputDirectory.h"><Filter>include\files</Filter></ClInclude>
+    <ClCompile Include="src\files\OutputDirectory.cpp"><Filter>src\files</Filter></ClCompile>
+  </ItemGroup>
 </Project>

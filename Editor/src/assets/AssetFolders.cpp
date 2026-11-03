@@ -1,6 +1,5 @@
 #include "assets/AssetFolders.h"
 #include "platform/windows/PathUtils.h"
-#include <Windows.h>
 #include <stdexcept>
 
 std::filesystem::path
@@ -27,15 +26,7 @@ AssetFolders::Resolve(const std::filesystem::path &assetRoot,
 		throw std::invalid_argument("The Assets folder does not exist.");
 	}
 
-	auto current = resolved.begin();
-	for (const auto &part : root) {
-		if (current == resolved.end() ||
-		    CompareStringOrdinal(part.c_str(), -1, current->c_str(), -1,
-		                         TRUE) != CSTR_EQUAL) {
-			throw std::invalid_argument("The folder resolves outside Assets.");
-		}
-		++current;
-	}
+	PathUtils::RelativeInside(root, resolved);
 
 	return resolved;
 }
@@ -51,17 +42,7 @@ bool AssetFolders::Create(const std::filesystem::path &assetRoot,
 
 		const auto root = Resolve(assetRoot, {});
 		const auto destination = Resolve(assetRoot, parent) / name;
-		std::filesystem::path selected;
-		auto component = destination.begin();
-
-		// 検証済みのルート部分を、文字の表記差を許容して要素数で取り除く。
-		for (auto rootPart = root.begin(); rootPart != root.end(); ++rootPart) {
-			++component;
-		}
-
-		for (; component != destination.end(); ++component) {
-			selected /= *component;
-		}
+		auto selected = PathUtils::RelativeInside(root, destination);
 
 		if (selected.empty()) {
 			throw std::runtime_error(

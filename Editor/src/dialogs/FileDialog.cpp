@@ -12,8 +12,8 @@
 void FileDialog::Show(FileDialogMode mode,
                       const std::filesystem::path &initialPath,
                       FileDialogFilter filter) {
-	if (filter == FileDialogFilter::IMAGE && mode != FileDialogMode::OPEN) {
-		throw std::invalid_argument("Image selection supports opening only.");
+	if (filter != FileDialogFilter::SCENE && mode != FileDialogMode::OPEN) {
+		throw std::invalid_argument("Asset selection supports opening only.");
 	}
 
 	filter_ = filter;
@@ -55,7 +55,8 @@ void FileDialog::Show(FileDialogMode mode,
 
 FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 	const char *title =
-	    filter_ == FileDialogFilter::IMAGE   ? "Open Image###FileDialog"
+	    filter_ == FileDialogFilter::MODEL   ? "Open Model###FileDialog"
+	    : filter_ == FileDialogFilter::IMAGE ? "Open Image###FileDialog"
 	    : mode_ == FileDialogMode::OPEN      ? "Open Scene###FileDialog"
 	    : mode_ == FileDialogMode::SAVE_COPY ? "Save Copy###FileDialog"
 	                                         : "Save Scene###FileDialog";
@@ -207,7 +208,9 @@ void FileDialog::Refresh() {
 				if (directory) {
 					entries_.push_back({entry.path(), true});
 				} else if (entry.is_regular_file(typeError) && !typeError &&
-				           (filter_ == FileDialogFilter::IMAGE
+				           (filter_ == FileDialogFilter::MODEL
+				                ? PathUtils::IsModelFile(entry.path())
+				            : filter_ == FileDialogFilter::IMAGE
 				                ? PathUtils::IsImageFile(entry.path())
 				                : PathUtils::HasExtension(entry.path(),
 				                                          ".json"))) {
@@ -288,10 +291,13 @@ bool FileDialog::AcceptSelection() {
 			return false;
 		}
 
-		if (filter_ == FileDialogFilter::IMAGE
+		if (filter_ == FileDialogFilter::MODEL ? !PathUtils::IsModelFile(name)
+		    : filter_ == FileDialogFilter::IMAGE
 		        ? !PathUtils::IsImageFile(name)
 		        : !PathUtils::HasExtension(name, ".json")) {
-			error_ = filter_ == FileDialogFilter::IMAGE
+			error_ = filter_ == FileDialogFilter::MODEL
+			             ? "Choose a GLB, glTF or OBJ model."
+			         : filter_ == FileDialogFilter::IMAGE
 			             ? "Choose a PNG, JPEG, BMP, TIFF or GIF image."
 			             : "Use a .json file name.";
 			return false;

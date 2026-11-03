@@ -27,10 +27,10 @@ enum class FileDialogResult {
 /// <summary>
 /// ファイル一覧と確定時に許可する種類
 /// </summary>
-enum class FileDialogFilter { SCENE, IMAGE };
+enum class FileDialogFilter { SCENE, IMAGE, MODEL };
 
 /// <summary>
-/// シーンの保存・読み込みと、取り込む画像ファイルの選択を行う
+/// シーンの保存・読み込みと、取り込む画像・モデルファイルの選択を行う
 /// </summary>
 class FileDialog {
   public:
@@ -39,7 +39,7 @@ class FileDialog {
 	/// </summary>
 	/// <param name="mode">開く、保存、またはコピーを保存</param>
 	/// <param name="initialPath">初期ファイルまたはフォルダ。空の場合は実行ファイルのフォルダ</param>
-	/// <param name="filter">一覧と確定時のファイル種別。画像はOPENだけに対応する</param>
+	/// <param name="filter">一覧と確定時のファイル種別。画像・モデルはOPENだけに対応する</param>
 	void Show(FileDialogMode mode,
 	          const std::filesystem::path &initialPath = {},
 	          FileDialogFilter filter = FileDialogFilter::SCENE);

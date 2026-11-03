@@ -387,4 +387,12 @@ exit /b 0</Command>
     <ClInclude Include="include\dialogs\AssetFolderDialog.h" />
     <ClCompile Include="src\dialogs\AssetFolderDialog.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\assets\ModelImporter.h" />
+    <ClCompile Include="src\assets\ModelImporter.cpp" />
+    <ClInclude Include="include\dialogs\ModelImportDialog.h" />
+    <ClCompile Include="src\dialogs\ModelImportDialog.cpp" />
+    <ClInclude Include="include\files\OutputDirectory.h" />
+    <ClCompile Include="src\files\OutputDirectory.cpp" />
+  </ItemGroup>
 </Project>

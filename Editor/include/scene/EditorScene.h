@@ -8,6 +8,7 @@
 #include "dialogs/FileDialog.h"
 #include "dialogs/GameExportDialog.h"
 #include "dialogs/GameSettingsDialog.h"
+#include "dialogs/ModelImportDialog.h"
 #include "dialogs/ObjectArrayDialog.h"
 #include "dialogs/SaveChangesDialog.h"
 #include "dialogs/SceneReloadDialog.h"
@@ -200,6 +201,7 @@ class EditorScene final : public IScene {
 		SAVE_FILE,
 		SAVE_COPY_FILE,
 		IMPORT_TEXTURE,
+		IMPORT_MODEL,
 		CREATE_ASSET_FOLDER,
 		EXPORT_GAME,
 		GAME_SETTINGS,
@@ -637,6 +639,7 @@ class EditorScene final : public IScene {
 	ObjectArrayDialog objectArrayDialog_;
 	FileDialog fileDialog_;
 	TextureImportDialog textureImportDialog_;
+	ModelImportDialog modelImportDialog_;
 	AssetFolderDialog assetFolderDialog_;
 	GameExportDialog exportDialog_;
 	GameSettingsDialog gameSettingsDialog_;

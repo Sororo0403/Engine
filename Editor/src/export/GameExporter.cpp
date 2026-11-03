@@ -1,5 +1,6 @@
 #include "export/GameExporter.h"
 #include "assets/AssetDependencies.h"
+#include "files/OutputDirectory.h"
 #include "gameplay/SceneSimulation.h"
 #include "platform/windows/PathUtils.h"
 #include "scene/SceneSerializer.h"
@@ -28,33 +29,6 @@ struct PathLess {
 };
 
 /// <summary>
-/// 正規化したパスが基準フォルダ内なら、表記の大小に依存しない相対パスを返す
-/// </summary>
-/// <param name="root">正規化済みの基準フォルダ</param>
-/// <param name="path">正規化済みの対象</param>
-/// <returns>基準からの相対パス。外部の場合は例外</returns>
-fs::path RelativeInside(const fs::path &root, const fs::path &path) {
-	auto a = root.begin(), b = path.begin();
-
-	for (; a != root.end(); ++a, ++b) {
-		if (b == path.end() || CompareStringOrdinal(a->c_str(), -1, b->c_str(),
-		                                            -1, TRUE) != CSTR_EQUAL) {
-			throw std::runtime_error(
-			    "A referenced file is outside resources: " +
-			    PathUtils::ToUtf8(path));
-		}
-	}
-
-	fs::path relative;
-
-	for (; b != path.end(); ++b) {
-		relative /= *b;
-	}
-
-	return relative;
-}
-
-/// <summary>
 /// リソース参照の別名やリンクによる外部依存を拒否し、通常ファイルを確認する
 /// </summary>
 /// <param name="root">リソースの正規化済みルート</param>
@@ -77,7 +51,7 @@ fs::path ResourceFile(const fs::path &root, const fs::path &input) {
 	}
 
 	const auto path = fs::canonical(input);
-	const auto relative = RelativeInside(root, path);
+	const auto relative = PathUtils::RelativeInside(root, path);
 
 	if (relative.empty() || !fs::is_regular_file(path)) {
 		throw std::runtime_error("A resource is not a regular file.");
@@ -132,291 +106,6 @@ class Assets {
 
 	fs::path root_;
 	std::set<fs::path, PathLess> files_, models_;
-};
-
-/// <summary>
-/// 作成したファイルを識別し、別のファイルに置き換わっていないか確認する
-/// </summary>
-struct FileIdentity {
-	DWORD volume = 0;
-	DWORD high = 0;
-	DWORD low = 0;
-
-	bool Matches(const BY_HANDLE_FILE_INFORMATION &info) const {
-		return volume == info.dwVolumeSerialNumber &&
-		       high == info.nFileIndexHigh && low == info.nFileIndexLow;
-	}
-};
-
-/// <summary>
-/// ファイル操作に使用するWindowsハンドルを保持する
-/// </summary>
-class FileHandle {
-  public:
-	explicit FileHandle(HANDLE value) : value_(value) {
-	}
-
-	~FileHandle() {
-		if (value_ != INVALID_HANDLE_VALUE) {
-			CloseHandle(value_);
-		}
-	}
-
-	FileHandle(const FileHandle &) = delete;
-	FileHandle &operator=(const FileHandle &) = delete;
-
-	HANDLE Get() const {
-		return value_;
-	}
-
-	HANDLE Release() {
-		return std::exchange(value_, INVALID_HANDLE_VALUE);
-	}
-
-  private:
-	HANDLE value_;
-};
-
-/// <summary>
-/// 操作対象とWindowsの失敗理由を通知する
-/// </summary>
-/// <param name="operation">失敗した操作</param>
-/// <param name="path">対象の絶対パス</param>
-/// <param name="code">失敗直後に取得したWindowsエラー番号</param>
-[[noreturn]] void FileError(const char *operation, const fs::path &path,
-                            DWORD code) {
-	throw std::runtime_error(std::string(operation) + ": " +
-	                         PathUtils::ToUtf8(path) + " (Windows error " +
-	                         std::to_string(code) + ").");
-}
-
-/// <summary>
-/// 新規出力へ直接書き込み、失敗時は今回作成したものだけを片付ける
-/// </summary>
-class OutputDirectory {
-  public:
-	void Create(const fs::path &path) {
-		root_ = path;
-		EnsureDirectory(path.parent_path());
-		CreateOwnedDirectory(path, true);
-	}
-
-	void Copy(const fs::path &source, const fs::path &relative) {
-		FileHandle input(CreateFileW(
-		    source.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_DELETE,
-		    nullptr, OPEN_EXISTING, FILE_FLAG_OPEN_REPARSE_POINT, nullptr));
-
-		if (input.Get() == INVALID_HANDLE_VALUE) {
-			FileError("Could not read resource", source, GetLastError());
-		}
-
-		BY_HANDLE_FILE_INFORMATION info{};
-
-		if (!GetFileInformationByHandle(input.Get(), &info)) {
-			FileError("Could not inspect resource", source, GetLastError());
-		}
-
-		if (info.dwFileAttributes &
-		    (FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_DIRECTORY)) {
-			throw std::runtime_error(
-			    "A resource is no longer a regular file: " +
-			    PathUtils::ToUtf8(source));
-		}
-
-		FileHandle output(OpenNewFile(relative));
-		std::array<char, 65536> buffer{};
-
-		for (;;) {
-			DWORD count = 0;
-
-			if (!ReadFile(input.Get(), buffer.data(), DWORD(buffer.size()),
-			              &count, nullptr)) {
-				FileError("Could not read resource", source, GetLastError());
-			}
-
-			if (count == 0) {
-				break;
-			}
-
-			Write(output.Get(), buffer.data(), count, root_ / relative);
-		}
-	}
-
-	void Text(const fs::path &relative, const std::string &text) {
-		FileHandle output(OpenNewFile(relative));
-		Write(output.Get(), text.data(), text.size(), root_ / relative);
-	}
-
-	void Complete() {
-		entries_.clear();
-	}
-
-	std::string Cleanup() {
-		std::size_t remaining = 0;
-		std::string first;
-
-		for (auto it = entries_.rbegin(); it != entries_.rend(); ++it) {
-			try {
-				FileHandle handle(CreateFileW(
-				    it->path.c_str(), DELETE | FILE_READ_ATTRIBUTES,
-				    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-				    nullptr, OPEN_EXISTING,
-				    FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
-				    nullptr));
-
-				if (handle.Get() == INVALID_HANDLE_VALUE) {
-					const DWORD code = GetLastError();
-
-					if (code == ERROR_FILE_NOT_FOUND ||
-					    code == ERROR_PATH_NOT_FOUND) {
-						continue;
-					}
-
-					FileError("Could not remove incomplete output", it->path,
-					          code);
-				}
-
-				BY_HANDLE_FILE_INFORMATION info{};
-
-				if (!GetFileInformationByHandle(handle.Get(), &info)) {
-					FileError("Could not inspect incomplete output", it->path,
-					          GetLastError());
-				}
-
-				if (!it->identified || !it->identity.Matches(info)) {
-					throw std::runtime_error(
-					    "An output item changed and was left untouched: " +
-					    PathUtils::ToUtf8(it->path));
-				}
-
-				FILE_DISPOSITION_INFO disposition{TRUE};
-
-				if (!SetFileInformationByHandle(
-				        handle.Get(), FileDispositionInfo, &disposition,
-				        sizeof(disposition))) {
-					FileError("Could not remove incomplete output", it->path,
-					          GetLastError());
-				}
-			} catch (const std::exception &e) {
-				++remaining;
-
-				if (first.empty()) {
-					first = e.what();
-				}
-			}
-		}
-
-		entries_.clear();
-
-		if (remaining == 0) {
-			return {};
-		}
-
-		return " Cleanup left " + std::to_string(remaining) +
-		       " item(s). Output: " + PathUtils::ToUtf8(root_) + ". " + first;
-	}
-
-  private:
-	struct Entry {
-		fs::path path;
-		FileIdentity identity{};
-		bool identified = false;
-	};
-
-	fs::path root_;
-	std::vector<Entry> entries_;
-
-	void Identify(HANDLE handle, Entry &entry) {
-		BY_HANDLE_FILE_INFORMATION info{};
-
-		if (!GetFileInformationByHandle(handle, &info)) {
-			FileError("Could not identify new output", entry.path,
-			          GetLastError());
-		}
-
-		entry.identity = {info.dwVolumeSerialNumber, info.nFileIndexHigh,
-		                  info.nFileIndexLow};
-		entry.identified = true;
-	}
-
-	void CreateOwnedDirectory(const fs::path &path, bool exclusive) {
-		entries_.push_back({path});
-
-		if (!CreateDirectoryW(path.c_str(), nullptr)) {
-			const DWORD code = GetLastError();
-			entries_.pop_back();
-
-			if (!exclusive && code == ERROR_ALREADY_EXISTS &&
-			    fs::is_directory(path)) {
-				return;
-			}
-
-			FileError("Could not create a new output folder; existing folders "
-			          "are not overwritten",
-			          path, code);
-		}
-
-		FileHandle handle(CreateFileW(
-		    path.c_str(), FILE_READ_ATTRIBUTES,
-		    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
-		    OPEN_EXISTING,
-		    FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
-		    nullptr));
-
-		if (handle.Get() == INVALID_HANDLE_VALUE) {
-			FileError("Could not inspect new output folder", path,
-			          GetLastError());
-		}
-
-		Identify(handle.Get(), entries_.back());
-	}
-
-	void EnsureDirectory(const fs::path &path) {
-		if (path.empty() || fs::is_directory(path)) {
-			return;
-		}
-
-		EnsureDirectory(path.parent_path());
-		CreateOwnedDirectory(path, false);
-	}
-
-	HANDLE OpenNewFile(const fs::path &relative) {
-		const auto path = root_ / relative;
-		EnsureDirectory(path.parent_path());
-		entries_.push_back({path});
-		FileHandle handle(CreateFileW(
-		    path.c_str(), GENERIC_WRITE | FILE_READ_ATTRIBUTES, FILE_SHARE_READ,
-		    nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr));
-
-		if (handle.Get() == INVALID_HANDLE_VALUE) {
-			const DWORD code = GetLastError();
-			entries_.pop_back();
-			FileError("Could not create a new output file", path, code);
-		}
-
-		Identify(handle.Get(), entries_.back());
-		// 書き込み中はこのハンドルだけを所有し、呼び出し側で必ず閉じる。
-		return handle.Release();
-	}
-
-	static void Write(HANDLE handle, const char *data, std::size_t size,
-	                  const fs::path &path) {
-		while (size != 0) {
-			const DWORD chunk = DWORD((std::min)(size, std::size_t(65536)));
-			DWORD written = 0;
-
-			if (!WriteFile(handle, data, chunk, &written, nullptr)) {
-				FileError("Could not write output", path, GetLastError());
-			}
-
-			if (written == 0) {
-				FileError("Could not write output", path, ERROR_WRITE_FAULT);
-			}
-
-			data += written;
-			size -= written;
-		}
-	}
 };
 
 /// <summary>
@@ -486,7 +175,7 @@ class CopyPlan {
 
 		bool inside = false;
 		try {
-			RelativeInside(fs::canonical(source), destination_);
+			PathUtils::RelativeInside(fs::canonical(source), destination_);
 			inside = true;
 		} catch (const std::runtime_error &) {
 		}
@@ -526,8 +215,8 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 	OutputDirectory output;
 	try {
 		error.clear();
-		RelativeInside(fs::path(L"resources"),
-		               options.config.scenePath.lexically_normal());
+		PathUtils::RelativeInside(fs::path(L"resources"),
+		                          options.config.scenePath.lexically_normal());
 
 		if (!options.config.IsValid()) {
 			throw std::runtime_error(
@@ -553,7 +242,7 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 		bool inside = false;
 
 		try {
-			RelativeInside(resourceRoot, destination);
+			PathUtils::RelativeInside(resourceRoot, destination);
 			inside = true;
 		} catch (const std::runtime_error &) {
 		}
@@ -597,12 +286,12 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 					const auto input =
 					    path.is_absolute()
 					        ? path
-					        : resourceRoot /
-					              RelativeInside(fs::path(L"resources"),
+					        : resourceRoot / PathUtils::RelativeInside(
+					                             fs::path(L"resources"),
 					                             path.lexically_normal());
-					path =
-					    fs::path(L"resources") /
-					    RelativeInside(resourceRoot, assets.AddTexture(input));
+					path = fs::path(L"resources") /
+					       PathUtils::RelativeInside(resourceRoot,
+					                                 assets.AddTexture(input));
 				}
 			}
 
@@ -611,12 +300,13 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 				    object.mesh->modelPath.is_absolute()
 				        ? object.mesh->modelPath
 				        : resourceRoot /
-				              RelativeInside(
+				              PathUtils::RelativeInside(
 				                  fs::path(L"resources"),
 				                  object.mesh->modelPath.lexically_normal());
 				const auto model = assets.AddModel(path);
-				object.mesh->modelPath = fs::path(L"resources") /
-				                         RelativeInside(resourceRoot, model);
+				object.mesh->modelPath =
+				    fs::path(L"resources") /
+				    PathUtils::RelativeInside(resourceRoot, model);
 			}
 		}
 
@@ -668,7 +358,7 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 
 		for (const auto &file : assets.Files()) {
 			plan.File(file, fs::path(L"resources") /
-			                    RelativeInside(resourceRoot, file));
+			                    PathUtils::RelativeInside(resourceRoot, file));
 		}
 
 		const auto assetLicenses = resourceRoot / L"licenses";

@@ -77,4 +77,20 @@ bool IsImageFile(const std::filesystem::path &path);
 /// <returns>true:使用可能な名前 false:空・予約名・無効な文字や末尾・255文字超過</returns>
 bool IsValidFileName(const std::filesystem::path &name);
 
+/// <summary>
+/// 正規化済みの対象が基準フォルダ内にあれば、表記の大小に依存しない相対パスを返す
+/// </summary>
+/// <param name="root">空でない正規化済みの基準フォルダ</param>
+/// <param name="path">同じ形式で正規化した対象パス</param>
+/// <returns>基準からの相対パス。外部・空・NULを含む参照では例外。同じ場所では空</returns>
+std::filesystem::path RelativeInside(const std::filesystem::path &root,
+                                     const std::filesystem::path &path);
+
+/// <summary>
+/// 対応するモデルファイルの拡張子か確認する。ファイルの実在や内容は確認しない
+/// </summary>
+/// <param name="path">確認するパス</param>
+/// <returns>true:GLB・glTF・OBJ false:その他</returns>
+bool IsModelFile(const std::filesystem::path &path);
+
 } // namespace PathUtils

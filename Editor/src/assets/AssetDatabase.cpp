@@ -80,9 +80,7 @@ bool AssetDatabase::Refresh() {
 					    path.lexically_relative(executableDirectory));
 				}
 
-				const bool supported = PathUtils::HasExtension(path, ".glb") ||
-				                       PathUtils::HasExtension(path, ".gltf") ||
-				                       PathUtils::HasExtension(path, ".obj");
+				const bool supported = PathUtils::IsModelFile(path);
 
 				if (supported) {
 					// SceneとModelManagerが使う実行ファイル基準に揃える

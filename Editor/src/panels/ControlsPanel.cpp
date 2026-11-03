@@ -262,6 +262,22 @@ void ControlsPanel::Draw() {
 	         "history "
 	         "and is unavailable during Play, modal operations or Scene "
 	         "gestures."},
+	        {"Assets > Import Model",
+	         "Choose a GLB, glTF or OBJ model, an Assets destination and a new "
+	         "model folder name. Import copies the model and referenced "
+	         "buffers, "
+	         "images and OBJ material files, keeping relative paths. Source "
+	         "Folder starts at the model's parent. Use Parent Source Folder "
+	         "includes sibling dependencies when a model refers to files above "
+	         "that folder. All dependencies must remain inside Source Folder "
+	         "and use local relative references. Existing folders are never "
+	         "overwritten. Failure removes only newly created output and keeps "
+	         "the dialog open; cleanup failures report the remaining location. "
+	         "Success reveals the copied model in Assets. Add to Scene places "
+	         "it afterward; assign images using Mesh Renderer texture slots. "
+	         "Import does not edit the scene or its Undo history and is "
+	         "blocked "
+	         "during Play, modal operations and Scene gestures."},
 	        {"Assets > Import Texture",
 	         "Choose an external PNG, JPEG, BMP, TIFF or GIF image, an "
 	         "existing "
