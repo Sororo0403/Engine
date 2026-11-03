@@ -416,4 +416,8 @@ exit /b 0</Command>
     <ClInclude Include="include\dialogs\BoxCreationDialog.h"></ClInclude>
     <ClCompile Include="src\dialogs\BoxCreationDialog.cpp"></ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\camera\EditorCameraBookmarks.h"></ClInclude>
+    <ClCompile Include="src\camera\EditorCameraBookmarks.cpp"></ClCompile>
+  </ItemGroup>
 </Project>

@@ -588,3 +588,28 @@ void EditorCameraController::Reset() {
 	panning_ = false;
 	orbiting_ = false;
 }
+
+EditorCameraController::ViewState EditorCameraController::GetViewState() const {
+	return {position_, yaw_, pitch_};
+}
+
+bool EditorCameraController::SetViewState(const ViewState &state) {
+	if (!MathUtils::IsFinite(state.position) || !std::isfinite(state.yaw) ||
+	    !std::isfinite(state.pitch) || std::abs(state.pitch) > kPitchLimit) {
+		return false;
+	}
+	auto candidate = *this;
+	candidate.position_ = state.position;
+	candidate.yaw_ = state.yaw;
+	candidate.pitch_ = state.pitch;
+	Camera validation;
+	if (!validation.SetPose(candidate.GetPose())) {
+		return false;
+	}
+	candidate.navigating_ = false;
+	candidate.panning_ = false;
+	candidate.orbiting_ = false;
+	candidate.orbitCenter_ = {};
+	*this = candidate;
+	return true;
+}

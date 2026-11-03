@@ -185,6 +185,9 @@ class EditorScene final : public IScene {
 		DISTRIBUTE_Y,
 		DISTRIBUTE_Z,
 		RESET_CAMERA,
+		SAVE_CAMERA_BOOKMARK,
+		RESTORE_CAMERA_BOOKMARK,
+		CLEAR_CAMERA_BOOKMARK,
 		VIEW_FRONT,
 		VIEW_BACK,
 		VIEW_LEFT,
@@ -718,6 +721,8 @@ class EditorScene final : public IScene {
 	InspectorPanel inspectorPanel_;
 	SceneViewPanel sceneViewPanel_;
 	EditorCameraController cameraController_;
+	EditorCameraBookmarks cameraBookmarks_;
+	std::size_t cameraBookmarkSlot_ = 0;
 
 	AssetDatabase assets_{L"resources/editor"};
 	AssetSources assetSources_;

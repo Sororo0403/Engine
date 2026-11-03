@@ -73,6 +73,7 @@ bool EditorScene::Initialize() {
 	preferences_ = EditorPreferences{};
 	canSavePreferences_ = preferences_.Load();
 	exportConfig_ = preferences_.gameExport;
+	cameraBookmarks_ = preferences_.cameraBookmarks;
 	assetSources_ = preferences_.assets;
 	recentScenes_.Clear();
 
@@ -1105,6 +1106,7 @@ void EditorScene::Finalize() {
 		current.snapping = gizmo_.IsSnapping();
 		current.snap = gizmo_.GetSnapSettings();
 		current.camera = cameraController_.GetSettings();
+		current.cameraBookmarks = cameraBookmarks_;
 		current.grid = sceneGrid_.GetSettings();
 		current.gameExport = exportConfig_;
 		current.assets = assetSources_;
@@ -1583,6 +1585,31 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			ui_.EndMenu();
 		}
 
+		if (ui_.BeginMenu("Camera Bookmarks")) {
+			for (std::size_t i = 0; i < EditorCameraBookmarks::kSlotCount;
+			     ++i) {
+				const auto label = std::format("View {}", i + 1);
+				if (ui_.BeginMenu(label.c_str())) {
+					const bool saved = cameraBookmarks_.Get(i) != nullptr;
+					if (ui_.MenuItem("Save Current View", nullptr, enabled)) {
+						cameraBookmarkSlot_ = i;
+						action = EditorAction::SAVE_CAMERA_BOOKMARK;
+					}
+					if (ui_.MenuItem("Restore View", nullptr,
+					                 enabled && saved)) {
+						cameraBookmarkSlot_ = i;
+						action = EditorAction::RESTORE_CAMERA_BOOKMARK;
+					}
+					if (ui_.MenuItem("Clear View", nullptr, enabled && saved)) {
+						cameraBookmarkSlot_ = i;
+						action = EditorAction::CLEAR_CAMERA_BOOKMARK;
+					}
+					ui_.EndMenu();
+				}
+			}
+			ui_.EndMenu();
+		}
+
 		if (ui_.MenuItem("Reset Camera", nullptr, enabled)) {
 			action = EditorAction::RESET_CAMERA;
 		}
@@ -1885,6 +1912,14 @@ void EditorScene::StartAction(EditorAction action) {
 		return;
 	}
 
+	if ((action == EditorAction::SAVE_CAMERA_BOOKMARK ||
+	     action == EditorAction::RESTORE_CAMERA_BOOKMARK ||
+	     action == EditorAction::CLEAR_CAMERA_BOOKMARK) &&
+	    (playMode_.IsPlaying() || gizmo_.IsUsing() || gizmoEditActive_ ||
+	     sceneViewPanel_.IsSelecting())) {
+		return;
+	}
+
 	// 保存やUndoを実行する前に、編集中の値を確定する
 	FinishEdit();
 
@@ -1957,6 +1992,26 @@ void EditorScene::StartAction(EditorAction action) {
 		return;
 	case EditorAction::VIEW_BOTTOM:
 		SetCameraView(CameraView::BOTTOM);
+		return;
+	case EditorAction::SAVE_CAMERA_BOOKMARK:
+		if (!cameraBookmarks_.Set(cameraBookmarkSlot_,
+		                          cameraController_.GetViewState())) {
+			ShowError("Could not save this Scene camera view.");
+		}
+		return;
+	case EditorAction::RESTORE_CAMERA_BOOKMARK:
+		if (const auto *state = cameraBookmarks_.Get(cameraBookmarkSlot_)) {
+			if (cameraController_.SetViewState(*state)) {
+				frameRequest_ = FrameRequest::NONE;
+				ImGui::SetWindowCollapsed("Scene", false);
+				ImGui::SetWindowFocus("Scene");
+			} else {
+				ShowError("Could not restore this Scene camera view.");
+			}
+		}
+		return;
+	case EditorAction::CLEAR_CAMERA_BOOKMARK:
+		cameraBookmarks_.Clear(cameraBookmarkSlot_);
 		return;
 	case EditorAction::RESET_CAMERA:
 		cameraController_.Reset();

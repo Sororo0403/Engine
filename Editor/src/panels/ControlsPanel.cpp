@@ -1134,6 +1134,17 @@ void ControlsPanel::Draw() {
 	DrawSection(
 	    "Editor settings",
 	    {
+	        {"View > Camera Bookmarks",
+	         "Save the current Scene view in one of five slots, restore a "
+	         "saved "
+	         "view, or clear a slot. Saving replaces that slot. Bookmarks are "
+	         "shared across scenes and retained in Editor settings when Editor "
+	         "closes. They store position and look direction, including top "
+	         "and "
+	         "bottom views. Restore ends navigation and brings Scene forward. "
+	         "Scene objects, camera components, selection, Inspector locks and "
+	         "undo history stay unchanged. Bookmarks are disabled during Play, "
+	         "dialogs and gizmo or selection operations."},
 	        {"View > Camera Settings",
 	         "Adjust movement speed, acceleration and mouse sensitivity."},
 	        {"View > Grid Settings",

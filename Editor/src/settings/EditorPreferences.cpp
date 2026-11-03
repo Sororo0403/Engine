@@ -254,6 +254,34 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 			    json.at("assetDirectory").get<std::string>()));
 		}
 
+		if (json.contains("cameraBookmarks")) {
+			const auto &bookmarks = json.at("cameraBookmarks");
+			if (!bookmarks.is_array() ||
+			    bookmarks.size() != EditorCameraBookmarks::kSlotCount) {
+				throw std::runtime_error("カメラのブックマーク数が無効です。");
+			}
+			for (std::size_t i = 0; i < bookmarks.size(); ++i) {
+				const auto &bookmark = bookmarks[i];
+				if (bookmark.is_null()) {
+					continue;
+				}
+				const auto &position = bookmark.at("position");
+				if (!position.is_array() || position.size() != 3 ||
+				    !position[0].is_number() || !position[1].is_number() ||
+				    !position[2].is_number() ||
+				    !bookmark.at("yaw").is_number() ||
+				    !bookmark.at("pitch").is_number() ||
+				    !loaded.cameraBookmarks.Set(
+				        i, {{position[0].get<float>(), position[1].get<float>(),
+				             position[2].get<float>()},
+				            bookmark.at("yaw").get<float>(),
+				            bookmark.at("pitch").get<float>()})) {
+					throw std::runtime_error(
+					    "カメラのブックマークが無効です。");
+				}
+			}
+		}
+
 		*this = std::move(loaded);
 		return true;
 	} catch (const std::exception &error) {
@@ -272,7 +300,8 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		    !validator.SetOperation(operation) || !validator.SetSpace(space) ||
 		    !validator.SetPivotMode(pivotMode) ||
 		    !cameraValidator.SetSettings(camera) ||
-		    !gridValidator.SetSettings(grid) || !gameExport.IsValid() ||
+		    !cameraBookmarks.IsValid() || !gridValidator.SetSettings(grid) ||
+		    !gameExport.IsValid() ||
 		    (colliderDisplay != ColliderBounds::Mode::NONE &&
 		     colliderDisplay != ColliderBounds::Mode::SELECTED &&
 		     colliderDisplay != ColliderBounds::Mode::ALL)) {
@@ -319,8 +348,23 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		}
 		const auto lighting = nlohmann::json::parse(gameText).at("lighting");
 
+		auto bookmarks = nlohmann::json::array();
+		for (std::size_t i = 0; i < EditorCameraBookmarks::kSlotCount; ++i) {
+			if (const auto *bookmark = cameraBookmarks.Get(i)) {
+				bookmarks.push_back(
+				    {{"position",
+				      {bookmark->position.x, bookmark->position.y,
+				       bookmark->position.z}},
+				     {"yaw", bookmark->yaw},
+				     {"pitch", bookmark->pitch}});
+			} else {
+				bookmarks.push_back(nullptr);
+			}
+		}
+
 		const nlohmann::json json{
 		    {"version", 1},
+		    {"cameraBookmarks", bookmarks},
 		    {"assetDirectory", PathUtils::ToUtf8(assets.GetDirectory())},
 		    {"assetDirectories", assetDirectories},
 		    {"gameExport",
@@ -378,7 +422,8 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 }
 
 bool EditorPreferences::operator==(const EditorPreferences &other) const {
-	return colliderDisplay == other.colliderDisplay &&
+	return cameraBookmarks == other.cameraBookmarks &&
+	       colliderDisplay == other.colliderDisplay &&
 	       pivotMode == other.pivotMode && grid == other.grid &&
 	       recentScenes == other.recentScenes && assets == other.assets &&
 	       gameExport.title == other.gameExport.title &&

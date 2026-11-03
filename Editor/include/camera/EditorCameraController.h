@@ -15,6 +15,35 @@ class InputSystem;
 class EditorCameraController {
   public:
 	/// <summary>
+	/// 作業用カメラの位置と向き。角度はラジアンで、ロールは使用しない
+	/// </summary>
+	struct ViewState {
+		DirectX::XMFLOAT3 position{0.0f, 0.0f, -2.0f};
+		float yaw = 0.0f;
+		float pitch = 0.0f;
+
+		bool operator==(const ViewState &other) const {
+			return position.x == other.position.x &&
+			       position.y == other.position.y &&
+			       position.z == other.position.z && yaw == other.yaw &&
+			       pitch == other.pitch;
+		}
+	};
+
+	/// <summary>
+	/// 現在の位置と向きを、操作設定とは独立して取得する
+	/// </summary>
+	/// <returns>ブックマークに保存する視点</returns>
+	ViewState GetViewState() const;
+
+	/// <summary>
+	/// 有効な視点を復元し、移動・パン・オービットの操作を終了する
+	/// </summary>
+	/// <param name="state">有限な位置・角度。pitchは上下90度以内</param>
+	/// <returns>true:成功 false:姿勢を表現できない。失敗時は位置・向き・操作状態を保持する</returns>
+	bool SetViewState(const ViewState &state);
+
+	/// <summary>
 	/// カメラの移動速度・加速倍率とマウス操作の設定
 	/// </summary>
 	struct Settings {

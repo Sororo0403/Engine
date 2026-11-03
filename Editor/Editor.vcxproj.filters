@@ -712,4 +712,8 @@
     <ClInclude Include="include\dialogs\BoxCreationDialog.h"><Filter>include\dialogs</Filter></ClInclude>
     <ClCompile Include="src\dialogs\BoxCreationDialog.cpp"><Filter>src\dialogs</Filter></ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\camera\EditorCameraBookmarks.h"><Filter>include\camera</Filter></ClInclude>
+    <ClCompile Include="src\camera\EditorCameraBookmarks.cpp"><Filter>src\camera</Filter></ClCompile>
+  </ItemGroup>
 </Project>
