@@ -1,6 +1,8 @@
 #pragma once
 
+#include <cstddef>
 #include <filesystem>
+#include <span>
 #include <string>
 #include <string_view>
 
@@ -17,4 +19,16 @@ namespace FileUtils {
 bool WriteTextAtomically(const std::filesystem::path &path,
                          std::string_view text, std::string &error,
                          bool overwrite = true);
+/// <summary>
+/// バイト列を新規の一時ファイルへ書き込み、完了後に保存先へ確定する
+/// </summary>
+/// <param name="path">保存先。親フォルダは事前に作成する</param>
+/// <param name="bytes">変更せず保存するバイト列</param>
+/// <param name="error">失敗理由。後片付け失敗時は残った場所も含む</param>
+/// <param name="overwrite">falseの場合は既存ファイルを変更しない</param>
+/// <returns>true:成功 false:保存失敗。既存ファイルと他の一時ファイルは保持する</returns>
+bool WriteBytesAtomically(const std::filesystem::path &path,
+                          std::span<const std::byte> bytes, std::string &error,
+                          bool overwrite = true);
+
 } // namespace FileUtils

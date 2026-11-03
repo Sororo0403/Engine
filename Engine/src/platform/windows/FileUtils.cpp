@@ -113,9 +113,9 @@ class StagedFile {
 };
 } // namespace
 
-bool FileUtils::WriteTextAtomically(const std::filesystem::path &path,
-                                    std::string_view text, std::string &error,
-                                    bool overwrite) {
+bool FileUtils::WriteBytesAtomically(const std::filesystem::path &path,
+                                     std::span<const std::byte> bytes,
+                                     std::string &error, bool overwrite) {
 	StagedFile file;
 	std::filesystem::path temporary;
 
@@ -159,12 +159,12 @@ bool FileUtils::WriteTextAtomically(const std::filesystem::path &path,
 
 		std::size_t offset = 0;
 
-		while (offset < text.size()) {
+		while (offset < bytes.size()) {
 			const auto size = static_cast<DWORD>(
-			    (std::min)(text.size() - offset, std::size_t(65536)));
+			    (std::min)(bytes.size() - offset, std::size_t(65536)));
 			DWORD written = 0;
 
-			if (!WriteFile(file.Get(), text.data() + offset, size, &written,
+			if (!WriteFile(file.Get(), bytes.data() + offset, size, &written,
 			               nullptr) ||
 			    written == 0) {
 				throw std::runtime_error("Could not write the save file.");
@@ -203,4 +203,12 @@ bool FileUtils::WriteTextAtomically(const std::filesystem::path &path,
 
 		return false;
 	}
+}
+
+bool FileUtils::WriteTextAtomically(const std::filesystem::path &path,
+                                    std::string_view text, std::string &error,
+                                    bool overwrite) {
+	return WriteBytesAtomically(
+	    path, std::as_bytes(std::span{text.data(), text.size()}), error,
+	    overwrite);
 }

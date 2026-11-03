@@ -9,7 +9,7 @@ class ImGuiSystem;
 /// <summary>
 /// ファイル選択ダイアログの用途
 /// </summary>
-enum class SceneFileDialogMode {
+enum class FileDialogMode {
 	OPEN,
 	SAVE,
 	SAVE_COPY,
@@ -18,31 +18,38 @@ enum class SceneFileDialogMode {
 /// <summary>
 /// ファイル選択ダイアログの結果
 /// </summary>
-enum class SceneFileDialogResult {
+enum class FileDialogResult {
 	NONE,
 	ACCEPTED,
 	CANCELLED,
 };
 
 /// <summary>
-/// シーンファイルの選択と保存先の指定を行う
+/// ファイル一覧と確定時に許可する種類
 /// </summary>
-class SceneFileDialog {
+enum class FileDialogFilter { SCENE, IMAGE };
+
+/// <summary>
+/// シーンの保存・読み込みと、取り込む画像ファイルの選択を行う
+/// </summary>
+class FileDialog {
   public:
 	/// <summary>
 	/// ファイル選択の表示を予約する
 	/// </summary>
 	/// <param name="mode">開く、保存、またはコピーを保存</param>
 	/// <param name="initialPath">初期ファイルまたはフォルダ。空の場合は実行ファイルのフォルダ</param>
-	void Show(SceneFileDialogMode mode,
-	          const std::filesystem::path &initialPath = {});
+	/// <param name="filter">一覧と確定時のファイル種別。画像はOPENだけに対応する</param>
+	void Show(FileDialogMode mode,
+	          const std::filesystem::path &initialPath = {},
+	          FileDialogFilter filter = FileDialogFilter::SCENE);
 
 	/// <summary>
 	/// ファイル選択を描画する
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
 	/// <returns>選択結果。未確定の場合はNONE</returns>
-	SceneFileDialogResult Draw(const ImGuiSystem &ui);
+	FileDialogResult Draw(const ImGuiSystem &ui);
 
 	/// <summary>
 	/// 確定したファイルパスを取得する
@@ -77,7 +84,8 @@ class SceneFileDialog {
 	bool AcceptSelection();
 
   private:
-	SceneFileDialogMode mode_ = SceneFileDialogMode::OPEN;
+	FileDialogMode mode_ = FileDialogMode::OPEN;
+	FileDialogFilter filter_ = FileDialogFilter::SCENE;
 
 	std::filesystem::path directory_;
 	std::filesystem::path selectedPath_;

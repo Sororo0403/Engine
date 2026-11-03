@@ -367,7 +367,9 @@ bool EditorScene::Update(float deltaTime) {
 		           object->meshRenderer->IsValid();
 	    });
 	const auto requestedModelPath =
-	    assetsPanel_.Draw(ui_, assets_, canSetTexture);
+	    assetsPanel_.Draw(ui_, assets_, canSetTexture,
+	                      !gizmo_.IsUsing() && !gizmoEditActive_ &&
+	                          !sceneViewPanel_.IsSelecting());
 	if (!wasBusy && !assetsPanel_.GetTexturePreviewRequest().empty()) {
 		texturePreviewPanel_.Open(assetsPanel_.GetTexturePreviewRequest());
 	}
@@ -418,6 +420,22 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	if (!wasBusy) {
+		if (assetsPanel_.IsTextureImportRequested() && !IsBusy() &&
+		    action == EditorAction::NONE &&
+		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
+			try {
+				FinishEdit();
+				textureImportDialog_.Show(assets_,
+				                          assetsPanel_.GetCurrentDirectory());
+				stage_ = DialogStage::IMPORT_TEXTURE;
+			} catch (const std::exception &error) {
+				Logger::Error(std::format("EditorScene::ImportTexture: {}",
+				                          error.what()));
+				ShowError(
+				    "Could not open image import. See the log for details.");
+			}
+		}
+
 		if (hierarchyRequest.action != HierarchyPanel::Action::NONE) {
 			// 編集中の内容を、物体を消す前に確定する
 			FinishEdit();
@@ -1991,7 +2009,7 @@ void EditorScene::ExecutePendingAction() {
 	}
 
 	case EditorAction::OPEN:
-		fileDialog_.Show(SceneFileDialogMode::OPEN, document_.GetFilePath());
+		fileDialog_.Show(FileDialogMode::OPEN, document_.GetFilePath());
 
 		stage_ = DialogStage::OPEN_FILE;
 		return;
@@ -2020,7 +2038,7 @@ void EditorScene::StartSave(bool saveAs) {
 		return;
 	}
 
-	fileDialog_.Show(SceneFileDialogMode::SAVE, document_.GetFilePath());
+	fileDialog_.Show(FileDialogMode::SAVE, document_.GetFilePath());
 
 	stage_ = DialogStage::SAVE_FILE;
 }
@@ -2253,7 +2271,7 @@ void EditorScene::StartSaveCopy() {
 		                    : currentPath.parent_path() /
 		                          (currentPath.stem().native() + L".copy" +
 		                           currentPath.extension().native());
-		fileDialog_.Show(SceneFileDialogMode::SAVE_COPY, copyPath);
+		fileDialog_.Show(FileDialogMode::SAVE_COPY, copyPath);
 		stage_ = DialogStage::SAVE_COPY_FILE;
 	} catch (const std::exception &error) {
 		Logger::Error(
@@ -2295,12 +2313,12 @@ void EditorScene::UpdateDialogs() {
 	case DialogStage::OPEN_FILE: {
 		const auto result = fileDialog_.Draw(ui_);
 
-		if (result == SceneFileDialogResult::CANCELLED) {
+		if (result == FileDialogResult::CANCELLED) {
 			stage_ = DialogStage::IDLE;
 			return;
 		}
 
-		if (result == SceneFileDialogResult::ACCEPTED) {
+		if (result == FileDialogResult::ACCEPTED) {
 			OpenScene(fileDialog_.GetSelectedPath());
 		}
 
@@ -2310,14 +2328,14 @@ void EditorScene::UpdateDialogs() {
 	case DialogStage::SAVE_FILE: {
 		const auto result = fileDialog_.Draw(ui_);
 
-		if (result == SceneFileDialogResult::CANCELLED) {
+		if (result == FileDialogResult::CANCELLED) {
 			// 保存先選択を取り消した場合は、NewやExitも取り消す
 			pendingAction_ = EditorAction::NONE;
 			stage_ = DialogStage::IDLE;
 			return;
 		}
 
-		if (result == SceneFileDialogResult::ACCEPTED) {
+		if (result == FileDialogResult::ACCEPTED) {
 			if (document_.SaveAs(fileDialog_.GetSelectedPath())) {
 				recentScenes_.Add(document_.GetFilePath());
 				ExecutePendingAction();
@@ -2344,9 +2362,9 @@ void EditorScene::UpdateDialogs() {
 	case DialogStage::SAVE_COPY_FILE: {
 		const auto result = fileDialog_.Draw(ui_);
 
-		if (result == SceneFileDialogResult::CANCELLED) {
+		if (result == FileDialogResult::CANCELLED) {
 			stage_ = DialogStage::IDLE;
-		} else if (result == SceneFileDialogResult::ACCEPTED) {
+		} else if (result == FileDialogResult::ACCEPTED) {
 			if (document_.SaveCopy(fileDialog_.GetSelectedPath())) {
 				recentScenes_.Add(fileDialog_.GetSelectedPath());
 				stage_ = DialogStage::IDLE;
@@ -2355,6 +2373,24 @@ void EditorScene::UpdateDialogs() {
 			}
 		}
 
+		return;
+	}
+
+	case DialogStage::IMPORT_TEXTURE: {
+		const auto result = textureImportDialog_.Draw(ui_);
+		if (result == TextureImportResult::ACCEPTED) {
+			stage_ = DialogStage::IDLE;
+			if (!assets_.Refresh()) {
+				ShowError(
+				    "The image was imported, but Assets could not refresh: " +
+				    assets_.GetError());
+			} else {
+				assetsPanel_.RequestReveal(
+				    textureImportDialog_.GetImportedPath());
+			}
+		} else if (result == TextureImportResult::CANCELLED) {
+			stage_ = DialogStage::IDLE;
+		}
 		return;
 	}
 

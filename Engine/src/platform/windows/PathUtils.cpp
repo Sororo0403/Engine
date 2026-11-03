@@ -166,3 +166,44 @@ bool PathUtils::IsImageFile(const std::filesystem::path &path) {
 
 	return false;
 }
+
+bool PathUtils::IsValidFileName(const std::filesystem::path &name) {
+	const auto &text = name.native();
+	if (text.empty() || text.size() > 255 || name.has_root_path() ||
+	    name.has_parent_path() || text.back() == L'.' || text.back() == L' ' ||
+	    text.find_first_of(L"<>:\"/\\|?*") != std::wstring::npos) {
+		return false;
+	}
+
+	for (const auto character : text) {
+		if (character < 32) {
+			return false;
+		}
+	}
+
+	auto base = text.substr(0, text.find(L'.'));
+	while (!base.empty() && base.back() == L' ') {
+		base.pop_back();
+	}
+
+	for (auto &character : base) {
+		if (character >= L'a' && character <= L'z') {
+			character -= L'a' - L'A';
+		}
+	}
+
+	if (base == L"CON" || base == L"PRN" || base == L"AUX" || base == L"NUL") {
+		return false;
+	}
+
+	if (base.size() == 4 &&
+	    (base.starts_with(L"COM") || base.starts_with(L"LPT"))) {
+		const auto digit = base.back();
+		if ((digit >= L'1' && digit <= L'9') || digit == L'\u00b9' ||
+		    digit == L'\u00b2' || digit == L'\u00b3') {
+			return false;
+		}
+	}
+
+	return true;
+}

@@ -4,12 +4,13 @@
 #include "camera/CameraFrustum.h"
 #include "camera/EditorCameraController.h"
 #include "dialogs/BatchRenameDialog.h"
+#include "dialogs/FileDialog.h"
 #include "dialogs/GameExportDialog.h"
 #include "dialogs/GameSettingsDialog.h"
 #include "dialogs/ObjectArrayDialog.h"
 #include "dialogs/SaveChangesDialog.h"
-#include "dialogs/SceneFileDialog.h"
 #include "dialogs/SceneReloadDialog.h"
+#include "dialogs/TextureImportDialog.h"
 #include "gameplay/CharacterJumpPreview.h"
 #include "gameplay/EditorPlayMode.h"
 #include "gameplay/FollowCameraPreview.h"
@@ -197,6 +198,7 @@ class EditorScene final : public IScene {
 		OPEN_FILE,
 		SAVE_FILE,
 		SAVE_COPY_FILE,
+		IMPORT_TEXTURE,
 		EXPORT_GAME,
 		GAME_SETTINGS,
 		CONFIRM_RELOAD,
@@ -631,7 +633,8 @@ class EditorScene final : public IScene {
 	SaveChangesDialog saveChangesDialog_;
 	BatchRenameDialog batchRenameDialog_;
 	ObjectArrayDialog objectArrayDialog_;
-	SceneFileDialog fileDialog_;
+	FileDialog fileDialog_;
+	TextureImportDialog textureImportDialog_;
 	GameExportDialog exportDialog_;
 	GameSettingsDialog gameSettingsDialog_;
 	GameConfig exportConfig_;

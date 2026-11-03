@@ -1,4 +1,4 @@
-#include "dialogs/SceneFileDialog.h"
+#include "dialogs/FileDialog.h"
 
 #include "graphics/ui/ImGuiSystem.h"
 #include "platform/windows/PathUtils.h"
@@ -6,10 +6,17 @@
 #include <algorithm>
 #include <exception>
 #include <format>
+#include <stdexcept>
 #include <system_error>
 
-void SceneFileDialog::Show(SceneFileDialogMode mode,
-                           const std::filesystem::path &initialPath) {
+void FileDialog::Show(FileDialogMode mode,
+                      const std::filesystem::path &initialPath,
+                      FileDialogFilter filter) {
+	if (filter == FileDialogFilter::IMAGE && mode != FileDialogMode::OPEN) {
+		throw std::invalid_argument("Image selection supports opening only.");
+	}
+
+	filter_ = filter;
 	mode_ = mode;
 	selectedPath_.clear();
 	entries_.clear();
@@ -35,7 +42,7 @@ void SceneFileDialog::Show(SceneFileDialogMode mode,
 			}
 		}
 
-		if (mode_ != SceneFileDialogMode::OPEN && fileName_.empty()) {
+		if (mode_ != FileDialogMode::OPEN && fileName_.empty()) {
 			fileName_ = "Untitled.scene.json";
 		}
 
@@ -46,12 +53,12 @@ void SceneFileDialog::Show(SceneFileDialogMode mode,
 	}
 }
 
-SceneFileDialogResult SceneFileDialog::Draw(const ImGuiSystem &ui) {
-	const char *title = mode_ == SceneFileDialogMode::OPEN
-	                        ? "Open Scene###SceneFileDialog"
-	                    : mode_ == SceneFileDialogMode::SAVE_COPY
-	                        ? "Save Copy###SceneFileDialog"
-	                        : "Save Scene###SceneFileDialog";
+FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
+	const char *title =
+	    filter_ == FileDialogFilter::IMAGE   ? "Open Image###FileDialog"
+	    : mode_ == FileDialogMode::OPEN      ? "Open Scene###FileDialog"
+	    : mode_ == FileDialogMode::SAVE_COPY ? "Save Copy###FileDialog"
+	                                         : "Save Scene###FileDialog";
 
 	if (openRequested_) {
 		ui.OpenPopup(title);
@@ -59,10 +66,10 @@ SceneFileDialogResult SceneFileDialog::Draw(const ImGuiSystem &ui) {
 	}
 
 	if (!ui.BeginPopupModal(title)) {
-		return SceneFileDialogResult::NONE;
+		return FileDialogResult::NONE;
 	}
 
-	SceneFileDialogResult result = SceneFileDialogResult::NONE;
+	FileDialogResult result = FileDialogResult::NONE;
 
 	if (confirmOverwrite_) {
 		ui.Text("This file already exists:");
@@ -71,7 +78,7 @@ SceneFileDialogResult SceneFileDialog::Draw(const ImGuiSystem &ui) {
 		ui.Separator();
 
 		if (ui.Button("Overwrite")) {
-			result = SceneFileDialogResult::ACCEPTED;
+			result = FileDialogResult::ACCEPTED;
 		}
 
 		ui.SameLine();
@@ -153,23 +160,22 @@ SceneFileDialogResult SceneFileDialog::Draw(const ImGuiSystem &ui) {
 
 		ui.Separator();
 
-		const char *button = mode_ == SceneFileDialogMode::OPEN ? "Open"
-		                     : mode_ == SceneFileDialogMode::SAVE_COPY
-		                         ? "Save Copy"
-		                         : "Save";
+		const char *button = mode_ == FileDialogMode::OPEN        ? "Open"
+		                     : mode_ == FileDialogMode::SAVE_COPY ? "Save Copy"
+		                                                          : "Save";
 
 		if (ui.Button(button) && AcceptSelection()) {
-			result = SceneFileDialogResult::ACCEPTED;
+			result = FileDialogResult::ACCEPTED;
 		}
 	}
 
 	ui.SameLine();
 
 	if (ui.Button("Cancel")) {
-		result = SceneFileDialogResult::CANCELLED;
+		result = FileDialogResult::CANCELLED;
 	}
 
-	if (result != SceneFileDialogResult::NONE) {
+	if (result != FileDialogResult::NONE) {
 		ui.CloseCurrentPopup();
 	}
 
@@ -177,11 +183,11 @@ SceneFileDialogResult SceneFileDialog::Draw(const ImGuiSystem &ui) {
 	return result;
 }
 
-const std::filesystem::path &SceneFileDialog::GetSelectedPath() const {
+const std::filesystem::path &FileDialog::GetSelectedPath() const {
 	return selectedPath_;
 }
 
-void SceneFileDialog::Refresh() {
+void FileDialog::Refresh() {
 	entries_.clear();
 	error_.clear();
 
@@ -201,7 +207,10 @@ void SceneFileDialog::Refresh() {
 				if (directory) {
 					entries_.push_back({entry.path(), true});
 				} else if (entry.is_regular_file(typeError) && !typeError &&
-				           PathUtils::HasExtension(entry.path(), ".json")) {
+				           (filter_ == FileDialogFilter::IMAGE
+				                ? PathUtils::IsImageFile(entry.path())
+				                : PathUtils::HasExtension(entry.path(),
+				                                          ".json"))) {
 					entries_.push_back({entry.path(), false});
 				}
 			}
@@ -229,7 +238,7 @@ void SceneFileDialog::Refresh() {
 	}
 }
 
-void SceneFileDialog::ChangeDirectory(const std::filesystem::path &path) {
+void FileDialog::ChangeDirectory(const std::filesystem::path &path) {
 	try {
 		if (!path.is_absolute()) {
 			error_ = "Enter an absolute folder path.";
@@ -249,7 +258,7 @@ void SceneFileDialog::ChangeDirectory(const std::filesystem::path &path) {
 		directory_.swap(next);
 		directoryText_.swap(text);
 
-		if (mode_ == SceneFileDialogMode::OPEN) {
+		if (mode_ == FileDialogMode::OPEN) {
 			fileName_.clear();
 		}
 
@@ -259,37 +268,32 @@ void SceneFileDialog::ChangeDirectory(const std::filesystem::path &path) {
 	}
 }
 
-bool SceneFileDialog::AcceptSelection() {
+bool FileDialog::AcceptSelection() {
 	try {
 		error_.clear();
 
-		if (fileName_.empty() ||
-		    fileName_.find_first_of("<>:\"/\\|?*") != std::string::npos ||
-		    fileName_.back() == '.' || fileName_.back() == ' ') {
+		auto name = PathUtils::FromUtf8(fileName_);
+
+		if (!PathUtils::IsValidFileName(name)) {
 			error_ = "Enter a valid file name.";
 			return false;
 		}
 
-		for (const unsigned char character : fileName_) {
-			if (character < 32) {
-				error_ = "The file name contains a control character.";
-				return false;
-			}
-		}
-
-		auto name = PathUtils::FromUtf8(fileName_);
-
-		if (name.has_root_path() || name.has_parent_path()) {
-			error_ = "Enter only the file name.";
-			return false;
-		}
-
-		if (mode_ != SceneFileDialogMode::OPEN && !name.has_extension()) {
+		if (mode_ != FileDialogMode::OPEN && !name.has_extension()) {
 			name += ".scene.json";
 		}
 
-		if (!PathUtils::HasExtension(name, ".json")) {
-			error_ = "Use a .json file name.";
+		if (!PathUtils::IsValidFileName(name)) {
+			error_ = "The complete file name is too long or invalid.";
+			return false;
+		}
+
+		if (filter_ == FileDialogFilter::IMAGE
+		        ? !PathUtils::IsImageFile(name)
+		        : !PathUtils::HasExtension(name, ".json")) {
+			error_ = filter_ == FileDialogFilter::IMAGE
+			             ? "Choose a PNG, JPEG, BMP, TIFF or GIF image."
+			             : "Use a .json file name.";
 			return false;
 		}
 
@@ -303,7 +307,7 @@ bool SceneFileDialog::AcceptSelection() {
 			return false;
 		}
 
-		if (mode_ == SceneFileDialogMode::OPEN && !exists) {
+		if (mode_ == FileDialogMode::OPEN && !exists) {
 			error_ = "The file does not exist.";
 			return false;
 		}
@@ -316,7 +320,7 @@ bool SceneFileDialog::AcceptSelection() {
 
 		selectedPath_.swap(candidate);
 
-		if (mode_ != SceneFileDialogMode::OPEN && exists) {
+		if (mode_ != FileDialogMode::OPEN && exists) {
 			confirmOverwrite_ = true;
 			return false;
 		}

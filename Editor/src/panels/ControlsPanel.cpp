@@ -251,6 +251,18 @@ void ControlsPanel::Draw() {
 	DrawSection(
 	    "Model assets",
 	    {
+	        {"Assets > Import Texture",
+	         "Choose an external PNG, JPEG, BMP, TIFF or GIF image, an "
+	         "existing "
+	         "Assets folder and a new image name. Import validates and copies "
+	         "the image, refreshes Assets and reveals the result. The source "
+	         "and existing files are never overwritten. A failed import keeps "
+	         "the dialog open. Cancel creates no asset. The image is not "
+	         "assigned automatically; use the texture slot controls afterward. "
+	         "Scene data, selection and Undo history stay unchanged. Import "
+	         "is unavailable during Play, modal operations or Scene gestures. "
+	         "Images must be at most 256 MiB with each dimension at most 16384 "
+	         "pixels. Animated images use their first frame for textures."},
 	        {"Assets > Asset Type > Textures",
 	         "Browse PNG, JPEG, BMP, TIFF and GIF images by folder or search. "
 	         "Choose a zero-based Texture Slot, then Assign Texture to "

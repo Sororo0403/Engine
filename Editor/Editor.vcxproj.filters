@@ -95,7 +95,7 @@
     <ClCompile Include="src\dialogs\BatchRenameDialog.cpp">
       <Filter>src\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="src\dialogs\SceneFileDialog.cpp">
+    <ClCompile Include="src\dialogs\FileDialog.cpp">
       <Filter>src\dialogs</Filter>
     </ClCompile>
     <ClCompile Include="src\scene\SceneDocument.cpp">
@@ -199,7 +199,7 @@
     <ClInclude Include="include\dialogs\BatchRenameDialog.h">
       <Filter>include\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="include\dialogs\SceneFileDialog.h">
+    <ClInclude Include="include\dialogs\FileDialog.h">
       <Filter>include\dialogs</Filter>
     </ClInclude>
     <ClInclude Include="include\scene\SceneDocument.h">
@@ -654,5 +654,11 @@
     <ClCompile Include="src\assets\AssetDependencies.cpp"><Filter>src\assets</Filter></ClCompile>
     <ClInclude Include="include\assets\SceneAssetValidation.h"><Filter>include\assets</Filter></ClInclude>
     <ClCompile Include="src\assets\SceneAssetValidation.cpp"><Filter>src\assets</Filter></ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\assets\TextureImporter.h"><Filter>include\assets</Filter></ClInclude>
+    <ClCompile Include="src\assets\TextureImporter.cpp"><Filter>src\assets</Filter></ClCompile>
+    <ClInclude Include="include\dialogs\TextureImportDialog.h"><Filter>include\dialogs</Filter></ClInclude>
+    <ClCompile Include="src\dialogs\TextureImportDialog.cpp"><Filter>src\dialogs</Filter></ClCompile>
   </ItemGroup>
 </Project>

@@ -70,4 +70,11 @@ bool HasExtension(const std::filesystem::path &path,
 /// <returns>true:PNG・JPEG・BMP・TIFF・GIF false:その他</returns>
 bool IsImageFile(const std::filesystem::path &path);
 
+/// <summary>
+/// Windowsの通常ファイルとして使用できる単独の名前か確認する。予約名・区切り・制御文字を拒否する
+/// </summary>
+/// <param name="name">親フォルダを含まない名前。ファイルの実在は確認しない</param>
+/// <returns>true:使用可能な名前 false:空・予約名・無効な文字や末尾・255文字超過</returns>
+bool IsValidFileName(const std::filesystem::path &name);
+
 } // namespace PathUtils

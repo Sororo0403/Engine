@@ -29,6 +29,7 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	textureUsageSelectionPath_.clear();
 	textureSelectionPath_.clear();
 	textureClearRequested_ = false;
+	textureImportRequested_ = false;
 	texturePreviewPath_.clear();
 	revealMessage_.clear();
 	scrollToSelected_ = false;
@@ -104,11 +105,13 @@ bool AssetsPanel::SelectAsset(const std::filesystem::path &path,
 
 std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
                                         AssetDatabase &assets,
-                                        bool canSetTexture) {
+                                        bool canSetTexture,
+                                        bool canImportTexture) {
 	instanceSelectionPath_.clear();
 	textureUsageSelectionPath_.clear();
 	textureSelectionPath_.clear();
 	textureClearRequested_ = false;
+	textureImportRequested_ = false;
 	texturePreviewPath_.clear();
 
 	if (!revealPath_.empty()) {
@@ -145,6 +148,13 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 
 		revealPath_.clear();
 	}
+
+	ui.SameLine();
+	ui.BeginDisabled(!canImportTexture);
+	if (ui.Button("Import Texture")) {
+		textureImportRequested_ = true;
+	}
+	ui.EndDisabled();
 
 	const auto &directories = assets.GetDirectories();
 
@@ -426,6 +436,7 @@ void AssetsPanel::Clear() {
 	textureUsageSelectionPath_.clear();
 	textureSelectionPath_.clear();
 	textureClearRequested_ = false;
+	textureImportRequested_ = false;
 	texturePreviewPath_.clear();
 	selectedPath_.clear();
 	instanceSelectionPath_.clear();
@@ -443,4 +454,12 @@ std::uint32_t AssetsPanel::GetTextureSlot() const {
 
 bool AssetsPanel::IsTextureClearRequested() const {
 	return textureClearRequested_;
+}
+
+bool AssetsPanel::IsTextureImportRequested() const {
+	return textureImportRequested_;
+}
+
+const std::filesystem::path &AssetsPanel::GetCurrentDirectory() const {
+	return currentDirectory_;
 }
