@@ -45,7 +45,7 @@ class FileDialog {
 	          FileDialogFilter filter = FileDialogFilter::SCENE);
 
 	/// <summary>
-	/// ファイル選択を描画する
+	/// ファイル選択を描画する。Escapeで選択を取り消す
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
 	/// <returns>選択結果。未確定の場合はNONE</returns>

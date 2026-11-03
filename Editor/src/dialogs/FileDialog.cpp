@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <exception>
 #include <format>
+#include <imgui.h>
 #include <stdexcept>
 #include <system_error>
 
@@ -174,7 +175,7 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 
 	ui.SameLine();
 
-	if (ui.Button("Cancel")) {
+	if (ui.Button("Cancel") || ImGui::IsKeyPressed(ImGuiKey_Escape, false)) {
 		result = FileDialogResult::CANCELLED;
 	}
 
