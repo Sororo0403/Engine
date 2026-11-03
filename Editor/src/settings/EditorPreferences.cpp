@@ -12,6 +12,7 @@
 #include <format>
 #include <fstream>
 #include <stdexcept>
+#include <utility>
 
 bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 	try {
@@ -225,7 +226,22 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 			}
 		}
 
-		*this = loaded;
+		if (json.contains("assetDirectories")) {
+			const auto &directories = json.at("assetDirectories");
+			if (!directories.is_array()) {
+				throw std::runtime_error("素材の取得元には配列が必要です。");
+			}
+			for (const auto &directory : directories) {
+				loaded.assets.Register(
+				    PathUtils::FromUtf8(directory.get<std::string>()));
+			}
+		}
+		if (json.contains("assetDirectory")) {
+			loaded.assets.Select(PathUtils::FromUtf8(
+			    json.at("assetDirectory").get<std::string>()));
+		}
+
+		*this = std::move(loaded);
 		return true;
 	} catch (const std::exception &error) {
 		Logger::Error(std::format("EditorPreferences::Load: {}", error.what()));
@@ -279,8 +295,15 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 			    GameInputBindings::GetName(gameExport.input.*action.member);
 		}
 
+		auto assetDirectories = nlohmann::json::array();
+		for (const auto &directory : assets.GetDirectories()) {
+			assetDirectories.push_back(PathUtils::ToUtf8(directory));
+		}
+
 		const nlohmann::json json{
 		    {"version", 1},
+		    {"assetDirectory", PathUtils::ToUtf8(assets.GetDirectory())},
+		    {"assetDirectories", assetDirectories},
 		    {"gameExport",
 		     {{"title", gameExport.title},
 		      {"width", gameExport.width},
@@ -337,7 +360,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 bool EditorPreferences::operator==(const EditorPreferences &other) const {
 	return colliderDisplay == other.colliderDisplay &&
 	       pivotMode == other.pivotMode && grid == other.grid &&
-	       recentScenes == other.recentScenes &&
+	       recentScenes == other.recentScenes && assets == other.assets &&
 	       gameExport.title == other.gameExport.title &&
 	       gameExport.width == other.gameExport.width &&
 	       gameExport.height == other.gameExport.height &&

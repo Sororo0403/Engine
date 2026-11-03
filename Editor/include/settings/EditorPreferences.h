@@ -1,5 +1,6 @@
 #pragma once
 
+#include "assets/AssetSources.h"
 #include "camera/EditorCameraController.h"
 #include "gameplay/GameConfig.h"
 #include "gizmo/TransformGizmo.h"
@@ -10,7 +11,7 @@
 #include <vector>
 
 /// <summary>
-/// シーンとは独立したEditorの表示・ギズモ・ゲーム出力設定を保存する
+/// シーンとは独立したEditorの表示・ギズモ・素材フォルダ・ゲーム出力設定を保存する
 /// </summary>
 class EditorPreferences {
   public:
@@ -33,6 +34,7 @@ class EditorPreferences {
 	GameConfig gameExport;
 
 	std::vector<std::filesystem::path> recentScenes;
+	AssetSources assets;
 
 	/// <summary>
 	/// 設定を読み込む。ファイルがない場合は現在の値を保持する

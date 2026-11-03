@@ -1,6 +1,7 @@
 #pragma once
 
 #include "assets/AssetDatabase.h"
+#include "assets/AssetSources.h"
 #include "camera/CameraFrustum.h"
 #include "camera/EditorCameraController.h"
 #include "dialogs/AssetFolderDialog.h"
@@ -133,6 +134,7 @@ class EditorScene final : public IScene {
 		IMPORT_SCENE,
 		EXPORT_GAME,
 		GAME_SETTINGS,
+		ASSETS_FOLDER,
 		RELOAD_SCENE,
 		EXIT,
 		UNDO,
@@ -216,6 +218,7 @@ class EditorScene final : public IScene {
 		IMPORT_MODEL,
 		IMPORT_SCENE,
 		CREATE_ASSET_FOLDER,
+		SELECT_ASSET_FOLDER,
 		EXPORT_GAME,
 		EXPORT_RESULT,
 		GAME_SETTINGS,
@@ -275,6 +278,14 @@ class EditorScene final : public IScene {
 	/// </summary>
 	/// <param name="saveAs">保存先を必ず選択するか</param>
 	void StartSave(bool saveAs);
+
+	/// <summary>
+	/// 未保存シーンの初期ファイル名を、選択した外部Assetsフォルダへ揃える
+	/// </summary>
+	/// <param name="name">初期ファイル名。空は読み込み時の初期フォルダ</param>
+	/// <returns>外部Assets内の絶対パス、または従来の実行ファイル基準の指定</returns>
+	std::filesystem::path
+	GetNewScenePath(const std::filesystem::path &name) const;
 
 	/// <summary>
 	/// 現在の保存先と保存地点を保持するコピーの保存先選択を開始する
@@ -643,6 +654,7 @@ class EditorScene final : public IScene {
 	EditorCameraController cameraController_;
 
 	AssetDatabase assets_{L"resources/editor"};
+	AssetSources assetSources_;
 	AssetsPanel assetsPanel_;
 	TexturePreviewPanel texturePreviewPanel_;
 

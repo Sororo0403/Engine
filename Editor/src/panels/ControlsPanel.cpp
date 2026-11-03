@@ -251,6 +251,16 @@ void ControlsPanel::Draw() {
 	DrawSection(
 	    "Model assets",
 	    {
+	        {"File > Assets Folder",
+	         "Choose a folder for browsing and new imports. Use a folder "
+	         "outside the Editor build output to retain authored assets "
+	         "when rebuilding or cleaning. Create Folder adds a new child "
+	         "immediately; Select Folder accepts the Folder field. Cancel "
+	         "keeps the current asset source. Existing scene references and "
+	         "files are kept in place. New scenes initially save inside an "
+	         "absolute Assets folder. Previously selected folders are kept "
+	         "for scene export, but only referenced sources are required. "
+	         "Folder settings are saved when Editor closes."},
 	        {"Assets > New Folder",
 	         "Create a new folder inside the current Assets folder. Enter a "
 	         "single folder name; existing files and folders are never reused "

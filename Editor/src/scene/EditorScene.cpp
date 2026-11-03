@@ -35,6 +35,7 @@
 #include <format>
 #include <imgui.h>
 #include <limits>
+#include <stdexcept>
 #include <utility>
 #include <vector>
 
@@ -69,6 +70,7 @@ bool EditorScene::Initialize() {
 	preferences_ = EditorPreferences{};
 	canSavePreferences_ = preferences_.Load();
 	exportConfig_ = preferences_.gameExport;
+	assetSources_ = preferences_.assets;
 	recentScenes_.Clear();
 
 	for (auto it = preferences_.recentScenes.rbegin();
@@ -112,8 +114,11 @@ bool EditorScene::Initialize() {
 	inspectorPanel_.Clear();
 	assetsPanel_.Clear();
 
-	// 検索失敗時もEditorは起動し、Assetsパネルにエラーを表示する
-	assets_.Refresh();
+	// 未接続の保存先も保持し、別のフォルダへ取り込んでしまうことを防ぐ。
+	assets_ = AssetDatabase(assetSources_.GetDirectory());
+	if (assets_.Refresh()) {
+		assetSources_.Select(assets_.GetRootDirectory());
+	}
 	clipboard_.Clear();
 
 	Logger::Info("EditorSceneを初期化しました。");
@@ -1030,6 +1035,7 @@ void EditorScene::Finalize() {
 		current.camera = cameraController_.GetSettings();
 		current.grid = sceneGrid_.GetSettings();
 		current.gameExport = exportConfig_;
+		current.assets = assetSources_;
 		const auto recent = recentScenes_.GetPaths();
 		current.recentScenes.assign(recent.begin(), recent.end());
 
@@ -1165,6 +1171,10 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 
 		if (ui_.MenuItem("Save Copy...", nullptr, enabled)) {
 			action = EditorAction::SAVE_COPY;
+		}
+
+		if (ui_.MenuItem("Assets Folder...", nullptr, enabled)) {
+			action = EditorAction::ASSETS_FOLDER;
 		}
 
 		if (ui_.MenuItem("Game Settings...", nullptr, enabled)) {
@@ -1765,7 +1775,8 @@ EditorScene::ReadShortcut(bool objectPanelFocused) const {
 void EditorScene::StartAction(EditorAction action) {
 	if (stage_ != DialogStage::IDLE || closeApproved_ ||
 	    action == EditorAction::NONE ||
-	    (action == EditorAction::IMPORT_SCENE &&
+	    ((action == EditorAction::IMPORT_SCENE ||
+	      action == EditorAction::ASSETS_FOLDER) &&
 	     (playMode_.IsPlaying() || IsBusy()))) {
 		return;
 	}
@@ -1774,6 +1785,19 @@ void EditorScene::StartAction(EditorAction action) {
 	FinishEdit();
 
 	switch (action) {
+	case EditorAction::ASSETS_FOLDER:
+		try {
+			fileDialog_.Show(FileDialogMode::SELECT_DIRECTORY,
+			                 assets_.GetRootDirectory());
+			stage_ = DialogStage::SELECT_ASSET_FOLDER;
+		} catch (const std::exception &error) {
+			Logger::Error(
+			    std::format("EditorScene::AssetsFolder: {}", error.what()));
+			ShowError(
+			    "Could not select an Assets folder. See the log for details.");
+		}
+		return;
+
 	case EditorAction::GAME_SETTINGS:
 		gameSettingsDialog_.Show(exportConfig_);
 		stage_ = DialogStage::GAME_SETTINGS;
@@ -2061,6 +2085,7 @@ void EditorScene::ExecutePendingAction() {
 		options.runtimeDirectory = root;
 #endif
 		options.resourceDirectory = root / L"resources";
+		options.assetDirectories = assetSources_.ForScene(document_.GetScene());
 		options.destination = root / L"exports" / L"Game";
 		options.config = exportConfig_;
 		options.config.fallbackCamera = cameraController_.GetPose();
@@ -2121,7 +2146,9 @@ void EditorScene::ExecutePendingAction() {
 		return;
 
 	case EditorAction::OPEN:
-		fileDialog_.Show(FileDialogMode::OPEN, document_.GetFilePath());
+		fileDialog_.Show(FileDialogMode::OPEN, document_.GetFilePath().empty()
+		                                           ? GetNewScenePath({})
+		                                           : document_.GetFilePath());
 
 		stage_ = DialogStage::OPEN_FILE;
 		return;
@@ -2150,7 +2177,10 @@ void EditorScene::StartSave(bool saveAs) {
 		return;
 	}
 
-	fileDialog_.Show(FileDialogMode::SAVE, document_.GetFilePath());
+	const auto path = document_.GetFilePath().empty()
+	                      ? GetNewScenePath(L"Untitled.scene.json")
+	                      : document_.GetFilePath();
+	fileDialog_.Show(FileDialogMode::SAVE, path);
 
 	stage_ = DialogStage::SAVE_FILE;
 }
@@ -2375,11 +2405,20 @@ void EditorScene::SetCameraView(CameraView view) {
 	frameRequest_ = FrameRequest::NONE;
 }
 
+std::filesystem::path
+EditorScene::GetNewScenePath(const std::filesystem::path &name) const {
+	const auto &directory = assetSources_.GetDirectory();
+	if (name.empty()) {
+		return directory.is_absolute() ? directory : std::filesystem::path{};
+	}
+	return directory.is_absolute() ? directory / name : name;
+}
+
 void EditorScene::StartSaveCopy() {
 	try {
 		const auto &currentPath = document_.GetFilePath();
 		auto copyPath = currentPath.empty()
-		                    ? std::filesystem::path(L"Untitled.copy.scene.json")
+		                    ? GetNewScenePath(L"Untitled.copy.scene.json")
 		                    : currentPath.parent_path() /
 		                          (currentPath.stem().native() + L".copy" +
 		                           currentPath.extension().native());
@@ -2485,6 +2524,33 @@ void EditorScene::UpdateDialogs() {
 			}
 		}
 
+		return;
+	}
+
+	case DialogStage::SELECT_ASSET_FOLDER: {
+		const auto result = fileDialog_.Draw(ui_);
+		if (result == FileDialogResult::CANCELLED) {
+			stage_ = DialogStage::IDLE;
+		} else if (result == FileDialogResult::ACCEPTED) {
+			try {
+				AssetDatabase candidate(fileDialog_.GetSelectedPath());
+				if (!candidate.Refresh()) {
+					throw std::runtime_error(candidate.GetError());
+				}
+				auto sources = assetSources_;
+				sources.Select(candidate.GetRootDirectory());
+				assets_ = std::move(candidate);
+				assetSources_ = std::move(sources);
+				assetsPanel_.Clear();
+				assetsPanel_.RequestOpenDirectory({});
+				stage_ = DialogStage::IDLE;
+			} catch (const std::exception &error) {
+				Logger::Error(
+				    std::format("EditorScene::AssetsFolder: {}", error.what()));
+				ShowError("The current Assets folder was kept: " +
+				          std::string(error.what()));
+			}
+		}
 		return;
 	}
 

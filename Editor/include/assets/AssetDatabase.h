@@ -17,6 +17,8 @@ class AssetDatabase {
 
 	AssetDatabase(const AssetDatabase &) = delete;
 	AssetDatabase &operator=(const AssetDatabase &) = delete;
+	AssetDatabase(AssetDatabase &&) noexcept = default;
+	AssetDatabase &operator=(AssetDatabase &&) noexcept = default;
 
 	/// <summary>
 	/// 配下のフォルダを含めてアセットの一覧を更新する
