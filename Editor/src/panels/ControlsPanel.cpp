@@ -973,8 +973,12 @@ void ControlsPanel::Draw() {
 	         "new scene file; import does not add the package to Open Recent."},
 	        {"File > Export Game",
 	         "Choose a new folder, game title and window size. Build Release "
-	         "first. Export keeps the active scene and saved state; run "
-	         "Game.exe from the exported folder."},
+	         "first. Export keeps the active scene and saved state. After "
+	         "success, "
+	         "Open Output Folder opens the package and Run Game starts its "
+	         "Game.exe independently. Close returns to editing. Failed open "
+	         "or launch requests keep the result screen available for retry. "
+	         "The exported game can also run directly from its folder."},
 	        {"File > Save Copy", "Save a separate scene file and keep the "
 	                             "active file and saved state."},
 	        {"Ctrl + Z", "Undo the last edit."},

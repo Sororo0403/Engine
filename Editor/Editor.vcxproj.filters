@@ -678,6 +678,8 @@
     <ClCompile Include="src\assets\SceneImporter.cpp"><Filter>src\assets</Filter></ClCompile>
     <ClInclude Include="include\dialogs\SceneImportDialog.h"><Filter>include\dialogs</Filter></ClInclude>
     <ClCompile Include="src\dialogs\SceneImportDialog.cpp"><Filter>src\dialogs</Filter></ClCompile>
+    <ClInclude Include="include\dialogs\GameExportResultDialog.h"><Filter>include\dialogs</Filter></ClInclude>
+    <ClCompile Include="src\dialogs\GameExportResultDialog.cpp"><Filter>src\dialogs</Filter></ClCompile>
     <ClInclude Include="include\dialogs\ModelImportDialog.h"><Filter>include\dialogs</Filter></ClInclude>
     <ClCompile Include="src\dialogs\ModelImportDialog.cpp"><Filter>src\dialogs</Filter></ClCompile>
     <ClInclude Include="include\files\OutputDirectory.h"><Filter>include\files</Filter></ClInclude>

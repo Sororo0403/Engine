@@ -2632,6 +2632,12 @@ void EditorScene::UpdateDialogs() {
 		return;
 	}
 
+	case DialogStage::EXPORT_RESULT:
+		if (exportResultDialog_.Draw(ui_) == GameExportResultAction::CLOSE) {
+			stage_ = DialogStage::IDLE;
+		}
+		return;
+
 	case DialogStage::GAME_SETTINGS: {
 		const auto result = gameSettingsDialog_.Draw(ui_);
 
@@ -2661,7 +2667,9 @@ void EditorScene::UpdateDialogs() {
 				    "Game exported to " +
 				    PathUtils::ToUtf8(exportDialog_.GetOptions().destination));
 				exportConfig_ = exportDialog_.GetOptions().config;
-				stage_ = DialogStage::IDLE;
+				exportResultDialog_.Show(
+				    exportDialog_.GetOptions().destination);
+				stage_ = DialogStage::EXPORT_RESULT;
 			} else {
 				ShowError(std::move(error));
 			}

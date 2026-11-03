@@ -7,6 +7,7 @@
 #include "dialogs/BatchRenameDialog.h"
 #include "dialogs/FileDialog.h"
 #include "dialogs/GameExportDialog.h"
+#include "dialogs/GameExportResultDialog.h"
 #include "dialogs/GameSettingsDialog.h"
 #include "dialogs/ModelImportDialog.h"
 #include "dialogs/ObjectArrayDialog.h"
@@ -216,6 +217,7 @@ class EditorScene final : public IScene {
 		IMPORT_SCENE,
 		CREATE_ASSET_FOLDER,
 		EXPORT_GAME,
+		EXPORT_RESULT,
 		GAME_SETTINGS,
 		CONFIRM_RELOAD,
 		BATCH_RENAME,
@@ -663,6 +665,7 @@ class EditorScene final : public IScene {
 	SceneImportDialog sceneImportDialog_;
 	AssetFolderDialog assetFolderDialog_;
 	GameExportDialog exportDialog_;
+	GameExportResultDialog exportResultDialog_;
 	GameSettingsDialog gameSettingsDialog_;
 	GameConfig exportConfig_;
 	SceneReloadDialog sceneReloadDialog_;
