@@ -262,6 +262,22 @@ void ControlsPanel::Draw() {
 	         "history "
 	         "and is unavailable during Play, modal operations or Scene "
 	         "gestures."},
+	        {"Missing or unreadable models",
+	         "Open and Reload Scene keep Mesh references even when a model "
+	         "cannot load. Scene and the editing Game preview draw the other "
+	         "objects. With Object Markers enabled, an unreadable visible "
+	         "model has a red origin marker; click or box-select it, or select "
+	         "it in Hierarchy. F frames its Collider or origin. Repair the "
+	         "reference in Inspector or use Assets > Replace Mesh of "
+	         "Selection. "
+	         "After restoring the original file, Refresh Assets and Reload "
+	         "Model to retry. A successful model cache load also allows retry. "
+	         "The missing reference stays in scene saves and Undo/Redo. "
+	         "Scene Check lists missing files; Console reports loading errors. "
+	         "A previously cached valid model can remain visible. Play checks "
+	         "that visible models load before starting; failed Play keeps "
+	         "editing. Empty scenes still play. Invalid scene JSON keeps the "
+	         "current scene unchanged. Export still requires asset files."},
 	        {"Assets > Replace Mesh of Selection",
 	         "Replace every selected object's existing Mesh with the chosen "
 	         "model in one Undo/Redo operation. Use the button or model row "

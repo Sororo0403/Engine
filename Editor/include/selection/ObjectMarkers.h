@@ -11,7 +11,7 @@ struct SceneObject;
 struct Ray;
 
 /// <summary>
-/// 描画用のMeshとMesh Rendererがそろっていない物体の原点をScene上に表示し、目印の範囲で選択を判定する
+/// 描画用の形状がない物体と、モデルを読み込めない物体の原点をScene上に表示して選択を判定する
 /// </summary>
 class ObjectMarkers {
   public:
@@ -21,20 +21,23 @@ class ObjectMarkers {
 	/// <summary>
 	/// 原点を囲む固定サイズの目印の8頂点を作る。Colliderの大きさや表示状態には依存しない
 	/// </summary>
-	/// <param name="object">描画用のMeshとMesh Rendererがそろっていない編集物体</param>
+	/// <param name="object">編集物体。描画用の形状がある場合はmissingModelも指定する</param>
 	/// <param name="corners">成功時に設定する範囲。失敗時は保持する</param>
-	/// <returns>true:取得成功 false:描画用のMeshとMesh Rendererあり、変形が無効、または範囲を表現できない</returns>
-	static bool GetBounds(const SceneObject &object, Corners &corners);
+	/// <param name="missingModel">更新済みの描画でモデルの読み込みを省略しているか</param>
+	/// <returns>true:取得成功 false:描画可能なモデルあり、変形が無効、または範囲を表現できない</returns>
+	static bool GetBounds(const SceneObject &object, Corners &corners,
+	                      bool missingModel = false);
 
 	/// <summary>
-	/// 目印をCamera・Collider・空の物体の色で組み立てる。選択中は強調色を使う
+	/// 目印をCamera・Collider・空の物体の色で組み立てる。読み込めないモデルは赤、選択中は強調色
 	/// </summary>
-	/// <param name="object">描画用のMeshとMesh Rendererがそろっていない編集物体</param>
+	/// <param name="object">編集物体。描画用の形状がある場合はmissingModelも指定する</param>
 	/// <param name="selected">現在選択されているか</param>
 	/// <param name="lines">成功時に設定する線。失敗時は保持する</param>
+	/// <param name="missingModel">モデルの読み込みを省略している物体か</param>
 	/// <returns>true:作成成功 false:表示対象なし、または無効な範囲</returns>
 	static bool BuildLines(const SceneObject &object, bool selected,
-	                       Lines &lines);
+	                       Lines &lines, bool missingModel = false);
 
 	/// <summary>
 	/// モデルより手前で最初に交差する目印を探す。同距離の目印では小さいIDを優先する
@@ -42,9 +45,11 @@ class ObjectMarkers {
 	/// <param name="scene">選択する編集シーン。値は変更しない</param>
 	/// <param name="ray">正規化済みのワールド座標レイ。最大距離を超える物体は除く</param>
 	/// <param name="modelDistance">モデルまでの距離。モデルに当たらない場合はレイの最大距離</param>
+	/// <param name="renderer">モデルの省略状態を取得する更新済みの描画先。nullptrなら形状のない物体だけ</param>
 	/// <returns>最も手前の目印の物体ID。交差なし、または引数が無効な場合は0</returns>
 	static SceneObjectId Pick(const Scene &scene, const Ray &ray,
-	                          float modelDistance);
+	                          float modelDistance,
+	                          const SceneRenderer *renderer = nullptr);
 
 	/// <summary>
 	/// 全ての有効な目印をScene描画へ登録する。Game描画には使用しない

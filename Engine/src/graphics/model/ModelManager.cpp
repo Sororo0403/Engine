@@ -57,6 +57,7 @@ struct ModelManager::Impl {
 
 	bool finalized = false;
 	std::uint64_t reloadRevision = 0;
+	std::uint64_t cacheRevision = 0;
 };
 
 ModelManager::ModelManager(D3D12Graphics &graphics)
@@ -71,12 +72,41 @@ ModelHandle ModelManager::Load(const std::filesystem::path &filePath) {
 	return LoadFile(filePath, false);
 }
 
+ModelHandle
+ModelManager::FindLoaded(const std::filesystem::path &filePath) const {
+	if (impl_->finalized || filePath.empty() ||
+	    (filePath.has_root_path() && !filePath.is_absolute()) ||
+	    filePath.native().find(L'\0') != std::wstring::npos) {
+		return {};
+	}
+
+	try {
+		const auto key = std::filesystem::weakly_canonical(
+		    PathUtils::ResolveFromExecutable(filePath));
+		const auto found = impl_->cache.find(key);
+		if (found == impl_->cache.end()) {
+			return {};
+		}
+
+		ModelHandle handle;
+		handle.model_ = found->second;
+		handle.graphics_ = &impl_->graphics;
+		return handle;
+	} catch (const std::filesystem::filesystem_error &) {
+		return {};
+	}
+}
+
 ModelHandle ModelManager::Reload(const std::filesystem::path &filePath) {
 	return LoadFile(filePath, true);
 }
 
 std::uint64_t ModelManager::GetReloadRevision() const {
 	return impl_->reloadRevision;
+}
+
+std::uint64_t ModelManager::GetCacheRevision() const {
+	return impl_->cacheRevision;
 }
 
 ModelHandle ModelManager::LoadFile(const std::filesystem::path &filePath,
@@ -123,6 +153,11 @@ ModelHandle ModelManager::LoadFile(const std::filesystem::path &filePath,
 			throw std::runtime_error("Model reload revision limit reached.");
 		}
 
+		if (impl_->cacheRevision ==
+		    (std::numeric_limits<std::uint64_t>::max)()) {
+			throw std::runtime_error("Model cache revision limit reached.");
+		}
+
 		// ファイルからCPU側のモデルデータを読み込む
 		ModelData data;
 
@@ -140,6 +175,7 @@ ModelHandle ModelManager::LoadFile(const std::filesystem::path &filePath,
 
 		// 初期化に成功したモデルだけをキャッシュへ登録する
 		impl_->cache.insert_or_assign(key, model);
+		++impl_->cacheRevision;
 		if (reload) {
 			++impl_->reloadRevision;
 		}

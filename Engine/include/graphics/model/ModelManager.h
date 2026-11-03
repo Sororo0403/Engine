@@ -34,6 +34,13 @@ class ModelManager {
 	ModelHandle Load(const std::filesystem::path &filePath);
 
 	/// <summary>
+	/// 読み込み済みの共有参照だけを取得する。ファイル読み込み・GPUリソース作成・エラー出力は行わない
+	/// </summary>
+	/// <param name="filePath">モデルの絶対パスまたは実行ファイル基準の相対パス</param>
+	/// <returns>読み込み済み:共有参照。それ以外・無効なパス・終了済み:空</returns>
+	ModelHandle FindLoaded(const std::filesystem::path &filePath) const;
+
+	/// <summary>
 	/// ファイルとGPUリソースを読み直し、成功した場合だけキャッシュを置き換える
 	/// </summary>
 	/// <param name="filePath">モデルの絶対パスまたは実行ファイル基準の相対パス</param>
@@ -46,6 +53,12 @@ class ModelManager {
 	/// </summary>
 	/// <returns>再読み込みによる変更の連番</returns>
 	std::uint64_t GetReloadRevision() const;
+
+	/// <summary>
+	/// 新規読み込み・再読み込みの成功で変化するキャッシュの連番を取得する
+	/// </summary>
+	/// <returns>共有キャッシュの変更連番。キャッシュ取得と読み込み失敗では変化しない</returns>
+	std::uint64_t GetCacheRevision() const;
 
 	/// <summary>
 	/// キャッシュを解放して終了する。GPUの利用完了後に呼び出す

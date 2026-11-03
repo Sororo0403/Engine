@@ -13,8 +13,9 @@
 #include <utility>
 
 SceneRenderer::SceneRenderer(const Scene &scene, ModelManager &models,
-                             RenderSystem &render)
-    : scene_(scene), models_(models), render_(render) {
+                             RenderSystem &render, ModelLoadFailure failure)
+    : scene_(scene), models_(models), render_(render),
+      modelLoadFailure_(failure) {
 }
 
 SceneRenderer::~SceneRenderer() = default;
@@ -104,6 +105,12 @@ bool SceneRenderer::SynchronizeObjects() {
 		auto it = objects_.try_emplace(id).first;
 		Object &renderObject = it->second;
 
+		if (renderObject.unavailable &&
+		    renderObject.modelPath == object.mesh->modelPath &&
+		    renderObject.failedCacheRevision == models_.GetCacheRevision()) {
+			continue;
+		}
+
 		bool needsCreate = !world_->Contains(renderObject.handle) ||
 		                   renderObject.modelPath != object.mesh->modelPath;
 		ModelHandle model;
@@ -116,6 +123,19 @@ bool SceneRenderer::SynchronizeObjects() {
 			}
 
 			if (!model) {
+				if (modelLoadFailure_ == ModelLoadFailure::SKIP) {
+					// 参照とシーンの値は保持し、古い形状を描き続けない。
+					auto path = object.mesh->modelPath;
+					world_->DestroyObject(renderObject.handle);
+					renderObject.modelPath = std::move(path);
+					renderObject.handle = {};
+					renderObject.model = {};
+					renderObject.unavailable = true;
+					renderObject.failedCacheRevision =
+					    models_.GetCacheRevision();
+					continue;
+				}
+
 				Logger::Error(std::format(
 				    "SceneRenderer: 物体{}のモデル読み込みに失敗しました。",
 				    id));
@@ -142,6 +162,7 @@ bool SceneRenderer::SynchronizeObjects() {
 			renderObject.modelPath = std::move(modelPath);
 			renderObject.handle = handle;
 			renderObject.model = model;
+			renderObject.unavailable = false;
 		}
 
 		for (std::size_t slot = 0;
@@ -188,6 +209,14 @@ void SceneRenderer::Finalize() {
 	world_.reset();
 	objects_.clear();
 	modelRevision_ = 0;
+}
+
+bool SceneRenderer::IsModelUnavailable(SceneObjectId id) const {
+	const auto *object = scene_.FindObject(id);
+	const auto found = objects_.find(id);
+	return object && object->IsRenderable() && found != objects_.end() &&
+	       found->second.unavailable &&
+	       found->second.modelPath == object->mesh->modelPath;
 }
 
 bool SceneRenderer::SetCameraPose(const CameraPose &pose) {

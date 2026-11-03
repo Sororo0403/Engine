@@ -9,8 +9,9 @@
 #include <algorithm>
 #include <cmath>
 
-bool ObjectMarkers::GetBounds(const SceneObject &object, Corners &corners) {
-	if ((object.HasMesh() && object.meshRenderer) ||
+bool ObjectMarkers::GetBounds(const SceneObject &object, Corners &corners,
+                              bool missingModel) {
+	if ((object.HasMesh() && object.meshRenderer && !missingModel) ||
 	    !TransformUtils::IsValid(object.transform)) {
 		return false;
 	}
@@ -38,15 +39,16 @@ bool ObjectMarkers::GetBounds(const SceneObject &object, Corners &corners) {
 }
 
 bool ObjectMarkers::BuildLines(const SceneObject &object, bool selected,
-                               Lines &lines) {
+                               Lines &lines, bool missingModel) {
 	Corners corners;
 
-	if (!GetBounds(object, corners)) {
+	if (!GetBounds(object, corners, missingModel)) {
 		return false;
 	}
 
 	const DirectX::XMFLOAT4 color =
 	    selected          ? DirectX::XMFLOAT4{1.0f, 0.85f, 0.15f, 1.0f}
+	    : missingModel    ? DirectX::XMFLOAT4{1.0f, 0.2f, 0.2f, 1.0f}
 	    : object.camera   ? DirectX::XMFLOAT4{0.2f, 0.85f, 1.0f, 1.0f}
 	    : object.collider ? DirectX::XMFLOAT4{0.2f, 1.0f, 0.3f, 1.0f}
 	                      : DirectX::XMFLOAT4{0.85f, 0.85f, 0.85f, 1.0f};
@@ -66,7 +68,8 @@ bool ObjectMarkers::BuildLines(const SceneObject &object, bool selected,
 }
 
 SceneObjectId ObjectMarkers::Pick(const Scene &scene, const Ray &ray,
-                                  float modelDistance) {
+                                  float modelDistance,
+                                  const SceneRenderer *renderer) {
 	const double length = std::hypot(static_cast<double>(ray.direction.x),
 	                                 static_cast<double>(ray.direction.y),
 	                                 static_cast<double>(ray.direction.z));
@@ -88,7 +91,8 @@ SceneObjectId ObjectMarkers::Pick(const Scene &scene, const Ray &ray,
 	for (const auto &[id, object] : scene.GetObjects()) {
 		Corners corners;
 
-		if (!GetBounds(object, corners)) {
+		if (!GetBounds(object, corners,
+		               renderer && renderer->IsModelUnavailable(id))) {
 			continue;
 		}
 
@@ -121,7 +125,7 @@ bool ObjectMarkers::Update(SceneRenderer &renderer, const Scene &scene,
 		if (!BuildLines(object,
 		                std::find(selected.begin(), selected.end(), id) !=
 		                    selected.end(),
-		                lines)) {
+		                lines, renderer.IsModelUnavailable(id))) {
 			continue;
 		}
 

@@ -5,8 +5,9 @@
 #include "physics/BoxColliderUtils.h"
 #include "scene/SceneObject.h"
 
-bool ObjectFrameBounds::Get(const SceneObject &object, Corners &corners) {
-	if ((object.HasMesh() && object.meshRenderer) ||
+bool ObjectFrameBounds::Get(const SceneObject &object, Corners &corners,
+                            bool missingModel) {
+	if ((object.HasMesh() && object.meshRenderer && !missingModel) ||
 	    !TransformUtils::IsValid(object.transform)) {
 		return false;
 	}

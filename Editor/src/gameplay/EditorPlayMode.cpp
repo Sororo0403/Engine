@@ -1,5 +1,6 @@
 #include "gameplay/EditorPlayMode.h"
 #include "gameplay/GameplayInput.h"
+#include "graphics/model/ModelManager.h"
 #include "graphics/render/RenderSystem.h"
 #include "graphics/render/RenderTexture.h"
 #include "graphics/ui/ImGuiSystem.h"
@@ -12,7 +13,9 @@
 
 EditorPlayMode::EditorPlayMode(ModelManager &models, RenderSystem &render)
     : renderer_(session_.GetScene(), models, render),
-      previewRenderer_(preview_.GetScene(), models, render), render_(render) {
+      previewRenderer_(preview_.GetScene(), models, render,
+                       SceneRenderer::ModelLoadFailure::SKIP),
+      render_(render), models_(models) {
 }
 
 EditorPlayMode::~EditorPlayMode() = default;
@@ -161,6 +164,18 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
 	if (!config.input.IsValid()) {
 		error = "Choose different supported gameplay keys before Play.";
 		return false;
+	}
+
+	for (const auto &[id, object] : scene.GetObjects()) {
+		if (object.IsRenderable() && !models_.Load(object.mesh->modelPath)) {
+			error = std::format("Could not load the model for object \"{}\" "
+			                    "(ID {}). Repair its Mesh before Play.",
+			                    object.name, id);
+			if (invalidObject) {
+				*invalidObject = id;
+			}
+			return false;
+		}
 	}
 
 	if (!session_.Start(scene, error, fallbackPose, invalidObject)) {

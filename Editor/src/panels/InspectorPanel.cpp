@@ -5,6 +5,7 @@
 #include "assets/ModelAssetDragDrop.h"
 #include "camera/CameraInspector.h"
 #include "gameplay/GameplayInspector.h"
+#include "graphics/model/ModelManager.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "history/EditorHistory.h"
 #include "math/TransformUtils.h"
@@ -128,6 +129,8 @@ void InspectorPanel::Clear() {
 	objectRequest_ = {};
 	colliderFitRequest_ = 0;
 	assetRevealPath_.clear();
+	slotModelPath_.clear();
+	slotModelRevision_ = 0;
 }
 
 const InspectorPanel::ObjectRequest &InspectorPanel::GetObjectRequest() const {
@@ -454,6 +457,16 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 		}
 
 		if (models && assets) {
+			if (object->HasMesh() &&
+			    !models->FindLoaded(object->mesh->modelPath) &&
+			    (slotModelPath_ != object->mesh->modelPath ||
+			     slotModelRevision_ != models->GetCacheRevision())) {
+				auto attempted = object->mesh->modelPath;
+				models->Load(attempted);
+				slotModelPath_.swap(attempted);
+				slotModelRevision_ = models->GetCacheRevision();
+			}
+
 			TextureSlotInspector::Request request;
 			changed |=
 			    TextureSlotInspector{}.Draw(ui, inspectedObjectId, *object,

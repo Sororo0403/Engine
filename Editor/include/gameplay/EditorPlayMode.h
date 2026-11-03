@@ -53,11 +53,11 @@ class EditorPlayMode {
 	/// 編集シーンを変更せずに再生を始める
 	/// </summary>
 	/// <param name="scene">編集シーン</param>
-	/// <param name="error">追加済みコンポーネントの設定や配置エラー</param>
+	/// <param name="error">追加済みコンポーネントの設定・配置・表示するモデルの読み込みエラー</param>
 	/// <param name="fallbackPose">Primary Cameraがない場合に使用するSceneビューの姿勢</param>
 	/// <param name="config">出力設定。Gameビューの描画幅・高さ・操作キー・移動基準を開始時に保持する</param>
-	/// <param name="invalidObject">指定時は設定に問題がある物体IDを設定する。成功時や描画サイズ・操作キーの失敗では0</param>
-	/// <returns>true:開始成功 false:設定が無効</returns>
+	/// <param name="invalidObject">指定時は設定やモデル読み込みに問題がある物体IDを設定する。成功時や描画サイズ・操作キーの失敗では0</param>
+	/// <returns>true:開始成功 false:設定が無効、または表示するモデルを読み込めない</returns>
 	bool Start(const Scene &scene, std::string &error,
 	           const CameraPose &fallbackPose = CameraPose{},
 	           const GameConfig &config = GameConfig{},
@@ -140,6 +140,7 @@ class EditorPlayMode {
 	SceneRenderer renderer_;
 	SceneRenderer previewRenderer_;
 	RenderSystem &render_;
+	ModelManager &models_;
 	std::unique_ptr<RenderTexture> texture_;
 	ViewportInput viewport_{};
 	GameInputBindings inputBindings_;

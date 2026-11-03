@@ -28,14 +28,21 @@ struct Ray;
 class SceneRenderer {
   public:
 	/// <summary>
+	/// 読み込み不能なモデルに対する描画更新の扱い
+	/// </summary>
+	enum class ModelLoadFailure { FAIL, SKIP };
+
+	/// <summary>
 	/// 描画対象のシーンと共通機能への参照を保持する。
 	/// GPUリソースは作成しない
 	/// </summary>
 	/// <param name="scene">描画対象。このクラスより長く保持すること</param>
 	/// <param name="models">モデル管理。このクラスより長く保持すること</param>
 	/// <param name="render">描画機能。このクラスより長く保持すること</param>
+	/// <param name="failure">FAIL:読み込み失敗で更新失敗 SKIP:参照を保持して対象の描画だけ省略</param>
 	SceneRenderer(const Scene &scene, ModelManager &models,
-	              RenderSystem &render);
+	              RenderSystem &render,
+	              ModelLoadFailure failure = ModelLoadFailure::FAIL);
 
 	~SceneRenderer();
 
@@ -68,6 +75,14 @@ class SceneRenderer {
 	/// 描画リソースを解放する。GPUの利用完了後に呼び出す
 	/// </summary>
 	void Finalize();
+
+	/// <summary>
+	/// 最後の更新で、モデルを読み込めず描画を省略した物体か確認する
+	/// </summary>
+	/// <param name="id">シーンの物体ID</param>
+	/// <returns>true:SKIPで省略中 false:描画可能・非表示・対象なし・まだ更新されていない</returns>
+	/// <remarks>キャッシュが追加・再読み込みされた後の更新で再試行する。同じ失敗を毎フレーム繰り返さない</remarks>
+	bool IsModelUnavailable(SceneObjectId id) const;
 
 	/// <summary>
 	/// シーンの描画に使用するカメラの姿勢を設定する。
@@ -148,6 +163,8 @@ class SceneRenderer {
 		std::filesystem::path modelPath;
 		RenderObjectHandle handle;
 		ModelHandle model;
+		bool unavailable = false;
+		std::uint64_t failedCacheRevision = 0;
 	};
 
 	/// <summary>
@@ -160,6 +177,7 @@ class SceneRenderer {
 	const Scene &scene_;
 	ModelManager &models_;
 	RenderSystem &render_;
+	const ModelLoadFailure modelLoadFailure_;
 
 	std::unique_ptr<RenderWorld> world_;
 

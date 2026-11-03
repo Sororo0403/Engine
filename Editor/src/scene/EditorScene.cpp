@@ -41,7 +41,8 @@
 EditorScene::EditorScene(const EngineContext &context)
     : ui_(context.ui), input_(context.input), models_(context.models),
       materials_(context.render.GetMaterials()),
-      renderer_(document_.GetScene(), context.models, context.render),
+      renderer_(document_.GetScene(), context.models, context.render,
+                SceneRenderer::ModelLoadFailure::SKIP),
       playMode_(context.models, context.render),
       playSceneRenderer_(playMode_.GetSession().GetScene(), context.models,
                          context.render),
@@ -2668,21 +2669,7 @@ void EditorScene::UpdateDialogs() {
 }
 
 void EditorScene::OpenScene(const std::filesystem::path &path) {
-	const bool opened = document_.Open(path, [this](const Scene &candidate) {
-		for (const auto &[id, object] : candidate.GetObjects()) {
-			// 非表示のモデルは、再表示を要求されたときに読み込む
-			if (object.IsRenderable() &&
-			    !models_.Load(object.mesh->modelPath)) {
-				Logger::Error(
-				    std::format("EditorScene::OpenScene: "
-				                "物体{}のモデルを読み込めません: {}",
-				                id, PathUtils::ToUtf8(object.mesh->modelPath)));
-				return false;
-			}
-		}
-
-		return true;
-	});
+	const bool opened = document_.Open(path);
 
 	if (!opened) {
 		ShowError("Could not open the scene. The current scene was kept. See "
@@ -3098,19 +3085,12 @@ bool EditorScene::ChangeVisibility(std::span<const SceneObjectId> objectIds,
 	try {
 		FinishEdit();
 
-		// 全モデルを確認してから、一括変更を履歴へ反映する
+		// 全対象を確認してから、一括変更を履歴へ反映する
 		for (const auto id : objectIds) {
 			const auto *object = document_.GetScene().FindObject(id);
 
 			if (!object) {
 				ShowError("Could not find an object to change its visibility.");
-				return false;
-			}
-
-			if (visible && object->IsHidden() && object->HasMesh() &&
-			    !models_.Load(object->mesh->modelPath)) {
-				ShowError(
-				    "Could not load a model. Visibility was kept unchanged.");
 				return false;
 			}
 		}
@@ -3305,7 +3285,7 @@ bool EditorScene::ApplySceneSelection(
 		    renderer.CreatePickingRay(request.minimum.x, request.minimum.y,
 		                              ray)) {
 			if (const auto marker =
-			        ObjectMarkers::Pick(scene, ray, modelDistance)) {
+			        ObjectMarkers::Pick(scene, ray, modelDistance, &renderer)) {
 				picked = marker;
 			}
 		}
@@ -3334,10 +3314,11 @@ bool EditorScene::ApplySceneSelection(
 
 	for (const auto &[id, object] : scene.GetObjects()) {
 		std::array<DirectX::XMFLOAT3, 8> corners;
+		const bool missingModel = renderer.IsModelUnavailable(id);
 		const bool boundsReady =
-		    (!object.HasMesh() || !object.meshRenderer)
+		    (!object.HasMesh() || !object.meshRenderer || missingModel)
 		        ? showObjectMarkers_ &&
-		              ObjectMarkers::GetBounds(object, corners)
+		              ObjectMarkers::GetBounds(object, corners, missingModel)
 		        : !object.IsHidden() && renderer.GetObjectBounds(id, corners);
 
 		if (boundsReady && volume.Intersects(corners) &&
@@ -3430,9 +3411,11 @@ bool EditorScene::FrameObjects(FrameRequest request,
 
 		std::array<DirectX::XMFLOAT3, 8> corners;
 
-		const bool boundsReady = (!object.HasMesh() || !object.meshRenderer)
-		                             ? ObjectFrameBounds::Get(object, corners)
-		                             : renderer.GetObjectBounds(id, corners);
+		const bool missingModel = renderer.IsModelUnavailable(id);
+		const bool boundsReady =
+		    (!object.HasMesh() || !object.meshRenderer || missingModel)
+		        ? ObjectFrameBounds::Get(object, corners, missingModel)
+		        : renderer.GetObjectBounds(id, corners);
 
 		if (!boundsReady) {
 			continue;

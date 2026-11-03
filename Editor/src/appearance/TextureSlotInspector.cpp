@@ -26,7 +26,7 @@ bool TextureSlotInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 	{
 		const auto model = !object.HasMesh()
 		                       ? ModelHandle{}
-		                       : models.Load(object.mesh->modelPath);
+		                       : models.FindLoaded(object.mesh->modelPath);
 		const auto count = models.GetMaterialCount(model);
 
 		for (std::size_t slot = 0; slot < count; ++slot) {

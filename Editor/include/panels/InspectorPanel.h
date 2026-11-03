@@ -4,6 +4,7 @@
 #include "math/Transform.h"
 #include "scene/SceneObjectId.h"
 
+#include <cstdint>
 #include <filesystem>
 #include <optional>
 
@@ -172,4 +173,7 @@ class InspectorPanel {
 	std::filesystem::path assetRevealPath_;
 	ObjectRequest objectRequest_;
 	SceneObjectId colliderFitRequest_ = 0;
+	// 非表示のモデルも必要時に読み込み、同じ失敗はキャッシュ更新まで繰り返さない。
+	std::filesystem::path slotModelPath_;
+	std::uint64_t slotModelRevision_ = 0;
 };

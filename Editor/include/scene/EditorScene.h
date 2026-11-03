@@ -404,11 +404,11 @@ class EditorScene final : public IScene {
 	bool ReplaceSelectedMeshes(const std::filesystem::path &modelPath);
 
 	/// <summary>
-	/// 表示するモデルの読み込みを確認し、表示状態をまとめて変更する
+	/// モデルが読み込めない場合も、編集用の表示状態をまとめて変更する
 	/// </summary>
 	/// <param name="objectIds">変更する物体のID一覧</param>
 	/// <param name="visible">変更後の表示状態</param>
-	/// <returns>true:成功 false:読み込みまたは変更に失敗</returns>
+	/// <returns>true:成功 false:対象または変更が無効</returns>
 	bool ChangeVisibility(std::span<const SceneObjectId> objectIds,
 	                      bool visible);
 
