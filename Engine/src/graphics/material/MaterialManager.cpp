@@ -42,11 +42,23 @@ MaterialManager::MaterialManager(D3D12Graphics &graphics)
 MaterialManager::~MaterialManager() = default;
 
 MaterialHandle MaterialManager::LoadTexture(const std::filesystem::path &path) {
+	return LoadTextureFile(path, false);
+}
+
+MaterialHandle
+MaterialManager::ReloadTexture(const std::filesystem::path &path) {
+	return LoadTextureFile(path, true);
+}
+
+MaterialHandle
+MaterialManager::LoadTextureFile(const std::filesystem::path &path,
+                                 bool reload) {
 	Impl::Entry *previous = nullptr;
 	try {
-		if (!path.empty() &&
-		    (!PathUtils::IsImageFile(path) ||
-		     path.native().find(L'\0') != std::wstring::npos)) {
+		if ((reload && path.empty()) ||
+		    (!path.empty() &&
+		     (!PathUtils::IsImageFile(path) ||
+		      path.native().find(L'\0') != std::wstring::npos))) {
 			throw std::invalid_argument("Invalid texture path.");
 		}
 
@@ -65,8 +77,8 @@ MaterialHandle MaterialManager::LoadTexture(const std::filesystem::path &path) {
 		                      ? 0
 		                      : std::filesystem::file_size(absolute, sizeError);
 
-		if ((entry.handle || entry.failed) && entry.modified == modified &&
-		    entry.size == size) {
+		if (!reload && (entry.handle || entry.failed) &&
+		    entry.modified == modified && entry.size == size) {
 			return entry.handle;
 		}
 
@@ -101,9 +113,10 @@ MaterialHandle MaterialManager::LoadTexture(const std::filesystem::path &path) {
 		entry.failed = false;
 		return result;
 	} catch (const std::exception &error) {
-		Logger::Error(std::format("MaterialManager::LoadTexture: {}: {}",
+		Logger::Error(std::format("MaterialManager::{}: {}: {}",
+		                          reload ? "ReloadTexture" : "LoadTexture",
 		                          PathUtils::ToUtf8(path), error.what()));
-		return previous ? previous->handle : MaterialHandle{};
+		return !reload && previous ? previous->handle : MaterialHandle{};
 	}
 }
 

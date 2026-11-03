@@ -28,6 +28,7 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	selectedPath_.clear();
 	instanceSelectionPath_.clear();
 	modelReloadPath_.clear();
+	textureReloadPath_.clear();
 	textureUsageSelectionPath_.clear();
 	textureSelectionPath_.clear();
 	textureClearRequested_ = false;
@@ -113,6 +114,7 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
                                         bool canEditAssets) {
 	instanceSelectionPath_.clear();
 	modelReloadPath_.clear();
+	textureReloadPath_.clear();
 	textureUsageSelectionPath_.clear();
 	textureSelectionPath_.clear();
 	textureClearRequested_ = false;
@@ -285,7 +287,7 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 	const auto contentSize = ui.GetContentSize();
 	const float footerHeight = ImGui::GetTextLineHeightWithSpacing() +
 	                           ImGui::GetFrameHeightWithSpacing() *
-	                               (type_ == AssetType::TEXTURE ? 5.0f : 3.0f) +
+	                               (type_ == AssetType::TEXTURE ? 6.0f : 3.0f) +
 	                           ImGui::GetStyle().ItemSpacing.y;
 	const float listHeight = std::max(1.0f, contentSize.y - footerHeight);
 
@@ -373,6 +375,11 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 					textureSelectionPath_ = assetPath;
 				}
 
+				if (type_ == AssetType::TEXTURE &&
+				    ui.MenuItem("Reload Texture", nullptr, canEditAssets)) {
+					textureReloadPath_ = assetPath;
+				}
+
 				if (type_ == AssetType::MODEL &&
 				    ui.MenuItem("Reload Model", nullptr, canEditAssets)) {
 					modelReloadPath_ = assetPath;
@@ -439,6 +446,12 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 		if (ui.Button("Preview Image")) {
 			texturePreviewPath_ = selectedPath_;
 		}
+
+		ui.BeginDisabled(!canEditAssets);
+		if (ui.Button("Reload Texture")) {
+			textureReloadPath_ = selectedPath_;
+		}
+		ui.EndDisabled();
 
 		ui.EndDisabled();
 		ImGui::InputInt("Texture Slot", &textureSlot_);
@@ -508,6 +521,7 @@ void AssetsPanel::Clear() {
 	selectedPath_.clear();
 	instanceSelectionPath_.clear();
 	modelReloadPath_.clear();
+	textureReloadPath_.clear();
 	currentDirectory_.clear();
 	filter_.clear();
 	revealPath_.clear();
@@ -547,4 +561,8 @@ bool AssetsPanel::IsModelImportRequested() const {
 
 const std::filesystem::path &AssetsPanel::GetModelReloadRequest() const {
 	return modelReloadPath_;
+}
+
+const std::filesystem::path &AssetsPanel::GetTextureReloadRequest() const {
+	return textureReloadPath_;
 }

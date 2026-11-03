@@ -28,11 +28,28 @@ class MaterialManager {
 	MaterialHandle LoadTexture(const std::filesystem::path &path);
 
 	/// <summary>
+	/// 更新日時・サイズに関係なく画像を読み直し、成功した場合だけ共有キャッシュを置き換える
+	/// </summary>
+	/// <param name="path">画像の絶対パスまたは実行ファイル基準の相対パス。空は指定できない</param>
+	/// <returns>成功:新しい材質。失敗:空。以前のキャッシュと取得済み参照は保持する</returns>
+	/// <remarks>GPU完了後、描画命令の記録前に呼び出す。次の更新で同じ画像の使用物体へ反映する</remarks>
+	MaterialHandle ReloadTexture(const std::filesystem::path &path);
+
+	/// <summary>
 	/// キャッシュを解放する。GPU完了後、描画基盤の終了前に呼び出す
 	/// </summary>
 	void Finalize();
 
   private:
+	/// <summary>
+	/// 画像を読み込み、指定された場合は更新日時・サイズによるキャッシュ判定を省略する
+	/// </summary>
+	/// <param name="path">画像のパス。通常の読み込みだけ空を白として扱う</param>
+	/// <param name="reload">true:必ず読み直す false:変更がない場合は共有する</param>
+	/// <returns>成功:材質。失敗:強制再読み込みは空、通常は以前の有効な材質</returns>
+	MaterialHandle LoadTextureFile(const std::filesystem::path &path,
+	                               bool reload);
+
 	struct Impl;
 	std::unique_ptr<Impl> impl_;
 };

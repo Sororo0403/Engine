@@ -262,6 +262,17 @@ void ControlsPanel::Draw() {
 	         "history "
 	         "and is unavailable during Play, modal operations or Scene "
 	         "gestures."},
+	        {"Assets > Reload Texture",
+	         "Read the selected image again even when its file time and size "
+	         "have not changed. Use the button or its context menu. Success "
+	         "updates every matching image slot in Scene and Game preview, "
+	         "including hidden objects when shown and later Play sessions. "
+	         "Scene data, selection, Inspector locks and Undo history stay "
+	         "unchanged. Failed reloads keep the last valid texture; fix the "
+	         "file and retry. Ordinary file changes still reload "
+	         "automatically. "
+	         "Image Preview has its own Reload Preview button. Unavailable "
+	         "during Play, modal operations or Scene gestures."},
 	        {"Assets > Reload Model",
 	         "Reload the selected model and its linked resources after editing "
 	         "files outside Editor. Use the button or its context menu. A "

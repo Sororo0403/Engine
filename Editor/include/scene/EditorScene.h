@@ -57,6 +57,7 @@ struct ViewportInput;
 class InputSystem;
 class ImGuiSystem;
 class ModelManager;
+class MaterialManager;
 
 /// <summary>
 /// シーンの編集と、ファイル操作の進行を管理する
@@ -584,6 +585,7 @@ class EditorScene final : public IScene {
 	const ImGuiSystem &ui_;
 	const InputSystem &input_;
 	ModelManager &models_;
+	MaterialManager &materials_;
 
 	// 描画側の参照より先に宣言する
 	SceneDocument document_;

@@ -11,6 +11,7 @@
 #include "gameplay/PlayShortcuts.h"
 #include "gameplay/SampleStage.h"
 #include "graphics/model/ModelManager.h"
+#include "graphics/render/RenderSystem.h"
 #include "graphics/render/RenderTexture.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "history/EditorHistory.h"
@@ -39,6 +40,7 @@
 
 EditorScene::EditorScene(const EngineContext &context)
     : ui_(context.ui), input_(context.input), models_(context.models),
+      materials_(context.render.GetMaterials()),
       renderer_(document_.GetScene(), context.models, context.render),
       playMode_(context.models, context.render),
       playSceneRenderer_(playMode_.GetSession().GetScene(), context.models,
@@ -381,6 +383,7 @@ bool EditorScene::Update(float deltaTime) {
 	        : assetsPanel_.GetTextureSelectionRequest();
 	const auto requestedInstances = assetsPanel_.GetInstanceSelectionRequest();
 	const auto requestedModelReload = assetsPanel_.GetModelReloadRequest();
+	const auto requestedTextureReload = assetsPanel_.GetTextureReloadRequest();
 	const bool textureAssignment =
 	    assetsPanel_.IsTextureClearRequested() || !requestedTexture.empty();
 	const auto requestedTextureUsers =
@@ -602,6 +605,25 @@ bool EditorScene::Update(float deltaTime) {
 			}
 		}
 
+		if (!IsBusy() && action == EditorAction::NONE &&
+		    !requestedTextureReload.empty() &&
+		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
+			try {
+				FinishEdit();
+				if (!materials_.ReloadTexture(requestedTextureReload)) {
+					ShowError(
+					    "Could not reload the texture. Its previous valid "
+					    "data was kept. See the log for details.");
+				}
+			} catch (const std::exception &exception) {
+				Logger::Error(std::format("EditorScene::ReloadTexture: {}",
+				                          exception.what()));
+				ShowError(
+				    "Could not reload the texture. Its previous valid data "
+				    "was kept. See the log for details.");
+			}
+		}
+
 		if (!IsBusy() && action == EditorAction::NONE && textureAssignment &&
 		    checkedObject == 0 && requestedTextureUsers.empty() &&
 		    requestedInstances.empty() && requestedModelPath.empty() &&
@@ -650,7 +672,8 @@ bool EditorScene::Update(float deltaTime) {
 			    requestedInstances.empty() && modelDrop.path.empty() &&
 			    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
 			    !hasObjectRequest && !textureAssignment &&
-			    requestedModelReload.empty() && checkedObject == 0 &&
+			    requestedModelReload.empty() &&
+			    requestedTextureReload.empty() && checkedObject == 0 &&
 			    requestedTextureUsers.empty() &&
 			    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 				RestoreHistory(*historyRequest);
@@ -660,7 +683,8 @@ bool EditorScene::Update(float deltaTime) {
 			    requestedInstances.empty() && modelDrop.path.empty() &&
 			    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
 			    !hasObjectRequest && !textureAssignment &&
-			    requestedModelReload.empty() && checkedObject == 0 &&
+			    requestedModelReload.empty() &&
+			    requestedTextureReload.empty() && checkedObject == 0 &&
 			    requestedTextureUsers.empty() && !historyRequest) {
 				const bool objectPanelFocused =
 				    hierarchyRequest.windowFocused ||
@@ -685,11 +709,12 @@ bool EditorScene::Update(float deltaTime) {
 	const bool inputBlocked =
 	    wasBusy || IsBusy() || action != EditorAction::NONE ||
 	    checkedObject != 0 || textureAssignment ||
-	    !requestedModelReload.empty() || !requestedModelPath.empty() ||
-	    !requestedInstances.empty() || !requestedTextureUsers.empty() ||
-	    !modelDrop.path.empty() || modelRequest.objectId != 0 ||
-	    visibilityRequest.objectId != 0 || colliderFitRequest != 0 ||
-	    hasObjectRequest || historyRequest.has_value() ||
+	    !requestedModelReload.empty() || !requestedTextureReload.empty() ||
+	    !requestedModelPath.empty() || !requestedInstances.empty() ||
+	    !requestedTextureUsers.empty() || !modelDrop.path.empty() ||
+	    modelRequest.objectId != 0 || visibilityRequest.objectId != 0 ||
+	    colliderFitRequest != 0 || hasObjectRequest ||
+	    historyRequest.has_value() ||
 	    hierarchyRequest.action != HierarchyPanel::Action::NONE;
 
 	ViewportInput viewport = sceneViewPanel_.GetInput();
