@@ -960,6 +960,14 @@ void ControlsPanel::Draw() {
 	         "text-input guards still apply; Escape closes Play or the game. "
 	         "Settings are saved when Editor closes. Old configurations use "
 	         "WASD and Space."},
+	        {"File > Import Game Scene",
+	         "Choose an exported game's game.json and a new Assets folder. "
+	         "Import its startup scene and referenced models, buffers and "
+	         "images as a new unsaved scene. Existing Assets folders and "
+	         "the source package are kept; failed copies remove only their "
+	         "own files. Current scene changes require save confirmation. "
+	         "Game window and input settings are kept. Save As chooses a "
+	         "new scene file; import does not add the package to Open Recent."},
 	        {"File > Export Game",
 	         "Choose a new folder, game title and window size. Build Release "
 	         "first. Export keeps the active scene and saved state; run "

@@ -71,6 +71,14 @@ void SceneDocument::New() {
 	history_.Reset();
 }
 
+void SceneDocument::SetUntitled() {
+	filePath_.clear();
+	savedText_.clear();
+	error_.clear();
+	history_.Reset();
+	history_.Invalidate();
+}
+
 bool SceneDocument::Open(const std::filesystem::path &filePath,
                          const std::function<bool(const Scene &)> &validate) {
 	try {

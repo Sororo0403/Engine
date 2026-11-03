@@ -392,6 +392,8 @@ exit /b 0</Command>
     <ClCompile Include="src\assets\ModelImporter.cpp" />
     <ClInclude Include="include\assets\SceneImporter.h" />
     <ClCompile Include="src\assets\SceneImporter.cpp" />
+    <ClInclude Include="include\dialogs\SceneImportDialog.h" />
+    <ClCompile Include="src\dialogs\SceneImportDialog.cpp" />
     <ClInclude Include="include\dialogs\ModelImportDialog.h" />
     <ClCompile Include="src\dialogs\ModelImportDialog.cpp" />
     <ClInclude Include="include\files\OutputDirectory.h" />

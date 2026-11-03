@@ -55,7 +55,9 @@ void FileDialog::Show(FileDialogMode mode,
 
 FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 	const char *title =
-	    filter_ == FileDialogFilter::MODEL   ? "Open Model###FileDialog"
+	    filter_ == FileDialogFilter::GAME_CONFIG
+	        ? "Open Game Configuration###FileDialog"
+	    : filter_ == FileDialogFilter::MODEL ? "Open Model###FileDialog"
 	    : filter_ == FileDialogFilter::IMAGE ? "Open Image###FileDialog"
 	    : mode_ == FileDialogMode::OPEN      ? "Open Scene###FileDialog"
 	    : mode_ == FileDialogMode::SAVE_COPY ? "Save Copy###FileDialog"

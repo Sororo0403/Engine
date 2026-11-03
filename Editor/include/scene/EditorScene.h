@@ -11,6 +11,7 @@
 #include "dialogs/ModelImportDialog.h"
 #include "dialogs/ObjectArrayDialog.h"
 #include "dialogs/SaveChangesDialog.h"
+#include "dialogs/SceneImportDialog.h"
 #include "dialogs/SceneReloadDialog.h"
 #include "dialogs/TextureImportDialog.h"
 #include "gameplay/CharacterJumpPreview.h"
@@ -128,6 +129,7 @@ class EditorScene final : public IScene {
 		SAVE,
 		SAVE_AS,
 		SAVE_COPY,
+		IMPORT_SCENE,
 		EXPORT_GAME,
 		GAME_SETTINGS,
 		RELOAD_SCENE,
@@ -211,6 +213,7 @@ class EditorScene final : public IScene {
 		SAVE_COPY_FILE,
 		IMPORT_TEXTURE,
 		IMPORT_MODEL,
+		IMPORT_SCENE,
 		CREATE_ASSET_FOLDER,
 		EXPORT_GAME,
 		GAME_SETTINGS,
@@ -255,7 +258,7 @@ class EditorScene final : public IScene {
 	void ExecutePendingAction();
 
 	/// <summary>
-	/// 保留中のNew・Open・Exitに対してシーンの保存を確認し、変更がなければ操作を続ける
+	/// 保留中のNew・Open・Import・Exitに対してシーンの保存を確認し、変更がなければ操作を続ける
 	/// </summary>
 	void ConfirmSceneChanges();
 
@@ -657,6 +660,7 @@ class EditorScene final : public IScene {
 	FileDialog fileDialog_;
 	TextureImportDialog textureImportDialog_;
 	ModelImportDialog modelImportDialog_;
+	SceneImportDialog sceneImportDialog_;
 	AssetFolderDialog assetFolderDialog_;
 	GameExportDialog exportDialog_;
 	GameSettingsDialog gameSettingsDialog_;

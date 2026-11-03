@@ -1119,6 +1119,10 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			action = EditorAction::OPEN;
 		}
 
+		if (ui_.MenuItem("Import Game Scene...", nullptr, enabled)) {
+			action = EditorAction::IMPORT_SCENE;
+		}
+
 		ui_.BeginDisabled(!enabled || recentScenes_.GetPaths().empty());
 
 		if (ui_.BeginMenu("Open Recent")) {
@@ -1760,7 +1764,9 @@ EditorScene::ReadShortcut(bool objectPanelFocused) const {
 
 void EditorScene::StartAction(EditorAction action) {
 	if (stage_ != DialogStage::IDLE || closeApproved_ ||
-	    action == EditorAction::NONE) {
+	    action == EditorAction::NONE ||
+	    (action == EditorAction::IMPORT_SCENE &&
+	     (playMode_.IsPlaying() || IsBusy()))) {
 		return;
 	}
 
@@ -1950,6 +1956,7 @@ void EditorScene::StartAction(EditorAction action) {
 	case EditorAction::NEW_SAMPLE:
 	case EditorAction::OPEN:
 	case EditorAction::OPEN_RECENT:
+	case EditorAction::IMPORT_SCENE:
 	case EditorAction::EXIT:
 		// 保存確認が終わるまで、実際の操作は保留する
 		pendingAction_ = action;
@@ -2100,6 +2107,18 @@ void EditorScene::ExecutePendingAction() {
 
 		return;
 	}
+
+	case EditorAction::IMPORT_SCENE:
+		try {
+			sceneImportDialog_.Show(assets_, assetsPanel_.GetOpenDirectory());
+			stage_ = DialogStage::IMPORT_SCENE;
+		} catch (const std::exception &error) {
+			Logger::Error(
+			    std::format("EditorScene::ImportScene: {}", error.what()));
+			ShowError(
+			    "Could not prepare scene import. See the log for details.");
+		}
+		return;
 
 	case EditorAction::OPEN:
 		fileDialog_.Show(FileDialogMode::OPEN, document_.GetFilePath());
@@ -2483,6 +2502,35 @@ void EditorScene::UpdateDialogs() {
 				    assetFolderDialog_.GetCreatedDirectory());
 			}
 		} else if (result == AssetFolderResult::CANCELLED) {
+			stage_ = DialogStage::IDLE;
+		}
+		return;
+	}
+
+	case DialogStage::IMPORT_SCENE: {
+		const auto result = sceneImportDialog_.Draw(ui_, document_.GetScene());
+		if (result == SceneImportResult::ACCEPTED) {
+			document_.SetUntitled();
+			sceneCheckPanel_.Reset();
+			clipboard_.DetachExternalReferences();
+			frameRequest_ = FrameRequest::NONE;
+			frameObject_ = 0;
+			gizmo_.Cancel();
+			gizmoEditActive_ = false;
+			selection_.Clear();
+			cameraController_.Reset();
+			hierarchyPanel_.Clear();
+			inspectorPanel_.Clear();
+			stage_ = DialogStage::IDLE;
+			if (!assets_.Refresh()) {
+				ShowError(
+				    "The scene was imported, but Assets could not refresh: " +
+				    assets_.GetError());
+			} else {
+				assetsPanel_.RequestOpenDirectory(
+				    sceneImportDialog_.GetCreatedDirectory());
+			}
+		} else if (result == SceneImportResult::CANCELLED) {
 			stage_ = DialogStage::IDLE;
 		}
 		return;

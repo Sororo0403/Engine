@@ -58,6 +58,12 @@ class SceneDocument {
 	void New();
 
 	/// <summary>
+	/// 現在のシーンを保持し、保存先と編集履歴を切り離して未保存の新規シーンとして扱う
+	/// </summary>
+	/// <remarks>取り込みなどでシーンを置き換えた後に呼ぶ。空のシーンも保存確認の対象にする</remarks>
+	void SetUntitled();
+
+	/// <summary>
 	/// 候補シーンを読み込み、事前確認の成功後に反映する。失敗時は現在の状態を保持する
 	/// </summary>
 	/// <param name="filePath">読み込むファイルのパス</param>
