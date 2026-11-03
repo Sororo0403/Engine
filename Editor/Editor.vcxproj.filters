@@ -98,6 +98,9 @@
     <ClCompile Include="src\dialogs\FileDialog.cpp">
       <Filter>src\dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="src\scene\SceneObjects.cpp">
+      <Filter>src\scene</Filter>
+    </ClCompile>
     <ClCompile Include="src\scene\SceneDocument.cpp">
       <Filter>src\scene</Filter>
     </ClCompile>
@@ -200,6 +203,9 @@
       <Filter>include\dialogs</Filter>
     </ClInclude>
     <ClInclude Include="include\dialogs\FileDialog.h">
+      <Filter>include\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scene\SceneObjects.h">
       <Filter>include\dialogs</Filter>
     </ClInclude>
     <ClInclude Include="include\scene\SceneDocument.h">

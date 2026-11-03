@@ -135,6 +135,11 @@ bool SceneDocument::Save() {
 }
 
 bool SceneDocument::SaveCopy(const std::filesystem::path &filePath) {
+	return SaveCopy(filePath, scene_);
+}
+
+bool SceneDocument::SaveCopy(const std::filesystem::path &filePath,
+                             const Scene &snapshot) {
 	try {
 		const auto resolvedPath = PathUtils::ResolveFromExecutable(filePath);
 		// 書き込み用の一時ファイルも、現在の保存先と別のファイルであることを確認する
@@ -153,7 +158,7 @@ bool SceneDocument::SaveCopy(const std::filesystem::path &filePath) {
 		}
 
 		history_.CommitEdit();
-		if (!SceneSerializer::Save(scene_, resolvedPath)) {
+		if (!SceneSerializer::Save(snapshot, resolvedPath)) {
 			error_ = "Could not save a scene copy. See the log for details.";
 			return false;
 		}

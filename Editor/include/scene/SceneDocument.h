@@ -93,6 +93,14 @@ class SceneDocument {
 	bool SaveCopy(const std::filesystem::path &filePath);
 
 	/// <summary>
+	/// 編集を確定し、指定スナップショットを別ファイルへ保存する。編集中のシーンと保存地点は保持する
+	/// </summary>
+	/// <param name="filePath">コピー先。現在の保存先や、その一時ファイルの別名は使用できない</param>
+	/// <param name="snapshot">選択物体などを準備した独立したシーン。素材ファイルはコピーしない</param>
+	/// <returns>true:成功 false:コピー先・データが無効、または書き込み失敗</returns>
+	bool SaveCopy(const std::filesystem::path &filePath, const Scene &snapshot);
+
+	/// <summary>
 	/// 編集中のシーンに対応する履歴を取得する
 	/// </summary>
 	/// <returns>編集履歴への参照</returns>
