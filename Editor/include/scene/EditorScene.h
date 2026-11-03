@@ -203,6 +203,7 @@ class EditorScene final : public IScene {
 	enum class FrameRequest {
 		NONE,
 		SELECTED,
+		ISSUES,
 		ALL,
 		RESPAWN,
 		COLLIDER,

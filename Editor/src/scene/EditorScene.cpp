@@ -348,13 +348,20 @@ bool EditorScene::Update(float deltaTime) {
 
 	ui_.BeginDisabled(wasBusy);
 
-	const auto checkedObject =
+	auto checkedRequest =
 	    sceneCheckPanel_.Draw(ui_, scene, cameraController_.GetPose());
+	const bool hasCheckRequest = !checkedRequest.objectIds.empty();
 
-	if (!wasBusy && checkedObject != 0) {
+	if (!wasBusy && hasCheckRequest) {
 		FinishEdit();
-		selection_.SelectOnly(checkedObject);
-		hierarchyPanel_.RequestReveal(checkedObject);
+		if (selection_.Set(std::move(checkedRequest.objectIds))) {
+			hierarchyPanel_.RequestReveal(selection_.GetActiveId());
+			if (checkedRequest.frame) {
+				frameRequest_ = FrameRequest::ISSUES;
+				ImGui::SetWindowCollapsed("Scene", false);
+				ImGui::SetWindowFocus("Scene");
+			}
+		}
 	}
 
 	const auto hierarchyRequest = hierarchyPanel_.Draw(
@@ -685,7 +692,7 @@ bool EditorScene::Update(float deltaTime) {
 		}
 
 		if (!IsBusy() && action == EditorAction::NONE && textureAssignment &&
-		    checkedObject == 0 && requestedTextureUsers.empty() &&
+		    !hasCheckRequest && requestedTextureUsers.empty() &&
 		    requestedSceneAppend.empty() && requestedInstances.empty() &&
 		    requestedModelPath.empty() && !hasAssetDrop &&
 		    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
@@ -735,7 +742,7 @@ bool EditorScene::Update(float deltaTime) {
 			    !hasObjectRequest && !textureAssignment &&
 			    requestedModelReload.empty() &&
 			    requestedMeshReplacement.empty() &&
-			    requestedTextureReload.empty() && checkedObject == 0 &&
+			    requestedTextureReload.empty() && !hasCheckRequest &&
 			    requestedTextureUsers.empty() && requestedSceneAppend.empty() &&
 			    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 				RestoreHistory(*historyRequest);
@@ -747,7 +754,7 @@ bool EditorScene::Update(float deltaTime) {
 			    !hasObjectRequest && !textureAssignment &&
 			    requestedModelReload.empty() &&
 			    requestedMeshReplacement.empty() &&
-			    requestedTextureReload.empty() && checkedObject == 0 &&
+			    requestedTextureReload.empty() && !hasCheckRequest &&
 			    requestedTextureUsers.empty() && requestedSceneAppend.empty() &&
 			    !historyRequest) {
 				const bool objectPanelFocused =
@@ -772,7 +779,7 @@ bool EditorScene::Update(float deltaTime) {
 
 	const bool inputBlocked =
 	    wasBusy || IsBusy() || action != EditorAction::NONE ||
-	    checkedObject != 0 || textureAssignment ||
+	    hasCheckRequest || textureAssignment ||
 	    !requestedMeshReplacement.empty() || !requestedModelReload.empty() ||
 	    !requestedTextureReload.empty() || !requestedModelPath.empty() ||
 	    !requestedInstances.empty() || !requestedTextureUsers.empty() ||
@@ -3886,18 +3893,25 @@ bool EditorScene::FrameObjects(FrameRequest request,
 	bool found = false;
 
 	for (const auto &[id, object] : scene.GetObjects()) {
-		if ((object.IsHidden() && object.HasMesh()) ||
-		    (request == FrameRequest::SELECTED && !selection.Contains(id))) {
+		if ((object.IsHidden() && object.HasMesh() &&
+		     request != FrameRequest::ISSUES) ||
+		    ((request == FrameRequest::SELECTED ||
+		      request == FrameRequest::ISSUES) &&
+		     !selection.Contains(id))) {
 			continue;
 		}
 
 		std::array<DirectX::XMFLOAT3, 8> corners;
 
 		const bool missingModel = renderer.IsModelUnavailable(id);
-		const bool boundsReady =
+		bool boundsReady =
 		    (!object.HasMesh() || !object.meshRenderer || missingModel)
 		        ? ObjectFrameBounds::Get(object, corners, missingModel)
 		        : renderer.GetObjectBounds(id, corners);
+		// 非表示・読み込み不能なモデルも、検証結果からはColliderか原点へ寄せられる。
+		if (!boundsReady && request == FrameRequest::ISSUES) {
+			boundsReady = ObjectFrameBounds::Get(object, corners, true);
+		}
 
 		if (!boundsReady) {
 			continue;
