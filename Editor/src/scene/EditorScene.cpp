@@ -1,8 +1,8 @@
 #include "scene/EditorScene.h"
 
-#include "assets/MaterialUsage.h"
 #include "assets/ModelPlacement.h"
 #include "assets/ModelUsage.h"
+#include "assets/TextureUsage.h"
 #include "camera/CameraObjects.h"
 #include "camera/ObjectFrameBounds.h"
 #include "core/EngineContext.h"
@@ -43,8 +43,7 @@ EditorScene::EditorScene(const EngineContext &context)
       playMode_(context.models, context.render),
       playSceneRenderer_(playMode_.GetSession().GetScene(), context.models,
                          context.render),
-      sceneViewPanel_(context.render),
-      materialPreviewPanel_(context.models, context.render) {
+      sceneViewPanel_(context.render) {
 }
 
 EditorScene::~EditorScene() = default;
@@ -93,7 +92,6 @@ bool EditorScene::Initialize() {
 
 	stage_ = DialogStage::IDLE;
 	pendingAction_ = EditorAction::NONE;
-	pendingMaterialPath_.clear();
 	exitQueued_ = false;
 	closeApproved_ = false;
 	errorOpenRequested_ = false;
@@ -354,16 +352,20 @@ bool EditorScene::Update(float deltaTime) {
 	const auto &modelRequest = inspectorPanel_.GetModelRequest();
 	const auto &visibilityRequest = inspectorPanel_.GetVisibilityRequest();
 	const auto colliderFitRequest = inspectorPanel_.GetColliderFitRequest();
-	auto materialEditPath = inspectorPanel_.GetMaterialEditRequest();
 	ui_.EndDisabled();
 
 	if (!wasBusy && !inspectorPanel_.GetAssetRevealPath().empty()) {
 		assetsPanel_.RequestReveal(inspectorPanel_.GetAssetRevealPath());
 	}
 
-	const bool canSetTexture = !materialPanel_.GetFilePath().empty() &&
-	                           !gizmo_.IsUsing() && !gizmoEditActive_ &&
-	                           !sceneViewPanel_.IsSelecting();
+	const bool canSetTexture =
+	    HasSelection() && !gizmo_.IsUsing() && !gizmoEditActive_ &&
+	    !sceneViewPanel_.IsSelecting() &&
+	    std::ranges::all_of(selection_.GetIds(), [&](const auto id) {
+		    const auto *object = scene.FindObject(id);
+		    return object && object->meshRenderer &&
+		           object->meshRenderer->IsValid();
+	    });
 	const auto requestedModelPath =
 	    assetsPanel_.Draw(ui_, assets_, canSetTexture);
 	if (!wasBusy && !assetsPanel_.GetTexturePreviewRequest().empty()) {
@@ -373,40 +375,9 @@ bool EditorScene::Update(float deltaTime) {
 	texturePreviewPanel_.Draw(ui_);
 	const auto requestedTexture = assetsPanel_.GetTextureSelectionRequest();
 	const auto requestedInstances = assetsPanel_.GetInstanceSelectionRequest();
-
-	if (materialEditPath.empty()) {
-		materialEditPath = assetsPanel_.GetMaterialEditRequest();
-	}
-
-	const bool materialEditRequested =
-	    !materialEditPath.empty() || !requestedTexture.empty();
-	const bool canAssignMaterial =
-	    HasSelection() && !gizmo_.IsUsing() && !gizmoEditActive_ &&
-	    !sceneViewPanel_.IsSelecting() &&
-	    std::ranges::all_of(selection_.GetIds(), [&](const auto id) {
-		    const auto *object = scene.FindObject(id);
-		    return object && object->meshRenderer.has_value();
-	    });
-	materialPanel_.Draw(ui_, assets_, canAssignMaterial);
-
-	if (!wasBusy && materialPanel_.IsPreviewRequested()) {
-		materialPreviewPanel_.Open();
-	}
-
-	materialPreviewPanel_.DrawUI(ui_, materialPanel_.GetPreviewDraft(),
-	                             materialPanel_.GetFilePath());
-
-	if (!wasBusy && !materialPanel_.GetAssetRevealRequest().empty()) {
-		assetsPanel_.RequestReveal(materialPanel_.GetAssetRevealRequest());
-	}
-
-	const auto &materialAssignment = materialPanel_.GetAssignmentRequest();
-	auto requestedMaterialUsers = materialPanel_.GetUsageSelectionRequest();
-
-	if (requestedMaterialUsers.empty()) {
-		requestedMaterialUsers =
-		    assetsPanel_.GetMaterialUsageSelectionRequest();
-	}
+	const bool textureAssignment = !requestedTexture.empty();
+	const auto requestedTextureUsers =
+	    assetsPanel_.GetTextureUsageSelectionRequest();
 
 	const auto historyRequest =
 	    historyPanel_.Draw(ui_, history,
@@ -559,24 +530,24 @@ bool EditorScene::Update(float deltaTime) {
 			SelectModelInstances(requestedInstances);
 		}
 
-		if (!IsBusy() && action == EditorAction::NONE && materialAssignment &&
-		    checkedObject == 0 && requestedMaterialUsers.empty() &&
+		if (!IsBusy() && action == EditorAction::NONE && textureAssignment &&
+		    checkedObject == 0 && requestedTextureUsers.empty() &&
 		    requestedInstances.empty() && requestedModelPath.empty() &&
 		    modelDrop.path.empty() && modelRequest.objectId == 0 &&
 		    visibilityRequest.objectId == 0 && colliderFitRequest == 0 &&
-		    !hasObjectRequest && !materialEditRequested && !historyRequest &&
+		    !hasObjectRequest && !historyRequest &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
-			AssignMaterialToSelection(*materialAssignment);
+			AssignTextureToSelection(requestedTexture,
+			                         assetsPanel_.GetTextureSlot());
 		}
 
 		if (!IsBusy() && action == EditorAction::NONE &&
-		    !requestedMaterialUsers.empty() && requestedInstances.empty() &&
+		    !requestedTextureUsers.empty() && requestedInstances.empty() &&
 		    requestedModelPath.empty() && modelDrop.path.empty() &&
 		    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
-		    colliderFitRequest == 0 && !hasObjectRequest &&
-		    !materialEditRequested && !historyRequest &&
+		    colliderFitRequest == 0 && !hasObjectRequest && !historyRequest &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
-			SelectMaterialUsers(requestedMaterialUsers);
+			SelectTextureUsers(requestedTextureUsers);
 		}
 
 		if (!IsBusy() && !requestedModelPath.empty()) {
@@ -601,38 +572,13 @@ bool EditorScene::Update(float deltaTime) {
 			ApplyInspectorRequest(objectRequest);
 		}
 
-		if (!IsBusy() && action == EditorAction::NONE &&
-		    !materialEditPath.empty() && !hasObjectRequest &&
-		    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
-		    colliderFitRequest == 0 &&
-		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
-			OpenMaterialForEdit(materialEditPath);
-		}
-
-		if (!IsBusy() && action == EditorAction::NONE &&
-		    !requestedTexture.empty() && materialEditPath.empty() &&
-		    !hasObjectRequest && modelRequest.objectId == 0 &&
-		    visibilityRequest.objectId == 0 && colliderFitRequest == 0 &&
-		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
-			try {
-				materialPanel_.SelectTexture(requestedTexture);
-				materialPanel_.RequestFocus();
-			} catch (const std::exception &error) {
-				Logger::Error(std::format("EditorScene::SelectTexture: {}",
-				                          error.what()));
-				ShowError("Could not select the texture. Your material draft "
-				          "was kept.");
-			}
-		}
-
 		if (!IsBusy()) {
 			if (historyRequest && action == EditorAction::NONE &&
 			    colliderFitRequest == 0 && requestedModelPath.empty() &&
 			    requestedInstances.empty() && modelDrop.path.empty() &&
 			    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
-			    !hasObjectRequest && !materialAssignment &&
-			    checkedObject == 0 && requestedMaterialUsers.empty() &&
-			    !materialEditRequested &&
+			    !hasObjectRequest && !textureAssignment && checkedObject == 0 &&
+			    requestedTextureUsers.empty() &&
 			    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 				RestoreHistory(*historyRequest);
 			}
@@ -640,9 +586,8 @@ bool EditorScene::Update(float deltaTime) {
 			if (action == EditorAction::NONE && colliderFitRequest == 0 &&
 			    requestedInstances.empty() && modelDrop.path.empty() &&
 			    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
-			    !hasObjectRequest && !materialAssignment &&
-			    checkedObject == 0 && requestedMaterialUsers.empty() &&
-			    !materialEditRequested && !historyRequest) {
+			    !hasObjectRequest && !textureAssignment && checkedObject == 0 &&
+			    requestedTextureUsers.empty() && !historyRequest) {
 				const bool objectPanelFocused =
 				    hierarchyRequest.windowFocused ||
 				    sceneViewPanel_.GetInput().windowFocused;
@@ -664,13 +609,13 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	const bool inputBlocked =
-	    wasBusy || IsBusy() || materialEditRequested ||
-	    action != EditorAction::NONE || checkedObject != 0 ||
-	    materialAssignment.has_value() || !requestedModelPath.empty() ||
-	    !requestedInstances.empty() || !requestedMaterialUsers.empty() ||
-	    !modelDrop.path.empty() || modelRequest.objectId != 0 ||
-	    visibilityRequest.objectId != 0 || colliderFitRequest != 0 ||
-	    hasObjectRequest || historyRequest.has_value() ||
+	    wasBusy || IsBusy() || action != EditorAction::NONE ||
+	    checkedObject != 0 || textureAssignment ||
+	    !requestedModelPath.empty() || !requestedInstances.empty() ||
+	    !requestedTextureUsers.empty() || !modelDrop.path.empty() ||
+	    modelRequest.objectId != 0 || visibilityRequest.objectId != 0 ||
+	    colliderFitRequest != 0 || hasObjectRequest ||
+	    historyRequest.has_value() ||
 	    hierarchyRequest.action != HierarchyPanel::Action::NONE;
 
 	ViewportInput viewport = sceneViewPanel_.GetInput();
@@ -943,8 +888,6 @@ void EditorScene::Draw() const {
 		return;
 	}
 
-	materialPreviewPanel_.Draw();
-
 	auto *target = sceneViewPanel_.GetRenderTexture();
 
 	if (target) {
@@ -980,7 +923,6 @@ void EditorScene::Finalize() {
 		}
 	}
 
-	materialPreviewPanel_.Clear();
 	texturePreviewPanel_.Clear();
 	performancePanel_.Reset();
 	playStatePanel_.Reset();
@@ -1002,7 +944,6 @@ void EditorScene::Finalize() {
 
 	stage_ = DialogStage::IDLE;
 	pendingAction_ = EditorAction::NONE;
-	pendingMaterialPath_.clear();
 	exitQueued_ = false;
 	closeApproved_ = false;
 	errorOpenRequested_ = false;
@@ -1035,10 +976,8 @@ std::string EditorScene::GetWindowTitle() const {
 	        ? "Untitled"
 	        : PathUtils::ToUtf8(document_.GetFilePath().filename());
 
-	return std::format(
-	    "{}{} - Editor", name,
-	    document_.IsModified() || materialPanel_.HasUnsavedChanges() ? "*"
-	                                                                 : "");
+	return std::format("{}{} - Editor", name,
+	                   document_.IsModified() ? "*" : "");
 }
 
 EditorScene::EditorAction EditorScene::DrawMenuBar() {
@@ -1677,26 +1616,6 @@ EditorScene::ReadShortcut(bool objectPanelFocused) const {
 		return EditorAction::NONE;
 	}
 
-	if (materialPanel_.HasFocus() || materialPreviewPanel_.HasFocus()) {
-		const bool available = !alt && !ImGui::IsAnyItemActive();
-
-		if (keyboard.IsPressed(Key::Z)) {
-			return !available ? EditorAction::NONE
-			       : shift    ? EditorAction::REDO_MATERIAL_DRAFT
-			                  : EditorAction::UNDO_MATERIAL_DRAFT;
-		}
-
-		if (keyboard.IsPressed(Key::Y)) {
-			return available ? EditorAction::REDO_MATERIAL_DRAFT
-			                 : EditorAction::NONE;
-		}
-
-		if (keyboard.IsPressed(Key::S)) {
-			return available && !shift ? EditorAction::SAVE_MATERIAL
-			                           : EditorAction::NONE;
-		}
-	}
-
 	if (objectEnabled && !shift && !alt && keyboard.IsPressed(Key::D)) {
 		return EditorAction::DUPLICATE_OBJECTS;
 	}
@@ -1738,29 +1657,17 @@ void EditorScene::StartAction(EditorAction action) {
 		gameSettingsDialog_.Show(exportConfig_);
 		stage_ = DialogStage::GAME_SETTINGS;
 		return;
-	case EditorAction::EXPORT_GAME: {
+	case EditorAction::EXPORT_GAME:
 		pendingAction_ = action;
-
 		try {
-			if (materialPanel_.HasUnsavedChanges() &&
-			    !MaterialUsage::FindObjects(document_.GetScene(),
-			                                materialPanel_.GetFilePath())
-			         .empty()) {
-				saveChangesDialog_.Show(
-				    PathUtils::ToUtf8(materialPanel_.GetFilePath().filename()));
-				stage_ = DialogStage::CONFIRM_MATERIAL_SAVE;
-			} else {
-				ContinueAfterMaterialConfirmation();
-			}
+			ExecutePendingAction();
 		} catch (const std::exception &error) {
 			Logger::Error(
 			    std::format("EditorScene::PrepareExport: {}", error.what()));
-			ShowError("Could not prepare game export. Your edits were kept. "
-			          "See the log for details.");
+			ShowError(
+			    "Could not prepare game export. See the log for details.");
 		}
-
 		return;
-	}
 
 	case EditorAction::RENAME_OBJECT:
 		if (HasSingleSelection()) {
@@ -1908,28 +1815,6 @@ void EditorScene::StartAction(EditorAction action) {
 	case EditorAction::FRAME_ALL:
 		frameRequest_ = FrameRequest::ALL;
 		return;
-	case EditorAction::UNDO_MATERIAL_DRAFT:
-	case EditorAction::REDO_MATERIAL_DRAFT:
-	case EditorAction::SAVE_MATERIAL:
-		try {
-			if (action == EditorAction::UNDO_MATERIAL_DRAFT) {
-				materialPanel_.UndoDraft();
-			} else if (action == EditorAction::REDO_MATERIAL_DRAFT) {
-				materialPanel_.RedoDraft();
-			} else if (!materialPanel_.GetFilePath().empty() &&
-			           !materialPanel_.Save()) {
-				ShowError("Could not save the material: " +
-				          materialPanel_.GetError());
-			}
-		} catch (const std::exception &error) {
-			Logger::Error(
-			    std::format("EditorScene::MaterialShortcut: {}", error.what()));
-			ShowError("Could not update the material. Your draft was kept. See "
-			          "the log for details.");
-		}
-
-		return;
-
 	case EditorAction::UNDO:
 		if (document_.GetHistory().CanUndo() &&
 		    !document_.GetHistory().Undo()) {
@@ -1954,32 +1839,22 @@ void EditorScene::StartAction(EditorAction action) {
 		// 保存確認が終わるまで、実際の操作は保留する
 		pendingAction_ = action;
 
-		if (action == EditorAction::EXIT &&
-		    materialPanel_.HasUnsavedChanges()) {
-			saveChangesDialog_.Show(
-			    PathUtils::ToUtf8(materialPanel_.GetFilePath().filename()));
-			stage_ = DialogStage::CONFIRM_MATERIAL_SAVE;
-		} else {
-			ConfirmSceneChanges();
-		}
+		ConfirmSceneChanges();
 
 		return;
 
 	case EditorAction::SAVE:
 		pendingAction_ = EditorAction::NONE;
-		pendingMaterialPath_.clear();
 		StartSave(false);
 		return;
 
 	case EditorAction::SAVE_AS:
 		pendingAction_ = EditorAction::NONE;
-		pendingMaterialPath_.clear();
 		StartSave(true);
 		return;
 
 	case EditorAction::RELOAD_SCENE:
 		pendingAction_ = EditorAction::NONE;
-		pendingMaterialPath_.clear();
 
 		if (!document_.GetFilePath().empty()) {
 			sceneReloadDialog_.Show(
@@ -1991,7 +1866,6 @@ void EditorScene::StartAction(EditorAction action) {
 
 	case EditorAction::SAVE_COPY:
 		pendingAction_ = EditorAction::NONE;
-		pendingMaterialPath_.clear();
 		StartSaveCopy();
 		return;
 	case EditorAction::CREATE_EMPTY:
@@ -2036,55 +1910,6 @@ void EditorScene::StartAction(EditorAction action) {
 	}
 }
 
-void EditorScene::OpenMaterialForEdit(const std::filesystem::path &path) {
-	if (IsBusy() || path.empty()) {
-		return;
-	}
-
-	try {
-		FinishEdit();
-
-		if (!materialPanel_.GetFilePath().empty() &&
-		    PathUtils::IsSameFile(path, materialPanel_.GetFilePath())) {
-			materialPanel_.RequestFocus();
-			return;
-		}
-
-		pendingMaterialPath_ = path;
-
-		if (materialPanel_.HasUnsavedChanges()) {
-			saveChangesDialog_.Show(
-			    PathUtils::ToUtf8(materialPanel_.GetFilePath().filename()));
-			stage_ = DialogStage::CONFIRM_MATERIAL_OPEN;
-		} else {
-			CompleteMaterialOpen(false);
-		}
-	} catch (const std::exception &error) {
-		Logger::Error(
-		    std::format("EditorScene::OpenMaterialForEdit: {}", error.what()));
-		ShowError("Could not open the material. Your edits were kept. See the "
-		          "log for details.");
-	}
-}
-
-void EditorScene::CompleteMaterialOpen(bool discardChanges) {
-	try {
-		if (materialPanel_.Open(pendingMaterialPath_, discardChanges)) {
-			pendingMaterialPath_.clear();
-			stage_ = DialogStage::IDLE;
-			materialPanel_.RequestFocus();
-		} else {
-			ShowError("Could not open the material: " +
-			          materialPanel_.GetError());
-		}
-	} catch (const std::exception &error) {
-		Logger::Error(
-		    std::format("EditorScene::CompleteMaterialOpen: {}", error.what()));
-		ShowError("Could not open the material. Your edits were kept. See the "
-		          "log for details.");
-	}
-}
-
 void EditorScene::ConfirmSceneChanges() {
 	if (document_.IsModified()) {
 		const auto name =
@@ -2102,7 +1927,6 @@ void EditorScene::ExecutePendingAction() {
 	const EditorAction action = pendingAction_;
 
 	pendingAction_ = EditorAction::NONE;
-	pendingMaterialPath_.clear();
 	stage_ = DialogStage::IDLE;
 
 	switch (action) {
@@ -2354,12 +2178,12 @@ void EditorScene::SelectModelInstances(const std::filesystem::path &path) {
 	}
 }
 
-void EditorScene::SelectMaterialUsers(const std::filesystem::path &path) {
+void EditorScene::SelectTextureUsers(const std::filesystem::path &path) {
 	FinishEdit();
 
 	try {
-		const auto count = MaterialUsage::SelectObjects(document_.GetScene(),
-		                                                path, selection_);
+		const auto count =
+		    TextureUsage::SelectObjects(document_.GetScene(), path, selection_);
 		hierarchyPanel_.RequestReveal(selection_.GetActiveId());
 
 		if (count == 0) {
@@ -2367,8 +2191,8 @@ void EditorScene::SelectMaterialUsers(const std::filesystem::path &path) {
 		}
 	} catch (const std::exception &error) {
 		Logger::Error(
-		    std::format("EditorScene::SelectMaterialUsers: {}", error.what()));
-		ShowError("Could not select material users. See the log for details.");
+		    std::format("EditorScene::SelectTextureUsers: {}", error.what()));
+		ShowError("Could not select texture users. See the log for details.");
 	}
 }
 
@@ -2440,62 +2264,6 @@ void EditorScene::UpdateDialogs() {
 	case DialogStage::IDLE:
 		return;
 
-	case DialogStage::CONFIRM_MATERIAL_OPEN: {
-		const auto result = saveChangesDialog_.Draw(ui_);
-
-		if (result == SaveChangesResult::SAVE) {
-			try {
-				if (materialPanel_.Save()) {
-					CompleteMaterialOpen(false);
-				} else {
-					ShowError("Could not save the material: " +
-					          materialPanel_.GetError());
-				}
-			} catch (const std::exception &error) {
-				Logger::Error(
-				    std::format("EditorScene::SaveMaterial: {}", error.what()));
-				ShowError("Could not save the material. Your edits were kept. "
-				          "See the log for details.");
-			}
-		} else if (result == SaveChangesResult::DISCARD) {
-			CompleteMaterialOpen(true);
-		} else if (result == SaveChangesResult::CANCEL) {
-			pendingMaterialPath_.clear();
-			stage_ = DialogStage::IDLE;
-		}
-
-		return;
-	}
-
-	case DialogStage::CONFIRM_MATERIAL_SAVE: {
-		const auto result = saveChangesDialog_.Draw(ui_);
-
-		if (result == SaveChangesResult::SAVE) {
-			try {
-				if (materialPanel_.Save()) {
-					ContinueAfterMaterialConfirmation();
-				} else {
-					ShowError("Could not save the material: " +
-					          materialPanel_.GetError());
-				}
-			} catch (const std::exception &error) {
-				Logger::Error(
-				    std::format("EditorScene::SaveMaterial: {}", error.what()));
-				ShowError("Could not save the material. Your edits were kept. "
-				          "See the log for details.");
-			}
-		} else if (result == SaveChangesResult::DISCARD) {
-			// 出力の取消や後続のシーン確認に備え、材質の編集中の値は保持する。
-			ContinueAfterMaterialConfirmation();
-		} else if (result == SaveChangesResult::CANCEL) {
-			pendingAction_ = EditorAction::NONE;
-			pendingMaterialPath_.clear();
-			stage_ = DialogStage::IDLE;
-		}
-
-		return;
-	}
-
 	case DialogStage::CONFIRM_SAVE: {
 		const auto result = saveChangesDialog_.Draw(ui_);
 
@@ -2510,7 +2278,6 @@ void EditorScene::UpdateDialogs() {
 
 		case SaveChangesResult::CANCEL:
 			pendingAction_ = EditorAction::NONE;
-			pendingMaterialPath_.clear();
 			stage_ = DialogStage::IDLE;
 			break;
 
@@ -2542,7 +2309,6 @@ void EditorScene::UpdateDialogs() {
 		if (result == SceneFileDialogResult::CANCELLED) {
 			// 保存先選択を取り消した場合は、NewやExitも取り消す
 			pendingAction_ = EditorAction::NONE;
-			pendingMaterialPath_.clear();
 			stage_ = DialogStage::IDLE;
 			return;
 		}
@@ -2774,7 +2540,6 @@ void EditorScene::ShowError(std::string message, SceneObjectId objectId) {
 	errorOpenRequested_ = true;
 
 	pendingAction_ = EditorAction::NONE;
-	pendingMaterialPath_.clear();
 	stage_ = DialogStage::ERROR;
 }
 
@@ -4152,24 +3917,8 @@ void EditorScene::PasteRespawnSettingsToSelection() {
 	}
 }
 
-void EditorScene::ContinueAfterMaterialConfirmation() {
-	if (pendingAction_ != EditorAction::EXPORT_GAME) {
-		ConfirmSceneChanges();
-		return;
-	}
-
-	try {
-		ExecutePendingAction();
-	} catch (const std::exception &error) {
-		Logger::Error(
-		    std::format("EditorScene::ContinueExport: {}", error.what()));
-		ShowError("Could not open game export. Your edits were kept. See the "
-		          "log for details.");
-	}
-}
-
-void EditorScene::AssignMaterialToSelection(
-    const MaterialPanel::AssignmentRequest &request) {
+void EditorScene::AssignTextureToSelection(const std::filesystem::path &path,
+                                           std::uint32_t slot) {
 	if (!HasSelection()) {
 		return;
 	}
@@ -4177,15 +3926,15 @@ void EditorScene::AssignMaterialToSelection(
 	try {
 		FinishEdit();
 
-		if (!document_.GetHistory().SetMaterialPaths(
-		        selection_.GetIds(), request.slot, request.path)) {
-			ShowError("Could not assign the material to all selected objects. "
+		if (!document_.GetHistory().SetTexturePaths(selection_.GetIds(), slot,
+		                                            path)) {
+			ShowError("Could not assign the texture to all selected objects. "
 			          "Every target needs valid Mesh Renderer settings. No "
 			          "assignments were changed.");
 		}
 	} catch (const std::exception &error) {
-		Logger::Error(std::format("EditorScene::AssignMaterialToSelection: {}",
+		Logger::Error(std::format("EditorScene::AssignTextureToSelection: {}",
 		                          error.what()));
-		ShowError("Could not assign the material. See the log for details.");
+		ShowError("Could not assign the texture. See the log for details.");
 	}
 }

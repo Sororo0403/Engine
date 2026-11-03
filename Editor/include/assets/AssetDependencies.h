@@ -14,10 +14,10 @@ std::vector<std::filesystem::path>
 ModelFiles(const std::filesystem::path &path);
 
 /// <summary>
-/// 材質を読み込み、本体と基本色画像の参照先を収集する
+/// 画像の拡張子とパスを検証し、直接参照する画像ファイルを取得する
 /// </summary>
-/// <param name="path">絶対パスまたは実行ファイル基準の材質パス</param>
-/// <returns>絶対パスの依存一覧。材質の形式や設定が無効なら例外。画像の存在は呼び出し側で検証する</returns>
+/// <param name="path">絶対パスまたは実行ファイル基準の画像パス</param>
+/// <returns>絶対パスの依存一覧。拡張子やパスが無効なら例外。画像の存在は呼び出し側で検証する</returns>
 std::vector<std::filesystem::path>
-MaterialFiles(const std::filesystem::path &path);
+TextureFiles(const std::filesystem::path &path);
 } // namespace AssetDependencies

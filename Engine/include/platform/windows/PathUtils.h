@@ -63,4 +63,11 @@ std::filesystem::path DecodeRelativeUri(std::string_view uri);
 bool HasExtension(const std::filesystem::path &path,
                   std::string_view extension);
 
+/// <summary>
+/// 対応する画像テクスチャの拡張子か、大文字・小文字を区別せず確認する
+/// </summary>
+/// <param name="path">確認するパス。ファイルの実在や画像データは確認しない</param>
+/// <returns>true:PNG・JPEG・BMP・TIFF・GIF false:その他</returns>
+bool IsImageFile(const std::filesystem::path &path);
+
 } // namespace PathUtils

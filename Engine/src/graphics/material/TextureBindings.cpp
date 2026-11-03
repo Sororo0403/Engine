@@ -1,8 +1,8 @@
-#include "graphics/material/MaterialBindings.h"
+#include "graphics/material/TextureBindings.h"
 #include "platform/windows/PathUtils.h"
 #include <optional>
 
-bool MaterialBindings::IsValid() const {
+bool TextureBindings::IsValid() const {
 	std::optional<std::uint32_t> previous;
 
 	for (const auto &[slot, path] : slots) {
@@ -13,8 +13,7 @@ bool MaterialBindings::IsValid() const {
 		previous = slot;
 		if (path.empty() || !path.has_filename() ||
 		    path.native().find(L'\0') != std::wstring::npos ||
-		    !PathUtils::HasExtension(path, ".json") ||
-		    !PathUtils::HasExtension(path.stem(), ".material")) {
+		    !PathUtils::IsImageFile(path)) {
 			return false;
 		}
 	}

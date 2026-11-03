@@ -43,7 +43,6 @@ void EditorDockLayout::Draw(const ImGuiSystem &ui, bool resetLayout) const {
 		ui.DockWindow(gameWindow_.c_str(), centerId);
 		ui.DockWindow(inspectorWindow_.c_str(), rightId);
 		ui.DockWindow(assetsWindow_.c_str(), bottomId);
-		ui.DockWindow("Materials", bottomId);
 		ui.DockWindow(historyWindow_.c_str(), bottomId);
 		ui.DockWindow(consoleWindow_.c_str(), bottomId);
 		ui.DockWindow(performanceWindow_.c_str(), bottomId);

@@ -320,16 +320,16 @@ exit /b 0</Command>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\graphics\material\MaterialData.cpp" />
-    <ClInclude Include="include\graphics\material\MaterialAsset.h" />
-    <ClCompile Include="src\graphics\material\MaterialAsset.cpp" />
+    <ClInclude Include="src\scene\LegacyMaterial.h" />
+    <ClCompile Include="src\scene\LegacyMaterial.cpp" />
     <ClInclude Include="include\graphics\material\TextureData.h" />
     <ClInclude Include="include\graphics\material\MaterialResource.h" />
     <ClCompile Include="src\graphics\material\MaterialResource.cpp" />
     <ClInclude Include="include\graphics\material\MaterialHandle.h" />
     <ClInclude Include="include\graphics\material\MaterialManager.h" />
     <ClCompile Include="src\graphics\material\MaterialManager.cpp" />
-    <ClInclude Include="include\graphics\material\MaterialBindings.h" />
-    <ClCompile Include="src\graphics\material\MaterialBindings.cpp" />
+    <ClInclude Include="include\graphics\material\TextureBindings.h" />
+    <ClCompile Include="src\graphics\material\TextureBindings.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\scene\MeshComponent.h"></ClInclude>

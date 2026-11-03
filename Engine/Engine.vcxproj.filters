@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="src">
@@ -567,16 +567,16 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\graphics\material\MaterialData.cpp"><Filter>src\graphics\material</Filter></ClCompile>
-    <ClInclude Include="include\graphics\material\MaterialAsset.h"><Filter>include\graphics\material</Filter></ClInclude>
-    <ClCompile Include="src\graphics\material\MaterialAsset.cpp"><Filter>src\graphics\material</Filter></ClCompile>
+    <ClInclude Include="src\scene\LegacyMaterial.h"><Filter>src\scene</Filter></ClInclude>
+    <ClCompile Include="src\scene\LegacyMaterial.cpp"><Filter>src\scene</Filter></ClCompile>
     <ClInclude Include="include\graphics\material\TextureData.h"><Filter>include\graphics\material</Filter></ClInclude>
     <ClInclude Include="include\graphics\material\MaterialResource.h"><Filter>include\graphics\material</Filter></ClInclude>
     <ClCompile Include="src\graphics\material\MaterialResource.cpp"><Filter>src\graphics\material</Filter></ClCompile>
     <ClInclude Include="include\graphics\material\MaterialHandle.h"><Filter>include\graphics\material</Filter></ClInclude>
     <ClInclude Include="include\graphics\material\MaterialManager.h"><Filter>include\graphics\material</Filter></ClInclude>
     <ClCompile Include="src\graphics\material\MaterialManager.cpp"><Filter>src\graphics\material</Filter></ClCompile>
-    <ClInclude Include="include\graphics\material\MaterialBindings.h"><Filter>include\graphics\material</Filter></ClInclude>
-    <ClCompile Include="src\graphics\material\MaterialBindings.cpp"><Filter>src\graphics\material</Filter></ClCompile>
+    <ClInclude Include="include\graphics\material\TextureBindings.h"><Filter>include\graphics\material</Filter></ClInclude>
+    <ClCompile Include="src\graphics\material\TextureBindings.cpp"><Filter>src\graphics\material</Filter></ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\scene\MeshComponent.h"><Filter>include\scene</Filter></ClInclude>

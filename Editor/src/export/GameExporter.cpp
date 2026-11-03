@@ -114,14 +114,9 @@ class Assets {
 		return model;
 	}
 
-	fs::path AddMaterial(const fs::path &input) {
-		const auto material = AddFile(input);
-
-		for (const auto &file : AssetDependencies::MaterialFiles(material)) {
-			AddFile(file);
-		}
-
-		return material;
+	fs::path AddTexture(const fs::path &input) {
+		AssetDependencies::TextureFiles(input);
+		return AddFile(input);
 	}
 
 	const auto &Files() const {
@@ -598,8 +593,7 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 
 		for (auto &[id, object] : objects) {
 			if (object.meshRenderer) {
-				for (auto &[slot, path] :
-				     object.meshRenderer->materials.slots) {
+				for (auto &[slot, path] : object.meshRenderer->textures.slots) {
 					const auto input =
 					    path.is_absolute()
 					        ? path
@@ -608,7 +602,7 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 					                             path.lexically_normal());
 					path =
 					    fs::path(L"resources") /
-					    RelativeInside(resourceRoot, assets.AddMaterial(input));
+					    RelativeInside(resourceRoot, assets.AddTexture(input));
 				}
 			}
 
@@ -706,8 +700,8 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 		for (const auto &[id, object] : snapshot.GetObjects()) {
 			if (object.meshRenderer) {
 				for (const auto &[slot, path] :
-				     object.meshRenderer->materials.slots) {
-					exportedAssets.AddMaterial(destination / path);
+				     object.meshRenderer->textures.slots) {
+					exportedAssets.AddTexture(destination / path);
 				}
 			}
 

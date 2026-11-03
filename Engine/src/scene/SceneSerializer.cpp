@@ -1,4 +1,5 @@
 #include "scene/SceneSerializer.h"
+#include "LegacyMaterial.h"
 
 #include "core/Logger.h"
 #include "math/MathUtils.h"
@@ -15,6 +16,7 @@
 #include <format>
 #include <fstream>
 #include <map>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -104,36 +106,58 @@ DirectX::XMFLOAT4 ReadRotation(const Json &value) {
 }
 
 /// <summary>
-/// 材質スロットの配列を読み込み、番号順へ揃えて重複と参照先を検証する
+/// 画像スロットの配列を読み込み、旧材質参照を画像へ移行して検証する
 /// </summary>
-/// <param name="bindings">スロット番号と材質パスの配列</param>
-/// <returns>検証済みの材質割り当て。無効な場合は例外</returns>
-MaterialBindings ReadBindings(const Json &bindings) {
+/// <param name="bindings">スロット番号と参照パスの配列</param>
+/// <param name="version">シーン形式。10以前は旧材質JSONから画像だけを取得する</param>
+/// <returns>検証済みの画像割り当て。無効な場合は例外</returns>
+TextureBindings ReadBindings(const Json &bindings, int version) {
 	if (!bindings.is_array()) {
-		throw std::runtime_error("材質の割り当て配列が無効です。");
+		throw std::runtime_error("画像の割り当て配列が無効です。");
 	}
 
-	MaterialBindings result;
-
+	TextureBindings result;
+	std::set<std::uint32_t> seen;
 	for (const auto &binding : bindings) {
 		const auto &slot = binding.at("slot");
-
 		if (!slot.is_number_unsigned() ||
-		    slot.get<std::uint64_t>() > UINT32_MAX) {
-			throw std::runtime_error("材質スロットの番号が無効です。");
+		    slot.get<std::uint64_t>() > UINT32_MAX ||
+		    !seen.insert(slot.get<std::uint32_t>()).second) {
+			throw std::runtime_error(
+			    "画像スロットの番号が無効、または重複しています。");
 		}
 
-		result.slots.emplace_back(
-		    slot.get<std::uint32_t>(),
-		    PathUtils::FromUtf8(binding.at("path").get<std::string>()));
+		auto path = PathUtils::FromUtf8(binding.at("path").get<std::string>());
+		if (version <= 10) {
+			if (path.empty() ||
+			    path.native().find(L'\0') != std::wstring::npos ||
+			    !PathUtils::HasExtension(path, ".json") ||
+			    !PathUtils::HasExtension(path.stem(), ".material")) {
+				throw std::runtime_error("旧材質の参照先が無効です。");
+			}
+
+			LegacyMaterial legacy;
+			std::string error;
+			if (!LegacyMaterialReader::Load(path, legacy, error)) {
+				throw std::runtime_error("旧材質の画像参照を移行できません: " +
+				                         error);
+			}
+
+			if (legacy.baseColorTexture.empty()) {
+				continue;
+			}
+
+			path = (path.parent_path() / legacy.baseColorTexture)
+			           .lexically_normal();
+		}
+
+		result.slots.emplace_back(slot.get<std::uint32_t>(), std::move(path));
 	}
 
 	std::sort(result.slots.begin(), result.slots.end(),
 	          [](const auto &a, const auto &b) { return a.first < b.first; });
-
 	if (!result.IsValid()) {
-		throw std::runtime_error(
-		    "材質の参照先が無効、またはスロットが重複しています。");
+		throw std::runtime_error("画像テクスチャの参照先が無効です。");
 	}
 
 	return result;
@@ -196,14 +220,14 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 				auto bindings = Json::array();
 
 				for (const auto &[slot, path] :
-				     object.meshRenderer->materials.slots) {
+				     object.meshRenderer->textures.slots) {
 					bindings.push_back(
 					    {{"slot", slot}, {"path", PathUtils::ToUtf8(path)}});
 				}
 
 				objects.back()["meshRenderer"] = {
 				    {"visible", object.meshRenderer->visible},
-				    {"materials", std::move(bindings)}};
+				    {"textures", std::move(bindings)}};
 			}
 
 			if (object.colorTint) {
@@ -257,7 +281,7 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 
 		const Json document{
 		    {"format", "EngineScene"},
-		    {"version", 10},
+		    {"version", 11},
 		    {"objects", std::move(objects)},
 		};
 
@@ -308,7 +332,7 @@ namespace {
 /// 解析したシーンドキュメントを検証し、全件成功した場合だけ反映する
 /// </summary>
 /// <param name="scene">読み込み先</param>
-/// <param name="document">version 1から10のJSON</param>
+/// <param name="document">version 1から11のJSON</param>
 /// <returns>true:成功 false:内容が無効</returns>
 bool ApplySceneDocument(Scene &scene, const Json &document) {
 	try {
@@ -318,7 +342,8 @@ bool ApplySceneDocument(Scene &scene, const Json &document) {
 		     document.at("version") != 3 && document.at("version") != 4 &&
 		     document.at("version") != 5 && document.at("version") != 6 &&
 		     document.at("version") != 7 && document.at("version") != 8 &&
-		     document.at("version") != 9 && document.at("version") != 10)) {
+		     document.at("version") != 9 && document.at("version") != 10 &&
+		     document.at("version") != 11)) {
 			throw std::runtime_error("未対応のシーンファイル形式です。");
 		}
 
@@ -360,16 +385,19 @@ bool ApplySceneDocument(Scene &scene, const Json &document) {
 					const auto &renderer = item.at("meshRenderer");
 					object.meshRenderer = MeshRendererComponent{
 					    renderer.at("visible").get<bool>(),
-					    ReadBindings(renderer.at("materials"))};
+					    ReadBindings(renderer.at(version >= 11 ? "textures"
+					                                           : "materials"),
+					                 version)};
 				}
 			} else {
 				const auto path =
 				    PathUtils::FromUtf8(item.at("model").get<std::string>());
 				const bool visible =
 				    version < 3 || item.at("visible").get<bool>();
-				const auto bindings = version >= 8 && item.contains("materials")
-				                          ? ReadBindings(item.at("materials"))
-				                          : MaterialBindings{};
+				const auto bindings =
+				    version >= 8 && item.contains("materials")
+				        ? ReadBindings(item.at("materials"), version)
+				        : TextureBindings{};
 
 				if (!path.empty()) {
 					object.mesh = MeshComponent{path};

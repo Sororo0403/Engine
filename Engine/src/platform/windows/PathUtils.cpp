@@ -155,3 +155,14 @@ std::filesystem::path PathUtils::DecodeRelativeUri(std::string_view uri) {
 
 	return path;
 }
+
+bool PathUtils::IsImageFile(const std::filesystem::path &path) {
+	for (const auto extension :
+	     {".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff", ".gif"}) {
+		if (HasExtension(path, extension)) {
+			return true;
+		}
+	}
+
+	return false;
+}

@@ -631,18 +631,14 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\history\MaterialSlotsCommand.h"><Filter>include\history</Filter></ClInclude>
-    <ClCompile Include="src\history\MaterialSlotsCommand.cpp"><Filter>src\history</Filter></ClCompile>
-    <ClInclude Include="include\appearance\MaterialSlotInspector.h"><Filter>include\appearance</Filter></ClInclude>
-    <ClCompile Include="src\appearance\MaterialSlotInspector.cpp"><Filter>src\appearance</Filter></ClCompile>
-    <ClInclude Include="include\panels\MaterialPanel.h"><Filter>include\panels</Filter></ClInclude>
-    <ClInclude Include="include\panels\MaterialPreviewPanel.h"><Filter>include\panels</Filter></ClInclude>
-    <ClCompile Include="src\panels\MaterialPreviewPanel.cpp"><Filter>src\panels</Filter></ClCompile>
-    <ClCompile Include="src\panels\MaterialPanel.cpp"><Filter>src\panels</Filter></ClCompile>
+    <ClInclude Include="include\history\TextureSlotsCommand.h"><Filter>include\history</Filter></ClInclude>
+    <ClCompile Include="src\history\TextureSlotsCommand.cpp"><Filter>src\history</Filter></ClCompile>
+    <ClInclude Include="include\appearance\TextureSlotInspector.h"><Filter>include\appearance</Filter></ClInclude>
+    <ClCompile Include="src\appearance\TextureSlotInspector.cpp"><Filter>src\appearance</Filter></ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\assets\MaterialUsage.h"><Filter>include\assets</Filter></ClInclude>
-    <ClCompile Include="src\assets\MaterialUsage.cpp"><Filter>src\assets</Filter></ClCompile>
+    <ClInclude Include="include\assets\TextureUsage.h"><Filter>include\assets</Filter></ClInclude>
+    <ClCompile Include="src\assets\TextureUsage.cpp"><Filter>src\assets</Filter></ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\history\ObjectArraySettings.h"><Filter>include\history</Filter></ClInclude>

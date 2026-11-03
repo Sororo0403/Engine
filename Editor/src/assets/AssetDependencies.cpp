@@ -1,5 +1,4 @@
 #include "assets/AssetDependencies.h"
-#include "graphics/material/MaterialAsset.h"
 #include "graphics/model/ModelLoader.h"
 #include "platform/windows/PathUtils.h"
 #include <array>
@@ -199,21 +198,10 @@ AssetDependencies::ModelFiles(const std::filesystem::path &input) {
 }
 
 std::vector<std::filesystem::path>
-AssetDependencies::MaterialFiles(const std::filesystem::path &path) {
-	const auto file = ResolveAsset(path);
-	std::vector<fs::path> files{file};
-
-	MaterialAsset asset;
-	std::string error;
-
-	if (!MaterialSerializer::Load(file, asset, error)) {
-		throw std::runtime_error(
-		    "Invalid material: " + PathUtils::ToUtf8(file) + ": " + error);
+AssetDependencies::TextureFiles(const std::filesystem::path &path) {
+	if (!PathUtils::IsImageFile(path)) {
+		throw std::invalid_argument("Unsupported image texture extension.");
 	}
 
-	if (!asset.baseColorTexture.empty()) {
-		files.push_back(file.parent_path() / asset.baseColorTexture);
-	}
-
-	return files;
+	return {ResolveAsset(path)};
 }

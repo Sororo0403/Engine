@@ -1,6 +1,6 @@
 #include "panels/InspectorPanel.h"
 #include "appearance/ColorTintInspector.h"
-#include "appearance/MaterialSlotInspector.h"
+#include "appearance/TextureSlotInspector.h"
 
 #include "assets/ModelAssetDragDrop.h"
 #include "camera/CameraInspector.h"
@@ -128,7 +128,6 @@ void InspectorPanel::Clear() {
 	objectRequest_ = {};
 	colliderFitRequest_ = 0;
 	assetRevealPath_.clear();
-	materialEditPath_.clear();
 }
 
 const InspectorPanel::ObjectRequest &InspectorPanel::GetObjectRequest() const {
@@ -163,7 +162,6 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 	colliderFitRequest_ = 0;
 	modelRequest_ = {};
 	assetRevealPath_.clear();
-	materialEditPath_.clear();
 	visibilityRequest_ = {};
 
 	if (lockedObjectId_ != 0 && !scene.Contains(lockedObjectId_)) {
@@ -456,11 +454,11 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 		}
 
 		if (models && assets) {
-			MaterialSlotInspector::Request request;
-			changed |= MaterialSlotInspector{}.Draw(ui, inspectedObjectId,
-			                                        *object, history, *models,
-			                                        *assets, request);
-			materialEditPath_ = std::move(request.editMaterial);
+			TextureSlotInspector::Request request;
+			changed |=
+			    TextureSlotInspector{}.Draw(ui, inspectedObjectId, *object,
+			                                history, *models, *assets, request);
+			assetRevealPath_ = std::move(request.revealTexture);
 		}
 
 		if (ui.Button("Remove Mesh Renderer")) {
@@ -630,7 +628,7 @@ InspectorPanel::DrawReadOnly(const ImGuiSystem &ui, const Scene &scene,
 		ui.Checkbox("Visible", visible);
 		ui.EndDisabled();
 
-		for (const auto &[slot, path] : object->meshRenderer->materials.slots) {
+		for (const auto &[slot, path] : object->meshRenderer->textures.slots) {
 			ui.Text(std::format("Slot {}: {}", slot, PathUtils::ToUtf8(path)));
 		}
 	}
@@ -701,8 +699,4 @@ InspectorPanel::DrawReadOnly(const ImGuiSystem &ui, const Scene &scene,
 
 	ui.EndWindow();
 	return copied;
-}
-
-const std::filesystem::path &InspectorPanel::GetMaterialEditRequest() const {
-	return materialEditPath_;
 }

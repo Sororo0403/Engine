@@ -5,12 +5,12 @@
 #include "history/ColliderCommand.h"
 #include "history/CommandGroup.h"
 #include "history/ComponentCommand.h"
-#include "history/MaterialSlotsCommand.h"
 #include "history/ModelPathCommand.h"
 #include "history/ObjectArraySettings.h"
 #include "history/ObjectCommand.h"
 #include "history/ObjectRename.h"
 #include "history/RenameCommand.h"
+#include "history/TextureSlotsCommand.h"
 #include "history/TransformCommand.h"
 #include "history/VisibilityCommand.h"
 #include "scene/SceneObject.h"
@@ -340,21 +340,20 @@ class EditorHistory {
 	/// </summary>
 	/// <param name="id">編集する物体</param>
 	/// <param name="slot">モデルの材質スロット番号</param>
-	/// <param name="path">材質ファイルの参照先。空はモデルの既定材質へ戻す</param>
+	/// <param name="path">画像ファイルの参照先。空は白いテクスチャへ戻す</param>
 	/// <returns>true:成功または同値 false:対象や設定が無効</returns>
-	bool SetMaterialPath(SceneObjectId id, std::uint32_t slot,
-	                     const std::filesystem::path &path);
+	bool SetTexturePath(SceneObjectId id, std::uint32_t slot,
+	                    const std::filesystem::path &path);
 
 	/// <summary>
 	/// 全対象の同じ材質スロットを変更し、1回のUndo操作へまとめる。編集中の値は先に確定する
 	/// </summary>
 	/// <param name="ids">重複しない対象ID。全物体に有効なMesh Rendererが必要</param>
 	/// <param name="slot">変更するスロット番号。モデルで未使用の番号も保持できる</param>
-	/// <param name="path">材質ファイル。空はそのスロットの明示的な割り当てだけを解除する</param>
+	/// <param name="path">画像ファイル。空はそのスロットの明示的な割り当てだけを解除する</param>
 	/// <returns>true:全件成功または同値 false:対象・設定が無効。失敗時は割り当てを変更しない</returns>
-	bool SetMaterialPaths(std::span<const SceneObjectId> ids,
-	                      std::uint32_t slot,
-	                      const std::filesystem::path &path);
+	bool SetTexturePaths(std::span<const SceneObjectId> ids, std::uint32_t slot,
+	                     const std::filesystem::path &path);
 
 	/// <summary>
 	/// 色の連続編集を開始し、編集前の設定を保持する
@@ -548,7 +547,7 @@ class EditorHistory {
 	                 ModelPathCommand, VisibilityCommand, ColliderCommand,
 	                 CharacterCommand, FollowCameraCommand, RespawnCommand,
 	                 CameraCommand, MeshRendererCommand, ColorTintCommand,
-	                 MaterialSlotsCommand, CommandGroup>;
+	                 TextureSlotsCommand, CommandGroup>;
 
 	/// <summary>
 	/// 操作と、その前後の状態を識別する情報

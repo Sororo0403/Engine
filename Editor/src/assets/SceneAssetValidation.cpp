@@ -13,7 +13,7 @@
 std::vector<SceneValidationIssue>
 SceneAssetValidation::Inspect(const Scene &scene) {
 	std::vector<SceneValidationIssue> issues;
-	std::map<std::filesystem::path, std::vector<std::string>> models, materials;
+	std::map<std::filesystem::path, std::vector<std::string>> models, textures;
 
 	const auto inspect = [](const std::filesystem::path &path, auto &cache,
 	                        auto collect) -> const std::vector<std::string> & {
@@ -66,9 +66,9 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 
 		if (object.meshRenderer) {
 			for (const auto &[slot, path] :
-			     object.meshRenderer->materials.slots) {
+			     object.meshRenderer->textures.slots) {
 				add(std::format("Mesh Renderer slot {}", slot),
-				    inspect(path, materials, AssetDependencies::MaterialFiles));
+				    inspect(path, textures, AssetDependencies::TextureFiles));
 			}
 		}
 	}

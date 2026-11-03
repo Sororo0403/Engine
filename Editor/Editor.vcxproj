@@ -351,18 +351,14 @@ exit /b 0</Command>
     <ClCompile Include="src\appearance\ColorTintInspector.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\history\MaterialSlotsCommand.h" />
-    <ClCompile Include="src\history\MaterialSlotsCommand.cpp" />
-    <ClInclude Include="include\appearance\MaterialSlotInspector.h" />
-    <ClCompile Include="src\appearance\MaterialSlotInspector.cpp" />
-    <ClInclude Include="include\panels\MaterialPanel.h" />
-    <ClInclude Include="include\panels\MaterialPreviewPanel.h" />
-    <ClCompile Include="src\panels\MaterialPanel.cpp" />
-    <ClCompile Include="src\panels\MaterialPreviewPanel.cpp" />
+    <ClInclude Include="include\history\TextureSlotsCommand.h" />
+    <ClCompile Include="src\history\TextureSlotsCommand.cpp" />
+    <ClInclude Include="include\appearance\TextureSlotInspector.h" />
+    <ClCompile Include="src\appearance\TextureSlotInspector.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\assets\MaterialUsage.h"></ClInclude>
-    <ClCompile Include="src\assets\MaterialUsage.cpp"></ClCompile>
+    <ClInclude Include="include\assets\TextureUsage.h"></ClInclude>
+    <ClCompile Include="src\assets\TextureUsage.cpp"></ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\history\ObjectArraySettings.h"></ClInclude>

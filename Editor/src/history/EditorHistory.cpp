@@ -2128,8 +2128,8 @@ bool EditorHistory::ResetComponentSettings(SceneObjectId id,
 	}
 }
 
-bool EditorHistory::SetMaterialPath(SceneObjectId id, std::uint32_t slot,
-                                    const std::filesystem::path &path) {
+bool EditorHistory::SetTexturePath(SceneObjectId id, std::uint32_t slot,
+                                   const std::filesystem::path &path) {
 	CommitEdit();
 	const auto *object = scene_.FindObject(id);
 
@@ -2137,7 +2137,7 @@ bool EditorHistory::SetMaterialPath(SceneObjectId id, std::uint32_t slot,
 		return false;
 	}
 
-	auto next = object->meshRenderer->materials;
+	auto next = object->meshRenderer->textures;
 
 	std::erase_if(next.slots,
 	              [slot](const auto &entry) { return entry.first == slot; });
@@ -2153,25 +2153,25 @@ bool EditorHistory::SetMaterialPath(SceneObjectId id, std::uint32_t slot,
 		return false;
 	}
 
-	if (object->meshRenderer->materials == next) {
+	if (object->meshRenderer->textures == next) {
 		return true;
 	}
 
-	MaterialSlotsCommand command{id, object->meshRenderer->materials,
-	                             std::move(next)};
+	TextureSlotsCommand command{id, object->meshRenderer->textures,
+	                            std::move(next)};
 	const auto state = PrepareAppend();
 
 	if (!command.Redo(scene_)) {
 		return false;
 	}
 
-	AppendPrepared(Command{std::move(command)}, state, "Assign Material");
+	AppendPrepared(Command{std::move(command)}, state, "Assign Texture");
 	return true;
 }
 
-bool EditorHistory::SetMaterialPaths(std::span<const SceneObjectId> ids,
-                                     std::uint32_t slot,
-                                     const std::filesystem::path &path) {
+bool EditorHistory::SetTexturePaths(std::span<const SceneObjectId> ids,
+                                    std::uint32_t slot,
+                                    const std::filesystem::path &path) {
 	CommitEdit();
 
 	if (ids.empty()) {
@@ -2190,7 +2190,7 @@ bool EditorHistory::SetMaterialPaths(std::span<const SceneObjectId> ids,
 			return false;
 		}
 
-		auto next = object->meshRenderer->materials;
+		auto next = object->meshRenderer->textures;
 		std::erase_if(next.slots, [slot](const auto &binding) {
 			return binding.first == slot;
 		});
@@ -2206,9 +2206,9 @@ bool EditorHistory::SetMaterialPaths(std::span<const SceneObjectId> ids,
 			return false;
 		}
 
-		if (next != object->meshRenderer->materials) {
-			commands.emplace_back(MaterialSlotsCommand{
-			    id, object->meshRenderer->materials, std::move(next)});
+		if (next != object->meshRenderer->textures) {
+			commands.emplace_back(TextureSlotsCommand{
+			    id, object->meshRenderer->textures, std::move(next)});
 		}
 	}
 
@@ -2223,6 +2223,6 @@ bool EditorHistory::SetMaterialPaths(std::span<const SceneObjectId> ids,
 		return false;
 	}
 
-	AppendPrepared(Command{std::move(group)}, next, "Assign Materials");
+	AppendPrepared(Command{std::move(group)}, next, "Assign Textures");
 	return true;
 }

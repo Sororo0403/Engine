@@ -6,10 +6,10 @@
 #include <vector>
 
 /// <summary>
-/// モデルの材質スロット番号と、独立した材質ファイルの割り当て
+/// モデルの材質スロット番号と、画像テクスチャの割り当て
 /// </summary>
-struct MaterialBindings {
-	// 番号の昇順に保持する。未登録のスロットは、モデルの既定材質を使う
+struct TextureBindings {
+	// 番号の昇順に保持する。未登録のスロットは、白いテクスチャを使う
 	std::vector<std::pair<std::uint32_t, std::filesystem::path>> slots;
 
 	/// <summary>
@@ -19,9 +19,9 @@ struct MaterialBindings {
 	bool IsValid() const;
 
 	/// <summary>
-	/// 材質の割り当てが一致するか確認する
+	/// 画像の割り当てが一致するか確認する
 	/// </summary>
 	/// <param name="other">比較対象</param>
 	/// <returns>true:一致 false:相違あり</returns>
-	bool operator==(const MaterialBindings &other) const = default;
+	bool operator==(const TextureBindings &other) const = default;
 };

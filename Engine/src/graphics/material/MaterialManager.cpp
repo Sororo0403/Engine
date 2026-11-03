@@ -1,6 +1,5 @@
 #include "graphics/material/MaterialManager.h"
 #include "core/Logger.h"
-#include "graphics/material/MaterialAsset.h"
 #include "graphics/material/MaterialResource.h"
 #include "graphics/render/D3D12Graphics.h"
 #include "platform/windows/PathUtils.h"
@@ -26,9 +25,6 @@ struct MaterialManager::Impl {
 		MaterialHandle handle;
 		std::filesystem::file_time_type modified{};
 		std::uintmax_t size = 0;
-		std::filesystem::path texture;
-		std::filesystem::file_time_type textureModified{};
-		std::uintmax_t textureSize = 0;
 		bool failed = false;
 	};
 
@@ -45,122 +41,69 @@ MaterialManager::MaterialManager(D3D12Graphics &graphics)
 
 MaterialManager::~MaterialManager() = default;
 
-MaterialHandle MaterialManager::Load(const std::filesystem::path &path) {
+MaterialHandle MaterialManager::LoadTexture(const std::filesystem::path &path) {
 	Impl::Entry *previous = nullptr;
 	try {
-		const auto absolute = std::filesystem::weakly_canonical(
-		    PathUtils::ResolveFromExecutable(path));
+		if (!path.empty() &&
+		    (!PathUtils::IsImageFile(path) ||
+		     path.native().find(L'\0') != std::wstring::npos)) {
+			throw std::invalid_argument("Invalid texture path.");
+		}
+
+		const auto absolute = path.empty()
+		                          ? std::filesystem::path{}
+		                          : std::filesystem::weakly_canonical(
+		                                PathUtils::ResolveFromExecutable(path));
 		auto &entry = impl_->entries[absolute];
 		previous = &entry;
-		std::error_code ec;
-		const auto modified = std::filesystem::last_write_time(absolute, ec);
-		const auto size = std::filesystem::file_size(absolute, ec);
-		const auto textureModified =
-		    entry.texture.empty()
+		std::error_code modifiedError, sizeError;
+		const auto modified =
+		    absolute.empty()
 		        ? std::filesystem::file_time_type{}
-		        : std::filesystem::last_write_time(entry.texture, ec);
-		const auto textureSize =
-		    entry.texture.empty()
-		        ? 0
-		        : std::filesystem::file_size(entry.texture, ec);
+		        : std::filesystem::last_write_time(absolute, modifiedError);
+		const auto size = absolute.empty()
+		                      ? 0
+		                      : std::filesystem::file_size(absolute, sizeError);
 
 		if ((entry.handle || entry.failed) && entry.modified == modified &&
-		    entry.size == size && entry.textureModified == textureModified &&
-		    entry.textureSize == textureSize) {
+		    entry.size == size) {
 			return entry.handle;
 		}
 
 		entry.modified = modified;
 		entry.size = size;
-		entry.textureModified = textureModified;
-		entry.textureSize = textureSize;
 		entry.failed = true;
-		MaterialAsset asset;
-		std::string error;
 
-		if (!MaterialSerializer::Load(absolute, asset, error)) {
-			throw std::runtime_error(error);
+		if (modifiedError || sizeError) {
+			throw std::runtime_error(
+			    "Could not read texture file information.");
 		}
 
 		TextureData image;
 
-		if (!asset.baseColorTexture.empty()) {
+		if (!absolute.empty()) {
 			image.source = TextureSource::FILE;
-			image.filePath = (absolute.parent_path() / asset.baseColorTexture)
-			                     .lexically_normal();
+			image.filePath = absolute;
 		}
 
-		// 画像が未作成でも参照先を保持し、後から画像が追加されたときに再試行する。
-		entry.texture = image.filePath;
-		entry.textureModified =
-		    image.filePath.empty()
-		        ? std::filesystem::file_time_type{}
-		        : std::filesystem::last_write_time(image.filePath, ec);
-		entry.textureSize =
-		    image.filePath.empty()
-		        ? 0
-		        : std::filesystem::file_size(image.filePath, ec);
 		auto resource = std::make_shared<MaterialResource>();
 
 		if (!resource->Initialize(impl_->graphics.GetDevice(),
-		                          impl_->graphics.GetCommandQueue(), asset.data,
-		                          image)) {
-			throw std::runtime_error(
-			    "Could not create material GPU resources.");
+		                          impl_->graphics.GetCommandQueue(),
+		                          MaterialData{}, image)) {
+			throw std::runtime_error("Could not create texture GPU resources.");
 		}
 
 		MaterialHandle result;
 		result.resource_ = std::move(resource);
 		result.device_ = impl_->graphics.GetDevice();
-		entry.texture = image.filePath;
-		entry.textureModified =
-		    image.filePath.empty()
-		        ? std::filesystem::file_time_type{}
-		        : std::filesystem::last_write_time(image.filePath);
-		entry.textureSize = image.filePath.empty()
-		                        ? 0
-		                        : std::filesystem::file_size(image.filePath);
 		entry.handle = result;
 		entry.failed = false;
 		return result;
-	} catch (const std::exception &e) {
-		Logger::Error(std::format("MaterialManager::Load: {}: {}",
-		                          PathUtils::ToUtf8(path), e.what()));
-		return previous ? previous->handle : MaterialHandle{};
-	}
-}
-
-MaterialHandle MaterialManager::Create(const MaterialAsset &asset,
-                                       const std::filesystem::path &directory) {
-	try {
-		if (!asset.IsValid()) {
-			throw std::invalid_argument("Invalid material draft.");
-		}
-
-		TextureData image;
-
-		if (!asset.baseColorTexture.empty()) {
-			image.source = TextureSource::FILE;
-			image.filePath = (PathUtils::ResolveFromExecutable(directory) /
-			                  asset.baseColorTexture)
-			                     .lexically_normal();
-		}
-
-		auto resource = std::make_shared<MaterialResource>();
-
-		if (!resource->Initialize(impl_->graphics.GetDevice(),
-		                          impl_->graphics.GetCommandQueue(), asset.data,
-		                          image)) {
-			return {};
-		}
-
-		MaterialHandle result;
-		result.resource_ = std::move(resource);
-		result.device_ = impl_->graphics.GetDevice();
-		return result;
 	} catch (const std::exception &error) {
-		Logger::Error(std::format("MaterialManager::Create: {}", error.what()));
-		return {};
+		Logger::Error(std::format("MaterialManager::LoadTexture: {}: {}",
+		                          PathUtils::ToUtf8(path), error.what()));
+		return previous ? previous->handle : MaterialHandle{};
 	}
 }
 

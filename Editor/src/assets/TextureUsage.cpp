@@ -1,4 +1,4 @@
-#include "assets/MaterialUsage.h"
+#include "assets/TextureUsage.h"
 
 #include "platform/windows/PathUtils.h"
 #include "scene/Scene.h"
@@ -11,13 +11,13 @@
 #include <utility>
 
 std::vector<SceneObjectId>
-MaterialUsage::FindObjects(const Scene &scene,
-                           const std::filesystem::path &materialPath) {
-	if (materialPath.native().find(L'\0') != std::wstring::npos) {
-		throw std::invalid_argument("MaterialUsage: 検索先のパスが無効です。");
+TextureUsage::FindObjects(const Scene &scene,
+                          const std::filesystem::path &texturePath) {
+	if (texturePath.native().find(L'\0') != std::wstring::npos) {
+		throw std::invalid_argument("TextureUsage: 検索先のパスが無効です。");
 	}
 
-	const auto target = PathUtils::ResolveFromExecutable(materialPath);
+	const auto target = PathUtils::ResolveFromExecutable(texturePath);
 	std::vector<SceneObjectId> result;
 	std::unordered_map<std::filesystem::path, bool> matches;
 
@@ -26,13 +26,13 @@ MaterialUsage::FindObjects(const Scene &scene,
 			continue;
 		}
 
-		for (const auto &[slot, path] : object.meshRenderer->materials.slots) {
+		for (const auto &[slot, path] : object.meshRenderer->textures.slots) {
 			if (path.empty() ||
 			    path.native().find(L'\0') != std::wstring::npos) {
 				continue;
 			}
 
-			// 同じ材質を割り当てたスロットでは、ファイルの照合結果を再利用する。
+			// 同じ画像を割り当てたスロットでは、ファイルの照合結果を再利用する。
 			auto [found, inserted] = matches.try_emplace(path, false);
 
 			if (inserted) {
@@ -55,10 +55,10 @@ MaterialUsage::FindObjects(const Scene &scene,
 }
 
 std::size_t
-MaterialUsage::SelectObjects(const Scene &scene,
-                             const std::filesystem::path &materialPath,
-                             EditorSelection &selection) {
-	auto ids = FindObjects(scene, materialPath);
+TextureUsage::SelectObjects(const Scene &scene,
+                            const std::filesystem::path &texturePath,
+                            EditorSelection &selection) {
+	auto ids = FindObjects(scene, texturePath);
 	const auto active =
 	    std::find(ids.begin(), ids.end(), selection.GetActiveId());
 
@@ -69,7 +69,7 @@ MaterialUsage::SelectObjects(const Scene &scene,
 	const auto count = ids.size();
 
 	if (!selection.Set(std::move(ids))) {
-		throw std::logic_error("MaterialUsage: 選択する物体の一覧が無効です。");
+		throw std::logic_error("TextureUsage: 選択する物体の一覧が無効です。");
 	}
 
 	return count;

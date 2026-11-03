@@ -23,8 +23,6 @@
 #include "panels/HierarchyPanel.h"
 #include "panels/HistoryPanel.h"
 #include "panels/InspectorPanel.h"
-#include "panels/MaterialPanel.h"
-#include "panels/MaterialPreviewPanel.h"
 #include "panels/PerformancePanel.h"
 #include "panels/PlayStatePanel.h"
 #include "panels/SceneCheckPanel.h"
@@ -132,9 +130,6 @@ class EditorScene final : public IScene {
 		EXIT,
 		UNDO,
 		REDO,
-		UNDO_MATERIAL_DRAFT,
-		REDO_MATERIAL_DRAFT,
-		SAVE_MATERIAL,
 		CREATE_EMPTY,
 		CREATE_BOX,
 		CREATE_CAMERA,
@@ -199,8 +194,6 @@ class EditorScene final : public IScene {
 	enum class DialogStage {
 		IDLE,
 		CONFIRM_SAVE,
-		CONFIRM_MATERIAL_SAVE,
-		CONFIRM_MATERIAL_OPEN,
 		OPEN_FILE,
 		SAVE_FILE,
 		SAVE_COPY_FILE,
@@ -252,23 +245,6 @@ class EditorScene final : public IScene {
 	void ConfirmSceneChanges();
 
 	/// <summary>
-	/// 材質の保存確認後に保留操作を続ける。ゲーム出力はシーンの保存を要求しない
-	/// </summary>
-	void ContinueAfterMaterialConfirmation();
-
-	/// <summary>
-	/// 割り当てた材質の編集を開始する。別の材質を編集中なら保存を確認する
-	/// </summary>
-	/// <param name="path">Inspectorから開く材質のパス</param>
-	void OpenMaterialForEdit(const std::filesystem::path &path);
-
-	/// <summary>
-	/// 保留した材質を読み込み、成功した場合だけ編集対象を切り替える
-	/// </summary>
-	/// <param name="discardChanges">確認で破棄を選択したか</param>
-	void CompleteMaterialOpen(bool discardChanges);
-
-	/// <summary>
 	/// シーンを読み込み、成功した場合に選択・カメラ・最近の一覧を更新する
 	/// </summary>
 	/// <param name="path">読み込むシーンのパス</param>
@@ -298,10 +274,10 @@ class EditorScene final : public IScene {
 	void SelectModelInstances(const std::filesystem::path &path);
 
 	/// <summary>
-	/// 指定材質を明示的に割り当てた物体をまとめて選択し、Hierarchyで表示する
+	/// 指定画像を明示的に割り当てた物体をまとめて選択し、Hierarchyで表示する
 	/// </summary>
-	/// <param name="path">使用物体を検索する材質ファイル</param>
-	void SelectMaterialUsers(const std::filesystem::path &path);
+	/// <param name="path">使用物体を検索する画像ファイル</param>
+	void SelectTextureUsers(const std::filesystem::path &path);
 
 	/// <summary>
 	/// 選択物体を直接追従するFollow Cameraをまとめて選択し、Hierarchyで表示する
@@ -361,11 +337,12 @@ class EditorScene final : public IScene {
 	void PasteRespawnSettingsToSelection();
 
 	/// <summary>
-	/// 保存済み材質の同じスロットへの割り当てを、全選択へ1回のUndo操作で適用する
+	/// 画像テクスチャの同じスロットへの割り当てを、全選択へ1回のUndo操作で適用する
 	/// </summary>
-	/// <param name="request">材質パスとスロット。空のパスはモデル既定材質へ戻す</param>
-	void
-	AssignMaterialToSelection(const MaterialPanel::AssignmentRequest &request);
+	/// <param name="path">画像パス。空は白へ戻す</param>
+	/// <param name="slot">変更するスロット番号</param>
+	void AssignTextureToSelection(const std::filesystem::path &path,
+	                              std::uint32_t slot);
 
 	/// <summary>
 	/// 現在のダイアログを描画し、選択結果を処理する
@@ -637,8 +614,6 @@ class EditorScene final : public IScene {
 	SceneViewPanel sceneViewPanel_;
 	EditorCameraController cameraController_;
 
-	MaterialPanel materialPanel_;
-	MaterialPreviewPanel materialPreviewPanel_;
 	AssetDatabase assets_{L"resources/editor"};
 	AssetsPanel assetsPanel_;
 	TexturePreviewPanel texturePreviewPanel_;
@@ -664,7 +639,6 @@ class EditorScene final : public IScene {
 
 	DialogStage stage_ = DialogStage::IDLE;
 	EditorAction pendingAction_ = EditorAction::NONE;
-	std::filesystem::path pendingMaterialPath_;
 
 	std::string errorMessage_;
 	SceneObjectId errorObjectId_ = 0;

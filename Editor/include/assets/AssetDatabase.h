@@ -5,7 +5,7 @@
 #include <vector>
 
 /// <summary>
-/// Editorが使用するモデル・材質・画像アセットとフォルダの一覧を管理する
+/// Editorが使用するモデル・画像アセットとフォルダの一覧を管理する
 /// </summary>
 class AssetDatabase {
   public:
@@ -37,12 +37,6 @@ class AssetDatabase {
 	const std::vector<std::filesystem::path> &GetModels() const;
 
 	/// <summary>
-	/// モデルから独立した材質ファイルの一覧を取得する
-	/// </summary>
-	/// <returns>実行ファイル基準の.material.jsonファイル一覧</returns>
-	const std::vector<std::filesystem::path> &GetMaterials() const;
-
-	/// <summary>
 	/// 材質で選択する画像ファイルの一覧を取得する
 	/// </summary>
 	/// <returns>実行ファイル基準のPNG・JPEG・BMP・TIFF・GIFファイル一覧</returns>
@@ -68,7 +62,6 @@ class AssetDatabase {
   private:
 	std::filesystem::path rootDirectory_;
 	std::vector<std::filesystem::path> models_;
-	std::vector<std::filesystem::path> materials_;
 	std::vector<std::filesystem::path> textures_;
 	std::vector<std::filesystem::path> directories_;
 	std::string error_;

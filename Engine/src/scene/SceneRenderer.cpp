@@ -136,13 +136,21 @@ bool SceneRenderer::SynchronizeObjects() {
 		for (std::size_t slot = 0;
 		     slot < world_->GetMaterialCount(renderObject.handle); ++slot) {
 			const auto found = std::find_if(
-			    object.meshRenderer->materials.slots.begin(),
-			    object.meshRenderer->materials.slots.end(),
+			    object.meshRenderer->textures.slots.begin(),
+			    object.meshRenderer->textures.slots.end(),
 			    [slot](const auto &binding) { return binding.first == slot; });
-			const auto material =
-			    found == object.meshRenderer->materials.slots.end()
-			        ? MaterialHandle{}
-			        : render_.GetMaterials().Load(found->second);
+			auto material =
+			    found == object.meshRenderer->textures.slots.end()
+			        ? render_.GetMaterials().LoadTexture({})
+			        : render_.GetMaterials().LoadTexture(found->second);
+
+			if (!material) {
+				material = render_.GetMaterials().LoadTexture({});
+			}
+
+			if (!material) {
+				return false;
+			}
 
 			if (!world_->SetMaterial(renderObject.handle, slot, material)) {
 				return false;
