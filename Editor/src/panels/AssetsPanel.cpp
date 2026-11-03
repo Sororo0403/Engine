@@ -28,6 +28,7 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	instanceSelectionPath_.clear();
 	textureUsageSelectionPath_.clear();
 	textureSelectionPath_.clear();
+	textureClearRequested_ = false;
 	texturePreviewPath_.clear();
 	revealMessage_.clear();
 	scrollToSelected_ = false;
@@ -107,6 +108,7 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 	instanceSelectionPath_.clear();
 	textureUsageSelectionPath_.clear();
 	textureSelectionPath_.clear();
+	textureClearRequested_ = false;
 	texturePreviewPath_.clear();
 
 	if (!revealPath_.empty()) {
@@ -220,7 +222,7 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 	const auto contentSize = ui.GetContentSize();
 	const float footerHeight = ImGui::GetTextLineHeightWithSpacing() +
 	                           ImGui::GetFrameHeightWithSpacing() *
-	                               (type_ == AssetType::TEXTURE ? 4.0f : 2.0f) +
+	                               (type_ == AssetType::TEXTURE ? 5.0f : 2.0f) +
 	                           ImGui::GetStyle().ItemSpacing.y;
 	const float listHeight = std::max(1.0f, contentSize.y - footerHeight);
 
@@ -350,41 +352,52 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 		ui.Text(PathUtils::ToUtf8(displayPath));
 	}
 
-	ui.BeginDisabled(selectedPath_.empty());
-
 	if (type_ == AssetType::MODEL) {
+		ui.BeginDisabled(selectedPath_.empty());
+
 		if (ui.Button("Add to Scene")) {
 			requestedPath = selectedPath_;
 		}
-	}
 
-	if (type_ == AssetType::TEXTURE) {
+		ui.EndDisabled();
+	} else {
+		ui.BeginDisabled(selectedPath_.empty());
+
 		if (ui.Button("Preview Image")) {
 			texturePreviewPath_ = selectedPath_;
 		}
 
+		ui.EndDisabled();
 		ImGui::InputInt("Texture Slot", &textureSlot_);
 		ui.BeginDisabled(!canSetTexture || textureSlot_ < 0);
+		ui.BeginDisabled(selectedPath_.empty());
 
 		if (ui.Button("Assign Texture to Selection")) {
 			textureSelectionPath_ = selectedPath_;
 		}
 
 		ui.EndDisabled();
-	}
 
-	{
-		if (ui.Button("Select Instances")) {
-			if (type_ == AssetType::MODEL) {
-				instanceSelectionPath_ = selectedPath_;
-			} else {
-				textureUsageSelectionPath_ = selectedPath_;
-			}
+		if (ui.Button("Clear Texture Slot")) {
+			textureSelectionPath_.clear();
+			textureClearRequested_ = true;
 		}
 
-		ImGui::SetItemTooltip(
-		    "Select all objects using this asset, including hidden objects.");
+		ui.EndDisabled();
 	}
+
+	ui.BeginDisabled(selectedPath_.empty());
+
+	if (ui.Button("Select Instances")) {
+		if (type_ == AssetType::MODEL) {
+			instanceSelectionPath_ = selectedPath_;
+		} else {
+			textureUsageSelectionPath_ = selectedPath_;
+		}
+	}
+
+	ImGui::SetItemTooltip(
+	    "Select all objects using this asset, including hidden objects.");
 	ui.EndDisabled();
 
 	ui.EndWindow();
@@ -412,6 +425,7 @@ void AssetsPanel::Clear() {
 	type_ = AssetType::MODEL;
 	textureUsageSelectionPath_.clear();
 	textureSelectionPath_.clear();
+	textureClearRequested_ = false;
 	texturePreviewPath_.clear();
 	selectedPath_.clear();
 	instanceSelectionPath_.clear();
@@ -425,4 +439,8 @@ void AssetsPanel::Clear() {
 
 std::uint32_t AssetsPanel::GetTextureSlot() const {
 	return textureSlot_ < 0 ? 0 : static_cast<std::uint32_t>(textureSlot_);
+}
+
+bool AssetsPanel::IsTextureClearRequested() const {
+	return textureClearRequested_;
 }

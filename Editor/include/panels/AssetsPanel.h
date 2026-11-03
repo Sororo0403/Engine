@@ -47,6 +47,12 @@ class AssetsPanel {
 	const std::filesystem::path &GetTextureSelectionRequest() const;
 
 	/// <summary>
+	/// このフレームに、選択物体の指定スロットを白へ戻す要求があったか確認する
+	/// </summary>
+	/// <returns>true:解除要求あり false:要求なし。次のDraw・種類切り替え・Clearで解除する</returns>
+	bool IsTextureClearRequested() const;
+
+	/// <summary>
 	/// 選択・検索・表示要求をクリアし、モデル一覧と検索先のルートフォルダへ戻る
 	/// </summary>
 	void Clear();
@@ -101,6 +107,7 @@ class AssetsPanel {
 	std::filesystem::path revealPath_;
 	std::string revealMessage_;
 	int textureSlot_ = 0;
+	bool textureClearRequested_ = false;
 	bool scrollToSelected_ = false;
 	bool scrollToTop_ = true;
 };

@@ -257,7 +257,11 @@ void ControlsPanel::Draw() {
 	         "Selection "
 	         "or double-click an image to assign it to every selected Mesh "
 	         "Renderer. "
-	         "One Undo restores the entire assignment. Select Instances finds "
+	         "Clear Texture Slot returns that slot on all selected renderers "
+	         "to white without selecting an image. Other slots are preserved. "
+	         "One Undo restores the entire assignment or clear operation. "
+	         "Repeated clears of an empty slot add no history. Select "
+	         "Instances finds "
 	         "explicit users, including hidden objects and unused slots. "
 	         "Preview Image opens the image independently. These actions are "
 	         "blocked during Play and modal operations."},

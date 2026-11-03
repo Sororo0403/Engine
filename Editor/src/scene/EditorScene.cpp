@@ -373,9 +373,13 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	texturePreviewPanel_.Draw(ui_);
-	const auto requestedTexture = assetsPanel_.GetTextureSelectionRequest();
+	const auto requestedTexture =
+	    assetsPanel_.IsTextureClearRequested()
+	        ? std::filesystem::path{}
+	        : assetsPanel_.GetTextureSelectionRequest();
 	const auto requestedInstances = assetsPanel_.GetInstanceSelectionRequest();
-	const bool textureAssignment = !requestedTexture.empty();
+	const bool textureAssignment =
+	    assetsPanel_.IsTextureClearRequested() || !requestedTexture.empty();
 	const auto requestedTextureUsers =
 	    assetsPanel_.GetTextureUsageSelectionRequest();
 
