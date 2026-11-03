@@ -439,6 +439,7 @@ void MaterialPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	assignmentRequest_.reset();
 	usageSelectionPath_.clear();
 	assetRevealPath_.clear();
+	previewRequested_ = false;
 	if (focusRequested_) {
 		ImGui::SetNextWindowCollapsed(false);
 		ImGui::SetNextWindowFocus();
@@ -490,6 +491,14 @@ void MaterialPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		if (!states_.empty()) {
 			ImGui::Separator();
 			ui.Text(PathUtils::ToUtf8(path_) + (dirty ? " *" : ""));
+			{
+				const DisabledScope disabled(ui, GetPreviewDraft() == nullptr);
+
+				if (ui.Button("Preview Material")) {
+					previewRequested_ = true;
+				}
+			}
+
 			if (ui.Button("Show Material in Assets")) {
 				assetRevealPath_ = path_;
 			}
@@ -679,6 +688,15 @@ void MaterialPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	}
 
 	ui.EndWindow();
+}
+
+const MaterialAsset *MaterialPanel::GetPreviewDraft() const {
+	return !states_.empty() && textureValid_ && draft_.IsValid() ? &draft_
+	                                                             : nullptr;
+}
+
+bool MaterialPanel::IsPreviewRequested() const {
+	return previewRequested_;
 }
 
 bool MaterialPanel::HasUnsavedChanges() const {

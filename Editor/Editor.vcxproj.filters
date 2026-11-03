@@ -636,6 +636,8 @@
     <ClInclude Include="include\appearance\MaterialSlotInspector.h"><Filter>include\appearance</Filter></ClInclude>
     <ClCompile Include="src\appearance\MaterialSlotInspector.cpp"><Filter>src\appearance</Filter></ClCompile>
     <ClInclude Include="include\panels\MaterialPanel.h"><Filter>include\panels</Filter></ClInclude>
+    <ClInclude Include="include\panels\MaterialPreviewPanel.h"><Filter>include\panels</Filter></ClInclude>
+    <ClCompile Include="src\panels\MaterialPreviewPanel.cpp"><Filter>src\panels</Filter></ClCompile>
     <ClCompile Include="src\panels\MaterialPanel.cpp"><Filter>src\panels</Filter></ClCompile>
   </ItemGroup>
   <ItemGroup>

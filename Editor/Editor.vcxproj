@@ -356,7 +356,9 @@ exit /b 0</Command>
     <ClInclude Include="include\appearance\MaterialSlotInspector.h" />
     <ClCompile Include="src\appearance\MaterialSlotInspector.cpp" />
     <ClInclude Include="include\panels\MaterialPanel.h" />
+    <ClInclude Include="include\panels\MaterialPreviewPanel.h" />
     <ClCompile Include="src\panels\MaterialPanel.cpp" />
+    <ClCompile Include="src\panels\MaterialPreviewPanel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\assets\MaterialUsage.h"></ClInclude>

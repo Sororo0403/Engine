@@ -24,6 +24,7 @@
 #include "panels/HistoryPanel.h"
 #include "panels/InspectorPanel.h"
 #include "panels/MaterialPanel.h"
+#include "panels/MaterialPreviewPanel.h"
 #include "panels/PerformancePanel.h"
 #include "panels/PlayStatePanel.h"
 #include "panels/SceneCheckPanel.h"
@@ -637,6 +638,7 @@ class EditorScene final : public IScene {
 	EditorCameraController cameraController_;
 
 	MaterialPanel materialPanel_;
+	MaterialPreviewPanel materialPreviewPanel_;
 	AssetDatabase assets_{L"resources/editor"};
 	AssetsPanel assetsPanel_;
 	TexturePreviewPanel texturePreviewPanel_;

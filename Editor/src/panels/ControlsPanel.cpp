@@ -473,6 +473,17 @@ void ControlsPanel::Draw() {
 	         "UV and texture behavior stay the same. Old version 1 materials "
 	         "load as Lit; saved assets use version 2. Game export keeps the "
 	         "saved shading mode and the matching shader."},
+	        {"Materials > Preview Material",
+	         "Show the current unsaved material on an independent preview "
+	         "box. Color, UV scale/offset and Lit/Unlit changes update live. "
+	         "Image choices are resolved relative to the material file. "
+	         "Reload Material Preview rereads external image edits or retries "
+	         "a failed load. Invalid drafts hide the preview until corrected. "
+	         "The window can be docked or closed independently and is hidden "
+	         "during Play. Scene objects, saved material files and history "
+	         "stay unchanged. While the preview has focus, Ctrl+Z/Y edit "
+	         "draft history and Ctrl+S saves the material, as in Materials. "
+	         "Modal operations block preview controls."},
 	        {"Assets > Textures > Preview Image",
 	         "Open the selected image in Image Preview without opening a "
 	         "material. Only one image is loaded, with pixel dimensions and "

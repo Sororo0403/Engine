@@ -8,6 +8,7 @@
 #include <format>
 #include <map>
 #include <stdexcept>
+#include <utility>
 
 struct MaterialManager::Impl {
 	/// <summary>
@@ -126,6 +127,40 @@ MaterialHandle MaterialManager::Load(const std::filesystem::path &path) {
 		Logger::Error(std::format("MaterialManager::Load: {}: {}",
 		                          PathUtils::ToUtf8(path), e.what()));
 		return previous ? previous->handle : MaterialHandle{};
+	}
+}
+
+MaterialHandle MaterialManager::Create(const MaterialAsset &asset,
+                                       const std::filesystem::path &directory) {
+	try {
+		if (!asset.IsValid()) {
+			throw std::invalid_argument("Invalid material draft.");
+		}
+
+		TextureData image;
+
+		if (!asset.baseColorTexture.empty()) {
+			image.source = TextureSource::FILE;
+			image.filePath = (PathUtils::ResolveFromExecutable(directory) /
+			                  asset.baseColorTexture)
+			                     .lexically_normal();
+		}
+
+		auto resource = std::make_shared<MaterialResource>();
+
+		if (!resource->Initialize(impl_->graphics.GetDevice(),
+		                          impl_->graphics.GetCommandQueue(), asset.data,
+		                          image)) {
+			return {};
+		}
+
+		MaterialHandle result;
+		result.resource_ = std::move(resource);
+		result.device_ = impl_->graphics.GetDevice();
+		return result;
+	} catch (const std::exception &error) {
+		Logger::Error(std::format("MaterialManager::Create: {}", error.what()));
+		return {};
 	}
 }
 

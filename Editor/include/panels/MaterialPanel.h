@@ -79,6 +79,18 @@ class MaterialPanel {
 	void RequestFocus();
 
 	/// <summary>
+	/// 描画に使用できる現在の下書きを取得する。ファイルは変更しない
+	/// </summary>
+	/// <returns>有効な下書き。未選択・入力不正はnullptr。次の編集まで有効</returns>
+	const MaterialAsset *GetPreviewDraft() const;
+
+	/// <summary>
+	/// このフレームに材質プレビューを開くことを要求したか確認する
+	/// </summary>
+	/// <returns>true:要求あり false:要求なし。次のDrawで解除する</returns>
+	bool IsPreviewRequested() const;
+
+	/// <summary>
 	/// このフレームに使用物体の選択を要求した材質を取得する
 	/// </summary>
 	/// <returns>材質パス。要求なしの場合は空。次のDrawまで有効</returns>
@@ -172,6 +184,7 @@ class MaterialPanel {
 	MaterialAsset draft_;
 	std::string texture_;
 	bool textureValid_ = true;
+	bool previewRequested_ = false;
 	bool focusRequested_ = false;
 	bool focused_ = false;
 	std::string newName_ = "New Material";

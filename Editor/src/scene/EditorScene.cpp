@@ -43,7 +43,8 @@ EditorScene::EditorScene(const EngineContext &context)
       playMode_(context.models, context.render),
       playSceneRenderer_(playMode_.GetSession().GetScene(), context.models,
                          context.render),
-      sceneViewPanel_(context.render) {
+      sceneViewPanel_(context.render),
+      materialPreviewPanel_(context.models, context.render) {
 }
 
 EditorScene::~EditorScene() = default;
@@ -387,6 +388,13 @@ bool EditorScene::Update(float deltaTime) {
 		    return object && object->meshRenderer.has_value();
 	    });
 	materialPanel_.Draw(ui_, assets_, canAssignMaterial);
+
+	if (!wasBusy && materialPanel_.IsPreviewRequested()) {
+		materialPreviewPanel_.Open();
+	}
+
+	materialPreviewPanel_.DrawUI(ui_, materialPanel_.GetPreviewDraft(),
+	                             materialPanel_.GetFilePath());
 
 	if (!wasBusy && !materialPanel_.GetAssetRevealRequest().empty()) {
 		assetsPanel_.RequestReveal(materialPanel_.GetAssetRevealRequest());
@@ -935,6 +943,8 @@ void EditorScene::Draw() const {
 		return;
 	}
 
+	materialPreviewPanel_.Draw();
+
 	auto *target = sceneViewPanel_.GetRenderTexture();
 
 	if (target) {
@@ -970,6 +980,7 @@ void EditorScene::Finalize() {
 		}
 	}
 
+	materialPreviewPanel_.Clear();
 	texturePreviewPanel_.Clear();
 	performancePanel_.Reset();
 	playStatePanel_.Reset();
@@ -1666,7 +1677,7 @@ EditorScene::ReadShortcut(bool objectPanelFocused) const {
 		return EditorAction::NONE;
 	}
 
-	if (materialPanel_.HasFocus()) {
+	if (materialPanel_.HasFocus() || materialPreviewPanel_.HasFocus()) {
 		const bool available = !alt && !ImGui::IsAnyItemActive();
 
 		if (keyboard.IsPressed(Key::Z)) {
