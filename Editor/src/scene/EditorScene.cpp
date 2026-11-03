@@ -30,6 +30,7 @@
 #include "scene/Scene.h"
 #include "scene/SceneObjects.h"
 #include "selection/SelectionFrustum.h"
+#include "selection/SelectionMeasurement.h"
 
 #include <algorithm>
 #include <array>
@@ -89,6 +90,7 @@ bool EditorScene::Initialize() {
 	showRespawnGuides_ = preferences_.showRespawnGuides;
 	showJumpGuide_ = preferences_.showJumpGuide;
 	showObjectMarkers_ = preferences_.showObjectMarkers;
+	showMeasurements_ = preferences_.showMeasurements;
 	colliderDisplay_ = preferences_.colliderDisplay;
 	gizmo_.SetSnapSettings(preferences_.snap);
 	gizmo_.SetSnapping(preferences_.snapping);
@@ -320,6 +322,8 @@ bool EditorScene::Update(float deltaTime) {
 		}
 
 		playStatePanel_.Draw(ui_, playMode_.GetSession());
+		measurementsPanel_.Draw(ui_, playMode_.GetSession().GetScene(),
+		                        playSelection_.GetIds(), showMeasurements_);
 
 		UpdateDialogs();
 
@@ -461,6 +465,7 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	const auto *performanceTarget = sceneViewPanel_.GetRenderTexture();
+	measurementsPanel_.Draw(ui_, scene, selection_.GetIds(), showMeasurements_);
 	performancePanel_.Draw(
 	    ui_, scene, selection_,
 	    performanceTarget ? performanceTarget->GetWidth() : 0,
@@ -1054,6 +1059,11 @@ bool EditorScene::Update(float deltaTime) {
 		return false;
 	}
 
+	if (showMeasurements_ && !SelectionMeasurement::AppendLine(
+	                             renderer_, scene, selection_.GetIds())) {
+		return false;
+	}
+
 	// 全ての線を登録した後、一度だけ頂点バッファへ転送する
 	if (!renderer_.UpdateDebugLines()) {
 		Logger::Error("EditorScene: 線の頂点バッファを更新できませんでした。");
@@ -1099,6 +1109,7 @@ void EditorScene::Finalize() {
 		current.showRespawnGuides = showRespawnGuides_;
 		current.showJumpGuide = showJumpGuide_;
 		current.showObjectMarkers = showObjectMarkers_;
+		current.showMeasurements = showMeasurements_;
 		current.colliderDisplay = colliderDisplay_;
 		current.operation = gizmo_.GetOperation();
 		current.space = gizmo_.GetSpace();
@@ -1634,6 +1645,8 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		ImGui::MenuItem("Respawn Guides", nullptr, &showRespawnGuides_,
 		                !IsBusy());
 		ImGui::MenuItem("Character Jump Guide", nullptr, &showJumpGuide_,
+		                !IsBusy());
+		ImGui::MenuItem("Selection Measurements", nullptr, &showMeasurements_,
 		                !IsBusy());
 		ImGui::MenuItem("Object Markers", nullptr, &showObjectMarkers_,
 		                !IsBusy());
@@ -4178,6 +4191,11 @@ bool EditorScene::UpdatePlaySceneView(float deltaTime, EditorAction action,
 		}
 	}
 
+	if (showMeasurements_ &&
+	    !SelectionMeasurement::AppendLine(playSceneRenderer_, runtime,
+	                                      playSelection_.GetIds())) {
+		return false;
+	}
 	playSceneReady_ = playSceneRenderer_.UpdateDebugLines();
 	return playSceneReady_;
 }

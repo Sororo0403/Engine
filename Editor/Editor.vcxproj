@@ -420,4 +420,10 @@ exit /b 0</Command>
     <ClInclude Include="include\camera\EditorCameraBookmarks.h"></ClInclude>
     <ClCompile Include="src\camera\EditorCameraBookmarks.cpp"></ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\selection\SelectionMeasurement.h"></ClInclude>
+    <ClCompile Include="src\selection\SelectionMeasurement.cpp"></ClCompile>
+    <ClInclude Include="include\panels\SelectionMeasurementsPanel.h"></ClInclude>
+    <ClCompile Include="src\panels\SelectionMeasurementsPanel.cpp"></ClCompile>
+  </ItemGroup>
 </Project>

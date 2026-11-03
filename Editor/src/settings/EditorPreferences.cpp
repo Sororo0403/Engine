@@ -44,6 +44,7 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 		loaded.showRespawnGuides = json.value("showRespawnGuides", true);
 		loaded.showJumpGuide = json.value("showJumpGuide", false);
 		loaded.showObjectMarkers = json.value("showObjectMarkers", true);
+		loaded.showMeasurements = json.value("showMeasurements", false);
 
 		// 旧設定には従来と同じ選択物体のみの表示を適用する。
 		if (json.contains("colliderDisplay")) {
@@ -380,6 +381,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		    {"showRespawnGuides", showRespawnGuides},
 		    {"showJumpGuide", showJumpGuide},
 		    {"showObjectMarkers", showObjectMarkers},
+		    {"showMeasurements", showMeasurements},
 		    {"colliderDisplay",
 		     colliderDisplay == ColliderBounds::Mode::NONE  ? "none"
 		     : colliderDisplay == ColliderBounds::Mode::ALL ? "all"
@@ -439,6 +441,7 @@ bool EditorPreferences::operator==(const EditorPreferences &other) const {
 	       showRespawnGuides == other.showRespawnGuides &&
 	       showJumpGuide == other.showJumpGuide &&
 	       showObjectMarkers == other.showObjectMarkers &&
+	       showMeasurements == other.showMeasurements &&
 	       snapping == other.snapping && operation == other.operation &&
 	       space == other.space &&
 	       snap.translation.x == other.snap.translation.x &&

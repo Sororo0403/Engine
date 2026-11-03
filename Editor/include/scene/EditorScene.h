@@ -36,6 +36,7 @@
 #include "panels/PlayStatePanel.h"
 #include "panels/SceneCheckPanel.h"
 #include "panels/SceneViewPanel.h"
+#include "panels/SelectionMeasurementsPanel.h"
 #include "panels/TexturePreviewPanel.h"
 #include "physics/ColliderBounds.h"
 #include "physics/ColliderPlacement.h"
@@ -787,5 +788,7 @@ class EditorScene final : public IScene {
 	ConsolePanel consolePanel_;
 	HistoryPanel historyPanel_;
 	PerformancePanel performancePanel_;
+	SelectionMeasurementsPanel measurementsPanel_;
+	bool showMeasurements_ = false;
 	PlayStatePanel playStatePanel_;
 };

@@ -1134,6 +1134,18 @@ void ControlsPanel::Draw() {
 	DrawSection(
 	    "Editor settings",
 	    {
+	        {"View > Selection Measurements",
+	         "Inspect the selected objects' Collider bounds and, for exactly "
+	         "two objects, their origin distance, horizontal distance and "
+	         "signed "
+	         "X/Y/Z differences. A yellow Scene line connects those origins. "
+	         "When both Colliders are valid, gap values measure the separation "
+	         "of their world-axis collision boxes; touching gives zero gap "
+	         "without overlap. Invalid Colliders are counted separately and "
+	         "excluded from combined bounds. Hidden and model-free objects are "
+	         "included. During Play the panel measures runtime selection. This "
+	         "is read-only and does not change objects, game settings or "
+	         "history."},
 	        {"View > Camera Bookmarks",
 	         "Save the current Scene view in one of five slots, restore a "
 	         "saved "

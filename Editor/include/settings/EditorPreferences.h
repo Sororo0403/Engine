@@ -22,6 +22,7 @@ class EditorPreferences {
 	bool showRespawnGuides = true;
 	bool showJumpGuide = false;
 	bool showObjectMarkers = true;
+	bool showMeasurements = false;
 	ColliderBounds::Mode colliderDisplay = ColliderBounds::Mode::SELECTED;
 	bool snapping = false;
 	TransformGizmo::Operation operation = TransformGizmo::Operation::TRANSLATE;
