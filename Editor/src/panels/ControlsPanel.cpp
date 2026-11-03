@@ -616,6 +616,14 @@ void ControlsPanel::Draw() {
 	         "Editor test control: scene data, movement settings, history, "
 	         "preferences and exported games are unchanged. Speed changes "
 	         "are unavailable while another dialog is open."},
+	        {"Game > Stop and Select in Editing Scene",
+	         "Stop Play and select the same objects in the editing Hierarchy. "
+	         "Selection order and the active object are kept. All selected "
+	         "objects must exist in both scenes; failure keeps Play and the "
+	         "editing selection. Transforms, components, history, files and "
+	         "Inspector locks are unchanged. Normal Stop keeps the selection "
+	         "from before Play. Unavailable without runtime selection or "
+	         "while another dialog is open."},
 	        {"Game > Stop and Keep Selected Transforms",
 	         "Select objects in the playing Hierarchy or Scene, then stop "
 	         "with this button to keep their current position, rotation and "

@@ -12,4 +12,5 @@ enum class EditorPlayAction {
 	TOGGLE_PAUSE,
 	STEP,
 	RENDER_ERROR,
+	STOP_AND_SELECT,
 };

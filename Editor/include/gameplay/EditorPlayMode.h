@@ -43,11 +43,11 @@ class EditorPlayMode {
 	/// <param name="ui">UI機能</param>
 	/// <param name="canStart">再生開始と速度変更を受け付けるか</param>
 	/// <param name="config">編集中のプレビューに使用する描画幅・高さ・照明。再生中は開始時の設定を保持する</param>
-	/// <param name="canKeepTransforms">選択した再生物体のTransformを保持して停止する操作を許可するか</param>
+	/// <param name="canUseSelection">再生中の選択物体を使った停止操作を許可するか</param>
 	/// <returns>ユーザーが要求した操作</returns>
 	Action DrawUI(const ImGuiSystem &ui, bool canStart,
 	              const GameConfig &config = GameConfig{},
-	              bool canKeepTransforms = false);
+	              bool canUseSelection = false);
 
 	/// <summary>
 	/// 編集シーンを変更せずに再生を始める

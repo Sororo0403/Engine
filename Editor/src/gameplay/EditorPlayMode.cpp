@@ -36,7 +36,7 @@ bool EditorPlayMode::Initialize() {
 EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
                                               bool canStart,
                                               const GameConfig &config,
-                                              bool canKeepTransforms) {
+                                              bool canUseSelection) {
 	visible_ = false;
 	ready_ = false;
 	viewport_ = {};
@@ -105,7 +105,11 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 		}
 
 		ui.EndDisabled();
-		ui.BeginDisabled(!canKeepTransforms);
+		ui.BeginDisabled(!canUseSelection);
+
+		if (ui.Button("Stop and Select in Editing Scene")) {
+			action = Action::STOP_AND_SELECT;
+		}
 
 		if (ui.Button("Stop and Keep Selected Transforms")) {
 			action = Action::STOP_AND_KEEP_TRANSFORMS;

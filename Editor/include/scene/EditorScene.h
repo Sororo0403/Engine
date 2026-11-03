@@ -586,6 +586,11 @@ class EditorScene final : public IScene {
 	void StopAndKeepSelectedTransforms();
 
 	/// <summary>
+	/// 選択中の再生物体が編集シーンに全件存在する場合だけ、選択を引き継いで停止する
+	/// </summary>
+	void StopAndSelectEditingObjects();
+
+	/// <summary>
 	/// 選択中の全物体を複製し、複製した物体を選択する
 	/// </summary>
 	/// <remarks>呼び出し前にFinishEditを呼び出す</remarks>
