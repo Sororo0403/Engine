@@ -376,9 +376,15 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\dialogs\SceneRecoveryDialog.h">
+      <Filter>include\dialogs</Filter>
+    </ClInclude>
     <ClInclude Include="include\dialogs\SceneReloadDialog.h">
       <Filter>include\dialogs</Filter>
     </ClInclude>
+    <ClCompile Include="src\dialogs\SceneRecoveryDialog.cpp">
+      <Filter>src\dialogs</Filter>
+    </ClCompile>
     <ClCompile Include="src\dialogs\SceneReloadDialog.cpp">
       <Filter>src\dialogs</Filter>
     </ClCompile>
@@ -696,7 +702,9 @@
     <ClCompile Include="src\dialogs\GameExportResultDialog.cpp"><Filter>src\dialogs</Filter></ClCompile>
     <ClInclude Include="include\dialogs\ModelImportDialog.h"><Filter>include\dialogs</Filter></ClInclude>
     <ClCompile Include="src\dialogs\ModelImportDialog.cpp"><Filter>src\dialogs</Filter></ClCompile>
+    <ClInclude Include="include\files\SceneRecovery.h"><Filter>include\files</Filter></ClInclude>
     <ClInclude Include="include\files\OutputDirectory.h"><Filter>include\files</Filter></ClInclude>
+    <ClCompile Include="src\files\SceneRecovery.cpp"><Filter>src\files</Filter></ClCompile>
     <ClCompile Include="src\files\OutputDirectory.cpp"><Filter>src\files</Filter></ClCompile>
   </ItemGroup>
 </Project>

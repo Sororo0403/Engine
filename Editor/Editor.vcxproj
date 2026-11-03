@@ -247,7 +247,9 @@ exit /b 0</Command>
     <ClCompile Include="src\assets\ModelUsage.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\dialogs\SceneRecoveryDialog.h" />
     <ClInclude Include="include\dialogs\SceneReloadDialog.h" />
+    <ClCompile Include="src\dialogs\SceneRecoveryDialog.cpp" />
     <ClCompile Include="src\dialogs\SceneReloadDialog.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -404,7 +406,9 @@ exit /b 0</Command>
     <ClCompile Include="src\dialogs\GameExportResultDialog.cpp" />
     <ClInclude Include="include\dialogs\ModelImportDialog.h" />
     <ClCompile Include="src\dialogs\ModelImportDialog.cpp" />
+    <ClInclude Include="include\files\SceneRecovery.h" />
     <ClInclude Include="include\files\OutputDirectory.h" />
+    <ClCompile Include="src\files\SceneRecovery.cpp" />
     <ClCompile Include="src\files\OutputDirectory.cpp" />
   </ItemGroup>
 </Project>
