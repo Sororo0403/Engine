@@ -1,5 +1,5 @@
 #include "panels/SceneViewPanel.h"
-#include "assets/ModelAssetDragDrop.h"
+#include "assets/AssetDragDrop.h"
 #include "graphics/render/RenderSystem.h"
 #include "graphics/render/RenderTexture.h"
 #include "graphics/ui/ImGuiSystem.h"
@@ -22,6 +22,7 @@ bool SceneViewPanel::DrawUI(const ImGuiSystem &ui, TransformGizmo &gizmo,
 	selectionEnabled_ = editable || allowReadOnlySelection;
 	input_ = {};
 	modelDrop_ = {};
+	sceneDrop_ = {};
 	imageMinimum_ = {};
 	imageSize_ = {};
 
@@ -82,18 +83,20 @@ bool SceneViewPanel::DrawUI(const ImGuiSystem &ui, TransformGizmo &gizmo,
 
 	input_ = ui.GetViewportInput();
 
-	if (auto path = editable_ ? ModelAssetDragDrop::AcceptTarget()
-	                          : std::filesystem::path{};
-	    !path.empty()) {
-		// ドラッグ元がアクティブな間は通常のホバー判定を使わない
-		const auto mouse = ImGui::GetMousePos();
-
-		if (ImGui::IsMousePosValid() && mouse.x >= minimum.x &&
-		    mouse.x < maximum.x && mouse.y >= minimum.y &&
-		    mouse.y < maximum.y) {
-			modelDrop_.path = std::move(path);
-			modelDrop_.imagePosition = {(mouse.x - minimum.x) / imageSize_.x,
-			                            (mouse.y - minimum.y) / imageSize_.y};
+	if (editable_) {
+		for (const auto kind :
+		     {AssetDragDrop::Kind::MODEL, AssetDragDrop::Kind::SCENE}) {
+			auto path = AssetDragDrop::AcceptTarget(kind);
+			const auto mouse = ImGui::GetMousePos();
+			if (!path.empty() && ImGui::IsMousePosValid() &&
+			    mouse.x >= minimum.x && mouse.x < maximum.x &&
+			    mouse.y >= minimum.y && mouse.y < maximum.y) {
+				auto &drop = kind == AssetDragDrop::Kind::MODEL ? modelDrop_
+				                                                : sceneDrop_;
+				drop.path = std::move(path);
+				drop.imagePosition = {(mouse.x - minimum.x) / imageSize_.x,
+				                      (mouse.y - minimum.y) / imageSize_.y};
+			}
 		}
 	}
 
@@ -135,7 +138,7 @@ const ViewportInput &SceneViewPanel::GetInput() const {
 	return input_;
 }
 
-const SceneViewPanel::ModelDropRequest &SceneViewPanel::GetModelDrop() const {
+const SceneViewPanel::AssetDropRequest &SceneViewPanel::GetModelDrop() const {
 	return modelDrop_;
 }
 
@@ -265,5 +268,10 @@ void SceneViewPanel::Finalize() {
 	texture_.reset();
 	input_ = {};
 	modelDrop_ = {};
+	sceneDrop_ = {};
 	visible_ = false;
+}
+
+const SceneViewPanel::AssetDropRequest &SceneViewPanel::GetSceneDrop() const {
+	return sceneDrop_;
 }

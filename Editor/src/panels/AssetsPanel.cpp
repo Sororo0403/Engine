@@ -1,8 +1,8 @@
 #include "panels/AssetsPanel.h"
 
 #include "assets/AssetDatabase.h"
+#include "assets/AssetDragDrop.h"
 #include "assets/AssetFolders.h"
-#include "assets/ModelAssetDragDrop.h"
 #include "core/Logger.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "platform/windows/PathUtils.h"
@@ -444,8 +444,11 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 				scrollToSelected_ = false;
 			}
 
-			if (type_ == AssetType::MODEL &&
-			    ModelAssetDragDrop::DrawSource(assetPath)) {
+			if ((type_ == AssetType::MODEL || type_ == AssetType::SCENE) &&
+			    AssetDragDrop::DrawSource(assetPath,
+			                              type_ == AssetType::MODEL
+			                                  ? AssetDragDrop::Kind::MODEL
+			                                  : AssetDragDrop::Kind::SCENE)) {
 				selectedPath_ = assetPath;
 			}
 

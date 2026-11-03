@@ -104,7 +104,10 @@
     <ClCompile Include="src\scene\SceneDocument.cpp">
       <Filter>src\scene</Filter>
     </ClCompile>
-    <ClCompile Include="src\assets\ModelAssetDragDrop.cpp">
+    <ClCompile Include="src\assets\AssetDragDrop.cpp">
+      <Filter>src\assets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\assets\ScenePlacement.cpp">
       <Filter>src\assets</Filter>
     </ClCompile>
     <ClCompile Include="src\assets\ModelPlacement.cpp">
@@ -211,7 +214,10 @@
     <ClInclude Include="include\scene\SceneDocument.h">
       <Filter>include\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="include\assets\ModelAssetDragDrop.h">
+    <ClInclude Include="include\assets\AssetDragDrop.h">
+      <Filter>include\assets</Filter>
+    </ClInclude>
+    <ClInclude Include="include\assets\ScenePlacement.h">
       <Filter>include\assets</Filter>
     </ClInclude>
     <ClInclude Include="include\assets\ModelPlacement.h">

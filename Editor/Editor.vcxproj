@@ -130,7 +130,8 @@
     <ClInclude Include="include\panels\HistoryPanel.h" />
     <ClInclude Include="include\panels\ConsolePanel.h" />
     <ClInclude Include="include\assets\AssetDatabase.h" />
-    <ClInclude Include="include\assets\ModelAssetDragDrop.h" />
+    <ClInclude Include="include\assets\AssetDragDrop.h" />
+    <ClInclude Include="include\assets\ScenePlacement.h" />
     <ClInclude Include="include\assets\ModelPlacement.h" />
     <ClInclude Include="include\camera\EditorCameraController.h" />
     <ClInclude Include="include\camera\CameraView.h" />
@@ -177,7 +178,8 @@
     <ClCompile Include="src\panels\HistoryPanel.cpp" />
     <ClCompile Include="src\panels\ConsolePanel.cpp" />
     <ClCompile Include="src\assets\AssetDatabase.cpp" />
-    <ClCompile Include="src\assets\ModelAssetDragDrop.cpp" />
+    <ClCompile Include="src\assets\AssetDragDrop.cpp" />
+    <ClCompile Include="src\assets\ScenePlacement.cpp" />
     <ClCompile Include="src\assets\ModelPlacement.cpp" />
     <ClCompile Include="src\scene\SceneObjects.cpp" />
     <ClCompile Include="src\scene\SceneDocument.cpp" />

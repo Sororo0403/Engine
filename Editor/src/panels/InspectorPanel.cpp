@@ -2,7 +2,7 @@
 #include "appearance/ColorTintInspector.h"
 #include "appearance/TextureSlotInspector.h"
 
-#include "assets/ModelAssetDragDrop.h"
+#include "assets/AssetDragDrop.h"
 #include "camera/CameraInspector.h"
 #include "gameplay/GameplayInspector.h"
 #include "graphics/model/ModelManager.h"
@@ -348,7 +348,8 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 			assetRevealPath_ = object->mesh->modelPath;
 		}
 
-		if (auto path = ModelAssetDragDrop::AcceptTarget(); !path.empty()) {
+		if (auto path = AssetDragDrop::AcceptTarget(AssetDragDrop::Kind::MODEL);
+		    !path.empty()) {
 			modelRequest_ = {inspectedObjectId, std::move(path)};
 		}
 

@@ -27,9 +27,9 @@ class SceneViewPanel {
 	};
 
 	/// <summary>
-	/// Scene画像へ確定したモデルの配置要求
+	/// Scene画像へ確定したアセットの配置要求
 	/// </summary>
-	struct ModelDropRequest {
+	struct AssetDropRequest {
 		std::filesystem::path path;
 		DirectX::XMFLOAT2 imagePosition{};
 	};
@@ -94,7 +94,13 @@ class SceneViewPanel {
 	/// このフレームのモデルのドロップを取得する
 	/// </summary>
 	/// <returns>配置要求。操作がない場合はパスが空</returns>
-	const ModelDropRequest &GetModelDrop() const;
+	const AssetDropRequest &GetModelDrop() const;
+
+	/// <summary>
+	/// このフレームの保存済み物体の組のドロップを取得する
+	/// </summary>
+	/// <returns>シーンの配置要求。操作がない場合はパスが空</returns>
+	const AssetDropRequest &GetSceneDrop() const;
 
 	/// <summary>
 	/// ギズモ判定後に選択入力を更新し、ドラッグ中の矩形を表示する
@@ -128,7 +134,8 @@ class SceneViewPanel {
 
 	std::unique_ptr<RenderTexture> texture_;
 	ViewportInput input_{};
-	ModelDropRequest modelDrop_;
+	AssetDropRequest modelDrop_;
+	AssetDropRequest sceneDrop_;
 
 	bool visible_ = false;
 	bool editable_ = true;
