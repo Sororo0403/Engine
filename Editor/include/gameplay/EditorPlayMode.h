@@ -55,8 +55,8 @@ class EditorPlayMode {
 	/// <param name="scene">編集シーン</param>
 	/// <param name="error">追加済みコンポーネントの設定や配置エラー</param>
 	/// <param name="fallbackPose">Primary Cameraがない場合に使用するSceneビューの姿勢</param>
-	/// <param name="config">出力設定。Gameビューの描画幅と高さを使用する</param>
-	/// <param name="invalidObject">指定時は設定に問題がある物体IDを設定する。成功時や描画サイズの失敗では0</param>
+	/// <param name="config">出力設定。Gameビューの描画幅・高さ・操作キーを開始時に保持する</param>
+	/// <param name="invalidObject">指定時は設定に問題がある物体IDを設定する。成功時や描画サイズ・操作キーの失敗では0</param>
 	/// <returns>true:開始成功 false:設定が無効</returns>
 	bool Start(const Scene &scene, std::string &error,
 	           const CameraPose &fallbackPose = CameraPose{},
@@ -142,6 +142,7 @@ class EditorPlayMode {
 	RenderSystem &render_;
 	std::unique_ptr<RenderTexture> texture_;
 	ViewportInput viewport_{};
+	GameInputBindings inputBindings_;
 	int gameWidth_ = 1280;
 	int gameHeight_ = 720;
 	bool visible_ = false, focusRequested_ = false, ready_ = false;

@@ -38,7 +38,7 @@ bool RuntimeScene::Update(float seconds) {
 			return true;
 		}
 
-		input = CharacterInputReader::Read(keys);
+		input = CharacterInputReader::Read(keys, config_.input);
 
 		if (!simulation_.Update(seconds, input)) {
 			return false;

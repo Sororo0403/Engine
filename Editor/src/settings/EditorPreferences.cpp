@@ -201,6 +201,22 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 			loaded.gameExport.width = width.get<int>();
 			loaded.gameExport.height = height.get<int>();
 
+			if (settings.contains("input")) {
+				for (const auto &action : GameInputBindings::kActions) {
+					const auto key =
+					    GameInputBindings::FromName(settings.at("input")
+					                                    .at(action.name)
+					                                    .get<std::string>());
+
+					if (!key) {
+						throw std::runtime_error(
+						    "ゲームの操作キーが未対応です。");
+					}
+
+					loaded.gameExport.input.*action.member = *key;
+				}
+			}
+
 			if (!loaded.gameExport.IsValid()) {
 				throw std::runtime_error(
 				    "ゲーム出力のタイトル・画面サイズが無効です。");
@@ -254,12 +270,20 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 			recentJson.push_back(PathUtils::ToUtf8(recentPath));
 		}
 
+		nlohmann::json inputJson = nlohmann::json::object();
+
+		for (const auto &action : GameInputBindings::kActions) {
+			inputJson[action.name] =
+			    GameInputBindings::GetName(gameExport.input.*action.member);
+		}
+
 		const nlohmann::json json{
 		    {"version", 1},
 		    {"gameExport",
 		     {{"title", gameExport.title},
 		      {"width", gameExport.width},
-		      {"height", gameExport.height}}},
+		      {"height", gameExport.height},
+		      {"input", inputJson}}},
 		    {"showGrid", showGrid},
 		    {"showSelectionBounds", showSelectionBounds},
 		    {"showCameraGuides", showCameraGuides},
@@ -314,6 +338,7 @@ bool EditorPreferences::operator==(const EditorPreferences &other) const {
 	       gameExport.title == other.gameExport.title &&
 	       gameExport.width == other.gameExport.width &&
 	       gameExport.height == other.gameExport.height &&
+	       gameExport.input == other.gameExport.input &&
 	       showGrid == other.showGrid &&
 	       showSelectionBounds == other.showSelectionBounds &&
 	       showCameraGuides == other.showCameraGuides &&

@@ -158,10 +158,16 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
 		return false;
 	}
 
+	if (!config.input.IsValid()) {
+		error = "Choose different supported gameplay keys before Play.";
+		return false;
+	}
+
 	if (!session_.Start(scene, error, fallbackPose, invalidObject)) {
 		return false;
 	}
 
+	inputBindings_ = config.input;
 	gameWidth_ = config.width;
 	gameHeight_ = config.height;
 	ready_ = false;
@@ -210,9 +216,10 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 	}
 
 	const auto controls =
-	    inputBlocked ? CharacterInput{}
-	                 : GameplayInput::Read(input.GetKeyboard(), viewport_,
-	                                       ImGui::GetIO().WantTextInput);
+	    inputBlocked
+	        ? CharacterInput{}
+	        : GameplayInput::Read(input.GetKeyboard(), viewport_,
+	                              ImGui::GetIO().WantTextInput, inputBindings_);
 
 	if (!inputBlocked && viewport_.windowFocused &&
 	    viewport_.applicationFocused && !viewport_.widgetActive &&

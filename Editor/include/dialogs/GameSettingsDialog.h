@@ -8,7 +8,7 @@ class ImGuiSystem;
 enum class GameSettingsResult { NONE, CANCELLED, ACCEPTED };
 
 /// <summary>
-/// シーンを変更せず、ゲームのタイトル・画面サイズを編集する
+/// シーンを変更せず、ゲームのタイトル・画面サイズ・操作キーを編集する
 /// </summary>
 class GameSettingsDialog {
   public:
@@ -35,6 +35,7 @@ class GameSettingsDialog {
 
   private:
 	GameConfig config_;
+	GameInputBindings input_;
 	std::string title_, error_;
 	int width_ = 1280;
 	int height_ = 720;

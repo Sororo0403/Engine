@@ -10,6 +10,7 @@ void GameSettingsDialog::Show(const GameConfig &config) {
 	title_ = config.title;
 	width_ = config.width;
 	height_ = config.height;
+	input_ = config.input;
 	error_.clear();
 	opening_ = true;
 }
@@ -32,6 +33,29 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 	ImGui::InputInt("Width", &width_);
 	ImGui::InputInt("Height", &height_);
 
+	ImGui::SeparatorText("Gameplay Keys");
+	const std::array<const char *, 5> labels{"Move Forward", "Move Backward",
+	                                         "Move Left", "Move Right", "Jump"};
+
+	for (std::size_t i = 0; i < GameInputBindings::kActions.size(); ++i) {
+		auto &key = input_.*GameInputBindings::kActions[i].member;
+
+		if (ImGui::BeginCombo(labels[i],
+		                      GameInputBindings::GetName(key).data())) {
+			for (const auto &option : GameInputBindings::kOptions) {
+				if (ui.Selectable(option.name.data(), key == option.key)) {
+					key = option.key;
+				}
+			}
+
+			ImGui::EndCombo();
+		}
+	}
+
+	if (ui.Button("Reset Gameplay Keys")) {
+		input_ = {};
+	}
+
 	if (!error_.empty()) {
 		ImGui::TextWrapped("%s", error_.c_str());
 	}
@@ -50,12 +74,16 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 		candidate.title = title_;
 		candidate.width = width_;
 		candidate.height = height_;
+		candidate.input = input_;
 
 		if (candidate.IsValid()) {
 			config_ = std::move(candidate);
 			result = GameSettingsResult::ACCEPTED;
 		} else {
-			error_ = "Enter a title and a valid window size (1-8192).";
+			error_ = !candidate.input.IsValid()
+			             ? "Choose different supported keys for every gameplay "
+			               "action."
+			             : "Enter a title and a valid window size (1-8192).";
 		}
 	}
 

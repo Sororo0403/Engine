@@ -888,9 +888,10 @@ void ControlsPanel::Draw() {
 	         "Follow Cameras update first. Circular target chains must be "
 	         "corrected before Play. Choose the rendered Camera using "
 	         "Primary."},
-	        {"WASD / Space",
-	         "Click the Game image to focus it. Move on world X/Z and jump "
-	         "when the object has a Character Controller."},
+	        {"Gameplay Keys (default WASD / Space)",
+	         "Click the Game image to focus it. Use the keys assigned in File "
+	         "> Game Settings to move on world X/Z and jump when the object "
+	         "has a Character Controller."},
 	        {"Game > Pause / Resume",
 	         "Freeze game time or continue from the paused state."},
 	        {"Game > Step", "While paused, advance one game frame (1/60 "
@@ -913,9 +914,15 @@ void ControlsPanel::Draw() {
 	         "selection, camera and undo history; a failed load keeps the "
 	         "edited scene."},
 	        {"File > Game Settings",
-	         "Set the game title and render size before Play or export. Apply "
-	         "keeps the scene and its undo history unchanged. Settings are "
-	         "saved when Editor closes."},
+	         "Set the game title, render size and five gameplay keys before "
+	         "Play or export. Choose distinct letters, digits, Space or arrow "
+	         "keys for movement and jumping. Reset Gameplay Keys restores "
+	         "WASD and Space. Apply validates all fields; Cancel keeps the "
+	         "previous settings. Scene data and undo history stay unchanged. "
+	         "Play and exported games share these bindings. Game focus and "
+	         "text-input guards still apply; Escape closes Play or the game. "
+	         "Settings are saved when Editor closes. Old configurations use "
+	         "WASD and Space."},
 	        {"File > Export Game",
 	         "Choose a new folder, game title and window size. Build Release "
 	         "first. Export keeps the active scene and saved state; run "

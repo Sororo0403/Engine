@@ -547,6 +547,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\gameplay\GameInputBindings.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
     <ClInclude Include="include\gameplay\CharacterInputReader.h">
       <Filter>include\gameplay</Filter>
     </ClInclude>

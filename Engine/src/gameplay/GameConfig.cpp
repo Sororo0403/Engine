@@ -31,7 +31,8 @@ DirectX::XMFLOAT3 ReadVector(const nlohmann::json &value) {
 } // namespace
 
 bool GameConfig::IsValid() const {
-	if (title.empty() || title.find('\0') != std::string::npos ||
+	if (!input.IsValid() || title.empty() ||
+	    title.find('\0') != std::string::npos ||
 	    StringConversion::Utf8ToWide(title).empty() || width < 1 ||
 	    height < 1 || width > 8192 || height > 8192 || scenePath.empty() ||
 	    scenePath.has_root_path() ||
@@ -61,9 +62,17 @@ bool GameConfig::Serialize(std::string &text, std::string &error) const {
 		auto vector = [](const auto &v) {
 			return nlohmann::json::array({v.x, v.y, v.z});
 		};
+		nlohmann::json inputJson = nlohmann::json::object();
+
+		for (const auto &action : GameInputBindings::kActions) {
+			inputJson[action.name] =
+			    GameInputBindings::GetName(input.*action.member);
+		}
+
 		const nlohmann::json data = {
 		    {"format", "EngineGame"},
-		    {"version", 1},
+		    {"version", 2},
+		    {"input", inputJson},
 		    {"title", title},
 		    {"width", width},
 		    {"height", height},
@@ -118,7 +127,8 @@ bool GameConfig::Load(const std::filesystem::path &path, std::string &error) {
 
 		if (data.at("format") != "EngineGame" ||
 		    !data.at("version").is_number_integer() ||
-		    data.at("version") != 1 || !data.at("width").is_number_integer() ||
+		    (data.at("version") != 1 && data.at("version") != 2) ||
+		    !data.at("width").is_number_integer() ||
 		    !data.at("height").is_number_integer()) {
 			throw std::runtime_error("Unsupported game configuration.");
 		}
@@ -135,6 +145,19 @@ bool GameConfig::Load(const std::filesystem::path &path, std::string &error) {
 		candidate.height = data.at("height").get<int>();
 		candidate.scenePath =
 		    PathUtils::FromUtf8(data.at("scene").get<std::string>());
+		if (data.at("version") == 2) {
+			for (const auto &action : GameInputBindings::kActions) {
+				const auto key = GameInputBindings::FromName(
+				    data.at("input").at(action.name).get<std::string>());
+
+				if (!key) {
+					throw std::runtime_error("Unsupported gameplay key.");
+				}
+
+				candidate.input.*action.member = *key;
+			}
+		}
+
 		const auto &camera = data.at("camera");
 		candidate.fallbackCamera = {ReadVector(camera.at("position")),
 		                            ReadVector(camera.at("target")),
