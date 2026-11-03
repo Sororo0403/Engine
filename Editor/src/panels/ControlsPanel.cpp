@@ -261,6 +261,16 @@ void ControlsPanel::Draw() {
 	         "absolute Assets folder. Previously selected folders are kept "
 	         "for scene export, but only referenced sources are required. "
 	         "Folder settings are saved when Editor closes."},
+	        {"Game Settings > Save Game Configuration",
+	         "Save the valid draft to a game configuration JSON without "
+	         "exporting "
+	         "a game. Existing destinations require overwrite confirmation. "
+	         "Saving does not Apply the draft to Editor; Cancel still keeps "
+	         "the earlier settings and leaves an explicitly saved file in "
+	         "place. "
+	         "Load Game Configuration can reuse the title, dimensions, keys "
+	         "and movement space. Scene path and fallback camera retain the "
+	         "current Editor configuration."},
 	        {"File > Recover Scene",
 	         "Choose an unsaved scene recorded by an ended Editor session. "
 	         "A stable unsaved scene is recorded every 30 seconds with its "

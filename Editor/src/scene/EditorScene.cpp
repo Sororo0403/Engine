@@ -1883,7 +1883,9 @@ void EditorScene::StartAction(EditorAction action) {
 		return;
 
 	case EditorAction::GAME_SETTINGS:
-		gameSettingsDialog_.Show(exportConfig_);
+		gameSettingsDialog_.Show(exportConfig_,
+		                         assets_.GetRootDirectory() /
+		                             assetsPanel_.GetOpenDirectory());
 		stage_ = DialogStage::GAME_SETTINGS;
 		return;
 	case EditorAction::EXPORT_GAME:

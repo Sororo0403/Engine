@@ -17,10 +17,12 @@ class GameSettingsDialog {
 	/// 現在の設定から編集用の値を作り、モーダルを開く
 	/// </summary>
 	/// <param name="config">変更前のゲーム設定</param>
-	void Show(const GameConfig &config);
+	/// <param name="directory">設定保存の初期フォルダ。空の場合は実行ファイルのフォルダ</param>
+	void Show(const GameConfig &config,
+	          const std::filesystem::path &directory = {});
 
 	/// <summary>
-	/// 編集用の値と出力ゲームからの読み込みを表示し、有効な値の適用か取り消しを受け付ける
+	/// 編集用の値と設定の読み込み・保存を表示し、有効な値の適用か取り消しを受け付ける
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
 	/// <returns>適用・取り消し・編集中</returns>
@@ -42,9 +44,18 @@ class GameSettingsDialog {
 	/// <returns>true:下書きを更新 false:下書きと適用済み設定を保持し、失敗理由を設定する</returns>
 	bool LoadConfiguration(const std::filesystem::path &path);
 
+	/// <summary>
+	/// 下書きを検証し、有効な場合だけ保存・適用する候補を作る
+	/// </summary>
+	/// <param name="candidate">成功時だけ設定する、シーン参照と予備カメラを保持した設定</param>
+	/// <returns>true:成功 false:候補を保持し、下書きのエラーを設定する</returns>
+	bool BuildConfiguration(GameConfig &candidate);
+
 	GameConfig config_;
+	GameConfig pendingSave_;
 	FileDialog picker_;
 	std::filesystem::path source_;
+	std::filesystem::path destination_;
 	GameInputBindings input_;
 	bool cameraRelativeMovement_ = false;
 	std::string title_, error_;
@@ -52,4 +63,5 @@ class GameSettingsDialog {
 	int height_ = 720;
 	bool opening_ = false;
 	bool selecting_ = false;
+	bool saving_ = false;
 };

@@ -5,7 +5,8 @@
 #include <imgui.h>
 #include <utility>
 
-void GameSettingsDialog::Show(const GameConfig &config) {
+void GameSettingsDialog::Show(const GameConfig &config,
+                              const std::filesystem::path &directory) {
 	config_ = config;
 	title_ = config.title;
 	width_ = config.width;
@@ -14,6 +15,8 @@ void GameSettingsDialog::Show(const GameConfig &config) {
 	cameraRelativeMovement_ = config.cameraRelativeMovement;
 	error_.clear();
 	source_.clear();
+	destination_ = directory / L"Game.settings.json";
+	saving_ = false;
 	opening_ = true;
 	selecting_ = false;
 }
@@ -34,10 +37,14 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 
 	ui.BeginDisabled(selecting_);
 	if (ui.Button("Load Game Configuration")) {
+		saving_ = false;
 		picker_.Show(FileDialogMode::OPEN, source_,
 		             FileDialogFilter::GAME_CONFIG);
 		selecting_ = true;
 	}
+	ui.EndDisabled();
+	ui.BeginDisabled(selecting_);
+	const bool saveConfiguration = ui.Button("Save Game Configuration");
 	ui.EndDisabled();
 
 	ui.BeginDisabled(selecting_);
@@ -71,6 +78,18 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 	}
 	ui.EndDisabled();
 
+	if (saveConfiguration) {
+		if (BuildConfiguration(pendingSave_)) {
+			picker_.Show(FileDialogMode::SAVE,
+			             destination_.empty()
+			                 ? std::filesystem::path(L"Game.settings.json")
+			                 : destination_,
+			             FileDialogFilter::GAME_CONFIG);
+			selecting_ = true;
+			saving_ = true;
+		}
+	}
+
 	if (!error_.empty()) {
 		ImGui::TextWrapped("%s", error_.c_str());
 	}
@@ -88,21 +107,10 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 	if (cancel) {
 		result = GameSettingsResult::CANCELLED;
 	} else if (apply) {
-		auto candidate = config_;
-		candidate.title = title_;
-		candidate.width = width_;
-		candidate.height = height_;
-		candidate.input = input_;
-		candidate.cameraRelativeMovement = cameraRelativeMovement_;
-
-		if (candidate.IsValid()) {
+		GameConfig candidate;
+		if (BuildConfiguration(candidate)) {
 			config_ = std::move(candidate);
 			result = GameSettingsResult::ACCEPTED;
-		} else {
-			error_ = !candidate.input.IsValid()
-			             ? "Choose different supported keys for every gameplay "
-			               "action."
-			             : "Enter a title and a valid window size (1-8192).";
 		}
 	}
 
@@ -111,8 +119,13 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 	if (selecting_) {
 		const auto selected = picker_.Draw(ui);
 		if (selected == FileDialogResult::ACCEPTED) {
-			source_ = picker_.GetSelectedPath();
-			LoadConfiguration(source_);
+			if (saving_) {
+				destination_ = picker_.GetSelectedPath();
+				pendingSave_.Save(destination_, error_);
+			} else {
+				source_ = picker_.GetSelectedPath();
+				LoadConfiguration(source_);
+			}
 		}
 		if (selected != FileDialogResult::NONE) {
 			selecting_ = false;
@@ -138,5 +151,24 @@ bool GameSettingsDialog::LoadConfiguration(const std::filesystem::path &path) {
 	height_ = loaded.height;
 	input_ = loaded.input;
 	cameraRelativeMovement_ = loaded.cameraRelativeMovement;
+	return true;
+}
+
+bool GameSettingsDialog::BuildConfiguration(GameConfig &candidate) {
+	auto value = config_;
+	value.title = title_;
+	value.width = width_;
+	value.height = height_;
+	value.input = input_;
+	value.cameraRelativeMovement = cameraRelativeMovement_;
+	if (!value.IsValid()) {
+		error_ =
+		    !value.input.IsValid()
+		        ? "Choose different supported keys for every gameplay action."
+		        : "Enter a title and a valid window size (1-8192).";
+		return false;
+	}
+	candidate = std::move(value);
+	error_.clear();
 	return true;
 }
