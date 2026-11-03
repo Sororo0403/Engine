@@ -485,6 +485,14 @@ bool EditorScene::Update(float deltaTime) {
 			action = EditorAction::OPEN_PATH;
 		}
 
+		const auto &requestedSettings = assetsPanel_.GetGameSettingsRequest();
+		if (!requestedSettings.empty() && !IsBusy() &&
+		    action == EditorAction::NONE &&
+		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
+			pendingOpenPath_ = requestedSettings;
+			action = EditorAction::LOAD_GAME_SETTINGS;
+		}
+
 		if (assetsPanel_.IsFolderCreateRequested() && !IsBusy() &&
 		    action == EditorAction::NONE &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
@@ -1853,6 +1861,7 @@ void EditorScene::StartAction(EditorAction action) {
 	    ((action == EditorAction::IMPORT_SCENE ||
 	      action == EditorAction::ASSETS_FOLDER ||
 	      action == EditorAction::OPEN_PATH ||
+	      action == EditorAction::LOAD_GAME_SETTINGS ||
 	      action == EditorAction::RECOVER_SCENE ||
 	      action == EditorAction::RESTORE_RECOVERY) &&
 	     (playMode_.IsPlaying() || IsBusy()))) {
@@ -1892,9 +1901,13 @@ void EditorScene::StartAction(EditorAction action) {
 		return;
 
 	case EditorAction::GAME_SETTINGS:
+	case EditorAction::LOAD_GAME_SETTINGS:
 		gameSettingsDialog_.Show(exportConfig_,
 		                         assets_.GetRootDirectory() /
-		                             assetsPanel_.GetOpenDirectory());
+		                             assetsPanel_.GetOpenDirectory(),
+		                         action == EditorAction::LOAD_GAME_SETTINGS
+		                             ? pendingOpenPath_
+		                             : std::filesystem::path{});
 		stage_ = DialogStage::GAME_SETTINGS;
 		return;
 	case EditorAction::EXPORT_GAME:
@@ -3067,6 +3080,9 @@ void EditorScene::UpdateDialogs() {
 		}
 
 		if (result != GameSettingsResult::NONE) {
+			if (!gameSettingsDialog_.GetLastSavedPath().empty()) {
+				assets_.Refresh();
+			}
 			stage_ = DialogStage::IDLE;
 		}
 

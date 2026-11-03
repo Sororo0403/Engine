@@ -136,6 +136,7 @@ class EditorScene final : public IScene {
 		IMPORT_SCENE,
 		EXPORT_GAME,
 		GAME_SETTINGS,
+		LOAD_GAME_SETTINGS,
 		ASSETS_FOLDER,
 		RELOAD_SCENE,
 		EXIT,

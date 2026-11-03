@@ -27,6 +27,7 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	type_ = type;
 	selectedPath_.clear();
 	sceneOpenPath_.clear();
+	gameSettingsPath_.clear();
 	sceneAppendPath_.clear();
 	instanceSelectionPath_.clear();
 	modelReloadPath_.clear();
@@ -104,7 +105,9 @@ bool AssetsPanel::SelectAsset(const std::filesystem::path &path,
 	for (const bool aliases : {false, true}) {
 		if (select(assets.GetModels(), AssetType::MODEL, aliases) ||
 		    select(assets.GetTextures(), AssetType::TEXTURE, aliases) ||
-		    select(assets.GetScenes(), AssetType::SCENE, aliases)) {
+		    select(assets.GetScenes(), AssetType::SCENE, aliases) ||
+		    select(assets.GetGameConfigurations(), AssetType::GAME_SETTINGS,
+		           aliases)) {
 			return true;
 		}
 	}
@@ -117,6 +120,7 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
                                         bool canSetTexture, bool canEditAssets,
                                         bool canReplaceMesh) {
 	sceneOpenPath_.clear();
+	gameSettingsPath_.clear();
 	sceneAppendPath_.clear();
 	instanceSelectionPath_.clear();
 	modelReloadPath_.clear();
@@ -257,13 +261,15 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 			return "Textures";
 		case AssetType::SCENE:
 			return "Scenes";
+		case AssetType::GAME_SETTINGS:
+			return "Game Settings";
 		}
 		return "";
 	};
 
 	if (ImGui::BeginCombo("Asset Type", typeLabel(type_))) {
-		for (const auto type :
-		     {AssetType::MODEL, AssetType::TEXTURE, AssetType::SCENE}) {
+		for (const auto type : {AssetType::MODEL, AssetType::TEXTURE,
+		                        AssetType::SCENE, AssetType::GAME_SETTINGS}) {
 			if (ui.Selectable(typeLabel(type), type_ == type)) {
 				SetAssetType(type);
 			}
@@ -285,7 +291,9 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 
 	const auto &entries = type_ == AssetType::MODEL     ? assets.GetModels()
 	                      : type_ == AssetType::TEXTURE ? assets.GetTextures()
-	                                                    : assets.GetScenes();
+	                      : type_ == AssetType::SCENE
+	                          ? assets.GetScenes()
+	                          : assets.GetGameConfigurations();
 
 	if (!selectedPath_.empty() && std::find(entries.begin(), entries.end(),
 	                                        selectedPath_) == entries.end()) {
@@ -385,6 +393,11 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 					sceneOpenPath_ = assetPath;
 				}
 
+				if (type_ == AssetType::GAME_SETTINGS && canEditAssets &&
+				    doubleClicked) {
+					gameSettingsPath_ = assetPath;
+				}
+
 				if (type_ == AssetType::TEXTURE && canSetTexture &&
 				    textureSlot_ >= 0 && doubleClicked) {
 					textureSelectionPath_ = assetPath;
@@ -428,7 +441,13 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 					modelReloadPath_ = assetPath;
 				}
 
-				if (type_ != AssetType::SCENE &&
+				if (type_ == AssetType::GAME_SETTINGS &&
+				    ui.MenuItem("Load Game Settings", nullptr, canEditAssets)) {
+					gameSettingsPath_ = assetPath;
+				}
+
+				if ((type_ == AssetType::MODEL ||
+				     type_ == AssetType::TEXTURE) &&
 				    ui.MenuItem("Select Instances", nullptr, true)) {
 					if (type_ == AssetType::MODEL) {
 						instanceSelectionPath_ = assetPath;
@@ -535,6 +554,12 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 		}
 
 		ui.EndDisabled();
+	} else if (type_ == AssetType::GAME_SETTINGS) {
+		ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
+		if (ui.Button("Load Game Settings")) {
+			gameSettingsPath_ = selectedPath_;
+		}
+		ui.EndDisabled();
 	} else {
 		ui.BeginDisabled(selectedPath_.empty());
 
@@ -585,6 +610,7 @@ void AssetsPanel::Clear() {
 	texturePreviewPath_.clear();
 	selectedPath_.clear();
 	sceneOpenPath_.clear();
+	gameSettingsPath_.clear();
 	sceneAppendPath_.clear();
 	instanceSelectionPath_.clear();
 	modelReloadPath_.clear();
@@ -645,4 +671,8 @@ const std::filesystem::path &AssetsPanel::GetSceneOpenRequest() const {
 
 const std::filesystem::path &AssetsPanel::GetSceneAppendRequest() const {
 	return sceneAppendPath_;
+}
+
+const std::filesystem::path &AssetsPanel::GetGameSettingsRequest() const {
+	return gameSettingsPath_;
 }

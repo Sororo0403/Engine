@@ -1,12 +1,15 @@
 #include "dialogs/GameSettingsDialog.h"
 
 #include "graphics/ui/ImGuiSystem.h"
+#include "platform/windows/PathUtils.h"
 
+#include <exception>
 #include <imgui.h>
 #include <utility>
 
 void GameSettingsDialog::Show(const GameConfig &config,
-                              const std::filesystem::path &directory) {
+                              const std::filesystem::path &directory,
+                              const std::filesystem::path &configuration) {
 	config_ = config;
 	title_ = config.title;
 	width_ = config.width;
@@ -15,11 +18,21 @@ void GameSettingsDialog::Show(const GameConfig &config,
 	cameraRelativeMovement_ = config.cameraRelativeMovement;
 	lighting_ = config.lighting;
 	error_.clear();
-	source_.clear();
+	source_ = configuration;
+	lastSavedPath_.clear();
 	destination_ = directory / L"Game.settings.json";
 	saving_ = false;
 	opening_ = true;
 	selecting_ = false;
+	if (!source_.empty()) {
+		try {
+			source_ = PathUtils::ResolveFromExecutable(source_);
+			destination_ = source_;
+			LoadConfiguration(source_);
+		} catch (const std::exception &error) {
+			error_ = error.what();
+		}
+	}
 }
 
 GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
@@ -132,7 +145,9 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 		if (selected == FileDialogResult::ACCEPTED) {
 			if (saving_) {
 				destination_ = picker_.GetSelectedPath();
-				pendingSave_.Save(destination_, error_);
+				if (pendingSave_.Save(destination_, error_)) {
+					lastSavedPath_ = destination_;
+				}
 			} else {
 				source_ = picker_.GetSelectedPath();
 				LoadConfiguration(source_);

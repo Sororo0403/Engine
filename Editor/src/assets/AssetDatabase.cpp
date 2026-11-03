@@ -52,6 +52,7 @@ bool AssetDatabase::Refresh() {
 		std::vector<std::filesystem::path> models;
 		std::vector<std::filesystem::path> textures;
 		std::vector<std::filesystem::path> scenes;
+		std::vector<std::filesystem::path> gameConfigurations;
 		std::vector<std::filesystem::path> directories;
 		const auto reference = [&](const std::filesystem::path &path) {
 			return selectedRoot.is_absolute()
@@ -97,6 +98,11 @@ bool AssetDatabase::Refresh() {
 					scenes.push_back(reference(path));
 				}
 
+				if (PathUtils::HasExtension(path, ".json") &&
+				    PathUtils::HasExtension(path.stem(), ".settings")) {
+					gameConfigurations.push_back(reference(path));
+				}
+
 				const bool supported = PathUtils::IsModelFile(path);
 
 				if (supported) {
@@ -122,12 +128,14 @@ bool AssetDatabase::Refresh() {
 		std::sort(models.begin(), models.end());
 		std::sort(textures.begin(), textures.end());
 		std::sort(scenes.begin(), scenes.end());
+		std::sort(gameConfigurations.begin(), gameConfigurations.end());
 		std::sort(directories.begin(), directories.end());
 
 		rootDirectory_.swap(selectedRoot);
 		models_.swap(models);
 		textures_.swap(textures);
 		scenes_.swap(scenes);
+		gameConfigurations_.swap(gameConfigurations);
 		directories_.swap(directories);
 		error_.clear();
 		return true;
@@ -135,6 +143,7 @@ bool AssetDatabase::Refresh() {
 		models_.clear();
 		textures_.clear();
 		scenes_.clear();
+		gameConfigurations_.clear();
 		directories_.clear();
 		error_ = error.what();
 
@@ -155,6 +164,7 @@ bool AssetDatabase::SetRootDirectory(std::filesystem::path rootDirectory) {
 		models_.swap(candidate.models_);
 		textures_.swap(candidate.textures_);
 		scenes_.swap(candidate.scenes_);
+		gameConfigurations_.swap(candidate.gameConfigurations_);
 		directories_.swap(candidate.directories_);
 		error_.clear();
 		return true;
@@ -185,6 +195,7 @@ void AssetDatabase::Clear() {
 	models_.clear();
 	textures_.clear();
 	scenes_.clear();
+	gameConfigurations_.clear();
 	directories_.clear();
 	error_.clear();
 }
@@ -195,4 +206,9 @@ const std::vector<std::filesystem::path> &AssetDatabase::GetTextures() const {
 
 const std::vector<std::filesystem::path> &AssetDatabase::GetScenes() const {
 	return scenes_;
+}
+
+const std::vector<std::filesystem::path> &
+AssetDatabase::GetGameConfigurations() const {
+	return gameConfigurations_;
 }

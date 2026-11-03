@@ -8,12 +8,12 @@ class AssetDatabase;
 class ImGuiSystem;
 
 /// <summary>
-/// モデル・画像・シーンの一覧・検索・選択と、配置・画像割り当て・シーンを開く要求を管理する
+/// モデル・画像・シーン・ゲーム設定の一覧・検索・選択と、配置・画像割り当て・シーンを開く要求を管理する
 /// </summary>
 class AssetsPanel {
   public:
 	/// <summary>
-	/// モデル・画像・シーンをAssets内で選択し、次の描画時に表示する
+	/// モデル・画像・シーン・ゲーム設定をAssets内で選択し、次の描画時に表示する
 	/// </summary>
 	/// <param name="path">表示するアセットの相対パスまたは絶対パス</param>
 	void RequestReveal(const std::filesystem::path &path);
@@ -43,6 +43,12 @@ class AssetsPanel {
 	/// </summary>
 	/// <returns>シーンの参照先。要求なしは空。次のDraw・種類切り替え・Clearまで有効</returns>
 	const std::filesystem::path &GetSceneAppendRequest() const;
+
+	/// <summary>
+	/// このフレームに、ゲーム設定の下書きへ読み込むことを要求したパスを取得する
+	/// </summary>
+	/// <returns>設定ファイル。要求なしは空。次のDraw・種類切り替え・Clearまで有効</returns>
+	const std::filesystem::path &GetGameSettingsRequest() const;
 
 	/// <summary>
 	/// このフレームに使用物体の選択を要求したモデルを取得する
@@ -137,12 +143,12 @@ class AssetsPanel {
 	/// <summary>
 	/// 一覧に表示するアセットの種類
 	/// </summary>
-	enum class AssetType { MODEL, TEXTURE, SCENE };
+	enum class AssetType { MODEL, TEXTURE, SCENE, GAME_SETTINGS };
 
 	/// <summary>
 	/// 表示の種類を切り替え、前の種類の選択と操作要求を解除する
 	/// </summary>
-	/// <param name="type">表示するモデル・画像・シーン</param>
+	/// <param name="type">表示するモデル・画像・シーン・ゲーム設定</param>
 	void SetAssetType(AssetType type);
 
 	/// <summary>
@@ -154,7 +160,7 @@ class AssetsPanel {
 	/// <summary>
 	/// 同じファイルを指す一覧の項目を選択し、親フォルダを開いて検索を解除する
 	/// </summary>
-	/// <param name="path">探すモデル・画像・シーンのパス</param>
+	/// <param name="path">探すモデル・画像・シーン・ゲーム設定のパス</param>
 	/// <param name="assets">確認するアセット一覧</param>
 	/// <returns>true:選択成功 false:一覧に該当なし</returns>
 	bool SelectAsset(const std::filesystem::path &path,
@@ -166,6 +172,7 @@ class AssetsPanel {
 	std::filesystem::path textureUsageSelectionPath_;
 	std::filesystem::path selectedPath_;
 	std::filesystem::path sceneOpenPath_;
+	std::filesystem::path gameSettingsPath_;
 	std::filesystem::path sceneAppendPath_;
 	std::filesystem::path instanceSelectionPath_;
 	std::filesystem::path modelReloadPath_;

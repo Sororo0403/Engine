@@ -261,6 +261,20 @@ void ControlsPanel::Draw() {
 	         "absolute Assets folder. Previously selected folders are kept "
 	         "for scene export, but only referenced sources are required. "
 	         "Folder settings are saved when Editor closes."},
+	        {"Assets > Game Settings",
+	         "Files named *.settings.json appear in Game Settings. Select a "
+	         "file and use Load Game Settings, double-click it or use its "
+	         "context menu to open a draft. Apply adopts its title, "
+	         "dimensions, "
+	         "keys, movement basis and lighting; Cancel keeps applied "
+	         "settings. "
+	         "Scene data, selection, Inspector locks and undo history are "
+	         "kept. "
+	         "Malformed files show an error without applying partial values. "
+	         "Saving writes only after explicit overwrite confirmation. The "
+	         "list refreshes when a dialog that saved a configuration closes. "
+	         "Other JSON names remain available through Load Game "
+	         "Configuration."},
 	        {"Game Settings > Save Game Configuration",
 	         "Save the valid draft to a game configuration JSON without "
 	         "exporting "
@@ -269,7 +283,8 @@ void ControlsPanel::Draw() {
 	         "the earlier settings and leaves an explicitly saved file in "
 	         "place. "
 	         "Load Game Configuration can reuse the title, dimensions, keys "
-	         "and movement space. Scene path and fallback camera retain the "
+	         "lighting and movement space. Scene path and fallback camera "
+	         "retain the "
 	         "current Editor configuration."},
 	        {"File > Recover Scene",
 	         "Choose an unsaved scene recorded by an ended Editor session. "
