@@ -14,8 +14,10 @@
 #include "dialogs/ObjectArrayDialog.h"
 #include "dialogs/SaveChangesDialog.h"
 #include "dialogs/SceneImportDialog.h"
+#include "dialogs/SceneRecoveryDialog.h"
 #include "dialogs/SceneReloadDialog.h"
 #include "dialogs/TextureImportDialog.h"
+#include "files/SceneRecovery.h"
 #include "gameplay/CharacterJumpPreview.h"
 #include "gameplay/EditorPlayMode.h"
 #include "gameplay/FollowCameraPreview.h"
@@ -189,6 +191,8 @@ class EditorScene final : public IScene {
 		RENAME_OBJECT,
 		OPEN_PATH,
 		SAVE_SELECTION,
+		RECOVER_SCENE,
+		RESTORE_RECOVERY,
 		SHOW_ALL_MODELS,
 		REVEAL_ACTIVE,
 	};
@@ -228,6 +232,7 @@ class EditorScene final : public IScene {
 		OBJECT_ARRAY,
 		ERROR,
 		SAVE_SELECTION_FILE,
+		RECOVERY,
 	};
 
 	/// <summary>
@@ -400,6 +405,33 @@ class EditorScene final : public IScene {
 	/// 現在のダイアログを描画し、選択結果を処理する
 	/// </summary>
 	void UpdateDialogs();
+
+	/// <summary>
+	/// 安定した未保存の編集シーンを定期的に記録する。Playやダイアログ・連続編集中は待つ
+	/// </summary>
+	/// <param name="deltaTime">検証済みのフレーム経過時間</param>
+	void UpdateRecovery(float deltaTime);
+
+	/// <summary>
+	/// 現在のシーンを復旧用に記録し、復旧元があれば新しい記録の成功後に消去する
+	/// </summary>
+	void RecordRecovery();
+
+	/// <summary>
+	/// 保存または明示的な破棄に合わせ、現在のシーンに対応する復旧記録を消去する
+	/// </summary>
+	/// <param name="protectedRecovery">復旧処理が引き続き読み込む候補。空は保護対象なし</param>
+	void ClearRecovery(const std::filesystem::path &protectedRecovery = {});
+
+	/// <summary>
+	/// 復旧候補を列挙して選択画面を開く
+	/// </summary>
+	void ShowRecovery();
+
+	/// <summary>
+	/// 確認済みの候補を独立した未保存シーンとして復旧する。元ファイルは上書きしない
+	/// </summary>
+	void RestoreRecovery();
 
 	/// <summary>
 	/// 操作を中止してエラー表示を予約する
@@ -641,6 +673,13 @@ class EditorScene final : public IScene {
 
 	// 描画側の参照より先に宣言する
 	SceneDocument document_;
+	SceneRecovery recovery_;
+	SceneRecoveryDialog recoveryDialog_;
+	std::filesystem::path pendingRecoveryPath_;
+	std::filesystem::path restoredRecoveryPath_;
+	float recoveryElapsed_ = 0;
+	bool recoveryWasDirty_ = false;
+
 	Scene selectionSnapshot_;
 	SceneRenderer renderer_;
 	EditorPlayMode playMode_;

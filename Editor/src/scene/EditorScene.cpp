@@ -124,6 +124,23 @@ bool EditorScene::Initialize() {
 	}
 	clipboard_.Clear();
 
+	recoveryElapsed_ = 0;
+	recoveryWasDirty_ = false;
+	pendingRecoveryPath_.clear();
+	restoredRecoveryPath_.clear();
+	std::string recoveryError;
+	if (!recovery_.Initialize(L"config/recovery", recoveryError)) {
+		Logger::Error("EditorScene::Recovery: " + recoveryError);
+	} else {
+		std::vector<SceneRecovery::Entry> entries;
+		if (!recovery_.Enumerate(entries, recoveryError)) {
+			Logger::Error("EditorScene::Recovery: " + recoveryError);
+		} else if (!entries.empty()) {
+			recoveryDialog_.Show(std::move(entries));
+			stage_ = DialogStage::RECOVERY;
+		}
+	}
+
 	Logger::Info("EditorSceneを初期化しました。");
 	return true;
 }
@@ -133,6 +150,8 @@ bool EditorScene::Update(float deltaTime) {
 		Logger::Error("EditorScene::Update: 経過時間が無効です。");
 		return false;
 	}
+
+	UpdateRecovery(deltaTime);
 
 	playFrame_ = false;
 	playSceneReady_ = false;
@@ -1047,6 +1066,12 @@ void EditorScene::Draw() const {
 
 void EditorScene::Finalize() {
 	FinishEdit();
+	if (closeApproved_ || !document_.IsModified()) {
+		ClearRecovery();
+	} else {
+		RecordRecovery();
+	}
+	recovery_.Release();
 
 	if (canSavePreferences_) {
 		EditorPreferences current;
@@ -1208,6 +1233,10 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		                     !gizmoEditActive_ &&
 		                     !sceneViewPanel_.IsSelecting())) {
 			action = EditorAction::SAVE_SELECTION;
+		}
+
+		if (ui_.MenuItem("Recover Scene...", nullptr, enabled)) {
+			action = EditorAction::RECOVER_SCENE;
 		}
 
 		if (ui_.MenuItem("Assets Folder...", nullptr, enabled)) {
@@ -1814,7 +1843,9 @@ void EditorScene::StartAction(EditorAction action) {
 	    action == EditorAction::NONE ||
 	    ((action == EditorAction::IMPORT_SCENE ||
 	      action == EditorAction::ASSETS_FOLDER ||
-	      action == EditorAction::OPEN_PATH) &&
+	      action == EditorAction::OPEN_PATH ||
+	      action == EditorAction::RECOVER_SCENE ||
+	      action == EditorAction::RESTORE_RECOVERY) &&
 	     (playMode_.IsPlaying() || IsBusy()))) {
 		return;
 	}
@@ -1830,6 +1861,10 @@ void EditorScene::StartAction(EditorAction action) {
 	FinishEdit();
 
 	switch (action) {
+	case EditorAction::RECOVER_SCENE:
+		ShowRecovery();
+		return;
+
 	case EditorAction::SAVE_SELECTION:
 		StartSaveSelection();
 		return;
@@ -2029,6 +2064,7 @@ void EditorScene::StartAction(EditorAction action) {
 	case EditorAction::NEW_SAMPLE:
 	case EditorAction::OPEN:
 	case EditorAction::OPEN_PATH:
+	case EditorAction::RESTORE_RECOVERY:
 	case EditorAction::IMPORT_SCENE:
 	case EditorAction::EXIT:
 		// 保存確認が終わるまで、実際の操作は保留する
@@ -2168,6 +2204,7 @@ void EditorScene::ExecutePendingAction() {
 				document_.MarkModified();
 			}
 
+			ClearRecovery();
 			gizmo_.Cancel();
 			gizmoEditActive_ = false;
 			selection_.Clear();
@@ -2204,6 +2241,9 @@ void EditorScene::ExecutePendingAction() {
 	case EditorAction::OPEN_PATH:
 		OpenScene(pendingOpenPath_);
 		return;
+	case EditorAction::RESTORE_RECOVERY:
+		RestoreRecovery();
+		return;
 
 	case EditorAction::EXIT:
 		closeApproved_ = true;
@@ -2218,6 +2258,7 @@ void EditorScene::StartSave(bool saveAs) {
 	if (!saveAs && !document_.GetFilePath().empty()) {
 		if (document_.Save()) {
 			recentScenes_.Add(document_.GetFilePath());
+			ClearRecovery();
 			assets_.Refresh();
 			ExecutePendingAction();
 		} else {
@@ -2568,10 +2609,146 @@ bool EditorScene::PlaceDroppedScene(const std::filesystem::path &path,
 	}
 }
 
+void EditorScene::UpdateRecovery(float deltaTime) {
+	if (!recovery_.IsReady()) {
+		return;
+	}
+	if (!document_.IsModified()) {
+		if (recoveryWasDirty_) {
+			ClearRecovery();
+		}
+		recoveryWasDirty_ = false;
+		recoveryElapsed_ = 0;
+		return;
+	}
+	recoveryWasDirty_ = true;
+	recoveryElapsed_ = (std::min)(SceneRecovery::kIntervalSeconds,
+	                              recoveryElapsed_ + deltaTime);
+	if (recoveryElapsed_ < SceneRecovery::kIntervalSeconds || IsBusy() ||
+	    playMode_.IsPlaying() || document_.GetHistory().IsEditing() ||
+	    gizmo_.IsUsing() || gizmoEditActive_ || sceneViewPanel_.IsSelecting() ||
+	    ImGui::IsAnyItemActive()) {
+		return;
+	}
+	RecordRecovery();
+}
+
+void EditorScene::RecordRecovery() {
+	recoveryElapsed_ = 0;
+	if (!recovery_.IsReady()) {
+		return;
+	}
+	std::string error;
+	if (!recovery_.Record(document_.GetScene(), document_.GetFilePath(),
+	                      assetSources_, exportConfig_, error)) {
+		Logger::Error("EditorScene::RecordRecovery: " + error);
+		return;
+	}
+	if (!restoredRecoveryPath_.empty()) {
+		if (!document_.GetFilePath().empty() &&
+		    PathUtils::IsSameFile(restoredRecoveryPath_,
+		                          document_.GetFilePath())) {
+			restoredRecoveryPath_.clear();
+		} else if (recovery_.Remove(restoredRecoveryPath_, error)) {
+			restoredRecoveryPath_.clear();
+		} else {
+			Logger::Error("EditorScene::RemoveRecovery: " + error);
+		}
+	}
+}
+
+void EditorScene::ClearRecovery(
+    const std::filesystem::path &protectedRecovery) {
+	recoveryElapsed_ = 0;
+	std::string error;
+	if (!recovery_.Clear(document_.GetFilePath(), error)) {
+		Logger::Error("EditorScene::ClearRecovery: " + error);
+	}
+	if (!restoredRecoveryPath_.empty()) {
+		const auto &protectedCandidate =
+		    pendingAction_ == EditorAction::RESTORE_RECOVERY
+		        ? pendingRecoveryPath_
+		        : protectedRecovery;
+		if (!protectedCandidate.empty() &&
+		    PathUtils::IsSameFile(restoredRecoveryPath_, protectedCandidate)) {
+			restoredRecoveryPath_.clear();
+		} else if (!document_.GetFilePath().empty() &&
+		           PathUtils::IsSameFile(restoredRecoveryPath_,
+		                                 document_.GetFilePath())) {
+			restoredRecoveryPath_.clear();
+		} else if (recovery_.Remove(restoredRecoveryPath_, error)) {
+			restoredRecoveryPath_.clear();
+		} else {
+			Logger::Error("EditorScene::RemoveRecovery: " + error);
+		}
+	}
+}
+
+void EditorScene::ShowRecovery() {
+	std::vector<SceneRecovery::Entry> entries;
+	std::string error;
+	recovery_.Enumerate(entries, error);
+	recoveryDialog_.Show(std::move(entries), std::move(error));
+	stage_ = DialogStage::RECOVERY;
+}
+
+void EditorScene::RestoreRecovery() {
+	try {
+		SceneRecovery::Snapshot snapshot;
+		std::string error;
+		if (!recovery_.Read(pendingRecoveryPath_, snapshot, error)) {
+			ShowError(
+			    "Could not restore the scene. The current scene was kept: " +
+			    error);
+			return;
+		}
+		AssetDatabase assets(snapshot.assets.GetDirectory());
+		assets.Refresh();
+		auto restoredPath = pendingRecoveryPath_;
+		document_.GetScene().ReplaceObjects(snapshot.scene.GetObjects());
+		document_.SetUntitled();
+		ClearRecovery(pendingRecoveryPath_);
+		assetSources_ = std::move(snapshot.assets);
+		exportConfig_ = std::move(snapshot.game);
+		assets_ = std::move(assets);
+		restoredRecoveryPath_.swap(restoredPath);
+		sceneCheckPanel_.Reset();
+		clipboard_.DetachExternalReferences();
+		frameRequest_ = FrameRequest::NONE;
+		frameObject_ = 0;
+		gizmo_.Cancel();
+		gizmoEditActive_ = false;
+		selection_.Clear();
+		cameraController_.Reset();
+		hierarchyPanel_.Clear();
+		inspectorPanel_.Clear();
+		assetsPanel_.Clear();
+		stage_ = DialogStage::IDLE;
+		RecordRecovery();
+	} catch (const std::exception &error) {
+		Logger::Error(
+		    std::format("EditorScene::RestoreRecovery: {}", error.what()));
+		ShowError("Could not restore the scene. See the log for details.");
+	}
+}
+
 void EditorScene::UpdateDialogs() {
 	switch (stage_) {
 	case DialogStage::IDLE:
 		return;
+
+	case DialogStage::RECOVERY: {
+		const auto result =
+		    recoveryDialog_.Draw(ui_, recovery_, document_.GetFilePath());
+		if (result == SceneRecoveryDialog::Result::CLOSED) {
+			stage_ = DialogStage::IDLE;
+		} else if (result == SceneRecoveryDialog::Result::RESTORE) {
+			pendingRecoveryPath_ = recoveryDialog_.GetSelectedPath();
+			stage_ = DialogStage::IDLE;
+			StartAction(EditorAction::RESTORE_RECOVERY);
+		}
+		return;
+	}
 
 	case DialogStage::CONFIRM_SAVE: {
 		const auto result = saveChangesDialog_.Draw(ui_);
@@ -2625,6 +2802,7 @@ void EditorScene::UpdateDialogs() {
 		if (result == FileDialogResult::ACCEPTED) {
 			if (document_.SaveAs(fileDialog_.GetSelectedPath())) {
 				recentScenes_.Add(document_.GetFilePath());
+				ClearRecovery();
 				assets_.Refresh();
 				ExecutePendingAction();
 			} else {
@@ -2734,6 +2912,7 @@ void EditorScene::UpdateDialogs() {
 		const auto result = sceneImportDialog_.Draw(ui_, document_.GetScene());
 		if (result == SceneImportResult::ACCEPTED) {
 			document_.SetUntitled();
+			ClearRecovery();
 			sceneCheckPanel_.Reset();
 			clipboard_.DetachExternalReferences();
 			frameRequest_ = FrameRequest::NONE;
@@ -2956,6 +3135,7 @@ void EditorScene::OpenScene(const std::filesystem::path &path) {
 		return;
 	}
 
+	ClearRecovery();
 	sceneCheckPanel_.Reset();
 	clipboard_.DetachExternalReferences();
 	frameRequest_ = FrameRequest::NONE;

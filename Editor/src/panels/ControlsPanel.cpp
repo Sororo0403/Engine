@@ -261,6 +261,18 @@ void ControlsPanel::Draw() {
 	         "absolute Assets folder. Previously selected folders are kept "
 	         "for scene export, but only referenced sources are required. "
 	         "Folder settings are saved when Editor closes."},
+	        {"File > Recover Scene",
+	         "Choose an unsaved scene recorded by an ended Editor session. "
+	         "A stable unsaved scene is recorded every 30 seconds with its "
+	         "Assets sources and game settings. Play, modal dialogs and active "
+	         "edits defer recording. Restore creates a modified Untitled scene "
+	         "and offers Save / Don't Save / Cancel for current edits first. "
+	         "Original files are never overwritten by recovery. Keep for Later "
+	         "or Escape preserves the records. Refresh updates the candidate "
+	         "list. "
+	         "Delete asks for confirmation. "
+	         "Active Editor sessions are excluded. A confirmed save or discard "
+	         "clears that scene's record; an unexpected shutdown retains it."},
 	        {"File > Save Selection As",
 	         "Save selected objects as a reusable *.scene.json in the current "
 	         "Assets folder. Save Copy confirms the destination. Placement, "
