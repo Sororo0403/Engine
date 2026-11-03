@@ -343,5 +343,7 @@ exit /b 0</Command>
   <ItemGroup>
     <ClInclude Include="include\platform\windows\FileUtils.h" />
     <ClCompile Include="src\platform\windows\FileUtils.cpp" />
+    <ClInclude Include="include\platform\windows\ShellUtils.h" />
+    <ClCompile Include="src\platform\windows\ShellUtils.cpp" />
   </ItemGroup>
 </Project>
