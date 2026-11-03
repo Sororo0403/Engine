@@ -8,6 +8,7 @@
 #include "physics/ColliderBounds.h"
 #include "scene/Scene.h"
 #include "scene/SceneRenderer.h"
+#include <algorithm>
 #include <array>
 #include <utility>
 
@@ -109,6 +110,39 @@ bool FollowCameraPreview::BuildLines(const Scene &scene, SceneObjectId id,
 	}
 
 	lines = std::move(result);
+	return true;
+}
+
+bool FollowCameraPreview::GetFrameBounds(
+    const Scene &scene, SceneObjectId id,
+    std::array<DirectX::XMFLOAT3, 8> &corners) const {
+	Lines lines;
+	if (!BuildLines(scene, id, lines) || lines.empty()) {
+		return false;
+	}
+	auto minimum = lines.front().start;
+	auto maximum = minimum;
+	for (const auto &line : lines) {
+		for (const auto &point : {line.start, line.end}) {
+			minimum.x = (std::min)(minimum.x, point.x);
+			minimum.y = (std::min)(minimum.y, point.y);
+			minimum.z = (std::min)(minimum.z, point.z);
+			maximum.x = (std::max)(maximum.x, point.x);
+			maximum.y = (std::max)(maximum.y, point.y);
+			maximum.z = (std::max)(maximum.z, point.z);
+		}
+	}
+	if (minimum.x >= maximum.x || minimum.y >= maximum.y ||
+	    minimum.z >= maximum.z) {
+		return false;
+	}
+	std::array<DirectX::XMFLOAT3, 8> result;
+	for (std::size_t i = 0; i < result.size(); ++i) {
+		result[i] = {(i & 1) ? maximum.x : minimum.x,
+		             (i & 2) ? maximum.y : minimum.y,
+		             (i & 4) ? maximum.z : minimum.z};
+	}
+	corners = result;
 	return true;
 }
 

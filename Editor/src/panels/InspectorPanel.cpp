@@ -547,6 +547,10 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 	} else if (followRequest.action == GameplayInspector::FollowAction::PASTE) {
 		objectRequest_ = {ObjectAction::PASTE_FOLLOW_SETTINGS,
 		                  followRequest.objectId};
+	} else if (followRequest.action ==
+	           GameplayInspector::FollowAction::FRAME_PATH) {
+		objectRequest_ = {ObjectAction::FRAME_FOLLOW_PATH,
+		                  followRequest.objectId};
 	}
 
 	const auto respawnRequest = gameplayInspector_.GetRespawnRequest();

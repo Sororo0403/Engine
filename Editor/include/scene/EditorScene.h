@@ -190,7 +190,15 @@ class EditorScene final : public IScene {
 	/// <summary>
 	/// カメラへ収める物体の範囲
 	/// </summary>
-	enum class FrameRequest { NONE, SELECTED, ALL, RESPAWN, COLLIDER, JUMP };
+	enum class FrameRequest {
+		NONE,
+		SELECTED,
+		ALL,
+		RESPAWN,
+		COLLIDER,
+		JUMP,
+		FOLLOW_PATH
+	};
 
 	/// <summary>
 	/// ファイル操作と設定ダイアログの進行状態

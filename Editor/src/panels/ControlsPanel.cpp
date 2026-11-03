@@ -844,6 +844,16 @@ void ControlsPanel::Draw() {
 	         "Respawn uses the start position and default fall height. "
 	         "Transform and other components stay unchanged. "
 	         "Pending edits finish first. Default values add no history."},
+	        {"Inspector > Follow Camera > Frame Follow Path",
+	         "Fit the inspected camera's complete follow links, clearance "
+	         "boxes and requested camera position into Scene. A locked "
+	         "Inspector uses its displayed object. Initial obstacle-placement "
+	         "errors can still be framed for diagnosis. The Scene tab opens "
+	         "when needed. Selection, Inspector lock, Camera Guides "
+	         "visibility, "
+	         "scene data and Undo history stay unchanged; pending edits finish "
+	         "first. An invalid target or configuration keeps the view and "
+	         "reports an error. Available while editing only."},
 	        {"Scene > Follow Camera clearance guide",
 	         "Select a Follow Camera and enable View > Camera Guides. With "
 	         "Avoid Obstacles on, purple boxes show Camera Clearance around "
