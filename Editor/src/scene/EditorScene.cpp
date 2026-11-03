@@ -3,6 +3,7 @@
 #include "assets/AssetFolders.h"
 #include "assets/ModelPlacement.h"
 #include "assets/ModelUsage.h"
+#include "assets/ScenePlacement.h"
 #include "assets/TextureUsage.h"
 #include "camera/CameraObjects.h"
 #include "camera/ObjectFrameBounds.h"
@@ -416,6 +417,9 @@ bool EditorScene::Update(float deltaTime) {
 	const bool sceneViewReady =
 	    sceneViewPanel_.DrawUI(ui_, gizmo_, toolbarMode);
 	const auto &modelDrop = sceneViewPanel_.GetModelDrop();
+	const auto &sceneDrop = sceneViewPanel_.GetSceneDrop();
+	const bool hasAssetDrop =
+	    !modelDrop.path.empty() || !sceneDrop.path.empty();
 
 	if (hierarchyRequest.windowFocused) {
 		hierarchySelectionScope_ = true;
@@ -612,7 +616,7 @@ bool EditorScene::Update(float deltaTime) {
 
 		if (!IsBusy() && action == EditorAction::NONE &&
 		    !requestedInstances.empty() && requestedModelPath.empty() &&
-		    modelDrop.path.empty() && modelRequest.objectId == 0 &&
+		    !hasAssetDrop && modelRequest.objectId == 0 &&
 		    visibilityRequest.objectId == 0 && !hasObjectRequest &&
 		    !historyRequest &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
@@ -664,7 +668,7 @@ bool EditorScene::Update(float deltaTime) {
 		if (!IsBusy() && action == EditorAction::NONE && textureAssignment &&
 		    checkedObject == 0 && requestedTextureUsers.empty() &&
 		    requestedSceneAppend.empty() && requestedInstances.empty() &&
-		    requestedModelPath.empty() && modelDrop.path.empty() &&
+		    requestedModelPath.empty() && !hasAssetDrop &&
 		    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
 		    colliderFitRequest == 0 && !hasObjectRequest && !historyRequest &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
@@ -675,7 +679,7 @@ bool EditorScene::Update(float deltaTime) {
 		if (!IsBusy() && action == EditorAction::NONE &&
 		    !requestedTextureUsers.empty() && requestedSceneAppend.empty() &&
 		    requestedInstances.empty() && requestedModelPath.empty() &&
-		    modelDrop.path.empty() && modelRequest.objectId == 0 &&
+		    !hasAssetDrop && modelRequest.objectId == 0 &&
 		    visibilityRequest.objectId == 0 && colliderFitRequest == 0 &&
 		    !hasObjectRequest && !historyRequest &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
@@ -707,7 +711,7 @@ bool EditorScene::Update(float deltaTime) {
 		if (!IsBusy()) {
 			if (historyRequest && action == EditorAction::NONE &&
 			    colliderFitRequest == 0 && requestedModelPath.empty() &&
-			    requestedInstances.empty() && modelDrop.path.empty() &&
+			    requestedInstances.empty() && !hasAssetDrop &&
 			    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
 			    !hasObjectRequest && !textureAssignment &&
 			    requestedModelReload.empty() &&
@@ -719,7 +723,7 @@ bool EditorScene::Update(float deltaTime) {
 			}
 
 			if (action == EditorAction::NONE && colliderFitRequest == 0 &&
-			    requestedInstances.empty() && modelDrop.path.empty() &&
+			    requestedInstances.empty() && !hasAssetDrop &&
 			    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
 			    !hasObjectRequest && !textureAssignment &&
 			    requestedModelReload.empty() &&
@@ -753,7 +757,7 @@ bool EditorScene::Update(float deltaTime) {
 	    !requestedMeshReplacement.empty() || !requestedModelReload.empty() ||
 	    !requestedTextureReload.empty() || !requestedModelPath.empty() ||
 	    !requestedInstances.empty() || !requestedTextureUsers.empty() ||
-	    !requestedSceneAppend.empty() || !modelDrop.path.empty() ||
+	    !requestedSceneAppend.empty() || hasAssetDrop ||
 	    modelRequest.objectId != 0 || visibilityRequest.objectId != 0 ||
 	    colliderFitRequest != 0 || hasObjectRequest ||
 	    historyRequest.has_value() ||
@@ -850,15 +854,20 @@ bool EditorScene::Update(float deltaTime) {
 
 	if (!wasBusy && !IsBusy() && action == EditorAction::NONE &&
 	    hierarchyRequest.action == HierarchyPanel::Action::NONE &&
-	    !modelDrop.path.empty()) {
+	    hasAssetDrop) {
 		Ray ray;
-
-		if (!renderer_.CreatePickingRay(modelDrop.imagePosition.x,
-		                                modelDrop.imagePosition.y, ray)) {
-			ShowError("Could not determine the model placement position.");
-		} else if (PlaceDroppedModel(modelDrop.path, ray) &&
-		           !renderer_.Update(target->GetWidth(), target->GetHeight())) {
-			return false;
+		const auto &drop = sceneDrop.path.empty() ? modelDrop : sceneDrop;
+		if (!renderer_.CreatePickingRay(drop.imagePosition.x,
+		                                drop.imagePosition.y, ray)) {
+			ShowError("Could not determine the asset placement position.");
+		} else {
+			const bool placed = sceneDrop.path.empty()
+			                        ? PlaceDroppedModel(drop.path, ray)
+			                        : PlaceDroppedScene(drop.path, ray);
+			if (placed &&
+			    !renderer_.Update(target->GetWidth(), target->GetHeight())) {
+				return false;
+			}
 		}
 	}
 
@@ -2520,6 +2529,42 @@ void EditorScene::AppendSceneObjects(const std::filesystem::path &path) {
 		    std::format("EditorScene::AppendSceneObjects: {}", error.what()));
 		ShowError(
 		    "Could not add objects from the scene. See the log for details.");
+	}
+}
+
+bool EditorScene::PlaceDroppedScene(const std::filesystem::path &path,
+                                    const Ray &ray) {
+	if (playMode_.IsPlaying() || IsBusy() || gizmo_.IsUsing() ||
+	    gizmoEditActive_ || sceneViewPanel_.IsSelecting()) {
+		return false;
+	}
+	try {
+		SceneDocument source;
+		if (!source.Open(path) ||
+		    !ScenePlacement::Place(
+		        source.GetScene(), document_.GetScene(), ray, models_,
+		        gizmo_.IsSnapping()
+		            ? std::optional{gizmo_.GetSnapSettings().translation}
+		            : std::nullopt)) {
+			ShowError("Could not position the scene objects. No objects were "
+			          "added. See the log for details.");
+			return false;
+		}
+		auto ids =
+		    SceneObjects::Append(source.GetScene(), document_.GetHistory());
+		if (ids.empty()) {
+			ShowError(
+			    "Could not add the positioned objects. No objects were added.");
+			return false;
+		}
+		selection_.Set(std::move(ids));
+		hierarchyPanel_.RequestReveal(selection_.GetActiveId());
+		return true;
+	} catch (const std::exception &error) {
+		Logger::Error(
+		    std::format("EditorScene::PlaceDroppedScene: {}", error.what()));
+		ShowError("Could not place scene objects. See the log for details.");
+		return false;
 	}
 }
 

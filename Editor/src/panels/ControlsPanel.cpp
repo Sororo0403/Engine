@@ -270,6 +270,18 @@ void ControlsPanel::Draw() {
 	         "file "
 	         "and its save state are kept; it cannot be overwritten by the "
 	         "copy."},
+	        {"Assets > Scenes: drag into Scene",
+	         "Place a saved object's group on the nearest Collider face or the "
+	         "ground. Without a surface, place it along the view ray. The "
+	         "group "
+	         "uses its combined Collider and visible model bounds; camera-only "
+	         "groups use object origins. Relative placement, rotations and "
+	         "scales "
+	         "are kept. Respawn positions and fall heights move with the "
+	         "group. "
+	         "All objects form one Undo / Redo operation. Failed placement "
+	         "adds "
+	         "nothing; the source file is kept unchanged."},
 	        {"Assets > Scenes > Add Objects",
 	         "Add a saved scene's objects at their saved positions without "
 	         "closing "

@@ -306,6 +306,14 @@ class EditorScene final : public IScene {
 	void AppendSceneObjects(const std::filesystem::path &path);
 
 	/// <summary>
+	/// Scene画像の配置先へ保存済み物体の組を移動し、全件を1回のUndo操作で追加する
+	/// </summary>
+	/// <param name="path">読み込む通常のシーンファイル</param>
+	/// <param name="ray">配置先の面を探す正規化済みレイ</param>
+	/// <returns>true:追加成功 false:実行不可、読み込み・形状取得・配置・追加失敗</returns>
+	bool PlaceDroppedScene(const std::filesystem::path &path, const Ray &ray);
+
+	/// <summary>
 	/// 選択物体の原点の平均位置、選択なしの場合はワールド原点を指定方向から見る
 	/// </summary>
 	/// <param name="view">対象を見る方向</param>
