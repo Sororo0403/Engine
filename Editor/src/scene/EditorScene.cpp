@@ -3060,7 +3060,7 @@ void EditorScene::UpdateDialogs() {
 	}
 
 	case DialogStage::OBJECT_ARRAY: {
-		const auto result = objectArrayDialog_.Draw(ui_);
+		const auto result = objectArrayDialog_.Draw(ui_, document_.GetScene());
 
 		if (result == ObjectArrayResult::NONE) {
 			return;

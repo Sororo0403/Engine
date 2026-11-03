@@ -57,6 +57,23 @@ class ColliderPlacement {
 	                                   DirectX::XMFLOAT3 &translation,
 	                                   std::string &error);
 
+	/// <summary>
+	/// 全選択のColliderを囲む幅から、指定軸へ繰り返す複製の間隔を求める
+	/// </summary>
+	/// <param name="scene">変更しない元シーン。表示状態・モデルの有無には依存しない</param>
+	/// <param name="objectIds">Colliderを持つ、重複しない選択ID</param>
+	/// <param name="face">間隔を求めるワールド座標の方向</param>
+	/// <param name="copies">追加する組数。等間隔複製の個数・総数制限に従う</param>
+	/// <param name="translation">成功時だけ置き換える共通の間隔。他の2軸は0</param>
+	/// <param name="error">失敗理由。成功時は空</param>
+	/// <returns>true:全組の形状と組間の非重複を確認済み false:選択・方向・個数・形状・座標精度が無効</returns>
+	/// <remarks>組の内部と選択外のColliderとの衝突は検証しない。組の面には丸め誤差を避ける微小な余白を残す</remarks>
+	static bool GetRepeatTranslation(const Scene &scene,
+	                                 std::span<const SceneObjectId> objectIds,
+	                                 Face face, int copies,
+	                                 DirectX::XMFLOAT3 &translation,
+	                                 std::string &error);
+
   private:
 	// 再生時の衝突移動と同じ微小な隙間を残し、接触面への丸め込みを避ける
 	static constexpr double kSurfaceClearance = 0.0001;

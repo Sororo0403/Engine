@@ -1,8 +1,11 @@
 #pragma once
 
 #include "history/ObjectArraySettings.h"
+#include "physics/ColliderPlacement.h"
 #include "scene/SceneObjectId.h"
+#include <optional>
 #include <span>
+#include <string>
 #include <vector>
 
 class ImGuiSystem;
@@ -30,8 +33,9 @@ class ObjectArrayDialog {
 	/// 組数と間隔を編集し、確定・取消の要求を返す
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
+	/// <param name="scene">現在の元シーン。Colliderによる間隔の計算と確定前の再検証に使用する</param>
 	/// <returns>未確定の場合はNONE。ACCEPTEDでもシーンは変更しない</returns>
-	ObjectArrayResult Draw(const ImGuiSystem &ui);
+	ObjectArrayResult Draw(const ImGuiSystem &ui, const Scene &scene);
 
 	/// <summary>
 	/// 複製対象を取得する
@@ -49,4 +53,7 @@ class ObjectArrayDialog {
 	std::vector<SceneObjectId> sourceIds_;
 	ObjectArraySettings settings_;
 	bool openRequested_ = false;
+	std::optional<ColliderPlacement::Face> spacingFace_;
+	int fittedCopies_ = 0;
+	std::string spacingError_;
 };

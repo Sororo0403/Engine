@@ -1,5 +1,6 @@
 #include "physics/ColliderPlacement.h"
 
+#include "history/ObjectArraySettings.h"
 #include "physics/BoxColliderUtils.h"
 #include "scene/Scene.h"
 
@@ -295,5 +296,124 @@ bool ColliderPlacement::GetAdjacentTranslation(
 	}
 
 	translation = movement;
+	return true;
+}
+
+bool ColliderPlacement::GetRepeatTranslation(
+    const Scene &scene, std::span<const SceneObjectId> objectIds, Face face,
+    int copies, DirectX::XMFLOAT3 &translation, std::string &error) {
+	error.clear();
+	ObjectArraySettings settings;
+	settings.copies = copies;
+	if (!settings.IsValid(objectIds.size()) || !CanDrop(scene, objectIds)) {
+		error = "Select Box Colliders and a valid number of copies.";
+		return false;
+	}
+	std::size_t axis = 0;
+	bool positive = true;
+	switch (face) {
+	case Face::RIGHT:
+		break;
+	case Face::LEFT:
+		positive = false;
+		break;
+	case Face::ABOVE:
+		axis = 1;
+		break;
+	case Face::BELOW:
+		axis = 1;
+		positive = false;
+		break;
+	case Face::FRONT:
+		axis = 2;
+		break;
+	case Face::BACK:
+		axis = 2;
+		positive = false;
+		break;
+	default:
+		error = "Choose a valid spacing direction.";
+		return false;
+	}
+	const auto component = [axis](const DirectX::XMFLOAT3 &v) {
+		return axis == 0 ? v.x : axis == 1 ? v.y : v.z;
+	};
+	const auto assign = [axis](DirectX::XMFLOAT3 &v, float value) {
+		if (axis == 0) {
+			v.x = value;
+		} else if (axis == 1) {
+			v.y = value;
+		} else {
+			v.z = value;
+		}
+	};
+	std::set<SceneObjectId> seen;
+	double minimum = (std::numeric_limits<double>::infinity)();
+	double maximum = -minimum;
+	for (const auto id : objectIds) {
+		const auto &object = *scene.FindObject(id);
+		AxisAlignedBox bounds;
+		if (!seen.insert(id).second ||
+		    !BoxColliderUtils::GetWorldBounds(*object.collider,
+		                                      object.transform, bounds)) {
+			error = "The selection contains duplicate IDs or an invalid Box "
+			        "Collider.";
+			return false;
+		}
+		minimum = (std::min)(minimum, double(component(bounds.minimum)));
+		maximum = (std::max)(maximum, double(component(bounds.maximum)));
+	}
+	const double width = maximum - minimum;
+	const double margin =
+	    kSurfaceClearance + kFaceRoundoffFactor *
+	                            std::numeric_limits<float>::epsilon() *
+	                            (std::max)({1.0, std::abs(minimum),
+	                                        std::abs(maximum), width * copies});
+	const double distance = width + margin;
+	float step = float(distance);
+	if (double(step) < distance) {
+		step = std::nextafter(step, (std::numeric_limits<float>::infinity)());
+	}
+	if (!std::isfinite(step) || step <= 0) {
+		error = "The collider spacing cannot be represented.";
+		return false;
+	}
+	if (!positive) {
+		step = -step;
+	}
+	// 履歴と同じdouble加算後のfloat変換で、全組を作った際の面を確認する。
+	double previousFace = positive ? maximum : minimum;
+	for (int copy = 1; copy <= copies; ++copy) {
+		double groupMinimum = (std::numeric_limits<double>::infinity)();
+		double groupMaximum = -groupMinimum;
+		for (const auto id : objectIds) {
+			const auto &object = *scene.FindObject(id);
+			auto transform = object.transform;
+			assign(transform.translation,
+			       float(double(component(transform.translation)) +
+			             double(step) * copy));
+			AxisAlignedBox bounds;
+			if (!BoxColliderUtils::GetWorldBounds(*object.collider, transform,
+			                                      bounds)) {
+				error = "A repeated collider cannot be represented at these "
+				        "coordinates.";
+				return false;
+			}
+			groupMinimum =
+			    (std::min)(groupMinimum, double(component(bounds.minimum)));
+			groupMaximum =
+			    (std::max)(groupMaximum, double(component(bounds.maximum)));
+		}
+		if (positive ? groupMinimum < previousFace
+		             : groupMaximum > previousFace) {
+			error = "Repeated colliders would overlap at this coordinate "
+			        "precision.";
+			return false;
+		}
+		previousFace = positive ? groupMaximum : groupMinimum;
+	}
+	DirectX::XMFLOAT3 result{};
+	assign(result, step);
+	translation = result;
 	return true;
 }
