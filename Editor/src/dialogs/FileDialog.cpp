@@ -13,8 +13,13 @@
 void FileDialog::Show(FileDialogMode mode,
                       const std::filesystem::path &initialPath,
                       FileDialogFilter filter) {
-	if (filter != FileDialogFilter::SCENE && mode != FileDialogMode::OPEN) {
-		throw std::invalid_argument("Asset selection supports opening only.");
+	if (((filter == FileDialogFilter::IMAGE ||
+	      filter == FileDialogFilter::MODEL) &&
+	     mode != FileDialogMode::OPEN) ||
+	    (filter == FileDialogFilter::GAME_CONFIG &&
+	     mode == FileDialogMode::SELECT_DIRECTORY)) {
+		throw std::invalid_argument(
+		    "This file type does not support the requested operation.");
 	}
 
 	filter_ = filter;
@@ -47,7 +52,9 @@ void FileDialog::Show(FileDialogMode mode,
 
 		if (mode_ != FileDialogMode::OPEN &&
 		    mode_ != FileDialogMode::SELECT_DIRECTORY && fileName_.empty()) {
-			fileName_ = "Untitled.scene.json";
+			fileName_ = filter_ == FileDialogFilter::GAME_CONFIG
+			                ? "Game.settings.json"
+			                : "Untitled.scene.json";
 		}
 
 		directoryText_ = PathUtils::ToUtf8(directory_);
@@ -61,7 +68,9 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 	const char *title =
 	    mode_ == FileDialogMode::SELECT_DIRECTORY ? "Select Folder###FileDialog"
 	    : filter_ == FileDialogFilter::GAME_CONFIG
-	        ? "Open Game Configuration###FileDialog"
+	        ? (mode_ == FileDialogMode::OPEN
+	               ? "Open Game Configuration###FileDialog"
+	               : "Save Game Configuration###FileDialog")
 	    : filter_ == FileDialogFilter::MODEL ? "Open Model###FileDialog"
 	    : filter_ == FileDialogFilter::IMAGE ? "Open Image###FileDialog"
 	    : mode_ == FileDialogMode::OPEN      ? "Open Scene###FileDialog"
@@ -305,7 +314,8 @@ bool FileDialog::AcceptSelection() {
 		}
 
 		if (mode_ != FileDialogMode::OPEN && !name.has_extension()) {
-			name += ".scene.json";
+			name += filter_ == FileDialogFilter::GAME_CONFIG ? ".json"
+			                                                 : ".scene.json";
 		}
 
 		if (!PathUtils::IsValidFileName(name)) {
