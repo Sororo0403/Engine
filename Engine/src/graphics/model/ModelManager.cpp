@@ -7,9 +7,11 @@
 #include "graphics/render/D3D12Graphics.h"
 #include "platform/windows/PathUtils.h"
 
+#include <Windows.h>
 #include <exception>
 #include <format>
-#include <unordered_map>
+#include <limits>
+#include <map>
 
 namespace {
 
@@ -32,6 +34,17 @@ void DestroyModel(Model *model) {
 /// モデルのキャッシュと描画基盤への参照を保持する
 /// </summary>
 struct ModelManager::Impl {
+	/// <summary>
+	/// Windows上の同じ正規化パスを、大文字・小文字を区別せず共有する
+	/// </summary>
+	struct PathLess {
+		bool operator()(const std::filesystem::path &left,
+		                const std::filesystem::path &right) const {
+			return CompareStringOrdinal(left.c_str(), -1, right.c_str(), -1,
+			                            TRUE) == CSTR_LESS_THAN;
+		}
+	};
+
 	explicit Impl(D3D12Graphics &graphics) : graphics(graphics) {
 	}
 
@@ -39,10 +52,11 @@ struct ModelManager::Impl {
 	D3D12Graphics &graphics;
 
 	// 正規化した絶対パスと、読み込み済みモデルの対応
-	std::unordered_map<std::filesystem::path, std::shared_ptr<const Model>>
+	std::map<std::filesystem::path, std::shared_ptr<const Model>, PathLess>
 	    cache;
 
 	bool finalized = false;
+	std::uint64_t reloadRevision = 0;
 };
 
 ModelManager::ModelManager(D3D12Graphics &graphics)
@@ -54,13 +68,27 @@ ModelManager::~ModelManager() {
 }
 
 ModelHandle ModelManager::Load(const std::filesystem::path &filePath) {
+	return LoadFile(filePath, false);
+}
+
+ModelHandle ModelManager::Reload(const std::filesystem::path &filePath) {
+	return LoadFile(filePath, true);
+}
+
+std::uint64_t ModelManager::GetReloadRevision() const {
+	return impl_->reloadRevision;
+}
+
+ModelHandle ModelManager::LoadFile(const std::filesystem::path &filePath,
+                                   bool reload) {
 	if (impl_->finalized) {
 		Logger::Error("ModelManager::Load: 終了済みです。");
 		return {};
 	}
 
-	if (filePath.empty()) {
-		Logger::Error("ModelManager::Load: ファイルパスが空です。");
+	if (filePath.empty() ||
+	    filePath.native().find(L'\0') != std::wstring::npos) {
+		Logger::Error("ModelManager::Load: ファイルパスが無効です。");
 		return {};
 	}
 
@@ -76,18 +104,23 @@ ModelHandle ModelManager::Load(const std::filesystem::path &filePath) {
 		// 相対パスは実行ファイルのフォルダを基準に解決する
 		const auto resolvedPath = PathUtils::ResolveFromExecutable(filePath);
 
-		// 実在するファイルの正規化済み絶対パスをキャッシュのキーにする
+		// ファイル削除時も、同じ正規化パスの有効なキャッシュを取得できるようにする
 		const std::filesystem::path key =
-		    std::filesystem::canonical(resolvedPath);
+		    std::filesystem::weakly_canonical(resolvedPath);
 
 		// 読み込み済みなら、同じモデルへの共有参照を返す
 		const auto found = impl_->cache.find(key);
 
-		if (found != impl_->cache.end()) {
+		if (!reload && found != impl_->cache.end()) {
 			ModelHandle handle;
 			handle.model_ = found->second;
 			handle.graphics_ = &impl_->graphics;
 			return handle;
+		}
+
+		if (reload && impl_->reloadRevision ==
+		                  (std::numeric_limits<std::uint64_t>::max)()) {
+			throw std::runtime_error("Model reload revision limit reached.");
 		}
 
 		// ファイルからCPU側のモデルデータを読み込む
@@ -106,7 +139,10 @@ ModelHandle ModelManager::Load(const std::filesystem::path &filePath) {
 		}
 
 		// 初期化に成功したモデルだけをキャッシュへ登録する
-		impl_->cache.emplace(key, model);
+		impl_->cache.insert_or_assign(key, model);
+		if (reload) {
+			++impl_->reloadRevision;
+		}
 
 		ModelHandle handle;
 		handle.model_ = model;

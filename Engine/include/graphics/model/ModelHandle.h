@@ -22,6 +22,13 @@ class ModelHandle {
 		return model_ != nullptr;
 	}
 
+	/// <summary>
+	/// 同じ描画基盤の、同じ読み込み済みモデルを参照しているか比較する
+	/// </summary>
+	/// <param name="other">比較する共有参照</param>
+	/// <returns>true:同じモデル false:別のモデルまたは描画基盤</returns>
+	bool operator==(const ModelHandle &other) const = default;
+
   private:
 	friend class ModelManager;
 	friend class RenderWorld;

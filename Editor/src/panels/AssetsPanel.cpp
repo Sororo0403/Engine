@@ -27,6 +27,7 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	type_ = type;
 	selectedPath_.clear();
 	instanceSelectionPath_.clear();
+	modelReloadPath_.clear();
 	textureUsageSelectionPath_.clear();
 	textureSelectionPath_.clear();
 	textureClearRequested_ = false;
@@ -111,6 +112,7 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
                                         bool canSetTexture,
                                         bool canEditAssets) {
 	instanceSelectionPath_.clear();
+	modelReloadPath_.clear();
 	textureUsageSelectionPath_.clear();
 	textureSelectionPath_.clear();
 	textureClearRequested_ = false;
@@ -283,7 +285,7 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 	const auto contentSize = ui.GetContentSize();
 	const float footerHeight = ImGui::GetTextLineHeightWithSpacing() +
 	                           ImGui::GetFrameHeightWithSpacing() *
-	                               (type_ == AssetType::TEXTURE ? 5.0f : 2.0f) +
+	                               (type_ == AssetType::TEXTURE ? 5.0f : 3.0f) +
 	                           ImGui::GetStyle().ItemSpacing.y;
 	const float listHeight = std::max(1.0f, contentSize.y - footerHeight);
 
@@ -371,6 +373,11 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 					textureSelectionPath_ = assetPath;
 				}
 
+				if (type_ == AssetType::MODEL &&
+				    ui.MenuItem("Reload Model", nullptr, canEditAssets)) {
+					modelReloadPath_ = assetPath;
+				}
+
 				if (ui.MenuItem("Select Instances", nullptr, true)) {
 					if (type_ == AssetType::MODEL) {
 						instanceSelectionPath_ = assetPath;
@@ -420,6 +427,11 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 			requestedPath = selectedPath_;
 		}
 
+		ui.BeginDisabled(!canEditAssets);
+		if (ui.Button("Reload Model")) {
+			modelReloadPath_ = selectedPath_;
+		}
+		ui.EndDisabled();
 		ui.EndDisabled();
 	} else {
 		ui.BeginDisabled(selectedPath_.empty());
@@ -495,6 +507,7 @@ void AssetsPanel::Clear() {
 	texturePreviewPath_.clear();
 	selectedPath_.clear();
 	instanceSelectionPath_.clear();
+	modelReloadPath_.clear();
 	currentDirectory_.clear();
 	filter_.clear();
 	revealPath_.clear();
@@ -530,4 +543,8 @@ void AssetsPanel::RequestOpenDirectory(const std::filesystem::path &folder) {
 
 bool AssetsPanel::IsModelImportRequested() const {
 	return modelImportRequested_;
+}
+
+const std::filesystem::path &AssetsPanel::GetModelReloadRequest() const {
+	return modelReloadPath_;
 }

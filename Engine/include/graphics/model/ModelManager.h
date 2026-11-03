@@ -4,6 +4,7 @@
 
 #include <DirectXMath.h>
 #include <array>
+#include <cstdint>
 #include <filesystem>
 #include <memory>
 
@@ -33,6 +34,20 @@ class ModelManager {
 	ModelHandle Load(const std::filesystem::path &filePath);
 
 	/// <summary>
+	/// ファイルとGPUリソースを読み直し、成功した場合だけキャッシュを置き換える
+	/// </summary>
+	/// <param name="filePath">モデルの絶対パスまたは実行ファイル基準の相対パス</param>
+	/// <returns>成功:新しい共有参照 失敗:空。以前のキャッシュと取得済み参照は保持する</returns>
+	/// <remarks>GPU利用完了後、描画命令の記録前に呼び出す。既存ハンドルの参照先は変更しない</remarks>
+	ModelHandle Reload(const std::filesystem::path &filePath);
+
+	/// <summary>
+	/// 成功した再読み込みの連番を取得する。通常のキャッシュ追加では変化しない
+	/// </summary>
+	/// <returns>再読み込みによる変更の連番</returns>
+	std::uint64_t GetReloadRevision() const;
+
+	/// <summary>
 	/// キャッシュを解放して終了する。GPUの利用完了後に呼び出す
 	/// </summary>
 	void Finalize();
@@ -54,6 +69,14 @@ class ModelManager {
 	                    std::array<DirectX::XMFLOAT3, 8> &corners) const;
 
   private:
+	/// <summary>
+	/// 共通の読み込みを行い、必要な場合だけ既存キャッシュを使用する
+	/// </summary>
+	/// <param name="filePath">読み込むモデル</param>
+	/// <param name="reload">true:キャッシュを使用せず読み直す false:読み込み済みなら共有する</param>
+	/// <returns>成功:共有参照 失敗:空</returns>
+	ModelHandle LoadFile(const std::filesystem::path &filePath, bool reload);
+
 	struct Impl;
 	std::unique_ptr<Impl> impl_;
 };

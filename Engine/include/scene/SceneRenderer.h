@@ -1,5 +1,8 @@
 #pragma once
 
+#include "graphics/model/ModelHandle.h"
+#include <cstdint>
+
 #include "graphics/camera/CameraPose.h"
 #include "graphics/camera/CameraSettings.h"
 #include "graphics/render/DebugLine.h"
@@ -144,6 +147,7 @@ class SceneRenderer {
 	struct Object {
 		std::filesystem::path modelPath;
 		RenderObjectHandle handle;
+		ModelHandle model;
 	};
 
 	/// <summary>
@@ -161,4 +165,5 @@ class SceneRenderer {
 
 	// シーン上の物体IDと、対応する描画物体の情報
 	std::map<SceneObjectId, Object> objects_;
+	std::uint64_t modelRevision_ = 0;
 };

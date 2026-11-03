@@ -80,6 +80,9 @@ void SceneRenderer::Draw(RenderTexture *target) const {
 }
 
 bool SceneRenderer::SynchronizeObjects() {
+	const auto revision = models_.GetReloadRevision();
+	const bool modelsChanged = revision != modelRevision_;
+
 	// 削除・非表示・モデルなしの物体を描画ワールドから取り除く
 	for (auto it = objects_.begin(); it != objects_.end();) {
 		const SceneObject *object = scene_.FindObject(it->first);
@@ -101,15 +104,16 @@ bool SceneRenderer::SynchronizeObjects() {
 		auto it = objects_.try_emplace(id).first;
 		Object &renderObject = it->second;
 
-		const bool needsCreate =
-		    !world_->Contains(renderObject.handle) ||
-		    renderObject.modelPath != object.mesh->modelPath;
+		bool needsCreate = !world_->Contains(renderObject.handle) ||
+		                   renderObject.modelPath != object.mesh->modelPath;
+		ModelHandle model;
 
-		if (needsCreate) {
-			// パスのコピーはGPUリソースを作成する前に済ませる
-			std::filesystem::path modelPath = object.mesh->modelPath;
-
-			const auto model = models_.Load(modelPath);
+		if (needsCreate || modelsChanged) {
+			model = models_.Load(object.mesh->modelPath);
+			if (!model && !needsCreate) {
+				// 他のモデルの更新時にも、以前の有効な描画を保持する。
+				model = renderObject.model;
+			}
 
 			if (!model) {
 				Logger::Error(std::format(
@@ -117,6 +121,12 @@ bool SceneRenderer::SynchronizeObjects() {
 				    id));
 				return false;
 			}
+
+			needsCreate |= renderObject.model != model;
+		}
+
+		if (needsCreate) {
+			std::filesystem::path modelPath = object.mesh->modelPath;
 
 			const auto handle = world_->CreateObject(model);
 
@@ -131,6 +141,7 @@ bool SceneRenderer::SynchronizeObjects() {
 
 			renderObject.modelPath = std::move(modelPath);
 			renderObject.handle = handle;
+			renderObject.model = model;
 		}
 
 		for (std::size_t slot = 0;
@@ -168,6 +179,7 @@ bool SceneRenderer::SynchronizeObjects() {
 		}
 	}
 
+	modelRevision_ = revision;
 	return true;
 }
 
@@ -175,6 +187,7 @@ void SceneRenderer::Finalize() {
 	// GPUの利用完了後に描画ワールドを解放する
 	world_.reset();
 	objects_.clear();
+	modelRevision_ = 0;
 }
 
 bool SceneRenderer::SetCameraPose(const CameraPose &pose) {

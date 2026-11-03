@@ -37,6 +37,12 @@ class AssetsPanel {
 	const std::filesystem::path &GetInstanceSelectionRequest() const;
 
 	/// <summary>
+	/// このフレームに再読み込みを要求したモデルを取得する
+	/// </summary>
+	/// <returns>モデルの相対パス。要求なしは空。次のDraw・種類切り替え・Clearまで有効</returns>
+	const std::filesystem::path &GetModelReloadRequest() const;
+
+	/// <summary>
 	/// このフレームに使用物体の選択を要求した画像を取得する
 	/// </summary>
 	/// <returns>画像の相対パス。要求なしは空。次のDrawまたはClearまで有効</returns>
@@ -134,6 +140,7 @@ class AssetsPanel {
 	std::filesystem::path textureUsageSelectionPath_;
 	std::filesystem::path selectedPath_;
 	std::filesystem::path instanceSelectionPath_;
+	std::filesystem::path modelReloadPath_;
 	std::filesystem::path currentDirectory_;
 	std::string filter_;
 	std::filesystem::path revealPath_;

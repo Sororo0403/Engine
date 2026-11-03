@@ -262,6 +262,23 @@ void ControlsPanel::Draw() {
 	         "history "
 	         "and is unavailable during Play, modal operations or Scene "
 	         "gestures."},
+	        {"Assets > Reload Model",
+	         "Reload the selected model and its linked resources after editing "
+	         "files outside Editor. Use the button or its context menu. A "
+	         "successful "
+	         "reload updates every rendered instance with the same normalized "
+	         "model path, including the Game preview and later Play sessions. "
+	         "Transforms, names, texture slot numbers, Collider settings, "
+	         "selection "
+	         "and scene Undo history stay unchanged. Fit Collider or frame the "
+	         "model "
+	         "again if its new shape needs it. Failed reloads keep the last "
+	         "valid "
+	         "cached model and existing display; fix the files and retry. "
+	         "Refresh "
+	         "only updates the Assets list. Reload is blocked during Play, "
+	         "modal "
+	         "operations and Scene gestures."},
 	        {"Assets > Import Model",
 	         "Choose a GLB, glTF or OBJ model, an Assets destination and a new "
 	         "model folder name. Import copies the model and referenced "
