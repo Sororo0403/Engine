@@ -27,6 +27,17 @@ CameraPose MakeFollowPose(const DirectX::XMFLOAT3 &target,
                           const FollowCameraSettings &settings);
 
 /// <summary>
+/// 注視点からカメラまで余裕幅を持つボックスをSweepし、静的なColliderの手前へカメラを寄せる
+/// </summary>
+/// <param name="scene">ColliderとFollow Cameraの設定を持つシーン</param>
+/// <param name="id">補正するFollow Cameraの物体ID</param>
+/// <param name="pose">補間済みの描画姿勢。成功時は位置だけ更新し、注視点・上方向は保持する</param>
+/// <returns>true:補正成功または回避無効 false:注視点の余裕幅が障害物内、形状や姿勢が無効。失敗時はposeを保持する</returns>
+/// <remarks>追従先・Character Controller・Follow CameraのColliderを除く。表示状態には依存しない</remarks>
+bool AvoidFollowObstacles(const Scene &scene, SceneObjectId id,
+                          CameraPose &pose);
+
+/// <summary>
 /// 描画姿勢をTransformの位置と回転へ反映する。拡大率は保持する
 /// </summary>
 /// <param name="pose">反映する位置・注視点・上方向</param>

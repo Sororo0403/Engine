@@ -100,6 +100,13 @@ bool SweepAgainstBox(const Vector &minimum, const Vector &maximum,
 
 bool CollisionWorld::Rebuild(const Scene &scene, SceneObjectId ignoredObject,
                              SceneObjectId *invalidObject) {
+	return Rebuild(scene, std::span<const SceneObjectId>{&ignoredObject, 1},
+	               invalidObject);
+}
+
+bool CollisionWorld::Rebuild(const Scene &scene,
+                             std::span<const SceneObjectId> ignoredObjects,
+                             SceneObjectId *invalidObject) {
 	if (invalidObject) {
 		*invalidObject = 0;
 	}
@@ -107,7 +114,9 @@ bool CollisionWorld::Rebuild(const Scene &scene, SceneObjectId ignoredObject,
 	std::vector<Obstacle> candidate;
 
 	for (const auto &[id, object] : scene.GetObjects()) {
-		if (id == ignoredObject || !object.collider) {
+		if (!object.collider ||
+		    std::find(ignoredObjects.begin(), ignoredObjects.end(), id) !=
+		        ignoredObjects.end()) {
 			continue;
 		}
 

@@ -267,7 +267,9 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 				    {"target", v.target},
 				    {"offset", ToJson(v.offset)},
 				    {"lookOffset", ToJson(v.lookOffset)},
-				    {"smoothing", v.smoothing}};
+				    {"smoothing", v.smoothing},
+				    {"avoidObstacles", v.avoidObstacles},
+				    {"clearance", v.clearance}};
 			}
 
 			if (object.respawn) {
@@ -281,7 +283,7 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 
 		const Json document{
 		    {"format", "EngineScene"},
-		    {"version", 11},
+		    {"version", 12},
 		    {"objects", std::move(objects)},
 		};
 
@@ -332,7 +334,7 @@ namespace {
 /// 解析したシーンドキュメントを検証し、全件成功した場合だけ反映する
 /// </summary>
 /// <param name="scene">読み込み先</param>
-/// <param name="document">version 1から11のJSON</param>
+/// <param name="document">version 1から12のJSON</param>
 /// <returns>true:成功 false:内容が無効</returns>
 bool ApplySceneDocument(Scene &scene, const Json &document) {
 	try {
@@ -343,7 +345,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document) {
 		     document.at("version") != 5 && document.at("version") != 6 &&
 		     document.at("version") != 7 && document.at("version") != 8 &&
 		     document.at("version") != 9 && document.at("version") != 10 &&
-		     document.at("version") != 11)) {
+		     document.at("version") != 11 && document.at("version") != 12)) {
 			throw std::runtime_error("未対応のシーンファイル形式です。");
 		}
 
@@ -493,6 +495,17 @@ bool ApplySceneDocument(Scene &scene, const Json &document) {
 				    v.at("target").get<SceneObjectId>(),
 				    ReadFloat3(v.at("offset")), ReadFloat3(v.at("lookOffset")),
 				    v.at("smoothing").get<float>()};
+				if (version >= 12) {
+					if (!v.at("avoidObstacles").is_boolean() ||
+					    !v.at("clearance").is_number()) {
+						throw std::runtime_error(
+						    "追従カメラの障害物回避設定が無効です。");
+					}
+					object.followCamera->avoidObstacles =
+					    v.at("avoidObstacles").get<bool>();
+					object.followCamera->clearance =
+					    v.at("clearance").get<float>();
+				}
 			}
 
 			if (version <= 5 && object.followCamera) {

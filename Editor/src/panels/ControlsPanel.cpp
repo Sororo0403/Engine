@@ -844,6 +844,23 @@ void ControlsPanel::Draw() {
 	         "Respawn uses the start position and default fall height. "
 	         "Transform and other components stay unchanged. "
 	         "Pending edits finish first. Default values add no history."},
+	        {"Inspector > Follow Camera > Avoid Obstacles",
+	         "Keep the camera before the first static Box Collider between "
+	         "its look point and smoothed position. Camera Clearance is the "
+	         "world-axis-aligned box half size around that path, from 0.01 to "
+	         "5 units. Hidden Colliders block it too. The followed target, "
+	         "Character Controllers and Follow Cameras are excluded. The "
+	         "camera pulls inward immediately, then uses Follow Smoothing to "
+	         "return outward. If the look point's clearance enters a Collider "
+	         "during Play, keep the last safe camera position and continue "
+	         "tracking "
+	         "the look point until the path clears. An invalid initial "
+	         "clearance "
+	         "prevents Play; adjust "
+	         "Look Offset or Camera Clearance. Scene guides, Game preview and "
+	         "exported games use the same rule. Enabled and clearance edits "
+	         "support Undo/Redo, copy/paste and scene saving. Off by default, "
+	         "including scenes saved before version 12."},
 	        {"Inspector > Follow Camera",
 	         "Offsets use world coordinates. Follow Smoothing 0 follows "
 	         "immediately. Choose the target object in the same scene; IDs "

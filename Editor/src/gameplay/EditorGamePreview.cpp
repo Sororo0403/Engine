@@ -25,10 +25,10 @@ bool EditorGamePreview::Prepare(const Scene &source,
 			auto &object = objects.at(id);
 			const auto &target = objects.at(object.followCamera->target);
 
-			if (!SceneCameraUtils::ApplyPose(
-			        SceneCameraUtils::MakeFollowPose(
-			            target.transform.translation, *object.followCamera),
-			        object.transform)) {
+			auto pose = SceneCameraUtils::MakeFollowPose(
+			    target.transform.translation, *object.followCamera);
+			if (!SceneCameraUtils::AvoidFollowObstacles(source, id, pose) ||
+			    !SceneCameraUtils::ApplyPose(pose, object.transform)) {
 				Reset();
 				return false;
 			}

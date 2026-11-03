@@ -4,6 +4,7 @@
 #include "graphics/camera/Camera.h"
 #include "math/MathUtils.h"
 #include "math/TransformUtils.h"
+#include "physics/CollisionWorld.h"
 #include "scene/Scene.h"
 #include <algorithm>
 #include <cmath>
@@ -30,6 +31,76 @@ SceneCameraUtils::MakeFollowPose(const DirectX::XMFLOAT3 &target,
 	                 target.y + settings.lookOffset.y,
 	                 target.z + settings.lookOffset.z};
 	return result;
+}
+
+bool SceneCameraUtils::AvoidFollowObstacles(const Scene &scene,
+                                            SceneObjectId id,
+                                            CameraPose &pose) {
+	const auto *object = scene.FindObject(id);
+	if (!object || !object->camera || !object->followCamera ||
+	    !object->followCamera->IsValid()) {
+		return false;
+	}
+	const auto &settings = *object->followCamera;
+	if (!settings.avoidObstacles) {
+		return true;
+	}
+	Camera validator;
+	if (!validator.SetPose(pose)) {
+		return false;
+	}
+
+	std::vector<SceneObjectId> ignored{settings.target};
+	for (const auto &[objectId, candidate] : scene.GetObjects()) {
+		if (candidate.character || candidate.followCamera) {
+			ignored.push_back(objectId);
+		}
+	}
+	CollisionWorld world;
+	if (!world.Rebuild(scene, std::span<const SceneObjectId>{ignored})) {
+		return false;
+	}
+
+	const float radius = settings.clearance;
+	const auto boxAt = [radius](const DirectX::XMFLOAT3 &point) {
+		return AxisAlignedBox{
+		    {point.x - radius, point.y - radius, point.z - radius},
+		    {point.x + radius, point.y + radius, point.z + radius}};
+	};
+	const DirectX::XMFLOAT3 movement{pose.position.x - pose.target.x,
+	                                 pose.position.y - pose.target.y,
+	                                 pose.position.z - pose.target.z};
+	CollisionSweepResult hit;
+	if (!world.Sweep(boxAt(pose.target), movement, hit)) {
+		return false;
+	}
+	if (!hit.objectId) {
+		return true;
+	}
+
+	const double distance =
+	    std::hypot(double(movement.x), double(movement.y), double(movement.z));
+	if (distance == 0 || hit.fraction <= 0) {
+		return false;
+	}
+	const double magnitude = (std::max)({std::abs(double(pose.position.x)),
+	                                     std::abs(double(pose.position.y)),
+	                                     std::abs(double(pose.position.z))});
+	const double skin =
+	    (std::max)(FollowCameraSettings::kCollisionSkinWidth,
+	               magnitude * std::numeric_limits<float>::epsilon() * 4);
+	const double fraction = (std::max)(0.0, hit.fraction - skin / distance);
+	auto adjusted = pose;
+	adjusted.position = {
+	    static_cast<float>(pose.target.x + movement.x * fraction),
+	    static_cast<float>(pose.target.y + movement.y * fraction),
+	    static_cast<float>(pose.target.z + movement.z * fraction)};
+	if (!world.CanPlace(boxAt(adjusted.position)) ||
+	    !validator.SetPose(adjusted)) {
+		return false;
+	}
+	pose = adjusted;
+	return true;
 }
 
 /// <summary>
@@ -112,7 +183,7 @@ bool SceneCameraUtils::GetInitialTransform(const Scene &scene, SceneObjectId id,
 	}
 
 	auto transform = object->transform;
-	std::vector<const SceneObject *> chain;
+	std::vector<SceneObjectId> chain;
 	std::set<SceneObjectId> visited;
 	auto currentId = id;
 	const auto *current = object;
@@ -125,7 +196,7 @@ bool SceneCameraUtils::GetInitialTransform(const Scene &scene, SceneObjectId id,
 			return false;
 		}
 
-		chain.push_back(current);
+		chain.push_back(currentId);
 		currentId = current->followCamera->target;
 		current = target;
 	}
@@ -133,10 +204,11 @@ bool SceneCameraUtils::GetInitialTransform(const Scene &scene, SceneObjectId id,
 	auto position = current->transform.translation;
 
 	for (auto it = chain.rbegin(); it != chain.rend(); ++it) {
-		auto resolved = (*it)->transform;
-
-		if (!ApplyPose(MakeFollowPose(position, *(*it)->followCamera),
-		               resolved)) {
+		const auto &camera = *scene.FindObject(*it);
+		auto resolved = camera.transform;
+		auto pose = MakeFollowPose(position, *camera.followCamera);
+		if (!AvoidFollowObstacles(scene, *it, pose) ||
+		    !ApplyPose(pose, resolved)) {
 			return false;
 		}
 

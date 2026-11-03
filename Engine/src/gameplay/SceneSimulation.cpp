@@ -123,10 +123,12 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 		for (const auto id : followOrder) {
 			auto &object = objects.at(id);
 			const auto &settings = *object.followCamera;
-			const auto followPose = SceneCameraUtils::MakeFollowPose(
+			auto followPose = SceneCameraUtils::MakeFollowPose(
 			    objects.at(settings.target).transform.translation, settings);
 
-			if (!SceneCameraUtils::ApplyPose(followPose, object.transform)) {
+			if (!SceneCameraUtils::AvoidFollowObstacles(source, id,
+			                                            followPose) ||
+			    !SceneCameraUtils::ApplyPose(followPose, object.transform)) {
 				return failObject(id, "Follow Camera pose is invalid.");
 			}
 
@@ -254,8 +256,18 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input) {
 			a.y += (b.y - a.y) * blend;
 			a.z += (b.z - a.z) * blend;
 		};
+		const auto previousPose = state.pose;
 		lerp(state.pose.position, desired.position);
 		lerp(state.pose.target, desired.target);
+		if (!SceneCameraUtils::AvoidFollowObstacles(scene_, state.objectId,
+		                                            state.pose)) {
+			// 位置を安全な場所に保ち、注視点は追従させて障害物の外へ抜けられるようにする。
+			state.pose.position = previousPose.position;
+			Camera validator;
+			if (!validator.SetPose(state.pose)) {
+				state.pose = previousPose;
+			}
+		}
 		state.transform = cameraObject->transform;
 
 		if (!SceneCameraUtils::ApplyPose(state.pose, state.transform)) {

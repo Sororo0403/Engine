@@ -11,11 +11,16 @@ struct FollowCameraSettings {
 	// オフセットの範囲と、視線が上方向と平行になることを避ける最小水平距離
 	static constexpr float kMaximumOffset = 10000.0f;
 	static constexpr double kMinimumHorizontalDistanceSquared = 0.000001;
+	static constexpr float kMinimumClearance = 0.01f;
+	static constexpr float kMaximumClearance = 5.0f;
+	static constexpr double kCollisionSkinWidth = 0.0001;
 
 	SceneObjectId target = 0;
 	DirectX::XMFLOAT3 offset{0.0f, 3.0f, -7.0f};
 	DirectX::XMFLOAT3 lookOffset{0.0f, 1.0f, 0.0f};
 	float smoothing = 8.0f;
+	bool avoidObstacles = false;
+	float clearance = 0.2f;
 
 	/// <summary>
 	/// 有限な設定で、視線がゼロまたは上方向と平行にならないか確認する
@@ -32,7 +37,9 @@ struct FollowCameraSettings {
 		       std::abs(lookOffset.y) <= kMaximumOffset &&
 		       std::abs(lookOffset.z) <= kMaximumOffset &&
 		       dx * dx + dz * dz > kMinimumHorizontalDistanceSquared &&
-		       std::isfinite(smoothing) && smoothing >= 0 && smoothing <= 100;
+		       std::isfinite(smoothing) && smoothing >= 0 && smoothing <= 100 &&
+		       std::isfinite(clearance) && clearance >= kMinimumClearance &&
+		       clearance <= kMaximumClearance;
 	}
 
 	/// <summary>
@@ -46,6 +53,8 @@ struct FollowCameraSettings {
 		       lookOffset.x == other.lookOffset.x &&
 		       lookOffset.y == other.lookOffset.y &&
 		       lookOffset.z == other.lookOffset.z &&
-		       smoothing == other.smoothing;
+		       smoothing == other.smoothing &&
+		       avoidObstacles == other.avoidObstacles &&
+		       clearance == other.clearance;
 	}
 };

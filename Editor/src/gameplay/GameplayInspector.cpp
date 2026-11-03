@@ -178,6 +178,20 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		changed |= ApplyField(history, id, object.followCamera, edited, value,
 		                      &EditorHistory::BeginFollowCamera);
 
+		edited = *object.followCamera;
+		value = ImGui::Checkbox("Avoid Obstacles", &edited.avoidObstacles);
+		changed |= ApplyField(history, id, object.followCamera, edited, value,
+		                      &EditorHistory::BeginFollowCamera);
+		edited = *object.followCamera;
+		ui.BeginDisabled(!edited.avoidObstacles);
+		value = ImGui::DragFloat("Camera Clearance", &edited.clearance, 0.01f,
+		                         FollowCameraSettings::kMinimumClearance,
+		                         FollowCameraSettings::kMaximumClearance,
+		                         "%.2f", ImGuiSliderFlags_AlwaysClamp);
+		changed |= ApplyField(history, id, object.followCamera, edited, value,
+		                      &EditorHistory::BeginFollowCamera);
+		ui.EndDisabled();
+
 		ui.BeginDisabled(!object.followCamera->IsValid());
 
 		if (ui.Button("Copy Follow Settings")) {

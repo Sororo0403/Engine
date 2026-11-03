@@ -32,6 +32,9 @@ bool FollowCameraPreview::BuildLines(const Scene &scene, SceneObjectId id,
 
 	// GetInitialPoseの注視点は単位方向なので、設定したLook Offsetの実際の位置を求める。
 	pose = SceneCameraUtils::MakeFollowPose(position, settings);
+	if (!SceneCameraUtils::AvoidFollowObstacles(scene, id, pose)) {
+		return false;
+	}
 	Lines result{};
 	result[0] = {position, pose.position, targetColor_};
 	result[1] = {pose.position, pose.target, lookColor_};

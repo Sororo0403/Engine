@@ -5,6 +5,7 @@
 #include "physics/CollisionSweepResult.h"
 #include "scene/SceneObjectId.h"
 
+#include <span>
 #include <vector>
 
 class Scene;
@@ -22,6 +23,17 @@ class CollisionWorld {
 	/// <param name="invalidObject">指定時は無効な形状の物体IDを設定する。成功時は0</param>
 	/// <returns>true:成功 false:形状が無効。失敗時は現在の障害物を保持する</returns>
 	bool Rebuild(const Scene &scene, SceneObjectId ignoredObject = 0,
+	             SceneObjectId *invalidObject = nullptr);
+
+	/// <summary>
+	/// 複数の物体を除外して衝突ワールドを作る。描画の表示状態には依存しない
+	/// </summary>
+	/// <param name="scene">障害物の設定を持つシーン</param>
+	/// <param name="ignoredObjects">除外するID一覧。重複や不在IDは無視する</param>
+	/// <param name="invalidObject">指定時は無効な形状のIDを設定する。成功時は0</param>
+	/// <returns>true:成功 false:形状が無効。失敗時は現在の障害物を保持する</returns>
+	bool Rebuild(const Scene &scene,
+	             std::span<const SceneObjectId> ignoredObjects,
 	             SceneObjectId *invalidObject = nullptr);
 
 	/// <summary>
