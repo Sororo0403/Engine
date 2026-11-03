@@ -127,6 +127,17 @@ void ControlsPanel::Draw() {
 	         "Choose creation order or name A-Z / Z-A. Range selection, Select "
 	         "All and arrow keys follow the displayed order; changing sort "
 	         "keeps the selection."},
+	        {"Create > Box with Size...",
+	         "Create a Box with a name, world-space center and full X/Y/Z "
+	         "dimensions. Mesh and Box Collider use the same measured model "
+	         "bounds. Dimensions must be finite and positive, and "
+	         "representable "
+	         "at the chosen center. Create adds and selects one object with "
+	         "one "
+	         "Undo/Redo operation. Cancel or Escape leaves the scene "
+	         "unchanged. "
+	         "The normal Box command still creates a two-unit box "
+	         "immediately."},
 	        {"Inspector > Add Component > Box Collider",
 	         "Add a collider fitted to the model, edit its local center and "
 	         "half size, fit again or remove it. Green Scene bounds show the "

@@ -707,4 +707,9 @@
     <ClCompile Include="src\files\SceneRecovery.cpp"><Filter>src\files</Filter></ClCompile>
     <ClCompile Include="src\files\OutputDirectory.cpp"><Filter>src\files</Filter></ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\scene\BoxCreationSettings.h"><Filter>include\scene</Filter></ClInclude>
+    <ClInclude Include="include\dialogs\BoxCreationDialog.h"><Filter>include\dialogs</Filter></ClInclude>
+    <ClCompile Include="src\dialogs\BoxCreationDialog.cpp"><Filter>src\dialogs</Filter></ClCompile>
+  </ItemGroup>
 </Project>

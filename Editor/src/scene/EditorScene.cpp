@@ -1517,6 +1517,10 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			action = EditorAction::CREATE_BOX;
 		}
 
+		if (ui_.MenuItem("Box with Size...", nullptr, enabled)) {
+			action = EditorAction::CREATE_SIZED_BOX;
+		}
+
 		if (ui_.MenuItem("Camera from Scene View", nullptr, enabled)) {
 			action = EditorAction::CREATE_CAMERA;
 		}
@@ -1875,6 +1879,12 @@ void EditorScene::StartAction(EditorAction action) {
 		return;
 	}
 
+	if (action == EditorAction::CREATE_SIZED_BOX &&
+	    (playMode_.IsPlaying() || gizmo_.IsUsing() || gizmoEditActive_ ||
+	     sceneViewPanel_.IsSelecting())) {
+		return;
+	}
+
 	// 保存やUndoを実行する前に、編集中の値を確定する
 	FinishEdit();
 
@@ -2129,6 +2139,21 @@ void EditorScene::StartAction(EditorAction action) {
 	case EditorAction::CREATE_BOX:
 		CreateObject(PrimitiveObjects::CreateBox());
 		return;
+	case EditorAction::CREATE_SIZED_BOX: {
+		try {
+			BoxCollider bounds;
+			if (!GetFittedCollider(PrimitiveObjects::CreateBox(), bounds)) {
+				ShowError(
+				    "Could not load the built-in Box. No object was created.");
+				return;
+			}
+			boxCreationDialog_.Show(bounds);
+			stage_ = DialogStage::BOX_CREATION;
+		} catch (const std::exception &error) {
+			ShowError(error.what());
+		}
+		return;
+	}
 	case EditorAction::CREATE_CAMERA:
 		CreateCameraFromView();
 		return;
@@ -3002,6 +3027,34 @@ void EditorScene::UpdateDialogs() {
 			}
 		} else if (result == TextureImportResult::CANCELLED) {
 			stage_ = DialogStage::IDLE;
+		}
+		return;
+	}
+
+	case DialogStage::BOX_CREATION: {
+		const auto result = boxCreationDialog_.Draw(ui_);
+		if (result == BoxCreationResult::NONE) {
+			return;
+		}
+		stage_ = DialogStage::IDLE;
+		if (result == BoxCreationResult::ACCEPTED) {
+			try {
+				BoxCollider bounds;
+				SceneObject object;
+				std::string error;
+				if (!GetFittedCollider(PrimitiveObjects::CreateBox(), bounds)) {
+					ShowError("Could not load the built-in Box. No object was "
+					          "created.");
+				} else if (!PrimitiveObjects::TryCreateBox(
+				               boxCreationDialog_.GetSettings(), bounds, object,
+				               error)) {
+					ShowError(error);
+				} else {
+					CreateObject(std::move(object));
+				}
+			} catch (const std::exception &error) {
+				ShowError(error.what());
+			}
 		}
 		return;
 	}
