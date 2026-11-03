@@ -6,6 +6,10 @@
 
 bool HierarchyFilter::Matches(SceneObjectId id,
                               const SceneObject &object) const {
+	if (id == 0) {
+		return false;
+	}
+
 	const std::string_view name =
 	    object.name.empty() ? std::string_view{"Object"} : object.name;
 
@@ -57,6 +61,13 @@ bool HierarchyFilter::Matches(SceneObjectId id,
 		return object.mesh.has_value();
 	case Component::MESH_RENDERER:
 		return object.meshRenderer.has_value();
+	case Component::PRIMARY_CAMERA:
+		return object.camera && object.camera->primary;
+	case Component::INCOMPLETE_RENDERING:
+		return (object.mesh || object.meshRenderer) &&
+		       (!object.HasMesh() || !object.meshRenderer);
+	case Component::CHARACTERS_WITHOUT_COLLIDER:
+		return object.character && !object.collider;
 	case Component::COLOR_TINT:
 		return object.colorTint.has_value();
 	default:

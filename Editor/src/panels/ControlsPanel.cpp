@@ -190,7 +190,16 @@ void ControlsPanel::Draw() {
 	         "The ID prefix ignores letter case and surrounding whitespace. "
 	         "Hidden only and component filters still apply. "
 	         "Invalid or missing IDs show no matches. "
-	         "Filtering never changes the scene or current selection."},
+	         "Filtering never changes the scene or current selection. "
+	         "Primary Camera finds the marked game camera, including invalid "
+	         "settings that need repair. Incomplete Mesh / Renderer finds "
+	         "missing Mesh, unassigned model paths or missing Mesh Renderers. "
+	         "A deliberately hidden renderer is complete. Characters without "
+	         "Collider finds unfinished Character Controllers. These filters "
+	         "check setup only, not missing asset files; use Scene Check for "
+	         "resource validation. All combine with name/ID and Hidden only, "
+	         "sorting, range selection and Select All Visible, including "
+	         "Play."},
 	        {"Hierarchy > Hidden only", "List hidden models. Search and range "
 	                                    "selection use this filtered list."},
 	        {"Edit > Show All Models",

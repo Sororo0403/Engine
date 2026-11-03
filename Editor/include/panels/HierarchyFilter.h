@@ -24,6 +24,9 @@ class HierarchyFilter {
 		COLOR_TINT,
 		MESH,
 		MESH_RENDERER,
+		PRIMARY_CAMERA,
+		INCOMPLETE_RENDERING,
+		CHARACTERS_WITHOUT_COLLIDER,
 	};
 
 	std::string text;
@@ -33,7 +36,7 @@ class HierarchyFilter {
 	/// <summary>
 	/// 名前またはID・表示状態・コンポーネントの全条件に一致するか確認する。
 	/// id:数値はIDの完全一致、その他は名前の部分一致とする。
-	/// 未完成の設定も探せるよう、コンポーネントの有無だけを判定する
+	/// コンポーネントの有無とPrimary指定・Mesh割り当てを判定する。ファイルの存在確認は行わない
 	/// </summary>
 	/// <param name="id">確認する物体ID。0は無効</param>
 	/// <param name="object">確認する物体。空の名前は表示と同じObjectとして扱う</param>
