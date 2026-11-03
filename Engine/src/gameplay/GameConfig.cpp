@@ -32,7 +32,7 @@ DirectX::XMFLOAT3 ReadVector(const nlohmann::json &value) {
 } // namespace
 
 bool GameConfig::IsValid() const {
-	if (!input.IsValid() || title.empty() ||
+	if (!lighting.IsValid() || !input.IsValid() || title.empty() ||
 	    title.find('\0') != std::string::npos ||
 	    StringConversion::Utf8ToWide(title).empty() || width < 1 ||
 	    height < 1 || width > 8192 || height > 8192 || scenePath.empty() ||
@@ -72,9 +72,14 @@ bool GameConfig::Serialize(std::string &text, std::string &error) const {
 
 		const nlohmann::json data = {
 		    {"format", "EngineGame"},
-		    {"version", 3},
+		    {"version", 4},
 		    {"cameraRelativeMovement", cameraRelativeMovement},
 		    {"input", inputJson},
+		    {"lighting",
+		     {{"direction", vector(lighting.direction)},
+		      {"color", vector(lighting.color)},
+		      {"intensity", lighting.intensity},
+		      {"ambient", lighting.ambient}}},
 		    {"title", title},
 		    {"width", width},
 		    {"height", height},
@@ -139,7 +144,7 @@ bool GameConfig::Deserialize(std::string_view text, std::string &error) {
 		if (data.at("format") != "EngineGame" ||
 		    !data.at("version").is_number_integer() ||
 		    (data.at("version") != 1 && data.at("version") != 2 &&
-		     data.at("version") != 3) ||
+		     data.at("version") != 3 && data.at("version") != 4) ||
 		    !data.at("width").is_number_integer() ||
 		    !data.at("height").is_number_integer()) {
 			throw std::runtime_error("Unsupported game configuration.");
@@ -170,13 +175,26 @@ bool GameConfig::Deserialize(std::string_view text, std::string &error) {
 			}
 		}
 
-		if (data.at("version") == 3) {
+		if (data.at("version") >= 3) {
 			if (!data.at("cameraRelativeMovement").is_boolean()) {
 				throw std::runtime_error("Movement space must be a boolean.");
 			}
 
 			candidate.cameraRelativeMovement =
 			    data.at("cameraRelativeMovement").get<bool>();
+		}
+
+		if (data.at("version") >= 4) {
+			const auto &light = data.at("lighting");
+			candidate.lighting.direction = ReadVector(light.at("direction"));
+			candidate.lighting.color = ReadVector(light.at("color"));
+			if (!light.at("intensity").is_number() ||
+			    !light.at("ambient").is_number()) {
+				throw std::runtime_error(
+				    "Light intensity and ambient must be numbers.");
+			}
+			candidate.lighting.intensity = light.at("intensity").get<float>();
+			candidate.lighting.ambient = light.at("ambient").get<float>();
 		}
 
 		const auto &camera = data.at("camera");

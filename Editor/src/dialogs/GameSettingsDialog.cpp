@@ -13,6 +13,7 @@ void GameSettingsDialog::Show(const GameConfig &config,
 	height_ = config.height;
 	input_ = config.input;
 	cameraRelativeMovement_ = config.cameraRelativeMovement;
+	lighting_ = config.lighting;
 	error_.clear();
 	source_.clear();
 	destination_ = directory / L"Game.settings.json";
@@ -53,6 +54,16 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 	ImGui::InputInt("Height", &height_);
 
 	ImGui::Checkbox("Camera Relative Movement", &cameraRelativeMovement_);
+
+	ImGui::SeparatorText("Lighting");
+	ImGui::InputFloat3("Light Direction", &lighting_.direction.x);
+	ImGui::ColorEdit3("Light Color", &lighting_.color.x);
+	ImGui::SliderFloat("Light Intensity", &lighting_.intensity, 0.0f,
+	                   LightingSettings::kMaxIntensity);
+	ImGui::SliderFloat("Ambient Light", &lighting_.ambient, 0.0f, 1.0f);
+	if (ui.Button("Reset Lighting")) {
+		lighting_ = {};
+	}
 
 	ImGui::SeparatorText("Gameplay Keys");
 	const std::array<const char *, 5> labels{"Move Forward", "Move Backward",
@@ -151,6 +162,7 @@ bool GameSettingsDialog::LoadConfiguration(const std::filesystem::path &path) {
 	height_ = loaded.height;
 	input_ = loaded.input;
 	cameraRelativeMovement_ = loaded.cameraRelativeMovement;
+	lighting_ = loaded.lighting;
 	return true;
 }
 
@@ -161,10 +173,14 @@ bool GameSettingsDialog::BuildConfiguration(GameConfig &candidate) {
 	value.height = height_;
 	value.input = input_;
 	value.cameraRelativeMovement = cameraRelativeMovement_;
+	value.lighting = lighting_;
 	if (!value.IsValid()) {
 		error_ =
 		    !value.input.IsValid()
 		        ? "Choose different supported keys for every gameplay action."
+		    : !value.lighting.IsValid()
+		        ? "Enter a nonzero finite light direction, color/ambient (0-1) "
+		          "and intensity (0-16)."
 		        : "Enter a title and a valid window size (1-8192).";
 		return false;
 	}

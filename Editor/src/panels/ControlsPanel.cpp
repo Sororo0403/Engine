@@ -1025,6 +1025,14 @@ void ControlsPanel::Draw() {
 	         "Editor Play and exported games with the same keys and focus "
 	         "guards. Jump remains vertical. Apply and Cancel keep scene data "
 	         "and history unchanged. The jump guide remains in world axes."},
+	        {"File > Game Settings > Lighting",
+	         "Set the directional light's travel direction, color, intensity "
+	         "and ambient brightness. Direction must be finite and nonzero. "
+	         "Color and ambient use 0-1; intensity uses 0-16. Reset Lighting "
+	         "restores defaults. Apply updates Scene and Game previews; Cancel "
+	         "keeps applied values. Play and Restart retain the lighting from "
+	         "Play start. Settings are retained across Editor sessions and "
+	         "included in saved configurations, recovery and exported games."},
 	        {"File > Game Settings",
 	         "Set the game title, render size and five gameplay keys before "
 	         "Play or export. Choose distinct letters, digits, Space or arrow "

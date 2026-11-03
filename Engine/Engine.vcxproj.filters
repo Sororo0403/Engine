@@ -343,6 +343,9 @@
     <ClInclude Include="include\graphics\DirectionalLightData.h">
       <Filter>include\graphics</Filter>
     </ClInclude>
+    <ClInclude Include="include\graphics\LightingSettings.h">
+      <Filter>include\graphics</Filter>
+    </ClInclude>
     <ClInclude Include="include\graphics\render\RenderWorld.h">
       <Filter>include\graphics\render</Filter>
     </ClInclude>

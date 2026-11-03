@@ -30,7 +30,7 @@ class EditorPreferences {
 	EditorCameraController::Settings camera;
 	SceneGrid::Settings grid;
 
-	// タイトル・画面サイズ・操作キー・移動基準だけを保存し、起動シーンとカメラ姿勢は出力時に決める
+	// タイトル・画面サイズ・操作キー・移動基準・照明だけを保存し、起動シーンとカメラ姿勢は出力時に決める
 	GameConfig gameExport;
 
 	std::vector<std::filesystem::path> recentScenes;

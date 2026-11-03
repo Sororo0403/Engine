@@ -42,6 +42,7 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 	viewport_ = {};
 
 	if (!IsPlaying()) {
+		lighting_ = config.lighting;
 		gameWidth_ = config.width;
 		gameHeight_ = config.height;
 	}
@@ -161,6 +162,11 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
 		return false;
 	}
 
+	if (!config.lighting.IsValid()) {
+		error = "Choose valid lighting before Play.";
+		return false;
+	}
+
 	if (!config.input.IsValid()) {
 		error = "Choose different supported gameplay keys before Play.";
 		return false;
@@ -182,6 +188,7 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
 		return false;
 	}
 
+	lighting_ = config.lighting;
 	inputBindings_ = config.input;
 	cameraRelativeMovement_ = config.cameraRelativeMovement;
 	gameWidth_ = config.width;
@@ -268,7 +275,8 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 		return true;
 	}
 
-	if (!renderer_.SetCameraPose(session_.GetCameraPose()) ||
+	if (!renderer_.SetLighting(lighting_) ||
+	    !renderer_.SetCameraPose(session_.GetCameraPose()) ||
 	    !renderer_.SetCameraSettings(session_.GetCameraSettings()) ||
 	    !renderer_.Update(texture_->GetWidth(), texture_->GetHeight())) {
 		return false;
@@ -288,7 +296,8 @@ bool EditorPlayMode::UpdatePreview(const Scene &scene,
 	// 無効なカメラでは過去のシーンを捨て、空のワールドを描画して古い画像を残さない。
 	preview_.Prepare(scene, fallback);
 
-	if (!previewRenderer_.SetCameraPose(preview_.GetPose()) ||
+	if (!previewRenderer_.SetLighting(lighting_) ||
+	    !previewRenderer_.SetCameraPose(preview_.GetPose()) ||
 	    !previewRenderer_.SetCameraSettings(preview_.GetSettings()) ||
 	    !previewRenderer_.Update(texture_->GetWidth(), texture_->GetHeight())) {
 		return false;

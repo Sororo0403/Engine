@@ -832,7 +832,8 @@ bool EditorScene::Update(float deltaTime) {
 		return false;
 	}
 
-	if (!renderer_.Update(target->GetWidth(), target->GetHeight())) {
+	if (!renderer_.SetLighting(exportConfig_.lighting) ||
+	    !renderer_.Update(target->GetWidth(), target->GetHeight())) {
 		return false;
 	}
 
@@ -860,7 +861,8 @@ bool EditorScene::Update(float deltaTime) {
 			return false;
 		}
 
-		if (!renderer_.Update(target->GetWidth(), target->GetHeight())) {
+		if (!renderer_.SetLighting(exportConfig_.lighting) ||
+		    !renderer_.Update(target->GetWidth(), target->GetHeight())) {
 			return false;
 		}
 
@@ -3975,7 +3977,8 @@ bool EditorScene::UpdatePlaySceneView(float deltaTime, EditorAction action,
 		return true;
 	}
 
-	if (!playSceneRenderer_.SetCameraPose(cameraController_.GetPose()) ||
+	if (!playSceneRenderer_.SetLighting(playMode_.GetLighting()) ||
+	    !playSceneRenderer_.SetCameraPose(cameraController_.GetPose()) ||
 	    !playSceneRenderer_.Update(target->GetWidth(), target->GetHeight())) {
 		return false;
 	}
@@ -4004,7 +4007,8 @@ bool EditorScene::UpdatePlaySceneView(float deltaTime, EditorAction action,
 
 	if (frameRequest != FrameRequest::NONE &&
 	    FrameObjects(frameRequest, projection, true)) {
-		if (!playSceneRenderer_.SetCameraPose(cameraController_.GetPose()) ||
+		if (!playSceneRenderer_.SetLighting(playMode_.GetLighting()) ||
+		    !playSceneRenderer_.SetCameraPose(cameraController_.GetPose()) ||
 		    !playSceneRenderer_.Update(target->GetWidth(),
 		                               target->GetHeight())) {
 			return false;

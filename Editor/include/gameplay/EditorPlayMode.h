@@ -42,7 +42,7 @@ class EditorPlayMode {
 	/// </summary>
 	/// <param name="ui">UI機能</param>
 	/// <param name="canStart">再生開始と速度変更を受け付けるか</param>
-	/// <param name="config">編集中のプレビューに使用する描画幅と高さ。再生中は開始時のサイズを保持する</param>
+	/// <param name="config">編集中のプレビューに使用する描画幅・高さ・照明。再生中は開始時の設定を保持する</param>
 	/// <param name="canKeepTransforms">選択した再生物体のTransformを保持して停止する操作を許可するか</param>
 	/// <returns>ユーザーが要求した操作</returns>
 	Action DrawUI(const ImGuiSystem &ui, bool canStart,
@@ -55,7 +55,7 @@ class EditorPlayMode {
 	/// <param name="scene">編集シーン</param>
 	/// <param name="error">追加済みコンポーネントの設定・配置・表示するモデルの読み込みエラー</param>
 	/// <param name="fallbackPose">Primary Cameraがない場合に使用するSceneビューの姿勢</param>
-	/// <param name="config">出力設定。Gameビューの描画幅・高さ・操作キー・移動基準を開始時に保持する</param>
+	/// <param name="config">出力設定。Gameビューの描画幅・高さ・操作キー・移動基準・照明を開始時に保持する</param>
 	/// <param name="invalidObject">指定時は設定やモデル読み込みに問題がある物体IDを設定する。成功時や描画サイズ・操作キーの失敗では0</param>
 	/// <returns>true:開始成功 false:設定が無効、または表示するモデルを読み込めない</returns>
 	bool Start(const Scene &scene, std::string &error,
@@ -134,6 +134,14 @@ class EditorPlayMode {
 	/// <returns>この再生モードの生存中に有効な読み取り専用のセッション</returns>
 	const EditorPlaySession &GetSession() const;
 
+	/// <summary>
+	/// 再生開始時、または停止中のプレビューに使用する照明を取得する
+	/// </summary>
+	/// <returns>この再生モードが保持する照明</returns>
+	const LightingSettings &GetLighting() const {
+		return lighting_;
+	}
+
   private:
 	EditorPlaySession session_;
 	EditorGamePreview preview_;
@@ -144,6 +152,7 @@ class EditorPlayMode {
 	std::unique_ptr<RenderTexture> texture_;
 	ViewportInput viewport_{};
 	GameInputBindings inputBindings_;
+	LightingSettings lighting_;
 	bool cameraRelativeMovement_ = false;
 	int gameWidth_ = 1280;
 	int gameHeight_ = 720;

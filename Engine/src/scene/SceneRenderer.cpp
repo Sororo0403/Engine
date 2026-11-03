@@ -20,6 +20,23 @@ SceneRenderer::SceneRenderer(const Scene &scene, ModelManager &models,
 
 SceneRenderer::~SceneRenderer() = default;
 
+bool SceneRenderer::SetLighting(const LightingSettings &settings) {
+	if (!world_ || !settings.IsValid()) {
+		return false;
+	}
+	const auto &direction = settings.direction;
+	const double length = std::sqrt(double(direction.x) * direction.x +
+	                                double(direction.y) * direction.y +
+	                                double(direction.z) * direction.z);
+	auto &light = world_->GetLight();
+	light.direction = {float(direction.x / length), float(direction.y / length),
+	                   float(direction.z / length)};
+	light.intensity = settings.intensity;
+	light.color = settings.color;
+	light.ambient = settings.ambient;
+	return true;
+}
+
 bool SceneRenderer::Initialize() {
 	if (world_) {
 		Logger::Error("SceneRenderer::Initialize: 初期化済みです。");

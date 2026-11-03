@@ -48,7 +48,8 @@ bool RuntimeScene::Update(float seconds) {
 		}
 	}
 
-	return renderer_.SetCameraPose(simulation_.GetCameraPose()) &&
+	return renderer_.SetLighting(config_.lighting) &&
+	       renderer_.SetCameraPose(simulation_.GetCameraPose()) &&
 	       renderer_.SetCameraSettings(simulation_.GetCameraSettings()) &&
 	       renderer_.Update();
 }

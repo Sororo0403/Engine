@@ -1,5 +1,6 @@
 #pragma once
 
+#include "graphics/LightingSettings.h"
 #include "graphics/model/ModelHandle.h"
 #include <cstdint>
 
@@ -27,6 +28,13 @@ struct Ray;
 /// </summary>
 class SceneRenderer {
   public:
+	/// <summary>
+	/// 検証した照明を描画ワールドへ反映する
+	/// </summary>
+	/// <param name="settings">ゲーム全体の照明。方向は正規化して使用する</param>
+	/// <returns>true:成功 false:未初期化または設定が無効。以前の照明は保持する</returns>
+	bool SetLighting(const LightingSettings &settings);
+
 	/// <summary>
 	/// 読み込み不能なモデルに対する描画更新の扱い
 	/// </summary>

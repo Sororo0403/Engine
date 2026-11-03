@@ -220,6 +220,19 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 				}
 			}
 
+			if (settings.contains("lighting")) {
+				std::string text, error;
+				if (!loaded.gameExport.Serialize(text, error)) {
+					throw std::runtime_error(error);
+				}
+				auto configuration = nlohmann::json::parse(text);
+				configuration["lighting"] = settings.at("lighting");
+				if (!loaded.gameExport.Deserialize(configuration.dump(),
+				                                   error)) {
+					throw std::runtime_error(error);
+				}
+			}
+
 			if (!loaded.gameExport.IsValid()) {
 				throw std::runtime_error(
 				    "ゲーム出力のタイトル・画面サイズが無効です。");
@@ -300,12 +313,19 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 			assetDirectories.push_back(PathUtils::ToUtf8(directory));
 		}
 
+		std::string gameText, gameError;
+		if (!gameExport.Serialize(gameText, gameError)) {
+			throw std::runtime_error(gameError);
+		}
+		const auto lighting = nlohmann::json::parse(gameText).at("lighting");
+
 		const nlohmann::json json{
 		    {"version", 1},
 		    {"assetDirectory", PathUtils::ToUtf8(assets.GetDirectory())},
 		    {"assetDirectories", assetDirectories},
 		    {"gameExport",
-		     {{"title", gameExport.title},
+		     {{"lighting", lighting},
+		      {"title", gameExport.title},
 		      {"width", gameExport.width},
 		      {"height", gameExport.height},
 		      {"input", inputJson},
@@ -365,6 +385,7 @@ bool EditorPreferences::operator==(const EditorPreferences &other) const {
 	       gameExport.width == other.gameExport.width &&
 	       gameExport.height == other.gameExport.height &&
 	       gameExport.input == other.gameExport.input &&
+	       gameExport.lighting == other.gameExport.lighting &&
 	       gameExport.cameraRelativeMovement ==
 	           other.gameExport.cameraRelativeMovement &&
 	       showGrid == other.showGrid &&
