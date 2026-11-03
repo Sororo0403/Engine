@@ -2922,6 +2922,14 @@ void EditorScene::UpdateDialogs() {
 	case DialogStage::IMPORT_SCENE: {
 		const auto result = sceneImportDialog_.Draw(ui_, document_.GetScene());
 		if (result == SceneImportResult::ACCEPTED) {
+			if (const auto *imported =
+			        sceneImportDialog_.GetImportedSettings()) {
+				auto settings = *imported;
+				// パッケージのシーン参照・予備カメラは現在のEditor設定へ持ち込まない。
+				settings.scenePath = exportConfig_.scenePath;
+				settings.fallbackCamera = exportConfig_.fallbackCamera;
+				exportConfig_ = std::move(settings);
+			}
 			document_.SetUntitled();
 			ClearRecovery();
 			sceneCheckPanel_.Reset();

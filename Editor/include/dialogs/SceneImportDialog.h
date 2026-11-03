@@ -2,6 +2,7 @@
 
 #include "assets/SceneImporter.h"
 #include "dialogs/FileDialog.h"
+#include "gameplay/GameConfig.h"
 #include <vector>
 
 class AssetDatabase;
@@ -36,8 +37,17 @@ class SceneImportDialog {
 	/// <returns>ACCEPTED後に使用できるAssets検索先基準のフォルダ</returns>
 	const std::filesystem::path &GetCreatedDirectory() const;
 
+	/// <summary>
+	/// 設定の取り込みを選び、取り込みに成功した場合だけ起動設定を取得する
+	/// </summary>
+	/// <returns>ACCEPTED後に参照する検証済み設定。それ以外はnullptr</returns>
+	const GameConfig *GetImportedSettings() const;
+
   private:
 	SceneImportOptions options_;
+	GameConfig settings_;
+	bool importSettings_ = false;
+	bool accepted_ = false;
 	FileDialog picker_;
 	std::vector<std::filesystem::path> folders_;
 	std::filesystem::path created_;

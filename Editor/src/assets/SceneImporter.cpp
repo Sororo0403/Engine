@@ -12,6 +12,8 @@
 #include <json.hpp>
 #include <map>
 #include <stdexcept>
+#include <type_traits>
+#include <utility>
 
 namespace {
 namespace fs = std::filesystem;
@@ -125,7 +127,9 @@ void ResolveReferences(Json &document, const fs::path &root) {
 } // namespace
 
 bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
-                           fs::path &createdFolder, std::string &error) {
+                           fs::path &createdFolder, std::string &error,
+                           GameConfig *configuration) {
+	static_assert(std::is_nothrow_move_assignable_v<GameConfig>);
 	OutputDirectory output;
 	try {
 		if (options.source.empty() ||
@@ -221,6 +225,9 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 		}
 		imported.ReplaceObjects(std::move(objects));
 		createdFolder.swap(folderReference);
+		if (configuration) {
+			*configuration = std::move(config);
+		}
 		output.Complete();
 		error.clear();
 		return true;

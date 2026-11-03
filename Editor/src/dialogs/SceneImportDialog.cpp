@@ -8,6 +8,9 @@
 void SceneImportDialog::Show(const AssetDatabase &assets,
                              const std::filesystem::path &folder) {
 	options_ = {};
+	settings_ = {};
+	importSettings_ = false;
+	accepted_ = false;
 	options_.assetRoot = assets.GetRootDirectory();
 	options_.folder = folder;
 	folders_ = {{}};
@@ -58,6 +61,7 @@ SceneImportResult SceneImportDialog::Draw(const ImGuiSystem &ui, Scene &scene) {
 	}
 
 	ui.InputText("Scene Folder Name", name_);
+	ImGui::Checkbox("Import Game Settings", &importSettings_);
 	ui.EndDisabled();
 	if (!error_.empty()) {
 		ImGui::TextWrapped("%s", error_.c_str());
@@ -68,7 +72,9 @@ SceneImportResult SceneImportDialog::Draw(const ImGuiSystem &ui, Scene &scene) {
 	if (ui.Button("Import")) {
 		try {
 			options_.folderName = PathUtils::FromUtf8(name_);
-			if (SceneImporter::Import(options_, scene, created_, error_)) {
+			if (SceneImporter::Import(options_, scene, created_, error_,
+			                          importSettings_ ? &settings_ : nullptr)) {
+				accepted_ = true;
 				result = SceneImportResult::ACCEPTED;
 			}
 		} catch (const std::exception &exception) {
@@ -79,8 +85,9 @@ SceneImportResult SceneImportDialog::Draw(const ImGuiSystem &ui, Scene &scene) {
 
 	ui.SameLine();
 	ui.BeginDisabled(selecting_);
-	if (ui.Button("Cancel") ||
-	    (!selecting_ && ImGui::IsKeyPressed(ImGuiKey_Escape, false))) {
+	if (result == SceneImportResult::NONE &&
+	    (ui.Button("Cancel") ||
+	     (!selecting_ && ImGui::IsKeyPressed(ImGuiKey_Escape, false)))) {
 		result = SceneImportResult::CANCELLED;
 	}
 	ui.EndDisabled();
@@ -106,4 +113,8 @@ SceneImportResult SceneImportDialog::Draw(const ImGuiSystem &ui, Scene &scene) {
 
 const std::filesystem::path &SceneImportDialog::GetCreatedDirectory() const {
 	return created_;
+}
+
+const GameConfig *SceneImportDialog::GetImportedSettings() const {
+	return accepted_ && importSettings_ ? &settings_ : nullptr;
 }

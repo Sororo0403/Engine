@@ -1061,7 +1061,12 @@ void ControlsPanel::Draw() {
 	         "images as a new unsaved scene. Existing Assets folders and "
 	         "the source package are kept; failed copies remove only their "
 	         "own files. Current scene changes require save confirmation. "
-	         "Game window and input settings are kept. Save As chooses a "
+	         "Game settings are kept by default. Enable Import Game Settings "
+	         "to adopt the title, dimensions, gameplay keys, movement basis "
+	         "and lighting from that package after the whole import succeeds. "
+	         "The current export scene path and fallback camera metadata are "
+	         "kept; cancel or failure keeps all current game settings. "
+	         "The option resets to off each time. Save As chooses a "
 	         "new scene file; import does not add the package to Open Recent."},
 	        {"File > Export Game",
 	         "Choose a new folder, game title and window size. Build Release "
