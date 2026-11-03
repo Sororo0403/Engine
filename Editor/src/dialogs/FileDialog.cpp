@@ -335,7 +335,8 @@ bool FileDialog::AcceptSelection() {
 			return false;
 		}
 
-		auto candidate = directory_ / name;
+		// Goを押していなくても、表示中のFolder欄と異なる場所へ確定しない。
+		auto candidate = ReadDirectory() / name;
 
 		std::error_code error;
 		const bool exists = std::filesystem::exists(candidate, error);

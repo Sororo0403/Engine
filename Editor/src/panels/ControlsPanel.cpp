@@ -1064,6 +1064,13 @@ void ControlsPanel::Draw() {
 	         "Filter recent logs by level or text, read details, copy a "
 	         "message or copy all matching logs with timestamps and levels. "
 	         "Clear Console resets recent messages while file output is kept."},
+	        {"File picker: Folder",
+	         "Open, Save and Save Copy use the absolute Folder field even "
+	         "without pressing Go. Go updates the visible file list. An "
+	         "invalid "
+	         "or missing folder prevents selection; an earlier folder is never "
+	         "used instead. Overwrite confirmation names the chosen "
+	         "destination."},
 	        {"File > Open Recent", "Reopen a recently used scene, with a save "
 	                               "prompt for unsaved changes."},
 	    });

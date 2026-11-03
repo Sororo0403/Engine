@@ -79,13 +79,13 @@ class FileDialog {
 	void ChangeDirectory(const std::filesystem::path &path);
 
 	/// <summary>
-	/// 入力されたファイル名またはフォルダを検証し、選択を確定する
+	/// Folder欄とファイル名を検証し、入力したフォルダを基準に選択を確定する
 	/// </summary>
 	/// <returns>true:確定 false:入力エラー、または上書き確認が必要</returns>
 	bool AcceptSelection();
 
 	/// <summary>
-	/// Folder欄の絶対パスを確認する。選択と新規フォルダ作成に共通の基準を使う
+	/// Folder欄の絶対パスを確認する。ファイル・フォルダの選択と新規フォルダ作成に共通の基準を使う
 	/// </summary>
 	/// <returns>存在するフォルダの正規パス。無効な指定は例外</returns>
 	std::filesystem::path ReadDirectory() const;
