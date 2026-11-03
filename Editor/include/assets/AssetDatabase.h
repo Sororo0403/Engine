@@ -5,7 +5,7 @@
 #include <vector>
 
 /// <summary>
-/// Editorが使用するモデル・画像アセットとフォルダの一覧を管理する
+/// Editorが使用するモデル・画像・シーンアセットとフォルダの一覧を管理する
 /// </summary>
 class AssetDatabase {
   public:
@@ -52,6 +52,12 @@ class AssetDatabase {
 	const std::vector<std::filesystem::path> &GetTextures() const;
 
 	/// <summary>
+	/// 標準のシーンファイル名を持つ項目を取得する。内容の検証は開く時に行う
+	/// </summary>
+	/// <returns>検索先と同じ絶対・相対指定の.scene.jsonファイル一覧</returns>
+	const std::vector<std::filesystem::path> &GetScenes() const;
+
+	/// <summary>
 	/// 空のフォルダを含む、検索先配下のフォルダ一覧を取得する
 	/// </summary>
 	/// <returns>検索先と同じ絶対・相対指定の一覧。検索先自身は含まない</returns>
@@ -72,6 +78,7 @@ class AssetDatabase {
 	std::filesystem::path rootDirectory_;
 	std::vector<std::filesystem::path> models_;
 	std::vector<std::filesystem::path> textures_;
+	std::vector<std::filesystem::path> scenes_;
 	std::vector<std::filesystem::path> directories_;
 	std::string error_;
 };

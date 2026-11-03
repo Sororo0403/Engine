@@ -26,6 +26,7 @@ void AssetsPanel::SetAssetType(AssetType type) {
 
 	type_ = type;
 	selectedPath_.clear();
+	sceneOpenPath_.clear();
 	instanceSelectionPath_.clear();
 	modelReloadPath_.clear();
 	meshReplacementPath_.clear();
@@ -101,7 +102,8 @@ bool AssetsPanel::SelectAsset(const std::filesystem::path &path,
 	// 全種類の通常パスを先に探し、別名の場合だけファイルの照合を行う。
 	for (const bool aliases : {false, true}) {
 		if (select(assets.GetModels(), AssetType::MODEL, aliases) ||
-		    select(assets.GetTextures(), AssetType::TEXTURE, aliases)) {
+		    select(assets.GetTextures(), AssetType::TEXTURE, aliases) ||
+		    select(assets.GetScenes(), AssetType::SCENE, aliases)) {
 			return true;
 		}
 	}
@@ -113,6 +115,7 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
                                         AssetDatabase &assets,
                                         bool canSetTexture, bool canEditAssets,
                                         bool canReplaceMesh) {
+	sceneOpenPath_.clear();
 	instanceSelectionPath_.clear();
 	modelReloadPath_.clear();
 	meshReplacementPath_.clear();
@@ -245,11 +248,20 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 	ImGui::SetNextItemWidth(160.0f);
 
 	const auto typeLabel = [](AssetType type) {
-		return type == AssetType::MODEL ? "Models" : "Textures";
+		switch (type) {
+		case AssetType::MODEL:
+			return "Models";
+		case AssetType::TEXTURE:
+			return "Textures";
+		case AssetType::SCENE:
+			return "Scenes";
+		}
+		return "";
 	};
 
 	if (ImGui::BeginCombo("Asset Type", typeLabel(type_))) {
-		for (const auto type : {AssetType::MODEL, AssetType::TEXTURE}) {
+		for (const auto type :
+		     {AssetType::MODEL, AssetType::TEXTURE, AssetType::SCENE}) {
 			if (ui.Selectable(typeLabel(type), type_ == type)) {
 				SetAssetType(type);
 			}
@@ -269,8 +281,9 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 	ImGui::TextDisabled("%s", filter_.empty() ? "Click a folder to open it."
 	                                          : "Searching all folders.");
 
-	const auto &entries =
-	    type_ == AssetType::MODEL ? assets.GetModels() : assets.GetTextures();
+	const auto &entries = type_ == AssetType::MODEL     ? assets.GetModels()
+	                      : type_ == AssetType::TEXTURE ? assets.GetTextures()
+	                                                    : assets.GetScenes();
 
 	if (!selectedPath_.empty() && std::find(entries.begin(), entries.end(),
 	                                        selectedPath_) == entries.end()) {
@@ -354,14 +367,24 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 			                       ? PathUtils::ToUtf8(displayPath.filename())
 			                       : searchPath;
 
-			if (ui.Selectable(label.c_str(), selectedPath_ == assetPath)) {
+			const bool selected =
+			    ui.Selectable(label.c_str(), selectedPath_ == assetPath);
+			// 通常の選択確定はボタンを離した時。ダブルクリックの押下は別に受け取る。
+			const bool doubleClicked =
+			    ImGui::IsItemHovered() &&
+			    ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left);
+			if (selected || doubleClicked) {
 				selectedPath_ = assetPath;
 				scrollToSelected_ = false;
 				revealMessage_.clear();
 
+				if (type_ == AssetType::SCENE && canEditAssets &&
+				    doubleClicked) {
+					sceneOpenPath_ = assetPath;
+				}
+
 				if (type_ == AssetType::TEXTURE && canSetTexture &&
-				    textureSlot_ >= 0 &&
-				    ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+				    textureSlot_ >= 0 && doubleClicked) {
 					textureSelectionPath_ = assetPath;
 				}
 			}
@@ -370,6 +393,11 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 				selectedPath_ = assetPath;
 				scrollToSelected_ = false;
 				revealMessage_.clear();
+
+				if (type_ == AssetType::SCENE &&
+				    ui.MenuItem("Open Scene", nullptr, canEditAssets)) {
+					sceneOpenPath_ = assetPath;
+				}
 
 				if (type_ == AssetType::TEXTURE &&
 				    ui.MenuItem("Assign Texture to Selection", nullptr,
@@ -393,7 +421,8 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 					modelReloadPath_ = assetPath;
 				}
 
-				if (ui.MenuItem("Select Instances", nullptr, true)) {
+				if (type_ != AssetType::SCENE &&
+				    ui.MenuItem("Select Instances", nullptr, true)) {
 					if (type_ == AssetType::MODEL) {
 						instanceSelectionPath_ = assetPath;
 					} else {
@@ -454,7 +483,7 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 		}
 		ui.EndDisabled();
 		ui.EndDisabled();
-	} else {
+	} else if (type_ == AssetType::TEXTURE) {
 		ui.BeginDisabled(selectedPath_.empty());
 
 		if (ui.Button("Preview Image")) {
@@ -486,19 +515,27 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 		ui.EndDisabled();
 	}
 
-	ui.BeginDisabled(selectedPath_.empty());
-
-	if (ui.Button("Select Instances")) {
-		if (type_ == AssetType::MODEL) {
-			instanceSelectionPath_ = selectedPath_;
-		} else {
-			textureUsageSelectionPath_ = selectedPath_;
+	if (type_ == AssetType::SCENE) {
+		ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
+		if (ui.Button("Open Scene")) {
+			sceneOpenPath_ = selectedPath_;
 		}
-	}
+		ui.EndDisabled();
+	} else {
+		ui.BeginDisabled(selectedPath_.empty());
 
-	ImGui::SetItemTooltip(
-	    "Select all objects using this asset, including hidden objects.");
-	ui.EndDisabled();
+		if (ui.Button("Select Instances")) {
+			if (type_ == AssetType::MODEL) {
+				instanceSelectionPath_ = selectedPath_;
+			} else {
+				textureUsageSelectionPath_ = selectedPath_;
+			}
+		}
+
+		ImGui::SetItemTooltip(
+		    "Select all objects using this asset, including hidden objects.");
+		ui.EndDisabled();
+	}
 
 	ui.EndWindow();
 	return requestedPath;
@@ -533,6 +570,7 @@ void AssetsPanel::Clear() {
 	folderCreateRequested_ = false;
 	texturePreviewPath_.clear();
 	selectedPath_.clear();
+	sceneOpenPath_.clear();
 	instanceSelectionPath_.clear();
 	modelReloadPath_.clear();
 	meshReplacementPath_.clear();
@@ -584,4 +622,8 @@ const std::filesystem::path &AssetsPanel::GetMeshReplacementRequest() const {
 
 const std::filesystem::path &AssetsPanel::GetTextureReloadRequest() const {
 	return textureReloadPath_;
+}
+
+const std::filesystem::path &AssetsPanel::GetSceneOpenRequest() const {
+	return sceneOpenPath_;
 }

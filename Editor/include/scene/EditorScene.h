@@ -187,7 +187,7 @@ class EditorScene final : public IScene {
 		VIEW_TOP,
 		VIEW_BOTTOM,
 		RENAME_OBJECT,
-		OPEN_RECENT,
+		OPEN_PATH,
 		SHOW_ALL_MODELS,
 		REVEAL_ACTIVE,
 	};
@@ -643,7 +643,7 @@ class EditorScene final : public IScene {
 	bool cameraSettingsRequested_ = false;
 	bool gridSettingsRequested_ = false;
 	RecentScenes recentScenes_;
-	std::filesystem::path recentOpenPath_;
+	std::filesystem::path pendingOpenPath_;
 	FrameRequest frameRequest_ = FrameRequest::NONE;
 	SceneObjectId frameObject_ = 0;
 	bool hierarchySelectionScope_ = false;

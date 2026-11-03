@@ -437,6 +437,15 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	if (!wasBusy) {
+		const auto &requestedScene = assetsPanel_.GetSceneOpenRequest();
+		if (!requestedScene.empty() && !IsBusy() &&
+		    action == EditorAction::NONE &&
+		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
+			// 保存先の選択や確認中にAssetsの選択が変わっても、開く対象は保持する。
+			pendingOpenPath_ = requestedScene;
+			action = EditorAction::OPEN_PATH;
+		}
+
 		if (assetsPanel_.IsFolderCreateRequested() && !IsBusy() &&
 		    action == EditorAction::NONE &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
@@ -1141,8 +1150,8 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 
 				if (ui_.MenuItem(label.c_str(), nullptr, enabled)) {
 					// 保存確認中に一覧が更新されても、開くパスは変えない
-					recentOpenPath_ = path;
-					action = EditorAction::OPEN_RECENT;
+					pendingOpenPath_ = path;
+					action = EditorAction::OPEN_PATH;
 				}
 
 				ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(path).c_str());
@@ -1776,7 +1785,8 @@ void EditorScene::StartAction(EditorAction action) {
 	if (stage_ != DialogStage::IDLE || closeApproved_ ||
 	    action == EditorAction::NONE ||
 	    ((action == EditorAction::IMPORT_SCENE ||
-	      action == EditorAction::ASSETS_FOLDER) &&
+	      action == EditorAction::ASSETS_FOLDER ||
+	      action == EditorAction::OPEN_PATH) &&
 	     (playMode_.IsPlaying() || IsBusy()))) {
 		return;
 	}
@@ -1979,7 +1989,7 @@ void EditorScene::StartAction(EditorAction action) {
 	case EditorAction::NEW:
 	case EditorAction::NEW_SAMPLE:
 	case EditorAction::OPEN:
-	case EditorAction::OPEN_RECENT:
+	case EditorAction::OPEN_PATH:
 	case EditorAction::IMPORT_SCENE:
 	case EditorAction::EXIT:
 		// 保存確認が終わるまで、実際の操作は保留する
@@ -2152,8 +2162,8 @@ void EditorScene::ExecutePendingAction() {
 
 		stage_ = DialogStage::OPEN_FILE;
 		return;
-	case EditorAction::OPEN_RECENT:
-		OpenScene(recentOpenPath_);
+	case EditorAction::OPEN_PATH:
+		OpenScene(pendingOpenPath_);
 		return;
 
 	case EditorAction::EXIT:
@@ -2169,6 +2179,7 @@ void EditorScene::StartSave(bool saveAs) {
 	if (!saveAs && !document_.GetFilePath().empty()) {
 		if (document_.Save()) {
 			recentScenes_.Add(document_.GetFilePath());
+			assets_.Refresh();
 			ExecutePendingAction();
 		} else {
 			ShowError(document_.GetError());
@@ -2489,6 +2500,7 @@ void EditorScene::UpdateDialogs() {
 		if (result == FileDialogResult::ACCEPTED) {
 			if (document_.SaveAs(fileDialog_.GetSelectedPath())) {
 				recentScenes_.Add(document_.GetFilePath());
+				assets_.Refresh();
 				ExecutePendingAction();
 			} else {
 				ShowError(document_.GetError());
@@ -2518,6 +2530,7 @@ void EditorScene::UpdateDialogs() {
 		} else if (result == FileDialogResult::ACCEPTED) {
 			if (document_.SaveCopy(fileDialog_.GetSelectedPath())) {
 				recentScenes_.Add(fileDialog_.GetSelectedPath());
+				assets_.Refresh();
 				stage_ = DialogStage::IDLE;
 			} else {
 				ShowError(document_.GetError());

@@ -261,6 +261,18 @@ void ControlsPanel::Draw() {
 	         "absolute Assets folder. Previously selected folders are kept "
 	         "for scene export, but only referenced sources are required. "
 	         "Folder settings are saved when Editor closes."},
+	        {"Assets > Asset Type > Scenes",
+	         "Browse and search *.scene.json files without loading their "
+	         "contents. "
+	         "Select Open Scene, double-click a scene, or use its context "
+	         "menu. "
+	         "Unsaved changes offer Save, Discard or Cancel before opening. "
+	         "Invalid or missing files keep the current scene. Opening is "
+	         "disabled "
+	         "during Play and other modal operations. Save and Save Copy "
+	         "refresh "
+	         "the list. Older scenes named only *.json still open with File > "
+	         "Open."},
 	        {"Assets > New Folder",
 	         "Create a new folder inside the current Assets folder. Enter a "
 	         "single folder name; existing files and folders are never reused "

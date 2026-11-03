@@ -51,6 +51,7 @@ bool AssetDatabase::Refresh() {
 
 		std::vector<std::filesystem::path> models;
 		std::vector<std::filesystem::path> textures;
+		std::vector<std::filesystem::path> scenes;
 		std::vector<std::filesystem::path> directories;
 		const auto reference = [&](const std::filesystem::path &path) {
 			return selectedRoot.is_absolute()
@@ -90,6 +91,12 @@ bool AssetDatabase::Refresh() {
 					textures.push_back(reference(path));
 				}
 
+				// 一覧の検索ではJSONを読み込まず、標準の名前を持つ候補だけを扱う。
+				if (PathUtils::HasExtension(path, ".json") &&
+				    PathUtils::HasExtension(path.stem(), ".scene")) {
+					scenes.push_back(reference(path));
+				}
+
 				const bool supported = PathUtils::IsModelFile(path);
 
 				if (supported) {
@@ -114,17 +121,20 @@ bool AssetDatabase::Refresh() {
 
 		std::sort(models.begin(), models.end());
 		std::sort(textures.begin(), textures.end());
+		std::sort(scenes.begin(), scenes.end());
 		std::sort(directories.begin(), directories.end());
 
 		rootDirectory_.swap(selectedRoot);
 		models_.swap(models);
 		textures_.swap(textures);
+		scenes_.swap(scenes);
 		directories_.swap(directories);
 		error_.clear();
 		return true;
 	} catch (const std::exception &error) {
 		models_.clear();
 		textures_.clear();
+		scenes_.clear();
 		directories_.clear();
 		error_ = error.what();
 
@@ -144,6 +154,7 @@ bool AssetDatabase::SetRootDirectory(std::filesystem::path rootDirectory) {
 		rootDirectory_.swap(candidate.rootDirectory_);
 		models_.swap(candidate.models_);
 		textures_.swap(candidate.textures_);
+		scenes_.swap(candidate.scenes_);
 		directories_.swap(candidate.directories_);
 		error_.clear();
 		return true;
@@ -173,10 +184,15 @@ AssetDatabase::GetDirectories() const {
 void AssetDatabase::Clear() {
 	models_.clear();
 	textures_.clear();
+	scenes_.clear();
 	directories_.clear();
 	error_.clear();
 }
 
 const std::vector<std::filesystem::path> &AssetDatabase::GetTextures() const {
 	return textures_;
+}
+
+const std::vector<std::filesystem::path> &AssetDatabase::GetScenes() const {
+	return scenes_;
 }
