@@ -494,6 +494,9 @@
     <ClInclude Include="include\physics\CollisionMoveResult.h">
       <Filter>include\physics</Filter>
     </ClInclude>
+    <ClInclude Include="include\physics\CollisionSweepResult.h">
+      <Filter>include\physics</Filter>
+    </ClInclude>
     <ClInclude Include="include\physics\CollisionWorld.h">
       <Filter>include\physics</Filter>
     </ClInclude>

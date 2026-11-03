@@ -54,8 +54,9 @@ bool Overlaps(const AxisAlignedBox &a, const AxisAlignedBox &b) {
 /// <param name="time">交差時刻。0は開始位置、1は移動の終点</param>
 /// <param name="axes">接触した軸のビット（X=1、Y=2、Z=4）</param>
 /// <returns>true:経路上で接触 false:接触しない</returns>
-bool Sweep(const Vector &minimum, const Vector &maximum, const Vector &movement,
-           const AxisAlignedBox &obstacle, double &time, unsigned int &axes) {
+bool SweepAgainstBox(const Vector &minimum, const Vector &maximum,
+                     const Vector &movement, const AxisAlignedBox &obstacle,
+                     double &time, unsigned int &axes) {
 	const auto low = ToVector(obstacle.minimum),
 	           high = ToVector(obstacle.maximum);
 	double entry = -(std::numeric_limits<double>::infinity)();
@@ -103,7 +104,7 @@ bool CollisionWorld::Rebuild(const Scene &scene, SceneObjectId ignoredObject,
 		*invalidObject = 0;
 	}
 
-	std::vector<AxisAlignedBox> candidate;
+	std::vector<Obstacle> candidate;
 
 	for (const auto &[id, object] : scene.GetObjects()) {
 		if (id == ignoredObject || !object.collider) {
@@ -121,7 +122,7 @@ bool CollisionWorld::Rebuild(const Scene &scene, SceneObjectId ignoredObject,
 			return false;
 		}
 
-		candidate.push_back(bounds);
+		candidate.push_back({id, bounds});
 	}
 
 	obstacles_.swap(candidate);
@@ -133,8 +134,8 @@ bool CollisionWorld::CanPlace(const AxisAlignedBox &body) const {
 		return false;
 	}
 
-	for (const auto &box : obstacles_) {
-		if (Overlaps(body, box)) {
+	for (const auto &obstacle : obstacles_) {
+		if (Overlaps(body, obstacle.bounds)) {
 			return false;
 		}
 	}
@@ -173,6 +174,37 @@ bool CollisionWorld::FindOverlaps(const Scene &scene,
 	return true;
 }
 
+bool CollisionWorld::Sweep(const AxisAlignedBox &body,
+                           const DirectX::XMFLOAT3 &displacement,
+                           CollisionSweepResult &result) const {
+	if (!Valid(body) || !MathUtils::IsFinite(displacement)) {
+		return false;
+	}
+
+	const auto minimum = ToVector(body.minimum),
+	           maximum = ToVector(body.maximum),
+	           movement = ToVector(displacement);
+	CollisionSweepResult candidate;
+	for (const auto &obstacle : obstacles_) {
+		double time = 0;
+		unsigned int axes = 0;
+		if (!Overlaps(body, obstacle.bounds) &&
+		    !SweepAgainstBox(minimum, maximum, movement, obstacle.bounds, time,
+		                     axes)) {
+			continue;
+		}
+
+		if (candidate.objectId == 0 || time < candidate.fraction ||
+		    (time == candidate.fraction &&
+		     obstacle.objectId < candidate.objectId)) {
+			candidate = {obstacle.objectId, time};
+		}
+	}
+
+	result = candidate;
+	return true;
+}
+
 bool CollisionWorld::Move(const AxisAlignedBox &body,
                           const DirectX::XMFLOAT3 &displacement,
                           CollisionMoveResult &result) const {
@@ -200,7 +232,8 @@ bool CollisionWorld::Move(const AxisAlignedBox &body,
 			double time;
 			unsigned int axes;
 
-			if (!Sweep(minimum, maximum, remaining, obstacle, time, axes)) {
+			if (!SweepAgainstBox(minimum, maximum, remaining, obstacle.bounds,
+			                     time, axes)) {
 				continue;
 			}
 

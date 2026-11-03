@@ -2,6 +2,7 @@
 
 #include "physics/AxisAlignedBox.h"
 #include "physics/CollisionMoveResult.h"
+#include "physics/CollisionSweepResult.h"
 #include "scene/SceneObjectId.h"
 
 #include <vector>
@@ -44,6 +45,18 @@ class CollisionWorld {
 	                         SceneObjectId ignoredObject = 0);
 
 	/// <summary>
+	/// ボックスを直線移動したとき、最初に体積が重なり始めるColliderと移動割合を調べる
+	/// </summary>
+	/// <param name="body">開始位置の有効なワールド座標のボックス</param>
+	/// <param name="displacement">調べるワールド座標の移動量。ゼロも指定できる</param>
+	/// <param name="result">成功時に置き換える接触結果。同時刻の接触では小さい物体IDを優先する</param>
+	/// <returns>true:問い合わせ成功 false:ボックスや移動量が無効。失敗時は出力を保持する</returns>
+	/// <remarks>開始時の重なりは割合0として返す。面に沿う移動や辺を掠めるだけの接触は除く。終点での接触は含む</remarks>
+	bool Sweep(const AxisAlignedBox &body,
+	           const DirectX::XMFLOAT3 &displacement,
+	           CollisionSweepResult &result) const;
+
+	/// <summary>
 	/// 移動経路で最初に接触する位置を調べ、障害物に沿った滑りを反映する
 	/// </summary>
 	/// <param name="body">開始位置のワールド座標のボックス</param>
@@ -54,7 +67,15 @@ class CollisionWorld {
 	          CollisionMoveResult &result) const;
 
   private:
-	std::vector<AxisAlignedBox> obstacles_;
+	/// <summary>
+	/// 衝突形状と、それを持つ物体の対応
+	/// </summary>
+	struct Obstacle {
+		SceneObjectId objectId;
+		AxisAlignedBox bounds;
+	};
+
+	std::vector<Obstacle> obstacles_;
 	static constexpr double kSkinWidth = 0.0001;
 	static constexpr int kMaximumSlideIterations = 4;
 };

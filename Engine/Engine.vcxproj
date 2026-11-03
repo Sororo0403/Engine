@@ -285,6 +285,7 @@ exit /b 0</Command>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\physics\CollisionMoveResult.h" />
+    <ClInclude Include="include\physics\CollisionSweepResult.h" />
     <ClInclude Include="include\physics\CollisionWorld.h" />
     <ClCompile Include="src\physics\CollisionWorld.cpp" />
     <ClInclude Include="include\gameplay\CharacterInput.h" />
