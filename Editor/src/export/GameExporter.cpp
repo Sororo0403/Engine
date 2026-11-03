@@ -67,45 +67,142 @@ fs::path ResourceFile(const fs::path &root, const fs::path &input) {
 }
 
 /// <summary>
-/// 参照するモデル・バッファ・画像・材質ファイルを収集する
+/// 正規化した参照先が、指定したフォルダの内側にあるか判定する
+/// </summary>
+/// <param name="root">基準フォルダの絶対パス</param>
+/// <param name="path">判定する絶対パス</param>
+/// <returns>true:同じ場所または配下 false:別のフォルダ</returns>
+bool IsInside(const fs::path &root, const fs::path &path) {
+	try {
+		PathUtils::RelativeInside(root, path);
+		return true;
+	} catch (const std::runtime_error &) {
+		return false;
+	}
+}
+
+/// <summary>
+/// 取得元と、それに対応するパッケージ内の名前空間を保持する
+/// </summary>
+struct AssetSource {
+	fs::path directory;
+	fs::path output;
+	bool used = false;
+};
+
+/// <summary>
+/// 明示した取得元からモデル・バッファ・画像・材質を収集し、相対構成を保って出力先へ対応付ける
 /// </summary>
 class Assets {
   public:
-	explicit Assets(fs::path root) : root_(std::move(root)) {
+	explicit Assets(fs::path root,
+	                const std::vector<fs::path> &additional = {}) {
+		if (!fs::is_directory(root)) {
+			throw std::invalid_argument("Choose an existing resource folder.");
+		}
+		sources_.push_back({std::move(root), L"resources"});
+		for (std::size_t i = 0; i < additional.size(); ++i) {
+			const auto &input = additional[i];
+			if (input.empty() ||
+			    input.native().find(L'\0') != std::wstring::npos) {
+				throw std::invalid_argument(
+				    "Choose valid external asset folders.");
+			}
+
+			const auto directory =
+			    fs::canonical(PathUtils::ResolveFromExecutable(input));
+			if (!fs::is_directory(directory)) {
+				throw std::invalid_argument(
+				    "An external asset source is not a folder.");
+			}
+			if (std::ranges::any_of(sources_, [&](const auto &source) {
+				    return IsInside(source.directory, directory);
+			    })) {
+				continue;
+			}
+
+			// 追加元どうしが重なる場合は、依存構成を保てる広いフォルダへまとめる。
+			// 組み込み側の取得元は優先し、従来の出力パスを保つ。
+			std::erase_if(sources_, [&](const auto &source) {
+				return source.output != L"resources" &&
+				       IsInside(directory, source.directory);
+			});
+			sources_.push_back({directory, fs::path(L"resources/external") /
+			                                   std::to_wstring(i)});
+		}
 	}
 
 	fs::path AddModel(const fs::path &input) {
-		const auto model = AddFile(input);
-
-		if (!models_.insert(model).second) {
-			return model;
+		const auto index = FindSource(input);
+		const auto model = ResourceFile(sources_[index].directory, input);
+		if (const auto found = models_.find(model); found != models_.end()) {
+			return found->second;
 		}
 
+		const auto reference = AddFile(index, model);
 		for (const auto &file : AssetDependencies::ModelFiles(model)) {
-			AddFile(file);
+			AddFile(index, file);
 		}
-
-		return model;
+		models_.emplace(model, reference);
+		return reference;
 	}
 
 	fs::path AddTexture(const fs::path &input) {
 		AssetDependencies::TextureFiles(input);
-		return AddFile(input);
+		return AddFile(FindSource(input), input);
 	}
 
 	const auto &Files() const {
 		return files_;
 	}
 
-  private:
-	fs::path AddFile(const fs::path &path) {
-		const auto file = ResourceFile(root_, path);
-		files_.insert(file);
-		return file;
+	const auto &Sources() const {
+		return sources_;
 	}
 
-	fs::path root_;
-	std::set<fs::path, PathLess> files_, models_;
+  private:
+	/// <summary>
+	/// 参照先を許可された取得元へ対応付ける。リンクや実体の範囲はResourceFileで検証する
+	/// </summary>
+	/// <param name="path">素材の絶対パス</param>
+	/// <returns>対応する取得元の添字。取得元外や無効な指定は例外</returns>
+	std::size_t FindSource(const fs::path &path) const {
+		if (!path.is_absolute() ||
+		    path.native().find(L'\0') != std::wstring::npos) {
+			throw std::invalid_argument("Use valid absolute asset references.");
+		}
+		for (std::size_t i = 0; i < sources_.size(); ++i) {
+			if (IsInside(sources_[i].directory, path.lexically_normal())) {
+				return i;
+			}
+		}
+		throw std::runtime_error(
+		    "An asset is outside the configured resource folders: " +
+		    PathUtils::ToUtf8(path));
+	}
+
+	/// <summary>
+	/// 同じ取得元の構成を保持して通常ファイルを登録する。出力先の衝突は拒否する
+	/// </summary>
+	/// <param name="index">モデル本体と共通の取得元</param>
+	/// <param name="path">依存ファイルの絶対パス</param>
+	/// <returns>パッケージ基準の参照</returns>
+	fs::path AddFile(std::size_t index, const fs::path &path) {
+		auto &source = sources_[index];
+		const auto file = ResourceFile(source.directory, path);
+		const auto relative =
+		    source.output / PathUtils::RelativeInside(source.directory, file);
+		const auto [found, inserted] = files_.try_emplace(relative, file);
+		if (!inserted && !fs::equivalent(found->second, file)) {
+			throw std::runtime_error("Asset output paths conflict: " +
+			                         PathUtils::ToUtf8(relative));
+		}
+		source.used = true;
+		return relative;
+	}
+
+	std::vector<AssetSource> sources_;
+	std::map<fs::path, fs::path, PathLess> files_, models_;
 };
 
 /// <summary>
@@ -236,20 +333,23 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 			    "Output folder already exists. Choose a new folder.");
 		}
 
+		for (const auto &path :
+		     {options.resourceDirectory, options.runtimeDirectory}) {
+			if (path.empty() ||
+			    path.native().find(L'\0') != std::wstring::npos ||
+			    (path.has_root_path() && !path.is_absolute())) {
+				throw std::invalid_argument(
+				    "Choose valid resource and Runtime folders.");
+			}
+		}
 		const auto resourceRoot = fs::canonical(options.resourceDirectory);
 		const auto runtimeRoot = fs::canonical(options.runtimeDirectory);
-		// 出力先が入力リソースの中に入らないことを確認する。
-		bool inside = false;
-
-		try {
-			PathUtils::RelativeInside(resourceRoot, destination);
-			inside = true;
-		} catch (const std::runtime_error &) {
-		}
-
-		if (inside) {
-			throw std::runtime_error(
-			    "Output must be outside the resources folder.");
+		Assets assets(resourceRoot, options.assetDirectories);
+		for (const auto &source : assets.Sources()) {
+			if (IsInside(source.directory, destination)) {
+				throw std::runtime_error(
+				    "Output must be outside all resource and asset folders.");
+			}
 		}
 
 		nlohmann::json build;
@@ -277,7 +377,6 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 			throw std::runtime_error(problem);
 		}
 
-		Assets assets(resourceRoot);
 		auto objects = scene.GetObjects();
 
 		for (auto &[id, object] : objects) {
@@ -289,9 +388,7 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 					        : resourceRoot / PathUtils::RelativeInside(
 					                             fs::path(L"resources"),
 					                             path.lexically_normal());
-					path = fs::path(L"resources") /
-					       PathUtils::RelativeInside(resourceRoot,
-					                                 assets.AddTexture(input));
+					path = assets.AddTexture(input);
 				}
 			}
 
@@ -303,10 +400,7 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 				              PathUtils::RelativeInside(
 				                  fs::path(L"resources"),
 				                  object.mesh->modelPath.lexically_normal());
-				const auto model = assets.AddModel(path);
-				object.mesh->modelPath =
-				    fs::path(L"resources") /
-				    PathUtils::RelativeInside(resourceRoot, model);
+				object.mesh->modelPath = assets.AddModel(path);
 			}
 		}
 
@@ -356,15 +450,21 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 		plan.Tree(runtimeRoot / L"resources" / L"engine", L"resources/engine");
 		plan.Tree(runtimeRoot / L"licenses", L"licenses");
 
-		for (const auto &file : assets.Files()) {
-			plan.File(file, fs::path(L"resources") /
-			                    PathUtils::RelativeInside(resourceRoot, file));
+		for (const auto &[relative, file] : assets.Files()) {
+			plan.File(file, relative);
 		}
 
-		const auto assetLicenses = resourceRoot / L"licenses";
-
-		if (fs::is_directory(assetLicenses)) {
-			plan.Tree(assetLicenses, L"licenses/assets");
+		for (const auto &source : assets.Sources()) {
+			// 従来のライセンス配置を保ち、未使用の追加フォルダからはコピーしない。
+			if (!source.used && source.output != L"resources") {
+				continue;
+			}
+			const auto licenses = source.directory / L"licenses";
+			if (fs::is_directory(licenses)) {
+				plan.Tree(licenses,
+				          fs::path(L"licenses/assets") /
+				              source.output.lexically_relative(L"resources"));
+			}
 		}
 
 		std::string sceneText, configText;
