@@ -27,6 +27,7 @@
     <ClCompile Include="src\core\Engine.cpp" />
     <ClCompile Include="src\scene\SceneManager.cpp" />
     <ClCompile Include="src\graphics\ui\ImGuiSystem.cpp" />
+    <ClCompile Include="src\graphics\ui\UITexture.cpp" />
     <ClCompile Include="src\graphics\model\ModelInstance.cpp" />
     <ClCompile Include="src\graphics\model\Model.cpp" />
     <ClCompile Include="src\graphics\model\ModelLoader.cpp" />
@@ -68,6 +69,7 @@
     <ClInclude Include="include\graphics\camera\CameraPose.h" />
     <ClInclude Include="include\graphics\render\RenderObjectHandle.h" />
     <ClInclude Include="include\graphics\ui\ImGuiSystem.h" />
+    <ClInclude Include="include\graphics\ui\UITexture.h" />
     <ClInclude Include="include\graphics\ui\DockDirection.h" />
     <ClInclude Include="include\graphics\DirectionalLight.h" />
     <ClInclude Include="include\math\Transform.h" />

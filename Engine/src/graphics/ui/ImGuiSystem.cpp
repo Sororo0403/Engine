@@ -1,4 +1,5 @@
 #include "graphics/ui/ImGuiSystem.h"
+#include "graphics/ui/UITexture.h"
 
 #include "core/Logger.h"
 #include "graphics/render/D3D12Graphics.h"
@@ -138,6 +139,34 @@ struct ImGuiSystem::Impl {
 	// 参照先はImGuiSystemより長く保持する
 	D3D12Graphics *graphics_ = nullptr;
 
+	/// <summary>
+	/// 表示する画像とSRVを、このフレームのGPU利用が終わるまで保持する
+	/// </summary>
+	/// <param name="resource">同じデバイスの読み込み済みリソース</param>
+	/// <param name="width">表示幅</param>
+	/// <param name="height">表示高さ</param>
+	void RegisterImage(ID3D12Resource *resource, float width, float height) {
+		const UINT index = FindFreeDescriptor();
+
+		// 配列の確保に成功してから、SRVを使用中にする
+		imageResources_.emplace_back(resource);
+		imageDescriptors_.push_back(index);
+		descriptorUsed_[index] = true;
+
+		D3D12_SHADER_RESOURCE_VIEW_DESC desc{};
+		desc.Format = resource->GetDesc().Format;
+		desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+		desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		desc.Texture2D.MipLevels = 1;
+
+		device_->CreateShaderResourceView(resource, &desc,
+		                                  srvHeap_->GetCpuHandle(index));
+
+		const auto gpuHandle = srvHeap_->GetGpuHandle(index);
+		ImGui::Image(ImTextureRef(static_cast<ImTextureID>(gpuHandle.ptr)),
+		             ImVec2(width, height));
+	}
+
 	// バックエンドが参照している間、デバイスとキューを保持する
 	Microsoft::WRL::ComPtr<ID3D12Device> device_;
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue_;
@@ -154,6 +183,7 @@ struct ImGuiSystem::Impl {
 
 	// このフレームの画像表示に使用しているSRVの格納位置
 	std::vector<UINT> imageDescriptors_;
+	std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> imageResources_;
 };
 
 ImGuiSystem::ImGuiSystem() : impl_(std::make_unique<Impl>()) {
@@ -222,6 +252,7 @@ bool ImGuiSystem::Initialize(const WinApp &app, D3D12Graphics &graphics) {
 
 		impl_->descriptorUsed_.fill(false);
 		impl_->imageDescriptors_.clear();
+		impl_->imageResources_.clear();
 
 		IMGUI_CHECKVERSION();
 		impl_->context_ = ImGui::CreateContext();
@@ -310,6 +341,7 @@ bool ImGuiSystem::BeginFrame() {
 	}
 
 	impl_->imageDescriptors_.clear();
+	impl_->imageResources_.clear();
 
 	ImGui::SetCurrentContext(impl_->context_);
 
@@ -798,25 +830,53 @@ void ImGuiSystem::Image(const RenderTexture &texture, float width,
 		    "ImGuiSystem::Image: 描画基盤が異なる、または画像が未作成です。");
 	}
 
-	const UINT index = impl_->FindFreeDescriptor();
+	impl_->RegisterImage(texture.GetColorResource(), width, height);
+}
 
-	// 配列の確保に成功してから、SRVを使用中にする
-	impl_->imageDescriptors_.push_back(index);
-	impl_->descriptorUsed_[index] = true;
+std::unique_ptr<UITexture>
+ImGuiSystem::LoadImageTexture(const std::filesystem::path &path) const {
+	try {
+		if (!impl_->context_ || !impl_->rendererInitialized_ ||
+		    !impl_->graphics_ || path.empty() ||
+		    path.native().find(L'\0') != std::wstring::npos) {
+			throw std::invalid_argument("ImGuiSystem::LoadImageTexture: "
+			                            "未初期化、または画像パスが無効です。");
+		}
 
-	D3D12_SHADER_RESOURCE_VIEW_DESC desc{};
-	desc.Format = texture.GetColorResource()->GetDesc().Format;
-	desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	desc.Texture2D.MipLevels = 1;
+		auto texture = std::unique_ptr<UITexture>(new UITexture());
 
-	impl_->device_->CreateShaderResourceView(
-	    texture.GetColorResource(), &desc,
-	    impl_->srvHeap_->GetCpuHandle(index));
+		if (!texture->Load(*impl_->graphics_,
+		                   PathUtils::ResolveFromExecutable(path))) {
+			return nullptr;
+		}
 
-	const auto gpuHandle = impl_->srvHeap_->GetGpuHandle(index);
-	ImGui::Image(ImTextureRef(static_cast<ImTextureID>(gpuHandle.ptr)),
-	             ImVec2(width, height));
+		return texture;
+	} catch (const std::exception &error) {
+		Logger::Error(
+		    std::format("ImGuiSystem::LoadImageTexture: {}", error.what()));
+		return nullptr;
+	}
+}
+
+void ImGuiSystem::Image(const UITexture &texture, float width,
+                        float height) const {
+	impl_->UseFrame();
+
+	if (!std::isfinite(width) || !std::isfinite(height)) {
+		throw std::invalid_argument(
+		    "ImGuiSystem::Image: 表示サイズが無効です。");
+	}
+
+	if (width <= 0.0f || height <= 0.0f) {
+		return;
+	}
+
+	if (!texture.Uses(*impl_->graphics_) || !texture.GetResource()) {
+		throw std::logic_error(
+		    "ImGuiSystem::Image: 描画基盤が異なる、または画像が未作成です。");
+	}
+
+	impl_->RegisterImage(texture.GetResource(), width, height);
 }
 
 bool ImGuiSystem::BeginMainMenuBar() const {
@@ -904,6 +964,7 @@ void ImGuiSystem::Finalize() {
 
 	impl_->srvHeap_.reset();
 	impl_->imageDescriptors_.clear();
+	impl_->imageResources_.clear();
 	impl_->descriptorUsed_.fill(false);
 
 	impl_->commandQueue_.Reset();

@@ -365,6 +365,11 @@ bool EditorScene::Update(float deltaTime) {
 	                           !sceneViewPanel_.IsSelecting();
 	const auto requestedModelPath =
 	    assetsPanel_.Draw(ui_, assets_, canSetTexture);
+	if (!wasBusy && !assetsPanel_.GetTexturePreviewRequest().empty()) {
+		texturePreviewPanel_.Open(assetsPanel_.GetTexturePreviewRequest());
+	}
+
+	texturePreviewPanel_.Draw(ui_);
 	const auto requestedTexture = assetsPanel_.GetTextureSelectionRequest();
 	const auto requestedInstances = assetsPanel_.GetInstanceSelectionRequest();
 
@@ -965,6 +970,7 @@ void EditorScene::Finalize() {
 		}
 	}
 
+	texturePreviewPanel_.Clear();
 	performancePanel_.Reset();
 	playStatePanel_.Reset();
 	playSceneReady_ = false;

@@ -5,12 +5,14 @@
 
 #include <DirectXMath.h>
 #include <cstdint>
+#include <filesystem>
 #include <memory>
 #include <string>
 #include <string_view>
 
 class D3D12Graphics;
 class RenderTexture;
+class UITexture;
 class WinApp;
 class Window;
 
@@ -316,6 +318,23 @@ class ImGuiSystem {
 	/// テクスチャのリサイズ・破棄を行わないこと
 	/// </remarks>
 	void Image(const RenderTexture &texture, float width, float height) const;
+
+	/// <summary>
+	/// WIC対応の画像をUI用に読み込み、GPUへの転送完了まで待機する
+	/// </summary>
+	/// <param name="path">画像ファイル。相対パスは実行ファイル基準</param>
+	/// <returns>読み込み済み画像。未初期化または読み込み失敗はnullptr</returns>
+	/// <remarks>GPUの利用完了後、描画命令の記録前に呼び出す</remarks>
+	std::unique_ptr<UITexture>
+	LoadImageTexture(const std::filesystem::path &path) const;
+
+	/// <summary>
+	/// 読み込んだ画像を表示する。登録したリソースはフレームのGPU処理完了まで内部で保持する
+	/// </summary>
+	/// <param name="texture">この描画基盤と同じデバイスで作成した画像</param>
+	/// <param name="width">表示幅</param>
+	/// <param name="height">表示高さ</param>
+	void Image(const UITexture &texture, float width, float height) const;
 
 	/// <summary>
 	/// 画面上部のメニューバーを開始する

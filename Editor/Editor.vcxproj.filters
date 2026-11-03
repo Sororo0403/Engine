@@ -122,6 +122,9 @@
     <ClCompile Include="src\panels\AssetsPanel.cpp">
       <Filter>src\panels</Filter>
     </ClCompile>
+    <ClCompile Include="src\panels\TexturePreviewPanel.cpp">
+      <Filter>src\panels</Filter>
+    </ClCompile>
     <ClCompile Include="src\gizmo\TransformGizmo.cpp">
       <Filter>src\gizmo</Filter>
     </ClCompile>
@@ -221,6 +224,9 @@
       <Filter>include\panels</Filter>
     </ClInclude>
     <ClInclude Include="include\panels\AssetsPanel.h">
+      <Filter>include\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="include\panels\TexturePreviewPanel.h">
       <Filter>include\panels</Filter>
     </ClInclude>
     <ClInclude Include="include\gizmo\TransformGizmo.h">

@@ -56,6 +56,12 @@ class AssetsPanel {
 	/// </summary>
 	void Clear();
 
+	/// <summary>
+	/// このフレームで確認用ウィンドウに開くことを要求した画像を取得する
+	/// </summary>
+	/// <returns>画像パス。要求なしは空。次のDrawまたはClearまで有効</returns>
+	const std::filesystem::path &GetTexturePreviewRequest() const;
+
   private:
 	/// <summary>
 	/// 一覧に表示するアセットの種類
@@ -85,6 +91,7 @@ class AssetsPanel {
 
 	AssetType type_ = AssetType::MODEL;
 	std::filesystem::path textureSelectionPath_;
+	std::filesystem::path texturePreviewPath_;
 	std::filesystem::path materialEditPath_;
 	std::filesystem::path materialUsageSelectionPath_;
 	std::filesystem::path selectedPath_;

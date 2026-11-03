@@ -473,6 +473,17 @@ void ControlsPanel::Draw() {
 	         "UV and texture behavior stay the same. Old version 1 materials "
 	         "load as Lit; saved assets use version 2. Game export keeps the "
 	         "saved shading mode and the matching shader."},
+	        {"Assets > Textures > Preview Image",
+	         "Open the selected image in Image Preview without opening a "
+	         "material. Only one image is loaded, with pixel dimensions and "
+	         "aspect preserved as the window resizes. Reload Preview reads "
+	         "external edits; Close Preview or the window close button "
+	         "releases the image. A failed load clears the previous preview "
+	         "and reports an error; fix the file and reload to retry. Uses "
+	         "the same WIC image formats as materials. Scene selection, "
+	         "material drafts and history stay unchanged. The window can be "
+	         "docked independently. Hidden during Play; new requests and "
+	         "reloads are blocked by modal operations."},
 	        {"Materials > Show Material / Texture in Assets",
 	         "Open the asset's parent folder and select it in Assets. The "
 	         "asset type switches automatically and Search is cleared. Show "

@@ -29,6 +29,7 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	materialEditPath_.clear();
 	materialUsageSelectionPath_.clear();
 	textureSelectionPath_.clear();
+	texturePreviewPath_.clear();
 	revealMessage_.clear();
 	scrollToSelected_ = false;
 	scrollToTop_ = true;
@@ -109,6 +110,7 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 	materialEditPath_.clear();
 	materialUsageSelectionPath_.clear();
 	textureSelectionPath_.clear();
+	texturePreviewPath_.clear();
 
 	if (!revealPath_.empty()) {
 		ImGui::SetNextWindowCollapsed(false);
@@ -377,6 +379,10 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 	}
 
 	if (type_ == AssetType::TEXTURE) {
+		if (ui.Button("Preview Image")) {
+			texturePreviewPath_ = selectedPath_;
+		}
+
 		ui.BeginDisabled(!canSetTexture);
 
 		if (ui.Button("Use Texture in Material")) {
@@ -419,11 +425,16 @@ const std::filesystem::path &AssetsPanel::GetTextureSelectionRequest() const {
 	return textureSelectionPath_;
 }
 
+const std::filesystem::path &AssetsPanel::GetTexturePreviewRequest() const {
+	return texturePreviewPath_;
+}
+
 void AssetsPanel::Clear() {
 	type_ = AssetType::MODEL;
 	materialEditPath_.clear();
 	materialUsageSelectionPath_.clear();
 	textureSelectionPath_.clear();
+	texturePreviewPath_.clear();
 	selectedPath_.clear();
 	instanceSelectionPath_.clear();
 	currentDirectory_.clear();
