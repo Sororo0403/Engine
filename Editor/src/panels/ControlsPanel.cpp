@@ -958,8 +958,11 @@ void ControlsPanel::Draw() {
 	         "previous settings. Scene data and undo history stay unchanged. "
 	         "Play and exported games share these bindings. Game focus and "
 	         "text-input guards still apply; Escape closes Play or the game. "
-	         "Settings are saved when Editor closes. Old configurations use "
-	         "WASD and Space."},
+	         "Settings are saved when Editor closes. Load Game Configuration "
+	         "reads an exported game.json into this draft; Apply accepts its "
+	         "title, size, keys and movement basis. Cancel keeps the previous "
+	         "settings. The active scene and camera view are kept. Old "
+	         "configurations use WASD and Space."},
 	        {"File > Import Game Scene",
 	         "Choose an exported game's game.json and a new Assets folder. "
 	         "Import its startup scene and referenced models, buffers and "

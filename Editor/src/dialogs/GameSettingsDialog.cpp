@@ -13,7 +13,9 @@ void GameSettingsDialog::Show(const GameConfig &config) {
 	input_ = config.input;
 	cameraRelativeMovement_ = config.cameraRelativeMovement;
 	error_.clear();
+	source_.clear();
 	opening_ = true;
+	selecting_ = false;
 }
 
 GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
@@ -30,6 +32,15 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 		return GameSettingsResult::NONE;
 	}
 
+	ui.BeginDisabled(selecting_);
+	if (ui.Button("Load Game Configuration")) {
+		picker_.Show(FileDialogMode::OPEN, source_,
+		             FileDialogFilter::GAME_CONFIG);
+		selecting_ = true;
+	}
+	ui.EndDisabled();
+
+	ui.BeginDisabled(selecting_);
 	ui.InputText("Game Title", title_);
 	ImGui::InputInt("Width", &width_);
 	ImGui::InputInt("Height", &height_);
@@ -58,6 +69,7 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 	if (ui.Button("Reset Gameplay Keys")) {
 		input_ = {};
 	}
+	ui.EndDisabled();
 
 	if (!error_.empty()) {
 		ImGui::TextWrapped("%s", error_.c_str());
@@ -65,10 +77,13 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 
 	GameSettingsResult result = GameSettingsResult::NONE;
 
+	ui.BeginDisabled(selecting_);
 	const bool apply = ui.Button("Apply");
 	ui.SameLine();
 	const bool cancel =
-	    ui.Button("Cancel") || ImGui::IsKeyPressed(ImGuiKey_Escape, false);
+	    ui.Button("Cancel") ||
+	    (!selecting_ && ImGui::IsKeyPressed(ImGuiKey_Escape, false));
+	ui.EndDisabled();
 
 	if (cancel) {
 		result = GameSettingsResult::CANCELLED;
@@ -93,10 +108,35 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 
 	ImGui::SetItemDefaultFocus();
 
+	if (selecting_) {
+		const auto selected = picker_.Draw(ui);
+		if (selected == FileDialogResult::ACCEPTED) {
+			source_ = picker_.GetSelectedPath();
+			LoadConfiguration(source_);
+		}
+		if (selected != FileDialogResult::NONE) {
+			selecting_ = false;
+		}
+	}
+
 	if (result != GameSettingsResult::NONE) {
 		ui.CloseCurrentPopup();
 	}
 
 	ui.EndPopup();
 	return result;
+}
+
+bool GameSettingsDialog::LoadConfiguration(const std::filesystem::path &path) {
+	GameConfig loaded;
+	if (!loaded.Load(path, error_)) {
+		return false;
+	}
+
+	title_ = loaded.title;
+	width_ = loaded.width;
+	height_ = loaded.height;
+	input_ = loaded.input;
+	cameraRelativeMovement_ = loaded.cameraRelativeMovement;
+	return true;
 }
