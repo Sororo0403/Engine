@@ -5,6 +5,15 @@
 
 namespace AssetFolders {
 /// <summary>
+/// 検索先の指定方法に合わせ、検証済みの絶対パスをSceneで使う参照へ変換する
+/// </summary>
+/// <param name="assetRoot">検索先。絶対指定なら参照も絶対パスにする</param>
+/// <param name="absolutePath">呼び出し側で作成先・検索範囲を確認した絶対パス。存在はまだ不要</param>
+/// <returns>絶対参照、または実行ファイル基準の相対参照。他ドライブへは絶対参照を使う。無効な指定は例外</returns>
+std::filesystem::path MakeReference(const std::filesystem::path &assetRoot,
+                                    const std::filesystem::path &absolutePath);
+
+/// <summary>
 /// Assets内の既存フォルダを解決し、親参照・ストリーム・検索先の外へ出る別名を拒否する
 /// </summary>
 /// <param name="assetRoot">Assetsの検索先。相対指定は実行ファイル基準</param>

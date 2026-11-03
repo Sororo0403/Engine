@@ -25,7 +25,7 @@ class ModelImporter {
 	/// </summary>
 	/// <param name="options">入力モデル・依存元の基準・Assets内の新規フォルダ名</param>
 	/// <param name="models">初期化済みのモデル管理。成功した取り込み先を読み込み済みにする</param>
-	/// <param name="imported">成功時だけ置き換える、実行ファイル基準のモデルパス</param>
+	/// <param name="imported">成功時だけ置き換えるモデルパス。assetRootが絶対指定なら絶対参照、それ以外は実行ファイル基準</param>
 	/// <param name="error">失敗理由。後片付けできない場合は残った場所も含む</param>
 	/// <returns>true:取り込み成功 false:参照・モデル・作成先が無効、またはコピー・読み込み失敗</returns>
 	/// <remarks>GLB・glTF・OBJに対応。GPU利用完了後、描画命令の記録前に呼び出す。外部参照はsourceRoot内にある相対参照を使用する</remarks>

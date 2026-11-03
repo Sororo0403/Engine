@@ -12,7 +12,7 @@ class AssetDatabase {
 	/// <summary>
 	/// アセットを検索するフォルダを指定する。ファイルの検索はまだ行わない
 	/// </summary>
-	/// <param name="rootDirectory">実行ファイルのフォルダを基準にした相対パス</param>
+	/// <param name="rootDirectory">絶対パス、または実行ファイルのフォルダを基準にした相対パス</param>
 	explicit AssetDatabase(std::filesystem::path rootDirectory);
 
 	AssetDatabase(const AssetDatabase &) = delete;
@@ -25,27 +25,34 @@ class AssetDatabase {
 	bool Refresh();
 
 	/// <summary>
+	/// 新しい検索先の読み込み成功後だけ、検索先と一覧を切り替える
+	/// </summary>
+	/// <param name="rootDirectory">絶対パス、または実行ファイル基準の相対パス</param>
+	/// <returns>true:切り替え成功 false:検索先と一覧を保持し、失敗理由を設定する</returns>
+	bool SetRootDirectory(std::filesystem::path rootDirectory);
+
+	/// <summary>
 	/// 検索対象のフォルダを取得する
 	/// </summary>
-	/// <returns>実行ファイルのフォルダを基準にした相対パス</returns>
+	/// <returns>指定した相対パス、または検索成功後に正規化した絶対パス</returns>
 	const std::filesystem::path &GetRootDirectory() const;
 
 	/// <summary>
 	/// モデルファイルの一覧を取得する
 	/// </summary>
-	/// <returns>実行ファイルのフォルダを基準にした相対パスの一覧</returns>
+	/// <returns>検索先が絶対指定なら絶対パス、それ以外は実行ファイル基準の相対パスの一覧</returns>
 	const std::vector<std::filesystem::path> &GetModels() const;
 
 	/// <summary>
 	/// 材質で選択する画像ファイルの一覧を取得する
 	/// </summary>
-	/// <returns>実行ファイル基準のPNG・JPEG・BMP・TIFF・GIFファイル一覧</returns>
+	/// <returns>検索先と同じ絶対・相対指定のPNG・JPEG・BMP・TIFF・GIFファイル一覧</returns>
 	const std::vector<std::filesystem::path> &GetTextures() const;
 
 	/// <summary>
 	/// 空のフォルダを含む、検索先配下のフォルダ一覧を取得する
 	/// </summary>
-	/// <returns>実行ファイルのフォルダを基準にした相対パスの一覧。検索先自身は含まない</returns>
+	/// <returns>検索先と同じ絶対・相対指定の一覧。検索先自身は含まない</returns>
 	const std::vector<std::filesystem::path> &GetDirectories() const;
 
 	/// <summary>

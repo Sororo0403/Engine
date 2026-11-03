@@ -104,11 +104,7 @@ bool TextureImporter::Import(const TextureImportOptions &options,
 
 		ValidateImage(bytes);
 		auto selected =
-		    destination.lexically_relative(PathUtils::GetExecutableDirectory());
-		if (selected.empty()) {
-			throw std::runtime_error(
-			    "Could not create the imported image reference.");
-		}
+		    AssetFolders::MakeReference(options.assetRoot, destination);
 
 		if (!FileUtils::WriteBytesAtomically(
 		        destination,

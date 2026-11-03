@@ -30,7 +30,7 @@ class SceneImporter {
 	/// <param name="createdFolder">成功時に置き換えるAssets検索先基準の作成フォルダ</param>
 	/// <param name="error">失敗理由。後片付けできない場合は残った場所も含む</param>
 	/// <returns>true:取り込み成功 false:設定・参照・コピーが無効。既存項目は変更しない</returns>
-	/// <remarks>ゲームのウィンドウ・操作キー設定は取り込まない。GPUリソースは作成しない。リンクやパッケージ外の参照は拒否する</remarks>
+	/// <remarks>assetRootが絶対指定なら素材は絶対参照にする。ゲームのウィンドウ・操作キー設定は取り込まない。GPUリソースは作成しない。リンクやパッケージ外の参照は拒否する</remarks>
 	static bool Import(const SceneImportOptions &options, Scene &imported,
 	                   std::filesystem::path &createdFolder,
 	                   std::string &error);

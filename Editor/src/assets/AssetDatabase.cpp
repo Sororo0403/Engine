@@ -17,12 +17,19 @@ AssetDatabase::AssetDatabase(std::filesystem::path rootDirectory)
 
 bool AssetDatabase::Refresh() {
 	try {
-		if (rootDirectory_.empty() || rootDirectory_.has_root_path()) {
-			throw std::invalid_argument(
-			    "検索先には実行ファイル基準の相対パスを指定してください。");
+		if (rootDirectory_.empty() ||
+		    rootDirectory_.native().find(L'\0') != std::wstring::npos ||
+		    (rootDirectory_.has_root_path() && !rootDirectory_.is_absolute())) {
+			throw std::invalid_argument("検索先には絶対パスか実行ファイル基準の"
+			                            "相対パスを指定してください。");
 		}
 
-		const auto root = PathUtils::ResolveFromExecutable(rootDirectory_);
+		const auto root =
+		    rootDirectory_.is_absolute()
+		        ? std::filesystem::canonical(rootDirectory_)
+		        : PathUtils::ResolveFromExecutable(rootDirectory_);
+		auto selectedRoot =
+		    rootDirectory_.is_absolute() ? root : rootDirectory_;
 
 		const auto executableDirectory = PathUtils::GetExecutableDirectory();
 
@@ -45,6 +52,11 @@ bool AssetDatabase::Refresh() {
 		std::vector<std::filesystem::path> models;
 		std::vector<std::filesystem::path> textures;
 		std::vector<std::filesystem::path> directories;
+		const auto reference = [&](const std::filesystem::path &path) {
+			return selectedRoot.is_absolute()
+			           ? path
+			           : path.lexically_relative(executableDirectory);
+		};
 
 		std::filesystem::recursive_directory_iterator iterator(root, error);
 		const std::filesystem::recursive_directory_iterator end;
@@ -68,31 +80,28 @@ bool AssetDatabase::Refresh() {
 			}
 
 			if (directory) {
-				directories.push_back(
-				    entry.path().lexically_relative(executableDirectory));
+				directories.push_back(reference(entry.path()));
 			}
 
 			if (regularFile) {
 				const auto &path = entry.path();
 
 				if (PathUtils::IsImageFile(path)) {
-					textures.push_back(
-					    path.lexically_relative(executableDirectory));
+					textures.push_back(reference(path));
 				}
 
 				const bool supported = PathUtils::IsModelFile(path);
 
 				if (supported) {
-					// SceneとModelManagerが使う実行ファイル基準に揃える
-					auto relativePath =
-					    path.lexically_relative(executableDirectory);
+					// 検索先の指定方法を保ち、外部フォルダは実行ファイルの移動に依存させない。
+					auto assetPath = reference(path);
 
-					if (relativePath.empty()) {
+					if (assetPath.empty()) {
 						throw std::runtime_error(
-						    "モデルの相対パスを作成できませんでした。");
+						    "モデルの参照パスを作成できませんでした。");
 					}
 
-					models.push_back(std::move(relativePath));
+					models.push_back(std::move(assetPath));
 				}
 			}
 
@@ -107,6 +116,7 @@ bool AssetDatabase::Refresh() {
 		std::sort(textures.begin(), textures.end());
 		std::sort(directories.begin(), directories.end());
 
+		rootDirectory_.swap(selectedRoot);
 		models_.swap(models);
 		textures_.swap(textures);
 		directories_.swap(directories);
@@ -119,6 +129,26 @@ bool AssetDatabase::Refresh() {
 		error_ = error.what();
 
 		Logger::Error(std::format("AssetDatabase::Refresh: {}", error_));
+		return false;
+	}
+}
+
+bool AssetDatabase::SetRootDirectory(std::filesystem::path rootDirectory) {
+	try {
+		AssetDatabase candidate(std::move(rootDirectory));
+		if (!candidate.Refresh()) {
+			error_ = candidate.GetError();
+			return false;
+		}
+
+		rootDirectory_.swap(candidate.rootDirectory_);
+		models_.swap(candidate.models_);
+		textures_.swap(candidate.textures_);
+		directories_.swap(candidate.directories_);
+		error_.clear();
+		return true;
+	} catch (const std::exception &error) {
+		error_ = error.what();
 		return false;
 	}
 }

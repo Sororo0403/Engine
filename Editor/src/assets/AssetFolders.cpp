@@ -3,6 +3,25 @@
 #include <stdexcept>
 
 std::filesystem::path
+AssetFolders::MakeReference(const std::filesystem::path &assetRoot,
+                            const std::filesystem::path &absolutePath) {
+	if (assetRoot.empty() ||
+	    assetRoot.native().find(L'\0') != std::wstring::npos ||
+	    (assetRoot.has_root_path() && !assetRoot.is_absolute()) ||
+	    !absolutePath.is_absolute() ||
+	    absolutePath.native().find(L'\0') != std::wstring::npos) {
+		throw std::invalid_argument("Choose valid asset references.");
+	}
+	const auto target = absolutePath.lexically_normal();
+	if (assetRoot.is_absolute()) {
+		return target;
+	}
+	const auto relative =
+	    target.lexically_relative(PathUtils::GetExecutableDirectory());
+	return relative.empty() ? target : relative;
+}
+
+std::filesystem::path
 AssetFolders::Resolve(const std::filesystem::path &assetRoot,
                       const std::filesystem::path &folder) {
 	if (assetRoot.empty() ||

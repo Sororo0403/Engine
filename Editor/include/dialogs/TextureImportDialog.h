@@ -30,7 +30,7 @@ class TextureImportDialog {
 	/// <summary>
 	/// 最後に取り込んだ画像の参照を取得する
 	/// </summary>
-	/// <returns>ACCEPTED後に使用できる実行ファイル基準のパス</returns>
+	/// <returns>ACCEPTED後に使用できるScene用の画像パス。検索先が絶対指定なら絶対参照</returns>
 	const std::filesystem::path &GetImportedPath() const;
 
   private:

@@ -32,7 +32,7 @@ class ModelImportDialog {
 	/// <summary>
 	/// 取り込んだモデルの参照を取得する
 	/// </summary>
-	/// <returns>ACCEPTED後に使用できる実行ファイル基準のモデルパス</returns>
+	/// <returns>ACCEPTED後に使用できるScene用のモデルパス。検索先が絶対指定なら絶対参照</returns>
 	const std::filesystem::path &GetImportedPath() const;
 
   private:

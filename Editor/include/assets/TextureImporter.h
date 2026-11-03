@@ -23,7 +23,7 @@ class TextureImporter {
 	/// 読み取ったバイト列を復号検証し、新しい画像ファイルとして確定する。シーンや履歴は変更しない
 	/// </summary>
 	/// <param name="options">入力元・検索先・検索先基準の相対フォルダ・画像名</param>
-	/// <param name="imported">成功時だけ置き換える、実行ファイル基準の取り込み先</param>
+	/// <param name="imported">成功時だけ置き換える取り込み先。assetRootが絶対指定なら絶対参照、それ以外は実行ファイル基準</param>
 	/// <param name="error">失敗理由。後片付け失敗時は残った場所も含む</param>
 	/// <returns>true:取り込み成功 false:無効な画像・パス・同名ファイル・保存失敗</returns>
 	/// <remarks>COM初期化後に呼び出す。画像は256MiBまで、各辺は16384ピクセルまで。先頭フレームを検証する</remarks>

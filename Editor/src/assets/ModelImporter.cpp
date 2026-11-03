@@ -106,13 +106,8 @@ bool ModelImporter::Import(const ModelImportOptions &options,
 			}
 		}
 
-		auto selected =
-		    (destination / modelRelative)
-		        .lexically_relative(PathUtils::GetExecutableDirectory());
-		if (selected.empty()) {
-			throw std::runtime_error(
-			    "Could not create the imported model reference.");
-		}
+		auto selected = AssetFolders::MakeReference(
+		    options.assetRoot, destination / modelRelative);
 
 		output.Create(destination);
 		for (const auto &[relative, file] : plan) {

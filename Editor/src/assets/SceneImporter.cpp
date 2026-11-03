@@ -189,9 +189,7 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 		auto objects = candidate.GetObjects();
 		const auto reference = [&](const fs::path &path) {
 			const auto target = destination / addFile(path);
-			auto relative =
-			    target.lexically_relative(PathUtils::GetExecutableDirectory());
-			return relative.empty() ? target : relative;
+			return AssetFolders::MakeReference(options.assetRoot, target);
 		};
 		for (auto &[id, object] : objects) {
 			if (object.HasMesh()) {
