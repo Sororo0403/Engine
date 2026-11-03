@@ -25,10 +25,12 @@ class AssetsPanel {
 	/// <param name="assets">一覧を表示するアセットデータベース</param>
 	/// <param name="canSetTexture">選択物体のスロットへ画像を割り当てる操作を許可するか</param>
 	/// <param name="canEditAssets">画像・モデルの取り込み・再読み込みとフォルダ作成を開始できるか</param>
+	/// <param name="canReplaceMesh">全選択物体の既存Meshを差し替えられるか</param>
 	/// <returns>配置を要求したモデルの相対パス。要求がない場合は空のパス</returns>
 	std::filesystem::path Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	                           bool canSetTexture = false,
-	                           bool canEditAssets = false);
+	                           bool canEditAssets = false,
+	                           bool canReplaceMesh = false);
 
 	/// <summary>
 	/// このフレームに使用物体の選択を要求したモデルを取得する
@@ -41,6 +43,12 @@ class AssetsPanel {
 	/// </summary>
 	/// <returns>モデルの相対パス。要求なしは空。次のDraw・種類切り替え・Clearまで有効</returns>
 	const std::filesystem::path &GetModelReloadRequest() const;
+
+	/// <summary>
+	/// このフレームに選択物体のMeshへの差し替えを要求したモデルを取得する
+	/// </summary>
+	/// <returns>モデルの相対パス。要求なしは空。次のDraw・種類切り替え・Clearまで有効</returns>
+	const std::filesystem::path &GetMeshReplacementRequest() const;
 
 	/// <summary>
 	/// このフレームに共有する画像の再読み込みを要求したパスを取得する
@@ -147,6 +155,7 @@ class AssetsPanel {
 	std::filesystem::path selectedPath_;
 	std::filesystem::path instanceSelectionPath_;
 	std::filesystem::path modelReloadPath_;
+	std::filesystem::path meshReplacementPath_;
 	std::filesystem::path textureReloadPath_;
 	std::filesystem::path currentDirectory_;
 	std::string filter_;

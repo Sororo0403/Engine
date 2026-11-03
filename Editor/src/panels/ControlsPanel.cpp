@@ -262,6 +262,18 @@ void ControlsPanel::Draw() {
 	         "history "
 	         "and is unavailable during Play, modal operations or Scene "
 	         "gestures."},
+	        {"Assets > Replace Mesh of Selection",
+	         "Replace every selected object's existing Mesh with the chosen "
+	         "model in one Undo/Redo operation. Use the button or model row "
+	         "context menu. Every selected object must already have a Mesh; "
+	         "a Mesh without an assigned model is supported. Hidden objects "
+	         "and Mesh-only objects are included. Names, IDs, Transforms, "
+	         "visibility, texture slot numbers, Colliders and gameplay "
+	         "settings "
+	         "stay unchanged. Fit Colliders again if the new shape needs it. "
+	         "Selection and Inspector locks stay unchanged. Failed model "
+	         "loading changes no Mesh. Identical assignments add no history. "
+	         "Unavailable during Play, modal operations or Scene gestures."},
 	        {"Assets > Reload Texture",
 	         "Read the selected image again even when its file time and size "
 	         "have not changed. Use the button or its context menu. Success "

@@ -446,6 +446,15 @@ class EditorHistory {
 	bool SetModelPath(SceneObjectId objectId, std::filesystem::path modelPath);
 
 	/// <summary>
+	/// 既存のMeshをまとめて差し替え、他のコンポーネントを保持して1操作として記録する
+	/// </summary>
+	/// <param name="ids">重複のない対象ID一覧。全物体に有効なMeshが必要</param>
+	/// <param name="modelPath">差し替えるモデル。空の参照は指定できない</param>
+	/// <returns>true:全件成功または変更なし false:対象・Mesh・パスが無効。全件変更しない</returns>
+	bool SetModelPaths(std::span<const SceneObjectId> ids,
+	                   const std::filesystem::path &modelPath);
+
+	/// <summary>
 	/// Meshコンポーネントを追加・変更・削除する。描画設定は保持する
 	/// </summary>
 	/// <param name="id">対象の物体</param>

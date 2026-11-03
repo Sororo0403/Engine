@@ -397,6 +397,13 @@ class EditorScene final : public IScene {
 	                 const std::filesystem::path &modelPath);
 
 	/// <summary>
+	/// モデルの読み込みを確認してから、選択物体の既存Meshを1操作で差し替える
+	/// </summary>
+	/// <param name="modelPath">差し替えるモデル。空は指定できない</param>
+	/// <returns>true:成功または変更なし false:読み込み・対象・履歴反映に失敗</returns>
+	bool ReplaceSelectedMeshes(const std::filesystem::path &modelPath);
+
+	/// <summary>
 	/// 表示するモデルの読み込みを確認し、表示状態をまとめて変更する
 	/// </summary>
 	/// <param name="objectIds">変更する物体のID一覧</param>

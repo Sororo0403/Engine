@@ -368,10 +368,15 @@ bool EditorScene::Update(float deltaTime) {
 		    return object && object->meshRenderer &&
 		           object->meshRenderer->IsValid();
 	    });
-	const auto requestedModelPath =
-	    assetsPanel_.Draw(ui_, assets_, canSetTexture,
-	                      !gizmo_.IsUsing() && !gizmoEditActive_ &&
-	                          !sceneViewPanel_.IsSelecting());
+	const auto requestedModelPath = assetsPanel_.Draw(
+	    ui_, assets_, canSetTexture,
+	    !gizmo_.IsUsing() && !gizmoEditActive_ &&
+	        !sceneViewPanel_.IsSelecting(),
+	    HasSelection() &&
+	        std::ranges::all_of(selection_.GetIds(), [&](const auto id) {
+		        const auto *object = scene.FindObject(id);
+		        return object && object->mesh && object->mesh->IsValid();
+	        }));
 	if (!wasBusy && !assetsPanel_.GetTexturePreviewRequest().empty()) {
 		texturePreviewPanel_.Open(assetsPanel_.GetTexturePreviewRequest());
 	}
@@ -383,6 +388,8 @@ bool EditorScene::Update(float deltaTime) {
 	        : assetsPanel_.GetTextureSelectionRequest();
 	const auto requestedInstances = assetsPanel_.GetInstanceSelectionRequest();
 	const auto requestedModelReload = assetsPanel_.GetModelReloadRequest();
+	const auto requestedMeshReplacement =
+	    assetsPanel_.GetMeshReplacementRequest();
 	const auto requestedTextureReload = assetsPanel_.GetTextureReloadRequest();
 	const bool textureAssignment =
 	    assetsPanel_.IsTextureClearRequested() || !requestedTexture.empty();
@@ -589,6 +596,12 @@ bool EditorScene::Update(float deltaTime) {
 		}
 
 		if (!IsBusy() && action == EditorAction::NONE &&
+		    !requestedMeshReplacement.empty() &&
+		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
+			ReplaceSelectedMeshes(requestedMeshReplacement);
+		}
+
+		if (!IsBusy() && action == EditorAction::NONE &&
 		    !requestedModelReload.empty() &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 			try {
@@ -673,6 +686,7 @@ bool EditorScene::Update(float deltaTime) {
 			    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
 			    !hasObjectRequest && !textureAssignment &&
 			    requestedModelReload.empty() &&
+			    requestedMeshReplacement.empty() &&
 			    requestedTextureReload.empty() && checkedObject == 0 &&
 			    requestedTextureUsers.empty() &&
 			    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
@@ -684,6 +698,7 @@ bool EditorScene::Update(float deltaTime) {
 			    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
 			    !hasObjectRequest && !textureAssignment &&
 			    requestedModelReload.empty() &&
+			    requestedMeshReplacement.empty() &&
 			    requestedTextureReload.empty() && checkedObject == 0 &&
 			    requestedTextureUsers.empty() && !historyRequest) {
 				const bool objectPanelFocused =
@@ -709,12 +724,12 @@ bool EditorScene::Update(float deltaTime) {
 	const bool inputBlocked =
 	    wasBusy || IsBusy() || action != EditorAction::NONE ||
 	    checkedObject != 0 || textureAssignment ||
-	    !requestedModelReload.empty() || !requestedTextureReload.empty() ||
-	    !requestedModelPath.empty() || !requestedInstances.empty() ||
-	    !requestedTextureUsers.empty() || !modelDrop.path.empty() ||
-	    modelRequest.objectId != 0 || visibilityRequest.objectId != 0 ||
-	    colliderFitRequest != 0 || hasObjectRequest ||
-	    historyRequest.has_value() ||
+	    !requestedMeshReplacement.empty() || !requestedModelReload.empty() ||
+	    !requestedTextureReload.empty() || !requestedModelPath.empty() ||
+	    !requestedInstances.empty() || !requestedTextureUsers.empty() ||
+	    !modelDrop.path.empty() || modelRequest.objectId != 0 ||
+	    visibilityRequest.objectId != 0 || colliderFitRequest != 0 ||
+	    hasObjectRequest || historyRequest.has_value() ||
 	    hierarchyRequest.action != HierarchyPanel::Action::NONE;
 
 	ViewportInput viewport = sceneViewPanel_.GetInput();
@@ -3136,6 +3151,32 @@ bool EditorScene::AssignModel(SceneObjectId objectId,
 		    std::format("EditorScene::AssignModel: {}", error.what()));
 		ShowError(
 		    "Could not change the object's model. See the log for details.");
+		return false;
+	}
+}
+
+bool EditorScene::ReplaceSelectedMeshes(
+    const std::filesystem::path &modelPath) {
+	try {
+		FinishEdit();
+		if (modelPath.empty() || !models_.Load(modelPath)) {
+			ShowError(
+			    "Could not load the model. The selected meshes were kept.");
+			return false;
+		}
+
+		if (!document_.GetHistory().SetModelPaths(selection_.GetIds(),
+		                                          modelPath)) {
+			ShowError("Could not replace the meshes. Every selected object "
+			          "must have a Mesh component.");
+			return false;
+		}
+
+		return true;
+	} catch (const std::exception &error) {
+		Logger::Error(std::format("EditorScene::ReplaceSelectedMeshes: {}",
+		                          error.what()));
+		ShowError("Could not replace the meshes. See the log for details.");
 		return false;
 	}
 }

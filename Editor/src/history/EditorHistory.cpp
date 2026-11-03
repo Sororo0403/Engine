@@ -615,6 +615,46 @@ bool EditorHistory::SetModelPath(SceneObjectId objectId,
 	return SetMesh(objectId, MeshComponent{std::move(modelPath)});
 }
 
+bool EditorHistory::SetModelPaths(std::span<const SceneObjectId> ids,
+                                  const std::filesystem::path &modelPath) {
+	CommitEdit();
+	const MeshComponent replacement{modelPath};
+
+	if (ids.empty() || modelPath.empty() || !replacement.IsValid()) {
+		return false;
+	}
+
+	std::set<SceneObjectId> seen;
+	std::vector<CommandGroup::Command> commands;
+	commands.reserve(ids.size());
+
+	for (const auto id : ids) {
+		const auto *object = scene_.FindObject(id);
+		if (!seen.insert(id).second || !object || !object->mesh ||
+		    !object->mesh->IsValid()) {
+			return false;
+		}
+
+		if (*object->mesh != replacement) {
+			commands.emplace_back(
+			    ModelPathCommand{id, object->mesh, replacement});
+		}
+	}
+
+	if (commands.empty()) {
+		return true;
+	}
+
+	CommandGroup group{std::move(commands)};
+	const auto next = PrepareAppend();
+	if (!group.Redo(scene_)) {
+		return false;
+	}
+
+	AppendPrepared(Command{std::move(group)}, next, "Replace Meshes");
+	return true;
+}
+
 bool EditorHistory::SetMesh(SceneObjectId id,
                             std::optional<MeshComponent> value) {
 	CommitEdit();

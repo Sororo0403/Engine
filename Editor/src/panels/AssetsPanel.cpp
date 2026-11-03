@@ -28,6 +28,7 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	selectedPath_.clear();
 	instanceSelectionPath_.clear();
 	modelReloadPath_.clear();
+	meshReplacementPath_.clear();
 	textureReloadPath_.clear();
 	textureUsageSelectionPath_.clear();
 	textureSelectionPath_.clear();
@@ -110,10 +111,11 @@ bool AssetsPanel::SelectAsset(const std::filesystem::path &path,
 
 std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
                                         AssetDatabase &assets,
-                                        bool canSetTexture,
-                                        bool canEditAssets) {
+                                        bool canSetTexture, bool canEditAssets,
+                                        bool canReplaceMesh) {
 	instanceSelectionPath_.clear();
 	modelReloadPath_.clear();
+	meshReplacementPath_.clear();
 	textureReloadPath_.clear();
 	textureUsageSelectionPath_.clear();
 	textureSelectionPath_.clear();
@@ -287,7 +289,7 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 	const auto contentSize = ui.GetContentSize();
 	const float footerHeight = ImGui::GetTextLineHeightWithSpacing() +
 	                           ImGui::GetFrameHeightWithSpacing() *
-	                               (type_ == AssetType::TEXTURE ? 6.0f : 3.0f) +
+	                               (type_ == AssetType::TEXTURE ? 6.0f : 4.0f) +
 	                           ImGui::GetStyle().ItemSpacing.y;
 	const float listHeight = std::max(1.0f, contentSize.y - footerHeight);
 
@@ -381,6 +383,12 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 				}
 
 				if (type_ == AssetType::MODEL &&
+				    ui.MenuItem("Replace Mesh of Selection", nullptr,
+				                canEditAssets && canReplaceMesh)) {
+					meshReplacementPath_ = assetPath;
+				}
+
+				if (type_ == AssetType::MODEL &&
 				    ui.MenuItem("Reload Model", nullptr, canEditAssets)) {
 					modelReloadPath_ = assetPath;
 				}
@@ -433,6 +441,12 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 		if (ui.Button("Add to Scene")) {
 			requestedPath = selectedPath_;
 		}
+
+		ui.BeginDisabled(!canEditAssets || !canReplaceMesh);
+		if (ui.Button("Replace Mesh of Selection")) {
+			meshReplacementPath_ = selectedPath_;
+		}
+		ui.EndDisabled();
 
 		ui.BeginDisabled(!canEditAssets);
 		if (ui.Button("Reload Model")) {
@@ -521,6 +535,7 @@ void AssetsPanel::Clear() {
 	selectedPath_.clear();
 	instanceSelectionPath_.clear();
 	modelReloadPath_.clear();
+	meshReplacementPath_.clear();
 	textureReloadPath_.clear();
 	currentDirectory_.clear();
 	filter_.clear();
@@ -561,6 +576,10 @@ bool AssetsPanel::IsModelImportRequested() const {
 
 const std::filesystem::path &AssetsPanel::GetModelReloadRequest() const {
 	return modelReloadPath_;
+}
+
+const std::filesystem::path &AssetsPanel::GetMeshReplacementRequest() const {
+	return meshReplacementPath_;
 }
 
 const std::filesystem::path &AssetsPanel::GetTextureReloadRequest() const {
