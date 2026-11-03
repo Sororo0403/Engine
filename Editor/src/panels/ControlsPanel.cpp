@@ -844,6 +844,17 @@ void ControlsPanel::Draw() {
 	         "Respawn uses the start position and default fall height. "
 	         "Transform and other components stay unchanged. "
 	         "Pending edits finish first. Default values add no history."},
+	        {"Scene > Follow Camera clearance guide",
+	         "Select a Follow Camera and enable View > Camera Guides. With "
+	         "Avoid Obstacles on, purple boxes show Camera Clearance around "
+	         "the look point and corrected starting camera position. When a "
+	         "wall shortens the distance, a gray box and connecting line show "
+	         "the requested camera position. Red links and boxes mean an "
+	         "initial clearance cannot be placed; inspect Box Colliders and "
+	         "adjust Look Offset or Camera Clearance. The requested pose "
+	         "remains visible for diagnosis. Guides do not add Colliders or "
+	         "change scene data, selection, Undo history or Game rendering. "
+	         "Turn Avoid Obstacles off to keep the usual follow links only."},
 	        {"Inspector > Follow Camera > Avoid Obstacles",
 	         "Keep the camera before the first static Box Collider between "
 	         "its look point and smoothed position. Camera Clearance is the "
