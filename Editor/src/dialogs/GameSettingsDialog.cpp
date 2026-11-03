@@ -11,6 +11,7 @@ void GameSettingsDialog::Show(const GameConfig &config) {
 	width_ = config.width;
 	height_ = config.height;
 	input_ = config.input;
+	cameraRelativeMovement_ = config.cameraRelativeMovement;
 	error_.clear();
 	opening_ = true;
 }
@@ -32,6 +33,8 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 	ui.InputText("Game Title", title_);
 	ImGui::InputInt("Width", &width_);
 	ImGui::InputInt("Height", &height_);
+
+	ImGui::Checkbox("Camera Relative Movement", &cameraRelativeMovement_);
 
 	ImGui::SeparatorText("Gameplay Keys");
 	const std::array<const char *, 5> labels{"Move Forward", "Move Backward",
@@ -75,6 +78,7 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 		candidate.width = width_;
 		candidate.height = height_;
 		candidate.input = input_;
+		candidate.cameraRelativeMovement = cameraRelativeMovement_;
 
 		if (candidate.IsValid()) {
 			config_ = std::move(candidate);

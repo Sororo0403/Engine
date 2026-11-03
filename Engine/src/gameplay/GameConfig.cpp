@@ -71,7 +71,8 @@ bool GameConfig::Serialize(std::string &text, std::string &error) const {
 
 		const nlohmann::json data = {
 		    {"format", "EngineGame"},
-		    {"version", 2},
+		    {"version", 3},
+		    {"cameraRelativeMovement", cameraRelativeMovement},
 		    {"input", inputJson},
 		    {"title", title},
 		    {"width", width},
@@ -127,7 +128,8 @@ bool GameConfig::Load(const std::filesystem::path &path, std::string &error) {
 
 		if (data.at("format") != "EngineGame" ||
 		    !data.at("version").is_number_integer() ||
-		    (data.at("version") != 1 && data.at("version") != 2) ||
+		    (data.at("version") != 1 && data.at("version") != 2 &&
+		     data.at("version") != 3) ||
 		    !data.at("width").is_number_integer() ||
 		    !data.at("height").is_number_integer()) {
 			throw std::runtime_error("Unsupported game configuration.");
@@ -145,7 +147,7 @@ bool GameConfig::Load(const std::filesystem::path &path, std::string &error) {
 		candidate.height = data.at("height").get<int>();
 		candidate.scenePath =
 		    PathUtils::FromUtf8(data.at("scene").get<std::string>());
-		if (data.at("version") == 2) {
+		if (data.at("version") >= 2) {
 			for (const auto &action : GameInputBindings::kActions) {
 				const auto key = GameInputBindings::FromName(
 				    data.at("input").at(action.name).get<std::string>());
@@ -156,6 +158,15 @@ bool GameConfig::Load(const std::filesystem::path &path, std::string &error) {
 
 				candidate.input.*action.member = *key;
 			}
+		}
+
+		if (data.at("version") == 3) {
+			if (!data.at("cameraRelativeMovement").is_boolean()) {
+				throw std::runtime_error("Movement space must be a boolean.");
+			}
+
+			candidate.cameraRelativeMovement =
+			    data.at("cameraRelativeMovement").get<bool>();
 		}
 
 		const auto &camera = data.at("camera");

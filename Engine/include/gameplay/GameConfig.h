@@ -14,6 +14,7 @@ struct GameConfig {
 	std::filesystem::path scenePath = L"resources/game/scene.json";
 	CameraPose fallbackCamera{};
 	GameInputBindings input;
+	bool cameraRelativeMovement = false;
 
 	/// <summary>
 	/// 起動値と、パッケージ内を指す相対シーンパスを確認する
@@ -22,7 +23,7 @@ struct GameConfig {
 	bool IsValid() const;
 
 	/// <summary>
-	/// 起動設定を検証し、ファイルへ書き込まずversion 2のJSON文字列に変換する
+	/// 起動設定を検証し、ファイルへ書き込まずversion 3のJSON文字列に変換する
 	/// </summary>
 	/// <param name="text">成功時に置き換えるJSON文字列。失敗時は保持する</param>
 	/// <param name="error">失敗理由。成功時は空</param>
@@ -38,7 +39,7 @@ struct GameConfig {
 	bool Save(const std::filesystem::path &path, std::string &error) const;
 
 	/// <summary>
-	/// version 1・2を読み込み、全設定の検証成功後だけ現在値を置き換える。version 1の操作キーはWASDとSpace
+	/// version 1から3を読み込み、全設定の検証成功後だけ現在値を置き換える。version 1の操作キーはWASDとSpace、version 1・2の移動はワールド基準
 	/// </summary>
 	/// <param name="path">読み込む設定ファイル</param>
 	/// <param name="error">失敗理由。成功時は空</param>

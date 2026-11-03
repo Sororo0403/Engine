@@ -168,6 +168,7 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
 	}
 
 	inputBindings_ = config.input;
+	cameraRelativeMovement_ = config.cameraRelativeMovement;
 	gameWidth_ = config.width;
 	gameHeight_ = config.height;
 	ready_ = false;
@@ -215,11 +216,13 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 		return true;
 	}
 
+	const auto *movementCamera =
+	    cameraRelativeMovement_ ? &session_.GetCameraPose() : nullptr;
 	const auto controls =
-	    inputBlocked
-	        ? CharacterInput{}
-	        : GameplayInput::Read(input.GetKeyboard(), viewport_,
-	                              ImGui::GetIO().WantTextInput, inputBindings_);
+	    inputBlocked ? CharacterInput{}
+	                 : GameplayInput::Read(input.GetKeyboard(), viewport_,
+	                                       ImGui::GetIO().WantTextInput,
+	                                       inputBindings_, movementCamera);
 
 	if (!inputBlocked && viewport_.windowFocused &&
 	    viewport_.applicationFocused && !viewport_.widgetActive &&

@@ -890,7 +890,7 @@ void ControlsPanel::Draw() {
 	         "Primary."},
 	        {"Gameplay Keys (default WASD / Space)",
 	         "Click the Game image to focus it. Use the keys assigned in File "
-	         "> Game Settings to move on world X/Z and jump when the object "
+	         "> Game Settings to move and jump when the object "
 	         "has a Character Controller."},
 	        {"Game > Pause / Resume",
 	         "Freeze game time or continue from the paused state."},
@@ -913,6 +913,16 @@ void ControlsPanel::Draw() {
 	         "Confirm to reload the active file from disk. Success resets "
 	         "selection, camera and undo history; a failed load keeps the "
 	         "edited scene."},
+	        {"File > Game Settings > Camera Relative Movement",
+	         "Move forward along the rendered Game camera's horizontal look "
+	         "direction, and right perpendicular to it on world X/Z. Uses the "
+	         "current Primary Camera, including Follow Camera, or the fixed "
+	         "fallback camera when no Primary exists. Pitch and roll do not "
+	         "tilt movement. A near-vertical camera falls back to world axes. "
+	         "Off by default, including old game configurations. Applies to "
+	         "Editor Play and exported games with the same keys and focus "
+	         "guards. Jump remains vertical. Apply and Cancel keep scene data "
+	         "and history unchanged. The jump guide remains in world axes."},
 	        {"File > Game Settings",
 	         "Set the game title, render size and five gameplay keys before "
 	         "Play or export. Choose distinct letters, digits, Space or arrow "
