@@ -1,4 +1,5 @@
 #include "assets/TextureImporter.h"
+#include "assets/AssetFolders.h"
 
 #include "platform/windows/FileUtils.h"
 #include "platform/windows/PathUtils.h"
@@ -70,37 +71,8 @@ bool TextureImporter::Import(const TextureImportOptions &options,
 			                            "with the same extension.");
 		}
 
-		if (options.assetRoot.empty() ||
-		    options.assetRoot.native().find(L'\0') != std::wstring::npos ||
-		    options.folder.has_root_path() ||
-		    options.folder.native().find(L'\0') != std::wstring::npos) {
-			throw std::invalid_argument("Choose a folder inside Assets.");
-		}
-
-		for (const auto &part : options.folder) {
-			if (part == L".." ||
-			    part.native().find(L':') != std::wstring::npos) {
-				throw std::invalid_argument("Choose a folder inside Assets.");
-			}
-		}
-
-		const auto root = std::filesystem::canonical(
-		    PathUtils::ResolveFromExecutable(options.assetRoot));
-		const auto folder = std::filesystem::canonical(root / options.folder);
-		if (!std::filesystem::is_directory(folder)) {
-			throw std::invalid_argument("The import folder does not exist.");
-		}
-
-		auto current = folder.begin();
-		for (const auto &part : root) {
-			if (current == folder.end() ||
-			    CompareStringOrdinal(part.c_str(), -1, current->c_str(), -1,
-			                         TRUE) != CSTR_EQUAL) {
-				throw std::invalid_argument(
-				    "The import folder resolves outside Assets.");
-			}
-			++current;
-		}
+		const auto folder =
+		    AssetFolders::Resolve(options.assetRoot, options.folder);
 
 		const auto destination = folder / options.fileName;
 		if (std::filesystem::exists(destination)) {

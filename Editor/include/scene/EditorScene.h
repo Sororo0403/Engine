@@ -3,6 +3,7 @@
 #include "assets/AssetDatabase.h"
 #include "camera/CameraFrustum.h"
 #include "camera/EditorCameraController.h"
+#include "dialogs/AssetFolderDialog.h"
 #include "dialogs/BatchRenameDialog.h"
 #include "dialogs/FileDialog.h"
 #include "dialogs/GameExportDialog.h"
@@ -199,6 +200,7 @@ class EditorScene final : public IScene {
 		SAVE_FILE,
 		SAVE_COPY_FILE,
 		IMPORT_TEXTURE,
+		CREATE_ASSET_FOLDER,
 		EXPORT_GAME,
 		GAME_SETTINGS,
 		CONFIRM_RELOAD,
@@ -635,6 +637,7 @@ class EditorScene final : public IScene {
 	ObjectArrayDialog objectArrayDialog_;
 	FileDialog fileDialog_;
 	TextureImportDialog textureImportDialog_;
+	AssetFolderDialog assetFolderDialog_;
 	GameExportDialog exportDialog_;
 	GameSettingsDialog gameSettingsDialog_;
 	GameConfig exportConfig_;

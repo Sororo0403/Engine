@@ -420,13 +420,29 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	if (!wasBusy) {
+		if (assetsPanel_.IsFolderCreateRequested() && !IsBusy() &&
+		    action == EditorAction::NONE &&
+		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
+			try {
+				FinishEdit();
+				assetFolderDialog_.Show(assets_.GetRootDirectory(),
+				                        assetsPanel_.GetOpenDirectory());
+				stage_ = DialogStage::CREATE_ASSET_FOLDER;
+			} catch (const std::exception &error) {
+				Logger::Error(std::format("EditorScene::CreateAssetFolder: {}",
+				                          error.what()));
+				ShowError(
+				    "Could not open folder creation. See the log for details.");
+			}
+		}
+
 		if (assetsPanel_.IsTextureImportRequested() && !IsBusy() &&
 		    action == EditorAction::NONE &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 			try {
 				FinishEdit();
 				textureImportDialog_.Show(assets_,
-				                          assetsPanel_.GetCurrentDirectory());
+				                          assetsPanel_.GetOpenDirectory());
 				stage_ = DialogStage::IMPORT_TEXTURE;
 			} catch (const std::exception &error) {
 				Logger::Error(std::format("EditorScene::ImportTexture: {}",
@@ -2373,6 +2389,25 @@ void EditorScene::UpdateDialogs() {
 			}
 		}
 
+		return;
+	}
+
+	case DialogStage::CREATE_ASSET_FOLDER: {
+		const auto result = assetFolderDialog_.Draw(ui_);
+
+		if (result == AssetFolderResult::ACCEPTED) {
+			stage_ = DialogStage::IDLE;
+			if (!assets_.Refresh()) {
+				ShowError(
+				    "The folder was created, but Assets could not refresh: " +
+				    assets_.GetError());
+			} else {
+				assetsPanel_.RequestOpenDirectory(
+				    assetFolderDialog_.GetCreatedDirectory());
+			}
+		} else if (result == AssetFolderResult::CANCELLED) {
+			stage_ = DialogStage::IDLE;
+		}
 		return;
 	}
 

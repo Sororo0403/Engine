@@ -1,6 +1,7 @@
 #include "panels/AssetsPanel.h"
 
 #include "assets/AssetDatabase.h"
+#include "assets/AssetFolders.h"
 #include "assets/ModelAssetDragDrop.h"
 #include "core/Logger.h"
 #include "graphics/ui/ImGuiSystem.h"
@@ -30,6 +31,7 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	textureSelectionPath_.clear();
 	textureClearRequested_ = false;
 	textureImportRequested_ = false;
+	folderCreateRequested_ = false;
 	texturePreviewPath_.clear();
 	revealMessage_.clear();
 	scrollToSelected_ = false;
@@ -106,15 +108,16 @@ bool AssetsPanel::SelectAsset(const std::filesystem::path &path,
 std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
                                         AssetDatabase &assets,
                                         bool canSetTexture,
-                                        bool canImportTexture) {
+                                        bool canEditAssets) {
 	instanceSelectionPath_.clear();
 	textureUsageSelectionPath_.clear();
 	textureSelectionPath_.clear();
 	textureClearRequested_ = false;
 	textureImportRequested_ = false;
+	folderCreateRequested_ = false;
 	texturePreviewPath_.clear();
 
-	if (!revealPath_.empty()) {
+	if (!revealPath_.empty() || directoryOpenRequested_) {
 		ImGui::SetNextWindowCollapsed(false);
 		ImGui::SetNextWindowFocus();
 	}
@@ -149,14 +152,39 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 		revealPath_.clear();
 	}
 
-	ui.SameLine();
-	ui.BeginDisabled(!canImportTexture);
-	if (ui.Button("Import Texture")) {
-		textureImportRequested_ = true;
-	}
-	ui.EndDisabled();
-
 	const auto &directories = assets.GetDirectories();
+
+	if (directoryOpenRequested_) {
+		try {
+			const auto target = AssetFolders::Resolve(assets.GetRootDirectory(),
+			                                          requestedDirectory_);
+			std::filesystem::path selected;
+
+			if (!PathUtils::IsSameFile(target, assets.GetRootDirectory())) {
+				const auto found = std::find_if(
+				    directories.begin(), directories.end(),
+				    [&](const auto &directory) {
+					    return PathUtils::IsSameFile(target, directory);
+				    });
+
+				if (found == directories.end()) {
+					throw std::runtime_error(
+					    "Folder is not in the current Assets index.");
+				}
+				selected = found->lexically_relative(assets.GetRootDirectory());
+			}
+
+			OpenDirectory(std::move(selected));
+		} catch (const std::exception &error) {
+			Logger::Error(
+			    std::format("AssetsPanel::OpenDirectory: {}", error.what()));
+			revealMessage_ =
+			    "Could not open the Assets folder. Refresh and try again.";
+		}
+
+		directoryOpenRequested_ = false;
+		requestedDirectory_.clear();
+	}
 
 	if (!currentDirectory_.empty() &&
 	    std::none_of(
@@ -181,6 +209,19 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 
 	if (ui.Button("Up")) {
 		OpenDirectory(currentDirectory_.parent_path());
+	}
+
+	ui.EndDisabled();
+	ui.BeginDisabled(!canEditAssets);
+
+	if (ui.Button("Import Texture")) {
+		textureImportRequested_ = true;
+	}
+
+	ui.SameLine();
+
+	if (ui.Button("New Folder")) {
+		folderCreateRequested_ = true;
 	}
 
 	ui.EndDisabled();
@@ -432,11 +473,14 @@ const std::filesystem::path &AssetsPanel::GetTexturePreviewRequest() const {
 }
 
 void AssetsPanel::Clear() {
+	directoryOpenRequested_ = false;
+	requestedDirectory_.clear();
 	type_ = AssetType::MODEL;
 	textureUsageSelectionPath_.clear();
 	textureSelectionPath_.clear();
 	textureClearRequested_ = false;
 	textureImportRequested_ = false;
+	folderCreateRequested_ = false;
 	texturePreviewPath_.clear();
 	selectedPath_.clear();
 	instanceSelectionPath_.clear();
@@ -460,6 +504,15 @@ bool AssetsPanel::IsTextureImportRequested() const {
 	return textureImportRequested_;
 }
 
-const std::filesystem::path &AssetsPanel::GetCurrentDirectory() const {
+const std::filesystem::path &AssetsPanel::GetOpenDirectory() const {
 	return currentDirectory_;
+}
+
+bool AssetsPanel::IsFolderCreateRequested() const {
+	return folderCreateRequested_;
+}
+
+void AssetsPanel::RequestOpenDirectory(const std::filesystem::path &folder) {
+	requestedDirectory_ = folder;
+	directoryOpenRequested_ = true;
 }

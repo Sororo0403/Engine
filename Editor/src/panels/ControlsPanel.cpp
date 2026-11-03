@@ -251,6 +251,17 @@ void ControlsPanel::Draw() {
 	DrawSection(
 	    "Model assets",
 	    {
+	        {"Assets > New Folder",
+	         "Create a new folder inside the current Assets folder. Enter a "
+	         "single folder name; existing files and folders are never reused "
+	         "or overwritten. On success, Assets refreshes, opens the new "
+	         "folder and clears the search. Create further folders inside it "
+	         "or use it as an image import destination. A failed create keeps "
+	         "the dialog and name; Cancel or Escape creates nothing. Folder "
+	         "creation does not edit the scene, selection or scene Undo "
+	         "history "
+	         "and is unavailable during Play, modal operations or Scene "
+	         "gestures."},
 	        {"Assets > Import Texture",
 	         "Choose an external PNG, JPEG, BMP, TIFF or GIF image, an "
 	         "existing "

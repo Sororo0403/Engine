@@ -24,11 +24,11 @@ class AssetsPanel {
 	/// <param name="ui">フレーム開始済みのUI</param>
 	/// <param name="assets">一覧を表示するアセットデータベース</param>
 	/// <param name="canSetTexture">選択物体のスロットへ画像を割り当てる操作を許可するか</param>
-	/// <param name="canImportTexture">外部画像の取り込みを開始できるか</param>
+	/// <param name="canEditAssets">画像の取り込みとフォルダ作成を開始できるか</param>
 	/// <returns>配置を要求したモデルの相対パス。要求がない場合は空のパス</returns>
 	std::filesystem::path Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	                           bool canSetTexture = false,
-	                           bool canImportTexture = false);
+	                           bool canEditAssets = false);
 
 	/// <summary>
 	/// このフレームに使用物体の選択を要求したモデルを取得する
@@ -61,10 +61,22 @@ class AssetsPanel {
 	bool IsTextureImportRequested() const;
 
 	/// <summary>
+	/// このフレームに新しいAssetsフォルダの作成を要求したか確認する
+	/// </summary>
+	/// <returns>true:要求あり false:要求なし。次のDraw・種類切り替え・Clearで解除する</returns>
+	bool IsFolderCreateRequested() const;
+
+	/// <summary>
+	/// 次の描画で既存のAssetsフォルダへ移動し、検索とアセット選択を解除する
+	/// </summary>
+	/// <param name="folder">検索先基準の相対フォルダ。空は検索先自身。呼び出し前に一覧を更新しておく</param>
+	void RequestOpenDirectory(const std::filesystem::path &folder);
+
+	/// <summary>
 	/// 開いているAssetsフォルダを取得する
 	/// </summary>
 	/// <returns>検索先を基準にした相対パス。空は検索先自身</returns>
-	const std::filesystem::path &GetCurrentDirectory() const;
+	const std::filesystem::path &GetOpenDirectory() const;
 
 	/// <summary>
 	/// 選択・検索・表示要求をクリアし、モデル一覧と検索先のルートフォルダへ戻る
@@ -123,6 +135,9 @@ class AssetsPanel {
 	int textureSlot_ = 0;
 	bool textureClearRequested_ = false;
 	bool textureImportRequested_ = false;
+	bool folderCreateRequested_ = false;
+	bool directoryOpenRequested_ = false;
+	std::filesystem::path requestedDirectory_;
 	bool scrollToSelected_ = false;
 	bool scrollToTop_ = true;
 };

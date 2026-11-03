@@ -661,4 +661,10 @@
     <ClInclude Include="include\dialogs\TextureImportDialog.h"><Filter>include\dialogs</Filter></ClInclude>
     <ClCompile Include="src\dialogs\TextureImportDialog.cpp"><Filter>src\dialogs</Filter></ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\assets\AssetFolders.h"><Filter>include\assets</Filter></ClInclude>
+    <ClCompile Include="src\assets\AssetFolders.cpp"><Filter>src\assets</Filter></ClCompile>
+    <ClInclude Include="include\dialogs\AssetFolderDialog.h"><Filter>include\dialogs</Filter></ClInclude>
+    <ClCompile Include="src\dialogs\AssetFolderDialog.cpp"><Filter>src\dialogs</Filter></ClCompile>
+  </ItemGroup>
 </Project>
