@@ -4,6 +4,7 @@
 #include "platform/windows/PathUtils.h"
 #include "platform/windows/StringConversion.h"
 #include <fstream>
+#include <iterator>
 #include <json.hpp>
 #include <stdexcept>
 #include <utility>
@@ -117,14 +118,23 @@ bool GameConfig::Save(const std::filesystem::path &path,
 
 bool GameConfig::Load(const std::filesystem::path &path, std::string &error) {
 	try {
-		error.clear();
 		std::ifstream file(path, std::ios::binary);
-
 		if (!file) {
 			throw std::runtime_error("Could not open game.json.");
 		}
+		file.exceptions(std::ios::badbit);
+		const std::string text{std::istreambuf_iterator<char>(file), {}};
+		return Deserialize(text, error);
+	} catch (const std::exception &e) {
+		error = e.what();
+		return false;
+	}
+}
 
-		const auto data = nlohmann::json::parse(file);
+bool GameConfig::Deserialize(std::string_view text, std::string &error) {
+	try {
+		error.clear();
+		const auto data = nlohmann::json::parse(text);
 
 		if (data.at("format") != "EngineGame" ||
 		    !data.at("version").is_number_integer() ||

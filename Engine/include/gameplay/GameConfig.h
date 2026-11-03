@@ -4,6 +4,7 @@
 #include "graphics/camera/CameraPose.h"
 #include <filesystem>
 #include <string>
+#include <string_view>
 
 /// <summary>
 /// 出力したゲームの起動シーン・ウィンドウ・カメラ・操作キーの初期設定
@@ -45,4 +46,12 @@ struct GameConfig {
 	/// <param name="error">失敗理由。成功時は空</param>
 	/// <returns>true:成功 false:無効なデータ。失敗時は現在値を保持する</returns>
 	bool Load(const std::filesystem::path &path, std::string &error);
+
+	/// <summary>
+	/// version 1から3のJSON文字列を検証し、全設定の読み込み成功後だけ現在値を置き換える
+	/// </summary>
+	/// <param name="text">ファイル操作を行わず読み込む起動設定</param>
+	/// <param name="error">失敗理由。成功時は空</param>
+	/// <returns>true:成功 false:無効なデータ。失敗時は以前の設定を保持する</returns>
+	bool Deserialize(std::string_view text, std::string &error);
 };
