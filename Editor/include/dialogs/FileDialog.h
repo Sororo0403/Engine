@@ -13,6 +13,7 @@ enum class FileDialogMode {
 	OPEN,
 	SAVE,
 	SAVE_COPY,
+	SELECT_DIRECTORY,
 };
 
 /// <summary>
@@ -30,14 +31,14 @@ enum class FileDialogResult {
 enum class FileDialogFilter { SCENE, IMAGE, MODEL, GAME_CONFIG };
 
 /// <summary>
-/// シーンの保存・読み込みと、取り込む画像・モデル・ゲーム起動設定の選択を行う
+/// シーンの保存・読み込みと、素材・ゲーム起動設定・フォルダの選択を行う
 /// </summary>
 class FileDialog {
   public:
 	/// <summary>
 	/// ファイル選択の表示を予約する
 	/// </summary>
-	/// <param name="mode">開く、保存、またはコピーを保存</param>
+	/// <param name="mode">開く、保存、コピーを保存、またはフォルダを選択</param>
 	/// <param name="initialPath">初期ファイルまたはフォルダ。空の場合は実行ファイルのフォルダ</param>
 	/// <param name="filter">一覧と確定時のファイル種別。SCENE以外はOPENだけに対応する</param>
 	void Show(FileDialogMode mode,
@@ -52,7 +53,7 @@ class FileDialog {
 	FileDialogResult Draw(const ImGuiSystem &ui);
 
 	/// <summary>
-	/// 確定したファイルパスを取得する
+	/// 確定したファイルまたはフォルダのパスを取得する
 	/// </summary>
 	/// <returns>ACCEPTEDが返された場合に使用できる絶対パス</returns>
 	const std::filesystem::path &GetSelectedPath() const;
@@ -78,10 +79,21 @@ class FileDialog {
 	void ChangeDirectory(const std::filesystem::path &path);
 
 	/// <summary>
-	/// 入力されたファイル名を検証し、選択を確定する
+	/// 入力されたファイル名またはフォルダを検証し、選択を確定する
 	/// </summary>
 	/// <returns>true:確定 false:入力エラー、または上書き確認が必要</returns>
 	bool AcceptSelection();
+
+	/// <summary>
+	/// Folder欄の絶対パスを確認する。選択と新規フォルダ作成に共通の基準を使う
+	/// </summary>
+	/// <returns>存在するフォルダの正規パス。無効な指定は例外</returns>
+	std::filesystem::path ReadDirectory() const;
+
+	/// <summary>
+	/// Folder欄の下に単独の新規フォルダを作り、表示先を切り替える。既存項目は保持する
+	/// </summary>
+	void CreateFolder();
 
   private:
 	FileDialogMode mode_ = FileDialogMode::OPEN;
@@ -92,6 +104,7 @@ class FileDialog {
 
 	std::string directoryText_;
 	std::string fileName_;
+	std::string folderName_;
 	std::string error_;
 
 	std::vector<Entry> entries_;

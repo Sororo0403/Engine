@@ -23,6 +23,7 @@ void FileDialog::Show(FileDialogMode mode,
 	entries_.clear();
 	error_.clear();
 	fileName_.clear();
+	folderName_.clear();
 	directoryText_.clear();
 	confirmOverwrite_ = false;
 	openRequested_ = true;
@@ -35,7 +36,8 @@ void FileDialog::Show(FileDialogMode mode,
 
 			std::error_code error;
 
-			if (std::filesystem::is_directory(resolved, error)) {
+			if (mode_ == FileDialogMode::SELECT_DIRECTORY ||
+			    std::filesystem::is_directory(resolved, error)) {
 				directory_ = resolved;
 			} else {
 				directory_ = resolved.parent_path();
@@ -43,7 +45,8 @@ void FileDialog::Show(FileDialogMode mode,
 			}
 		}
 
-		if (mode_ != FileDialogMode::OPEN && fileName_.empty()) {
+		if (mode_ != FileDialogMode::OPEN &&
+		    mode_ != FileDialogMode::SELECT_DIRECTORY && fileName_.empty()) {
 			fileName_ = "Untitled.scene.json";
 		}
 
@@ -56,7 +59,8 @@ void FileDialog::Show(FileDialogMode mode,
 
 FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 	const char *title =
-	    filter_ == FileDialogFilter::GAME_CONFIG
+	    mode_ == FileDialogMode::SELECT_DIRECTORY ? "Select Folder###FileDialog"
+	    : filter_ == FileDialogFilter::GAME_CONFIG
 	        ? "Open Game Configuration###FileDialog"
 	    : filter_ == FileDialogFilter::MODEL ? "Open Model###FileDialog"
 	    : filter_ == FileDialogFilter::IMAGE ? "Open Image###FileDialog"
@@ -156,7 +160,14 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 			ChangeDirectory(nextDirectory);
 		}
 
-		ui.InputText("File name", fileName_);
+		if (mode_ == FileDialogMode::SELECT_DIRECTORY) {
+			ui.InputText("New Folder Name", folderName_);
+			if (ui.Button("Create Folder")) {
+				CreateFolder();
+			}
+		} else {
+			ui.InputText("File name", fileName_);
+		}
 
 		if (!error_.empty()) {
 			ui.Text(error_);
@@ -164,7 +175,9 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 
 		ui.Separator();
 
-		const char *button = mode_ == FileDialogMode::OPEN        ? "Open"
+		const char *button = mode_ == FileDialogMode::SELECT_DIRECTORY
+		                         ? "Select Folder"
+		                     : mode_ == FileDialogMode::OPEN      ? "Open"
 		                     : mode_ == FileDialogMode::SAVE_COPY ? "Save Copy"
 		                                                          : "Save";
 
@@ -210,7 +223,8 @@ void FileDialog::Refresh() {
 			if (!typeError) {
 				if (directory) {
 					entries_.push_back({entry.path(), true});
-				} else if (entry.is_regular_file(typeError) && !typeError &&
+				} else if (mode_ != FileDialogMode::SELECT_DIRECTORY &&
+				           entry.is_regular_file(typeError) && !typeError &&
 				           (filter_ == FileDialogFilter::MODEL
 				                ? PathUtils::IsModelFile(entry.path())
 				            : filter_ == FileDialogFilter::IMAGE
@@ -277,6 +291,11 @@ void FileDialog::ChangeDirectory(const std::filesystem::path &path) {
 bool FileDialog::AcceptSelection() {
 	try {
 		error_.clear();
+		if (mode_ == FileDialogMode::SELECT_DIRECTORY) {
+			auto selected = ReadDirectory();
+			selectedPath_.swap(selected);
+			return true;
+		}
 
 		auto name = PathUtils::FromUtf8(fileName_);
 
@@ -338,5 +357,36 @@ bool FileDialog::AcceptSelection() {
 	} catch (const std::exception &error) {
 		error_ = error.what();
 		return false;
+	}
+}
+
+std::filesystem::path FileDialog::ReadDirectory() const {
+	const auto directory = PathUtils::FromUtf8(directoryText_);
+	if (!directory.is_absolute() ||
+	    directory.native().find(L'\0') != std::wstring::npos) {
+		throw std::invalid_argument("Enter an absolute folder path.");
+	}
+	const auto resolved = std::filesystem::canonical(directory);
+	if (!std::filesystem::is_directory(resolved)) {
+		throw std::invalid_argument("Choose an existing folder.");
+	}
+	return resolved;
+}
+
+void FileDialog::CreateFolder() {
+	try {
+		const auto name = PathUtils::FromUtf8(folderName_);
+		if (!PathUtils::IsValidFileName(name)) {
+			throw std::invalid_argument("Enter a single valid folder name.");
+		}
+		const auto created = ReadDirectory() / name;
+		if (!std::filesystem::create_directory(created)) {
+			throw std::runtime_error(
+			    "That folder already exists. Choose another name.");
+		}
+		folderName_.clear();
+		ChangeDirectory(created);
+	} catch (const std::exception &error) {
+		error_ = error.what();
 	}
 }
