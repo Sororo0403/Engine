@@ -1,5 +1,6 @@
 #include "scene/EditorScene.h"
 
+#include "assets/AssetFolders.h"
 #include "assets/ModelPlacement.h"
 #include "assets/ModelUsage.h"
 #include "assets/TextureUsage.h"
@@ -26,6 +27,7 @@
 #include "platform/windows/PathUtils.h"
 #include "scene/PrimitiveObjects.h"
 #include "scene/Scene.h"
+#include "scene/SceneObjects.h"
 #include "selection/SelectionFrustum.h"
 
 #include <algorithm>
@@ -392,6 +394,7 @@ bool EditorScene::Update(float deltaTime) {
 	    assetsPanel_.IsTextureClearRequested()
 	        ? std::filesystem::path{}
 	        : assetsPanel_.GetTextureSelectionRequest();
+	const auto requestedSceneAppend = assetsPanel_.GetSceneAppendRequest();
 	const auto requestedInstances = assetsPanel_.GetInstanceSelectionRequest();
 	const auto requestedModelReload = assetsPanel_.GetModelReloadRequest();
 	const auto requestedMeshReplacement =
@@ -437,6 +440,12 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	if (!wasBusy) {
+		if (!requestedSceneAppend.empty() && !IsBusy() &&
+		    action == EditorAction::NONE &&
+		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
+			AppendSceneObjects(requestedSceneAppend);
+		}
+
 		const auto &requestedScene = assetsPanel_.GetSceneOpenRequest();
 		if (!requestedScene.empty() && !IsBusy() &&
 		    action == EditorAction::NONE &&
@@ -654,20 +663,21 @@ bool EditorScene::Update(float deltaTime) {
 
 		if (!IsBusy() && action == EditorAction::NONE && textureAssignment &&
 		    checkedObject == 0 && requestedTextureUsers.empty() &&
-		    requestedInstances.empty() && requestedModelPath.empty() &&
-		    modelDrop.path.empty() && modelRequest.objectId == 0 &&
-		    visibilityRequest.objectId == 0 && colliderFitRequest == 0 &&
-		    !hasObjectRequest && !historyRequest &&
+		    requestedSceneAppend.empty() && requestedInstances.empty() &&
+		    requestedModelPath.empty() && modelDrop.path.empty() &&
+		    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
+		    colliderFitRequest == 0 && !hasObjectRequest && !historyRequest &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 			AssignTextureToSelection(requestedTexture,
 			                         assetsPanel_.GetTextureSlot());
 		}
 
 		if (!IsBusy() && action == EditorAction::NONE &&
-		    !requestedTextureUsers.empty() && requestedInstances.empty() &&
-		    requestedModelPath.empty() && modelDrop.path.empty() &&
-		    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
-		    colliderFitRequest == 0 && !hasObjectRequest && !historyRequest &&
+		    !requestedTextureUsers.empty() && requestedSceneAppend.empty() &&
+		    requestedInstances.empty() && requestedModelPath.empty() &&
+		    modelDrop.path.empty() && modelRequest.objectId == 0 &&
+		    visibilityRequest.objectId == 0 && colliderFitRequest == 0 &&
+		    !hasObjectRequest && !historyRequest &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 			SelectTextureUsers(requestedTextureUsers);
 		}
@@ -703,7 +713,7 @@ bool EditorScene::Update(float deltaTime) {
 			    requestedModelReload.empty() &&
 			    requestedMeshReplacement.empty() &&
 			    requestedTextureReload.empty() && checkedObject == 0 &&
-			    requestedTextureUsers.empty() &&
+			    requestedTextureUsers.empty() && requestedSceneAppend.empty() &&
 			    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 				RestoreHistory(*historyRequest);
 			}
@@ -715,7 +725,8 @@ bool EditorScene::Update(float deltaTime) {
 			    requestedModelReload.empty() &&
 			    requestedMeshReplacement.empty() &&
 			    requestedTextureReload.empty() && checkedObject == 0 &&
-			    requestedTextureUsers.empty() && !historyRequest) {
+			    requestedTextureUsers.empty() && requestedSceneAppend.empty() &&
+			    !historyRequest) {
 				const bool objectPanelFocused =
 				    hierarchyRequest.windowFocused ||
 				    sceneViewPanel_.GetInput().windowFocused;
@@ -742,9 +753,10 @@ bool EditorScene::Update(float deltaTime) {
 	    !requestedMeshReplacement.empty() || !requestedModelReload.empty() ||
 	    !requestedTextureReload.empty() || !requestedModelPath.empty() ||
 	    !requestedInstances.empty() || !requestedTextureUsers.empty() ||
-	    !modelDrop.path.empty() || modelRequest.objectId != 0 ||
-	    visibilityRequest.objectId != 0 || colliderFitRequest != 0 ||
-	    hasObjectRequest || historyRequest.has_value() ||
+	    !requestedSceneAppend.empty() || !modelDrop.path.empty() ||
+	    modelRequest.objectId != 0 || visibilityRequest.objectId != 0 ||
+	    colliderFitRequest != 0 || hasObjectRequest ||
+	    historyRequest.has_value() ||
 	    hierarchyRequest.action != HierarchyPanel::Action::NONE;
 
 	ViewportInput viewport = sceneViewPanel_.GetInput();
@@ -1180,6 +1192,13 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 
 		if (ui_.MenuItem("Save Copy...", nullptr, enabled)) {
 			action = EditorAction::SAVE_COPY;
+		}
+
+		if (ui_.MenuItem("Save Selection As...", nullptr,
+		                 enabled && HasSelection() && !gizmo_.IsUsing() &&
+		                     !gizmoEditActive_ &&
+		                     !sceneViewPanel_.IsSelecting())) {
+			action = EditorAction::SAVE_SELECTION;
 		}
 
 		if (ui_.MenuItem("Assets Folder...", nullptr, enabled)) {
@@ -1791,10 +1810,21 @@ void EditorScene::StartAction(EditorAction action) {
 		return;
 	}
 
+	if (action == EditorAction::SAVE_SELECTION &&
+	    (playMode_.IsPlaying() || IsBusy() || !HasSelection() ||
+	     gizmo_.IsUsing() || gizmoEditActive_ ||
+	     sceneViewPanel_.IsSelecting())) {
+		return;
+	}
+
 	// 保存やUndoを実行する前に、編集中の値を確定する
 	FinishEdit();
 
 	switch (action) {
+	case EditorAction::SAVE_SELECTION:
+		StartSaveSelection();
+		return;
+
 	case EditorAction::ASSETS_FOLDER:
 		try {
 			fileDialog_.Show(FileDialogMode::SELECT_DIRECTORY,
@@ -2443,6 +2473,56 @@ void EditorScene::StartSaveCopy() {
 	}
 }
 
+void EditorScene::StartSaveSelection() {
+	try {
+		if (!SceneObjects::Capture(document_.GetScene(), selection_.GetIds(),
+		                           selectionSnapshot_)) {
+			ShowError(
+			    "Could not prepare the selected objects. No file was written.");
+			return;
+		}
+		const auto folder = AssetFolders::Resolve(
+		    assets_.GetRootDirectory(), assetsPanel_.GetOpenDirectory());
+		fileDialog_.Show(FileDialogMode::SAVE_COPY,
+		                 folder / L"Selection.scene.json");
+		stage_ = DialogStage::SAVE_SELECTION_FILE;
+	} catch (const std::exception &error) {
+		Logger::Error(
+		    std::format("EditorScene::SaveSelection: {}", error.what()));
+		ShowError(
+		    "Could not prepare a selection copy. See the log for details.");
+	}
+}
+
+void EditorScene::AppendSceneObjects(const std::filesystem::path &path) {
+	if (playMode_.IsPlaying() || IsBusy() || gizmo_.IsUsing() ||
+	    gizmoEditActive_ || sceneViewPanel_.IsSelecting()) {
+		return;
+	}
+	try {
+		SceneDocument source;
+		if (!source.Open(path)) {
+			ShowError("Could not read objects from the scene. The current "
+			          "scene was kept.");
+			return;
+		}
+		auto ids =
+		    SceneObjects::Append(source.GetScene(), document_.GetHistory());
+		if (ids.empty()) {
+			ShowError("The scene has no objects to add, or its settings are "
+			          "invalid.");
+			return;
+		}
+		selection_.Set(std::move(ids));
+		hierarchyPanel_.RequestReveal(selection_.GetActiveId());
+	} catch (const std::exception &error) {
+		Logger::Error(
+		    std::format("EditorScene::AppendSceneObjects: {}", error.what()));
+		ShowError(
+		    "Could not add objects from the scene. See the log for details.");
+	}
+}
+
 void EditorScene::UpdateDialogs() {
 	switch (stage_) {
 	case DialogStage::IDLE:
@@ -2519,6 +2599,25 @@ void EditorScene::UpdateDialogs() {
 			OpenScene(document_.GetFilePath());
 		}
 
+		return;
+	}
+
+	case DialogStage::SAVE_SELECTION_FILE: {
+		const auto result = fileDialog_.Draw(ui_);
+		if (result == FileDialogResult::CANCELLED) {
+			selectionSnapshot_.Clear();
+			stage_ = DialogStage::IDLE;
+		} else if (result == FileDialogResult::ACCEPTED) {
+			if (document_.SaveCopy(fileDialog_.GetSelectedPath(),
+			                       selectionSnapshot_)) {
+				assets_.Refresh();
+				assetsPanel_.RequestReveal(fileDialog_.GetSelectedPath());
+				selectionSnapshot_.Clear();
+				stage_ = DialogStage::IDLE;
+			} else {
+				ShowError(document_.GetError());
+			}
+		}
 		return;
 	}
 

@@ -188,6 +188,7 @@ class EditorScene final : public IScene {
 		VIEW_BOTTOM,
 		RENAME_OBJECT,
 		OPEN_PATH,
+		SAVE_SELECTION,
 		SHOW_ALL_MODELS,
 		REVEAL_ACTIVE,
 	};
@@ -226,6 +227,7 @@ class EditorScene final : public IScene {
 		BATCH_RENAME,
 		OBJECT_ARRAY,
 		ERROR,
+		SAVE_SELECTION_FILE,
 	};
 
 	/// <summary>
@@ -291,6 +293,17 @@ class EditorScene final : public IScene {
 	/// 現在の保存先と保存地点を保持するコピーの保存先選択を開始する
 	/// </summary>
 	void StartSaveCopy();
+
+	/// <summary>
+	/// 選択物体を独立したシーンへ準備し、コピー先の選択を開始する
+	/// </summary>
+	void StartSaveSelection();
+
+	/// <summary>
+	/// 指定シーンを読み込み、新しいIDの物体として1回の履歴操作で追加する
+	/// </summary>
+	/// <param name="path">参照と配置を保持して追加するシーンファイル</param>
+	void AppendSceneObjects(const std::filesystem::path &path);
 
 	/// <summary>
 	/// 選択物体の原点の平均位置、選択なしの場合はワールド原点を指定方向から見る
@@ -620,6 +633,7 @@ class EditorScene final : public IScene {
 
 	// 描画側の参照より先に宣言する
 	SceneDocument document_;
+	Scene selectionSnapshot_;
 	SceneRenderer renderer_;
 	EditorPlayMode playMode_;
 	SceneRenderer playSceneRenderer_;

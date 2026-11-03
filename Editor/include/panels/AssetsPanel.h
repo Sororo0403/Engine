@@ -24,7 +24,7 @@ class AssetsPanel {
 	/// <param name="ui">フレーム開始済みのUI</param>
 	/// <param name="assets">一覧を表示するアセットデータベース</param>
 	/// <param name="canSetTexture">選択物体のスロットへ画像を割り当てる操作を許可するか</param>
-	/// <param name="canEditAssets">画像・モデルの取り込み・再読み込み、フォルダ作成とシーンを開く操作を開始できるか</param>
+	/// <param name="canEditAssets">画像・モデルの取り込み・再読み込み、フォルダ作成・シーンを開く操作・保存済み物体の追加を開始できるか</param>
 	/// <param name="canReplaceMesh">全選択物体の既存Meshを差し替えられるか</param>
 	/// <returns>配置を要求したモデルの相対パス。要求がない場合は空のパス</returns>
 	std::filesystem::path Draw(const ImGuiSystem &ui, AssetDatabase &assets,
@@ -37,6 +37,12 @@ class AssetsPanel {
 	/// </summary>
 	/// <returns>シーンの参照先。要求なしは空。次のDraw・種類切り替え・Clearまで有効</returns>
 	const std::filesystem::path &GetSceneOpenRequest() const;
+
+	/// <summary>
+	/// このフレームに現在のシーンへの物体追加を要求したシーンを取得する
+	/// </summary>
+	/// <returns>シーンの参照先。要求なしは空。次のDraw・種類切り替え・Clearまで有効</returns>
+	const std::filesystem::path &GetSceneAppendRequest() const;
 
 	/// <summary>
 	/// このフレームに使用物体の選択を要求したモデルを取得する
@@ -160,6 +166,7 @@ class AssetsPanel {
 	std::filesystem::path textureUsageSelectionPath_;
 	std::filesystem::path selectedPath_;
 	std::filesystem::path sceneOpenPath_;
+	std::filesystem::path sceneAppendPath_;
 	std::filesystem::path instanceSelectionPath_;
 	std::filesystem::path modelReloadPath_;
 	std::filesystem::path meshReplacementPath_;

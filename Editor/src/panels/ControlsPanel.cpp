@@ -261,6 +261,25 @@ void ControlsPanel::Draw() {
 	         "absolute Assets folder. Previously selected folders are kept "
 	         "for scene export, but only referenced sources are required. "
 	         "Folder settings are saved when Editor closes."},
+	        {"File > Save Selection As",
+	         "Save selected objects as a reusable *.scene.json in the current "
+	         "Assets folder. Save Copy confirms the destination. Placement, "
+	         "components and asset references are retained; files are not "
+	         "bundled. "
+	         "Follow targets outside the selection are cleared. The active "
+	         "file "
+	         "and its save state are kept; it cannot be overwritten by the "
+	         "copy."},
+	        {"Assets > Scenes > Add Objects",
+	         "Add a saved scene's objects at their saved positions without "
+	         "closing "
+	         "the current scene. Internal Follow Camera targets receive the "
+	         "new "
+	         "object IDs, and the existing Primary Camera takes priority. New "
+	         "objects are selected for editing together. Undo / Redo affects "
+	         "the "
+	         "whole addition. No live link is kept to the source file; later "
+	         "source edits do not change placed objects."},
 	        {"Assets > Asset Type > Scenes",
 	         "Browse and search *.scene.json files without loading their "
 	         "contents. "

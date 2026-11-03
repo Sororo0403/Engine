@@ -27,6 +27,7 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	type_ = type;
 	selectedPath_.clear();
 	sceneOpenPath_.clear();
+	sceneAppendPath_.clear();
 	instanceSelectionPath_.clear();
 	modelReloadPath_.clear();
 	meshReplacementPath_.clear();
@@ -116,6 +117,7 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
                                         bool canSetTexture, bool canEditAssets,
                                         bool canReplaceMesh) {
 	sceneOpenPath_.clear();
+	sceneAppendPath_.clear();
 	instanceSelectionPath_.clear();
 	modelReloadPath_.clear();
 	meshReplacementPath_.clear();
@@ -395,6 +397,11 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 				revealMessage_.clear();
 
 				if (type_ == AssetType::SCENE &&
+				    ui.MenuItem("Add Objects", nullptr, canEditAssets)) {
+					sceneAppendPath_ = assetPath;
+				}
+
+				if (type_ == AssetType::SCENE &&
 				    ui.MenuItem("Open Scene", nullptr, canEditAssets)) {
 					sceneOpenPath_ = assetPath;
 				}
@@ -520,6 +527,10 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 		if (ui.Button("Open Scene")) {
 			sceneOpenPath_ = selectedPath_;
 		}
+		if (ui.Button("Add Objects")) {
+			sceneAppendPath_ = selectedPath_;
+		}
+
 		ui.EndDisabled();
 	} else {
 		ui.BeginDisabled(selectedPath_.empty());
@@ -571,6 +582,7 @@ void AssetsPanel::Clear() {
 	texturePreviewPath_.clear();
 	selectedPath_.clear();
 	sceneOpenPath_.clear();
+	sceneAppendPath_.clear();
 	instanceSelectionPath_.clear();
 	modelReloadPath_.clear();
 	meshReplacementPath_.clear();
@@ -626,4 +638,8 @@ const std::filesystem::path &AssetsPanel::GetTextureReloadRequest() const {
 
 const std::filesystem::path &AssetsPanel::GetSceneOpenRequest() const {
 	return sceneOpenPath_;
+}
+
+const std::filesystem::path &AssetsPanel::GetSceneAppendRequest() const {
+	return sceneAppendPath_;
 }
