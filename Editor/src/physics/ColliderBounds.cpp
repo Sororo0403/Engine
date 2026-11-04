@@ -40,7 +40,7 @@ bool ColliderBounds::GetFrameBounds(const SceneObject &object,
                                     std::array<DirectX::XMFLOAT3, 8> &corners) {
 	AxisAlignedBox box;
 
-	return object.collider &&
+	return object.parentId == 0 && object.collider &&
 	       BoxColliderUtils::GetWorldBounds(*object.collider, object.transform,
 	                                        box) &&
 	       GetCorners(box, corners);
@@ -55,7 +55,7 @@ bool ColliderBounds::Update(SceneRenderer &renderer, const Scene &scene,
 	case Mode::SELECTED:
 		for (const auto id : selected) {
 			if (const auto *object = scene.FindObject(id);
-			    object && !Update(renderer, *object)) {
+			    object && !Update(renderer, scene, id)) {
 				return false;
 			}
 		}
@@ -63,7 +63,7 @@ bool ColliderBounds::Update(SceneRenderer &renderer, const Scene &scene,
 		return true;
 	case Mode::ALL:
 		for (const auto &[id, object] : scene.GetObjects()) {
-			if (!Update(renderer, object)) {
+			if (!Update(renderer, scene, id)) {
 				return false;
 			}
 		}
@@ -75,7 +75,7 @@ bool ColliderBounds::Update(SceneRenderer &renderer, const Scene &scene,
 }
 
 bool ColliderBounds::BuildLines(const SceneObject &object, Lines &lines) const {
-	if (!object.collider) {
+	if (object.parentId != 0 || !object.collider) {
 		return false;
 	}
 
@@ -125,5 +125,34 @@ bool ColliderBounds::Update(SceneRenderer &renderer,
 		}
 	}
 
+	return true;
+}
+
+bool ColliderBounds::GetFrameBounds(const Scene &scene, SceneObjectId id,
+                                    std::array<DirectX::XMFLOAT3, 8> &corners) {
+	const auto *object = scene.FindObject(id);
+	AxisAlignedBox bounds;
+	return object && object->collider &&
+	       BoxColliderUtils::GetWorldBounds(*object->collider, scene, id,
+	                                        bounds) &&
+	       GetCorners(bounds, corners);
+}
+
+bool ColliderBounds::Update(SceneRenderer &renderer, const Scene &scene,
+                            SceneObjectId id) const {
+	const auto *object = scene.FindObject(id);
+	if (!object)
+		return false;
+	if (!object->collider)
+		return true;
+	AxisAlignedBox bounds;
+	Lines lines;
+	if (!BoxColliderUtils::GetWorldBounds(*object->collider, scene, id,
+	                                      bounds) ||
+	    !BuildLines(bounds, lines))
+		return false;
+	for (const auto &line : lines)
+		if (!renderer.AddDebugLine(line))
+			return false;
 	return true;
 }

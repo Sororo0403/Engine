@@ -5,6 +5,7 @@
 #include "math/TransformUtils.h"
 #include "physics/BoxColliderUtils.h"
 #include "scene/Scene.h"
+#include "scene/SceneHierarchy.h"
 #include "scene/SceneSerializer.h"
 
 #include <algorithm>
@@ -28,7 +29,7 @@ bool Collect(const Scene &scene, ModelManager &models,
 		}
 		if (object.collider) {
 			Corners corners;
-			if (!ObjectFrameBounds::Get(object, corners, true)) {
+			if (!ObjectFrameBounds::Get(scene, id, corners, true)) {
 				return false;
 			}
 			boxes.push_back(corners);
@@ -39,8 +40,10 @@ bool Collect(const Scene &scene, ModelManager &models,
 			if (!model || !models.GetLocalBounds(model, corners)) {
 				return false;
 			}
-			const auto matrix =
-			    TransformUtils::MakeWorldMatrix(object.transform);
+			SceneWorldTransform world;
+			if (!SceneHierarchy::GetWorldTransform(scene, id, world))
+				return false;
+			const auto matrix = DirectX::XMLoadFloat4x4(&world.matrix);
 			for (auto &point : corners) {
 				DirectX::XMStoreFloat3(
 				    &point, DirectX::XMVector3TransformCoord(
@@ -52,7 +55,7 @@ bool Collect(const Scene &scene, ModelManager &models,
 	if (boxes.empty()) {
 		for (const auto &[id, object] : scene.GetObjects()) {
 			Corners corners;
-			if (!ObjectFrameBounds::Get(object, corners, true)) {
+			if (!ObjectFrameBounds::Get(scene, id, corners, true)) {
 				return false;
 			}
 			boxes.push_back(corners);
@@ -138,9 +141,11 @@ bool ScenePlacement::Place(Scene &objects, const Scene &target, const Ray &ray,
 	return objects.ApplyTransaction([&](Scene &working) {
 		for (const auto &[id, data] : working.GetObjects()) {
 			auto *object = working.FindObject(id);
-			auto &position = object->transform.translation;
-			position = {position.x + delta.x, position.y + delta.y,
-			            position.z + delta.z};
+			if (object->parentId == 0) {
+				auto &position = object->transform.translation;
+				position = {position.x + delta.x, position.y + delta.y,
+				            position.z + delta.z};
+			}
 			if (object->respawn) {
 				auto &respawn = *object->respawn;
 				respawn.minimumY += delta.y;

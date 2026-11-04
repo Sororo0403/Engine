@@ -7,6 +7,7 @@
 #include "physics/AxisAlignedBox.h"
 #include "physics/ColliderBounds.h"
 #include "scene/Scene.h"
+#include "scene/SceneHierarchy.h"
 #include "scene/SceneRenderer.h"
 #include <algorithm>
 #include <array>
@@ -27,7 +28,10 @@ bool FollowCameraPreview::BuildLines(const Scene &scene, SceneObjectId id,
 	    !TransformUtils::IsValid(target->transform)) {
 		return false;
 	}
-	auto position = target->transform.translation;
+	SceneWorldTransform targetWorld;
+	if (!SceneHierarchy::GetWorldTransform(scene, settings.target, targetWorld))
+		return false;
+	auto position = targetWorld.GetPosition();
 	if (target->followCamera) {
 		CameraPose targetPose;
 		if (!SceneCameraUtils::GetInitialPose(scene, settings.target,

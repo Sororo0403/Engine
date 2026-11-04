@@ -1,4 +1,5 @@
 #include "scene/EditorScene.h"
+#include "scene/SceneHierarchy.h"
 
 #include "assets/AssetFolders.h"
 #include "assets/ModelPlacement.h"
@@ -650,6 +651,19 @@ bool EditorScene::Update(float deltaTime) {
 
 			try {
 				switch (hierarchyRequest.action) {
+				case HierarchyPanel::Action::REPARENT_OBJECTS:
+					if (!document_.GetHistory().SetParent(
+					        hierarchyRequest.parentObjects,
+					        hierarchyRequest.parentId,
+					        hierarchyRequest.keepWorld)) {
+						ShowError("Could not change parent. A parent cannot be "
+						          "one of its descendants. If the world "
+						          "transform requires shear, hold Alt while "
+						          "dropping to keep the local transform.");
+					} else {
+						hierarchyPanel_.RequestReveal(selection_.GetActiveId());
+					}
+					break;
 				case HierarchyPanel::Action::CREATE_EMPTY:
 					CreateObject(SceneObject{});
 					break;
@@ -949,8 +963,12 @@ bool EditorScene::Update(float deltaTime) {
 		if (selection_.GetCount() == 1) {
 			if (const auto *object =
 			        scene.FindObject(selection_.GetActiveId())) {
-				orbitTransform = object->transform;
-				orbitTarget = &orbitTransform.translation;
+				SceneWorldTransform world;
+				if (SceneHierarchy::GetWorldTransform(
+				        scene, selection_.GetActiveId(), world)) {
+					orbitTransform.translation = world.GetPosition();
+					orbitTarget = &orbitTransform.translation;
+				}
 			}
 		} else if (SelectionPivot::Make(scene, selection_,
 		                                SelectionPivot::Mode::CENTER,
@@ -1056,6 +1074,8 @@ bool EditorScene::Update(float deltaTime) {
 	SceneObject *selected = scene.FindObject(activeId);
 
 	Transform *transform = nullptr;
+	Transform singleGizmo;
+	const Transform beforeLocal = selected ? selected->transform : Transform{};
 
 	if (multipleSelection) {
 		if (gizmoEditActive_ ||
@@ -1063,7 +1083,13 @@ bool EditorScene::Update(float deltaTime) {
 			transform = &selectionGizmoTransform_;
 		}
 	} else if (HasSingleSelection() && selected) {
-		transform = &selected->transform;
+		SceneWorldTransform world;
+		if (SceneHierarchy::GetWorldTransform(scene, activeId, world)) {
+			singleGizmo = selected->transform;
+			singleGizmo.translation = world.GetPosition();
+			singleGizmo.rotation = world.rotation;
+			transform = &singleGizmo;
+		}
 	}
 
 	const Transform beforeGizmo = transform ? *transform : Transform{};
@@ -1088,7 +1114,7 @@ bool EditorScene::Update(float deltaTime) {
 				}
 
 				selectionGizmoStart_ = beforeGizmo;
-			} else if (!history.BeginTransform(activeId, beforeGizmo)) {
+			} else if (!history.BeginTransform(activeId, beforeLocal)) {
 				Logger::Error(
 				    "EditorScene: ギズモの編集履歴を開始できませんでした。");
 				return false;
@@ -1109,6 +1135,29 @@ bool EditorScene::Update(float deltaTime) {
 				FinishEdit();
 				Logger::Error("EditorScene: 複数物体の変形情報が無効です。");
 			}
+		}
+
+		if (!multipleSelection) {
+			switch (gizmo_.GetOperation()) {
+			case TransformGizmo::Operation::TRANSLATE:
+				applied = SceneHierarchy::SetWorldPosition(
+				    scene, activeId, singleGizmo.translation);
+				break;
+			case TransformGizmo::Operation::ROTATE:
+				applied = SceneHierarchy::SetWorldPose(scene, activeId,
+				                                       singleGizmo.translation,
+				                                       singleGizmo.rotation);
+				break;
+			case TransformGizmo::Operation::SCALE:
+				// 単体の拡縮は親のワールド拡縮ではなく、Inspectorと同じローカルの値を編集する。
+				if (TransformUtils::IsValid(singleGizmo))
+					selected->transform.scale = singleGizmo.scale;
+				else
+					applied = false;
+				break;
+			}
+			if (!applied)
+				FinishEdit();
 		}
 
 		if (applied &&
@@ -2918,7 +2967,11 @@ void EditorScene::SetCameraView(CameraView view) {
 			return;
 		}
 
-		center = object->transform.translation;
+		SceneWorldTransform world;
+		if (!SceneHierarchy::GetWorldTransform(document_.GetScene(),
+		                                       selection_.GetActiveId(), world))
+			return;
+		center = world.GetPosition();
 	} else if (selection_.GetCount() > 1) {
 		Transform pivot;
 
@@ -4056,7 +4109,8 @@ void EditorScene::ApplyInspectorRequest(
 			    request.action == InspectorPanel::ObjectAction::FRAME_RESPAWN;
 			const bool ready =
 			    respawn ? RespawnPreview::GetFrameBounds(*object, corners)
-			            : ColliderBounds::GetFrameBounds(*object, corners);
+			            : ColliderBounds::GetFrameBounds(
+			                  document_.GetScene(), request.objectId, corners);
 
 			if (!ready) {
 				ShowError(
@@ -4489,7 +4543,7 @@ bool EditorScene::ApplySceneSelection(
 		const bool boundsReady =
 		    (!object.HasMesh() || !object.meshRenderer || missingModel)
 		        ? showObjectMarkers_ &&
-		              ObjectMarkers::GetBounds(object, corners, missingModel)
+		              ObjectMarkers::GetBounds(scene, id, corners, missingModel)
 		        : !object.IsHidden() && renderer.GetObjectBounds(id, corners);
 
 		if (boundsReady && volume.Intersects(corners) &&
@@ -4638,7 +4692,8 @@ bool EditorScene::FrameObjects(FrameRequest request,
 		} else if (const auto *object = scene.FindObject(frameObject_)) {
 			ready = request == FrameRequest::RESPAWN
 			            ? RespawnPreview::GetFrameBounds(*object, corners)
-			            : ColliderBounds::GetFrameBounds(*object, corners);
+			            : ColliderBounds::GetFrameBounds(scene, frameObject_,
+			                                             corners);
 		}
 
 		if (!ready) {
@@ -4676,11 +4731,11 @@ bool EditorScene::FrameObjects(FrameRequest request,
 		const bool missingModel = renderer.IsModelUnavailable(id);
 		bool boundsReady =
 		    (!object.HasMesh() || !object.meshRenderer || missingModel)
-		        ? ObjectFrameBounds::Get(object, corners, missingModel)
+		        ? ObjectFrameBounds::Get(scene, id, corners, missingModel)
 		        : renderer.GetObjectBounds(id, corners);
 		// 非表示・読み込み不能なモデルも、検証結果や再生状態からはColliderか原点へ寄せられる。
 		if (!boundsReady && includeHidden) {
-			boundsReady = ObjectFrameBounds::Get(object, corners, true);
+			boundsReady = ObjectFrameBounds::Get(scene, id, corners, true);
 		}
 
 		if (!boundsReady) {
@@ -4751,10 +4806,13 @@ bool EditorScene::UpdatePlaySceneView(float deltaTime, EditorAction action,
 	}
 
 	const auto &runtime = playMode_.GetSession().GetScene();
-	const auto *active = runtime.FindObject(playSelection_.GetActiveId());
+	SceneWorldTransform activeWorld;
+	const bool hasActive = SceneHierarchy::GetWorldTransform(
+	    runtime, playSelection_.GetActiveId(), activeWorld);
+	const auto activePosition = activeWorld.GetPosition();
 	UpdatePlaySelectionFollow();
 	cameraController_.Update(input_, viewport, deltaTime,
-	                         active ? &active->transform.translation : nullptr);
+	                         hasActive ? &activePosition : nullptr);
 	auto *target = sceneViewPanel_.GetRenderTexture();
 
 	if (!target) {
@@ -4911,16 +4969,16 @@ void EditorScene::StopAndSelectEditingObjects() {
 
 void EditorScene::UpdatePlaySelectionFollow() {
 	const auto id = playSelection_.GetActiveId();
-	const auto *object = playMode_.GetSession().GetScene().FindObject(id);
-
-	if (!followPlaySelection_ || !playMode_.IsPlaying() || !object ||
-	    !MathUtils::IsFinite(object->transform.translation)) {
+	SceneWorldTransform world;
+	if (!followPlaySelection_ || !playMode_.IsPlaying() ||
+	    !SceneHierarchy::GetWorldTransform(playMode_.GetSession().GetScene(),
+	                                       id, world)) {
 		followPlaySelection_ = false;
 		followedPlayObject_ = 0;
 		return;
 	}
 
-	const auto position = object->transform.translation;
+	const auto position = world.GetPosition();
 
 	if (followedPlayObject_ != id) {
 		followedPlayObject_ = id;

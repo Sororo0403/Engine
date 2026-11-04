@@ -63,6 +63,17 @@ class ObjectMarkers {
 	bool Update(SceneRenderer &renderer, const Scene &scene,
 	            std::span<const SceneObjectId> selected) const;
 
+	/// <summary>
+	/// 親子合成後の原点を囲む固定サイズの目印を取得する
+	/// </summary>
+	/// <param name="scene">表示対象のシーン</param>
+	/// <param name="id">既存物体のID</param>
+	/// <param name="corners">成功時だけ置き換える8頂点</param>
+	/// <param name="missingModel">読み込み不能なモデルも対象とするか</param>
+	/// <returns>true:成功 false:物体・変形が無効、または表示対象なし</returns>
+	static bool GetBounds(const Scene &scene, SceneObjectId id,
+	                      Corners &corners, bool missingModel = false);
+
   private:
 	static constexpr float kHalfExtent = 0.25f;
 	static constexpr double kDirectionTolerance = 0.001;

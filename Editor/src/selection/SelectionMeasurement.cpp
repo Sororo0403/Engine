@@ -3,6 +3,7 @@
 #include "math/MathUtils.h"
 #include "physics/BoxColliderUtils.h"
 #include "scene/Scene.h"
+#include "scene/SceneHierarchy.h"
 #include "scene/SceneRenderer.h"
 #include <algorithm>
 #include <cmath>
@@ -19,8 +20,9 @@ bool SelectionMeasurement::Measure(const Scene &scene,
 	Pair pair;
 	for (std::size_t i = 0; i < ids.size(); ++i) {
 		const auto *object = scene.FindObject(ids[i]);
+		SceneWorldTransform world;
 		if (!object || !seen.insert(ids[i]).second ||
-		    !MathUtils::IsFinite(object->transform.translation)) {
+		    !SceneHierarchy::GetWorldTransform(scene, ids[i], world)) {
 			error = "Select existing objects with finite positions and no "
 			        "duplicate IDs.";
 			return false;
@@ -28,18 +30,18 @@ bool SelectionMeasurement::Measure(const Scene &scene,
 		if (ids.size() == 2) {
 			if (i == 0) {
 				pair.from = ids[i];
-				pair.start = object->transform.translation;
+				pair.start = world.GetPosition();
 			} else {
 				pair.to = ids[i];
-				pair.end = object->transform.translation;
+				pair.end = world.GetPosition();
 			}
 		}
 		if (!object->collider) {
 			continue;
 		}
 		AxisAlignedBox bounds;
-		if (!BoxColliderUtils::GetWorldBounds(*object->collider,
-		                                      object->transform, bounds)) {
+		if (!BoxColliderUtils::GetWorldBounds(*object->collider, world.matrix,
+		                                      bounds)) {
 			++candidate.invalidColliders;
 			continue;
 		}

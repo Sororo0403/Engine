@@ -167,7 +167,7 @@ bool ModelPlacement::GetSurface(const Ray &ray, const Scene &scene,
 		AxisAlignedBox box;
 
 		if (!object.collider || !BoxColliderUtils::GetWorldBounds(
-		                            *object.collider, object.transform, box)) {
+		                            *object.collider, scene, id, box)) {
 			continue;
 		}
 

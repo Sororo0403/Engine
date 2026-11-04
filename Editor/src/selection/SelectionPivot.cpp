@@ -2,6 +2,7 @@
 
 #include "math/TransformUtils.h"
 #include "scene/Scene.h"
+#include "scene/SceneHierarchy.h"
 #include "selection/EditorSelection.h"
 
 bool SelectionPivot::Make(const Scene &scene, const EditorSelection &selection,
@@ -18,13 +19,12 @@ bool SelectionPivot::Make(const Scene &scene, const EditorSelection &selection,
 	bool activeFound = false;
 
 	for (const auto id : selection.GetIds()) {
-		const auto *object = scene.FindObject(id);
-
-		if (!object || !TransformUtils::IsValid(object->transform)) {
+		SceneWorldTransform world;
+		if (!SceneHierarchy::GetWorldTransform(scene, id, world)) {
 			return false;
 		}
 
-		const auto &position = object->transform.translation;
+		const auto position = world.GetPosition();
 		x += position.x;
 		y += position.y;
 		z += position.z;

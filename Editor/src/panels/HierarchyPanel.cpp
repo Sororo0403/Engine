@@ -4,12 +4,14 @@
 #include "graphics/ui/ImGuiSystem.h"
 #include "physics/ColliderPlacement.h"
 #include "scene/Scene.h"
+#include "scene/SceneHierarchy.h"
 #include "selection/EditorSelection.h"
 
 #include <imgui.h>
 
 #include <algorithm>
 #include <format>
+#include <map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -200,6 +202,18 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 	ui.EndDisabled();
 	ui.EndDisabled();
 
+	// 外部から選ばれた子を表示するときは、祖先の折りたたみを解除する。
+	if (scrollToId_ != 0) {
+		auto parent = scene.FindObject(scrollToId_)->parentId;
+		for (std::size_t count = 0;
+		     parent != 0 && count < scene.GetObjects().size(); ++count) {
+			collapsed_.erase(parent);
+			const auto *object = scene.FindObject(parent);
+			if (!object)
+				break;
+			parent = object->parentId;
+		}
+	}
 	const auto visibleIds = GetVisibleIds(scene);
 	ui.BeginDisabled(visibleIds.empty());
 
@@ -216,6 +230,34 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 	const bool drawObjects = ui.BeginChild("HierarchyObjects", 0.0f, 0.0f);
 
 	if (drawObjects) {
+		const auto acceptParent = [&](SceneObjectId parent) {
+			if (!editable || !ImGui::BeginDragDropTarget())
+				return;
+			if (const auto *payload =
+			        ImGui::AcceptDragDropPayload("EDITOR_HIERARCHY_OBJECTS")) {
+				if (payload->Data && payload->DataSize > 0 &&
+				    payload->DataSize % sizeof(SceneObjectId) == 0) {
+					const auto *ids =
+					    static_cast<const SceneObjectId *>(payload->Data);
+					result.parentObjects.assign(
+					    ids, ids + payload->DataSize / sizeof(SceneObjectId));
+					result.parentId = parent;
+					result.keepWorld = !ImGui::GetIO().KeyAlt;
+					result.action = Action::REPARENT_OBJECTS;
+				}
+			}
+			ImGui::EndDragDropTarget();
+		};
+		ui.Selectable("Scene Root###HierarchyRoot", false);
+		acceptParent(0);
+		const bool filtered = IsFiltered();
+		std::set<SceneObjectId> hasChildren;
+		for (const auto &[id, object] : objects) {
+			(void)id;
+			if (object.parentId)
+				hasChildren.insert(object.parentId);
+		}
+
 		// 描画と範囲選択で同じ表示一覧を使用し、検索で隠れた項目を除く
 		SceneObjectId keyboardFocusId = 0;
 		result.selectionChanged |=
@@ -241,7 +283,38 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 			const auto &io = ImGui::GetIO();
 
-			if (ui.Selectable(label.c_str(), selection.Contains(id))) {
+			float indent = 0;
+			if (!filtered) {
+				auto parent = object.parentId;
+				for (std::size_t depth = 0;
+				     parent != 0 && depth < objects.size(); ++depth) {
+					const auto *ancestor = scene.FindObject(parent);
+					if (!ancestor)
+						break;
+					indent += ImGui::GetStyle().IndentSpacing;
+					parent = ancestor->parentId;
+				}
+			}
+			if (indent > 0)
+				ImGui::Indent(indent);
+			const bool branch = !filtered && hasChildren.contains(id);
+			auto flags = ImGuiTreeNodeFlags_NoTreePushOnOpen |
+			             ImGuiTreeNodeFlags_SpanAvailWidth |
+			             ImGuiTreeNodeFlags_OpenOnArrow;
+			if (!branch)
+				flags |= ImGuiTreeNodeFlags_Leaf;
+			if (selection.Contains(id))
+				flags |= ImGuiTreeNodeFlags_Selected;
+			ImGui::SetNextItemOpen(!collapsed_.contains(id), ImGuiCond_Always);
+			const bool open = ImGui::TreeNodeEx(label.c_str(), flags);
+			if (branch && ImGui::IsItemToggledOpen()) {
+				if (open)
+					collapsed_.erase(id);
+				else
+					collapsed_.insert(id);
+			}
+			if (ImGui::IsItemClicked(ImGuiMouseButton_Left) &&
+			    !ImGui::IsItemToggledOpen()) {
 				const bool changed = SelectObject(id, visibleIds, io.KeyCtrl,
 				                                  io.KeyShift, selection);
 				scrollToId_ = 0;
@@ -274,12 +347,47 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 				scrollToId_ = 0;
 			}
 
+			if (editable && ImGui::BeginDragDropSource()) {
+				const auto selectedIds = selection.GetIds();
+				if (selection.Contains(id)) {
+					ImGui::SetDragDropPayload(
+					    "EDITOR_HIERARCHY_OBJECTS", selectedIds.data(),
+					    selectedIds.size_bytes(), ImGuiCond_Once);
+				} else {
+					ImGui::SetDragDropPayload("EDITOR_HIERARCHY_OBJECTS", &id,
+					                          sizeof(id), ImGuiCond_Once);
+				}
+				ui.Text(std::format("{}", name));
+				ui.Text(ImGui::GetIO().KeyAlt
+				            ? "Keep Local Transform"
+				            : "Keep World Transform (Alt: Keep Local)");
+				ImGui::EndDragDropSource();
+			}
+			acceptParent(id);
+
 			if (ImGui::BeginPopupContextItem()) {
 				// 選択済みの項目ではグループを保ち、未選択の項目だけ選び直す
 				if (!selection.Contains(id)) {
 					result.selectionChanged |= selection.SelectOnly(id);
 					rangeAnchorId_ = id;
 					scrollToId_ = 0;
+				}
+
+				if (ui.MenuItem("Unparent (Keep World)", nullptr,
+				                editable && object.parentId != 0)) {
+					result.action = Action::REPARENT_OBJECTS;
+					result.parentObjects.assign(selection.GetIds().begin(),
+					                            selection.GetIds().end());
+					result.parentId = 0;
+					result.keepWorld = true;
+				}
+				if (ui.MenuItem("Unparent (Keep Local)", nullptr,
+				                editable && object.parentId != 0)) {
+					result.action = Action::REPARENT_OBJECTS;
+					result.parentObjects.assign(selection.GetIds().begin(),
+					                            selection.GetIds().end());
+					result.parentId = 0;
+					result.keepWorld = false;
 				}
 
 				if (ui.MenuItem("Copy", "Ctrl+C", editable)) {
@@ -501,6 +609,8 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 				ui.EndDisabled();
 				ImGui::EndPopup();
 			}
+			if (indent > 0)
+				ImGui::Unindent(indent);
 		}
 
 		if (visibleIds.empty()) {
@@ -542,6 +652,7 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 void HierarchyPanel::Clear() {
 	filter_.Clear();
+	collapsed_.clear();
 	pickingDisabledOnly_ = false;
 	scenePickingDisabled_.clear();
 	sortMode_ = SortMode::CREATION;
@@ -601,38 +712,73 @@ HierarchyPanel::GetVisibleIds(const Scene &scene) const {
 		}
 	}
 
-	if (sortMode_ == SortMode::CREATION) {
-		return ids;
-	}
+	if (sortMode_ != SortMode::CREATION) {
+		struct Item {
+			SceneObjectId id;
+			std::string_view name;
+		};
 
-	struct Item {
-		SceneObjectId id;
-		std::string_view name;
-	};
+		std::vector<Item> items;
+		items.reserve(ids.size());
 
-	std::vector<Item> items;
-	items.reserve(ids.size());
-
-	for (const auto id : ids) {
-		const auto &name = scene.GetObjects().at(id).name;
-		items.push_back({id, name.empty() ? std::string_view{"Object"} : name});
-	}
-
-	std::sort(items.begin(), items.end(), [&](const Item &a, const Item &b) {
-		const int order = CompareNames(a.name, b.name);
-
-		if (order == 0) {
-			return a.id < b.id;
+		for (const auto id : ids) {
+			const auto &name = scene.GetObjects().at(id).name;
+			items.push_back(
+			    {id, name.empty() ? std::string_view{"Object"} : name});
 		}
 
-		return sortMode_ == SortMode::NAME_ASCENDING ? order < 0 : order > 0;
-	});
+		std::sort(items.begin(), items.end(),
+		          [&](const Item &a, const Item &b) {
+			          const int order = CompareNames(a.name, b.name);
 
-	for (std::size_t i = 0; i < items.size(); ++i) {
-		ids[i] = items[i].id;
+			          if (order == 0) {
+				          return a.id < b.id;
+			          }
+
+			          return sortMode_ == SortMode::NAME_ASCENDING ? order < 0
+			                                                       : order > 0;
+		          });
+
+		for (std::size_t i = 0; i < items.size(); ++i) {
+			ids[i] = items[i].id;
+		}
 	}
 
-	return ids;
+	if (IsFiltered())
+		return ids;
+
+	std::vector<SceneObjectId> order;
+
+	if (!SceneHierarchy::GetEvaluationOrder(scene, order))
+		return ids;
+
+	std::map<SceneObjectId, std::vector<SceneObjectId>> children;
+
+	for (const auto id : ids)
+		children[scene.FindObject(id)->parentId].push_back(id);
+
+	std::vector<SceneObjectId> stack(children[0].rbegin(), children[0].rend());
+	std::vector<SceneObjectId> result;
+
+	while (!stack.empty()) {
+		const auto id = stack.back();
+		stack.pop_back();
+		result.push_back(id);
+
+		if (collapsed_.contains(id))
+			continue;
+
+		const auto &descendants = children[id];
+		stack.insert(stack.end(), descendants.rbegin(), descendants.rend());
+	}
+
+	return result;
+}
+
+bool HierarchyPanel::IsFiltered() const {
+	return !filter_.text.empty() || filter_.hiddenOnly ||
+	       filter_.component != HierarchyFilter::Component::ALL ||
+	       pickingDisabledOnly_;
 }
 
 bool HierarchyPanel::SelectAllVisible(const Scene &scene,

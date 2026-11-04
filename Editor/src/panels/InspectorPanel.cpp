@@ -247,7 +247,8 @@ bool InspectorPanel::Draw(
 	ui.Text(std::format("ID: {}", inspectedObjectId));
 	ui.Separator();
 
-	const bool transformExpanded = ui.CollapsingHeader("Transform");
+	const bool transformExpanded =
+	    ui.CollapsingHeader("Local Transform###Transform");
 
 	if (ImGui::BeginPopupContextItem("TransformTools")) {
 		ImGui::TextDisabled("Inspected object only");
@@ -663,7 +664,7 @@ InspectorPanel::DrawReadOnly(const ImGuiSystem &ui, const Scene &scene,
 
 	std::optional<Transform> copied;
 
-	if (ui.CollapsingHeader("Transform")) {
+	if (ui.CollapsingHeader("Local Transform###Transform")) {
 		ui.BeginDisabled(!TransformUtils::IsValid(object->transform));
 
 		if (ui.Button("Copy Transform")) {

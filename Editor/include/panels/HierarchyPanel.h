@@ -3,6 +3,7 @@
 #include "panels/HierarchyFilter.h"
 #include "scene/SceneObjectId.h"
 
+#include <set>
 #include <span>
 #include <string>
 #include <string_view>
@@ -65,6 +66,7 @@ class HierarchyPanel {
 		SELECT_FOLLOW_CAMERAS,
 		HIDE_OBJECTS,
 		SHOW_OBJECTS,
+		REPARENT_OBJECTS,
 	};
 
 	/// <summary>
@@ -72,6 +74,10 @@ class HierarchyPanel {
 	/// </summary>
 	struct Result {
 		Action action = Action::NONE;
+		// 親変更は入力時点の対象を保持し、選択変更と独立した要求として返す。
+		std::vector<SceneObjectId> parentObjects;
+		SceneObjectId parentId = 0;
+		bool keepWorld = true;
 
 		bool windowFocused = false;
 		bool selectionChanged = false;
@@ -176,7 +182,14 @@ class HierarchyPanel {
 	/// <returns>true:全ての条件に一致 false:条件外</returns>
 	bool MatchesFilters(SceneObjectId id, const SceneObject &object) const;
 
+	/// <summary>
+	/// 一覧が絞り込み中か確認する。絞り込み中は一致した項目だけを平坦に表示する
+	/// </summary>
+	/// <returns>true:絞り込み中 false:親子ツリー表示</returns>
+	bool IsFiltered() const;
+
 	HierarchyFilter filter_;
+	std::set<SceneObjectId> collapsed_;
 	std::vector<SceneObjectId> scenePickingDisabled_;
 	SortMode sortMode_ = SortMode::CREATION;
 	SceneObjectId rangeAnchorId_ = 0;

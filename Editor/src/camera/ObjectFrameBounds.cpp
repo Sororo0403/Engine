@@ -3,9 +3,30 @@
 #include "math/MathUtils.h"
 #include "math/TransformUtils.h"
 #include "physics/BoxColliderUtils.h"
+#include "scene/Scene.h"
+#include "scene/SceneHierarchy.h"
 #include "scene/SceneObject.h"
 
 bool ObjectFrameBounds::Get(const SceneObject &object, Corners &corners,
+                            bool missingModel) {
+	if (object.parentId != 0 || !TransformUtils::IsValid(object.transform))
+		return false;
+	DirectX::XMFLOAT4X4 world;
+	DirectX::XMStoreFloat4x4(&world,
+	                         TransformUtils::MakeWorldMatrix(object.transform));
+	return Get(object, world, corners, missingModel);
+}
+
+bool ObjectFrameBounds::Get(const Scene &scene, SceneObjectId id,
+                            Corners &corners, bool missingModel) {
+	const auto *object = scene.FindObject(id);
+	SceneWorldTransform world;
+	return object && SceneHierarchy::GetWorldTransform(scene, id, world) &&
+	       Get(*object, world.matrix, corners, missingModel);
+}
+
+bool ObjectFrameBounds::Get(const SceneObject &object,
+                            const DirectX::XMFLOAT4X4 &world, Corners &corners,
                             bool missingModel) {
 	if ((object.HasMesh() && object.meshRenderer && !missingModel) ||
 	    !TransformUtils::IsValid(object.transform)) {
@@ -15,12 +36,12 @@ bool ObjectFrameBounds::Get(const SceneObject &object, Corners &corners,
 	AxisAlignedBox bounds;
 
 	if (object.collider) {
-		if (!BoxColliderUtils::GetWorldBounds(*object.collider,
-		                                      object.transform, bounds)) {
+		if (!BoxColliderUtils::GetWorldBounds(*object.collider, world,
+		                                      bounds)) {
 			return false;
 		}
 	} else {
-		const auto &position = object.transform.translation;
+		const DirectX::XMFLOAT3 position{world._41, world._42, world._43};
 		bounds.minimum = {position.x - kOriginHalfExtent,
 		                  position.y - kOriginHalfExtent,
 		                  position.z - kOriginHalfExtent};

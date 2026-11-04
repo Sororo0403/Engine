@@ -125,6 +125,28 @@ void ControlsPanel::Draw() {
 	DrawSection(
 	    "Selection and objects",
 	    {
+	        {"Hierarchy tree",
+	         "Use arrows to fold or unfold child objects. Name sorting applies "
+	         "to siblings. Search and component filters show only matching "
+	         "objects as a flat list; range selection uses the displayed "
+	         "rows."},
+	        {"Hierarchy drag and drop",
+	         "Drop an object or the selection onto another object to change "
+	         "its "
+	         "parent. Drop onto Scene Root to unparent. World placement is "
+	         "kept "
+	         "by default; hold Alt while dropping to keep local Transform "
+	         "values. "
+	         "A parent cannot be a descendant of its child. Parent changes "
+	         "support Undo/Redo."},
+	        {"Local Transform",
+	         "Inspector values are relative to the parent. Parent movement, "
+	         "rotation and scale affect descendants. Copy, duplicate and "
+	         "delete "
+	         "include descendants. Keeping world placement may be rejected "
+	         "when it requires local shear; Keep Local can retain the existing "
+	         "local SRT. Copying a branch without its external parent also "
+	         "requires a representable root SRT."},
 	        {"Hierarchy > Invert Listed",
 	         "Toggle selection only for objects matching the current search, "
 	         "component, Hidden only and Scene picking filters. Objects "
