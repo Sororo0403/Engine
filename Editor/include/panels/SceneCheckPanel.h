@@ -44,7 +44,7 @@ class SceneCheckPanel {
 	std::string GetReport() const;
 
 	/// <summary>
-	/// 最後の検証結果と再検証ボタンを描画する。シーンは変更しない
+	/// 最後の検証結果を検索して表示する。一括操作は表示中の結果だけを対象とし、シーンは変更しない
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
 	/// <param name="scene">検証対象と選択先を確認する編集シーン</param>
@@ -55,7 +55,16 @@ class SceneCheckPanel {
 
   private:
 	/// <summary>
-	/// 最後の検証結果から、現在も存在する物体を重複せず列挙する
+	/// メッセージ・現在の物体名・IDのいずれかが検索文字列を含むか調べる
+	/// </summary>
+	/// <param name="issue">最後の検証結果</param>
+	/// <param name="scene">現在の物体名を確認するシーン</param>
+	/// <returns>true:部分一致、または検索が空 false:一致しない。英字の大文字と小文字は区別する</returns>
+	bool MatchesFilter(const SceneValidationIssue &issue,
+	                   const Scene &scene) const;
+
+	/// <summary>
+	/// 検索に一致する検証結果から、現在も存在する物体を重複せず列挙する
 	/// </summary>
 	/// <param name="scene">削除済みの物体を除くための現在のシーン</param>
 	/// <returns>検証結果に現れる順の物体ID。物体を指さない問題は除く</returns>
@@ -63,6 +72,7 @@ class SceneCheckPanel {
 
 	std::vector<SceneValidationIssue> issues_;
 	std::string error_;
+	std::string filter_;
 	bool open_ = false;
 	bool checkRequested_ = false;
 	bool focusRequested_ = false;

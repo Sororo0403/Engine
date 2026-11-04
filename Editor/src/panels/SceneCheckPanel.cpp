@@ -2,11 +2,13 @@
 #include "assets/SceneAssetValidation.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "scene/Scene.h"
+#include <algorithm>
 #include <exception>
 #include <format>
 #include <imgui.h>
 #include <iterator>
 #include <set>
+#include <string_view>
 
 void SceneCheckPanel::Show() {
 	open_ = true;
@@ -45,6 +47,32 @@ std::string SceneCheckPanel::GetReport() const {
 	}
 
 	return report;
+}
+
+bool SceneCheckPanel::MatchesFilter(const SceneValidationIssue &issue,
+                                    const Scene &scene) const {
+	if (filter_.empty() || issue.message.find(filter_) != std::string::npos) {
+		return true;
+	}
+
+	if (issue.objectId == 0) {
+		return false;
+	}
+
+	if (std::to_string(issue.objectId).find(filter_) != std::string::npos) {
+		return true;
+	}
+
+	const auto *object = scene.FindObject(issue.objectId);
+
+	if (!object) {
+		return false;
+	}
+
+	const std::string_view name = object->name.empty()
+	                                  ? std::string_view{"Object"}
+	                                  : std::string_view{object->name};
+	return name.find(filter_) != std::string_view::npos;
 }
 
 SceneCheckPanel::Request SceneCheckPanel::Draw(const ImGuiSystem &ui,
@@ -100,20 +128,43 @@ SceneCheckPanel::Request SceneCheckPanel::Draw(const ImGuiSystem &ui,
 		ui.Text(std::format("Last check: {} issue(s)", issues_.size()));
 	}
 
+	ui.InputText("Search Issues", filter_);
+	ui.SameLine();
+
+	if (ui.Button("Clear Search")) {
+		filter_.clear();
+	}
+
+	const auto matchingCount =
+	    std::count_if(issues_.begin(), issues_.end(), [&](const auto &issue) {
+		    return MatchesFilter(issue, scene);
+	    });
+	ui.Text(std::format("Showing {} of {} issue(s)", matchingCount,
+	                    issues_.size()));
+
+	if (checked_ && matchingCount == 0 && !issues_.empty()) {
+		ui.Text("No issues match the search.");
+	}
+
 	Request requested;
 	const auto objects = GetIssueObjects(scene);
 	ui.BeginDisabled(objects.empty());
-	if (ui.Button("Select All Issue Objects")) {
+	if (ui.Button("Select Listed Issue Objects")) {
 		requested.objectIds = objects;
 	}
 	ui.SameLine();
-	if (ui.Button("Frame All Issue Objects")) {
+	if (ui.Button("Frame Listed Issue Objects")) {
 		requested = {objects, true};
 	}
 	ui.EndDisabled();
 
 	for (std::size_t i = 0; i < issues_.size(); ++i) {
 		const auto &issue = issues_[i];
+
+		if (!MatchesFilter(issue, scene)) {
+			continue;
+		}
+
 		ImGui::PushID(static_cast<int>(i));
 		ImGui::Separator();
 		ImGui::TextWrapped("%s", issue.message.c_str());
@@ -151,7 +202,7 @@ SceneCheckPanel::GetIssueObjects(const Scene &scene) const {
 	std::vector<SceneObjectId> ids;
 	std::set<SceneObjectId> seen;
 	for (const auto &issue : issues_) {
-		if (scene.Contains(issue.objectId) &&
+		if (MatchesFilter(issue, scene) && scene.Contains(issue.objectId) &&
 		    seen.insert(issue.objectId).second) {
 			ids.push_back(issue.objectId);
 		}
