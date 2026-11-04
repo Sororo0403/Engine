@@ -14,8 +14,10 @@ class EditorGamePreview {
 	/// </summary>
 	/// <param name="source">編集シーン。値は変更しない。Character ControllerとColliderの検証は行わない</param>
 	/// <param name="fallback">Primary Cameraがない場合のSceneビューの姿勢</param>
+	/// <param name="cameraOverride">0は通常のPrimary選択。指定時はそのCameraの姿勢とレンズを表示に使用する</param>
 	/// <returns>true:準備成功 false:カメラ設定または複製が無効。失敗時は過去の表示データを破棄する</returns>
-	bool Prepare(const Scene &source, const CameraPose &fallback);
+	bool Prepare(const Scene &source, const CameraPose &fallback,
+	             SceneObjectId cameraOverride = 0);
 
 	/// <summary>
 	/// 表示用シーンを空にし、カメラを初期値へ戻す

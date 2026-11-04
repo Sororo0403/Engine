@@ -7,8 +7,8 @@
 #include <utility>
 #include <vector>
 
-bool EditorGamePreview::Prepare(const Scene &source,
-                                const CameraPose &fallback) {
+bool EditorGamePreview::Prepare(const Scene &source, const CameraPose &fallback,
+                                SceneObjectId cameraOverride) {
 	try {
 		std::vector<SceneObjectId> order;
 		std::string error;
@@ -52,6 +52,20 @@ bool EditorGamePreview::Prepare(const Scene &source,
 			primary = true;
 			pose = SceneCameraUtils::FromTransform(object.transform);
 			settings = object.camera->settings;
+		}
+
+		if (cameraOverride != 0) {
+			const auto found = objects.find(cameraOverride);
+
+			if (found == objects.end() || !found->second.camera ||
+			    !found->second.camera->IsValid() ||
+			    !TransformUtils::IsValid(found->second.transform)) {
+				Reset();
+				return false;
+			}
+
+			pose = SceneCameraUtils::FromTransform(found->second.transform);
+			settings = found->second.camera->settings;
 		}
 
 		Camera validator;

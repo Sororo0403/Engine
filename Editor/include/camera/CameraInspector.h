@@ -21,6 +21,7 @@ class CameraInspector {
 		COPY_LENS,
 		PASTE_LENS,
 		PLAY_FROM_CAMERA,
+		PREVIEW_IN_GAME,
 	};
 
 	/// <summary>

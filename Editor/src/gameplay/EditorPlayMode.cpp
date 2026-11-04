@@ -36,7 +36,8 @@ bool EditorPlayMode::Initialize() {
 EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
                                               bool canStart,
                                               const GameConfig &config,
-                                              bool canUseSelection) {
+                                              bool canUseSelection,
+                                              const Scene *editingScene) {
 	visible_ = false;
 	ready_ = false;
 	viewport_ = {};
@@ -117,7 +118,29 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 
 		ui.EndDisabled();
 	} else {
+		if (previewCamera_ != 0 && editingScene) {
+			const auto *object = editingScene->FindObject(previewCamera_);
+
+			if (!object || !object->camera) {
+				SetPreviewCamera(0);
+			}
+		}
+
 		ui.BeginDisabled(!canStart);
+
+		if (previewCamera_ != 0) {
+			const auto *object = editingScene
+			                         ? editingScene->FindObject(previewCamera_)
+			                         : nullptr;
+			ui.Text(std::format("Preview Camera: {} (ID {})",
+			                    object && !object->name.empty() ? object->name
+			                                                    : "Camera",
+			                    previewCamera_));
+
+			if (ui.Button("Preview Primary Camera")) {
+				SetPreviewCamera(0);
+			}
+		}
 
 		if (ui.Button("Play")) {
 			action = Action::PLAY;
@@ -293,14 +316,32 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 	return true;
 }
 
+bool EditorPlayMode::SetPreviewCamera(SceneObjectId objectId) {
+	if (IsPlaying()) {
+		return false;
+	}
+
+	previewCamera_ = objectId;
+	focusRequested_ = objectId != 0;
+	return true;
+}
+
 bool EditorPlayMode::UpdatePreview(const Scene &scene,
                                    const CameraPose &fallback) {
+	if (!IsPlaying() && previewCamera_ != 0) {
+		const auto *object = scene.FindObject(previewCamera_);
+
+		if (!object || !object->camera) {
+			SetPreviewCamera(0);
+		}
+	}
+
 	if (IsPlaying() || !visible_ || !texture_) {
 		return true;
 	}
 
 	// 無効なカメラでは過去のシーンを捨て、空のワールドを描画して古い画像を残さない。
-	preview_.Prepare(scene, fallback);
+	preview_.Prepare(scene, fallback, previewCamera_);
 
 	if (!previewRenderer_.SetLighting(lighting_) ||
 	    !previewRenderer_.SetCameraPose(preview_.GetPose()) ||
@@ -334,5 +375,6 @@ void EditorPlayMode::Finalize() {
 	renderer_.Finalize();
 	previewRenderer_.Finalize();
 	preview_.Reset();
+	previewCamera_ = 0;
 	previewFrame_ = false;
 }

@@ -1305,6 +1305,18 @@ void ControlsPanel::Draw() {
 	         "and Cancel leaves the scene untouched. Adjusting Size later "
 	         "does not automatically move Center; press the button again "
 	         "to align the new dimensions."},
+	        {"Inspector > Camera > Preview in Game",
+	         "Pin the stopped Game view to the inspected Camera without "
+	         "changing Primary or running physics. Follow Camera uses its "
+	         "initial resolved pose, and edits to its Transform or lens update "
+	         "the preview. A locked Inspector uses its displayed Camera. "
+	         "Preview Primary Camera in Game restores the normal view. "
+	         "Ordinary Play and game output still use the authored Primary; "
+	         "Stop returns to the pinned preview. New/Open and deleting the "
+	         "pinned Camera clear the pin. Invalid camera settings leave a "
+	         "blank preview as usual; scene validation rules are unchanged. "
+	         "The pin is a workspace choice with no Undo entry or scene-file "
+	         "change."},
 	        {"Inspector > Box Collider > Use Top as Work Plane",
 	         "Set Grid Settings Height from the inspected Collider's world "
 	         "maximum Y after rotation, scale and local center offset. A "

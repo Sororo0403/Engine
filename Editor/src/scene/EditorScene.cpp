@@ -119,6 +119,7 @@ bool EditorScene::Initialize() {
 
 	hierarchyPanel_.Clear();
 	pendingPlayCamera_ = 0;
+	playMode_.SetPreviewCamera(0);
 	inspectorPanel_.Clear();
 	assetsPanel_.Clear();
 
@@ -178,7 +179,8 @@ bool EditorScene::Update(float deltaTime) {
 
 	auto playAction = playMode_.DrawUI(ui_, !IsBusy(), exportConfig_,
 	                                   !IsBusy() && playSelectionActive_ &&
-	                                       playSelection_.GetCount() != 0);
+	                                       playSelection_.GetCount() != 0,
+	                                   &document_.GetScene());
 	const bool playShortcutEnabled =
 	    input_.IsActive() && playInputWasActive_ && !exitQueued_ &&
 	    action == EditorAction::NONE && !cameraSettingsRequested_ &&
@@ -1228,6 +1230,7 @@ void EditorScene::Finalize() {
 
 	hierarchyPanel_.Clear();
 	pendingPlayCamera_ = 0;
+	playMode_.SetPreviewCamera(0);
 	inspectorPanel_.Clear();
 
 	stage_ = DialogStage::IDLE;
@@ -2506,6 +2509,7 @@ void EditorScene::ExecutePendingAction() {
 			cameraController_.Reset();
 			hierarchyPanel_.Clear();
 			pendingPlayCamera_ = 0;
+			playMode_.SetPreviewCamera(0);
 			inspectorPanel_.Clear();
 		} catch (const std::exception &error) {
 			Logger::Error(error.what());
@@ -3019,6 +3023,7 @@ void EditorScene::RestoreRecovery() {
 		cameraController_.Reset();
 		hierarchyPanel_.Clear();
 		pendingPlayCamera_ = 0;
+		playMode_.SetPreviewCamera(0);
 		inspectorPanel_.Clear();
 		assetsPanel_.Clear();
 		stage_ = DialogStage::IDLE;
@@ -3229,6 +3234,7 @@ void EditorScene::UpdateDialogs() {
 			cameraController_.Reset();
 			hierarchyPanel_.Clear();
 			pendingPlayCamera_ = 0;
+			playMode_.SetPreviewCamera(0);
 			inspectorPanel_.Clear();
 			stage_ = DialogStage::IDLE;
 			if (!assets_.Refresh()) {
@@ -3483,6 +3489,7 @@ void EditorScene::OpenScene(const std::filesystem::path &path) {
 	cameraController_.Reset();
 	hierarchyPanel_.Clear();
 	pendingPlayCamera_ = 0;
+	playMode_.SetPreviewCamera(0);
 	inspectorPanel_.Clear();
 	recentScenes_.Add(document_.GetFilePath());
 	stage_ = DialogStage::IDLE;
@@ -3612,6 +3619,17 @@ void EditorScene::ApplyInspectorRequest(
 				    "Could not apply UV settings. Every selected object must "
 				    "have "
 				    "a valid Mesh Renderer. No selected object was changed.");
+			}
+
+			return;
+		}
+
+		if (request.action == InspectorPanel::ObjectAction::PREVIEW_CAMERA) {
+			if (!object->camera || !object->camera->IsValid() ||
+			    !playMode_.SetPreviewCamera(request.objectId)) {
+				ShowError("Choose a valid Camera while Play is stopped to "
+				          "preview it in Game.",
+				          request.objectId);
 			}
 
 			return;

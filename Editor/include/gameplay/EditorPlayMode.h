@@ -44,10 +44,12 @@ class EditorPlayMode {
 	/// <param name="canStart">再生開始と速度変更を受け付けるか</param>
 	/// <param name="config">編集中のプレビューに使用する描画幅・高さ・照明。再生中は開始時の設定を保持する</param>
 	/// <param name="canUseSelection">再生中の選択物体を使った停止操作を許可するか</param>
+	/// <param name="editingScene">指定時は停止中のプレビューCamera名を表示するために参照する。保持しない</param>
 	/// <returns>ユーザーが要求した操作</returns>
 	Action DrawUI(const ImGuiSystem &ui, bool canStart,
 	              const GameConfig &config = GameConfig{},
-	              bool canUseSelection = false);
+	              bool canUseSelection = false,
+	              const Scene *editingScene = nullptr);
 
 	/// <summary>
 	/// 編集シーンを変更せずに再生を始める
@@ -113,6 +115,21 @@ class EditorPlayMode {
 	bool UpdatePreview(const Scene &scene, const CameraPose &fallback);
 
 	/// <summary>
+	/// 停止中のGame表示で使用するCameraを指定する。PlayとシーンのPrimaryは変更しない
+	/// </summary>
+	/// <param name="objectId">表示するCamera。0は通常のPrimaryへ戻す。対象の存在は描画更新時に確認する</param>
+	/// <returns>true:指定成功 false:再生中。以前の指定は保持する</returns>
+	bool SetPreviewCamera(SceneObjectId objectId);
+
+	/// <summary>
+	/// 停止中のプレビューに指定したCameraを取得する
+	/// </summary>
+	/// <returns>指定したID。0は通常のPrimary。シーンの切り替えや対象の削除時には解除する</returns>
+	SceneObjectId GetPreviewCamera() const {
+		return previewCamera_;
+	}
+
+	/// <summary>
 	/// 更新したGame画像を描画する
 	/// </summary>
 	void Draw() const;
@@ -146,6 +163,7 @@ class EditorPlayMode {
 
   private:
 	EditorPlaySession session_;
+	SceneObjectId previewCamera_ = 0;
 	EditorGamePreview preview_;
 	SceneRenderer renderer_;
 	SceneRenderer previewRenderer_;
