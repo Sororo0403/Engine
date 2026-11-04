@@ -1371,7 +1371,11 @@ void ControlsPanel::Draw() {
 	         "new scene file; import does not add the package to Open Recent."},
 	        {"File > Export Game",
 	         "Choose a new folder, game title and window size. Build Release "
-	         "first. Export keeps the active scene and saved state. Explicit "
+	         "first. Runtime must report the same game configuration and scene "
+	         "format versions as the Editor. Missing or mismatched format "
+	         "information asks you to rebuild Release Runtime before "
+	         "creating output. Export keeps the active scene and saved "
+	         "state. Explicit "
 	         "texture assignments are decoded before and after copying, "
 	         "including hidden objects and unused slots. Invalid images "
 	         "reject the export; only newly created output is cleaned up. "

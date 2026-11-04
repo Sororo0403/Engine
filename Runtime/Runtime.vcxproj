@@ -133,9 +133,10 @@
 robocopy "$(VCInstallDir)Redist\MSVC\$(VCToolsRedistVersion)\x64\Microsoft.VC145.CRT" "$(OutDir)." *.dll /R:1 /W:1 /NFL /NDL /NJH /NJS /NP
 if errorlevel 8 exit /b 1
 )
-echo {"configuration":"$(Configuration)","architecture":"x64"} &gt; "$(OutDir)Runtime.build.json"
+"$(TargetPath)" --write-build-info
+if errorlevel 1 exit /b 1
 exit /b 0</Command>
-      <Message>Runtimeの構成情報を記録しています。</Message>
+      <Message>Runtimeの構成と対応形式を記録しています。</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

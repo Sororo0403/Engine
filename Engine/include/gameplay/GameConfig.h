@@ -11,6 +11,11 @@
 /// 出力したゲームの起動シーン・ウィンドウ・カメラ・操作キー・ゲームパッド・照明の初期設定
 /// </summary>
 struct GameConfig {
+	/// <summary>
+	/// 保存する形式のバージョン。読み込みはversion 1からこの値まで対応する
+	/// </summary>
+	static constexpr int kCurrentVersion = 5;
+
 	std::string title = "Game";
 	int width = 1280, height = 720;
 	std::filesystem::path scenePath = L"resources/game/scene.json";

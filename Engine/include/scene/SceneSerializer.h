@@ -12,6 +12,11 @@ class Scene;
 class SceneSerializer {
   public:
 	/// <summary>
+	/// 保存する形式のバージョン。読み込みはversion 1からこの値まで対応する
+	/// </summary>
+	static constexpr int kCurrentVersion = 13;
+
+	/// <summary>
 	/// シーンを検証し、ファイルへ書き込まずJSON文字列に変換する
 	/// </summary>
 	/// <param name="scene">変換するシーン</param>

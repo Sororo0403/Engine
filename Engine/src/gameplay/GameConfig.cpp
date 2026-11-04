@@ -72,7 +72,7 @@ bool GameConfig::Serialize(std::string &text, std::string &error) const {
 
 		const nlohmann::json data = {
 		    {"format", "EngineGame"},
-		    {"version", 5},
+		    {"version", kCurrentVersion},
 		    {"gamepadEnabled", gamepadEnabled},
 		    {"cameraRelativeMovement", cameraRelativeMovement},
 		    {"input", inputJson},
@@ -144,9 +144,7 @@ bool GameConfig::Deserialize(std::string_view text, std::string &error) {
 
 		if (data.at("format") != "EngineGame" ||
 		    !data.at("version").is_number_integer() ||
-		    (data.at("version") != 1 && data.at("version") != 2 &&
-		     data.at("version") != 3 && data.at("version") != 4 &&
-		     data.at("version") != 5) ||
+		    (data.at("version") < 1 || data.at("version") > kCurrentVersion) ||
 		    !data.at("width").is_number_integer() ||
 		    !data.at("height").is_number_integer()) {
 			throw std::runtime_error("Unsupported game configuration.");

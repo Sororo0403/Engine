@@ -389,6 +389,17 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 			    "A Release x64 Runtime build is required.");
 		}
 
+		if (!build.contains("gameConfigVersion") ||
+		    !build.at("gameConfigVersion").is_number_integer() ||
+		    build.at("gameConfigVersion") != GameConfig::kCurrentVersion ||
+		    !build.contains("sceneVersion") ||
+		    !build.at("sceneVersion").is_number_integer() ||
+		    build.at("sceneVersion") != SceneSerializer::kCurrentVersion) {
+			throw std::runtime_error(
+			    "Runtime format versions do not match the Editor. Rebuild "
+			    "Release Runtime before exporting.");
+		}
+
 		SceneSimulation check;
 		std::string problem;
 

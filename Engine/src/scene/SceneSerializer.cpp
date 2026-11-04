@@ -308,7 +308,7 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 
 		const Json document{
 		    {"format", "EngineScene"},
-		    {"version", 13},
+		    {"version", SceneSerializer::kCurrentVersion},
 		    {"objects", std::move(objects)},
 		};
 
@@ -365,13 +365,8 @@ bool ApplySceneDocument(Scene &scene, const Json &document) {
 	try {
 		if (!document.is_object() || document.at("format") != "EngineScene" ||
 		    !document.at("version").is_number_integer() ||
-		    (document.at("version") != 1 && document.at("version") != 2 &&
-		     document.at("version") != 3 && document.at("version") != 4 &&
-		     document.at("version") != 5 && document.at("version") != 6 &&
-		     document.at("version") != 7 && document.at("version") != 8 &&
-		     document.at("version") != 9 && document.at("version") != 10 &&
-		     document.at("version") != 11 && document.at("version") != 12 &&
-		     document.at("version") != 13)) {
+		    (document.at("version") < 1 ||
+		     document.at("version") > SceneSerializer::kCurrentVersion)) {
 			throw std::runtime_error("未対応のシーンファイル形式です。");
 		}
 
