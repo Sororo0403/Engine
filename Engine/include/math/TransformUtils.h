@@ -41,6 +41,15 @@ DirectX::XMFLOAT3 RotationToEuler(const DirectX::XMFLOAT4 &rotation);
 DirectX::XMMATRIX MakeWorldMatrix(const Transform &transform);
 
 /// <summary>
+/// アフィンなワールド行列の逆行列を求める。せん断を含む行列にも対応する
+/// </summary>
+/// <param name="matrix">有限なアフィン行列。最後の列は0・0・0・1</param>
+/// <param name="inverse">成功時だけ置き換える有限な逆行列。入力と同じ変数でもよい</param>
+/// <returns>true:成功 false:非アフィン、特異行列、または逆行列を有限値で表現できない</returns>
+bool TryInverseWorldMatrix(const DirectX::XMFLOAT4X4 &matrix,
+                           DirectX::XMFLOAT4X4 &inverse);
+
+/// <summary>
 /// 拡大・回転・移動で表現できるワールド行列を変形情報へ戻す
 /// </summary>
 /// <param name="matrix">分解するワールド行列</param>

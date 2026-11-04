@@ -9,6 +9,7 @@
 #include "scene/CameraComponent.h"
 #include "scene/MeshComponent.h"
 #include "scene/MeshRendererComponent.h"
+#include "scene/SceneObjectId.h"
 
 #include <filesystem>
 #include <optional>
@@ -19,6 +20,9 @@
 /// </summary>
 struct SceneObject {
 	std::string name = "Object";
+	// 親の変更にはSceneHierarchy::SetParentを使う。0はルートを表す
+	SceneObjectId parentId = 0;
+	// 親に対するローカル変形。ルートの場合はワールド変形と一致する
 	Transform transform{};
 
 	std::optional<MeshComponent> mesh;

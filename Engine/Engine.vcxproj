@@ -20,6 +20,7 @@
     <ClCompile Include="src\input\Mouse.cpp" />
     <ClCompile Include="src\graphics\render\RenderTexture.cpp" />
     <ClCompile Include="src\scene\SceneRenderer.cpp" />
+    <ClCompile Include="src\scene\SceneHierarchy.cpp" />
     <ClCompile Include="src\scene\Scene.cpp" />
     <ClCompile Include="src\graphics\render\RenderSystem.cpp" />
     <ClCompile Include="src\graphics\render\RenderWorld.cpp" />
@@ -117,6 +118,8 @@
     <ClInclude Include="include\graphics\render\RenderSystem.h" />
     <ClInclude Include="include\scene\SceneObject.h" />
     <ClInclude Include="include\scene\SceneObjectId.h" />
+    <ClInclude Include="include\scene\SceneHierarchy.h" />
+    <ClInclude Include="include\scene\SceneWorldTransform.h" />
     <ClInclude Include="include\scene\Scene.h" />
     <ClInclude Include="include\scene\SceneRenderer.h" />
     <ClInclude Include="include\graphics\render\RenderTexture.h" />

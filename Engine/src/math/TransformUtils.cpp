@@ -193,3 +193,27 @@ bool TransformUtils::AreEqual(const Transform &left, const Transform &right) {
 	return equal(left.translation, right.translation) &&
 	       equal(left.scale, right.scale) && (same || opposite);
 }
+
+bool TransformUtils::TryInverseWorldMatrix(const DirectX::XMFLOAT4X4 &matrix,
+                                           DirectX::XMFLOAT4X4 &inverse) {
+	using namespace DirectX;
+
+	if (!MathUtils::IsFinite(matrix) || matrix._14 != 0 || matrix._24 != 0 ||
+	    matrix._34 != 0 || matrix._44 != 1) {
+		return false;
+	}
+
+	XMVECTOR determinant;
+	XMFLOAT4X4 candidate;
+	XMStoreFloat4x4(&candidate,
+	                XMMatrixInverse(&determinant, XMLoadFloat4x4(&matrix)));
+	const float value = XMVectorGetX(determinant);
+
+	if (!std::isfinite(value) || value == 0 ||
+	    !MathUtils::IsFinite(candidate)) {
+		return false;
+	}
+
+	inverse = candidate;
+	return true;
+}

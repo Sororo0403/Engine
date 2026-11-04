@@ -25,6 +25,13 @@ bool IsFinite(const DirectX::XMFLOAT3 &value);
 bool IsFinite(const DirectX::XMFLOAT4 &value);
 
 /// <summary>
+/// 行列の全成分が有限か確認する
+/// </summary>
+/// <param name="value">確認する行列</param>
+/// <returns>true:すべて有限 false:無限大または非数を含む</returns>
+bool IsFinite(const DirectX::XMFLOAT4X4 &value);
+
+/// <summary>
 /// 各成分を、0を基準としたグリッド上の最近点へ丸める
 /// </summary>
 /// <param name="position">丸める座標</param>

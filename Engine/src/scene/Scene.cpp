@@ -1,4 +1,5 @@
 #include "scene/Scene.h"
+#include "scene/SceneHierarchy.h"
 
 #include "math/TransformUtils.h"
 
@@ -28,6 +29,11 @@ SceneObjectId Scene::CreateObject(SceneObject object) {
 		    "Scene::CreateObject: 変形情報が無効です。");
 	}
 
+	if (object.parentId != 0 && !Contains(object.parentId)) {
+		throw std::invalid_argument(
+		    "Scene::CreateObject: 親の物体が存在しません。");
+	}
+
 	if (object.name.empty()) {
 		object.name = "Object";
 	}
@@ -47,6 +53,10 @@ SceneObjectId Scene::CreateObject(SceneObject object) {
 }
 
 bool Scene::DestroyObject(SceneObjectId id) {
+	if (id == 0 || !SceneHierarchy::GetChildren(*this, id).empty()) {
+		return false;
+	}
+
 	return objects_.erase(id) != 0;
 }
 
@@ -98,13 +108,23 @@ void Scene::ReplaceObjects(std::map<SceneObjectId, SceneObject> objects) {
 		}
 	}
 
-	// 全IDの確認が終わってから、保持している物体を置き換える
-	objects_.swap(objects);
+	Scene candidate;
+	candidate.objects_ = std::move(objects);
+	std::vector<SceneObjectId> order;
+
+	if (!SceneHierarchy::GetEvaluationOrder(candidate, order)) {
+		throw std::invalid_argument(
+		    "Scene::ReplaceObjects: 親子関係が無効です。");
+	}
+
+	// 全IDと親子関係の確認が終わってから、保持している物体を置き換える
+	objects_.swap(candidate.objects_);
 	nextObjectId_ = nextId;
 }
 
 bool Scene::RestoreObject(SceneObjectId id, const SceneObject &object) {
-	if (id == 0 || id >= nextObjectId_ || objects_.contains(id)) {
+	if (id == 0 || id >= nextObjectId_ || objects_.contains(id) ||
+	    (object.parentId != 0 && !Contains(object.parentId))) {
 		return false;
 	}
 
@@ -124,6 +144,12 @@ bool Scene::ApplyTransaction(const std::function<bool(Scene &)> &operation) {
 	working.nextObjectId_ = nextObjectId_;
 
 	if (!operation(working)) {
+		return false;
+	}
+
+	std::vector<SceneObjectId> order;
+
+	if (!SceneHierarchy::GetEvaluationOrder(working, order)) {
 		return false;
 	}
 

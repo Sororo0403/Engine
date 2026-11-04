@@ -39,7 +39,7 @@ class Scene {
 	/// 指定した物体を削除する
 	/// </summary>
 	/// <param name="id">削除する物体のID</param>
-	/// <returns>true:削除成功 false:物体が存在しない</returns>
+	/// <returns>true:削除成功 false:物体が存在しない、または子がある。階層の削除では子から順に削除する</returns>
 	bool DestroyObject(SceneObjectId id);
 
 	/// <summary>
@@ -77,7 +77,7 @@ class Scene {
 	/// <summary>
 	/// 全物体を指定したデータに置き換える。取得済みのポインターは無効になる
 	/// </summary>
-	/// <param name="objects">置き換え後の物体一覧。IDには0と最大値を使用できない</param>
+	/// <param name="objects">置き換え後の物体一覧。IDには0と最大値を使用できない。親は同じ一覧に存在し、循環しないこと</param>
 	void ReplaceObjects(std::map<SceneObjectId, SceneObject> objects);
 
 	/// <summary>
@@ -86,7 +86,7 @@ class Scene {
 	/// </summary>
 	/// <param name="id">このシーンで発行済みの物体ID</param>
 	/// <param name="object">復元する物体データ</param>
-	/// <returns>true:復元成功 false:未発行のID、または同じIDの物体が存在する</returns>
+	/// <returns>true:復元成功 false:未発行のID、同じIDの物体が存在する、または親が存在しない</returns>
 	bool RestoreObject(SceneObjectId id, const SceneObject &object);
 
 	/// <summary>

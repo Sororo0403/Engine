@@ -191,6 +191,9 @@
     <ClCompile Include="src\graphics\render\RenderSystem.cpp">
       <Filter>src\graphics\render</Filter>
     </ClCompile>
+    <ClCompile Include="src\scene\SceneHierarchy.cpp">
+      <Filter>src\scene</Filter>
+    </ClCompile>
     <ClCompile Include="src\scene\Scene.cpp">
       <Filter>src\scene</Filter>
     </ClCompile>
@@ -359,6 +362,12 @@
       <Filter>include\scene</Filter>
     </ClInclude>
     <ClInclude Include="include\scene\SceneObjectId.h">
+      <Filter>include\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scene\SceneHierarchy.h">
+      <Filter>include\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scene\SceneWorldTransform.h">
       <Filter>include\scene</Filter>
     </ClInclude>
     <ClInclude Include="include\scene\Scene.h">

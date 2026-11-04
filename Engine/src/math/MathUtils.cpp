@@ -42,3 +42,15 @@ bool MathUtils::IsFinite(const DirectX::XMFLOAT4 &value) {
 	return std::isfinite(value.x) && std::isfinite(value.y) &&
 	       std::isfinite(value.z) && std::isfinite(value.w);
 }
+
+bool MathUtils::IsFinite(const DirectX::XMFLOAT4X4 &value) {
+	for (const auto &row : value.m) {
+		for (const auto component : row) {
+			if (!std::isfinite(component)) {
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
