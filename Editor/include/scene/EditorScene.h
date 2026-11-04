@@ -231,6 +231,7 @@ class EditorScene final : public IScene {
 		FOLLOW_PATH,
 		INSPECTED,
 		DRAFT,
+		MOTION_TRAIL,
 	};
 
 	/// <summary>

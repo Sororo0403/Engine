@@ -1837,6 +1837,14 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		ImGui::MenuItem("Character Motion Trail", nullptr, &showMotionTrail_,
 		                !IsBusy());
 
+		if (ui_.MenuItem("Frame Motion Trail", nullptr,
+		                 enabled && playMode_.IsPlaying() && showMotionTrail_ &&
+		                     motionTrail_.GetLineCount() != 0)) {
+			playFrameRequest_ = FrameRequest::MOTION_TRAIL;
+			ImGui::SetWindowCollapsed("Scene", false);
+			ImGui::SetWindowFocus("Scene");
+		}
+
 		if (ui_.MenuItem("Clear Motion Trail", nullptr,
 		                 enabled && playMode_.IsPlaying() &&
 		                     motionTrail_.GetLineCount() != 0)) {
@@ -4538,6 +4546,23 @@ bool EditorScene::FrameObjects(FrameRequest request,
 
 	if (request == FrameRequest::DRAFT) {
 		return !runtimeScene && FrameDraft(projection);
+	}
+
+	if (request == FrameRequest::MOTION_TRAIL) {
+		std::array<DirectX::XMFLOAT3, 8> corners;
+
+		if (!runtimeScene || !playMode_.IsPlaying() || !showMotionTrail_ ||
+		    !motionTrail_.GetFrameBounds(corners)) {
+			return false;
+		}
+
+		if (!cameraController_.FrameBounds(corners, projection)) {
+			Logger::Warning("EditorScene: "
+			                "移動軌跡を現在の描画範囲に収められませんでした。");
+			return false;
+		}
+
+		return true;
 	}
 
 	if (request == FrameRequest::RESPAWN || request == FrameRequest::COLLIDER ||

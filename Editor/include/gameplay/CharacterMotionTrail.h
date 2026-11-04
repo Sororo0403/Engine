@@ -2,6 +2,7 @@
 
 #include "graphics/render/DebugLine.h"
 #include "scene/SceneObjectId.h"
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <deque>
@@ -48,6 +49,13 @@ class CharacterMotionTrail {
 	/// <param name="renderer">更新済みのScene描画先。再生用のGame描画先は渡さない</param>
 	/// <returns>true:登録成功または線なし false:線の登録失敗</returns>
 	bool Update(SceneRenderer &renderer) const;
+
+	/// <summary>
+	/// 保持している全ての軌跡の端点を囲む、フレーミング用の8頂点を取得する
+	/// </summary>
+	/// <param name="corners">成功時だけ置き換えるワールド座標の8頂点。上限で破棄した線は含めない</param>
+	/// <returns>true:範囲あり false:記録線なし。記録と再生状態は変更しない</returns>
+	bool GetFrameBounds(std::array<DirectX::XMFLOAT3, 8> &corners) const;
 
   private:
 	std::deque<DebugLine> lines_;

@@ -888,7 +888,10 @@ void ControlsPanel::Draw() {
 	         "airborne movement is orange. Pause adds no samples; Step can "
 	         "add one segment. Respawns begin a new segment without drawing "
 	         "the teleport. The most recent 2048 moving segments are kept. "
-	         "Clear Motion Trail starts a fresh path without changing Play. "
+	         "Frame Motion Trail fits the retained path in Scene without "
+	         "changing its direction or Play. If the path exceeds the "
+	         "current clipping range, the view is kept. Clear Motion Trail "
+	         "starts a fresh path without changing Play. "
 	         "Restart, Stop and disabling the display clear the path. The "
 	         "display preference is saved; the recorded path is not saved "
 	         "in scenes, exported games or Undo history."},
