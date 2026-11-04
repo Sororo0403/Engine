@@ -16,6 +16,7 @@ void GameSettingsDialog::Show(const GameConfig &config,
 	height_ = config.height;
 	input_ = config.input;
 	cameraRelativeMovement_ = config.cameraRelativeMovement;
+	gamepadEnabled_ = config.gamepadEnabled;
 	lighting_ = config.lighting;
 	error_.clear();
 	source_ = configuration;
@@ -78,7 +79,8 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 		lighting_ = {};
 	}
 
-	ImGui::SeparatorText("Gameplay Keys");
+	ImGui::SeparatorText("Gameplay Input");
+	ImGui::Checkbox("Enable Gamepad", &gamepadEnabled_);
 	const std::array<const char *, 5> labels{"Move Forward", "Move Backward",
 	                                         "Move Left", "Move Right", "Jump"};
 
@@ -177,6 +179,7 @@ bool GameSettingsDialog::LoadConfiguration(const std::filesystem::path &path) {
 	height_ = loaded.height;
 	input_ = loaded.input;
 	cameraRelativeMovement_ = loaded.cameraRelativeMovement;
+	gamepadEnabled_ = loaded.gamepadEnabled;
 	lighting_ = loaded.lighting;
 	return true;
 }
@@ -188,6 +191,7 @@ bool GameSettingsDialog::BuildConfiguration(GameConfig &candidate) {
 	value.height = height_;
 	value.input = input_;
 	value.cameraRelativeMovement = cameraRelativeMovement_;
+	value.gamepadEnabled = gamepadEnabled_;
 	value.lighting = lighting_;
 	if (!value.IsValid()) {
 		error_ =

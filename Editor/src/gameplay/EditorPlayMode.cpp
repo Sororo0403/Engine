@@ -257,6 +257,7 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
 	lighting_ = config.lighting;
 	inputBindings_ = config.input;
 	cameraRelativeMovement_ = config.cameraRelativeMovement;
+	gamepadEnabled_ = config.gamepadEnabled;
 	gameWidth_ = config.width;
 	gameHeight_ = config.height;
 	maximized_ = false;
@@ -323,9 +324,10 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 	const auto controls =
 	    inputBlocked
 	        ? CharacterInput{}
-	        : GameplayInput::Read(input.GetKeyboard(), viewport_,
-	                              ImGui::GetIO().WantTextInput, inputBindings_,
-	                              movementCamera, &input.GetGamepad());
+	        : GameplayInput::Read(
+	              input.GetKeyboard(), viewport_, ImGui::GetIO().WantTextInput,
+	              inputBindings_, movementCamera,
+	              gamepadEnabled_ ? &input.GetGamepad() : nullptr);
 
 	if (!inputBlocked && viewport_.windowFocused &&
 	    viewport_.applicationFocused && !viewport_.widgetActive &&

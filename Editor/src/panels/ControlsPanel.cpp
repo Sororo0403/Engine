@@ -1282,6 +1282,12 @@ void ControlsPanel::Draw() {
 	         "corrected before Play. Choose the rendered Camera using "
 	         "Primary."},
 	        {"Gamepad (Game focused)",
+	         "Enable Gamepad in File > Game Settings controls both Play and "
+	         "exported games and is saved with game configurations and "
+	         "Editor preferences. Older game configurations enable it by "
+	         "default. Play captures the option at start; changing settings "
+	         "applies to the next Play. When disabled, gameplay uses only "
+	         "the configured keyboard keys. "
 	         "Move with the left stick or D-pad; press the south face button "
 	         "(Xbox A / PlayStation Cross) to jump. Stick strength controls "
 	         "movement speed. Keyboard and gamepad input combine without "

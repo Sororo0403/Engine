@@ -72,7 +72,8 @@ bool GameConfig::Serialize(std::string &text, std::string &error) const {
 
 		const nlohmann::json data = {
 		    {"format", "EngineGame"},
-		    {"version", 4},
+		    {"version", 5},
+		    {"gamepadEnabled", gamepadEnabled},
 		    {"cameraRelativeMovement", cameraRelativeMovement},
 		    {"input", inputJson},
 		    {"lighting",
@@ -144,7 +145,8 @@ bool GameConfig::Deserialize(std::string_view text, std::string &error) {
 		if (data.at("format") != "EngineGame" ||
 		    !data.at("version").is_number_integer() ||
 		    (data.at("version") != 1 && data.at("version") != 2 &&
-		     data.at("version") != 3 && data.at("version") != 4) ||
+		     data.at("version") != 3 && data.at("version") != 4 &&
+		     data.at("version") != 5) ||
 		    !data.at("width").is_number_integer() ||
 		    !data.at("height").is_number_integer()) {
 			throw std::runtime_error("Unsupported game configuration.");
@@ -195,6 +197,14 @@ bool GameConfig::Deserialize(std::string_view text, std::string &error) {
 			}
 			candidate.lighting.intensity = light.at("intensity").get<float>();
 			candidate.lighting.ambient = light.at("ambient").get<float>();
+		}
+
+		if (data.at("version") >= 5) {
+			if (!data.at("gamepadEnabled").is_boolean()) {
+				throw std::runtime_error("Gamepad input must be a boolean.");
+			}
+
+			candidate.gamepadEnabled = data.at("gamepadEnabled").get<bool>();
 		}
 
 		const auto &camera = data.at("camera");

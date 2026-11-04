@@ -38,11 +38,11 @@ bool RuntimeScene::Update(float seconds) {
 			return true;
 		}
 
-		input = CharacterInputReader::Read(keys, config_.input,
-		                                   config_.cameraRelativeMovement
-		                                       ? &simulation_.GetCameraPose()
-		                                       : nullptr,
-		                                   &input_.GetGamepad());
+		input = CharacterInputReader::Read(
+		    keys, config_.input,
+		    config_.cameraRelativeMovement ? &simulation_.GetCameraPose()
+		                                   : nullptr,
+		    config_.gamepadEnabled ? &input_.GetGamepad() : nullptr);
 
 		if (!simulation_.Update(seconds, input)) {
 			return false;

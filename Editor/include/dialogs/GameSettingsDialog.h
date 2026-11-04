@@ -9,7 +9,7 @@ class ImGuiSystem;
 enum class GameSettingsResult { NONE, CANCELLED, ACCEPTED };
 
 /// <summary>
-/// シーンを変更せず、ゲームのタイトル・画面サイズ・操作キー・移動基準・照明を編集する
+/// シーンを変更せず、ゲームのタイトル・画面サイズ・操作キー・ゲームパッド・移動基準・照明を編集する
 /// </summary>
 class GameSettingsDialog {
   public:
@@ -48,7 +48,7 @@ class GameSettingsDialog {
 
   private:
 	/// <summary>
-	/// 起動設定を検証し、タイトル・画面サイズ・操作キー・移動基準・照明だけを下書きへ読み込む
+	/// 起動設定を検証し、タイトル・画面サイズ・操作キー・ゲームパッド・移動基準・照明だけを下書きへ読み込む
 	/// </summary>
 	/// <param name="path">読み込むゲーム起動設定の絶対パス</param>
 	/// <returns>true:下書きを更新 false:下書きと適用済み設定を保持し、失敗理由を設定する</returns>
@@ -70,6 +70,7 @@ class GameSettingsDialog {
 	GameInputBindings input_;
 	LightingSettings lighting_;
 	bool cameraRelativeMovement_ = false;
+	bool gamepadEnabled_ = true;
 	std::string title_, error_;
 	int width_ = 1280;
 	int height_ = 720;

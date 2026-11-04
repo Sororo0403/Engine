@@ -244,6 +244,8 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 			loaded.gameExport.height = height.get<int>();
 			loaded.gameExport.cameraRelativeMovement =
 			    settings.value("cameraRelativeMovement", false);
+			loaded.gameExport.gamepadEnabled =
+			    settings.value("gamepadEnabled", true);
 
 			if (settings.contains("input")) {
 				for (const auto &action : GameInputBindings::kActions) {
@@ -424,6 +426,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		      {"width", gameExport.width},
 		      {"height", gameExport.height},
 		      {"input", inputJson},
+		      {"gamepadEnabled", gameExport.gamepadEnabled},
 		      {"cameraRelativeMovement", gameExport.cameraRelativeMovement}}},
 		    {"showGrid", showGrid},
 		    {"showSelectionBounds", showSelectionBounds},
@@ -488,6 +491,7 @@ bool EditorPreferences::operator==(const EditorPreferences &other) const {
 	       gameExport.height == other.gameExport.height &&
 	       gameExport.input == other.gameExport.input &&
 	       gameExport.lighting == other.gameExport.lighting &&
+	       gameExport.gamepadEnabled == other.gameExport.gamepadEnabled &&
 	       gameExport.cameraRelativeMovement ==
 	           other.gameExport.cameraRelativeMovement &&
 	       showGrid == other.showGrid &&

@@ -203,6 +203,7 @@ class EditorPlayMode {
 	GameInputBindings inputBindings_;
 	LightingSettings lighting_;
 	bool cameraRelativeMovement_ = false;
+	bool gamepadEnabled_ = true;
 	int gameWidth_ = 1280;
 	int gameHeight_ = 720;
 	bool visible_ = false, focusRequested_ = false, ready_ = false;
