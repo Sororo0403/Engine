@@ -797,6 +797,13 @@ void ControlsPanel::Draw() {
 	         "Game Settings resolution and aspect. Invalid camera chains clear "
 	         "the preview; incomplete movement/collider settings do not "
 	         "require Play."},
+	        {"Scene Check > Copy Results",
+	         "Copy the last completed check's issue count and every message "
+	         "as text. Zero issues can be copied too. Before the first check "
+	         "there is nothing to copy. If checking itself fails, copy its "
+	         "failure reason instead of an older result. Copying does not "
+	         "rerun checks or change the scene, selection or Undo history. "
+	         "Run Check Scene again after editing to update the results."},
 	        {"View > Scene Check",
 	         "Check the current editing scene without starting Play. Results "
 	         "list component, follow-camera, start-position and recovery-point "

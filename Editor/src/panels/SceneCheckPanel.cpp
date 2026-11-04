@@ -28,6 +28,25 @@ void SceneCheckPanel::Check(const Scene &scene, const CameraPose &fallback) {
 	checked_ = true;
 }
 
+std::string SceneCheckPanel::GetReport() const {
+	if (!error_.empty()) {
+		return std::format("Scene Check failed:\n{}\n", error_);
+	}
+
+	if (!checked_) {
+		return {};
+	}
+
+	auto report =
+	    std::format("Last Scene Check: {} issue(s)\n", issues_.size());
+
+	for (std::size_t i = 0; i < issues_.size(); ++i) {
+		report += std::format("\n{}. {}\n", i + 1, issues_[i].message);
+	}
+
+	return report;
+}
+
 SceneCheckPanel::Request SceneCheckPanel::Draw(const ImGuiSystem &ui,
                                                const Scene &scene,
                                                const CameraPose &fallback) {
@@ -57,6 +76,15 @@ SceneCheckPanel::Request SceneCheckPanel::Draw(const ImGuiSystem &ui,
 			error_ = error.what();
 		}
 	}
+
+	ui.BeginDisabled(!checked_ && error_.empty());
+
+	if (ui.Button("Copy Results")) {
+		const auto report = GetReport();
+		ImGui::SetClipboardText(report.c_str());
+	}
+
+	ui.EndDisabled();
 
 	if (!error_.empty()) {
 		ImGui::TextWrapped("%s", error_.c_str());
