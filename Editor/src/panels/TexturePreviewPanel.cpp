@@ -30,7 +30,9 @@ void TexturePreviewPanel::Draw(const ImGuiSystem &ui) {
 		return;
 	}
 
-	if (focusRequested_) {
+	const bool focusWindow = focusRequested_;
+
+	if (focusWindow) {
 		ImGui::SetNextWindowCollapsed(false);
 		ImGui::SetNextWindowFocus();
 		focusRequested_ = false;
@@ -38,6 +40,10 @@ void TexturePreviewPanel::Draw(const ImGuiSystem &ui) {
 
 	ImGui::SetNextWindowSize({360, 360}, ImGuiCond_FirstUseEver);
 	const bool visible = ImGui::Begin("Image Preview", &open_);
+
+	if (focusWindow && open_) {
+		ui.FocusWindow("Image Preview");
+	}
 
 	if (!open_) {
 		Clear();

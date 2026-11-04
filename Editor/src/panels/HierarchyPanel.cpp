@@ -78,14 +78,22 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 		revealRequested_ = false;
 	}
 
-	if (revealRequested_) {
+	const bool focusWindow = revealRequested_;
+
+	if (focusWindow) {
 		filter_.Clear();
 		pickingDisabledOnly_ = false;
 		ImGui::SetNextWindowCollapsed(false);
 		ImGui::SetNextWindowFocus();
 	}
 
-	if (!ui.BeginWindow("Hierarchy")) {
+	const bool windowVisible = ui.BeginWindow("Hierarchy");
+
+	if (focusWindow) {
+		ui.FocusWindow("Hierarchy");
+	}
+
+	if (!windowVisible) {
 		ui.EndWindow();
 		return result;
 	}

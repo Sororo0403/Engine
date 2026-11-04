@@ -185,7 +185,13 @@ bool InspectorPanel::Draw(
 		renameObjectId_ = 0;
 	}
 
-	if (!ui.BeginWindow("Inspector")) {
+	const bool windowVisible = ui.BeginWindow("Inspector");
+
+	if (focusName || focusInspect) {
+		ui.FocusWindow("Inspector");
+	}
+
+	if (!windowVisible) {
 		ui.EndWindow();
 		return false;
 	}

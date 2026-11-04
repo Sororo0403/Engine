@@ -134,12 +134,20 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	folderCreateRequested_ = false;
 	texturePreviewPath_.clear();
 
-	if (!revealPath_.empty() || directoryOpenRequested_) {
+	const bool focusWindow = !revealPath_.empty() || directoryOpenRequested_;
+
+	if (focusWindow) {
 		ImGui::SetNextWindowCollapsed(false);
 		ImGui::SetNextWindowFocus();
 	}
 
-	if (!ui.BeginWindow("Assets")) {
+	const bool windowVisible = ui.BeginWindow("Assets");
+
+	if (focusWindow) {
+		ui.FocusWindow("Assets");
+	}
+
+	if (!windowVisible) {
 		ui.EndWindow();
 		return {};
 	}

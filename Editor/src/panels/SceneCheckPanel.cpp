@@ -56,13 +56,21 @@ SceneCheckPanel::Request SceneCheckPanel::Draw(const ImGuiSystem &ui,
 
 	ImGui::SetNextWindowSize({620.0f, 420.0f}, ImGuiCond_FirstUseEver);
 
-	if (focusRequested_) {
+	const bool focusWindow = focusRequested_;
+
+	if (focusWindow) {
 		ImGui::SetNextWindowCollapsed(false);
 		ImGui::SetNextWindowFocus();
 		focusRequested_ = false;
 	}
 
-	if (!ImGui::Begin("Scene Check", &open_)) {
+	const bool windowVisible = ImGui::Begin("Scene Check", &open_);
+
+	if (focusWindow && open_) {
+		ui.FocusWindow("Scene Check");
+	}
+
+	if (!windowVisible) {
 		ImGui::End();
 		return {};
 	}
