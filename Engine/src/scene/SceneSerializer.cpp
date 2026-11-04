@@ -8,6 +8,7 @@
 #include "platform/windows/FileUtils.h"
 #include "platform/windows/PathUtils.h"
 #include "scene/Scene.h"
+#include "scene/SceneHierarchy.h"
 
 #include <algorithm>
 #include <array>
@@ -189,6 +190,10 @@ TextureBindings ReadBindings(const Json &bindings, int version) {
 
 bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 	try {
+		SceneHierarchy::WorldTransforms transforms;
+		if (!SceneHierarchy::BuildWorldTransforms(scene, transforms)) {
+			throw std::runtime_error("親子関係または合成後の変形が無効です。");
+		}
 		Json objects = Json::array();
 
 		for (const auto &[id, object] : scene.GetObjects()) {
@@ -210,7 +215,7 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 				AxisAlignedBox bounds;
 
 				if (!BoxColliderUtils::GetWorldBounds(
-				        *object.collider, object.transform, bounds)) {
+				        *object.collider, transforms.at(id).matrix, bounds)) {
 					throw std::runtime_error("衝突用ボックスが無効です。");
 				}
 			}
@@ -225,6 +230,7 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 
 			objects.push_back({
 			    {"id", id},
+			    {"parent", object.parentId},
 			    {"name", object.name},
 			    {"transform",
 			     {
@@ -359,7 +365,7 @@ namespace {
 /// 解析したシーンドキュメントを検証し、全件成功した場合だけ反映する
 /// </summary>
 /// <param name="scene">読み込み先</param>
-/// <param name="document">version 1から13のJSON</param>
+/// <param name="document">version 1から14のJSON</param>
 /// <returns>true:成功 false:内容が無効</returns>
 bool ApplySceneDocument(Scene &scene, const Json &document) {
 	try {
@@ -391,6 +397,13 @@ bool ApplySceneDocument(Scene &scene, const Json &document) {
 			const SceneObjectId id = idValue.get<SceneObjectId>();
 
 			SceneObject object;
+			if (version >= 14) {
+				const auto &parent = item.at("parent");
+				if (!parent.is_number_unsigned()) {
+					throw std::runtime_error("親IDには0以上の整数が必要です。");
+				}
+				object.parentId = parent.get<SceneObjectId>();
+			}
 
 			object.name = item.at("name").get<std::string>();
 
@@ -576,13 +589,9 @@ bool ApplySceneDocument(Scene &scene, const Json &document) {
 				throw std::runtime_error("Transformが無効です。");
 			}
 
-			if (object.collider) {
-				AxisAlignedBox bounds;
-
-				if (!BoxColliderUtils::GetWorldBounds(
-				        *object.collider, object.transform, bounds)) {
-					throw std::runtime_error("衝突用ボックスが無効です。");
-				}
+			if (object.collider &&
+			    !BoxColliderUtils::IsValid(*object.collider)) {
+				throw std::runtime_error("衝突用ボックスが無効です。");
 			}
 
 			const bool inserted = objects.emplace(id, std::move(object)).second;
@@ -592,8 +601,25 @@ bool ApplySceneDocument(Scene &scene, const Json &document) {
 			}
 		}
 
-		// 全データの読み込みに成功してから、現在のシーンへ反映する
-		scene.ReplaceObjects(std::move(objects));
+		// 親のID順に依存せず全件を読み込み、循環・不在の親・合成後の形状を検証する。
+		Scene candidate;
+		candidate.ReplaceObjects(std::move(objects));
+		SceneHierarchy::WorldTransforms transforms;
+		if (!SceneHierarchy::BuildWorldTransforms(candidate, transforms)) {
+			throw std::runtime_error("親子関係または合成後の変形が無効です。");
+		}
+		for (const auto &[id, object] : candidate.GetObjects()) {
+			AxisAlignedBox bounds;
+			if (object.collider &&
+			    !BoxColliderUtils::GetWorldBounds(
+			        *object.collider, transforms.at(id).matrix, bounds)) {
+				throw std::runtime_error(
+				    "親子合成後の衝突用ボックスが無効です。");
+			}
+		}
+
+		// 全データの読み込みに成功してから、現在のシーンへ反映する。
+		scene.ReplaceObjects(candidate.GetObjects());
 
 		Logger::Info("シーンを読み込みました。");
 		return true;
