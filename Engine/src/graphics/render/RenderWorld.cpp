@@ -12,6 +12,7 @@
 #include "math/Ray.h"
 #include "math/TransformUtils.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <exception>
@@ -490,8 +491,9 @@ bool RenderWorld::CreatePickingRay(float imageX, float imageY, Ray &ray) const {
 	       impl_->camera_.CreatePickingRay(imageX, imageY, ray);
 }
 
-RenderObjectHandle RenderWorld::Pick(float imageX, float imageY,
-                                     float *distance) const {
+RenderObjectHandle
+RenderWorld::Pick(float imageX, float imageY, float *distance,
+                  std::span<const RenderObjectHandle> excluded) const {
 	if (!impl_->initialized_ || !impl_->prepared_) {
 		return {};
 	}
@@ -514,6 +516,16 @@ RenderObjectHandle RenderWorld::Pick(float imageX, float imageY,
 		const auto &slot = impl_->slots_[index];
 
 		if (!slot.object_) {
+			continue;
+		}
+
+		RenderObjectHandle candidate;
+		candidate.worldId_ = impl_->worldId_;
+		candidate.index_ = index;
+		candidate.generation_ = slot.generation_;
+
+		if (std::find(excluded.begin(), excluded.end(), candidate) !=
+		    excluded.end()) {
 			continue;
 		}
 
@@ -571,9 +583,7 @@ RenderObjectHandle RenderWorld::Pick(float imageX, float imageY,
 
 		nearestDistance = worldDistance;
 
-		nearestHandle.worldId_ = impl_->worldId_;
-		nearestHandle.index_ = index;
-		nearestHandle.generation_ = slot.generation_;
+		nearestHandle = candidate;
 	}
 
 	if (distance && Contains(nearestHandle)) {

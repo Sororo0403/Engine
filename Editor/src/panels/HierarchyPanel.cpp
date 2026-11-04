@@ -178,6 +178,14 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 	}
 
 	ui.EndDisabled();
+
+	ui.BeginDisabled(scenePickingDisabled_.empty());
+
+	if (ui.Button("Enable All Scene Picking") && editable) {
+		scenePickingDisabled_.clear();
+	}
+
+	ui.EndDisabled();
 	ui.EndDisabled();
 
 	ui.Separator();
@@ -202,9 +210,15 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 			// アクティブ物体に印を付けても、項目のIDは変えない
 			const auto label =
-			    std::format("{}{}{}###SceneObject{}",
+			    std::format("{}{}{}{}###SceneObject{}",
 			                selection.GetActiveId() == id ? "> " : "  ",
-			                !object.IsHidden() ? "" : "[Hidden] ", name, id);
+			                !object.IsHidden() ? "" : "[Hidden] ",
+			                std::find(scenePickingDisabled_.begin(),
+			                          scenePickingDisabled_.end(),
+			                          id) != scenePickingDisabled_.end()
+			                    ? "[No Scene Pick] "
+			                    : "",
+			                name, id);
 
 			const auto &io = ImGui::GetIO();
 
@@ -267,6 +281,33 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 				}
 
 				ui.BeginDisabled(!editable);
+
+				bool canDisablePicking = false;
+				bool canEnablePicking = false;
+
+				for (const auto selectedId : selection.GetIds()) {
+					const bool disabled =
+					    std::find(scenePickingDisabled_.begin(),
+					              scenePickingDisabled_.end(),
+					              selectedId) != scenePickingDisabled_.end();
+					canDisablePicking |= !disabled;
+					canEnablePicking |= disabled;
+				}
+
+				if (ui.MenuItem("Disable Scene Picking", nullptr,
+				                canDisablePicking) &&
+				    editable &&
+				    SetScenePickingDisabled(scene, selection.GetIds(), true)) {
+					result.selectionChanged |= selection.Clear();
+					rangeAnchorId_ = 0;
+					scrollToId_ = 0;
+				}
+
+				if (ui.MenuItem("Enable Scene Picking", nullptr,
+				                canEnablePicking) &&
+				    editable) {
+					SetScenePickingDisabled(scene, selection.GetIds(), false);
+				}
 
 				if (ui.MenuItem("Rename", "F2", selection.GetCount() != 0)) {
 					result.action = Action::RENAME_OBJECT;
@@ -420,11 +461,42 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 void HierarchyPanel::Clear() {
 	filter_.Clear();
+	scenePickingDisabled_.clear();
 	sortMode_ = SortMode::CREATION;
 	rangeAnchorId_ = 0;
 	lastActiveId_ = 0;
 	scrollToId_ = 0;
 	revealRequested_ = false;
+}
+
+std::span<const SceneObjectId>
+HierarchyPanel::GetScenePickingDisabledIds() const {
+	return scenePickingDisabled_;
+}
+
+bool HierarchyPanel::SetScenePickingDisabled(const Scene &scene,
+                                             std::span<const SceneObjectId> ids,
+                                             bool disabled) {
+	for (const auto id : ids) {
+		if (id == 0 || !scene.Contains(id)) {
+			return false;
+		}
+	}
+
+	auto next = scenePickingDisabled_;
+
+	for (const auto id : ids) {
+		if (disabled) {
+			if (std::find(next.begin(), next.end(), id) == next.end()) {
+				next.push_back(id);
+			}
+		} else {
+			std::erase(next, id);
+		}
+	}
+
+	scenePickingDisabled_.swap(next);
+	return true;
 }
 
 std::vector<SceneObjectId>

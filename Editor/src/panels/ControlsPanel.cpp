@@ -200,6 +200,17 @@ void ControlsPanel::Draw() {
 	         "resource validation. All combine with name/ID and Hidden only, "
 	         "sorting, range selection and Select All Visible, including "
 	         "Play."},
+	        {"Hierarchy > Scene Picking",
+	         "Right-click objects and Disable Scene Picking to exclude them "
+	         "from Scene clicks and box selection while keeping them visible. "
+	         "The current selection is cleared to leave the gizmo safely. "
+	         "Picking passes through excluded models and markers. The list "
+	         "shows No Scene Pick; Hierarchy selection and editing remain "
+	         "available for deliberate changes. Enable Scene Picking restores "
+	         "selected objects; Enable All Scene Picking restores all. These "
+	         "workspace flags survive Undo/Redo and Play, but reset on scene "
+	         "New/Open/Reload. They do not affect runtime selection, physics, "
+	         "rendering, scene files or history."},
 	        {"Hierarchy > Hidden only", "List hidden models. Search and range "
 	                                    "selection use this filtered list."},
 	        {"Edit > Show All Models",

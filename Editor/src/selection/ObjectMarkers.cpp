@@ -69,7 +69,8 @@ bool ObjectMarkers::BuildLines(const SceneObject &object, bool selected,
 
 SceneObjectId ObjectMarkers::Pick(const Scene &scene, const Ray &ray,
                                   float modelDistance,
-                                  const SceneRenderer *renderer) {
+                                  const SceneRenderer *renderer,
+                                  std::span<const SceneObjectId> excluded) {
 	const double length = std::hypot(static_cast<double>(ray.direction.x),
 	                                 static_cast<double>(ray.direction.y),
 	                                 static_cast<double>(ray.direction.z));
@@ -89,6 +90,10 @@ SceneObjectId ObjectMarkers::Pick(const Scene &scene, const Ray &ray,
 	SceneObjectId picked = 0;
 
 	for (const auto &[id, object] : scene.GetObjects()) {
+		if (std::find(excluded.begin(), excluded.end(), id) != excluded.end()) {
+			continue;
+		}
+
 		Corners corners;
 
 		if (!GetBounds(object, corners,

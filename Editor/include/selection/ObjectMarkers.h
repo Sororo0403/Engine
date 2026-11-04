@@ -46,10 +46,12 @@ class ObjectMarkers {
 	/// <param name="ray">正規化済みのワールド座標レイ。最大距離を超える物体は除く</param>
 	/// <param name="modelDistance">モデルまでの距離。モデルに当たらない場合はレイの最大距離</param>
 	/// <param name="renderer">モデルの省略状態を取得する更新済みの描画先。nullptrなら形状のない物体だけ</param>
-	/// <returns>最も手前の目印の物体ID。交差なし、または引数が無効な場合は0</returns>
+	/// <param name="excluded">選択判定から除く物体ID</param>
+	/// <returns>除外されていない最も手前の目印の物体ID。交差なし、または引数が無効な場合は0</returns>
 	static SceneObjectId Pick(const Scene &scene, const Ray &ray,
 	                          float modelDistance,
-	                          const SceneRenderer *renderer = nullptr);
+	                          const SceneRenderer *renderer = nullptr,
+	                          std::span<const SceneObjectId> excluded = {});
 
 	/// <summary>
 	/// 全ての有効な目印をScene描画へ登録する。Game描画には使用しない

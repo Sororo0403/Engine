@@ -84,9 +84,15 @@ class HierarchyPanel {
 	            bool canPasteRespawn = false);
 
 	/// <summary>
-	/// 検索・並び順・表示条件・表示要求・範囲選択の基準をクリアする。選択状態は変更しない
+	/// 検索・並び順・表示条件・表示要求・範囲選択の基準とScene選択の除外をクリアする。選択状態は変更しない
 	/// </summary>
 	void Clear();
+
+	/// <summary>
+	/// Sceneビューのマウス選択から除く物体IDを取得する。描画やHierarchyの選択は制限しない
+	/// </summary>
+	/// <returns>次の選択可否変更・Clearまで有効なID一覧。削除後もUndoに備えて保持する</returns>
+	std::span<const SceneObjectId> GetScenePickingDisabledIds() const;
 
 	/// <summary>
 	/// 現在の絞り込み条件に一致する物体を全て選択する
@@ -132,7 +138,19 @@ class HierarchyPanel {
 	                  std::span<const SceneObjectId> visibleIds, bool control,
 	                  bool shift, EditorSelection &selection);
 
+	/// <summary>
+	/// 指定した物体群をSceneビューの選択対象から除外・復帰する。シーンや履歴は変更しない
+	/// </summary>
+	/// <param name="scene">物体の存在を確認するシーン</param>
+	/// <param name="ids">対象のID。重複はまとめる</param>
+	/// <param name="disabled">true:選択から除く false:選択を許可する</param>
+	/// <returns>true:設定成功 false:無効・不在のIDを含む。失敗時は以前の除外を保持する</returns>
+	bool SetScenePickingDisabled(const Scene &scene,
+	                             std::span<const SceneObjectId> ids,
+	                             bool disabled);
+
 	HierarchyFilter filter_;
+	std::vector<SceneObjectId> scenePickingDisabled_;
 	SortMode sortMode_ = SortMode::CREATION;
 	SceneObjectId rangeAnchorId_ = 0;
 	SceneObjectId lastActiveId_ = 0;

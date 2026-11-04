@@ -11,6 +11,7 @@
 #include <exception>
 #include <format>
 #include <utility>
+#include <vector>
 
 SceneRenderer::SceneRenderer(const Scene &scene, ModelManager &models,
                              RenderSystem &render, ModelLoadFailure failure)
@@ -245,14 +246,25 @@ bool SceneRenderer::SetCameraPose(const CameraPose &pose) {
 	return world_->SetCameraPose(pose);
 }
 
-SceneObjectId SceneRenderer::Pick(float imageX, float imageY,
-                                  float *distance) const {
+SceneObjectId
+SceneRenderer::Pick(float imageX, float imageY, float *distance,
+                    std::span<const SceneObjectId> excluded) const {
 	if (!world_) {
 		return 0;
 	}
 
+	std::vector<RenderObjectHandle> excludedHandles;
+	excludedHandles.reserve(excluded.size());
+
+	for (const auto id : excluded) {
+		if (const auto it = objects_.find(id); it != objects_.end()) {
+			excludedHandles.push_back(it->second.handle);
+		}
+	}
+
 	float hitDistance = 0;
-	const auto handle = world_->Pick(imageX, imageY, &hitDistance);
+	const auto handle =
+	    world_->Pick(imageX, imageY, &hitDistance, excludedHandles);
 
 	if (!world_->Contains(handle)) {
 		return 0;

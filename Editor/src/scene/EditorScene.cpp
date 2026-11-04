@@ -3931,18 +3931,21 @@ bool EditorScene::ApplySceneSelection(
 	auto &renderer = runtimeScene ? playSceneRenderer_ : renderer_;
 	auto &selection = runtimeScene ? playSelection_ : selection_;
 	using Action = SceneViewPanel::SelectionRequest::Action;
+	const auto excluded = runtimeScene
+	                          ? std::span<const SceneObjectId>{}
+	                          : hierarchyPanel_.GetScenePickingDisabledIds();
 
 	if (request.action == Action::CLICK) {
 		float modelDistance = (std::numeric_limits<float>::max)();
-		SceneObjectId picked =
-		    renderer.Pick(request.minimum.x, request.minimum.y, &modelDistance);
+		SceneObjectId picked = renderer.Pick(
+		    request.minimum.x, request.minimum.y, &modelDistance, excluded);
 		Ray ray;
 
 		if (showObjectMarkers_ &&
 		    renderer.CreatePickingRay(request.minimum.x, request.minimum.y,
 		                              ray)) {
-			if (const auto marker =
-			        ObjectMarkers::Pick(scene, ray, modelDistance, &renderer)) {
+			if (const auto marker = ObjectMarkers::Pick(
+			        scene, ray, modelDistance, &renderer, excluded)) {
 				picked = marker;
 			}
 		}
@@ -3970,6 +3973,10 @@ bool EditorScene::ApplySceneSelection(
 	}
 
 	for (const auto &[id, object] : scene.GetObjects()) {
+		if (std::find(excluded.begin(), excluded.end(), id) != excluded.end()) {
+			continue;
+		}
+
 		std::array<DirectX::XMFLOAT3, 8> corners;
 		const bool missingModel = renderer.IsModelUnavailable(id);
 		const bool boundsReady =
