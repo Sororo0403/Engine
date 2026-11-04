@@ -154,6 +154,11 @@ class EditorPlayMode {
 	const EditorPlaySession &GetSession() const;
 
 	/// <summary>
+	/// 拡大表示と切り替え予約を解除する。再生状態・配置・選択を保ち、Gameへフォーカスを移さない
+	/// </summary>
+	void RestoreLayout();
+
+	/// <summary>
 	/// Gameだけを作業領域へ拡大して表示しているか取得する。描画解像度とドック配置は変更しない
 	/// </summary>
 	/// <returns>true:再生中の拡大表示 false:通常の配置</returns>

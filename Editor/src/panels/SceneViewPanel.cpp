@@ -14,6 +14,10 @@ SceneViewPanel::SceneViewPanel(RenderSystem &render) : render_(render) {
 
 SceneViewPanel::~SceneViewPanel() = default;
 
+void SceneViewPanel::Show() {
+	focusRequested_ = true;
+}
+
 bool SceneViewPanel::DrawUI(const ImGuiSystem &ui, TransformGizmo &gizmo,
                             TransformGizmo::SelectionMode selectionMode,
                             bool editable, bool allowReadOnlySelection) {
@@ -28,7 +32,19 @@ bool SceneViewPanel::DrawUI(const ImGuiSystem &ui, TransformGizmo &gizmo,
 
 	ui.SetNextWindowSize(800.0f, 500.0f);
 
-	if (!ui.BeginWindow("Scene")) {
+	if (focusRequested_) {
+		ImGui::SetNextWindowCollapsed(false);
+		ImGui::SetNextWindowFocus();
+	}
+
+	const bool open = ui.BeginWindow("Scene");
+
+	if (focusRequested_) {
+		ui.FocusWindow("Scene");
+		focusRequested_ = false;
+	}
+
+	if (!open) {
 		ui.EndWindow();
 		CancelSelection();
 		return true;
@@ -264,6 +280,7 @@ void SceneViewPanel::CancelSelection() {
 }
 
 void SceneViewPanel::Finalize() {
+	focusRequested_ = false;
 	CancelSelection();
 	texture_.reset();
 	input_ = {};

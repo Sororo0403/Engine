@@ -57,6 +57,8 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 
 	ui.SetNextWindowSize(800, 500);
 
+	const bool focusWindow = focusRequested_;
+
 	if (focusRequested_) {
 		ImGui::SetNextWindowCollapsed(false);
 		ImGui::SetNextWindowFocus();
@@ -76,6 +78,10 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 		        ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
 	} else {
 		open = ui.BeginWindow("Game");
+	}
+
+	if (focusWindow && !maximized_) {
+		ui.FocusWindow("Game");
 	}
 
 	if (!open) {
@@ -290,6 +296,16 @@ void EditorPlayMode::Stop() {
 	visible_ = false;
 	focusRequested_ = false;
 	viewport_ = {};
+}
+
+void EditorPlayMode::RestoreLayout() {
+	if (!maximized_ && !maximizeRequested_) {
+		return;
+	}
+
+	maximized_ = false;
+	maximizeRequested_ = false;
+	focusRequested_ = false;
 }
 
 bool EditorPlayMode::Update(float seconds, const InputSystem &input,

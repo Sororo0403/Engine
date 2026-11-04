@@ -16,6 +16,11 @@ class RenderTexture;
 class SceneViewPanel {
   public:
 	/// <summary>
+	/// Sceneビューを展開し、次の描画時にドックのタブを選んでフォーカスを移す
+	/// </summary>
+	void Show();
+
+	/// <summary>
 	/// Scene画像で確定した選択操作
 	/// </summary>
 	struct SelectionRequest {
@@ -129,6 +134,8 @@ class SceneViewPanel {
 	void Finalize();
 
   private:
+	bool focusRequested_ = false;
+
 	// 参照先はSceneViewPanelより長く保持する
 	RenderSystem &render_;
 

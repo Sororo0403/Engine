@@ -350,6 +350,11 @@ class EditorScene final : public IScene {
 	void SetCameraView(CameraView view);
 
 	/// <summary>
+	/// Gameの拡大表示を解除し、Sceneビューを展開してフォーカスを移す。再生と選択は変更しない
+	/// </summary>
+	void ShowSceneView();
+
+	/// <summary>
 	/// 指定モデルを使用する物体をまとめて選択し、Hierarchyで表示する
 	/// </summary>
 	/// <param name="path">検索するモデルのパス</param>
@@ -751,6 +756,8 @@ class EditorScene final : public IScene {
 	EditorDockLayout dockLayout_;
 
 	bool resetDockLayout_ = false;
+	// パネルの再表示で発生する自動フォーカスの後に、メニューの要求先へ移す。
+	const char *windowFocusRequest_ = nullptr;
 	bool showGrid_ = true;
 	bool showSelectionBounds_ = true;
 	bool showCameraGuides_ = true;

@@ -499,6 +499,29 @@ void ImGuiSystem::DockWindow(const char *windowName,
 	ImGui::DockBuilderDockWindow(windowName, nodeId);
 }
 
+bool ImGuiSystem::FocusWindow(const char *windowName) const {
+	impl_->UseFrame();
+
+	if (!windowName || !*windowName) {
+		return false;
+	}
+
+	auto *window = ImGui::FindWindowByName(windowName);
+
+	if (!window) {
+		return false;
+	}
+
+	if (auto *node = window->DockNode; node && node->TabBar) {
+		if (auto *tab = ImGui::TabBarFindTabByID(node->TabBar, window->TabId)) {
+			ImGui::TabBarQueueFocus(node->TabBar, tab);
+		}
+	}
+
+	ImGui::SetWindowFocus(windowName);
+	return true;
+}
+
 void ImGuiSystem::FinishDockLayout(std::uint32_t dockspaceId) const {
 	impl_->UseDocking();
 

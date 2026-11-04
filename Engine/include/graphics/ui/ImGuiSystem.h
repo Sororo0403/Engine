@@ -96,6 +96,13 @@ class ImGuiSystem {
 	void DockWindow(const char *windowName, std::uint32_t nodeId) const;
 
 	/// <summary>
+	/// 表示済みウィンドウへフォーカスを移し、ドッキング中は対応するタブの選択も予約する
+	/// </summary>
+	/// <param name="windowName">BeginWindowへ渡すウィンドウ名</param>
+	/// <returns>true:要求成功 false:名前が無効、またはウィンドウが未作成</returns>
+	bool FocusWindow(const char *windowName) const;
+
+	/// <summary>
 	/// ドッキング領域の配置構築を完了する
 	/// </summary>
 	/// <param name="dockspaceId">構築したドッキング領域のID</param>

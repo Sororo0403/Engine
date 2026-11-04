@@ -173,6 +173,7 @@ bool EditorScene::Update(float deltaTime) {
 	performancePanel_.Record(deltaTime);
 	gizmo_.BeginFrame();
 
+	windowFocusRequest_ = nullptr;
 	EditorAction action = DrawMenuBar();
 	dockLayout_.Draw(ui_, resetDockLayout_);
 	resetDockLayout_ = false;
@@ -314,7 +315,6 @@ bool EditorScene::Update(float deltaTime) {
 
 	if (playMode_.IsPlaying()) {
 		playFrame_ = true;
-		DrawGridSettings();
 
 		consolePanel_.Draw(ui_);
 		controlsPanel_.Draw();
@@ -407,6 +407,11 @@ bool EditorScene::Update(float deltaTime) {
 		    performanceTarget ? performanceTarget->GetWidth() : 0,
 		    performanceTarget ? performanceTarget->GetHeight() : 0);
 
+		if (windowFocusRequest_) {
+			ui_.FocusWindow(windowFocusRequest_);
+		}
+
+		DrawGridSettings();
 		UpdateDialogs();
 
 		if (!playMode_.IsPlaying()) {
@@ -968,6 +973,11 @@ bool EditorScene::Update(float deltaTime) {
 		}
 
 		gizmo_.Cancel();
+
+		if (windowFocusRequest_) {
+			ui_.FocusWindow(windowFocusRequest_);
+		}
+
 		return playMode_.UpdatePreview(scene, cameraController_.GetPose());
 	}
 
@@ -1219,6 +1229,10 @@ bool EditorScene::Update(float deltaTime) {
 	if (!renderer_.UpdateDebugLines()) {
 		Logger::Error("EditorScene: 線の頂点バッファを更新できませんでした。");
 		return false;
+	}
+
+	if (windowFocusRequest_) {
+		ui_.FocusWindow(windowFocusRequest_);
 	}
 
 	return playMode_.UpdatePreview(scene, cameraController_.GetPose());
@@ -1771,10 +1785,12 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		                                 ? playSelection_.GetCount() > 0
 		                                 : HasSelection()))) {
 			action = EditorAction::FRAME_SELECTED;
+			ShowSceneView();
 		}
 
 		if (ui_.MenuItem("Frame All", "Shift+F", enabled)) {
 			action = EditorAction::FRAME_ALL;
+			ShowSceneView();
 		}
 
 		if (ImGui::MenuItem("Follow Active in Play", nullptr,
@@ -1853,6 +1869,7 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		ImGui::MenuItem("Grid", nullptr, &showGrid_, !IsBusy());
 
 		if (ui_.MenuItem("Grid Settings...", nullptr, !IsBusy())) {
+			playMode_.RestoreLayout();
 			gridSettingsRequested_ = true;
 		}
 
@@ -1871,8 +1888,7 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		                 enabled && playMode_.IsPlaying() && showMotionTrail_ &&
 		                     motionTrail_.GetLineCount() != 0)) {
 			playFrameRequest_ = FrameRequest::MOTION_TRAIL;
-			ImGui::SetWindowCollapsed("Scene", false);
-			ImGui::SetWindowFocus("Scene");
+			ShowSceneView();
 		}
 
 		if (ui_.MenuItem("Clear Motion Trail", nullptr,
@@ -1903,15 +1919,20 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		ui_.Separator();
 
 		if (ui_.MenuItem("Reset Layout", nullptr, !IsBusy())) {
+			playMode_.RestoreLayout();
 			resetDockLayout_ = true;
 		}
 
 		if (ui_.MenuItem("History...", nullptr, !IsBusy())) {
+			playMode_.RestoreLayout();
 			historyPanel_.Show();
+			windowFocusRequest_ = "History";
 		}
 
 		if (ui_.MenuItem("Console...", nullptr, !IsBusy())) {
+			playMode_.RestoreLayout();
 			consolePanel_.Show();
+			windowFocusRequest_ = "Console";
 		}
 
 		if (ui_.MenuItem("Scene Check...", nullptr,
@@ -1920,12 +1941,16 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		}
 
 		if (ui_.MenuItem("Performance...", nullptr, !IsBusy())) {
+			playMode_.RestoreLayout();
 			performancePanel_.Show();
+			windowFocusRequest_ = "Performance";
 		}
 
 		if (ui_.MenuItem("Play State...", nullptr,
 		                 stage_ == DialogStage::IDLE && !exitQueued_)) {
+			playMode_.RestoreLayout();
 			playStatePanel_.Show();
+			windowFocusRequest_ = "Play State";
 		}
 
 		ui_.EndMenu();
@@ -1933,7 +1958,9 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 
 	if (ui_.BeginMenu("Help")) {
 		if (ui_.MenuItem("Controls...", nullptr, !IsBusy())) {
+			playMode_.RestoreLayout();
 			controlsPanel_.Show();
+			windowFocusRequest_ = "Editor Controls";
 		}
 
 		ui_.EndMenu();
@@ -4566,6 +4593,12 @@ bool EditorScene::FrameDraft(const DirectX::XMFLOAT4X4 &projection) {
 	}
 
 	return false;
+}
+
+void EditorScene::ShowSceneView() {
+	playMode_.RestoreLayout();
+	windowFocusRequest_ = "Scene";
+	sceneViewPanel_.Show();
 }
 
 bool EditorScene::FrameObjects(FrameRequest request,

@@ -889,7 +889,9 @@ void ControlsPanel::Draw() {
 	         "changing Pause, playback speed or selection. Stop and Escape "
 	         "restore the normal layout. Restart keeps the expanded view. "
 	         "Play shortcuts remain available; other panels are hidden until "
-	         "the layout is restored. Motion Trail recording continues."},
+	         "the layout is restored. Opening a panel, Grid Settings or Help, "
+	         "or framing Scene from the menu restores the layout immediately "
+	         "and shows that view. Motion Trail recording continues."},
 	        {"View > Character Motion Trail",
 	         "Record the live Character position once per simulated frame "
 	         "and show its path only in Scene. Grounded movement is green; "
