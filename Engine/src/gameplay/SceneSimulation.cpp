@@ -177,6 +177,8 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 		nextFollows_ = std::move(nextFollows);
 		cameraSettings_ = lens;
 		spawn_ = spawn;
+		respawnCount_ = 0;
+		lastRespawnPosition_.reset();
 		pose_ = pose;
 		playing_ = true;
 		return true;
@@ -193,6 +195,8 @@ void SceneSimulation::Stop() {
 	cameraFollow_.reset();
 	follows_.clear();
 	nextFollows_.clear();
+	respawnCount_ = 0;
+	lastRespawnPosition_.reset();
 }
 
 bool SceneSimulation::Update(float seconds, const CharacterInput &input) {
@@ -309,6 +313,11 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input) {
 		scene_.FindObject(state.objectId)->transform = state.transform;
 	}
 
+	if (respawned) {
+		++respawnCount_;
+		lastRespawnPosition_ = next.GetTransform().translation;
+	}
+
 	return true;
 }
 
@@ -318,7 +327,10 @@ SceneSimulation::GetCharacterState() const {
 		return std::nullopt;
 	}
 
-	return CharacterRuntimeState{
-	    character_, controller_.GetTransform().translation,
-	    controller_.GetVerticalVelocity(), controller_.IsGrounded()};
+	return CharacterRuntimeState{character_,
+	                             controller_.GetTransform().translation,
+	                             controller_.GetVerticalVelocity(),
+	                             controller_.IsGrounded(),
+	                             respawnCount_,
+	                             lastRespawnPosition_};
 }

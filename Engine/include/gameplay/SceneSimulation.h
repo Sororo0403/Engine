@@ -107,6 +107,8 @@ class SceneSimulation {
 	// 毎フレームの確保と失敗時の部分更新を避けるため、次の状態を別バッファで計算する
 	std::vector<FollowState> nextFollows_;
 	DirectX::XMFLOAT3 spawn_{};
+	std::uint64_t respawnCount_ = 0;
+	std::optional<DirectX::XMFLOAT3> lastRespawnPosition_;
 	CameraPose pose_{};
 	CameraSettings cameraSettings_{};
 	bool playing_ = false;

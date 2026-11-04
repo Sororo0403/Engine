@@ -21,7 +21,7 @@ PlayStatePanel::Request PlayStatePanel::Draw(const ImGuiSystem &ui,
 		return {};
 	}
 
-	ImGui::SetNextWindowSize({400.0f, 360.0f}, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({400.0f, 440.0f}, ImGuiCond_FirstUseEver);
 
 	if (focusRequested_) {
 		ImGui::SetNextWindowCollapsed(false);
@@ -82,6 +82,14 @@ PlayStatePanel::Request PlayStatePanel::Draw(const ImGuiSystem &ui,
 		ui.Text(std::format("Vertical Velocity: {:.3f}",
 		                    character->verticalVelocity));
 		ui.Text(character->grounded ? "Grounded: Yes" : "Grounded: No");
+		ui.Text(std::format("Respawns: {}", character->respawnCount));
+
+		if (character->lastRespawnPosition) {
+			vector("Last Respawn", *character->lastRespawnPosition);
+		} else {
+			ui.Text("Last Respawn: None");
+		}
+
 		select(object ? character->objectId : 0, "Select Character",
 		       "Frame Character");
 	} else {

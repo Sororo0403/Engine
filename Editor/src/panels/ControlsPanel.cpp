@@ -772,7 +772,10 @@ void ControlsPanel::Draw() {
 	         "the unchanged editing scene; the Scene camera view is kept."},
 	        {"View > Play State",
 	         "Inspect the live character position, vertical velocity and "
-	         "grounded state, plus the rendered camera pose and lens. The "
+	         "grounded state, plus the rendered camera pose and lens. "
+	         "Respawns counts successful fall recoveries; Last Respawn shows "
+	         "the most recent recovery position. Both reset on Start, Restart "
+	         "and Stop, and are unchanged by failed updates. The "
 	         "panel is read-only and can be opened during Play. Pause freezes "
 	         "the values; Step shows the next simulated frame. Stop clears "
 	         "the live display. Simulated Time accumulates only successful "
