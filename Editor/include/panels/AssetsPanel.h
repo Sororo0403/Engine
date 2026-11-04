@@ -1,7 +1,9 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 #include <filesystem>
+#include <span>
 #include <string>
 
 class AssetDatabase;
@@ -12,6 +14,16 @@ class ImGuiSystem;
 /// </summary>
 class AssetsPanel {
   public:
+	/// <summary>
+	/// 選択物体のモデルから得た、番号を変えない画像スロットの表示候補
+	/// </summary>
+	struct TextureSlotChoice {
+		int index = 0;
+		std::string name;
+		std::size_t usedBy = 0;
+		std::size_t selectedCount = 0;
+	};
+
 	/// <summary>
 	/// モデル・画像・シーン・ゲーム設定をAssets内で選択し、次の描画時に表示する
 	/// </summary>
@@ -26,11 +38,13 @@ class AssetsPanel {
 	/// <param name="canSetTexture">選択物体のスロットへ画像を割り当てる操作を許可するか</param>
 	/// <param name="canEditAssets">画像・モデルの取り込み・再読み込み、フォルダ作成・シーンを開く操作・保存済み物体の追加を開始できるか</param>
 	/// <param name="canReplaceMesh">全選択物体の既存Meshを差し替えられるか</param>
+	/// <param name="textureSlots">選択物体の材質名と使用状況。番号選択の補助に使い、空でも手入力は可能</param>
 	/// <returns>配置を要求したモデルの相対パス。要求がない場合は空のパス</returns>
-	std::filesystem::path Draw(const ImGuiSystem &ui, AssetDatabase &assets,
-	                           bool canSetTexture = false,
-	                           bool canEditAssets = false,
-	                           bool canReplaceMesh = false);
+	std::filesystem::path
+	Draw(const ImGuiSystem &ui, AssetDatabase &assets,
+	     bool canSetTexture = false, bool canEditAssets = false,
+	     bool canReplaceMesh = false,
+	     std::span<const TextureSlotChoice> textureSlots = {});
 
 	/// <summary>
 	/// このフレームに開くことを要求したシーンを取得する。保存確認と読み込みは呼び出し側で行う

@@ -200,6 +200,16 @@ void ControlsPanel::Draw() {
 	         "resource validation. All combine with name/ID and Hidden only, "
 	         "sorting, range selection and Select All Visible, including "
 	         "Play."},
+	        {"Assets > Textures > Model Slots",
+	         "Choose a slot number from the selected objects' loaded models. "
+	         "The table shows source material names and Used counts: how many "
+	         "selected objects actually draw with each slot. Mixed Materials "
+	         "means different names share that number; Unused means none use "
+	         "it. Selecting a row only changes the assignment target number. "
+	         "Assign Texture to Selection applies the image through the normal "
+	         "Undo/Redo operation. Manual Texture Slot input remains available "
+	         "for unused or not-yet-loaded slots. Slot numbers and existing "
+	         "assignments are never changed automatically."},
 	        {"Inspector > Mesh Renderer > Texture Slots",
 	         "Each slot shows the source material name and how many model "
 	         "meshes use it. Unused slots keep their original numbers and "

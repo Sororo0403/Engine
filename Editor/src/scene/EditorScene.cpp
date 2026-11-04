@@ -39,6 +39,7 @@
 #include <format>
 #include <imgui.h>
 #include <limits>
+#include <map>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -454,15 +455,19 @@ bool EditorScene::Update(float deltaTime) {
 		    return object && object->meshRenderer &&
 		           object->meshRenderer->IsValid();
 	    });
+	const auto textureSlots = GetTextureSlotChoices();
 	const auto requestedModelPath = assetsPanel_.Draw(
 	    ui_, assets_, canSetTexture,
 	    !gizmo_.IsUsing() && !gizmoEditActive_ &&
 	        !sceneViewPanel_.IsSelecting(),
 	    HasSelection() &&
-	        std::ranges::all_of(selection_.GetIds(), [&](const auto id) {
-		        const auto *object = scene.FindObject(id);
-		        return object && object->mesh && object->mesh->IsValid();
-	        }));
+	        std::ranges::all_of(selection_.GetIds(),
+	                            [&](const auto id) {
+		                            const auto *object = scene.FindObject(id);
+		                            return object && object->mesh &&
+		                                   object->mesh->IsValid();
+	                            }),
+	    textureSlots);
 	if (!wasBusy && !assetsPanel_.GetTexturePreviewRequest().empty()) {
 		texturePreviewPanel_.Open(assetsPanel_.GetTexturePreviewRequest());
 	}
@@ -4839,6 +4844,55 @@ void EditorScene::DistributeSelectedColliderGaps(AlignmentAxis axis) {
 		ShowError(
 		    "Could not distribute Collider gaps. See the log for details.");
 	}
+}
+
+std::vector<AssetsPanel::TextureSlotChoice>
+EditorScene::GetTextureSlotChoices() const {
+	std::map<int, AssetsPanel::TextureSlotChoice> choices;
+
+	for (const auto id : selection_.GetIds()) {
+		const auto *object = document_.GetScene().FindObject(id);
+
+		if (!object || !object->meshRenderer || !object->HasMesh()) {
+			continue;
+		}
+
+		const auto model = models_.FindLoaded(object->mesh->modelPath);
+		const auto count = models_.GetMaterialCount(model);
+
+		for (std::size_t slot = 0;
+		     slot < count && slot <= static_cast<std::size_t>(
+		                                 (std::numeric_limits<int>::max)());
+		     ++slot) {
+			const auto index = static_cast<int>(slot);
+			const auto name = models_.GetMaterialName(model, slot);
+			const std::string label =
+			    name.empty() ? "Unnamed" : std::string{name};
+			auto [entry, inserted] = choices.try_emplace(index);
+			auto &choice = entry->second;
+
+			if (inserted) {
+				choice.index = index;
+				choice.name = label;
+				choice.selectedCount = selection_.GetCount();
+			} else if (choice.name != label) {
+				choice.name = "Mixed Materials";
+			}
+
+			if (models_.GetMaterialMeshCount(model, slot) != 0) {
+				++choice.usedBy;
+			}
+		}
+	}
+
+	std::vector<AssetsPanel::TextureSlotChoice> result;
+	result.reserve(choices.size());
+
+	for (auto &[index, choice] : choices) {
+		result.push_back(std::move(choice));
+	}
+
+	return result;
 }
 
 bool EditorScene::HasVisibleSelectedModel() const {

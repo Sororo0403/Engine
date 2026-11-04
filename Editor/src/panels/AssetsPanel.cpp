@@ -115,10 +115,10 @@ bool AssetsPanel::SelectAsset(const std::filesystem::path &path,
 	return false;
 }
 
-std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
-                                        AssetDatabase &assets,
-                                        bool canSetTexture, bool canEditAssets,
-                                        bool canReplaceMesh) {
+std::filesystem::path
+AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
+                  bool canSetTexture, bool canEditAssets, bool canReplaceMesh,
+                  std::span<const TextureSlotChoice> textureSlots) {
 	sceneOpenPath_.clear();
 	gameSettingsPath_.clear();
 	sceneAppendPath_.clear();
@@ -527,6 +527,45 @@ std::filesystem::path AssetsPanel::Draw(const ImGuiSystem &ui,
 
 		ui.EndDisabled();
 		ImGui::InputInt("Texture Slot", &textureSlot_);
+
+		if (!textureSlots.empty() &&
+		    ImGui::BeginCombo("Model Slots",
+		                      std::to_string(textureSlot_).c_str())) {
+			if (ImGui::BeginTable("TextureSlotChoices", 2,
+			                      ImGuiTableFlags_RowBg)) {
+				ImGui::TableSetupColumn(
+				    "Slot", ImGuiTableColumnFlags_WidthFixed, 40.0f);
+				ImGui::TableSetupColumn("Material / Objects");
+				ImGui::TableHeadersRow();
+
+				for (const auto &choice : textureSlots) {
+					if (choice.index < 0) {
+						continue;
+					}
+
+					ImGui::TableNextRow();
+					ImGui::TableNextColumn();
+					ImGui::PushID(choice.index);
+					const auto label = std::to_string(choice.index);
+
+					if (ImGui::Selectable(
+					        label.c_str(), textureSlot_ == choice.index,
+					        ImGuiSelectableFlags_SpanAllColumns)) {
+						textureSlot_ = choice.index;
+					}
+
+					ImGui::PopID();
+					ImGui::TableNextColumn();
+					ui.Text(std::format("{} | Used: {}/{}{}", choice.name,
+					                    choice.usedBy, choice.selectedCount,
+					                    choice.usedBy == 0 ? " [Unused]" : ""));
+				}
+
+				ImGui::EndTable();
+			}
+
+			ImGui::EndCombo();
+		}
 		ui.BeginDisabled(!canSetTexture || textureSlot_ < 0);
 		ui.BeginDisabled(selectedPath_.empty());
 

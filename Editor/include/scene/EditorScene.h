@@ -54,6 +54,7 @@
 #include <filesystem>
 #include <span>
 #include <string>
+#include <vector>
 
 struct BoxCollider;
 struct Ray;
@@ -701,6 +702,12 @@ class EditorScene final : public IScene {
 	/// </summary>
 	/// <returns>true:有効な選択あり false:未選択、または存在しないIDあり</returns>
 	bool HasSelection() const;
+
+	/// <summary>
+	/// 選択物体の読み込み済みモデルから、画像スロットの名前と使用物体数をまとめる
+	/// </summary>
+	/// <returns>スロット番号順の候補。名前が異なる場合はMixed Materials。モデルの読み込みやシーン変更は行わない</returns>
+	std::vector<AssetsPanel::TextureSlotChoice> GetTextureSlotChoices() const;
 
 	/// <summary>
 	/// シーンに存在する物体が1つだけ選択されているか確認する
