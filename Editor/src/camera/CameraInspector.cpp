@@ -82,6 +82,10 @@ bool CameraInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 			request = {Action::ALIGN_VIEW, id};
 		}
 
+		if (ui.Button("Match Scene View")) {
+			request = {Action::MATCH_VIEW, id};
+		}
+
 		ui.BeginDisabled(!object.camera->IsValid());
 
 		if (ui.Button("Preview in Game")) {

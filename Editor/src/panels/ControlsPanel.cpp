@@ -605,7 +605,7 @@ void ControlsPanel::Draw() {
 	         "in Game. This display setting is saved with Editor preferences."},
 	        {"Create > Camera from Scene View",
 	         "Create a fixed Camera at the current Scene view position and "
-	         "orientation, using the standard Scene lens settings. It is "
+	         "orientation, vertical FOV and clipping distances. It is "
 	         "selected and revealed in Hierarchy in one Undo operation. If no "
 	         "Primary exists, the new Camera becomes Primary; otherwise the "
 	         "existing Primary is kept. Use "
@@ -932,6 +932,13 @@ void ControlsPanel::Draw() {
 	         "in one Undo operation. Lens, scale and follow smoothing are "
 	         "preserved. Follow Camera needs a target, a view not straight up "
 	         "or down, and offsets within its allowed range."},
+	        {"Inspector > Camera > Match Scene View",
+	         "Apply the Scene view position, direction, vertical FOV and "
+	         "Near/Far "
+	         "Clip in one Undo operation. Scale, Primary and follow smoothing "
+	         "are preserved. Follow Camera has the same target and offset "
+	         "requirements as Align to Scene View. Game uses the aspect ratio "
+	         "in Game Settings, so its horizontal framing may differ."},
 	        {"View > Camera Guides / Respawn Guides",
 	         "Toggle selected Camera frustums and follow links, or Respawn "
 	         "position and fall-height markers. Each setting is saved for "

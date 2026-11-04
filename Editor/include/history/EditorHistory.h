@@ -298,12 +298,15 @@ class EditorHistory {
 
 	/// <summary>
 	/// Cameraの位置と向きをSceneビューへ合わせ、追従オフセットも1操作として記録する。
-	/// 拡大率・投影設定・追従速度は保持し、編集中の内容は先に確定する
+	/// 拡大率・Primary・追従速度は保持し、編集中の内容は先に確定する
 	/// </summary>
 	/// <param name="objectId">Cameraを持つ対象ID</param>
 	/// <param name="pose">Sceneビューの姿勢。Follow Cameraの上方向はワールドYを基準とする</param>
-	/// <returns>true:成功または同値 false:対象・姿勢・追従先・オフセットが無効。配置は変更しない</returns>
-	bool AlignCameraView(SceneObjectId objectId, const CameraPose &pose);
+	/// <param name="projection">同時に適用する投影設定。省略時は現在の投影設定を保持する</param>
+	/// <returns>true:成功または同値 false:対象・姿勢・投影設定・追従先・オフセットが無効。配置は変更しない</returns>
+	bool
+	AlignCameraView(SceneObjectId objectId, const CameraPose &pose,
+	                std::optional<CameraSettings> projection = std::nullopt);
 
 	/// <summary>
 	/// カメラの連続編集を開始する

@@ -754,12 +754,14 @@ bool EditorHistory::SetVisibility(std::span<const SceneObjectId> objectIds,
 	return true;
 }
 
-bool EditorHistory::AlignCameraView(SceneObjectId id, const CameraPose &pose) {
+bool EditorHistory::AlignCameraView(SceneObjectId id, const CameraPose &pose,
+                                    std::optional<CameraSettings> projection) {
 	CommitEdit();
 	const auto *object = scene_.FindObject(id);
 
 	if (!object || !object->camera || !object->camera->IsValid() ||
-	    !TransformUtils::IsValid(object->transform)) {
+	    !TransformUtils::IsValid(object->transform) ||
+	    (projection && !projection->IsValid())) {
 		return false;
 	}
 
@@ -799,10 +801,21 @@ bool EditorHistory::AlignCameraView(SceneObjectId id, const CameraPose &pose) {
 		        after)) {
 			return false;
 		}
+
+		// 同じ描画姿勢なら注視距離を再計算せず、丸め誤差による履歴を防ぐ。
+		auto current = object->transform;
+
+		if (SceneCameraUtils::ApplyPose(
+		        SceneCameraUtils::MakeFollowPose(targetPosition,
+		                                         *object->followCamera),
+		        current) &&
+		    TransformUtils::AreEqual(current, after)) {
+			follow = object->followCamera;
+		}
 	}
 
 	std::vector<CommandGroup::Command> commands;
-	commands.reserve(2);
+	commands.reserve(3);
 
 	if (!TransformUtils::AreEqual(object->transform, after)) {
 		commands.emplace_back(TransformCommand{id, object->transform, after});
@@ -811,6 +824,12 @@ bool EditorHistory::AlignCameraView(SceneObjectId id, const CameraPose &pose) {
 	if (object->followCamera != follow) {
 		commands.emplace_back(
 		    FollowCameraCommand{id, object->followCamera, follow});
+	}
+
+	if (projection && object->camera->settings != *projection) {
+		auto camera = *object->camera;
+		camera.settings = *projection;
+		commands.emplace_back(CameraCommand{id, object->camera, camera});
 	}
 
 	if (commands.empty()) {
@@ -825,7 +844,8 @@ bool EditorHistory::AlignCameraView(SceneObjectId id, const CameraPose &pose) {
 	}
 
 	AppendPrepared(Command{std::move(group)}, next,
-	               "Align Camera to Scene View");
+	               projection ? "Match Camera to Scene View"
+	                          : "Align Camera to Scene View");
 	return true;
 }
 
