@@ -401,6 +401,11 @@ bool EditorScene::Update(float deltaTime) {
 
 		measurementsPanel_.Draw(ui_, playMode_.GetSession().GetScene(),
 		                        playSelection_.GetIds(), showMeasurements_);
+		const auto *performanceTarget = sceneViewPanel_.GetRenderTexture();
+		performancePanel_.Draw(
+		    ui_, runtime, playSelection_,
+		    performanceTarget ? performanceTarget->GetWidth() : 0,
+		    performanceTarget ? performanceTarget->GetHeight() : 0);
 
 		UpdateDialogs();
 
