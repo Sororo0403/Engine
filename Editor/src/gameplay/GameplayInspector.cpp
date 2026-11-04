@@ -260,6 +260,18 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 			}
 		}
 
+		RespawnPreview::Geometry respawnGeometry;
+		ui.BeginDisabled(
+		    object.respawn->useStartPosition ||
+		    !RespawnPreview{}.BuildGeometry(scene, id, respawnGeometry) ||
+		    !respawnGeometry.canRespawn);
+
+		if (ui.Button("Move to Respawn Position")) {
+			respawnRequest_ = {RespawnAction::MOVE_TO_POSITION, id};
+		}
+
+		ui.EndDisabled();
+
 		ui.BeginDisabled(!canPasteTransform);
 
 		if (ui.Button("Paste Respawn Position")) {

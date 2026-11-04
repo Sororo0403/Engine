@@ -595,6 +595,10 @@ bool InspectorPanel::Draw(
 	           GameplayInspector::RespawnAction::PASTE) {
 		objectRequest_ = {ObjectAction::PASTE_RESPAWN_SETTINGS,
 		                  respawnRequest.objectId};
+	} else if (respawnRequest.action ==
+	           GameplayInspector::RespawnAction::MOVE_TO_POSITION) {
+		objectRequest_ = {ObjectAction::MOVE_TO_RESPAWN,
+		                  respawnRequest.objectId};
 	}
 
 	if (targetSelectionRequest != 0) {

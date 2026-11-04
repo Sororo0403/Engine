@@ -1022,6 +1022,15 @@ void ControlsPanel::Draw() {
 	         "Character Controller and Collider are not added. Check the "
 	         "placements before Play. Scene selection and Inspector lock "
 	         "stay unchanged. Unavailable during Play or modal operations."},
+	        {"Inspector > Respawn > Move to Respawn Position",
+	         "Move the inspected object to its explicit Respawn Position in "
+	         "one Undo/Redo operation. Rotation, scale, Collider and Respawn "
+	         "settings stay unchanged. A locked Inspector moves its displayed "
+	         "object. Use Start Position must be off, and the destination must "
+	         "be above Fall Below Y with valid Character and Collider settings "
+	         "and no blocking Collider. The travel path is not checked. "
+	         "Pending edits finish first. Already being at the destination "
+	         "adds no history. Available while editing only."},
 	        {"Inspector > Copy / Paste Respawn Settings",
 	         "Copy the fall height, Use Start Position option and explicit "
 	         "respawn position. Paste replaces only Respawn settings on the "

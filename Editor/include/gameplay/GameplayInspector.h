@@ -40,9 +40,9 @@ class GameplayInspector {
 	};
 
 	/// <summary>
-	/// 描画後に表示対象の復帰設定へ適用する操作
+	/// 描画後に表示対象の復帰設定・復帰位置への移動へ適用する操作
 	/// </summary>
-	enum class RespawnAction { NONE, COPY, PASTE };
+	enum class RespawnAction { NONE, COPY, PASTE, MOVE_TO_POSITION };
 
 	/// <summary>
 	/// 復帰設定の操作と、Inspectorに表示している対象ID

@@ -3680,6 +3680,32 @@ void EditorScene::ApplyInspectorRequest(
 			return;
 		}
 
+		if (request.action == InspectorPanel::ObjectAction::MOVE_TO_RESPAWN) {
+			RespawnPreview::Geometry geometry;
+
+			if (!object->respawn || object->respawn->useStartPosition ||
+			    !respawnPreview_.BuildGeometry(document_.GetScene(),
+			                                   request.objectId, geometry) ||
+			    !geometry.canRespawn) {
+				ShowError("Choose an explicit, valid and unobstructed Respawn "
+				          "position before moving the object.",
+				          request.objectId);
+				return;
+			}
+
+			auto transform = object->transform;
+			transform.translation = object->respawn->position;
+			const std::array edits{
+			    EditorHistory::TransformEdit{request.objectId, transform}};
+
+			if (!document_.GetHistory().SetTransforms(edits)) {
+				ShowError("Could not move the object to its Respawn position.",
+				          request.objectId);
+			}
+
+			return;
+		}
+
 		if (request.action ==
 		    InspectorPanel::ObjectAction::COPY_RESPAWN_SETTINGS) {
 			if (!object->respawn ||
