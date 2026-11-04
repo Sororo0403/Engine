@@ -15,8 +15,12 @@ void Gamepad::Update(const GamepadState &state) {
 	state_.leftStick = ApplyDeadZone(state.leftStick);
 	state_.rightStick = ApplyDeadZone(state.rightStick);
 
-	state_.leftTrigger = std::clamp(state.leftTrigger, 0.0f, 1.0f);
-	state_.rightTrigger = std::clamp(state.rightTrigger, 0.0f, 1.0f);
+	state_.leftTrigger = std::isfinite(state.leftTrigger)
+	                         ? std::clamp(state.leftTrigger, 0.0f, 1.0f)
+	                         : 0.0f;
+	state_.rightTrigger = std::isfinite(state.rightTrigger)
+	                          ? std::clamp(state.rightTrigger, 0.0f, 1.0f)
+	                          : 0.0f;
 }
 
 bool Gamepad::IsConnected() const {
@@ -63,16 +67,21 @@ void Gamepad::Reset() {
 }
 
 GamepadStick Gamepad::ApplyDeadZone(GamepadStick stick) {
-	const float magnitude = std::sqrt(stick.x * stick.x + stick.y * stick.y);
+	if (!std::isfinite(stick.x) || !std::isfinite(stick.y)) {
+		return {};
+	}
+
+	const double magnitude = std::hypot(double(stick.x), double(stick.y));
 
 	if (magnitude <= kStickDeadZone) {
 		return {};
 	}
 
 	// デッドゾーンの外側を0～1に変換する
-	const float strength =
-	    (std::min(magnitude, 1.0f) - kStickDeadZone) / (1.0f - kStickDeadZone);
+	const double strength =
+	    (std::min(magnitude, 1.0) - kStickDeadZone) / (1.0 - kStickDeadZone);
 
 	// 倒した方向を保ちながら、入力の強さを適用する
-	return {stick.x / magnitude * strength, stick.y / magnitude * strength};
+	return {float(stick.x / magnitude * strength),
+	        float(stick.y / magnitude * strength)};
 }

@@ -1281,6 +1281,15 @@ void ControlsPanel::Draw() {
 	         "Follow Cameras update first. Circular target chains must be "
 	         "corrected before Play. Choose the rendered Camera using "
 	         "Primary."},
+	        {"Gamepad (Game focused)",
+	         "Move with the left stick or D-pad; press the south face button "
+	         "(Xbox A / PlayStation Cross) to jump. Stick strength controls "
+	         "movement speed. Keyboard and gamepad input combine without "
+	         "exceeding the Character Controller move speed. The same input "
+	         "works in exported games and uses Camera Relative Movement "
+	         "when enabled. Scene navigation, text fields and dialogs block "
+	         "gamepad gameplay input in the Editor; losing application "
+	         "focus blocks it in both Editor and Runtime."},
 	        {"Gameplay Keys (default WASD / Space)",
 	         "Click the Game image to focus it. Use the keys assigned in File "
 	         "> Game Settings to move and jump when the object "

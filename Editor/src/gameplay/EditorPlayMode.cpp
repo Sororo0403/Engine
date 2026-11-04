@@ -321,10 +321,11 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 	const auto *movementCamera =
 	    cameraRelativeMovement_ ? &session_.GetCameraPose() : nullptr;
 	const auto controls =
-	    inputBlocked ? CharacterInput{}
-	                 : GameplayInput::Read(input.GetKeyboard(), viewport_,
-	                                       ImGui::GetIO().WantTextInput,
-	                                       inputBindings_, movementCamera);
+	    inputBlocked
+	        ? CharacterInput{}
+	        : GameplayInput::Read(input.GetKeyboard(), viewport_,
+	                              ImGui::GetIO().WantTextInput, inputBindings_,
+	                              movementCamera, &input.GetGamepad());
 
 	if (!inputBlocked && viewport_.windowFocused &&
 	    viewport_.applicationFocused && !viewport_.widgetActive &&

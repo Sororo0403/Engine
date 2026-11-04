@@ -5,7 +5,7 @@
 class Gamepad {
   public:
 	/// <summary>
-	/// 取得済みの状態を反映し、デッドゾーンを適用する
+	/// 取得済みの状態を反映し、デッドゾーンを適用する。非有限値のスティックとトリガーは0にする
 	/// </summary>
 	/// <param name="state">バックエンドが取得した入力状態。未接続の場合は現在と前フレームの状態をクリアする</param>
 	void Update(const GamepadState &state);
