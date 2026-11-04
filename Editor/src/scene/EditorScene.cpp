@@ -2212,13 +2212,20 @@ void EditorScene::StartAction(EditorAction action) {
 		return;
 	case EditorAction::SAVE_CAMERA_BOOKMARK:
 		if (!cameraBookmarks_.Set(cameraBookmarkSlot_,
-		                          cameraController_.GetViewState())) {
+		                          cameraController_.GetViewState(),
+		                          sceneProjection_)) {
 			ShowError("Could not save this Scene camera view.");
 		}
 		return;
 	case EditorAction::RESTORE_CAMERA_BOOKMARK:
 		if (const auto *state = cameraBookmarks_.Get(cameraBookmarkSlot_)) {
-			if (cameraController_.SetViewState(*state)) {
+			const auto *projection =
+			    cameraBookmarks_.GetProjection(cameraBookmarkSlot_);
+			if ((!projection || projection->IsValid()) &&
+			    cameraController_.SetViewState(*state)) {
+				if (projection) {
+					sceneProjection_ = *projection;
+				}
 				frameRequest_ = FrameRequest::NONE;
 				ImGui::SetWindowCollapsed("Scene", false);
 				ImGui::SetWindowFocus("Scene");

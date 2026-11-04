@@ -1343,7 +1343,11 @@ void ControlsPanel::Draw() {
 	         "shared across scenes and retained in Editor settings when Editor "
 	         "closes. They store position and look direction, including top "
 	         "and "
-	         "bottom views. Restore ends navigation and brings Scene forward. "
+	         "bottom views, plus the Scene FOV and Near/Far Clip at save time. "
+	         "Restore recovers both the view and its projection, ends "
+	         "navigation "
+	         "and brings Scene forward. Older pose-only bookmarks keep the "
+	         "current Scene projection when restored. "
 	         "Scene objects, camera components, selection, Inspector locks and "
 	         "undo history stay unchanged. Bookmarks are disabled during Play, "
 	         "dialogs and gizmo or selection operations."},

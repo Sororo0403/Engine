@@ -14,6 +14,38 @@
 #include <stdexcept>
 #include <utility>
 
+namespace {
+/// <summary>
+/// Sceneとブックマークに共通する投影設定を読み、数値型と範囲を検証する
+/// </summary>
+/// <param name="json">縦視野角とNear／Far Clipを持つJSONオブジェクト</param>
+/// <returns>有効な投影設定。形式や値が無効な場合は例外</returns>
+CameraSettings ReadProjection(const nlohmann::json &json) {
+	if (!json.is_object() || !json.at("verticalFovDegrees").is_number() ||
+	    !json.at("nearClip").is_number() || !json.at("farClip").is_number()) {
+		throw std::runtime_error("Sceneカメラの投影設定には数値が必要です。");
+	}
+	CameraSettings settings{json.at("verticalFovDegrees").get<float>(),
+	                        json.at("nearClip").get<float>(),
+	                        json.at("farClip").get<float>()};
+	if (!settings.IsValid()) {
+		throw std::runtime_error("Sceneカメラの投影設定が無効です。");
+	}
+	return settings;
+}
+
+/// <summary>
+/// 検証済みの投影設定を保存用のJSONオブジェクトへ変換する
+/// </summary>
+/// <param name="settings">保存前にIsValidを確認した投影設定</param>
+/// <returns>縦視野角とNear／Far Clipを持つオブジェクト</returns>
+nlohmann::json ProjectionJson(const CameraSettings &settings) {
+	return {{"verticalFovDegrees", settings.verticalFovDegrees},
+	        {"nearClip", settings.nearClip},
+	        {"farClip", settings.farClip}};
+}
+} // namespace
+
 bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 	try {
 		const auto path = PathUtils::ResolveFromExecutable(filePath);
@@ -136,24 +168,7 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 
 		// 投影設定がない旧ファイルでは、従来のSceneビューの初期値を使う。
 		if (json.contains("sceneProjection")) {
-			const auto &projection = json.at("sceneProjection");
-			if (!projection.is_object() ||
-			    !projection.at("verticalFovDegrees").is_number() ||
-			    !projection.at("nearClip").is_number() ||
-			    !projection.at("farClip").is_number()) {
-				throw std::runtime_error(
-				    "Sceneカメラの投影設定には数値が必要です。");
-			}
-			loaded.sceneProjection.verticalFovDegrees =
-			    projection.at("verticalFovDegrees").get<float>();
-			loaded.sceneProjection.nearClip =
-			    projection.at("nearClip").get<float>();
-			loaded.sceneProjection.farClip =
-			    projection.at("farClip").get<float>();
-		}
-
-		if (!loaded.sceneProjection.IsValid()) {
-			throw std::runtime_error("Sceneカメラの投影設定が無効です。");
+			loaded.sceneProjection = ReadProjection(json.at("sceneProjection"));
 		}
 
 		EditorCameraController cameraValidator;
@@ -289,6 +304,10 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 				if (bookmark.is_null()) {
 					continue;
 				}
+				std::optional<CameraSettings> projection;
+				if (bookmark.contains("projection")) {
+					projection = ReadProjection(bookmark.at("projection"));
+				}
 				const auto &position = bookmark.at("position");
 				if (!position.is_array() || position.size() != 3 ||
 				    !position[0].is_number() || !position[1].is_number() ||
@@ -296,10 +315,12 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 				    !bookmark.at("yaw").is_number() ||
 				    !bookmark.at("pitch").is_number() ||
 				    !loaded.cameraBookmarks.Set(
-				        i, {{position[0].get<float>(), position[1].get<float>(),
-				             position[2].get<float>()},
-				            bookmark.at("yaw").get<float>(),
-				            bookmark.at("pitch").get<float>()})) {
+				        i,
+				        {{position[0].get<float>(), position[1].get<float>(),
+				          position[2].get<float>()},
+				         bookmark.at("yaw").get<float>(),
+				         bookmark.at("pitch").get<float>()},
+				        projection)) {
 					throw std::runtime_error(
 					    "カメラのブックマークが無効です。");
 				}
@@ -375,12 +396,16 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		auto bookmarks = nlohmann::json::array();
 		for (std::size_t i = 0; i < EditorCameraBookmarks::kSlotCount; ++i) {
 			if (const auto *bookmark = cameraBookmarks.Get(i)) {
-				bookmarks.push_back(
-				    {{"position",
-				      {bookmark->position.x, bookmark->position.y,
-				       bookmark->position.z}},
-				     {"yaw", bookmark->yaw},
-				     {"pitch", bookmark->pitch}});
+				nlohmann::json saved{
+				    {"position",
+				     {bookmark->position.x, bookmark->position.y,
+				      bookmark->position.z}},
+				    {"yaw", bookmark->yaw},
+				    {"pitch", bookmark->pitch}};
+				if (const auto *projection = cameraBookmarks.GetProjection(i)) {
+					saved["projection"] = ProjectionJson(*projection);
+				}
+				bookmarks.push_back(std::move(saved));
 			} else {
 				bookmarks.push_back(nullptr);
 			}
@@ -425,10 +450,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		      {"height", grid.height},
 		      {"halfLineCount", grid.halfLineCount},
 		      {"majorLineInterval", grid.majorLineInterval}}},
-		    {"sceneProjection",
-		     {{"verticalFovDegrees", sceneProjection.verticalFovDegrees},
-		      {"nearClip", sceneProjection.nearClip},
-		      {"farClip", sceneProjection.farClip}}},
+		    {"sceneProjection", ProjectionJson(sceneProjection)},
 		    {"camera",
 		     {{"moveSpeed", camera.moveSpeed},
 		      {"fastMultiplier", camera.fastMultiplier},
