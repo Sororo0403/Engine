@@ -19,8 +19,9 @@ bool SceneObjects::Capture(const Scene &source,
 
 	std::map<SceneObjectId, SceneObject> objects;
 	const auto values = copied.GetObjects();
-	for (std::size_t i = 0; i < ids.size(); ++i) {
-		objects.emplace(ids[i], values[i]);
+	const auto sourceIds = copied.GetSourceIds();
+	for (std::size_t i = 0; i < sourceIds.size(); ++i) {
+		objects.emplace(sourceIds[i], values[i]);
 	}
 
 	Scene candidate;

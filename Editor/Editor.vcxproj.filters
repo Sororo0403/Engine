@@ -137,6 +137,9 @@
     <ClCompile Include="src\history\TransformCommand.cpp">
       <Filter>src\history</Filter>
     </ClCompile>
+    <ClCompile Include="src\history\ParentCommand.cpp">
+      <Filter>src\history</Filter>
+    </ClCompile>
     <ClCompile Include="src\history\EditorHistory.cpp">
       <Filter>src\history</Filter>
     </ClCompile>
@@ -245,6 +248,9 @@
       <Filter>include\gizmo</Filter>
     </ClInclude>
     <ClInclude Include="include\history\TransformCommand.h">
+      <Filter>include\history</Filter>
+    </ClInclude>
+    <ClInclude Include="include\history\ParentCommand.h">
       <Filter>include\history</Filter>
     </ClInclude>
     <ClInclude Include="include\history\EditorHistory.h">

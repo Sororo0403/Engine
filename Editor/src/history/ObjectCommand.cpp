@@ -30,6 +30,7 @@ bool ObjectCommand::Remove(Scene &scene) const {
 	const SceneObject *current = scene.FindObject(objectId_);
 
 	if (!current || current->name != object_.name ||
+	    current->parentId != object_.parentId ||
 	    current->mesh != object_.mesh ||
 	    current->meshRenderer != object_.meshRenderer ||
 	    current->colorTint != object_.colorTint ||

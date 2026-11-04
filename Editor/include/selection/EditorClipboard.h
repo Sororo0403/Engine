@@ -17,11 +17,11 @@ class Scene;
 class EditorClipboard {
   public:
 	/// <summary>
-	/// 指定した全物体のデータをコピーする。失敗時は以前の内容を保持する
+	/// 指定物体と全子孫を親から先にコピーする。範囲外の親はワールドSRTを保って解除する
 	/// </summary>
 	/// <param name="scene">コピー元のシーン</param>
 	/// <param name="objectIds">重複のないコピー対象ID一覧</param>
-	/// <returns>true:全件コピー成功 false:対象なし、重複、またはデータが無効</returns>
+	/// <returns>true:全件コピー成功 false:対象・関係・データが無効、または範囲外の親の解除にせん断が必要。失敗時は以前の内容を保持する</returns>
 	bool Copy(const Scene &scene, std::span<const SceneObjectId> objectIds);
 
 	/// <summary>

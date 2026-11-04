@@ -6,6 +6,7 @@
 #include "math/TransformUtils.h"
 #include "physics/BoxColliderUtils.h"
 #include "scene/Scene.h"
+#include "scene/SceneHierarchy.h"
 
 #include <algorithm>
 #include <cassert>
@@ -47,6 +48,40 @@ SceneObjectId EditorHistory::DuplicateObject(SceneObjectId objectId) {
 	return createdIds.empty() ? 0 : createdIds.front();
 }
 
+bool EditorHistory::SetParent(std::span<const SceneObjectId> ids,
+                              SceneObjectId parent, bool keepWorld) {
+	CommitEdit();
+	std::vector<SceneObjectId> roots;
+	if (!SceneHierarchy::GetSelectionRoots(scene_, ids, roots) ||
+	    (parent != 0 && !scene_.Contains(parent)))
+		return false;
+	Scene working;
+	working.ReplaceObjects(scene_.GetObjects());
+	std::vector<CommandGroup::Command> commands;
+	for (const auto id : roots) {
+		const auto &before = *scene_.FindObject(id);
+		if (before.parentId == parent)
+			continue;
+		if (!SceneHierarchy::SetParent(working, id, parent, keepWorld))
+			return false;
+		const auto &after = *working.FindObject(id);
+		commands.emplace_back(ParentCommand{id, before.parentId, after.parentId,
+		                                    before.transform, after.transform});
+	}
+	if (commands.empty())
+		return true;
+	SceneHierarchy::WorldTransforms transforms;
+	if (!SceneHierarchy::BuildWorldTransforms(working, transforms))
+		return false;
+	CommandGroup group{std::move(commands)};
+	const auto next = PrepareAppend();
+	if (!group.Redo(scene_))
+		return false;
+	AppendPrepared(Command{std::move(group)}, next,
+	               parent == 0 ? "Unparent Objects" : "Parent Objects");
+	return true;
+}
+
 bool EditorHistory::BeginRename(SceneObjectId objectId) {
 	const SceneObject *object = scene_.FindObject(objectId);
 
@@ -72,13 +107,10 @@ bool EditorHistory::DeleteObjects(std::span<const SceneObjectId> objectIds) {
 		return false;
 	}
 
-	std::set<SceneObjectId> seen;
-
-	for (const auto id : objectIds) {
-		if (id == 0 || !seen.insert(id).second || !scene_.Contains(id)) {
-			return false;
-		}
-	}
+	std::vector<SceneObjectId> expanded;
+	if (!SceneHierarchy::ExpandSelection(scene_, objectIds, expanded))
+		return false;
+	std::set<SceneObjectId> seen(expanded.begin(), expanded.end());
 
 	std::vector<CommandGroup::Command> commands;
 	commands.reserve(objectIds.size());
@@ -100,9 +132,8 @@ bool EditorHistory::DeleteObjects(std::span<const SceneObjectId> objectIds) {
 		    FollowCameraCommand{id, object.followCamera, cleared});
 	}
 
-	for (const auto id : objectIds) {
-		// 削除する物体同士の参照も含め、削除前の全データを保持する。
-		commands.emplace_back(ObjectCommand{id, *scene_.FindObject(id),
+	for (auto it = expanded.rbegin(); it != expanded.rend(); ++it) {
+		commands.emplace_back(ObjectCommand{*it, *scene_.FindObject(*it),
 		                                    ObjectCommand::Kind::DELETE});
 	}
 
@@ -128,16 +159,14 @@ EditorHistory::DuplicateObjects(std::span<const SceneObjectId> objectIds) {
 		return {};
 	}
 
-	std::set<SceneObjectId> seen;
+	std::vector<SceneObjectId> expanded;
+	if (!SceneHierarchy::ExpandSelection(scene_, objectIds, expanded))
+		return {};
 
 	std::vector<SceneObject> copies;
-	copies.reserve(objectIds.size());
+	copies.reserve(expanded.size());
 
-	for (const SceneObjectId id : objectIds) {
-		if (id == 0 || !seen.insert(id).second) {
-			return {};
-		}
-
+	for (const SceneObjectId id : expanded) {
 		const SceneObject *source = scene_.FindObject(id);
 
 		if (!source) {
@@ -155,7 +184,7 @@ EditorHistory::DuplicateObjects(std::span<const SceneObjectId> objectIds) {
 		copies.push_back(std::move(object));
 	}
 
-	return CreateObjects(std::move(copies), objectIds);
+	return CreateObjects(std::move(copies), expanded);
 }
 
 std::vector<SceneObjectId>
@@ -163,43 +192,42 @@ EditorHistory::DuplicateObjectsInArray(std::span<const SceneObjectId> objectIds,
                                        const ObjectArraySettings &settings) {
 	CommitEdit();
 
-	if (!settings.IsValid(objectIds.size())) {
+	std::vector<SceneObjectId> roots, expanded;
+	if (!SceneHierarchy::GetSelectionRoots(scene_, objectIds, roots) ||
+	    !SceneHierarchy::ExpandSelection(scene_, objectIds, expanded) ||
+	    !settings.IsValid(expanded.size())) {
 		return {};
 	}
 
-	std::set<SceneObjectId> seen;
-
-	for (const auto id : objectIds) {
-		if (!scene_.Contains(id) || !seen.insert(id).second) {
-			return {};
-		}
-	}
-
 	std::vector<SceneObject> copies;
-	copies.reserve(objectIds.size() *
-	               static_cast<std::size_t>(settings.copies));
-
+	copies.reserve(expanded.size() * static_cast<std::size_t>(settings.copies));
 	for (int copy = 1; copy <= settings.copies; ++copy) {
-		for (const auto id : objectIds) {
-			auto object = *scene_.FindObject(id);
+		Scene working;
+		working.ReplaceObjects(scene_.GetObjects());
+		for (const auto id : roots) {
+			SceneWorldTransform world;
+			if (!SceneHierarchy::GetWorldTransform(scene_, id, world))
+				return {};
+			const auto position = world.GetPosition();
+			const DirectX::XMFLOAT3 moved{
+			    static_cast<float>(double(position.x) +
+			                       double(settings.offset.x) * copy),
+			    static_cast<float>(double(position.y) +
+			                       double(settings.offset.y) * copy),
+			    static_cast<float>(double(position.z) +
+			                       double(settings.offset.z) * copy)};
+			if (!SceneHierarchy::SetWorldPosition(working, id, moved))
+				return {};
+		}
+		for (const auto id : expanded) {
+			auto object = *working.FindObject(id);
 			object.name =
 			    std::format("{} Copy {}",
 			                object.name.empty() ? "Object" : object.name, copy);
-			auto &position = object.transform.translation;
-			position = {static_cast<float>(
-			                static_cast<double>(position.x) +
-			                static_cast<double>(settings.offset.x) * copy),
-			            static_cast<float>(
-			                static_cast<double>(position.y) +
-			                static_cast<double>(settings.offset.y) * copy),
-			            static_cast<float>(
-			                static_cast<double>(position.z) +
-			                static_cast<double>(settings.offset.z) * copy)};
 			copies.push_back(std::move(object));
 		}
 	}
-
-	return CreateObjectGroups(std::move(copies), objectIds);
+	return CreateObjectGroups(std::move(copies), expanded);
 }
 
 std::vector<SceneObjectId>
@@ -285,7 +313,9 @@ EditorHistory::CreateObjectGroups(std::vector<SceneObject> objects,
 	                                              sourceIds](Scene &working) {
 		// 全IDが決まってから参照を解決し、入力順に依存しないようにする。
 		for (std::size_t i = 0; i < objects.size(); ++i) {
-			const auto id = working.CreateObject(objects[i]);
+			auto initial = objects[i];
+			initial.parentId = 0;
+			const auto id = working.CreateObject(std::move(initial));
 			createdIds.push_back(id);
 
 			if (!sourceIds.empty()) {
@@ -297,6 +327,14 @@ EditorHistory::CreateObjectGroups(std::vector<SceneObject> objects,
 			auto &object = objects[i];
 			auto &remap = remaps[i / groupSize];
 
+			if (const auto found = remap.find(object.parentId);
+			    found != remap.end()) {
+				object.parentId = found->second;
+			}
+			if (object.parentId != 0 && !working.Contains(object.parentId))
+				return false;
+			working.FindObject(createdIds[i])->parentId = object.parentId;
+
 			if (object.followCamera) {
 				if (const auto found = remap.find(object.followCamera->target);
 				    found != remap.end()) {
@@ -305,11 +343,20 @@ EditorHistory::CreateObjectGroups(std::vector<SceneObject> objects,
 					    object.followCamera;
 				}
 			}
-
-			commands.emplace_back(ObjectCommand{
-			    createdIds[i], std::move(object), ObjectCommand::Kind::CREATE});
 		}
 
+		SceneHierarchy::WorldTransforms transforms;
+		std::vector<SceneObjectId> order;
+		if (!SceneHierarchy::BuildWorldTransforms(working, transforms) ||
+		    !SceneHierarchy::GetEvaluationOrder(working, order))
+			return false;
+		const std::set<SceneObjectId> created(createdIds.begin(),
+		                                      createdIds.end());
+		for (const auto id : order) {
+			if (created.contains(id))
+				commands.emplace_back(ObjectCommand{
+				    id, *working.FindObject(id), ObjectCommand::Kind::CREATE});
+		}
 		return true;
 	});
 
@@ -331,22 +378,18 @@ bool EditorHistory::BeginTransforms(std::span<const SceneObjectId> objectIds) {
 		return false;
 	}
 
-	std::set<SceneObjectId> seen;
+	std::vector<SceneObjectId> roots;
+	if (!SceneHierarchy::GetSelectionRoots(scene_, objectIds, roots))
+		return false;
 	std::vector<TransformSnapshot> snapshots;
-	snapshots.reserve(objectIds.size());
-
-	for (const SceneObjectId id : objectIds) {
-		if (id == 0 || !seen.insert(id).second) {
+	snapshots.reserve(roots.size());
+	for (const auto id : roots) {
+		const auto *object = scene_.FindObject(id);
+		SceneWorldTransform world;
+		if (!SceneHierarchy::GetWorldTransform(scene_, id, world))
 			return false;
-		}
-
-		const SceneObject *object = scene_.FindObject(id);
-
-		if (!object || !TransformUtils::IsValid(object->transform)) {
-			return false;
-		}
-
-		snapshots.push_back(TransformSnapshot{id, object->transform});
+		snapshots.push_back(
+		    TransformSnapshot{id, object->transform, object->parentId, world});
 	}
 
 	pendingTransforms_ = std::move(snapshots);
@@ -453,16 +496,52 @@ bool EditorHistory::UpdateTransforms(const Transform &beforePivot,
 		return edited;
 	};
 
-	// 全件の検証が終わるまで、現在のシーンを変更しない
+	// 選択された祖先の子を二重に動かさず、全件の検証後にローカル変形を反映する。
+	Scene working;
+	working.ReplaceObjects(scene_.GetObjects());
+	XMFLOAT4X4 beforeMatrix;
+	XMStoreFloat4x4(&beforeMatrix,
+	                TransformUtils::MakeWorldMatrix(beforePivot));
+	XMFLOAT4X4 inverse;
+	if (!TransformUtils::TryInverseWorldMatrix(beforeMatrix, inverse))
+		return false;
+	const auto delta =
+	    XMLoadFloat4x4(&inverse) * TransformUtils::MakeWorldMatrix(afterPivot);
 	for (const auto &snapshot : *pendingTransforms_) {
-		if (!scene_.Contains(snapshot.objectId) ||
-		    !TransformUtils::IsValid(makeEdited(snapshot))) {
+		auto *object = working.FindObject(snapshot.objectId);
+		if (!object || object->parentId != snapshot.parentId)
 			return false;
+		object->transform = snapshot.before;
+		if (snapshot.parentId == 0) {
+			object->transform = makeEdited(snapshot);
+			if (!TransformUtils::IsValid(object->transform))
+				return false;
+		} else if (!rotated && !scaled) {
+			const auto original = snapshot.world.GetPosition();
+			const XMFLOAT3 position{original.x + (afterPivot.translation.x -
+			                                      beforePivot.translation.x),
+			                        original.y + (afterPivot.translation.y -
+			                                      beforePivot.translation.y),
+			                        original.z + (afterPivot.translation.z -
+			                                      beforePivot.translation.z)};
+			if (!SceneHierarchy::SetWorldPosition(working, snapshot.objectId,
+			                                      position))
+				return false;
+		} else {
+			XMFLOAT4X4 matrix;
+			XMStoreFloat4x4(&matrix,
+			                XMLoadFloat4x4(&snapshot.world.matrix) * delta);
+			if (!SceneHierarchy::SetWorldTransform(working, snapshot.objectId,
+			                                       matrix))
+				return false;
 		}
 	}
-
+	SceneHierarchy::WorldTransforms transforms;
+	if (!SceneHierarchy::BuildWorldTransforms(working, transforms))
+		return false;
 	for (const auto &snapshot : *pendingTransforms_) {
-		scene_.FindObject(snapshot.objectId)->transform = makeEdited(snapshot);
+		scene_.FindObject(snapshot.objectId)->transform =
+		    working.FindObject(snapshot.objectId)->transform;
 	}
 
 	return true;

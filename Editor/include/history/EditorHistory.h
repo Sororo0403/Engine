@@ -9,11 +9,13 @@
 #include "history/ObjectArraySettings.h"
 #include "history/ObjectCommand.h"
 #include "history/ObjectRename.h"
+#include "history/ParentCommand.h"
 #include "history/RenameCommand.h"
 #include "history/TextureSlotsCommand.h"
 #include "history/TransformCommand.h"
 #include "history/VisibilityCommand.h"
 #include "scene/SceneObject.h"
+#include "scene/SceneWorldTransform.h"
 
 #include <array>
 #include <cstddef>
@@ -188,6 +190,16 @@ class EditorHistory {
 	/// <param name="objectId">削除する物体のID</param>
 	/// <returns>true:削除成功 false:物体が存在しない</returns>
 	bool DeleteObject(SceneObjectId objectId);
+
+	/// <summary>
+	/// 選択内の最上位の物体を新しい親へ移し、1回のUndo・Redoとして記録する
+	/// </summary>
+	/// <param name="ids">重複のない選択ID。選択された祖先がある子は親と一緒に移動する</param>
+	/// <param name="parent">新しい親。0はルート</param>
+	/// <param name="keepWorld">true:ワールド行列を維持 false:ローカル変形を維持</param>
+	/// <returns>true:成功または変更なし false:対象・関係・変形が無効。失敗時は状態を保持する</returns>
+	bool SetParent(std::span<const SceneObjectId> ids, SceneObjectId parent,
+	               bool keepWorld = true);
 
 	/// <summary>
 	/// 物体を複製し、その追加を履歴へ記録する。
@@ -598,11 +610,11 @@ class EditorHistory {
   private:
 	// 単独の編集操作、または複数の編集操作を保持する
 	using Command =
-	    std::variant<TransformCommand, ObjectCommand, RenameCommand,
-	                 ModelPathCommand, VisibilityCommand, ColliderCommand,
-	                 CharacterCommand, FollowCameraCommand, RespawnCommand,
-	                 CameraCommand, MeshRendererCommand, ColorTintCommand,
-	                 TextureSlotsCommand, CommandGroup>;
+	    std::variant<TransformCommand, ObjectCommand, ParentCommand,
+	                 RenameCommand, ModelPathCommand, VisibilityCommand,
+	                 ColliderCommand, CharacterCommand, FollowCameraCommand,
+	                 RespawnCommand, CameraCommand, MeshRendererCommand,
+	                 ColorTintCommand, TextureSlotsCommand, CommandGroup>;
 
 	/// <summary>
 	/// 操作と、その前後の状態を識別する情報
@@ -637,6 +649,9 @@ class EditorHistory {
 	struct TransformSnapshot {
 		SceneObjectId objectId = 0;
 		Transform before;
+		// 共有ギズモでは開始時の親とワールド行列も保持する。
+		SceneObjectId parentId = 0;
+		SceneWorldTransform world{};
 	};
 
   private:

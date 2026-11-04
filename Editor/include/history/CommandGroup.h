@@ -4,6 +4,7 @@
 #include "history/ComponentCommand.h"
 #include "history/ModelPathCommand.h"
 #include "history/ObjectCommand.h"
+#include "history/ParentCommand.h"
 #include "history/RenameCommand.h"
 #include "history/TextureSlotsCommand.h"
 #include "history/TransformCommand.h"
@@ -20,10 +21,11 @@ class Scene;
 class CommandGroup {
   public:
 	using Command =
-	    std::variant<TransformCommand, ObjectCommand, RenameCommand,
-	                 ModelPathCommand, VisibilityCommand, ColliderCommand,
-	                 CharacterCommand, FollowCameraCommand, RespawnCommand,
-	                 CameraCommand, MeshRendererCommand, TextureSlotsCommand>;
+	    std::variant<TransformCommand, ObjectCommand, ParentCommand,
+	                 RenameCommand, ModelPathCommand, VisibilityCommand,
+	                 ColliderCommand, CharacterCommand, FollowCameraCommand,
+	                 RespawnCommand, CameraCommand, MeshRendererCommand,
+	                 TextureSlotsCommand>;
 
 	/// <summary>
 	/// 実行順に並んだ操作を保持する。シーンへの反映は行わない

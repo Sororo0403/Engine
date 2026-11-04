@@ -3,6 +3,7 @@
 #include "math/TransformUtils.h"
 #include "physics/BoxColliderUtils.h"
 #include "scene/Scene.h"
+#include "scene/SceneHierarchy.h"
 
 #include <set>
 
@@ -12,25 +13,27 @@ bool EditorClipboard::Copy(const Scene &scene,
 		return false;
 	}
 
-	std::set<SceneObjectId> seen;
+	std::vector<SceneObjectId> sourceIds;
+	if (!SceneHierarchy::ExpandSelection(scene, objectIds, sourceIds))
+		return false;
+	const std::set<SceneObjectId> seen(sourceIds.begin(), sourceIds.end());
 	std::vector<SceneObject> objects;
-	objects.reserve(objectIds.size());
-
-	for (const SceneObjectId id : objectIds) {
-		if (id == 0 || !seen.insert(id).second) {
-			return false;
+	objects.reserve(sourceIds.size());
+	for (const auto id : sourceIds) {
+		auto object = *scene.FindObject(id);
+		if (object.parentId != 0 && !seen.contains(object.parentId)) {
+			SceneWorldTransform world;
+			if (!SceneHierarchy::GetWorldTransform(scene, id, world) ||
+			    !TransformUtils::TryFromWorldMatrix(world.matrix,
+			                                        object.transform))
+				return false;
+			object.parentId = 0;
 		}
-
-		const SceneObject *object = scene.FindObject(id);
-
-		if (!object || !TransformUtils::IsValid(object->transform)) {
+		if (!TransformUtils::IsValid(object.transform))
 			return false;
-		}
-
-		objects.push_back(*object);
+		objects.push_back(std::move(object));
 	}
 
-	std::vector<SceneObjectId> sourceIds(objectIds.begin(), objectIds.end());
 	std::vector<std::size_t> externalReferences;
 
 	for (std::size_t i = 0; i < objects.size(); ++i) {
