@@ -32,7 +32,7 @@ class SceneImporter {
 	/// <param name="error">失敗理由。後片付けできない場合は残った場所も含む</param>
 	/// <param name="configuration">指定時は、全取り込み成功後だけ同じgame.jsonから検証した起動設定を置き換える。失敗時は保持する</param>
 	/// <returns>true:取り込み成功 false:設定・参照・コピーが無効。既存項目は変更しない</returns>
-	/// <remarks>assetRootが絶対指定なら素材は絶対参照にする。起動設定の返却とEditorへの適用は任意。GPUリソースは作成しない。リンクやパッケージ外の参照は拒否する</remarks>
+	/// <remarks>COM初期化後に呼び出す。明示割り当て画像は取得元とコピー後を取り込みと同じ条件で復号検証する。assetRootが絶対指定なら素材は絶対参照にする。起動設定の返却とEditorへの適用は任意。GPUリソースは作成しない。リンクやパッケージ外の参照は拒否する</remarks>
 	static bool Import(const SceneImportOptions &options, Scene &imported,
 	                   std::filesystem::path &createdFolder, std::string &error,
 	                   GameConfig *configuration = nullptr);

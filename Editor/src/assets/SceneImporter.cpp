@@ -2,15 +2,19 @@
 
 #include "assets/AssetDependencies.h"
 #include "assets/AssetFolders.h"
+#include "assets/ImageValidation.h"
 #include "files/OutputDirectory.h"
 #include "gameplay/GameConfig.h"
 #include "platform/windows/PathUtils.h"
 #include "scene/Scene.h"
 #include "scene/SceneSerializer.h"
 #include <Windows.h>
+#include <format>
 #include <fstream>
 #include <json.hpp>
 #include <map>
+#include <new>
+#include <set>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
@@ -67,6 +71,22 @@ fs::path PackageFile(const fs::path &root, const fs::path &input) {
 		throw std::runtime_error("A scene asset is not a regular file.");
 	}
 	return file;
+}
+
+/// <summary>
+/// 明示割り当て画像を復号検証し、失敗時は参照先を含む理由を報告する
+/// </summary>
+/// <param name="path">パッケージ内で確認済みの通常ファイル</param>
+void ValidateTexture(const fs::path &path) {
+	try {
+		ImageValidation::Read(path);
+	} catch (const std::bad_alloc &) {
+		throw;
+	} catch (const std::exception &error) {
+		throw std::runtime_error(
+		    std::format("Could not import image \"{}\": {}",
+		                PathUtils::ToUtf8(path), error.what()));
+	}
 }
 
 /// <summary>
@@ -180,6 +200,7 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 		}
 		auto folderReference = PathUtils::RelativeInside(root, destination);
 		std::map<fs::path, fs::path, PathLess> files;
+		std::set<fs::path, PathLess> textures;
 		const auto addFile = [&](const fs::path &path) {
 			const auto file = PackageFile(sourceRoot, path);
 			const auto relative = PathUtils::RelativeInside(sourceRoot, file);
@@ -206,7 +227,14 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 			if (object.meshRenderer) {
 				for (auto &[slot, path] : object.meshRenderer->textures.slots) {
 					AssetDependencies::TextureFiles(path);
-					path = reference(path);
+					const auto relative = addFile(path);
+
+					if (textures.insert(relative).second) {
+						ValidateTexture(files.at(relative));
+					}
+
+					path = AssetFolders::MakeReference(options.assetRoot,
+					                                   destination / relative);
 				}
 			}
 		}
@@ -214,6 +242,10 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 		for (const auto &[relative, sourceFile] : files) {
 			output.Copy(sourceFile, relative);
 		}
+		for (const auto &relative : textures) {
+			ValidateTexture(PackageFile(destination, destination / relative));
+		}
+
 		// コピー後も、モデルの相対参照が取り込み先の内側で完結することを確認する。
 		for (const auto &[id, object] : objects) {
 			if (object.HasMesh()) {

@@ -1348,6 +1348,10 @@ void ControlsPanel::Draw() {
 	         "and lighting from that package after the whole import succeeds. "
 	         "The current export scene path and fallback camera metadata are "
 	         "kept; cancel or failure keeps all current game settings. "
+	         "Explicit texture assignments are decoded before and after "
+	         "copying, including hidden objects and unused slots. Invalid "
+	         "images leave the scene, game settings and existing assets "
+	         "unchanged and clean up newly created import output. "
 	         "The option resets to off each time. Save As chooses a "
 	         "new scene file; import does not add the package to Open Recent."},
 	        {"File > Export Game",
