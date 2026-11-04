@@ -390,6 +390,12 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 					result.action = Action::DROP_TO_SURFACE;
 				}
 
+				if (ui.MenuItem("Place Colliders on Work Plane", nullptr,
+				                ColliderPlacement::CanDrop(
+				                    scene, selection.GetIds()))) {
+					result.action = Action::PLACE_ON_WORK_PLANE;
+				}
+
 				if (ui.MenuItem("Align X to Active", nullptr,
 				                selection.GetCount() > 1)) {
 					result.action = Action::ALIGN_X;

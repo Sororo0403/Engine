@@ -644,6 +644,9 @@ bool EditorScene::Update(float deltaTime) {
 				case HierarchyPanel::Action::DROP_TO_SURFACE:
 					DropSelectionToSurface();
 					break;
+				case HierarchyPanel::Action::PLACE_ON_WORK_PLANE:
+					PlaceSelectionOnWorkPlane();
+					break;
 				case HierarchyPanel::Action::ALIGN_X:
 					AlignSelection(AlignmentAxis::X);
 					break;
@@ -1473,6 +1476,13 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			action = EditorAction::DROP_TO_SURFACE;
 		}
 
+		if (ui_.MenuItem("Place Colliders on Work Plane", nullptr,
+		                 objectEnabled &&
+		                     ColliderPlacement::CanDrop(document_.GetScene(),
+		                                                selection_.GetIds()))) {
+			action = EditorAction::PLACE_ON_WORK_PLANE;
+		}
+
 		if (ui_.MenuItem("Paste Camera Lenses", nullptr,
 		                 objectEnabled &&
 		                     clipboard_.GetCameraLens() != nullptr)) {
@@ -2200,6 +2210,9 @@ void EditorScene::StartAction(EditorAction action) {
 		PlaceSelectionNextToActive(ColliderPlacement::Face::BACK);
 		return;
 
+	case EditorAction::PLACE_ON_WORK_PLANE:
+		PlaceSelectionOnWorkPlane();
+		return;
 	case EditorAction::ALIGN_X:
 		AlignSelection(AlignmentAxis::X);
 		return;
@@ -4864,6 +4877,36 @@ void EditorScene::DropSelectionToGround() {
 		                          error.what()));
 		ShowError("Could not move the selection to the ground. See the log for "
 		          "details.");
+	}
+}
+
+void EditorScene::PlaceSelectionOnWorkPlane() {
+	if (!HasSelection()) {
+		return;
+	}
+
+	try {
+		FinishEdit();
+		DirectX::XMFLOAT3 translation;
+		std::string error;
+
+		if (!ColliderPlacement::GetPlaneTranslation(
+		        document_.GetScene(), selection_.GetIds(),
+		        sceneGrid_.GetSettings().height, translation, error)) {
+			ShowError(std::move(error));
+			return;
+		}
+
+		if (!document_.GetHistory().TranslateObjects(selection_.GetIds(),
+		                                             translation)) {
+			ShowError("Could not move the selection to the work plane. No "
+			          "selected object was changed.");
+		}
+	} catch (const std::exception &error) {
+		Logger::Error(std::format("EditorScene::PlaceSelectionOnWorkPlane: {}",
+		                          error.what()));
+		ShowError("Could not place the Colliders on the work plane. See the "
+		          "log for details.");
 	}
 }
 

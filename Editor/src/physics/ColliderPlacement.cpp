@@ -146,6 +146,82 @@ bool ColliderPlacement::GetDropTranslation(
 	return true;
 }
 
+bool ColliderPlacement::GetPlaneTranslation(
+    const Scene &scene, std::span<const SceneObjectId> objectIds, float height,
+    DirectX::XMFLOAT3 &translation, std::string &error) {
+	error.clear();
+
+	if (!std::isfinite(height) || !CanDrop(scene, objectIds)) {
+		error =
+		    "Select objects with Box Colliders and a finite work-plane height.";
+		return false;
+	}
+
+	std::set<SceneObjectId> seen;
+	double bottom = (std::numeric_limits<double>::infinity)();
+
+	for (const auto id : objectIds) {
+		const auto &object = *scene.FindObject(id);
+		AxisAlignedBox bounds;
+
+		if (!seen.insert(id).second ||
+		    !BoxColliderUtils::GetWorldBounds(*object.collider,
+		                                      object.transform, bounds)) {
+			error = "The selection contains duplicate IDs or invalid Collider "
+			        "bounds.";
+			return false;
+		}
+
+		bottom = (std::min)(bottom, double(bounds.minimum.y));
+	}
+
+	const double tolerance =
+	    (std::max)(kSurfaceClearance * 2,
+	               kFaceRoundoffFactor * std::numeric_limits<float>::epsilon() *
+	                   (std::max)(1.0, std::abs(double(height))));
+
+	if (bottom >= height && bottom - height <= tolerance) {
+		translation = {};
+		return true;
+	}
+
+	const double distance = double(height) + kSurfaceClearance - bottom;
+
+	if (!std::isfinite(distance) ||
+	    std::abs(distance) > (std::numeric_limits<float>::max)()) {
+		error = "The work-plane move cannot be represented at this position.";
+		return false;
+	}
+
+	const float offset = static_cast<float>(distance);
+	double movedBottom = (std::numeric_limits<double>::infinity)();
+
+	for (const auto id : objectIds) {
+		const auto &object = *scene.FindObject(id);
+		auto moved = object.transform;
+		moved.translation.y += offset;
+		AxisAlignedBox bounds;
+
+		if (!BoxColliderUtils::GetWorldBounds(*object.collider, moved,
+		                                      bounds)) {
+			error =
+			    "The moved Collider cannot be represented at this transform.";
+			return false;
+		}
+
+		movedBottom = (std::min)(movedBottom, double(bounds.minimum.y));
+	}
+
+	if (movedBottom < height || movedBottom - height > tolerance) {
+		error = "Coordinate precision prevents placing the Colliders on the "
+		        "work plane.";
+		return false;
+	}
+
+	translation = {0.0f, offset, 0.0f};
+	return true;
+}
+
 bool ColliderPlacement::GetAdjacentTranslation(
     const Scene &scene, std::span<const SceneObjectId> objectIds,
     SceneObjectId referenceId, Face face, DirectX::XMFLOAT3 &translation,

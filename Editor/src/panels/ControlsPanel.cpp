@@ -1261,6 +1261,17 @@ void ControlsPanel::Draw() {
 	         "dialogs and gizmo or selection operations."},
 	        {"View > Camera Settings",
 	         "Adjust movement speed, acceleration and mouse sensitivity."},
+	        {"Place Colliders on Work Plane",
+	         "Use Edit or the Hierarchy menu to move all selected Box "
+	         "Colliders by one Y offset until the group's lowest bound meets "
+	         "the Grid Settings Height. Hidden and model-free Colliders are "
+	         "included. The group can move up or down, with positions relative "
+	         "to one another, rotation, scale and components preserved. A tiny "
+	         "clearance avoids rounding into the plane. Undo/Redo records one "
+	         "operation; repeating an already placed group adds no history. "
+	         "Every selected object needs a valid Collider. Other objects and "
+	         "the travel path are not checked for collisions. Grid visibility "
+	         "does not affect placement. Drop to Ground still uses world Y=0."},
 	        {"View > Grid Settings",
 	         "Adjust grid spacing, extent, major-line interval and work-plane "
 	         "Height. Model and saved-object-group drops use that height when "
