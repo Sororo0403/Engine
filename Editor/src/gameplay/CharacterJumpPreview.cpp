@@ -33,7 +33,11 @@ bool CharacterJumpPreview::BuildPaths(const Scene &scene, SceneObjectId id,
 	     {1, 0, true},
 	     {-1, 0, true},
 	     {0, 1, true},
-	     {0, -1, true}}};
+	     {0, -1, true},
+	     {1, 1, true},
+	     {1, -1, true},
+	     {-1, 1, true},
+	     {-1, -1, true}}};
 	Paths result;
 
 	for (std::size_t i = 0; i < directions.size(); ++i) {
@@ -124,7 +128,11 @@ bool CharacterJumpPreview::Update(SceneRenderer &renderer, const Scene &scene,
 	     {1, .45f, .4f, 1},
 	     {1, .45f, .4f, 1},
 	     {.4f, .7f, 1, 1},
-	     {.4f, .7f, 1, 1}}};
+	     {.4f, .7f, 1, 1},
+	     {.8f, .5f, 1, 1},
+	     {.8f, .5f, 1, 1},
+	     {.8f, .5f, 1, 1},
+	     {.8f, .5f, 1, 1}}};
 
 	for (std::size_t i = 0; i < paths.size(); ++i) {
 		const auto &path = paths[i];

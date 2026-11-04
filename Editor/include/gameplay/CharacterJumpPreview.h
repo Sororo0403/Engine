@@ -13,7 +13,7 @@ class SceneRenderer;
 /// </summary>
 class CharacterJumpPreview {
   public:
-	static constexpr std::size_t kDirectionCount = 5;
+	static constexpr std::size_t kDirectionCount = 9;
 	static constexpr std::size_t kMaximumSteps = 360;
 	static constexpr std::size_t kSampleInterval = 4;
 	static constexpr std::size_t kMaximumPoints =
@@ -36,7 +36,8 @@ class CharacterJumpPreview {
 	using Paths = std::array<Path, kDirectionCount>;
 
 	/// <summary>
-	/// 接地した主人公のその場・+X・-X・+Z・-Z方向のジャンプを120Hzで計算する。
+	/// 接地した主人公のその場・+X・-X・+Z・-Z・斜め4方向の順でジャンプを120Hzで計算する。
+	/// 斜めは+X/+Z・+X/-Z・-X/+Z・-X/-Zの順。実際の移動と同じ速度制限を使う。
 	/// 着地・落下判定高度・3秒で終了し、4更新ごとと終了時の位置を記録する
 	/// </summary>
 	/// <param name="scene">変更しない編集シーン。非表示のColliderも障害物に含める</param>

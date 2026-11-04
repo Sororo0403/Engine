@@ -1057,7 +1057,7 @@ void ControlsPanel::Draw() {
 	         "New/Open. Inspector locks and selection are preserved. Pending "
 	         "edits finish first. Editing is unavailable during Play."},
 	        {"Inspector > Character Controller > Frame Jump",
-	         "Fit the inspected character's five predicted jump paths and "
+	         "Fit the inspected character's nine predicted jump paths and "
 	         "endpoint markers into Scene. A valid Character Controller, "
 	         "Collider and grounded starting position are required. A locked "
 	         "Inspector uses its displayed object. The Scene tab opens when "
@@ -1070,7 +1070,9 @@ void ControlsPanel::Draw() {
 	        {"View > Character Jump Guide",
 	         "Preview a jump from the active selected Character Controller "
 	         "at rest: white stays in place, red moves along world X and blue "
-	         "along world Z. A valid Collider and grounded starting position "
+	         "along world Z; purple previews the four world X/Z diagonals. "
+	         "Diagonal input uses the same movement-speed limit as Play. "
+	         "A valid Collider and grounded starting position "
 	         "are required. Lines follow the object origin using actual "
 	         "120 Hz movement and all static Colliders, including hidden ones. "
 	         "Green endpoints land, red endpoints reach the Respawn fall "
