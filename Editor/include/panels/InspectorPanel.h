@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <optional>
+#include <span>
 
 class ImGuiSystem;
 class Scene;
@@ -57,6 +58,7 @@ class InspectorPanel {
 		REMOVE_MESH,
 		ADD_MESH_RENDERER,
 		REMOVE_MESH_RENDERER,
+		APPLY_UV_TO_SELECTION,
 	};
 
 	/// <summary>
@@ -140,6 +142,7 @@ class InspectorPanel {
 	/// <param name="canPasteCharacter">貼り付けるCharacter設定を保持しているか</param>
 	/// <param name="canPasteFollow">貼り付ける追従設定を保持しているか</param>
 	/// <param name="canPasteRespawn">貼り付ける復帰設定を保持しているか</param>
+	/// <param name="uvTargets">表示物体のUVを一括適用する選択先。空またはMesh Rendererなしの物体を含む場合は要求不可</param>
 	/// <returns>true:物体を編集した false:シーンへの変更なし</returns>
 	bool Draw(const ImGuiSystem &ui, Scene &scene,
 	          SceneObjectId selectedObjectId, EditorHistory &history,
@@ -147,7 +150,8 @@ class InspectorPanel {
 	          const AssetDatabase *assets = nullptr,
 	          bool canPasteCollider = false, bool canPasteCameraLens = false,
 	          bool canPasteCharacter = false, bool canPasteFollow = false,
-	          bool canPasteRespawn = false);
+	          bool canPasteRespawn = false,
+	          std::span<const SceneObjectId> uvTargets = {});
 
 	/// <summary>
 	/// 選択した再生物体の現在値を表示し、Transformのコピーを返す。編集用の固定先・要求・履歴は変更しない

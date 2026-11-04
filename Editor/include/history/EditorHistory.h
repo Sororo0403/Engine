@@ -15,6 +15,7 @@
 #include "history/VisibilityCommand.h"
 #include "scene/SceneObject.h"
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <filesystem>
@@ -368,6 +369,18 @@ class EditorHistory {
 	/// <param name="objectId">Mesh Rendererを持つ物体</param>
 	/// <returns>true:開始成功 false:対象またはMesh Rendererなし</returns>
 	bool BeginMeshRenderer(SceneObjectId objectId);
+
+	/// <summary>
+	/// 選択物体のUVだけを1操作でそろえる。画像・表示状態・他コンポーネントは保持する
+	/// </summary>
+	/// <param name="ids">重複しない対象ID。全物体に有効なMesh Rendererが必要</param>
+	/// <param name="scale">全対象へ適用する有限なUV倍率</param>
+	/// <param name="offset">全対象へ適用する有限なUV移動量</param>
+	/// <returns>true:全件成功または同値 false:空・対象・値が無効。全対象を変更しない</returns>
+	/// <remarks>成功時は物体参照を取得し直す。連続編集中の内容は先に確定する</remarks>
+	bool SetTextureUVs(std::span<const SceneObjectId> ids,
+	                   const std::array<float, 2> &scale,
+	                   const std::array<float, 2> &offset);
 
 	/// <summary>
 	/// FollowCameraコンポーネントを追加・変更・削除して履歴へ記録する

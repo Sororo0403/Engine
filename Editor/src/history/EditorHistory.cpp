@@ -2240,6 +2240,55 @@ bool EditorHistory::SetTexturePath(SceneObjectId id, std::uint32_t slot,
 	return true;
 }
 
+bool EditorHistory::SetTextureUVs(std::span<const SceneObjectId> ids,
+                                  const std::array<float, 2> &scale,
+                                  const std::array<float, 2> &offset) {
+	CommitEdit();
+	MeshRendererComponent values;
+	values.uvScale = scale;
+	values.uvOffset = offset;
+
+	if (ids.empty() || !values.IsValid()) {
+		return false;
+	}
+
+	std::set<SceneObjectId> seen;
+	std::vector<CommandGroup::Command> commands;
+	commands.reserve(ids.size());
+
+	for (const auto id : ids) {
+		const auto *object = scene_.FindObject(id);
+
+		if (!seen.insert(id).second || !object || !object->meshRenderer ||
+		    !object->meshRenderer->IsValid()) {
+			return false;
+		}
+
+		auto next = *object->meshRenderer;
+		next.uvScale = values.uvScale;
+		next.uvOffset = values.uvOffset;
+
+		if (next != *object->meshRenderer) {
+			commands.emplace_back(
+			    MeshRendererCommand{id, object->meshRenderer, std::move(next)});
+		}
+	}
+
+	if (commands.empty()) {
+		return true;
+	}
+
+	CommandGroup group{std::move(commands)};
+	const auto next = PrepareAppend();
+
+	if (!group.Redo(scene_)) {
+		return false;
+	}
+
+	AppendPrepared(Command{std::move(group)}, next, "Apply UV to Selection");
+	return true;
+}
+
 bool EditorHistory::SetTexturePaths(std::span<const SceneObjectId> ids,
                                     std::uint32_t slot,
                                     const std::filesystem::path &path) {

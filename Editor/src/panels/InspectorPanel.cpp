@@ -16,6 +16,7 @@
 #include <imgui.h>
 
 #include <DirectXMath.h>
+#include <algorithm>
 #include <format>
 #include <string>
 #include <utility>
@@ -160,7 +161,8 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
                           ModelManager *models, const AssetDatabase *assets,
                           bool canPasteCollider, bool canPasteCameraLens,
                           bool canPasteCharacter, bool canPasteFollow,
-                          bool canPasteRespawn) {
+                          bool canPasteRespawn,
+                          std::span<const SceneObjectId> uvTargets) {
 	objectRequest_ = {};
 	colliderFitRequest_ = 0;
 	modelRequest_ = {};
@@ -468,11 +470,25 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 				slotModelRevision_ = models->GetCacheRevision();
 			}
 
+			const bool canApplyUv =
+			    !uvTargets.empty() &&
+			    std::all_of(uvTargets.begin(), uvTargets.end(),
+			                [&scene](SceneObjectId id) {
+				                const auto *target = scene.FindObject(id);
+				                return target && target->meshRenderer &&
+				                       target->meshRenderer->IsValid();
+			                });
+
 			TextureSlotInspector::Request request;
-			changed |=
-			    TextureSlotInspector{}.Draw(ui, inspectedObjectId, *object,
-			                                history, *models, *assets, request);
+			changed |= TextureSlotInspector{}.Draw(
+			    ui, inspectedObjectId, *object, history, *models, *assets,
+			    request, canApplyUv);
 			assetRevealPath_ = std::move(request.revealTexture);
+
+			if (request.applyUvToSelection) {
+				objectRequest_ = {ObjectAction::APPLY_UV_TO_SELECTION,
+				                  inspectedObjectId};
+			}
 		}
 
 		if (ui.Button("Remove Mesh Renderer")) {

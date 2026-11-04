@@ -13,8 +13,8 @@
 bool TextureSlotInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
                                 SceneObject &object, EditorHistory &history,
                                 ModelManager &models,
-                                const AssetDatabase &assets,
-                                Request &request) const {
+                                const AssetDatabase &assets, Request &request,
+                                bool canApplyUvToSelection) const {
 	request = {};
 	if (!object.meshRenderer) {
 		return false;
@@ -55,6 +55,14 @@ bool TextureSlotInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		changed |=
 		    history.SetMeshRenderer(id, reset) && object.meshRenderer != before;
 	}
+
+	ui.BeginDisabled(!canApplyUvToSelection);
+
+	if (ui.Button("Apply UV to Selected Objects") && canApplyUvToSelection) {
+		request.applyUvToSelection = true;
+	}
+
+	ui.EndDisabled();
 
 	{
 		const auto model = !object.HasMesh()

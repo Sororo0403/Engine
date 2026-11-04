@@ -14,10 +14,11 @@ struct SceneObject;
 class TextureSlotInspector {
   public:
 	/// <summary>
-	/// 描画後にAssetsで表示する画像への要求
+	/// 描画後にAssetsで表示する画像と、選択物体へのUV適用要求
 	/// </summary>
 	struct Request {
 		std::filesystem::path revealTexture;
+		bool applyUvToSelection = false;
 	};
 
 	/// <summary>
@@ -30,8 +31,10 @@ class TextureSlotInspector {
 	/// <param name="models">材質スロット数を取得するモデル管理</param>
 	/// <param name="assets">割り当て可能な画像の一覧</param>
 	/// <param name="request">画像を表示する要求。操作なしの場合はクリアする</param>
+	/// <param name="canApplyUvToSelection">全選択物体へUVを適用する要求を許可するか</param>
 	/// <returns>true:UVまたは割り当て変更あり false:変更なし、または編集要求のみ</returns>
 	bool Draw(const ImGuiSystem &ui, SceneObjectId id, SceneObject &object,
 	          EditorHistory &history, ModelManager &models,
-	          const AssetDatabase &assets, Request &request) const;
+	          const AssetDatabase &assets, Request &request,
+	          bool canApplyUvToSelection = false) const;
 };

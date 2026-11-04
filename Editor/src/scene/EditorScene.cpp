@@ -413,7 +413,8 @@ bool EditorScene::Update(float deltaTime) {
 	                     clipboard_.GetCameraLens() != nullptr,
 	                     clipboard_.GetCharacterSettings() != nullptr,
 	                     clipboard_.GetFollowSettings() != nullptr,
-	                     clipboard_.GetRespawnSettings() != nullptr);
+	                     clipboard_.GetRespawnSettings() != nullptr,
+	                     selection_.GetIds());
 	const auto &objectRequest = inspectorPanel_.GetObjectRequest();
 	const bool hasObjectRequest =
 	    objectRequest.action != InspectorPanel::ObjectAction::NONE;
@@ -3356,6 +3357,28 @@ void EditorScene::ApplyInspectorRequest(
 
 		if (!object) {
 			ShowError("Could not find the object to edit.");
+			return;
+		}
+
+		if (request.action ==
+		    InspectorPanel::ObjectAction::APPLY_UV_TO_SELECTION) {
+			if (!object->meshRenderer || !object->meshRenderer->IsValid()) {
+				ShowError("Could not read valid UV settings from the inspected "
+				          "object.");
+				return;
+			}
+
+			const auto scale = object->meshRenderer->uvScale;
+			const auto offset = object->meshRenderer->uvOffset;
+
+			if (!document_.GetHistory().SetTextureUVs(selection_.GetIds(),
+			                                          scale, offset)) {
+				ShowError(
+				    "Could not apply UV settings. Every selected object must "
+				    "have "
+				    "a valid Mesh Renderer. No selected object was changed.");
+			}
+
 			return;
 		}
 

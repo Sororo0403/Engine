@@ -208,7 +208,12 @@ void ControlsPanel::Draw() {
 	         "operation; Reset UV restores tiling 1,1 and offset 0,0. Play "
 	         "shows these values read-only. Scene version 13 stores them; "
 	         "older scenes load with the default UVs. Game output preserves "
-	         "the same settings."},
+	         "the same settings. Apply UV to Selected Objects copies only "
+	         "the inspected UVs to all selected objects as one Undo/Redo "
+	         "operation. Every target needs a valid Mesh Renderer; otherwise "
+	         "nothing is changed. Images, visibility and other components "
+	         "are kept. A locked Inspector can supply UVs from an object "
+	         "outside the selection."},
 	        {"Hierarchy > Scene Picking",
 	         "Right-click objects and Disable Scene Picking to exclude them "
 	         "from Scene clicks and box selection while keeping them visible. "
