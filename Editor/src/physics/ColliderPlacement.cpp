@@ -377,8 +377,13 @@ bool ColliderPlacement::GetAdjacentTranslation(
 
 bool ColliderPlacement::GetRepeatTranslation(
     const Scene &scene, std::span<const SceneObjectId> objectIds, Face face,
-    int copies, DirectX::XMFLOAT3 &translation, std::string &error) {
+    int copies, DirectX::XMFLOAT3 &translation, std::string &error,
+    double minimumGap) {
 	error.clear();
+	if (!std::isfinite(minimumGap) || minimumGap < 0.0) {
+		error = "Use a finite, nonnegative minimum gap.";
+		return false;
+	}
 	ObjectArraySettings settings;
 	settings.copies = copies;
 	if (!settings.IsValid(objectIds.size()) || !CanDrop(scene, objectIds)) {
@@ -441,11 +446,16 @@ bool ColliderPlacement::GetRepeatTranslation(
 	}
 	const double width = maximum - minimum;
 	const double margin =
-	    kSurfaceClearance + kFaceRoundoffFactor *
-	                            std::numeric_limits<float>::epsilon() *
-	                            (std::max)({1.0, std::abs(minimum),
-	                                        std::abs(maximum), width * copies});
-	const double distance = width + margin;
+	    kSurfaceClearance +
+	    kFaceRoundoffFactor * std::numeric_limits<float>::epsilon() *
+	        (std::max)({1.0, std::abs(minimum), std::abs(maximum),
+	                    (width + minimumGap) * copies});
+	const double distance = width + minimumGap + margin;
+	if (!std::isfinite(distance) ||
+	    distance > (std::numeric_limits<float>::max)()) {
+		error = "The collider spacing cannot be represented.";
+		return false;
+	}
 	float step = float(distance);
 	if (double(step) < distance) {
 		step = std::nextafter(step, (std::numeric_limits<float>::infinity)());
@@ -480,10 +490,11 @@ bool ColliderPlacement::GetRepeatTranslation(
 			groupMaximum =
 			    (std::max)(groupMaximum, double(component(bounds.maximum)));
 		}
-		if (positive ? groupMinimum < previousFace
-		             : groupMaximum > previousFace) {
-			error = "Repeated colliders would overlap at this coordinate "
-			        "precision.";
+		const double gap = positive ? groupMinimum - previousFace
+		                            : previousFace - groupMaximum;
+		if (gap < minimumGap) {
+			error = "The requested gap between repeated colliders cannot be "
+			        "preserved at this coordinate precision.";
 			return false;
 		}
 		previousFace = positive ? groupMaximum : groupMinimum;

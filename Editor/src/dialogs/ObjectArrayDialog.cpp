@@ -2,6 +2,7 @@
 
 #include "graphics/ui/ImGuiSystem.h"
 #include "scene/Scene.h"
+#include <cmath>
 #include <format>
 #include <imgui.h>
 #include <iterator>
@@ -30,6 +31,7 @@ bool ObjectArrayDialog::Show(const Scene &scene,
 	spacingFace_.reset();
 	spacingError_.clear();
 	fittedCopies_ = 0;
+	minimumGap_ = 0;
 	openRequested_ = true;
 	return true;
 }
@@ -55,6 +57,10 @@ ObjectArrayResult ObjectArrayDialog::Draw(const ImGuiSystem &ui,
 		spacingError_.clear();
 	}
 	ImGui::SeparatorText("Spacing from Colliders");
+	const bool gapChanged =
+	    ImGui::InputDouble("Minimum Gap", &minimumGap_, 0.1, 1.0, "%.3f");
+	const bool validGap = std::isfinite(minimumGap_) && minimumGap_ >= 0;
+
 	const std::pair<const char *, ColliderPlacement::Face> directions[] = {
 	    {"Spacing +X", ColliderPlacement::Face::RIGHT},
 	    {"Spacing -X", ColliderPlacement::Face::LEFT},
@@ -64,7 +70,8 @@ ObjectArrayResult ObjectArrayDialog::Draw(const ImGuiSystem &ui,
 	    {"Spacing -Z", ColliderPlacement::Face::BACK}};
 	bool fitRequested = false;
 	ui.BeginDisabled(!settings_.IsValid(sourceIds_.size()) ||
-	                 !ColliderPlacement::CanDrop(scene, sourceIds_));
+	                 !ColliderPlacement::CanDrop(scene, sourceIds_) ||
+	                 !validGap);
 	for (std::size_t i = 0; i < std::size(directions); ++i) {
 		if (i % 2 != 0) {
 			ui.SameLine();
@@ -79,9 +86,10 @@ ObjectArrayResult ObjectArrayDialog::Draw(const ImGuiSystem &ui,
 		fittedCopies_ = settings_.copies;
 		return ColliderPlacement::GetRepeatTranslation(
 		    scene, sourceIds_, *spacingFace_, settings_.copies,
-		    settings_.offset, spacingError_);
+		    settings_.offset, spacingError_, minimumGap_);
 	};
-	if (spacingFace_ && (fitRequested || fittedCopies_ != settings_.copies)) {
+	if (spacingFace_ &&
+	    (fitRequested || fittedCopies_ != settings_.copies || gapChanged)) {
 		fit();
 	}
 	const bool validSettings = settings_.IsValid(sourceIds_.size());

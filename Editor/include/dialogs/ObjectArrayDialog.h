@@ -30,7 +30,7 @@ class ObjectArrayDialog {
 	bool Show(const Scene &scene, std::span<const SceneObjectId> ids);
 
 	/// <summary>
-	/// 組数と間隔を編集し、確定・取消の要求を返す
+	/// 組数・間隔・Collider間の最小すき間を編集し、確定・取消の要求を返す
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
 	/// <param name="scene">現在の元シーン。Colliderによる間隔の計算と確定前の再検証に使用する</param>
@@ -55,5 +55,6 @@ class ObjectArrayDialog {
 	bool openRequested_ = false;
 	std::optional<ColliderPlacement::Face> spacingFace_;
 	int fittedCopies_ = 0;
+	double minimumGap_ = 0;
 	std::string spacingError_;
 };
