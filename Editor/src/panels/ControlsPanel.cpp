@@ -115,7 +115,9 @@ void ControlsPanel::Draw() {
 	        {"View > Camera View",
 	         "Look from the front, back, left, right, top or bottom in "
 	         "perspective. Center on selected object origins, or the world "
-	         "origin when nothing is selected; keep the current distance."},
+	         "origin when nothing is selected; keep the current distance. "
+	         "Camera View and Reset Camera reveal the Scene tab so the "
+	         "result is visible even when Game covers it."},
 	        {"Hierarchy double-click", "Frame the clicked object. Model-free "
 	                                   "objects use their Collider or origin."},
 	    });

@@ -2321,6 +2321,7 @@ void EditorScene::StartAction(EditorAction action) {
 	case EditorAction::RESET_CAMERA:
 		cameraController_.Reset();
 		frameRequest_ = FrameRequest::NONE;
+		ShowSceneView();
 		return;
 	case EditorAction::RESET_TRANSFORMS:
 		ResetSelectedTransforms();
@@ -2936,6 +2937,7 @@ void EditorScene::SetCameraView(CameraView view) {
 	}
 
 	frameRequest_ = FrameRequest::NONE;
+	ShowSceneView();
 }
 
 std::filesystem::path
