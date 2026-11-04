@@ -131,6 +131,10 @@ bool ColliderInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 			request = {Action::FRAME, id};
 		}
 
+		if (ui.Button("Use Top as Work Plane")) {
+			request = {Action::SET_WORK_PLANE, id};
+		}
+
 		if (ui.Button("Select Overlapping Colliders")) {
 			request = {Action::SELECT_OVERLAPS, id};
 		}

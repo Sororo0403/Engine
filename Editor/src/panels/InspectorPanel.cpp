@@ -520,6 +520,10 @@ bool InspectorPanel::Draw(
 	           ColliderInspector::Action::SELECT_OVERLAPS) {
 		objectRequest_ = {ObjectAction::SELECT_COLLIDER_OVERLAPS,
 		                  colliderRequest.objectId};
+	} else if (colliderRequest.action ==
+	           ColliderInspector::Action::SET_WORK_PLANE) {
+		objectRequest_ = {ObjectAction::SET_WORK_PLANE_FROM_COLLIDER,
+		                  colliderRequest.objectId};
 	} else if (colliderRequest.action == ColliderInspector::Action::FRAME) {
 		objectRequest_ = {ObjectAction::FRAME_COLLIDER,
 		                  colliderRequest.objectId};

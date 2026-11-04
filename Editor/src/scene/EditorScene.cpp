@@ -3511,6 +3511,31 @@ void EditorScene::ApplyInspectorRequest(
 			return;
 		}
 
+		if (request.action ==
+		    InspectorPanel::ObjectAction::SET_WORK_PLANE_FROM_COLLIDER) {
+			AxisAlignedBox bounds;
+
+			if (!object->collider ||
+			    !BoxColliderUtils::GetWorldBounds(*object->collider,
+			                                      object->transform, bounds)) {
+				ShowError(
+				    "Could not read a valid Collider top for the work plane.",
+				    request.objectId);
+				return;
+			}
+
+			auto settings = sceneGrid_.GetSettings();
+			settings.height = bounds.maximum.y;
+
+			if (!sceneGrid_.SetSettings(settings)) {
+				ShowError("The Collider top is outside the supported "
+				          "work-plane height range.",
+				          request.objectId);
+			}
+
+			return;
+		}
+
 		if (request.action == InspectorPanel::ObjectAction::COPY_UV) {
 			if (!object->meshRenderer || !object->meshRenderer->IsValid() ||
 			    !clipboard_.CopyTextureUVs(object->meshRenderer->uvScale,

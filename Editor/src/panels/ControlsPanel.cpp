@@ -1261,6 +1261,15 @@ void ControlsPanel::Draw() {
 	         "dialogs and gizmo or selection operations."},
 	        {"View > Camera Settings",
 	         "Adjust movement speed, acceleration and mouse sensitivity."},
+	        {"Inspector > Box Collider > Use Top as Work Plane",
+	         "Set Grid Settings Height from the inspected Collider's world "
+	         "maximum Y after rotation, scale and local center offset. A "
+	         "locked Inspector uses its displayed object, even outside the "
+	         "selection. Pending edits finish first. The scene, selection, "
+	         "camera, Inspector lock and grid visibility stay unchanged; this "
+	         "workspace setting adds no Undo operation. Invalid bounds or a "
+	         "top outside the supported height range keep the previous plane. "
+	         "Available while editing only."},
 	        {"Place Colliders on Work Plane",
 	         "Use Edit or the Hierarchy menu to move all selected Box "
 	         "Colliders by one Y offset until the group's lowest bound meets "
