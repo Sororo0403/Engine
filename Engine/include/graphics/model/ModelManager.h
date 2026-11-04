@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <memory>
+#include <string_view>
 
 class D3D12Graphics;
 
@@ -71,6 +72,25 @@ class ModelManager {
 	/// <param name="model">この描画基盤で読み込んだモデル</param>
 	/// <returns>有効なスロット数。無効なハンドルは0</returns>
 	std::size_t GetMaterialCount(const ModelHandle &model) const;
+
+	/// <summary>
+	/// モデルに記録された材質スロットの名前を取得する
+	/// </summary>
+	/// <param name="model">この描画基盤で読み込んだモデル</param>
+	/// <param name="materialIndex">材質スロット番号</param>
+	/// <returns>材質名。無効なハンドル・範囲外・未設定は空</returns>
+	/// <remarks>ハンドルが参照するモデルの生存中は有効。再読み込み後も旧ハンドルは旧モデルの名前を返す</remarks>
+	std::string_view GetMaterialName(const ModelHandle &model,
+	                                 std::size_t materialIndex) const;
+
+	/// <summary>
+	/// モデルの材質スロットを実際に使用するメッシュ数を取得する
+	/// </summary>
+	/// <param name="model">この描画基盤で読み込んだモデル</param>
+	/// <param name="materialIndex">材質スロット番号</param>
+	/// <returns>メッシュ数。無効なハンドル・範囲外・未使用は0</returns>
+	std::size_t GetMaterialMeshCount(const ModelHandle &model,
+	                                 std::size_t materialIndex) const;
 
 	/// <summary>
 	/// 読み込み済みモデルのローカル座標の外接ボックスを取得する

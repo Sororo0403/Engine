@@ -152,6 +152,12 @@ bool ModelLoader::Load(const std::filesystem::path &filePath,
 		}
 
 		ModelMaterialData material;
+		aiString name;
+
+		if (source.Get(AI_MATKEY_NAME, name) == AI_SUCCESS) {
+			material.name = name.C_Str();
+		}
+
 		material.baseColor = {color.r, color.g, color.b, color.a};
 
 		if (!LoadBaseColorTexture(*scene, source, filePath,

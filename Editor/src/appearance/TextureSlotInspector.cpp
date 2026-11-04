@@ -88,6 +88,11 @@ bool TextureSlotInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 
 		for (std::size_t slot = 0; slot < count; ++slot) {
 			ImGui::PushID(static_cast<int>(slot));
+			const auto materialName = models.GetMaterialName(model, slot);
+			const auto meshes = models.GetMaterialMeshCount(model, slot);
+			ui.Text(std::format("Material: {} | Meshes: {}{}",
+			                    materialName.empty() ? "Unnamed" : materialName,
+			                    meshes, meshes == 0 ? " [Unused]" : ""));
 			const auto found = std::find_if(
 			    object.meshRenderer->textures.slots.begin(),
 			    object.meshRenderer->textures.slots.end(),

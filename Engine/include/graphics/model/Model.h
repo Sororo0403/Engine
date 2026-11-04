@@ -8,6 +8,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <string>
+#include <string_view>
 #include <vector>
 
 struct ModelData;
@@ -70,6 +72,20 @@ class Model {
 	std::size_t GetMaterialCount() const;
 
 	/// <summary>
+	/// 元モデルの材質名を取得する
+	/// </summary>
+	/// <param name="materialIndex">モデル内の材質スロット番号</param>
+	/// <returns>材質名。未設定・範囲外は空。モデルの生存中は参照が有効</returns>
+	std::string_view GetMaterialName(std::size_t materialIndex) const;
+
+	/// <summary>
+	/// 指定した材質スロットを使用するメッシュ数を取得する
+	/// </summary>
+	/// <param name="materialIndex">モデル内の材質スロット番号</param>
+	/// <returns>使用するメッシュ数。未使用・範囲外は0</returns>
+	std::size_t GetMaterialMeshCount(std::size_t materialIndex) const;
+
+	/// <summary>
 	/// モデルに設定されている材質の初期値を取得する
 	/// </summary>
 	/// <param name="materialIndex">0以上、GetMaterialCount()未満の材質番号</param>
@@ -118,6 +134,10 @@ class Model {
 	DirectX::BoundingBox bounds_{};
 
 	std::vector<MeshPart> parts_;
+
+	// 材質スロットの元の名前と、参照するメッシュの数
+	std::vector<std::string> materialNames_;
+	std::vector<std::size_t> materialMeshCounts_;
 
 	// モデルから読み込んだ既定材質への参照。画像とSRVは材質側が保持する
 	std::vector<std::shared_ptr<const MaterialResource>> defaultMaterials_;

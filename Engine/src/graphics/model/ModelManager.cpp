@@ -216,3 +216,19 @@ std::size_t ModelManager::GetMaterialCount(const ModelHandle &model) const {
 	           ? model.model_->GetMaterialCount()
 	           : 0;
 }
+
+std::string_view
+ModelManager::GetMaterialName(const ModelHandle &model,
+                              std::size_t materialIndex) const {
+	return model.model_ && model.graphics_ == &impl_->graphics
+	           ? model.model_->GetMaterialName(materialIndex)
+	           : std::string_view{};
+}
+
+std::size_t
+ModelManager::GetMaterialMeshCount(const ModelHandle &model,
+                                   std::size_t materialIndex) const {
+	return model.model_ && model.graphics_ == &impl_->graphics
+	           ? model.model_->GetMaterialMeshCount(materialIndex)
+	           : 0;
+}

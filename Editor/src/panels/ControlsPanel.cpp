@@ -200,6 +200,15 @@ void ControlsPanel::Draw() {
 	         "resource validation. All combine with name/ID and Hidden only, "
 	         "sorting, range selection and Select All Visible, including "
 	         "Play."},
+	        {"Inspector > Mesh Renderer > Texture Slots",
+	         "Each slot shows the source material name and how many model "
+	         "meshes use it. Unused slots keep their original numbers and "
+	         "assignments, but changing their image does not affect the "
+	         "current "
+	         "model. Names are hints; assignments continue to use slot numbers "
+	         "after reload or mesh replacement. No image is assigned "
+	         "automatically. White remains the default until an image is "
+	         "explicitly selected."},
 	        {"Inspector > Mesh Renderer > UV",
 	         "UV Tiling repeats or mirrors the image; UV Offset moves its "
 	         "sampling position. Values apply to all texture slots of this "

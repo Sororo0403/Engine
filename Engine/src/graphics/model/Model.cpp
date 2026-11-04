@@ -34,8 +34,11 @@ bool Model::Initialize(ID3D12Device *device, ID3D12CommandQueue *commandQueue,
 	try {
 		// 既定材質も独立した共有リソースとして作成し、モデルは参照だけを持つ。
 		defaultMaterials_.reserve(data.materials.size());
+		materialNames_.reserve(data.materials.size());
+		materialMeshCounts_.assign(data.materials.size(), 0);
 
 		for (const auto &source : data.materials) {
+			materialNames_.push_back(source.name);
 			MaterialData material;
 			material.baseColor = source.baseColor;
 			auto resource = std::make_shared<MaterialResource>();
@@ -89,6 +92,7 @@ bool Model::CreateMeshes(ID3D12Device *device, const ModelData &data) {
 		}
 
 		part.materialIndex = source.materialIndex;
+		++materialMeshCounts_[part.materialIndex];
 
 		// 選択判定には座標と頂点番号だけを保持する
 		part.positions.reserve(source.mesh.vertices.size());
@@ -138,6 +142,18 @@ std::size_t Model::GetMeshMaterialIndex(std::size_t meshIndex) const {
 
 std::size_t Model::GetMaterialCount() const {
 	return defaultMaterials_.size();
+}
+
+std::string_view Model::GetMaterialName(std::size_t materialIndex) const {
+	return materialIndex < materialNames_.size()
+	           ? std::string_view{materialNames_[materialIndex]}
+	           : std::string_view{};
+}
+
+std::size_t Model::GetMaterialMeshCount(std::size_t materialIndex) const {
+	return materialIndex < materialMeshCounts_.size()
+	           ? materialMeshCounts_[materialIndex]
+	           : 0;
 }
 
 const MaterialData &
@@ -225,4 +241,6 @@ void Model::Finalize() {
 	bounds_ = {};
 
 	defaultMaterials_.clear();
+	materialNames_.clear();
+	materialMeshCounts_.clear();
 }
