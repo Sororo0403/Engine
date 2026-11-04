@@ -155,14 +155,12 @@ SceneObjectId InspectorPanel::GetColliderFitRequest() const {
 	return colliderFitRequest_;
 }
 
-bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
-                          SceneObjectId selectedObjectId,
-                          EditorHistory &history, bool canPasteTransform,
-                          ModelManager *models, const AssetDatabase *assets,
-                          bool canPasteCollider, bool canPasteCameraLens,
-                          bool canPasteCharacter, bool canPasteFollow,
-                          bool canPasteRespawn,
-                          std::span<const SceneObjectId> uvTargets) {
+bool InspectorPanel::Draw(
+    const ImGuiSystem &ui, Scene &scene, SceneObjectId selectedObjectId,
+    EditorHistory &history, bool canPasteTransform, ModelManager *models,
+    const AssetDatabase *assets, bool canPasteCollider, bool canPasteCameraLens,
+    bool canPasteCharacter, bool canPasteFollow, bool canPasteRespawn,
+    std::span<const SceneObjectId> uvTargets, bool canPasteUv) {
 	objectRequest_ = {};
 	colliderFitRequest_ = 0;
 	modelRequest_ = {};
@@ -482,10 +480,15 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 			TextureSlotInspector::Request request;
 			changed |= TextureSlotInspector{}.Draw(
 			    ui, inspectedObjectId, *object, history, *models, *assets,
-			    request, canApplyUv);
+			    request, canApplyUv, canPasteUv);
 			assetRevealPath_ = std::move(request.revealTexture);
 
-			if (request.applyUvToSelection) {
+			if (request.copyUv) {
+				objectRequest_ = {ObjectAction::COPY_UV, inspectedObjectId};
+			} else if (request.pasteUvToSelection) {
+				objectRequest_ = {ObjectAction::PASTE_UV_TO_SELECTION,
+				                  inspectedObjectId};
+			} else if (request.applyUvToSelection) {
 				objectRequest_ = {ObjectAction::APPLY_UV_TO_SELECTION,
 				                  inspectedObjectId};
 			}

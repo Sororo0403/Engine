@@ -3,6 +3,7 @@
 #include "scene/SceneObject.h"
 #include "scene/SceneObjectId.h"
 
+#include <array>
 #include <cstddef>
 #include <optional>
 #include <span>
@@ -11,7 +12,7 @@
 class Scene;
 
 /// <summary>
-/// コピーした物体・Transform・Box Collider・Cameraのレンズ設定・Character設定・追従設定・復帰設定を、元のシーンと独立して保持する
+/// コピーした物体・Transform・Box Collider・Cameraのレンズ設定・Character設定・追従設定・復帰設定・UVを、元のシーンと独立して保持する
 /// </summary>
 class EditorClipboard {
   public:
@@ -126,6 +127,29 @@ class EditorClipboard {
 	const RespawnSettings *GetRespawnSettings() const;
 
 	/// <summary>
+	/// 画像の参照を含まない、物体ごとのUV調整
+	/// </summary>
+	struct TextureUVs {
+		std::array<float, 2> scale{1.0f, 1.0f};
+		std::array<float, 2> offset{0.0f, 0.0f};
+	};
+
+	/// <summary>
+	/// UVの繰り返しと位置だけをコピーする。他のコピー内容は変更しない
+	/// </summary>
+	/// <param name="scale">有限な繰り返し倍率。0と負数も使用可能</param>
+	/// <param name="offset">有限なUV位置</param>
+	/// <returns>true:成功 false:値が無効。以前の内容は保持する</returns>
+	bool CopyTextureUVs(const std::array<float, 2> &scale,
+	                    const std::array<float, 2> &offset);
+
+	/// <summary>
+	/// コピーしたUVを取得する。シーンを切り替えても保持する
+	/// </summary>
+	/// <returns>次のCopyTextureUVs成功またはClearまで有効な値。未設定はnullptr</returns>
+	const TextureUVs *GetTextureUVs() const;
+
+	/// <summary>
 	/// コピーしたデータを破棄する
 	/// </summary>
 	void Clear();
@@ -141,4 +165,5 @@ class EditorClipboard {
 	std::optional<CharacterSettings> characterSettings_;
 	std::optional<FollowCameraSettings> followSettings_;
 	std::optional<RespawnSettings> respawnSettings_;
+	std::optional<TextureUVs> textureUVs_;
 };

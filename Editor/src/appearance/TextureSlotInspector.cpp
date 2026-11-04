@@ -14,7 +14,8 @@ bool TextureSlotInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
                                 SceneObject &object, EditorHistory &history,
                                 ModelManager &models,
                                 const AssetDatabase &assets, Request &request,
-                                bool canApplyUvToSelection) const {
+                                bool canApplyUvToSelection,
+                                bool canPasteUv) const {
 	request = {};
 	if (!object.meshRenderer) {
 		return false;
@@ -56,6 +57,21 @@ bool TextureSlotInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		    history.SetMeshRenderer(id, reset) && object.meshRenderer != before;
 	}
 
+	ui.BeginDisabled(!object.meshRenderer->IsValid());
+
+	if (ui.Button("Copy UV") && object.meshRenderer->IsValid()) {
+		request.copyUv = true;
+	}
+
+	ui.EndDisabled();
+	ui.BeginDisabled(!canPasteUv || !canApplyUvToSelection);
+
+	if (ui.Button("Paste UV to Selected Objects") && canPasteUv &&
+	    canApplyUvToSelection) {
+		request.pasteUvToSelection = true;
+	}
+
+	ui.EndDisabled();
 	ui.BeginDisabled(!canApplyUvToSelection);
 
 	if (ui.Button("Apply UV to Selected Objects") && canApplyUvToSelection) {

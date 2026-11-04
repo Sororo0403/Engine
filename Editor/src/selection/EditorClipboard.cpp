@@ -149,6 +149,24 @@ const RespawnSettings *EditorClipboard::GetRespawnSettings() const {
 	return respawnSettings_ ? &*respawnSettings_ : nullptr;
 }
 
+bool EditorClipboard::CopyTextureUVs(const std::array<float, 2> &scale,
+                                     const std::array<float, 2> &offset) {
+	MeshRendererComponent values;
+	values.uvScale = scale;
+	values.uvOffset = offset;
+
+	if (!values.IsValid()) {
+		return false;
+	}
+
+	textureUVs_ = TextureUVs{values.uvScale, values.uvOffset};
+	return true;
+}
+
+const EditorClipboard::TextureUVs *EditorClipboard::GetTextureUVs() const {
+	return textureUVs_ ? &*textureUVs_ : nullptr;
+}
+
 void EditorClipboard::Clear() {
 	objects_.clear();
 	sourceIds_.clear();
@@ -159,4 +177,5 @@ void EditorClipboard::Clear() {
 	characterSettings_.reset();
 	followSettings_.reset();
 	respawnSettings_.reset();
+	textureUVs_.reset();
 }

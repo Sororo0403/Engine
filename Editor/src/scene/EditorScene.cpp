@@ -427,7 +427,8 @@ bool EditorScene::Update(float deltaTime) {
 	                     clipboard_.GetCharacterSettings() != nullptr,
 	                     clipboard_.GetFollowSettings() != nullptr,
 	                     clipboard_.GetRespawnSettings() != nullptr,
-	                     selection_.GetIds());
+	                     selection_.GetIds(),
+	                     clipboard_.GetTextureUVs() != nullptr);
 	const auto &objectRequest = inspectorPanel_.GetObjectRequest();
 	const bool hasObjectRequest =
 	    objectRequest.action != InspectorPanel::ObjectAction::NONE;
@@ -3375,6 +3376,32 @@ void EditorScene::ApplyInspectorRequest(
 
 		if (!object) {
 			ShowError("Could not find the object to edit.");
+			return;
+		}
+
+		if (request.action == InspectorPanel::ObjectAction::COPY_UV) {
+			if (!object->meshRenderer || !object->meshRenderer->IsValid() ||
+			    !clipboard_.CopyTextureUVs(object->meshRenderer->uvScale,
+			                               object->meshRenderer->uvOffset)) {
+				ShowError("Could not copy valid UV settings from the inspected "
+				          "object.");
+			}
+
+			return;
+		}
+
+		if (request.action ==
+		    InspectorPanel::ObjectAction::PASTE_UV_TO_SELECTION) {
+			const auto *copied = clipboard_.GetTextureUVs();
+
+			if (!copied ||
+			    !document_.GetHistory().SetTextureUVs(
+			        selection_.GetIds(), copied->scale, copied->offset)) {
+				ShowError("Could not paste UV settings. Copy valid UVs and "
+				          "select objects with valid Mesh Renderers. No "
+				          "selected object was changed.");
+			}
+
 			return;
 		}
 

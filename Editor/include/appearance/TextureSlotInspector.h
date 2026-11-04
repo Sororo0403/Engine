@@ -19,6 +19,8 @@ class TextureSlotInspector {
 	struct Request {
 		std::filesystem::path revealTexture;
 		bool applyUvToSelection = false;
+		bool copyUv = false;
+		bool pasteUvToSelection = false;
 	};
 
 	/// <summary>
@@ -32,9 +34,11 @@ class TextureSlotInspector {
 	/// <param name="assets">割り当て可能な画像の一覧</param>
 	/// <param name="request">画像を表示する要求。操作なしの場合はクリアする</param>
 	/// <param name="canApplyUvToSelection">全選択物体へUVを適用する要求を許可するか</param>
+	/// <param name="canPasteUv">コピー済みの有効なUVがあるか</param>
 	/// <returns>true:UVまたは割り当て変更あり false:変更なし、または編集要求のみ</returns>
 	bool Draw(const ImGuiSystem &ui, SceneObjectId id, SceneObject &object,
 	          EditorHistory &history, ModelManager &models,
 	          const AssetDatabase &assets, Request &request,
-	          bool canApplyUvToSelection = false) const;
+	          bool canApplyUvToSelection = false,
+	          bool canPasteUv = false) const;
 };

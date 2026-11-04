@@ -213,7 +213,11 @@ void ControlsPanel::Draw() {
 	         "operation. Every target needs a valid Mesh Renderer; otherwise "
 	         "nothing is changed. Images, visibility and other components "
 	         "are kept. A locked Inspector can supply UVs from an object "
-	         "outside the selection."},
+	         "outside the selection. Copy UV keeps only tiling and offset in "
+	         "the Editor clipboard, including across scene changes. Paste UV "
+	         "to Selected Objects applies that copy as one Undo/Redo operation "
+	         "without changing images. Every selected object must have a "
+	         "valid Mesh Renderer; Play remains read-only."},
 	        {"Hierarchy > Scene Picking",
 	         "Right-click objects and Disable Scene Picking to exclude them "
 	         "from Scene clicks and box selection while keeping them visible. "
