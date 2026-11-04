@@ -2388,7 +2388,7 @@ void EditorScene::StartAction(EditorAction action) {
 				    "Could not load the built-in Box. No object was created.");
 				return;
 			}
-			boxCreationDialog_.Show(bounds);
+			boxCreationDialog_.Show(bounds, sceneGrid_.GetSettings().height);
 			stage_ = DialogStage::BOX_CREATION;
 		} catch (const std::exception &error) {
 			ShowError(error.what());

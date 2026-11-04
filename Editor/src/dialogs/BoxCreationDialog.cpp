@@ -1,12 +1,18 @@
 #include "dialogs/BoxCreationDialog.h"
 
 #include "graphics/ui/ImGuiSystem.h"
+#include "physics/BoxColliderUtils.h"
 #include "scene/PrimitiveObjects.h"
+#include <algorithm>
+#include <cmath>
 #include <imgui.h>
+#include <limits>
+#include <utility>
 
-void BoxCreationDialog::Show(const BoxCollider &bounds) {
+void BoxCreationDialog::Show(const BoxCollider &bounds, float planeHeight) {
 	settings_ = {};
 	bounds_ = bounds;
+	planeHeight_ = planeHeight;
 	opening_ = true;
 }
 
@@ -24,6 +30,33 @@ BoxCreationResult BoxCreationDialog::Draw(const ImGuiSystem &ui) {
 	ui.InputText("Name", settings_.name);
 	ImGui::InputFloat3("Center", &settings_.center.x);
 	ImGui::InputFloat3("Size", &settings_.size.x);
+	auto placed = settings_;
+	const double centerY = double(planeHeight_) + double(placed.size.y) * 0.5;
+	bool canPlace = std::isfinite(planeHeight_) && std::isfinite(centerY) &&
+	                std::abs(centerY) <= (std::numeric_limits<float>::max)();
+
+	if (canPlace) {
+		placed.center.y = static_cast<float>(centerY);
+		SceneObject checked;
+		std::string message;
+		canPlace =
+		    PrimitiveObjects::TryCreateBox(placed, bounds_, checked, message);
+		AxisAlignedBox world;
+		canPlace = canPlace && checked.collider &&
+		           BoxColliderUtils::GetWorldBounds(*checked.collider,
+		                                            checked.transform, world) &&
+		           std::abs(double(world.minimum.y) - planeHeight_) <=
+		               BoxCreationSettings::kBoundsRelativeTolerance *
+		                   (std::max)(1.0, std::abs(double(planeHeight_)));
+	}
+
+	ui.BeginDisabled(!canPlace);
+
+	if (ui.Button("Place Bottom on Work Plane") && canPlace) {
+		settings_ = std::move(placed);
+	}
+
+	ui.EndDisabled();
 	SceneObject candidate;
 	std::string error;
 	const bool valid =

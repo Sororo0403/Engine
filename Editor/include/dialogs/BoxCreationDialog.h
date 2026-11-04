@@ -19,7 +19,8 @@ class BoxCreationDialog {
 	/// 組み込みモデルのローカル範囲を保持し、初期値で表示を予約する
 	/// </summary>
 	/// <param name="bounds">実際のモデルから求めたローカルのBox</param>
-	void Show(const BoxCollider &bounds);
+	/// <param name="planeHeight">底面合わせで使用する作業平面の高さ。表示開始時の値を保持する</param>
+	void Show(const BoxCollider &bounds, float planeHeight = 0.0f);
 
 	/// <summary>
 	/// 入力した寸法を検証する。シーンや描画リソースは変更しない
@@ -39,5 +40,6 @@ class BoxCreationDialog {
   private:
 	BoxCreationSettings settings_;
 	BoxCollider bounds_;
+	float planeHeight_ = 0.0f;
 	bool opening_ = false;
 };

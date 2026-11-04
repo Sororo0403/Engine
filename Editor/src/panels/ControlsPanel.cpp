@@ -1261,6 +1261,14 @@ void ControlsPanel::Draw() {
 	         "dialogs and gizmo or selection operations."},
 	        {"View > Camera Settings",
 	         "Adjust movement speed, acceleration and mouse sensitivity."},
+	        {"Create > Box with Size > Place Bottom on Work Plane",
+	         "Set the draft Center Y to Grid Settings Height plus half of "
+	         "Size Y. X/Z, name and dimensions stay unchanged. The plane "
+	         "height is captured when the dialog opens. This only adjusts "
+	         "the draft: Create Box accepts it as one Undo/Redo operation, "
+	         "and Cancel leaves the scene untouched. Adjusting Size later "
+	         "does not automatically move Center; press the button again "
+	         "to align the new dimensions."},
 	        {"Inspector > Box Collider > Use Top as Work Plane",
 	         "Set Grid Settings Height from the inspected Collider's world "
 	         "maximum Y after rotation, scale and local center offset. A "
