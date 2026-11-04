@@ -85,6 +85,47 @@ bool IsInside(const fs::path &root, const fs::path &path) {
 }
 
 /// <summary>
+/// Runtimeの確認情報を厳密に読み、構成と対応形式を照合する。不正な場合は再ビルドの案内を含む例外
+/// </summary>
+/// <param name="directory">正規化済みのRuntime取得元</param>
+void ValidateRuntimeBuild(const fs::path &directory) {
+	std::ifstream file(directory / L"Runtime.build.json", std::ios::binary);
+
+	if (!file) {
+		throw std::runtime_error(
+		    "Runtime build information could not be read. Rebuild Release "
+		    "Runtime before exporting.");
+	}
+
+	try {
+		const auto build = nlohmann::json::parse(file);
+		const auto configuration = build.at("configuration").get<std::string>();
+		const auto architecture = build.at("architecture").get<std::string>();
+
+		if (configuration != "Release" || architecture != "x64") {
+			throw std::runtime_error(
+			    "A Release x64 Runtime build is required. Rebuild Release "
+			    "Runtime before exporting.");
+		}
+
+		if (!build.contains("gameConfigVersion") ||
+		    !build.at("gameConfigVersion").is_number_integer() ||
+		    build.at("gameConfigVersion") != GameConfig::kCurrentVersion ||
+		    !build.contains("sceneVersion") ||
+		    !build.at("sceneVersion").is_number_integer() ||
+		    build.at("sceneVersion") != SceneSerializer::kCurrentVersion) {
+			throw std::runtime_error(
+			    "Runtime format versions do not match the Editor. Rebuild "
+			    "Release Runtime before exporting.");
+		}
+	} catch (const nlohmann::json::exception &) {
+		throw std::runtime_error(
+		    "Runtime build information is invalid. Rebuild Release Runtime "
+		    "before exporting.");
+	}
+}
+
+/// <summary>
 /// 取得元と、それに対応するパッケージ内の名前空間を保持する
 /// </summary>
 struct AssetSource {
@@ -371,34 +412,7 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 			}
 		}
 
-		nlohmann::json build;
-		{
-			std::ifstream file(runtimeRoot / L"Runtime.build.json");
-
-			if (!file) {
-				throw std::runtime_error(
-				    "Build the Release configuration before exporting.");
-			}
-
-			file >> build;
-		}
-
-		if (build.at("configuration") != "Release" ||
-		    build.at("architecture") != "x64") {
-			throw std::runtime_error(
-			    "A Release x64 Runtime build is required.");
-		}
-
-		if (!build.contains("gameConfigVersion") ||
-		    !build.at("gameConfigVersion").is_number_integer() ||
-		    build.at("gameConfigVersion") != GameConfig::kCurrentVersion ||
-		    !build.contains("sceneVersion") ||
-		    !build.at("sceneVersion").is_number_integer() ||
-		    build.at("sceneVersion") != SceneSerializer::kCurrentVersion) {
-			throw std::runtime_error(
-			    "Runtime format versions do not match the Editor. Rebuild "
-			    "Release Runtime before exporting.");
-		}
+		ValidateRuntimeBuild(runtimeRoot);
 
 		SceneSimulation check;
 		std::string problem;

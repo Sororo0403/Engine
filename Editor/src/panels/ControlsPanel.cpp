@@ -1372,8 +1372,8 @@ void ControlsPanel::Draw() {
 	        {"File > Export Game",
 	         "Choose a new folder, game title and window size. Build Release "
 	         "first. Runtime must report the same game configuration and scene "
-	         "format versions as the Editor. Missing or mismatched format "
-	         "information asks you to rebuild Release Runtime before "
+	         "format versions as the Editor. Missing, malformed or mismatched "
+	         "build information asks you to rebuild Release Runtime before "
 	         "creating output. Export keeps the active scene and saved "
 	         "state. Explicit "
 	         "texture assignments are decoded before and after copying, "
