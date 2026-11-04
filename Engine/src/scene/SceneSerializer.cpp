@@ -10,6 +10,8 @@
 #include "scene/Scene.h"
 
 #include <algorithm>
+#include <array>
+#include <cmath>
 #include <json.hpp>
 
 #include <exception>
@@ -40,6 +42,27 @@ Json ToJson(const DirectX::XMFLOAT3 &value) {
 /// <returns>x・y・z・wの順に並べたJSON配列</returns>
 Json ToJson(const DirectX::XMFLOAT4 &value) {
 	return Json::array({value.x, value.y, value.z, value.w});
+}
+
+/// <summary>
+/// JSON配列からUV用の有限な2成分を読み込む
+/// </summary>
+/// <param name="value">数値を2つ持つJSON配列</param>
+/// <returns>UVの横・縦の順に並べた値</returns>
+std::array<float, 2> ReadFloat2(const Json &value) {
+	if (!value.is_array() || value.size() != 2 || !value.at(0).is_number() ||
+	    !value.at(1).is_number()) {
+		throw std::runtime_error("UVには数値2成分の配列が必要です。");
+	}
+
+	const std::array<float, 2> result{value.at(0).get<float>(),
+	                                  value.at(1).get<float>()};
+
+	if (!std::isfinite(result[0]) || !std::isfinite(result[1])) {
+		throw std::runtime_error("UVの値がfloatの有効範囲を超えています。");
+	}
+
+	return result;
 }
 
 /// <summary>
@@ -227,7 +250,9 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 
 				objects.back()["meshRenderer"] = {
 				    {"visible", object.meshRenderer->visible},
-				    {"textures", std::move(bindings)}};
+				    {"textures", std::move(bindings)},
+				    {"uvScale", object.meshRenderer->uvScale},
+				    {"uvOffset", object.meshRenderer->uvOffset}};
 			}
 
 			if (object.colorTint) {
@@ -283,7 +308,7 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 
 		const Json document{
 		    {"format", "EngineScene"},
-		    {"version", 12},
+		    {"version", 13},
 		    {"objects", std::move(objects)},
 		};
 
@@ -334,7 +359,7 @@ namespace {
 /// 解析したシーンドキュメントを検証し、全件成功した場合だけ反映する
 /// </summary>
 /// <param name="scene">読み込み先</param>
-/// <param name="document">version 1から12のJSON</param>
+/// <param name="document">version 1から13のJSON</param>
 /// <returns>true:成功 false:内容が無効</returns>
 bool ApplySceneDocument(Scene &scene, const Json &document) {
 	try {
@@ -345,7 +370,8 @@ bool ApplySceneDocument(Scene &scene, const Json &document) {
 		     document.at("version") != 5 && document.at("version") != 6 &&
 		     document.at("version") != 7 && document.at("version") != 8 &&
 		     document.at("version") != 9 && document.at("version") != 10 &&
-		     document.at("version") != 11 && document.at("version") != 12)) {
+		     document.at("version") != 11 && document.at("version") != 12 &&
+		     document.at("version") != 13)) {
 			throw std::runtime_error("未対応のシーンファイル形式です。");
 		}
 
@@ -390,6 +416,13 @@ bool ApplySceneDocument(Scene &scene, const Json &document) {
 					    ReadBindings(renderer.at(version >= 11 ? "textures"
 					                                           : "materials"),
 					                 version)};
+
+					if (version >= 13) {
+						object.meshRenderer->uvScale =
+						    ReadFloat2(renderer.at("uvScale"));
+						object.meshRenderer->uvOffset =
+						    ReadFloat2(renderer.at("uvOffset"));
+					}
 				}
 			} else {
 				const auto path =

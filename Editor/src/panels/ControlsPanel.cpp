@@ -200,6 +200,15 @@ void ControlsPanel::Draw() {
 	         "resource validation. All combine with name/ID and Hidden only, "
 	         "sorting, range selection and Select All Visible, including "
 	         "Play."},
+	        {"Inspector > Mesh Renderer > UV",
+	         "UV Tiling repeats or mirrors the image; UV Offset moves its "
+	         "sampling position. Values apply to all texture slots of this "
+	         "object without changing shared images or model geometry. Zero "
+	         "tiling samples a fixed coordinate. Each drag is one Undo/Redo "
+	         "operation; Reset UV restores tiling 1,1 and offset 0,0. Play "
+	         "shows these values read-only. Scene version 13 stores them; "
+	         "older scenes load with the default UVs. Game output preserves "
+	         "the same settings."},
 	        {"Hierarchy > Scene Picking",
 	         "Right-click objects and Disable Scene Picking to exclude them "
 	         "from Scene clicks and box selection while keeping them visible. "

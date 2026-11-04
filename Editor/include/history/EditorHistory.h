@@ -363,6 +363,13 @@ class EditorHistory {
 	bool BeginColorTint(SceneObjectId objectId);
 
 	/// <summary>
+	/// Mesh Rendererの連続編集を開始し、UV・画像・表示状態の編集前の値を保持する
+	/// </summary>
+	/// <param name="objectId">Mesh Rendererを持つ物体</param>
+	/// <returns>true:開始成功 false:対象またはMesh Rendererなし</returns>
+	bool BeginMeshRenderer(SceneObjectId objectId);
+
+	/// <summary>
 	/// FollowCameraコンポーネントを追加・変更・削除して履歴へ記録する
 	/// 対象の不在や自己参照・循環する追従先は設定せず、0は追従先の解除として扱う
 	/// </summary>
@@ -580,7 +587,8 @@ class EditorHistory {
 		             std::optional<CharacterSettings>,
 		             std::optional<FollowCameraSettings>,
 		             std::optional<CameraComponent>,
-		             std::optional<RespawnSettings>, std::optional<ColorTint>>
+		             std::optional<RespawnSettings>, std::optional<ColorTint>,
+		             std::optional<MeshRendererComponent>>
 		    before;
 	};
 

@@ -1255,6 +1255,10 @@ bool EditorHistory::HasPendingChanges() const {
 		                                        std::optional<ColorTint>>) {
 			    return before != object->colorTint;
 		    } else if constexpr (std::is_same_v<
+		                             Before,
+		                             std::optional<MeshRendererComponent>>) {
+			    return before != object->meshRenderer;
+		    } else if constexpr (std::is_same_v<
 		                             Before, std::optional<RespawnSettings>>) {
 			    return before != object->respawn;
 		    } else if constexpr (std::is_same_v<
@@ -1401,6 +1405,13 @@ void EditorHistory::CommitEdit() {
 		return;
 	}
 
+	if (std::holds_alternative<std::optional<MeshRendererComponent>>(
+	        pending_->before) &&
+	    object->meshRenderer && !object->meshRenderer->IsValid()) {
+		Invalidate();
+		return;
+	}
+
 	if (std::holds_alternative<std::optional<CameraComponent>>(
 	        pending_->before) &&
 	    object->camera && !object->camera->IsValid()) {
@@ -1444,6 +1455,11 @@ void EditorHistory::CommitEdit() {
 		                                        std::optional<ColorTint>>) {
 			    return Command{
 			        ColorTintCommand{objectId, before, object->colorTint}};
+		    } else if constexpr (std::is_same_v<
+		                             Before,
+		                             std::optional<MeshRendererComponent>>) {
+			    return Command{MeshRendererCommand{objectId, before,
+			                                       object->meshRenderer}};
 		    } else if constexpr (std::is_same_v<
 		                             Before, std::optional<RespawnSettings>>) {
 			    return Command{
@@ -1495,6 +1511,9 @@ void EditorHistory::CommitEdit() {
 			    return "Edit Camera";
 		    } else if constexpr (std::is_same_v<T, std::optional<ColorTint>>) {
 			    return "Edit Color Tint";
+		    } else if constexpr (std::is_same_v<
+		                             T, std::optional<MeshRendererComponent>>) {
+			    return "Edit Mesh Renderer";
 		    } else {
 			    return "Edit Respawn";
 		    }
@@ -1882,6 +1901,18 @@ bool EditorHistory::SetColorTint(SceneObjectId id,
 	               !value   ? "Remove Color Tint"
 	               : adding ? "Add Color Tint"
 	                        : "Edit Color Tint");
+	return true;
+}
+
+bool EditorHistory::BeginMeshRenderer(SceneObjectId id) {
+	CommitEdit();
+	const auto *object = scene_.FindObject(id);
+
+	if (!object || !object->meshRenderer) {
+		return false;
+	}
+
+	pending_ = PendingEdit{id, object->meshRenderer};
 	return true;
 }
 

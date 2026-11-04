@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <format>
 #include <imgui.h>
+#include <utility>
 #include <vector>
 
 bool TextureSlotInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
@@ -22,6 +23,38 @@ bool TextureSlotInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 	bool changed = false;
 	ImGui::PushID(std::to_string(id).c_str());
 	ImGui::PushID("TextureSlots");
+
+	const auto editUv = [&](const char *label, bool scale) {
+		auto edited = *object.meshRenderer;
+		auto &values = scale ? edited.uvScale : edited.uvOffset;
+		const bool valueChanged =
+		    ImGui::DragFloat2(label, values.data(), 0.01f);
+		const bool begin =
+		    !ImGui::IsItemActivated() || history.BeginMeshRenderer(id);
+
+		if (begin && valueChanged && edited.IsValid() &&
+		    edited != *object.meshRenderer &&
+		    (history.IsEditing() || history.BeginMeshRenderer(id))) {
+			object.meshRenderer = std::move(edited);
+			changed = true;
+		}
+
+		if (ImGui::IsItemDeactivated() && !ImGui::IsAnyItemActive()) {
+			history.CommitEdit();
+		}
+	};
+
+	editUv("UV Tiling", true);
+	editUv("UV Offset", false);
+
+	if (ui.Button("Reset UV")) {
+		const auto before = object.meshRenderer;
+		auto reset = *object.meshRenderer;
+		reset.uvScale = {1.0f, 1.0f};
+		reset.uvOffset = {0.0f, 0.0f};
+		changed |=
+		    history.SetMeshRenderer(id, reset) && object.meshRenderer != before;
+	}
 
 	{
 		const auto model = !object.HasMesh()

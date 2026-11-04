@@ -119,6 +119,12 @@ bool SceneRenderer::SynchronizeObjects() {
 			continue;
 		}
 
+		if (!object.meshRenderer->IsValid()) {
+			Logger::Error(
+			    "SceneRenderer: Mesh Rendererの画像またはUV設定が無効です。");
+			return false;
+		}
+
 		// 描画物体を作る前に、対応情報の格納先を確保する
 		auto it = objects_.try_emplace(id).first;
 		Object &renderObject = it->second;
@@ -205,6 +211,12 @@ bool SceneRenderer::SynchronizeObjects() {
 			if (!world_->SetMaterial(renderObject.handle, slot, material)) {
 				return false;
 			}
+
+			auto &data = world_->GetMaterial(renderObject.handle, slot);
+			data.uvScale = {object.meshRenderer->uvScale[0],
+			                object.meshRenderer->uvScale[1]};
+			data.uvOffset = {object.meshRenderer->uvOffset[0],
+			                 object.meshRenderer->uvOffset[1]};
 		}
 
 		// シーン側の変形情報を描画側へ反映する

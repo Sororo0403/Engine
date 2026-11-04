@@ -646,6 +646,13 @@ InspectorPanel::DrawReadOnly(const ImGuiSystem &ui, const Scene &scene,
 		ui.Checkbox("Visible", visible);
 		ui.EndDisabled();
 
+		ui.Text(std::format("UV Tiling: {:.3f}, {:.3f}",
+		                    object->meshRenderer->uvScale[0],
+		                    object->meshRenderer->uvScale[1]));
+		ui.Text(std::format("UV Offset: {:.3f}, {:.3f}",
+		                    object->meshRenderer->uvOffset[0],
+		                    object->meshRenderer->uvOffset[1]));
+
 		for (const auto &[slot, path] : object->meshRenderer->textures.slots) {
 			ui.Text(std::format("Slot {}: {}", slot, PathUtils::ToUtf8(path)));
 		}
