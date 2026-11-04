@@ -177,6 +177,8 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 			}
 		}
 
+		ui.Checkbox("Maximize on Play", maximizeOnPlay_);
+
 		if (ui.Button("Play")) {
 			action = Action::PLAY;
 		}
@@ -257,6 +259,8 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
 	cameraRelativeMovement_ = config.cameraRelativeMovement;
 	gameWidth_ = config.width;
 	gameHeight_ = config.height;
+	maximized_ = false;
+	maximizeRequested_ = maximizeOnPlay_;
 	ready_ = false;
 	visible_ = false;
 	viewport_ = {};

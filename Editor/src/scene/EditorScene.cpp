@@ -93,6 +93,7 @@ bool EditorScene::Initialize() {
 	showRespawnGuides_ = preferences_.showRespawnGuides;
 	showJumpGuide_ = preferences_.showJumpGuide;
 	showMotionTrail_ = preferences_.showMotionTrail;
+	playMode_.SetMaximizeOnPlay(preferences_.maximizeGameOnPlay);
 	showObjectMarkers_ = preferences_.showObjectMarkers;
 	showMeasurements_ = preferences_.showMeasurements;
 	colliderDisplay_ = preferences_.colliderDisplay;
@@ -1274,6 +1275,7 @@ void EditorScene::Finalize() {
 		current.showRespawnGuides = showRespawnGuides_;
 		current.showJumpGuide = showJumpGuide_;
 		current.showMotionTrail = showMotionTrail_;
+		current.maximizeGameOnPlay = playMode_.GetMaximizeOnPlay();
 		current.showObjectMarkers = showObjectMarkers_;
 		current.showMeasurements = showMeasurements_;
 		current.colliderDisplay = colliderDisplay_;

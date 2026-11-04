@@ -882,6 +882,13 @@ void ControlsPanel::Draw() {
 	         "Game is hidden but Scene is visible; hiding both or switching "
 	         "away from the application suspends simulation. Stop restores "
 	         "the unchanged editing scene; the Scene camera view is kept."},
+	        {"Game > Maximize on Play",
+	         "While stopped, enable this option to expand Game automatically "
+	         "when a new Play session starts. The choice is saved for the "
+	         "next Editor session. Restoring the layout during Play keeps it "
+	         "restored; Restart keeps the current view. Stop restores the "
+	         "layout, and the next Play follows this option again. Failed "
+	         "Play validation does not expand Game."},
 	        {"Game > Maximize Game / Restore Layout",
 	         "Expand Game across the Editor work area during Play. The "
 	         "original dock arrangement and render resolution are kept. "

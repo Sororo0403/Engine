@@ -23,6 +23,7 @@ class EditorPreferences {
 	bool showRespawnGuides = true;
 	bool showJumpGuide = false;
 	bool showMotionTrail = false;
+	bool maximizeGameOnPlay = false;
 	bool showObjectMarkers = true;
 	bool showMeasurements = false;
 	ColliderBounds::Mode colliderDisplay = ColliderBounds::Mode::SELECTED;

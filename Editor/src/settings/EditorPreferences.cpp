@@ -76,6 +76,7 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 		loaded.showRespawnGuides = json.value("showRespawnGuides", true);
 		loaded.showJumpGuide = json.value("showJumpGuide", false);
 		loaded.showMotionTrail = json.value("showMotionTrail", false);
+		loaded.maximizeGameOnPlay = json.value("maximizeGameOnPlay", false);
 		loaded.showObjectMarkers = json.value("showObjectMarkers", true);
 		loaded.showMeasurements = json.value("showMeasurements", false);
 
@@ -430,6 +431,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		    {"showRespawnGuides", showRespawnGuides},
 		    {"showJumpGuide", showJumpGuide},
 		    {"showMotionTrail", showMotionTrail},
+		    {"maximizeGameOnPlay", maximizeGameOnPlay},
 		    {"showObjectMarkers", showObjectMarkers},
 		    {"showMeasurements", showMeasurements},
 		    {"colliderDisplay",
@@ -494,6 +496,7 @@ bool EditorPreferences::operator==(const EditorPreferences &other) const {
 	       showRespawnGuides == other.showRespawnGuides &&
 	       showJumpGuide == other.showJumpGuide &&
 	       showMotionTrail == other.showMotionTrail &&
+	       maximizeGameOnPlay == other.maximizeGameOnPlay &&
 	       showObjectMarkers == other.showObjectMarkers &&
 	       showMeasurements == other.showMeasurements &&
 	       snapping == other.snapping && operation == other.operation &&
