@@ -1,13 +1,23 @@
 #pragma once
 
+#include "scene/SceneObjectId.h"
+
 class ImGuiSystem;
 class EditorPlaySession;
 
 /// <summary>
-/// 編集シーンとは独立した主人公と描画カメラの再生状態を、読み取り専用で表示する
+/// 編集シーンとは独立した主人公と描画カメラの再生状態と、対象への選択・フレーム操作を表示する
 /// </summary>
 class PlayStatePanel {
   public:
+	/// <summary>
+	/// 再生中の物体を選択し、必要に応じてSceneカメラへ収める要求
+	/// </summary>
+	struct Request {
+		SceneObjectId objectId = 0;
+		bool frame = false;
+	};
+
 	/// <summary>
 	/// パネルを開き、次の描画時にフォーカスを移す
 	/// </summary>
@@ -23,7 +33,8 @@ class PlayStatePanel {
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
 	/// <param name="session">参照する再生セッション。シーンと時間制御は変更しない</param>
-	void Draw(const ImGuiSystem &ui, const EditorPlaySession &session);
+	/// <returns>選択先のIDとフレーム指定。操作なし・停止中はIDが0</returns>
+	Request Draw(const ImGuiSystem &ui, const EditorPlaySession &session);
 
   private:
 	bool open_ = false;

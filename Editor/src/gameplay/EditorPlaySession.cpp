@@ -113,6 +113,10 @@ const Scene &EditorPlaySession::GetScene() const {
 	return simulation_.GetScene();
 }
 
+SceneObjectId EditorPlaySession::GetCameraObjectId() const {
+	return simulation_.GetCameraObjectId();
+}
+
 const CameraPose &EditorPlaySession::GetCameraPose() const {
 	return simulation_.GetCameraPose();
 }

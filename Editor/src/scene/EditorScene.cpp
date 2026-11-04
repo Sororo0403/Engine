@@ -325,7 +325,29 @@ bool EditorScene::Update(float deltaTime) {
 			ShowError("Could not copy an invalid runtime Transform.");
 		}
 
-		playStatePanel_.Draw(ui_, playMode_.GetSession());
+		ui_.BeginDisabled(IsBusy());
+		const auto stateRequest =
+		    playStatePanel_.Draw(ui_, playMode_.GetSession());
+		ui_.EndDisabled();
+
+		if (!IsBusy() && playMode_.IsPlaying() && playSelectionActive_ &&
+		    runtime.Contains(stateRequest.objectId)) {
+			try {
+				playSelection_.SelectOnly(stateRequest.objectId);
+				playHierarchyPanel_.RequestReveal(stateRequest.objectId);
+
+				if (stateRequest.frame) {
+					playFrameRequest_ = FrameRequest::INSPECTED;
+					ImGui::SetWindowCollapsed("Scene", false);
+					ImGui::SetWindowFocus("Scene");
+				}
+			} catch (const std::exception &error) {
+				Logger::Error(std::format(
+				    "EditorScene::SelectPlayStateObject: {}", error.what()));
+				ShowError("Could not select the runtime object.");
+			}
+		}
+
 		measurementsPanel_.Draw(ui_, playMode_.GetSession().GetScene(),
 		                        playSelection_.GetIds(), showMeasurements_);
 
@@ -4040,13 +4062,14 @@ bool EditorScene::FrameObjects(FrameRequest request,
 	DirectX::XMFLOAT3 minimum{};
 	DirectX::XMFLOAT3 maximum{};
 	bool found = false;
+	const bool includeHidden =
+	    request == FrameRequest::ISSUES || request == FrameRequest::INSPECTED;
+	const bool selectedOnly =
+	    request == FrameRequest::SELECTED || includeHidden;
 
 	for (const auto &[id, object] : scene.GetObjects()) {
-		if ((object.IsHidden() && object.HasMesh() &&
-		     request != FrameRequest::ISSUES) ||
-		    ((request == FrameRequest::SELECTED ||
-		      request == FrameRequest::ISSUES) &&
-		     !selection.Contains(id))) {
+		if ((object.IsHidden() && object.HasMesh() && !includeHidden) ||
+		    (selectedOnly && !selection.Contains(id))) {
 			continue;
 		}
 
@@ -4057,8 +4080,8 @@ bool EditorScene::FrameObjects(FrameRequest request,
 		    (!object.HasMesh() || !object.meshRenderer || missingModel)
 		        ? ObjectFrameBounds::Get(object, corners, missingModel)
 		        : renderer.GetObjectBounds(id, corners);
-		// 非表示・読み込み不能なモデルも、検証結果からはColliderか原点へ寄せられる。
-		if (!boundsReady && request == FrameRequest::ISSUES) {
+		// 非表示・読み込み不能なモデルも、検証結果や再生状態からはColliderか原点へ寄せられる。
+		if (!boundsReady && includeHidden) {
 			boundsReady = ObjectFrameBounds::Get(object, corners, true);
 		}
 

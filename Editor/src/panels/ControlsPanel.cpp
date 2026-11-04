@@ -775,7 +775,13 @@ void ControlsPanel::Draw() {
 	         "grounded state, plus the rendered camera pose and lens. The "
 	         "panel is read-only and can be opened during Play. Pause freezes "
 	         "the values; Step shows the next simulated frame. Stop clears the "
-	         "live display."},
+	         "live display. Select Character / Camera reveals the live object "
+	         "in "
+	         "Hierarchy; Frame also moves the Scene camera to it, including "
+	         "hidden or model-free objects. Camera selection is unavailable "
+	         "for a fixed view without a Primary Camera. Dialogs disable "
+	         "these actions. Simulation, editing selection, Inspector locks, "
+	         "scene data and history are unchanged."},
 	        {"Game > Restart",
 	         "Reset the player, physics and cameras to the state captured when "
 	         "Play started. The first frame shows that initial state. Restart "

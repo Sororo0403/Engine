@@ -89,6 +89,12 @@ class EditorPlaySession {
 	const Scene &GetScene() const;
 
 	/// <summary>
+	/// 描画中のCamera物体を取得する
+	/// </summary>
+	/// <returns>再生開始時に選ばれたCameraのID。停止中または固定ビューの場合は0</returns>
+	SceneObjectId GetCameraObjectId() const;
+
+	/// <summary>
 	/// 再生カメラの姿勢を取得する
 	/// </summary>
 	/// <returns>現在の描画姿勢</returns>

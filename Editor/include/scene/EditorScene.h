@@ -215,7 +215,8 @@ class EditorScene final : public IScene {
 		RESPAWN,
 		COLLIDER,
 		JUMP,
-		FOLLOW_PATH
+		FOLLOW_PATH,
+		INSPECTED,
 	};
 
 	/// <summary>

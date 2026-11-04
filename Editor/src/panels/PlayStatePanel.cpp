@@ -15,10 +15,10 @@ void PlayStatePanel::Reset() {
 	focusRequested_ = false;
 }
 
-void PlayStatePanel::Draw(const ImGuiSystem &ui,
-                          const EditorPlaySession &session) {
+PlayStatePanel::Request PlayStatePanel::Draw(const ImGuiSystem &ui,
+                                             const EditorPlaySession &session) {
 	if (!open_) {
-		return;
+		return {};
 	}
 
 	ImGui::SetNextWindowSize({400.0f, 360.0f}, ImGuiCond_FirstUseEver);
@@ -31,7 +31,7 @@ void PlayStatePanel::Draw(const ImGuiSystem &ui,
 
 	if (!ImGui::Begin("Play State", &open_)) {
 		ImGui::End();
-		return;
+		return {};
 	}
 
 	ui.Text(!session.IsPlaying() ? "Stopped"
@@ -40,8 +40,26 @@ void PlayStatePanel::Draw(const ImGuiSystem &ui,
 
 	if (!session.IsPlaying()) {
 		ImGui::End();
-		return;
+		return {};
 	}
+
+	Request requested;
+	const auto select = [&](SceneObjectId id, const char *selectLabel,
+	                        const char *frameLabel) {
+		ui.BeginDisabled(id == 0);
+
+		if (ui.Button(selectLabel) && id != 0) {
+			requested = {id, false};
+		}
+
+		ui.SameLine();
+
+		if (ui.Button(frameLabel) && id != 0) {
+			requested = {id, true};
+		}
+
+		ui.EndDisabled();
+	};
 
 	const auto vector = [&ui](const char *label,
 	                          const DirectX::XMFLOAT3 &value) {
@@ -59,12 +77,26 @@ void PlayStatePanel::Draw(const ImGuiSystem &ui,
 		ui.Text(std::format("Vertical Velocity: {:.3f}",
 		                    character->verticalVelocity));
 		ui.Text(character->grounded ? "Grounded: Yes" : "Grounded: No");
+		select(object ? character->objectId : 0, "Select Character",
+		       "Frame Character");
 	} else {
 		ui.Text("Character: None");
 	}
 
 	ui.Separator();
-	ui.Text("Camera");
+	const auto cameraId = session.GetCameraObjectId();
+	const auto *camera = session.GetScene().FindObject(cameraId);
+
+	if (camera && camera->camera) {
+		ui.Text(std::format("Camera: {} (ID {})",
+		                    camera->name.empty() ? "Object" : camera->name,
+		                    cameraId));
+	} else {
+		ui.Text("Camera: Fixed View");
+	}
+
+	select(camera && camera->camera ? cameraId : 0, "Select Camera",
+	       "Frame Camera");
 	const auto &pose = session.GetCameraPose();
 	const auto &lens = session.GetCameraSettings();
 	vector("Position", pose.position);
@@ -74,4 +106,5 @@ void PlayStatePanel::Draw(const ImGuiSystem &ui,
 	ui.Text(std::format("Near / Far: {:.3f} / {:.3f}", lens.nearClip,
 	                    lens.farClip));
 	ImGui::End();
+	return requested;
 }

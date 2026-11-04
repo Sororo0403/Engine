@@ -63,6 +63,14 @@ class SceneSimulation {
 	}
 
 	/// <summary>
+	/// 現在の描画に使用するCamera物体のIDを取得する
+	/// </summary>
+	/// <returns>再生開始時に選ばれたCameraのID。停止中または固定ビューの場合は0</returns>
+	SceneObjectId GetCameraObjectId() const {
+		return playing_ ? camera_ : 0;
+	}
+
+	/// <summary>
 	/// Primary Camera、または開始時に指定した固定カメラの姿勢を取得する
 	/// </summary>
 	/// <returns>再生時の描画姿勢</returns>
