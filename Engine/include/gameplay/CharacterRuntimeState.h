@@ -16,4 +16,7 @@ struct CharacterRuntimeState {
 	bool grounded = false;
 	std::uint64_t respawnCount = 0;
 	std::optional<DirectX::XMFLOAT3> lastRespawnPosition;
+
+	// 接地中の足元のCollider。空中、または足元にColliderがない場合は0
+	SceneObjectId groundObjectId = 0;
 };

@@ -327,10 +327,17 @@ SceneSimulation::GetCharacterState() const {
 		return std::nullopt;
 	}
 
+	SceneObjectId groundObject = 0;
+
+	if (controller_.IsGrounded()) {
+		controller_.FindGroundObject(world_, groundObject);
+	}
+
 	return CharacterRuntimeState{character_,
 	                             controller_.GetTransform().translation,
 	                             controller_.GetVerticalVelocity(),
 	                             controller_.IsGrounded(),
 	                             respawnCount_,
-	                             lastRespawnPosition_};
+	                             lastRespawnPosition_,
+	                             groundObject};
 }

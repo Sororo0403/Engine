@@ -6,7 +6,7 @@ class ImGuiSystem;
 class EditorPlaySession;
 
 /// <summary>
-/// 編集シーンとは独立した主人公と描画カメラの再生状態と、対象への選択・フレーム操作を表示する
+/// 編集シーンとは独立した主人公・足元のCollider・描画カメラの再生状態と、対象への選択・フレーム操作を表示する
 /// </summary>
 class PlayStatePanel {
   public:

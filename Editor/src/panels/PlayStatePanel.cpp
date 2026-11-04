@@ -92,6 +92,21 @@ PlayStatePanel::Request PlayStatePanel::Draw(const ImGuiSystem &ui,
 
 		select(object ? character->objectId : 0, "Select Character",
 		       "Frame Character");
+
+		const auto *ground =
+		    session.GetScene().FindObject(character->groundObjectId);
+		const bool hasGround = ground && ground->collider;
+
+		if (hasGround) {
+			ui.Text(std::format("Ground Collider: {} (ID {})",
+			                    ground->name.empty() ? "Object" : ground->name,
+			                    character->groundObjectId));
+		} else {
+			ui.Text("Ground Collider: None");
+		}
+
+		select(hasGround ? character->groundObjectId : 0,
+		       "Select Ground Collider", "Frame Ground Collider");
 	} else {
 		ui.Text("Character: None");
 	}
