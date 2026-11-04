@@ -207,7 +207,12 @@ void ControlsPanel::Draw() {
 	         "Picking passes through excluded models and markers. The list "
 	         "shows No Scene Pick; Hierarchy selection and editing remain "
 	         "available for deliberate changes. Enable Scene Picking restores "
-	         "selected objects; Enable All Scene Picking restores all. These "
+	         "selected objects; Enable All Scene Picking restores all and "
+	         "clears the picking-only filter. Scene picking disabled only "
+	         "lists excluded objects, combined with name/ID, Hidden only, "
+	         "component and sort conditions. Range selection and Select All "
+	         "Visible use that same list. Reveal Active clears filter "
+	         "conditions while preserving exclusions. These "
 	         "workspace flags survive Undo/Redo and Play, but reset on scene "
 	         "New/Open/Reload. They do not affect runtime selection, physics, "
 	         "rendering, scene files or history."},

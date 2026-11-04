@@ -79,6 +79,7 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 	if (revealRequested_) {
 		filter_.Clear();
+		pickingDisabledOnly_ = false;
 		ImGui::SetNextWindowCollapsed(false);
 		ImGui::SetNextWindowFocus();
 	}
@@ -105,6 +106,7 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 	ui.EndDisabled();
 
 	ImGui::Checkbox("Hidden only", &filter_.hiddenOnly);
+	ImGui::Checkbox("Scene picking disabled only", &pickingDisabledOnly_);
 	int component = static_cast<int>(filter_.component);
 
 	if (ImGui::Combo(
@@ -148,7 +150,7 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 			continue;
 		}
 
-		if (!filter_.Matches(id, *object)) {
+		if (!MatchesFilters(id, *object)) {
 			++filteredCount;
 		}
 	}
@@ -179,10 +181,11 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 	ui.EndDisabled();
 
-	ui.BeginDisabled(scenePickingDisabled_.empty());
+	ui.BeginDisabled(scenePickingDisabled_.empty() && !pickingDisabledOnly_);
 
 	if (ui.Button("Enable All Scene Picking") && editable) {
 		scenePickingDisabled_.clear();
+		pickingDisabledOnly_ = false;
 	}
 
 	ui.EndDisabled();
@@ -461,6 +464,7 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 void HierarchyPanel::Clear() {
 	filter_.Clear();
+	pickingDisabledOnly_ = false;
 	scenePickingDisabled_.clear();
 	sortMode_ = SortMode::CREATION;
 	rangeAnchorId_ = 0;
@@ -499,13 +503,22 @@ bool HierarchyPanel::SetScenePickingDisabled(const Scene &scene,
 	return true;
 }
 
+bool HierarchyPanel::MatchesFilters(SceneObjectId id,
+                                    const SceneObject &object) const {
+	return filter_.Matches(id, object) &&
+	       (!pickingDisabledOnly_ ||
+	        std::find(scenePickingDisabled_.begin(),
+	                  scenePickingDisabled_.end(),
+	                  id) != scenePickingDisabled_.end());
+}
+
 std::vector<SceneObjectId>
 HierarchyPanel::GetVisibleIds(const Scene &scene) const {
 	std::vector<SceneObjectId> ids;
 	ids.reserve(scene.GetObjects().size());
 
 	for (const auto &[id, object] : scene.GetObjects()) {
-		if (filter_.Matches(id, object)) {
+		if (MatchesFilters(id, object)) {
 			ids.push_back(id);
 		}
 	}

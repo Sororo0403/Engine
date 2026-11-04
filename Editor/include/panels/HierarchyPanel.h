@@ -10,6 +10,7 @@
 
 class ImGuiSystem;
 class Scene;
+struct SceneObject;
 class EditorSelection;
 
 /// <summary>
@@ -149,6 +150,14 @@ class HierarchyPanel {
 	                             std::span<const SceneObjectId> ids,
 	                             bool disabled);
 
+	/// <summary>
+	/// 検索・コンポーネント・表示状態と、Scene選択除外の絞り込みをまとめて判定する
+	/// </summary>
+	/// <param name="id">判定する物体ID</param>
+	/// <param name="object">一覧に表示する物体</param>
+	/// <returns>true:全ての条件に一致 false:条件外</returns>
+	bool MatchesFilters(SceneObjectId id, const SceneObject &object) const;
+
 	HierarchyFilter filter_;
 	std::vector<SceneObjectId> scenePickingDisabled_;
 	SortMode sortMode_ = SortMode::CREATION;
@@ -156,4 +165,5 @@ class HierarchyPanel {
 	SceneObjectId lastActiveId_ = 0;
 	SceneObjectId scrollToId_ = 0;
 	bool revealRequested_ = false;
+	bool pickingDisabledOnly_ = false;
 };
