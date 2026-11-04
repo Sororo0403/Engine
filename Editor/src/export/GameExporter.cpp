@@ -15,6 +15,7 @@
 #include <new>
 #include <set>
 #include <stdexcept>
+#include <system_error>
 #include <utility>
 #include <vector>
 
@@ -403,7 +404,16 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 			}
 		}
 		const auto resourceRoot = fs::canonical(options.resourceDirectory);
-		const auto runtimeRoot = fs::canonical(options.runtimeDirectory);
+		std::error_code runtimeError;
+		const auto runtimeRoot =
+		    fs::canonical(options.runtimeDirectory, runtimeError);
+
+		if (runtimeError || !fs::is_directory(runtimeRoot, runtimeError)) {
+			throw std::runtime_error(
+			    "Release Runtime output folder is unavailable. Build Release "
+			    "Runtime before exporting.");
+		}
+
 		Assets assets(resourceRoot, options.assetDirectories);
 		for (const auto &source : assets.Sources()) {
 			if (IsInside(source.directory, destination)) {
