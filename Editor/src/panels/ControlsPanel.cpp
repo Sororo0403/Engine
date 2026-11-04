@@ -882,6 +882,16 @@ void ControlsPanel::Draw() {
 	         "Game is hidden but Scene is visible; hiding both or switching "
 	         "away from the application suspends simulation. Stop restores "
 	         "the unchanged editing scene; the Scene camera view is kept."},
+	        {"View > Character Motion Trail",
+	         "Record the live Character position once per simulated frame "
+	         "and show its path only in Scene. Grounded movement is green; "
+	         "airborne movement is orange. Pause adds no samples; Step can "
+	         "add one segment. Respawns begin a new segment without drawing "
+	         "the teleport. The most recent 2048 moving segments are kept. "
+	         "Clear Motion Trail starts a fresh path without changing Play. "
+	         "Restart, Stop and disabling the display clear the path. The "
+	         "display preference is saved; the recorded path is not saved "
+	         "in scenes, exported games or Undo history."},
 	        {"View > Play State",
 	         "Inspect the live character position, vertical velocity and "
 	         "grounded state, plus the rendered camera pose and lens. "

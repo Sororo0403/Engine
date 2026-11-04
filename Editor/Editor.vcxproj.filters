@@ -440,6 +440,12 @@
     <ClCompile Include="src\gameplay\CharacterJumpPreview.cpp">
       <Filter>src\gameplay</Filter>
     </ClCompile>
+    <ClInclude Include="include\gameplay\CharacterMotionTrail.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
+    <ClCompile Include="src\gameplay\CharacterMotionTrail.cpp">
+      <Filter>src\gameplay</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\gameplay\EditorPlayMode.h">

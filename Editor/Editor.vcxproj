@@ -271,6 +271,8 @@ exit /b 0</Command>
     <ClCompile Include="src\gameplay\RespawnPreview.cpp" />
     <ClInclude Include="include\gameplay\CharacterJumpPreview.h" />
     <ClCompile Include="src\gameplay\CharacterJumpPreview.cpp" />
+    <ClInclude Include="include\gameplay\CharacterMotionTrail.h" />
+    <ClCompile Include="src\gameplay\CharacterMotionTrail.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\gameplay\EditorPlayMode.h" />

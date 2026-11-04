@@ -20,6 +20,7 @@
 #include "dialogs/TextureImportDialog.h"
 #include "files/SceneRecovery.h"
 #include "gameplay/CharacterJumpPreview.h"
+#include "gameplay/CharacterMotionTrail.h"
 #include "gameplay/EditorPlayMode.h"
 #include "gameplay/FollowCameraPreview.h"
 #include "gameplay/RespawnPreview.h"
@@ -754,6 +755,7 @@ class EditorScene final : public IScene {
 	bool showCameraGuides_ = true;
 	bool showRespawnGuides_ = true;
 	bool showJumpGuide_ = false;
+	bool showMotionTrail_ = false;
 	bool showObjectMarkers_ = true;
 	// フォーカス復帰直後の押しっぱなしを、再生操作の押下として扱わない。
 	bool playInputWasActive_ = false;
@@ -832,6 +834,7 @@ class EditorScene final : public IScene {
 	ColliderBounds::Mode colliderDisplay_ = ColliderBounds::Mode::SELECTED;
 	RespawnPreview respawnPreview_;
 	CharacterJumpPreview jumpPreview_;
+	CharacterMotionTrail motionTrail_;
 	CameraFrustum cameraFrustum_;
 	FollowCameraPreview followCameraPreview_;
 

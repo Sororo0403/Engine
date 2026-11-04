@@ -92,6 +92,7 @@ bool EditorScene::Initialize() {
 	showCameraGuides_ = preferences_.showCameraGuides;
 	showRespawnGuides_ = preferences_.showRespawnGuides;
 	showJumpGuide_ = preferences_.showJumpGuide;
+	showMotionTrail_ = preferences_.showMotionTrail;
 	showObjectMarkers_ = preferences_.showObjectMarkers;
 	showMeasurements_ = preferences_.showMeasurements;
 	colliderDisplay_ = preferences_.colliderDisplay;
@@ -328,6 +329,12 @@ bool EditorScene::Update(float deltaTime) {
 			playMode_.Stop();
 			ShowError("Play stopped because simulation or Game rendering "
 			          "failed. Your editing scene is unchanged.");
+		}
+
+		if (showMotionTrail_) {
+			motionTrail_.Record(playMode_.GetSession());
+		} else {
+			motionTrail_.Clear();
 		}
 
 		if (playMode_.IsPlaying() &&
@@ -1222,6 +1229,7 @@ void EditorScene::Finalize() {
 		current.showCameraGuides = showCameraGuides_;
 		current.showRespawnGuides = showRespawnGuides_;
 		current.showJumpGuide = showJumpGuide_;
+		current.showMotionTrail = showMotionTrail_;
 		current.showObjectMarkers = showObjectMarkers_;
 		current.showMeasurements = showMeasurements_;
 		current.colliderDisplay = colliderDisplay_;
@@ -1826,6 +1834,15 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		                !IsBusy());
 		ImGui::MenuItem("Character Jump Guide", nullptr, &showJumpGuide_,
 		                !IsBusy());
+		ImGui::MenuItem("Character Motion Trail", nullptr, &showMotionTrail_,
+		                !IsBusy());
+
+		if (ui_.MenuItem("Clear Motion Trail", nullptr,
+		                 enabled && playMode_.IsPlaying() &&
+		                     motionTrail_.GetLineCount() != 0)) {
+			motionTrail_.Clear();
+		}
+
 		ImGui::MenuItem("Selection Measurements", nullptr, &showMeasurements_,
 		                !IsBusy());
 		ImGui::MenuItem("Object Markers", nullptr, &showObjectMarkers_,
@@ -4721,6 +4738,10 @@ bool EditorScene::UpdatePlaySceneView(float deltaTime, EditorAction action,
 	                                      playSelection_.GetIds())) {
 		return false;
 	}
+	if (showMotionTrail_ && !motionTrail_.Update(playSceneRenderer_)) {
+		return false;
+	}
+
 	playSceneReady_ = playSceneRenderer_.UpdateDebugLines();
 	return playSceneReady_;
 }
@@ -4848,6 +4869,7 @@ void EditorScene::UpdatePlaySelectionFollow() {
 }
 
 void EditorScene::ClearPlaySelection() {
+	motionTrail_.Clear();
 	sceneViewPanel_.CancelSelection();
 	playSelection_.Clear();
 	playHierarchyPanel_.Clear();

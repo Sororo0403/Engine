@@ -22,6 +22,7 @@ class EditorPreferences {
 	bool showCameraGuides = true;
 	bool showRespawnGuides = true;
 	bool showJumpGuide = false;
+	bool showMotionTrail = false;
 	bool showObjectMarkers = true;
 	bool showMeasurements = false;
 	ColliderBounds::Mode colliderDisplay = ColliderBounds::Mode::SELECTED;
