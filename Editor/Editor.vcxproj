@@ -386,6 +386,8 @@ exit /b 0</Command>
     <ClCompile Include="src\assets\SceneAssetValidation.cpp"></ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\assets\ImageValidation.h" />
+    <ClCompile Include="src\assets\ImageValidation.cpp" />
     <ClInclude Include="include\assets\TextureImporter.h" />
     <ClCompile Include="src\assets\TextureImporter.cpp" />
     <ClInclude Include="include\dialogs\TextureImportDialog.h" />

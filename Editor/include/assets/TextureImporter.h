@@ -2,7 +2,6 @@
 
 #include <filesystem>
 #include <string>
-#include <string_view>
 
 /// <summary>
 /// 取り込む画像と、Assets内の既存フォルダ・保存名を指定する
@@ -29,13 +28,4 @@ class TextureImporter {
 	/// <remarks>COM初期化後に呼び出す。画像は256MiBまで、各辺は16384ピクセルまで。先頭フレームを検証する</remarks>
 	static bool Import(const TextureImportOptions &options,
 	                   std::filesystem::path &imported, std::string &error);
-
-  private:
-	/// <summary>
-	/// メモリ上の画像の先頭フレームをRGBAへ復号し、全行を確認する。失敗時は例外
-	/// </summary>
-	/// <param name="bytes">コピーに使用する変更しない画像データ</param>
-	static void ValidateImage(std::string_view bytes);
-	static constexpr std::size_t kMaximumSourceBytes = 256u * 1024u * 1024u;
-	static constexpr unsigned kMaximumDimension = 16384;
 };

@@ -1,6 +1,7 @@
 #include "assets/SceneAssetValidation.h"
 
 #include "assets/AssetDependencies.h"
+#include "assets/ImageValidation.h"
 #include "platform/windows/PathUtils.h"
 #include "scene/Scene.h"
 #include <format>
@@ -42,7 +43,8 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 		} catch (const std::bad_alloc &) {
 			throw;
 		} catch (const std::exception &error) {
-			errors.push_back(error.what());
+			errors.push_back(
+			    std::format("{}: {}", PathUtils::ToUtf8(path), error.what()));
 		}
 
 		return errors;
@@ -68,7 +70,18 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 			for (const auto &[slot, path] :
 			     object.meshRenderer->textures.slots) {
 				add(std::format("Mesh Renderer slot {}", slot),
-				    inspect(path, textures, AssetDependencies::TextureFiles));
+				    inspect(path, textures, [](const auto &image) {
+					    const auto files =
+					        AssetDependencies::TextureFiles(image);
+
+					    for (const auto &file : files) {
+						    if (std::filesystem::is_regular_file(file)) {
+							    ImageValidation::Read(file);
+						    }
+					    }
+
+					    return files;
+				    }));
 			}
 		}
 	}

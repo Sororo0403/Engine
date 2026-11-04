@@ -857,7 +857,10 @@ void ControlsPanel::Draw() {
 	         "Hidden meshes, renderer-only texture assignments and unused "
 	         "slots are included. Model dependencies include OBJ material "
 	         "files and glTF buffers and images. Shared file results are "
-	         "reused during each check. Image decoding, GPU rendering and "
+	         "reused during each check. Explicit texture assignments are "
+	         "decoded using the same first-frame, dimension and file-size "
+	         "checks as Import Image, including hidden objects and unused "
+	         "slots. GPU rendering and "
 	         "export-folder restrictions are not checked. Scene data and Undo "
 	         "history are preserved."},
 	        {"Game > Play / Stop",

@@ -686,6 +686,8 @@
     <ClCompile Include="src\assets\SceneAssetValidation.cpp"><Filter>src\assets</Filter></ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\assets\ImageValidation.h"><Filter>include\assets</Filter></ClInclude>
+    <ClCompile Include="src\assets\ImageValidation.cpp"><Filter>src\assets</Filter></ClCompile>
     <ClInclude Include="include\assets\TextureImporter.h"><Filter>include\assets</Filter></ClInclude>
     <ClCompile Include="src\assets\TextureImporter.cpp"><Filter>src\assets</Filter></ClCompile>
     <ClInclude Include="include\dialogs\TextureImportDialog.h"><Filter>include\dialogs</Filter></ClInclude>
