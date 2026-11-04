@@ -117,6 +117,7 @@ bool EditorScene::Initialize() {
 	ClearPlaySelection();
 
 	hierarchyPanel_.Clear();
+	pendingPlayCamera_ = 0;
 	inspectorPanel_.Clear();
 	assetsPanel_.Clear();
 
@@ -198,6 +199,17 @@ bool EditorScene::Update(float deltaTime) {
 		                        playMode_.IsPaused(), playShortcutEnabled);
 	}
 
+	const auto requestedCamera =
+	    std::exchange(pendingPlayCamera_, SceneObjectId{0});
+	const bool useRequestedCamera =
+	    requestedCamera != 0 && playAction == EditorPlayMode::Action::NONE &&
+	    action == EditorAction::NONE && !IsBusy() && !playMode_.IsPlaying() &&
+	    !exitQueued_;
+
+	if (useRequestedCamera) {
+		playAction = EditorPlayMode::Action::PLAY;
+	}
+
 	if (playAction == EditorPlayMode::Action::STOP_AND_KEEP_TRANSFORMS &&
 	    !IsBusy()) {
 		StopAndKeepSelectedTransforms();
@@ -227,7 +239,8 @@ bool EditorScene::Update(float deltaTime) {
 
 		if (!playMode_.Start(document_.GetScene(), error,
 		                     cameraController_.GetPose(), exportConfig_,
-		                     &invalidObject)) {
+		                     &invalidObject,
+		                     useRequestedCamera ? requestedCamera : 0)) {
 			ShowError(std::move(error), invalidObject);
 		}
 	}
@@ -1173,6 +1186,7 @@ void EditorScene::Finalize() {
 	selection_.Clear();
 
 	hierarchyPanel_.Clear();
+	pendingPlayCamera_ = 0;
 	inspectorPanel_.Clear();
 
 	stage_ = DialogStage::IDLE;
@@ -2354,6 +2368,7 @@ void EditorScene::ExecutePendingAction() {
 			selection_.Clear();
 			cameraController_.Reset();
 			hierarchyPanel_.Clear();
+			pendingPlayCamera_ = 0;
 			inspectorPanel_.Clear();
 		} catch (const std::exception &error) {
 			Logger::Error(error.what());
@@ -2865,6 +2880,7 @@ void EditorScene::RestoreRecovery() {
 		selection_.Clear();
 		cameraController_.Reset();
 		hierarchyPanel_.Clear();
+		pendingPlayCamera_ = 0;
 		inspectorPanel_.Clear();
 		assetsPanel_.Clear();
 		stage_ = DialogStage::IDLE;
@@ -3074,6 +3090,7 @@ void EditorScene::UpdateDialogs() {
 			selection_.Clear();
 			cameraController_.Reset();
 			hierarchyPanel_.Clear();
+			pendingPlayCamera_ = 0;
 			inspectorPanel_.Clear();
 			stage_ = DialogStage::IDLE;
 			if (!assets_.Refresh()) {
@@ -3327,6 +3344,7 @@ void EditorScene::OpenScene(const std::filesystem::path &path) {
 	selection_.Clear();
 	cameraController_.Reset();
 	hierarchyPanel_.Clear();
+	pendingPlayCamera_ = 0;
 	inspectorPanel_.Clear();
 	recentScenes_.Add(document_.GetFilePath());
 	stage_ = DialogStage::IDLE;
@@ -3377,6 +3395,14 @@ void EditorScene::ApplyInspectorRequest(
 				    "Could not apply UV settings. Every selected object must "
 				    "have "
 				    "a valid Mesh Renderer. No selected object was changed.");
+			}
+
+			return;
+		}
+
+		if (request.action == InspectorPanel::ObjectAction::PLAY_FROM_CAMERA) {
+			if (!playMode_.IsPlaying() && object->camera) {
+				pendingPlayCamera_ = request.objectId;
 			}
 
 			return;

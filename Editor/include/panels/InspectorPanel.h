@@ -59,6 +59,7 @@ class InspectorPanel {
 		ADD_MESH_RENDERER,
 		REMOVE_MESH_RENDERER,
 		APPLY_UV_TO_SELECTION,
+		PLAY_FROM_CAMERA,
 	};
 
 	/// <summary>

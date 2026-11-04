@@ -737,6 +737,8 @@ class EditorScene final : public IScene {
 	TexturePreviewPanel texturePreviewPanel_;
 
 	EditorSelection selection_;
+	// Inspectorから要求したCameraで、次の更新開始時にPlayを始める。0は要求なし
+	SceneObjectId pendingPlayCamera_ = 0;
 	EditorSelection playSelection_;
 	HierarchyPanel playHierarchyPanel_;
 	bool playSelectionActive_ = false;

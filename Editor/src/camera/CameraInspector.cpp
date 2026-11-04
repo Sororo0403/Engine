@@ -82,6 +82,14 @@ bool CameraInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 			request = {Action::ALIGN_VIEW, id};
 		}
 
+		ui.BeginDisabled(!object.camera->IsValid());
+
+		if (ui.Button("Play From This Camera")) {
+			request = {Action::PLAY_FROM_CAMERA, id};
+		}
+
+		ui.EndDisabled();
+
 		if (ui.Button("Remove Camera")) {
 			changed |= history.SetCamera(id, std::nullopt);
 		}

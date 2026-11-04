@@ -17,10 +17,12 @@ class EditorPlaySession {
 	/// <param name="error">失敗理由。成功時は空</param>
 	/// <param name="fallbackPose">Primary Cameraがない場合の開始姿勢</param>
 	/// <param name="invalidObject">指定時は問題の物体IDを設定する。成功時や物体に紐付かない失敗では0</param>
+	/// <param name="cameraOverride">0は通常のPrimary選択。指定時は再生複製内だけ、そのCameraをPrimaryとして使用する</param>
 	/// <returns>true:開始成功 false:設定が無効、または複製失敗</returns>
 	bool Start(const Scene &scene, std::string &error,
 	           const CameraPose &fallbackPose = CameraPose{},
-	           SceneObjectId *invalidObject = nullptr);
+	           SceneObjectId *invalidObject = nullptr,
+	           SceneObjectId cameraOverride = 0);
 
 	/// <summary>
 	/// Play開始時のシーンから再実行する。一時停止と再生速度は保持し、予約済みのStepは破棄する

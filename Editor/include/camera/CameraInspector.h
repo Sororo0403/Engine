@@ -20,6 +20,7 @@ class CameraInspector {
 		MAKE_PRIMARY,
 		COPY_LENS,
 		PASTE_LENS,
+		PLAY_FROM_CAMERA,
 	};
 
 	/// <summary>
@@ -37,7 +38,7 @@ class CameraInspector {
 	/// <param name="id">対象物体のID</param>
 	/// <param name="object">編集する物体</param>
 	/// <param name="history">編集履歴</param>
-	/// <param name="request">姿勢・Primary・レンズの操作要求。操作がなければ呼び出し前の値を保つ</param>
+	/// <param name="request">姿勢・Primary・レンズ・再生の操作要求。操作がなければ呼び出し前の値を保つ</param>
 	/// <param name="canPasteLens">コピーしたレンズ設定を保持しているか</param>
 	/// <returns>true:設定変更あり false:変更なし、または操作要求のみ</returns>
 	bool Draw(const ImGuiSystem &ui, SceneObjectId id, SceneObject &object,

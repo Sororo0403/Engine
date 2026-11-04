@@ -526,7 +526,10 @@ bool InspectorPanel::Draw(const ImGuiSystem &ui, Scene &scene,
 	changed |= CameraInspector{}.Draw(ui, inspectedObjectId, *object, history,
 	                                  cameraRequest, canPasteCameraLens);
 
-	if (cameraRequest.action == CameraInspector::Action::ALIGN_VIEW) {
+	if (cameraRequest.action == CameraInspector::Action::PLAY_FROM_CAMERA) {
+		objectRequest_ = {ObjectAction::PLAY_FROM_CAMERA,
+		                  cameraRequest.objectId};
+	} else if (cameraRequest.action == CameraInspector::Action::ALIGN_VIEW) {
 		objectRequest_ = {ObjectAction::ALIGN_CAMERA_VIEW,
 		                  cameraRequest.objectId};
 	} else if (cameraRequest.action == CameraInspector::Action::MAKE_PRIMARY) {

@@ -820,6 +820,14 @@ void ControlsPanel::Draw() {
 	         "view without a Primary Camera. Dialogs disable these actions. "
 	         "Simulation, editing selection, Inspector locks, scene data and "
 	         "history are unchanged."},
+	        {"Inspector > Camera > Play From This Camera",
+	         "Test the displayed Camera without changing the editing Primary "
+	         "flags, history or files. The selected Camera becomes Primary "
+	         "only in the Play snapshot; Follow Camera behavior and its lens "
+	         "are preserved. Restart keeps this choice. Stop discards it; "
+	         "normal Play and exported games use the authored Primary. The "
+	         "request starts next frame and is cancelled by another action "
+	         "or a dialog. Invalid scene settings still prevent Play."},
 	        {"Game > Restart",
 	         "Reset the player, physics and cameras to the state captured when "
 	         "Play started. The first frame shows that initial state. Restart "

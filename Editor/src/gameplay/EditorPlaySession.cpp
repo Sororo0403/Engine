@@ -1,4 +1,5 @@
 #include "gameplay/EditorPlaySession.h"
+#include "gameplay/SceneValidation.h"
 
 #include <cmath>
 #include <exception>
@@ -6,7 +7,8 @@
 
 bool EditorPlaySession::Start(const Scene &scene, std::string &error,
                               const CameraPose &fallbackPose,
-                              SceneObjectId *invalidObject) {
+                              SceneObjectId *invalidObject,
+                              SceneObjectId cameraOverride) {
 	if (invalidObject) {
 		*invalidObject = 0;
 	}
@@ -15,6 +17,42 @@ bool EditorPlaySession::Start(const Scene &scene, std::string &error,
 		// 再生状態を置き換える前に、再実行用の領域を確保する。
 		auto snapshot = std::make_unique<Scene>();
 		snapshot->ReplaceObjects(scene.GetObjects());
+
+		if (cameraOverride != 0) {
+			const auto *selected = snapshot->FindObject(cameraOverride);
+
+			if (!selected || !selected->camera) {
+				error = "Choose an existing Camera for Play.";
+
+				if (invalidObject) {
+					*invalidObject = cameraOverride;
+				}
+
+				return false;
+			}
+
+			// Primaryの重複など、元のシーンの問題を上書き指定で隠さない。
+			// 指定Cameraを使うため、未使用の予備姿勢は標準値で検証する。
+			const auto issues =
+			    SceneValidation::Inspect(*snapshot, CameraPose{});
+
+			if (!issues.empty()) {
+				error = issues.front().message;
+
+				if (invalidObject) {
+					*invalidObject = issues.front().objectId;
+				}
+
+				return false;
+			}
+
+			for (const auto &[id, object] : snapshot->GetObjects()) {
+				if (object.camera) {
+					snapshot->FindObject(id)->camera->primary =
+					    id == cameraOverride;
+				}
+			}
+		}
 
 		if (!simulation_.Start(*snapshot, error, fallbackPose, invalidObject)) {
 			return false;

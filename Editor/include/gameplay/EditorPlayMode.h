@@ -57,11 +57,13 @@ class EditorPlayMode {
 	/// <param name="fallbackPose">Primary Cameraがない場合に使用するSceneビューの姿勢</param>
 	/// <param name="config">出力設定。Gameビューの描画幅・高さ・操作キー・移動基準・照明を開始時に保持する</param>
 	/// <param name="invalidObject">指定時は設定やモデル読み込みに問題がある物体IDを設定する。成功時や描画サイズ・操作キーの失敗では0</param>
+	/// <param name="cameraOverride">0は通常のPrimary選択。指定時は再生複製内だけ、そのCameraをPrimaryとして使用する</param>
 	/// <returns>true:開始成功 false:設定が無効、または表示するモデルを読み込めない</returns>
 	bool Start(const Scene &scene, std::string &error,
 	           const CameraPose &fallbackPose = CameraPose{},
 	           const GameConfig &config = GameConfig{},
-	           SceneObjectId *invalidObject = nullptr);
+	           SceneObjectId *invalidObject = nullptr,
+	           SceneObjectId cameraOverride = 0);
 
 	/// <summary>
 	/// Play開始時の状態から再実行し、Gameパネルへフォーカスを戻す。一時停止状態は保持する

@@ -155,7 +155,8 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 bool EditorPlayMode::Start(const Scene &scene, std::string &error,
                            const CameraPose &fallbackPose,
                            const GameConfig &config,
-                           SceneObjectId *invalidObject) {
+                           SceneObjectId *invalidObject,
+                           SceneObjectId cameraOverride) {
 	if (invalidObject) {
 		*invalidObject = 0;
 	}
@@ -188,7 +189,8 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
 		}
 	}
 
-	if (!session_.Start(scene, error, fallbackPose, invalidObject)) {
+	if (!session_.Start(scene, error, fallbackPose, invalidObject,
+	                    cameraOverride)) {
 		return false;
 	}
 
