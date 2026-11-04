@@ -43,6 +43,11 @@ PlayStatePanel::Request PlayStatePanel::Draw(const ImGuiSystem &ui,
 		return {};
 	}
 
+	ui.Text(
+	    std::format("Simulated Time: {:.3f} s", session.GetElapsedSeconds()));
+	ui.Text(std::format("Simulation Frames: {}",
+	                    session.GetSimulationFrameCount()));
+
 	Request requested;
 	const auto select = [&](SceneObjectId id, const char *selectLabel,
 	                        const char *frameLabel) {

@@ -23,6 +23,8 @@ bool EditorPlaySession::Start(const Scene &scene, std::string &error,
 		initialScene_ = std::move(snapshot);
 		initialFallback_ = fallbackPose;
 		clock_.Reset();
+		elapsedSeconds_ = 0.0;
+		simulationFrameCount_ = 0;
 		firstFrame_ = true;
 		return true;
 	} catch (const std::exception &exception) {
@@ -50,6 +52,8 @@ bool EditorPlaySession::Restart(std::string &error) {
 		clock_.TogglePause();
 	}
 
+	elapsedSeconds_ = 0.0;
+	simulationFrameCount_ = 0;
 	firstFrame_ = true;
 	return true;
 }
@@ -59,6 +63,8 @@ void EditorPlaySession::Stop() {
 	initialScene_.reset();
 	initialFallback_ = {};
 	clock_.Reset();
+	elapsedSeconds_ = 0.0;
+	simulationFrameCount_ = 0;
 	firstFrame_ = false;
 }
 
@@ -82,6 +88,14 @@ float EditorPlaySession::GetTimeScale() const {
 	return clock_.GetTimeScale();
 }
 
+double EditorPlaySession::GetElapsedSeconds() const {
+	return elapsedSeconds_;
+}
+
+std::uint64_t EditorPlaySession::GetSimulationFrameCount() const {
+	return simulationFrameCount_;
+}
+
 bool EditorPlaySession::Update(float seconds, const CharacterInput &input) {
 	if (!IsPlaying() || !std::isfinite(seconds) || seconds < 0) {
 		return false;
@@ -93,7 +107,21 @@ bool EditorPlaySession::Update(float seconds, const CharacterInput &input) {
 	}
 
 	const auto time = clock_.Advance(seconds);
-	return !time || simulation_.Update(*time, input);
+
+	if (!time) {
+		return true;
+	}
+
+	if (!simulation_.Update(*time, input)) {
+		return false;
+	}
+
+	if (*time > 0.0f) {
+		elapsedSeconds_ += static_cast<double>(*time);
+		++simulationFrameCount_;
+	}
+
+	return true;
 }
 
 bool EditorPlaySession::IsPlaying() const {

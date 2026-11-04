@@ -2,6 +2,7 @@
 
 #include "gameplay/PlaybackClock.h"
 #include "gameplay/SceneSimulation.h"
+#include <cstdint>
 #include <memory>
 
 /// <summary>
@@ -55,6 +56,18 @@ class EditorPlaySession {
 	/// </summary>
 	/// <returns>実時間に掛ける倍率</returns>
 	float GetTimeScale() const;
+
+	/// <summary>
+	/// 再生シーンの更新に成功したゲーム時間を累積して取得する
+	/// </summary>
+	/// <returns>速度倍率とフレーム上限を反映した秒数。Start・Restart・Stopで0に戻る</returns>
+	double GetElapsedSeconds() const;
+
+	/// <summary>
+	/// 正のゲーム時間で更新に成功した回数を取得する。描画回数や物理の内部刻み数は含まない
+	/// </summary>
+	/// <returns>再生フレーム数。Pause中・0秒の更新・開始直後の表示では増えず、Start・Restart・Stopで0に戻る</returns>
+	std::uint64_t GetSimulationFrameCount() const;
 
 	/// <summary>
 	/// 時間制御に従って再生シーンを更新する。開始・再実行後の最初の表示は初期状態を保持する
@@ -111,5 +124,7 @@ class EditorPlaySession {
 	std::unique_ptr<Scene> initialScene_;
 	CameraPose initialFallback_{};
 	PlaybackClock clock_;
+	double elapsedSeconds_ = 0.0;
+	std::uint64_t simulationFrameCount_ = 0;
 	bool firstFrame_ = false;
 };
