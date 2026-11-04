@@ -400,6 +400,11 @@ bool EditorScene::Update(float deltaTime) {
 		FinishEdit();
 		if (selection_.Set(std::move(checkedRequest.objectIds))) {
 			hierarchyPanel_.RequestReveal(selection_.GetActiveId());
+
+			if (checkedRequest.inspect) {
+				inspectorPanel_.RequestInspect(selection_.GetActiveId());
+			}
+
 			if (checkedRequest.frame) {
 				frameRequest_ = FrameRequest::ISSUES;
 				ImGui::SetWindowCollapsed("Scene", false);

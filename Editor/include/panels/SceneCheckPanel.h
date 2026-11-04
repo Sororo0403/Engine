@@ -12,11 +12,12 @@ class Scene;
 class SceneCheckPanel {
   public:
 	/// <summary>
-	/// 描画後に実行する、問題のある物体の選択とSceneカメラの移動要求
+	/// 描画後に実行する、問題のある物体の選択・Sceneカメラの移動・Inspector表示の要求
 	/// </summary>
 	struct Request {
 		std::vector<SceneObjectId> objectIds;
 		bool frame = false;
+		bool inspect = false;
 	};
 
 	/// <summary>
@@ -42,7 +43,7 @@ class SceneCheckPanel {
 	/// <param name="ui">フレーム開始済みのUI</param>
 	/// <param name="scene">検証対象と選択先を確認する編集シーン</param>
 	/// <param name="fallback">現在のSceneカメラ姿勢</param>
-	/// <returns>選択する既存物体の一覧とフレーム要求。要求なしは空の一覧</returns>
+	/// <returns>選択する既存物体の一覧とフレーム・Inspector表示の要求。要求なしは空の一覧。Inspector表示は単独の物体への明示操作のみ</returns>
 	Request Draw(const ImGuiSystem &ui, const Scene &scene,
 	             const CameraPose &fallback);
 
