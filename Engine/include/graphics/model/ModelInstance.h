@@ -4,7 +4,6 @@
 
 #include "graphics/material/Material.h"
 #include "graphics/mesh/MeshInstance.h"
-#include "math/Transform.h"
 
 #include <cstddef>
 #include <vector>
@@ -37,9 +36,11 @@ class ModelInstance {
 	/// 各メッシュの変換行列と、材質の定数バッファを更新する
 	/// </summary>
 	/// <param name="camera">更新済みのカメラ</param>
+	/// <param name="world">親子階層を合成したワールド行列。せん断を含めて反映する</param>
 	/// <param name="tint">元の材質へ掛ける色。材質データ自体には累積しない</param>
 	/// <returns>true:成功 false:未初期化、または材質更新失敗</returns>
-	bool Update(const Camera &camera, const ColorTint &tint = {});
+	bool Update(const Camera &camera, const DirectX::XMFLOAT4X4 &world,
+	            const ColorTint &tint = {});
 
 	/// <summary>
 	/// モデルのSRVヒープを設定し、各メッシュの描画命令を記録する
@@ -49,18 +50,6 @@ class ModelInstance {
 	/// <param name="light">更新済みの平行光源</param>
 	void Draw(ID3D12GraphicsCommandList *commandList, MeshRenderer &renderer,
 	          const DirectionalLight &light) const;
-
-	/// <summary>
-	/// 物体全体の変形情報を設定する
-	/// </summary>
-	/// <param name="transform">拡大率・回転クォータニオン・移動量</param>
-	void SetTransform(const Transform &transform);
-
-	/// <summary>
-	/// 物体全体の変形情報を取得する
-	/// </summary>
-	/// <returns>変形情報への読み取り専用参照</returns>
-	const Transform &GetTransform() const;
 
 	/// <summary>
 	/// 材質数を取得する
@@ -98,8 +87,6 @@ class ModelInstance {
 
   private:
 	const Model *model_ = nullptr;
-
-	Transform transform_{};
 
 	std::vector<Material> materials_;
 	std::vector<MaterialData> materialData_;

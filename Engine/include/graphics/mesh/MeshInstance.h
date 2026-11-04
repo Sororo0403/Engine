@@ -1,7 +1,7 @@
 #pragma once
 
 #include "graphics/buffer/ConstantBuffer.h"
-#include "math/Transform.h"
+#include <DirectXMath.h>
 
 #include <d3d12.h>
 
@@ -34,19 +34,9 @@ class MeshInstance {
 	/// 頂点位置と法線の変換行列を定数バッファへ書き込む
 	/// </summary>
 	/// <param name="camera">更新済みのカメラ</param>
-	void Update(const Camera &camera);
-
-	/// <summary>
-	/// 変形情報を設定する
-	/// </summary>
-	/// <param name="transform">拡大率・回転クォータニオン・移動量</param>
-	void SetTransform(const Transform &transform);
-
-	/// <summary>
-	/// 変形情報を取得する
-	/// </summary>
-	/// <returns>この物体の変形情報への読み取り専用参照</returns>
-	const Transform &GetTransform() const;
+	/// <param name="world">親子階層を合成した有限な可逆アフィン行列</param>
+	/// <returns>true:成功 false:未初期化、または行列が無効</returns>
+	bool Update(const Camera &camera, const DirectX::XMFLOAT4X4 &world);
 
 	/// <summary>
 	/// 使用するメッシュを取得する
@@ -75,6 +65,5 @@ class MeshInstance {
 	const Mesh *mesh_ = nullptr;
 	const Material *material_ = nullptr;
 
-	Transform transform_{};
 	ConstantBuffer<TransformationConstants> constantBuffer_;
 };

@@ -6,6 +6,7 @@
 #include "graphics/render/RenderTexture.h"
 #include "graphics/render/RenderWorld.h"
 #include "scene/Scene.h"
+#include "scene/SceneHierarchy.h"
 
 #include <algorithm>
 #include <exception>
@@ -99,6 +100,13 @@ void SceneRenderer::Draw(RenderTexture *target) const {
 }
 
 bool SceneRenderer::SynchronizeObjects() {
+	SceneHierarchy::WorldTransforms transforms;
+
+	if (!SceneHierarchy::BuildWorldTransforms(scene_, transforms)) {
+		Logger::Error("SceneRenderer: 親子関係またはワールド変形が無効です。");
+		return false;
+	}
+
 	const auto revision = models_.GetReloadRevision();
 	const bool modelsChanged = revision != modelRevision_;
 
@@ -219,8 +227,16 @@ bool SceneRenderer::SynchronizeObjects() {
 			                 object.meshRenderer->uvOffset[1]};
 		}
 
-		// シーン側の変形情報を描画側へ反映する
-		world_->GetTransform(renderObject.handle) = object.transform;
+		// 親子の合成結果を、描画・選択・外接ボックスで共通に使用する。
+		const bool transformed =
+		    object.parentId == 0
+		        ? world_->SetTransform(renderObject.handle, object.transform)
+		        : world_->SetWorldMatrix(renderObject.handle,
+		                                 transforms.at(id).matrix);
+
+		if (!transformed) {
+			return false;
+		}
 
 		if (!world_->SetColorTint(renderObject.handle,
 		                          object.colorTint.value_or(ColorTint{}))) {

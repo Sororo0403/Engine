@@ -80,13 +80,17 @@ bool ModelInstance::Initialize(ID3D12Device *device, const Model &model) {
 	return true;
 }
 
-bool ModelInstance::Update(const Camera &camera, const ColorTint &tint) {
+bool ModelInstance::Update(const Camera &camera,
+                           const DirectX::XMFLOAT4X4 &world,
+                           const ColorTint &tint) {
 	if (!model_) {
 		Logger::Error("ModelInstance::Update: 未初期化です。");
 		return false;
 	}
 
-	if (!TransformUtils::IsValid(transform_)) {
+	DirectX::XMFLOAT4X4 inverse;
+
+	if (!TransformUtils::TryInverseWorldMatrix(world, inverse)) {
 		Logger::Error("ModelInstance::Update: 変形情報が無効です。");
 		return false;
 	}
@@ -112,8 +116,9 @@ bool ModelInstance::Update(const Camera &camera, const ColorTint &tint) {
 
 	// モデルを構成する全メッシュに、同じ変形を適用する
 	for (auto &instance : meshInstances_) {
-		instance.SetTransform(transform_);
-		instance.Update(camera);
+		if (!instance.Update(camera, world)) {
+			return false;
+		}
 	}
 
 	return true;
@@ -130,14 +135,6 @@ void ModelInstance::Draw(ID3D12GraphicsCommandList *commandList,
 	for (const auto &instance : meshInstances_) {
 		renderer.Draw(commandList, instance, light);
 	}
-}
-
-void ModelInstance::SetTransform(const Transform &transform) {
-	transform_ = transform;
-}
-
-const Transform &ModelInstance::GetTransform() const {
-	return transform_;
 }
 
 std::size_t ModelInstance::GetMaterialCount() const {
@@ -169,7 +166,6 @@ void ModelInstance::Finalize() {
 	materialData_.clear();
 
 	model_ = nullptr;
-	transform_ = {};
 }
 
 bool ModelInstance::SetMaterial(

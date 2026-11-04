@@ -18,6 +18,7 @@
 #include <exception>
 #include <format>
 #include <limits>
+#include <optional>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -56,6 +57,8 @@ struct RenderWorld::Impl {
 
 		ModelHandle model_;
 		Transform transform_{};
+		std::optional<DirectX::XMFLOAT4X4> worldMatrix_;
+		bool matrixHasSrt_ = true;
 		ColorTint tint_{};
 		ModelInstance instance_;
 	};
@@ -97,6 +100,37 @@ struct RenderWorld::Impl {
 		}
 
 		return *slots_[handle.index_].object_;
+	}
+
+	/// <summary>
+	/// SRTまたは行列指定から、有効なワールド行列を取り出す
+	/// </summary>
+	/// <param name="object">確認する物体</param>
+	/// <param name="matrix">成功時だけ置き換える行列</param>
+	/// <returns>true:成功 false:変形が無効</returns>
+	bool GetWorldMatrix(const Object &object,
+	                    DirectX::XMFLOAT4X4 &matrix) const {
+		DirectX::XMFLOAT4X4 candidate;
+
+		if (object.worldMatrix_) {
+			candidate = *object.worldMatrix_;
+		} else {
+			if (!TransformUtils::IsValid(object.transform_)) {
+				return false;
+			}
+
+			DirectX::XMStoreFloat4x4(
+			    &candidate, TransformUtils::MakeWorldMatrix(object.transform_));
+		}
+
+		DirectX::XMFLOAT4X4 inverse;
+
+		if (!TransformUtils::TryInverseWorldMatrix(candidate, inverse)) {
+			return false;
+		}
+
+		matrix = candidate;
+		return true;
 	}
 
 	void ReleaseSlot(Slot &slot) {
@@ -153,7 +187,9 @@ bool RenderWorld::GetObjectBounds(
 	const Impl &impl = *impl_;
 	const auto &object = impl.GetObject(handle);
 
-	if (!object.model_.model_ || !TransformUtils::IsValid(object.transform_)) {
+	DirectX::XMFLOAT4X4 worldMatrix;
+
+	if (!object.model_.model_ || !impl.GetWorldMatrix(object, worldMatrix)) {
 		return false;
 	}
 
@@ -165,7 +201,7 @@ bool RenderWorld::GetObjectBounds(
 
 	using namespace DirectX;
 
-	const XMMATRIX world = TransformUtils::MakeWorldMatrix(object.transform_);
+	const XMMATRIX world = XMLoadFloat4x4(&worldMatrix);
 
 	for (auto &corner : transformed) {
 		XMStoreFloat3(&corner,
@@ -318,13 +354,70 @@ bool RenderWorld::DestroyObject(RenderObjectHandle handle) {
 Transform &RenderWorld::GetTransform(RenderObjectHandle handle) {
 	auto &object = impl_->GetObject(handle);
 
+	if (object.worldMatrix_ && !object.matrixHasSrt_) {
+		throw std::logic_error(
+		    "RenderWorld: "
+		    "せん断を含む変形はGetWorldMatrixで取得してください。");
+	}
+
+	object.worldMatrix_.reset();
 	impl_->prepared_ = false;
 	return object.transform_;
 }
 
 const Transform &RenderWorld::GetTransform(RenderObjectHandle handle) const {
-	const Impl &impl = *impl_;
-	return impl.GetObject(handle).transform_;
+	const auto &object = impl_->GetObject(handle);
+
+	if (object.worldMatrix_ && !object.matrixHasSrt_) {
+		throw std::logic_error(
+		    "RenderWorld: "
+		    "せん断を含む変形はGetWorldMatrixで取得してください。");
+	}
+
+	return object.transform_;
+}
+
+bool RenderWorld::SetTransform(RenderObjectHandle handle,
+                               const Transform &transform) {
+	if (!impl_->Contains(handle) || !TransformUtils::IsValid(transform)) {
+		return false;
+	}
+
+	auto &object = impl_->GetObject(handle);
+	object.transform_ = transform;
+	object.worldMatrix_.reset();
+	object.matrixHasSrt_ = true;
+	impl_->prepared_ = false;
+	return true;
+}
+
+bool RenderWorld::SetWorldMatrix(RenderObjectHandle handle,
+                                 const DirectX::XMFLOAT4X4 &matrix) {
+	DirectX::XMFLOAT4X4 inverse;
+
+	if (!impl_->Contains(handle) ||
+	    !TransformUtils::TryInverseWorldMatrix(matrix, inverse)) {
+		return false;
+	}
+
+	auto &object = impl_->GetObject(handle);
+	Transform transform;
+	const bool hasSrt = TransformUtils::TryFromWorldMatrix(matrix, transform);
+
+	if (hasSrt) {
+		object.transform_ = transform;
+	}
+
+	object.worldMatrix_ = matrix;
+	object.matrixHasSrt_ = hasSrt;
+	impl_->prepared_ = false;
+	return true;
+}
+
+bool RenderWorld::GetWorldMatrix(RenderObjectHandle handle,
+                                 DirectX::XMFLOAT4X4 &matrix) const {
+	return impl_->initialized_ && impl_->Contains(handle) &&
+	       impl_->GetWorldMatrix(impl_->GetObject(handle), matrix);
 }
 
 std::size_t RenderWorld::GetMaterialCount(RenderObjectHandle handle) const {
@@ -435,9 +528,11 @@ bool RenderWorld::Update(int width, int height) {
 
 		auto &object = *slot.object_;
 
-		object.instance_.SetTransform(object.transform_);
+		DirectX::XMFLOAT4X4 worldMatrix;
 
-		if (!object.instance_.Update(impl_->camera_, object.tint_)) {
+		if (!impl_->GetWorldMatrix(object, worldMatrix) ||
+		    !object.instance_.Update(impl_->camera_, worldMatrix,
+		                             object.tint_)) {
 			return false;
 		}
 	}
@@ -531,22 +626,15 @@ RenderWorld::Pick(float imageX, float imageY, float *distance,
 
 		const auto &object = *slot.object_;
 
+		XMFLOAT4X4 worldMatrix, inverse;
+
 		if (!object.model_.model_ ||
-		    !TransformUtils::IsValid(object.transform_)) {
+		    !impl_->GetWorldMatrix(object, worldMatrix) ||
+		    !TransformUtils::TryInverseWorldMatrix(worldMatrix, inverse)) {
 			continue;
 		}
 
-		const XMMATRIX world =
-		    TransformUtils::MakeWorldMatrix(object.transform_);
-
-		XMVECTOR determinant;
-		const XMMATRIX inverseWorld = XMMatrixInverse(&determinant, world);
-
-		const float determinantValue = XMVectorGetX(determinant);
-
-		if (!std::isfinite(determinantValue) || determinantValue == 0.0f) {
-			continue;
-		}
+		const XMMATRIX inverseWorld = XMLoadFloat4x4(&inverse);
 
 		// レイをモデルのローカル座標へ変換する
 		const XMVECTOR localOrigin =

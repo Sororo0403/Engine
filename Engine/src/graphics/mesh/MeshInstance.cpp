@@ -2,6 +2,7 @@
 #include "core/Logger.h"
 #include "graphics/camera/Camera.h"
 #include "graphics/material/Material.h"
+#include "math/MathUtils.h"
 #include "math/TransformUtils.h"
 
 bool MeshInstance::Initialize(ID3D12Device *device, const Mesh &mesh,
@@ -30,41 +31,40 @@ bool MeshInstance::Initialize(ID3D12Device *device, const Mesh &mesh,
 	return true;
 }
 
-void MeshInstance::Update(const Camera &camera) {
+bool MeshInstance::Update(const Camera &camera,
+                          const DirectX::XMFLOAT4X4 &worldMatrix) {
 	if (!constantBuffer_.IsInitialized()) {
 		Logger::Error("MeshInstance::Update: 未初期化です。");
-		return;
+		return false;
 	}
 
-	if (!TransformUtils::IsValid(transform_)) {
-		Logger::Error("MeshInstance::Update: 変形情報が無効です。");
-		return;
+	DirectX::XMFLOAT4X4 inverse;
+
+	if (!TransformUtils::TryInverseWorldMatrix(worldMatrix, inverse)) {
+		Logger::Error("MeshInstance::Update: ワールド行列が無効です。");
+		return false;
 	}
 
 	using namespace DirectX;
 
 	TransformationConstants constants{};
-	const XMMATRIX world = TransformUtils::MakeWorldMatrix(transform_);
+	const XMMATRIX world = XMLoadFloat4x4(&worldMatrix);
 	const XMMATRIX view = XMLoadFloat4x4(&camera.GetViewMatrix());
 	const XMMATRIX projection = XMLoadFloat4x4(&camera.GetProjectionMatrix());
 
-	// 頂点位置を画面へ投影する行列
+	// 頂点位置と法線に、せん断を含む同じワールド行列を反映する。
 	XMStoreFloat4x4(&constants.worldViewProjection, world * view * projection);
+	XMStoreFloat4x4(&constants.worldInverseTranspose,
+	                XMMatrixTranspose(XMLoadFloat4x4(&inverse)));
 
-	// 法線をワールド座標へ変換する行列
-	const XMMATRIX worldInverseTranspose =
-	    XMMatrixTranspose(XMMatrixInverse(nullptr, world));
+	if (!MathUtils::IsFinite(constants.worldViewProjection)) {
+		Logger::Error(
+		    "MeshInstance::Update: 投影結果を有限値で表現できません。");
+		return false;
+	}
 
-	XMStoreFloat4x4(&constants.worldInverseTranspose, worldInverseTranspose);
 	constantBuffer_.Update(constants);
-}
-
-void MeshInstance::SetTransform(const Transform &transform) {
-	transform_ = transform;
-}
-
-const Transform &MeshInstance::GetTransform() const {
-	return transform_;
+	return true;
 }
 
 const Mesh *MeshInstance::GetMesh() const {

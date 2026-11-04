@@ -55,18 +55,44 @@ class RenderWorld {
 	bool DestroyObject(RenderObjectHandle handle);
 
 	/// <summary>
-	/// 編集用の変形情報を取得する。無効なハンドルの場合は例外を送出する
+	/// 編集用のSRTを取得し、行列指定を解除する。無効なハンドルやSRTで表せない行列の場合は例外
 	/// </summary>
 	/// <param name="handle">物体のハンドル</param>
 	/// <returns>物体削除まで有効な変形情報への参照</returns>
 	Transform &GetTransform(RenderObjectHandle handle);
 
 	/// <summary>
-	/// 読み取り専用の変形情報を取得する。無効なハンドルの場合は例外を送出する
+	/// 読み取り専用のSRTを取得する。無効なハンドルやSRTで表せない行列の場合は例外
 	/// </summary>
 	/// <param name="handle">物体のハンドル</param>
 	/// <returns>物体削除まで有効な変形情報への読み取り専用参照</returns>
 	const Transform &GetTransform(RenderObjectHandle handle) const;
+
+	/// <summary>
+	/// SRTを設定し、ワールド行列による指定を解除する
+	/// </summary>
+	/// <param name="handle">このワールドの物体</param>
+	/// <param name="transform">有効な拡大率・回転・移動</param>
+	/// <returns>true:成功 false:物体または変形が無効。失敗時は現在値を保持する</returns>
+	bool SetTransform(RenderObjectHandle handle, const Transform &transform);
+
+	/// <summary>
+	/// せん断を含むワールド行列を、そのまま描画と選択判定へ設定する
+	/// </summary>
+	/// <param name="handle">このワールドの物体</param>
+	/// <param name="matrix">有限な可逆アフィン行列</param>
+	/// <returns>true:成功 false:物体または行列が無効。失敗時は現在値を保持する</returns>
+	bool SetWorldMatrix(RenderObjectHandle handle,
+	                    const DirectX::XMFLOAT4X4 &matrix);
+
+	/// <summary>
+	/// 現在のCPU側のワールド行列を取得する。更新前でも取得できる
+	/// </summary>
+	/// <param name="handle">このワールドの物体</param>
+	/// <param name="matrix">成功時だけ置き換える行列</param>
+	/// <returns>true:成功 false:物体または変形が無効</returns>
+	bool GetWorldMatrix(RenderObjectHandle handle,
+	                    DirectX::XMFLOAT4X4 &matrix) const;
 
 	/// <summary>
 	/// 物体の材質数を取得する。無効なハンドルの場合は例外を送出する
