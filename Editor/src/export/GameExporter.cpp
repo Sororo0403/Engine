@@ -1,5 +1,6 @@
 #include "export/GameExporter.h"
 #include "assets/AssetDependencies.h"
+#include "assets/ImageValidation.h"
 #include "files/OutputDirectory.h"
 #include "gameplay/SceneSimulation.h"
 #include "platform/windows/PathUtils.h"
@@ -7,9 +8,11 @@
 #include <Windows.h>
 #include <algorithm>
 #include <array>
+#include <format>
 #include <fstream>
 #include <json.hpp>
 #include <map>
+#include <new>
 #include <set>
 #include <stdexcept>
 #include <utility>
@@ -149,7 +152,22 @@ class Assets {
 
 	fs::path AddTexture(const fs::path &input) {
 		AssetDependencies::TextureFiles(input);
-		return AddFile(FindSource(input), input);
+		const auto reference = AddFile(FindSource(input), input);
+		const auto &file = files_.at(reference);
+
+		if (textures_.insert(file).second) {
+			try {
+				ImageValidation::Read(file);
+			} catch (const std::bad_alloc &) {
+				throw;
+			} catch (const std::exception &error) {
+				throw std::runtime_error(
+				    std::format("Could not export image \"{}\": {}",
+				                PathUtils::ToUtf8(file), error.what()));
+			}
+		}
+
+		return reference;
 	}
 
 	const auto &Files() const {
@@ -203,6 +221,7 @@ class Assets {
 
 	std::vector<AssetSource> sources_;
 	std::map<fs::path, fs::path, PathLess> files_, models_;
+	std::set<fs::path, PathLess> textures_;
 };
 
 /// <summary>
