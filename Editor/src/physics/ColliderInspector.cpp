@@ -5,7 +5,10 @@
 #include "physics/BoxColliderUtils.h"
 #include "scene/SceneObject.h"
 
+#include <algorithm>
+#include <cmath>
 #include <imgui.h>
+#include <limits>
 #include <string>
 
 namespace {
@@ -74,9 +77,29 @@ bool ColliderInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		                                  0.01f, -10000, 10000);
 		changed |= ApplyEdit(history, id, object, edited, valueChanged);
 		edited = *object.collider;
-		valueChanged = ui.DragFloat3("Collider Half Size", edited.halfExtents,
-		                             0.01f, 0.001f, 10000);
-		changed |= ApplyEdit(history, id, object, edited, valueChanged);
+		// 内部の半寸法は保持し、UIではローカル座標の全体の寸法を扱う。
+		// doubleで表示し、既存データの大きな半寸法を2倍しても桁あふれさせない。
+		double size[] = {double(edited.halfExtents.x) * 2,
+		                 double(edited.halfExtents.y) * 2,
+		                 double(edited.halfExtents.z) * 2};
+		const double minimum = 0.002, maximum = 20000.0;
+		valueChanged = ImGui::DragScalarN("Collider Size", ImGuiDataType_Double,
+		                                  size, 3, 0.01f, &minimum, &maximum,
+		                                  "%.2f", ImGuiSliderFlags_AlwaysClamp);
+		const bool validSize =
+		    std::all_of(std::begin(size), std::end(size), [](double value) {
+			    return std::isfinite(value) && value > 0.0 &&
+			           value <= double((std::numeric_limits<float>::max)()) * 2;
+		    });
+
+		if (valueChanged && validSize) {
+			edited.halfExtents = {static_cast<float>(size[0] * 0.5),
+			                      static_cast<float>(size[1] * 0.5),
+			                      static_cast<float>(size[2] * 0.5)};
+		}
+
+		changed |=
+		    ApplyEdit(history, id, object, edited, valueChanged && validSize);
 
 		ui.BeginDisabled(!BoxColliderUtils::IsValid(*object.collider));
 

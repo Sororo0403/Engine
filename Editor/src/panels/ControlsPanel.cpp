@@ -722,8 +722,15 @@ void ControlsPanel::Draw() {
 	         "all clipboards are kept. One Undo/Redo restores the whole edit; "
 	         "identical values add no history. Hierarchy has the same action. "
 	         "Copy a Box Collider in Inspector first."},
+	        {"Inspector > Box Collider > Collider Size",
+	         "Enter the full local X/Y/Z dimensions. The displayed Size is "
+	         "twice the internal half extents; Transform scale and rotation "
+	         "still affect the world collision bounds. Center stays unchanged. "
+	         "A continuous drag is one Undo/Redo operation. Play displays the "
+	         "same full dimensions read-only. Existing scene files and copied "
+	         "collider data keep their original dimensions."},
 	        {"Inspector > Box Collider > Copy / Paste Box Collider",
-	         "Copy the local Center and Half Size, then paste them onto the "
+	         "Copy the local Center and Size, then paste them onto the "
 	         "inspected object. Add Component > Paste Box Collider adds a "
 	         "missing component. The target's Transform, other components, "
 	         "selection and Inspector lock stay unchanged; target rotation and "

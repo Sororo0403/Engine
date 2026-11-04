@@ -684,8 +684,11 @@ InspectorPanel::DrawReadOnly(const ImGuiSystem &ui, const Scene &scene,
 		auto collider = *object->collider;
 		ui.BeginDisabled(true);
 		ui.DragFloat3("Collider Center", collider.center, 0.01f, 0.0f, 0.0f);
-		ui.DragFloat3("Collider Half Size", collider.halfExtents, 0.01f, 0.0f,
-		              0.0f);
+		double size[] = {double(collider.halfExtents.x) * 2,
+		                 double(collider.halfExtents.y) * 2,
+		                 double(collider.halfExtents.z) * 2};
+		ImGui::DragScalarN("Collider Size", ImGuiDataType_Double, size, 3,
+		                   0.01f, nullptr, nullptr, "%.2f");
 		ui.EndDisabled();
 	}
 
