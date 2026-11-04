@@ -390,8 +390,7 @@ bool EditorScene::Update(float deltaTime) {
 
 				if (stateRequest.frame) {
 					playFrameRequest_ = FrameRequest::INSPECTED;
-					ImGui::SetWindowCollapsed("Scene", false);
-					ImGui::SetWindowFocus("Scene");
+					ShowSceneView();
 				}
 			} catch (const std::exception &error) {
 				Logger::Error(std::format(
@@ -456,8 +455,7 @@ bool EditorScene::Update(float deltaTime) {
 
 			if (checkedRequest.frame) {
 				frameRequest_ = FrameRequest::ISSUES;
-				ImGui::SetWindowCollapsed("Scene", false);
-				ImGui::SetWindowFocus("Scene");
+				ShowSceneView();
 			}
 		}
 	}
@@ -2311,8 +2309,7 @@ void EditorScene::StartAction(EditorAction action) {
 					sceneProjection_ = *projection;
 				}
 				frameRequest_ = FrameRequest::NONE;
-				ImGui::SetWindowCollapsed("Scene", false);
-				ImGui::SetWindowFocus("Scene");
+				ShowSceneView();
 			} else {
 				ShowError("Could not restore this Scene camera view.");
 			}
@@ -2542,8 +2539,7 @@ void EditorScene::StartAction(EditorAction action) {
 			}
 			boxCreationDialog_.Show(bounds, sceneGrid_.GetSettings().height);
 			stage_ = DialogStage::BOX_CREATION;
-			ImGui::SetWindowCollapsed("Scene", false);
-			ImGui::SetWindowFocus("Scene");
+			ShowSceneView();
 		} catch (const std::exception &error) {
 			ShowError(error.what());
 		}
@@ -3933,8 +3929,7 @@ void EditorScene::ApplyInspectorRequest(
 			}
 			frameObject_ = request.objectId;
 			frameRequest_ = FrameRequest::FOLLOW_PATH;
-			ImGui::SetWindowCollapsed("Scene", false);
-			ImGui::SetWindowFocus("Scene");
+			ShowSceneView();
 			return;
 		}
 
@@ -4048,8 +4043,7 @@ void EditorScene::ApplyInspectorRequest(
 
 			frameObject_ = request.objectId;
 			frameRequest_ = FrameRequest::JUMP;
-			ImGui::SetWindowCollapsed("Scene", false);
-			ImGui::SetWindowFocus("Scene");
+			ShowSceneView();
 			return;
 		}
 
@@ -4073,8 +4067,7 @@ void EditorScene::ApplyInspectorRequest(
 			frameRequest_ =
 			    respawn ? FrameRequest::RESPAWN : FrameRequest::COLLIDER;
 			// ドックの別タブにある場合も、次のフレームでSceneの描画サイズを取得する。
-			ImGui::SetWindowCollapsed("Scene", false);
-			ImGui::SetWindowFocus("Scene");
+			ShowSceneView();
 			return;
 		}
 
@@ -5458,8 +5451,7 @@ void EditorScene::StartObjectArray() {
 		}
 
 		stage_ = DialogStage::OBJECT_ARRAY;
-		ImGui::SetWindowCollapsed("Scene", false);
-		ImGui::SetWindowFocus("Scene");
+		ShowSceneView();
 	} catch (const std::exception &error) {
 		Logger::Error(
 		    std::format("EditorScene::StartObjectArray: {}", error.what()));
