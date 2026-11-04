@@ -77,6 +77,12 @@ bool CharacterJumpPreview::BuildPaths(const Scene &scene, SceneObjectId id,
 				path.end = fell     ? End::FALL_LIMIT
 				           : landed ? End::LANDED
 				                    : End::TIME_LIMIT;
+
+				if (path.end == End::LANDED &&
+				    !controller.FindGroundObject(world, path.landingObject)) {
+					return false;
+				}
+
 				break;
 			}
 		}

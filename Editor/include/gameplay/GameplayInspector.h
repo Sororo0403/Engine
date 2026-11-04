@@ -56,11 +56,11 @@ class GameplayInspector {
 	/// 存在するコンポーネントを表示し、編集を履歴へ記録する
 	/// </summary>
 	/// <param name="ui">描画用UI</param>
-	/// <param name="scene">追従対象を選ぶシーン</param>
+	/// <param name="scene">追従対象・ジャンプの着地先を選ぶシーン</param>
 	/// <param name="id">表示対象ID</param>
 	/// <param name="object">編集する物体</param>
 	/// <param name="history">編集履歴</param>
-	/// <param name="targetSelectionRequest">追従先の選択要求。要求なしの場合は0。シーンの選択変更は描画後に行う</param>
+	/// <param name="targetSelectionRequest">追従先・ジャンプ着地先の選択要求。要求なしの場合は0。シーンの選択変更は描画後に行う</param>
 	/// <param name="canPasteTransform">復帰先へ貼り付けるTransformを保持しているか</param>
 	/// <param name="canPasteCharacter">貼り付けるCharacter設定を保持しているか</param>
 	/// <param name="canPasteFollow">貼り付ける追従設定を保持しているか</param>

@@ -52,25 +52,26 @@ bool ApplyField(EditorHistory &history, SceneObjectId id,
 /// <param name="ui">描画用UI</param>
 /// <param name="scene">変更しない編集シーン</param>
 /// <param name="id">Inspectorに表示する主人公。選択状態には依存しない</param>
-void DrawJumpMeasurements(const ImGuiSystem &ui, const Scene &scene,
-                          SceneObjectId id) {
+/// <returns>選択を要求した着地先のCollider。要求なしは0。選択の変更は描画後に行う</returns>
+SceneObjectId DrawJumpMeasurements(const ImGuiSystem &ui, const Scene &scene,
+                                   SceneObjectId id) {
 	if (!ui.CollapsingHeader("Jump Measurements", false)) {
-		return;
+		return 0;
 	}
 
 	CharacterJumpPreview::Paths paths;
 
 	if (!CharacterJumpPreview{}.BuildPaths(scene, id, paths)) {
 		ui.Text("Jump measurements unavailable.");
-		return;
+		return 0;
 	}
 
-	if (!ImGui::BeginTable("JumpMeasurements", 5,
+	if (!ImGui::BeginTable("JumpMeasurements", 6,
 	                       ImGuiTableFlags_RowBg |
 	                           ImGuiTableFlags_BordersInnerV |
 	                           ImGuiTableFlags_ScrollX,
-	                       {0, 0}, 520.0f)) {
-		return;
+	                       {0, 0}, 760.0f)) {
+		return 0;
 	}
 
 	ImGui::TableSetupColumn("Direction");
@@ -78,7 +79,9 @@ void DrawJumpMeasurements(const ImGuiSystem &ui, const Scene &scene,
 	ImGui::TableSetupColumn("Time (s)");
 	ImGui::TableSetupColumn("Height");
 	ImGui::TableSetupColumn("Distance XZ");
+	ImGui::TableSetupColumn("Landing Collider");
 	ImGui::TableHeadersRow();
+	SceneObjectId selectedLanding = 0;
 	const std::array<const char *, CharacterJumpPreview::kDirectionCount>
 	    labels{"In Place", "+X",      "-X",      "+Z",     "-Z",
 	           "+X / +Z",  "+X / -Z", "-X / +Z", "-X / -Z"};
@@ -99,9 +102,28 @@ void DrawJumpMeasurements(const ImGuiSystem &ui, const Scene &scene,
 		ui.Text(std::format("{:.3f}", path.maximumHeight));
 		ImGui::TableNextColumn();
 		ui.Text(std::format("{:.3f}", path.horizontalDistance));
+		ImGui::TableNextColumn();
+		const auto *landing = path.end == CharacterJumpPreview::End::LANDED
+		                          ? scene.FindObject(path.landingObject)
+		                          : nullptr;
+
+		if (landing && landing->collider) {
+			ImGui::PushID(static_cast<int>(i));
+
+			if (ui.Button("Select Landing Collider")) {
+				selectedLanding = path.landingObject;
+			}
+
+			ImGui::PopID();
+			ui.Text(
+			    std::format("{} (ID {})", landing->name, path.landingObject));
+		} else {
+			ui.Text("-");
+		}
 	}
 
 	ImGui::EndTable();
+	return selectedLanding;
 }
 
 } // namespace
@@ -167,7 +189,7 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 		ui.EndDisabled();
 
-		DrawJumpMeasurements(ui, scene, id);
+		targetSelectionRequest = DrawJumpMeasurements(ui, scene, id);
 
 		ui.BeginDisabled(!object.character->IsValid());
 

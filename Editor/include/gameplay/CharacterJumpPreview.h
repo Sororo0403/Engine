@@ -31,6 +31,8 @@ class CharacterJumpPreview {
 		std::array<DirectX::XMFLOAT3, kMaximumPoints> points{};
 		std::size_t count = 0;
 		End end = End::TIME_LIMIT;
+		// 着地終了時の位置を支えるCollider。未着地、または終了位置に支持が残っていなければ0。
+		SceneObjectId landingObject = 0;
 		// 終了までの秒数、開始位置からの最高上昇量、終了位置までの水平直線距離。
 		// 描画用の間引き前に毎更新から測定する。着地以外の終了理由では到達可能距離を意味しない。
 		double durationSeconds = 0;
