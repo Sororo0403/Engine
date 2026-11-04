@@ -1262,7 +1262,16 @@ void ControlsPanel::Draw() {
 	        {"View > Camera Settings",
 	         "Adjust movement speed, acceleration and mouse sensitivity."},
 	        {"View > Grid Settings",
-	         "Adjust grid spacing, extent and major-line interval."},
+	         "Adjust grid spacing, extent, major-line interval and work-plane "
+	         "Height. Model and saved-object-group drops use that height when "
+	         "no Box Collider surface is hit, even if grid lines are hidden. "
+	         "Collider faces still take priority. A parallel ray or a plane "
+	         "outside the visible ray range keeps the existing near-ray "
+	         "placement. These are Editor settings, saved across sessions; "
+	         "they do not change scene objects, physics or game output. "
+	         "Drop to Ground still uses world Y=0; position snapping uses its "
+	         "existing world-origin intervals. Restore Defaults resets the "
+	         "height to zero."},
 	        {"View menu", "Show or hide the grid and selection bounds, or "
 	                      "reset the dock layout."},
 	    });

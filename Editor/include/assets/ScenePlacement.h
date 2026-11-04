@@ -20,11 +20,13 @@ class ScenePlacement {
 	/// <param name="ray">Scene画像から作成した正規化済みレイ</param>
 	/// <param name="models">表示するモデルの範囲を取得する描画基盤。GPUの利用完了後に呼ぶ</param>
 	/// <param name="grid">指定時は組の中心を面に沿う軸だけスナップする。各軸の間隔は正の有限値</param>
+	/// <param name="planeHeight">Collider面がない場合の水平な作業平面の高さ。有限値</param>
 	/// <returns>true:全物体の配置成功 false:空、無効な設定、モデル取得失敗、または配置を表現できない</returns>
 	/// <remarks>形状はColliderと表示モデルを優先し、なければ原点を使う。回転・拡大率・ローカル設定は保持する</remarks>
 	static bool Place(Scene &objects, const Scene &target, const Ray &ray,
 	                  ModelManager &models,
-	                  std::optional<DirectX::XMFLOAT3> grid = std::nullopt);
+	                  std::optional<DirectX::XMFLOAT3> grid = std::nullopt,
+	                  float planeHeight = 0.0f);
 
   private:
 	static constexpr float kSurfaceClearance = 0.0001f;

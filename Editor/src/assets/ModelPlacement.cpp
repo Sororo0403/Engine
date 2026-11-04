@@ -33,8 +33,9 @@ bool ModelPlacement::GetGroundTranslation(
 	return true;
 }
 
-bool ModelPlacement::GetPosition(const Ray &ray, DirectX::XMFLOAT3 &position) {
-	if (!MathUtils::IsFinite(ray.origin) ||
+bool ModelPlacement::GetPosition(const Ray &ray, DirectX::XMFLOAT3 &position,
+                                 float planeHeight) {
+	if (!std::isfinite(planeHeight) || !MathUtils::IsFinite(ray.origin) ||
 	    !MathUtils::IsFinite(ray.direction) ||
 	    !std::isfinite(ray.maxDistance) || ray.maxDistance <= 0.0f) {
 		return false;
@@ -54,7 +55,7 @@ bool ModelPlacement::GetPosition(const Ray &ray, DirectX::XMFLOAT3 &position) {
 
 	if (std::abs(direction.y) > kParallelTolerance) {
 		const double groundDistance =
-		    -static_cast<double>(ray.origin.y) / direction.y;
+		    (double(planeHeight) - ray.origin.y) / direction.y;
 
 		if (groundDistance >= 0.0 && groundDistance <= ray.maxDistance) {
 			distance = groundDistance;
@@ -142,20 +143,20 @@ bool IntersectSurface(const Ray &ray, const AxisAlignedBox &box,
 } // namespace
 
 bool ModelPlacement::GetSurface(const Ray &ray, const Scene &scene,
-                                Surface &surface) {
+                                Surface &surface, float planeHeight) {
 	Surface result;
 
-	if (!GetPosition(ray, result.position)) {
+	if (!GetPosition(ray, result.position, planeHeight)) {
 		return false;
 	}
 
 	if (std::abs(ray.direction.y) > kParallelTolerance) {
 		const double ground =
-		    -static_cast<double>(ray.origin.y) / ray.direction.y;
+		    (double(planeHeight) - ray.origin.y) / ray.direction.y;
 		result.onSurface = ground >= 0.0 && ground <= ray.maxDistance;
 
 		if (result.onSurface) {
-			result.position.y = 0.0f;
+			result.position.y = planeHeight;
 			result.normal = {0.0f, 1.0f, 0.0f};
 		}
 	}

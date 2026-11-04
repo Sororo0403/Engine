@@ -6,7 +6,9 @@
 #include <cmath>
 
 bool SceneGrid::SetSettings(const Settings &settings) {
-	if (!std::isfinite(settings.spacing) || settings.spacing <= 0.0f ||
+	if (!std::isfinite(settings.height) ||
+	    std::abs(settings.height) > kMaximumHeight ||
+	    !std::isfinite(settings.spacing) || settings.spacing <= 0.0f ||
 	    settings.spacing > kMaximumSpacing || settings.halfLineCount < 1 ||
 	    settings.halfLineCount > kMaximumHalfLineCount ||
 	    settings.majorLineInterval < 1 ||
@@ -40,14 +42,14 @@ bool SceneGrid::Update(SceneRenderer &renderer) const {
 		                        : minorColor_;
 
 		const DebugLine xLine{
-		    {-extent, kHeight, offset},
-		    {extent, kHeight, offset},
+		    {-extent, settings_.height, offset},
+		    {extent, settings_.height, offset},
 		    color,
 		};
 
 		const DebugLine zLine{
-		    {offset, kHeight, -extent},
-		    {offset, kHeight, extent},
+		    {offset, settings_.height, -extent},
+		    {offset, settings_.height, extent},
 		    color,
 		};
 
@@ -57,14 +59,14 @@ bool SceneGrid::Update(SceneRenderer &renderer) const {
 	}
 
 	const DebugLine xAxis{
-	    {-extent, kHeight, 0.0f},
-	    {extent, kHeight, 0.0f},
+	    {-extent, settings_.height, 0.0f},
+	    {extent, settings_.height, 0.0f},
 	    xAxisColor_,
 	};
 
 	const DebugLine zAxis{
-	    {0.0f, kHeight, -extent},
-	    {0.0f, kHeight, extent},
+	    {0.0f, settings_.height, -extent},
+	    {0.0f, settings_.height, extent},
 	    zAxisColor_,
 	};
 

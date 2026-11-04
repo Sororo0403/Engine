@@ -178,6 +178,7 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 			}
 
 			loaded.grid.spacing = settings.at("spacing").get<float>();
+			loaded.grid.height = settings.value("height", 0.0f);
 			loaded.grid.halfLineCount = count.get<int>();
 			loaded.grid.majorLineInterval = major.get<int>();
 		}
@@ -399,6 +400,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		    {"recentScenes", recentJson},
 		    {"grid",
 		     {{"spacing", grid.spacing},
+		      {"height", grid.height},
 		      {"halfLineCount", grid.halfLineCount},
 		      {"majorLineInterval", grid.majorLineInterval}}},
 		    {"camera",

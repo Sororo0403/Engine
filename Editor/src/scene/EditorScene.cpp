@@ -1855,6 +1855,9 @@ void EditorScene::DrawGridSettings() {
 	bool changed = ImGui::DragFloat("Spacing", &settings.spacing, 0.01f, 0.001f,
 	                                SceneGrid::kMaximumSpacing, "%.3f");
 	ImGui::SetItemTooltip("Distance between grid lines.");
+	changed |= ImGui::DragFloat(
+	    "Height", &settings.height, 0.01f, -SceneGrid::kMaximumHeight,
+	    SceneGrid::kMaximumHeight, "%.3f", ImGuiSliderFlags_AlwaysClamp);
 	changed |= ImGui::SliderInt("Cells per side", &settings.halfLineCount, 1,
 	                            SceneGrid::kMaximumHalfLineCount);
 	ImGui::SetItemTooltip("Number of cells from the origin to either edge.");
@@ -2861,7 +2864,8 @@ bool EditorScene::PlaceDroppedScene(const std::filesystem::path &path,
 		        source.GetScene(), document_.GetScene(), ray, models_,
 		        gizmo_.IsSnapping()
 		            ? std::optional{gizmo_.GetSnapSettings().translation}
-		            : std::nullopt)) {
+		            : std::nullopt,
+		        sceneGrid_.GetSettings().height)) {
 			ShowError("Could not position the scene objects. No objects were "
 			          "added. See the log for details.");
 			return false;
@@ -4058,7 +4062,8 @@ bool EditorScene::PlaceDroppedModel(const std::filesystem::path &modelPath,
 		std::array<DirectX::XMFLOAT3, 8> bounds;
 		DirectX::XMFLOAT3 position;
 
-		if (!ModelPlacement::GetSurface(ray, document_.GetScene(), surface)) {
+		if (!ModelPlacement::GetSurface(ray, document_.GetScene(), surface,
+		                                sceneGrid_.GetSettings().height)) {
 			ShowError("Could not determine the model placement surface.");
 			return false;
 		}

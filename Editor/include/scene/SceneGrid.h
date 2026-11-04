@@ -10,12 +10,13 @@ class SceneRenderer;
 class SceneGrid {
   public:
 	/// <summary>
-	/// グリッドの線間隔・原点から各端までのセル数・強調線の周期
+	/// グリッドの線間隔・原点から各端までのセル数・強調線の周期・作業平面の高さ
 	/// </summary>
 	struct Settings {
 		float spacing = 1.0f;
 		int halfLineCount = 20;
 		int majorLineInterval = 5;
+		float height = 0.0f;
 
 		/// <summary>
 		/// 設定の値がすべて一致するか確認する
@@ -28,18 +29,19 @@ class SceneGrid {
 	static constexpr int kMaximumHalfLineCount = 200;
 	static constexpr int kMaximumMajorLineInterval = 200;
 	static constexpr float kMaximumSpacing = 10000.0f;
+	static constexpr float kMaximumHeight = 100000.0f;
 
 	/// <summary>
 	/// 有効なグリッド設定を反映する
 	/// </summary>
-	/// <param name="settings">正の線間隔と、1以上で上限以下のセル数・周期</param>
+	/// <param name="settings">正の線間隔、1以上で上限以下のセル数・周期、有限で範囲内の高さ</param>
 	/// <returns>true:成功 false:値が無効。現在の設定は保持する</returns>
 	bool SetSettings(const Settings &settings);
 
 	/// <summary>
 	/// 現在のグリッド設定を取得する
 	/// </summary>
-	/// <returns>線間隔・セル数・強調線の周期</returns>
+	/// <returns>線間隔・セル数・強調線の周期・作業平面の高さ</returns>
 	Settings GetSettings() const;
 
 	/// <summary>
@@ -50,7 +52,6 @@ class SceneGrid {
 	bool Update(SceneRenderer &renderer) const;
 
   private:
-	static constexpr float kHeight = 0.0f;
 	Settings settings_;
 
 	DirectX::XMFLOAT4 minorColor_{0.25f, 0.25f, 0.25f, 1.0f};

@@ -27,9 +27,10 @@ class ModelPlacement {
 	/// <param name="ray">描画範囲内の正規化されたワールド座標レイ</param>
 	/// <param name="scene">配置先のColliderを持つ編集シーン。モデルの表示状態には依存しない</param>
 	/// <param name="surface">成功時に設定する位置と法線。Colliderは物理判定と同じ各軸に平行なボックスを使用する</param>
-	/// <returns>true:成功 false:レイが無効。失敗時は出力を保持する</returns>
-	static bool GetSurface(const Ray &ray, const Scene &scene,
-	                       Surface &surface);
+	/// <param name="planeHeight">Collider面がない場合の水平な作業平面の高さ。有限値</param>
+	/// <returns>true:成功 false:レイまたは高さが無効。失敗時は出力を保持する</returns>
+	static bool GetSurface(const Ray &ray, const Scene &scene, Surface &surface,
+	                       float planeHeight = 0.0f);
 
 	/// <summary>
 	/// 回転なし・等倍で追加するモデルの外接ボックスを、配置先の面へ合わせる
@@ -48,8 +49,10 @@ class ModelPlacement {
 	/// </summary>
 	/// <param name="ray">描画範囲内の正規化されたワールド座標レイ</param>
 	/// <param name="position">成功した場合に設定する配置位置</param>
-	/// <returns>true:成功 false:レイが無効</returns>
-	static bool GetPosition(const Ray &ray, DirectX::XMFLOAT3 &position);
+	/// <param name="planeHeight">水平な作業平面の高さ。有限値。交差しない場合は従来の手前配置を使用する</param>
+	/// <returns>true:成功 false:レイまたは高さが無効。失敗時は出力を保持する</returns>
+	static bool GetPosition(const Ray &ray, DirectX::XMFLOAT3 &position,
+	                        float planeHeight = 0.0f);
 
 	/// <summary>
 	/// 全ボックスの最下端を地面へ合わせる、共通の上下移動量を求める。微小な誤差は移動なしとする

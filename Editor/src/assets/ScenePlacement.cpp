@@ -97,9 +97,10 @@ bool CenteredBounds(const std::vector<Corners> &boxes, Corners &bounds,
 
 bool ScenePlacement::Place(Scene &objects, const Scene &target, const Ray &ray,
                            ModelManager &models,
-                           std::optional<DirectX::XMFLOAT3> grid) {
+                           std::optional<DirectX::XMFLOAT3> grid,
+                           float planeHeight) {
 	ModelPlacement::Surface surface;
-	if (!ModelPlacement::GetSurface(ray, target, surface)) {
+	if (!ModelPlacement::GetSurface(ray, target, surface, planeHeight)) {
 		return false;
 	}
 	std::vector<Corners> boxes;
