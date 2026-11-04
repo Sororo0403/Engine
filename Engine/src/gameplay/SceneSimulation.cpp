@@ -4,6 +4,7 @@
 #include "graphics/camera/Camera.h"
 #include "math/TransformUtils.h"
 #include "physics/BoxColliderUtils.h"
+#include "scene/SceneHierarchy.h"
 #include <algorithm>
 #include <cmath>
 #include <exception>
@@ -58,104 +59,89 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 			}
 		}
 
-		std::vector<SceneObjectId> followOrder;
-
-		if (!SceneCameraUtils::GetFollowOrder(source, followOrder, error,
-		                                      invalidObject)) {
+		std::vector<SceneObjectId> order;
+		Scene working;
+		if (!SceneCameraUtils::GetUpdateOrder(source, order, error,
+		                                      invalidObject) ||
+		    !SceneCameraUtils::ResolveInitialScene(source, working, error,
+		                                           invalidObject)) {
 			return false;
 		}
-
+		std::vector<SceneObjectId> ignored;
+		if (character &&
+		    !SceneHierarchy::GetSubtree(working, character, ignored)) {
+			return failObject(character, "Character hierarchy is invalid.");
+		}
 		CollisionWorld world;
-
 		SceneObjectId invalidCollider = 0;
-		if (!world.Rebuild(source, character, &invalidCollider)) {
+		if (!world.Rebuild(working, std::span<const SceneObjectId>{ignored},
+		                   &invalidCollider)) {
 			return failObject(
 			    invalidCollider,
-			    "Box Collider cannot be represented at its transform.");
+			    "Box Collider cannot be represented at its world transform.");
 		}
-
 		CharacterController controller;
 		DirectX::XMFLOAT3 spawn{};
-
 		if (character) {
-			const auto &object = *source.FindObject(character);
-
-			if (!controller.Initialize(object.transform, *object.collider,
+			const auto &object = *working.FindObject(character);
+			SceneWorldTransform transform;
+			if (!SceneHierarchy::GetWorldTransform(working, character,
+			                                       transform) ||
+			    !controller.Initialize(transform.matrix, *object.collider,
 			                           *object.character, world)) {
-				return failObject(
-				    character,
-				    "The character starts inside a collider or has an invalid "
-				    "transform or Box Collider.");
+				return failObject(character,
+				                  "The character starts inside a collider or "
+				                  "has an invalid world transform.");
 			}
-
-			spawn = object.transform.translation;
-
+			spawn = transform.GetPosition();
 			if (object.respawn) {
 				const auto &settings = *object.respawn;
-
-				if (!settings.useStartPosition) {
+				if (!settings.useStartPosition)
 					spawn = settings.position;
-				}
-
 				if (spawn.y <= settings.minimumY ||
-				    object.transform.translation.y <= settings.minimumY ||
-				    !controller.Teleport(spawn, world)) {
+				    transform.GetPosition().y <= settings.minimumY ||
+				    !controller.Teleport(spawn, world) ||
+				    !controller.Teleport(transform.GetPosition(), world)) {
 					return failObject(
 					    character,
 					    "The character and its respawn point must be above "
 					    "Fall Below Y and outside solid colliders.");
 				}
-
-				if (!controller.Teleport(object.transform.translation, world)) {
-					return failObject(
-					    character,
-					    "Could not restore the character start position.");
-				}
 			}
 		}
-
-		auto objects = source.GetObjects();
-		std::vector<FollowState> follows;
-		follows.reserve(followOrder.size());
-		std::map<SceneObjectId, std::size_t> indices;
-		std::optional<std::size_t> cameraFollow;
-
-		for (const auto id : followOrder) {
-			auto &object = objects.at(id);
-			const auto &settings = *object.followCamera;
+		std::map<SceneObjectId, CameraPose> follows;
+		for (const auto id : order) {
+			if (!working.FindObject(id)->followCamera)
+				continue;
+			SceneWorldTransform transform;
+			if (!SceneHierarchy::GetWorldTransform(working, id, transform)) {
+				return failObject(id,
+				                  "Follow Camera world transform is invalid.");
+			}
+			// 注視点は回転から復元せず、Follow設定にある距離を保持する。
+			const auto &object = *working.FindObject(id);
+			SceneWorldTransform target;
+			if (!SceneHierarchy::GetWorldTransform(
+			        working, object.followCamera->target, target))
+				return false;
 			auto followPose = SceneCameraUtils::MakeFollowPose(
-			    objects.at(settings.target).transform.translation, settings);
-
-			if (!SceneCameraUtils::AvoidFollowObstacles(source, id,
-			                                            followPose) ||
-			    !SceneCameraUtils::ApplyPose(followPose, object.transform)) {
-				return failObject(id, "Follow Camera pose is invalid.");
-			}
-
-			std::optional<std::size_t> parent;
-
-			if (const auto found = indices.find(settings.target);
-			    found != indices.end()) {
-				parent = found->second;
-			}
-
-			if (id == camera) {
-				cameraFollow = follows.size();
-			}
-
-			indices.emplace(id, follows.size());
-			follows.push_back(
-			    {id, settings.target, parent, followPose, object.transform});
+			    target.GetPosition(), *object.followCamera);
+			if (!SceneCameraUtils::AvoidFollowObstacles(working, id,
+			                                            followPose))
+				return false;
+			follows.emplace(id, followPose);
 		}
-
-		auto nextFollows = follows;
-
-		auto pose =
-		    camera
-		        ? SceneCameraUtils::FromTransform(objects.at(camera).transform)
-		        : fallbackPose;
-		auto lens =
-		    camera ? objects.at(camera).camera->settings : CameraSettings{};
+		auto pose = fallbackPose;
+		if (camera) {
+			SceneWorldTransform transform;
+			if (!SceneHierarchy::GetWorldTransform(working, camera,
+			                                       transform)) {
+				return failObject(camera, "Camera world transform is invalid.");
+			}
+			pose = SceneCameraUtils::FromWorldTransform(transform);
+		}
+		const auto lens = camera ? working.FindObject(camera)->camera->settings
+		                         : CameraSettings{};
 		Camera validator;
 
 		if (!validator.SetPose(pose) || !validator.SetSettings(lens)) {
@@ -167,14 +153,13 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 			return false;
 		}
 
-		scene_.ReplaceObjects(std::move(objects));
+		scene_.ReplaceObjects(working.GetObjects());
 		world_ = std::move(world);
 		controller_ = controller;
 		character_ = character;
 		camera_ = camera;
-		cameraFollow_ = cameraFollow;
-		follows_ = std::move(follows);
-		nextFollows_ = std::move(nextFollows);
+		updateOrder_ = std::move(order);
+		followPoses_ = std::move(follows);
 		cameraSettings_ = lens;
 		spawn_ = spawn;
 		respawnCount_ = 0;
@@ -192,133 +177,119 @@ void SceneSimulation::Stop() {
 	playing_ = false;
 	scene_.ReplaceObjects({});
 	character_ = camera_ = 0;
-	cameraFollow_.reset();
-	follows_.clear();
-	nextFollows_.clear();
+	updateOrder_.clear();
+	followPoses_.clear();
 	respawnCount_ = 0;
 	lastRespawnPosition_.reset();
 }
 
 bool SceneSimulation::Update(float seconds, const CharacterInput &input) {
-	if (!playing_ || !std::isfinite(seconds) || seconds < 0) {
+	if (!playing_ || !std::isfinite(seconds) || seconds < 0)
+		return false;
+	try {
+		Scene working;
+		working.ReplaceObjects(scene_.GetObjects());
+		auto next = controller_;
+		auto follows = followPoses_;
+		CollisionWorld world;
+		std::vector<SceneObjectId> ignored;
+		if (character_ &&
+		    !SceneHierarchy::GetSubtree(working, character_, ignored))
+			return false;
+		bool respawned = false;
+		// 親と追従対象を先に更新する。カメラを親にした主人公も同じ依存順で処理する。
+		for (const auto id : updateOrder_) {
+			const auto *object = working.FindObject(id);
+			if (!object)
+				return false;
+			if (id == character_) {
+				SceneWorldTransform transform;
+				if (!object->collider || !object->character ||
+				    !world.Rebuild(working,
+				                   std::span<const SceneObjectId>{ignored}) ||
+				    !SceneHierarchy::GetWorldTransform(working, id,
+				                                       transform) ||
+				    !next.SynchronizeWorldMatrix(transform.matrix, world) ||
+				    !next.Update(seconds, input, world))
+					return false;
+				if (object->respawn && next.GetTransform().translation.y <
+				                           object->respawn->minimumY) {
+					if (!next.Teleport(spawn_, world))
+						return false;
+					respawned = true;
+				}
+				if (!SceneHierarchy::SetWorldPosition(
+				        working, id, next.GetTransform().translation))
+					return false;
+			}
+			if (object->followCamera) {
+				const auto &settings = *object->followCamera;
+				const auto found = follows.find(id);
+				SceneWorldTransform target;
+				if (!object->camera || found == follows.end() ||
+				    !SceneHierarchy::GetWorldTransform(working, settings.target,
+				                                       target))
+					return false;
+				const auto desired = SceneCameraUtils::MakeFollowPose(
+				    target.GetPosition(), settings);
+				const float blend = respawned || settings.smoothing == 0
+				                        ? 1.0f
+				                        : static_cast<float>(-std::expm1(
+				                              -double(settings.smoothing) *
+				                              std::min(seconds, 0.1f)));
+				const auto lerp = [blend](auto &a, const auto &b) {
+					a.x += (b.x - a.x) * blend;
+					a.y += (b.y - a.y) * blend;
+					a.z += (b.z - a.z) * blend;
+				};
+				const auto previous = found->second;
+				auto &pose = found->second;
+				lerp(pose.position, desired.position);
+				lerp(pose.target, desired.target);
+				if (!SceneCameraUtils::AvoidFollowObstacles(working, id,
+				                                            pose)) {
+					pose.position = previous.position;
+					Camera validator;
+					if (!validator.SetPose(pose))
+						pose = previous;
+				}
+				if (!SceneCameraUtils::ApplyWorldPose(working, id, pose))
+					return false;
+			}
+		}
+		auto pose = pose_;
+		if (camera_) {
+			SceneWorldTransform transform;
+			if (!SceneHierarchy::GetWorldTransform(working, camera_, transform))
+				return false;
+			pose = SceneCameraUtils::FromWorldTransform(transform);
+			Camera validator;
+			if (!validator.SetPose(pose))
+				return false;
+		}
+		// 全更新の成功後に確定し、失敗したフレームは位置・速度・追従状態を保持する。
+		if (!world.Rebuild(working, std::span<const SceneObjectId>{ignored}))
+			return false;
+		if (character_) {
+			SceneWorldTransform transform;
+			if (!SceneHierarchy::GetWorldTransform(working, character_,
+			                                       transform) ||
+			    !next.SynchronizeWorldMatrix(transform.matrix, world))
+				return false;
+		}
+		scene_.ReplaceObjects(working.GetObjects());
+		controller_ = next;
+		world_ = std::move(world);
+		followPoses_ = std::move(follows);
+		pose_ = pose;
+		if (respawned) {
+			++respawnCount_;
+			lastRespawnPosition_ = next.GetTransform().translation;
+		}
+		return true;
+	} catch (const std::exception &) {
 		return false;
 	}
-
-	auto next = controller_;
-	bool respawned = false;
-
-	if (character_) {
-		if (!next.Update(seconds, input, world_)) {
-			return false;
-		}
-
-		const auto *object = scene_.FindObject(character_);
-
-		if (!object) {
-			return false;
-		}
-
-		if (object->respawn &&
-		    next.GetTransform().translation.y < object->respawn->minimumY) {
-			if (!next.Teleport(spawn_, world_)) {
-				return false;
-			}
-
-			respawned = true;
-		}
-	}
-
-	std::copy(follows_.begin(), follows_.end(), nextFollows_.begin());
-
-	for (std::size_t i = 0; i < nextFollows_.size(); ++i) {
-		auto &state = nextFollows_[i];
-		const auto *cameraObject = scene_.FindObject(state.objectId);
-		const auto *target = scene_.FindObject(state.targetId);
-
-		if (!cameraObject || !cameraObject->camera ||
-		    !cameraObject->followCamera || !target ||
-		    cameraObject->followCamera->target != state.targetId ||
-		    (state.targetFollow && *state.targetFollow >= i)) {
-			return false;
-		}
-
-		const auto &settings = *cameraObject->followCamera;
-		const auto targetPosition =
-		    state.targetFollow
-		        ? nextFollows_[*state.targetFollow].transform.translation
-		    : state.targetId == character_ ? next.GetTransform().translation
-		                                   : target->transform.translation;
-		const auto desired =
-		    SceneCameraUtils::MakeFollowPose(targetPosition, settings);
-		const float blend =
-		    respawned || settings.smoothing == 0
-		        ? 1.0f
-		        : static_cast<float>(-std::expm1(-double(settings.smoothing) *
-		                                         std::min(seconds, 0.1f)));
-		auto lerp = [blend](auto &a, const auto &b) {
-			a.x += (b.x - a.x) * blend;
-			a.y += (b.y - a.y) * blend;
-			a.z += (b.z - a.z) * blend;
-		};
-		const auto previousPose = state.pose;
-		lerp(state.pose.position, desired.position);
-		lerp(state.pose.target, desired.target);
-		if (!SceneCameraUtils::AvoidFollowObstacles(scene_, state.objectId,
-		                                            state.pose)) {
-			// 位置を安全な場所に保ち、注視点は追従させて障害物の外へ抜けられるようにする。
-			state.pose.position = previousPose.position;
-			Camera validator;
-			if (!validator.SetPose(state.pose)) {
-				state.pose = previousPose;
-			}
-		}
-		state.transform = cameraObject->transform;
-
-		if (!SceneCameraUtils::ApplyPose(state.pose, state.transform)) {
-			return false;
-		}
-	}
-
-	auto pose = pose_;
-
-	if (camera_) {
-		const auto *cameraObject = scene_.FindObject(camera_);
-
-		if (!cameraObject || !cameraObject->camera) {
-			return false;
-		}
-
-		const auto &transform =
-		    cameraFollow_           ? nextFollows_[*cameraFollow_].transform
-		    : camera_ == character_ ? next.GetTransform()
-		                            : cameraObject->transform;
-		pose = SceneCameraUtils::FromTransform(transform);
-		Camera validator;
-
-		if (!validator.SetPose(pose)) {
-			return false;
-		}
-	}
-
-	controller_ = next;
-
-	if (character_) {
-		scene_.FindObject(character_)->transform = next.GetTransform();
-	}
-
-	pose_ = pose;
-	follows_.swap(nextFollows_);
-
-	for (const auto &state : follows_) {
-		scene_.FindObject(state.objectId)->transform = state.transform;
-	}
-
-	if (respawned) {
-		++respawnCount_;
-		lastRespawnPosition_ = next.GetTransform().translation;
-	}
-
-	return true;
 }
 
 std::optional<CharacterRuntimeState>

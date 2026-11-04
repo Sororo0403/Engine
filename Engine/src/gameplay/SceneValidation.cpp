@@ -7,6 +7,7 @@
 #include "physics/BoxColliderUtils.h"
 #include "physics/CollisionWorld.h"
 #include "scene/Scene.h"
+#include "scene/SceneHierarchy.h"
 #include <format>
 #include <map>
 #include <optional>
@@ -26,42 +27,21 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose) {
 	};
 	SceneObjectId firstCharacter = 0, primary = 0;
 
-	// 追従先の計算結果を再利用し、正常な連鎖を1回ずつ解決する。
-	std::vector<SceneObjectId> followOrder;
-	std::string followError;
-	const bool ordered =
-	    SceneCameraUtils::GetFollowOrder(scene, followOrder, followError);
-	std::map<SceneObjectId, std::optional<Transform>> followTransforms;
-
-	if (ordered) {
-		for (const auto id : followOrder) {
-			const auto &object = *scene.FindObject(id);
-			const auto &settings = *object.followCamera;
-			auto target =
-			    scene.FindObject(settings.target)->transform.translation;
-
-			if (const auto parent = followTransforms.find(settings.target);
-			    parent != followTransforms.end()) {
-				if (!parent->second) {
-					followTransforms.emplace(id, std::nullopt);
-					continue;
-				}
-
-				target = parent->second->translation;
-			}
-
-			auto transform = object.transform;
-
-			if (SceneCameraUtils::ApplyPose(
-			        SceneCameraUtils::MakeFollowPose(target, settings),
-			        transform)) {
-				followTransforms.emplace(id, transform);
-			} else {
-				followTransforms.emplace(id, std::nullopt);
-			}
-		}
+	SceneHierarchy::WorldTransforms sourceTransforms;
+	if (!SceneHierarchy::BuildWorldTransforms(scene, sourceTransforms)) {
+		add(0, "Parent hierarchy or composed world transform is invalid.");
+		return issues;
 	}
-
+	Scene resolved;
+	std::string followError;
+	const bool resolvedInitial =
+	    SceneCameraUtils::ResolveInitialScene(scene, resolved, followError);
+	const auto &initial = resolvedInitial ? resolved : scene;
+	SceneHierarchy::WorldTransforms transforms;
+	if (!SceneHierarchy::BuildWorldTransforms(initial, transforms)) {
+		add(0, "Initial world transforms are invalid.");
+		return issues;
+	}
 	for (const auto &[id, object] : scene.GetObjects()) {
 		if ((object.mesh && !object.mesh->IsValid()) ||
 		    (object.meshRenderer && !object.meshRenderer->IsValid())) {
@@ -113,18 +93,19 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose) {
 
 		AxisAlignedBox body;
 
-		if (object.collider && !BoxColliderUtils::GetWorldBounds(
-		                           *object.collider, object.transform, body)) {
+		if (object.collider &&
+		    !BoxColliderUtils::GetWorldBounds(*object.collider,
+		                                      transforms.at(id).matrix, body)) {
 			add(id, "Box Collider cannot be represented at its transform.");
 		}
 
 		if (object.followCamera) {
-			Transform resolved;
+			Transform cameraTransform;
 
 			// 不正な依存関係は、個別検証で各物体へ報告する。
-			const bool valid = ordered ? followTransforms.at(id).has_value()
-			                           : SceneCameraUtils::GetInitialTransform(
-			                                 scene, id, resolved);
+			const bool valid =
+			    resolvedInitial || SceneCameraUtils::GetInitialTransform(
+			                           scene, id, cameraTransform);
 
 			if (!valid) {
 				add(id, "Follow Camera requires valid Camera settings, a valid "
@@ -142,14 +123,16 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose) {
 
 		CollisionWorld world;
 
-		if (!world.Rebuild(scene, id)) {
+		std::vector<SceneObjectId> ignored;
+		if (!SceneHierarchy::GetSubtree(initial, id, ignored) ||
+		    !world.Rebuild(initial, std::span<const SceneObjectId>{ignored})) {
 			// 不正な障害物は上の一覧で報告し、修正後に主人公の配置を再検証する。
 			continue;
 		}
 
 		CharacterController controller;
 
-		if (!controller.Initialize(object.transform, *object.collider,
+		if (!controller.Initialize(transforms.at(id).matrix, *object.collider,
 		                           *object.character, world)) {
 			add(id, "The character starts inside a collider or has an invalid "
 			        "transform or Box Collider.");
@@ -157,14 +140,16 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose) {
 
 		if (object.respawn && object.respawn->IsValid()) {
 			const auto &settings = *object.respawn;
-			auto recovery = object.transform;
+			auto recovery = transforms.at(id).matrix;
 
 			if (!settings.useStartPosition) {
-				recovery.translation = settings.position;
+				recovery._41 = settings.position.x;
+				recovery._42 = settings.position.y;
+				recovery._43 = settings.position.z;
 			}
 
-			if (object.transform.translation.y <= settings.minimumY ||
-			    recovery.translation.y <= settings.minimumY ||
+			if (transforms.at(id).GetPosition().y <= settings.minimumY ||
+			    recovery._42 <= settings.minimumY ||
 			    !controller.Initialize(recovery, *object.collider,
 			                           *object.character, world)) {
 				add(id, "The character and its respawn point must be above "

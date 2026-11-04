@@ -3,6 +3,7 @@
 #include "gameplay/SceneCameraUtils.h"
 #include "graphics/camera/Camera.h"
 #include "math/TransformUtils.h"
+#include "scene/SceneHierarchy.h"
 #include <exception>
 #include <utility>
 #include <vector>
@@ -10,30 +11,13 @@
 bool EditorGamePreview::Prepare(const Scene &source, const CameraPose &fallback,
                                 SceneObjectId cameraOverride) {
 	try {
-		std::vector<SceneObjectId> order;
+		Scene resolved;
 		std::string error;
-
-		if (!SceneCameraUtils::GetFollowOrder(source, order, error)) {
+		if (!SceneCameraUtils::ResolveInitialScene(source, resolved, error)) {
 			Reset();
 			return false;
 		}
-
-		auto objects = source.GetObjects();
-
-		// 追従先を先に解決し、Play開始時と同じ位置へCameraの表示物体も置く。
-		for (const auto id : order) {
-			auto &object = objects.at(id);
-			const auto &target = objects.at(object.followCamera->target);
-
-			auto pose = SceneCameraUtils::MakeFollowPose(
-			    target.transform.translation, *object.followCamera);
-			if (!SceneCameraUtils::AvoidFollowObstacles(source, id, pose) ||
-			    !SceneCameraUtils::ApplyPose(pose, object.transform)) {
-				Reset();
-				return false;
-			}
-		}
-
+		const auto &objects = resolved.GetObjects();
 		CameraPose pose = fallback;
 		CameraSettings settings;
 		bool primary = false;
@@ -50,7 +34,12 @@ bool EditorGamePreview::Prepare(const Scene &source, const CameraPose &fallback,
 			}
 
 			primary = true;
-			pose = SceneCameraUtils::FromTransform(object.transform);
+			SceneWorldTransform transform;
+			if (!SceneHierarchy::GetWorldTransform(resolved, id, transform)) {
+				Reset();
+				return false;
+			}
+			pose = SceneCameraUtils::FromWorldTransform(transform);
 			settings = object.camera->settings;
 		}
 
@@ -64,7 +53,13 @@ bool EditorGamePreview::Prepare(const Scene &source, const CameraPose &fallback,
 				return false;
 			}
 
-			pose = SceneCameraUtils::FromTransform(found->second.transform);
+			SceneWorldTransform transform;
+			if (!SceneHierarchy::GetWorldTransform(resolved, cameraOverride,
+			                                       transform)) {
+				Reset();
+				return false;
+			}
+			pose = SceneCameraUtils::FromWorldTransform(transform);
 			settings = found->second.camera->settings;
 		}
 
@@ -75,7 +70,7 @@ bool EditorGamePreview::Prepare(const Scene &source, const CameraPose &fallback,
 			return false;
 		}
 
-		scene_.ReplaceObjects(std::move(objects));
+		scene_.ReplaceObjects(objects);
 		pose_ = pose;
 		settings_ = settings;
 		return true;

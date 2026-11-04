@@ -26,6 +26,28 @@ class CharacterController {
 	                const CollisionWorld &world);
 
 	/// <summary>
+	/// 親子合成済みの行列を使用して主人公を初期化する
+	/// </summary>
+	/// <param name="worldMatrix">せん断を含められるワールド行列</param>
+	/// <param name="collider">主人公のローカル衝突形状</param>
+	/// <param name="settings">ワールド単位の移動設定</param>
+	/// <param name="world">自身を除外した衝突ワールド</param>
+	/// <returns>true:成功 false:形状・行列・配置が無効。失敗時は状態を保持する</returns>
+	bool Initialize(const DirectX::XMFLOAT4X4 &worldMatrix,
+	                const BoxCollider &collider,
+	                const CharacterSettings &settings,
+	                const CollisionWorld &world);
+
+	/// <summary>
+	/// 親の変形を現在の衝突形状へ反映する。速度とジャンプ入力の蓄積は保持する
+	/// </summary>
+	/// <param name="worldMatrix">新しいワールド行列</param>
+	/// <param name="world">現在の衝突ワールド</param>
+	/// <returns>true:成功 false:未初期化、無効な行列、または障害物と重なる。失敗時は状態を保持する</returns>
+	bool SynchronizeWorldMatrix(const DirectX::XMFLOAT4X4 &worldMatrix,
+	                            const CollisionWorld &world);
+
+	/// <summary>
 	/// 入力を反映して更新する。長いフレームは0.1秒までを処理し、内部では120Hzに分割する
 	/// </summary>
 	/// <param name="deltaTime">有限で0以上の経過時間（秒）</param>
@@ -45,7 +67,7 @@ class CharacterController {
 	              const CollisionWorld &world);
 
 	/// <summary>
-	/// 描画とシーンへ反映する現在の姿勢を取得する
+	/// 現在位置を取得する。行列で初期化した場合、回転と拡縮は単位値で、描画にはシーンの合成行列を使う
 	/// </summary>
 	/// <returns>現在の姿勢</returns>
 	const Transform &GetTransform() const {
@@ -88,6 +110,8 @@ class CharacterController {
 	bool Step(const CharacterInput &input, const CollisionWorld &world);
 
 	Transform transform_{};
+	DirectX::XMFLOAT4X4 worldMatrix_{1, 0, 0, 0, 0, 1, 0, 0,
+	                                 0, 0, 1, 0, 0, 0, 0, 1};
 	BoxCollider collider_{};
 	CharacterSettings settings_{};
 	float verticalVelocity_ = 0.0f;

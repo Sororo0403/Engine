@@ -2,6 +2,7 @@
 
 #include "math/MathUtils.h"
 #include "math/TransformUtils.h"
+#include "scene/SceneHierarchy.h"
 
 #include <algorithm>
 #include <cmath>
@@ -62,7 +63,29 @@ bool BoxColliderUtils::GetWorldBounds(const BoxCollider &collider,
 		return false;
 	}
 
-	const auto world = TransformUtils::MakeWorldMatrix(transform);
+	DirectX::XMFLOAT4X4 world;
+	DirectX::XMStoreFloat4x4(&world,
+	                         TransformUtils::MakeWorldMatrix(transform));
+	return GetWorldBounds(collider, world, bounds);
+}
+
+bool BoxColliderUtils::GetWorldBounds(const BoxCollider &collider,
+                                      const Scene &scene, SceneObjectId id,
+                                      AxisAlignedBox &bounds) {
+	SceneWorldTransform world;
+	return SceneHierarchy::GetWorldTransform(scene, id, world) &&
+	       GetWorldBounds(collider, world.matrix, bounds);
+}
+
+bool BoxColliderUtils::GetWorldBounds(const BoxCollider &collider,
+                                      const DirectX::XMFLOAT4X4 &matrix,
+                                      AxisAlignedBox &bounds) {
+	DirectX::XMFLOAT4X4 inverse;
+	if (!IsValid(collider) ||
+	    !TransformUtils::TryInverseWorldMatrix(matrix, inverse)) {
+		return false;
+	}
+	const auto world = DirectX::XMLoadFloat4x4(&matrix);
 	AxisAlignedBox candidate;
 
 	for (unsigned int i = 0; i < 8; ++i) {

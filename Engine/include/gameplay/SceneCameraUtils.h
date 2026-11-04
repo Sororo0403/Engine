@@ -8,6 +8,7 @@
 class Scene;
 struct Transform;
 struct FollowCameraSettings;
+struct SceneWorldTransform;
 
 namespace SceneCameraUtils {
 /// <summary>
@@ -16,6 +17,44 @@ namespace SceneCameraUtils {
 /// <param name="transform">カメラ物体の姿勢。拡大率は描画姿勢へ適用しない</param>
 /// <returns>ワールド座標のカメラ姿勢。入力の検証は呼び出し側で行う</returns>
 CameraPose FromTransform(const Transform &transform);
+
+/// <summary>
+/// 親子合成後の位置と、拡縮やせん断を含めない向きからカメラ姿勢を作る
+/// </summary>
+/// <param name="world">有効なワールド変形</param>
+/// <returns>ワールド座標のカメラ姿勢</returns>
+CameraPose FromWorldTransform(const SceneWorldTransform &world);
+
+/// <summary>
+/// ワールドのカメラ姿勢を親に対するローカル位置・回転へ変換する
+/// </summary>
+/// <param name="scene">変更するシーン</param>
+/// <param name="id">既存の物体ID</param>
+/// <param name="pose">有効なワールドのカメラ姿勢</param>
+/// <returns>true:成功 false:姿勢や親子関係が無効。失敗時は現在値を保持する</returns>
+bool ApplyWorldPose(Scene &scene, SceneObjectId id, const CameraPose &pose);
+
+/// <summary>
+/// 親子関係と追従対象の両方を依存関係として、全物体の更新順を作る
+/// </summary>
+/// <param name="scene">読み取り専用のシーン</param>
+/// <param name="order">成功時だけ置き換える、全物体のID一覧</param>
+/// <param name="error">失敗理由。成功時は空</param>
+/// <param name="invalidObject">指定時は問題の物体ID。成功時は0</param>
+/// <returns>true:成功 false:設定・参照・依存関係が無効</returns>
+bool GetUpdateOrder(const Scene &scene, std::vector<SceneObjectId> &order,
+                    std::string &error, SceneObjectId *invalidObject = nullptr);
+
+/// <summary>
+/// 親子関係と追従を依存順に解決した、開始時のシーンを作る
+/// </summary>
+/// <param name="source">変更しない編集シーン</param>
+/// <param name="result">成功時だけ物体を置き換える出力先</param>
+/// <param name="error">失敗理由。成功時は空</param>
+/// <param name="invalidObject">指定時は問題の物体ID。成功時は0</param>
+/// <returns>true:成功 false:設定・参照・姿勢が無効。物理演算は実行しない</returns>
+bool ResolveInitialScene(const Scene &source, Scene &result, std::string &error,
+                         SceneObjectId *invalidObject = nullptr);
 
 /// <summary>
 /// 追従対象の位置とワールド座標のオフセットから、目標の描画姿勢を作る
@@ -46,11 +85,11 @@ bool AvoidFollowObstacles(const Scene &scene, SceneObjectId id,
 bool ApplyPose(const CameraPose &pose, Transform &transform);
 
 /// <summary>
-/// 追従の連鎖を解決した開始Transformを取得する。シーンは変更しない
+/// 親子関係と追従を解決した、カメラ表示用のワールド位置・向きを取得する。シーンは変更しない
 /// </summary>
 /// <param name="scene">Cameraと追従先が存在するシーン</param>
 /// <param name="id">Cameraを持つ物体ID</param>
-/// <param name="transform">成功時に置き換えるTransform。失敗時は保持する</param>
+/// <param name="transform">成功時に置き換える表示用のワールドSRT。拡縮は単位値。描画物体の合成には使用しない</param>
 /// <returns>true:解決成功 false:設定・対象・連鎖・姿勢が無効</returns>
 bool GetInitialTransform(const Scene &scene, SceneObjectId id,
                          Transform &transform);
@@ -76,7 +115,7 @@ bool CanSetFollowTarget(const Scene &scene, SceneObjectId id,
                         SceneObjectId target);
 
 /// <summary>
-/// 全Follow Cameraを検証し、追従先のCameraが先に現れる更新順を作る
+/// 全Follow Cameraを検証し、親子関係と追従対象の更新順からCameraだけを列挙する
 /// </summary>
 /// <param name="scene">検証するシーン。値は変更しない</param>
 /// <param name="order">成功時に置き換えるCameraのID一覧。失敗時は保持する</param>

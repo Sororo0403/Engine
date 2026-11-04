@@ -3,6 +3,7 @@
 #include "math/MathUtils.h"
 #include "physics/BoxColliderUtils.h"
 #include "scene/Scene.h"
+#include "scene/SceneHierarchy.h"
 
 #include <algorithm>
 #include <array>
@@ -111,6 +112,10 @@ bool CollisionWorld::Rebuild(const Scene &scene,
 		*invalidObject = 0;
 	}
 
+	SceneHierarchy::WorldTransforms transforms;
+	if (!SceneHierarchy::BuildWorldTransforms(scene, transforms)) {
+		return false;
+	}
 	std::vector<Obstacle> candidate;
 
 	for (const auto &[id, object] : scene.GetObjects()) {
@@ -122,8 +127,8 @@ bool CollisionWorld::Rebuild(const Scene &scene,
 
 		AxisAlignedBox bounds;
 
-		if (!BoxColliderUtils::GetWorldBounds(*object.collider,
-		                                      object.transform, bounds)) {
+		if (!BoxColliderUtils::GetWorldBounds(
+		        *object.collider, transforms.at(id).matrix, bounds)) {
 			if (invalidObject) {
 				*invalidObject = id;
 			}
@@ -160,6 +165,10 @@ bool CollisionWorld::FindOverlaps(const Scene &scene,
 		return false;
 	}
 
+	SceneHierarchy::WorldTransforms transforms;
+	if (!SceneHierarchy::BuildWorldTransforms(scene, transforms)) {
+		return false;
+	}
 	std::vector<SceneObjectId> result;
 
 	for (const auto &[id, object] : scene.GetObjects()) {
@@ -170,7 +179,7 @@ bool CollisionWorld::FindOverlaps(const Scene &scene,
 		AxisAlignedBox box;
 
 		if (!BoxColliderUtils::GetWorldBounds(*object.collider,
-		                                      object.transform, box)) {
+		                                      transforms.at(id).matrix, box)) {
 			return false;
 		}
 

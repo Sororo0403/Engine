@@ -5,7 +5,7 @@
 #include "graphics/camera/CameraPose.h"
 #include "physics/CollisionWorld.h"
 #include "scene/Scene.h"
-#include <cstddef>
+#include <map>
 #include <optional>
 #include <string>
 #include <vector>
@@ -87,25 +87,13 @@ class SceneSimulation {
 	}
 
   private:
-	/// <summary>
-	/// 依存順に並ぶ1つのFollow Cameraの追従状態と、計算済みのTransform
-	/// </summary>
-	struct FollowState {
-		SceneObjectId objectId = 0;
-		SceneObjectId targetId = 0;
-		std::optional<std::size_t> targetFollow;
-		CameraPose pose{};
-		Transform transform{};
-	};
-
 	Scene scene_;
 	CollisionWorld world_;
 	CharacterController controller_;
 	SceneObjectId character_ = 0, camera_ = 0;
-	std::optional<std::size_t> cameraFollow_;
-	std::vector<FollowState> follows_;
-	// 毎フレームの確保と失敗時の部分更新を避けるため、次の状態を別バッファで計算する
-	std::vector<FollowState> nextFollows_;
+	std::vector<SceneObjectId> updateOrder_;
+	// 追従の補間状態はワールド座標で保持し、シーンにはローカル変形を反映する。
+	std::map<SceneObjectId, CameraPose> followPoses_;
 	DirectX::XMFLOAT3 spawn_{};
 	std::uint64_t respawnCount_ = 0;
 	std::optional<DirectX::XMFLOAT3> lastRespawnPosition_;

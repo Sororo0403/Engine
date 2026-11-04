@@ -1,5 +1,6 @@
 #include "gameplay/CharacterController.h"
 
+#include "math/TransformUtils.h"
 #include "physics/BoxColliderUtils.h"
 #include "physics/CollisionWorld.h"
 
@@ -23,15 +24,37 @@ bool CharacterController::Initialize(const Transform &transform,
                                      const BoxCollider &collider,
                                      const CharacterSettings &settings,
                                      const CollisionWorld &world) {
+	if (!TransformUtils::IsValid(transform)) {
+		return false;
+	}
+	DirectX::XMFLOAT4X4 matrix;
+	DirectX::XMStoreFloat4x4(&matrix,
+	                         TransformUtils::MakeWorldMatrix(transform));
+	auto candidate = *this;
+	if (!candidate.Initialize(matrix, collider, settings, world)) {
+		return false;
+	}
+	candidate.transform_ = transform;
+	*this = candidate;
+	return true;
+}
+
+bool CharacterController::Initialize(const DirectX::XMFLOAT4X4 &worldMatrix,
+                                     const BoxCollider &collider,
+                                     const CharacterSettings &settings,
+                                     const CollisionWorld &world) {
 	AxisAlignedBox body;
 
 	if (!settings.IsValid() ||
-	    !BoxColliderUtils::GetWorldBounds(collider, transform, body) ||
+	    !BoxColliderUtils::GetWorldBounds(collider, worldMatrix, body) ||
 	    !world.CanPlace(body)) {
 		return false;
 	}
 
-	transform_ = transform;
+	transform_ = {};
+	transform_.translation = {worldMatrix._41, worldMatrix._42,
+	                          worldMatrix._43};
+	worldMatrix_ = worldMatrix;
 	collider_ = collider;
 	settings_ = settings;
 	verticalVelocity_ = 0.0f;
@@ -54,9 +77,18 @@ bool CharacterController::Teleport(const DirectX::XMFLOAT3 &position,
 		return false;
 	}
 
-	auto transform = transform_;
-	transform.translation = position;
-	return Initialize(transform, collider_, settings_, world);
+	auto matrix = worldMatrix_;
+	matrix._41 = position.x;
+	matrix._42 = position.y;
+	matrix._43 = position.z;
+	auto candidate = *this;
+	if (!candidate.Initialize(matrix, collider_, settings_, world)) {
+		return false;
+	}
+	candidate.transform_.scale = transform_.scale;
+	candidate.transform_.rotation = transform_.rotation;
+	*this = candidate;
+	return true;
 }
 
 bool CharacterController::Update(float deltaTime, const CharacterInput &input,
@@ -88,7 +120,7 @@ bool CharacterController::FindGroundObject(const CollisionWorld &world,
 	CollisionSweepResult contact;
 
 	if (!initialized_ ||
-	    !BoxColliderUtils::GetWorldBounds(collider_, transform_, body) ||
+	    !BoxColliderUtils::GetWorldBounds(collider_, worldMatrix_, body) ||
 	    !world.CanPlace(body) ||
 	    !world.Sweep(body, {0.0f, -kGroundProbeDistance, 0.0f}, contact)) {
 		return false;
@@ -102,7 +134,7 @@ bool CharacterController::Step(const CharacterInput &input,
                                const CollisionWorld &world) {
 	AxisAlignedBox body;
 
-	if (!BoxColliderUtils::GetWorldBounds(collider_, transform_, body)) {
+	if (!BoxColliderUtils::GetWorldBounds(collider_, worldMatrix_, body)) {
 		return false;
 	}
 
@@ -154,14 +186,19 @@ bool CharacterController::Step(const CharacterInput &input,
 	transform.translation.x += movement.displacement.x;
 	transform.translation.y += movement.displacement.y;
 	transform.translation.z += movement.displacement.z;
+	auto matrix = worldMatrix_;
+	matrix._41 = transform.translation.x;
+	matrix._42 = transform.translation.y;
+	matrix._43 = transform.translation.z;
 	AxisAlignedBox movedBody;
 
-	if (!BoxColliderUtils::GetWorldBounds(collider_, transform, movedBody) ||
+	if (!BoxColliderUtils::GetWorldBounds(collider_, matrix, movedBody) ||
 	    !world.CanPlace(movedBody)) {
 		return false;
 	}
 
 	transform_ = transform;
+	worldMatrix_ = matrix;
 	grounded_ = movement.grounded;
 
 	if (movement.grounded || movement.hitCeiling) {
@@ -183,5 +220,19 @@ bool CharacterController::Step(const CharacterInput &input,
 	jumpBufferRemaining_ =
 	    (std::max)(0.0, jumpBufferRemaining_ - kFixedStepSeconds);
 
+	return true;
+}
+
+bool CharacterController::SynchronizeWorldMatrix(
+    const DirectX::XMFLOAT4X4 &worldMatrix, const CollisionWorld &world) {
+	AxisAlignedBox body;
+	if (!initialized_ ||
+	    !BoxColliderUtils::GetWorldBounds(collider_, worldMatrix, body) ||
+	    !world.CanPlace(body)) {
+		return false;
+	}
+	worldMatrix_ = worldMatrix;
+	transform_.translation = {worldMatrix._41, worldMatrix._42,
+	                          worldMatrix._43};
 	return true;
 }
