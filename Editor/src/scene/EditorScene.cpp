@@ -287,6 +287,31 @@ bool EditorScene::Update(float deltaTime) {
 		}
 	}
 
+	if (playMode_.IsPlaying() && playMode_.IsMaximized()) {
+		playFrame_ = true;
+		sceneViewPanel_.CancelSelection();
+
+		if (!playMode_.Update(deltaTime, input_, IsBusy())) {
+			playMode_.Stop();
+			ShowError("Play stopped because simulation or Game rendering "
+			          "failed. Your editing scene is unchanged.");
+		}
+
+		if (showMotionTrail_) {
+			motionTrail_.Record(playMode_.GetSession());
+		} else {
+			motionTrail_.Clear();
+		}
+
+		UpdateDialogs();
+
+		if (!playMode_.IsPlaying()) {
+			ClearPlaySelection();
+		}
+
+		return true;
+	}
+
 	if (playMode_.IsPlaying()) {
 		playFrame_ = true;
 		DrawGridSettings();

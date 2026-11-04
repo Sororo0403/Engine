@@ -154,6 +154,14 @@ class EditorPlayMode {
 	const EditorPlaySession &GetSession() const;
 
 	/// <summary>
+	/// Gameだけを作業領域へ拡大して表示しているか取得する。描画解像度とドック配置は変更しない
+	/// </summary>
+	/// <returns>true:再生中の拡大表示 false:通常の配置</returns>
+	bool IsMaximized() const {
+		return maximized_;
+	}
+
+	/// <summary>
 	/// 再生開始時、または停止中のプレビューに使用する照明を取得する
 	/// </summary>
 	/// <returns>この再生モードが保持する照明</returns>
@@ -178,4 +186,6 @@ class EditorPlayMode {
 	int gameHeight_ = 720;
 	bool visible_ = false, focusRequested_ = false, ready_ = false;
 	bool previewFrame_ = false;
+	bool maximized_ = false;
+	bool maximizeRequested_ = false;
 };

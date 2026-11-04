@@ -882,6 +882,14 @@ void ControlsPanel::Draw() {
 	         "Game is hidden but Scene is visible; hiding both or switching "
 	         "away from the application suspends simulation. Stop restores "
 	         "the unchanged editing scene; the Scene camera view is kept."},
+	        {"Game > Maximize Game / Restore Layout",
+	         "Expand Game across the Editor work area during Play. The "
+	         "original dock arrangement and render resolution are kept. "
+	         "Restore Layout returns to the panels without restarting or "
+	         "changing Pause, playback speed or selection. Stop and Escape "
+	         "restore the normal layout. Restart keeps the expanded view. "
+	         "Play shortcuts remain available; other panels are hidden until "
+	         "the layout is restored. Motion Trail recording continues."},
 	        {"View > Character Motion Trail",
 	         "Record the live Character position once per simulated frame "
 	         "and show its path only in Scene. Grounded movement is green; "

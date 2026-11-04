@@ -42,6 +42,13 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 	ready_ = false;
 	viewport_ = {};
 
+	// ウィンドウの切り替えは、ボタンを描いた次のフレームから反映する。
+	if (maximizeRequested_) {
+		maximized_ = !maximized_;
+		maximizeRequested_ = false;
+		focusRequested_ = true;
+	}
+
 	if (!IsPlaying()) {
 		lighting_ = config.lighting;
 		gameWidth_ = config.width;
@@ -56,7 +63,22 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 		focusRequested_ = false;
 	}
 
-	if (!ui.BeginWindow("Game")) {
+	bool open = false;
+
+	if (maximized_) {
+		const auto *viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(viewport->WorkPos);
+		ImGui::SetNextWindowSize(viewport->WorkSize);
+		ImGui::SetNextWindowViewport(viewport->ID);
+		open = ImGui::Begin(
+		    "Game###MaximizedGame", nullptr,
+		    ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking |
+		        ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
+	} else {
+		open = ui.BeginWindow("Game");
+	}
+
+	if (!open) {
 		ui.EndWindow();
 		return Action::NONE;
 	}
@@ -114,6 +136,13 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 
 		if (ui.Button("Stop and Keep Selected Transforms")) {
 			action = Action::STOP_AND_KEEP_TRANSFORMS;
+		}
+
+		ui.EndDisabled();
+		ui.BeginDisabled(!canStart);
+
+		if (ui.Button(maximized_ ? "Restore Layout" : "Maximize Game")) {
+			maximizeRequested_ = true;
 		}
 
 		ui.EndDisabled();
@@ -255,6 +284,8 @@ bool EditorPlayMode::IsPaused() const {
 
 void EditorPlayMode::Stop() {
 	session_.Stop();
+	maximized_ = false;
+	maximizeRequested_ = false;
 	ready_ = false;
 	visible_ = false;
 	focusRequested_ = false;
