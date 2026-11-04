@@ -582,6 +582,16 @@ class EditorHistory {
 	bool DistributeObjects(std::span<const SceneObjectId> objectIds,
 	                       AlignmentAxis axis);
 
+	/// <summary>
+	/// 指定軸のCollider間のすき間を均等にし、両端を固定して1操作として記録する
+	/// </summary>
+	/// <param name="objectIds">有効なColliderを持つ、重複しない3件以上のID。編集中の内容は先に確定する</param>
+	/// <param name="axis">ワールド座標のX・Y・Z。Colliderの最小端、同値ならID順で配置する</param>
+	/// <returns>true:全件成功または配置済み false:対象・形状・軸・座標精度が無効、または両端の間に収まらない。全件を保持する</returns>
+	/// <remarks>回転・拡縮を反映した軸平行ボックスを使用する。他軸・姿勢・形状・表示状態は保持する。選択外との重なりは検証しない。成功後は物体参照を取得し直す</remarks>
+	bool DistributeColliderGaps(std::span<const SceneObjectId> objectIds,
+	                            AlignmentAxis axis);
+
   private:
 	// 単独の編集操作、または複数の編集操作を保持する
 	using Command =

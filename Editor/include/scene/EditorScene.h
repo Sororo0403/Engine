@@ -191,6 +191,9 @@ class EditorScene final : public IScene {
 		DISTRIBUTE_X,
 		DISTRIBUTE_Y,
 		DISTRIBUTE_Z,
+		DISTRIBUTE_COLLIDER_X,
+		DISTRIBUTE_COLLIDER_Y,
+		DISTRIBUTE_COLLIDER_Z,
 		RESET_CAMERA,
 		SAVE_CAMERA_BOOKMARK,
 		RESTORE_CAMERA_BOOKMARK,
@@ -674,6 +677,12 @@ class EditorScene final : public IScene {
 	/// </summary>
 	/// <param name="axis">ワールド座標のX・Y・Zのいずれか</param>
 	void DistributeSelection(AlignmentAxis axis);
+
+	/// <summary>
+	/// 両端を固定し、選択Collider間のすき間を指定軸で均等にする
+	/// </summary>
+	/// <param name="axis">ワールド座標のX・Y・Z</param>
+	void DistributeSelectedColliderGaps(AlignmentAxis axis);
 
 	/// <summary>
 	/// 選択に、表示中でモデルを持つ物体があるか確認する

@@ -666,6 +666,15 @@ bool EditorScene::Update(float deltaTime) {
 				case HierarchyPanel::Action::ALIGN_COLLIDER_MAX_Z:
 					AlignSelectedColliderBounds(AlignmentAxis::Z, true);
 					break;
+				case HierarchyPanel::Action::DISTRIBUTE_COLLIDER_X:
+					DistributeSelectedColliderGaps(AlignmentAxis::X);
+					break;
+				case HierarchyPanel::Action::DISTRIBUTE_COLLIDER_Y:
+					DistributeSelectedColliderGaps(AlignmentAxis::Y);
+					break;
+				case HierarchyPanel::Action::DISTRIBUTE_COLLIDER_Z:
+					DistributeSelectedColliderGaps(AlignmentAxis::Z);
+					break;
 				case HierarchyPanel::Action::DISTRIBUTE_X:
 					DistributeSelection(AlignmentAxis::X);
 					break;
@@ -1589,6 +1598,28 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 
 		ui_.EndDisabled();
 
+		ui_.BeginDisabled(!objectEnabled || selection_.GetCount() < 3 ||
+		                  !ColliderPlacement::CanDrop(document_.GetScene(),
+		                                              selection_.GetIds()));
+
+		if (ui_.BeginMenu("Distribute Collider Gaps")) {
+			if (ui_.MenuItem("Equal Gaps X", nullptr, true)) {
+				action = EditorAction::DISTRIBUTE_COLLIDER_X;
+			}
+
+			if (ui_.MenuItem("Equal Gaps Y", nullptr, true)) {
+				action = EditorAction::DISTRIBUTE_COLLIDER_Y;
+			}
+
+			if (ui_.MenuItem("Equal Gaps Z", nullptr, true)) {
+				action = EditorAction::DISTRIBUTE_COLLIDER_Z;
+			}
+
+			ui_.EndMenu();
+		}
+
+		ui_.EndDisabled();
+
 		if (ui_.MenuItem("Distribute X", nullptr,
 		                 objectEnabled && selection_.GetCount() > 2)) {
 			action = EditorAction::DISTRIBUTE_X;
@@ -2187,6 +2218,15 @@ void EditorScene::StartAction(EditorAction action) {
 		return;
 	case EditorAction::ALIGN_COLLIDER_MAX_Z:
 		AlignSelectedColliderBounds(AlignmentAxis::Z, true);
+		return;
+	case EditorAction::DISTRIBUTE_COLLIDER_X:
+		DistributeSelectedColliderGaps(AlignmentAxis::X);
+		return;
+	case EditorAction::DISTRIBUTE_COLLIDER_Y:
+		DistributeSelectedColliderGaps(AlignmentAxis::Y);
+		return;
+	case EditorAction::DISTRIBUTE_COLLIDER_Z:
+		DistributeSelectedColliderGaps(AlignmentAxis::Z);
 		return;
 	case EditorAction::DISTRIBUTE_X:
 		DistributeSelection(AlignmentAxis::X);
@@ -4727,6 +4767,29 @@ void EditorScene::DistributeSelection(AlignmentAxis axis) {
 		    std::format("EditorScene::DistributeSelection: {}", error.what()));
 		ShowError("Could not distribute the selected objects. See the log for "
 		          "details.");
+	}
+}
+
+void EditorScene::DistributeSelectedColliderGaps(AlignmentAxis axis) {
+	if (!HasSelection() || selection_.GetCount() < 3) {
+		return;
+	}
+
+	try {
+		FinishEdit();
+
+		if (!document_.GetHistory().DistributeColliderGaps(selection_.GetIds(),
+		                                                   axis)) {
+			ShowError(
+			    "Could not distribute Collider gaps. Select valid Box "
+			    "Colliders with enough space between the fixed endpoints and "
+			    "representable coordinates. No selected object was changed.");
+		}
+	} catch (const std::exception &error) {
+		Logger::Error(std::format(
+		    "EditorScene::DistributeSelectedColliderGaps: {}", error.what()));
+		ShowError(
+		    "Could not distribute Collider gaps. See the log for details.");
 	}
 }
 

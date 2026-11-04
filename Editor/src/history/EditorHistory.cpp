@@ -1315,6 +1315,171 @@ bool EditorHistory::DistributeObjects(std::span<const SceneObjectId> objectIds,
 	return true;
 }
 
+bool EditorHistory::DistributeColliderGaps(
+    std::span<const SceneObjectId> objectIds, AlignmentAxis axis) {
+	CommitEdit();
+
+	if (objectIds.size() < 3 ||
+	    (axis != AlignmentAxis::X && axis != AlignmentAxis::Y &&
+	     axis != AlignmentAxis::Z)) {
+		return false;
+	}
+
+	struct Placement {
+		SceneObjectId id;
+		Transform before;
+		Transform after;
+		AxisAlignedBox bounds;
+	};
+
+	const auto coordinate = [axis](const DirectX::XMFLOAT3 &value) {
+		return static_cast<double>(axis == AlignmentAxis::X   ? value.x
+		                           : axis == AlignmentAxis::Y ? value.y
+		                                                      : value.z);
+	};
+	std::vector<Placement> placements;
+	placements.reserve(objectIds.size());
+	std::set<SceneObjectId> seen;
+	double totalWidth = 0.0;
+
+	for (const auto id : objectIds) {
+		const auto *object = scene_.FindObject(id);
+		AxisAlignedBox bounds;
+
+		if (!object || !object->collider || !seen.insert(id).second ||
+		    !BoxColliderUtils::GetWorldBounds(*object->collider,
+		                                      object->transform, bounds)) {
+			return false;
+		}
+
+		totalWidth += coordinate(bounds.maximum) - coordinate(bounds.minimum);
+		placements.push_back(
+		    {id, object->transform, object->transform, bounds});
+	}
+
+	std::sort(placements.begin(), placements.end(),
+	          [&](const auto &a, const auto &b) {
+		          const auto first = coordinate(a.bounds.minimum);
+		          const auto second = coordinate(b.bounds.minimum);
+		          return first != second ? first < second : a.id < b.id;
+	          });
+	const double first = coordinate(placements.front().bounds.minimum);
+	const double last = coordinate(placements.back().bounds.maximum);
+	const double available = last - first - totalWidth;
+
+	// 移動前のfloat座標から求めた幅には、接触面の微小な丸め誤差が含まれる。
+	// 配置後の実際のすき間も検証し、形状の重なりは許可しない。
+	if (!std::isfinite(available) || available < -kColliderAlignmentTolerance) {
+		return false;
+	}
+
+	const double gap =
+	    (std::max)(0.0, available) / static_cast<double>(placements.size() - 1);
+	bool evenlySpaced = true;
+
+	for (std::size_t i = 1; i < placements.size(); ++i) {
+		const double actualGap = coordinate(placements[i].bounds.minimum) -
+		                         coordinate(placements[i - 1].bounds.maximum);
+
+		if (actualGap < 0.0 ||
+		    std::abs(actualGap - gap) > kColliderAlignmentTolerance) {
+			evenlySpaced = false;
+			break;
+		}
+	}
+
+	if (evenlySpaced) {
+		return true;
+	}
+
+	std::vector<CommandGroup::Command> commands;
+	commands.reserve(placements.size() - 2);
+	double cursor = first;
+
+	for (std::size_t i = 0; i < placements.size(); ++i) {
+		auto &placement = placements[i];
+		const double width = coordinate(placement.bounds.maximum) -
+		                     coordinate(placement.bounds.minimum);
+		const double expectedMaximum = cursor + width;
+
+		if (i != 0 && i + 1 != placements.size() &&
+		    std::abs(cursor - coordinate(placement.bounds.minimum)) >
+		        kColliderAlignmentTolerance) {
+			const double position = coordinate(placement.before.translation) +
+			                        cursor -
+			                        coordinate(placement.bounds.minimum);
+
+			if (!std::isfinite(position) ||
+			    std::abs(position) > (std::numeric_limits<float>::max)()) {
+				return false;
+			}
+
+			const auto value = static_cast<float>(position);
+
+			switch (axis) {
+			case AlignmentAxis::X:
+				placement.after.translation.x = value;
+				break;
+			case AlignmentAxis::Y:
+				placement.after.translation.y = value;
+				break;
+			case AlignmentAxis::Z:
+				placement.after.translation.z = value;
+				break;
+			}
+
+			const auto *object = scene_.FindObject(placement.id);
+
+			if (!BoxColliderUtils::GetWorldBounds(
+			        *object->collider, placement.after, placement.bounds)) {
+				return false;
+			}
+		}
+
+		if (std::abs(coordinate(placement.bounds.minimum) - cursor) >
+		        kColliderAlignmentTolerance ||
+		    std::abs(coordinate(placement.bounds.maximum) - expectedMaximum) >
+		        kColliderAlignmentTolerance) {
+			return false;
+		}
+
+		if (i != 0) {
+			const double actualGap =
+			    coordinate(placement.bounds.minimum) -
+			    coordinate(placements[i - 1].bounds.maximum);
+
+			if (actualGap < 0.0 ||
+			    std::abs(actualGap - gap) > kColliderAlignmentTolerance) {
+				return false;
+			}
+		}
+
+		if (!TransformUtils::AreEqual(placement.before, placement.after)) {
+			commands.emplace_back(TransformCommand{
+			    placement.id, placement.before, placement.after});
+		}
+
+		cursor = expectedMaximum + gap;
+	}
+
+	if (commands.empty()) {
+		return true;
+	}
+
+	CommandGroup group{std::move(commands)};
+	const auto next = PrepareAppend();
+
+	if (!group.Redo(scene_)) {
+		return false;
+	}
+
+	AppendPrepared(Command{std::move(group)}, next,
+	               axis == AlignmentAxis::X   ? "Distribute Collider Gaps X"
+	               : axis == AlignmentAxis::Y ? "Distribute Collider Gaps Y"
+	                                          : "Distribute Collider Gaps Z");
+	return true;
+}
+
 bool EditorHistory::HasPendingChanges() const {
 	if (pendingTransforms_) {
 		for (const auto &snapshot : *pendingTransforms_) {

@@ -264,6 +264,16 @@ void ControlsPanel::Draw() {
 	         "the active object stays fixed. All selected objects need valid "
 	         "Colliders and representable coordinates. Undo/Redo treats the "
 	         "alignment as one operation. This does not prevent overlaps."},
+	        {"Distribute Collider Gaps",
+	         "Use Edit or the Hierarchy menu with at least three Box "
+	         "Colliders. "
+	         "Equal Gaps X/Y/Z sorts world bounds by their minimum edge and "
+	         "keeps the two endpoint objects fixed. Interior objects move so "
+	         "the gaps between bounds are equal, including different sizes, "
+	         "rotation, scale and hidden objects. Other axes and components "
+	         "stay unchanged. Insufficient space or coordinate precision "
+	         "rejects the whole operation. Undo/Redo records one operation. "
+	         "Colliders outside the selection are not checked."},
 	        {"Distribute X / Y / Z",
 	         "For three or more selected objects, space origins evenly in "
 	         "world coordinate order with both endpoints fixed. Other axes, "

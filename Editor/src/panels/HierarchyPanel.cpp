@@ -439,6 +439,28 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 				ui.EndDisabled();
 
+				ui.BeginDisabled(
+				    selection.GetCount() < 3 ||
+				    !ColliderPlacement::CanDrop(scene, selection.GetIds()));
+
+				if (ui.BeginMenu("Distribute Collider Gaps")) {
+					if (ui.MenuItem("Equal Gaps X", nullptr, true)) {
+						result.action = Action::DISTRIBUTE_COLLIDER_X;
+					}
+
+					if (ui.MenuItem("Equal Gaps Y", nullptr, true)) {
+						result.action = Action::DISTRIBUTE_COLLIDER_Y;
+					}
+
+					if (ui.MenuItem("Equal Gaps Z", nullptr, true)) {
+						result.action = Action::DISTRIBUTE_COLLIDER_Z;
+					}
+
+					ui.EndMenu();
+				}
+
+				ui.EndDisabled();
+
 				if (ui.MenuItem("Distribute X", nullptr,
 				                selection.GetCount() > 2)) {
 					result.action = Action::DISTRIBUTE_X;
