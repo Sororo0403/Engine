@@ -85,6 +85,21 @@ bool TextureSlotInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		                       ? ModelHandle{}
 		                       : models.FindLoaded(object.mesh->modelPath);
 		const auto count = models.GetMaterialCount(model);
+		const bool canClearUnused =
+		    model && object.meshRenderer->IsValid() &&
+		    std::any_of(object.meshRenderer->textures.slots.begin(),
+		                object.meshRenderer->textures.slots.end(),
+		                [&](const auto &binding) {
+			                return models.GetMaterialMeshCount(
+			                           model, binding.first) == 0;
+		                });
+		ui.BeginDisabled(!canClearUnused);
+
+		if (ui.Button("Clear Unused Texture Assignments") && canClearUnused) {
+			request.clearUnusedTextures = true;
+		}
+
+		ui.EndDisabled();
 
 		for (std::size_t slot = 0; slot < count; ++slot) {
 			ImGui::PushID(static_cast<int>(slot));

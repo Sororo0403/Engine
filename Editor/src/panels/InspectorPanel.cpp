@@ -483,7 +483,10 @@ bool InspectorPanel::Draw(
 			    request, canApplyUv, canPasteUv);
 			assetRevealPath_ = std::move(request.revealTexture);
 
-			if (request.copyUv) {
+			if (request.clearUnusedTextures) {
+				objectRequest_ = {ObjectAction::CLEAR_UNUSED_TEXTURES,
+				                  inspectedObjectId};
+			} else if (request.copyUv) {
 				objectRequest_ = {ObjectAction::COPY_UV, inspectedObjectId};
 			} else if (request.pasteUvToSelection) {
 				objectRequest_ = {ObjectAction::PASTE_UV_TO_SELECTION,

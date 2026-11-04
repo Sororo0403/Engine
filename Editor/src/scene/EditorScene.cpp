@@ -3541,6 +3541,34 @@ void EditorScene::ApplyInspectorRequest(
 			return;
 		}
 
+		if (request.action ==
+		    InspectorPanel::ObjectAction::CLEAR_UNUSED_TEXTURES) {
+			const auto model = object->HasMesh()
+			                       ? models_.FindLoaded(object->mesh->modelPath)
+			                       : ModelHandle{};
+
+			if (!model || !object->meshRenderer ||
+			    !object->meshRenderer->IsValid()) {
+				ShowError("Load a valid Mesh and Mesh Renderer before clearing "
+				          "unused image assignments.",
+				          request.objectId);
+				return;
+			}
+
+			auto edited = *object->meshRenderer;
+			std::erase_if(edited.textures.slots, [&](const auto &binding) {
+				return models_.GetMaterialMeshCount(model, binding.first) == 0;
+			});
+
+			if (!document_.GetHistory().SetMeshRenderer(request.objectId,
+			                                            edited)) {
+				ShowError("Could not clear unused image assignments.",
+				          request.objectId);
+			}
+
+			return;
+		}
+
 		if (request.action == InspectorPanel::ObjectAction::COPY_UV) {
 			if (!object->meshRenderer || !object->meshRenderer->IsValid() ||
 			    !clipboard_.CopyTextureUVs(object->meshRenderer->uvScale,

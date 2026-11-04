@@ -14,13 +14,14 @@ struct SceneObject;
 class TextureSlotInspector {
   public:
 	/// <summary>
-	/// 描画後にAssetsで表示する画像と、選択物体へのUV適用要求
+	/// 描画後にAssetsで表示する画像と、UV適用・未使用画像割り当ての整理要求
 	/// </summary>
 	struct Request {
 		std::filesystem::path revealTexture;
 		bool applyUvToSelection = false;
 		bool copyUv = false;
 		bool pasteUvToSelection = false;
+		bool clearUnusedTextures = false;
 	};
 
 	/// <summary>

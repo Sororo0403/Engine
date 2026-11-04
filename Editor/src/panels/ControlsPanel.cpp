@@ -210,6 +210,16 @@ void ControlsPanel::Draw() {
 	         "Undo/Redo operation. Manual Texture Slot input remains available "
 	         "for unused or not-yet-loaded slots. Slot numbers and existing "
 	         "assignments are never changed automatically."},
+	        {"Inspector > Mesh Renderer > Clear Unused Texture Assignments",
+	         "Explicitly remove image assignments whose slot is not used by "
+	         "any mesh in the currently loaded model, including old slot "
+	         "numbers outside its range. Used images, UVs, visibility and "
+	         "other components stay unchanged. A locked Inspector acts on "
+	         "its displayed object. One Undo/Redo restores all removed "
+	         "assignments. The action requires a loaded Mesh and valid "
+	         "Mesh Renderer; no assignments are automatically deleted when "
+	         "replacing or reloading a model. Image files are not deleted. "
+	         "Unavailable during Play."},
 	        {"Inspector > Mesh Renderer > Texture Slots",
 	         "Each slot shows the source material name and how many model "
 	         "meshes use it. Unused slots keep their original numbers and "
