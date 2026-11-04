@@ -103,6 +103,7 @@ bool EditorScene::Initialize() {
 
 	cameraController_.Reset();
 	cameraController_.SetSettings(preferences_.camera);
+	sceneProjection_ = preferences_.sceneProjection;
 
 	stage_ = DialogStage::IDLE;
 	pendingAction_ = EditorAction::NONE;
@@ -938,7 +939,8 @@ bool EditorScene::Update(float deltaTime) {
 		return false;
 	}
 
-	if (!renderer_.SetLighting(exportConfig_.lighting) ||
+	if (!renderer_.SetCameraSettings(sceneProjection_) ||
+	    !renderer_.SetLighting(exportConfig_.lighting) ||
 	    !renderer_.Update(target->GetWidth(), target->GetHeight())) {
 		return false;
 	}
@@ -967,7 +969,8 @@ bool EditorScene::Update(float deltaTime) {
 			return false;
 		}
 
-		if (!renderer_.SetLighting(exportConfig_.lighting) ||
+		if (!renderer_.SetCameraSettings(sceneProjection_) ||
+		    !renderer_.SetLighting(exportConfig_.lighting) ||
 		    !renderer_.Update(target->GetWidth(), target->GetHeight())) {
 			return false;
 		}
@@ -1228,6 +1231,7 @@ void EditorScene::Finalize() {
 		current.snapping = gizmo_.IsSnapping();
 		current.snap = gizmo_.GetSnapSettings();
 		current.camera = cameraController_.GetSettings();
+		current.sceneProjection = sceneProjection_;
 		current.cameraBookmarks = cameraBookmarks_;
 		current.grid = sceneGrid_.GetSettings();
 		current.gameExport = exportConfig_;
@@ -1958,6 +1962,27 @@ void EditorScene::DrawCameraSettings() {
 
 	if (changed) {
 		cameraController_.SetSettings(settings);
+	}
+
+	ImGui::SeparatorText("Scene Projection");
+	auto projection = sceneProjection_;
+	bool projectionChanged = ImGui::DragFloat(
+	    "Scene Vertical FOV", &projection.verticalFovDegrees, 0.1f, 1.0f,
+	    179.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+	projectionChanged |=
+	    ImGui::DragFloat("Scene Near Clip", &projection.nearClip, 0.01f, 0.001f,
+	                     99999.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp);
+	projectionChanged |=
+	    ImGui::DragFloat("Scene Far Clip", &projection.farClip, 1.0f, 0.002f,
+	                     100000.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+
+	if (ImGui::Button("Reset Scene Projection")) {
+		projection = CameraSettings{};
+		projectionChanged = true;
+	}
+
+	if (projectionChanged && projection.IsValid()) {
+		sceneProjection_ = projection;
 	}
 
 	ImGui::EndDisabled();
@@ -4618,7 +4643,8 @@ bool EditorScene::UpdatePlaySceneView(float deltaTime, EditorAction action,
 		return true;
 	}
 
-	if (!playSceneRenderer_.SetLighting(playMode_.GetLighting()) ||
+	if (!playSceneRenderer_.SetCameraSettings(sceneProjection_) ||
+	    !playSceneRenderer_.SetLighting(playMode_.GetLighting()) ||
 	    !playSceneRenderer_.SetCameraPose(cameraController_.GetPose()) ||
 	    !playSceneRenderer_.Update(target->GetWidth(), target->GetHeight())) {
 		return false;
@@ -4648,7 +4674,8 @@ bool EditorScene::UpdatePlaySceneView(float deltaTime, EditorAction action,
 
 	if (frameRequest != FrameRequest::NONE &&
 	    FrameObjects(frameRequest, projection, true)) {
-		if (!playSceneRenderer_.SetLighting(playMode_.GetLighting()) ||
+		if (!playSceneRenderer_.SetCameraSettings(sceneProjection_) ||
+		    !playSceneRenderer_.SetLighting(playMode_.GetLighting()) ||
 		    !playSceneRenderer_.SetCameraPose(cameraController_.GetPose()) ||
 		    !playSceneRenderer_.Update(target->GetWidth(),
 		                               target->GetHeight())) {

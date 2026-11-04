@@ -134,6 +134,28 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 			}
 		}
 
+		// 投影設定がない旧ファイルでは、従来のSceneビューの初期値を使う。
+		if (json.contains("sceneProjection")) {
+			const auto &projection = json.at("sceneProjection");
+			if (!projection.is_object() ||
+			    !projection.at("verticalFovDegrees").is_number() ||
+			    !projection.at("nearClip").is_number() ||
+			    !projection.at("farClip").is_number()) {
+				throw std::runtime_error(
+				    "Sceneカメラの投影設定には数値が必要です。");
+			}
+			loaded.sceneProjection.verticalFovDegrees =
+			    projection.at("verticalFovDegrees").get<float>();
+			loaded.sceneProjection.nearClip =
+			    projection.at("nearClip").get<float>();
+			loaded.sceneProjection.farClip =
+			    projection.at("farClip").get<float>();
+		}
+
+		if (!loaded.sceneProjection.IsValid()) {
+			throw std::runtime_error("Sceneカメラの投影設定が無効です。");
+		}
+
 		EditorCameraController cameraValidator;
 
 		if (!cameraValidator.SetSettings(loaded.camera)) {
@@ -302,8 +324,8 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		    !validator.SetOperation(operation) || !validator.SetSpace(space) ||
 		    !validator.SetPivotMode(pivotMode) ||
 		    !cameraValidator.SetSettings(camera) ||
-		    !cameraBookmarks.IsValid() || !gridValidator.SetSettings(grid) ||
-		    !gameExport.IsValid() ||
+		    !sceneProjection.IsValid() || !cameraBookmarks.IsValid() ||
+		    !gridValidator.SetSettings(grid) || !gameExport.IsValid() ||
 		    (colliderDisplay != ColliderBounds::Mode::NONE &&
 		     colliderDisplay != ColliderBounds::Mode::SELECTED &&
 		     colliderDisplay != ColliderBounds::Mode::ALL)) {
@@ -403,6 +425,10 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		      {"height", grid.height},
 		      {"halfLineCount", grid.halfLineCount},
 		      {"majorLineInterval", grid.majorLineInterval}}},
+		    {"sceneProjection",
+		     {{"verticalFovDegrees", sceneProjection.verticalFovDegrees},
+		      {"nearClip", sceneProjection.nearClip},
+		      {"farClip", sceneProjection.farClip}}},
 		    {"camera",
 		     {{"moveSpeed", camera.moveSpeed},
 		      {"fastMultiplier", camera.fastMultiplier},
@@ -426,7 +452,8 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 }
 
 bool EditorPreferences::operator==(const EditorPreferences &other) const {
-	return cameraBookmarks == other.cameraBookmarks &&
+	return sceneProjection == other.sceneProjection &&
+	       cameraBookmarks == other.cameraBookmarks &&
 	       colliderDisplay == other.colliderDisplay &&
 	       pivotMode == other.pivotMode && grid == other.grid &&
 	       recentScenes == other.recentScenes && assets == other.assets &&

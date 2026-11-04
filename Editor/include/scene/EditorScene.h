@@ -24,6 +24,7 @@
 #include "gameplay/FollowCameraPreview.h"
 #include "gameplay/RespawnPreview.h"
 #include "gizmo/TransformGizmo.h"
+#include "graphics/camera/CameraSettings.h"
 #include "history/AlignmentAxis.h"
 #include "layout/EditorDockLayout.h"
 #include "panels/AssetsPanel.h"
@@ -771,6 +772,7 @@ class EditorScene final : public IScene {
 	InspectorPanel inspectorPanel_;
 	SceneViewPanel sceneViewPanel_;
 	EditorCameraController cameraController_;
+	CameraSettings sceneProjection_;
 	EditorCameraBookmarks cameraBookmarks_;
 	std::size_t cameraBookmarkSlot_ = 0;
 

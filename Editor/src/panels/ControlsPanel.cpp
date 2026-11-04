@@ -1348,7 +1348,16 @@ void ControlsPanel::Draw() {
 	         "undo history stay unchanged. Bookmarks are disabled during Play, "
 	         "dialogs and gizmo or selection operations."},
 	        {"View > Camera Settings",
-	         "Adjust movement speed, acceleration and mouse sensitivity."},
+	         "Adjust movement speed, acceleration and mouse sensitivity. "
+	         "Scene Projection controls the Scene view's vertical FOV and "
+	         "Near/Far Clip, including the observation view during Play. "
+	         "Increase Far Clip to see and frame larger stages or drafts. "
+	         "Near Clip must be positive and below Far Clip. Invalid changes "
+	         "keep the previous projection. Reset Scene Projection restores "
+	         "only this lens. These Editor settings are saved across sessions "
+	         "and do not change Camera components, Game rendering, game "
+	         "output, "
+	         "scene data or Undo history."},
 	        {"Box with Size / Duplicate with Offset > Frame Preview",
 	         "Fit the entire draft Collider outline into Scene without "
 	         "closing the dialog or creating objects. Array framing includes "

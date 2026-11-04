@@ -5,6 +5,7 @@
 #include "camera/EditorCameraController.h"
 #include "gameplay/GameConfig.h"
 #include "gizmo/TransformGizmo.h"
+#include "graphics/camera/CameraSettings.h"
 #include "physics/ColliderBounds.h"
 #include "scene/SceneGrid.h"
 
@@ -30,6 +31,7 @@ class EditorPreferences {
 	SelectionPivot::Mode pivotMode = SelectionPivot::Mode::CENTER;
 	TransformGizmo::SnapSettings snap;
 	EditorCameraController::Settings camera;
+	CameraSettings sceneProjection;
 	SceneGrid::Settings grid;
 	EditorCameraBookmarks cameraBookmarks;
 
