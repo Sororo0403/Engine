@@ -113,6 +113,14 @@ class HierarchyPanel {
 	/// <returns>true:選択変更あり false:変更なし</returns>
 	bool SelectAllVisible(const Scene &scene, EditorSelection &selection);
 
+	/// <summary>
+	/// 現在の一覧の選択を反転する。条件外の選択順を保ち、新しく選ぶ項目を表示順で末尾へ加える
+	/// </summary>
+	/// <param name="scene">表示対象のシーン。シーンや履歴は変更しない</param>
+	/// <param name="selection">変更する選択状態。末尾をアクティブとし、次の範囲選択の基準にする</param>
+	/// <returns>true:選択変更あり false:一覧が空、または選択を設定できない</returns>
+	bool InvertVisible(const Scene &scene, EditorSelection &selection);
+
   private:
 	/// <summary>
 	/// 一覧の表示順。同名の物体はIDの昇順を維持する

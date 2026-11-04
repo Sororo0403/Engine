@@ -123,6 +123,14 @@ void ControlsPanel::Draw() {
 	DrawSection(
 	    "Selection and objects",
 	    {
+	        {"Hierarchy > Invert Listed",
+	         "Toggle selection only for objects matching the current search, "
+	         "component, Hidden only and Scene picking filters. Objects "
+	         "outside the list keep their selection. Newly selected objects "
+	         "are appended in displayed order; the last becomes Active and "
+	         "the next Shift-selection anchor. An empty list leaves selection "
+	         "unchanged. Available during Play; scene data, picking exclusions "
+	         "and Undo history are unchanged."},
 	        {"Hierarchy > Sort",
 	         "Choose creation order or name A-Z / Z-A. Range selection, Select "
 	         "All and arrow keys follow the displayed order; changing sort "

@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <format>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -191,6 +192,15 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 	ui.EndDisabled();
 	ui.EndDisabled();
 
+	const auto visibleIds = GetVisibleIds(scene);
+	ui.BeginDisabled(visibleIds.empty());
+
+	if (ui.Button("Invert Listed")) {
+		result.selectionChanged |= InvertVisible(scene, selection);
+	}
+
+	ui.EndDisabled();
+
 	ui.Separator();
 
 	const auto &objects = scene.GetObjects();
@@ -198,8 +208,6 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 	const bool drawObjects = ui.BeginChild("HierarchyObjects", 0.0f, 0.0f);
 
 	if (drawObjects) {
-		const auto visibleIds = GetVisibleIds(scene);
-
 		// 描画と範囲選択で同じ表示一覧を使用し、検索で隠れた項目を除く
 		SceneObjectId keyboardFocusId = 0;
 		result.selectionChanged |=
@@ -632,6 +640,43 @@ bool HierarchyPanel::SelectAllVisible(const Scene &scene,
 	const bool changed = selection.Set(std::move(ids));
 	lastActiveId_ = selection.GetActiveId();
 	return changed;
+}
+
+bool HierarchyPanel::InvertVisible(const Scene &scene,
+                                   EditorSelection &selection) {
+	const auto visible = GetVisibleIds(scene);
+
+	if (visible.empty()) {
+		return false;
+	}
+
+	const auto current = selection.GetIds();
+	const std::unordered_set<SceneObjectId> listed(visible.begin(),
+	                                               visible.end());
+	const std::unordered_set<SceneObjectId> selected(current.begin(),
+	                                                 current.end());
+	std::vector<SceneObjectId> next;
+	next.reserve(current.size() + visible.size());
+
+	for (const auto id : current) {
+		if (scene.Contains(id) && !listed.contains(id)) {
+			next.push_back(id);
+		}
+	}
+
+	for (const auto id : visible) {
+		if (!selected.contains(id)) {
+			next.push_back(id);
+		}
+	}
+
+	if (!selection.Set(std::move(next))) {
+		return false;
+	}
+
+	rangeAnchorId_ = lastActiveId_ = selection.GetActiveId();
+	scrollToId_ = listed.contains(lastActiveId_) ? lastActiveId_ : 0;
+	return true;
 }
 
 bool HierarchyPanel::NavigateSelection(
