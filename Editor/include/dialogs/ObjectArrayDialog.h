@@ -49,6 +49,14 @@ class ObjectArrayDialog {
 	/// <returns>現在の入力値。適用側でもIsValidによる検証が必要</returns>
 	const ObjectArraySettings &GetSettings() const;
 
+	/// <summary>
+	/// 入力設定が有効で、未解決のCollider間隔エラーがないか確認する
+	/// </summary>
+	/// <returns>true:下書きの外枠を計算できる設定 false:設定または間隔の計算が無効。元の形状は計算側で再確認する</returns>
+	bool CanPreview() const {
+		return settings_.IsValid(sourceIds_.size()) && spacingError_.empty();
+	}
+
   private:
 	std::vector<SceneObjectId> sourceIds_;
 	ObjectArraySettings settings_;

@@ -343,6 +343,8 @@ exit /b 0</Command>
   <ItemGroup>
     <ClInclude Include="include\physics\ColliderPlacement.h" />
     <ClCompile Include="src\physics\ColliderPlacement.cpp" />
+    <ClInclude Include="include\physics\ColliderArrayPreview.h" />
+    <ClCompile Include="src\physics\ColliderArrayPreview.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\camera\ObjectFrameBounds.h" />

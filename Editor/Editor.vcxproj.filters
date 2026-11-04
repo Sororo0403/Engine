@@ -615,6 +615,12 @@
     <ClCompile Include="src\physics\ColliderPlacement.cpp">
       <Filter>src\physics</Filter>
     </ClCompile>
+    <ClInclude Include="include\physics\ColliderArrayPreview.h">
+      <Filter>include\physics</Filter>
+    </ClInclude>
+    <ClCompile Include="src\physics\ColliderArrayPreview.cpp">
+      <Filter>src\physics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\camera\ObjectFrameBounds.h">

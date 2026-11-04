@@ -24,6 +24,7 @@
 #include "math/Ray.h"
 #include "math/TransformUtils.h"
 #include "physics/BoxColliderUtils.h"
+#include "physics/ColliderArrayPreview.h"
 #include "physics/ColliderPlacement.h"
 #include "physics/CollisionWorld.h"
 #include "platform/windows/PathUtils.h"
@@ -1145,6 +1146,16 @@ bool EditorScene::Update(float deltaTime) {
 
 	if (showMeasurements_ && !SelectionMeasurement::AppendLine(
 	                             renderer_, scene, selection_.GetIds())) {
+		return false;
+	}
+
+	if (stage_ == DialogStage::OBJECT_ARRAY &&
+	    objectArrayDialog_.CanPreview() &&
+	    !ColliderArrayPreview{}.Update(renderer_, scene,
+	                                   objectArrayDialog_.GetSourceIds(),
+	                                   objectArrayDialog_.GetSettings())) {
+		Logger::Error(
+		    "EditorScene: 等間隔複製の下書きを表示できませんでした。");
 		return false;
 	}
 
@@ -5197,6 +5208,8 @@ void EditorScene::StartObjectArray() {
 		}
 
 		stage_ = DialogStage::OBJECT_ARRAY;
+		ImGui::SetWindowCollapsed("Scene", false);
+		ImGui::SetWindowFocus("Scene");
 	} catch (const std::exception &error) {
 		Logger::Error(
 		    std::format("EditorScene::StartObjectArray: {}", error.what()));
