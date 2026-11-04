@@ -82,3 +82,12 @@ BoxCreationResult BoxCreationDialog::Draw(const ImGuiSystem &ui) {
 	ui.EndPopup();
 	return result;
 }
+
+bool BoxCreationDialog::GetPreviewBounds(AxisAlignedBox &bounds) const {
+	SceneObject object;
+	std::string error;
+	return PrimitiveObjects::TryCreateBox(settings_, bounds_, object, error) &&
+	       object.collider &&
+	       BoxColliderUtils::GetWorldBounds(*object.collider, object.transform,
+	                                        bounds);
+}

@@ -4,6 +4,7 @@
 #include "scene/BoxCreationSettings.h"
 
 class ImGuiSystem;
+struct AxisAlignedBox;
 
 /// <summary>
 /// 実寸を指定するBox作成画面の操作結果
@@ -28,6 +29,13 @@ class BoxCreationDialog {
 	/// <param name="ui">フレーム開始済みのUI</param>
 	/// <returns>編集中・作成確定・取消</returns>
 	BoxCreationResult Draw(const ImGuiSystem &ui);
+
+	/// <summary>
+	/// 作成時と同じ寸法検証を使い、現在の下書きのワールド座標の衝突範囲を取得する
+	/// </summary>
+	/// <param name="bounds">成功時に置き換える外枠。シーンやモデルのインスタンスは作成しない</param>
+	/// <returns>true:取得成功 false:中心・寸法・モデルのローカル範囲が無効。失敗時は出力を保持する</returns>
+	bool GetPreviewBounds(AxisAlignedBox &bounds) const;
 
 	/// <summary>
 	/// 入力した作成設定を取得する

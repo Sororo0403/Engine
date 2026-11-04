@@ -1159,6 +1159,22 @@ bool EditorScene::Update(float deltaTime) {
 		return false;
 	}
 
+	AxisAlignedBox boxDraft;
+	if (stage_ == DialogStage::BOX_CREATION &&
+	    boxCreationDialog_.GetPreviewBounds(boxDraft)) {
+		ColliderBounds::Lines lines;
+		if (!colliderBounds_.BuildLines(boxDraft, lines)) {
+			return false;
+		}
+
+		for (auto &line : lines) {
+			line.color = {0.2f, 0.85f, 1.0f, 1.0f};
+			if (!renderer_.AddDebugLine(line)) {
+				return false;
+			}
+		}
+	}
+
 	// 全ての線を登録した後、一度だけ頂点バッファへ転送する
 	if (!renderer_.UpdateDebugLines()) {
 		Logger::Error("EditorScene: 線の頂点バッファを更新できませんでした。");
@@ -2410,6 +2426,8 @@ void EditorScene::StartAction(EditorAction action) {
 			}
 			boxCreationDialog_.Show(bounds, sceneGrid_.GetSettings().height);
 			stage_ = DialogStage::BOX_CREATION;
+			ImGui::SetWindowCollapsed("Scene", false);
+			ImGui::SetWindowFocus("Scene");
 		} catch (const std::exception &error) {
 			ShowError(error.what());
 		}

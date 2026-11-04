@@ -129,7 +129,11 @@ void ControlsPanel::Draw() {
 	         "keeps the selection."},
 	        {"Create > Box with Size...",
 	         "Create a Box with a name, world-space center and full X/Y/Z "
-	         "dimensions. Mesh and Box Collider use the same measured model "
+	         "dimensions. A cyan Scene outline previews the current Collider "
+	         "bounds before creation, including Place Bottom on Work Plane. "
+	         "Invalid drafts hide the outline. The preview creates no scene "
+	         "objects or selectable models and disappears on Create or Cancel. "
+	         "Mesh and Box Collider use the same measured model "
 	         "bounds. Dimensions must be finite and positive, and "
 	         "representable "
 	         "at the chosen center. Create adds and selects one object with "
