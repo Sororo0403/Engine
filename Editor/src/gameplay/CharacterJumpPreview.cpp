@@ -6,6 +6,7 @@
 #include "scene/Scene.h"
 #include "scene/SceneRenderer.h"
 #include <algorithm>
+#include <cmath>
 
 bool CharacterJumpPreview::BuildPaths(const Scene &scene, SceneObjectId id,
                                       Paths &paths) const {
@@ -53,6 +54,16 @@ bool CharacterJumpPreview::BuildPaths(const Scene &scene, SceneObjectId id,
 
 			input.jumpPressed = false;
 			const auto position = controller.GetTransform().translation;
+			path.durationSeconds = static_cast<double>(step) * kStepSeconds;
+			path.maximumHeight =
+			    (std::max)(path.maximumHeight,
+			               static_cast<double>(position.y) -
+			                   object->transform.translation.y);
+			path.horizontalDistance =
+			    std::hypot(static_cast<double>(position.x) -
+			                   object->transform.translation.x,
+			               static_cast<double>(position.z) -
+			                   object->transform.translation.z);
 			const bool fell =
 			    object->respawn && position.y < object->respawn->minimumY;
 			const bool landed = controller.IsGrounded();

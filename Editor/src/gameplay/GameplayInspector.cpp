@@ -1,9 +1,11 @@
 #include "gameplay/GameplayInspector.h"
+#include "gameplay/CharacterJumpPreview.h"
 #include "gameplay/RespawnPreview.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "history/EditorHistory.h"
 #include "physics/AxisAlignedBox.h"
 #include "scene/Scene.h"
+#include <format>
 #include <imgui.h>
 #include <string>
 
@@ -42,6 +44,64 @@ bool ApplyField(EditorHistory &history, SceneObjectId id,
 	}
 
 	return applied;
+}
+
+/// <summary>
+/// 開いたときだけ実際のジャンプを予測し、方向別の終了理由・時間・上昇量・水平距離を表示する
+/// </summary>
+/// <param name="ui">描画用UI</param>
+/// <param name="scene">変更しない編集シーン</param>
+/// <param name="id">Inspectorに表示する主人公。選択状態には依存しない</param>
+void DrawJumpMeasurements(const ImGuiSystem &ui, const Scene &scene,
+                          SceneObjectId id) {
+	if (!ui.CollapsingHeader("Jump Measurements", false)) {
+		return;
+	}
+
+	CharacterJumpPreview::Paths paths;
+
+	if (!CharacterJumpPreview{}.BuildPaths(scene, id, paths)) {
+		ui.Text("Jump measurements unavailable.");
+		return;
+	}
+
+	if (!ImGui::BeginTable("JumpMeasurements", 5,
+	                       ImGuiTableFlags_RowBg |
+	                           ImGuiTableFlags_BordersInnerV |
+	                           ImGuiTableFlags_ScrollX,
+	                       {0, 0}, 520.0f)) {
+		return;
+	}
+
+	ImGui::TableSetupColumn("Direction");
+	ImGui::TableSetupColumn("Result");
+	ImGui::TableSetupColumn("Time (s)");
+	ImGui::TableSetupColumn("Height");
+	ImGui::TableSetupColumn("Distance XZ");
+	ImGui::TableHeadersRow();
+	const std::array<const char *, CharacterJumpPreview::kDirectionCount>
+	    labels{"In Place", "+X",      "-X",      "+Z",     "-Z",
+	           "+X / +Z",  "+X / -Z", "-X / +Z", "-X / -Z"};
+
+	for (std::size_t i = 0; i < paths.size(); ++i) {
+		const auto &path = paths[i];
+		ImGui::TableNextRow();
+		ImGui::TableNextColumn();
+		ui.Text(labels[i]);
+		ImGui::TableNextColumn();
+		ui.Text(path.end == CharacterJumpPreview::End::LANDED ? "Landed"
+		        : path.end == CharacterJumpPreview::End::FALL_LIMIT
+		            ? "Fall Limit"
+		            : "Time Limit");
+		ImGui::TableNextColumn();
+		ui.Text(std::format("{:.3f}", path.durationSeconds));
+		ImGui::TableNextColumn();
+		ui.Text(std::format("{:.3f}", path.maximumHeight));
+		ImGui::TableNextColumn();
+		ui.Text(std::format("{:.3f}", path.horizontalDistance));
+	}
+
+	ImGui::EndTable();
 }
 
 } // namespace
@@ -102,6 +162,8 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		}
 
 		ui.EndDisabled();
+
+		DrawJumpMeasurements(ui, scene, id);
 
 		ui.BeginDisabled(!object.character->IsValid());
 

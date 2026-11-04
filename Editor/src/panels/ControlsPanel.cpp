@@ -1067,6 +1067,19 @@ void ControlsPanel::Draw() {
 	         "operations. If the trajectory cannot be calculated, the camera "
 	         "stays in place and an error is shown. Use View > Character Jump "
 	         "Guide to display paths for the active selection."},
+	        {"Inspector > Character Controller > Jump Measurements",
+	         "Expand to measure the inspected character's nine predicted "
+	         "jumps. Result distinguishes landing, the Respawn fall threshold "
+	         "and the three-second preview limit. Time is the simulated "
+	         "duration, Height is the greatest rise from the starting origin, "
+	         "and Distance XZ is the straight horizontal distance from start "
+	         "to finish. Fall Limit and Time Limit are not safe landing "
+	         "ranges. Measurements use every physics update before drawing "
+	         "samples are reduced, with the same collisions and speed limits "
+	         "as Play. Values update while expanded; collapse to stop "
+	         "calculating. Valid Character and Collider settings and a "
+	         "grounded start are required. A locked Inspector uses its "
+	         "displayed character. No scene data or history is changed."},
 	        {"View > Character Jump Guide",
 	         "Preview a jump from the active selected Character Controller "
 	         "at rest: white stays in place, red moves along world X and blue "
