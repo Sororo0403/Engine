@@ -570,6 +570,10 @@ bool InspectorPanel::Draw(
 	           GameplayInspector::CharacterAction::PASTE) {
 		objectRequest_ = {ObjectAction::PASTE_CHARACTER_SETTINGS,
 		                  characterRequest.objectId};
+	} else if (characterRequest.action ==
+	           GameplayInspector::CharacterAction::SELECT_GROUND) {
+		objectRequest_ = {ObjectAction::SELECT_GROUND_COLLIDER,
+		                  characterRequest.objectId};
 	}
 
 	const auto followRequest = gameplayInspector_.GetFollowRequest();

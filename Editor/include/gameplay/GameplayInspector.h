@@ -14,9 +14,9 @@ struct SceneObject;
 class GameplayInspector {
   public:
 	/// <summary>
-	/// 描画後に表示対象のCharacter設定へ適用する操作
+	/// 描画後に表示対象のCharacter設定へ適用する操作と足元のColliderの選択要求
 	/// </summary>
-	enum class CharacterAction { NONE, COPY, PASTE };
+	enum class CharacterAction { NONE, COPY, PASTE, SELECT_GROUND };
 
 	/// <summary>
 	/// 描画後に表示対象の追従設定へ適用する操作と経路の表示要求。追従対象はコピーしない

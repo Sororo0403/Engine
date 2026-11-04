@@ -4,6 +4,7 @@
 #include "gameplay/CharacterSettings.h"
 #include "math/Transform.h"
 #include "physics/BoxCollider.h"
+#include "scene/SceneObjectId.h"
 
 class CollisionWorld;
 
@@ -58,6 +59,16 @@ class CharacterController {
 	bool IsGrounded() const {
 		return grounded_;
 	}
+
+	/// <summary>
+	/// 現在の形状から、接地判定と同じ短い下向き探索で足元のColliderを検索する。
+	/// 鉛直速度や保持中の接地状態は変更せず、現在位置だけで問い合わせる
+	/// </summary>
+	/// <param name="world">自身を除外した衝突ワールド。初期化後に障害物が変わった場合も再確認する</param>
+	/// <param name="objectId">成功時に設定する地面のID。範囲内にない場合は0。同距離では小さいIDを優先する</param>
+	/// <returns>true:検索成功 false:未初期化、形状が無効、または現在位置が障害物と重なる。失敗時は出力を保持する</returns>
+	bool FindGroundObject(const CollisionWorld &world,
+	                      SceneObjectId &objectId) const;
 
 	/// <summary>
 	/// 上向きを正とする現在の鉛直速度を取得する

@@ -157,6 +157,10 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 		ui.BeginDisabled(!object.collider || !object.character->IsValid());
 
+		if (ui.Button("Select Ground Collider")) {
+			characterRequest_ = {CharacterAction::SELECT_GROUND, id};
+		}
+
 		if (ui.Button("Frame Jump")) {
 			jumpFrameRequest_ = id;
 		}

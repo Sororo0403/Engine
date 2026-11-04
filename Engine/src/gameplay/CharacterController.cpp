@@ -82,6 +82,22 @@ bool CharacterController::Update(float deltaTime, const CharacterInput &input,
 	return true;
 }
 
+bool CharacterController::FindGroundObject(const CollisionWorld &world,
+                                           SceneObjectId &objectId) const {
+	AxisAlignedBox body;
+	CollisionSweepResult contact;
+
+	if (!initialized_ ||
+	    !BoxColliderUtils::GetWorldBounds(collider_, transform_, body) ||
+	    !world.CanPlace(body) ||
+	    !world.Sweep(body, {0.0f, -kGroundProbeDistance, 0.0f}, contact)) {
+		return false;
+	}
+
+	objectId = contact.objectId;
+	return true;
+}
+
 bool CharacterController::Step(const CharacterInput &input,
                                const CollisionWorld &world) {
 	AxisAlignedBox body;

@@ -1067,6 +1067,16 @@ void ControlsPanel::Draw() {
 	         "operations. If the trajectory cannot be calculated, the camera "
 	         "stays in place and an error is shown. Use View > Character Jump "
 	         "Guide to display paths for the active selection."},
+	        {"Inspector > Character Controller > Select Ground Collider",
+	         "Select the Collider immediately below the inspected character "
+	         "using the same short downward probe as ground detection. This "
+	         "does not search all the way down from an airborne character. "
+	         "Hidden and model-free Colliders are included; side and ceiling "
+	         "contact are excluded. Equal-distance contacts choose the lowest "
+	         "object ID. Hierarchy reveals the result. A locked Inspector uses "
+	         "its displayed character and keeps its lock. Invalid settings or "
+	         "no ground keep the current selection. Scene data, camera and "
+	         "history stay unchanged. Available while editing only."},
 	        {"Inspector > Character Controller > Jump Measurements",
 	         "Expand to measure the inspected character's nine predicted "
 	         "jumps. Result distinguishes landing, the Respawn fall threshold "

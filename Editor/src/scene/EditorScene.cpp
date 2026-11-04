@@ -9,6 +9,7 @@
 #include "camera/ObjectFrameBounds.h"
 #include "core/EngineContext.h"
 #include "core/Logger.h"
+#include "gameplay/CharacterController.h"
 #include "gameplay/FollowCameraUsage.h"
 #include "gameplay/PlayShortcuts.h"
 #include "gameplay/SampleStage.h"
@@ -3953,6 +3954,36 @@ void EditorScene::ApplyInspectorRequest(
 				hierarchyPanel_.RequestReveal(selection_.GetActiveId());
 			}
 
+			return;
+		}
+
+		if (request.action ==
+		    InspectorPanel::ObjectAction::SELECT_GROUND_COLLIDER) {
+			CollisionWorld world;
+			CharacterController controller;
+			SceneObjectId ground = 0;
+
+			if (!object->character || !object->collider ||
+			    !world.Rebuild(document_.GetScene(), request.objectId) ||
+			    !controller.Initialize(object->transform, *object->collider,
+			                           *object->character, world) ||
+			    !controller.FindGroundObject(world, ground)) {
+				ShowError(
+				    "Could not inspect the ground Collider. Check the "
+				    "Character, Collider, Transform and obstacle settings.",
+				    request.objectId);
+				return;
+			}
+
+			if (ground == 0) {
+				ShowError(
+				    "No supporting Collider was found below this character.",
+				    request.objectId);
+				return;
+			}
+
+			selection_.SelectOnly(ground);
+			hierarchyPanel_.RequestReveal(ground);
 			return;
 		}
 
