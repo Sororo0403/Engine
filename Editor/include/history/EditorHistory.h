@@ -561,6 +561,19 @@ class EditorHistory {
 	                  SceneObjectId referenceId, AlignmentAxis axis);
 
 	/// <summary>
+	/// Colliderを囲むワールド座標の端を基準物体の同じ端へそろえ、1操作として記録する
+	/// </summary>
+	/// <param name="objectIds">有効なColliderを持つ、重複しない2件以上のID。編集中の内容は先に確定する</param>
+	/// <param name="referenceId">位置を保持する基準物体。一覧に含まれること</param>
+	/// <param name="axis">そろえるワールド座標のX・Y・Z</param>
+	/// <param name="maximum">true:最大側の端 false:最小側の端</param>
+	/// <returns>true:全件成功または配置済み false:対象・形状・軸・座標精度が無効。全対象を保持する</returns>
+	/// <remarks>回転・拡縮を反映した軸平行ボックスを使用する。他軸・姿勢・形状・表示状態は変更しない。成功後は物体参照を取得し直す</remarks>
+	bool AlignColliderBounds(std::span<const SceneObjectId> objectIds,
+	                         SceneObjectId referenceId, AlignmentAxis axis,
+	                         bool maximum);
+
+	/// <summary>
 	/// 指定軸の座標順で両端を固定し、間の原点を等間隔に配置して1操作として記録する
 	/// </summary>
 	/// <param name="objectIds">重複のない3件以上の対象ID一覧。編集中の内容は先に確定する</param>
@@ -661,6 +674,9 @@ class EditorHistory {
 	bool HasPendingChanges() const;
 
   private:
+	// 整列後の端に許容するワールド座標の誤差
+	static constexpr double kColliderAlignmentTolerance = 0.0001;
+
 	Scene &scene_;
 
 	std::vector<Entry> entries_;

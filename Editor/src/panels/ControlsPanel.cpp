@@ -255,6 +255,15 @@ void ControlsPanel::Draw() {
 	         "Use Edit or the Hierarchy menu to align selected origins to the "
 	         "active object's world coordinate on one axis. Other axes, "
 	         "rotation and scale stay unchanged."},
+	        {"Align Collider Bounds",
+	         "In Edit or the Hierarchy menu, align the selected Box Collider "
+	         "minimum or maximum on X, Y or Z to the active object's same "
+	         "edge. This uses world axis-aligned bounds after rotation and "
+	         "scale, including hidden objects. Only that position axis "
+	         "changes; "
+	         "the active object stays fixed. All selected objects need valid "
+	         "Colliders and representable coordinates. Undo/Redo treats the "
+	         "alignment as one operation. This does not prevent overlaps."},
 	        {"Distribute X / Y / Z",
 	         "For three or more selected objects, space origins evenly in "
 	         "world coordinate order with both endpoints fixed. Other axes, "

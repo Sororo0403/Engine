@@ -405,6 +405,40 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 					result.action = Action::ALIGN_Z;
 				}
 
+				ui.BeginDisabled(
+				    selection.GetCount() < 2 ||
+				    !ColliderPlacement::CanDrop(scene, selection.GetIds()));
+
+				if (ui.BeginMenu("Align Collider Bounds")) {
+					if (ui.MenuItem("Min X to Active", nullptr, true)) {
+						result.action = Action::ALIGN_COLLIDER_MIN_X;
+					}
+
+					if (ui.MenuItem("Max X to Active", nullptr, true)) {
+						result.action = Action::ALIGN_COLLIDER_MAX_X;
+					}
+
+					if (ui.MenuItem("Min Y to Active", nullptr, true)) {
+						result.action = Action::ALIGN_COLLIDER_MIN_Y;
+					}
+
+					if (ui.MenuItem("Max Y to Active", nullptr, true)) {
+						result.action = Action::ALIGN_COLLIDER_MAX_Y;
+					}
+
+					if (ui.MenuItem("Min Z to Active", nullptr, true)) {
+						result.action = Action::ALIGN_COLLIDER_MIN_Z;
+					}
+
+					if (ui.MenuItem("Max Z to Active", nullptr, true)) {
+						result.action = Action::ALIGN_COLLIDER_MAX_Z;
+					}
+
+					ui.EndMenu();
+				}
+
+				ui.EndDisabled();
+
 				if (ui.MenuItem("Distribute X", nullptr,
 				                selection.GetCount() > 2)) {
 					result.action = Action::DISTRIBUTE_X;

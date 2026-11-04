@@ -182,6 +182,12 @@ class EditorScene final : public IScene {
 		ALIGN_X,
 		ALIGN_Y,
 		ALIGN_Z,
+		ALIGN_COLLIDER_MIN_X,
+		ALIGN_COLLIDER_MAX_X,
+		ALIGN_COLLIDER_MIN_Y,
+		ALIGN_COLLIDER_MAX_Y,
+		ALIGN_COLLIDER_MIN_Z,
+		ALIGN_COLLIDER_MAX_Z,
 		DISTRIBUTE_X,
 		DISTRIBUTE_Y,
 		DISTRIBUTE_Z,
@@ -655,6 +661,13 @@ class EditorScene final : public IScene {
 	/// </summary>
 	/// <param name="axis">ワールド座標のX・Y・Zのいずれか</param>
 	void AlignSelection(AlignmentAxis axis);
+
+	/// <summary>
+	/// 選択Colliderの指定軸の端を、アクティブ物体の同じ端へそろえる
+	/// </summary>
+	/// <param name="axis">ワールド座標のX・Y・Z</param>
+	/// <param name="maximum">true:最大側 false:最小側</param>
+	void AlignSelectedColliderBounds(AlignmentAxis axis, bool maximum);
 
 	/// <summary>
 	/// 選択物体の原点を指定軸の方向で等間隔に配置する。両端は固定する
