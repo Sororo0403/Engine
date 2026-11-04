@@ -1349,6 +1349,16 @@ void ControlsPanel::Draw() {
 	         "dialogs and gizmo or selection operations."},
 	        {"View > Camera Settings",
 	         "Adjust movement speed, acceleration and mouse sensitivity."},
+	        {"Box with Size / Duplicate with Offset > Frame Preview",
+	         "Fit the entire draft Collider outline into Scene without "
+	         "closing the dialog or creating objects. Array framing includes "
+	         "every copied group's Collider bounds, excluding originals and "
+	         "objects without Colliders. Current Scene view direction and "
+	         "aspect ratio are preserved. Selection, Inspector locks, scene "
+	         "and history stay unchanged. Invalid drafts or arrays without "
+	         "Colliders cannot be framed. If the current camera clipping "
+	         "range cannot contain the draft, the view stays unchanged. "
+	         "Cancel keeps the explicitly chosen camera view."},
 	        {"Create > Box with Size > Place Bottom on Work Plane",
 	         "Set the draft Center Y to Grid Settings Height plus half of "
 	         "Size Y. X/Z, name and dimensions stay unchanged. The plane "

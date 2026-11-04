@@ -67,6 +67,10 @@ BoxCreationResult BoxCreationDialog::Draw(const ImGuiSystem &ui) {
 
 	BoxCreationResult result = BoxCreationResult::NONE;
 	ui.BeginDisabled(!valid);
+	if (ui.Button("Frame Preview")) {
+		result = BoxCreationResult::FRAME_PREVIEW;
+	}
+
 	if (ui.Button("Create Box")) {
 		result = BoxCreationResult::ACCEPTED;
 	}
@@ -76,7 +80,8 @@ BoxCreationResult BoxCreationDialog::Draw(const ImGuiSystem &ui) {
 	    (ui.Button("Cancel") || ImGui::IsKeyPressed(ImGuiKey_Escape, false))) {
 		result = BoxCreationResult::CANCELLED;
 	}
-	if (result != BoxCreationResult::NONE) {
+	if (result == BoxCreationResult::ACCEPTED ||
+	    result == BoxCreationResult::CANCELLED) {
 		ui.CloseCurrentPopup();
 	}
 	ui.EndPopup();

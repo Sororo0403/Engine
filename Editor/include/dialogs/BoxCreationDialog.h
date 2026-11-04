@@ -9,7 +9,7 @@ struct AxisAlignedBox;
 /// <summary>
 /// 実寸を指定するBox作成画面の操作結果
 /// </summary>
-enum class BoxCreationResult { NONE, ACCEPTED, CANCELLED };
+enum class BoxCreationResult { NONE, ACCEPTED, CANCELLED, FRAME_PREVIEW };
 
 /// <summary>
 /// 名前・中心位置・実寸を下書きで指定し、作成または取消を受け付ける
@@ -27,7 +27,7 @@ class BoxCreationDialog {
 	/// 入力した寸法を検証する。シーンや描画リソースは変更しない
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
-	/// <returns>編集中・作成確定・取消</returns>
+	/// <returns>編集中・作成確定・取消・下書きのフレーミング要求。フレーミングでは画面を閉じない</returns>
 	BoxCreationResult Draw(const ImGuiSystem &ui);
 
 	/// <summary>

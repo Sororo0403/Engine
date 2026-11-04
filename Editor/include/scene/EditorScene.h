@@ -228,6 +228,7 @@ class EditorScene final : public IScene {
 		JUMP,
 		FOLLOW_PATH,
 		INSPECTED,
+		DRAFT,
 	};
 
 	/// <summary>
@@ -571,6 +572,13 @@ class EditorScene final : public IScene {
 	bool FrameObjects(FrameRequest request,
 	                  const DirectX::XMFLOAT4X4 &projection,
 	                  bool runtimeScene = false);
+
+	/// <summary>
+	/// 開いているBox作成・等間隔複製の下書き全体をSceneカメラへ収める。ダイアログは閉じない
+	/// </summary>
+	/// <param name="projection">Sceneビューの更新済み透視投影行列</param>
+	/// <returns>true:移動成功 false:未編集中・再生中・範囲なし・無効・描画範囲外。失敗時はカメラを保持する</returns>
+	bool FrameDraft(const DirectX::XMFLOAT4X4 &projection);
 
 	/// <summary>
 	/// 再生シーンを独立したSceneカメラで更新する。編集や再生入力には反映しない

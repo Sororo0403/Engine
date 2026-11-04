@@ -1,6 +1,7 @@
 #include "dialogs/ObjectArrayDialog.h"
 
 #include "graphics/ui/ImGuiSystem.h"
+#include "physics/ColliderArrayPreview.h"
 #include "scene/Scene.h"
 #include <cmath>
 #include <format>
@@ -108,6 +109,19 @@ ObjectArrayResult ObjectArrayDialog::Draw(const ImGuiSystem &ui,
 	}
 
 	ObjectArrayResult result = ObjectArrayResult::NONE;
+	std::vector<AxisAlignedBox> previewBounds;
+	const bool canFrame = valid &&
+	                      ColliderArrayPreview{}.BuildBounds(
+	                          scene, sourceIds_, settings_, previewBounds) &&
+	                      !previewBounds.empty();
+	ui.BeginDisabled(!canFrame);
+
+	if (ui.Button("Frame Preview")) {
+		result = ObjectArrayResult::FRAME_PREVIEW;
+	}
+
+	ui.EndDisabled();
+
 	ui.BeginDisabled(!valid);
 
 	if (ui.Button("Create Copies") && (!spacingFace_ || fit())) {
@@ -122,7 +136,8 @@ ObjectArrayResult ObjectArrayDialog::Draw(const ImGuiSystem &ui,
 		result = ObjectArrayResult::CANCELLED;
 	}
 
-	if (result != ObjectArrayResult::NONE) {
+	if (result == ObjectArrayResult::ACCEPTED ||
+	    result == ObjectArrayResult::CANCELLED) {
 		ui.CloseCurrentPopup();
 	}
 

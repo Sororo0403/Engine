@@ -3319,8 +3319,16 @@ void EditorScene::UpdateDialogs() {
 
 	case DialogStage::BOX_CREATION: {
 		const auto result = boxCreationDialog_.Draw(ui_);
+		if (result == BoxCreationResult::FRAME_PREVIEW) {
+			frameRequest_ = FrameRequest::DRAFT;
+			return;
+		}
+
 		if (result == BoxCreationResult::NONE) {
 			return;
+		}
+		if (frameRequest_ == FrameRequest::DRAFT) {
+			frameRequest_ = FrameRequest::NONE;
 		}
 		stage_ = DialogStage::IDLE;
 		if (result == BoxCreationResult::ACCEPTED) {
@@ -3348,8 +3356,16 @@ void EditorScene::UpdateDialogs() {
 	case DialogStage::OBJECT_ARRAY: {
 		const auto result = objectArrayDialog_.Draw(ui_, document_.GetScene());
 
+		if (result == ObjectArrayResult::FRAME_PREVIEW) {
+			frameRequest_ = FrameRequest::DRAFT;
+			return;
+		}
+
 		if (result == ObjectArrayResult::NONE) {
 			return;
+		}
+		if (frameRequest_ == FrameRequest::DRAFT) {
+			frameRequest_ = FrameRequest::NONE;
 		}
 
 		stage_ = DialogStage::IDLE;
@@ -4399,11 +4415,72 @@ EditorScene::ReadFrameShortcut(const ViewportInput &viewport,
 	                                   : FrameRequest::SELECTED;
 }
 
+bool EditorScene::FrameDraft(const DirectX::XMFLOAT4X4 &projection) {
+	if (playMode_.IsPlaying()) {
+		return false;
+	}
+
+	try {
+		std::vector<AxisAlignedBox> bounds;
+
+		if (stage_ == DialogStage::BOX_CREATION) {
+			AxisAlignedBox box;
+			if (!boxCreationDialog_.GetPreviewBounds(box)) {
+				return false;
+			}
+			bounds.push_back(box);
+		} else if (stage_ == DialogStage::OBJECT_ARRAY &&
+		           objectArrayDialog_.CanPreview()) {
+			if (!ColliderArrayPreview{}.BuildBounds(
+			        document_.GetScene(), objectArrayDialog_.GetSourceIds(),
+			        objectArrayDialog_.GetSettings(), bounds)) {
+				return false;
+			}
+		}
+
+		if (bounds.empty()) {
+			return false;
+		}
+
+		auto combined = bounds.front();
+		for (const auto &box : bounds) {
+			combined.minimum = {(std::min)(combined.minimum.x, box.minimum.x),
+			                    (std::min)(combined.minimum.y, box.minimum.y),
+			                    (std::min)(combined.minimum.z, box.minimum.z)};
+			combined.maximum = {(std::max)(combined.maximum.x, box.maximum.x),
+			                    (std::max)(combined.maximum.y, box.maximum.y),
+			                    (std::max)(combined.maximum.z, box.maximum.z)};
+		}
+
+		std::array<DirectX::XMFLOAT3, 8> corners;
+		for (std::size_t i = 0; i < corners.size(); ++i) {
+			corners[i] = {(i & 1) ? combined.maximum.x : combined.minimum.x,
+			              (i & 2) ? combined.maximum.y : combined.minimum.y,
+			              (i & 4) ? combined.maximum.z : combined.minimum.z};
+		}
+
+		if (cameraController_.FrameBounds(corners, projection)) {
+			return true;
+		}
+		Logger::Warning(
+		    "EditorScene: 下書き全体を現在の描画範囲に収められませんでした。");
+	} catch (const std::exception &error) {
+		Logger::Warning(
+		    std::format("EditorScene::FrameDraft: {}", error.what()));
+	}
+
+	return false;
+}
+
 bool EditorScene::FrameObjects(FrameRequest request,
                                const DirectX::XMFLOAT4X4 &projection,
                                bool runtimeScene) {
 	const auto &scene =
 	    runtimeScene ? playMode_.GetSession().GetScene() : document_.GetScene();
+
+	if (request == FrameRequest::DRAFT) {
+		return !runtimeScene && FrameDraft(projection);
+	}
 
 	if (request == FrameRequest::RESPAWN || request == FrameRequest::COLLIDER ||
 	    request == FrameRequest::JUMP || request == FrameRequest::FOLLOW_PATH) {

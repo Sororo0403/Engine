@@ -14,7 +14,7 @@ class Scene;
 /// <summary>
 /// 等間隔複製ダイアログの操作結果
 /// </summary>
-enum class ObjectArrayResult { NONE, ACCEPTED, CANCELLED };
+enum class ObjectArrayResult { NONE, ACCEPTED, CANCELLED, FRAME_PREVIEW };
 
 /// <summary>
 /// 複製対象・組数・ワールド座標の間隔を指定するダイアログ
@@ -34,7 +34,7 @@ class ObjectArrayDialog {
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
 	/// <param name="scene">現在の元シーン。Colliderによる間隔の計算と確定前の再検証に使用する</param>
-	/// <returns>未確定の場合はNONE。ACCEPTEDでもシーンは変更しない</returns>
+	/// <returns>未確定の場合はNONE。ACCEPTEDでもシーンは変更しない。FRAME_PREVIEWは画面を閉じずに下書きのフレーミングを要求する</returns>
 	ObjectArrayResult Draw(const ImGuiSystem &ui, const Scene &scene);
 
 	/// <summary>
