@@ -7,6 +7,7 @@
 #include "physics/BoxColliderUtils.h"
 #include "physics/CollisionWorld.h"
 #include "scene/Scene.h"
+#include "scene/SceneActivity.h"
 #include "scene/SceneHierarchy.h"
 #include <format>
 #include <map>
@@ -26,6 +27,11 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose) {
 		             : std::string(reason)});
 	};
 	SceneObjectId firstCharacter = 0, primary = 0;
+	SceneActivity::States active;
+	if (!SceneActivity::BuildStates(scene, active)) {
+		add(0, "Parent hierarchy is invalid.");
+		return issues;
+	}
 
 	SceneHierarchy::WorldTransforms sourceTransforms;
 	if (!SceneHierarchy::BuildWorldTransforms(scene, sourceTransforms)) {
@@ -43,6 +49,9 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose) {
 		return issues;
 	}
 	for (const auto &[id, object] : scene.GetObjects()) {
+		if (!active.at(id)) {
+			continue;
+		}
 		if ((object.mesh && !object.mesh->IsValid()) ||
 		    (object.meshRenderer && !object.meshRenderer->IsValid())) {
 			add(id, "Mesh or Mesh Renderer settings are invalid.");
@@ -118,8 +127,8 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose) {
 	}
 
 	for (const auto &[id, object] : scene.GetObjects()) {
-		if (!object.character || !object.character->IsValid() ||
-		    !object.collider) {
+		if (!active.at(id) || !object.character ||
+		    !object.character->IsValid() || !object.collider) {
 			continue;
 		}
 

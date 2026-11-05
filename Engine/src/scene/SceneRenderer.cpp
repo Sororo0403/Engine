@@ -6,6 +6,7 @@
 #include "graphics/render/RenderTexture.h"
 #include "graphics/render/RenderWorld.h"
 #include "scene/Scene.h"
+#include "scene/SceneActivity.h"
 #include "scene/SceneHierarchy.h"
 
 #include <algorithm>
@@ -107,6 +108,10 @@ bool SceneRenderer::SynchronizeObjects() {
 		return false;
 	}
 
+	SceneActivity::States active;
+	if (!SceneActivity::BuildStates(scene_, active)) {
+		return false;
+	}
 	const auto revision = models_.GetReloadRevision();
 	const bool modelsChanged = revision != modelRevision_;
 
@@ -114,7 +119,7 @@ bool SceneRenderer::SynchronizeObjects() {
 	for (auto it = objects_.begin(); it != objects_.end();) {
 		const SceneObject *object = scene_.FindObject(it->first);
 
-		if (!object || !object->IsRenderable()) {
+		if (!object || !active.at(it->first) || !object->IsRenderable()) {
 			world_->DestroyObject(it->second.handle);
 			it = objects_.erase(it);
 		} else {
@@ -123,7 +128,7 @@ bool SceneRenderer::SynchronizeObjects() {
 	}
 
 	for (const auto &[id, object] : scene_.GetObjects()) {
-		if (!object.IsRenderable()) {
+		if (!active.at(id) || !object.IsRenderable()) {
 			continue;
 		}
 
@@ -260,7 +265,8 @@ void SceneRenderer::Finalize() {
 bool SceneRenderer::IsModelUnavailable(SceneObjectId id) const {
 	const auto *object = scene_.FindObject(id);
 	const auto found = objects_.find(id);
-	return object && object->IsRenderable() && found != objects_.end() &&
+	return object && SceneActivity::IsActive(scene_, id) &&
+	       object->IsRenderable() && found != objects_.end() &&
 	       found->second.unavailable &&
 	       found->second.modelPath == object->mesh->modelPath;
 }
@@ -325,7 +331,8 @@ bool SceneRenderer::GetObjectBounds(
     SceneObjectId objectId, std::array<DirectX::XMFLOAT3, 8> &corners) const {
 	const auto *object = scene_.FindObject(objectId);
 
-	if (!world_ || !object || !object->IsRenderable()) {
+	if (!world_ || !object || !SceneActivity::IsActive(scene_, objectId) ||
+	    !object->IsRenderable()) {
 		return false;
 	}
 

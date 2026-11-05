@@ -3,6 +3,7 @@
 #include "gameplay/SceneCameraUtils.h"
 #include "graphics/camera/Camera.h"
 #include "math/TransformUtils.h"
+#include "scene/SceneActivity.h"
 #include "scene/SceneHierarchy.h"
 #include <exception>
 #include <utility>
@@ -23,7 +24,8 @@ bool EditorGamePreview::Prepare(const Scene &source, const CameraPose &fallback,
 		bool primary = false;
 
 		for (const auto &[id, object] : objects) {
-			if (!object.camera || !object.camera->primary) {
+			if (!SceneActivity::IsActive(resolved, id) || !object.camera ||
+			    !object.camera->primary) {
 				continue;
 			}
 
@@ -46,8 +48,9 @@ bool EditorGamePreview::Prepare(const Scene &source, const CameraPose &fallback,
 		if (cameraOverride != 0) {
 			const auto found = objects.find(cameraOverride);
 
-			if (found == objects.end() || !found->second.camera ||
-			    !found->second.camera->IsValid() ||
+			if (found == objects.end() ||
+			    !SceneActivity::IsActive(resolved, cameraOverride) ||
+			    !found->second.camera || !found->second.camera->IsValid() ||
 			    !TransformUtils::IsValid(found->second.transform)) {
 				Reset();
 				return false;

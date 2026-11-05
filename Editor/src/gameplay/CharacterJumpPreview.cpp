@@ -1,4 +1,5 @@
 #include "gameplay/CharacterJumpPreview.h"
+#include "scene/SceneActivity.h"
 
 #include "gameplay/CharacterController.h"
 #include "math/MathUtils.h"
@@ -13,7 +14,8 @@ bool CharacterJumpPreview::BuildPaths(const Scene &scene, SceneObjectId id,
                                       Paths &paths) const {
 	const auto *object = scene.FindObject(id);
 	SceneWorldTransform transform;
-	if (!object || !SceneHierarchy::GetWorldTransform(scene, id, transform) ||
+	if (!object || !SceneActivity::IsActive(scene, id) ||
+	    !SceneHierarchy::GetWorldTransform(scene, id, transform) ||
 	    !object->character || !object->collider ||
 	    (object->respawn &&
 	     (!object->respawn->IsValid() ||

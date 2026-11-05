@@ -2,6 +2,7 @@
 
 #include "physics/BoxColliderUtils.h"
 #include "scene/Scene.h"
+#include "scene/SceneActivity.h"
 #include "scene/SceneHierarchy.h"
 #include <algorithm>
 #include <array>
@@ -76,9 +77,13 @@ bool TriggerWorld::Update(const Scene &scene,
 		if (!SceneHierarchy::BuildWorldTransforms(scene, transforms)) {
 			return false;
 		}
+		SceneActivity::States active;
+		if (!SceneActivity::BuildStates(scene, active)) {
+			return false;
+		}
 		std::map<SceneObjectId, Shape> shapes;
 		for (const auto &[id, object] : scene.GetObjects()) {
-			if (!object.collider) {
+			if (!active.at(id) || !object.collider) {
 				continue;
 			}
 			AxisAlignedBox bounds;

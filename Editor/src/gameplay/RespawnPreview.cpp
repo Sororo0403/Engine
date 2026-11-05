@@ -1,4 +1,5 @@
 #include "gameplay/RespawnPreview.h"
+#include "scene/SceneActivity.h"
 
 #include "math/MathUtils.h"
 #include "physics/BoxColliderUtils.h"
@@ -29,8 +30,8 @@ bool RespawnPreview::BuildGeometry(const Scene &scene, SceneObjectId id,
 			result.collider = outline;
 		}
 
-		if (object->character && object->character->IsValid() &&
-		    !object->collider->isTrigger &&
+		if (SceneActivity::IsActive(scene, id) && object->character &&
+		    object->character->IsValid() && !object->collider->isTrigger &&
 		    result.markers[3].start.y > settings.minimumY) {
 			CollisionWorld world;
 			std::vector<SceneObjectId> ignored;

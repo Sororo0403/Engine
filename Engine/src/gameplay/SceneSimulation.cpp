@@ -4,6 +4,7 @@
 #include "graphics/camera/Camera.h"
 #include "math/TransformUtils.h"
 #include "physics/BoxColliderUtils.h"
+#include "scene/SceneActivity.h"
 #include "scene/SceneHierarchy.h"
 #include <algorithm>
 #include <cmath>
@@ -50,6 +51,9 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 		}
 
 		for (const auto &[id, object] : source.GetObjects()) {
+			if (!SceneActivity::IsActive(source, id)) {
+				continue;
+			}
 			if (object.character) {
 				character = id;
 			}
@@ -111,7 +115,8 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 		}
 		std::map<SceneObjectId, CameraPose> follows;
 		for (const auto id : order) {
-			if (!working.FindObject(id)->followCamera)
+			if (!SceneActivity::IsActive(working, id) ||
+			    !working.FindObject(id)->followCamera)
 				continue;
 			SceneWorldTransform transform;
 			if (!SceneHierarchy::GetWorldTransform(working, id, transform)) {
@@ -209,6 +214,8 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input) {
 			const auto *object = working.FindObject(id);
 			if (!object)
 				return false;
+			if (!SceneActivity::IsActive(working, id))
+				continue;
 			if (id == character_) {
 				SceneWorldTransform transform;
 				if (!object->collider || !object->character ||

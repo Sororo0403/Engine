@@ -3,6 +3,7 @@
 #include "math/MathUtils.h"
 #include "physics/BoxColliderUtils.h"
 #include "scene/Scene.h"
+#include "scene/SceneActivity.h"
 #include "scene/SceneHierarchy.h"
 
 #include <algorithm>
@@ -116,10 +117,14 @@ bool CollisionWorld::Rebuild(const Scene &scene,
 	if (!SceneHierarchy::BuildWorldTransforms(scene, transforms)) {
 		return false;
 	}
+	SceneActivity::States active;
+	if (!SceneActivity::BuildStates(scene, active)) {
+		return false;
+	}
 	std::vector<Obstacle> candidate;
 
 	for (const auto &[id, object] : scene.GetObjects()) {
-		if (!object.collider ||
+		if (!active.at(id) || !object.collider ||
 		    std::find(ignoredObjects.begin(), ignoredObjects.end(), id) !=
 		        ignoredObjects.end()) {
 			continue;
@@ -176,10 +181,14 @@ bool CollisionWorld::FindOverlaps(const Scene &scene,
 	if (!SceneHierarchy::BuildWorldTransforms(scene, transforms)) {
 		return false;
 	}
+	SceneActivity::States active;
+	if (!SceneActivity::BuildStates(scene, active)) {
+		return false;
+	}
 	std::vector<SceneObjectId> result;
 
 	for (const auto &[id, object] : scene.GetObjects()) {
-		if (id == ignoredObject || !object.collider) {
+		if (!active.at(id) || id == ignoredObject || !object.collider) {
 			continue;
 		}
 

@@ -6,6 +6,7 @@
 #include "math/TransformUtils.h"
 #include "physics/CollisionWorld.h"
 #include "scene/Scene.h"
+#include "scene/SceneActivity.h"
 #include "scene/SceneHierarchy.h"
 #include <algorithm>
 #include <cmath>
@@ -204,7 +205,7 @@ bool ApplyInitialFollows(Scene &working,
                          std::string &error, SceneObjectId *invalidObject) {
 	for (const auto id : order) {
 		const auto &object = *working.FindObject(id);
-		if (!object.followCamera)
+		if (!SceneActivity::IsActive(working, id) || !object.followCamera)
 			continue;
 		SceneWorldTransform target;
 		if (!SceneHierarchy::GetWorldTransform(
@@ -255,7 +256,7 @@ bool SceneCameraUtils::ResolveInitialDependencies(const Scene &scene,
 
 		objects.emplace(current, *node);
 		pending.push_back(node->parentId);
-		if (node->followCamera) {
+		if (node->followCamera && SceneActivity::IsActive(scene, current)) {
 			pending.push_back(node->followCamera->target);
 		}
 	}
@@ -386,6 +387,10 @@ bool SceneCameraUtils::GetUpdateOrder(const Scene &scene,
 	std::map<SceneObjectId, std::set<SceneObjectId>> dependencies;
 	std::map<SceneObjectId, std::vector<SceneObjectId>> dependents;
 	std::set<SceneObjectId> ready;
+	SceneActivity::States active;
+	if (!SceneActivity::BuildStates(scene, active)) {
+		return fail(0, "The parent hierarchy is invalid.");
+	}
 	for (const auto &[id, object] : scene.GetObjects()) {
 		auto &values = dependencies[id];
 		if (object.parentId) {
@@ -393,7 +398,7 @@ bool SceneCameraUtils::GetUpdateOrder(const Scene &scene,
 				return fail(id, "The parent does not exist.");
 			values.insert(object.parentId);
 		}
-		if (object.followCamera) {
+		if (active.at(id) && object.followCamera) {
 			if (!FollowTarget(scene, id))
 				return fail(id,
 				            "Follow Camera requires a valid Camera, target, "
@@ -440,7 +445,8 @@ bool SceneCameraUtils::GetFollowOrder(const Scene &scene,
 	if (!GetUpdateOrder(scene, result, error, invalidObject))
 		return false;
 	std::erase_if(result, [&](SceneObjectId id) {
-		return !scene.FindObject(id)->followCamera;
+		return !SceneActivity::IsActive(scene, id) ||
+		       !scene.FindObject(id)->followCamera;
 	});
 	order.swap(result);
 	return true;

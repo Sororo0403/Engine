@@ -20,6 +20,8 @@
 /// </summary>
 struct SceneObject {
 	std::string name = "Object";
+	// 自身の設定。実際の有効状態はSceneActivityで祖先と合わせて判定する
+	bool active = true;
 	// 親の変更にはSceneHierarchy::SetParentを使う。0はルートを表す
 	SceneObjectId parentId = 0;
 	// 親に対するローカル変形。ルートの場合はワールド変形と一致する

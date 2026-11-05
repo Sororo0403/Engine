@@ -1,5 +1,6 @@
 #include "gameplay/EditorPlaySession.h"
 #include "gameplay/SceneValidation.h"
+#include "scene/SceneActivity.h"
 
 #include <algorithm>
 #include <cmath>
@@ -22,8 +23,10 @@ bool EditorPlaySession::Start(const Scene &scene, std::string &error,
 		if (cameraOverride != 0) {
 			const auto *selected = snapshot->FindObject(cameraOverride);
 
-			if (!selected || !selected->camera) {
-				error = "Choose an existing Camera for Play.";
+			if (!selected ||
+			    !SceneActivity::IsActive(*snapshot, cameraOverride) ||
+			    !selected->camera) {
+				error = "Choose an existing active Camera for Play.";
 
 				if (invalidObject) {
 					*invalidObject = cameraOverride;
