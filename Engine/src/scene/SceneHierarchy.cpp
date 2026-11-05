@@ -376,3 +376,71 @@ bool SceneHierarchy::SetWorldPose(Scene &scene, SceneObjectId id,
 	object->transform = local;
 	return true;
 }
+
+bool SceneHierarchy::SetWorldPositions(
+    Scene &scene, const std::map<SceneObjectId, DirectX::XMFLOAT3> &positions) {
+	if (positions.empty()) {
+		return false;
+	}
+
+	for (const auto &[id, position] : positions) {
+		if (!scene.Contains(id) || !MathUtils::IsFinite(position)) {
+			return false;
+		}
+	}
+
+	return scene.ApplyTransaction([&](Scene &working) {
+		std::vector<SceneObjectId> order;
+		if (!GetEvaluationOrder(working, order)) {
+			return false;
+		}
+
+		for (const auto id : order) {
+			const auto found = positions.find(id);
+			if (found == positions.end()) {
+				continue;
+			}
+
+			SceneWorldTransform current;
+			if (!GetWorldTransform(working, id, current)) {
+				return false;
+			}
+
+			const auto position = current.GetPosition();
+			const auto &desired = found->second;
+			if (position.x == desired.x && position.y == desired.y &&
+			    position.z == desired.z) {
+				continue;
+			}
+
+			if (!SetWorldPosition(working, id, desired)) {
+				return false;
+			}
+		}
+
+		WorldTransforms transforms;
+		return BuildWorldTransforms(working, transforms);
+	});
+}
+
+bool SceneHierarchy::TranslateSelection(Scene &scene,
+                                        std::span<const SceneObjectId> ids,
+                                        const DirectX::XMFLOAT3 &translation) {
+	std::vector<SceneObjectId> roots;
+	WorldTransforms transforms;
+	if (!MathUtils::IsFinite(translation) ||
+	    !GetSelectionRoots(scene, ids, roots) ||
+	    !BuildWorldTransforms(scene, transforms)) {
+		return false;
+	}
+
+	std::map<SceneObjectId, DirectX::XMFLOAT3> positions;
+	for (const auto id : roots) {
+		const auto position = transforms.at(id).GetPosition();
+		positions.emplace(id, DirectX::XMFLOAT3{position.x + translation.x,
+		                                        position.y + translation.y,
+		                                        position.z + translation.z});
+	}
+
+	return SetWorldPositions(scene, positions);
+}

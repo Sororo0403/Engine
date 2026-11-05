@@ -107,6 +107,26 @@ bool SetWorldTransform(Scene &scene, SceneObjectId id,
 /// <returns>true:成功 false:親子関係や位置が無効。失敗時は現在値を保持する</returns>
 bool SetWorldPosition(Scene &scene, SceneObjectId id,
                       const DirectX::XMFLOAT3 &position);
+
+/// <summary>
+/// 親を先に更新して、複数物体のワールド位置を同時に指定する
+/// </summary>
+/// <param name="scene">変更するシーン。成功後は物体参照を取得し直す</param>
+/// <param name="positions">既存IDと有限なワールド位置の対応。空は無効</param>
+/// <returns>true:成功 false:対象・親子関係・変形が無効。失敗時は全物体を保持する</returns>
+bool SetWorldPositions(
+    Scene &scene, const std::map<SceneObjectId, DirectX::XMFLOAT3> &positions);
+
+/// <summary>
+/// 選択内の最上位の物体へ同じワールド移動量を加え、子孫を一度だけ移動する
+/// </summary>
+/// <param name="scene">変更するシーン。成功後は物体参照を取得し直す</param>
+/// <param name="ids">重複のない既存IDの一覧</param>
+/// <param name="translation">有限なワールド移動量</param>
+/// <returns>true:成功 false:選択・関係・変形が無効。失敗時は全物体を保持する</returns>
+bool TranslateSelection(Scene &scene, std::span<const SceneObjectId> ids,
+                        const DirectX::XMFLOAT3 &translation);
+
 /// <summary>
 /// ワールドの位置と向きをローカルへ変換する。ローカルの拡縮は保持する
 /// </summary>

@@ -21,6 +21,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <filesystem>
+#include <map>
 #include <optional>
 #include <span>
 #include <string>
@@ -540,7 +541,7 @@ class EditorHistory {
 	bool SetTransforms(std::span<const TransformEdit> edits);
 
 	/// <summary>
-	/// 全対象へ同じ移動量を加え、1操作として記録する。編集中の内容は先に確定する
+	/// 選択内の最上位の対象へ同じワールド移動量を加え、子孫を一度だけ移動して記録する
 	/// </summary>
 	/// <param name="objectIds">重複のない対象ID一覧</param>
 	/// <param name="translation">ワールド座標での移動量</param>
@@ -655,6 +656,16 @@ class EditorHistory {
 	};
 
   private:
+	/// <summary>
+	/// ワールド位置をローカル変形へ変換し、全変更を1つの履歴として反映する
+	/// </summary>
+	/// <param name="positions">既存IDとワールド位置。空は無効</param>
+	/// <param name="description">履歴に保持する、静的な寿命を持つ表示名</param>
+	/// <returns>true:成功または同値 false:位置・関係・変形が無効。失敗時は全物体を保持する</returns>
+	bool ApplyWorldPositions(
+	    const std::map<SceneObjectId, DirectX::XMFLOAT3> &positions,
+	    std::string_view description);
+
 	/// <summary>
 	/// 新しい状態の識別番号を発行する
 	/// </summary>

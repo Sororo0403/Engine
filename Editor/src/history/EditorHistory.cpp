@@ -20,6 +20,58 @@
 #include <type_traits>
 #include <utility>
 
+namespace {
+/// <summary>
+/// 選択の重複と存在を検証し、合成済みのワールド位置を集める
+/// </summary>
+/// <param name="scene">変更しないシーン</param>
+/// <param name="ids">重複のない既存IDの一覧</param>
+/// <param name="positions">成功時だけ置き換えるワールド位置</param>
+/// <returns>true:成功 false:対象なし、または選択・変形が無効</returns>
+bool ReadWorldPositions(const Scene &scene, std::span<const SceneObjectId> ids,
+                        std::map<SceneObjectId, DirectX::XMFLOAT3> &positions) {
+	SceneHierarchy::WorldTransforms transforms;
+	if (ids.empty() ||
+	    !SceneHierarchy::BuildWorldTransforms(scene, transforms)) {
+		return false;
+	}
+
+	std::map<SceneObjectId, DirectX::XMFLOAT3> result;
+	for (const auto id : ids) {
+		const auto found = transforms.find(id);
+		if (found == transforms.end() ||
+		    !result.emplace(id, found->second.GetPosition()).second) {
+			return false;
+		}
+	}
+
+	positions.swap(result);
+	return true;
+}
+
+/// <summary>
+/// 配置に使うワールド座標の軸か確認する
+/// </summary>
+/// <param name="axis">確認する軸</param>
+/// <returns>true:X・Y・Z false:未対応の値</returns>
+bool IsPlacementAxis(AlignmentAxis axis) {
+	return axis == AlignmentAxis::X || axis == AlignmentAxis::Y ||
+	       axis == AlignmentAxis::Z;
+}
+
+/// <summary>
+/// 配置対象の指定軸を参照する
+/// </summary>
+/// <param name="value">ワールド位置</param>
+/// <param name="axis">有効な軸</param>
+/// <returns>指定軸の成分</returns>
+float &Coordinate(DirectX::XMFLOAT3 &value, AlignmentAxis axis) {
+	return axis == AlignmentAxis::X   ? value.x
+	       : axis == AlignmentAxis::Y ? value.y
+	                                  : value.z;
+}
+} // namespace
+
 EditorHistory::EditorHistory(Scene &scene) noexcept : scene_(scene) {
 }
 
@@ -601,7 +653,7 @@ bool EditorHistory::SetCollider(SceneObjectId objectId,
 	AxisAlignedBox bounds;
 
 	if (collider &&
-	    !BoxColliderUtils::GetWorldBounds(*collider, object->transform, bounds))
+	    !BoxColliderUtils::GetWorldBounds(*collider, scene_, objectId, bounds))
 		return false;
 
 	const bool adding = !object->collider;
@@ -646,8 +698,9 @@ bool EditorHistory::SetColliders(std::span<const ColliderEdit> edits) {
 
 		AxisAlignedBox bounds;
 
-		if (edit.collider && !BoxColliderUtils::GetWorldBounds(
-		                         *edit.collider, object->transform, bounds)) {
+		if (edit.collider &&
+		    !BoxColliderUtils::GetWorldBounds(*edit.collider, scene_,
+		                                      edit.objectId, bounds)) {
 			return false;
 		}
 
@@ -1022,101 +1075,40 @@ bool EditorHistory::SetTransforms(std::span<const TransformEdit> edits) {
 bool EditorHistory::SnapObjectsToGrid(std::span<const SceneObjectId> objectIds,
                                       const DirectX::XMFLOAT3 &step) {
 	CommitEdit();
-
-	if (objectIds.empty() || !MathUtils::IsFinite(step) || step.x <= 0.0f ||
-	    step.y <= 0.0f || step.z <= 0.0f) {
+	std::map<SceneObjectId, DirectX::XMFLOAT3> positions;
+	if (!ReadWorldPositions(scene_, objectIds, positions)) {
 		return false;
 	}
 
-	std::set<SceneObjectId> seen;
-	std::vector<CommandGroup::Command> commands;
-	commands.reserve(objectIds.size());
-
-	for (const auto id : objectIds) {
-		const auto *object = scene_.FindObject(id);
-
-		if (!object || !seen.insert(id).second ||
-		    !TransformUtils::IsValid(object->transform)) {
+	for (auto &[id, position] : positions) {
+		(void)id;
+		if (!MathUtils::SnapToGrid(position, step, position)) {
 			return false;
 		}
-
-		Transform after = object->transform;
-
-		if (!MathUtils::SnapToGrid(after.translation, step,
-		                           after.translation)) {
-			return false;
-		}
-
-		if (!TransformUtils::AreEqual(object->transform, after)) {
-			commands.emplace_back(
-			    TransformCommand{id, object->transform, after});
-		}
 	}
 
-	if (commands.empty()) {
-		return true;
-	}
-
-	CommandGroup group{std::move(commands)};
-	const auto state = PrepareAppend();
-
-	if (!group.Redo(scene_)) {
-		return false;
-	}
-
-	AppendPrepared(Command{std::move(group)}, state, "Snap Positions to Grid");
-	return true;
+	return ApplyWorldPositions(positions, "Snap Positions to Grid");
 }
 
 bool EditorHistory::TranslateObjects(std::span<const SceneObjectId> objectIds,
                                      const DirectX::XMFLOAT3 &translation) {
 	CommitEdit();
-
-	if (objectIds.empty() || !MathUtils::IsFinite(translation)) {
+	std::vector<SceneObjectId> roots;
+	std::map<SceneObjectId, DirectX::XMFLOAT3> positions;
+	if (!MathUtils::IsFinite(translation) ||
+	    !SceneHierarchy::GetSelectionRoots(scene_, objectIds, roots) ||
+	    !ReadWorldPositions(scene_, roots, positions)) {
 		return false;
 	}
 
-	std::set<SceneObjectId> seen;
-	std::vector<CommandGroup::Command> commands;
-	commands.reserve(objectIds.size());
-
-	for (const auto id : objectIds) {
-		const auto *object = scene_.FindObject(id);
-
-		if (!object || !seen.insert(id).second ||
-		    !TransformUtils::IsValid(object->transform)) {
-			return false;
-		}
-
-		Transform after = object->transform;
-		after.translation = {after.translation.x + translation.x,
-		                     after.translation.y + translation.y,
-		                     after.translation.z + translation.z};
-
-		if (!TransformUtils::IsValid(after)) {
-			return false;
-		}
-
-		if (!TransformUtils::AreEqual(object->transform, after)) {
-			commands.emplace_back(
-			    TransformCommand{id, object->transform, after});
-		}
+	for (auto &[id, position] : positions) {
+		(void)id;
+		position = {position.x + translation.x, position.y + translation.y,
+		            position.z + translation.z};
 	}
 
-	if (commands.empty()) {
-		return true;
-	}
-
-	CommandGroup group{std::move(commands)};
-	const auto next = PrepareAppend();
-
-	if (!group.Redo(scene_)) {
-		return false;
-	}
-
-	AppendPrepared(Command{std::move(group)}, next,
-	               objectIds.size() == 1 ? "Move Object" : "Move Objects");
-	return true;
+	return ApplyWorldPositions(positions, roots.size() == 1 ? "Move Object"
+	                                                        : "Move Objects");
 }
 
 bool EditorHistory::RenameObjects(std::span<const ObjectRename> renames) {
@@ -1164,324 +1156,166 @@ bool EditorHistory::AlignObjects(std::span<const SceneObjectId> objectIds,
                                  SceneObjectId referenceId,
                                  AlignmentAxis axis) {
 	CommitEdit();
-	const auto *reference = scene_.FindObject(referenceId);
-
-	if (!reference || !TransformUtils::IsValid(reference->transform) ||
-	    std::find(objectIds.begin(), objectIds.end(), referenceId) ==
-	        objectIds.end() ||
-	    (axis != AlignmentAxis::X && axis != AlignmentAxis::Y &&
-	     axis != AlignmentAxis::Z)) {
+	std::map<SceneObjectId, DirectX::XMFLOAT3> positions;
+	if (!IsPlacementAxis(axis) ||
+	    !ReadWorldPositions(scene_, objectIds, positions) ||
+	    !positions.contains(referenceId)) {
 		return false;
 	}
 
-	const auto position = reference->transform.translation;
-	std::set<SceneObjectId> seen;
-	std::vector<CommandGroup::Command> commands;
-	commands.reserve(objectIds.size());
-
-	for (const auto id : objectIds) {
-		const auto *object = scene_.FindObject(id);
-
-		if (!object || !seen.insert(id).second ||
-		    !TransformUtils::IsValid(object->transform)) {
-			return false;
-		}
-
-		Transform after = object->transform;
-
-		switch (axis) {
-		case AlignmentAxis::X:
-			after.translation.x = position.x;
-			break;
-		case AlignmentAxis::Y:
-			after.translation.y = position.y;
-			break;
-		case AlignmentAxis::Z:
-			after.translation.z = position.z;
-			break;
-		}
-
-		if (!TransformUtils::AreEqual(object->transform, after)) {
-			commands.emplace_back(
-			    TransformCommand{id, object->transform, after});
-		}
+	const float reference = Coordinate(positions.at(referenceId), axis);
+	for (auto &[id, position] : positions) {
+		(void)id;
+		Coordinate(position, axis) = reference;
 	}
 
-	if (commands.empty()) {
-		return true;
-	}
-
-	CommandGroup group{std::move(commands)};
-	const auto next = PrepareAppend();
-
-	if (!group.Redo(scene_)) {
-		return false;
-	}
-
-	AppendPrepared(Command{std::move(group)}, next,
-	               axis == AlignmentAxis::X   ? "Align X to Active"
+	return ApplyWorldPositions(
+	    positions, axis == AlignmentAxis::X   ? "Align X to Active"
 	               : axis == AlignmentAxis::Y ? "Align Y to Active"
 	                                          : "Align Z to Active");
-	return true;
 }
 
 bool EditorHistory::AlignColliderBounds(
     std::span<const SceneObjectId> objectIds, SceneObjectId referenceId,
     AlignmentAxis axis, bool maximum) {
 	CommitEdit();
-	const auto *reference = scene_.FindObject(referenceId);
+	std::map<SceneObjectId, DirectX::XMFLOAT3> positions;
 	AxisAlignedBox referenceBounds;
-
-	if (objectIds.size() < 2 || !reference || !reference->collider ||
-	    std::find(objectIds.begin(), objectIds.end(), referenceId) ==
-	        objectIds.end() ||
-	    (axis != AlignmentAxis::X && axis != AlignmentAxis::Y &&
-	     axis != AlignmentAxis::Z) ||
-	    !BoxColliderUtils::GetWorldBounds(
-	        *reference->collider, reference->transform, referenceBounds)) {
+	const auto *reference = scene_.FindObject(referenceId);
+	if (objectIds.size() < 2 || !IsPlacementAxis(axis) || !reference ||
+	    !reference->collider ||
+	    !ReadWorldPositions(scene_, objectIds, positions) ||
+	    !positions.contains(referenceId) ||
+	    !BoxColliderUtils::GetWorldBounds(*reference->collider, scene_,
+	                                      referenceId, referenceBounds)) {
 		return false;
 	}
 
-	const auto coordinate = [axis](const DirectX::XMFLOAT3 &value) {
-		return axis == AlignmentAxis::X   ? value.x
-		       : axis == AlignmentAxis::Y ? value.y
-		                                  : value.z;
-	};
 	const auto edge = [&](const AxisAlignedBox &bounds) {
-		return static_cast<double>(
-		    coordinate(maximum ? bounds.maximum : bounds.minimum));
+		auto value = maximum ? bounds.maximum : bounds.minimum;
+		return double(Coordinate(value, axis));
 	};
 	const double target = edge(referenceBounds);
-	std::set<SceneObjectId> seen;
-	std::vector<CommandGroup::Command> commands;
-	commands.reserve(objectIds.size());
-
-	for (const auto id : objectIds) {
+	for (auto &[id, position] : positions) {
 		const auto *object = scene_.FindObject(id);
 		AxisAlignedBox bounds;
-
-		if (!object || !object->collider || !seen.insert(id).second ||
-		    !BoxColliderUtils::GetWorldBounds(*object->collider,
-		                                      object->transform, bounds)) {
+		if (!object->collider || !BoxColliderUtils::GetWorldBounds(
+		                             *object->collider, scene_, id, bounds)) {
 			return false;
 		}
 
-		if (id == referenceId ||
-		    std::abs(target - edge(bounds)) <= kColliderAlignmentTolerance) {
-			continue;
-		}
-
-		const double position =
-		    coordinate(object->transform.translation) + target - edge(bounds);
-
-		if (!std::isfinite(position) ||
-		    std::abs(position) > (std::numeric_limits<float>::max)()) {
-			return false;
-		}
-
-		auto after = object->transform;
-		const float aligned = static_cast<float>(position);
-
-		switch (axis) {
-		case AlignmentAxis::X:
-			after.translation.x = aligned;
-			break;
-		case AlignmentAxis::Y:
-			after.translation.y = aligned;
-			break;
-		case AlignmentAxis::Z:
-			after.translation.z = aligned;
-			break;
-		}
-
-		AxisAlignedBox moved;
-
-		if (!BoxColliderUtils::GetWorldBounds(*object->collider, after,
-		                                      moved) ||
-		    std::abs(edge(moved) - target) > kColliderAlignmentTolerance) {
-			return false;
-		}
-
-		if (!TransformUtils::AreEqual(object->transform, after)) {
-			commands.emplace_back(
-			    TransformCommand{id, object->transform, after});
+		const double delta = target - edge(bounds);
+		if (id != referenceId &&
+		    std::abs(delta) > kColliderAlignmentTolerance) {
+			Coordinate(position, axis) =
+			    static_cast<float>(double(Coordinate(position, axis)) + delta);
 		}
 	}
 
-	if (commands.empty()) {
-		return true;
-	}
-
-	CommandGroup group{std::move(commands)};
-	const auto next = PrepareAppend();
-
-	if (!group.Redo(scene_)) {
+	Scene working;
+	working.ReplaceObjects(scene_.GetObjects());
+	if (!SceneHierarchy::SetWorldPositions(working, positions)) {
 		return false;
 	}
 
-	AppendPrepared(Command{std::move(group)}, next,
-	               maximum ? "Align Collider Max to Active"
-	                       : "Align Collider Min to Active");
-	return true;
+	for (const auto id : objectIds) {
+		AxisAlignedBox bounds;
+		if (!BoxColliderUtils::GetWorldBounds(*working.FindObject(id)->collider,
+		                                      working, id, bounds) ||
+		    std::abs(edge(bounds) - target) > kColliderAlignmentTolerance) {
+			return false;
+		}
+	}
+
+	return ApplyWorldPositions(positions, maximum
+	                                          ? "Align Collider Max to Active"
+	                                          : "Align Collider Min to Active");
 }
 
 bool EditorHistory::DistributeObjects(std::span<const SceneObjectId> objectIds,
                                       AlignmentAxis axis) {
 	CommitEdit();
-
-	if (objectIds.size() < 3 ||
-	    (axis != AlignmentAxis::X && axis != AlignmentAxis::Y &&
-	     axis != AlignmentAxis::Z)) {
+	std::map<SceneObjectId, DirectX::XMFLOAT3> positions;
+	if (objectIds.size() < 3 || !IsPlacementAxis(axis) ||
+	    !ReadWorldPositions(scene_, objectIds, positions)) {
 		return false;
 	}
 
-	std::set<SceneObjectId> seen;
-	std::vector<TransformSnapshot> snapshots;
-	snapshots.reserve(objectIds.size());
-
-	for (const auto id : objectIds) {
-		const auto *object = scene_.FindObject(id);
-
-		if (!object || !seen.insert(id).second ||
-		    !TransformUtils::IsValid(object->transform)) {
-			return false;
-		}
-
-		snapshots.push_back({id, object->transform});
-	}
-
-	const auto coordinate = [axis](const Transform &transform) {
-		return axis == AlignmentAxis::X   ? transform.translation.x
-		       : axis == AlignmentAxis::Y ? transform.translation.y
-		                                  : transform.translation.z;
-	};
-	std::sort(snapshots.begin(), snapshots.end(),
-	          [&](const auto &a, const auto &b) {
-		          const auto x = coordinate(a.before);
-		          const auto y = coordinate(b.before);
-		          return x != y ? x < y : a.objectId < b.objectId;
+	std::vector<SceneObjectId> order(objectIds.begin(), objectIds.end());
+	std::sort(order.begin(), order.end(),
+	          [&](SceneObjectId a, SceneObjectId b) {
+		          const auto first = Coordinate(positions.at(a), axis),
+		                     second = Coordinate(positions.at(b), axis);
+		          return first != second ? first < second : a < b;
 	          });
-	const double first = coordinate(snapshots.front().before);
-	const double last = coordinate(snapshots.back().before);
-	std::vector<CommandGroup::Command> commands;
-	commands.reserve(snapshots.size() - 2);
+	const double first = Coordinate(positions.at(order.front()), axis);
+	const double last = Coordinate(positions.at(order.back()), axis);
 
-	for (std::size_t i = 1; i + 1 < snapshots.size(); ++i) {
-		const auto &snapshot = snapshots[i];
-		Transform after = snapshot.before;
-		const double ratio =
-		    static_cast<double>(i) / static_cast<double>(snapshots.size() - 1);
-		// floatの両端の差が桁あふれしないよう、doubleで補間する
-		const float value = static_cast<float>(std::lerp(first, last, ratio));
-
-		switch (axis) {
-		case AlignmentAxis::X:
-			after.translation.x = value;
-			break;
-		case AlignmentAxis::Y:
-			after.translation.y = value;
-			break;
-		case AlignmentAxis::Z:
-			after.translation.z = value;
-			break;
-		}
-
-		if (!TransformUtils::IsValid(after)) {
-			return false;
-		}
-
-		if (!TransformUtils::AreEqual(snapshot.before, after)) {
-			commands.emplace_back(
-			    TransformCommand{snapshot.objectId, snapshot.before, after});
-		}
+	for (std::size_t i = 1; i + 1 < order.size(); ++i) {
+		const double ratio = double(i) / double(order.size() - 1);
+		Coordinate(positions.at(order[i]), axis) =
+		    static_cast<float>(std::lerp(first, last, ratio));
 	}
 
-	if (commands.empty()) {
-		return true;
-	}
-
-	CommandGroup group{std::move(commands)};
-	const auto next = PrepareAppend();
-
-	if (!group.Redo(scene_)) {
-		return false;
-	}
-
-	AppendPrepared(Command{std::move(group)}, next,
-	               axis == AlignmentAxis::X   ? "Distribute X"
-	               : axis == AlignmentAxis::Y ? "Distribute Y"
-	                                          : "Distribute Z");
-	return true;
+	return ApplyWorldPositions(positions,
+	                           axis == AlignmentAxis::X   ? "Distribute X"
+	                           : axis == AlignmentAxis::Y ? "Distribute Y"
+	                                                      : "Distribute Z");
 }
 
 bool EditorHistory::DistributeColliderGaps(
     std::span<const SceneObjectId> objectIds, AlignmentAxis axis) {
 	CommitEdit();
-
-	if (objectIds.size() < 3 ||
-	    (axis != AlignmentAxis::X && axis != AlignmentAxis::Y &&
-	     axis != AlignmentAxis::Z)) {
+	std::map<SceneObjectId, DirectX::XMFLOAT3> positions;
+	if (objectIds.size() < 3 || !IsPlacementAxis(axis) ||
+	    !ReadWorldPositions(scene_, objectIds, positions)) {
 		return false;
 	}
 
 	struct Placement {
 		SceneObjectId id;
-		Transform before;
-		Transform after;
 		AxisAlignedBox bounds;
+		double minimum = 0, maximum = 0;
 	};
 
-	const auto coordinate = [axis](const DirectX::XMFLOAT3 &value) {
-		return static_cast<double>(axis == AlignmentAxis::X   ? value.x
-		                           : axis == AlignmentAxis::Y ? value.y
-		                                                      : value.z);
+	const auto coordinate = [axis](DirectX::XMFLOAT3 value) {
+		return double(Coordinate(value, axis));
 	};
 	std::vector<Placement> placements;
-	placements.reserve(objectIds.size());
-	std::set<SceneObjectId> seen;
-	double totalWidth = 0.0;
-
+	double totalWidth = 0;
 	for (const auto id : objectIds) {
 		const auto *object = scene_.FindObject(id);
 		AxisAlignedBox bounds;
-
-		if (!object || !object->collider || !seen.insert(id).second ||
-		    !BoxColliderUtils::GetWorldBounds(*object->collider,
-		                                      object->transform, bounds)) {
+		if (!object->collider || !BoxColliderUtils::GetWorldBounds(
+		                             *object->collider, scene_, id, bounds)) {
 			return false;
 		}
 
 		totalWidth += coordinate(bounds.maximum) - coordinate(bounds.minimum);
-		placements.push_back(
-		    {id, object->transform, object->transform, bounds});
+		placements.push_back({id, bounds});
 	}
 
 	std::sort(placements.begin(), placements.end(),
 	          [&](const auto &a, const auto &b) {
-		          const auto first = coordinate(a.bounds.minimum);
-		          const auto second = coordinate(b.bounds.minimum);
+		          const auto first = coordinate(a.bounds.minimum),
+		                     second = coordinate(b.bounds.minimum);
 		          return first != second ? first < second : a.id < b.id;
 	          });
 	const double first = coordinate(placements.front().bounds.minimum);
 	const double last = coordinate(placements.back().bounds.maximum);
 	const double available = last - first - totalWidth;
-
-	// 移動前のfloat座標から求めた幅には、接触面の微小な丸め誤差が含まれる。
-	// 配置後の実際のすき間も検証し、形状の重なりは許可しない。
 	if (!std::isfinite(available) || available < -kColliderAlignmentTolerance) {
 		return false;
 	}
 
 	const double gap =
-	    (std::max)(0.0, available) / static_cast<double>(placements.size() - 1);
+	    (std::max)(0.0, available) / double(placements.size() - 1);
 	bool evenlySpaced = true;
-
 	for (std::size_t i = 1; i < placements.size(); ++i) {
-		const double actualGap = coordinate(placements[i].bounds.minimum) -
-		                         coordinate(placements[i - 1].bounds.maximum);
-
-		if (actualGap < 0.0 ||
-		    std::abs(actualGap - gap) > kColliderAlignmentTolerance) {
+		const double actual = coordinate(placements[i].bounds.minimum) -
+		                      coordinate(placements[i - 1].bounds.maximum);
+		if (actual < 0 ||
+		    std::abs(actual - gap) > kColliderAlignmentTolerance) {
 			evenlySpaced = false;
 			break;
 		}
@@ -1491,92 +1325,56 @@ bool EditorHistory::DistributeColliderGaps(
 		return true;
 	}
 
-	std::vector<CommandGroup::Command> commands;
-	commands.reserve(placements.size() - 2);
 	double cursor = first;
-
 	for (std::size_t i = 0; i < placements.size(); ++i) {
 		auto &placement = placements[i];
-		const double width = coordinate(placement.bounds.maximum) -
-		                     coordinate(placement.bounds.minimum);
-		const double expectedMaximum = cursor + width;
-
+		const double low = coordinate(placement.bounds.minimum);
+		const double width = coordinate(placement.bounds.maximum) - low;
+		placement.minimum = cursor;
+		placement.maximum = cursor + width;
 		if (i != 0 && i + 1 != placements.size() &&
-		    std::abs(cursor - coordinate(placement.bounds.minimum)) >
-		        kColliderAlignmentTolerance) {
-			const double position = coordinate(placement.before.translation) +
-			                        cursor -
-			                        coordinate(placement.bounds.minimum);
-
-			if (!std::isfinite(position) ||
-			    std::abs(position) > (std::numeric_limits<float>::max)()) {
-				return false;
-			}
-
-			const auto value = static_cast<float>(position);
-
-			switch (axis) {
-			case AlignmentAxis::X:
-				placement.after.translation.x = value;
-				break;
-			case AlignmentAxis::Y:
-				placement.after.translation.y = value;
-				break;
-			case AlignmentAxis::Z:
-				placement.after.translation.z = value;
-				break;
-			}
-
-			const auto *object = scene_.FindObject(placement.id);
-
-			if (!BoxColliderUtils::GetWorldBounds(
-			        *object->collider, placement.after, placement.bounds)) {
-				return false;
-			}
+		    std::abs(cursor - low) > kColliderAlignmentTolerance) {
+			auto &position = positions.at(placement.id);
+			Coordinate(position, axis) =
+			    static_cast<float>(coordinate(position) + cursor - low);
 		}
 
-		if (std::abs(coordinate(placement.bounds.minimum) - cursor) >
-		        kColliderAlignmentTolerance ||
-		    std::abs(coordinate(placement.bounds.maximum) - expectedMaximum) >
-		        kColliderAlignmentTolerance) {
-			return false;
-		}
-
-		if (i != 0) {
-			const double actualGap =
-			    coordinate(placement.bounds.minimum) -
-			    coordinate(placements[i - 1].bounds.maximum);
-
-			if (actualGap < 0.0 ||
-			    std::abs(actualGap - gap) > kColliderAlignmentTolerance) {
-				return false;
-			}
-		}
-
-		if (!TransformUtils::AreEqual(placement.before, placement.after)) {
-			commands.emplace_back(TransformCommand{
-			    placement.id, placement.before, placement.after});
-		}
-
-		cursor = expectedMaximum + gap;
+		cursor = placement.maximum + gap;
 	}
 
-	if (commands.empty()) {
-		return true;
-	}
-
-	CommandGroup group{std::move(commands)};
-	const auto next = PrepareAppend();
-
-	if (!group.Redo(scene_)) {
+	Scene working;
+	working.ReplaceObjects(scene_.GetObjects());
+	if (!SceneHierarchy::SetWorldPositions(working, positions)) {
 		return false;
 	}
 
-	AppendPrepared(Command{std::move(group)}, next,
-	               axis == AlignmentAxis::X   ? "Distribute Collider Gaps X"
+	double previous = first;
+	for (std::size_t i = 0; i < placements.size(); ++i) {
+		const auto &placement = placements[i];
+		AxisAlignedBox bounds;
+		if (!BoxColliderUtils::GetWorldBounds(
+		        *working.FindObject(placement.id)->collider, working,
+		        placement.id, bounds)) {
+			return false;
+		}
+
+		const double low = coordinate(bounds.minimum),
+		             high = coordinate(bounds.maximum);
+		const double actualGap = low - previous;
+		if (std::abs(low - placement.minimum) > kColliderAlignmentTolerance ||
+		    std::abs(high - placement.maximum) > kColliderAlignmentTolerance ||
+		    (i != 0 && (actualGap < 0 || std::abs(actualGap - gap) >
+		                                     kColliderAlignmentTolerance))) {
+			return false;
+		}
+
+		previous = high;
+	}
+
+	return ApplyWorldPositions(
+	    positions, axis == AlignmentAxis::X   ? "Distribute Collider Gaps X"
 	               : axis == AlignmentAxis::Y ? "Distribute Collider Gaps Y"
 	                                          : "Distribute Collider Gaps Z");
-	return true;
 }
 
 bool EditorHistory::HasPendingChanges() const {
@@ -1735,8 +1533,8 @@ void EditorHistory::CommitEdit() {
 	    object->collider) {
 		AxisAlignedBox bounds;
 
-		if (!BoxColliderUtils::GetWorldBounds(*object->collider,
-		                                      object->transform, bounds)) {
+		if (!BoxColliderUtils::GetWorldBounds(*object->collider, scene_,
+		                                      pending_->objectId, bounds)) {
 			Invalidate();
 			return;
 		}
@@ -2708,5 +2506,39 @@ bool EditorHistory::SetTexturePaths(std::span<const SceneObjectId> ids,
 	}
 
 	AppendPrepared(Command{std::move(group)}, next, "Assign Textures");
+	return true;
+}
+
+bool EditorHistory::ApplyWorldPositions(
+    const std::map<SceneObjectId, DirectX::XMFLOAT3> &positions,
+    std::string_view description) {
+	Scene working;
+	working.ReplaceObjects(scene_.GetObjects());
+	if (!SceneHierarchy::SetWorldPositions(working, positions)) {
+		return false;
+	}
+
+	std::vector<CommandGroup::Command> commands;
+	commands.reserve(positions.size());
+	for (const auto &[id, position] : positions) {
+		(void)position;
+		const auto &before = scene_.FindObject(id)->transform;
+		const auto &after = working.FindObject(id)->transform;
+		if (!TransformUtils::AreEqual(before, after)) {
+			commands.emplace_back(TransformCommand{id, before, after});
+		}
+	}
+
+	if (commands.empty()) {
+		return true;
+	}
+
+	CommandGroup group{std::move(commands)};
+	const auto next = PrepareAppend();
+	if (!group.Redo(scene_)) {
+		return false;
+	}
+
+	AppendPrepared(Command{std::move(group)}, next, description);
 	return true;
 }

@@ -3,6 +3,7 @@
 #include "history/ObjectArraySettings.h"
 #include "physics/BoxColliderUtils.h"
 #include "scene/Scene.h"
+#include "scene/SceneHierarchy.h"
 
 #include <algorithm>
 #include <cmath>
@@ -24,6 +25,46 @@ bool OverlapsHorizontally(const AxisAlignedBox &first,
 	       first.maximum.x > second.minimum.x &&
 	       first.minimum.z < second.maximum.z &&
 	       first.maximum.z > second.minimum.z;
+}
+
+/// <summary>
+/// 選択枝の全子孫から、衝突形状を持つ物体を重複なく列挙する
+/// </summary>
+/// <param name="scene">変更しないシーン</param>
+/// <param name="ids">選択ID</param>
+/// <param name="colliders">成功時だけ置き換えるCollider付きのID一覧</param>
+/// <returns>true:形状あり false:選択・親子関係が無効、または形状なし</returns>
+bool CollectBranchColliders(const Scene &scene,
+                            std::span<const SceneObjectId> ids,
+                            std::vector<SceneObjectId> &colliders) {
+	std::vector<SceneObjectId> expanded;
+	if (!SceneHierarchy::ExpandSelection(scene, ids, expanded)) {
+		return false;
+	}
+
+	std::erase_if(expanded, [&](SceneObjectId id) {
+		return !scene.FindObject(id)->collider;
+	});
+	if (expanded.empty()) {
+		return false;
+	}
+
+	colliders.swap(expanded);
+	return true;
+}
+
+/// <summary>
+/// 実際の履歴と同じワールド移動を、検証用のシーンへ適用する
+/// </summary>
+/// <param name="source">変更しない元シーン</param>
+/// <param name="ids">選択ID</param>
+/// <param name="translation">ワールド移動量</param>
+/// <param name="result">試行結果を保持する一時シーン</param>
+/// <returns>true:成功 false:選択・変形が無効</returns>
+bool MakeMovedScene(const Scene &source, std::span<const SceneObjectId> ids,
+                    const DirectX::XMFLOAT3 &translation, Scene &result) {
+	result.ReplaceObjects(source.GetObjects());
+	return SceneHierarchy::TranslateSelection(result, ids, translation);
 }
 } // namespace
 
@@ -47,12 +88,12 @@ bool ColliderPlacement::GetDropTranslation(
 		return false;
 	}
 
-	const std::set<SceneObjectId> selected(objectIds.begin(), objectIds.end());
-
-	if (selected.size() != objectIds.size()) {
-		error = "The selection contains duplicate object IDs.";
+	std::vector<SceneObjectId> expanded;
+	if (!SceneHierarchy::ExpandSelection(scene, objectIds, expanded)) {
+		error = "The selection or parent hierarchy is invalid.";
 		return false;
 	}
+	const std::set<SceneObjectId> selected(expanded.begin(), expanded.end());
 
 	std::map<SceneObjectId, AxisAlignedBox> bodies, obstacles;
 
@@ -63,8 +104,8 @@ bool ColliderPlacement::GetDropTranslation(
 
 		AxisAlignedBox bounds;
 
-		if (!BoxColliderUtils::GetWorldBounds(*object.collider,
-		                                      object.transform, bounds)) {
+		if (!BoxColliderUtils::GetWorldBounds(*object.collider, scene, id,
+		                                      bounds)) {
 			error =
 			    std::format("Invalid Box Collider on object: \"{}\" (ID {}).",
 			                object.name.empty() ? "Object" : object.name, id);
@@ -116,20 +157,24 @@ bool ColliderPlacement::GetDropTranslation(
 	}
 
 	// 履歴で実際に行うfloatの加算と形状変換を確認してから、移動量を返す。
-	bool movedAny = false;
-	for (const auto id : objectIds) {
-		const auto &object = *scene.FindObject(id);
-		auto transform = object.transform;
-		transform.translation.y -= drop;
-		movedAny |= transform.translation.y != object.transform.translation.y;
-		AxisAlignedBox moved;
+	Scene movedScene;
+	if (!MakeMovedScene(scene, objectIds, {0, -drop, 0}, movedScene)) {
+		error = "The dropped hierarchy cannot be represented.";
+		return false;
+	}
 
-		if (!BoxColliderUtils::GetWorldBounds(*object.collider, transform,
+	bool movedAny = false;
+	for (const auto &[id, body] : bodies) {
+		const auto &object = *movedScene.FindObject(id);
+		AxisAlignedBox moved;
+		if (!BoxColliderUtils::GetWorldBounds(*object.collider, movedScene, id,
 		                                      moved)) {
 			error =
 			    "The dropped collider cannot be represented at this transform.";
 			return false;
 		}
+
+		movedAny |= moved.minimum.y != body.minimum.y;
 
 		for (const auto &[obstacleId, obstacle] : obstacles) {
 			if (OverlapsHorizontally(moved, obstacle) &&
@@ -157,16 +202,22 @@ bool ColliderPlacement::GetPlaneTranslation(
 		return false;
 	}
 
+	std::vector<SceneObjectId> colliderIds;
+	if (!CollectBranchColliders(scene, objectIds, colliderIds)) {
+		error = "The selection or parent hierarchy is invalid.";
+		return false;
+	}
+
 	std::set<SceneObjectId> seen;
 	double bottom = (std::numeric_limits<double>::infinity)();
 
-	for (const auto id : objectIds) {
+	for (const auto id : colliderIds) {
 		const auto &object = *scene.FindObject(id);
 		AxisAlignedBox bounds;
 
 		if (!seen.insert(id).second ||
-		    !BoxColliderUtils::GetWorldBounds(*object.collider,
-		                                      object.transform, bounds)) {
+		    !BoxColliderUtils::GetWorldBounds(*object.collider, scene, id,
+		                                      bounds)) {
 			error = "The selection contains duplicate IDs or invalid Collider "
 			        "bounds.";
 			return false;
@@ -196,13 +247,16 @@ bool ColliderPlacement::GetPlaneTranslation(
 	const float offset = static_cast<float>(distance);
 	double movedBottom = (std::numeric_limits<double>::infinity)();
 
-	for (const auto id : objectIds) {
-		const auto &object = *scene.FindObject(id);
-		auto moved = object.transform;
-		moved.translation.y += offset;
-		AxisAlignedBox bounds;
+	Scene movedScene;
+	if (!MakeMovedScene(scene, objectIds, {0, offset, 0}, movedScene)) {
+		error = "The moved hierarchy cannot be represented.";
+		return false;
+	}
 
-		if (!BoxColliderUtils::GetWorldBounds(*object.collider, moved,
+	for (const auto id : colliderIds) {
+		const auto &object = *movedScene.FindObject(id);
+		AxisAlignedBox bounds;
+		if (!BoxColliderUtils::GetWorldBounds(*object.collider, movedScene, id,
 		                                      bounds)) {
 			error =
 			    "The moved Collider cannot be represented at this transform.";
@@ -268,6 +322,20 @@ bool ColliderPlacement::GetAdjacentTranslation(
 		return false;
 	}
 
+	std::vector<SceneObjectId> moving, colliderIds;
+	for (const auto id : objectIds) {
+		if (id != referenceId)
+			moving.push_back(id);
+	}
+	if (!CollectBranchColliders(scene, moving, colliderIds) ||
+	    std::find(colliderIds.begin(), colliderIds.end(), referenceId) !=
+	        colliderIds.end()) {
+		error =
+		    "The active reference cannot be a descendant of a moving object.";
+		return false;
+	}
+	colliderIds.insert(colliderIds.begin(), referenceId);
+
 	const auto component = [axis](const DirectX::XMFLOAT3 &value) -> double {
 		return axis == 0 ? value.x : axis == 1 ? value.y : value.z;
 	};
@@ -275,12 +343,12 @@ bool ColliderPlacement::GetAdjacentTranslation(
 	double movingFace = positive ? (std::numeric_limits<double>::infinity)()
 	                             : -(std::numeric_limits<double>::infinity)();
 
-	for (const auto id : objectIds) {
+	for (const auto id : colliderIds) {
 		const auto &object = *scene.FindObject(id);
 		AxisAlignedBox bounds;
 
-		if (!BoxColliderUtils::GetWorldBounds(*object.collider,
-		                                      object.transform, bounds)) {
+		if (!BoxColliderUtils::GetWorldBounds(*object.collider, scene, id,
+		                                      bounds)) {
 			error =
 			    std::format("Invalid Box Collider on object: \"{}\" (ID {}).",
 			                object.name, id);
@@ -333,19 +401,18 @@ bool ColliderPlacement::GetAdjacentTranslation(
 	double placedFace = positive ? (std::numeric_limits<double>::infinity)()
 	                             : -(std::numeric_limits<double>::infinity)();
 
-	for (const auto id : objectIds) {
-		if (id == referenceId) {
+	Scene movedScene;
+	if (!MakeMovedScene(scene, moving, movement, movedScene)) {
+		error = "The moving hierarchy cannot be represented.";
+		return false;
+	}
+
+	for (const auto id : colliderIds) {
+		if (id == referenceId)
 			continue;
-		}
-
-		const auto &object = *scene.FindObject(id);
-		auto transform = object.transform;
-		transform.translation = {transform.translation.x + movement.x,
-		                         transform.translation.y + movement.y,
-		                         transform.translation.z + movement.z};
+		const auto &object = *movedScene.FindObject(id);
 		AxisAlignedBox bounds;
-
-		if (!BoxColliderUtils::GetWorldBounds(*object.collider, transform,
+		if (!BoxColliderUtils::GetWorldBounds(*object.collider, movedScene, id,
 		                                      bounds) ||
 		    (positive ? component(bounds.minimum) < referenceFace
 		              : component(bounds.maximum) > referenceFace)) {
@@ -390,6 +457,15 @@ bool ColliderPlacement::GetRepeatTranslation(
 		error = "Select Box Colliders and a valid number of copies.";
 		return false;
 	}
+	std::vector<SceneObjectId> colliderIds, expanded, roots;
+	if (!CollectBranchColliders(scene, objectIds, colliderIds) ||
+	    !SceneHierarchy::ExpandSelection(scene, objectIds, expanded) ||
+	    !SceneHierarchy::GetSelectionRoots(scene, objectIds, roots) ||
+	    !settings.IsValid(expanded.size())) {
+		error = "The selection hierarchy or number of copies is invalid.";
+		return false;
+	}
+
 	std::size_t axis = 0;
 	bool positive = true;
 	switch (face) {
@@ -431,12 +507,12 @@ bool ColliderPlacement::GetRepeatTranslation(
 	std::set<SceneObjectId> seen;
 	double minimum = (std::numeric_limits<double>::infinity)();
 	double maximum = -minimum;
-	for (const auto id : objectIds) {
+	for (const auto id : colliderIds) {
 		const auto &object = *scene.FindObject(id);
 		AxisAlignedBox bounds;
 		if (!seen.insert(id).second ||
-		    !BoxColliderUtils::GetWorldBounds(*object.collider,
-		                                      object.transform, bounds)) {
+		    !BoxColliderUtils::GetWorldBounds(*object.collider, scene, id,
+		                                      bounds)) {
 			error = "The selection contains duplicate IDs or an invalid Box "
 			        "Collider.";
 			return false;
@@ -472,19 +548,38 @@ bool ColliderPlacement::GetRepeatTranslation(
 	for (int copy = 1; copy <= copies; ++copy) {
 		double groupMinimum = (std::numeric_limits<double>::infinity)();
 		double groupMaximum = -groupMinimum;
-		for (const auto id : objectIds) {
-			const auto &object = *scene.FindObject(id);
-			auto transform = object.transform;
-			assign(transform.translation,
-			       float(double(component(transform.translation)) +
-			             double(step) * copy));
+		Scene working;
+		working.ReplaceObjects(scene.GetObjects());
+		std::map<SceneObjectId, DirectX::XMFLOAT3> positions;
+		for (const auto id : roots) {
+			SceneWorldTransform world;
+			if (!SceneHierarchy::GetWorldTransform(scene, id, world)) {
+				error = "The source world transform is invalid.";
+				return false;
+			}
+
+			auto position = world.GetPosition();
+			assign(position,
+			       float(double(component(position)) + double(step) * copy));
+			positions.emplace(id, position);
+		}
+
+		if (!SceneHierarchy::SetWorldPositions(working, positions)) {
+			error = "A repeated hierarchy cannot be represented at these "
+			        "coordinates.";
+			return false;
+		}
+
+		for (const auto id : colliderIds) {
+			const auto &object = *working.FindObject(id);
 			AxisAlignedBox bounds;
-			if (!BoxColliderUtils::GetWorldBounds(*object.collider, transform,
+			if (!BoxColliderUtils::GetWorldBounds(*object.collider, working, id,
 			                                      bounds)) {
 				error = "A repeated collider cannot be represented at these "
 				        "coordinates.";
 				return false;
 			}
+
 			groupMinimum =
 			    (std::min)(groupMinimum, double(component(bounds.minimum)));
 			groupMaximum =
