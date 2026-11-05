@@ -190,15 +190,55 @@ const SceneObject *FollowTarget(const Scene &scene, SceneObjectId id) {
 
 	return scene.FindObject(object->followCamera->target);
 }
+
+/// <summary>
+/// 指定した依存順で追従姿勢を解決する。衝突判定には作業シーン全体の形状を使う
+/// </summary>
+/// <param name="working">一時シーン。成功するまで公開シーンには反映しない</param>
+/// <param name="order">親と追従先が先に現れる物体ID一覧</param>
+/// <param name="error">失敗理由。成功時は変更しない</param>
+/// <param name="invalidObject">指定時は失敗した物体のID</param>
+/// <returns>true:成功 false:対象・形状・姿勢が無効</returns>
+bool ApplyInitialFollows(Scene &working,
+                         const std::vector<SceneObjectId> &order,
+                         std::string &error, SceneObjectId *invalidObject) {
+	for (const auto id : order) {
+		const auto &object = *working.FindObject(id);
+		if (!object.followCamera)
+			continue;
+		SceneWorldTransform target;
+		if (!SceneHierarchy::GetWorldTransform(
+		        working, object.followCamera->target, target)) {
+			error = std::format(
+			    "Follow Camera target transform is invalid. Object ID: {}.",
+			    id);
+			if (invalidObject)
+				*invalidObject = id;
+			return false;
+		}
+		auto pose = SceneCameraUtils::MakeFollowPose(target.GetPosition(),
+		                                             *object.followCamera);
+		if (!SceneCameraUtils::AvoidFollowObstacles(working, id, pose) ||
+		    !SceneCameraUtils::ApplyWorldPose(working, id, pose)) {
+			error = std::format("Follow Camera pose is invalid. Object ID: {}.",
+			                    id);
+			if (invalidObject)
+				*invalidObject = id;
+			return false;
+		}
+	}
+	return true;
+}
 } // namespace
 
-bool SceneCameraUtils::GetInitialTransform(const Scene &scene, SceneObjectId id,
-                                           Transform &resultTransform) {
-	const auto *object = scene.FindObject(id);
-	if (!object || !object->camera || !object->camera->IsValid()) {
+bool SceneCameraUtils::ResolveInitialDependencies(const Scene &scene,
+                                                  SceneObjectId id,
+                                                  Scene &result) {
+	if (!scene.Contains(id)) {
 		return false;
 	}
-	// 問い合わせたカメラの祖先と追従先だけを取り出し、無関係な未設定Cameraと分離する。
+
+	// 依存の検証は対象の枝だけに限定し、障害物は元のシーン全体から参照する。
 	std::map<SceneObjectId, SceneObject> objects;
 	std::vector<SceneObjectId> pending{id};
 	while (!pending.empty()) {
@@ -207,30 +247,61 @@ bool SceneCameraUtils::GetInitialTransform(const Scene &scene, SceneObjectId id,
 		if (current == 0 || objects.contains(current)) {
 			continue;
 		}
+
 		const auto *node = scene.FindObject(current);
 		if (!node) {
 			return false;
 		}
+
 		objects.emplace(current, *node);
 		pending.push_back(node->parentId);
 		if (node->followCamera) {
 			pending.push_back(node->followCamera->target);
 		}
 	}
-	Scene source, resolved;
+
 	try {
-		source.ReplaceObjects(std::move(objects));
+		Scene dependencies, working;
+		dependencies.ReplaceObjects(std::move(objects));
+		std::vector<SceneObjectId> order;
+		std::string error;
+		if (!GetUpdateOrder(dependencies, order, error)) {
+			return false;
+		}
+
+		working.ReplaceObjects(scene.GetObjects());
+		if (!ApplyInitialFollows(working, order, error, nullptr)) {
+			return false;
+		}
+
+		SceneWorldTransform world;
+		if (!SceneHierarchy::GetWorldTransform(working, id, world)) {
+			return false;
+		}
+
+		result.ReplaceObjects(working.GetObjects());
+		return true;
 	} catch (const std::exception &) {
 		return false;
 	}
-	std::string error;
+}
+
+bool SceneCameraUtils::GetInitialTransform(const Scene &scene, SceneObjectId id,
+                                           Transform &resultTransform) {
+	const auto *object = scene.FindObject(id);
+	if (!object || !object->camera || !object->camera->IsValid()) {
+		return false;
+	}
+
+	Scene resolved;
 	SceneWorldTransform world;
 	Transform transform;
-	if (!ResolveInitialScene(source, resolved, error) ||
+	if (!ResolveInitialDependencies(scene, id, resolved) ||
 	    !SceneHierarchy::GetWorldTransform(resolved, id, world) ||
 	    !ApplyPose(FromWorldTransform(world), transform)) {
 		return false;
 	}
+
 	resultTransform = transform;
 	return true;
 }
@@ -383,30 +454,10 @@ bool SceneCameraUtils::ResolveInitialScene(const Scene &source, Scene &result,
 		return false;
 	Scene working;
 	working.ReplaceObjects(source.GetObjects());
-	for (const auto id : order) {
-		const auto &object = *working.FindObject(id);
-		if (!object.followCamera)
-			continue;
-		SceneWorldTransform target;
-		if (!SceneHierarchy::GetWorldTransform(
-		        working, object.followCamera->target, target)) {
-			error = std::format(
-			    "Follow Camera target transform is invalid. Object ID: {}.",
-			    id);
-			if (invalidObject)
-				*invalidObject = id;
-			return false;
-		}
-		auto pose = MakeFollowPose(target.GetPosition(), *object.followCamera);
-		if (!AvoidFollowObstacles(working, id, pose) ||
-		    !ApplyWorldPose(working, id, pose)) {
-			error = std::format("Follow Camera pose is invalid. Object ID: {}.",
-			                    id);
-			if (invalidObject)
-				*invalidObject = id;
-			return false;
-		}
+	if (!ApplyInitialFollows(working, order, error, invalidObject)) {
+		return false;
 	}
+
 	SceneHierarchy::WorldTransforms transforms;
 	if (!SceneHierarchy::BuildWorldTransforms(working, transforms)) {
 		error = "World transforms cannot be represented.";

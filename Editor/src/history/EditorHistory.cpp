@@ -897,53 +897,44 @@ bool EditorHistory::AlignCameraView(SceneObjectId id, const CameraPose &pose,
 		return false;
 	}
 
-	auto after = object->transform;
-
-	if (!SceneCameraUtils::ApplyPose(pose, after) ||
-	    !TransformUtils::IsValid(after)) {
+	Scene working;
+	if (!SceneCameraUtils::ResolveInitialDependencies(scene_, id, working)) {
 		return false;
 	}
 
+	Transform desiredView, currentView;
+	SceneWorldTransform currentWorld;
+	if (!SceneCameraUtils::ApplyPose(pose, desiredView) ||
+	    !SceneHierarchy::GetWorldTransform(working, id, currentWorld) ||
+	    !SceneCameraUtils::ApplyPose(
+	        SceneCameraUtils::FromWorldTransform(currentWorld), currentView)) {
+		return false;
+	}
+
+	auto after = object->transform;
 	auto follow = object->followCamera;
-
-	if (follow) {
-		const auto *target = scene_.FindObject(follow->target);
-
-		if (object->character || follow->target == id || !target ||
-		    !MathUtils::IsFinite(target->transform.translation)) {
-			return false;
-		}
-
-		auto targetPosition = target->transform.translation;
-
-		if (target->followCamera) {
-			CameraPose targetPose;
-
-			if (!SceneCameraUtils::GetInitialPose(scene_, follow->target,
-			                                      targetPose)) {
+	// 同じ開始ビューでは、親の逆変換やオフセットの再計算による丸め誤差を履歴へ加えない。
+	if (!TransformUtils::AreEqual(currentView, desiredView)) {
+		auto desiredPose = pose;
+		if (follow) {
+			SceneWorldTransform target;
+			if (object->character ||
+			    !SceneHierarchy::GetWorldTransform(working, follow->target,
+			                                       target) ||
+			    !SceneCameraUtils::MatchFollowPose(pose, target.GetPosition(),
+			                                       *follow)) {
 				return false;
 			}
 
-			targetPosition = targetPose.position;
+			desiredPose =
+			    SceneCameraUtils::MakeFollowPose(target.GetPosition(), *follow);
 		}
 
-		if (!SceneCameraUtils::MatchFollowPose(pose, targetPosition, *follow) ||
-		    !SceneCameraUtils::ApplyPose(
-		        SceneCameraUtils::MakeFollowPose(targetPosition, *follow),
-		        after)) {
+		if (!SceneCameraUtils::ApplyWorldPose(working, id, desiredPose)) {
 			return false;
 		}
 
-		// 同じ描画姿勢なら注視距離を再計算せず、丸め誤差による履歴を防ぐ。
-		auto current = object->transform;
-
-		if (SceneCameraUtils::ApplyPose(
-		        SceneCameraUtils::MakeFollowPose(targetPosition,
-		                                         *object->followCamera),
-		        current) &&
-		    TransformUtils::AreEqual(current, after)) {
-			follow = object->followCamera;
-		}
+		after = working.FindObject(id)->transform;
 	}
 
 	std::vector<CommandGroup::Command> commands;

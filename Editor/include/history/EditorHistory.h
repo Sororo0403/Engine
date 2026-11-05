@@ -310,8 +310,8 @@ class EditorHistory {
 	                        const RespawnSettings &settings);
 
 	/// <summary>
-	/// Cameraの位置と向きをSceneビューへ合わせ、追従オフセットも1操作として記録する。
-	/// 拡大率・Primary・追従速度は保持し、編集中の内容は先に確定する
+	/// 親と追従先の開始姿勢を解決してCameraをSceneビューへ合わせ、追従オフセットも記録する。
+	/// 親・ローカル拡大率・Primary・追従速度は保持し、編集中の内容は先に確定する
 	/// </summary>
 	/// <param name="objectId">Cameraを持つ対象ID</param>
 	/// <param name="pose">Sceneビューの姿勢。Follow Cameraの上方向はワールドYを基準とする</param>

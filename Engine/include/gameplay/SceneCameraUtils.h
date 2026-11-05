@@ -57,6 +57,16 @@ bool ResolveInitialScene(const Scene &source, Scene &result, std::string &error,
                          SceneObjectId *invalidObject = nullptr);
 
 /// <summary>
+/// 指定物体の祖先と追従先だけを解決し、全物体を保持した開始姿勢のシーンを作る
+/// </summary>
+/// <param name="source">変更しない編集シーン。障害物の形状も参照する</param>
+/// <param name="id">開始姿勢を解決する既存物体ID。Camera以外も指定できる</param>
+/// <param name="result">成功時だけ置き換える独立したシーン</param>
+/// <returns>true:成功 false:対象・親子関係・依存する追従設定・姿勢が無効。無関係な未設定Follow Cameraは解決しない</returns>
+bool ResolveInitialDependencies(const Scene &source, SceneObjectId id,
+                                Scene &result);
+
+/// <summary>
 /// 追従対象の位置とワールド座標のオフセットから、目標の描画姿勢を作る
 /// </summary>
 /// <param name="target">対象のワールド位置</param>
