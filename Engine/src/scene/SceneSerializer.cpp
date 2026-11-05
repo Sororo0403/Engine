@@ -240,7 +240,8 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 			    (object.character && !object.character->IsValid()) ||
 			    (object.followCamera && !object.followCamera->IsValid()) ||
 			    (object.respawn && !object.respawn->IsValid()) ||
-			    (object.triggerActions && !object.triggerActions->IsValid())) {
+			    (object.triggerActions && !object.triggerActions->IsValid()) ||
+			    (object.pointLight && !object.pointLight->IsValid())) {
 				throw std::runtime_error(
 				    "ゲーム用コンポーネントの設定が無効です。");
 			}
@@ -277,6 +278,13 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 				    {"textures", std::move(bindings)},
 				    {"uvScale", object.meshRenderer->uvScale},
 				    {"uvOffset", object.meshRenderer->uvOffset}};
+			}
+
+			if (object.pointLight) {
+				const auto &light = *object.pointLight;
+				objects.back()["pointLight"] = {{"color", light.color},
+				                                {"intensity", light.intensity},
+				                                {"range", light.range}};
 			}
 
 			if (object.colorTint) {
@@ -408,7 +416,7 @@ namespace {
 /// 解析したシーンドキュメントを検証し、全件成功した場合だけ反映する
 /// </summary>
 /// <param name="scene">読み込み先</param>
-/// <param name="document">version 1から18のJSON</param>
+/// <param name="document">version 1から19のJSON</param>
 /// <returns>true:成功 false:内容が無効</returns>
 bool ApplySceneDocument(Scene &scene, const Json &document) {
 	try {
@@ -503,6 +511,20 @@ bool ApplySceneDocument(Scene &scene, const Json &document) {
 			    (object.meshRenderer && !object.meshRenderer->IsValid())) {
 				throw std::runtime_error(
 				    "MeshまたはMesh Rendererの設定が無効です。");
+			}
+
+			if (version >= 19 && item.contains("pointLight")) {
+				const auto &light = item.at("pointLight");
+				if (!light.at("intensity").is_number() ||
+				    !light.at("range").is_number()) {
+					throw std::runtime_error(
+					    "Point Lightの強さと範囲には数値が必要です。");
+				}
+				const auto color = ReadFloat3(light.at("color"));
+				object.pointLight =
+				    PointLightComponent{{color.x, color.y, color.z},
+				                        light.at("intensity").get<float>(),
+				                        light.at("range").get<float>()};
 			}
 
 			if (version >= 7 && item.contains("colorTint")) {
@@ -660,7 +682,8 @@ bool ApplySceneDocument(Scene &scene, const Json &document) {
 			    (object.character && !object.character->IsValid()) ||
 			    (object.followCamera && !object.followCamera->IsValid()) ||
 			    (object.respawn && !object.respawn->IsValid()) ||
-			    (object.triggerActions && !object.triggerActions->IsValid())) {
+			    (object.triggerActions && !object.triggerActions->IsValid()) ||
+			    (object.pointLight && !object.pointLight->IsValid())) {
 				throw std::runtime_error(
 				    "ゲーム用コンポーネントの設定が無効です。");
 			}
