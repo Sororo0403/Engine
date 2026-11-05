@@ -358,6 +358,9 @@
     <ClInclude Include="include\graphics\render\RenderObjectHandle.h">
       <Filter>include\graphics\render</Filter>
     </ClInclude>
+    <ClInclude Include="include\scene\SceneActiveChange.h">
+      <Filter>include\scene</Filter>
+    </ClInclude>
     <ClInclude Include="include\scene\SceneActivity.h">
       <Filter>include\scene</Filter>
     </ClInclude>

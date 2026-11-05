@@ -21,8 +21,10 @@ namespace SceneValidation {
 /// </summary>
 /// <param name="scene">変更しない検証対象。空のシーンも有効</param>
 /// <param name="fallbackPose">Primary Cameraがない場合の描画姿勢</param>
+/// <param name="resolveInitialPose">true:開始時の追従姿勢と復帰配置を検証 false:現在のワールド姿勢と明示的な復帰先を検証。保持中の開始位置は呼び出し側で確認する</param>
 /// <returns>検出した問題。空なら再生設定は有効。リソースファイルの有無やGPU描画は検証しない</returns>
 /// <remarks>前提となる設定が不正な場合、その設定に依存する衝突検証は修正後に再実行する</remarks>
 std::vector<SceneValidationIssue>
-Inspect(const Scene &scene, const CameraPose &fallbackPose = CameraPose{});
+Inspect(const Scene &scene, const CameraPose &fallbackPose = CameraPose{},
+        bool resolveInitialPose = true);
 } // namespace SceneValidation

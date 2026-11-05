@@ -15,7 +15,8 @@
 #include <string_view>
 
 std::vector<SceneValidationIssue>
-SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose) {
+SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
+                         bool resolveInitialPose) {
 	std::vector<SceneValidationIssue> issues;
 	const auto add = [&](SceneObjectId id, std::string_view reason) {
 		const auto *object = scene.FindObject(id);
@@ -40,9 +41,14 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose) {
 	}
 	Scene resolved;
 	std::string followError;
+	std::vector<SceneObjectId> order;
 	const bool resolvedInitial =
-	    SceneCameraUtils::ResolveInitialScene(scene, resolved, followError);
-	const auto &initial = resolvedInitial ? resolved : scene;
+	    resolveInitialPose
+	        ? SceneCameraUtils::ResolveInitialScene(scene, resolved,
+	                                                followError)
+	        : SceneCameraUtils::GetUpdateOrder(scene, order, followError);
+	const auto &initial =
+	    resolvedInitial && resolveInitialPose ? resolved : scene;
 	SceneHierarchy::WorldTransforms transforms;
 	if (!SceneHierarchy::BuildWorldTransforms(initial, transforms)) {
 		add(0, "Initial world transforms are invalid.");
@@ -149,7 +155,8 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose) {
 			        "transform or Box Collider.");
 		}
 
-		if (object.respawn && object.respawn->IsValid()) {
+		if (object.respawn && object.respawn->IsValid() &&
+		    (resolveInitialPose || !object.respawn->useStartPosition)) {
 			const auto &settings = *object.respawn;
 			auto recovery = transforms.at(id).matrix;
 
@@ -159,7 +166,8 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose) {
 				recovery._43 = settings.position.z;
 			}
 
-			if (transforms.at(id).GetPosition().y <= settings.minimumY ||
+			if ((resolveInitialPose &&
+			     transforms.at(id).GetPosition().y <= settings.minimumY) ||
 			    recovery._42 <= settings.minimumY ||
 			    !controller.Initialize(recovery, *object.collider,
 			                           *object.character, world)) {
@@ -175,8 +183,13 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose) {
 		const auto &object = *scene.FindObject(primary);
 		CameraPose pose;
 
-		if (!SceneCameraUtils::GetInitialPose(scene, primary, pose) ||
-		    !validator.SetPose(pose) ||
+		bool hasPose = true;
+		if (resolveInitialPose) {
+			hasPose = SceneCameraUtils::GetInitialPose(scene, primary, pose);
+		} else {
+			pose = SceneCameraUtils::FromWorldTransform(transforms.at(primary));
+		}
+		if (!hasPose || !validator.SetPose(pose) ||
 		    !validator.SetSettings(object.camera->settings)) {
 			add(primary, "Camera pose or projection is invalid.");
 		}

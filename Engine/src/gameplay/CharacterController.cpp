@@ -238,3 +238,19 @@ bool CharacterController::SynchronizeWorldMatrix(
 	                          worldMatrix._43};
 	return true;
 }
+
+bool CharacterController::RefreshContacts(const CollisionWorld &world) {
+	AxisAlignedBox body;
+	CollisionMoveResult ground;
+	if (!initialized_ ||
+	    !BoxColliderUtils::GetWorldBounds(collider_, worldMatrix_, body) ||
+	    !world.Move(body, {0, -kGroundProbeDistance, 0}, ground,
+	                collider_.filter)) {
+		return false;
+	}
+	grounded_ = verticalVelocity_ <= 0 && ground.grounded;
+	if (grounded_) {
+		coyoteRemaining_ = settings_.coyoteTime;
+	}
+	return true;
+}

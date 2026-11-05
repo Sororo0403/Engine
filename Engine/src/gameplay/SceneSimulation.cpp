@@ -11,102 +11,183 @@
 #include <exception>
 #include <format>
 #include <map>
+#include <set>
 #include <string_view>
 
 bool SceneSimulation::Start(const Scene &source, std::string &error,
                             const CameraPose &fallbackPose,
                             SceneObjectId *invalidObject) {
+	return Configure(source, error, fallbackPose, invalidObject, false);
+}
+
+bool SceneSimulation::SetActive(SceneObjectId id, bool active,
+                                std::string &error,
+                                SceneObjectId *invalidObject) {
+	const SceneActiveChange change{id, active};
+	return SetActive(std::span<const SceneActiveChange>{&change, 1}, error,
+	                 invalidObject);
+}
+
+bool SceneSimulation::SetActive(std::span<const SceneActiveChange> changes,
+                                std::string &error,
+                                SceneObjectId *invalidObject) {
+	error.clear();
 	if (invalidObject) {
 		*invalidObject = 0;
 	}
+	if (!playing_ || changes.empty()) {
+		error =
+		    "Start Play and specify existing objects before changing activity.";
+		return false;
+	}
+	try {
+		Scene working;
+		working.ReplaceObjects(scene_.GetObjects());
+		std::set<SceneObjectId> seen;
+		bool changed = false;
+		for (const auto &change : changes) {
+			auto *object = working.FindObject(change.objectId);
+			if (!object || !seen.insert(change.objectId).second) {
+				error = "Activity changes require unique, existing object IDs.";
+				if (invalidObject) {
+					*invalidObject = change.objectId;
+				}
+				return false;
+			}
+			changed |= object->active != change.active;
+			object->active = change.active;
+		}
+		return !changed ||
+		       Configure(working, error, fallbackPose_, invalidObject, true);
+	} catch (const std::exception &exception) {
+		error = exception.what();
+		return false;
+	}
+}
 
+bool SceneSimulation::Configure(const Scene &source, std::string &error,
+                                const CameraPose &fallbackPose,
+                                SceneObjectId *invalidObject, bool preserve) {
+	if (invalidObject) {
+		*invalidObject = 0;
+	}
 	try {
 		error.clear();
-		SceneObjectId character = 0, camera = 0;
-		// 検証ルールは変えず、問題の物体を名前とIDで特定できるようにする。
-		const auto failObject = [&](SceneObjectId id, std::string_view reason) {
+		const auto fail = [&](SceneObjectId id, std::string_view reason) {
 			const auto *object = source.FindObject(id);
-			const std::string_view name =
-			    object ? std::string_view{object->name} : std::string_view{};
-			error = std::format("{} Object: \"{}\" (ID {}).", reason,
-			                    name.empty() ? "Object" : name, id);
-
+			error = std::format(
+			    "{} Object: \"{}\" (ID {}).", reason,
+			    object && !object->name.empty() ? object->name : "Object", id);
 			if (invalidObject) {
 				*invalidObject = id;
 			}
-
 			return false;
 		};
-
-		const auto issues = SceneValidation::Inspect(source, fallbackPose);
-
+		std::vector<SceneObjectId> order;
+		if (!SceneCameraUtils::GetUpdateOrder(source, order, error,
+		                                      invalidObject)) {
+			return false;
+		}
+		Scene working;
+		if (!preserve) {
+			if (!SceneCameraUtils::ResolveInitialScene(source, working, error,
+			                                           invalidObject)) {
+				return false;
+			}
+		} else {
+			working.ReplaceObjects(source.GetObjects());
+			// 継続する追従は現在姿勢を保ち、新しく有効になった枝だけを依存順で初期化する。
+			for (const auto id : order) {
+				const auto &object = *working.FindObject(id);
+				if (!SceneActivity::IsActive(working, id) ||
+				    !object.followCamera || followPoses_.contains(id)) {
+					continue;
+				}
+				SceneWorldTransform target;
+				if (!SceneHierarchy::GetWorldTransform(
+				        working, object.followCamera->target, target)) {
+					return fail(id,
+					            "Follow Camera target transform is invalid.");
+				}
+				auto pose = SceneCameraUtils::MakeFollowPose(
+				    target.GetPosition(), *object.followCamera);
+				if (!SceneCameraUtils::AvoidFollowObstacles(working, id,
+				                                            pose) ||
+				    !SceneCameraUtils::ApplyWorldPose(working, id, pose)) {
+					return fail(
+					    id, "The newly active Follow Camera pose is invalid.");
+				}
+			}
+		}
+		// 現在の姿勢を検証し、既存の追従や移動を開始時へ巻き戻さない。
+		const auto issues =
+		    SceneValidation::Inspect(working, fallbackPose, false);
 		if (!issues.empty()) {
 			error = issues.front().message;
-
 			if (invalidObject) {
 				*invalidObject = issues.front().objectId;
 			}
-
 			return false;
 		}
-
-		for (const auto &[id, object] : source.GetObjects()) {
-			if (!SceneActivity::IsActive(source, id)) {
+		SceneObjectId character = 0, camera = 0;
+		for (const auto &[id, object] : working.GetObjects()) {
+			if (!SceneActivity::IsActive(working, id)) {
 				continue;
 			}
 			if (object.character) {
 				character = id;
 			}
-
 			if (object.camera && object.camera->primary) {
 				camera = id;
 			}
 		}
-
-		std::vector<SceneObjectId> order;
-		Scene working;
-		if (!SceneCameraUtils::GetUpdateOrder(source, order, error,
-		                                      invalidObject) ||
-		    !SceneCameraUtils::ResolveInitialScene(source, working, error,
-		                                           invalidObject)) {
-			return false;
-		}
 		std::vector<SceneObjectId> ignored;
 		if (character &&
 		    !SceneHierarchy::GetSubtree(working, character, ignored)) {
-			return failObject(character, "Character hierarchy is invalid.");
+			return fail(character, "Character hierarchy is invalid.");
 		}
 		CollisionWorld world;
 		SceneObjectId invalidCollider = 0;
 		if (!world.Rebuild(working, std::span<const SceneObjectId>{ignored},
 		                   &invalidCollider)) {
-			return failObject(
+			return fail(
 			    invalidCollider,
 			    "Box Collider cannot be represented at its world transform.");
 		}
+		const bool continuing =
+		    preserve && character != 0 && character == character_;
 		CharacterController controller;
+		if (continuing) {
+			controller = controller_;
+		}
 		DirectX::XMFLOAT3 spawn{};
 		if (character) {
 			const auto &object = *working.FindObject(character);
 			SceneWorldTransform transform;
 			if (!SceneHierarchy::GetWorldTransform(working, character,
 			                                       transform) ||
-			    !controller.Initialize(transform.matrix, *object.collider,
-			                           *object.character, world)) {
-				return failObject(character,
-				                  "The character starts inside a collider or "
-				                  "has an invalid world transform.");
+			    (continuing ? (!controller.SynchronizeWorldMatrix(
+			                       transform.matrix, world) ||
+			                   !controller.RefreshContacts(world))
+			                : !controller.Initialize(
+			                      transform.matrix, *object.collider,
+			                      *object.character, world))) {
+				return fail(character, "The character overlaps a collider or "
+				                       "has an invalid world transform.");
 			}
-			spawn = transform.GetPosition();
+			spawn = continuing ? spawn_ : transform.GetPosition();
 			if (object.respawn) {
 				const auto &settings = *object.respawn;
-				if (!settings.useStartPosition)
+				if (!settings.useStartPosition) {
 					spawn = settings.position;
+				}
+				// 復帰先の検証はコピーで行い、継続する主人公の速度と入力を消さない。
+				auto placement = controller;
 				if (spawn.y <= settings.minimumY ||
-				    transform.GetPosition().y <= settings.minimumY ||
-				    !controller.Teleport(spawn, world) ||
-				    !controller.Teleport(transform.GetPosition(), world)) {
-					return failObject(
+				    (!continuing &&
+				     transform.GetPosition().y <= settings.minimumY) ||
+				    !placement.Teleport(spawn, world)) {
+					return fail(
 					    character,
 					    "The character and its respawn point must be above "
 					    "Fall Below Y and outside solid colliders.");
@@ -115,57 +196,55 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 		}
 		std::map<SceneObjectId, CameraPose> follows;
 		for (const auto id : order) {
-			if (!SceneActivity::IsActive(working, id) ||
-			    !working.FindObject(id)->followCamera)
-				continue;
-			SceneWorldTransform transform;
-			if (!SceneHierarchy::GetWorldTransform(working, id, transform)) {
-				return failObject(id,
-				                  "Follow Camera world transform is invalid.");
-			}
-			// 注視点は回転から復元せず、Follow設定にある距離を保持する。
 			const auto &object = *working.FindObject(id);
+			if (!SceneActivity::IsActive(working, id) || !object.followCamera) {
+				continue;
+			}
+			if (preserve) {
+				const auto found = followPoses_.find(id);
+				if (found != followPoses_.end()) {
+					follows.emplace(id, found->second);
+					continue;
+				}
+			}
 			SceneWorldTransform target;
 			if (!SceneHierarchy::GetWorldTransform(
-			        working, object.followCamera->target, target))
-				return false;
-			auto followPose = SceneCameraUtils::MakeFollowPose(
-			    target.GetPosition(), *object.followCamera);
-			if (!SceneCameraUtils::AvoidFollowObstacles(working, id,
-			                                            followPose))
-				return false;
-			follows.emplace(id, followPose);
+			        working, object.followCamera->target, target)) {
+				return fail(id, "Follow Camera target transform is invalid.");
+			}
+			auto pose = SceneCameraUtils::MakeFollowPose(target.GetPosition(),
+			                                             *object.followCamera);
+			if (!SceneCameraUtils::AvoidFollowObstacles(working, id, pose)) {
+				return fail(id, "Follow Camera pose is invalid.");
+			}
+			follows.emplace(id, pose);
 		}
 		auto pose = fallbackPose;
 		if (camera) {
 			SceneWorldTransform transform;
 			if (!SceneHierarchy::GetWorldTransform(working, camera,
 			                                       transform)) {
-				return failObject(camera, "Camera world transform is invalid.");
+				return fail(camera, "Camera world transform is invalid.");
 			}
 			pose = SceneCameraUtils::FromWorldTransform(transform);
 		}
 		const auto lens = camera ? working.FindObject(camera)->camera->settings
 		                         : CameraSettings{};
 		Camera validator;
-
 		if (!validator.SetPose(pose) || !validator.SetSettings(lens)) {
-			if (camera) {
-				return failObject(camera,
-				                  "Camera pose or projection is invalid.");
-			}
-			error = "Fallback Camera pose or projection is invalid.";
-			return false;
+			return fail(camera, "Camera pose or projection is invalid.");
 		}
-
 		TriggerWorld triggers;
-		if (!triggers.Reset(working)) {
-			error = "Trigger world shapes or hierarchy are invalid.";
-			return false;
+		if (preserve) {
+			triggers = triggers_;
 		}
+		if (preserve ? !triggers.Update(working) : !triggers.Reset(working)) {
+			return fail(0, "Trigger world shapes or hierarchy are invalid.");
+		}
+		// 全候補が有効な場合だけ確定し、失敗時は再生シーンと実行状態をすべて保持する。
 		scene_.ReplaceObjects(working.GetObjects());
-		triggers_ = std::move(triggers);
 		world_ = std::move(world);
+		triggers_ = std::move(triggers);
 		controller_ = controller;
 		character_ = character;
 		camera_ = camera;
@@ -173,9 +252,12 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 		followPoses_ = std::move(follows);
 		cameraSettings_ = lens;
 		spawn_ = spawn;
-		respawnCount_ = 0;
-		lastRespawnPosition_.reset();
+		if (!continuing) {
+			respawnCount_ = 0;
+			lastRespawnPosition_.reset();
+		}
 		pose_ = pose;
+		fallbackPose_ = fallbackPose;
 		playing_ = true;
 		return true;
 	} catch (const std::exception &exception) {

@@ -100,6 +100,13 @@ class CharacterController {
 		return verticalVelocity_;
 	}
 
+	/// <summary>
+	/// 障害物の切り替えに合わせて接地状態を更新する。速度と入力の蓄積は保持する
+	/// </summary>
+	/// <param name="world">自身を除いた現在の衝突ワールド</param>
+	/// <returns>true:成功 false:未初期化、形状が無効、または障害物と重なる。失敗時は状態を保持する</returns>
+	bool RefreshContacts(const CollisionWorld &world);
+
   private:
 	/// <summary>
 	/// 固定刻み1回分の移動を処理する

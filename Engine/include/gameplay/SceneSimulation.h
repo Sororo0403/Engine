@@ -6,6 +6,7 @@
 #include "physics/CollisionWorld.h"
 #include "physics/TriggerWorld.h"
 #include "scene/Scene.h"
+#include "scene/SceneActiveChange.h"
 #include <map>
 #include <optional>
 #include <span>
@@ -28,6 +29,28 @@ class SceneSimulation {
 	bool Start(const Scene &source, std::string &error,
 	           const CameraPose &fallbackPose = CameraPose{},
 	           SceneObjectId *invalidObject = nullptr);
+
+	/// <summary>
+	/// 再生中の有効設定をまとめて変更し、描画用シーン・衝突・Trigger・Cameraの選択を同期する
+	/// </summary>
+	/// <param name="changes">重複のない既存IDとローカル有効設定。空は無効</param>
+	/// <param name="error">成功時は空、失敗時は理由</param>
+	/// <param name="invalidObject">指定時は問題のID。成功時や対象に紐付かない失敗では0</param>
+	/// <returns>true:変更成功または同値 false:未再生、無効な対象・配置・コンポーネント。失敗時は全状態を保持する</returns>
+	/// <remarks>継続する主人公の速度・入力・復帰情報と追従の補間状態を保持する。新しく有効になった主人公は現在位置で初期化する。無効な枝のローカル姿勢と子自身の設定は保持する</remarks>
+	bool SetActive(std::span<const SceneActiveChange> changes,
+	               std::string &error, SceneObjectId *invalidObject = nullptr);
+
+	/// <summary>
+	/// 1物体のローカル有効設定を変更する
+	/// </summary>
+	/// <param name="id">既存の物体ID</param>
+	/// <param name="active">変更後の設定</param>
+	/// <param name="error">成功時は空、失敗時は理由</param>
+	/// <param name="invalidObject">指定時は問題のID</param>
+	/// <returns>true:成功または同値 false:未再生、対象や変更後の状態が無効。失敗時は全状態を保持する</returns>
+	bool SetActive(SceneObjectId id, bool active, std::string &error,
+	               SceneObjectId *invalidObject = nullptr);
 
 	/// <summary>
 	/// 再生を終了して複製データを破棄する
@@ -67,7 +90,7 @@ class SceneSimulation {
 	/// <summary>
 	/// 現在の描画に使用するCamera物体のIDを取得する
 	/// </summary>
-	/// <returns>再生開始時に選ばれたCameraのID。停止中または固定ビューの場合は0</returns>
+	/// <returns>現在有効なPrimary CameraのID。停止中または固定ビューの場合は0</returns>
 	SceneObjectId GetCameraObjectId() const {
 		return playing_ ? camera_ : 0;
 	}
@@ -89,9 +112,9 @@ class SceneSimulation {
 	}
 
 	/// <summary>
-	/// 開始時または最後の正の時間の更新で生成したTriggerイベントを取得する。一時停止相当の0秒更新では保持する
+	/// 開始時・有効設定の変更時・最後の正の時間の更新で生成したTriggerイベントを取得する。一時停止相当の0秒更新では保持する
 	/// </summary>
-	/// <returns>組のID順のイベント。次の正の時間の更新成功・再生開始・停止まで有効</returns>
+	/// <returns>組のID順のイベント。次の正の時間の更新成功・有効設定の変更成功・再生開始・停止まで有効</returns>
 	std::span<const TriggerEvent> GetTriggerEvents() const {
 		return triggers_.GetEvents();
 	}
@@ -105,6 +128,19 @@ class SceneSimulation {
 	}
 
   private:
+	/// <summary>
+	/// 開始または有効設定の変更を、作業シーンで検証してから確定する
+	/// </summary>
+	/// <param name="source">反映する設定</param>
+	/// <param name="error">失敗理由</param>
+	/// <param name="fallbackPose">Primaryがない場合の固定姿勢</param>
+	/// <param name="invalidObject">問題のIDの出力先</param>
+	/// <param name="preserve">継続するコンポーネントの実行状態を引き継ぐか</param>
+	/// <returns>true:確定成功 false:検証失敗。現在のシーンと実行状態は保持する</returns>
+	bool Configure(const Scene &source, std::string &error,
+	               const CameraPose &fallbackPose, SceneObjectId *invalidObject,
+	               bool preserve);
+
 	Scene scene_;
 	CollisionWorld world_;
 	TriggerWorld triggers_;
@@ -117,6 +153,7 @@ class SceneSimulation {
 	std::uint64_t respawnCount_ = 0;
 	std::optional<DirectX::XMFLOAT3> lastRespawnPosition_;
 	CameraPose pose_{};
+	CameraPose fallbackPose_{};
 	CameraSettings cameraSettings_{};
 	bool playing_ = false;
 };
