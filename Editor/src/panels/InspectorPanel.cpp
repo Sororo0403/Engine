@@ -1,6 +1,7 @@
 #include "panels/InspectorPanel.h"
 #include "appearance/ColorTintInspector.h"
 #include "appearance/TextureSlotInspector.h"
+#include "scene/SceneActivity.h"
 
 #include "assets/AssetDragDrop.h"
 #include "camera/CameraInspector.h"
@@ -244,6 +245,16 @@ bool InspectorPanel::Draw(
 		}
 	}
 
+	bool active = object->active;
+	if (ImGui::Checkbox("Active", &active)) {
+		const SceneObjectId targets[]{inspectedObjectId};
+		changed |= history.SetActive(targets, active);
+		// グループ履歴の確定でシーンの物体を置き換えるため、参照を取得し直す。
+		object = scene.FindObject(inspectedObjectId);
+	}
+	ui.Text(SceneActivity::IsActive(scene, inspectedObjectId)
+	            ? "Active in Hierarchy: Yes"
+	            : "Active in Hierarchy: No");
 	ui.Text(std::format("ID: {}", inspectedObjectId));
 	ui.Separator();
 
@@ -661,6 +672,10 @@ InspectorPanel::DrawReadOnly(const ImGuiSystem &ui, const Scene &scene,
 	}
 
 	ui.Text(std::format("Name: {}", object->name));
+	ui.Text(object->active ? "Active: Yes" : "Active: No");
+	ui.Text(SceneActivity::IsActive(scene, selectedObjectId)
+	            ? "Active in Hierarchy: Yes"
+	            : "Active in Hierarchy: No");
 	ui.Text(std::format("ID: {}", selectedObjectId));
 
 	std::optional<Transform> copied;

@@ -1,4 +1,5 @@
 #include "panels/HierarchyPanel.h"
+#include "scene/SceneActivity.h"
 
 #include "gameplay/FollowCameraUsage.h"
 #include "graphics/ui/ImGuiSystem.h"
@@ -270,16 +271,19 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 			                                  : std::string_view{object.name};
 
 			// アクティブ物体に印を付けても、項目のIDは変えない
-			const auto label =
-			    std::format("{}{}{}{}###SceneObject{}",
-			                selection.GetActiveId() == id ? "> " : "  ",
-			                !object.IsHidden() ? "" : "[Hidden] ",
-			                std::find(scenePickingDisabled_.begin(),
-			                          scenePickingDisabled_.end(),
-			                          id) != scenePickingDisabled_.end()
-			                    ? "[No Scene Pick] "
-			                    : "",
-			                name, id);
+			const auto label = std::format(
+			    "{}{}{}{}{}###SceneObject{}",
+			    selection.GetActiveId() == id ? "> " : "  ",
+			    !SceneActivity::IsActive(scene, id)
+			        ? (object.active ? "[Inactive Parent] " : "[Inactive] ")
+			        : "",
+			    !object.IsHidden() ? "" : "[Hidden] ",
+			    std::find(scenePickingDisabled_.begin(),
+			              scenePickingDisabled_.end(),
+			              id) != scenePickingDisabled_.end()
+			        ? "[No Scene Pick] "
+			        : "",
+			    name, id);
 
 			const auto &io = ImGui::GetIO();
 
@@ -471,6 +475,7 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 				bool canHide = false;
 				bool canShow = false;
+				bool canEnable = false, canDisable = false;
 				bool canGround = false;
 
 				for (const auto selectedId : selection.GetIds()) {
@@ -478,10 +483,18 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 						canHide |=
 						    selected->meshRenderer && !selected->IsHidden();
 						canShow |= selected->IsHidden();
+						canEnable |= !selected->active;
+						canDisable |= selected->active;
 						canGround |= selected->IsRenderable();
 					}
 				}
 
+				if (ui.MenuItem("Enable Selected", nullptr, canEnable)) {
+					result.action = Action::ENABLE_OBJECTS;
+				}
+				if (ui.MenuItem("Disable Selected", nullptr, canDisable)) {
+					result.action = Action::DISABLE_OBJECTS;
+				}
 				if (ui.MenuItem("Hide Selected", nullptr, canHide)) {
 					result.action = Action::HIDE_OBJECTS;
 				}

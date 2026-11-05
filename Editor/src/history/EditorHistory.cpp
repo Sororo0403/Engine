@@ -886,6 +886,46 @@ bool EditorHistory::SetVisibility(std::span<const SceneObjectId> objectIds,
 	return true;
 }
 
+bool EditorHistory::SetActive(std::span<const SceneObjectId> objectIds,
+                              bool active) {
+	CommitEdit();
+
+	if (objectIds.empty()) {
+		return false;
+	}
+
+	std::set<SceneObjectId> seen;
+	std::vector<CommandGroup::Command> commands;
+	commands.reserve(objectIds.size());
+
+	for (const auto id : objectIds) {
+		const auto *object = scene_.FindObject(id);
+
+		if (!object || !seen.insert(id).second) {
+			return false;
+		}
+
+		if (object->active != active) {
+			commands.emplace_back(ActiveCommand{id, object->active, active});
+		}
+	}
+
+	if (commands.empty()) {
+		return true;
+	}
+
+	CommandGroup group{std::move(commands)};
+	const auto next = PrepareAppend();
+
+	if (!group.Redo(scene_)) {
+		return false;
+	}
+
+	AppendPrepared(Command{std::move(group)}, next,
+	               active ? "Enable Objects" : "Disable Objects");
+	return true;
+}
+
 bool EditorHistory::AlignCameraView(SceneObjectId id, const CameraPose &pose,
                                     std::optional<CameraSettings> projection) {
 	CommitEdit();

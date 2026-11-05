@@ -155,6 +155,12 @@
     <ClCompile Include="src\scene\SceneGrid.cpp">
       <Filter>src\scene</Filter>
     </ClCompile>
+    <ClCompile Include="src\history\ActiveCommand.cpp">
+      <Filter>src\history</Filter>
+    </ClCompile>
+    <ClInclude Include="include\history\ActiveCommand.h">
+      <Filter>include\history</Filter>
+    </ClInclude>
     <ClCompile Include="src\history\VisibilityCommand.cpp">
       <Filter>src\history</Filter>
     </ClCompile>

@@ -1,4 +1,5 @@
 #include "scene/EditorScene.h"
+#include "scene/SceneActivity.h"
 #include "scene/SceneHierarchy.h"
 
 #include "assets/AssetFolders.h"
@@ -775,6 +776,15 @@ bool EditorScene::Update(float deltaTime) {
 					break;
 				case HierarchyPanel::Action::SELECT_FOLLOW_CAMERAS:
 					SelectFollowingCameras();
+					break;
+				case HierarchyPanel::Action::ENABLE_OBJECTS:
+				case HierarchyPanel::Action::DISABLE_OBJECTS:
+					if (!document_.GetHistory().SetActive(
+					        selection_.GetIds(),
+					        hierarchyRequest.action ==
+					            HierarchyPanel::Action::ENABLE_OBJECTS)) {
+						ShowError("Could not change object activity.");
+					}
 					break;
 				case HierarchyPanel::Action::HIDE_OBJECTS:
 					ChangeVisibility(selection_.GetIds(), false);
@@ -4554,7 +4564,8 @@ bool EditorScene::ApplySceneSelection(
 	}
 
 	for (const auto &[id, object] : scene.GetObjects()) {
-		if (std::find(excluded.begin(), excluded.end(), id) != excluded.end()) {
+		if (!SceneActivity::IsActive(scene, id) ||
+		    std::find(excluded.begin(), excluded.end(), id) != excluded.end()) {
 			continue;
 		}
 
@@ -4742,7 +4753,8 @@ bool EditorScene::FrameObjects(FrameRequest request,
 	    request == FrameRequest::SELECTED || includeHidden;
 
 	for (const auto &[id, object] : scene.GetObjects()) {
-		if ((object.IsHidden() && object.HasMesh() && !includeHidden) ||
+		if ((!selectedOnly && !SceneActivity::IsActive(scene, id)) ||
+		    (object.IsHidden() && object.HasMesh() && !includeHidden) ||
 		    (selectedOnly && !selection.Contains(id))) {
 			continue;
 		}
@@ -4755,7 +4767,8 @@ bool EditorScene::FrameObjects(FrameRequest request,
 		        ? ObjectFrameBounds::Get(scene, id, corners, missingModel)
 		        : renderer.GetObjectBounds(id, corners);
 		// 非表示・読み込み不能なモデルも、検証結果や再生状態からはColliderか原点へ寄せられる。
-		if (!boundsReady && includeHidden) {
+		if (!boundsReady &&
+		    (includeHidden || !SceneActivity::IsActive(scene, id))) {
 			boundsReady = ObjectFrameBounds::Get(scene, id, corners, true);
 		}
 

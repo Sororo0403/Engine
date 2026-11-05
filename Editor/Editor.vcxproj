@@ -169,6 +169,8 @@
     <ClCompile Include="src\settings\RecentScenes.cpp" />
     <ClCompile Include="src\history\RenameCommand.cpp" />
     <ClCompile Include="src\history\ModelPathCommand.cpp" />
+    <ClCompile Include="src\history\ActiveCommand.cpp" />
+    <ClInclude Include="include\history\ActiveCommand.h" />
     <ClCompile Include="src\history\VisibilityCommand.cpp" />
     <ClCompile Include="src\scene\SceneGrid.cpp" />
     <ClCompile Include="src\history\ObjectCommand.cpp" />

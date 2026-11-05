@@ -1,4 +1,5 @@
 #include "assets/ModelPlacement.h"
+#include "scene/SceneActivity.h"
 
 #include "math/MathUtils.h"
 #include "math/Ray.h"
@@ -166,8 +167,9 @@ bool ModelPlacement::GetSurface(const Ray &ray, const Scene &scene,
 	for (const auto &[id, object] : scene.GetObjects()) {
 		AxisAlignedBox box;
 
-		if (!object.collider || !BoxColliderUtils::GetWorldBounds(
-		                            *object.collider, scene, id, box)) {
+		if (!SceneActivity::IsActive(scene, id) || !object.collider ||
+		    !BoxColliderUtils::GetWorldBounds(*object.collider, scene, id,
+		                                      box)) {
 			continue;
 		}
 

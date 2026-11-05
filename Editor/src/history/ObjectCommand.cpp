@@ -31,7 +31,7 @@ bool ObjectCommand::Remove(Scene &scene) const {
 
 	if (!current || current->name != object_.name ||
 	    current->parentId != object_.parentId ||
-	    current->mesh != object_.mesh ||
+	    current->active != object_.active || current->mesh != object_.mesh ||
 	    current->meshRenderer != object_.meshRenderer ||
 	    current->colorTint != object_.colorTint ||
 	    current->collider != object_.collider ||

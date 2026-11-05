@@ -1,4 +1,5 @@
 #include "selection/ObjectMarkers.h"
+#include "scene/SceneActivity.h"
 
 #include "math/MathUtils.h"
 #include "math/Ray.h"
@@ -105,7 +106,8 @@ SceneObjectId ObjectMarkers::Pick(const Scene &scene, const Ray &ray,
 	SceneObjectId picked = 0;
 
 	for (const auto &[id, object] : scene.GetObjects()) {
-		if (std::find(excluded.begin(), excluded.end(), id) != excluded.end()) {
+		if (!SceneActivity::IsActive(scene, id) ||
+		    std::find(excluded.begin(), excluded.end(), id) != excluded.end()) {
 			continue;
 		}
 
@@ -140,6 +142,10 @@ SceneObjectId ObjectMarkers::Pick(const Scene &scene, const Ray &ray,
 bool ObjectMarkers::Update(SceneRenderer &renderer, const Scene &scene,
                            std::span<const SceneObjectId> selected) const {
 	for (const auto &[id, object] : scene.GetObjects()) {
+		if (!SceneActivity::IsActive(scene, id) &&
+		    std::find(selected.begin(), selected.end(), id) == selected.end()) {
+			continue;
+		}
 		Lines lines;
 
 		SceneWorldTransform world;

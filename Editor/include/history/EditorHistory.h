@@ -1,6 +1,7 @@
 #pragma once
 
 #include "graphics/camera/CameraPose.h"
+#include "history/ActiveCommand.h"
 #include "history/AlignmentAxis.h"
 #include "history/ColliderCommand.h"
 #include "history/CommandGroup.h"
@@ -516,6 +517,14 @@ class EditorHistory {
 	bool SetVisibility(std::span<const SceneObjectId> objectIds, bool visible);
 
 	/// <summary>
+	/// 指定した物体自身の有効設定をまとめて変更し、1操作として記録する。子の設定は上書きしない
+	/// </summary>
+	/// <param name="objectIds">重複のない既存ID一覧</param>
+	/// <param name="active">変更後のローカル有効設定</param>
+	/// <returns>true:変更成功または同値 false:対象なし、重複、不在ID、または履歴との不一致</returns>
+	bool SetActive(std::span<const SceneObjectId> objectIds, bool active);
+
+	/// <summary>
 	/// 指定物体へ同じ変形情報を適用し、1操作として記録する。編集中の内容は先に確定する
 	/// </summary>
 	/// <param name="objectIds">重複のない対象ID一覧</param>
@@ -621,9 +630,10 @@ class EditorHistory {
 	using Command =
 	    std::variant<TransformCommand, ObjectCommand, ParentCommand,
 	                 RenameCommand, ModelPathCommand, VisibilityCommand,
-	                 ColliderCommand, CharacterCommand, FollowCameraCommand,
-	                 RespawnCommand, CameraCommand, MeshRendererCommand,
-	                 ColorTintCommand, TextureSlotsCommand, CommandGroup>;
+	                 ActiveCommand, ColliderCommand, CharacterCommand,
+	                 FollowCameraCommand, RespawnCommand, CameraCommand,
+	                 MeshRendererCommand, ColorTintCommand, TextureSlotsCommand,
+	                 CommandGroup>;
 
 	/// <summary>
 	/// 操作と、その前後の状態を識別する情報

@@ -1,4 +1,5 @@
 #include "physics/ColliderPlacement.h"
+#include "scene/SceneActivity.h"
 
 #include "history/ObjectArraySettings.h"
 #include "physics/BoxColliderUtils.h"
@@ -98,7 +99,8 @@ bool ColliderPlacement::GetDropTranslation(
 	std::map<SceneObjectId, AxisAlignedBox> bodies, obstacles;
 
 	for (const auto &[id, object] : scene.GetObjects()) {
-		if (!object.collider) {
+		if (!object.collider ||
+		    (!selected.contains(id) && !SceneActivity::IsActive(scene, id))) {
 			continue;
 		}
 
