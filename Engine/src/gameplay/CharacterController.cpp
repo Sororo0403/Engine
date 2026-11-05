@@ -47,7 +47,7 @@ bool CharacterController::Initialize(const DirectX::XMFLOAT4X4 &worldMatrix,
 
 	if (!settings.IsValid() ||
 	    !BoxColliderUtils::GetWorldBounds(collider, worldMatrix, body) ||
-	    !world.CanPlace(body)) {
+	    !world.CanPlace(body, collider.filter)) {
 		return false;
 	}
 
@@ -64,9 +64,9 @@ bool CharacterController::Initialize(const DirectX::XMFLOAT4X4 &worldMatrix,
 	jumpBufferRemaining_ = 0.0;
 	initialized_ = true;
 	CollisionMoveResult contact;
-	grounded_ =
-	    world.Move(body, {0.0f, -kGroundProbeDistance, 0.0f}, contact) &&
-	    contact.grounded;
+	grounded_ = world.Move(body, {0.0f, -kGroundProbeDistance, 0.0f}, contact,
+	                       collider_.filter) &&
+	            contact.grounded;
 	coyoteRemaining_ = grounded_ ? settings_.coyoteTime : 0.0;
 	return true;
 }
@@ -121,8 +121,9 @@ bool CharacterController::FindGroundObject(const CollisionWorld &world,
 
 	if (!initialized_ ||
 	    !BoxColliderUtils::GetWorldBounds(collider_, worldMatrix_, body) ||
-	    !world.CanPlace(body) ||
-	    !world.Sweep(body, {0.0f, -kGroundProbeDistance, 0.0f}, contact)) {
+	    !world.CanPlace(body, collider_.filter) ||
+	    !world.Sweep(body, {0.0f, -kGroundProbeDistance, 0.0f}, contact,
+	                 collider_.filter)) {
 		return false;
 	}
 
@@ -140,7 +141,8 @@ bool CharacterController::Step(const CharacterInput &input,
 
 	CollisionMoveResult ground;
 	grounded_ = verticalVelocity_ <= 0.0f &&
-	            world.Move(body, {0.0f, -kGroundProbeDistance, 0.0f}, ground) &&
+	            world.Move(body, {0.0f, -kGroundProbeDistance, 0.0f}, ground,
+	                       collider_.filter) &&
 	            ground.grounded;
 
 	if (grounded_) {
@@ -178,7 +180,7 @@ bool CharacterController::Step(const CharacterInput &input,
 	                       step)};
 	CollisionMoveResult movement;
 
-	if (!world.Move(body, requested, movement)) {
+	if (!world.Move(body, requested, movement, collider_.filter)) {
 		return false;
 	}
 
@@ -193,7 +195,7 @@ bool CharacterController::Step(const CharacterInput &input,
 	AxisAlignedBox movedBody;
 
 	if (!BoxColliderUtils::GetWorldBounds(collider_, matrix, movedBody) ||
-	    !world.CanPlace(movedBody)) {
+	    !world.CanPlace(movedBody, collider_.filter)) {
 		return false;
 	}
 
@@ -228,7 +230,7 @@ bool CharacterController::SynchronizeWorldMatrix(
 	AxisAlignedBox body;
 	if (!initialized_ ||
 	    !BoxColliderUtils::GetWorldBounds(collider_, worldMatrix, body) ||
-	    !world.CanPlace(body)) {
+	    !world.CanPlace(body, collider_.filter)) {
 		return false;
 	}
 	worldMatrix_ = worldMatrix;

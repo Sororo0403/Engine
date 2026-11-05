@@ -484,6 +484,9 @@
     <ClInclude Include="include\physics\AxisAlignedBox.h">
       <Filter>include\physics</Filter>
     </ClInclude>
+    <ClInclude Include="include\physics\CollisionFilter.h">
+      <Filter>include\physics</Filter>
+    </ClInclude>
     <ClInclude Include="include\physics\BoxCollider.h">
       <Filter>include\physics</Filter>
     </ClInclude>

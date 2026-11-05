@@ -36,7 +36,7 @@ bool RespawnPreview::BuildGeometry(const Scene &scene, SceneObjectId id,
 			result.canRespawn =
 			    SceneHierarchy::GetSubtree(scene, id, ignored) &&
 			    world.Rebuild(scene, std::span<const SceneObjectId>{ignored}) &&
-			    world.CanPlace(body);
+			    world.CanPlace(body, object->collider->filter);
 		}
 	}
 
@@ -238,7 +238,8 @@ bool RespawnPreview::FindBlockingObjects(const Scene &scene, SceneObjectId id,
 	std::vector<SceneObjectId> result, ignored;
 	if (!GetColliderBounds(scene, id, body) ||
 	    !SceneHierarchy::GetSubtree(scene, id, ignored) ||
-	    !CollisionWorld::FindOverlaps(scene, body, result)) {
+	    !CollisionWorld::FindOverlaps(scene, body, result, 0,
+	                                  scene.FindObject(id)->collider->filter)) {
 		return false;
 	}
 

@@ -12,7 +12,7 @@ class Scene;
 namespace BoxColliderUtils {
 
 /// <summary>
-/// 中心と半分の大きさが有限で、各軸の大きさが正か確認する
+/// 形状が有限で各軸の大きさが正、かつ衝突レイヤーが有効か確認する
 /// </summary>
 /// <param name="collider">確認する衝突形状</param>
 /// <returns>true:有効 false:無効</returns>
@@ -22,7 +22,7 @@ bool IsValid(const BoxCollider &collider);
 /// モデルなどのローカル座標の頂点を囲む衝突形状を作る
 /// </summary>
 /// <param name="points">有限のローカル座標の頂点</param>
-/// <param name="collider">成功時に設定する形状</param>
+/// <param name="collider">成功時に形状を設定する。衝突レイヤーとマスクは保持する</param>
 /// <param name="minimumHalfExtent">厚みのない軸にも設定する半分の大きさ</param>
 /// <returns>true:成功 false:頂点なし、または値が無効。失敗時は出力を保持する</returns>
 bool FitToPoints(std::span<const DirectX::XMFLOAT3> points,

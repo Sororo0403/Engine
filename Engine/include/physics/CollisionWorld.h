@@ -1,10 +1,12 @@
 #pragma once
 
 #include "physics/AxisAlignedBox.h"
+#include "physics/CollisionFilter.h"
 #include "physics/CollisionMoveResult.h"
 #include "physics/CollisionSweepResult.h"
 #include "scene/SceneObjectId.h"
 
+#include <optional>
 #include <span>
 #include <vector>
 
@@ -40,8 +42,11 @@ class CollisionWorld {
 	/// 有効なボックスを障害物と重ならず配置できるか確認する。面への接触は許可する
 	/// </summary>
 	/// <param name="body">配置するワールド座標のボックス</param>
+	/// <param name="filter">問い合わせ元の衝突設定。未指定はマスクを無視して全形状を調べる</param>
 	/// <returns>true:配置可能 false:値が無効、または障害物と重なる</returns>
-	bool CanPlace(const AxisAlignedBox &body) const;
+	bool
+	CanPlace(const AxisAlignedBox &body,
+	         const std::optional<CollisionFilter> &filter = std::nullopt) const;
 
 	/// <summary>
 	/// 指定したボックスと体積が重なるColliderの物体IDをシーンから検索する。
@@ -51,10 +56,13 @@ class CollisionWorld {
 	/// <param name="body">検索する有効なワールド座標のボックス</param>
 	/// <param name="objects">成功時に置き換えるID昇順の結果。重複なし。該当なしは空</param>
 	/// <param name="ignoredObject">検索から除く物体ID。0は除外なし</param>
+	/// <param name="filter">問い合わせ元の衝突設定。未指定は幾何的な重なりを検索する</param>
 	/// <returns>true:検索成功 false:ボックスや障害物の形状が無効。失敗や例外時は結果を保持する</returns>
-	static bool FindOverlaps(const Scene &scene, const AxisAlignedBox &body,
-	                         std::vector<SceneObjectId> &objects,
-	                         SceneObjectId ignoredObject = 0);
+	static bool
+	FindOverlaps(const Scene &scene, const AxisAlignedBox &body,
+	             std::vector<SceneObjectId> &objects,
+	             SceneObjectId ignoredObject = 0,
+	             const std::optional<CollisionFilter> &filter = std::nullopt);
 
 	/// <summary>
 	/// ボックスを直線移動したとき、最初に体積が重なり始めるColliderと移動割合を調べる
@@ -62,11 +70,13 @@ class CollisionWorld {
 	/// <param name="body">開始位置の有効なワールド座標のボックス</param>
 	/// <param name="displacement">調べるワールド座標の移動量。ゼロも指定できる</param>
 	/// <param name="result">成功時に置き換える接触結果。同時刻の接触では小さい物体IDを優先する</param>
+	/// <param name="filter">問い合わせ元の衝突設定。未指定は全形状を調べる</param>
 	/// <returns>true:問い合わせ成功 false:ボックスや移動量が無効。失敗時は出力を保持する</returns>
 	/// <remarks>開始時の重なりは割合0として返す。面に沿う移動や辺を掠めるだけの接触は除く。終点での接触は含む</remarks>
-	bool Sweep(const AxisAlignedBox &body,
-	           const DirectX::XMFLOAT3 &displacement,
-	           CollisionSweepResult &result) const;
+	bool
+	Sweep(const AxisAlignedBox &body, const DirectX::XMFLOAT3 &displacement,
+	      CollisionSweepResult &result,
+	      const std::optional<CollisionFilter> &filter = std::nullopt) const;
 
 	/// <summary>
 	/// 移動経路で最初に接触する位置を調べ、障害物に沿った滑りを反映する
@@ -74,9 +84,12 @@ class CollisionWorld {
 	/// <param name="body">開始位置のワールド座標のボックス</param>
 	/// <param name="displacement">要求するワールド座標の移動量</param>
 	/// <param name="result">成功時に設定する移動量と接触状態</param>
+	/// <param name="filter">移動する形状の衝突設定。未指定は全形状と衝突する</param>
 	/// <returns>true:成功 false:開始状態や移動結果が無効。失敗時は出力を保持する</returns>
-	bool Move(const AxisAlignedBox &body, const DirectX::XMFLOAT3 &displacement,
-	          CollisionMoveResult &result) const;
+	bool
+	Move(const AxisAlignedBox &body, const DirectX::XMFLOAT3 &displacement,
+	     CollisionMoveResult &result,
+	     const std::optional<CollisionFilter> &filter = std::nullopt) const;
 
   private:
 	/// <summary>
@@ -85,6 +98,7 @@ class CollisionWorld {
 	struct Obstacle {
 		SceneObjectId objectId;
 		AxisAlignedBox bounds;
+		CollisionFilter filter;
 	};
 
 	std::vector<Obstacle> obstacles_;

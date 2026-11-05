@@ -8,7 +8,7 @@
 #include <cmath>
 
 bool BoxColliderUtils::IsValid(const BoxCollider &collider) {
-	return MathUtils::IsFinite(collider.center) &&
+	return collider.filter.IsValid() && MathUtils::IsFinite(collider.center) &&
 	       MathUtils::IsFinite(collider.halfExtents) &&
 	       collider.halfExtents.x > 0.0f && collider.halfExtents.y > 0.0f &&
 	       collider.halfExtents.z > 0.0f;
@@ -47,7 +47,8 @@ bool BoxColliderUtils::FitToPoints(std::span<const DirectX::XMFLOAT3> points,
 	    {middle(minimum.x, maximum.x), middle(minimum.y, maximum.y),
 	     middle(minimum.z, maximum.z)},
 	    {half(minimum.x, maximum.x), half(minimum.y, maximum.y),
-	     half(minimum.z, maximum.z)}};
+	     half(minimum.z, maximum.z)},
+	    collider.filter};
 
 	if (!IsValid(candidate))
 		return false;

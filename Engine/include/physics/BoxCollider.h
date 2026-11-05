@@ -1,5 +1,7 @@
 #pragma once
 
+#include "physics/CollisionFilter.h"
+
 #include <DirectXMath.h>
 
 /// <summary>
@@ -8,6 +10,7 @@
 struct BoxCollider {
 	DirectX::XMFLOAT3 center{};
 	DirectX::XMFLOAT3 halfExtents{0.5f, 0.5f, 0.5f};
+	CollisionFilter filter{};
 
 	/// <summary>
 	/// 設定値が一致するか確認する
@@ -19,6 +22,6 @@ struct BoxCollider {
 		       center.z == other.center.z &&
 		       halfExtents.x == other.halfExtents.x &&
 		       halfExtents.y == other.halfExtents.y &&
-		       halfExtents.z == other.halfExtents.z;
+		       halfExtents.z == other.halfExtents.z && filter == other.filter;
 	}
 };

@@ -136,20 +136,23 @@ bool CollisionWorld::Rebuild(const Scene &scene,
 			return false;
 		}
 
-		candidate.push_back({id, bounds});
+		candidate.push_back({id, bounds, object.collider->filter});
 	}
 
 	obstacles_.swap(candidate);
 	return true;
 }
 
-bool CollisionWorld::CanPlace(const AxisAlignedBox &body) const {
-	if (!Valid(body)) {
+bool CollisionWorld::CanPlace(
+    const AxisAlignedBox &body,
+    const std::optional<CollisionFilter> &filter) const {
+	if (!Valid(body) || (filter && !filter->IsValid())) {
 		return false;
 	}
 
 	for (const auto &obstacle : obstacles_) {
-		if (Overlaps(body, obstacle.bounds)) {
+		if ((!filter || filter->CanCollide(obstacle.filter)) &&
+		    Overlaps(body, obstacle.bounds)) {
 			return false;
 		}
 	}
@@ -157,11 +160,11 @@ bool CollisionWorld::CanPlace(const AxisAlignedBox &body) const {
 	return true;
 }
 
-bool CollisionWorld::FindOverlaps(const Scene &scene,
-                                  const AxisAlignedBox &body,
-                                  std::vector<SceneObjectId> &objects,
-                                  SceneObjectId ignoredObject) {
-	if (!Valid(body)) {
+bool CollisionWorld::FindOverlaps(
+    const Scene &scene, const AxisAlignedBox &body,
+    std::vector<SceneObjectId> &objects, SceneObjectId ignoredObject,
+    const std::optional<CollisionFilter> &filter) {
+	if (!Valid(body) || (filter && !filter->IsValid())) {
 		return false;
 	}
 
@@ -183,7 +186,8 @@ bool CollisionWorld::FindOverlaps(const Scene &scene,
 			return false;
 		}
 
-		if (Overlaps(body, box)) {
+		if ((!filter || filter->CanCollide(object.collider->filter)) &&
+		    Overlaps(body, box)) {
 			result.push_back(id);
 		}
 	}
@@ -194,8 +198,10 @@ bool CollisionWorld::FindOverlaps(const Scene &scene,
 
 bool CollisionWorld::Sweep(const AxisAlignedBox &body,
                            const DirectX::XMFLOAT3 &displacement,
-                           CollisionSweepResult &result) const {
-	if (!Valid(body) || !MathUtils::IsFinite(displacement)) {
+                           CollisionSweepResult &result,
+                           const std::optional<CollisionFilter> &filter) const {
+	if (!Valid(body) || !MathUtils::IsFinite(displacement) ||
+	    (filter && !filter->IsValid())) {
 		return false;
 	}
 
@@ -204,6 +210,10 @@ bool CollisionWorld::Sweep(const AxisAlignedBox &body,
 	           movement = ToVector(displacement);
 	CollisionSweepResult candidate;
 	for (const auto &obstacle : obstacles_) {
+		if (filter && !filter->CanCollide(obstacle.filter)) {
+			continue;
+		}
+
 		double time = 0;
 		unsigned int axes = 0;
 		if (!Overlaps(body, obstacle.bounds) &&
@@ -225,8 +235,9 @@ bool CollisionWorld::Sweep(const AxisAlignedBox &body,
 
 bool CollisionWorld::Move(const AxisAlignedBox &body,
                           const DirectX::XMFLOAT3 &displacement,
-                          CollisionMoveResult &result) const {
-	if (!CanPlace(body) || !MathUtils::IsFinite(displacement)) {
+                          CollisionMoveResult &result,
+                          const std::optional<CollisionFilter> &filter) const {
+	if (!CanPlace(body, filter) || !MathUtils::IsFinite(displacement)) {
 		return false;
 	}
 
@@ -247,6 +258,10 @@ bool CollisionWorld::Move(const AxisAlignedBox &body,
 		unsigned int blocked = 0;
 
 		for (const auto &obstacle : obstacles_) {
+			if (filter && !filter->CanCollide(obstacle.filter)) {
+				continue;
+			}
+
 			double time;
 			unsigned int axes;
 
@@ -307,7 +322,7 @@ bool CollisionWorld::Move(const AxisAlignedBox &body,
 	                    static_cast<float>(finalMax[1]),
 	                    static_cast<float>(finalMax[2])};
 
-	if (!CanPlace(finalBox)) {
+	if (!CanPlace(finalBox, filter)) {
 		return false;
 	}
 
