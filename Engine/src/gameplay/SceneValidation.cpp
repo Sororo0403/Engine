@@ -62,8 +62,10 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose) {
 				firstCharacter = id;
 			}
 
-			if (!object.collider || !object.character->IsValid()) {
-				add(id, "Character Controller requires a Box Collider and "
+			if (!object.collider || object.collider->isTrigger ||
+			    !object.character->IsValid()) {
+				add(id, "Character Controller requires a non-trigger Box "
+				        "Collider and "
 				        "valid movement settings.");
 			}
 		}

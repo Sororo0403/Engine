@@ -11,6 +11,8 @@ struct BoxCollider {
 	DirectX::XMFLOAT3 center{};
 	DirectX::XMFLOAT3 halfExtents{0.5f, 0.5f, 0.5f};
 	CollisionFilter filter{};
+	// 有効時は移動を止めず、Triggerイベントだけを生成する
+	bool isTrigger = false;
 
 	/// <summary>
 	/// 設定値が一致するか確認する
@@ -22,6 +24,7 @@ struct BoxCollider {
 		       center.z == other.center.z &&
 		       halfExtents.x == other.halfExtents.x &&
 		       halfExtents.y == other.halfExtents.y &&
-		       halfExtents.z == other.halfExtents.z && filter == other.filter;
+		       halfExtents.z == other.halfExtents.z && filter == other.filter &&
+		       isTrigger == other.isTrigger;
 	}
 };

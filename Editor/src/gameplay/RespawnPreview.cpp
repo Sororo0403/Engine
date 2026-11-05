@@ -30,6 +30,7 @@ bool RespawnPreview::BuildGeometry(const Scene &scene, SceneObjectId id,
 		}
 
 		if (object->character && object->character->IsValid() &&
+		    !object->collider->isTrigger &&
 		    result.markers[3].start.y > settings.minimumY) {
 			CollisionWorld world;
 			std::vector<SceneObjectId> ignored;
@@ -239,7 +240,8 @@ bool RespawnPreview::FindBlockingObjects(const Scene &scene, SceneObjectId id,
 	if (!GetColliderBounds(scene, id, body) ||
 	    !SceneHierarchy::GetSubtree(scene, id, ignored) ||
 	    !CollisionWorld::FindOverlaps(scene, body, result, 0,
-	                                  scene.FindObject(id)->collider->filter)) {
+	                                  scene.FindObject(id)->collider->filter,
+	                                  false)) {
 		return false;
 	}
 

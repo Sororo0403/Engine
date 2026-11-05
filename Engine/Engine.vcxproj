@@ -283,6 +283,10 @@ exit /b 0</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="include\physics\AxisAlignedBox.h" />
+    <ClInclude Include="include\physics\TriggerContact.h" />
+    <ClInclude Include="include\physics\TriggerEvent.h" />
+    <ClInclude Include="include\physics\TriggerWorld.h" />
+    <ClCompile Include="src\physics\TriggerWorld.cpp" />
     <ClInclude Include="include\physics\CollisionFilter.h" />
     <ClInclude Include="include\physics\BoxCollider.h" />
     <ClInclude Include="include\physics\BoxColliderUtils.h" />

@@ -4,9 +4,11 @@
 #include "gameplay/CharacterRuntimeState.h"
 #include "graphics/camera/CameraPose.h"
 #include "physics/CollisionWorld.h"
+#include "physics/TriggerWorld.h"
 #include "scene/Scene.h"
 #include <map>
 #include <optional>
+#include <span>
 #include <string>
 #include <vector>
 
@@ -86,9 +88,26 @@ class SceneSimulation {
 		return cameraSettings_;
 	}
 
+	/// <summary>
+	/// 開始時または最後の正の時間の更新で生成したTriggerイベントを取得する。一時停止相当の0秒更新では保持する
+	/// </summary>
+	/// <returns>組のID順のイベント。次の正の時間の更新成功・再生開始・停止まで有効</returns>
+	std::span<const TriggerEvent> GetTriggerEvents() const {
+		return triggers_.GetEvents();
+	}
+
+	/// <summary>
+	/// 再生シーンで現在重なるTriggerの組を取得する
+	/// </summary>
+	/// <returns>少なくとも一方がTriggerである接触の一覧。停止中は空</returns>
+	std::span<const TriggerContact> GetTriggerContacts() const {
+		return triggers_.GetContacts();
+	}
+
   private:
 	Scene scene_;
 	CollisionWorld world_;
+	TriggerWorld triggers_;
 	CharacterController controller_;
 	SceneObjectId character_ = 0, camera_ = 0;
 	std::vector<SceneObjectId> updateOrder_;

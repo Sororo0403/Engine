@@ -153,7 +153,13 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 			return false;
 		}
 
+		TriggerWorld triggers;
+		if (!triggers.Reset(working)) {
+			error = "Trigger world shapes or hierarchy are invalid.";
+			return false;
+		}
 		scene_.ReplaceObjects(working.GetObjects());
+		triggers_ = std::move(triggers);
 		world_ = std::move(world);
 		controller_ = controller;
 		character_ = character;
@@ -175,6 +181,7 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 
 void SceneSimulation::Stop() {
 	playing_ = false;
+	triggers_.Clear();
 	scene_.ReplaceObjects({});
 	character_ = camera_ = 0;
 	updateOrder_.clear();
@@ -277,7 +284,21 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input) {
 			    !next.SynchronizeWorldMatrix(transform.matrix, world))
 				return false;
 		}
+		std::optional<TriggerWorld> triggers;
+		// 落下復帰では主人公と子孫の瞬間移動経路を検知しない。
+		// 終点でのEnterと、開始時の接触に対するExitは通常どおり生成する。
+		if (seconds > 0) {
+			triggers = triggers_;
+			if (!triggers->Update(
+			        working, respawned ? std::span<const SceneObjectId>{ignored}
+			                           : std::span<const SceneObjectId>{})) {
+				return false;
+			}
+		}
 		scene_.ReplaceObjects(working.GetObjects());
+		if (triggers) {
+			triggers_ = std::move(*triggers);
+		}
 		controller_ = next;
 		world_ = std::move(world);
 		followPoses_ = std::move(follows);

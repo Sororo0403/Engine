@@ -484,6 +484,18 @@
     <ClInclude Include="include\physics\AxisAlignedBox.h">
       <Filter>include\physics</Filter>
     </ClInclude>
+    <ClInclude Include="include\physics\TriggerContact.h">
+      <Filter>include\physics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\physics\TriggerEvent.h">
+      <Filter>include\physics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\physics\TriggerWorld.h">
+      <Filter>include\physics</Filter>
+    </ClInclude>
+    <ClCompile Include="src\physics\TriggerWorld.cpp">
+      <Filter>src\physics</Filter>
+    </ClCompile>
     <ClInclude Include="include\physics\CollisionFilter.h">
       <Filter>include\physics</Filter>
     </ClInclude>

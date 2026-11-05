@@ -45,7 +45,7 @@ bool CharacterController::Initialize(const DirectX::XMFLOAT4X4 &worldMatrix,
                                      const CollisionWorld &world) {
 	AxisAlignedBox body;
 
-	if (!settings.IsValid() ||
+	if (collider.isTrigger || !settings.IsValid() ||
 	    !BoxColliderUtils::GetWorldBounds(collider, worldMatrix, body) ||
 	    !world.CanPlace(body, collider.filter)) {
 		return false;

@@ -136,7 +136,9 @@ bool CollisionWorld::Rebuild(const Scene &scene,
 			return false;
 		}
 
-		candidate.push_back({id, bounds, object.collider->filter});
+		if (!object.collider->isTrigger) {
+			candidate.push_back({id, bounds, object.collider->filter});
+		}
 	}
 
 	obstacles_.swap(candidate);
@@ -160,10 +162,12 @@ bool CollisionWorld::CanPlace(
 	return true;
 }
 
-bool CollisionWorld::FindOverlaps(
-    const Scene &scene, const AxisAlignedBox &body,
-    std::vector<SceneObjectId> &objects, SceneObjectId ignoredObject,
-    const std::optional<CollisionFilter> &filter) {
+bool CollisionWorld::FindOverlaps(const Scene &scene,
+                                  const AxisAlignedBox &body,
+                                  std::vector<SceneObjectId> &objects,
+                                  SceneObjectId ignoredObject,
+                                  const std::optional<CollisionFilter> &filter,
+                                  bool includeTriggers) {
 	if (!Valid(body) || (filter && !filter->IsValid())) {
 		return false;
 	}
@@ -186,7 +190,8 @@ bool CollisionWorld::FindOverlaps(
 			return false;
 		}
 
-		if ((!filter || filter->CanCollide(object.collider->filter)) &&
+		if ((includeTriggers || !object.collider->isTrigger) &&
+		    (!filter || filter->CanCollide(object.collider->filter)) &&
 		    Overlaps(body, box)) {
 			result.push_back(id);
 		}

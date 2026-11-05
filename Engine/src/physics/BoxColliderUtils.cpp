@@ -48,7 +48,8 @@ bool BoxColliderUtils::FitToPoints(std::span<const DirectX::XMFLOAT3> points,
 	     middle(minimum.z, maximum.z)},
 	    {half(minimum.x, maximum.x), half(minimum.y, maximum.y),
 	     half(minimum.z, maximum.z)},
-	    collider.filter};
+	    collider.filter,
+	    collider.isTrigger};
 
 	if (!IsValid(candidate))
 		return false;

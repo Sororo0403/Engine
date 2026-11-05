@@ -22,7 +22,7 @@ bool IsValid(const BoxCollider &collider);
 /// モデルなどのローカル座標の頂点を囲む衝突形状を作る
 /// </summary>
 /// <param name="points">有限のローカル座標の頂点</param>
-/// <param name="collider">成功時に形状を設定する。衝突レイヤーとマスクは保持する</param>
+/// <param name="collider">成功時に形状を設定する。衝突レイヤー・マスク・Trigger設定は保持する</param>
 /// <param name="minimumHalfExtent">厚みのない軸にも設定する半分の大きさ</param>
 /// <returns>true:成功 false:頂点なし、または値が無効。失敗時は出力を保持する</returns>
 bool FitToPoints(std::span<const DirectX::XMFLOAT3> points,
