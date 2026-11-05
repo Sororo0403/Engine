@@ -568,6 +568,21 @@
     <ClInclude Include="include\gameplay\SceneCameraUtils.h">
       <Filter>include\gameplay</Filter>
     </ClInclude>
+    <ClInclude Include="include\gameplay\TriggerAction.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gameplay\TriggerActionsComponent.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
+    <ClCompile Include="src\gameplay\SceneSimulationActions.cpp">
+      <Filter>src\gameplay</Filter>
+    </ClCompile>
+    <ClInclude Include="include\scene\SceneObjectReferences.h">
+      <Filter>include\scene</Filter>
+    </ClInclude>
+    <ClCompile Include="src\scene\SceneObjectReferences.cpp">
+      <Filter>src\scene</Filter>
+    </ClCompile>
     <ClCompile Include="src\gameplay\SceneSimulation.cpp">
       <Filter>src\gameplay</Filter>
     </ClCompile>

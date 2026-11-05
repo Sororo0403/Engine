@@ -45,6 +45,7 @@ bool RuntimeScene::Update(float seconds) {
 		    config_.gamepadEnabled ? &input_.GetGamepad() : nullptr);
 
 		if (!simulation_.Update(seconds, input)) {
+			Logger::Error(simulation_.GetLastUpdateError());
 			return false;
 		}
 	}

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "gameplay/CharacterController.h"
 #include "gameplay/CharacterRuntimeState.h"
@@ -7,10 +7,13 @@
 #include "physics/TriggerWorld.h"
 #include "scene/Scene.h"
 #include "scene/SceneActiveChange.h"
+#include <cstddef>
 #include <map>
 #include <optional>
+#include <set>
 #include <span>
 #include <string>
+#include <utility>
 #include <vector>
 
 /// <summary>
@@ -114,9 +117,17 @@ class SceneSimulation {
 	/// <summary>
 	/// 開始時・有効設定の変更時・最後の正の時間の更新で生成したTriggerイベントを取得する。一時停止相当の0秒更新では保持する
 	/// </summary>
-	/// <returns>組のID順のイベント。次の正の時間の更新成功・有効設定の変更成功・再生開始・停止まで有効</returns>
+	/// <returns>検知した組のID順のイベントと、その操作で生成したイベント。次の正の時間の更新成功・有効設定の変更成功・再生開始・停止まで有効</returns>
 	std::span<const TriggerEvent> GetTriggerEvents() const {
-		return triggers_.GetEvents();
+		return frameEvents_;
+	}
+
+	/// <summary>
+	/// 最後のUpdateに失敗した理由を取得する。開始と更新の成功時は空になる
+	/// </summary>
+	/// <returns>次のUpdateまたは再生開始まで有効な失敗理由</returns>
+	const std::string &GetLastUpdateError() const {
+		return lastUpdateError_;
 	}
 
 	/// <summary>
@@ -128,6 +139,51 @@ class SceneSimulation {
 	}
 
   private:
+	/// <summary>
+	/// 次の正の時間の更新で操作を受け取るTrigger Actionsと、その原因イベント
+	/// </summary>
+	struct ActionSignal {
+		SceneObjectId receiver = 0;
+		TriggerEvent event;
+	};
+
+	/// <summary>
+	/// 作業用シミュレーションへ、シーンと継続中の実行状態を複製する
+	/// </summary>
+	/// <param name="source">複製元</param>
+	void CopyFrom(const SceneSimulation &source);
+
+	/// <summary>
+	/// 検証済みの作業結果を、公開シーン本体のアドレスを保って確定する
+	/// </summary>
+	/// <param name="source">確定する作業結果</param>
+	void Adopt(SceneSimulation &source);
+
+	/// <summary>
+	/// 操作の処理前に、物理・追従・復帰とTriggerの更新を行う
+	/// </summary>
+	/// <param name="seconds">有効な経過時間</param>
+	/// <param name="input">移動とジャンプ</param>
+	/// <returns>true:更新成功 false:更新失敗</returns>
+	bool Advance(float seconds, const CharacterInput &input);
+
+	/// <summary>
+	/// 進入・退出を、発生時に有効なTrigger Actionsの受信先へ振り分ける
+	/// </summary>
+	/// <param name="events">振り分けるイベント</param>
+	/// <param name="signals">末尾へ追加する受信先とイベント</param>
+	void QueueActionSignals(std::span<const TriggerEvent> events,
+	                        std::vector<ActionSignal> &signals) const;
+
+	/// <summary>
+	/// 予約済みの検知と今回の検知から操作を集め、最後に有効設定を一括変更する
+	/// </summary>
+	/// <param name="error">失敗理由。成功時は空</param>
+	/// <param name="invalidObject">指定時は問題のIDを設定する</param>
+	/// <returns>true:成功 false:設定や適用先の状態が無効</returns>
+	bool ApplyTriggerActions(std::string &error,
+	                         SceneObjectId *invalidObject = nullptr);
+
 	/// <summary>
 	/// 開始または有効設定の変更を、作業シーンで検証してから確定する
 	/// </summary>
@@ -156,4 +212,8 @@ class SceneSimulation {
 	CameraPose fallbackPose_{};
 	CameraSettings cameraSettings_{};
 	bool playing_ = false;
+	std::vector<TriggerEvent> frameEvents_;
+	std::vector<ActionSignal> pendingActionSignals_;
+	std::set<std::pair<SceneObjectId, std::size_t>> firedActions_;
+	std::string lastUpdateError_;
 };

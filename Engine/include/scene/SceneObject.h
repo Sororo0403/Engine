@@ -3,6 +3,7 @@
 #include "gameplay/CharacterSettings.h"
 #include "gameplay/FollowCameraSettings.h"
 #include "gameplay/RespawnSettings.h"
+#include "gameplay/TriggerActionsComponent.h"
 #include "graphics/material/ColorTint.h"
 #include "math/Transform.h"
 #include "physics/BoxCollider.h"
@@ -44,6 +45,8 @@ struct SceneObject {
 	std::optional<FollowCameraSettings> followCamera;
 	// 落下時の復帰。Character Controllerを持つ物体に使用する
 	std::optional<RespawnSettings> respawn;
+	// 同じ物体のTriggerイベントで実行する対象物体の操作
+	std::optional<TriggerActionsComponent> triggerActions;
 
 	/// <summary>
 	/// Meshに形状の参照が割り当てられているか確認する

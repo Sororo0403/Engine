@@ -17,7 +17,23 @@
 bool SceneSimulation::Start(const Scene &source, std::string &error,
                             const CameraPose &fallbackPose,
                             SceneObjectId *invalidObject) {
-	return Configure(source, error, fallbackPose, invalidObject, false);
+	try {
+		SceneSimulation working;
+		if (!working.Configure(source, error, fallbackPose, invalidObject,
+		                       false)) {
+			return false;
+		}
+		const auto events = working.triggers_.GetEvents();
+		working.frameEvents_.assign(events.begin(), events.end());
+		if (!working.ApplyTriggerActions(error, invalidObject)) {
+			return false;
+		}
+		Adopt(working);
+		return true;
+	} catch (const std::exception &exception) {
+		error = exception.what();
+		return false;
+	}
 }
 
 bool SceneSimulation::SetActive(SceneObjectId id, bool active,
@@ -57,8 +73,20 @@ bool SceneSimulation::SetActive(std::span<const SceneActiveChange> changes,
 			changed |= object->active != change.active;
 			object->active = change.active;
 		}
-		return !changed ||
-		       Configure(working, error, fallbackPose_, invalidObject, true);
+		if (!changed) {
+			return true;
+		}
+		SceneSimulation next;
+		next.CopyFrom(*this);
+		if (!next.Configure(working, error, next.fallbackPose_, invalidObject,
+		                    true)) {
+			return false;
+		}
+		const auto events = next.triggers_.GetEvents();
+		next.frameEvents_.assign(events.begin(), events.end());
+		next.QueueActionSignals(events, next.pendingActionSignals_);
+		Adopt(next);
+		return true;
 	} catch (const std::exception &exception) {
 		error = exception.what();
 		return false;
@@ -268,6 +296,10 @@ bool SceneSimulation::Configure(const Scene &source, std::string &error,
 
 void SceneSimulation::Stop() {
 	playing_ = false;
+	frameEvents_.clear();
+	pendingActionSignals_.clear();
+	firedActions_.clear();
+	lastUpdateError_.clear();
 	triggers_.Clear();
 	scene_.ReplaceObjects({});
 	character_ = camera_ = 0;
@@ -278,6 +310,44 @@ void SceneSimulation::Stop() {
 }
 
 bool SceneSimulation::Update(float seconds, const CharacterInput &input) {
+	if (!playing_ || !std::isfinite(seconds) || seconds < 0) {
+		lastUpdateError_ =
+		    "Start Play and use a finite, non-negative simulation time.";
+		return false;
+	}
+	try {
+		if (seconds == 0) {
+			if (!Advance(seconds, input)) {
+				lastUpdateError_ = "The zero-time simulation update failed.";
+				return false;
+			}
+			lastUpdateError_.clear();
+			return true;
+		}
+		SceneSimulation working;
+		working.CopyFrom(*this);
+		if (!working.Advance(seconds, input)) {
+			lastUpdateError_ = "Simulation update failed. Check active physics "
+			                   "and camera settings.";
+			return false;
+		}
+		const auto events = working.triggers_.GetEvents();
+		working.frameEvents_.assign(events.begin(), events.end());
+		std::string error;
+		if (!working.ApplyTriggerActions(error)) {
+			lastUpdateError_ = std::move(error);
+			return false;
+		}
+		working.lastUpdateError_.clear();
+		Adopt(working);
+		return true;
+	} catch (const std::exception &exception) {
+		lastUpdateError_ = exception.what();
+		return false;
+	}
+}
+
+bool SceneSimulation::Advance(float seconds, const CharacterInput &input) {
 	if (!playing_ || !std::isfinite(seconds) || seconds < 0)
 		return false;
 	try {

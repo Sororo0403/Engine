@@ -67,6 +67,24 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 			add(id, "Color Tint settings are invalid.");
 		}
 
+		if (object.triggerActions) {
+			if (!object.triggerActions->IsValid()) {
+				add(id, "Trigger Actions settings are invalid.");
+			} else if (!object.triggerActions->actions.empty()) {
+				if (!object.collider || !object.collider->isTrigger) {
+					add(id, "Configured Trigger Actions require a Box Collider "
+					        "with Is Trigger enabled.");
+				}
+				for (const auto &action : object.triggerActions->actions) {
+					if (!scene.Contains(action.target)) {
+						add(id, "Trigger Actions require an existing target "
+						        "for each action.");
+						break;
+					}
+				}
+			}
+		}
+
 		if (object.character) {
 			if (firstCharacter) {
 				add(id, std::format(

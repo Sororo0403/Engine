@@ -316,6 +316,11 @@ exit /b 0</Command>
   <ItemGroup>
     <ClInclude Include="include\gameplay\SceneSimulation.h" />
     <ClInclude Include="include\gameplay\SceneCameraUtils.h" />
+    <ClInclude Include="include\gameplay\TriggerAction.h" />
+    <ClInclude Include="include\gameplay\TriggerActionsComponent.h" />
+    <ClCompile Include="src\gameplay\SceneSimulationActions.cpp" />
+    <ClInclude Include="include\scene\SceneObjectReferences.h" />
+    <ClCompile Include="src\scene\SceneObjectReferences.cpp" />
     <ClCompile Include="src\gameplay\SceneSimulation.cpp" />
     <ClCompile Include="src\gameplay\SceneCameraUtils.cpp" />
   </ItemGroup>
