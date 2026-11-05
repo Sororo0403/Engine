@@ -286,6 +286,7 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 				objects.back()["collider"] = {
 				    {"center", ToJson(object.collider->center)},
 				    {"halfExtents", ToJson(object.collider->halfExtents)},
+				    {"isTrigger", object.collider->isTrigger},
 				    {"filter",
 				     {{"layer", object.collider->filter.layer},
 				      {"mask", object.collider->filter.mask}}}};
@@ -384,7 +385,7 @@ namespace {
 /// 解析したシーンドキュメントを検証し、全件成功した場合だけ反映する
 /// </summary>
 /// <param name="scene">読み込み先</param>
-/// <param name="document">version 1から15のJSON</param>
+/// <param name="document">version 1から16のJSON</param>
 /// <returns>true:成功 false:内容が無効</returns>
 bool ApplySceneDocument(Scene &scene, const Json &document) {
 	try {
@@ -492,6 +493,10 @@ bool ApplySceneDocument(Scene &scene, const Json &document) {
 				object.collider =
 				    BoxCollider{ReadFloat3(collider.at("center")),
 				                ReadFloat3(collider.at("halfExtents"))};
+				if (version >= 16) {
+					object.collider->isTrigger =
+					    collider.at("isTrigger").get<bool>();
+				}
 				if (version >= 15) {
 					const auto &filter = collider.at("filter");
 					object.collider->filter = {
