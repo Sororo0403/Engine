@@ -6,6 +6,7 @@
 #include "assets/AssetDragDrop.h"
 #include "camera/CameraInspector.h"
 #include "gameplay/GameplayInspector.h"
+#include "gameplay/TriggerActionsInspector.h"
 #include "graphics/model/ModelManager.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "history/EditorHistory.h"
@@ -453,6 +454,11 @@ bool InspectorPanel::Draw(
 			                  inspectedObjectId};
 		}
 
+		if (ui.MenuItem("Trigger Actions", nullptr, !object->triggerActions)) {
+			changed |= history.SetTriggerActions(inspectedObjectId,
+			                                     TriggerActionsComponent{});
+		}
+
 		if (ui.MenuItem("Respawn", nullptr, !object->respawn)) {
 			changed |= history.SetRespawn(inspectedObjectId, RespawnSettings{});
 		}
@@ -550,6 +556,9 @@ bool InspectorPanel::Draw(
 		objectRequest_ = {ObjectAction::FRAME_COLLIDER,
 		                  colliderRequest.objectId};
 	}
+
+	changed |= TriggerActionsInspector{}.Draw(ui, scene, inspectedObjectId,
+	                                          *object, history);
 
 	CameraInspector::Request cameraRequest;
 	changed |= CameraInspector{}.Draw(ui, inspectedObjectId, *object, history,
@@ -738,6 +747,8 @@ InspectorPanel::DrawReadOnly(const ImGuiSystem &ui, const Scene &scene,
 		ui.Text(std::format("Collision Layer: {}", collider.filter.layer));
 		ui.Text(std::format("Collides With: 0x{:08X}", collider.filter.mask));
 	}
+
+	TriggerActionsInspector{}.DrawReadOnly(ui, scene, *object);
 
 	if (object->character && ui.CollapsingHeader("Character Controller")) {
 		auto settings = *object->character;

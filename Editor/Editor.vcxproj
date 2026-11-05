@@ -271,6 +271,8 @@ exit /b 0</Command>
     <ClInclude Include="include\history\ComponentCommand.h" />
     <ClInclude Include="include\gameplay\GameplayInspector.h" />
     <ClInclude Include="include\gameplay\RespawnPreview.h" />
+    <ClCompile Include="src\gameplay\TriggerActionsInspector.cpp" />
+    <ClInclude Include="include\gameplay\TriggerActionsInspector.h" />
     <ClCompile Include="src\gameplay\GameplayInspector.cpp" />
     <ClCompile Include="src\gameplay\RespawnPreview.cpp" />
     <ClInclude Include="include\gameplay\CharacterJumpPreview.h" />

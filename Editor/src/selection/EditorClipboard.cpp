@@ -5,6 +5,7 @@
 #include "physics/BoxColliderUtils.h"
 #include "scene/Scene.h"
 #include "scene/SceneHierarchy.h"
+#include "scene/SceneObjectReferences.h"
 
 #include <set>
 
@@ -38,8 +39,7 @@ bool EditorClipboard::Copy(const Scene &scene,
 	std::vector<std::size_t> externalReferences;
 
 	for (std::size_t i = 0; i < objects.size(); ++i) {
-		if (objects[i].followCamera && objects[i].followCamera->target != 0 &&
-		    !seen.contains(objects[i].followCamera->target)) {
+		if (SceneObjectReferences::HasExternal(objects[i], sourceIds)) {
 			externalReferences.push_back(i);
 		}
 	}
@@ -60,9 +60,7 @@ std::span<const SceneObjectId> EditorClipboard::GetSourceIds() const {
 
 void EditorClipboard::DetachExternalReferences() noexcept {
 	for (const auto index : externalReferences_) {
-		if (objects_[index].followCamera) {
-			objects_[index].followCamera->target = 0;
-		}
+		SceneObjectReferences::ClearExternal(objects_[index], sourceIds_);
 	}
 
 	externalReferences_.clear();

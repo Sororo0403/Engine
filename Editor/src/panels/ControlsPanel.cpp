@@ -1,4 +1,4 @@
-#include "panels/ControlsPanel.h"
+﻿#include "panels/ControlsPanel.h"
 
 #include <imgui.h>
 
@@ -796,6 +796,34 @@ void ControlsPanel::Draw() {
 	         "all clipboards are kept. One Undo/Redo restores the whole edit; "
 	         "identical values add no history. Hierarchy has the same action. "
 	         "Copy a Box Collider in Inspector first."},
+	        {"Inspector > Add Component > Trigger Actions",
+	         "Add actions to the same object as a Box Collider with Is "
+	         "Trigger enabled. Choose Enter or Exit, a target object, and "
+	         "Enable, Disable or Toggle. The target's local Active flag "
+	         "changes without overwriting its children's flags. Collision "
+	         "layers decide which overlaps produce events. Once per Play "
+	         "runs that action at most once, even after disabling and "
+	         "re-enabling the owner; Start and Restart clear that state. "
+	         "Add/remove, target changes, reordering and component removal "
+	         "support Undo/Redo. Duplicating a group remaps internal targets. "
+	         "Deleting a target clears its reference, which Undo restores. "
+	         "Assign all configured targets before Play; an empty list is "
+	         "inert."},
+	        {"Trigger Actions execution",
+	         "Initial overlaps run at Start. Later actions run after a "
+	         "positive simulation update: queued signals first, then new "
+	         "Trigger events in pair ID order, with each pair's owners in "
+	         "ID order and actions in list order. Conflicting writes use "
+	         "that order; two "
+	         "Toggles cancel. Stay does not run actions. Activity changes are "
+	         "applied as one batch. Events caused by that batch are visible "
+	         "in Play State immediately, while their actions wait for the "
+	         "next positive update. Disabled receivers do not receive new "
+	         "signals. Zero-time updates and Pause do not execute queued "
+	         "actions. Invalid changes, such as enabling a wall inside a "
+	         "character or blocking its recovery point, reject the entire "
+	         "start/update and preserve the prior runtime state. The error "
+	         "identifies the problem; the editing scene is always kept."},
 	        {"Inspector > Active / Hierarchy > Enable or Disable Selected",
 	         "Enable or disable an object's drawing, collision, Trigger "
 	         "detection and gameplay components. The object also needs every "

@@ -296,9 +296,15 @@ bool EditorScene::Update(float deltaTime) {
 		sceneViewPanel_.CancelSelection();
 
 		if (!playMode_.Update(deltaTime, input_, IsBusy())) {
+			const auto reason = playMode_.GetSession().GetLastUpdateError();
 			playMode_.Stop();
-			ShowError("Play stopped because simulation or Game rendering "
-			          "failed. Your editing scene is unchanged.");
+			ShowError(
+			    reason.empty()
+			        ? "Play stopped because simulation or Game rendering "
+			          "failed. Your editing scene is unchanged."
+			        : std::format(
+			              "Play stopped: {} Your editing scene is unchanged.",
+			              reason));
 		}
 
 		if (showMotionTrail_) {
@@ -354,9 +360,15 @@ bool EditorScene::Update(float deltaTime) {
 		                                 hierarchy.windowFocused,
 		                             sceneViewPanel_.GetRenderTexture() !=
 		                                 nullptr)) {
+			const auto reason = playMode_.GetSession().GetLastUpdateError();
 			playMode_.Stop();
-			ShowError("Play stopped because simulation or Game rendering "
-			          "failed. Your editing scene is unchanged.");
+			ShowError(
+			    reason.empty()
+			        ? "Play stopped because simulation or Game rendering "
+			          "failed. Your editing scene is unchanged."
+			        : std::format(
+			              "Play stopped: {} Your editing scene is unchanged.",
+			              reason));
 		}
 
 		if (showMotionTrail_) {

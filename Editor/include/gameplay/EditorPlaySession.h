@@ -153,6 +153,14 @@ class EditorPlaySession {
 	/// <returns>Start・Restart・Stopで初期化する履歴。開始時のEnterはフレーム0、時間0</returns>
 	std::span<const TriggerRecord> GetTriggerHistory() const;
 
+	/// <summary>
+	/// 最後の再生更新に失敗した具体的な理由を取得する
+	/// </summary>
+	/// <returns>停止や再生開始、次の更新まで有効な失敗理由</returns>
+	const std::string &GetLastUpdateError() const {
+		return simulation_.GetLastUpdateError();
+	}
+
   private:
 	/// <summary>
 	/// 最後の更新で確定した進入・退出を、再生時間とフレーム数とともに固定長の履歴へ記録する

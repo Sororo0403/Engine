@@ -12,7 +12,7 @@
 class Scene;
 
 /// <summary>
-/// コピーした物体・Transform・Box Collider・Cameraのレンズ設定・Character設定・追従設定・復帰設定・UVを、元のシーンと独立して保持する
+/// コピーした物体・Transform・Box Collider・Cameraのレンズ設定・Character設定・追従設定・復帰設定・Trigger Actions・UVを、元のシーンと独立して保持する
 /// </summary>
 class EditorClipboard {
   public:
@@ -38,7 +38,7 @@ class EditorClipboard {
 
 	/// <summary>
 	/// 元のシーンの置き換えに合わせ、コピー範囲外の物体への参照を解除する。
-	/// コピー範囲内の参照とTransform・Box Collider・レンズ設定・Character設定・追従設定・復帰設定のコピーは保持する
+	/// コピー範囲内の参照とTransform・Box Collider・レンズ設定・Character設定・追従設定・復帰設定・Trigger Actionsのコピーは保持する
 	/// </summary>
 	void DetachExternalReferences() noexcept;
 

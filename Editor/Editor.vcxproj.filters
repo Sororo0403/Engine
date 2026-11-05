@@ -440,6 +440,12 @@
     <ClInclude Include="include\gameplay\RespawnPreview.h">
       <Filter>include\gameplay</Filter>
     </ClInclude>
+    <ClCompile Include="src\gameplay\TriggerActionsInspector.cpp">
+      <Filter>src\gameplay</Filter>
+    </ClCompile>
+    <ClInclude Include="include\gameplay\TriggerActionsInspector.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
     <ClCompile Include="src\gameplay\GameplayInspector.cpp">
       <Filter>src\gameplay</Filter>
     </ClCompile>

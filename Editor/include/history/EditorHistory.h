@@ -525,6 +525,15 @@ class EditorHistory {
 	bool SetActive(std::span<const SceneObjectId> objectIds, bool active);
 
 	/// <summary>
+	/// Trigger Actionsの追加・変更・削除を1操作として記録する。未割り当ての対象は0で保持できる
+	/// </summary>
+	/// <param name="id">既存の物体ID</param>
+	/// <param name="value">変更後の設定。nulloptは削除</param>
+	/// <returns>true:成功または同値 false:対象・操作種別・操作数・参照先が無効</returns>
+	bool SetTriggerActions(SceneObjectId id,
+	                       std::optional<TriggerActionsComponent> value);
+
+	/// <summary>
 	/// 指定物体へ同じ変形情報を適用し、1操作として記録する。編集中の内容は先に確定する
 	/// </summary>
 	/// <param name="objectIds">重複のない対象ID一覧</param>
@@ -631,9 +640,9 @@ class EditorHistory {
 	    std::variant<TransformCommand, ObjectCommand, ParentCommand,
 	                 RenameCommand, ModelPathCommand, VisibilityCommand,
 	                 ActiveCommand, ColliderCommand, CharacterCommand,
-	                 FollowCameraCommand, RespawnCommand, CameraCommand,
-	                 MeshRendererCommand, ColorTintCommand, TextureSlotsCommand,
-	                 CommandGroup>;
+	                 FollowCameraCommand, TriggerActionsCommand, RespawnCommand,
+	                 CameraCommand, MeshRendererCommand, ColorTintCommand,
+	                 TextureSlotsCommand, CommandGroup>;
 
 	/// <summary>
 	/// 操作と、その前後の状態を識別する情報

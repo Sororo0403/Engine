@@ -7,6 +7,7 @@
 #include "physics/BoxColliderUtils.h"
 #include "scene/Scene.h"
 #include "scene/SceneHierarchy.h"
+#include "scene/SceneObjectReferences.h"
 
 #include <algorithm>
 #include <cassert>
@@ -169,19 +170,19 @@ bool EditorHistory::DeleteObjects(std::span<const SceneObjectId> objectIds) {
 
 	// Undoでは削除物体を先に復元し、その後で残る物体の参照を戻す。
 	for (const auto &[id, object] : scene_.GetObjects()) {
-		if (seen.contains(id) || !object.followCamera ||
-		    !seen.contains(object.followCamera->target)) {
+		if (seen.contains(id)) {
 			continue;
 		}
-
-		if (!object.followCamera->IsValid()) {
-			return false;
+		auto cleared = object;
+		SceneObjectReferences::ClearTargets(cleared, expanded);
+		if (cleared.followCamera != object.followCamera) {
+			commands.emplace_back(FollowCameraCommand{id, object.followCamera,
+			                                          cleared.followCamera});
 		}
-
-		auto cleared = *object.followCamera;
-		cleared.target = 0;
-		commands.emplace_back(
-		    FollowCameraCommand{id, object.followCamera, cleared});
+		if (cleared.triggerActions != object.triggerActions) {
+			commands.emplace_back(TriggerActionsCommand{
+			    id, object.triggerActions, cleared.triggerActions});
+		}
 	}
 
 	for (auto it = expanded.rbegin(); it != expanded.rend(); ++it) {
@@ -321,6 +322,12 @@ EditorHistory::CreateObjectGroups(std::vector<SceneObject> objects,
 		}
 	}
 
+	std::vector<SceneObjectId> allowedReferences(sourceIds.begin(),
+	                                             sourceIds.end());
+	for (const auto &[id, existing] : scene_.GetObjects()) {
+		allowedReferences.push_back(id);
+	}
+
 	bool hasPrimary =
 	    std::ranges::any_of(scene_.GetObjects(), [](const auto &entry) {
 		    return entry.second.camera && entry.second.camera->primary;
@@ -328,18 +335,15 @@ EditorHistory::CreateObjectGroups(std::vector<SceneObject> objects,
 
 	for (std::size_t i = 0; i < objects.size(); ++i) {
 		auto &object = objects[i];
-		auto &remap = remaps[i / groupSize];
 
 		if (!TransformUtils::IsValid(object.transform) ||
 		    (object.camera && !object.camera->IsValid())) {
 			return {};
 		}
 
-		if (!sourceIds.empty() && object.followCamera &&
-		    !remap.contains(object.followCamera->target) &&
-		    !scene_.Contains(object.followCamera->target)) {
-			// コピー範囲外の対象が既に削除されていたら、貼り付け先では未設定にする。
-			object.followCamera->target = 0;
+		if (!sourceIds.empty()) {
+			// コピー範囲外の対象が削除されていた場合は、全種類の参照を同じ規則で解除する。
+			SceneObjectReferences::ClearExternal(object, allowedReferences);
 		}
 
 		if (object.camera && object.camera->primary) {
@@ -387,14 +391,11 @@ EditorHistory::CreateObjectGroups(std::vector<SceneObject> objects,
 				return false;
 			working.FindObject(createdIds[i])->parentId = object.parentId;
 
-			if (object.followCamera) {
-				if (const auto found = remap.find(object.followCamera->target);
-				    found != remap.end()) {
-					object.followCamera->target = found->second;
-					working.FindObject(createdIds[i])->followCamera =
-					    object.followCamera;
-				}
-			}
+			SceneObjectReferences::Remap(object, remap);
+			working.FindObject(createdIds[i])->followCamera =
+			    object.followCamera;
+			working.FindObject(createdIds[i])->triggerActions =
+			    object.triggerActions;
 		}
 
 		SceneHierarchy::WorldTransforms transforms;
@@ -2578,4 +2579,34 @@ bool EditorHistory::SetWorldPosition(SceneObjectId id,
                                      const DirectX::XMFLOAT3 &position) {
 	CommitEdit();
 	return ApplyWorldPositions({{id, position}}, "Move Object");
+}
+
+bool EditorHistory::SetTriggerActions(
+    SceneObjectId id, std::optional<TriggerActionsComponent> value) {
+	CommitEdit();
+	const auto *object = scene_.FindObject(id);
+	if (!object || (value && !value->IsValid())) {
+		return false;
+	}
+	if (value) {
+		for (const auto &action : value->actions) {
+			if (action.target != 0 && !scene_.Contains(action.target)) {
+				return false;
+			}
+		}
+	}
+	const bool adding = !object->triggerActions;
+	TriggerActionsCommand command{id, object->triggerActions, value};
+	if (!command.HasChanges()) {
+		return true;
+	}
+	const auto next = PrepareAppend();
+	if (!command.Redo(scene_)) {
+		return false;
+	}
+	AppendPrepared(Command{std::move(command)}, next,
+	               !value   ? "Remove Trigger Actions"
+	               : adding ? "Add Trigger Actions"
+	                        : "Edit Trigger Actions");
+	return true;
 }
