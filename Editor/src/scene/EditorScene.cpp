@@ -2849,6 +2849,7 @@ bool EditorScene::GetFittedCollider(const SceneObject &object,
 	BoxCollider fitted;
 	if (object.collider) {
 		fitted.filter = object.collider->filter;
+		fitted.isTrigger = object.collider->isTrigger;
 	}
 
 	if (object.HasMesh()) {

@@ -796,6 +796,28 @@ void ControlsPanel::Draw() {
 	         "all clipboards are kept. One Undo/Redo restores the whole edit; "
 	         "identical values add no history. Hierarchy has the same action. "
 	         "Copy a Box Collider in Inspector first."},
+	        {"Inspector > Box Collider > Is Trigger",
+	         "Make a Collider detect overlaps without blocking movement, "
+	         "grounding, respawn or Follow Camera obstacle avoidance. "
+	         "Both collision masks must permit the other layer. A Character "
+	         "Controller itself needs a non-trigger Collider; put extra "
+	         "detection volumes on other objects or children. Geometry "
+	         "selection and placement still use Trigger bounds. The flag "
+	         "supports Undo/Redo, copy/paste and duplication; fitting the "
+	         "shape keeps it. Older scenes load as solid Colliders."},
+	        {"View > Play State > Triggers",
+	         "Inspect active Trigger contacts and the latest 128 Enter/Exit "
+	         "events, including object IDs, simulation frames and game time. "
+	         "Click an object to select it; double-click to frame it. Start "
+	         "and Restart record initial overlaps at frame 0, while Pause "
+	         "retains the display and Step advances it. Stop clears events. "
+	         "Stay is available to runtime code each positive update but does "
+	         "not fill the history. Face-only touches do not count. A volume "
+	         "crossed between updates produces Enter then Exit from linear "
+	         "interpolation of the endpoint world AABBs; curved motion and "
+	         "intermediate rotation are not reconstructed. Respawn teleports "
+	         "test their endpoints without crossing the intervening space. "
+	         "No gameplay component is needed to start Play or use Triggers."},
 	        {"Inspector > Box Collider > Collision Layer / Collides With",
 	         "Choose one of 32 layers per Collider (0 is Default), then check "
 	         "the layers it can collide with. Both Colliders must allow the "

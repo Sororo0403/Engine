@@ -104,6 +104,11 @@ bool ColliderInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		                     valueChanged && validSize);
 
 		edited = *object.collider;
+		if (ImGui::Checkbox("Is Trigger", &edited.isTrigger)) {
+			changed |= history.SetCollider(id, edited);
+		}
+
+		edited = *object.collider;
 		const auto layerLabel = edited.filter.layer == 0
 		                            ? std::string{"0: Default"}
 		                            : std::to_string(edited.filter.layer);

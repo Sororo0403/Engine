@@ -2,8 +2,11 @@
 
 #include "gameplay/PlaybackClock.h"
 #include "gameplay/SceneSimulation.h"
+#include <array>
+#include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <span>
 
 /// <summary>
 /// 編集シーンの開始時データを保持し、再生・再実行・一時停止の状態を管理する
@@ -121,7 +124,41 @@ class EditorPlaySession {
 	/// <returns>現在の投影設定</returns>
 	const CameraSettings &GetCameraSettings() const;
 
+	/// <summary>
+	/// Play中の進入・退出を、発生したフレームとゲーム時間とともに保持する
+	/// </summary>
+	struct TriggerRecord {
+		TriggerEvent event;
+		std::uint64_t frame = 0;
+		double seconds = 0;
+	};
+
+	static constexpr std::size_t kMaximumTriggerRecords = 128;
+
+	/// <summary>
+	/// 開始時または最後の正のゲーム時間の更新によるTriggerイベントを取得する
+	/// </summary>
+	/// <returns>Enter・Stay・Exitの一覧。一時停止中は最後の値を保持し、停止時は空になる</returns>
+	std::span<const TriggerEvent> GetTriggerEvents() const;
+
+	/// <summary>
+	/// 現在Triggerと重なっている組を取得する
+	/// </summary>
+	/// <returns>ID順の接触一覧。瞬間的な通過の組は含まない</returns>
+	std::span<const TriggerContact> GetTriggerContacts() const;
+
+	/// <summary>
+	/// 最新128件までの進入・退出を、古い順で取得する。Stayは履歴へ追加しない
+	/// </summary>
+	/// <returns>Start・Restart・Stopで初期化する履歴。開始時のEnterはフレーム0、時間0</returns>
+	std::span<const TriggerRecord> GetTriggerHistory() const;
+
   private:
+	/// <summary>
+	/// 最後の更新で確定した進入・退出を、再生時間とフレーム数とともに固定長の履歴へ記録する
+	/// </summary>
+	void RememberTriggerEvents();
+
 	SceneSimulation simulation_;
 	std::unique_ptr<Scene> initialScene_;
 	CameraPose initialFallback_{};
@@ -129,4 +166,6 @@ class EditorPlaySession {
 	double elapsedSeconds_ = 0.0;
 	std::uint64_t simulationFrameCount_ = 0;
 	bool firstFrame_ = false;
+	std::array<TriggerRecord, kMaximumTriggerRecords> triggerRecords_{};
+	std::size_t triggerRecordCount_ = 0;
 };

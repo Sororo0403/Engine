@@ -34,7 +34,7 @@ class ColliderInspector {
 	};
 
 	/// <summary>
-	/// 既存の衝突設定の削除と、中心・大きさ・衝突レイヤーの編集UIを描画する
+	/// 既存の衝突設定の削除と、中心・大きさ・衝突レイヤー・Triggerの編集UIを描画する
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
 	/// <param name="scene">表示物体と祖先のワールド変形を取得するシーン</param>

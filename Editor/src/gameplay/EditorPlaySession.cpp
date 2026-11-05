@@ -1,6 +1,7 @@
 #include "gameplay/EditorPlaySession.h"
 #include "gameplay/SceneValidation.h"
 
+#include <algorithm>
 #include <cmath>
 #include <exception>
 #include <utility>
@@ -64,6 +65,8 @@ bool EditorPlaySession::Start(const Scene &scene, std::string &error,
 		elapsedSeconds_ = 0.0;
 		simulationFrameCount_ = 0;
 		firstFrame_ = true;
+		triggerRecordCount_ = 0;
+		RememberTriggerEvents();
 		return true;
 	} catch (const std::exception &exception) {
 		error = exception.what();
@@ -93,6 +96,8 @@ bool EditorPlaySession::Restart(std::string &error) {
 	elapsedSeconds_ = 0.0;
 	simulationFrameCount_ = 0;
 	firstFrame_ = true;
+	triggerRecordCount_ = 0;
+	RememberTriggerEvents();
 	return true;
 }
 
@@ -104,6 +109,7 @@ void EditorPlaySession::Stop() {
 	elapsedSeconds_ = 0.0;
 	simulationFrameCount_ = 0;
 	firstFrame_ = false;
+	triggerRecordCount_ = 0;
 }
 
 void EditorPlaySession::TogglePause() {
@@ -157,6 +163,7 @@ bool EditorPlaySession::Update(float seconds, const CharacterInput &input) {
 	if (*time > 0.0f) {
 		elapsedSeconds_ += static_cast<double>(*time);
 		++simulationFrameCount_;
+		RememberTriggerEvents();
 	}
 
 	return true;
@@ -189,4 +196,32 @@ const CameraPose &EditorPlaySession::GetCameraPose() const {
 
 const CameraSettings &EditorPlaySession::GetCameraSettings() const {
 	return simulation_.GetCameraSettings();
+}
+
+std::span<const TriggerEvent> EditorPlaySession::GetTriggerEvents() const {
+	return simulation_.GetTriggerEvents();
+}
+
+std::span<const TriggerContact> EditorPlaySession::GetTriggerContacts() const {
+	return simulation_.GetTriggerContacts();
+}
+
+std::span<const EditorPlaySession::TriggerRecord>
+EditorPlaySession::GetTriggerHistory() const {
+	return {triggerRecords_.data(), triggerRecordCount_};
+}
+
+void EditorPlaySession::RememberTriggerEvents() {
+	for (const auto &event : simulation_.GetTriggerEvents()) {
+		if (event.type == TriggerEvent::Type::STAY) {
+			continue;
+		}
+		if (triggerRecordCount_ == triggerRecords_.size()) {
+			std::move(triggerRecords_.begin() + 1, triggerRecords_.end(),
+			          triggerRecords_.begin());
+			--triggerRecordCount_;
+		}
+		triggerRecords_[triggerRecordCount_++] = {event, simulationFrameCount_,
+		                                          elapsedSeconds_};
+	}
 }

@@ -133,6 +133,72 @@ PlayStatePanel::Request PlayStatePanel::Draw(const ImGuiSystem &ui,
 	ui.Text(std::format("Vertical FOV: {:.3f}", lens.verticalFovDegrees));
 	ui.Text(std::format("Near / Far: {:.3f} / {:.3f}", lens.nearClip,
 	                    lens.farClip));
+	ui.Separator();
+	if (ui.CollapsingHeader("Triggers")) {
+		const auto selectObject = [&](SceneObjectId id) {
+			const auto *object = session.GetScene().FindObject(id);
+			const auto label = std::format(
+			    "{} (ID {})", object ? object->name : "Missing", id);
+			ui.BeginDisabled(!object);
+			if (ImGui::Selectable(label.c_str(), false,
+			                      ImGuiSelectableFlags_AllowDoubleClick)) {
+				requested = {
+				    id, ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)};
+			}
+			ui.EndDisabled();
+		};
+		const auto contacts = session.GetTriggerContacts();
+		ui.Text(std::format("Active Contacts: {}", contacts.size()));
+		const auto flags = ImGuiTableFlags_RowBg |
+		                   ImGuiTableFlags_BordersInnerV |
+		                   ImGuiTableFlags_ScrollY;
+		if (!contacts.empty() &&
+		    ImGui::BeginTable("TriggerContacts", 2, flags, {0, 120})) {
+			ImGui::TableSetupColumn("First Collider");
+			ImGui::TableSetupColumn("Second Collider");
+			ImGui::TableSetupScrollFreeze(0, 1);
+			ImGui::TableHeadersRow();
+			for (std::size_t i = 0; i < contacts.size(); ++i) {
+				ImGui::PushID(static_cast<int>(i));
+				ImGui::TableNextRow();
+				ImGui::TableNextColumn();
+				selectObject(contacts[i].first);
+				ImGui::TableNextColumn();
+				selectObject(contacts[i].second);
+				ImGui::PopID();
+			}
+			ImGui::EndTable();
+		}
+		const auto records = session.GetTriggerHistory();
+		ui.Text(std::format("Recent Enter / Exit: {}", records.size()));
+		if (!records.empty() &&
+		    ImGui::BeginTable("TriggerHistory", 4, flags, {0, 180})) {
+			ImGui::TableSetupColumn("Event");
+			ImGui::TableSetupColumn("Frame / Time");
+			ImGui::TableSetupColumn("First Collider");
+			ImGui::TableSetupColumn("Second Collider");
+			ImGui::TableSetupScrollFreeze(0, 1);
+			ImGui::TableHeadersRow();
+			for (std::size_t i = records.size(); i > 0; --i) {
+				const auto &record = records[i - 1];
+				ImGui::PushID(static_cast<int>(i));
+				ImGui::TableNextRow();
+				ImGui::TableNextColumn();
+				ui.Text(record.event.type == TriggerEvent::Type::ENTER
+				            ? "Enter"
+				            : "Exit");
+				ImGui::TableNextColumn();
+				ui.Text(
+				    std::format("{} / {:.3f} s", record.frame, record.seconds));
+				ImGui::TableNextColumn();
+				selectObject(record.event.contact.first);
+				ImGui::TableNextColumn();
+				selectObject(record.event.contact.second);
+				ImGui::PopID();
+			}
+			ImGui::EndTable();
+		}
+	}
 	ImGui::End();
 	return requested;
 }

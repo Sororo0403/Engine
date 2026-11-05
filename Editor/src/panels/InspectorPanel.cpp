@@ -719,6 +719,7 @@ InspectorPanel::DrawReadOnly(const ImGuiSystem &ui, const Scene &scene,
 		ImGui::DragScalarN("Collider Size", ImGuiDataType_Double, size, 3,
 		                   0.01f, nullptr, nullptr, "%.2f");
 		ui.EndDisabled();
+		ui.Text(collider.isTrigger ? "Is Trigger: Yes" : "Is Trigger: No");
 		ui.Text(std::format("Collision Layer: {}", collider.filter.layer));
 		ui.Text(std::format("Collides With: 0x{:08X}", collider.filter.mask));
 	}
