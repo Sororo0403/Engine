@@ -2847,6 +2847,9 @@ void EditorScene::FitCollider(SceneObjectId id) {
 bool EditorScene::GetFittedCollider(const SceneObject &object,
                                     BoxCollider &collider) {
 	BoxCollider fitted;
+	if (object.collider) {
+		fitted.filter = object.collider->filter;
+	}
 
 	if (object.HasMesh()) {
 		const auto model = models_.Load(object.mesh->modelPath);

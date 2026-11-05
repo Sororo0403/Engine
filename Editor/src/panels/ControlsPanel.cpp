@@ -796,6 +796,18 @@ void ControlsPanel::Draw() {
 	         "all clipboards are kept. One Undo/Redo restores the whole edit; "
 	         "identical values add no history. Hierarchy has the same action. "
 	         "Copy a Box Collider in Inspector first."},
+	        {"Inspector > Box Collider > Collision Layer / Collides With",
+	         "Choose one of 32 layers per Collider (0 is Default), then check "
+	         "the layers it can collide with. Both Colliders must allow the "
+	         "other's layer; disabling either side prevents contact. Nothing "
+	         "allows passage through every Collider. Character movement, "
+	         "grounding, jump prediction and respawn checks use these same "
+	         "rules in Play and exported games. Filters do not change drawing "
+	         "or selection, do not inherit from parents, and do not hide "
+	         "geometry from placement or Follow Camera obstacle queries. "
+	         "Each choice supports Undo/Redo; copy/paste and duplication "
+	         "include the filter, while Fit Collider keeps it. Older scenes "
+	         "use Default and Everything until edited."},
 	        {"Inspector > Box Collider > Collider Size",
 	         "Enter the full local X/Y/Z dimensions. The displayed Size is "
 	         "twice the internal half extents; Transform scale and rotation "
@@ -804,7 +816,7 @@ void ControlsPanel::Draw() {
 	         "same full dimensions read-only. Existing scene files and copied "
 	         "collider data keep their original dimensions."},
 	        {"Inspector > Box Collider > Copy / Paste Box Collider",
-	         "Copy the local Center and Size, then paste them onto the "
+	         "Copy the local Center, Size and collision filter onto the "
 	         "inspected object. Add Component > Paste Box Collider adds a "
 	         "missing component. The target's Transform, other components, "
 	         "selection and Inspector lock stay unchanged; target rotation and "

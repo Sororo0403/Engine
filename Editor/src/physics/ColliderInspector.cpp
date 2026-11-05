@@ -103,6 +103,57 @@ bool ColliderInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		changed |= ApplyEdit(history, scene, id, object, edited,
 		                     valueChanged && validSize);
 
+		edited = *object.collider;
+		const auto layerLabel = edited.filter.layer == 0
+		                            ? std::string{"0: Default"}
+		                            : std::to_string(edited.filter.layer);
+		if (ImGui::BeginCombo("Collision Layer", layerLabel.c_str())) {
+			for (std::uint32_t layer = 0; layer < CollisionFilter::kLayerCount;
+			     ++layer) {
+				const auto label = layer == 0 ? std::string{"0: Default"}
+				                              : std::to_string(layer);
+				if (ImGui::Selectable(label.c_str(),
+				                      edited.filter.layer == layer)) {
+					edited.filter.layer = layer;
+					changed |= history.SetCollider(id, edited);
+				}
+			}
+			ImGui::EndCombo();
+		}
+
+		edited = *object.collider;
+		const auto maskLabel = edited.filter.mask == CollisionFilter::kAllLayers
+		                           ? std::string{"Everything"}
+		                       : edited.filter.mask == 0
+		                           ? std::string{"Nothing"}
+		                           : std::string{"Custom"};
+		if (ImGui::BeginCombo("Collides With", maskLabel.c_str())) {
+			if (ImGui::Selectable("Everything",
+			                      edited.filter.mask ==
+			                          CollisionFilter::kAllLayers)) {
+				edited.filter.mask = CollisionFilter::kAllLayers;
+				changed |= history.SetCollider(id, edited);
+			}
+			if (ImGui::Selectable("Nothing", edited.filter.mask == 0)) {
+				edited.filter.mask = 0;
+				changed |= history.SetCollider(id, edited);
+			}
+			ImGui::Separator();
+			for (std::uint32_t layer = 0; layer < CollisionFilter::kLayerCount;
+			     ++layer) {
+				const auto bit = std::uint32_t{1} << layer;
+				bool enabled = (edited.filter.mask & bit) != 0;
+				const auto label = layer == 0 ? std::string{"0: Default"}
+				                              : std::to_string(layer);
+				if (ImGui::Checkbox(label.c_str(), &enabled)) {
+					edited.filter.mask = enabled ? edited.filter.mask | bit
+					                             : edited.filter.mask & ~bit;
+					changed |= history.SetCollider(id, edited);
+				}
+			}
+			ImGui::EndCombo();
+		}
+
 		ui.BeginDisabled(!BoxColliderUtils::IsValid(*object.collider));
 
 		if (ui.Button("Copy Box Collider")) {
