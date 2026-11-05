@@ -239,7 +239,8 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 			if ((object.camera && !object.camera->IsValid()) ||
 			    (object.character && !object.character->IsValid()) ||
 			    (object.followCamera && !object.followCamera->IsValid()) ||
-			    (object.respawn && !object.respawn->IsValid())) {
+			    (object.respawn && !object.respawn->IsValid()) ||
+			    (object.triggerActions && !object.triggerActions->IsValid())) {
 				throw std::runtime_error(
 				    "ゲーム用コンポーネントの設定が無効です。");
 			}
@@ -324,6 +325,27 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 				    {"clearance", v.clearance}};
 			}
 
+			if (object.triggerActions) {
+				Json actions = Json::array();
+				for (const auto &action : object.triggerActions->actions) {
+					const auto operation =
+					    action.operation == TriggerAction::Operation::ENABLE
+					        ? "enable"
+					    : action.operation == TriggerAction::Operation::DISABLE
+					        ? "disable"
+					        : "toggle";
+					actions.push_back(
+					    {{"event", action.event == TriggerEvent::Type::ENTER
+					                   ? "enter"
+					                   : "exit"},
+					     {"target", action.target},
+					     {"operation", operation},
+					     {"once", action.once}});
+				}
+				objects.back()["triggerActions"] = {
+				    {"actions", std::move(actions)}};
+			}
+
 			if (object.respawn) {
 				const auto &v = *object.respawn;
 				objects.back()["respawn"] = {
@@ -386,7 +408,7 @@ namespace {
 /// 解析したシーンドキュメントを検証し、全件成功した場合だけ反映する
 /// </summary>
 /// <param name="scene">読み込み先</param>
-/// <param name="document">version 1から17のJSON</param>
+/// <param name="document">version 1から18のJSON</param>
 /// <returns>true:成功 false:内容が無効</returns>
 bool ApplySceneDocument(Scene &scene, const Json &document) {
 	try {
@@ -587,6 +609,40 @@ bool ApplySceneDocument(Scene &scene, const Json &document) {
 				object.camera = CameraComponent{};
 			}
 
+			if (version >= 18 && item.contains("triggerActions")) {
+				const auto &actions = item.at("triggerActions").at("actions");
+				if (!actions.is_array() ||
+				    actions.size() > TriggerActionsComponent::kMaximumActions) {
+					throw std::runtime_error(
+					    "Trigger Actionsの操作配列が無効です。");
+				}
+				TriggerActionsComponent component;
+				for (const auto &value : actions) {
+					const auto event = value.at("event").get<std::string>();
+					const auto operation =
+					    value.at("operation").get<std::string>();
+					if ((event != "enter" && event != "exit") ||
+					    (operation != "enable" && operation != "disable" &&
+					     operation != "toggle") ||
+					    !value.at("target").is_number_unsigned() ||
+					    !value.at("once").is_boolean()) {
+						throw std::runtime_error(
+						    "Trigger Actionsの操作設定が無効です。");
+					}
+					component.actions.push_back(
+					    {event == "enter" ? TriggerEvent::Type::ENTER
+					                      : TriggerEvent::Type::EXIT,
+					     value.at("target").get<SceneObjectId>(),
+					     operation == "enable"
+					         ? TriggerAction::Operation::ENABLE
+					     : operation == "disable"
+					         ? TriggerAction::Operation::DISABLE
+					         : TriggerAction::Operation::TOGGLE,
+					     value.at("once").get<bool>()});
+				}
+				object.triggerActions = std::move(component);
+			}
+
 			if (version >= 5 && item.contains("respawn")) {
 				const auto &v = item.at("respawn");
 
@@ -603,7 +659,8 @@ bool ApplySceneDocument(Scene &scene, const Json &document) {
 			if ((object.camera && !object.camera->IsValid()) ||
 			    (object.character && !object.character->IsValid()) ||
 			    (object.followCamera && !object.followCamera->IsValid()) ||
-			    (object.respawn && !object.respawn->IsValid())) {
+			    (object.respawn && !object.respawn->IsValid()) ||
+			    (object.triggerActions && !object.triggerActions->IsValid())) {
 				throw std::runtime_error(
 				    "ゲーム用コンポーネントの設定が無効です。");
 			}
