@@ -2542,3 +2542,9 @@ bool EditorHistory::ApplyWorldPositions(
 	AppendPrepared(Command{std::move(group)}, next, description);
 	return true;
 }
+
+bool EditorHistory::SetWorldPosition(SceneObjectId id,
+                                     const DirectX::XMFLOAT3 &position) {
+	CommitEdit();
+	return ApplyWorldPositions({{id, position}}, "Move Object");
+}

@@ -4,6 +4,7 @@
 #include "math/MathUtils.h"
 #include "physics/CollisionWorld.h"
 #include "scene/Scene.h"
+#include "scene/SceneHierarchy.h"
 #include "scene/SceneRenderer.h"
 #include <algorithm>
 #include <cmath>
@@ -11,19 +12,22 @@
 bool CharacterJumpPreview::BuildPaths(const Scene &scene, SceneObjectId id,
                                       Paths &paths) const {
 	const auto *object = scene.FindObject(id);
-
-	if (!object || !object->character || !object->collider ||
+	SceneWorldTransform transform;
+	if (!object || !SceneHierarchy::GetWorldTransform(scene, id, transform) ||
+	    !object->character || !object->collider ||
 	    (object->respawn &&
 	     (!object->respawn->IsValid() ||
-	      object->transform.translation.y <= object->respawn->minimumY))) {
+	      transform.GetPosition().y <= object->respawn->minimumY))) {
 		return false;
 	}
 
 	CollisionWorld world;
 	CharacterController initial;
 
-	if (!world.Rebuild(scene, id) ||
-	    !initial.Initialize(object->transform, *object->collider,
+	std::vector<SceneObjectId> ignored;
+	if (!SceneHierarchy::GetSubtree(scene, id, ignored) ||
+	    !world.Rebuild(scene, std::span<const SceneObjectId>{ignored}) ||
+	    !initial.Initialize(transform.matrix, *object->collider,
 	                        *object->character, world) ||
 	    !initial.IsGrounded()) {
 		return false;
@@ -45,7 +49,7 @@ bool CharacterJumpPreview::BuildPaths(const Scene &scene, SceneObjectId id,
 		auto controller = initial;
 		auto input = directions[i];
 		auto &path = result[i];
-		path.points[path.count++] = object->transform.translation;
+		path.points[path.count++] = transform.GetPosition();
 
 		for (std::size_t step = 1; step <= kMaximumSteps; ++step) {
 			if (!controller.Update(kStepSeconds, input, world)) {
@@ -56,14 +60,11 @@ bool CharacterJumpPreview::BuildPaths(const Scene &scene, SceneObjectId id,
 			const auto position = controller.GetTransform().translation;
 			path.durationSeconds = static_cast<double>(step) * kStepSeconds;
 			path.maximumHeight =
-			    (std::max)(path.maximumHeight,
-			               static_cast<double>(position.y) -
-			                   object->transform.translation.y);
-			path.horizontalDistance =
-			    std::hypot(static_cast<double>(position.x) -
-			                   object->transform.translation.x,
-			               static_cast<double>(position.z) -
-			                   object->transform.translation.z);
+			    (std::max)(path.maximumHeight, static_cast<double>(position.y) -
+			                                       transform.GetPosition().y);
+			path.horizontalDistance = std::hypot(
+			    static_cast<double>(position.x) - transform.GetPosition().x,
+			    static_cast<double>(position.z) - transform.GetPosition().z);
 			const bool fell =
 			    object->respawn && position.y < object->respawn->minimumY;
 			const bool landed = controller.IsGrounded();

@@ -514,8 +514,9 @@ bool InspectorPanel::Draw(
 	    ColorTintInspector{}.Draw(ui, inspectedObjectId, *object, history);
 
 	ColliderInspector::Request colliderRequest;
-	changed |= ColliderInspector{}.Draw(ui, inspectedObjectId, *object, history,
-	                                    colliderRequest, canPasteCollider);
+	changed |=
+	    ColliderInspector{}.Draw(ui, scene, inspectedObjectId, *object, history,
+	                             colliderRequest, canPasteCollider);
 
 	if (colliderRequest.action == ColliderInspector::Action::COPY) {
 		objectRequest_ = {ObjectAction::COPY_COLLIDER,

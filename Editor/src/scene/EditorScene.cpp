@@ -373,9 +373,14 @@ bool EditorScene::Update(float deltaTime) {
 
 		if (const auto copied = inspectorPanel_.DrawReadOnly(
 		        ui_, playMode_.GetSession().GetScene(),
-		        playSelection_.GetActiveId());
-		    copied && !clipboard_.CopyTransform(*copied)) {
-			ShowError("Could not copy an invalid runtime Transform.");
+		        playSelection_.GetActiveId())) {
+			SceneWorldTransform world;
+			if (!SceneHierarchy::GetWorldTransform(
+			        playMode_.GetSession().GetScene(),
+			        playSelection_.GetActiveId(), world) ||
+			    !clipboard_.CopyTransform(*copied, world.GetPosition())) {
+				ShowError("Could not copy an invalid runtime Transform.");
+			}
 		}
 
 		ui_.BeginDisabled(IsBusy());
@@ -3742,7 +3747,8 @@ void EditorScene::ApplyInspectorRequest(
 
 			if (!object->collider ||
 			    !BoxColliderUtils::GetWorldBounds(*object->collider,
-			                                      object->transform, bounds)) {
+			                                      document_.GetScene(),
+			                                      request.objectId, bounds)) {
 				ShowError(
 				    "Could not read a valid Collider top for the work plane.",
 				    request.objectId);
@@ -3906,12 +3912,8 @@ void EditorScene::ApplyInspectorRequest(
 				return;
 			}
 
-			auto transform = object->transform;
-			transform.translation = object->respawn->position;
-			const std::array edits{
-			    EditorHistory::TransformEdit{request.objectId, transform}};
-
-			if (!document_.GetHistory().SetTransforms(edits)) {
+			if (!document_.GetHistory().SetWorldPosition(
+			        request.objectId, object->respawn->position)) {
 				ShowError("Could not move the object to its Respawn position.",
 				          request.objectId);
 			}
@@ -4055,7 +4057,11 @@ void EditorScene::ApplyInspectorRequest(
 		}
 
 		if (request.action == InspectorPanel::ObjectAction::COPY_TRANSFORM) {
-			if (!clipboard_.CopyTransform(object->transform)) {
+			SceneWorldTransform world;
+			if (!SceneHierarchy::GetWorldTransform(document_.GetScene(),
+			                                       request.objectId, world) ||
+			    !clipboard_.CopyTransform(object->transform,
+			                              world.GetPosition())) {
 				ShowError("Could not copy an invalid Transform.");
 			}
 
@@ -4064,7 +4070,7 @@ void EditorScene::ApplyInspectorRequest(
 
 		if (request.action ==
 		    InspectorPanel::ObjectAction::PASTE_RESPAWN_POSITION) {
-			const auto *copied = clipboard_.GetTransform();
+			const auto *copied = clipboard_.GetWorldPosition();
 
 			if (!object->respawn || !copied) {
 				ShowError("Copy a Transform and inspect an object with Respawn "
@@ -4074,7 +4080,7 @@ void EditorScene::ApplyInspectorRequest(
 
 			auto settings = *object->respawn;
 			settings.useStartPosition = false;
-			settings.position = copied->translation;
+			settings.position = *copied;
 
 			if (!document_.GetHistory().SetRespawn(request.objectId,
 			                                       settings)) {
@@ -4108,9 +4114,11 @@ void EditorScene::ApplyInspectorRequest(
 			const bool respawn =
 			    request.action == InspectorPanel::ObjectAction::FRAME_RESPAWN;
 			const bool ready =
-			    respawn ? RespawnPreview::GetFrameBounds(*object, corners)
-			            : ColliderBounds::GetFrameBounds(
-			                  document_.GetScene(), request.objectId, corners);
+			    respawn
+			        ? RespawnPreview::GetFrameBounds(document_.GetScene(),
+			                                         request.objectId, corners)
+			        : ColliderBounds::GetFrameBounds(document_.GetScene(),
+			                                         request.objectId, corners);
 
 			if (!ready) {
 				ShowError(
@@ -4145,7 +4153,8 @@ void EditorScene::ApplyInspectorRequest(
 				inspected =
 				    object->collider &&
 				    BoxColliderUtils::GetWorldBounds(*object->collider,
-				                                     object->transform, body) &&
+				                                     document_.GetScene(),
+				                                     request.objectId, body) &&
 				    CollisionWorld::FindOverlaps(document_.GetScene(), body,
 				                                 objects, request.objectId);
 			}
@@ -4172,10 +4181,17 @@ void EditorScene::ApplyInspectorRequest(
 			CollisionWorld world;
 			CharacterController controller;
 			SceneObjectId ground = 0;
+			SceneWorldTransform transform;
+			std::vector<SceneObjectId> ignored;
 
 			if (!object->character || !object->collider ||
-			    !world.Rebuild(document_.GetScene(), request.objectId) ||
-			    !controller.Initialize(object->transform, *object->collider,
+			    !SceneHierarchy::GetWorldTransform(
+			        document_.GetScene(), request.objectId, transform) ||
+			    !SceneHierarchy::GetSubtree(document_.GetScene(),
+			                                request.objectId, ignored) ||
+			    !world.Rebuild(document_.GetScene(),
+			                   std::span<const SceneObjectId>{ignored}) ||
+			    !controller.Initialize(transform.matrix, *object->collider,
 			                           *object->character, world) ||
 			    !controller.FindGroundObject(world, ground)) {
 				ShowError(
@@ -4691,7 +4707,8 @@ bool EditorScene::FrameObjects(FrameRequest request,
 			ready = jumpPreview_.GetFrameBounds(scene, frameObject_, corners);
 		} else if (const auto *object = scene.FindObject(frameObject_)) {
 			ready = request == FrameRequest::RESPAWN
-			            ? RespawnPreview::GetFrameBounds(*object, corners)
+			            ? RespawnPreview::GetFrameBounds(scene, frameObject_,
+			                                             corners)
 			            : ColliderBounds::GetFrameBounds(scene, frameObject_,
 			                                             corners);
 		}

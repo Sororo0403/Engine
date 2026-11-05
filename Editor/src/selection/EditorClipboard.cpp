@@ -1,5 +1,6 @@
 #include "selection/EditorClipboard.h"
 
+#include "math/MathUtils.h"
 #include "math/TransformUtils.h"
 #include "physics/BoxColliderUtils.h"
 #include "scene/Scene.h"
@@ -72,12 +73,23 @@ bool EditorClipboard::HasObjects() const {
 }
 
 bool EditorClipboard::CopyTransform(const Transform &transform) {
-	if (!TransformUtils::IsValid(transform)) {
+	return CopyTransform(transform, transform.translation);
+}
+
+bool EditorClipboard::CopyTransform(const Transform &transform,
+                                    const DirectX::XMFLOAT3 &worldPosition) {
+	if (!TransformUtils::IsValid(transform) ||
+	    !MathUtils::IsFinite(worldPosition)) {
 		return false;
 	}
 
 	transform_ = transform;
+	worldPosition_ = worldPosition;
 	return true;
+}
+
+const DirectX::XMFLOAT3 *EditorClipboard::GetWorldPosition() const {
+	return worldPosition_ ? &*worldPosition_ : nullptr;
 }
 
 const Transform *EditorClipboard::GetTransform() const {
@@ -175,6 +187,7 @@ void EditorClipboard::Clear() {
 	sourceIds_.clear();
 	externalReferences_.clear();
 	transform_.reset();
+	worldPosition_.reset();
 	collider_.reset();
 	cameraLens_.reset();
 	characterSettings_.reset();

@@ -56,6 +56,21 @@ class EditorClipboard {
 	bool CopyTransform(const Transform &transform);
 
 	/// <summary>
+	/// ローカルTransformと、復帰先などへ貼り付けるワールド位置を同時にコピーする
+	/// </summary>
+	/// <param name="transform">有効なローカル変形</param>
+	/// <param name="worldPosition">親子合成後の有限なワールド位置</param>
+	/// <returns>true:成功 false:変形や位置が無効。失敗時は両方のコピー内容を保持する</returns>
+	bool CopyTransform(const Transform &transform,
+	                   const DirectX::XMFLOAT3 &worldPosition);
+
+	/// <summary>
+	/// Transformと同時にコピーしたワールド位置を取得する
+	/// </summary>
+	/// <returns>次のCopyTransform成功またはClearまで有効な位置。未コピーの場合はnullptr</returns>
+	const DirectX::XMFLOAT3 *GetWorldPosition() const;
+
+	/// <summary>
 	/// コピーしたTransformを取得する
 	/// </summary>
 	/// <returns>次のCopyTransform成功またはClearまで有効な値。未設定はnullptr</returns>
@@ -160,6 +175,7 @@ class EditorClipboard {
 	// シーンを置き換えた後に確保を行わず、外部参照だけを解除するための添字
 	std::vector<std::size_t> externalReferences_;
 	std::optional<Transform> transform_;
+	std::optional<DirectX::XMFLOAT3> worldPosition_;
 	std::optional<BoxCollider> collider_;
 	std::optional<CameraSettings> cameraLens_;
 	std::optional<CharacterSettings> characterSettings_;

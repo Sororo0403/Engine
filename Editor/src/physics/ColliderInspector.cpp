@@ -16,13 +16,14 @@ namespace {
 /// 形状編集の開始・変更・終了を、単一のUndo操作として記録する
 /// </summary>
 /// <param name="history">編集履歴</param>
+/// <param name="scene">物体と祖先の変形を参照するシーン</param>
 /// <param name="id">編集対象ID</param>
 /// <param name="object">変更を反映する物体</param>
 /// <param name="edited">編集後の形状</param>
 /// <param name="changed">入力欄の値が変わったか</param>
 /// <returns>true:形状を変更した false:変更なし</returns>
-bool ApplyEdit(EditorHistory &history, SceneObjectId id, SceneObject &object,
-               const BoxCollider &edited, bool changed) {
+bool ApplyEdit(EditorHistory &history, const Scene &scene, SceneObjectId id,
+               SceneObject &object, const BoxCollider &edited, bool changed) {
 	if (ImGui::IsItemActivated() && !history.BeginCollider(id)) {
 		return false;
 	}
@@ -31,7 +32,7 @@ bool ApplyEdit(EditorHistory &history, SceneObjectId id, SceneObject &object,
 	AxisAlignedBox bounds;
 
 	if (changed && object.collider && *object.collider != edited &&
-	    BoxColliderUtils::GetWorldBounds(edited, object.transform, bounds)) {
+	    BoxColliderUtils::GetWorldBounds(edited, scene, id, bounds)) {
 		if (!history.IsEditing() && !history.BeginCollider(id)) {
 			return false;
 		}
@@ -48,9 +49,10 @@ bool ApplyEdit(EditorHistory &history, SceneObjectId id, SceneObject &object,
 }
 } // namespace
 
-bool ColliderInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
-                             SceneObject &object, EditorHistory &history,
-                             Request &request, bool canPasteCollider) const {
+bool ColliderInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
+                             SceneObjectId id, SceneObject &object,
+                             EditorHistory &history, Request &request,
+                             bool canPasteCollider) const {
 	request = {};
 
 	if (!object.collider) {
@@ -65,8 +67,8 @@ bool ColliderInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 	if (ui.CollapsingHeader("Box Collider")) {
 		AxisAlignedBox bounds;
 
-		if (!BoxColliderUtils::GetWorldBounds(*object.collider,
-		                                      object.transform, bounds)) {
+		if (!BoxColliderUtils::GetWorldBounds(*object.collider, scene, id,
+		                                      bounds)) {
 			ImGui::TextWrapped(
 			    "The collider cannot be represented at this transform. Adjust "
 			    "position or scale, or fit the collider again.");
@@ -75,7 +77,7 @@ bool ColliderInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		auto edited = *object.collider;
 		bool valueChanged = ui.DragFloat3("Collider Center", edited.center,
 		                                  0.01f, -10000, 10000);
-		changed |= ApplyEdit(history, id, object, edited, valueChanged);
+		changed |= ApplyEdit(history, scene, id, object, edited, valueChanged);
 		edited = *object.collider;
 		// 内部の半寸法は保持し、UIではローカル座標の全体の寸法を扱う。
 		// doubleで表示し、既存データの大きな半寸法を2倍しても桁あふれさせない。
@@ -98,8 +100,8 @@ bool ColliderInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 			                      static_cast<float>(size[2] * 0.5)};
 		}
 
-		changed |=
-		    ApplyEdit(history, id, object, edited, valueChanged && validSize);
+		changed |= ApplyEdit(history, scene, id, object, edited,
+		                     valueChanged && validSize);
 
 		ui.BeginDisabled(!BoxColliderUtils::IsValid(*object.collider));
 
@@ -124,8 +126,8 @@ bool ColliderInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		ImGui::SetItemTooltip(
 		    "Use the model's local bounds. Empty objects use a unit box.");
 
-		ui.BeginDisabled(!BoxColliderUtils::GetWorldBounds(
-		    *object.collider, object.transform, bounds));
+		ui.BeginDisabled(!BoxColliderUtils::GetWorldBounds(*object.collider,
+		                                                   scene, id, bounds));
 
 		if (ui.Button("Frame Collider")) {
 			request = {Action::FRAME, id};

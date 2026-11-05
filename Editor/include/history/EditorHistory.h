@@ -550,6 +550,14 @@ class EditorHistory {
 	                      const DirectX::XMFLOAT3 &translation);
 
 	/// <summary>
+	/// 親を保ったままワールド位置を指定し、ローカル変形の変更を履歴へ記録する
+	/// </summary>
+	/// <param name="id">既存の物体ID</param>
+	/// <param name="position">有限なワールド位置</param>
+	/// <returns>true:成功または同値 false:対象・位置・変形が無効。失敗時は状態を保持する</returns>
+	bool SetWorldPosition(SceneObjectId id, const DirectX::XMFLOAT3 &position);
+
+	/// <summary>
 	/// 各物体の原点をワールド座標のグリッドへ揃え、全変更を1操作として記録する
 	/// </summary>
 	/// <param name="objectIds">重複のない対象ID。編集中の内容は先に確定する</param>

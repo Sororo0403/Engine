@@ -4,6 +4,7 @@
 #include "physics/BoxColliderUtils.h"
 #include "physics/CollisionWorld.h"
 #include "scene/Scene.h"
+#include "scene/SceneHierarchy.h"
 #include "scene/SceneObject.h"
 #include "scene/SceneRenderer.h"
 #include <algorithm>
@@ -13,14 +14,14 @@ bool RespawnPreview::BuildGeometry(const Scene &scene, SceneObjectId id,
 	const auto *object = scene.FindObject(id);
 	Geometry result;
 
-	if (!object || !BuildLines(*object, result.markers)) {
+	if (!object || !BuildLines(scene, id, result.markers)) {
 		return false;
 	}
 
 	const auto &settings = *object->respawn;
 	AxisAlignedBox body;
 
-	if (GetColliderBounds(*object, body)) {
+	if (GetColliderBounds(scene, id, body)) {
 		ColliderBounds::Lines outline;
 		ColliderBounds bounds;
 
@@ -31,8 +32,11 @@ bool RespawnPreview::BuildGeometry(const Scene &scene, SceneObjectId id,
 		if (object->character && object->character->IsValid() &&
 		    result.markers[3].start.y > settings.minimumY) {
 			CollisionWorld world;
+			std::vector<SceneObjectId> ignored;
 			result.canRespawn =
-			    world.Rebuild(scene, id) && world.CanPlace(body);
+			    SceneHierarchy::GetSubtree(scene, id, ignored) &&
+			    world.Rebuild(scene, std::span<const SceneObjectId>{ignored}) &&
+			    world.CanPlace(body);
 		}
 	}
 
@@ -54,14 +58,34 @@ bool RespawnPreview::BuildGeometry(const Scene &scene, SceneObjectId id,
 }
 
 bool RespawnPreview::BuildLines(const SceneObject &object, Lines &lines) const {
-	if (!object.respawn || !object.respawn->IsValid()) {
+	if (object.parentId != 0 || !object.respawn || !object.respawn->IsValid()) {
 		return false;
 	}
 
-	const auto &settings = *object.respawn;
-	const auto position = settings.useStartPosition
+	const auto position = object.respawn->useStartPosition
 	                          ? object.transform.translation
-	                          : settings.position;
+	                          : object.respawn->position;
+	return BuildLines(*object.respawn, position, lines);
+}
+
+bool RespawnPreview::BuildLines(const Scene &scene, SceneObjectId id,
+                                Lines &lines) const {
+	const auto *object = scene.FindObject(id);
+	SceneWorldTransform world;
+	if (!object || !object->respawn || !object->respawn->IsValid() ||
+	    !SceneHierarchy::GetWorldTransform(scene, id, world)) {
+		return false;
+	}
+
+	const auto position = object->respawn->useStartPosition
+	                          ? world.GetPosition()
+	                          : object->respawn->position;
+	return BuildLines(*object->respawn, position, lines);
+}
+
+bool RespawnPreview::BuildLines(const RespawnSettings &settings,
+                                const DirectX::XMFLOAT3 &position,
+                                Lines &lines) const {
 
 	if (!MathUtils::IsFinite(position)) {
 		return false;
@@ -103,15 +127,38 @@ bool RespawnPreview::BuildLines(const SceneObject &object, Lines &lines) const {
 
 bool RespawnPreview::GetFrameBounds(const SceneObject &object,
                                     std::array<DirectX::XMFLOAT3, 8> &corners) {
-	if (!object.respawn || !object.respawn->IsValid()) {
+	if (object.parentId != 0 || !object.respawn || !object.respawn->IsValid()) {
 		return false;
 	}
 
-	auto transform = object.transform;
-	transform.translation = object.respawn->useStartPosition
-	                            ? transform.translation
-	                            : object.respawn->position;
-	const auto &position = transform.translation;
+	const auto position = object.respawn->useStartPosition
+	                          ? object.transform.translation
+	                          : object.respawn->position;
+	AxisAlignedBox body;
+	const bool hasBody = GetColliderBounds(object, body);
+	return MakeFrameBounds(position, hasBody ? &body : nullptr, corners);
+}
+
+bool RespawnPreview::GetFrameBounds(const Scene &scene, SceneObjectId id,
+                                    std::array<DirectX::XMFLOAT3, 8> &corners) {
+	const auto *object = scene.FindObject(id);
+	SceneWorldTransform world;
+	if (!object || !object->respawn || !object->respawn->IsValid() ||
+	    !SceneHierarchy::GetWorldTransform(scene, id, world)) {
+		return false;
+	}
+
+	const auto position = object->respawn->useStartPosition
+	                          ? world.GetPosition()
+	                          : object->respawn->position;
+	AxisAlignedBox body;
+	const bool hasBody = GetColliderBounds(scene, id, body);
+	return MakeFrameBounds(position, hasBody ? &body : nullptr, corners);
+}
+
+bool RespawnPreview::MakeFrameBounds(
+    const DirectX::XMFLOAT3 &position, const AxisAlignedBox *body,
+    std::array<DirectX::XMFLOAT3, 8> &corners) {
 
 	if (!MathUtils::IsFinite(position)) {
 		return false;
@@ -121,15 +168,13 @@ bool RespawnPreview::GetFrameBounds(const SceneObject &object,
 	                    position.z - kMarkerRadius},
 	                   {position.x + kMarkerRadius, position.y + kMarkerRadius,
 	                    position.z + kMarkerRadius}};
-	AxisAlignedBox body;
-
-	if (GetColliderBounds(object, body)) {
-		box.minimum = {(std::min)(box.minimum.x, body.minimum.x),
-		               (std::min)(box.minimum.y, body.minimum.y),
-		               (std::min)(box.minimum.z, body.minimum.z)};
-		box.maximum = {(std::max)(box.maximum.x, body.maximum.x),
-		               (std::max)(box.maximum.y, body.maximum.y),
-		               (std::max)(box.maximum.z, body.maximum.z)};
+	if (body) {
+		box.minimum = {(std::min)(box.minimum.x, body->minimum.x),
+		               (std::min)(box.minimum.y, body->minimum.y),
+		               (std::min)(box.minimum.z, body->minimum.z)};
+		box.maximum = {(std::max)(box.maximum.x, body->maximum.x),
+		               (std::max)(box.maximum.y, body->maximum.y),
+		               (std::max)(box.maximum.z, body->maximum.z)};
 	}
 
 	if (!MathUtils::IsFinite(box.minimum) ||
@@ -152,7 +197,8 @@ bool RespawnPreview::GetFrameBounds(const SceneObject &object,
 
 bool RespawnPreview::GetColliderBounds(const SceneObject &object,
                                        AxisAlignedBox &bounds) {
-	if (!object.respawn || !object.respawn->IsValid() || !object.collider) {
+	if (object.parentId != 0 || !object.respawn || !object.respawn->IsValid() ||
+	    !object.collider) {
 		return false;
 	}
 
@@ -165,13 +211,43 @@ bool RespawnPreview::GetColliderBounds(const SceneObject &object,
 	                                        bounds);
 }
 
+bool RespawnPreview::GetColliderBounds(const Scene &scene, SceneObjectId id,
+                                       AxisAlignedBox &bounds) {
+	const auto *object = scene.FindObject(id);
+	SceneWorldTransform world;
+	if (!object || !object->respawn || !object->respawn->IsValid() ||
+	    !object->collider ||
+	    !SceneHierarchy::GetWorldTransform(scene, id, world)) {
+		return false;
+	}
+
+	if (!object->respawn->useStartPosition) {
+		const auto position = object->respawn->position;
+		world.matrix._41 = position.x;
+		world.matrix._42 = position.y;
+		world.matrix._43 = position.z;
+	}
+
+	return BoxColliderUtils::GetWorldBounds(*object->collider, world.matrix,
+	                                        bounds);
+}
+
 bool RespawnPreview::FindBlockingObjects(const Scene &scene, SceneObjectId id,
                                          std::vector<SceneObjectId> &objects) {
-	const auto *object = scene.FindObject(id);
 	AxisAlignedBox body;
+	std::vector<SceneObjectId> result, ignored;
+	if (!GetColliderBounds(scene, id, body) ||
+	    !SceneHierarchy::GetSubtree(scene, id, ignored) ||
+	    !CollisionWorld::FindOverlaps(scene, body, result)) {
+		return false;
+	}
 
-	return object && GetColliderBounds(*object, body) &&
-	       CollisionWorld::FindOverlaps(scene, body, objects, id);
+	std::erase_if(result, [&](SceneObjectId object) {
+		return std::find(ignored.begin(), ignored.end(), object) !=
+		       ignored.end();
+	});
+	objects.swap(result);
+	return true;
 }
 
 bool RespawnPreview::Update(SceneRenderer &renderer, const Scene &scene,

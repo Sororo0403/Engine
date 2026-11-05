@@ -5,6 +5,7 @@
 #include "history/EditorHistory.h"
 #include "physics/AxisAlignedBox.h"
 #include "scene/Scene.h"
+#include "scene/SceneHierarchy.h"
 #include <format>
 #include <imgui.h>
 #include <string>
@@ -343,8 +344,11 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 			if (ui.Button("Use Current Position")) {
 				edited = *object.respawn;
-				edited.position = object.transform.translation;
-				changed |= history.SetRespawn(id, edited);
+				SceneWorldTransform world;
+				if (SceneHierarchy::GetWorldTransform(scene, id, world)) {
+					edited.position = world.GetPosition();
+					changed |= history.SetRespawn(id, edited);
+				}
 			}
 		}
 
@@ -369,7 +373,8 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		ui.EndDisabled();
 
 		std::array<DirectX::XMFLOAT3, 8> frameBounds;
-		ui.BeginDisabled(!RespawnPreview::GetFrameBounds(object, frameBounds));
+		ui.BeginDisabled(
+		    !RespawnPreview::GetFrameBounds(scene, id, frameBounds));
 
 		if (ui.Button("Frame Respawn")) {
 			respawnFrameRequest_ = id;
@@ -379,7 +384,7 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 		AxisAlignedBox respawnBody;
 		ui.BeginDisabled(
-		    !RespawnPreview::GetColliderBounds(object, respawnBody));
+		    !RespawnPreview::GetColliderBounds(scene, id, respawnBody));
 
 		if (ui.Button("Select Blocking Colliders")) {
 			respawnBlockersRequest_ = id;

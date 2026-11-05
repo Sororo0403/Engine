@@ -1022,7 +1022,8 @@ void ControlsPanel::Draw() {
 	         "at the aspect ratio in Game Settings. Follow Camera previews "
 	         "its starting view using the current target position."},
 	        {"Inspector > Respawn > Paste Respawn Position",
-	         "Use the position from the copied Transform as an explicit "
+	         "Use the world position captured with the copied Transform as an "
+	         "explicit "
 	         "recovery "
 	         "point. You can copy a live position during Play, Stop, then "
 	         "paste "
@@ -1116,8 +1117,10 @@ void ControlsPanel::Draw() {
 	         "placements before Play. Scene selection and Inspector lock "
 	         "stay unchanged. Unavailable during Play or modal operations."},
 	        {"Inspector > Respawn > Move to Respawn Position",
-	         "Move the inspected object to its explicit Respawn Position in "
-	         "one Undo/Redo operation. Rotation, scale, Collider and Respawn "
+	         "Move the inspected object to its explicit world Respawn Position "
+	         "in "
+	         "one Undo/Redo operation. The parent and local rotation/scale, "
+	         "Collider and Respawn "
 	         "settings stay unchanged. A locked Inspector moves its displayed "
 	         "object. Use Start Position must be off, and the destination must "
 	         "be above Fall Below Y with valid Character and Collider settings "
