@@ -14,7 +14,7 @@ class SceneSerializer {
 	/// <summary>
 	/// 保存する形式のバージョン。読み込みはversion 1からこの値まで対応する
 	/// </summary>
-	static constexpr int kCurrentVersion = 14;
+	static constexpr int kCurrentVersion = 15;
 
 	/// <summary>
 	/// シーンを検証し、ファイルへ書き込まずJSON文字列に変換する
@@ -25,7 +25,7 @@ class SceneSerializer {
 	static bool Serialize(const Scene &scene, std::string &text);
 
 	/// <summary>
-	/// version 1から14のJSON文字列を読み込む。失敗時は現在のシーンを保持する
+	/// version 1から15のJSON文字列を読み込む。失敗時は現在のシーンを保持する
 	/// </summary>
 	/// <param name="scene">成功時に置き換えるシーン</param>
 	/// <param name="text">ファイルから取得したJSON。参照する間だけ保持すればよい</param>
@@ -33,7 +33,7 @@ class SceneSerializer {
 	static bool Deserialize(Scene &scene, std::string_view text);
 
 	/// <summary>
-	/// 画像割り当て・描画・ゲーム用コンポーネントを含むversion 13形式で保存する。相対パスは実行ファイル基準
+	/// 親子関係・衝突レイヤー・画像割り当て・ゲーム用コンポーネントを保存する。相対パスは実行ファイル基準
 	/// </summary>
 	/// <param name="scene">保存するシーン</param>
 	/// <param name="filePath">保存先のファイルパス</param>
@@ -41,7 +41,7 @@ class SceneSerializer {
 	static bool Save(const Scene &scene, const std::filesystem::path &filePath);
 
 	/// <summary>
-	/// version 1から14のシーンを読み込む。失敗時は現在のシーンを保持する
+	/// version 1から15のシーンを読み込む。失敗時は現在のシーンを保持する
 	/// </summary>
 	/// <param name="scene">読み込み結果を反映するシーン</param>
 	/// <param name="filePath">読み込むファイルのパス。相対パスは実行ファイル基準</param>

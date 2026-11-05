@@ -18,6 +18,7 @@
 #include <exception>
 #include <format>
 #include <fstream>
+#include <limits>
 #include <map>
 #include <set>
 #include <stdexcept>
@@ -26,6 +27,21 @@
 
 namespace {
 using Json = nlohmann::json;
+
+/// <summary>
+/// 衝突設定に使う32ビット符号なし整数を、切り捨てや桁あふれなしで読み込む
+/// </summary>
+/// <param name="value">0からUINT32_MAXまでのJSON整数</param>
+/// <returns>読み込んだ整数。型や範囲が無効な場合は例外</returns>
+std::uint32_t ReadCollisionValue(const Json &value) {
+	if (!value.is_number_unsigned() ||
+	    value.get<std::uint64_t>() >
+	        (std::numeric_limits<std::uint32_t>::max)()) {
+		throw std::runtime_error(
+		    "衝突設定には32ビット符号なし整数が必要です。");
+	}
+	return value.get<std::uint32_t>();
+}
 
 /// <summary>
 /// 3成分の値をJSON配列に変換する
@@ -269,7 +285,10 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 			if (object.collider) {
 				objects.back()["collider"] = {
 				    {"center", ToJson(object.collider->center)},
-				    {"halfExtents", ToJson(object.collider->halfExtents)}};
+				    {"halfExtents", ToJson(object.collider->halfExtents)},
+				    {"filter",
+				     {{"layer", object.collider->filter.layer},
+				      {"mask", object.collider->filter.mask}}}};
 			}
 
 			if (object.camera) {
@@ -365,7 +384,7 @@ namespace {
 /// 解析したシーンドキュメントを検証し、全件成功した場合だけ反映する
 /// </summary>
 /// <param name="scene">読み込み先</param>
-/// <param name="document">version 1から14のJSON</param>
+/// <param name="document">version 1から15のJSON</param>
 /// <returns>true:成功 false:内容が無効</returns>
 bool ApplySceneDocument(Scene &scene, const Json &document) {
 	try {
@@ -473,6 +492,12 @@ bool ApplySceneDocument(Scene &scene, const Json &document) {
 				object.collider =
 				    BoxCollider{ReadFloat3(collider.at("center")),
 				                ReadFloat3(collider.at("halfExtents"))};
+				if (version >= 15) {
+					const auto &filter = collider.at("filter");
+					object.collider->filter = {
+					    ReadCollisionValue(filter.at("layer")),
+					    ReadCollisionValue(filter.at("mask"))};
+				}
 			}
 
 			if (version >= 6 && item.contains("camera")) {
