@@ -1,6 +1,7 @@
 #include "graphics/model/ModelInstance.h"
 #include "core/Logger.h"
 #include "graphics/DirectionalLight.h"
+#include "graphics/PointLights.h"
 #include "graphics/camera/Camera.h"
 #include "graphics/model/Model.h"
 #include "graphics/render/MeshRenderer.h"
@@ -125,15 +126,15 @@ bool ModelInstance::Update(const Camera &camera,
 }
 
 void ModelInstance::Draw(ID3D12GraphicsCommandList *commandList,
-                         MeshRenderer &renderer,
-                         const DirectionalLight &light) const {
+                         MeshRenderer &renderer, const DirectionalLight &light,
+                         const PointLights &pointLights) const {
 	if (!commandList || !model_) {
 		Logger::Error("ModelInstance::Draw: 引数が無効、または未初期化です。");
 		return;
 	}
 
 	for (const auto &instance : meshInstances_) {
-		renderer.Draw(commandList, instance, light);
+		renderer.Draw(commandList, instance, light, pointLights);
 	}
 }
 

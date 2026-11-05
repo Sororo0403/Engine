@@ -1,6 +1,7 @@
 #include "graphics/render/MeshRenderer.h"
 #include "core/Logger.h"
 #include "graphics/DirectionalLight.h"
+#include "graphics/PointLights.h"
 #include "graphics/material/Material.h"
 #include "graphics/material/MaterialResource.h"
 #include "graphics/mesh/Mesh.h"
@@ -36,7 +37,8 @@ bool MeshRenderer::Initialize(ID3D12Device *device, IDxcBlob *vertexShader,
 
 void MeshRenderer::Draw(ID3D12GraphicsCommandList *commandList,
                         const MeshInstance &instance,
-                        const DirectionalLight &light) {
+                        const DirectionalLight &light,
+                        const PointLights &pointLights) {
 	const Mesh *mesh = instance.GetMesh();
 	const Material *material = instance.GetMaterial();
 
@@ -48,11 +50,12 @@ void MeshRenderer::Draw(ID3D12GraphicsCommandList *commandList,
 
 	const auto objectAddress = instance.GetConstantBufferAddress();
 	const auto lightAddress = light.GetConstantBufferAddress();
+	const auto pointLightAddress = pointLights.GetConstantBufferAddress();
 	const auto materialAddress = material->GetConstantBufferAddress();
 	const auto textureSrv = material->GetTextureSrv();
 
-	if (objectAddress == 0 || lightAddress == 0 || materialAddress == 0 ||
-	    textureSrv.ptr == 0) {
+	if (objectAddress == 0 || lightAddress == 0 || pointLightAddress == 0 ||
+	    materialAddress == 0 || textureSrv.ptr == 0) {
 		Logger::Error("MeshRenderer::Draw: 描画リソースが未初期化です。");
 		return;
 	}
@@ -75,6 +78,9 @@ void MeshRenderer::Draw(ID3D12GraphicsCommandList *commandList,
 	// PSのb2：材質情報
 	commandList->SetGraphicsRootConstantBufferView(3, materialAddress);
 
+	// PSのb3：このワールドの点光源
+	commandList->SetGraphicsRootConstantBufferView(4, pointLightAddress);
+
 	mesh->Draw(commandList);
 }
 
@@ -93,7 +99,7 @@ bool MeshRenderer::CreateRootSignature(ID3D12Device *device) {
 	range.OffsetInDescriptorsFromTableStart =
 	    D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	D3D12_ROOT_PARAMETER parameters[4]{};
+	D3D12_ROOT_PARAMETER parameters[5]{};
 
 	// ルートパラメーター0：物体ごとの変換行列
 	parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
@@ -118,6 +124,12 @@ bool MeshRenderer::CreateRootSignature(ID3D12Device *device) {
 	parameters[3].Descriptor.ShaderRegister = 2;
 	parameters[3].Descriptor.RegisterSpace = 0;
 	parameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+	// ルートパラメーター4：PSのb3へ点光源配列を渡す
+	parameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	parameters[4].Descriptor.ShaderRegister = 3;
+	parameters[4].Descriptor.RegisterSpace = 0;
+	parameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
 	// PSのs0で使用する固定サンプラー
 	D3D12_STATIC_SAMPLER_DESC sampler{};

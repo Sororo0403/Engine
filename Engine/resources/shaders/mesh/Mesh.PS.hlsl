@@ -11,6 +11,19 @@ cbuffer DirectionalLightBuffer : register(b1) {
 	float ambient;
 };
 
+struct PointLight {
+	float3 position;
+	float range;
+	float3 color;
+	float intensity;
+};
+
+cbuffer PointLightBuffer : register(b3) {
+	uint pointLightCount;
+	uint3 pointLightPadding;
+	PointLight pointLights[32];
+};
+
 cbuffer MaterialBuffer : register(b2) {
 	float4 baseColor;
 	float2 uvScale;
@@ -31,6 +44,19 @@ float4 PSMain(VertexOutput input) : SV_Target0 {
 		float3 toLight = -normalize(lightDirection);
 		float diffuse = saturate(dot(normal, toLight));
 		lighting = lightColor * lightIntensity * diffuse + ambient;
+		// 範囲端で滑らかに0へ近づけ、光源位置そのものでは零除算を避ける。
+		for (uint i = 0; i < pointLightCount; ++i) {
+			float3 offset = pointLights[i].position - input.worldPosition;
+			float distanceSquared = dot(offset, offset);
+			float distance = sqrt(distanceSquared);
+			if (distance > 0.0f && distance < pointLights[i].range) {
+				float attenuation = 1.0f - distance / pointLights[i].range;
+				float3 direction = offset / distance;
+				float pointDiffuse = saturate(dot(normal, direction));
+				lighting += pointLights[i].color * pointLights[i].intensity *
+				            pointDiffuse * attenuation * attenuation;
+			}
+		}
 	}
 
 	float3 color =

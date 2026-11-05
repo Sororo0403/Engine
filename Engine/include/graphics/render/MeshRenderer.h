@@ -7,6 +7,7 @@
 
 class MeshInstance;
 class DirectionalLight;
+class PointLights;
 
 class MeshRenderer {
   public:
@@ -28,9 +29,11 @@ class MeshRenderer {
 	/// </summary>
 	/// <param name="commandList">材質のテクスチャ用ヒープが設定済みの記録中のコマンドリスト</param>
 	/// <param name="instance">初期化・更新済みの物体</param>
+	/// <param name="pointLights">更新済みの点光源配列</param>
 	/// <param name="light">初期化・更新済みの平行光源</param>
 	void Draw(ID3D12GraphicsCommandList *commandList,
-	          const MeshInstance &instance, const DirectionalLight &light);
+	          const MeshInstance &instance, const DirectionalLight &light,
+	          const PointLights &pointLights);
 
 	/// <summary>
 	/// 描画用オブジェクトを解放する。GPUの利用完了後に呼び出す

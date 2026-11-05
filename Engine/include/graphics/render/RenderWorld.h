@@ -1,6 +1,7 @@
 #pragma once
 
 #include "graphics/DirectionalLightData.h"
+#include "graphics/PointLightData.h"
 #include "graphics/camera/CameraPose.h"
 #include "graphics/camera/CameraSettings.h"
 #include "graphics/material/ColorTint.h"
@@ -149,6 +150,13 @@ class RenderWorld {
 	/// </summary>
 	/// <returns>ライト情報への参照</returns>
 	DirectionalLightData &GetLight();
+
+	/// <summary>
+	/// ワールド座標の点光源を一括設定する。更新成功前の設定では描画しない
+	/// </summary>
+	/// <param name="lights">最大32灯の有効な光源。空は全消灯</param>
+	/// <returns>true:成功 false:未初期化、上限超過、または無効な設定。失敗時は現在値を保持する</returns>
+	bool SetPointLights(std::span<const PointLightData> lights);
 
 	/// <summary>
 	/// 読み取り専用のライト情報を取得する

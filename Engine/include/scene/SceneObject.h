@@ -10,6 +10,7 @@
 #include "scene/CameraComponent.h"
 #include "scene/MeshComponent.h"
 #include "scene/MeshRendererComponent.h"
+#include "scene/PointLightComponent.h"
 #include "scene/SceneObjectId.h"
 
 #include <filesystem>
@@ -47,6 +48,8 @@ struct SceneObject {
 	std::optional<RespawnSettings> respawn;
 	// 同じ物体のTriggerイベントで実行する対象物体の操作
 	std::optional<TriggerActionsComponent> triggerActions;
+	// 物体のワールド位置を光源として使用する
+	std::optional<PointLightComponent> pointLight;
 
 	/// <summary>
 	/// Meshに形状の参照が割り当てられているか確認する

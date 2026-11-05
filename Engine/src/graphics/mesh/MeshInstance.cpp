@@ -16,6 +16,7 @@ bool MeshInstance::Initialize(ID3D12Device *device, const Mesh &mesh,
 	}
 
 	TransformationConstants initialValue{};
+	DirectX::XMStoreFloat4x4(&initialValue.world, DirectX::XMMatrixIdentity());
 	DirectX::XMStoreFloat4x4(&initialValue.worldViewProjection,
 	                         DirectX::XMMatrixIdentity());
 	DirectX::XMStoreFloat4x4(&initialValue.worldInverseTranspose,
@@ -48,6 +49,7 @@ bool MeshInstance::Update(const Camera &camera,
 	using namespace DirectX;
 
 	TransformationConstants constants{};
+	constants.world = worldMatrix;
 	const XMMATRIX world = XMLoadFloat4x4(&worldMatrix);
 	const XMMATRIX view = XMLoadFloat4x4(&camera.GetViewMatrix());
 	const XMMATRIX projection = XMLoadFloat4x4(&camera.GetProjectionMatrix());

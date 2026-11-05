@@ -9,6 +9,7 @@
 #include "scene/Scene.h"
 #include "scene/SceneActivity.h"
 #include "scene/SceneHierarchy.h"
+#include "scene/SceneLighting.h"
 #include <format>
 #include <map>
 #include <optional>
@@ -38,6 +39,13 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 	if (!SceneHierarchy::BuildWorldTransforms(scene, sourceTransforms)) {
 		add(0, "Parent hierarchy or composed world transform is invalid.");
 		return issues;
+	}
+	std::vector<PointLightData> lights;
+	std::string lightError;
+	SceneObjectId invalidLight = 0;
+	if (!SceneLighting::CollectPointLights(scene, lights, lightError,
+	                                       &invalidLight)) {
+		add(invalidLight, lightError);
 	}
 	Scene resolved;
 	std::string followError;

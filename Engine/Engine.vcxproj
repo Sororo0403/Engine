@@ -363,4 +363,12 @@ exit /b 0</Command>
     <ClInclude Include="include\platform\windows\ShellUtils.h" />
     <ClCompile Include="src\platform\windows\ShellUtils.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\scene\PointLightComponent.h" />
+    <ClInclude Include="include\graphics\PointLightData.h" />
+    <ClInclude Include="include\graphics\PointLights.h" />
+    <ClCompile Include="src\graphics\PointLights.cpp" />
+    <ClInclude Include="include\scene\SceneLighting.h" />
+    <ClCompile Include="src\scene\SceneLighting.cpp" />
+  </ItemGroup>
 </Project>

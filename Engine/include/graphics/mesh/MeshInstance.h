@@ -17,6 +17,7 @@ class MeshInstance {
 	struct TransformationConstants {
 		DirectX::XMFLOAT4X4 worldViewProjection;
 		DirectX::XMFLOAT4X4 worldInverseTranspose;
+		DirectX::XMFLOAT4X4 world;
 	};
 
   public:

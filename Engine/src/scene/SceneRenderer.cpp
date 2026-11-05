@@ -8,6 +8,7 @@
 #include "scene/Scene.h"
 #include "scene/SceneActivity.h"
 #include "scene/SceneHierarchy.h"
+#include "scene/SceneLighting.h"
 
 #include <algorithm>
 #include <exception>
@@ -110,6 +111,14 @@ bool SceneRenderer::SynchronizeObjects() {
 
 	SceneActivity::States active;
 	if (!SceneActivity::BuildStates(scene_, active)) {
+		return false;
+	}
+	std::vector<PointLightData> lights;
+	std::string lightError;
+	if (!SceneLighting::CollectPointLights(scene_, lights, lightError) ||
+	    !world_->SetPointLights(lights)) {
+		Logger::Error(lightError.empty() ? "Point Light update failed."
+		                                 : lightError);
 		return false;
 	}
 	const auto revision = models_.GetReloadRevision();

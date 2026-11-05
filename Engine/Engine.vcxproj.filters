@@ -648,4 +648,24 @@
     <ClInclude Include="include\platform\windows\ShellUtils.h"><Filter>include\platform\windows</Filter></ClInclude>
     <ClCompile Include="src\platform\windows\ShellUtils.cpp"><Filter>src\platform\windows</Filter></ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\scene\PointLightComponent.h">
+      <Filter>include\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\PointLightData.h">
+      <Filter>include\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\PointLights.h">
+      <Filter>include\graphics</Filter>
+    </ClInclude>
+    <ClCompile Include="src\graphics\PointLights.cpp">
+      <Filter>src\graphics</Filter>
+    </ClCompile>
+    <ClInclude Include="include\scene\SceneLighting.h">
+      <Filter>include\scene</Filter>
+    </ClInclude>
+    <ClCompile Include="src\scene\SceneLighting.cpp">
+      <Filter>src\scene</Filter>
+    </ClCompile>
+  </ItemGroup>
 </Project>

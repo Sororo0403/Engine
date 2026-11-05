@@ -1,6 +1,7 @@
 #include "graphics/render/RenderWorld.h"
 #include "core/Logger.h"
 #include "graphics/DirectionalLight.h"
+#include "graphics/PointLights.h"
 #include "graphics/camera/Camera.h"
 #include "graphics/model/Model.h"
 #include "graphics/model/ModelInstance.h"
@@ -159,6 +160,8 @@ struct RenderWorld::Impl {
 
 	Camera camera_;
 	DirectionalLight light_;
+	PointLights pointLights_;
+	std::vector<PointLightData> pointLightData_;
 	DirectionalLightData lightData_{};
 
 	bool initialized_ = false;
@@ -255,6 +258,7 @@ RenderWorld::~RenderWorld() {
 	// 呼び出し側でGPUの利用完了を保証してから破棄する
 	Clear();
 	impl_->light_.Finalize();
+	impl_->pointLights_.Finalize();
 }
 
 bool RenderWorld::Initialize() {
@@ -270,7 +274,8 @@ bool RenderWorld::Initialize() {
 		return false;
 	}
 
-	if (!impl_->light_.Initialize(device)) {
+	if (!impl_->light_.Initialize(device) ||
+	    !impl_->pointLights_.Initialize(device)) {
 		return false;
 	}
 
@@ -488,6 +493,7 @@ void RenderWorld::Clear() {
 	// スロットと世代番号は残し、古いハンドルを再び有効にしない
 	impl_->camera_ = Camera{};
 	impl_->lightData_ = DirectionalLightData{};
+	impl_->pointLightData_.clear();
 	impl_->prepared_ = false;
 }
 
@@ -517,7 +523,8 @@ bool RenderWorld::Update(int width, int height) {
 		return false;
 	}
 
-	if (!impl_->light_.Update(impl_->lightData_)) {
+	if (!impl_->light_.Update(impl_->lightData_) ||
+	    !impl_->pointLights_.Update(impl_->pointLightData_)) {
 		return false;
 	}
 
@@ -564,7 +571,8 @@ void RenderWorld::Draw(MeshRenderer &renderer,
 			continue;
 		}
 
-		slot.object_->instance_.Draw(commandList, renderer, impl_->light_);
+		slot.object_->instance_.Draw(commandList, renderer, impl_->light_,
+		                             impl_->pointLights_);
 	}
 
 	// モデルの深度を使い、登録された線をまとめて描画する
@@ -702,6 +710,19 @@ bool RenderWorld::SetMaterial(RenderObjectHandle handle, std::size_t slot,
 		return false;
 	}
 
+	impl_->prepared_ = false;
+	return true;
+}
+
+bool RenderWorld::SetPointLights(std::span<const PointLightData> lights) {
+	if (!impl_->initialized_ ||
+	    lights.size() > PointLightData::kMaximumLights ||
+	    !std::all_of(lights.begin(), lights.end(),
+	                 [](const auto &light) { return light.IsValid(); })) {
+		return false;
+	}
+	std::vector<PointLightData> next(lights.begin(), lights.end());
+	impl_->pointLightData_.swap(next);
 	impl_->prepared_ = false;
 	return true;
 }

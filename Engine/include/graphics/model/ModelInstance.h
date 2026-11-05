@@ -10,6 +10,7 @@
 
 class Camera;
 class DirectionalLight;
+class PointLights;
 class MeshRenderer;
 class Model;
 
@@ -47,9 +48,11 @@ class ModelInstance {
 	/// </summary>
 	/// <param name="commandList">記録中のコマンドリスト</param>
 	/// <param name="renderer">初期化済みのメッシュ描画クラス</param>
+	/// <param name="pointLights">更新済みの点光源配列</param>
 	/// <param name="light">更新済みの平行光源</param>
 	void Draw(ID3D12GraphicsCommandList *commandList, MeshRenderer &renderer,
-	          const DirectionalLight &light) const;
+	          const DirectionalLight &light,
+	          const PointLights &pointLights) const;
 
 	/// <summary>
 	/// 材質数を取得する
