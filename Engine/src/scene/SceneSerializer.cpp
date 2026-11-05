@@ -247,6 +247,7 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 			objects.push_back({
 			    {"id", id},
 			    {"parent", object.parentId},
+			    {"active", object.active},
 			    {"name", object.name},
 			    {"transform",
 			     {
@@ -385,7 +386,7 @@ namespace {
 /// 解析したシーンドキュメントを検証し、全件成功した場合だけ反映する
 /// </summary>
 /// <param name="scene">読み込み先</param>
-/// <param name="document">version 1から16のJSON</param>
+/// <param name="document">version 1から17のJSON</param>
 /// <returns>true:成功 false:内容が無効</returns>
 bool ApplySceneDocument(Scene &scene, const Json &document) {
 	try {
@@ -417,6 +418,9 @@ bool ApplySceneDocument(Scene &scene, const Json &document) {
 			const SceneObjectId id = idValue.get<SceneObjectId>();
 
 			SceneObject object;
+			if (version >= 17) {
+				object.active = item.at("active").get<bool>();
+			}
 			if (version >= 14) {
 				const auto &parent = item.at("parent");
 				if (!parent.is_number_unsigned()) {
