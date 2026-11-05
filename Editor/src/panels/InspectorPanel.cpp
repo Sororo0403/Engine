@@ -1,6 +1,7 @@
 #include "panels/InspectorPanel.h"
 #include "appearance/ColorTintInspector.h"
 #include "appearance/TextureSlotInspector.h"
+#include "lighting/PointLightInspector.h"
 #include "scene/SceneActivity.h"
 
 #include "assets/AssetDragDrop.h"
@@ -418,6 +419,11 @@ bool InspectorPanel::Draw(
 			objectRequest_ = {ObjectAction::PASTE_COLLIDER, inspectedObjectId};
 		}
 
+		if (ui.MenuItem("Point Light", nullptr, !object->pointLight)) {
+			changed |=
+			    history.SetPointLight(inspectedObjectId, PointLightComponent{});
+		}
+
 		if (ui.MenuItem("Color Tint", nullptr, !object->colorTint)) {
 			changed |= history.SetColorTint(inspectedObjectId, ColorTint{});
 		}
@@ -556,6 +562,9 @@ bool InspectorPanel::Draw(
 		objectRequest_ = {ObjectAction::FRAME_COLLIDER,
 		                  colliderRequest.objectId};
 	}
+
+	changed |=
+	    PointLightInspector{}.Draw(ui, inspectedObjectId, *object, history);
 
 	changed |= TriggerActionsInspector{}.Draw(ui, scene, inspectedObjectId,
 	                                          *object, history);
@@ -747,6 +756,8 @@ InspectorPanel::DrawReadOnly(const ImGuiSystem &ui, const Scene &scene,
 		ui.Text(std::format("Collision Layer: {}", collider.filter.layer));
 		ui.Text(std::format("Collides With: 0x{:08X}", collider.filter.mask));
 	}
+
+	PointLightInspector{}.DrawReadOnly(ui, *object);
 
 	TriggerActionsInspector{}.DrawReadOnly(ui, scene, *object);
 

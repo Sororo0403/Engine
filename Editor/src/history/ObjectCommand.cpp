@@ -40,6 +40,7 @@ bool ObjectCommand::Remove(Scene &scene) const {
 	    current->followCamera != object_.followCamera ||
 	    current->respawn != object_.respawn ||
 	    current->triggerActions != object_.triggerActions ||
+	    current->pointLight != object_.pointLight ||
 	    !TransformUtils::AreEqual(current->transform, object_.transform)) {
 		return false;
 	}

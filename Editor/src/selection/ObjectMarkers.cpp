@@ -63,11 +63,12 @@ bool ObjectMarkers::BuildLines(const SceneObject &object, bool selected,
 	}
 
 	const DirectX::XMFLOAT4 color =
-	    selected          ? DirectX::XMFLOAT4{1.0f, 0.85f, 0.15f, 1.0f}
-	    : missingModel    ? DirectX::XMFLOAT4{1.0f, 0.2f, 0.2f, 1.0f}
-	    : object.camera   ? DirectX::XMFLOAT4{0.2f, 0.85f, 1.0f, 1.0f}
-	    : object.collider ? DirectX::XMFLOAT4{0.2f, 1.0f, 0.3f, 1.0f}
-	                      : DirectX::XMFLOAT4{0.85f, 0.85f, 0.85f, 1.0f};
+	    selected            ? DirectX::XMFLOAT4{1.0f, 0.85f, 0.15f, 1.0f}
+	    : missingModel      ? DirectX::XMFLOAT4{1.0f, 0.2f, 0.2f, 1.0f}
+	    : object.pointLight ? DirectX::XMFLOAT4{1.0f, 0.75f, 0.2f, 1.0f}
+	    : object.camera     ? DirectX::XMFLOAT4{0.2f, 0.85f, 1.0f, 1.0f}
+	    : object.collider   ? DirectX::XMFLOAT4{0.2f, 1.0f, 0.3f, 1.0f}
+	                        : DirectX::XMFLOAT4{0.85f, 0.85f, 0.85f, 1.0f};
 	Lines result;
 	std::size_t count = 0;
 

@@ -25,8 +25,9 @@ class CommandGroup {
 	    std::variant<TransformCommand, ObjectCommand, ParentCommand,
 	                 RenameCommand, ModelPathCommand, VisibilityCommand,
 	                 ActiveCommand, ColliderCommand, CharacterCommand,
-	                 FollowCameraCommand, TriggerActionsCommand, RespawnCommand,
-	                 CameraCommand, MeshRendererCommand, TextureSlotsCommand>;
+	                 FollowCameraCommand, TriggerActionsCommand,
+	                 PointLightCommand, RespawnCommand, CameraCommand,
+	                 MeshRendererCommand, TextureSlotsCommand>;
 
 	/// <summary>
 	/// 実行順に並んだ操作を保持する。シーンへの反映は行わない

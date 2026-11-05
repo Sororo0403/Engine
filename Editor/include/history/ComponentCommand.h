@@ -91,3 +91,6 @@ using ColorTintCommand = ComponentCommand<ColorTint, &SceneObject::colorTint>;
 
 using MeshRendererCommand =
     ComponentCommand<MeshRendererComponent, &SceneObject::meshRenderer>;
+
+using PointLightCommand =
+    ComponentCommand<PointLightComponent, &SceneObject::pointLight>;

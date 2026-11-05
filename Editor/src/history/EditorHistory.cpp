@@ -1445,6 +1445,10 @@ bool EditorHistory::HasPendingChanges() const {
 		    } else if constexpr (std::is_same_v<
 		                             Before, std::optional<CameraComponent>>) {
 			    return before != object->camera;
+		    } else if constexpr (std::is_same_v<
+		                             Before,
+		                             std::optional<PointLightComponent>>) {
+			    return before != object->pointLight;
 		    } else if constexpr (std::is_same_v<Before,
 		                                        std::optional<ColorTint>>) {
 			    return before != object->colorTint;
@@ -1593,6 +1597,13 @@ void EditorHistory::CommitEdit() {
 		return;
 	}
 
+	if (std::holds_alternative<std::optional<PointLightComponent>>(
+	        pending_->before) &&
+	    object->pointLight && !object->pointLight->IsValid()) {
+		Invalidate();
+		return;
+	}
+
 	if (std::holds_alternative<std::optional<ColorTint>>(pending_->before) &&
 	    object->colorTint && !object->colorTint->IsValid()) {
 		Invalidate();
@@ -1645,6 +1656,11 @@ void EditorHistory::CommitEdit() {
 		                                        std::optional<BoxCollider>>) {
 			    return Command{
 			        ColliderCommand{objectId, before, object->collider}};
+		    } else if constexpr (std::is_same_v<
+		                             Before,
+		                             std::optional<PointLightComponent>>) {
+			    return Command{
+			        PointLightCommand{objectId, before, object->pointLight}};
 		    } else if constexpr (std::is_same_v<Before,
 		                                        std::optional<ColorTint>>) {
 			    return Command{
@@ -1703,6 +1719,9 @@ void EditorHistory::CommitEdit() {
 		    } else if constexpr (std::is_same_v<
 		                             T, std::optional<CameraComponent>>) {
 			    return "Edit Camera";
+		    } else if constexpr (std::is_same_v<
+		                             T, std::optional<PointLightComponent>>) {
+			    return "Edit Point Light";
 		    } else if constexpr (std::is_same_v<T, std::optional<ColorTint>>) {
 			    return "Edit Color Tint";
 		    } else if constexpr (std::is_same_v<
@@ -2608,5 +2627,46 @@ bool EditorHistory::SetTriggerActions(
 	               !value   ? "Remove Trigger Actions"
 	               : adding ? "Add Trigger Actions"
 	                        : "Edit Trigger Actions");
+	return true;
+}
+
+bool EditorHistory::SetPointLight(SceneObjectId id,
+                                  std::optional<PointLightComponent> value) {
+	CommitEdit();
+	auto *object = scene_.FindObject(id);
+
+	if (!object || (value && !value->IsValid())) {
+		return false;
+	}
+
+	const bool adding = !object->pointLight;
+	PointLightCommand command{id, object->pointLight, value};
+
+	if (!command.HasChanges()) {
+		return true;
+	}
+
+	const auto next = PrepareAppend();
+
+	if (!command.Redo(scene_)) {
+		return false;
+	}
+
+	AppendPrepared(Command{std::move(command)}, next,
+	               !value   ? "Remove Point Light"
+	               : adding ? "Add Point Light"
+	                        : "Edit Point Light");
+	return true;
+}
+
+bool EditorHistory::BeginPointLight(SceneObjectId id) {
+	CommitEdit();
+	const auto *object = scene_.FindObject(id);
+
+	if (!object || !object->pointLight) {
+		return false;
+	}
+
+	pending_ = PendingEdit{id, object->pointLight};
 	return true;
 }

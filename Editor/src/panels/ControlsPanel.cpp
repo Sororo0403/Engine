@@ -809,6 +809,26 @@ void ControlsPanel::Draw() {
 	         "Deleting a target clears its reference, which Undo restores. "
 	         "Assign all configured targets before Play; an empty list is "
 	         "inert."},
+	        {"Inspector > Add Component > Point Light",
+	         "Add a Point Light to an object, then edit Color, Intensity and "
+	         "Range. "
+	         "Transform sets its position, including parent transforms. Range "
+	         "is a "
+	         "world distance and does not scale with the object. Light fades "
+	         "smoothly "
+	         "to zero at Range; Point Lights add colored diffuse light to the "
+	         "global "
+	         "directional and ambient lighting. Unlit materials ignore all "
+	         "lights. "
+	         "At most 32 Point Lights may be active at once; Scene Check "
+	         "reports "
+	         "invalid settings or excess lights. Active and parent Active "
+	         "switch "
+	         "lights off, including changes from Trigger Actions. Point Lights "
+	         "do "
+	         "not cast shadows. Edits, Reset and Remove support Undo/Redo; "
+	         "settings "
+	         "are saved with the scene and included in exported games."},
 	        {"Trigger Actions execution",
 	         "Initial overlaps run at Start. Later actions run after a "
 	         "positive simulation update: queued signals first, then new "

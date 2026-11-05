@@ -754,4 +754,10 @@
     <ClInclude Include="include\panels\SelectionMeasurementsPanel.h"><Filter>include\panels</Filter></ClInclude>
     <ClCompile Include="src\panels\SelectionMeasurementsPanel.cpp"><Filter>src\panels</Filter></ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Filter Include="include\lighting"><UniqueIdentifier>{832f1f08-97d9-4b8b-9d8f-77a91b1527ec}</UniqueIdentifier></Filter>
+    <ClInclude Include="include\lighting\PointLightInspector.h"><Filter>include\lighting</Filter></ClInclude>
+    <Filter Include="src\lighting"><UniqueIdentifier>{b542e72a-8828-451a-b60c-2fa96dee2d78}</UniqueIdentifier></Filter>
+    <ClCompile Include="src\lighting\PointLightInspector.cpp"><Filter>src\lighting</Filter></ClCompile>
+  </ItemGroup>
 </Project>
