@@ -1803,6 +1803,16 @@ exit /b 0</Command>
     <ClInclude Include="external\jolt\src\Jolt\Shaders\HairStructs.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\physics\RigidBodySettings.h" />
+    <ClCompile Include="src\physics\RigidBodySettings.cpp" />
+    <ClInclude Include="include\physics\RigidBodyDescription.h" />
+    <ClInclude Include="include\physics\RigidBodyState.h" />
+    <ClInclude Include="include\physics\RigidBodyWorld.h" />
+    <ClCompile Include="src\physics\RigidBodyWorld.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
     <ClInclude Include="external\jolt\src\Jolt\Shaders\ShaderCore.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -2196,6 +2196,26 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\physics\RigidBodySettings.h">
+      <Filter>include\physics</Filter>
+    </ClInclude>
+    <ClCompile Include="src\physics\RigidBodySettings.cpp">
+      <Filter>src\physics</Filter>
+    </ClCompile>
+    <ClInclude Include="include\physics\RigidBodyDescription.h">
+      <Filter>include\physics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\physics\RigidBodyState.h">
+      <Filter>include\physics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\physics\RigidBodyWorld.h">
+      <Filter>include\physics</Filter>
+    </ClInclude>
+    <ClCompile Include="src\physics\RigidBodyWorld.cpp">
+      <Filter>src\physics</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
     <ClInclude Include="external\jolt\src\Jolt\Shaders\ShaderCore.h">
       <Filter>external\jolt</Filter>
     </ClInclude>
