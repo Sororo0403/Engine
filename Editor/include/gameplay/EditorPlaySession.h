@@ -14,6 +14,14 @@
 class EditorPlaySession {
   public:
 	/// <summary>
+	/// シーン間で共有するLuaのgameを、変更しないJSONとして取得する
+	/// </summary>
+	/// <returns>次の更新まで有効な共有データ</returns>
+	std::string_view GetSharedScriptData() const {
+		return simulation_.GetSharedScriptData();
+	}
+
+	/// <summary>
 	/// 宣言されたPrefab素材の準備を描画・音声の所有側へ委ねる
 	/// </summary>
 	/// <param name="prepare">GPU完了後に呼ぶ準備処理</param>

@@ -1988,6 +1988,21 @@ void ControlsPanel::Draw() {
 	         "calls per callback, 32 per step, 1024 generated objects per step "
 	         "and 4096 scene objects. Any callback, physics or preparation "
 	         "failure restores the entire simulation step."},
+	        {"Shared Script Data",
+	         "Use game.score, game.inventory or other fields from callbacks "
+	         "to share data across objects and Scene transitions. For example, "
+	         "game.score = (game.score or 0) + 1. Unlike each object's state, "
+	         "game survives load_scene and Trigger Scene changes. Callbacks "
+	         "see changes made by earlier callbacks; "
+	         "any failure restores the whole step, including shared data. "
+	         "Play State > Shared Script Data displays the current JSON. "
+	         "Pause holds it; Step advances once. Start, Restart and Stop "
+	         "reset it. This data lasts for one Play session. Each shared root "
+	         "uses the same 64 KiB, 4096-value and depth-16 limits as state. "
+	         "Use finite numbers, strings, booleans and tables. Functions, "
+	         "userdata, sparse/mixed arrays and cycles are invalid. Modify "
+	         "game's fields instead of replacing its root table, and do not "
+	         "change shared data at module scope."},
 	        {"Script Scenes",
 	         "In Inspector > Lua Script, add a unique Scene Name and assign "
 	         "a .scene.json from the combo or Assets drag/drop. Call "

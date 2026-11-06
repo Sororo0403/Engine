@@ -48,6 +48,10 @@ PlayStatePanel::Request PlayStatePanel::Draw(const ImGuiSystem &ui,
 	ui.Text(std::format("Simulation Frames: {}",
 	                    session.GetSimulationFrameCount()));
 
+	if (ImGui::CollapsingHeader("Shared Script Data")) {
+		const auto data = session.GetSharedScriptData();
+		ImGui::TextWrapped("%.*s", static_cast<int>(data.size()), data.data());
+	}
 	Request requested;
 	const auto select = [&](SceneObjectId id, const char *selectLabel,
 	                        const char *frameLabel) {

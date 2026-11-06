@@ -529,7 +529,11 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 			SceneSimulation check;
 			std::string issue;
 			if (!entry.prefab &&
-			    !check.Start(candidate, issue, options.config.fallbackCamera))
+			    !(&entry == &graph.front()
+			          ? check.Start(candidate, issue,
+			                        options.config.fallbackCamera)
+			          : SceneSimulation::Validate(
+			                candidate, issue, options.config.fallbackCamera)))
 				throw std::runtime_error(issue);
 			auto &objects = entry.objects;
 
