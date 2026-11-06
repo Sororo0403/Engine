@@ -2317,4 +2317,12 @@
     <ClInclude Include="include\gameplay\GameActionReader.h"><Filter>include\gameplay</Filter></ClInclude>
     <ClCompile Include="src\gameplay\GameActionReader.cpp"><Filter>src\gameplay</Filter></ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\graphics\ShadowSettings.h"><Filter>include\graphics</Filter></ClInclude>
+    <ClInclude Include="include\graphics\camera\ShadowCamera.h"><Filter>include\graphics\camera</Filter></ClInclude>
+    <ClCompile Include="src\graphics\camera\ShadowCamera.cpp"><Filter>src\graphics\camera</Filter></ClCompile>
+    <ClInclude Include="include\graphics\render\ShadowMap.h"><Filter>include\graphics\render</Filter></ClInclude>
+    <ClCompile Include="src\graphics\render\ShadowMap.cpp"><Filter>src\graphics\render</Filter></ClCompile>
+    <None Include="resources\shaders\mesh\Shadow.VS.hlsl" />
+  </ItemGroup>
 </Project>

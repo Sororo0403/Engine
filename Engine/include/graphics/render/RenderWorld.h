@@ -1,4 +1,5 @@
 #pragma once
+#include "graphics/ShadowSettings.h"
 
 #include "graphics/DirectionalLightData.h"
 #include "graphics/PointLightData.h"
@@ -254,8 +255,20 @@ class RenderWorld {
 	/// <remarks>最後のAddDebugLine後、Drawより前に呼び出す</remarks>
 	bool UpdateDebugLines();
 
+	/// <summary>
+	/// 次の更新から使用する平行光源の影を設定する
+	/// </summary>
+	/// <param name="settings">有限な範囲・補正・対応する解像度</param>
+	/// <returns>true:設定成功 false:無効な値。以前の設定は保持する</returns>
+	bool SetShadows(const ShadowSettings &settings);
+
   private:
 	friend class RenderSystem;
+	/// <summary>
+	/// 更新済みワールドを光源から深度へ描画する。呼び出し側は後から色の描画先を設定する
+	/// </summary>
+	/// <param name="renderer">初期化済みのメッシュ描画クラス</param>
+	void DrawShadows(MeshRenderer &renderer) const;
 
 	explicit RenderWorld(D3D12Graphics &graphics);
 

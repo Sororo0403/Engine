@@ -1,5 +1,6 @@
 #pragma once
 
+#include "graphics/ShadowSettings.h"
 #include <DirectXMath.h>
 #include <cmath>
 
@@ -12,6 +13,7 @@ struct LightingSettings {
 	float intensity = 0.8f;
 	DirectX::XMFLOAT3 color{1.0f, 1.0f, 1.0f};
 	float ambient = 0.2f;
+	ShadowSettings shadows;
 
 	/// <summary>
 	/// 光の向きが有限かつ非零で、色・環境光が0から1、強さが許容範囲内か確認する
@@ -24,10 +26,10 @@ struct LightingSettings {
 		auto unit = [](float value) {
 			return std::isfinite(value) && value >= 0.0f && value <= 1.0f;
 		};
-		return std::isfinite(lengthSquared) && lengthSquared > 0.0 &&
-		       std::isfinite(intensity) && intensity >= 0.0f &&
-		       intensity <= kMaxIntensity && unit(color.x) && unit(color.y) &&
-		       unit(color.z) && unit(ambient);
+		return shadows.IsValid() && std::isfinite(lengthSquared) &&
+		       lengthSquared > 0.0 && std::isfinite(intensity) &&
+		       intensity >= 0.0f && intensity <= kMaxIntensity &&
+		       unit(color.x) && unit(color.y) && unit(color.z) && unit(ambient);
 	}
 
 	/// <summary>
@@ -41,6 +43,6 @@ struct LightingSettings {
 		       direction.z == other.direction.z &&
 		       intensity == other.intensity && color.x == other.color.x &&
 		       color.y == other.color.y && color.z == other.color.z &&
-		       ambient == other.ambient;
+		       ambient == other.ambient && shadows == other.shadows;
 	}
 };

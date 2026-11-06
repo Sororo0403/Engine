@@ -269,8 +269,11 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 					throw std::runtime_error(error);
 				}
 				auto configuration = nlohmann::json::parse(text);
-				if (settings.contains("lighting"))
+				if (settings.contains("lighting")) {
 					configuration["lighting"] = settings.at("lighting");
+					if (!settings.at("lighting").contains("shadows"))
+						configuration["version"] = 7;
+				}
 				if (settings.contains("actions"))
 					configuration["actions"] = settings.at("actions");
 				if (!loaded.gameExport.Deserialize(configuration.dump(),

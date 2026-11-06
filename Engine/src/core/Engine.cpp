@@ -127,10 +127,13 @@ struct Engine::Impl {
 		    (debugShaderDirectory / L"DebugLine.PS.hlsl").wstring(), L"PSMain",
 		    L"ps_6_0");
 
+		auto shadowVertexShader = shaderCompiler_.Compile(
+		    (shaderDirectory / L"Shadow.VS.hlsl").wstring(), L"VSMain",
+		    L"vs_6_0");
 		shaderCompiler_.Finalize();
 
-		if (!vertexShader || !pixelShader || !debugVertexShader ||
-		    !debugPixelShader) {
+		if (!shadowVertexShader || !vertexShader || !pixelShader ||
+		    !debugVertexShader || !debugPixelShader) {
 			return false;
 		}
 
@@ -146,10 +149,10 @@ struct Engine::Impl {
 
 		graphicsInitialized_ = true;
 
-		if (!meshRenderer_.Initialize(graphics_.GetDevice(), vertexShader.Get(),
-		                              pixelShader.Get(),
-		                              graphics_.GetRenderTargetFormat(),
-		                              graphics_.GetDepthStencilFormat())) {
+		if (!meshRenderer_.Initialize(
+		        graphics_.GetDevice(), vertexShader.Get(), pixelShader.Get(),
+		        graphics_.GetRenderTargetFormat(),
+		        graphics_.GetDepthStencilFormat(), shadowVertexShader.Get())) {
 			return false;
 		}
 

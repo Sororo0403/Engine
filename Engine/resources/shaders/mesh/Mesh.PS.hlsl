@@ -1,7 +1,60 @@
 #include "Mesh.hlsli"
 
 Texture2D<float4> texture0 : register(t0);
+
 SamplerState sampler0 : register(s0);
+
+Texture2D<float> shadowMap : register(t1);
+SamplerComparisonState shadowSampler : register(s1);
+
+cbuffer ShadowBuffer : register(b5) {
+	row_major float4x4 shadowViewProjection;
+	float shadowStrength;
+	float shadowBias;
+	float shadowNormalBias;
+	uint shadowEnabled;
+	float shadowTexelSize;
+	float3 shadowPadding;
+};
+
+float ShadowVisibility(float3 position, float3 normal) {
+	if (shadowEnabled == 0) {
+		return 1.0f;
+	}
+
+	float4 projected = mul(float4(position + normal * shadowNormalBias, 1.0f),
+	                       shadowViewProjection);
+	float3 p = projected.xyz / projected.w;
+	float2 uv = p.xy * float2(0.5f, -0.5f) + 0.5f;
+	// 比較する画素ごとに受光面の深度を求め、斜面を平均した際の自己遮蔽を抑える。
+	float3 dx = ddx(float3(uv, p.z));
+	float3 dy = ddy(float3(uv, p.z));
+	float determinant = dx.x * dy.y - dx.y * dy.x;
+	float2 gradient = float2(0.0f, 0.0f);
+	if (abs(determinant) > 0.0000000001f) {
+		gradient = float2(dx.z * dy.y - dy.z * dx.y,
+		                  dx.x * dy.z - dy.x * dx.z) / determinant;
+	}
+	float filterBias = 0.5f * shadowTexelSize * (abs(gradient.x) + abs(gradient.y));
+
+	if (p.z <= 0.0f || p.z >= 1.0f || any(abs(p.xy) >= 1.0f)) {
+		return 1.0f;
+	}
+
+	float visible = 0.0f;
+	[unroll]
+	for (int y = -1; y <= 1; ++y) {
+		[unroll]
+		for (int x = -1; x <= 1; ++x) {
+			float2 offset = float2(x, y) * shadowTexelSize;
+			float reference = p.z + dot(gradient, offset) - shadowBias - filterBias;
+			visible += shadowMap.SampleCmpLevelZero(shadowSampler, uv + offset, reference);
+		}
+	}
+
+	float fade = saturate((1.0f - max(abs(p.x), abs(p.y))) * 10.0f);
+	return lerp(1.0f, visible / 9.0f, shadowStrength * fade);
+}
 
 cbuffer DirectionalLightBuffer : register(b1) {
 	float3 lightDirection;
@@ -60,7 +113,8 @@ float4 PSMain(VertexOutput input) : SV_Target0 {
 		float3 normal = normalize(input.normal);
 		float3 toLight = -normalize(lightDirection);
 		float diffuse = saturate(dot(normal, toLight));
-		lighting = lightColor * lightIntensity * diffuse + ambient;
+		lighting = lightColor * lightIntensity * diffuse *
+		           ShadowVisibility(input.worldPosition, normal) + ambient;
 		// 範囲端で滑らかに0へ近づけ、光源位置そのものでは零除算を避ける。
 		for (uint i = 0; i < pointLightCount; ++i) {
 			float3 offset = pointLights[i].position - input.worldPosition;

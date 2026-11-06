@@ -2268,4 +2268,12 @@ exit /b 0</Command>
     <ClInclude Include="include\gameplay\GameActionReader.h" />
     <ClCompile Include="src\gameplay\GameActionReader.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\graphics\ShadowSettings.h" />
+    <ClInclude Include="include\graphics\camera\ShadowCamera.h" />
+    <ClCompile Include="src\graphics\camera\ShadowCamera.cpp" />
+    <ClInclude Include="include\graphics\render\ShadowMap.h" />
+    <ClCompile Include="src\graphics\render\ShadowMap.cpp" />
+    <None Include="resources\shaders\mesh\Shadow.VS.hlsl" />
+  </ItemGroup>
 </Project>

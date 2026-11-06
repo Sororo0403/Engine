@@ -1,5 +1,6 @@
 #include "graphics/render/RenderSystem.h"
 #include "core/Logger.h"
+#include "graphics/render/D3D12Graphics.h"
 #include "graphics/render/RenderTexture.h"
 #include "graphics/ui/CanvasRenderer.h"
 #include "platform/windows/WinApp.h"
@@ -48,6 +49,7 @@ void RenderSystem::Draw(const RenderWorld &world, RenderTexture &target,
 		return;
 	}
 
+	world.DrawShadows(renderer_);
 	if (!target.Begin(clearColor)) {
 		return;
 	}
@@ -88,6 +90,8 @@ void RenderSystem::Draw(const RenderWorld &world,
 		return;
 	}
 
+	world.DrawShadows(renderer_);
+	graphics_.BindBackBuffer();
 	world.Draw(renderer_, debugRenderer_);
 	if (canvas)
 		canvas->Draw();

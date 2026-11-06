@@ -40,6 +40,15 @@ class MaterialResource {
 	/// <returns>GPU側SRV。未初期化時はptrが0</returns>
 	D3D12_GPU_DESCRIPTOR_HANDLE GetTextureSrv() const;
 
+	/// <summary>
+	/// 共有する画像のSRVを指定したCPU側スロットへ作成する。画像の所有権は移さない
+	/// </summary>
+	/// <param name="device">材質を作成した同じデバイス</param>
+	/// <param name="destination">呼び出し側が確保したCBV/SRV/UAVヒープのCPU側の参照</param>
+	/// <returns>true:作成成功 false:デバイス・画像・参照が無効</returns>
+	bool CreateTextureView(ID3D12Device *device,
+	                       D3D12_CPU_DESCRIPTOR_HANDLE destination) const;
+
   private:
 	MaterialData data_;
 	Texture texture_;

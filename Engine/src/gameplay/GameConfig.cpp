@@ -103,7 +103,14 @@ bool GameConfig::Serialize(std::string &text, std::string &error) const {
 		     {{"direction", vector(lighting.direction)},
 		      {"color", vector(lighting.color)},
 		      {"intensity", lighting.intensity},
-		      {"ambient", lighting.ambient}}},
+		      {"ambient", lighting.ambient},
+		      {"shadows",
+		       {{"enabled", lighting.shadows.enabled},
+		        {"resolution", lighting.shadows.resolution},
+		        {"extent", lighting.shadows.extent},
+		        {"strength", lighting.shadows.strength},
+		        {"bias", lighting.shadows.bias},
+		        {"normalBias", lighting.shadows.normalBias}}}}},
 		    {"title", title},
 		    {"width", width},
 		    {"height", height},
@@ -286,6 +293,31 @@ bool GameConfig::Deserialize(std::string_view text, std::string &error) {
 				           GameActionBinding::kGamepadOptions, action.gamepad);
 				candidate.actions.push_back(std::move(action));
 			}
+		}
+
+		if (data.at("version") >= 8) {
+			const auto &shadows = data.at("lighting").at("shadows");
+			if (!shadows.at("enabled").is_boolean() ||
+			    !shadows.at("resolution").is_number_integer())
+				throw std::runtime_error(
+				    "Shadow mode or resolution is invalid.");
+			auto &s = candidate.lighting.shadows;
+			s.enabled = shadows.at("enabled").get<bool>();
+			if (shadows.at("resolution") != 512 &&
+			    shadows.at("resolution") != 1024 &&
+			    shadows.at("resolution") != 2048)
+				throw std::runtime_error("Unsupported shadow resolution.");
+			s.resolution = shadows.at("resolution").get<int>();
+			const auto number = [&](const char *name) {
+				if (!shadows.at(name).is_number())
+					throw std::runtime_error(
+					    "Shadow settings must use numbers.");
+				return shadows.at(name).get<float>();
+			};
+			s.extent = number("extent");
+			s.strength = number("strength");
+			s.bias = number("bias");
+			s.normalBias = number("normalBias");
 		}
 		const auto &camera = data.at("camera");
 		candidate.fallbackCamera = {ReadVector(camera.at("position")),

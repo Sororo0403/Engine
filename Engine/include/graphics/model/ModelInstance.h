@@ -1,4 +1,5 @@
 #pragma once
+#include <span>
 
 #include "graphics/material/ColorTint.h"
 
@@ -12,6 +13,7 @@ class Camera;
 class DirectionalLight;
 class PointLights;
 class SpotLights;
+class ShadowMap;
 class MeshRenderer;
 class Model;
 
@@ -45,16 +47,17 @@ class ModelInstance {
 	            const ColorTint &tint = {});
 
 	/// <summary>
-	/// モデルのSRVヒープを設定し、各メッシュの描画命令を記録する
+	/// ワールド専用の画像・影のヒープを使用し、各メッシュの描画命令を記録する
 	/// </summary>
 	/// <param name="commandList">記録中のコマンドリスト</param>
 	/// <param name="renderer">初期化済みのメッシュ描画クラス</param>
 	/// <param name="pointLights">更新済みの点光源配列</param>
+	/// <param name="shadows">このワールド専用の影と材質画像の参照</param>
 	/// <param name="spotLights">更新済みのスポットライト配列</param>
 	/// <param name="light">更新済みの平行光源</param>
 	void Draw(ID3D12GraphicsCommandList *commandList, MeshRenderer &renderer,
 	          const DirectionalLight &light, const PointLights &pointLights,
-	          const SpotLights &spotLights) const;
+	          const SpotLights &spotLights, const ShadowMap &shadows) const;
 
 	/// <summary>
 	/// 材質数を取得する
@@ -89,6 +92,12 @@ class ModelInstance {
 	/// <returns>true:成功 false:物体やスロット、材質が無効</returns>
 	bool SetMaterial(std::size_t slot,
 	                 const std::shared_ptr<const MaterialResource> &resource);
+
+	/// <summary>
+	/// 光源からの深度描画と材質の準備に使用する、読み取り専用のメッシュ一覧を取得する
+	/// </summary>
+	/// <returns>次の初期化・終了まで有効な一覧</returns>
+	std::span<const MeshInstance> GetMeshes() const;
 
   private:
 	const Model *model_ = nullptr;

@@ -43,7 +43,7 @@ bool SceneRenderer::SetLighting(const LightingSettings &settings) {
 	light.intensity = settings.intensity;
 	light.color = settings.color;
 	light.ambient = settings.ambient;
-	return true;
+	return world_->SetShadows(settings.shadows);
 }
 
 bool SceneRenderer::Initialize() {

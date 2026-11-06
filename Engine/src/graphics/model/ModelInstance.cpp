@@ -128,14 +128,16 @@ bool ModelInstance::Update(const Camera &camera,
 void ModelInstance::Draw(ID3D12GraphicsCommandList *commandList,
                          MeshRenderer &renderer, const DirectionalLight &light,
                          const PointLights &pointLights,
-                         const SpotLights &spotLights) const {
+                         const SpotLights &spotLights,
+                         const ShadowMap &shadows) const {
 	if (!commandList || !model_) {
 		Logger::Error("ModelInstance::Draw: 引数が無効、または未初期化です。");
 		return;
 	}
 
 	for (const auto &instance : meshInstances_) {
-		renderer.Draw(commandList, instance, light, pointLights, spotLights);
+		renderer.Draw(commandList, instance, light, pointLights, spotLights,
+		              shadows);
 	}
 }
 
@@ -188,4 +190,8 @@ bool ModelInstance::SetMaterial(
 
 	materialData_[slot] = next->GetData();
 	return true;
+}
+
+std::span<const MeshInstance> ModelInstance::GetMeshes() const {
+	return meshInstances_;
 }

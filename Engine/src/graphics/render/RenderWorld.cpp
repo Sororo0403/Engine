@@ -4,12 +4,15 @@
 #include "graphics/PointLights.h"
 #include "graphics/SpotLights.h"
 #include "graphics/camera/Camera.h"
+#include "graphics/material/Material.h"
+#include "graphics/mesh/MeshInstance.h"
 #include "graphics/model/Model.h"
 #include "graphics/model/ModelInstance.h"
 #include "graphics/render/D3D12Graphics.h"
 #include "graphics/render/DebugLineBatch.h"
 #include "graphics/render/DebugLineRenderer.h"
 #include "graphics/render/MeshRenderer.h"
+#include "graphics/render/ShadowMap.h"
 #include "math/MathUtils.h"
 #include "math/Ray.h"
 #include "math/TransformUtils.h"
@@ -166,6 +169,8 @@ struct RenderWorld::Impl {
 	std::vector<PointLightData> pointLightData_;
 	std::vector<SpotLightData> spotLightData_;
 	DirectionalLightData lightData_{};
+	ShadowSettings shadowSettings_;
+	ShadowMap shadows_;
 
 	bool initialized_ = false;
 	bool prepared_ = false;
@@ -280,7 +285,8 @@ bool RenderWorld::Initialize() {
 
 	if (!impl_->light_.Initialize(device) ||
 	    !impl_->pointLights_.Initialize(device) ||
-	    !impl_->spotLights_.Initialize(device)) {
+	    !impl_->spotLights_.Initialize(device) ||
+	    !impl_->shadows_.Initialize(device)) {
 		return false;
 	}
 
@@ -551,6 +557,15 @@ bool RenderWorld::Update(int width, int height) {
 		}
 	}
 
+	std::vector<const MaterialResource *> materials;
+	for (const auto &slot : impl_->slots_)
+		if (slot.object_)
+			for (const auto &mesh : slot.object_->instance_.GetMeshes())
+				materials.push_back(mesh.GetMaterial()->GetResource().get());
+	if (!impl_->shadows_.Update(impl_->camera_.GetViewMatrix(),
+	                            impl_->lightData_.direction,
+	                            impl_->shadowSettings_, materials))
+		return false;
 	impl_->prepared_ = true;
 	return true;
 }
@@ -579,7 +594,8 @@ void RenderWorld::Draw(MeshRenderer &renderer,
 		}
 
 		slot.object_->instance_.Draw(commandList, renderer, impl_->light_,
-		                             impl_->pointLights_, impl_->spotLights_);
+		                             impl_->pointLights_, impl_->spotLights_,
+		                             impl_->shadows_);
 	}
 
 	// モデルの深度を使い、登録された線をまとめて描画する
@@ -744,4 +760,25 @@ bool RenderWorld::SetSpotLights(std::span<const SpotLightData> lights) {
 	impl_->spotLightData_.swap(next);
 	impl_->prepared_ = false;
 	return true;
+}
+
+bool RenderWorld::SetShadows(const ShadowSettings &settings) {
+	if (!settings.IsValid())
+		return false;
+	impl_->shadowSettings_ = settings;
+	return true;
+}
+
+void RenderWorld::DrawShadows(MeshRenderer &renderer) const {
+	if (!impl_->prepared_)
+		return;
+	auto *commands = impl_->graphics_.GetCommandList();
+	if (!impl_->shadows_.Begin(commands))
+		return;
+	for (const auto &slot : impl_->slots_) {
+		if (slot.object_)
+			for (const auto &mesh : slot.object_->instance_.GetMeshes())
+				renderer.DrawShadow(commands, mesh, impl_->shadows_);
+	}
+	impl_->shadows_.End(commands);
 }

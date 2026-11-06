@@ -61,3 +61,17 @@ ID3D12DescriptorHeap *MaterialResource::GetDescriptorHeap() const {
 D3D12_GPU_DESCRIPTOR_HANDLE MaterialResource::GetTextureSrv() const {
 	return heap_ ? heap_->GetGpuHandle(0) : D3D12_GPU_DESCRIPTOR_HANDLE{};
 }
+
+bool MaterialResource::CreateTextureView(
+    ID3D12Device *device, D3D12_CPU_DESCRIPTOR_HANDLE destination) const {
+	if (!device || !destination.ptr || !texture_.GetResource())
+		return false;
+	Microsoft::WRL::ComPtr<ID3D12Device> owner;
+	if (FAILED(texture_.GetResource()->GetDevice(
+	        IID_PPV_ARGS(owner.GetAddressOf()))) ||
+	    owner.Get() != device)
+		return false;
+	DirectX::CreateShaderResourceView(device, texture_.GetResource(),
+	                                  destination);
+	return true;
+}

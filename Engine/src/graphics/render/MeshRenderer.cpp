@@ -8,6 +8,7 @@
 #include "graphics/mesh/Mesh.h"
 #include "graphics/mesh/MeshInstance.h"
 #include "graphics/mesh/Vertex.h"
+#include "graphics/render/ShadowMap.h"
 
 #include <cstddef>
 #include <format>
@@ -17,15 +18,17 @@
 bool MeshRenderer::Initialize(ID3D12Device *device, IDxcBlob *vertexShader,
                               IDxcBlob *pixelShader,
                               DXGI_FORMAT renderTargetFormat,
-                              DXGI_FORMAT depthStencilFormat) {
-	if (!device || !vertexShader || !pixelShader || rootSignature_ ||
-	    pipelineState_) {
+                              DXGI_FORMAT depthStencilFormat,
+                              IDxcBlob *shadowVertexShader) {
+	if (!device || !vertexShader || !pixelShader || !shadowVertexShader ||
+	    rootSignature_ || pipelineState_) {
 		Logger::Error(
 		    "MeshRenderer::Initialize: 引数が無効、または初期化済みです。");
 		return false;
 	}
 
 	if (!CreateRootSignature(device) ||
+	    !CreateShadowPipeline(device, shadowVertexShader) ||
 	    !CreatePipelineState(device, vertexShader, pixelShader,
 	                         renderTargetFormat, depthStencilFormat)) {
 		Finalize();
@@ -40,7 +43,8 @@ void MeshRenderer::Draw(ID3D12GraphicsCommandList *commandList,
                         const MeshInstance &instance,
                         const DirectionalLight &light,
                         const PointLights &pointLights,
-                        const SpotLights &spotLights) {
+                        const SpotLights &spotLights,
+                        const ShadowMap &shadows) {
 	const Mesh *mesh = instance.GetMesh();
 	const Material *material = instance.GetMaterial();
 
@@ -55,7 +59,8 @@ void MeshRenderer::Draw(ID3D12GraphicsCommandList *commandList,
 	const auto pointLightAddress = pointLights.GetConstantBufferAddress();
 	const auto spotLightAddress = spotLights.GetConstantBufferAddress();
 	const auto materialAddress = material->GetConstantBufferAddress();
-	const auto textureSrv = material->GetTextureSrv();
+	const auto textureSrv =
+	    shadows.GetTextureSrv(material->GetResource().get());
 
 	if (objectAddress == 0 || lightAddress == 0 || pointLightAddress == 0 ||
 	    spotLightAddress == 0 || materialAddress == 0 || textureSrv.ptr == 0) {
@@ -63,8 +68,8 @@ void MeshRenderer::Draw(ID3D12GraphicsCommandList *commandList,
 		return;
 	}
 
-	// メッシュごとに、割り当てられた材質の画像ヒープを使用する。
-	auto *heap = material->GetResource()->GetDescriptorHeap();
+	// このワールド専用のヒープから、材質画像と影を同時に参照する。
+	auto *heap = shadows.GetHeap();
 	commandList->SetDescriptorHeaps(1, &heap);
 	commandList->SetGraphicsRootSignature(rootSignature_.Get());
 	commandList->SetPipelineState(pipelineState_.Get());
@@ -87,10 +92,15 @@ void MeshRenderer::Draw(ID3D12GraphicsCommandList *commandList,
 	// PSのb4：このワールドのスポットライト
 	commandList->SetGraphicsRootConstantBufferView(5, spotLightAddress);
 
+	commandList->SetGraphicsRootConstantBufferView(
+	    6, shadows.GetConstantBufferAddress());
+	commandList->SetGraphicsRootDescriptorTable(7, shadows.GetShadowSrv());
 	mesh->Draw(commandList);
 }
 
 void MeshRenderer::Finalize() {
+	shadowPipeline_.Reset();
+	shadowRoot_.Reset();
 	pipelineState_.Reset();
 	rootSignature_.Reset();
 }
@@ -105,7 +115,16 @@ bool MeshRenderer::CreateRootSignature(ID3D12Device *device) {
 	range.OffsetInDescriptorsFromTableStart =
 	    D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	D3D12_ROOT_PARAMETER parameters[6]{};
+	D3D12_ROOT_PARAMETER parameters[8]{};
+	auto shadowRange = range;
+	shadowRange.BaseShaderRegister = 1;
+	parameters[6].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	parameters[6].Descriptor.ShaderRegister = 5;
+	parameters[6].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	parameters[7].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	parameters[7].DescriptorTable.NumDescriptorRanges = 1;
+	parameters[7].DescriptorTable.pDescriptorRanges = &shadowRange;
+	parameters[7].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
 	// ルートパラメーター0：物体ごとの変換行列
 	parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
@@ -157,11 +176,18 @@ bool MeshRenderer::CreateRootSignature(ID3D12Device *device) {
 	sampler.RegisterSpace = 0;
 	sampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
+	D3D12_STATIC_SAMPLER_DESC samplers[2]{sampler, sampler};
+	samplers[1].ShaderRegister = 1;
+	samplers[1].Filter = D3D12_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
+	samplers[1].AddressU = samplers[1].AddressV = samplers[1].AddressW =
+	    D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+	samplers[1].BorderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE;
+	samplers[1].ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 	D3D12_ROOT_SIGNATURE_DESC desc{};
 	desc.NumParameters = static_cast<UINT>(std::size(parameters));
 	desc.pParameters = parameters;
-	desc.NumStaticSamplers = 1;
-	desc.pStaticSamplers = &sampler;
+	desc.NumStaticSamplers = 2;
+	desc.pStaticSamplers = samplers;
 	desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
 	Microsoft::WRL::ComPtr<ID3DBlob> serialized;
@@ -280,4 +306,75 @@ bool MeshRenderer::CreatePipelineState(ID3D12Device *device,
 	}
 
 	return true;
+}
+
+bool MeshRenderer::CreateShadowPipeline(ID3D12Device *device,
+                                        IDxcBlob *shader) {
+	D3D12_ROOT_PARAMETER parameters[2]{};
+	for (UINT i = 0; i < 2; ++i) {
+		parameters[i].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+		parameters[i].Descriptor.ShaderRegister = i ? 5 : 0;
+		parameters[i].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+	}
+	D3D12_ROOT_SIGNATURE_DESC root{};
+	root.NumParameters = 2;
+	root.pParameters = parameters;
+	root.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+	Microsoft::WRL::ComPtr<ID3DBlob> bytes, errors;
+	if (FAILED(D3D12SerializeRootSignature(&root, D3D_ROOT_SIGNATURE_VERSION_1,
+	                                       bytes.GetAddressOf(),
+	                                       errors.GetAddressOf())) ||
+	    FAILED(device->CreateRootSignature(
+	        0, bytes->GetBufferPointer(), bytes->GetBufferSize(),
+	        IID_PPV_ARGS(shadowRoot_.GetAddressOf()))))
+		return false;
+	const D3D12_INPUT_ELEMENT_DESC position{
+	    "POSITION",
+	    0,
+	    DXGI_FORMAT_R32G32B32_FLOAT,
+	    0,
+	    static_cast<UINT>(offsetof(Vertex, position)),
+	    D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
+	    0};
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC desc{};
+	desc.pRootSignature = shadowRoot_.Get();
+	for (auto &target : desc.BlendState.RenderTarget) {
+		target.SrcBlend = D3D12_BLEND_ONE;
+		target.DestBlend = D3D12_BLEND_ZERO;
+		target.BlendOp = D3D12_BLEND_OP_ADD;
+		target.SrcBlendAlpha = D3D12_BLEND_ONE;
+		target.DestBlendAlpha = D3D12_BLEND_ZERO;
+		target.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+		target.LogicOp = D3D12_LOGIC_OP_NOOP;
+	}
+	desc.VS = {shader->GetBufferPointer(), shader->GetBufferSize()};
+	desc.InputLayout = {&position, 1};
+	desc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
+	desc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+	desc.RasterizerState.DepthClipEnable = TRUE;
+	desc.RasterizerState.DepthBias = 100;
+	desc.RasterizerState.SlopeScaledDepthBias = 1;
+	desc.DepthStencilState.DepthEnable = TRUE;
+	desc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+	desc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
+	desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	desc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+	desc.SampleMask = UINT_MAX;
+	desc.SampleDesc.Count = 1;
+	return SUCCEEDED(device->CreateGraphicsPipelineState(
+	    &desc, IID_PPV_ARGS(shadowPipeline_.GetAddressOf())));
+}
+
+void MeshRenderer::DrawShadow(ID3D12GraphicsCommandList *commands,
+                              const MeshInstance &instance,
+                              const ShadowMap &shadows) {
+	if (!commands || !shadowPipeline_ || !instance.GetMesh())
+		return;
+	commands->SetGraphicsRootSignature(shadowRoot_.Get());
+	commands->SetPipelineState(shadowPipeline_.Get());
+	commands->SetGraphicsRootConstantBufferView(
+	    0, instance.GetConstantBufferAddress());
+	commands->SetGraphicsRootConstantBufferView(
+	    1, shadows.GetConstantBufferAddress());
+	instance.GetMesh()->Draw(commands);
 }
