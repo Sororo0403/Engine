@@ -8,6 +8,7 @@
 #include <string_view>
 #include <vector>
 class Scene;
+class ScenePhysics;
 struct CharacterInput;
 
 class LuaScript;
@@ -36,6 +37,10 @@ class LuaScriptProgram {
 /// </summary>
 class LuaScript {
   public:
+	/// <summary>
+	/// 公開するスクリプトAPIの版。Runtimeの出力互換性を照合する
+	/// </summary>
+	static constexpr int kApiVersion = 1;
 	static constexpr std::size_t kMaximumSourceBytes = 256 * 1024;
 	static constexpr std::size_t kMaximumBytecodeBytes = 1024 * 1024;
 	static constexpr std::size_t kMaximumStateBytes = 64 * 1024;
@@ -43,6 +48,7 @@ class LuaScript {
 	static constexpr int kMaximumStateDepth = 16;
 	static constexpr std::size_t kMaximumVmBytes = 4 * 1024 * 1024;
 	static constexpr int kMaximumInstructions = 200000;
+	static constexpr int kMaximumPhysicsOperations = 128;
 	static constexpr int kHookInterval = 100;
 	static constexpr std::size_t kMaximumLogBytes = 1024;
 
@@ -89,7 +95,7 @@ class LuaScript {
 	/// 宣言用のチャンクから指定コールバックを呼び、成功時だけstateを返す。シーンは呼び出し側の候補を使用する
 	/// </summary>
 	/// <param name="program">コンパイル済みの不変なコード</param>
-	/// <param name="callback">start・update・trigger_enter・trigger_stay・trigger_exit</param>
+	/// <param name="callback">start・update・trigger_enter・trigger_stay・trigger_exit・click</param>
 	/// <param name="scene">作業シーン。全コールバックと物理検証の成功後だけ呼び出し側で確定する</param>
 	/// <param name="self">スクリプトを持つ物体</param>
 	/// <param name="state">成功時だけ置き換えるインスタンス状態</param>
@@ -99,11 +105,15 @@ class LuaScript {
 	/// <param name="logs">成功したコールバックのメッセージを追加する。呼び出し側で確定後に出力する</param>
 	/// <param name="error">ファイル名・行・失敗理由</param>
 	/// <param name="remainingInstructions">指定時はフレーム全体で共有する残り命令数。失敗時も消費した命令数を減らす</param>
+	/// <param name="physics">指定時は呼び出し側の候補となる物理状態。Sceneとともに全処理成功後だけ確定する</param>
+	/// <param name="remainingPhysicsOperations">指定時はフレームで共有する残り物理API回数。失敗時も消費分を減らす</param>
 	/// <returns>true:成功またはコールバックなし false:コード・API・状態・実行制限が無効</returns>
 	static bool Invoke(const LuaScriptProgram &program,
 	                   std::string_view callback, Scene &scene,
 	                   SceneObjectId self, std::string &state, float seconds,
 	                   const CharacterInput &input, SceneObjectId other,
 	                   std::vector<std::string> &logs, std::string &error,
-	                   int *remainingInstructions = nullptr);
+	                   int *remainingInstructions = nullptr,
+	                   ScenePhysics *physics = nullptr,
+	                   int *remainingPhysicsOperations = nullptr);
 };

@@ -21,6 +21,7 @@ class SceneScripts {
 	static constexpr std::size_t kMaximumCallbacks = 1024;
 	static constexpr std::size_t kMaximumLogs = 128;
 	static constexpr int kFrameInstructions = 2000000;
+	static constexpr int kFramePhysicsOperations = 1024;
 	static constexpr float kMaximumFrameSeconds = 0.1f;
 
 	/// <summary>
@@ -45,11 +46,13 @@ class SceneScripts {
 	/// <param name="error">失敗理由</param>
 	/// <param name="invalidObject">指定時は失敗した物体ID</param>
 	/// <param name="uiClicks">今回クリックされたButtonのID。正の時間でだけclickを通知する</param>
+	/// <param name="physics">指定時はSceneと同じトランザクションの物理候補。失敗時は呼び出し側で破棄する</param>
 	/// <returns>true:実行成功 false:コールバック・状態・制限が無効。呼び出し側は候補を破棄する</returns>
 	bool Run(Scene &scene, float seconds, const CharacterInput &input,
 	         std::span<const TriggerEvent> events, bool startOnly,
 	         std::string &error, SceneObjectId *invalidObject,
-	         std::span<const SceneObjectId> uiClicks = {});
+	         std::span<const SceneObjectId> uiClicks = {},
+	         ScenePhysics *physics = nullptr);
 
 	/// <summary>
 	/// スクリプトが生成した接触を再帰実行せず、次の正の時間の更新へ送る

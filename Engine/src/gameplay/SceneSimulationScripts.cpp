@@ -11,10 +11,12 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 	Scene candidate;
 	candidate.ReplaceObjects(scene_.GetObjects());
 	auto scripts = scripts_;
+	auto physics = physics_;
 	if (!scripts.Run(candidate, seconds, input, frameEvents_, startOnly, error,
 	                 invalidObject,
 	                 startOnly ? std::span<const SceneObjectId>{}
-	                           : ui_.GetClicks()))
+	                           : ui_.GetClicks(),
+	                 &physics))
 		return false;
 	std::string serialized;
 	if (!SceneSerializer::Serialize(candidate, serialized)) {
@@ -23,6 +25,7 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 	}
 	if (candidate.GetObjects() == scene_.GetObjects()) {
 		scripts_ = std::move(scripts);
+		physics_ = std::move(physics);
 		return true;
 	}
 	std::vector<SceneObjectId> transformed;
@@ -38,6 +41,7 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 	SceneSimulation next;
 	next.CopyFrom(*this);
 	next.scripts_ = std::move(scripts);
+	next.physics_ = std::move(physics);
 	std::vector<TriggerEvent> generated;
 	if (!next.SynchronizeSceneChanges(candidate, transformed, error,
 	                                  invalidObject, &generated))

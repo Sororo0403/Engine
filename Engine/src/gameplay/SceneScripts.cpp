@@ -84,7 +84,8 @@ bool SceneScripts::Configure(const Scene &scene, bool preserve,
 bool SceneScripts::Run(Scene &scene, float seconds, const CharacterInput &input,
                        std::span<const TriggerEvent> events, bool startOnly,
                        std::string &error, SceneObjectId *invalidObject,
-                       std::span<const SceneObjectId> uiClicks) {
+                       std::span<const SceneObjectId> uiClicks,
+                       ScenePhysics *physics) {
 	SceneObjectId current = 0;
 	try {
 		if (!std::isfinite(seconds) || seconds < 0)
@@ -92,6 +93,7 @@ bool SceneScripts::Run(Scene &scene, float seconds, const CharacterInput &input,
 		logs_.clear();
 		std::size_t callbacks = 0;
 		int budget = kFrameInstructions;
+		int physicsBudget = kFramePhysicsOperations;
 		const auto active = [&](SceneObjectId id) {
 			const auto *o = scene.FindObject(id);
 			return o && o->script && o->script->enabled &&
@@ -106,10 +108,10 @@ bool SceneScripts::Run(Scene &scene, float seconds, const CharacterInput &input,
 				throw std::runtime_error(
 				    "Script callback count limit exceeded.");
 			std::vector<std::string> messages;
-			if (!LuaScript::Invoke(instance.program, callback, scene, id,
-			                       instance.state,
-			                       (std::min)(seconds, kMaximumFrameSeconds),
-			                       input, other, messages, error, &budget))
+			if (!LuaScript::Invoke(
+			        instance.program, callback, scene, id, instance.state,
+			        (std::min)(seconds, kMaximumFrameSeconds), input, other,
+			        messages, error, &budget, physics, &physicsBudget))
 				throw std::runtime_error(std::format(
 				    "{} [{}]: {}", PathUtils::ToUtf8(instance.settings.asset),
 				    callback, error));

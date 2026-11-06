@@ -201,6 +201,10 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 		case Op::LOG:
 			break;
 		}
+		if (op == Op::SET_ACTIVE || op == Op::SET_POSITION ||
+		    op == Op::SET_LOCAL_POSITION || op == Op::SET_ROTATION ||
+		    op == Op::SET_SCALE)
+			call.physicsDirty = true;
 		return true;
 	} catch (const std::exception &error) {
 		call.error.assign(error.what(), (std::min)(std::strlen(error.what()),
@@ -407,6 +411,7 @@ int LuaInternal::OpenEnvironment(lua_State *state, Call &call) {
 	Method(state, "get_scale", Op::SCALE);
 	Method(state, "set_scale", Op::SET_SCALE);
 	LuaInternal::AddUIMethods(state);
+	LuaInternal::AddPhysicsMethods(state);
 	lua_setfield(state, -2, "__index");
 	lua_pop(state, 1);
 	lua_newtable(state);

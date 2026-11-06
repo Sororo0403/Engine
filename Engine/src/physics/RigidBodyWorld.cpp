@@ -476,7 +476,12 @@ bool RigidBodyWorld::AddImpulse(SceneObjectId id,
 		if (Motion(impl_->descriptions[index]) != JPH::EMotionType::Dynamic)
 			throw std::runtime_error("Only dynamic bodies accept impulses.");
 		auto next = impl_.use_count() == 1 ? impl_ : impl_->Clone();
-		next->system.GetBodyInterface().AddImpulse(body, Vector(impulse));
+		auto &interface = next->system.GetBodyInterface();
+		interface.AddImpulse(body, Vector(impulse));
+		// 力積を加えた直後の問い合わせでも、設定した最大速度を超えない。
+		JPH::Vec3 linear, angular;
+		interface.GetLinearAndAngularVelocity(body, linear, angular);
+		interface.SetLinearAndAngularVelocity(body, linear, angular);
 		impl_ = std::move(next);
 		error.clear();
 		return true;
@@ -625,6 +630,45 @@ bool RigidBodyWorld::Sweep(const AxisAlignedBox &box,
 		result = next;
 		return true;
 	} catch (const std::exception &) {
+		return false;
+	}
+}
+
+bool RigidBodyWorld::SetLinearVelocity(SceneObjectId id,
+                                       const DirectX::XMFLOAT3 &velocity,
+                                       std::string &error) {
+	return SetVelocityComponent(id, velocity, false, error);
+}
+
+bool RigidBodyWorld::SetAngularVelocity(SceneObjectId id,
+                                        const DirectX::XMFLOAT3 &velocity,
+                                        std::string &error) {
+	return SetVelocityComponent(id, velocity, true, error);
+}
+
+bool RigidBodyWorld::SetVelocityComponent(SceneObjectId id,
+                                          const DirectX::XMFLOAT3 &velocity,
+                                          bool angular, std::string &error) {
+	try {
+		RigidBodySettings limits;
+		(angular ? limits.angularVelocity : limits.linearVelocity) = velocity;
+		if (!impl_ || !impl_->bodies.contains(id) || !limits.IsValid())
+			throw std::runtime_error("Velocity requires an existing moving "
+			                         "body and a supported finite vector.");
+		const auto &[body, index] = impl_->bodies.at(id);
+		if (Motion(impl_->descriptions[index]) == JPH::EMotionType::Static)
+			throw std::runtime_error("Static bodies do not have velocity.");
+		auto next = impl_.use_count() == 1 ? impl_ : impl_->Clone();
+		auto &interface = next->system.GetBodyInterface();
+		if (angular)
+			interface.SetAngularVelocity(body, Vector(velocity));
+		else
+			interface.SetLinearVelocity(body, Vector(velocity));
+		impl_ = std::move(next);
+		error.clear();
+		return true;
+	} catch (const std::exception &exception) {
+		error = exception.what();
 		return false;
 	}
 }

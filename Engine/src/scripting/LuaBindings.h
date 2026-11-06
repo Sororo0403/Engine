@@ -11,6 +11,7 @@ extern "C" {
 #include <lualib.h>
 }
 class Scene;
+class ScenePhysics;
 
 namespace LuaInternal {
 struct StateNode;
@@ -20,6 +21,10 @@ struct StateNode;
 /// </summary>
 struct Call {
 	Scene *scene = nullptr;
+	ScenePhysics *physics = nullptr;
+	bool physicsDirty = true;
+	int physicsOperations = 0;
+	int *remainingPhysicsOperations = nullptr;
 	SceneObjectId self = 0, other = 0;
 	const CharacterInput *input = nullptr;
 	const StateNode *initial = nullptr;
@@ -48,6 +53,12 @@ int OpenEnvironment(lua_State *state, Call &call);
 /// </summary>
 /// <param name="state">保護呼び出し内のLua状態</param>
 void AddUIMethods(lua_State *state);
+
+/// <summary>
+/// 直前の物体メソッドテーブルへ、実行中の剛体速度・力積のAPIを登録する
+/// </summary>
+/// <param name="state">保護呼び出し内のLua状態</param>
+void AddPhysicsMethods(lua_State *state);
 
 /// <summary>
 /// 物体IDを、アドレスを公開しない読み取り専用userdataへ変換する

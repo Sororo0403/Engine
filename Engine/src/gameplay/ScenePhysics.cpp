@@ -297,3 +297,35 @@ bool ScenePhysics::Advance(Scene &scene, float seconds, std::string &error) {
 		return false;
 	}
 }
+
+bool ScenePhysics::SetLinearVelocity(SceneObjectId id,
+                                     const DirectX::XMFLOAT3 &velocity,
+                                     std::string &error) {
+	if (!world_ || driven_.contains(id)) {
+		error = "Velocity requires a physical runtime and cannot override "
+		        "Motion Path.";
+		return false;
+	}
+	return world_->SetLinearVelocity(id, velocity, error);
+}
+
+bool ScenePhysics::SetAngularVelocity(SceneObjectId id,
+                                      const DirectX::XMFLOAT3 &velocity,
+                                      std::string &error) {
+	if (!world_ || driven_.contains(id)) {
+		error = "Angular velocity requires a physical runtime and cannot "
+		        "override Motion Path.";
+		return false;
+	}
+	return world_->SetAngularVelocity(id, velocity, error);
+}
+
+bool ScenePhysics::AddImpulse(SceneObjectId id,
+                              const DirectX::XMFLOAT3 &impulse,
+                              std::string &error) {
+	if (!world_) {
+		error = "Impulse requires a physical runtime.";
+		return false;
+	}
+	return world_->AddImpulse(id, impulse, error);
+}

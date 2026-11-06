@@ -87,6 +87,26 @@ class RigidBodyWorld {
 	                 const DirectX::XMFLOAT3 &angular, std::string &error);
 
 	/// <summary>
+	/// 他方の速度を保持し、並進速度だけを設定する
+	/// </summary>
+	/// <param name="id">静的でない物体ID</param>
+	/// <param name="velocity">長さ500m/s以下のワールド並進速度</param>
+	/// <param name="error">成功時は空、失敗時は理由</param>
+	/// <returns>true:成功 false:対象や値が無効</returns>
+	bool SetLinearVelocity(SceneObjectId id, const DirectX::XMFLOAT3 &velocity,
+	                       std::string &error);
+
+	/// <summary>
+	/// 並進速度を保持し、角速度だけを設定する。回転固定は維持する
+	/// </summary>
+	/// <param name="id">静的でない物体ID</param>
+	/// <param name="velocity">長さ100rad/s以下のワールド角速度</param>
+	/// <param name="error">成功時は空、失敗時は理由</param>
+	/// <returns>true:成功 false:対象や値が無効</returns>
+	bool SetAngularVelocity(SceneObjectId id, const DirectX::XMFLOAT3 &velocity,
+	                        std::string &error);
+
+	/// <summary>
 	/// 箱を現在の剛体形状と重ならずに配置できるか確認する
 	/// </summary>
 	/// <param name="box">ワールド軸に沿った問い合わせ用の箱</param>
@@ -114,6 +134,12 @@ class RigidBodyWorld {
 	      const std::optional<CollisionFilter> &filter = std::nullopt) const;
 
   private:
+	/// <summary>
+	/// 片方の速度だけを検証して変更し、もう片方の実行値を保持する
+	/// </summary>
+	bool SetVelocityComponent(SceneObjectId id,
+	                          const DirectX::XMFLOAT3 &velocity, bool angular,
+	                          std::string &error);
 	struct Impl;
 	// コピー後の変更でJoltの接触・休止状態も含めて複製し、他のワールドを変えない
 	std::shared_ptr<Impl> impl_;

@@ -314,14 +314,16 @@ bool LuaScript::Invoke(const LuaScriptProgram &program,
                        SceneObjectId self, std::string &state, float seconds,
                        const CharacterInput &input, SceneObjectId other,
                        std::vector<std::string> &logs, std::string &error,
-                       int *remainingInstructions) {
+                       int *remainingInstructions, ScenePhysics *physics,
+                       int *remainingPhysicsOperations) {
 	try {
 		const char *name = Callback(callback);
 		if (!program || !name || !scene.Contains(self) ||
 		    !std::isfinite(seconds) || seconds < 0 ||
 		    !std::isfinite(input.moveX) || !std::isfinite(input.moveZ) ||
 		    (other && !scene.Contains(other)) ||
-		    (remainingInstructions && *remainingInstructions < 0))
+		    (remainingInstructions && *remainingInstructions < 0) ||
+		    (remainingPhysicsOperations && *remainingPhysicsOperations < 0))
 			throw std::runtime_error("Script callback arguments are invalid.");
 		std::string normalized;
 		if (!NormalizeState(state, normalized, error))
@@ -339,6 +341,8 @@ bool LuaScript::Invoke(const LuaScriptProgram &program,
 		call.callback = name;
 		call.seconds = seconds;
 		call.remainingInstructions = remainingInstructions;
+		call.physics = physics;
+		call.remainingPhysicsOperations = remainingPhysicsOperations;
 		if (!Run(call, ::Invoke, error))
 			return false;
 		auto combined = logs;

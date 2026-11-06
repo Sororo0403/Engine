@@ -1862,6 +1862,28 @@ void ControlsPanel::Draw() {
 	         "Pause keeps the physical state, Step advances once and Restart "
 	         "restores authored values. Settings, Prefabs and game output "
 	         "preserve Rigid Body components."},
+	        {"Rigid Body Scripts",
+	         "Use get_velocity/set_velocity(x,y,z) in world m/s and "
+	         "get_angular_velocity/set_angular_velocity(x,y,z) in world rad/s. "
+	         "Each setter keeps the other velocity unchanged and respects "
+	         "rotation locks. add_impulse(x,y,z) applies an instantaneous "
+	         "world-space impulse at the center of mass; mass affects the "
+	         "result. Speeds are capped at 500 m/s and 100 rad/s. Use "
+	         "is_sleeping() for the current state and is_dynamic() to safely "
+	         "filter objects before applying impulses. Only active, enabled "
+	         "Rigid Bodies have runtime velocity; impulses require Dynamic. "
+	         "Motion Path owns its body's velocity. Kinematic without Motion "
+	         "Path accepts velocity setters. Named references and Trigger "
+	         "other objects use the same API. Mutations belong inside "
+	         "callbacks. "
+	         "Getters immediately see prior writes; motion advances on the "
+	         "next "
+	         "positive physical step. Position/active/scale changes are synced "
+	         "before the next physical API. Errors restore scene, Lua state "
+	         "and physics together. A callback allows 128 physical API calls; "
+	         "a game step shares 1024. Pause holds state and Restart restores "
+	         "the authored initial velocities. These calls never edit the "
+	         "Inspector's initial values."},
 	        {"Lua Scripts",
 	         "Create Script in Assets, then add Lua Script in Inspector and "
 	         "choose its asset. Edit Script opens the built-in code editor. "

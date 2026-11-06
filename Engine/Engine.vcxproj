@@ -1823,6 +1823,9 @@ exit /b 0</Command>
     <ClInclude Include="include\gameplay\ScenePhysics.h"></ClInclude>
     <ClCompile Include="src\gameplay\ScenePhysics.cpp"></ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\scripting\LuaPhysicsBindings.cpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
 

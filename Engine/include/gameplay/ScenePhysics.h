@@ -48,6 +48,36 @@ class ScenePhysics {
 		return world_ ? &*world_ : nullptr;
 	}
 
+	/// <summary>
+	/// 経路から操作されない剛体の並進速度を、角速度を保って変更する
+	/// </summary>
+	/// <param name="id">有効な剛体の物体ID</param>
+	/// <param name="velocity">ワールド並進速度</param>
+	/// <param name="error">成功時は空、失敗時は理由</param>
+	/// <returns>true:変更成功 false:対象・操作元・値が無効</returns>
+	bool SetLinearVelocity(SceneObjectId id, const DirectX::XMFLOAT3 &velocity,
+	                       std::string &error);
+
+	/// <summary>
+	/// 経路から操作されない剛体の角速度を、並進速度を保って変更する
+	/// </summary>
+	/// <param name="id">有効な剛体の物体ID</param>
+	/// <param name="velocity">ワールド角速度。単位はrad/s</param>
+	/// <param name="error">成功時は空、失敗時は理由</param>
+	/// <returns>true:変更成功 false:対象・操作元・値が無効</returns>
+	bool SetAngularVelocity(SceneObjectId id, const DirectX::XMFLOAT3 &velocity,
+	                        std::string &error);
+
+	/// <summary>
+	/// 動的な剛体の重心へ、ワールド座標の力積を加える
+	/// </summary>
+	/// <param name="id">有効な動的剛体の物体ID</param>
+	/// <param name="impulse">ワールド座標の力積</param>
+	/// <param name="error">成功時は空、失敗時は理由</param>
+	/// <returns>true:変更成功 false:対象や値が無効</returns>
+	bool AddImpulse(SceneObjectId id, const DirectX::XMFLOAT3 &impulse,
+	                std::string &error);
+
   private:
 	std::optional<RigidBodyWorld> world_;
 	std::map<SceneObjectId, RigidBodyDescription> definitions_;

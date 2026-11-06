@@ -2236,4 +2236,9 @@
       <Filter>src\gameplay</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\scripting\LuaPhysicsBindings.cpp">
+      <Filter>src\scripting</Filter>
+    </ClCompile>
+  </ItemGroup>
 </Project>
