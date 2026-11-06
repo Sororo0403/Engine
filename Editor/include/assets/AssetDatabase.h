@@ -92,12 +92,19 @@ class AssetDatabase {
 	/// </summary>
 	void Clear();
 
+	/// <summary>
+	/// スクリプトとして割り当てるLuaファイルの一覧を取得する
+	/// </summary>
+	/// <returns>検索先と同じ絶対・相対指定の.lua一覧。構文は保存・再生時に検証する</returns>
+	const std::vector<std::filesystem::path> &GetScripts() const;
+
   private:
 	std::filesystem::path rootDirectory_;
 	std::vector<std::filesystem::path> models_;
 	std::vector<std::filesystem::path> textures_;
 	std::vector<std::filesystem::path> audioClips_;
 	std::vector<std::filesystem::path> scenes_;
+	std::vector<std::filesystem::path> scripts_;
 	std::vector<std::filesystem::path> prefabs_;
 	std::vector<std::filesystem::path> gameConfigurations_;
 	std::vector<std::filesystem::path> directories_;

@@ -42,6 +42,8 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	modelImportRequested_ = false;
 	folderCreateRequested_ = false;
 	prefabCreateRequested_ = false;
+	scriptCreateRequested_ = false;
+	scriptEditPath_.clear();
 	texturePreviewPath_.clear();
 	audioPreviewPath_.clear();
 	revealMessage_.clear();
@@ -107,7 +109,8 @@ bool AssetsPanel::SelectAsset(const std::filesystem::path &path,
 
 	// 全種類の通常パスを先に探し、別名の場合だけファイルの照合を行う。
 	for (const bool aliases : {false, true}) {
-		if (select(assets.GetModels(), AssetType::MODEL, aliases) ||
+		if (select(assets.GetScripts(), AssetType::SCRIPT, aliases) ||
+		    select(assets.GetModels(), AssetType::MODEL, aliases) ||
 		    select(assets.GetTextures(), AssetType::TEXTURE, aliases) ||
 		    select(assets.GetAudioClips(), AssetType::AUDIO, aliases) ||
 		    select(assets.GetScenes(), AssetType::SCENE, aliases) ||
@@ -142,6 +145,8 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	modelImportRequested_ = false;
 	folderCreateRequested_ = false;
 	prefabCreateRequested_ = false;
+	scriptCreateRequested_ = false;
+	scriptEditPath_.clear();
 	texturePreviewPath_.clear();
 	audioPreviewPath_.clear();
 
@@ -264,6 +269,8 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	}
 	ui.EndDisabled();
 
+	if (ui.Button("Create Script"))
+		scriptCreateRequested_ = true;
 	if (ui.Button("Import Texture")) {
 		textureImportRequested_ = true;
 	}
@@ -286,6 +293,8 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 	const auto typeLabel = [](AssetType type) {
 		switch (type) {
+		case AssetType::SCRIPT:
+			return "Scripts";
 		case AssetType::MODEL:
 			return "Models";
 		case AssetType::TEXTURE:
@@ -305,7 +314,8 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	if (ImGui::BeginCombo("Asset Type", typeLabel(type_))) {
 		for (const auto type :
 		     {AssetType::MODEL, AssetType::TEXTURE, AssetType::AUDIO,
-		      AssetType::SCENE, AssetType::PREFAB, AssetType::GAME_SETTINGS}) {
+		      AssetType::SCENE, AssetType::PREFAB, AssetType::GAME_SETTINGS,
+		      AssetType::SCRIPT}) {
 			if (ui.Selectable(typeLabel(type), type_ == type)) {
 				SetAssetType(type);
 			}
@@ -327,7 +337,8 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		                                          : "Searching all folders.");
 	}
 
-	const auto &entries = type_ == AssetType::MODEL     ? assets.GetModels()
+	const auto &entries = type_ == AssetType::SCRIPT    ? assets.GetScripts()
+	                      : type_ == AssetType::MODEL   ? assets.GetModels()
 	                      : type_ == AssetType::TEXTURE ? assets.GetTextures()
 	                      : type_ == AssetType::AUDIO   ? assets.GetAudioClips()
 	                      : type_ == AssetType::SCENE   ? assets.GetScenes()
@@ -431,6 +442,9 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				scrollToSelected_ = false;
 				revealMessage_.clear();
 
+				if (type_ == AssetType::SCRIPT && canEditAssets &&
+				    ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+					scriptEditPath_ = assetPath;
 				if (type_ == AssetType::SCENE && canEditAssets &&
 				    doubleClicked) {
 					sceneOpenPath_ = assetPath;
@@ -512,10 +526,12 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			}
 
 			if ((type_ == AssetType::MODEL || type_ == AssetType::SCENE ||
-			     type_ == AssetType::AUDIO || type_ == AssetType::PREFAB) &&
+			     type_ == AssetType::AUDIO || type_ == AssetType::PREFAB ||
+			     type_ == AssetType::SCRIPT) &&
 			    AssetDragDrop::DrawSource(
 			        assetPath,
-			        type_ == AssetType::MODEL   ? AssetDragDrop::Kind::MODEL
+			        type_ == AssetType::SCRIPT  ? AssetDragDrop::Kind::SCRIPT
+			        : type_ == AssetType::MODEL ? AssetDragDrop::Kind::MODEL
 			        : type_ == AssetType::AUDIO ? AssetDragDrop::Kind::AUDIO
 			        : type_ == AssetType::PREFAB
 			            ? AssetDragDrop::Kind::PREFAB
@@ -649,7 +665,12 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		}
 	}
 
-	if (type_ == AssetType::SCENE) {
+	if (type_ == AssetType::SCRIPT) {
+		ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
+		if (ui.Button("Edit Script"))
+			scriptEditPath_ = selectedPath_;
+		ui.EndDisabled();
+	} else if (type_ == AssetType::SCENE) {
 		ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
 		if (ui.Button("Open Scene")) {
 			sceneOpenPath_ = selectedPath_;
@@ -720,6 +741,8 @@ void AssetsPanel::Clear() {
 	modelImportRequested_ = false;
 	folderCreateRequested_ = false;
 	prefabCreateRequested_ = false;
+	scriptCreateRequested_ = false;
+	scriptEditPath_.clear();
 	texturePreviewPath_.clear();
 	audioPreviewPath_.clear();
 	selectedPath_.clear();

@@ -726,13 +726,21 @@ class EditorHistory {
 	/// <returns>true:開始成功 false:対象または経路なし</returns>
 	bool BeginMotionPath(SceneObjectId id);
 
+	/// <summary>
+	/// Lua Scriptの追加・設定・削除を、初期状態を正規化して1操作として記録する
+	/// </summary>
+	/// <param name="id">対象物体</param>
+	/// <param name="value">設定。nulloptは削除</param>
+	/// <returns>true:反映成功または同じ値 false:設定・対象が無効</returns>
+	bool SetScript(SceneObjectId id, std::optional<ScriptComponent> value);
+
   private:
 	// 単独の編集操作、または複数の編集操作を保持する
 	using Command =
 	    std::variant<TransformCommand, ObjectCommand, ParentCommand,
 	                 RenameCommand, ModelPathCommand, VisibilityCommand,
 	                 ActiveCommand, ColliderCommand, CharacterCommand,
-	                 FollowCameraCommand, TriggerActionsCommand,
+	                 FollowCameraCommand, TriggerActionsCommand, ScriptCommand,
 	                 PointLightCommand, SpotLightCommand, MotionPathCommand,
 	                 AudioSourceCommand, AudioListenerCommand, RespawnCommand,
 	                 CameraCommand, MeshRendererCommand, ColorTintCommand,

@@ -2,6 +2,7 @@
 
 #include "audio/AudioInspector.h"
 #include "gameplay/GameplayInspector.h"
+#include "gameplay/ScriptInspector.h"
 #include "math/Transform.h"
 #include "prefab/PrefabInspector.h"
 #include "scene/SceneObjectId.h"
@@ -180,12 +181,23 @@ class InspectorPanel {
 	/// <param name="ui">フレーム開始済みのUI</param>
 	/// <param name="scene">変更しない再生シーン</param>
 	/// <param name="selectedObjectId">観察する物体ID。0または不在の場合は未選択を表示する</param>
+	/// <param name="scriptState">再生中のLua状態。未初期化の場合はnullopt</param>
 	/// <returns>コピー操作をした時点のTransform。操作なし、対象なし、または無効な値ではnullopt</returns>
-	std::optional<Transform> DrawReadOnly(const ImGuiSystem &ui,
-	                                      const Scene &scene,
-	                                      SceneObjectId selectedObjectId) const;
+	std::optional<Transform> DrawReadOnly(
+	    const ImGuiSystem &ui, const Scene &scene,
+	    SceneObjectId selectedObjectId,
+	    std::optional<std::string_view> scriptState = std::nullopt) const;
+
+	/// <summary>
+	/// このフレームにコード編集を要求したLuaアセットを取得する
+	/// </summary>
+	/// <returns>対象パス。次のDraw・Clearで解除する</returns>
+	const std::filesystem::path &GetScriptEditRequest() const {
+		return scriptInspector_.GetEditRequest();
+	}
 
   private:
+	ScriptInspector scriptInspector_;
 	PrefabInspector::Request prefabRequest_;
 
 	GameplayInspector gameplayInspector_;

@@ -188,6 +188,15 @@ class EditorPlaySession {
 		return simulation_.GetLastUpdateError();
 	}
 
+	/// <summary>
+	/// 再生物体ごとのLua状態を取得する。編集シーンの初期状態は変更しない
+	/// </summary>
+	/// <param name="id">再生物体ID</param>
+	/// <returns>次の更新まで有効なJSON。実行インスタンスなしはnullopt</returns>
+	std::optional<std::string_view> GetScriptState(SceneObjectId id) const {
+		return simulation_.GetScriptState(id);
+	}
+
   private:
 	/// <summary>
 	/// 最後の更新で確定した進入・退出を、再生時間とフレーム数とともに固定長の履歴へ記録する

@@ -395,7 +395,9 @@ bool EditorScene::Update(float deltaTime) {
 
 		if (const auto copied = inspectorPanel_.DrawReadOnly(
 		        ui_, playMode_.GetSession().GetScene(),
-		        playSelection_.GetActiveId())) {
+		        playSelection_.GetActiveId(),
+		        playMode_.GetSession().GetScriptState(
+		            playSelection_.GetActiveId()))) {
 			SceneWorldTransform world;
 			if (!SceneHierarchy::GetWorldTransform(
 			        playMode_.GetSession().GetScene(),
@@ -678,6 +680,26 @@ bool EditorScene::Update(float deltaTime) {
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 			pendingOpenPath_ = requestedSettings;
 			action = EditorAction::LOAD_GAME_SETTINGS;
+		}
+
+		const auto &scriptEdit = inspectorPanel_.GetScriptEditRequest().empty()
+		                             ? assetsPanel_.GetScriptEditRequest()
+		                             : inspectorPanel_.GetScriptEditRequest();
+		if ((assetsPanel_.IsScriptCreateRequested() || !scriptEdit.empty()) &&
+		    !IsBusy() && action == EditorAction::NONE &&
+		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
+			FinishEdit();
+			std::string error;
+			const bool opened =
+			    !scriptEdit.empty()
+			        ? scriptEditorDialog_.ShowEdit(scriptEdit, error)
+			        : scriptEditorDialog_.ShowCreate(
+			              assets_.GetRootDirectory(),
+			              assetsPanel_.GetOpenDirectory(), error);
+			if (opened)
+				stage_ = DialogStage::EDIT_SCRIPT;
+			else
+				ShowError(error);
 		}
 
 		if (assetsPanel_.IsPrefabCreateRequested() &&
@@ -3544,6 +3566,19 @@ void EditorScene::UpdateDialogs() {
 			}
 		}
 		return;
+	}
+
+	case DialogStage::EDIT_SCRIPT: {
+		const auto result = scriptEditorDialog_.Draw(ui_);
+		if (result == ScriptEditorDialog::Result::SAVED) {
+			stage_ = DialogStage::IDLE;
+			if (!assets_.Refresh())
+				ShowError(assets_.GetError());
+			else
+				assetsPanel_.RequestReveal(scriptEditorDialog_.GetSavedPath());
+		} else if (result == ScriptEditorDialog::Result::CANCELLED)
+			stage_ = DialogStage::IDLE;
+		break;
 	}
 
 	case DialogStage::CREATE_PREFAB: {

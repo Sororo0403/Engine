@@ -14,6 +14,8 @@ namespace {
 /// </summary>
 const char *PayloadType(AssetDragDrop::Kind kind) {
 	switch (kind) {
+	case AssetDragDrop::Kind::SCRIPT:
+		return "EDITOR_SCRIPT_PATH";
 	case AssetDragDrop::Kind::MODEL:
 		return "EDITOR_MODEL_PATH";
 	case AssetDragDrop::Kind::SCENE:
@@ -35,6 +37,8 @@ bool Matches(const std::filesystem::path &path, AssetDragDrop::Kind kind) {
 		return false;
 	}
 	switch (kind) {
+	case AssetDragDrop::Kind::SCRIPT:
+		return PathUtils::HasExtension(path, ".lua");
 	case AssetDragDrop::Kind::MODEL:
 		return PathUtils::IsModelFile(path);
 	case AssetDragDrop::Kind::AUDIO:

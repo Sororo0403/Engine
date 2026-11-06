@@ -1,4 +1,5 @@
 #include "history/EditorHistory.h"
+#include "scripting/LuaScript.h"
 
 #include "core/Logger.h"
 #include "gameplay/SceneCameraUtils.h"
@@ -198,6 +199,10 @@ bool EditorHistory::DeleteObjects(std::span<const SceneObjectId> objectIds) {
 		}
 		auto cleared = object;
 		SceneObjectReferences::ClearTargets(cleared, expanded);
+		if (cleared.script != object.script) {
+			commands.emplace_back(
+			    ScriptCommand{id, object.script, cleared.script});
+		}
 		if (cleared.followCamera != object.followCamera) {
 			commands.emplace_back(FollowCameraCommand{id, object.followCamera,
 			                                          cleared.followCamera});
@@ -420,6 +425,7 @@ EditorHistory::CreateObjectGroups(std::vector<SceneObject> objects,
 			working.FindObject(createdIds[i])->parentId = object.parentId;
 
 			SceneObjectReferences::Remap(object, remap);
+			working.FindObject(createdIds[i])->script = object.script;
 			working.FindObject(createdIds[i])->prefabLink = object.prefabLink;
 			working.FindObject(createdIds[i])->followCamera =
 			    object.followCamera;
@@ -2935,4 +2941,39 @@ bool EditorHistory::ApplySceneChanges(
 		AppendPrepared(Command{std::move(*command)}, *state, description);
 	}
 	return applied;
+}
+
+bool EditorHistory::SetScript(SceneObjectId id,
+                              std::optional<ScriptComponent> value) {
+	if (value) {
+		std::string normalized, error;
+		if (!LuaScript::NormalizeState(value->initialState, normalized, error))
+			return false;
+		value->initialState = std::move(normalized);
+	}
+	CommitEdit();
+	auto *object = scene_.FindObject(id);
+
+	if (!object || (value && !value->IsValid())) {
+		return false;
+	}
+
+	const bool adding = !object->script;
+	ScriptCommand command{id, object->script, value};
+
+	if (!command.HasChanges()) {
+		return true;
+	}
+
+	const auto next = PrepareAppend();
+
+	if (!command.Redo(scene_)) {
+		return false;
+	}
+
+	AppendPrepared(Command{std::move(command)}, next,
+	               !value   ? "Remove Lua Script"
+	               : adding ? "Add Lua Script"
+	                        : "Edit Lua Script");
+	return true;
 }

@@ -1,0 +1,162 @@
+﻿#include "gameplay/ScriptInspector.h"
+#include "assets/AssetDragDrop.h"
+#include "graphics/ui/ImGuiSystem.h"
+#include "history/EditorHistory.h"
+#include "platform/windows/PathUtils.h"
+#include "scene/Scene.h"
+#include "scripting/LuaScript.h"
+#include <algorithm>
+#include <format>
+#include <imgui.h>
+#include <imgui_stdlib.h>
+
+void ScriptInspector::Clear() {
+	draftObject_ = 0;
+	initial_.clear();
+	draft_.clear();
+	referenceName_ = "target";
+	error_.clear();
+	edit_.clear();
+}
+
+bool ScriptInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
+                           SceneObjectId id, SceneObject &object,
+                           EditorHistory &history,
+                           std::span<const std::filesystem::path> scripts) {
+	edit_.clear();
+	if (!object.script)
+		return false;
+	if (draftObject_ != id || initial_ != object.script->initialState) {
+		draftObject_ = id;
+		initial_ = object.script->initialState;
+		draft_ = initial_;
+		error_.clear();
+	}
+	if (!ui.CollapsingHeader("Lua Script"))
+		return false;
+	const auto scope = std::to_string(id);
+	ImGui::PushID(scope.c_str());
+	ImGui::PushID("ScriptInspector");
+	auto value = *object.script;
+	bool changed = false;
+	if (ui.Checkbox("Script Enabled", value.enabled))
+		changed |= history.SetScript(id, value);
+	const auto preview = value.asset.empty()
+	                         ? std::string("None")
+	                         : PathUtils::ToUtf8(value.asset.filename());
+	if (ImGui::BeginCombo("Script Asset", preview.c_str())) {
+		if (ui.Selectable("None", value.asset.empty())) {
+			value.asset.clear();
+			changed |= history.SetScript(id, value);
+		}
+		for (const auto &path : scripts) {
+			const auto label = PathUtils::ToUtf8(path);
+			if (ui.Selectable(label.c_str(), path == value.asset)) {
+				value.asset = path;
+				changed |= history.SetScript(id, value);
+			}
+		}
+		ImGui::EndCombo();
+	}
+	if (auto path = AssetDragDrop::AcceptTarget(AssetDragDrop::Kind::SCRIPT);
+	    !path.empty()) {
+		value.asset = std::move(path);
+		changed |= history.SetScript(id, value);
+	}
+	ImGui::BeginDisabled(value.asset.empty());
+	if (ui.Button("Edit Script"))
+		edit_ = value.asset;
+	ImGui::EndDisabled();
+	ImGui::InputTextMultiline("Initial State", &draft_, {0, 100});
+	if (ImGui::IsItemHovered())
+		ImGui::SetTooltip("JSON object used at Play / Restart. Apply to record "
+		                  "one undo step.");
+	if (ui.Button("Apply Initial State")) {
+		std::string normalized;
+		if (LuaScript::NormalizeState(draft_, normalized, error_)) {
+			value.initialState = std::move(normalized);
+			changed |= history.SetScript(id, value);
+			initial_ = value.initialState;
+			draft_ = initial_;
+		}
+	}
+	ui.SameLine();
+	if (ui.Button("Reload Initial State")) {
+		initial_ = object.script->initialState;
+		draft_ = initial_;
+		error_.clear();
+	}
+	std::size_t remove = value.references.size();
+	for (std::size_t i = 0; i < value.references.size(); ++i) {
+		ImGui::PushID(static_cast<int>(i));
+		auto &[name, target] = value.references[i];
+		const auto *selected = scene.FindObject(target);
+		const auto label =
+		    selected ? std::format("{} (ID {})", selected->name, target)
+		    : target ? std::format("Missing (ID {})", target)
+		             : "None";
+		if (ImGui::BeginCombo(name.c_str(), label.c_str())) {
+			if (ui.Selectable("None", target == 0)) {
+				target = 0;
+				changed |= history.SetScript(id, value);
+			}
+			for (const auto &[other, entry] : scene.GetObjects()) {
+				const auto item = std::format("{} (ID {})", entry.name, other);
+				if (ui.Selectable(item.c_str(), target == other)) {
+					target = other;
+					changed |= history.SetScript(id, value);
+				}
+			}
+			ImGui::EndCombo();
+		}
+		if (ui.Button("Remove Reference"))
+			remove = i;
+		ImGui::PopID();
+	}
+	if (remove < value.references.size()) {
+		value.references.erase(value.references.begin() +
+		                       static_cast<std::ptrdiff_t>(remove));
+		changed |= history.SetScript(id, value);
+	}
+	ui.InputText("Reference Name", referenceName_);
+	ImGui::BeginDisabled(value.references.size() >=
+	                     ScriptComponent::kMaximumReferences);
+	if (ui.Button("Add Reference")) {
+		auto next = value;
+		next.references.emplace_back(referenceName_, 0);
+		if (!next.IsValid())
+			error_ =
+			    "Use a unique, nonempty reference name of at most 64 bytes.";
+		else {
+			changed |= history.SetScript(id, next);
+			error_.clear();
+		}
+	}
+	ImGui::EndDisabled();
+	if (!error_.empty())
+		ImGui::TextWrapped("%s", error_.c_str());
+	if (ui.Button("Remove Lua Script")) {
+		changed |= history.SetScript(id, std::nullopt);
+		Clear();
+	}
+	ImGui::PopID();
+	ImGui::PopID();
+	return changed;
+}
+
+void ScriptInspector::DrawReadOnly(
+    const ImGuiSystem &ui, const SceneObject &object,
+    std::optional<std::string_view> state) const {
+	if (!object.script || !ui.CollapsingHeader("Lua Script"))
+		return;
+	ui.Text(object.script->enabled ? "Enabled" : "Disabled");
+	ui.Text(PathUtils::ToUtf8(object.script->asset));
+	for (const auto &[name, target] : object.script->references)
+		ui.Text(std::format("{}: ID {}", name, target));
+	ui.Text("State");
+	if (state)
+		ImGui::TextWrapped("%.*s", static_cast<int>(state->size()),
+		                   state->data());
+	else
+		ui.Text("Not initialized");
+}

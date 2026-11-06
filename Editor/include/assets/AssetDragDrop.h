@@ -10,7 +10,7 @@ class AssetDragDrop {
 	/// <summary>
 	/// 誤った対象へ受け渡さないためのアセット種別
 	/// </summary>
-	enum class Kind { MODEL, SCENE, AUDIO, PREFAB };
+	enum class Kind { SCRIPT, MODEL, SCENE, AUDIO, PREFAB };
 
 	/// <summary>
 	/// 直前のUI項目を指定種別のアセットのドラッグ元として扱う

@@ -1,4 +1,5 @@
 #include "assets/SceneAssetValidation.h"
+#include "scripting/LuaScript.h"
 
 #include "assets/AssetDependencies.h"
 #include "assets/ImageValidation.h"
@@ -17,7 +18,7 @@ std::vector<SceneValidationIssue>
 SceneAssetValidation::Inspect(const Scene &scene) {
 	std::vector<SceneValidationIssue> issues;
 	std::map<std::filesystem::path, std::vector<std::string>> models, textures,
-	    monoAudio, stereoAudio, scenes;
+	    monoAudio, stereoAudio, scenes, scripts;
 
 	const auto inspect = [](const std::filesystem::path &path, auto &cache,
 	                        auto collect) -> const std::vector<std::string> & {
@@ -79,6 +80,17 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 					        PathUtils::ResolveFromExecutable(path)};
 				    }));
 			}
+		if (object.script && !object.script->asset.empty()) {
+			add("Lua Script",
+			    inspect(object.script->asset, scripts, [](const auto &path) {
+				    std::string source, error;
+				    if (!LuaScript::Read(path, source, error) ||
+				        !LuaScript::Validate(source, error))
+					    throw std::runtime_error(error);
+				    return std::vector<std::filesystem::path>{
+				        PathUtils::ResolveFromExecutable(path)};
+			    }));
+		}
 		if (object.audioSource && !object.audioSource->clipPath.empty()) {
 			const bool spatial = object.audioSource->spatial;
 			add("Audio Source",

@@ -54,6 +54,7 @@ bool AssetDatabase::Refresh() {
 		std::vector<std::filesystem::path> textures;
 		std::vector<std::filesystem::path> audioClips;
 		std::vector<std::filesystem::path> scenes;
+		std::vector<std::filesystem::path> scripts;
 		std::vector<std::filesystem::path> prefabs;
 		std::vector<std::filesystem::path> gameConfigurations;
 		std::vector<std::filesystem::path> directories;
@@ -91,6 +92,8 @@ bool AssetDatabase::Refresh() {
 			if (regularFile) {
 				const auto &path = entry.path();
 
+				if (PathUtils::HasExtension(path, ".lua"))
+					scripts.push_back(reference(path));
 				if (PathUtils::HasExtension(path, ".wav"))
 					audioClips.push_back(reference(path));
 
@@ -139,6 +142,7 @@ bool AssetDatabase::Refresh() {
 		std::sort(textures.begin(), textures.end());
 		std::sort(audioClips.begin(), audioClips.end());
 		std::sort(scenes.begin(), scenes.end());
+		std::sort(scripts.begin(), scripts.end());
 		std::sort(prefabs.begin(), prefabs.end());
 		std::sort(gameConfigurations.begin(), gameConfigurations.end());
 		std::sort(directories.begin(), directories.end());
@@ -148,6 +152,7 @@ bool AssetDatabase::Refresh() {
 		textures_.swap(textures);
 		audioClips_.swap(audioClips);
 		scenes_.swap(scenes);
+		scripts_.swap(scripts);
 		prefabs_.swap(prefabs);
 		gameConfigurations_.swap(gameConfigurations);
 		directories_.swap(directories);
@@ -158,6 +163,7 @@ bool AssetDatabase::Refresh() {
 		textures_.clear();
 		audioClips_.clear();
 		scenes_.clear();
+		scripts_.clear();
 		prefabs_.clear();
 		gameConfigurations_.clear();
 		directories_.clear();
@@ -181,6 +187,7 @@ bool AssetDatabase::SetRootDirectory(std::filesystem::path rootDirectory) {
 		textures_.swap(candidate.textures_);
 		audioClips_.swap(candidate.audioClips_);
 		scenes_.swap(candidate.scenes_);
+		scripts_.swap(candidate.scripts_);
 		prefabs_.swap(candidate.prefabs_);
 		gameConfigurations_.swap(candidate.gameConfigurations_);
 		directories_.swap(candidate.directories_);
@@ -214,6 +221,7 @@ void AssetDatabase::Clear() {
 	textures_.clear();
 	audioClips_.clear();
 	scenes_.clear();
+	scripts_.clear();
 	prefabs_.clear();
 	gameConfigurations_.clear();
 	directories_.clear();
@@ -239,4 +247,8 @@ AssetDatabase::GetGameConfigurations() const {
 
 const std::vector<std::filesystem::path> &AssetDatabase::GetAudioClips() const {
 	return audioClips_;
+}
+
+const std::vector<std::filesystem::path> &AssetDatabase::GetScripts() const {
+	return scripts_;
 }

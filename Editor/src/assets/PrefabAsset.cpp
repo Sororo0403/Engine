@@ -92,6 +92,8 @@ void RewriteReferences(Scene &scene, const std::filesystem::path &base,
 				if (action.operation == TriggerAction::Operation::LOAD_SCENE)
 					rewrite(action.scenePath);
 			}
+		if (object.script)
+			rewrite(object.script->asset);
 		if (object.mesh) {
 			rewrite(object.mesh->modelPath);
 		}

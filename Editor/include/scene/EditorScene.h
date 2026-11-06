@@ -19,6 +19,7 @@
 #include "dialogs/SceneImportDialog.h"
 #include "dialogs/SceneRecoveryDialog.h"
 #include "dialogs/SceneReloadDialog.h"
+#include "dialogs/ScriptEditorDialog.h"
 #include "dialogs/TextureImportDialog.h"
 #include "files/SceneRecovery.h"
 #include "gameplay/CharacterJumpPreview.h"
@@ -252,6 +253,7 @@ class EditorScene final : public IScene {
 		IMPORT_SCENE,
 		CREATE_ASSET_FOLDER,
 		CREATE_PREFAB,
+		EDIT_SCRIPT,
 		SELECT_ASSET_FOLDER,
 		EXPORT_GAME,
 		EXPORT_RESULT,
@@ -825,6 +827,7 @@ class EditorScene final : public IScene {
 	SceneImportDialog sceneImportDialog_;
 	AssetFolderDialog assetFolderDialog_;
 	PrefabCreateDialog prefabCreateDialog_;
+	ScriptEditorDialog scriptEditorDialog_;
 	GameExportDialog exportDialog_;
 	GameExportResultDialog exportResultDialog_;
 	GameSettingsDialog gameSettingsDialog_;

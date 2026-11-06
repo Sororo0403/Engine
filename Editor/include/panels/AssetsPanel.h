@@ -179,6 +179,22 @@ class AssetsPanel {
 	/// <returns>0以上のスロット番号。不正入力中は割り当て要求を生成しない</returns>
 	std::uint32_t GetTextureSlot() const;
 
+	/// <summary>
+	/// このフレームにLuaアセットの作成を要求したか確認する
+	/// </summary>
+	/// <returns>true:作成要求。次のDraw・種類切り替え・Clearで解除する</returns>
+	bool IsScriptCreateRequested() const {
+		return scriptCreateRequested_;
+	}
+
+	/// <summary>
+	/// このフレームにコード編集を要求したLuaアセットを取得する
+	/// </summary>
+	/// <returns>対象パス。次のDraw・種類切り替え・Clearで解除する</returns>
+	const std::filesystem::path &GetScriptEditRequest() const {
+		return scriptEditPath_;
+	}
+
   private:
 	/// <summary>
 	/// 一覧に表示するアセットの種類
@@ -189,7 +205,8 @@ class AssetsPanel {
 		AUDIO,
 		SCENE,
 		GAME_SETTINGS,
-		PREFAB
+		PREFAB,
+		SCRIPT
 	};
 
 	/// <summary>
@@ -237,6 +254,8 @@ class AssetsPanel {
 	bool audioImportRequested_ = false;
 	bool modelImportRequested_ = false;
 	bool folderCreateRequested_ = false;
+	bool scriptCreateRequested_ = false;
+	std::filesystem::path scriptEditPath_;
 	bool prefabCreateRequested_ = false;
 	bool directoryOpenRequested_ = false;
 	std::filesystem::path requestedDirectory_;

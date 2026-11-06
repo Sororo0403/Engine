@@ -126,6 +126,7 @@ void InspectorPanel::RequestRename(SceneObjectId objectId) {
 void InspectorPanel::Clear() {
 	audioInspector_.Clear();
 	gameplayInspector_.Clear();
+	scriptInspector_.Clear();
 	inspectObjectId_ = 0;
 	lockedObjectId_ = 0;
 	renameObjectId_ = 0;
@@ -136,6 +137,7 @@ void InspectorPanel::Clear() {
 	visibilityRequest_ = {};
 	objectRequest_ = {};
 	prefabRequest_ = {};
+	scriptInspector_.ResetRequest();
 	colliderFitRequest_ = 0;
 	assetRevealPath_.clear();
 	slotModelPath_.clear();
@@ -171,6 +173,7 @@ bool InspectorPanel::Draw(
     std::span<const SceneObjectId> uvTargets, bool canPasteUv) {
 	objectRequest_ = {};
 	prefabRequest_ = {};
+	scriptInspector_.ResetRequest();
 	colliderFitRequest_ = 0;
 	modelRequest_ = {};
 	assetRevealPath_.clear();
@@ -361,6 +364,10 @@ bool InspectorPanel::Draw(
 	}
 
 	prefabRequest_ = PrefabInspector{}.Draw(ui, scene, inspectedObjectId);
+	changed |= scriptInspector_.Draw(
+	    ui, scene, inspectedObjectId, *object, history,
+	    assets ? std::span<const std::filesystem::path>{assets->GetScripts()}
+	           : std::span<const std::filesystem::path>{});
 	changed |=
 	    MotionPathInspector{}.Draw(ui, inspectedObjectId, *object, history);
 
@@ -441,6 +448,8 @@ bool InspectorPanel::Draw(
 			    history.SetPointLight(inspectedObjectId, PointLightComponent{});
 		}
 
+		if (ui.MenuItem("Lua Script", nullptr, !object->script))
+			changed |= history.SetScript(inspectedObjectId, ScriptComponent{});
 		if (ui.MenuItem("Motion Path", nullptr, !object->motionPath)) {
 			changed |=
 			    history.SetMotionPath(inspectedObjectId, MotionPathComponent{});
@@ -709,9 +718,9 @@ bool InspectorPanel::Draw(
 	return changed;
 }
 
-std::optional<Transform>
-InspectorPanel::DrawReadOnly(const ImGuiSystem &ui, const Scene &scene,
-                             SceneObjectId selectedObjectId) const {
+std::optional<Transform> InspectorPanel::DrawReadOnly(
+    const ImGuiSystem &ui, const Scene &scene, SceneObjectId selectedObjectId,
+    std::optional<std::string_view> scriptState) const {
 	if (!ui.BeginWindow("Inspector")) {
 		ui.EndWindow();
 		return std::nullopt;
@@ -795,6 +804,7 @@ InspectorPanel::DrawReadOnly(const ImGuiSystem &ui, const Scene &scene,
 		ui.Text(std::format("Collides With: 0x{:08X}", collider.filter.mask));
 	}
 
+	scriptInspector_.DrawReadOnly(ui, *object, scriptState);
 	audioInspector_.DrawReadOnly(ui, *object);
 
 	PointLightInspector{}.DrawReadOnly(ui, *object);

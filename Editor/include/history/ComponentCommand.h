@@ -105,3 +105,5 @@ using MotionPathCommand =
 
 using SpotLightCommand =
     ComponentCommand<SpotLightComponent, &SceneObject::spotLight>;
+
+using ScriptCommand = ComponentCommand<ScriptComponent, &SceneObject::script>;
