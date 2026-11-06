@@ -2248,4 +2248,8 @@ exit /b 0</Command>
     <ClCompile Include="src\gameplay\ScenePrefabs.cpp" />
     <ClCompile Include="src\scripting\LuaPrefabBindings.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\scene\SceneDestruction.h" />
+    <ClCompile Include="src\scene\SceneDestruction.cpp" />
+  </ItemGroup>
 </Project>

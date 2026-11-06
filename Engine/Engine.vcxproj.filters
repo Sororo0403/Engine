@@ -2293,4 +2293,12 @@
       <Filter>src\scripting</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\scene\SceneDestruction.h">
+      <Filter>include\scene</Filter>
+    </ClInclude>
+    <ClCompile Include="src\scene\SceneDestruction.cpp">
+      <Filter>src\scene</Filter>
+    </ClCompile>
+  </ItemGroup>
 </Project>
