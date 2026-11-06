@@ -81,6 +81,20 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 			add(id, "Audio Source settings or WAV reference are invalid.");
 		}
 
+		if (object.script && object.script->enabled) {
+			if (!object.script->IsValid())
+				add(id, "Lua Script settings are invalid.");
+			else if (!object.script->asset.empty())
+				for (const auto &[name, target] : object.script->references) {
+					(void)name;
+					if (target && !scene.Contains(target)) {
+						add(id, "A Script object reference points to a missing "
+						        "object.");
+						break;
+					}
+				}
+		}
+
 		if (object.motionPath && (!object.motionPath->IsValid() ||
 		                          object.character || object.followCamera)) {
 			add(id, "Motion Path requires valid points and cannot share an "

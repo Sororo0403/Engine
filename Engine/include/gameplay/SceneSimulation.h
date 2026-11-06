@@ -4,6 +4,7 @@
 #include "gameplay/CharacterRuntimeState.h"
 #include "gameplay/FollowCameraOrbit.h"
 #include "gameplay/SceneMotion.h"
+#include "gameplay/SceneScripts.h"
 #include "graphics/camera/CameraPose.h"
 #include "physics/CollisionWorld.h"
 #include "physics/TriggerWorld.h"
@@ -159,6 +160,15 @@ class SceneSimulation {
 		return triggers_.GetContacts();
 	}
 
+	/// <summary>
+	/// 初期化済みLuaインスタンスの状態を、変更しないJSONとして参照する
+	/// </summary>
+	/// <param name="id">物体ID</param>
+	/// <returns>状態。未初期化はnullopt。次の更新まで有効</returns>
+	std::optional<std::string_view> GetScriptState(SceneObjectId id) const {
+		return scripts_.GetState(id);
+	}
+
   private:
 	/// <summary>
 	/// 次の正の時間の更新で操作を受け取るTrigger Actionsと、その原因イベント
@@ -233,11 +243,40 @@ class SceneSimulation {
 	ApplyTeleports(const std::map<SceneObjectId, DirectX::XMFLOAT3> &positions,
 	               std::string &error, SceneObjectId *invalidObject);
 
+	/// <summary>
+	/// スクリプトの状態と候補の変更を実行し、物理・追従・接触をまとめて検証する
+	/// </summary>
+	/// <param name="seconds">ゲーム時間</param>
+	/// <param name="input">共通ゲーム入力</param>
+	/// <param name="startOnly">true:startだけ実行する</param>
+	/// <param name="error">失敗理由</param>
+	/// <param name="invalidObject">問題の物体ID</param>
+	/// <returns>true:成功 false:スクリプトまたは変更後の配置が無効</returns>
+	bool ApplyScripts(float seconds, const CharacterInput &input,
+	                  bool startOnly, std::string &error,
+	                  SceneObjectId *invalidObject);
+
+	/// <summary>
+	/// 物体変更後の最終状態を検証し、瞬間的に動かした枝の速度・追従・接触を同期する
+	/// </summary>
+	/// <param name="candidate">全変更を含む候補</param>
+	/// <param name="transformed">明示的に変形した物体</param>
+	/// <param name="error">失敗理由</param>
+	/// <param name="invalidObject">問題の物体ID</param>
+	/// <param name="generated">指定時は今回のEnter/Exitを返す</param>
+	/// <returns>true:確定成功 false:階層・物理・カメラ・コンポーネントが無効。失敗時は現在の状態を保持する</returns>
+	bool
+	SynchronizeSceneChanges(const Scene &candidate,
+	                        std::span<const SceneObjectId> transformed,
+	                        std::string &error, SceneObjectId *invalidObject,
+	                        std::vector<TriggerEvent> *generated = nullptr);
+
 	Scene scene_;
 	CollisionWorld world_;
 	TriggerWorld triggers_;
 	CharacterController controller_;
 	SceneMotion motion_;
+	SceneScripts scripts_;
 	SceneObjectId character_ = 0, camera_ = 0;
 	std::vector<SceneObjectId> updateOrder_;
 	// 追従の補間状態はワールド座標で保持し、シーンにはローカル変形を反映する。

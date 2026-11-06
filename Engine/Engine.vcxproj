@@ -421,6 +421,17 @@ exit /b 0</Command>
     <ClCompile Include="src\gameplay\SceneMotion.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\gameplay\ScriptComponent.h" />
+    <ClInclude Include="include\gameplay\SceneScripts.h" />
+    <ClInclude Include="include\scripting\LuaScript.h" />
+    <ClCompile Include="src\gameplay\ScriptComponent.cpp" />
+    <ClCompile Include="src\gameplay\SceneScripts.cpp" />
+    <ClCompile Include="src\gameplay\SceneSimulationScripts.cpp" />
+    <ClCompile Include="src\scripting\LuaScript.cpp" />
+    <ClInclude Include="src\scripting\LuaBindings.h" />
+    <ClCompile Include="src\scripting\LuaBindings.cpp" />
+    <ClInclude Include="src\scripting\LuaStateData.h" />
+    <ClCompile Include="src\scripting\LuaStateData.cpp" />
     <ClInclude Include="external\lua\include\lauxlib.h" />
     <ClInclude Include="external\lua\include\lua.h" />
     <ClInclude Include="external\lua\include\luaconf.h" />

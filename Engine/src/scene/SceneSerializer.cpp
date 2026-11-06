@@ -327,6 +327,7 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 			    (object.pointLight && !object.pointLight->IsValid()) ||
 			    (object.spotLight && !object.spotLight->IsValid()) ||
 			    (object.motionPath && !object.motionPath->IsValid()) ||
+			    (object.script && !object.script->IsValid()) ||
 			    (object.audioSource && !object.audioSource->IsValid())) {
 				throw std::runtime_error(
 				    "ゲーム用コンポーネントの設定が無効です。");
@@ -403,6 +404,17 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 				                                {"range", light.range}};
 			}
 
+			if (object.script) {
+				const auto &script = *object.script;
+				Json references = Json::array();
+				for (const auto &[name, target] : script.references)
+					references.push_back({{"name", name}, {"target", target}});
+				objects.back()["script"] = {
+				    {"asset", PathUtils::ToUtf8(script.asset)},
+				    {"enabled", script.enabled},
+				    {"state", Json::parse(script.initialState)},
+				    {"references", std::move(references)}};
+			}
 			if (object.motionPath) {
 				const auto &path = *object.motionPath;
 				objects.back()["motionPath"] = {
@@ -716,6 +728,34 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 				                        light.at("range").get<float>()};
 			}
 
+			if (version >= 29 && item.contains("script")) {
+				const auto &value = item.at("script");
+				if (!value.at("asset").is_string() ||
+				    !value.at("enabled").is_boolean() ||
+				    !value.at("state").is_object() ||
+				    !value.at("references").is_array() ||
+				    value.at("references").size() >
+				        ScriptComponent::kMaximumReferences)
+					throw std::runtime_error("Lua Script fields are invalid.");
+				ScriptComponent script;
+				script.asset =
+				    PathUtils::FromUtf8(value.at("asset").get<std::string>());
+				script.enabled = value.at("enabled").get<bool>();
+				script.initialState = value.at("state").dump();
+				for (const auto &reference : value.at("references")) {
+					if (!reference.at("name").is_string() ||
+					    !reference.at("target").is_number_unsigned())
+						throw std::runtime_error(
+						    "Script object reference is invalid.");
+					script.references.emplace_back(
+					    reference.at("name").get<std::string>(),
+					    reference.at("target").get<SceneObjectId>());
+				}
+				if (!script.IsValid())
+					throw std::runtime_error(
+					    "Lua Script settings are invalid.");
+				object.script = std::move(script);
+			}
 			if (version >= 27 && item.contains("motionPath")) {
 				const auto &value = item.at("motionPath");
 				const auto &points = value.at("points");
@@ -1006,6 +1046,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 			    (object.pointLight && !object.pointLight->IsValid()) ||
 			    (object.spotLight && !object.spotLight->IsValid()) ||
 			    (object.motionPath && !object.motionPath->IsValid()) ||
+			    (object.script && !object.script->IsValid()) ||
 			    (object.audioSource && !object.audioSource->IsValid())) {
 				throw std::runtime_error(
 				    "ゲーム用コンポーネントの設定が無効です。");

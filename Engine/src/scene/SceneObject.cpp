@@ -13,5 +13,6 @@ bool SceneObject::operator==(const SceneObject &other) const {
 	       pointLight == other.pointLight && spotLight == other.spotLight &&
 	       audioSource == other.audioSource &&
 	       audioListener == other.audioListener &&
-	       prefabLink == other.prefabLink && motionPath == other.motionPath;
+	       prefabLink == other.prefabLink && motionPath == other.motionPath &&
+	       script == other.script;
 }

@@ -4,6 +4,7 @@
 #include "scene/SceneHierarchy.h"
 #include <algorithm>
 #include <array>
+#include <cstring>
 #include <format>
 #include <utility>
 
@@ -13,6 +14,7 @@ void SceneSimulation::CopyFrom(const SceneSimulation &source) {
 	triggers_ = source.triggers_;
 	controller_ = source.controller_;
 	motion_ = source.motion_;
+	scripts_ = source.scripts_;
 	character_ = source.character_;
 	camera_ = source.camera_;
 	updateOrder_ = source.updateOrder_;
@@ -42,6 +44,7 @@ void SceneSimulation::Adopt(SceneSimulation &source) {
 	triggers_ = std::move(source.triggers_);
 	controller_ = source.controller_;
 	motion_ = std::move(source.motion_);
+	scripts_ = std::move(source.scripts_);
 	character_ = source.character_;
 	camera_ = source.camera_;
 	updateOrder_ = std::move(source.updateOrder_);
@@ -268,6 +271,18 @@ bool SceneSimulation::ApplyTeleports(
 		return false;
 	}
 
+	std::vector<SceneObjectId> transformed;
+	for (const auto &[id, position] : positions) {
+		(void)position;
+		transformed.push_back(id);
+	}
+	return SynchronizeSceneChanges(working, transformed, error, invalidObject);
+}
+
+bool SceneSimulation::SynchronizeSceneChanges(
+    const Scene &working, std::span<const SceneObjectId> transformed,
+    std::string &error, SceneObjectId *invalidObject,
+    std::vector<TriggerEvent> *generated) {
 	SceneSimulation next;
 	next.CopyFrom(*this);
 	// 追従対象またはカメラの親が移動した場合は、補間せず到着先の姿勢へ同期する。
@@ -275,9 +290,8 @@ bool SceneSimulation::ApplyTeleports(
 		SceneWorldTransform before, after;
 		return !SceneHierarchy::GetWorldTransform(scene_, id, before) ||
 		       !SceneHierarchy::GetWorldTransform(working, id, after) ||
-		       before.GetPosition().x != after.GetPosition().x ||
-		       before.GetPosition().y != after.GetPosition().y ||
-		       before.GetPosition().z != after.GetPosition().z;
+		       std::memcmp(&before.matrix, &after.matrix,
+		                   sizeof(before.matrix)) != 0;
 	};
 	std::set<SceneObjectId> followMoved;
 	for (const auto id : updateOrder_) {
@@ -301,8 +315,7 @@ bool SceneSimulation::ApplyTeleports(
 
 	bool resetCharacter = false;
 	std::set<SceneObjectId> teleported;
-	for (const auto &[id, position] : positions) {
-		(void)position;
+	for (const auto id : transformed) {
 		std::vector<SceneObjectId> subtree;
 		if (!SceneHierarchy::GetSubtree(scene_, id, subtree)) {
 			error = "Teleport hierarchy is invalid.";
@@ -318,14 +331,13 @@ bool SceneSimulation::ApplyTeleports(
 		SceneWorldTransform before, after;
 		if (SceneHierarchy::GetWorldTransform(scene_, id, before) &&
 		    SceneHierarchy::GetWorldTransform(next.scene_, id, after) &&
-		    (before.GetPosition().x != after.GetPosition().x ||
-		     before.GetPosition().y != after.GetPosition().y ||
-		     before.GetPosition().z != after.GetPosition().z)) {
+		    (std::memcmp(&before.matrix, &after.matrix,
+		                 sizeof(before.matrix)) != 0)) {
 			teleported.insert(id);
 		}
 	}
 	resetCharacter |= teleported.contains(character_);
-	if (character_ && resetCharacter &&
+	if (next.character_ && resetCharacter &&
 	    !next.controller_.Teleport(next.controller_.GetTransform().translation,
 	                               next.world_)) {
 		error = "Teleport character destination overlaps a solid collider.";
@@ -347,6 +359,8 @@ bool SceneSimulation::ApplyTeleports(
 	for (const auto &event : events) {
 		if (event.type != TriggerEvent::Type::STAY) {
 			next.frameEvents_.push_back(event);
+			if (generated)
+				generated->push_back(event);
 		}
 	}
 	Adopt(next);

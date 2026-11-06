@@ -4,6 +4,7 @@
 #include "gameplay/FollowCameraSettings.h"
 #include "gameplay/MotionPathComponent.h"
 #include "gameplay/RespawnSettings.h"
+#include "gameplay/ScriptComponent.h"
 #include "gameplay/TriggerActionsComponent.h"
 #include "graphics/material/ColorTint.h"
 #include "math/Transform.h"
@@ -64,6 +65,8 @@ struct SceneObject {
 	std::optional<PrefabLinkComponent> prefabLink;
 	// 開始位置を基準にしたローカル経路。Colliderがあれば移動床として使用する
 	std::optional<MotionPathComponent> motionPath;
+	// Luaのコールバック・開始状態・物体参照。VMと実行中のstateはシミュレーション側で保持する
+	std::optional<ScriptComponent> script;
 
 	/// <summary>
 	/// Meshに形状の参照が割り当てられているか確認する

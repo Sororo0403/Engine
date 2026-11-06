@@ -44,14 +44,24 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 		                       false)) {
 			return false;
 		}
+		if (!working.ApplyScripts(0, CharacterInput{}, true, error,
+		                          invalidObject))
+			return false;
+		working.pendingActionSignals_.clear();
+		if (!working.triggers_.Reset(working.scene_)) {
+			error = "Initial Script trigger shapes are invalid.";
+			return false;
+		}
 		const auto events = working.triggers_.GetEvents();
 		working.frameEvents_.assign(events.begin(), events.end());
 		if (!working.ApplyTriggerActions(error, invalidObject)) {
 			return false;
 		}
+		working.scripts_.QueueTriggers(working.frameEvents_);
 		working.audioRevision_ = audioRevision_ + 1;
 		working.sceneRevision_ = sceneRevision_ + 1;
 		Adopt(working);
+		scripts_.FlushLogs();
 		return true;
 	} catch (const std::exception &exception) {
 		error = exception.what();
@@ -318,12 +328,16 @@ bool SceneSimulation::Configure(const Scene &source, std::string &error,
 		auto motion = motion_;
 		if (!motion.Configure(working, preserve))
 			return fail(0, "Motion Path settings are invalid.");
+		auto scripts = scripts_;
+		if (!scripts.Configure(working, preserve, error, invalidObject))
+			return false;
 		// 全候補が有効な場合だけ確定し、失敗時は再生シーンと実行状態をすべて保持する。
 		scene_.ReplaceObjects(working.GetObjects());
 		world_ = std::move(world);
 		triggers_ = std::move(triggers);
 		controller_ = controller;
 		motion_ = std::move(motion);
+		scripts_ = std::move(scripts);
 		character_ = character;
 		camera_ = camera;
 		updateOrder_ = std::move(order);
@@ -349,6 +363,7 @@ void SceneSimulation::Stop() {
 	playing_ = false;
 	pendingScene_.clear();
 	motion_ = SceneMotion{};
+	scripts_ = SceneScripts{};
 	frameEvents_.clear();
 	audioActions_.clear();
 	pendingActionSignals_.clear();
@@ -417,9 +432,14 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 			lastUpdateError_ = std::move(error);
 			return false;
 		}
+		if (!working.ApplyScripts(seconds, input, false, error, nullptr)) {
+			lastUpdateError_ = std::move(error);
+			return false;
+		}
 		working.lastUpdateError_.clear();
 		working.audioRevision_ = audioRevision_ + 1;
 		Adopt(working);
+		scripts_.FlushLogs();
 		return true;
 	} catch (const std::exception &exception) {
 		lastUpdateError_ = exception.what();

@@ -11,6 +11,12 @@ namespace {
 /// <param name="object">列挙する物体</param>
 /// <param name="visit">各対象IDに適用する処理</param>
 template <class T, class F> void Visit(T &object, F visit) {
+	if (object.script) {
+		for (auto &[name, target] : object.script->references) {
+			(void)name;
+			visit(target);
+		}
+	}
 	if (object.prefabLink) {
 		visit(object.prefabLink->root);
 	}
