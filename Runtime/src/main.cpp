@@ -3,6 +3,7 @@
 #include "platform/windows/StringConversion.h"
 #include "scene/RuntimeScene.h"
 #include "scene/SceneSerializer.h"
+#include "scripting/LuaScript.h"
 #include <Windows.h>
 #include <exception>
 #include <fstream>
@@ -35,7 +36,7 @@ int WriteBuildInfo() {
 		     << "\",\"architecture\":\"" << architecture
 		     << "\",\"gameConfigVersion\":" << GameConfig::kCurrentVersion
 		     << ",\"sceneVersion\":" << SceneSerializer::kCurrentVersion
-		     << "}\n";
+		     << ",\"scriptApiVersion\":" << LuaScript::kApiVersion << "}\n";
 		file.close();
 		return file ? 0 : 1;
 	} catch (const std::exception &) {

@@ -122,6 +122,12 @@ void ValidateRuntimeBuild(const fs::path &directory) {
 			    "Runtime format versions do not match the Editor. Rebuild "
 			    "Release Runtime before exporting.");
 		}
+		if (!build.contains("scriptApiVersion") ||
+		    !build.at("scriptApiVersion").is_number_integer() ||
+		    build.at("scriptApiVersion") != LuaScript::kApiVersion)
+			throw std::runtime_error(
+			    "Runtime script API version does not match the Editor. Rebuild "
+			    "Release Runtime before exporting.");
 	} catch (const nlohmann::json::exception &) {
 		throw std::runtime_error(
 		    "Runtime build information is invalid. Rebuild Release Runtime "
