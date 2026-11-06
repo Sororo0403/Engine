@@ -1,10 +1,10 @@
 ﻿// Joltの他のヘッダーより先に共通定義を読み込む。
 #include <Jolt/Jolt.h>
 
+#include "JoltRuntime.h"
 #include "math/TransformUtils.h"
 #include "physics/CollisionEvents.h"
 #include "physics/RigidBodyWorld.h"
-#include <Jolt/Core/Factory.h>
 #include <Jolt/Core/JobSystemSingleThreaded.h>
 #include <Jolt/Core/TempAllocator.h>
 #include <Jolt/Physics/Body/Body.h>
@@ -21,7 +21,6 @@
 #include <Jolt/Physics/Collision/ShapeCast.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Physics/StateRecorderImpl.h>
-#include <Jolt/RegisterTypes.h>
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -33,39 +32,6 @@
 #include <vector>
 
 namespace {
-/// <summary>
-/// Jolt共通の型登録を、物理ワールドより先に作り、最後に終了する
-/// </summary>
-struct Registry {
-	Registry() {
-		if (JPH::Factory::sInstance)
-			throw std::runtime_error(
-			    "Jolt is already initialized outside the engine.");
-		JPH::RegisterDefaultAllocator();
-		if (!JPH::VerifyJoltVersionID())
-			throw std::runtime_error(
-			    "Jolt library configuration does not match the engine.");
-		factory = std::make_unique<JPH::Factory>();
-		JPH::Factory::sInstance = factory.get();
-		JPH::RegisterTypes();
-	}
-
-	~Registry() {
-		JPH::UnregisterTypes();
-		JPH::Factory::sInstance = nullptr;
-	}
-
-	std::unique_ptr<JPH::Factory> factory;
-};
-
-/// <summary>
-/// 初めて物理ワールドを作るときにだけ共通機能を初期化する
-/// </summary>
-std::shared_ptr<Registry> InitializeJolt() {
-	static const auto registry = std::make_shared<Registry>();
-	return registry;
-}
-
 /// <summary>
 /// 静的な物体と、動的・Kinematicな物体を別々の衝突探索へ分ける
 /// </summary>
@@ -261,7 +227,7 @@ class Contacts final : public JPH::ContactListener {
 /// </summary>
 struct RigidBodyWorld::Impl {
 	// すべてのJoltオブジェクトより後に共通機能を解放する。
-	std::shared_ptr<Registry> registry;
+	std::shared_ptr<JoltRuntime::Registry> registry;
 	BroadLayers layers;
 	BroadFilter broadFilter;
 	LayerFilter layerFilter;
@@ -275,7 +241,7 @@ struct RigidBodyWorld::Impl {
 	std::map<SceneObjectId, std::pair<JPH::BodyID, std::size_t>> bodies;
 
 	explicit Impl(std::span<const RigidBodyDescription> source,
-	              std::shared_ptr<Registry> registration,
+	              std::shared_ptr<JoltRuntime::Registry> registration,
 	              const JPH::Ref<JPH::GroupFilterTable> &filter = nullptr)
 	    : registry(std::move(registration)),
 	      descriptions(source.begin(), source.end()), group(filter) {
@@ -417,7 +383,7 @@ bool RigidBodyWorld::Rebuild(std::span<const RigidBodyDescription> bodies,
 				    "supported range.");
 		}
 		current = 0;
-		auto next = std::make_shared<Impl>(bodies, InitializeJolt());
+		auto next = std::make_shared<Impl>(bodies, JoltRuntime::Initialize());
 		impl_ = std::move(next);
 		error.clear();
 		return true;

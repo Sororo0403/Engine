@@ -2329,4 +2329,11 @@ exit /b 0</Command>
     <ClInclude Include="include\physics\Collider.h" />
     <ClCompile Include="src\physics\Collider.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\physics\JoltRuntime.h" />
+    <ClCompile Include="src\physics\JoltRuntime.cpp" />
+    <ClInclude Include="include\physics\ColliderCastHit.h" />
+    <ClInclude Include="include\physics\WorldCollider.h" />
+    <ClCompile Include="src\physics\WorldCollider.cpp" />
+  </ItemGroup>
 </Project>
