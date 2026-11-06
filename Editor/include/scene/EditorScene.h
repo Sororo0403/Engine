@@ -609,6 +609,11 @@ class EditorScene final : public IScene {
 	void ClearPlaySelection();
 
 	/// <summary>
+	/// シーン遷移や再実行で変わった物体IDの所属に合わせ、再生中の選択と軌跡を初期化する
+	/// </summary>
+	void SynchronizePlayScene();
+
+	/// <summary>
 	/// 追従中の再生物体の移動量をSceneカメラへ反映する。選択変更時は飛ばさず基準を取り直す
 	/// </summary>
 	void UpdatePlaySelectionFollow();
@@ -862,5 +867,6 @@ class EditorScene final : public IScene {
 	PerformancePanel performancePanel_;
 	SelectionMeasurementsPanel measurementsPanel_;
 	bool showMeasurements_ = false;
+	std::uint64_t playSceneRevision_ = 0;
 	PlayStatePanel playStatePanel_;
 };

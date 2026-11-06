@@ -170,6 +170,7 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	UpdateRecovery(deltaTime);
+	SynchronizePlayScene();
 
 	playFrame_ = false;
 	playSceneReady_ = false;
@@ -313,6 +314,7 @@ bool EditorScene::Update(float deltaTime) {
 			              reason));
 		}
 
+		SynchronizePlayScene();
 		if (showMotionTrail_) {
 			motionTrail_.Record(playMode_.GetSession());
 		} else {
@@ -377,6 +379,7 @@ bool EditorScene::Update(float deltaTime) {
 			              reason));
 		}
 
+		SynchronizePlayScene();
 		if (showMotionTrail_) {
 			motionTrail_.Record(playMode_.GetSession());
 		} else {
@@ -5095,6 +5098,8 @@ bool EditorScene::UpdatePlaySceneView(float deltaTime, EditorAction action,
 }
 
 void EditorScene::StopAndKeepSelectedTransforms() {
+	if (!playMode_.GetSession().IsInitialScene())
+		return;
 	if (!playMode_.IsPlaying() || !playSelectionActive_ ||
 	    playSelection_.GetCount() == 0) {
 		return;
@@ -5136,6 +5141,8 @@ void EditorScene::StopAndKeepSelectedTransforms() {
 }
 
 void EditorScene::StopAndSelectEditingObjects() {
+	if (!playMode_.GetSession().IsInitialScene())
+		return;
 	if (!playMode_.IsPlaying() || !playSelectionActive_ || IsBusy() ||
 	    playSelection_.GetCount() == 0) {
 		return;
@@ -5214,6 +5221,19 @@ void EditorScene::UpdatePlaySelectionFollow() {
 	}
 
 	followedPlayPosition_ = position;
+}
+
+void EditorScene::SynchronizePlayScene() {
+	if (!playMode_.IsPlaying()) {
+		playSceneRevision_ = 0;
+		return;
+	}
+	const auto revision = playMode_.GetSession().GetSceneRevision();
+	if (playSceneRevision_ != 0 && playSceneRevision_ != revision) {
+		ClearPlaySelection();
+		playSelectionActive_ = true;
+	}
+	playSceneRevision_ = revision;
 }
 
 void EditorScene::ClearPlaySelection() {

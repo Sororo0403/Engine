@@ -136,7 +136,7 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 		}
 
 		ui.EndDisabled();
-		ui.BeginDisabled(!canUseSelection);
+		ui.BeginDisabled(!canUseSelection || !session_.IsInitialScene());
 
 		if (ui.Button("Stop and Select in Editing Scene")) {
 			action = Action::STOP_AND_SELECT;
@@ -378,14 +378,23 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 	        : GameplayInput::ReadOrbit(
 	              input.GetMouse(), viewport_, ImGui::GetIO().WantTextInput,
 	              gamepadEnabled_ ? &input.GetGamepad() : nullptr);
+	const auto revision = session_.GetSceneRevision();
 	if (!session_.Update(seconds, controls, cameraControls)) {
+		lastUpdateError_ = session_.GetLastUpdateError();
 		return false;
 	}
 
-	if (!audioPlayer_.Update(session_.GetCameraPose(), session_.IsPaused(),
-	                         lastUpdateError_, nullptr,
-	                         session_.GetAudioActions()))
-		return false;
+	if (session_.GetSceneRevision() != revision) {
+		if (!audioPlayer_.Start(session_.GetCameraPose(), session_.IsPaused(),
+		                        lastUpdateError_, nullptr,
+		                        session_.GetAudioActions()))
+			return false;
+	} else {
+		if (!audioPlayer_.Update(session_.GetCameraPose(), session_.IsPaused(),
+		                         lastUpdateError_, nullptr,
+		                         session_.GetAudioActions()))
+			return false;
+	}
 
 	if (!visible_) {
 		return true;

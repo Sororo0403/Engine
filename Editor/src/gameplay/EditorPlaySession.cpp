@@ -63,6 +63,7 @@ bool EditorPlaySession::Start(const Scene &scene, std::string &error,
 		}
 
 		initialScene_ = std::move(snapshot);
+		initialSceneRevision_ = simulation_.GetSceneRevision();
 		initialFallback_ = fallbackPose;
 		clock_.Reset();
 		elapsedSeconds_ = 0.0;
@@ -87,6 +88,7 @@ bool EditorPlaySession::Restart(std::string &error) {
 		return false;
 	}
 
+	initialSceneRevision_ = simulation_.GetSceneRevision();
 	const bool paused = clock_.IsPaused();
 	const auto speed = clock_.GetTimeScale();
 	clock_.Reset();
@@ -107,6 +109,7 @@ bool EditorPlaySession::Restart(std::string &error) {
 void EditorPlaySession::Stop() {
 	simulation_.Stop();
 	initialScene_.reset();
+	initialSceneRevision_ = 0;
 	initialFallback_ = {};
 	clock_.Reset();
 	elapsedSeconds_ = 0.0;
@@ -160,10 +163,13 @@ bool EditorPlaySession::Update(float seconds, const CharacterInput &input,
 		return true;
 	}
 
+	const auto revision = simulation_.GetSceneRevision();
 	if (!simulation_.Update(*time, input, cameraInput)) {
 		return false;
 	}
 
+	if (simulation_.GetSceneRevision() != revision)
+		triggerRecordCount_ = 0;
 	if (*time > 0.0f) {
 		elapsedSeconds_ += static_cast<double>(*time);
 		++simulationFrameCount_;

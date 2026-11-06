@@ -1,4 +1,6 @@
 #include "gameplay/TriggerActionsInspector.h"
+#include "assets/AssetDragDrop.h"
+#include "platform/windows/PathUtils.h"
 
 #include "graphics/ui/ImGuiSystem.h"
 #include "history/EditorHistory.h"
@@ -44,6 +46,8 @@ const char *OperationLabel(TriggerAction::Operation operation) {
 		return "Stop Audio";
 	case TriggerAction::Operation::TELEPORT:
 		return "Teleport";
+	case TriggerAction::Operation::LOAD_SCENE:
+		return "Load Scene";
 	}
 	return "Invalid";
 }
@@ -66,9 +70,10 @@ const char *EventLabel(TriggerAction::Event event) {
 }
 } // namespace
 
-bool TriggerActionsInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
-                                   SceneObjectId id, SceneObject &object,
-                                   EditorHistory &history) const {
+bool TriggerActionsInspector::Draw(
+    const ImGuiSystem &ui, const Scene &scene, SceneObjectId id,
+    SceneObject &object, EditorHistory &history,
+    std::span<const std::filesystem::path> scenes) const {
 	if (!object.triggerActions || !ui.CollapsingHeader("Trigger Actions")) {
 		return false;
 	}
@@ -98,27 +103,32 @@ bool TriggerActionsInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 				}
 				ImGui::EndCombo();
 			}
-			const auto target = TargetLabel(scene, action.target);
-			if (ImGui::BeginCombo("Target", target.c_str())) {
-				if (ImGui::Selectable("None", action.target == 0) &&
-				    action.target != 0) {
-					action.target = 0;
-					changed = true;
-				}
-				for (const auto &[targetId, candidate] : scene.GetObjects()) {
-					if (action.IsAudioOperation() && !candidate.audioSource) {
-						continue;
-					}
-					const auto label = TargetLabel(scene, targetId);
-					if (ImGui::Selectable(label.c_str(),
-					                      action.target == targetId) &&
-					    action.target != targetId) {
-						action.target = targetId;
+			if (action.operation != TriggerAction::Operation::LOAD_SCENE) {
+				const auto target = TargetLabel(scene, action.target);
+				if (ImGui::BeginCombo("Target", target.c_str())) {
+					if (ImGui::Selectable("None", action.target == 0) &&
+					    action.target != 0) {
+						action.target = 0;
 						changed = true;
 					}
+					for (const auto &[targetId, candidate] :
+					     scene.GetObjects()) {
+						if (action.IsAudioOperation() &&
+						    !candidate.audioSource) {
+							continue;
+						}
+						const auto label = TargetLabel(scene, targetId);
+						if (ImGui::Selectable(label.c_str(),
+						                      action.target == targetId) &&
+						    action.target != targetId) {
+							action.target = targetId;
+							changed = true;
+						}
+					}
+					ImGui::EndCombo();
 				}
-				ImGui::EndCombo();
 			}
+
 			if (ImGui::BeginCombo("Operation",
 			                      OperationLabel(action.operation))) {
 				for (const auto operation :
@@ -127,7 +137,8 @@ bool TriggerActionsInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 				                TriggerAction::Operation::TOGGLE,
 				                TriggerAction::Operation::PLAY_AUDIO,
 				                TriggerAction::Operation::STOP_AUDIO,
-				                TriggerAction::Operation::TELEPORT}) {
+				                TriggerAction::Operation::TELEPORT,
+				                TriggerAction::Operation::LOAD_SCENE}) {
 					if (ImGui::Selectable(OperationLabel(operation),
 					                      action.operation == operation) &&
 					    action.operation != operation) {
@@ -160,7 +171,37 @@ bool TriggerActionsInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 				}
 			}
 
-			changed |= ImGui::Checkbox("Once per Play", &action.once);
+			if (action.operation == TriggerAction::Operation::LOAD_SCENE) {
+				const auto label =
+				    action.scenePath.empty()
+				        ? "None"
+				        : PathUtils::ToUtf8(action.scenePath.filename());
+				if (ImGui::BeginCombo("Destination Scene", label.c_str())) {
+					if (ImGui::Selectable("None", action.scenePath.empty())) {
+						changed |= !action.scenePath.empty();
+						action.scenePath.clear();
+					}
+					for (const auto &path : scenes) {
+						if (ImGui::Selectable(PathUtils::ToUtf8(path).c_str(),
+						                      path == action.scenePath)) {
+							changed |= path != action.scenePath;
+							action.scenePath = path;
+						}
+					}
+					ImGui::EndCombo();
+				}
+				ImGui::Button("Drop Scene Asset");
+				if (const auto path =
+				        AssetDragDrop::AcceptTarget(AssetDragDrop::Kind::SCENE);
+				    !path.empty() && path != action.scenePath) {
+					action.scenePath = path;
+					changed = true;
+				}
+				if (!action.scenePath.empty() && ImGui::IsItemHovered())
+					ImGui::SetTooltip(
+					    "%s", PathUtils::ToUtf8(action.scenePath).c_str());
+			}
+			changed |= ImGui::Checkbox("Once per Scene", &action.once);
 			ui.BeginDisabled(i == 0);
 			if (ImGui::SmallButton("Move Up")) {
 				move = std::pair{i, i - 1};
@@ -215,6 +256,8 @@ void TriggerActionsInspector::DrawReadOnly(const ImGuiSystem &ui,
 		    "Action {}: {} / {} / {} / Once: {}", i + 1,
 		    EventLabel(action.event), TargetLabel(scene, action.target),
 		    OperationLabel(action.operation), action.once ? "Yes" : "No"));
+		if (action.operation == TriggerAction::Operation::LOAD_SCENE)
+			ui.Text("Scene: " + PathUtils::ToUtf8(action.scenePath));
 		if (action.operation == TriggerAction::Operation::TELEPORT) {
 			ui.Text("Destination: " + TargetLabel(scene, action.destination));
 		}

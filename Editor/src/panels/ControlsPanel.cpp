@@ -1813,6 +1813,21 @@ void ControlsPanel::Draw() {
 	         "Drop to Ground still uses world Y=0; position snapping uses its "
 	         "existing world-origin intervals. Restore Defaults resets the "
 	         "height to zero."},
+	        {"Load Scene",
+	         "Use Trigger Actions > Load Scene to choose a saved scene from "
+	         "Assets or drop a scene asset. Enter, Exit and Interact "
+	         "conditions use the existing Trigger rules. This operation needs "
+	         "no object target. The last request in action order is used; "
+	         "loading runs on the next positive game update, once per frame, "
+	         "so cycles cannot recurse. Pause holds requests; Step may load "
+	         "one scene. Missing or invalid scene data is reported instead of "
+	         "opening a partial scene. Restart returns to the Play-start "
+	         "snapshot, and Stop leaves the editing document unchanged. "
+	         "Selection, trails and audio are reset on scene changes; carrying "
+	         "runtime Transforms back is available only in the initial scene. "
+	         "Game output includes every configured reachable scene and its "
+	         "assets, including inactive references and cycles, up to 256 "
+	         "scenes. Imported games retain the same links."},
 	        {"Motion Path",
 	         "Add Motion Path in Inspector to move an object along offsets "
 	         "from its Play-start local position. The first point stays at "

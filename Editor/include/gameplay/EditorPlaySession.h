@@ -91,6 +91,23 @@ class EditorPlaySession {
 	bool IsPlaying() const;
 
 	/// <summary>
+	/// 再生中の物体IDの所属を識別する値を取得する
+	/// </summary>
+	/// <returns>開始・再実行・遷移のたびに増える値</returns>
+	std::uint64_t GetSceneRevision() const {
+		return simulation_.GetSceneRevision();
+	}
+
+	/// <summary>
+	/// Play開始時の編集シーンと同じ物体IDの集合を使用しているか確認する
+	/// </summary>
+	/// <returns>true:開始シーンを再生中 false:停止中または遷移後</returns>
+	bool IsInitialScene() const {
+		return IsPlaying() &&
+		       simulation_.GetSceneRevision() == initialSceneRevision_;
+	}
+
+	/// <summary>
 	/// 一時停止状態を取得する
 	/// </summary>
 	/// <returns>true:再生中かつ一時停止 false:通常再生または停止中</returns>
@@ -184,6 +201,7 @@ class EditorPlaySession {
 	double elapsedSeconds_ = 0.0;
 	std::uint64_t simulationFrameCount_ = 0;
 	bool firstFrame_ = false;
+	std::uint64_t initialSceneRevision_ = 0;
 	std::array<TriggerRecord, kMaximumTriggerRecords> triggerRecords_{};
 	std::size_t triggerRecordCount_ = 0;
 };

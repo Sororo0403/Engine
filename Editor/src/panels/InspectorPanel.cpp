@@ -6,6 +6,7 @@
 #include "lighting/SpotLightInspector.h"
 #include "scene/SceneActivity.h"
 
+#include "assets/AssetDatabase.h"
 #include "assets/AssetDragDrop.h"
 #include "camera/CameraInspector.h"
 #include "gameplay/GameplayInspector.h"
@@ -599,8 +600,10 @@ bool InspectorPanel::Draw(
 	changed |=
 	    SpotLightInspector{}.Draw(ui, inspectedObjectId, *object, history);
 
-	changed |= TriggerActionsInspector{}.Draw(ui, scene, inspectedObjectId,
-	                                          *object, history);
+	changed |= TriggerActionsInspector{}.Draw(
+	    ui, scene, inspectedObjectId, *object, history,
+	    assets ? std::span<const std::filesystem::path>(assets->GetScenes())
+	           : std::span<const std::filesystem::path>{});
 
 	CameraInspector::Request cameraRequest;
 	changed |= CameraInspector{}.Draw(ui, inspectedObjectId, *object, history,
