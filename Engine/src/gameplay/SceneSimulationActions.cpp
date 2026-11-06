@@ -72,18 +72,37 @@ void SceneSimulation::QueueActionSignals(
 			    object->collider && object->collider->isTrigger &&
 			    object->triggerActions &&
 			    !object->triggerActions->actions.empty()) {
-				signals.push_back({id, event});
+				signals.push_back({id, event.type == TriggerEvent::Type::ENTER
+				                           ? TriggerAction::Event::ENTER
+				                           : TriggerAction::Event::EXIT});
 			}
 		}
 	}
 }
 
 bool SceneSimulation::ApplyTriggerActions(std::string &error,
-                                          SceneObjectId *invalidObject) {
+                                          SceneObjectId *invalidObject,
+                                          bool interactPressed) {
 	error.clear();
 	auto signals = std::move(pendingActionSignals_);
 	pendingActionSignals_.clear();
 	QueueActionSignals(frameEvents_, signals);
+	if (interactPressed && character_ != 0) {
+		// 通過経路ではなく現在の接触を使い、床や他の物体の重なりからは操作しない。
+		for (const auto &contact : triggers_.GetContacts()) {
+			const auto receiver = contact.first == character_ ? contact.second
+			                      : contact.second == character_ ? contact.first
+			                                                     : 0;
+			const auto *object = scene_.FindObject(receiver);
+			if (object && SceneActivity::IsActive(scene_, receiver) &&
+			    object->collider && object->collider->isTrigger &&
+			    object->triggerActions &&
+			    !object->triggerActions->actions.empty()) {
+				signals.push_back({receiver, TriggerAction::Event::INTERACT});
+			}
+		}
+	}
+
 	auto fired = firedActions_;
 	std::map<SceneObjectId, bool> requested;
 	std::vector<SceneAudioAction> audio;
@@ -99,7 +118,7 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 		for (std::size_t i = 0; i < actions.size(); ++i) {
 			const auto &action = actions[i];
 			const auto key = std::pair{signal.receiver, i};
-			if (action.event != signal.event.type ||
+			if (action.event != signal.event ||
 			    (action.once && fired.contains(key))) {
 				continue;
 			}

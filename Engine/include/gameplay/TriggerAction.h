@@ -1,9 +1,9 @@
 #pragma once
 
-#include "physics/TriggerEvent.h"
+#include "scene/SceneObjectId.h"
 
 /// <summary>
-/// Triggerの進入・退出に応じて、対象物体の有効設定または音声の再生、瞬間移動を操作する
+/// Triggerの進入・退出、または範囲内での操作入力に応じて、対象物体の有効設定または音声の再生、瞬間移動を操作する
 /// </summary>
 struct TriggerAction {
 	/// <summary>
@@ -18,7 +18,12 @@ struct TriggerAction {
 		TELEPORT
 	};
 
-	TriggerEvent::Type event = TriggerEvent::Type::ENTER;
+	/// <summary>
+	/// 物理的な接触イベントと、範囲内で押した操作入力を区別する実行条件
+	/// </summary>
+	enum class Event { ENTER, EXIT, INTERACT };
+
+	Event event = Event::ENTER;
 	SceneObjectId target = 0;
 	Operation operation = Operation::ENABLE;
 	bool once = false;
@@ -30,8 +35,8 @@ struct TriggerAction {
 	/// </summary>
 	/// <returns>true:有効 false:未対応のイベントまたは操作</returns>
 	bool IsValid() const {
-		return (event == TriggerEvent::Type::ENTER ||
-		        event == TriggerEvent::Type::EXIT) &&
+		return (event == Event::ENTER || event == Event::EXIT ||
+		        event == Event::INTERACT) &&
 		       (operation == Operation::ENABLE ||
 		        operation == Operation::DISABLE ||
 		        operation == Operation::TOGGLE || IsAudioOperation() ||

@@ -387,9 +387,11 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 					        ? "stopAudio"
 					        : "teleport";
 					actions.push_back(
-					    {{"event", action.event == TriggerEvent::Type::ENTER
+					    {{"event", action.event == TriggerAction::Event::ENTER
 					                   ? "enter"
-					                   : "exit"},
+					               : action.event == TriggerAction::Event::EXIT
+					                   ? "exit"
+					                   : "interact"},
 					     {"target", action.target},
 					     {"operation", operation},
 					     {"once", action.once},
@@ -758,7 +760,8 @@ bool ApplySceneDocument(Scene &scene, const Json &document) {
 					const auto event = value.at("event").get<std::string>();
 					const auto operation =
 					    value.at("operation").get<std::string>();
-					if ((event != "enter" && event != "exit") ||
+					if ((event != "enter" && event != "exit" &&
+					     !(version >= 25 && event == "interact")) ||
 					    (operation != "enable" && operation != "disable" &&
 					     operation != "toggle" &&
 					     !(version >= 21 && (operation == "playAudio" ||
@@ -772,8 +775,9 @@ bool ApplySceneDocument(Scene &scene, const Json &document) {
 						    "Trigger Actionsの操作設定が無効です。");
 					}
 					component.actions.push_back(
-					    {event == "enter" ? TriggerEvent::Type::ENTER
-					                      : TriggerEvent::Type::EXIT,
+					    {event == "enter"  ? TriggerAction::Event::ENTER
+					     : event == "exit" ? TriggerAction::Event::EXIT
+					                       : TriggerAction::Event::INTERACT,
 					     value.at("target").get<SceneObjectId>(),
 					     operation == "enable"
 					         ? TriggerAction::Operation::ENABLE

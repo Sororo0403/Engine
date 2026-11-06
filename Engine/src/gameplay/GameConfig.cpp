@@ -164,6 +164,10 @@ bool GameConfig::Deserialize(std::string_view text, std::string &error) {
 		    PathUtils::FromUtf8(data.at("scene").get<std::string>());
 		if (data.at("version") >= 2) {
 			for (const auto &action : GameInputBindings::kActions) {
+				if (data.at("version") < 6 &&
+				    action.member == &GameInputBindings::interact) {
+					continue;
+				}
 				const auto key = GameInputBindings::FromName(
 				    data.at("input").at(action.name).get<std::string>());
 
@@ -172,6 +176,24 @@ bool GameConfig::Deserialize(std::string_view text, std::string &error) {
 				}
 
 				candidate.input.*action.member = *key;
+			}
+		}
+
+		if (data.at("version") < 6 && !candidate.input.IsValid()) {
+			// 旧5操作は変更せず、新しい操作だけを未使用の対応キーへ割り当てる。
+			for (const auto key :
+			     std::array{Key::E, Key::F, Key::Q, Key::G, Key::R, Key::T}) {
+				bool used = false;
+				for (const auto &action : GameInputBindings::kActions) {
+					if (action.member != &GameInputBindings::interact &&
+					    candidate.input.*action.member == key) {
+						used = true;
+					}
+				}
+				if (!used) {
+					candidate.input.interact = key;
+					break;
+				}
 			}
 		}
 

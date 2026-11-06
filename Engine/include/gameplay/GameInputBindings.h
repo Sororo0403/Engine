@@ -6,7 +6,7 @@
 #include <string_view>
 
 /// <summary>
-/// 移動とジャンプに割り当てるキー。EditorのPlayと出力ゲームで共有する
+/// 移動・ジャンプ・操作に割り当てるキー。EditorのPlayと出力ゲームで共有する
 /// </summary>
 struct GameInputBindings {
 	Key forward = Key::W;
@@ -14,6 +14,7 @@ struct GameInputBindings {
 	Key left = Key::A;
 	Key right = Key::D;
 	Key jump = Key::SPACE;
+	Key interact = Key::E;
 
 	/// <summary>
 	/// 設定ファイルで使用するキー名と共通キーの対応
@@ -47,12 +48,13 @@ struct GameInputBindings {
 	    {Key::SPACE, "Space"}, {Key::LEFT, "Left"}, {Key::RIGHT, "Right"},
 	    {Key::UP, "Up"},       {Key::DOWN, "Down"},
 	}};
-	static constexpr std::array<Action, 5> kActions{
+	static constexpr std::array<Action, 6> kActions{
 	    {{"forward", &GameInputBindings::forward},
 	     {"backward", &GameInputBindings::backward},
 	     {"left", &GameInputBindings::left},
 	     {"right", &GameInputBindings::right},
-	     {"jump", &GameInputBindings::jump}}};
+	     {"jump", &GameInputBindings::jump},
+	     {"interact", &GameInputBindings::interact}}};
 
 	/// <summary>
 	/// 設定ファイルで使用するキー名を取得する

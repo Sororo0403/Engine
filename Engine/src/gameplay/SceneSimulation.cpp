@@ -377,7 +377,8 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 		const auto events = working.triggers_.GetEvents();
 		working.frameEvents_.assign(events.begin(), events.end());
 		std::string error;
-		if (!working.ApplyTriggerActions(error)) {
+		if (!working.ApplyTriggerActions(error, nullptr,
+		                                 input.interactPressed)) {
 			lastUpdateError_ = std::move(error);
 			return false;
 		}
