@@ -1,5 +1,6 @@
 #pragma once
 
+#include "scene/SceneAudioAction.h"
 #include "scene/SceneObjectId.h"
 #include <cstddef>
 #include <filesystem>
@@ -41,7 +42,7 @@ class LuaScript {
 	/// <summary>
 	/// 公開するスクリプトAPIの版。Runtimeの出力互換性を照合する
 	/// </summary>
-	static constexpr int kApiVersion = 5;
+	static constexpr int kApiVersion = 6;
 	static constexpr std::size_t kMaximumSourceBytes = 256 * 1024;
 	static constexpr std::size_t kMaximumBytecodeBytes = 1024 * 1024;
 	static constexpr std::size_t kMaximumStateBytes = 64 * 1024;
@@ -52,6 +53,7 @@ class LuaScript {
 	static constexpr int kMaximumPhysicsOperations = 128;
 	static constexpr int kMaximumInstantiations = 16;
 	static constexpr int kMaximumDestructions = 64;
+	static constexpr int kMaximumAudioOperations = 128;
 	static constexpr int kHookInterval = 100;
 	static constexpr std::size_t kMaximumLogBytes = 1024;
 
@@ -115,6 +117,8 @@ class LuaScript {
 	/// <param name="remainingSpawnedObjects">指定時は生成する根と子孫の残り総数</param>
 	/// <param name="pendingDestructions">指定時は全コールバック成功後に削除する根の候補を追加する。呼び出し側が一括反映する</param>
 	/// <param name="remainingDestructions">指定時はフレーム全体で共有する残り削除要求回数</param>
+	/// <param name="audioActions">指定時は候補へ追加する音声要求。全処理成功後に呼び出し側で確定する</param>
+	/// <param name="remainingAudioOperations">指定時はフレームで共有する残り音声API回数</param>
 	/// <returns>true:成功またはコールバックなし false:コード・API・状態・実行制限が無効</returns>
 	static bool
 	Invoke(const LuaScriptProgram &program, std::string_view callback,
@@ -128,5 +132,7 @@ class LuaScript {
 	       int *remainingInstantiations = nullptr,
 	       std::size_t *remainingSpawnedObjects = nullptr,
 	       std::vector<SceneObjectId> *pendingDestructions = nullptr,
-	       int *remainingDestructions = nullptr);
+	       int *remainingDestructions = nullptr,
+	       std::vector<SceneAudioAction> *audioActions = nullptr,
+	       int *remainingAudioOperations = nullptr);
 };

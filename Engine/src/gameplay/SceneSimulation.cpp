@@ -434,6 +434,7 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 		}
 		SceneSimulation working;
 		working.CopyFrom(*this);
+		working.audioActions_.clear();
 		if (audioRevision_ == (std::numeric_limits<std::uint64_t>::max)()) {
 			lastUpdateError_ =
 			    "The simulation audio revision limit was reached.";

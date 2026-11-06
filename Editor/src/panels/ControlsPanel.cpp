@@ -1988,6 +1988,21 @@ void ControlsPanel::Draw() {
 	         "calls per callback, 32 per step, 1024 generated objects per step "
 	         "and 4096 scene objects. Any callback, physics or preparation "
 	         "failure restores the entire simulation step."},
+	        {"Audio Scripts",
+	         "On an object with Audio Source, call play_audio() to restart "
+	         "its sound from the beginning, or stop_audio() to stop it. Both "
+	         "return false for an inactive or unassigned source. Use "
+	         "self:reference(\"sound\") to control another assigned source. "
+	         "get_audio_volume() reads its volume; set_audio_volume(value) "
+	         "accepts 0 to 4 and preserves playback position and manual stop. "
+	         "Calls are limited to 128 per callback and 1024 per step. "
+	         "Commands "
+	         "only reach audio after the full simulation succeeds. The last "
+	         "play/stop command for each source wins. Normal steps run Trigger "
+	         "Actions before Lua; at Play start, Lua start runs before initial "
+	         "Trigger Actions. Deleting a source discards its requests. Pause "
+	         "keeps audio paused; Step can queue a paused sound once and "
+	         "Restart restores the authored volume and startup behavior."},
 	        {"Destroying Objects",
 	         "Inside a Lua callback call object:destroy(). It queues the "
 	         "root and its descendants until all callbacks in that step "

@@ -26,6 +26,7 @@ class SceneScripts {
 	static constexpr int kFramePhysicsOperations = 1024;
 	static constexpr int kFrameInstantiations = 32;
 	static constexpr int kFrameDestructions = 256;
+	static constexpr int kFrameAudioOperations = 1024;
 	static constexpr std::size_t kFrameSpawnedObjects = 1024;
 	static constexpr float kMaximumFrameSeconds = 0.1f;
 
@@ -53,13 +54,15 @@ class SceneScripts {
 	/// <param name="uiClicks">今回クリックされたButtonのID。正の時間でだけclickを通知する</param>
 	/// <param name="physics">指定時はSceneと同じトランザクションの物理候補。失敗時は呼び出し側で破棄する</param>
 	/// <param name="collisions">今回の通常接触。正の時間でTriggerの後、clickの前に両物体へ通知する</param>
+	/// <param name="audioActions">指定時は成功した全コールバックの音声要求を末尾へ追加する。削除した音源への要求は取り除く</param>
 	/// <returns>true:実行成功 false:コールバック・状態・制限が無効。呼び出し側は候補を破棄する</returns>
 	bool Run(Scene &scene, float seconds, const CharacterInput &input,
 	         std::span<const TriggerEvent> events, bool startOnly,
 	         std::string &error, SceneObjectId *invalidObject,
 	         std::span<const SceneObjectId> uiClicks = {},
 	         ScenePhysics *physics = nullptr,
-	         std::span<const CollisionEvent> collisions = {});
+	         std::span<const CollisionEvent> collisions = {},
+	         std::vector<SceneAudioAction> *audioActions = nullptr);
 
 	/// <summary>
 	/// スクリプトが生成した接触を再帰実行せず、次の正の時間の更新へ送る

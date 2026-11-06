@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gameplay/CharacterInput.h"
+#include "scene/SceneAudioAction.h"
 #include "scene/SceneObjectId.h"
 #include <string>
 #include <string_view>
@@ -26,6 +27,9 @@ struct Call {
 	const ScenePrefabs *prefabs = nullptr;
 	std::vector<SceneObjectId> *pendingDestructions = nullptr;
 	int destructions = 0;
+	std::vector<SceneAudioAction> *audioActions = nullptr;
+	int audioOperations = 0;
+	int *remainingAudioOperations = nullptr;
 	int *remainingDestructions = nullptr;
 	int instantiations = 0;
 	int *remainingInstantiations = nullptr;
@@ -67,6 +71,12 @@ void AddUIMethods(lua_State *state);
 /// </summary>
 /// <param name="state">保護呼び出し内のLua状態</param>
 void AddPhysicsMethods(lua_State *state);
+
+/// <summary>
+/// 直前の物体メソッドテーブルへ、Audio Sourceの再生・停止・音量操作を登録する
+/// </summary>
+/// <param name="state">保護呼び出し内のLua状態</param>
+void AddAudioMethods(lua_State *state);
 
 /// <summary>
 /// 直前の物体メソッドテーブルへ、名前付きPrefabの生成を登録する

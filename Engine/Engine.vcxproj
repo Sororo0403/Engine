@@ -2252,4 +2252,5 @@ exit /b 0</Command>
     <ClInclude Include="include\scene\SceneDestruction.h" />
     <ClCompile Include="src\scene\SceneDestruction.cpp" />
   </ItemGroup>
+  <ItemGroup><ClCompile Include="src\scripting\LuaAudioBindings.cpp" /></ItemGroup>
 </Project>

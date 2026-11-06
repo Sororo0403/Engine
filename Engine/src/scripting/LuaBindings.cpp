@@ -445,6 +445,7 @@ int LuaInternal::OpenEnvironment(lua_State *state, Call &call) {
 	Method(state, "set_scale", Op::SET_SCALE);
 	LuaInternal::AddUIMethods(state);
 	LuaInternal::AddPhysicsMethods(state);
+	LuaInternal::AddAudioMethods(state);
 	LuaInternal::AddPrefabMethods(state);
 	lua_setfield(state, -2, "__index");
 	lua_pop(state, 1);

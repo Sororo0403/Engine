@@ -122,7 +122,7 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 
 	auto fired = firedActions_;
 	std::map<SceneObjectId, bool> requested;
-	std::vector<SceneAudioAction> audio;
+	auto audio = audioActions_;
 	std::map<SceneObjectId, SceneObjectId> destinations;
 	std::filesystem::path requestedScene;
 	for (const auto &signal : signals) {

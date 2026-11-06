@@ -310,18 +310,17 @@ bool LuaScript::NormalizeState(std::string_view source, std::string &normalized,
 	}
 }
 
-bool LuaScript::Invoke(const LuaScriptProgram &program,
-                       std::string_view callback, Scene &scene,
-                       SceneObjectId self, std::string &state, float seconds,
-                       const CharacterInput &input, SceneObjectId other,
-                       std::vector<std::string> &logs, std::string &error,
-                       int *remainingInstructions, ScenePhysics *physics,
-                       int *remainingPhysicsOperations,
-                       const ScenePrefabs *prefabs,
-                       int *remainingInstantiations,
-                       std::size_t *remainingSpawnedObjects,
-                       std::vector<SceneObjectId> *pendingDestructions,
-                       int *remainingDestructions) {
+bool LuaScript::Invoke(
+    const LuaScriptProgram &program, std::string_view callback, Scene &scene,
+    SceneObjectId self, std::string &state, float seconds,
+    const CharacterInput &input, SceneObjectId other,
+    std::vector<std::string> &logs, std::string &error,
+    int *remainingInstructions, ScenePhysics *physics,
+    int *remainingPhysicsOperations, const ScenePrefabs *prefabs,
+    int *remainingInstantiations, std::size_t *remainingSpawnedObjects,
+    std::vector<SceneObjectId> *pendingDestructions, int *remainingDestructions,
+    std::vector<SceneAudioAction> *audioActions,
+    int *remainingAudioOperations) {
 	try {
 		const char *name = Callback(callback);
 		if (!program || !name || !scene.Contains(self) ||
@@ -332,7 +331,8 @@ bool LuaScript::Invoke(const LuaScriptProgram &program,
 		    (remainingInstructions && *remainingInstructions < 0) ||
 		    (remainingPhysicsOperations && *remainingPhysicsOperations < 0) ||
 		    (remainingInstantiations && *remainingInstantiations < 0) ||
-		    (remainingDestructions && *remainingDestructions < 0))
+		    (remainingDestructions && *remainingDestructions < 0) ||
+		    (remainingAudioOperations && *remainingAudioOperations < 0))
 			throw std::runtime_error("Script callback arguments are invalid.");
 		std::string normalized;
 		if (!NormalizeState(state, normalized, error))
@@ -352,6 +352,8 @@ bool LuaScript::Invoke(const LuaScriptProgram &program,
 		call.remainingInstructions = remainingInstructions;
 		call.physics = physics;
 		call.remainingPhysicsOperations = remainingPhysicsOperations;
+		call.audioActions = audioActions;
+		call.remainingAudioOperations = remainingAudioOperations;
 		call.pendingDestructions = pendingDestructions;
 		call.remainingDestructions = remainingDestructions;
 		call.prefabs = prefabs;

@@ -2301,4 +2301,5 @@
       <Filter>src\scene</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup><ClCompile Include="src\scripting\LuaAudioBindings.cpp"><Filter>src\scripting</Filter></ClCompile></ItemGroup>
 </Project>

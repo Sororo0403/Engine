@@ -108,7 +108,8 @@ bool SceneScripts::Run(Scene &scene, float seconds, const CharacterInput &input,
                        std::string &error, SceneObjectId *invalidObject,
                        std::span<const SceneObjectId> uiClicks,
                        ScenePhysics *physics,
-                       std::span<const CollisionEvent> collisions) {
+                       std::span<const CollisionEvent> collisions,
+                       std::vector<SceneAudioAction> *audioActions) {
 	SceneObjectId current = 0;
 	try {
 		if (!std::isfinite(seconds) || seconds < 0)
@@ -117,6 +118,8 @@ bool SceneScripts::Run(Scene &scene, float seconds, const CharacterInput &input,
 		std::size_t callbacks = 0;
 		int budget = kFrameInstructions;
 		int physicsBudget = kFramePhysicsOperations;
+		int audioBudget = kFrameAudioOperations;
+		std::vector<SceneAudioAction> requestedAudio;
 		int destructionBudget = kFrameDestructions;
 		std::vector<SceneObjectId> pendingDestructions;
 		int spawnBudget = kFrameInstantiations;
@@ -140,7 +143,8 @@ bool SceneScripts::Run(Scene &scene, float seconds, const CharacterInput &input,
 			        (std::min)(seconds, kMaximumFrameSeconds), input, other,
 			        messages, error, &budget, physics, &physicsBudget,
 			        &prefabs_, &spawnBudget, &objectBudget,
-			        &pendingDestructions, &destructionBudget))
+			        &pendingDestructions, &destructionBudget,
+			        audioActions ? &requestedAudio : nullptr, &audioBudget))
 				throw std::runtime_error(std::format(
 				    "{} [{}]: {}", PathUtils::ToUtf8(instance.settings.asset),
 				    callback, error));
@@ -213,6 +217,16 @@ bool SceneScripts::Run(Scene &scene, float seconds, const CharacterInput &input,
 		}
 		if (!SceneDestruction::Apply(scene, pendingDestructions, error))
 			throw std::runtime_error(error);
+		if (audioActions) {
+			auto combined = *audioActions;
+			combined.insert(combined.end(), requestedAudio.begin(),
+			                requestedAudio.end());
+			std::erase_if(combined, [&](const auto &action) {
+				const auto *o = scene.FindObject(action.target);
+				return !o || !o->audioSource;
+			});
+			audioActions->swap(combined);
+		}
 		error.clear();
 		return true;
 	} catch (const std::exception &exception) {
