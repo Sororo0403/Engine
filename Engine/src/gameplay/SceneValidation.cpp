@@ -81,6 +81,12 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 			add(id, "Audio Source settings or WAV reference are invalid.");
 		}
 
+		if (object.motionPath && (!object.motionPath->IsValid() ||
+		                          object.character || object.followCamera)) {
+			add(id, "Motion Path requires valid points and cannot share an "
+			        "object with Character Controller or Follow Camera.");
+		}
+
 		if (object.colorTint && !object.colorTint->IsValid()) {
 			add(id, "Color Tint settings are invalid.");
 		}

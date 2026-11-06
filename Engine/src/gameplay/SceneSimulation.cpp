@@ -309,11 +309,15 @@ bool SceneSimulation::Configure(const Scene &source, std::string &error,
 		if (preserve ? !triggers.Update(working) : !triggers.Reset(working)) {
 			return fail(0, "Trigger world shapes or hierarchy are invalid.");
 		}
+		auto motion = motion_;
+		if (!motion.Configure(working, preserve))
+			return fail(0, "Motion Path settings are invalid.");
 		// 全候補が有効な場合だけ確定し、失敗時は再生シーンと実行状態をすべて保持する。
 		scene_.ReplaceObjects(working.GetObjects());
 		world_ = std::move(world);
 		triggers_ = std::move(triggers);
 		controller_ = controller;
+		motion_ = std::move(motion);
 		character_ = character;
 		camera_ = camera;
 		updateOrder_ = std::move(order);
@@ -337,6 +341,7 @@ bool SceneSimulation::Configure(const Scene &source, std::string &error,
 
 void SceneSimulation::Stop() {
 	playing_ = false;
+	motion_ = SceneMotion{};
 	frameEvents_.clear();
 	audioActions_.clear();
 	pendingActionSignals_.clear();
@@ -381,8 +386,6 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 			                   "and camera settings.";
 			return false;
 		}
-		const auto events = working.triggers_.GetEvents();
-		working.frameEvents_.assign(events.begin(), events.end());
 		std::string error;
 		if (!working.ApplyTriggerActions(error, nullptr,
 		                                 input.interactPressed)) {
@@ -407,6 +410,15 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 		Scene working;
 		working.ReplaceObjects(scene_.GetObjects());
 		auto next = controller_;
+		auto motion = motion_;
+		std::optional<TriggerWorld> triggers;
+		std::vector<TriggerEvent> motionEvents;
+		if (seconds > 0)
+			triggers = triggers_;
+		if (!motion.Advance(working, seconds, character_ ? &next : nullptr,
+		                    character_, triggers ? &*triggers : nullptr,
+		                    triggers ? &motionEvents : nullptr))
+			return false;
 		auto follows = followPoses_;
 		auto orbits = orbitStates_;
 		if (const auto found = orbits.find(camera_);
@@ -515,11 +527,9 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 			    !next.SynchronizeWorldMatrix(transform.matrix, world))
 				return false;
 		}
-		std::optional<TriggerWorld> triggers;
 		// 落下復帰では主人公と子孫の瞬間移動経路を検知しない。
 		// 終点でのEnterと、開始時の接触に対するExitは通常どおり生成する。
 		if (seconds > 0) {
-			triggers = triggers_;
 			if (!triggers->Update(
 			        working, respawned ? std::span<const SceneObjectId>{ignored}
 			                           : std::span<const SceneObjectId>{})) {
@@ -528,9 +538,19 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 		}
 		scene_.ReplaceObjects(working.GetObjects());
 		if (triggers) {
+			for (const auto &event : triggers->GetEvents()) {
+				if (event.type == TriggerEvent::Type::STAY &&
+				    std::ranges::any_of(motionEvents, [&](const auto &prior) {
+					    return prior.contact == event.contact;
+				    }))
+					continue;
+				motionEvents.push_back(event);
+			}
+			frameEvents_ = std::move(motionEvents);
 			triggers_ = std::move(*triggers);
 		}
 		controller_ = next;
+		motion_ = std::move(motion);
 		world_ = std::move(world);
 		followPoses_ = std::move(follows);
 		orbitStates_ = std::move(orbits);

@@ -3,6 +3,7 @@
 #include "gameplay/CharacterController.h"
 #include "gameplay/CharacterRuntimeState.h"
 #include "gameplay/FollowCameraOrbit.h"
+#include "gameplay/SceneMotion.h"
 #include "graphics/camera/CameraPose.h"
 #include "physics/CollisionWorld.h"
 #include "physics/TriggerWorld.h"
@@ -228,6 +229,7 @@ class SceneSimulation {
 	CollisionWorld world_;
 	TriggerWorld triggers_;
 	CharacterController controller_;
+	SceneMotion motion_;
 	SceneObjectId character_ = 0, camera_ = 0;
 	std::vector<SceneObjectId> updateOrder_;
 	// 追従の補間状態はワールド座標で保持し、シーンにはローカル変形を反映する。

@@ -2,6 +2,7 @@
 
 #include "gameplay/CharacterSettings.h"
 #include "gameplay/FollowCameraSettings.h"
+#include "gameplay/MotionPathComponent.h"
 #include "gameplay/RespawnSettings.h"
 #include "gameplay/TriggerActionsComponent.h"
 #include "graphics/material/ColorTint.h"
@@ -61,6 +62,8 @@ struct SceneObject {
 	std::optional<AudioListenerComponent> audioListener;
 	// 保存・編集用のPrefab由来情報。ゲーム出力では通常の物体へ展開する
 	std::optional<PrefabLinkComponent> prefabLink;
+	// 開始位置を基準にしたローカル経路。Colliderがあれば移動床として使用する
+	std::optional<MotionPathComponent> motionPath;
 
 	/// <summary>
 	/// Meshに形状の参照が割り当てられているか確認する

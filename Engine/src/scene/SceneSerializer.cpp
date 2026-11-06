@@ -326,6 +326,7 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 			    (object.triggerActions && !object.triggerActions->IsValid()) ||
 			    (object.pointLight && !object.pointLight->IsValid()) ||
 			    (object.spotLight && !object.spotLight->IsValid()) ||
+			    (object.motionPath && !object.motionPath->IsValid()) ||
 			    (object.audioSource && !object.audioSource->IsValid())) {
 				throw std::runtime_error(
 				    "ゲーム用コンポーネントの設定が無効です。");
@@ -400,6 +401,19 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 				objects.back()["pointLight"] = {{"color", light.color},
 				                                {"intensity", light.intensity},
 				                                {"range", light.range}};
+			}
+
+			if (object.motionPath) {
+				const auto &path = *object.motionPath;
+				objects.back()["motionPath"] = {
+				    {"points", path.points},
+				    {"segmentSeconds", path.segmentSeconds},
+				    {"mode", path.mode == MotionPathComponent::Mode::ONCE
+				                 ? "once"
+				             : path.mode == MotionPathComponent::Mode::LOOP
+				                 ? "loop"
+				                 : "pingPong"},
+				    {"smooth", path.smooth}};
 			}
 
 			if (object.spotLight) {
@@ -699,6 +713,38 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 				                        light.at("range").get<float>()};
 			}
 
+			if (version >= 27 && item.contains("motionPath")) {
+				const auto &value = item.at("motionPath");
+				const auto &points = value.at("points");
+				if (!points.is_array() || points.size() < 2 ||
+				    points.size() > MotionPathComponent::kMaximumPoints ||
+				    !value.at("segmentSeconds").is_number() ||
+				    !value.at("smooth").is_boolean() ||
+				    !value.at("mode").is_string())
+					throw std::runtime_error("Motion Path fields are invalid.");
+				MotionPathComponent path;
+				path.points.clear();
+				for (const auto &point : points) {
+					const auto p = ReadFloat3(point);
+					path.points.push_back({p.x, p.y, p.z});
+				}
+				path.segmentSeconds = value.at("segmentSeconds").get<float>();
+				path.smooth = value.at("smooth").get<bool>();
+				const auto mode = value.at("mode").get<std::string>();
+				if (mode == "once")
+					path.mode = MotionPathComponent::Mode::ONCE;
+				else if (mode == "loop")
+					path.mode = MotionPathComponent::Mode::LOOP;
+				else if (mode == "pingPong")
+					path.mode = MotionPathComponent::Mode::PING_PONG;
+				else
+					throw std::runtime_error("Motion Path mode is invalid.");
+				if (!path.IsValid())
+					throw std::runtime_error(
+					    "Motion Path settings are invalid.");
+				object.motionPath = std::move(path);
+			}
+
 			if (version >= 22 && item.contains("spotLight")) {
 				const auto &light = item.at("spotLight");
 				for (const auto *field :
@@ -948,6 +994,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 			    (object.triggerActions && !object.triggerActions->IsValid()) ||
 			    (object.pointLight && !object.pointLight->IsValid()) ||
 			    (object.spotLight && !object.spotLight->IsValid()) ||
+			    (object.motionPath && !object.motionPath->IsValid()) ||
 			    (object.audioSource && !object.audioSource->IsValid())) {
 				throw std::runtime_error(
 				    "ゲーム用コンポーネントの設定が無効です。");

@@ -12,6 +12,7 @@ void SceneSimulation::CopyFrom(const SceneSimulation &source) {
 	world_ = source.world_;
 	triggers_ = source.triggers_;
 	controller_ = source.controller_;
+	motion_ = source.motion_;
 	character_ = source.character_;
 	camera_ = source.camera_;
 	updateOrder_ = source.updateOrder_;
@@ -38,6 +39,7 @@ void SceneSimulation::Adopt(SceneSimulation &source) {
 	world_ = std::move(source.world_);
 	triggers_ = std::move(source.triggers_);
 	controller_ = source.controller_;
+	motion_ = std::move(source.motion_);
 	character_ = source.character_;
 	camera_ = source.camera_;
 	updateOrder_ = std::move(source.updateOrder_);

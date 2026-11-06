@@ -414,4 +414,10 @@ exit /b 0</Command>
     <ClCompile Include="src\graphics\SpotLights.cpp" />
     <ClInclude Include="include\scene\SpotLightComponent.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\gameplay\MotionPathComponent.h" />
+    <ClInclude Include="include\gameplay\SceneMotion.h" />
+    <ClCompile Include="src\gameplay\MotionPathComponent.cpp" />
+    <ClCompile Include="src\gameplay\SceneMotion.cpp" />
+  </ItemGroup>
 </Project>

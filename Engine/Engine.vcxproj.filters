@@ -727,4 +727,18 @@
     <ClCompile Include="src\graphics\SpotLights.cpp"><Filter>src\graphics</Filter></ClCompile>
     <ClInclude Include="include\scene\SpotLightComponent.h"><Filter>include\scene</Filter></ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\gameplay\MotionPathComponent.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gameplay\SceneMotion.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
+    <ClCompile Include="src\gameplay\MotionPathComponent.cpp">
+      <Filter>src\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gameplay\SceneMotion.cpp">
+      <Filter>src\gameplay</Filter>
+    </ClCompile>
+  </ItemGroup>
 </Project>
