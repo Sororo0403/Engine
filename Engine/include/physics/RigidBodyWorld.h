@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "physics/AxisAlignedBox.h"
+#include "physics/CollisionContact.h"
 #include "physics/CollisionSweepResult.h"
 #include "physics/RigidBodyDescription.h"
 #include "physics/RigidBodyState.h"
@@ -8,6 +9,7 @@
 #include <optional>
 #include <span>
 #include <string>
+#include <vector>
 
 /// <summary>
 /// 箱の重力・回転・衝突を計算する。外部ライブラリの型は内部に隠す
@@ -132,6 +134,19 @@ class RigidBodyWorld {
 	      CollisionSweepResult &result,
 	      std::span<const SceneObjectId> ignored = {},
 	      const std::optional<CollisionFilter> &filter = std::nullopt) const;
+
+	/// <summary>
+	/// 休止状態に依存せず、現在の箱同士が接触している組を求める
+	/// </summary>
+	/// <param name="contacts">成功時だけ設定するID順の結果。Triggerは登録されていないため含まない</param>
+	/// <returns>true:検索成功 false:未作成・形状・件数が無効</returns>
+	bool FindContacts(std::vector<CollisionContact> &contacts) const;
+
+	/// <summary>
+	/// 最後の正の時間の物理更新中に接触した組を取得する
+	/// </summary>
+	/// <returns>次の変更操作まで有効。休止中の継続接触はFindContactsで調べる</returns>
+	std::span<const CollisionContact> GetFrameContacts() const;
 
   private:
 	/// <summary>

@@ -2227,4 +2227,10 @@ exit /b 0</Command>
     <ClCompile Include="src\physics\SceneRaycast.cpp" />
     <ClCompile Include="src\scripting\LuaRaycastBindings.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\physics\CollisionContact.h" />
+    <ClInclude Include="include\physics\CollisionEvent.h" />
+    <ClInclude Include="include\physics\CollisionEvents.h" />
+    <ClCompile Include="src\physics\CollisionEvents.cpp" />
+  </ItemGroup>
 </Project>

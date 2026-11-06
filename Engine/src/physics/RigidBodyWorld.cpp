@@ -2,6 +2,7 @@
 #include <Jolt/Jolt.h>
 
 #include "math/TransformUtils.h"
+#include "physics/CollisionEvents.h"
 #include "physics/RigidBodyWorld.h"
 #include <Jolt/Core/Factory.h>
 #include <Jolt/Core/JobSystemSingleThreaded.h>
@@ -11,6 +12,7 @@
 #include <Jolt/Physics/Body/BodyFilter.h>
 #include <Jolt/Physics/Body/BodyLock.h>
 #include <Jolt/Physics/Collision/CollisionCollectorImpl.h>
+#include <Jolt/Physics/Collision/ContactListener.h>
 #include <Jolt/Physics/Collision/GroupFilterTable.h>
 #include <Jolt/Physics/Collision/NarrowPhaseQuery.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
@@ -171,6 +173,52 @@ JPH::EMotionType Motion(const RigidBodyDescription &d) {
 	       : d.rigidBody->isKinematic            ? JPH::EMotionType::Kinematic
 	                                             : JPH::EMotionType::Dynamic;
 }
+
+/// <summary>
+/// 物理更新の途中の接触を収集する。Luaやロックを取るBodyInterfaceは呼ばない
+/// </summary>
+class Contacts final : public JPH::ContactListener {
+  public:
+	std::vector<CollisionContact> touched;
+	bool overflow = false;
+
+	Contacts() {
+		touched.reserve(CollisionEvents::kMaximumContacts);
+	}
+
+	/// <summary>
+	/// 同じ組は1フレームに一度だけ記録し、確保や例外を接触コールバックへ持ち込まない
+	/// </summary>
+	void Record(const JPH::Body &a, const JPH::Body &b,
+	            const JPH::ContactManifold &m) noexcept {
+		if (m.mPenetrationDepth < -0.000001f)
+			return;
+		const auto x = a.GetUserData(), y = b.GetUserData();
+		const CollisionContact pair{(std::min)(x, y), (std::max)(x, y)};
+		const auto position =
+		    std::lower_bound(touched.begin(), touched.end(), pair);
+		if (position != touched.end() && *position == pair)
+			return;
+		if (touched.size() == CollisionEvents::kMaximumContacts) {
+			overflow = true;
+			return;
+		}
+		touched.insert(position, pair);
+	}
+
+	void OnContactAdded(const JPH::Body &a, const JPH::Body &b,
+	                    const JPH::ContactManifold &m,
+	                    JPH::ContactSettings &) override {
+		Record(a, b, m);
+	}
+
+	void OnContactPersisted(const JPH::Body &a, const JPH::Body &b,
+	                        const JPH::ContactManifold &m,
+	                        JPH::ContactSettings &) override {
+		Record(a, b, m);
+	}
+};
+
 } // namespace
 
 /// <summary>
@@ -185,6 +233,7 @@ struct RigidBodyWorld::Impl {
 	std::vector<RigidBodyDescription> descriptions;
 	JPH::Ref<JPH::GroupFilterTable> group;
 	// PhysicsSystemより先に共有フィルターを用意し、後に解放する
+	Contacts contacts;
 	JPH::PhysicsSystem system;
 	JPH::TempAllocatorImplWithMallocFallback allocator{16 * 1024 * 1024};
 	JPH::JobSystemSingleThreaded jobs{2048};
@@ -198,6 +247,7 @@ struct RigidBodyWorld::Impl {
 		system.Init(static_cast<JPH::uint>(kMaximumBodies), 0, 8192, 8192,
 		            layers, broadFilter, layerFilter);
 		system.SetGravity({0, -9.8f, 0});
+		system.SetContactListener(&contacts);
 		if (!group) {
 			group = new JPH::GroupFilterTable(
 			    static_cast<JPH::uint>(descriptions.size()));
@@ -274,6 +324,7 @@ struct RigidBodyWorld::Impl {
 		saved.Rewind();
 		if (!copy->system.RestoreState(saved) || saved.IsFailed())
 			throw std::runtime_error("Could not restore rigid body state.");
+		copy->contacts.touched = contacts.touched;
 		return copy;
 	}
 
@@ -358,6 +409,9 @@ bool RigidBodyWorld::Update(float seconds, std::string &error) {
 		next->system.SaveState(saved);
 		if (saved.IsFailed())
 			throw std::runtime_error("Could not record rigid body state.");
+		auto previousContacts = next->contacts.touched;
+		next->contacts.touched.clear();
+		next->contacts.overflow = false;
 		try {
 			const float duration = (std::min)(seconds, kMaximumFrameSeconds);
 			const int steps =
@@ -368,6 +422,9 @@ bool RigidBodyWorld::Update(float seconds, std::string &error) {
 				    JPH::EPhysicsUpdateError::None)
 					throw std::runtime_error(
 					    "The physics contact limit was reached.");
+			if (next->contacts.overflow)
+				throw std::runtime_error(
+				    "The collision notification limit was reached.");
 			for (const auto &[id, body] : next->bodies) {
 				(void)body;
 				const auto state = next->State(id);
@@ -377,6 +434,9 @@ bool RigidBodyWorld::Update(float seconds, std::string &error) {
 					    "A rigid body moved outside the supported range.");
 			}
 		} catch (...) {
+			next->contacts.touched.assign(previousContacts.begin(),
+			                              previousContacts.end());
+			next->contacts.overflow = false;
 			saved.Rewind();
 			if (!next->system.RestoreState(saved) || saved.IsFailed())
 				throw std::runtime_error(
@@ -740,4 +800,56 @@ bool RigidBodyWorld::SetVelocityComponent(SceneObjectId id,
 		error = exception.what();
 		return false;
 	}
+}
+
+bool RigidBodyWorld::FindContacts(
+    std::vector<CollisionContact> &contacts) const {
+	try {
+		if (!impl_)
+			return false;
+		std::vector<CollisionContact> found;
+		for (const auto &[id, entry] : impl_->bodies) {
+			const auto &[body, index] = entry;
+			const auto &source = impl_->descriptions[index];
+			const auto &h = source.collider.halfExtents,
+			           &s = source.transform.scale;
+			JPH::BoxShape shape({h.x * s.x, h.y * s.y, h.z * s.z}, 0);
+			JPH::CollideShapeSettings settings;
+			settings.mCollisionTolerance = 0.000001f;
+			settings.mPenetrationTolerance = 0.000001f;
+			settings.mMaxSeparationDistance =
+			    CollisionEvents::kContactTolerance;
+			JPH::AllHitCollisionCollector<JPH::CollideShapeCollector> collector;
+			const std::optional<CollisionFilter> filter =
+			    source.collider.filter;
+			QueryBodies selected(impl_->bodies, impl_->descriptions, {&id, 1},
+			                     filter);
+			const auto matrix =
+			    impl_->system.GetBodyInterface().GetCenterOfMassTransform(body);
+			impl_->system.GetNarrowPhaseQuery().CollideShape(
+			    &shape, JPH::Vec3::sReplicate(1), matrix, settings,
+			    matrix.GetTranslation(), collector, {}, {}, selected);
+			for (const auto &hit : collector.mHits) {
+				const auto other =
+				    impl_->system.GetBodyInterface().GetUserData(hit.mBodyID2);
+				if (id >= other ||
+				    hit.mPenetrationDepth < -CollisionEvents::kContactTolerance)
+					continue;
+				if (found.size() >= CollisionEvents::kMaximumContacts)
+					return false;
+				found.push_back({id, other});
+			}
+		}
+		std::ranges::sort(found);
+		found.erase(std::unique(found.begin(), found.end()), found.end());
+		contacts.swap(found);
+		return true;
+	} catch (...) {
+		return false;
+	}
+}
+
+std::span<const CollisionContact> RigidBodyWorld::GetFrameContacts() const {
+	return impl_ ? std::span<const CollisionContact>{impl_->contacts.touched}
+	             : std::span<const CollisionContact>{};
 }

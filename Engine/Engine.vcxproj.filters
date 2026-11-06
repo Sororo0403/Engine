@@ -2258,4 +2258,18 @@
       <Filter>src\scripting</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\physics\CollisionContact.h">
+      <Filter>include\physics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\physics\CollisionEvent.h">
+      <Filter>include\physics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\physics\CollisionEvents.h">
+      <Filter>include\physics</Filter>
+    </ClInclude>
+    <ClCompile Include="src\physics\CollisionEvents.cpp">
+      <Filter>src\physics</Filter>
+    </ClCompile>
+  </ItemGroup>
 </Project>
