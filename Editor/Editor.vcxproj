@@ -446,4 +446,8 @@ exit /b 0</Command>
     <ClInclude Include="include\audio\AudioInspector.h" />
     <ClCompile Include="src\audio\AudioInspector.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\assets\AudioImporter.h" />
+    <ClCompile Include="src\assets\AudioImporter.cpp" />
+  </ItemGroup>
 </Project>

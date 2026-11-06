@@ -14,7 +14,8 @@ void FileDialog::Show(FileDialogMode mode,
                       const std::filesystem::path &initialPath,
                       FileDialogFilter filter) {
 	if (((filter == FileDialogFilter::IMAGE ||
-	      filter == FileDialogFilter::MODEL) &&
+	      filter == FileDialogFilter::MODEL ||
+	      filter == FileDialogFilter::AUDIO) &&
 	     mode != FileDialogMode::OPEN) ||
 	    (filter == FileDialogFilter::GAME_CONFIG &&
 	     mode == FileDialogMode::SELECT_DIRECTORY)) {
@@ -73,6 +74,7 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 	               : "Save Game Configuration###FileDialog")
 	    : filter_ == FileDialogFilter::MODEL ? "Open Model###FileDialog"
 	    : filter_ == FileDialogFilter::IMAGE ? "Open Image###FileDialog"
+	    : filter_ == FileDialogFilter::AUDIO ? "Open Audio###FileDialog"
 	    : mode_ == FileDialogMode::OPEN      ? "Open Scene###FileDialog"
 	    : mode_ == FileDialogMode::SAVE_COPY ? "Save Copy###FileDialog"
 	                                         : "Save Scene###FileDialog";
@@ -238,6 +240,8 @@ void FileDialog::Refresh() {
 				                ? PathUtils::IsModelFile(entry.path())
 				            : filter_ == FileDialogFilter::IMAGE
 				                ? PathUtils::IsImageFile(entry.path())
+				            : filter_ == FileDialogFilter::AUDIO
+				                ? PathUtils::HasExtension(entry.path(), ".wav")
 				                : PathUtils::HasExtension(entry.path(),
 				                                          ".json"))) {
 					entries_.push_back({entry.path(), false});
@@ -323,14 +327,17 @@ bool FileDialog::AcceptSelection() {
 			return false;
 		}
 
-		if (filter_ == FileDialogFilter::MODEL ? !PathUtils::IsModelFile(name)
-		    : filter_ == FileDialogFilter::IMAGE
-		        ? !PathUtils::IsImageFile(name)
+		if (filter_ == FileDialogFilter::MODEL   ? !PathUtils::IsModelFile(name)
+		    : filter_ == FileDialogFilter::IMAGE ? !PathUtils::IsImageFile(name)
+		    : filter_ == FileDialogFilter::AUDIO
+		        ? !PathUtils::HasExtension(name, ".wav")
 		        : !PathUtils::HasExtension(name, ".json")) {
 			error_ = filter_ == FileDialogFilter::MODEL
 			             ? "Choose a GLB, glTF or OBJ model."
 			         : filter_ == FileDialogFilter::IMAGE
 			             ? "Choose a PNG, JPEG, BMP, TIFF or GIF image."
+			         : filter_ == FileDialogFilter::AUDIO
+			             ? "Choose a WAV audio file."
 			             : "Use a .json file name.";
 			return false;
 		}

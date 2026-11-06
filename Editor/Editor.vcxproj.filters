@@ -766,4 +766,8 @@
     <ClInclude Include="include\audio\AudioInspector.h"><Filter>include\audio</Filter></ClInclude>
     <ClCompile Include="src\audio\AudioInspector.cpp"><Filter>src\audio</Filter></ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\assets\AudioImporter.h"><Filter>include\assets</Filter></ClInclude>
+    <ClCompile Include="src\assets\AudioImporter.cpp"><Filter>src\assets</Filter></ClCompile>
+  </ItemGroup>
 </Project>
