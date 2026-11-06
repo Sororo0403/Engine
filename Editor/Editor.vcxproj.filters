@@ -772,4 +772,8 @@
     <ClInclude Include="include\dialogs\AudioImportDialog.h"><Filter>include\dialogs</Filter></ClInclude>
     <ClCompile Include="src\dialogs\AudioImportDialog.cpp"><Filter>src\dialogs</Filter></ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\audio\AudioPreview.h"><Filter>include\audio</Filter></ClInclude>
+    <ClCompile Include="src\audio\AudioPreview.cpp"><Filter>src\audio</Filter></ClCompile>
+  </ItemGroup>
 </Project>
