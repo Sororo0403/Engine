@@ -3,6 +3,7 @@
 #include "core/Logger.h"
 #include "gameplay/CharacterInputReader.h"
 #include "gameplay/OrbitCameraInputReader.h"
+#include "graphics/model/ModelManager.h"
 #include "graphics/render/RenderSystem.h"
 #include "input/InputSystem.h"
 #include "scene/SceneSerializer.h"
@@ -14,6 +15,16 @@ RuntimeScene::RuntimeScene(const EngineContext &context, GameConfig config)
       config_(std::move(config)),
       renderer_(simulation_.GetScene(), context.models, context.render),
       audioPlayer_(simulation_.GetScene(), context.audioClips, context.audio) {
+	simulation_.SetAnimatorModelLoading(
+	    [&models = context.models](const std::filesystem::path &path,
+	                               std::string &error) {
+		    auto data = models.GetAnimationData(models.Load(path));
+		    if (!data)
+			    error = "The model has no usable animation data.";
+		    else
+			    error.clear();
+		    return data;
+	    });
 	simulation_.SetPrefabResourcePreparation(
 	    [this, &clips = context.audioClips](auto prefabs, std::string &error) {
 		    return renderer_.PreparePrefabResources(prefabs, clips, error);
@@ -98,6 +109,10 @@ bool RuntimeScene::Update(float seconds) {
 		return false;
 	}
 
+	std::vector<AnimatorDrawPose> poses;
+	if (!simulation_.GetAnimatorPoses(poses, audioError) ||
+	    !renderer_.SetAnimatorPoses(std::move(poses)))
+		return false;
 	std::vector<ParticleDrawBatch> particles;
 	if (!simulation_.GetParticles(particles, audioError)) {
 		Logger::Error(audioError);

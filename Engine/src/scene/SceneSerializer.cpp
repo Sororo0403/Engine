@@ -332,6 +332,7 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 			    (object.transformAnimation &&
 			     !object.transformAnimation->IsValid()) ||
 			    (object.script && !object.script->IsValid()) ||
+			    (object.animator && !object.animator->IsValid()) ||
 			    (object.particleEmitter &&
 			     !object.particleEmitter->IsValid()) ||
 			    (object.audioSource && !object.audioSource->IsValid())) {
@@ -434,6 +435,13 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 				    {"scenes", std::move(scenes)}};
 			}
 
+			if (object.animator) {
+				const auto &a = *object.animator;
+				objects.back()["animator"] = {{"clip", a.clip},
+				                              {"speed", a.speed},
+				                              {"loop", a.loop},
+				                              {"playOnStart", a.playOnStart}};
+			}
 			if (object.particleEmitter) {
 				const auto &p = *object.particleEmitter;
 				objects.back()["particleEmitter"] = {
@@ -862,6 +870,21 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 				object.script = std::move(script);
 			}
 
+			if (version >= 37 && item.contains("animator")) {
+				const auto &v = item.at("animator");
+				if (!v.is_object() || !v.at("clip").is_string() ||
+				    !v.at("speed").is_number() || !v.at("loop").is_boolean() ||
+				    !v.at("playOnStart").is_boolean())
+					throw std::runtime_error(
+					    "Animator requires a clip name, numeric speed and "
+					    "boolean flags.");
+				AnimatorComponent value{
+				    v.at("clip").get<std::string>(), v.at("speed").get<float>(),
+				    v.at("loop").get<bool>(), v.at("playOnStart").get<bool>()};
+				if (!value.IsValid())
+					throw std::runtime_error("Animator settings are invalid.");
+				object.animator = std::move(value);
+			}
 			if (version >= 36 && item.contains("particleEmitter")) {
 				const auto &v = item.at("particleEmitter");
 				ParticleEmitterComponent p;
@@ -1276,6 +1299,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 			    (object.transformAnimation &&
 			     !object.transformAnimation->IsValid()) ||
 			    (object.script && !object.script->IsValid()) ||
+			    (object.animator && !object.animator->IsValid()) ||
 			    (object.particleEmitter &&
 			     !object.particleEmitter->IsValid()) ||
 			    (object.audioSource && !object.audioSource->IsValid())) {

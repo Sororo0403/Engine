@@ -68,6 +68,7 @@ bool SceneSimulation::StartScene(const Scene &source, std::string &error,
 		runtime.ReplaceObjects(std::move(objects));
 		SceneSimulation working;
 		working.preparePrefabResources_ = preparePrefabResources_;
+		working.loadAnimatorModel_ = loadAnimatorModel_;
 		if (preserveSharedData)
 			working.sharedScriptData_ = sharedScriptData_;
 		if (!working.Configure(runtime, error, fallbackPose, invalidObject,
@@ -379,6 +380,10 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 		if (preparePrefabResources_ &&
 		    !preparePrefabResources_(scripts.GetPrefabScenes(), error))
 			return false;
+		auto animators = animators_;
+		if (!animators.Configure(working, preserve, error, invalidObject,
+		                         loadAnimatorModel_, scripts.GetPrefabScenes()))
+			return false;
 		// 全候補が有効な場合だけ確定し、失敗時は再生シーンと実行状態をすべて保持する。
 		scene_.CopyFrom(working);
 		world_ = std::move(world);
@@ -387,6 +392,7 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 		motion_ = std::move(motion);
 		animations_ = std::move(animations);
 		particles_ = std::move(particles);
+		animators_ = std::move(animators);
 		physics_ = std::move(physics);
 		scripts_ = std::move(scripts);
 		ui_ = std::move(ui);
@@ -418,6 +424,7 @@ void SceneSimulation::Stop() {
 	motion_ = SceneMotion{};
 	animations_ = SceneAnimations{};
 	particles_ = SceneParticles{};
+	animators_ = SceneAnimators{};
 	physics_ = ScenePhysics{};
 	scripts_ = SceneScripts{};
 	ui_ = SceneUI{};
@@ -715,6 +722,9 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 		auto particles = particles_;
 		if (!particles.Advance(working, seconds, lastUpdateError_))
 			return false;
+		auto animators = animators_;
+		if (!animators.Advance(working, seconds, lastUpdateError_))
+			return false;
 		scene_.CopyFrom(working);
 		if (triggers) {
 			for (const auto &event : triggers->GetEvents()) {
@@ -732,6 +742,7 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 		motion_ = std::move(motion);
 		animations_ = std::move(animations);
 		particles_ = std::move(particles);
+		animators_ = std::move(animators);
 		physics_ = std::move(physics);
 		world_ = std::move(world);
 		followPoses_ = std::move(follows);

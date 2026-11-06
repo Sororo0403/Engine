@@ -2371,4 +2371,13 @@
     <None Include="resources\shaders\mesh\SkinnedShadow.VS.hlsl" />
     <ClCompile Include="src\graphics\model\ModelSkinning.cpp"><Filter>src\graphics\model</Filter></ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\animation\AnimatorComponent.h"><Filter>include\animation</Filter></ClInclude>
+    <ClCompile Include="src\animation\AnimatorComponent.cpp"><Filter>src\animation</Filter></ClCompile>
+    <ClInclude Include="include\animation\AnimatorPlaybackState.h"><Filter>include\animation</Filter></ClInclude>
+    <ClInclude Include="include\animation\AnimatorDrawPose.h"><Filter>include\animation</Filter></ClInclude>
+    <ClInclude Include="include\animation\SceneAnimators.h"><Filter>include\animation</Filter></ClInclude>
+    <ClCompile Include="src\animation\SceneAnimators.cpp"><Filter>src\animation</Filter></ClCompile>
+    <ClCompile Include="src\scripting\LuaAnimatorBindings.cpp"><Filter>src\scripting</Filter></ClCompile>
+  </ItemGroup>
 </Project>

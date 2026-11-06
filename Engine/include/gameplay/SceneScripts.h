@@ -1,6 +1,7 @@
 #pragma once
 class SceneAnimations;
 class SceneParticles;
+class SceneAnimators;
 
 #include "gameplay/GameActionState.h"
 #include <span>
@@ -67,6 +68,7 @@ class SceneScripts {
 	/// <param name="actions">今回の名前付き入力。更新時だけLuaのinput.actionsへ渡す</param>
 	/// <param name="animations">指定時は同じ候補のアニメーション再生状態。成功後だけ呼び出し側で確定する</param>
 	/// <param name="particles">指定時は同じ候補の粒子再生状態。成功後だけ呼び出し側で確定する</param>
+	/// <param name="animators">指定時は同じ候補のモデル内クリップの再生状態</param>
 	/// <returns>true:実行成功 false:コールバック・状態・制限が無効。呼び出し側は候補を破棄する</returns>
 	bool Run(Scene &scene, float seconds, const CharacterInput &input,
 	         std::span<const TriggerEvent> events, bool startOnly,
@@ -79,7 +81,8 @@ class SceneScripts {
 	         std::string *sharedState = nullptr,
 	         std::span<const GameActionState> actions = {},
 	         SceneAnimations *animations = nullptr,
-	         SceneParticles *particles = nullptr);
+	         SceneParticles *particles = nullptr,
+	         SceneAnimators *animators = nullptr);
 
 	/// <summary>
 	/// スクリプトが生成した接触を再帰実行せず、次の正の時間の更新へ送る

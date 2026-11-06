@@ -126,6 +126,7 @@ bool SceneRenderer::PreparePrefabResources(
 void SceneRenderer::ClearPrefabResources() {
 	preparedPrefabs_.clear();
 	particleBatches_.clear();
+	animatorPoses_.clear();
 	if (particles_)
 		particles_->Clear();
 	if (canvas_)
@@ -343,6 +344,19 @@ bool SceneRenderer::SynchronizeObjects() {
 			                 object.meshRenderer->uvOffset[1]};
 		}
 
+		const auto animator = animatorPoses_.find(id);
+		const ModelAnimationPose *skin = nullptr;
+		if (object.animator && animator != animatorPoses_.end()) {
+			if (animator->second.model !=
+			    models_.GetAnimationData(renderObject.model)) {
+				Logger::Error("Animator model changed while playing. Restart "
+				              "Play to reload its clips.");
+				return false;
+			}
+			skin = animator->second.pose.get();
+		}
+		if (!world_->SetAnimationPose(renderObject.handle, skin))
+			return false;
 		// 親子の合成結果を、描画・選択・外接ボックスで共通に使用する。
 		const bool transformed =
 		    object.parentId == 0
@@ -371,9 +385,11 @@ void SceneRenderer::Finalize() {
 	world_.reset();
 	particles_.reset();
 	particleBatches_.clear();
+	animatorPoses_.clear();
 	canvas_.reset();
 	preparedPrefabs_.clear();
 	particleBatches_.clear();
+	animatorPoses_.clear();
 	if (particles_)
 		particles_->Clear();
 	buttonVisuals_.clear();
@@ -506,4 +522,16 @@ bool SceneRenderer::SetUIButtonVisuals(
 
 void SceneRenderer::SetParticles(std::vector<ParticleDrawBatch> batches) {
 	particleBatches_ = std::move(batches);
+}
+
+bool SceneRenderer::SetAnimatorPoses(std::vector<AnimatorDrawPose> poses) {
+	std::map<SceneObjectId, AnimatorDrawPose> next;
+	for (auto &pose : poses) {
+		const auto *object = scene_.FindObject(pose.object);
+		if (!object || !object->animator || !pose.model || !pose.pose ||
+		    !next.emplace(pose.object, std::move(pose)).second)
+			return false;
+	}
+	animatorPoses_ = std::move(next);
+	return true;
 }

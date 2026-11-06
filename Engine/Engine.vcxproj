@@ -2316,4 +2316,13 @@ exit /b 0</Command>
     <None Include="resources\shaders\mesh\SkinnedShadow.VS.hlsl" />
     <ClCompile Include="src\graphics\model\ModelSkinning.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\animation\AnimatorComponent.h" />
+    <ClCompile Include="src\animation\AnimatorComponent.cpp" />
+    <ClInclude Include="include\animation\AnimatorPlaybackState.h" />
+    <ClInclude Include="include\animation\AnimatorDrawPose.h" />
+    <ClInclude Include="include\animation\SceneAnimators.h" />
+    <ClCompile Include="src\animation\SceneAnimators.cpp" />
+    <ClCompile Include="src\scripting\LuaAnimatorBindings.cpp" />
+  </ItemGroup>
 </Project>

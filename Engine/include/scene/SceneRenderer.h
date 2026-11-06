@@ -1,4 +1,5 @@
 #pragma once
+#include "animation/AnimatorDrawPose.h"
 #include "particles/ParticleDrawBatch.h"
 #include "ui/UIButtonVisual.h"
 #include <vector>
@@ -211,6 +212,13 @@ class SceneRenderer {
 	/// <param name="batches">移動・物理・Luaを反映したワールド座標の粒子</param>
 	void SetParticles(std::vector<ParticleDrawBatch> batches);
 
+	/// <summary>
+	/// 同じ再生シーンの骨・ノード姿勢を受け取る。次のUpdateで描画・影・選択へ反映する
+	/// </summary>
+	/// <param name="poses">モデルと姿勢の変更しない共有参照。空は全物体を静止描画へ戻す</param>
+	/// <returns>true:成功 false:物体・モデル・重複が無効。失敗時は以前の一覧を保持する</returns>
+	bool SetAnimatorPoses(std::vector<AnimatorDrawPose> poses);
+
   private:
 	/// <summary>
 	/// シーン上の物体と対応する描画物体の情報
@@ -239,6 +247,7 @@ class SceneRenderer {
 	std::unique_ptr<CanvasRenderer> canvas_;
 	std::unique_ptr<ParticleRenderer> particles_;
 	std::vector<ParticleDrawBatch> particleBatches_;
+	std::map<SceneObjectId, AnimatorDrawPose> animatorPoses_;
 	std::vector<std::shared_ptr<const Scene>> preparedPrefabs_;
 	bool screenUIEnabled_ = true;
 	std::vector<UIButtonVisual> buttonVisuals_;

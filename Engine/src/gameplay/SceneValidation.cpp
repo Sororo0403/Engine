@@ -107,6 +107,10 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 				}
 		}
 
+		if (object.animator &&
+		    (!object.animator->IsValid() || !object.HasMesh()))
+			add(id,
+			    "Animator requires valid settings and a Mesh with a model.");
 		if (object.particleEmitter && !object.particleEmitter->IsValid())
 			add(id, "Particle Emitter settings are invalid.");
 		if (object.transformAnimation &&

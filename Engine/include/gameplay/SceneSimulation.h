@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "animation/SceneAnimations.h"
+#include "animation/SceneAnimators.h"
 #include "particles/SceneParticles.h"
 
 #include "gameplay/GameActionState.h"
@@ -35,6 +36,35 @@
 class SceneSimulation {
 
   public:
+	/// <summary>
+	/// モデルの所有側と同じ骨・クリップを読み込む処理を登録する。Stopでも保持する
+	/// </summary>
+	/// <param name="load">GPUの利用完了後に呼ぶ読み込み。空はCPUだけの検証用読み込み</param>
+	void SetAnimatorModelLoading(SceneAnimators::LoadModel load) {
+		loadAnimatorModel_ = std::move(load);
+	}
+
+	/// <summary>
+	/// 実行時のクリップ・速度・時刻・再生指定を取得する
+	/// </summary>
+	/// <param name="id">再生物体ID</param>
+	/// <returns>再生状態。対象なしはnullopt</returns>
+	std::optional<AnimatorPlaybackState>
+	GetAnimatorState(SceneObjectId id) const {
+		return animators_.GetState(id);
+	}
+
+	/// <summary>
+	/// 現在適用中の骨・ノード姿勢を描画用の共有参照で取得する
+	/// </summary>
+	/// <param name="poses">成功時だけ置き換える物体と姿勢の一覧</param>
+	/// <param name="error">失敗理由</param>
+	/// <returns>true:成功 false:対象・階層が無効</returns>
+	bool GetAnimatorPoses(std::vector<AnimatorDrawPose> &poses,
+	                      std::string &error) const {
+		return animators_.Snapshot(scene_, poses, error);
+	}
+
 	/// <summary>
 	/// 発生元の時計・生存数・発生指定を取得する
 	/// </summary>
@@ -436,6 +466,8 @@ class SceneSimulation {
 	SceneMotion motion_;
 	SceneAnimations animations_;
 	SceneParticles particles_;
+	SceneAnimators animators_;
+	SceneAnimators::LoadModel loadAnimatorModel_;
 	ScenePhysics physics_;
 	SceneScripts scripts_;
 	SceneUI ui_;

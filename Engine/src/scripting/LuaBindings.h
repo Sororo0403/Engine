@@ -19,6 +19,7 @@ class ScenePrefabs;
 class ScriptMailbox;
 class SceneAnimations;
 class SceneParticles;
+class SceneAnimators;
 struct ScriptMessage;
 
 namespace LuaInternal {
@@ -57,6 +58,9 @@ struct Call {
 	SceneAnimations *animations = nullptr;
 	int animationOperations = 0;
 	SceneParticles *particles = nullptr;
+	SceneAnimators *animators = nullptr;
+	int animatorOperations = 0;
+	int *remainingAnimatorOperations = nullptr;
 	int particleOperations = 0;
 	int *remainingParticleOperations = nullptr;
 	int *remainingAnimationOperations = nullptr;
@@ -114,6 +118,12 @@ void AddAnimationMethods(lua_State *state);
 /// </summary>
 /// <param name="state">保護呼び出し内のLua状態</param>
 void AddParticleMethods(lua_State *state);
+
+/// <summary>
+/// 直前の物体メソッド表へ、モデル内クリップの再生・停止・指定・参照を登録する
+/// </summary>
+/// <param name="state">保護呼び出し内のLua状態</param>
+void AddAnimatorMethods(lua_State *state);
 
 /// <summary>
 /// 直前の物体メソッドテーブルへ、名前付きシーンへの遷移要求を登録する
