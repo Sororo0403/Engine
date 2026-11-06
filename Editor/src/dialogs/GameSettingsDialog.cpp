@@ -81,8 +81,9 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 
 	ImGui::SeparatorText("Gameplay Input");
 	ImGui::Checkbox("Enable Gamepad", &gamepadEnabled_);
-	const std::array<const char *, 5> labels{"Move Forward", "Move Backward",
-	                                         "Move Left", "Move Right", "Jump"};
+	const std::array<const char *, GameInputBindings::kActions.size()> labels{
+	    "Move Forward", "Move Backward", "Move Left",
+	    "Move Right",   "Jump",          "Interact"};
 
 	for (std::size_t i = 0; i < GameInputBindings::kActions.size(); ++i) {
 		auto &key = input_.*GameInputBindings::kActions[i].member;

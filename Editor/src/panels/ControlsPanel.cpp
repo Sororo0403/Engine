@@ -952,6 +952,24 @@ void ControlsPanel::Draw() {
 	         "settings "
 	         "support Undo/Redo and are included in saved and exported "
 	         "scenes."},
+	        {"Trigger Actions > Interact",
+	         "Set Event to Interact to operate a switch or door on a button "
+	         "press instead of immediately on entering. The active Character "
+	         "Controller must currently overlap this object's trigger Collider "
+	         "and both collision masks must permit the pair. Press the "
+	         "Interact "
+	         "key (E by default) or the gamepad's west face button. Game "
+	         "Settings "
+	         "can reassign the key; hold does not repeat. No Character is "
+	         "needed "
+	         "to start Play, but interaction has no receiver without one. "
+	         "All overlapped receivers run in ID order, after queued and new "
+	         "Enter/Exit signals. Interact supports the same operations and "
+	         "Once "
+	         "per Play as Enter/Exit. Pause and zero-time updates do not "
+	         "interact; "
+	         "physical Trigger history continues to show contact events only. "
+	         "Interact settings support Undo/Redo, save and game export."},
 	        {"Trigger Actions execution",
 	         "Initial overlaps run at Start. Later actions run after a "
 	         "positive simulation update: queued signals first, then new "

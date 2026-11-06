@@ -47,6 +47,23 @@ const char *OperationLabel(TriggerAction::Operation operation) {
 	}
 	return "Invalid";
 }
+
+/// <summary>
+/// Trigger Actionsの実行条件を表示名へ変換する
+/// </summary>
+/// <param name="event">表示する条件</param>
+/// <returns>Inspectorの項目名</returns>
+const char *EventLabel(TriggerAction::Event event) {
+	switch (event) {
+	case TriggerAction::Event::ENTER:
+		return "Enter";
+	case TriggerAction::Event::EXIT:
+		return "Exit";
+	case TriggerAction::Event::INTERACT:
+		return "Interact";
+	}
+	return "Invalid";
+}
 } // namespace
 
 bool TriggerActionsInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
@@ -67,15 +84,12 @@ bool TriggerActionsInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		auto &action = edited.actions[i];
 		const auto title = std::format("Action {}", i + 1);
 		if (ui.CollapsingHeader(title.c_str())) {
-			if (ImGui::BeginCombo("Event",
-			                      action.event == TriggerEvent::Type::ENTER
-			                          ? "Enter"
-			                          : "Exit")) {
-				for (const auto event : std::array{TriggerEvent::Type::ENTER,
-				                                   TriggerEvent::Type::EXIT}) {
-					if (ImGui::Selectable(event == TriggerEvent::Type::ENTER
-					                          ? "Enter"
-					                          : "Exit",
+			if (ImGui::BeginCombo("Event", EventLabel(action.event))) {
+				for (const auto event :
+				     std::array{TriggerAction::Event::ENTER,
+				                TriggerAction::Event::EXIT,
+				                TriggerAction::Event::INTERACT}) {
+					if (ImGui::Selectable(EventLabel(event),
 					                      action.event == event) &&
 					    action.event != event) {
 						action.event = event;
@@ -199,9 +213,8 @@ void TriggerActionsInspector::DrawReadOnly(const ImGuiSystem &ui,
 		const auto &action = object.triggerActions->actions[i];
 		ui.Text(std::format(
 		    "Action {}: {} / {} / {} / Once: {}", i + 1,
-		    action.event == TriggerEvent::Type::ENTER ? "Enter" : "Exit",
-		    TargetLabel(scene, action.target), OperationLabel(action.operation),
-		    action.once ? "Yes" : "No"));
+		    EventLabel(action.event), TargetLabel(scene, action.target),
+		    OperationLabel(action.operation), action.once ? "Yes" : "No"));
 		if (action.operation == TriggerAction::Operation::TELEPORT) {
 			ui.Text("Destination: " + TargetLabel(scene, action.destination));
 		}
