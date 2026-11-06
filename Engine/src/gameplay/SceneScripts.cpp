@@ -4,6 +4,7 @@
 #include "platform/windows/PathUtils.h"
 #include "scene/Scene.h"
 #include "scene/SceneActivity.h"
+#include "scene/SceneDestruction.h"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -116,6 +117,8 @@ bool SceneScripts::Run(Scene &scene, float seconds, const CharacterInput &input,
 		std::size_t callbacks = 0;
 		int budget = kFrameInstructions;
 		int physicsBudget = kFramePhysicsOperations;
+		int destructionBudget = kFrameDestructions;
+		std::vector<SceneObjectId> pendingDestructions;
 		int spawnBudget = kFrameInstantiations;
 		std::size_t objectBudget = kFrameSpawnedObjects;
 		const auto active = [&](SceneObjectId id) {
@@ -136,7 +139,8 @@ bool SceneScripts::Run(Scene &scene, float seconds, const CharacterInput &input,
 			        instance.program, callback, scene, id, instance.state,
 			        (std::min)(seconds, kMaximumFrameSeconds), input, other,
 			        messages, error, &budget, physics, &physicsBudget,
-			        &prefabs_, &spawnBudget, &objectBudget))
+			        &prefabs_, &spawnBudget, &objectBudget,
+			        &pendingDestructions, &destructionBudget))
 				throw std::runtime_error(std::format(
 				    "{} [{}]: {}", PathUtils::ToUtf8(instance.settings.asset),
 				    callback, error));
@@ -160,6 +164,10 @@ bool SceneScripts::Run(Scene &scene, float seconds, const CharacterInput &input,
 			pending_.clear();
 			queued.insert(queued.end(), events.begin(), events.end());
 			for (const auto &event : queued) {
+				if (event.type != TriggerEvent::Type::EXIT &&
+				    (!scene.Contains(event.contact.first) ||
+				     !scene.Contains(event.contact.second)))
+					continue;
 				const char *callback =
 				    event.type == TriggerEvent::Type::ENTER  ? "trigger_enter"
 				    : event.type == TriggerEvent::Type::EXIT ? "trigger_exit"
@@ -175,6 +183,10 @@ bool SceneScripts::Run(Scene &scene, float seconds, const CharacterInput &input,
 		}
 		if (!startOnly && seconds > 0) {
 			for (const auto &event : collisions) {
+				if (event.type != CollisionEvent::Type::EXIT &&
+				    (!scene.Contains(event.contact.first) ||
+				     !scene.Contains(event.contact.second)))
+					continue;
 				const char *callback =
 				    event.type == CollisionEvent::Type::ENTER
 				        ? "collision_enter"
@@ -199,6 +211,8 @@ bool SceneScripts::Run(Scene &scene, float seconds, const CharacterInput &input,
 					invoke(id, "click", 0);
 			}
 		}
+		if (!SceneDestruction::Apply(scene, pendingDestructions, error))
+			throw std::runtime_error(error);
 		error.clear();
 		return true;
 	} catch (const std::exception &exception) {

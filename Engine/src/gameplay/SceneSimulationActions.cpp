@@ -303,6 +303,8 @@ bool SceneSimulation::SynchronizeSceneChanges(
 	};
 	std::set<SceneObjectId> followMoved;
 	for (const auto id : updateOrder_) {
+		if (!working.Contains(id))
+			continue;
 		const auto &object = *working.FindObject(id);
 		if (object.followCamera && SceneActivity::IsActive(working, id) &&
 		    (moved(id) || moved(object.followCamera->target) ||
@@ -321,6 +323,32 @@ bool SceneSimulation::SynchronizeSceneChanges(
 		return false;
 	}
 
+	// 削除で詰めたTrigger Actionの添字へ、一度だけ実行済みの状態を引き継ぐ。
+	std::set<std::pair<SceneObjectId, std::size_t>> fired;
+	for (const auto &[id, before] : scene_.GetObjects()) {
+		const auto *after = working.FindObject(id);
+		if (!after || !before.triggerActions || !after->triggerActions)
+			continue;
+		std::size_t current = 0;
+		for (std::size_t previous = 0;
+		     previous < before.triggerActions->actions.size() &&
+		     current < after->triggerActions->actions.size();
+		     ++previous) {
+			if (before.triggerActions->actions[previous] !=
+			    after->triggerActions->actions[current])
+				continue;
+			if (firedActions_.contains({id, previous}))
+				fired.emplace(id, current);
+			++current;
+		}
+	}
+	next.firedActions_ = std::move(fired);
+	std::erase_if(next.audioActions_, [&](const auto &action) {
+		return !working.Contains(action.target);
+	});
+	std::erase_if(next.pendingActionSignals_, [&](const auto &signal) {
+		return !working.Contains(signal.receiver);
+	});
 	bool resetCharacter = false;
 	std::set<SceneObjectId> teleported;
 	for (const auto id : transformed) {

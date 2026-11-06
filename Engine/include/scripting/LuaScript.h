@@ -41,7 +41,7 @@ class LuaScript {
 	/// <summary>
 	/// 公開するスクリプトAPIの版。Runtimeの出力互換性を照合する
 	/// </summary>
-	static constexpr int kApiVersion = 4;
+	static constexpr int kApiVersion = 5;
 	static constexpr std::size_t kMaximumSourceBytes = 256 * 1024;
 	static constexpr std::size_t kMaximumBytecodeBytes = 1024 * 1024;
 	static constexpr std::size_t kMaximumStateBytes = 64 * 1024;
@@ -51,6 +51,7 @@ class LuaScript {
 	static constexpr int kMaximumInstructions = 200000;
 	static constexpr int kMaximumPhysicsOperations = 128;
 	static constexpr int kMaximumInstantiations = 16;
+	static constexpr int kMaximumDestructions = 64;
 	static constexpr int kHookInterval = 100;
 	static constexpr std::size_t kMaximumLogBytes = 1024;
 
@@ -112,16 +113,20 @@ class LuaScript {
 	/// <param name="prefabs">指定時は準備済みの不変なPrefabライブラリ</param>
 	/// <param name="remainingInstantiations">指定時はフレーム全体で共有する残り生成回数</param>
 	/// <param name="remainingSpawnedObjects">指定時は生成する根と子孫の残り総数</param>
+	/// <param name="pendingDestructions">指定時は全コールバック成功後に削除する根の候補を追加する。呼び出し側が一括反映する</param>
+	/// <param name="remainingDestructions">指定時はフレーム全体で共有する残り削除要求回数</param>
 	/// <returns>true:成功またはコールバックなし false:コード・API・状態・実行制限が無効</returns>
-	static bool Invoke(const LuaScriptProgram &program,
-	                   std::string_view callback, Scene &scene,
-	                   SceneObjectId self, std::string &state, float seconds,
-	                   const CharacterInput &input, SceneObjectId other,
-	                   std::vector<std::string> &logs, std::string &error,
-	                   int *remainingInstructions = nullptr,
-	                   ScenePhysics *physics = nullptr,
-	                   int *remainingPhysicsOperations = nullptr,
-	                   const ScenePrefabs *prefabs = nullptr,
-	                   int *remainingInstantiations = nullptr,
-	                   std::size_t *remainingSpawnedObjects = nullptr);
+	static bool
+	Invoke(const LuaScriptProgram &program, std::string_view callback,
+	       Scene &scene, SceneObjectId self, std::string &state, float seconds,
+	       const CharacterInput &input, SceneObjectId other,
+	       std::vector<std::string> &logs, std::string &error,
+	       int *remainingInstructions = nullptr,
+	       ScenePhysics *physics = nullptr,
+	       int *remainingPhysicsOperations = nullptr,
+	       const ScenePrefabs *prefabs = nullptr,
+	       int *remainingInstantiations = nullptr,
+	       std::size_t *remainingSpawnedObjects = nullptr,
+	       std::vector<SceneObjectId> *pendingDestructions = nullptr,
+	       int *remainingDestructions = nullptr);
 };

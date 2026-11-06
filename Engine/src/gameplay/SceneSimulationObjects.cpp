@@ -1,5 +1,6 @@
 #include "gameplay/SceneSimulation.h"
 #include "scene/PrefabInstantiation.h"
+#include "scene/SceneDestruction.h"
 #include <exception>
 
 SceneObjectId
@@ -31,5 +32,32 @@ SceneSimulation::InstantiatePrefab(const Scene &prefab,
 	} catch (const std::exception &exception) {
 		error = exception.what();
 		return 0;
+	}
+}
+
+bool SceneSimulation::DestroyObjects(std::span<const SceneObjectId> roots,
+                                     std::string &error) {
+	if (!playing_ || roots.empty()) {
+		error = "Start Play and specify roots before destroying objects.";
+		return false;
+	}
+	try {
+		Scene candidate;
+		candidate.CopyFrom(scene_);
+		if (!SceneDestruction::Apply(candidate, roots, error))
+			return false;
+		SceneSimulation next;
+		next.CopyFrom(*this);
+		std::vector<TriggerEvent> generated;
+		if (!next.SynchronizeSceneChanges(candidate, {}, error, nullptr,
+		                                  &generated))
+			return false;
+		next.scripts_.QueueTriggers(generated);
+		Adopt(next);
+		error.clear();
+		return true;
+	} catch (const std::exception &exception) {
+		error = exception.what();
+		return false;
 	}
 }

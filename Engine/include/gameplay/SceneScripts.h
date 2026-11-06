@@ -25,6 +25,7 @@ class SceneScripts {
 	static constexpr int kFrameInstructions = 2000000;
 	static constexpr int kFramePhysicsOperations = 1024;
 	static constexpr int kFrameInstantiations = 32;
+	static constexpr int kFrameDestructions = 256;
 	static constexpr std::size_t kFrameSpawnedObjects = 1024;
 	static constexpr float kMaximumFrameSeconds = 0.1f;
 

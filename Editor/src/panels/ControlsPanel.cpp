@@ -1988,6 +1988,22 @@ void ControlsPanel::Draw() {
 	         "calls per callback, 32 per step, 1024 generated objects per step "
 	         "and 4096 scene objects. Any callback, physics or preparation "
 	         "failure restores the entire simulation step."},
+	        {"Destroying Objects",
+	         "Inside a Lua callback call object:destroy(). It queues the "
+	         "root and its descendants until all callbacks in that step "
+	         "finish. "
+	         "Repeated requests are harmless; the return value reports a new "
+	         "request. Limits are 64 requests per callback and 256 per step. "
+	         "All requests and Lua/physics changes roll back on any failure. "
+	         "Remaining named references become nil. Follow Cameras whose "
+	         "target is removed stop following at their current pose, and "
+	         "Trigger Actions using removed targets or teleport destinations "
+	         "are removed from the Play copy only. Surviving objects receive "
+	         "trigger_exit/collision_exit on the next step. A deleted other "
+	         "still supports get_id() and is_valid(); accessing its other "
+	         "properties is an error. Pause defers deletion until Step or "
+	         "resume; Restart restores authored objects. Destroyed IDs are "
+	         "not reused within that run."},
 	        {"Collision Scripts",
 	         "Return collision_enter(self,state,other), collision_stay or "
 	         "collision_exit for solid Collider contacts. These are separate "

@@ -26,6 +26,7 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 		return false;
 	}
 	if (candidate.GetObjects() == scene_.GetObjects()) {
+		scene_.CopyFrom(candidate);
 		scripts_ = std::move(scripts);
 		physics_ = std::move(physics);
 		return true;

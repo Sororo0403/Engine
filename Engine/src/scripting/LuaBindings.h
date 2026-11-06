@@ -24,6 +24,9 @@ struct Call {
 	Scene *scene = nullptr;
 	ScenePhysics *physics = nullptr;
 	const ScenePrefabs *prefabs = nullptr;
+	std::vector<SceneObjectId> *pendingDestructions = nullptr;
+	int destructions = 0;
+	int *remainingDestructions = nullptr;
 	int instantiations = 0;
 	int *remainingInstantiations = nullptr;
 	std::size_t *remainingSpawnedObjects = nullptr;

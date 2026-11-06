@@ -319,16 +319,20 @@ bool LuaScript::Invoke(const LuaScriptProgram &program,
                        int *remainingPhysicsOperations,
                        const ScenePrefabs *prefabs,
                        int *remainingInstantiations,
-                       std::size_t *remainingSpawnedObjects) {
+                       std::size_t *remainingSpawnedObjects,
+                       std::vector<SceneObjectId> *pendingDestructions,
+                       int *remainingDestructions) {
 	try {
 		const char *name = Callback(callback);
 		if (!program || !name || !scene.Contains(self) ||
 		    !std::isfinite(seconds) || seconds < 0 ||
 		    !std::isfinite(input.moveX) || !std::isfinite(input.moveZ) ||
-		    (other && !scene.Contains(other)) ||
+		    (other && !scene.Contains(other) && callback != "trigger_exit" &&
+		     callback != "collision_exit") ||
 		    (remainingInstructions && *remainingInstructions < 0) ||
 		    (remainingPhysicsOperations && *remainingPhysicsOperations < 0) ||
-		    (remainingInstantiations && *remainingInstantiations < 0))
+		    (remainingInstantiations && *remainingInstantiations < 0) ||
+		    (remainingDestructions && *remainingDestructions < 0))
 			throw std::runtime_error("Script callback arguments are invalid.");
 		std::string normalized;
 		if (!NormalizeState(state, normalized, error))
@@ -348,6 +352,8 @@ bool LuaScript::Invoke(const LuaScriptProgram &program,
 		call.remainingInstructions = remainingInstructions;
 		call.physics = physics;
 		call.remainingPhysicsOperations = remainingPhysicsOperations;
+		call.pendingDestructions = pendingDestructions;
+		call.remainingDestructions = remainingDestructions;
 		call.prefabs = prefabs;
 		call.remainingInstantiations = remainingInstantiations;
 		call.remainingSpawnedObjects = remainingSpawnedObjects;

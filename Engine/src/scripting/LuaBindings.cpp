@@ -19,6 +19,8 @@ enum class Op {
 	NAME,
 	SET_NAME,
 	ID,
+	VALID,
+	DESTROY,
 	PARENT,
 	REFERENCE,
 	ACTIVE,
@@ -70,7 +72,7 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 		if (!call.scene)
 			throw std::runtime_error("A scene is required for object APIs.");
 		const bool mutation =
-		    op == Op::SET_NAME || op == Op::SET_ACTIVE ||
+		    op == Op::DESTROY || op == Op::SET_NAME || op == Op::SET_ACTIVE ||
 		    op == Op::SET_POSITION || op == Op::SET_LOCAL_POSITION ||
 		    op == Op::SET_ROTATION || op == Op::SET_SCALE || op == Op::LOG;
 		if (mutation && !call.executing)
@@ -103,6 +105,32 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 				throw std::runtime_error(
 				    "Object IDs are unsigned decimal strings.");
 			result.id = call.scene->Contains(parsed) ? parsed : 0;
+			return true;
+		}
+		if (op == Op::ID) {
+			call.returnText = std::to_string(id);
+			return true;
+		}
+		if (op == Op::VALID) {
+			result.boolean = call.scene->Contains(id);
+			return true;
+		}
+		if (op == Op::DESTROY) {
+			if (!call.pendingDestructions)
+				throw std::runtime_error(
+				    "Object destruction requires a deferred simulation queue.");
+			if (++call.destructions > LuaScript::kMaximumDestructions ||
+			    (call.remainingDestructions &&
+			     *call.remainingDestructions <= 0))
+				throw std::runtime_error(
+				    "Script destruction request limit exceeded.");
+			if (call.remainingDestructions)
+				--*call.remainingDestructions;
+			result.boolean = call.scene->Contains(id) &&
+			                 std::ranges::find(*call.pendingDestructions, id) ==
+			                     call.pendingDestructions->end();
+			if (result.boolean)
+				call.pendingDestructions->push_back(id);
 			return true;
 		}
 		auto *object = call.scene->FindObject(id);
@@ -234,7 +262,8 @@ int Dispatch(lua_State *state) {
 		    luaL_checkudata(state, 1, kObjectType));
 	if (op == Op::NAME || op == Op::POSITION || op == Op::LOCAL_POSITION ||
 	    op == Op::ROTATION || op == Op::SCALE || op == Op::ACTIVE ||
-	    op == Op::PARENT || op == Op::ID) {
+	    op == Op::PARENT || op == Op::ID || op == Op::VALID ||
+	    op == Op::DESTROY) {
 		// 引数はselfだけ。値はPerformで取得する。
 	} else if (op == Op::SET_NAME || op == Op::REFERENCE || op == Op::FIND ||
 	           op == Op::FIND_ID || op == Op::LOG) {
@@ -273,6 +302,8 @@ int Dispatch(lua_State *state) {
 		LuaInternal::PushObject(state, result.id);
 		return 1;
 	case Op::ACTIVE:
+	case Op::VALID:
+	case Op::DESTROY:
 		lua_pushboolean(state, result.boolean);
 		return 1;
 	case Op::POSITION:
@@ -398,6 +429,8 @@ int LuaInternal::OpenEnvironment(lua_State *state, Call &call) {
 	Method(state, "get_name", Op::NAME);
 	Method(state, "set_name", Op::SET_NAME);
 	Method(state, "get_id", Op::ID);
+	Method(state, "is_valid", Op::VALID);
+	Method(state, "destroy", Op::DESTROY);
 	Method(state, "parent", Op::PARENT);
 	Method(state, "reference", Op::REFERENCE);
 	Method(state, "is_active", Op::ACTIVE);
