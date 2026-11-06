@@ -195,14 +195,18 @@ class Assets {
 		return reference;
 	}
 
-	fs::path AddTexture(const fs::path &input) {
+	fs::path AddTexture(const fs::path &input,
+	                    unsigned maximumDimension = 16384) {
 		AssetDependencies::TextureFiles(input);
 		const auto reference = AddFile(FindSource(input), input);
 		const auto &file = files_.at(reference);
 
-		if (textures_.insert(file).second) {
+		const auto validated = textures_.find(file);
+		if (validated == textures_.end() ||
+		    maximumDimension < validated->second) {
 			try {
-				ImageValidation::Read(file);
+				ImageValidation::Read(file, maximumDimension);
+				textures_.insert_or_assign(file, maximumDimension);
 			} catch (const std::bad_alloc &) {
 				throw;
 			} catch (const std::exception &error) {
@@ -311,7 +315,8 @@ class Assets {
 
 	std::vector<AssetSource> sources_;
 	std::map<fs::path, fs::path, PathLess> files_, models_;
-	std::set<fs::path, PathLess> textures_, scripts_;
+	std::map<fs::path, unsigned, PathLess> textures_;
+	std::set<fs::path, PathLess> scripts_;
 	std::map<fs::path, std::uint16_t, PathLess> audioChannels_;
 };
 
@@ -530,6 +535,16 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 						action.scenePath = scenePaths[static_cast<std::size_t>(
 						    found - graph.begin())];
 					}
+				if (object.image && !object.image->texture.empty()) {
+					auto &path = object.image->texture;
+					const auto input =
+					    path.is_absolute()
+					        ? path
+					        : resourceRoot / PathUtils::RelativeInside(
+					                             fs::path(L"resources"),
+					                             path.lexically_normal());
+					path = assets.AddTexture(input, 4096);
+				}
 				if (object.script && !object.script->asset.empty()) {
 					auto &path = object.script->asset;
 					const auto input =
@@ -668,6 +683,9 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 
 		for (const auto &entry : graph)
 			for (const auto &[id, object] : entry.objects) {
+				if (object.image && !object.image->texture.empty())
+					exportedAssets.AddTexture(
+					    destination / object.image->texture, 4096);
 				if (object.script && !object.script->asset.empty())
 					exportedAssets.AddScript(destination /
 					                         object.script->asset);

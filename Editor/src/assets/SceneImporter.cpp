@@ -80,9 +80,10 @@ fs::path PackageFile(const fs::path &root, const fs::path &input) {
 /// 明示割り当て画像を復号検証し、失敗時は参照先を含む理由を報告する
 /// </summary>
 /// <param name="path">パッケージ内で確認済みの通常ファイル</param>
-void ValidateTexture(const fs::path &path) {
+/// <param name="maximumDimension">画像の各辺の上限。UIは4096、それ以外は16384</param>
+void ValidateTexture(const fs::path &path, unsigned maximumDimension = 16384) {
 	try {
-		ImageValidation::Read(path);
+		ImageValidation::Read(path, maximumDimension);
 	} catch (const std::bad_alloc &) {
 		throw;
 	} catch (const std::exception &error) {
@@ -159,6 +160,8 @@ void ResolveReferences(Json &document, const fs::path &root) {
 		}
 	};
 	for (auto &object : document.at("objects")) {
+		if (version >= 30 && object.contains("image"))
+			resolve(object.at("image").at("texture"));
 		if (version >= 29 && object.contains("script"))
 			resolve(object.at("script").at("asset"));
 		if (version >= 28 && object.contains("triggerActions")) {
@@ -248,7 +251,7 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 		}
 		auto folderReference = PathUtils::RelativeInside(root, destination);
 		std::map<fs::path, fs::path, PathLess> files;
-		std::set<fs::path, PathLess> textures, scripts;
+		std::set<fs::path, PathLess> textures, scripts, uiTextures;
 		std::map<fs::path, bool, PathLess> audio;
 		const auto addFile = [&](const fs::path &path) {
 			const auto file = PackageFile(sourceRoot, path);
@@ -287,6 +290,13 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 							        PathUtils::RelativeInside(
 							            sourceRoot, action.scenePath));
 					}
+				if (object.image && !object.image->texture.empty()) {
+					const auto relative = addFile(object.image->texture);
+					if (uiTextures.insert(relative).second)
+						ValidateTexture(files.at(relative), 4096);
+					object.image->texture = AssetFolders::MakeReference(
+					    options.assetRoot, destination / relative);
+				}
 				if (object.script && !object.script->asset.empty()) {
 					const auto relative = addFile(object.script->asset);
 					if (scripts.insert(relative).second)
@@ -349,6 +359,9 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 		for (const auto &[relative, sourceFile] : files) {
 			output.Copy(sourceFile, relative);
 		}
+		for (const auto &relative : uiTextures)
+			ValidateTexture(PackageFile(destination, destination / relative),
+			                4096);
 		for (const auto &relative : textures) {
 			ValidateTexture(PackageFile(destination, destination / relative));
 		}
