@@ -15,6 +15,7 @@ void ScriptInspector::Clear() {
 	initial_.clear();
 	draft_.clear();
 	referenceName_ = "target";
+	prefabName_ = "prefab";
 	error_.clear();
 	edit_.clear();
 }
@@ -22,7 +23,8 @@ void ScriptInspector::Clear() {
 bool ScriptInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
                            SceneObjectId id, SceneObject &object,
                            EditorHistory &history,
-                           std::span<const std::filesystem::path> scripts) {
+                           std::span<const std::filesystem::path> scripts,
+                           std::span<const std::filesystem::path> prefabs) {
 	edit_.clear();
 	if (!object.script)
 		return false;
@@ -133,6 +135,60 @@ bool ScriptInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		}
 	}
 	ImGui::EndDisabled();
+
+	std::size_t removePrefab = value.prefabs.size();
+	ImGui::PushID("PrefabSlots");
+	for (std::size_t i = 0; i < value.prefabs.size(); ++i) {
+		ImGui::PushID(static_cast<int>(i));
+		auto &[name, path] = value.prefabs[i];
+		const auto prefabPreview = path.empty()
+		                               ? std::string("None")
+		                               : PathUtils::ToUtf8(path.filename());
+		const auto label = "Prefab: " + name;
+		if (ImGui::BeginCombo(label.c_str(), prefabPreview.c_str())) {
+			if (ui.Selectable("None", path.empty())) {
+				path.clear();
+				changed |= history.SetScript(id, value);
+			}
+			for (const auto &candidate : prefabs) {
+				const auto title = PathUtils::ToUtf8(candidate);
+				if (ui.Selectable(title.c_str(), path == candidate)) {
+					path = candidate;
+					changed |= history.SetScript(id, value);
+				}
+			}
+			ImGui::EndCombo();
+		}
+		if (auto droppedPrefab =
+		        AssetDragDrop::AcceptTarget(AssetDragDrop::Kind::PREFAB);
+		    !droppedPrefab.empty()) {
+			value.prefabs[i].second = std::move(droppedPrefab);
+			changed |= history.SetScript(id, value);
+		}
+		if (ui.Button("Remove Prefab"))
+			removePrefab = i;
+		ImGui::PopID();
+	}
+	if (removePrefab < value.prefabs.size()) {
+		value.prefabs.erase(value.prefabs.begin() +
+		                    static_cast<std::ptrdiff_t>(removePrefab));
+		changed |= history.SetScript(id, value);
+	}
+	ui.InputText("Prefab Name", prefabName_);
+	ImGui::BeginDisabled(value.prefabs.size() >=
+	                     ScriptComponent::kMaximumPrefabs);
+	if (ui.Button("Add Prefab")) {
+		auto next = value;
+		next.prefabs.emplace_back(prefabName_, std::filesystem::path{});
+		if (!next.IsValid())
+			error_ = "Use a unique, nonempty Prefab name of at most 64 bytes.";
+		else {
+			changed |= history.SetScript(id, next);
+			error_.clear();
+		}
+	}
+	ImGui::EndDisabled();
+	ImGui::PopID();
 	if (!error_.empty())
 		ImGui::TextWrapped("%s", error_.c_str());
 	if (ui.Button("Remove Lua Script")) {
@@ -153,6 +209,8 @@ void ScriptInspector::DrawReadOnly(
 	ui.Text(PathUtils::ToUtf8(object.script->asset));
 	for (const auto &[name, target] : object.script->references)
 		ui.Text(std::format("{}: ID {}", name, target));
+	for (const auto &[name, path] : object.script->prefabs)
+		ui.Text(std::format("Prefab {}: {}", name, PathUtils::ToUtf8(path)));
 	ui.Text("State");
 	if (state)
 		ImGui::TextWrapped("%.*s", static_cast<int>(state->size()),

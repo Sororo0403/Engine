@@ -1966,6 +1966,17 @@ void ControlsPanel::Draw() {
 	         "the current input. Stop/Restart/scene changes clear old UI "
 	         "presses and selection. Button settings support Undo/Redo, "
 	         "Prefabs, game output and import."},
+	        {"Script Prefabs",
+	         "In Inspector > Lua Script, enter a unique Prefab Name and Add "
+	         "Prefab. Assign a .prefab.json using the combo or drag it from "
+	         "Assets. None keeps an unassigned slot; Remove Prefab removes "
+	         "the slot. Assignments support Undo/Redo, copying and Prefab "
+	         "instances. Scene format v33 stores the names and paths; older "
+	         "scenes start without Prefab slots. Game output and import "
+	         "collect "
+	         "nested Prefabs and their model, image, audio, Lua and scene "
+	         "transition dependencies. Cycles are allowed and each asset is "
+	         "processed once, within the shared 256 scene/Prefab limit."},
 	        {"Collision Scripts",
 	         "Return collision_enter(self,state,other), collision_stay or "
 	         "collision_exit for solid Collider contacts. These are separate "

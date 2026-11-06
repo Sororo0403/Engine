@@ -36,10 +36,12 @@ class ScriptInspector {
 	/// <param name="object">編集する物体</param>
 	/// <param name="history">設定を記録する履歴</param>
 	/// <param name="scripts">割り当て可能なLuaファイル</param>
+	/// <param name="prefabs">割り当て可能なPrefabファイル</param>
 	/// <returns>true:設定変更あり false:変更なし</returns>
 	bool Draw(const ImGuiSystem &ui, const Scene &scene, SceneObjectId id,
 	          SceneObject &object, EditorHistory &history,
-	          std::span<const std::filesystem::path> scripts);
+	          std::span<const std::filesystem::path> scripts,
+	          std::span<const std::filesystem::path> prefabs = {});
 	/// <summary>
 	/// 再生中の設定と、物体ごとの現在のstateを変更せず表示する
 	/// </summary>
@@ -59,6 +61,7 @@ class ScriptInspector {
 
   private:
 	SceneObjectId draftObject_ = 0;
-	std::string initial_, draft_, referenceName_ = "target", error_;
+	std::string initial_, draft_, referenceName_ = "target",
+	                              prefabName_ = "prefab", error_;
 	std::filesystem::path edit_;
 };
