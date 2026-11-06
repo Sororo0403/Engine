@@ -504,4 +504,8 @@ exit /b 0</Command>
     <ClInclude Include="include\particles\ParticleEmitterInspector.h" />
     <ClCompile Include="src\particles\ParticleEmitterInspector.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\animation\AnimatorInspector.h" />
+    <ClCompile Include="src\animation\AnimatorInspector.cpp" />
+  </ItemGroup>
 </Project>

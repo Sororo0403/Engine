@@ -762,6 +762,21 @@ class EditorHistory {
 	bool BeginParticleEmitter(SceneObjectId id);
 
 	/// <summary>
+	/// モデル内クリップの再生設定を追加・変更・削除し、1回の履歴へ記録する
+	/// </summary>
+	/// <param name="id">編集する物体</param>
+	/// <param name="value">設定。nulloptは削除</param>
+	/// <returns>true:変更成功または同値 false:対象または設定が無効</returns>
+	bool SetAnimator(SceneObjectId id, std::optional<AnimatorComponent> value);
+
+	/// <summary>
+	/// モデル内クリップの速度などの連続編集を開始する
+	/// </summary>
+	/// <param name="id">Animatorを持つ物体</param>
+	/// <returns>true:開始成功 false:対象またはAnimatorなし</returns>
+	bool BeginAnimator(SceneObjectId id);
+
+	/// <summary>
 	/// Lua Scriptの追加・設定・削除を、初期状態を正規化して1操作として記録する
 	/// </summary>
 	/// <param name="id">対象物体</param>
@@ -862,10 +877,10 @@ class EditorHistory {
 	    ModelPathCommand, VisibilityCommand, ActiveCommand, ColliderCommand,
 	    CharacterCommand, FollowCameraCommand, TriggerActionsCommand,
 	    ScriptCommand, PointLightCommand, SpotLightCommand, MotionPathCommand,
-	    TransformAnimationCommand, ParticleEmitterCommand, CanvasCommand,
-	    ButtonCommand, RigidBodyCommand, RectTransformCommand, TextCommand,
-	    ImageCommand, AudioSourceCommand, AudioListenerCommand, RespawnCommand,
-	    CameraCommand, MeshRendererCommand, ColorTintCommand,
+	    TransformAnimationCommand, ParticleEmitterCommand, AnimatorCommand,
+	    CanvasCommand, ButtonCommand, RigidBodyCommand, RectTransformCommand,
+	    TextCommand, ImageCommand, AudioSourceCommand, AudioListenerCommand,
+	    RespawnCommand, CameraCommand, MeshRendererCommand, ColorTintCommand,
 	    TextureSlotsCommand, CommandGroup, ScenePatchCommand>;
 
 	/// <summary>
@@ -896,8 +911,8 @@ class EditorHistory {
 		    std::optional<MotionPathComponent>,
 		    std::optional<TransformAnimationComponent>,
 		    std::optional<ParticleEmitterComponent>,
-		    std::optional<CanvasComponent>, std::optional<ButtonComponent>,
-		    std::optional<RigidBodySettings>,
+		    std::optional<AnimatorComponent>, std::optional<CanvasComponent>,
+		    std::optional<ButtonComponent>, std::optional<RigidBodySettings>,
 		    std::optional<RectTransformComponent>, std::optional<TextComponent>,
 		    std::optional<ImageComponent>,
 

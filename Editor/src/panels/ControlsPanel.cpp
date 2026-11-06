@@ -1989,6 +1989,31 @@ void ControlsPanel::Draw() {
 	         "and 4096 scene objects. Any callback, physics or preparation "
 	         "failure restores the entire simulation step."},
 
+	        {"Animator",
+	         "Assign a GLB/glTF model with animation to Mesh, then add "
+	         "Animator. Choose a Default Clip, Speed, Loop and Play On Start "
+	         "in Inspector. Empty Default Clip uses the model's first clip. "
+	         "Settings support Undo/Redo, Scene/Prefab save, import and game "
+	         "output. LINEAR and STEP curves are supported; export cubic "
+	         "splines as sampled linear keys. Animator changes visual bones "
+	         "and mesh nodes, while Character Controller, Rigidbody and "
+	         "Collider keep using the object's Transform. It can coexist with "
+	         "Transform Animation and Motion Path. Play copies the scene; "
+	         "Pause freezes the clock, Step advances once, Restart resets it, "
+	         "inactive branches freeze and hide their poses. Lua can call "
+	         "play_clip(name, restart), play_clip(nil, false) to resume, "
+	         "pause_animator(), stop_animator() (returns to bind pose), "
+	         "seek_animator(seconds), set_animator_speed(speed), "
+	         "set_animator_loop(loop), get_animator_time(), "
+	         "get_animator_duration(), get_animator_speed(), "
+	         "get_animator_clip() and is_animator_playing(). Runtime clip, "
+	         "speed and loop changes do not edit the saved component. A failed "
+	         "script or physics update restores the previous clip, time and "
+	         "pose. Declared Prefab models are prepared before callbacks; a "
+	         "newly instantiated object can play a clip immediately. Meshes "
+	         "support eight bone influences per vertex and 256 bones per mesh. "
+	         "Color, shadow, bounds and picking use the same evaluated pose. "
+	         "Restart Play after reloading a model while playing."},
 	        {"Particle Emitter",
 	         "Add Component > Particle Emitter creates visual smoke, sparks "
 	         "and bursts "

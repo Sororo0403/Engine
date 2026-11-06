@@ -1,5 +1,7 @@
 #include "assets/SceneAssetValidation.h"
+#include "animation/SceneAnimators.h"
 #include "scripting/LuaScript.h"
+#include <algorithm>
 
 #include "assets/AssetDependencies.h"
 #include "assets/ImageValidation.h"
@@ -188,5 +190,15 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 		}
 	}
 
+	if (std::any_of(scene.GetObjects().begin(), scene.GetObjects().end(),
+	                [](const auto &entry) {
+		                return entry.second.animator.has_value();
+	                })) {
+		SceneAnimators validation;
+		std::string issue;
+		SceneObjectId object = 0;
+		if (!validation.Configure(scene, false, issue, &object))
+			issues.push_back({object, "Animator: " + issue});
+	}
 	return issues;
 }

@@ -100,6 +100,9 @@ using AudioSourceCommand =
 using AudioListenerCommand =
     ComponentCommand<AudioListenerComponent, &SceneObject::audioListener>;
 
+using AnimatorCommand =
+    ComponentCommand<AnimatorComponent, &SceneObject::animator>;
+
 using ParticleEmitterCommand =
     ComponentCommand<ParticleEmitterComponent, &SceneObject::particleEmitter>;
 

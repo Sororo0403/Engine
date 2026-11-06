@@ -19,6 +19,15 @@ EditorPlayMode::EditorPlayMode(ModelManager &models, RenderSystem &render,
       previewRenderer_(preview_.GetScene(), models, render,
                        SceneRenderer::ModelLoadFailure::SKIP),
       render_(render), models_(models) {
+	session_.SetAnimatorModelLoading(
+	    [&models](const std::filesystem::path &path, std::string &error) {
+		    auto data = models.GetAnimationData(models.Load(path));
+		    if (!data)
+			    error = "The model has no usable animation data.";
+		    else
+			    error.clear();
+		    return data;
+	    });
 	session_.SetPrefabResourcePreparation(
 	    [this, &clips](auto prefabs, std::string &error) {
 		    return renderer_.PreparePrefabResources(prefabs, clips, error);
@@ -436,6 +445,10 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 		return true;
 	}
 
+	std::vector<AnimatorDrawPose> poses;
+	if (!session_.GetAnimatorPoses(poses, lastUpdateError_) ||
+	    !renderer_.SetAnimatorPoses(std::move(poses)))
+		return false;
 	std::vector<ParticleDrawBatch> particles;
 	if (!session_.GetParticles(particles, lastUpdateError_))
 		return false;

@@ -1525,6 +1525,10 @@ bool EditorHistory::HasPendingChanges() const {
 		                             Before,
 		                             std::optional<ParticleEmitterComponent>>) {
 			    return before != object->particleEmitter;
+		    } else if constexpr (std::is_same_v<
+		                             Before,
+		                             std::optional<AnimatorComponent>>) {
+			    return before != object->animator;
 		    } else if constexpr (std::is_same_v<Before,
 		                                        std::optional<ColorTint>>) {
 			    return before != object->colorTint;
@@ -1751,6 +1755,13 @@ void EditorHistory::CommitEdit() {
 		return;
 	}
 
+	if (std::holds_alternative<std::optional<AnimatorComponent>>(
+	        pending_->before) &&
+	    object->animator && !object->animator->IsValid()) {
+		Invalidate();
+		return;
+	}
+
 	if (std::holds_alternative<std::optional<ColorTint>>(pending_->before) &&
 	    object->colorTint && !object->colorTint->IsValid()) {
 		Invalidate();
@@ -1856,6 +1867,11 @@ void EditorHistory::CommitEdit() {
 		                             std::optional<ParticleEmitterComponent>>) {
 			    return Command{ParticleEmitterCommand{objectId, before,
 			                                          object->particleEmitter}};
+		    } else if constexpr (std::is_same_v<
+		                             Before,
+		                             std::optional<AnimatorComponent>>) {
+			    return Command{
+			        AnimatorCommand{objectId, before, object->animator}};
 		    } else if constexpr (std::is_same_v<Before,
 		                                        std::optional<ColorTint>>) {
 			    return Command{
@@ -1953,6 +1969,9 @@ void EditorHistory::CommitEdit() {
 		                             T,
 		                             std::optional<ParticleEmitterComponent>>) {
 			    return "Edit Particle Emitter";
+		    } else if constexpr (std::is_same_v<
+		                             T, std::optional<AnimatorComponent>>) {
+			    return "Edit Animator";
 		    } else if constexpr (std::is_same_v<T, std::optional<ColorTint>>) {
 			    return "Edit Color Tint";
 		    } else if constexpr (std::is_same_v<
@@ -3133,6 +3152,47 @@ bool EditorHistory::BeginParticleEmitter(SceneObjectId id) {
 	}
 
 	pending_ = PendingEdit{id, object->particleEmitter};
+	return true;
+}
+
+bool EditorHistory::SetAnimator(SceneObjectId id,
+                                std::optional<AnimatorComponent> value) {
+	CommitEdit();
+	auto *object = scene_.FindObject(id);
+
+	if (!object || (value && !value->IsValid())) {
+		return false;
+	}
+
+	const bool adding = !object->animator;
+	AnimatorCommand command{id, object->animator, value};
+
+	if (!command.HasChanges()) {
+		return true;
+	}
+
+	const auto next = PrepareAppend();
+
+	if (!command.Redo(scene_)) {
+		return false;
+	}
+
+	AppendPrepared(Command{std::move(command)}, next,
+	               !value   ? "Remove Animator"
+	               : adding ? "Add Animator"
+	                        : "Edit Animator");
+	return true;
+}
+
+bool EditorHistory::BeginAnimator(SceneObjectId id) {
+	CommitEdit();
+	const auto *object = scene_.FindObject(id);
+
+	if (!object || !object->animator) {
+		return false;
+	}
+
+	pending_ = PendingEdit{id, object->animator};
 	return true;
 }
 

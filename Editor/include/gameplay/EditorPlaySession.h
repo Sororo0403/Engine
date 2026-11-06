@@ -15,6 +15,35 @@ class EditorPlaySession {
 
   public:
 	/// <summary>
+	/// 描画と同じモデル内クリップを準備する処理を登録する
+	/// </summary>
+	/// <param name="load">モデル所有側の読み込み処理。StopとRestartでも保持する</param>
+	void SetAnimatorModelLoading(SceneAnimators::LoadModel load) {
+		simulation_.SetAnimatorModelLoading(std::move(load));
+	}
+
+	/// <summary>
+	/// 実行中のモデル内クリップと再生指定を取得する
+	/// </summary>
+	/// <param name="id">再生物体ID</param>
+	/// <returns>状態。対象なしはnullopt</returns>
+	std::optional<AnimatorPlaybackState>
+	GetAnimatorState(SceneObjectId id) const {
+		return simulation_.GetAnimatorState(id);
+	}
+
+	/// <summary>
+	/// SceneとGameに同じ骨・ノード姿勢を渡す
+	/// </summary>
+	/// <param name="poses">成功時だけ置き換える一覧</param>
+	/// <param name="error">失敗理由</param>
+	/// <returns>true:成功 false:対象・階層が無効</returns>
+	bool GetAnimatorPoses(std::vector<AnimatorDrawPose> &poses,
+	                      std::string &error) const {
+		return simulation_.GetAnimatorPoses(poses, error);
+	}
+
+	/// <summary>
 	/// 再生用の粒子を描画用に複製する
 	/// </summary>
 	/// <param name="batches">成功時だけ置き換えるワールド座標の粒子</param>

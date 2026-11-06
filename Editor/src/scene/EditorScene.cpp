@@ -5109,6 +5109,12 @@ bool EditorScene::UpdatePlaySceneView(float deltaTime, EditorAction action,
 		return false;
 	}
 	playSceneRenderer_.SetParticles(std::move(particles));
+	std::vector<AnimatorDrawPose> poses;
+	if (!playMode_.GetSession().GetAnimatorPoses(poses, particleError) ||
+	    !playSceneRenderer_.SetAnimatorPoses(std::move(poses))) {
+		Logger::Error(particleError);
+		return false;
+	}
 	if (!playSceneRenderer_.SetCameraSettings(sceneProjection_) ||
 	    !playSceneRenderer_.SetLighting(playMode_.GetLighting()) ||
 	    !playSceneRenderer_.SetCameraPose(cameraController_.GetPose()) ||

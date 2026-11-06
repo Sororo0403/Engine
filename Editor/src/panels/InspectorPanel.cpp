@@ -1,4 +1,5 @@
 #include "panels/InspectorPanel.h"
+#include "animation/AnimatorInspector.h"
 #include "animation/TransformAnimationInspector.h"
 #include "appearance/ColorTintInspector.h"
 #include "appearance/TextureSlotInspector.h"
@@ -388,6 +389,8 @@ bool InspectorPanel::Draw(
 	    ui, inspectedObjectId, *object, history,
 	    assets ? std::span<const std::filesystem::path>{assets->GetTextures()}
 	           : std::span<const std::filesystem::path>{});
+	changed |= AnimatorInspector{}.Draw(ui, inspectedObjectId, *object, history,
+	                                    models);
 	changed |= TransformAnimationInspector{}.Draw(ui, inspectedObjectId,
 	                                              *object, history);
 
@@ -490,6 +493,9 @@ bool InspectorPanel::Draw(
 		if (ui.MenuItem("Lua Script", nullptr, !object->script))
 			changed |= history.SetScript(inspectedObjectId, ScriptComponent{});
 
+		if (ui.MenuItem("Animator", nullptr, !object->animator))
+			changed |=
+			    history.SetAnimator(inspectedObjectId, AnimatorComponent{});
 		if (ui.MenuItem("Particle Emitter", nullptr, !object->particleEmitter))
 			changed |= history.SetParticleEmitter(inspectedObjectId,
 			                                      ParticleEmitterComponent{});
@@ -861,6 +867,7 @@ std::optional<Transform> InspectorPanel::DrawReadOnly(
 	MotionPathInspector{}.DrawReadOnly(ui, *object);
 	TransformAnimationInspector{}.DrawReadOnly(ui, *object);
 	ParticleEmitterInspector{}.DrawReadOnly(ui, *object);
+	AnimatorInspector{}.DrawReadOnly(ui, *object);
 
 	TriggerActionsInspector{}.DrawReadOnly(ui, scene, *object);
 

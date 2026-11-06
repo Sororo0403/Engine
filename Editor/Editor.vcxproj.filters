@@ -861,4 +861,8 @@
     <ClInclude Include="include\particles\ParticleEmitterInspector.h"><Filter>include\particles</Filter></ClInclude>
     <ClCompile Include="src\particles\ParticleEmitterInspector.cpp"><Filter>src\particles</Filter></ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\animation\AnimatorInspector.h"><Filter>include\animation</Filter></ClInclude>
+    <ClCompile Include="src\animation\AnimatorInspector.cpp"><Filter>src\animation</Filter></ClCompile>
+  </ItemGroup>
 </Project>
