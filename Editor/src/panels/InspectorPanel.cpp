@@ -823,6 +823,19 @@ InspectorPanel::DrawReadOnly(const ImGuiSystem &ui, const Scene &scene,
 		ui.DragFloat3("Camera Offset", settings.offset, 0.01f, 0.0f, 0.0f);
 		ui.DragFloat3("Look Offset", settings.lookOffset, 0.01f, 0.0f, 0.0f);
 		ImGui::DragFloat("Follow Smoothing", &settings.smoothing);
+		ui.Checkbox("Orbit Input", settings.orbit.enabled);
+		if (settings.orbit.enabled) {
+			ui.Text(std::format(
+			    "Mouse: {:.2f} / Stick: {:.2f} deg/s / Zoom: {:.2f}",
+			    settings.orbit.mouseSensitivity, settings.orbit.stickSpeed,
+			    settings.orbit.zoomSensitivity));
+			ui.Text(std::format(
+			    "Pitch: {:.2f} to {:.2f} / Distance: {:.2f} to {:.2f}",
+			    settings.orbit.minimumPitch, settings.orbit.maximumPitch,
+			    settings.orbit.minimumDistance,
+			    settings.orbit.maximumDistance));
+		}
+
 		ui.EndDisabled();
 	}
 

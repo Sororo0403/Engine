@@ -281,6 +281,46 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		                      &EditorHistory::BeginFollowCamera);
 		ui.EndDisabled();
 
+		edited = *object.followCamera;
+		value = ImGui::Checkbox("Orbit Input", &edited.orbit.enabled);
+		changed |= ApplyField(history, id, object.followCamera, edited, value,
+		                      &EditorHistory::BeginFollowCamera);
+
+		if (object.followCamera->orbit.enabled) {
+			// 各連続編集を既存のFollow Camera履歴へまとめる。
+			const auto orbitField =
+			    [&](const char *label, float OrbitCameraSettings::*member,
+			        float speed, float minimum, float maximum) {
+				    auto next = *object.followCamera;
+				    const bool fieldChanged = ImGui::DragFloat(
+				        label, &(next.orbit.*member), speed, minimum, maximum,
+				        "%.2f", ImGuiSliderFlags_AlwaysClamp);
+				    return ApplyField(history, id, object.followCamera, next,
+				                      fieldChanged,
+				                      &EditorHistory::BeginFollowCamera);
+			    };
+			changed |= orbitField("Mouse Sensitivity",
+			                      &OrbitCameraSettings::mouseSensitivity, 0.01f,
+			                      0.01f, 10);
+			changed |= orbitField("Stick Degrees Per Second",
+			                      &OrbitCameraSettings::stickSpeed, 1, 1, 720);
+			changed |= orbitField("Zoom Sensitivity",
+			                      &OrbitCameraSettings::zoomSensitivity, 0.01f,
+			                      0.01f, 5);
+			changed |=
+			    orbitField("Minimum Pitch", &OrbitCameraSettings::minimumPitch,
+			               0.5f, -89, object.followCamera->orbit.maximumPitch);
+			changed |=
+			    orbitField("Maximum Pitch", &OrbitCameraSettings::maximumPitch,
+			               0.5f, object.followCamera->orbit.minimumPitch, 89);
+			changed |= orbitField(
+			    "Minimum Distance", &OrbitCameraSettings::minimumDistance,
+			    0.05f, 0.01f, object.followCamera->orbit.maximumDistance);
+			changed |= orbitField(
+			    "Maximum Distance", &OrbitCameraSettings::maximumDistance,
+			    0.05f, object.followCamera->orbit.minimumDistance, 10000);
+		}
+
 		ui.BeginDisabled(!object.camera || !object.camera->IsValid() ||
 		                 !object.followCamera->IsValid() || !currentTarget ||
 		                 object.followCamera->target == id);
