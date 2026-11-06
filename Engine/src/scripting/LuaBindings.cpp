@@ -406,6 +406,7 @@ int LuaInternal::OpenEnvironment(lua_State *state, Call &call) {
 	Method(state, "set_rotation", Op::SET_ROTATION);
 	Method(state, "get_scale", Op::SCALE);
 	Method(state, "set_scale", Op::SET_SCALE);
+	LuaInternal::AddUIMethods(state);
 	lua_setfield(state, -2, "__index");
 	lua_pop(state, 1);
 	lua_newtable(state);

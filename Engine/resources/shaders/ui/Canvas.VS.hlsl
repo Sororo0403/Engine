@@ -1,0 +1,18 @@
+﻿cbuffer Element : register(b0) {
+    float4 rectangle;
+    float4 tint;
+};
+struct Output {
+    float4 position : SV_POSITION;
+    float2 uv : TEXCOORD0;
+};
+Output main(uint id : SV_VertexID) {
+    static const float2 corners[6] = {
+        float2(0, 0), float2(1, 0), float2(0, 1),
+        float2(0, 1), float2(1, 0), float2(1, 1)
+    };
+    Output result;
+    result.uv = corners[id];
+    result.position = float4(rectangle.xy + result.uv * rectangle.zw, 0, 1);
+    return result;
+}

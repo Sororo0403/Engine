@@ -5,6 +5,7 @@
 #include "graphics/render/RenderSystem.h"
 #include "graphics/render/RenderTexture.h"
 #include "graphics/render/RenderWorld.h"
+#include "graphics/ui/CanvasRenderer.h"
 #include "scene/Scene.h"
 #include "scene/SceneActivity.h"
 #include "scene/SceneHierarchy.h"
@@ -54,6 +55,11 @@ bool SceneRenderer::Initialize() {
 		return false;
 	}
 
+	canvas_ = render_.CreateCanvas(modelLoadFailure_ == ModelLoadFailure::SKIP);
+	if (!canvas_) {
+		world_.reset();
+		return false;
+	}
 	return true;
 }
 
@@ -69,10 +75,14 @@ bool SceneRenderer::Update(int width, int height) {
 		}
 
 		if (width == 0 && height == 0) {
-			return render_.Update(*world_);
+			return render_.Update(*world_) &&
+			       (!screenUIEnabled_ ||
+			        render_.UpdateCanvas(*canvas_, scene_));
 		}
 
-		return render_.Update(*world_, width, height);
+		return render_.Update(*world_, width, height) &&
+		       (!screenUIEnabled_ ||
+		        render_.UpdateCanvas(*canvas_, scene_, width, height));
 	} catch (const std::exception &error) {
 		Logger::Error(std::format(
 		    "SceneRendererの更新中に例外が発生しました: {}", error.what()));
@@ -95,9 +105,10 @@ void SceneRenderer::Draw(RenderTexture *target) const {
 		    1.0f,
 		};
 
-		render_.Draw(*world_, *target, clearColor);
+		render_.Draw(*world_, *target, clearColor,
+		             screenUIEnabled_ ? canvas_.get() : nullptr);
 	} else {
-		render_.Draw(*world_);
+		render_.Draw(*world_, screenUIEnabled_ ? canvas_.get() : nullptr);
 	}
 }
 
@@ -275,6 +286,7 @@ bool SceneRenderer::SynchronizeObjects() {
 void SceneRenderer::Finalize() {
 	// GPUの利用完了後に描画ワールドを解放する
 	world_.reset();
+	canvas_.reset();
 	objects_.clear();
 	modelRevision_ = 0;
 }

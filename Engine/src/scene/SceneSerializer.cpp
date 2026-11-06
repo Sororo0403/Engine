@@ -1,5 +1,6 @@
 #include "scene/SceneSerializer.h"
 #include "LegacyMaterial.h"
+#include "SceneUISerializer.h"
 
 #include "core/Logger.h"
 #include "math/MathUtils.h"
@@ -404,6 +405,7 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 				                                {"range", light.range}};
 			}
 
+			SceneUISerializer::Write(objects.back(), object);
 			if (object.script) {
 				const auto &script = *object.script;
 				Json references = Json::array();
@@ -728,6 +730,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 				                        light.at("range").get<float>()};
 			}
 
+			SceneUISerializer::Read(item, object, version);
 			if (version >= 29 && item.contains("script")) {
 				const auto &value = item.at("script");
 				if (!value.at("asset").is_string() ||

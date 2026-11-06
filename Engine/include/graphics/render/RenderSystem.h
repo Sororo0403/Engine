@@ -10,6 +10,8 @@ class MeshRenderer;
 class WinApp;
 class RenderTexture;
 class DebugLineRenderer;
+class CanvasRenderer;
+class Scene;
 
 /// <summary>
 /// 描画ワールドの生成・描画準備・描画の実行を担当する
@@ -52,8 +54,10 @@ class RenderSystem {
 	/// <param name="world">描画するワールド</param>
 	/// <param name="target">描画先</param>
 	/// <param name="clearColor">赤・緑・青・アルファの4要素</param>
+	/// <param name="canvas">3Dの後に重ねるUI。nullptrはUIなし</param>
 	void Draw(const RenderWorld &world, RenderTexture &target,
-	          const float (&clearColor)[4]) const;
+	          const float (&clearColor)[4],
+	          const CanvasRenderer *canvas = nullptr) const;
 
 	/// <summary>
 	/// シーン専用の描画ワールドを作成する
@@ -72,13 +76,32 @@ class RenderSystem {
 	/// 現在の描画先へワールドの描画命令を記録する
 	/// </summary>
 	/// <param name="world">描画するワールド</param>
-	void Draw(const RenderWorld &world) const;
+	/// <param name="canvas">3Dの後に重ねるUI。nullptrはUIなし</param>
+	void Draw(const RenderWorld &world,
+	          const CanvasRenderer *canvas = nullptr) const;
 
 	/// <summary>
 	/// 描画基盤で共有する、モデルから独立した材質管理を取得する
 	/// </summary>
 	/// <returns>GPU完了後に利用する材質管理</returns>
 	MaterialManager &GetMaterials();
+
+	/// <summary>
+	/// 同じ描画基盤を使用する、遅延初期化のCanvas描画を作る
+	/// </summary>
+	/// <param name="skipUnavailable">true:編集用に未設定・読み込み不能のUI要素を省略する</param>
+	/// <returns>成功:描画クラス 失敗:nullptr</returns>
+	std::unique_ptr<CanvasRenderer> CreateCanvas(bool skipUnavailable = false);
+	/// <summary>
+	/// Canvasの素材と配置をGPU完了後に準備する
+	/// </summary>
+	/// <param name="canvas">この描画基盤から作成したCanvas描画</param>
+	/// <param name="scene">表示するシーン</param>
+	/// <param name="width">描画幅。高さと共に0の場合はウィンドウサイズ</param>
+	/// <param name="height">描画高さ</param>
+	/// <returns>true:成功 false:配置・素材・描画準備が無効</returns>
+	bool UpdateCanvas(CanvasRenderer &canvas, const Scene &scene, int width = 0,
+	                  int height = 0);
 
   private:
 	MaterialManager materials_;

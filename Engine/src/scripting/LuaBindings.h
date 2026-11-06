@@ -44,6 +44,12 @@ struct Call {
 int OpenEnvironment(lua_State *state, Call &call);
 
 /// <summary>
+/// 直前の物体メソッドテーブルへ、文字・矩形・UI色のAPIを登録する
+/// </summary>
+/// <param name="state">保護呼び出し内のLua状態</param>
+void AddUIMethods(lua_State *state);
+
+/// <summary>
 /// 物体IDを、アドレスを公開しない読み取り専用userdataへ変換する
 /// </summary>
 /// <param name="state">Lua状態</param>

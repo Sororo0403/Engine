@@ -1,6 +1,7 @@
 #include "graphics/render/RenderSystem.h"
 #include "core/Logger.h"
 #include "graphics/render/RenderTexture.h"
+#include "graphics/ui/CanvasRenderer.h"
 #include "platform/windows/WinApp.h"
 
 #include <exception>
@@ -40,7 +41,8 @@ bool RenderSystem::Update(RenderWorld &world, int width, int height) {
 }
 
 void RenderSystem::Draw(const RenderWorld &world, RenderTexture &target,
-                        const float (&clearColor)[4]) const {
+                        const float (&clearColor)[4],
+                        const CanvasRenderer *canvas) const {
 	if (!world.Uses(graphics_) || !target.Uses(graphics_)) {
 		Logger::Error("RenderSystem::Draw: 描画基盤が異なります。");
 		return;
@@ -51,6 +53,8 @@ void RenderSystem::Draw(const RenderWorld &world, RenderTexture &target,
 	}
 
 	world.Draw(renderer_, debugRenderer_);
+	if (canvas)
+		canvas->Draw();
 
 	target.End();
 }
@@ -77,15 +81,44 @@ bool RenderSystem::Update(RenderWorld &world) {
 	return Update(world, app_.GetWidth(), app_.GetHeight());
 }
 
-void RenderSystem::Draw(const RenderWorld &world) const {
+void RenderSystem::Draw(const RenderWorld &world,
+                        const CanvasRenderer *canvas) const {
 	if (!world.Uses(graphics_)) {
 		Logger::Error("RenderSystem::Draw: 描画基盤が異なります。");
 		return;
 	}
 
 	world.Draw(renderer_, debugRenderer_);
+	if (canvas)
+		canvas->Draw();
 }
 
 MaterialManager &RenderSystem::GetMaterials() {
 	return materials_;
+}
+
+std::unique_ptr<CanvasRenderer>
+RenderSystem::CreateCanvas(bool skipUnavailable) {
+	try {
+		return std::make_unique<CanvasRenderer>(
+		    graphics_, skipUnavailable ? CanvasRenderer::Failure::SKIP_ELEMENT
+		                               : CanvasRenderer::Failure::FAIL);
+	} catch (const std::exception &error) {
+		Logger::Error(std::format("CreateCanvas: {}", error.what()));
+		return nullptr;
+	}
+}
+
+bool RenderSystem::UpdateCanvas(CanvasRenderer &canvas, const Scene &scene,
+                                int width, int height) {
+	if (width == 0 && height == 0) {
+		width = app_.GetWidth();
+		height = app_.GetHeight();
+	}
+	std::string error;
+	if (!canvas.Update(scene, width, height, error)) {
+		Logger::Error(error);
+		return false;
+	}
+	return true;
 }

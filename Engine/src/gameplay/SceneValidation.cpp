@@ -1,4 +1,5 @@
 #include "gameplay/SceneValidation.h"
+#include "ui/CanvasLayout.h"
 
 #include "gameplay/CharacterController.h"
 #include "gameplay/SceneCameraUtils.h"
@@ -53,6 +54,12 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 	                                      &invalidLight)) {
 		add(invalidLight, lightError);
 	}
+	std::vector<UIElement> uiElements;
+	std::string uiError;
+	SceneObjectId invalidUI = 0;
+	if (!CanvasLayout::Collect(scene, 1280, 720, uiElements, uiError,
+	                           &invalidUI))
+		add(invalidUI, uiError);
 	Scene resolved;
 	std::string followError;
 	std::vector<SceneObjectId> order;

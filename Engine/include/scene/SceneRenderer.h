@@ -22,6 +22,7 @@ class RenderSystem;
 class RenderWorld;
 class Scene;
 class RenderTexture;
+class CanvasRenderer;
 struct Ray;
 
 /// <summary>
@@ -165,6 +166,15 @@ class SceneRenderer {
 	/// <remarks>最後のAddDebugLine後、Drawより前に呼び出す</remarks>
 	bool UpdateDebugLines();
 
+	/// <summary>
+	/// 3Dの後に画面上のCanvasを描くか指定する。Scene編集ビューでは無効にする
+	/// </summary>
+	/// <param name="enabled">true:UIを表示 false:3Dだけ表示</param>
+	/// <remarks>次のUpdateより前に呼ぶ</remarks>
+	void SetScreenUIEnabled(bool enabled) {
+		screenUIEnabled_ = enabled;
+	}
+
   private:
 	/// <summary>
 	/// シーン上の物体と対応する描画物体の情報
@@ -190,6 +200,8 @@ class SceneRenderer {
 	const ModelLoadFailure modelLoadFailure_;
 
 	std::unique_ptr<RenderWorld> world_;
+	std::unique_ptr<CanvasRenderer> canvas_;
+	bool screenUIEnabled_ = true;
 
 	// シーン上の物体IDと、対応する描画物体の情報
 	std::map<SceneObjectId, Object> objects_;

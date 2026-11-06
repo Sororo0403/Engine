@@ -807,4 +807,27 @@
     <ClCompile Include="external\lua\src\lzio.c" />
     <ClInclude Include="external\lua\src\lzio.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\scene\CanvasComponent.h" />
+    <ClCompile Include="src\scene\CanvasComponent.cpp" />
+    <ClInclude Include="include\scene\RectTransformComponent.h" />
+    <ClCompile Include="src\scene\RectTransformComponent.cpp" />
+    <ClInclude Include="include\scene\TextComponent.h" />
+    <ClCompile Include="src\scene\TextComponent.cpp" />
+    <ClInclude Include="include\scene\ImageComponent.h" />
+    <ClCompile Include="src\scene\ImageComponent.cpp" />
+    <ClInclude Include="include\ui\CanvasLayout.h" />
+    <ClCompile Include="src\ui\CanvasLayout.cpp" />
+    <ClInclude Include="src\scene\SceneUISerializer.h" />
+    <ClCompile Include="src\scene\SceneUISerializer.cpp" />
+    <ClInclude Include="include\platform\windows\TextRasterizer.h" />
+    <ClCompile Include="src\platform\windows\TextRasterizer.cpp" />
+    <ClInclude Include="include\graphics\ui\CanvasRenderer.h" />
+    <None Include="resources\shaders\ui\Canvas.VS.hlsl" />
+    <None Include="resources\shaders\ui\Canvas.PS.hlsl" />
+    <ClCompile Include="src\graphics\ui\CanvasRenderer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\scripting\LuaUIBindings.cpp" />
+  </ItemGroup>
 </Project>

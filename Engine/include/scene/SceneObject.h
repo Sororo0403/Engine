@@ -1,4 +1,8 @@
 #pragma once
+#include "scene/CanvasComponent.h"
+#include "scene/ImageComponent.h"
+#include "scene/RectTransformComponent.h"
+#include "scene/TextComponent.h"
 
 #include "gameplay/CharacterSettings.h"
 #include "gameplay/FollowCameraSettings.h"
@@ -67,6 +71,11 @@ struct SceneObject {
 	std::optional<MotionPathComponent> motionPath;
 	// Luaのコールバック・開始状態・物体参照。VMと実行中のstateはシミュレーション側で保持する
 	std::optional<ScriptComponent> script;
+	// 画面上のUI。3DのTransformとは独立した座標系でレイアウトする
+	std::optional<CanvasComponent> canvas;
+	std::optional<RectTransformComponent> rectTransform;
+	std::optional<TextComponent> text;
+	std::optional<ImageComponent> image;
 
 	/// <summary>
 	/// Meshに形状の参照が割り当てられているか確認する
