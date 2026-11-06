@@ -496,4 +496,8 @@ exit /b 0</Command>
     <ClInclude Include="include\ui\UIObjects.h" />
     <ClCompile Include="src\ui\UIObjects.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\animation\TransformAnimationInspector.h" />
+    <ClCompile Include="src\animation\TransformAnimationInspector.cpp" />
+  </ItemGroup>
 </Project>

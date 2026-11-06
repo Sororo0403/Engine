@@ -1,4 +1,5 @@
 #include "panels/InspectorPanel.h"
+#include "animation/TransformAnimationInspector.h"
 #include "appearance/ColorTintInspector.h"
 #include "appearance/TextureSlotInspector.h"
 #include "gameplay/MotionPathInspector.h"
@@ -382,6 +383,8 @@ bool InspectorPanel::Draw(
 	           : std::span<const std::filesystem::path>{});
 	changed |=
 	    MotionPathInspector{}.Draw(ui, inspectedObjectId, *object, history);
+	changed |= TransformAnimationInspector{}.Draw(ui, inspectedObjectId,
+	                                              *object, history);
 
 	if (object->mesh && ui.CollapsingHeader("Mesh")) {
 		const auto label = std::format(
@@ -481,6 +484,11 @@ bool InspectorPanel::Draw(
 			    history.SetRigidBody(inspectedObjectId, RigidBodySettings{});
 		if (ui.MenuItem("Lua Script", nullptr, !object->script))
 			changed |= history.SetScript(inspectedObjectId, ScriptComponent{});
+
+		if (ui.MenuItem("Transform Animation", nullptr,
+		                !object->transformAnimation))
+			changed |= history.SetTransformAnimation(
+			    inspectedObjectId, TransformAnimationComponent{});
 		if (ui.MenuItem("Motion Path", nullptr, !object->motionPath)) {
 			changed |=
 			    history.SetMotionPath(inspectedObjectId, MotionPathComponent{});
@@ -843,6 +851,7 @@ std::optional<Transform> InspectorPanel::DrawReadOnly(
 	PointLightInspector{}.DrawReadOnly(ui, *object);
 	SpotLightInspector{}.DrawReadOnly(ui, *object);
 	MotionPathInspector{}.DrawReadOnly(ui, *object);
+	TransformAnimationInspector{}.DrawReadOnly(ui, *object);
 
 	TriggerActionsInspector{}.DrawReadOnly(ui, scene, *object);
 

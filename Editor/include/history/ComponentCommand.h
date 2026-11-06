@@ -100,6 +100,10 @@ using AudioSourceCommand =
 using AudioListenerCommand =
     ComponentCommand<AudioListenerComponent, &SceneObject::audioListener>;
 
+using TransformAnimationCommand =
+    ComponentCommand<TransformAnimationComponent,
+                     &SceneObject::transformAnimation>;
+
 using MotionPathCommand =
     ComponentCommand<MotionPathComponent, &SceneObject::motionPath>;
 

@@ -1516,6 +1516,11 @@ bool EditorHistory::HasPendingChanges() const {
 		                             Before,
 		                             std::optional<MotionPathComponent>>) {
 			    return before != object->motionPath;
+		    } else if constexpr (std::is_same_v<
+		                             Before,
+		                             std::optional<
+		                                 TransformAnimationComponent>>) {
+			    return before != object->transformAnimation;
 		    } else if constexpr (std::is_same_v<Before,
 		                                        std::optional<ColorTint>>) {
 			    return before != object->colorTint;
@@ -1728,6 +1733,13 @@ void EditorHistory::CommitEdit() {
 		return;
 	}
 
+	if (std::holds_alternative<std::optional<TransformAnimationComponent>>(
+	        pending_->before) &&
+	    object->transformAnimation && !object->transformAnimation->IsValid()) {
+		Invalidate();
+		return;
+	}
+
 	if (std::holds_alternative<std::optional<ColorTint>>(pending_->before) &&
 	    object->colorTint && !object->colorTint->IsValid()) {
 		Invalidate();
@@ -1822,6 +1834,12 @@ void EditorHistory::CommitEdit() {
 		                             std::optional<MotionPathComponent>>) {
 			    return Command{
 			        MotionPathCommand{objectId, before, object->motionPath}};
+		    } else if constexpr (std::is_same_v<
+		                             Before,
+		                             std::optional<
+		                                 TransformAnimationComponent>>) {
+			    return Command{TransformAnimationCommand{
+			        objectId, before, object->transformAnimation}};
 		    } else if constexpr (std::is_same_v<Before,
 		                                        std::optional<ColorTint>>) {
 			    return Command{
@@ -1911,6 +1929,10 @@ void EditorHistory::CommitEdit() {
 		    } else if constexpr (std::is_same_v<
 		                             T, std::optional<MotionPathComponent>>) {
 			    return "Edit Motion Path";
+		    } else if constexpr (std::is_same_v<
+		                             T, std::optional<
+		                                    TransformAnimationComponent>>) {
+			    return "Edit Transform Animation";
 		    } else if constexpr (std::is_same_v<T, std::optional<ColorTint>>) {
 			    return "Edit Color Tint";
 		    } else if constexpr (std::is_same_v<
@@ -3009,6 +3031,47 @@ bool EditorHistory::BeginMotionPath(SceneObjectId id) {
 	}
 
 	pending_ = PendingEdit{id, object->motionPath};
+	return true;
+}
+
+bool EditorHistory::SetTransformAnimation(
+    SceneObjectId id, std::optional<TransformAnimationComponent> value) {
+	CommitEdit();
+	auto *object = scene_.FindObject(id);
+
+	if (!object || (value && !value->IsValid())) {
+		return false;
+	}
+
+	const bool adding = !object->transformAnimation;
+	TransformAnimationCommand command{id, object->transformAnimation, value};
+
+	if (!command.HasChanges()) {
+		return true;
+	}
+
+	const auto next = PrepareAppend();
+
+	if (!command.Redo(scene_)) {
+		return false;
+	}
+
+	AppendPrepared(Command{std::move(command)}, next,
+	               !value   ? "Remove Transform Animation"
+	               : adding ? "Add Transform Animation"
+	                        : "Edit Transform Animation");
+	return true;
+}
+
+bool EditorHistory::BeginTransformAnimation(SceneObjectId id) {
+	CommitEdit();
+	const auto *object = scene_.FindObject(id);
+
+	if (!object || !object->transformAnimation) {
+		return false;
+	}
+
+	pending_ = PendingEdit{id, object->transformAnimation};
 	return true;
 }
 

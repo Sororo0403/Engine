@@ -724,7 +724,25 @@ class EditorHistory {
 	/// </summary>
 	/// <param name="id">経路を持つ物体</param>
 	/// <returns>true:開始成功 false:対象または経路なし</returns>
+
 	bool BeginMotionPath(SceneObjectId id);
+
+	/// <summary>
+	/// 変形アニメーションを追加・変更・削除し、1回の履歴へ記録する
+	/// </summary>
+	/// <param name="id">編集する物体</param>
+	/// <param name="value">キーと再生設定。nulloptは削除</param>
+	/// <returns>true:変更成功または同値 false:対象または値が無効</returns>
+	bool
+	SetTransformAnimation(SceneObjectId id,
+	                      std::optional<TransformAnimationComponent> value);
+
+	/// <summary>
+	/// 変形アニメーションの連続編集を開始する
+	/// </summary>
+	/// <param name="id">コンポーネントを持つ物体</param>
+	/// <returns>true:開始成功 false:対象またはコンポーネントなし</returns>
+	bool BeginTransformAnimation(SceneObjectId id);
 
 	/// <summary>
 	/// Lua Scriptの追加・設定・削除を、初期状態を正規化して1操作として記録する
@@ -827,10 +845,11 @@ class EditorHistory {
 	    ModelPathCommand, VisibilityCommand, ActiveCommand, ColliderCommand,
 	    CharacterCommand, FollowCameraCommand, TriggerActionsCommand,
 	    ScriptCommand, PointLightCommand, SpotLightCommand, MotionPathCommand,
-	    CanvasCommand, ButtonCommand, RigidBodyCommand, RectTransformCommand,
-	    TextCommand, ImageCommand, AudioSourceCommand, AudioListenerCommand,
-	    RespawnCommand, CameraCommand, MeshRendererCommand, ColorTintCommand,
-	    TextureSlotsCommand, CommandGroup, ScenePatchCommand>;
+	    TransformAnimationCommand, CanvasCommand, ButtonCommand,
+	    RigidBodyCommand, RectTransformCommand, TextCommand, ImageCommand,
+	    AudioSourceCommand, AudioListenerCommand, RespawnCommand, CameraCommand,
+	    MeshRendererCommand, ColorTintCommand, TextureSlotsCommand,
+	    CommandGroup, ScenePatchCommand>;
 
 	/// <summary>
 	/// 操作と、その前後の状態を識別する情報
@@ -857,8 +876,10 @@ class EditorHistory {
 		    std::optional<RespawnSettings>, std::optional<ColorTint>,
 		    std::optional<PointLightComponent>,
 		    std::optional<SpotLightComponent>,
-		    std::optional<MotionPathComponent>, std::optional<CanvasComponent>,
-		    std::optional<ButtonComponent>, std::optional<RigidBodySettings>,
+		    std::optional<MotionPathComponent>,
+		    std::optional<TransformAnimationComponent>,
+		    std::optional<CanvasComponent>, std::optional<ButtonComponent>,
+		    std::optional<RigidBodySettings>,
 		    std::optional<RectTransformComponent>, std::optional<TextComponent>,
 		    std::optional<ImageComponent>,
 
