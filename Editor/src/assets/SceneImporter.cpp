@@ -8,6 +8,7 @@
 #include "files/OutputDirectory.h"
 #include "gameplay/GameConfig.h"
 #include "platform/windows/PathUtils.h"
+#include "scene/PrefabSerializer.h"
 #include "scene/Scene.h"
 #include "scene/SceneSerializer.h"
 #include "scripting/LuaScript.h"
@@ -151,17 +152,24 @@ std::string ReadScene(const fs::path &file) {
 /// </summary>
 /// <param name="document">入力シーンのJSON。形式の詳細検証はSceneSerializerで行う</param>
 /// <param name="root">パッケージの基準フォルダ</param>
-void ResolveReferences(Json &document, const fs::path &root) {
+void ResolveReferences(Json &document, const fs::path &root,
+                       const fs::path &base = {}) {
 	const int version = document.at("version").get<int>();
 	const auto resolve = [&](Json &value) {
 		const auto path = PathUtils::FromUtf8(value.get<std::string>());
 		if (!path.empty()) {
-			value = PathUtils::ToUtf8(PackageFile(root, path));
+			value = PathUtils::ToUtf8(
+			    PackageFile(root, path.is_absolute()
+			                          ? path
+			                          : (base.empty() ? root : base) / path));
 		}
 	};
 	for (auto &object : document.at("objects")) {
 		if (version >= 30 && object.contains("image"))
 			resolve(object.at("image").at("texture"));
+		if (version >= 33 && object.contains("script"))
+			for (auto &entry : object.at("script").at("prefabs"))
+				resolve(entry.at("path"));
 		if (version >= 29 && object.contains("script"))
 			resolve(object.at("script").at("asset"));
 		if (version >= 28 && object.contains("triggerActions")) {
@@ -272,6 +280,14 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 			    if (!SceneSerializer::Deserialize(loaded, document.dump()))
 				    throw std::runtime_error(
 				        "Could not read an imported destination scene.");
+		    },
+		    [&](const auto &path, Scene &loaded, SceneObjectId &counter) {
+			    auto document = Json::parse(ReadScene(path));
+			    ResolveReferences(document.at("scene"), sourceRoot,
+			                      path.parent_path());
+			    if (!PrefabSerializer::Deserialize(document.dump(), path,
+			                                       loaded, problem, &counter))
+				    throw std::runtime_error(problem);
 		    });
 		const auto reference = [&](const fs::path &path) {
 			const auto target = destination / addFile(path);
@@ -289,6 +305,15 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 							    destination /
 							        PathUtils::RelativeInside(
 							            sourceRoot, action.scenePath));
+					}
+				if (object.script)
+					for (auto &[name, path] : object.script->prefabs) {
+						(void)name;
+						if (!path.empty())
+							path = AssetFolders::MakeReference(
+							    options.assetRoot,
+							    destination / PathUtils::RelativeInside(
+							                      sourceRoot, path));
 					}
 				if (object.image && !object.image->texture.empty()) {
 					const auto relative = addFile(object.image->texture);
@@ -351,7 +376,14 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 			Scene loaded;
 			loaded.ReplaceObjects(entry.objects);
 			std::string text;
-			if (!SceneSerializer::Serialize(loaded, text))
+			if (entry.prefab) {
+				SceneObjectId prefabRoot = 0;
+				if (!PrefabSerializer::Validate(loaded, prefabRoot, problem) ||
+				    !PrefabSerializer::Serialize(loaded, prefabRoot,
+				                                 destination / relative, text,
+				                                 problem, entry.nextSourceId))
+					throw std::runtime_error(problem);
+			} else if (!SceneSerializer::Serialize(loaded, text))
 				throw std::runtime_error("Could not encode an imported scene.");
 			sceneTexts.emplace_back(relative, std::move(text));
 		}

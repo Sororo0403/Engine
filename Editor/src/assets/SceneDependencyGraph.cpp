@@ -1,13 +1,13 @@
 #include "assets/SceneDependencyGraph.h"
 #include "platform/windows/PathUtils.h"
+#include "scene/PrefabSerializer.h"
 #include "scene/Scene.h"
 #include <algorithm>
 #include <stdexcept>
 
-std::vector<SceneDependencyGraph::Entry>
-SceneDependencyGraph::Read(const Scene &scene,
-                           const std::filesystem::path &source,
-                           const Resolve &resolve, const Load &load) {
+std::vector<SceneDependencyGraph::Entry> SceneDependencyGraph::Read(
+    const Scene &scene, const std::filesystem::path &source,
+    const Resolve &resolve, const Load &load, const LoadPrefab &loadPrefab) {
 	if (!resolve || !load)
 		throw std::invalid_argument(
 		    "Scene dependency readers must be provided.");
@@ -17,6 +17,14 @@ SceneDependencyGraph::Read(const Scene &scene,
 		std::vector<std::filesystem::path> targets;
 		for (auto &[id, object] : objects) {
 			(void)id;
+			if (object.script)
+				for (auto &[name, path] : object.script->prefabs) {
+					(void)name;
+					if (!path.empty()) {
+						path = resolve(path);
+						targets.push_back(path);
+					}
+				}
 			if (!object.triggerActions)
 				continue;
 			for (auto &action : object.triggerActions->actions) {
@@ -36,10 +44,18 @@ SceneDependencyGraph::Read(const Scene &scene,
 				continue;
 			if (entries.size() >= kMaximumScenes)
 				throw std::runtime_error(
-				    "The scene transition graph exceeds 256 scenes.");
+				    "The scene/Prefab dependency graph exceeds 256 assets.");
 			Scene target;
-			load(path, target);
-			entries.push_back({path, target.GetObjects()});
+			const bool prefab = PrefabSerializer::IsPrefabPath(path);
+			SceneObjectId counter = 0;
+			if (prefab) {
+				if (!loadPrefab)
+					throw std::runtime_error(
+					    "A Prefab dependency reader is required.");
+				loadPrefab(path, target, counter);
+			} else
+				load(path, target);
+			entries.push_back({path, target.GetObjects(), prefab, counter});
 		}
 	}
 	return entries;

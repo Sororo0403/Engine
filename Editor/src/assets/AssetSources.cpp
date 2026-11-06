@@ -115,6 +115,13 @@ AssetSources::ForScene(const Scene &scene) const {
 			    if (object.image && !object.image->texture.empty() &&
 			        Contains(directory, object.image->texture))
 				    return true;
+			    if (object.script &&
+			        std::ranges::any_of(
+			            object.script->prefabs, [&](const auto &entry) {
+				            return !entry.second.empty() &&
+				                   Contains(directory, entry.second);
+			            }))
+				    return true;
 			    if (object.script && !object.script->asset.empty() &&
 			        Contains(directory, object.script->asset))
 				    return true;

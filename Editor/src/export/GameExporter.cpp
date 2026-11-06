@@ -6,6 +6,8 @@
 #include "files/OutputDirectory.h"
 #include "gameplay/SceneSimulation.h"
 #include "platform/windows/PathUtils.h"
+#include "scene/PrefabSerializer.h"
+#include "scene/SceneAssetReferences.h"
 #include "scene/SceneSerializer.h"
 #include "scripting/LuaScript.h"
 #include <Windows.h>
@@ -491,6 +493,11 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 				    throw std::runtime_error(
 				        "Could not read destination scene: " +
 				        PathUtils::ToUtf8(path));
+		    },
+		    [&](const auto &path, Scene &loaded, SceneObjectId &counter) {
+			    std::string issue;
+			    if (!PrefabSerializer::Load(path, loaded, issue, &counter))
+				    throw std::runtime_error(issue);
 		    });
 		auto sourceDirectories = options.assetDirectories;
 		for (const auto &entry : graph)
@@ -500,8 +507,12 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 		std::vector<fs::path> scenePaths{options.config.scenePath};
 		for (std::size_t i = 1; i < graph.size(); ++i) {
 			assets.ValidateScene(graph[i].source);
-			scenePaths.push_back(fs::path(L"resources/scenes/transitions") /
-			                     std::format("Scene{}.scene.json", i));
+			if (graph[i].prefab)
+				scenePaths.push_back(fs::path(L"resources/prefabs") /
+				                     std::format("Prefab{}.prefab.json", i));
+			else
+				scenePaths.push_back(fs::path(L"resources/scenes/transitions") /
+				                     std::format("Scene{}.scene.json", i));
 		}
 		for (const auto &source : assets.Sources()) {
 			if (IsInside(source.directory, destination)) {
@@ -517,7 +528,8 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 			candidate.ReplaceObjects(entry.objects);
 			SceneSimulation check;
 			std::string issue;
-			if (!check.Start(candidate, issue, options.config.fallbackCamera))
+			if (!entry.prefab &&
+			    !check.Start(candidate, issue, options.config.fallbackCamera))
 				throw std::runtime_error(issue);
 			auto &objects = entry.objects;
 
@@ -539,6 +551,24 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 							throw std::runtime_error("Destination scene is not "
 							                         "in the export graph.");
 						action.scenePath = scenePaths[static_cast<std::size_t>(
+						    found - graph.begin())];
+					}
+				if (object.script)
+					for (auto &[name, path] : object.script->prefabs) {
+						(void)name;
+						if (path.empty())
+							continue;
+						const auto found = std::ranges::find_if(
+						    graph, [&](const auto &target) {
+							    return target.prefab &&
+							           !target.source.empty() &&
+							           PathUtils::IsSameFile(target.source,
+							                                 path);
+						    });
+						if (found == graph.end())
+							throw std::runtime_error(
+							    "Script Prefab is not in the export graph.");
+						path = scenePaths[static_cast<std::size_t>(
 						    found - graph.begin())];
 					}
 				if (object.image && !object.image->texture.empty()) {
@@ -663,11 +693,22 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 
 		std::string configText;
 		std::vector<std::string> sceneTexts;
-		for (const auto &entry : graph) {
+		for (std::size_t i = 0; i < graph.size(); ++i) {
+			const auto &entry = graph[i];
 			Scene snapshot;
 			snapshot.ReplaceObjects(entry.objects);
 			std::string text;
-			if (!SceneSerializer::Serialize(snapshot, text))
+			if (entry.prefab) {
+				SceneAssetReferences::Rewrite(snapshot, [&](const auto &path) {
+					return path.is_absolute() ? path : destination / path;
+				});
+				SceneObjectId root = 0;
+				if (!PrefabSerializer::Validate(snapshot, root, problem) ||
+				    !PrefabSerializer::Serialize(
+				        snapshot, root, destination / scenePaths[i], text,
+				        problem, entry.nextSourceId))
+					throw std::runtime_error(problem);
+			} else if (!SceneSerializer::Serialize(snapshot, text))
 				throw std::runtime_error(
 				    "Could not serialize an exported scene.");
 			sceneTexts.push_back(std::move(text));

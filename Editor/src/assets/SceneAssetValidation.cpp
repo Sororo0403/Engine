@@ -5,6 +5,7 @@
 #include "assets/ImageValidation.h"
 #include "audio/WaveReader.h"
 #include "platform/windows/PathUtils.h"
+#include "scene/PrefabSerializer.h"
 #include "scene/Scene.h"
 #include "scene/SceneSerializer.h"
 #include <format>
@@ -18,7 +19,7 @@ std::vector<SceneValidationIssue>
 SceneAssetValidation::Inspect(const Scene &scene) {
 	std::vector<SceneValidationIssue> issues;
 	std::map<std::filesystem::path, std::vector<std::string>> models, textures,
-	    monoAudio, stereoAudio, scenes, scripts, uiTextures;
+	    monoAudio, stereoAudio, scenes, scripts, uiTextures, prefabs;
 
 	const auto inspect = [](const std::filesystem::path &path, auto &cache,
 	                        auto collect) -> const std::vector<std::string> & {
@@ -90,6 +91,20 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 						            ImageValidation::Read(file, 4096);
 				            return files;
 			            }));
+		if (object.script)
+			for (const auto &[name, path] : object.script->prefabs) {
+				if (path.empty())
+					continue;
+				add("Script Prefab " + name,
+				    inspect(path, prefabs, [](const auto &file) {
+					    Scene loaded;
+					    std::string error;
+					    if (!PrefabSerializer::Load(file, loaded, error))
+						    throw std::runtime_error(error);
+					    return std::vector<std::filesystem::path>{
+					        PathUtils::ResolveFromExecutable(file)};
+				    }));
+			}
 		if (object.script && !object.script->asset.empty()) {
 			add("Lua Script",
 			    inspect(object.script->asset, scripts, [](const auto &path) {
