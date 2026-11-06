@@ -1966,6 +1966,24 @@ void ControlsPanel::Draw() {
 	         "the current input. Stop/Restart/scene changes clear old UI "
 	         "presses and selection. Button settings support Undo/Redo, "
 	         "Prefabs, game output and import."},
+	        {"Collision Scripts",
+	         "Return collision_enter(self,state,other), collision_stay or "
+	         "collision_exit for solid Collider contacts. These are separate "
+	         "from Trigger and honor both Colliders' layer masks and active "
+	         "ancestors. Rigidbody worlds use actual physical boxes; scenes "
+	         "without a Rigid Body use the same world AABBs as movement. "
+	         "Collider-only pairs can notify too. Character Controller child "
+	         "Colliders are excluded. Contacts within 0.0002 world units count "
+	         "as touching. Sleeping bodies keep Stay. Native physical impacts "
+	         "that separate within one game step send Enter then Exit. "
+	         "Callbacks run in pair-ID order on both active scripts, after "
+	         "update/Trigger and before click. Initial contacts are evaluated "
+	         "on the first positive step. Transform/activity changes made by "
+	         "callbacks affect contacts on the next step, without recursion. "
+	         "Pause holds notifications; Step advances once; Restart clears "
+	         "contacts. Scene, scripts, physics and notifications roll back "
+	         "together on failure. All callbacks share the existing game-step "
+	         "budgets. Non-native AABB paths are not swept for notifications."},
 	        {"Raycast Scripts",
 	         "scene.raycast(ox,oy,oz, dx,dy,dz, distance [,layerMask "
 	         "[,includeTriggers [,ignoredObject]]]) finds the nearest active "

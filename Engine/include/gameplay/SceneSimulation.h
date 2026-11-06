@@ -7,6 +7,7 @@
 #include "gameplay/ScenePhysics.h"
 #include "gameplay/SceneScripts.h"
 #include "graphics/camera/CameraPose.h"
+#include "physics/CollisionEvents.h"
 #include "physics/CollisionWorld.h"
 #include "physics/TriggerWorld.h"
 #include "scene/Scene.h"
@@ -137,6 +138,14 @@ class SceneSimulation {
 	/// <returns>再生中の縦視野角と表示距離</returns>
 	const CameraSettings &GetCameraSettings() const {
 		return cameraSettings_;
+	}
+
+	/// <summary>
+	/// 最後の正の時間の更新で生成した通常の接触通知を取得する。開始直後は空
+	/// </summary>
+	/// <returns>次の更新成功・再開始・停止まで有効。0秒更新と失敗では保持する</returns>
+	std::span<const CollisionEvent> GetCollisionEvents() const {
+		return collisions_.GetEvents();
 	}
 
 	/// <summary>
@@ -300,6 +309,7 @@ class SceneSimulation {
 	Scene scene_;
 	CollisionWorld world_;
 	TriggerWorld triggers_;
+	CollisionEvents collisions_;
 	CharacterController controller_;
 	SceneMotion motion_;
 	ScenePhysics physics_;

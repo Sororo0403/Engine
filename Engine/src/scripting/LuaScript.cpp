@@ -215,8 +215,9 @@ bool Run(LuaInternal::Call &call, lua_CFunction function, std::string &error) {
 /// <param name="name">確認する名前</param>
 /// <returns>対応する名前。未対応はnullptr</returns>
 const char *Callback(std::string_view name) {
-	for (const char *value : {"start", "update", "trigger_enter",
-	                          "trigger_stay", "trigger_exit", "click"})
+	for (const char *value :
+	     {"start", "update", "trigger_enter", "trigger_stay", "trigger_exit",
+	      "click", "collision_enter", "collision_stay", "collision_exit"})
 		if (name == value)
 			return value;
 	return nullptr;

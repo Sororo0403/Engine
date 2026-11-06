@@ -16,7 +16,9 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 	                 invalidObject,
 	                 startOnly ? std::span<const SceneObjectId>{}
 	                           : ui_.GetClicks(),
-	                 &physics))
+	                 &physics,
+	                 startOnly ? std::span<const CollisionEvent>{}
+	                           : collisions_.GetEvents()))
 		return false;
 	std::string serialized;
 	if (!SceneSerializer::Serialize(candidate, serialized)) {

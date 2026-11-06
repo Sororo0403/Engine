@@ -380,6 +380,7 @@ void SceneSimulation::Stop() {
 	firedActions_.clear();
 	lastUpdateError_.clear();
 	triggers_.Clear();
+	collisions_ = CollisionEvents{};
 	scene_.ReplaceObjects({});
 	character_ = camera_ = 0;
 	updateOrder_.clear();
@@ -449,6 +450,23 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 			                       ? "Simulation update failed. Check active "
 			                         "physics and camera settings."
 			                       : working.lastUpdateError_;
+			return false;
+		}
+		// 主人公や追従の最終姿勢で問い合わせる。実行中のKinematic速度は変えない。
+		auto contactPhysics = working.physics_;
+		std::string contactError;
+		if (!contactPhysics.Configure(working.scene_, true, contactError)) {
+			lastUpdateError_ = std::move(contactError);
+			return false;
+		}
+		const auto *physicalWorld = working.physics_.GetWorld();
+		const auto impacts = physicalWorld && seconds >= .000001f
+		                         ? physicalWorld->GetFrameContacts()
+		                         : std::span<const CollisionContact>{};
+		if (!working.collisions_.Update(working.scene_,
+		                                contactPhysics.GetWorld(), impacts)) {
+			lastUpdateError_ =
+			    "Collision notification shapes or contact count are invalid.";
 			return false;
 		}
 		std::string error;

@@ -85,7 +85,8 @@ bool SceneScripts::Run(Scene &scene, float seconds, const CharacterInput &input,
                        std::span<const TriggerEvent> events, bool startOnly,
                        std::string &error, SceneObjectId *invalidObject,
                        std::span<const SceneObjectId> uiClicks,
-                       ScenePhysics *physics) {
+                       ScenePhysics *physics,
+                       std::span<const CollisionEvent> collisions) {
 	SceneObjectId current = 0;
 	try {
 		if (!std::isfinite(seconds) || seconds < 0)
@@ -146,6 +147,22 @@ bool SceneScripts::Run(Scene &scene, float seconds, const CharacterInput &input,
 						       id == event.contact.first ? event.contact.second
 						                                 : event.contact.first);
 				}
+			}
+		}
+		if (!startOnly && seconds > 0) {
+			for (const auto &event : collisions) {
+				const char *callback =
+				    event.type == CollisionEvent::Type::ENTER
+				        ? "collision_enter"
+				    : event.type == CollisionEvent::Type::EXIT
+				        ? "collision_exit"
+				        : "collision_stay";
+				for (auto id :
+				     std::array{event.contact.first, event.contact.second})
+					if (instances_.contains(id) && active(id))
+						invoke(id, callback,
+						       id == event.contact.first ? event.contact.second
+						                                 : event.contact.first);
 			}
 		}
 		if (!startOnly && seconds > 0) {
