@@ -7,6 +7,7 @@
 #include "gameplay/SceneSimulation.h"
 #include "platform/windows/PathUtils.h"
 #include "scene/SceneSerializer.h"
+#include "scripting/LuaScript.h"
 #include <Windows.h>
 #include <algorithm>
 #include <array>
@@ -236,6 +237,23 @@ class Assets {
 		return reference;
 	}
 
+	/// <summary>
+	/// Luaを構文確認し、元のフォルダ構成を保って出力一覧へ登録する
+	/// </summary>
+	/// <param name="input">許可された取得元の絶対パス</param>
+	/// <returns>出力先基準のLuaアセット参照</returns>
+	fs::path AddScript(const fs::path &input) {
+		const auto reference = AddFile(FindSource(input), input);
+		const auto &file = files_.at(reference);
+		if (scripts_.insert(file).second) {
+			std::string source, error;
+			if (!LuaScript::Read(file, source, error) ||
+			    !LuaScript::Validate(source, error))
+				throw std::runtime_error(error);
+		}
+		return reference;
+	}
+
 	void ValidateScene(const fs::path &path) {
 		const auto index = FindSource(path);
 		ResourceFile(sources_[index].directory, path);
@@ -293,7 +311,7 @@ class Assets {
 
 	std::vector<AssetSource> sources_;
 	std::map<fs::path, fs::path, PathLess> files_, models_;
-	std::set<fs::path, PathLess> textures_;
+	std::set<fs::path, PathLess> textures_, scripts_;
 	std::map<fs::path, std::uint16_t, PathLess> audioChannels_;
 };
 
@@ -512,6 +530,16 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 						action.scenePath = scenePaths[static_cast<std::size_t>(
 						    found - graph.begin())];
 					}
+				if (object.script && !object.script->asset.empty()) {
+					auto &path = object.script->asset;
+					const auto input =
+					    path.is_absolute()
+					        ? path
+					        : resourceRoot / PathUtils::RelativeInside(
+					                             fs::path(L"resources"),
+					                             path.lexically_normal());
+					path = assets.AddScript(input);
+				}
 				if (object.audioSource &&
 				    !object.audioSource->clipPath.empty()) {
 					auto &path = object.audioSource->clipPath;
@@ -640,6 +668,9 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 
 		for (const auto &entry : graph)
 			for (const auto &[id, object] : entry.objects) {
+				if (object.script && !object.script->asset.empty())
+					exportedAssets.AddScript(destination /
+					                         object.script->asset);
 				if (object.audioSource && !object.audioSource->clipPath.empty())
 					exportedAssets.AddAudio(destination /
 					                            object.audioSource->clipPath,

@@ -10,6 +10,7 @@
 #include "platform/windows/PathUtils.h"
 #include "scene/Scene.h"
 #include "scene/SceneSerializer.h"
+#include "scripting/LuaScript.h"
 #include <Windows.h>
 #include <format>
 #include <fstream>
@@ -114,6 +115,17 @@ void ValidateAudio(const fs::path &path, bool spatial) {
 }
 
 /// <summary>
+/// Luaの構文を実行せず確認し、取り込めない理由を報告する
+/// </summary>
+/// <param name="path">パッケージ内で確認済みの通常ファイル</param>
+void ValidateScript(const fs::path &path) {
+	std::string source, error;
+	if (!LuaScript::Read(path, source, error) ||
+	    !LuaScript::Validate(source, error))
+		throw std::runtime_error(error);
+}
+
+/// <summary>
 /// 制限内のシーンファイルを読み、途中の切り詰めや追加を検出する
 /// </summary>
 /// <param name="file">読み込む通常ファイル</param>
@@ -147,6 +159,8 @@ void ResolveReferences(Json &document, const fs::path &root) {
 		}
 	};
 	for (auto &object : document.at("objects")) {
+		if (version >= 29 && object.contains("script"))
+			resolve(object.at("script").at("asset"));
 		if (version >= 28 && object.contains("triggerActions")) {
 			for (auto &action : object.at("triggerActions").at("actions")) {
 				if (action.at("operation") == "loadScene")
@@ -234,7 +248,7 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 		}
 		auto folderReference = PathUtils::RelativeInside(root, destination);
 		std::map<fs::path, fs::path, PathLess> files;
-		std::set<fs::path, PathLess> textures;
+		std::set<fs::path, PathLess> textures, scripts;
 		std::map<fs::path, bool, PathLess> audio;
 		const auto addFile = [&](const fs::path &path) {
 			const auto file = PackageFile(sourceRoot, path);
@@ -273,6 +287,13 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 							        PathUtils::RelativeInside(
 							            sourceRoot, action.scenePath));
 					}
+				if (object.script && !object.script->asset.empty()) {
+					const auto relative = addFile(object.script->asset);
+					if (scripts.insert(relative).second)
+						ValidateScript(files.at(relative));
+					object.script->asset = AssetFolders::MakeReference(
+					    options.assetRoot, destination / relative);
+				}
 				if (object.audioSource &&
 				    !object.audioSource->clipPath.empty()) {
 					auto &emitter = *object.audioSource;
@@ -335,6 +356,9 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 			ValidateAudio(PackageFile(destination, destination / relative),
 			              spatial);
 		}
+
+		for (const auto &relative : scripts)
+			ValidateScript(PackageFile(destination, destination / relative));
 
 		// コピー後も、モデルの相対参照が取り込み先の内側で完結することを確認する。
 		for (const auto &entry : graph)

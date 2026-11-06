@@ -112,6 +112,9 @@ AssetSources::ForScene(const Scene &scene) const {
 				                   Contains(directory, action.scenePath);
 			            }))
 				    return true;
+			    if (object.script && !object.script->asset.empty() &&
+			        Contains(directory, object.script->asset))
+				    return true;
 			    if (object.audioSource &&
 			        !object.audioSource->clipPath.empty() &&
 			        Contains(directory, object.audioSource->clipPath)) {
