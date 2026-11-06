@@ -372,7 +372,13 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 		return false;
 	}
 
-	if (!session_.Update(seconds, controls)) {
+	const auto cameraControls =
+	    inputBlocked
+	        ? OrbitCameraInput{}
+	        : GameplayInput::ReadOrbit(
+	              input.GetMouse(), viewport_, ImGui::GetIO().WantTextInput,
+	              gamepadEnabled_ ? &input.GetGamepad() : nullptr);
+	if (!session_.Update(seconds, controls, cameraControls)) {
 		return false;
 	}
 

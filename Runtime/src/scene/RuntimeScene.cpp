@@ -2,6 +2,7 @@
 #include "core/EngineContext.h"
 #include "core/Logger.h"
 #include "gameplay/CharacterInputReader.h"
+#include "gameplay/OrbitCameraInputReader.h"
 #include "input/InputSystem.h"
 #include "scene/SceneSerializer.h"
 #include <utility>
@@ -52,7 +53,11 @@ bool RuntimeScene::Update(float seconds) {
 		                                   : nullptr,
 		    config_.gamepadEnabled ? &input_.GetGamepad() : nullptr);
 
-		if (!simulation_.Update(seconds, input)) {
+		if (!simulation_.Update(
+		        seconds, input,
+		        OrbitCameraInputReader::Read(
+		            &input_.GetMouse(),
+		            config_.gamepadEnabled ? &input_.GetGamepad() : nullptr))) {
 			Logger::Error(simulation_.GetLastUpdateError());
 			return false;
 		}

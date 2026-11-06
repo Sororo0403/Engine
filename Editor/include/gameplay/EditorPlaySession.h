@@ -79,8 +79,10 @@ class EditorPlaySession {
 	/// </summary>
 	/// <param name="seconds">有限な0以上の経過秒数</param>
 	/// <param name="input">今回の移動・ジャンプ入力</param>
+	/// <param name="cameraInput">今回の旋回・ズーム入力。一時停止と初期表示では反映しない</param>
 	/// <returns>true:更新成功または一時停止 false:未再生、無効な時間、または更新失敗</returns>
-	bool Update(float seconds, const CharacterInput &input);
+	bool Update(float seconds, const CharacterInput &input,
+	            const OrbitCameraInput &cameraInput = {});
 
 	/// <summary>
 	/// 再生状態を取得する

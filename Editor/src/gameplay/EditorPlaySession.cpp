@@ -143,7 +143,8 @@ std::uint64_t EditorPlaySession::GetSimulationFrameCount() const {
 	return simulationFrameCount_;
 }
 
-bool EditorPlaySession::Update(float seconds, const CharacterInput &input) {
+bool EditorPlaySession::Update(float seconds, const CharacterInput &input,
+                               const OrbitCameraInput &cameraInput) {
 	if (!IsPlaying() || !std::isfinite(seconds) || seconds < 0) {
 		return false;
 	}
@@ -159,7 +160,7 @@ bool EditorPlaySession::Update(float seconds, const CharacterInput &input) {
 		return true;
 	}
 
-	if (!simulation_.Update(*time, input)) {
+	if (!simulation_.Update(*time, input, cameraInput)) {
 		return false;
 	}
 
