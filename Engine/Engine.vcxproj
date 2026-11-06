@@ -2260,4 +2260,12 @@ exit /b 0</Command>
     <ClCompile Include="src\scripting\ScriptMailbox.cpp" />
     <ClCompile Include="src\scripting\LuaMessageBindings.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\gameplay\GameActionBinding.h" />
+    <ClInclude Include="include\gameplay\GameActionState.h" />
+    <ClCompile Include="src\gameplay\GameActionBinding.cpp" />
+    <ClCompile Include="src\gameplay\GameActionState.cpp" />
+    <ClInclude Include="include\gameplay\GameActionReader.h" />
+    <ClCompile Include="src\gameplay\GameActionReader.cpp" />
+  </ItemGroup>
 </Project>

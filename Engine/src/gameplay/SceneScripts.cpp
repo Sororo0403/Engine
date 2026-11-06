@@ -113,7 +113,8 @@ bool SceneScripts::Run(Scene &scene, float seconds, const CharacterInput &input,
                        std::span<const CollisionEvent> collisions,
                        std::vector<SceneAudioAction> *audioActions,
                        std::filesystem::path *sceneRequest,
-                       std::string *sharedState) {
+                       std::string *sharedState,
+                       std::span<const GameActionState> actions) {
 	SceneObjectId current = 0;
 	try {
 		if (!std::isfinite(seconds) || seconds < 0)
@@ -155,7 +156,7 @@ bool SceneScripts::Run(Scene &scene, float seconds, const CharacterInput &input,
 			        &pendingDestructions, &destructionBudget,
 			        audioActions ? &requestedAudio : nullptr, &audioBudget,
 			        sceneRequest ? &requestedScene : nullptr, &sceneBudget,
-			        sharedState ? &game : nullptr, &mailbox_, message))
+			        sharedState ? &game : nullptr, &mailbox_, message, actions))
 				throw std::runtime_error(std::format(
 				    "{} [{}]: {}", PathUtils::ToUtf8(instance.settings.asset),
 				    callback, error));

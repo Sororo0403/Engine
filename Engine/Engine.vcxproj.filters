@@ -2309,4 +2309,12 @@
     <ClCompile Include="src\scripting\ScriptMailbox.cpp"><Filter>src\scripting</Filter></ClCompile>
     <ClCompile Include="src\scripting\LuaMessageBindings.cpp"><Filter>src\scripting</Filter></ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\gameplay\GameActionBinding.h"><Filter>include\gameplay</Filter></ClInclude>
+    <ClInclude Include="include\gameplay\GameActionState.h"><Filter>include\gameplay</Filter></ClInclude>
+    <ClCompile Include="src\gameplay\GameActionBinding.cpp"><Filter>src\gameplay</Filter></ClCompile>
+    <ClCompile Include="src\gameplay\GameActionState.cpp"><Filter>src\gameplay</Filter></ClCompile>
+    <ClInclude Include="include\gameplay\GameActionReader.h"><Filter>include\gameplay</Filter></ClInclude>
+    <ClCompile Include="src\gameplay\GameActionReader.cpp"><Filter>src\gameplay</Filter></ClCompile>
+  </ItemGroup>
 </Project>

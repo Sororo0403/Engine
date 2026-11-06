@@ -32,7 +32,8 @@ DirectX::XMFLOAT3 ReadVector(const nlohmann::json &value) {
 } // namespace
 
 bool GameConfig::IsValid() const {
-	if (!lighting.IsValid() || !input.IsValid() || title.empty() ||
+	if (!lighting.IsValid() || !input.IsValid() ||
+	    !GameActionBinding::IsValid(actions) || title.empty() ||
 	    title.find('\0') != std::string::npos ||
 	    StringConversion::Utf8ToWide(title).empty() || width < 1 ||
 	    height < 1 || width > 8192 || height > 8192 || scenePath.empty() ||
@@ -70,12 +71,34 @@ bool GameConfig::Serialize(std::string &text, std::string &error) const {
 			    GameInputBindings::GetName(input.*action.member);
 		}
 
+		auto actionsJson = nlohmann::json::array();
+		for (const auto &action : actions) {
+			nlohmann::json entry{{"name", action.name},
+			                     {"keyboard", nullptr},
+			                     {"mouse", nullptr},
+			                     {"gamepad", nullptr}};
+			if (action.keyboard)
+				entry["keyboard"] =
+				    GameInputBindings::GetName(*action.keyboard);
+			if (action.mouse)
+				entry["mouse"] =
+				    GameActionBinding::kMouseOptions[static_cast<std::size_t>(
+				                                         *action.mouse)]
+				        .name;
+			if (action.gamepad)
+				entry["gamepad"] =
+				    GameActionBinding::kGamepadOptions[static_cast<std::size_t>(
+				                                           *action.gamepad)]
+				        .name;
+			actionsJson.push_back(std::move(entry));
+		}
 		const nlohmann::json data = {
 		    {"format", "EngineGame"},
 		    {"version", kCurrentVersion},
 		    {"gamepadEnabled", gamepadEnabled},
 		    {"cameraRelativeMovement", cameraRelativeMovement},
 		    {"input", inputJson},
+		    {"actions", actionsJson},
 		    {"lighting",
 		     {{"direction", vector(lighting.direction)},
 		      {"color", vector(lighting.color)},
@@ -227,6 +250,43 @@ bool GameConfig::Deserialize(std::string_view text, std::string &error) {
 			candidate.gamepadEnabled = data.at("gamepadEnabled").get<bool>();
 		}
 
+		if (data.at("version") >= 7) {
+			const auto &entries = data.at("actions");
+			if (!entries.is_array() ||
+			    entries.size() > GameActionBinding::kMaximumCount)
+				throw std::runtime_error("Named input actions must be an array "
+				                         "of up to 32 entries.");
+			for (const auto &entry : entries) {
+				GameActionBinding action;
+				action.name = entry.at("name").get<std::string>();
+				const auto &key = entry.at("keyboard");
+				if (!key.is_null()) {
+					action.keyboard =
+					    GameInputBindings::FromName(key.get<std::string>());
+					if (!action.keyboard)
+						throw std::runtime_error("Unsupported action key.");
+				}
+				const auto readButton = [](const auto &value,
+				                           const auto &options,
+				                           auto &destination) {
+					if (value.is_null())
+						return;
+					const auto name = value.template get<std::string>();
+					for (const auto &option : options) {
+						if (name == option.name) {
+							destination = option.button;
+							return;
+						}
+					}
+					throw std::runtime_error("Unsupported action button.");
+				};
+				readButton(entry.at("mouse"), GameActionBinding::kMouseOptions,
+				           action.mouse);
+				readButton(entry.at("gamepad"),
+				           GameActionBinding::kGamepadOptions, action.gamepad);
+				candidate.actions.push_back(std::move(action));
+			}
+		}
 		const auto &camera = data.at("camera");
 		candidate.fallbackCamera = {ReadVector(camera.at("position")),
 		                            ReadVector(camera.at("target")),

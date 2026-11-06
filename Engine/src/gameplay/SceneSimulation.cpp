@@ -426,9 +426,11 @@ void SceneSimulation::Stop() {
 
 bool SceneSimulation::Update(float seconds, const CharacterInput &input,
                              const OrbitCameraInput &cameraInput,
-                             const UIInput &uiInput) {
+                             const UIInput &uiInput,
+                             std::span<const GameActionState> actions) {
 	if (!playing_ || !std::isfinite(seconds) || seconds < 0 ||
-	    !cameraInput.IsValid() || !uiInput.IsValid()) {
+	    !cameraInput.IsValid() || !uiInput.IsValid() ||
+	    !GameActionState::IsValid(actions)) {
 		lastUpdateError_ =
 		    "Start Play and use a finite, non-negative simulation time.";
 		return false;
@@ -510,7 +512,16 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 			lastUpdateError_ = std::move(error);
 			return false;
 		}
-		if (!working.ApplyScripts(seconds, controls, false, error, nullptr)) {
+
+		std::vector<GameActionState> scriptActions(actions.begin(),
+		                                           actions.end());
+		if (working.ui_.ConsumesNavigation() || working.ui_.ConsumesPointer()) {
+			for (auto &action : scriptActions) {
+				action.down = action.pressed = action.released = false;
+			}
+		}
+		if (!working.ApplyScripts(seconds, controls, false, error, nullptr,
+		                          scriptActions)) {
 			lastUpdateError_ = std::move(error);
 			return false;
 		}

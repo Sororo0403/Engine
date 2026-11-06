@@ -1,5 +1,6 @@
 #pragma once
 
+#include "gameplay/GameActionReader.h"
 #include "gameplay/GameConfig.h"
 #include "gameplay/SceneSimulation.h"
 #include "scene/IScene.h"
@@ -55,6 +56,7 @@ class RuntimeScene final : public IScene {
 	const InputSystem &input_;
 	RenderSystem &render_;
 	GameConfig config_;
+	GameActionReader actionReader_;
 	SceneSimulation simulation_;
 	SceneRenderer renderer_;
 	SceneAudioPlayer audioPlayer_;

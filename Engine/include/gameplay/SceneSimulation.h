@@ -1,5 +1,8 @@
 ﻿#pragma once
 
+#include "gameplay/GameActionState.h"
+#include <span>
+
 #include "gameplay/CharacterController.h"
 #include "gameplay/CharacterRuntimeState.h"
 #include "gameplay/FollowCameraOrbit.h"
@@ -140,10 +143,12 @@ class SceneSimulation {
 	/// <param name="input">ワールドX/Z方向の移動とジャンプ</param>
 	/// <param name="cameraInput">現在のPrimary Follow Cameraの旋回入力。0秒では反映しない</param>
 	/// <param name="uiInput">ゲーム内UIの操作。0秒では押下を解除し、クリックしない</param>
+	/// <param name="actions">今回の名前付き入力。更新時だけLuaのinput.actionsへ渡す</param>
 	/// <returns>true:更新成功 false:未再生または更新失敗</returns>
 	bool Update(float seconds, const CharacterInput &input,
 	            const OrbitCameraInput &cameraInput = {},
-	            const UIInput &uiInput = {});
+	            const UIInput &uiInput = {},
+	            std::span<const GameActionState> actions = {});
 
 	/// <summary>
 	/// 開始・再開始・シーン遷移のたびに増える識別値を取得する。失敗では変えない
@@ -365,10 +370,12 @@ class SceneSimulation {
 	/// <param name="startOnly">true:startだけ実行する</param>
 	/// <param name="error">失敗理由</param>
 	/// <param name="invalidObject">問題の物体ID</param>
+	/// <param name="actions">今回の名前付き入力。更新時だけLuaのinput.actionsへ渡す</param>
 	/// <returns>true:成功 false:スクリプトまたは変更後の配置が無効</returns>
 	bool ApplyScripts(float seconds, const CharacterInput &input,
 	                  bool startOnly, std::string &error,
-	                  SceneObjectId *invalidObject);
+	                  SceneObjectId *invalidObject,
+	                  std::span<const GameActionState> actions = {});
 
 	/// <summary>
 	/// 物体変更後の最終状態を検証し、瞬間的に動かした枝の速度・追従・接触を同期する

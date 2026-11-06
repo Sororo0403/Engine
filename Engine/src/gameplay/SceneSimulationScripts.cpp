@@ -5,7 +5,8 @@
 
 bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
                                    bool startOnly, std::string &error,
-                                   SceneObjectId *invalidObject) {
+                                   SceneObjectId *invalidObject,
+                                   std::span<const GameActionState> actions) {
 	if (!scripts_.HasInstances())
 		return true;
 	Scene candidate;
@@ -22,7 +23,7 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 	                 &physics,
 	                 startOnly ? std::span<const CollisionEvent>{}
 	                           : collisions_.GetEvents(),
-	                 &audio, &requestedScene, &game))
+	                 &audio, &requestedScene, &game, actions))
 		return false;
 	std::string serialized;
 	if (!SceneSerializer::Serialize(candidate, serialized)) {

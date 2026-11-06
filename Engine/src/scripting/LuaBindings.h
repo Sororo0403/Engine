@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gameplay/CharacterInput.h"
+#include "gameplay/GameActionState.h"
 #include "scene/SceneAudioAction.h"
 #include "scene/SceneObjectId.h"
 #include <filesystem>
@@ -50,6 +51,7 @@ struct Call {
 	int *remainingPhysicsOperations = nullptr;
 	SceneObjectId self = 0, other = 0;
 	const CharacterInput *input = nullptr;
+	std::span<const GameActionState> actions;
 	const StateNode *initial = nullptr;
 	const StateNode *sharedInitial = nullptr;
 	std::string sharedInput, sharedResult;

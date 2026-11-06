@@ -176,7 +176,7 @@ int Invoke(lua_State *state) {
 	int arguments = 2;
 	if (std::strcmp(call.callback, "update") == 0) {
 		lua_pushnumber(state, call.seconds);
-		lua_createtable(state, 0, 4);
+		lua_createtable(state, 0, 5);
 		lua_pushnumber(state, call.input->moveX);
 		lua_setfield(state, -2, "moveX");
 		lua_pushnumber(state, call.input->moveZ);
@@ -185,6 +185,21 @@ int Invoke(lua_State *state) {
 		lua_setfield(state, -2, "jumpPressed");
 		lua_pushboolean(state, call.input->interactPressed);
 		lua_setfield(state, -2, "interactPressed");
+
+		lua_createtable(state, 0, static_cast<int>(call.actions.size()));
+		for (std::size_t i = 0; i < call.actions.size(); ++i) {
+			lua_pushlstring(state, call.actions[i].name.data(),
+			                call.actions[i].name.size());
+			lua_createtable(state, 0, 3);
+			lua_pushboolean(state, call.actions[i].down);
+			lua_setfield(state, -2, "down");
+			lua_pushboolean(state, call.actions[i].pressed);
+			lua_setfield(state, -2, "pressed");
+			lua_pushboolean(state, call.actions[i].released);
+			lua_setfield(state, -2, "released");
+			lua_rawset(state, -3);
+		}
+		lua_setfield(state, -2, "actions");
 		arguments = 4;
 	} else if (std::strcmp(call.callback, "message") == 0) {
 		lua_pushlstring(state, call.message->name.data(),
@@ -368,12 +383,13 @@ bool LuaScript::Invoke(
     std::vector<SceneAudioAction> *audioActions, int *remainingAudioOperations,
     std::filesystem::path *sceneRequest, int *remainingSceneRequests,
     std::string *sharedState, ScriptMailbox *mailbox,
-    const ScriptMessage *message) {
+    const ScriptMessage *message, std::span<const GameActionState> actions) {
 	try {
 		const char *name = Callback(callback);
 		if (!program || !name || !scene.Contains(self) ||
 		    !std::isfinite(seconds) || seconds < 0 ||
 		    !std::isfinite(input.moveX) || !std::isfinite(input.moveZ) ||
+		    !GameActionState::IsValid(actions) ||
 		    (other && !scene.Contains(other) && callback != "trigger_exit" &&
 		     callback != "collision_exit" && callback != "message") ||
 		    (remainingInstructions && *remainingInstructions < 0) ||
@@ -422,6 +438,7 @@ bool LuaScript::Invoke(
 		call.self = self;
 		call.other = other;
 		call.input = &input;
+		call.actions = actions;
 		call.initial = &nodes;
 		call.mailbox = mailbox;
 		call.message = message;

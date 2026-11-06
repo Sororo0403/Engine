@@ -1,5 +1,8 @@
 #pragma once
 
+#include "gameplay/GameActionState.h"
+#include <span>
+
 #include "scene/SceneAudioAction.h"
 #include "scene/SceneObjectId.h"
 #include <cstddef>
@@ -44,7 +47,7 @@ class LuaScript {
 	/// <summary>
 	/// 公開するスクリプトAPIの版。Runtimeの出力互換性を照合する
 	/// </summary>
-	static constexpr int kApiVersion = 9;
+	static constexpr int kApiVersion = 10;
 	static constexpr std::size_t kMaximumSourceBytes = 256 * 1024;
 	static constexpr std::size_t kMaximumBytecodeBytes = 1024 * 1024;
 	static constexpr std::size_t kMaximumStateBytes = 64 * 1024;
@@ -128,6 +131,7 @@ class LuaScript {
 	/// <param name="sharedState">指定時はgameとして公開する共有JSON。成功時だけ置き換える。stateと同じ制限を使い、同じ文字列を両方へ渡さない</param>
 	/// <param name="mailbox">指定時は作業用の次回通知キュー。呼び出し側で全処理成功後に確定する</param>
 	/// <param name="message">messageコールバックへ渡す名前・JSON・送信者。受信者はselfと一致すること</param>
+	/// <param name="actions">今回の名前付き入力。更新時だけLuaのinput.actionsへ渡す</param>
 	/// <returns>true:成功またはコールバックなし false:コード・API・状態・実行制限が無効</returns>
 	static bool
 	Invoke(const LuaScriptProgram &program, std::string_view callback,
@@ -147,5 +151,6 @@ class LuaScript {
 	       std::filesystem::path *sceneRequest = nullptr,
 	       int *remainingSceneRequests = nullptr,
 	       std::string *sharedState = nullptr, ScriptMailbox *mailbox = nullptr,
-	       const ScriptMessage *message = nullptr);
+	       const ScriptMessage *message = nullptr,
+	       std::span<const GameActionState> actions = {});
 };

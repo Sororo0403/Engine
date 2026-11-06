@@ -21,6 +21,7 @@ RuntimeScene::RuntimeScene(const EngineContext &context, GameConfig config)
 }
 
 bool RuntimeScene::Initialize() {
+	actionReader_.Reset();
 	Scene source;
 	std::string error;
 
@@ -45,6 +46,10 @@ bool RuntimeScene::Initialize() {
 
 bool RuntimeScene::Update(float seconds) {
 	CharacterInput input;
+	const auto actions = actionReader_.Read(
+	    config_.actions, input_.GetKeyboard(), &input_.GetMouse(),
+	    config_.gamepadEnabled ? &input_.GetGamepad() : nullptr,
+	    input_.IsActive());
 	const auto revision = simulation_.GetSceneRevision();
 
 	if (input_.IsActive()) {
@@ -71,7 +76,7 @@ bool RuntimeScene::Update(float seconds) {
 		        OrbitCameraInputReader::Read(
 		            &input_.GetMouse(),
 		            config_.gamepadEnabled ? &input_.GetGamepad() : nullptr),
-		        uiInput)) {
+		        uiInput, actions)) {
 			Logger::Error(simulation_.GetLastUpdateError());
 			return false;
 		}
@@ -105,6 +110,7 @@ void RuntimeScene::Draw() const {
 }
 
 void RuntimeScene::Finalize() {
+	actionReader_.Reset();
 	audioPlayer_.Stop();
 	renderer_.Finalize();
 	simulation_.Stop();
