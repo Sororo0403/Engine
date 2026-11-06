@@ -38,6 +38,10 @@ const char *OperationLabel(TriggerAction::Operation operation) {
 		return "Disable";
 	case TriggerAction::Operation::TOGGLE:
 		return "Toggle";
+	case TriggerAction::Operation::PLAY_AUDIO:
+		return "Play Audio";
+	case TriggerAction::Operation::STOP_AUDIO:
+		return "Stop Audio";
 	}
 	return "Invalid";
 }
@@ -86,6 +90,9 @@ bool TriggerActionsInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 					changed = true;
 				}
 				for (const auto &[targetId, candidate] : scene.GetObjects()) {
+					if (action.IsAudioOperation() && !candidate.audioSource) {
+						continue;
+					}
 					const auto label = TargetLabel(scene, targetId);
 					if (ImGui::Selectable(label.c_str(),
 					                      action.target == targetId) &&
@@ -101,7 +108,9 @@ bool TriggerActionsInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 				for (const auto operation :
 				     std::array{TriggerAction::Operation::ENABLE,
 				                TriggerAction::Operation::DISABLE,
-				                TriggerAction::Operation::TOGGLE}) {
+				                TriggerAction::Operation::TOGGLE,
+				                TriggerAction::Operation::PLAY_AUDIO,
+				                TriggerAction::Operation::STOP_AUDIO}) {
 					if (ImGui::Selectable(OperationLabel(operation),
 					                      action.operation == operation) &&
 					    action.operation != operation) {

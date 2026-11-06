@@ -850,6 +850,18 @@ void ControlsPanel::Draw() {
 	         "the rendering camera receives sound. An unassigned source is "
 	         "inert. "
 	         "Play does not require audio components or an output device."},
+	        {"Inspector > Trigger Actions > Play Audio / Stop Audio",
+	         "Choose Enter or Exit, then an Audio Source target and Play Audio "
+	         "or Stop Audio. Disable Play on Start on event-driven sources. "
+	         "Play Audio restarts that source from its beginning; Stop Audio "
+	         "also cancels queued playback while no output device is "
+	         "available. "
+	         "Inactive or unassigned sources are inert. Activity changes apply "
+	         "before audio, and the last matching audio operation for a source "
+	         "in one simulation update wins. Once per Play resets on Restart. "
+	         "Pause does not repeat an operation; Step may queue sound paused "
+	         "until Resume. Editor Play and exported games use the same rules. "
+	         "Changing action settings supports Undo/Redo."},
 	        {"Play audio controls",
 	         "Pause freezes owned sound positions; Step keeps audio paused. "
 	         "Restart "
