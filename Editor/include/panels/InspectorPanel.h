@@ -1,5 +1,6 @@
 #pragma once
 
+#include "audio/AudioInspector.h"
 #include "gameplay/GameplayInspector.h"
 #include "math/Transform.h"
 #include "scene/SceneObjectId.h"
@@ -177,6 +178,7 @@ class InspectorPanel {
 
   private:
 	GameplayInspector gameplayInspector_;
+	AudioInspector audioInspector_;
 	SceneObjectId lockedObjectId_ = 0;
 	// 表示用の角度を保持し、編集中のオイラー角の切り替わりを防ぐ
 	SceneObjectId rotationObjectId_ = 0;

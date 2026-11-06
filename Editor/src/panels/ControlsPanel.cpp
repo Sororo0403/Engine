@@ -809,6 +809,38 @@ void ControlsPanel::Draw() {
 	         "Deleting a target clears its reference, which Undo restores. "
 	         "Assign all configured targets before Play; an empty list is "
 	         "inert."},
+	        {"Inspector > Add Component > Audio Source / Audio Listener",
+	         "Choose a WAV in Audio Clip, or drag it from Assets > Audio. "
+	         "Click the "
+	         "clip field to reveal it in Assets. Clear removes the reference; "
+	         "Reset "
+	         "restores component defaults. Volume and distance drags form one "
+	         "Undo "
+	         "entry; clip changes, switches, Reset and Remove also support "
+	         "Undo/Redo. "
+	         "Spatial sources need mono WAV audio; stereo clips can play as 2D "
+	         "audio. "
+	         "Play on Start runs on activation; Loop repeats the full clip. "
+	         "Parent "
+	         "transforms position sources and listeners, while attenuation "
+	         "distances "
+	         "remain in world units. Only one listener may be active; without "
+	         "one, "
+	         "the rendering camera receives sound. An unassigned source is "
+	         "inert. "
+	         "Play does not require audio components or an output device."},
+	        {"Play audio controls",
+	         "Pause freezes owned sound positions; Step keeps audio paused. "
+	         "Restart "
+	         "starts sound from the beginning and keeps Pause. Focus loss and "
+	         "minimization freeze sound, then playback resumes when the app "
+	         "returns. "
+	         "Natural one-shot completion does not restart every frame. Source "
+	         "deactivation stops it; reactivation applies Play on Start again. "
+	         "Play Inspector settings are read-only. Scene Check reports "
+	         "invalid "
+	         "clips and duplicate listeners; game export includes referenced "
+	         "WAV files."},
 	        {"Inspector > Add Component > Point Light",
 	         "Add a Point Light to an object, then edit Color, Intensity and "
 	         "Range. "

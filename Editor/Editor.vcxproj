@@ -442,4 +442,8 @@ exit /b 0</Command>
     <ClInclude Include="include\lighting\PointLightInspector.h" />
     <ClCompile Include="src\lighting\PointLightInspector.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\audio\AudioInspector.h" />
+    <ClCompile Include="src\audio\AudioInspector.cpp" />
+  </ItemGroup>
 </Project>

@@ -121,6 +121,7 @@ void InspectorPanel::RequestRename(SceneObjectId objectId) {
 }
 
 void InspectorPanel::Clear() {
+	audioInspector_.Clear();
 	gameplayInspector_.Clear();
 	inspectObjectId_ = 0;
 	lockedObjectId_ = 0;
@@ -419,6 +420,13 @@ bool InspectorPanel::Draw(
 			objectRequest_ = {ObjectAction::PASTE_COLLIDER, inspectedObjectId};
 		}
 
+		if (ui.MenuItem("Audio Source", nullptr, !object->audioSource))
+			changed |= history.SetAudioSource(inspectedObjectId,
+			                                  AudioSourceComponent{});
+		if (ui.MenuItem("Audio Listener", nullptr, !object->audioListener))
+			changed |= history.SetAudioListener(inspectedObjectId,
+			                                    AudioListenerComponent{});
+
 		if (ui.MenuItem("Point Light", nullptr, !object->pointLight)) {
 			changed |=
 			    history.SetPointLight(inspectedObjectId, PointLightComponent{});
@@ -562,6 +570,11 @@ bool InspectorPanel::Draw(
 		objectRequest_ = {ObjectAction::FRAME_COLLIDER,
 		                  colliderRequest.objectId};
 	}
+
+	changed |=
+	    audioInspector_.Draw(ui, inspectedObjectId, *object, history, assets);
+	if (!audioInspector_.GetRevealRequest().empty())
+		assetRevealPath_ = audioInspector_.GetRevealRequest();
 
 	changed |=
 	    PointLightInspector{}.Draw(ui, inspectedObjectId, *object, history);
@@ -756,6 +769,8 @@ InspectorPanel::DrawReadOnly(const ImGuiSystem &ui, const Scene &scene,
 		ui.Text(std::format("Collision Layer: {}", collider.filter.layer));
 		ui.Text(std::format("Collides With: 0x{:08X}", collider.filter.mask));
 	}
+
+	audioInspector_.DrawReadOnly(ui, *object);
 
 	PointLightInspector{}.DrawReadOnly(ui, *object);
 
