@@ -7,6 +7,8 @@
 #include "graphics/material/ColorTint.h"
 #include "math/Transform.h"
 #include "physics/BoxCollider.h"
+#include "scene/AudioListenerComponent.h"
+#include "scene/AudioSourceComponent.h"
 #include "scene/CameraComponent.h"
 #include "scene/MeshComponent.h"
 #include "scene/MeshRendererComponent.h"
@@ -50,6 +52,9 @@ struct SceneObject {
 	std::optional<TriggerActionsComponent> triggerActions;
 	// 物体のワールド位置を光源として使用する
 	std::optional<PointLightComponent> pointLight;
+	// 親子合成後の位置で再生する音源と、受信姿勢の指定
+	std::optional<AudioSourceComponent> audioSource;
+	std::optional<AudioListenerComponent> audioListener;
 
 	/// <summary>
 	/// Meshに形状の参照が割り当てられているか確認する

@@ -41,6 +41,7 @@ struct AudioPlaybackSettings {
 	float volume = 1.0f;
 	bool loop = false;
 	bool spatial = false;
+	bool startPaused = false;
 	AudioEmitterSettings emitter{};
 
 	/// <summary>

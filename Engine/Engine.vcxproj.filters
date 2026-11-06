@@ -686,4 +686,14 @@
     <ClCompile Include="src\audio\WaveData.cpp"><Filter>src\audio</Filter></ClCompile>
     <ClCompile Include="src\audio\WaveReader.cpp"><Filter>src\audio</Filter></ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\audio\AudioEmitterChange.h"><Filter>include\audio</Filter></ClInclude>
+    <ClInclude Include="include\scene\AudioSourceComponent.h"><Filter>include\scene</Filter></ClInclude>
+    <ClCompile Include="src\scene\AudioSourceComponent.cpp"><Filter>src\scene</Filter></ClCompile>
+    <ClInclude Include="include\scene\AudioListenerComponent.h"><Filter>include\scene</Filter></ClInclude>
+    <ClInclude Include="include\scene\SceneAudio.h"><Filter>include\scene</Filter></ClInclude>
+    <ClCompile Include="src\scene\SceneAudio.cpp"><Filter>src\scene</Filter></ClCompile>
+    <ClInclude Include="include\scene\SceneAudioPlayer.h"><Filter>include\scene</Filter></ClInclude>
+    <ClCompile Include="src\scene\SceneAudioPlayer.cpp"><Filter>src\scene</Filter></ClCompile>
+  </ItemGroup>
 </Project>

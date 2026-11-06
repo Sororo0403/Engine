@@ -1,4 +1,6 @@
 #include "core/Engine.h"
+#include "audio/AudioClipManager.h"
+#include "audio/AudioSystem.h"
 
 #include "core/EngineContext.h"
 #include "core/FrameTimer.h"
@@ -24,6 +26,7 @@
 #include <memory>
 #include <objbase.h>
 #include <string>
+#include <utility>
 
 namespace {
 
@@ -73,6 +76,8 @@ struct Engine::Impl {
 
 		// 参照している側から順に終了する
 		sceneManager_.Finalize();
+		audio_.Finalize();
+		audioClips_.Clear();
 		models_.Finalize();
 		render_.GetMaterials().Finalize();
 
@@ -166,12 +171,19 @@ struct Engine::Impl {
 			return false;
 		}
 
+		std::string audioError;
+		audioInitialized_ = audio_.Initialize(audioError);
+		if (!audioInitialized_)
+			Logger::Warning("Audio initialization: " + audioError);
+
 		// アプリへ公開する機能だけを渡す
 		context_ = std::make_unique<EngineContext>(EngineContext{
 		    models_,
 		    render_,
 		    input_,
 		    ui_,
+		    audioClips_,
+		    audio_,
 		});
 
 		if (!sceneManager_.RequestChange(sceneFactory(*context_)) ||
@@ -222,6 +234,10 @@ struct Engine::Impl {
 			const int width = app_.GetWidth();
 			const int height = app_.GetHeight();
 
+			if (audioInitialized_)
+				audio_.SetSuspended(width <= 0 || height <= 0 ||
+				                    !input_.IsActive());
+
 			if (width <= 0 || height <= 0) {
 				WaitMessage();
 				frameTimer.Reset();
@@ -247,6 +263,13 @@ struct Engine::Impl {
 			// 終了確認中も更新と描画を継続する
 			if (!sceneManager_.Update(deltaTime)) {
 				return -1;
+			}
+
+			if (audioInitialized_) {
+				std::string audioError;
+				if (!audio_.Update(audioError) && audioError != lastAudioError_)
+					Logger::Warning(audioError);
+				lastAudioError_ = std::move(audioError);
 			}
 
 			const std::string title = sceneManager_.GetWindowTitle();
@@ -292,6 +315,8 @@ struct Engine::Impl {
 	ImGuiSystem ui_;
 
 	// コンストラクターでは依存先の参照だけを保持する
+	AudioClipManager audioClips_;
+	AudioSystem audio_;
 	ModelManager models_;
 	RenderSystem render_;
 
@@ -299,6 +324,8 @@ struct Engine::Impl {
 	std::unique_ptr<EngineContext> context_;
 	SceneManager sceneManager_;
 
+	std::string lastAudioError_;
+	bool audioInitialized_ = false;
 	bool graphicsInitialized_ = false;
 	bool uiEnabled_ = false;
 };

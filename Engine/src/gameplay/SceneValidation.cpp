@@ -8,6 +8,7 @@
 #include "physics/CollisionWorld.h"
 #include "scene/Scene.h"
 #include "scene/SceneActivity.h"
+#include "scene/SceneAudio.h"
 #include "scene/SceneHierarchy.h"
 #include "scene/SceneLighting.h"
 #include <format>
@@ -69,6 +70,10 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 		if ((object.mesh && !object.mesh->IsValid()) ||
 		    (object.meshRenderer && !object.meshRenderer->IsValid())) {
 			add(id, "Mesh or Mesh Renderer settings are invalid.");
+		}
+
+		if (object.audioSource && !object.audioSource->IsValid()) {
+			add(id, "Audio Source settings or WAV reference are invalid.");
 		}
 
 		if (object.colorTint && !object.colorTint->IsValid()) {
@@ -222,6 +227,19 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 	} else if (!validator.SetPose(fallbackPose) ||
 	           !validator.SetSettings(CameraSettings{})) {
 		add(0, "Fallback Camera pose or projection is invalid.");
+	}
+
+	if (issues.empty()) {
+		CameraPose listenerCamera = fallbackPose;
+		if (primary)
+			listenerCamera =
+			    SceneCameraUtils::FromWorldTransform(transforms.at(primary));
+		SceneAudioFrame audioFrame;
+		std::string audioError;
+		SceneObjectId invalidAudio = 0;
+		if (!SceneAudio::Collect(initial, listenerCamera, audioFrame,
+		                         audioError, &invalidAudio))
+			add(invalidAudio, audioError);
 	}
 
 	return issues;

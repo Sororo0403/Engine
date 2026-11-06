@@ -1,11 +1,13 @@
 #pragma once
 
 #include "audio/AudioClipHandle.h"
+#include "audio/AudioEmitterChange.h"
 #include "audio/AudioPlaybackHandle.h"
 #include "audio/AudioSettings.h"
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <span>
 #include <string>
 
 /// <summary>
@@ -134,6 +136,28 @@ class AudioSystem {
 	/// <param name="listener">左手座標系の有効な姿勢</param>
 	/// <returns>true:成功 false:姿勢または距離が無効</returns>
 	bool SetListener(const AudioListenerPose &listener);
+
+	/// <summary>
+	/// 受信姿勢と複数の音源位置を一括設定する。大きく移動しても途中の位置関係を検証に使わない
+	/// </summary>
+	/// <param name="listener">変更後の左手座標系の受信姿勢</param>
+	/// <param name="changes">重複しない有効な空間再生と、その新しい位置・距離</param>
+	/// <returns>true:一括設定成功 false:対象・重複・姿勢・距離が無効。失敗時は全設定を保持する</returns>
+	bool SetSpatialState(const AudioListenerPose &listener,
+	                     std::span<const AudioEmitterChange> changes);
+
+	/// <summary>
+	/// 全音声処理の進行を一時停止・再開する。個別の再生状態とバッファは保持する
+	/// </summary>
+	/// <param name="suspended">true:処理を止める false:処理を再開する</param>
+	/// <returns>true:成功または同値 false:未初期化またはネイティブ処理失敗</returns>
+	bool SetSuspended(bool suspended);
+
+	/// <summary>
+	/// デバイスの初期化・再取得・終了による再生破棄の世代を取得する
+	/// </summary>
+	/// <returns>同じ値の間はデバイスの世代が同じ。初期値は0</returns>
+	std::uint64_t GetDeviceRevision() const;
 
 	/// <summary>
 	/// 空間音源の位置と減衰距離を次の更新に設定する

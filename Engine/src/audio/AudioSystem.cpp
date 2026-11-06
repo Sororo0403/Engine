@@ -66,6 +66,8 @@ struct AudioSystem::Impl {
 	std::vector<Slot> slots;
 	AudioListenerPose listener{};
 	float masterVolume = 1;
+	bool suspended = false;
+	std::uint64_t deviceRevision = 0;
 
 	Voice *Find(AudioPlaybackHandle handle) const {
 		if (handle.system_ != id || handle.index_ >= slots.size())
@@ -125,6 +127,7 @@ bool AudioSystem::Initialize(std::string &error) {
 		engine->SetMaxVoicePool(0, kMaximumVoices);
 		engine->SetMasterVolume(impl_->masterVolume);
 		impl_->engine = std::move(engine);
+		++impl_->deviceRevision;
 		return true;
 	} catch (const std::exception &exception) {
 		error = exception.what();
@@ -139,9 +142,12 @@ bool AudioSystem::ResetDevice(std::string &error) {
 			throw std::logic_error(
 			    "Initialize the audio system before resetting its device.");
 		StopAll();
+		++impl_->deviceRevision;
 		if (!impl_->engine->Reset())
 			throw std::runtime_error("No audio output device is available.");
 		impl_->engine->SetMasterVolume(impl_->masterVolume);
+		if (impl_->suspended)
+			impl_->engine->Suspend();
 		return true;
 	} catch (const std::exception &exception) {
 		error = exception.what();
@@ -181,7 +187,10 @@ bool AudioSystem::Update(std::string &error) {
 
 void AudioSystem::Finalize() {
 	StopAll();
+	if (impl_->engine)
+		++impl_->deviceRevision;
 	impl_->engine.reset();
+	impl_->suspended = false;
 	impl_->listener = AudioListenerPose{};
 	impl_->masterVolume = 1;
 }
@@ -224,6 +233,7 @@ AudioPlaybackHandle AudioSystem::Play(const AudioClipHandle &clip,
 		auto voice = std::make_unique<Impl::Voice>();
 		voice->data = clip.data_;
 		voice->settings = settings;
+		voice->paused = settings.startPaused;
 		WAVEFORMATEX format{};
 		format.wFormatTag = voice->data->format == WaveSampleFormat::FLOAT32
 		                        ? WAVE_FORMAT_IEEE_FLOAT
@@ -249,7 +259,7 @@ AudioPlaybackHandle AudioSystem::Play(const AudioClipHandle &clip,
 		buffer.pAudioData = voice->data->samples.data();
 		buffer.LoopCount = settings.loop ? XAUDIO2_LOOP_INFINITE : 0;
 		if (FAILED(voice->source->SubmitSourceBuffer(&buffer)) ||
-		    FAILED(voice->source->Start())) {
+		    (!settings.startPaused && FAILED(voice->source->Start()))) {
 			throw std::runtime_error(
 			    "The native audio source could not start playback.");
 		}
@@ -348,16 +358,59 @@ bool AudioSystem::SetMasterVolume(float volume) {
 }
 
 bool AudioSystem::SetListener(const AudioListenerPose &listener) {
-	if (!listener.IsValid())
+	return SetSpatialState(listener, {});
+}
+
+bool AudioSystem::SetSpatialState(const AudioListenerPose &listener,
+                                  std::span<const AudioEmitterChange> changes) {
+	if (!listener.IsValid() || changes.size() > kMaximumVoices)
 		return false;
+	std::array<Impl::Voice *, kMaximumVoices> voices{};
+	for (std::size_t i = 0; i < changes.size(); ++i) {
+		voices[i] = impl_->Find(changes[i].handle);
+		if (!voices[i] || !voices[i]->settings.spatial)
+			return false;
+		for (std::size_t j = 0; j < i; ++j)
+			if (voices[j] == voices[i])
+				return false;
+	}
+
 	for (const auto &slot : impl_->slots) {
-		if (slot.voice && slot.voice->settings.spatial &&
-		    !SpatialAudio::CanCalculate(listener, slot.voice->settings.emitter))
+		if (!slot.voice || !slot.voice->settings.spatial)
+			continue;
+		const AudioEmitterSettings *emitter = &slot.voice->settings.emitter;
+		for (std::size_t i = 0; i < changes.size(); ++i)
+			if (voices[i] == slot.voice.get())
+				emitter = &changes[i].emitter;
+		if (!SpatialAudio::CanCalculate(listener, *emitter))
 			return false;
 	}
 
 	impl_->listener = listener;
+	for (std::size_t i = 0; i < changes.size(); ++i)
+		voices[i]->settings.emitter = changes[i].emitter;
 	return true;
+}
+
+bool AudioSystem::SetSuspended(bool suspended) {
+	if (!impl_->engine)
+		return false;
+	if (impl_->suspended == suspended)
+		return true;
+	try {
+		if (suspended)
+			impl_->engine->Suspend();
+		else
+			impl_->engine->Resume();
+		impl_->suspended = suspended;
+		return true;
+	} catch (const std::exception &) {
+		return false;
+	}
+}
+
+std::uint64_t AudioSystem::GetDeviceRevision() const {
+	return impl_->deviceRevision;
 }
 
 bool AudioSystem::SetEmitter(AudioPlaybackHandle handle,

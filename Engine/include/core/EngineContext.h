@@ -4,6 +4,8 @@ class ModelManager;
 class RenderSystem;
 class InputSystem;
 class ImGuiSystem;
+class AudioClipManager;
+class AudioSystem;
 
 /// <summary>
 /// アプリ側が使用できるエンジンの共通機能への参照
@@ -13,4 +15,6 @@ struct EngineContext {
 	RenderSystem &render;
 	const InputSystem &input;
 	ImGuiSystem &ui;
+	AudioClipManager &audioClips;
+	AudioSystem &audio;
 };
