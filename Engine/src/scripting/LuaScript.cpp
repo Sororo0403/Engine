@@ -4,6 +4,7 @@
 #include "platform/windows/PathUtils.h"
 #include "platform/windows/StringConversion.h"
 #include "scene/Scene.h"
+#include "scripting/ScriptMessage.h"
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
@@ -185,6 +186,12 @@ int Invoke(lua_State *state) {
 		lua_pushboolean(state, call.input->interactPressed);
 		lua_setfield(state, -2, "interactPressed");
 		arguments = 4;
+	} else if (std::strcmp(call.callback, "message") == 0) {
+		lua_pushlstring(state, call.message->name.data(),
+		                call.message->name.size());
+		LuaInternal::PushState(state, *call.messageInitial);
+		LuaInternal::PushObject(state, call.message->sender);
+		arguments = 5;
 	} else if (std::strcmp(call.callback, "start") != 0 &&
 	           std::strcmp(call.callback, "click") != 0) {
 		LuaInternal::PushObject(state, call.other);
@@ -255,7 +262,8 @@ bool Run(LuaInternal::Call &call, lua_CFunction function, std::string &error) {
 const char *Callback(std::string_view name) {
 	for (const char *value :
 	     {"start", "update", "trigger_enter", "trigger_stay", "trigger_exit",
-	      "click", "collision_enter", "collision_stay", "collision_exit"})
+	      "click", "collision_enter", "collision_stay", "collision_exit",
+	      "message"})
 		if (name == value)
 			return value;
 	return nullptr;
@@ -359,14 +367,15 @@ bool LuaScript::Invoke(
     std::vector<SceneObjectId> *pendingDestructions, int *remainingDestructions,
     std::vector<SceneAudioAction> *audioActions, int *remainingAudioOperations,
     std::filesystem::path *sceneRequest, int *remainingSceneRequests,
-    std::string *sharedState) {
+    std::string *sharedState, ScriptMailbox *mailbox,
+    const ScriptMessage *message) {
 	try {
 		const char *name = Callback(callback);
 		if (!program || !name || !scene.Contains(self) ||
 		    !std::isfinite(seconds) || seconds < 0 ||
 		    !std::isfinite(input.moveX) || !std::isfinite(input.moveZ) ||
 		    (other && !scene.Contains(other) && callback != "trigger_exit" &&
-		     callback != "collision_exit") ||
+		     callback != "collision_exit" && callback != "message") ||
 		    (remainingInstructions && *remainingInstructions < 0) ||
 		    (remainingPhysicsOperations && *remainingPhysicsOperations < 0) ||
 		    (remainingInstantiations && *remainingInstantiations < 0) ||
@@ -374,6 +383,25 @@ bool LuaScript::Invoke(
 		    (remainingAudioOperations && *remainingAudioOperations < 0) ||
 		    (remainingSceneRequests && *remainingSceneRequests < 0))
 			throw std::runtime_error("Script callback arguments are invalid.");
+		std::string messageNormalized;
+		if (callback == "message") {
+			if (!message || message->receiver != self ||
+			    message->name.empty() ||
+			    message->name.size() > ScriptMessage::kMaximumNameBytes ||
+			    message->name.find('\0') != std::string::npos ||
+			    StringConversion::Utf8ToWide(message->name).empty() ||
+			    message->sender != other ||
+			    message->data.size() > ScriptMessage::kMaximumDataBytes ||
+			    !NormalizeState(message->data, messageNormalized, error) ||
+			    messageNormalized.size() > ScriptMessage::kMaximumDataBytes)
+				throw std::runtime_error(
+				    "Script message arguments are invalid.");
+		} else if (message)
+			throw std::runtime_error(
+			    "Message data requires the message callback.");
+		const auto messageJson = nlohmann::json::parse(
+		    message ? messageNormalized : std::string("{}"));
+		const auto messageNodes = LuaInternal::BuildState(messageJson);
 		std::string normalized;
 		if (!NormalizeState(state, normalized, error))
 			return false;
@@ -395,6 +423,9 @@ bool LuaScript::Invoke(
 		call.other = other;
 		call.input = &input;
 		call.initial = &nodes;
+		call.mailbox = mailbox;
+		call.message = message;
+		call.messageInitial = message ? &messageNodes : nullptr;
 		call.sharedInitial = sharedState ? &sharedNodes : nullptr;
 		call.sharedInput = std::move(sharedNormalized);
 		call.source = program.data_->bytes;

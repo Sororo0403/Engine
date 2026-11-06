@@ -89,9 +89,11 @@ bool SceneScripts::Configure(const Scene &scene, bool preserve,
 		instances_.swap(instances);
 		programs_.swap(programs);
 		if (!preserve) {
+			mailbox_.Clear();
 			pending_.clear();
 			logs_.clear();
 		}
+		mailbox_.RemoveMissingReceivers(scene);
 		error.clear();
 		return true;
 	} catch (const std::exception &exception) {
@@ -117,6 +119,7 @@ bool SceneScripts::Run(Scene &scene, float seconds, const CharacterInput &input,
 		if (!std::isfinite(seconds) || seconds < 0)
 			throw std::runtime_error("Script time is invalid.");
 		logs_.clear();
+		auto incoming = mailbox_.BeginStep(!startOnly && seconds > 0);
 		std::string game = sharedState ? *sharedState : std::string("{}");
 		std::size_t callbacks = 0;
 		int budget = kFrameInstructions;
@@ -136,7 +139,8 @@ bool SceneScripts::Run(Scene &scene, float seconds, const CharacterInput &input,
 			       SceneActivity::IsActive(scene, id);
 		};
 		const auto invoke = [&](SceneObjectId id, const char *callback,
-		                        SceneObjectId other) {
+		                        SceneObjectId other,
+		                        const ScriptMessage *message = nullptr) {
 			current = id;
 			auto &instance = instances_.at(id);
 			if (++callbacks > kMaximumCallbacks)
@@ -151,14 +155,14 @@ bool SceneScripts::Run(Scene &scene, float seconds, const CharacterInput &input,
 			        &pendingDestructions, &destructionBudget,
 			        audioActions ? &requestedAudio : nullptr, &audioBudget,
 			        sceneRequest ? &requestedScene : nullptr, &sceneBudget,
-			        sharedState ? &game : nullptr))
+			        sharedState ? &game : nullptr, &mailbox_, message))
 				throw std::runtime_error(std::format(
 				    "{} [{}]: {}", PathUtils::ToUtf8(instance.settings.asset),
 				    callback, error));
 			if (messages.size() > kMaximumLogs - logs_.size())
 				throw std::runtime_error("Script frame log limit exceeded.");
-			for (auto &message : messages)
-				logs_.emplace_back(id, std::move(message));
+			for (auto &line : messages)
+				logs_.emplace_back(id, std::move(line));
 		};
 		for (auto &[id, instance] : instances_) {
 			if (!active(id))
@@ -222,8 +226,15 @@ bool SceneScripts::Run(Scene &scene, float seconds, const CharacterInput &input,
 					invoke(id, "click", 0);
 			}
 		}
+		for (const auto &message : incoming) {
+			if (instances_.contains(message.receiver) &&
+			    active(message.receiver) &&
+			    instances_.at(message.receiver).started)
+				invoke(message.receiver, "message", message.sender, &message);
+		}
 		if (!SceneDestruction::Apply(scene, pendingDestructions, error))
 			throw std::runtime_error(error);
+		mailbox_.RemoveMissingReceivers(scene);
 		if (audioActions) {
 			auto combined = *audioActions;
 			combined.insert(combined.end(), requestedAudio.begin(),

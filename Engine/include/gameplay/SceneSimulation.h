@@ -30,6 +30,14 @@
 class SceneSimulation {
   public:
 	/// <summary>
+	/// 次の正の時間の更新を待つLua通知の件数を取得する
+	/// </summary>
+	/// <returns>停止・シーン遷移・Restartで0に戻る件数</returns>
+	std::size_t GetPendingScriptMessages() const {
+		return scripts_.GetPendingMessageCount();
+	}
+
+	/// <summary>
 	/// ゲームの開始処理を実行せず、シーンの初期配置・物理・UIとLuaのコンパイルを検証する
 	/// </summary>
 	/// <param name="source">変更しない検証元</param>

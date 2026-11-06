@@ -11,6 +11,8 @@
 class Scene;
 class ScenePhysics;
 class ScenePrefabs;
+class ScriptMailbox;
+struct ScriptMessage;
 struct CharacterInput;
 
 class LuaScript;
@@ -42,7 +44,7 @@ class LuaScript {
 	/// <summary>
 	/// 公開するスクリプトAPIの版。Runtimeの出力互換性を照合する
 	/// </summary>
-	static constexpr int kApiVersion = 8;
+	static constexpr int kApiVersion = 9;
 	static constexpr std::size_t kMaximumSourceBytes = 256 * 1024;
 	static constexpr std::size_t kMaximumBytecodeBytes = 1024 * 1024;
 	static constexpr std::size_t kMaximumStateBytes = 64 * 1024;
@@ -55,6 +57,7 @@ class LuaScript {
 	static constexpr int kMaximumDestructions = 64;
 	static constexpr int kMaximumAudioOperations = 128;
 	static constexpr int kMaximumSceneRequests = 8;
+	static constexpr int kMaximumMessages = 32;
 	static constexpr int kHookInterval = 100;
 	static constexpr std::size_t kMaximumLogBytes = 1024;
 
@@ -101,7 +104,7 @@ class LuaScript {
 	/// 宣言用のチャンクから指定コールバックを呼び、成功時だけstateを返す。シーンは呼び出し側の候補を使用する
 	/// </summary>
 	/// <param name="program">コンパイル済みの不変なコード</param>
-	/// <param name="callback">start・update・trigger_enter・trigger_stay・trigger_exit・collision_enter・collision_stay・collision_exit・click</param>
+	/// <param name="callback">start・update・trigger_enter・trigger_stay・trigger_exit・collision_enter・collision_stay・collision_exit・click・message</param>
 	/// <param name="scene">作業シーン。全コールバックと物理検証の成功後だけ呼び出し側で確定する</param>
 	/// <param name="self">スクリプトを持つ物体</param>
 	/// <param name="state">成功時だけ置き換えるインスタンス状態</param>
@@ -123,6 +126,8 @@ class LuaScript {
 	/// <param name="sceneRequest">指定時は候補の遷移先を最後の要求で置き換える。呼び出し側で全処理成功後に確定する</param>
 	/// <param name="remainingSceneRequests">指定時はフレームで共有する残り遷移要求回数</param>
 	/// <param name="sharedState">指定時はgameとして公開する共有JSON。成功時だけ置き換える。stateと同じ制限を使い、同じ文字列を両方へ渡さない</param>
+	/// <param name="mailbox">指定時は作業用の次回通知キュー。呼び出し側で全処理成功後に確定する</param>
+	/// <param name="message">messageコールバックへ渡す名前・JSON・送信者。受信者はselfと一致すること</param>
 	/// <returns>true:成功またはコールバックなし false:コード・API・状態・実行制限が無効</returns>
 	static bool
 	Invoke(const LuaScriptProgram &program, std::string_view callback,
@@ -141,5 +146,6 @@ class LuaScript {
 	       int *remainingAudioOperations = nullptr,
 	       std::filesystem::path *sceneRequest = nullptr,
 	       int *remainingSceneRequests = nullptr,
-	       std::string *sharedState = nullptr);
+	       std::string *sharedState = nullptr, ScriptMailbox *mailbox = nullptr,
+	       const ScriptMessage *message = nullptr);
 };

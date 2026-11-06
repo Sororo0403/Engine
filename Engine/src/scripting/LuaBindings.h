@@ -15,6 +15,8 @@ extern "C" {
 class Scene;
 class ScenePhysics;
 class ScenePrefabs;
+class ScriptMailbox;
+struct ScriptMessage;
 
 namespace LuaInternal {
 struct StateNode;
@@ -32,6 +34,11 @@ struct Call {
 	int audioOperations = 0;
 	std::filesystem::path *sceneRequest = nullptr;
 	int sceneRequests = 0;
+	ScriptMailbox *mailbox = nullptr;
+	const ScriptMessage *message = nullptr;
+	const StateNode *messageInitial = nullptr;
+	std::string messageData;
+	int messagesSent = 0;
 	int *remainingSceneRequests = nullptr;
 	int *remainingAudioOperations = nullptr;
 	int *remainingDestructions = nullptr;
@@ -89,6 +96,12 @@ void AddAudioMethods(lua_State *state);
 /// </summary>
 /// <param name="state">保護呼び出し内のLua状態</param>
 void AddSceneMethods(lua_State *state);
+
+/// <summary>
+/// 直前の物体メソッドテーブルへ、次の更新に通知を送るAPIを登録する
+/// </summary>
+/// <param name="state">保護呼び出し内のLua状態</param>
+void AddMessageMethods(lua_State *state);
 
 /// <summary>
 /// 直前の物体メソッドテーブルへ、名前付きPrefabの生成を登録する

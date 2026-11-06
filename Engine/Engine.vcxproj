@@ -2254,4 +2254,10 @@ exit /b 0</Command>
   </ItemGroup>
   <ItemGroup><ClCompile Include="src\scripting\LuaAudioBindings.cpp" /></ItemGroup>
   <ItemGroup><ClCompile Include="src\scripting\LuaSceneBindings.cpp" /></ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\scripting\ScriptMessage.h" />
+    <ClInclude Include="include\scripting\ScriptMailbox.h" />
+    <ClCompile Include="src\scripting\ScriptMailbox.cpp" />
+    <ClCompile Include="src\scripting\LuaMessageBindings.cpp" />
+  </ItemGroup>
 </Project>

@@ -5,6 +5,7 @@
 #include "physics/CollisionEvent.h"
 #include "physics/TriggerEvent.h"
 #include "scripting/LuaScript.h"
+#include "scripting/ScriptMailbox.h"
 #include <map>
 #include <optional>
 #include <span>
@@ -88,11 +89,11 @@ class SceneScripts {
 	void FlushLogs();
 
 	/// <summary>
-	/// 初期化済みインスタンスを保持するか確認する
+	/// 処理対象のインスタンスまたは通知を保持するか確認する
 	/// </summary>
 	/// <returns>true:保持中 false:対象なし</returns>
 	bool HasInstances() const {
-		return !instances_.empty();
+		return !instances_.empty() || mailbox_.GetPendingCount() != 0;
 	}
 
 	/// <summary>
@@ -101,6 +102,14 @@ class SceneScripts {
 	/// <returns>次の設定変更まで有効な不変の階層一覧</returns>
 	std::span<const std::shared_ptr<const Scene>> GetPrefabScenes() const {
 		return prefabs_.GetScenes();
+	}
+
+	/// <summary>
+	/// 次の正の時間の更新を待つ通知の件数を取得する
+	/// </summary>
+	/// <returns>送信成功後、まだ受信処理していない件数</returns>
+	std::size_t GetPendingMessageCount() const {
+		return mailbox_.GetPendingCount();
 	}
 
   private:
@@ -112,6 +121,7 @@ class SceneScripts {
 	};
 
 	ScenePrefabs prefabs_;
+	ScriptMailbox mailbox_;
 	std::map<SceneObjectId, Instance> instances_;
 	std::map<std::filesystem::path, LuaScriptProgram> programs_;
 	std::vector<TriggerEvent> pending_;

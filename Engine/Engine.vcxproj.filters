@@ -2303,4 +2303,10 @@
   </ItemGroup>
   <ItemGroup><ClCompile Include="src\scripting\LuaAudioBindings.cpp"><Filter>src\scripting</Filter></ClCompile></ItemGroup>
   <ItemGroup><ClCompile Include="src\scripting\LuaSceneBindings.cpp"><Filter>src\scripting</Filter></ClCompile></ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\scripting\ScriptMessage.h"><Filter>include\scripting</Filter></ClInclude>
+    <ClInclude Include="include\scripting\ScriptMailbox.h"><Filter>include\scripting</Filter></ClInclude>
+    <ClCompile Include="src\scripting\ScriptMailbox.cpp"><Filter>src\scripting</Filter></ClCompile>
+    <ClCompile Include="src\scripting\LuaMessageBindings.cpp"><Filter>src\scripting</Filter></ClCompile>
+  </ItemGroup>
 </Project>
