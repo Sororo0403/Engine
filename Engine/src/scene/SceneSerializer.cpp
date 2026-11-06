@@ -241,7 +241,8 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 			    (object.followCamera && !object.followCamera->IsValid()) ||
 			    (object.respawn && !object.respawn->IsValid()) ||
 			    (object.triggerActions && !object.triggerActions->IsValid()) ||
-			    (object.pointLight && !object.pointLight->IsValid())) {
+			    (object.pointLight && !object.pointLight->IsValid()) ||
+			    (object.audioSource && !object.audioSource->IsValid())) {
 				throw std::runtime_error(
 				    "ゲーム用コンポーネントの設定が無効です。");
 			}
@@ -279,6 +280,21 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 				    {"uvScale", object.meshRenderer->uvScale},
 				    {"uvOffset", object.meshRenderer->uvOffset}};
 			}
+
+			if (object.audioSource) {
+				const auto &v = *object.audioSource;
+				objects.back()["audioSource"] = {
+				    {"clip", PathUtils::ToUtf8(v.clipPath)},
+				    {"volume", v.volume},
+				    {"loop", v.loop},
+				    {"playOnStart", v.playOnStart},
+				    {"spatial", v.spatial},
+				    {"minDistance", v.minDistance},
+				    {"maxDistance", v.maxDistance}};
+			}
+
+			if (object.audioListener)
+				objects.back()["audioListener"] = Json::object();
 
 			if (object.pointLight) {
 				const auto &light = *object.pointLight;
@@ -416,7 +432,7 @@ namespace {
 /// 解析したシーンドキュメントを検証し、全件成功した場合だけ反映する
 /// </summary>
 /// <param name="scene">読み込み先</param>
-/// <param name="document">version 1から19のJSON</param>
+/// <param name="document">version 1から20のJSON</param>
 /// <returns>true:成功 false:内容が無効</returns>
 bool ApplySceneDocument(Scene &scene, const Json &document) {
 	try {
@@ -511,6 +527,33 @@ bool ApplySceneDocument(Scene &scene, const Json &document) {
 			    (object.meshRenderer && !object.meshRenderer->IsValid())) {
 				throw std::runtime_error(
 				    "MeshまたはMesh Rendererの設定が無効です。");
+			}
+
+			if (version >= 20 && item.contains("audioSource")) {
+				const auto &v = item.at("audioSource");
+				for (const auto *key : {"volume", "minDistance", "maxDistance"})
+					if (!v.at(key).is_number())
+						throw std::runtime_error(
+						    "Audio Sourceの音量と距離には数値が必要です。");
+				for (const auto *key : {"loop", "playOnStart", "spatial"})
+					if (!v.at(key).is_boolean())
+						throw std::runtime_error(
+						    "Audio Sourceの切り替えには真偽値が必要です。");
+				object.audioSource = AudioSourceComponent{
+				    PathUtils::FromUtf8(v.at("clip").get<std::string>()),
+				    v.at("volume").get<float>(),
+				    v.at("loop").get<bool>(),
+				    v.at("playOnStart").get<bool>(),
+				    v.at("spatial").get<bool>(),
+				    v.at("minDistance").get<float>(),
+				    v.at("maxDistance").get<float>()};
+			}
+
+			if (version >= 20 && item.contains("audioListener")) {
+				if (!item.at("audioListener").is_object())
+					throw std::runtime_error(
+					    "Audio Listenerの設定にはオブジェクトが必要です。");
+				object.audioListener.emplace();
 			}
 
 			if (version >= 19 && item.contains("pointLight")) {
@@ -683,7 +726,8 @@ bool ApplySceneDocument(Scene &scene, const Json &document) {
 			    (object.followCamera && !object.followCamera->IsValid()) ||
 			    (object.respawn && !object.respawn->IsValid()) ||
 			    (object.triggerActions && !object.triggerActions->IsValid()) ||
-			    (object.pointLight && !object.pointLight->IsValid())) {
+			    (object.pointLight && !object.pointLight->IsValid()) ||
+			    (object.audioSource && !object.audioSource->IsValid())) {
 				throw std::runtime_error(
 				    "ゲーム用コンポーネントの設定が無効です。");
 			}
