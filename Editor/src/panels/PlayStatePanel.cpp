@@ -48,6 +48,8 @@ PlayStatePanel::Request PlayStatePanel::Draw(const ImGuiSystem &ui,
 	ui.Text(std::format("Simulation Frames: {}",
 	                    session.GetSimulationFrameCount()));
 
+	ui.Text(std::format("Queued Script Messages: {}",
+	                    session.GetPendingScriptMessages()));
 	if (ImGui::CollapsingHeader("Shared Script Data")) {
 		const auto data = session.GetSharedScriptData();
 		ImGui::TextWrapped("%.*s", static_cast<int>(data.size()), data.data());

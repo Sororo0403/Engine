@@ -14,6 +14,14 @@
 class EditorPlaySession {
   public:
 	/// <summary>
+	/// 次の再生更新を待つ物体間通知の件数を取得する
+	/// </summary>
+	/// <returns>保持中のLua通知の件数</returns>
+	std::size_t GetPendingScriptMessages() const {
+		return simulation_.GetPendingScriptMessages();
+	}
+
+	/// <summary>
 	/// シーン間で共有するLuaのgameを、変更しないJSONとして取得する
 	/// </summary>
 	/// <returns>次の更新まで有効な共有データ</returns>

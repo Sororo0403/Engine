@@ -1988,6 +1988,23 @@ void ControlsPanel::Draw() {
 	         "calls per callback, 32 per step, 1024 generated objects per step "
 	         "and 4096 scene objects. Any callback, physics or preparation "
 	         "failure restores the entire simulation step."},
+	        {"Script Messages",
+	         "Use target:send_message(\"damage\", {amount=1}) on an object "
+	         "reference. It returns false if the target has no active Lua "
+	         "Script; missing message handlers are inert. Return "
+	         "message(self,state,name,data,sender) to receive it after the "
+	         "normal callbacks of the next positive step. Data is copied at "
+	         "send time; omitted data means {}. The sender can already be "
+	         "deleted: use sender:is_valid() before accessing its properties. "
+	         "Messages sent from a handler wait until another step, so "
+	         "delivery never recurses. Deleted/inactive receivers are skipped. "
+	         "Pause holds messages; Step delivers once. Restart, Stop and "
+	         "Scene changes clear them. Any callback failure restores both "
+	         "incoming and outgoing messages and the whole simulation step. "
+	         "Names use 1-64 UTF-8 bytes, data is a 4 KiB JSON object using "
+	         "state-compatible values. Limits: 32 sends per callback, 128 per "
+	         "step, 128 pending messages and 64 KiB for names/data. Play State "
+	         "shows the queued count."},
 	        {"Shared Script Data",
 	         "Use game.score, game.inventory or other fields from callbacks "
 	         "to share data across objects and Scene transitions. For example, "
