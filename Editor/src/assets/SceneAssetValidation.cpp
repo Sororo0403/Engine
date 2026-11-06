@@ -2,6 +2,7 @@
 
 #include "assets/AssetDependencies.h"
 #include "assets/ImageValidation.h"
+#include "audio/WaveReader.h"
 #include "platform/windows/PathUtils.h"
 #include "scene/Scene.h"
 #include <format>
@@ -14,7 +15,8 @@
 std::vector<SceneValidationIssue>
 SceneAssetValidation::Inspect(const Scene &scene) {
 	std::vector<SceneValidationIssue> issues;
-	std::map<std::filesystem::path, std::vector<std::string>> models, textures;
+	std::map<std::filesystem::path, std::vector<std::string>> models, textures,
+	    monoAudio, stereoAudio;
 
 	const auto inspect = [](const std::filesystem::path &path, auto &cache,
 	                        auto collect) -> const std::vector<std::string> & {
@@ -60,6 +62,29 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 				                 id)});
 			}
 		};
+
+		if (object.audioSource && !object.audioSource->clipPath.empty()) {
+			const bool spatial = object.audioSource->spatial;
+			add("Audio Source",
+			    inspect(object.audioSource->clipPath,
+			            spatial ? monoAudio : stereoAudio,
+			            [spatial](const auto &path) {
+				            auto files = AssetDependencies::AudioFiles(path);
+				            for (const auto &file : files)
+					            if (std::filesystem::is_regular_file(file)) {
+						            WaveData wave;
+						            std::string error;
+						            if (!WaveReader::Load(file, wave, error))
+							            throw std::runtime_error(error);
+						            if (spatial && wave.channels != 1)
+							            throw std::runtime_error(
+							                "Spatial Audio Source needs a mono "
+							                "WAV clip.");
+					            }
+
+				            return files;
+			            }));
+		}
 
 		if (object.HasMesh()) {
 			add("Mesh", inspect(object.mesh->modelPath, models,

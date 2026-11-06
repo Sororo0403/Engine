@@ -20,4 +20,11 @@ ModelFiles(const std::filesystem::path &path);
 /// <returns>絶対パスの依存一覧。拡張子やパスが無効なら例外。画像の存在は呼び出し側で検証する</returns>
 std::vector<std::filesystem::path>
 TextureFiles(const std::filesystem::path &path);
+/// <summary>
+/// WAVの拡張子とパスを検証し、直接参照する音声ファイルを取得する
+/// </summary>
+/// <param name="path">絶対パスまたは実行ファイル基準のWAV</param>
+/// <returns>絶対パスの依存一覧。参照が無効なら例外。内容は読み込み側で検証する</returns>
+std::vector<std::filesystem::path>
+AudioFiles(const std::filesystem::path &path);
 } // namespace AssetDependencies

@@ -1,6 +1,7 @@
 #include "export/GameExporter.h"
 #include "assets/AssetDependencies.h"
 #include "assets/ImageValidation.h"
+#include "audio/WaveReader.h"
 #include "files/OutputDirectory.h"
 #include "gameplay/SceneSimulation.h"
 #include "platform/windows/PathUtils.h"
@@ -212,6 +213,28 @@ class Assets {
 		return reference;
 	}
 
+	fs::path AddAudio(const fs::path &input, bool spatial) {
+		AssetDependencies::AudioFiles(input);
+		const auto reference = AddFile(FindSource(input), input);
+		const auto &file = files_.at(reference);
+		auto found = audioChannels_.find(file);
+		if (found == audioChannels_.end()) {
+			WaveData wave;
+			std::string error;
+			if (!WaveReader::Load(file, wave, error))
+				throw std::runtime_error(
+				    std::format("Could not export audio \"{}\": {}",
+				                PathUtils::ToUtf8(file), error));
+			found = audioChannels_.emplace(file, wave.channels).first;
+		}
+
+		if (spatial && found->second != 1)
+			throw std::runtime_error(
+			    "Spatial Audio Source needs a mono WAV clip: " +
+			    PathUtils::ToUtf8(file));
+		return reference;
+	}
+
 	const auto &Files() const {
 		return files_;
 	}
@@ -264,6 +287,7 @@ class Assets {
 	std::vector<AssetSource> sources_;
 	std::map<fs::path, fs::path, PathLess> files_, models_;
 	std::set<fs::path, PathLess> textures_;
+	std::map<fs::path, std::uint16_t, PathLess> audioChannels_;
 };
 
 /// <summary>
@@ -434,6 +458,17 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 		auto objects = scene.GetObjects();
 
 		for (auto &[id, object] : objects) {
+			if (object.audioSource && !object.audioSource->clipPath.empty()) {
+				auto &path = object.audioSource->clipPath;
+				const auto input =
+				    path.is_absolute()
+				        ? path
+				        : resourceRoot / PathUtils::RelativeInside(
+				                             fs::path(L"resources"),
+				                             path.lexically_normal());
+				path = assets.AddAudio(input, object.audioSource->spatial);
+			}
+
 			if (object.meshRenderer) {
 				for (auto &[slot, path] : object.meshRenderer->textures.slots) {
 					const auto input =
@@ -542,6 +577,10 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 		Assets exportedAssets(fs::canonical(destination / L"resources"));
 
 		for (const auto &[id, object] : snapshot.GetObjects()) {
+			if (object.audioSource && !object.audioSource->clipPath.empty())
+				exportedAssets.AddAudio(destination /
+				                            object.audioSource->clipPath,
+				                        object.audioSource->spatial);
 			if (object.meshRenderer) {
 				for (const auto &[slot, path] :
 				     object.meshRenderer->textures.slots) {

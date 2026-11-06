@@ -205,3 +205,10 @@ AssetDependencies::TextureFiles(const std::filesystem::path &path) {
 
 	return {ResolveAsset(path)};
 }
+
+std::vector<std::filesystem::path>
+AssetDependencies::AudioFiles(const std::filesystem::path &path) {
+	if (!PathUtils::HasExtension(path, ".wav"))
+		throw std::invalid_argument("Unsupported audio extension. Use WAV.");
+	return {ResolveAsset(path)};
+}
