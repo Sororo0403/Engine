@@ -2241,4 +2241,21 @@
       <Filter>src\scripting</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\physics\RaycastHit.h">
+      <Filter>include\physics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\physics\RaycastOptions.h">
+      <Filter>include\physics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\physics\SceneRaycast.h">
+      <Filter>include\physics</Filter>
+    </ClInclude>
+    <ClCompile Include="src\physics\SceneRaycast.cpp">
+      <Filter>src\physics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scripting\LuaRaycastBindings.cpp">
+      <Filter>src\scripting</Filter>
+    </ClCompile>
+  </ItemGroup>
 </Project>

@@ -2220,4 +2220,11 @@ exit /b 0</Command>
     <ClInclude Include="include\ui\UIInputReader.h" />
     <ClCompile Include="src\ui\UIInputReader.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\physics\RaycastHit.h" />
+    <ClInclude Include="include\physics\RaycastOptions.h" />
+    <ClInclude Include="include\physics\SceneRaycast.h" />
+    <ClCompile Include="src\physics\SceneRaycast.cpp" />
+    <ClCompile Include="src\scripting\LuaRaycastBindings.cpp" />
+  </ItemGroup>
 </Project>

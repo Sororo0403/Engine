@@ -1966,6 +1966,21 @@ void ControlsPanel::Draw() {
 	         "the current input. Stop/Restart/scene changes clear old UI "
 	         "presses and selection. Button settings support Undo/Redo, "
 	         "Prefabs, game output and import."},
+	        {"Raycast Scripts",
+	         "scene.raycast(ox,oy,oz, dx,dy,dz, distance [,layerMask "
+	         "[,includeTriggers [,ignoredObject]]]) finds the nearest active "
+	         "Box Collider, including rotated/scaled children. Direction is "
+	         "normalized; distance is in world units from 0 to 1000000. The "
+	         "default mask includes all layers, Trigger is excluded and the "
+	         "script owner is ignored. The mask selects Collider layers, "
+	         "independently of their collision masks. Returns nil on a miss, "
+	         "or a table with object, distance, x/y/z and normal_x/y/z. A ray "
+	         "starting inside returns distance 0 and the opposite ray "
+	         "direction "
+	         "as normal. Queries see earlier script transform/activity changes "
+	         "and share the physics API call budget. Use hit.object references "
+	         "to interact with the target or apply impulses. Only assigned "
+	         "Colliders participate; model triangles are not queried."},
 	        {"View menu", "Show or hide the grid and selection bounds, or "
 	                      "reset the dock layout."},
 	    });

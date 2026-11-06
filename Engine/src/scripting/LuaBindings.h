@@ -61,6 +61,12 @@ void AddUIMethods(lua_State *state);
 void AddPhysicsMethods(lua_State *state);
 
 /// <summary>
+/// 直前のsceneテーブルへ、現在のColliderを検索するレイキャストを登録する
+/// </summary>
+/// <param name="state">保護呼び出し内のLua状態</param>
+void AddRaycastMethods(lua_State *state);
+
+/// <summary>
 /// 物体IDを、アドレスを公開しない読み取り専用userdataへ変換する
 /// </summary>
 /// <param name="state">Lua状態</param>
