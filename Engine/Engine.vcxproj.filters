@@ -668,4 +668,15 @@
       <Filter>src\scene</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Filter Include="include\audio"><UniqueIdentifier>{0c09dbaa-1cef-4419-b8b9-4391fb9dad26}</UniqueIdentifier></Filter>
+    <Filter Include="src\audio"><UniqueIdentifier>{d3c155a1-b582-4d30-827f-7e98e0417155}</UniqueIdentifier></Filter>
+    <ClInclude Include="include\audio\AudioClipHandle.h"><Filter>include\audio</Filter></ClInclude>
+    <ClInclude Include="include\audio\AudioClipManager.h"><Filter>include\audio</Filter></ClInclude>
+    <ClInclude Include="include\audio\WaveData.h"><Filter>include\audio</Filter></ClInclude>
+    <ClInclude Include="include\audio\WaveReader.h"><Filter>include\audio</Filter></ClInclude>
+    <ClCompile Include="src\audio\AudioClipManager.cpp"><Filter>src\audio</Filter></ClCompile>
+    <ClCompile Include="src\audio\WaveData.cpp"><Filter>src\audio</Filter></ClCompile>
+    <ClCompile Include="src\audio\WaveReader.cpp"><Filter>src\audio</Filter></ClCompile>
+  </ItemGroup>
 </Project>

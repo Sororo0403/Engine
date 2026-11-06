@@ -371,4 +371,13 @@ exit /b 0</Command>
     <ClInclude Include="include\scene\SceneLighting.h" />
     <ClCompile Include="src\scene\SceneLighting.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\audio\AudioClipHandle.h" />
+    <ClInclude Include="include\audio\AudioClipManager.h" />
+    <ClInclude Include="include\audio\WaveData.h" />
+    <ClInclude Include="include\audio\WaveReader.h" />
+    <ClCompile Include="src\audio\AudioClipManager.cpp" />
+    <ClCompile Include="src\audio\WaveData.cpp" />
+    <ClCompile Include="src\audio\WaveReader.cpp" />
+  </ItemGroup>
 </Project>
