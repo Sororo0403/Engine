@@ -3,18 +3,27 @@
 #include "physics/TriggerEvent.h"
 
 /// <summary>
-/// Triggerの進入・退出に応じて、対象物体の有効設定または音声の再生を操作する
+/// Triggerの進入・退出に応じて、対象物体の有効設定または音声の再生、瞬間移動を操作する
 /// </summary>
 struct TriggerAction {
 	/// <summary>
-	/// 対象へ適用する有効設定、またはAudio Sourceの再生・停止
+	/// 対象へ適用する有効設定、Audio Sourceの再生・停止、または瞬間移動
 	/// </summary>
-	enum class Operation { ENABLE, DISABLE, TOGGLE, PLAY_AUDIO, STOP_AUDIO };
+	enum class Operation {
+		ENABLE,
+		DISABLE,
+		TOGGLE,
+		PLAY_AUDIO,
+		STOP_AUDIO,
+		TELEPORT
+	};
 
 	TriggerEvent::Type event = TriggerEvent::Type::ENTER;
 	SceneObjectId target = 0;
 	Operation operation = Operation::ENABLE;
 	bool once = false;
+	// Teleportの移動先。物体のワールド位置を使用し、回転と拡縮は維持する。
+	SceneObjectId destination = 0;
 
 	/// <summary>
 	/// 種別が有効か確認する。未割り当ての対象は編集用に許可し、Play時に存在を確認する
@@ -25,7 +34,8 @@ struct TriggerAction {
 		        event == TriggerEvent::Type::EXIT) &&
 		       (operation == Operation::ENABLE ||
 		        operation == Operation::DISABLE ||
-		        operation == Operation::TOGGLE || IsAudioOperation());
+		        operation == Operation::TOGGLE || IsAudioOperation() ||
+		        operation == Operation::TELEPORT);
 	}
 
 	/// <summary>

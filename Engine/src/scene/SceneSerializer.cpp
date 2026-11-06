@@ -373,14 +373,18 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 					    : action.operation ==
 					            TriggerAction::Operation::PLAY_AUDIO
 					        ? "playAudio"
-					        : "stopAudio";
+					    : action.operation ==
+					            TriggerAction::Operation::STOP_AUDIO
+					        ? "stopAudio"
+					        : "teleport";
 					actions.push_back(
 					    {{"event", action.event == TriggerEvent::Type::ENTER
 					                   ? "enter"
 					                   : "exit"},
 					     {"target", action.target},
 					     {"operation", operation},
-					     {"once", action.once}});
+					     {"once", action.once},
+					     {"destination", action.destination}});
 				}
 				objects.back()["triggerActions"] = {
 				    {"actions", std::move(actions)}};
@@ -724,7 +728,10 @@ bool ApplySceneDocument(Scene &scene, const Json &document) {
 					    (operation != "enable" && operation != "disable" &&
 					     operation != "toggle" &&
 					     !(version >= 21 && (operation == "playAudio" ||
-					                         operation == "stopAudio"))) ||
+					                         operation == "stopAudio")) &&
+					     !(version >= 23 && operation == "teleport")) ||
+					    (version >= 23 &&
+					     !value.at("destination").is_number_unsigned()) ||
 					    !value.at("target").is_number_unsigned() ||
 					    !value.at("once").is_boolean()) {
 						throw std::runtime_error(
@@ -742,8 +749,13 @@ bool ApplySceneDocument(Scene &scene, const Json &document) {
 					         ? TriggerAction::Operation::TOGGLE
 					     : operation == "playAudio"
 					         ? TriggerAction::Operation::PLAY_AUDIO
-					         : TriggerAction::Operation::STOP_AUDIO,
-					     value.at("once").get<bool>()});
+					     : operation == "stopAudio"
+					         ? TriggerAction::Operation::STOP_AUDIO
+					         : TriggerAction::Operation::TELEPORT,
+					     value.at("once").get<bool>(),
+					     version >= 23
+					         ? value.at("destination").get<SceneObjectId>()
+					         : 0});
 				}
 				object.triggerActions = std::move(component);
 			}

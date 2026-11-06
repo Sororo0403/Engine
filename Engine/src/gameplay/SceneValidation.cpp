@@ -99,6 +99,14 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 						        "for each action.");
 						break;
 					}
+					if (action.operation ==
+					        TriggerAction::Operation::TELEPORT &&
+					    !scene.Contains(action.destination)) {
+						add(id, "Teleport Trigger Actions require an existing "
+						        "destination.");
+						break;
+					}
+
 					if (action.IsAudioOperation() &&
 					    !scene.FindObject(action.target)->audioSource) {
 						add(id, "Audio Trigger Actions require an Audio Source "

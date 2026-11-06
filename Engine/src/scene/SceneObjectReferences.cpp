@@ -17,6 +17,7 @@ template <class T, class F> void Visit(T &object, F visit) {
 	if (object.triggerActions) {
 		for (auto &action : object.triggerActions->actions) {
 			visit(action.target);
+			visit(action.destination);
 		}
 	}
 }

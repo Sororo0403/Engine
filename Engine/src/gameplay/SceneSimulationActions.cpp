@@ -1,6 +1,8 @@
 #include "gameplay/SceneSimulation.h"
 
 #include "scene/SceneActivity.h"
+#include "scene/SceneHierarchy.h"
+#include <algorithm>
 #include <array>
 #include <format>
 #include <utility>
@@ -83,6 +85,7 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 	auto fired = firedActions_;
 	std::map<SceneObjectId, bool> requested;
 	std::vector<SceneAudioAction> audio;
+	std::map<SceneObjectId, SceneObjectId> destinations;
 	for (const auto &signal : signals) {
 		const auto *object = scene_.FindObject(signal.receiver);
 		if (!object || !SceneActivity::IsActive(scene_, signal.receiver) ||
@@ -108,6 +111,21 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 				}
 				return false;
 			}
+			if (action.operation == TriggerAction::Operation::TELEPORT) {
+				if (!scene_.Contains(action.destination)) {
+					error = "Teleport requires an existing destination.";
+					if (invalidObject) {
+						*invalidObject = signal.receiver;
+					}
+					return false;
+				}
+				destinations[action.target] = action.destination;
+				if (action.once) {
+					fired.insert(key);
+				}
+				continue;
+			}
+
 			if (action.IsAudioOperation()) {
 				if (!target->audioSource) {
 					error = std::format("Trigger Actions on object ID {} need "
@@ -142,6 +160,7 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 				break;
 			case TriggerAction::Operation::PLAY_AUDIO:
 			case TriggerAction::Operation::STOP_AUDIO:
+			case TriggerAction::Operation::TELEPORT:
 				break;
 			}
 			if (action.once) {
@@ -170,7 +189,122 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 		}
 		frameEvents_.swap(events);
 	}
+	if (!destinations.empty()) {
+		// 全移動先を変更前のシーンから取得し、親子や相互参照でも順序に依存させない。
+		std::map<SceneObjectId, DirectX::XMFLOAT3> positions;
+		for (const auto &[target, destination] : destinations) {
+			SceneWorldTransform transform;
+			if (!SceneHierarchy::GetWorldTransform(scene_, destination,
+			                                       transform)) {
+				error = "Teleport destination has an invalid world transform.";
+				if (invalidObject) {
+					*invalidObject = destination;
+				}
+				return false;
+			}
+			positions.emplace(target, transform.GetPosition());
+		}
+		if (!ApplyTeleports(positions, error, invalidObject)) {
+			return false;
+		}
+	}
+
 	firedActions_.swap(fired);
 	audioActions_.swap(audio);
+	return true;
+}
+
+bool SceneSimulation::ApplyTeleports(
+    const std::map<SceneObjectId, DirectX::XMFLOAT3> &positions,
+    std::string &error, SceneObjectId *invalidObject) {
+	Scene working;
+	working.ReplaceObjects(scene_.GetObjects());
+	if (!SceneHierarchy::SetWorldPositions(working, positions)) {
+		error = "Teleport positions cannot be represented in this hierarchy.";
+		return false;
+	}
+
+	SceneSimulation next;
+	next.CopyFrom(*this);
+	// 追従対象またはカメラの親が移動した場合は、補間せず到着先の姿勢へ同期する。
+	const auto moved = [&](SceneObjectId id) {
+		SceneWorldTransform before, after;
+		return !SceneHierarchy::GetWorldTransform(scene_, id, before) ||
+		       !SceneHierarchy::GetWorldTransform(working, id, after) ||
+		       before.GetPosition().x != after.GetPosition().x ||
+		       before.GetPosition().y != after.GetPosition().y ||
+		       before.GetPosition().z != after.GetPosition().z;
+	};
+	std::set<SceneObjectId> followMoved;
+	for (const auto id : updateOrder_) {
+		const auto &object = *working.FindObject(id);
+		if (object.followCamera && SceneActivity::IsActive(working, id) &&
+		    (moved(id) || moved(object.followCamera->target) ||
+		     followMoved.contains(id) ||
+		     followMoved.contains(object.followCamera->target))) {
+			next.followPoses_.erase(id);
+			std::vector<SceneObjectId> subtree;
+			if (!SceneHierarchy::GetSubtree(working, id, subtree)) {
+				error = "Teleport Follow Camera hierarchy is invalid.";
+				return false;
+			}
+			followMoved.insert(subtree.begin(), subtree.end());
+		}
+	}
+	if (!next.Configure(working, error, fallbackPose_, invalidObject, true)) {
+		return false;
+	}
+
+	bool resetCharacter = false;
+	std::set<SceneObjectId> teleported;
+	for (const auto &[id, position] : positions) {
+		(void)position;
+		std::vector<SceneObjectId> subtree;
+		if (!SceneHierarchy::GetSubtree(scene_, id, subtree)) {
+			error = "Teleport hierarchy is invalid.";
+			return false;
+		}
+		teleported.insert(subtree.begin(), subtree.end());
+		resetCharacter |= std::find(subtree.begin(), subtree.end(),
+		                            character_) != subtree.end();
+	}
+	// 追従によって移動したColliderにも途中経路の検知を適用しない。
+	for (const auto &[id, object] : next.scene_.GetObjects()) {
+		(void)object;
+		SceneWorldTransform before, after;
+		if (SceneHierarchy::GetWorldTransform(scene_, id, before) &&
+		    SceneHierarchy::GetWorldTransform(next.scene_, id, after) &&
+		    (before.GetPosition().x != after.GetPosition().x ||
+		     before.GetPosition().y != after.GetPosition().y ||
+		     before.GetPosition().z != after.GetPosition().z)) {
+			teleported.insert(id);
+		}
+	}
+	resetCharacter |= teleported.contains(character_);
+	if (character_ && resetCharacter &&
+	    !next.controller_.Teleport(next.controller_.GetTransform().translation,
+	                               next.world_)) {
+		error = "Teleport character destination overlaps a solid collider.";
+		if (invalidObject) {
+			*invalidObject = character_;
+		}
+		return false;
+	}
+
+	const std::vector<SceneObjectId> ids(teleported.begin(), teleported.end());
+	auto triggers = triggers_;
+	if (!triggers.Update(next.scene_, ids)) {
+		error = "Teleport trigger shapes are invalid.";
+		return false;
+	}
+	next.triggers_ = std::move(triggers);
+	const auto events = next.triggers_.GetEvents();
+	next.QueueActionSignals(events, next.pendingActionSignals_);
+	for (const auto &event : events) {
+		if (event.type != TriggerEvent::Type::STAY) {
+			next.frameEvents_.push_back(event);
+		}
+	}
+	Adopt(next);
 	return true;
 }

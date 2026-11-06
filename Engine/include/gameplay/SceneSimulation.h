@@ -206,6 +206,17 @@ class SceneSimulation {
 	               const CameraPose &fallbackPose, SceneObjectId *invalidObject,
 	               bool preserve);
 
+	/// <summary>
+	/// Trigger操作の瞬間移動をまとめて検証し、衝突・追従・接触を同期する
+	/// </summary>
+	/// <param name="positions">移動対象と移動後のワールド位置</param>
+	/// <param name="error">失敗理由</param>
+	/// <param name="invalidObject">問題のIDの出力先</param>
+	/// <returns>true:確定成功 false:配置や実行状態が無効。失敗時は全状態を保持する</returns>
+	bool
+	ApplyTeleports(const std::map<SceneObjectId, DirectX::XMFLOAT3> &positions,
+	               std::string &error, SceneObjectId *invalidObject);
+
 	Scene scene_;
 	CollisionWorld world_;
 	TriggerWorld triggers_;
