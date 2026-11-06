@@ -26,7 +26,8 @@ class CommandGroup {
 	                 RenameCommand, ModelPathCommand, VisibilityCommand,
 	                 ActiveCommand, ColliderCommand, CharacterCommand,
 	                 FollowCameraCommand, TriggerActionsCommand,
-	                 PointLightCommand, RespawnCommand, CameraCommand,
+	                 PointLightCommand, AudioSourceCommand,
+	                 AudioListenerCommand, RespawnCommand, CameraCommand,
 	                 MeshRendererCommand, TextureSlotsCommand>;
 
 	/// <summary>

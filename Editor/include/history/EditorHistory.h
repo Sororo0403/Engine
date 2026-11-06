@@ -388,6 +388,31 @@ class EditorHistory {
 	bool BeginPointLight(SceneObjectId objectId);
 
 	/// <summary>
+	/// 音源の追加・設定・削除を1回の履歴に記録する。未割り当ての参照は空で保持できる
+	/// </summary>
+	/// <param name="objectId">既存の物体</param>
+	/// <param name="value">有効な設定。nulloptは削除</param>
+	/// <returns>true:成功または同値 false:対象または設定が無効</returns>
+	bool SetAudioSource(SceneObjectId objectId,
+	                    std::optional<AudioSourceComponent> value);
+
+	/// <summary>
+	/// 音量と減衰距離の連続編集を開始する。現在の編集は先に確定する
+	/// </summary>
+	/// <param name="objectId">音源を持つ物体</param>
+	/// <returns>true:開始 false:対象または音源なし</returns>
+	bool BeginAudioSource(SceneObjectId objectId);
+
+	/// <summary>
+	/// リスナーの追加・削除を1回の履歴に記録する。有効リスナーの重複はScene CheckとPlayで検出する
+	/// </summary>
+	/// <param name="objectId">既存の物体</param>
+	/// <param name="value">リスナー設定。nulloptは削除</param>
+	/// <returns>true:成功または同値 false:対象なし</returns>
+	bool SetAudioListener(SceneObjectId objectId,
+	                      std::optional<AudioListenerComponent> value);
+
+	/// <summary>
 	/// 点光源の追加・設定・削除を1回の履歴に記録する
 	/// </summary>
 	/// <param name="objectId">既存の物体</param>
@@ -656,8 +681,9 @@ class EditorHistory {
 	    TransformCommand, ObjectCommand, ParentCommand, RenameCommand,
 	    ModelPathCommand, VisibilityCommand, ActiveCommand, ColliderCommand,
 	    CharacterCommand, FollowCameraCommand, TriggerActionsCommand,
-	    PointLightCommand, RespawnCommand, CameraCommand, MeshRendererCommand,
-	    ColorTintCommand, TextureSlotsCommand, CommandGroup>;
+	    PointLightCommand, AudioSourceCommand, AudioListenerCommand,
+	    RespawnCommand, CameraCommand, MeshRendererCommand, ColorTintCommand,
+	    TextureSlotsCommand, CommandGroup>;
 
 	/// <summary>
 	/// 操作と、その前後の状態を識別する情報
@@ -683,6 +709,7 @@ class EditorHistory {
 		             std::optional<CameraComponent>,
 		             std::optional<RespawnSettings>, std::optional<ColorTint>,
 		             std::optional<PointLightComponent>,
+		             std::optional<AudioSourceComponent>,
 		             std::optional<MeshRendererComponent>>
 		    before;
 	};

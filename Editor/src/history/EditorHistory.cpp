@@ -1447,6 +1447,10 @@ bool EditorHistory::HasPendingChanges() const {
 			    return before != object->camera;
 		    } else if constexpr (std::is_same_v<
 		                             Before,
+		                             std::optional<AudioSourceComponent>>) {
+			    return before != object->audioSource;
+		    } else if constexpr (std::is_same_v<
+		                             Before,
 		                             std::optional<PointLightComponent>>) {
 			    return before != object->pointLight;
 		    } else if constexpr (std::is_same_v<Before,
@@ -1597,6 +1601,13 @@ void EditorHistory::CommitEdit() {
 		return;
 	}
 
+	if (std::holds_alternative<std::optional<AudioSourceComponent>>(
+	        pending_->before) &&
+	    object->audioSource && !object->audioSource->IsValid()) {
+		Invalidate();
+		return;
+	}
+
 	if (std::holds_alternative<std::optional<PointLightComponent>>(
 	        pending_->before) &&
 	    object->pointLight && !object->pointLight->IsValid()) {
@@ -1656,6 +1667,11 @@ void EditorHistory::CommitEdit() {
 		                                        std::optional<BoxCollider>>) {
 			    return Command{
 			        ColliderCommand{objectId, before, object->collider}};
+		    } else if constexpr (std::is_same_v<
+		                             Before,
+		                             std::optional<AudioSourceComponent>>) {
+			    return Command{
+			        AudioSourceCommand{objectId, before, object->audioSource}};
 		    } else if constexpr (std::is_same_v<
 		                             Before,
 		                             std::optional<PointLightComponent>>) {
@@ -1719,6 +1735,9 @@ void EditorHistory::CommitEdit() {
 		    } else if constexpr (std::is_same_v<
 		                             T, std::optional<CameraComponent>>) {
 			    return "Edit Camera";
+		    } else if constexpr (std::is_same_v<
+		                             T, std::optional<AudioSourceComponent>>) {
+			    return "Edit Audio Source";
 		    } else if constexpr (std::is_same_v<
 		                             T, std::optional<PointLightComponent>>) {
 			    return "Edit Point Light";
@@ -2668,5 +2687,75 @@ bool EditorHistory::BeginPointLight(SceneObjectId id) {
 	}
 
 	pending_ = PendingEdit{id, object->pointLight};
+	return true;
+}
+
+bool EditorHistory::SetAudioSource(SceneObjectId id,
+                                   std::optional<AudioSourceComponent> value) {
+	CommitEdit();
+	auto *object = scene_.FindObject(id);
+
+	if (!object || (value && !value->IsValid())) {
+		return false;
+	}
+
+	const bool adding = !object->audioSource;
+	AudioSourceCommand command{id, object->audioSource, value};
+
+	if (!command.HasChanges()) {
+		return true;
+	}
+
+	const auto next = PrepareAppend();
+
+	if (!command.Redo(scene_)) {
+		return false;
+	}
+
+	AppendPrepared(Command{std::move(command)}, next,
+	               !value   ? "Remove Audio Source"
+	               : adding ? "Add Audio Source"
+	                        : "Edit Audio Source");
+	return true;
+}
+
+bool EditorHistory::SetAudioListener(
+    SceneObjectId id, std::optional<AudioListenerComponent> value) {
+	CommitEdit();
+	auto *object = scene_.FindObject(id);
+
+	if (!object || (value && !value->IsValid())) {
+		return false;
+	}
+
+	const bool adding = !object->audioListener;
+	AudioListenerCommand command{id, object->audioListener, value};
+
+	if (!command.HasChanges()) {
+		return true;
+	}
+
+	const auto next = PrepareAppend();
+
+	if (!command.Redo(scene_)) {
+		return false;
+	}
+
+	AppendPrepared(Command{std::move(command)}, next,
+	               !value   ? "Remove Audio Listener"
+	               : adding ? "Add Audio Listener"
+	                        : "Edit Audio Listener");
+	return true;
+}
+
+bool EditorHistory::BeginAudioSource(SceneObjectId id) {
+	CommitEdit();
+	const auto *object = scene_.FindObject(id);
+
+	if (!object || !object->audioSource) {
+		return false;
+	}
+
+	pending_ = PendingEdit{id, object->audioSource};
 	return true;
 }

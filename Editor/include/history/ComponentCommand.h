@@ -94,3 +94,8 @@ using MeshRendererCommand =
 
 using PointLightCommand =
     ComponentCommand<PointLightComponent, &SceneObject::pointLight>;
+
+using AudioSourceCommand =
+    ComponentCommand<AudioSourceComponent, &SceneObject::audioSource>;
+using AudioListenerCommand =
+    ComponentCommand<AudioListenerComponent, &SceneObject::audioListener>;
