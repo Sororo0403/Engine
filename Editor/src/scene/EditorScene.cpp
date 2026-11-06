@@ -6,6 +6,7 @@
 #include "assets/ModelPlacement.h"
 #include "assets/ModelUsage.h"
 #include "assets/PrefabAsset.h"
+#include "assets/PrefabInstances.h"
 #include "assets/ScenePlacement.h"
 #include "assets/TextureUsage.h"
 #include "camera/CameraObjects.h"
@@ -505,6 +506,9 @@ bool EditorScene::Update(float deltaTime) {
 	                     clipboard_.GetRespawnSettings() != nullptr,
 	                     selection_.GetIds(),
 	                     clipboard_.GetTextureUVs() != nullptr);
+	const auto prefabRequest = inspectorPanel_.GetPrefabRequest();
+	const bool hasPrefabRequest =
+	    prefabRequest.action != PrefabInspector::Action::NONE;
 	const auto &objectRequest = inspectorPanel_.GetObjectRequest();
 	const bool hasObjectRequest =
 	    objectRequest.action != InspectorPanel::ObjectAction::NONE;
@@ -601,6 +605,52 @@ bool EditorScene::Update(float deltaTime) {
 
 	if (!gizmoEditActive_ && !ImGui::IsAnyItemActive()) {
 		history.CommitEdit();
+	}
+
+	if (!wasBusy && hasPrefabRequest && !IsBusy() &&
+	    action == EditorAction::NONE &&
+	    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
+		FinishEdit();
+		std::string error;
+		bool success = true;
+		switch (prefabRequest.action) {
+		case PrefabInspector::Action::REFRESH:
+			success =
+			    PrefabInstances::Refresh(history, prefabRequest.root, error);
+			break;
+		case PrefabInspector::Action::REFRESH_ALL:
+			success = PrefabInstances::Refresh(history, prefabRequest.root,
+			                                   error, false, true);
+			break;
+		case PrefabInspector::Action::REVERT:
+			success = PrefabInstances::Refresh(history, prefabRequest.root,
+			                                   error, true);
+			break;
+		case PrefabInspector::Action::SAVE_ASSET:
+			success = PrefabInstances::SaveToAsset(history, prefabRequest.root,
+			                                       error);
+			if (success) {
+				assets_.Refresh();
+			}
+			break;
+		case PrefabInspector::Action::UNPACK:
+			success =
+			    PrefabInstances::Unpack(history, prefabRequest.root, error);
+			break;
+		case PrefabInspector::Action::SELECT_ROOT:
+			selection_.SelectOnly(prefabRequest.root);
+			hierarchyPanel_.RequestReveal(prefabRequest.root);
+			break;
+		case PrefabInspector::Action::REVEAL_ASSET:
+			assetsPanel_.RequestReveal(
+			    scene.FindObject(prefabRequest.root)->prefabLink->asset);
+			break;
+		case PrefabInspector::Action::NONE:
+			break;
+		}
+		if (!success) {
+			ShowError(error);
+		}
 	}
 
 	if (!wasBusy) {
@@ -1004,7 +1054,7 @@ bool EditorScene::Update(float deltaTime) {
 
 	const bool inputBlocked =
 	    wasBusy || IsBusy() || action != EditorAction::NONE ||
-	    hasCheckRequest || textureAssignment ||
+	    hasCheckRequest || hasPrefabRequest || textureAssignment ||
 	    !requestedMeshReplacement.empty() || !requestedModelReload.empty() ||
 	    !requestedTextureReload.empty() || !requestedModelPath.empty() ||
 	    !requestedInstances.empty() || !requestedTextureUsers.empty() ||
@@ -3137,11 +3187,11 @@ void EditorScene::AppendAssetObjects(const std::filesystem::path &path) {
 			sources.Register(
 			    PathUtils::ResolveFromExecutable(assets_.GetRootDirectory()));
 		}
-		auto ids = prefab
-		               ? PrefabAsset::Instantiate(source.GetScene(),
+		auto ids =
+		    prefab ? PrefabInstances::Instantiate(path, source.GetScene(),
 		                                          document_.GetHistory(), error)
-		               : SceneObjects::Append(source.GetScene(),
-		                                      document_.GetHistory());
+		           : SceneObjects::Append(source.GetScene(),
+		                                  document_.GetHistory());
 		if (ids.empty()) {
 			ShowError(error.empty() ? "The asset has no objects to add, or its "
 			                          "settings are invalid."
@@ -3188,11 +3238,11 @@ bool EditorScene::PlaceDroppedObjects(const std::filesystem::path &path,
 			          "added. See the log for details.");
 			return false;
 		}
-		auto ids = prefab
-		               ? PrefabAsset::Instantiate(source.GetScene(),
+		auto ids =
+		    prefab ? PrefabInstances::Instantiate(path, source.GetScene(),
 		                                          document_.GetHistory(), error)
-		               : SceneObjects::Append(source.GetScene(),
-		                                      document_.GetHistory());
+		           : SceneObjects::Append(source.GetScene(),
+		                                  document_.GetHistory());
 		if (ids.empty()) {
 			ShowError(error.empty() ? "Could not add the positioned objects. "
 			                          "No objects were added."

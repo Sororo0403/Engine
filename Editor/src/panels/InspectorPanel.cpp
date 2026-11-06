@@ -133,6 +133,7 @@ void InspectorPanel::Clear() {
 	modelRequest_ = {};
 	visibilityRequest_ = {};
 	objectRequest_ = {};
+	prefabRequest_ = {};
 	colliderFitRequest_ = 0;
 	assetRevealPath_.clear();
 	slotModelPath_.clear();
@@ -167,6 +168,7 @@ bool InspectorPanel::Draw(
     bool canPasteCharacter, bool canPasteFollow, bool canPasteRespawn,
     std::span<const SceneObjectId> uvTargets, bool canPasteUv) {
 	objectRequest_ = {};
+	prefabRequest_ = {};
 	colliderFitRequest_ = 0;
 	modelRequest_ = {};
 	assetRevealPath_.clear();
@@ -355,6 +357,8 @@ bool InspectorPanel::Draw(
 			}
 		}
 	}
+
+	prefabRequest_ = PrefabInspector{}.Draw(ui, scene, inspectedObjectId);
 
 	if (object->mesh && ui.CollapsingHeader("Mesh")) {
 		const auto label = std::format(
@@ -739,6 +743,8 @@ InspectorPanel::DrawReadOnly(const ImGuiSystem &ui, const Scene &scene,
 		ui.DragFloat3("Scale", transform.scale, 0.01f, 0.0f, 0.0f);
 		ui.EndDisabled();
 	}
+
+	PrefabInspector{}.Draw(ui, scene, selectedObjectId, false);
 
 	if (object->mesh && ui.CollapsingHeader("Mesh")) {
 		ui.Text(object->HasMesh() ? PathUtils::ToUtf8(object->mesh->modelPath)

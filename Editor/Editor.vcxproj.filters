@@ -69,6 +69,12 @@
     <Filter Include="src\selection">
       <UniqueIdentifier>{141248d8-68a7-440d-9455-dc29c6aec408}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\prefab">
+      <UniqueIdentifier>{DA74AD5A-20FA-4049-8844-0B10C115C3DB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\prefab">
+      <UniqueIdentifier>{8EEDED53-76CB-4B7A-BEB3-A3AD9E41D07D}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -113,6 +119,9 @@
     <ClCompile Include="src\assets\PrefabAsset.cpp">
       <Filter>src\assets</Filter>
     </ClCompile>
+    <ClCompile Include="src\assets\PrefabInstances.cpp">
+      <Filter>src\assets</Filter>
+    </ClCompile>
     <ClCompile Include="src\assets\ModelPlacement.cpp">
       <Filter>src\assets</Filter>
     </ClCompile>
@@ -147,6 +156,9 @@
       <Filter>src\history</Filter>
     </ClCompile>
     <ClCompile Include="src\history\ObjectCommand.cpp">
+      <Filter>src\history</Filter>
+    </ClCompile>
+    <ClCompile Include="src\history\ScenePatchCommand.cpp">
       <Filter>src\history</Filter>
     </ClCompile>
     <ClCompile Include="src\selection\SelectionBounds.cpp">
@@ -235,6 +247,9 @@
     <ClInclude Include="include\assets\PrefabAsset.h">
       <Filter>include\assets</Filter>
     </ClInclude>
+    <ClInclude Include="include\assets\PrefabInstances.h">
+      <Filter>include\assets</Filter>
+    </ClInclude>
     <ClInclude Include="include\assets\ModelPlacement.h">
       <Filter>include\assets</Filter>
     </ClInclude>
@@ -269,6 +284,9 @@
       <Filter>include\history</Filter>
     </ClInclude>
     <ClInclude Include="include\history\ObjectCommand.h">
+      <Filter>include\history</Filter>
+    </ClInclude>
+    <ClInclude Include="include\history\ScenePatchCommand.h">
       <Filter>include\history</Filter>
     </ClInclude>
     <ClInclude Include="include\selection\SelectionBounds.h">
@@ -789,5 +807,9 @@
   <ItemGroup>
     <ClInclude Include="include\lighting\SpotLightInspector.h"><Filter>include\lighting</Filter></ClInclude>
     <ClCompile Include="src\lighting\SpotLightInspector.cpp"><Filter>src\lighting</Filter></ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\prefab\PrefabInspector.h"><Filter>include\prefab</Filter></ClInclude>
+    <ClCompile Include="src\prefab\PrefabInspector.cpp"><Filter>src\prefab</Filter></ClCompile>
   </ItemGroup>
 </Project>

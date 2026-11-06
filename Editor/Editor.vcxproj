@@ -133,6 +133,8 @@
     <ClInclude Include="include\assets\AssetDragDrop.h" />
     <ClInclude Include="include\assets\ScenePlacement.h" />
     <ClInclude Include="include\assets\PrefabAsset.h" />
+    <ClInclude Include="include\assets\PrefabInstances.h" />
+    <ClInclude Include="include\prefab\PrefabInspector.h" />
     <ClInclude Include="include\dialogs\PrefabCreateDialog.h" />
     <ClInclude Include="include\assets\ModelPlacement.h" />
     <ClInclude Include="include\camera\EditorCameraController.h" />
@@ -155,6 +157,7 @@
     <ClInclude Include="include\history\TransformCommand.h" />
     <ClInclude Include="include\history\ParentCommand.h" />
     <ClInclude Include="include\history\ObjectCommand.h" />
+    <ClInclude Include="include\history\ScenePatchCommand.h" />
     <ClInclude Include="include\selection\SelectionBounds.h" />
     <ClInclude Include="include\selection\SelectionFrustum.h" />
     <ClInclude Include="include\scene\SceneGrid.h" />
@@ -176,6 +179,7 @@
     <ClCompile Include="src\history\VisibilityCommand.cpp" />
     <ClCompile Include="src\scene\SceneGrid.cpp" />
     <ClCompile Include="src\history\ObjectCommand.cpp" />
+    <ClCompile Include="src\history\ScenePatchCommand.cpp" />
     <ClCompile Include="src\history\EditorHistory.cpp" />
     <ClCompile Include="src\panels\AssetsPanel.cpp" />
     <ClCompile Include="src\panels\TexturePreviewPanel.cpp" />
@@ -186,6 +190,8 @@
     <ClCompile Include="src\assets\AssetDragDrop.cpp" />
     <ClCompile Include="src\assets\ScenePlacement.cpp" />
     <ClCompile Include="src\assets\PrefabAsset.cpp" />
+    <ClCompile Include="src\assets\PrefabInstances.cpp" />
+    <ClCompile Include="src\prefab\PrefabInspector.cpp" />
     <ClCompile Include="src\dialogs\PrefabCreateDialog.cpp" />
     <ClCompile Include="src\assets\ModelPlacement.cpp" />
     <ClCompile Include="src\scene\SceneObjects.cpp" />

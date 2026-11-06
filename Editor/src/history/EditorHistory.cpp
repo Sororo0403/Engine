@@ -8,6 +8,7 @@
 #include "scene/Scene.h"
 #include "scene/SceneHierarchy.h"
 #include "scene/SceneObjectReferences.h"
+#include "scene/SceneSerializer.h"
 
 #include <algorithm>
 #include <cassert>
@@ -164,6 +165,28 @@ bool EditorHistory::DeleteObjects(std::span<const SceneObjectId> objectIds) {
 	if (!SceneHierarchy::ExpandSelection(scene_, objectIds, expanded))
 		return false;
 	std::set<SceneObjectId> seen(expanded.begin(), expanded.end());
+
+	// Prefabの所有関係と削除後の参照を、最終状態までまとめて検証する。
+	if (std::ranges::any_of(scene_.GetObjects(), [](const auto &entry) {
+		    return entry.second.prefabLink.has_value();
+	    })) {
+		return ApplySceneChanges(
+		    [&](Scene &candidate) {
+			    for (const auto &[id, object] : candidate.GetObjects()) {
+				    (void)object;
+				    if (!seen.contains(id)) {
+					    SceneObjectReferences::ClearTargets(
+					        *candidate.FindObject(id), expanded);
+				    }
+			    }
+			    for (auto it = expanded.rbegin(); it != expanded.rend(); ++it) {
+				    if (!candidate.DestroyObject(*it))
+					    return false;
+			    }
+			    return true;
+		    },
+		    objectIds.size() == 1 ? "Delete Object" : "Delete Objects");
+	}
 
 	std::vector<CommandGroup::Command> commands;
 	commands.reserve(objectIds.size());
@@ -335,6 +358,11 @@ EditorHistory::CreateObjectGroups(std::vector<SceneObject> objects,
 
 	for (std::size_t i = 0; i < objects.size(); ++i) {
 		auto &object = objects[i];
+		if (object.prefabLink &&
+		    std::find(sourceIds.begin(), sourceIds.end(),
+		              object.prefabLink->root) == sourceIds.end()) {
+			object.prefabLink.reset();
+		}
 
 		if (!TransformUtils::IsValid(object.transform) ||
 		    (object.camera && !object.camera->IsValid())) {
@@ -392,6 +420,7 @@ EditorHistory::CreateObjectGroups(std::vector<SceneObject> objects,
 			working.FindObject(createdIds[i])->parentId = object.parentId;
 
 			SceneObjectReferences::Remap(object, remap);
+			working.FindObject(createdIds[i])->prefabLink = object.prefabLink;
 			working.FindObject(createdIds[i])->followCamera =
 			    object.followCamera;
 			working.FindObject(createdIds[i])->triggerActions =
@@ -2818,4 +2847,32 @@ bool EditorHistory::BeginSpotLight(SceneObjectId id) {
 
 	pending_ = PendingEdit{id, object->spotLight};
 	return true;
+}
+
+bool EditorHistory::ApplySceneChanges(
+    const std::function<bool(Scene &)> &operation,
+    std::string_view description) {
+	if (IsEditing() || !operation) {
+		return false;
+	}
+	std::optional<ScenePatchCommand> command;
+	std::optional<std::uint64_t> state;
+	const bool applied = scene_.ApplyTransaction([&](Scene &candidate) {
+		if (!operation(candidate)) {
+			return false;
+		}
+		std::string text;
+		if (!SceneSerializer::Serialize(candidate, text)) {
+			return false;
+		}
+		command.emplace(scene_, candidate);
+		if (command->HasChanges()) {
+			state = PrepareAppend();
+		}
+		return true;
+	});
+	if (applied && state) {
+		AppendPrepared(Command{std::move(*command)}, *state, description);
+	}
+	return applied;
 }

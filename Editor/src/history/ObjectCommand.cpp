@@ -1,6 +1,5 @@
 #include "history/ObjectCommand.h"
 
-#include "math/TransformUtils.h"
 #include "scene/Scene.h"
 
 #include <utility>
@@ -29,22 +28,7 @@ bool ObjectCommand::Redo(Scene &scene) const {
 bool ObjectCommand::Remove(Scene &scene) const {
 	const SceneObject *current = scene.FindObject(objectId_);
 
-	if (!current || current->name != object_.name ||
-	    current->parentId != object_.parentId ||
-	    current->active != object_.active || current->mesh != object_.mesh ||
-	    current->meshRenderer != object_.meshRenderer ||
-	    current->colorTint != object_.colorTint ||
-	    current->collider != object_.collider ||
-	    current->camera != object_.camera ||
-	    current->character != object_.character ||
-	    current->followCamera != object_.followCamera ||
-	    current->respawn != object_.respawn ||
-	    current->triggerActions != object_.triggerActions ||
-	    current->pointLight != object_.pointLight ||
-	    current->spotLight != object_.spotLight ||
-	    current->audioSource != object_.audioSource ||
-	    current->audioListener != object_.audioListener ||
-	    !TransformUtils::AreEqual(current->transform, object_.transform)) {
+	if (!current || !(*current == object_)) {
 		return false;
 	}
 

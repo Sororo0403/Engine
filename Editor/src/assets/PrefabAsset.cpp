@@ -31,6 +31,10 @@ SceneObjectId Validate(const Scene &scene) {
 	SceneObjectId root = 0;
 	std::vector<SceneObjectId> ids;
 	for (const auto &[id, object] : scene.GetObjects()) {
+		if (object.prefabLink) {
+			throw std::runtime_error(
+			    "Prefab assets must contain unpacked object data.");
+		}
 		ids.push_back(id);
 		if (!object.parentId) {
 			if (root) {
@@ -115,7 +119,9 @@ bool PrefabAsset::Capture(const Scene &source, SceneObjectId root,
 		}
 		std::map<SceneObjectId, SceneObject> objects;
 		for (std::size_t i = 0; i < copy.GetSourceIds().size(); ++i) {
-			objects.emplace(copy.GetSourceIds()[i], copy.GetObjects()[i]);
+			auto object = copy.GetObjects()[i];
+			object.prefabLink.reset();
+			objects.emplace(copy.GetSourceIds()[i], std::move(object));
 		}
 		Scene candidate;
 		candidate.ReplaceObjects(std::move(objects));
@@ -154,17 +160,11 @@ bool PrefabAsset::Save(const Scene &source, SceneObjectId root,
 		if (!Capture(source, root, candidate, error)) {
 			return false;
 		}
-		RewriteReferences(candidate, destination.parent_path(), true);
 		std::string text;
-		if (!SceneSerializer::Serialize(candidate, text)) {
-			throw std::runtime_error("Could not encode the Prefab references.");
+		if (!Serialize(candidate, root, destination, text, error)) {
+			return false;
 		}
-		const Json document{{"format", "EnginePrefab"},
-		                    {"version", 1},
-		                    {"root", root},
-		                    {"scene", Json::parse(text)}};
-		return FileUtils::WriteTextAtomically(destination, document.dump(2),
-		                                      error, false);
+		return FileUtils::WriteTextAtomically(destination, text, error, false);
 	} catch (const std::exception &exception) {
 		error = exception.what();
 		return false;
@@ -172,7 +172,7 @@ bool PrefabAsset::Save(const Scene &source, SceneObjectId root,
 }
 
 bool PrefabAsset::Load(const std::filesystem::path &path, Scene &result,
-                       std::string &error) {
+                       std::string &error, SceneObjectId *nextSourceId) {
 	try {
 		if (!IsPrefabPath(path)) {
 			throw std::invalid_argument("Choose a .prefab.json asset.");
@@ -188,7 +188,7 @@ bool PrefabAsset::Load(const std::filesystem::path &path, Scene &result,
 		                            std::istreambuf_iterator<char>()});
 		if (document.at("format") != "EnginePrefab" ||
 		    !document.at("version").is_number_integer() ||
-		    document.at("version") != 1 ||
+		    (document.at("version") != 1 && document.at("version") != 2) ||
 		    !document.at("root").is_number_unsigned()) {
 			throw std::runtime_error("Unsupported Prefab format.");
 		}
@@ -201,7 +201,20 @@ bool PrefabAsset::Load(const std::filesystem::path &path, Scene &result,
 		}
 		RewriteReferences(candidate, source.parent_path(), false);
 		Validate(candidate);
+		const auto minimum = candidate.GetObjects().rbegin()->first + 1;
+		SceneObjectId counter = minimum;
+		if (document.at("version") == 2) {
+			if (!document.at("nextSourceId").is_number_unsigned() ||
+			    document.at("nextSourceId") < minimum) {
+				throw std::runtime_error(
+				    "Prefab source ID counter is invalid.");
+			}
+			counter = document.at("nextSourceId").get<SceneObjectId>();
+		}
 		result.ReplaceObjects(candidate.GetObjects());
+		if (nextSourceId) {
+			*nextSourceId = counter;
+		}
 		error.clear();
 		return true;
 	} catch (const std::exception &exception) {
@@ -233,5 +246,45 @@ std::vector<SceneObjectId> PrefabAsset::Instantiate(const Scene &source,
 	} catch (const std::exception &exception) {
 		error = exception.what();
 		return {};
+	}
+}
+
+bool PrefabAsset::Serialize(const Scene &source, SceneObjectId root,
+                            const std::filesystem::path &path,
+                            std::string &text, std::string &error,
+                            SceneObjectId nextSourceId) {
+	try {
+		if (!IsPrefabPath(path) || Validate(source) != root) {
+			throw std::runtime_error("Prefab root or destination is invalid.");
+		}
+		const auto minimum = source.GetObjects().rbegin()->first + 1;
+		if (!nextSourceId) {
+			nextSourceId = minimum;
+		}
+		if (nextSourceId < minimum) {
+			throw std::runtime_error(
+			    "Prefab source ID counter must be greater than existing IDs.");
+		}
+		Scene candidate;
+		candidate.ReplaceObjects(source.GetObjects());
+		RewriteReferences(candidate,
+		                  PathUtils::ResolveFromExecutable(path).parent_path(),
+		                  true);
+		std::string data;
+		if (!SceneSerializer::Serialize(candidate, data)) {
+			throw std::runtime_error("Could not encode the Prefab references.");
+		}
+		const Json document{{"format", "EnginePrefab"},
+		                    {"version", 2},
+		                    {"root", root},
+		                    {"nextSourceId", nextSourceId},
+		                    {"scene", Json::parse(data)}};
+		auto result = document.dump(2);
+		text.swap(result);
+		error.clear();
+		return true;
+	} catch (const std::exception &exception) {
+		error = exception.what();
+		return false;
 	}
 }

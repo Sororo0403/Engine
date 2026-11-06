@@ -3,6 +3,7 @@
 #include "audio/AudioInspector.h"
 #include "gameplay/GameplayInspector.h"
 #include "math/Transform.h"
+#include "prefab/PrefabInspector.h"
 #include "scene/SceneObjectId.h"
 
 #include <cstdint>
@@ -25,6 +26,14 @@ class InspectorPanel {
 	/// 表示の固定・名前欄のフォーカス・編集要求・回転の表示状態をクリアする
 	/// </summary>
 	void Clear();
+
+	/// <summary>
+	/// Inspector描画後に処理するPrefab操作を取得する
+	/// </summary>
+	/// <returns>今回の要求。次のDrawまたはClearで解除する</returns>
+	const PrefabInspector::Request &GetPrefabRequest() const {
+		return prefabRequest_;
+	}
 
 	/// <summary>
 	/// Inspector描画後に表示対象または参照先の物体へ適用する操作
@@ -177,6 +186,8 @@ class InspectorPanel {
 	                                      SceneObjectId selectedObjectId) const;
 
   private:
+	PrefabInspector::Request prefabRequest_;
+
 	GameplayInspector gameplayInspector_;
 	AudioInspector audioInspector_;
 	SceneObjectId lockedObjectId_ = 0;

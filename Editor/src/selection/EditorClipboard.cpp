@@ -23,6 +23,9 @@ bool EditorClipboard::Copy(const Scene &scene,
 	objects.reserve(sourceIds.size());
 	for (const auto id : sourceIds) {
 		auto object = *scene.FindObject(id);
+		if (object.prefabLink && !seen.contains(object.prefabLink->root)) {
+			object.prefabLink.reset();
+		}
 		if (object.parentId != 0 && !seen.contains(object.parentId)) {
 			SceneWorldTransform world;
 			if (!SceneHierarchy::GetWorldTransform(scene, id, world) ||

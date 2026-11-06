@@ -12,6 +12,7 @@
 #include "history/ObjectRename.h"
 #include "history/ParentCommand.h"
 #include "history/RenameCommand.h"
+#include "history/ScenePatchCommand.h"
 #include "history/TextureSlotsCommand.h"
 #include "history/TransformCommand.h"
 #include "history/VisibilityCommand.h"
@@ -22,6 +23,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <filesystem>
+#include <functional>
 #include <map>
 #include <optional>
 #include <span>
@@ -37,6 +39,14 @@ class Scene;
 /// </summary>
 class EditorHistory {
   public:
+	/// <summary>
+	/// この履歴が編集するシーンを読み取る
+	/// </summary>
+	/// <returns>履歴と同じ寿命を持つシーン</returns>
+	const Scene &GetScene() const {
+		return scene_;
+	}
+
 	/// <summary>
 	/// 履歴を適用するシーンへの参照を保持する
 	/// </summary>
@@ -691,6 +701,15 @@ class EditorHistory {
 	bool DistributeColliderGaps(std::span<const SceneObjectId> objectIds,
 	                            AlignmentAxis axis);
 
+	/// <summary>
+	/// 作業シーンへの変更を検証し、追加・変更・削除を1回の履歴操作として確定する
+	/// </summary>
+	/// <param name="operation">作業用コピーだけを変更する処理。失敗時はfalse</param>
+	/// <param name="description">静的な寿命を持つ履歴の表示名</param>
+	/// <returns>true:成功または同値 false:編集中、操作失敗、または無効なデータ。シーンと履歴を保持する</returns>
+	bool ApplySceneChanges(const std::function<bool(Scene &)> &operation,
+	                       std::string_view description);
+
   private:
 	// 単独の編集操作、または複数の編集操作を保持する
 	using Command =
@@ -701,7 +720,7 @@ class EditorHistory {
 	                 PointLightCommand, SpotLightCommand, AudioSourceCommand,
 	                 AudioListenerCommand, RespawnCommand, CameraCommand,
 	                 MeshRendererCommand, ColorTintCommand, TextureSlotsCommand,
-	                 CommandGroup>;
+	                 CommandGroup, ScenePatchCommand>;
 
 	/// <summary>
 	/// 操作と、その前後の状態を識別する情報

@@ -458,6 +458,7 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 		auto objects = scene.GetObjects();
 
 		for (auto &[id, object] : objects) {
+			object.prefabLink.reset();
 			if (object.audioSource && !object.audioSource->clipPath.empty()) {
 				auto &path = object.audioSource->clipPath;
 				const auto input =
