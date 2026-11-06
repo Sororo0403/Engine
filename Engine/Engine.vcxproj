@@ -2276,4 +2276,12 @@ exit /b 0</Command>
     <ClCompile Include="src\graphics\render\ShadowMap.cpp" />
     <None Include="resources\shaders\mesh\Shadow.VS.hlsl" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\animation\TransformAnimationComponent.h" />
+    <ClCompile Include="src\animation\TransformAnimationComponent.cpp" />
+    <ClInclude Include="include\animation\AnimationPlaybackState.h" />
+    <ClInclude Include="include\animation\SceneAnimations.h" />
+    <ClCompile Include="src\animation\SceneAnimations.cpp" />
+    <ClCompile Include="src\scripting\LuaAnimationBindings.cpp" />
+  </ItemGroup>
 </Project>

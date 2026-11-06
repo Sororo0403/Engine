@@ -17,6 +17,7 @@ class Scene;
 class ScenePhysics;
 class ScenePrefabs;
 class ScriptMailbox;
+class SceneAnimations;
 struct ScriptMessage;
 
 namespace LuaInternal {
@@ -52,6 +53,9 @@ struct Call {
 	SceneObjectId self = 0, other = 0;
 	const CharacterInput *input = nullptr;
 	std::span<const GameActionState> actions;
+	SceneAnimations *animations = nullptr;
+	int animationOperations = 0;
+	int *remainingAnimationOperations = nullptr;
 	const StateNode *initial = nullptr;
 	const StateNode *sharedInitial = nullptr;
 	std::string sharedInput, sharedResult;
@@ -91,7 +95,14 @@ void AddPhysicsMethods(lua_State *state);
 /// 直前の物体メソッドテーブルへ、Audio Sourceの再生・停止・音量操作を登録する
 /// </summary>
 /// <param name="state">保護呼び出し内のLua状態</param>
+
 void AddAudioMethods(lua_State *state);
+
+/// <summary>
+/// 直前の物体メソッド表へ、Transform Animationの再生・停止・シークを登録する
+/// </summary>
+/// <param name="state">保護呼び出し内のLua状態</param>
+void AddAnimationMethods(lua_State *state);
 
 /// <summary>
 /// 直前の物体メソッドテーブルへ、名前付きシーンへの遷移要求を登録する

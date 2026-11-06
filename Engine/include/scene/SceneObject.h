@@ -5,6 +5,7 @@
 #include "scene/RectTransformComponent.h"
 #include "scene/TextComponent.h"
 
+#include "animation/TransformAnimationComponent.h"
 #include "gameplay/CharacterSettings.h"
 #include "gameplay/FollowCameraSettings.h"
 #include "gameplay/MotionPathComponent.h"
@@ -73,6 +74,8 @@ struct SceneObject {
 	std::optional<PrefabLinkComponent> prefabLink;
 	// 開始位置を基準にしたローカル経路。Colliderがあれば移動床として使用する
 	std::optional<MotionPathComponent> motionPath;
+	// 開始時の姿勢を基準にした変形のキー。実行中の時計と開始姿勢はシミュレーションが保持する
+	std::optional<TransformAnimationComponent> transformAnimation;
 	// Luaのコールバック・開始状態・物体参照。VMと実行中のstateはシミュレーション側で保持する
 	std::optional<ScriptComponent> script;
 	// 画面上のUI。3DのTransformとは独立した座標系でレイアウトする

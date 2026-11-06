@@ -67,10 +67,12 @@ void Collect(const Scene &scene, std::vector<RigidBodyDescription> &bodies,
 			throw std::runtime_error("Rigid Body requires a non-Trigger Box "
 			                         "Collider on the same object.");
 		if (o.character || o.followCamera ||
-		    (o.motionPath && !o.rigidBody->isKinematic))
+		    ((o.motionPath || o.transformAnimation) &&
+		     !o.rigidBody->isKinematic))
 			throw std::runtime_error(
 			    "Rigid Body cannot share an object with Character Controller "
-			    "or Follow Camera; Motion Path requires Is Kinematic.");
+			    "or Follow Camera; Motion Path and Transform Animation require "
+			    "Is Kinematic.");
 		// 非一様な親の下で回転すると、ローカルSRTでは剛体の姿勢を保てない。
 		for (auto parent = o.parentId; parent;
 		     parent = scene.FindObject(parent)->parentId) {
@@ -98,13 +100,15 @@ void Collect(const Scene &scene, std::vector<RigidBodyDescription> &bodies,
 		if (!active.at(id) || !o.collider || o.collider->isTrigger)
 			continue;
 		invalid = id;
-		bool path = bool(o.motionPath), character = bool(o.character),
-		     belowCharacter = false;
+		bool path = bool(o.motionPath) || bool(o.transformAnimation),
+		     character = bool(o.character), belowCharacter = false;
 		bool belowRigid = false;
 		for (auto parent = o.parentId; parent;
 		     parent = scene.FindObject(parent)->parentId) {
 			const auto &ancestor = *scene.FindObject(parent);
-			path |= bool(ancestor.motionPath) || bool(ancestor.followCamera);
+			path |= bool(ancestor.motionPath) ||
+			        bool(ancestor.transformAnimation) ||
+			        bool(ancestor.followCamera);
 			belowCharacter |= bool(ancestor.character);
 			belowRigid |= ancestor.rigidBody && ancestor.rigidBody->enabled;
 		}
@@ -256,6 +260,17 @@ bool ScenePhysics::Advance(Scene &scene, float seconds, std::string &error) {
 		std::set<SceneObjectId> driven;
 		SceneObjectId invalid = 0;
 		Collect(scene, current, driven, invalid);
+
+		// 拡縮で形状が変わったときだけ作り直す。姿勢だけの変更はMoveKinematicで速度を持たせる。
+		const bool same = next.definitions_.size() == current.size() &&
+		                  std::ranges::all_of(current, [&](const auto &d) {
+			                  const auto found =
+			                      next.definitions_.find(d.object);
+			                  return found != next.definitions_.end() &&
+			                         SameDefinition(found->second, d);
+		                  });
+		if (!same && !next.Configure(scene, true, error))
+			return false;
 		const float duration =
 		    (std::min)(seconds, RigidBodyWorld::kMaximumFrameSeconds);
 		for (const auto &d : current) {

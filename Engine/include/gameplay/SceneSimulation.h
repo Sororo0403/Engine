@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "animation/SceneAnimations.h"
 
 #include "gameplay/GameActionState.h"
 #include <span>
@@ -31,11 +32,23 @@
 /// 編集シーンから独立した再生用シーンで、移動・追従・復帰を実行する
 /// </summary>
 class SceneSimulation {
+
   public:
+	/// <summary>
+	/// 物体の再生位置と再生指定を取得する。編集用の設定には書き戻さない
+	/// </summary>
+	/// <param name="id">再生シーンの物体</param>
+	/// <returns>再生状態。コンポーネントなし・停止中のシミュレーションはnullopt</returns>
+	std::optional<AnimationPlaybackState>
+	GetAnimationState(SceneObjectId id) const {
+		return animations_.GetState(id);
+	}
+
 	/// <summary>
 	/// 次の正の時間の更新を待つLua通知の件数を取得する
 	/// </summary>
 	/// <returns>停止・シーン遷移・Restartで0に戻る件数</returns>
+
 	std::size_t GetPendingScriptMessages() const {
 		return scripts_.GetPendingMessageCount();
 	}
@@ -399,6 +412,7 @@ class SceneSimulation {
 	CollisionEvents collisions_;
 	CharacterController controller_;
 	SceneMotion motion_;
+	SceneAnimations animations_;
 	ScenePhysics physics_;
 	SceneScripts scripts_;
 	SceneUI ui_;

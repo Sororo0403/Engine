@@ -329,6 +329,8 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 			    (object.pointLight && !object.pointLight->IsValid()) ||
 			    (object.spotLight && !object.spotLight->IsValid()) ||
 			    (object.motionPath && !object.motionPath->IsValid()) ||
+			    (object.transformAnimation &&
+			     !object.transformAnimation->IsValid()) ||
 			    (object.script && !object.script->IsValid()) ||
 			    (object.audioSource && !object.audioSource->IsValid())) {
 				throw std::runtime_error(
@@ -428,6 +430,34 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 				    {"references", std::move(references)},
 				    {"prefabs", std::move(prefabs)},
 				    {"scenes", std::move(scenes)}};
+			}
+
+			if (object.transformAnimation) {
+				const auto &a = *object.transformAnimation;
+				auto keys = Json::array();
+				for (const auto &key : a.keys)
+					keys.push_back(
+					    {{"seconds", key.seconds},
+					     {"translation", ToJson(key.offset.translation)},
+					     {"rotation", ToJson(key.offset.rotation)},
+					     {"scale", ToJson(key.offset.scale)}});
+				objects.back()["transformAnimation"] = {
+				    {"keys", std::move(keys)},
+				    {"mode", a.mode == TransformAnimationComponent::Mode::ONCE
+				                 ? "once"
+				             : a.mode == TransformAnimationComponent::Mode::LOOP
+				                 ? "loop"
+				                 : "pingPong"},
+				    {"interpolation",
+				     a.interpolation ==
+				             TransformAnimationComponent::Interpolation::LINEAR
+				         ? "linear"
+				     : a.interpolation ==
+				             TransformAnimationComponent::Interpolation::SMOOTH
+				         ? "smooth"
+				         : "step"},
+				    {"speed", a.speed},
+				    {"playOnStart", a.playOnStart}};
 			}
 			if (object.motionPath) {
 				const auto &path = *object.motionPath;
@@ -806,6 +836,61 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					    "Lua Script settings are invalid.");
 				object.script = std::move(script);
 			}
+
+			if (version >= 35 && item.contains("transformAnimation")) {
+				const auto &value = item.at("transformAnimation"),
+				           &keys = value.at("keys");
+				if (!keys.is_array() || keys.size() < 2 ||
+				    keys.size() > TransformAnimationComponent::kMaximumKeys ||
+				    !value.at("speed").is_number() ||
+				    !value.at("playOnStart").is_boolean())
+					throw std::runtime_error(
+					    "Transform Animation fields are invalid.");
+				TransformAnimationComponent animation;
+				animation.keys.clear();
+				for (const auto &key : keys) {
+					if (!key.at("seconds").is_number())
+						throw std::runtime_error(
+						    "Animation key time must be a number.");
+					TransformAnimationKey frame;
+					frame.seconds = key.at("seconds").get<float>();
+					frame.offset.translation =
+					    ReadFloat3(key.at("translation"));
+					frame.offset.scale = ReadFloat3(key.at("scale"));
+					frame.offset.rotation = ReadRotation(key.at("rotation"));
+					animation.keys.push_back(frame);
+				}
+				const auto mode = value.at("mode").get<std::string>(),
+				           interpolation =
+				               value.at("interpolation").get<std::string>();
+				if (mode == "once")
+					animation.mode = TransformAnimationComponent::Mode::ONCE;
+				else if (mode == "loop")
+					animation.mode = TransformAnimationComponent::Mode::LOOP;
+				else if (mode == "pingPong")
+					animation.mode =
+					    TransformAnimationComponent::Mode::PING_PONG;
+				else
+					throw std::runtime_error("Animation mode is invalid.");
+				if (interpolation == "linear")
+					animation.interpolation =
+					    TransformAnimationComponent::Interpolation::LINEAR;
+				else if (interpolation == "smooth")
+					animation.interpolation =
+					    TransformAnimationComponent::Interpolation::SMOOTH;
+				else if (interpolation == "step")
+					animation.interpolation =
+					    TransformAnimationComponent::Interpolation::STEP;
+				else
+					throw std::runtime_error(
+					    "Animation interpolation is invalid.");
+				animation.speed = value.at("speed").get<float>();
+				animation.playOnStart = value.at("playOnStart").get<bool>();
+				if (!animation.IsValid())
+					throw std::runtime_error(
+					    "Transform Animation settings are invalid.");
+				object.transformAnimation = std::move(animation);
+			}
 			if (version >= 27 && item.contains("motionPath")) {
 				const auto &value = item.at("motionPath");
 				const auto &points = value.at("points");
@@ -1096,6 +1181,8 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 			    (object.pointLight && !object.pointLight->IsValid()) ||
 			    (object.spotLight && !object.spotLight->IsValid()) ||
 			    (object.motionPath && !object.motionPath->IsValid()) ||
+			    (object.transformAnimation &&
+			     !object.transformAnimation->IsValid()) ||
 			    (object.script && !object.script->IsValid()) ||
 			    (object.audioSource && !object.audioSource->IsValid())) {
 				throw std::runtime_error(

@@ -2325,4 +2325,13 @@
     <ClCompile Include="src\graphics\render\ShadowMap.cpp"><Filter>src\graphics\render</Filter></ClCompile>
     <None Include="resources\shaders\mesh\Shadow.VS.hlsl" />
   </ItemGroup>
+  <ItemGroup><Filter Include="include\animation"><UniqueIdentifier>{C3268274-74D9-4B92-BE19-2C972DB83821}</UniqueIdentifier></Filter><Filter Include="src\animation"><UniqueIdentifier>{6AF0FA94-0469-4F76-A54A-238D89CFBCA1}</UniqueIdentifier></Filter></ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\animation\TransformAnimationComponent.h"><Filter>include\animation</Filter></ClInclude>
+    <ClCompile Include="src\animation\TransformAnimationComponent.cpp"><Filter>src\animation</Filter></ClCompile>
+    <ClInclude Include="include\animation\AnimationPlaybackState.h"><Filter>include\animation</Filter></ClInclude>
+    <ClInclude Include="include\animation\SceneAnimations.h"><Filter>include\animation</Filter></ClInclude>
+    <ClCompile Include="src\animation\SceneAnimations.cpp"><Filter>src\animation</Filter></ClCompile>
+    <ClCompile Include="src\scripting\LuaAnimationBindings.cpp"><Filter>src\scripting</Filter></ClCompile>
+  </ItemGroup>
 </Project>

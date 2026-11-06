@@ -107,6 +107,12 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 				}
 		}
 
+		if (object.transformAnimation &&
+		    (!object.transformAnimation->IsValid() || object.motionPath ||
+		     object.character || object.followCamera))
+			add(id, "Transform Animation requires valid keys and cannot share "
+			        "an object with Motion Path, Character Controller or "
+			        "Follow Camera.");
 		if (object.motionPath && (!object.motionPath->IsValid() ||
 		                          object.character || object.followCamera)) {
 			add(id, "Motion Path requires valid points and cannot share an "

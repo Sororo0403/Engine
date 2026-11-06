@@ -156,7 +156,7 @@ bool SceneSimulation::SetActive(std::span<const SceneActiveChange> changes,
 	}
 }
 
-bool SceneSimulation::Configure(const Scene &source, std::string &error,
+bool SceneSimulation::Configure(const Scene &original, std::string &error,
                                 const CameraPose &fallbackPose,
                                 SceneObjectId *invalidObject, bool preserve) {
 	if (invalidObject) {
@@ -164,6 +164,12 @@ bool SceneSimulation::Configure(const Scene &source, std::string &error,
 	}
 	try {
 		error.clear();
+		Scene source;
+		source.CopyFrom(original);
+		auto animations = animations_;
+		if (!animations.Configure(source, preserve, error, invalidObject))
+			return false;
+
 		const auto fail = [&](SceneObjectId id, std::string_view reason) {
 			const auto *object = source.FindObject(id);
 			error = std::format(
@@ -376,6 +382,7 @@ bool SceneSimulation::Configure(const Scene &source, std::string &error,
 		triggers_ = std::move(triggers);
 		controller_ = controller;
 		motion_ = std::move(motion);
+		animations_ = std::move(animations);
 		physics_ = std::move(physics);
 		scripts_ = std::move(scripts);
 		ui_ = std::move(ui);
@@ -405,6 +412,7 @@ void SceneSimulation::Stop() {
 	playing_ = false;
 	pendingScene_.clear();
 	motion_ = SceneMotion{};
+	animations_ = SceneAnimations{};
 	physics_ = ScenePhysics{};
 	scripts_ = SceneScripts{};
 	ui_ = SceneUI{};
@@ -549,6 +557,12 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 		Scene working;
 		working.CopyFrom(scene_);
 		auto next = controller_;
+		auto animations = animations_;
+		std::string animationError;
+		if (!animations.Advance(working, seconds, animationError)) {
+			lastUpdateError_ = std::move(animationError);
+			return false;
+		}
 		auto motion = motion_;
 		std::optional<TriggerWorld> triggers;
 		std::vector<TriggerEvent> motionEvents;
@@ -708,6 +722,7 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 		}
 		controller_ = next;
 		motion_ = std::move(motion);
+		animations_ = std::move(animations);
 		physics_ = std::move(physics);
 		world_ = std::move(world);
 		followPoses_ = std::move(follows);
