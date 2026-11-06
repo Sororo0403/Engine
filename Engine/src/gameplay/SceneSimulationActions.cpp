@@ -16,6 +16,7 @@ void SceneSimulation::CopyFrom(const SceneSimulation &source) {
 	camera_ = source.camera_;
 	updateOrder_ = source.updateOrder_;
 	followPoses_ = source.followPoses_;
+	orbitStates_ = source.orbitStates_;
 	spawn_ = source.spawn_;
 	respawnCount_ = source.respawnCount_;
 	lastRespawnPosition_ = source.lastRespawnPosition_;
@@ -41,6 +42,7 @@ void SceneSimulation::Adopt(SceneSimulation &source) {
 	camera_ = source.camera_;
 	updateOrder_ = std::move(source.updateOrder_);
 	followPoses_ = std::move(source.followPoses_);
+	orbitStates_ = std::move(source.orbitStates_);
 	spawn_ = source.spawn_;
 	respawnCount_ = source.respawnCount_;
 	lastRespawnPosition_ = source.lastRespawnPosition_;

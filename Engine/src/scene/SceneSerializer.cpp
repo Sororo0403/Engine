@@ -357,7 +357,16 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 				    {"lookOffset", ToJson(v.lookOffset)},
 				    {"smoothing", v.smoothing},
 				    {"avoidObstacles", v.avoidObstacles},
-				    {"clearance", v.clearance}};
+				    {"clearance", v.clearance},
+				    {"orbit",
+				     {{"enabled", v.orbit.enabled},
+				      {"mouseSensitivity", v.orbit.mouseSensitivity},
+				      {"stickSpeed", v.orbit.stickSpeed},
+				      {"zoomSensitivity", v.orbit.zoomSensitivity},
+				      {"minimumPitch", v.orbit.minimumPitch},
+				      {"maximumPitch", v.orbit.maximumPitch},
+				      {"minimumDistance", v.orbit.minimumDistance},
+				      {"maximumDistance", v.orbit.maximumDistance}}}};
 			}
 
 			if (object.triggerActions) {
@@ -705,6 +714,31 @@ bool ApplySceneDocument(Scene &scene, const Json &document) {
 					    v.at("avoidObstacles").get<bool>();
 					object.followCamera->clearance =
 					    v.at("clearance").get<float>();
+				}
+				if (version >= 24) {
+					const auto &orbit = v.at("orbit");
+					if (!orbit.at("enabled").is_boolean()) {
+						throw std::runtime_error(
+						    "Orbit Cameraの有効設定が無効です。");
+					}
+					for (const auto *field :
+					     {"mouseSensitivity", "stickSpeed", "zoomSensitivity",
+					      "minimumPitch", "maximumPitch", "minimumDistance",
+					      "maximumDistance"}) {
+						if (!orbit.at(field).is_number()) {
+							throw std::runtime_error(
+							    "Orbit Cameraの設定には数値が必要です。");
+						}
+					}
+					object.followCamera->orbit = {
+					    orbit.at("enabled").get<bool>(),
+					    orbit.at("mouseSensitivity").get<float>(),
+					    orbit.at("stickSpeed").get<float>(),
+					    orbit.at("zoomSensitivity").get<float>(),
+					    orbit.at("minimumPitch").get<float>(),
+					    orbit.at("maximumPitch").get<float>(),
+					    orbit.at("minimumDistance").get<float>(),
+					    orbit.at("maximumDistance").get<float>()};
 				}
 			}
 

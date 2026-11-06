@@ -1,5 +1,6 @@
 #pragma once
 
+#include "gameplay/OrbitCameraSettings.h"
 #include "math/MathUtils.h"
 #include "scene/SceneObjectId.h"
 #include <cmath>
@@ -21,6 +22,7 @@ struct FollowCameraSettings {
 	float smoothing = 8.0f;
 	bool avoidObstacles = false;
 	float clearance = 0.2f;
+	OrbitCameraSettings orbit;
 
 	/// <summary>
 	/// 有限な設定で、視線がゼロまたは上方向と平行にならないか確認する
@@ -39,7 +41,7 @@ struct FollowCameraSettings {
 		       dx * dx + dz * dz > kMinimumHorizontalDistanceSquared &&
 		       std::isfinite(smoothing) && smoothing >= 0 && smoothing <= 100 &&
 		       std::isfinite(clearance) && clearance >= kMinimumClearance &&
-		       clearance <= kMaximumClearance;
+		       clearance <= kMaximumClearance && orbit.IsValid();
 	}
 
 	/// <summary>
@@ -55,6 +57,6 @@ struct FollowCameraSettings {
 		       lookOffset.z == other.lookOffset.z &&
 		       smoothing == other.smoothing &&
 		       avoidObstacles == other.avoidObstacles &&
-		       clearance == other.clearance;
+		       clearance == other.clearance && orbit == other.orbit;
 	}
 };

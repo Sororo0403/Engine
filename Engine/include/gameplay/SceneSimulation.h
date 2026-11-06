@@ -2,6 +2,7 @@
 
 #include "gameplay/CharacterController.h"
 #include "gameplay/CharacterRuntimeState.h"
+#include "gameplay/FollowCameraOrbit.h"
 #include "graphics/camera/CameraPose.h"
 #include "physics/CollisionWorld.h"
 #include "physics/TriggerWorld.h"
@@ -66,8 +67,10 @@ class SceneSimulation {
 	/// </summary>
 	/// <param name="seconds">有限な0以上の秒数</param>
 	/// <param name="input">ワールドX/Z方向の移動とジャンプ</param>
+	/// <param name="cameraInput">現在のPrimary Follow Cameraの旋回入力。0秒では反映しない</param>
 	/// <returns>true:更新成功 false:未再生または更新失敗</returns>
-	bool Update(float seconds, const CharacterInput &input);
+	bool Update(float seconds, const CharacterInput &input,
+	            const OrbitCameraInput &cameraInput = {});
 
 	/// <summary>
 	/// 再生状態を確認する
@@ -173,8 +176,10 @@ class SceneSimulation {
 	/// </summary>
 	/// <param name="seconds">有効な経過時間</param>
 	/// <param name="input">移動とジャンプ</param>
+	/// <param name="cameraInput">Primary Cameraの旋回入力</param>
 	/// <returns>true:更新成功 false:更新失敗</returns>
-	bool Advance(float seconds, const CharacterInput &input);
+	bool Advance(float seconds, const CharacterInput &input,
+	             const OrbitCameraInput &cameraInput);
 
 	/// <summary>
 	/// 進入・退出を、発生時に有効なTrigger Actionsの受信先へ振り分ける
@@ -225,6 +230,7 @@ class SceneSimulation {
 	std::vector<SceneObjectId> updateOrder_;
 	// 追従の補間状態はワールド座標で保持し、シーンにはローカル変形を反映する。
 	std::map<SceneObjectId, CameraPose> followPoses_;
+	std::map<SceneObjectId, FollowCameraOrbit> orbitStates_;
 	DirectX::XMFLOAT3 spawn_{};
 	std::uint64_t respawnCount_ = 0;
 	std::optional<DirectX::XMFLOAT3> lastRespawnPosition_;

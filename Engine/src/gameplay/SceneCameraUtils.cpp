@@ -1,5 +1,6 @@
 #include "gameplay/SceneCameraUtils.h"
 
+#include "gameplay/FollowCameraOrbit.h"
 #include "gameplay/FollowCameraSettings.h"
 #include "graphics/camera/Camera.h"
 #include "math/MathUtils.h"
@@ -27,6 +28,12 @@
 CameraPose
 SceneCameraUtils::MakeFollowPose(const DirectX::XMFLOAT3 &target,
                                  const FollowCameraSettings &settings) {
+	if (settings.orbit.enabled) {
+		FollowCameraOrbit orbit;
+		if (orbit.Initialize(settings)) {
+			return orbit.MakePose(target, settings);
+		}
+	}
 	CameraPose result;
 	result.position = {target.x + settings.offset.x,
 	                   target.y + settings.offset.y,

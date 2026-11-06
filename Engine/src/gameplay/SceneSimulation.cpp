@@ -126,6 +126,29 @@ bool SceneSimulation::Configure(const Scene &source, std::string &error,
 		                                      invalidObject)) {
 			return false;
 		}
+		std::map<SceneObjectId, FollowCameraOrbit> orbits;
+		for (const auto id : order) {
+			const auto &object = *source.FindObject(id);
+			if (!object.followCamera || !object.followCamera->orbit.enabled) {
+				continue;
+			}
+			const auto found = orbitStates_.find(id);
+			if (preserve && found != orbitStates_.end()) {
+				orbits.emplace(id, found->second);
+			} else if (SceneActivity::IsActive(source, id) &&
+			           !orbits[id].Initialize(*object.followCamera)) {
+				return fail(id, "Orbit Camera settings are invalid.");
+			}
+		}
+		const auto makeFollow = [&](SceneObjectId id,
+		                            const DirectX::XMFLOAT3 &target,
+		                            const FollowCameraSettings &settings) {
+			const auto orbit = orbits.find(id);
+			return orbit != orbits.end()
+			           ? orbit->second.MakePose(target, settings)
+			           : SceneCameraUtils::MakeFollowPose(target, settings);
+		};
+
 		Scene working;
 		if (!preserve) {
 			if (!SceneCameraUtils::ResolveInitialScene(source, working, error,
@@ -147,8 +170,8 @@ bool SceneSimulation::Configure(const Scene &source, std::string &error,
 					return fail(id,
 					            "Follow Camera target transform is invalid.");
 				}
-				auto pose = SceneCameraUtils::MakeFollowPose(
-				    target.GetPosition(), *object.followCamera);
+				auto pose =
+				    makeFollow(id, target.GetPosition(), *object.followCamera);
 				if (!SceneCameraUtils::AvoidFollowObstacles(working, id,
 				                                            pose) ||
 				    !SceneCameraUtils::ApplyWorldPose(working, id, pose)) {
@@ -250,8 +273,8 @@ bool SceneSimulation::Configure(const Scene &source, std::string &error,
 			        working, object.followCamera->target, target)) {
 				return fail(id, "Follow Camera target transform is invalid.");
 			}
-			auto pose = SceneCameraUtils::MakeFollowPose(target.GetPosition(),
-			                                             *object.followCamera);
+			auto pose =
+			    makeFollow(id, target.GetPosition(), *object.followCamera);
 			if (!SceneCameraUtils::AvoidFollowObstacles(working, id, pose)) {
 				return fail(id, "Follow Camera pose is invalid.");
 			}
@@ -288,6 +311,7 @@ bool SceneSimulation::Configure(const Scene &source, std::string &error,
 		camera_ = camera;
 		updateOrder_ = std::move(order);
 		followPoses_ = std::move(follows);
+		orbitStates_ = std::move(orbits);
 		cameraSettings_ = lens;
 		spawn_ = spawn;
 		if (!continuing) {
@@ -316,19 +340,22 @@ void SceneSimulation::Stop() {
 	character_ = camera_ = 0;
 	updateOrder_.clear();
 	followPoses_.clear();
+	orbitStates_.clear();
 	respawnCount_ = 0;
 	lastRespawnPosition_.reset();
 }
 
-bool SceneSimulation::Update(float seconds, const CharacterInput &input) {
-	if (!playing_ || !std::isfinite(seconds) || seconds < 0) {
+bool SceneSimulation::Update(float seconds, const CharacterInput &input,
+                             const OrbitCameraInput &cameraInput) {
+	if (!playing_ || !std::isfinite(seconds) || seconds < 0 ||
+	    !cameraInput.IsValid()) {
 		lastUpdateError_ =
 		    "Start Play and use a finite, non-negative simulation time.";
 		return false;
 	}
 	try {
 		if (seconds == 0) {
-			if (!Advance(seconds, input)) {
+			if (!Advance(seconds, input, cameraInput)) {
 				lastUpdateError_ = "The zero-time simulation update failed.";
 				return false;
 			}
@@ -342,7 +369,7 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input) {
 			    "The simulation audio revision limit was reached.";
 			return false;
 		}
-		if (!working.Advance(seconds, input)) {
+		if (!working.Advance(seconds, input, cameraInput)) {
 			lastUpdateError_ = "Simulation update failed. Check active physics "
 			                   "and camera settings.";
 			return false;
@@ -364,7 +391,8 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input) {
 	}
 }
 
-bool SceneSimulation::Advance(float seconds, const CharacterInput &input) {
+bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
+                              const OrbitCameraInput &cameraInput) {
 	if (!playing_ || !std::isfinite(seconds) || seconds < 0)
 		return false;
 	try {
@@ -372,6 +400,13 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input) {
 		working.ReplaceObjects(scene_.GetObjects());
 		auto next = controller_;
 		auto follows = followPoses_;
+		auto orbits = orbitStates_;
+		if (const auto found = orbits.find(camera_);
+		    found != orbits.end() &&
+		    !found->second.Update(seconds, cameraInput,
+		                          *working.FindObject(camera_)->followCamera)) {
+			return false;
+		}
 		CollisionWorld world;
 		std::vector<SceneObjectId> ignored;
 		if (character_ &&
@@ -413,8 +448,12 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input) {
 				    !SceneHierarchy::GetWorldTransform(working, settings.target,
 				                                       target))
 					return false;
-				const auto desired = SceneCameraUtils::MakeFollowPose(
-				    target.GetPosition(), settings);
+				const auto orbit = orbits.find(id);
+				const auto desired =
+				    orbit != orbits.end()
+				        ? orbit->second.MakePose(target.GetPosition(), settings)
+				        : SceneCameraUtils::MakeFollowPose(target.GetPosition(),
+				                                           settings);
 				const float blend = respawned || settings.smoothing == 0
 				                        ? 1.0f
 				                        : static_cast<float>(-std::expm1(
@@ -427,8 +466,16 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input) {
 				};
 				const auto previous = found->second;
 				auto &pose = found->second;
-				lerp(pose.position, desired.position);
 				lerp(pose.target, desired.target);
+				if (orbit != orbits.end()) {
+					// 注視点の追従だけを補間し、旋回中に半径が縮んで対象を横切ることを避ける。
+					pose.position = {
+					    pose.target.x + desired.position.x - desired.target.x,
+					    pose.target.y + desired.position.y - desired.target.y,
+					    pose.target.z + desired.position.z - desired.target.z};
+				} else {
+					lerp(pose.position, desired.position);
+				}
 				if (!SceneCameraUtils::AvoidFollowObstacles(working, id,
 				                                            pose)) {
 					pose.position = previous.position;
@@ -478,6 +525,7 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input) {
 		controller_ = next;
 		world_ = std::move(world);
 		followPoses_ = std::move(follows);
+		orbitStates_ = std::move(orbits);
 		pose_ = pose;
 		if (respawned) {
 			++respawnCount_;

@@ -311,6 +311,10 @@ exit /b 0</Command>
 
   <ItemGroup>
     <ClInclude Include="include\gameplay\FollowCameraSettings.h" />
+    <ClInclude Include="include\gameplay\OrbitCameraSettings.h" />
+    <ClInclude Include="include\gameplay\OrbitCameraInput.h" />
+    <ClInclude Include="include\gameplay\OrbitCameraInputReader.h" />
+    <ClInclude Include="include\gameplay\FollowCameraOrbit.h" />
     <ClInclude Include="include\gameplay\RespawnSettings.h" />
   </ItemGroup>
   <ItemGroup>
@@ -323,6 +327,7 @@ exit /b 0</Command>
     <ClCompile Include="src\scene\SceneObjectReferences.cpp" />
     <ClCompile Include="src\gameplay\SceneSimulation.cpp" />
     <ClCompile Include="src\gameplay\SceneCameraUtils.cpp" />
+    <ClCompile Include="src\gameplay\FollowCameraOrbit.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\graphics\camera\CameraSettings.h" />

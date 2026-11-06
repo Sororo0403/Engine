@@ -557,6 +557,18 @@
     <ClInclude Include="include\gameplay\FollowCameraSettings.h">
       <Filter>include\gameplay</Filter>
     </ClInclude>
+    <ClInclude Include="include\gameplay\OrbitCameraSettings.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gameplay\OrbitCameraInput.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gameplay\OrbitCameraInputReader.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gameplay\FollowCameraOrbit.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
     <ClInclude Include="include\gameplay\RespawnSettings.h">
       <Filter>include\gameplay</Filter>
     </ClInclude>
@@ -587,6 +599,9 @@
       <Filter>src\gameplay</Filter>
     </ClCompile>
     <ClCompile Include="src\gameplay\SceneCameraUtils.cpp">
+      <Filter>src\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gameplay\FollowCameraOrbit.cpp">
       <Filter>src\gameplay</Filter>
     </ClCompile>
   </ItemGroup>
