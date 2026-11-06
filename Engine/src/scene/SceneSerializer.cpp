@@ -497,7 +497,9 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 					    : action.operation ==
 					            TriggerAction::Operation::STOP_AUDIO
 					        ? "stopAudio"
-					        : "teleport";
+					    : action.operation == TriggerAction::Operation::TELEPORT
+					        ? "teleport"
+					        : "loadScene";
 					actions.push_back(
 					    {{"event", action.event == TriggerAction::Event::ENTER
 					                   ? "enter"
@@ -507,7 +509,8 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 					     {"target", action.target},
 					     {"operation", operation},
 					     {"once", action.once},
-					     {"destination", action.destination}});
+					     {"destination", action.destination},
+					     {"scene", PathUtils::ToUtf8(action.scenePath)}});
 				}
 				objects.back()["triggerActions"] = {
 				    {"actions", std::move(actions)}};
@@ -942,11 +945,13 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					     operation != "toggle" &&
 					     !(version >= 21 && (operation == "playAudio" ||
 					                         operation == "stopAudio")) &&
-					     !(version >= 23 && operation == "teleport")) ||
+					     !(version >= 23 && operation == "teleport") &&
+					     !(version >= 28 && operation == "loadScene")) ||
 					    (version >= 23 &&
 					     !value.at("destination").is_number_unsigned()) ||
 					    !value.at("target").is_number_unsigned() ||
-					    !value.at("once").is_boolean()) {
+					    !value.at("once").is_boolean() ||
+					    (version >= 28 && !value.at("scene").is_string())) {
 						throw std::runtime_error(
 						    "Trigger Actionsの操作設定が無効です。");
 					}
@@ -965,11 +970,17 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					         ? TriggerAction::Operation::PLAY_AUDIO
 					     : operation == "stopAudio"
 					         ? TriggerAction::Operation::STOP_AUDIO
-					         : TriggerAction::Operation::TELEPORT,
+					     : operation == "teleport"
+					         ? TriggerAction::Operation::TELEPORT
+					         : TriggerAction::Operation::LOAD_SCENE,
 					     value.at("once").get<bool>(),
 					     version >= 23
 					         ? value.at("destination").get<SceneObjectId>()
-					         : 0});
+					         : 0,
+					     version >= 28
+					         ? PathUtils::FromUtf8(
+					               value.at("scene").get<std::string>())
+					         : std::filesystem::path{}});
 				}
 				object.triggerActions = std::move(component);
 			}

@@ -6,6 +6,7 @@
 #include "physics/BoxColliderUtils.h"
 #include "scene/SceneActivity.h"
 #include "scene/SceneHierarchy.h"
+#include "scene/SceneSerializer.h"
 #include <algorithm>
 #include <cmath>
 #include <exception>
@@ -23,6 +24,10 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 	}
 
 	try {
+		if (sceneRevision_ == (std::numeric_limits<std::uint64_t>::max)()) {
+			error = "The scene revision limit was reached.";
+			return false;
+		}
 		if (audioRevision_ == (std::numeric_limits<std::uint64_t>::max)()) {
 			error = "The simulation audio revision limit was reached.";
 			return false;
@@ -45,6 +50,7 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 			return false;
 		}
 		working.audioRevision_ = audioRevision_ + 1;
+		working.sceneRevision_ = sceneRevision_ + 1;
 		Adopt(working);
 		return true;
 	} catch (const std::exception &exception) {
@@ -341,6 +347,7 @@ bool SceneSimulation::Configure(const Scene &source, std::string &error,
 
 void SceneSimulation::Stop() {
 	playing_ = false;
+	pendingScene_.clear();
 	motion_ = SceneMotion{};
 	frameEvents_.clear();
 	audioActions_.clear();
@@ -372,6 +379,24 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 				return false;
 			}
 			lastUpdateError_.clear();
+			return true;
+		}
+		if (!pendingScene_.empty()) {
+			Scene destination;
+			if (!SceneSerializer::Load(destination, pendingScene_)) {
+				lastUpdateError_ = "Could not load destination scene: " +
+				                   PathUtils::ToUtf8(pendingScene_);
+				return false;
+			}
+			SceneSimulation destinationSimulation;
+			destinationSimulation.CopyFrom(*this);
+			std::string error;
+			if (!destinationSimulation.Start(destination, error,
+			                                 fallbackPose_)) {
+				lastUpdateError_ = std::move(error);
+				return false;
+			}
+			Adopt(destinationSimulation);
 			return true;
 		}
 		SceneSimulation working;

@@ -38,6 +38,7 @@ bool RuntimeScene::Initialize() {
 
 bool RuntimeScene::Update(float seconds) {
 	CharacterInput input;
+	const auto revision = simulation_.GetSceneRevision();
 
 	if (input_.IsActive()) {
 		const auto &keys = input_.GetKeyboard();
@@ -64,9 +65,15 @@ bool RuntimeScene::Update(float seconds) {
 	}
 
 	std::string audioError;
-	if (!audioPlayer_.Update(simulation_.GetCameraPose(), !input_.IsActive(),
-	                         audioError, nullptr,
-	                         simulation_.GetAudioActions())) {
+	const bool audioReady =
+	    simulation_.GetSceneRevision() != revision
+	        ? audioPlayer_.Start(simulation_.GetCameraPose(),
+	                             !input_.IsActive(), audioError, nullptr,
+	                             simulation_.GetAudioActions())
+	        : audioPlayer_.Update(simulation_.GetCameraPose(),
+	                              !input_.IsActive(), audioError, nullptr,
+	                              simulation_.GetAudioActions());
+	if (!audioReady) {
 		Logger::Error(audioError);
 		return false;
 	}

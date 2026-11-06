@@ -1,13 +1,15 @@
 #pragma once
 
+#include "platform/windows/PathUtils.h"
 #include "scene/SceneObjectId.h"
+#include <filesystem>
 
 /// <summary>
-/// Triggerの進入・退出、または範囲内での操作入力に応じて、対象物体の有効設定または音声の再生、瞬間移動を操作する
+/// Triggerの進入・退出、または範囲内での操作入力に応じて、対象物体の有効設定・音声・瞬間移動、またはシーン遷移を要求する
 /// </summary>
 struct TriggerAction {
 	/// <summary>
-	/// 対象へ適用する有効設定、Audio Sourceの再生・停止、または瞬間移動
+	/// 対象へ適用する有効設定、Audio Sourceの再生・停止、瞬間移動、またはシーンの読み込み
 	/// </summary>
 	enum class Operation {
 		ENABLE,
@@ -15,7 +17,8 @@ struct TriggerAction {
 		TOGGLE,
 		PLAY_AUDIO,
 		STOP_AUDIO,
-		TELEPORT
+		TELEPORT,
+		LOAD_SCENE
 	};
 
 	/// <summary>
@@ -29,18 +32,26 @@ struct TriggerAction {
 	bool once = false;
 	// Teleportの移動先。物体のワールド位置を使用し、回転と拡縮は維持する。
 	SceneObjectId destination = 0;
+	// Load Sceneの遷移先。空は編集中だけ許可する。絶対パスまたは実行ファイル基準
+	std::filesystem::path scenePath;
 
 	/// <summary>
 	/// 種別が有効か確認する。未割り当ての対象は編集用に許可し、Play時に存在を確認する
 	/// </summary>
 	/// <returns>true:有効 false:未対応のイベントまたは操作</returns>
 	bool IsValid() const {
-		return (event == Event::ENTER || event == Event::EXIT ||
+		return (scenePath.empty() ||
+		        (scenePath.native().find(L'\0') == std::wstring::npos &&
+		         (!scenePath.has_root_path() || scenePath.is_absolute()) &&
+		         PathUtils::HasExtension(scenePath, ".json") &&
+		         PathUtils::HasExtension(scenePath.stem(), ".scene"))) &&
+		       (event == Event::ENTER || event == Event::EXIT ||
 		        event == Event::INTERACT) &&
 		       (operation == Operation::ENABLE ||
 		        operation == Operation::DISABLE ||
 		        operation == Operation::TOGGLE || IsAudioOperation() ||
-		        operation == Operation::TELEPORT);
+		        operation == Operation::TELEPORT ||
+		        operation == Operation::LOAD_SCENE);
 	}
 
 	/// <summary>

@@ -100,6 +100,13 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 					        "with Is Trigger enabled.");
 				}
 				for (const auto &action : object.triggerActions->actions) {
+					if (action.operation ==
+					    TriggerAction::Operation::LOAD_SCENE) {
+						if (action.scenePath.empty())
+							add(id, "Load Scene requires a destination scene "
+							        "asset.");
+						continue;
+					}
 					if (!scene.Contains(action.target)) {
 						add(id, "Trigger Actions require an existing target "
 						        "for each action.");

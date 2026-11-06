@@ -74,6 +74,14 @@ class SceneSimulation {
 	            const OrbitCameraInput &cameraInput = {});
 
 	/// <summary>
+	/// 開始・再開始・シーン遷移のたびに増える識別値を取得する。失敗では変えない
+	/// </summary>
+	/// <returns>物体IDの所属を識別する単調増加の値。未開始は0</returns>
+	std::uint64_t GetSceneRevision() const {
+		return sceneRevision_;
+	}
+
+	/// <summary>
 	/// 再生状態を確認する
 	/// </summary>
 	/// <returns>true:再生中 false:停止中</returns>
@@ -248,4 +256,6 @@ class SceneSimulation {
 	std::vector<ActionSignal> pendingActionSignals_;
 	std::set<std::pair<SceneObjectId, std::size_t>> firedActions_;
 	std::string lastUpdateError_;
+	std::filesystem::path pendingScene_;
+	std::uint64_t sceneRevision_ = 0;
 };

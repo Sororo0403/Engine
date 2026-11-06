@@ -31,6 +31,8 @@ void SceneSimulation::CopyFrom(const SceneSimulation &source) {
 	pendingActionSignals_ = source.pendingActionSignals_;
 	firedActions_ = source.firedActions_;
 	lastUpdateError_ = source.lastUpdateError_;
+	pendingScene_ = source.pendingScene_;
+	sceneRevision_ = source.sceneRevision_;
 }
 
 void SceneSimulation::Adopt(SceneSimulation &source) {
@@ -58,6 +60,8 @@ void SceneSimulation::Adopt(SceneSimulation &source) {
 	pendingActionSignals_ = std::move(source.pendingActionSignals_);
 	firedActions_ = std::move(source.firedActions_);
 	lastUpdateError_ = std::move(source.lastUpdateError_);
+	pendingScene_ = std::move(source.pendingScene_);
+	sceneRevision_ = source.sceneRevision_;
 }
 
 void SceneSimulation::QueueActionSignals(
@@ -109,6 +113,7 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 	std::map<SceneObjectId, bool> requested;
 	std::vector<SceneAudioAction> audio;
 	std::map<SceneObjectId, SceneObjectId> destinations;
+	std::filesystem::path requestedScene;
 	for (const auto &signal : signals) {
 		const auto *object = scene_.FindObject(signal.receiver);
 		if (!object || !SceneActivity::IsActive(scene_, signal.receiver) ||
@@ -125,7 +130,9 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 				continue;
 			}
 			const auto *target = scene_.FindObject(action.target);
-			if (!action.IsValid() || !target) {
+			if (!action.IsValid() ||
+			    (action.operation != TriggerAction::Operation::LOAD_SCENE &&
+			     !target)) {
 				error = std::format("Trigger Actions on object ID {} have an "
 				                    "invalid action or target.",
 				                    signal.receiver);
@@ -133,6 +140,18 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 					*invalidObject = signal.receiver;
 				}
 				return false;
+			}
+			if (action.operation == TriggerAction::Operation::LOAD_SCENE) {
+				if (action.scenePath.empty()) {
+					error = "Load Scene requires a destination scene asset.";
+					return false;
+				}
+				// 同じ更新に複数の要求があれば、既存の操作順で最後の要求を使用する。
+				requestedScene =
+				    PathUtils::ResolveFromExecutable(action.scenePath);
+				if (action.once)
+					fired.insert(key);
+				continue;
 			}
 			if (action.operation == TriggerAction::Operation::TELEPORT) {
 				if (!scene_.Contains(action.destination)) {
@@ -183,6 +202,7 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 				break;
 			case TriggerAction::Operation::PLAY_AUDIO:
 			case TriggerAction::Operation::STOP_AUDIO:
+			case TriggerAction::Operation::LOAD_SCENE:
 			case TriggerAction::Operation::TELEPORT:
 				break;
 			}
@@ -232,6 +252,7 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 		}
 	}
 
+	pendingScene_.swap(requestedScene);
 	firedActions_.swap(fired);
 	audioActions_.swap(audio);
 	return true;
