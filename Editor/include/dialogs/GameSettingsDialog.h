@@ -68,6 +68,7 @@ class GameSettingsDialog {
 	std::filesystem::path destination_;
 	std::filesystem::path lastSavedPath_;
 	GameInputBindings input_;
+	std::vector<GameActionBinding> actions_;
 	LightingSettings lighting_;
 	bool cameraRelativeMovement_ = false;
 	bool gamepadEnabled_ = true;

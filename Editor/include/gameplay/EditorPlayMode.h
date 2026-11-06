@@ -3,6 +3,7 @@
 #include "gameplay/EditorGamePreview.h"
 #include "gameplay/EditorPlayAction.h"
 #include "gameplay/EditorPlaySession.h"
+#include "gameplay/GameActionReader.h"
 #include "gameplay/GameConfig.h"
 #include "graphics/ui/ViewportInput.h"
 #include "scene/SceneAudioPlayer.h"
@@ -224,6 +225,8 @@ class EditorPlayMode {
 	std::unique_ptr<RenderTexture> texture_;
 	ViewportInput viewport_{};
 	GameInputBindings inputBindings_;
+	std::vector<GameActionBinding> actionBindings_;
+	GameActionReader actionReader_;
 	LightingSettings lighting_;
 	bool cameraRelativeMovement_ = false;
 	bool gamepadEnabled_ = true;

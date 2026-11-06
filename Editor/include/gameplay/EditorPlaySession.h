@@ -106,10 +106,12 @@ class EditorPlaySession {
 	/// <param name="input">今回の移動・ジャンプ入力</param>
 	/// <param name="cameraInput">今回の旋回・ズーム入力。一時停止と初期表示では反映しない</param>
 	/// <param name="uiInput">ゲーム内UIの入力。Pause中は実行しない</param>
+	/// <param name="actions">今回の名前付き入力。更新時だけLuaのinput.actionsへ渡す</param>
 	/// <returns>true:更新成功または一時停止 false:未再生、無効な時間、または更新失敗</returns>
 	bool Update(float seconds, const CharacterInput &input,
 	            const OrbitCameraInput &cameraInput = {},
-	            const UIInput &uiInput = {});
+	            const UIInput &uiInput = {},
+	            std::span<const GameActionState> actions = {});
 
 	/// <summary>
 	/// 再生状態を取得する

@@ -149,7 +149,8 @@ std::uint64_t EditorPlaySession::GetSimulationFrameCount() const {
 
 bool EditorPlaySession::Update(float seconds, const CharacterInput &input,
                                const OrbitCameraInput &cameraInput,
-                               const UIInput &uiInput) {
+                               const UIInput &uiInput,
+                               std::span<const GameActionState> actions) {
 	if (!IsPlaying() || !std::isfinite(seconds) || seconds < 0) {
 		return false;
 	}
@@ -167,7 +168,7 @@ bool EditorPlaySession::Update(float seconds, const CharacterInput &input,
 	}
 
 	const auto revision = simulation_.GetSceneRevision();
-	if (!simulation_.Update(*time, input, cameraInput, uiInput)) {
+	if (!simulation_.Update(*time, input, cameraInput, uiInput, actions)) {
 		return false;
 	}
 

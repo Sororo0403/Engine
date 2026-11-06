@@ -239,8 +239,10 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
 		return false;
 	}
 
-	if (!config.input.IsValid()) {
-		error = "Choose different supported gameplay keys before Play.";
+	if (!config.input.IsValid() ||
+	    !GameActionBinding::IsValid(config.actions)) {
+		error = "Use distinct supported gameplay keys and valid, unique named "
+		        "input actions before Play.";
 		return false;
 	}
 
@@ -269,6 +271,8 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
 	lastUpdateError_.clear();
 	lighting_ = config.lighting;
 	inputBindings_ = config.input;
+	actionBindings_ = config.actions;
+	actionReader_.Reset();
 	cameraRelativeMovement_ = config.cameraRelativeMovement;
 	gamepadEnabled_ = config.gamepadEnabled;
 	gameWidth_ = config.width;
@@ -286,6 +290,7 @@ bool EditorPlayMode::Restart(std::string &error) {
 	if (!session_.Restart(error)) {
 		return false;
 	}
+	actionReader_.Reset();
 
 	if (!audioPlayer_.Start(session_.GetCameraPose(), session_.IsPaused(),
 	                        error, nullptr, session_.GetAudioActions())) {
@@ -317,6 +322,7 @@ bool EditorPlayMode::IsPaused() const {
 }
 
 void EditorPlayMode::Stop() {
+	actionReader_.Reset();
 	renderer_.ClearPrefabResources();
 	audioPlayer_.Stop();
 	session_.Stop();
@@ -345,6 +351,15 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 	}
 
 	lastUpdateError_.clear();
+	const bool actionsEnabled =
+	    !inputBlocked && visible_ && input.IsActive() &&
+	    viewport_.windowFocused && viewport_.applicationFocused &&
+	    !viewport_.widgetActive && !ImGui::GetIO().AppFocusLost &&
+	    !ImGui::GetIO().WantTextInput;
+	const auto actions = actionReader_.Read(
+	    actionBindings_, input.GetKeyboard(), &input.GetMouse(),
+	    gamepadEnabled_ ? &input.GetGamepad() : nullptr, actionsEnabled,
+	    viewport_.imageHovered);
 	const auto *movementCamera =
 	    cameraRelativeMovement_ ? &session_.GetCameraPose() : nullptr;
 	const auto controls =
@@ -400,7 +415,7 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 	uiInput.pointerY = viewport_.imageY;
 	uiInput.pointerPressed = viewport_.leftPressed;
 	uiInput.pointerDown = viewport_.leftDown;
-	if (!session_.Update(seconds, controls, cameraControls, uiInput)) {
+	if (!session_.Update(seconds, controls, cameraControls, uiInput, actions)) {
 		lastUpdateError_ = session_.GetLastUpdateError();
 		return false;
 	}

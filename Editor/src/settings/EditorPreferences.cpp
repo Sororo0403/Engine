@@ -263,13 +263,16 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 				}
 			}
 
-			if (settings.contains("lighting")) {
+			if (settings.contains("lighting") || settings.contains("actions")) {
 				std::string text, error;
 				if (!loaded.gameExport.Serialize(text, error)) {
 					throw std::runtime_error(error);
 				}
 				auto configuration = nlohmann::json::parse(text);
-				configuration["lighting"] = settings.at("lighting");
+				if (settings.contains("lighting"))
+					configuration["lighting"] = settings.at("lighting");
+				if (settings.contains("actions"))
+					configuration["actions"] = settings.at("actions");
 				if (!loaded.gameExport.Deserialize(configuration.dump(),
 				                                   error)) {
 					throw std::runtime_error(error);
@@ -395,7 +398,8 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		if (!gameExport.Serialize(gameText, gameError)) {
 			throw std::runtime_error(gameError);
 		}
-		const auto lighting = nlohmann::json::parse(gameText).at("lighting");
+		const auto gameJson = nlohmann::json::parse(gameText);
+		const auto lighting = gameJson.at("lighting");
 
 		auto bookmarks = nlohmann::json::array();
 		for (std::size_t i = 0; i < EditorCameraBookmarks::kSlotCount; ++i) {
@@ -422,6 +426,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		    {"assetDirectories", assetDirectories},
 		    {"gameExport",
 		     {{"lighting", lighting},
+		      {"actions", gameJson.at("actions")},
 		      {"title", gameExport.title},
 		      {"width", gameExport.width},
 		      {"height", gameExport.height},
@@ -490,6 +495,7 @@ bool EditorPreferences::operator==(const EditorPreferences &other) const {
 	       gameExport.width == other.gameExport.width &&
 	       gameExport.height == other.gameExport.height &&
 	       gameExport.input == other.gameExport.input &&
+	       gameExport.actions == other.gameExport.actions &&
 	       gameExport.lighting == other.gameExport.lighting &&
 	       gameExport.gamepadEnabled == other.gameExport.gamepadEnabled &&
 	       gameExport.cameraRelativeMovement ==
