@@ -10,6 +10,7 @@ struct TextComponent {
 	enum class Alignment { LEFT, CENTER, RIGHT };
 	enum class VerticalAlignment { TOP, MIDDLE, BOTTOM };
 	bool enabled = true;
+	bool raycastTarget = true;
 	std::string text = "Text";
 	std::string fontFamily = "Segoe UI";
 	float fontSize = 32;

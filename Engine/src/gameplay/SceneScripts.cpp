@@ -9,6 +9,7 @@
 #include <cmath>
 #include <exception>
 #include <format>
+#include <set>
 #include <stdexcept>
 #include <utility>
 
@@ -82,7 +83,8 @@ bool SceneScripts::Configure(const Scene &scene, bool preserve,
 
 bool SceneScripts::Run(Scene &scene, float seconds, const CharacterInput &input,
                        std::span<const TriggerEvent> events, bool startOnly,
-                       std::string &error, SceneObjectId *invalidObject) {
+                       std::string &error, SceneObjectId *invalidObject,
+                       std::span<const SceneObjectId> uiClicks) {
 	SceneObjectId current = 0;
 	try {
 		if (!std::isfinite(seconds) || seconds < 0)
@@ -142,6 +144,16 @@ bool SceneScripts::Run(Scene &scene, float seconds, const CharacterInput &input,
 						       id == event.contact.first ? event.contact.second
 						                                 : event.contact.first);
 				}
+			}
+		}
+		if (!startOnly && seconds > 0) {
+			std::set<SceneObjectId> delivered;
+			for (auto id : uiClicks) {
+				const auto *object = scene.FindObject(id);
+				if (delivered.insert(id).second && instances_.contains(id) &&
+				    active(id) && object->button && object->button->enabled &&
+				    object->button->interactable)
+					invoke(id, "click", 0);
 			}
 		}
 		error.clear();

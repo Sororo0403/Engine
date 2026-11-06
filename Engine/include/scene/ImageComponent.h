@@ -7,6 +7,7 @@
 /// </summary>
 struct ImageComponent {
 	bool enabled = true;
+	bool raycastTarget = true;
 	std::filesystem::path texture;
 	std::array<float, 4> color{1, 1, 1, 1};
 	bool preserveAspect = false;

@@ -1,5 +1,7 @@
 ﻿#pragma once
+#include "ui/UIButtonVisual.h"
 #include <memory>
+#include <span>
 #include <string>
 class Scene;
 class D3D12Graphics;
@@ -30,9 +32,11 @@ class CanvasRenderer {
 	/// <param name="width">描画先の幅</param>
 	/// <param name="height">描画先の高さ</param>
 	/// <param name="error">失敗理由。成功時は空</param>
+	/// <param name="visuals">実行中のボタン表示。未指定のボタンには設定の通常色・無効色を使う</param>
 	/// <returns>true:準備成功 false:設定・画像・文字・GPU準備が無効。失敗後は描画しない</returns>
 	/// <remarks>COM初期化済み、GPU完了後、BeginFrame前に呼ぶ。画像1辺4096・表示素材合計128 MiBを上限とする</remarks>
-	bool Update(const Scene &scene, int width, int height, std::string &error);
+	bool Update(const Scene &scene, int width, int height, std::string &error,
+	            std::span<const UIButtonVisual> visuals = {});
 	/// <summary>
 	/// 最後のUpdateで準備したUIを、設定済みの描画先とビューポートへ重ねる
 	/// </summary>

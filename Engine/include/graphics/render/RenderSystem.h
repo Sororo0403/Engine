@@ -3,7 +3,10 @@
 #include "graphics/material/MaterialManager.h"
 #include "graphics/render/RenderWorld.h"
 
+#include "ui/UIButtonVisual.h"
+#include <array>
 #include <memory>
+#include <span>
 
 class D3D12Graphics;
 class MeshRenderer;
@@ -99,9 +102,17 @@ class RenderSystem {
 	/// <param name="scene">表示するシーン</param>
 	/// <param name="width">描画幅。高さと共に0の場合はウィンドウサイズ</param>
 	/// <param name="height">描画高さ</param>
+	/// <param name="visuals">再生中のボタン表示</param>
 	/// <returns>true:成功 false:配置・素材・描画準備が無効</returns>
 	bool UpdateCanvas(CanvasRenderer &canvas, const Scene &scene, int width = 0,
-	                  int height = 0);
+	                  int height = 0,
+	                  std::span<const UIButtonVisual> visuals = {});
+
+	/// <summary>
+	/// 実行ウィンドウの現在のクライアント寸法を取得する
+	/// </summary>
+	/// <returns>横・縦のピクセル数。リサイズ後も実際の描画寸法を返す</returns>
+	std::array<int, 2> GetWindowSize() const;
 
   private:
 	MaterialManager materials_;

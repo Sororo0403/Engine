@@ -206,11 +206,47 @@ CanvasRenderer::CanvasRenderer(D3D12Graphics &graphics, Failure failure)
 CanvasRenderer::~CanvasRenderer() = default;
 
 bool CanvasRenderer::Update(const Scene &scene, int width, int height,
-                            std::string &error) {
+                            std::string &error,
+                            std::span<const UIButtonVisual> visuals) {
 	auto &p = *impl_;
 	p.prepared = false;
 	SceneObjectId current = 0;
 	try {
+		std::map<SceneObjectId, UIButtonVisual::State> states;
+		if (visuals.size() > CanvasLayout::kMaximumElements)
+			throw std::runtime_error("Too many Button visual states.");
+		for (const auto &visual : visuals) {
+			const auto *object = scene.FindObject(visual.object);
+			if (!object || !object->button ||
+			    visual.state < UIButtonVisual::State::NORMAL ||
+			    visual.state > UIButtonVisual::State::DISABLED ||
+			    !states.emplace(visual.object, visual.state).second)
+				throw std::runtime_error("Invalid Button visual state.");
+		}
+		const auto color = [&](const SceneObject &object, SceneObjectId id,
+		                       const std::array<float, 4> &base, bool text) {
+			auto result = base;
+			if (!object.button ||
+			    (text && object.image && object.image->enabled &&
+			     object.image->color[3] > 0))
+				return result;
+			const auto &button = *object.button;
+			const auto found = states.find(id);
+			const auto state = (!button.enabled || !button.interactable)
+			                       ? UIButtonVisual::State::DISABLED
+			                   : found == states.end()
+			                       ? UIButtonVisual::State::NORMAL
+			                       : found->second;
+			const auto &tint =
+			    state == UIButtonVisual::State::DISABLED  ? button.disabledColor
+			    : state == UIButtonVisual::State::PRESSED ? button.pressedColor
+			    : state == UIButtonVisual::State::HIGHLIGHTED
+			        ? button.highlightedColor
+			        : button.normalColor;
+			for (std::size_t i = 0; i < 4; ++i)
+				result[i] *= tint[i];
+			return result;
+		};
 		std::vector<UIElement> elements;
 		if (!CanvasLayout::Collect(scene, width, height, elements, error,
 		                           nullptr, p.failure == Failure::SKIP_ELEMENT))
@@ -306,7 +342,8 @@ bool CanvasRenderer::Update(const Scene &scene, int width, int height,
 						bounds.y += (r.height - bounds.height) * .5f;
 					}
 					commands.push_back(
-					    {std::move(texture), bounds, image.color});
+					    {std::move(texture), bounds,
+					     color(object, current, image.color, false)});
 				}
 				if (object.text && object.text->enabled &&
 				    !object.text->text.empty() && object.text->color[3] > 0) {
@@ -348,7 +385,9 @@ bool CanvasRenderer::Update(const Scene &scene, int width, int height,
 							    "Could not upload UI text.");
 					}
 					account(entry.texture);
-					commands.push_back({entry.texture, r, object.text->color});
+					commands.push_back(
+					    {entry.texture, r,
+					     color(object, current, object.text->color, true)});
 					texts.emplace(current, std::move(entry));
 				}
 			} catch (const std::bad_alloc &) {

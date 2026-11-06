@@ -16,5 +16,5 @@ bool SceneObject::operator==(const SceneObject &other) const {
 	       prefabLink == other.prefabLink && motionPath == other.motionPath &&
 	       script == other.script && canvas == other.canvas &&
 	       rectTransform == other.rectTransform && text == other.text &&
-	       image == other.image;
+	       image == other.image && button == other.button;
 }

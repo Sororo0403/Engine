@@ -1,4 +1,5 @@
 #include "scene/SceneRenderer.h"
+#include "ui/CanvasLayout.h"
 
 #include "core/Logger.h"
 #include "graphics/model/ModelManager.h"
@@ -14,6 +15,7 @@
 #include <algorithm>
 #include <exception>
 #include <format>
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -77,12 +79,14 @@ bool SceneRenderer::Update(int width, int height) {
 		if (width == 0 && height == 0) {
 			return render_.Update(*world_) &&
 			       (!screenUIEnabled_ ||
-			        render_.UpdateCanvas(*canvas_, scene_));
+			        render_.UpdateCanvas(*canvas_, scene_, 0, 0,
+			                             buttonVisuals_));
 		}
 
 		return render_.Update(*world_, width, height) &&
 		       (!screenUIEnabled_ ||
-		        render_.UpdateCanvas(*canvas_, scene_, width, height));
+		        render_.UpdateCanvas(*canvas_, scene_, width, height,
+		                             buttonVisuals_));
 	} catch (const std::exception &error) {
 		Logger::Error(std::format(
 		    "SceneRendererの更新中に例外が発生しました: {}", error.what()));
@@ -287,6 +291,7 @@ void SceneRenderer::Finalize() {
 	// GPUの利用完了後に描画ワールドを解放する
 	world_.reset();
 	canvas_.reset();
+	buttonVisuals_.clear();
 	objects_.clear();
 	modelRevision_ = 0;
 }
@@ -395,4 +400,21 @@ bool SceneRenderer::UpdateDebugLines() {
 
 bool SceneRenderer::SetCameraSettings(const CameraSettings &settings) {
 	return world_ && world_->SetCameraSettings(settings);
+}
+
+bool SceneRenderer::SetUIButtonVisuals(
+    std::span<const UIButtonVisual> visuals) {
+	if (visuals.size() > CanvasLayout::kMaximumElements)
+		return false;
+	std::set<SceneObjectId> seen;
+	for (const auto &visual : visuals) {
+		const auto *object = scene_.FindObject(visual.object);
+		if (!object || !object->button || !seen.insert(visual.object).second ||
+		    visual.state < UIButtonVisual::State::NORMAL ||
+		    visual.state > UIButtonVisual::State::DISABLED)
+			return false;
+	}
+	std::vector<UIButtonVisual> candidate(visuals.begin(), visuals.end());
+	buttonVisuals_.swap(candidate);
+	return true;
 }

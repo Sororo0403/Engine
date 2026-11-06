@@ -110,15 +110,20 @@ RenderSystem::CreateCanvas(bool skipUnavailable) {
 }
 
 bool RenderSystem::UpdateCanvas(CanvasRenderer &canvas, const Scene &scene,
-                                int width, int height) {
+                                int width, int height,
+                                std::span<const UIButtonVisual> visuals) {
 	if (width == 0 && height == 0) {
 		width = app_.GetWidth();
 		height = app_.GetHeight();
 	}
 	std::string error;
-	if (!canvas.Update(scene, width, height, error)) {
+	if (!canvas.Update(scene, width, height, error, visuals)) {
 		Logger::Error(error);
 		return false;
 	}
 	return true;
+}
+
+std::array<int, 2> RenderSystem::GetWindowSize() const {
+	return {app_.GetWidth(), app_.GetHeight()};
 }

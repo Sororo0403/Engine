@@ -160,7 +160,8 @@ int Invoke(lua_State *state) {
 		lua_pushboolean(state, call.input->interactPressed);
 		lua_setfield(state, -2, "interactPressed");
 		arguments = 4;
-	} else if (std::strcmp(call.callback, "start") != 0) {
+	} else if (std::strcmp(call.callback, "start") != 0 &&
+	           std::strcmp(call.callback, "click") != 0) {
 		LuaInternal::PushObject(state, call.other);
 		arguments = 3;
 	}
@@ -214,8 +215,8 @@ bool Run(LuaInternal::Call &call, lua_CFunction function, std::string &error) {
 /// <param name="name">確認する名前</param>
 /// <returns>対応する名前。未対応はnullptr</returns>
 const char *Callback(std::string_view name) {
-	for (const char *value :
-	     {"start", "update", "trigger_enter", "trigger_stay", "trigger_exit"})
+	for (const char *value : {"start", "update", "trigger_enter",
+	                          "trigger_stay", "trigger_exit", "click"})
 		if (name == value)
 			return value;
 	return nullptr;

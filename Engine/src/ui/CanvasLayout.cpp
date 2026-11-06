@@ -107,16 +107,19 @@ bool CanvasLayout::Collect(const Scene &scene, int width, int height,
 				continue;
 			const bool drawText = object.text && object.text->enabled,
 			           drawImage = object.image && object.image->enabled;
-			if (!drawText && !drawImage)
+			const bool button = object.button && object.button->enabled;
+			if (!drawText && !drawImage && !button)
 				continue;
 			if ((object.text && !object.text->IsValid()) ||
-			    (object.image && !object.image->IsValid()))
-				throw std::runtime_error("Text or Image settings are invalid.");
+			    (object.image && !object.image->IsValid()) ||
+			    (object.button && !object.button->IsValid()))
+				throw std::runtime_error(
+				    "Text, Image or Button settings are invalid.");
 			if (!object.rectTransform || !context.canvas) {
 				if (skipIncomplete)
 					continue;
-				throw std::runtime_error(
-				    "Text and Image need Rect Transform and a parent Canvas.");
+				throw std::runtime_error("Text, Image and Button need Rect "
+				                         "Transform and a parent Canvas.");
 			}
 			const auto &rect = context.rect;
 			if (!std::isfinite(rect.x) || !std::isfinite(rect.y) ||

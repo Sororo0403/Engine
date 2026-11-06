@@ -1,4 +1,5 @@
 #pragma once
+#include "scene/ButtonComponent.h"
 #include "scene/CanvasComponent.h"
 #include "scene/ImageComponent.h"
 #include "scene/RectTransformComponent.h"
@@ -76,6 +77,7 @@ struct SceneObject {
 	std::optional<RectTransformComponent> rectTransform;
 	std::optional<TextComponent> text;
 	std::optional<ImageComponent> image;
+	std::optional<ButtonComponent> button;
 
 	/// <summary>
 	/// Meshに形状の参照が割り当てられているか確認する

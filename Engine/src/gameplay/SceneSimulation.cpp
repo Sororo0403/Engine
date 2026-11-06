@@ -331,6 +331,9 @@ bool SceneSimulation::Configure(const Scene &source, std::string &error,
 		auto scripts = scripts_;
 		if (!scripts.Configure(working, preserve, error, invalidObject))
 			return false;
+		auto ui = preserve ? ui_ : SceneUI{};
+		if (!ui.Refresh(working, error))
+			return false;
 		// 全候補が有効な場合だけ確定し、失敗時は再生シーンと実行状態をすべて保持する。
 		scene_.ReplaceObjects(working.GetObjects());
 		world_ = std::move(world);
@@ -338,6 +341,7 @@ bool SceneSimulation::Configure(const Scene &source, std::string &error,
 		controller_ = controller;
 		motion_ = std::move(motion);
 		scripts_ = std::move(scripts);
+		ui_ = std::move(ui);
 		character_ = character;
 		camera_ = camera;
 		updateOrder_ = std::move(order);
@@ -364,6 +368,7 @@ void SceneSimulation::Stop() {
 	pendingScene_.clear();
 	motion_ = SceneMotion{};
 	scripts_ = SceneScripts{};
+	ui_ = SceneUI{};
 	frameEvents_.clear();
 	audioActions_.clear();
 	pendingActionSignals_.clear();
@@ -380,9 +385,10 @@ void SceneSimulation::Stop() {
 }
 
 bool SceneSimulation::Update(float seconds, const CharacterInput &input,
-                             const OrbitCameraInput &cameraInput) {
+                             const OrbitCameraInput &cameraInput,
+                             const UIInput &uiInput) {
 	if (!playing_ || !std::isfinite(seconds) || seconds < 0 ||
-	    !cameraInput.IsValid()) {
+	    !cameraInput.IsValid() || !uiInput.IsValid()) {
 		lastUpdateError_ =
 		    "Start Play and use a finite, non-negative simulation time.";
 		return false;
@@ -393,6 +399,7 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 				lastUpdateError_ = "The zero-time simulation update failed.";
 				return false;
 			}
+			ui_.Cancel();
 			lastUpdateError_.clear();
 			return true;
 		}
@@ -421,18 +428,33 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 			    "The simulation audio revision limit was reached.";
 			return false;
 		}
-		if (!working.Advance(seconds, input, cameraInput)) {
+		std::string uiError;
+		if (!working.ui_.Update(working.scene_, uiInput, uiError)) {
+			lastUpdateError_ = std::move(uiError);
+			return false;
+		}
+		const auto controls =
+		    working.ui_.ConsumesNavigation() ? CharacterInput{} : input;
+		const auto orbit =
+		    (working.ui_.ConsumesNavigation() || working.ui_.ConsumesPointer())
+		        ? OrbitCameraInput{}
+		        : cameraInput;
+		if (!working.Advance(seconds, controls, orbit)) {
 			lastUpdateError_ = "Simulation update failed. Check active physics "
 			                   "and camera settings.";
 			return false;
 		}
 		std::string error;
 		if (!working.ApplyTriggerActions(error, nullptr,
-		                                 input.interactPressed)) {
+		                                 controls.interactPressed)) {
 			lastUpdateError_ = std::move(error);
 			return false;
 		}
-		if (!working.ApplyScripts(seconds, input, false, error, nullptr)) {
+		if (!working.ApplyScripts(seconds, controls, false, error, nullptr)) {
+			lastUpdateError_ = std::move(error);
+			return false;
+		}
+		if (!working.ui_.Refresh(working.scene_, error)) {
 			lastUpdateError_ = std::move(error);
 			return false;
 		}

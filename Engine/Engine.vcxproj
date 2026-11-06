@@ -691,4 +691,15 @@ exit /b 0</Command>
   <ItemGroup>
     <ClCompile Include="src\scripting\LuaUIBindings.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\scene\ButtonComponent.h" />
+    <ClCompile Include="src\scene\ButtonComponent.cpp" />
+    <ClInclude Include="include\ui\UIInput.h" />
+    <ClCompile Include="src\ui\UIInput.cpp" />
+    <ClInclude Include="include\ui\UIButtonVisual.h" />
+    <ClInclude Include="include\ui\SceneUI.h" />
+    <ClCompile Include="src\ui\SceneUI.cpp" />
+    <ClInclude Include="include\ui\UIInputReader.h" />
+    <ClCompile Include="src\ui\UIInputReader.cpp" />
+  </ItemGroup>
 </Project>

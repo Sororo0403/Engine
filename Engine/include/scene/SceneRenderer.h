@@ -1,4 +1,6 @@
 #pragma once
+#include "ui/UIButtonVisual.h"
+#include <vector>
 
 #include "graphics/LightingSettings.h"
 #include "graphics/model/ModelHandle.h"
@@ -175,6 +177,13 @@ class SceneRenderer {
 		screenUIEnabled_ = enabled;
 	}
 
+	/// <summary>
+	/// 実行中のボタンの表示を次の更新へ渡す。編集プレビューでは空の一覧を使う
+	/// </summary>
+	/// <param name="visuals">表示対象シーンの重複しないButton状態</param>
+	/// <returns>true:反映成功 false:物体・状態が無効。以前の一覧を保持する</returns>
+	bool SetUIButtonVisuals(std::span<const UIButtonVisual> visuals);
+
   private:
 	/// <summary>
 	/// シーン上の物体と対応する描画物体の情報
@@ -202,6 +211,7 @@ class SceneRenderer {
 	std::unique_ptr<RenderWorld> world_;
 	std::unique_ptr<CanvasRenderer> canvas_;
 	bool screenUIEnabled_ = true;
+	std::vector<UIButtonVisual> buttonVisuals_;
 
 	// シーン上の物体IDと、対応する描画物体の情報
 	std::map<SceneObjectId, Object> objects_;

@@ -50,7 +50,8 @@ void Validate(const SceneObject &object) {
 	if ((object.canvas && !object.canvas->IsValid()) ||
 	    (object.rectTransform && !object.rectTransform->IsValid()) ||
 	    (object.text && !object.text->IsValid()) ||
-	    (object.image && !object.image->IsValid()))
+	    (object.image && !object.image->IsValid()) ||
+	    (object.button && !object.button->IsValid()))
 		throw std::runtime_error("UI component settings are invalid.");
 }
 
@@ -80,6 +81,7 @@ void SceneUISerializer::Write(nlohmann::json &item, const SceneObject &object) {
 		const auto &t = *object.text;
 		item["text"] = {
 		    {"enabled", t.enabled},
+		    {"raycastTarget", t.raycastTarget},
 		    {"value", t.text},
 		    {"fontFamily", t.fontFamily},
 		    {"fontSize", t.fontSize},
@@ -92,9 +94,20 @@ void SceneUISerializer::Write(nlohmann::json &item, const SceneObject &object) {
 	if (object.image) {
 		const auto &i = *object.image;
 		item["image"] = {{"enabled", i.enabled},
+		                 {"raycastTarget", i.raycastTarget},
 		                 {"texture", PathUtils::ToUtf8(i.texture)},
 		                 {"color", i.color},
 		                 {"preserveAspect", i.preserveAspect}};
+	}
+	if (object.button) {
+		const auto &b = *object.button;
+		item["button"] = {{"enabled", b.enabled},
+		                  {"interactable", b.interactable},
+		                  {"navigation", b.navigation},
+		                  {"normalColor", b.normalColor},
+		                  {"highlightedColor", b.highlightedColor},
+		                  {"pressedColor", b.pressedColor},
+		                  {"disabledColor", b.disabledColor}};
 	}
 }
 
@@ -133,6 +146,8 @@ void SceneUISerializer::Read(const nlohmann::json &item, SceneObject &object,
 		if (!v.at("fontSize").is_number())
 			throw std::runtime_error("Text font size needs a number.");
 		t.enabled = v.at("enabled").get<bool>();
+		if (version >= 31)
+			t.raycastTarget = v.at("raycastTarget").get<bool>();
 		t.text = v.at("value").get<std::string>();
 		t.fontFamily = v.at("fontFamily").get<std::string>();
 		t.fontSize = v.at("fontSize").get<float>();
@@ -148,10 +163,24 @@ void SceneUISerializer::Read(const nlohmann::json &item, SceneObject &object,
 		const auto &v = item.at("image");
 		ImageComponent i;
 		i.enabled = v.at("enabled").get<bool>();
+		if (version >= 31)
+			i.raycastTarget = v.at("raycastTarget").get<bool>();
 		i.texture = PathUtils::FromUtf8(v.at("texture").get<std::string>());
 		i.color = ReadArray<4>(v.at("color"));
 		i.preserveAspect = v.at("preserveAspect").get<bool>();
 		object.image = std::move(i);
+	}
+	if (version >= 31 && item.contains("button")) {
+		const auto &v = item.at("button");
+		ButtonComponent b;
+		b.enabled = v.at("enabled").get<bool>();
+		b.interactable = v.at("interactable").get<bool>();
+		b.navigation = v.at("navigation").get<bool>();
+		b.normalColor = ReadArray<4>(v.at("normalColor"));
+		b.highlightedColor = ReadArray<4>(v.at("highlightedColor"));
+		b.pressedColor = ReadArray<4>(v.at("pressedColor"));
+		b.disabledColor = ReadArray<4>(v.at("disabledColor"));
+		object.button = b;
 	}
 	Validate(object);
 }

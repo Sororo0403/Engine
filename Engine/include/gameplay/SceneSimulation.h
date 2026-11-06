@@ -11,6 +11,7 @@
 #include "scene/Scene.h"
 #include "scene/SceneActiveChange.h"
 #include "scene/SceneAudioActions.h"
+#include "ui/SceneUI.h"
 #include <cstddef>
 #include <map>
 #include <optional>
@@ -70,9 +71,11 @@ class SceneSimulation {
 	/// <param name="seconds">有限な0以上の秒数</param>
 	/// <param name="input">ワールドX/Z方向の移動とジャンプ</param>
 	/// <param name="cameraInput">現在のPrimary Follow Cameraの旋回入力。0秒では反映しない</param>
+	/// <param name="uiInput">ゲーム内UIの操作。0秒では押下を解除し、クリックしない</param>
 	/// <returns>true:更新成功 false:未再生または更新失敗</returns>
 	bool Update(float seconds, const CharacterInput &input,
-	            const OrbitCameraInput &cameraInput = {});
+	            const OrbitCameraInput &cameraInput = {},
+	            const UIInput &uiInput = {});
 
 	/// <summary>
 	/// 開始・再開始・シーン遷移のたびに増える識別値を取得する。失敗では変えない
@@ -167,6 +170,21 @@ class SceneSimulation {
 	/// <returns>状態。未初期化はnullopt。次の更新まで有効</returns>
 	std::optional<std::string_view> GetScriptState(SceneObjectId id) const {
 		return scripts_.GetState(id);
+	}
+
+	/// <summary>
+	/// 一時停止・フォーカス喪失時に、ゲーム内UIの操作を解除する
+	/// </summary>
+	void CancelUIInput() {
+		ui_.Cancel();
+	}
+
+	/// <summary>
+	/// 現在のボタン表示と入力消費の状態を取得する
+	/// </summary>
+	/// <returns>次の更新・停止まで有効な読み取り専用の状態</returns>
+	const SceneUI &GetUI() const {
+		return ui_;
 	}
 
   private:
@@ -277,6 +295,7 @@ class SceneSimulation {
 	CharacterController controller_;
 	SceneMotion motion_;
 	SceneScripts scripts_;
+	SceneUI ui_;
 	SceneObjectId character_ = 0, camera_ = 0;
 	std::vector<SceneObjectId> updateOrder_;
 	// 追従の補間状態はワールド座標で保持し、シーンにはローカル変形を反映する。

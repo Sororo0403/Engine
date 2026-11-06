@@ -12,7 +12,9 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 	candidate.ReplaceObjects(scene_.GetObjects());
 	auto scripts = scripts_;
 	if (!scripts.Run(candidate, seconds, input, frameEvents_, startOnly, error,
-	                 invalidObject))
+	                 invalidObject,
+	                 startOnly ? std::span<const SceneObjectId>{}
+	                           : ui_.GetClicks()))
 		return false;
 	std::string serialized;
 	if (!SceneSerializer::Serialize(candidate, serialized)) {

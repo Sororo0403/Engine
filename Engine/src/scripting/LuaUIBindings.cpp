@@ -1,5 +1,6 @@
 ﻿#include "LuaBindings.h"
 #include "scene/Scene.h"
+#include "scene/SceneActivity.h"
 #include <algorithm>
 #include <cmath>
 #include <cstring>
@@ -18,7 +19,9 @@ enum class Op {
 	TEXT_COLOR,
 	SET_TEXT_COLOR,
 	IMAGE_COLOR,
-	SET_IMAGE_COLOR
+	SET_IMAGE_COLOR,
+	INTERACTABLE,
+	SET_INTERACTABLE
 };
 
 /// <summary>
@@ -36,15 +39,28 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 	try {
 		const bool mutation = op == Op::SET_TEXT || op == Op::SET_POSITION ||
 		                      op == Op::SET_SIZE || op == Op::SET_TEXT_COLOR ||
-		                      op == Op::SET_IMAGE_COLOR;
+		                      op == Op::SET_IMAGE_COLOR ||
+		                      op == Op::SET_INTERACTABLE;
 		if (!call.scene || (mutation && !call.executing))
 			throw std::runtime_error(
 			    "Change UI values inside callbacks, not at module scope.");
 		auto *object = call.scene->FindObject(id);
 		if (!object)
 			throw std::runtime_error("The UI object no longer exists.");
-		if (op == Op::TEXT || op == Op::SET_TEXT || op == Op::TEXT_COLOR ||
-		    op == Op::SET_TEXT_COLOR) {
+		if (op == Op::INTERACTABLE || op == Op::SET_INTERACTABLE) {
+			if (!object->button)
+				throw std::runtime_error(
+				    "This object needs a UI Button component.");
+			if (op == Op::INTERACTABLE)
+				numbers[0] = object->button->enabled &&
+				                     object->button->interactable &&
+				                     SceneActivity::IsActive(*call.scene, id)
+				                 ? 1.0f
+				                 : 0.0f;
+			else
+				object->button->interactable = numbers[0] != 0;
+		} else if (op == Op::TEXT || op == Op::SET_TEXT ||
+		           op == Op::TEXT_COLOR || op == Op::SET_TEXT_COLOR) {
 			if (!object->text)
 				throw std::runtime_error(
 				    "This object needs a UI Text component.");
@@ -55,6 +71,7 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 				          object->text->color.end(), numbers);
 			else {
 				auto value = *object->text;
+
 				if (op == Op::SET_TEXT) {
 					if (length > TextComponent::kMaximumTextBytes)
 						throw std::runtime_error(
@@ -123,6 +140,10 @@ int Dispatch(lua_State *state) {
 	float numbers[4]{};
 	const char *text = nullptr;
 	std::size_t length = 0;
+	if (op == Op::SET_INTERACTABLE) {
+		luaL_checktype(state, 2, LUA_TBOOLEAN);
+		numbers[0] = lua_toboolean(state, 2) ? 1.0f : 0.0f;
+	}
 	if (op == Op::SET_TEXT) {
 		luaL_checktype(state, 2, LUA_TSTRING);
 		text = lua_tolstring(state, 2, &length);
@@ -144,6 +165,10 @@ int Dispatch(lua_State *state) {
 		lua_pushlstring(state, call.error.data(), call.error.size());
 		return lua_error(state);
 	}
+	if (op == Op::INTERACTABLE) {
+		lua_pushboolean(state, numbers[0] != 0);
+		return 1;
+	}
 	if (op == Op::TEXT) {
 		lua_pushlstring(state, call.returnText.data(), call.returnText.size());
 		return 1;
@@ -158,11 +183,12 @@ int Dispatch(lua_State *state) {
 } // namespace
 
 void LuaInternal::AddUIMethods(lua_State *state) {
-	const char *names[]{"get_text",        "set_text",       "get_ui_position",
-	                    "set_ui_position", "get_ui_size",    "set_ui_size",
-	                    "get_text_color",  "set_text_color", "get_image_color",
-	                    "set_image_color"};
-	for (int i = 0; i < 10; ++i) {
+	const char *names[]{
+	    "get_text",        "set_text",        "get_ui_position",
+	    "set_ui_position", "get_ui_size",     "set_ui_size",
+	    "get_text_color",  "set_text_color",  "get_image_color",
+	    "set_image_color", "is_interactable", "set_interactable"};
+	for (int i = 0; i < 12; ++i) {
 		lua_pushinteger(state, i);
 		lua_pushcclosure(state, Dispatch, 1);
 		lua_setfield(state, -2, names[i]);

@@ -44,10 +44,12 @@ class SceneScripts {
 	/// <param name="startOnly">true:startだけ実行する</param>
 	/// <param name="error">失敗理由</param>
 	/// <param name="invalidObject">指定時は失敗した物体ID</param>
+	/// <param name="uiClicks">今回クリックされたButtonのID。正の時間でだけclickを通知する</param>
 	/// <returns>true:実行成功 false:コールバック・状態・制限が無効。呼び出し側は候補を破棄する</returns>
 	bool Run(Scene &scene, float seconds, const CharacterInput &input,
 	         std::span<const TriggerEvent> events, bool startOnly,
-	         std::string &error, SceneObjectId *invalidObject);
+	         std::string &error, SceneObjectId *invalidObject,
+	         std::span<const SceneObjectId> uiClicks = {});
 
 	/// <summary>
 	/// スクリプトが生成した接触を再帰実行せず、次の正の時間の更新へ送る
