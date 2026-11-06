@@ -9,6 +9,7 @@
 #include <Jolt/Physics/Body/Body.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Body/BodyFilter.h>
+#include <Jolt/Physics/Body/BodyLock.h>
 #include <Jolt/Physics/Collision/CollisionCollectorImpl.h>
 #include <Jolt/Physics/Collision/GroupFilterTable.h>
 #include <Jolt/Physics/Collision/NarrowPhaseQuery.h>
@@ -18,6 +19,7 @@
 #include <Jolt/Physics/StateRecorderImpl.h>
 #include <Jolt/RegisterTypes.h>
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <exception>
 #include <format>
@@ -561,6 +563,58 @@ class QueryBodies final : public JPH::BodyFilter {
 		            descriptions[found->second.second].collider.filter));
 	}
 };
+
+/// <summary>
+/// 開始位置の箱を分離軸で確認し、GJKが移動方向から作った不安定な法線を補う
+/// </summary>
+/// <param name="center">問い合わせAABBの中心</param>
+/// <param name="half">問い合わせAABBの半径</param>
+/// <param name="movement">今回の移動量</param>
+/// <param name="body">相手の現在の物理形状</param>
+/// <param name="extent">相手の拡大率を反映した箱の半径</param>
+/// <param name="normal">接触面が一意でない場合も、最小の重なりの外向き軸を設定する</param>
+/// <returns>true:接触または重なり false:離れている、または接触面を滑る・離れるだけ</returns>
+bool ResolveInitialContact(JPH::Vec3Arg center, JPH::Vec3Arg half,
+                           JPH::Vec3Arg movement, const JPH::Body &body,
+                           JPH::Vec3Arg extent, JPH::Vec3 &normal) {
+	const std::array<JPH::Vec3, 3> world{
+	    JPH::Vec3::sAxisX(), JPH::Vec3::sAxisY(), JPH::Vec3::sAxisZ()};
+	const auto rotation = body.GetRotation();
+	const std::array<JPH::Vec3, 3> local{
+	    rotation * world[0], rotation * world[1], rotation * world[2]};
+	std::array<JPH::Vec3, 15> axes;
+	for (int i = 0; i < 3; ++i) {
+		axes[i] = world[i];
+		axes[i + 3] = local[i];
+	}
+	for (int i = 0; i < 3; ++i)
+		for (int j = 0; j < 3; ++j)
+			axes[6 + i * 3 + j] = world[i].Cross(local[j]);
+	const auto delta = center - body.GetCenterOfMassPosition();
+	float minimum = (std::numeric_limits<float>::max)();
+	for (auto axis : axes) {
+		const float length = axis.Length();
+		if (length < .000001f)
+			continue;
+		axis /= length;
+		const float radius = half.Dot(axis.Abs()) +
+		                     extent.GetX() * std::abs(axis.Dot(local[0])) +
+		                     extent.GetY() * std::abs(axis.Dot(local[1])) +
+		                     extent.GetZ() * std::abs(axis.Dot(local[2]));
+		const float offset = delta.Dot(axis), depth = radius - std::abs(offset);
+		if (depth < -.00001f)
+			return false;
+		const auto outward = offset >= 0 ? axis : -axis;
+		if (depth <= .00001f && outward.Dot(movement) >= -.0000001f)
+			return false;
+		if (depth < minimum) {
+			minimum = depth;
+			normal = outward;
+		}
+	}
+	return true;
+}
+
 } // namespace
 
 bool RigidBodyWorld::CanPlace(
@@ -614,8 +668,23 @@ bool RigidBodyWorld::Sweep(const AxisAlignedBox &box,
 		    settings, center, contacts, {}, {}, bodies);
 		CollisionSweepResult next;
 		for (const auto &hit : contacts.mHits) {
-			const auto normal =
+			auto normal =
 			    -hit.mPenetrationAxis.NormalizedOr(JPH::Vec3::sAxisY());
+			if (hit.mFraction <= 0) {
+				const JPH::BodyLockRead locked(
+				    impl_->system.GetBodyLockInterface(), hit.mBodyID2);
+				if (!locked.Succeeded())
+					return false;
+				const auto id = locked.GetBody().GetUserData();
+				const auto &source =
+				    impl_->descriptions[impl_->bodies.at(id).second];
+				const auto &h = source.collider.halfExtents,
+				           &s = source.transform.scale;
+				if (!ResolveInitialContact(
+				        center, half, Vector(displacement), locked.GetBody(),
+				        JPH::Vec3{h.x * s.x, h.y * s.y, h.z * s.z}, normal))
+					continue;
+			}
 			if (hit.mPenetrationDepth <= 0.00001f &&
 			    normal.Dot(Vector(displacement)) >= -0.0000001f)
 				continue;
