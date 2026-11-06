@@ -16,6 +16,9 @@ struct ScriptComponent {
 	// JSONオブジェクト。個々のインスタンスのstateへ複製し、再生中は変更しない
 	std::string initialState = "{}";
 	std::vector<std::pair<std::string, SceneObjectId>> references;
+	// 生成に使うPrefab。未割り当てのスロットも編集用に保持する
+	std::vector<std::pair<std::string, std::filesystem::path>> prefabs;
+	static constexpr std::size_t kMaximumPrefabs = 32;
 	static constexpr std::size_t kMaximumReferences = 32;
 	static constexpr std::size_t kMaximumReferenceNameBytes = 64;
 

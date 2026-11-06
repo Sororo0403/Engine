@@ -2242,4 +2242,5 @@ exit /b 0</Command>
     <ClCompile Include="src\scene\PrefabInstantiation.cpp" />
   </ItemGroup>
   <ItemGroup><ClCompile Include="src\gameplay\SceneSimulationObjects.cpp" /></ItemGroup>
+<ItemGroup><ClInclude Include="include\scene\SceneAssetReferences.h" /><ClCompile Include="src\scene\SceneAssetReferences.cpp" /></ItemGroup>
 </Project>

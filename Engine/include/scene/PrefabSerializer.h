@@ -2,6 +2,7 @@
 #include "scene/SceneObjectId.h"
 #include <filesystem>
 #include <string>
+#include <string_view>
 class Scene;
 
 /// <summary>
@@ -9,6 +10,20 @@ class Scene;
 /// </summary>
 class PrefabSerializer {
   public:
+	/// <summary>
+	/// 呼び出し側で取得・検証したPrefabのバイト列を読み込み、素材パスを保存先基準で解決する
+	/// </summary>
+	/// <param name="text">Prefab形式v1またはv2のJSON</param>
+	/// <param name="path">素材パスの基準になるPrefabファイル名</param>
+	/// <param name="result">成功時だけ置き換える階層</param>
+	/// <param name="error">成功時は空、失敗時は理由</param>
+	/// <param name="nextSourceId">指定時は次の元IDを成功時だけ設定する</param>
+	/// <returns>true:成功 false:形式・階層・設定・カウンターが無効。出力を保持する</returns>
+	static bool Deserialize(std::string_view text,
+	                        const std::filesystem::path &path, Scene &result,
+	                        std::string &error,
+	                        SceneObjectId *nextSourceId = nullptr);
+
 	/// <summary>
 	/// Prefab専用の標準ファイル名か確認する。内容の検証は行わない
 	/// </summary>

@@ -1,6 +1,7 @@
 #include "scene/PrefabSerializer.h"
 #include "platform/windows/PathUtils.h"
 #include "scene/Scene.h"
+#include "scene/SceneAssetReferences.h"
 #include "scene/SceneHierarchy.h"
 #include "scene/SceneObjectReferences.h"
 #include "scene/SceneSerializer.h"
@@ -67,41 +68,14 @@ SceneObjectId ValidateHierarchy(const Scene &scene) {
 /// <param name="saving">true:実行ファイル基準から保存先基準へ変換 false:保存先基準を絶対パスへ変換</param>
 void RewriteReferences(Scene &scene, const std::filesystem::path &base,
                        bool saving) {
-	const auto rewrite = [&](std::filesystem::path &path) {
-		if (path.empty()) {
-			return;
-		}
+	SceneAssetReferences::Rewrite(scene, [&](const auto &path) {
 		const auto absolute = saving ? PathUtils::ResolveFromExecutable(path)
 		                             : (base / path).lexically_normal();
 		const auto relative = absolute.lexically_relative(base);
-		path = saving && !relative.empty() ? relative : absolute;
-	};
-	for (const auto &[id, value] : scene.GetObjects()) {
-		(void)value;
-		auto &object = *scene.FindObject(id);
-		if (object.triggerActions)
-			for (auto &action : object.triggerActions->actions) {
-				if (action.operation == TriggerAction::Operation::LOAD_SCENE)
-					rewrite(action.scenePath);
-			}
-		if (object.script)
-			rewrite(object.script->asset);
-		if (object.image)
-			rewrite(object.image->texture);
-		if (object.mesh) {
-			rewrite(object.mesh->modelPath);
-		}
-		if (object.meshRenderer) {
-			for (auto &[slot, path] : object.meshRenderer->textures.slots) {
-				(void)slot;
-				rewrite(path);
-			}
-		}
-		if (object.audioSource) {
-			rewrite(object.audioSource->clipPath);
-		}
-	}
+		return saving && !relative.empty() ? relative : absolute;
+	});
 }
+
 } // namespace
 
 bool PrefabSerializer::IsPrefabPath(const std::filesystem::path &path) {
@@ -112,18 +86,31 @@ bool PrefabSerializer::IsPrefabPath(const std::filesystem::path &path) {
 bool PrefabSerializer::Load(const std::filesystem::path &path, Scene &result,
                             std::string &error, SceneObjectId *nextSourceId) {
 	try {
-		if (!IsPrefabPath(path)) {
+		if (!IsPrefabPath(path))
 			throw std::invalid_argument("Choose a .prefab.json asset.");
-		}
 		const auto source = PathUtils::ResolveFromExecutable(path);
 		std::ifstream file(source, std::ios::binary);
-		if (!file) {
+		if (!file)
 			throw std::runtime_error("Could not open the Prefab asset.");
-		}
 		file.exceptions(std::ios::badbit);
-		const auto document =
-		    Json::parse(std::string{std::istreambuf_iterator<char>(file),
-		                            std::istreambuf_iterator<char>()});
+		const std::string text{std::istreambuf_iterator<char>(file),
+		                       std::istreambuf_iterator<char>()};
+		return Deserialize(text, source, result, error, nextSourceId);
+	} catch (const std::exception &exception) {
+		error = exception.what();
+		return false;
+	}
+}
+
+bool PrefabSerializer::Deserialize(std::string_view text,
+                                   const std::filesystem::path &path,
+                                   Scene &result, std::string &error,
+                                   SceneObjectId *nextSourceId) {
+	try {
+		if (!IsPrefabPath(path))
+			throw std::invalid_argument("Choose a .prefab.json asset.");
+		const auto source = PathUtils::ResolveFromExecutable(path);
+		const auto document = Json::parse(text);
 		if (document.at("format") != "EnginePrefab" ||
 		    !document.at("version").is_number_integer() ||
 		    (document.at("version") != 1 && document.at("version") != 2) ||

@@ -2281,4 +2281,5 @@
     <ClCompile Include="src\scene\PrefabInstantiation.cpp"><Filter>src\scene</Filter></ClCompile>
   </ItemGroup>
   <ItemGroup><ClCompile Include="src\gameplay\SceneSimulationObjects.cpp"><Filter>src\gameplay</Filter></ClCompile></ItemGroup>
+<ItemGroup><ClInclude Include="include\scene\SceneAssetReferences.h"><Filter>include\scene</Filter></ClInclude><ClCompile Include="src\scene\SceneAssetReferences.cpp"><Filter>src\scene</Filter></ClCompile></ItemGroup>
 </Project>
