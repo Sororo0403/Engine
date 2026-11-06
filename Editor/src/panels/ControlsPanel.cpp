@@ -1841,6 +1841,27 @@ void ControlsPanel::Draw() {
 	         "Follow Camera cannot share the moving object. Child objects "
 	         "inherit motion. Restart restores the authored position. All "
 	         "settings and point edits support Undo/Redo and game output."},
+	        {"Rigid Bodies",
+	         "Add Rigid Body and a non-Trigger Box Collider on the same "
+	         "object. "
+	         "Mass, friction, restitution, gravity, damping, initial "
+	         "velocities "
+	         "and world-axis rotation locks are edited in Inspector. Positive "
+	         "world scale without shear and positive uniform ancestor scales "
+	         "are required. "
+	         "Use the body's own scale for non-uniform dimensions. Dynamic "
+	         "bodies keep their "
+	         "world pose when parents move. Motion Path on the same object "
+	         "requires Is Kinematic. A solid child Collider needs its own "
+	         "Rigid "
+	         "Body; compound shapes are not supported yet. The current "
+	         "physical "
+	         "shape is a box. Up to 1024 solid Colliders are supported in a "
+	         "physics scene. Character Controller keeps its own movement and "
+	         "gravity settings; it cannot share the object with Rigid Body. "
+	         "Pause keeps the physical state, Step advances once and Restart "
+	         "restores authored values. Settings, Prefabs and game output "
+	         "preserve Rigid Body components."},
 	        {"Lua Scripts",
 	         "Create Script in Assets, then add Lua Script in Inspector and "
 	         "choose its asset. Edit Script opens the built-in code editor. "

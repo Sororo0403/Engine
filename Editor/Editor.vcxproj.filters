@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="include\settings">
@@ -839,5 +839,13 @@
     <ClCompile Include="src\ui\UIInspector.cpp" />
     <ClInclude Include="include\ui\UIObjects.h" />
     <ClCompile Include="src\ui\UIObjects.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\physics\RigidBodyInspector.h">
+      <Filter>include\physics</Filter>
+    </ClInclude>
+    <ClCompile Include="src\physics\RigidBodyInspector.cpp">
+      <Filter>src\physics</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

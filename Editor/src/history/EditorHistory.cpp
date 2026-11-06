@@ -1496,6 +1496,10 @@ bool EditorHistory::HasPendingChanges() const {
 		                             Before, std::optional<ButtonComponent>>) {
 			    return before != object->button;
 		    } else if constexpr (std::is_same_v<
+		                             Before,
+		                             std::optional<RigidBodySettings>>) {
+			    return before != object->rigidBody;
+		    } else if constexpr (std::is_same_v<
 		                             Before, std::optional<CanvasComponent>>) {
 			    return before != object->canvas;
 		    } else if constexpr (std::is_same_v<
@@ -1687,6 +1691,12 @@ void EditorHistory::CommitEdit() {
 		Invalidate();
 		return;
 	}
+	if (std::holds_alternative<std::optional<RigidBodySettings>>(
+	        pending_->before) &&
+	    object->rigidBody && !object->rigidBody->IsValid()) {
+		Invalidate();
+		return;
+	}
 	if (std::holds_alternative<std::optional<CanvasComponent>>(
 	        pending_->before) &&
 	    object->canvas && !object->canvas->IsValid()) {
@@ -1789,6 +1799,11 @@ void EditorHistory::CommitEdit() {
 		                             Before, std::optional<ButtonComponent>>) {
 			    return Command{ButtonCommand{objectId, before, object->button}};
 		    } else if constexpr (std::is_same_v<
+		                             Before,
+		                             std::optional<RigidBodySettings>>) {
+			    return Command{
+			        RigidBodyCommand{objectId, before, object->rigidBody}};
+		    } else if constexpr (std::is_same_v<
 		                             Before, std::optional<CanvasComponent>>) {
 			    return Command{CanvasCommand{objectId, before, object->canvas}};
 		    } else if constexpr (std::is_same_v<
@@ -1877,6 +1892,9 @@ void EditorHistory::CommitEdit() {
 		    } else if constexpr (std::is_same_v<
 		                             T, std::optional<ButtonComponent>>) {
 			    return "Edit UI Button";
+		    } else if constexpr (std::is_same_v<
+		                             T, std::optional<RigidBodySettings>>) {
+			    return "Edit Rigid Body";
 		    } else if constexpr (std::is_same_v<
 		                             T, std::optional<CanvasComponent>>) {
 			    return "Edit Canvas";
@@ -3259,5 +3277,46 @@ bool EditorHistory::BeginButton(SceneObjectId id) {
 	}
 
 	pending_ = PendingEdit{id, object->button};
+	return true;
+}
+
+bool EditorHistory::SetRigidBody(SceneObjectId id,
+                                 std::optional<RigidBodySettings> value) {
+	CommitEdit();
+	auto *object = scene_.FindObject(id);
+
+	if (!object || (value && !value->IsValid())) {
+		return false;
+	}
+
+	const bool adding = !object->rigidBody;
+	RigidBodyCommand command{id, object->rigidBody, value};
+
+	if (!command.HasChanges()) {
+		return true;
+	}
+
+	const auto next = PrepareAppend();
+
+	if (!command.Redo(scene_)) {
+		return false;
+	}
+
+	AppendPrepared(Command{std::move(command)}, next,
+	               !value   ? "Remove Rigid Body"
+	               : adding ? "Add Rigid Body"
+	                        : "Edit Rigid Body");
+	return true;
+}
+
+bool EditorHistory::BeginRigidBody(SceneObjectId id) {
+	CommitEdit();
+	const auto *object = scene_.FindObject(id);
+
+	if (!object || !object->rigidBody) {
+		return false;
+	}
+
+	pending_ = PendingEdit{id, object->rigidBody};
 	return true;
 }

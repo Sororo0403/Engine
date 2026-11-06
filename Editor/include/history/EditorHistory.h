@@ -805,6 +805,21 @@ class EditorHistory {
 	/// <returns>true:開始成功 false:対象またはButtonなし</returns>
 	bool BeginButton(SceneObjectId id);
 
+	/// <summary>
+	/// Rigid Bodyの追加・変更・削除を1回の履歴へ記録する
+	/// </summary>
+	/// <param name="id">編集する物体ID</param>
+	/// <param name="value">設定。nulloptは削除</param>
+	/// <returns>true:反映成功または同じ値 false:対象・設定が無効</returns>
+	bool SetRigidBody(SceneObjectId id, std::optional<RigidBodySettings> value);
+
+	/// <summary>
+	/// 剛体設定の連続編集の開始値を保持する
+	/// </summary>
+	/// <param name="id">編集する物体ID</param>
+	/// <returns>true:開始成功 false:対象またはコンポーネントなし</returns>
+	bool BeginRigidBody(SceneObjectId id);
+
   private:
 	// 単独の編集操作、または複数の編集操作を保持する
 	using Command = std::variant<
@@ -812,9 +827,9 @@ class EditorHistory {
 	    ModelPathCommand, VisibilityCommand, ActiveCommand, ColliderCommand,
 	    CharacterCommand, FollowCameraCommand, TriggerActionsCommand,
 	    ScriptCommand, PointLightCommand, SpotLightCommand, MotionPathCommand,
-	    CanvasCommand, ButtonCommand, RectTransformCommand, TextCommand,
-	    ImageCommand, AudioSourceCommand, AudioListenerCommand, RespawnCommand,
-	    CameraCommand, MeshRendererCommand, ColorTintCommand,
+	    CanvasCommand, ButtonCommand, RigidBodyCommand, RectTransformCommand,
+	    TextCommand, ImageCommand, AudioSourceCommand, AudioListenerCommand,
+	    RespawnCommand, CameraCommand, MeshRendererCommand, ColorTintCommand,
 	    TextureSlotsCommand, CommandGroup, ScenePatchCommand>;
 
 	/// <summary>
@@ -843,7 +858,7 @@ class EditorHistory {
 		    std::optional<PointLightComponent>,
 		    std::optional<SpotLightComponent>,
 		    std::optional<MotionPathComponent>, std::optional<CanvasComponent>,
-		    std::optional<ButtonComponent>,
+		    std::optional<ButtonComponent>, std::optional<RigidBodySettings>,
 		    std::optional<RectTransformComponent>, std::optional<TextComponent>,
 		    std::optional<ImageComponent>,
 

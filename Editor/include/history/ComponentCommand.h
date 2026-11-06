@@ -115,3 +115,6 @@ using TextCommand = ComponentCommand<TextComponent, &SceneObject::text>;
 using ImageCommand = ComponentCommand<ImageComponent, &SceneObject::image>;
 
 using ButtonCommand = ComponentCommand<ButtonComponent, &SceneObject::button>;
+
+using RigidBodyCommand =
+    ComponentCommand<RigidBodySettings, &SceneObject::rigidBody>;

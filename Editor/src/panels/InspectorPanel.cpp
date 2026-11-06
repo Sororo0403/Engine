@@ -4,6 +4,7 @@
 #include "gameplay/MotionPathInspector.h"
 #include "lighting/PointLightInspector.h"
 #include "lighting/SpotLightInspector.h"
+#include "physics/RigidBodyInspector.h"
 #include "scene/SceneActivity.h"
 #include "ui/UIInspector.h"
 
@@ -365,6 +366,8 @@ bool InspectorPanel::Draw(
 	}
 
 	prefabRequest_ = PrefabInspector{}.Draw(ui, scene, inspectedObjectId);
+	changed |=
+	    RigidBodyInspector{}.Draw(ui, inspectedObjectId, *object, history);
 	changed |= UIInspector{}.Draw(
 	    ui, inspectedObjectId, *object, history,
 	    assets ? std::span<const std::filesystem::path>{assets->GetTextures()}
@@ -469,6 +472,9 @@ bool InspectorPanel::Draw(
 		if (ui.MenuItem("UI Image", nullptr,
 		                !object->image && object->rectTransform.has_value()))
 			changed |= history.SetImage(inspectedObjectId, ImageComponent{});
+		if (ui.MenuItem("Rigid Body", nullptr, !object->rigidBody))
+			changed |=
+			    history.SetRigidBody(inspectedObjectId, RigidBodySettings{});
 		if (ui.MenuItem("Lua Script", nullptr, !object->script))
 			changed |= history.SetScript(inspectedObjectId, ScriptComponent{});
 		if (ui.MenuItem("Motion Path", nullptr, !object->motionPath)) {
@@ -826,6 +832,7 @@ std::optional<Transform> InspectorPanel::DrawReadOnly(
 	}
 
 	UIInspector{}.DrawReadOnly(ui, *object);
+	RigidBodyInspector{}.DrawReadOnly(ui, *object);
 	scriptInspector_.DrawReadOnly(ui, *object, scriptState);
 	audioInspector_.DrawReadOnly(ui, *object);
 

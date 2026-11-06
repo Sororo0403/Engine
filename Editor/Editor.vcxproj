@@ -274,6 +274,10 @@ exit /b 0</Command>
     <ClInclude Include="include\physics\ColliderBounds.h" />
     <ClCompile Include="src\physics\ColliderBounds.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\physics\RigidBodyInspector.h" />
+    <ClCompile Include="src\physics\RigidBodyInspector.cpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
 
