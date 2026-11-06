@@ -775,5 +775,7 @@
   <ItemGroup>
     <ClInclude Include="include\audio\AudioPreview.h"><Filter>include\audio</Filter></ClInclude>
     <ClCompile Include="src\audio\AudioPreview.cpp"><Filter>src\audio</Filter></ClCompile>
+    <ClInclude Include="include\panels\AudioPreviewPanel.h"><Filter>include\panels</Filter></ClInclude>
+    <ClCompile Include="src\panels\AudioPreviewPanel.cpp"><Filter>src\panels</Filter></ClCompile>
   </ItemGroup>
 </Project>

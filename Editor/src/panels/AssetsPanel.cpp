@@ -41,6 +41,7 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	modelImportRequested_ = false;
 	folderCreateRequested_ = false;
 	texturePreviewPath_.clear();
+	audioPreviewPath_.clear();
 	revealMessage_.clear();
 	scrollToSelected_ = false;
 	scrollToTop_ = true;
@@ -136,6 +137,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	modelImportRequested_ = false;
 	folderCreateRequested_ = false;
 	texturePreviewPath_.clear();
+	audioPreviewPath_.clear();
 
 	const bool focusWindow = !revealPath_.empty() || directoryOpenRequested_;
 
@@ -306,8 +308,10 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		revealMessage_.clear();
 	}
 
-	ImGui::TextDisabled("%s", filter_.empty() ? "Click a folder to open it."
-	                                          : "Searching all folders.");
+	if (type_ != AssetType::AUDIO) {
+		ImGui::TextDisabled("%s", filter_.empty() ? "Click a folder to open it."
+		                                          : "Searching all folders.");
+	}
 
 	const auto &entries = type_ == AssetType::MODEL     ? assets.GetModels()
 	                      : type_ == AssetType::TEXTURE ? assets.GetTextures()
@@ -331,10 +335,13 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	}
 
 	const auto contentSize = ui.GetContentSize();
-	const float footerHeight = ImGui::GetTextLineHeightWithSpacing() +
-	                           ImGui::GetFrameHeightWithSpacing() *
-	                               (type_ == AssetType::TEXTURE ? 6.0f : 4.0f) +
-	                           ImGui::GetStyle().ItemSpacing.y;
+	const float footerHeight =
+	    (type_ == AssetType::AUDIO
+	         ? ImGui::GetFrameHeightWithSpacing()
+	         : ImGui::GetTextLineHeightWithSpacing() +
+	               ImGui::GetFrameHeightWithSpacing() *
+	                   (type_ == AssetType::TEXTURE ? 6.0f : 4.0f)) +
+	    ImGui::GetStyle().ItemSpacing.y;
 	const float listHeight = std::max(1.0f, contentSize.y - footerHeight);
 
 	const bool drawEntries = ui.BeginChild("AssetEntries", 0.0f, listHeight);
@@ -509,7 +516,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		OpenDirectory(std::move(nextDirectory));
 	}
 
-	if (!selectedPath_.empty()) {
+	if (!selectedPath_.empty() && type_ != AssetType::AUDIO) {
 		const auto displayPath =
 		    selectedPath_.lexically_relative(assets.GetRootDirectory());
 
@@ -604,6 +611,20 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		}
 
 		ui.EndDisabled();
+	} else if (type_ == AssetType::AUDIO) {
+		ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
+
+		if (ui.Button("Preview Audio")) {
+			audioPreviewPath_ = selectedPath_;
+		}
+
+		ui.EndDisabled();
+
+		if (!selectedPath_.empty()) {
+			ui.SameLine();
+			ui.Text(PathUtils::ToUtf8(
+			    selectedPath_.lexically_relative(assets.GetRootDirectory())));
+		}
 	}
 
 	if (type_ == AssetType::SCENE) {
@@ -671,6 +692,7 @@ void AssetsPanel::Clear() {
 	modelImportRequested_ = false;
 	folderCreateRequested_ = false;
 	texturePreviewPath_.clear();
+	audioPreviewPath_.clear();
 	selectedPath_.clear();
 	sceneOpenPath_.clear();
 	gameSettingsPath_.clear();
@@ -742,4 +764,8 @@ const std::filesystem::path &AssetsPanel::GetGameSettingsRequest() const {
 
 bool AssetsPanel::IsAudioImportRequested() const {
 	return audioImportRequested_;
+}
+
+const std::filesystem::path &AssetsPanel::GetAudioPreviewRequest() const {
+	return audioPreviewPath_;
 }

@@ -579,6 +579,19 @@ void ControlsPanel::Draw() {
 	         "Import does not edit the scene or its Undo history and is "
 	         "blocked "
 	         "during Play, modal operations and Scene gestures."},
+	        {"Assets > Audio > Preview Audio",
+	         "Open a WAV to inspect channels, sample rate and duration without "
+	         "changing the scene. Play Preview starts from the beginning; "
+	         "Pause "
+	         "and Resume keep its position, Stop ends it, and Restart begins "
+	         "again. Volume affects only this preview. Set Loop while stopped. "
+	         "Reload Audio refreshes the shared WAV data and stops this "
+	         "preview "
+	         "only on success; failure keeps its previous data and playback. "
+	         "Other playing voices retain their data. Opening another clip, "
+	         "closing the preview or entering Play stops its sound. "
+	         "Trial playback uses 2D audio for both mono and stereo WAVs. "
+	         "Play mode has priority; preview controls are unavailable there."},
 	        {"Assets > Import Audio",
 	         "Choose a WAV, a destination folder and an Audio Name ending in "
 	         ".wav. Import validates the full file and copies its original "

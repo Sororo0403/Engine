@@ -30,6 +30,7 @@
 #include "history/AlignmentAxis.h"
 #include "layout/EditorDockLayout.h"
 #include "panels/AssetsPanel.h"
+#include "panels/AudioPreviewPanel.h"
 #include "panels/ConsolePanel.h"
 #include "panels/ControlsPanel.h"
 #include "panels/HierarchyPanel.h"
@@ -792,6 +793,7 @@ class EditorScene final : public IScene {
 	AssetSources assetSources_;
 	AssetsPanel assetsPanel_;
 	TexturePreviewPanel texturePreviewPanel_;
+	AudioPreviewPanel audioPreviewPanel_;
 
 	EditorSelection selection_;
 	// Inspectorから要求したCameraで、次の更新開始時にPlayを始める。0は要求なし

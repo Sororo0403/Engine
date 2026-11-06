@@ -57,7 +57,8 @@ EditorScene::EditorScene(const EngineContext &context)
                 context.audio),
       playSceneRenderer_(playMode_.GetSession().GetScene(), context.models,
                          context.render),
-      sceneViewPanel_(context.render) {
+      sceneViewPanel_(context.render),
+      audioPreviewPanel_(context.audioClips, context.audio) {
 }
 
 EditorScene::~EditorScene() = default;
@@ -130,6 +131,7 @@ bool EditorScene::Initialize() {
 	playMode_.SetPreviewCamera(0);
 	inspectorPanel_.Clear();
 	assetsPanel_.Clear();
+	audioPreviewPanel_.Clear();
 
 	// 未接続の保存先も保持し、別のフォルダへ取り込んでしまうことを防ぐ。
 	assets_ = AssetDatabase(assetSources_.GetDirectory());
@@ -241,6 +243,7 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	if (playAction == EditorPlayMode::Action::PLAY && !IsBusy()) {
+		audioPreviewPanel_.Stop();
 		frameRequest_ = FrameRequest::NONE;
 		frameObject_ = 0;
 		FinishEdit();
@@ -539,6 +542,11 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	texturePreviewPanel_.Draw(ui_);
+	if (!wasBusy && !assetsPanel_.GetAudioPreviewRequest().empty()) {
+		audioPreviewPanel_.Open(assetsPanel_.GetAudioPreviewRequest());
+	}
+
+	audioPreviewPanel_.Draw(ui_);
 	const auto requestedTexture =
 	    assetsPanel_.IsTextureClearRequested()
 	        ? std::filesystem::path{}
@@ -1390,6 +1398,7 @@ void EditorScene::Finalize() {
 	}
 
 	texturePreviewPanel_.Clear();
+	audioPreviewPanel_.Clear();
 	performancePanel_.Reset();
 	playStatePanel_.Reset();
 	playSceneReady_ = false;
