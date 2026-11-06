@@ -202,7 +202,7 @@
   <PropertyGroup Label="UserMacros" />
   <!-- 外部ヘッダーとして扱い、ライブラリ側の警告レベルを分ける -->
   <PropertyGroup>
-    <ExternalIncludePath>$(EngineExternalRoot)lua\include;$(EngineExternalRoot)nlohmann\include;$(EngineExternalRoot)gameinput\include;$(EngineExternalRoot)dxc\include;$(EngineExternalRoot)directxtk12\include;$(EngineExternalRoot)assimp\include;$(EngineExternalRoot)imgui\include;$(EngineExternalRoot)directxmath\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>$(EngineExternalRoot)jolt\src;$(EngineExternalRoot)lua\include;$(EngineExternalRoot)nlohmann\include;$(EngineExternalRoot)gameinput\include;$(EngineExternalRoot)dxc\include;$(EngineExternalRoot)directxtk12\include;$(EngineExternalRoot)assimp\include;$(EngineExternalRoot)imgui\include;$(EngineExternalRoot)directxmath\include;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)build\lib\$(Configuration)\</OutDir>
@@ -307,6 +307,1503 @@ exit /b 0</Command>
     <ClInclude Include="include\gameplay\CharacterController.h" />
     <ClInclude Include="include\gameplay\CharacterRuntimeState.h" />
     <ClCompile Include="src\gameplay\CharacterController.cpp" />
+  </ItemGroup>
+  <!-- Jolt PhysicsのCPUソースをEngine内部でビルドする。公開ヘッダーからは参照しない -->
+  <ItemGroup>
+    <ClCompile Include="external\jolt\src\Jolt\AABBTree\AABBTreeBuilder.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\AABBTree\AABBTreeBuilder.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\AABBTree\AABBTreeBuilder.h" />
+    <ClInclude Include="external\jolt\src\Jolt\AABBTree\AABBTreeToBuffer.h" />
+    <ClInclude Include="external\jolt\src\Jolt\AABBTree\NodeCodec\NodeCodecQuadTreeHalfFloat.h" />
+    <ClInclude Include="external\jolt\src\Jolt\AABBTree\TriangleCodec\TriangleCodecIndexed8BitPackSOA4Flags.h" />
+    <ClInclude Include="external\jolt\src\Jolt\ConfigurationString.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Compute\ComputeBuffer.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Compute\ComputeQueue.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Compute\ComputeSystem.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Compute\ComputeSystem.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Compute\ComputeSystem.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Compute\ComputeShader.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\ARMNeon.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\RISCVVector.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\Array.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\Atomics.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\BinaryHeap.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\ByteBuffer.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Core\Color.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Core\Color.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Core\Color.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\Core.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Core\Factory.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Core\Factory.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Core\Factory.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\FixedSizeFreeList.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\FixedSizeFreeList.inl" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\FPControlWord.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\FPException.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\FPFlushDenormals.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\HashCombine.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\HashTable.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\IncludeWindows.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\InsertionSort.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Core\IssueReporting.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Core\IssueReporting.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Core\IssueReporting.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\JobSystem.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\JobSystem.inl" />
+    <ClCompile Include="external\jolt\src\Jolt\Core\JobSystemSingleThreaded.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Core\JobSystemSingleThreaded.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Core\JobSystemSingleThreaded.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Core\JobSystemThreadPool.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Core\JobSystemThreadPool.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Core\JobSystemThreadPool.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Core\JobSystemWithBarrier.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Core\JobSystemWithBarrier.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Core\JobSystemWithBarrier.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Core\LinearCurve.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Core\LinearCurve.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Core\LinearCurve.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\LockFreeHashMap.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\LockFreeHashMap.inl" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\LSANSuppressions.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Core\Memory.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Core\Memory.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Core\Memory.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\Mutex.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\MutexArray.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\NonCopyable.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\ObjectToIDMap.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\Prefetch.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Core\Profiler.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Core\Profiler.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Core\Profiler.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\Profiler.inl" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\QuickSort.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\Reference.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\Result.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Core\RTTI.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Core\RTTI.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Core\RTTI.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\ScopeExit.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Core\Semaphore.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Core\Semaphore.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Core\Semaphore.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\StaticArray.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\STLAlignedAllocator.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\STLAllocator.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\STLLocalAllocator.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\STLTempAllocator.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\StreamIn.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\StreamOut.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\StreamUtils.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\StreamWrapper.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\StridedPtr.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Core\StringTools.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Core\StringTools.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Core\StringTools.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\TempAllocator.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Core\TickCounter.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Core\TickCounter.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Core\TickCounter.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\UnorderedMap.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\UnorderedMapFwd.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\UnorderedSet.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Core\UnorderedSetFwd.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Geometry\AABox.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Geometry\AABox4.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Geometry\ClipPoly.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Geometry\ClosestPoint.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Geometry\ConvexHullBuilder.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Geometry\ConvexHullBuilder.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Geometry\ConvexHullBuilder.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Geometry\ConvexHullBuilder2D.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Geometry\ConvexHullBuilder2D.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Geometry\ConvexHullBuilder2D.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Geometry\ConvexSupport.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Geometry\Ellipse.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Geometry\EPAConvexHullBuilder.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Geometry\EPAPenetrationDepth.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Geometry\GJKClosestPoint.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Geometry\IndexedTriangle.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Geometry\Indexify.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Geometry\Indexify.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Geometry\Indexify.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Geometry\MortonCode.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Geometry\OrientedBox.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Geometry\OrientedBox.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Geometry\OrientedBox.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Geometry\Plane.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Geometry\RayAABox.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Geometry\RayCapsule.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Geometry\RayCylinder.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Geometry\RaySphere.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Geometry\RayTriangle.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Geometry\Sphere.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Geometry\Triangle.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Jolt.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Math\BVec16.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Math\BVec16.inl" />
+    <ClInclude Include="external\jolt\src\Jolt\Math\DMat44.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Math\DMat44.inl" />
+    <ClInclude Include="external\jolt\src\Jolt\Math\Double3.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Math\DVec3.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Math\DVec3.inl" />
+    <ClInclude Include="external\jolt\src\Jolt\Math\DynMatrix.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Math\EigenValueSymmetric.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Math\FindRoot.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Math\Float2.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Math\Float3.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Math\Float4.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Math\GaussianElimination.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Math\HalfFloat.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Math\Mat44.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Math\Mat44.inl" />
+    <ClInclude Include="external\jolt\src\Jolt\Math\Math.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Math\MathTypes.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Math\Matrix.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Math\Quat.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Math\Quat.inl" />
+    <ClInclude Include="external\jolt\src\Jolt\Math\Real.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Math\Swizzle.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Math\Trigonometry.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Math\UVec4.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Math\UVec4.inl" />
+    <ClCompile Include="external\jolt\src\Jolt\Math\Vec3.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Math\Vec3.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Math\Vec3.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Math\Vec3.inl" />
+    <ClInclude Include="external\jolt\src\Jolt\Math\Vec4.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Math\Vec4.inl" />
+    <ClInclude Include="external\jolt\src\Jolt\Math\Vector.h" />
+    <ClInclude Include="external\jolt\src\Jolt\ObjectStream\ObjectStream.h" />
+    <ClInclude Include="external\jolt\src\Jolt\ObjectStream\SerializableAttribute.h" />
+    <ClInclude Include="external\jolt\src\Jolt\ObjectStream\SerializableAttributeEnum.h" />
+    <ClInclude Include="external\jolt\src\Jolt\ObjectStream\SerializableAttributeTyped.h" />
+    <ClCompile Include="external\jolt\src\Jolt\ObjectStream\SerializableObject.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\ObjectStream\SerializableObject.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\ObjectStream\SerializableObject.h" />
+    <ClInclude Include="external\jolt\src\Jolt\ObjectStream\TypeDeclarations.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Body\AllowedDOFs.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Body\Body.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Body\Body.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Body\Body.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Body\Body.inl" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Body\BodyAccess.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Body\BodyActivationListener.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Body\BodyCreationSettings.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Body\BodyCreationSettings.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Body\BodyCreationSettings.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Body\BodyFilter.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Body\BodyID.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Body\BodyInterface.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Body\BodyInterface.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Body\BodyInterface.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Body\BodyLock.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Body\BodyLockInterface.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Body\BodyLockMulti.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Body\BodyManager.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Body\BodyManager.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Body\BodyManager.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Body\BodyPair.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Body\BodyType.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Body\MassProperties.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Body\MassProperties.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Body\MassProperties.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Body\MotionProperties.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Body\MotionProperties.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Body\MotionProperties.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Body\MotionProperties.inl" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Body\MotionQuality.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Body\MotionType.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Character\Character.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Character\Character.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Character\Character.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Character\CharacterBase.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Character\CharacterBase.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Character\CharacterBase.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Character\CharacterID.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Character\CharacterVirtual.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Character\CharacterVirtual.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Character\CharacterVirtual.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\AABoxCast.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\ActiveEdgeMode.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\ActiveEdges.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\BackFaceMode.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\BroadPhase\BroadPhase.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\BroadPhase\BroadPhase.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\BroadPhase\BroadPhase.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\BroadPhase\BroadPhaseBruteForce.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\BroadPhase\BroadPhaseBruteForce.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\BroadPhase\BroadPhaseBruteForce.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\BroadPhase\BroadPhaseLayer.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\BroadPhase\BroadPhaseLayerInterfaceMask.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\BroadPhase\BroadPhaseLayerInterfaceTable.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\BroadPhase\BroadPhaseQuadTree.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\BroadPhase\BroadPhaseQuadTree.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\BroadPhase\BroadPhaseQuadTree.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\BroadPhase\BroadPhaseQuery.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\BroadPhase\ObjectVsBroadPhaseLayerFilterMask.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\BroadPhase\ObjectVsBroadPhaseLayerFilterTable.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\BroadPhase\QuadTree.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\BroadPhase\QuadTree.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\BroadPhase\QuadTree.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\CastConvexVsTriangles.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\CastConvexVsTriangles.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\CastConvexVsTriangles.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\CastResult.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\CastSphereVsTriangles.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\CastSphereVsTriangles.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\CastSphereVsTriangles.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\CollectFacesMode.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\CollideConvexVsTriangles.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\CollideConvexVsTriangles.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\CollideConvexVsTriangles.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\CollidePointResult.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\CollideShape.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\CollideShapeVsShapePerLeaf.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\CollideSoftBodyVertexIterator.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\CollideSoftBodyVerticesVsTriangles.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\CollideSphereVsTriangles.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\CollideSphereVsTriangles.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\CollideSphereVsTriangles.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\CollisionCollector.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\CollisionCollectorImpl.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\CollisionDispatch.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\CollisionDispatch.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\CollisionDispatch.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\CollisionGroup.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\CollisionGroup.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\CollisionGroup.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\ContactListener.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\EstimateCollisionResponse.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\EstimateCollisionResponse.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\EstimateCollisionResponse.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\GroupFilter.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\GroupFilter.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\GroupFilter.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\GroupFilterTable.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\GroupFilterTable.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\GroupFilterTable.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\InternalEdgeRemovingCollector.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\ManifoldBetweenTwoFaces.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\ManifoldBetweenTwoFaces.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\ManifoldBetweenTwoFaces.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\NarrowPhaseQuery.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\NarrowPhaseQuery.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\NarrowPhaseQuery.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\NarrowPhaseStats.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\NarrowPhaseStats.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\NarrowPhaseStats.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\ObjectLayer.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\ObjectLayerPairFilterMask.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\ObjectLayerPairFilterTable.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\PhysicsMaterial.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\PhysicsMaterial.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\PhysicsMaterial.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\PhysicsMaterialSimple.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\PhysicsMaterialSimple.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\PhysicsMaterialSimple.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\RayCast.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\Shape\BoxShape.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\Shape\BoxShape.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\Shape\BoxShape.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\Shape\CapsuleShape.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\Shape\CapsuleShape.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\Shape\CapsuleShape.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\Shape\CompoundShape.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\Shape\CompoundShape.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\Shape\CompoundShape.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\Shape\CompoundShapeVisitors.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\Shape\ConvexHullShape.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\Shape\ConvexHullShape.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\Shape\ConvexHullShape.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\Shape\ConvexShape.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\Shape\ConvexShape.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\Shape\ConvexShape.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\Shape\CylinderShape.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\Shape\CylinderShape.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\Shape\CylinderShape.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\Shape\DecoratedShape.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\Shape\DecoratedShape.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\Shape\DecoratedShape.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\Shape\EmptyShape.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\Shape\EmptyShape.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\Shape\EmptyShape.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\Shape\GetTrianglesContext.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\Shape\HeightFieldShape.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\Shape\HeightFieldShape.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\Shape\HeightFieldShape.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\Shape\MeshShape.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\Shape\MeshShape.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\Shape\MeshShape.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\Shape\MutableCompoundShape.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\Shape\MutableCompoundShape.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\Shape\MutableCompoundShape.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\Shape\OffsetCenterOfMassShape.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\Shape\OffsetCenterOfMassShape.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\Shape\OffsetCenterOfMassShape.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\Shape\PlaneShape.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\Shape\PlaneShape.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\Shape\PlaneShape.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\Shape\PolyhedronSubmergedVolumeCalculator.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\Shape\RotatedTranslatedShape.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\Shape\RotatedTranslatedShape.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\Shape\RotatedTranslatedShape.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\Shape\ScaledShape.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\Shape\ScaledShape.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\Shape\ScaledShape.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\Shape\ScaleHelpers.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\Shape\Shape.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\Shape\Shape.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\Shape\Shape.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\Shape\SphereShape.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\Shape\SphereShape.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\Shape\SphereShape.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\Shape\StaticCompoundShape.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\Shape\StaticCompoundShape.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\Shape\StaticCompoundShape.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\Shape\SubShapeID.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\Shape\SubShapeIDPair.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\Shape\TaperedCapsuleShape.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\Shape\TaperedCapsuleShape.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\Shape\TaperedCapsuleShape.gliffy" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\Shape\TaperedCapsuleShape.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\Shape\TaperedCylinderShape.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\Shape\TaperedCylinderShape.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\Shape\TaperedCylinderShape.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\Shape\TriangleShape.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\Shape\TriangleShape.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\Shape\TriangleShape.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\ShapeCast.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\ShapeFilter.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\SimShapeFilter.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\SimShapeFilterWrapper.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\SortReverseAndStore.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\TransformedShape.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Collision\TransformedShape.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\TransformedShape.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\CalculateSolverSteps.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Constraints\ConeConstraint.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Constraints\ConeConstraint.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\ConeConstraint.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Constraints\Constraint.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Constraints\Constraint.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\Constraint.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Constraints\ConstraintManager.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Constraints\ConstraintManager.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\ConstraintManager.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\ConstraintPart\AngleConstraintPart.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\ConstraintPart\AngularFrictionConstraintPart.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\ConstraintPart\AxisConstraintPart.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\ConstraintPart\ContactConstraintPart.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\ConstraintPart\DualAxisConstraintPart.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\ConstraintPart\GearConstraintPart.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\ConstraintPart\HingeRotationConstraintPart.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\ConstraintPart\IndependentAxisConstraintPart.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\ConstraintPart\PointConstraintPart.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\ConstraintPart\RackAndPinionConstraintPart.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\ConstraintPart\RotationEulerConstraintPart.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\ConstraintPart\RotationQuatConstraintPart.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\ConstraintPart\SpringPart.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\ConstraintPart\SwingTwistConstraintPart.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Constraints\ContactConstraintManager.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Constraints\ContactConstraintManager.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\ContactConstraintManager.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Constraints\DistanceConstraint.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Constraints\DistanceConstraint.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\DistanceConstraint.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Constraints\FixedConstraint.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Constraints\FixedConstraint.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\FixedConstraint.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Constraints\GearConstraint.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Constraints\GearConstraint.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\GearConstraint.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Constraints\HingeConstraint.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Constraints\HingeConstraint.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\HingeConstraint.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Constraints\MotorSettings.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Constraints\MotorSettings.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\MotorSettings.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Constraints\PathConstraint.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Constraints\PathConstraint.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\PathConstraint.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Constraints\PathConstraintPath.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Constraints\PathConstraintPath.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\PathConstraintPath.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Constraints\PathConstraintPathHermite.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Constraints\PathConstraintPathHermite.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\PathConstraintPathHermite.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Constraints\PointConstraint.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Constraints\PointConstraint.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\PointConstraint.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Constraints\PulleyConstraint.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Constraints\PulleyConstraint.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\PulleyConstraint.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Constraints\RackAndPinionConstraint.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Constraints\RackAndPinionConstraint.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\RackAndPinionConstraint.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Constraints\SixDOFConstraint.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Constraints\SixDOFConstraint.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\SixDOFConstraint.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Constraints\SliderConstraint.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Constraints\SliderConstraint.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\SliderConstraint.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Constraints\SpringSettings.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Constraints\SpringSettings.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\SpringSettings.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Constraints\SwingTwistConstraint.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Constraints\SwingTwistConstraint.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\SwingTwistConstraint.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Constraints\TwoBodyConstraint.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Constraints\TwoBodyConstraint.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Constraints\TwoBodyConstraint.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\DeterminismLog.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\DeterminismLog.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\DeterminismLog.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\EActivation.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\EPhysicsUpdateError.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Hair\Hair.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Hair\Hair.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Hair\Hair.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Hair\HairSettings.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Hair\HairSettings.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Hair\HairSettings.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Hair\HairShaders.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Hair\HairShaders.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Hair\HairShaders.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Hair\RegisterHair.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Hair\RegisterHair.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Hair\RegisterHair.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\IslandBuilder.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\IslandBuilder.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\IslandBuilder.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\LargeIslandSplitter.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\LargeIslandSplitter.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\LargeIslandSplitter.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\PhysicsLock.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\PhysicsScene.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\PhysicsScene.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\PhysicsScene.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\PhysicsSettings.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\PhysicsStepListener.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\PhysicsSystem.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\PhysicsSystem.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\PhysicsSystem.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\PhysicsUpdateContext.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\PhysicsUpdateContext.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\PhysicsUpdateContext.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Ragdoll\Ragdoll.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Ragdoll\Ragdoll.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Ragdoll\Ragdoll.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\SoftBody\SoftBodyContactListener.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\SoftBody\SoftBodyCreationSettings.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\SoftBody\SoftBodyCreationSettings.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\SoftBody\SoftBodyCreationSettings.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\SoftBody\SoftBodyManifold.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\SoftBody\SoftBodyMotionProperties.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\SoftBody\SoftBodyMotionProperties.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\SoftBody\SoftBodyMotionProperties.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\SoftBody\SoftBodyShape.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\SoftBody\SoftBodyShape.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\SoftBody\SoftBodyShape.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\SoftBody\SoftBodySharedSettings.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\SoftBody\SoftBodySharedSettings.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\SoftBody\SoftBodySharedSettings.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\SoftBody\SoftBodyUpdateContext.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\SoftBody\SoftBodyVertex.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Physics\StateRecorder.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\StateRecorderImpl.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\StateRecorderImpl.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\StateRecorderImpl.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Vehicle\MotorcycleController.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Vehicle\MotorcycleController.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Vehicle\MotorcycleController.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Vehicle\TrackedVehicleController.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Vehicle\TrackedVehicleController.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Vehicle\TrackedVehicleController.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Vehicle\VehicleAntiRollBar.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Vehicle\VehicleAntiRollBar.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Vehicle\VehicleAntiRollBar.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Vehicle\VehicleCollisionTester.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Vehicle\VehicleCollisionTester.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Vehicle\VehicleCollisionTester.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Vehicle\VehicleConstraint.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Vehicle\VehicleConstraint.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Vehicle\VehicleConstraint.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Vehicle\VehicleController.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Vehicle\VehicleController.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Vehicle\VehicleController.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Vehicle\VehicleDifferential.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Vehicle\VehicleDifferential.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Vehicle\VehicleDifferential.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Vehicle\VehicleEngine.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Vehicle\VehicleEngine.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Vehicle\VehicleEngine.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Vehicle\VehicleTrack.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Vehicle\VehicleTrack.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Vehicle\VehicleTrack.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Vehicle\VehicleTransmission.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Vehicle\VehicleTransmission.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Vehicle\VehicleTransmission.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Vehicle\Wheel.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Vehicle\Wheel.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Vehicle\Wheel.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Physics\Vehicle\WheeledVehicleController.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Physics\Vehicle\WheeledVehicleController.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Physics\Vehicle\WheeledVehicleController.h" />
+    <ClCompile Include="external\jolt\src\Jolt\RegisterTypes.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\RegisterTypes.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\RegisterTypes.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Renderer\DebugRenderer.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Renderer\DebugRenderer.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Renderer\DebugRenderer.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Renderer\DebugRendererPlayback.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Renderer\DebugRendererPlayback.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Renderer\DebugRendererPlayback.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Renderer\DebugRendererRecorder.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Renderer\DebugRendererRecorder.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Renderer\DebugRendererRecorder.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Renderer\DebugRendererSimple.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Renderer\DebugRendererSimple.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Renderer\DebugRendererSimple.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Skeleton\SkeletalAnimation.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Skeleton\SkeletalAnimation.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Skeleton\SkeletalAnimation.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Skeleton\Skeleton.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Skeleton\Skeleton.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Skeleton\Skeleton.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Skeleton\SkeletonMapper.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Skeleton\SkeletonMapper.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Skeleton\SkeletonMapper.h" />
+    <ClCompile Include="external\jolt\src\Jolt\Skeleton\SkeletonPose.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\Skeleton\SkeletonPose.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\Skeleton\SkeletonPose.h" />
+    <ClCompile Include="external\jolt\src\Jolt\TriangleSplitter\TriangleSplitter.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\TriangleSplitter\TriangleSplitter.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\TriangleSplitter\TriangleSplitter.h" />
+    <ClCompile Include="external\jolt\src\Jolt\TriangleSplitter\TriangleSplitterBinning.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\TriangleSplitter\TriangleSplitterBinning.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\TriangleSplitter\TriangleSplitterBinning.h" />
+    <ClCompile Include="external\jolt\src\Jolt\TriangleSplitter\TriangleSplitterMean.cpp">
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ObjectFileName>$(IntDir)jolt\TriangleSplitter\TriangleSplitterMean.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="external\jolt\src\Jolt\TriangleSplitter\TriangleSplitterMean.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="external\jolt\src\Jolt\ObjectStream\GetPrimitiveTypeOfType.h" />
+    <ClInclude Include="external\jolt\src\Jolt\ObjectStream\ObjectStreamTypes.h" />
+    <ClInclude Include="external\jolt\src\Jolt\Shaders\HairStructs.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="external\jolt\src\Jolt\Shaders\ShaderCore.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

@@ -1,0 +1,10 @@
+{
+  "name": "Jolt Physics",
+  "version": "5.6.0",
+  "source": "https://github.com/jrouwe/JoltPhysics/tree/v5.6.0",
+  "archive": "https://codeload.github.com/jrouwe/JoltPhysics/zip/refs/tags/v5.6.0",
+  "archiveSha256": "0af9beea51637ef805e624fe838ea2870f7b68cd48cbe1615c853bd9bcf4f1d7",
+  "license": "../licenses/jolt-LICENSE.txt",
+  "selection": "Core C++ sources and headers listed in Jolt/Jolt.cmake plus their required headers; optional GPU backends, samples and tests not copied",
+  "build": "Compiled by Engine.vcxproj; x64 SSE2, single precision, 16-bit object layers, CRT /MDd or /MD; object stream, debug renderer, GPU compute, FPE and profiling disabled; vendor files unchanged"
+}
