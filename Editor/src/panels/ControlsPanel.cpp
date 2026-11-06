@@ -874,6 +874,19 @@ void ControlsPanel::Draw() {
 	         "invalid "
 	         "clips and duplicate listeners; game export includes referenced "
 	         "WAV files."},
+	        {"Inspector > Add Component > Spot Light",
+	         "Aim the object's local +Z axis, then set Color, Intensity, Range "
+	         "and Inner / Outer Angle. Angles are the full cone in degrees. "
+	         "Inside the inner cone the light is full strength; between the "
+	         "cones it fades smoothly, and outside the outer cone it is off. "
+	         "Equal angles make a hard edge. Range is a world distance. Parent "
+	         "rotation and activity apply; scaling does not change the range "
+	         "or cone angles. This light does not cast shadows. Up to 32 Spot "
+	         "Lights may be active per scene, independently of Point Lights. "
+	         "Drags form one Undo entry; Reset, Remove and component creation "
+	         "also support Undo/Redo. Play settings are read-only. Saved "
+	         "scenes "
+	         "and exported games retain the light."},
 	        {"Inspector > Add Component > Point Light",
 	         "Add a Point Light to an object, then edit Color, Intensity and "
 	         "Range. "

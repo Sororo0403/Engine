@@ -2,6 +2,7 @@
 #include "appearance/ColorTintInspector.h"
 #include "appearance/TextureSlotInspector.h"
 #include "lighting/PointLightInspector.h"
+#include "lighting/SpotLightInspector.h"
 #include "scene/SceneActivity.h"
 
 #include "assets/AssetDragDrop.h"
@@ -432,6 +433,11 @@ bool InspectorPanel::Draw(
 			    history.SetPointLight(inspectedObjectId, PointLightComponent{});
 		}
 
+		if (ui.MenuItem("Spot Light", nullptr, !object->spotLight)) {
+			changed |=
+			    history.SetSpotLight(inspectedObjectId, SpotLightComponent{});
+		}
+
 		if (ui.MenuItem("Color Tint", nullptr, !object->colorTint)) {
 			changed |= history.SetColorTint(inspectedObjectId, ColorTint{});
 		}
@@ -578,6 +584,8 @@ bool InspectorPanel::Draw(
 
 	changed |=
 	    PointLightInspector{}.Draw(ui, inspectedObjectId, *object, history);
+	changed |=
+	    SpotLightInspector{}.Draw(ui, inspectedObjectId, *object, history);
 
 	changed |= TriggerActionsInspector{}.Draw(ui, scene, inspectedObjectId,
 	                                          *object, history);
@@ -773,6 +781,7 @@ InspectorPanel::DrawReadOnly(const ImGuiSystem &ui, const Scene &scene,
 	audioInspector_.DrawReadOnly(ui, *object);
 
 	PointLightInspector{}.DrawReadOnly(ui, *object);
+	SpotLightInspector{}.DrawReadOnly(ui, *object);
 
 	TriggerActionsInspector{}.DrawReadOnly(ui, scene, *object);
 
