@@ -1,6 +1,9 @@
 #include "graphics/model/ModelLoader.h"
+#include "GltfAnimationMetadata.h"
+#include "ModelAnimationLoader.h"
 #include "core/Logger.h"
 #include "platform/windows/PathUtils.h"
+#include <memory>
 
 #include <assimp/DefaultIOSystem.h>
 #include <assimp/Importer.hpp>
@@ -113,6 +116,15 @@ bool ModelLoader::Load(const std::filesystem::path &filePath,
 	    std::filesystem::absolute(filePath).lexically_normal();
 	const std::string path = PathUtils::ToUtf8(absolutePath);
 
+	const bool gltf = PathUtils::HasExtension(filePath, ".gltf") ||
+	                  PathUtils::HasExtension(filePath, ".glb");
+	GltfAnimationMetadata metadata;
+	std::string metadataError;
+	if (gltf && !metadata.Read(absolutePath, metadataError)) {
+		Logger::Error(metadataError);
+		return false;
+	}
+
 	Assimp::Importer importer;
 
 	if (PathUtils::HasExtension(filePath, ".gltf") ||
@@ -121,10 +133,10 @@ bool ModelLoader::Load(const std::filesystem::path &filePath,
 		importer.SetIOHandler(new GltfIOSystem(absolutePath));
 	}
 
-	const unsigned int flags =
-	    aiProcess_Triangulate | aiProcess_SortByPType |
-	    aiProcess_JoinIdenticalVertices | aiProcess_GenNormals |
-	    aiProcess_PreTransformVertices | aiProcess_ConvertToLeftHanded;
+	const unsigned int flags = aiProcess_Triangulate | aiProcess_SortByPType |
+	                           aiProcess_JoinIdenticalVertices |
+	                           aiProcess_GenNormals |
+	                           aiProcess_ConvertToLeftHanded;
 
 	const aiScene *scene = importer.ReadFile(path, flags);
 
@@ -138,6 +150,31 @@ bool ModelLoader::Load(const std::filesystem::path &filePath,
 
 	// 全メッシュの読み込みに成功してから呼び出し元へ反映する
 	ModelData result;
+
+	// 階層を焼き込む前に、Importerから独立した再生用データを保持する。
+	const bool animated =
+	    scene->HasAnimations() ||
+	    std::any_of(
+	        scene->mMeshes, scene->mMeshes + scene->mNumMeshes,
+	        [](const aiMesh *mesh) { return mesh && mesh->HasBones(); });
+	if (animated) {
+		auto animation = std::make_shared<ModelAnimationData>();
+		std::string error;
+		if (!ModelAnimationLoader::Read(*scene, *animation, error,
+		                                gltf ? &metadata : nullptr)) {
+			Logger::Error(std::format(
+			    "モデルのアニメーションを読み込めません。ファイル={}、詳細={}",
+			    path, error));
+			return false;
+		}
+		result.animation = std::move(animation);
+	}
+	// 既存の静止描画・選択判定は、従来と同じ事前変換済みメッシュを使用する。
+	scene = importer.ApplyPostProcessing(aiProcess_PreTransformVertices);
+	if (!scene || !scene->HasMeshes()) {
+		Logger::Error("モデルの静止メッシュを準備できません。");
+		return false;
+	}
 
 	// 材質番号が変わらないよう、元の順番で全材質を保存する
 	for (unsigned int i = 0; i < scene->mNumMaterials; ++i) {

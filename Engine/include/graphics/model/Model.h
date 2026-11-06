@@ -13,6 +13,7 @@
 #include <vector>
 
 struct ModelData;
+struct ModelAnimationData;
 struct Ray;
 
 /// <summary>
@@ -50,6 +51,12 @@ class Model {
 	/// </summary>
 	/// <returns>メッシュ数。未初期化の場合は0</returns>
 	std::size_t GetMeshCount() const;
+
+	/// <summary>
+	/// ファイルから保持した骨・クリップの共有参照を取得する
+	/// </summary>
+	/// <returns>変更しない再生用データ。静止モデルまたは未初期化は空</returns>
+	const std::shared_ptr<const ModelAnimationData> &GetAnimationData() const;
 
 	/// <summary>
 	/// 指定したメッシュを取得する
@@ -134,6 +141,7 @@ class Model {
 	DirectX::BoundingBox bounds_{};
 
 	std::vector<MeshPart> parts_;
+	std::shared_ptr<const ModelAnimationData> animation_;
 
 	// 材質スロットの元の名前と、参照するメッシュの数
 	std::vector<std::string> materialNames_;

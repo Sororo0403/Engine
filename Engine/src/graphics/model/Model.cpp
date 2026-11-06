@@ -1,4 +1,5 @@
 #include "graphics/model/Model.h"
+#include "animation/ModelAnimationData.h"
 #include "core/Logger.h"
 #include "graphics/model/ModelData.h"
 #include "math/MathUtils.h"
@@ -32,6 +33,13 @@ bool Model::Initialize(ID3D12Device *device, ID3D12CommandQueue *commandQueue,
 	}
 
 	try {
+		if (data.animation) {
+			std::string error;
+			if (!data.animation->IsValid(error)) {
+				Logger::Error(error);
+				return false;
+			}
+		}
 		// 既定材質も独立した共有リソースとして作成し、モデルは参照だけを持つ。
 		defaultMaterials_.reserve(data.materials.size());
 		materialNames_.reserve(data.materials.size());
@@ -63,6 +71,8 @@ bool Model::Initialize(ID3D12Device *device, ID3D12CommandQueue *commandQueue,
 		Finalize();
 		return false;
 	}
+
+	animation_ = data.animation;
 
 	Logger::Info(std::format("Modelを初期化しました。メッシュ数={}、材質数={}",
 	                         GetMeshCount(), GetMaterialCount()));
@@ -126,6 +136,11 @@ bool Model::CreateMeshes(ID3D12Device *device, const ModelData &data) {
 	}
 
 	return true;
+}
+
+const std::shared_ptr<const ModelAnimationData> &
+Model::GetAnimationData() const {
+	return animation_;
 }
 
 std::size_t Model::GetMeshCount() const {
@@ -237,6 +252,7 @@ void Model::Finalize() {
 	}
 
 	parts_.clear();
+	animation_.reset();
 
 	bounds_ = {};
 

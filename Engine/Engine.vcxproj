@@ -2297,4 +2297,16 @@ exit /b 0</Command>
     <None Include="resources\shaders\particles\Particle.PS.hlsl" />
     <ClCompile Include="src\scripting\LuaParticleBindings.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\animation\ModelAnimationData.h" />
+    <ClInclude Include="include\animation\ModelAnimationSampler.h" />
+    <ClCompile Include="src\animation\ModelAnimationData.cpp" />
+    <ClCompile Include="src\animation\ModelAnimationSampler.cpp" />
+    <ClInclude Include="src\graphics\model\ModelAnimationLoader.h" />
+    <ClCompile Include="src\graphics\model\ModelAnimationLoader.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\graphics\model\GltfAnimationMetadata.h" />
+    <ClCompile Include="src\graphics\model\GltfAnimationMetadata.cpp" />
+  </ItemGroup>
 </Project>

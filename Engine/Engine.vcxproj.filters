@@ -2352,4 +2352,16 @@
     <None Include="resources\shaders\particles\Particle.PS.hlsl" />
     <ClCompile Include="src\scripting\LuaParticleBindings.cpp"><Filter>src\scripting</Filter></ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\animation\ModelAnimationData.h"><Filter>include\animation</Filter></ClInclude>
+    <ClInclude Include="include\animation\ModelAnimationSampler.h"><Filter>include\animation</Filter></ClInclude>
+    <ClCompile Include="src\animation\ModelAnimationData.cpp"><Filter>src\animation</Filter></ClCompile>
+    <ClCompile Include="src\animation\ModelAnimationSampler.cpp"><Filter>src\animation</Filter></ClCompile>
+    <ClInclude Include="src\graphics\model\ModelAnimationLoader.h"><Filter>src\graphics\model</Filter></ClInclude>
+    <ClCompile Include="src\graphics\model\ModelAnimationLoader.cpp"><Filter>src\graphics\model</Filter></ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\graphics\model\GltfAnimationMetadata.h"><Filter>src\graphics\model</Filter></ClInclude>
+    <ClCompile Include="src\graphics\model\GltfAnimationMetadata.cpp"><Filter>src\graphics\model</Filter></ClCompile>
+  </ItemGroup>
 </Project>

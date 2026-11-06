@@ -10,6 +10,7 @@
 #include <string_view>
 
 class D3D12Graphics;
+struct ModelAnimationData;
 
 /// <summary>
 /// モデルの読み込み・キャッシュ・共有リソースを管理する
@@ -72,6 +73,14 @@ class ModelManager {
 	/// <param name="model">この描画基盤で読み込んだモデル</param>
 	/// <returns>有効なスロット数。無効なハンドルは0</returns>
 	std::size_t GetMaterialCount(const ModelHandle &model) const;
+
+	/// <summary>
+	/// 読み込み済みモデルの骨・クリップを、GPUから独立した共有参照で取得する
+	/// </summary>
+	/// <param name="model">同じ描画基盤で読み込んだモデル</param>
+	/// <returns>変更しない再生用データ。静止モデル・無効な参照・異なる基盤は空</returns>
+	std::shared_ptr<const ModelAnimationData>
+	GetAnimationData(const ModelHandle &model) const;
 
 	/// <summary>
 	/// モデルに記録された材質スロットの名前を取得する

@@ -8,12 +8,12 @@ struct aiScene;
 struct aiMaterial;
 
 /// <summary>
-/// 静止モデルの形状と材質番号を読み込む
+/// 静止表示用の形状・材質と、存在する場合はモデル内の骨・クリップを読み込む
 /// </summary>
 class ModelLoader {
   public:
 	/// <summary>
-	/// モデル内の三角形メッシュを、それぞれの材質番号とともに読み込む
+	/// 三角形・材質と、事前変換から分離した骨・ノード・再生キーを読み込む
 	/// </summary>
 	/// <param name="filePath">読み込むモデルファイルのパス</param>
 	/// <param name="modelData">読み込み結果。失敗した場合は変更しない</param>

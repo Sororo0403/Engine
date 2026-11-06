@@ -6,7 +6,10 @@
 #include <DirectXMath.h>
 #include <cstdint>
 #include <filesystem>
+#include <memory>
 #include <string>
+
+struct ModelAnimationData;
 #include <vector>
 
 /// <summary>
@@ -37,4 +40,7 @@ struct ModelMaterialData {
 struct ModelData {
 	std::vector<ModelMeshData> meshes;
 	std::vector<ModelMaterialData> materials;
+
+	// 骨・ノードの動きがある場合だけ保持する。静止表示用の焼き込み済み形状とは分離する
+	std::shared_ptr<const ModelAnimationData> animation;
 };
