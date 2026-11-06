@@ -41,7 +41,7 @@ class SceneAudioPlayer {
 	           const SceneAudioActions &actions = {});
 
 	/// <summary>
-	/// 成功したシミュレーションの有効状態・ワールド位置・一時停止状態を音へ反映する
+	/// 成功したシミュレーションの有効状態・ワールド位置・一時停止状態を音へ反映する。音量だけの変更では再生位置と停止状態を保持する
 	/// </summary>
 	/// <param name="camera">現在の描画姿勢</param>
 	/// <param name="paused">音声の再生位置を止めるか。1フレーム実行中もtrueを渡す</param>

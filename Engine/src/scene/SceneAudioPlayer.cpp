@@ -83,8 +83,11 @@ bool SceneAudioPlayer::Synchronize(const SceneAudioFrame &frame, bool paused,
 			current = source.id;
 			const auto old = entries_.find(source.id);
 			if (!restart && old != entries_.end() &&
-			    old->second.component == source.component) {
+			    old->second.component.clipPath == source.component.clipPath &&
+			    old->second.component.loop == source.component.loop &&
+			    old->second.component.spatial == source.component.spatial) {
 				next.emplace(source.id, old->second);
+				next.at(source.id).component = source.component;
 				next.at(source.id).playback = source.playback;
 				continue;
 			}
@@ -184,6 +187,15 @@ bool SceneAudioPlayer::Synchronize(const SceneAudioFrame &frame, bool paused,
 				                         settings.spatial, paused));
 			}
 
+			// 音量だけの変更では再生位置・停止状態を維持する。自然終了との競合は許容する。
+			if (entry.handle &&
+			    !audio_.SetVolume(entry.handle, source.playback.volume) &&
+			    audio_.GetState(entry.handle) != AudioPlaybackState::STOPPED) {
+				error = "The scene Audio Source volume could not be applied.";
+				if (invalidObject)
+					*invalidObject = current;
+				return false;
+			}
 			if (entry.handle && !(paused ? audio_.Pause(entry.handle)
 			                             : audio_.Resume(entry.handle))) {
 				// 自然終了が状態確認と操作の間に起きた場合は、その音だけ終了として扱う。
