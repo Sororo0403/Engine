@@ -78,7 +78,8 @@ bool Mesh::Initialize(ID3D12Device *device, std::span<const Vertex> vertices,
 	return true;
 }
 
-void Mesh::Draw(ID3D12GraphicsCommandList *commandList) const {
+void Mesh::Draw(ID3D12GraphicsCommandList *commandList,
+                const D3D12_VERTEX_BUFFER_VIEW *weights) const {
 	if (!commandList || !vertexBuffer_ || !indexBuffer_) {
 		Logger::Error("Mesh::Draw: 引数が無効、または未初期化です。");
 		return;
@@ -86,7 +87,9 @@ void Mesh::Draw(ID3D12GraphicsCommandList *commandList) const {
 
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
+	const D3D12_VERTEX_BUFFER_VIEW views[2]{
+	    vertexBufferView_, weights ? *weights : D3D12_VERTEX_BUFFER_VIEW{}};
+	commandList->IASetVertexBuffers(0, weights ? 2 : 1, views);
 	commandList->IASetIndexBuffer(&indexBufferView_);
 
 	commandList->DrawIndexedInstanced(indexCount_, 1, 0, 0, 0);

@@ -8,12 +8,14 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
 
 struct ModelData;
 struct ModelAnimationData;
+struct ModelAnimationPose;
 struct Ray;
 
 /// <summary>
@@ -33,6 +35,13 @@ class Model {
 
 		// モデルのローカル座標で表す外接ボックス
 		DirectX::BoundingBox bounds;
+	};
+
+	struct AnimationPart {
+		Mesh mesh;
+		Microsoft::WRL::ComPtr<ID3D12Resource> weights;
+		D3D12_VERTEX_BUFFER_VIEW weightsView{};
+		std::vector<std::optional<DirectX::BoundingBox>> bounds;
 	};
 
   public:
@@ -57,6 +66,40 @@ class Model {
 	/// </summary>
 	/// <returns>変更しない再生用データ。静止モデルまたは未初期化は空</returns>
 	const std::shared_ptr<const ModelAnimationData> &GetAnimationData() const;
+
+	/// <summary>
+	/// 事前変換していない、再生用の共有メッシュを取得する
+	/// </summary>
+	/// <param name="index">再生データのメッシュ番号</param>
+	/// <returns>モデルの寿命まで有効なメッシュ</returns>
+	const Mesh &GetAnimationMesh(std::size_t index) const;
+
+	/// <summary>
+	/// 元の再生メッシュに対応する、8本分の重みの共有ビューを取得する
+	/// </summary>
+	/// <param name="index">再生データのメッシュ番号</param>
+	/// <returns>モデルの寿命まで有効な重みのビュー</returns>
+	const D3D12_VERTEX_BUFFER_VIEW &
+	GetAnimationWeights(std::size_t index) const;
+
+	/// <summary>
+	/// 骨に割り当てられた頂点の範囲を変換し、スキン形状を確実に含むボックスを求める
+	/// </summary>
+	/// <param name="pose">同じモデルのノードと骨の行列</param>
+	/// <param name="corners">成功時に置き換えるモデル座標の8頂点</param>
+	/// <returns>true:成功 false:再生データなし、姿勢・結果が無効</returns>
+	bool GetAnimationBounds(const ModelAnimationPose &pose,
+	                        std::array<DirectX::XMFLOAT3, 8> &corners) const;
+
+	/// <summary>
+	/// 指定姿勢の三角形をCPU評価し、クリックした時だけスキン形状を調べる
+	/// </summary>
+	/// <param name="pose">同じモデルのノードと骨の行列</param>
+	/// <param name="ray">モデル座標の有限なレイ</param>
+	/// <param name="distance">交差した時だけ置き換える距離</param>
+	/// <returns>true:交差 false:交差なし、または姿勢が無効</returns>
+	bool RaycastAnimation(const ModelAnimationPose &pose, const Ray &ray,
+	                      float &distance) const;
 
 	/// <summary>
 	/// 指定したメッシュを取得する
@@ -142,6 +185,14 @@ class Model {
 
 	std::vector<MeshPart> parts_;
 	std::shared_ptr<const ModelAnimationData> animation_;
+	std::vector<AnimationPart> animationParts_;
+
+	/// <summary>
+	/// 再生用の共有頂点・重みと、骨ごとの頂点範囲を準備する
+	/// </summary>
+	/// <param name="device">同じモデルの描画デバイス</param>
+	/// <returns>true:成功または静止モデル false:作成失敗</returns>
+	bool CreateAnimationMeshes(ID3D12Device *device);
 
 	// 材質スロットの元の名前と、参照するメッシュの数
 	std::vector<std::string> materialNames_;

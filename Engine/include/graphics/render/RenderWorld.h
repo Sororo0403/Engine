@@ -25,6 +25,7 @@ class MeshRenderer;
 class RenderSystem;
 class DebugLineRenderer;
 struct Ray;
+struct ModelAnimationPose;
 
 /// <summary>
 /// シーンごとの描画物体・カメラ・ライトを管理する
@@ -49,6 +50,15 @@ class RenderWorld {
 	/// <param name="handle">確認するハンドル</param>
 	/// <returns>true:物体あり false:未設定、削除済み、または別ワールド</returns>
 	bool Contains(RenderObjectHandle handle) const;
+
+	/// <summary>
+	/// 描画物体だけの骨・ノード姿勢を設定し、次のUpdateで色・影・選択へ反映する
+	/// </summary>
+	/// <param name="handle">このワールドの描画物体</param>
+	/// <param name="pose">同じ共有モデルの評価結果。nullptrは静止描画へ戻す</param>
+	/// <returns>true:成功 false:対象・姿勢・GPU準備が無効。成功後はUpdateが必要</returns>
+	bool SetAnimationPose(RenderObjectHandle handle,
+	                      const ModelAnimationPose *pose);
 
 	/// <summary>
 	/// 描画物体を削除する。GPUの利用完了後、描画命令の記録前に呼び出す

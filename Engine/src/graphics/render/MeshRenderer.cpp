@@ -15,13 +15,38 @@
 #include <iterator>
 #include <string>
 
+namespace {
+const D3D12_INPUT_ELEMENT_DESC kSkinnedLayout[]{
+    {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(Vertex, position),
+     D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+    {"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, offsetof(Vertex, color),
+     D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+    {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(Vertex, texcoord),
+     D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+    {"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(Vertex, normal),
+     D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+    {"BLENDINDICES", 0, DXGI_FORMAT_R32G32B32A32_UINT, 1, 0,
+     D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+    {"BLENDINDICES", 1, DXGI_FORMAT_R32G32B32A32_UINT, 1, 16,
+     D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+    {"BLENDWEIGHT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32,
+     D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+    {"BLENDWEIGHT", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48,
+     D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}};
+static_assert(sizeof(ModelVertexWeights) == 64 &&
+              offsetof(ModelVertexWeights, weights) == 32);
+} // namespace
+
 bool MeshRenderer::Initialize(ID3D12Device *device, IDxcBlob *vertexShader,
                               IDxcBlob *pixelShader,
                               DXGI_FORMAT renderTargetFormat,
                               DXGI_FORMAT depthStencilFormat,
-                              IDxcBlob *shadowVertexShader) {
+                              IDxcBlob *shadowVertexShader,
+                              IDxcBlob *skinnedVertexShader,
+                              IDxcBlob *skinnedShadowShader) {
 	if (!device || !vertexShader || !pixelShader || !shadowVertexShader ||
-	    rootSignature_ || pipelineState_) {
+	    rootSignature_ || pipelineState_ ||
+	    bool(skinnedVertexShader) != bool(skinnedShadowShader)) {
 		Logger::Error(
 		    "MeshRenderer::Initialize: 引数が無効、または初期化済みです。");
 		return false;
@@ -35,6 +60,13 @@ bool MeshRenderer::Initialize(ID3D12Device *device, IDxcBlob *vertexShader,
 		return false;
 	}
 
+	if (skinnedVertexShader &&
+	    (!CreatePipelineState(device, skinnedVertexShader, pixelShader,
+	                          renderTargetFormat, depthStencilFormat, true) ||
+	     !CreateShadowPipeline(device, skinnedShadowShader, true))) {
+		Finalize();
+		return false;
+	}
 	Logger::Info("MeshRendererを初期化しました。");
 	return true;
 }
@@ -72,7 +104,13 @@ void MeshRenderer::Draw(ID3D12GraphicsCommandList *commandList,
 	auto *heap = shadows.GetHeap();
 	commandList->SetDescriptorHeaps(1, &heap);
 	commandList->SetGraphicsRootSignature(rootSignature_.Get());
-	commandList->SetPipelineState(pipelineState_.Get());
+	const bool skinned = instance.GetSkinningAddress() != 0;
+	if (skinned && !skinnedPipeline_) {
+		Logger::Error("Skinned pipeline is unavailable.");
+		return;
+	}
+	commandList->SetPipelineState(skinned ? skinnedPipeline_.Get()
+	                                      : pipelineState_.Get());
 
 	// VSのb0：物体の変換行列
 	commandList->SetGraphicsRootConstantBufferView(0, objectAddress);
@@ -95,10 +133,15 @@ void MeshRenderer::Draw(ID3D12GraphicsCommandList *commandList,
 	commandList->SetGraphicsRootConstantBufferView(
 	    6, shadows.GetConstantBufferAddress());
 	commandList->SetGraphicsRootDescriptorTable(7, shadows.GetShadowSrv());
-	mesh->Draw(commandList);
+	if (skinned)
+		commandList->SetGraphicsRootConstantBufferView(
+		    8, instance.GetSkinningAddress());
+	mesh->Draw(commandList, instance.GetSkinningWeights());
 }
 
 void MeshRenderer::Finalize() {
+	skinnedPipeline_.Reset();
+	skinnedShadowPipeline_.Reset();
 	shadowPipeline_.Reset();
 	shadowRoot_.Reset();
 	pipelineState_.Reset();
@@ -115,7 +158,10 @@ bool MeshRenderer::CreateRootSignature(ID3D12Device *device) {
 	range.OffsetInDescriptorsFromTableStart =
 	    D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	D3D12_ROOT_PARAMETER parameters[8]{};
+	D3D12_ROOT_PARAMETER parameters[9]{};
+	parameters[8].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	parameters[8].Descriptor.ShaderRegister = 6;
+	parameters[8].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
 	auto shadowRange = range;
 	shadowRange.BaseShaderRegister = 1;
 	parameters[6].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
@@ -234,7 +280,8 @@ bool MeshRenderer::CreatePipelineState(ID3D12Device *device,
                                        IDxcBlob *vertexShader,
                                        IDxcBlob *pixelShader,
                                        DXGI_FORMAT renderTargetFormat,
-                                       DXGI_FORMAT depthStencilFormat) {
+                                       DXGI_FORMAT depthStencilFormat,
+                                       bool skinned) {
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC desc{};
 	desc.pRootSignature = rootSignature_.Get();
 
@@ -288,6 +335,9 @@ bool MeshRenderer::CreatePipelineState(ID3D12Device *device,
 	desc.InputLayout = {inputElements,
 	                    static_cast<UINT>(std::size(inputElements))};
 
+	if (skinned)
+		desc.InputLayout = {kSkinnedLayout,
+		                    static_cast<UINT>(std::size(kSkinnedLayout))};
 	desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 
 	desc.NumRenderTargets = 1;
@@ -296,7 +346,9 @@ bool MeshRenderer::CreatePipelineState(ID3D12Device *device,
 	desc.SampleDesc.Count = 1;
 
 	const HRESULT hr = device->CreateGraphicsPipelineState(
-	    &desc, IID_PPV_ARGS(pipelineState_.GetAddressOf()));
+	    &desc,
+	    IID_PPV_ARGS(
+	        (skinned ? skinnedPipeline_ : pipelineState_).GetAddressOf()));
 
 	if (FAILED(hr)) {
 		Logger::Error(std::format(
@@ -308,25 +360,26 @@ bool MeshRenderer::CreatePipelineState(ID3D12Device *device,
 	return true;
 }
 
-bool MeshRenderer::CreateShadowPipeline(ID3D12Device *device,
-                                        IDxcBlob *shader) {
-	D3D12_ROOT_PARAMETER parameters[2]{};
-	for (UINT i = 0; i < 2; ++i) {
+bool MeshRenderer::CreateShadowPipeline(ID3D12Device *device, IDxcBlob *shader,
+                                        bool skinned) {
+	D3D12_ROOT_PARAMETER parameters[3]{};
+	for (UINT i = 0; i < 3; ++i) {
 		parameters[i].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-		parameters[i].Descriptor.ShaderRegister = i ? 5 : 0;
+		parameters[i].Descriptor.ShaderRegister = i == 2 ? 6 : i ? 5 : 0;
 		parameters[i].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
 	}
 	D3D12_ROOT_SIGNATURE_DESC root{};
-	root.NumParameters = 2;
+	root.NumParameters = 3;
 	root.pParameters = parameters;
 	root.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 	Microsoft::WRL::ComPtr<ID3DBlob> bytes, errors;
-	if (FAILED(D3D12SerializeRootSignature(&root, D3D_ROOT_SIGNATURE_VERSION_1,
-	                                       bytes.GetAddressOf(),
-	                                       errors.GetAddressOf())) ||
-	    FAILED(device->CreateRootSignature(
-	        0, bytes->GetBufferPointer(), bytes->GetBufferSize(),
-	        IID_PPV_ARGS(shadowRoot_.GetAddressOf()))))
+	if (!shadowRoot_ &&
+	    (FAILED(D3D12SerializeRootSignature(&root, D3D_ROOT_SIGNATURE_VERSION_1,
+	                                        bytes.GetAddressOf(),
+	                                        errors.GetAddressOf())) ||
+	     FAILED(device->CreateRootSignature(
+	         0, bytes->GetBufferPointer(), bytes->GetBufferSize(),
+	         IID_PPV_ARGS(shadowRoot_.GetAddressOf())))))
 		return false;
 	const D3D12_INPUT_ELEMENT_DESC position{
 	    "POSITION",
@@ -348,7 +401,11 @@ bool MeshRenderer::CreateShadowPipeline(ID3D12Device *device,
 		target.LogicOp = D3D12_LOGIC_OP_NOOP;
 	}
 	desc.VS = {shader->GetBufferPointer(), shader->GetBufferSize()};
-	desc.InputLayout = {&position, 1};
+	desc.InputLayout =
+	    skinned ? D3D12_INPUT_LAYOUT_DESC{kSkinnedLayout,
+	                                      static_cast<UINT>(
+	                                          std::size(kSkinnedLayout))}
+	            : D3D12_INPUT_LAYOUT_DESC{&position, 1};
 	desc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
 	desc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
 	desc.RasterizerState.DepthClipEnable = TRUE;
@@ -362,7 +419,8 @@ bool MeshRenderer::CreateShadowPipeline(ID3D12Device *device,
 	desc.SampleMask = UINT_MAX;
 	desc.SampleDesc.Count = 1;
 	return SUCCEEDED(device->CreateGraphicsPipelineState(
-	    &desc, IID_PPV_ARGS(shadowPipeline_.GetAddressOf())));
+	    &desc, IID_PPV_ARGS((skinned ? skinnedShadowPipeline_ : shadowPipeline_)
+	                            .GetAddressOf())));
 }
 
 void MeshRenderer::DrawShadow(ID3D12GraphicsCommandList *commands,
@@ -371,10 +429,19 @@ void MeshRenderer::DrawShadow(ID3D12GraphicsCommandList *commands,
 	if (!commands || !shadowPipeline_ || !instance.GetMesh())
 		return;
 	commands->SetGraphicsRootSignature(shadowRoot_.Get());
-	commands->SetPipelineState(shadowPipeline_.Get());
+	const bool skinned = instance.GetSkinningAddress() != 0;
+	if (skinned && !skinnedShadowPipeline_) {
+		Logger::Error("Skinned shadow pipeline is unavailable.");
+		return;
+	}
+	commands->SetPipelineState(skinned ? skinnedShadowPipeline_.Get()
+	                                   : shadowPipeline_.Get());
 	commands->SetGraphicsRootConstantBufferView(
 	    0, instance.GetConstantBufferAddress());
 	commands->SetGraphicsRootConstantBufferView(
 	    1, shadows.GetConstantBufferAddress());
-	instance.GetMesh()->Draw(commands);
+	if (skinned)
+		commands->SetGraphicsRootConstantBufferView(
+		    2, instance.GetSkinningAddress());
+	instance.GetMesh()->Draw(commands, instance.GetSkinningWeights());
 }

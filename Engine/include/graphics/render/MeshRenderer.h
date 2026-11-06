@@ -22,11 +22,15 @@ class MeshRenderer {
 	/// <param name="renderTargetFormat">描画先のカラー形式</param>
 	/// <param name="depthStencilFormat">描画先の深度形式</param>
 	/// <param name="shadowVertexShader">光源から深度を描画する頂点シェーダー</param>
+	/// <param name="skinnedVertexShader">骨で変形する頂点シェーダー。両スキン指定が空なら静止専用</param>
+	/// <param name="skinnedShadowShader">変形後の影の頂点シェーダー</param>
 	/// <returns>true:成功 false:引数が無効、初期化済み、または作成失敗</returns>
 	bool Initialize(ID3D12Device *device, IDxcBlob *vertexShader,
 	                IDxcBlob *pixelShader, DXGI_FORMAT renderTargetFormat,
 	                DXGI_FORMAT depthStencilFormat,
-	                IDxcBlob *shadowVertexShader);
+	                IDxcBlob *shadowVertexShader,
+	                IDxcBlob *skinnedVertexShader = nullptr,
+	                IDxcBlob *skinnedShadowShader = nullptr);
 
 	/// <summary>
 	/// 物体が指定するメッシュと材質を使い、平行光源を反映して描画する
@@ -73,19 +77,25 @@ class MeshRenderer {
 	/// <param name="pixelShader">コンパイル済みピクセルシェーダー</param>
 	/// <param name="renderTargetFormat">描画先のカラー形式</param>
 	/// <param name="depthStencilFormat">描画先の深度形式</param>
+	/// <param name="skinned">true:8本の重みを持つ頂点形式 false:静止形式</param>
 	/// <returns>true:成功 false:失敗</returns>
 	bool CreatePipelineState(ID3D12Device *device, IDxcBlob *vertexShader,
 	                         IDxcBlob *pixelShader,
 	                         DXGI_FORMAT renderTargetFormat,
-	                         DXGI_FORMAT depthStencilFormat);
+	                         DXGI_FORMAT depthStencilFormat,
+	                         bool skinned = false);
 
 	/// <summary>
 	/// 光源からの深度専用パイプラインを作成する
 	/// </summary>
 	/// <param name="device">同じ描画デバイス</param>
 	/// <param name="shader">深度用の頂点シェーダー</param>
+	/// <param name="skinned">true:スキンの深度描画 false:静止形状</param>
 	/// <returns>true:成功 false:作成失敗</returns>
-	bool CreateShadowPipeline(ID3D12Device *device, IDxcBlob *shader);
+	bool CreateShadowPipeline(ID3D12Device *device, IDxcBlob *shader,
+	                          bool skinned = false);
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> skinnedPipeline_,
+	    skinnedShadowPipeline_;
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> shadowRoot_;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> shadowPipeline_;
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature_;

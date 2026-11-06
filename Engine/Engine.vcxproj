@@ -2309,4 +2309,11 @@ exit /b 0</Command>
     <ClInclude Include="src\graphics\model\GltfAnimationMetadata.h" />
     <ClCompile Include="src\graphics\model\GltfAnimationMetadata.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\graphics\mesh\SkinningConstants.h" />
+    <None Include="resources\shaders\mesh\Skinning.hlsli" />
+    <None Include="resources\shaders\mesh\SkinnedMesh.VS.hlsl" />
+    <None Include="resources\shaders\mesh\SkinnedShadow.VS.hlsl" />
+    <ClCompile Include="src\graphics\model\ModelSkinning.cpp" />
+  </ItemGroup>
 </Project>

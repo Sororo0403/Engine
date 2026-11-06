@@ -23,7 +23,9 @@ class Mesh {
 	/// 頂点・インデックスバッファを設定し、描画命令を記録する
 	/// </summary>
 	/// <param name="commandList">シェーダーなどが設定済みの記録中のコマンドリスト</param>
-	void Draw(ID3D12GraphicsCommandList *commandList) const;
+	/// <param name="weights">指定時はスキン重みを頂点スロット1へ設定する</param>
+	void Draw(ID3D12GraphicsCommandList *commandList,
+	          const D3D12_VERTEX_BUFFER_VIEW *weights = nullptr) const;
 
 	/// <summary>
 	/// バッファを解放する。GPUの利用完了後に呼び出す

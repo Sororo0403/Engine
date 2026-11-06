@@ -6,7 +6,8 @@
 #include "math/TransformUtils.h"
 
 bool MeshInstance::Initialize(ID3D12Device *device, const Mesh &mesh,
-                              const Material &material) {
+                              const Material &material,
+                              const D3D12_VERTEX_BUFFER_VIEW *weights) {
 	if (!device || constantBuffer_.IsInitialized() || mesh_ || material_ ||
 	    material.GetConstantBufferAddress() == 0 ||
 	    material.GetTextureSrv().ptr == 0) {
@@ -26,6 +27,20 @@ bool MeshInstance::Initialize(ID3D12Device *device, const Mesh &mesh,
 		return false;
 	}
 
+	if (weights) {
+		if (!weights->BufferLocation || !weights->SizeInBytes ||
+		    weights->StrideInBytes != sizeof(ModelVertexWeights)) {
+			constantBuffer_.Finalize();
+			return false;
+		}
+		auto buffer = std::make_unique<ConstantBuffer<SkinningConstants>>();
+		if (!buffer->Initialize(device)) {
+			constantBuffer_.Finalize();
+			return false;
+		}
+		skinning_ = std::move(buffer);
+		weights_ = weights;
+	}
 	mesh_ = &mesh;
 	material_ = &material;
 
@@ -84,6 +99,22 @@ MeshInstance::GetConstantBufferAddress() const {
 
 void MeshInstance::Finalize() {
 	constantBuffer_.Finalize();
+	skinning_.reset();
+	weights_ = nullptr;
 	mesh_ = nullptr;
 	material_ = nullptr;
+}
+
+bool MeshInstance::UpdateSkinning(const SkinningConstants &constants) {
+	return skinning_ &&
+	       constants.boneCount <= ModelAnimationData::kMaximumBones &&
+	       skinning_->Update(constants);
+}
+
+D3D12_GPU_VIRTUAL_ADDRESS MeshInstance::GetSkinningAddress() const {
+	return skinning_ ? skinning_->GetGPUVirtualAddress() : 0;
+}
+
+const D3D12_VERTEX_BUFFER_VIEW *MeshInstance::GetSkinningWeights() const {
+	return weights_;
 }

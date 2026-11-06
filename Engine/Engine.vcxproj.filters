@@ -2364,4 +2364,11 @@
     <ClInclude Include="src\graphics\model\GltfAnimationMetadata.h"><Filter>src\graphics\model</Filter></ClInclude>
     <ClCompile Include="src\graphics\model\GltfAnimationMetadata.cpp"><Filter>src\graphics\model</Filter></ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\graphics\mesh\SkinningConstants.h"><Filter>include\graphics\mesh</Filter></ClInclude>
+    <None Include="resources\shaders\mesh\Skinning.hlsli" />
+    <None Include="resources\shaders\mesh\SkinnedMesh.VS.hlsl" />
+    <None Include="resources\shaders\mesh\SkinnedShadow.VS.hlsl" />
+    <ClCompile Include="src\graphics\model\ModelSkinning.cpp"><Filter>src\graphics\model</Filter></ClCompile>
+  </ItemGroup>
 </Project>

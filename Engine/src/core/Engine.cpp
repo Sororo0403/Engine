@@ -130,9 +130,16 @@ struct Engine::Impl {
 		auto shadowVertexShader = shaderCompiler_.Compile(
 		    (shaderDirectory / L"Shadow.VS.hlsl").wstring(), L"VSMain",
 		    L"vs_6_0");
+		auto skinnedVertexShader = shaderCompiler_.Compile(
+		    (shaderDirectory / L"SkinnedMesh.VS.hlsl").wstring(), L"VSMain",
+		    L"vs_6_0");
+		auto skinnedShadowShader = shaderCompiler_.Compile(
+		    (shaderDirectory / L"SkinnedShadow.VS.hlsl").wstring(), L"VSMain",
+		    L"vs_6_0");
 		shaderCompiler_.Finalize();
 
-		if (!shadowVertexShader || !vertexShader || !pixelShader ||
+		if (!skinnedVertexShader || !skinnedShadowShader ||
+		    !shadowVertexShader || !vertexShader || !pixelShader ||
 		    !debugVertexShader || !debugPixelShader) {
 			return false;
 		}
@@ -152,7 +159,8 @@ struct Engine::Impl {
 		if (!meshRenderer_.Initialize(
 		        graphics_.GetDevice(), vertexShader.Get(), pixelShader.Get(),
 		        graphics_.GetRenderTargetFormat(),
-		        graphics_.GetDepthStencilFormat(), shadowVertexShader.Get())) {
+		        graphics_.GetDepthStencilFormat(), shadowVertexShader.Get(),
+		        skinnedVertexShader.Get(), skinnedShadowShader.Get())) {
 			return false;
 		}
 

@@ -76,6 +76,7 @@ bool ModelInstance::Initialize(ID3D12Device *device, const Model &model) {
 	}
 
 	model_ = &model;
+	device_ = device;
 
 	Logger::Info("ModelInstanceを初期化しました。");
 	return true;
@@ -116,7 +117,8 @@ bool ModelInstance::Update(const Camera &camera,
 	}
 
 	// モデルを構成する全メッシュに、同じ変形を適用する
-	for (auto &instance : meshInstances_) {
+	for (auto &instance :
+	     animationPose_ ? animatedInstances_ : meshInstances_) {
 		if (!instance.Update(camera, world)) {
 			return false;
 		}
@@ -135,7 +137,7 @@ void ModelInstance::Draw(ID3D12GraphicsCommandList *commandList,
 		return;
 	}
 
-	for (const auto &instance : meshInstances_) {
+	for (const auto &instance : GetMeshes()) {
 		renderer.Draw(commandList, instance, light, pointLights, spotLights,
 		              shadows);
 	}
@@ -162,6 +164,10 @@ void ModelInstance::Finalize() {
 
 	meshInstances_.clear();
 
+	for (auto &instance : animatedInstances_)
+		instance.Finalize();
+	animatedInstances_.clear();
+	animationPose_.reset();
 	for (auto &material : materials_) {
 		material.Finalize();
 	}
@@ -170,6 +176,7 @@ void ModelInstance::Finalize() {
 	materialData_.clear();
 
 	model_ = nullptr;
+	device_ = nullptr;
 }
 
 bool ModelInstance::SetMaterial(
@@ -193,5 +200,73 @@ bool ModelInstance::SetMaterial(
 }
 
 std::span<const MeshInstance> ModelInstance::GetMeshes() const {
-	return meshInstances_;
+	return animationPose_ ? std::span<const MeshInstance>{animatedInstances_}
+	                      : std::span<const MeshInstance>{meshInstances_};
+}
+
+bool ModelInstance::SetAnimationPose(const ModelAnimationPose *pose) {
+	if (!model_)
+		return false;
+	if (!pose) {
+		animationPose_.reset();
+		return true;
+	}
+	const auto &data = model_->GetAnimationData();
+	if (!data)
+		return false;
+	std::array<DirectX::XMFLOAT3, 8> bounds;
+	if (!model_->GetAnimationBounds(*pose, bounds))
+		return false;
+	try {
+		// 複製と検証を先に済ませ、無効な入力で以前のGPU行列を上書きしない。
+		std::optional<ModelAnimationPose> next{*pose};
+		if (animatedInstances_.empty()) {
+			std::vector<MeshInstance> instances(data->meshes.size());
+			for (std::size_t i = 0; i < instances.size(); ++i)
+				if (!instances[i].Initialize(
+				        device_, model_->GetAnimationMesh(i),
+				        materials_.at(data->meshes[i].materialIndex),
+				        &model_->GetAnimationWeights(i)))
+					return false;
+			animatedInstances_ = std::move(instances);
+		}
+		for (std::size_t i = 0; i < animatedInstances_.size(); ++i) {
+			SkinningConstants constants;
+			constants.boneCount =
+			    static_cast<std::uint32_t>(data->meshes[i].bones.size());
+			for (std::size_t b = 0; b <= constants.boneCount; ++b) {
+				const auto &m = b < constants.boneCount
+				                    ? pose->bones[i][b]
+				                    : pose->nodes[data->meshes[i].node];
+				DirectX::XMFLOAT4X4 inverse;
+				if (!TransformUtils::TryInverseWorldMatrix(m, inverse))
+					return false;
+				constants.transforms[b] = m;
+				DirectX::XMStoreFloat4x4(
+				    &constants.normals[b],
+				    DirectX::XMMatrixTranspose(
+				        DirectX::XMLoadFloat4x4(&inverse)));
+			}
+			if (!animatedInstances_[i].UpdateSkinning(constants))
+				return false;
+		}
+		animationPose_ = std::move(next);
+		return true;
+	} catch (const std::exception &e) {
+		Logger::Error(e.what());
+		return false;
+	}
+}
+
+bool ModelInstance::GetBoundsCorners(
+    std::array<DirectX::XMFLOAT3, 8> &corners) const {
+	return model_ && (animationPose_
+	                      ? model_->GetAnimationBounds(*animationPose_, corners)
+	                      : model_->GetBoundsCorners(corners));
+}
+
+bool ModelInstance::Raycast(const Ray &ray, float &distance) const {
+	return model_ && (animationPose_ ? model_->RaycastAnimation(*animationPose_,
+	                                                            ray, distance)
+	                                 : model_->Raycast(ray, distance));
 }

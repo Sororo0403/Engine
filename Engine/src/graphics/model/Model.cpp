@@ -73,6 +73,16 @@ bool Model::Initialize(ID3D12Device *device, ID3D12CommandQueue *commandQueue,
 	}
 
 	animation_ = data.animation;
+	try {
+		if (!CreateAnimationMeshes(device)) {
+			Finalize();
+			return false;
+		}
+	} catch (const std::exception &e) {
+		Logger::Error(e.what());
+		Finalize();
+		return false;
+	}
 
 	Logger::Info(std::format("Modelを初期化しました。メッシュ数={}、材質数={}",
 	                         GetMeshCount(), GetMaterialCount()));
@@ -253,6 +263,9 @@ void Model::Finalize() {
 
 	parts_.clear();
 	animation_.reset();
+	for (auto &part : animationParts_)
+		part.mesh.Finalize();
+	animationParts_.clear();
 
 	bounds_ = {};
 

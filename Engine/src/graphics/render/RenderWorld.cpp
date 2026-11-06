@@ -206,7 +206,7 @@ bool RenderWorld::GetObjectBounds(
 
 	std::array<DirectX::XMFLOAT3, 8> transformed{};
 
-	if (!object.model_.model_->GetBoundsCorners(transformed)) {
+	if (!object.instance_.GetBoundsCorners(transformed)) {
 		return false;
 	}
 
@@ -688,7 +688,7 @@ RenderWorld::Pick(float imageX, float imageY, float *distance,
 
 		float localDistance = 0.0f;
 
-		if (!object.model_.model_->Raycast(localRay, localDistance)) {
+		if (!object.instance_.Raycast(localRay, localDistance)) {
 			continue;
 		}
 
@@ -781,4 +781,14 @@ void RenderWorld::DrawShadows(MeshRenderer &renderer) const {
 				renderer.DrawShadow(commands, mesh, impl_->shadows_);
 	}
 	impl_->shadows_.End(commands);
+}
+
+bool RenderWorld::SetAnimationPose(RenderObjectHandle handle,
+                                   const ModelAnimationPose *pose) {
+	if (!impl_->initialized_ || !impl_->Contains(handle))
+		return false;
+	if (!impl_->GetObject(handle).instance_.SetAnimationPose(pose))
+		return false;
+	impl_->prepared_ = false;
+	return true;
 }

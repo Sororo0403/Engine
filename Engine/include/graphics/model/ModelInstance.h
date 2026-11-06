@@ -1,4 +1,7 @@
 #pragma once
+#include "animation/ModelAnimationSampler.h"
+#include <array>
+#include <optional>
 #include <span>
 
 #include "graphics/material/ColorTint.h"
@@ -16,6 +19,7 @@ class SpotLights;
 class ShadowMap;
 class MeshRenderer;
 class Model;
+struct Ray;
 
 /// <summary>
 /// 共有モデルを使用する、1つの物体の描画情報を保持する
@@ -99,6 +103,29 @@ class ModelInstance {
 	/// <returns>次の初期化・終了まで有効な一覧</returns>
 	std::span<const MeshInstance> GetMeshes() const;
 
+	/// <summary>
+	/// 同じモデルの再生姿勢を物体専用の骨バッファへ設定する
+	/// </summary>
+	/// <param name="pose">ノード・骨の評価結果。nullptrは従来の静止描画へ戻す</param>
+	/// <returns>true:成功 false:再生データなし、姿勢・GPU作成が無効</returns>
+	/// <remarks>GPUの利用完了後、描画準備より前に呼ぶ。共有モデルと他の物体は変更しない</remarks>
+	bool SetAnimationPose(const ModelAnimationPose *pose);
+
+	/// <summary>
+	/// 現在の静止またはスキン姿勢を囲むモデル座標の範囲を取得する
+	/// </summary>
+	/// <param name="corners">成功時だけ設定する8頂点</param>
+	/// <returns>true:成功 false:未初期化または無効な姿勢</returns>
+	bool GetBoundsCorners(std::array<DirectX::XMFLOAT3, 8> &corners) const;
+
+	/// <summary>
+	/// 現在の描画姿勢の三角形をレイで選択する
+	/// </summary>
+	/// <param name="ray">モデル座標のレイ</param>
+	/// <param name="distance">交差した時だけ置き換える距離</param>
+	/// <returns>true:交差 false:未初期化・無効・交差なし</returns>
+	bool Raycast(const Ray &ray, float &distance) const;
+
   private:
 	const Model *model_ = nullptr;
 
@@ -106,4 +133,7 @@ class ModelInstance {
 	std::vector<MaterialData> materialData_;
 
 	std::vector<MeshInstance> meshInstances_;
+	std::vector<MeshInstance> animatedInstances_;
+	std::optional<ModelAnimationPose> animationPose_;
+	ID3D12Device *device_ = nullptr;
 };
