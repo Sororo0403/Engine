@@ -29,6 +29,7 @@ void SceneSimulation::CopyFrom(const SceneSimulation &source) {
 	pose_ = source.pose_;
 	fallbackPose_ = source.fallbackPose_;
 	cameraSettings_ = source.cameraSettings_;
+	preparePrefabResources_ = source.preparePrefabResources_;
 	playing_ = source.playing_;
 	frameEvents_ = source.frameEvents_;
 	audioActions_ = source.audioActions_;
@@ -62,6 +63,7 @@ void SceneSimulation::Adopt(SceneSimulation &source) {
 	pose_ = source.pose_;
 	fallbackPose_ = source.fallbackPose_;
 	cameraSettings_ = source.cameraSettings_;
+	preparePrefabResources_ = source.preparePrefabResources_;
 	playing_ = source.playing_;
 	frameEvents_ = std::move(source.frameEvents_);
 	audioActions_ = std::move(source.audioActions_);

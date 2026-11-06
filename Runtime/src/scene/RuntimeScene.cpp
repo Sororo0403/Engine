@@ -14,6 +14,10 @@ RuntimeScene::RuntimeScene(const EngineContext &context, GameConfig config)
       config_(std::move(config)),
       renderer_(simulation_.GetScene(), context.models, context.render),
       audioPlayer_(simulation_.GetScene(), context.audioClips, context.audio) {
+	simulation_.SetPrefabResourcePreparation(
+	    [this, &clips = context.audioClips](auto prefabs, std::string &error) {
+		    return renderer_.PreparePrefabResources(prefabs, clips, error);
+	    });
 }
 
 bool RuntimeScene::Initialize() {
@@ -24,13 +28,13 @@ bool RuntimeScene::Initialize() {
 		return false;
 	}
 
+	if (!renderer_.Initialize())
+		return false;
 	if (!simulation_.Start(source, error, config_.fallbackCamera)) {
 		Logger::Error(error);
 		return false;
 	}
 
-	if (!renderer_.Initialize())
-		return false;
 	if (!audioPlayer_.Start(simulation_.GetCameraPose(), false, error, nullptr,
 	                        simulation_.GetAudioActions())) {
 		Logger::Error(error);

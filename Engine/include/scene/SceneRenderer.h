@@ -18,7 +18,9 @@
 #include <map>
 #include <memory>
 #include <span>
+#include <string>
 
+class AudioClipManager;
 class ModelManager;
 class RenderSystem;
 class RenderWorld;
@@ -184,6 +186,23 @@ class SceneRenderer {
 	/// <returns>true:反映成功 false:物体・状態が無効。以前の一覧を保持する</returns>
 	bool SetUIButtonVisuals(std::span<const UIButtonVisual> visuals);
 
+	/// <summary>
+	/// 宣言されたPrefabのモデル・材質・音声・UI画像を生成前に準備する
+	/// </summary>
+	/// <param name="prefabs">再生中に共有する不変のPrefab階層</param>
+	/// <param name="clips">共通の音声素材管理</param>
+	/// <param name="error">成功時は空、失敗時は理由</param>
+	/// <returns>true:準備成功 false:素材が無効、またはGPU準備失敗</returns>
+	/// <remarks>GPU完了後、BeginFrame前に呼ぶ。生成用画像は停止時にClearPrefabResourcesで解放する</remarks>
+	bool PreparePrefabResources(
+	    std::span<const std::shared_ptr<const Scene>> prefabs,
+	    AudioClipManager &clips, std::string &error);
+
+	/// <summary>
+	/// 生成用の階層とUI画像の保持を解除する。GPU完了後に呼ぶ
+	/// </summary>
+	void ClearPrefabResources();
+
   private:
 	/// <summary>
 	/// シーン上の物体と対応する描画物体の情報
@@ -210,6 +229,7 @@ class SceneRenderer {
 
 	std::unique_ptr<RenderWorld> world_;
 	std::unique_ptr<CanvasRenderer> canvas_;
+	std::vector<std::shared_ptr<const Scene>> preparedPrefabs_;
 	bool screenUIEnabled_ = true;
 	std::vector<UIButtonVisual> buttonVisuals_;
 

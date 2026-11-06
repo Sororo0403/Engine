@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "ui/UIButtonVisual.h"
+#include <filesystem>
 #include <memory>
 #include <span>
 #include <string>
@@ -42,6 +43,21 @@ class CanvasRenderer {
 	/// </summary>
 	/// <remarks>同じ描画基盤のBeginFrameからEndFrameの間に呼ぶ。深度を参照・変更しない</remarks>
 	void Draw() const;
+
+	/// <summary>
+	/// 生成予定のUI画像を上限128 MiBで読み込み、元ファイルによらず保持する
+	/// </summary>
+	/// <param name="paths">絶対パスまたは実行ファイル基準の画像。重複は共有する</param>
+	/// <param name="error">成功時は空、失敗時は理由。以前の準備済み画像は保持する</param>
+	/// <returns>true:準備成功 false:読み込み・容量・GPU準備の失敗</returns>
+	/// <remarks>COM初期化済み、GPU完了後、BeginFrame前に呼ぶ</remarks>
+	bool PrepareImages(std::span<const std::filesystem::path> paths,
+	                   std::string &error);
+
+	/// <summary>
+	/// 生成用に保持した画像だけを解放する。GPU完了後に呼ぶ
+	/// </summary>
+	void ClearPreparedImages();
 
   private:
 	struct Impl;

@@ -15,6 +15,7 @@
 #include "scene/SceneAudioActions.h"
 #include "ui/SceneUI.h"
 #include <cstddef>
+#include <functional>
 #include <map>
 #include <optional>
 #include <set>
@@ -28,6 +29,20 @@
 /// </summary>
 class SceneSimulation {
   public:
+	/// <summary>
+	/// 宣言されたPrefab素材を、候補の確定前に準備する処理
+	/// </summary>
+	using PreparePrefabResources = std::function<bool(
+	    std::span<const std::shared_ptr<const Scene>>, std::string &)>;
+
+	/// <summary>
+	/// 描画・音声を所有する層から素材準備を登録する。停止しても登録を保持する
+	/// </summary>
+	/// <param name="prepare">GPU完了後に呼ぶ準備処理。空の場合はCPUの検証だけを行う</param>
+	void SetPrefabResourcePreparation(PreparePrefabResources prepare) {
+		preparePrefabResources_ = std::move(prepare);
+	}
+
 	/// <summary>
 	/// 再生中のシーンへ独立したPrefab階層を追加し、物理・追従・UI・スクリプトの準備を同期する
 	/// </summary>
@@ -338,6 +353,7 @@ class SceneSimulation {
 	CameraPose pose_{};
 	CameraPose fallbackPose_{};
 	CameraSettings cameraSettings_{};
+	PreparePrefabResources preparePrefabResources_;
 	bool playing_ = false;
 	std::vector<TriggerEvent> frameEvents_;
 	std::vector<SceneAudioAction> audioActions_;

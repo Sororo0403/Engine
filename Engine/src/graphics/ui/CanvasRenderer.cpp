@@ -70,6 +70,7 @@ struct CanvasRenderer::Impl {
 	std::shared_ptr<Texture> white;
 	std::map<SceneObjectId, TextEntry> texts;
 	std::map<std::filesystem::path, ImageEntry> images;
+	std::map<std::filesystem::path, ImageEntry> preparedImages;
 	std::vector<Command> commands;
 	int width = 0, height = 0;
 	bool prepared = false;
@@ -205,6 +206,48 @@ CanvasRenderer::CanvasRenderer(D3D12Graphics &graphics, Failure failure)
 
 CanvasRenderer::~CanvasRenderer() = default;
 
+bool CanvasRenderer::PrepareImages(std::span<const std::filesystem::path> paths,
+                                   std::string &error) {
+	try {
+		auto &p = *impl_;
+		auto next = p.preparedImages;
+		std::size_t bytes = 0;
+		for (const auto &[path, entry] : next) {
+			(void)path;
+			bytes += static_cast<std::size_t>(entry.texture->GetWidth()) *
+			         entry.texture->GetHeight() * 4;
+		}
+		for (const auto &source : paths) {
+			if (source.empty())
+				continue;
+			const auto path =
+			    PathUtils::ResolveFromExecutable(source).lexically_normal();
+			if (next.contains(path))
+				continue;
+			const auto needed = p.ImageBytes(path);
+			if (needed > kMaximumBytes - bytes)
+				throw std::runtime_error("Prepared UI images exceed 128 MiB.");
+			Impl::ImageEntry entry;
+			entry.texture = std::make_shared<Texture>();
+			if (!entry.texture->Load(p.graphics.GetDevice(),
+			                         p.graphics.GetCommandQueue(), path))
+				throw std::runtime_error("Could not prepare Prefab UI image.");
+			bytes += needed;
+			next.emplace(path, std::move(entry));
+		}
+		p.preparedImages = std::move(next);
+		error.clear();
+		return true;
+	} catch (const std::exception &exception) {
+		error = exception.what();
+		return false;
+	}
+}
+
+void CanvasRenderer::ClearPreparedImages() {
+	impl_->preparedImages.clear();
+}
+
 bool CanvasRenderer::Update(const Scene &scene, int width, int height,
                             std::string &error,
                             std::span<const UIButtonVisual> visuals) {
@@ -298,31 +341,38 @@ bool CanvasRenderer::Update(const Scene &scene, int width, int height,
 						        .lexically_normal();
 						auto found = images.find(path);
 						if (found == images.end()) {
-							const auto modified =
-							    std::filesystem::last_write_time(path);
-							const auto size = std::filesystem::file_size(path);
-							auto cached = p.images.find(path);
-							Impl::ImageEntry entry;
-							if (cached != p.images.end() &&
-							    cached->second.modified == modified &&
-							    cached->second.size == size)
-								entry = cached->second;
-							else {
-								const auto needed = p.ImageBytes(path);
-								if (needed > kMaximumBytes - bytes)
-									throw std::runtime_error(
-									    "UI images exceed 128 MiB.");
-								entry.modified = modified;
-								entry.size = size;
-								entry.texture = std::make_shared<Texture>();
-								if (!entry.texture->Load(
-								        p.graphics.GetDevice(),
-								        p.graphics.GetCommandQueue(), path))
-									throw std::runtime_error(
-									    "Could not load UI image.");
+							const auto pinned = p.preparedImages.find(path);
+							if (pinned != p.preparedImages.end()) {
+								found =
+								    images.emplace(path, pinned->second).first;
+							} else {
+								const auto modified =
+								    std::filesystem::last_write_time(path);
+								const auto size =
+								    std::filesystem::file_size(path);
+								auto cached = p.images.find(path);
+								Impl::ImageEntry entry;
+								if (cached != p.images.end() &&
+								    cached->second.modified == modified &&
+								    cached->second.size == size)
+									entry = cached->second;
+								else {
+									const auto needed = p.ImageBytes(path);
+									if (needed > kMaximumBytes - bytes)
+										throw std::runtime_error(
+										    "UI images exceed 128 MiB.");
+									entry.modified = modified;
+									entry.size = size;
+									entry.texture = std::make_shared<Texture>();
+									if (!entry.texture->Load(
+									        p.graphics.GetDevice(),
+									        p.graphics.GetCommandQueue(), path))
+										throw std::runtime_error(
+										    "Could not load UI image.");
+								}
+								found = images.emplace(path, std::move(entry))
+								            .first;
 							}
-							found =
-							    images.emplace(path, std::move(entry)).first;
 						}
 						texture = found->second.texture;
 					}

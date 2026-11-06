@@ -1,5 +1,7 @@
 #include "scene/SceneRenderer.h"
+#include "audio/AudioClipManager.h"
 #include "ui/CanvasLayout.h"
+#include <stdexcept>
 
 #include "core/Logger.h"
 #include "graphics/model/ModelManager.h"
@@ -63,6 +65,63 @@ bool SceneRenderer::Initialize() {
 		return false;
 	}
 	return true;
+}
+
+bool SceneRenderer::PreparePrefabResources(
+    std::span<const std::shared_ptr<const Scene>> prefabs,
+    AudioClipManager &clips, std::string &error) {
+	try {
+		if (!canvas_)
+			throw std::runtime_error(
+			    "Initialize the renderer before preparing Prefabs.");
+		auto next = preparedPrefabs_;
+		std::vector<std::filesystem::path> images;
+		for (const auto &scene : prefabs) {
+			if (!scene)
+				throw std::runtime_error("Prefab scene is missing.");
+			if (std::ranges::find(next, scene) != next.end())
+				continue;
+			for (const auto &[id, o] : scene->GetObjects()) {
+				(void)id;
+				if (o.HasMesh() && !models_.Load(o.mesh->modelPath))
+					throw std::runtime_error("Could not prepare Prefab model.");
+				if (o.meshRenderer)
+					for (const auto &[slot, path] :
+					     o.meshRenderer->textures.slots) {
+						(void)slot;
+						if (!render_.GetMaterials().LoadTexture(path))
+							throw std::runtime_error(
+							    "Could not prepare Prefab material.");
+					}
+				if (o.audioSource && !o.audioSource->clipPath.empty()) {
+					const auto clip =
+					    clips.Load(o.audioSource->clipPath, error);
+					if (!clip)
+						throw std::runtime_error(error);
+					if (o.audioSource->spatial && clip.GetChannels() != 1)
+						throw std::runtime_error(
+						    "Spatial Prefab audio requires mono WAV.");
+				}
+				if (o.image && !o.image->texture.empty())
+					images.push_back(o.image->texture);
+			}
+			next.push_back(scene);
+		}
+		if (!canvas_->PrepareImages(images, error))
+			return false;
+		preparedPrefabs_.assign(prefabs.begin(), prefabs.end());
+		error.clear();
+		return true;
+	} catch (const std::exception &exception) {
+		error = exception.what();
+		return false;
+	}
+}
+
+void SceneRenderer::ClearPrefabResources() {
+	preparedPrefabs_.clear();
+	if (canvas_)
+		canvas_->ClearPreparedImages();
 }
 
 bool SceneRenderer::Update(int width, int height) {
@@ -291,6 +350,7 @@ void SceneRenderer::Finalize() {
 	// GPUの利用完了後に描画ワールドを解放する
 	world_.reset();
 	canvas_.reset();
+	preparedPrefabs_.clear();
 	buttonVisuals_.clear();
 	objects_.clear();
 	modelRevision_ = 0;

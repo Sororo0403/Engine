@@ -41,6 +41,7 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 		runtime.CopyFrom(source);
 		runtime.ReplaceObjects(std::move(objects));
 		SceneSimulation working;
+		working.preparePrefabResources_ = preparePrefabResources_;
 		if (!working.Configure(runtime, error, fallbackPose, invalidObject,
 		                       false)) {
 			return false;
@@ -337,6 +338,9 @@ bool SceneSimulation::Configure(const Scene &source, std::string &error,
 			return false;
 		auto ui = preserve ? ui_ : SceneUI{};
 		if (!ui.Refresh(working, error))
+			return false;
+		if (preparePrefabResources_ &&
+		    !preparePrefabResources_(scripts.GetPrefabScenes(), error))
 			return false;
 		// 全候補が有効な場合だけ確定し、失敗時は再生シーンと実行状態をすべて保持する。
 		scene_.CopyFrom(working);

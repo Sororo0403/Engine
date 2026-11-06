@@ -14,6 +14,15 @@
 class EditorPlaySession {
   public:
 	/// <summary>
+	/// 宣言されたPrefab素材の準備を描画・音声の所有側へ委ねる
+	/// </summary>
+	/// <param name="prepare">GPU完了後に呼ぶ準備処理</param>
+	void SetPrefabResourcePreparation(
+	    SceneSimulation::PreparePrefabResources prepare) {
+		simulation_.SetPrefabResourcePreparation(std::move(prepare));
+	}
+
+	/// <summary>
 	/// 開始時のシーンを保持して再生する。失敗時は現在の再生状態を保持する
 	/// </summary>
 	/// <param name="scene">複製元の編集シーン。値は変更しない</param>

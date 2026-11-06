@@ -1976,7 +1976,18 @@ void ControlsPanel::Draw() {
 	         "collect "
 	         "nested Prefabs and their model, image, audio, Lua and scene "
 	         "transition dependencies. Cycles are allowed and each asset is "
-	         "processed once, within the shared 256 scene/Prefab limit."},
+	         "processed once, within the shared 256 scene/Prefab limit. "
+	         "In Lua callbacks use local object = "
+	         "self:instantiate(\"enemy\",x,y,z). "
+	         "The name must be assigned on that object. The returned root "
+	         "has new IDs and remapped internal references; its scripts start "
+	         "on the next positive step. Prefabs and their "
+	         "Lua/model/image/audio "
+	         "assets are prepared before Play. Pause does not spawn; Step runs "
+	         "one step and Restart removes generated objects. Limits are 16 "
+	         "calls per callback, 32 per step, 1024 generated objects per step "
+	         "and 4096 scene objects. Any callback, physics or preparation "
+	         "failure restores the entire simulation step."},
 	        {"Collision Scripts",
 	         "Return collision_enter(self,state,other), collision_stay or "
 	         "collision_exit for solid Collider contacts. These are separate "

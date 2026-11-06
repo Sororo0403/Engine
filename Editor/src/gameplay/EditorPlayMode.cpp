@@ -19,6 +19,10 @@ EditorPlayMode::EditorPlayMode(ModelManager &models, RenderSystem &render,
       previewRenderer_(preview_.GetScene(), models, render,
                        SceneRenderer::ModelLoadFailure::SKIP),
       render_(render), models_(models) {
+	session_.SetPrefabResourcePreparation(
+	    [this, &clips](auto prefabs, std::string &error) {
+		    return renderer_.PreparePrefabResources(prefabs, clips, error);
+	    });
 }
 
 EditorPlayMode::~EditorPlayMode() = default;
@@ -313,6 +317,7 @@ bool EditorPlayMode::IsPaused() const {
 }
 
 void EditorPlayMode::Stop() {
+	renderer_.ClearPrefabResources();
 	audioPlayer_.Stop();
 	session_.Stop();
 	maximized_ = false;
