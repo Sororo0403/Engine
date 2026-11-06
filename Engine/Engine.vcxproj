@@ -397,4 +397,8 @@ exit /b 0</Command>
     <ClInclude Include="include\scene\SceneAudioPlayer.h" />
     <ClCompile Include="src\scene\SceneAudioPlayer.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\scene\SceneAudioAction.h" />
+    <ClInclude Include="include\scene\SceneAudioActions.h" />
+  </ItemGroup>
 </Project>

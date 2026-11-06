@@ -257,7 +257,7 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
 	}
 
 	if (!audioPlayer_.Start(session_.GetCameraPose(), false, error,
-	                        invalidObject)) {
+	                        invalidObject, session_.GetAudioActions())) {
 		Stop();
 		return false;
 	}
@@ -283,7 +283,7 @@ bool EditorPlayMode::Restart(std::string &error) {
 	}
 
 	if (!audioPlayer_.Start(session_.GetCameraPose(), session_.IsPaused(),
-	                        error)) {
+	                        error, nullptr, session_.GetAudioActions())) {
 		Stop();
 		return false;
 	}
@@ -299,7 +299,7 @@ void EditorPlayMode::TogglePause() {
 	session_.TogglePause();
 	std::string error;
 	if (!audioPlayer_.Update(session_.GetCameraPose(), session_.IsPaused(),
-	                         error))
+	                         error, nullptr, session_.GetAudioActions()))
 		lastUpdateError_ = std::move(error);
 }
 
@@ -364,7 +364,8 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 	if ((!visible_ && !sceneVisible) || ImGui::GetIO().AppFocusLost ||
 	    (!sceneVisible && !viewport_.applicationFocused)) {
 		return audioPlayer_.Update(session_.GetCameraPose(), true,
-		                           lastUpdateError_);
+		                           lastUpdateError_, nullptr,
+		                           session_.GetAudioActions());
 	}
 
 	if (!std::isfinite(seconds) || seconds < 0) {
@@ -376,7 +377,8 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 	}
 
 	if (!audioPlayer_.Update(session_.GetCameraPose(), session_.IsPaused(),
-	                         lastUpdateError_))
+	                         lastUpdateError_, nullptr,
+	                         session_.GetAudioActions()))
 		return false;
 
 	if (!visible_) {

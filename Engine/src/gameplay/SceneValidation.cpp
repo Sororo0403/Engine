@@ -94,6 +94,12 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 						        "for each action.");
 						break;
 					}
+					if (action.IsAudioOperation() &&
+					    !scene.FindObject(action.target)->audioSource) {
+						add(id, "Audio Trigger Actions require an Audio Source "
+						        "on their target.");
+						break;
+					}
 				}
 			}
 		}

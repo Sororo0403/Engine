@@ -10,6 +10,7 @@
 #include <cmath>
 #include <exception>
 #include <format>
+#include <limits>
 #include <map>
 #include <set>
 #include <string_view>
@@ -17,7 +18,15 @@
 bool SceneSimulation::Start(const Scene &source, std::string &error,
                             const CameraPose &fallbackPose,
                             SceneObjectId *invalidObject) {
+	if (invalidObject) {
+		*invalidObject = 0;
+	}
+
 	try {
+		if (audioRevision_ == (std::numeric_limits<std::uint64_t>::max)()) {
+			error = "The simulation audio revision limit was reached.";
+			return false;
+		}
 		SceneSimulation working;
 		if (!working.Configure(source, error, fallbackPose, invalidObject,
 		                       false)) {
@@ -28,6 +37,7 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 		if (!working.ApplyTriggerActions(error, invalidObject)) {
 			return false;
 		}
+		working.audioRevision_ = audioRevision_ + 1;
 		Adopt(working);
 		return true;
 	} catch (const std::exception &exception) {
@@ -297,6 +307,7 @@ bool SceneSimulation::Configure(const Scene &source, std::string &error,
 void SceneSimulation::Stop() {
 	playing_ = false;
 	frameEvents_.clear();
+	audioActions_.clear();
 	pendingActionSignals_.clear();
 	firedActions_.clear();
 	lastUpdateError_.clear();
@@ -326,6 +337,11 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input) {
 		}
 		SceneSimulation working;
 		working.CopyFrom(*this);
+		if (audioRevision_ == (std::numeric_limits<std::uint64_t>::max)()) {
+			lastUpdateError_ =
+			    "The simulation audio revision limit was reached.";
+			return false;
+		}
 		if (!working.Advance(seconds, input)) {
 			lastUpdateError_ = "Simulation update failed. Check active physics "
 			                   "and camera settings.";
@@ -339,6 +355,7 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input) {
 			return false;
 		}
 		working.lastUpdateError_.clear();
+		working.audioRevision_ = audioRevision_ + 1;
 		Adopt(working);
 		return true;
 	} catch (const std::exception &exception) {

@@ -357,7 +357,12 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 					        ? "enable"
 					    : action.operation == TriggerAction::Operation::DISABLE
 					        ? "disable"
-					        : "toggle";
+					    : action.operation == TriggerAction::Operation::TOGGLE
+					        ? "toggle"
+					    : action.operation ==
+					            TriggerAction::Operation::PLAY_AUDIO
+					        ? "playAudio"
+					        : "stopAudio";
 					actions.push_back(
 					    {{"event", action.event == TriggerEvent::Type::ENTER
 					                   ? "enter"
@@ -432,7 +437,7 @@ namespace {
 /// 解析したシーンドキュメントを検証し、全件成功した場合だけ反映する
 /// </summary>
 /// <param name="scene">読み込み先</param>
-/// <param name="document">version 1から20のJSON</param>
+/// <param name="document">version 1から21のJSON</param>
 /// <returns>true:成功 false:内容が無効</returns>
 bool ApplySceneDocument(Scene &scene, const Json &document) {
 	try {
@@ -688,7 +693,9 @@ bool ApplySceneDocument(Scene &scene, const Json &document) {
 					    value.at("operation").get<std::string>();
 					if ((event != "enter" && event != "exit") ||
 					    (operation != "enable" && operation != "disable" &&
-					     operation != "toggle") ||
+					     operation != "toggle" &&
+					     !(version >= 21 && (operation == "playAudio" ||
+					                         operation == "stopAudio"))) ||
 					    !value.at("target").is_number_unsigned() ||
 					    !value.at("once").is_boolean()) {
 						throw std::runtime_error(
@@ -702,7 +709,11 @@ bool ApplySceneDocument(Scene &scene, const Json &document) {
 					         ? TriggerAction::Operation::ENABLE
 					     : operation == "disable"
 					         ? TriggerAction::Operation::DISABLE
-					         : TriggerAction::Operation::TOGGLE,
+					     : operation == "toggle"
+					         ? TriggerAction::Operation::TOGGLE
+					     : operation == "playAudio"
+					         ? TriggerAction::Operation::PLAY_AUDIO
+					         : TriggerAction::Operation::STOP_AUDIO,
 					     value.at("once").get<bool>()});
 				}
 				object.triggerActions = std::move(component);

@@ -22,6 +22,8 @@ void SceneSimulation::CopyFrom(const SceneSimulation &source) {
 	cameraSettings_ = source.cameraSettings_;
 	playing_ = source.playing_;
 	frameEvents_ = source.frameEvents_;
+	audioActions_ = source.audioActions_;
+	audioRevision_ = source.audioRevision_;
 	pendingActionSignals_ = source.pendingActionSignals_;
 	firedActions_ = source.firedActions_;
 	lastUpdateError_ = source.lastUpdateError_;
@@ -45,6 +47,8 @@ void SceneSimulation::Adopt(SceneSimulation &source) {
 	cameraSettings_ = source.cameraSettings_;
 	playing_ = source.playing_;
 	frameEvents_ = std::move(source.frameEvents_);
+	audioActions_ = std::move(source.audioActions_);
+	audioRevision_ = source.audioRevision_;
 	pendingActionSignals_ = std::move(source.pendingActionSignals_);
 	firedActions_ = std::move(source.firedActions_);
 	lastUpdateError_ = std::move(source.lastUpdateError_);
@@ -78,6 +82,7 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 	QueueActionSignals(frameEvents_, signals);
 	auto fired = firedActions_;
 	std::map<SceneObjectId, bool> requested;
+	std::vector<SceneAudioAction> audio;
 	for (const auto &signal : signals) {
 		const auto *object = scene_.FindObject(signal.receiver);
 		if (!object || !SceneActivity::IsActive(scene_, signal.receiver) ||
@@ -103,6 +108,26 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 				}
 				return false;
 			}
+			if (action.IsAudioOperation()) {
+				if (!target->audioSource) {
+					error = std::format("Trigger Actions on object ID {} need "
+					                    "an Audio Source on target ID {}.",
+					                    signal.receiver, action.target);
+					if (invalidObject) {
+						*invalidObject = signal.receiver;
+					}
+					return false;
+				}
+				audio.push_back(
+				    {action.target,
+				     action.operation == TriggerAction::Operation::PLAY_AUDIO
+				         ? SceneAudioAction::Operation::PLAY
+				         : SceneAudioAction::Operation::STOP});
+				if (action.once) {
+					fired.insert(key);
+				}
+				continue;
+			}
 			auto entry =
 			    requested.try_emplace(action.target, target->active).first;
 			switch (action.operation) {
@@ -114,6 +139,9 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 				break;
 			case TriggerAction::Operation::TOGGLE:
 				entry->second = !entry->second;
+				break;
+			case TriggerAction::Operation::PLAY_AUDIO:
+			case TriggerAction::Operation::STOP_AUDIO:
 				break;
 			}
 			if (action.once) {
@@ -143,5 +171,6 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 		frameEvents_.swap(events);
 	}
 	firedActions_.swap(fired);
+	audioActions_.swap(audio);
 	return true;
 }

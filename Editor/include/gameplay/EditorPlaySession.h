@@ -142,6 +142,14 @@ class EditorPlaySession {
 	std::span<const TriggerEvent> GetTriggerEvents() const;
 
 	/// <summary>
+	/// 最後に成功したシミュレーションの音声要求を取得する。一時停止中は同じrevisionを返す
+	/// </summary>
+	/// <returns>次の成功または停止まで有効な要求。音声側は同じrevisionを再実行しない</returns>
+	SceneAudioActions GetAudioActions() const {
+		return simulation_.GetAudioActions();
+	}
+
+	/// <summary>
 	/// 現在Triggerと重なっている組を取得する
 	/// </summary>
 	/// <returns>ID順の接触一覧。瞬間的な通過の組は含まない</returns>

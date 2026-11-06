@@ -696,4 +696,8 @@
     <ClInclude Include="include\scene\SceneAudioPlayer.h"><Filter>include\scene</Filter></ClInclude>
     <ClCompile Include="src\scene\SceneAudioPlayer.cpp"><Filter>src\scene</Filter></ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\scene\SceneAudioAction.h"><Filter>include\scene</Filter></ClInclude>
+    <ClInclude Include="include\scene\SceneAudioActions.h"><Filter>include\scene</Filter></ClInclude>
+  </ItemGroup>
 </Project>

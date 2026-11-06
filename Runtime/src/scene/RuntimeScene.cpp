@@ -27,7 +27,8 @@ bool RuntimeScene::Initialize() {
 
 	if (!renderer_.Initialize())
 		return false;
-	if (!audioPlayer_.Start(simulation_.GetCameraPose(), false, error)) {
+	if (!audioPlayer_.Start(simulation_.GetCameraPose(), false, error, nullptr,
+	                        simulation_.GetAudioActions())) {
 		Logger::Error(error);
 		return false;
 	}
@@ -59,7 +60,8 @@ bool RuntimeScene::Update(float seconds) {
 
 	std::string audioError;
 	if (!audioPlayer_.Update(simulation_.GetCameraPose(), !input_.IsActive(),
-	                         audioError)) {
+	                         audioError, nullptr,
+	                         simulation_.GetAudioActions())) {
 		Logger::Error(audioError);
 		return false;
 	}

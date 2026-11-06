@@ -7,6 +7,7 @@
 #include "physics/TriggerWorld.h"
 #include "scene/Scene.h"
 #include "scene/SceneActiveChange.h"
+#include "scene/SceneAudioActions.h"
 #include <cstddef>
 #include <map>
 #include <optional>
@@ -123,6 +124,14 @@ class SceneSimulation {
 	}
 
 	/// <summary>
+	/// 成功した開始・正の時間の更新で確定した音声要求を取得する。0秒更新・一時停止・失敗では保持する
+	/// </summary>
+	/// <returns>次の成功または停止まで有効な参照。同じrevisionは再実行しない</returns>
+	SceneAudioActions GetAudioActions() const {
+		return {audioRevision_, audioActions_};
+	}
+
+	/// <summary>
 	/// 最後のUpdateに失敗した理由を取得する。開始と更新の成功時は空になる
 	/// </summary>
 	/// <returns>次のUpdateまたは再生開始まで有効な失敗理由</returns>
@@ -176,7 +185,7 @@ class SceneSimulation {
 	                        std::vector<ActionSignal> &signals) const;
 
 	/// <summary>
-	/// 予約済みの検知と今回の検知から操作を集め、最後に有効設定を一括変更する
+	/// 予約済みの検知と今回の検知から操作を集め、有効設定を一括変更してから音声要求を確定する
 	/// </summary>
 	/// <param name="error">失敗理由。成功時は空</param>
 	/// <param name="invalidObject">指定時は問題のIDを設定する</param>
@@ -213,6 +222,8 @@ class SceneSimulation {
 	CameraSettings cameraSettings_{};
 	bool playing_ = false;
 	std::vector<TriggerEvent> frameEvents_;
+	std::vector<SceneAudioAction> audioActions_;
+	std::uint64_t audioRevision_ = 0;
 	std::vector<ActionSignal> pendingActionSignals_;
 	std::set<std::pair<SceneObjectId, std::size_t>> firedActions_;
 	std::string lastUpdateError_;

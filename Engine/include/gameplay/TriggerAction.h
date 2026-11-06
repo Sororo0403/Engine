@@ -3,13 +3,13 @@
 #include "physics/TriggerEvent.h"
 
 /// <summary>
-/// Triggerの進入・退出に応じて、対象物体自身の有効設定を変更する
+/// Triggerの進入・退出に応じて、対象物体の有効設定または音声の再生を操作する
 /// </summary>
 struct TriggerAction {
 	/// <summary>
-	/// 対象へ適用する有効設定の操作
+	/// 対象へ適用する有効設定、またはAudio Sourceの再生・停止
 	/// </summary>
-	enum class Operation { ENABLE, DISABLE, TOGGLE };
+	enum class Operation { ENABLE, DISABLE, TOGGLE, PLAY_AUDIO, STOP_AUDIO };
 
 	TriggerEvent::Type event = TriggerEvent::Type::ENTER;
 	SceneObjectId target = 0;
@@ -25,7 +25,16 @@ struct TriggerAction {
 		        event == TriggerEvent::Type::EXIT) &&
 		       (operation == Operation::ENABLE ||
 		        operation == Operation::DISABLE ||
-		        operation == Operation::TOGGLE);
+		        operation == Operation::TOGGLE || IsAudioOperation());
+	}
+
+	/// <summary>
+	/// 対象にAudio Sourceが必要な操作か確認する
+	/// </summary>
+	/// <returns>true:音声操作 false:有効設定の操作または未対応の値</returns>
+	bool IsAudioOperation() const {
+		return operation == Operation::PLAY_AUDIO ||
+		       operation == Operation::STOP_AUDIO;
 	}
 
 	/// <summary>

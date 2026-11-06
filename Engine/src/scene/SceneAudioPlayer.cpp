@@ -2,6 +2,7 @@
 
 #include "audio/AudioClipManager.h"
 #include "core/Logger.h"
+#include "scene/Scene.h"
 #include <exception>
 #include <format>
 #include <utility>
@@ -16,19 +17,20 @@ SceneAudioPlayer::~SceneAudioPlayer() {
 }
 
 bool SceneAudioPlayer::Start(const CameraPose &camera, bool paused,
-                             std::string &error, SceneObjectId *invalidObject) {
+                             std::string &error, SceneObjectId *invalidObject,
+                             const SceneAudioActions &actions) {
 	SceneAudioFrame frame;
 	if (!SceneAudio::Collect(scene_, camera, frame, error, invalidObject))
 		return false;
-	if (!Synchronize(frame, paused, true, error, invalidObject))
+	if (!Synchronize(frame, paused, true, error, invalidObject, actions))
 		return false;
 	started_ = true;
 	return true;
 }
 
 bool SceneAudioPlayer::Update(const CameraPose &camera, bool paused,
-                              std::string &error,
-                              SceneObjectId *invalidObject) {
+                              std::string &error, SceneObjectId *invalidObject,
+                              const SceneAudioActions &actions) {
 	if (!started_) {
 		error = "Start scene audio before updating it.";
 		if (invalidObject)
@@ -38,17 +40,44 @@ bool SceneAudioPlayer::Update(const CameraPose &camera, bool paused,
 
 	SceneAudioFrame frame;
 	return SceneAudio::Collect(scene_, camera, frame, error, invalidObject) &&
-	       Synchronize(frame, paused, false, error, invalidObject);
+	       Synchronize(frame, paused, false, error, invalidObject, actions);
 }
 
 bool SceneAudioPlayer::Synchronize(const SceneAudioFrame &frame, bool paused,
                                    bool restart, std::string &error,
-                                   SceneObjectId *invalidObject) {
+                                   SceneObjectId *invalidObject,
+                                   const SceneAudioActions &actions) {
 	error.clear();
 	if (invalidObject)
 		*invalidObject = 0;
 	SceneObjectId current = 0;
 	try {
+		if (!restart && actionRevision_ &&
+		    actions.revision < *actionRevision_) {
+			error =
+			    "Use the latest simulation audio actions when synchronizing "
+			    "scene audio.";
+			return false;
+		}
+
+		std::map<SceneObjectId, SceneAudioAction::Operation> requested;
+		if (restart || !actionRevision_ ||
+		    actions.revision != *actionRevision_) {
+			for (const auto &action : actions.commands) {
+				current = action.target;
+				const auto *target = scene_.FindObject(action.target);
+				if (!action.IsValid() || !target || !target->audioSource) {
+					error = "Scene audio actions require a valid operation and "
+					        "an existing Audio Source target.";
+					if (invalidObject) {
+						*invalidObject = current;
+					}
+					return false;
+				}
+				requested[action.target] = action.operation;
+			}
+		}
+
 		std::map<SceneObjectId, Entry> next;
 		for (const auto &source : frame.sources) {
 			current = source.id;
@@ -81,6 +110,15 @@ bool SceneAudioPlayer::Synchronize(const SceneAudioFrame &frame, bool paused,
 
 			entry.pending = source.component.playOnStart;
 			next.emplace(source.id, std::move(entry));
+		}
+
+		// 先に最終要求を候補へ反映し、同じ更新内で停止する音を一瞬でも開始しない。
+		for (const auto &[id, operation] : requested) {
+			if (const auto found = next.find(id); found != next.end()) {
+				found->second.handle = {};
+				found->second.pending =
+				    operation == SceneAudioAction::Operation::PLAY;
+			}
 		}
 
 		// 新しい全参照を確認してから、無効化・削除・再設定された音だけを破棄する。
@@ -161,6 +199,7 @@ bool SceneAudioPlayer::Synchronize(const SceneAudioFrame &frame, bool paused,
 
 		deviceRevision_ = audio_.GetDeviceRevision();
 		paused_ = paused;
+		actionRevision_ = actions.revision;
 		return true;
 	} catch (const std::exception &exception) {
 		error = std::format("Scene audio object ID {}: {}", current,
@@ -176,6 +215,7 @@ void SceneAudioPlayer::Stop() {
 		audio_.Stop(entry.handle);
 	entries_.clear();
 	started_ = false;
+	actionRevision_.reset();
 }
 
 AudioPlaybackState SceneAudioPlayer::GetState(SceneObjectId id) const {
