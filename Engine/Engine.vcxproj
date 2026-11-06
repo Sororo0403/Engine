@@ -2233,4 +2233,8 @@ exit /b 0</Command>
     <ClInclude Include="include\physics\CollisionEvents.h" />
     <ClCompile Include="src\physics\CollisionEvents.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\scene\PrefabSerializer.h" />
+    <ClCompile Include="src\scene\PrefabSerializer.cpp" />
+  </ItemGroup>
 </Project>
