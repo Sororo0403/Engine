@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
@@ -202,7 +202,7 @@
   <PropertyGroup Label="UserMacros" />
   <!-- 外部ヘッダーとして扱い、ライブラリ側の警告レベルを分ける -->
   <PropertyGroup>
-    <ExternalIncludePath>$(EngineExternalRoot)nlohmann\include;$(EngineExternalRoot)gameinput\include;$(EngineExternalRoot)dxc\include;$(EngineExternalRoot)directxtk12\include;$(EngineExternalRoot)assimp\include;$(EngineExternalRoot)imgui\include;$(EngineExternalRoot)directxmath\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>$(EngineExternalRoot)lua\include;$(EngineExternalRoot)nlohmann\include;$(EngineExternalRoot)gameinput\include;$(EngineExternalRoot)dxc\include;$(EngineExternalRoot)directxtk12\include;$(EngineExternalRoot)assimp\include;$(EngineExternalRoot)imgui\include;$(EngineExternalRoot)directxmath\include;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)build\lib\$(Configuration)\</OutDir>
@@ -222,7 +222,7 @@
       <TreatWarningAsError>true</TreatWarningAsError>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(EngineExternalRoot)nlohmann\include;$(EngineExternalRoot)gameinput\include;$(EngineExternalRoot)dxc\include;$(EngineExternalRoot)directxtk12\include;$(EngineExternalRoot)assimp\include;$(EngineExternalRoot)imgui\include;$(EngineExternalRoot)directxmath\include;$(ProjectDir)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)lua\include;$(EngineExternalRoot)nlohmann\include;$(EngineExternalRoot)gameinput\include;$(EngineExternalRoot)dxc\include;$(EngineExternalRoot)directxtk12\include;$(EngineExternalRoot)assimp\include;$(EngineExternalRoot)imgui\include;$(EngineExternalRoot)directxmath\include;$(ProjectDir)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
     </ClCompile>
@@ -247,7 +247,7 @@
       <TreatWarningAsError>true</TreatWarningAsError>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(EngineExternalRoot)nlohmann\include;$(EngineExternalRoot)gameinput\include;$(EngineExternalRoot)dxc\include;$(EngineExternalRoot)directxtk12\include;$(EngineExternalRoot)assimp\include;$(EngineExternalRoot)imgui\include;$(EngineExternalRoot)directxmath\include;$(ProjectDir)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(EngineExternalRoot)lua\include;$(EngineExternalRoot)nlohmann\include;$(EngineExternalRoot)gameinput\include;$(EngineExternalRoot)dxc\include;$(EngineExternalRoot)directxtk12\include;$(EngineExternalRoot)assimp\include;$(EngineExternalRoot)imgui\include;$(EngineExternalRoot)directxmath\include;$(ProjectDir)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
     </ClCompile>
@@ -419,5 +419,242 @@ exit /b 0</Command>
     <ClInclude Include="include\gameplay\SceneMotion.h" />
     <ClCompile Include="src\gameplay\MotionPathComponent.cpp" />
     <ClCompile Include="src\gameplay\SceneMotion.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="external\lua\include\lauxlib.h" />
+    <ClInclude Include="external\lua\include\lua.h" />
+    <ClInclude Include="external\lua\include\luaconf.h" />
+    <ClInclude Include="external\lua\include\lualib.h" />
+    <ClCompile Include="external\lua\src\lapi.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClInclude Include="external\lua\src\lapi.h" />
+    <ClCompile Include="external\lua\src\lauxlib.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="external\lua\src\lbaselib.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="external\lua\src\lcode.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClInclude Include="external\lua\src\lcode.h" />
+    <ClCompile Include="external\lua\src\lctype.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClInclude Include="external\lua\src\lctype.h" />
+    <ClCompile Include="external\lua\src\ldebug.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClInclude Include="external\lua\src\ldebug.h" />
+    <ClCompile Include="external\lua\src\ldo.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClInclude Include="external\lua\src\ldo.h" />
+    <ClCompile Include="external\lua\src\ldump.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="external\lua\src\lfunc.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClInclude Include="external\lua\src\lfunc.h" />
+    <ClCompile Include="external\lua\src\lgc.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClInclude Include="external\lua\src\lgc.h" />
+    <ClInclude Include="external\lua\src\ljumptab.h" />
+    <ClCompile Include="external\lua\src\llex.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClInclude Include="external\lua\src\llex.h" />
+    <ClInclude Include="external\lua\src\llimits.h" />
+    <ClCompile Include="external\lua\src\lmathlib.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="external\lua\src\lmem.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClInclude Include="external\lua\src\lmem.h" />
+    <ClCompile Include="external\lua\src\lobject.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClInclude Include="external\lua\src\lobject.h" />
+    <ClCompile Include="external\lua\src\lopcodes.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClInclude Include="external\lua\src\lopcodes.h" />
+    <ClInclude Include="external\lua\src\lopnames.h" />
+    <ClCompile Include="external\lua\src\lparser.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClInclude Include="external\lua\src\lparser.h" />
+    <ClInclude Include="external\lua\src\lprefix.h" />
+    <ClCompile Include="external\lua\src\lstate.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClInclude Include="external\lua\src\lstate.h" />
+    <ClCompile Include="external\lua\src\lstring.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClInclude Include="external\lua\src\lstring.h" />
+    <ClCompile Include="external\lua\src\lstrlib.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="external\lua\src\ltable.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClInclude Include="external\lua\src\ltable.h" />
+    <ClCompile Include="external\lua\src\ltablib.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="external\lua\src\ltm.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClInclude Include="external\lua\src\ltm.h" />
+    <ClCompile Include="external\lua\src\lundump.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClInclude Include="external\lua\src\lundump.h" />
+    <ClCompile Include="external\lua\src\lutf8lib.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="external\lua\src\lvm.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClInclude Include="external\lua\src\lvm.h" />
+    <ClCompile Include="external\lua\src\lzio.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClInclude Include="external\lua\src\lzio.h" />
   </ItemGroup>
 </Project>
