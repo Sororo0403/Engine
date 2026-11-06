@@ -1486,6 +1486,10 @@ bool EditorHistory::HasPendingChanges() const {
 		                             Before,
 		                             std::optional<SpotLightComponent>>) {
 			    return before != object->spotLight;
+		    } else if constexpr (std::is_same_v<
+		                             Before,
+		                             std::optional<MotionPathComponent>>) {
+			    return before != object->motionPath;
 		    } else if constexpr (std::is_same_v<Before,
 		                                        std::optional<ColorTint>>) {
 			    return before != object->colorTint;
@@ -1655,6 +1659,13 @@ void EditorHistory::CommitEdit() {
 		return;
 	}
 
+	if (std::holds_alternative<std::optional<MotionPathComponent>>(
+	        pending_->before) &&
+	    object->motionPath && !object->motionPath->IsValid()) {
+		Invalidate();
+		return;
+	}
+
 	if (std::holds_alternative<std::optional<ColorTint>>(pending_->before) &&
 	    object->colorTint && !object->colorTint->IsValid()) {
 		Invalidate();
@@ -1722,6 +1733,11 @@ void EditorHistory::CommitEdit() {
 		                             std::optional<SpotLightComponent>>) {
 			    return Command{
 			        SpotLightCommand{objectId, before, object->spotLight}};
+		    } else if constexpr (std::is_same_v<
+		                             Before,
+		                             std::optional<MotionPathComponent>>) {
+			    return Command{
+			        MotionPathCommand{objectId, before, object->motionPath}};
 		    } else if constexpr (std::is_same_v<Before,
 		                                        std::optional<ColorTint>>) {
 			    return Command{
@@ -1789,6 +1805,9 @@ void EditorHistory::CommitEdit() {
 		    } else if constexpr (std::is_same_v<
 		                             T, std::optional<SpotLightComponent>>) {
 			    return "Edit Spot Light";
+		    } else if constexpr (std::is_same_v<
+		                             T, std::optional<MotionPathComponent>>) {
+			    return "Edit Motion Path";
 		    } else if constexpr (std::is_same_v<T, std::optional<ColorTint>>) {
 			    return "Edit Color Tint";
 		    } else if constexpr (std::is_same_v<
@@ -2846,6 +2865,47 @@ bool EditorHistory::BeginSpotLight(SceneObjectId id) {
 	}
 
 	pending_ = PendingEdit{id, object->spotLight};
+	return true;
+}
+
+bool EditorHistory::SetMotionPath(SceneObjectId id,
+                                  std::optional<MotionPathComponent> value) {
+	CommitEdit();
+	auto *object = scene_.FindObject(id);
+
+	if (!object || (value && !value->IsValid())) {
+		return false;
+	}
+
+	const bool adding = !object->motionPath;
+	MotionPathCommand command{id, object->motionPath, value};
+
+	if (!command.HasChanges()) {
+		return true;
+	}
+
+	const auto next = PrepareAppend();
+
+	if (!command.Redo(scene_)) {
+		return false;
+	}
+
+	AppendPrepared(Command{std::move(command)}, next,
+	               !value   ? "Remove Motion Path"
+	               : adding ? "Add Motion Path"
+	                        : "Edit Motion Path");
+	return true;
+}
+
+bool EditorHistory::BeginMotionPath(SceneObjectId id) {
+	CommitEdit();
+	const auto *object = scene_.FindObject(id);
+
+	if (!object || !object->motionPath) {
+		return false;
+	}
+
+	pending_ = PendingEdit{id, object->motionPath};
 	return true;
 }
 

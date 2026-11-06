@@ -1813,6 +1813,19 @@ void ControlsPanel::Draw() {
 	         "Drop to Ground still uses world Y=0; position snapping uses its "
 	         "existing world-origin intervals. Restore Defaults resets the "
 	         "height to zero."},
+	        {"Motion Path",
+	         "Add Motion Path in Inspector to move an object along offsets "
+	         "from its Play-start local position. The first point stays at "
+	         "zero. Each segment uses Segment Seconds; choose Once, Loop "
+	         "(including the return segment) or Ping Pong, with optional "
+	         "Smooth easing. Colliders create moving floors: standing "
+	         "characters ride along. Solid paths stop at obstacles or when a "
+	         "passenger would be crushed, and resume when clear. Trigger and "
+	         "model-only paths do not block. Inactive branches pause their "
+	         "path; Pause and Step use game time. Character Controller and "
+	         "Follow Camera cannot share the moving object. Child objects "
+	         "inherit motion. Restart restores the authored position. All "
+	         "settings and point edits support Undo/Redo and game output."},
 	        {"View menu", "Show or hide the grid and selection bounds, or "
 	                      "reset the dock layout."},
 	    });

@@ -812,4 +812,12 @@
     <ClInclude Include="include\prefab\PrefabInspector.h"><Filter>include\prefab</Filter></ClInclude>
     <ClCompile Include="src\prefab\PrefabInspector.cpp"><Filter>src\prefab</Filter></ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\gameplay\MotionPathInspector.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
+    <ClCompile Include="src\gameplay\MotionPathInspector.cpp">
+      <Filter>src\gameplay</Filter>
+    </ClCompile>
+  </ItemGroup>
 </Project>

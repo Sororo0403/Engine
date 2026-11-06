@@ -710,6 +710,22 @@ class EditorHistory {
 	bool ApplySceneChanges(const std::function<bool(Scene &)> &operation,
 	                       std::string_view description);
 
+	/// <summary>
+	/// 経路移動を追加・変更・削除し、1回の履歴へ記録する
+	/// </summary>
+	/// <param name="id">編集する物体</param>
+	/// <param name="value">設定。nulloptは削除</param>
+	/// <returns>true:変更成功または同値 false:対象または値が無効</returns>
+	bool SetMotionPath(SceneObjectId id,
+	                   std::optional<MotionPathComponent> value);
+
+	/// <summary>
+	/// 経路の連続編集を開始する
+	/// </summary>
+	/// <param name="id">経路を持つ物体</param>
+	/// <returns>true:開始成功 false:対象または経路なし</returns>
+	bool BeginMotionPath(SceneObjectId id);
+
   private:
 	// 単独の編集操作、または複数の編集操作を保持する
 	using Command =
@@ -717,10 +733,10 @@ class EditorHistory {
 	                 RenameCommand, ModelPathCommand, VisibilityCommand,
 	                 ActiveCommand, ColliderCommand, CharacterCommand,
 	                 FollowCameraCommand, TriggerActionsCommand,
-	                 PointLightCommand, SpotLightCommand, AudioSourceCommand,
-	                 AudioListenerCommand, RespawnCommand, CameraCommand,
-	                 MeshRendererCommand, ColorTintCommand, TextureSlotsCommand,
-	                 CommandGroup, ScenePatchCommand>;
+	                 PointLightCommand, SpotLightCommand, MotionPathCommand,
+	                 AudioSourceCommand, AudioListenerCommand, RespawnCommand,
+	                 CameraCommand, MeshRendererCommand, ColorTintCommand,
+	                 TextureSlotsCommand, CommandGroup, ScenePatchCommand>;
 
 	/// <summary>
 	/// 操作と、その前後の状態を識別する情報
@@ -747,6 +763,7 @@ class EditorHistory {
 		             std::optional<RespawnSettings>, std::optional<ColorTint>,
 		             std::optional<PointLightComponent>,
 		             std::optional<SpotLightComponent>,
+		             std::optional<MotionPathComponent>,
 		             std::optional<AudioSourceComponent>,
 		             std::optional<MeshRendererComponent>>
 		    before;

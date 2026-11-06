@@ -1,6 +1,7 @@
 #include "panels/InspectorPanel.h"
 #include "appearance/ColorTintInspector.h"
 #include "appearance/TextureSlotInspector.h"
+#include "gameplay/MotionPathInspector.h"
 #include "lighting/PointLightInspector.h"
 #include "lighting/SpotLightInspector.h"
 #include "scene/SceneActivity.h"
@@ -359,6 +360,8 @@ bool InspectorPanel::Draw(
 	}
 
 	prefabRequest_ = PrefabInspector{}.Draw(ui, scene, inspectedObjectId);
+	changed |=
+	    MotionPathInspector{}.Draw(ui, inspectedObjectId, *object, history);
 
 	if (object->mesh && ui.CollapsingHeader("Mesh")) {
 		const auto label = std::format(
@@ -435,6 +438,11 @@ bool InspectorPanel::Draw(
 		if (ui.MenuItem("Point Light", nullptr, !object->pointLight)) {
 			changed |=
 			    history.SetPointLight(inspectedObjectId, PointLightComponent{});
+		}
+
+		if (ui.MenuItem("Motion Path", nullptr, !object->motionPath)) {
+			changed |=
+			    history.SetMotionPath(inspectedObjectId, MotionPathComponent{});
 		}
 
 		if (ui.MenuItem("Spot Light", nullptr, !object->spotLight)) {
@@ -788,6 +796,7 @@ InspectorPanel::DrawReadOnly(const ImGuiSystem &ui, const Scene &scene,
 
 	PointLightInspector{}.DrawReadOnly(ui, *object);
 	SpotLightInspector{}.DrawReadOnly(ui, *object);
+	MotionPathInspector{}.DrawReadOnly(ui, *object);
 
 	TriggerActionsInspector{}.DrawReadOnly(ui, scene, *object);
 

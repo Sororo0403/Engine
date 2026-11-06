@@ -100,5 +100,8 @@ using AudioSourceCommand =
 using AudioListenerCommand =
     ComponentCommand<AudioListenerComponent, &SceneObject::audioListener>;
 
+using MotionPathCommand =
+    ComponentCommand<MotionPathComponent, &SceneObject::motionPath>;
+
 using SpotLightCommand =
     ComponentCommand<SpotLightComponent, &SceneObject::spotLight>;
