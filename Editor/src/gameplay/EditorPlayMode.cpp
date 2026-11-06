@@ -11,8 +11,10 @@
 #include <imgui.h>
 #include <initializer_list>
 
-EditorPlayMode::EditorPlayMode(ModelManager &models, RenderSystem &render)
-    : renderer_(session_.GetScene(), models, render),
+EditorPlayMode::EditorPlayMode(ModelManager &models, RenderSystem &render,
+                               AudioClipManager &clips, AudioSystem &audio)
+    : audioPlayer_(session_.GetScene(), clips, audio),
+      renderer_(session_.GetScene(), models, render),
       previewRenderer_(preview_.GetScene(), models, render,
                        SceneRenderer::ModelLoadFailure::SKIP),
       render_(render), models_(models) {
@@ -254,6 +256,12 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
 		return false;
 	}
 
+	if (!audioPlayer_.Start(session_.GetCameraPose(), false, error,
+	                        invalidObject)) {
+		Stop();
+		return false;
+	}
+	lastUpdateError_.clear();
 	lighting_ = config.lighting;
 	inputBindings_ = config.input;
 	cameraRelativeMovement_ = config.cameraRelativeMovement;
@@ -274,6 +282,12 @@ bool EditorPlayMode::Restart(std::string &error) {
 		return false;
 	}
 
+	if (!audioPlayer_.Start(session_.GetCameraPose(), session_.IsPaused(),
+	                        error)) {
+		Stop();
+		return false;
+	}
+	lastUpdateError_.clear();
 	ready_ = false;
 	visible_ = false;
 	viewport_ = {};
@@ -283,6 +297,10 @@ bool EditorPlayMode::Restart(std::string &error) {
 
 void EditorPlayMode::TogglePause() {
 	session_.TogglePause();
+	std::string error;
+	if (!audioPlayer_.Update(session_.GetCameraPose(), session_.IsPaused(),
+	                         error))
+		lastUpdateError_ = std::move(error);
 }
 
 void EditorPlayMode::RequestStep() {
@@ -294,6 +312,7 @@ bool EditorPlayMode::IsPaused() const {
 }
 
 void EditorPlayMode::Stop() {
+	audioPlayer_.Stop();
 	session_.Stop();
 	maximized_ = false;
 	maximizeRequested_ = false;
@@ -319,6 +338,7 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 		return true;
 	}
 
+	lastUpdateError_.clear();
 	const auto *movementCamera =
 	    cameraRelativeMovement_ ? &session_.GetCameraPose() : nullptr;
 	const auto controls =
@@ -343,7 +363,8 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 	// Sceneだけが表示されている間も再生し、アプリ全体のフォーカス喪失時は止める。
 	if ((!visible_ && !sceneVisible) || ImGui::GetIO().AppFocusLost ||
 	    (!sceneVisible && !viewport_.applicationFocused)) {
-		return true;
+		return audioPlayer_.Update(session_.GetCameraPose(), true,
+		                           lastUpdateError_);
 	}
 
 	if (!std::isfinite(seconds) || seconds < 0) {
@@ -353,6 +374,10 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 	if (!session_.Update(seconds, controls)) {
 		return false;
 	}
+
+	if (!audioPlayer_.Update(session_.GetCameraPose(), session_.IsPaused(),
+	                         lastUpdateError_))
+		return false;
 
 	if (!visible_) {
 		return true;

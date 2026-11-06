@@ -5,6 +5,7 @@
 #include "gameplay/EditorPlaySession.h"
 #include "gameplay/GameConfig.h"
 #include "graphics/ui/ViewportInput.h"
+#include "scene/SceneAudioPlayer.h"
 #include "scene/SceneRenderer.h"
 #include <memory>
 
@@ -28,7 +29,10 @@ class EditorPlayMode {
 	/// </summary>
 	/// <param name="models">モデル管理</param>
 	/// <param name="render">描画機能</param>
-	EditorPlayMode(ModelManager &models, RenderSystem &render);
+	/// <param name="clips">音声データ管理</param>
+	/// <param name="audio">共有音声基盤</param>
+	EditorPlayMode(ModelManager &models, RenderSystem &render,
+	               AudioClipManager &clips, AudioSystem &audio);
 	~EditorPlayMode();
 
 	/// <summary>
@@ -154,6 +158,23 @@ class EditorPlayMode {
 	const EditorPlaySession &GetSession() const;
 
 	/// <summary>
+	/// 状態表示用に、この再生シーンが所有する音声の状態を取得する
+	/// </summary>
+	/// <returns>この再生モードの生存中に有効な音声セッション</returns>
+	const SceneAudioPlayer &GetAudioPlayer() const {
+		return audioPlayer_;
+	}
+
+	/// <summary>
+	/// シミュレーションまたはシーン音声の最後の更新エラーを取得する
+	/// </summary>
+	/// <returns>失敗理由。成功時は空</returns>
+	const std::string &GetLastUpdateError() const {
+		return lastUpdateError_.empty() ? session_.GetLastUpdateError()
+		                                : lastUpdateError_;
+	}
+
+	/// <summary>
 	/// 拡大表示と切り替え予約を解除する。再生状態・配置・選択を保ち、Gameへフォーカスを移さない
 	/// </summary>
 	void RestoreLayout();
@@ -192,6 +213,8 @@ class EditorPlayMode {
 
   private:
 	EditorPlaySession session_;
+	SceneAudioPlayer audioPlayer_;
+	std::string lastUpdateError_;
 	SceneObjectId previewCamera_ = 0;
 	EditorGamePreview preview_;
 	SceneRenderer renderer_;

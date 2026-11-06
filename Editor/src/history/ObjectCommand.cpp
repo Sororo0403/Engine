@@ -41,6 +41,8 @@ bool ObjectCommand::Remove(Scene &scene) const {
 	    current->respawn != object_.respawn ||
 	    current->triggerActions != object_.triggerActions ||
 	    current->pointLight != object_.pointLight ||
+	    current->audioSource != object_.audioSource ||
+	    current->audioListener != object_.audioListener ||
 	    !TransformUtils::AreEqual(current->transform, object_.transform)) {
 		return false;
 	}

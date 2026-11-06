@@ -8,7 +8,8 @@
 
 RuntimeScene::RuntimeScene(const EngineContext &context, GameConfig config)
     : input_(context.input), config_(std::move(config)),
-      renderer_(simulation_.GetScene(), context.models, context.render) {
+      renderer_(simulation_.GetScene(), context.models, context.render),
+      audioPlayer_(simulation_.GetScene(), context.audioClips, context.audio) {
 }
 
 bool RuntimeScene::Initialize() {
@@ -24,7 +25,13 @@ bool RuntimeScene::Initialize() {
 		return false;
 	}
 
-	return renderer_.Initialize();
+	if (!renderer_.Initialize())
+		return false;
+	if (!audioPlayer_.Start(simulation_.GetCameraPose(), false, error)) {
+		Logger::Error(error);
+		return false;
+	}
+	return true;
 }
 
 bool RuntimeScene::Update(float seconds) {
@@ -50,6 +57,13 @@ bool RuntimeScene::Update(float seconds) {
 		}
 	}
 
+	std::string audioError;
+	if (!audioPlayer_.Update(simulation_.GetCameraPose(), !input_.IsActive(),
+	                         audioError)) {
+		Logger::Error(audioError);
+		return false;
+	}
+
 	return renderer_.SetLighting(config_.lighting) &&
 	       renderer_.SetCameraPose(simulation_.GetCameraPose()) &&
 	       renderer_.SetCameraSettings(simulation_.GetCameraSettings()) &&
@@ -61,6 +75,7 @@ void RuntimeScene::Draw() const {
 }
 
 void RuntimeScene::Finalize() {
+	audioPlayer_.Stop();
 	renderer_.Finalize();
 	simulation_.Stop();
 }

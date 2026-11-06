@@ -3,6 +3,7 @@
 #include "gameplay/GameConfig.h"
 #include "gameplay/SceneSimulation.h"
 #include "scene/IScene.h"
+#include "scene/SceneAudioPlayer.h"
 #include "scene/SceneRenderer.h"
 
 struct EngineContext;
@@ -54,5 +55,6 @@ class RuntimeScene final : public IScene {
 	GameConfig config_;
 	SceneSimulation simulation_;
 	SceneRenderer renderer_;
+	SceneAudioPlayer audioPlayer_;
 	bool close_ = false;
 };

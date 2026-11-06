@@ -53,7 +53,8 @@ EditorScene::EditorScene(const EngineContext &context)
       materials_(context.render.GetMaterials()),
       renderer_(document_.GetScene(), context.models, context.render,
                 SceneRenderer::ModelLoadFailure::SKIP),
-      playMode_(context.models, context.render),
+      playMode_(context.models, context.render, context.audioClips,
+                context.audio),
       playSceneRenderer_(playMode_.GetSession().GetScene(), context.models,
                          context.render),
       sceneViewPanel_(context.render) {
@@ -296,7 +297,7 @@ bool EditorScene::Update(float deltaTime) {
 		sceneViewPanel_.CancelSelection();
 
 		if (!playMode_.Update(deltaTime, input_, IsBusy())) {
-			const auto reason = playMode_.GetSession().GetLastUpdateError();
+			const auto reason = playMode_.GetLastUpdateError();
 			playMode_.Stop();
 			ShowError(
 			    reason.empty()
@@ -360,7 +361,7 @@ bool EditorScene::Update(float deltaTime) {
 		                                 hierarchy.windowFocused,
 		                             sceneViewPanel_.GetRenderTexture() !=
 		                                 nullptr)) {
-			const auto reason = playMode_.GetSession().GetLastUpdateError();
+			const auto reason = playMode_.GetLastUpdateError();
 			playMode_.Stop();
 			ShowError(
 			    reason.empty()
