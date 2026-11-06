@@ -422,6 +422,22 @@ class EditorHistory {
 	                   std::optional<PointLightComponent> value);
 
 	/// <summary>
+	/// スポットライトの追加・設定・削除を1回の履歴に記録する
+	/// </summary>
+	/// <param name="objectId">既存の物体</param>
+	/// <param name="value">有効な設定。nulloptは削除</param>
+	/// <returns>true:成功または同値 false:対象または設定が無効</returns>
+	bool SetSpotLight(SceneObjectId objectId,
+	                  std::optional<SpotLightComponent> value);
+
+	/// <summary>
+	/// 色・強さ・範囲・照射角の連続編集を開始する。現在の編集は先に確定する
+	/// </summary>
+	/// <param name="objectId">スポットライトを持つ物体</param>
+	/// <returns>true:開始 false:物体または光源なし</returns>
+	bool BeginSpotLight(SceneObjectId objectId);
+
+	/// <summary>
 	/// Mesh Rendererの連続編集を開始し、UV・画像・表示状態の編集前の値を保持する
 	/// </summary>
 	/// <param name="objectId">Mesh Rendererを持つ物体</param>
@@ -677,13 +693,15 @@ class EditorHistory {
 
   private:
 	// 単独の編集操作、または複数の編集操作を保持する
-	using Command = std::variant<
-	    TransformCommand, ObjectCommand, ParentCommand, RenameCommand,
-	    ModelPathCommand, VisibilityCommand, ActiveCommand, ColliderCommand,
-	    CharacterCommand, FollowCameraCommand, TriggerActionsCommand,
-	    PointLightCommand, AudioSourceCommand, AudioListenerCommand,
-	    RespawnCommand, CameraCommand, MeshRendererCommand, ColorTintCommand,
-	    TextureSlotsCommand, CommandGroup>;
+	using Command =
+	    std::variant<TransformCommand, ObjectCommand, ParentCommand,
+	                 RenameCommand, ModelPathCommand, VisibilityCommand,
+	                 ActiveCommand, ColliderCommand, CharacterCommand,
+	                 FollowCameraCommand, TriggerActionsCommand,
+	                 PointLightCommand, SpotLightCommand, AudioSourceCommand,
+	                 AudioListenerCommand, RespawnCommand, CameraCommand,
+	                 MeshRendererCommand, ColorTintCommand, TextureSlotsCommand,
+	                 CommandGroup>;
 
 	/// <summary>
 	/// 操作と、その前後の状態を識別する情報
@@ -709,6 +727,7 @@ class EditorHistory {
 		             std::optional<CameraComponent>,
 		             std::optional<RespawnSettings>, std::optional<ColorTint>,
 		             std::optional<PointLightComponent>,
+		             std::optional<SpotLightComponent>,
 		             std::optional<AudioSourceComponent>,
 		             std::optional<MeshRendererComponent>>
 		    before;

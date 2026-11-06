@@ -1453,6 +1453,10 @@ bool EditorHistory::HasPendingChanges() const {
 		                             Before,
 		                             std::optional<PointLightComponent>>) {
 			    return before != object->pointLight;
+		    } else if constexpr (std::is_same_v<
+		                             Before,
+		                             std::optional<SpotLightComponent>>) {
+			    return before != object->spotLight;
 		    } else if constexpr (std::is_same_v<Before,
 		                                        std::optional<ColorTint>>) {
 			    return before != object->colorTint;
@@ -1615,6 +1619,13 @@ void EditorHistory::CommitEdit() {
 		return;
 	}
 
+	if (std::holds_alternative<std::optional<SpotLightComponent>>(
+	        pending_->before) &&
+	    object->spotLight && !object->spotLight->IsValid()) {
+		Invalidate();
+		return;
+	}
+
 	if (std::holds_alternative<std::optional<ColorTint>>(pending_->before) &&
 	    object->colorTint && !object->colorTint->IsValid()) {
 		Invalidate();
@@ -1677,6 +1688,11 @@ void EditorHistory::CommitEdit() {
 		                             std::optional<PointLightComponent>>) {
 			    return Command{
 			        PointLightCommand{objectId, before, object->pointLight}};
+		    } else if constexpr (std::is_same_v<
+		                             Before,
+		                             std::optional<SpotLightComponent>>) {
+			    return Command{
+			        SpotLightCommand{objectId, before, object->spotLight}};
 		    } else if constexpr (std::is_same_v<Before,
 		                                        std::optional<ColorTint>>) {
 			    return Command{
@@ -1741,6 +1757,9 @@ void EditorHistory::CommitEdit() {
 		    } else if constexpr (std::is_same_v<
 		                             T, std::optional<PointLightComponent>>) {
 			    return "Edit Point Light";
+		    } else if constexpr (std::is_same_v<
+		                             T, std::optional<SpotLightComponent>>) {
+			    return "Edit Spot Light";
 		    } else if constexpr (std::is_same_v<T, std::optional<ColorTint>>) {
 			    return "Edit Color Tint";
 		    } else if constexpr (std::is_same_v<
@@ -2757,5 +2776,46 @@ bool EditorHistory::BeginAudioSource(SceneObjectId id) {
 	}
 
 	pending_ = PendingEdit{id, object->audioSource};
+	return true;
+}
+
+bool EditorHistory::SetSpotLight(SceneObjectId id,
+                                 std::optional<SpotLightComponent> value) {
+	CommitEdit();
+	auto *object = scene_.FindObject(id);
+
+	if (!object || (value && !value->IsValid())) {
+		return false;
+	}
+
+	const bool adding = !object->spotLight;
+	SpotLightCommand command{id, object->spotLight, value};
+
+	if (!command.HasChanges()) {
+		return true;
+	}
+
+	const auto next = PrepareAppend();
+
+	if (!command.Redo(scene_)) {
+		return false;
+	}
+
+	AppendPrepared(Command{std::move(command)}, next,
+	               !value   ? "Remove Spot Light"
+	               : adding ? "Add Spot Light"
+	                        : "Edit Spot Light");
+	return true;
+}
+
+bool EditorHistory::BeginSpotLight(SceneObjectId id) {
+	CommitEdit();
+	const auto *object = scene_.FindObject(id);
+
+	if (!object || !object->spotLight) {
+		return false;
+	}
+
+	pending_ = PendingEdit{id, object->spotLight};
 	return true;
 }

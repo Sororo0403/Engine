@@ -99,3 +99,6 @@ using AudioSourceCommand =
     ComponentCommand<AudioSourceComponent, &SceneObject::audioSource>;
 using AudioListenerCommand =
     ComponentCommand<AudioListenerComponent, &SceneObject::audioListener>;
+
+using SpotLightCommand =
+    ComponentCommand<SpotLightComponent, &SceneObject::spotLight>;
