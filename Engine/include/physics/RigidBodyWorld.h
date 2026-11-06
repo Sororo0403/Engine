@@ -12,7 +12,7 @@
 #include <vector>
 
 /// <summary>
-/// 箱の重力・回転・衝突を計算する。外部ライブラリの型は内部に隠す
+/// 箱・球・カプセルの重力・回転・衝突を計算する。外部ライブラリの型は内部に隠す
 /// </summary>
 /// <remarks>コピーは状態を共有し、変更時だけ独立する。失敗した操作では元の状態を保持する。同じインスタンスを複数スレッドから変更しない</remarks>
 class RigidBodyWorld {
@@ -22,9 +22,9 @@ class RigidBodyWorld {
 	static constexpr float kMaximumStepSeconds = 1.0f / 120.0f;
 
 	/// <summary>
-	/// 固有IDを持つ箱から物理ワールドを作る。Triggerは登録しない
+	/// 固有IDを持つ形状から物理ワールドを作る。Triggerは登録しない
 	/// </summary>
-	/// <param name="bodies">有効なワールド姿勢と非TriggerのCollider。空も指定できる</param>
+	/// <param name="bodies">有効なワールド姿勢と非TriggerのCollider。球・カプセルには正の一様拡縮を使う。空も指定できる</param>
 	/// <param name="error">成功時は空、失敗時は理由</param>
 	/// <param name="invalidObject">指定時は失敗したID。全体の失敗と成功時は0</param>
 	/// <returns>true:作成成功 false:設定や形状が無効。元の状態を保持する</returns>
@@ -57,7 +57,7 @@ class RigidBodyWorld {
 	              std::string &error);
 
 	/// <summary>
-	/// Kinematicの箱を指定した姿勢まで動かす速度を設定する
+	/// Kinematicの物体を指定した姿勢まで動かす速度を設定する
 	/// </summary>
 	/// <param name="id">Kinematicの物体ID</param>
 	/// <param name="transform">同じ拡大率を持つ移動先のワールド姿勢</param>
@@ -136,7 +136,7 @@ class RigidBodyWorld {
 	      const std::optional<CollisionFilter> &filter = std::nullopt) const;
 
 	/// <summary>
-	/// 休止状態に依存せず、現在の箱同士が接触している組を求める
+	/// 休止状態に依存せず、現在の形状同士が接触している組を求める
 	/// </summary>
 	/// <param name="contacts">成功時だけ設定するID順の結果。Triggerは登録されていないため含まない</param>
 	/// <returns>true:検索成功 false:未作成・形状・件数が無効</returns>

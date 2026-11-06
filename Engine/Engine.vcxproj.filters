@@ -2380,4 +2380,8 @@
     <ClCompile Include="src\animation\SceneAnimators.cpp"><Filter>src\animation</Filter></ClCompile>
     <ClCompile Include="src\scripting\LuaAnimatorBindings.cpp"><Filter>src\scripting</Filter></ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\physics\Collider.h" />
+    <ClCompile Include="src\physics\Collider.cpp" />
+  </ItemGroup>
 </Project>

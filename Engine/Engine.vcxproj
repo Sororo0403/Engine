@@ -2325,4 +2325,8 @@ exit /b 0</Command>
     <ClCompile Include="src\animation\SceneAnimators.cpp" />
     <ClCompile Include="src\scripting\LuaAnimatorBindings.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\physics\Collider.h" />
+    <ClCompile Include="src\physics\Collider.cpp" />
+  </ItemGroup>
 </Project>

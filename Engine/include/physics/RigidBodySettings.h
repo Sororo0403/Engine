@@ -4,7 +4,7 @@
 #include <array>
 
 /// <summary>
-/// 箱型の剛体に使用する質量・摩擦・反発と、開始時の速度を保持する
+/// 剛体に使用する質量・摩擦・反発と、開始時の速度を保持する
 /// </summary>
 struct RigidBodySettings {
 	static constexpr float kMinimumMass = 0.001f;

@@ -16,6 +16,8 @@
 #include <Jolt/Physics/Collision/GroupFilterTable.h>
 #include <Jolt/Physics/Collision/NarrowPhaseQuery.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
+#include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
+#include <Jolt/Physics/Collision/Shape/SphereShape.h>
 #include <Jolt/Physics/Collision/ShapeCast.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Physics/StateRecorderImpl.h>
@@ -132,6 +134,39 @@ bool SameScale(const Transform &a, const Transform &b) {
 /// </summary>
 JPH::Vec3 Vector(const DirectX::XMFLOAT3 &v) {
 	return {v.x, v.y, v.z};
+}
+
+/// <summary>
+/// 事前検証した寸法から実際の凸形状を作る。拡縮は寸法へ適用し、姿勢と中心はBody側へ渡す
+/// </summary>
+/// <param name="d">有効な寸法・正の拡縮を持つ物体</param>
+/// <returns>共有する変更不可の形状。作成できない場合は例外で呼び出し側の候補を破棄する</returns>
+JPH::RefConst<JPH::Shape> CreateShape(const RigidBodyDescription &d) {
+	const auto &c = d.collider;
+	const auto &s = d.transform.scale;
+	JPH::ShapeSettings::ShapeResult result;
+	switch (c.shape) {
+	case Collider::Shape::BOX:
+		result =
+		    JPH::BoxShapeSettings({c.halfExtents.x * s.x, c.halfExtents.y * s.y,
+		                           c.halfExtents.z * s.z},
+		                          0)
+		        .Create();
+		break;
+	case Collider::Shape::SPHERE:
+		result = JPH::SphereShapeSettings(c.radius * s.x).Create();
+		break;
+	case Collider::Shape::CAPSULE:
+		result = JPH::CapsuleShapeSettings(c.halfHeight * s.x, c.radius * s.x)
+		             .Create();
+		break;
+	default:
+		throw std::runtime_error("Unsupported Collider shape.");
+	}
+	if (result.HasError())
+		throw std::runtime_error(std::format("Object ID {}: {}", d.object,
+		                                     result.GetError().c_str()));
+	return result.Get();
 }
 
 /// <summary>
@@ -261,17 +296,11 @@ struct RigidBodyWorld::Impl {
 		auto &interface = system.GetBodyInterface();
 		for (std::size_t index = 0; index < descriptions.size(); ++index) {
 			const auto &d = descriptions[index];
-			const auto &h = d.collider.halfExtents;
-			const auto &s = d.transform.scale;
-			JPH::BoxShapeSettings shape({h.x * s.x, h.y * s.y, h.z * s.z}, 0);
-			const auto created = shape.Create();
-			if (created.HasError())
-				throw std::runtime_error(std::format(
-				    "Object ID {}: {}", d.object, created.GetError().c_str()));
+			const auto shape = CreateShape(d);
 			const auto motion = Motion(d);
 			JPH::BodyCreationSettings settings(
-			    created.Get(), Center(d, d.transform), Rotation(d.transform),
-			    motion, motion == JPH::EMotionType::Static ? 0 : 1);
+			    shape, Center(d, d.transform), Rotation(d.transform), motion,
+			    motion == JPH::EMotionType::Static ? 0 : 1);
 			settings.mCollisionGroup =
 			    JPH::CollisionGroup(group, 0, static_cast<JPH::uint>(index));
 			settings.mUserData = d.object;
@@ -295,7 +324,7 @@ struct RigidBodyWorld::Impl {
 						settings.mAllowedDOFs &=
 						    ~static_cast<JPH::EAllowedDOFs>(1 << (axis + 3));
 			}
-			// 動的な箱はCCDを使い、薄い床を高速で通り抜けることを防ぐ。
+			// 動的な形状はCCDを使い、薄い床を高速で通り抜けることを防ぐ。
 			settings.mMotionQuality = motion == JPH::EMotionType::Dynamic
 			                              ? JPH::EMotionQuality::LinearCast
 			                              : JPH::EMotionQuality::Discrete;
@@ -357,24 +386,29 @@ bool RigidBodyWorld::Rebuild(std::span<const RigidBodyDescription> bodies,
 	try {
 		if (bodies.size() > kMaximumBodies)
 			throw std::runtime_error(
-			    "A physics world supports at most 1024 boxes.");
+			    "A physics world supports at most 1024 bodies.");
 		std::map<SceneObjectId, bool> ids;
 		for (const auto &d : bodies) {
 			current = d.object;
 			if (!d.object || !ids.emplace(d.object, true).second ||
 			    !Pose(d.transform) || d.collider.isTrigger ||
-			    !d.collider.filter.IsValid() || !Position(d.collider.center) ||
-			    !Position(d.collider.halfExtents) ||
-			    d.collider.halfExtents.x <= 0 ||
-			    d.collider.halfExtents.y <= 0 ||
-			    d.collider.halfExtents.z <= 0 ||
+			    !d.collider.IsValid() || !Position(d.collider.center) ||
 			    (d.rigidBody && !d.rigidBody->IsValid()))
 				throw std::runtime_error(
 				    "Rigid bodies require unique IDs, valid settings and "
-				    "non-Trigger boxes.");
+				    "non-Trigger shapes.");
+			if (d.collider.shape != Collider::Shape::BOX &&
+			    (d.transform.scale.x != d.transform.scale.y ||
+			     d.transform.scale.x != d.transform.scale.z))
+				throw std::runtime_error(
+				    "Sphere and Capsule require uniform positive scale.");
 			const auto center = Center(d, d.transform);
-			const auto &h = d.collider.halfExtents;
+			const auto h = d.collider.GetHalfExtents();
 			const auto &s = d.transform.scale;
+			if (d.collider.shape == Collider::Shape::CAPSULE &&
+			    d.collider.halfHeight * s.x < .0001f)
+				throw std::runtime_error(
+				    "Scaled Capsule half height must be at least 0.0001.");
 			if (!Position(Vector(center)) || h.x * s.x > 1000000 ||
 			    h.y * s.y > 1000000 || h.z * s.z > 1000000 ||
 			    h.x * s.x < .0001f || h.y * s.y < .0001f || h.z * s.z < .0001f)
@@ -740,7 +774,8 @@ bool RigidBodyWorld::Sweep(const AxisAlignedBox &box,
 				    impl_->descriptions[impl_->bodies.at(id).second];
 				const auto &h = source.collider.halfExtents,
 				           &s = source.transform.scale;
-				if (!ResolveInitialContact(
+				if (source.collider.shape == Collider::Shape::BOX &&
+				    !ResolveInitialContact(
 				        center, half, Vector(displacement), locked.GetBody(),
 				        JPH::Vec3{h.x * s.x, h.y * s.y, h.z * s.z}, normal))
 					continue;
@@ -811,9 +846,7 @@ bool RigidBodyWorld::FindContacts(
 		for (const auto &[id, entry] : impl_->bodies) {
 			const auto &[body, index] = entry;
 			const auto &source = impl_->descriptions[index];
-			const auto &h = source.collider.halfExtents,
-			           &s = source.transform.scale;
-			JPH::BoxShape shape({h.x * s.x, h.y * s.y, h.z * s.z}, 0);
+			const auto shape = CreateShape(source);
 			JPH::CollideShapeSettings settings;
 			settings.mCollisionTolerance = 0.000001f;
 			settings.mPenetrationTolerance = 0.000001f;
@@ -827,7 +860,7 @@ bool RigidBodyWorld::FindContacts(
 			const auto matrix =
 			    impl_->system.GetBodyInterface().GetCenterOfMassTransform(body);
 			impl_->system.GetNarrowPhaseQuery().CollideShape(
-			    &shape, JPH::Vec3::sReplicate(1), matrix, settings,
+			    shape, JPH::Vec3::sReplicate(1), matrix, settings,
 			    matrix.GetTranslation(), collector, {}, {}, selected);
 			for (const auto &hit : collector.mHits) {
 				const auto other =
