@@ -3,12 +3,15 @@
 #include "core/Logger.h"
 #include "gameplay/CharacterInputReader.h"
 #include "gameplay/OrbitCameraInputReader.h"
+#include "graphics/render/RenderSystem.h"
 #include "input/InputSystem.h"
 #include "scene/SceneSerializer.h"
+#include "ui/UIInputReader.h"
 #include <utility>
 
 RuntimeScene::RuntimeScene(const EngineContext &context, GameConfig config)
-    : input_(context.input), config_(std::move(config)),
+    : input_(context.input), render_(context.render),
+      config_(std::move(config)),
       renderer_(simulation_.GetScene(), context.models, context.render),
       audioPlayer_(simulation_.GetScene(), context.audioClips, context.audio) {
 }
@@ -54,16 +57,24 @@ bool RuntimeScene::Update(float seconds) {
 		                                   : nullptr,
 		    config_.gamepadEnabled ? &input_.GetGamepad() : nullptr);
 
+		const auto size = render_.GetWindowSize();
+		const auto uiInput = UIInputReader::Read(
+		    keys, &input_.GetMouse(),
+		    config_.gamepadEnabled ? &input_.GetGamepad() : nullptr, size[0],
+		    size[1]);
 		if (!simulation_.Update(
 		        seconds, input,
 		        OrbitCameraInputReader::Read(
 		            &input_.GetMouse(),
-		            config_.gamepadEnabled ? &input_.GetGamepad() : nullptr))) {
+		            config_.gamepadEnabled ? &input_.GetGamepad() : nullptr),
+		        uiInput)) {
 			Logger::Error(simulation_.GetLastUpdateError());
 			return false;
 		}
 	}
 
+	if (!input_.IsActive())
+		simulation_.CancelUIInput();
 	std::string audioError;
 	const bool audioReady =
 	    simulation_.GetSceneRevision() != revision
@@ -78,7 +89,8 @@ bool RuntimeScene::Update(float seconds) {
 		return false;
 	}
 
-	return renderer_.SetLighting(config_.lighting) &&
+	return renderer_.SetUIButtonVisuals(simulation_.GetUI().GetVisuals()) &&
+	       renderer_.SetLighting(config_.lighting) &&
 	       renderer_.SetCameraPose(simulation_.GetCameraPose()) &&
 	       renderer_.SetCameraSettings(simulation_.GetCameraSettings()) &&
 	       renderer_.Update();

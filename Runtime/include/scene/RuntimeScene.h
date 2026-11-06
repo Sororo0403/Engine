@@ -8,6 +8,7 @@
 
 struct EngineContext;
 class InputSystem;
+class RenderSystem;
 
 /// <summary>
 /// 出力されたシーンをEditorなしで更新・描画する
@@ -52,6 +53,7 @@ class RuntimeScene final : public IScene {
 
   private:
 	const InputSystem &input_;
+	RenderSystem &render_;
 	GameConfig config_;
 	SceneSimulation simulation_;
 	SceneRenderer renderer_;
