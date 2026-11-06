@@ -1493,6 +1493,19 @@ bool EditorHistory::HasPendingChanges() const {
 		                             std::optional<SpotLightComponent>>) {
 			    return before != object->spotLight;
 		    } else if constexpr (std::is_same_v<
+		                             Before, std::optional<CanvasComponent>>) {
+			    return before != object->canvas;
+		    } else if constexpr (std::is_same_v<
+		                             Before,
+		                             std::optional<RectTransformComponent>>) {
+			    return before != object->rectTransform;
+		    } else if constexpr (std::is_same_v<Before,
+		                                        std::optional<TextComponent>>) {
+			    return before != object->text;
+		    } else if constexpr (std::is_same_v<
+		                             Before, std::optional<ImageComponent>>) {
+			    return before != object->image;
+		    } else if constexpr (std::is_same_v<
 		                             Before,
 		                             std::optional<MotionPathComponent>>) {
 			    return before != object->motionPath;
@@ -1665,6 +1678,30 @@ void EditorHistory::CommitEdit() {
 		return;
 	}
 
+	if (std::holds_alternative<std::optional<CanvasComponent>>(
+	        pending_->before) &&
+	    object->canvas && !object->canvas->IsValid()) {
+		Invalidate();
+		return;
+	}
+	if (std::holds_alternative<std::optional<RectTransformComponent>>(
+	        pending_->before) &&
+	    object->rectTransform && !object->rectTransform->IsValid()) {
+		Invalidate();
+		return;
+	}
+	if (std::holds_alternative<std::optional<TextComponent>>(
+	        pending_->before) &&
+	    object->text && !object->text->IsValid()) {
+		Invalidate();
+		return;
+	}
+	if (std::holds_alternative<std::optional<ImageComponent>>(
+	        pending_->before) &&
+	    object->image && !object->image->IsValid()) {
+		Invalidate();
+		return;
+	}
 	if (std::holds_alternative<std::optional<MotionPathComponent>>(
 	        pending_->before) &&
 	    object->motionPath && !object->motionPath->IsValid()) {
@@ -1740,6 +1777,20 @@ void EditorHistory::CommitEdit() {
 			    return Command{
 			        SpotLightCommand{objectId, before, object->spotLight}};
 		    } else if constexpr (std::is_same_v<
+		                             Before, std::optional<CanvasComponent>>) {
+			    return Command{CanvasCommand{objectId, before, object->canvas}};
+		    } else if constexpr (std::is_same_v<
+		                             Before,
+		                             std::optional<RectTransformComponent>>) {
+			    return Command{RectTransformCommand{objectId, before,
+			                                        object->rectTransform}};
+		    } else if constexpr (std::is_same_v<Before,
+		                                        std::optional<TextComponent>>) {
+			    return Command{TextCommand{objectId, before, object->text}};
+		    } else if constexpr (std::is_same_v<
+		                             Before, std::optional<ImageComponent>>) {
+			    return Command{ImageCommand{objectId, before, object->image}};
+		    } else if constexpr (std::is_same_v<
 		                             Before,
 		                             std::optional<MotionPathComponent>>) {
 			    return Command{
@@ -1811,6 +1862,19 @@ void EditorHistory::CommitEdit() {
 		    } else if constexpr (std::is_same_v<
 		                             T, std::optional<SpotLightComponent>>) {
 			    return "Edit Spot Light";
+		    } else if constexpr (std::is_same_v<
+		                             T, std::optional<CanvasComponent>>) {
+			    return "Edit Canvas";
+		    } else if constexpr (std::is_same_v<
+		                             T,
+		                             std::optional<RectTransformComponent>>) {
+			    return "Edit Rect Transform";
+		    } else if constexpr (std::is_same_v<T,
+		                                        std::optional<TextComponent>>) {
+			    return "Edit UI Text";
+		    } else if constexpr (std::is_same_v<
+		                             T, std::optional<ImageComponent>>) {
+			    return "Edit UI Image";
 		    } else if constexpr (std::is_same_v<
 		                             T, std::optional<MotionPathComponent>>) {
 			    return "Edit Motion Path";
@@ -2975,5 +3039,169 @@ bool EditorHistory::SetScript(SceneObjectId id,
 	               !value   ? "Remove Lua Script"
 	               : adding ? "Add Lua Script"
 	                        : "Edit Lua Script");
+	return true;
+}
+
+bool EditorHistory::SetCanvas(SceneObjectId id,
+                              std::optional<CanvasComponent> value) {
+	CommitEdit();
+	auto *object = scene_.FindObject(id);
+
+	if (!object || (value && !value->IsValid())) {
+		return false;
+	}
+
+	const bool adding = !object->canvas;
+	CanvasCommand command{id, object->canvas, value};
+
+	if (!command.HasChanges()) {
+		return true;
+	}
+
+	const auto next = PrepareAppend();
+
+	if (!command.Redo(scene_)) {
+		return false;
+	}
+
+	AppendPrepared(Command{std::move(command)}, next,
+	               !value   ? "Remove Canvas"
+	               : adding ? "Add Canvas"
+	                        : "Edit Canvas");
+	return true;
+}
+
+bool EditorHistory::BeginCanvas(SceneObjectId id) {
+	CommitEdit();
+	const auto *object = scene_.FindObject(id);
+
+	if (!object || !object->canvas) {
+		return false;
+	}
+
+	pending_ = PendingEdit{id, object->canvas};
+	return true;
+}
+
+bool EditorHistory::SetRectTransform(
+    SceneObjectId id, std::optional<RectTransformComponent> value) {
+	CommitEdit();
+	auto *object = scene_.FindObject(id);
+
+	if (!object || (value && !value->IsValid())) {
+		return false;
+	}
+
+	const bool adding = !object->rectTransform;
+	RectTransformCommand command{id, object->rectTransform, value};
+
+	if (!command.HasChanges()) {
+		return true;
+	}
+
+	const auto next = PrepareAppend();
+
+	if (!command.Redo(scene_)) {
+		return false;
+	}
+
+	AppendPrepared(Command{std::move(command)}, next,
+	               !value   ? "Remove Rect Transform"
+	               : adding ? "Add Rect Transform"
+	                        : "Edit Rect Transform");
+	return true;
+}
+
+bool EditorHistory::BeginRectTransform(SceneObjectId id) {
+	CommitEdit();
+	const auto *object = scene_.FindObject(id);
+
+	if (!object || !object->rectTransform) {
+		return false;
+	}
+
+	pending_ = PendingEdit{id, object->rectTransform};
+	return true;
+}
+
+bool EditorHistory::SetText(SceneObjectId id,
+                            std::optional<TextComponent> value) {
+	CommitEdit();
+	auto *object = scene_.FindObject(id);
+
+	if (!object || (value && !value->IsValid())) {
+		return false;
+	}
+
+	const bool adding = !object->text;
+	TextCommand command{id, object->text, value};
+
+	if (!command.HasChanges()) {
+		return true;
+	}
+
+	const auto next = PrepareAppend();
+
+	if (!command.Redo(scene_)) {
+		return false;
+	}
+
+	AppendPrepared(Command{std::move(command)}, next,
+	               !value   ? "Remove UI Text"
+	               : adding ? "Add UI Text"
+	                        : "Edit UI Text");
+	return true;
+}
+
+bool EditorHistory::BeginText(SceneObjectId id) {
+	CommitEdit();
+	const auto *object = scene_.FindObject(id);
+
+	if (!object || !object->text) {
+		return false;
+	}
+
+	pending_ = PendingEdit{id, object->text};
+	return true;
+}
+
+bool EditorHistory::SetImage(SceneObjectId id,
+                             std::optional<ImageComponent> value) {
+	CommitEdit();
+	auto *object = scene_.FindObject(id);
+
+	if (!object || (value && !value->IsValid())) {
+		return false;
+	}
+
+	const bool adding = !object->image;
+	ImageCommand command{id, object->image, value};
+
+	if (!command.HasChanges()) {
+		return true;
+	}
+
+	const auto next = PrepareAppend();
+
+	if (!command.Redo(scene_)) {
+		return false;
+	}
+
+	AppendPrepared(Command{std::move(command)}, next,
+	               !value   ? "Remove UI Image"
+	               : adding ? "Add UI Image"
+	                        : "Edit UI Image");
+	return true;
+}
+
+bool EditorHistory::BeginImage(SceneObjectId id) {
+	CommitEdit();
+	const auto *object = scene_.FindObject(id);
+
+	if (!object || !object->image) {
+		return false;
+	}
+
+	pending_ = PendingEdit{id, object->image};
 	return true;
 }

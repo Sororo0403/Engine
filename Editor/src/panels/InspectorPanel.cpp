@@ -5,6 +5,7 @@
 #include "lighting/PointLightInspector.h"
 #include "lighting/SpotLightInspector.h"
 #include "scene/SceneActivity.h"
+#include "ui/UIInspector.h"
 
 #include "assets/AssetDatabase.h"
 #include "assets/AssetDragDrop.h"
@@ -364,6 +365,10 @@ bool InspectorPanel::Draw(
 	}
 
 	prefabRequest_ = PrefabInspector{}.Draw(ui, scene, inspectedObjectId);
+	changed |= UIInspector{}.Draw(
+	    ui, inspectedObjectId, *object, history,
+	    assets ? std::span<const std::filesystem::path>{assets->GetTextures()}
+	           : std::span<const std::filesystem::path>{});
 	changed |= scriptInspector_.Draw(
 	    ui, scene, inspectedObjectId, *object, history,
 	    assets ? std::span<const std::filesystem::path>{assets->GetScripts()}
@@ -448,6 +453,19 @@ bool InspectorPanel::Draw(
 			    history.SetPointLight(inspectedObjectId, PointLightComponent{});
 		}
 
+		if (ui.MenuItem("Canvas", nullptr,
+		                !object->canvas && !object->rectTransform))
+			changed |= history.SetCanvas(inspectedObjectId, CanvasComponent{});
+		if (ui.MenuItem("Rect Transform", nullptr,
+		                !object->rectTransform && !object->canvas))
+			changed |= history.SetRectTransform(inspectedObjectId,
+			                                    RectTransformComponent{});
+		if (ui.MenuItem("UI Text", nullptr,
+		                !object->text && object->rectTransform.has_value()))
+			changed |= history.SetText(inspectedObjectId, TextComponent{});
+		if (ui.MenuItem("UI Image", nullptr,
+		                !object->image && object->rectTransform.has_value()))
+			changed |= history.SetImage(inspectedObjectId, ImageComponent{});
 		if (ui.MenuItem("Lua Script", nullptr, !object->script))
 			changed |= history.SetScript(inspectedObjectId, ScriptComponent{});
 		if (ui.MenuItem("Motion Path", nullptr, !object->motionPath)) {
@@ -804,6 +822,7 @@ std::optional<Transform> InspectorPanel::DrawReadOnly(
 		ui.Text(std::format("Collides With: 0x{:08X}", collider.filter.mask));
 	}
 
+	UIInspector{}.DrawReadOnly(ui, *object);
 	scriptInspector_.DrawReadOnly(ui, *object, scriptState);
 	audioInspector_.DrawReadOnly(ui, *object);
 

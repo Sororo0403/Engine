@@ -834,4 +834,10 @@
     <ClInclude Include="include\dialogs\ScriptEditorDialog.h" />
     <ClCompile Include="src\dialogs\ScriptEditorDialog.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\ui\UIInspector.h" />
+    <ClCompile Include="src\ui\UIInspector.cpp" />
+    <ClInclude Include="include\ui\UIObjects.h" />
+    <ClCompile Include="src\ui\UIObjects.cpp" />
+  </ItemGroup>
 </Project>

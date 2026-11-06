@@ -3,6 +3,7 @@
 
 #include <Windows.h>
 #include <cstdint>
+#include <format>
 #include <fstream>
 #include <stdexcept>
 #include <string_view>
@@ -15,7 +16,8 @@ namespace {
 /// メモリ上の画像の先頭フレームをRGBAへ復号し、全行を確認する。失敗時は例外
 /// </summary>
 /// <param name="bytes">変更しない画像データ。読み取り時にサイズを確認しておく</param>
-void ValidateImage(std::string_view bytes) {
+/// <param name="maximumDimension">各辺の上限</param>
+void ValidateImage(std::string_view bytes, unsigned maximumDimension) {
 	const auto check = [](HRESULT result) {
 		if (FAILED(result)) {
 			throw std::runtime_error("The image could not be decoded.");
@@ -40,10 +42,11 @@ void ValidateImage(std::string_view bytes) {
 	UINT width = 0, height = 0;
 	check(frame->GetSize(&width, &height));
 
-	if (!width || !height || width > ImageValidation::kMaximumDimension ||
-	    height > ImageValidation::kMaximumDimension) {
+	if (!width || !height || width > maximumDimension ||
+	    height > maximumDimension) {
 		throw std::runtime_error(
-		    "Use an image with dimensions from 1 to 16384 pixels.");
+		    std::format("Use an image with dimensions from 1 to {} pixels.",
+		                maximumDimension));
 	}
 
 	Microsoft::WRL::ComPtr<IWICFormatConverter> converter;
@@ -62,7 +65,10 @@ void ValidateImage(std::string_view bytes) {
 
 } // namespace
 
-std::string ImageValidation::Read(const std::filesystem::path &path) {
+std::string ImageValidation::Read(const std::filesystem::path &path,
+                                  unsigned maximumDimension) {
+	if (maximumDimension < 1 || maximumDimension > kMaximumDimension)
+		throw std::invalid_argument("Invalid image dimension limit.");
 	if (path.empty() || path.native().find(L'\0') != std::wstring::npos) {
 		throw std::invalid_argument("Choose a valid image path.");
 	}
@@ -88,6 +94,6 @@ std::string ImageValidation::Read(const std::filesystem::path &path) {
 		    "The source image changed or could not be read completely.");
 	}
 
-	ValidateImage(bytes);
+	ValidateImage(bytes, maximumDimension);
 	return bytes;
 }

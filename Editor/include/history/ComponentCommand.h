@@ -107,3 +107,9 @@ using SpotLightCommand =
     ComponentCommand<SpotLightComponent, &SceneObject::spotLight>;
 
 using ScriptCommand = ComponentCommand<ScriptComponent, &SceneObject::script>;
+
+using CanvasCommand = ComponentCommand<CanvasComponent, &SceneObject::canvas>;
+using RectTransformCommand =
+    ComponentCommand<RectTransformComponent, &SceneObject::rectTransform>;
+using TextCommand = ComponentCommand<TextComponent, &SceneObject::text>;
+using ImageCommand = ComponentCommand<ImageComponent, &SceneObject::image>;

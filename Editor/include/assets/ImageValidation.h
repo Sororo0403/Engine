@@ -13,7 +13,9 @@ inline constexpr unsigned kMaximumDimension = 16384;
 /// 画像ファイルを読み取り、先頭フレームをRGBAへ復号して全行を検証する。失敗時は例外
 /// </summary>
 /// <param name="path">画像の絶対パス、または実行ファイル基準の相対パス</param>
+/// <param name="maximumDimension">各辺の上限。1から16384。UI画像には4096を指定する</param>
 /// <returns>検証した元のバイト列。文字コードや改行は変更しない</returns>
 /// <remarks>COM初期化後に呼び出す。画像は256MiBまで、各辺は16384ピクセルまで。ファイルとGPUリソースは変更しない</remarks>
-std::string Read(const std::filesystem::path &path);
+std::string Read(const std::filesystem::path &path,
+                 unsigned maximumDimension = kMaximumDimension);
 } // namespace ImageValidation

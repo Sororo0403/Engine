@@ -10,13 +10,13 @@ class AssetDragDrop {
 	/// <summary>
 	/// 誤った対象へ受け渡さないためのアセット種別
 	/// </summary>
-	enum class Kind { SCRIPT, MODEL, SCENE, AUDIO, PREFAB };
+	enum class Kind { TEXTURE, SCRIPT, MODEL, SCENE, AUDIO, PREFAB };
 
 	/// <summary>
 	/// 直前のUI項目を指定種別のアセットのドラッグ元として扱う
 	/// </summary>
 	/// <param name="path">一覧で選択したアセットのパス</param>
-	/// <param name="kind">モデル・シーン・WAV音声・Prefab</param>
+	/// <param name="kind">モデル・画像・シーン・WAV音声・Prefab・Lua</param>
 	/// <returns>true:ドラッグ中 false:操作なし、またはパスが対象外</returns>
 	static bool DrawSource(const std::filesystem::path &path, Kind kind);
 

@@ -18,7 +18,7 @@ std::vector<SceneValidationIssue>
 SceneAssetValidation::Inspect(const Scene &scene) {
 	std::vector<SceneValidationIssue> issues;
 	std::map<std::filesystem::path, std::vector<std::string>> models, textures,
-	    monoAudio, stereoAudio, scenes, scripts;
+	    monoAudio, stereoAudio, scenes, scripts, uiTextures;
 
 	const auto inspect = [](const std::filesystem::path &path, auto &cache,
 	                        auto collect) -> const std::vector<std::string> & {
@@ -80,6 +80,16 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 					        PathUtils::ResolveFromExecutable(path)};
 				    }));
 			}
+		if (object.image && !object.image->texture.empty())
+			add("UI Image",
+			    inspect(object.image->texture, uiTextures,
+			            [](const auto &image) {
+				            auto files = AssetDependencies::TextureFiles(image);
+				            for (const auto &file : files)
+					            if (std::filesystem::is_regular_file(file))
+						            ImageValidation::Read(file, 4096);
+				            return files;
+			            }));
 		if (object.script && !object.script->asset.empty()) {
 			add("Lua Script",
 			    inspect(object.script->asset, scripts, [](const auto &path) {

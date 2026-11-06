@@ -734,17 +734,74 @@ class EditorHistory {
 	/// <returns>true:反映成功または同じ値 false:設定・対象が無効</returns>
 	bool SetScript(SceneObjectId id, std::optional<ScriptComponent> value);
 
+	/// <summary>
+	/// Canvasの追加・設定・削除を1操作として記録する
+	/// </summary>
+	/// <param name="id">編集する物体ID</param>
+	/// <param name="value">設定。nulloptは削除</param>
+	/// <returns>true:反映成功または同じ値 false:対象・設定が無効</returns>
+	bool SetCanvas(SceneObjectId id, std::optional<CanvasComponent> value);
+	/// <summary>
+	/// Canvasの連続編集の開始値を保持する
+	/// </summary>
+	/// <param name="id">編集する物体ID</param>
+	/// <returns>true:編集開始 false:対象またはコンポーネントなし</returns>
+	bool BeginCanvas(SceneObjectId id);
+
+	/// <summary>
+	/// Rect Transformの追加・設定・削除を1操作として記録する
+	/// </summary>
+	/// <param name="id">編集する物体ID</param>
+	/// <param name="value">設定。nulloptは削除</param>
+	/// <returns>true:反映成功または同じ値 false:対象・設定が無効</returns>
+	bool SetRectTransform(SceneObjectId id,
+	                      std::optional<RectTransformComponent> value);
+	/// <summary>
+	/// Rect Transformの連続編集の開始値を保持する
+	/// </summary>
+	/// <param name="id">編集する物体ID</param>
+	/// <returns>true:編集開始 false:対象またはコンポーネントなし</returns>
+	bool BeginRectTransform(SceneObjectId id);
+
+	/// <summary>
+	/// UI Textの追加・設定・削除を1操作として記録する
+	/// </summary>
+	/// <param name="id">編集する物体ID</param>
+	/// <param name="value">設定。nulloptは削除</param>
+	/// <returns>true:反映成功または同じ値 false:対象・設定が無効</returns>
+	bool SetText(SceneObjectId id, std::optional<TextComponent> value);
+	/// <summary>
+	/// UI Textの連続編集の開始値を保持する
+	/// </summary>
+	/// <param name="id">編集する物体ID</param>
+	/// <returns>true:編集開始 false:対象またはコンポーネントなし</returns>
+	bool BeginText(SceneObjectId id);
+
+	/// <summary>
+	/// UI Imageの追加・設定・削除を1操作として記録する
+	/// </summary>
+	/// <param name="id">編集する物体ID</param>
+	/// <param name="value">設定。nulloptは削除</param>
+	/// <returns>true:反映成功または同じ値 false:対象・設定が無効</returns>
+	bool SetImage(SceneObjectId id, std::optional<ImageComponent> value);
+	/// <summary>
+	/// UI Imageの連続編集の開始値を保持する
+	/// </summary>
+	/// <param name="id">編集する物体ID</param>
+	/// <returns>true:編集開始 false:対象またはコンポーネントなし</returns>
+	bool BeginImage(SceneObjectId id);
+
   private:
 	// 単独の編集操作、または複数の編集操作を保持する
-	using Command =
-	    std::variant<TransformCommand, ObjectCommand, ParentCommand,
-	                 RenameCommand, ModelPathCommand, VisibilityCommand,
-	                 ActiveCommand, ColliderCommand, CharacterCommand,
-	                 FollowCameraCommand, TriggerActionsCommand, ScriptCommand,
-	                 PointLightCommand, SpotLightCommand, MotionPathCommand,
-	                 AudioSourceCommand, AudioListenerCommand, RespawnCommand,
-	                 CameraCommand, MeshRendererCommand, ColorTintCommand,
-	                 TextureSlotsCommand, CommandGroup, ScenePatchCommand>;
+	using Command = std::variant<
+	    TransformCommand, ObjectCommand, ParentCommand, RenameCommand,
+	    ModelPathCommand, VisibilityCommand, ActiveCommand, ColliderCommand,
+	    CharacterCommand, FollowCameraCommand, TriggerActionsCommand,
+	    ScriptCommand, PointLightCommand, SpotLightCommand, MotionPathCommand,
+	    CanvasCommand, RectTransformCommand, TextCommand, ImageCommand,
+	    AudioSourceCommand, AudioListenerCommand, RespawnCommand, CameraCommand,
+	    MeshRendererCommand, ColorTintCommand, TextureSlotsCommand,
+	    CommandGroup, ScenePatchCommand>;
 
 	/// <summary>
 	/// 操作と、その前後の状態を識別する情報
@@ -764,16 +821,19 @@ class EditorHistory {
 		SceneObjectId objectId = 0;
 
 		// 変形・名前・各コンポーネントの編集開始時点の値
-		std::variant<Transform, std::string, std::optional<BoxCollider>,
-		             std::optional<CharacterSettings>,
-		             std::optional<FollowCameraSettings>,
-		             std::optional<CameraComponent>,
-		             std::optional<RespawnSettings>, std::optional<ColorTint>,
-		             std::optional<PointLightComponent>,
-		             std::optional<SpotLightComponent>,
-		             std::optional<MotionPathComponent>,
-		             std::optional<AudioSourceComponent>,
-		             std::optional<MeshRendererComponent>>
+		std::variant<
+		    Transform, std::string, std::optional<BoxCollider>,
+		    std::optional<CharacterSettings>,
+		    std::optional<FollowCameraSettings>, std::optional<CameraComponent>,
+		    std::optional<RespawnSettings>, std::optional<ColorTint>,
+		    std::optional<PointLightComponent>,
+		    std::optional<SpotLightComponent>,
+		    std::optional<MotionPathComponent>, std::optional<CanvasComponent>,
+		    std::optional<RectTransformComponent>, std::optional<TextComponent>,
+		    std::optional<ImageComponent>,
+
+		    std::optional<AudioSourceComponent>,
+		    std::optional<MeshRendererComponent>>
 		    before;
 	};
 

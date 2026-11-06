@@ -1869,6 +1869,32 @@ void ControlsPanel::Draw() {
 	         "files or load modules; memory, execution, state size and "
 	         "callback count are limited. Game output includes assigned Lua "
 	         "assets in every reachable scene."},
+	        {"Game UI",
+	         "Create > UI adds a Canvas, Text or Image. Text/Image creation "
+	         "uses the selected Canvas branch or creates a Canvas when "
+	         "necessary, as one undo step. Edit the result in Inspector and "
+	         "preview it in Game. Canvas scales from its Reference Resolution; "
+	         "Match Width / Height selects the resize balance. Rect Transform "
+	         "uses anchors and a pivot in its parent rectangle, with Y "
+	         "downward; UI Position and Size Delta use Canvas units. Stretch "
+	         "fills the parent plus Size Delta. 3D Transform does not place "
+	         "screen UI. A visible Text/Image needs Rect Transform and a "
+	         "Canvas ancestor; incomplete authoring elements are omitted from "
+	         "preview and reported before Play. Font Family uses Windows fonts "
+	         "with fallback. Text and image colors include alpha. An Image "
+	         "with no asset draws a solid rectangle; Preserve Aspect fits an "
+	         "assigned image inside its rectangle. Canvas Sort Order controls "
+	         "overlapping canvases; hierarchy order controls their children. "
+	         "Settings, creation and removal support Undo/Redo and Prefabs. "
+	         "Runtime Inspector is read-only. Lua provides get_text/set_text, "
+	         "get_ui_position/set_ui_position(x,y), "
+	         "get_ui_size/set_ui_size(widthDelta,heightDelta), "
+	         "get_text_color/set_text_color(r,g,b,a) and "
+	         "get_image_color/set_image_color(r,g,b,a). Values use existing UI "
+	         "components and participate in frame rollback. Images are limited "
+	         "to 4096 pixels per side, text to 4096 UTF-8 bytes, visible "
+	         "elements to 256 and displayed textures to 128 MiB. Game output "
+	         "and import retain Canvas settings, text and image dependencies."},
 	        {"View menu", "Show or hide the grid and selection bounds, or "
 	                      "reset the dock layout."},
 	    });

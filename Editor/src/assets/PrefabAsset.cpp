@@ -94,6 +94,8 @@ void RewriteReferences(Scene &scene, const std::filesystem::path &base,
 			}
 		if (object.script)
 			rewrite(object.script->asset);
+		if (object.image)
+			rewrite(object.image->texture);
 		if (object.mesh) {
 			rewrite(object.mesh->modelPath);
 		}

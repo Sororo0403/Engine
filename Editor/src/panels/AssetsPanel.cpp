@@ -527,12 +527,13 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 			if ((type_ == AssetType::MODEL || type_ == AssetType::SCENE ||
 			     type_ == AssetType::AUDIO || type_ == AssetType::PREFAB ||
-			     type_ == AssetType::SCRIPT) &&
+			     type_ == AssetType::SCRIPT || type_ == AssetType::TEXTURE) &&
 			    AssetDragDrop::DrawSource(
 			        assetPath,
-			        type_ == AssetType::SCRIPT  ? AssetDragDrop::Kind::SCRIPT
-			        : type_ == AssetType::MODEL ? AssetDragDrop::Kind::MODEL
-			        : type_ == AssetType::AUDIO ? AssetDragDrop::Kind::AUDIO
+			        type_ == AssetType::TEXTURE  ? AssetDragDrop::Kind::TEXTURE
+			        : type_ == AssetType::SCRIPT ? AssetDragDrop::Kind::SCRIPT
+			        : type_ == AssetType::MODEL  ? AssetDragDrop::Kind::MODEL
+			        : type_ == AssetType::AUDIO  ? AssetDragDrop::Kind::AUDIO
 			        : type_ == AssetType::PREFAB
 			            ? AssetDragDrop::Kind::PREFAB
 			            : AssetDragDrop::Kind::SCENE)) {

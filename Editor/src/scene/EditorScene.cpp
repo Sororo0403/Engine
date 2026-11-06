@@ -1,6 +1,7 @@
 #include "scene/EditorScene.h"
 #include "scene/SceneActivity.h"
 #include "scene/SceneHierarchy.h"
+#include "ui/UIObjects.h"
 
 #include "assets/AssetFolders.h"
 #include "assets/ModelPlacement.h"
@@ -66,6 +67,8 @@ EditorScene::EditorScene(const EngineContext &context)
 EditorScene::~EditorScene() = default;
 
 bool EditorScene::Initialize() {
+	renderer_.SetScreenUIEnabled(false);
+	playSceneRenderer_.SetScreenUIEnabled(false);
 	if (!ui_.EnableDocking()) {
 		return false;
 	}
@@ -1961,6 +1964,16 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			action = EditorAction::CREATE_SIZED_BOX;
 		}
 
+		if (ui_.BeginMenu("UI")) {
+			if (ui_.MenuItem("Canvas", nullptr, enabled))
+				action = EditorAction::CREATE_CANVAS;
+			if (ui_.MenuItem("Text", nullptr, enabled))
+				action = EditorAction::CREATE_UI_TEXT;
+			if (ui_.MenuItem("Image", nullptr, enabled))
+				action = EditorAction::CREATE_UI_IMAGE;
+			ui_.EndMenu();
+		}
+
 		if (ui_.MenuItem("Camera from Scene View", nullptr, enabled)) {
 			action = EditorAction::CREATE_CAMERA;
 		}
@@ -2719,6 +2732,29 @@ void EditorScene::StartAction(EditorAction action) {
 		pendingAction_ = EditorAction::NONE;
 		StartSaveCopy();
 		return;
+	case EditorAction::CREATE_CANVAS:
+	case EditorAction::CREATE_UI_TEXT:
+	case EditorAction::CREATE_UI_IMAGE: {
+		FinishEdit();
+		std::string error;
+		const auto kind =
+		    action == EditorAction::CREATE_CANVAS    ? UIObjects::Kind::CANVAS
+		    : action == EditorAction::CREATE_UI_TEXT ? UIObjects::Kind::TEXT
+		                                             : UIObjects::Kind::IMAGE;
+		const auto id =
+		    UIObjects::Create(document_.GetScene(), document_.GetHistory(),
+		                      kind, selection_.GetActiveId(), error);
+		if (!id)
+			ShowError(error);
+		else {
+			selection_.SelectOnly(id);
+			hierarchyPanel_.RequestReveal(id);
+			inspectorPanel_.RequestInspect(id);
+			windowFocusRequest_ = "Game";
+		}
+		return;
+	}
+
 	case EditorAction::CREATE_EMPTY:
 		CreateObject(SceneObject{});
 		return;
