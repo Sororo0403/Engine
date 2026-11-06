@@ -1988,6 +1988,19 @@ void ControlsPanel::Draw() {
 	         "calls per callback, 32 per step, 1024 generated objects per step "
 	         "and 4096 scene objects. Any callback, physics or preparation "
 	         "failure restores the entire simulation step."},
+	        {"Script Scenes",
+	         "In Inspector > Lua Script, add a unique Scene Name and assign "
+	         "a .scene.json from the combo or Assets drag/drop. Call "
+	         "self:load_scene(\"level\") from a callback, including a Button "
+	         "click. The last successful request wins and loads on the next "
+	         "positive step; the current callback finishes first. Limits are "
+	         "8 requests per callback and 64 per step. Errors discard the "
+	         "whole simulation step; a failed destination load preserves the "
+	         "current scene. Pause holds a request until Step or resume. "
+	         "Restart returns to the original authored Play scene. Assignments "
+	         "support Undo/Redo, Prefabs, output and import, including cyclic "
+	         "Scene/Prefab dependencies within the shared 256-asset limit. "
+	         "Scene format v34 stores the names; older scenes start empty."},
 	        {"Audio Scripts",
 	         "On an object with Audio Source, call play_audio() to restart "
 	         "its sound from the beginning, or stop_audio() to stop it. Both "

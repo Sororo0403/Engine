@@ -124,7 +124,7 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 	std::map<SceneObjectId, bool> requested;
 	auto audio = audioActions_;
 	std::map<SceneObjectId, SceneObjectId> destinations;
-	std::filesystem::path requestedScene;
+	auto requestedScene = pendingScene_;
 	for (const auto &signal : signals) {
 		const auto *object = scene_.FindObject(signal.receiver);
 		if (!object || !SceneActivity::IsActive(scene_, signal.receiver) ||

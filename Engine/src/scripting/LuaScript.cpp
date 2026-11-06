@@ -319,8 +319,8 @@ bool LuaScript::Invoke(
     int *remainingPhysicsOperations, const ScenePrefabs *prefabs,
     int *remainingInstantiations, std::size_t *remainingSpawnedObjects,
     std::vector<SceneObjectId> *pendingDestructions, int *remainingDestructions,
-    std::vector<SceneAudioAction> *audioActions,
-    int *remainingAudioOperations) {
+    std::vector<SceneAudioAction> *audioActions, int *remainingAudioOperations,
+    std::filesystem::path *sceneRequest, int *remainingSceneRequests) {
 	try {
 		const char *name = Callback(callback);
 		if (!program || !name || !scene.Contains(self) ||
@@ -332,7 +332,8 @@ bool LuaScript::Invoke(
 		    (remainingPhysicsOperations && *remainingPhysicsOperations < 0) ||
 		    (remainingInstantiations && *remainingInstantiations < 0) ||
 		    (remainingDestructions && *remainingDestructions < 0) ||
-		    (remainingAudioOperations && *remainingAudioOperations < 0))
+		    (remainingAudioOperations && *remainingAudioOperations < 0) ||
+		    (remainingSceneRequests && *remainingSceneRequests < 0))
 			throw std::runtime_error("Script callback arguments are invalid.");
 		std::string normalized;
 		if (!NormalizeState(state, normalized, error))
@@ -352,6 +353,8 @@ bool LuaScript::Invoke(
 		call.remainingInstructions = remainingInstructions;
 		call.physics = physics;
 		call.remainingPhysicsOperations = remainingPhysicsOperations;
+		call.sceneRequest = sceneRequest;
+		call.remainingSceneRequests = remainingSceneRequests;
 		call.audioActions = audioActions;
 		call.remainingAudioOperations = remainingAudioOperations;
 		call.pendingDestructions = pendingDestructions;

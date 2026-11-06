@@ -3,6 +3,7 @@
 #include "gameplay/CharacterInput.h"
 #include "scene/SceneAudioAction.h"
 #include "scene/SceneObjectId.h"
+#include <filesystem>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -29,6 +30,9 @@ struct Call {
 	int destructions = 0;
 	std::vector<SceneAudioAction> *audioActions = nullptr;
 	int audioOperations = 0;
+	std::filesystem::path *sceneRequest = nullptr;
+	int sceneRequests = 0;
+	int *remainingSceneRequests = nullptr;
 	int *remainingAudioOperations = nullptr;
 	int *remainingDestructions = nullptr;
 	int instantiations = 0;
@@ -77,6 +81,12 @@ void AddPhysicsMethods(lua_State *state);
 /// </summary>
 /// <param name="state">保護呼び出し内のLua状態</param>
 void AddAudioMethods(lua_State *state);
+
+/// <summary>
+/// 直前の物体メソッドテーブルへ、名前付きシーンへの遷移要求を登録する
+/// </summary>
+/// <param name="state">保護呼び出し内のLua状態</param>
+void AddSceneMethods(lua_State *state);
 
 /// <summary>
 /// 直前の物体メソッドテーブルへ、名前付きPrefabの生成を登録する

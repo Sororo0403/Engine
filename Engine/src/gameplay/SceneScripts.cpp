@@ -109,7 +109,8 @@ bool SceneScripts::Run(Scene &scene, float seconds, const CharacterInput &input,
                        std::span<const SceneObjectId> uiClicks,
                        ScenePhysics *physics,
                        std::span<const CollisionEvent> collisions,
-                       std::vector<SceneAudioAction> *audioActions) {
+                       std::vector<SceneAudioAction> *audioActions,
+                       std::filesystem::path *sceneRequest) {
 	SceneObjectId current = 0;
 	try {
 		if (!std::isfinite(seconds) || seconds < 0)
@@ -118,6 +119,8 @@ bool SceneScripts::Run(Scene &scene, float seconds, const CharacterInput &input,
 		std::size_t callbacks = 0;
 		int budget = kFrameInstructions;
 		int physicsBudget = kFramePhysicsOperations;
+		int sceneBudget = kFrameSceneRequests;
+		std::filesystem::path requestedScene;
 		int audioBudget = kFrameAudioOperations;
 		std::vector<SceneAudioAction> requestedAudio;
 		int destructionBudget = kFrameDestructions;
@@ -144,7 +147,8 @@ bool SceneScripts::Run(Scene &scene, float seconds, const CharacterInput &input,
 			        messages, error, &budget, physics, &physicsBudget,
 			        &prefabs_, &spawnBudget, &objectBudget,
 			        &pendingDestructions, &destructionBudget,
-			        audioActions ? &requestedAudio : nullptr, &audioBudget))
+			        audioActions ? &requestedAudio : nullptr, &audioBudget,
+			        sceneRequest ? &requestedScene : nullptr, &sceneBudget))
 				throw std::runtime_error(std::format(
 				    "{} [{}]: {}", PathUtils::ToUtf8(instance.settings.asset),
 				    callback, error));
@@ -227,6 +231,8 @@ bool SceneScripts::Run(Scene &scene, float seconds, const CharacterInput &input,
 			});
 			audioActions->swap(combined);
 		}
+		if (sceneRequest && !requestedScene.empty())
+			*sceneRequest = std::move(requestedScene);
 		error.clear();
 		return true;
 	} catch (const std::exception &exception) {
