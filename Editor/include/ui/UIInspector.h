@@ -7,7 +7,7 @@ class ImGuiSystem;
 struct SceneObject;
 
 /// <summary>
-/// Canvas・Rect Transform・Text・Imageを編集し、連続した変更を1回の履歴へまとめる
+/// Canvas・Rect Transform・Text・Image・Buttonを編集し、連続した変更を1回の履歴へまとめる
 /// </summary>
 class UIInspector {
   public:

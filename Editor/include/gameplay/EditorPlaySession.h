@@ -80,9 +80,11 @@ class EditorPlaySession {
 	/// <param name="seconds">有限な0以上の経過秒数</param>
 	/// <param name="input">今回の移動・ジャンプ入力</param>
 	/// <param name="cameraInput">今回の旋回・ズーム入力。一時停止と初期表示では反映しない</param>
+	/// <param name="uiInput">ゲーム内UIの入力。Pause中は実行しない</param>
 	/// <returns>true:更新成功または一時停止 false:未再生、無効な時間、または更新失敗</returns>
 	bool Update(float seconds, const CharacterInput &input,
-	            const OrbitCameraInput &cameraInput = {});
+	            const OrbitCameraInput &cameraInput = {},
+	            const UIInput &uiInput = {});
 
 	/// <summary>
 	/// 再生状態を取得する
@@ -195,6 +197,21 @@ class EditorPlaySession {
 	/// <returns>次の更新まで有効なJSON。実行インスタンスなしはnullopt</returns>
 	std::optional<std::string_view> GetScriptState(SceneObjectId id) const {
 		return simulation_.GetScriptState(id);
+	}
+
+	/// <summary>
+	/// Gameビューのフォーカス喪失・操作中断時にUIの押下と選択を解除する
+	/// </summary>
+	void CancelUIInput() {
+		simulation_.CancelUIInput();
+	}
+
+	/// <summary>
+	/// 再生中のUI表示と入力消費状態を取得する
+	/// </summary>
+	/// <returns>次の更新・停止まで有効な状態</returns>
+	const SceneUI &GetUI() const {
+		return simulation_.GetUI();
 	}
 
   private:

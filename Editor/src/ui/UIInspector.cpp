@@ -122,9 +122,38 @@ bool UIInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		if (ui.Button("Remove Rect Transform"))
 			changed |= history.SetRectTransform(id, std::nullopt);
 	}
+	if (object.button && ui.CollapsingHeader("UI Button")) {
+		auto b = *object.button;
+		if (ui.Checkbox("Button Enabled", b.enabled))
+			changed |= history.SetButton(id, b);
+		if (ui.Checkbox("Interactable", b.interactable))
+			changed |= history.SetButton(id, b);
+		if (ui.Checkbox("Button Navigation", b.navigation))
+			changed |= history.SetButton(id, b);
+		changed |=
+		    Apply(history, id, object.button, b,
+		          ImGui::ColorEdit4("Normal Color", b.normalColor.data()),
+		          &EditorHistory::BeginButton);
+		changed |= Apply(
+		    history, id, object.button, b,
+		    ImGui::ColorEdit4("Highlighted Color", b.highlightedColor.data()),
+		    &EditorHistory::BeginButton);
+		changed |=
+		    Apply(history, id, object.button, b,
+		          ImGui::ColorEdit4("Pressed Color", b.pressedColor.data()),
+		          &EditorHistory::BeginButton);
+		changed |=
+		    Apply(history, id, object.button, b,
+		          ImGui::ColorEdit4("Disabled Color", b.disabledColor.data()),
+		          &EditorHistory::BeginButton);
+		if (ui.Button("Remove UI Button"))
+			changed |= history.SetButton(id, std::nullopt);
+	}
 	if (object.text && ui.CollapsingHeader("UI Text")) {
 		auto t = *object.text;
 		if (ui.Checkbox("Text Enabled", t.enabled))
+			changed |= history.SetText(id, t);
+		if (ui.Checkbox("Text Raycast Target", t.raycastTarget))
 			changed |= history.SetText(id, t);
 		changed |= Apply(history, id, object.text, t,
 		                 ImGui::InputTextMultiline("Text", &t.text, {0, 85}),
@@ -171,6 +200,8 @@ bool UIInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 	if (object.image && ui.CollapsingHeader("UI Image")) {
 		auto i = *object.image;
 		if (ui.Checkbox("Image Enabled", i.enabled))
+			changed |= history.SetImage(id, i);
+		if (ui.Checkbox("Image Raycast Target", i.raycastTarget))
 			changed |= history.SetImage(id, i);
 		const auto preview = i.texture.empty()
 		                         ? std::string("Solid Color")
@@ -222,6 +253,13 @@ void UIInspector::DrawReadOnly(const ImGuiSystem &ui,
 		                    r.position[1]));
 		ui.Text(std::format("Size Delta: {:.1f}, {:.1f}", r.sizeDelta[0],
 		                    r.sizeDelta[1]));
+	}
+	if (object.button && ui.CollapsingHeader("UI Button")) {
+		ui.Text(object.button->enabled ? "Enabled" : "Disabled");
+		ui.Text(object.button->interactable ? "Interactable: Yes"
+		                                    : "Interactable: No");
+		ui.Text(object.button->navigation ? "Navigation: Yes"
+		                                  : "Navigation: No");
 	}
 	if (object.text && ui.CollapsingHeader("UI Text")) {
 		ui.Text(object.text->enabled ? "Enabled" : "Disabled");

@@ -96,6 +96,7 @@ bool EditorPlaySession::Restart(std::string &error) {
 
 	if (paused) {
 		clock_.TogglePause();
+		simulation_.CancelUIInput();
 	}
 
 	elapsedSeconds_ = 0.0;
@@ -147,7 +148,8 @@ std::uint64_t EditorPlaySession::GetSimulationFrameCount() const {
 }
 
 bool EditorPlaySession::Update(float seconds, const CharacterInput &input,
-                               const OrbitCameraInput &cameraInput) {
+                               const OrbitCameraInput &cameraInput,
+                               const UIInput &uiInput) {
 	if (!IsPlaying() || !std::isfinite(seconds) || seconds < 0) {
 		return false;
 	}
@@ -160,11 +162,12 @@ bool EditorPlaySession::Update(float seconds, const CharacterInput &input,
 	const auto time = clock_.Advance(seconds);
 
 	if (!time) {
+		simulation_.CancelUIInput();
 		return true;
 	}
 
 	const auto revision = simulation_.GetSceneRevision();
-	if (!simulation_.Update(*time, input, cameraInput)) {
+	if (!simulation_.Update(*time, input, cameraInput, uiInput)) {
 		return false;
 	}
 

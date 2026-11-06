@@ -460,6 +460,9 @@ bool InspectorPanel::Draw(
 		                !object->rectTransform && !object->canvas))
 			changed |= history.SetRectTransform(inspectedObjectId,
 			                                    RectTransformComponent{});
+		if (ui.MenuItem("UI Button", nullptr,
+		                !object->button && object->rectTransform.has_value()))
+			changed |= history.SetButton(inspectedObjectId, ButtonComponent{});
 		if (ui.MenuItem("UI Text", nullptr,
 		                !object->text && object->rectTransform.has_value()))
 			changed |= history.SetText(inspectedObjectId, TextComponent{});

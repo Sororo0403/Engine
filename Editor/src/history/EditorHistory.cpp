@@ -1493,6 +1493,9 @@ bool EditorHistory::HasPendingChanges() const {
 		                             std::optional<SpotLightComponent>>) {
 			    return before != object->spotLight;
 		    } else if constexpr (std::is_same_v<
+		                             Before, std::optional<ButtonComponent>>) {
+			    return before != object->button;
+		    } else if constexpr (std::is_same_v<
 		                             Before, std::optional<CanvasComponent>>) {
 			    return before != object->canvas;
 		    } else if constexpr (std::is_same_v<
@@ -1678,6 +1681,12 @@ void EditorHistory::CommitEdit() {
 		return;
 	}
 
+	if (std::holds_alternative<std::optional<ButtonComponent>>(
+	        pending_->before) &&
+	    object->button && !object->button->IsValid()) {
+		Invalidate();
+		return;
+	}
 	if (std::holds_alternative<std::optional<CanvasComponent>>(
 	        pending_->before) &&
 	    object->canvas && !object->canvas->IsValid()) {
@@ -1777,6 +1786,9 @@ void EditorHistory::CommitEdit() {
 			    return Command{
 			        SpotLightCommand{objectId, before, object->spotLight}};
 		    } else if constexpr (std::is_same_v<
+		                             Before, std::optional<ButtonComponent>>) {
+			    return Command{ButtonCommand{objectId, before, object->button}};
+		    } else if constexpr (std::is_same_v<
 		                             Before, std::optional<CanvasComponent>>) {
 			    return Command{CanvasCommand{objectId, before, object->canvas}};
 		    } else if constexpr (std::is_same_v<
@@ -1862,6 +1874,9 @@ void EditorHistory::CommitEdit() {
 		    } else if constexpr (std::is_same_v<
 		                             T, std::optional<SpotLightComponent>>) {
 			    return "Edit Spot Light";
+		    } else if constexpr (std::is_same_v<
+		                             T, std::optional<ButtonComponent>>) {
+			    return "Edit UI Button";
 		    } else if constexpr (std::is_same_v<
 		                             T, std::optional<CanvasComponent>>) {
 			    return "Edit Canvas";
@@ -3203,5 +3218,46 @@ bool EditorHistory::BeginImage(SceneObjectId id) {
 	}
 
 	pending_ = PendingEdit{id, object->image};
+	return true;
+}
+
+bool EditorHistory::SetButton(SceneObjectId id,
+                              std::optional<ButtonComponent> value) {
+	CommitEdit();
+	auto *object = scene_.FindObject(id);
+
+	if (!object || (value && !value->IsValid())) {
+		return false;
+	}
+
+	const bool adding = !object->button;
+	ButtonCommand command{id, object->button, value};
+
+	if (!command.HasChanges()) {
+		return true;
+	}
+
+	const auto next = PrepareAppend();
+
+	if (!command.Redo(scene_)) {
+		return false;
+	}
+
+	AppendPrepared(Command{std::move(command)}, next,
+	               !value   ? "Remove UI Button"
+	               : adding ? "Add UI Button"
+	                        : "Edit UI Button");
+	return true;
+}
+
+bool EditorHistory::BeginButton(SceneObjectId id) {
+	CommitEdit();
+	const auto *object = scene_.FindObject(id);
+
+	if (!object || !object->button) {
+		return false;
+	}
+
+	pending_ = PendingEdit{id, object->button};
 	return true;
 }

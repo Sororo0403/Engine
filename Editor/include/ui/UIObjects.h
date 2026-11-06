@@ -5,7 +5,7 @@ class EditorHistory;
 class Scene;
 
 namespace UIObjects {
-enum class Kind { CANVAS, TEXT, IMAGE };
+enum class Kind { CANVAS, TEXT, IMAGE, BUTTON };
 /// <summary>
 /// UI物体を1操作として作る。文字・画像の配置先にCanvasがなければ同時に作成する
 /// </summary>

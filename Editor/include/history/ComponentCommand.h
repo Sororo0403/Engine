@@ -113,3 +113,5 @@ using RectTransformCommand =
     ComponentCommand<RectTransformComponent, &SceneObject::rectTransform>;
 using TextCommand = ComponentCommand<TextComponent, &SceneObject::text>;
 using ImageCommand = ComponentCommand<ImageComponent, &SceneObject::image>;
+
+using ButtonCommand = ComponentCommand<ButtonComponent, &SceneObject::button>;

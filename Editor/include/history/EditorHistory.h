@@ -791,6 +791,20 @@ class EditorHistory {
 	/// <returns>true:編集開始 false:対象またはコンポーネントなし</returns>
 	bool BeginImage(SceneObjectId id);
 
+	/// <summary>
+	/// UI Buttonの追加・設定・削除を1回の履歴へ記録する
+	/// </summary>
+	/// <param name="id">編集する物体</param>
+	/// <param name="value">設定。nulloptは削除</param>
+	/// <returns>true:反映成功または同じ値 false:対象・設定が無効</returns>
+	bool SetButton(SceneObjectId id, std::optional<ButtonComponent> value);
+	/// <summary>
+	/// ボタン表示色の連続編集の開始値を保持する
+	/// </summary>
+	/// <param name="id">編集する物体</param>
+	/// <returns>true:開始成功 false:対象またはButtonなし</returns>
+	bool BeginButton(SceneObjectId id);
+
   private:
 	// 単独の編集操作、または複数の編集操作を保持する
 	using Command = std::variant<
@@ -798,10 +812,10 @@ class EditorHistory {
 	    ModelPathCommand, VisibilityCommand, ActiveCommand, ColliderCommand,
 	    CharacterCommand, FollowCameraCommand, TriggerActionsCommand,
 	    ScriptCommand, PointLightCommand, SpotLightCommand, MotionPathCommand,
-	    CanvasCommand, RectTransformCommand, TextCommand, ImageCommand,
-	    AudioSourceCommand, AudioListenerCommand, RespawnCommand, CameraCommand,
-	    MeshRendererCommand, ColorTintCommand, TextureSlotsCommand,
-	    CommandGroup, ScenePatchCommand>;
+	    CanvasCommand, ButtonCommand, RectTransformCommand, TextCommand,
+	    ImageCommand, AudioSourceCommand, AudioListenerCommand, RespawnCommand,
+	    CameraCommand, MeshRendererCommand, ColorTintCommand,
+	    TextureSlotsCommand, CommandGroup, ScenePatchCommand>;
 
 	/// <summary>
 	/// 操作と、その前後の状態を識別する情報
@@ -829,6 +843,7 @@ class EditorHistory {
 		    std::optional<PointLightComponent>,
 		    std::optional<SpotLightComponent>,
 		    std::optional<MotionPathComponent>, std::optional<CanvasComponent>,
+		    std::optional<ButtonComponent>,
 		    std::optional<RectTransformComponent>, std::optional<TextComponent>,
 		    std::optional<ImageComponent>,
 

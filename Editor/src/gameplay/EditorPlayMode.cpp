@@ -6,6 +6,7 @@
 #include "graphics/ui/ImGuiSystem.h"
 #include "input/InputSystem.h"
 #include "layout/GameViewLayout.h"
+#include "ui/UIInputReader.h"
 #include <cmath>
 #include <format>
 #include <imgui.h>
@@ -363,6 +364,7 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 	// Sceneだけが表示されている間も再生し、アプリ全体のフォーカス喪失時は止める。
 	if ((!visible_ && !sceneVisible) || ImGui::GetIO().AppFocusLost ||
 	    (!sceneVisible && !viewport_.applicationFocused)) {
+		session_.CancelUIInput();
 		return audioPlayer_.Update(session_.GetCameraPose(), true,
 		                           lastUpdateError_, nullptr,
 		                           session_.GetAudioActions());
@@ -379,7 +381,21 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 	              input.GetMouse(), viewport_, ImGui::GetIO().WantTextInput,
 	              gamepadEnabled_ ? &input.GetGamepad() : nullptr);
 	const auto revision = session_.GetSceneRevision();
-	if (!session_.Update(seconds, controls, cameraControls)) {
+	auto uiInput = UIInputReader::Read(
+	    input.GetKeyboard(), nullptr,
+	    gamepadEnabled_ ? &input.GetGamepad() : nullptr,
+	    texture_ ? texture_->GetWidth() : gameWidth_,
+	    texture_ ? texture_->GetHeight() : gameHeight_,
+	    !inputBlocked && visible_ && viewport_.applicationFocused &&
+	        !viewport_.widgetActive && !ImGui::GetIO().WantTextInput,
+	    viewport_.windowFocused);
+	uiInput.pointerValid =
+	    viewport_.imageHovered && viewport_.imagePositionValid;
+	uiInput.pointerX = viewport_.imageX;
+	uiInput.pointerY = viewport_.imageY;
+	uiInput.pointerPressed = viewport_.leftPressed;
+	uiInput.pointerDown = viewport_.leftDown;
+	if (!session_.Update(seconds, controls, cameraControls, uiInput)) {
 		lastUpdateError_ = session_.GetLastUpdateError();
 		return false;
 	}
@@ -400,7 +416,8 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 		return true;
 	}
 
-	if (!renderer_.SetLighting(lighting_) ||
+	if (!renderer_.SetUIButtonVisuals(session_.GetUI().GetVisuals()) ||
+	    !renderer_.SetLighting(lighting_) ||
 	    !renderer_.SetCameraPose(session_.GetCameraPose()) ||
 	    !renderer_.SetCameraSettings(session_.GetCameraSettings()) ||
 	    !renderer_.Update(texture_->GetWidth(), texture_->GetHeight())) {

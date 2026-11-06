@@ -1969,6 +1969,8 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 				action = EditorAction::CREATE_CANVAS;
 			if (ui_.MenuItem("Text", nullptr, enabled))
 				action = EditorAction::CREATE_UI_TEXT;
+			if (ui_.MenuItem("Button", nullptr, enabled))
+				action = EditorAction::CREATE_UI_BUTTON;
 			if (ui_.MenuItem("Image", nullptr, enabled))
 				action = EditorAction::CREATE_UI_IMAGE;
 			ui_.EndMenu();
@@ -2734,13 +2736,15 @@ void EditorScene::StartAction(EditorAction action) {
 		return;
 	case EditorAction::CREATE_CANVAS:
 	case EditorAction::CREATE_UI_TEXT:
-	case EditorAction::CREATE_UI_IMAGE: {
+	case EditorAction::CREATE_UI_IMAGE:
+	case EditorAction::CREATE_UI_BUTTON: {
 		FinishEdit();
 		std::string error;
 		const auto kind =
-		    action == EditorAction::CREATE_CANVAS    ? UIObjects::Kind::CANVAS
-		    : action == EditorAction::CREATE_UI_TEXT ? UIObjects::Kind::TEXT
-		                                             : UIObjects::Kind::IMAGE;
+		    action == EditorAction::CREATE_CANVAS      ? UIObjects::Kind::CANVAS
+		    : action == EditorAction::CREATE_UI_TEXT   ? UIObjects::Kind::TEXT
+		    : action == EditorAction::CREATE_UI_BUTTON ? UIObjects::Kind::BUTTON
+		                                               : UIObjects::Kind::IMAGE;
 		const auto id =
 		    UIObjects::Create(document_.GetScene(), document_.GetHistory(),
 		                      kind, selection_.GetActiveId(), error);
