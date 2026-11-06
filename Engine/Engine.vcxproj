@@ -2237,4 +2237,9 @@ exit /b 0</Command>
     <ClInclude Include="include\scene\PrefabSerializer.h" />
     <ClCompile Include="src\scene\PrefabSerializer.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\scene\PrefabInstantiation.h" />
+    <ClCompile Include="src\scene\PrefabInstantiation.cpp" />
+  </ItemGroup>
+  <ItemGroup><ClCompile Include="src\gameplay\SceneSimulationObjects.cpp" /></ItemGroup>
 </Project>
