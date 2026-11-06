@@ -42,6 +42,8 @@ const char *OperationLabel(TriggerAction::Operation operation) {
 		return "Play Audio";
 	case TriggerAction::Operation::STOP_AUDIO:
 		return "Stop Audio";
+	case TriggerAction::Operation::TELEPORT:
+		return "Teleport";
 	}
 	return "Invalid";
 }
@@ -110,7 +112,8 @@ bool TriggerActionsInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 				                TriggerAction::Operation::DISABLE,
 				                TriggerAction::Operation::TOGGLE,
 				                TriggerAction::Operation::PLAY_AUDIO,
-				                TriggerAction::Operation::STOP_AUDIO}) {
+				                TriggerAction::Operation::STOP_AUDIO,
+				                TriggerAction::Operation::TELEPORT}) {
 					if (ImGui::Selectable(OperationLabel(operation),
 					                      action.operation == operation) &&
 					    action.operation != operation) {
@@ -120,6 +123,29 @@ bool TriggerActionsInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 				}
 				ImGui::EndCombo();
 			}
+			if (action.operation == TriggerAction::Operation::TELEPORT) {
+				const auto destination = TargetLabel(scene, action.destination);
+				if (ImGui::BeginCombo("Destination", destination.c_str())) {
+					if (ImGui::Selectable("None", action.destination == 0) &&
+					    action.destination != 0) {
+						action.destination = 0;
+						changed = true;
+					}
+					for (const auto &[targetId, candidate] :
+					     scene.GetObjects()) {
+						(void)candidate;
+						const auto label = TargetLabel(scene, targetId);
+						if (ImGui::Selectable(label.c_str(),
+						                      action.destination == targetId) &&
+						    action.destination != targetId) {
+							action.destination = targetId;
+							changed = true;
+						}
+					}
+					ImGui::EndCombo();
+				}
+			}
+
 			changed |= ImGui::Checkbox("Once per Play", &action.once);
 			ui.BeginDisabled(i == 0);
 			if (ImGui::SmallButton("Move Up")) {
@@ -176,5 +202,8 @@ void TriggerActionsInspector::DrawReadOnly(const ImGuiSystem &ui,
 		    action.event == TriggerEvent::Type::ENTER ? "Enter" : "Exit",
 		    TargetLabel(scene, action.target), OperationLabel(action.operation),
 		    action.once ? "Yes" : "No"));
+		if (action.operation == TriggerAction::Operation::TELEPORT) {
+			ui.Text("Destination: " + TargetLabel(scene, action.destination));
+		}
 	}
 }

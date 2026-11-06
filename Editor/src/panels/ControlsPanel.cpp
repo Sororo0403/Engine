@@ -907,6 +907,28 @@ void ControlsPanel::Draw() {
 	         "not cast shadows. Edits, Reset and Remove support Undo/Redo; "
 	         "settings "
 	         "are saved with the scene and included in exported games."},
+	        {"Trigger Actions > Teleport",
+	         "Choose Teleport, set Target to the object to move and "
+	         "Destination "
+	         "to a marker object. Destination uses its world position; it "
+	         "needs "
+	         "no Collider and may be inactive. Target keeps its rotation, "
+	         "scale "
+	         "and parent. Active changes run first, then all destinations are "
+	         "sampled before moving any target; the last Teleport for each "
+	         "target wins. Moving a character or its ancestor resets character "
+	         "velocity and pending jump input, keeps its original respawn "
+	         "point "
+	         "and snaps affected Follow Cameras. Active Follow Cameras remain "
+	         "driven by their Follow settings. Arrival Enter and departure "
+	         "Exit "
+	         "are reported, but the instant path does not trigger intermediate "
+	         "volumes. Resulting actions wait for the next positive update. "
+	         "Invalid placement rejects the complete start/update, including "
+	         "activity, Once flags and audio requests. Changes to these "
+	         "settings "
+	         "support Undo/Redo and are included in saved and exported "
+	         "scenes."},
 	        {"Trigger Actions execution",
 	         "Initial overlaps run at Start. Later actions run after a "
 	         "positive simulation update: queued signals first, then new "
