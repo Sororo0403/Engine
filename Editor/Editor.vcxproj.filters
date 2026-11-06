@@ -110,6 +110,9 @@
     <ClCompile Include="src\assets\ScenePlacement.cpp">
       <Filter>src\assets</Filter>
     </ClCompile>
+    <ClCompile Include="src\assets\PrefabAsset.cpp">
+      <Filter>src\assets</Filter>
+    </ClCompile>
     <ClCompile Include="src\assets\ModelPlacement.cpp">
       <Filter>src\assets</Filter>
     </ClCompile>
@@ -227,6 +230,9 @@
       <Filter>include\assets</Filter>
     </ClInclude>
     <ClInclude Include="include\assets\ScenePlacement.h">
+      <Filter>include\assets</Filter>
+    </ClInclude>
+    <ClInclude Include="include\assets\PrefabAsset.h">
       <Filter>include\assets</Filter>
     </ClInclude>
     <ClInclude Include="include\assets\ModelPlacement.h">
@@ -715,7 +721,9 @@
     <ClInclude Include="include\assets\AssetFolders.h"><Filter>include\assets</Filter></ClInclude>
     <ClCompile Include="src\assets\AssetFolders.cpp"><Filter>src\assets</Filter></ClCompile>
     <ClInclude Include="include\dialogs\AssetFolderDialog.h"><Filter>include\dialogs</Filter></ClInclude>
+    <ClInclude Include="include\dialogs\PrefabCreateDialog.h"><Filter>include\dialogs</Filter></ClInclude>
     <ClCompile Include="src\dialogs\AssetFolderDialog.cpp"><Filter>src\dialogs</Filter></ClCompile>
+    <ClCompile Include="src\dialogs\PrefabCreateDialog.cpp"><Filter>src\dialogs</Filter></ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="include\files"><UniqueIdentifier>{e18f1f02-9928-469a-a46b-9f13723d14ca}</UniqueIdentifier></Filter>

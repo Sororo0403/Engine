@@ -104,8 +104,8 @@ class SceneViewPanel {
 	/// <summary>
 	/// このフレームの保存済み物体の組のドロップを取得する
 	/// </summary>
-	/// <returns>シーンの配置要求。操作がない場合はパスが空</returns>
-	const AssetDropRequest &GetSceneDrop() const;
+	/// <returns>シーンまたはPrefabの配置要求。操作がない場合はパスが空</returns>
+	const AssetDropRequest &GetObjectDrop() const;
 
 	/// <summary>
 	/// ギズモ判定後に選択入力を更新し、ドラッグ中の矩形を表示する
@@ -142,7 +142,7 @@ class SceneViewPanel {
 	std::unique_ptr<RenderTexture> texture_;
 	ViewportInput input_{};
 	AssetDropRequest modelDrop_;
-	AssetDropRequest sceneDrop_;
+	AssetDropRequest objectDrop_;
 
 	bool visible_ = false;
 	bool editable_ = true;

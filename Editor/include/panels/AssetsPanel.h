@@ -39,12 +39,14 @@ class AssetsPanel {
 	/// <param name="canEditAssets">素材の取り込み、画像・モデルの再読み込み、フォルダ作成・シーンを開く操作・保存済み物体の追加を開始できるか</param>
 	/// <param name="canReplaceMesh">全選択物体の既存Meshを差し替えられるか</param>
 	/// <param name="textureSlots">選択物体の材質名と使用状況。番号選択の補助に使い、空でも手入力は可能</param>
+	/// <param name="canCreatePrefab">単独選択の階層をPrefabとして作成できるか</param>
 	/// <returns>配置を要求したモデルの相対パス。要求がない場合は空のパス</returns>
 	std::filesystem::path
 	Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	     bool canSetTexture = false, bool canEditAssets = false,
 	     bool canReplaceMesh = false,
-	     std::span<const TextureSlotChoice> textureSlots = {});
+	     std::span<const TextureSlotChoice> textureSlots = {},
+	     bool canCreatePrefab = false);
 
 	/// <summary>
 	/// このフレームに開くことを要求したシーンを取得する。保存確認と読み込みは呼び出し側で行う
@@ -57,6 +59,18 @@ class AssetsPanel {
 	/// </summary>
 	/// <returns>シーンの参照先。要求なしは空。次のDraw・種類切り替え・Clearまで有効</returns>
 	const std::filesystem::path &GetSceneAppendRequest() const;
+
+	/// <summary>
+	/// このフレームで配置を要求したPrefabを取得する
+	/// </summary>
+	/// <returns>Prefabの参照先。要求なしは空。次のDraw・種類切り替え・Clearまで有効</returns>
+	const std::filesystem::path &GetPrefabAppendRequest() const;
+
+	/// <summary>
+	/// 単独選択の階層からPrefabを作成する要求があったか確認する
+	/// </summary>
+	/// <returns>true:作成要求あり false:要求なし。次のDraw・種類切り替え・Clearで解除する</returns>
+	bool IsPrefabCreateRequested() const;
 
 	/// <summary>
 	/// このフレームに、ゲーム設定の下書きへ読み込むことを要求したパスを取得する
@@ -169,12 +183,19 @@ class AssetsPanel {
 	/// <summary>
 	/// 一覧に表示するアセットの種類
 	/// </summary>
-	enum class AssetType { MODEL, TEXTURE, AUDIO, SCENE, GAME_SETTINGS };
+	enum class AssetType {
+		MODEL,
+		TEXTURE,
+		AUDIO,
+		SCENE,
+		GAME_SETTINGS,
+		PREFAB
+	};
 
 	/// <summary>
 	/// 表示の種類を切り替え、前の種類の選択と操作要求を解除する
 	/// </summary>
-	/// <param name="type">表示するモデル・画像・音声・シーン・ゲーム設定</param>
+	/// <param name="type">表示するモデル・画像・音声・シーン・Prefab・ゲーム設定</param>
 	void SetAssetType(AssetType type);
 
 	/// <summary>
@@ -186,7 +207,7 @@ class AssetsPanel {
 	/// <summary>
 	/// 同じファイルを指す一覧の項目を選択し、親フォルダを開いて検索を解除する
 	/// </summary>
-	/// <param name="path">探すモデル・画像・音声・シーン・ゲーム設定のパス</param>
+	/// <param name="path">探すモデル・画像・音声・シーン・Prefab・ゲーム設定のパス</param>
 	/// <param name="assets">確認するアセット一覧</param>
 	/// <returns>true:選択成功 false:一覧に該当なし</returns>
 	bool SelectAsset(const std::filesystem::path &path,
@@ -201,6 +222,7 @@ class AssetsPanel {
 	std::filesystem::path sceneOpenPath_;
 	std::filesystem::path gameSettingsPath_;
 	std::filesystem::path sceneAppendPath_;
+	std::filesystem::path prefabAppendPath_;
 	std::filesystem::path instanceSelectionPath_;
 	std::filesystem::path modelReloadPath_;
 	std::filesystem::path meshReplacementPath_;
@@ -215,6 +237,7 @@ class AssetsPanel {
 	bool audioImportRequested_ = false;
 	bool modelImportRequested_ = false;
 	bool folderCreateRequested_ = false;
+	bool prefabCreateRequested_ = false;
 	bool directoryOpenRequested_ = false;
 	std::filesystem::path requestedDirectory_;
 	bool scrollToSelected_ = false;

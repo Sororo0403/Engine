@@ -1,4 +1,5 @@
 #include "assets/AssetDatabase.h"
+#include "assets/PrefabAsset.h"
 
 #include "core/Logger.h"
 #include "platform/windows/PathUtils.h"
@@ -53,6 +54,7 @@ bool AssetDatabase::Refresh() {
 		std::vector<std::filesystem::path> textures;
 		std::vector<std::filesystem::path> audioClips;
 		std::vector<std::filesystem::path> scenes;
+		std::vector<std::filesystem::path> prefabs;
 		std::vector<std::filesystem::path> gameConfigurations;
 		std::vector<std::filesystem::path> directories;
 		const auto reference = [&](const std::filesystem::path &path) {
@@ -96,6 +98,10 @@ bool AssetDatabase::Refresh() {
 					textures.push_back(reference(path));
 				}
 
+				if (PrefabAsset::IsPrefabPath(path)) {
+					prefabs.push_back(reference(path));
+				}
+
 				// 一覧の検索ではJSONを読み込まず、標準の名前を持つ候補だけを扱う。
 				if (PathUtils::HasExtension(path, ".json") &&
 				    PathUtils::HasExtension(path.stem(), ".scene")) {
@@ -133,6 +139,7 @@ bool AssetDatabase::Refresh() {
 		std::sort(textures.begin(), textures.end());
 		std::sort(audioClips.begin(), audioClips.end());
 		std::sort(scenes.begin(), scenes.end());
+		std::sort(prefabs.begin(), prefabs.end());
 		std::sort(gameConfigurations.begin(), gameConfigurations.end());
 		std::sort(directories.begin(), directories.end());
 
@@ -141,6 +148,7 @@ bool AssetDatabase::Refresh() {
 		textures_.swap(textures);
 		audioClips_.swap(audioClips);
 		scenes_.swap(scenes);
+		prefabs_.swap(prefabs);
 		gameConfigurations_.swap(gameConfigurations);
 		directories_.swap(directories);
 		error_.clear();
@@ -150,6 +158,7 @@ bool AssetDatabase::Refresh() {
 		textures_.clear();
 		audioClips_.clear();
 		scenes_.clear();
+		prefabs_.clear();
 		gameConfigurations_.clear();
 		directories_.clear();
 		error_ = error.what();
@@ -172,6 +181,7 @@ bool AssetDatabase::SetRootDirectory(std::filesystem::path rootDirectory) {
 		textures_.swap(candidate.textures_);
 		audioClips_.swap(candidate.audioClips_);
 		scenes_.swap(candidate.scenes_);
+		prefabs_.swap(candidate.prefabs_);
 		gameConfigurations_.swap(candidate.gameConfigurations_);
 		directories_.swap(candidate.directories_);
 		error_.clear();
@@ -204,6 +214,7 @@ void AssetDatabase::Clear() {
 	textures_.clear();
 	audioClips_.clear();
 	scenes_.clear();
+	prefabs_.clear();
 	gameConfigurations_.clear();
 	directories_.clear();
 	error_.clear();
@@ -211,6 +222,10 @@ void AssetDatabase::Clear() {
 
 const std::vector<std::filesystem::path> &AssetDatabase::GetTextures() const {
 	return textures_;
+}
+
+const std::vector<std::filesystem::path> &AssetDatabase::GetPrefabs() const {
+	return prefabs_;
 }
 
 const std::vector<std::filesystem::path> &AssetDatabase::GetScenes() const {

@@ -1,4 +1,5 @@
 #include "assets/AssetDragDrop.h"
+#include "assets/PrefabAsset.h"
 #include "core/Logger.h"
 #include "platform/windows/PathUtils.h"
 
@@ -19,6 +20,8 @@ const char *PayloadType(AssetDragDrop::Kind kind) {
 		return "EDITOR_SCENE_PATH";
 	case AssetDragDrop::Kind::AUDIO:
 		return "EDITOR_AUDIO_PATH";
+	case AssetDragDrop::Kind::PREFAB:
+		return "EDITOR_PREFAB_PATH";
 	}
 	return nullptr;
 }
@@ -36,6 +39,8 @@ bool Matches(const std::filesystem::path &path, AssetDragDrop::Kind kind) {
 		return PathUtils::IsModelFile(path);
 	case AssetDragDrop::Kind::AUDIO:
 		return PathUtils::HasExtension(path, ".wav");
+	case AssetDragDrop::Kind::PREFAB:
+		return PrefabAsset::IsPrefabPath(path);
 	case AssetDragDrop::Kind::SCENE:
 		return PathUtils::HasExtension(path, ".json") &&
 		       PathUtils::HasExtension(path.stem(), ".scene");

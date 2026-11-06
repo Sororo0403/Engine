@@ -14,6 +14,7 @@
 #include "dialogs/GameSettingsDialog.h"
 #include "dialogs/ModelImportDialog.h"
 #include "dialogs/ObjectArrayDialog.h"
+#include "dialogs/PrefabCreateDialog.h"
 #include "dialogs/SaveChangesDialog.h"
 #include "dialogs/SceneImportDialog.h"
 #include "dialogs/SceneRecoveryDialog.h"
@@ -250,6 +251,7 @@ class EditorScene final : public IScene {
 		IMPORT_MODEL,
 		IMPORT_SCENE,
 		CREATE_ASSET_FOLDER,
+		CREATE_PREFAB,
 		SELECT_ASSET_FOLDER,
 		EXPORT_GAME,
 		EXPORT_RESULT,
@@ -333,18 +335,18 @@ class EditorScene final : public IScene {
 	void StartSaveSelection();
 
 	/// <summary>
-	/// 指定シーンを読み込み、新しいIDの物体として1回の履歴操作で追加する
+	/// シーンまたはPrefabを読み込み、新しいIDの物体として1回の履歴操作で追加する
 	/// </summary>
-	/// <param name="path">参照と配置を保持して追加するシーンファイル</param>
-	void AppendSceneObjects(const std::filesystem::path &path);
+	/// <param name="path">追加するシーンまたはPrefabファイル</param>
+	void AppendAssetObjects(const std::filesystem::path &path);
 
 	/// <summary>
 	/// Scene画像の配置先へ保存済み物体の組を移動し、全件を1回のUndo操作で追加する
 	/// </summary>
-	/// <param name="path">読み込む通常のシーンファイル</param>
+	/// <param name="path">読み込むシーンまたはPrefabファイル</param>
 	/// <param name="ray">配置先の面を探す正規化済みレイ</param>
 	/// <returns>true:追加成功 false:実行不可、読み込み・形状取得・配置・追加失敗</returns>
-	bool PlaceDroppedScene(const std::filesystem::path &path, const Ray &ray);
+	bool PlaceDroppedObjects(const std::filesystem::path &path, const Ray &ray);
 
 	/// <summary>
 	/// 選択物体の原点の平均位置、選択なしの場合はワールド原点を指定方向から見る
@@ -817,6 +819,7 @@ class EditorScene final : public IScene {
 	ModelImportDialog modelImportDialog_;
 	SceneImportDialog sceneImportDialog_;
 	AssetFolderDialog assetFolderDialog_;
+	PrefabCreateDialog prefabCreateDialog_;
 	GameExportDialog exportDialog_;
 	GameExportResultDialog exportResultDialog_;
 	GameSettingsDialog gameSettingsDialog_;

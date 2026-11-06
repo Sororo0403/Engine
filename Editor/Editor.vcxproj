@@ -132,6 +132,8 @@
     <ClInclude Include="include\assets\AssetDatabase.h" />
     <ClInclude Include="include\assets\AssetDragDrop.h" />
     <ClInclude Include="include\assets\ScenePlacement.h" />
+    <ClInclude Include="include\assets\PrefabAsset.h" />
+    <ClInclude Include="include\dialogs\PrefabCreateDialog.h" />
     <ClInclude Include="include\assets\ModelPlacement.h" />
     <ClInclude Include="include\camera\EditorCameraController.h" />
     <ClInclude Include="include\camera\CameraView.h" />
@@ -183,6 +185,8 @@
     <ClCompile Include="src\assets\AssetDatabase.cpp" />
     <ClCompile Include="src\assets\AssetDragDrop.cpp" />
     <ClCompile Include="src\assets\ScenePlacement.cpp" />
+    <ClCompile Include="src\assets\PrefabAsset.cpp" />
+    <ClCompile Include="src\dialogs\PrefabCreateDialog.cpp" />
     <ClCompile Include="src\assets\ModelPlacement.cpp" />
     <ClCompile Include="src\scene\SceneObjects.cpp" />
     <ClCompile Include="src\scene\SceneDocument.cpp" />

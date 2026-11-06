@@ -26,7 +26,7 @@ bool SceneViewPanel::DrawUI(const ImGuiSystem &ui, TransformGizmo &gizmo,
 	selectionEnabled_ = editable || allowReadOnlySelection;
 	input_ = {};
 	modelDrop_ = {};
-	sceneDrop_ = {};
+	objectDrop_ = {};
 	imageMinimum_ = {};
 	imageSize_ = {};
 
@@ -101,14 +101,15 @@ bool SceneViewPanel::DrawUI(const ImGuiSystem &ui, TransformGizmo &gizmo,
 
 	if (editable_) {
 		for (const auto kind :
-		     {AssetDragDrop::Kind::MODEL, AssetDragDrop::Kind::SCENE}) {
+		     {AssetDragDrop::Kind::MODEL, AssetDragDrop::Kind::SCENE,
+		      AssetDragDrop::Kind::PREFAB}) {
 			auto path = AssetDragDrop::AcceptTarget(kind);
 			const auto mouse = ImGui::GetMousePos();
 			if (!path.empty() && ImGui::IsMousePosValid() &&
 			    mouse.x >= minimum.x && mouse.x < maximum.x &&
 			    mouse.y >= minimum.y && mouse.y < maximum.y) {
 				auto &drop = kind == AssetDragDrop::Kind::MODEL ? modelDrop_
-				                                                : sceneDrop_;
+				                                                : objectDrop_;
 				drop.path = std::move(path);
 				drop.imagePosition = {(mouse.x - minimum.x) / imageSize_.x,
 				                      (mouse.y - minimum.y) / imageSize_.y};
@@ -285,10 +286,10 @@ void SceneViewPanel::Finalize() {
 	texture_.reset();
 	input_ = {};
 	modelDrop_ = {};
-	sceneDrop_ = {};
+	objectDrop_ = {};
 	visible_ = false;
 }
 
-const SceneViewPanel::AssetDropRequest &SceneViewPanel::GetSceneDrop() const {
-	return sceneDrop_;
+const SceneViewPanel::AssetDropRequest &SceneViewPanel::GetObjectDrop() const {
+	return objectDrop_;
 }

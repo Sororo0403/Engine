@@ -5,7 +5,7 @@
 #include <vector>
 
 /// <summary>
-/// Editorが使用するモデル・画像・音声・シーン・ゲーム設定アセットとフォルダの一覧を管理する
+/// Editorが使用するモデル・画像・音声・シーン・Prefab・ゲーム設定アセットとフォルダの一覧を管理する
 /// </summary>
 class AssetDatabase {
   public:
@@ -64,6 +64,12 @@ class AssetDatabase {
 	const std::vector<std::filesystem::path> &GetScenes() const;
 
 	/// <summary>
+	/// Prefab専用の標準名を持つ候補を取得する。内容は配置時に検証する
+	/// </summary>
+	/// <returns>検索先と同じ絶対・相対指定の.prefab.json一覧</returns>
+	const std::vector<std::filesystem::path> &GetPrefabs() const;
+
+	/// <summary>
 	/// 標準名を持つゲーム設定ファイルを取得する。内容は読み込み時に検証する
 	/// </summary>
 	/// <returns>検索先と同じ絶対・相対指定の*.settings.json一覧</returns>
@@ -92,6 +98,7 @@ class AssetDatabase {
 	std::vector<std::filesystem::path> textures_;
 	std::vector<std::filesystem::path> audioClips_;
 	std::vector<std::filesystem::path> scenes_;
+	std::vector<std::filesystem::path> prefabs_;
 	std::vector<std::filesystem::path> gameConfigurations_;
 	std::vector<std::filesystem::path> directories_;
 	std::string error_;

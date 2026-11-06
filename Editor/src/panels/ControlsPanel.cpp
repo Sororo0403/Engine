@@ -952,6 +952,23 @@ void ControlsPanel::Draw() {
 	         "settings "
 	         "support Undo/Redo and are included in saved and exported "
 	         "scenes."},
+	        {"Assets > Prefabs",
+	         "Select one root object and choose Create Prefab from Selection "
+	         "to save it and all descendants as a .prefab.json asset in the "
+	         "current Assets folder. The root's saved position is the origin; "
+	         "its rotation, scale, child transforms and component settings are "
+	         "retained. External object references must be included under the "
+	         "root or cleared first. Models, textures and WAVs remain shared "
+	         "file references relative to the Prefab, so keep their folders "
+	         "together. Existing assets are not overwritten. Choose Prefabs "
+	         "in Asset Type, select an asset and Add Prefab, or drag it onto "
+	         "Scene to fit the group to a surface or grid. Placement remaps "
+	         "internal references, validates resources and creates one "
+	         "Undo/Redo "
+	         "operation. Placements are independent object copies in this "
+	         "workflow; changes to an asset do not update existing placements. "
+	         "Saved scenes and exported games contain the placed objects "
+	         "and their ordinary resource dependencies."},
 	        {"Trigger Actions > Interact",
 	         "Set Event to Interact to operate a switch or door on a button "
 	         "press instead of immediately on entering. The active Character "

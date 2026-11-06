@@ -5,6 +5,7 @@
 #include "assets/AssetFolders.h"
 #include "assets/ModelPlacement.h"
 #include "assets/ModelUsage.h"
+#include "assets/PrefabAsset.h"
 #include "assets/ScenePlacement.h"
 #include "assets/TextureUsage.h"
 #include "camera/CameraObjects.h"
@@ -536,7 +537,7 @@ bool EditorScene::Update(float deltaTime) {
 		                            return object && object->mesh &&
 		                                   object->mesh->IsValid();
 	                            }),
-	    textureSlots);
+	    textureSlots, selection_.GetCount() == 1);
 	if (!wasBusy && !assetsPanel_.GetTexturePreviewRequest().empty()) {
 		texturePreviewPanel_.Open(assetsPanel_.GetTexturePreviewRequest());
 	}
@@ -551,7 +552,9 @@ bool EditorScene::Update(float deltaTime) {
 	    assetsPanel_.IsTextureClearRequested()
 	        ? std::filesystem::path{}
 	        : assetsPanel_.GetTextureSelectionRequest();
-	const auto requestedSceneAppend = assetsPanel_.GetSceneAppendRequest();
+	const auto requestedObjects = !assetsPanel_.GetPrefabAppendRequest().empty()
+	                                  ? assetsPanel_.GetPrefabAppendRequest()
+	                                  : assetsPanel_.GetSceneAppendRequest();
 	const auto requestedInstances = assetsPanel_.GetInstanceSelectionRequest();
 	const auto requestedModelReload = assetsPanel_.GetModelReloadRequest();
 	const auto requestedMeshReplacement =
@@ -573,7 +576,7 @@ bool EditorScene::Update(float deltaTime) {
 	const bool sceneViewReady =
 	    sceneViewPanel_.DrawUI(ui_, gizmo_, toolbarMode);
 	const auto &modelDrop = sceneViewPanel_.GetModelDrop();
-	const auto &sceneDrop = sceneViewPanel_.GetSceneDrop();
+	const auto &sceneDrop = sceneViewPanel_.GetObjectDrop();
 	const bool hasAssetDrop =
 	    !modelDrop.path.empty() || !sceneDrop.path.empty();
 
@@ -601,10 +604,10 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	if (!wasBusy) {
-		if (!requestedSceneAppend.empty() && !IsBusy() &&
+		if (!requestedObjects.empty() && !IsBusy() &&
 		    action == EditorAction::NONE &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
-			AppendSceneObjects(requestedSceneAppend);
+			AppendAssetObjects(requestedObjects);
 		}
 
 		const auto &requestedScene = assetsPanel_.GetSceneOpenRequest();
@@ -622,6 +625,21 @@ bool EditorScene::Update(float deltaTime) {
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 			pendingOpenPath_ = requestedSettings;
 			action = EditorAction::LOAD_GAME_SETTINGS;
+		}
+
+		if (assetsPanel_.IsPrefabCreateRequested() &&
+		    selection_.GetCount() == 1 && !IsBusy() &&
+		    action == EditorAction::NONE &&
+		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
+			FinishEdit();
+			std::string error;
+			if (prefabCreateDialog_.Show(
+			        scene, selection_.GetActiveId(), assets_.GetRootDirectory(),
+			        assetsPanel_.GetOpenDirectory(), error)) {
+				stage_ = DialogStage::CREATE_PREFAB;
+			} else {
+				ShowError(error);
+			}
 		}
 
 		if (assetsPanel_.IsFolderCreateRequested() && !IsBusy() &&
@@ -900,7 +918,7 @@ bool EditorScene::Update(float deltaTime) {
 
 		if (!IsBusy() && action == EditorAction::NONE && textureAssignment &&
 		    !hasCheckRequest && requestedTextureUsers.empty() &&
-		    requestedSceneAppend.empty() && requestedInstances.empty() &&
+		    requestedObjects.empty() && requestedInstances.empty() &&
 		    requestedModelPath.empty() && !hasAssetDrop &&
 		    modelRequest.objectId == 0 && visibilityRequest.objectId == 0 &&
 		    colliderFitRequest == 0 && !hasObjectRequest && !historyRequest &&
@@ -910,7 +928,7 @@ bool EditorScene::Update(float deltaTime) {
 		}
 
 		if (!IsBusy() && action == EditorAction::NONE &&
-		    !requestedTextureUsers.empty() && requestedSceneAppend.empty() &&
+		    !requestedTextureUsers.empty() && requestedObjects.empty() &&
 		    requestedInstances.empty() && requestedModelPath.empty() &&
 		    !hasAssetDrop && modelRequest.objectId == 0 &&
 		    visibilityRequest.objectId == 0 && colliderFitRequest == 0 &&
@@ -950,7 +968,7 @@ bool EditorScene::Update(float deltaTime) {
 			    requestedModelReload.empty() &&
 			    requestedMeshReplacement.empty() &&
 			    requestedTextureReload.empty() && !hasCheckRequest &&
-			    requestedTextureUsers.empty() && requestedSceneAppend.empty() &&
+			    requestedTextureUsers.empty() && requestedObjects.empty() &&
 			    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 				RestoreHistory(*historyRequest);
 			}
@@ -962,7 +980,7 @@ bool EditorScene::Update(float deltaTime) {
 			    requestedModelReload.empty() &&
 			    requestedMeshReplacement.empty() &&
 			    requestedTextureReload.empty() && !hasCheckRequest &&
-			    requestedTextureUsers.empty() && requestedSceneAppend.empty() &&
+			    requestedTextureUsers.empty() && requestedObjects.empty() &&
 			    !historyRequest) {
 				const bool objectPanelFocused =
 				    hierarchyRequest.windowFocused ||
@@ -990,7 +1008,7 @@ bool EditorScene::Update(float deltaTime) {
 	    !requestedMeshReplacement.empty() || !requestedModelReload.empty() ||
 	    !requestedTextureReload.empty() || !requestedModelPath.empty() ||
 	    !requestedInstances.empty() || !requestedTextureUsers.empty() ||
-	    !requestedSceneAppend.empty() || hasAssetDrop ||
+	    !requestedObjects.empty() || hasAssetDrop ||
 	    modelRequest.objectId != 0 || visibilityRequest.objectId != 0 ||
 	    colliderFitRequest != 0 || hasObjectRequest ||
 	    historyRequest.has_value() ||
@@ -1109,7 +1127,7 @@ bool EditorScene::Update(float deltaTime) {
 		} else {
 			const bool placed = sceneDrop.path.empty()
 			                        ? PlaceDroppedModel(drop.path, ray)
-			                        : PlaceDroppedScene(drop.path, ray);
+			                        : PlaceDroppedObjects(drop.path, ray);
 			if (placed &&
 			    !renderer_.Update(target->GetWidth(), target->GetHeight())) {
 				return false;
@@ -3098,44 +3116,68 @@ void EditorScene::StartSaveSelection() {
 	}
 }
 
-void EditorScene::AppendSceneObjects(const std::filesystem::path &path) {
+void EditorScene::AppendAssetObjects(const std::filesystem::path &path) {
 	if (playMode_.IsPlaying() || IsBusy() || gizmo_.IsUsing() ||
 	    gizmoEditActive_ || sceneViewPanel_.IsSelecting()) {
 		return;
 	}
 	try {
 		SceneDocument source;
-		if (!source.Open(path)) {
-			ShowError("Could not read objects from the scene. The current "
-			          "scene was kept.");
+		const bool prefab = PrefabAsset::IsPrefabPath(path);
+		std::string error;
+		if (prefab ? !PrefabAsset::Load(path, source.GetScene(), error)
+		           : !source.Open(path)) {
+			ShowError(error.empty() ? "Could not read the asset objects. The "
+			                          "current scene was kept."
+			                        : error);
 			return;
 		}
-		auto ids =
-		    SceneObjects::Append(source.GetScene(), document_.GetHistory());
+		auto sources = assetSources_;
+		if (prefab) {
+			sources.Register(
+			    PathUtils::ResolveFromExecutable(assets_.GetRootDirectory()));
+		}
+		auto ids = prefab
+		               ? PrefabAsset::Instantiate(source.GetScene(),
+		                                          document_.GetHistory(), error)
+		               : SceneObjects::Append(source.GetScene(),
+		                                      document_.GetHistory());
 		if (ids.empty()) {
-			ShowError("The scene has no objects to add, or its settings are "
-			          "invalid.");
+			ShowError(error.empty() ? "The asset has no objects to add, or its "
+			                          "settings are invalid."
+			                        : error);
 			return;
 		}
+		assetSources_ = std::move(sources);
 		selection_.Set(std::move(ids));
 		hierarchyPanel_.RequestReveal(selection_.GetActiveId());
 	} catch (const std::exception &error) {
 		Logger::Error(
-		    std::format("EditorScene::AppendSceneObjects: {}", error.what()));
+		    std::format("EditorScene::AppendAssetObjects: {}", error.what()));
 		ShowError(
 		    "Could not add objects from the scene. See the log for details.");
 	}
 }
 
-bool EditorScene::PlaceDroppedScene(const std::filesystem::path &path,
-                                    const Ray &ray) {
+bool EditorScene::PlaceDroppedObjects(const std::filesystem::path &path,
+                                      const Ray &ray) {
 	if (playMode_.IsPlaying() || IsBusy() || gizmo_.IsUsing() ||
 	    gizmoEditActive_ || sceneViewPanel_.IsSelecting()) {
 		return false;
 	}
 	try {
 		SceneDocument source;
-		if (!source.Open(path) ||
+		const bool prefab = PrefabAsset::IsPrefabPath(path);
+		std::string error;
+		const bool loaded =
+		    prefab ? PrefabAsset::Load(path, source.GetScene(), error)
+		           : source.Open(path);
+		auto sources = assetSources_;
+		if (prefab) {
+			sources.Register(
+			    PathUtils::ResolveFromExecutable(assets_.GetRootDirectory()));
+		}
+		if (!loaded ||
 		    !ScenePlacement::Place(
 		        source.GetScene(), document_.GetScene(), ray, models_,
 		        gizmo_.IsSnapping()
@@ -3146,19 +3188,24 @@ bool EditorScene::PlaceDroppedScene(const std::filesystem::path &path,
 			          "added. See the log for details.");
 			return false;
 		}
-		auto ids =
-		    SceneObjects::Append(source.GetScene(), document_.GetHistory());
+		auto ids = prefab
+		               ? PrefabAsset::Instantiate(source.GetScene(),
+		                                          document_.GetHistory(), error)
+		               : SceneObjects::Append(source.GetScene(),
+		                                      document_.GetHistory());
 		if (ids.empty()) {
-			ShowError(
-			    "Could not add the positioned objects. No objects were added.");
+			ShowError(error.empty() ? "Could not add the positioned objects. "
+			                          "No objects were added."
+			                        : error);
 			return false;
 		}
+		assetSources_ = std::move(sources);
 		selection_.Set(std::move(ids));
 		hierarchyPanel_.RequestReveal(selection_.GetActiveId());
 		return true;
 	} catch (const std::exception &error) {
 		Logger::Error(
-		    std::format("EditorScene::PlaceDroppedScene: {}", error.what()));
+		    std::format("EditorScene::PlaceDroppedObjects: {}", error.what()));
 		ShowError("Could not place scene objects. See the log for details.");
 		return false;
 	}
@@ -3442,6 +3489,24 @@ void EditorScene::UpdateDialogs() {
 				ShowError("The current Assets folder was kept: " +
 				          std::string(error.what()));
 			}
+		}
+		return;
+	}
+
+	case DialogStage::CREATE_PREFAB: {
+		const auto result = prefabCreateDialog_.Draw(ui_);
+		if (result == PrefabCreateResult::ACCEPTED) {
+			stage_ = DialogStage::IDLE;
+			if (!assets_.Refresh()) {
+				ShowError(
+				    "The Prefab was created, but Assets could not refresh: " +
+				    assets_.GetError());
+			} else {
+				assetsPanel_.RequestReveal(
+				    prefabCreateDialog_.GetCreatedPath());
+			}
+		} else if (result == PrefabCreateResult::CANCELLED) {
+			stage_ = DialogStage::IDLE;
 		}
 		return;
 	}

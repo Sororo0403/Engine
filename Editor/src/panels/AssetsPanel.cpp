@@ -29,6 +29,7 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	sceneOpenPath_.clear();
 	gameSettingsPath_.clear();
 	sceneAppendPath_.clear();
+	prefabAppendPath_.clear();
 	instanceSelectionPath_.clear();
 	modelReloadPath_.clear();
 	meshReplacementPath_.clear();
@@ -40,6 +41,7 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	audioImportRequested_ = false;
 	modelImportRequested_ = false;
 	folderCreateRequested_ = false;
+	prefabCreateRequested_ = false;
 	texturePreviewPath_.clear();
 	audioPreviewPath_.clear();
 	revealMessage_.clear();
@@ -109,6 +111,7 @@ bool AssetsPanel::SelectAsset(const std::filesystem::path &path,
 		    select(assets.GetTextures(), AssetType::TEXTURE, aliases) ||
 		    select(assets.GetAudioClips(), AssetType::AUDIO, aliases) ||
 		    select(assets.GetScenes(), AssetType::SCENE, aliases) ||
+		    select(assets.GetPrefabs(), AssetType::PREFAB, aliases) ||
 		    select(assets.GetGameConfigurations(), AssetType::GAME_SETTINGS,
 		           aliases)) {
 			return true;
@@ -121,10 +124,12 @@ bool AssetsPanel::SelectAsset(const std::filesystem::path &path,
 std::filesystem::path
 AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
                   bool canSetTexture, bool canEditAssets, bool canReplaceMesh,
-                  std::span<const TextureSlotChoice> textureSlots) {
+                  std::span<const TextureSlotChoice> textureSlots,
+                  bool canCreatePrefab) {
 	sceneOpenPath_.clear();
 	gameSettingsPath_.clear();
 	sceneAppendPath_.clear();
+	prefabAppendPath_.clear();
 	instanceSelectionPath_.clear();
 	modelReloadPath_.clear();
 	meshReplacementPath_.clear();
@@ -136,6 +141,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	audioImportRequested_ = false;
 	modelImportRequested_ = false;
 	folderCreateRequested_ = false;
+	prefabCreateRequested_ = false;
 	texturePreviewPath_.clear();
 	audioPreviewPath_.clear();
 
@@ -252,6 +258,12 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	ui.EndDisabled();
 	ui.BeginDisabled(!canEditAssets);
 
+	ui.BeginDisabled(!canCreatePrefab);
+	if (ui.Button("Create Prefab from Selection")) {
+		prefabCreateRequested_ = true;
+	}
+	ui.EndDisabled();
+
 	if (ui.Button("Import Texture")) {
 		textureImportRequested_ = true;
 	}
@@ -282,6 +294,8 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			return "Audio";
 		case AssetType::SCENE:
 			return "Scenes";
+		case AssetType::PREFAB:
+			return "Prefabs";
 		case AssetType::GAME_SETTINGS:
 			return "Game Settings";
 		}
@@ -291,7 +305,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	if (ImGui::BeginCombo("Asset Type", typeLabel(type_))) {
 		for (const auto type :
 		     {AssetType::MODEL, AssetType::TEXTURE, AssetType::AUDIO,
-		      AssetType::SCENE, AssetType::GAME_SETTINGS}) {
+		      AssetType::SCENE, AssetType::PREFAB, AssetType::GAME_SETTINGS}) {
 			if (ui.Selectable(typeLabel(type), type_ == type)) {
 				SetAssetType(type);
 			}
@@ -316,8 +330,9 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	const auto &entries = type_ == AssetType::MODEL     ? assets.GetModels()
 	                      : type_ == AssetType::TEXTURE ? assets.GetTextures()
 	                      : type_ == AssetType::AUDIO   ? assets.GetAudioClips()
-	                      : type_ == AssetType::SCENE
-	                          ? assets.GetScenes()
+	                      : type_ == AssetType::SCENE   ? assets.GetScenes()
+	                      : type_ == AssetType::PREFAB
+	                          ? assets.GetPrefabs()
 	                          : assets.GetGameConfigurations();
 
 	if (!selectedPath_.empty() && std::find(entries.begin(), entries.end(),
@@ -437,6 +452,11 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				scrollToSelected_ = false;
 				revealMessage_.clear();
 
+				if (type_ == AssetType::PREFAB &&
+				    ui.MenuItem("Add Prefab", nullptr, canEditAssets)) {
+					prefabAppendPath_ = assetPath;
+				}
+
 				if (type_ == AssetType::SCENE &&
 				    ui.MenuItem("Add Objects", nullptr, canEditAssets)) {
 					sceneAppendPath_ = assetPath;
@@ -492,12 +512,14 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			}
 
 			if ((type_ == AssetType::MODEL || type_ == AssetType::SCENE ||
-			     type_ == AssetType::AUDIO) &&
+			     type_ == AssetType::AUDIO || type_ == AssetType::PREFAB) &&
 			    AssetDragDrop::DrawSource(
 			        assetPath,
 			        type_ == AssetType::MODEL   ? AssetDragDrop::Kind::MODEL
 			        : type_ == AssetType::AUDIO ? AssetDragDrop::Kind::AUDIO
-			                                    : AssetDragDrop::Kind::SCENE)) {
+			        : type_ == AssetType::PREFAB
+			            ? AssetDragDrop::Kind::PREFAB
+			            : AssetDragDrop::Kind::SCENE)) {
 				selectedPath_ = assetPath;
 			}
 
@@ -637,6 +659,12 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		}
 
 		ui.EndDisabled();
+	} else if (type_ == AssetType::PREFAB) {
+		ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
+		if (ui.Button("Add Prefab")) {
+			prefabAppendPath_ = selectedPath_;
+		}
+		ui.EndDisabled();
 	} else if (type_ == AssetType::GAME_SETTINGS) {
 		ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
 		if (ui.Button("Load Game Settings")) {
@@ -691,12 +719,14 @@ void AssetsPanel::Clear() {
 	audioImportRequested_ = false;
 	modelImportRequested_ = false;
 	folderCreateRequested_ = false;
+	prefabCreateRequested_ = false;
 	texturePreviewPath_.clear();
 	audioPreviewPath_.clear();
 	selectedPath_.clear();
 	sceneOpenPath_.clear();
 	gameSettingsPath_.clear();
 	sceneAppendPath_.clear();
+	prefabAppendPath_.clear();
 	instanceSelectionPath_.clear();
 	modelReloadPath_.clear();
 	meshReplacementPath_.clear();
@@ -752,6 +782,14 @@ const std::filesystem::path &AssetsPanel::GetTextureReloadRequest() const {
 
 const std::filesystem::path &AssetsPanel::GetSceneOpenRequest() const {
 	return sceneOpenPath_;
+}
+
+const std::filesystem::path &AssetsPanel::GetPrefabAppendRequest() const {
+	return prefabAppendPath_;
+}
+
+bool AssetsPanel::IsPrefabCreateRequested() const {
+	return prefabCreateRequested_;
 }
 
 const std::filesystem::path &AssetsPanel::GetSceneAppendRequest() const {
