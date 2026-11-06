@@ -21,10 +21,12 @@ void SceneAssetReferences::Rewrite(
 					apply(action.scenePath);
 		if (object.script) {
 			apply(object.script->asset);
-			for (auto &[name, path] : object.script->prefabs) {
-				(void)name;
-				apply(path);
-			}
+			for (auto *bindings :
+			     {&object.script->prefabs, &object.script->scenes})
+				for (auto &[name, path] : *bindings) {
+					(void)name;
+					apply(path);
+				}
 		}
 		if (object.image)
 			apply(object.image->texture);

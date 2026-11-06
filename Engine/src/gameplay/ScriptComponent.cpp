@@ -8,7 +8,7 @@ bool ScriptComponent::IsValid() const {
 	                        asset.native().find(L'\0') != std::wstring::npos ||
 	                        (asset.has_root_path() && !asset.is_absolute()))) ||
 	    references.size() > kMaximumReferences ||
-	    prefabs.size() > kMaximumPrefabs)
+	    prefabs.size() > kMaximumPrefabs || scenes.size() > kMaximumScenes)
 		return false;
 	std::string normalized, error;
 	if (!LuaScript::NormalizeState(initialState, normalized, error))
@@ -30,6 +30,17 @@ bool ScriptComponent::IsValid() const {
 		     !PathUtils::HasExtension(path.stem(), ".prefab") ||
 		     path.native().find(L'\0') != std::wstring::npos ||
 		     (path.has_root_path() && !path.is_absolute())))
+			return false;
+	}
+	names.clear();
+	for (const auto &[name, path] : scenes) {
+		if (name.empty() || name.size() > kMaximumReferenceNameBytes ||
+		    name.find('\0') != std::string::npos || !names.insert(name).second)
+			return false;
+		if (!path.empty() && (!PathUtils::HasExtension(path, ".json") ||
+		                      !PathUtils::HasExtension(path.stem(), ".scene") ||
+		                      path.native().find(L'\0') != std::wstring::npos ||
+		                      (path.has_root_path() && !path.is_absolute())))
 			return false;
 	}
 	return true;

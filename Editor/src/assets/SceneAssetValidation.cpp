@@ -92,6 +92,20 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 				            return files;
 			            }));
 		if (object.script)
+			for (const auto &[name, path] : object.script->scenes) {
+				if (path.empty())
+					continue;
+				add("Script Scene " + name,
+				    inspect(path, scenes, [](const auto &file) {
+					    Scene loaded;
+					    if (!SceneSerializer::Load(loaded, file))
+						    throw std::runtime_error(
+						        "Could not read Script Scene.");
+					    return std::vector<std::filesystem::path>{
+					        PathUtils::ResolveFromExecutable(file)};
+				    }));
+			}
+		if (object.script)
 			for (const auto &[name, path] : object.script->prefabs) {
 				if (path.empty())
 					continue;

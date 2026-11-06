@@ -18,13 +18,15 @@ std::vector<SceneDependencyGraph::Entry> SceneDependencyGraph::Read(
 		for (auto &[id, object] : objects) {
 			(void)id;
 			if (object.script)
-				for (auto &[name, path] : object.script->prefabs) {
-					(void)name;
-					if (!path.empty()) {
-						path = resolve(path);
-						targets.push_back(path);
+				for (auto *bindings :
+				     {&object.script->prefabs, &object.script->scenes})
+					for (auto &[name, path] : *bindings) {
+						(void)name;
+						if (!path.empty()) {
+							path = resolve(path);
+							targets.push_back(path);
+						}
 					}
-				}
 			if (!object.triggerActions)
 				continue;
 			for (auto &action : object.triggerActions->actions) {

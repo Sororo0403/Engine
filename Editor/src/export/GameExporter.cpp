@@ -554,23 +554,28 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 						    found - graph.begin())];
 					}
 				if (object.script)
-					for (auto &[name, path] : object.script->prefabs) {
-						(void)name;
-						if (path.empty())
-							continue;
-						const auto found = std::ranges::find_if(
-						    graph, [&](const auto &target) {
-							    return target.prefab &&
-							           !target.source.empty() &&
-							           PathUtils::IsSameFile(target.source,
-							                                 path);
-						    });
-						if (found == graph.end())
-							throw std::runtime_error(
-							    "Script Prefab is not in the export graph.");
-						path = scenePaths[static_cast<std::size_t>(
-						    found - graph.begin())];
-					}
+					for (auto *bindings :
+					     {&object.script->prefabs, &object.script->scenes})
+						for (auto &[name, path] : *bindings) {
+							(void)name;
+							if (path.empty())
+								continue;
+							const auto found = std::ranges::find_if(
+							    graph, [&](const auto &target) {
+								    return target.prefab ==
+								               PrefabSerializer::IsPrefabPath(
+								                   path) &&
+								           !target.source.empty() &&
+								           PathUtils::IsSameFile(target.source,
+								                                 path);
+							    });
+							if (found == graph.end())
+								throw std::runtime_error(
+								    "Script Scene or Prefab is not in the "
+								    "export graph.");
+							path = scenePaths[static_cast<std::size_t>(
+							    found - graph.begin())];
+						}
 				if (object.image && !object.image->texture.empty()) {
 					auto &path = object.image->texture;
 					const auto input =

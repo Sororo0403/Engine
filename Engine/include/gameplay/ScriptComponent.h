@@ -18,6 +18,9 @@ struct ScriptComponent {
 	std::vector<std::pair<std::string, SceneObjectId>> references;
 	// 生成に使うPrefab。未割り当てのスロットも編集用に保持する
 	std::vector<std::pair<std::string, std::filesystem::path>> prefabs;
+	// 遷移に使うシーン。Prefab・物体参照とは別の名前空間を使用する
+	std::vector<std::pair<std::string, std::filesystem::path>> scenes;
+	static constexpr std::size_t kMaximumScenes = 32;
 	static constexpr std::size_t kMaximumPrefabs = 32;
 	static constexpr std::size_t kMaximumReferences = 32;
 	static constexpr std::size_t kMaximumReferenceNameBytes = 64;

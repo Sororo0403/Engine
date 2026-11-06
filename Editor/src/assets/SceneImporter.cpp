@@ -167,6 +167,9 @@ void ResolveReferences(Json &document, const fs::path &root,
 	for (auto &object : document.at("objects")) {
 		if (version >= 30 && object.contains("image"))
 			resolve(object.at("image").at("texture"));
+		if (version >= 34 && object.contains("script"))
+			for (auto &entry : object.at("script").at("scenes"))
+				resolve(entry.at("path"));
 		if (version >= 33 && object.contains("script"))
 			for (auto &entry : object.at("script").at("prefabs"))
 				resolve(entry.at("path"));
@@ -307,14 +310,16 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 							            sourceRoot, action.scenePath));
 					}
 				if (object.script)
-					for (auto &[name, path] : object.script->prefabs) {
-						(void)name;
-						if (!path.empty())
-							path = AssetFolders::MakeReference(
-							    options.assetRoot,
-							    destination / PathUtils::RelativeInside(
-							                      sourceRoot, path));
-					}
+					for (auto *bindings :
+					     {&object.script->prefabs, &object.script->scenes})
+						for (auto &[name, path] : *bindings) {
+							(void)name;
+							if (!path.empty())
+								path = AssetFolders::MakeReference(
+								    options.assetRoot,
+								    destination / PathUtils::RelativeInside(
+								                      sourceRoot, path));
+						}
 				if (object.image && !object.image->texture.empty()) {
 					const auto relative = addFile(object.image->texture);
 					if (uiTextures.insert(relative).second)

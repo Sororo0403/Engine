@@ -417,12 +417,17 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 				for (const auto &[name, path] : script.prefabs)
 					prefabs.push_back(
 					    {{"name", name}, {"path", PathUtils::ToUtf8(path)}});
+				Json scenes = Json::array();
+				for (const auto &[name, path] : script.scenes)
+					scenes.push_back(
+					    {{"name", name}, {"path", PathUtils::ToUtf8(path)}});
 				objects.back()["script"] = {
 				    {"asset", PathUtils::ToUtf8(script.asset)},
 				    {"enabled", script.enabled},
 				    {"state", Json::parse(script.initialState)},
 				    {"references", std::move(references)},
-				    {"prefabs", std::move(prefabs)}};
+				    {"prefabs", std::move(prefabs)},
+				    {"scenes", std::move(scenes)}};
 			}
 			if (object.motionPath) {
 				const auto &path = *object.motionPath;
@@ -774,6 +779,23 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 							throw std::runtime_error(
 							    "Script Prefab reference is invalid.");
 						script.prefabs.emplace_back(
+						    entry.at("name").get<std::string>(),
+						    PathUtils::FromUtf8(
+						        entry.at("path").get<std::string>()));
+					}
+				}
+				if (version >= 34) {
+					const auto &scenes = value.at("scenes");
+					if (!scenes.is_array() ||
+					    scenes.size() > ScriptComponent::kMaximumScenes)
+						throw std::runtime_error(
+						    "Script Scene fields are invalid.");
+					for (const auto &entry : scenes) {
+						if (!entry.at("name").is_string() ||
+						    !entry.at("path").is_string())
+							throw std::runtime_error(
+							    "Script Scene reference is invalid.");
+						script.scenes.emplace_back(
 						    entry.at("name").get<std::string>(),
 						    PathUtils::FromUtf8(
 						        entry.at("path").get<std::string>()));
