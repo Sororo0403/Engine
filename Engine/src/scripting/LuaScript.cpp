@@ -316,7 +316,10 @@ bool LuaScript::Invoke(const LuaScriptProgram &program,
                        const CharacterInput &input, SceneObjectId other,
                        std::vector<std::string> &logs, std::string &error,
                        int *remainingInstructions, ScenePhysics *physics,
-                       int *remainingPhysicsOperations) {
+                       int *remainingPhysicsOperations,
+                       const ScenePrefabs *prefabs,
+                       int *remainingInstantiations,
+                       std::size_t *remainingSpawnedObjects) {
 	try {
 		const char *name = Callback(callback);
 		if (!program || !name || !scene.Contains(self) ||
@@ -324,7 +327,8 @@ bool LuaScript::Invoke(const LuaScriptProgram &program,
 		    !std::isfinite(input.moveX) || !std::isfinite(input.moveZ) ||
 		    (other && !scene.Contains(other)) ||
 		    (remainingInstructions && *remainingInstructions < 0) ||
-		    (remainingPhysicsOperations && *remainingPhysicsOperations < 0))
+		    (remainingPhysicsOperations && *remainingPhysicsOperations < 0) ||
+		    (remainingInstantiations && *remainingInstantiations < 0))
 			throw std::runtime_error("Script callback arguments are invalid.");
 		std::string normalized;
 		if (!NormalizeState(state, normalized, error))
@@ -344,6 +348,9 @@ bool LuaScript::Invoke(const LuaScriptProgram &program,
 		call.remainingInstructions = remainingInstructions;
 		call.physics = physics;
 		call.remainingPhysicsOperations = remainingPhysicsOperations;
+		call.prefabs = prefabs;
+		call.remainingInstantiations = remainingInstantiations;
+		call.remainingSpawnedObjects = remainingSpawnedObjects;
 		if (!Run(call, ::Invoke, error))
 			return false;
 		auto combined = logs;

@@ -33,10 +33,8 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 	std::vector<SceneObjectId> transformed;
 	for (const auto &[id, object] : candidate.GetObjects()) {
 		const auto *before = scene_.FindObject(id);
-		if (!before) {
-			error = "Script APIs cannot add or remove objects.";
-			return false;
-		}
+		if (!before)
+			continue;
 		if (!TransformUtils::AreEqual(before->transform, object.transform))
 			transformed.push_back(id);
 	}

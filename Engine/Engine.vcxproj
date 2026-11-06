@@ -2243,4 +2243,9 @@ exit /b 0</Command>
   </ItemGroup>
   <ItemGroup><ClCompile Include="src\gameplay\SceneSimulationObjects.cpp" /></ItemGroup>
 <ItemGroup><ClInclude Include="include\scene\SceneAssetReferences.h" /><ClCompile Include="src\scene\SceneAssetReferences.cpp" /></ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\gameplay\ScenePrefabs.h" />
+    <ClCompile Include="src\gameplay\ScenePrefabs.cpp" />
+    <ClCompile Include="src\scripting\LuaPrefabBindings.cpp" />
+  </ItemGroup>
 </Project>

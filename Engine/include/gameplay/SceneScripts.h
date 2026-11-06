@@ -1,5 +1,6 @@
 #pragma once
 
+#include "gameplay/ScenePrefabs.h"
 #include "gameplay/ScriptComponent.h"
 #include "physics/CollisionEvent.h"
 #include "physics/TriggerEvent.h"
@@ -23,6 +24,8 @@ class SceneScripts {
 	static constexpr std::size_t kMaximumLogs = 128;
 	static constexpr int kFrameInstructions = 2000000;
 	static constexpr int kFramePhysicsOperations = 1024;
+	static constexpr int kFrameInstantiations = 32;
+	static constexpr std::size_t kFrameSpawnedObjects = 1024;
 	static constexpr float kMaximumFrameSeconds = 0.1f;
 
 	/// <summary>
@@ -83,6 +86,14 @@ class SceneScripts {
 		return !instances_.empty();
 	}
 
+	/// <summary>
+	/// 素材準備で参照する、読み込み済みPrefabを取得する
+	/// </summary>
+	/// <returns>次の設定変更まで有効な不変の階層一覧</returns>
+	std::span<const std::shared_ptr<const Scene>> GetPrefabScenes() const {
+		return prefabs_.GetScenes();
+	}
+
   private:
 	struct Instance {
 		ScriptComponent settings;
@@ -91,6 +102,7 @@ class SceneScripts {
 		bool started = false;
 	};
 
+	ScenePrefabs prefabs_;
 	std::map<SceneObjectId, Instance> instances_;
 	std::map<std::filesystem::path, LuaScriptProgram> programs_;
 	std::vector<TriggerEvent> pending_;

@@ -22,6 +22,26 @@ bool SceneScripts::Configure(const Scene &scene, bool preserve,
 		auto programs =
 		    preserve ? programs_
 		             : std::map<std::filesystem::path, LuaScriptProgram>{};
+		auto prefabs = preserve ? prefabs_ : ScenePrefabs{};
+		if (!prefabs.Configure(scene, preserve, error))
+			throw std::runtime_error(error);
+		for (const auto &source : prefabs.GetScenes())
+			for (const auto &[id, o] : source->GetObjects()) {
+				(void)id;
+				if (!o.script || o.script->asset.empty())
+					continue;
+				auto path = PathUtils::ResolveFromExecutable(o.script->asset);
+				path.make_preferred();
+				if (programs.contains(path))
+					continue;
+				std::string text;
+				LuaScriptProgram compiled;
+				if (!LuaScript::Read(path, text, error) ||
+				    !LuaScript::Compile(text, PathUtils::ToUtf8(path), compiled,
+				                        error))
+					throw std::runtime_error(error);
+				programs.emplace(path, std::move(compiled));
+			}
 		for (auto i = instances.begin(); i != instances.end();) {
 			const auto *object = scene.FindObject(i->first);
 			if (!object || !object->script || object->script->asset.empty() ||
@@ -64,6 +84,7 @@ bool SceneScripts::Configure(const Scene &scene, bool preserve,
 				throw std::runtime_error(error);
 			instances.emplace(id, std::move(instance));
 		}
+		prefabs_ = std::move(prefabs);
 		instances_.swap(instances);
 		programs_.swap(programs);
 		if (!preserve) {
@@ -95,6 +116,8 @@ bool SceneScripts::Run(Scene &scene, float seconds, const CharacterInput &input,
 		std::size_t callbacks = 0;
 		int budget = kFrameInstructions;
 		int physicsBudget = kFramePhysicsOperations;
+		int spawnBudget = kFrameInstantiations;
+		std::size_t objectBudget = kFrameSpawnedObjects;
 		const auto active = [&](SceneObjectId id) {
 			const auto *o = scene.FindObject(id);
 			return o && o->script && o->script->enabled &&
@@ -112,7 +135,8 @@ bool SceneScripts::Run(Scene &scene, float seconds, const CharacterInput &input,
 			if (!LuaScript::Invoke(
 			        instance.program, callback, scene, id, instance.state,
 			        (std::min)(seconds, kMaximumFrameSeconds), input, other,
-			        messages, error, &budget, physics, &physicsBudget))
+			        messages, error, &budget, physics, &physicsBudget,
+			        &prefabs_, &spawnBudget, &objectBudget))
 				throw std::runtime_error(std::format(
 				    "{} [{}]: {}", PathUtils::ToUtf8(instance.settings.asset),
 				    callback, error));

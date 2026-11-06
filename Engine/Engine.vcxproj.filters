@@ -2282,4 +2282,15 @@
   </ItemGroup>
   <ItemGroup><ClCompile Include="src\gameplay\SceneSimulationObjects.cpp"><Filter>src\gameplay</Filter></ClCompile></ItemGroup>
 <ItemGroup><ClInclude Include="include\scene\SceneAssetReferences.h"><Filter>include\scene</Filter></ClInclude><ClCompile Include="src\scene\SceneAssetReferences.cpp"><Filter>src\scene</Filter></ClCompile></ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\gameplay\ScenePrefabs.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
+    <ClCompile Include="src\gameplay\ScenePrefabs.cpp">
+      <Filter>src\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scripting\LuaPrefabBindings.cpp">
+      <Filter>src\scripting</Filter>
+    </ClCompile>
+  </ItemGroup>
 </Project>

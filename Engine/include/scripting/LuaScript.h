@@ -9,6 +9,7 @@
 #include <vector>
 class Scene;
 class ScenePhysics;
+class ScenePrefabs;
 struct CharacterInput;
 
 class LuaScript;
@@ -40,7 +41,7 @@ class LuaScript {
 	/// <summary>
 	/// 公開するスクリプトAPIの版。Runtimeの出力互換性を照合する
 	/// </summary>
-	static constexpr int kApiVersion = 3;
+	static constexpr int kApiVersion = 4;
 	static constexpr std::size_t kMaximumSourceBytes = 256 * 1024;
 	static constexpr std::size_t kMaximumBytecodeBytes = 1024 * 1024;
 	static constexpr std::size_t kMaximumStateBytes = 64 * 1024;
@@ -49,6 +50,7 @@ class LuaScript {
 	static constexpr std::size_t kMaximumVmBytes = 4 * 1024 * 1024;
 	static constexpr int kMaximumInstructions = 200000;
 	static constexpr int kMaximumPhysicsOperations = 128;
+	static constexpr int kMaximumInstantiations = 16;
 	static constexpr int kHookInterval = 100;
 	static constexpr std::size_t kMaximumLogBytes = 1024;
 
@@ -107,6 +109,9 @@ class LuaScript {
 	/// <param name="remainingInstructions">指定時はフレーム全体で共有する残り命令数。失敗時も消費した命令数を減らす</param>
 	/// <param name="physics">指定時は呼び出し側の候補となる物理状態。Sceneとともに全処理成功後だけ確定する</param>
 	/// <param name="remainingPhysicsOperations">指定時はフレームで共有する残り物理API回数。失敗時も消費分を減らす</param>
+	/// <param name="prefabs">指定時は準備済みの不変なPrefabライブラリ</param>
+	/// <param name="remainingInstantiations">指定時はフレーム全体で共有する残り生成回数</param>
+	/// <param name="remainingSpawnedObjects">指定時は生成する根と子孫の残り総数</param>
 	/// <returns>true:成功またはコールバックなし false:コード・API・状態・実行制限が無効</returns>
 	static bool Invoke(const LuaScriptProgram &program,
 	                   std::string_view callback, Scene &scene,
@@ -115,5 +120,8 @@ class LuaScript {
 	                   std::vector<std::string> &logs, std::string &error,
 	                   int *remainingInstructions = nullptr,
 	                   ScenePhysics *physics = nullptr,
-	                   int *remainingPhysicsOperations = nullptr);
+	                   int *remainingPhysicsOperations = nullptr,
+	                   const ScenePrefabs *prefabs = nullptr,
+	                   int *remainingInstantiations = nullptr,
+	                   std::size_t *remainingSpawnedObjects = nullptr);
 };

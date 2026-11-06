@@ -12,6 +12,7 @@ extern "C" {
 }
 class Scene;
 class ScenePhysics;
+class ScenePrefabs;
 
 namespace LuaInternal {
 struct StateNode;
@@ -22,6 +23,10 @@ struct StateNode;
 struct Call {
 	Scene *scene = nullptr;
 	ScenePhysics *physics = nullptr;
+	const ScenePrefabs *prefabs = nullptr;
+	int instantiations = 0;
+	int *remainingInstantiations = nullptr;
+	std::size_t *remainingSpawnedObjects = nullptr;
 	bool physicsDirty = true;
 	int physicsOperations = 0;
 	int *remainingPhysicsOperations = nullptr;
@@ -59,6 +64,12 @@ void AddUIMethods(lua_State *state);
 /// </summary>
 /// <param name="state">保護呼び出し内のLua状態</param>
 void AddPhysicsMethods(lua_State *state);
+
+/// <summary>
+/// 直前の物体メソッドテーブルへ、名前付きPrefabの生成を登録する
+/// </summary>
+/// <param name="state">保護呼び出し内のLua状態</param>
+void AddPrefabMethods(lua_State *state);
 
 /// <summary>
 /// 直前のsceneテーブルへ、現在のColliderを検索するレイキャストを登録する
