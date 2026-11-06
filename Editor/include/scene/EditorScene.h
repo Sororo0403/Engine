@@ -5,6 +5,7 @@
 #include "camera/CameraFrustum.h"
 #include "camera/EditorCameraController.h"
 #include "dialogs/AssetFolderDialog.h"
+#include "dialogs/AudioImportDialog.h"
 #include "dialogs/BatchRenameDialog.h"
 #include "dialogs/BoxCreationDialog.h"
 #include "dialogs/FileDialog.h"
@@ -244,6 +245,7 @@ class EditorScene final : public IScene {
 		SAVE_FILE,
 		SAVE_COPY_FILE,
 		IMPORT_TEXTURE,
+		IMPORT_AUDIO,
 		IMPORT_MODEL,
 		IMPORT_SCENE,
 		CREATE_ASSET_FOLDER,
@@ -809,6 +811,7 @@ class EditorScene final : public IScene {
 	BoxCreationDialog boxCreationDialog_;
 	FileDialog fileDialog_;
 	TextureImportDialog textureImportDialog_;
+	AudioImportDialog audioImportDialog_;
 	ModelImportDialog modelImportDialog_;
 	SceneImportDialog sceneImportDialog_;
 	AssetFolderDialog assetFolderDialog_;

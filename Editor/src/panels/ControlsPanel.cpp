@@ -579,6 +579,14 @@ void ControlsPanel::Draw() {
 	         "Import does not edit the scene or its Undo history and is "
 	         "blocked "
 	         "during Play, modal operations and Scene gestures."},
+	        {"Assets > Import Audio",
+	         "Choose a WAV, a destination folder and an Audio Name ending in "
+	         ".wav. Import validates the full file and copies its original "
+	         "bytes without changing the source or overwriting an existing "
+	         "asset. Mono and stereo PCM or float32 WAV files are supported. "
+	         "The imported clip is revealed in Assets > Audio; assign it in "
+	         "the Audio Source Inspector or drag it onto its clip field. "
+	         "Importing alone does not modify the scene or its Undo history."},
 	        {"Assets > Import Texture",
 	         "Choose an external PNG, JPEG, BMP, TIFF or GIF image, an "
 	         "existing "

@@ -769,5 +769,7 @@
   <ItemGroup>
     <ClInclude Include="include\assets\AudioImporter.h"><Filter>include\assets</Filter></ClInclude>
     <ClCompile Include="src\assets\AudioImporter.cpp"><Filter>src\assets</Filter></ClCompile>
+    <ClInclude Include="include\dialogs\AudioImportDialog.h"><Filter>include\dialogs</Filter></ClInclude>
+    <ClCompile Include="src\dialogs\AudioImportDialog.cpp"><Filter>src\dialogs</Filter></ClCompile>
   </ItemGroup>
 </Project>

@@ -37,6 +37,7 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	textureSelectionPath_.clear();
 	textureClearRequested_ = false;
 	textureImportRequested_ = false;
+	audioImportRequested_ = false;
 	modelImportRequested_ = false;
 	folderCreateRequested_ = false;
 	texturePreviewPath_.clear();
@@ -131,6 +132,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	textureSelectionPath_.clear();
 	textureClearRequested_ = false;
 	textureImportRequested_ = false;
+	audioImportRequested_ = false;
 	modelImportRequested_ = false;
 	folderCreateRequested_ = false;
 	texturePreviewPath_.clear();
@@ -256,6 +258,12 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 	if (ui.Button("Import Model")) {
 		modelImportRequested_ = true;
+	}
+
+	ui.SameLine();
+
+	if (ui.Button("Import Audio")) {
+		audioImportRequested_ = true;
 	}
 
 	ui.EndDisabled();
@@ -659,6 +667,7 @@ void AssetsPanel::Clear() {
 	textureSelectionPath_.clear();
 	textureClearRequested_ = false;
 	textureImportRequested_ = false;
+	audioImportRequested_ = false;
 	modelImportRequested_ = false;
 	folderCreateRequested_ = false;
 	texturePreviewPath_.clear();
@@ -729,4 +738,8 @@ const std::filesystem::path &AssetsPanel::GetSceneAppendRequest() const {
 
 const std::filesystem::path &AssetsPanel::GetGameSettingsRequest() const {
 	return gameSettingsPath_;
+}
+
+bool AssetsPanel::IsAudioImportRequested() const {
+	return audioImportRequested_;
 }

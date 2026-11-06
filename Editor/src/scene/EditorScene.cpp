@@ -664,6 +664,22 @@ bool EditorScene::Update(float deltaTime) {
 			}
 		}
 
+		if (assetsPanel_.IsAudioImportRequested() && !IsBusy() &&
+		    action == EditorAction::NONE &&
+		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
+			try {
+				FinishEdit();
+				audioImportDialog_.Show(assets_,
+				                        assetsPanel_.GetOpenDirectory());
+				stage_ = DialogStage::IMPORT_AUDIO;
+			} catch (const std::exception &error) {
+				Logger::Error(
+				    std::format("EditorScene::ImportAudio: {}", error.what()));
+				ShowError(
+				    "Could not open audio import. See the log for details.");
+			}
+		}
+
 		if (hierarchyRequest.action != HierarchyPanel::Action::NONE) {
 			// 編集中の内容を、物体を消す前に確定する
 			FinishEdit();
@@ -3511,6 +3527,24 @@ void EditorScene::UpdateDialogs() {
 				    textureImportDialog_.GetImportedPath());
 			}
 		} else if (result == TextureImportResult::CANCELLED) {
+			stage_ = DialogStage::IDLE;
+		}
+		return;
+	}
+
+	case DialogStage::IMPORT_AUDIO: {
+		const auto result = audioImportDialog_.Draw(ui_);
+		if (result == AudioImportResult::ACCEPTED) {
+			stage_ = DialogStage::IDLE;
+			if (!assets_.Refresh()) {
+				ShowError(
+				    "The audio was imported, but Assets could not refresh: " +
+				    assets_.GetError());
+			} else {
+				assetsPanel_.RequestReveal(
+				    audioImportDialog_.GetImportedPath());
+			}
+		} else if (result == AudioImportResult::CANCELLED) {
 			stage_ = DialogStage::IDLE;
 		}
 		return;

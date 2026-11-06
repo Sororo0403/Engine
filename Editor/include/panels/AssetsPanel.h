@@ -36,7 +36,7 @@ class AssetsPanel {
 	/// <param name="ui">フレーム開始済みのUI</param>
 	/// <param name="assets">一覧を表示するアセットデータベース</param>
 	/// <param name="canSetTexture">選択物体のスロットへ画像を割り当てる操作を許可するか</param>
-	/// <param name="canEditAssets">画像・モデルの取り込み・再読み込み、フォルダ作成・シーンを開く操作・保存済み物体の追加を開始できるか</param>
+	/// <param name="canEditAssets">素材の取り込み、画像・モデルの再読み込み、フォルダ作成・シーンを開く操作・保存済み物体の追加を開始できるか</param>
 	/// <param name="canReplaceMesh">全選択物体の既存Meshを差し替えられるか</param>
 	/// <param name="textureSlots">選択物体の材質名と使用状況。番号選択の補助に使い、空でも手入力は可能</param>
 	/// <returns>配置を要求したモデルの相対パス。要求がない場合は空のパス</returns>
@@ -111,6 +111,12 @@ class AssetsPanel {
 	/// </summary>
 	/// <returns>true:要求あり false:要求なし。次のDraw・種類切り替え・Clearで解除する</returns>
 	bool IsTextureImportRequested() const;
+
+	/// <summary>
+	/// このフレームに外部WAVの取り込みを要求したか確認する
+	/// </summary>
+	/// <returns>true:要求あり false:要求なし。次のDraw・種類切り替え・Clearで解除する</returns>
+	bool IsAudioImportRequested() const;
 
 	/// <summary>
 	/// このフレームに外部モデルの取り込みを要求したか確認する
@@ -199,6 +205,7 @@ class AssetsPanel {
 	int textureSlot_ = 0;
 	bool textureClearRequested_ = false;
 	bool textureImportRequested_ = false;
+	bool audioImportRequested_ = false;
 	bool modelImportRequested_ = false;
 	bool folderCreateRequested_ = false;
 	bool directoryOpenRequested_ = false;
