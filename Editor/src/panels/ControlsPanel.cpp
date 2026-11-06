@@ -1989,6 +1989,27 @@ void ControlsPanel::Draw() {
 	         "and 4096 scene objects. Any callback, physics or preparation "
 	         "failure restores the entire simulation step."},
 
+	        {"Directional Shadows", "Game Settings > Directional Shadows "
+	                                "enables a camera-centered shadow map "
+	                                "for the global directional light. "
+	                                "Resolution is 512, 1024 or 2048. Extent "
+	                                "is half the covered width in world units; "
+	                                "increase it for a larger stage "
+	                                "or decrease it for finer detail. Strength "
+	                                "affects direct sunlight only, "
+	                                "leaving ambient, point/spot lights and "
+	                                "Unlit materials unchanged. Depth "
+	                                "and Normal Bias reduce self-shadow "
+	                                "artifacts; excessive values detach "
+	                                "shadows. The edge fades into unshadowed "
+	                                "lighting. Visible meshes cast "
+	                                "and receive shadows; hidden/inactive "
+	                                "meshes are excluded. Scene and "
+	                                "Game keep separate maps. Apply updates "
+	                                "Scene and the next Play; settings "
+	                                "save and game output retain the "
+	                                "configuration. Old configurations keep "
+	                                "shadows disabled."},
 	        {"Named Input Actions",
 	         "Game Settings > Named Input Actions assigns up to 32 unique "
 	         "names to "

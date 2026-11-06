@@ -86,6 +86,27 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 		lighting_ = {};
 	}
 
+	ImGui::SeparatorText("Directional Shadows");
+	ImGui::Checkbox("Enable Shadows", &lighting_.shadows.enabled);
+	ImGui::BeginDisabled(!lighting_.shadows.enabled);
+	const auto resolution = std::to_string(lighting_.shadows.resolution);
+	if (ImGui::BeginCombo("Shadow Resolution", resolution.c_str())) {
+		for (int size : {512, 1024, 2048}) {
+			const auto label = std::to_string(size);
+			if (ImGui::Selectable(label.c_str(),
+			                      lighting_.shadows.resolution == size))
+				lighting_.shadows.resolution = size;
+		}
+		ImGui::EndCombo();
+	}
+	ImGui::DragFloat("Shadow Extent", &lighting_.shadows.extent, .1f, 1, 1000,
+	                 "%.1f", ImGuiSliderFlags_AlwaysClamp);
+	ImGui::SliderFloat("Shadow Strength", &lighting_.shadows.strength, 0, 1);
+	ImGui::DragFloat("Shadow Depth Bias", &lighting_.shadows.bias, .00001f, 0,
+	                 .02f, "%.5f", ImGuiSliderFlags_AlwaysClamp);
+	ImGui::DragFloat("Shadow Normal Bias", &lighting_.shadows.normalBias, .001f,
+	                 0, 1, "%.3f", ImGuiSliderFlags_AlwaysClamp);
+	ImGui::EndDisabled();
 	ImGui::SeparatorText("Gameplay Input");
 	ImGui::Checkbox("Enable Gamepad", &gamepadEnabled_);
 	const std::array<const char *, GameInputBindings::kActions.size()> labels{
@@ -278,7 +299,7 @@ bool GameSettingsDialog::BuildConfiguration(GameConfig &candidate) {
 		        ? "Choose different supported keys for every gameplay action."
 		    : !value.lighting.IsValid()
 		        ? "Enter a nonzero finite light direction, color/ambient (0-1) "
-		          "and intensity (0-16)."
+		          "and intensity (0-16), plus valid shadow settings."
 		        : "Enter a title and a valid window size (1-8192).";
 		return false;
 	}

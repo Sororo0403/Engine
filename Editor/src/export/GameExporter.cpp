@@ -671,6 +671,7 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 
 		for (const auto *shader :
 		     {L"shaders/mesh/Mesh.VS.hlsl", L"shaders/mesh/Mesh.PS.hlsl",
+		      L"shaders/mesh/Shadow.VS.hlsl",
 		      L"shaders/debug/DebugLine.VS.hlsl",
 		      L"shaders/debug/DebugLine.PS.hlsl"}) {
 			if (!fs::is_regular_file(runtimeRoot / L"resources/engine" /
