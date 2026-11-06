@@ -10,7 +10,7 @@ class AssetDatabase;
 class ImGuiSystem;
 
 /// <summary>
-/// モデル・画像・シーン・ゲーム設定の一覧・検索・選択と、配置・画像割り当て・シーンを開く要求を管理する
+/// モデル・画像・音声・シーン・ゲーム設定の一覧・検索・選択と、配置・画像割り当て・シーンを開く要求を管理する
 /// </summary>
 class AssetsPanel {
   public:
@@ -25,7 +25,7 @@ class AssetsPanel {
 	};
 
 	/// <summary>
-	/// モデル・画像・シーン・ゲーム設定をAssets内で選択し、次の描画時に表示する
+	/// モデル・画像・音声・シーン・ゲーム設定をAssets内で選択し、次の描画時に表示する
 	/// </summary>
 	/// <param name="path">表示するアセットの相対パスまたは絶対パス</param>
 	void RequestReveal(const std::filesystem::path &path);
@@ -157,12 +157,12 @@ class AssetsPanel {
 	/// <summary>
 	/// 一覧に表示するアセットの種類
 	/// </summary>
-	enum class AssetType { MODEL, TEXTURE, SCENE, GAME_SETTINGS };
+	enum class AssetType { MODEL, TEXTURE, AUDIO, SCENE, GAME_SETTINGS };
 
 	/// <summary>
 	/// 表示の種類を切り替え、前の種類の選択と操作要求を解除する
 	/// </summary>
-	/// <param name="type">表示するモデル・画像・シーン・ゲーム設定</param>
+	/// <param name="type">表示するモデル・画像・音声・シーン・ゲーム設定</param>
 	void SetAssetType(AssetType type);
 
 	/// <summary>
@@ -174,7 +174,7 @@ class AssetsPanel {
 	/// <summary>
 	/// 同じファイルを指す一覧の項目を選択し、親フォルダを開いて検索を解除する
 	/// </summary>
-	/// <param name="path">探すモデル・画像・シーン・ゲーム設定のパス</param>
+	/// <param name="path">探すモデル・画像・音声・シーン・ゲーム設定のパス</param>
 	/// <param name="assets">確認するアセット一覧</param>
 	/// <returns>true:選択成功 false:一覧に該当なし</returns>
 	bool SelectAsset(const std::filesystem::path &path,

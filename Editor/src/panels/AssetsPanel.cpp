@@ -105,6 +105,7 @@ bool AssetsPanel::SelectAsset(const std::filesystem::path &path,
 	for (const bool aliases : {false, true}) {
 		if (select(assets.GetModels(), AssetType::MODEL, aliases) ||
 		    select(assets.GetTextures(), AssetType::TEXTURE, aliases) ||
+		    select(assets.GetAudioClips(), AssetType::AUDIO, aliases) ||
 		    select(assets.GetScenes(), AssetType::SCENE, aliases) ||
 		    select(assets.GetGameConfigurations(), AssetType::GAME_SETTINGS,
 		           aliases)) {
@@ -267,6 +268,8 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			return "Models";
 		case AssetType::TEXTURE:
 			return "Textures";
+		case AssetType::AUDIO:
+			return "Audio";
 		case AssetType::SCENE:
 			return "Scenes";
 		case AssetType::GAME_SETTINGS:
@@ -276,8 +279,9 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	};
 
 	if (ImGui::BeginCombo("Asset Type", typeLabel(type_))) {
-		for (const auto type : {AssetType::MODEL, AssetType::TEXTURE,
-		                        AssetType::SCENE, AssetType::GAME_SETTINGS}) {
+		for (const auto type :
+		     {AssetType::MODEL, AssetType::TEXTURE, AssetType::AUDIO,
+		      AssetType::SCENE, AssetType::GAME_SETTINGS}) {
 			if (ui.Selectable(typeLabel(type), type_ == type)) {
 				SetAssetType(type);
 			}
@@ -299,6 +303,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 	const auto &entries = type_ == AssetType::MODEL     ? assets.GetModels()
 	                      : type_ == AssetType::TEXTURE ? assets.GetTextures()
+	                      : type_ == AssetType::AUDIO   ? assets.GetAudioClips()
 	                      : type_ == AssetType::SCENE
 	                          ? assets.GetScenes()
 	                          : assets.GetGameConfigurations();
@@ -471,11 +476,13 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				scrollToSelected_ = false;
 			}
 
-			if ((type_ == AssetType::MODEL || type_ == AssetType::SCENE) &&
-			    AssetDragDrop::DrawSource(assetPath,
-			                              type_ == AssetType::MODEL
-			                                  ? AssetDragDrop::Kind::MODEL
-			                                  : AssetDragDrop::Kind::SCENE)) {
+			if ((type_ == AssetType::MODEL || type_ == AssetType::SCENE ||
+			     type_ == AssetType::AUDIO) &&
+			    AssetDragDrop::DrawSource(
+			        assetPath,
+			        type_ == AssetType::MODEL   ? AssetDragDrop::Kind::MODEL
+			        : type_ == AssetType::AUDIO ? AssetDragDrop::Kind::AUDIO
+			                                    : AssetDragDrop::Kind::SCENE)) {
 				selectedPath_ = assetPath;
 			}
 
@@ -607,7 +614,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			gameSettingsPath_ = selectedPath_;
 		}
 		ui.EndDisabled();
-	} else {
+	} else if (type_ != AssetType::AUDIO) {
 		ui.BeginDisabled(selectedPath_.empty());
 
 		if (ui.Button("Select Instances")) {

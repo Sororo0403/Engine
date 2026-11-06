@@ -17,6 +17,8 @@ const char *PayloadType(AssetDragDrop::Kind kind) {
 		return "EDITOR_MODEL_PATH";
 	case AssetDragDrop::Kind::SCENE:
 		return "EDITOR_SCENE_PATH";
+	case AssetDragDrop::Kind::AUDIO:
+		return "EDITOR_AUDIO_PATH";
 	}
 	return nullptr;
 }
@@ -32,6 +34,8 @@ bool Matches(const std::filesystem::path &path, AssetDragDrop::Kind kind) {
 	switch (kind) {
 	case AssetDragDrop::Kind::MODEL:
 		return PathUtils::IsModelFile(path);
+	case AssetDragDrop::Kind::AUDIO:
+		return PathUtils::HasExtension(path, ".wav");
 	case AssetDragDrop::Kind::SCENE:
 		return PathUtils::HasExtension(path, ".json") &&
 		       PathUtils::HasExtension(path.stem(), ".scene");

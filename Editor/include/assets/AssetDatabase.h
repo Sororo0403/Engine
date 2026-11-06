@@ -5,7 +5,7 @@
 #include <vector>
 
 /// <summary>
-/// Editorが使用するモデル・画像・シーン・ゲーム設定アセットとフォルダの一覧を管理する
+/// Editorが使用するモデル・画像・音声・シーン・ゲーム設定アセットとフォルダの一覧を管理する
 /// </summary>
 class AssetDatabase {
   public:
@@ -52,6 +52,12 @@ class AssetDatabase {
 	const std::vector<std::filesystem::path> &GetTextures() const;
 
 	/// <summary>
+	/// 音源で選択するWAVファイルの候補一覧を取得する。内容は割り当て時と再生時に検証する
+	/// </summary>
+	/// <returns>検索先と同じ絶対・相対指定のWAV一覧</returns>
+	const std::vector<std::filesystem::path> &GetAudioClips() const;
+
+	/// <summary>
 	/// 標準のシーンファイル名を持つ項目を取得する。内容の検証は開く時に行う
 	/// </summary>
 	/// <returns>検索先と同じ絶対・相対指定の.scene.jsonファイル一覧</returns>
@@ -84,6 +90,7 @@ class AssetDatabase {
 	std::filesystem::path rootDirectory_;
 	std::vector<std::filesystem::path> models_;
 	std::vector<std::filesystem::path> textures_;
+	std::vector<std::filesystem::path> audioClips_;
 	std::vector<std::filesystem::path> scenes_;
 	std::vector<std::filesystem::path> gameConfigurations_;
 	std::vector<std::filesystem::path> directories_;

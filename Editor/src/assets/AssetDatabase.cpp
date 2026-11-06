@@ -51,6 +51,7 @@ bool AssetDatabase::Refresh() {
 
 		std::vector<std::filesystem::path> models;
 		std::vector<std::filesystem::path> textures;
+		std::vector<std::filesystem::path> audioClips;
 		std::vector<std::filesystem::path> scenes;
 		std::vector<std::filesystem::path> gameConfigurations;
 		std::vector<std::filesystem::path> directories;
@@ -87,6 +88,9 @@ bool AssetDatabase::Refresh() {
 
 			if (regularFile) {
 				const auto &path = entry.path();
+
+				if (PathUtils::HasExtension(path, ".wav"))
+					audioClips.push_back(reference(path));
 
 				if (PathUtils::IsImageFile(path)) {
 					textures.push_back(reference(path));
@@ -127,6 +131,7 @@ bool AssetDatabase::Refresh() {
 
 		std::sort(models.begin(), models.end());
 		std::sort(textures.begin(), textures.end());
+		std::sort(audioClips.begin(), audioClips.end());
 		std::sort(scenes.begin(), scenes.end());
 		std::sort(gameConfigurations.begin(), gameConfigurations.end());
 		std::sort(directories.begin(), directories.end());
@@ -134,6 +139,7 @@ bool AssetDatabase::Refresh() {
 		rootDirectory_.swap(selectedRoot);
 		models_.swap(models);
 		textures_.swap(textures);
+		audioClips_.swap(audioClips);
 		scenes_.swap(scenes);
 		gameConfigurations_.swap(gameConfigurations);
 		directories_.swap(directories);
@@ -142,6 +148,7 @@ bool AssetDatabase::Refresh() {
 	} catch (const std::exception &error) {
 		models_.clear();
 		textures_.clear();
+		audioClips_.clear();
 		scenes_.clear();
 		gameConfigurations_.clear();
 		directories_.clear();
@@ -163,6 +170,7 @@ bool AssetDatabase::SetRootDirectory(std::filesystem::path rootDirectory) {
 		rootDirectory_.swap(candidate.rootDirectory_);
 		models_.swap(candidate.models_);
 		textures_.swap(candidate.textures_);
+		audioClips_.swap(candidate.audioClips_);
 		scenes_.swap(candidate.scenes_);
 		gameConfigurations_.swap(candidate.gameConfigurations_);
 		directories_.swap(candidate.directories_);
@@ -194,6 +202,7 @@ AssetDatabase::GetDirectories() const {
 void AssetDatabase::Clear() {
 	models_.clear();
 	textures_.clear();
+	audioClips_.clear();
 	scenes_.clear();
 	gameConfigurations_.clear();
 	directories_.clear();
@@ -211,4 +220,8 @@ const std::vector<std::filesystem::path> &AssetDatabase::GetScenes() const {
 const std::vector<std::filesystem::path> &
 AssetDatabase::GetGameConfigurations() const {
 	return gameConfigurations_;
+}
+
+const std::vector<std::filesystem::path> &AssetDatabase::GetAudioClips() const {
+	return audioClips_;
 }
