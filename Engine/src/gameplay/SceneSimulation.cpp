@@ -27,8 +27,15 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 			error = "The simulation audio revision limit was reached.";
 			return false;
 		}
+		Scene runtime;
+		auto objects = source.GetObjects();
+		for (auto &[id, object] : objects) {
+			(void)id;
+			object.prefabLink.reset();
+		}
+		runtime.ReplaceObjects(std::move(objects));
 		SceneSimulation working;
-		if (!working.Configure(source, error, fallbackPose, invalidObject,
+		if (!working.Configure(runtime, error, fallbackPose, invalidObject,
 		                       false)) {
 			return false;
 		}

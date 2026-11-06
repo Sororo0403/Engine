@@ -9,6 +9,7 @@
 #include "platform/windows/PathUtils.h"
 #include "scene/Scene.h"
 #include "scene/SceneHierarchy.h"
+#include "scene/SceneObjectReferences.h"
 
 #include <algorithm>
 #include <array>
@@ -202,6 +203,87 @@ TextureBindings ReadBindings(const Json &bindings, int version) {
 
 	return result;
 }
+
+/// <summary>
+/// 基準シーンの検証では、通常の読み込み成功メッセージを出さずに同じ検証を使う
+/// </summary>
+/// <param name="scene">成功時だけ置き換えるシーン</param>
+/// <param name="document">読み込むJSON</param>
+/// <param name="logSuccess">成功メッセージを記録するか</param>
+/// <returns>true:成功 false:形式や設定が無効</returns>
+bool ApplySceneDocument(Scene &scene, const Json &document,
+                        bool logSuccess = true);
+
+/// <summary>
+/// Prefabの根・元ID・保存済み対応表と、再帰を含まない基準シーンを検証する
+/// </summary>
+/// <param name="scene">保存または読み込むシーン</param>
+void ValidatePrefabLinks(const Scene &scene) {
+	std::map<SceneObjectId, std::set<SceneObjectId>> members;
+	for (const auto &[id, object] : scene.GetObjects()) {
+		if (!object.prefabLink) {
+			continue;
+		}
+		const auto &link = *object.prefabLink;
+		if (!link.IsValid()) {
+			throw std::runtime_error("Prefab link data is invalid.");
+		}
+		if (!members[link.root].insert(link.source).second) {
+			throw std::runtime_error(
+			    "Prefab source IDs must be unique within an instance.");
+		}
+		const auto *owner = scene.FindObject(link.root);
+		if (!owner || !owner->prefabLink ||
+		    owner->prefabLink->root != link.root ||
+		    owner->prefabLink->asset.empty() ||
+		    !owner->prefabLink->ContainsSource(link.source) ||
+		    owner->prefabLink->GetInstance(link.source) != id) {
+			throw std::runtime_error(
+			    "Prefab member does not match its owning root.");
+		}
+		if (id != link.root) {
+			if (!link.asset.empty() || !link.baseline.empty() ||
+			    !link.objects.empty()) {
+				throw std::runtime_error(
+				    "Only a Prefab root may store its baseline.");
+			}
+			continue;
+		}
+		if (!PathUtils::HasExtension(link.asset, ".json") ||
+		    !PathUtils::HasExtension(link.asset.stem(), ".prefab") ||
+		    (link.asset.has_root_path() && !link.asset.is_absolute())) {
+			throw std::runtime_error("Prefab asset path is invalid.");
+		}
+		const auto baseline = Json::parse(link.baseline);
+		for (const auto &value : baseline.at("objects")) {
+			if (value.contains("prefabLink")) {
+				throw std::runtime_error(
+				    "Prefab baselines cannot contain nested links.");
+			}
+		}
+		Scene original;
+		if (!ApplySceneDocument(original, baseline, false) ||
+		    !original.Contains(link.source) ||
+		    original.FindObject(link.source)->parentId != 0 ||
+		    original.GetObjects().size() != link.objects.size()) {
+			throw std::runtime_error(
+			    "Prefab baseline or source map is invalid.");
+		}
+		std::vector<SceneObjectId> ids;
+		if (!SceneHierarchy::GetSubtree(original, link.source, ids) ||
+		    ids.size() != original.GetObjects().size()) {
+			throw std::runtime_error("Prefab baseline must be one hierarchy.");
+		}
+		for (const auto &[source, value] : original.GetObjects()) {
+			if (!link.ContainsSource(source) ||
+			    SceneObjectReferences::HasExternal(value, ids)) {
+				throw std::runtime_error(
+				    "Prefab baseline contains an external reference.");
+			}
+		}
+	}
+}
+
 } // namespace
 
 bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
@@ -210,6 +292,7 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 		if (!SceneHierarchy::BuildWorldTransforms(scene, transforms)) {
 			throw std::runtime_error("親子関係または合成後の変形が無効です。");
 		}
+		ValidatePrefabLinks(scene);
 		Json objects = Json::array();
 
 		for (const auto &[id, object] : scene.GetObjects()) {
@@ -280,6 +363,21 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 				    {"textures", std::move(bindings)},
 				    {"uvScale", object.meshRenderer->uvScale},
 				    {"uvOffset", object.meshRenderer->uvOffset}};
+			}
+
+			if (object.prefabLink) {
+				const auto &link = *object.prefabLink;
+				Json mappings = Json::array();
+				for (const auto &[source, instance] : link.objects) {
+					mappings.push_back(
+					    {{"source", source}, {"instance", instance}});
+				}
+				objects.back()["prefabLink"] = {
+				    {"root", link.root},
+				    {"source", link.source},
+				    {"asset", PathUtils::ToUtf8(link.asset)},
+				    {"baseline", link.baseline},
+				    {"objects", std::move(mappings)}};
 			}
 
 			if (object.audioSource) {
@@ -465,7 +563,7 @@ namespace {
 /// <param name="scene">読み込み先</param>
 /// <param name="document">version 1から22のJSON</param>
 /// <returns>true:成功 false:内容が無効</returns>
-bool ApplySceneDocument(Scene &scene, const Json &document) {
+bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 	try {
 		if (!document.is_object() || document.at("format") != "EngineScene" ||
 		    !document.at("version").is_number_integer() ||
@@ -748,6 +846,38 @@ bool ApplySceneDocument(Scene &scene, const Json &document) {
 				object.camera = CameraComponent{};
 			}
 
+			if (version >= 26 && item.contains("prefabLink")) {
+				const auto &value = item.at("prefabLink");
+				if (!value.at("root").is_number_unsigned() ||
+				    !value.at("source").is_number_unsigned() ||
+				    !value.at("asset").is_string() ||
+				    !value.at("baseline").is_string() ||
+				    !value.at("objects").is_array()) {
+					throw std::runtime_error("Prefab link fields are invalid.");
+				}
+				PrefabLinkComponent link;
+				link.root = value.at("root").get<SceneObjectId>();
+				link.source = value.at("source").get<SceneObjectId>();
+				link.asset =
+				    PathUtils::FromUtf8(value.at("asset").get<std::string>());
+				link.baseline = value.at("baseline").get<std::string>();
+				for (const auto &entry : value.at("objects")) {
+					if (!entry.at("source").is_number_unsigned() ||
+					    !entry.at("instance").is_number_unsigned() ||
+					    link.ContainsSource(
+					        entry.at("source").get<SceneObjectId>())) {
+						throw std::runtime_error(
+						    "Prefab source map is invalid.");
+					}
+					link.objects.emplace_back(
+					    entry.at("source").get<SceneObjectId>(),
+					    entry.at("instance").get<SceneObjectId>());
+				}
+				std::ranges::sort(link.objects);
+
+				object.prefabLink = std::move(link);
+			}
+
 			if (version >= 18 && item.contains("triggerActions")) {
 				const auto &actions = item.at("triggerActions").at("actions");
 				if (!actions.is_array() ||
@@ -867,10 +997,14 @@ bool ApplySceneDocument(Scene &scene, const Json &document) {
 			}
 		}
 
+		ValidatePrefabLinks(candidate);
+
 		// 全データの読み込みに成功してから、現在のシーンへ反映する。
 		scene.ReplaceObjects(candidate.GetObjects());
 
-		Logger::Info("シーンを読み込みました。");
+		if (logSuccess) {
+			Logger::Info("シーンを読み込みました。");
+		}
 		return true;
 	} catch (const std::exception &exception) {
 		Logger::Error(std::format("SceneSerializer: {}", exception.what()));

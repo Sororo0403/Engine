@@ -22,6 +22,7 @@
     <ClCompile Include="src\scene\SceneRenderer.cpp" />
     <ClCompile Include="src\scene\SceneHierarchy.cpp" />
     <ClCompile Include="src\scene\Scene.cpp" />
+    <ClCompile Include="src\scene\SceneObject.cpp" />
     <ClCompile Include="src\graphics\render\RenderSystem.cpp" />
     <ClCompile Include="src\graphics\render\RenderWorld.cpp" />
     <ClCompile Include="src\graphics\model\ModelManager.cpp" />
@@ -120,6 +121,7 @@
     <ClInclude Include="include\scene\SceneActivity.h" />
     <ClCompile Include="src\scene\SceneActivity.cpp" />
     <ClInclude Include="include\scene\SceneObject.h" />
+    <ClInclude Include="include\scene\PrefabLinkComponent.h" />
     <ClInclude Include="include\scene\SceneObjectId.h" />
     <ClInclude Include="include\scene\SceneHierarchy.h" />
     <ClInclude Include="include\scene\SceneWorldTransform.h" />

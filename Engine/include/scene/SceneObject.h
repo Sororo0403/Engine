@@ -13,6 +13,7 @@
 #include "scene/MeshComponent.h"
 #include "scene/MeshRendererComponent.h"
 #include "scene/PointLightComponent.h"
+#include "scene/PrefabLinkComponent.h"
 #include "scene/SceneObjectId.h"
 #include "scene/SpotLightComponent.h"
 
@@ -58,6 +59,8 @@ struct SceneObject {
 	// 親子合成後の位置で再生する音源と、受信姿勢の指定
 	std::optional<AudioSourceComponent> audioSource;
 	std::optional<AudioListenerComponent> audioListener;
+	// 保存・編集用のPrefab由来情報。ゲーム出力では通常の物体へ展開する
+	std::optional<PrefabLinkComponent> prefabLink;
 
 	/// <summary>
 	/// Meshに形状の参照が割り当てられているか確認する
@@ -82,4 +85,11 @@ struct SceneObject {
 	bool IsRenderable() const {
 		return HasMesh() && meshRenderer && meshRenderer->visible;
 	}
+
+	/// <summary>
+	/// 変形と全コンポーネントの値が一致するか確認する
+	/// </summary>
+	/// <param name="other">比較対象</param>
+	/// <returns>true:一致 false:不一致または無効な変形</returns>
+	bool operator==(const SceneObject &other) const;
 };

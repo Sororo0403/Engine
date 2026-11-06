@@ -197,6 +197,9 @@
     <ClCompile Include="src\scene\Scene.cpp">
       <Filter>src\scene</Filter>
     </ClCompile>
+    <ClCompile Include="src\scene\SceneObject.cpp">
+      <Filter>src\scene</Filter>
+    </ClCompile>
     <ClCompile Include="src\scene\SceneRenderer.cpp">
       <Filter>src\scene</Filter>
     </ClCompile>
@@ -368,6 +371,9 @@
       <Filter>src\scene</Filter>
     </ClCompile>
     <ClInclude Include="include\scene\SceneObject.h">
+      <Filter>include\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scene\PrefabLinkComponent.h">
       <Filter>include\scene</Filter>
     </ClInclude>
     <ClInclude Include="include\scene\SceneObjectId.h">
