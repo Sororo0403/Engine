@@ -18,7 +18,7 @@ bool EditorPlaySession::Start(const Scene &scene, std::string &error,
 	try {
 		// 再生状態を置き換える前に、再実行用の領域を確保する。
 		auto snapshot = std::make_unique<Scene>();
-		snapshot->ReplaceObjects(scene.GetObjects());
+		snapshot->CopyFrom(scene);
 
 		if (cameraOverride != 0) {
 			const auto *selected = snapshot->FindObject(cameraOverride);

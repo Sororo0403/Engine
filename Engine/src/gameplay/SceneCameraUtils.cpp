@@ -277,7 +277,7 @@ bool SceneCameraUtils::ResolveInitialDependencies(const Scene &scene,
 			return false;
 		}
 
-		working.ReplaceObjects(scene.GetObjects());
+		working.CopyFrom(scene);
 		if (!ApplyInitialFollows(working, order, error, nullptr)) {
 			return false;
 		}
@@ -287,7 +287,7 @@ bool SceneCameraUtils::ResolveInitialDependencies(const Scene &scene,
 			return false;
 		}
 
-		result.ReplaceObjects(working.GetObjects());
+		result.CopyFrom(working);
 		return true;
 	} catch (const std::exception &) {
 		return false;
@@ -466,7 +466,7 @@ bool SceneCameraUtils::ResolveInitialScene(const Scene &source, Scene &result,
 	if (!GetUpdateOrder(source, order, error, invalidObject))
 		return false;
 	Scene working;
-	working.ReplaceObjects(source.GetObjects());
+	working.CopyFrom(source);
 	if (!ApplyInitialFollows(working, order, error, invalidObject)) {
 		return false;
 	}
@@ -476,7 +476,7 @@ bool SceneCameraUtils::ResolveInitialScene(const Scene &source, Scene &result,
 		error = "World transforms cannot be represented.";
 		return false;
 	}
-	result.ReplaceObjects(working.GetObjects());
+	result.CopyFrom(working);
 	return true;
 }
 

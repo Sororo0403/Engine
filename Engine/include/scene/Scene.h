@@ -15,6 +15,13 @@ class Scene {
   public:
 	Scene() = default;
 
+	/// <summary>
+	/// 物体と発行済みIDの上限を複製し、削除済みIDの再利用を防ぐ
+	/// </summary>
+	/// <param name="source">変更しない複製元</param>
+	/// <remarks>このシーンで既に発行したIDの上限も保持する。失敗時は全状態を保持する</remarks>
+	void CopyFrom(const Scene &source);
+
 	Scene(const Scene &) = delete;
 	Scene &operator=(const Scene &) = delete;
 

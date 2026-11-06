@@ -188,7 +188,7 @@ bool SceneMotion::Advance(Scene &scene, float seconds,
 				continue;
 			}
 			Scene candidate;
-			candidate.ReplaceObjects(scene.GetObjects());
+			candidate.CopyFrom(scene);
 			candidate.FindObject(id)->transform.translation = position;
 			std::vector<SceneObjectId> branch;
 			if (!SceneHierarchy::GetSubtree(scene, id, branch))
@@ -285,7 +285,7 @@ bool SceneMotion::Advance(Scene &scene, float seconds,
 						events->push_back(event);
 				}
 			}
-			scene.ReplaceObjects(candidate.GetObjects());
+			scene.CopyFrom(candidate);
 			if (passenger)
 				*controller = *passenger;
 			found->second = state;

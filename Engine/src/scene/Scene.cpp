@@ -3,6 +3,7 @@
 
 #include "math/TransformUtils.h"
 
+#include <algorithm>
 #include <limits>
 #include <stdexcept>
 #include <utility>
@@ -158,4 +159,12 @@ bool Scene::ApplyTransaction(const std::function<bool(Scene &)> &operation) {
 	nextObjectId_ = working.nextObjectId_;
 
 	return true;
+}
+
+void Scene::CopyFrom(const Scene &source) {
+	Scene candidate;
+	candidate.ReplaceObjects(source.objects_);
+	const auto next = (std::max)(nextObjectId_, source.nextObjectId_);
+	objects_.swap(candidate.objects_);
+	nextObjectId_ = next;
 }

@@ -9,7 +9,7 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 	if (!scripts_.HasInstances())
 		return true;
 	Scene candidate;
-	candidate.ReplaceObjects(scene_.GetObjects());
+	candidate.CopyFrom(scene_);
 	auto scripts = scripts_;
 	auto physics = physics_;
 	if (!scripts.Run(candidate, seconds, input, frameEvents_, startOnly, error,

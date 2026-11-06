@@ -38,6 +38,7 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 			(void)id;
 			object.prefabLink.reset();
 		}
+		runtime.CopyFrom(source);
 		runtime.ReplaceObjects(std::move(objects));
 		SceneSimulation working;
 		if (!working.Configure(runtime, error, fallbackPose, invalidObject,
@@ -91,7 +92,7 @@ bool SceneSimulation::SetActive(std::span<const SceneActiveChange> changes,
 	}
 	try {
 		Scene working;
-		working.ReplaceObjects(scene_.GetObjects());
+		working.CopyFrom(scene_);
 		std::set<SceneObjectId> seen;
 		bool changed = false;
 		for (const auto &change : changes) {
@@ -179,7 +180,7 @@ bool SceneSimulation::Configure(const Scene &source, std::string &error,
 				return false;
 			}
 		} else {
-			working.ReplaceObjects(source.GetObjects());
+			working.CopyFrom(source);
 			// 継続する追従は現在姿勢を保ち、新しく有効になった枝だけを依存順で初期化する。
 			for (const auto id : order) {
 				const auto &object = *working.FindObject(id);
@@ -338,7 +339,7 @@ bool SceneSimulation::Configure(const Scene &source, std::string &error,
 		if (!ui.Refresh(working, error))
 			return false;
 		// 全候補が有効な場合だけ確定し、失敗時は再生シーンと実行状態をすべて保持する。
-		scene_.ReplaceObjects(working.GetObjects());
+		scene_.CopyFrom(working);
 		world_ = std::move(world);
 		triggers_ = std::move(triggers);
 		controller_ = controller;
@@ -501,7 +502,7 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 	lastUpdateError_.clear();
 	try {
 		Scene working;
-		working.ReplaceObjects(scene_.GetObjects());
+		working.CopyFrom(scene_);
 		auto next = controller_;
 		auto motion = motion_;
 		std::optional<TriggerWorld> triggers;
@@ -647,7 +648,7 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 				return false;
 			}
 		}
-		scene_.ReplaceObjects(working.GetObjects());
+		scene_.CopyFrom(working);
 		if (triggers) {
 			for (const auto &event : triggers->GetEvents()) {
 				if (event.type == TriggerEvent::Type::STAY &&

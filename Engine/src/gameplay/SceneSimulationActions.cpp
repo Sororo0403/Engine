@@ -9,7 +9,7 @@
 #include <utility>
 
 void SceneSimulation::CopyFrom(const SceneSimulation &source) {
-	scene_.ReplaceObjects(source.scene_.GetObjects());
+	scene_.CopyFrom(source.scene_);
 	world_ = source.world_;
 	triggers_ = source.triggers_;
 	collisions_ = source.collisions_;
@@ -42,7 +42,7 @@ void SceneSimulation::CopyFrom(const SceneSimulation &source) {
 
 void SceneSimulation::Adopt(SceneSimulation &source) {
 	// シーンの複製と検証が完了してから、確保を伴わない移動で残りの状態を確定する。
-	scene_.ReplaceObjects(source.scene_.GetObjects());
+	scene_.CopyFrom(source.scene_);
 	world_ = std::move(source.world_);
 	triggers_ = std::move(source.triggers_);
 	collisions_ = std::move(source.collisions_);
@@ -271,7 +271,7 @@ bool SceneSimulation::ApplyTeleports(
     const std::map<SceneObjectId, DirectX::XMFLOAT3> &positions,
     std::string &error, SceneObjectId *invalidObject) {
 	Scene working;
-	working.ReplaceObjects(scene_.GetObjects());
+	working.CopyFrom(scene_);
 	if (!SceneHierarchy::SetWorldPositions(working, positions)) {
 		error = "Teleport positions cannot be represented in this hierarchy.";
 		return false;
