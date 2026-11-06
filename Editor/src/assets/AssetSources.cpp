@@ -91,6 +91,11 @@ AssetSources::ForScene(const Scene &scene) const {
 		const bool used =
 		    std::ranges::any_of(scene.GetObjects(), [&](const auto &entry) {
 			    const auto &object = entry.second;
+			    if (object.audioSource &&
+			        !object.audioSource->clipPath.empty() &&
+			        Contains(directory, object.audioSource->clipPath)) {
+				    return true;
+			    }
 			    if (object.HasMesh() &&
 			        Contains(directory, object.mesh->modelPath)) {
 				    return true;
