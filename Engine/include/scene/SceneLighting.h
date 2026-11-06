@@ -1,6 +1,7 @@
 #pragma once
 
 #include "graphics/PointLightData.h"
+#include "graphics/SpotLightData.h"
 #include "scene/SceneObjectId.h"
 #include <string>
 #include <vector>
@@ -19,4 +20,16 @@ namespace SceneLighting {
 bool CollectPointLights(const Scene &scene, std::vector<PointLightData> &lights,
                         std::string &error,
                         SceneObjectId *invalidObject = nullptr);
+
+/// <summary>
+/// 有効なスポットライトをID順に集める。方向は親子の回転だけでローカル+Zから作る
+/// </summary>
+/// <param name="scene">ワールド位置・回転・有効設定を解決するシーン</param>
+/// <param name="lights">成功時に置き換える描画用配列</param>
+/// <param name="error">成功時は空、失敗時は理由</param>
+/// <param name="invalidObject">指定時は問題の物体ID。階層不正または成功時は0</param>
+/// <returns>true:成功 false:階層・設定が無効、または有効な光源数が上限を超える。失敗時は出力を保持する</returns>
+bool CollectSpotLights(const Scene &scene, std::vector<SpotLightData> &lights,
+                       std::string &error,
+                       SceneObjectId *invalidObject = nullptr);
 } // namespace SceneLighting

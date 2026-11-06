@@ -121,6 +121,14 @@ bool SceneRenderer::SynchronizeObjects() {
 		                                 : lightError);
 		return false;
 	}
+
+	std::vector<SpotLightData> spotLights;
+	if (!SceneLighting::CollectSpotLights(scene_, spotLights, lightError) ||
+	    !world_->SetSpotLights(spotLights)) {
+		Logger::Error(lightError.empty() ? "Spot Light update failed."
+		                                 : lightError);
+		return false;
+	}
 	const auto revision = models_.GetReloadRevision();
 	const bool modelsChanged = revision != modelRevision_;
 

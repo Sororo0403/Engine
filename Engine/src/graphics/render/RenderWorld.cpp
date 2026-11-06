@@ -2,6 +2,7 @@
 #include "core/Logger.h"
 #include "graphics/DirectionalLight.h"
 #include "graphics/PointLights.h"
+#include "graphics/SpotLights.h"
 #include "graphics/camera/Camera.h"
 #include "graphics/model/Model.h"
 #include "graphics/model/ModelInstance.h"
@@ -161,7 +162,9 @@ struct RenderWorld::Impl {
 	Camera camera_;
 	DirectionalLight light_;
 	PointLights pointLights_;
+	SpotLights spotLights_;
 	std::vector<PointLightData> pointLightData_;
+	std::vector<SpotLightData> spotLightData_;
 	DirectionalLightData lightData_{};
 
 	bool initialized_ = false;
@@ -259,6 +262,7 @@ RenderWorld::~RenderWorld() {
 	Clear();
 	impl_->light_.Finalize();
 	impl_->pointLights_.Finalize();
+	impl_->spotLights_.Finalize();
 }
 
 bool RenderWorld::Initialize() {
@@ -275,7 +279,8 @@ bool RenderWorld::Initialize() {
 	}
 
 	if (!impl_->light_.Initialize(device) ||
-	    !impl_->pointLights_.Initialize(device)) {
+	    !impl_->pointLights_.Initialize(device) ||
+	    !impl_->spotLights_.Initialize(device)) {
 		return false;
 	}
 
@@ -494,6 +499,7 @@ void RenderWorld::Clear() {
 	impl_->camera_ = Camera{};
 	impl_->lightData_ = DirectionalLightData{};
 	impl_->pointLightData_.clear();
+	impl_->spotLightData_.clear();
 	impl_->prepared_ = false;
 }
 
@@ -524,7 +530,8 @@ bool RenderWorld::Update(int width, int height) {
 	}
 
 	if (!impl_->light_.Update(impl_->lightData_) ||
-	    !impl_->pointLights_.Update(impl_->pointLightData_)) {
+	    !impl_->pointLights_.Update(impl_->pointLightData_) ||
+	    !impl_->spotLights_.Update(impl_->spotLightData_)) {
 		return false;
 	}
 
@@ -572,7 +579,7 @@ void RenderWorld::Draw(MeshRenderer &renderer,
 		}
 
 		slot.object_->instance_.Draw(commandList, renderer, impl_->light_,
-		                             impl_->pointLights_);
+		                             impl_->pointLights_, impl_->spotLights_);
 	}
 
 	// モデルの深度を使い、登録された線をまとめて描画する
@@ -723,6 +730,18 @@ bool RenderWorld::SetPointLights(std::span<const PointLightData> lights) {
 	}
 	std::vector<PointLightData> next(lights.begin(), lights.end());
 	impl_->pointLightData_.swap(next);
+	impl_->prepared_ = false;
+	return true;
+}
+
+bool RenderWorld::SetSpotLights(std::span<const SpotLightData> lights) {
+	if (!impl_->initialized_ || lights.size() > SpotLightData::kMaximumLights ||
+	    !std::all_of(lights.begin(), lights.end(),
+	                 [](const auto &light) { return light.IsValid(); })) {
+		return false;
+	}
+	std::vector<SpotLightData> next(lights.begin(), lights.end());
+	impl_->spotLightData_.swap(next);
 	impl_->prepared_ = false;
 	return true;
 }

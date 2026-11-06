@@ -401,4 +401,10 @@ exit /b 0</Command>
     <ClInclude Include="include\scene\SceneAudioAction.h" />
     <ClInclude Include="include\scene\SceneAudioActions.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\graphics\SpotLightData.h" />
+    <ClInclude Include="include\graphics\SpotLights.h" />
+    <ClCompile Include="src\graphics\SpotLights.cpp" />
+    <ClInclude Include="include\scene\SpotLightComponent.h" />
+  </ItemGroup>
 </Project>

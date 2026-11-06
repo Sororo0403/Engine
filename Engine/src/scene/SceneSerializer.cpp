@@ -242,6 +242,7 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 			    (object.respawn && !object.respawn->IsValid()) ||
 			    (object.triggerActions && !object.triggerActions->IsValid()) ||
 			    (object.pointLight && !object.pointLight->IsValid()) ||
+			    (object.spotLight && !object.spotLight->IsValid()) ||
 			    (object.audioSource && !object.audioSource->IsValid())) {
 				throw std::runtime_error(
 				    "ゲーム用コンポーネントの設定が無効です。");
@@ -301,6 +302,16 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 				objects.back()["pointLight"] = {{"color", light.color},
 				                                {"intensity", light.intensity},
 				                                {"range", light.range}};
+			}
+
+			if (object.spotLight) {
+				const auto &light = *object.spotLight;
+				objects.back()["spotLight"] = {
+				    {"color", light.color},
+				    {"intensity", light.intensity},
+				    {"range", light.range},
+				    {"innerAngle", light.innerAngle},
+				    {"outerAngle", light.outerAngle}};
 			}
 
 			if (object.colorTint) {
@@ -437,7 +448,7 @@ namespace {
 /// 解析したシーンドキュメントを検証し、全件成功した場合だけ反映する
 /// </summary>
 /// <param name="scene">読み込み先</param>
-/// <param name="document">version 1から21のJSON</param>
+/// <param name="document">version 1から22のJSON</param>
 /// <returns>true:成功 false:内容が無効</returns>
 bool ApplySceneDocument(Scene &scene, const Json &document) {
 	try {
@@ -573,6 +584,24 @@ bool ApplySceneDocument(Scene &scene, const Json &document) {
 				    PointLightComponent{{color.x, color.y, color.z},
 				                        light.at("intensity").get<float>(),
 				                        light.at("range").get<float>()};
+			}
+
+			if (version >= 22 && item.contains("spotLight")) {
+				const auto &light = item.at("spotLight");
+				for (const auto *field :
+				     {"intensity", "range", "innerAngle", "outerAngle"}) {
+					if (!light.at(field).is_number()) {
+						throw std::runtime_error(
+						    "Spot Lightの強さ・範囲・角度には数値が必要です。");
+					}
+				}
+				const auto color = ReadFloat3(light.at("color"));
+				object.spotLight =
+				    SpotLightComponent{{color.x, color.y, color.z},
+				                       light.at("intensity").get<float>(),
+				                       light.at("range").get<float>(),
+				                       light.at("innerAngle").get<float>(),
+				                       light.at("outerAngle").get<float>()};
 			}
 
 			if (version >= 7 && item.contains("colorTint")) {
@@ -738,6 +767,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document) {
 			    (object.respawn && !object.respawn->IsValid()) ||
 			    (object.triggerActions && !object.triggerActions->IsValid()) ||
 			    (object.pointLight && !object.pointLight->IsValid()) ||
+			    (object.spotLight && !object.spotLight->IsValid()) ||
 			    (object.audioSource && !object.audioSource->IsValid())) {
 				throw std::runtime_error(
 				    "ゲーム用コンポーネントの設定が無効です。");

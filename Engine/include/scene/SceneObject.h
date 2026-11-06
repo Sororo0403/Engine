@@ -14,6 +14,7 @@
 #include "scene/MeshRendererComponent.h"
 #include "scene/PointLightComponent.h"
 #include "scene/SceneObjectId.h"
+#include "scene/SpotLightComponent.h"
 
 #include <filesystem>
 #include <optional>
@@ -52,6 +53,8 @@ struct SceneObject {
 	std::optional<TriggerActionsComponent> triggerActions;
 	// 物体のワールド位置を光源として使用する
 	std::optional<PointLightComponent> pointLight;
+	// ワールド位置と親子合成した回転から円錐状に照らす
+	std::optional<SpotLightComponent> spotLight;
 	// 親子合成後の位置で再生する音源と、受信姿勢の指定
 	std::optional<AudioSourceComponent> audioSource;
 	std::optional<AudioListenerComponent> audioListener;

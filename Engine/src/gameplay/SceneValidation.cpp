@@ -48,6 +48,11 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 	                                       &invalidLight)) {
 		add(invalidLight, lightError);
 	}
+	std::vector<SpotLightData> spotLights;
+	if (!SceneLighting::CollectSpotLights(scene, spotLights, lightError,
+	                                      &invalidLight)) {
+		add(invalidLight, lightError);
+	}
 	Scene resolved;
 	std::string followError;
 	std::vector<SceneObjectId> order;

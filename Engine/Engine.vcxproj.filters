@@ -700,4 +700,10 @@
     <ClInclude Include="include\scene\SceneAudioAction.h"><Filter>include\scene</Filter></ClInclude>
     <ClInclude Include="include\scene\SceneAudioActions.h"><Filter>include\scene</Filter></ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\graphics\SpotLightData.h"><Filter>include\graphics</Filter></ClInclude>
+    <ClInclude Include="include\graphics\SpotLights.h"><Filter>include\graphics</Filter></ClInclude>
+    <ClCompile Include="src\graphics\SpotLights.cpp"><Filter>src\graphics</Filter></ClCompile>
+    <ClInclude Include="include\scene\SpotLightComponent.h"><Filter>include\scene</Filter></ClInclude>
+  </ItemGroup>
 </Project>

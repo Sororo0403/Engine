@@ -2,6 +2,7 @@
 
 #include "graphics/DirectionalLightData.h"
 #include "graphics/PointLightData.h"
+#include "graphics/SpotLightData.h"
 #include "graphics/camera/CameraPose.h"
 #include "graphics/camera/CameraSettings.h"
 #include "graphics/material/ColorTint.h"
@@ -157,6 +158,13 @@ class RenderWorld {
 	/// <param name="lights">最大32灯の有効な光源。空は全消灯</param>
 	/// <returns>true:成功 false:未初期化、上限超過、または無効な設定。失敗時は現在値を保持する</returns>
 	bool SetPointLights(std::span<const PointLightData> lights);
+
+	/// <summary>
+	/// ワールド座標のスポットライトを一括設定する。描画前にUpdateを呼び出す
+	/// </summary>
+	/// <param name="lights">上限以内の有効な位置・単位方向・範囲・色・強さ・円錐</param>
+	/// <returns>true:成功 false:未初期化・無効な光源・上限超過。失敗時は現在値を保持する</returns>
+	bool SetSpotLights(std::span<const SpotLightData> lights);
 
 	/// <summary>
 	/// 読み取り専用のライト情報を取得する
