@@ -3,6 +3,7 @@
 #include "assets/AssetDependencies.h"
 #include "assets/AssetFolders.h"
 #include "assets/ImageValidation.h"
+#include "audio/WaveReader.h"
 #include "files/OutputDirectory.h"
 #include "gameplay/GameConfig.h"
 #include "platform/windows/PathUtils.h"
@@ -90,6 +91,28 @@ void ValidateTexture(const fs::path &path) {
 }
 
 /// <summary>
+/// WAVを復号検証し、空間音声にはモノラルだけを受け付ける
+/// </summary>
+/// <param name="path">パッケージ内で確認済みの通常ファイル</param>
+/// <param name="spatial">同じファイルを空間音声として使う物体があるか</param>
+void ValidateAudio(const fs::path &path, bool spatial) {
+	WaveData wave;
+	std::string error;
+
+	if (!WaveReader::Load(path, wave, error)) {
+		throw std::runtime_error(
+		    std::format("Could not import audio \"{}\": {}",
+		                PathUtils::ToUtf8(path), error));
+	}
+
+	if (spatial && wave.channels != 1) {
+		throw std::runtime_error(
+		    "Spatial Audio Source needs a mono WAV clip: " +
+		    PathUtils::ToUtf8(path));
+	}
+}
+
+/// <summary>
 /// 制限内のシーンファイルを読み、途中の切り詰めや追加を検出する
 /// </summary>
 /// <param name="file">読み込む通常ファイル</param>
@@ -110,7 +133,7 @@ std::string ReadScene(const fs::path &file) {
 }
 
 /// <summary>
-/// 各形式のモデル・画像・旧材質JSON参照を、読み込み前にパッケージ内の絶対パスへ揃える
+/// 各形式のモデル・画像・音声・旧材質JSON参照を、読み込み前にパッケージ内の絶対パスへ揃える
 /// </summary>
 /// <param name="document">入力シーンのJSON。形式の詳細検証はSceneSerializerで行う</param>
 /// <param name="root">パッケージの基準フォルダ</param>
@@ -123,6 +146,10 @@ void ResolveReferences(Json &document, const fs::path &root) {
 		}
 	};
 	for (auto &object : document.at("objects")) {
+		if (version >= 20 && object.contains("audioSource")) {
+			resolve(object.at("audioSource").at("clip"));
+		}
+
 		if (version >= 9) {
 			if (object.contains("mesh")) {
 				resolve(object.at("mesh").at("model"));
@@ -201,6 +228,7 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 		auto folderReference = PathUtils::RelativeInside(root, destination);
 		std::map<fs::path, fs::path, PathLess> files;
 		std::set<fs::path, PathLess> textures;
+		std::map<fs::path, bool, PathLess> audio;
 		const auto addFile = [&](const fs::path &path) {
 			const auto file = PackageFile(sourceRoot, path);
 			const auto relative = PathUtils::RelativeInside(sourceRoot, file);
@@ -217,6 +245,15 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 			return AssetFolders::MakeReference(options.assetRoot, target);
 		};
 		for (auto &[id, object] : objects) {
+			if (object.audioSource && !object.audioSource->clipPath.empty()) {
+				auto &emitter = *object.audioSource;
+				AssetDependencies::AudioFiles(emitter.clipPath);
+				const auto relative = addFile(emitter.clipPath);
+				audio[relative] |= emitter.spatial;
+				emitter.clipPath = AssetFolders::MakeReference(
+				    options.assetRoot, destination / relative);
+			}
+
 			if (object.HasMesh()) {
 				for (const auto &file :
 				     AssetDependencies::ModelFiles(object.mesh->modelPath)) {
@@ -238,12 +275,20 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 				}
 			}
 		}
+		for (const auto &[relative, spatial] : audio) {
+			ValidateAudio(files.at(relative), spatial);
+		}
+
 		output.Create(destination);
 		for (const auto &[relative, sourceFile] : files) {
 			output.Copy(sourceFile, relative);
 		}
 		for (const auto &relative : textures) {
 			ValidateTexture(PackageFile(destination, destination / relative));
+		}
+		for (const auto &[relative, spatial] : audio) {
+			ValidateAudio(PackageFile(destination, destination / relative),
+			              spatial);
 		}
 
 		// コピー後も、モデルの相対参照が取り込み先の内側で完結することを確認する。
