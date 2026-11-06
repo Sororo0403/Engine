@@ -57,6 +57,7 @@ class SceneScripts {
 	/// <param name="collisions">今回の通常接触。正の時間でTriggerの後、clickの前に両物体へ通知する</param>
 	/// <param name="audioActions">指定時は成功した全コールバックの音声要求を末尾へ追加する。削除した音源への要求は取り除く</param>
 	/// <param name="sceneRequest">指定時は成功したコールバックから最後の遷移先を返す</param>
+	/// <param name="sharedState">指定時は全物体・コールバックで共有するgameのJSON。成功後に呼び出し側で確定する</param>
 	/// <returns>true:実行成功 false:コールバック・状態・制限が無効。呼び出し側は候補を破棄する</returns>
 	bool Run(Scene &scene, float seconds, const CharacterInput &input,
 	         std::span<const TriggerEvent> events, bool startOnly,
@@ -65,7 +66,8 @@ class SceneScripts {
 	         ScenePhysics *physics = nullptr,
 	         std::span<const CollisionEvent> collisions = {},
 	         std::vector<SceneAudioAction> *audioActions = nullptr,
-	         std::filesystem::path *sceneRequest = nullptr);
+	         std::filesystem::path *sceneRequest = nullptr,
+	         std::string *sharedState = nullptr);
 
 	/// <summary>
 	/// スクリプトが生成した接触を再帰実行せず、次の正の時間の更新へ送る

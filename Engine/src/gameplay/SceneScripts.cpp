@@ -110,12 +110,14 @@ bool SceneScripts::Run(Scene &scene, float seconds, const CharacterInput &input,
                        ScenePhysics *physics,
                        std::span<const CollisionEvent> collisions,
                        std::vector<SceneAudioAction> *audioActions,
-                       std::filesystem::path *sceneRequest) {
+                       std::filesystem::path *sceneRequest,
+                       std::string *sharedState) {
 	SceneObjectId current = 0;
 	try {
 		if (!std::isfinite(seconds) || seconds < 0)
 			throw std::runtime_error("Script time is invalid.");
 		logs_.clear();
+		std::string game = sharedState ? *sharedState : std::string("{}");
 		std::size_t callbacks = 0;
 		int budget = kFrameInstructions;
 		int physicsBudget = kFramePhysicsOperations;
@@ -148,7 +150,8 @@ bool SceneScripts::Run(Scene &scene, float seconds, const CharacterInput &input,
 			        &prefabs_, &spawnBudget, &objectBudget,
 			        &pendingDestructions, &destructionBudget,
 			        audioActions ? &requestedAudio : nullptr, &audioBudget,
-			        sceneRequest ? &requestedScene : nullptr, &sceneBudget))
+			        sceneRequest ? &requestedScene : nullptr, &sceneBudget,
+			        sharedState ? &game : nullptr))
 				throw std::runtime_error(std::format(
 				    "{} [{}]: {}", PathUtils::ToUtf8(instance.settings.asset),
 				    callback, error));
@@ -233,6 +236,8 @@ bool SceneScripts::Run(Scene &scene, float seconds, const CharacterInput &input,
 		}
 		if (sceneRequest && !requestedScene.empty())
 			*sceneRequest = std::move(requestedScene);
+		if (sharedState)
+			sharedState->swap(game);
 		error.clear();
 		return true;
 	} catch (const std::exception &exception) {

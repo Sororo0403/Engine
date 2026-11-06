@@ -126,6 +126,13 @@ int Invoke(lua_State *state) {
 	auto &call = *static_cast<LuaInternal::Call *>(lua_touserdata(state, 1));
 	const int environment = LuaInternal::OpenEnvironment(state, call);
 	LuaInternal::PrepareState(state);
+	int sharedIndex = 0;
+	if (call.sharedInitial) {
+		LuaInternal::PushState(state, *call.sharedInitial);
+		sharedIndex = lua_gettop(state);
+		lua_pushvalue(state, sharedIndex);
+		lua_setfield(state, environment, "game");
+	}
 	if (luaL_loadbufferx(state, call.source.data(), call.source.size(),
 	                     call.name.c_str(), "b") != LUA_OK)
 		return lua_error(state);
@@ -136,6 +143,24 @@ int Invoke(lua_State *state) {
 	const int module = lua_gettop(state);
 	if (!lua_istable(state, module))
 		return luaL_error(state, "A Script must return a table of callbacks.");
+	if (sharedIndex) {
+		lua_getfield(state, environment, "game");
+		if (!lua_rawequal(state, -1, sharedIndex))
+			return luaL_error(
+			    state,
+			    "Modify game fields instead of replacing the shared table.");
+		lua_pop(state, 1);
+		if (!lua_checkstack(state, LuaScript::kMaximumStateDepth * 4 + 32))
+			return luaL_error(state, "Shared data stack limit exceeded.");
+		if (!LuaInternal::ReadState(state, sharedIndex, call.sharedResult,
+		                            call.error)) {
+			lua_pushlstring(state, call.error.data(), call.error.size());
+			return lua_error(state);
+		}
+		if (call.sharedResult != call.sharedInput)
+			return luaL_error(state, "Change shared game data inside "
+			                         "callbacks, not at module scope.");
+	}
 	LuaInternal::PushState(state, *call.initial);
 	const int initial = lua_gettop(state);
 	lua_getfield(state, module, call.callback);
@@ -172,6 +197,19 @@ int Invoke(lua_State *state) {
 	if (!LuaInternal::ReadState(state, initial, call)) {
 		lua_pushlstring(state, call.error.data(), call.error.size());
 		return lua_error(state);
+	}
+	if (sharedIndex) {
+		lua_getfield(state, environment, "game");
+		if (!lua_rawequal(state, -1, sharedIndex))
+			return luaL_error(
+			    state,
+			    "Modify game fields instead of replacing the shared table.");
+		lua_pop(state, 1);
+		if (!LuaInternal::ReadState(state, sharedIndex, call.sharedResult,
+		                            call.error)) {
+			lua_pushlstring(state, call.error.data(), call.error.size());
+			return lua_error(state);
+		}
 	}
 	return 0;
 }
@@ -320,7 +358,8 @@ bool LuaScript::Invoke(
     int *remainingInstantiations, std::size_t *remainingSpawnedObjects,
     std::vector<SceneObjectId> *pendingDestructions, int *remainingDestructions,
     std::vector<SceneAudioAction> *audioActions, int *remainingAudioOperations,
-    std::filesystem::path *sceneRequest, int *remainingSceneRequests) {
+    std::filesystem::path *sceneRequest, int *remainingSceneRequests,
+    std::string *sharedState) {
 	try {
 		const char *name = Callback(callback);
 		if (!program || !name || !scene.Contains(self) ||
@@ -338,6 +377,16 @@ bool LuaScript::Invoke(
 		std::string normalized;
 		if (!NormalizeState(state, normalized, error))
 			return false;
+		if (sharedState == &state)
+			throw std::runtime_error(
+			    "Object state and shared game data must use separate storage.");
+		std::string sharedNormalized;
+		if (sharedState &&
+		    !NormalizeState(*sharedState, sharedNormalized, error))
+			return false;
+		const auto sharedJson = nlohmann::json::parse(
+		    sharedState ? sharedNormalized : std::string("{}"));
+		const auto sharedNodes = LuaInternal::BuildState(sharedJson);
 		const auto initial = nlohmann::json::parse(normalized);
 		const auto nodes = LuaInternal::BuildState(initial);
 		LuaInternal::Call call;
@@ -346,6 +395,8 @@ bool LuaScript::Invoke(
 		call.other = other;
 		call.input = &input;
 		call.initial = &nodes;
+		call.sharedInitial = sharedState ? &sharedNodes : nullptr;
+		call.sharedInput = std::move(sharedNormalized);
 		call.source = program.data_->bytes;
 		call.name = program.data_->name;
 		call.callback = name;
@@ -368,6 +419,8 @@ bool LuaScript::Invoke(
 		combined.insert(combined.end(), call.logs.begin(), call.logs.end());
 		if (!call.result.empty())
 			state.swap(call.result);
+		if (sharedState && !call.sharedResult.empty())
+			sharedState->swap(call.sharedResult);
 		logs.swap(combined);
 		error.clear();
 		return true;

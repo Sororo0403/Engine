@@ -14,6 +14,7 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 	auto physics = physics_;
 	auto audio = audioActions_;
 	auto requestedScene = pendingScene_;
+	auto game = sharedScriptData_;
 	if (!scripts.Run(candidate, seconds, input, frameEvents_, startOnly, error,
 	                 invalidObject,
 	                 startOnly ? std::span<const SceneObjectId>{}
@@ -21,7 +22,7 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 	                 &physics,
 	                 startOnly ? std::span<const CollisionEvent>{}
 	                           : collisions_.GetEvents(),
-	                 &audio, &requestedScene))
+	                 &audio, &requestedScene, &game))
 		return false;
 	std::string serialized;
 	if (!SceneSerializer::Serialize(candidate, serialized)) {
@@ -32,6 +33,7 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 		scene_.CopyFrom(candidate);
 		audioActions_ = std::move(audio);
 		pendingScene_ = std::move(requestedScene);
+		sharedScriptData_ = std::move(game);
 		scripts_ = std::move(scripts);
 		physics_ = std::move(physics);
 		return true;
@@ -50,6 +52,7 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 	next.physics_ = std::move(physics);
 	next.audioActions_ = std::move(audio);
 	next.pendingScene_ = std::move(requestedScene);
+	next.sharedScriptData_ = std::move(game);
 	std::vector<TriggerEvent> generated;
 	if (!next.SynchronizeSceneChanges(candidate, transformed, error,
 	                                  invalidObject, &generated))

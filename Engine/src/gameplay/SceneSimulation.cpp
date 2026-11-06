@@ -19,10 +19,36 @@
 bool SceneSimulation::Start(const Scene &source, std::string &error,
                             const CameraPose &fallbackPose,
                             SceneObjectId *invalidObject) {
-	if (invalidObject) {
-		*invalidObject = 0;
-	}
+	return StartScene(source, error, fallbackPose, invalidObject, false);
+}
 
+bool SceneSimulation::Validate(const Scene &source, std::string &error,
+                               const CameraPose &fallbackPose,
+                               SceneObjectId *invalidObject) {
+	if (invalidObject)
+		*invalidObject = 0;
+	try {
+		Scene runtime;
+		runtime.CopyFrom(source);
+		for (const auto &[id, value] : runtime.GetObjects()) {
+			(void)value;
+			runtime.FindObject(id)->prefabLink.reset();
+		}
+		SceneSimulation check;
+		return check.Configure(runtime, error, fallbackPose, invalidObject,
+		                       false);
+	} catch (const std::exception &exception) {
+		error = exception.what();
+		return false;
+	}
+}
+
+bool SceneSimulation::StartScene(const Scene &source, std::string &error,
+                                 const CameraPose &fallbackPose,
+                                 SceneObjectId *invalidObject,
+                                 bool preserveSharedData) {
+	if (invalidObject)
+		*invalidObject = 0;
 	try {
 		if (sceneRevision_ == (std::numeric_limits<std::uint64_t>::max)()) {
 			error = "The scene revision limit was reached.";
@@ -42,6 +68,8 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 		runtime.ReplaceObjects(std::move(objects));
 		SceneSimulation working;
 		working.preparePrefabResources_ = preparePrefabResources_;
+		if (preserveSharedData)
+			working.sharedScriptData_ = sharedScriptData_;
 		if (!working.Configure(runtime, error, fallbackPose, invalidObject,
 		                       false)) {
 			return false;
@@ -373,6 +401,7 @@ bool SceneSimulation::Configure(const Scene &source, std::string &error,
 }
 
 void SceneSimulation::Stop() {
+	sharedScriptData_ = "{}";
 	playing_ = false;
 	pendingScene_.clear();
 	motion_ = SceneMotion{};
@@ -424,8 +453,8 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 			SceneSimulation destinationSimulation;
 			destinationSimulation.CopyFrom(*this);
 			std::string error;
-			if (!destinationSimulation.Start(destination, error,
-			                                 fallbackPose_)) {
+			if (!destinationSimulation.StartScene(
+			        destination, error, fallbackPose_, nullptr, true)) {
 				lastUpdateError_ = std::move(error);
 				return false;
 			}

@@ -10,6 +10,7 @@
 
 void SceneSimulation::CopyFrom(const SceneSimulation &source) {
 	scene_.CopyFrom(source.scene_);
+	sharedScriptData_ = source.sharedScriptData_;
 	world_ = source.world_;
 	triggers_ = source.triggers_;
 	collisions_ = source.collisions_;
@@ -44,6 +45,7 @@ void SceneSimulation::CopyFrom(const SceneSimulation &source) {
 void SceneSimulation::Adopt(SceneSimulation &source) {
 	// シーンの複製と検証が完了してから、確保を伴わない移動で残りの状態を確定する。
 	scene_.CopyFrom(source.scene_);
+	sharedScriptData_ = std::move(source.sharedScriptData_);
 	world_ = std::move(source.world_);
 	triggers_ = std::move(source.triggers_);
 	collisions_ = std::move(source.collisions_);

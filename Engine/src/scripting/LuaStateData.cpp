@@ -215,6 +215,11 @@ void LuaInternal::PushState(lua_State *state, const StateNode &value) {
 }
 
 bool LuaInternal::ReadState(lua_State *state, int index, Call &call) noexcept {
+	return ReadState(state, index, call.result, call.error);
+}
+
+bool LuaInternal::ReadState(lua_State *state, int index, std::string &result,
+                            std::string &failure) noexcept {
 	try {
 		std::array<const void *, LuaScript::kMaximumStateDepth + 1> parents{};
 		std::size_t count = 0, bytes = 0;
@@ -226,14 +231,14 @@ bool LuaInternal::ReadState(lua_State *state, int index, Call &call) noexcept {
 		auto text = value.dump();
 		if (text.size() > LuaScript::kMaximumStateBytes)
 			throw std::runtime_error("Script state exceeds 64 KiB.");
-		call.result.swap(text);
+		result.swap(text);
 		return true;
 	} catch (const std::exception &error) {
-		call.error.assign(error.what(), (std::min)(std::strlen(error.what()),
-		                                           std::size_t(512)));
+		failure.assign(error.what(),
+		               (std::min)(std::strlen(error.what()), std::size_t(512)));
 		return false;
 	} catch (...) {
-		call.error.assign("Could not read Script state.");
+		failure.assign("Could not read Script state.");
 		return false;
 	}
 }

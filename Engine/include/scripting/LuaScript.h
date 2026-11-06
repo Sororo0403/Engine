@@ -42,7 +42,7 @@ class LuaScript {
 	/// <summary>
 	/// 公開するスクリプトAPIの版。Runtimeの出力互換性を照合する
 	/// </summary>
-	static constexpr int kApiVersion = 7;
+	static constexpr int kApiVersion = 8;
 	static constexpr std::size_t kMaximumSourceBytes = 256 * 1024;
 	static constexpr std::size_t kMaximumBytecodeBytes = 1024 * 1024;
 	static constexpr std::size_t kMaximumStateBytes = 64 * 1024;
@@ -122,6 +122,7 @@ class LuaScript {
 	/// <param name="remainingAudioOperations">指定時はフレームで共有する残り音声API回数</param>
 	/// <param name="sceneRequest">指定時は候補の遷移先を最後の要求で置き換える。呼び出し側で全処理成功後に確定する</param>
 	/// <param name="remainingSceneRequests">指定時はフレームで共有する残り遷移要求回数</param>
+	/// <param name="sharedState">指定時はgameとして公開する共有JSON。成功時だけ置き換える。stateと同じ制限を使い、同じ文字列を両方へ渡さない</param>
 	/// <returns>true:成功またはコールバックなし false:コード・API・状態・実行制限が無効</returns>
 	static bool
 	Invoke(const LuaScriptProgram &program, std::string_view callback,
@@ -139,5 +140,6 @@ class LuaScript {
 	       std::vector<SceneAudioAction> *audioActions = nullptr,
 	       int *remainingAudioOperations = nullptr,
 	       std::filesystem::path *sceneRequest = nullptr,
-	       int *remainingSceneRequests = nullptr);
+	       int *remainingSceneRequests = nullptr,
+	       std::string *sharedState = nullptr);
 };

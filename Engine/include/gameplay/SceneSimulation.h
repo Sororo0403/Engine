@@ -30,6 +30,27 @@
 class SceneSimulation {
   public:
 	/// <summary>
+	/// ゲームの開始処理を実行せず、シーンの初期配置・物理・UIとLuaのコンパイルを検証する
+	/// </summary>
+	/// <param name="source">変更しない検証元</param>
+	/// <param name="error">成功時は空、失敗時は理由</param>
+	/// <param name="fallbackPose">Cameraがない場合の姿勢</param>
+	/// <param name="invalidObject">指定時は問題の物体ID</param>
+	/// <returns>true:準備可能 false:設定・配置・コンパイルが無効</returns>
+	/// <remarks>遷移先のstartが前のシーンの共有データを必要とする場合も、初期化を先行実行しない</remarks>
+	static bool Validate(const Scene &source, std::string &error,
+	                     const CameraPose &fallbackPose = CameraPose{},
+	                     SceneObjectId *invalidObject = nullptr);
+
+	/// <summary>
+	/// 全物体とシーン遷移で共有するLuaのgameを、変更しないJSONとして取得する
+	/// </summary>
+	/// <returns>次の更新まで有効なJSON。Start・Restart・Stopで空に戻る</returns>
+	std::string_view GetSharedScriptData() const {
+		return sharedScriptData_;
+	}
+
+	/// <summary>
 	/// 再生用の根と子孫を削除し、参照・物理・UI・スクリプト状態を同期する
 	/// </summary>
 	/// <param name="roots">存在する根のID。重複と親子の同時指定を許可する</param>
@@ -243,6 +264,19 @@ class SceneSimulation {
 
   private:
 	/// <summary>
+	/// シーンを開始し、遷移の場合だけ共有データを引き継ぐ
+	/// </summary>
+	/// <param name="source">変更しない開始元</param>
+	/// <param name="error">成功時は空、失敗時は理由</param>
+	/// <param name="fallbackPose">Cameraがない場合の姿勢</param>
+	/// <param name="invalidObject">指定時は問題の物体ID</param>
+	/// <param name="preserveSharedData">true:シーン遷移 false:新しいPlayを開始する</param>
+	/// <returns>true:開始成功 false:失敗。全実行状態を保持する</returns>
+	bool StartScene(const Scene &source, std::string &error,
+	                const CameraPose &fallbackPose,
+	                SceneObjectId *invalidObject, bool preserveSharedData);
+
+	/// <summary>
 	/// 次の正の時間の更新で操作を受け取るTrigger Actionsと、その原因イベント
 	/// </summary>
 	struct ActionSignal {
@@ -344,6 +378,7 @@ class SceneSimulation {
 	                        std::vector<TriggerEvent> *generated = nullptr);
 
 	Scene scene_;
+	std::string sharedScriptData_ = "{}";
 	CollisionWorld world_;
 	TriggerWorld triggers_;
 	CollisionEvents collisions_;

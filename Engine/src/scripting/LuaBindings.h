@@ -44,6 +44,8 @@ struct Call {
 	SceneObjectId self = 0, other = 0;
 	const CharacterInput *input = nullptr;
 	const StateNode *initial = nullptr;
+	const StateNode *sharedInitial = nullptr;
+	std::string sharedInput, sharedResult;
 	std::string_view source;
 	std::string name;
 	const char *callback = nullptr;

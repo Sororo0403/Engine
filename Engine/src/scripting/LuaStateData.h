@@ -52,4 +52,15 @@ void PrepareState(lua_State *state);
 /// <param name="call">結果と失敗理由</param>
 /// <returns>true:読み取り成功 false:型・循環・サイズ・深さが無効</returns>
 bool ReadState(lua_State *state, int index, Call &call) noexcept;
+
+/// <summary>
+/// stateまたは共有データを同じ制限で読み、成功時だけ指定したJSONを置き換える
+/// </summary>
+/// <param name="state">保護呼び出し内でスタックに余裕を確保したLua状態</param>
+/// <param name="index">読み取るテーブルの位置</param>
+/// <param name="result">成功時だけ置き換えるJSON</param>
+/// <param name="error">失敗理由。あらかじめ1024バイト以上を確保する</param>
+/// <returns>true:読み取り成功 false:型・循環・サイズ・深さが無効</returns>
+bool ReadState(lua_State *state, int index, std::string &result,
+               std::string &error) noexcept;
 } // namespace LuaInternal
