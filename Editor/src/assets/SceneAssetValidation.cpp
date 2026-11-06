@@ -5,6 +5,7 @@
 #include "audio/WaveReader.h"
 #include "platform/windows/PathUtils.h"
 #include "scene/Scene.h"
+#include "scene/SceneSerializer.h"
 #include <format>
 #include <map>
 #include <new>
@@ -16,7 +17,7 @@ std::vector<SceneValidationIssue>
 SceneAssetValidation::Inspect(const Scene &scene) {
 	std::vector<SceneValidationIssue> issues;
 	std::map<std::filesystem::path, std::vector<std::string>> models, textures,
-	    monoAudio, stereoAudio;
+	    monoAudio, stereoAudio, scenes;
 
 	const auto inspect = [](const std::filesystem::path &path, auto &cache,
 	                        auto collect) -> const std::vector<std::string> & {
@@ -63,6 +64,21 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 			}
 		};
 
+		if (object.triggerActions)
+			for (const auto &action : object.triggerActions->actions) {
+				if (action.operation != TriggerAction::Operation::LOAD_SCENE ||
+				    action.scenePath.empty())
+					continue;
+				add("Load Scene",
+				    inspect(action.scenePath, scenes, [](const auto &path) {
+					    Scene target;
+					    if (!SceneSerializer::Load(target, path))
+						    throw std::runtime_error(
+						        "Could not read destination scene.");
+					    return std::vector<std::filesystem::path>{
+					        PathUtils::ResolveFromExecutable(path)};
+				    }));
+			}
 		if (object.audioSource && !object.audioSource->clipPath.empty()) {
 			const bool spatial = object.audioSource->spatial;
 			add("Audio Source",

@@ -476,4 +476,8 @@ exit /b 0</Command>
     <ClInclude Include="include\gameplay\MotionPathInspector.h" />
     <ClCompile Include="src\gameplay\MotionPathInspector.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\assets\SceneDependencyGraph.h" />
+    <ClCompile Include="src\assets\SceneDependencyGraph.cpp" />
+  </ItemGroup>
 </Project>

@@ -1,4 +1,5 @@
 #include "assets/SceneImporter.h"
+#include "assets/SceneDependencyGraph.h"
 
 #include "assets/AssetDependencies.h"
 #include "assets/AssetFolders.h"
@@ -146,6 +147,12 @@ void ResolveReferences(Json &document, const fs::path &root) {
 		}
 	};
 	for (auto &object : document.at("objects")) {
+		if (version >= 28 && object.contains("triggerActions")) {
+			for (auto &action : object.at("triggerActions").at("actions")) {
+				if (action.at("operation") == "loadScene")
+					resolve(action.at("scene"));
+			}
+		}
 		if (version >= 20 && object.contains("audioSource")) {
 			resolve(object.at("audioSource").at("clip"));
 		}
@@ -239,39 +246,63 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 			}
 			return relative;
 		};
-		auto objects = candidate.GetObjects();
+		auto graph = SceneDependencyGraph::Read(
+		    candidate, sceneFile,
+		    [&](const auto &path) { return PackageFile(sourceRoot, path); },
+		    [&](const auto &path, Scene &loaded) {
+			    auto document = Json::parse(ReadScene(path));
+			    ResolveReferences(document, sourceRoot);
+			    if (!SceneSerializer::Deserialize(loaded, document.dump()))
+				    throw std::runtime_error(
+				        "Could not read an imported destination scene.");
+		    });
 		const auto reference = [&](const fs::path &path) {
 			const auto target = destination / addFile(path);
 			return AssetFolders::MakeReference(options.assetRoot, target);
 		};
-		for (auto &[id, object] : objects) {
-			if (object.audioSource && !object.audioSource->clipPath.empty()) {
-				auto &emitter = *object.audioSource;
-				AssetDependencies::AudioFiles(emitter.clipPath);
-				const auto relative = addFile(emitter.clipPath);
-				audio[relative] |= emitter.spatial;
-				emitter.clipPath = AssetFolders::MakeReference(
-				    options.assetRoot, destination / relative);
-			}
-
-			if (object.HasMesh()) {
-				for (const auto &file :
-				     AssetDependencies::ModelFiles(object.mesh->modelPath)) {
-					addFile(file);
-				}
-				object.mesh->modelPath = reference(object.mesh->modelPath);
-			}
-			if (object.meshRenderer) {
-				for (auto &[slot, path] : object.meshRenderer->textures.slots) {
-					AssetDependencies::TextureFiles(path);
-					const auto relative = addFile(path);
-
-					if (textures.insert(relative).second) {
-						ValidateTexture(files.at(relative));
+		for (auto &entry : graph) {
+			for (auto &[id, object] : entry.objects) {
+				if (object.triggerActions)
+					for (auto &action : object.triggerActions->actions) {
+						if (action.operation ==
+						        TriggerAction::Operation::LOAD_SCENE &&
+						    !action.scenePath.empty())
+							action.scenePath = AssetFolders::MakeReference(
+							    options.assetRoot,
+							    destination /
+							        PathUtils::RelativeInside(
+							            sourceRoot, action.scenePath));
 					}
+				if (object.audioSource &&
+				    !object.audioSource->clipPath.empty()) {
+					auto &emitter = *object.audioSource;
+					AssetDependencies::AudioFiles(emitter.clipPath);
+					const auto relative = addFile(emitter.clipPath);
+					audio[relative] |= emitter.spatial;
+					emitter.clipPath = AssetFolders::MakeReference(
+					    options.assetRoot, destination / relative);
+				}
 
-					path = AssetFolders::MakeReference(options.assetRoot,
-					                                   destination / relative);
+				if (object.HasMesh()) {
+					for (const auto &file : AssetDependencies::ModelFiles(
+					         object.mesh->modelPath)) {
+						addFile(file);
+					}
+					object.mesh->modelPath = reference(object.mesh->modelPath);
+				}
+				if (object.meshRenderer) {
+					for (auto &[slot, path] :
+					     object.meshRenderer->textures.slots) {
+						AssetDependencies::TextureFiles(path);
+						const auto relative = addFile(path);
+
+						if (textures.insert(relative).second) {
+							ValidateTexture(files.at(relative));
+						}
+
+						path = AssetFolders::MakeReference(
+						    options.assetRoot, destination / relative);
+					}
 				}
 			}
 		}
@@ -279,6 +310,20 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 			ValidateAudio(files.at(relative), spatial);
 		}
 
+		std::vector<std::pair<fs::path, std::string>> sceneTexts;
+		for (const auto &entry : graph) {
+			const auto relative =
+			    PathUtils::RelativeInside(sourceRoot, entry.source);
+			if (files.contains(relative))
+				throw std::runtime_error(
+				    "An imported scene path conflicts with an asset.");
+			Scene loaded;
+			loaded.ReplaceObjects(entry.objects);
+			std::string text;
+			if (!SceneSerializer::Serialize(loaded, text))
+				throw std::runtime_error("Could not encode an imported scene.");
+			sceneTexts.emplace_back(relative, std::move(text));
+		}
 		output.Create(destination);
 		for (const auto &[relative, sourceFile] : files) {
 			output.Copy(sourceFile, relative);
@@ -292,15 +337,18 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 		}
 
 		// コピー後も、モデルの相対参照が取り込み先の内側で完結することを確認する。
-		for (const auto &[id, object] : objects) {
-			if (object.HasMesh()) {
-				for (const auto &file :
-				     AssetDependencies::ModelFiles(object.mesh->modelPath)) {
-					PackageFile(destination, file);
+		for (const auto &entry : graph)
+			for (const auto &[id, object] : entry.objects) {
+				if (object.HasMesh()) {
+					for (const auto &file : AssetDependencies::ModelFiles(
+					         object.mesh->modelPath)) {
+						PackageFile(destination, file);
+					}
 				}
 			}
-		}
-		imported.ReplaceObjects(std::move(objects));
+		for (const auto &[path, text] : sceneTexts)
+			output.Text(path, text);
+		imported.ReplaceObjects(std::move(graph.front().objects));
 		createdFolder.swap(folderReference);
 		if (configuration) {
 			*configuration = std::move(config);

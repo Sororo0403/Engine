@@ -87,6 +87,11 @@ void RewriteReferences(Scene &scene, const std::filesystem::path &base,
 	for (const auto &[id, value] : scene.GetObjects()) {
 		(void)value;
 		auto &object = *scene.FindObject(id);
+		if (object.triggerActions)
+			for (auto &action : object.triggerActions->actions) {
+				if (action.operation == TriggerAction::Operation::LOAD_SCENE)
+					rewrite(action.scenePath);
+			}
 		if (object.mesh) {
 			rewrite(object.mesh->modelPath);
 		}

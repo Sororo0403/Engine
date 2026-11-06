@@ -820,4 +820,12 @@
       <Filter>src\gameplay</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\assets\SceneDependencyGraph.h">
+      <Filter>include\assets</Filter>
+    </ClInclude>
+    <ClCompile Include="src\assets\SceneDependencyGraph.cpp">
+      <Filter>src\assets</Filter>
+    </ClCompile>
+  </ItemGroup>
 </Project>

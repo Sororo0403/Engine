@@ -1,6 +1,7 @@
 #include "export/GameExporter.h"
 #include "assets/AssetDependencies.h"
 #include "assets/ImageValidation.h"
+#include "assets/SceneDependencyGraph.h"
 #include "audio/WaveReader.h"
 #include "files/OutputDirectory.h"
 #include "gameplay/SceneSimulation.h"
@@ -235,6 +236,12 @@ class Assets {
 		return reference;
 	}
 
+	void ValidateScene(const fs::path &path) {
+		const auto index = FindSource(path);
+		ResourceFile(sources_[index].directory, path);
+		sources_[index].used = true;
+	}
+
 	const auto &Files() const {
 		return files_;
 	}
@@ -438,7 +445,35 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 			    "Runtime before exporting.");
 		}
 
-		Assets assets(resourceRoot, options.assetDirectories);
+		auto graph = SceneDependencyGraph::Read(
+		    scene, {},
+		    [&](const auto &path) {
+			    const auto absolute =
+			        path.is_absolute()
+			            ? path
+			            : resourceRoot / PathUtils::RelativeInside(
+			                                 fs::path(L"resources"),
+			                                 path.lexically_normal());
+			    return ResourceFile(fs::canonical(absolute.parent_path()),
+			                        absolute);
+		    },
+		    [&](const auto &path, Scene &loaded) {
+			    if (!SceneSerializer::Load(loaded, path))
+				    throw std::runtime_error(
+				        "Could not read destination scene: " +
+				        PathUtils::ToUtf8(path));
+		    });
+		auto sourceDirectories = options.assetDirectories;
+		for (const auto &entry : graph)
+			if (!entry.source.empty())
+				sourceDirectories.push_back(entry.source.parent_path());
+		Assets assets(resourceRoot, sourceDirectories);
+		std::vector<fs::path> scenePaths{options.config.scenePath};
+		for (std::size_t i = 1; i < graph.size(); ++i) {
+			assets.ValidateScene(graph[i].source);
+			scenePaths.push_back(fs::path(L"resources/scenes/transitions") /
+			                     std::format("Scene{}.scene.json", i));
+		}
 		for (const auto &source : assets.Sources()) {
 			if (IsInside(source.directory, destination)) {
 				throw std::runtime_error(
@@ -448,56 +483,76 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 
 		ValidateRuntimeBuild(runtimeRoot);
 
-		SceneSimulation check;
-		std::string problem;
+		for (auto &entry : graph) {
+			Scene candidate;
+			candidate.ReplaceObjects(entry.objects);
+			SceneSimulation check;
+			std::string issue;
+			if (!check.Start(candidate, issue, options.config.fallbackCamera))
+				throw std::runtime_error(issue);
+			auto &objects = entry.objects;
 
-		if (!check.Start(scene, problem, options.config.fallbackCamera)) {
-			throw std::runtime_error(problem);
-		}
-
-		auto objects = scene.GetObjects();
-
-		for (auto &[id, object] : objects) {
-			object.prefabLink.reset();
-			if (object.audioSource && !object.audioSource->clipPath.empty()) {
-				auto &path = object.audioSource->clipPath;
-				const auto input =
-				    path.is_absolute()
-				        ? path
-				        : resourceRoot / PathUtils::RelativeInside(
-				                             fs::path(L"resources"),
-				                             path.lexically_normal());
-				path = assets.AddAudio(input, object.audioSource->spatial);
-			}
-
-			if (object.meshRenderer) {
-				for (auto &[slot, path] : object.meshRenderer->textures.slots) {
+			for (auto &[id, object] : objects) {
+				object.prefabLink.reset();
+				if (object.triggerActions)
+					for (auto &action : object.triggerActions->actions) {
+						if (action.operation !=
+						        TriggerAction::Operation::LOAD_SCENE ||
+						    action.scenePath.empty())
+							continue;
+						const auto found = std::ranges::find_if(
+						    graph, [&](const auto &target) {
+							    return !target.source.empty() &&
+							           PathUtils::IsSameFile(target.source,
+							                                 action.scenePath);
+						    });
+						if (found == graph.end())
+							throw std::runtime_error("Destination scene is not "
+							                         "in the export graph.");
+						action.scenePath = scenePaths[static_cast<std::size_t>(
+						    found - graph.begin())];
+					}
+				if (object.audioSource &&
+				    !object.audioSource->clipPath.empty()) {
+					auto &path = object.audioSource->clipPath;
 					const auto input =
 					    path.is_absolute()
 					        ? path
 					        : resourceRoot / PathUtils::RelativeInside(
 					                             fs::path(L"resources"),
 					                             path.lexically_normal());
-					path = assets.AddTexture(input);
+					path = assets.AddAudio(input, object.audioSource->spatial);
+				}
+
+				if (object.meshRenderer) {
+					for (auto &[slot, path] :
+					     object.meshRenderer->textures.slots) {
+						const auto input =
+						    path.is_absolute()
+						        ? path
+						        : resourceRoot / PathUtils::RelativeInside(
+						                             fs::path(L"resources"),
+						                             path.lexically_normal());
+						path = assets.AddTexture(input);
+					}
+				}
+
+				if (object.HasMesh()) {
+					const auto path =
+					    object.mesh->modelPath.is_absolute()
+					        ? object.mesh->modelPath
+					        : resourceRoot / PathUtils::RelativeInside(
+					                             fs::path(L"resources"),
+					                             object.mesh->modelPath
+					                                 .lexically_normal());
+					object.mesh->modelPath = assets.AddModel(path);
 				}
 			}
-
-			if (object.HasMesh()) {
-				const auto path =
-				    object.mesh->modelPath.is_absolute()
-				        ? object.mesh->modelPath
-				        : resourceRoot /
-				              PathUtils::RelativeInside(
-				                  fs::path(L"resources"),
-				                  object.mesh->modelPath.lexically_normal());
-				object.mesh->modelPath = assets.AddModel(path);
-			}
 		}
-
-		Scene snapshot;
-		snapshot.ReplaceObjects(std::move(objects));
+		std::string problem;
 		CopyPlan plan(destination);
-		plan.Reserve(options.config.scenePath);
+		for (const auto &path : scenePaths)
+			plan.Reserve(path);
 		plan.Reserve(L"game.json");
 		plan.File(runtimeRoot / L"Runtime.exe", L"Game.exe");
 
@@ -557,10 +612,16 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 			}
 		}
 
-		std::string sceneText, configText;
-
-		if (!SceneSerializer::Serialize(snapshot, sceneText)) {
-			throw std::runtime_error("Could not serialize the exported scene.");
+		std::string configText;
+		std::vector<std::string> sceneTexts;
+		for (const auto &entry : graph) {
+			Scene snapshot;
+			snapshot.ReplaceObjects(entry.objects);
+			std::string text;
+			if (!SceneSerializer::Serialize(snapshot, text))
+				throw std::runtime_error(
+				    "Could not serialize an exported scene.");
+			sceneTexts.push_back(std::move(text));
 		}
 
 		if (!options.config.Serialize(configText, problem)) {
@@ -577,24 +638,27 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 
 		Assets exportedAssets(fs::canonical(destination / L"resources"));
 
-		for (const auto &[id, object] : snapshot.GetObjects()) {
-			if (object.audioSource && !object.audioSource->clipPath.empty())
-				exportedAssets.AddAudio(destination /
-				                            object.audioSource->clipPath,
-				                        object.audioSource->spatial);
-			if (object.meshRenderer) {
-				for (const auto &[slot, path] :
-				     object.meshRenderer->textures.slots) {
-					exportedAssets.AddTexture(destination / path);
+		for (const auto &entry : graph)
+			for (const auto &[id, object] : entry.objects) {
+				if (object.audioSource && !object.audioSource->clipPath.empty())
+					exportedAssets.AddAudio(destination /
+					                            object.audioSource->clipPath,
+					                        object.audioSource->spatial);
+				if (object.meshRenderer) {
+					for (const auto &[slot, path] :
+					     object.meshRenderer->textures.slots) {
+						exportedAssets.AddTexture(destination / path);
+					}
+				}
+
+				if (object.HasMesh()) {
+					exportedAssets.AddModel(destination /
+					                        object.mesh->modelPath);
 				}
 			}
 
-			if (object.HasMesh()) {
-				exportedAssets.AddModel(destination / object.mesh->modelPath);
-			}
-		}
-
-		output.Text(options.config.scenePath, sceneText);
+		for (std::size_t i = 0; i < scenePaths.size(); ++i)
+			output.Text(scenePaths[i], sceneTexts[i]);
 		output.Text(L"game.json", configText);
 		output.Copy(runtimeRoot / L"Runtime.exe", L"Game.exe");
 		output.Complete();
