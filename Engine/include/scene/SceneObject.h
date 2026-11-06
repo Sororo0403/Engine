@@ -14,6 +14,7 @@
 #include "gameplay/TriggerActionsComponent.h"
 #include "graphics/material/ColorTint.h"
 #include "math/Transform.h"
+#include "particles/ParticleEmitterComponent.h"
 #include "physics/BoxCollider.h"
 #include "physics/RigidBodySettings.h"
 #include "scene/AudioListenerComponent.h"
@@ -76,6 +77,8 @@ struct SceneObject {
 	std::optional<MotionPathComponent> motionPath;
 	// 開始時の姿勢を基準にした変形のキー。実行中の時計と開始姿勢はシミュレーションが保持する
 	std::optional<TransformAnimationComponent> transformAnimation;
+	// 発生設定だけを保存し、生存する粒子・時計・乱数は再生シーンが保持する
+	std::optional<ParticleEmitterComponent> particleEmitter;
 	// Luaのコールバック・開始状態・物体参照。VMと実行中のstateはシミュレーション側で保持する
 	std::optional<ScriptComponent> script;
 	// 画面上のUI。3DのTransformとは独立した座標系でレイアウトする

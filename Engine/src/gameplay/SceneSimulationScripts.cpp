@@ -14,17 +14,18 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 	auto scripts = scripts_;
 	auto physics = physics_;
 	auto animations = animations_;
+	auto particles = particles_;
 	auto audio = audioActions_;
 	auto requestedScene = pendingScene_;
 	auto game = sharedScriptData_;
-	if (!scripts.Run(candidate, seconds, input, frameEvents_, startOnly, error,
-	                 invalidObject,
-	                 startOnly ? std::span<const SceneObjectId>{}
-	                           : ui_.GetClicks(),
-	                 &physics,
-	                 startOnly ? std::span<const CollisionEvent>{}
-	                           : collisions_.GetEvents(),
-	                 &audio, &requestedScene, &game, actions, &animations))
+	if (!scripts.Run(
+	        candidate, seconds, input, frameEvents_, startOnly, error,
+	        invalidObject,
+	        startOnly ? std::span<const SceneObjectId>{} : ui_.GetClicks(),
+	        &physics,
+	        startOnly ? std::span<const CollisionEvent>{}
+	                  : collisions_.GetEvents(),
+	        &audio, &requestedScene, &game, actions, &animations, &particles))
 		return false;
 	std::string serialized;
 	if (!SceneSerializer::Serialize(candidate, serialized)) {
@@ -39,6 +40,7 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 		scripts_ = std::move(scripts);
 		physics_ = std::move(physics);
 		animations_ = std::move(animations);
+		particles_ = std::move(particles);
 		return true;
 	}
 	std::vector<SceneObjectId> transformed;
@@ -54,6 +56,7 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 	next.scripts_ = std::move(scripts);
 	next.physics_ = std::move(physics);
 	next.animations_ = std::move(animations);
+	next.particles_ = std::move(particles);
 	next.audioActions_ = std::move(audio);
 	next.pendingScene_ = std::move(requestedScene);
 	next.sharedScriptData_ = std::move(game);

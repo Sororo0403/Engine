@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "animation/SceneAnimations.h"
+#include "particles/SceneParticles.h"
 
 #include "gameplay/GameActionState.h"
 #include <span>
@@ -34,6 +35,27 @@
 class SceneSimulation {
 
   public:
+	/// <summary>
+	/// 発生元の時計・生存数・発生指定を取得する
+	/// </summary>
+	/// <param name="id">再生シーンの物体</param>
+	/// <returns>状態。発生元なし・シミュレーション停止中はnullopt</returns>
+	std::optional<ParticlePlaybackState>
+	GetParticleState(SceneObjectId id) const {
+		return particles_.GetState(id);
+	}
+
+	/// <summary>
+	/// 描画直前の粒子をワールド座標で複製する
+	/// </summary>
+	/// <param name="batches">成功時だけ置き換える描画データ</param>
+	/// <param name="error">失敗理由</param>
+	/// <returns>true:成功 false:階層・粒子が無効</returns>
+	bool GetParticles(std::vector<ParticleDrawBatch> &batches,
+	                  std::string &error) const {
+		return particles_.Snapshot(scene_, batches, error);
+	}
+
 	/// <summary>
 	/// 物体の再生位置と再生指定を取得する。編集用の設定には書き戻さない
 	/// </summary>
@@ -413,6 +435,7 @@ class SceneSimulation {
 	CharacterController controller_;
 	SceneMotion motion_;
 	SceneAnimations animations_;
+	SceneParticles particles_;
 	ScenePhysics physics_;
 	SceneScripts scripts_;
 	SceneUI ui_;

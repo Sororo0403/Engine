@@ -332,6 +332,8 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 			    (object.transformAnimation &&
 			     !object.transformAnimation->IsValid()) ||
 			    (object.script && !object.script->IsValid()) ||
+			    (object.particleEmitter &&
+			     !object.particleEmitter->IsValid()) ||
 			    (object.audioSource && !object.audioSource->IsValid())) {
 				throw std::runtime_error(
 				    "ゲーム用コンポーネントの設定が無効です。");
@@ -432,6 +434,29 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 				    {"scenes", std::move(scenes)}};
 			}
 
+			if (object.particleEmitter) {
+				const auto &p = *object.particleEmitter;
+				objects.back()["particleEmitter"] = {
+				    {"playOnStart", p.playOnStart},
+				    {"loop", p.loop},
+				    {"localSpace", p.localSpace},
+				    {"additive", p.additive},
+				    {"texture", PathUtils::ToUtf8(p.texture)},
+				    {"seed", p.seed},
+				    {"maxParticles", p.maxParticles},
+				    {"burst", p.burst},
+				    {"duration", p.duration},
+				    {"rate", p.rate},
+				    {"lifetime", {p.lifetimeMin, p.lifetimeMax}},
+				    {"speed", {p.speedMin, p.speedMax}},
+				    {"radius", p.radius},
+				    {"coneDegrees", p.coneDegrees},
+				    {"size", {p.sizeStart, p.sizeEnd}},
+				    {"rotationSpeed", p.rotationSpeed},
+				    {"gravity", ToJson(p.gravity)},
+				    {"colorStart", p.colorStart},
+				    {"colorEnd", p.colorEnd}};
+			}
 			if (object.transformAnimation) {
 				const auto &a = *object.transformAnimation;
 				auto keys = Json::array();
@@ -837,6 +862,73 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 				object.script = std::move(script);
 			}
 
+			if (version >= 36 && item.contains("particleEmitter")) {
+				const auto &v = item.at("particleEmitter");
+				ParticleEmitterComponent p;
+				for (auto field :
+				     {"playOnStart", "loop", "localSpace", "additive"})
+					if (!v.at(field).is_boolean())
+						throw std::runtime_error(
+						    "Particle flags must be boolean.");
+				for (auto field : {"maxParticles", "burst", "seed"})
+					if (!v.at(field).is_number_integer())
+						throw std::runtime_error(
+						    "Particle counts and seed must be integers.");
+				if (v.at("maxParticles") < 1 || v.at("maxParticles") > 4096 ||
+				    v.at("burst") < 0 || v.at("burst") > 4096 ||
+				    v.at("seed") < 0 ||
+				    v.at("seed") > (std::numeric_limits<std::uint32_t>::max)())
+					throw std::runtime_error(
+					    "Particle count or seed is out of range.");
+				p.playOnStart = v.at("playOnStart").get<bool>();
+				p.loop = v.at("loop").get<bool>();
+				p.localSpace = v.at("localSpace").get<bool>();
+				p.additive = v.at("additive").get<bool>();
+				p.texture =
+				    PathUtils::FromUtf8(v.at("texture").get<std::string>());
+				p.seed = v.at("seed").get<std::uint32_t>();
+				p.maxParticles = v.at("maxParticles").get<int>();
+				p.burst = v.at("burst").get<int>();
+				const auto number = [&](const char *field) {
+					if (!v.at(field).is_number())
+						throw std::runtime_error(
+						    "Particle settings must use numbers.");
+					return v.at(field).get<float>();
+				};
+				p.duration = number("duration");
+				p.rate = number("rate");
+				p.radius = number("radius");
+				p.coneDegrees = number("coneDegrees");
+				p.rotationSpeed = number("rotationSpeed");
+				p.gravity = ReadFloat3(v.at("gravity"));
+				const auto lifetime = ReadFloat2(v.at("lifetime")),
+				           speed = ReadFloat2(v.at("speed")),
+				           size = ReadFloat2(v.at("size"));
+				p.lifetimeMin = lifetime[0];
+				p.lifetimeMax = lifetime[1];
+				p.speedMin = speed[0];
+				p.speedMax = speed[1];
+				p.sizeStart = size[0];
+				p.sizeEnd = size[1];
+				for (auto field : {"colorStart", "colorEnd"}) {
+					const auto &color = v.at(field);
+					if (!color.is_array() || color.size() != 4)
+						throw std::runtime_error(
+						    "Particle colors need four channels.");
+					for (std::size_t c = 0; c < 4; ++c) {
+						if (!color[c].is_number())
+							throw std::runtime_error(
+							    "Particle colors must use numbers.");
+						(std::string_view(field) == "colorStart"
+						     ? p.colorStart
+						     : p.colorEnd)[c] = color[c].get<float>();
+					}
+				}
+				if (!p.IsValid())
+					throw std::runtime_error(
+					    "Particle Emitter settings are invalid.");
+				object.particleEmitter = std::move(p);
+			}
 			if (version >= 35 && item.contains("transformAnimation")) {
 				const auto &value = item.at("transformAnimation"),
 				           &keys = value.at("keys");
@@ -1184,6 +1276,8 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 			    (object.transformAnimation &&
 			     !object.transformAnimation->IsValid()) ||
 			    (object.script && !object.script->IsValid()) ||
+			    (object.particleEmitter &&
+			     !object.particleEmitter->IsValid()) ||
 			    (object.audioSource && !object.audioSource->IsValid())) {
 				throw std::runtime_error(
 				    "ゲーム用コンポーネントの設定が無効です。");

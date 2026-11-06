@@ -75,3 +75,7 @@ bool MaterialResource::CreateTextureView(
 	                                  destination);
 	return true;
 }
+
+std::array<unsigned int, 2> MaterialResource::GetTextureSize() const {
+	return {texture_.GetWidth(), texture_.GetHeight()};
+}

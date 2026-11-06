@@ -1,5 +1,6 @@
 #include "scene/SceneRenderer.h"
 #include "audio/AudioClipManager.h"
+#include "graphics/render/ParticleRenderer.h"
 #include "ui/CanvasLayout.h"
 #include <stdexcept>
 
@@ -64,7 +65,8 @@ bool SceneRenderer::Initialize() {
 		world_.reset();
 		return false;
 	}
-	return true;
+	particles_ = render_.CreateParticles();
+	return bool(particles_);
 }
 
 bool SceneRenderer::PreparePrefabResources(
@@ -75,7 +77,7 @@ bool SceneRenderer::PreparePrefabResources(
 			throw std::runtime_error(
 			    "Initialize the renderer before preparing Prefabs.");
 		auto next = preparedPrefabs_;
-		std::vector<std::filesystem::path> images;
+		std::vector<std::filesystem::path> images, particleImages;
 		for (const auto &scene : prefabs) {
 			if (!scene)
 				throw std::runtime_error("Prefab scene is missing.");
@@ -102,12 +104,15 @@ bool SceneRenderer::PreparePrefabResources(
 						throw std::runtime_error(
 						    "Spatial Prefab audio requires mono WAV.");
 				}
+				if (o.particleEmitter && !o.particleEmitter->texture.empty())
+					particleImages.push_back(o.particleEmitter->texture);
 				if (o.image && !o.image->texture.empty())
 					images.push_back(o.image->texture);
 			}
 			next.push_back(scene);
 		}
-		if (!canvas_->PrepareImages(images, error))
+		if (!canvas_->PrepareImages(images, error) ||
+		    !particles_->PrepareImages(particleImages, error))
 			return false;
 		preparedPrefabs_.assign(prefabs.begin(), prefabs.end());
 		error.clear();
@@ -120,36 +125,49 @@ bool SceneRenderer::PreparePrefabResources(
 
 void SceneRenderer::ClearPrefabResources() {
 	preparedPrefabs_.clear();
+	particleBatches_.clear();
+	if (particles_)
+		particles_->Clear();
 	if (canvas_)
 		canvas_->ClearPreparedImages();
 }
 
 bool SceneRenderer::Update(int width, int height) {
-	if (!world_) {
-		Logger::Error("SceneRenderer::Update: 未初期化です。");
+	if (!world_ || !particles_) {
+		Logger::Error("SceneRenderer is not initialized.");
 		return false;
 	}
-
 	try {
-		if (!SynchronizeObjects()) {
+		std::vector<std::filesystem::path> images;
+		for (const auto &[id, o] : scene_.GetObjects()) {
+			(void)id;
+			if (o.particleEmitter && !o.particleEmitter->texture.empty())
+				images.push_back(o.particleEmitter->texture);
+		}
+		std::string error;
+		if (modelLoadFailure_ != ModelLoadFailure::SKIP &&
+		    !particles_->PrepareImages(images, error)) {
+			Logger::Error(error);
 			return false;
 		}
-
-		if (width == 0 && height == 0) {
-			return render_.Update(*world_) &&
-			       (!screenUIEnabled_ ||
-			        render_.UpdateCanvas(*canvas_, scene_, 0, 0,
-			                             buttonVisuals_));
+		if (!SynchronizeObjects())
+			return false;
+		const bool updated = width == 0 && height == 0
+		                         ? render_.Update(*world_)
+		                         : render_.Update(*world_, width, height);
+		if (!updated)
+			return false;
+		DirectX::XMFLOAT4X4 view, projection;
+		if (!world_->GetCameraMatrices(view, projection) ||
+		    !particles_->Update(particleBatches_, view, projection, error)) {
+			Logger::Error(error);
+			return false;
 		}
-
-		return render_.Update(*world_, width, height) &&
-		       (!screenUIEnabled_ ||
-		        render_.UpdateCanvas(*canvas_, scene_, width, height,
-		                             buttonVisuals_));
+		return !screenUIEnabled_ ||
+		       render_.UpdateCanvas(*canvas_, scene_, width, height,
+		                            buttonVisuals_);
 	} catch (const std::exception &error) {
-		Logger::Error(std::format(
-		    "SceneRendererの更新中に例外が発生しました: {}", error.what()));
-
+		Logger::Error(std::format("SceneRenderer update: {}", error.what()));
 		return false;
 	}
 }
@@ -169,9 +187,11 @@ void SceneRenderer::Draw(RenderTexture *target) const {
 		};
 
 		render_.Draw(*world_, *target, clearColor,
-		             screenUIEnabled_ ? canvas_.get() : nullptr);
+		             screenUIEnabled_ ? canvas_.get() : nullptr,
+		             particles_.get());
 	} else {
-		render_.Draw(*world_, screenUIEnabled_ ? canvas_.get() : nullptr);
+		render_.Draw(*world_, screenUIEnabled_ ? canvas_.get() : nullptr,
+		             particles_.get());
 	}
 }
 
@@ -349,8 +369,13 @@ bool SceneRenderer::SynchronizeObjects() {
 void SceneRenderer::Finalize() {
 	// GPUの利用完了後に描画ワールドを解放する
 	world_.reset();
+	particles_.reset();
+	particleBatches_.clear();
 	canvas_.reset();
 	preparedPrefabs_.clear();
+	particleBatches_.clear();
+	if (particles_)
+		particles_->Clear();
 	buttonVisuals_.clear();
 	objects_.clear();
 	modelRevision_ = 0;
@@ -477,4 +502,8 @@ bool SceneRenderer::SetUIButtonVisuals(
 	std::vector<UIButtonVisual> candidate(visuals.begin(), visuals.end());
 	buttonVisuals_.swap(candidate);
 	return true;
+}
+
+void SceneRenderer::SetParticles(std::vector<ParticleDrawBatch> batches) {
+	particleBatches_ = std::move(batches);
 }

@@ -14,6 +14,7 @@ class WinApp;
 class RenderTexture;
 class DebugLineRenderer;
 class CanvasRenderer;
+class ParticleRenderer;
 class Scene;
 
 /// <summary>
@@ -58,9 +59,11 @@ class RenderSystem {
 	/// <param name="target">描画先</param>
 	/// <param name="clearColor">赤・緑・青・アルファの4要素</param>
 	/// <param name="canvas">3Dの後に重ねるUI。nullptrはUIなし</param>
+	/// <param name="particles">3DとUIの間へ合成する粒子。nullptrはなし</param>
 	void Draw(const RenderWorld &world, RenderTexture &target,
 	          const float (&clearColor)[4],
-	          const CanvasRenderer *canvas = nullptr) const;
+	          const CanvasRenderer *canvas = nullptr,
+	          const ParticleRenderer *particles = nullptr) const;
 
 	/// <summary>
 	/// シーン専用の描画ワールドを作成する
@@ -80,8 +83,9 @@ class RenderSystem {
 	/// </summary>
 	/// <param name="world">描画するワールド</param>
 	/// <param name="canvas">3Dの後に重ねるUI。nullptrはUIなし</param>
-	void Draw(const RenderWorld &world,
-	          const CanvasRenderer *canvas = nullptr) const;
+	/// <param name="particles">3DとUIの間へ合成する粒子。nullptrはなし</param>
+	void Draw(const RenderWorld &world, const CanvasRenderer *canvas = nullptr,
+	          const ParticleRenderer *particles = nullptr) const;
 
 	/// <summary>
 	/// 描画基盤で共有する、モデルから独立した材質管理を取得する
@@ -113,6 +117,12 @@ class RenderSystem {
 	/// </summary>
 	/// <returns>横・縦のピクセル数。リサイズ後も実際の描画寸法を返す</returns>
 	std::array<int, 2> GetWindowSize() const;
+
+	/// <summary>
+	/// 同じ描画基盤と画像管理を使う、遅延初期化の粒子描画を作成する
+	/// </summary>
+	/// <returns>この描画基盤より先に破棄する描画クラス</returns>
+	std::unique_ptr<ParticleRenderer> CreateParticles();
 
   private:
 	MaterialManager materials_;

@@ -1,4 +1,5 @@
 #pragma once
+#include <array>
 
 #include "graphics/material/MaterialData.h"
 #include "graphics/material/Texture.h"
@@ -48,6 +49,12 @@ class MaterialResource {
 	/// <returns>true:作成成功 false:デバイス・画像・参照が無効</returns>
 	bool CreateTextureView(ID3D12Device *device,
 	                       D3D12_CPU_DESCRIPTOR_HANDLE destination) const;
+
+	/// <summary>
+	/// 画像の画素数を取得し、読み込み・保持の容量を確認できるようにする
+	/// </summary>
+	/// <returns>横・縦の画素数。未初期化は0</returns>
+	std::array<unsigned int, 2> GetTextureSize() const;
 
   private:
 	MaterialData data_;

@@ -384,7 +384,8 @@ bool LuaScript::Invoke(
     std::filesystem::path *sceneRequest, int *remainingSceneRequests,
     std::string *sharedState, ScriptMailbox *mailbox,
     const ScriptMessage *message, std::span<const GameActionState> actions,
-    SceneAnimations *animations, int *remainingAnimationOperations) {
+    SceneAnimations *animations, int *remainingAnimationOperations,
+    SceneParticles *particles, int *remainingParticleOperations) {
 	try {
 		const char *name = Callback(callback);
 		if (!program || !name || !scene.Contains(self) ||
@@ -399,7 +400,9 @@ bool LuaScript::Invoke(
 		    (remainingDestructions && *remainingDestructions < 0) ||
 		    (remainingAudioOperations && *remainingAudioOperations < 0) ||
 		    (remainingSceneRequests && *remainingSceneRequests < 0) ||
-		    (remainingAnimationOperations && *remainingAnimationOperations < 0))
+		    (remainingAnimationOperations &&
+		     *remainingAnimationOperations < 0) ||
+		    (remainingParticleOperations && *remainingParticleOperations < 0))
 			throw std::runtime_error("Script callback arguments are invalid.");
 		std::string messageNormalized;
 		if (callback == "message") {
@@ -442,6 +445,8 @@ bool LuaScript::Invoke(
 		call.input = &input;
 		call.actions = actions;
 		call.animations = animations;
+		call.particles = particles;
+		call.remainingParticleOperations = remainingParticleOperations;
 		call.remainingAnimationOperations = remainingAnimationOperations;
 		call.initial = &nodes;
 		call.mailbox = mailbox;

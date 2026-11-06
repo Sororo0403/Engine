@@ -16,6 +16,7 @@ class ScenePhysics;
 class ScenePrefabs;
 class ScriptMailbox;
 class SceneAnimations;
+class SceneParticles;
 struct ScriptMessage;
 struct CharacterInput;
 
@@ -48,7 +49,7 @@ class LuaScript {
 	/// <summary>
 	/// 公開するスクリプトAPIの版。Runtimeの出力互換性を照合する
 	/// </summary>
-	static constexpr int kApiVersion = 11;
+	static constexpr int kApiVersion = 12;
 	static constexpr std::size_t kMaximumSourceBytes = 256 * 1024;
 	static constexpr std::size_t kMaximumBytecodeBytes = 1024 * 1024;
 	static constexpr std::size_t kMaximumStateBytes = 64 * 1024;
@@ -135,6 +136,8 @@ class LuaScript {
 	/// <param name="actions">今回の名前付き入力。更新時だけLuaのinput.actionsへ渡す</param>
 	/// <param name="animations">指定時は同じ候補のアニメーション再生状態</param>
 	/// <param name="remainingAnimationOperations">指定時はフレームで共有する残り操作回数</param>
+	/// <param name="particles">指定時は同じ候補の粒子再生状態</param>
+	/// <param name="remainingParticleOperations">指定時はフレーム全体で共有する残り粒子操作回数</param>
 	/// <returns>true:成功またはコールバックなし false:コード・API・状態・実行制限が無効</returns>
 	static bool
 	Invoke(const LuaScriptProgram &program, std::string_view callback,
@@ -157,5 +160,7 @@ class LuaScript {
 	       const ScriptMessage *message = nullptr,
 	       std::span<const GameActionState> actions = {},
 	       SceneAnimations *animations = nullptr,
-	       int *remainingAnimationOperations = nullptr);
+	       int *remainingAnimationOperations = nullptr,
+	       SceneParticles *particles = nullptr,
+	       int *remainingParticleOperations = nullptr);
 };

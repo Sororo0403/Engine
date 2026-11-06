@@ -1,6 +1,7 @@
 #include "graphics/render/RenderSystem.h"
 #include "core/Logger.h"
 #include "graphics/render/D3D12Graphics.h"
+#include "graphics/render/ParticleRenderer.h"
 #include "graphics/render/RenderTexture.h"
 #include "graphics/ui/CanvasRenderer.h"
 #include "platform/windows/WinApp.h"
@@ -43,7 +44,8 @@ bool RenderSystem::Update(RenderWorld &world, int width, int height) {
 
 void RenderSystem::Draw(const RenderWorld &world, RenderTexture &target,
                         const float (&clearColor)[4],
-                        const CanvasRenderer *canvas) const {
+                        const CanvasRenderer *canvas,
+                        const ParticleRenderer *particles) const {
 	if (!world.Uses(graphics_) || !target.Uses(graphics_)) {
 		Logger::Error("RenderSystem::Draw: 描画基盤が異なります。");
 		return;
@@ -55,6 +57,8 @@ void RenderSystem::Draw(const RenderWorld &world, RenderTexture &target,
 	}
 
 	world.Draw(renderer_, debugRenderer_);
+	if (particles)
+		particles->Draw();
 	if (canvas)
 		canvas->Draw();
 
@@ -83,8 +87,8 @@ bool RenderSystem::Update(RenderWorld &world) {
 	return Update(world, app_.GetWidth(), app_.GetHeight());
 }
 
-void RenderSystem::Draw(const RenderWorld &world,
-                        const CanvasRenderer *canvas) const {
+void RenderSystem::Draw(const RenderWorld &world, const CanvasRenderer *canvas,
+                        const ParticleRenderer *particles) const {
 	if (!world.Uses(graphics_)) {
 		Logger::Error("RenderSystem::Draw: 描画基盤が異なります。");
 		return;
@@ -93,6 +97,8 @@ void RenderSystem::Draw(const RenderWorld &world,
 	world.DrawShadows(renderer_);
 	graphics_.BindBackBuffer();
 	world.Draw(renderer_, debugRenderer_);
+	if (particles)
+		particles->Draw();
 	if (canvas)
 		canvas->Draw();
 }
@@ -130,4 +136,8 @@ bool RenderSystem::UpdateCanvas(CanvasRenderer &canvas, const Scene &scene,
 
 std::array<int, 2> RenderSystem::GetWindowSize() const {
 	return {app_.GetWidth(), app_.GetHeight()};
+}
+
+std::unique_ptr<ParticleRenderer> RenderSystem::CreateParticles() {
+	return std::make_unique<ParticleRenderer>(graphics_, materials_);
 }

@@ -107,6 +107,8 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 				}
 		}
 
+		if (object.particleEmitter && !object.particleEmitter->IsValid())
+			add(id, "Particle Emitter settings are invalid.");
 		if (object.transformAnimation &&
 		    (!object.transformAnimation->IsValid() || object.motionPath ||
 		     object.character || object.followCamera))

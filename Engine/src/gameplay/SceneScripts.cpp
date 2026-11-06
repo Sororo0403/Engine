@@ -105,14 +105,17 @@ bool SceneScripts::Configure(const Scene &scene, bool preserve,
 	}
 }
 
-bool SceneScripts::Run(
-    Scene &scene, float seconds, const CharacterInput &input,
-    std::span<const TriggerEvent> events, bool startOnly, std::string &error,
-    SceneObjectId *invalidObject, std::span<const SceneObjectId> uiClicks,
-    ScenePhysics *physics, std::span<const CollisionEvent> collisions,
-    std::vector<SceneAudioAction> *audioActions,
-    std::filesystem::path *sceneRequest, std::string *sharedState,
-    std::span<const GameActionState> actions, SceneAnimations *animations) {
+bool SceneScripts::Run(Scene &scene, float seconds, const CharacterInput &input,
+                       std::span<const TriggerEvent> events, bool startOnly,
+                       std::string &error, SceneObjectId *invalidObject,
+                       std::span<const SceneObjectId> uiClicks,
+                       ScenePhysics *physics,
+                       std::span<const CollisionEvent> collisions,
+                       std::vector<SceneAudioAction> *audioActions,
+                       std::filesystem::path *sceneRequest,
+                       std::string *sharedState,
+                       std::span<const GameActionState> actions,
+                       SceneAnimations *animations, SceneParticles *particles) {
 	SceneObjectId current = 0;
 	try {
 		if (!std::isfinite(seconds) || seconds < 0)
@@ -127,6 +130,7 @@ bool SceneScripts::Run(
 		std::filesystem::path requestedScene;
 		int audioBudget = kFrameAudioOperations;
 		int animationBudget = 1024;
+		int particleBudget = 1024;
 		std::vector<SceneAudioAction> requestedAudio;
 		int destructionBudget = kFrameDestructions;
 		std::vector<SceneObjectId> pendingDestructions;
@@ -156,7 +160,7 @@ bool SceneScripts::Run(
 			        audioActions ? &requestedAudio : nullptr, &audioBudget,
 			        sceneRequest ? &requestedScene : nullptr, &sceneBudget,
 			        sharedState ? &game : nullptr, &mailbox_, message, actions,
-			        animations, &animationBudget))
+			        animations, &animationBudget, particles, &particleBudget))
 				throw std::runtime_error(std::format(
 				    "{} [{}]: {}", PathUtils::ToUtf8(instance.settings.asset),
 				    callback, error));

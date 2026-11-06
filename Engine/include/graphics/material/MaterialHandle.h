@@ -27,6 +27,7 @@ class MaterialHandle {
   private:
 	friend class MaterialManager;
 	friend class RenderWorld;
+	friend class ParticleRenderer;
 	std::shared_ptr<const MaterialResource> resource_;
 	ID3D12Device *device_ = nullptr;
 };

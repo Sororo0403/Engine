@@ -28,6 +28,8 @@ void SceneAssetReferences::Rewrite(
 					apply(path);
 				}
 		}
+		if (object.particleEmitter)
+			apply(object.particleEmitter->texture);
 		if (object.image)
 			apply(object.image->texture);
 		if (object.mesh)

@@ -2284,4 +2284,17 @@ exit /b 0</Command>
     <ClCompile Include="src\animation\SceneAnimations.cpp" />
     <ClCompile Include="src\scripting\LuaAnimationBindings.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\particles\ParticleEmitterComponent.h" />
+    <ClCompile Include="src\particles\ParticleEmitterComponent.cpp" />
+    <ClInclude Include="include\particles\ParticleDrawBatch.h" />
+    <ClInclude Include="include\particles\ParticlePlaybackState.h" />
+    <ClInclude Include="include\particles\SceneParticles.h" />
+    <ClCompile Include="src\particles\SceneParticles.cpp" />
+    <ClInclude Include="include\graphics\render\ParticleRenderer.h" />
+    <ClCompile Include="src\graphics\render\ParticleRenderer.cpp" />
+    <None Include="resources\shaders\particles\Particle.VS.hlsl" />
+    <None Include="resources\shaders\particles\Particle.PS.hlsl" />
+    <ClCompile Include="src\scripting\LuaParticleBindings.cpp" />
+  </ItemGroup>
 </Project>

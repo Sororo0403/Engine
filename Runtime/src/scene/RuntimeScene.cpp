@@ -98,6 +98,12 @@ bool RuntimeScene::Update(float seconds) {
 		return false;
 	}
 
+	std::vector<ParticleDrawBatch> particles;
+	if (!simulation_.GetParticles(particles, audioError)) {
+		Logger::Error(audioError);
+		return false;
+	}
+	renderer_.SetParticles(std::move(particles));
 	return renderer_.SetUIButtonVisuals(simulation_.GetUI().GetVisuals()) &&
 	       renderer_.SetLighting(config_.lighting) &&
 	       renderer_.SetCameraPose(simulation_.GetCameraPose()) &&

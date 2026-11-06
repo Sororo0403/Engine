@@ -15,7 +15,7 @@ bool SceneObject::operator==(const SceneObject &other) const {
 	       audioListener == other.audioListener &&
 	       prefabLink == other.prefabLink && motionPath == other.motionPath &&
 	       transformAnimation == other.transformAnimation &&
-	       script == other.script && canvas == other.canvas &&
-	       rectTransform == other.rectTransform && text == other.text &&
-	       image == other.image && button == other.button;
+	       particleEmitter == other.particleEmitter && script == other.script &&
+	       canvas == other.canvas && rectTransform == other.rectTransform &&
+	       text == other.text && image == other.image && button == other.button;
 }

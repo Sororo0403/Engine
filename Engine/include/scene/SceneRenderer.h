@@ -1,4 +1,5 @@
 #pragma once
+#include "particles/ParticleDrawBatch.h"
 #include "ui/UIButtonVisual.h"
 #include <vector>
 
@@ -27,6 +28,7 @@ class RenderWorld;
 class Scene;
 class RenderTexture;
 class CanvasRenderer;
+class ParticleRenderer;
 struct Ray;
 
 /// <summary>
@@ -203,6 +205,12 @@ class SceneRenderer {
 	/// </summary>
 	void ClearPrefabResources();
 
+	/// <summary>
+	/// 次の更新で描く粒子のスナップショットを受け取る
+	/// </summary>
+	/// <param name="batches">移動・物理・Luaを反映したワールド座標の粒子</param>
+	void SetParticles(std::vector<ParticleDrawBatch> batches);
+
   private:
 	/// <summary>
 	/// シーン上の物体と対応する描画物体の情報
@@ -229,6 +237,8 @@ class SceneRenderer {
 
 	std::unique_ptr<RenderWorld> world_;
 	std::unique_ptr<CanvasRenderer> canvas_;
+	std::unique_ptr<ParticleRenderer> particles_;
+	std::vector<ParticleDrawBatch> particleBatches_;
 	std::vector<std::shared_ptr<const Scene>> preparedPrefabs_;
 	bool screenUIEnabled_ = true;
 	std::vector<UIButtonVisual> buttonVisuals_;

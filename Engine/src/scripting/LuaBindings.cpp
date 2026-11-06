@@ -447,6 +447,7 @@ int LuaInternal::OpenEnvironment(lua_State *state, Call &call) {
 	LuaInternal::AddPhysicsMethods(state);
 	LuaInternal::AddAudioMethods(state);
 	AddAnimationMethods(state);
+	AddParticleMethods(state);
 	LuaInternal::AddSceneMethods(state);
 	LuaInternal::AddMessageMethods(state);
 	LuaInternal::AddPrefabMethods(state);

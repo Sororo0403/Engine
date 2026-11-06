@@ -2334,4 +2334,22 @@
     <ClCompile Include="src\animation\SceneAnimations.cpp"><Filter>src\animation</Filter></ClCompile>
     <ClCompile Include="src\scripting\LuaAnimationBindings.cpp"><Filter>src\scripting</Filter></ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Filter Include="include\particles"><UniqueIdentifier>{ADD494ED-7765-4197-8D13-02584D04A136}</UniqueIdentifier></Filter>
+    <Filter Include="src\particles"><UniqueIdentifier>{2D5A2059-3808-4E0C-BF00-19166FEC6680}</UniqueIdentifier></Filter>
+    <Filter Include="src\scripting"><UniqueIdentifier>{B5A404EE-92F1-4507-BBAA-1E1F3FD8AD6A}</UniqueIdentifier></Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\particles\ParticleEmitterComponent.h"><Filter>include\particles</Filter></ClInclude>
+    <ClCompile Include="src\particles\ParticleEmitterComponent.cpp"><Filter>src\particles</Filter></ClCompile>
+    <ClInclude Include="include\particles\ParticleDrawBatch.h"><Filter>include\particles</Filter></ClInclude>
+    <ClInclude Include="include\particles\ParticlePlaybackState.h"><Filter>include\particles</Filter></ClInclude>
+    <ClInclude Include="include\particles\SceneParticles.h"><Filter>include\particles</Filter></ClInclude>
+    <ClCompile Include="src\particles\SceneParticles.cpp"><Filter>src\particles</Filter></ClCompile>
+    <ClInclude Include="include\graphics\render\ParticleRenderer.h"><Filter>include\graphics\render</Filter></ClInclude>
+    <ClCompile Include="src\graphics\render\ParticleRenderer.cpp"><Filter>src\graphics\render</Filter></ClCompile>
+    <None Include="resources\shaders\particles\Particle.VS.hlsl" />
+    <None Include="resources\shaders\particles\Particle.PS.hlsl" />
+    <ClCompile Include="src\scripting\LuaParticleBindings.cpp"><Filter>src\scripting</Filter></ClCompile>
+  </ItemGroup>
 </Project>

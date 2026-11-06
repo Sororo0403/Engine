@@ -364,6 +364,9 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 		if (preserve ? !triggers.Update(working) : !triggers.Reset(working)) {
 			return fail(0, "Trigger world shapes or hierarchy are invalid.");
 		}
+		auto particles = particles_;
+		if (!particles.Configure(working, preserve, error, invalidObject))
+			return false;
 		auto motion = motion_;
 		if (!motion.Configure(working, preserve))
 			return fail(0, "Motion Path settings are invalid.");
@@ -383,6 +386,7 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 		controller_ = controller;
 		motion_ = std::move(motion);
 		animations_ = std::move(animations);
+		particles_ = std::move(particles);
 		physics_ = std::move(physics);
 		scripts_ = std::move(scripts);
 		ui_ = std::move(ui);
@@ -413,6 +417,7 @@ void SceneSimulation::Stop() {
 	pendingScene_.clear();
 	motion_ = SceneMotion{};
 	animations_ = SceneAnimations{};
+	particles_ = SceneParticles{};
 	physics_ = ScenePhysics{};
 	scripts_ = SceneScripts{};
 	ui_ = SceneUI{};
@@ -707,6 +712,9 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 				return false;
 			}
 		}
+		auto particles = particles_;
+		if (!particles.Advance(working, seconds, lastUpdateError_))
+			return false;
 		scene_.CopyFrom(working);
 		if (triggers) {
 			for (const auto &event : triggers->GetEvents()) {
@@ -723,6 +731,7 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 		controller_ = next;
 		motion_ = std::move(motion);
 		animations_ = std::move(animations);
+		particles_ = std::move(particles);
 		physics_ = std::move(physics);
 		world_ = std::move(world);
 		followPoses_ = std::move(follows);
