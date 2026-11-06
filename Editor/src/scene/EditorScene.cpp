@@ -5102,6 +5102,13 @@ bool EditorScene::UpdatePlaySceneView(float deltaTime, EditorAction action,
 		return true;
 	}
 
+	std::vector<ParticleDrawBatch> particles;
+	std::string particleError;
+	if (!playMode_.GetSession().GetParticles(particles, particleError)) {
+		Logger::Error(particleError);
+		return false;
+	}
+	playSceneRenderer_.SetParticles(std::move(particles));
 	if (!playSceneRenderer_.SetCameraSettings(sceneProjection_) ||
 	    !playSceneRenderer_.SetLighting(playMode_.GetLighting()) ||
 	    !playSceneRenderer_.SetCameraPose(cameraController_.GetPose()) ||

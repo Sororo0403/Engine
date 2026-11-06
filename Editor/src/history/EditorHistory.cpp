@@ -1521,6 +1521,10 @@ bool EditorHistory::HasPendingChanges() const {
 		                             std::optional<
 		                                 TransformAnimationComponent>>) {
 			    return before != object->transformAnimation;
+		    } else if constexpr (std::is_same_v<
+		                             Before,
+		                             std::optional<ParticleEmitterComponent>>) {
+			    return before != object->particleEmitter;
 		    } else if constexpr (std::is_same_v<Before,
 		                                        std::optional<ColorTint>>) {
 			    return before != object->colorTint;
@@ -1740,6 +1744,13 @@ void EditorHistory::CommitEdit() {
 		return;
 	}
 
+	if (std::holds_alternative<std::optional<ParticleEmitterComponent>>(
+	        pending_->before) &&
+	    object->particleEmitter && !object->particleEmitter->IsValid()) {
+		Invalidate();
+		return;
+	}
+
 	if (std::holds_alternative<std::optional<ColorTint>>(pending_->before) &&
 	    object->colorTint && !object->colorTint->IsValid()) {
 		Invalidate();
@@ -1840,6 +1851,11 @@ void EditorHistory::CommitEdit() {
 		                                 TransformAnimationComponent>>) {
 			    return Command{TransformAnimationCommand{
 			        objectId, before, object->transformAnimation}};
+		    } else if constexpr (std::is_same_v<
+		                             Before,
+		                             std::optional<ParticleEmitterComponent>>) {
+			    return Command{ParticleEmitterCommand{objectId, before,
+			                                          object->particleEmitter}};
 		    } else if constexpr (std::is_same_v<Before,
 		                                        std::optional<ColorTint>>) {
 			    return Command{
@@ -1933,6 +1949,10 @@ void EditorHistory::CommitEdit() {
 		                             T, std::optional<
 		                                    TransformAnimationComponent>>) {
 			    return "Edit Transform Animation";
+		    } else if constexpr (std::is_same_v<
+		                             T,
+		                             std::optional<ParticleEmitterComponent>>) {
+			    return "Edit Particle Emitter";
 		    } else if constexpr (std::is_same_v<T, std::optional<ColorTint>>) {
 			    return "Edit Color Tint";
 		    } else if constexpr (std::is_same_v<
@@ -3072,6 +3092,47 @@ bool EditorHistory::BeginTransformAnimation(SceneObjectId id) {
 	}
 
 	pending_ = PendingEdit{id, object->transformAnimation};
+	return true;
+}
+
+bool EditorHistory::SetParticleEmitter(
+    SceneObjectId id, std::optional<ParticleEmitterComponent> value) {
+	CommitEdit();
+	auto *object = scene_.FindObject(id);
+
+	if (!object || (value && !value->IsValid())) {
+		return false;
+	}
+
+	const bool adding = !object->particleEmitter;
+	ParticleEmitterCommand command{id, object->particleEmitter, value};
+
+	if (!command.HasChanges()) {
+		return true;
+	}
+
+	const auto next = PrepareAppend();
+
+	if (!command.Redo(scene_)) {
+		return false;
+	}
+
+	AppendPrepared(Command{std::move(command)}, next,
+	               !value   ? "Remove Particle Emitter"
+	               : adding ? "Add Particle Emitter"
+	                        : "Edit Particle Emitter");
+	return true;
+}
+
+bool EditorHistory::BeginParticleEmitter(SceneObjectId id) {
+	CommitEdit();
+	const auto *object = scene_.FindObject(id);
+
+	if (!object || !object->particleEmitter) {
+		return false;
+	}
+
+	pending_ = PendingEdit{id, object->particleEmitter};
 	return true;
 }
 

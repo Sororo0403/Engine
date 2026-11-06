@@ -590,6 +590,17 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 					                             path.lexically_normal());
 					path = assets.AddTexture(input, 4096);
 				}
+				if (object.particleEmitter &&
+				    !object.particleEmitter->texture.empty()) {
+					auto &path = object.particleEmitter->texture;
+					const auto input =
+					    path.is_absolute()
+					        ? path
+					        : resourceRoot / PathUtils::RelativeInside(
+					                             fs::path(L"resources"),
+					                             path.lexically_normal());
+					path = assets.AddTexture(input, 4096);
+				}
 				if (object.script && !object.script->asset.empty()) {
 					auto &path = object.script->asset;
 					const auto input =
@@ -672,6 +683,8 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 		for (const auto *shader :
 		     {L"shaders/mesh/Mesh.VS.hlsl", L"shaders/mesh/Mesh.PS.hlsl",
 		      L"shaders/mesh/Shadow.VS.hlsl",
+		      L"shaders/particles/Particle.VS.hlsl",
+		      L"shaders/particles/Particle.PS.hlsl",
 		      L"shaders/debug/DebugLine.VS.hlsl",
 		      L"shaders/debug/DebugLine.PS.hlsl"}) {
 			if (!fs::is_regular_file(runtimeRoot / L"resources/engine" /
@@ -743,6 +756,10 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 				if (object.image && !object.image->texture.empty())
 					exportedAssets.AddTexture(
 					    destination / object.image->texture, 4096);
+				if (object.particleEmitter &&
+				    !object.particleEmitter->texture.empty())
+					exportedAssets.AddTexture(
+					    destination / object.particleEmitter->texture, 4096);
 				if (object.script && !object.script->asset.empty())
 					exportedAssets.AddScript(destination /
 					                         object.script->asset);

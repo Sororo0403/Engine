@@ -115,6 +115,10 @@ AssetSources::ForScene(const Scene &scene) const {
 			    if (object.image && !object.image->texture.empty() &&
 			        Contains(directory, object.image->texture))
 				    return true;
+			    if (object.particleEmitter &&
+			        !object.particleEmitter->texture.empty() &&
+			        Contains(directory, object.particleEmitter->texture))
+				    return true;
 			    if (object.script &&
 			        std::ranges::any_of(
 			            object.script->scenes, [&](const auto &entry) {

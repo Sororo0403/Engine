@@ -12,7 +12,29 @@
 /// 編集シーンの開始時データを保持し、再生・再実行・一時停止の状態を管理する
 /// </summary>
 class EditorPlaySession {
+
   public:
+	/// <summary>
+	/// 再生用の粒子を描画用に複製する
+	/// </summary>
+	/// <param name="batches">成功時だけ置き換えるワールド座標の粒子</param>
+	/// <param name="error">失敗理由</param>
+	/// <returns>true:成功 false:階層・粒子が無効</returns>
+	bool GetParticles(std::vector<ParticleDrawBatch> &batches,
+	                  std::string &error) const {
+		return simulation_.GetParticles(batches, error);
+	}
+
+	/// <summary>
+	/// 発生元の時計と生存数を取得する
+	/// </summary>
+	/// <param name="id">再生物体ID</param>
+	/// <returns>状態。対象なしはnullopt</returns>
+	std::optional<ParticlePlaybackState>
+	GetParticleState(SceneObjectId id) const {
+		return simulation_.GetParticleState(id);
+	}
+
 	/// <summary>
 	/// 次の再生更新を待つ物体間通知の件数を取得する
 	/// </summary>

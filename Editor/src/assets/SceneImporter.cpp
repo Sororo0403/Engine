@@ -165,6 +165,8 @@ void ResolveReferences(Json &document, const fs::path &root,
 		}
 	};
 	for (auto &object : document.at("objects")) {
+		if (version >= 36 && object.contains("particleEmitter"))
+			resolve(object.at("particleEmitter").at("texture"));
 		if (version >= 30 && object.contains("image"))
 			resolve(object.at("image").at("texture"));
 		if (version >= 34 && object.contains("script"))
@@ -326,6 +328,16 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 						ValidateTexture(files.at(relative), 4096);
 					object.image->texture = AssetFolders::MakeReference(
 					    options.assetRoot, destination / relative);
+				}
+				if (object.particleEmitter &&
+				    !object.particleEmitter->texture.empty()) {
+					const auto relative =
+					    addFile(object.particleEmitter->texture);
+					if (uiTextures.insert(relative).second)
+						ValidateTexture(files.at(relative), 4096);
+					object.particleEmitter->texture =
+					    AssetFolders::MakeReference(options.assetRoot,
+					                                destination / relative);
 				}
 				if (object.script && !object.script->asset.empty()) {
 					const auto relative = addFile(object.script->asset);

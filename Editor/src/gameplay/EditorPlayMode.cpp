@@ -436,6 +436,10 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 		return true;
 	}
 
+	std::vector<ParticleDrawBatch> particles;
+	if (!session_.GetParticles(particles, lastUpdateError_))
+		return false;
+	renderer_.SetParticles(std::move(particles));
 	if (!renderer_.SetUIButtonVisuals(session_.GetUI().GetVisuals()) ||
 	    !renderer_.SetLighting(lighting_) ||
 	    !renderer_.SetCameraPose(session_.GetCameraPose()) ||

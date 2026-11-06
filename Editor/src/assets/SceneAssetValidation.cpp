@@ -91,6 +91,16 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 						            ImageValidation::Read(file, 4096);
 				            return files;
 			            }));
+		if (object.particleEmitter && !object.particleEmitter->texture.empty())
+			add("Particle Image",
+			    inspect(object.particleEmitter->texture, uiTextures,
+			            [](const auto &image) {
+				            auto files = AssetDependencies::TextureFiles(image);
+				            for (const auto &file : files)
+					            if (std::filesystem::is_regular_file(file))
+						            ImageValidation::Read(file, 4096);
+				            return files;
+			            }));
 		if (object.script)
 			for (const auto &[name, path] : object.script->scenes) {
 				if (path.empty())

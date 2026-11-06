@@ -500,4 +500,8 @@ exit /b 0</Command>
     <ClInclude Include="include\animation\TransformAnimationInspector.h" />
     <ClCompile Include="src\animation\TransformAnimationInspector.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\particles\ParticleEmitterInspector.h" />
+    <ClCompile Include="src\particles\ParticleEmitterInspector.cpp" />
+  </ItemGroup>
 </Project>

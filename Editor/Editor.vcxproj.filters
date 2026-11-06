@@ -853,4 +853,12 @@
     <ClInclude Include="include\animation\TransformAnimationInspector.h"><Filter>include\animation</Filter></ClInclude>
     <ClCompile Include="src\animation\TransformAnimationInspector.cpp"><Filter>src\animation</Filter></ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Filter Include="include\particles"><UniqueIdentifier>{2EC1A1D0-453B-439A-8ED9-CB78F3FA1C50}</UniqueIdentifier></Filter>
+    <Filter Include="src\particles"><UniqueIdentifier>{FA1452B5-31E2-4DA0-98E8-588B72220024}</UniqueIdentifier></Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\particles\ParticleEmitterInspector.h"><Filter>include\particles</Filter></ClInclude>
+    <ClCompile Include="src\particles\ParticleEmitterInspector.cpp"><Filter>src\particles</Filter></ClCompile>
+  </ItemGroup>
 </Project>

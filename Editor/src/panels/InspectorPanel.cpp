@@ -5,6 +5,7 @@
 #include "gameplay/MotionPathInspector.h"
 #include "lighting/PointLightInspector.h"
 #include "lighting/SpotLightInspector.h"
+#include "particles/ParticleEmitterInspector.h"
 #include "physics/RigidBodyInspector.h"
 #include "scene/SceneActivity.h"
 #include "ui/UIInspector.h"
@@ -383,6 +384,10 @@ bool InspectorPanel::Draw(
 	           : std::span<const std::filesystem::path>{});
 	changed |=
 	    MotionPathInspector{}.Draw(ui, inspectedObjectId, *object, history);
+	changed |= ParticleEmitterInspector{}.Draw(
+	    ui, inspectedObjectId, *object, history,
+	    assets ? std::span<const std::filesystem::path>{assets->GetTextures()}
+	           : std::span<const std::filesystem::path>{});
 	changed |= TransformAnimationInspector{}.Draw(ui, inspectedObjectId,
 	                                              *object, history);
 
@@ -485,6 +490,9 @@ bool InspectorPanel::Draw(
 		if (ui.MenuItem("Lua Script", nullptr, !object->script))
 			changed |= history.SetScript(inspectedObjectId, ScriptComponent{});
 
+		if (ui.MenuItem("Particle Emitter", nullptr, !object->particleEmitter))
+			changed |= history.SetParticleEmitter(inspectedObjectId,
+			                                      ParticleEmitterComponent{});
 		if (ui.MenuItem("Transform Animation", nullptr,
 		                !object->transformAnimation))
 			changed |= history.SetTransformAnimation(
@@ -852,6 +860,7 @@ std::optional<Transform> InspectorPanel::DrawReadOnly(
 	SpotLightInspector{}.DrawReadOnly(ui, *object);
 	MotionPathInspector{}.DrawReadOnly(ui, *object);
 	TransformAnimationInspector{}.DrawReadOnly(ui, *object);
+	ParticleEmitterInspector{}.DrawReadOnly(ui, *object);
 
 	TriggerActionsInspector{}.DrawReadOnly(ui, scene, *object);
 
