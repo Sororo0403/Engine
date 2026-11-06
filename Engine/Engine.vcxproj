@@ -374,9 +374,16 @@ exit /b 0</Command>
   <ItemGroup>
     <ClInclude Include="include\audio\AudioClipHandle.h" />
     <ClInclude Include="include\audio\AudioClipManager.h" />
+    <ClInclude Include="include\audio\AudioPlaybackHandle.h" />
+    <ClInclude Include="include\audio\AudioSettings.h" />
+    <ClInclude Include="include\audio\AudioSystem.h" />
     <ClInclude Include="include\audio\WaveData.h" />
     <ClInclude Include="include\audio\WaveReader.h" />
     <ClCompile Include="src\audio\AudioClipManager.cpp" />
+    <ClCompile Include="src\audio\AudioSettings.cpp" />
+    <ClCompile Include="src\audio\AudioSystem.cpp" />
+    <ClCompile Include="src\audio\SpatialAudio.cpp" />
+    <ClInclude Include="src\audio\SpatialAudio.h" />
     <ClCompile Include="src\audio\WaveData.cpp" />
     <ClCompile Include="src\audio\WaveReader.cpp" />
   </ItemGroup>

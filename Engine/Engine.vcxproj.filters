@@ -673,9 +673,16 @@
     <Filter Include="src\audio"><UniqueIdentifier>{d3c155a1-b582-4d30-827f-7e98e0417155}</UniqueIdentifier></Filter>
     <ClInclude Include="include\audio\AudioClipHandle.h"><Filter>include\audio</Filter></ClInclude>
     <ClInclude Include="include\audio\AudioClipManager.h"><Filter>include\audio</Filter></ClInclude>
+    <ClInclude Include="include\audio\AudioPlaybackHandle.h"><Filter>include\audio</Filter></ClInclude>
+    <ClInclude Include="include\audio\AudioSettings.h"><Filter>include\audio</Filter></ClInclude>
+    <ClInclude Include="include\audio\AudioSystem.h"><Filter>include\audio</Filter></ClInclude>
     <ClInclude Include="include\audio\WaveData.h"><Filter>include\audio</Filter></ClInclude>
     <ClInclude Include="include\audio\WaveReader.h"><Filter>include\audio</Filter></ClInclude>
     <ClCompile Include="src\audio\AudioClipManager.cpp"><Filter>src\audio</Filter></ClCompile>
+    <ClCompile Include="src\audio\AudioSettings.cpp"><Filter>src\audio</Filter></ClCompile>
+    <ClCompile Include="src\audio\AudioSystem.cpp"><Filter>src\audio</Filter></ClCompile>
+    <ClCompile Include="src\audio\SpatialAudio.cpp"><Filter>src\audio</Filter></ClCompile>
+    <ClInclude Include="src\audio\SpatialAudio.h"><Filter>src\audio</Filter></ClInclude>
     <ClCompile Include="src\audio\WaveData.cpp"><Filter>src\audio</Filter></ClCompile>
     <ClCompile Include="src\audio\WaveReader.cpp"><Filter>src\audio</Filter></ClCompile>
   </ItemGroup>
