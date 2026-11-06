@@ -4,6 +4,7 @@
 #include "gameplay/CharacterRuntimeState.h"
 #include "gameplay/FollowCameraOrbit.h"
 #include "gameplay/SceneMotion.h"
+#include "gameplay/ScenePhysics.h"
 #include "gameplay/SceneScripts.h"
 #include "graphics/camera/CameraPose.h"
 #include "physics/CollisionWorld.h"
@@ -98,6 +99,13 @@ class SceneSimulation {
 	/// </summary>
 	/// <returns>再生中の主人公の値。停止中、または主人公なしの場合はnullopt</returns>
 	std::optional<CharacterRuntimeState> GetCharacterState() const;
+
+	/// <summary>
+	/// 有効なRigid Bodyの現在のワールド姿勢・速度・休止状態を取得する
+	/// </summary>
+	/// <param name="id">再生用シーンの物体ID</param>
+	/// <returns>実行中の剛体状態。対象なし・無効・停止中はnullopt</returns>
+	std::optional<RigidBodyState> GetRigidBodyState(SceneObjectId id) const;
 
 	/// <summary>
 	/// Rendererから参照できる、アドレスが変わらない再生用シーンを取得する
@@ -294,6 +302,7 @@ class SceneSimulation {
 	TriggerWorld triggers_;
 	CharacterController controller_;
 	SceneMotion motion_;
+	ScenePhysics physics_;
 	SceneScripts scripts_;
 	SceneUI ui_;
 	SceneObjectId character_ = 0, camera_ = 0;

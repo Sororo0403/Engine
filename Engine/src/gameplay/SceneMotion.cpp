@@ -44,6 +44,9 @@ bool CheckBranch(const Scene &before, const Scene &after,
 	blocked = false;
 	for (auto id : branch) {
 		const auto &object = *before.FindObject(id);
+		if (object.rigidBody && object.rigidBody->enabled &&
+		    !object.rigidBody->isKinematic)
+			continue;
 		if (!object.collider || object.collider->isTrigger ||
 		    !SceneActivity::IsActive(before, id) ||
 		    std::ranges::find(characterBranch, id) != characterBranch.end())
@@ -206,6 +209,11 @@ bool SceneMotion::Advance(Scene &scene, float seconds,
 			if (carried)
 				ignored.insert(ignored.end(), characterBranch.begin(),
 				               characterBranch.end());
+			// 動的な箱は剛体ワールド側で移動床から力を受ける。
+			for (const auto &[bodyId, body] : scene.GetObjects())
+				if (body.rigidBody && body.rigidBody->enabled &&
+				    !body.rigidBody->isKinematic)
+					ignored.push_back(bodyId);
 			CollisionWorld obstacles;
 			if (!obstacles.Rebuild(scene, ignored))
 				return false;

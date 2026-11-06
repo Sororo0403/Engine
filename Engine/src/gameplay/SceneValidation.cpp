@@ -1,4 +1,5 @@
 #include "gameplay/SceneValidation.h"
+#include "gameplay/ScenePhysics.h"
 #include "ui/CanvasLayout.h"
 
 #include "gameplay/CharacterController.h"
@@ -54,6 +55,10 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 	                                      &invalidLight)) {
 		add(invalidLight, lightError);
 	}
+	std::string physicsError;
+	SceneObjectId invalidPhysics = 0;
+	if (!ScenePhysics::Validate(scene, physicsError, &invalidPhysics))
+		add(invalidPhysics, physicsError);
 	std::vector<UIElement> uiElements;
 	std::string uiError;
 	SceneObjectId invalidUI = 0;

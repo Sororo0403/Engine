@@ -2220,4 +2220,20 @@
       <Filter>external\jolt</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\scene\SceneRigidBodySerializer.h">
+      <Filter>src\scene</Filter>
+    </ClInclude>
+    <ClCompile Include="src\scene\SceneRigidBodySerializer.cpp">
+      <Filter>src\scene</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\gameplay\ScenePhysics.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
+    <ClCompile Include="src\gameplay\ScenePhysics.cpp">
+      <Filter>src\gameplay</Filter>
+    </ClCompile>
+  </ItemGroup>
 </Project>

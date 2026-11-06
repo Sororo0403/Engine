@@ -1815,6 +1815,14 @@ exit /b 0</Command>
   <ItemGroup>
     <ClInclude Include="external\jolt\src\Jolt\Shaders\ShaderCore.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\scene\SceneRigidBodySerializer.h" />
+    <ClCompile Include="src\scene\SceneRigidBodySerializer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\gameplay\ScenePhysics.h"></ClInclude>
+    <ClCompile Include="src\gameplay\ScenePhysics.cpp"></ClCompile>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
 

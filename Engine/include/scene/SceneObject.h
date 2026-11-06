@@ -14,6 +14,7 @@
 #include "graphics/material/ColorTint.h"
 #include "math/Transform.h"
 #include "physics/BoxCollider.h"
+#include "physics/RigidBodySettings.h"
 #include "scene/AudioListenerComponent.h"
 #include "scene/AudioSourceComponent.h"
 #include "scene/CameraComponent.h"
@@ -48,6 +49,8 @@ struct SceneObject {
 
 	// 指定した物体は衝突判定に使用する。未指定の場合は衝突形状を持たない
 	std::optional<BoxCollider> collider;
+	// 重力や衝突で動く剛体。Box Colliderと組み合わせて使用する
+	std::optional<RigidBodySettings> rigidBody;
 
 	// 再生時に入力・重力で動かす物体。衝突形状も必要
 	std::optional<CharacterSettings> character;

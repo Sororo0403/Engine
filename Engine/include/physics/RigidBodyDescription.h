@@ -15,4 +15,6 @@ struct RigidBodyDescription {
 	BoxCollider collider{};
 	// 未指定または無効化した設定は静的な障害物として扱う
 	std::optional<RigidBodySettings> rigidBody;
+	// シーンの再構成時に、継続する動的な物体の休止状態を引き継ぐ
+	bool startSleeping = false;
 };

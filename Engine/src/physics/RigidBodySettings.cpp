@@ -11,10 +11,11 @@ bool RigidBodySettings::IsValid() const {
 		return range(v.x, -limit, limit) && range(v.y, -limit, limit) &&
 		       range(v.z, -limit, limit) && length <= double(limit) * limit;
 	};
-	return range(mass, 0.001f, 1000000.0f) && range(friction, 0, 1) &&
+	return range(mass, kMinimumMass, kMaximumMass) && range(friction, 0, 1) &&
 	       range(restitution, 0, 1) && range(gravityFactor, 0, 10) &&
 	       range(linearDamping, 0, 1) && range(angularDamping, 0, 1) &&
-	       velocity(linearVelocity, 500) && velocity(angularVelocity, 100);
+	       velocity(linearVelocity, kMaximumLinearSpeed) &&
+	       velocity(angularVelocity, kMaximumAngularSpeed);
 }
 
 bool RigidBodySettings::operator==(const RigidBodySettings &other) const {

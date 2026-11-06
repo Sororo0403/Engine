@@ -14,6 +14,7 @@ void SceneSimulation::CopyFrom(const SceneSimulation &source) {
 	triggers_ = source.triggers_;
 	controller_ = source.controller_;
 	motion_ = source.motion_;
+	physics_ = source.physics_;
 	scripts_ = source.scripts_;
 	ui_ = source.ui_;
 	character_ = source.character_;
@@ -45,6 +46,7 @@ void SceneSimulation::Adopt(SceneSimulation &source) {
 	triggers_ = std::move(source.triggers_);
 	controller_ = source.controller_;
 	motion_ = std::move(source.motion_);
+	physics_ = std::move(source.physics_);
 	scripts_ = std::move(source.scripts_);
 	ui_ = std::move(source.ui_);
 	character_ = source.character_;

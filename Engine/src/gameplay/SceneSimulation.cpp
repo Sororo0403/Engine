@@ -230,10 +230,13 @@ bool SceneSimulation::Configure(const Scene &source, std::string &error,
 		    !SceneHierarchy::GetSubtree(working, character, ignored)) {
 			return fail(character, "Character hierarchy is invalid.");
 		}
+		auto physics = preserve ? physics_ : ScenePhysics{};
+		if (!physics.Configure(working, preserve, error, invalidObject))
+			return false;
 		CollisionWorld world;
 		SceneObjectId invalidCollider = 0;
 		if (!world.Rebuild(working, std::span<const SceneObjectId>{ignored},
-		                   &invalidCollider)) {
+		                   &invalidCollider, physics.GetWorld())) {
 			return fail(
 			    invalidCollider,
 			    "Box Collider cannot be represented at its world transform.");
@@ -340,6 +343,7 @@ bool SceneSimulation::Configure(const Scene &source, std::string &error,
 		triggers_ = std::move(triggers);
 		controller_ = controller;
 		motion_ = std::move(motion);
+		physics_ = std::move(physics);
 		scripts_ = std::move(scripts);
 		ui_ = std::move(ui);
 		character_ = character;
@@ -367,6 +371,7 @@ void SceneSimulation::Stop() {
 	playing_ = false;
 	pendingScene_.clear();
 	motion_ = SceneMotion{};
+	physics_ = ScenePhysics{};
 	scripts_ = SceneScripts{};
 	ui_ = SceneUI{};
 	frameEvents_.clear();
@@ -440,8 +445,10 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 		        ? OrbitCameraInput{}
 		        : cameraInput;
 		if (!working.Advance(seconds, controls, orbit)) {
-			lastUpdateError_ = "Simulation update failed. Check active physics "
-			                   "and camera settings.";
+			lastUpdateError_ = working.lastUpdateError_.empty()
+			                       ? "Simulation update failed. Check active "
+			                         "physics and camera settings."
+			                       : working.lastUpdateError_;
 			return false;
 		}
 		std::string error;
@@ -473,6 +480,7 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
                               const OrbitCameraInput &cameraInput) {
 	if (!playing_ || !std::isfinite(seconds) || seconds < 0)
 		return false;
+	lastUpdateError_.clear();
 	try {
 		Scene working;
 		working.ReplaceObjects(scene_.GetObjects());
@@ -486,6 +494,12 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 		                    character_, triggers ? &*triggers : nullptr,
 		                    triggers ? &motionEvents : nullptr))
 			return false;
+		auto physics = physics_;
+		std::string physicsError;
+		if (!physics.Advance(working, seconds, physicsError)) {
+			lastUpdateError_ = std::move(physicsError);
+			return false;
+		}
 		auto follows = followPoses_;
 		auto orbits = orbitStates_;
 		if (const auto found = orbits.find(camera_);
@@ -507,11 +521,22 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 				return false;
 			if (!SceneActivity::IsActive(working, id))
 				continue;
+			// 親の追従・移動を反映した後も、動的な剛体のワールド姿勢を保持する。
+			if (object->rigidBody && object->rigidBody->enabled) {
+				const auto *physicalWorld = physics.GetWorld();
+				const auto state =
+				    physicalWorld ? physicalWorld->GetState(id) : std::nullopt;
+				if (!state || !SceneHierarchy::SetWorldPose(
+				                  working, id, state->transform.translation,
+				                  state->transform.rotation))
+					return false;
+			}
 			if (id == character_) {
 				SceneWorldTransform transform;
 				if (!object->collider || !object->character ||
 				    !world.Rebuild(working,
-				                   std::span<const SceneObjectId>{ignored}) ||
+				                   std::span<const SceneObjectId>{ignored},
+				                   nullptr, physics.GetWorld()) ||
 				    !SceneHierarchy::GetWorldTransform(working, id,
 				                                       transform) ||
 				    !next.SynchronizeWorldMatrix(transform.matrix, world) ||
@@ -585,7 +610,8 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 				return false;
 		}
 		// 全更新の成功後に確定し、失敗したフレームは位置・速度・追従状態を保持する。
-		if (!world.Rebuild(working, std::span<const SceneObjectId>{ignored}))
+		if (!world.Rebuild(working, std::span<const SceneObjectId>{ignored},
+		                   nullptr, physics.GetWorld()))
 			return false;
 		if (character_) {
 			SceneWorldTransform transform;
@@ -618,6 +644,7 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 		}
 		controller_ = next;
 		motion_ = std::move(motion);
+		physics_ = std::move(physics);
 		world_ = std::move(world);
 		followPoses_ = std::move(follows);
 		orbitStates_ = std::move(orbits);
@@ -651,4 +678,15 @@ SceneSimulation::GetCharacterState() const {
 	                             respawnCount_,
 	                             lastRespawnPosition_,
 	                             groundObject};
+}
+
+std::optional<RigidBodyState>
+SceneSimulation::GetRigidBodyState(SceneObjectId id) const {
+	const auto *object = scene_.FindObject(id);
+	const auto *world = physics_.GetWorld();
+	return playing_ && world && object && object->rigidBody &&
+	               object->rigidBody->enabled &&
+	               SceneActivity::IsActive(scene_, id)
+	           ? world->GetState(id)
+	           : std::nullopt;
 }

@@ -101,14 +101,16 @@ bool SweepAgainstBox(const Vector &minimum, const Vector &maximum,
 } // namespace
 
 bool CollisionWorld::Rebuild(const Scene &scene, SceneObjectId ignoredObject,
-                             SceneObjectId *invalidObject) {
+                             SceneObjectId *invalidObject,
+                             const RigidBodyWorld *rigidBodies) {
 	return Rebuild(scene, std::span<const SceneObjectId>{&ignoredObject, 1},
-	               invalidObject);
+	               invalidObject, rigidBodies);
 }
 
 bool CollisionWorld::Rebuild(const Scene &scene,
                              std::span<const SceneObjectId> ignoredObjects,
-                             SceneObjectId *invalidObject) {
+                             SceneObjectId *invalidObject,
+                             const RigidBodyWorld *rigidBodies) {
 	if (invalidObject) {
 		*invalidObject = 0;
 	}
@@ -146,6 +148,13 @@ bool CollisionWorld::Rebuild(const Scene &scene,
 		}
 	}
 
+	std::vector<SceneObjectId> ignored(ignoredObjects.begin(),
+	                                   ignoredObjects.end());
+	std::optional<RigidBodyWorld> physics;
+	if (rigidBodies)
+		physics = *rigidBodies;
+	rigidBodies_.swap(physics);
+	ignoredBodies_.swap(ignored);
 	obstacles_.swap(candidate);
 	return true;
 }
@@ -156,6 +165,9 @@ bool CollisionWorld::CanPlace(
 	if (!Valid(body) || (filter && !filter->IsValid())) {
 		return false;
 	}
+
+	if (rigidBodies_)
+		return rigidBodies_->CanPlace(body, ignoredBodies_, filter);
 
 	for (const auto &obstacle : obstacles_) {
 		if ((!filter || filter->CanCollide(obstacle.filter)) &&
@@ -219,6 +231,10 @@ bool CollisionWorld::Sweep(const AxisAlignedBox &body,
 		return false;
 	}
 
+	if (rigidBodies_)
+		return rigidBodies_->Sweep(body, displacement, result, ignoredBodies_,
+		                           filter);
+
 	const auto minimum = ToVector(body.minimum),
 	           maximum = ToVector(body.maximum),
 	           movement = ToVector(displacement);
@@ -254,6 +270,9 @@ bool CollisionWorld::Move(const AxisAlignedBox &body,
 	if (!CanPlace(body, filter) || !MathUtils::IsFinite(displacement)) {
 		return false;
 	}
+
+	if (rigidBodies_)
+		return MoveRigid(body, displacement, result, filter);
 
 	Vector moved{}, remaining = ToVector(displacement);
 	const auto initialMin = ToVector(body.minimum),
@@ -344,5 +363,63 @@ bool CollisionWorld::Move(const AxisAlignedBox &body,
 	                          static_cast<float>(moved[1]),
 	                          static_cast<float>(moved[2])};
 	result = candidate;
+	return true;
+}
+
+bool CollisionWorld::MoveRigid(
+    const AxisAlignedBox &body, const DirectX::XMFLOAT3 &displacement,
+    CollisionMoveResult &result,
+    const std::optional<CollisionFilter> &filter) const {
+	DirectX::XMFLOAT3 moved{}, remaining = displacement;
+	CollisionMoveResult next;
+	for (int iteration = 0; iteration < kMaximumSlideIterations; ++iteration) {
+		auto box = body;
+		box.minimum = {body.minimum.x + moved.x, body.minimum.y + moved.y,
+		               body.minimum.z + moved.z};
+		box.maximum = {body.maximum.x + moved.x, body.maximum.y + moved.y,
+		               body.maximum.z + moved.z};
+		CollisionSweepResult hit;
+		if (!rigidBodies_->Sweep(box, remaining, hit, ignoredBodies_, filter))
+			return false;
+		const double length = std::sqrt(double(remaining.x) * remaining.x +
+		                                double(remaining.y) * remaining.y +
+		                                double(remaining.z) * remaining.z);
+		if (length < 0.0000001)
+			break;
+		const float fraction =
+		    hit.objectId
+		        ? static_cast<float>(
+		              (std::max)(0.0, hit.fraction - kSkinWidth / length))
+		        : 1;
+		moved.x += remaining.x * fraction;
+		moved.y += remaining.y * fraction;
+		moved.z += remaining.z * fraction;
+		if (!hit.objectId)
+			break;
+		next.grounded |= hit.normal.y > .5f && remaining.y < 0;
+		next.hitCeiling |= hit.normal.y < -.5f && remaining.y > 0;
+		next.hitWall |= std::abs(hit.normal.y) <= .5f;
+		remaining.x *= 1 - fraction;
+		remaining.y *= 1 - fraction;
+		remaining.z *= 1 - fraction;
+		const float into = remaining.x * hit.normal.x +
+		                   remaining.y * hit.normal.y +
+		                   remaining.z * hit.normal.z;
+		if (into < 0) {
+			remaining.x -= hit.normal.x * into;
+			remaining.y -= hit.normal.y * into;
+			remaining.z -= hit.normal.z * into;
+		} else
+			break;
+	}
+	auto finalBox = body;
+	finalBox.minimum = {body.minimum.x + moved.x, body.minimum.y + moved.y,
+	                    body.minimum.z + moved.z};
+	finalBox.maximum = {body.maximum.x + moved.x, body.maximum.y + moved.y,
+	                    body.maximum.z + moved.z};
+	if (!rigidBodies_->CanPlace(finalBox, ignoredBodies_, filter))
+		return false;
+	next.displacement = moved;
+	result = next;
 	return true;
 }

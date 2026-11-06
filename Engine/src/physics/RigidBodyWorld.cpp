@@ -6,9 +6,14 @@
 #include <Jolt/Core/Factory.h>
 #include <Jolt/Core/JobSystemSingleThreaded.h>
 #include <Jolt/Core/TempAllocator.h>
+#include <Jolt/Physics/Body/Body.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
+#include <Jolt/Physics/Body/BodyFilter.h>
+#include <Jolt/Physics/Collision/CollisionCollectorImpl.h>
 #include <Jolt/Physics/Collision/GroupFilterTable.h>
+#include <Jolt/Physics/Collision/NarrowPhaseQuery.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
+#include <Jolt/Physics/Collision/ShapeCast.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Physics/StateRecorderImpl.h>
 #include <Jolt/RegisterTypes.h>
@@ -243,9 +248,10 @@ struct RigidBodyWorld::Impl {
 			                              ? JPH::EMotionQuality::LinearCast
 			                              : JPH::EMotionQuality::Discrete;
 			const auto id = interface.CreateAndAddBody(
-			    settings, motion == JPH::EMotionType::Static
-			                  ? JPH::EActivation::DontActivate
-			                  : JPH::EActivation::Activate);
+			    settings,
+			    (motion == JPH::EMotionType::Static || d.startSleeping)
+			        ? JPH::EActivation::DontActivate
+			        : JPH::EActivation::Activate);
 			if (id.IsInvalid())
 				throw std::runtime_error(
 				    "The rigid body count limit was reached.");
@@ -502,6 +508,123 @@ bool RigidBodyWorld::SetVelocity(SceneObjectId id,
 		return true;
 	} catch (const std::exception &exception) {
 		error = exception.what();
+		return false;
+	}
+}
+
+namespace {
+/// <summary>
+/// 問い合わせ用の箱を、正の半径と中心へ変換する
+/// </summary>
+/// <param name="box">ワールド軸に沿った箱</param>
+/// <param name="center">成功時に設定する中心</param>
+/// <param name="half">成功時に設定する半径</param>
+/// <returns>true:変換成功 false:非有限値、範囲外、または潰れた箱</returns>
+bool QueryBox(const AxisAlignedBox &box, JPH::Vec3 &center, JPH::Vec3 &half) {
+	if (!Position(box.minimum) || !Position(box.maximum))
+		return false;
+	half = (Vector(box.maximum) - Vector(box.minimum)) * .5f;
+	center = Vector(box.minimum) + half;
+	return half.GetX() > 0.000001f && half.GetY() > 0.000001f &&
+	       half.GetZ() > 0.000001f;
+}
+
+/// <summary>
+/// 自分自身と対象外のレイヤーを、Joltの形状問い合わせから除く
+/// </summary>
+class QueryBodies final : public JPH::BodyFilter {
+  public:
+	const std::map<SceneObjectId, std::pair<JPH::BodyID, std::size_t>> &bodies;
+	const std::vector<RigidBodyDescription> &descriptions;
+	std::span<const SceneObjectId> ignored;
+	const std::optional<CollisionFilter> &filter;
+
+	QueryBodies(const auto &entries, const auto &source,
+	            std::span<const SceneObjectId> skip,
+	            const std::optional<CollisionFilter> &collision)
+	    : bodies(entries), descriptions(source), ignored(skip),
+	      filter(collision) {
+	}
+
+	bool ShouldCollideLocked(const JPH::Body &body) const override {
+		const auto id = body.GetUserData();
+		const auto found = bodies.find(id);
+		return found != bodies.end() &&
+		       std::ranges::find(ignored, id) == ignored.end() &&
+		       (!filter ||
+		        filter->CanCollide(
+		            descriptions[found->second.second].collider.filter));
+	}
+};
+} // namespace
+
+bool RigidBodyWorld::CanPlace(
+    const AxisAlignedBox &box, std::span<const SceneObjectId> ignored,
+    const std::optional<CollisionFilter> &filter) const {
+	try {
+		JPH::Vec3 center, half;
+		if (!impl_ || !QueryBox(box, center, half) ||
+		    (filter && !filter->IsValid()))
+			return false;
+		JPH::BoxShape shape(half, 0);
+		JPH::CollideShapeSettings settings;
+		settings.mCollisionTolerance = 0.000001f;
+		settings.mPenetrationTolerance = 0.000001f;
+		JPH::AllHitCollisionCollector<JPH::CollideShapeCollector> contacts;
+		QueryBodies bodies(impl_->bodies, impl_->descriptions, ignored, filter);
+		impl_->system.GetNarrowPhaseQuery().CollideShape(
+		    &shape, JPH::Vec3::sReplicate(1), JPH::RMat44::sTranslation(center),
+		    settings, center, contacts, {}, {}, bodies);
+		// 面への接触とGJKの数値誤差だけでは配置を拒否しない。
+		return std::ranges::none_of(contacts.mHits, [](const auto &hit) {
+			return hit.mPenetrationDepth > 0.00001f;
+		});
+	} catch (const std::exception &) {
+		return false;
+	}
+}
+
+bool RigidBodyWorld::Sweep(const AxisAlignedBox &box,
+                           const DirectX::XMFLOAT3 &displacement,
+                           CollisionSweepResult &result,
+                           std::span<const SceneObjectId> ignored,
+                           const std::optional<CollisionFilter> &filter) const {
+	try {
+		JPH::Vec3 center, half;
+		if (!impl_ || !QueryBox(box, center, half) || !Position(displacement) ||
+		    (filter && !filter->IsValid()))
+			return false;
+		JPH::BoxShape shape(half, 0);
+		JPH::ShapeCastSettings settings;
+		settings.mCollisionTolerance = 0.000001f;
+		settings.mPenetrationTolerance = 0.000001f;
+		settings.mReturnDeepestPoint = true;
+		settings.SetBackFaceMode(JPH::EBackFaceMode::CollideWithBackFaces);
+		JPH::AllHitCollisionCollector<JPH::CastShapeCollector> contacts;
+		QueryBodies bodies(impl_->bodies, impl_->descriptions, ignored, filter);
+		impl_->system.GetNarrowPhaseQuery().CastShape(
+		    JPH::RShapeCast(&shape, JPH::Vec3::sReplicate(1),
+		                    JPH::RMat44::sTranslation(center),
+		                    Vector(displacement)),
+		    settings, center, contacts, {}, {}, bodies);
+		CollisionSweepResult next;
+		for (const auto &hit : contacts.mHits) {
+			const auto normal =
+			    -hit.mPenetrationAxis.NormalizedOr(JPH::Vec3::sAxisY());
+			if (hit.mPenetrationDepth <= 0.00001f &&
+			    normal.Dot(Vector(displacement)) >= -0.0000001f)
+				continue;
+			const auto id =
+			    impl_->system.GetBodyInterface().GetUserData(hit.mBodyID2);
+			const double fraction =
+			    (std::max)(0.0, static_cast<double>(hit.mFraction));
+			if (!next.objectId || fraction < next.fraction ||
+			    (fraction == next.fraction && id < next.objectId))
+				next = {id, fraction, Vector(normal)};
+		}
+		result = next;
+		return true;
+	} catch (const std::exception &) {
 		return false;
 	}
 }

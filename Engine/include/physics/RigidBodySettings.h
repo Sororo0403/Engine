@@ -7,6 +7,10 @@
 /// 箱型の剛体に使用する質量・摩擦・反発と、開始時の速度を保持する
 /// </summary>
 struct RigidBodySettings {
+	static constexpr float kMinimumMass = 0.001f;
+	static constexpr float kMaximumMass = 1000000.0f;
+	static constexpr float kMaximumLinearSpeed = 500.0f;
+	static constexpr float kMaximumAngularSpeed = 100.0f;
 	bool enabled = true;
 	// 有効時は重力や衝突の力で動かず、指定した姿勢まで移動する
 	bool isKinematic = false;

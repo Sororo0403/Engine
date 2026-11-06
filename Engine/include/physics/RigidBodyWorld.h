@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "physics/AxisAlignedBox.h"
+#include "physics/CollisionSweepResult.h"
 #include "physics/RigidBodyDescription.h"
 #include "physics/RigidBodyState.h"
 #include <memory>
@@ -83,6 +85,33 @@ class RigidBodyWorld {
 	/// <returns>true:成功 false:対象や速度が無効</returns>
 	bool SetVelocity(SceneObjectId id, const DirectX::XMFLOAT3 &linear,
 	                 const DirectX::XMFLOAT3 &angular, std::string &error);
+
+	/// <summary>
+	/// 箱を現在の剛体形状と重ならずに配置できるか確認する
+	/// </summary>
+	/// <param name="box">ワールド軸に沿った問い合わせ用の箱</param>
+	/// <param name="ignored">判定から除く物体ID</param>
+	/// <param name="filter">指定時は相互の衝突マスクも確認する</param>
+	/// <returns>true:配置可能 false:重なり、無効な値、または未作成</returns>
+	bool
+	CanPlace(const AxisAlignedBox &box,
+	         std::span<const SceneObjectId> ignored = {},
+	         const std::optional<CollisionFilter> &filter = std::nullopt) const;
+
+	/// <summary>
+	/// 箱を直線移動したときの最初の接触位置と、剛体の実際の面の法線を調べる
+	/// </summary>
+	/// <param name="box">移動前の問い合わせ用の箱</param>
+	/// <param name="displacement">ワールド座標の移動量</param>
+	/// <param name="result">成功時に置き換える結果。同時の接触では小さいIDを優先する</param>
+	/// <param name="ignored">判定から除く物体ID</param>
+	/// <param name="filter">指定時は相互の衝突マスクも確認する</param>
+	/// <returns>true:検索成功 false:未作成または値が無効。失敗時は出力を保持する</returns>
+	bool
+	Sweep(const AxisAlignedBox &box, const DirectX::XMFLOAT3 &displacement,
+	      CollisionSweepResult &result,
+	      std::span<const SceneObjectId> ignored = {},
+	      const std::optional<CollisionFilter> &filter = std::nullopt) const;
 
   private:
 	struct Impl;

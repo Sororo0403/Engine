@@ -4,6 +4,7 @@
 #include "physics/CollisionFilter.h"
 #include "physics/CollisionMoveResult.h"
 #include "physics/CollisionSweepResult.h"
+#include "physics/RigidBodyWorld.h"
 #include "scene/SceneObjectId.h"
 
 #include <optional>
@@ -23,9 +24,11 @@ class CollisionWorld {
 	/// <param name="scene">静的な障害物の設定を持つシーン</param>
 	/// <param name="ignoredObject">主人公など、障害物から除くID。0は除外なし</param>
 	/// <param name="invalidObject">指定時は無効な形状の物体IDを設定する。成功時は0</param>
+	/// <param name="rigidBodies">指定時はコピーした剛体形状で移動・重なりを判定する</param>
 	/// <returns>true:成功 false:形状が無効。失敗時は現在の障害物を保持する</returns>
 	bool Rebuild(const Scene &scene, SceneObjectId ignoredObject = 0,
-	             SceneObjectId *invalidObject = nullptr);
+	             SceneObjectId *invalidObject = nullptr,
+	             const RigidBodyWorld *rigidBodies = nullptr);
 
 	/// <summary>
 	/// 複数の物体とTriggerを障害物から除外してワールドを作る。描画の表示状態には依存しない
@@ -33,10 +36,12 @@ class CollisionWorld {
 	/// <param name="scene">障害物の設定を持つシーン</param>
 	/// <param name="ignoredObjects">除外するID一覧。重複や不在IDは無視する</param>
 	/// <param name="invalidObject">指定時は無効な形状のIDを設定する。成功時は0</param>
+	/// <param name="rigidBodies">指定時はコピーした剛体形状で移動・重なりを判定する</param>
 	/// <returns>true:成功 false:形状が無効。失敗時は現在の障害物を保持する</returns>
 	bool Rebuild(const Scene &scene,
 	             std::span<const SceneObjectId> ignoredObjects,
-	             SceneObjectId *invalidObject = nullptr);
+	             SceneObjectId *invalidObject = nullptr,
+	             const RigidBodyWorld *rigidBodies = nullptr);
 
 	/// <summary>
 	/// 有効なボックスを障害物と重ならず配置できるか確認する。面への接触は許可する
@@ -94,6 +99,16 @@ class CollisionWorld {
 	     const std::optional<CollisionFilter> &filter = std::nullopt) const;
 
   private:
+	/// <summary>
+	/// 剛体の面の法線で滑り方向を決め、回転した箱との移動を判定する
+	/// </summary>
+	bool MoveRigid(const AxisAlignedBox &body,
+	               const DirectX::XMFLOAT3 &displacement,
+	               CollisionMoveResult &result,
+	               const std::optional<CollisionFilter> &filter) const;
+	std::optional<RigidBodyWorld> rigidBodies_;
+	std::vector<SceneObjectId> ignoredBodies_;
+
 	/// <summary>
 	/// 衝突形状と、それを持つ物体の対応
 	/// </summary>

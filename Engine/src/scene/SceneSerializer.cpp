@@ -1,5 +1,6 @@
 #include "scene/SceneSerializer.h"
 #include "LegacyMaterial.h"
+#include "SceneRigidBodySerializer.h"
 #include "SceneUISerializer.h"
 
 #include "core/Logger.h"
@@ -406,6 +407,7 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 			}
 
 			SceneUISerializer::Write(objects.back(), object);
+			SceneRigidBodySerializer::Write(objects.back(), object);
 			if (object.script) {
 				const auto &script = *object.script;
 				Json references = Json::array();
@@ -731,6 +733,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 			}
 
 			SceneUISerializer::Read(item, object, version);
+			SceneRigidBodySerializer::Read(item, object, version);
 			if (version >= 29 && item.contains("script")) {
 				const auto &value = item.at("script");
 				if (!value.at("asset").is_string() ||
