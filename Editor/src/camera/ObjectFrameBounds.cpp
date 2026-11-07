@@ -2,7 +2,7 @@
 
 #include "math/MathUtils.h"
 #include "math/TransformUtils.h"
-#include "physics/BoxColliderUtils.h"
+#include "physics/ColliderUtils.h"
 #include "scene/Scene.h"
 #include "scene/SceneHierarchy.h"
 #include "scene/SceneObject.h"
@@ -36,8 +36,7 @@ bool ObjectFrameBounds::Get(const SceneObject &object,
 	AxisAlignedBox bounds;
 
 	if (object.collider) {
-		if (!BoxColliderUtils::GetWorldBounds(*object.collider, world,
-		                                      bounds)) {
+		if (!ColliderUtils::GetWorldBounds(*object.collider, world, bounds)) {
 			return false;
 		}
 	} else {

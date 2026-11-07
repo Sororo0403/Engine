@@ -1,6 +1,6 @@
 #include "scene/PrimitiveObjects.h"
 #include "math/MathUtils.h"
-#include "physics/BoxColliderUtils.h"
+#include "physics/ColliderUtils.h"
 #include "platform/windows/StringConversion.h"
 #include <algorithm>
 #include <cmath>
@@ -12,13 +12,13 @@ SceneObject PrimitiveObjects::CreateBox() {
 	object.name = "Box";
 	object.mesh = MeshComponent{L"resources/editor/models/box.glb"};
 	object.meshRenderer = MeshRendererComponent{};
-	object.collider = BoxCollider{{0, 0, 0}, {1, 1, 1}};
+	object.collider = Collider{{0, 0, 0}, {1, 1, 1}};
 	return object;
 }
 
 bool PrimitiveObjects::TryCreateBox(const BoxCreationSettings &settings,
-                                    const BoxCollider &bounds,
-                                    SceneObject &object, std::string &error) {
+                                    const Collider &bounds, SceneObject &object,
+                                    std::string &error) {
 	try {
 		if (settings.name.empty() ||
 		    settings.name.find('\0') != std::string::npos ||
@@ -30,7 +30,7 @@ bool PrimitiveObjects::TryCreateBox(const BoxCreationSettings &settings,
 		if (!MathUtils::IsFinite(settings.center) ||
 		    !MathUtils::IsFinite(settings.size) || settings.size.x <= 0 ||
 		    settings.size.y <= 0 || settings.size.z <= 0 ||
-		    !BoxColliderUtils::GetWorldBounds(bounds, Transform{}, local)) {
+		    !ColliderUtils::GetWorldBounds(bounds, Transform{}, local)) {
 			error = "Enter a finite center and positive dimensions with valid "
 			        "model bounds.";
 			return false;
@@ -64,8 +64,8 @@ bool PrimitiveObjects::TryCreateBox(const BoxCreationSettings &settings,
 			       std::abs((double(maximum) + minimum) * 0.5 - center) <=
 			           tolerance;
 		};
-		if (!BoxColliderUtils::GetWorldBounds(bounds, candidate.transform,
-		                                      world) ||
+		if (!ColliderUtils::GetWorldBounds(bounds, candidate.transform,
+		                                   world) ||
 		    !matches(world.minimum.x, world.maximum.x, settings.center.x,
 		             settings.size.x) ||
 		    !matches(world.minimum.y, world.maximum.y, settings.center.y,

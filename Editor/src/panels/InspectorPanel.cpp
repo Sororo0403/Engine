@@ -451,10 +451,10 @@ bool InspectorPanel::Draw(
 			                  inspectedObjectId};
 		}
 
-		if (ui.MenuItem("Box Collider", nullptr, !object->collider))
+		if (ui.MenuItem("Collider", nullptr, !object->collider))
 			colliderFitRequest_ = inspectedObjectId;
 
-		if (ui.MenuItem("Paste Box Collider", nullptr,
+		if (ui.MenuItem("Paste Collider", nullptr,
 		                canPasteCollider && !object->collider)) {
 			objectRequest_ = {ObjectAction::PASTE_COLLIDER, inspectedObjectId};
 		}
@@ -842,15 +842,26 @@ std::optional<Transform> InspectorPanel::DrawReadOnly(
 		}
 	}
 
-	if (object->collider && ui.CollapsingHeader("Box Collider")) {
+	if (object->collider && ui.CollapsingHeader("Collider")) {
 		auto collider = *object->collider;
 		ui.BeginDisabled(true);
 		ui.DragFloat3("Collider Center", collider.center, 0.01f, 0.0f, 0.0f);
-		double size[] = {double(collider.halfExtents.x) * 2,
-		                 double(collider.halfExtents.y) * 2,
-		                 double(collider.halfExtents.z) * 2};
-		ImGui::DragScalarN("Collider Size", ImGuiDataType_Double, size, 3,
-		                   0.01f, nullptr, nullptr, "%.2f");
+		ui.Text(collider.shape == Collider::Shape::BOX      ? "Shape: Box"
+		        : collider.shape == Collider::Shape::SPHERE ? "Shape: Sphere"
+		                                                    : "Shape: Capsule");
+		if (collider.shape == Collider::Shape::BOX) {
+			double size[] = {double(collider.halfExtents.x) * 2,
+			                 double(collider.halfExtents.y) * 2,
+			                 double(collider.halfExtents.z) * 2};
+			ImGui::DragScalarN("Collider Size", ImGuiDataType_Double, size, 3,
+			                   0.01f, nullptr, nullptr, "%.2f");
+		} else {
+			ui.Text(std::format("Radius: {:.3f}", collider.radius));
+			if (collider.shape == Collider::Shape::CAPSULE)
+				ui.Text(std::format("Cylinder Height: {:.3f}",
+				                    double(collider.halfHeight) * 2));
+		}
+
 		ui.EndDisabled();
 		ui.Text(collider.isTrigger ? "Is Trigger: Yes" : "Is Trigger: No");
 		ui.Text(std::format("Collision Layer: {}", collider.filter.layer));

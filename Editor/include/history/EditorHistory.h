@@ -255,15 +255,14 @@ class EditorHistory {
 	/// <param name="objectId">対象ID</param>
 	/// <param name="collider">変更後の形状。未指定は削除</param>
 	/// <returns>true:成功または変更なし false:対象なし、または形状が無効</returns>
-	bool SetCollider(SceneObjectId objectId,
-	                 std::optional<BoxCollider> collider);
+	bool SetCollider(SceneObjectId objectId, std::optional<Collider> collider);
 
 	/// <summary>
 	/// 1物体の衝突形状の変更内容
 	/// </summary>
 	struct ColliderEdit {
 		SceneObjectId objectId = 0;
-		std::optional<BoxCollider> collider;
+		std::optional<Collider> collider;
 	};
 
 	/// <summary>
@@ -902,7 +901,7 @@ class EditorHistory {
 
 		// 変形・名前・各コンポーネントの編集開始時点の値
 		std::variant<
-		    Transform, std::string, std::optional<BoxCollider>,
+		    Transform, std::string, std::optional<Collider>,
 		    std::optional<CharacterSettings>,
 		    std::optional<FollowCameraSettings>, std::optional<CameraComponent>,
 		    std::optional<RespawnSettings>, std::optional<ColorTint>,

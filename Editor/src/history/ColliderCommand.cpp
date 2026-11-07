@@ -1,6 +1,6 @@
 #include "history/ColliderCommand.h"
 
-#include "physics/BoxColliderUtils.h"
+#include "physics/ColliderUtils.h"
 #include "scene/Scene.h"
 
 namespace {
@@ -13,15 +13,15 @@ namespace {
 /// <param name="value">変更後の設定</param>
 /// <returns>true:成功 false:対象や設定が不一致、または形状が無効</returns>
 bool Apply(Scene &scene, SceneObjectId id,
-           const std::optional<BoxCollider> &expected,
-           const std::optional<BoxCollider> &value) {
+           const std::optional<Collider> &expected,
+           const std::optional<Collider> &value) {
 	auto *object = scene.FindObject(id);
 
 	if (!object || object->collider != expected) {
 		return false;
 	}
 
-	if (value && !BoxColliderUtils::IsValid(*value)) {
+	if (value && !ColliderUtils::IsValid(*value)) {
 		return false;
 	}
 
@@ -31,8 +31,8 @@ bool Apply(Scene &scene, SceneObjectId id,
 } // namespace
 
 ColliderCommand::ColliderCommand(SceneObjectId objectId,
-                                 std::optional<BoxCollider> before,
-                                 std::optional<BoxCollider> after)
+                                 std::optional<Collider> before,
+                                 std::optional<Collider> after)
     : objectId_(objectId), before_(before), after_(after) {
 }
 

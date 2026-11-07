@@ -5,7 +5,7 @@
 #include "gameplay/SceneCameraUtils.h"
 #include "math/MathUtils.h"
 #include "math/TransformUtils.h"
-#include "physics/BoxColliderUtils.h"
+#include "physics/ColliderUtils.h"
 #include "scene/Scene.h"
 #include "scene/SceneHierarchy.h"
 #include "scene/SceneObjectReferences.h"
@@ -679,7 +679,7 @@ bool EditorHistory::ResetTransforms(std::span<const SceneObjectId> objectIds) {
 }
 
 bool EditorHistory::SetCollider(SceneObjectId objectId,
-                                std::optional<BoxCollider> collider) {
+                                std::optional<Collider> collider) {
 	CommitEdit();
 	const auto *object = scene_.FindObject(objectId);
 
@@ -689,7 +689,7 @@ bool EditorHistory::SetCollider(SceneObjectId objectId,
 	AxisAlignedBox bounds;
 
 	if (collider &&
-	    !BoxColliderUtils::GetWorldBounds(*collider, scene_, objectId, bounds))
+	    !ColliderUtils::GetWorldBounds(*collider, scene_, objectId, bounds))
 		return false;
 
 	const bool adding = !object->collider;
@@ -704,9 +704,9 @@ bool EditorHistory::SetCollider(SceneObjectId objectId,
 		return false;
 
 	AppendPrepared(Command{std::move(command)}, next,
-	               !collider ? "Remove Box Collider"
-	               : adding  ? "Add Box Collider"
-	                         : "Edit Box Collider");
+	               !collider ? "Remove Collider"
+	               : adding  ? "Add Collider"
+	                         : "Edit Collider");
 	return true;
 }
 
@@ -727,16 +727,15 @@ bool EditorHistory::SetColliders(std::span<const ColliderEdit> edits) {
 		const auto *object = scene_.FindObject(edit.objectId);
 
 		if (!object || !seen.insert(edit.objectId).second ||
-		    (object->collider &&
-		     !BoxColliderUtils::IsValid(*object->collider))) {
+		    (object->collider && !ColliderUtils::IsValid(*object->collider))) {
 			return false;
 		}
 
 		AxisAlignedBox bounds;
 
 		if (edit.collider &&
-		    !BoxColliderUtils::GetWorldBounds(*edit.collider, scene_,
-		                                      edit.objectId, bounds)) {
+		    !ColliderUtils::GetWorldBounds(*edit.collider, scene_,
+		                                   edit.objectId, bounds)) {
 			return false;
 		}
 
@@ -761,9 +760,9 @@ bool EditorHistory::SetColliders(std::span<const ColliderEdit> edits) {
 	}
 
 	AppendPrepared(Command{std::move(group)}, next,
-	               addingOnly     ? "Add Box Colliders"
-	               : removingOnly ? "Remove Box Colliders"
-	                              : "Edit Box Colliders");
+	               addingOnly     ? "Add Colliders"
+	               : removingOnly ? "Remove Colliders"
+	                              : "Edit Colliders");
 	return true;
 }
 
@@ -1253,8 +1252,8 @@ bool EditorHistory::AlignColliderBounds(
 	    !reference->collider ||
 	    !ReadWorldPositions(scene_, objectIds, positions) ||
 	    !positions.contains(referenceId) ||
-	    !BoxColliderUtils::GetWorldBounds(*reference->collider, scene_,
-	                                      referenceId, referenceBounds)) {
+	    !ColliderUtils::GetWorldBounds(*reference->collider, scene_,
+	                                   referenceId, referenceBounds)) {
 		return false;
 	}
 
@@ -1266,7 +1265,7 @@ bool EditorHistory::AlignColliderBounds(
 	for (auto &[id, position] : positions) {
 		const auto *object = scene_.FindObject(id);
 		AxisAlignedBox bounds;
-		if (!object->collider || !BoxColliderUtils::GetWorldBounds(
+		if (!object->collider || !ColliderUtils::GetWorldBounds(
 		                             *object->collider, scene_, id, bounds)) {
 			return false;
 		}
@@ -1287,8 +1286,8 @@ bool EditorHistory::AlignColliderBounds(
 
 	for (const auto id : objectIds) {
 		AxisAlignedBox bounds;
-		if (!BoxColliderUtils::GetWorldBounds(*working.FindObject(id)->collider,
-		                                      working, id, bounds) ||
+		if (!ColliderUtils::GetWorldBounds(*working.FindObject(id)->collider,
+		                                   working, id, bounds) ||
 		    std::abs(edge(bounds) - target) > kColliderAlignmentTolerance) {
 			return false;
 		}
@@ -1353,7 +1352,7 @@ bool EditorHistory::DistributeColliderGaps(
 	for (const auto id : objectIds) {
 		const auto *object = scene_.FindObject(id);
 		AxisAlignedBox bounds;
-		if (!object->collider || !BoxColliderUtils::GetWorldBounds(
+		if (!object->collider || !ColliderUtils::GetWorldBounds(
 		                             *object->collider, scene_, id, bounds)) {
 			return false;
 		}
@@ -1419,7 +1418,7 @@ bool EditorHistory::DistributeColliderGaps(
 	for (std::size_t i = 0; i < placements.size(); ++i) {
 		const auto &placement = placements[i];
 		AxisAlignedBox bounds;
-		if (!BoxColliderUtils::GetWorldBounds(
+		if (!ColliderUtils::GetWorldBounds(
 		        *working.FindObject(placement.id)->collider, working,
 		        placement.id, bounds)) {
 			return false;
@@ -1475,7 +1474,7 @@ bool EditorHistory::HasPendingChanges() const {
 		    if constexpr (std::is_same_v<Before, Transform>) {
 			    return !TransformUtils::AreEqual(before, object->transform);
 		    } else if constexpr (std::is_same_v<Before,
-		                                        std::optional<BoxCollider>>) {
+		                                        std::optional<Collider>>) {
 			    return before != object->collider;
 		    } else if constexpr (std::is_same_v<
 		                             Before, std::optional<CameraComponent>>) {
@@ -1645,12 +1644,12 @@ void EditorHistory::CommitEdit() {
 		return;
 	}
 
-	if (std::holds_alternative<std::optional<BoxCollider>>(pending_->before) &&
+	if (std::holds_alternative<std::optional<Collider>>(pending_->before) &&
 	    object->collider) {
 		AxisAlignedBox bounds;
 
-		if (!BoxColliderUtils::GetWorldBounds(*object->collider, scene_,
-		                                      pending_->objectId, bounds)) {
+		if (!ColliderUtils::GetWorldBounds(*object->collider, scene_,
+		                                   pending_->objectId, bounds)) {
 			Invalidate();
 			return;
 		}
@@ -1811,7 +1810,7 @@ void EditorHistory::CommitEdit() {
 			        object->transform,
 			    }};
 		    } else if constexpr (std::is_same_v<Before,
-		                                        std::optional<BoxCollider>>) {
+		                                        std::optional<Collider>>) {
 			    return Command{
 			        ColliderCommand{objectId, before, object->collider}};
 		    } else if constexpr (std::is_same_v<
@@ -1918,9 +1917,8 @@ void EditorHistory::CommitEdit() {
 			    return "Transform Object";
 		    } else if constexpr (std::is_same_v<T, std::string>) {
 			    return "Rename Object";
-		    } else if constexpr (std::is_same_v<T,
-		                                        std::optional<BoxCollider>>) {
-			    return "Edit Box Collider";
+		    } else if constexpr (std::is_same_v<T, std::optional<Collider>>) {
+			    return "Edit Collider";
 		    } else if constexpr (std::is_same_v<
 		                             T, std::optional<CharacterSettings>>) {
 			    return "Edit Character Controller";

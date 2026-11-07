@@ -1,6 +1,6 @@
 #pragma once
 
-#include "physics/BoxCollider.h"
+#include "physics/Collider.h"
 #include "scene/BoxCreationSettings.h"
 
 class ImGuiSystem;
@@ -21,7 +21,7 @@ class BoxCreationDialog {
 	/// </summary>
 	/// <param name="bounds">実際のモデルから求めたローカルのBox</param>
 	/// <param name="planeHeight">底面合わせで使用する作業平面の高さ。表示開始時の値を保持する</param>
-	void Show(const BoxCollider &bounds, float planeHeight = 0.0f);
+	void Show(const Collider &bounds, float planeHeight = 0.0f);
 
 	/// <summary>
 	/// 入力した寸法を検証する。シーンや描画リソースは変更しない
@@ -47,7 +47,7 @@ class BoxCreationDialog {
 
   private:
 	BoxCreationSettings settings_;
-	BoxCollider bounds_;
+	Collider bounds_;
 	float planeHeight_ = 0.0f;
 	bool opening_ = false;
 };

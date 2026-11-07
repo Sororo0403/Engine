@@ -3,7 +3,7 @@
 #include "graphics/model/ModelManager.h"
 #include "math/MathUtils.h"
 #include "math/TransformUtils.h"
-#include "physics/BoxColliderUtils.h"
+#include "physics/ColliderUtils.h"
 #include "scene/Scene.h"
 #include "scene/SceneHierarchy.h"
 #include "scene/SceneSerializer.h"

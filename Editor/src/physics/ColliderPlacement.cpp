@@ -2,7 +2,8 @@
 #include "scene/SceneActivity.h"
 
 #include "history/ObjectArraySettings.h"
-#include "physics/BoxColliderUtils.h"
+#include "physics/ColliderUtils.h"
+#include "physics/WorldCollider.h"
 #include "scene/Scene.h"
 #include "scene/SceneHierarchy.h"
 
@@ -14,20 +15,6 @@
 #include <set>
 
 namespace {
-/// <summary>
-/// 上下移動の経路が交差する、正の面積の重なりを確認する。辺だけの接触は除く
-/// </summary>
-/// <param name="first">移動するボックス</param>
-/// <param name="second">障害物のボックス</param>
-/// <returns>true:XZ平面で面積を持つ重なりあり false:重なりなし</returns>
-bool OverlapsHorizontally(const AxisAlignedBox &first,
-                          const AxisAlignedBox &second) {
-	return first.minimum.x < second.maximum.x &&
-	       first.maximum.x > second.minimum.x &&
-	       first.minimum.z < second.maximum.z &&
-	       first.maximum.z > second.minimum.z;
-}
-
 /// <summary>
 /// 選択枝の全子孫から、衝突形状を持つ物体を重複なく列挙する
 /// </summary>
@@ -84,8 +71,7 @@ bool ColliderPlacement::GetDropTranslation(
 	error.clear();
 
 	if (!CanDrop(scene, objectIds)) {
-		error =
-		    "Select objects with Box Colliders before dropping to a surface.";
+		error = "Select objects with Colliders before dropping to a surface.";
 		return false;
 	}
 
@@ -96,53 +82,69 @@ bool ColliderPlacement::GetDropTranslation(
 	}
 	const std::set<SceneObjectId> selected(expanded.begin(), expanded.end());
 
-	std::map<SceneObjectId, AxisAlignedBox> bodies, obstacles;
+	struct Shape {
+		AxisAlignedBox bounds;
+		WorldCollider geometry;
+	};
 
+	std::map<SceneObjectId, Shape> bodies, obstacles;
 	for (const auto &[id, object] : scene.GetObjects()) {
 		if (!object.collider ||
-		    (!selected.contains(id) && !SceneActivity::IsActive(scene, id))) {
+		    (!selected.contains(id) && (!SceneActivity::IsActive(scene, id) ||
+		                                object.collider->isTrigger)))
 			continue;
-		}
-
-		AxisAlignedBox bounds;
-
-		if (!BoxColliderUtils::GetWorldBounds(*object.collider, scene, id,
-		                                      bounds)) {
-			error =
-			    std::format("Invalid Box Collider on object: \"{}\" (ID {}).",
-			                object.name.empty() ? "Object" : object.name, id);
+		SceneWorldTransform transform;
+		Shape shape;
+		if (!SceneHierarchy::GetWorldTransform(scene, id, transform) ||
+		    !WorldCollider::Create(*object.collider, transform.matrix,
+		                           shape.geometry, error) ||
+		    !shape.geometry.GetBounds(shape.bounds)) {
+			error = std::format("Invalid Collider on object ID {}.", id);
 			return false;
 		}
-
-		(selected.contains(id) ? bodies : obstacles).emplace(id, bounds);
+		(selected.contains(id) ? bodies : obstacles)
+		    .emplace(id, std::move(shape));
 	}
-
 	double distance = (std::numeric_limits<double>::infinity)();
-
-	for (const auto &[id, body] : bodies) {
+	for (const auto &[id, body] : bodies)
 		for (const auto &[obstacleId, obstacle] : obstacles) {
-			if (!OverlapsHorizontally(body, obstacle)) {
-				continue;
-			}
-
-			if (body.minimum.y < obstacle.maximum.y &&
-			    body.maximum.y > obstacle.minimum.y) {
-				error = std::format("Object \"{}\" (ID {}) already overlaps "
-				                    "Box Collider ID {}.",
-				                    scene.FindObject(id)->name, id, obstacleId);
+			bool overlap = false;
+			if (!body.geometry.Overlaps(
+			        obstacle.geometry,
+			        static_cast<float>(kSurfaceClearance * .1), overlap)) {
+				error = "Could not test Collider overlap.";
 				return false;
 			}
-
-			if (obstacle.maximum.y <= body.minimum.y) {
-				distance =
-				    (std::min)(distance, static_cast<double>(body.minimum.y) -
-				                             obstacle.maximum.y);
+			if (overlap) {
+				error = std::format(
+				    "Collider ID {} already overlaps Collider ID {}.", id,
+				    obstacleId);
+				return false;
 			}
+			const double range = double(body.bounds.maximum.y) -
+			                     obstacle.bounds.minimum.y + kSurfaceClearance;
+			if (range <= 0)
+				continue;
+			if (range > 2 * WorldCollider::kMaximumCoordinate) {
+				error = "Drop is outside the supported range.";
+				return false;
+			}
+			const float length = static_cast<float>(range);
+			const DirectX::XMFLOAT3 movement{0, -length, 0};
+			std::optional<ColliderCastHit> hit;
+			bool crosses = false;
+			if (!body.geometry.Cast(obstacle.geometry, movement, hit) ||
+			    !body.geometry.Crosses(obstacle.geometry, movement, .000001f,
+			                           crosses)) {
+				error = "Could not cast the selected Collider.";
+				return false;
+			}
+			if (hit && crosses)
+				distance = (std::min)(distance, hit->fraction * length);
 		}
-	}
 
 	if (!std::isfinite(distance)) {
-		error = "No Box Collider surface was found below the selection.";
+		error = "No solid Collider surface was found below the selection.";
 		return false;
 	}
 
@@ -169,19 +171,28 @@ bool ColliderPlacement::GetDropTranslation(
 	for (const auto &[id, body] : bodies) {
 		const auto &object = *movedScene.FindObject(id);
 		AxisAlignedBox moved;
-		if (!BoxColliderUtils::GetWorldBounds(*object.collider, movedScene, id,
-		                                      moved)) {
+		if (!ColliderUtils::GetWorldBounds(*object.collider, movedScene, id,
+		                                   moved)) {
 			error =
 			    "The dropped collider cannot be represented at this transform.";
 			return false;
 		}
 
-		movedAny |= moved.minimum.y != body.minimum.y;
+		movedAny |= moved.minimum.y != body.bounds.minimum.y;
 
+		SceneWorldTransform transform;
+		WorldCollider geometry;
+		if (!SceneHierarchy::GetWorldTransform(movedScene, id, transform) ||
+		    !WorldCollider::Create(*object.collider, transform.matrix, geometry,
+		                           error))
+			return false;
 		for (const auto &[obstacleId, obstacle] : obstacles) {
-			if (OverlapsHorizontally(moved, obstacle) &&
-			    moved.minimum.y < obstacle.maximum.y &&
-			    moved.maximum.y > obstacle.minimum.y) {
+			bool overlap = false;
+			if (!geometry.Overlaps(obstacle.geometry,
+			                       static_cast<float>(kSurfaceClearance * .1),
+			                       overlap))
+				return false;
+			if (overlap) {
 				error = "The drop would overlap another collider due to "
 				        "coordinate precision.";
 				return false;
@@ -199,8 +210,7 @@ bool ColliderPlacement::GetPlaneTranslation(
 	error.clear();
 
 	if (!std::isfinite(height) || !CanDrop(scene, objectIds)) {
-		error =
-		    "Select objects with Box Colliders and a finite work-plane height.";
+		error = "Select objects with Colliders and a finite work-plane height.";
 		return false;
 	}
 
@@ -218,8 +228,8 @@ bool ColliderPlacement::GetPlaneTranslation(
 		AxisAlignedBox bounds;
 
 		if (!seen.insert(id).second ||
-		    !BoxColliderUtils::GetWorldBounds(*object.collider, scene, id,
-		                                      bounds)) {
+		    !ColliderUtils::GetWorldBounds(*object.collider, scene, id,
+		                                   bounds)) {
 			error = "The selection contains duplicate IDs or invalid Collider "
 			        "bounds.";
 			return false;
@@ -258,8 +268,8 @@ bool ColliderPlacement::GetPlaneTranslation(
 	for (const auto id : colliderIds) {
 		const auto &object = *movedScene.FindObject(id);
 		AxisAlignedBox bounds;
-		if (!BoxColliderUtils::GetWorldBounds(*object.collider, movedScene, id,
-		                                      bounds)) {
+		if (!ColliderUtils::GetWorldBounds(*object.collider, movedScene, id,
+		                                   bounds)) {
 			error =
 			    "The moved Collider cannot be represented at this transform.";
 			return false;
@@ -312,7 +322,7 @@ bool ColliderPlacement::GetAdjacentTranslation(
 	}
 
 	if (objectIds.size() < 2 || !CanDrop(scene, objectIds)) {
-		error = "Select at least two objects with Box Colliders.";
+		error = "Select at least two objects with Colliders.";
 		return false;
 	}
 
@@ -349,11 +359,10 @@ bool ColliderPlacement::GetAdjacentTranslation(
 		const auto &object = *scene.FindObject(id);
 		AxisAlignedBox bounds;
 
-		if (!BoxColliderUtils::GetWorldBounds(*object.collider, scene, id,
-		                                      bounds)) {
-			error =
-			    std::format("Invalid Box Collider on object: \"{}\" (ID {}).",
-			                object.name, id);
+		if (!ColliderUtils::GetWorldBounds(*object.collider, scene, id,
+		                                   bounds)) {
+			error = std::format("Invalid Collider on object: \"{}\" (ID {}).",
+			                    object.name, id);
 			return false;
 		}
 
@@ -414,8 +423,8 @@ bool ColliderPlacement::GetAdjacentTranslation(
 			continue;
 		const auto &object = *movedScene.FindObject(id);
 		AxisAlignedBox bounds;
-		if (!BoxColliderUtils::GetWorldBounds(*object.collider, movedScene, id,
-		                                      bounds) ||
+		if (!ColliderUtils::GetWorldBounds(*object.collider, movedScene, id,
+		                                   bounds) ||
 		    (positive ? component(bounds.minimum) < referenceFace
 		              : component(bounds.maximum) > referenceFace)) {
 			error = "The collider face placement cannot be represented at "
@@ -456,7 +465,7 @@ bool ColliderPlacement::GetRepeatTranslation(
 	ObjectArraySettings settings;
 	settings.copies = copies;
 	if (!settings.IsValid(objectIds.size()) || !CanDrop(scene, objectIds)) {
-		error = "Select Box Colliders and a valid number of copies.";
+		error = "Select Colliders and a valid number of copies.";
 		return false;
 	}
 	std::vector<SceneObjectId> colliderIds, expanded, roots;
@@ -513,8 +522,8 @@ bool ColliderPlacement::GetRepeatTranslation(
 		const auto &object = *scene.FindObject(id);
 		AxisAlignedBox bounds;
 		if (!seen.insert(id).second ||
-		    !BoxColliderUtils::GetWorldBounds(*object.collider, scene, id,
-		                                      bounds)) {
+		    !ColliderUtils::GetWorldBounds(*object.collider, scene, id,
+		                                   bounds)) {
 			error = "The selection contains duplicate IDs or an invalid Box "
 			        "Collider.";
 			return false;
@@ -575,8 +584,8 @@ bool ColliderPlacement::GetRepeatTranslation(
 		for (const auto id : colliderIds) {
 			const auto &object = *working.FindObject(id);
 			AxisAlignedBox bounds;
-			if (!BoxColliderUtils::GetWorldBounds(*object.collider, working, id,
-			                                      bounds)) {
+			if (!ColliderUtils::GetWorldBounds(*object.collider, working, id,
+			                                   bounds)) {
 				error = "A repeated collider cannot be represented at these "
 				        "coordinates.";
 				return false;

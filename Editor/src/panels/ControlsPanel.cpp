@@ -165,7 +165,7 @@ void ControlsPanel::Draw() {
 	         "bounds before creation, including Place Bottom on Work Plane. "
 	         "Invalid drafts hide the outline. The preview creates no scene "
 	         "objects or selectable models and disappears on Create or Cancel. "
-	         "Mesh and Box Collider use the same measured model "
+	         "Mesh and Collider use the same measured model "
 	         "bounds. Dimensions must be finite and positive, and "
 	         "representable "
 	         "at the chosen center. Create adds and selects one object with "
@@ -174,10 +174,20 @@ void ControlsPanel::Draw() {
 	         "unchanged. "
 	         "The normal Box command still creates a two-unit box "
 	         "immediately."},
-	        {"Inspector > Add Component > Box Collider",
+	        {"Inspector > Collider > Shape",
+	         "Choose Box, Sphere or Capsule. Radius and cylinder height are "
+	         "local dimensions. "
+	         "Round shapes require uniform world scale without shear. Shape "
+	         "and dimensions support Undo / Redo."},
+	        {"Character Controller collider",
+	         "Character Controller currently uses a non-trigger Box shape. "
+	         "Sphere and Capsule "
+	         "are available for static obstacles, Trigger regions and Rigid "
+	         "Body objects."},
+	        {"Inspector > Add Component > Collider",
 	         "Add a collider fitted to the model, edit its local center and "
-	         "half size, fit again or remove it. Green Scene bounds show the "
-	         "world-axis-aligned collision shape. Each drag is one Undo "
+	         "dimensions, fit again or remove it. Green Scene lines show the "
+	         "transformed shape outline. Each drag is one Undo "
 	         "operation."},
 	        {"Assets > Select Instances",
 	         "Select all scene objects using the chosen model, including "
@@ -321,7 +331,7 @@ void ControlsPanel::Draw() {
 	         "active object's world coordinate on one axis. Other axes, "
 	         "rotation and scale stay unchanged."},
 	        {"Align Collider Bounds",
-	         "In Edit or the Hierarchy menu, align the selected Box Collider "
+	         "In Edit or the Hierarchy menu, align the selected Collider "
 	         "minimum or maximum on X, Y or Z to the active object's same "
 	         "edge. This uses world axis-aligned bounds after rotation and "
 	         "scale, including hidden objects. Only that position axis "
@@ -630,7 +640,7 @@ void ControlsPanel::Draw() {
 	        {"Assets > Add to Scene",
 	         "Place the selected model at the world origin."},
 	        {"Drag Assets into Scene",
-	         "Place a model against the nearest Box Collider surface and "
+	         "Place a model against the nearest Collider surface and "
 	         "select it. "
 	         "Collider placement uses the same world-axis box as physics, "
 	         "including hidden objects. Without a Collider hit, use Y=0 or "
@@ -649,7 +659,7 @@ void ControlsPanel::Draw() {
 	    "Game authoring and playback",
 	    {
 	        {"Inspector > Add Component",
-	         "Add Box Collider, Character Controller, Camera, Follow Camera or "
+	         "Add Collider, Character Controller, Camera, Follow Camera or "
 	         "Respawn. Changes support Undo and scene saving."},
 	        {"View > Colliders",
 	         "Show collider outlines for None, Selected or All objects in "
@@ -667,7 +677,7 @@ void ControlsPanel::Draw() {
 	        {"Create > Empty / Box",
 	         "Add a normal object at the world origin and reveal it in "
 	         "Hierarchy. Box uses the built-in two-unit model with a matching "
-	         "Box Collider. Scale it into floors, walls or platforms. Creation "
+	         "Collider. Scale it into floors, walls or platforms. Creation "
 	         "supports Undo/Redo and scene saving. Hierarchy has the same "
 	         "creation controls."},
 	        {"Hierarchy > Component",
@@ -677,24 +687,25 @@ void ControlsPanel::Draw() {
 	         "selections remain selected when filtered out; Reveal Active "
 	         "clears filters to show the active object."},
 	        {"Edit > Drop Colliders to Surface",
-	         "Move selected Box Colliders straight down until the first one "
+	         "Move selected Colliders straight down until the first one "
 	         "reaches another collider's top surface. Selection spacing is "
-	         "preserved; hidden colliders also count. Collision uses the same "
-	         "world-axis boxes as Play, with a tiny clearance. All selected "
+	         "preserved; hidden colliders also count. Collision uses actual "
+	         "Box, Sphere and Capsule surfaces, with a tiny clearance. All "
+	         "selected "
 	         "objects need colliders. No surface or an existing overlap leaves "
 	         "them unchanged. The action supports Undo/Redo; Hierarchy's "
 	         "context menu has the same command. Drop to Ground still aligns "
 	         "visible model bounds to Y=0."},
-	        {"Box Colliders > Place Next to Active",
-	         "Select at least two Box Colliders. The active object stays "
+	        {"Colliders > Place Next to Active",
+	         "Select at least two Colliders. The active object stays "
 	         "fixed; the other selected objects move as one group to its "
 	         "Right, Left, Above, Below, Front or Behind face in world axes. "
-	         "This uses the same axis-aligned collider bounds as Play, "
+	         "This aligns enclosing world-axis collider bounds, "
 	         "including rotation, scale and hidden objects, with a tiny "
 	         "clearance for rounding. Group spacing and other axes are kept. "
 	         "Already aligned faces add no history. The move is one Undo/Redo "
 	         "operation."},
-	        {"Edit > Box Colliders",
+	        {"Edit > Colliders",
 	         "Apply to all selected objects, including hidden ones. Add "
 	         "Missing keeps existing collider shapes. Fit All to Models "
 	         "replaces or adds shapes; objects without models use a unit box. "
@@ -808,7 +819,7 @@ void ControlsPanel::Draw() {
 	         "saving, duplication and Play. Objects sharing one model keep "
 	         "independent colors. Hierarchy > Component > Color Tint finds "
 	         "objects with the component. During Play it is read-only."},
-	        {"Edit > Box Colliders > Paste Box Colliders",
+	        {"Edit > Colliders > Paste Colliders",
 	         "Apply the copied local collider shape to every selected object, "
 	         "including hidden objects and objects without models. Missing "
 	         "colliders are added; existing shapes are replaced. All targets "
@@ -816,9 +827,9 @@ void ControlsPanel::Draw() {
 	         "Transform and other components. Selection, Inspector locks and "
 	         "all clipboards are kept. One Undo/Redo restores the whole edit; "
 	         "identical values add no history. Hierarchy has the same action. "
-	         "Copy a Box Collider in Inspector first."},
+	         "Copy a Collider in Inspector first."},
 	        {"Inspector > Add Component > Trigger Actions",
-	         "Add actions to the same object as a Box Collider with Is "
+	         "Add actions to the same object as a Collider with Is "
 	         "Trigger enabled. Choose Enter or Exit, a target object, and "
 	         "Enable, Disable or Toggle. The target's local Active flag "
 	         "changes without overwriting its children's flags. Collision "
@@ -1040,13 +1051,14 @@ void ControlsPanel::Draw() {
 	         "read the frozen transform of an inactive target. An inactive "
 	         "Camera cannot be pinned or chosen for Play. Stop keeps the "
 	         "authored flags, and object activity is read-only during Play."},
-	        {"Inspector > Box Collider > Is Trigger",
+	        {"Inspector > Collider > Is Trigger",
 	         "Make a Collider detect overlaps without blocking movement, "
 	         "grounding, respawn or Follow Camera obstacle avoidance. "
 	         "Both collision masks must permit the other layer. A Character "
 	         "Controller itself needs a non-trigger Collider; put extra "
 	         "detection volumes on other objects or children. Geometry "
-	         "selection and placement still use Trigger bounds. The flag "
+	         "selection includes Trigger shapes; dropping ignores Trigger "
+	         "supports. The flag "
 	         "supports Undo/Redo, copy/paste and duplication; fitting the "
 	         "shape keeps it. Older scenes load as solid Colliders."},
 	        {"View > Play State > Triggers",
@@ -1058,11 +1070,12 @@ void ControlsPanel::Draw() {
 	         "Stay is available to runtime code each positive update but does "
 	         "not fill the history. Face-only touches do not count. A volume "
 	         "crossed between updates produces Enter then Exit from linear "
-	         "interpolation of the endpoint world AABBs; curved motion and "
+	         "relative translation of unchanged shapes; curved motion, size "
+	         "changes and "
 	         "intermediate rotation are not reconstructed. Respawn teleports "
 	         "test their endpoints without crossing the intervening space. "
 	         "No gameplay component is needed to start Play or use Triggers."},
-	        {"Inspector > Box Collider > Collision Layer / Collides With",
+	        {"Inspector > Collider > Collision Layer / Collides With",
 	         "Choose one of 32 layers per Collider (0 is Default), then check "
 	         "the layers it can collide with. Both Colliders must allow the "
 	         "other's layer; disabling either side prevents contact. Nothing "
@@ -1074,16 +1087,16 @@ void ControlsPanel::Draw() {
 	         "Each choice supports Undo/Redo; copy/paste and duplication "
 	         "include the filter, while Fit Collider keeps it. Older scenes "
 	         "use Default and Everything until edited."},
-	        {"Inspector > Box Collider > Collider Size",
+	        {"Inspector > Collider > Collider Size",
 	         "Enter the full local X/Y/Z dimensions. The displayed Size is "
 	         "twice the internal half extents; Transform scale and rotation "
 	         "still affect the world collision bounds. Center stays unchanged. "
 	         "A continuous drag is one Undo/Redo operation. Play displays the "
 	         "same full dimensions read-only. Existing scene files and copied "
 	         "collider data keep their original dimensions."},
-	        {"Inspector > Box Collider > Copy / Paste Box Collider",
+	        {"Inspector > Collider > Copy / Paste Collider",
 	         "Copy the local Center, Size and collision filter onto the "
-	         "inspected object. Add Component > Paste Box Collider adds a "
+	         "inspected object. Add Component > Paste Collider adds a "
 	         "missing component. The target's Transform, other components, "
 	         "selection and Inspector lock stay unchanged; target rotation and "
 	         "scale still determine the world collision box. Paste supports "
@@ -1091,7 +1104,7 @@ void ControlsPanel::Draw() {
 	         "bounds reject the paste. Object and Transform clipboards are "
 	         "independent and are kept. The collider copy also survives scene "
 	         "changes. These editing actions are unavailable during Play."},
-	        {"Inspector > Box Collider > Frame Collider",
+	        {"Inspector > Collider > Frame Collider",
 	         "Bring the inspected collider's actual collision box into Scene "
 	         "view, including its center offset, rotation and scale. Models "
 	         "may be hidden or absent; a locked Inspector uses its fixed "
@@ -1100,7 +1113,7 @@ void ControlsPanel::Draw() {
 	         "Colliders > All shows hidden or unselected shapes. Invalid "
 	         "colliders disable the action. Bounds outside the camera's "
 	         "clipping range leave the camera unchanged."},
-	        {"Inspector > Box Collider > Select Overlapping Colliders",
+	        {"Inspector > Collider > Select Overlapping Colliders",
 	         "Select the other colliders sharing volume with the inspected "
 	         "object at its current position. Use this to find solids around "
 	         "a character's start position. Hidden objects count; self and "
@@ -1320,7 +1333,7 @@ void ControlsPanel::Draw() {
 	         "included in the view bounds. The command also works with "
 	         "Respawn Guides hidden and opens the Scene tab if necessary."},
 	        {"Inspector > Respawn > Select Blocking Colliders",
-	         "Select every Box Collider overlapping the inspected object's "
+	         "Select every Collider overlapping the inspected object's "
 	         "recovery shape, including hidden objects. The character itself "
 	         "and face-only contact are excluded. Hierarchy reveals the active "
 	         "result. View > Colliders > Selected shows its shape even when "
@@ -1529,13 +1542,13 @@ void ControlsPanel::Draw() {
 	         "the look point and corrected starting camera position. When a "
 	         "wall shortens the distance, a gray box and connecting line show "
 	         "the requested camera position. Red links and boxes mean an "
-	         "initial clearance cannot be placed; inspect Box Colliders and "
+	         "initial clearance cannot be placed; inspect Colliders and "
 	         "adjust Look Offset or Camera Clearance. The requested pose "
 	         "remains visible for diagnosis. Guides do not add Colliders or "
 	         "change scene data, selection, Undo history or Game rendering. "
 	         "Turn Avoid Obstacles off to keep the usual follow links only."},
 	        {"Inspector > Follow Camera > Avoid Obstacles",
-	         "Keep the camera before the first static Box Collider between "
+	         "Keep the camera before the first static Collider between "
 	         "its look point and smoothed position. Camera Clearance is the "
 	         "world-axis-aligned box half size around that path, from 0.01 to "
 	         "5 units. Hidden Colliders block it too. The followed target, "
@@ -1782,7 +1795,7 @@ void ControlsPanel::Draw() {
 	         "blank preview as usual; scene validation rules are unchanged. "
 	         "The pin is a workspace choice with no Undo entry or scene-file "
 	         "change."},
-	        {"Inspector > Box Collider > Use Top as Work Plane",
+	        {"Inspector > Collider > Use Top as Work Plane",
 	         "Set Grid Settings Height from the inspected Collider's world "
 	         "maximum Y after rotation, scale and local center offset. A "
 	         "locked Inspector uses its displayed object, even outside the "
@@ -1805,7 +1818,7 @@ void ControlsPanel::Draw() {
 	        {"View > Grid Settings",
 	         "Adjust grid spacing, extent, major-line interval and work-plane "
 	         "Height. Model and saved-object-group drops use that height when "
-	         "no Box Collider surface is hit, even if grid lines are hidden. "
+	         "no Collider surface is hit, even if grid lines are hidden. "
 	         "Collider faces still take priority. A parallel ray or a plane "
 	         "outside the visible ray range keeps the existing near-ray "
 	         "placement. These are Editor settings, saved across sessions; "
@@ -1842,7 +1855,7 @@ void ControlsPanel::Draw() {
 	         "inherit motion. Restart restores the authored position. All "
 	         "settings and point edits support Undo/Redo and game output."},
 	        {"Rigid Bodies",
-	         "Add Rigid Body and a non-Trigger Box Collider on the same "
+	         "Add Rigid Body and a non-Trigger Collider on the same "
 	         "object. "
 	         "Mass, friction, restitution, gravity, damping, initial "
 	         "velocities "
@@ -2214,8 +2227,8 @@ void ControlsPanel::Draw() {
 	         "Return collision_enter(self,state,other), collision_stay or "
 	         "collision_exit for solid Collider contacts. These are separate "
 	         "from Trigger and honor both Colliders' layer masks and active "
-	         "ancestors. Rigidbody worlds use actual physical boxes; scenes "
-	         "without a Rigid Body use the same world AABBs as movement. "
+	         "ancestors. Rigidbody and static worlds use actual shapes; scenes "
+	         "without a Rigid Body do not need a physics component to notify. "
 	         "Collider-only pairs can notify too. Character Controller child "
 	         "Colliders are excluded. Contacts within 0.0002 world units count "
 	         "as touching. Sleeping bodies keep Stay. Native physical impacts "
@@ -2227,11 +2240,12 @@ void ControlsPanel::Draw() {
 	         "Pause holds notifications; Step advances once; Restart clears "
 	         "contacts. Scene, scripts, physics and notifications roll back "
 	         "together on failure. All callbacks share the existing game-step "
-	         "budgets. Non-native AABB paths are not swept for notifications."},
+	         "budgets. Static paths are not swept for collision "
+	         "notifications."},
 	        {"Raycast Scripts",
 	         "scene.raycast(ox,oy,oz, dx,dy,dz, distance [,layerMask "
 	         "[,includeTriggers [,ignoredObject]]]) finds the nearest active "
-	         "Box Collider, including rotated/scaled children. Direction is "
+	         "Collider, including rotated/scaled children. Direction is "
 	         "normalized; distance is in world units from 0 to 1000000. The "
 	         "default mask includes all layers, Trigger is excluded and the "
 	         "script owner is ignored. The mask selects Collider layers, "

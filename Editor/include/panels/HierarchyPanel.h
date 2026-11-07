@@ -93,7 +93,7 @@ class HierarchyPanel {
 	/// <param name="scene">表示対象のシーン</param>
 	/// <param name="selection">Editorの選択状態</param>
 	/// <param name="editable">追加・削除などの編集要求を許可するか。falseでも選択・検索・フレーミングは許可する</param>
-	/// <param name="canPasteCollider">貼り付けるBox Colliderのコピーを保持しているか</param>
+	/// <param name="canPasteCollider">貼り付けるColliderのコピーを保持しているか</param>
 	/// <param name="canPasteCameraLens">貼り付けるCameraのレンズ設定を保持しているか</param>
 	/// <param name="canPasteRespawn">貼り付ける復帰設定を保持しているか</param>
 	/// <returns>要求された操作と入力状態</returns>

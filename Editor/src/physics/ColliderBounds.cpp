@@ -3,9 +3,13 @@
 
 #include "graphics/render/DebugLine.h"
 #include "math/MathUtils.h"
-#include "physics/BoxColliderUtils.h"
+#include "math/TransformUtils.h"
+#include "physics/ColliderUtils.h"
 #include "scene/Scene.h"
+#include "scene/SceneHierarchy.h"
 #include "scene/SceneRenderer.h"
+#include <cmath>
+#include <numbers>
 
 #include <array>
 
@@ -42,8 +46,8 @@ bool ColliderBounds::GetFrameBounds(const SceneObject &object,
 	AxisAlignedBox box;
 
 	return object.parentId == 0 && object.collider &&
-	       BoxColliderUtils::GetWorldBounds(*object.collider, object.transform,
-	                                        box) &&
+	       ColliderUtils::GetWorldBounds(*object.collider, object.transform,
+	                                     box) &&
 	       GetCorners(box, corners);
 }
 
@@ -79,14 +83,15 @@ bool ColliderBounds::Update(SceneRenderer &renderer, const Scene &scene,
 }
 
 bool ColliderBounds::BuildLines(const SceneObject &object, Lines &lines) const {
-	if (object.parentId != 0 || !object.collider) {
+	if (object.parentId != 0 || !object.collider ||
+	    object.collider->shape != Collider::Shape::BOX) {
 		return false;
 	}
 
 	AxisAlignedBox box;
 
-	if (!BoxColliderUtils::GetWorldBounds(*object.collider, object.transform,
-	                                      box)) {
+	if (!ColliderUtils::GetWorldBounds(*object.collider, object.transform,
+	                                   box)) {
 		return false;
 	}
 
@@ -117,18 +122,17 @@ bool ColliderBounds::BuildLines(const AxisAlignedBox &box, Lines &lines) const {
 
 bool ColliderBounds::Update(SceneRenderer &renderer,
                             const SceneObject &object) const {
-	Lines lines;
-
-	if (!BuildLines(object, lines)) {
+	if (object.parentId != 0 || !object.collider)
 		return true;
-	}
-
-	for (const auto &line : lines) {
-		if (!renderer.AddDebugLine(line)) {
+	DirectX::XMFLOAT4X4 matrix;
+	DirectX::XMStoreFloat4x4(&matrix,
+	                         TransformUtils::MakeWorldMatrix(object.transform));
+	std::vector<DebugLine> lines;
+	if (!BuildLines(*object.collider, matrix, lines))
+		return false;
+	for (const auto &line : lines)
+		if (!renderer.AddDebugLine(line))
 			return false;
-		}
-	}
-
 	return true;
 }
 
@@ -137,8 +141,8 @@ bool ColliderBounds::GetFrameBounds(const Scene &scene, SceneObjectId id,
 	const auto *object = scene.FindObject(id);
 	AxisAlignedBox bounds;
 	return object && object->collider &&
-	       BoxColliderUtils::GetWorldBounds(*object->collider, scene, id,
-	                                        bounds) &&
+	       ColliderUtils::GetWorldBounds(*object->collider, scene, id,
+	                                     bounds) &&
 	       GetCorners(bounds, corners);
 }
 
@@ -149,14 +153,88 @@ bool ColliderBounds::Update(SceneRenderer &renderer, const Scene &scene,
 		return false;
 	if (!object->collider)
 		return true;
-	AxisAlignedBox bounds;
-	Lines lines;
-	if (!BoxColliderUtils::GetWorldBounds(*object->collider, scene, id,
-	                                      bounds) ||
-	    !BuildLines(bounds, lines))
+	SceneWorldTransform world;
+	std::vector<DebugLine> lines;
+	if (!SceneHierarchy::GetWorldTransform(scene, id, world) ||
+	    !BuildLines(*object->collider, world.matrix, lines))
 		return false;
 	for (const auto &line : lines)
 		if (!renderer.AddDebugLine(line))
 			return false;
+	return true;
+}
+
+bool ColliderBounds::BuildLines(const Collider &collider,
+                                const DirectX::XMFLOAT4X4 &matrix,
+                                std::vector<DebugLine> &lines) const {
+	DirectX::XMFLOAT4X4 inverse;
+	if (!collider.IsValid() ||
+	    !TransformUtils::TryInverseWorldMatrix(matrix, inverse))
+		return false;
+	const auto world = DirectX::XMLoadFloat4x4(&matrix);
+	std::vector<DebugLine> next;
+	bool valid = true;
+	const auto point = [&](DirectX::XMFLOAT3 local) {
+		local = {local.x + collider.center.x, local.y + collider.center.y,
+		         local.z + collider.center.z};
+		DirectX::XMFLOAT3 result;
+		DirectX::XMStoreFloat3(&result,
+		                       DirectX::XMVector3TransformCoord(
+		                           DirectX::XMLoadFloat3(&local), world));
+		valid &= MathUtils::IsFinite(result);
+		return result;
+	};
+	const auto line = [&](const DirectX::XMFLOAT3 &a,
+	                      const DirectX::XMFLOAT3 &b) {
+		next.push_back({point(a), point(b), color_});
+	};
+	if (collider.shape == Collider::Shape::BOX) {
+		std::array<DirectX::XMFLOAT3, 8> corners;
+		const auto &h = collider.halfExtents;
+		for (unsigned i = 0; i < 8; ++i)
+			corners[i] = {(i & 1) ? h.x : -h.x, (i & 2) ? h.y : -h.y,
+			              (i & 4) ? h.z : -h.z};
+		for (unsigned i = 0; i < 8; ++i)
+			for (unsigned axis : {1u, 2u, 4u})
+				if (!(i & axis))
+					line(corners[i], corners[i | axis]);
+	} else {
+		const float radius = collider.radius;
+		const auto circle = [&](int plane, float y, float start, float end,
+		                        int segments) {
+			const auto at = [&](float angle) {
+				const float a = std::cos(angle) * radius,
+				            b = std::sin(angle) * radius;
+				return plane == 0   ? DirectX::XMFLOAT3{a, b + y, 0}
+				       : plane == 1 ? DirectX::XMFLOAT3{0, b + y, a}
+				                    : DirectX::XMFLOAT3{a, y, b};
+			};
+			for (int i = 0; i < segments; ++i)
+				line(at(start + (end - start) * i / segments),
+				     at(start + (end - start) * (i + 1) / segments));
+		};
+		const float pi = std::numbers::pi_v<float>;
+		if (collider.shape == Collider::Shape::SPHERE) {
+			for (int plane = 0; plane < 3; ++plane)
+				circle(plane, 0, 0, 2 * pi, kCircleSegments);
+		} else {
+			const float height = collider.halfHeight;
+			for (float y : {-height, height})
+				circle(2, y, 0, 2 * pi, kCircleSegments);
+			for (int plane = 0; plane < 2; ++plane) {
+				circle(plane, height, 0, pi, kCircleSegments / 2);
+				circle(plane, -height, pi, 2 * pi, kCircleSegments / 2);
+			}
+			for (const DirectX::XMFLOAT3 p :
+			     std::array<DirectX::XMFLOAT3, 4>{{{radius, 0, 0},
+			                                       {-radius, 0, 0},
+			                                       {0, 0, radius},
+			                                       {0, 0, -radius}}})
+				line({p.x, -height, p.z}, {p.x, height, p.z});
+		}
+	}
+	if (!valid)
+		return false;
+	lines = std::move(next);
 	return true;
 }

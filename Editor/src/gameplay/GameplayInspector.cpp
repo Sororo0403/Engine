@@ -150,7 +150,7 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 	if (object.character && ui.CollapsingHeader("Character Controller")) {
 		if (!object.collider) {
-			ImGui::TextWrapped("Box Collider is missing.");
+			ImGui::TextWrapped("Collider is missing.");
 		}
 
 		auto field = [&](const char *label, float CharacterSettings::*member,

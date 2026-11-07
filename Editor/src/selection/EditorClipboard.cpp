@@ -2,7 +2,7 @@
 
 #include "math/MathUtils.h"
 #include "math/TransformUtils.h"
-#include "physics/BoxColliderUtils.h"
+#include "physics/ColliderUtils.h"
 #include "scene/Scene.h"
 #include "scene/SceneHierarchy.h"
 #include "scene/SceneObjectReferences.h"
@@ -97,8 +97,8 @@ const Transform *EditorClipboard::GetTransform() const {
 	return transform_ ? &*transform_ : nullptr;
 }
 
-bool EditorClipboard::CopyCollider(const BoxCollider &collider) {
-	if (!BoxColliderUtils::IsValid(collider)) {
+bool EditorClipboard::CopyCollider(const Collider &collider) {
+	if (!ColliderUtils::IsValid(collider)) {
 		return false;
 	}
 
@@ -106,7 +106,7 @@ bool EditorClipboard::CopyCollider(const BoxCollider &collider) {
 	return true;
 }
 
-const BoxCollider *EditorClipboard::GetCollider() const {
+const Collider *EditorClipboard::GetCollider() const {
 	return collider_ ? &*collider_ : nullptr;
 }
 

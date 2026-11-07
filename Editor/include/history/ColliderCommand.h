@@ -1,6 +1,6 @@
 #pragma once
 
-#include "physics/BoxCollider.h"
+#include "physics/Collider.h"
 #include "scene/SceneObjectId.h"
 
 #include <optional>
@@ -18,8 +18,8 @@ class ColliderCommand {
 	/// <param name="objectId">対象物体のID</param>
 	/// <param name="before">変更前。未指定はコンポーネントなし</param>
 	/// <param name="after">変更後。未指定はコンポーネントなし</param>
-	ColliderCommand(SceneObjectId objectId, std::optional<BoxCollider> before,
-	                std::optional<BoxCollider> after);
+	ColliderCommand(SceneObjectId objectId, std::optional<Collider> before,
+	                std::optional<Collider> after);
 
 	/// <summary>
 	/// 設定が変わる操作か確認する
@@ -45,6 +45,6 @@ class ColliderCommand {
 
   private:
 	SceneObjectId objectId_;
-	std::optional<BoxCollider> before_;
-	std::optional<BoxCollider> after_;
+	std::optional<Collider> before_;
+	std::optional<Collider> after_;
 };

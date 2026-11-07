@@ -1,9 +1,11 @@
 #pragma once
 
 #include "graphics/render/DebugLine.h"
+#include "physics/Collider.h"
 #include "scene/SceneObjectId.h"
 #include <array>
 #include <span>
+#include <vector>
 
 struct AxisAlignedBox;
 class SceneRenderer;
@@ -11,7 +13,7 @@ class Scene;
 struct SceneObject;
 
 /// <summary>
-/// 衝突判定に使うワールド座標のボックスをSceneビューに表示する
+/// Colliderのローカル輪郭をワールド座標へ変換し、Sceneビューに表示する
 /// </summary>
 class ColliderBounds {
   public:
@@ -90,6 +92,17 @@ class ColliderBounds {
 	bool Update(SceneRenderer &renderer, const Scene &scene,
 	            SceneObjectId id) const;
 
+	/// <summary>
+	/// ローカルの箱・球・カプセルの輪郭を、合成行列で変換した線へ置き換える
+	/// </summary>
+	/// <param name="collider">表示する形状</param>
+	/// <param name="matrix">有限で可逆なアフィン行列。編集途中の非一様な丸形状も輪郭として表示する</param>
+	/// <param name="lines">成功時だけ設定する輪郭。箱12本、球96本、カプセル132本</param>
+	/// <returns>true:作成成功 false:形状・行列・線の座標が無効</returns>
+	bool BuildLines(const Collider &collider, const DirectX::XMFLOAT4X4 &matrix,
+	                std::vector<DebugLine> &lines) const;
+
   private:
+	static constexpr int kCircleSegments = 32;
 	DirectX::XMFLOAT4 color_{0.2f, 1.0f, 0.3f, 1.0f};
 };

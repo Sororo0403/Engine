@@ -1,7 +1,7 @@
 #include "dialogs/BoxCreationDialog.h"
 
 #include "graphics/ui/ImGuiSystem.h"
-#include "physics/BoxColliderUtils.h"
+#include "physics/ColliderUtils.h"
 #include "scene/PrimitiveObjects.h"
 #include <algorithm>
 #include <cmath>
@@ -9,7 +9,7 @@
 #include <limits>
 #include <utility>
 
-void BoxCreationDialog::Show(const BoxCollider &bounds, float planeHeight) {
+void BoxCreationDialog::Show(const Collider &bounds, float planeHeight) {
 	settings_ = {};
 	bounds_ = bounds;
 	planeHeight_ = planeHeight;
@@ -43,8 +43,8 @@ BoxCreationResult BoxCreationDialog::Draw(const ImGuiSystem &ui) {
 		    PrimitiveObjects::TryCreateBox(placed, bounds_, checked, message);
 		AxisAlignedBox world;
 		canPlace = canPlace && checked.collider &&
-		           BoxColliderUtils::GetWorldBounds(*checked.collider,
-		                                            checked.transform, world) &&
+		           ColliderUtils::GetWorldBounds(*checked.collider,
+		                                         checked.transform, world) &&
 		           std::abs(double(world.minimum.y) - planeHeight_) <=
 		               BoxCreationSettings::kBoundsRelativeTolerance *
 		                   (std::max)(1.0, std::abs(double(planeHeight_)));
@@ -93,6 +93,6 @@ bool BoxCreationDialog::GetPreviewBounds(AxisAlignedBox &bounds) const {
 	std::string error;
 	return PrimitiveObjects::TryCreateBox(settings_, bounds_, object, error) &&
 	       object.collider &&
-	       BoxColliderUtils::GetWorldBounds(*object.collider, object.transform,
-	                                        bounds);
+	       ColliderUtils::GetWorldBounds(*object.collider, object.transform,
+	                                     bounds);
 }

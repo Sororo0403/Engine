@@ -157,7 +157,7 @@ class InspectorPanel {
 	/// <param name="canPasteTransform">貼り付けるTransformを保持しているか</param>
 	/// <param name="models">材質スロットを表示する場合のモデル管理</param>
 	/// <param name="assets">材質スロットを表示する場合のアセット一覧</param>
-	/// <param name="canPasteCollider">貼り付けるBox Colliderのコピーを保持しているか</param>
+	/// <param name="canPasteCollider">貼り付けるColliderのコピーを保持しているか</param>
 	/// <param name="canPasteCameraLens">貼り付けるCameraのレンズ設定を保持しているか</param>
 	/// <param name="canPasteCharacter">貼り付けるCharacter設定を保持しているか</param>
 	/// <param name="canPasteFollow">貼り付ける追従設定を保持しているか</param>

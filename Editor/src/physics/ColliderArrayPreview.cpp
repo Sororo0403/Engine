@@ -1,8 +1,8 @@
 #include "physics/ColliderArrayPreview.h"
 
 #include "math/TransformUtils.h"
-#include "physics/BoxColliderUtils.h"
 #include "physics/ColliderBounds.h"
+#include "physics/ColliderUtils.h"
 #include "scene/Scene.h"
 #include "scene/SceneHierarchy.h"
 #include "scene/SceneRenderer.h"
@@ -60,8 +60,8 @@ bool ColliderArrayPreview::BuildBounds(
 			}
 
 			AxisAlignedBox box;
-			if (!BoxColliderUtils::GetWorldBounds(*object.collider, working, id,
-			                                      box)) {
+			if (!ColliderUtils::GetWorldBounds(*object.collider, working, id,
+			                                   box)) {
 				return false;
 			}
 

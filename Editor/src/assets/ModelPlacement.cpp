@@ -3,7 +3,7 @@
 
 #include "math/MathUtils.h"
 #include "math/Ray.h"
-#include "physics/BoxColliderUtils.h"
+#include "physics/ColliderUtils.h"
 #include "scene/Scene.h"
 
 #include <algorithm>
@@ -168,8 +168,7 @@ bool ModelPlacement::GetSurface(const Ray &ray, const Scene &scene,
 		AxisAlignedBox box;
 
 		if (!SceneActivity::IsActive(scene, id) || !object.collider ||
-		    !BoxColliderUtils::GetWorldBounds(*object.collider, scene, id,
-		                                      box)) {
+		    !ColliderUtils::GetWorldBounds(*object.collider, scene, id, box)) {
 			continue;
 		}
 

@@ -1,7 +1,7 @@
 #include "selection/SelectionMeasurement.h"
 
 #include "math/MathUtils.h"
-#include "physics/BoxColliderUtils.h"
+#include "physics/ColliderUtils.h"
 #include "scene/Scene.h"
 #include "scene/SceneHierarchy.h"
 #include "scene/SceneRenderer.h"
@@ -40,8 +40,8 @@ bool SelectionMeasurement::Measure(const Scene &scene,
 			continue;
 		}
 		AxisAlignedBox bounds;
-		if (!BoxColliderUtils::GetWorldBounds(*object->collider, world.matrix,
-		                                      bounds)) {
+		if (!ColliderUtils::GetWorldBounds(*object->collider, world.matrix,
+		                                   bounds)) {
 			++candidate.invalidColliders;
 			continue;
 		}

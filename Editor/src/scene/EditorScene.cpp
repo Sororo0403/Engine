@@ -28,9 +28,9 @@
 #include "math/MathUtils.h"
 #include "math/Ray.h"
 #include "math/TransformUtils.h"
-#include "physics/BoxColliderUtils.h"
 #include "physics/ColliderArrayPreview.h"
 #include "physics/ColliderPlacement.h"
+#include "physics/ColliderUtils.h"
 #include "physics/CollisionWorld.h"
 #include "platform/windows/PathUtils.h"
 #include "scene/PrimitiveObjects.h"
@@ -1785,7 +1785,7 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			action = EditorAction::PASTE_RESPAWN_SETTINGS;
 		}
 
-		if (ui_.BeginMenu("Box Colliders")) {
+		if (ui_.BeginMenu("Colliders")) {
 			bool hasCollider = false;
 			bool hasMissing = false;
 
@@ -1805,7 +1805,7 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 				action = EditorAction::FIT_COLLIDERS;
 			}
 
-			if (ui_.MenuItem("Paste Box Colliders", nullptr,
+			if (ui_.MenuItem("Paste Colliders", nullptr,
 			                 objectEnabled &&
 			                     clipboard_.GetCollider() != nullptr)) {
 				action = EditorAction::PASTE_COLLIDERS;
@@ -2767,7 +2767,7 @@ void EditorScene::StartAction(EditorAction action) {
 		return;
 	case EditorAction::CREATE_SIZED_BOX: {
 		try {
-			BoxCollider bounds;
+			Collider bounds;
 			if (!GetFittedCollider(PrimitiveObjects::CreateBox(), bounds)) {
 				ShowError(
 				    "Could not load the built-in Box. No object was created.");
@@ -2972,7 +2972,7 @@ void EditorScene::CreateObject(SceneObject object) {
 		FinishEdit();
 
 		if (object.collider && object.HasMesh()) {
-			BoxCollider fitted;
+			Collider fitted;
 
 			if (!GetFittedCollider(object, fitted)) {
 				ShowError("Could not load the built-in model. No object was "
@@ -3007,7 +3007,7 @@ void EditorScene::FitCollider(SceneObjectId id) {
 		if (!object)
 			return;
 
-		BoxCollider collider;
+		Collider collider;
 
 		if (!GetFittedCollider(*object, collider)) {
 			ShowError("Could not fit the collider to the model. See the log "
@@ -3026,19 +3026,20 @@ void EditorScene::FitCollider(SceneObjectId id) {
 }
 
 bool EditorScene::GetFittedCollider(const SceneObject &object,
-                                    BoxCollider &collider) {
-	BoxCollider fitted;
-	if (object.collider) {
-		fitted.filter = object.collider->filter;
-		fitted.isTrigger = object.collider->isTrigger;
+                                    Collider &collider) {
+	Collider fitted = object.collider.value_or(Collider{});
+	if (!object.HasMesh()) {
+		fitted.center = {};
+		fitted.halfExtents = {.5f, .5f, .5f};
+		fitted.radius = .5f;
+		fitted.halfHeight = .5f;
 	}
-
 	if (object.HasMesh()) {
 		const auto model = models_.Load(object.mesh->modelPath);
 		std::array<DirectX::XMFLOAT3, 8> corners;
 
 		if (!models_.GetLocalBounds(model, corners) ||
-		    !BoxColliderUtils::FitToPoints(corners, fitted)) {
+		    !ColliderUtils::FitToPoints(corners, fitted)) {
 			return false;
 		}
 	}
@@ -3067,10 +3068,10 @@ void EditorScene::ConfigureSelectedColliders(ColliderOperation operation) {
 				continue;
 			}
 
-			std::optional<BoxCollider> collider;
+			std::optional<Collider> collider;
 
 			if (operation != ColliderOperation::REMOVE_ALL) {
-				BoxCollider fitted;
+				Collider fitted;
 
 				if (!GetFittedCollider(object, fitted)) {
 					ShowError(std::format("Could not fit a collider to '{}'. "
@@ -3768,7 +3769,7 @@ void EditorScene::UpdateDialogs() {
 		stage_ = DialogStage::IDLE;
 		if (result == BoxCreationResult::ACCEPTED) {
 			try {
-				BoxCollider bounds;
+				Collider bounds;
 				SceneObject object;
 				std::string error;
 				if (!GetFittedCollider(PrimitiveObjects::CreateBox(), bounds)) {
@@ -4009,9 +4010,9 @@ void EditorScene::ApplyInspectorRequest(
 			AxisAlignedBox bounds;
 
 			if (!object->collider ||
-			    !BoxColliderUtils::GetWorldBounds(*object->collider,
-			                                      document_.GetScene(),
-			                                      request.objectId, bounds)) {
+			    !ColliderUtils::GetWorldBounds(*object->collider,
+			                                   document_.GetScene(),
+			                                   request.objectId, bounds)) {
 				ShowError(
 				    "Could not read a valid Collider top for the work plane.",
 				    request.objectId);
@@ -4301,7 +4302,7 @@ void EditorScene::ApplyInspectorRequest(
 		if (request.action == InspectorPanel::ObjectAction::COPY_COLLIDER) {
 			if (!object->collider ||
 			    !clipboard_.CopyCollider(*object->collider)) {
-				ShowError("Could not copy an invalid Box Collider.");
+				ShowError("Could not copy an invalid Collider.");
 			}
 
 			return;
@@ -4312,7 +4313,7 @@ void EditorScene::ApplyInspectorRequest(
 
 			if (!copied || !document_.GetHistory().SetCollider(request.objectId,
 			                                                   *copied)) {
-				ShowError("Could not paste the Box Collider. Copy a valid "
+				ShowError("Could not paste the Collider. Copy a valid "
 				          "shape and check the target Transform.");
 			}
 
@@ -4412,14 +4413,8 @@ void EditorScene::ApplyInspectorRequest(
 				inspected = RespawnPreview::FindBlockingObjects(
 				    document_.GetScene(), request.objectId, objects);
 			} else {
-				AxisAlignedBox body;
-				inspected =
-				    object->collider &&
-				    BoxColliderUtils::GetWorldBounds(*object->collider,
-				                                     document_.GetScene(),
-				                                     request.objectId, body) &&
-				    CollisionWorld::FindOverlaps(document_.GetScene(), body,
-				                                 objects, request.objectId);
+				inspected = CollisionWorld::FindColliderOverlaps(
+				    document_.GetScene(), request.objectId, objects);
 			}
 
 			if (!inspected) {
@@ -5523,7 +5518,7 @@ void EditorScene::AlignSelectedColliderBounds(AlignmentAxis axis,
 		if (!document_.GetHistory().AlignColliderBounds(
 		        selection_.GetIds(), selection_.GetActiveId(), axis, maximum)) {
 			ShowError("Could not align Collider bounds. Select objects with "
-			          "valid Box Colliders and representable coordinates. No "
+			          "valid Colliders and representable coordinates. No "
 			          "selected object was changed.");
 		}
 	} catch (const std::exception &error) {
@@ -5850,14 +5845,13 @@ void EditorScene::PasteCollidersToSelection() {
 		}
 
 		if (!document_.GetHistory().SetColliders(edits)) {
-			ShowError("Could not paste all Box Colliders. Check the selected "
+			ShowError("Could not paste all Colliders. Check the selected "
 			          "shapes and Transforms. No colliders were changed.");
 		}
 	} catch (const std::exception &error) {
 		Logger::Error(std::format("EditorScene::PasteCollidersToSelection: {}",
 		                          error.what()));
-		ShowError(
-		    "Could not paste the Box Colliders. See the log for details.");
+		ShowError("Could not paste the Colliders. See the log for details.");
 	}
 }
 

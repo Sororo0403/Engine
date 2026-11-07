@@ -2,7 +2,7 @@
 #include "scene/SceneActivity.h"
 
 #include "math/MathUtils.h"
-#include "physics/BoxColliderUtils.h"
+#include "physics/ColliderUtils.h"
 #include "physics/CollisionWorld.h"
 #include "scene/Scene.h"
 #include "scene/SceneHierarchy.h"
@@ -209,8 +209,7 @@ bool RespawnPreview::GetColliderBounds(const SceneObject &object,
 	                            ? transform.translation
 	                            : object.respawn->position;
 
-	return BoxColliderUtils::GetWorldBounds(*object.collider, transform,
-	                                        bounds);
+	return ColliderUtils::GetWorldBounds(*object.collider, transform, bounds);
 }
 
 bool RespawnPreview::GetColliderBounds(const Scene &scene, SceneObjectId id,
@@ -230,8 +229,8 @@ bool RespawnPreview::GetColliderBounds(const Scene &scene, SceneObjectId id,
 		world.matrix._43 = position.z;
 	}
 
-	return BoxColliderUtils::GetWorldBounds(*object->collider, world.matrix,
-	                                        bounds);
+	return ColliderUtils::GetWorldBounds(*object->collider, world.matrix,
+	                                     bounds);
 }
 
 bool RespawnPreview::FindBlockingObjects(const Scene &scene, SceneObjectId id,

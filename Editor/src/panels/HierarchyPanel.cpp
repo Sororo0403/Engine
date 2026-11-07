@@ -123,7 +123,7 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 	if (ImGui::Combo(
 	        "Component", &component,
-	        "All objects\0Box Collider\0Models without Collider\0Character "
+	        "All objects\0Collider\0Models without Collider\0Character "
 	        "Controller\0Camera\0Follow Camera\0Respawn\0Color "
 	        "Tint\0Mesh\0Mesh Renderer\0Primary Camera\0Incomplete Mesh / "
 	        "Renderer\0Characters without Collider\0")) {
@@ -456,7 +456,7 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 					result.action = Action::DUPLICATE_ARRAY;
 				}
 
-				if (ui.MenuItem("Paste Box Colliders", nullptr,
+				if (ui.MenuItem("Paste Colliders", nullptr,
 				                canPasteCollider &&
 				                    selection.GetCount() != 0)) {
 					result.action = Action::PASTE_COLLIDERS;

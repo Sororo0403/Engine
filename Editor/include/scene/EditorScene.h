@@ -62,7 +62,7 @@
 #include <string>
 #include <vector>
 
-struct BoxCollider;
+struct Collider;
 struct Ray;
 struct SceneObject;
 struct EngineContext;
@@ -411,7 +411,7 @@ class EditorScene final : public IScene {
 	/// <param name="object">形状を作る物体</param>
 	/// <param name="collider">成功時に設定する形状</param>
 	/// <returns>true:取得成功 false:モデルまたは外接ボックスを取得できない</returns>
-	bool GetFittedCollider(const SceneObject &object, BoxCollider &collider);
+	bool GetFittedCollider(const SceneObject &object, Collider &collider);
 
 	/// <summary>
 	/// 選択全体の衝突形状を準備し、全件成功時だけ1操作として反映する

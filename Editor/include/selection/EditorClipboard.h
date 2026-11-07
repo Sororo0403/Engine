@@ -12,7 +12,7 @@
 class Scene;
 
 /// <summary>
-/// コピーした物体・Transform・Box Collider・Cameraのレンズ設定・Character設定・追従設定・復帰設定・Trigger Actions・UVを、元のシーンと独立して保持する
+/// コピーした物体・Transform・Collider・Cameraのレンズ設定・Character設定・追従設定・復帰設定・Trigger Actions・UVを、元のシーンと独立して保持する
 /// </summary>
 class EditorClipboard {
   public:
@@ -38,7 +38,7 @@ class EditorClipboard {
 
 	/// <summary>
 	/// 元のシーンの置き換えに合わせ、コピー範囲外の物体への参照を解除する。
-	/// コピー範囲内の参照とTransform・Box Collider・レンズ設定・Character設定・追従設定・復帰設定・Trigger Actionsのコピーは保持する
+	/// コピー範囲内の参照とTransform・Collider・レンズ設定・Character設定・追従設定・復帰設定・Trigger Actionsのコピーは保持する
 	/// </summary>
 	void DetachExternalReferences() noexcept;
 
@@ -77,17 +77,17 @@ class EditorClipboard {
 	const Transform *GetTransform() const;
 
 	/// <summary>
-	/// Box Colliderのローカル形状をコピーする。物体とTransformのコピーは変更しない
+	/// Colliderのローカル形状をコピーする。物体とTransformのコピーは変更しない
 	/// </summary>
 	/// <param name="collider">中心と半寸法が有効な衝突形状。元のTransformは保持しない</param>
 	/// <returns>true:コピー成功 false:無効な形状。以前のコピー内容は保持する</returns>
-	bool CopyCollider(const BoxCollider &collider);
+	bool CopyCollider(const Collider &collider);
 
 	/// <summary>
-	/// コピーしたBox Colliderのローカル形状を取得する
+	/// コピーしたColliderのローカル形状を取得する
 	/// </summary>
 	/// <returns>次のCopyCollider成功またはClearまで有効な値。未設定はnullptr</returns>
-	const BoxCollider *GetCollider() const;
+	const Collider *GetCollider() const;
 
 	/// <summary>
 	/// Cameraのレンズ設定をコピーする。Primary・姿勢・追従設定と、他のコピー内容は変更しない
@@ -176,7 +176,7 @@ class EditorClipboard {
 	std::vector<std::size_t> externalReferences_;
 	std::optional<Transform> transform_;
 	std::optional<DirectX::XMFLOAT3> worldPosition_;
-	std::optional<BoxCollider> collider_;
+	std::optional<Collider> collider_;
 	std::optional<CameraSettings> cameraLens_;
 	std::optional<CharacterSettings> characterSettings_;
 	std::optional<FollowCameraSettings> followSettings_;
