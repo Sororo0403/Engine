@@ -50,9 +50,7 @@ bool SceneDestruction::Apply(Scene &scene, std::span<const SceneObjectId> roots,
 						        const bool destinationRemoved =
 						            action.UsesDestination() &&
 						            removed.contains(action.destination);
-						        return action.operation !=
-						                   TriggerAction::Operation::
-						                       LOAD_SCENE &&
+						        return action.UsesTarget() &&
 						               (targetRemoved || destinationRemoved);
 					        });
 				    if (o.prefabLink && removed.contains(o.prefabLink->root))

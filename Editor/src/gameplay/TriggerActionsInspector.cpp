@@ -79,6 +79,8 @@ const char *OperationLabel(TriggerAction::Operation operation) {
 		return "Send Script Message";
 	case TriggerAction::Operation::EMIT_PARTICLES:
 		return "Emit Particles";
+	case TriggerAction::Operation::QUIT_GAME:
+		return "Quit Game";
 	case TriggerAction::Operation::LOAD_SCENE:
 		return "Load Scene";
 	}
@@ -248,7 +250,7 @@ bool TriggerActionsInspector::Draw(
 				}
 				ImGui::EndCombo();
 			}
-			if (action.operation != TriggerAction::Operation::LOAD_SCENE) {
+			if (action.UsesTarget()) {
 				const auto target = TargetLabel(scene, action.target);
 				if (ImGui::BeginCombo("Target", target.c_str())) {
 					if (ImGui::Selectable("None", action.target == 0) &&
@@ -323,11 +325,16 @@ bool TriggerActionsInspector::Draw(
 				         TriggerAction::Operation::STOP_ANIMATOR,
 				         TriggerAction::Operation::SEND_SCRIPT_MESSAGE,
 				         TriggerAction::Operation::EMIT_PARTICLES,
-				         TriggerAction::Operation::LOAD_SCENE}) {
+				         TriggerAction::Operation::LOAD_SCENE,
+				         TriggerAction::Operation::QUIT_GAME}) {
 					if (ImGui::Selectable(OperationLabel(operation),
 					                      action.operation == operation) &&
 					    action.operation != operation) {
 						action.operation = operation;
+						if (!action.UsesTarget()) {
+							action.target = 0;
+							action.destination = 0;
+						}
 						if (operation != TriggerAction::Operation::LOAD_SCENE)
 							action.arrivalTag.clear();
 						if (operation != TriggerAction::Operation::SET_CAMERA)

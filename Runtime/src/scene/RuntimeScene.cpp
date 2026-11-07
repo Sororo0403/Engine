@@ -93,6 +93,11 @@ bool RuntimeScene::Update(float seconds) {
 		}
 	}
 
+	if (simulation_.IsQuitRequested()) {
+		close_ = true;
+		return true;
+	}
+
 	if (!input_.IsActive())
 		simulation_.CancelUIInput();
 	std::string audioError;
@@ -127,7 +132,8 @@ bool RuntimeScene::Update(float seconds) {
 }
 
 void RuntimeScene::Draw() const {
-	renderer_.Draw();
+	if (!close_)
+		renderer_.Draw();
 }
 
 void RuntimeScene::Finalize() {

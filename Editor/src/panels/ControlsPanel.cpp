@@ -942,6 +942,11 @@ void ControlsPanel::Draw() {
 	         "does "
 	         "not change the authored offsets. Exported games use the same "
 	         "input."},
+	        {"Trigger Actions > Quit Game",
+	         "Choose Quit Game as the operation, for example on a menu "
+	         "button with the Button Click event. In the exported game it "
+	         "closes the game window. In the editor it stops Play and returns "
+	         "to the editing scene."},
 	        {"Trigger Actions > Button Click",
 	         "On a UI Button, add Trigger Actions and choose Button Click. "
 	         "Mouse clicks and keyboard or gamepad submit can then open menus, "

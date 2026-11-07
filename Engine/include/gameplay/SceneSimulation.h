@@ -313,6 +313,14 @@ class SceneSimulation {
 	}
 
 	/// <summary>
+	/// 確定済みのゲーム終了要求を取得する。アプリケーション側でPlay停止または終了に使う
+	/// </summary>
+	/// <returns>true:終了を要求済み false:通常の実行状態</returns>
+	bool IsQuitRequested() const {
+		return quitRequested_;
+	}
+
+	/// <summary>
 	/// 最後のUpdateに失敗した理由を取得する。開始と更新の成功時は空になる
 	/// </summary>
 	/// <returns>次のUpdateまたは再生開始まで有効な失敗理由</returns>
@@ -552,5 +560,6 @@ class SceneSimulation {
 	};
 
 	SceneLoadRequest pendingScene_;
+	bool quitRequested_ = false;
 	std::uint64_t sceneRevision_ = 0;
 };

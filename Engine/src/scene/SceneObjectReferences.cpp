@@ -25,7 +25,7 @@ template <class T, class F> void Visit(T &object, F visit) {
 	}
 	if (object.triggerActions) {
 		for (auto &action : object.triggerActions->actions) {
-			if (action.operation == TriggerAction::Operation::LOAD_SCENE)
+			if (!action.UsesTarget())
 				continue;
 			visit(action.target);
 			visit(action.destination);

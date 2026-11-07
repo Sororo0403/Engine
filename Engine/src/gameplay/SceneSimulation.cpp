@@ -488,6 +488,7 @@ void SceneSimulation::Stop() {
 	sharedScriptData_ = "{}";
 	playing_ = false;
 	pendingScene_ = {};
+	quitRequested_ = false;
 	cameraTransition_.reset();
 	motion_ = SceneMotion{};
 	animations_ = SceneAnimations{};
@@ -526,6 +527,8 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 		return false;
 	}
 	try {
+		if (quitRequested_)
+			return true;
 		if (seconds == 0) {
 			if (!Advance(seconds, input, cameraInput)) {
 				lastUpdateError_ = "The zero-time simulation update failed.";

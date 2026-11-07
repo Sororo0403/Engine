@@ -429,6 +429,11 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 		return false;
 	}
 
+	if (session_.IsQuitRequested()) {
+		Stop();
+		return true;
+	}
+
 	if (session_.GetSceneRevision() != revision) {
 		if (!audioPlayer_.Start(session_.GetCameraPose(), session_.IsPaused(),
 		                        lastUpdateError_, nullptr,

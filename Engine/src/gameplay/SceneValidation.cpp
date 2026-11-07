@@ -155,6 +155,8 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 							        "asset.");
 						continue;
 					}
+					if (!action.UsesTarget())
+						continue;
 					if (!scene.Contains(action.target)) {
 						add(id, "Trigger Actions require an existing target "
 						        "for each action.");

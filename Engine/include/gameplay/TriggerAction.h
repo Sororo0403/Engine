@@ -40,7 +40,8 @@ struct TriggerAction {
 		PAUSE_ANIMATOR,
 		STOP_ANIMATOR,
 		SEND_SCRIPT_MESSAGE,
-		LOAD_SCENE
+		LOAD_SCENE,
+		QUIT_GAME
 	};
 
 	/// <summary>
@@ -123,7 +124,8 @@ struct TriggerAction {
 		        IsAnimatorOperation() ||
 		        operation == Operation::EMIT_PARTICLES ||
 		        operation == Operation::SEND_SCRIPT_MESSAGE ||
-		        operation == Operation::LOAD_SCENE);
+		        operation == Operation::LOAD_SCENE ||
+		        operation == Operation::QUIT_GAME);
 	}
 
 	/// <summary>
@@ -141,6 +143,15 @@ struct TriggerAction {
 	bool AllowsDynamicContact() const {
 		return event != Event::INTERACT && event != Event::BUTTON_CLICK &&
 		       operation != Operation::SET_CHECKPOINT;
+	}
+
+	/// <summary>
+	/// 操作の対象としてシーン内の物体を使うか確認する
+	/// </summary>
+	/// <returns>true:物体を使う false:シーンの読み込みまたはゲームの終了</returns>
+	bool UsesTarget() const {
+		return operation != Operation::LOAD_SCENE &&
+		       operation != Operation::QUIT_GAME;
 	}
 
 	/// <summary>

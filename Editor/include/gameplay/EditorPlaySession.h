@@ -269,6 +269,14 @@ class EditorPlaySession {
 	}
 
 	/// <summary>
+	/// 現在のシミュレーションがゲーム終了を要求したか取得する
+	/// </summary>
+	/// <returns>true:Playを停止する false:継続</returns>
+	bool IsQuitRequested() const {
+		return simulation_.IsQuitRequested();
+	}
+
+	/// <summary>
 	/// 再生物体ごとのLua状態を取得する。編集シーンの初期状態は変更しない
 	/// </summary>
 	/// <param name="id">再生物体ID</param>

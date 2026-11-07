@@ -70,6 +70,7 @@ void SceneSimulation::CopyFrom(const SceneSimulation &source) {
 	occupiedActions_ = source.occupiedActions_;
 	lastUpdateError_ = source.lastUpdateError_;
 	pendingScene_ = source.pendingScene_;
+	quitRequested_ = source.quitRequested_;
 	sceneRevision_ = source.sceneRevision_;
 }
 
@@ -112,6 +113,7 @@ void SceneSimulation::Adopt(SceneSimulation &source) {
 	occupiedActions_ = std::move(source.occupiedActions_);
 	lastUpdateError_ = std::move(source.lastUpdateError_);
 	pendingScene_ = std::move(source.pendingScene_);
+	quitRequested_ = source.quitRequested_;
 	sceneRevision_ = source.sceneRevision_;
 }
 
@@ -239,6 +241,7 @@ bool SceneSimulation::ApplyTriggerActions(
 	SceneObjectId selectedCamera = 0;
 	float cameraBlendSeconds = 0;
 	auto requestedScene = pendingScene_;
+	bool quit = quitRequested_;
 	for (const auto &signal : signals) {
 		const auto *object = scene_.FindObject(signal.receiver);
 		if (!object || !SceneActivity::IsActive(scene_, signal.receiver) ||
@@ -275,9 +278,7 @@ bool SceneSimulation::ApplyTriggerActions(
 					continue;
 			}
 			const auto *target = scene_.FindObject(action.target);
-			if (!action.IsValid() ||
-			    (action.operation != TriggerAction::Operation::LOAD_SCENE &&
-			     !target)) {
+			if (!action.IsValid() || (action.UsesTarget() && !target)) {
 				error = std::format("Trigger Actions on object ID {} have an "
 				                    "invalid action or target.",
 				                    signal.receiver);
@@ -296,6 +297,12 @@ bool SceneSimulation::ApplyTriggerActions(
 				delayedActions_.push_back(
 				    {{signal.receiver, signal.event, signal.other, i, true},
 				     action.delaySeconds});
+				if (action.once)
+					fired.insert(key);
+				continue;
+			}
+			if (action.operation == TriggerAction::Operation::QUIT_GAME) {
+				quit = true;
 				if (action.once)
 					fired.insert(key);
 				continue;
@@ -427,6 +434,7 @@ bool SceneSimulation::ApplyTriggerActions(
 			case TriggerAction::Operation::PLAY_AUDIO:
 			case TriggerAction::Operation::STOP_AUDIO:
 			case TriggerAction::Operation::LOAD_SCENE:
+			case TriggerAction::Operation::QUIT_GAME:
 			case TriggerAction::Operation::TELEPORT:
 			case TriggerAction::Operation::SET_CHECKPOINT:
 			case TriggerAction::Operation::SET_CAMERA:
@@ -628,6 +636,7 @@ bool SceneSimulation::ApplyTriggerActions(
 	}
 
 	pendingScene_ = std::move(requestedScene);
+	quitRequested_ = quit;
 	firedActions_.swap(fired);
 	occupiedActions_.swap(occupied);
 	audioActions_.swap(audio);
