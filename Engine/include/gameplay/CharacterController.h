@@ -9,7 +9,7 @@
 class CollisionWorld;
 
 /// <summary>
-/// ボックス形状の主人公を固定刻みで移動させ、重力・着地・入力猶予付きのジャンプを処理する
+/// 箱・球・カプセル形状の主人公を固定刻みで移動させ、重力・着地・入力猶予付きのジャンプを処理する
 /// </summary>
 class CharacterController {
   public:

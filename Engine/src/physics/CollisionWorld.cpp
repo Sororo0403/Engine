@@ -160,6 +160,26 @@ std::optional<ColliderCastHit> SweepBox(const AxisAlignedBox &body,
 	                        static_cast<float>(normal[1]),
 	                        static_cast<float>(normal[2])}};
 }
+
+/// <summary>
+/// 問い合わせ用の箱をワールド座標で移動する
+/// </summary>
+bool Translate(const AxisAlignedBox &body, const DirectX::XMFLOAT3 &offset,
+               AxisAlignedBox &result) {
+	result = {{body.minimum.x + offset.x, body.minimum.y + offset.y,
+	           body.minimum.z + offset.z},
+	          {body.maximum.x + offset.x, body.maximum.y + offset.y,
+	           body.maximum.z + offset.z}};
+	return Valid(result);
+}
+
+/// <summary>
+/// 準備済みの凸形状をワールド座標で移動する
+/// </summary>
+bool Translate(const WorldCollider &body, const DirectX::XMFLOAT3 &offset,
+               WorldCollider &result) {
+	return body.Translate(offset, result);
+}
 } // namespace
 
 bool CollisionWorld::Rebuild(const Scene &scene, SceneObjectId ignoredObject,
@@ -245,6 +265,14 @@ bool CollisionWorld::CanPlace(
 	WorldCollider query;
 	if (!QueryShape(body, query))
 		return false;
+	return CanPlace(query, filter);
+}
+
+bool CollisionWorld::CanPlace(
+    const WorldCollider &query,
+    const std::optional<CollisionFilter> &filter) const {
+	if (rigidBodies_)
+		return rigidBodies_->CanPlace(query, ignoredBodies_, filter);
 	for (const auto &obstacle : obstacles_) {
 		if (filter && !filter->CanCollide(obstacle.filter))
 			continue;
@@ -267,6 +295,18 @@ bool CollisionWorld::FindOverlaps(const Scene &scene,
 		return false;
 	}
 
+	WorldCollider query;
+	return QueryShape(body, query) &&
+	       FindOverlaps(scene, query, objects, ignoredObject, filter,
+	                    includeTriggers);
+}
+
+bool CollisionWorld::FindOverlaps(const Scene &scene,
+                                  const WorldCollider &query,
+                                  std::vector<SceneObjectId> &objects,
+                                  SceneObjectId ignoredObject,
+                                  const std::optional<CollisionFilter> &filter,
+                                  bool includeTriggers) {
 	SceneHierarchy::WorldTransforms transforms;
 	if (!SceneHierarchy::BuildWorldTransforms(scene, transforms)) {
 		return false;
@@ -276,9 +316,6 @@ bool CollisionWorld::FindOverlaps(const Scene &scene,
 		return false;
 	}
 	std::vector<SceneObjectId> result;
-	WorldCollider query;
-	if (!QueryShape(body, query))
-		return false;
 
 	for (const auto &[id, object] : scene.GetObjects()) {
 		if (!active.at(id) || id == ignoredObject || !object.collider) {
@@ -398,6 +435,97 @@ bool CollisionWorld::Sweep(const AxisAlignedBox &body,
 	return true;
 }
 
+bool CollisionWorld::CanPlace(const Collider &collider,
+                              const DirectX::XMFLOAT4X4 &matrix) const {
+	if (collider.shape == Collider::Shape::BOX) {
+		AxisAlignedBox body;
+		return ColliderUtils::GetWorldBounds(collider, matrix, body) &&
+		       CanPlace(body, collider.filter);
+	}
+	WorldCollider body;
+	std::string error;
+	return WorldCollider::Create(collider, matrix, body, error) &&
+	       CanPlace(body, collider.filter);
+}
+
+bool CollisionWorld::Sweep(const Collider &collider,
+                           const DirectX::XMFLOAT4X4 &matrix,
+                           const DirectX::XMFLOAT3 &displacement,
+                           CollisionSweepResult &result) const {
+	if (collider.shape == Collider::Shape::BOX) {
+		AxisAlignedBox body;
+		return ColliderUtils::GetWorldBounds(collider, matrix, body) &&
+		       Sweep(body, displacement, result, collider.filter);
+	}
+	WorldCollider body;
+	std::string error;
+	return WorldCollider::Create(collider, matrix, body, error) &&
+	       Sweep(body, displacement, result, collider.filter);
+}
+
+bool CollisionWorld::Sweep(const WorldCollider &body,
+                           const DirectX::XMFLOAT3 &displacement,
+                           CollisionSweepResult &result,
+                           const std::optional<CollisionFilter> &filter) const {
+	if (!MathUtils::IsFinite(displacement))
+		return false;
+	if (rigidBodies_)
+		return rigidBodies_->Sweep(body, displacement, result, ignoredBodies_,
+		                           filter);
+	CollisionSweepResult candidate;
+	for (const auto &obstacle : obstacles_) {
+		if (filter && !filter->CanCollide(obstacle.filter))
+			continue;
+		std::optional<ColliderCastHit> hit;
+		if (!body.Cast(obstacle.geometry, displacement, hit))
+			return false;
+		if (!hit)
+			continue;
+		const double into = double(hit->normal.x) * displacement.x +
+		                    double(hit->normal.y) * displacement.y +
+		                    double(hit->normal.z) * displacement.z;
+		if (into >= -.0000001)
+			continue;
+		if (!candidate.objectId || hit->fraction < candidate.fraction ||
+		    (hit->fraction == candidate.fraction &&
+		     obstacle.objectId < candidate.objectId))
+			candidate = {obstacle.objectId, hit->fraction, hit->normal};
+	}
+	result = candidate;
+	return true;
+}
+
+bool CollisionWorld::Move(const Collider &collider,
+                          const DirectX::XMFLOAT4X4 &matrix,
+                          const DirectX::XMFLOAT3 &displacement,
+                          CollisionMoveResult &result) const {
+	if (collider.shape == Collider::Shape::BOX) {
+		AxisAlignedBox body;
+		return ColliderUtils::GetWorldBounds(collider, matrix, body) &&
+		       Move(body, displacement, result, collider.filter);
+	}
+	WorldCollider body;
+	std::string error;
+	return MathUtils::IsFinite(displacement) &&
+	       WorldCollider::Create(collider, matrix, body, error) &&
+	       CanPlace(body, collider.filter) &&
+	       MoveAlongSurfaces(body, displacement, result, collider.filter);
+}
+
+bool CollisionWorld::FindOverlaps(const Scene &scene, const Collider &collider,
+                                  const DirectX::XMFLOAT4X4 &matrix,
+                                  std::vector<SceneObjectId> &objects) {
+	if (collider.shape == Collider::Shape::BOX) {
+		AxisAlignedBox body;
+		return ColliderUtils::GetWorldBounds(collider, matrix, body) &&
+		       FindOverlaps(scene, body, objects, 0, collider.filter, false);
+	}
+	WorldCollider body;
+	std::string error;
+	return WorldCollider::Create(collider, matrix, body, error) &&
+	       FindOverlaps(scene, body, objects, 0, collider.filter, false);
+}
+
 bool CollisionWorld::Move(const AxisAlignedBox &body,
                           const DirectX::XMFLOAT3 &displacement,
                           CollisionMoveResult &result,
@@ -407,20 +535,18 @@ bool CollisionWorld::Move(const AxisAlignedBox &body,
 	return MoveAlongSurfaces(body, displacement, result, filter);
 }
 
+template <class Body>
 bool CollisionWorld::MoveAlongSurfaces(
-    const AxisAlignedBox &body, const DirectX::XMFLOAT3 &displacement,
+    const Body &body, const DirectX::XMFLOAT3 &displacement,
     CollisionMoveResult &result,
     const std::optional<CollisionFilter> &filter) const {
 	DirectX::XMFLOAT3 moved{}, remaining = displacement;
 	CollisionMoveResult next;
 	for (int iteration = 0; iteration < kMaximumSlideIterations; ++iteration) {
-		auto box = body;
-		box.minimum = {body.minimum.x + moved.x, body.minimum.y + moved.y,
-		               body.minimum.z + moved.z};
-		box.maximum = {body.maximum.x + moved.x, body.maximum.y + moved.y,
-		               body.maximum.z + moved.z};
+		Body current;
 		CollisionSweepResult hit;
-		if (!Sweep(box, remaining, hit, filter))
+		if (!Translate(body, moved, current) ||
+		    !Sweep(current, remaining, hit, filter))
 			return false;
 		const double length = std::sqrt(double(remaining.x) * remaining.x +
 		                                double(remaining.y) * remaining.y +
@@ -453,12 +579,8 @@ bool CollisionWorld::MoveAlongSurfaces(
 		} else
 			break;
 	}
-	auto finalBox = body;
-	finalBox.minimum = {body.minimum.x + moved.x, body.minimum.y + moved.y,
-	                    body.minimum.z + moved.z};
-	finalBox.maximum = {body.maximum.x + moved.x, body.maximum.y + moved.y,
-	                    body.maximum.z + moved.z};
-	if (!CanPlace(finalBox, filter))
+	Body finalBody;
+	if (!Translate(body, moved, finalBody) || !CanPlace(finalBody, filter))
 		return false;
 	next.displacement = moved;
 	result = next;

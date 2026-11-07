@@ -52,17 +52,13 @@ bool CheckBranch(const Scene &before, const Scene &after,
 		    std::ranges::find(characterBranch, id) != characterBranch.end())
 			continue;
 		SceneWorldTransform oldPose, newPose;
-		AxisAlignedBox bounds;
 		if (!SceneHierarchy::GetWorldTransform(before, id, oldPose) ||
-		    !SceneHierarchy::GetWorldTransform(after, id, newPose) ||
-		    !ColliderUtils::GetWorldBounds(*object.collider, oldPose.matrix,
-		                                   bounds))
+		    !SceneHierarchy::GetWorldTransform(after, id, newPose))
 			return false;
 		CollisionSweepResult hit;
 		if (!obstacles.Sweep(
-		        bounds,
-		        Difference(newPose.GetPosition(), oldPose.GetPosition()), hit,
-		        object.collider->filter))
+		        *object.collider, oldPose.matrix,
+		        Difference(newPose.GetPosition(), oldPose.GetPosition()), hit))
 			return false;
 		if (hit.objectId && hit.fraction < 1.0) {
 			blocked = true;
@@ -249,21 +245,17 @@ bool SceneMotion::Advance(Scene &scene, float seconds,
 					                                       afterPose))
 						return false;
 				}
+				const auto &collider = *scene.FindObject(character)->collider;
 				if (carried && ground && inBranch(ground) &&
+				    collider.shape == Collider::Shape::BOX &&
 				    !SeparatePassenger(candidate, character, ground, afterPose))
 					continue;
 				if (carried) {
-					AxisAlignedBox bounds;
-					if (!ColliderUtils::GetWorldBounds(
-					        *scene.FindObject(character)->collider,
-					        beforePose.matrix, bounds))
-						return false;
 					CollisionSweepResult hit;
-					if (!obstacles.Sweep(
-					        bounds,
-					        Difference(afterPose.GetPosition(),
-					                   beforePose.GetPosition()),
-					        hit, scene.FindObject(character)->collider->filter))
+					if (!obstacles.Sweep(collider, beforePose.matrix,
+					                     Difference(afterPose.GetPosition(),
+					                                beforePose.GetPosition()),
+					                     hit))
 						return false;
 					if (hit.objectId && hit.fraction < 1.0)
 						continue;

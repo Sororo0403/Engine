@@ -1,7 +1,6 @@
 #include "gameplay/CharacterController.h"
 
 #include "math/TransformUtils.h"
-#include "physics/ColliderUtils.h"
 #include "physics/CollisionWorld.h"
 
 #include <algorithm>
@@ -43,12 +42,8 @@ bool CharacterController::Initialize(const DirectX::XMFLOAT4X4 &worldMatrix,
                                      const Collider &collider,
                                      const CharacterSettings &settings,
                                      const CollisionWorld &world) {
-	AxisAlignedBox body;
-
-	if (collider.shape != Collider::Shape::BOX || collider.isTrigger ||
-	    !settings.IsValid() ||
-	    !ColliderUtils::GetWorldBounds(collider, worldMatrix, body) ||
-	    !world.CanPlace(body, collider.filter)) {
+	if (collider.isTrigger || !settings.IsValid() ||
+	    !world.CanPlace(collider, worldMatrix)) {
 		return false;
 	}
 
@@ -65,8 +60,8 @@ bool CharacterController::Initialize(const DirectX::XMFLOAT4X4 &worldMatrix,
 	jumpBufferRemaining_ = 0.0;
 	initialized_ = true;
 	CollisionMoveResult contact;
-	grounded_ = world.Move(body, {0.0f, -kGroundProbeDistance, 0.0f}, contact,
-	                       collider_.filter) &&
+	grounded_ = world.Move(collider_, worldMatrix_,
+	                       {0.0f, -kGroundProbeDistance, 0.0f}, contact) &&
 	            contact.grounded;
 	coyoteRemaining_ = grounded_ ? settings_.coyoteTime : 0.0;
 	return true;
@@ -117,14 +112,11 @@ bool CharacterController::Update(float deltaTime, const CharacterInput &input,
 
 bool CharacterController::FindGroundObject(const CollisionWorld &world,
                                            SceneObjectId &objectId) const {
-	AxisAlignedBox body;
 	CollisionSweepResult contact;
 
-	if (!initialized_ ||
-	    !ColliderUtils::GetWorldBounds(collider_, worldMatrix_, body) ||
-	    !world.CanPlace(body, collider_.filter) ||
-	    !world.Sweep(body, {0.0f, -kGroundProbeDistance, 0.0f}, contact,
-	                 collider_.filter)) {
+	if (!initialized_ || !world.CanPlace(collider_, worldMatrix_) ||
+	    !world.Sweep(collider_, worldMatrix_,
+	                 {0.0f, -kGroundProbeDistance, 0.0f}, contact)) {
 		return false;
 	}
 
@@ -134,16 +126,10 @@ bool CharacterController::FindGroundObject(const CollisionWorld &world,
 
 bool CharacterController::Step(const CharacterInput &input,
                                const CollisionWorld &world) {
-	AxisAlignedBox body;
-
-	if (!ColliderUtils::GetWorldBounds(collider_, worldMatrix_, body)) {
-		return false;
-	}
-
 	CollisionMoveResult ground;
 	grounded_ = verticalVelocity_ <= 0.0f &&
-	            world.Move(body, {0.0f, -kGroundProbeDistance, 0.0f}, ground,
-	                       collider_.filter) &&
+	            world.Move(collider_, worldMatrix_,
+	                       {0.0f, -kGroundProbeDistance, 0.0f}, ground) &&
 	            ground.grounded;
 
 	if (grounded_) {
@@ -181,7 +167,7 @@ bool CharacterController::Step(const CharacterInput &input,
 	                       step)};
 	CollisionMoveResult movement;
 
-	if (!world.Move(body, requested, movement, collider_.filter)) {
+	if (!world.Move(collider_, worldMatrix_, requested, movement)) {
 		return false;
 	}
 
@@ -193,10 +179,8 @@ bool CharacterController::Step(const CharacterInput &input,
 	matrix._41 = transform.translation.x;
 	matrix._42 = transform.translation.y;
 	matrix._43 = transform.translation.z;
-	AxisAlignedBox movedBody;
 
-	if (!ColliderUtils::GetWorldBounds(collider_, matrix, movedBody) ||
-	    !world.CanPlace(movedBody, collider_.filter)) {
+	if (!world.CanPlace(collider_, matrix)) {
 		return false;
 	}
 
@@ -228,10 +212,7 @@ bool CharacterController::Step(const CharacterInput &input,
 
 bool CharacterController::SynchronizeWorldMatrix(
     const DirectX::XMFLOAT4X4 &worldMatrix, const CollisionWorld &world) {
-	AxisAlignedBox body;
-	if (!initialized_ ||
-	    !ColliderUtils::GetWorldBounds(collider_, worldMatrix, body) ||
-	    !world.CanPlace(body, collider_.filter)) {
+	if (!initialized_ || !world.CanPlace(collider_, worldMatrix)) {
 		return false;
 	}
 	worldMatrix_ = worldMatrix;
@@ -241,12 +222,9 @@ bool CharacterController::SynchronizeWorldMatrix(
 }
 
 bool CharacterController::RefreshContacts(const CollisionWorld &world) {
-	AxisAlignedBox body;
 	CollisionMoveResult ground;
-	if (!initialized_ ||
-	    !ColliderUtils::GetWorldBounds(collider_, worldMatrix_, body) ||
-	    !world.Move(body, {0, -kGroundProbeDistance, 0}, ground,
-	                collider_.filter)) {
+	if (!initialized_ || !world.Move(collider_, worldMatrix_,
+	                                 {0, -kGroundProbeDistance, 0}, ground)) {
 		return false;
 	}
 	grounded_ = verticalVelocity_ <= 0 && ground.grounded;

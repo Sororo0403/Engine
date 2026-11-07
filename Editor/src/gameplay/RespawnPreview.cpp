@@ -10,6 +10,29 @@
 #include "scene/SceneRenderer.h"
 #include <algorithm>
 
+namespace {
+/// <summary>
+/// 復帰先でのColliderのワールド姿勢を求める
+/// </summary>
+bool GetRespawnPose(const Scene &scene, SceneObjectId id,
+                    SceneWorldTransform &world) {
+	const auto *object = scene.FindObject(id);
+	if (!object || !object->respawn || !object->respawn->IsValid() ||
+	    !object->collider ||
+	    !SceneHierarchy::GetWorldTransform(scene, id, world)) {
+		return false;
+	}
+
+	if (!object->respawn->useStartPosition) {
+		const auto position = object->respawn->position;
+		world.matrix._41 = position.x;
+		world.matrix._42 = position.y;
+		world.matrix._43 = position.z;
+	}
+	return true;
+}
+} // namespace
+
 bool RespawnPreview::BuildGeometry(const Scene &scene, SceneObjectId id,
                                    Geometry &geometry) const {
 	const auto *object = scene.FindObject(id);
@@ -20,15 +43,22 @@ bool RespawnPreview::BuildGeometry(const Scene &scene, SceneObjectId id,
 	}
 
 	const auto &settings = *object->respawn;
-	AxisAlignedBox body;
-
-	if (GetColliderBounds(scene, id, body)) {
-		ColliderBounds::Lines outline;
+	SceneWorldTransform pose;
+	if (GetRespawnPose(scene, id, pose)) {
 		ColliderBounds bounds;
-
-		if (bounds.BuildLines(body, outline)) {
-			result.collider = outline;
+		std::vector<DebugLine> outline;
+		if (object->collider->shape == Collider::Shape::BOX) {
+			AxisAlignedBox body;
+			ColliderBounds::Lines boxOutline;
+			if (ColliderUtils::GetWorldBounds(*object->collider, pose.matrix,
+			                                  body) &&
+			    bounds.BuildLines(body, boxOutline))
+				outline.assign(boxOutline.begin(), boxOutline.end());
+		} else {
+			bounds.BuildLines(*object->collider, pose.matrix, outline);
 		}
+		if (!outline.empty())
+			result.collider = std::move(outline);
 
 		if (SceneActivity::IsActive(scene, id) && object->character &&
 		    object->character->IsValid() && !object->collider->isTrigger &&
@@ -38,7 +68,7 @@ bool RespawnPreview::BuildGeometry(const Scene &scene, SceneObjectId id,
 			result.canRespawn =
 			    SceneHierarchy::GetSubtree(scene, id, ignored) &&
 			    world.Rebuild(scene, std::span<const SceneObjectId>{ignored}) &&
-			    world.CanPlace(body, object->collider->filter);
+			    world.CanPlace(*object->collider, pose.matrix);
 		}
 	}
 
@@ -214,34 +244,22 @@ bool RespawnPreview::GetColliderBounds(const SceneObject &object,
 
 bool RespawnPreview::GetColliderBounds(const Scene &scene, SceneObjectId id,
                                        AxisAlignedBox &bounds) {
-	const auto *object = scene.FindObject(id);
 	SceneWorldTransform world;
-	if (!object || !object->respawn || !object->respawn->IsValid() ||
-	    !object->collider ||
-	    !SceneHierarchy::GetWorldTransform(scene, id, world)) {
+	if (!GetRespawnPose(scene, id, world))
 		return false;
-	}
 
-	if (!object->respawn->useStartPosition) {
-		const auto position = object->respawn->position;
-		world.matrix._41 = position.x;
-		world.matrix._42 = position.y;
-		world.matrix._43 = position.z;
-	}
-
-	return ColliderUtils::GetWorldBounds(*object->collider, world.matrix,
-	                                     bounds);
+	return ColliderUtils::GetWorldBounds(*scene.FindObject(id)->collider,
+	                                     world.matrix, bounds);
 }
 
 bool RespawnPreview::FindBlockingObjects(const Scene &scene, SceneObjectId id,
                                          std::vector<SceneObjectId> &objects) {
-	AxisAlignedBox body;
+	SceneWorldTransform pose;
 	std::vector<SceneObjectId> result, ignored;
-	if (!GetColliderBounds(scene, id, body) ||
+	if (!GetRespawnPose(scene, id, pose) ||
 	    !SceneHierarchy::GetSubtree(scene, id, ignored) ||
-	    !CollisionWorld::FindOverlaps(scene, body, result, 0,
-	                                  scene.FindObject(id)->collider->filter,
-	                                  false)) {
+	    !CollisionWorld::FindOverlaps(scene, *scene.FindObject(id)->collider,
+	                                  pose.matrix, result)) {
 		return false;
 	}
 

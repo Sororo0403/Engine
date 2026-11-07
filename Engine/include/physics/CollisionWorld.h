@@ -109,11 +109,67 @@ class CollisionWorld {
 	     CollisionMoveResult &result,
 	     const std::optional<CollisionFilter> &filter = std::nullopt) const;
 
+	/// <summary>
+	/// 箱は従来のAABB、球とカプセルは実形状で配置できるか調べる
+	/// </summary>
+	/// <param name="collider">問い合わせ元の形状とマスク</param>
+	/// <param name="matrix">ワールド姿勢</param>
+	/// <returns>true:配置可能 false:重なり、または形状・姿勢が無効</returns>
+	bool CanPlace(const Collider &collider,
+	              const DirectX::XMFLOAT4X4 &matrix) const;
+
+	/// <summary>
+	/// 形状と姿勢を保って直線移動したときの最初の接触を調べる
+	/// </summary>
+	/// <param name="collider">問い合わせ元の形状とマスク</param>
+	/// <param name="matrix">移動前のワールド姿勢</param>
+	/// <param name="displacement">ワールド移動量</param>
+	/// <param name="result">成功時だけ設定する接触</param>
+	/// <returns>true:検索成功 false:形状や入力が無効</returns>
+	bool Sweep(const Collider &collider, const DirectX::XMFLOAT4X4 &matrix,
+	           const DirectX::XMFLOAT3 &displacement,
+	           CollisionSweepResult &result) const;
+
+	/// <summary>
+	/// 実行時の形状に合わせて、衝突と滑りを反映した移動量を求める
+	/// </summary>
+	/// <param name="collider">移動する形状とマスク</param>
+	/// <param name="matrix">移動前のワールド姿勢</param>
+	/// <param name="displacement">要求するワールド移動量</param>
+	/// <param name="result">成功時だけ設定する移動量と接触状態</param>
+	/// <returns>true:成功 false:配置できないか、形状や入力が無効</returns>
+	bool Move(const Collider &collider, const DirectX::XMFLOAT4X4 &matrix,
+	          const DirectX::XMFLOAT3 &displacement,
+	          CollisionMoveResult &result) const;
+
+	/// <summary>
+	/// 指定姿勢の移動用形状と重なる有効な固体を、衝突マスクに従って列挙する
+	/// </summary>
+	/// <param name="scene">固体を取得するシーン</param>
+	/// <param name="collider">問い合わせ元の形状とマスク</param>
+	/// <param name="matrix">問い合わせ元のワールド姿勢</param>
+	/// <param name="objects">成功時だけ設定する物体ID一覧</param>
+	/// <returns>true:検索成功 false:姿勢や形状が無効</returns>
+	static bool FindOverlaps(const Scene &scene, const Collider &collider,
+	                         const DirectX::XMFLOAT4X4 &matrix,
+	                         std::vector<SceneObjectId> &objects);
+
   private:
+	bool CanPlace(const WorldCollider &body,
+	              const std::optional<CollisionFilter> &filter) const;
+	bool Sweep(const WorldCollider &body, const DirectX::XMFLOAT3 &displacement,
+	           CollisionSweepResult &result,
+	           const std::optional<CollisionFilter> &filter) const;
+	static bool FindOverlaps(const Scene &scene, const WorldCollider &body,
+	                         std::vector<SceneObjectId> &objects,
+	                         SceneObjectId ignoredObject,
+	                         const std::optional<CollisionFilter> &filter,
+	                         bool includeTriggers);
 	/// <summary>
 	/// 実形状の面の法線で滑り方向を決め、移動を判定する
 	/// </summary>
-	bool MoveAlongSurfaces(const AxisAlignedBox &body,
+	template <class Body>
+	bool MoveAlongSurfaces(const Body &body,
 	                       const DirectX::XMFLOAT3 &displacement,
 	                       CollisionMoveResult &result,
 	                       const std::optional<CollisionFilter> &filter) const;

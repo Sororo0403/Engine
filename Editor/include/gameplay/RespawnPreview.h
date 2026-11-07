@@ -24,7 +24,7 @@ class RespawnPreview {
 	/// </summary>
 	struct Geometry {
 		Lines markers{};
-		std::optional<ColliderBounds::Lines> collider;
+		std::optional<std::vector<DebugLine>> collider;
 		// 復帰先の高さ・移動設定・衝突形状・障害物との重なりだけを確認する。シーン全体のPlay可否ではない。
 		bool canRespawn = false;
 	};

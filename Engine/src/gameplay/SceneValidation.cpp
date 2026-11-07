@@ -179,9 +179,8 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 			}
 
 			if (!object.collider || object.collider->isTrigger ||
-			    object.collider->shape != Collider::Shape::BOX ||
 			    !object.character->IsValid()) {
-				add(id, "Character Controller requires a non-trigger Box "
+				add(id, "Character Controller requires a non-trigger "
 				        "Collider and "
 				        "valid movement settings.");
 			}
@@ -254,7 +253,7 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 		if (!controller.Initialize(transforms.at(id).matrix, *object.collider,
 		                           *object.character, world)) {
 			add(id, "The character starts inside a collider or has an invalid "
-			        "transform or Box Collider.");
+			        "transform or Collider.");
 		}
 
 		if (object.respawn && object.respawn->IsValid() &&

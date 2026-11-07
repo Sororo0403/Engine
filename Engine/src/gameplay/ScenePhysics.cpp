@@ -137,7 +137,8 @@ void Collect(const Scene &scene, std::vector<RigidBodyDescription> &bodies,
 			d.collider.center.z *= scale.z < 0 ? -1.f : 1.f;
 			scale = {std::abs(scale.x), std::abs(scale.x), std::abs(scale.x)};
 		}
-		if (character || !decomposed || d.transform.scale.x <= 0 ||
+		if ((character && d.collider.shape == Collider::Shape::BOX) ||
+		    !decomposed || d.transform.scale.x <= 0 ||
 		    d.transform.scale.y <= 0 || d.transform.scale.z <= 0) {
 			AxisAlignedBox bounds;
 			if (!ColliderUtils::GetWorldBounds(

@@ -180,7 +180,7 @@ void ControlsPanel::Draw() {
 	         "Round shapes require uniform world scale without shear. Shape "
 	         "and dimensions support Undo / Redo."},
 	        {"Character Controller collider",
-	         "Character Controller currently uses a non-trigger Box shape. "
+	         "Character Controller requires a Collider with Is Trigger off. "
 	         "Sphere and Capsule "
 	         "are available for static obstacles, Trigger regions and Rigid "
 	         "Body objects."},

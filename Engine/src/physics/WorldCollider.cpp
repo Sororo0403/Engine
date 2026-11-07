@@ -348,3 +348,28 @@ bool WorldCollider::Crosses(const WorldCollider &other,
 	crosses = false;
 	return true;
 }
+
+bool WorldCollider::Translate(const DirectX::XMFLOAT3 &offset,
+                              WorldCollider &result) const {
+	if (!impl_ || !Bounded(offset, 2 * kMaximumCoordinate))
+		return false;
+	const auto delta = Vector(offset);
+	const auto center = impl_->center + delta;
+	if (!Bounded(Vector(center), kMaximumCoordinate))
+		return false;
+	const AxisAlignedBox bounds{Vector(Vector(impl_->bounds.minimum) + delta),
+	                            Vector(Vector(impl_->bounds.maximum) + delta)};
+	if (bounds.minimum.x >= bounds.maximum.x ||
+	    bounds.minimum.y >= bounds.maximum.y ||
+	    bounds.minimum.z >= bounds.maximum.z)
+		return false;
+	try {
+		auto next = std::make_shared<Impl>(*impl_);
+		next->center = center;
+		next->bounds = bounds;
+		result.impl_ = std::move(next);
+		return true;
+	} catch (const std::exception &) {
+		return false;
+	}
+}

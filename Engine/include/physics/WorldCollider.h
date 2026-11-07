@@ -66,6 +66,15 @@ class WorldCollider {
 	             const DirectX::XMFLOAT3 &displacement, float minimumDepth,
 	             bool &crosses) const;
 
+	/// <summary>
+	/// 形状と姿勢を共有し、位置だけをずらした問い合わせ用の形状を作る
+	/// </summary>
+	/// <param name="offset">ワールド座標の移動量</param>
+	/// <param name="result">成功時だけ設定する形状</param>
+	/// <returns>true:成功 false:未作成、範囲外、または値が無効</returns>
+	bool Translate(const DirectX::XMFLOAT3 &offset,
+	               WorldCollider &result) const;
+
   private:
 	friend class RigidBodyWorld;
 	bool DepthAt(const WorldCollider &other, const DirectX::XMFLOAT3 &offset,
