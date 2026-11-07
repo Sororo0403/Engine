@@ -539,6 +539,7 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 		if (working.ui_.ConsumesNavigation() || working.ui_.ConsumesPointer()) {
 			for (auto &action : scriptActions) {
 				action.down = action.pressed = action.released = false;
+				action.value = 0;
 			}
 		}
 		auto scriptViewport = uiInput;

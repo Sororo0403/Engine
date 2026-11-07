@@ -10,9 +10,11 @@ struct GameActionState {
 	bool down = false;
 	bool pressed = false;
 	bool released = false;
+	// 押下閾値と独立した入力の強さ。複数の割り当ては最大値を使う。
+	float value = down ? 1.f : 0.f;
 
 	/// <summary>
-	/// 件数・名前・状態の整合性を確認する
+	/// 件数・名前・強さ・状態の整合性を確認する
 	/// </summary>
 	/// <param name="states">一回の入力取得結果</param>
 	/// <returns>true:有効 false:名前の重複や押下・解放状態の矛盾がある</returns>

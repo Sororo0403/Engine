@@ -82,6 +82,7 @@ GameActionReader::Read(std::span<const GameActionBinding> bindings,
 			    axisDown};
 			bool down = false;
 			bool cancelled = false;
+			float value = 0.f;
 			for (std::size_t i = 0; i < raw.size(); ++i) {
 				if (!allowed[i]) {
 					h.blocked[i] = true;
@@ -92,9 +93,15 @@ GameActionReader::Read(std::span<const GameActionBinding> bindings,
 					down = true;
 				}
 				h.held[i] = allowed[i] && raw[i] && !h.blocked[i];
+				if (allowed[i] && !h.blocked[i]) {
+					const float strengthForDevice =
+					    i == raw.size() - 1 ? (std::max)(0.f, strength)
+					                        : (h.held[i] ? 1.f : 0.f);
+					value = (std::max)(value, strengthForDevice);
+				}
 			}
 			states_.push_back({binding.name, down, down && !h.down,
-			                   !down && h.down && !cancelled});
+			                   !down && h.down && !cancelled, value});
 			h.down = down;
 		}
 		next.push_back(std::move(h));

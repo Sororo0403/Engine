@@ -229,7 +229,9 @@ int Invoke(lua_State *state) {
 		for (std::size_t i = 0; i < call.actions.size(); ++i) {
 			lua_pushlstring(state, call.actions[i].name.data(),
 			                call.actions[i].name.size());
-			lua_createtable(state, 0, 3);
+			lua_createtable(state, 0, 4);
+			lua_pushnumber(state, call.actions[i].value);
+			lua_setfield(state, -2, "value");
 			lua_pushboolean(state, call.actions[i].down);
 			lua_setfield(state, -2, "down");
 			lua_pushboolean(state, call.actions[i].pressed);
