@@ -51,6 +51,9 @@ enum class Op {
 	FIND_ID,
 	GET_CAMERA,
 	SET_CAMERA,
+	CAMERA_LENS,
+	SET_CAMERA_LENS,
+	SET_CAMERA_FOV,
 	LOG
 };
 
@@ -92,6 +95,7 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 		    op == Op::DESTROY || op == Op::SET_NAME || op == Op::SET_ACTIVE ||
 		    op == Op::SET_PARENT || op == Op::SET_MESH_VISIBLE ||
 		    op == Op::SET_MESH_TINT || op == Op::SET_CAMERA ||
+		    op == Op::SET_CAMERA_LENS || op == Op::SET_CAMERA_FOV ||
 		    op == Op::SET_POSITION || op == Op::SET_LOCAL_POSITION ||
 		    op == Op::SET_ROTATION || op == Op::LOOK_AT ||
 		    op == Op::SET_SCALE || op == Op::LOG;
@@ -245,6 +249,30 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 				result.numbers[2] = color.z;
 			}
 			break;
+		case Op::CAMERA_LENS:
+		case Op::SET_CAMERA_LENS:
+		case Op::SET_CAMERA_FOV: {
+			if (!object->camera)
+				throw std::runtime_error("This object requires a Camera.");
+			auto settings = object->camera->settings;
+			if (op == Op::CAMERA_LENS) {
+				result.numbers[0] = settings.verticalFovDegrees;
+				result.numbers[1] = settings.nearClip;
+				result.numbers[2] = settings.farClip;
+				break;
+			}
+			settings.verticalFovDegrees = numbers[0];
+			if (op == Op::SET_CAMERA_LENS) {
+				settings.nearClip = numbers[1];
+				settings.farClip = numbers[2];
+			}
+			if (!settings.IsValid())
+				throw std::runtime_error(
+				    "Camera lens requires a field of view from 1 to 179 "
+				    "degrees and valid near and far distances.");
+			object->camera->settings = settings;
+			break;
+		}
 		case Op::POSITION: {
 			SceneWorldTransform world;
 			if (!SceneHierarchy::GetWorldTransform(*call.scene, id, world))
@@ -379,8 +407,9 @@ int Dispatch(lua_State *state) {
 	if (op == Op::NAME || op == Op::TAG || op == Op::POSITION ||
 	    op == Op::LOCAL_POSITION || op == Op::ROTATION || op == Op::SCALE ||
 	    op == Op::ACTIVE || op == Op::MESH_VISIBLE || op == Op::MESH_TINT ||
-	    op == Op::PARENT || op == Op::ID || op == Op::VALID ||
-	    op == Op::DESTROY || op == Op::GET_CAMERA || op == Op::SET_CAMERA) {
+	    op == Op::CAMERA_LENS || op == Op::PARENT || op == Op::ID ||
+	    op == Op::VALID || op == Op::DESTROY || op == Op::GET_CAMERA ||
+	    op == Op::SET_CAMERA) {
 		// 引数はselfだけ。値はPerformで取得する。
 	} else if (op == Op::SET_NAME || op == Op::REFERENCE ||
 	           op == Op::FIND_CHILD || op == Op::FIND || op == Op::FIND_ID ||
@@ -404,7 +433,9 @@ int Dispatch(lua_State *state) {
 		luaL_checktype(state, 2, LUA_TBOOLEAN);
 		flag = lua_toboolean(state, 2) != 0;
 	} else {
-		const int count = op == Op::SET_ROTATION ? 4 : 3;
+		const int count = op == Op::SET_ROTATION     ? 4
+		                  : op == Op::SET_CAMERA_FOV ? 1
+		                                             : 3;
 		for (int i = 0; i < count; ++i) {
 			luaL_checktype(state, i + 2, LUA_TNUMBER);
 			const double value = lua_tonumber(state, i + 2);
@@ -442,6 +473,7 @@ int Dispatch(lua_State *state) {
 		return 1;
 	case Op::POSITION:
 	case Op::MESH_TINT:
+	case Op::CAMERA_LENS:
 	case Op::LOCAL_TO_WORLD:
 	case Op::WORLD_TO_LOCAL:
 	case Op::LOCAL_VECTOR_TO_WORLD:
@@ -671,6 +703,9 @@ int LuaInternal::OpenEnvironment(lua_State *state, Call &call) {
 	Method(state, "reference", Op::REFERENCE);
 	Method(state, "is_active", Op::ACTIVE);
 	Method(state, "set_active", Op::SET_ACTIVE);
+	Method(state, "get_camera_lens", Op::CAMERA_LENS);
+	Method(state, "set_camera_lens", Op::SET_CAMERA_LENS);
+	Method(state, "set_camera_fov", Op::SET_CAMERA_FOV);
 	Method(state, "get_mesh_visible", Op::MESH_VISIBLE);
 	Method(state, "set_mesh_visible", Op::SET_MESH_VISIBLE);
 	Method(state, "get_mesh_tint", Op::MESH_TINT);

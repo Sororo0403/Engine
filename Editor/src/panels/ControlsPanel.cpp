@@ -2320,6 +2320,12 @@ void ControlsPanel::Draw() {
 	         "pass nil to use the fixed fallback view. Call the setter inside "
 	         "a callback. Both fixed and Follow Cameras are supported. "
 	         "Restart restores the authored Primary selection."},
+	        {"Lua > Camera Lens",
+	         "On a Camera object, get_camera_lens() returns vertical FOV "
+	         "in degrees and the near and far clip distances. Use "
+	         "set_camera_fov(degrees) for zoom or set_camera_lens(degrees, "
+	         "near, far) to update all three values. Both setters apply "
+	         "during callbacks and preserve the camera pose."},
 	        {"Lua > Mesh Appearance",
 	         "For an object with Mesh Renderer, set_mesh_visible(boolean) "
 	         "changes its mesh visibility while gameplay components continue "
