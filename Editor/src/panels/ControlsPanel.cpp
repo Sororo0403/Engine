@@ -2320,6 +2320,13 @@ void ControlsPanel::Draw() {
 	         "pass nil to use the fixed fallback view. Call the setter inside "
 	         "a callback. Both fixed and Follow Cameras are supported. "
 	         "Restart restores the authored Primary selection."},
+	        {"Lua > Set Checkpoint",
+	         "character:set_checkpoint(x,y,z) updates the fall recovery "
+	         "position of an active Character Controller with Respawn. Call "
+	         "it in a callback. The destination must be above Fall Below Y "
+	         "and clear of solids after the callback changes are applied. "
+	         "The current position and velocity are preserved. Restart "
+	         "starts from the authored Respawn settings."},
 	        {"Lua > Character State",
 	         "In update, input.character describes the active Character "
 	         "Controller after movement and Trigger Actions. It provides "

@@ -52,7 +52,7 @@ class LuaScript {
 	/// <summary>
 	/// 公開するスクリプトAPIの版。Runtimeの出力互換性を照合する
 	/// </summary>
-	static constexpr int kApiVersion = 28;
+	static constexpr int kApiVersion = 29;
 	static constexpr std::size_t kMaximumSourceBytes = 256 * 1024;
 	static constexpr std::size_t kMaximumBytecodeBytes = 1024 * 1024;
 	static constexpr std::size_t kMaximumStateBytes = 64 * 1024;

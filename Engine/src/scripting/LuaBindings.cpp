@@ -28,6 +28,7 @@ enum class Op {
 	DESTROY,
 	PARENT,
 	SET_PARENT,
+	SET_CHECKPOINT,
 	FIND_CHILD,
 	REFERENCE,
 	ACTIVE,
@@ -97,12 +98,12 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 			throw std::runtime_error("A scene is required for object APIs.");
 		const bool mutation =
 		    op == Op::DESTROY || op == Op::SET_NAME || op == Op::SET_ACTIVE ||
-		    op == Op::SET_PARENT || op == Op::SET_MESH_VISIBLE ||
-		    op == Op::SET_MESH_TINT || op == Op::SET_CAMERA ||
-		    op == Op::SET_CAMERA_LENS || op == Op::SET_CAMERA_FOV ||
-		    op == Op::SET_POSITION || op == Op::SET_LOCAL_POSITION ||
-		    op == Op::SET_ROTATION || op == Op::LOOK_AT ||
-		    op == Op::SET_SCALE || op == Op::LOG;
+		    op == Op::SET_PARENT || op == Op::SET_CHECKPOINT ||
+		    op == Op::SET_MESH_VISIBLE || op == Op::SET_MESH_TINT ||
+		    op == Op::SET_CAMERA || op == Op::SET_CAMERA_LENS ||
+		    op == Op::SET_CAMERA_FOV || op == Op::SET_POSITION ||
+		    op == Op::SET_LOCAL_POSITION || op == Op::SET_ROTATION ||
+		    op == Op::LOOK_AT || op == Op::SET_SCALE || op == Op::LOG;
 		if (mutation && !call.executing)
 			throw std::runtime_error(
 			    "Change objects inside callbacks, not at module scope.");
@@ -203,6 +204,20 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 				    "Parent change would create a cycle or cannot preserve the "
 				    "world transform.");
 			break;
+		case Op::SET_CHECKPOINT: {
+			if (!object->character || !object->respawn ||
+			    !SceneActivity::IsActive(*call.scene, id))
+				throw std::runtime_error("Checkpoint requires an active "
+				                         "Character Controller with Respawn.");
+			auto settings = *object->respawn;
+			settings.useStartPosition = false;
+			settings.position = {numbers[0], numbers[1], numbers[2]};
+			if (!settings.IsValid() || settings.position.y <= settings.minimumY)
+				throw std::runtime_error("Checkpoint must be a valid world "
+				                         "position above Fall Below Y.");
+			object->respawn = settings;
+			break;
+		}
 		case Op::FIND_CHILD: {
 			const std::string_view name(text, length);
 			for (const auto &[childId, child] : call.scene->GetObjects()) {
@@ -763,6 +778,7 @@ int LuaInternal::OpenEnvironment(lua_State *state, Call &call) {
 	Method(state, "destroy", Op::DESTROY);
 	Method(state, "parent", Op::PARENT);
 	Method(state, "set_parent", Op::SET_PARENT);
+	Method(state, "set_checkpoint", Op::SET_CHECKPOINT);
 	Method(state, "find_child", Op::FIND_CHILD);
 	lua_pushcfunction(state, GetChildren);
 	lua_setfield(state, -2, "get_children");
