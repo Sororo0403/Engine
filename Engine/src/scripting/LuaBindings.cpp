@@ -24,6 +24,7 @@ enum class Op {
 	VALID,
 	DESTROY,
 	PARENT,
+	SET_PARENT,
 	FIND_CHILD,
 	REFERENCE,
 	ACTIVE,
@@ -70,20 +71,21 @@ LuaInternal::Call &Context(lua_State *state) {
 /// <param name="text">Luaが保持している文字列</param>
 /// <param name="length">文字列のバイト数</param>
 /// <param name="numbers">有限な入力数値</param>
-/// <param name="flag">有効設定</param>
+/// <param name="flag">有効設定またはワールド姿勢の維持</param>
+/// <param name="parent">親の設定で指定するID。0はルート</param>
 /// <param name="result">成功時の数値・ID・真偽値</param>
 /// <returns>true:処理成功 false:理由をcall.errorへ設定。Luaのエラー送出は呼び出し側で行う</returns>
 bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
              std::size_t length, const float *numbers, bool flag,
-             Result &result) noexcept {
+             SceneObjectId parent, Result &result) noexcept {
 	try {
 		if (!call.scene)
 			throw std::runtime_error("A scene is required for object APIs.");
-		const bool mutation = op == Op::DESTROY || op == Op::SET_NAME ||
-		                      op == Op::SET_ACTIVE || op == Op::SET_POSITION ||
-		                      op == Op::SET_LOCAL_POSITION ||
-		                      op == Op::SET_ROTATION || op == Op::LOOK_AT ||
-		                      op == Op::SET_SCALE || op == Op::LOG;
+		const bool mutation =
+		    op == Op::DESTROY || op == Op::SET_NAME || op == Op::SET_ACTIVE ||
+		    op == Op::SET_PARENT || op == Op::SET_POSITION ||
+		    op == Op::SET_LOCAL_POSITION || op == Op::SET_ROTATION ||
+		    op == Op::LOOK_AT || op == Op::SET_SCALE || op == Op::LOG;
 		if (mutation && !call.executing)
 			throw std::runtime_error(
 			    "Change objects inside callbacks, not at module scope.");
@@ -167,6 +169,12 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 			break;
 		case Op::PARENT:
 			result.id = object->parentId;
+			break;
+		case Op::SET_PARENT:
+			if (!SceneHierarchy::SetParent(*call.scene, id, parent, flag))
+				throw std::runtime_error(
+				    "Parent change would create a cycle or cannot preserve the "
+				    "world transform.");
 			break;
 		case Op::FIND_CHILD: {
 			const std::string_view name(text, length);
@@ -284,8 +292,9 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 		case Op::LOG:
 			break;
 		}
-		if (op == Op::SET_ACTIVE || op == Op::SET_POSITION ||
-		    op == Op::SET_LOCAL_POSITION || op == Op::SET_ROTATION ||
+		if (op == Op::SET_ACTIVE || op == Op::SET_PARENT ||
+		    op == Op::SET_POSITION || op == Op::SET_LOCAL_POSITION ||
+		    op == Op::SET_ROTATION ||
 		    (op == Op::SET_SCALE || op == Op::LOOK_AT))
 			call.physicsDirty = true;
 		return true;
@@ -312,6 +321,7 @@ int Dispatch(lua_State *state) {
 	std::size_t length = 0;
 	float numbers[4]{};
 	bool flag = false;
+	SceneObjectId parent = 0;
 	if (op != Op::FIND && op != Op::FIND_ID && op != Op::LOG)
 		id = *static_cast<SceneObjectId *>(
 		    luaL_checkudata(state, 1, kObjectType));
@@ -329,6 +339,15 @@ int Dispatch(lua_State *state) {
 		        : 1;
 		luaL_checktype(state, index, LUA_TSTRING);
 		text = lua_tolstring(state, index, &length);
+	} else if (op == Op::SET_PARENT) {
+		if (!lua_isnil(state, 2))
+			parent = *static_cast<SceneObjectId *>(
+			    luaL_checkudata(state, 2, kObjectType));
+		flag = true;
+		if (!lua_isnoneornil(state, 3)) {
+			luaL_checktype(state, 3, LUA_TBOOLEAN);
+			flag = lua_toboolean(state, 3) != 0;
+		}
 	} else if (op == Op::SET_ACTIVE) {
 		luaL_checktype(state, 2, LUA_TBOOLEAN);
 		flag = lua_toboolean(state, 2) != 0;
@@ -345,7 +364,7 @@ int Dispatch(lua_State *state) {
 		}
 	}
 	Result result;
-	if (!Perform(call, op, id, text, length, numbers, flag, result)) {
+	if (!Perform(call, op, id, text, length, numbers, flag, parent, result)) {
 		lua_pushlstring(state, call.error.data(), call.error.size());
 		return lua_error(state);
 	}
@@ -590,6 +609,7 @@ int LuaInternal::OpenEnvironment(lua_State *state, Call &call) {
 	Method(state, "is_valid", Op::VALID);
 	Method(state, "destroy", Op::DESTROY);
 	Method(state, "parent", Op::PARENT);
+	Method(state, "set_parent", Op::SET_PARENT);
 	Method(state, "find_child", Op::FIND_CHILD);
 	lua_pushcfunction(state, GetChildren);
 	lua_setfield(state, -2, "get_children");

@@ -2314,6 +2314,12 @@ void ControlsPanel::Draw() {
 	         "and share the physics API call budget. Use hit.object references "
 	         "to interact with the target or apply impulses. Only assigned "
 	         "Colliders participate; model triangles are not queried."},
+	        {"Lua > Set Parent",
+	         "object:set_parent(parent [,keepWorld]) changes its parent during "
+	         "a callback. Pass nil to move it to the scene root. By default "
+	         "the world transform is preserved. Pass false to retain the "
+	         "local transform, for example when attaching a held item. "
+	         "Cycles and transforms that cannot be represented are rejected."},
 	        {"Lua > Child Objects",
 	         "object:find_child(name) returns the first direct child with "
 	         "the exact name, or nil. object:get_children() returns up to "
