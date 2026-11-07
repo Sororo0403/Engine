@@ -2320,6 +2320,12 @@ void ControlsPanel::Draw() {
 	         "pass nil to use the fixed fallback view. Call the setter inside "
 	         "a callback. Both fixed and Follow Cameras are supported. "
 	         "Restart restores the authored Primary selection."},
+	        {"Lua > Viewport Ray",
+	         "camera:viewport_ray(u,v,width,height) returns origin x/y/z, "
+	         "unit direction x/y/z, and distance to the far clip plane. "
+	         "Use coordinates from 0 to 1 with a top-left origin. The ray "
+	         "starts at the near clip plane. Pass these values to "
+	         "scene.raycast for picking or aiming."},
 	        {"Lua > World To Viewport",
 	         "camera:world_to_viewport(x,y,z,width,height) returns normalized "
 	         "u/v from the top left, forward distance, and a visible flag. "

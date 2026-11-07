@@ -81,6 +81,8 @@ class Camera {
 	DirectX::XMFLOAT3 up_{0.0f, 1.0f, 0.0f};
 
 	CameraSettings settings_{};
+	CameraSettings projectedSettings_{};
+	DirectX::XMFLOAT3 viewOrigin_{};
 
 	DirectX::XMFLOAT4X4 viewMatrix_{};
 	DirectX::XMFLOAT4X4 projectionMatrix_{};

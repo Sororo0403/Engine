@@ -27,6 +27,8 @@ bool Camera::Update(int width, int height) {
 
 	XMStoreFloat4x4(&viewMatrix_, view);
 	XMStoreFloat4x4(&projectionMatrix_, projection);
+	projectedSettings_ = settings_;
+	viewOrigin_ = position_;
 
 	return true;
 }
@@ -88,49 +90,38 @@ bool Camera::CreatePickingRay(float imageX, float imageY, Ray &ray) const {
 		return false;
 	}
 
-	using namespace DirectX;
-
-	const XMMATRIX view = XMLoadFloat4x4(&viewMatrix_);
-	const XMMATRIX projection = XMLoadFloat4x4(&projectionMatrix_);
-
-	XMVECTOR determinant;
-	const XMMATRIX inverseViewProjection =
-	    XMMatrixInverse(&determinant, view * projection);
-
-	const float determinantValue = XMVectorGetX(determinant);
-
-	if (!std::isfinite(determinantValue) || determinantValue == 0.0f) {
+	const double horizontal = projectionMatrix_._11;
+	const double vertical = projectionMatrix_._22;
+	if (!std::isfinite(horizontal) || !std::isfinite(vertical) ||
+	    horizontal <= 0 || vertical <= 0)
 		return false;
-	}
 
-	// UIの左上原点を、クリップ空間の座標へ変換する
-	const float x = imageX * 2.0f - 1.0f;
-	const float y = 1.0f - imageY * 2.0f;
-
-	const XMVECTOR nearPoint = XMVector3TransformCoord(
-	    XMVectorSet(x, y, 0.0f, 1.0f), inverseViewProjection);
-
-	const XMVECTOR farPoint = XMVector3TransformCoord(
-	    XMVectorSet(x, y, 1.0f, 1.0f), inverseViewProjection);
-
-	const XMVECTOR difference = XMVectorSubtract(farPoint, nearPoint);
-
-	const float length = XMVectorGetX(XMVector3Length(difference));
-
-	if (!std::isfinite(length) || length <= 0.0f) {
+	// カメラ空間のZ=1を通る方向を作る。遠クリップの逆投影で生じる桁落ちを避ける。
+	const double x = (double(imageX) * 2 - 1) / horizontal;
+	const double y = (1 - double(imageY) * 2) / vertical;
+	const auto &view = viewMatrix_;
+	const double dx = x * view._11 + y * view._12 + view._13;
+	const double dy = x * view._21 + y * view._22 + view._23;
+	const double dz = x * view._31 + y * view._32 + view._33;
+	const double length = std::hypot(dx, dy, dz);
+	const double distance = length * (double(projectedSettings_.farClip) -
+	                                  projectedSettings_.nearClip);
+	constexpr double limit = (std::numeric_limits<float>::max)();
+	if (!std::isfinite(distance) || distance <= 0 || distance > limit)
 		return false;
-	}
 
-	Ray result;
-	XMStoreFloat3(&result.origin, nearPoint);
-	XMStoreFloat3(&result.direction, XMVectorScale(difference, 1.0f / length));
-
-	result.maxDistance = length;
-
-	if (!MathUtils::IsFinite(result.origin) ||
-	    !MathUtils::IsFinite(result.direction)) {
+	const double near = projectedSettings_.nearClip;
+	const double ox = double(viewOrigin_.x) + dx * near;
+	const double oy = double(viewOrigin_.y) + dy * near;
+	const double oz = double(viewOrigin_.z) + dz * near;
+	if (!std::isfinite(ox) || !std::isfinite(oy) || !std::isfinite(oz) ||
+	    std::abs(ox) > limit || std::abs(oy) > limit || std::abs(oz) > limit)
 		return false;
-	}
+
+	const Ray result{
+	    {float(ox), float(oy), float(oz)},
+	    {float(dx / length), float(dy / length), float(dz / length)},
+	    float(distance)};
 
 	ray = result;
 	return true;
@@ -166,7 +157,7 @@ Camera::Project(const DirectX::XMFLOAT3 &position) const {
 	    std::abs(y) > limit || clip[3] > limit)
 		return std::nullopt;
 	const bool visible = x >= 0 && x <= 1 && y >= 0 && y <= 1 &&
-	                     view[2] >= settings_.nearClip &&
-	                     view[2] <= settings_.farClip;
+	                     view[2] >= projectedSettings_.nearClip &&
+	                     view[2] <= projectedSettings_.farClip;
 	return ViewportPoint{float(x), float(y), float(clip[3]), visible};
 }
