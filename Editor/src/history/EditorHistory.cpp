@@ -281,22 +281,16 @@ EditorHistory::DuplicateObjectsInArray(std::span<const SceneObjectId> objectIds,
 	}
 
 	std::vector<SceneObject> copies;
-	copies.reserve(expanded.size() * static_cast<std::size_t>(settings.copies));
-	for (int copy = 1; copy <= settings.copies; ++copy) {
+	const auto count = settings.GetCopyCount();
+	copies.reserve(expanded.size() * static_cast<std::size_t>(count));
+	for (int copy = 1; copy <= count; ++copy) {
 		Scene working;
 		working.ReplaceObjects(scene_.GetObjects());
 		for (const auto id : roots) {
 			SceneWorldTransform world;
 			if (!SceneHierarchy::GetWorldTransform(scene_, id, world))
 				return {};
-			const auto position = world.GetPosition();
-			const DirectX::XMFLOAT3 moved{
-			    static_cast<float>(double(position.x) +
-			                       double(settings.offset.x) * copy),
-			    static_cast<float>(double(position.y) +
-			                       double(settings.offset.y) * copy),
-			    static_cast<float>(double(position.z) +
-			                       double(settings.offset.z) * copy)};
+			const auto moved = settings.GetPosition(world.GetPosition(), copy);
 			if (!SceneHierarchy::SetWorldPosition(working, id, moved))
 				return {};
 		}

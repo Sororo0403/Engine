@@ -3,6 +3,7 @@
 #include "graphics/ui/ImGuiSystem.h"
 #include "physics/ColliderArrayPreview.h"
 #include "scene/Scene.h"
+#include "scene/SceneHierarchy.h"
 #include <cmath>
 #include <format>
 #include <imgui.h>
@@ -14,7 +15,9 @@ bool ObjectArrayDialog::Show(const Scene &scene,
                              std::span<const SceneObjectId> ids) {
 	ObjectArraySettings settings;
 
-	if (!settings.IsValid(ids.size())) {
+	std::vector<SceneObjectId> expanded;
+	if (!SceneHierarchy::ExpandSelection(scene, ids, expanded) ||
+	    !settings.IsValid(expanded.size())) {
 		return false;
 	}
 
@@ -28,6 +31,7 @@ bool ObjectArrayDialog::Show(const Scene &scene,
 
 	std::vector<SceneObjectId> sources(ids.begin(), ids.end());
 	sourceIds_.swap(sources);
+	sourceCount_ = expanded.size();
 	settings_ = settings;
 	spacingFace_.reset();
 	spacingError_.clear();
@@ -52,10 +56,18 @@ ObjectArrayResult ObjectArrayDialog::Draw(const ImGuiSystem &ui,
 		return ObjectArrayResult::NONE;
 	}
 
-	ImGui::InputInt("Copies", &settings_.copies, 1, 10);
+	if (ImGui::InputInt("Copies", &settings_.copies, 1, 10) &&
+	    settings_.copies == 0) {
+		spacingFace_.reset();
+		spacingError_.clear();
+	}
+	ImGui::InputInt("Rows", &settings_.rows, 1, 10);
 	if (ui.DragFloat3("World Offset", settings_.offset, 0.1f, 0, 0)) {
 		spacingFace_.reset();
 		spacingError_.clear();
+	}
+	if (settings_.rows > 1) {
+		ui.DragFloat3("Row Offset", settings_.rowOffset, 0.1f, 0, 0);
 	}
 	ImGui::SeparatorText("Spacing from Colliders");
 	const bool gapChanged =
@@ -70,9 +82,9 @@ ObjectArrayResult ObjectArrayDialog::Draw(const ImGuiSystem &ui,
 	    {"Spacing +Z", ColliderPlacement::Face::FRONT},
 	    {"Spacing -Z", ColliderPlacement::Face::BACK}};
 	bool fitRequested = false;
-	ui.BeginDisabled(!settings_.IsValid(sourceIds_.size()) ||
-	                 !ColliderPlacement::CanDrop(scene, sourceIds_) ||
-	                 !validGap);
+	ui.BeginDisabled(
+	    settings_.copies <= 0 || !settings_.IsValid(sourceCount_) ||
+	    !ColliderPlacement::CanDrop(scene, sourceIds_) || !validGap);
 	for (std::size_t i = 0; i < std::size(directions); ++i) {
 		if (i % 2 != 0) {
 			ui.SameLine();
@@ -93,19 +105,19 @@ ObjectArrayResult ObjectArrayDialog::Draw(const ImGuiSystem &ui,
 	    (fitRequested || fittedCopies_ != settings_.copies || gapChanged)) {
 		fit();
 	}
-	const bool validSettings = settings_.IsValid(sourceIds_.size());
+	const bool validSettings = settings_.IsValid(sourceCount_);
 	const bool valid = validSettings && spacingError_.empty();
 	if (!spacingError_.empty()) {
 		ImGui::TextWrapped("%s", spacingError_.c_str());
 	}
 
 	if (validSettings) {
-		ui.Text(std::format("New objects: {}",
-		                    sourceIds_.size() *
-		                        static_cast<std::size_t>(settings_.copies)));
+		ui.Text(std::format(
+		    "New objects: {}",
+		    sourceCount_ * static_cast<std::size_t>(settings_.GetCopyCount())));
 	} else {
-		ui.Text(
-		    "Use 1-100 copies, at most 10000 new objects, and finite offsets.");
+		ui.Text("Use 1-100 new groups, at most 10000 new objects, and finite "
+		        "offsets.");
 	}
 
 	ObjectArrayResult result = ObjectArrayResult::NONE;

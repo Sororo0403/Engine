@@ -17,7 +17,7 @@ class Scene;
 enum class ObjectArrayResult { NONE, ACCEPTED, CANCELLED, FRAME_PREVIEW };
 
 /// <summary>
-/// 複製対象・組数・ワールド座標の間隔を指定するダイアログ
+/// 複製対象と、行・列の組数とワールド座標の間隔を指定するダイアログ
 /// </summary>
 class ObjectArrayDialog {
   public:
@@ -54,11 +54,12 @@ class ObjectArrayDialog {
 	/// </summary>
 	/// <returns>true:下書きの外枠を計算できる設定 false:設定または間隔の計算が無効。元の形状は計算側で再確認する</returns>
 	bool CanPreview() const {
-		return settings_.IsValid(sourceIds_.size()) && spacingError_.empty();
+		return settings_.IsValid(sourceCount_) && spacingError_.empty();
 	}
 
   private:
 	std::vector<SceneObjectId> sourceIds_;
+	std::size_t sourceCount_ = 0;
 	ObjectArraySettings settings_;
 	bool openRequested_ = false;
 	std::optional<ColliderPlacement::Face> spacingFace_;

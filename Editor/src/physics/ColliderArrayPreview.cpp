@@ -30,9 +30,10 @@ bool ColliderArrayPreview::BuildBounds(
 	}
 
 	std::vector<AxisAlignedBox> result;
-	result.reserve(settings.copies);
+	const auto count = settings.GetCopyCount();
+	result.reserve(count);
 
-	for (int copy = 1; copy <= settings.copies; ++copy) {
+	for (int copy = 1; copy <= count; ++copy) {
 		std::optional<AxisAlignedBox> combined;
 
 		Scene working;
@@ -40,13 +41,7 @@ bool ColliderArrayPreview::BuildBounds(
 		std::map<SceneObjectId, DirectX::XMFLOAT3> positions;
 		for (const auto id : roots) {
 			const auto position = original.at(id).GetPosition();
-			positions.emplace(
-			    id, DirectX::XMFLOAT3{float(double(position.x) +
-			                                double(settings.offset.x) * copy),
-			                          float(double(position.y) +
-			                                double(settings.offset.y) * copy),
-			                          float(double(position.z) +
-			                                double(settings.offset.z) * copy)});
+			positions.emplace(id, settings.GetPosition(position, copy));
 		}
 
 		if (!SceneHierarchy::SetWorldPositions(working, positions)) {

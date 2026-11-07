@@ -174,10 +174,10 @@ class EditorHistory {
 	                           std::filesystem::path modelPath = {});
 
 	/// <summary>
-	/// 選択物体を一定間隔で複製し、全ての組を1回のUndo操作へまとめる
+	/// 選択物体をワールド座標の行と列に複製し、全ての組を1回のUndo操作へまとめる
 	/// </summary>
 	/// <param name="objectIds">元の物体ID。重複不可。組内の追従先は同じ複製組へ付け替える</param>
-	/// <param name="settings">追加する組数とワールド座標の間隔。元の物体は移動しない</param>
+	/// <param name="settings">行と列の組数とワールド座標の間隔。元の物体は移動しない</param>
 	/// <returns>組ごとに元の入力順で並べた新規ID一覧。無効な対象・設定は空。作成失敗時は物体を追加しない</returns>
 	std::vector<SceneObjectId>
 	DuplicateObjectsInArray(std::span<const SceneObjectId> objectIds,
