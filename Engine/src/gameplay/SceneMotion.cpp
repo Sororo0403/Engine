@@ -118,7 +118,8 @@ bool SceneMotion::Configure(const Scene &scene, bool preserve) {
 			continue;
 		}
 		State state{object.transform.translation, 0,
-		            object.motionPath->playOnStart};
+		            object.motionPath->playOnStart ? Playback::FORWARD
+		                                           : Playback::PAUSE};
 		if (const auto found = states_.find(id);
 		    preserve && found != states_.end()) {
 			state = found->second;
@@ -133,11 +134,11 @@ bool SceneMotion::Configure(const Scene &scene, bool preserve) {
 	return true;
 }
 
-bool SceneMotion::SetPlaying(SceneObjectId id, bool playing) {
+bool SceneMotion::SetPlayback(SceneObjectId id, Playback playback) {
 	const auto state = states_.find(id);
 	if (state == states_.end())
 		return false;
-	state->second.playing = playing;
+	state->second.playback = playback;
 	return true;
 }
 
@@ -160,17 +161,22 @@ bool SceneMotion::Advance(Scene &scene, float seconds,
 		double step = (std::min)(remaining, kMaximumStep);
 		// 曲がり角や往復端で移動を区切り、角を横切る近道を作らない。
 		for (const auto &[id, state] : states_) {
-			if (!state.playing || !SceneActivity::IsActive(scene, id))
+			if (state.playback == Playback::PAUSE ||
+			    !SceneActivity::IsActive(scene, id))
 				continue;
 			const double segment =
 			    scene.FindObject(id)->motionPath->segmentSeconds;
-			const double boundary = segment - std::fmod(state.seconds, segment);
+			const double phase = std::fmod(state.seconds, segment);
+			const double boundary = state.playback == Playback::REVERSE
+			                            ? (phase > 1e-10 ? phase : segment)
+			                            : segment - phase;
 			if (boundary > 1e-10)
 				step = (std::min)(step, boundary);
 		}
 		for (const auto id : order) {
 			auto found = states_.find(id);
-			if (found == states_.end() || !found->second.playing ||
+			if (found == states_.end() ||
+			    found->second.playback == Playback::PAUSE ||
 			    !SceneActivity::IsActive(scene, id))
 				continue;
 			const auto &settings = *scene.FindObject(id)->motionPath;
@@ -178,12 +184,17 @@ bool SceneMotion::Advance(Scene &scene, float seconds,
 				return false;
 			auto state = found->second;
 			const auto duration = settings.GetDuration();
-			state.seconds = settings.mode == MotionPathComponent::Mode::ONCE
-			                    ? (std::min)(duration, state.seconds + step)
-			                    : std::fmod(state.seconds + step, duration);
-			if (settings.mode == MotionPathComponent::Mode::ONCE &&
-			    state.seconds >= duration)
-				state.playing = false;
+			const bool reverse = state.playback == Playback::REVERSE;
+			const double nextTime = state.seconds + (reverse ? -step : step);
+			if (settings.mode == MotionPathComponent::Mode::ONCE) {
+				state.seconds = (std::clamp)(nextTime, 0., duration);
+				if (reverse ? state.seconds == 0 : state.seconds == duration)
+					state.playback = Playback::PAUSE;
+			} else {
+				state.seconds = std::fmod(nextTime, duration);
+				if (state.seconds < 0)
+					state.seconds += duration;
+			}
 			DirectX::XMFLOAT3 offset;
 			if (!settings.Sample(state.seconds, offset))
 				return false;

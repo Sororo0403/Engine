@@ -23,6 +23,7 @@ struct TriggerAction {
 		SET_CHECKPOINT,
 		SET_CAMERA,
 		PLAY_MOTION_PATH,
+		REVERSE_MOTION_PATH,
 		PAUSE_MOTION_PATH,
 		LOAD_SCENE
 	};
@@ -91,11 +92,12 @@ struct TriggerAction {
 	}
 
 	/// <summary>
-	/// 対象のMotion Pathを再生または一時停止する操作か確認する
+	/// 対象のMotion Pathを順再生・逆再生・一時停止する操作か確認する
 	/// </summary>
 	/// <returns>true:経路の操作 false:その他の操作</returns>
 	bool IsMotionPathOperation() const {
 		return operation == Operation::PLAY_MOTION_PATH ||
+		       operation == Operation::REVERSE_MOTION_PATH ||
 		       operation == Operation::PAUSE_MOTION_PATH;
 	}
 

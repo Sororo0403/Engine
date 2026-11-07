@@ -610,6 +610,9 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 					    : action.operation ==
 					            TriggerAction::Operation::PAUSE_MOTION_PATH
 					        ? "pauseMotionPath"
+					    : action.operation ==
+					            TriggerAction::Operation::REVERSE_MOTION_PATH
+					        ? "reverseMotionPath"
 					        : "loadScene";
 					actions.push_back(
 					    {{"event", action.event == TriggerAction::Event::ENTER
@@ -1298,9 +1301,10 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					     !(version >= 28 && operation == "loadScene") &&
 					     !(version >= 39 && operation == "setCheckpoint") &&
 					     !(version >= 40 && operation == "setCamera") &&
-					     !(version >= 44 &&
-					       (operation == "playMotionPath" ||
-					        operation == "pauseMotionPath"))) ||
+					     !(version >= 44 && (operation == "playMotionPath" ||
+					                         operation == "pauseMotionPath")) &&
+					     !(version >= 45 &&
+					       operation == "reverseMotionPath")) ||
 					    (version >= 23 &&
 					     !value.at("destination").is_number_unsigned()) ||
 					    !value.at("target").is_number_unsigned() ||
@@ -1341,6 +1345,8 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					         ? TriggerAction::Operation::PLAY_MOTION_PATH
 					     : operation == "pauseMotionPath"
 					         ? TriggerAction::Operation::PAUSE_MOTION_PATH
+					     : operation == "reverseMotionPath"
+					         ? TriggerAction::Operation::REVERSE_MOTION_PATH
 					         : TriggerAction::Operation::LOAD_SCENE,
 					     value.at("once").get<bool>(),
 					     version >= 23

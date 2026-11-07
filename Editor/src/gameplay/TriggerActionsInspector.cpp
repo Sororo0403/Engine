@@ -54,6 +54,8 @@ const char *OperationLabel(TriggerAction::Operation operation) {
 		return "Set Camera";
 	case TriggerAction::Operation::PLAY_MOTION_PATH:
 		return "Play Motion Path";
+	case TriggerAction::Operation::REVERSE_MOTION_PATH:
+		return "Reverse Motion Path";
 	case TriggerAction::Operation::PAUSE_MOTION_PATH:
 		return "Pause Motion Path";
 	case TriggerAction::Operation::LOAD_SCENE:
@@ -229,6 +231,7 @@ bool TriggerActionsInspector::Draw(
 				                TriggerAction::Operation::SET_CHECKPOINT,
 				                TriggerAction::Operation::SET_CAMERA,
 				                TriggerAction::Operation::PLAY_MOTION_PATH,
+				                TriggerAction::Operation::REVERSE_MOTION_PATH,
 				                TriggerAction::Operation::PAUSE_MOTION_PATH,
 				                TriggerAction::Operation::LOAD_SCENE}) {
 					if (ImGui::Selectable(OperationLabel(operation),

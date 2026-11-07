@@ -158,7 +158,7 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 
 	auto fired = firedActions_;
 	std::map<SceneObjectId, bool> requested;
-	std::map<SceneObjectId, bool> motionPlayback;
+	std::map<SceneObjectId, SceneMotion::Playback> motionPlayback;
 	auto audio = audioActions_;
 	std::map<SceneObjectId, SceneObjectId> destinations;
 	// 有効な主人公は一体なので、同じ更新では最後に通った設定を使う。
@@ -241,7 +241,12 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 			if (action.IsMotionPathOperation()) {
 				motionPlayback[action.target] =
 				    action.operation ==
-				    TriggerAction::Operation::PLAY_MOTION_PATH;
+				            TriggerAction::Operation::PLAY_MOTION_PATH
+				        ? SceneMotion::Playback::FORWARD
+				    : action.operation ==
+				            TriggerAction::Operation::REVERSE_MOTION_PATH
+				        ? SceneMotion::Playback::REVERSE
+				        : SceneMotion::Playback::PAUSE;
 				if (action.once)
 					fired.insert(key);
 				continue;
@@ -286,6 +291,7 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 			case TriggerAction::Operation::SET_CHECKPOINT:
 			case TriggerAction::Operation::SET_CAMERA:
 			case TriggerAction::Operation::PLAY_MOTION_PATH:
+			case TriggerAction::Operation::REVERSE_MOTION_PATH:
 			case TriggerAction::Operation::PAUSE_MOTION_PATH:
 				break;
 			}
@@ -380,8 +386,8 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 		}
 	}
 
-	for (const auto &[id, playing] : motionPlayback) {
-		if (!motion_.SetPlaying(id, playing)) {
+	for (const auto &[id, playback] : motionPlayback) {
+		if (!motion_.SetPlayback(id, playback)) {
 			error = "Motion Path Trigger Action target is not prepared.";
 			if (invalidObject)
 				*invalidObject = id;

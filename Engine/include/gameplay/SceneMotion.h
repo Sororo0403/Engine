@@ -14,6 +14,7 @@ class TriggerWorld;
 /// </summary>
 class SceneMotion {
   public:
+	enum class Playback { FORWARD, REVERSE, PAUSE };
 	/// <summary>
 	/// 全経路の原点を準備する。継続時は現在位置の外部変更だけ原点へ加える
 	/// </summary>
@@ -38,18 +39,18 @@ class SceneMotion {
 	             std::vector<TriggerEvent> *events = nullptr);
 
 	/// <summary>
-	/// 経路の現在位置を保ったまま再生または一時停止する
+	/// 経路の現在位置を保ったまま、進行方向の指定または一時停止を行う
 	/// </summary>
 	/// <param name="id">準備済みのMotion Pathを持つ物体</param>
-	/// <param name="playing">true:再生 false:一時停止</param>
+	/// <param name="playback">順再生・逆再生・一時停止</param>
 	/// <returns>true:成功 false:経路なし</returns>
-	bool SetPlaying(SceneObjectId id, bool playing);
+	bool SetPlayback(SceneObjectId id, Playback playback);
 
   private:
 	struct State {
 		DirectX::XMFLOAT3 origin{};
 		double seconds = 0;
-		bool playing = true;
+		Playback playback = Playback::FORWARD;
 	};
 
 	std::map<SceneObjectId, State> states_;
