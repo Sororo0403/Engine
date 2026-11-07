@@ -4,6 +4,7 @@
 #include "math/Ray.h"
 
 #include <cmath>
+#include <limits>
 
 bool Camera::Update(int width, int height) {
 	if (width <= 0 || height <= 0) {
@@ -142,4 +143,30 @@ bool Camera::SetSettings(const CameraSettings &settings) {
 
 	settings_ = settings;
 	return true;
+}
+
+std::optional<ViewportPoint>
+Camera::Project(const DirectX::XMFLOAT3 &position) const {
+	if (!MathUtils::IsFinite(position))
+		return std::nullopt;
+	const double source[]{position.x, position.y, position.z, 1};
+	double view[4]{}, clip[4]{};
+	for (int i = 0; i < 4; ++i)
+		for (int j = 0; j < 4; ++j)
+			view[i] += source[j] * viewMatrix_.m[j][i];
+	for (int i = 0; i < 4; ++i)
+		for (int j = 0; j < 4; ++j)
+			clip[i] += view[j] * projectionMatrix_.m[j][i];
+	if (!std::isfinite(clip[3]) || clip[3] <= 0)
+		return std::nullopt;
+	const double x = (clip[0] / clip[3] + 1) * .5;
+	const double y = (1 - clip[1] / clip[3]) * .5;
+	constexpr double limit = (std::numeric_limits<float>::max)();
+	if (!std::isfinite(x) || !std::isfinite(y) || std::abs(x) > limit ||
+	    std::abs(y) > limit || clip[3] > limit)
+		return std::nullopt;
+	const bool visible = x >= 0 && x <= 1 && y >= 0 && y <= 1 &&
+	                     view[2] >= settings_.nearClip &&
+	                     view[2] <= settings_.farClip;
+	return ViewportPoint{float(x), float(y), float(clip[3]), visible};
 }

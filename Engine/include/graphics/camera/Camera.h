@@ -4,8 +4,17 @@
 #include "graphics/camera/CameraSettings.h"
 
 #include <DirectXMath.h>
+#include <optional>
 
 struct Ray;
+
+/// <summary>
+/// ビューポート内の正規化位置とカメラ前方への距離
+/// </summary>
+struct ViewportPoint {
+	float x = 0, y = 0, depth = 0;
+	bool visible = false;
+};
 
 class Camera {
   public:
@@ -57,6 +66,14 @@ class Camera {
 	/// <param name="ray">成功した場合に設定するワールド座標のレイ</param>
 	/// <returns>true:成功 false:位置または行列が無効</returns>
 	bool CreatePickingRay(float imageX, float imageY, Ray &ray) const;
+
+	/// <summary>
+	/// 更新済みの行列で、ワールド座標を左上原点のビューポート座標へ変換する
+	/// </summary>
+	/// <param name="position">有限なワールド座標</param>
+	/// <returns>カメラ前方の投影位置。画面外やクリップ範囲外はvisibleがfalse。背面・無効時はnullopt</returns>
+	std::optional<ViewportPoint>
+	Project(const DirectX::XMFLOAT3 &position) const;
 
   private:
 	DirectX::XMFLOAT3 position_{0.0f, 0.0f, -2.0f};

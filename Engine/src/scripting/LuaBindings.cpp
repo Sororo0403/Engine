@@ -1,5 +1,6 @@
 #include "LuaBindings.h"
 #include "gameplay/SceneCameraUtils.h"
+#include "graphics/camera/Camera.h"
 #include "math/TransformUtils.h"
 #include "platform/windows/StringConversion.h"
 #include "scene/Scene.h"
@@ -54,6 +55,7 @@ enum class Op {
 	CAMERA_LENS,
 	SET_CAMERA_LENS,
 	SET_CAMERA_FOV,
+	WORLD_TO_VIEWPORT,
 	LOG
 };
 
@@ -273,6 +275,34 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 			object->camera->settings = settings;
 			break;
 		}
+		case Op::WORLD_TO_VIEWPORT: {
+			constexpr float maximumDimension = 32768;
+			const float width = numbers[3], height = numbers[4];
+			if (width < 1 || height < 1 || width > maximumDimension ||
+			    height > maximumDimension || std::floor(width) != width ||
+			    std::floor(height) != height)
+				throw std::runtime_error(
+				    "Viewport dimensions must be integers from 1 to 32768.");
+			SceneWorldTransform world;
+			Camera camera;
+			if (!object->camera ||
+			    !SceneHierarchy::GetWorldTransform(*call.scene, id, world) ||
+			    !camera.SetPose(SceneCameraUtils::FromWorldTransform(world)) ||
+			    !camera.SetSettings(object->camera->settings) ||
+			    !camera.Update(static_cast<int>(width),
+			                   static_cast<int>(height)))
+				throw std::runtime_error("Projection requires a valid Camera.");
+			const auto projected =
+			    camera.Project({numbers[0], numbers[1], numbers[2]});
+			if (projected) {
+				result.id = id;
+				result.numbers[0] = projected->x;
+				result.numbers[1] = projected->y;
+				result.numbers[2] = projected->depth;
+				result.boolean = projected->visible;
+			}
+			break;
+		}
 		case Op::POSITION: {
 			SceneWorldTransform world;
 			if (!SceneHierarchy::GetWorldTransform(*call.scene, id, world))
@@ -393,7 +423,7 @@ int Dispatch(lua_State *state) {
 	SceneObjectId id = 0;
 	const char *text = nullptr;
 	std::size_t length = 0;
-	float numbers[4]{};
+	float numbers[5]{};
 	bool flag = false;
 	SceneObjectId parent = 0;
 	if (op == Op::SET_CAMERA) {
@@ -433,9 +463,10 @@ int Dispatch(lua_State *state) {
 		luaL_checktype(state, 2, LUA_TBOOLEAN);
 		flag = lua_toboolean(state, 2) != 0;
 	} else {
-		const int count = op == Op::SET_ROTATION     ? 4
-		                  : op == Op::SET_CAMERA_FOV ? 1
-		                                             : 3;
+		const int count = op == Op::WORLD_TO_VIEWPORT ? 5
+		                  : op == Op::SET_ROTATION    ? 4
+		                  : op == Op::SET_CAMERA_FOV  ? 1
+		                                              : 3;
 		for (int i = 0; i < count; ++i) {
 			luaL_checktype(state, i + 2, LUA_TNUMBER);
 			const double value = lua_tonumber(state, i + 2);
@@ -483,6 +514,15 @@ int Dispatch(lua_State *state) {
 		for (int i = 0; i < 3; ++i)
 			lua_pushnumber(state, result.numbers[i]);
 		return 3;
+	case Op::WORLD_TO_VIEWPORT:
+		if (!result.id) {
+			lua_pushnil(state);
+			return 1;
+		}
+		for (int i = 0; i < 3; ++i)
+			lua_pushnumber(state, result.numbers[i]);
+		lua_pushboolean(state, result.boolean);
+		return 4;
 	case Op::ROTATION:
 		for (int i = 0; i < 4; ++i)
 			lua_pushnumber(state, result.numbers[i]);
@@ -706,6 +746,7 @@ int LuaInternal::OpenEnvironment(lua_State *state, Call &call) {
 	Method(state, "get_camera_lens", Op::CAMERA_LENS);
 	Method(state, "set_camera_lens", Op::SET_CAMERA_LENS);
 	Method(state, "set_camera_fov", Op::SET_CAMERA_FOV);
+	Method(state, "world_to_viewport", Op::WORLD_TO_VIEWPORT);
 	Method(state, "get_mesh_visible", Op::MESH_VISIBLE);
 	Method(state, "set_mesh_visible", Op::SET_MESH_VISIBLE);
 	Method(state, "get_mesh_tint", Op::MESH_TINT);

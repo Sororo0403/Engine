@@ -2320,6 +2320,13 @@ void ControlsPanel::Draw() {
 	         "pass nil to use the fixed fallback view. Call the setter inside "
 	         "a callback. Both fixed and Follow Cameras are supported. "
 	         "Restart restores the authored Primary selection."},
+	        {"Lua > World To Viewport",
+	         "camera:world_to_viewport(x,y,z,width,height) returns normalized "
+	         "u/v from the top left, forward distance, and a visible flag. "
+	         "Pass the viewport's pixel dimensions for the correct aspect. "
+	         "Off-screen points still return coordinates; points at or behind "
+	         "the camera return nil. Visibility tests the view bounds and clip "
+	         "distances, without testing occlusion by scene objects."},
 	        {"Lua > Camera Lens",
 	         "On a Camera object, get_camera_lens() returns vertical FOV "
 	         "in degrees and the near and far clip distances. Use "
