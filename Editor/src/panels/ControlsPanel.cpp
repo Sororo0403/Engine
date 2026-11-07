@@ -949,6 +949,13 @@ void ControlsPanel::Draw() {
 	         "and can then run in the opposite direction. Use Enter to open "
 	         "and Exit to close a door with one path. If multiple actions "
 	         "control the same path in one update, the last one wins."},
+	        {"Trigger Actions > First Enter / Last Exit",
+	         "Use these events for a pressure plate shared by several objects. "
+	         "First Enter fires when the first matching Collider is present; "
+	         "Last Exit fires when the last matching Collider is gone. Contact "
+	         "and Contact Tag define which objects count for each action. "
+	         "These events use the final contacts of a simulation update, so "
+	         "a pass-through within one update still uses Enter and Exit."},
 	        {"Trigger Actions > Contact",
 	         "Choose Any Collider, Character Controller, or Dynamic Rigid "
 	         "Body as the contact source for Enter and Exit. A dynamic source "

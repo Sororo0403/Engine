@@ -6,6 +6,7 @@
 #include <array>
 #include <cstring>
 #include <format>
+#include <iterator>
 #include <utility>
 
 namespace {
@@ -62,6 +63,7 @@ void SceneSimulation::CopyFrom(const SceneSimulation &source) {
 	audioRevision_ = source.audioRevision_;
 	pendingActionSignals_ = source.pendingActionSignals_;
 	firedActions_ = source.firedActions_;
+	occupiedActions_ = source.occupiedActions_;
 	lastUpdateError_ = source.lastUpdateError_;
 	pendingScene_ = source.pendingScene_;
 	sceneRevision_ = source.sceneRevision_;
@@ -101,6 +103,7 @@ void SceneSimulation::Adopt(SceneSimulation &source) {
 	audioRevision_ = source.audioRevision_;
 	pendingActionSignals_ = std::move(source.pendingActionSignals_);
 	firedActions_ = std::move(source.firedActions_);
+	occupiedActions_ = std::move(source.occupiedActions_);
 	lastUpdateError_ = std::move(source.lastUpdateError_);
 	pendingScene_ = std::move(source.pendingScene_);
 	sceneRevision_ = source.sceneRevision_;
@@ -132,6 +135,49 @@ void SceneSimulation::QueueActionSignals(
 	}
 }
 
+void SceneSimulation::QueueOccupancySignals(
+    std::vector<ActionSignal> &signals,
+    std::set<std::pair<SceneObjectId, std::size_t>> &occupied) const {
+	for (const auto &contact : triggers_.GetContacts()) {
+		for (const auto id : std::array{contact.first, contact.second}) {
+			const auto *object = scene_.FindObject(id);
+			if (!object || !object->collider || !object->collider->isTrigger ||
+			    !object->triggerActions)
+				continue;
+			const auto other =
+			    id == contact.first ? contact.second : contact.first;
+			const auto &actions = object->triggerActions->actions;
+			for (std::size_t i = 0; i < actions.size(); ++i) {
+				const auto &action = actions[i];
+				if (!action.UsesOccupancy() ||
+				    (action.operation ==
+				         TriggerAction::Operation::SET_CHECKPOINT &&
+				     other != action.target) ||
+				    !MatchesContact(action, scene_.FindObject(other)))
+					continue;
+				occupied.emplace(id, i);
+			}
+		}
+	}
+	std::vector<std::pair<SceneObjectId, std::size_t>> changed;
+	std::set_symmetric_difference(occupiedActions_.begin(),
+	                              occupiedActions_.end(), occupied.begin(),
+	                              occupied.end(), std::back_inserter(changed));
+	for (const auto &[id, index] : changed) {
+		const auto *object = scene_.FindObject(id);
+		if (!object || !object->triggerActions ||
+		    index >= object->triggerActions->actions.size() ||
+		    !SceneActivity::IsActive(scene_, id))
+			continue;
+		const auto &action = object->triggerActions->actions[index];
+		const auto event = occupied.contains({id, index})
+		                       ? TriggerAction::Event::FIRST_ENTER
+		                       : TriggerAction::Event::LAST_EXIT;
+		if (action.event == event)
+			signals.push_back({id, event, action.target, index});
+	}
+}
+
 bool SceneSimulation::ApplyTriggerActions(std::string &error,
                                           SceneObjectId *invalidObject,
                                           bool interactPressed) {
@@ -156,6 +202,8 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 		}
 	}
 
+	std::set<std::pair<SceneObjectId, std::size_t>> occupied;
+	QueueOccupancySignals(signals, occupied);
 	auto fired = firedActions_;
 	std::map<SceneObjectId, bool> requested;
 	std::map<SceneObjectId, SceneMotion::Playback> motionPlayback;
@@ -176,9 +224,11 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 		for (std::size_t i = 0; i < actions.size(); ++i) {
 			const auto &action = actions[i];
 			const auto key = std::pair{signal.receiver, i};
-			if (action.event != signal.event ||
+			if ((signal.actionIndex && *signal.actionIndex != i) ||
+			    action.event != signal.event ||
 			    (action.once && fired.contains(key)) ||
-			    !MatchesContact(action, scene_.FindObject(signal.other))) {
+			    (!signal.actionIndex &&
+			     !MatchesContact(action, scene_.FindObject(signal.other)))) {
 				continue;
 			}
 			const auto *target = scene_.FindObject(action.target);
@@ -397,6 +447,7 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 
 	pendingScene_.swap(requestedScene);
 	firedActions_.swap(fired);
+	occupiedActions_.swap(occupied);
 	audioActions_.swap(audio);
 	return true;
 }
@@ -456,7 +507,7 @@ bool SceneSimulation::SynchronizeSceneChanges(
 	}
 
 	// 削除で詰めたTrigger Actionの添字へ、一度だけ実行済みの状態を引き継ぐ。
-	std::set<std::pair<SceneObjectId, std::size_t>> fired;
+	std::set<std::pair<SceneObjectId, std::size_t>> fired, occupied;
 	for (const auto &[id, before] : scene_.GetObjects()) {
 		const auto *after = working.FindObject(id);
 		if (!after || !before.triggerActions || !after->triggerActions)
@@ -471,10 +522,13 @@ bool SceneSimulation::SynchronizeSceneChanges(
 				continue;
 			if (firedActions_.contains({id, previous}))
 				fired.emplace(id, current);
+			if (occupiedActions_.contains({id, previous}))
+				occupied.emplace(id, current);
 			++current;
 		}
 	}
 	next.firedActions_ = std::move(fired);
+	next.occupiedActions_ = std::move(occupied);
 	std::erase_if(next.audioActions_, [&](const auto &action) {
 		return !working.Contains(action.target);
 	});

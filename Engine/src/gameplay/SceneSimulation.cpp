@@ -432,6 +432,7 @@ void SceneSimulation::Stop() {
 	audioActions_.clear();
 	pendingActionSignals_.clear();
 	firedActions_.clear();
+	occupiedActions_.clear();
 	lastUpdateError_.clear();
 	triggers_.Clear();
 	collisions_ = CollisionEvents{};

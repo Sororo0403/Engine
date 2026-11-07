@@ -31,7 +31,7 @@ struct TriggerAction {
 	/// <summary>
 	/// 物理的な接触イベントと、範囲内で押した操作入力を区別する実行条件
 	/// </summary>
-	enum class Event { ENTER, EXIT, INTERACT };
+	enum class Event { ENTER, EXIT, INTERACT, FIRST_ENTER, LAST_EXIT };
 
 	/// <summary>
 	/// 操作を発火させる接触相手のコンポーネント条件
@@ -64,13 +64,22 @@ struct TriggerAction {
 		       (contact == Contact::ANY || contact == Contact::CHARACTER ||
 		        contact == Contact::DYNAMIC_BODY) &&
 		       (event == Event::ENTER || event == Event::EXIT ||
-		        event == Event::INTERACT) &&
+		        event == Event::INTERACT || event == Event::FIRST_ENTER ||
+		        event == Event::LAST_EXIT) &&
 		       (contact != Contact::DYNAMIC_BODY || AllowsDynamicContact()) &&
 		       (operation == Operation::ENABLE ||
 		        operation == Operation::DISABLE ||
 		        operation == Operation::TOGGLE || IsAudioOperation() ||
 		        UsesDestination() || operation == Operation::SET_CAMERA ||
 		        IsMotionPathOperation() || operation == Operation::LOAD_SCENE);
+	}
+
+	/// <summary>
+	/// 接触相手ごとの通過でなく、該当する物体がいる状態の変化で発火するか確認する
+	/// </summary>
+	/// <returns>true:最初の進入または最後の退出 false:個別の接触や操作入力</returns>
+	bool UsesOccupancy() const {
+		return event == Event::FIRST_ENTER || event == Event::LAST_EXIT;
 	}
 
 	/// <summary>

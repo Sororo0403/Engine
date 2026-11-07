@@ -615,11 +615,14 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 					        ? "reverseMotionPath"
 					        : "loadScene";
 					actions.push_back(
-					    {{"event", action.event == TriggerAction::Event::ENTER
-					                   ? "enter"
-					               : action.event == TriggerAction::Event::EXIT
-					                   ? "exit"
-					                   : "interact"},
+					    {{"event",
+					      action.event == TriggerAction::Event::ENTER  ? "enter"
+					      : action.event == TriggerAction::Event::EXIT ? "exit"
+					      : action.event == TriggerAction::Event::FIRST_ENTER
+					          ? "firstEnter"
+					      : action.event == TriggerAction::Event::LAST_EXIT
+					          ? "lastExit"
+					          : "interact"},
 					     {"target", action.target},
 					     {"operation", operation},
 					     {"once", action.once},
@@ -1292,7 +1295,9 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					const auto operation =
 					    value.at("operation").get<std::string>();
 					if ((event != "enter" && event != "exit" &&
-					     !(version >= 25 && event == "interact")) ||
+					     !(version >= 25 && event == "interact") &&
+					     !(version >= 46 &&
+					       (event == "firstEnter" || event == "lastExit"))) ||
 					    (operation != "enable" && operation != "disable" &&
 					     operation != "toggle" &&
 					     !(version >= 21 && (operation == "playAudio" ||
@@ -1323,7 +1328,10 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					component.actions.push_back(
 					    {event == "enter"  ? TriggerAction::Event::ENTER
 					     : event == "exit" ? TriggerAction::Event::EXIT
-					                       : TriggerAction::Event::INTERACT,
+					     : event == "firstEnter"
+					         ? TriggerAction::Event::FIRST_ENTER
+					     : event == "lastExit" ? TriggerAction::Event::LAST_EXIT
+					                           : TriggerAction::Event::INTERACT,
 					     value.at("target").get<SceneObjectId>(),
 					     operation == "enable"
 					         ? TriggerAction::Operation::ENABLE

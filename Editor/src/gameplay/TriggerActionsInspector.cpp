@@ -75,6 +75,10 @@ const char *EventLabel(TriggerAction::Event event) {
 		return "Enter";
 	case TriggerAction::Event::EXIT:
 		return "Exit";
+	case TriggerAction::Event::FIRST_ENTER:
+		return "First Enter";
+	case TriggerAction::Event::LAST_EXIT:
+		return "Last Exit";
 	case TriggerAction::Event::INTERACT:
 		return "Interact";
 	}
@@ -126,6 +130,8 @@ bool TriggerActionsInspector::Draw(
 				for (const auto event :
 				     std::array{TriggerAction::Event::ENTER,
 				                TriggerAction::Event::EXIT,
+				                TriggerAction::Event::FIRST_ENTER,
+				                TriggerAction::Event::LAST_EXIT,
 				                TriggerAction::Event::INTERACT}) {
 					if (ImGui::Selectable(EventLabel(event),
 					                      action.event == event) &&

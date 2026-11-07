@@ -361,6 +361,7 @@ class SceneSimulation {
 		SceneObjectId receiver = 0;
 		TriggerAction::Event event = TriggerAction::Event::ENTER;
 		SceneObjectId other = 0;
+		std::optional<std::size_t> actionIndex = std::nullopt;
 	};
 
 	/// <summary>
@@ -392,6 +393,15 @@ class SceneSimulation {
 	/// <param name="signals">末尾へ追加する受信先とイベント</param>
 	void QueueActionSignals(std::span<const TriggerEvent> events,
 	                        std::vector<ActionSignal> &signals) const;
+
+	/// <summary>
+	/// 更新後の接触から、条件に合う最初の進入と最後の退出を操作ごとに追加する
+	/// </summary>
+	/// <param name="signals">発火する操作の追加先</param>
+	/// <param name="occupied">今回接触条件を満たす操作の一覧</param>
+	void QueueOccupancySignals(
+	    std::vector<ActionSignal> &signals,
+	    std::set<std::pair<SceneObjectId, std::size_t>> &occupied) const;
 
 	/// <summary>
 	/// 予約済みの検知と今回の検知から操作を集め、有効設定を一括変更してから音声要求を確定する
@@ -489,7 +499,8 @@ class SceneSimulation {
 	std::vector<SceneAudioAction> audioActions_;
 	std::uint64_t audioRevision_ = 0;
 	std::vector<ActionSignal> pendingActionSignals_;
-	std::set<std::pair<SceneObjectId, std::size_t>> firedActions_;
+	std::set<std::pair<SceneObjectId, std::size_t>> firedActions_,
+	    occupiedActions_;
 	std::string lastUpdateError_;
 	std::filesystem::path pendingScene_;
 	std::uint64_t sceneRevision_ = 0;
