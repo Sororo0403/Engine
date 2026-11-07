@@ -2257,6 +2257,16 @@ void ControlsPanel::Draw() {
 	         "and share the physics API call budget. Use hit.object references "
 	         "to interact with the target or apply impulses. Only assigned "
 	         "Colliders participate; model triangles are not queried."},
+	        {"Sphere Overlap Scripts",
+	         "scene.overlap_sphere(x,y,z,radius [,layerMask "
+	         "[,includeTriggers [,ignoredObject]]]) returns a list of active "
+	         "Collider objects that overlap a world-space sphere. Touching its "
+	         "surface alone does not count. The optional filters have the same "
+	         "defaults as scene.raycast. Results use object ID order. The "
+	         "second "
+	         "return value is true if more than 256 objects matched. Use the "
+	         "list to apply area effects or detect nearby targets. Queries see "
+	         "earlier script edits and share the physics API call budget."},
 	        {"View menu", "Show or hide the grid and selection bounds, or "
 	                      "reset the dock layout."},
 	    });

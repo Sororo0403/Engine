@@ -458,7 +458,7 @@ int LuaInternal::OpenEnvironment(lua_State *state, Call &call) {
 	Method(state, "find", Op::FIND);
 	Method(state, "find_id", Op::FIND_ID);
 	Method(state, "log", Op::LOG);
-	LuaInternal::AddRaycastMethods(state);
+	LuaInternal::AddSpatialQueryMethods(state);
 	lua_setfield(state, environment, "scene");
 	return environment;
 }

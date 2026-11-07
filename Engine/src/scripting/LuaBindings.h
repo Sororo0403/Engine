@@ -144,10 +144,10 @@ void AddMessageMethods(lua_State *state);
 void AddPrefabMethods(lua_State *state);
 
 /// <summary>
-/// 直前のsceneテーブルへ、現在のColliderを検索するレイキャストを登録する
+/// 直前のsceneテーブルへ、現在のColliderを検索するレイキャストと範囲検索を登録する
 /// </summary>
 /// <param name="state">保護呼び出し内のLua状態</param>
-void AddRaycastMethods(lua_State *state);
+void AddSpatialQueryMethods(lua_State *state);
 
 /// <summary>
 /// 物体IDを、アドレスを公開しない読み取り専用userdataへ変換する

@@ -8,6 +8,7 @@
 #include "physics/WorldCollider.h"
 #include "scene/SceneObjectId.h"
 
+#include <cstdint>
 #include <optional>
 #include <span>
 #include <vector>
@@ -154,6 +155,23 @@ class CollisionWorld {
 	                         const DirectX::XMFLOAT4X4 &matrix,
 	                         std::vector<SceneObjectId> &objects);
 
+	/// <summary>
+	/// ワールド座標の球と重なるColliderを物体ID順に列挙する
+	/// </summary>
+	/// <param name="scene">有効なColliderを取得するシーン</param>
+	/// <param name="center">球の中心</param>
+	/// <param name="radius">球の半径</param>
+	/// <param name="objects">成功時だけ設定する物体ID一覧</param>
+	/// <param name="layerMask">対象の所属レイヤー。対象自身の衝突マスクには依存しない</param>
+	/// <param name="includeTriggers">Triggerも対象にするか</param>
+	/// <param name="ignoredObject">除外する物体ID。0は除外なし</param>
+	/// <returns>true:検索成功 false:形状や姿勢が無効</returns>
+	static bool
+	FindSphereOverlaps(const Scene &scene, const DirectX::XMFLOAT3 &center,
+	                   float radius, std::vector<SceneObjectId> &objects,
+	                   std::uint32_t layerMask, bool includeTriggers,
+	                   SceneObjectId ignoredObject);
+
   private:
 	bool CanPlace(const WorldCollider &body,
 	              const std::optional<CollisionFilter> &filter) const;
@@ -164,7 +182,8 @@ class CollisionWorld {
 	                         std::vector<SceneObjectId> &objects,
 	                         SceneObjectId ignoredObject,
 	                         const std::optional<CollisionFilter> &filter,
-	                         bool includeTriggers);
+	                         bool includeTriggers,
+	                         std::uint32_t layerMask = UINT32_MAX);
 	/// <summary>
 	/// 実形状の面の法線で滑り方向を決め、移動を判定する
 	/// </summary>
