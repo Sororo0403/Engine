@@ -370,6 +370,9 @@
     <ClCompile Include="src\scene\SceneActivity.cpp">
       <Filter>src\scene</Filter>
     </ClCompile>
+    <ClInclude Include="include\scene\ObjectTag.h">
+      <Filter>include\scene</Filter>
+    </ClInclude>
     <ClInclude Include="include\scene\SceneObject.h">
       <Filter>include\scene</Filter>
     </ClInclude>

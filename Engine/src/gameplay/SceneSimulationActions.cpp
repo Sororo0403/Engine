@@ -12,8 +12,11 @@ namespace {
 /// <summary>
 /// 進入・退出・操作入力を発生させた相手が、操作の接触条件を満たすか確認する
 /// </summary>
-bool MatchesContact(TriggerAction::Contact contact, const SceneObject *other) {
-	switch (contact) {
+bool MatchesContact(const TriggerAction &action, const SceneObject *other) {
+	if (!action.contactTag.empty() &&
+	    (!other || other->tag != action.contactTag))
+		return false;
+	switch (action.contact) {
 	case TriggerAction::Contact::ANY:
 		return true;
 	case TriggerAction::Contact::CHARACTER:
@@ -174,8 +177,7 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 			const auto key = std::pair{signal.receiver, i};
 			if (action.event != signal.event ||
 			    (action.once && fired.contains(key)) ||
-			    !MatchesContact(action.contact,
-			                    scene_.FindObject(signal.other))) {
+			    !MatchesContact(action, scene_.FindObject(signal.other))) {
 				continue;
 			}
 			const auto *target = scene_.FindObject(action.target);

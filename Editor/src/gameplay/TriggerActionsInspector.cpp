@@ -9,7 +9,9 @@
 #include <format>
 #include <imgui.h>
 #include <optional>
+#include <set>
 #include <string>
+#include <string_view>
 #include <utility>
 
 namespace {
@@ -100,6 +102,12 @@ bool TriggerActionsInspector::Draw(
 	ImGui::PushID(scope.c_str());
 	ImGui::PushID("TriggerActionsInspector");
 	auto edited = *object.triggerActions;
+	std::set<std::string_view> tags;
+	for (const auto &[objectId, candidate] : scene.GetObjects()) {
+		(void)objectId;
+		if (!candidate.tag.empty())
+			tags.insert(candidate.tag);
+	}
 	bool changed = false;
 	std::optional<std::size_t> remove;
 	std::optional<std::pair<std::size_t, std::size_t>> move;
@@ -140,6 +148,31 @@ bool TriggerActionsInspector::Draw(
 						action.contact = contact;
 						changed = true;
 					}
+				}
+				ImGui::EndCombo();
+			}
+			if (ImGui::BeginCombo("Contact Tag",
+			                      action.contactTag.empty()
+			                          ? "Any Tag"
+			                          : action.contactTag.c_str())) {
+				if (ImGui::Selectable("Any Tag##noTag",
+				                      action.contactTag.empty()) &&
+				    !action.contactTag.empty()) {
+					action.contactTag.clear();
+					changed = true;
+				}
+				for (const auto tag : tags) {
+					ImGui::PushID(tag.data(), tag.data() + tag.size());
+					const auto position = ImGui::GetCursorScreenPos();
+					if (ImGui::Selectable("##tag", tag == action.contactTag) &&
+					    tag != action.contactTag) {
+						action.contactTag = tag;
+						changed = true;
+					}
+					ImGui::GetWindowDrawList()->AddText(
+					    position, ImGui::GetColorU32(ImGuiCol_Text), tag.data(),
+					    tag.data() + tag.size());
+					ImGui::PopID();
 				}
 				ImGui::EndCombo();
 			}
@@ -311,6 +344,8 @@ void TriggerActionsInspector::DrawReadOnly(const ImGuiSystem &ui,
 		    EventLabel(action.event), TargetLabel(scene, action.target),
 		    OperationLabel(action.operation), action.once ? "Yes" : "No"));
 		ui.Text(std::format("Contact: {}", ContactLabel(action.contact)));
+		if (!action.contactTag.empty())
+			ui.Text(std::format("Contact Tag: {}", action.contactTag));
 		if (action.operation == TriggerAction::Operation::LOAD_SCENE)
 			ui.Text("Scene: " + PathUtils::ToUtf8(action.scenePath));
 		if (action.UsesDestination()) {

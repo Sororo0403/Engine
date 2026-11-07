@@ -946,7 +946,10 @@ void ControlsPanel::Draw() {
 	         "Body as the contact source for Enter and Exit. A dynamic source "
 	         "must have an enabled non-kinematic Rigid Body. Interact is "
 	         "always initiated by the character. The contact filter applies "
-	         "before Once per Scene, including overlaps at Play start."},
+	         "before Once per Scene, including overlaps at Play start. Contact "
+	         "Tag "
+	         "adds a case-sensitive match to the selected source type. Assign "
+	         "a tag to an object in the scene first, then choose it here."},
 	        {"Trigger Actions > Set Camera",
 	         "Choose a Camera target to switch the Game view on Enter, Exit "
 	         "or Interact. Enter and Exit use any eligible Collider, including "

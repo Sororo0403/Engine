@@ -1,11 +1,9 @@
 #include "scene/SceneObject.h"
 #include "math/TransformUtils.h"
-#include "platform/windows/StringConversion.h"
+#include "scene/ObjectTag.h"
 
 bool SceneObject::IsValidTag(std::string_view tag) {
-	return tag.empty() ||
-	       (tag.size() <= 64 && tag.find('\0') == std::string_view::npos &&
-	        !StringConversion::Utf8ToWide(tag).empty());
+	return ObjectTag::IsValid(tag);
 }
 
 bool SceneObject::operator==(const SceneObject &other) const {

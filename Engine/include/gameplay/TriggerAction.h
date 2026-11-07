@@ -1,8 +1,10 @@
 #pragma once
 
 #include "platform/windows/PathUtils.h"
+#include "scene/ObjectTag.h"
 #include "scene/SceneObjectId.h"
 #include <filesystem>
+#include <string>
 
 /// <summary>
 /// Triggerの進入・退出、または範囲内での操作入力に応じて、対象物体の有効設定・音声・瞬間移動・復帰先やカメラの変更、またはシーン遷移を要求する
@@ -42,13 +44,16 @@ struct TriggerAction {
 	// Load Sceneの遷移先。空は編集中だけ許可する。絶対パスまたは実行ファイル基準
 	std::filesystem::path scenePath;
 	Contact contact = Contact::ANY;
+	// 接触相手のタグ。空の場合はタグによる絞り込みを行わない。
+	std::string contactTag;
 
 	/// <summary>
 	/// 種別が有効か確認する。未割り当ての対象は編集用に許可し、Play時に存在を確認する
 	/// </summary>
 	/// <returns>true:有効 false:未対応のイベントまたは操作</returns>
 	bool IsValid() const {
-		return (scenePath.empty() ||
+		return ObjectTag::IsValid(contactTag) &&
+		       (scenePath.empty() ||
 		        (scenePath.native().find(L'\0') == std::wstring::npos &&
 		         (!scenePath.has_root_path() || scenePath.is_absolute()) &&
 		         PathUtils::HasExtension(scenePath, ".json") &&
