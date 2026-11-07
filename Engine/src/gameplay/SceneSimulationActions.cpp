@@ -190,7 +190,8 @@ void SceneSimulation::QueueOccupancySignals(
 
 bool SceneSimulation::ApplyTriggerActions(
     std::string &error, SceneObjectId *invalidObject, bool interactPressed,
-    std::span<const GameActionState> namedInputs, float seconds) {
+    std::span<const GameActionState> namedInputs, float seconds,
+    bool uiConsumesInput) {
 	error.clear();
 	std::vector<ActionSignal> signals;
 	// 新しく予約する操作には、条件を満たすまでに使った今回の時間を引かない。
@@ -206,9 +207,16 @@ bool SceneSimulation::ApplyTriggerActions(
 	               pendingActionSignals_.end());
 	pendingActionSignals_.clear();
 	QueueActionSignals(frameEvents_, signals);
+	const bool namedPressed =
+	    std::ranges::any_of(namedInputs, &GameActionState::pressed);
+	const auto isPressed = [&](std::string_view name) {
+		return std::ranges::any_of(
+		    namedInputs, [&](const GameActionState &input) {
+			    return input.pressed && input.name == name;
+		    });
+	};
 	if (character_ != 0 &&
-	    (interactPressed ||
-	     std::ranges::any_of(namedInputs, &GameActionState::pressed))) {
+	    (interactPressed || (namedPressed && !uiConsumesInput))) {
 		// 通過経路ではなく現在の接触を使い、床や他の物体の重なりからは操作しない。
 		for (const auto &contact : triggers_.GetContacts()) {
 			const auto receiver = contact.first == character_ ? contact.second
@@ -229,6 +237,19 @@ bool SceneSimulation::ApplyTriggerActions(
 	QueueOccupancySignals(signals, occupied);
 	for (const auto button : ui_.GetClicks())
 		signals.push_back({button, TriggerAction::Event::BUTTON_CLICK});
+	if (namedPressed) {
+		for (const auto &[id, object] : scene_.GetObjects()) {
+			if (!object.triggerActions || !SceneActivity::IsActive(scene_, id))
+				continue;
+			const auto &actions = object.triggerActions->actions;
+			for (std::size_t i = 0; i < actions.size(); ++i) {
+				if (actions[i].event == TriggerAction::Event::INPUT_PRESSED &&
+				    isPressed(actions[i].inputAction))
+					signals.push_back(
+					    {id, TriggerAction::Event::INPUT_PRESSED, 0, i});
+			}
+		}
+	}
 	auto fired = firedActions_;
 	std::map<SceneObjectId, bool> requested;
 	std::map<SceneObjectId, SceneMotion::Playback> motionPlayback;
@@ -252,8 +273,11 @@ bool SceneSimulation::ApplyTriggerActions(
 		}
 		const bool buttonClick =
 		    signal.event == TriggerAction::Event::BUTTON_CLICK;
-		if (buttonClick ? (!object->button || !object->button->enabled)
-		                : (!object->collider || !object->collider->isTrigger))
+		const bool globalInput =
+		    signal.event == TriggerAction::Event::INPUT_PRESSED;
+		if ((buttonClick && (!object->button || !object->button->enabled)) ||
+		    (!buttonClick && !globalInput &&
+		     (!object->collider || !object->collider->isTrigger)))
 			continue;
 		const auto &actions = object->triggerActions->actions;
 		for (std::size_t i = 0; i < actions.size(); ++i) {
@@ -271,11 +295,7 @@ bool SceneSimulation::ApplyTriggerActions(
 				const bool pressed =
 				    action.inputAction.empty()
 				        ? interactPressed
-				        : std::ranges::any_of(
-				              namedInputs, [&](const GameActionState &input) {
-					              return input.pressed &&
-					                     input.name == action.inputAction;
-				              });
+				        : !uiConsumesInput && isPressed(action.inputAction);
 				if (!pressed)
 					continue;
 			}
@@ -339,9 +359,9 @@ bool SceneSimulation::ApplyTriggerActions(
 				const bool settingCheckpoint =
 				    action.operation ==
 				    TriggerAction::Operation::SET_CHECKPOINT;
-				if (settingCheckpoint &&
-				    (action.target != character_ ||
-				     (!buttonClick && signal.other != action.target)))
+				if (settingCheckpoint && (action.target != character_ ||
+				                          (!buttonClick && !globalInput &&
+				                           signal.other != action.target)))
 					continue;
 				if (!scene_.Contains(action.destination)) {
 					error = "Teleport and Set Checkpoint require an existing "

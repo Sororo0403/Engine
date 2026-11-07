@@ -942,6 +942,12 @@ void ControlsPanel::Draw() {
 	         "does "
 	         "not change the authored offsets. Exported games use the same "
 	         "input."},
+	        {"Trigger Actions > Input Pressed",
+	         "Choose Input Pressed on an active object, then select a named "
+	         "action from Game Settings. The press can toggle a menu or run "
+	         "another operation anywhere in the scene, including while a "
+	         "menu has focus. Use a distinct binding if you do not want "
+	         "the same press to also activate a UI Button."},
 	        {"Trigger Actions > Restart Scene",
 	         "Choose Restart Scene to retry the current level, for example "
 	         "from a Button Click action. It resets the scene to the state "

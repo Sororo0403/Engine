@@ -615,13 +615,11 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 			return false;
 		}
 		std::string error;
-		const auto triggerInputs =
-		    working.ui_.ConsumesNavigation() || working.ui_.ConsumesPointer()
-		        ? std::span<const GameActionState>{}
-		        : actions;
+		const bool uiConsumesInput =
+		    working.ui_.ConsumesNavigation() || working.ui_.ConsumesPointer();
 		if (!working.ApplyTriggerActions(error, nullptr,
-		                                 controls.interactPressed,
-		                                 triggerInputs, seconds)) {
+		                                 controls.interactPressed, actions,
+		                                 seconds, uiConsumesInput)) {
 			lastUpdateError_ = std::move(error);
 			return false;
 		}

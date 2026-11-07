@@ -660,6 +660,8 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 					          ? "lastExit"
 					      : action.event == TriggerAction::Event::BUTTON_CLICK
 					          ? "buttonClick"
+					      : action.event == TriggerAction::Event::INPUT_PRESSED
+					          ? "inputPressed"
 					          : "interact"},
 					     {"target", action.target},
 					     {"operation", operation},
@@ -1341,7 +1343,8 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					     !(version >= 25 && event == "interact") &&
 					     !(version >= 46 &&
 					       (event == "firstEnter" || event == "lastExit")) &&
-					     !(version >= 56 && event == "buttonClick")) ||
+					     !(version >= 56 && event == "buttonClick") &&
+					     !(version >= 59 && event == "inputPressed")) ||
 					    (operation != "enable" && operation != "disable" &&
 					     operation != "toggle" &&
 					     !(version >= 21 && (operation == "playAudio" ||
@@ -1394,6 +1397,8 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					     : event == "lastExit" ? TriggerAction::Event::LAST_EXIT
 					     : event == "buttonClick"
 					         ? TriggerAction::Event::BUTTON_CLICK
+					     : event == "inputPressed"
+					         ? TriggerAction::Event::INPUT_PRESSED
 					         : TriggerAction::Event::INTERACT,
 					     value.at("target").get<SceneObjectId>(),
 					     operation == "enable"

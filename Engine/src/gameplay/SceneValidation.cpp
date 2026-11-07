@@ -137,8 +137,7 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 				for (const auto &action : object.triggerActions->actions) {
 					requiresButton |=
 					    action.event == TriggerAction::Event::BUTTON_CLICK;
-					requiresTrigger |=
-					    action.event != TriggerAction::Event::BUTTON_CLICK;
+					requiresTrigger |= action.UsesContact();
 				}
 				if (requiresTrigger &&
 				    (!object.collider || !object.collider->isTrigger))
@@ -148,6 +147,11 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 					add(id,
 					    "Button Click Trigger Actions require a UI Button.");
 				for (const auto &action : object.triggerActions->actions) {
+					if (action.event == TriggerAction::Event::INPUT_PRESSED &&
+					    action.inputAction.empty()) {
+						add(id, "Input Pressed requires a named input action.");
+						break;
+					}
 					if (action.operation ==
 					    TriggerAction::Operation::LOAD_SCENE) {
 						if (action.scenePath.empty())

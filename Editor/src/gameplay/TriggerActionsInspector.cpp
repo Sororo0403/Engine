@@ -108,6 +108,8 @@ const char *EventLabel(TriggerAction::Event event) {
 		return "Interact";
 	case TriggerAction::Event::BUTTON_CLICK:
 		return "Button Click";
+	case TriggerAction::Event::INPUT_PRESSED:
+		return "Input Pressed";
 	}
 	return "Invalid";
 }
@@ -161,14 +163,16 @@ bool TriggerActionsInspector::Draw(
 				                TriggerAction::Event::FIRST_ENTER,
 				                TriggerAction::Event::LAST_EXIT,
 				                TriggerAction::Event::INTERACT,
-				                TriggerAction::Event::BUTTON_CLICK}) {
+				                TriggerAction::Event::BUTTON_CLICK,
+				                TriggerAction::Event::INPUT_PRESSED}) {
 					if (ImGui::Selectable(EventLabel(event),
 					                      action.event == event) &&
 					    action.event != event) {
 						action.event = event;
-						if (event != TriggerAction::Event::INTERACT)
+						if (event != TriggerAction::Event::INTERACT &&
+						    event != TriggerAction::Event::INPUT_PRESSED)
 							action.inputAction.clear();
-						if (event == TriggerAction::Event::BUTTON_CLICK) {
+						if (!action.UsesContact()) {
 							action.contact = TriggerAction::Contact::ANY;
 							action.contactTag.clear();
 						}
@@ -181,11 +185,15 @@ bool TriggerActionsInspector::Draw(
 				}
 				ImGui::EndCombo();
 			}
-			if (action.event == TriggerAction::Event::INTERACT &&
+			const bool interact =
+			    action.event == TriggerAction::Event::INTERACT;
+			const char *defaultInput = interact ? "Default Interact" : "None";
+			if ((interact ||
+			     action.event == TriggerAction::Event::INPUT_PRESSED) &&
 			    ImGui::BeginCombo("Input", action.inputAction.empty()
-			                                   ? "Default Interact"
+			                                   ? defaultInput
 			                                   : action.inputAction.c_str())) {
-				if (ImGui::Selectable("Default Interact",
+				if (ImGui::Selectable(defaultInput,
 				                      action.inputAction.empty()) &&
 				    !action.inputAction.empty()) {
 					action.inputAction.clear();
@@ -208,7 +216,7 @@ bool TriggerActionsInspector::Draw(
 				}
 				ImGui::EndCombo();
 			}
-			if (action.event != TriggerAction::Event::BUTTON_CLICK &&
+			if (action.UsesContact() &&
 			    ImGui::BeginCombo("Contact", ContactLabel(action.contact))) {
 				for (const auto contact :
 				     std::array{TriggerAction::Contact::ANY,
@@ -226,7 +234,7 @@ bool TriggerActionsInspector::Draw(
 				}
 				ImGui::EndCombo();
 			}
-			if (action.event != TriggerAction::Event::BUTTON_CLICK &&
+			if (action.UsesContact() &&
 			    ImGui::BeginCombo("Contact Tag",
 			                      action.contactTag.empty()
 			                          ? "Any Tag"
@@ -503,13 +511,14 @@ void TriggerActionsInspector::DrawReadOnly(const ImGuiSystem &ui,
 		    "Action {}: {} / {} / {} / Once: {}", i + 1,
 		    EventLabel(action.event), TargetLabel(scene, action.target),
 		    OperationLabel(action.operation), action.once ? "Yes" : "No"));
-		if (action.event != TriggerAction::Event::BUTTON_CLICK)
+		if (action.UsesContact())
 			ui.Text(std::format("Contact: {}", ContactLabel(action.contact)));
 		if (action.cameraBlendSeconds > 0)
 			ui.Text(std::format("Blend: {:.3f} s", action.cameraBlendSeconds));
 		if (action.delaySeconds > 0)
 			ui.Text(std::format("Delay: {:.3f} s", action.delaySeconds));
-		if (action.event == TriggerAction::Event::INTERACT)
+		if (action.event == TriggerAction::Event::INTERACT ||
+		    action.event == TriggerAction::Event::INPUT_PRESSED)
 			ui.Text("Input: " + (action.inputAction.empty()
 			                         ? "Default Interact"
 			                         : action.inputAction));

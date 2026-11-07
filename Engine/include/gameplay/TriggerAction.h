@@ -46,7 +46,7 @@ struct TriggerAction {
 	};
 
 	/// <summary>
-	/// 物理的な接触、範囲内での操作入力、またはUI Buttonのクリックを指定する実行条件
+	/// 物理的な接触、操作入力、またはUI Buttonのクリックを指定する実行条件
 	/// </summary>
 	enum class Event {
 		ENTER,
@@ -54,7 +54,8 @@ struct TriggerAction {
 		INTERACT,
 		FIRST_ENTER,
 		LAST_EXIT,
-		BUTTON_CLICK
+		BUTTON_CLICK,
+		INPUT_PRESSED
 	};
 
 	/// <summary>
@@ -73,7 +74,7 @@ struct TriggerAction {
 	Contact contact = Contact::ANY;
 	// 接触相手のタグ。空の場合はタグによる絞り込みを行わない。
 	std::string contactTag;
-	// Interactで使う名前付き操作。空の場合は既定のInteractを使う。
+	// InteractまたはInput Pressedで使う名前付き操作。Interactは空で既定の操作を使う。
 	std::string inputAction;
 	// 受信側のLuaに渡す通知名。空は編集中だけ許可する。
 	std::string messageName;
@@ -102,7 +103,7 @@ struct TriggerAction {
 		        (operation == Operation::SEND_SCRIPT_MESSAGE &&
 		         ScriptMessage::IsValidName(messageName))) &&
 		       (inputAction.empty() ||
-		        (event == Event::INTERACT &&
+		        ((event == Event::INTERACT || event == Event::INPUT_PRESSED) &&
 		         GameActionBinding::IsValidName(inputAction))) &&
 		       (scenePath.empty() ||
 		        (scenePath.native().find(L'\0') == std::wstring::npos &&
@@ -113,8 +114,9 @@ struct TriggerAction {
 		        contact == Contact::DYNAMIC_BODY) &&
 		       (event == Event::ENTER || event == Event::EXIT ||
 		        event == Event::INTERACT || event == Event::FIRST_ENTER ||
-		        event == Event::LAST_EXIT || event == Event::BUTTON_CLICK) &&
-		       (event != Event::BUTTON_CLICK ||
+		        event == Event::LAST_EXIT || event == Event::BUTTON_CLICK ||
+		        event == Event::INPUT_PRESSED) &&
+		       (UsesContact() ||
 		        (contact == Contact::ANY && contactTag.empty())) &&
 		       (contact != Contact::DYNAMIC_BODY || AllowsDynamicContact()) &&
 		       (operation == Operation::ENABLE ||
@@ -139,11 +141,19 @@ struct TriggerAction {
 	}
 
 	/// <summary>
+	/// 実行条件がTrigger Colliderとの接触を使うか確認する
+	/// </summary>
+	/// <returns>true:接触を使う false:UI Buttonまたは名前付き入力</returns>
+	bool UsesContact() const {
+		return event != Event::BUTTON_CLICK && event != Event::INPUT_PRESSED;
+	}
+
+	/// <summary>
 	/// 接触相手として動的剛体を指定できる操作か確認する
 	/// </summary>
 	/// <returns>true:動的剛体で発火可能 false:主人公の操作または復帰先設定</returns>
 	bool AllowsDynamicContact() const {
-		return event != Event::INTERACT && event != Event::BUTTON_CLICK &&
+		return UsesContact() && event != Event::INTERACT &&
 		       operation != Operation::SET_CHECKPOINT;
 	}
 
