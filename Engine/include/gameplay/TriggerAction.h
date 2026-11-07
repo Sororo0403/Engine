@@ -25,6 +25,10 @@ struct TriggerAction {
 		PLAY_MOTION_PATH,
 		REVERSE_MOTION_PATH,
 		PAUSE_MOTION_PATH,
+		PLAY_TRANSFORM_ANIMATION,
+		RESTART_TRANSFORM_ANIMATION,
+		PAUSE_TRANSFORM_ANIMATION,
+		STOP_TRANSFORM_ANIMATION,
 		LOAD_SCENE
 	};
 
@@ -71,7 +75,8 @@ struct TriggerAction {
 		        operation == Operation::DISABLE ||
 		        operation == Operation::TOGGLE || IsAudioOperation() ||
 		        UsesDestination() || operation == Operation::SET_CAMERA ||
-		        IsMotionPathOperation() || operation == Operation::LOAD_SCENE);
+		        IsMotionPathOperation() || IsTransformAnimationOperation() ||
+		        operation == Operation::LOAD_SCENE);
 	}
 
 	/// <summary>
@@ -108,6 +113,17 @@ struct TriggerAction {
 		return operation == Operation::PLAY_MOTION_PATH ||
 		       operation == Operation::REVERSE_MOTION_PATH ||
 		       operation == Operation::PAUSE_MOTION_PATH;
+	}
+
+	/// <summary>
+	/// 対象のTransform Animationを操作する種別か確認する
+	/// </summary>
+	/// <returns>true:変形アニメーションの操作 false:その他の操作</returns>
+	bool IsTransformAnimationOperation() const {
+		return operation == Operation::PLAY_TRANSFORM_ANIMATION ||
+		       operation == Operation::RESTART_TRANSFORM_ANIMATION ||
+		       operation == Operation::PAUSE_TRANSFORM_ANIMATION ||
+		       operation == Operation::STOP_TRANSFORM_ANIMATION;
 	}
 
 	/// <summary>

@@ -1,5 +1,6 @@
 #include "gameplay/SceneSimulation.h"
 
+#include "math/TransformUtils.h"
 #include "scene/SceneActivity.h"
 #include "scene/SceneHierarchy.h"
 #include <algorithm>
@@ -207,6 +208,7 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 	auto fired = firedActions_;
 	std::map<SceneObjectId, bool> requested;
 	std::map<SceneObjectId, SceneMotion::Playback> motionPlayback;
+	std::map<SceneObjectId, TriggerAction::Operation> animationPlayback;
 	auto audio = audioActions_;
 	std::map<SceneObjectId, SceneObjectId> destinations;
 	// 有効な主人公は一体なので、同じ更新では最後に通った設定を使う。
@@ -302,6 +304,13 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 				continue;
 			}
 
+			if (action.IsTransformAnimationOperation()) {
+				animationPlayback[action.target] = action.operation;
+				if (action.once)
+					fired.insert(key);
+				continue;
+			}
+
 			if (action.IsAudioOperation()) {
 				if (!target->audioSource) {
 					error = std::format("Trigger Actions on object ID {} need "
@@ -343,6 +352,10 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 			case TriggerAction::Operation::PLAY_MOTION_PATH:
 			case TriggerAction::Operation::REVERSE_MOTION_PATH:
 			case TriggerAction::Operation::PAUSE_MOTION_PATH:
+			case TriggerAction::Operation::PLAY_TRANSFORM_ANIMATION:
+			case TriggerAction::Operation::RESTART_TRANSFORM_ANIMATION:
+			case TriggerAction::Operation::PAUSE_TRANSFORM_ANIMATION:
+			case TriggerAction::Operation::STOP_TRANSFORM_ANIMATION:
 				break;
 			}
 			if (action.once) {
@@ -410,7 +423,8 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 			*invalidObject = selectedCamera;
 		return false;
 	}
-	if (checkpointPosition || (selectedCamera && selectedCamera != camera_)) {
+	if (checkpointPosition || (selectedCamera && selectedCamera != camera_) ||
+	    !animationPlayback.empty()) {
 		Scene candidate;
 		candidate.CopyFrom(scene_);
 		if (checkpointPosition) {
@@ -425,13 +439,40 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 					candidate.FindObject(id)->camera->primary =
 					    id == selectedCamera;
 		}
-		if (!SynchronizeSceneChanges(candidate, {}, error, invalidObject)) {
+		std::vector<SceneObjectId> transformed;
+		for (const auto &[id, operation] : animationPlayback) {
+			const auto before = candidate.FindObject(id)->transform;
+			const auto control =
+			    operation == TriggerAction::Operation::STOP_TRANSFORM_ANIMATION
+			        ? SceneAnimations::Operation::STOP
+			    : operation ==
+			            TriggerAction::Operation::PAUSE_TRANSFORM_ANIMATION
+			        ? SceneAnimations::Operation::PAUSE
+			        : SceneAnimations::Operation::PLAY;
+			if (!animations_.Control(
+			        candidate, id, control, 0,
+			        operation ==
+			            TriggerAction::Operation::RESTART_TRANSFORM_ANIMATION,
+			        error)) {
+				error = "Transform Animation Trigger Action failed: " + error;
+				if (invalidObject)
+					*invalidObject = id;
+				return false;
+			}
+			if (!TransformUtils::AreEqual(before,
+			                              candidate.FindObject(id)->transform))
+				transformed.push_back(id);
+		}
+		if (!SynchronizeSceneChanges(candidate, transformed, error,
+		                             invalidObject)) {
 			const char *operation =
 			    checkpointPosition
 			        ? (selectedCamera ? "Set Camera / Set Checkpoint"
 			                          : "Set Checkpoint")
 			        : "Set Camera";
-			error = std::string(operation) + " failed: " + error;
+			error = std::string(animationPlayback.empty() ? operation
+			                                              : "Trigger Actions") +
+			        " failed: " + error;
 			return false;
 		}
 	}

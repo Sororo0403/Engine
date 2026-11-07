@@ -181,6 +181,13 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 						break;
 					}
 
+					if (action.IsTransformAnimationOperation() &&
+					    !target.transformAnimation) {
+						add(id, "Transform Animation Trigger Actions require a "
+						        "target with Transform Animation.");
+						break;
+					}
+
 					if (action.IsAudioOperation() && !target.audioSource) {
 						add(id, "Audio Trigger Actions require an Audio Source "
 						        "on their target.");

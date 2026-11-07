@@ -613,6 +613,18 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 					    : action.operation ==
 					            TriggerAction::Operation::REVERSE_MOTION_PATH
 					        ? "reverseMotionPath"
+					    : action.operation == TriggerAction::Operation::
+					                              PLAY_TRANSFORM_ANIMATION
+					        ? "playTransformAnimation"
+					    : action.operation == TriggerAction::Operation::
+					                              RESTART_TRANSFORM_ANIMATION
+					        ? "restartTransformAnimation"
+					    : action.operation == TriggerAction::Operation::
+					                              PAUSE_TRANSFORM_ANIMATION
+					        ? "pauseTransformAnimation"
+					    : action.operation == TriggerAction::Operation::
+					                              STOP_TRANSFORM_ANIMATION
+					        ? "stopTransformAnimation"
 					        : "loadScene";
 					actions.push_back(
 					    {{"event",
@@ -1308,8 +1320,12 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					     !(version >= 40 && operation == "setCamera") &&
 					     !(version >= 44 && (operation == "playMotionPath" ||
 					                         operation == "pauseMotionPath")) &&
-					     !(version >= 45 &&
-					       operation == "reverseMotionPath")) ||
+					     !(version >= 45 && operation == "reverseMotionPath") &&
+					     !(version >= 47 &&
+					       (operation == "playTransformAnimation" ||
+					        operation == "restartTransformAnimation" ||
+					        operation == "pauseTransformAnimation" ||
+					        operation == "stopTransformAnimation"))) ||
 					    (version >= 23 &&
 					     !value.at("destination").is_number_unsigned()) ||
 					    !value.at("target").is_number_unsigned() ||
@@ -1355,6 +1371,18 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					         ? TriggerAction::Operation::PAUSE_MOTION_PATH
 					     : operation == "reverseMotionPath"
 					         ? TriggerAction::Operation::REVERSE_MOTION_PATH
+					     : operation == "playTransformAnimation"
+					         ? TriggerAction::Operation::
+					               PLAY_TRANSFORM_ANIMATION
+					     : operation == "restartTransformAnimation"
+					         ? TriggerAction::Operation::
+					               RESTART_TRANSFORM_ANIMATION
+					     : operation == "pauseTransformAnimation"
+					         ? TriggerAction::Operation::
+					               PAUSE_TRANSFORM_ANIMATION
+					     : operation == "stopTransformAnimation"
+					         ? TriggerAction::Operation::
+					               STOP_TRANSFORM_ANIMATION
 					         : TriggerAction::Operation::LOAD_SCENE,
 					     value.at("once").get<bool>(),
 					     version >= 23

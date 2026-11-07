@@ -58,6 +58,14 @@ const char *OperationLabel(TriggerAction::Operation operation) {
 		return "Reverse Motion Path";
 	case TriggerAction::Operation::PAUSE_MOTION_PATH:
 		return "Pause Motion Path";
+	case TriggerAction::Operation::PLAY_TRANSFORM_ANIMATION:
+		return "Play Transform Animation";
+	case TriggerAction::Operation::RESTART_TRANSFORM_ANIMATION:
+		return "Restart Transform Animation";
+	case TriggerAction::Operation::PAUSE_TRANSFORM_ANIMATION:
+		return "Pause Transform Animation";
+	case TriggerAction::Operation::STOP_TRANSFORM_ANIMATION:
+		return "Stop Transform Animation";
 	case TriggerAction::Operation::LOAD_SCENE:
 		return "Load Scene";
 	}
@@ -213,6 +221,9 @@ bool TriggerActionsInspector::Draw(
 						if (action.IsMotionPathOperation() &&
 						    !candidate.motionPath)
 							continue;
+						if (action.IsTransformAnimationOperation() &&
+						    !candidate.transformAnimation)
+							continue;
 						const auto label = TargetLabel(scene, targetId);
 						if (ImGui::Selectable(label.c_str(),
 						                      action.target == targetId) &&
@@ -227,19 +238,23 @@ bool TriggerActionsInspector::Draw(
 
 			if (ImGui::BeginCombo("Operation",
 			                      OperationLabel(action.operation))) {
-				for (const auto operation :
-				     std::array{TriggerAction::Operation::ENABLE,
-				                TriggerAction::Operation::DISABLE,
-				                TriggerAction::Operation::TOGGLE,
-				                TriggerAction::Operation::PLAY_AUDIO,
-				                TriggerAction::Operation::STOP_AUDIO,
-				                TriggerAction::Operation::TELEPORT,
-				                TriggerAction::Operation::SET_CHECKPOINT,
-				                TriggerAction::Operation::SET_CAMERA,
-				                TriggerAction::Operation::PLAY_MOTION_PATH,
-				                TriggerAction::Operation::REVERSE_MOTION_PATH,
-				                TriggerAction::Operation::PAUSE_MOTION_PATH,
-				                TriggerAction::Operation::LOAD_SCENE}) {
+				for (const auto operation : std::array{
+				         TriggerAction::Operation::ENABLE,
+				         TriggerAction::Operation::DISABLE,
+				         TriggerAction::Operation::TOGGLE,
+				         TriggerAction::Operation::PLAY_AUDIO,
+				         TriggerAction::Operation::STOP_AUDIO,
+				         TriggerAction::Operation::TELEPORT,
+				         TriggerAction::Operation::SET_CHECKPOINT,
+				         TriggerAction::Operation::SET_CAMERA,
+				         TriggerAction::Operation::PLAY_MOTION_PATH,
+				         TriggerAction::Operation::REVERSE_MOTION_PATH,
+				         TriggerAction::Operation::PAUSE_MOTION_PATH,
+				         TriggerAction::Operation::PLAY_TRANSFORM_ANIMATION,
+				         TriggerAction::Operation::RESTART_TRANSFORM_ANIMATION,
+				         TriggerAction::Operation::PAUSE_TRANSFORM_ANIMATION,
+				         TriggerAction::Operation::STOP_TRANSFORM_ANIMATION,
+				         TriggerAction::Operation::LOAD_SCENE}) {
 					if (ImGui::Selectable(OperationLabel(operation),
 					                      action.operation == operation) &&
 					    action.operation != operation) {

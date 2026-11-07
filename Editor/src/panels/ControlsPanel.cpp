@@ -941,6 +941,12 @@ void ControlsPanel::Draw() {
 	         "does "
 	         "not change the authored offsets. Exported games use the same "
 	         "input."},
+	        {"Trigger Actions > Transform Animation",
+	         "Choose a target with Transform Animation. Play resumes its "
+	         "clock, Restart begins at the first key, Pause holds the current "
+	         "pose, and Stop returns to the authored starting pose. Turn off "
+	         "Play on Start to wait for a Trigger. The last command for a "
+	         "target in an update wins."},
 	        {"Trigger Actions > Motion Path",
 	         "Play Motion Path moves forward, Reverse Motion Path moves "
 	         "backward, and Pause Motion Path holds the current position. "
