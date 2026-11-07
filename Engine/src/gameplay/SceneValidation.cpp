@@ -133,10 +133,20 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 			if (!object.triggerActions->IsValid()) {
 				add(id, "Trigger Actions settings are invalid.");
 			} else if (!object.triggerActions->actions.empty()) {
-				if (!object.collider || !object.collider->isTrigger) {
-					add(id, "Configured Trigger Actions require a Collider "
-					        "with Is Trigger enabled.");
+				bool requiresTrigger = false, requiresButton = false;
+				for (const auto &action : object.triggerActions->actions) {
+					requiresButton |=
+					    action.event == TriggerAction::Event::BUTTON_CLICK;
+					requiresTrigger |=
+					    action.event != TriggerAction::Event::BUTTON_CLICK;
 				}
+				if (requiresTrigger &&
+				    (!object.collider || !object.collider->isTrigger))
+					add(id, "Contact Trigger Actions require a Collider with "
+					        "Is Trigger enabled.");
+				if (requiresButton && !object.button)
+					add(id,
+					    "Button Click Trigger Actions require a UI Button.");
 				for (const auto &action : object.triggerActions->actions) {
 					if (action.operation ==
 					    TriggerAction::Operation::LOAD_SCENE) {

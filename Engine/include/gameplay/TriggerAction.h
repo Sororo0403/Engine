@@ -10,7 +10,7 @@
 #include <string>
 
 /// <summary>
-/// Triggerの進入・退出、または範囲内での操作入力に応じて、対象物体の有効設定・音声・瞬間移動・復帰先やカメラの変更、またはシーン遷移を要求する
+/// Triggerの進入・退出や範囲内での操作入力、UI Buttonのクリックに応じて、対象物体の有効設定・音声・瞬間移動・復帰先やカメラの変更、またはシーン遷移を要求する
 /// </summary>
 struct TriggerAction {
 	static constexpr float kMaximumDelaySeconds = 600.f;
@@ -44,9 +44,16 @@ struct TriggerAction {
 	};
 
 	/// <summary>
-	/// 物理的な接触イベントと、範囲内で押した操作入力を区別する実行条件
+	/// 物理的な接触、範囲内での操作入力、またはUI Buttonのクリックを指定する実行条件
 	/// </summary>
-	enum class Event { ENTER, EXIT, INTERACT, FIRST_ENTER, LAST_EXIT };
+	enum class Event {
+		ENTER,
+		EXIT,
+		INTERACT,
+		FIRST_ENTER,
+		LAST_EXIT,
+		BUTTON_CLICK
+	};
 
 	/// <summary>
 	/// 操作を発火させる接触相手のコンポーネント条件
@@ -104,7 +111,9 @@ struct TriggerAction {
 		        contact == Contact::DYNAMIC_BODY) &&
 		       (event == Event::ENTER || event == Event::EXIT ||
 		        event == Event::INTERACT || event == Event::FIRST_ENTER ||
-		        event == Event::LAST_EXIT) &&
+		        event == Event::LAST_EXIT || event == Event::BUTTON_CLICK) &&
+		       (event != Event::BUTTON_CLICK ||
+		        (contact == Contact::ANY && contactTag.empty())) &&
 		       (contact != Contact::DYNAMIC_BODY || AllowsDynamicContact()) &&
 		       (operation == Operation::ENABLE ||
 		        operation == Operation::DISABLE ||
@@ -130,7 +139,7 @@ struct TriggerAction {
 	/// </summary>
 	/// <returns>true:動的剛体で発火可能 false:主人公の操作または復帰先設定</returns>
 	bool AllowsDynamicContact() const {
-		return event != Event::INTERACT &&
+		return event != Event::INTERACT && event != Event::BUTTON_CLICK &&
 		       operation != Operation::SET_CHECKPOINT;
 	}
 

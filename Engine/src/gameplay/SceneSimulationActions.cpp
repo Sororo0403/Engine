@@ -223,6 +223,8 @@ bool SceneSimulation::ApplyTriggerActions(
 
 	std::set<std::pair<SceneObjectId, std::size_t>> occupied;
 	QueueOccupancySignals(signals, occupied);
+	for (const auto button : ui_.GetClicks())
+		signals.push_back({button, TriggerAction::Event::BUTTON_CLICK});
 	auto fired = firedActions_;
 	std::map<SceneObjectId, bool> requested;
 	std::map<SceneObjectId, SceneMotion::Playback> motionPlayback;
@@ -240,10 +242,14 @@ bool SceneSimulation::ApplyTriggerActions(
 	for (const auto &signal : signals) {
 		const auto *object = scene_.FindObject(signal.receiver);
 		if (!object || !SceneActivity::IsActive(scene_, signal.receiver) ||
-		    !object->collider || !object->collider->isTrigger ||
 		    !object->triggerActions) {
 			continue;
 		}
+		const bool buttonClick =
+		    signal.event == TriggerAction::Event::BUTTON_CLICK;
+		if (buttonClick ? (!object->button || !object->button->enabled)
+		                : (!object->collider || !object->collider->isTrigger))
+			continue;
 		const auto &actions = object->triggerActions->actions;
 		for (std::size_t i = 0; i < actions.size(); ++i) {
 			const auto &action = actions[i];
@@ -318,8 +324,9 @@ bool SceneSimulation::ApplyTriggerActions(
 				const bool settingCheckpoint =
 				    action.operation ==
 				    TriggerAction::Operation::SET_CHECKPOINT;
-				if (settingCheckpoint && (signal.other != action.target ||
-				                          action.target != character_))
+				if (settingCheckpoint &&
+				    (action.target != character_ ||
+				     (!buttonClick && signal.other != action.target)))
 					continue;
 				if (!scene_.Contains(action.destination)) {
 					error = "Teleport and Set Checkpoint require an existing "

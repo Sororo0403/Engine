@@ -829,7 +829,8 @@ void ControlsPanel::Draw() {
 	         "identical values add no history. Hierarchy has the same action. "
 	         "Copy a Collider in Inspector first."},
 	        {"Inspector > Add Component > Trigger Actions",
-	         "Add actions to the same object as a Collider with Is "
+	         "For contact events, add actions to the same object as a Collider "
+	         "with Is "
 	         "Trigger enabled. Choose Enter or Exit, a target object, and "
 	         "Enable, Disable or Toggle. The target's local Active flag "
 	         "changes without overwriting its children's flags. Collision "
@@ -941,6 +942,13 @@ void ControlsPanel::Draw() {
 	         "does "
 	         "not change the authored offsets. Exported games use the same "
 	         "input."},
+	        {"Trigger Actions > Button Click",
+	         "On a UI Button, add Trigger Actions and choose Button Click. "
+	         "Mouse clicks and keyboard or gamepad submit can then open menus, "
+	         "toggle objects, play audio or load another scene. The action "
+	         "runs before the button's Lua click callback, if one is assigned. "
+	         "A Button Click action needs a UI Button; contact events need a "
+	         "trigger Collider."},
 	        {"Trigger Actions > Send Script Message",
 	         "Choose Send Script Message, select a target with an enabled Lua "
 	         "Script, then enter a name and press Enter. The script's "
