@@ -34,6 +34,10 @@ enum class Op {
 	ROTATION,
 	SET_ROTATION,
 	LOOK_AT,
+	LOCAL_TO_WORLD,
+	WORLD_TO_LOCAL,
+	LOCAL_VECTOR_TO_WORLD,
+	WORLD_VECTOR_TO_LOCAL,
 	SCALE,
 	SET_SCALE,
 	FIND,
@@ -188,6 +192,33 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 			result.numbers[2] = value.z;
 			break;
 		}
+		case Op::LOCAL_TO_WORLD:
+		case Op::WORLD_TO_LOCAL:
+		case Op::LOCAL_VECTOR_TO_WORLD:
+		case Op::WORLD_VECTOR_TO_LOCAL: {
+			SceneWorldTransform world;
+			if (!SceneHierarchy::GetWorldTransform(*call.scene, id, world))
+				throw std::runtime_error("Object world transform is invalid.");
+			auto matrix = world.matrix;
+			if ((op == Op::WORLD_TO_LOCAL || op == Op::WORLD_VECTOR_TO_LOCAL) &&
+			    !TransformUtils::TryInverseWorldMatrix(world.matrix, matrix))
+				throw std::runtime_error(
+				    "Object world transform cannot be inverted.");
+			const bool point =
+			    op == Op::LOCAL_TO_WORLD || op == Op::WORLD_TO_LOCAL;
+			for (int axis = 0; axis < 3; ++axis) {
+				double value = point ? matrix.m[3][axis] : 0.;
+				for (int component = 0; component < 3; ++component)
+					value +=
+					    double(numbers[component]) * matrix.m[component][axis];
+				if (!std::isfinite(value) ||
+				    std::abs(value) > (std::numeric_limits<float>::max)())
+					throw std::runtime_error(
+					    "Converted coordinates cannot be represented.");
+				result.numbers[axis] = static_cast<float>(value);
+			}
+			break;
+		}
 		case Op::SET_POSITION:
 			if (!SceneHierarchy::SetWorldPosition(
 			        *call.scene, id, {numbers[0], numbers[1], numbers[2]}))
@@ -321,6 +352,10 @@ int Dispatch(lua_State *state) {
 		lua_pushboolean(state, result.boolean);
 		return 1;
 	case Op::POSITION:
+	case Op::LOCAL_TO_WORLD:
+	case Op::WORLD_TO_LOCAL:
+	case Op::LOCAL_VECTOR_TO_WORLD:
+	case Op::WORLD_VECTOR_TO_LOCAL:
 	case Op::LOCAL_POSITION:
 	case Op::SCALE:
 		for (int i = 0; i < 3; ++i)
@@ -520,6 +555,10 @@ int LuaInternal::OpenEnvironment(lua_State *state, Call &call) {
 	Method(state, "get_rotation", Op::ROTATION);
 	Method(state, "set_rotation", Op::SET_ROTATION);
 	Method(state, "look_at", Op::LOOK_AT);
+	Method(state, "local_to_world", Op::LOCAL_TO_WORLD);
+	Method(state, "world_to_local", Op::WORLD_TO_LOCAL);
+	Method(state, "local_vector_to_world", Op::LOCAL_VECTOR_TO_WORLD);
+	Method(state, "world_vector_to_local", Op::WORLD_VECTOR_TO_LOCAL);
 	Method(state, "get_scale", Op::SCALE);
 	Method(state, "set_scale", Op::SET_SCALE);
 	LuaInternal::AddUIMethods(state);

@@ -2314,6 +2314,12 @@ void ControlsPanel::Draw() {
 	         "and share the physics API call budget. Use hit.object references "
 	         "to interact with the target or apply impulses. Only assigned "
 	         "Colliders participate; model triangles are not queried."},
+	        {"Lua > Coordinate Conversion",
+	         "Use object:local_to_world(x,y,z) for a muzzle or attachment "
+	         "point and object:world_to_local(x,y,z) for the reverse. "
+	         "local_vector_to_world and world_vector_to_local transform "
+	         "offsets without translation or normalization. The full object "
+	         "and ancestor transforms apply. All four calls return x, y, z."},
 	        {"Lua > Look At",
 	         "object:look_at(x,y,z) points its local +Z axis toward a world "
 	         "position, preserving its position and scale. A coincident "
