@@ -17,6 +17,7 @@ struct MotionPathComponent {
 	float segmentSeconds = 2.0f;
 	Mode mode = Mode::PING_PONG;
 	bool smooth = false;
+	bool playOnStart = true;
 	static constexpr std::size_t kMaximumPoints = 64;
 	static constexpr float kMinimumSegmentSeconds = 0.05f;
 	static constexpr float kMaximumSegmentSeconds = 3600.0f;

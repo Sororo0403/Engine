@@ -175,6 +175,12 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 						break;
 					}
 
+					if (action.IsMotionPathOperation() && !target.motionPath) {
+						add(id, "Motion Path Trigger Actions require a target "
+						        "with a Motion Path.");
+						break;
+					}
+
 					if (action.IsAudioOperation() && !target.audioSource) {
 						add(id, "Audio Trigger Actions require an Audio Source "
 						        "on their target.");

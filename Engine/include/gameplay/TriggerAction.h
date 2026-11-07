@@ -22,6 +22,8 @@ struct TriggerAction {
 		TELEPORT,
 		SET_CHECKPOINT,
 		SET_CAMERA,
+		PLAY_MOTION_PATH,
+		PAUSE_MOTION_PATH,
 		LOAD_SCENE
 	};
 
@@ -67,7 +69,7 @@ struct TriggerAction {
 		        operation == Operation::DISABLE ||
 		        operation == Operation::TOGGLE || IsAudioOperation() ||
 		        UsesDestination() || operation == Operation::SET_CAMERA ||
-		        operation == Operation::LOAD_SCENE);
+		        IsMotionPathOperation() || operation == Operation::LOAD_SCENE);
 	}
 
 	/// <summary>
@@ -86,6 +88,15 @@ struct TriggerAction {
 	bool UsesDestination() const {
 		return operation == Operation::TELEPORT ||
 		       operation == Operation::SET_CHECKPOINT;
+	}
+
+	/// <summary>
+	/// 対象のMotion Pathを再生または一時停止する操作か確認する
+	/// </summary>
+	/// <returns>true:経路の操作 false:その他の操作</returns>
+	bool IsMotionPathOperation() const {
+		return operation == Operation::PLAY_MOTION_PATH ||
+		       operation == Operation::PAUSE_MOTION_PATH;
 	}
 
 	/// <summary>

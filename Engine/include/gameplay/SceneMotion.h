@@ -37,10 +37,19 @@ class SceneMotion {
 	             SceneObjectId character, TriggerWorld *triggers = nullptr,
 	             std::vector<TriggerEvent> *events = nullptr);
 
+	/// <summary>
+	/// 経路の現在位置を保ったまま再生または一時停止する
+	/// </summary>
+	/// <param name="id">準備済みのMotion Pathを持つ物体</param>
+	/// <param name="playing">true:再生 false:一時停止</param>
+	/// <returns>true:成功 false:経路なし</returns>
+	bool SetPlaying(SceneObjectId id, bool playing);
+
   private:
 	struct State {
 		DirectX::XMFLOAT3 origin{};
 		double seconds = 0;
+		bool playing = true;
 	};
 
 	std::map<SceneObjectId, State> states_;

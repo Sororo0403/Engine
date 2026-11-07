@@ -158,6 +158,7 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 
 	auto fired = firedActions_;
 	std::map<SceneObjectId, bool> requested;
+	std::map<SceneObjectId, bool> motionPlayback;
 	auto audio = audioActions_;
 	std::map<SceneObjectId, SceneObjectId> destinations;
 	// 有効な主人公は一体なので、同じ更新では最後に通った設定を使う。
@@ -237,6 +238,15 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 				continue;
 			}
 
+			if (action.IsMotionPathOperation()) {
+				motionPlayback[action.target] =
+				    action.operation ==
+				    TriggerAction::Operation::PLAY_MOTION_PATH;
+				if (action.once)
+					fired.insert(key);
+				continue;
+			}
+
 			if (action.IsAudioOperation()) {
 				if (!target->audioSource) {
 					error = std::format("Trigger Actions on object ID {} need "
@@ -275,6 +285,8 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 			case TriggerAction::Operation::TELEPORT:
 			case TriggerAction::Operation::SET_CHECKPOINT:
 			case TriggerAction::Operation::SET_CAMERA:
+			case TriggerAction::Operation::PLAY_MOTION_PATH:
+			case TriggerAction::Operation::PAUSE_MOTION_PATH:
 				break;
 			}
 			if (action.once) {
@@ -364,6 +376,15 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 			                          : "Set Checkpoint")
 			        : "Set Camera";
 			error = std::string(operation) + " failed: " + error;
+			return false;
+		}
+	}
+
+	for (const auto &[id, playing] : motionPlayback) {
+		if (!motion_.SetPlaying(id, playing)) {
+			error = "Motion Path Trigger Action target is not prepared.";
+			if (invalidObject)
+				*invalidObject = id;
 			return false;
 		}
 	}

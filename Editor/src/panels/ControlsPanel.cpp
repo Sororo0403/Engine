@@ -941,6 +941,12 @@ void ControlsPanel::Draw() {
 	         "does "
 	         "not change the authored offsets. Exported games use the same "
 	         "input."},
+	        {"Trigger Actions > Motion Path",
+	         "Play Motion Path and Pause Motion Path control a target with a "
+	         "Motion Path. Clear Play on Start on the target to wait for a "
+	         "Trigger. Play resumes at the current path position. A Once path "
+	         "holds its endpoint until Restart. If multiple actions control "
+	         "the same path in one update, the last one wins."},
 	        {"Trigger Actions > Contact",
 	         "Choose Any Collider, Character Controller, or Dynamic Rigid "
 	         "Body as the contact source for Enter and Exit. A dynamic source "

@@ -52,6 +52,10 @@ const char *OperationLabel(TriggerAction::Operation operation) {
 		return "Set Checkpoint";
 	case TriggerAction::Operation::SET_CAMERA:
 		return "Set Camera";
+	case TriggerAction::Operation::PLAY_MOTION_PATH:
+		return "Play Motion Path";
+	case TriggerAction::Operation::PAUSE_MOTION_PATH:
+		return "Pause Motion Path";
 	case TriggerAction::Operation::LOAD_SCENE:
 		return "Load Scene";
 	}
@@ -198,6 +202,9 @@ bool TriggerActionsInspector::Draw(
 						        TriggerAction::Operation::SET_CAMERA &&
 						    !candidate.camera)
 							continue;
+						if (action.IsMotionPathOperation() &&
+						    !candidate.motionPath)
+							continue;
 						const auto label = TargetLabel(scene, targetId);
 						if (ImGui::Selectable(label.c_str(),
 						                      action.target == targetId) &&
@@ -221,6 +228,8 @@ bool TriggerActionsInspector::Draw(
 				                TriggerAction::Operation::TELEPORT,
 				                TriggerAction::Operation::SET_CHECKPOINT,
 				                TriggerAction::Operation::SET_CAMERA,
+				                TriggerAction::Operation::PLAY_MOTION_PATH,
+				                TriggerAction::Operation::PAUSE_MOTION_PATH,
 				                TriggerAction::Operation::LOAD_SCENE}) {
 					if (ImGui::Selectable(OperationLabel(operation),
 					                      action.operation == operation) &&

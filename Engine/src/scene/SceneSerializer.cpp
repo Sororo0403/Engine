@@ -504,7 +504,8 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 				             : path.mode == MotionPathComponent::Mode::LOOP
 				                 ? "loop"
 				                 : "pingPong"},
-				    {"smooth", path.smooth}};
+				    {"smooth", path.smooth},
+				    {"playOnStart", path.playOnStart}};
 			}
 
 			if (object.spotLight) {
@@ -603,6 +604,12 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 					    : action.operation ==
 					            TriggerAction::Operation::SET_CAMERA
 					        ? "setCamera"
+					    : action.operation ==
+					            TriggerAction::Operation::PLAY_MOTION_PATH
+					        ? "playMotionPath"
+					    : action.operation ==
+					            TriggerAction::Operation::PAUSE_MOTION_PATH
+					        ? "pauseMotionPath"
 					        : "loadScene";
 					actions.push_back(
 					    {{"event", action.event == TriggerAction::Event::ENTER
@@ -1050,6 +1057,12 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 				}
 				path.segmentSeconds = value.at("segmentSeconds").get<float>();
 				path.smooth = value.at("smooth").get<bool>();
+				if (version >= 44) {
+					if (!value.at("playOnStart").is_boolean())
+						throw std::runtime_error(
+						    "Motion Path Play on Start is invalid.");
+					path.playOnStart = value.at("playOnStart").get<bool>();
+				}
 				const auto mode = value.at("mode").get<std::string>();
 				if (mode == "once")
 					path.mode = MotionPathComponent::Mode::ONCE;
@@ -1284,7 +1297,10 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					     !(version >= 23 && operation == "teleport") &&
 					     !(version >= 28 && operation == "loadScene") &&
 					     !(version >= 39 && operation == "setCheckpoint") &&
-					     !(version >= 40 && operation == "setCamera")) ||
+					     !(version >= 40 && operation == "setCamera") &&
+					     !(version >= 44 &&
+					       (operation == "playMotionPath" ||
+					        operation == "pauseMotionPath"))) ||
 					    (version >= 23 &&
 					     !value.at("destination").is_number_unsigned()) ||
 					    !value.at("target").is_number_unsigned() ||
@@ -1321,6 +1337,10 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					         ? TriggerAction::Operation::SET_CHECKPOINT
 					     : operation == "setCamera"
 					         ? TriggerAction::Operation::SET_CAMERA
+					     : operation == "playMotionPath"
+					         ? TriggerAction::Operation::PLAY_MOTION_PATH
+					     : operation == "pauseMotionPath"
+					         ? TriggerAction::Operation::PAUSE_MOTION_PATH
 					         : TriggerAction::Operation::LOAD_SCENE,
 					     value.at("once").get<bool>(),
 					     version >= 23

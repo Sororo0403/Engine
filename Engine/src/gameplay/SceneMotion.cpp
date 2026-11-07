@@ -117,7 +117,8 @@ bool SceneMotion::Configure(const Scene &scene, bool preserve) {
 				return false;
 			continue;
 		}
-		State state{object.transform.translation, 0};
+		State state{object.transform.translation, 0,
+		            object.motionPath->playOnStart};
 		if (const auto found = states_.find(id);
 		    preserve && found != states_.end()) {
 			state = found->second;
@@ -129,6 +130,14 @@ bool SceneMotion::Configure(const Scene &scene, bool preserve) {
 		candidate.emplace(id, state);
 	}
 	states_.swap(candidate);
+	return true;
+}
+
+bool SceneMotion::SetPlaying(SceneObjectId id, bool playing) {
+	const auto state = states_.find(id);
+	if (state == states_.end())
+		return false;
+	state->second.playing = playing;
 	return true;
 }
 
@@ -151,7 +160,7 @@ bool SceneMotion::Advance(Scene &scene, float seconds,
 		double step = (std::min)(remaining, kMaximumStep);
 		// 曲がり角や往復端で移動を区切り、角を横切る近道を作らない。
 		for (const auto &[id, state] : states_) {
-			if (!SceneActivity::IsActive(scene, id))
+			if (!state.playing || !SceneActivity::IsActive(scene, id))
 				continue;
 			const double segment =
 			    scene.FindObject(id)->motionPath->segmentSeconds;
@@ -161,7 +170,8 @@ bool SceneMotion::Advance(Scene &scene, float seconds,
 		}
 		for (const auto id : order) {
 			auto found = states_.find(id);
-			if (found == states_.end() || !SceneActivity::IsActive(scene, id))
+			if (found == states_.end() || !found->second.playing ||
+			    !SceneActivity::IsActive(scene, id))
 				continue;
 			const auto &settings = *scene.FindObject(id)->motionPath;
 			if (!settings.IsValid())
@@ -171,6 +181,9 @@ bool SceneMotion::Advance(Scene &scene, float seconds,
 			state.seconds = settings.mode == MotionPathComponent::Mode::ONCE
 			                    ? (std::min)(duration, state.seconds + step)
 			                    : std::fmod(state.seconds + step, duration);
+			if (settings.mode == MotionPathComponent::Mode::ONCE &&
+			    state.seconds >= duration)
+				state.playing = false;
 			DirectX::XMFLOAT3 offset;
 			if (!settings.Sample(state.seconds, offset))
 				return false;

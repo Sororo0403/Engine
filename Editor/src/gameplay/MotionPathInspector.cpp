@@ -45,6 +45,8 @@ bool MotionPathInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 	                       MotionPathComponent::kMinimumSegmentSeconds,
 	                       MotionPathComponent::kMaximumSegmentSeconds, "%.3f",
 	                       ImGuiSliderFlags_AlwaysClamp));
+	if (ImGui::Checkbox("Play on Start", &edited.playOnStart))
+		changed |= history.SetMotionPath(id, edited);
 	if (ImGui::Checkbox("Smooth", &edited.smooth))
 		changed |= history.SetMotionPath(id, edited);
 	ui.Text("Point 0: 0, 0, 0");
@@ -92,6 +94,7 @@ void MotionPathInspector::DrawReadOnly(const ImGuiSystem &ui,
 		return;
 	const auto &path = *object.motionPath;
 	ui.Text(std::format("Points: {}", path.points.size()));
+	ui.Text(path.playOnStart ? "Play on Start: Yes" : "Play on Start: No");
 	ui.Text(std::format("Segment Seconds: {:.3f}", path.segmentSeconds));
 	ui.Text(path.mode == MotionPathComponent::Mode::ONCE ? "Playback: Once"
 	        : path.mode == MotionPathComponent::Mode::LOOP
