@@ -6,7 +6,7 @@
 #include "core/Logger.h"
 #include "math/MathUtils.h"
 #include "math/TransformUtils.h"
-#include "physics/BoxColliderUtils.h"
+#include "physics/ColliderUtils.h"
 #include "platform/windows/FileUtils.h"
 #include "platform/windows/PathUtils.h"
 #include "scene/Scene.h"
@@ -315,7 +315,7 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 			if (object.collider) {
 				AxisAlignedBox bounds;
 
-				if (!BoxColliderUtils::GetWorldBounds(
+				if (!ColliderUtils::GetWorldBounds(
 				        *object.collider, transforms.at(id).matrix, bounds)) {
 					throw std::runtime_error("衝突用ボックスが無効です。");
 				}
@@ -523,6 +523,13 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 			if (object.collider) {
 				objects.back()["collider"] = {
 				    {"center", ToJson(object.collider->center)},
+				    {"shape",
+				     object.collider->shape == Collider::Shape::BOX ? "Box"
+				     : object.collider->shape == Collider::Shape::SPHERE
+				         ? "Sphere"
+				         : "Capsule"},
+				    {"radius", object.collider->radius},
+				    {"halfHeight", object.collider->halfHeight},
 				    {"halfExtents", ToJson(object.collider->halfExtents)},
 				    {"isTrigger", object.collider->isTrigger},
 				    {"filter",
@@ -1068,8 +1075,27 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 			if (version >= 4 && item.contains("collider")) {
 				const auto &collider = item.at("collider");
 				object.collider =
-				    BoxCollider{ReadFloat3(collider.at("center")),
-				                ReadFloat3(collider.at("halfExtents"))};
+				    Collider{ReadFloat3(collider.at("center")),
+				             ReadFloat3(collider.at("halfExtents"))};
+				if (version >= 38) {
+					const auto shape = collider.at("shape").get<std::string>();
+					if (shape == "Box")
+						object.collider->shape = Collider::Shape::BOX;
+					else if (shape == "Sphere")
+						object.collider->shape = Collider::Shape::SPHERE;
+					else if (shape == "Capsule")
+						object.collider->shape = Collider::Shape::CAPSULE;
+					else
+						throw std::runtime_error("Unknown Collider shape.");
+					if (!collider.at("radius").is_number() ||
+					    !collider.at("halfHeight").is_number())
+						throw std::runtime_error(
+						    "Collider dimensions must be numbers.");
+					object.collider->radius =
+					    collider.at("radius").get<float>();
+					object.collider->halfHeight =
+					    collider.at("halfHeight").get<float>();
+				}
 				if (version >= 16) {
 					object.collider->isTrigger =
 					    collider.at("isTrigger").get<bool>();
@@ -1322,8 +1348,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 				throw std::runtime_error("Transformが無効です。");
 			}
 
-			if (object.collider &&
-			    !BoxColliderUtils::IsValid(*object.collider)) {
+			if (object.collider && !ColliderUtils::IsValid(*object.collider)) {
 				throw std::runtime_error("衝突用ボックスが無効です。");
 			}
 
@@ -1344,7 +1369,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 		for (const auto &[id, object] : candidate.GetObjects()) {
 			AxisAlignedBox bounds;
 			if (object.collider &&
-			    !BoxColliderUtils::GetWorldBounds(
+			    !ColliderUtils::GetWorldBounds(
 			        *object.collider, transforms.at(id).matrix, bounds)) {
 				throw std::runtime_error(
 				    "親子合成後の衝突用ボックスが無効です。");

@@ -1,5 +1,6 @@
 #pragma once
-#include "physics/BoxCollider.h"
+#include "physics/CollisionFilter.h"
+#include <DirectXMath.h>
 
 /// <summary>
 /// ローカルの箱・球・Y軸カプセルと、共通の中心・衝突レイヤーを保持する
@@ -18,12 +19,6 @@ struct Collider {
 	Collider() = default;
 
 	/// <summary>
-	/// 既存の箱の中心・半径・レイヤー・Trigger設定をそのまま引き継ぐ
-	/// </summary>
-	/// <param name="box">読み取り元の箱。参照は保持しない</param>
-	Collider(const BoxCollider &box);
-
-	/// <summary>
 	/// 中心と各軸の半径から箱を作る
 	/// </summary>
 	/// <param name="center">ローカル中心</param>
@@ -35,7 +30,7 @@ struct Collider {
 	         const CollisionFilter &filter = {}, bool isTrigger = false);
 
 	/// <summary>
-	/// 中心・レイヤーと、選択した形状の寸法を確認する
+	/// 中心・レイヤーと、保持する全寸法を確認する
 	/// </summary>
 	/// <returns>true:有効 false:無効な形状、非有限値、または潰れた寸法</returns>
 	bool IsValid() const;

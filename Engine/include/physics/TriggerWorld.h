@@ -3,6 +3,7 @@
 #include "physics/AxisAlignedBox.h"
 #include "physics/CollisionFilter.h"
 #include "physics/TriggerEvent.h"
+#include "physics/WorldCollider.h"
 #include <map>
 #include <span>
 #include <vector>
@@ -10,7 +11,7 @@
 class Scene;
 
 /// <summary>
-/// 親子合成したColliderのAABBと相互マスクからTriggerの接触イベントを生成する
+/// 親子合成したColliderの実形状と相互マスクからTriggerの接触イベントを生成する
 /// </summary>
 class TriggerWorld {
   public:
@@ -27,7 +28,7 @@ class TriggerWorld {
 	/// <param name="scene">更新後のシーン。少なくとも一方がTriggerで、両者のマスクが許可した組を検知する</param>
 	/// <param name="teleported">途中経路を検知しない物体ID。開始・終点の接触変化は通常どおり生成する</param>
 	/// <returns>true:成功 false:形状や親子関係が無効。失敗時は形状・接触・イベントをすべて保持する</returns>
-	/// <remarks>経路は前後のワールドAABBの各境界を直線補間する。回転の途中形状や曲線経路は再現しない。面・辺・頂点だけの接触は検知しない。新規追加や設定変更時は終点だけを調べる</remarks>
+	/// <remarks>姿勢・寸法・設定が同じ場合の相対的な直線移動を調べる。回転・寸法の変更時は終点だけを調べる。曲線経路は再現しない。面・辺・頂点だけの接触は検知しない。新規追加や設定変更時は終点だけを調べる</remarks>
 	bool Update(const Scene &scene,
 	            std::span<const SceneObjectId> teleported = {});
 
@@ -53,6 +54,8 @@ class TriggerWorld {
 	}
 
   private:
+	static constexpr float kMinimumDepth = .000001f;
+
 	/// <summary>
 	/// 前後の経路検知に使用するワールド形状とColliderの設定
 	/// </summary>
@@ -60,6 +63,9 @@ class TriggerWorld {
 		AxisAlignedBox bounds;
 		CollisionFilter filter;
 		bool trigger = false;
+		Collider collider;
+		DirectX::XMFLOAT4X4 matrix;
+		WorldCollider geometry;
 	};
 
 	std::map<SceneObjectId, Shape> shapes_;

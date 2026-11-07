@@ -3,7 +3,7 @@
 #include "gameplay/CharacterInput.h"
 #include "gameplay/CharacterSettings.h"
 #include "math/Transform.h"
-#include "physics/BoxCollider.h"
+#include "physics/Collider.h"
 #include "scene/SceneObjectId.h"
 
 class CollisionWorld;
@@ -21,7 +21,7 @@ class CharacterController {
 	/// <param name="settings">移動と重力の設定</param>
 	/// <param name="world">主人公自身を除外した静的な衝突ワールド</param>
 	/// <returns>true:成功 false:開始状態が無効。失敗時は現在の状態を保持する</returns>
-	bool Initialize(const Transform &transform, const BoxCollider &collider,
+	bool Initialize(const Transform &transform, const Collider &collider,
 	                const CharacterSettings &settings,
 	                const CollisionWorld &world);
 
@@ -34,8 +34,7 @@ class CharacterController {
 	/// <param name="world">自身を除外した衝突ワールド</param>
 	/// <returns>true:成功 false:形状・行列・配置が無効。失敗時は状態を保持する</returns>
 	bool Initialize(const DirectX::XMFLOAT4X4 &worldMatrix,
-	                const BoxCollider &collider,
-	                const CharacterSettings &settings,
+	                const Collider &collider, const CharacterSettings &settings,
 	                const CollisionWorld &world);
 
 	/// <summary>
@@ -119,7 +118,7 @@ class CharacterController {
 	Transform transform_{};
 	DirectX::XMFLOAT4X4 worldMatrix_{1, 0, 0, 0, 0, 1, 0, 0,
 	                                 0, 0, 1, 0, 0, 0, 0, 1};
-	BoxCollider collider_{};
+	Collider collider_{};
 	CharacterSettings settings_{};
 	float verticalVelocity_ = 0.0f;
 	double accumulatedTime_ = 0.0;

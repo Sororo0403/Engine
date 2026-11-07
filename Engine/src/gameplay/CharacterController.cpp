@@ -1,7 +1,7 @@
 #include "gameplay/CharacterController.h"
 
 #include "math/TransformUtils.h"
-#include "physics/BoxColliderUtils.h"
+#include "physics/ColliderUtils.h"
 #include "physics/CollisionWorld.h"
 
 #include <algorithm>
@@ -21,7 +21,7 @@ bool CharacterSettings::IsValid() const {
 }
 
 bool CharacterController::Initialize(const Transform &transform,
-                                     const BoxCollider &collider,
+                                     const Collider &collider,
                                      const CharacterSettings &settings,
                                      const CollisionWorld &world) {
 	if (!TransformUtils::IsValid(transform)) {
@@ -40,13 +40,14 @@ bool CharacterController::Initialize(const Transform &transform,
 }
 
 bool CharacterController::Initialize(const DirectX::XMFLOAT4X4 &worldMatrix,
-                                     const BoxCollider &collider,
+                                     const Collider &collider,
                                      const CharacterSettings &settings,
                                      const CollisionWorld &world) {
 	AxisAlignedBox body;
 
-	if (collider.isTrigger || !settings.IsValid() ||
-	    !BoxColliderUtils::GetWorldBounds(collider, worldMatrix, body) ||
+	if (collider.shape != Collider::Shape::BOX || collider.isTrigger ||
+	    !settings.IsValid() ||
+	    !ColliderUtils::GetWorldBounds(collider, worldMatrix, body) ||
 	    !world.CanPlace(body, collider.filter)) {
 		return false;
 	}
@@ -120,7 +121,7 @@ bool CharacterController::FindGroundObject(const CollisionWorld &world,
 	CollisionSweepResult contact;
 
 	if (!initialized_ ||
-	    !BoxColliderUtils::GetWorldBounds(collider_, worldMatrix_, body) ||
+	    !ColliderUtils::GetWorldBounds(collider_, worldMatrix_, body) ||
 	    !world.CanPlace(body, collider_.filter) ||
 	    !world.Sweep(body, {0.0f, -kGroundProbeDistance, 0.0f}, contact,
 	                 collider_.filter)) {
@@ -135,7 +136,7 @@ bool CharacterController::Step(const CharacterInput &input,
                                const CollisionWorld &world) {
 	AxisAlignedBox body;
 
-	if (!BoxColliderUtils::GetWorldBounds(collider_, worldMatrix_, body)) {
+	if (!ColliderUtils::GetWorldBounds(collider_, worldMatrix_, body)) {
 		return false;
 	}
 
@@ -194,7 +195,7 @@ bool CharacterController::Step(const CharacterInput &input,
 	matrix._43 = transform.translation.z;
 	AxisAlignedBox movedBody;
 
-	if (!BoxColliderUtils::GetWorldBounds(collider_, matrix, movedBody) ||
+	if (!ColliderUtils::GetWorldBounds(collider_, matrix, movedBody) ||
 	    !world.CanPlace(movedBody, collider_.filter)) {
 		return false;
 	}
@@ -229,7 +230,7 @@ bool CharacterController::SynchronizeWorldMatrix(
     const DirectX::XMFLOAT4X4 &worldMatrix, const CollisionWorld &world) {
 	AxisAlignedBox body;
 	if (!initialized_ ||
-	    !BoxColliderUtils::GetWorldBounds(collider_, worldMatrix, body) ||
+	    !ColliderUtils::GetWorldBounds(collider_, worldMatrix, body) ||
 	    !world.CanPlace(body, collider_.filter)) {
 		return false;
 	}
@@ -243,7 +244,7 @@ bool CharacterController::RefreshContacts(const CollisionWorld &world) {
 	AxisAlignedBox body;
 	CollisionMoveResult ground;
 	if (!initialized_ ||
-	    !BoxColliderUtils::GetWorldBounds(collider_, worldMatrix_, body) ||
+	    !ColliderUtils::GetWorldBounds(collider_, worldMatrix_, body) ||
 	    !world.Move(body, {0, -kGroundProbeDistance, 0}, ground,
 	                collider_.filter)) {
 		return false;

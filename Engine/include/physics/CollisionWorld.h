@@ -5,6 +5,7 @@
 #include "physics/CollisionMoveResult.h"
 #include "physics/CollisionSweepResult.h"
 #include "physics/RigidBodyWorld.h"
+#include "physics/WorldCollider.h"
 #include "scene/SceneObjectId.h"
 
 #include <optional>
@@ -14,7 +15,7 @@
 class Scene;
 
 /// <summary>
-/// シーンの衝突用ボックスを静的な障害物として保持し、移動と滑りを判定する
+/// シーンのColliderを実形状の静的な障害物として保持し、移動と滑りを判定する
 /// </summary>
 class CollisionWorld {
   public:
@@ -72,6 +73,16 @@ class CollisionWorld {
 	             bool includeTriggers = true);
 
 	/// <summary>
+	/// 指定物体のColliderの実形状と重なる、有効な他のColliderをID順に列挙する
+	/// </summary>
+	/// <param name="scene">形状と合成姿勢の参照元</param>
+	/// <param name="objectId">問い合わせ元のCollider。自身は結果から除外する</param>
+	/// <param name="objects">成功時だけ置き換えるID一覧。マスクとTrigger設定は絞り込まない</param>
+	/// <returns>true:検索成功 false:物体・階層・形状が無効</returns>
+	static bool FindColliderOverlaps(const Scene &scene, SceneObjectId objectId,
+	                                 std::vector<SceneObjectId> &objects);
+
+	/// <summary>
 	/// ボックスを直線移動したとき、最初に体積が重なり始めるColliderと移動割合を調べる
 	/// </summary>
 	/// <param name="body">開始位置の有効なワールド座標のボックス</param>
@@ -100,12 +111,12 @@ class CollisionWorld {
 
   private:
 	/// <summary>
-	/// 剛体の面の法線で滑り方向を決め、回転した箱との移動を判定する
+	/// 実形状の面の法線で滑り方向を決め、移動を判定する
 	/// </summary>
-	bool MoveRigid(const AxisAlignedBox &body,
-	               const DirectX::XMFLOAT3 &displacement,
-	               CollisionMoveResult &result,
-	               const std::optional<CollisionFilter> &filter) const;
+	bool MoveAlongSurfaces(const AxisAlignedBox &body,
+	                       const DirectX::XMFLOAT3 &displacement,
+	                       CollisionMoveResult &result,
+	                       const std::optional<CollisionFilter> &filter) const;
 	std::optional<RigidBodyWorld> rigidBodies_;
 	std::vector<SceneObjectId> ignoredBodies_;
 
@@ -116,9 +127,13 @@ class CollisionWorld {
 		SceneObjectId objectId;
 		AxisAlignedBox bounds;
 		CollisionFilter filter;
+		WorldCollider geometry;
+		Collider collider;
+		DirectX::XMFLOAT4X4 matrix;
 	};
 
 	std::vector<Obstacle> obstacles_;
 	static constexpr double kSkinWidth = 0.0001;
+	static constexpr float kOverlapTolerance = 0.00001f;
 	static constexpr int kMaximumSlideIterations = 4;
 };

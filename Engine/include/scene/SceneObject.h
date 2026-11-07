@@ -16,7 +16,7 @@
 #include "graphics/material/ColorTint.h"
 #include "math/Transform.h"
 #include "particles/ParticleEmitterComponent.h"
-#include "physics/BoxCollider.h"
+#include "physics/Collider.h"
 #include "physics/RigidBodySettings.h"
 #include "scene/AudioListenerComponent.h"
 #include "scene/AudioSourceComponent.h"
@@ -51,7 +51,7 @@ struct SceneObject {
 	std::optional<ColorTint> colorTint;
 
 	// 指定した物体は衝突判定に使用する。未指定の場合は衝突形状を持たない
-	std::optional<BoxCollider> collider;
+	std::optional<Collider> collider;
 	// 重力や衝突で動く剛体。Box Colliderと組み合わせて使用する
 	std::optional<RigidBodySettings> rigidBody;
 

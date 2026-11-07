@@ -1,63 +1,28 @@
 #include "physics/TriggerWorld.h"
 
-#include "physics/BoxColliderUtils.h"
+#include "physics/ColliderUtils.h"
 #include "scene/Scene.h"
 #include "scene/SceneActivity.h"
 #include "scene/SceneHierarchy.h"
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <exception>
 #include <set>
 #include <utility>
 
 namespace {
 /// <summary>
-/// 面だけの接触を除き、正の体積で重なっているか確認する
+/// 回転・拡縮が変わらず、位置だけを直線補間できる合成行列か確認する
 /// </summary>
-/// <param name="a">1つ目の形状</param>
-/// <param name="b">2つ目の形状</param>
-/// <returns>true:重なりあり false:重なりなし</returns>
-bool Overlaps(const AxisAlignedBox &a, const AxisAlignedBox &b) {
-	return a.minimum.x < b.maximum.x && a.maximum.x > b.minimum.x &&
-	       a.minimum.y < b.maximum.y && a.maximum.y > b.minimum.y &&
-	       a.minimum.z < b.maximum.z && a.maximum.z > b.minimum.z;
-}
-
-/// <summary>
-/// 前後のAABBの境界を直線補間し、同じ時刻に6つの分離条件をすべて解消する区間があるか調べる
-/// </summary>
-/// <param name="a0">1つ目の開始形状</param>
-/// <param name="a1">1つ目の終点形状</param>
-/// <param name="b0">2つ目の開始形状</param>
-/// <param name="b1">2つ目の終点形状</param>
-/// <returns>true:途中で正の体積が重なる false:重ならない、または瞬間的な接触だけ</returns>
-bool Crosses(const AxisAlignedBox &a0, const AxisAlignedBox &a1,
-             const AxisAlignedBox &b0, const AxisAlignedBox &b1) {
-	const auto gaps = [](const AxisAlignedBox &a, const AxisAlignedBox &b) {
-		return std::array<double, 6>{double(b.maximum.x) - a.minimum.x,
-		                             double(a.maximum.x) - b.minimum.x,
-		                             double(b.maximum.y) - a.minimum.y,
-		                             double(a.maximum.y) - b.minimum.y,
-		                             double(b.maximum.z) - a.minimum.z,
-		                             double(a.maximum.z) - b.minimum.z};
-	};
-	const auto start = gaps(a0, b0), end = gaps(a1, b1);
-	double first = 0, last = 1;
-	for (std::size_t i = 0; i < start.size(); ++i) {
-		if (start[i] <= 0 && end[i] <= 0) {
-			return false;
-		}
-		const auto change = end[i] - start[i];
-		if (change > 0) {
-			first = (std::max)(first, -start[i] / change);
-		} else if (change < 0) {
-			last = (std::min)(last, -start[i] / change);
-		}
-		if (first >= last) {
-			return false;
-		}
-	}
-	return first < last;
+bool SameBasis(const DirectX::XMFLOAT4X4 &a, const DirectX::XMFLOAT4X4 &b) {
+	for (int i = 0; i < 3; ++i)
+		for (int j = 0; j < 3; ++j)
+			if (std::abs(double(a.m[i][j]) - b.m[i][j]) >
+			    .00001 * (std::max)({1., std::abs(double(a.m[i][j])),
+			                         std::abs(double(b.m[i][j]))}))
+				return false;
+	return true;
 }
 } // namespace
 
@@ -87,12 +52,20 @@ bool TriggerWorld::Update(const Scene &scene,
 				continue;
 			}
 			AxisAlignedBox bounds;
-			if (!BoxColliderUtils::GetWorldBounds(
+			if (!ColliderUtils::GetWorldBounds(
 			        *object.collider, transforms.at(id).matrix, bounds)) {
 				return false;
 			}
+			WorldCollider geometry;
+			std::string error;
+			if (!WorldCollider::Create(*object.collider,
+			                           transforms.at(id).matrix, geometry,
+			                           error))
+				return false;
 			shapes.emplace(id, Shape{bounds, object.collider->filter,
-			                         object.collider->isTrigger});
+			                         object.collider->isTrigger,
+			                         *object.collider, transforms.at(id).matrix,
+			                         std::move(geometry)});
 		}
 		// 現在Triggerを持つ組と、退出が必要になる前回の接触を一度ずつ処理する。
 		std::set<TriggerContact> pairs(contacts_.begin(), contacts_.end());
@@ -117,8 +90,10 @@ bool TriggerWorld::Update(const Scene &scene,
 			const bool eligible = a != shapes.end() && b != shapes.end() &&
 			                      (a->second.trigger || b->second.trigger) &&
 			                      a->second.filter.CanCollide(b->second.filter);
-			const bool inside =
-			    eligible && Overlaps(a->second.bounds, b->second.bounds);
+			bool inside = false;
+			if (eligible && !a->second.geometry.Overlaps(b->second.geometry,
+			                                             kMinimumDepth, inside))
+				return false;
 			if (inside) {
 				contacts.push_back(pair);
 				events.push_back({pair, wasInside ? TriggerEvent::Type::STAY
@@ -133,15 +108,28 @@ bool TriggerWorld::Update(const Scene &scene,
 					                 id) == teleported.end();
 				};
 				if (oldA != shapes_.end() && oldB != shapes_.end() &&
-				    oldA->second.filter == a->second.filter &&
-				    oldB->second.filter == b->second.filter &&
-				    oldA->second.trigger == a->second.trigger &&
-				    oldB->second.trigger == b->second.trigger &&
-				    continuous(pair.first) && continuous(pair.second) &&
-				    Crosses(oldA->second.bounds, a->second.bounds,
-				            oldB->second.bounds, b->second.bounds)) {
-					events.push_back({pair, TriggerEvent::Type::ENTER});
-					events.push_back({pair, TriggerEvent::Type::EXIT});
+				    oldA->second.collider == a->second.collider &&
+				    oldB->second.collider == b->second.collider &&
+				    SameBasis(oldA->second.matrix, a->second.matrix) &&
+				    SameBasis(oldB->second.matrix, b->second.matrix) &&
+				    continuous(pair.first) && continuous(pair.second)) {
+					const auto &a0 = oldA->second.matrix,
+					           &a1 = a->second.matrix,
+					           &b0 = oldB->second.matrix,
+					           &b1 = b->second.matrix;
+					DirectX::XMFLOAT3 relative{
+					    (a1._41 - a0._41) - (b1._41 - b0._41),
+					    (a1._42 - a0._42) - (b1._42 - b0._42),
+					    (a1._43 - a0._43) - (b1._43 - b0._43)};
+					bool crosses = false;
+					if (!oldA->second.geometry.Crosses(oldB->second.geometry,
+					                                   relative, kMinimumDepth,
+					                                   crosses))
+						return false;
+					if (crosses) {
+						events.push_back({pair, TriggerEvent::Type::ENTER});
+						events.push_back({pair, TriggerEvent::Type::EXIT});
+					}
 				}
 			}
 		}

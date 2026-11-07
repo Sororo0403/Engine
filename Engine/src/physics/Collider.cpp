@@ -2,10 +2,6 @@
 #include "math/MathUtils.h"
 #include <cmath>
 
-Collider::Collider(const BoxCollider &box)
-    : Collider(box.center, box.halfExtents, box.filter, box.isTrigger) {
-}
-
 Collider::Collider(const DirectX::XMFLOAT3 &center,
                    const DirectX::XMFLOAT3 &halfExtents,
                    const CollisionFilter &filter, bool isTrigger)
@@ -14,7 +10,10 @@ Collider::Collider(const DirectX::XMFLOAT3 &center,
 }
 
 bool Collider::IsValid() const {
-	if (!filter.IsValid() || !MathUtils::IsFinite(center))
+	if (!filter.IsValid() || !MathUtils::IsFinite(center) ||
+	    !MathUtils::IsFinite(halfExtents) || halfExtents.x <= 0 ||
+	    halfExtents.y <= 0 || halfExtents.z <= 0 || !std::isfinite(radius) ||
+	    radius <= 0 || !std::isfinite(halfHeight) || halfHeight <= 0)
 		return false;
 	switch (shape) {
 	case Shape::BOX:

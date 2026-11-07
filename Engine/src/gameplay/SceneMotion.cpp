@@ -1,7 +1,7 @@
 #include "gameplay/SceneMotion.h"
 
 #include "gameplay/CharacterController.h"
-#include "physics/BoxColliderUtils.h"
+#include "physics/ColliderUtils.h"
 #include "physics/CollisionWorld.h"
 #include "physics/TriggerWorld.h"
 #include "scene/Scene.h"
@@ -55,8 +55,8 @@ bool CheckBranch(const Scene &before, const Scene &after,
 		AxisAlignedBox bounds;
 		if (!SceneHierarchy::GetWorldTransform(before, id, oldPose) ||
 		    !SceneHierarchy::GetWorldTransform(after, id, newPose) ||
-		    !BoxColliderUtils::GetWorldBounds(*object.collider, oldPose.matrix,
-		                                      bounds))
+		    !ColliderUtils::GetWorldBounds(*object.collider, oldPose.matrix,
+		                                   bounds))
 			return false;
 		CollisionSweepResult hit;
 		if (!obstacles.Sweep(
@@ -86,12 +86,12 @@ bool SeparatePassenger(Scene &scene, SceneObjectId character,
 	SceneWorldTransform floorPose;
 	AxisAlignedBox floor;
 	if (!SceneHierarchy::GetWorldTransform(scene, ground, floorPose) ||
-	    !BoxColliderUtils::GetWorldBounds(*scene.FindObject(ground)->collider,
-	                                      floorPose.matrix, floor))
+	    !ColliderUtils::GetWorldBounds(*scene.FindObject(ground)->collider,
+	                                   floorPose.matrix, floor))
 		return false;
 	for (int attempt = 0; attempt < 4; ++attempt) {
 		AxisAlignedBox body;
-		if (!BoxColliderUtils::GetWorldBounds(
+		if (!ColliderUtils::GetWorldBounds(
 		        *scene.FindObject(character)->collider, pose.matrix, body))
 			return false;
 		const double gap = double(body.minimum.y) - double(floor.maximum.y);
@@ -254,7 +254,7 @@ bool SceneMotion::Advance(Scene &scene, float seconds,
 					continue;
 				if (carried) {
 					AxisAlignedBox bounds;
-					if (!BoxColliderUtils::GetWorldBounds(
+					if (!ColliderUtils::GetWorldBounds(
 					        *scene.FindObject(character)->collider,
 					        beforePose.matrix, bounds))
 						return false;

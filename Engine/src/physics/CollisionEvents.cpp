@@ -1,6 +1,7 @@
 #include "physics/CollisionEvents.h"
-#include "physics/BoxColliderUtils.h"
+#include "physics/ColliderUtils.h"
 #include "physics/RigidBodyWorld.h"
+#include "physics/WorldCollider.h"
 #include "scene/Scene.h"
 #include "scene/SceneActivity.h"
 #include "scene/SceneHierarchy.h"
@@ -35,7 +36,7 @@ bool CollisionEvents::Update(const Scene &scene, const RigidBodyWorld *world,
 				return false;
 
 			struct Shape {
-				AxisAlignedBox box;
+				WorldCollider geometry;
 				CollisionFilter filter;
 			};
 
@@ -51,8 +52,10 @@ bool CollisionEvents::Update(const Scene &scene, const RigidBodyWorld *world,
 				if (belowCharacter)
 					continue;
 				Shape shape;
-				if (!BoxColliderUtils::GetWorldBounds(
-				        *object.collider, transforms.at(id).matrix, shape.box))
+				std::string error;
+				if (!WorldCollider::Create(*object.collider,
+				                           transforms.at(id).matrix,
+				                           shape.geometry, error))
 					return false;
 				shape.filter = object.collider->filter;
 				shapes.emplace(id, shape);
@@ -62,15 +65,11 @@ bool CollisionEvents::Update(const Scene &scene, const RigidBodyWorld *world,
 					const auto &x = a->second, &y = b->second;
 					if (!x.filter.CanCollide(y.filter))
 						continue;
-					const auto near = [](float lo, float hi) {
-						return double(lo) - hi <= kContactTolerance;
-					};
-					if (near(x.box.minimum.x, y.box.maximum.x) &&
-					    near(y.box.minimum.x, x.box.maximum.x) &&
-					    near(x.box.minimum.y, y.box.maximum.y) &&
-					    near(y.box.minimum.y, x.box.maximum.y) &&
-					    near(x.box.minimum.z, y.box.maximum.z) &&
-					    near(y.box.minimum.z, x.box.maximum.z)) {
+					bool touching = false;
+					if (!x.geometry.Overlaps(y.geometry, -kContactTolerance,
+					                         touching))
+						return false;
+					if (touching) {
 						if (current.size() >= kMaximumContacts)
 							return false;
 						current.push_back({a->first, b->first});

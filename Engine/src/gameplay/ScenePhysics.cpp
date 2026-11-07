@@ -1,6 +1,6 @@
 #include "gameplay/ScenePhysics.h"
 #include "math/TransformUtils.h"
-#include "physics/BoxColliderUtils.h"
+#include "physics/ColliderUtils.h"
 #include "scene/Scene.h"
 #include "scene/SceneActivity.h"
 #include "scene/SceneHierarchy.h"
@@ -64,7 +64,7 @@ void Collect(const Scene &scene, std::vector<RigidBodyDescription> &bodies,
 			continue;
 		enabled = true;
 		if (!o.collider || o.collider->isTrigger)
-			throw std::runtime_error("Rigid Body requires a non-Trigger Box "
+			throw std::runtime_error("Rigid Body requires a non-Trigger "
 			                         "Collider on the same object.");
 		if (o.character || o.followCamera ||
 		    ((o.motionPath || o.transformAnimation) &&
@@ -124,10 +124,23 @@ void Collect(const Scene &scene, std::vector<RigidBodyDescription> &bodies,
 		d.rigidBody = o.rigidBody;
 		const bool decomposed = TransformUtils::TryFromWorldMatrix(
 		    transforms.at(id).matrix, d.transform);
+		if (d.collider.shape != Collider::Shape::BOX) {
+			AxisAlignedBox bounds;
+			if (!decomposed ||
+			    !ColliderUtils::GetWorldBounds(
+			        *o.collider, transforms.at(id).matrix, bounds))
+				throw std::runtime_error("Round Collider requires uniform "
+				                         "world scale without shear.");
+			auto &scale = d.transform.scale;
+			d.collider.center.x *= scale.x < 0 ? -1.f : 1.f;
+			d.collider.center.y *= scale.y < 0 ? -1.f : 1.f;
+			d.collider.center.z *= scale.z < 0 ? -1.f : 1.f;
+			scale = {std::abs(scale.x), std::abs(scale.x), std::abs(scale.x)};
+		}
 		if (character || !decomposed || d.transform.scale.x <= 0 ||
 		    d.transform.scale.y <= 0 || d.transform.scale.z <= 0) {
 			AxisAlignedBox bounds;
-			if (!BoxColliderUtils::GetWorldBounds(
+			if (!ColliderUtils::GetWorldBounds(
 			        *o.collider, transforms.at(id).matrix, bounds))
 				throw std::runtime_error(
 				    "Physics collider cannot be represented in world space.");

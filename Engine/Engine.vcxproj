@@ -295,7 +295,7 @@ exit /b 0</Command>
     <ClInclude Include="include\physics\CollisionFilter.h" />
     <ClInclude Include="include\physics\BoxCollider.h" />
     <ClInclude Include="include\physics\BoxColliderUtils.h" />
-    <ClCompile Include="src\physics\BoxColliderUtils.cpp" />
+    <ClCompile Include="src\physics\ColliderUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\physics\CollisionMoveResult.h" />
@@ -2336,4 +2336,5 @@ exit /b 0</Command>
     <ClInclude Include="include\physics\WorldCollider.h" />
     <ClCompile Include="src\physics\WorldCollider.cpp" />
   </ItemGroup>
+  <ItemGroup><ClInclude Include="include\physics\ColliderUtils.h" /></ItemGroup>
 </Project>

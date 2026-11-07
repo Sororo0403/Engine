@@ -6,7 +6,7 @@
 #include "gameplay/SceneCameraUtils.h"
 #include "graphics/camera/Camera.h"
 #include "math/TransformUtils.h"
-#include "physics/BoxColliderUtils.h"
+#include "physics/ColliderUtils.h"
 #include "physics/CollisionWorld.h"
 #include "scene/Scene.h"
 #include "scene/SceneActivity.h"
@@ -134,7 +134,7 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 				add(id, "Trigger Actions settings are invalid.");
 			} else if (!object.triggerActions->actions.empty()) {
 				if (!object.collider || !object.collider->isTrigger) {
-					add(id, "Configured Trigger Actions require a Box Collider "
+					add(id, "Configured Trigger Actions require a Collider "
 					        "with Is Trigger enabled.");
 				}
 				for (const auto &action : object.triggerActions->actions) {
@@ -179,6 +179,7 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 			}
 
 			if (!object.collider || object.collider->isTrigger ||
+			    object.collider->shape != Collider::Shape::BOX ||
 			    !object.character->IsValid()) {
 				add(id, "Character Controller requires a non-trigger Box "
 				        "Collider and "
@@ -212,9 +213,9 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 		AxisAlignedBox body;
 
 		if (object.collider &&
-		    !BoxColliderUtils::GetWorldBounds(*object.collider,
-		                                      transforms.at(id).matrix, body)) {
-			add(id, "Box Collider cannot be represented at its transform.");
+		    !ColliderUtils::GetWorldBounds(*object.collider,
+		                                   transforms.at(id).matrix, body)) {
+			add(id, "Collider cannot be represented at its transform.");
 		}
 
 		if (object.followCamera) {

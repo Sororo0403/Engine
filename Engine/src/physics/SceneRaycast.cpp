@@ -1,7 +1,7 @@
 #include "physics/SceneRaycast.h"
 #include "math/MathUtils.h"
 #include "math/TransformUtils.h"
-#include "physics/BoxColliderUtils.h"
+#include "physics/ColliderUtils.h"
 #include "scene/Scene.h"
 #include "scene/SceneActivity.h"
 #include "scene/SceneHierarchy.h"
@@ -38,9 +38,9 @@ Vector TransformVector(const Vector &v, const DirectX::XMFLOAT4X4 &m,
 /// <summary>
 /// ローカルの箱との交差区間を求め、距離と外向きのローカル法線を返す
 /// </summary>
-bool Intersect(const BoxCollider &box, const Vector &origin,
-               const Vector &direction, double maximum, double &distance,
-               Vector &normal) {
+bool IntersectBox(const Collider &box, const Vector &origin,
+                  const Vector &direction, double maximum, double &distance,
+                  Vector &normal) {
 	const auto center = Value(box.center), half = Value(box.halfExtents);
 	double enter = -(std::numeric_limits<double>::infinity)();
 	double exit = maximum;
@@ -74,6 +74,94 @@ bool Intersect(const BoxCollider &box, const Vector &origin,
 		normal = {};
 	return true;
 }
+
+/// <summary>
+/// 球・Y軸カプセルの実表面と交差する最も近いレイ位置を、ローカル座標で調べる
+/// </summary>
+bool IntersectRound(const Collider &shape, const Vector &origin,
+                    const Vector &direction, double maximum, double &distance,
+                    Vector &normal) {
+	const Vector o{origin[0] - shape.center.x, origin[1] - shape.center.y,
+	               origin[2] - shape.center.z};
+	const double radius = shape.radius,
+	             halfHeight = shape.shape == Collider::Shape::CAPSULE
+	                              ? shape.halfHeight
+	                              : 0;
+	const double y = o[1] - (std::clamp)(o[1], -halfHeight, halfHeight);
+	if (o[0] * o[0] + y * y + o[2] * o[2] <= radius * radius) {
+		distance = 0;
+		normal = {};
+		return true;
+	}
+	bool hit = false;
+	double closest = maximum;
+	const auto accept = [&](double t, const Vector &n) {
+		if (t >= 0 && t <= closest) {
+			hit = true;
+			closest = t;
+			normal = n;
+		}
+	};
+	const auto sphere = [&](double centerY, int cap) {
+		const Vector p{o[0], o[1] - centerY, o[2]};
+		const double a = direction[0] * direction[0] +
+		                 direction[1] * direction[1] +
+		                 direction[2] * direction[2];
+		const double b =
+		    p[0] * direction[0] + p[1] * direction[1] + p[2] * direction[2];
+		const Vector cross{p[1] * direction[2] - p[2] * direction[1],
+		                   p[2] * direction[0] - p[0] * direction[2],
+		                   p[0] * direction[1] - p[1] * direction[0]};
+		const double discriminant = a * radius * radius - cross[0] * cross[0] -
+		                            cross[1] * cross[1] - cross[2] * cross[2];
+		if (discriminant < 0)
+			return;
+		const double root = std::sqrt(discriminant);
+		for (const double t : {(-b - root) / a, (-b + root) / a}) {
+			const double worldY = o[1] + t * direction[1];
+			if ((cap > 0 && worldY < halfHeight) ||
+			    (cap < 0 && worldY > -halfHeight))
+				continue;
+			accept(t, {p[0] + t * direction[0], p[1] + t * direction[1],
+			           p[2] + t * direction[2]});
+		}
+	};
+	if (halfHeight == 0)
+		sphere(0, 0);
+	else {
+		const double a =
+		    direction[0] * direction[0] + direction[2] * direction[2];
+		if (a > 0) {
+			const double b = o[0] * direction[0] + o[2] * direction[2];
+			const double cross = o[0] * direction[2] - o[2] * direction[0];
+			const double discriminant = a * radius * radius - cross * cross;
+			if (discriminant >= 0) {
+				const double root = std::sqrt(discriminant);
+				for (const double t : {(-b - root) / a, (-b + root) / a}) {
+					const double localY = o[1] + t * direction[1];
+					if (localY >= -halfHeight && localY <= halfHeight)
+						accept(t, {o[0] + t * direction[0], 0,
+						           o[2] + t * direction[2]});
+				}
+			}
+		}
+		sphere(halfHeight, 1);
+		sphere(-halfHeight, -1);
+	}
+	if (hit)
+		distance = closest;
+	return hit;
+}
+
+bool Intersect(const Collider &shape, const Vector &origin,
+               const Vector &direction, double maximum, double &distance,
+               Vector &normal) {
+	return shape.shape == Collider::Shape::BOX
+	           ? IntersectBox(shape, origin, direction, maximum, distance,
+	                          normal)
+	           : IntersectRound(shape, origin, direction, maximum, distance,
+	                            normal);
+}
 } // namespace
 
 bool SceneRaycast::Cast(const Scene &scene, const Ray &ray, RaycastHit &hit,
@@ -106,8 +194,14 @@ bool SceneRaycast::Cast(const Scene &scene, const Ray &ray, RaycastHit &hit,
 			    (!options.includeTriggers && object.collider->isTrigger))
 				continue;
 			const auto &box = *object.collider;
-			if (!BoxColliderUtils::IsValid(box))
+			if (!ColliderUtils::IsValid(box))
 				return false;
+			if (box.shape != Collider::Shape::BOX) {
+				AxisAlignedBox bounds;
+				if (!ColliderUtils::GetWorldBounds(
+				        box, transforms.at(id).matrix, bounds))
+					return false;
+			}
 			if (!(options.layerMask & (std::uint32_t{1} << box.filter.layer)))
 				continue;
 			DirectX::XMFLOAT4X4 inverse;

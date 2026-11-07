@@ -3,7 +3,7 @@
 #include "gameplay/SceneValidation.h"
 #include "graphics/camera/Camera.h"
 #include "math/TransformUtils.h"
-#include "physics/BoxColliderUtils.h"
+#include "physics/ColliderUtils.h"
 #include "scene/SceneActivity.h"
 #include "scene/SceneHierarchy.h"
 #include "scene/SceneSerializer.h"
@@ -276,7 +276,7 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 		                   &invalidCollider, physics.GetWorld())) {
 			return fail(
 			    invalidCollider,
-			    "Box Collider cannot be represented at its world transform.");
+			    "Collider cannot be represented at its world transform.");
 		}
 		const bool continuing =
 		    preserve && character != 0 && character == character_;
