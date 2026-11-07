@@ -941,6 +941,14 @@ void ControlsPanel::Draw() {
 	         "does "
 	         "not change the authored offsets. Exported games use the same "
 	         "input."},
+	        {"Trigger Actions > Send Script Message",
+	         "Choose Send Script Message, select a target with an enabled Lua "
+	         "Script, then enter a name and press Enter. The script's "
+	         "message(self,state,name,data,sender) receives an empty data "
+	         "table "
+	         "and the Trigger object as sender. Messages from initial overlaps "
+	         "wait for the first simulation update. Inactive targets skip the "
+	         "message. Once still applies per Play session."},
 	        {"Trigger Actions > Animator",
 	         "Choose Play Animator to resume the target's current clip, "
 	         "Restart "

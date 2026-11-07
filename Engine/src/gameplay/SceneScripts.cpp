@@ -266,6 +266,17 @@ bool SceneScripts::Run(
 	}
 }
 
+bool SceneScripts::QueueTriggerMessage(const Scene &scene,
+                                       SceneObjectId receiver,
+                                       SceneObjectId sender,
+                                       std::string_view name,
+                                       std::string &error) {
+	if (!instances_.contains(receiver) ||
+	    !SceneActivity::IsActive(scene, receiver))
+		return true;
+	return mailbox_.Enqueue(receiver, sender, name, "{}", error);
+}
+
 void SceneScripts::QueueTriggers(std::span<const TriggerEvent> events) {
 	if (instances_.empty())
 		return;

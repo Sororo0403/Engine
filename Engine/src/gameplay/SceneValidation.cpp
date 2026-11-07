@@ -202,6 +202,16 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 						break;
 					}
 
+					if (action.operation ==
+					        TriggerAction::Operation::SEND_SCRIPT_MESSAGE &&
+					    (action.messageName.empty() || !target.script ||
+					     !target.script->enabled ||
+					     target.script->asset.empty())) {
+						add(id, "Send Script Message requires a name and a "
+						        "target with an enabled Lua Script.");
+						break;
+					}
+
 					if (action.IsAudioOperation() && !target.audioSource) {
 						add(id, "Audio Trigger Actions require an Audio Source "
 						        "on their target.");

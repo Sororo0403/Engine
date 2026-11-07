@@ -214,6 +214,7 @@ bool SceneSimulation::ApplyTriggerActions(
 	std::map<SceneObjectId, TriggerAction::Operation> animationPlayback;
 	std::map<SceneObjectId, TriggerAction::Operation> animatorPlayback;
 	std::vector<SceneObjectId> particleBursts;
+	std::vector<ScriptMessage> scriptMessages;
 	auto audio = audioActions_;
 	std::map<SceneObjectId, SceneObjectId> destinations;
 	// 有効な主人公は一体なので、同じ更新では最後に通った設定を使う。
@@ -342,6 +343,15 @@ bool SceneSimulation::ApplyTriggerActions(
 				continue;
 			}
 
+			if (action.operation ==
+			    TriggerAction::Operation::SEND_SCRIPT_MESSAGE) {
+				scriptMessages.push_back(
+				    {action.target, signal.receiver, action.messageName});
+				if (action.once)
+					fired.insert(key);
+				continue;
+			}
+
 			if (action.IsAudioOperation()) {
 				if (!target->audioSource) {
 					error = std::format("Trigger Actions on object ID {} need "
@@ -391,6 +401,7 @@ bool SceneSimulation::ApplyTriggerActions(
 			case TriggerAction::Operation::RESTART_ANIMATOR:
 			case TriggerAction::Operation::PAUSE_ANIMATOR:
 			case TriggerAction::Operation::STOP_ANIMATOR:
+			case TriggerAction::Operation::SEND_SCRIPT_MESSAGE:
 			case TriggerAction::Operation::EMIT_PARTICLES:
 				break;
 			}
@@ -555,6 +566,17 @@ bool SceneSimulation::ApplyTriggerActions(
 			error = "Emit Particles failed: " + error;
 			if (invalidObject)
 				*invalidObject = id;
+			return false;
+		}
+	}
+
+	for (const auto &message : scriptMessages) {
+		if (!scripts_.QueueTriggerMessage(scene_, message.receiver,
+		                                  message.sender, message.name,
+		                                  error)) {
+			error = "Send Script Message failed: " + error;
+			if (invalidObject)
+				*invalidObject = message.sender;
 			return false;
 		}
 	}

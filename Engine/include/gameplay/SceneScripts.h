@@ -97,6 +97,19 @@ class SceneScripts {
 	void QueueTriggers(std::span<const TriggerEvent> events);
 
 	/// <summary>
+	/// Triggerから有効なLua Scriptに空のデータを持つ通知を予約する
+	/// </summary>
+	/// <param name="scene">操作を反映した再生シーン</param>
+	/// <param name="receiver">通知先</param>
+	/// <param name="sender">Triggerを持つ物体</param>
+	/// <param name="name">通知名</param>
+	/// <param name="error">失敗理由</param>
+	/// <returns>true:追加成功または無効な受信先をスキップ false:キューの制限または通知名が無効</returns>
+	bool QueueTriggerMessage(const Scene &scene, SceneObjectId receiver,
+	                         SceneObjectId sender, std::string_view name,
+	                         std::string &error);
+
+	/// <summary>
 	/// インスタンスの状態を、値を書き換えられないJSONとして参照する
 	/// </summary>
 	/// <param name="id">物体ID</param>

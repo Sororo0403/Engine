@@ -7,14 +7,17 @@
 #include <stdexcept>
 #include <utility>
 
+bool ScriptMessage::IsValidName(std::string_view name) {
+	return !name.empty() && name.size() <= kMaximumNameBytes &&
+	       name.find('\0') == std::string_view::npos &&
+	       !StringConversion::Utf8ToWide(std::string(name)).empty();
+}
+
 bool ScriptMailbox::Enqueue(SceneObjectId receiver, SceneObjectId sender,
                             std::string_view name, std::string_view data,
                             std::string &error) {
 	try {
-		if (!receiver || name.empty() ||
-		    name.size() > ScriptMessage::kMaximumNameBytes ||
-		    name.find('\0') != std::string_view::npos ||
-		    StringConversion::Utf8ToWide(std::string(name)).empty())
+		if (!receiver || !ScriptMessage::IsValidName(name))
 			throw std::runtime_error(
 			    "Messages require a receiver and 1 to 64 UTF-8 name bytes.");
 		std::string normalized;

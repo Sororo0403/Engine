@@ -640,6 +640,9 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 					    : action.operation ==
 					            TriggerAction::Operation::STOP_ANIMATOR
 					        ? "stopAnimator"
+					    : action.operation ==
+					            TriggerAction::Operation::SEND_SCRIPT_MESSAGE
+					        ? "sendScriptMessage"
 					        : "loadScene";
 					actions.push_back(
 					    {{"event",
@@ -663,7 +666,8 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 					          ? "dynamicBody"
 					          : "any"},
 					     {"contactTag", action.contactTag},
-					     {"inputAction", action.inputAction}});
+					     {"inputAction", action.inputAction},
+					     {"messageName", action.messageName}});
 				}
 				objects.back()["triggerActions"] = {
 				    {"actions", std::move(actions)}};
@@ -1346,7 +1350,9 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					     !(version >= 50 && (operation == "playAnimator" ||
 					                         operation == "restartAnimator" ||
 					                         operation == "pauseAnimator" ||
-					                         operation == "stopAnimator"))) ||
+					                         operation == "stopAnimator")) &&
+					     !(version >= 51 &&
+					       operation == "sendScriptMessage")) ||
 					    (version >= 23 &&
 					     !value.at("destination").is_number_unsigned()) ||
 					    !value.at("target").is_number_unsigned() ||
@@ -1414,6 +1420,8 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					         ? TriggerAction::Operation::PAUSE_ANIMATOR
 					     : operation == "stopAnimator"
 					         ? TriggerAction::Operation::STOP_ANIMATOR
+					     : operation == "sendScriptMessage"
+					         ? TriggerAction::Operation::SEND_SCRIPT_MESSAGE
 					         : TriggerAction::Operation::LOAD_SCENE,
 					     value.at("once").get<bool>(),
 					     version >= 23
@@ -1433,6 +1441,9 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					         : std::string{},
 					     version >= 49
 					         ? value.at("inputAction").get<std::string>()
+					         : std::string{},
+					     version >= 51
+					         ? value.at("messageName").get<std::string>()
 					         : std::string{}});
 				}
 				object.triggerActions = std::move(component);

@@ -8,6 +8,7 @@
 #include <array>
 #include <format>
 #include <imgui.h>
+#include <imgui_stdlib.h>
 #include <optional>
 #include <set>
 #include <string>
@@ -74,6 +75,8 @@ const char *OperationLabel(TriggerAction::Operation operation) {
 		return "Pause Animator";
 	case TriggerAction::Operation::STOP_ANIMATOR:
 		return "Stop Animator";
+	case TriggerAction::Operation::SEND_SCRIPT_MESSAGE:
+		return "Send Script Message";
 	case TriggerAction::Operation::EMIT_PARTICLES:
 		return "Emit Particles";
 	case TriggerAction::Operation::LOAD_SCENE:
@@ -267,6 +270,11 @@ bool TriggerActionsInspector::Draw(
 						if (action.IsAnimatorOperation() && !candidate.animator)
 							continue;
 						if (action.operation ==
+						        TriggerAction::Operation::SEND_SCRIPT_MESSAGE &&
+						    (!candidate.script || !candidate.script->enabled ||
+						     candidate.script->asset.empty()))
+							continue;
+						if (action.operation ==
 						        TriggerAction::Operation::EMIT_PARTICLES &&
 						    !candidate.particleEmitter)
 							continue;
@@ -304,12 +312,16 @@ bool TriggerActionsInspector::Draw(
 				         TriggerAction::Operation::RESTART_ANIMATOR,
 				         TriggerAction::Operation::PAUSE_ANIMATOR,
 				         TriggerAction::Operation::STOP_ANIMATOR,
+				         TriggerAction::Operation::SEND_SCRIPT_MESSAGE,
 				         TriggerAction::Operation::EMIT_PARTICLES,
 				         TriggerAction::Operation::LOAD_SCENE}) {
 					if (ImGui::Selectable(OperationLabel(operation),
 					                      action.operation == operation) &&
 					    action.operation != operation) {
 						action.operation = operation;
+						if (operation !=
+						    TriggerAction::Operation::SEND_SCRIPT_MESSAGE)
+							action.messageName.clear();
 						if (!action.AllowsDynamicContact() &&
 						    action.contact ==
 						        TriggerAction::Contact::DYNAMIC_BODY)
@@ -319,6 +331,18 @@ bool TriggerActionsInspector::Draw(
 				}
 				ImGui::EndCombo();
 			}
+			if (action.operation ==
+			    TriggerAction::Operation::SEND_SCRIPT_MESSAGE) {
+				auto name = action.messageName;
+				if (ImGui::InputText("Message Name", &name,
+				                     ImGuiInputTextFlags_EnterReturnsTrue) &&
+				    (name.empty() || ScriptMessage::IsValidName(name)) &&
+				    name != action.messageName) {
+					action.messageName = std::move(name);
+					changed = true;
+				}
+			}
+
 			if (action.UsesDestination()) {
 				const auto destination = TargetLabel(scene, action.destination);
 				if (ImGui::BeginCombo("Destination", destination.c_str())) {
@@ -434,6 +458,8 @@ void TriggerActionsInspector::DrawReadOnly(const ImGuiSystem &ui,
 			                         : action.inputAction));
 		if (!action.contactTag.empty())
 			ui.Text(std::format("Contact Tag: {}", action.contactTag));
+		if (action.operation == TriggerAction::Operation::SEND_SCRIPT_MESSAGE)
+			ui.Text("Message: " + action.messageName);
 		if (action.operation == TriggerAction::Operation::LOAD_SCENE)
 			ui.Text("Scene: " + PathUtils::ToUtf8(action.scenePath));
 		if (action.UsesDestination()) {
