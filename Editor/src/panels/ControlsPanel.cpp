@@ -1910,6 +1910,13 @@ void ControlsPanel::Draw() {
 	         "Drop to Ground still uses world Y=0; position snapping uses its "
 	         "existing world-origin intervals. Restore Defaults resets the "
 	         "height to zero."},
+	        {"Load Scene > Arrival Tag",
+	         "Set a unique tag on an active marker in the destination scene. "
+	         "Enter that tag under Arrival Tag and press Enter. The "
+	         "destination "
+	         "must have one active Character Controller, and the marker must "
+	         "leave space for its Collider. The character keeps its authored "
+	         "orientation. An empty tag uses the authored position."},
 	        {"Load Scene",
 	         "Use Trigger Actions > Load Scene to choose a saved scene from "
 	         "Assets or drop a scene asset. Enter, Exit and Interact "

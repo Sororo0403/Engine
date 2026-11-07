@@ -19,7 +19,7 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 	auto particles = particles_;
 	auto animators = animators_;
 	auto audio = audioActions_;
-	auto requestedScene = pendingScene_;
+	std::filesystem::path requestedScene;
 	auto game = sharedScriptData_;
 	// すべてのupdateに、物理・Trigger処理後でLua変更前の同じ主人公状態を渡す。
 	const auto character = startOnly ? std::nullopt : GetCharacterState();
@@ -43,7 +43,8 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 	if (candidate.GetObjects() == scene_.GetObjects()) {
 		scene_.CopyFrom(candidate);
 		audioActions_ = std::move(audio);
-		pendingScene_ = std::move(requestedScene);
+		if (!requestedScene.empty())
+			pendingScene_ = {std::move(requestedScene), {}};
 		sharedScriptData_ = std::move(game);
 		scripts_ = std::move(scripts);
 		physics_ = std::move(physics);
@@ -68,7 +69,8 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 	next.particles_ = std::move(particles);
 	next.animators_ = std::move(animators);
 	next.audioActions_ = std::move(audio);
-	next.pendingScene_ = std::move(requestedScene);
+	if (!requestedScene.empty())
+		next.pendingScene_ = {std::move(requestedScene), {}};
 	next.sharedScriptData_ = std::move(game);
 	std::vector<TriggerEvent> generated;
 	if (!next.SynchronizeSceneChanges(candidate, transformed, error,

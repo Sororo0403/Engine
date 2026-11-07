@@ -16,6 +16,60 @@
 #include <set>
 #include <string_view>
 
+namespace {
+/// <summary>
+/// 遷移先の編集データを読み込んだ候補で、主人公をタグ付き物体の位置へ移す
+/// </summary>
+/// <param name="scene">読み込んだ直後の遷移先</param>
+/// <param name="tag">到着地点のタグ。空は元の配置を使う</param>
+/// <param name="error">失敗理由</param>
+/// <returns>true:準備成功 false:タグや主人公を一意に解決できない、または位置が無効</returns>
+bool PlaceSceneArrival(Scene &scene, std::string_view tag, std::string &error) {
+	if (tag.empty())
+		return true;
+	SceneObjectId arrival = 0, character = 0;
+	for (const auto &[id, object] : scene.GetObjects()) {
+		if (!SceneActivity::IsActive(scene, id))
+			continue;
+		if (object.tag == tag) {
+			if (arrival) {
+				error = std::format(
+				    "Arrival Tag '{}' matches multiple active objects.", tag);
+				return false;
+			}
+			arrival = id;
+		}
+		if (object.character) {
+			if (character) {
+				error = "A tagged arrival requires exactly one active "
+				        "Character Controller.";
+				return false;
+			}
+			character = id;
+		}
+	}
+	if (!arrival) {
+		error = std::format(
+		    "Arrival Tag '{}' has no active object in the destination scene.",
+		    tag);
+		return false;
+	}
+	if (!character) {
+		error = "A tagged arrival requires an active Character Controller.";
+		return false;
+	}
+	SceneWorldTransform world;
+	if (!SceneHierarchy::GetWorldTransform(scene, arrival, world) ||
+	    !SceneHierarchy::SetWorldPosition(scene, character,
+	                                      world.GetPosition())) {
+		error = "The destination Character Controller cannot be placed at the "
+		        "Arrival Tag.";
+		return false;
+	}
+	return true;
+}
+} // namespace
+
 bool SceneSimulation::Start(const Scene &source, std::string &error,
                             const CameraPose &fallbackPose,
                             SceneObjectId *invalidObject) {
@@ -424,7 +478,7 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 void SceneSimulation::Stop() {
 	sharedScriptData_ = "{}";
 	playing_ = false;
-	pendingScene_.clear();
+	pendingScene_ = {};
 	cameraTransition_.reset();
 	motion_ = SceneMotion{};
 	animations_ = SceneAnimations{};
@@ -472,16 +526,21 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 			lastUpdateError_.clear();
 			return true;
 		}
-		if (!pendingScene_.empty()) {
+		if (!pendingScene_.path.empty()) {
 			Scene destination;
-			if (!SceneSerializer::Load(destination, pendingScene_)) {
+			if (!SceneSerializer::Load(destination, pendingScene_.path)) {
 				lastUpdateError_ = "Could not load destination scene: " +
-				                   PathUtils::ToUtf8(pendingScene_);
+				                   PathUtils::ToUtf8(pendingScene_.path);
+				return false;
+			}
+			std::string error;
+			if (!PlaceSceneArrival(destination, pendingScene_.arrivalTag,
+			                       error)) {
+				lastUpdateError_ = std::move(error);
 				return false;
 			}
 			SceneSimulation destinationSimulation;
 			destinationSimulation.CopyFrom(*this);
-			std::string error;
 			if (!destinationSimulation.StartScene(
 			        destination, error, fallbackPose_, nullptr, true)) {
 				lastUpdateError_ = std::move(error);

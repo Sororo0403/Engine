@@ -319,6 +319,8 @@ bool TriggerActionsInspector::Draw(
 					                      action.operation == operation) &&
 					    action.operation != operation) {
 						action.operation = operation;
+						if (operation != TriggerAction::Operation::LOAD_SCENE)
+							action.arrivalTag.clear();
 						if (operation != TriggerAction::Operation::SET_CAMERA)
 							action.cameraBlendSeconds = 0;
 						if (operation !=
@@ -397,6 +399,13 @@ bool TriggerActionsInspector::Draw(
 				if (!action.scenePath.empty() && ImGui::IsItemHovered())
 					ImGui::SetTooltip(
 					    "%s", PathUtils::ToUtf8(action.scenePath).c_str());
+				auto tag = action.arrivalTag;
+				if (ImGui::InputText("Arrival Tag", &tag,
+				                     ImGuiInputTextFlags_EnterReturnsTrue) &&
+				    ObjectTag::IsValid(tag) && tag != action.arrivalTag) {
+					action.arrivalTag = std::move(tag);
+					changed = true;
+				}
 			}
 			if (action.operation == TriggerAction::Operation::SET_CAMERA) {
 				float blend = action.cameraBlendSeconds;
@@ -488,6 +497,8 @@ void TriggerActionsInspector::DrawReadOnly(const ImGuiSystem &ui,
 			ui.Text("Message: " + action.messageName);
 		if (action.operation == TriggerAction::Operation::LOAD_SCENE)
 			ui.Text("Scene: " + PathUtils::ToUtf8(action.scenePath));
+		if (!action.arrivalTag.empty())
+			ui.Text("Arrival Tag: " + action.arrivalTag);
 		if (action.UsesDestination()) {
 			ui.Text("Destination: " + TargetLabel(scene, action.destination));
 		}

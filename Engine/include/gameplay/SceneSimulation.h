@@ -530,6 +530,15 @@ class SceneSimulation {
 	std::set<std::pair<SceneObjectId, std::size_t>> firedActions_,
 	    occupiedActions_;
 	std::string lastUpdateError_;
-	std::filesystem::path pendingScene_;
+
+	/// <summary>
+	/// 次回更新で読み込むシーンと、任意の到着地点のタグ
+	/// </summary>
+	struct SceneLoadRequest {
+		std::filesystem::path path;
+		std::string arrivalTag;
+	};
+
+	SceneLoadRequest pendingScene_;
 	std::uint64_t sceneRevision_ = 0;
 };

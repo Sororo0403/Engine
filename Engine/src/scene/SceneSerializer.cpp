@@ -669,7 +669,8 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 					     {"inputAction", action.inputAction},
 					     {"messageName", action.messageName},
 					     {"delaySeconds", action.delaySeconds},
-					     {"cameraBlendSeconds", action.cameraBlendSeconds}});
+					     {"cameraBlendSeconds", action.cameraBlendSeconds},
+					     {"arrivalTag", action.arrivalTag}});
 				}
 				objects.back()["triggerActions"] = {
 				    {"actions", std::move(actions)}};
@@ -1455,7 +1456,10 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					                   : 0.f,
 					     version >= 53
 					         ? value.at("cameraBlendSeconds").get<float>()
-					         : 0.f});
+					         : 0.f,
+					     version >= 54
+					         ? value.at("arrivalTag").get<std::string>()
+					         : std::string{}});
 				}
 				object.triggerActions = std::move(component);
 			}

@@ -300,8 +300,9 @@ bool SceneSimulation::ApplyTriggerActions(
 					return false;
 				}
 				// 同じ更新に複数の要求があれば、既存の操作順で最後の要求を使用する。
-				requestedScene =
-				    PathUtils::ResolveFromExecutable(action.scenePath);
+				requestedScene = {
+				    PathUtils::ResolveFromExecutable(action.scenePath),
+				    action.arrivalTag};
 				if (action.once)
 					fired.insert(key);
 				continue;
@@ -619,7 +620,7 @@ bool SceneSimulation::ApplyTriggerActions(
 		}
 	}
 
-	pendingScene_.swap(requestedScene);
+	pendingScene_ = std::move(requestedScene);
 	firedActions_.swap(fired);
 	occupiedActions_.swap(occupied);
 	audioActions_.swap(audio);

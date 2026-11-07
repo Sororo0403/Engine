@@ -72,6 +72,8 @@ struct TriggerAction {
 	float delaySeconds = 0;
 	// Set Cameraで描画姿勢を切り替える時間。0で即時に切り替える。
 	float cameraBlendSeconds = 0;
+	// Load Sceneで主人公の到着位置を指定する遷移先のタグ。空は配置済みの位置を使う。
+	std::string arrivalTag;
 
 	/// <summary>
 	/// 種別が有効か確認する。未割り当ての対象は編集用に許可し、Play時に存在を確認する
@@ -85,6 +87,8 @@ struct TriggerAction {
 		       (cameraBlendSeconds == 0 ||
 		        operation == Operation::SET_CAMERA) &&
 		       ObjectTag::IsValid(contactTag) &&
+		       (arrivalTag.empty() || (operation == Operation::LOAD_SCENE &&
+		                               ObjectTag::IsValid(arrivalTag))) &&
 		       (messageName.empty() ||
 		        (operation == Operation::SEND_SCRIPT_MESSAGE &&
 		         ScriptMessage::IsValidName(messageName))) &&
