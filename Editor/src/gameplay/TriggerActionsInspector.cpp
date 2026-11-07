@@ -396,6 +396,15 @@ bool TriggerActionsInspector::Draw(
 					ImGui::SetTooltip(
 					    "%s", PathUtils::ToUtf8(action.scenePath).c_str());
 			}
+			float delay = action.delaySeconds;
+			if (ImGui::InputFloat("Delay (s)", &delay, 0, 0, "%.3f",
+			                      ImGuiInputTextFlags_EnterReturnsTrue) &&
+			    std::isfinite(delay) && delay >= 0 &&
+			    delay <= TriggerAction::kMaximumDelaySeconds &&
+			    delay != action.delaySeconds) {
+				action.delaySeconds = delay;
+				changed = true;
+			}
 			changed |= ImGui::Checkbox("Once per Scene", &action.once);
 			ui.BeginDisabled(i == 0);
 			if (ImGui::SmallButton("Move Up")) {
@@ -452,6 +461,8 @@ void TriggerActionsInspector::DrawReadOnly(const ImGuiSystem &ui,
 		    EventLabel(action.event), TargetLabel(scene, action.target),
 		    OperationLabel(action.operation), action.once ? "Yes" : "No"));
 		ui.Text(std::format("Contact: {}", ContactLabel(action.contact)));
+		if (action.delaySeconds > 0)
+			ui.Text(std::format("Delay: {:.3f} s", action.delaySeconds));
 		if (action.event == TriggerAction::Event::INTERACT)
 			ui.Text("Input: " + (action.inputAction.empty()
 			                         ? "Default Interact"

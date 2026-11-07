@@ -64,6 +64,7 @@ void SceneSimulation::CopyFrom(const SceneSimulation &source) {
 	audioActions_ = source.audioActions_;
 	audioRevision_ = source.audioRevision_;
 	pendingActionSignals_ = source.pendingActionSignals_;
+	delayedActions_ = source.delayedActions_;
 	firedActions_ = source.firedActions_;
 	occupiedActions_ = source.occupiedActions_;
 	lastUpdateError_ = source.lastUpdateError_;
@@ -104,6 +105,7 @@ void SceneSimulation::Adopt(SceneSimulation &source) {
 	audioActions_ = std::move(source.audioActions_);
 	audioRevision_ = source.audioRevision_;
 	pendingActionSignals_ = std::move(source.pendingActionSignals_);
+	delayedActions_ = std::move(source.delayedActions_);
 	firedActions_ = std::move(source.firedActions_);
 	occupiedActions_ = std::move(source.occupiedActions_);
 	lastUpdateError_ = std::move(source.lastUpdateError_);
@@ -182,9 +184,20 @@ void SceneSimulation::QueueOccupancySignals(
 
 bool SceneSimulation::ApplyTriggerActions(
     std::string &error, SceneObjectId *invalidObject, bool interactPressed,
-    std::span<const GameActionState> namedInputs) {
+    std::span<const GameActionState> namedInputs, float seconds) {
 	error.clear();
-	auto signals = std::move(pendingActionSignals_);
+	std::vector<ActionSignal> signals;
+	// 新しく予約する操作には、条件を満たすまでに使った今回の時間を引かない。
+	for (auto &delayed : delayedActions_) {
+		delayed.remaining -= seconds;
+		if (delayed.remaining <= 0)
+			signals.push_back(delayed.signal);
+	}
+	std::erase_if(delayedActions_, [](const DelayedTriggerAction &delayed) {
+		return delayed.remaining <= 0;
+	});
+	signals.insert(signals.end(), pendingActionSignals_.begin(),
+	               pendingActionSignals_.end());
 	pendingActionSignals_.clear();
 	QueueActionSignals(frameEvents_, signals);
 	if (character_ != 0 &&
@@ -234,12 +247,13 @@ bool SceneSimulation::ApplyTriggerActions(
 			const auto key = std::pair{signal.receiver, i};
 			if ((signal.actionIndex && *signal.actionIndex != i) ||
 			    action.event != signal.event ||
-			    (action.once && fired.contains(key)) ||
+			    (!signal.delayElapsed && action.once && fired.contains(key)) ||
 			    (!signal.actionIndex &&
 			     !MatchesContact(action, scene_.FindObject(signal.other)))) {
 				continue;
 			}
-			if (action.event == TriggerAction::Event::INTERACT) {
+			if (!signal.delayElapsed &&
+			    action.event == TriggerAction::Event::INTERACT) {
 				const bool pressed =
 				    action.inputAction.empty()
 				        ? interactPressed
@@ -262,6 +276,20 @@ bool SceneSimulation::ApplyTriggerActions(
 					*invalidObject = signal.receiver;
 				}
 				return false;
+			}
+			if (!signal.delayElapsed && action.delaySeconds > 0) {
+				if (delayedActions_.size() >= kMaximumDelayedTriggerActions) {
+					error = "Delayed Trigger Actions limit exceeded.";
+					if (invalidObject)
+						*invalidObject = signal.receiver;
+					return false;
+				}
+				delayedActions_.push_back(
+				    {{signal.receiver, signal.event, signal.other, i, true},
+				     action.delaySeconds});
+				if (action.once)
+					fired.insert(key);
+				continue;
 			}
 			if (action.operation == TriggerAction::Operation::LOAD_SCENE) {
 				if (action.scenePath.empty()) {
@@ -642,8 +670,13 @@ bool SceneSimulation::SynchronizeSceneChanges(
 		return false;
 	}
 
-	// 削除で詰めたTrigger Actionの添字へ、一度だけ実行済みの状態を引き継ぐ。
+	// 削除で詰めたTrigger Actionの添字へ、実行済み・接触中・予約済みの状態を引き継ぐ。
 	std::set<std::pair<SceneObjectId, std::size_t>> fired, occupied;
+	std::map<std::pair<SceneObjectId, std::size_t>, std::optional<std::size_t>>
+	    delayedIndices;
+	for (const auto &delayed : delayedActions_)
+		delayedIndices.try_emplace(
+		    {delayed.signal.receiver, *delayed.signal.actionIndex});
 	for (const auto &[id, before] : scene_.GetObjects()) {
 		const auto *after = working.FindObject(id);
 		if (!after || !before.triggerActions || !after->triggerActions)
@@ -660,11 +693,23 @@ bool SceneSimulation::SynchronizeSceneChanges(
 				fired.emplace(id, current);
 			if (occupiedActions_.contains({id, previous}))
 				occupied.emplace(id, current);
+			if (const auto index = delayedIndices.find({id, previous});
+			    index != delayedIndices.end())
+				index->second = current;
 			++current;
 		}
 	}
 	next.firedActions_ = std::move(fired);
 	next.occupiedActions_ = std::move(occupied);
+	std::erase_if(
+	    next.delayedActions_, [&](const DelayedTriggerAction &delayed) {
+		    const auto index = delayedIndices.find(
+		        {delayed.signal.receiver, *delayed.signal.actionIndex});
+		    return index == delayedIndices.end() || !index->second;
+	    });
+	for (auto &delayed : next.delayedActions_)
+		delayed.signal.actionIndex = delayedIndices.at(
+		    {delayed.signal.receiver, *delayed.signal.actionIndex});
 	std::erase_if(next.audioActions_, [&](const auto &action) {
 		return !working.Contains(action.target);
 	});

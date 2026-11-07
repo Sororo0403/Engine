@@ -432,6 +432,7 @@ void SceneSimulation::Stop() {
 	frameEvents_.clear();
 	audioActions_.clear();
 	pendingActionSignals_.clear();
+	delayedActions_.clear();
 	firedActions_.clear();
 	occupiedActions_.clear();
 	lastUpdateError_.clear();
@@ -533,8 +534,9 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 		    working.ui_.ConsumesNavigation() || working.ui_.ConsumesPointer()
 		        ? std::span<const GameActionState>{}
 		        : actions;
-		if (!working.ApplyTriggerActions(
-		        error, nullptr, controls.interactPressed, triggerInputs)) {
+		if (!working.ApplyTriggerActions(error, nullptr,
+		                                 controls.interactPressed,
+		                                 triggerInputs, seconds)) {
 			lastUpdateError_ = std::move(error);
 			return false;
 		}

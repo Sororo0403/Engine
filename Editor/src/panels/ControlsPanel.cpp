@@ -1091,6 +1091,14 @@ void ControlsPanel::Draw() {
 	         "interact; "
 	         "physical Trigger history continues to show contact events only. "
 	         "Interact settings support Undo/Redo, save and game export."},
+	        {"Trigger Actions > Delay",
+	         "Enter a delay in seconds (0 to 600) and press Enter. A zero "
+	         "delay runs immediately. A positive delay starts when the event "
+	         "matches and advances only during simulation, including Step. "
+	         "Leaving the trigger does not cancel the action. The trigger "
+	         "must still be active when the delay ends. Once reserves only "
+	         "one action per Play; restarting or changing scenes clears "
+	         "pending actions."},
 	        {"Trigger Actions execution",
 	         "Initial overlaps run at Start. Later actions run after a "
 	         "positive simulation update: queued signals first, then new "

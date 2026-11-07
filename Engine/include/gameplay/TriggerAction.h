@@ -5,6 +5,7 @@
 #include "scene/ObjectTag.h"
 #include "scene/SceneObjectId.h"
 #include "scripting/ScriptMessage.h"
+#include <cmath>
 #include <filesystem>
 #include <string>
 
@@ -12,6 +13,7 @@
 /// Triggerの進入・退出、または範囲内での操作入力に応じて、対象物体の有効設定・音声・瞬間移動・復帰先やカメラの変更、またはシーン遷移を要求する
 /// </summary>
 struct TriggerAction {
+	static constexpr float kMaximumDelaySeconds = 600.f;
 	/// <summary>
 	/// 対象へ適用する有効設定、Audio Sourceの再生・停止、瞬間移動・復帰先やカメラの変更、またはシーンの読み込み
 	/// </summary>
@@ -65,13 +67,17 @@ struct TriggerAction {
 	std::string inputAction;
 	// 受信側のLuaに渡す通知名。空は編集中だけ許可する。
 	std::string messageName;
+	// 条件を満たしてから操作を実行するまでのシミュレーション秒数。
+	float delaySeconds = 0;
 
 	/// <summary>
 	/// 種別が有効か確認する。未割り当ての対象は編集用に許可し、Play時に存在を確認する
 	/// </summary>
 	/// <returns>true:有効 false:未対応のイベントまたは操作</returns>
 	bool IsValid() const {
-		return ObjectTag::IsValid(contactTag) &&
+		return std::isfinite(delaySeconds) && delaySeconds >= 0 &&
+		       delaySeconds <= kMaximumDelaySeconds &&
+		       ObjectTag::IsValid(contactTag) &&
 		       (messageName.empty() ||
 		        (operation == Operation::SEND_SCRIPT_MESSAGE &&
 		         ScriptMessage::IsValidName(messageName))) &&

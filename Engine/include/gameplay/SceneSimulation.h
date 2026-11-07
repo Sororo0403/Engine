@@ -362,7 +362,18 @@ class SceneSimulation {
 		TriggerAction::Event event = TriggerAction::Event::ENTER;
 		SceneObjectId other = 0;
 		std::optional<std::size_t> actionIndex = std::nullopt;
+		bool delayElapsed = false;
 	};
+
+	/// <summary>
+	/// 発火条件の確認後に予約した操作と、実行までに必要なシミュレーション時間
+	/// </summary>
+	struct DelayedTriggerAction {
+		ActionSignal signal;
+		double remaining = 0;
+	};
+
+	static constexpr std::size_t kMaximumDelayedTriggerActions = 1024;
 
 	/// <summary>
 	/// 作業用シミュレーションへ、シーンと継続中の実行状態を複製する
@@ -410,11 +421,13 @@ class SceneSimulation {
 	/// <param name="invalidObject">指定時は問題のIDを設定する</param>
 	/// <param name="interactPressed">今回の既定の操作入力。現在の主人公が重なるTriggerへ進入・退出の後に送る</param>
 	/// <param name="namedInputs">今回の名前付き操作入力</param>
+	/// <param name="seconds">予約済みの操作を進める時間。Play開始時は0</param>
 	/// <returns>true:成功 false:設定や適用先の状態が無効</returns>
 	bool ApplyTriggerActions(std::string &error,
 	                         SceneObjectId *invalidObject = nullptr,
 	                         bool interactPressed = false,
-	                         std::span<const GameActionState> namedInputs = {});
+	                         std::span<const GameActionState> namedInputs = {},
+	                         float seconds = 0);
 
 	/// <summary>
 	/// 開始または有効設定の変更を、作業シーンで検証してから確定する
@@ -503,6 +516,7 @@ class SceneSimulation {
 	std::vector<SceneAudioAction> audioActions_;
 	std::uint64_t audioRevision_ = 0;
 	std::vector<ActionSignal> pendingActionSignals_;
+	std::vector<DelayedTriggerAction> delayedActions_;
 	std::set<std::pair<SceneObjectId, std::size_t>> firedActions_,
 	    occupiedActions_;
 	std::string lastUpdateError_;
