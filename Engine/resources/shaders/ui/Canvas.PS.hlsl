@@ -1,6 +1,7 @@
 ﻿cbuffer Element : register(b0) {
     float4 rectangle;
     float4 tint;
+    float4 uvRect;
 };
 Texture2D image : register(t0);
 SamplerState imageSampler : register(s0);

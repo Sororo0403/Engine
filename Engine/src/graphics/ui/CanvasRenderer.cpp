@@ -46,6 +46,7 @@ struct CanvasRenderer::Impl {
 		std::shared_ptr<Texture> texture;
 		UIRect rect;
 		std::array<float, 4> color;
+		std::array<float, 4> uv{0, 0, 1, 1};
 	};
 
 	struct TextEntry {
@@ -101,7 +102,7 @@ struct CanvasRenderer::Impl {
 		range.NumDescriptors = 1;
 		D3D12_ROOT_PARAMETER parameters[2]{};
 		parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
-		parameters[0].Constants.Num32BitValues = 8;
+		parameters[0].Constants.Num32BitValues = 12;
 		parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 		parameters[1].ParameterType =
 		    D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
@@ -319,7 +320,8 @@ bool CanvasRenderer::Update(const Scene &scene, int width, int height,
 					continue;
 				const auto &object = *scene.FindObject(element.object);
 				if (object.image && object.image->enabled &&
-				    object.image->color[3] > 0) {
+				    object.image->color[3] > 0 &&
+				    object.image->fillAmount > 0) {
 					const auto &image = *object.image;
 					std::shared_ptr<Texture> texture;
 					if (image.texture.empty()) {
@@ -391,9 +393,29 @@ bool CanvasRenderer::Update(const Scene &scene, int width, int height,
 						bounds.x += (r.width - bounds.width) * .5f;
 						bounds.y += (r.height - bounds.height) * .5f;
 					}
+					std::array<float, 4> uv{0, 0, 1, 1};
+					const auto amount = image.fillAmount;
+					const auto remaining = 1 - amount;
+					using Origin = ImageComponent::FillOrigin;
+					if (image.fillOrigin == Origin::LEFT ||
+					    image.fillOrigin == Origin::RIGHT) {
+						if (image.fillOrigin == Origin::RIGHT) {
+							bounds.x += bounds.width * remaining;
+							uv[0] = remaining;
+						}
+						bounds.width *= amount;
+						uv[2] = amount;
+					} else {
+						if (image.fillOrigin == Origin::BOTTOM) {
+							bounds.y += bounds.height * remaining;
+							uv[1] = remaining;
+						}
+						bounds.height *= amount;
+						uv[3] = amount;
+					}
 					commands.push_back(
 					    {std::move(texture), bounds,
-					     color(object, current, image.color, false)});
+					     color(object, current, image.color, false), uv});
 				}
 				if (object.text && object.text->enabled &&
 				    !object.text->text.empty() && object.text->color[3] > 0) {
@@ -507,8 +529,12 @@ void CanvasRenderer::Draw() const {
 		                        color[0],
 		                        color[1],
 		                        color[2],
-		                        color[3]};
-		list->SetGraphicsRoot32BitConstants(0, 8, constants, 0);
+		                        color[3],
+		                        command.uv[0],
+		                        command.uv[1],
+		                        command.uv[2],
+		                        command.uv[3]};
+		list->SetGraphicsRoot32BitConstants(0, 12, constants, 0);
 		list->SetGraphicsRootDescriptorTable(1, descriptor);
 		list->DrawInstanced(6, 1, 0, 0);
 		descriptor.ptr += stride;

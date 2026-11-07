@@ -13,6 +13,13 @@ struct ImageComponent {
 	bool preserveAspect = false;
 
 	/// <summary>
+	/// 画像のうち、表示範囲を伸ばす起点となる辺
+	/// </summary>
+	enum class FillOrigin { LEFT, RIGHT, TOP, BOTTOM };
+	FillOrigin fillOrigin = FillOrigin::LEFT;
+	float fillAmount = 1;
+
+	/// <summary>
 	/// 画像参照の形式とRGBAの範囲を検証する。画像の存在と復号は描画・出力時に確認する
 	/// </summary>
 	/// <returns>true:有効 false:パス形式・画像拡張子・色が無効</returns>

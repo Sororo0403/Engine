@@ -21,7 +21,9 @@ enum class Op {
 	IMAGE_COLOR,
 	SET_IMAGE_COLOR,
 	INTERACTABLE,
-	SET_INTERACTABLE
+	SET_INTERACTABLE,
+	IMAGE_FILL,
+	SET_IMAGE_FILL
 };
 
 /// <summary>
@@ -40,7 +42,8 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 		const bool mutation = op == Op::SET_TEXT || op == Op::SET_POSITION ||
 		                      op == Op::SET_SIZE || op == Op::SET_TEXT_COLOR ||
 		                      op == Op::SET_IMAGE_COLOR ||
-		                      op == Op::SET_INTERACTABLE;
+		                      op == Op::SET_INTERACTABLE ||
+		                      op == Op::SET_IMAGE_FILL;
 		if (!call.scene || (mutation && !call.executing))
 			throw std::runtime_error(
 			    "Change UI values inside callbacks, not at module scope.");
@@ -83,6 +86,18 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 					throw std::runtime_error(
 					    "UI text or RGBA color is invalid.");
 				object->text = std::move(value);
+			}
+		} else if (op == Op::IMAGE_FILL || op == Op::SET_IMAGE_FILL) {
+			if (!object->image)
+				throw std::runtime_error(
+				    "This object needs a UI Image component.");
+			if (op == Op::IMAGE_FILL)
+				numbers[0] = object->image->fillAmount;
+			else {
+				if (numbers[0] < 0 || numbers[0] > 1)
+					throw std::runtime_error(
+					    "UI image fill must be between 0 and 1.");
+				object->image->fillAmount = numbers[0];
 			}
 		} else if (op == Op::IMAGE_COLOR || op == Op::SET_IMAGE_COLOR) {
 			if (!object->image)
@@ -149,9 +164,11 @@ int Dispatch(lua_State *state) {
 		text = lua_tolstring(state, 2, &length);
 	}
 	if (op == Op::SET_POSITION || op == Op::SET_SIZE ||
-	    op == Op::SET_TEXT_COLOR || op == Op::SET_IMAGE_COLOR) {
-		const int count =
-		    (op == Op::SET_POSITION || op == Op::SET_SIZE) ? 2 : 4;
+	    op == Op::SET_TEXT_COLOR || op == Op::SET_IMAGE_COLOR ||
+	    op == Op::SET_IMAGE_FILL) {
+		const int count = op == Op::SET_IMAGE_FILL                         ? 1
+		                  : (op == Op::SET_POSITION || op == Op::SET_SIZE) ? 2
+		                                                                   : 4;
 		for (int i = 0; i < count; ++i) {
 			luaL_checktype(state, i + 2, LUA_TNUMBER);
 			const double value = lua_tonumber(state, i + 2);
@@ -173,7 +190,8 @@ int Dispatch(lua_State *state) {
 		lua_pushlstring(state, call.returnText.data(), call.returnText.size());
 		return 1;
 	}
-	const int result = (op == Op::POSITION || op == Op::SIZE)            ? 2
+	const int result = op == Op::IMAGE_FILL                              ? 1
+	                   : (op == Op::POSITION || op == Op::SIZE)          ? 2
 	                   : (op == Op::TEXT_COLOR || op == Op::IMAGE_COLOR) ? 4
 	                                                                     : 0;
 	for (int i = 0; i < result; ++i)
@@ -187,8 +205,9 @@ void LuaInternal::AddUIMethods(lua_State *state) {
 	    "get_text",        "set_text",        "get_ui_position",
 	    "set_ui_position", "get_ui_size",     "set_ui_size",
 	    "get_text_color",  "set_text_color",  "get_image_color",
-	    "set_image_color", "is_interactable", "set_interactable"};
-	for (int i = 0; i < 12; ++i) {
+	    "set_image_color", "is_interactable", "set_interactable",
+	    "get_image_fill",  "set_image_fill"};
+	for (int i = 0; i < static_cast<int>(std::size(names)); ++i) {
 		lua_pushinteger(state, i);
 		lua_pushcclosure(state, Dispatch, 1);
 		lua_setfield(state, -2, names[i]);

@@ -1,6 +1,7 @@
 ﻿cbuffer Element : register(b0) {
     float4 rectangle;
     float4 tint;
+    float4 uvRect;
 };
 struct Output {
     float4 position : SV_POSITION;
@@ -12,7 +13,7 @@ Output main(uint id : SV_VertexID) {
         float2(0, 1), float2(1, 0), float2(1, 1)
     };
     Output result;
-    result.uv = corners[id];
-    result.position = float4(rectangle.xy + result.uv * rectangle.zw, 0, 1);
+    result.uv = uvRect.xy + corners[id] * uvRect.zw;
+    result.position = float4(rectangle.xy + corners[id] * rectangle.zw, 0, 1);
     return result;
 }

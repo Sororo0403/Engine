@@ -230,6 +230,17 @@ bool UIInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		changed |= Apply(history, id, object.image, i,
 		                 ImGui::ColorEdit4("Image Color", i.color.data()),
 		                 &EditorHistory::BeginImage);
+		const char *origins[]{"Left", "Right", "Top", "Bottom"};
+		auto origin = static_cast<int>(i.fillOrigin);
+		if (ImGui::Combo("Fill Origin", &origin, origins, 4)) {
+			i.fillOrigin = static_cast<ImageComponent::FillOrigin>(origin);
+			changed |= history.SetImage(id, i);
+		}
+		changed |=
+		    Apply(history, id, object.image, i,
+		          ImGui::SliderFloat("Fill Amount", &i.fillAmount, 0, 1, "%.3f",
+		                             ImGuiSliderFlags_AlwaysClamp),
+		          &EditorHistory::BeginImage);
 		if (ui.Button("Remove UI Image"))
 			changed |= history.SetImage(id, std::nullopt);
 	}
@@ -272,5 +283,6 @@ void UIInspector::DrawReadOnly(const ImGuiSystem &ui,
 		ui.Text(object.image->texture.empty()
 		            ? "Solid Color"
 		            : PathUtils::ToUtf8(object.image->texture));
+		ui.Text(std::format("Fill Amount: {:.3f}", object.image->fillAmount));
 	}
 }

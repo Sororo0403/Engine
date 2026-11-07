@@ -1217,6 +1217,13 @@ void ControlsPanel::Draw() {
 	         "Game Settings resolution and aspect. Invalid camera chains clear "
 	         "the preview; incomplete movement/collider settings do not "
 	         "require Play."},
+	        {"UI Image > Fill",
+	         "Use Fill Amount from 0 to 1 and choose a Fill Origin to make a "
+	         "health or progress bar. Fill crops the image from the chosen "
+	         "edge, keeping the texture scale and Rect Transform. The pointer "
+	         "hit area stays the full rectangle; clear Image Raycast Target "
+	         "for a decorative gauge. Lua can read or change it with "
+	         "get_image_fill() and set_image_fill(amount)."},
 	        {"Scene Check > Copy Results",
 	         "Copy the last completed check's issue count and every message "
 	         "as text. Zero issues can be copied too. Before the first check "

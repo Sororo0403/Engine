@@ -29,17 +29,20 @@ template <std::size_t N> std::array<float, N> ReadArray(const Json &value) {
 }
 
 /// <summary>
-/// 配置方法を3種類の文字列から読み込む
+/// UIの列挙設定を対応する文字列から読み込む
 /// </summary>
+/// <typeparam name="N">候補数</typeparam>
 /// <param name="value">文字列のJSON</param>
-/// <param name="names">列挙値の順の3候補</param>
+/// <param name="names">列挙値の順に並べた候補</param>
 /// <returns>対応する添字。未対応の値は例外</returns>
-int Choice(const Json &value, const std::array<const char *, 3> &names) {
+template <std::size_t N>
+std::size_t Choice(const Json &value,
+                   const std::array<const char *, N> &names) {
 	const auto text = value.get<std::string>();
-	for (int i = 0; i < 3; ++i)
-		if (text == names[static_cast<std::size_t>(i)])
+	for (std::size_t i = 0; i < names.size(); ++i)
+		if (text == names[i])
 			return i;
-	throw std::runtime_error("UI alignment is invalid.");
+	throw std::runtime_error("UI choice is invalid.");
 }
 
 /// <summary>
@@ -57,6 +60,8 @@ void Validate(const SceneObject &object) {
 
 const std::array<const char *, 3> kHorizontal{"left", "center", "right"},
     kVertical{"top", "middle", "bottom"};
+const std::array<const char *, 4> kFillOrigins{"left", "right", "top",
+                                               "bottom"};
 } // namespace
 
 void SceneUISerializer::Write(nlohmann::json &item, const SceneObject &object) {
@@ -97,7 +102,10 @@ void SceneUISerializer::Write(nlohmann::json &item, const SceneObject &object) {
 		                 {"raycastTarget", i.raycastTarget},
 		                 {"texture", PathUtils::ToUtf8(i.texture)},
 		                 {"color", i.color},
-		                 {"preserveAspect", i.preserveAspect}};
+		                 {"preserveAspect", i.preserveAspect},
+		                 {"fillOrigin",
+		                  kFillOrigins[static_cast<std::size_t>(i.fillOrigin)]},
+		                 {"fillAmount", i.fillAmount}};
 	}
 	if (object.button) {
 		const auto &b = *object.button;
@@ -168,6 +176,13 @@ void SceneUISerializer::Read(const nlohmann::json &item, SceneObject &object,
 		i.texture = PathUtils::FromUtf8(v.at("texture").get<std::string>());
 		i.color = ReadArray<4>(v.at("color"));
 		i.preserveAspect = v.at("preserveAspect").get<bool>();
+		if (version >= 55) {
+			i.fillOrigin = static_cast<ImageComponent::FillOrigin>(
+			    Choice(v.at("fillOrigin"), kFillOrigins));
+			if (!v.at("fillAmount").is_number())
+				throw std::runtime_error("UI image fill needs a number.");
+			i.fillAmount = v.at("fillAmount").get<float>();
+		}
 		object.image = std::move(i);
 	}
 	if (version >= 31 && item.contains("button")) {
