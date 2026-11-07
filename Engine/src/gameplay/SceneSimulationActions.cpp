@@ -180,14 +180,16 @@ void SceneSimulation::QueueOccupancySignals(
 	}
 }
 
-bool SceneSimulation::ApplyTriggerActions(std::string &error,
-                                          SceneObjectId *invalidObject,
-                                          bool interactPressed) {
+bool SceneSimulation::ApplyTriggerActions(
+    std::string &error, SceneObjectId *invalidObject, bool interactPressed,
+    std::span<const GameActionState> namedInputs) {
 	error.clear();
 	auto signals = std::move(pendingActionSignals_);
 	pendingActionSignals_.clear();
 	QueueActionSignals(frameEvents_, signals);
-	if (interactPressed && character_ != 0) {
+	if (character_ != 0 &&
+	    (interactPressed ||
+	     std::ranges::any_of(namedInputs, &GameActionState::pressed))) {
 		// 通過経路ではなく現在の接触を使い、床や他の物体の重なりからは操作しない。
 		for (const auto &contact : triggers_.GetContacts()) {
 			const auto receiver = contact.first == character_ ? contact.second
@@ -234,6 +236,18 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 			    (!signal.actionIndex &&
 			     !MatchesContact(action, scene_.FindObject(signal.other)))) {
 				continue;
+			}
+			if (action.event == TriggerAction::Event::INTERACT) {
+				const bool pressed =
+				    action.inputAction.empty()
+				        ? interactPressed
+				        : std::ranges::any_of(
+				              namedInputs, [&](const GameActionState &input) {
+					              return input.pressed &&
+					                     input.name == action.inputAction;
+				              });
+				if (!pressed)
+					continue;
 			}
 			const auto *target = scene_.FindObject(action.target);
 			if (!action.IsValid() ||

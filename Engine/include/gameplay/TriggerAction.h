@@ -1,5 +1,6 @@
 #pragma once
 
+#include "gameplay/GameActionBinding.h"
 #include "platform/windows/PathUtils.h"
 #include "scene/ObjectTag.h"
 #include "scene/SceneObjectId.h"
@@ -54,6 +55,8 @@ struct TriggerAction {
 	Contact contact = Contact::ANY;
 	// 接触相手のタグ。空の場合はタグによる絞り込みを行わない。
 	std::string contactTag;
+	// Interactで使う名前付き操作。空の場合は既定のInteractを使う。
+	std::string inputAction;
 
 	/// <summary>
 	/// 種別が有効か確認する。未割り当ての対象は編集用に許可し、Play時に存在を確認する
@@ -61,6 +64,9 @@ struct TriggerAction {
 	/// <returns>true:有効 false:未対応のイベントまたは操作</returns>
 	bool IsValid() const {
 		return ObjectTag::IsValid(contactTag) &&
+		       (inputAction.empty() ||
+		        (event == Event::INTERACT &&
+		         GameActionBinding::IsValidName(inputAction))) &&
 		       (scenePath.empty() ||
 		        (scenePath.native().find(L'\0') == std::wstring::npos &&
 		         (!scenePath.has_root_path() || scenePath.is_absolute()) &&

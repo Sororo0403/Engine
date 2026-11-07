@@ -650,7 +650,8 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 					              TriggerAction::Contact::DYNAMIC_BODY
 					          ? "dynamicBody"
 					          : "any"},
-					     {"contactTag", action.contactTag}});
+					     {"contactTag", action.contactTag},
+					     {"inputAction", action.inputAction}});
 				}
 				objects.back()["triggerActions"] = {
 				    {"actions", std::move(actions)}};
@@ -1405,6 +1406,9 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					         : TriggerAction::Contact::ANY,
 					     version >= 43
 					         ? value.at("contactTag").get<std::string>()
+					         : std::string{},
+					     version >= 49
+					         ? value.at("inputAction").get<std::string>()
 					         : std::string{}});
 				}
 				object.triggerActions = std::move(component);

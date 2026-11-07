@@ -408,11 +408,13 @@ class SceneSimulation {
 	/// </summary>
 	/// <param name="error">失敗理由。成功時は空</param>
 	/// <param name="invalidObject">指定時は問題のIDを設定する</param>
-	/// <param name="interactPressed">今回の操作入力。現在の主人公が重なるTriggerへ進入・退出の後に送る</param>
+	/// <param name="interactPressed">今回の既定の操作入力。現在の主人公が重なるTriggerへ進入・退出の後に送る</param>
+	/// <param name="namedInputs">今回の名前付き操作入力</param>
 	/// <returns>true:成功 false:設定や適用先の状態が無効</returns>
 	bool ApplyTriggerActions(std::string &error,
 	                         SceneObjectId *invalidObject = nullptr,
-	                         bool interactPressed = false);
+	                         bool interactPressed = false,
+	                         std::span<const GameActionState> namedInputs = {});
 
 	/// <summary>
 	/// 開始または有効設定の変更を、作業シーンで検証してから確定する

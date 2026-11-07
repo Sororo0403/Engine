@@ -18,6 +18,7 @@ class Scene;
 class EditorHistory;
 class ModelManager;
 class AssetDatabase;
+struct GameActionBinding;
 
 /// <summary>
 /// 選択に追従、または固定した物体の情報表示と編集要求を管理する
@@ -164,6 +165,7 @@ class InspectorPanel {
 	/// <param name="canPasteFollow">貼り付ける追従設定を保持しているか</param>
 	/// <param name="canPasteRespawn">貼り付ける復帰設定を保持しているか</param>
 	/// <param name="canPasteUv">コピー済みの有効なUVがあるか</param>
+	/// <param name="inputBindings">ゲーム設定の名前付き操作</param>
 	/// <param name="uvTargets">表示物体のUVを一括適用する選択先。空またはMesh Rendererなしの物体を含む場合は要求不可</param>
 	/// <returns>true:物体を編集した false:シーンへの変更なし</returns>
 	bool Draw(const ImGuiSystem &ui, Scene &scene,
@@ -174,7 +176,8 @@ class InspectorPanel {
 	          bool canPasteCharacter = false, bool canPasteFollow = false,
 	          bool canPasteRespawn = false,
 	          std::span<const SceneObjectId> uvTargets = {},
-	          bool canPasteUv = false);
+	          bool canPasteUv = false,
+	          std::span<const GameActionBinding> inputBindings = {});
 
 	/// <summary>
 	/// 選択した再生物体の現在値を表示し、Transformのコピーを返す。編集用の固定先・要求・履歴は変更しない

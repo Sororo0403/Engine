@@ -114,7 +114,8 @@ const char *ContactLabel(TriggerAction::Contact contact) {
 bool TriggerActionsInspector::Draw(
     const ImGuiSystem &ui, const Scene &scene, SceneObjectId id,
     SceneObject &object, EditorHistory &history,
-    std::span<const std::filesystem::path> scenes) const {
+    std::span<const std::filesystem::path> scenes,
+    std::span<const GameActionBinding> inputBindings) const {
 	if (!object.triggerActions || !ui.CollapsingHeader("Trigger Actions")) {
 		return false;
 	}
@@ -147,12 +148,41 @@ bool TriggerActionsInspector::Draw(
 					                      action.event == event) &&
 					    action.event != event) {
 						action.event = event;
+						if (event != TriggerAction::Event::INTERACT)
+							action.inputAction.clear();
 						if (!action.AllowsDynamicContact() &&
 						    action.contact ==
 						        TriggerAction::Contact::DYNAMIC_BODY)
 							action.contact = TriggerAction::Contact::ANY;
 						changed = true;
 					}
+				}
+				ImGui::EndCombo();
+			}
+			if (action.event == TriggerAction::Event::INTERACT &&
+			    ImGui::BeginCombo("Input", action.inputAction.empty()
+			                                   ? "Default Interact"
+			                                   : action.inputAction.c_str())) {
+				if (ImGui::Selectable("Default Interact",
+				                      action.inputAction.empty()) &&
+				    !action.inputAction.empty()) {
+					action.inputAction.clear();
+					changed = true;
+				}
+				for (const auto &binding : inputBindings) {
+					const auto &name = binding.name;
+					ImGui::PushID(name.c_str());
+					const auto position = ImGui::GetCursorScreenPos();
+					if (ImGui::Selectable("##input",
+					                      name == action.inputAction) &&
+					    name != action.inputAction) {
+						action.inputAction = name;
+						changed = true;
+					}
+					ImGui::GetWindowDrawList()->AddText(
+					    position, ImGui::GetColorU32(ImGuiCol_Text),
+					    name.c_str());
+					ImGui::PopID();
 				}
 				ImGui::EndCombo();
 			}
@@ -384,6 +414,10 @@ void TriggerActionsInspector::DrawReadOnly(const ImGuiSystem &ui,
 		    EventLabel(action.event), TargetLabel(scene, action.target),
 		    OperationLabel(action.operation), action.once ? "Yes" : "No"));
 		ui.Text(std::format("Contact: {}", ContactLabel(action.contact)));
+		if (action.event == TriggerAction::Event::INTERACT)
+			ui.Text("Input: " + (action.inputAction.empty()
+			                         ? "Default Interact"
+			                         : action.inputAction));
 		if (!action.contactTag.empty())
 			ui.Text(std::format("Contact Tag: {}", action.contactTag));
 		if (action.operation == TriggerAction::Operation::LOAD_SCENE)

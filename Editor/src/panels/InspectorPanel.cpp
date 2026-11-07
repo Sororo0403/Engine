@@ -178,7 +178,8 @@ bool InspectorPanel::Draw(
     EditorHistory &history, bool canPasteTransform, ModelManager *models,
     const AssetDatabase *assets, bool canPasteCollider, bool canPasteCameraLens,
     bool canPasteCharacter, bool canPasteFollow, bool canPasteRespawn,
-    std::span<const SceneObjectId> uvTargets, bool canPasteUv) {
+    std::span<const SceneObjectId> uvTargets, bool canPasteUv,
+    std::span<const GameActionBinding> inputBindings) {
 	objectRequest_ = {};
 	prefabRequest_ = {};
 	scriptInspector_.ResetRequest();
@@ -692,7 +693,8 @@ bool InspectorPanel::Draw(
 	changed |= TriggerActionsInspector{}.Draw(
 	    ui, scene, inspectedObjectId, *object, history,
 	    assets ? std::span<const std::filesystem::path>(assets->GetScenes())
-	           : std::span<const std::filesystem::path>{});
+	           : std::span<const std::filesystem::path>{},
+	    inputBindings);
 
 	CameraInspector::Request cameraRequest;
 	changed |= CameraInspector{}.Draw(ui, inspectedObjectId, *object, history,

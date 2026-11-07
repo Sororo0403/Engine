@@ -529,8 +529,12 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 			return false;
 		}
 		std::string error;
-		if (!working.ApplyTriggerActions(error, nullptr,
-		                                 controls.interactPressed)) {
+		const auto triggerInputs =
+		    working.ui_.ConsumesNavigation() || working.ui_.ConsumesPointer()
+		        ? std::span<const GameActionState>{}
+		        : actions;
+		if (!working.ApplyTriggerActions(
+		        error, nullptr, controls.interactPressed, triggerInputs)) {
 			lastUpdateError_ = std::move(error);
 			return false;
 		}

@@ -505,15 +505,15 @@ bool EditorScene::Update(float deltaTime) {
 	// ギズモ操作とInspectorの編集を、同じ履歴として混在させない
 	ui_.BeginDisabled(gizmo_.IsUsing() || gizmoEditActive_ ||
 	                  sceneViewPanel_.IsSelecting());
-	inspectorPanel_.Draw(ui_, scene, selection_.GetActiveId(), history,
-	                     clipboard_.GetTransform() != nullptr, &models_,
-	                     &assets_, clipboard_.GetCollider() != nullptr,
-	                     clipboard_.GetCameraLens() != nullptr,
-	                     clipboard_.GetCharacterSettings() != nullptr,
-	                     clipboard_.GetFollowSettings() != nullptr,
-	                     clipboard_.GetRespawnSettings() != nullptr,
-	                     selection_.GetIds(),
-	                     clipboard_.GetTextureUVs() != nullptr);
+	inspectorPanel_.Draw(
+	    ui_, scene, selection_.GetActiveId(), history,
+	    clipboard_.GetTransform() != nullptr, &models_, &assets_,
+	    clipboard_.GetCollider() != nullptr,
+	    clipboard_.GetCameraLens() != nullptr,
+	    clipboard_.GetCharacterSettings() != nullptr,
+	    clipboard_.GetFollowSettings() != nullptr,
+	    clipboard_.GetRespawnSettings() != nullptr, selection_.GetIds(),
+	    clipboard_.GetTextureUVs() != nullptr, exportConfig_.actions);
 	const auto prefabRequest = inspectorPanel_.GetPrefabRequest();
 	const bool hasPrefabRequest =
 	    prefabRequest.action != PrefabInspector::Action::NONE;
