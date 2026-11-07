@@ -4,6 +4,39 @@
 #include "input/Mouse.h"
 #include <algorithm>
 
+namespace {
+/// <summary>
+/// 選んだトリガーやスティック方向の強さを取得する
+/// </summary>
+float AxisValue(GameActionBinding::GamepadAxis axis,
+                const GamepadState &state) {
+	using Axis = GameActionBinding::GamepadAxis;
+	switch (axis) {
+	case Axis::LEFT_TRIGGER:
+		return state.leftTrigger;
+	case Axis::RIGHT_TRIGGER:
+		return state.rightTrigger;
+	case Axis::LEFT_UP:
+		return state.leftStick.y;
+	case Axis::LEFT_DOWN:
+		return -state.leftStick.y;
+	case Axis::LEFT_LEFT:
+		return -state.leftStick.x;
+	case Axis::LEFT_RIGHT:
+		return state.leftStick.x;
+	case Axis::RIGHT_UP:
+		return state.rightStick.y;
+	case Axis::RIGHT_DOWN:
+		return -state.rightStick.y;
+	case Axis::RIGHT_LEFT:
+		return -state.rightStick.x;
+	case Axis::RIGHT_RIGHT:
+		return state.rightStick.x;
+	}
+	return 0;
+}
+} // namespace
+
 std::span<const GameActionState>
 GameActionReader::Read(std::span<const GameActionBinding> bindings,
                        const Keyboard &keyboard, const Mouse *mouse,
@@ -28,14 +61,25 @@ GameActionReader::Read(std::span<const GameActionBinding> bindings,
 			h.down = false;
 			states_.push_back({binding.name});
 		} else {
-			const std::array<bool, 3> allowed{
+			const bool padConnected = gamepad && gamepad->IsConnected();
+			const std::array<bool, 4> allowed{
 			    true, pointerEnabled && mouse && mouse->IsConnected(),
-			    gamepad && gamepad->IsConnected()};
-			const std::array<bool, 3> raw{
+			    padConnected, padConnected};
+			// 押下と解放で閾値を分け、復帰時も解放側の閾値まで戻るのを待つ。
+			constexpr float pressThreshold = .6f;
+			constexpr float releaseThreshold = .4f;
+			const auto strength =
+			    binding.gamepadAxis && padConnected
+			        ? AxisValue(*binding.gamepadAxis, gamepad->GetState())
+			        : 0.f;
+			const bool axisDown = h.held.back() || h.blocked.back()
+			                          ? strength > releaseThreshold
+			                          : strength >= pressThreshold;
+			const std::array<bool, 4> raw{
 			    binding.keyboard && keyboard.IsDown(*binding.keyboard),
 			    binding.mouse && mouse && mouse->IsDown(*binding.mouse),
-			    binding.gamepad && gamepad &&
-			        gamepad->IsDown(*binding.gamepad)};
+			    binding.gamepad && gamepad && gamepad->IsDown(*binding.gamepad),
+			    axisDown};
 			bool down = false;
 			bool cancelled = false;
 			for (std::size_t i = 0; i < raw.size(); ++i) {

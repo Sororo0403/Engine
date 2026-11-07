@@ -2127,7 +2127,9 @@ void ControlsPanel::Draw() {
 	        {"Named Input Actions",
 	         "Game Settings > Named Input Actions assigns up to 32 unique "
 	         "names to "
-	         "keyboard, mouse and gamepad buttons. None leaves a device "
+	         "keyboard, mouse, gamepad buttons, triggers and stick directions. "
+	         "An axis counts as pressed at 60% and releases at 40%, after the "
+	         "stick dead zone is applied. None leaves a binding "
 	         "unassigned; "
 	         "an entirely unassigned action stays neutral. Apply affects the "
 	         "next Play; "

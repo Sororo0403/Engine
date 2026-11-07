@@ -274,8 +274,17 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 					if (!settings.at("lighting").contains("shadows"))
 						configuration["version"] = 7;
 				}
-				if (settings.contains("actions"))
-					configuration["actions"] = settings.at("actions");
+				if (settings.contains("actions")) {
+					auto &actions = configuration["actions"];
+					actions = settings.at("actions");
+					// 旧Editor設定の操作にはゲームパッド軸の欄がない。
+					if (actions.is_array()) {
+						for (auto &action : actions)
+							if (action.is_object() &&
+							    !action.contains("gamepadAxis"))
+								action["gamepadAxis"] = nullptr;
+					}
+				}
 				if (!loaded.gameExport.Deserialize(configuration.dump(),
 				                                   error)) {
 					throw std::runtime_error(error);

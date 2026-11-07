@@ -76,7 +76,8 @@ bool GameConfig::Serialize(std::string &text, std::string &error) const {
 			nlohmann::json entry{{"name", action.name},
 			                     {"keyboard", nullptr},
 			                     {"mouse", nullptr},
-			                     {"gamepad", nullptr}};
+			                     {"gamepad", nullptr},
+			                     {"gamepadAxis", nullptr}};
 			if (action.keyboard)
 				entry["keyboard"] =
 				    GameInputBindings::GetName(*action.keyboard);
@@ -90,6 +91,11 @@ bool GameConfig::Serialize(std::string &text, std::string &error) const {
 				    GameActionBinding::kGamepadOptions[static_cast<std::size_t>(
 				                                           *action.gamepad)]
 				        .name;
+			if (action.gamepadAxis)
+				entry["gamepadAxis"] =
+				    GameActionBinding::kGamepadAxisOptions
+				        [static_cast<std::size_t>(*action.gamepadAxis)]
+				            .name;
 			actionsJson.push_back(std::move(entry));
 		}
 		const nlohmann::json data = {
@@ -285,12 +291,17 @@ bool GameConfig::Deserialize(std::string_view text, std::string &error) {
 							return;
 						}
 					}
-					throw std::runtime_error("Unsupported action button.");
+					throw std::runtime_error(
+					    "Unsupported action button or axis.");
 				};
 				readButton(entry.at("mouse"), GameActionBinding::kMouseOptions,
 				           action.mouse);
 				readButton(entry.at("gamepad"),
 				           GameActionBinding::kGamepadOptions, action.gamepad);
+				if (data.at("version") >= 9)
+					readButton(entry.at("gamepadAxis"),
+					           GameActionBinding::kGamepadAxisOptions,
+					           action.gamepadAxis);
 				candidate.actions.push_back(std::move(action));
 			}
 		}

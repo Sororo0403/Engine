@@ -173,6 +173,8 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 			buttons("Mouse", action.mouse, GameActionBinding::kMouseOptions);
 			buttons("Gamepad", action.gamepad,
 			        GameActionBinding::kGamepadOptions);
+			buttons("Gamepad Axis", action.gamepadAxis,
+			        GameActionBinding::kGamepadAxisOptions);
 			const bool remove = ui.Button("Remove Action");
 			ImGui::Separator();
 			ImGui::PopID();

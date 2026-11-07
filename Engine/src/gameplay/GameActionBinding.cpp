@@ -17,7 +17,9 @@ bool GameActionBinding::IsValid(std::span<const GameActionBinding> bindings) {
 		    (b.mouse &&
 		     static_cast<std::size_t>(*b.mouse) >= kMouseOptions.size()) ||
 		    (b.gamepad &&
-		     static_cast<std::size_t>(*b.gamepad) >= kGamepadOptions.size()))
+		     static_cast<std::size_t>(*b.gamepad) >= kGamepadOptions.size()) ||
+		    (b.gamepadAxis && static_cast<std::size_t>(*b.gamepadAxis) >=
+		                          kGamepadAxisOptions.size()))
 			return false;
 		for (std::size_t j = 0; j < i; ++j) {
 			if (b.name == bindings[j].name)

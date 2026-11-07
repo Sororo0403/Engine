@@ -36,8 +36,8 @@ class GameActionReader {
   private:
 	struct History {
 		GameActionBinding binding;
-		std::array<bool, 3> blocked{true, true, true};
-		std::array<bool, 3> held{};
+		std::array<bool, 4> blocked{true, true, true, true};
+		std::array<bool, 4> held{};
 		bool down = false;
 	};
 

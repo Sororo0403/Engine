@@ -8,7 +8,7 @@
 #include <string>
 
 /// <summary>
-/// 名前付き操作に割り当てるキーとボタン。複数の機器は論理和で一つの操作として扱う
+/// 名前付き操作に割り当てるキー・ボタン・ゲームパッド軸。各入力は論理和で一つの操作として扱う
 /// </summary>
 struct GameActionBinding {
 	static constexpr std::size_t kMaximumCount = 32;
@@ -17,6 +17,20 @@ struct GameActionBinding {
 	std::optional<Key> keyboard;
 	std::optional<MouseButton> mouse;
 	std::optional<GamepadButton> gamepad;
+
+	enum class GamepadAxis {
+		LEFT_TRIGGER,
+		RIGHT_TRIGGER,
+		LEFT_UP,
+		LEFT_DOWN,
+		LEFT_LEFT,
+		LEFT_RIGHT,
+		RIGHT_UP,
+		RIGHT_DOWN,
+		RIGHT_LEFT,
+		RIGHT_RIGHT
+	};
+	std::optional<GamepadAxis> gamepadAxis;
 
 	template <class T> struct Option {
 		T button;
@@ -44,6 +58,18 @@ struct GameActionBinding {
 	     {GamepadButton::RIGHT_STICK, "RightStick"},
 	     {GamepadButton::MENU, "Menu"},
 	     {GamepadButton::VIEW, "View"}}};
+
+	static constexpr std::array<Option<GamepadAxis>, 10> kGamepadAxisOptions{
+	    {{GamepadAxis::LEFT_TRIGGER, "LeftTrigger"},
+	     {GamepadAxis::RIGHT_TRIGGER, "RightTrigger"},
+	     {GamepadAxis::LEFT_UP, "LeftStickUp"},
+	     {GamepadAxis::LEFT_DOWN, "LeftStickDown"},
+	     {GamepadAxis::LEFT_LEFT, "LeftStickLeft"},
+	     {GamepadAxis::LEFT_RIGHT, "LeftStickRight"},
+	     {GamepadAxis::RIGHT_UP, "RightStickUp"},
+	     {GamepadAxis::RIGHT_DOWN, "RightStickDown"},
+	     {GamepadAxis::RIGHT_LEFT, "RightStickLeft"},
+	     {GamepadAxis::RIGHT_RIGHT, "RightStickRight"}}};
 
 	/// <summary>
 	/// 操作名が空でなく、64バイト以内のNULを含まないUTF-8か確認する
