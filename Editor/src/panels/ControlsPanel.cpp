@@ -2320,6 +2320,12 @@ void ControlsPanel::Draw() {
 	         "pass nil to use the fixed fallback view. Call the setter inside "
 	         "a callback. Both fixed and Follow Cameras are supported. "
 	         "Restart restores the authored Primary selection."},
+	        {"Lua > Character State",
+	         "In update, input.character describes the active Character "
+	         "Controller after movement and Trigger Actions. It provides "
+	         "object, grounded, ground (Collider object or nil), "
+	         "verticalVelocity and respawnCount. The snapshot is shared "
+	         "for the update and is nil when there is no active character."},
 	        {"Lua > Viewport Input",
 	         "In update, input.viewport gives width and height in pixels. "
 	         "input.pointer gives normalized top-left x/y and left-button "

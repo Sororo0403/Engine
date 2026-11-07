@@ -1,6 +1,7 @@
 #include "scripting/LuaScript.h"
 #include "LuaBindings.h"
 #include "LuaStateData.h"
+#include "gameplay/CharacterRuntimeState.h"
 #include "platform/windows/PathUtils.h"
 #include "platform/windows/StringConversion.h"
 #include "scene/Scene.h"
@@ -177,7 +178,7 @@ int Invoke(lua_State *state) {
 	int arguments = 2;
 	if (std::strcmp(call.callback, "update") == 0) {
 		lua_pushnumber(state, call.seconds);
-		lua_createtable(state, 0, 7);
+		lua_createtable(state, 0, 8);
 		lua_pushnumber(state, call.input->moveX);
 		lua_setfield(state, -2, "moveX");
 		lua_pushnumber(state, call.input->moveZ);
@@ -206,6 +207,22 @@ int Invoke(lua_State *state) {
 				lua_setfield(state, -2, "pressed");
 				lua_setfield(state, -2, "pointer");
 			}
+		}
+
+		if (const auto *character = call.character) {
+			lua_createtable(state, 0, 5);
+			LuaInternal::PushObject(state, character->objectId);
+			lua_setfield(state, -2, "object");
+			LuaInternal::PushObject(state, character->groundObjectId);
+			lua_setfield(state, -2, "ground");
+			lua_pushboolean(state, character->grounded);
+			lua_setfield(state, -2, "grounded");
+			lua_pushnumber(state, character->verticalVelocity);
+			lua_setfield(state, -2, "verticalVelocity");
+			lua_pushnumber(state,
+			               static_cast<lua_Number>(character->respawnCount));
+			lua_setfield(state, -2, "respawnCount");
+			lua_setfield(state, -2, "character");
 		}
 
 		lua_createtable(state, 0, static_cast<int>(call.actions.size()));
@@ -409,7 +426,7 @@ bool LuaScript::Invoke(
     SceneAnimations *animations, int *remainingAnimationOperations,
     SceneParticles *particles, int *remainingParticleOperations,
     SceneAnimators *animators, int *remainingAnimatorOperations,
-    const UIInput *viewport) {
+    const UIInput *viewport, const CharacterRuntimeState *character) {
 	try {
 		const char *name = Callback(callback);
 		if (!program || !name || !scene.Contains(self) ||
@@ -471,6 +488,7 @@ bool LuaScript::Invoke(
 		call.input = &input;
 		call.actions = actions;
 		call.viewport = viewport;
+		call.character = character;
 		call.animations = animations;
 		call.particles = particles;
 		call.animators = animators;

@@ -20,15 +20,17 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 	auto audio = audioActions_;
 	auto requestedScene = pendingScene_;
 	auto game = sharedScriptData_;
-	if (!scripts.Run(candidate, seconds, input, frameEvents_, startOnly, error,
-	                 invalidObject,
-	                 startOnly ? std::span<const SceneObjectId>{}
-	                           : ui_.GetClicks(),
-	                 &physics,
-	                 startOnly ? std::span<const CollisionEvent>{}
-	                           : collisions_.GetEvents(),
-	                 &audio, &requestedScene, &game, actions, &animations,
-	                 &particles, &animators, viewport))
+	// すべてのupdateに、物理・Trigger処理後でLua変更前の同じ主人公状態を渡す。
+	const auto character = startOnly ? std::nullopt : GetCharacterState();
+	if (!scripts.Run(
+	        candidate, seconds, input, frameEvents_, startOnly, error,
+	        invalidObject,
+	        startOnly ? std::span<const SceneObjectId>{} : ui_.GetClicks(),
+	        &physics,
+	        startOnly ? std::span<const CollisionEvent>{}
+	                  : collisions_.GetEvents(),
+	        &audio, &requestedScene, &game, actions, &animations, &particles,
+	        &animators, viewport, character ? &*character : nullptr))
 		return false;
 	std::string serialized;
 	if (!SceneSerializer::Serialize(candidate, serialized)) {

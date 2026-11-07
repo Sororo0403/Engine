@@ -13,6 +13,7 @@
 #include <vector>
 class Scene;
 struct UIInput;
+struct CharacterRuntimeState;
 class ScenePhysics;
 class ScenePrefabs;
 class ScriptMailbox;
@@ -51,7 +52,7 @@ class LuaScript {
 	/// <summary>
 	/// 公開するスクリプトAPIの版。Runtimeの出力互換性を照合する
 	/// </summary>
-	static constexpr int kApiVersion = 27;
+	static constexpr int kApiVersion = 28;
 	static constexpr std::size_t kMaximumSourceBytes = 256 * 1024;
 	static constexpr std::size_t kMaximumBytecodeBytes = 1024 * 1024;
 	static constexpr std::size_t kMaximumStateBytes = 64 * 1024;
@@ -142,6 +143,7 @@ class LuaScript {
 	/// <param name="remainingParticleOperations">指定時はフレーム全体で共有する残り粒子操作回数</param>
 	/// <param name="animators">指定時は同じ候補のモデル内クリップの再生状態</param>
 	/// <param name="viewport">指定時はLuaのupdateへ描画寸法と利用可能なポインターを渡す</param>
+	/// <param name="character">指定時はLuaのupdateへ主人公の更新済み状態を渡す</param>
 	/// <param name="remainingAnimatorOperations">指定時はフレーム全体で共有する残りAnimator操作回数</param>
 	/// <returns>true:成功またはコールバックなし false:コード・API・状態・実行制限が無効</returns>
 	static bool
@@ -170,5 +172,6 @@ class LuaScript {
 	       int *remainingParticleOperations = nullptr,
 	       SceneAnimators *animators = nullptr,
 	       int *remainingAnimatorOperations = nullptr,
-	       const UIInput *viewport = nullptr);
+	       const UIInput *viewport = nullptr,
+	       const CharacterRuntimeState *character = nullptr);
 };
