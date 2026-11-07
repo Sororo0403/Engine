@@ -29,6 +29,10 @@ enum class Op {
 	REFERENCE,
 	ACTIVE,
 	SET_ACTIVE,
+	MESH_VISIBLE,
+	SET_MESH_VISIBLE,
+	MESH_TINT,
+	SET_MESH_TINT,
 	POSITION,
 	SET_POSITION,
 	LOCAL_POSITION,
@@ -83,7 +87,8 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 			throw std::runtime_error("A scene is required for object APIs.");
 		const bool mutation =
 		    op == Op::DESTROY || op == Op::SET_NAME || op == Op::SET_ACTIVE ||
-		    op == Op::SET_PARENT || op == Op::SET_POSITION ||
+		    op == Op::SET_PARENT || op == Op::SET_MESH_VISIBLE ||
+		    op == Op::SET_MESH_TINT || op == Op::SET_POSITION ||
 		    op == Op::SET_LOCAL_POSITION || op == Op::SET_ROTATION ||
 		    op == Op::LOOK_AT || op == Op::SET_SCALE || op == Op::LOG;
 		if (mutation && !call.executing)
@@ -200,6 +205,31 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 			break;
 		case Op::SET_ACTIVE:
 			object->active = flag;
+			break;
+		case Op::MESH_VISIBLE:
+		case Op::SET_MESH_VISIBLE:
+		case Op::MESH_TINT:
+		case Op::SET_MESH_TINT:
+			if (!object->meshRenderer)
+				throw std::runtime_error(
+				    "This object requires a Mesh Renderer.");
+			if (op == Op::MESH_VISIBLE)
+				result.boolean = object->meshRenderer->visible;
+			else if (op == Op::SET_MESH_VISIBLE)
+				object->meshRenderer->visible = flag;
+			else if (op == Op::SET_MESH_TINT) {
+				const ColorTint tint{{numbers[0], numbers[1], numbers[2]}};
+				if (!tint.IsValid())
+					throw std::runtime_error(
+					    "Mesh tint RGB must be within 0 to 1.");
+				object->colorTint = tint;
+			} else {
+				const auto color =
+				    object->colorTint.value_or(ColorTint{}).color;
+				result.numbers[0] = color.x;
+				result.numbers[1] = color.y;
+				result.numbers[2] = color.z;
+			}
 			break;
 		case Op::POSITION: {
 			SceneWorldTransform world;
@@ -327,8 +357,9 @@ int Dispatch(lua_State *state) {
 		    luaL_checkudata(state, 1, kObjectType));
 	if (op == Op::NAME || op == Op::TAG || op == Op::POSITION ||
 	    op == Op::LOCAL_POSITION || op == Op::ROTATION || op == Op::SCALE ||
-	    op == Op::ACTIVE || op == Op::PARENT || op == Op::ID ||
-	    op == Op::VALID || op == Op::DESTROY) {
+	    op == Op::ACTIVE || op == Op::MESH_VISIBLE || op == Op::MESH_TINT ||
+	    op == Op::PARENT || op == Op::ID || op == Op::VALID ||
+	    op == Op::DESTROY) {
 		// 引数はselfだけ。値はPerformで取得する。
 	} else if (op == Op::SET_NAME || op == Op::REFERENCE ||
 	           op == Op::FIND_CHILD || op == Op::FIND || op == Op::FIND_ID ||
@@ -348,7 +379,7 @@ int Dispatch(lua_State *state) {
 			luaL_checktype(state, 3, LUA_TBOOLEAN);
 			flag = lua_toboolean(state, 3) != 0;
 		}
-	} else if (op == Op::SET_ACTIVE) {
+	} else if (op == Op::SET_ACTIVE || op == Op::SET_MESH_VISIBLE) {
 		luaL_checktype(state, 2, LUA_TBOOLEAN);
 		flag = lua_toboolean(state, 2) != 0;
 	} else {
@@ -382,11 +413,13 @@ int Dispatch(lua_State *state) {
 		LuaInternal::PushObject(state, result.id);
 		return 1;
 	case Op::ACTIVE:
+	case Op::MESH_VISIBLE:
 	case Op::VALID:
 	case Op::DESTROY:
 		lua_pushboolean(state, result.boolean);
 		return 1;
 	case Op::POSITION:
+	case Op::MESH_TINT:
 	case Op::LOCAL_TO_WORLD:
 	case Op::WORLD_TO_LOCAL:
 	case Op::LOCAL_VECTOR_TO_WORLD:
@@ -616,6 +649,10 @@ int LuaInternal::OpenEnvironment(lua_State *state, Call &call) {
 	Method(state, "reference", Op::REFERENCE);
 	Method(state, "is_active", Op::ACTIVE);
 	Method(state, "set_active", Op::SET_ACTIVE);
+	Method(state, "get_mesh_visible", Op::MESH_VISIBLE);
+	Method(state, "set_mesh_visible", Op::SET_MESH_VISIBLE);
+	Method(state, "get_mesh_tint", Op::MESH_TINT);
+	Method(state, "set_mesh_tint", Op::SET_MESH_TINT);
 	Method(state, "get_position", Op::POSITION);
 	Method(state, "set_position", Op::SET_POSITION);
 	Method(state, "get_local_position", Op::LOCAL_POSITION);

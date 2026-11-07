@@ -2314,6 +2314,13 @@ void ControlsPanel::Draw() {
 	         "and share the physics API call budget. Use hit.object references "
 	         "to interact with the target or apply impulses. Only assigned "
 	         "Colliders participate; model triangles are not queried."},
+	        {"Lua > Mesh Appearance",
+	         "For an object with Mesh Renderer, set_mesh_visible(boolean) "
+	         "changes its mesh visibility while gameplay components continue "
+	         "running. get_mesh_visible() reads the renderer setting. "
+	         "set_mesh_tint(r,g,b) multiplies the mesh color with values from "
+	         "0 to 1. get_mesh_tint() returns RGB (white by default). Make "
+	         "changes in callbacks. Restart restores the authored settings."},
 	        {"Lua > Set Parent",
 	         "object:set_parent(parent [,keepWorld]) changes its parent during "
 	         "a callback. Pass nil to move it to the scene root. By default "
