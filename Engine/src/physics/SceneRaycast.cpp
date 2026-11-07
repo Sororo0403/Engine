@@ -2,6 +2,7 @@
 #include "math/MathUtils.h"
 #include "math/TransformUtils.h"
 #include "physics/ColliderUtils.h"
+#include "physics/WorldCollider.h"
 #include "scene/Scene.h"
 #include "scene/SceneActivity.h"
 #include "scene/SceneHierarchy.h"
@@ -162,23 +163,32 @@ bool Intersect(const Collider &shape, const Vector &origin,
 	           : IntersectRound(shape, origin, direction, maximum, distance,
 	                            normal);
 }
+
+/// <summary>
+/// 距離の範囲を検証し、有限な方向を倍精度で単位化する
+/// </summary>
+bool Normalize(const Ray &ray, Vector &direction) {
+	if (!MathUtils::IsFinite(ray.origin) ||
+	    !MathUtils::IsFinite(ray.direction) ||
+	    !std::isfinite(ray.maxDistance) || ray.maxDistance < 0 ||
+	    ray.maxDistance > SceneRaycast::kMaximumDistance)
+		return false;
+	direction = Value(ray.direction);
+	const double length = std::hypot(direction[0], direction[1], direction[2]);
+	if (length == 0)
+		return false;
+	for (auto &component : direction)
+		component /= length;
+	return true;
+}
 } // namespace
 
 bool SceneRaycast::Cast(const Scene &scene, const Ray &ray, RaycastHit &hit,
                         const RaycastOptions &options) {
 	try {
-		if (!MathUtils::IsFinite(ray.origin) ||
-		    !MathUtils::IsFinite(ray.direction) ||
-		    !std::isfinite(ray.maxDistance) || ray.maxDistance < 0 ||
-		    ray.maxDistance > kMaximumDistance)
+		Vector direction;
+		if (!Normalize(ray, direction))
 			return false;
-		auto direction = Value(ray.direction);
-		const double length =
-		    std::hypot(direction[0], direction[1], direction[2]);
-		if (length == 0)
-			return false;
-		for (auto &component : direction)
-			component /= length;
 		SceneHierarchy::WorldTransforms transforms;
 		SceneActivity::States active;
 		if (!SceneHierarchy::BuildWorldTransforms(scene, transforms) ||
@@ -245,6 +255,92 @@ bool SceneRaycast::Cast(const Scene &scene, const Ray &ray, RaycastHit &hit,
 			if (!MathUtils::IsFinite(next.position))
 				return false;
 			closest = distance;
+		}
+		hit = next;
+		return true;
+	} catch (...) {
+		return false;
+	}
+}
+
+bool SceneRaycast::CastSphere(const Scene &scene, const Ray &ray, float radius,
+                              RaycastHit &hit, const RaycastOptions &options) {
+	try {
+		Vector direction;
+		if (!Normalize(ray, direction))
+			return false;
+		Collider sphere;
+		sphere.shape = Collider::Shape::SPHERE;
+		sphere.radius = radius;
+		DirectX::XMFLOAT4X4 matrix;
+		DirectX::XMStoreFloat4x4(
+		    &matrix, DirectX::XMMatrixTranslation(ray.origin.x, ray.origin.y,
+		                                          ray.origin.z));
+		WorldCollider query;
+		std::string error;
+		if (!WorldCollider::Create(sphere, matrix, query, error))
+			return false;
+		SceneHierarchy::WorldTransforms transforms;
+		SceneActivity::States active;
+		if (!SceneHierarchy::BuildWorldTransforms(scene, transforms) ||
+		    !SceneActivity::BuildStates(scene, active))
+			return false;
+		const auto origin = Value(ray.origin);
+		const DirectX::XMFLOAT3 delta{float(direction[0] * ray.maxDistance),
+		                              float(direction[1] * ray.maxDistance),
+		                              float(direction[2] * ray.maxDistance)};
+		const auto displacement = Value(delta);
+		const DirectX::XMFLOAT3 backward{
+		    float(-direction[0]), float(-direction[1]), float(-direction[2])};
+		RaycastHit next;
+		double closest = 1;
+		for (const auto &[id, object] : scene.GetObjects()) {
+			if (!object.collider || !active.at(id) ||
+			    std::ranges::find(options.ignored, id) !=
+			        options.ignored.end() ||
+			    (!options.includeTriggers && object.collider->isTrigger))
+				continue;
+			const auto &collider = *object.collider;
+			AxisAlignedBox bounds;
+			const auto &pose = transforms.at(id).matrix;
+			if (!ColliderUtils::GetWorldBounds(collider, pose, bounds))
+				return false;
+			if (!(options.layerMask &
+			      (std::uint32_t{1} << collider.filter.layer)))
+				continue;
+			const auto lower = Value(bounds.minimum),
+			           upper = Value(bounds.maximum);
+			bool near = true;
+			for (int axis = 0; axis < 3; ++axis) {
+				const double from = origin[axis],
+				             to = from + displacement[axis];
+				const double padding = radius + .00001;
+				near &= (std::min)(from, to) - padding <= upper[axis] &&
+				        (std::max)(from, to) + padding >= lower[axis];
+			}
+			if (!near)
+				continue;
+			WorldCollider target;
+			bool overlapping = false;
+			if (!WorldCollider::Create(collider, pose, target, error) ||
+			    !query.Overlaps(target, -.000001f, overlapping))
+				return false;
+			std::optional<ColliderCastHit> contact;
+			if (overlapping)
+				contact = ColliderCastHit{0, backward};
+			else if (ray.maxDistance > 0 && !query.Cast(target, delta, contact))
+				return false;
+			if (!contact || contact->fraction > closest ||
+			    (next.objectId && contact->fraction == closest &&
+			     id > next.objectId))
+				continue;
+			closest = contact->fraction;
+			next = {id,
+			        float(closest * ray.maxDistance),
+			        {float(origin[0] + displacement[0] * closest),
+			         float(origin[1] + displacement[1] * closest),
+			         float(origin[2] + displacement[2] * closest)},
+			        contact->normal};
 		}
 		hit = next;
 		return true;

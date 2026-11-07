@@ -18,4 +18,16 @@ static constexpr float kMaximumDistance = 1000000;
 /// <remarks>箱は回転・非一様拡縮・負の拡縮・せん断に対応し、球・カプセルは一様拡縮に対応する。形状の内部からは距離0、始点、レイと反対向きの法線を返す</remarks>
 bool Cast(const Scene &scene, const Ray &ray, RaycastHit &hit,
           const RaycastOptions &options = {});
+/// <summary>
+/// ワールド座標の球をレイの方向へ移動し、最初に接触するColliderを求める
+/// </summary>
+/// <param name="scene">現在のColliderの姿勢を持つシーン</param>
+/// <param name="ray">球の始点・0でない方向・0以上1000000以下の距離</param>
+/// <param name="radius">ワールド単位の球の半径</param>
+/// <param name="hit">成功時だけ設定する結果。positionは接触時の球の中心。同距離は小さいIDを優先する</param>
+/// <param name="options">対象レイヤー・Trigger・除外ID</param>
+/// <returns>true:問い合わせ成功。命中なしはobjectIdが0 false:入力・形状・親子関係が無効</returns>
+/// <remarks>開始時に重なる場合は、距離0と移動方向の逆向きの法線を返す</remarks>
+bool CastSphere(const Scene &scene, const Ray &ray, float radius,
+                RaycastHit &hit, const RaycastOptions &options = {});
 } // namespace SceneRaycast

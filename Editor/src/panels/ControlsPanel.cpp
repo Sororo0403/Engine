@@ -2270,6 +2270,15 @@ void ControlsPanel::Draw() {
 	         "and share the physics API call budget. Use hit.object references "
 	         "to interact with the target or apply impulses. Only assigned "
 	         "Colliders participate; model triangles are not queried."},
+	        {"Sphere Cast Scripts",
+	         "scene.cast_sphere(ox,oy,oz, dx,dy,dz, distance, radius "
+	         "[,layerMask [,includeTriggers [,ignoredObject]]]) sweeps a "
+	         "sphere "
+	         "along a direction and returns the first Collider hit, or nil. "
+	         "Filters and result fields match scene.raycast. The x/y/z fields "
+	         "are the sphere center at impact. An initial overlap returns "
+	         "distance 0 and the opposite direction as normal. Use it for "
+	         "projectiles or movement probes that need a radius."},
 	        {"Sphere Overlap Scripts",
 	         "scene.overlap_sphere(x,y,z,radius [,layerMask "
 	         "[,includeTriggers [,ignoredObject]]]) returns a list of active "

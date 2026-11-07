@@ -37,7 +37,8 @@ void CheckQuery(LuaInternal::Call &call, SceneObjectId ignored) {
 /// <summary>
 /// Lua APIを呼ばずに候補シーンを検索し、C++の所有値をこのフレームで破棄する
 /// </summary>
-bool Perform(LuaInternal::Call &call, const Ray &ray, const QueryOptions &query,
+bool Perform(LuaInternal::Call &call, const Ray &ray,
+             const std::optional<float> &radius, const QueryOptions &query,
              RaycastHit &hit) noexcept {
 	try {
 		CheckQuery(call, query.ignored);
@@ -45,10 +46,16 @@ bool Perform(LuaInternal::Call &call, const Ray &ray, const QueryOptions &query,
 		options.layerMask = query.layerMask;
 		options.includeTriggers = query.includeTriggers;
 		options.ignored = {&query.ignored, 1};
-		if (!SceneRaycast::Cast(*call.scene, ray, hit, options))
+		const bool ok =
+		    radius ? SceneRaycast::CastSphere(*call.scene, ray, *radius, hit,
+		                                      options)
+		           : SceneRaycast::Cast(*call.scene, ray, hit, options);
+		if (!ok)
 			throw std::runtime_error(
-			    "Raycast requires valid collider transforms, a finite nonzero "
-			    "direction and a distance from 0 to 1000000.");
+			    radius ? "Sphere cast requires a valid center, radius, "
+			             "direction, distance and collider transforms."
+			           : "Raycast requires valid collider transforms, a finite "
+			             "nonzero direction and a distance from 0 to 1000000.");
 		return true;
 	} catch (const std::exception &e) {
 		call.error.assign(e.what(),
@@ -104,16 +111,17 @@ QueryOptions ReadOptions(lua_State *state, int first, SceneObjectId self) {
 /// <summary>
 /// 所有値のないCフレームで引数を検証し、交点のテーブルまたはnilを返す
 /// </summary>
-int Cast(lua_State *state) {
+template <bool sphere> int Cast(lua_State *state) {
 	auto &call = **static_cast<LuaInternal::Call **>(lua_getextraspace(state));
-	float values[7]{};
+	float values[sphere ? 8 : 7]{};
 	ReadNumbers(state, values);
-	const auto query = ReadOptions(state, 8, call.self);
+	const auto query = ReadOptions(state, sphere ? 9 : 8, call.self);
 	const Ray ray{{values[0], values[1], values[2]},
 	              {values[3], values[4], values[5]},
 	              values[6]};
+	const auto radius = sphere ? std::optional<float>{values[7]} : std::nullopt;
 	RaycastHit hit;
-	if (!Perform(call, ray, query, hit)) {
+	if (!Perform(call, ray, radius, query, hit)) {
 		lua_pushlstring(state, call.error.data(), call.error.size());
 		return lua_error(state);
 	}
@@ -195,8 +203,10 @@ int OverlapSphere(lua_State *state) {
 } // namespace
 
 void LuaInternal::AddSpatialQueryMethods(lua_State *state) {
-	lua_pushcfunction(state, Cast);
+	lua_pushcfunction(state, Cast<false>);
 	lua_setfield(state, -2, "raycast");
+	lua_pushcfunction(state, Cast<true>);
+	lua_setfield(state, -2, "cast_sphere");
 	lua_pushcfunction(state, OverlapSphere);
 	lua_setfield(state, -2, "overlap_sphere");
 }
