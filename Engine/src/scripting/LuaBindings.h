@@ -14,6 +14,7 @@ extern "C" {
 #include <lualib.h>
 }
 class Scene;
+struct UIInput;
 class ScenePhysics;
 class ScenePrefabs;
 class ScriptMailbox;
@@ -54,6 +55,7 @@ struct Call {
 	int *remainingPhysicsOperations = nullptr;
 	SceneObjectId self = 0, other = 0;
 	const CharacterInput *input = nullptr;
+	const UIInput *viewport = nullptr;
 	std::span<const GameActionState> actions;
 	SceneAnimations *animations = nullptr;
 	int animationOperations = 0;

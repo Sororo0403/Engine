@@ -2320,6 +2320,13 @@ void ControlsPanel::Draw() {
 	         "pass nil to use the fixed fallback view. Call the setter inside "
 	         "a callback. Both fixed and Follow Cameras are supported. "
 	         "Restart restores the authored Primary selection."},
+	        {"Lua > Viewport Input",
+	         "In update, input.viewport gives width and height in pixels. "
+	         "input.pointer gives normalized top-left x/y and left-button "
+	         "down/pressed when the pointer is available. It is nil outside "
+	         "the game image, while gameplay input is blocked, or when game "
+	         "UI consumes the pointer. Combine it with camera:viewport_ray "
+	         "for picking."},
 	        {"Lua > Viewport Ray",
 	         "camera:viewport_ray(u,v,width,height) returns origin x/y/z, "
 	         "unit direction x/y/z, and distance to the far clip plane. "

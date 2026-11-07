@@ -447,11 +447,13 @@ class SceneSimulation {
 	/// <param name="error">失敗理由</param>
 	/// <param name="invalidObject">問題の物体ID</param>
 	/// <param name="actions">今回の名前付き入力。更新時だけLuaのinput.actionsへ渡す</param>
+	/// <param name="viewport">ゲーム内UIの消費を反映した描画寸法とポインター状態</param>
 	/// <returns>true:成功 false:スクリプトまたは変更後の配置が無効</returns>
 	bool ApplyScripts(float seconds, const CharacterInput &input,
 	                  bool startOnly, std::string &error,
 	                  SceneObjectId *invalidObject,
-	                  std::span<const GameActionState> actions = {});
+	                  std::span<const GameActionState> actions = {},
+	                  const UIInput *viewport = nullptr);
 
 	/// <summary>
 	/// 物体変更後の最終状態を検証し、瞬間的に動かした枝の速度・追従・接触を同期する

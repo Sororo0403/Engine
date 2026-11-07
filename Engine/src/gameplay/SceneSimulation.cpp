@@ -541,8 +541,11 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 				action.down = action.pressed = action.released = false;
 			}
 		}
+		auto scriptViewport = uiInput;
+		// UIがポインターを使用した更新では、同じクリックを3D操作へ渡さない。
+		scriptViewport.pointerValid &= !working.ui_.ConsumesPointer();
 		if (!working.ApplyScripts(seconds, controls, false, error, nullptr,
-		                          scriptActions)) {
+		                          scriptActions, &scriptViewport)) {
 			lastUpdateError_ = std::move(error);
 			return false;
 		}

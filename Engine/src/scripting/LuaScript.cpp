@@ -5,6 +5,7 @@
 #include "platform/windows/StringConversion.h"
 #include "scene/Scene.h"
 #include "scripting/ScriptMessage.h"
+#include "ui/UIInput.h"
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
@@ -176,7 +177,7 @@ int Invoke(lua_State *state) {
 	int arguments = 2;
 	if (std::strcmp(call.callback, "update") == 0) {
 		lua_pushnumber(state, call.seconds);
-		lua_createtable(state, 0, 5);
+		lua_createtable(state, 0, 7);
 		lua_pushnumber(state, call.input->moveX);
 		lua_setfield(state, -2, "moveX");
 		lua_pushnumber(state, call.input->moveZ);
@@ -185,6 +186,27 @@ int Invoke(lua_State *state) {
 		lua_setfield(state, -2, "jumpPressed");
 		lua_pushboolean(state, call.input->interactPressed);
 		lua_setfield(state, -2, "interactPressed");
+
+		if (const auto *viewport = call.viewport) {
+			lua_createtable(state, 0, 2);
+			lua_pushinteger(state, viewport->width);
+			lua_setfield(state, -2, "width");
+			lua_pushinteger(state, viewport->height);
+			lua_setfield(state, -2, "height");
+			lua_setfield(state, -2, "viewport");
+			if (viewport->enabled && viewport->pointerValid) {
+				lua_createtable(state, 0, 4);
+				lua_pushnumber(state, viewport->pointerX);
+				lua_setfield(state, -2, "x");
+				lua_pushnumber(state, viewport->pointerY);
+				lua_setfield(state, -2, "y");
+				lua_pushboolean(state, viewport->pointerDown);
+				lua_setfield(state, -2, "down");
+				lua_pushboolean(state, viewport->pointerPressed);
+				lua_setfield(state, -2, "pressed");
+				lua_setfield(state, -2, "pointer");
+			}
+		}
 
 		lua_createtable(state, 0, static_cast<int>(call.actions.size()));
 		for (std::size_t i = 0; i < call.actions.size(); ++i) {
@@ -386,13 +408,15 @@ bool LuaScript::Invoke(
     const ScriptMessage *message, std::span<const GameActionState> actions,
     SceneAnimations *animations, int *remainingAnimationOperations,
     SceneParticles *particles, int *remainingParticleOperations,
-    SceneAnimators *animators, int *remainingAnimatorOperations) {
+    SceneAnimators *animators, int *remainingAnimatorOperations,
+    const UIInput *viewport) {
 	try {
 		const char *name = Callback(callback);
 		if (!program || !name || !scene.Contains(self) ||
 		    !std::isfinite(seconds) || seconds < 0 ||
 		    !std::isfinite(input.moveX) || !std::isfinite(input.moveZ) ||
 		    !GameActionState::IsValid(actions) ||
+		    (viewport && !viewport->IsValid()) ||
 		    (other && !scene.Contains(other) && callback != "trigger_exit" &&
 		     callback != "collision_exit" && callback != "message") ||
 		    (remainingInstructions && *remainingInstructions < 0) ||
@@ -446,6 +470,7 @@ bool LuaScript::Invoke(
 		call.other = other;
 		call.input = &input;
 		call.actions = actions;
+		call.viewport = viewport;
 		call.animations = animations;
 		call.particles = particles;
 		call.animators = animators;
