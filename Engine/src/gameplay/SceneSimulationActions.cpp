@@ -70,6 +70,7 @@ void SceneSimulation::CopyFrom(const SceneSimulation &source) {
 	occupiedActions_ = source.occupiedActions_;
 	lastUpdateError_ = source.lastUpdateError_;
 	pendingScene_ = source.pendingScene_;
+	restartSource_ = source.restartSource_;
 	quitRequested_ = source.quitRequested_;
 	sceneRevision_ = source.sceneRevision_;
 }
@@ -113,6 +114,7 @@ void SceneSimulation::Adopt(SceneSimulation &source) {
 	occupiedActions_ = std::move(source.occupiedActions_);
 	lastUpdateError_ = std::move(source.lastUpdateError_);
 	pendingScene_ = std::move(source.pendingScene_);
+	restartSource_ = std::move(source.restartSource_);
 	quitRequested_ = source.quitRequested_;
 	sceneRevision_ = source.sceneRevision_;
 }
@@ -307,6 +309,12 @@ bool SceneSimulation::ApplyTriggerActions(
 					fired.insert(key);
 				continue;
 			}
+			if (action.operation == TriggerAction::Operation::RESTART_SCENE) {
+				requestedScene = {{}, {}, true};
+				if (action.once)
+					fired.insert(key);
+				continue;
+			}
 			if (action.operation == TriggerAction::Operation::LOAD_SCENE) {
 				if (action.scenePath.empty()) {
 					error = "Load Scene requires a destination scene asset.";
@@ -435,6 +443,7 @@ bool SceneSimulation::ApplyTriggerActions(
 			case TriggerAction::Operation::STOP_AUDIO:
 			case TriggerAction::Operation::LOAD_SCENE:
 			case TriggerAction::Operation::QUIT_GAME:
+			case TriggerAction::Operation::RESTART_SCENE:
 			case TriggerAction::Operation::TELEPORT:
 			case TriggerAction::Operation::SET_CHECKPOINT:
 			case TriggerAction::Operation::SET_CAMERA:

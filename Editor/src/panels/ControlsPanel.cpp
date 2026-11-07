@@ -942,6 +942,12 @@ void ControlsPanel::Draw() {
 	         "does "
 	         "not change the authored offsets. Exported games use the same "
 	         "input."},
+	        {"Trigger Actions > Restart Scene",
+	         "Choose Restart Scene to retry the current level, for example "
+	         "from a Button Click action. It resets the scene to the state "
+	         "at entry, including the arrival position, and runs Lua start "
+	         "again. Lua's shared game table stays available. The restart "
+	         "runs on the next simulation step and does not need a target."},
 	        {"Trigger Actions > Quit Game",
 	         "Choose Quit Game as the operation, for example on a menu "
 	         "button with the Button Click event. In the exported game it "

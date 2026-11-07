@@ -121,21 +121,26 @@ bool SceneSimulation::StartScene(const Scene &source, std::string &error,
 			error = "The simulation audio revision limit was reached.";
 			return false;
 		}
-		Scene runtime;
-		auto objects = source.GetObjects();
-		for (auto &[id, object] : objects) {
-			(void)id;
-			object.prefabLink.reset();
+		auto initialScene = restartSource_;
+		if (&source != initialScene.get()) {
+			auto snapshot = std::make_shared<Scene>();
+			auto objects = source.GetObjects();
+			for (auto &[id, object] : objects) {
+				(void)id;
+				object.prefabLink.reset();
+			}
+			snapshot->CopyFrom(source);
+			snapshot->ReplaceObjects(std::move(objects));
+			initialScene = std::move(snapshot);
 		}
-		runtime.CopyFrom(source);
-		runtime.ReplaceObjects(std::move(objects));
 		SceneSimulation working;
+		working.restartSource_ = initialScene;
 		working.preparePrefabResources_ = preparePrefabResources_;
 		working.loadAnimatorModel_ = loadAnimatorModel_;
 		if (preserveSharedData)
 			working.sharedScriptData_ = sharedScriptData_;
-		if (!working.Configure(runtime, error, fallbackPose, invalidObject,
-		                       false)) {
+		if (!working.Configure(*initialScene, error, fallbackPose,
+		                       invalidObject, false)) {
 			return false;
 		}
 		if (!working.ApplyScripts(0, CharacterInput{}, true, error,
@@ -488,6 +493,7 @@ void SceneSimulation::Stop() {
 	sharedScriptData_ = "{}";
 	playing_ = false;
 	pendingScene_ = {};
+	restartSource_.reset();
 	quitRequested_ = false;
 	cameraTransition_.reset();
 	motion_ = SceneMotion{};
@@ -538,23 +544,27 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 			lastUpdateError_.clear();
 			return true;
 		}
-		if (!pendingScene_.path.empty()) {
+		if (pendingScene_.restart || !pendingScene_.path.empty()) {
 			Scene destination;
-			if (!SceneSerializer::Load(destination, pendingScene_.path)) {
-				lastUpdateError_ = "Could not load destination scene: " +
-				                   PathUtils::ToUtf8(pendingScene_.path);
-				return false;
-			}
 			std::string error;
-			if (!PlaceSceneArrival(destination, pendingScene_.arrivalTag,
-			                       error)) {
-				lastUpdateError_ = std::move(error);
-				return false;
+			if (!pendingScene_.restart) {
+				if (!SceneSerializer::Load(destination, pendingScene_.path)) {
+					lastUpdateError_ = "Could not load destination scene: " +
+					                   PathUtils::ToUtf8(pendingScene_.path);
+					return false;
+				}
+				if (!PlaceSceneArrival(destination, pendingScene_.arrivalTag,
+				                       error)) {
+					lastUpdateError_ = std::move(error);
+					return false;
+				}
 			}
+			const auto &source =
+			    pendingScene_.restart ? *restartSource_ : destination;
 			SceneSimulation destinationSimulation;
 			destinationSimulation.CopyFrom(*this);
-			if (!destinationSimulation.StartScene(
-			        destination, error, fallbackPose_, nullptr, true)) {
+			if (!destinationSimulation.StartScene(source, error, fallbackPose_,
+			                                      nullptr, true)) {
 				lastUpdateError_ = std::move(error);
 				return false;
 			}

@@ -23,6 +23,7 @@
 #include <cstddef>
 #include <functional>
 #include <map>
+#include <memory>
 #include <optional>
 #include <set>
 #include <span>
@@ -552,14 +553,17 @@ class SceneSimulation {
 	std::string lastUpdateError_;
 
 	/// <summary>
-	/// 次回更新で読み込むシーンと、任意の到着地点のタグ
+	/// 次回更新で読み込むシーンと任意の到着地点、または現在のシーンのやり直し
 	/// </summary>
 	struct SceneLoadRequest {
 		std::filesystem::path path;
 		std::string arrivalTag;
+		bool restart = false;
 	};
 
 	SceneLoadRequest pendingScene_;
+	// 到着位置を反映済みで、Lua開始処理とシミュレーションを実行する前の状態。
+	std::shared_ptr<const Scene> restartSource_;
 	bool quitRequested_ = false;
 	std::uint64_t sceneRevision_ = 0;
 };

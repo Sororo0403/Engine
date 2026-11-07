@@ -646,6 +646,9 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 					    : action.operation ==
 					            TriggerAction::Operation::QUIT_GAME
 					        ? "quitGame"
+					    : action.operation ==
+					            TriggerAction::Operation::RESTART_SCENE
+					        ? "restartScene"
 					        : "loadScene";
 					actions.push_back(
 					    {{"event",
@@ -1346,6 +1349,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					     !(version >= 23 && operation == "teleport") &&
 					     !(version >= 28 && operation == "loadScene") &&
 					     !(version >= 57 && operation == "quitGame") &&
+					     !(version >= 58 && operation == "restartScene") &&
 					     !(version >= 39 && operation == "setCheckpoint") &&
 					     !(version >= 40 && operation == "setCamera") &&
 					     !(version >= 44 && (operation == "playMotionPath" ||
@@ -1440,6 +1444,8 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					         ? TriggerAction::Operation::SEND_SCRIPT_MESSAGE
 					     : operation == "quitGame"
 					         ? TriggerAction::Operation::QUIT_GAME
+					     : operation == "restartScene"
+					         ? TriggerAction::Operation::RESTART_SCENE
 					         : TriggerAction::Operation::LOAD_SCENE,
 					     value.at("once").get<bool>(),
 					     version >= 23
