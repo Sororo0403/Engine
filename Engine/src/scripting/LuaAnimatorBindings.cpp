@@ -2,6 +2,7 @@
 #include "animation/SceneAnimators.h"
 #include "scene/Scene.h"
 #include "scene/SceneActivity.h"
+#include <iterator>
 #include <stdexcept>
 
 namespace {
@@ -16,7 +17,8 @@ enum class Op {
 	DURATION,
 	SPEED,
 	SET_SPEED,
-	SET_LOOP
+	SET_LOOP,
+	CROSS_FADE
 };
 
 /// <summary>
@@ -79,12 +81,14 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id,
 			call.returnText = state->clip;
 			return true;
 		}
-		if (op == Op::PLAY && !SceneActivity::IsActive(*call.scene, id)) {
+		if ((op == Op::PLAY || op == Op::CROSS_FADE) &&
+		    !SceneActivity::IsActive(*call.scene, id)) {
 			value = 0;
 			return true;
 		}
 		const auto operation =
-		    op == Op::PLAY        ? SceneAnimators::Operation::PLAY
+		    op == Op::CROSS_FADE  ? SceneAnimators::Operation::CROSS_FADE
+		    : op == Op::PLAY      ? SceneAnimators::Operation::PLAY
 		    : op == Op::PAUSE     ? SceneAnimators::Operation::PAUSE
 		    : op == Op::STOP      ? SceneAnimators::Operation::STOP
 		    : op == Op::SEEK      ? SceneAnimators::Operation::SEEK
@@ -128,6 +132,12 @@ int Dispatch(lua_State *state) {
 			flag = lua_toboolean(state, 3) != 0;
 		}
 	}
+	if (op == Op::CROSS_FADE) {
+		luaL_checktype(state, 2, LUA_TSTRING);
+		clip = luaL_checklstring(state, 2, &length);
+		luaL_checktype(state, 3, LUA_TNUMBER);
+		number = lua_tonumber(state, 3);
+	}
 	if (op == Op::SEEK || op == Op::SET_SPEED)
 		number = luaL_checknumber(state, 2);
 	if (op == Op::SET_LOOP) {
@@ -153,8 +163,8 @@ void LuaInternal::AddAnimatorMethods(lua_State *state) {
 	    "play_clip",          "pause_animator",        "stop_animator",
 	    "seek_animator",      "get_animator_time",     "is_animator_playing",
 	    "get_animator_clip",  "get_animator_duration", "get_animator_speed",
-	    "set_animator_speed", "set_animator_loop"};
-	for (int i = 0; i < 11; ++i) {
+	    "set_animator_speed", "set_animator_loop",     "cross_fade_clip"};
+	for (int i = 0; i < static_cast<int>(std::size(names)); ++i) {
 		lua_pushinteger(state, i);
 		lua_pushcclosure(state, Dispatch, 1);
 		lua_setfield(state, -2, names[i]);

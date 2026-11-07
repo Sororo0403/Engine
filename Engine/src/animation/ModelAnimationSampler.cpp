@@ -54,6 +54,38 @@ Value Evaluate(const std::vector<Key> &keys, double time, const Value &fallback,
 	    a.value, b.value,
 	    static_cast<float>((time - a.seconds) / (b.seconds - a.seconds)));
 }
+
+/// <summary>
+/// 位置・拡縮の3成分を線形補間する
+/// </summary>
+DirectX::XMFLOAT3 BlendVector(const DirectX::XMFLOAT3 &a,
+                              const DirectX::XMFLOAT3 &b, float weight) {
+	using namespace DirectX;
+	XMFLOAT3 result;
+	XMStoreFloat3(&result,
+	              XMVectorLerp(XMLoadFloat3(&a), XMLoadFloat3(&b), weight));
+	return result;
+}
+
+/// <summary>
+/// 回転を最短経路で補間する
+/// </summary>
+DirectX::XMFLOAT4 BlendRotation(const DirectX::XMFLOAT4 &a,
+                                const DirectX::XMFLOAT4 &b, float weight) {
+	using namespace DirectX;
+	XMFLOAT4 result;
+	XMStoreFloat4(
+	    &result, XMQuaternionSlerp(XMLoadFloat4(&a), XMLoadFloat4(&b), weight));
+	return result;
+}
+
+/// <summary>
+/// 鏡映が異なる場合も、軸を潰さず中間点で拡縮の符号を切り替える
+/// </summary>
+float BlendScale(float a, float b, float weight) {
+	const float magnitude = std::lerp(std::abs(a), std::abs(b), weight);
+	return std::copysign(magnitude, weight < .5f ? a : b);
+}
 } // namespace
 
 bool ModelAnimationSampler::Initialize(
@@ -70,58 +102,59 @@ bool ModelAnimationSampler::Initialize(
 
 bool ModelAnimationSampler::Sample(std::optional<std::size_t> clip,
                                    double seconds, bool loop,
-                                   ModelAnimationPose &pose,
-                                   std::string &error) const {
+                                   ModelAnimationPose &pose, std::string &error,
+                                   const ModelAnimationPose *source,
+                                   float weight) const {
 	try {
 		using namespace DirectX;
 		if (!data_ || !std::isfinite(seconds) || seconds < 0 ||
-		    (clip && *clip >= data_->clips.size()))
+		    (clip && *clip >= data_->clips.size()) ||
+		    (source && (source->localTransforms.size() != data_->nodes.size() ||
+		                !std::isfinite(weight) || weight < 0 || weight > 1)))
 			throw std::runtime_error(
 			    "Model animation sample arguments are invalid.");
-		std::vector<XMFLOAT4X4> local;
-		local.reserve(data_->nodes.size());
-		for (const auto &node : data_->nodes)
-			local.push_back(node.localBind);
+		ModelAnimationPose result;
+		auto &local = result.localTransforms;
+		local.resize(data_->nodes.size());
 		if (clip) {
 			const auto &animation = data_->clips[*clip];
 			const double time = loop ? std::fmod(seconds, animation.duration)
 			                         : (std::min)(seconds, animation.duration);
 			for (const auto &track : animation.tracks) {
 				Transform t = data_->nodes[track.node].bindTransform;
-				const auto vectorBlend = [](const XMFLOAT3 &a,
-				                            const XMFLOAT3 &b, float factor) {
-					XMFLOAT3 result;
-					XMStoreFloat3(&result,
-					              XMVectorLerp(XMLoadFloat3(&a),
-					                           XMLoadFloat3(&b), factor));
-					return result;
-				};
 				t.translation = Evaluate(track.positions, time, t.translation,
-				                         track, vectorBlend);
+				                         track, BlendVector);
 				t.scale =
-				    Evaluate(track.scales, time, t.scale, track, vectorBlend);
-				t.rotation = Evaluate(
-				    track.rotations, time, t.rotation, track,
-				    [](const XMFLOAT4 &a, const XMFLOAT4 &b, float factor) {
-					    XMFLOAT4 result;
-					    XMStoreFloat4(&result, XMQuaternionSlerp(
-					                               XMLoadFloat4(&a),
-					                               XMLoadFloat4(&b), factor));
-					    return result;
-				    });
-				if (!TransformUtils::TryNormalizeRotation(t.rotation,
-				                                          t.rotation) ||
-				    !TransformUtils::IsValid(t))
-					throw std::runtime_error(
-					    "Model animation transform became invalid.");
-				XMStoreFloat4x4(&local[track.node],
-				                TransformUtils::MakeWorldMatrix(t));
+				    Evaluate(track.scales, time, t.scale, track, BlendVector);
+				t.rotation = Evaluate(track.rotations, time, t.rotation, track,
+				                      BlendRotation);
+				local[track.node] = t;
 			}
 		}
-		ModelAnimationPose result;
 		result.nodes.resize(local.size());
 		for (std::size_t i = 0; i < local.size(); ++i) {
-			auto matrix = XMLoadFloat4x4(&local[i]);
+			const auto &node = data_->nodes[i];
+			if (source && weight < 1 &&
+			    (source->localTransforms[i] || local[i])) {
+				const auto from =
+				    source->localTransforms[i].value_or(node.bindTransform);
+				const auto to = local[i].value_or(node.bindTransform);
+				local[i] = Transform{
+				    {BlendScale(from.scale.x, to.scale.x, weight),
+				     BlendScale(from.scale.y, to.scale.y, weight),
+				     BlendScale(from.scale.z, to.scale.z, weight)},
+				    BlendRotation(from.rotation, to.rotation, weight),
+				    BlendVector(from.translation, to.translation, weight)};
+			}
+			auto matrix = XMLoadFloat4x4(&node.localBind);
+			if (auto &t = local[i]) {
+				if (!TransformUtils::TryNormalizeRotation(t->rotation,
+				                                          t->rotation) ||
+				    !TransformUtils::IsValid(*t))
+					throw std::runtime_error(
+					    "Model animation transform became invalid.");
+				matrix = TransformUtils::MakeWorldMatrix(*t);
+			}
 			const int parent = data_->nodes[i].parent;
 			if (parent >= 0)
 				matrix = matrix * XMLoadFloat4x4(&result.nodes[parent]);

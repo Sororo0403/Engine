@@ -19,7 +19,7 @@ class SceneAnimators {
 	static constexpr std::size_t kMaximumKeys = 2000000;
 	using LoadModel = std::function<std::shared_ptr<const ModelAnimationData>(
 	    const std::filesystem::path &, std::string &)>;
-	enum class Operation { PLAY, PAUSE, STOP, SEEK, SPEED, LOOP };
+	enum class Operation { PLAY, CROSS_FADE, PAUSE, STOP, SEEK, SPEED, LOOP };
 
 	/// <summary>
 	/// 物体と宣言済みPrefabのモデル・クリップを検証し、成功後だけ再生状態を更新する
@@ -53,8 +53,8 @@ class SceneAnimators {
 	/// <param name="scene">同じ候補の物体と有効状態</param>
 	/// <param name="id">Animatorを持つ物体</param>
 	/// <param name="operation">操作。STOPはモデルのバインド姿勢へ戻す</param>
-	/// <param name="clip">PLAYで選ぶ名前。空は現在のクリップを保持する</param>
-	/// <param name="number">SEEKの秒数、またはSPEEDの倍率</param>
+	/// <param name="clip">PLAYまたはCROSS_FADEで選ぶ名前。空は現在のクリップを保持する</param>
+	/// <param name="number">CROSS_FADEの補間秒数、SEEKの秒数、またはSPEEDの倍率</param>
 	/// <param name="flag">PLAYの先頭から再生、またはLOOPの指定</param>
 	/// <param name="error">失敗理由</param>
 	/// <returns>true:成功 false:対象・引数・評価が無効。失敗時は状態を保持する</returns>
@@ -96,6 +96,9 @@ class SceneAnimators {
 		std::filesystem::path path;
 		std::shared_ptr<const Resource> resource;
 		std::shared_ptr<const ModelAnimationPose> pose;
+		// 切替直前に表示していた姿勢を固定し、切替の途中からでも連続させる。
+		std::shared_ptr<const ModelAnimationPose> fadeSource;
+		double fadeDuration = 0, fadeElapsed = 0;
 		std::size_t clip = 0;
 		double cursor = 0;
 		float speed = 1;

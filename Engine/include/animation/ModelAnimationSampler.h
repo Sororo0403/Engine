@@ -9,6 +9,7 @@
 /// </summary>
 struct ModelAnimationPose {
 	std::vector<DirectX::XMFLOAT4X4> nodes;
+	std::vector<std::optional<Transform>> localTransforms;
 	std::vector<std::vector<DirectX::XMFLOAT4X4>> bones;
 };
 
@@ -34,9 +35,13 @@ class ModelAnimationSampler {
 	/// <param name="loop">true:末尾で先頭へ戻る false:末尾の姿勢を保持する</param>
 	/// <param name="pose">成功時に設定するモデル座標の行列</param>
 	/// <param name="error">失敗理由</param>
+	/// <param name="source">同じモデルから得た補間元の姿勢。省略時は指定クリップだけを評価する</param>
+	/// <param name="weight">補間先の割合。0から1</param>
 	/// <returns>true:成功 false:未初期化・時刻・番号・評価結果が無効</returns>
 	bool Sample(std::optional<std::size_t> clip, double seconds, bool loop,
-	            ModelAnimationPose &pose, std::string &error) const;
+	            ModelAnimationPose &pose, std::string &error,
+	            const ModelAnimationPose *source = nullptr,
+	            float weight = 1) const;
 
 	/// <summary>
 	/// 評価した行列で位置・法線をCPU変形する。重みなしの頂点は所属ノードへ従う

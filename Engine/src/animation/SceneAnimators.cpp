@@ -22,9 +22,17 @@ bool SceneAnimators::Apply(State &state, std::string &error) {
 		state.pose.reset();
 		return true;
 	}
+	if (state.fadeSource && state.fadeElapsed == 0) {
+		state.pose = state.fadeSource;
+		return true;
+	}
+	const float weight =
+	    state.fadeSource
+	        ? static_cast<float>(state.fadeElapsed / state.fadeDuration)
+	        : 1.0f;
 	auto pose = std::make_shared<ModelAnimationPose>();
 	if (!state.resource->sampler.Sample(state.clip, state.cursor, false, *pose,
-	                                    error))
+	                                    error, state.fadeSource.get(), weight))
 		return false;
 	state.pose = std::move(pose);
 	return true;
@@ -192,12 +200,18 @@ bool SceneAnimators::Advance(const Scene &scene, float seconds,
 			state.applied = true;
 			const double duration =
 			    state.resource->data->clips[state.clip].duration;
-			state.cursor += double((std::min)(seconds, .1f)) * state.speed;
+			const double step = (std::min)(seconds, .1f);
+			if (state.fadeSource) {
+				state.fadeElapsed += step;
+				if (state.fadeElapsed >= state.fadeDuration)
+					state.fadeSource.reset();
+			}
+			state.cursor += step * state.speed;
 			if (state.loop)
 				state.cursor = std::fmod(state.cursor, duration);
 			else if (state.cursor >= duration) {
 				state.cursor = duration;
-				state.playing = false;
+				state.playing = bool(state.fadeSource);
 			}
 			if (!Apply(state, error))
 				throw std::runtime_error(error);
@@ -222,7 +236,14 @@ bool SceneAnimators::Control(const Scene &scene, SceneObjectId id,
 		auto state = found->second;
 		if (operation != Operation::SPEED && operation != Operation::LOOP)
 			state.pendingStart = false;
-		if (operation == Operation::PLAY) {
+		if (operation == Operation::PLAY ||
+		    operation == Operation::CROSS_FADE) {
+			const bool fade = operation == Operation::CROSS_FADE;
+			if (fade && (!std::isfinite(number) || number < 0 || number > 10 ||
+			             clip.empty()))
+				throw std::runtime_error(
+				    "Animator cross-fade requires a clip name and a duration "
+				    "from 0 to 10 seconds.");
 			if (!SceneActivity::IsActive(scene, id))
 				throw std::runtime_error(
 				    "Activate the object before playing its Animator.");
@@ -237,7 +258,22 @@ bool SceneAnimators::Control(const Scene &scene, SceneObjectId id,
 				if (index == clips.size())
 					throw std::runtime_error("Animator clip was not found.");
 			}
-			if (flag || index != state.clip)
+			if (fade && number > 0 && (index != state.clip || !state.applied)) {
+				state.fadeSource = state.pose;
+				if (!state.fadeSource) {
+					auto bind = std::make_shared<ModelAnimationPose>();
+					if (!state.resource->sampler.Sample(std::nullopt, 0, false,
+					                                    *bind, error))
+						return false;
+					state.fadeSource = std::move(bind);
+				}
+				state.fadeElapsed = 0;
+				state.fadeDuration = number;
+			} else if ((!fade && (flag || index != state.clip)) ||
+			           (fade && number == 0)) {
+				state.fadeSource.reset();
+			}
+			if ((!fade && flag) || index != state.clip || (fade && number == 0))
 				state.cursor = 0;
 			state.clip = index;
 			state.playing = state.applied = true;
@@ -245,6 +281,7 @@ bool SceneAnimators::Control(const Scene &scene, SceneObjectId id,
 			state.playing = false;
 		else if (operation == Operation::STOP) {
 			state.cursor = 0;
+			state.fadeSource.reset();
 			state.playing = state.applied = false;
 		} else if (operation == Operation::SEEK) {
 			const double duration =
@@ -252,6 +289,7 @@ bool SceneAnimators::Control(const Scene &scene, SceneObjectId id,
 			if (!std::isfinite(number) || number < 0 || number > duration)
 				throw std::runtime_error(
 				    "Animator seek must be inside the clip duration.");
+			state.fadeSource.reset();
 			state.cursor = number;
 			state.applied = true;
 			if (!state.loop && number == duration)
