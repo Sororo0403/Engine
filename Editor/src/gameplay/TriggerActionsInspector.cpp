@@ -66,6 +66,14 @@ const char *OperationLabel(TriggerAction::Operation operation) {
 		return "Pause Transform Animation";
 	case TriggerAction::Operation::STOP_TRANSFORM_ANIMATION:
 		return "Stop Transform Animation";
+	case TriggerAction::Operation::PLAY_ANIMATOR:
+		return "Play Animator";
+	case TriggerAction::Operation::RESTART_ANIMATOR:
+		return "Restart Animator";
+	case TriggerAction::Operation::PAUSE_ANIMATOR:
+		return "Pause Animator";
+	case TriggerAction::Operation::STOP_ANIMATOR:
+		return "Stop Animator";
 	case TriggerAction::Operation::EMIT_PARTICLES:
 		return "Emit Particles";
 	case TriggerAction::Operation::LOAD_SCENE:
@@ -256,6 +264,8 @@ bool TriggerActionsInspector::Draw(
 						if (action.IsTransformAnimationOperation() &&
 						    !candidate.transformAnimation)
 							continue;
+						if (action.IsAnimatorOperation() && !candidate.animator)
+							continue;
 						if (action.operation ==
 						        TriggerAction::Operation::EMIT_PARTICLES &&
 						    !candidate.particleEmitter)
@@ -290,6 +300,10 @@ bool TriggerActionsInspector::Draw(
 				         TriggerAction::Operation::RESTART_TRANSFORM_ANIMATION,
 				         TriggerAction::Operation::PAUSE_TRANSFORM_ANIMATION,
 				         TriggerAction::Operation::STOP_TRANSFORM_ANIMATION,
+				         TriggerAction::Operation::PLAY_ANIMATOR,
+				         TriggerAction::Operation::RESTART_ANIMATOR,
+				         TriggerAction::Operation::PAUSE_ANIMATOR,
+				         TriggerAction::Operation::STOP_ANIMATOR,
 				         TriggerAction::Operation::EMIT_PARTICLES,
 				         TriggerAction::Operation::LOAD_SCENE}) {
 					if (ImGui::Selectable(OperationLabel(operation),

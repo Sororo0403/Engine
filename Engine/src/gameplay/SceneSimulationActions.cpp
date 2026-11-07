@@ -212,6 +212,7 @@ bool SceneSimulation::ApplyTriggerActions(
 	std::map<SceneObjectId, bool> requested;
 	std::map<SceneObjectId, SceneMotion::Playback> motionPlayback;
 	std::map<SceneObjectId, TriggerAction::Operation> animationPlayback;
+	std::map<SceneObjectId, TriggerAction::Operation> animatorPlayback;
 	std::vector<SceneObjectId> particleBursts;
 	auto audio = audioActions_;
 	std::map<SceneObjectId, SceneObjectId> destinations;
@@ -327,6 +328,13 @@ bool SceneSimulation::ApplyTriggerActions(
 				continue;
 			}
 
+			if (action.IsAnimatorOperation()) {
+				animatorPlayback[action.target] = action.operation;
+				if (action.once)
+					fired.insert(key);
+				continue;
+			}
+
 			if (action.operation == TriggerAction::Operation::EMIT_PARTICLES) {
 				particleBursts.push_back(action.target);
 				if (action.once)
@@ -379,6 +387,10 @@ bool SceneSimulation::ApplyTriggerActions(
 			case TriggerAction::Operation::RESTART_TRANSFORM_ANIMATION:
 			case TriggerAction::Operation::PAUSE_TRANSFORM_ANIMATION:
 			case TriggerAction::Operation::STOP_TRANSFORM_ANIMATION:
+			case TriggerAction::Operation::PLAY_ANIMATOR:
+			case TriggerAction::Operation::RESTART_ANIMATOR:
+			case TriggerAction::Operation::PAUSE_ANIMATOR:
+			case TriggerAction::Operation::STOP_ANIMATOR:
 			case TriggerAction::Operation::EMIT_PARTICLES:
 				break;
 			}
@@ -505,6 +517,24 @@ bool SceneSimulation::ApplyTriggerActions(
 	for (const auto &[id, playback] : motionPlayback) {
 		if (!motion_.SetPlayback(id, playback)) {
 			error = "Motion Path Trigger Action target is not prepared.";
+			if (invalidObject)
+				*invalidObject = id;
+			return false;
+		}
+	}
+
+	for (const auto &[id, operation] : animatorPlayback) {
+		const auto control =
+		    operation == TriggerAction::Operation::STOP_ANIMATOR
+		        ? SceneAnimators::Operation::STOP
+		    : operation == TriggerAction::Operation::PAUSE_ANIMATOR
+		        ? SceneAnimators::Operation::PAUSE
+		        : SceneAnimators::Operation::PLAY;
+		if (!animators_.Control(scene_, id, control, {}, 0,
+		                        operation ==
+		                            TriggerAction::Operation::RESTART_ANIMATOR,
+		                        error)) {
+			error = "Animator Trigger Action failed: " + error;
 			if (invalidObject)
 				*invalidObject = id;
 			return false;

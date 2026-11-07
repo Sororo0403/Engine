@@ -941,6 +941,15 @@ void ControlsPanel::Draw() {
 	         "does "
 	         "not change the authored offsets. Exported games use the same "
 	         "input."},
+	        {"Trigger Actions > Animator",
+	         "Choose Play Animator to resume the target's current clip, "
+	         "Restart "
+	         "Animator to start it from the beginning, Pause Animator to hold "
+	         "the current pose, or Stop Animator to restore the bind pose. Set "
+	         "the default clip and looping on the target Animator. Enable "
+	         "the target before playing or restarting. If several Trigger "
+	         "Actions control the same Animator in one update, the last "
+	         "matching action wins."},
 	        {"Trigger Actions > Emit Particles",
 	         "Choose an active Particle Emitter as the target. Each action "
 	         "emits its configured Start Burst count at the emitter's final "

@@ -31,6 +31,10 @@ struct TriggerAction {
 		PAUSE_TRANSFORM_ANIMATION,
 		STOP_TRANSFORM_ANIMATION,
 		EMIT_PARTICLES,
+		PLAY_ANIMATOR,
+		RESTART_ANIMATOR,
+		PAUSE_ANIMATOR,
+		STOP_ANIMATOR,
 		LOAD_SCENE
 	};
 
@@ -83,6 +87,7 @@ struct TriggerAction {
 		        operation == Operation::TOGGLE || IsAudioOperation() ||
 		        UsesDestination() || operation == Operation::SET_CAMERA ||
 		        IsMotionPathOperation() || IsTransformAnimationOperation() ||
+		        IsAnimatorOperation() ||
 		        operation == Operation::EMIT_PARTICLES ||
 		        operation == Operation::LOAD_SCENE);
 	}
@@ -132,6 +137,17 @@ struct TriggerAction {
 		       operation == Operation::RESTART_TRANSFORM_ANIMATION ||
 		       operation == Operation::PAUSE_TRANSFORM_ANIMATION ||
 		       operation == Operation::STOP_TRANSFORM_ANIMATION;
+	}
+
+	/// <summary>
+	/// 対象のAnimatorで現在のクリップの再生状態を操作する種別か確認する
+	/// </summary>
+	/// <returns>true:Animatorの操作 false:その他の操作</returns>
+	bool IsAnimatorOperation() const {
+		return operation == Operation::PLAY_ANIMATOR ||
+		       operation == Operation::RESTART_ANIMATOR ||
+		       operation == Operation::PAUSE_ANIMATOR ||
+		       operation == Operation::STOP_ANIMATOR;
 	}
 
 	/// <summary>

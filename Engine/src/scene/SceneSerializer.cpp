@@ -628,6 +628,18 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 					    : action.operation ==
 					            TriggerAction::Operation::EMIT_PARTICLES
 					        ? "emitParticles"
+					    : action.operation ==
+					            TriggerAction::Operation::PLAY_ANIMATOR
+					        ? "playAnimator"
+					    : action.operation ==
+					            TriggerAction::Operation::RESTART_ANIMATOR
+					        ? "restartAnimator"
+					    : action.operation ==
+					            TriggerAction::Operation::PAUSE_ANIMATOR
+					        ? "pauseAnimator"
+					    : action.operation ==
+					            TriggerAction::Operation::STOP_ANIMATOR
+					        ? "stopAnimator"
 					        : "loadScene";
 					actions.push_back(
 					    {{"event",
@@ -1330,7 +1342,11 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					        operation == "restartTransformAnimation" ||
 					        operation == "pauseTransformAnimation" ||
 					        operation == "stopTransformAnimation")) &&
-					     !(version >= 48 && operation == "emitParticles")) ||
+					     !(version >= 48 && operation == "emitParticles") &&
+					     !(version >= 50 && (operation == "playAnimator" ||
+					                         operation == "restartAnimator" ||
+					                         operation == "pauseAnimator" ||
+					                         operation == "stopAnimator"))) ||
 					    (version >= 23 &&
 					     !value.at("destination").is_number_unsigned()) ||
 					    !value.at("target").is_number_unsigned() ||
@@ -1390,6 +1406,14 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					               STOP_TRANSFORM_ANIMATION
 					     : operation == "emitParticles"
 					         ? TriggerAction::Operation::EMIT_PARTICLES
+					     : operation == "playAnimator"
+					         ? TriggerAction::Operation::PLAY_ANIMATOR
+					     : operation == "restartAnimator"
+					         ? TriggerAction::Operation::RESTART_ANIMATOR
+					     : operation == "pauseAnimator"
+					         ? TriggerAction::Operation::PAUSE_ANIMATOR
+					     : operation == "stopAnimator"
+					         ? TriggerAction::Operation::STOP_ANIMATOR
 					         : TriggerAction::Operation::LOAD_SCENE,
 					     value.at("once").get<bool>(),
 					     version >= 23

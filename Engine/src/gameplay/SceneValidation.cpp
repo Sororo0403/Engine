@@ -196,6 +196,12 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 						break;
 					}
 
+					if (action.IsAnimatorOperation() && !target.animator) {
+						add(id, "Animator Trigger Actions require a target "
+						        "with an Animator.");
+						break;
+					}
+
 					if (action.IsAudioOperation() && !target.audioSource) {
 						add(id, "Audio Trigger Actions require an Audio Source "
 						        "on their target.");
