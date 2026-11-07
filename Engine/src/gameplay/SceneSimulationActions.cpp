@@ -8,6 +8,24 @@
 #include <format>
 #include <utility>
 
+namespace {
+/// <summary>
+/// 進入・退出・操作入力を発生させた相手が、操作の接触条件を満たすか確認する
+/// </summary>
+bool MatchesContact(TriggerAction::Contact contact, const SceneObject *other) {
+	switch (contact) {
+	case TriggerAction::Contact::ANY:
+		return true;
+	case TriggerAction::Contact::CHARACTER:
+		return other && other->character.has_value();
+	case TriggerAction::Contact::DYNAMIC_BODY:
+		return other && other->rigidBody && other->rigidBody->enabled &&
+		       !other->rigidBody->isKinematic;
+	}
+	return false;
+}
+} // namespace
+
 void SceneSimulation::CopyFrom(const SceneSimulation &source) {
 	scene_.CopyFrom(source.scene_);
 	sharedScriptData_ = source.sharedScriptData_;
@@ -155,7 +173,9 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 			const auto &action = actions[i];
 			const auto key = std::pair{signal.receiver, i};
 			if (action.event != signal.event ||
-			    (action.once && fired.contains(key))) {
+			    (action.once && fired.contains(key)) ||
+			    !MatchesContact(action.contact,
+			                    scene_.FindObject(signal.other))) {
 				continue;
 			}
 			const auto *target = scene_.FindObject(action.target);

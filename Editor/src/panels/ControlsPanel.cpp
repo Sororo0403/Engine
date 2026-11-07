@@ -941,6 +941,12 @@ void ControlsPanel::Draw() {
 	         "does "
 	         "not change the authored offsets. Exported games use the same "
 	         "input."},
+	        {"Trigger Actions > Contact",
+	         "Choose Any Collider, Character Controller, or Dynamic Rigid "
+	         "Body as the contact source for Enter and Exit. A dynamic source "
+	         "must have an enabled non-kinematic Rigid Body. Interact is "
+	         "always initiated by the character. The contact filter applies "
+	         "before Once per Scene, including overlaps at Play start."},
 	        {"Trigger Actions > Set Camera",
 	         "Choose a Camera target to switch the Game view on Enter, Exit "
 	         "or Interact. Enter and Exit use any eligible Collider, including "

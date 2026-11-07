@@ -72,6 +72,21 @@ const char *EventLabel(TriggerAction::Event event) {
 	}
 	return "Invalid";
 }
+
+/// <summary>
+/// 接触相手の条件をInspectorの表示名へ変換する
+/// </summary>
+const char *ContactLabel(TriggerAction::Contact contact) {
+	switch (contact) {
+	case TriggerAction::Contact::ANY:
+		return "Any Collider";
+	case TriggerAction::Contact::CHARACTER:
+		return "Character Controller";
+	case TriggerAction::Contact::DYNAMIC_BODY:
+		return "Dynamic Rigid Body";
+	}
+	return "Invalid";
+}
 } // namespace
 
 bool TriggerActionsInspector::Draw(
@@ -102,6 +117,27 @@ bool TriggerActionsInspector::Draw(
 					                      action.event == event) &&
 					    action.event != event) {
 						action.event = event;
+						if (!action.AllowsDynamicContact() &&
+						    action.contact ==
+						        TriggerAction::Contact::DYNAMIC_BODY)
+							action.contact = TriggerAction::Contact::ANY;
+						changed = true;
+					}
+				}
+				ImGui::EndCombo();
+			}
+			if (ImGui::BeginCombo("Contact", ContactLabel(action.contact))) {
+				for (const auto contact :
+				     std::array{TriggerAction::Contact::ANY,
+				                TriggerAction::Contact::CHARACTER,
+				                TriggerAction::Contact::DYNAMIC_BODY}) {
+					if (!action.AllowsDynamicContact() &&
+					    contact == TriggerAction::Contact::DYNAMIC_BODY)
+						continue;
+					if (ImGui::Selectable(ContactLabel(contact),
+					                      contact == action.contact) &&
+					    contact != action.contact) {
+						action.contact = contact;
 						changed = true;
 					}
 				}
@@ -157,6 +193,10 @@ bool TriggerActionsInspector::Draw(
 					                      action.operation == operation) &&
 					    action.operation != operation) {
 						action.operation = operation;
+						if (!action.AllowsDynamicContact() &&
+						    action.contact ==
+						        TriggerAction::Contact::DYNAMIC_BODY)
+							action.contact = TriggerAction::Contact::ANY;
 						changed = true;
 					}
 				}
@@ -270,6 +310,7 @@ void TriggerActionsInspector::DrawReadOnly(const ImGuiSystem &ui,
 		    "Action {}: {} / {} / {} / Once: {}", i + 1,
 		    EventLabel(action.event), TargetLabel(scene, action.target),
 		    OperationLabel(action.operation), action.once ? "Yes" : "No"));
+		ui.Text(std::format("Contact: {}", ContactLabel(action.contact)));
 		if (action.operation == TriggerAction::Operation::LOAD_SCENE)
 			ui.Text("Scene: " + PathUtils::ToUtf8(action.scenePath));
 		if (action.UsesDestination()) {

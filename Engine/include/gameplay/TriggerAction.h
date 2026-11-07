@@ -28,6 +28,11 @@ struct TriggerAction {
 	/// </summary>
 	enum class Event { ENTER, EXIT, INTERACT };
 
+	/// <summary>
+	/// 操作を発火させる接触相手のコンポーネント条件
+	/// </summary>
+	enum class Contact { ANY, CHARACTER, DYNAMIC_BODY };
+
 	Event event = Event::ENTER;
 	SceneObjectId target = 0;
 	Operation operation = Operation::ENABLE;
@@ -36,6 +41,7 @@ struct TriggerAction {
 	SceneObjectId destination = 0;
 	// Load Sceneの遷移先。空は編集中だけ許可する。絶対パスまたは実行ファイル基準
 	std::filesystem::path scenePath;
+	Contact contact = Contact::ANY;
 
 	/// <summary>
 	/// 種別が有効か確認する。未割り当ての対象は編集用に許可し、Play時に存在を確認する
@@ -47,13 +53,25 @@ struct TriggerAction {
 		         (!scenePath.has_root_path() || scenePath.is_absolute()) &&
 		         PathUtils::HasExtension(scenePath, ".json") &&
 		         PathUtils::HasExtension(scenePath.stem(), ".scene"))) &&
+		       (contact == Contact::ANY || contact == Contact::CHARACTER ||
+		        contact == Contact::DYNAMIC_BODY) &&
 		       (event == Event::ENTER || event == Event::EXIT ||
 		        event == Event::INTERACT) &&
+		       (contact != Contact::DYNAMIC_BODY || AllowsDynamicContact()) &&
 		       (operation == Operation::ENABLE ||
 		        operation == Operation::DISABLE ||
 		        operation == Operation::TOGGLE || IsAudioOperation() ||
 		        UsesDestination() || operation == Operation::SET_CAMERA ||
 		        operation == Operation::LOAD_SCENE);
+	}
+
+	/// <summary>
+	/// 接触相手として動的剛体を指定できる操作か確認する
+	/// </summary>
+	/// <returns>true:動的剛体で発火可能 false:主人公の操作または復帰先設定</returns>
+	bool AllowsDynamicContact() const {
+		return event != Event::INTERACT &&
+		       operation != Operation::SET_CHECKPOINT;
 	}
 
 	/// <summary>

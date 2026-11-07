@@ -612,7 +612,14 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 					     {"operation", operation},
 					     {"once", action.once},
 					     {"destination", action.destination},
-					     {"scene", PathUtils::ToUtf8(action.scenePath)}});
+					     {"scene", PathUtils::ToUtf8(action.scenePath)},
+					     {"contact",
+					      action.contact == TriggerAction::Contact::CHARACTER
+					          ? "character"
+					      : action.contact ==
+					              TriggerAction::Contact::DYNAMIC_BODY
+					          ? "dynamicBody"
+					          : "any"}});
 				}
 				objects.back()["triggerActions"] = {
 				    {"actions", std::move(actions)}};
@@ -1279,6 +1286,13 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 						throw std::runtime_error(
 						    "Trigger Actionsの操作設定が無効です。");
 					}
+					const auto contact =
+					    version >= 41 ? value.at("contact").get<std::string>()
+					                  : "any";
+					if (contact != "any" && contact != "character" &&
+					    contact != "dynamicBody")
+						throw std::runtime_error(
+						    "Trigger Actionsの接触条件が無効です。");
 					component.actions.push_back(
 					    {event == "enter"  ? TriggerAction::Event::ENTER
 					     : event == "exit" ? TriggerAction::Event::EXIT
@@ -1308,7 +1322,12 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					     version >= 28
 					         ? PathUtils::FromUtf8(
 					               value.at("scene").get<std::string>())
-					         : std::filesystem::path{}});
+					         : std::filesystem::path{},
+					     contact == "character"
+					         ? TriggerAction::Contact::CHARACTER
+					     : contact == "dynamicBody"
+					         ? TriggerAction::Contact::DYNAMIC_BODY
+					         : TriggerAction::Contact::ANY});
 				}
 				object.triggerActions = std::move(component);
 			}
