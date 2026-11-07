@@ -2337,4 +2337,5 @@ exit /b 0</Command>
     <ClCompile Include="src\physics\WorldCollider.cpp" />
   </ItemGroup>
   <ItemGroup><ClInclude Include="include\physics\ColliderUtils.h" /></ItemGroup>
+  <ItemGroup><ClInclude Include="src\physics\WorldColliderImpl.h" /></ItemGroup>
 </Project>

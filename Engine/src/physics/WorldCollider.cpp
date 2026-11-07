@@ -1,10 +1,9 @@
 // Joltの他のヘッダーより先に共通定義を読み込む。
 #include <Jolt/Jolt.h>
 
-#include "JoltRuntime.h"
+#include "WorldColliderImpl.h"
 #include "math/MathUtils.h"
 #include "math/TransformUtils.h"
-#include "physics/WorldCollider.h"
 #include <Jolt/Geometry/ConvexSupport.h>
 #include <Jolt/Geometry/EPAPenetrationDepth.h>
 #include <Jolt/Physics/Collision/CollisionCollectorImpl.h>
@@ -36,16 +35,6 @@ bool Depth(float v) {
 	return std::isfinite(v) && std::abs(v) <= .01f;
 }
 } // namespace
-
-struct WorldCollider::Impl {
-	// 形状を解放してから共通登録を終了する。
-	std::shared_ptr<JoltRuntime::Registry> registry;
-	JPH::RefConst<JPH::Shape> shape;
-	JPH::Vec3 scale = JPH::Vec3::sReplicate(1);
-	JPH::Quat rotation = JPH::Quat::sIdentity();
-	JPH::Vec3 center = JPH::Vec3::sZero();
-	AxisAlignedBox bounds;
-};
 
 bool WorldCollider::Create(const Collider &collider,
                            const DirectX::XMFLOAT4X4 &world,

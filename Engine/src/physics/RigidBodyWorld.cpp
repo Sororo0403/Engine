@@ -1,7 +1,7 @@
 ﻿// Joltの他のヘッダーより先に共通定義を読み込む。
 #include <Jolt/Jolt.h>
 
-#include "JoltRuntime.h"
+#include "WorldColliderImpl.h"
 #include "math/TransformUtils.h"
 #include "physics/CollisionEvents.h"
 #include "physics/RigidBodyWorld.h"
@@ -677,23 +677,52 @@ bool ResolveInitialContact(JPH::Vec3Arg center, JPH::Vec3Arg half,
 
 } // namespace
 
+struct RigidBodyWorld::ShapeQuery {
+	const JPH::Shape *shape;
+	JPH::Vec3 scale;
+	JPH::Quat rotation;
+	JPH::Vec3 center;
+	std::optional<JPH::Vec3> axisAlignedHalfExtent;
+};
+
 bool RigidBodyWorld::CanPlace(
     const AxisAlignedBox &box, std::span<const SceneObjectId> ignored,
     const std::optional<CollisionFilter> &filter) const {
+	JPH::Vec3 center, half;
+	if (!QueryBox(box, center, half))
+		return false;
+	JPH::BoxShape shape(half, 0);
+	return CanPlace(ShapeQuery{&shape, JPH::Vec3::sReplicate(1),
+	                           JPH::Quat::sIdentity(), center, half},
+	                ignored, filter);
+}
+
+bool RigidBodyWorld::CanPlace(
+    const WorldCollider &shape, std::span<const SceneObjectId> ignored,
+    const std::optional<CollisionFilter> &filter) const {
+	if (!shape.impl_)
+		return false;
+	const auto &data = *shape.impl_;
+	return CanPlace(ShapeQuery{data.shape, data.scale, data.rotation,
+	                           data.center, std::nullopt},
+	                ignored, filter);
+}
+
+bool RigidBodyWorld::CanPlace(
+    const ShapeQuery &query, std::span<const SceneObjectId> ignored,
+    const std::optional<CollisionFilter> &filter) const {
 	try {
-		JPH::Vec3 center, half;
-		if (!impl_ || !QueryBox(box, center, half) ||
-		    (filter && !filter->IsValid()))
+		if (!impl_ || (filter && !filter->IsValid()))
 			return false;
-		JPH::BoxShape shape(half, 0);
 		JPH::CollideShapeSettings settings;
 		settings.mCollisionTolerance = 0.000001f;
 		settings.mPenetrationTolerance = 0.000001f;
 		JPH::AllHitCollisionCollector<JPH::CollideShapeCollector> contacts;
 		QueryBodies bodies(impl_->bodies, impl_->descriptions, ignored, filter);
 		impl_->system.GetNarrowPhaseQuery().CollideShape(
-		    &shape, JPH::Vec3::sReplicate(1), JPH::RMat44::sTranslation(center),
-		    settings, center, contacts, {}, {}, bodies);
+		    query.shape, query.scale,
+		    JPH::RMat44::sRotationTranslation(query.rotation, query.center),
+		    settings, query.center, contacts, {}, {}, bodies);
 		// 面への接触とGJKの数値誤差だけでは配置を拒否しない。
 		return std::ranges::none_of(contacts.mHits, [](const auto &hit) {
 			return hit.mPenetrationDepth > 0.00001f;
@@ -708,12 +737,36 @@ bool RigidBodyWorld::Sweep(const AxisAlignedBox &box,
                            CollisionSweepResult &result,
                            std::span<const SceneObjectId> ignored,
                            const std::optional<CollisionFilter> &filter) const {
+	JPH::Vec3 center, half;
+	if (!QueryBox(box, center, half))
+		return false;
+	JPH::BoxShape shape(half, 0);
+	return Sweep(ShapeQuery{&shape, JPH::Vec3::sReplicate(1),
+	                        JPH::Quat::sIdentity(), center, half},
+	             displacement, result, ignored, filter);
+}
+
+bool RigidBodyWorld::Sweep(const WorldCollider &shape,
+                           const DirectX::XMFLOAT3 &displacement,
+                           CollisionSweepResult &result,
+                           std::span<const SceneObjectId> ignored,
+                           const std::optional<CollisionFilter> &filter) const {
+	if (!shape.impl_)
+		return false;
+	const auto &data = *shape.impl_;
+	return Sweep(ShapeQuery{data.shape, data.scale, data.rotation, data.center,
+	                        std::nullopt},
+	             displacement, result, ignored, filter);
+}
+
+bool RigidBodyWorld::Sweep(const ShapeQuery &query,
+                           const DirectX::XMFLOAT3 &displacement,
+                           CollisionSweepResult &result,
+                           std::span<const SceneObjectId> ignored,
+                           const std::optional<CollisionFilter> &filter) const {
 	try {
-		JPH::Vec3 center, half;
-		if (!impl_ || !QueryBox(box, center, half) || !Position(displacement) ||
-		    (filter && !filter->IsValid()))
+		if (!impl_ || !Position(displacement) || (filter && !filter->IsValid()))
 			return false;
-		JPH::BoxShape shape(half, 0);
 		JPH::ShapeCastSettings settings;
 		settings.mCollisionTolerance = 0.000001f;
 		settings.mPenetrationTolerance = 0.000001f;
@@ -722,10 +775,11 @@ bool RigidBodyWorld::Sweep(const AxisAlignedBox &box,
 		JPH::AllHitCollisionCollector<JPH::CastShapeCollector> contacts;
 		QueryBodies bodies(impl_->bodies, impl_->descriptions, ignored, filter);
 		impl_->system.GetNarrowPhaseQuery().CastShape(
-		    JPH::RShapeCast(&shape, JPH::Vec3::sReplicate(1),
-		                    JPH::RMat44::sTranslation(center),
-		                    Vector(displacement)),
-		    settings, center, contacts, {}, {}, bodies);
+		    JPH::RShapeCast(
+		        query.shape, query.scale,
+		        JPH::RMat44::sRotationTranslation(query.rotation, query.center),
+		        Vector(displacement)),
+		    settings, query.center, contacts, {}, {}, bodies);
 		CollisionSweepResult next;
 		for (const auto &hit : contacts.mHits) {
 			auto normal =
@@ -740,11 +794,19 @@ bool RigidBodyWorld::Sweep(const AxisAlignedBox &box,
 				    impl_->descriptions[impl_->bodies.at(id).second];
 				const auto &h = source.collider.halfExtents,
 				           &s = source.transform.scale;
-				if (source.collider.shape == Collider::Shape::BOX &&
+				if (query.axisAlignedHalfExtent &&
+				    source.collider.shape == Collider::Shape::BOX &&
 				    !ResolveInitialContact(
-				        center, half, Vector(displacement), locked.GetBody(),
+				        query.center, *query.axisAlignedHalfExtent,
+				        Vector(displacement), locked.GetBody(),
 				        JPH::Vec3{h.x * s.x, h.y * s.y, h.z * s.z}, normal))
 					continue;
+				if (!query.axisAlignedHalfExtent &&
+				    hit.mPenetrationDepth <= 0.00001f) {
+					// 開始時の浅い接触では移動方向ではなく、相手の表面から法線を求める。
+					normal = locked.GetBody().GetWorldSpaceSurfaceNormal(
+					    hit.mSubShapeID2, query.center + hit.mContactPointOn2);
+				}
 			}
 			if (hit.mPenetrationDepth <= 0.00001f &&
 			    normal.Dot(Vector(displacement)) >= -0.0000001f)

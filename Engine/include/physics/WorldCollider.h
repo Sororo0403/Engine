@@ -67,6 +67,7 @@ class WorldCollider {
 	             bool &crosses) const;
 
   private:
+	friend class RigidBodyWorld;
 	bool DepthAt(const WorldCollider &other, const DirectX::XMFLOAT3 &offset,
 	             float minimumDepth, float &depth) const;
 	bool OverlapAt(const WorldCollider &other, const DirectX::XMFLOAT3 &offset,

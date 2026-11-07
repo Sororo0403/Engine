@@ -11,6 +11,8 @@
 #include <string>
 #include <vector>
 
+class WorldCollider;
+
 /// <summary>
 /// 箱・球・カプセルの重力・回転・衝突を計算する。外部ライブラリの型は内部に隠す
 /// </summary>
@@ -136,6 +138,33 @@ class RigidBodyWorld {
 	      const std::optional<CollisionFilter> &filter = std::nullopt) const;
 
 	/// <summary>
+	/// 準備済みの凸形状を現在の剛体と重ならずに置けるか調べる
+	/// </summary>
+	/// <param name="shape">ワールド座標の問い合わせ形状</param>
+	/// <param name="ignored">判定から除く物体ID</param>
+	/// <param name="filter">指定時は相互の衝突マスクも確認する</param>
+	/// <returns>true:配置可能 false:重なり、未作成、または値が無効</returns>
+	bool
+	CanPlace(const WorldCollider &shape,
+	         std::span<const SceneObjectId> ignored = {},
+	         const std::optional<CollisionFilter> &filter = std::nullopt) const;
+
+	/// <summary>
+	/// 凸形状を姿勢と寸法を保ったまま移動し、現在の剛体との最初の接触を求める
+	/// </summary>
+	/// <param name="shape">開始位置の問い合わせ形状</param>
+	/// <param name="displacement">ワールド座標の移動量</param>
+	/// <param name="result">成功時だけ設定する接触。接触なしは物体ID 0</param>
+	/// <param name="ignored">判定から除く物体ID</param>
+	/// <param name="filter">指定時は相互の衝突マスクも確認する</param>
+	/// <returns>true:検索成功 false:未作成または値が無効</returns>
+	bool
+	Sweep(const WorldCollider &shape, const DirectX::XMFLOAT3 &displacement,
+	      CollisionSweepResult &result,
+	      std::span<const SceneObjectId> ignored = {},
+	      const std::optional<CollisionFilter> &filter = std::nullopt) const;
+
+	/// <summary>
 	/// 休止状態に依存せず、現在の形状同士が接触している組を求める
 	/// </summary>
 	/// <param name="contacts">成功時だけ設定するID順の結果。Triggerは登録されていないため含まない</param>
@@ -149,6 +178,14 @@ class RigidBodyWorld {
 	std::span<const CollisionContact> GetFrameContacts() const;
 
   private:
+	struct ShapeQuery;
+	bool CanPlace(const ShapeQuery &query,
+	              std::span<const SceneObjectId> ignored,
+	              const std::optional<CollisionFilter> &filter) const;
+	bool Sweep(const ShapeQuery &query, const DirectX::XMFLOAT3 &displacement,
+	           CollisionSweepResult &result,
+	           std::span<const SceneObjectId> ignored,
+	           const std::optional<CollisionFilter> &filter) const;
 	/// <summary>
 	/// 片方の速度だけを検証して変更し、もう片方の実行値を保持する
 	/// </summary>
