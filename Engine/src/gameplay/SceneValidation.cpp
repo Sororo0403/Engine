@@ -188,6 +188,14 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 						break;
 					}
 
+					if (action.operation ==
+					        TriggerAction::Operation::EMIT_PARTICLES &&
+					    !target.particleEmitter) {
+						add(id, "Emit Particles requires a target with a "
+						        "Particle Emitter.");
+						break;
+					}
+
 					if (action.IsAudioOperation() && !target.audioSource) {
 						add(id, "Audio Trigger Actions require an Audio Source "
 						        "on their target.");

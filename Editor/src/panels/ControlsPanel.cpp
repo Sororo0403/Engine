@@ -941,6 +941,12 @@ void ControlsPanel::Draw() {
 	         "does "
 	         "not change the authored offsets. Exported games use the same "
 	         "input."},
+	        {"Trigger Actions > Emit Particles",
+	         "Choose an active Particle Emitter as the target. Each action "
+	         "emits its configured Start Burst count at the emitter's final "
+	         "position for that update. Turn off Play on Start to use only "
+	         "triggered bursts. Existing particles keep their normal "
+	         "lifespan."},
 	        {"Trigger Actions > Transform Animation",
 	         "Choose a target with Transform Animation. Play resumes its "
 	         "clock, Restart begins at the first key, Pause holds the current "

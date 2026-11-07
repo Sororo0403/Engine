@@ -66,6 +66,8 @@ const char *OperationLabel(TriggerAction::Operation operation) {
 		return "Pause Transform Animation";
 	case TriggerAction::Operation::STOP_TRANSFORM_ANIMATION:
 		return "Stop Transform Animation";
+	case TriggerAction::Operation::EMIT_PARTICLES:
+		return "Emit Particles";
 	case TriggerAction::Operation::LOAD_SCENE:
 		return "Load Scene";
 	}
@@ -224,6 +226,10 @@ bool TriggerActionsInspector::Draw(
 						if (action.IsTransformAnimationOperation() &&
 						    !candidate.transformAnimation)
 							continue;
+						if (action.operation ==
+						        TriggerAction::Operation::EMIT_PARTICLES &&
+						    !candidate.particleEmitter)
+							continue;
 						const auto label = TargetLabel(scene, targetId);
 						if (ImGui::Selectable(label.c_str(),
 						                      action.target == targetId) &&
@@ -254,6 +260,7 @@ bool TriggerActionsInspector::Draw(
 				         TriggerAction::Operation::RESTART_TRANSFORM_ANIMATION,
 				         TriggerAction::Operation::PAUSE_TRANSFORM_ANIMATION,
 				         TriggerAction::Operation::STOP_TRANSFORM_ANIMATION,
+				         TriggerAction::Operation::EMIT_PARTICLES,
 				         TriggerAction::Operation::LOAD_SCENE}) {
 					if (ImGui::Selectable(OperationLabel(operation),
 					                      action.operation == operation) &&

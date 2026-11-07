@@ -209,6 +209,7 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 	std::map<SceneObjectId, bool> requested;
 	std::map<SceneObjectId, SceneMotion::Playback> motionPlayback;
 	std::map<SceneObjectId, TriggerAction::Operation> animationPlayback;
+	std::vector<SceneObjectId> particleBursts;
 	auto audio = audioActions_;
 	std::map<SceneObjectId, SceneObjectId> destinations;
 	// 有効な主人公は一体なので、同じ更新では最後に通った設定を使う。
@@ -311,6 +312,13 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 				continue;
 			}
 
+			if (action.operation == TriggerAction::Operation::EMIT_PARTICLES) {
+				particleBursts.push_back(action.target);
+				if (action.once)
+					fired.insert(key);
+				continue;
+			}
+
 			if (action.IsAudioOperation()) {
 				if (!target->audioSource) {
 					error = std::format("Trigger Actions on object ID {} need "
@@ -356,6 +364,7 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 			case TriggerAction::Operation::RESTART_TRANSFORM_ANIMATION:
 			case TriggerAction::Operation::PAUSE_TRANSFORM_ANIMATION:
 			case TriggerAction::Operation::STOP_TRANSFORM_ANIMATION:
+			case TriggerAction::Operation::EMIT_PARTICLES:
 				break;
 			}
 			if (action.once) {
@@ -480,6 +489,24 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 	for (const auto &[id, playback] : motionPlayback) {
 		if (!motion_.SetPlayback(id, playback)) {
 			error = "Motion Path Trigger Action target is not prepared.";
+			if (invalidObject)
+				*invalidObject = id;
+			return false;
+		}
+	}
+
+	// 移動・有効設定・アニメーションの確定後の発生元の位置を使う。
+	for (const auto id : particleBursts) {
+		const auto *object = scene_.FindObject(id);
+		if (!object || !object->particleEmitter) {
+			error = "Emit Particles requires a target with a Particle Emitter.";
+			if (invalidObject)
+				*invalidObject = id;
+			return false;
+		}
+		if (!particles_.Control(scene_, id, SceneParticles::Operation::EMIT,
+		                        object->particleEmitter->burst, false, error)) {
+			error = "Emit Particles failed: " + error;
 			if (invalidObject)
 				*invalidObject = id;
 			return false;

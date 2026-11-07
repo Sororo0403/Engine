@@ -625,6 +625,9 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 					    : action.operation == TriggerAction::Operation::
 					                              STOP_TRANSFORM_ANIMATION
 					        ? "stopTransformAnimation"
+					    : action.operation ==
+					            TriggerAction::Operation::EMIT_PARTICLES
+					        ? "emitParticles"
 					        : "loadScene";
 					actions.push_back(
 					    {{"event",
@@ -1325,7 +1328,8 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					       (operation == "playTransformAnimation" ||
 					        operation == "restartTransformAnimation" ||
 					        operation == "pauseTransformAnimation" ||
-					        operation == "stopTransformAnimation"))) ||
+					        operation == "stopTransformAnimation")) &&
+					     !(version >= 48 && operation == "emitParticles")) ||
 					    (version >= 23 &&
 					     !value.at("destination").is_number_unsigned()) ||
 					    !value.at("target").is_number_unsigned() ||
@@ -1383,6 +1387,8 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					     : operation == "stopTransformAnimation"
 					         ? TriggerAction::Operation::
 					               STOP_TRANSFORM_ANIMATION
+					     : operation == "emitParticles"
+					         ? TriggerAction::Operation::EMIT_PARTICLES
 					         : TriggerAction::Operation::LOAD_SCENE,
 					     value.at("once").get<bool>(),
 					     version >= 23

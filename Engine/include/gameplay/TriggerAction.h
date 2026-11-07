@@ -29,6 +29,7 @@ struct TriggerAction {
 		RESTART_TRANSFORM_ANIMATION,
 		PAUSE_TRANSFORM_ANIMATION,
 		STOP_TRANSFORM_ANIMATION,
+		EMIT_PARTICLES,
 		LOAD_SCENE
 	};
 
@@ -76,6 +77,7 @@ struct TriggerAction {
 		        operation == Operation::TOGGLE || IsAudioOperation() ||
 		        UsesDestination() || operation == Operation::SET_CAMERA ||
 		        IsMotionPathOperation() || IsTransformAnimationOperation() ||
+		        operation == Operation::EMIT_PARTICLES ||
 		        operation == Operation::LOAD_SCENE);
 	}
 
