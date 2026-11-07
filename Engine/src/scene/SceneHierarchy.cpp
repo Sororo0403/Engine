@@ -345,6 +345,56 @@ bool SceneHierarchy::SetWorldPosition(Scene &scene, SceneObjectId id,
 	return true;
 }
 
+bool SceneHierarchy::LookAt(Scene &scene, SceneObjectId id,
+                            const DirectX::XMFLOAT3 &target) {
+	using namespace DirectX;
+	auto *object = scene.FindObject(id);
+	SceneWorldTransform world, parent;
+	XMFLOAT4X4 inverse;
+	if (!object || !MathUtils::IsFinite(target) ||
+	    !GetParentTransform(scene, object->parentId, parent) ||
+	    !Compose(object->transform, &parent, world) ||
+	    !TransformUtils::TryInverseWorldMatrix(parent.matrix, inverse))
+		return false;
+
+	const auto position = world.GetPosition();
+	const double direction[]{double(target.x) - position.x,
+	                         double(target.y) - position.y,
+	                         double(target.z) - position.z};
+	if (direction[0] == 0 && direction[1] == 0 && direction[2] == 0)
+		return true;
+
+	// 親の拡縮・せん断も含めて方向を逆変換し、負のZ拡縮による反転を補正する。
+	double localDirection[3]{};
+	const double sign = object->transform.scale.z < 0 ? -1. : 1.;
+	for (int axis = 0; axis < 3; ++axis) {
+		for (int component = 0; component < 3; ++component)
+			localDirection[axis] +=
+			    direction[component] * inverse.m[component][axis] * sign;
+	}
+	const double length =
+	    std::hypot(localDirection[0], localDirection[1], localDirection[2]);
+	if (!std::isfinite(length) || length == 0)
+		return false;
+	const auto forward = XMVectorSet(float(localDirection[0] / length),
+	                                 float(localDirection[1] / length),
+	                                 float(localDirection[2] / length), 0);
+	// +Yを優先し、真上・真下に近い場合は+Zを使って基底を作る。
+	const auto up = std::abs(XMVectorGetY(forward)) < .9999f
+	                    ? XMVectorSet(0, 1, 0, 0)
+	                    : XMVectorSet(0, 0, 1, 0);
+	const auto right = XMVector3Normalize(XMVector3Cross(up, forward));
+	const XMMATRIX basis(right, XMVector3Cross(forward, right), forward,
+	                     XMVectorSet(0, 0, 0, 1));
+	auto local = object->transform;
+	XMStoreFloat4(&local.rotation,
+	              XMQuaternionNormalize(XMQuaternionRotationMatrix(basis)));
+	if (!Compose(local, &parent, world))
+		return false;
+	object->transform.rotation = local.rotation;
+	return true;
+}
+
 bool SceneHierarchy::SetWorldPose(Scene &scene, SceneObjectId id,
                                   const DirectX::XMFLOAT3 &position,
                                   const DirectX::XMFLOAT4 &rotation) {

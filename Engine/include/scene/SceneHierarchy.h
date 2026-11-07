@@ -109,6 +109,15 @@ bool SetWorldPosition(Scene &scene, SceneObjectId id,
                       const DirectX::XMFLOAT3 &position);
 
 /// <summary>
+/// 物体の+Z方向をワールド座標の目標点へ向ける。位置と拡縮は維持する
+/// </summary>
+/// <param name="scene">変形する物体と親を持つシーン</param>
+/// <param name="id">既存の物体ID</param>
+/// <param name="target">有限なワールド座標。現在位置と同じなら変更しない</param>
+/// <returns>true:成功 false:目標や親子階層が無効。失敗時は変更しない</returns>
+bool LookAt(Scene &scene, SceneObjectId id, const DirectX::XMFLOAT3 &target);
+
+/// <summary>
 /// 親を先に更新して、複数物体のワールド位置を同時に指定する
 /// </summary>
 /// <param name="scene">変更するシーン。成功後は物体参照を取得し直す</param>

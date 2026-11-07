@@ -2314,6 +2314,11 @@ void ControlsPanel::Draw() {
 	         "and share the physics API call budget. Use hit.object references "
 	         "to interact with the target or apply impulses. Only assigned "
 	         "Colliders participate; model triangles are not queried."},
+	        {"Lua > Look At",
+	         "object:look_at(x,y,z) points its local +Z axis toward a world "
+	         "position, preserving its position and scale. A coincident "
+	         "target leaves rotation as it is. Pass the object's own world "
+	         "Y coordinate to aim horizontally. Use inside a callback."},
 	        {"Inspector > Tag",
 	         "Assign one case-sensitive tag per object (up to 64 UTF-8 bytes). "
 	         "Clear the field to remove it. Filter the Hierarchy with "

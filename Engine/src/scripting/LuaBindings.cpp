@@ -33,6 +33,7 @@ enum class Op {
 	SET_LOCAL_POSITION,
 	ROTATION,
 	SET_ROTATION,
+	LOOK_AT,
 	SCALE,
 	SET_SCALE,
 	FIND,
@@ -73,10 +74,11 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 	try {
 		if (!call.scene)
 			throw std::runtime_error("A scene is required for object APIs.");
-		const bool mutation =
-		    op == Op::DESTROY || op == Op::SET_NAME || op == Op::SET_ACTIVE ||
-		    op == Op::SET_POSITION || op == Op::SET_LOCAL_POSITION ||
-		    op == Op::SET_ROTATION || op == Op::SET_SCALE || op == Op::LOG;
+		const bool mutation = op == Op::DESTROY || op == Op::SET_NAME ||
+		                      op == Op::SET_ACTIVE || op == Op::SET_POSITION ||
+		                      op == Op::SET_LOCAL_POSITION ||
+		                      op == Op::SET_ROTATION || op == Op::LOOK_AT ||
+		                      op == Op::SET_SCALE || op == Op::LOG;
 		if (mutation && !call.executing)
 			throw std::runtime_error(
 			    "Change objects inside callbacks, not at module scope.");
@@ -192,6 +194,12 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 				throw std::runtime_error(
 				    "World position cannot be represented in this hierarchy.");
 			break;
+		case Op::LOOK_AT:
+			if (!SceneHierarchy::LookAt(*call.scene, id,
+			                            {numbers[0], numbers[1], numbers[2]}))
+				throw std::runtime_error(
+				    "Look-at target or object hierarchy is invalid.");
+			break;
 		case Op::LOCAL_POSITION:
 			result.numbers[0] = object->transform.translation.x;
 			result.numbers[1] = object->transform.translation.y;
@@ -236,7 +244,7 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 		}
 		if (op == Op::SET_ACTIVE || op == Op::SET_POSITION ||
 		    op == Op::SET_LOCAL_POSITION || op == Op::SET_ROTATION ||
-		    op == Op::SET_SCALE)
+		    (op == Op::SET_SCALE || op == Op::LOOK_AT))
 			call.physicsDirty = true;
 		return true;
 	} catch (const std::exception &error) {
@@ -511,6 +519,7 @@ int LuaInternal::OpenEnvironment(lua_State *state, Call &call) {
 	Method(state, "set_local_position", Op::SET_LOCAL_POSITION);
 	Method(state, "get_rotation", Op::ROTATION);
 	Method(state, "set_rotation", Op::SET_ROTATION);
+	Method(state, "look_at", Op::LOOK_AT);
 	Method(state, "get_scale", Op::SCALE);
 	Method(state, "set_scale", Op::SET_SCALE);
 	LuaInternal::AddUIMethods(state);
