@@ -97,6 +97,15 @@ bool SceneSimulation::Validate(const Scene &source, std::string &error,
 	}
 }
 
+bool SceneSimulation::ValidateArrival(const Scene &source, std::string_view tag,
+                                      std::string &error,
+                                      const CameraPose &fallbackPose) {
+	Scene candidate;
+	candidate.CopyFrom(source);
+	return PlaceSceneArrival(candidate, tag, error) &&
+	       Validate(candidate, error, fallbackPose);
+}
+
 bool SceneSimulation::StartScene(const Scene &source, std::string &error,
                                  const CameraPose &fallbackPose,
                                  SceneObjectId *invalidObject,

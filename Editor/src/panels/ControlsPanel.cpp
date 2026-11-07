@@ -1916,7 +1916,10 @@ void ControlsPanel::Draw() {
 	         "destination "
 	         "must have one active Character Controller, and the marker must "
 	         "leave space for its Collider. The character keeps its authored "
-	         "orientation. An empty tag uses the authored position."},
+	         "orientation. An empty tag uses the authored position. Scene "
+	         "Check "
+	         "reports invalid tagged arrivals on the source Trigger. Game "
+	         "Export validates tagged arrivals throughout its scene graph."},
 	        {"Load Scene",
 	         "Use Trigger Actions > Load Scene to choose a saved scene from "
 	         "Assets or drop a scene asset. Enter, Exit and Interact "

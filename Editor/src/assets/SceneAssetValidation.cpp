@@ -6,6 +6,7 @@
 #include "assets/AssetDependencies.h"
 #include "assets/ImageValidation.h"
 #include "audio/WaveReader.h"
+#include "gameplay/SceneSimulation.h"
 #include "platform/windows/PathUtils.h"
 #include "scene/PrefabSerializer.h"
 #include "scene/Scene.h"
@@ -22,6 +23,9 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 	std::vector<SceneValidationIssue> issues;
 	std::map<std::filesystem::path, std::vector<std::string>> models, textures,
 	    monoAudio, stereoAudio, scenes, scripts, uiTextures, prefabs;
+	std::map<std::pair<std::filesystem::path, std::string>,
+	         std::vector<std::string>>
+	    arrivals;
 
 	const auto inspect = [](const std::filesystem::path &path, auto &cache,
 	                        auto collect) -> const std::vector<std::string> & {
@@ -73,6 +77,24 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 				if (action.operation != TriggerAction::Operation::LOAD_SCENE ||
 				    action.scenePath.empty())
 					continue;
+				if (!action.arrivalTag.empty()) {
+					auto [entry, inserted] = arrivals.try_emplace(
+					    {action.scenePath, action.arrivalTag});
+					if (inserted) {
+						Scene target;
+						std::string error;
+						if (!SceneSerializer::Load(target, action.scenePath))
+							error = "Could not read destination scene: " +
+							        PathUtils::ToUtf8(action.scenePath);
+						else
+							SceneSimulation::ValidateArrival(
+							    target, action.arrivalTag, error);
+						if (!error.empty())
+							entry->second.push_back(std::move(error));
+					}
+					add("Load Scene", entry->second);
+					continue;
+				}
 				add("Load Scene",
 				    inspect(action.scenePath, scenes, [](const auto &path) {
 					    Scene target;

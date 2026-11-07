@@ -119,6 +119,18 @@ class SceneSimulation {
 	                     SceneObjectId *invalidObject = nullptr);
 
 	/// <summary>
+	/// 遷移先でタグ付き到着地点へ主人公を配置できるか、開始処理を実行せず検証する
+	/// </summary>
+	/// <param name="source">変更しない遷移先のシーン</param>
+	/// <param name="tag">到着地点のタグ。空は配置済みの位置を使う</param>
+	/// <param name="error">失敗理由</param>
+	/// <param name="fallbackPose">Cameraがない場合の姿勢</param>
+	/// <returns>true:準備可能 false:到着地点または開始時の設定が無効</returns>
+	static bool ValidateArrival(const Scene &source, std::string_view tag,
+	                            std::string &error,
+	                            const CameraPose &fallbackPose = CameraPose{});
+
+	/// <summary>
 	/// 全物体とシーン遷移で共有するLuaのgameを、変更しないJSONとして取得する
 	/// </summary>
 	/// <returns>次の更新まで有効なJSON。Start・Restart・Stopで空に戻る</returns>

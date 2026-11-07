@@ -523,6 +523,47 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 
 		ValidateRuntimeBuild(runtimeRoot);
 
+		// アセット参照を出力先へ書き換える前に、遷移先の到着地点を検証する。
+		std::set<std::pair<std::size_t, std::string>> checkedArrivals;
+		for (const auto &entry : graph) {
+			for (const auto &[id, object] : entry.objects) {
+				if (!object.triggerActions)
+					continue;
+				for (const auto &action : object.triggerActions->actions) {
+					if (action.operation !=
+					        TriggerAction::Operation::LOAD_SCENE ||
+					    action.scenePath.empty() || action.arrivalTag.empty())
+						continue;
+					const auto found =
+					    std::ranges::find_if(graph, [&](const auto &target) {
+						    return !target.prefab && !target.source.empty() &&
+						           PathUtils::IsSameFile(target.source,
+						                                 action.scenePath);
+					    });
+					if (found == graph.end())
+						throw std::runtime_error(
+						    "Tagged arrival requires a destination scene in "
+						    "the export graph.");
+					const auto index =
+					    static_cast<std::size_t>(found - graph.begin());
+					if (!checkedArrivals.emplace(index, action.arrivalTag)
+					         .second)
+						continue;
+					Scene candidate;
+					candidate.ReplaceObjects(found->objects);
+					std::string issue;
+					if (!SceneSimulation::ValidateArrival(
+					        candidate, action.arrivalTag, issue,
+					        options.config.fallbackCamera))
+						throw std::runtime_error(
+						    std::format("Load Scene on object ID {} to '{}' "
+						                "(Arrival Tag '{}'): {}",
+						                id, PathUtils::ToUtf8(found->source),
+						                action.arrivalTag, issue));
+				}
+			}
+		}
+
 		for (auto &entry : graph) {
 			Scene candidate;
 			candidate.ReplaceObjects(entry.objects);
