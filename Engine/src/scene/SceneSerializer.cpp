@@ -595,6 +595,9 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 					        ? "stopAudio"
 					    : action.operation == TriggerAction::Operation::TELEPORT
 					        ? "teleport"
+					    : action.operation ==
+					            TriggerAction::Operation::SET_CHECKPOINT
+					        ? "setCheckpoint"
 					        : "loadScene";
 					actions.push_back(
 					    {{"event", action.event == TriggerAction::Event::ENTER
@@ -1262,7 +1265,8 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					     !(version >= 21 && (operation == "playAudio" ||
 					                         operation == "stopAudio")) &&
 					     !(version >= 23 && operation == "teleport") &&
-					     !(version >= 28 && operation == "loadScene")) ||
+					     !(version >= 28 && operation == "loadScene") &&
+					     !(version >= 39 && operation == "setCheckpoint")) ||
 					    (version >= 23 &&
 					     !value.at("destination").is_number_unsigned()) ||
 					    !value.at("target").is_number_unsigned() ||
@@ -1288,6 +1292,8 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					         ? TriggerAction::Operation::STOP_AUDIO
 					     : operation == "teleport"
 					         ? TriggerAction::Operation::TELEPORT
+					     : operation == "setCheckpoint"
+					         ? TriggerAction::Operation::SET_CHECKPOINT
 					         : TriggerAction::Operation::LOAD_SCENE,
 					     value.at("once").get<bool>(),
 					     version >= 23

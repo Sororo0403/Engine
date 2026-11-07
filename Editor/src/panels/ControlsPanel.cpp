@@ -941,6 +941,13 @@ void ControlsPanel::Draw() {
 	         "does "
 	         "not change the authored offsets. Exported games use the same "
 	         "input."},
+	        {"Trigger Actions > Set Checkpoint",
+	         "Choose a target with Character Controller and Respawn, and a "
+	         "destination object. The action runs when that character enters, "
+	         "exits or interacts with the Trigger, depending on Event. Falling "
+	         "later returns the character to the destination's position at "
+	         "activation. Place it above Fall Below Y and clear of solids. "
+	         "Restart restores the authored Respawn settings."},
 	        {"Trigger Actions > Teleport",
 	         "Choose Teleport, set Target to the object to move and "
 	         "Destination "

@@ -46,6 +46,8 @@ const char *OperationLabel(TriggerAction::Operation operation) {
 		return "Stop Audio";
 	case TriggerAction::Operation::TELEPORT:
 		return "Teleport";
+	case TriggerAction::Operation::SET_CHECKPOINT:
+		return "Set Checkpoint";
 	case TriggerAction::Operation::LOAD_SCENE:
 		return "Load Scene";
 	}
@@ -117,6 +119,10 @@ bool TriggerActionsInspector::Draw(
 						    !candidate.audioSource) {
 							continue;
 						}
+						if (action.operation ==
+						        TriggerAction::Operation::SET_CHECKPOINT &&
+						    (!candidate.character || !candidate.respawn))
+							continue;
 						const auto label = TargetLabel(scene, targetId);
 						if (ImGui::Selectable(label.c_str(),
 						                      action.target == targetId) &&
@@ -138,6 +144,7 @@ bool TriggerActionsInspector::Draw(
 				                TriggerAction::Operation::PLAY_AUDIO,
 				                TriggerAction::Operation::STOP_AUDIO,
 				                TriggerAction::Operation::TELEPORT,
+				                TriggerAction::Operation::SET_CHECKPOINT,
 				                TriggerAction::Operation::LOAD_SCENE}) {
 					if (ImGui::Selectable(OperationLabel(operation),
 					                      action.operation == operation) &&
@@ -148,7 +155,7 @@ bool TriggerActionsInspector::Draw(
 				}
 				ImGui::EndCombo();
 			}
-			if (action.operation == TriggerAction::Operation::TELEPORT) {
+			if (action.UsesDestination()) {
 				const auto destination = TargetLabel(scene, action.destination);
 				if (ImGui::BeginCombo("Destination", destination.c_str())) {
 					if (ImGui::Selectable("None", action.destination == 0) &&
@@ -258,7 +265,7 @@ void TriggerActionsInspector::DrawReadOnly(const ImGuiSystem &ui,
 		    OperationLabel(action.operation), action.once ? "Yes" : "No"));
 		if (action.operation == TriggerAction::Operation::LOAD_SCENE)
 			ui.Text("Scene: " + PathUtils::ToUtf8(action.scenePath));
-		if (action.operation == TriggerAction::Operation::TELEPORT) {
+		if (action.UsesDestination()) {
 			ui.Text("Destination: " + TargetLabel(scene, action.destination));
 		}
 	}

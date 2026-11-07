@@ -360,6 +360,7 @@ class SceneSimulation {
 	struct ActionSignal {
 		SceneObjectId receiver = 0;
 		TriggerAction::Event event = TriggerAction::Event::ENTER;
+		SceneObjectId other = 0;
 	};
 
 	/// <summary>

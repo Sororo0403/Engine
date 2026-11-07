@@ -99,9 +99,13 @@ void SceneSimulation::QueueActionSignals(
 			    object->collider && object->collider->isTrigger &&
 			    object->triggerActions &&
 			    !object->triggerActions->actions.empty()) {
-				signals.push_back({id, event.type == TriggerEvent::Type::ENTER
-				                           ? TriggerAction::Event::ENTER
-				                           : TriggerAction::Event::EXIT});
+				signals.push_back({id,
+				                   event.type == TriggerEvent::Type::ENTER
+				                       ? TriggerAction::Event::ENTER
+				                       : TriggerAction::Event::EXIT,
+				                   id == event.contact.first
+				                       ? event.contact.second
+				                       : event.contact.first});
 			}
 		}
 	}
@@ -125,7 +129,8 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 			    object->collider && object->collider->isTrigger &&
 			    object->triggerActions &&
 			    !object->triggerActions->actions.empty()) {
-				signals.push_back({receiver, TriggerAction::Event::INTERACT});
+				signals.push_back(
+				    {receiver, TriggerAction::Event::INTERACT, character_});
 			}
 		}
 	}
@@ -134,6 +139,8 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 	std::map<SceneObjectId, bool> requested;
 	auto audio = audioActions_;
 	std::map<SceneObjectId, SceneObjectId> destinations;
+	// 有効な主人公は一体なので、同じ更新では最後に通った設定を使う。
+	SceneObjectId checkpoint = 0, checkpointTarget = 0;
 	auto requestedScene = pendingScene_;
 	for (const auto &signal : signals) {
 		const auto *object = scene_.FindObject(signal.receiver);
@@ -174,15 +181,27 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 					fired.insert(key);
 				continue;
 			}
-			if (action.operation == TriggerAction::Operation::TELEPORT) {
+			if (action.UsesDestination()) {
+				const bool settingCheckpoint =
+				    action.operation ==
+				    TriggerAction::Operation::SET_CHECKPOINT;
+				if (settingCheckpoint && (signal.other != action.target ||
+				                          action.target != character_))
+					continue;
 				if (!scene_.Contains(action.destination)) {
-					error = "Teleport requires an existing destination.";
+					error = "Teleport and Set Checkpoint require an existing "
+					        "destination.";
 					if (invalidObject) {
 						*invalidObject = signal.receiver;
 					}
 					return false;
 				}
-				destinations[action.target] = action.destination;
+				if (settingCheckpoint) {
+					checkpoint = action.destination;
+					checkpointTarget = action.target;
+				} else {
+					destinations[action.target] = action.destination;
+				}
 				if (action.once) {
 					fired.insert(key);
 				}
@@ -225,6 +244,7 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 			case TriggerAction::Operation::STOP_AUDIO:
 			case TriggerAction::Operation::LOAD_SCENE:
 			case TriggerAction::Operation::TELEPORT:
+			case TriggerAction::Operation::SET_CHECKPOINT:
 				break;
 			}
 			if (action.once) {
@@ -253,6 +273,19 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 		}
 		frameEvents_.swap(events);
 	}
+	std::optional<DirectX::XMFLOAT3> checkpointPosition;
+	if (checkpoint && character_ == checkpointTarget) {
+		SceneWorldTransform destination;
+		if (!SceneHierarchy::GetWorldTransform(scene_, checkpoint,
+		                                       destination)) {
+			error = "Checkpoint destination has an invalid world transform.";
+			if (invalidObject)
+				*invalidObject = checkpoint;
+			return false;
+		}
+		checkpointPosition = destination.GetPosition();
+	}
+
 	if (!destinations.empty()) {
 		// 全移動先を変更前のシーンから取得し、親子や相互参照でも順序に依存させない。
 		std::map<SceneObjectId, DirectX::XMFLOAT3> positions;
@@ -269,6 +302,18 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 			positions.emplace(target, transform.GetPosition());
 		}
 		if (!ApplyTeleports(positions, error, invalidObject)) {
+			return false;
+		}
+	}
+
+	if (checkpointPosition) {
+		Scene candidate;
+		candidate.CopyFrom(scene_);
+		auto &settings = *candidate.FindObject(checkpointTarget)->respawn;
+		settings.useStartPosition = false;
+		settings.position = *checkpointPosition;
+		if (!SynchronizeSceneChanges(candidate, {}, error, invalidObject)) {
+			error = "Set Checkpoint failed: " + error;
 			return false;
 		}
 	}

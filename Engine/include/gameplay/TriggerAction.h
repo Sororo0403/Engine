@@ -5,11 +5,11 @@
 #include <filesystem>
 
 /// <summary>
-/// Triggerの進入・退出、または範囲内での操作入力に応じて、対象物体の有効設定・音声・瞬間移動、またはシーン遷移を要求する
+/// Triggerの進入・退出、または範囲内での操作入力に応じて、対象物体の有効設定・音声・瞬間移動・復帰先の変更、またはシーン遷移を要求する
 /// </summary>
 struct TriggerAction {
 	/// <summary>
-	/// 対象へ適用する有効設定、Audio Sourceの再生・停止、瞬間移動、またはシーンの読み込み
+	/// 対象へ適用する有効設定、Audio Sourceの再生・停止、瞬間移動・復帰先の変更、またはシーンの読み込み
 	/// </summary>
 	enum class Operation {
 		ENABLE,
@@ -18,6 +18,7 @@ struct TriggerAction {
 		PLAY_AUDIO,
 		STOP_AUDIO,
 		TELEPORT,
+		SET_CHECKPOINT,
 		LOAD_SCENE
 	};
 
@@ -30,7 +31,7 @@ struct TriggerAction {
 	SceneObjectId target = 0;
 	Operation operation = Operation::ENABLE;
 	bool once = false;
-	// Teleportの移動先。物体のワールド位置を使用し、回転と拡縮は維持する。
+	// Teleportの移動先、またはSet Checkpointの復帰先。物体のワールド位置を使用する。
 	SceneObjectId destination = 0;
 	// Load Sceneの遷移先。空は編集中だけ許可する。絶対パスまたは実行ファイル基準
 	std::filesystem::path scenePath;
@@ -50,8 +51,16 @@ struct TriggerAction {
 		       (operation == Operation::ENABLE ||
 		        operation == Operation::DISABLE ||
 		        operation == Operation::TOGGLE || IsAudioOperation() ||
-		        operation == Operation::TELEPORT ||
-		        operation == Operation::LOAD_SCENE);
+		        UsesDestination() || operation == Operation::LOAD_SCENE);
+	}
+
+	/// <summary>
+	/// シーン内の物体を移動先または復帰先として使う操作か確認する
+	/// </summary>
+	/// <returns>true:配置先を使う false:配置先は不要</returns>
+	bool UsesDestination() const {
+		return operation == Operation::TELEPORT ||
+		       operation == Operation::SET_CHECKPOINT;
 	}
 
 	/// <summary>

@@ -48,8 +48,7 @@ bool SceneDestruction::Apply(Scene &scene, std::span<const SceneObjectId> roots,
 						        const bool targetRemoved =
 						            removed.contains(action.target);
 						        const bool destinationRemoved =
-						            action.operation ==
-						                TriggerAction::Operation::TELEPORT &&
+						            action.UsesDestination() &&
 						            removed.contains(action.destination);
 						        return action.operation !=
 						                   TriggerAction::Operation::

@@ -150,11 +150,20 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 						        "for each action.");
 						break;
 					}
-					if (action.operation ==
-					        TriggerAction::Operation::TELEPORT &&
+					if (action.UsesDestination() &&
 					    !scene.Contains(action.destination)) {
-						add(id, "Teleport Trigger Actions require an existing "
-						        "destination.");
+						add(id,
+						    "Teleport and Set Checkpoint require an existing "
+						    "destination.");
+						break;
+					}
+
+					const auto &target = *scene.FindObject(action.target);
+					if (action.operation ==
+					        TriggerAction::Operation::SET_CHECKPOINT &&
+					    (!target.character || !target.respawn)) {
+						add(id, "Set Checkpoint requires a target with "
+						        "Character Controller and Respawn.");
 						break;
 					}
 
