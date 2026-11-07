@@ -941,6 +941,14 @@ void ControlsPanel::Draw() {
 	         "does "
 	         "not change the authored offsets. Exported games use the same "
 	         "input."},
+	        {"Trigger Actions > Set Camera",
+	         "Choose a Camera target to switch the Game view on Enter, Exit "
+	         "or Interact. Enter and Exit use any eligible Collider, including "
+	         "overlaps at Play start. Both fixed and Follow Cameras can be "
+	         "selected. "
+	         "The target must be active when the action runs. If several "
+	         "actions select a camera in one update, the last one wins. "
+	         "Restart restores the authored Primary Camera."},
 	        {"Trigger Actions > Set Checkpoint",
 	         "Choose a target with Character Controller and Respawn, and a "
 	         "destination object. The action runs when that character enters, "

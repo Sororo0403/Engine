@@ -141,6 +141,7 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 	std::map<SceneObjectId, SceneObjectId> destinations;
 	// 有効な主人公は一体なので、同じ更新では最後に通った設定を使う。
 	SceneObjectId checkpoint = 0, checkpointTarget = 0;
+	SceneObjectId selectedCamera = 0;
 	auto requestedScene = pendingScene_;
 	for (const auto &signal : signals) {
 		const auto *object = scene_.FindObject(signal.receiver);
@@ -177,6 +178,12 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 				// 同じ更新に複数の要求があれば、既存の操作順で最後の要求を使用する。
 				requestedScene =
 				    PathUtils::ResolveFromExecutable(action.scenePath);
+				if (action.once)
+					fired.insert(key);
+				continue;
+			}
+			if (action.operation == TriggerAction::Operation::SET_CAMERA) {
+				selectedCamera = action.target;
 				if (action.once)
 					fired.insert(key);
 				continue;
@@ -245,6 +252,7 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 			case TriggerAction::Operation::LOAD_SCENE:
 			case TriggerAction::Operation::TELEPORT:
 			case TriggerAction::Operation::SET_CHECKPOINT:
+			case TriggerAction::Operation::SET_CAMERA:
 				break;
 			}
 			if (action.once) {
@@ -306,14 +314,34 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 		}
 	}
 
-	if (checkpointPosition) {
+	if (selectedCamera && !SceneActivity::IsActive(scene_, selectedCamera)) {
+		error = "Set Camera requires an active target Camera.";
+		if (invalidObject)
+			*invalidObject = selectedCamera;
+		return false;
+	}
+	if (checkpointPosition || (selectedCamera && selectedCamera != camera_)) {
 		Scene candidate;
 		candidate.CopyFrom(scene_);
-		auto &settings = *candidate.FindObject(checkpointTarget)->respawn;
-		settings.useStartPosition = false;
-		settings.position = *checkpointPosition;
+		if (checkpointPosition) {
+			auto &settings = *candidate.FindObject(checkpointTarget)->respawn;
+			settings.useStartPosition = false;
+			settings.position = *checkpointPosition;
+		}
+		// 再生シーンだけのPrimaryを切り替え、追従姿勢や他の実行状態を引き継ぐ。
+		if (selectedCamera) {
+			for (const auto &[id, object] : candidate.GetObjects())
+				if (object.camera)
+					candidate.FindObject(id)->camera->primary =
+					    id == selectedCamera;
+		}
 		if (!SynchronizeSceneChanges(candidate, {}, error, invalidObject)) {
-			error = "Set Checkpoint failed: " + error;
+			const char *operation =
+			    checkpointPosition
+			        ? (selectedCamera ? "Set Camera / Set Checkpoint"
+			                          : "Set Checkpoint")
+			        : "Set Camera";
+			error = std::string(operation) + " failed: " + error;
 			return false;
 		}
 	}

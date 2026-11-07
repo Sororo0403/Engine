@@ -5,11 +5,11 @@
 #include <filesystem>
 
 /// <summary>
-/// Triggerの進入・退出、または範囲内での操作入力に応じて、対象物体の有効設定・音声・瞬間移動・復帰先の変更、またはシーン遷移を要求する
+/// Triggerの進入・退出、または範囲内での操作入力に応じて、対象物体の有効設定・音声・瞬間移動・復帰先やカメラの変更、またはシーン遷移を要求する
 /// </summary>
 struct TriggerAction {
 	/// <summary>
-	/// 対象へ適用する有効設定、Audio Sourceの再生・停止、瞬間移動・復帰先の変更、またはシーンの読み込み
+	/// 対象へ適用する有効設定、Audio Sourceの再生・停止、瞬間移動・復帰先やカメラの変更、またはシーンの読み込み
 	/// </summary>
 	enum class Operation {
 		ENABLE,
@@ -19,6 +19,7 @@ struct TriggerAction {
 		STOP_AUDIO,
 		TELEPORT,
 		SET_CHECKPOINT,
+		SET_CAMERA,
 		LOAD_SCENE
 	};
 
@@ -51,7 +52,8 @@ struct TriggerAction {
 		       (operation == Operation::ENABLE ||
 		        operation == Operation::DISABLE ||
 		        operation == Operation::TOGGLE || IsAudioOperation() ||
-		        UsesDestination() || operation == Operation::LOAD_SCENE);
+		        UsesDestination() || operation == Operation::SET_CAMERA ||
+		        operation == Operation::LOAD_SCENE);
 	}
 
 	/// <summary>

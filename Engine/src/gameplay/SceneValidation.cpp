@@ -167,8 +167,15 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 						break;
 					}
 
-					if (action.IsAudioOperation() &&
-					    !scene.FindObject(action.target)->audioSource) {
+					if (action.operation ==
+					        TriggerAction::Operation::SET_CAMERA &&
+					    !target.camera) {
+						add(id, "Set Camera requires a target with a Camera "
+						        "component.");
+						break;
+					}
+
+					if (action.IsAudioOperation() && !target.audioSource) {
 						add(id, "Audio Trigger Actions require an Audio Source "
 						        "on their target.");
 						break;

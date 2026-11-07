@@ -48,6 +48,8 @@ const char *OperationLabel(TriggerAction::Operation operation) {
 		return "Teleport";
 	case TriggerAction::Operation::SET_CHECKPOINT:
 		return "Set Checkpoint";
+	case TriggerAction::Operation::SET_CAMERA:
+		return "Set Camera";
 	case TriggerAction::Operation::LOAD_SCENE:
 		return "Load Scene";
 	}
@@ -123,6 +125,10 @@ bool TriggerActionsInspector::Draw(
 						        TriggerAction::Operation::SET_CHECKPOINT &&
 						    (!candidate.character || !candidate.respawn))
 							continue;
+						if (action.operation ==
+						        TriggerAction::Operation::SET_CAMERA &&
+						    !candidate.camera)
+							continue;
 						const auto label = TargetLabel(scene, targetId);
 						if (ImGui::Selectable(label.c_str(),
 						                      action.target == targetId) &&
@@ -145,6 +151,7 @@ bool TriggerActionsInspector::Draw(
 				                TriggerAction::Operation::STOP_AUDIO,
 				                TriggerAction::Operation::TELEPORT,
 				                TriggerAction::Operation::SET_CHECKPOINT,
+				                TriggerAction::Operation::SET_CAMERA,
 				                TriggerAction::Operation::LOAD_SCENE}) {
 					if (ImGui::Selectable(OperationLabel(operation),
 					                      action.operation == operation) &&
