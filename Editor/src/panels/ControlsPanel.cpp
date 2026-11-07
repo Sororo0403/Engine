@@ -2314,6 +2314,12 @@ void ControlsPanel::Draw() {
 	         "and share the physics API call budget. Use hit.object references "
 	         "to interact with the target or apply impulses. Only assigned "
 	         "Colliders participate; model triangles are not queried."},
+	        {"Lua > Game Camera",
+	         "scene.get_camera() returns the active Primary Camera or nil. "
+	         "scene.set_camera(object) selects an active object with Camera; "
+	         "pass nil to use the fixed fallback view. Call the setter inside "
+	         "a callback. Both fixed and Follow Cameras are supported. "
+	         "Restart restores the authored Primary selection."},
 	        {"Lua > Mesh Appearance",
 	         "For an object with Mesh Renderer, set_mesh_visible(boolean) "
 	         "changes its mesh visibility while gameplay components continue "

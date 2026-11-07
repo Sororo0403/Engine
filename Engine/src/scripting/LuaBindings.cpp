@@ -1,4 +1,5 @@
 #include "LuaBindings.h"
+#include "gameplay/SceneCameraUtils.h"
 #include "math/TransformUtils.h"
 #include "platform/windows/StringConversion.h"
 #include "scene/Scene.h"
@@ -48,6 +49,8 @@ enum class Op {
 	SET_SCALE,
 	FIND,
 	FIND_ID,
+	GET_CAMERA,
+	SET_CAMERA,
 	LOG
 };
 
@@ -88,9 +91,10 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 		const bool mutation =
 		    op == Op::DESTROY || op == Op::SET_NAME || op == Op::SET_ACTIVE ||
 		    op == Op::SET_PARENT || op == Op::SET_MESH_VISIBLE ||
-		    op == Op::SET_MESH_TINT || op == Op::SET_POSITION ||
-		    op == Op::SET_LOCAL_POSITION || op == Op::SET_ROTATION ||
-		    op == Op::LOOK_AT || op == Op::SET_SCALE || op == Op::LOG;
+		    op == Op::SET_MESH_TINT || op == Op::SET_CAMERA ||
+		    op == Op::SET_POSITION || op == Op::SET_LOCAL_POSITION ||
+		    op == Op::SET_ROTATION || op == Op::LOOK_AT ||
+		    op == Op::SET_SCALE || op == Op::LOG;
 		if (mutation && !call.executing)
 			throw std::runtime_error(
 			    "Change objects inside callbacks, not at module scope.");
@@ -103,6 +107,16 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 			     StringConversion::Utf8ToWide(call.returnText).empty()))
 				throw std::runtime_error("Script logs must use UTF-8 text.");
 			call.logs.push_back(call.returnText);
+			return true;
+		}
+		if (op == Op::GET_CAMERA) {
+			result.id = SceneCameraUtils::FindPrimary(*call.scene);
+			return true;
+		}
+		if (op == Op::SET_CAMERA) {
+			if (!SceneCameraUtils::SetPrimary(*call.scene, id))
+				throw std::runtime_error(
+				    "Set Camera requires an active target Camera.");
 			return true;
 		}
 		if (op == Op::FIND) {
@@ -319,6 +333,8 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 		}
 		case Op::FIND:
 		case Op::FIND_ID:
+		case Op::GET_CAMERA:
+		case Op::SET_CAMERA:
 		case Op::LOG:
 			break;
 		}
@@ -352,14 +368,19 @@ int Dispatch(lua_State *state) {
 	float numbers[4]{};
 	bool flag = false;
 	SceneObjectId parent = 0;
-	if (op != Op::FIND && op != Op::FIND_ID && op != Op::LOG)
+	if (op == Op::SET_CAMERA) {
+		if (!lua_isnil(state, 1))
+			id = *static_cast<SceneObjectId *>(
+			    luaL_checkudata(state, 1, kObjectType));
+	} else if (op != Op::FIND && op != Op::FIND_ID && op != Op::LOG &&
+	           op != Op::GET_CAMERA)
 		id = *static_cast<SceneObjectId *>(
 		    luaL_checkudata(state, 1, kObjectType));
 	if (op == Op::NAME || op == Op::TAG || op == Op::POSITION ||
 	    op == Op::LOCAL_POSITION || op == Op::ROTATION || op == Op::SCALE ||
 	    op == Op::ACTIVE || op == Op::MESH_VISIBLE || op == Op::MESH_TINT ||
 	    op == Op::PARENT || op == Op::ID || op == Op::VALID ||
-	    op == Op::DESTROY) {
+	    op == Op::DESTROY || op == Op::GET_CAMERA || op == Op::SET_CAMERA) {
 		// 引数はselfだけ。値はPerformで取得する。
 	} else if (op == Op::SET_NAME || op == Op::REFERENCE ||
 	           op == Op::FIND_CHILD || op == Op::FIND || op == Op::FIND_ID ||
@@ -410,6 +431,7 @@ int Dispatch(lua_State *state) {
 	case Op::REFERENCE:
 	case Op::FIND:
 	case Op::FIND_ID:
+	case Op::GET_CAMERA:
 		LuaInternal::PushObject(state, result.id);
 		return 1;
 	case Op::ACTIVE:
@@ -680,6 +702,8 @@ int LuaInternal::OpenEnvironment(lua_State *state, Call &call) {
 	lua_newtable(state);
 	Method(state, "find", Op::FIND);
 	Method(state, "find_id", Op::FIND_ID);
+	Method(state, "get_camera", Op::GET_CAMERA);
+	Method(state, "set_camera", Op::SET_CAMERA);
 	lua_pushcfunction(state, FindAllByTag);
 	lua_setfield(state, -2, "find_all_by_tag");
 	Method(state, "log", Op::LOG);

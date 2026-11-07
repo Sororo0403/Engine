@@ -1,3 +1,4 @@
+#include "gameplay/SceneCameraUtils.h"
 #include "gameplay/SceneSimulation.h"
 
 #include "math/TransformUtils.h"
@@ -442,11 +443,12 @@ bool SceneSimulation::ApplyTriggerActions(std::string &error,
 			settings.position = *checkpointPosition;
 		}
 		// 再生シーンだけのPrimaryを切り替え、追従姿勢や他の実行状態を引き継ぐ。
-		if (selectedCamera) {
-			for (const auto &[id, object] : candidate.GetObjects())
-				if (object.camera)
-					candidate.FindObject(id)->camera->primary =
-					    id == selectedCamera;
+		if (selectedCamera &&
+		    !SceneCameraUtils::SetPrimary(candidate, selectedCamera)) {
+			error = "Set Camera requires an active target Camera.";
+			if (invalidObject)
+				*invalidObject = selectedCamera;
+			return false;
 		}
 		std::vector<SceneObjectId> transformed;
 		for (const auto &[id, operation] : animationPlayback) {

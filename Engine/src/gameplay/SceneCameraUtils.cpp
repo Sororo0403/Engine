@@ -119,6 +119,26 @@ bool SceneCameraUtils::AvoidFollowObstacles(const Scene &scene,
 /// </summary>
 /// <param name="transform">カメラ物体の姿勢。拡大率は描画姿勢へ適用しない</param>
 /// <returns>ワールド座標のカメラ姿勢</returns>
+SceneObjectId SceneCameraUtils::FindPrimary(const Scene &scene) {
+	for (const auto &[id, object] : scene.GetObjects())
+		if (object.camera && object.camera->primary &&
+		    SceneActivity::IsActive(scene, id))
+			return id;
+	return 0;
+}
+
+bool SceneCameraUtils::SetPrimary(Scene &scene, SceneObjectId id) {
+	if (id) {
+		const auto *target = scene.FindObject(id);
+		if (!target || !target->camera || !SceneActivity::IsActive(scene, id))
+			return false;
+	}
+	for (const auto &[candidate, object] : scene.GetObjects())
+		if (object.camera)
+			scene.FindObject(candidate)->camera->primary = candidate == id;
+	return true;
+}
+
 CameraPose SceneCameraUtils::FromTransform(const Transform &transform) {
 	using namespace DirectX;
 	CameraPose pose;

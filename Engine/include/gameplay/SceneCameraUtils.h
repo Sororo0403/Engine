@@ -12,6 +12,21 @@ struct SceneWorldTransform;
 
 namespace SceneCameraUtils {
 /// <summary>
+/// 有効なPrimary Cameraを取得する。固定ビューの場合は0を返す
+/// </summary>
+/// <param name="scene">現在の候補シーン</param>
+/// <returns>描画に使う物体ID。該当なしは0</returns>
+SceneObjectId FindPrimary(const Scene &scene);
+
+/// <summary>
+/// 候補シーン内のPrimary指定を一つに更新する。0は固定ビューへの切り替え
+/// </summary>
+/// <param name="scene">変更するシーン</param>
+/// <param name="id">有効なCameraを持つ物体。0は全Primary指定を解除する</param>
+/// <returns>true:成功 false:対象が不在、無効、またはCameraなし</returns>
+bool SetPrimary(Scene &scene, SceneObjectId id);
+
+/// <summary>
 /// Transformの位置と回転から、+Zを前、+Yを上とする描画姿勢を作る
 /// </summary>
 /// <param name="transform">カメラ物体の姿勢。拡大率は描画姿勢へ適用しない</param>
