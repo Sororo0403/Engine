@@ -6,6 +6,7 @@
 #include "scene/SceneHierarchy.h"
 #include "scripting/LuaScript.h"
 #include <algorithm>
+#include <array>
 #include <charconv>
 #include <cmath>
 #include <cstring>
@@ -17,6 +18,7 @@ namespace {
 constexpr const char *kObjectType = "Engine.ScriptObject";
 enum class Op {
 	NAME,
+	TAG,
 	SET_NAME,
 	ID,
 	VALID,
@@ -140,6 +142,9 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 		case Op::NAME:
 			call.returnText = object->name;
 			break;
+		case Op::TAG:
+			call.returnText = object->tag;
+			break;
 		case Op::SET_NAME:
 			if (!length || length > 256)
 				throw std::runtime_error(
@@ -260,10 +265,10 @@ int Dispatch(lua_State *state) {
 	if (op != Op::FIND && op != Op::FIND_ID && op != Op::LOG)
 		id = *static_cast<SceneObjectId *>(
 		    luaL_checkudata(state, 1, kObjectType));
-	if (op == Op::NAME || op == Op::POSITION || op == Op::LOCAL_POSITION ||
-	    op == Op::ROTATION || op == Op::SCALE || op == Op::ACTIVE ||
-	    op == Op::PARENT || op == Op::ID || op == Op::VALID ||
-	    op == Op::DESTROY) {
+	if (op == Op::NAME || op == Op::TAG || op == Op::POSITION ||
+	    op == Op::LOCAL_POSITION || op == Op::ROTATION || op == Op::SCALE ||
+	    op == Op::ACTIVE || op == Op::PARENT || op == Op::ID ||
+	    op == Op::VALID || op == Op::DESTROY) {
 		// 引数はselfだけ。値はPerformで取得する。
 	} else if (op == Op::SET_NAME || op == Op::REFERENCE || op == Op::FIND ||
 	           op == Op::FIND_ID || op == Op::LOG) {
@@ -292,6 +297,7 @@ int Dispatch(lua_State *state) {
 	}
 	switch (op) {
 	case Op::NAME:
+	case Op::TAG:
 	case Op::ID:
 		lua_pushlstring(state, call.returnText.data(), call.returnText.size());
 		return 1;
@@ -319,6 +325,69 @@ int Dispatch(lua_State *state) {
 	default:
 		return 0;
 	}
+}
+
+constexpr std::size_t kMaximumTagMatches = 256;
+
+/// <summary>
+/// タグが完全一致する物体を、指定件数までID順に集める
+/// </summary>
+bool CollectTagged(LuaInternal::Call &call, std::string_view tag,
+                   bool includeInactive, std::span<SceneObjectId> matches,
+                   std::size_t &count, bool &truncated) noexcept {
+	try {
+		if (!call.scene || tag.empty() || !SceneObject::IsValidTag(tag))
+			throw std::runtime_error(
+			    "Tag search requires a scene and 1 to 64 UTF-8 bytes.");
+		SceneActivity::States active;
+		if (!includeInactive &&
+		    !SceneActivity::BuildStates(*call.scene, active))
+			throw std::runtime_error("Tag search requires a valid hierarchy.");
+		for (const auto &[id, object] : call.scene->GetObjects()) {
+			if (object.tag != tag || (!includeInactive && !active.at(id)))
+				continue;
+			if (count == matches.size()) {
+				truncated = true;
+				break;
+			}
+			matches[count++] = id;
+		}
+		return true;
+	} catch (const std::exception &e) {
+		call.error = e.what();
+		return false;
+	} catch (...) {
+		call.error = "Tag search failed.";
+		return false;
+	}
+}
+
+/// <summary>
+/// タグが一致した物体の配列と、上限を超えたかを返す
+/// </summary>
+int FindAllByTag(lua_State *state) {
+	luaL_checktype(state, 1, LUA_TSTRING);
+	std::size_t length = 0;
+	const char *tag = lua_tolstring(state, 1, &length);
+	if (!lua_isnoneornil(state, 2))
+		luaL_checktype(state, 2, LUA_TBOOLEAN);
+	const bool includeInactive = lua_toboolean(state, 2) != 0;
+	std::array<SceneObjectId, kMaximumTagMatches> matches{};
+	std::size_t count = 0;
+	bool truncated = false;
+	auto &call = Context(state);
+	if (!CollectTagged(call, {tag, length}, includeInactive, matches, count,
+	                   truncated)) {
+		lua_pushlstring(state, call.error.data(), call.error.size());
+		return lua_error(state);
+	}
+	lua_createtable(state, static_cast<int>(count), 0);
+	for (std::size_t i = 0; i < count; ++i) {
+		LuaInternal::PushObject(state, matches[i]);
+		lua_rawseti(state, -2, static_cast<lua_Integer>(i + 1));
+	}
+	lua_pushboolean(state, truncated);
+	return 2;
 }
 
 /// <summary>
@@ -427,6 +496,7 @@ int LuaInternal::OpenEnvironment(lua_State *state, Call &call) {
 	lua_setfield(state, -2, "__eq");
 	lua_newtable(state);
 	Method(state, "get_name", Op::NAME);
+	Method(state, "get_tag", Op::TAG);
 	Method(state, "set_name", Op::SET_NAME);
 	Method(state, "get_id", Op::ID);
 	Method(state, "is_valid", Op::VALID);
@@ -457,6 +527,8 @@ int LuaInternal::OpenEnvironment(lua_State *state, Call &call) {
 	lua_newtable(state);
 	Method(state, "find", Op::FIND);
 	Method(state, "find_id", Op::FIND_ID);
+	lua_pushcfunction(state, FindAllByTag);
+	lua_setfield(state, -2, "find_all_by_tag");
 	Method(state, "log", Op::LOG);
 	LuaInternal::AddSpatialQueryMethods(state);
 	lua_setfield(state, environment, "scene");

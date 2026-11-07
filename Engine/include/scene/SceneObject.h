@@ -31,12 +31,14 @@
 #include <filesystem>
 #include <optional>
 #include <string>
+#include <string_view>
 
 /// <summary>
 /// シーン上の物体の名前・変形情報・描画と衝突の設定を保持する
 /// </summary>
 struct SceneObject {
 	std::string name = "Object";
+	std::string tag;
 	// 自身の設定。実際の有効状態はSceneActivityで祖先と合わせて判定する
 	bool active = true;
 	// 親の変更にはSceneHierarchy::SetParentを使う。0はルートを表す
@@ -90,6 +92,13 @@ struct SceneObject {
 	std::optional<TextComponent> text;
 	std::optional<ImageComponent> image;
 	std::optional<ButtonComponent> button;
+
+	/// <summary>
+	/// 物体の分類タグを検証する。空は未設定として扱う
+	/// </summary>
+	/// <param name="tag">最大64バイトのUTF-8文字列</param>
+	/// <returns>true:有効 false:長すぎる、NULを含む、またはUTF-8ではない</returns>
+	static bool IsValidTag(std::string_view tag);
 
 	/// <summary>
 	/// Meshに形状の参照が割り当てられているか確認する

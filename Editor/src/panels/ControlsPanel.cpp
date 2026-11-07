@@ -2284,6 +2284,15 @@ void ControlsPanel::Draw() {
 	         "and share the physics API call budget. Use hit.object references "
 	         "to interact with the target or apply impulses. Only assigned "
 	         "Colliders participate; model triangles are not queried."},
+	        {"Inspector > Tag",
+	         "Assign one case-sensitive tag per object (up to 64 UTF-8 bytes). "
+	         "Clear the field to remove it. Filter the Hierarchy with "
+	         "tag:Enemy. "
+	         "Tags are saved with scenes and "
+	         "Prefabs. Lua can read object:get_tag() or call "
+	         "scene.find_all_by_tag(tag [,includeInactive]). The returned list "
+	         "uses object ID order and holds up to 256 matches. The second "
+	         "result reports whether more objects matched."},
 	        {"Sphere Cast Scripts",
 	         "scene.cast_sphere(ox,oy,oz, dx,dy,dz, distance, radius "
 	         "[,layerMask [,includeTriggers [,ignoredObject]]]) sweeps a "

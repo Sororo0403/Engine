@@ -1,8 +1,15 @@
 #include "scene/SceneObject.h"
 #include "math/TransformUtils.h"
+#include "platform/windows/StringConversion.h"
+
+bool SceneObject::IsValidTag(std::string_view tag) {
+	return tag.empty() ||
+	       (tag.size() <= 64 && tag.find('\0') == std::string_view::npos &&
+	        !StringConversion::Utf8ToWide(tag).empty());
+}
 
 bool SceneObject::operator==(const SceneObject &other) const {
-	return name == other.name && active == other.active &&
+	return name == other.name && tag == other.tag && active == other.active &&
 	       parentId == other.parentId &&
 	       TransformUtils::AreEqual(transform, other.transform) &&
 	       mesh == other.mesh && meshRenderer == other.meshRenderer &&

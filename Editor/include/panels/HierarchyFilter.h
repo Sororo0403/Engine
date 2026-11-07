@@ -6,7 +6,7 @@
 struct SceneObject;
 
 /// <summary>
-/// Hierarchyの名前またはID・表示状態・コンポーネントによる絞り込み条件を保持する
+/// Hierarchyの名前・タグ・ID・表示状態・コンポーネントによる絞り込み条件を保持する
 /// </summary>
 class HierarchyFilter {
   public:
@@ -34,8 +34,8 @@ class HierarchyFilter {
 	Component component = Component::ALL;
 
 	/// <summary>
-	/// 名前またはID・表示状態・コンポーネントの全条件に一致するか確認する。
-	/// id:数値はIDの完全一致、その他は名前の部分一致とする。
+	/// 名前・タグ・ID・表示状態・コンポーネントの全条件に一致するか確認する。
+	/// id:数値はID、tag:文字列はタグの完全一致、その他は名前の部分一致とする。
 	/// コンポーネントの有無とPrimary指定・Mesh割り当てを判定する。ファイルの存在確認は行わない
 	/// </summary>
 	/// <param name="id">確認する物体ID。0は無効</param>

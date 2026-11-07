@@ -24,8 +24,11 @@ bool HierarchyFilter::Matches(SceneObjectId id,
 	};
 	const auto query = trim(text);
 
-	if (query.size() >= 3 && (query[0] == 'i' || query[0] == 'I') &&
-	    (query[1] == 'd' || query[1] == 'D') && query[2] == ':') {
+	if (text.starts_with("tag:")) {
+		matchesText = !object.tag.empty() &&
+		              object.tag == std::string_view{text}.substr(4);
+	} else if (query.size() >= 3 && (query[0] == 'i' || query[0] == 'I') &&
+	           (query[1] == 'd' || query[1] == 'D') && query[2] == ':') {
 		const auto number = trim(query.substr(3));
 		SceneObjectId requested = 0;
 		matchesText = false;

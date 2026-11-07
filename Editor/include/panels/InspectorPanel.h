@@ -11,6 +11,7 @@
 #include <filesystem>
 #include <optional>
 #include <span>
+#include <string>
 
 class ImGuiSystem;
 class Scene;
@@ -207,6 +208,9 @@ class InspectorPanel {
 	SceneObjectId rotationObjectId_ = 0;
 	DirectX::XMFLOAT3 rotationDegrees_{};
 	DirectX::XMFLOAT4 displayedRotation_{0.0f, 0.0f, 0.0f, 1.0f};
+	std::string tagDraft_;
+	SceneObjectId tagObjectId_ = 0;
+	bool tagEditing_ = false;
 	SceneObjectId renameObjectId_ = 0;
 	SceneObjectId inspectObjectId_ = 0;
 	ModelRequest modelRequest_;

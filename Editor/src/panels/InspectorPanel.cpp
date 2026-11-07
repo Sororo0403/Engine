@@ -129,6 +129,9 @@ void InspectorPanel::RequestRename(SceneObjectId objectId) {
 }
 
 void InspectorPanel::Clear() {
+	tagDraft_.clear();
+	tagObjectId_ = 0;
+	tagEditing_ = false;
 	audioInspector_.Clear();
 	gameplayInspector_.Clear();
 	scriptInspector_.Clear();
@@ -259,6 +262,30 @@ bool InspectorPanel::Draw(
 		                  object->name)) {
 			changed = true;
 		}
+	}
+
+	if (tagObjectId_ != inspectedObjectId || !tagEditing_)
+		tagDraft_ = object->tag;
+	tagObjectId_ = inspectedObjectId;
+	const auto tagLabel = std::format("Tag###ObjectTag{}", inspectedObjectId);
+	ui.InputText(tagLabel.c_str(), tagDraft_);
+	tagEditing_ = ImGui::IsItemActive();
+	const bool validTag = SceneObject::IsValidTag(tagDraft_);
+	if (!validTag)
+		ImGui::SetItemTooltip("Tag must contain at most 64 UTF-8 bytes.");
+	if (ImGui::IsItemDeactivatedAfterEdit() && tagDraft_ != object->tag &&
+	    validTag) {
+		history.CommitEdit();
+		changed |= history.ApplySceneChanges(
+		    [&](Scene &candidate) {
+			    auto *edited = candidate.FindObject(inspectedObjectId);
+			    if (!edited)
+				    return false;
+			    edited->tag = tagDraft_;
+			    return true;
+		    },
+		    "Edit Object Tag");
+		object = scene.FindObject(inspectedObjectId);
 	}
 
 	bool active = object->active;
@@ -788,6 +815,8 @@ std::optional<Transform> InspectorPanel::DrawReadOnly(
 	}
 
 	ui.Text(std::format("Name: {}", object->name));
+	if (!object->tag.empty())
+		ui.Text(std::format("Tag: {}", object->tag));
 	ui.Text(object->active ? "Active: Yes" : "Active: No");
 	ui.Text(SceneActivity::IsActive(scene, selectedObjectId)
 	            ? "Active in Hierarchy: Yes"

@@ -325,6 +325,7 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 			    (object.character && !object.character->IsValid()) ||
 			    (object.followCamera && !object.followCamera->IsValid()) ||
 			    (object.respawn && !object.respawn->IsValid()) ||
+			    !SceneObject::IsValidTag(object.tag) ||
 			    (object.triggerActions && !object.triggerActions->IsValid()) ||
 			    (object.pointLight && !object.pointLight->IsValid()) ||
 			    (object.spotLight && !object.spotLight->IsValid()) ||
@@ -345,6 +346,7 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 			    {"parent", object.parentId},
 			    {"active", object.active},
 			    {"name", object.name},
+			    {"tag", object.tag},
 			    {"transform",
 			     {
 			         {"translation", ToJson(object.transform.translation)},
@@ -731,6 +733,10 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 			}
 
 			object.name = item.at("name").get<std::string>();
+			if (version >= 42)
+				object.tag = item.at("tag").get<std::string>();
+			if (!SceneObject::IsValidTag(object.tag))
+				throw std::runtime_error("物体のタグが無効です。");
 
 			if (object.name.empty()) {
 				object.name = "Object";
