@@ -233,3 +233,10 @@ bool CharacterController::RefreshContacts(const CollisionWorld &world) {
 	}
 	return true;
 }
+
+bool CharacterController::SetSettings(const CharacterSettings &settings) {
+	if (!initialized_ || !settings.IsValid())
+		return false;
+	settings_ = settings;
+	return true;
+}

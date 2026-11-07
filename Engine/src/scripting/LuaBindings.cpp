@@ -29,6 +29,8 @@ enum class Op {
 	PARENT,
 	SET_PARENT,
 	SET_CHECKPOINT,
+	CHARACTER_SPEEDS,
+	SET_CHARACTER_SPEEDS,
 	FIND_CHILD,
 	REFERENCE,
 	ACTIVE,
@@ -99,11 +101,12 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 		const bool mutation =
 		    op == Op::DESTROY || op == Op::SET_NAME || op == Op::SET_ACTIVE ||
 		    op == Op::SET_PARENT || op == Op::SET_CHECKPOINT ||
-		    op == Op::SET_MESH_VISIBLE || op == Op::SET_MESH_TINT ||
-		    op == Op::SET_CAMERA || op == Op::SET_CAMERA_LENS ||
-		    op == Op::SET_CAMERA_FOV || op == Op::SET_POSITION ||
-		    op == Op::SET_LOCAL_POSITION || op == Op::SET_ROTATION ||
-		    op == Op::LOOK_AT || op == Op::SET_SCALE || op == Op::LOG;
+		    op == Op::SET_CHARACTER_SPEEDS || op == Op::SET_MESH_VISIBLE ||
+		    op == Op::SET_MESH_TINT || op == Op::SET_CAMERA ||
+		    op == Op::SET_CAMERA_LENS || op == Op::SET_CAMERA_FOV ||
+		    op == Op::SET_POSITION || op == Op::SET_LOCAL_POSITION ||
+		    op == Op::SET_ROTATION || op == Op::LOOK_AT ||
+		    op == Op::SET_SCALE || op == Op::LOG;
 		if (mutation && !call.executing)
 			throw std::runtime_error(
 			    "Change objects inside callbacks, not at module scope.");
@@ -204,6 +207,25 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 				    "Parent change would create a cycle or cannot preserve the "
 				    "world transform.");
 			break;
+		case Op::CHARACTER_SPEEDS:
+		case Op::SET_CHARACTER_SPEEDS: {
+			if (!object->character)
+				throw std::runtime_error(
+				    "This object requires Character Controller.");
+			auto settings = *object->character;
+			if (op == Op::CHARACTER_SPEEDS) {
+				result.numbers[0] = settings.moveSpeed;
+				result.numbers[1] = settings.jumpSpeed;
+				break;
+			}
+			settings.moveSpeed = numbers[0];
+			settings.jumpSpeed = numbers[1];
+			if (!settings.IsValid())
+				throw std::runtime_error("Character speeds must be greater "
+				                         "than zero and at most 1000.");
+			object->character = settings;
+			break;
+		}
 		case Op::SET_CHECKPOINT: {
 			if (!object->character || !object->respawn ||
 			    !SceneActivity::IsActive(*call.scene, id))
@@ -473,9 +495,9 @@ int Dispatch(lua_State *state) {
 	if (op == Op::NAME || op == Op::TAG || op == Op::POSITION ||
 	    op == Op::LOCAL_POSITION || op == Op::ROTATION || op == Op::SCALE ||
 	    op == Op::ACTIVE || op == Op::MESH_VISIBLE || op == Op::MESH_TINT ||
-	    op == Op::CAMERA_LENS || op == Op::PARENT || op == Op::ID ||
-	    op == Op::VALID || op == Op::DESTROY || op == Op::GET_CAMERA ||
-	    op == Op::SET_CAMERA) {
+	    op == Op::CAMERA_LENS || op == Op::CHARACTER_SPEEDS ||
+	    op == Op::PARENT || op == Op::ID || op == Op::VALID ||
+	    op == Op::DESTROY || op == Op::GET_CAMERA || op == Op::SET_CAMERA) {
 		// 引数はselfだけ。値はPerformで取得する。
 	} else if (op == Op::SET_NAME || op == Op::REFERENCE ||
 	           op == Op::FIND_CHILD || op == Op::FIND || op == Op::FIND_ID ||
@@ -502,8 +524,9 @@ int Dispatch(lua_State *state) {
 		const int count = op == Op::WORLD_TO_VIEWPORT ? 5
 		                  : (op == Op::SET_ROTATION || op == Op::VIEWPORT_RAY)
 		                      ? 4
-		                  : op == Op::SET_CAMERA_FOV ? 1
-		                                             : 3;
+		                  : op == Op::SET_CHARACTER_SPEEDS ? 2
+		                  : op == Op::SET_CAMERA_FOV       ? 1
+		                                                   : 3;
 		for (int i = 0; i < count; ++i) {
 			luaL_checktype(state, i + 2, LUA_TNUMBER);
 			const double value = lua_tonumber(state, i + 2);
@@ -551,6 +574,10 @@ int Dispatch(lua_State *state) {
 		for (int i = 0; i < 3; ++i)
 			lua_pushnumber(state, result.numbers[i]);
 		return 3;
+	case Op::CHARACTER_SPEEDS:
+		lua_pushnumber(state, result.numbers[0]);
+		lua_pushnumber(state, result.numbers[1]);
+		return 2;
 	case Op::VIEWPORT_RAY:
 		for (float value : result.numbers)
 			lua_pushnumber(state, value);
@@ -779,6 +806,8 @@ int LuaInternal::OpenEnvironment(lua_State *state, Call &call) {
 	Method(state, "parent", Op::PARENT);
 	Method(state, "set_parent", Op::SET_PARENT);
 	Method(state, "set_checkpoint", Op::SET_CHECKPOINT);
+	Method(state, "get_character_speeds", Op::CHARACTER_SPEEDS);
+	Method(state, "set_character_speeds", Op::SET_CHARACTER_SPEEDS);
 	Method(state, "find_child", Op::FIND_CHILD);
 	lua_pushcfunction(state, GetChildren);
 	lua_setfield(state, -2, "get_children");

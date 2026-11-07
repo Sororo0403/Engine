@@ -290,7 +290,8 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 			SceneWorldTransform transform;
 			if (!SceneHierarchy::GetWorldTransform(working, character,
 			                                       transform) ||
-			    (continuing ? (!controller.SynchronizeWorldMatrix(
+			    (continuing ? (!controller.SetSettings(*object.character) ||
+			                   !controller.SynchronizeWorldMatrix(
 			                       transform.matrix, world) ||
 			                   !controller.RefreshContacts(world))
 			                : !controller.Initialize(

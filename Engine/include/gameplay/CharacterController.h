@@ -106,6 +106,13 @@ class CharacterController {
 	/// <returns>true:成功 false:未初期化、形状が無効、または障害物と重なる。失敗時は状態を保持する</returns>
 	bool RefreshContacts(const CollisionWorld &world);
 
+	/// <summary>
+	/// 移動設定を更新する。位置・速度・入力と接地状態を維持する
+	/// </summary>
+	/// <param name="settings">新しい移動設定</param>
+	/// <returns>true:成功 false:未初期化または設定が無効</returns>
+	bool SetSettings(const CharacterSettings &settings);
+
   private:
 	/// <summary>
 	/// 固定刻み1回分の移動を処理する

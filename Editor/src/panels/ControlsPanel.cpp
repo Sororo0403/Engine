@@ -2322,6 +2322,12 @@ void ControlsPanel::Draw() {
 	         "pass nil to use the fixed fallback view. Call the setter inside "
 	         "a callback. Both fixed and Follow Cameras are supported. "
 	         "Restart restores the authored Primary selection."},
+	        {"Lua > Character Speeds",
+	         "get_character_speeds() returns move speed and jump speed. "
+	         "set_character_speeds(move,jump) changes both for later movement "
+	         "and jumps. Values are in world units per second, greater than "
+	         "0 and at most 1000. An ongoing jump keeps its vertical "
+	         "velocity."},
 	        {"Lua > Set Checkpoint",
 	         "character:set_checkpoint(x,y,z) updates the fall recovery "
 	         "position of an active Character Controller with Respawn. Call "
