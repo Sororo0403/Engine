@@ -56,6 +56,7 @@ void SceneSimulation::CopyFrom(const SceneSimulation &source) {
 	respawnCount_ = source.respawnCount_;
 	lastRespawnPosition_ = source.lastRespawnPosition_;
 	pose_ = source.pose_;
+	cameraTransition_ = source.cameraTransition_;
 	fallbackPose_ = source.fallbackPose_;
 	cameraSettings_ = source.cameraSettings_;
 	preparePrefabResources_ = source.preparePrefabResources_;
@@ -97,6 +98,7 @@ void SceneSimulation::Adopt(SceneSimulation &source) {
 	respawnCount_ = source.respawnCount_;
 	lastRespawnPosition_ = source.lastRespawnPosition_;
 	pose_ = source.pose_;
+	cameraTransition_ = std::move(source.cameraTransition_);
 	fallbackPose_ = source.fallbackPose_;
 	cameraSettings_ = source.cameraSettings_;
 	preparePrefabResources_ = source.preparePrefabResources_;
@@ -233,6 +235,7 @@ bool SceneSimulation::ApplyTriggerActions(
 	// 有効な主人公は一体なので、同じ更新では最後に通った設定を使う。
 	SceneObjectId checkpoint = 0, checkpointTarget = 0;
 	SceneObjectId selectedCamera = 0;
+	float cameraBlendSeconds = 0;
 	auto requestedScene = pendingScene_;
 	for (const auto &signal : signals) {
 		const auto *object = scene_.FindObject(signal.receiver);
@@ -305,6 +308,7 @@ bool SceneSimulation::ApplyTriggerActions(
 			}
 			if (action.operation == TriggerAction::Operation::SET_CAMERA) {
 				selectedCamera = action.target;
+				cameraBlendSeconds = action.cameraBlendSeconds;
 				if (action.once)
 					fired.insert(key);
 				continue;
@@ -498,8 +502,9 @@ bool SceneSimulation::ApplyTriggerActions(
 			*invalidObject = selectedCamera;
 		return false;
 	}
-	if (checkpointPosition || (selectedCamera && selectedCamera != camera_) ||
-	    !animationPlayback.empty()) {
+	const bool changingCamera = selectedCamera && selectedCamera != camera_;
+	if (checkpointPosition || changingCamera || !animationPlayback.empty()) {
+		const auto previousCameraPose = pose_;
 		Scene candidate;
 		candidate.CopyFrom(scene_);
 		if (checkpointPosition) {
@@ -550,6 +555,11 @@ bool SceneSimulation::ApplyTriggerActions(
 			                                              : "Trigger Actions") +
 			        " failed: " + error;
 			return false;
+		}
+		if (changingCamera && cameraBlendSeconds > 0) {
+			cameraTransition_ =
+			    CameraTransition{previousCameraPose, cameraBlendSeconds};
+			pose_ = previousCameraPose;
 		}
 	}
 

@@ -10,7 +10,26 @@ struct Transform;
 struct FollowCameraSettings;
 struct SceneWorldTransform;
 
+/// <summary>
+/// Camera物体と、視点切り替え中に描画へ渡す補間姿勢
+/// </summary>
+struct CameraTransitionView {
+	SceneObjectId camera;
+	CameraPose pose;
+};
+
 namespace SceneCameraUtils {
+/// <summary>
+/// 2つの描画姿勢の位置を直線補間し、向きを最短の回転で補間する
+/// </summary>
+/// <param name="from">切り替え元</param>
+/// <param name="to">切り替え先</param>
+/// <param name="fraction">0から1までの補間割合</param>
+/// <param name="result">成功時だけ設定する補間姿勢</param>
+/// <returns>true:成功 false:有効な描画姿勢を求められない</returns>
+bool BlendPose(const CameraPose &from, const CameraPose &to, float fraction,
+               CameraPose &result);
+
 /// <summary>
 /// 有効なPrimary Cameraを取得する。固定ビューの場合は0を返す
 /// </summary>

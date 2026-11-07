@@ -261,7 +261,7 @@ class SceneSimulation {
 	}
 
 	/// <summary>
-	/// Primary Camera、または開始時に指定した固定カメラの姿勢を取得する
+	/// Primary Cameraまたは固定カメラの描画姿勢を取得する。切り替え中は補間姿勢を返す
 	/// </summary>
 	/// <returns>再生時の描画姿勢</returns>
 	const CameraPose &GetCameraPose() const {
@@ -507,7 +507,17 @@ class SceneSimulation {
 	DirectX::XMFLOAT3 spawn_{};
 	std::uint64_t respawnCount_ = 0;
 	std::optional<DirectX::XMFLOAT3> lastRespawnPosition_;
+
+	/// <summary>
+	/// 切り替え開始時の描画姿勢と、シミュレーションで経過した時間
+	/// </summary>
+	struct CameraTransition {
+		CameraPose from;
+		double duration = 0, elapsed = 0;
+	};
+
 	CameraPose pose_{};
+	std::optional<CameraTransition> cameraTransition_;
 	CameraPose fallbackPose_{};
 	CameraSettings cameraSettings_{};
 	PreparePrefabResources preparePrefabResources_;

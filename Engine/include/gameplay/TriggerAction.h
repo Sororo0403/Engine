@@ -14,6 +14,7 @@
 /// </summary>
 struct TriggerAction {
 	static constexpr float kMaximumDelaySeconds = 600.f;
+	static constexpr float kMaximumCameraBlendSeconds = 30.f;
 	/// <summary>
 	/// 対象へ適用する有効設定、Audio Sourceの再生・停止、瞬間移動・復帰先やカメラの変更、またはシーンの読み込み
 	/// </summary>
@@ -69,6 +70,8 @@ struct TriggerAction {
 	std::string messageName;
 	// 条件を満たしてから操作を実行するまでのシミュレーション秒数。
 	float delaySeconds = 0;
+	// Set Cameraで描画姿勢を切り替える時間。0で即時に切り替える。
+	float cameraBlendSeconds = 0;
 
 	/// <summary>
 	/// 種別が有効か確認する。未割り当ての対象は編集用に許可し、Play時に存在を確認する
@@ -77,6 +80,10 @@ struct TriggerAction {
 	bool IsValid() const {
 		return std::isfinite(delaySeconds) && delaySeconds >= 0 &&
 		       delaySeconds <= kMaximumDelaySeconds &&
+		       std::isfinite(cameraBlendSeconds) && cameraBlendSeconds >= 0 &&
+		       cameraBlendSeconds <= kMaximumCameraBlendSeconds &&
+		       (cameraBlendSeconds == 0 ||
+		        operation == Operation::SET_CAMERA) &&
 		       ObjectTag::IsValid(contactTag) &&
 		       (messageName.empty() ||
 		        (operation == Operation::SEND_SCRIPT_MESSAGE &&

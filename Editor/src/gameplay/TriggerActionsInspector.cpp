@@ -319,6 +319,8 @@ bool TriggerActionsInspector::Draw(
 					                      action.operation == operation) &&
 					    action.operation != operation) {
 						action.operation = operation;
+						if (operation != TriggerAction::Operation::SET_CAMERA)
+							action.cameraBlendSeconds = 0;
 						if (operation !=
 						    TriggerAction::Operation::SEND_SCRIPT_MESSAGE)
 							action.messageName.clear();
@@ -396,6 +398,17 @@ bool TriggerActionsInspector::Draw(
 					ImGui::SetTooltip(
 					    "%s", PathUtils::ToUtf8(action.scenePath).c_str());
 			}
+			if (action.operation == TriggerAction::Operation::SET_CAMERA) {
+				float blend = action.cameraBlendSeconds;
+				if (ImGui::InputFloat("Blend (s)", &blend, 0, 0, "%.3f",
+				                      ImGuiInputTextFlags_EnterReturnsTrue) &&
+				    std::isfinite(blend) && blend >= 0 &&
+				    blend <= TriggerAction::kMaximumCameraBlendSeconds &&
+				    blend != action.cameraBlendSeconds) {
+					action.cameraBlendSeconds = blend;
+					changed = true;
+				}
+			}
 			float delay = action.delaySeconds;
 			if (ImGui::InputFloat("Delay (s)", &delay, 0, 0, "%.3f",
 			                      ImGuiInputTextFlags_EnterReturnsTrue) &&
@@ -461,6 +474,8 @@ void TriggerActionsInspector::DrawReadOnly(const ImGuiSystem &ui,
 		    EventLabel(action.event), TargetLabel(scene, action.target),
 		    OperationLabel(action.operation), action.once ? "Yes" : "No"));
 		ui.Text(std::format("Contact: {}", ContactLabel(action.contact)));
+		if (action.cameraBlendSeconds > 0)
+			ui.Text(std::format("Blend: {:.3f} s", action.cameraBlendSeconds));
 		if (action.delaySeconds > 0)
 			ui.Text(std::format("Delay: {:.3f} s", action.delaySeconds));
 		if (action.event == TriggerAction::Event::INTERACT)

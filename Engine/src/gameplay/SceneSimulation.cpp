@@ -398,6 +398,8 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 		scripts_ = std::move(scripts);
 		ui_ = std::move(ui);
 		character_ = character;
+		if (!preserve || camera != camera_)
+			cameraTransition_.reset();
 		camera_ = camera;
 		updateOrder_ = std::move(order);
 		followPoses_ = std::move(follows);
@@ -408,7 +410,8 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 			respawnCount_ = 0;
 			lastRespawnPosition_.reset();
 		}
-		pose_ = pose;
+		if (!cameraTransition_)
+			pose_ = pose;
 		fallbackPose_ = fallbackPose;
 		playing_ = true;
 		return true;
@@ -422,6 +425,7 @@ void SceneSimulation::Stop() {
 	sharedScriptData_ = "{}";
 	playing_ = false;
 	pendingScene_.clear();
+	cameraTransition_.reset();
 	motion_ = SceneMotion{};
 	animations_ = SceneAnimations{};
 	particles_ = SceneParticles{};
@@ -711,6 +715,22 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 			if (!validator.SetPose(pose))
 				return false;
 		}
+		auto transition = cameraTransition_;
+		if (transition && seconds == 0) {
+			pose = pose_;
+		} else if (transition) {
+			transition->elapsed += seconds;
+			if (transition->elapsed >= transition->duration) {
+				transition.reset();
+			} else {
+				const auto t = static_cast<float>(transition->elapsed /
+				                                  transition->duration);
+				const auto blend = t * t * (3.f - 2.f * t);
+				if (!SceneCameraUtils::BlendPose(transition->from, pose, blend,
+				                                 pose))
+					return false;
+			}
+		}
 		// 全更新の成功後に確定し、失敗したフレームは位置・速度・追従状態を保持する。
 		if (!world.Rebuild(working, std::span<const SceneObjectId>{ignored},
 		                   nullptr, physics.GetWorld()))
@@ -760,6 +780,7 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 		followPoses_ = std::move(follows);
 		orbitStates_ = std::move(orbits);
 		pose_ = pose;
+		cameraTransition_ = transition;
 		if (respawned) {
 			++respawnCount_;
 			lastRespawnPosition_ = next.GetTransform().translation;

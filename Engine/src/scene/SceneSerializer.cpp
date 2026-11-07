@@ -668,7 +668,8 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 					     {"contactTag", action.contactTag},
 					     {"inputAction", action.inputAction},
 					     {"messageName", action.messageName},
-					     {"delaySeconds", action.delaySeconds}});
+					     {"delaySeconds", action.delaySeconds},
+					     {"cameraBlendSeconds", action.cameraBlendSeconds}});
 				}
 				objects.back()["triggerActions"] = {
 				    {"actions", std::move(actions)}};
@@ -1360,7 +1361,9 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					    !value.at("once").is_boolean() ||
 					    (version >= 28 && !value.at("scene").is_string()) ||
 					    (version >= 52 &&
-					     !value.at("delaySeconds").is_number())) {
+					     !value.at("delaySeconds").is_number()) ||
+					    (version >= 53 &&
+					     !value.at("cameraBlendSeconds").is_number())) {
 						throw std::runtime_error(
 						    "Trigger Actionsの操作設定が無効です。");
 					}
@@ -1449,7 +1452,10 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					         ? value.at("messageName").get<std::string>()
 					         : std::string{},
 					     version >= 52 ? value.at("delaySeconds").get<float>()
-					                   : 0.f});
+					                   : 0.f,
+					     version >= 53
+					         ? value.at("cameraBlendSeconds").get<float>()
+					         : 0.f});
 				}
 				object.triggerActions = std::move(component);
 			}

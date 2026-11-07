@@ -114,7 +114,8 @@ bool SceneScripts::Run(
     std::filesystem::path *sceneRequest, std::string *sharedState,
     std::span<const GameActionState> actions, SceneAnimations *animations,
     SceneParticles *particles, SceneAnimators *animators,
-    const UIInput *viewport, const CharacterRuntimeState *character) {
+    const UIInput *viewport, const CharacterRuntimeState *character,
+    const CameraTransitionView *transitionView) {
 	SceneObjectId current = 0;
 	try {
 		if (!std::isfinite(seconds) || seconds < 0)
@@ -161,7 +162,8 @@ bool SceneScripts::Run(
 			        sceneRequest ? &requestedScene : nullptr, &sceneBudget,
 			        sharedState ? &game : nullptr, &mailbox_, message, actions,
 			        animations, &animationBudget, particles, &particleBudget,
-			        animators, &animatorBudget, viewport, character))
+			        animators, &animatorBudget, viewport, character,
+			        transitionView))
 				throw std::runtime_error(std::format(
 				    "{} [{}]: {}", PathUtils::ToUtf8(instance.settings.asset),
 				    callback, error));

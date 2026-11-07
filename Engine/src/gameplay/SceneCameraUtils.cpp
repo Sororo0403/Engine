@@ -182,6 +182,26 @@ bool SceneCameraUtils::ApplyPose(const CameraPose &pose, Transform &transform) {
 	return true;
 }
 
+bool SceneCameraUtils::BlendPose(const CameraPose &from, const CameraPose &to,
+                                 float fraction, CameraPose &result) {
+	Transform source, target;
+	if (!ApplyPose(from, source) || !ApplyPose(to, target))
+		return false;
+	using namespace DirectX;
+	XMStoreFloat4(&target.rotation,
+	              XMQuaternionSlerp(XMLoadFloat4(&source.rotation),
+	                                XMLoadFloat4(&target.rotation), fraction));
+	target.translation = {std::lerp(from.position.x, to.position.x, fraction),
+	                      std::lerp(from.position.y, to.position.y, fraction),
+	                      std::lerp(from.position.z, to.position.z, fraction)};
+	const auto pose = FromTransform(target);
+	Camera validator;
+	if (!validator.SetPose(pose))
+		return false;
+	result = pose;
+	return true;
+}
+
 CameraPose
 SceneCameraUtils::FromWorldTransform(const SceneWorldTransform &world) {
 	Transform transform;

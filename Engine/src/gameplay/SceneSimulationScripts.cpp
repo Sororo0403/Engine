@@ -1,3 +1,4 @@
+#include "gameplay/SceneCameraUtils.h"
 #include "gameplay/SceneSimulation.h"
 #include "math/TransformUtils.h"
 #include "scene/SceneSerializer.h"
@@ -22,6 +23,7 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 	auto game = sharedScriptData_;
 	// すべてのupdateに、物理・Trigger処理後でLua変更前の同じ主人公状態を渡す。
 	const auto character = startOnly ? std::nullopt : GetCharacterState();
+	const CameraTransitionView transitionView{camera_, pose_};
 	if (!scripts.Run(
 	        candidate, seconds, input, frameEvents_, startOnly, error,
 	        invalidObject,
@@ -30,7 +32,8 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 	        startOnly ? std::span<const CollisionEvent>{}
 	                  : collisions_.GetEvents(),
 	        &audio, &requestedScene, &game, actions, &animations, &particles,
-	        &animators, viewport, character ? &*character : nullptr))
+	        &animators, viewport, character ? &*character : nullptr,
+	        cameraTransition_ ? &transitionView : nullptr))
 		return false;
 	std::string serialized;
 	if (!SceneSerializer::Serialize(candidate, serialized)) {

@@ -16,6 +16,7 @@ extern "C" {
 class Scene;
 struct UIInput;
 struct CharacterRuntimeState;
+struct CameraTransitionView;
 class ScenePhysics;
 class ScenePrefabs;
 class ScriptMailbox;
@@ -58,6 +59,7 @@ struct Call {
 	const CharacterInput *input = nullptr;
 	const UIInput *viewport = nullptr;
 	const CharacterRuntimeState *character = nullptr;
+	const CameraTransitionView *transitionView = nullptr;
 	std::span<const GameActionState> actions;
 	SceneAnimations *animations = nullptr;
 	int animationOperations = 0;

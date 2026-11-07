@@ -1001,6 +1001,11 @@ void ControlsPanel::Draw() {
 	         "selected. "
 	         "The target must be active when the action runs. If several "
 	         "actions select a camera in one update, the last one wins. "
+	         "Set Blend (s) from 0 to 30 and press Enter. Zero switches "
+	         "immediately. A blend eases the position and orientation toward "
+	         "the live target pose using simulation time. The target lens "
+	         "takes effect at the start. A new target starts from the current "
+	         "view; selecting the same target does not restart the blend. "
 	         "Restart restores the authored Primary Camera."},
 	        {"Trigger Actions > Set Checkpoint",
 	         "Choose a target with Character Controller and Respawn, and a "

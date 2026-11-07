@@ -327,9 +327,17 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 				    "Viewport dimensions must be integers from 1 to 32768.");
 			SceneWorldTransform world;
 			Camera camera;
+			const bool transitioning =
+			    call.transitionView && call.transitionView->camera == id &&
+			    object->camera && object->camera->primary &&
+			    SceneActivity::IsActive(*call.scene, id);
 			if (!object->camera ||
-			    !SceneHierarchy::GetWorldTransform(*call.scene, id, world) ||
-			    !camera.SetPose(SceneCameraUtils::FromWorldTransform(world)) ||
+			    (!transitioning &&
+			     !SceneHierarchy::GetWorldTransform(*call.scene, id, world)) ||
+			    !camera.SetPose(
+			        transitioning
+			            ? call.transitionView->pose
+			            : SceneCameraUtils::FromWorldTransform(world)) ||
 			    !camera.SetSettings(object->camera->settings) ||
 			    !camera.Update(static_cast<int>(width),
 			                   static_cast<int>(height)))
