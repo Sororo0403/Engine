@@ -24,6 +24,7 @@ enum class Op {
 	VALID,
 	DESTROY,
 	PARENT,
+	FIND_CHILD,
 	REFERENCE,
 	ACTIVE,
 	SET_ACTIVE,
@@ -167,6 +168,16 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 		case Op::PARENT:
 			result.id = object->parentId;
 			break;
+		case Op::FIND_CHILD: {
+			const std::string_view name(text, length);
+			for (const auto &[childId, child] : call.scene->GetObjects()) {
+				if (child.parentId == id && child.name == name) {
+					result.id = childId;
+					break;
+				}
+			}
+			break;
+		}
 		case Op::REFERENCE:
 			if (object->script)
 				for (const auto &[name, target] : object->script->references) {
@@ -309,9 +320,13 @@ int Dispatch(lua_State *state) {
 	    op == Op::ACTIVE || op == Op::PARENT || op == Op::ID ||
 	    op == Op::VALID || op == Op::DESTROY) {
 		// 引数はselfだけ。値はPerformで取得する。
-	} else if (op == Op::SET_NAME || op == Op::REFERENCE || op == Op::FIND ||
-	           op == Op::FIND_ID || op == Op::LOG) {
-		const int index = (op == Op::SET_NAME || op == Op::REFERENCE) ? 2 : 1;
+	} else if (op == Op::SET_NAME || op == Op::REFERENCE ||
+	           op == Op::FIND_CHILD || op == Op::FIND || op == Op::FIND_ID ||
+	           op == Op::LOG) {
+		const int index =
+		    (op == Op::SET_NAME || op == Op::REFERENCE || op == Op::FIND_CHILD)
+		        ? 2
+		        : 1;
 		luaL_checktype(state, index, LUA_TSTRING);
 		text = lua_tolstring(state, index, &length);
 	} else if (op == Op::SET_ACTIVE) {
@@ -341,6 +356,7 @@ int Dispatch(lua_State *state) {
 		lua_pushlstring(state, call.returnText.data(), call.returnText.size());
 		return 1;
 	case Op::PARENT:
+	case Op::FIND_CHILD:
 	case Op::REFERENCE:
 	case Op::FIND:
 	case Op::FIND_ID:
@@ -370,7 +386,7 @@ int Dispatch(lua_State *state) {
 	}
 }
 
-constexpr std::size_t kMaximumTagMatches = 256;
+constexpr std::size_t kMaximumObjectResults = 256;
 
 /// <summary>
 /// タグが完全一致する物体を、指定件数までID順に集める
@@ -406,6 +422,41 @@ bool CollectTagged(LuaInternal::Call &call, std::string_view tag,
 }
 
 /// <summary>
+/// 物体の配列と、件数上限で省略されたかをLuaへ返す
+/// </summary>
+int PushObjectResults(lua_State *state, std::span<const SceneObjectId> objects,
+                      bool truncated) {
+	lua_createtable(state, static_cast<int>(objects.size()), 0);
+	for (std::size_t i = 0; i < objects.size(); ++i) {
+		LuaInternal::PushObject(state, objects[i]);
+		lua_rawseti(state, -2, static_cast<lua_Integer>(i + 1));
+	}
+	lua_pushboolean(state, truncated);
+	return 2;
+}
+
+/// <summary>
+/// 直接の子をID順に列挙する。無効な子も含める
+/// </summary>
+int GetChildren(lua_State *state) {
+	const auto id =
+	    *static_cast<SceneObjectId *>(luaL_checkudata(state, 1, kObjectType));
+	const auto *scene = Context(state).scene;
+	if (!scene || !scene->Contains(id))
+		return luaL_error(state, "The referenced object no longer exists.");
+	std::array<SceneObjectId, kMaximumObjectResults> children{};
+	std::size_t count = 0;
+	for (const auto &[childId, object] : scene->GetObjects()) {
+		if (object.parentId != id)
+			continue;
+		if (count == children.size())
+			return PushObjectResults(state, children, true);
+		children[count++] = childId;
+	}
+	return PushObjectResults(state, std::span{children}.first(count), false);
+}
+
+/// <summary>
 /// タグが一致した物体の配列と、上限を超えたかを返す
 /// </summary>
 int FindAllByTag(lua_State *state) {
@@ -415,7 +466,7 @@ int FindAllByTag(lua_State *state) {
 	if (!lua_isnoneornil(state, 2))
 		luaL_checktype(state, 2, LUA_TBOOLEAN);
 	const bool includeInactive = lua_toboolean(state, 2) != 0;
-	std::array<SceneObjectId, kMaximumTagMatches> matches{};
+	std::array<SceneObjectId, kMaximumObjectResults> matches{};
 	std::size_t count = 0;
 	bool truncated = false;
 	auto &call = Context(state);
@@ -424,13 +475,7 @@ int FindAllByTag(lua_State *state) {
 		lua_pushlstring(state, call.error.data(), call.error.size());
 		return lua_error(state);
 	}
-	lua_createtable(state, static_cast<int>(count), 0);
-	for (std::size_t i = 0; i < count; ++i) {
-		LuaInternal::PushObject(state, matches[i]);
-		lua_rawseti(state, -2, static_cast<lua_Integer>(i + 1));
-	}
-	lua_pushboolean(state, truncated);
-	return 2;
+	return PushObjectResults(state, std::span{matches}.first(count), truncated);
 }
 
 /// <summary>
@@ -545,6 +590,9 @@ int LuaInternal::OpenEnvironment(lua_State *state, Call &call) {
 	Method(state, "is_valid", Op::VALID);
 	Method(state, "destroy", Op::DESTROY);
 	Method(state, "parent", Op::PARENT);
+	Method(state, "find_child", Op::FIND_CHILD);
+	lua_pushcfunction(state, GetChildren);
+	lua_setfield(state, -2, "get_children");
 	Method(state, "reference", Op::REFERENCE);
 	Method(state, "is_active", Op::ACTIVE);
 	Method(state, "set_active", Op::SET_ACTIVE);

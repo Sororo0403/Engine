@@ -2314,6 +2314,12 @@ void ControlsPanel::Draw() {
 	         "and share the physics API call budget. Use hit.object references "
 	         "to interact with the target or apply impulses. Only assigned "
 	         "Colliders participate; model triangles are not queried."},
+	        {"Lua > Child Objects",
+	         "object:find_child(name) returns the first direct child with "
+	         "the exact name, or nil. object:get_children() returns up to "
+	         "256 direct children in ID order, including inactive children. "
+	         "Its second result reports whether more children exist. Use "
+	         "these on a Prefab instance to find its own parts."},
 	        {"Lua > Coordinate Conversion",
 	         "Use object:local_to_world(x,y,z) for a muzzle or attachment "
 	         "point and object:world_to_local(x,y,z) for the reverse. "
