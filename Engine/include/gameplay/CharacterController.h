@@ -7,6 +7,7 @@
 #include "scene/SceneObjectId.h"
 
 class CollisionWorld;
+struct CollisionMoveResult;
 
 /// <summary>
 /// 箱・球・カプセル形状の主人公を固定刻みで移動させ、重力・着地・入力猶予付きのジャンプを処理する
@@ -137,6 +138,17 @@ class CharacterController {
 
 	static constexpr double kFixedStepSeconds = 1.0 / 120.0;
 	static constexpr float kMaximumFrameSeconds = 0.1f;
+	/// <summary>
+	/// 上昇・水平移動・着地を順に調べ、障害物の上に安全に乗れる場合だけ移動結果を更新する
+	/// </summary>
+	/// <param name="world">現在の衝突形状</param>
+	/// <param name="horizontal">その固定更新で要求した水平移動</param>
+	/// <param name="movement">成功時だけ置き換える接地済み移動結果</param>
+	/// <returns>true:段差を上れる false:通常の移動結果を使う</returns>
+	bool TryStepUp(const CollisionWorld &world,
+	               const DirectX::XMFLOAT3 &horizontal,
+	               CollisionMoveResult &movement) const;
+
 	static constexpr float kGroundProbeDistance = 0.002f;
-	static constexpr double kGroundSnapClearance = 0.0001;
+	static constexpr double kGroundClearance = 0.0001;
 };

@@ -180,6 +180,8 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		field("Ground Snap Distance", &CharacterSettings::groundSnapDistance,
 		      CharacterSettings::kMaximumGroundSnapDistance, 0.0f, 0.005f,
 		      "%.3f");
+		field("Step Height", &CharacterSettings::stepHeight,
+		      CharacterSettings::kMaximumStepHeight, 0.0f, 0.005f, "%.3f");
 
 		ui.BeginDisabled(!object.collider || !object.character->IsValid());
 

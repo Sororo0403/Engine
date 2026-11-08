@@ -1620,6 +1620,11 @@ void ControlsPanel::Draw() {
 	         "the whole scene. It changes no scene data, selection or history. "
 	         "Off by default; the preference is saved. Available while editing "
 	         "only. Use Play to test other movement directions and timing."},
+	        {"Inspector > Character Controller > Step Height",
+	         "Set Step Height above zero to walk onto small steps while "
+	         "grounded. The controller checks clearance above and ahead, "
+	         "and needs a walkable surface to land on. Zero keeps automatic "
+	         "step-up disabled."},
 	        {"Inspector > Character Controller > Ground Snap",
 	         "Set Ground Snap Distance above zero to stay grounded on shallow "
 	         "descents or small drops. After a grounded move, the controller "

@@ -559,7 +559,8 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 				    {"terminalSpeed", v.terminalSpeed},
 				    {"coyoteTime", v.coyoteTime},
 				    {"jumpBufferTime", v.jumpBufferTime},
-				    {"groundSnapDistance", v.groundSnapDistance}};
+				    {"groundSnapDistance", v.groundSnapDistance},
+				    {"stepHeight", v.stepHeight}};
 			}
 
 			if (object.followCamera) {
@@ -1263,6 +1264,13 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 						    "Character ground snap distance is invalid.");
 					object.character->groundSnapDistance =
 					    v.at("groundSnapDistance").get<float>();
+				}
+				if (version >= 63) {
+					if (!v.at("stepHeight").is_number())
+						throw std::runtime_error(
+						    "Character step height is invalid.");
+					object.character->stepHeight =
+					    v.at("stepHeight").get<float>();
 				}
 			}
 

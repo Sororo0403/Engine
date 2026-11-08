@@ -13,11 +13,14 @@ struct CharacterSettings {
 	float jumpBufferTime = 0.0f;
 	// 接地中の移動後に足元を探す距離。0は無効。
 	float groundSnapDistance = 0.0f;
+	// 地上を歩くときに乗り越えられる段差の高さ。0は無効。
+	float stepHeight = 0.0f;
 
 	static constexpr float kMaximumSpeed = 1000.0f;
 	static constexpr float kMaximumGravity = 1000.0f;
 	static constexpr float kMaximumJumpGraceSeconds = 1.0f;
 	static constexpr float kMaximumGroundSnapDistance = 2.0f;
+	static constexpr float kMaximumStepHeight = 2.0f;
 
 	/// <summary>
 	/// 移動と重力が有限で正、ジャンプ猶予が有限で0以上、かつ設定範囲内か確認する

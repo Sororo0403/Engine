@@ -18,7 +18,9 @@ bool CharacterSettings::IsValid() const {
 	       std::isfinite(jumpBufferTime) && jumpBufferTime >= 0.0f &&
 	       jumpBufferTime <= kMaximumJumpGraceSeconds &&
 	       std::isfinite(groundSnapDistance) && groundSnapDistance >= 0.0f &&
-	       groundSnapDistance <= kMaximumGroundSnapDistance;
+	       groundSnapDistance <= kMaximumGroundSnapDistance &&
+	       std::isfinite(stepHeight) && stepHeight >= 0.0f &&
+	       stepHeight <= kMaximumStepHeight;
 }
 
 bool CharacterController::Initialize(const Transform &transform,
@@ -126,6 +128,41 @@ bool CharacterController::FindGroundObject(const CollisionWorld &world,
 	return true;
 }
 
+bool CharacterController::TryStepUp(const CollisionWorld &world,
+                                    const DirectX::XMFLOAT3 &horizontal,
+                                    CollisionMoveResult &movement) const {
+	if (horizontal.x == 0 && horizontal.z == 0)
+		return false;
+
+	// 上限と同じ高さの段差でも、Sweepで接触面からわずかに離す。
+	const float lift = settings_.stepHeight + float(kGroundClearance);
+	auto raised = worldMatrix_;
+	CollisionSweepResult hit;
+	if (!world.Sweep(collider_, raised, {0, lift, 0}, hit) || hit.objectId)
+		return false;
+	raised._42 += lift;
+	if (!world.Sweep(collider_, raised, horizontal, hit) || hit.objectId)
+		return false;
+	raised._41 += horizontal.x;
+	raised._43 += horizontal.z;
+
+	const float down = lift + kGroundProbeDistance;
+	if (!world.Sweep(collider_, raised, {0, -down, 0}, hit) || !hit.objectId ||
+	    hit.normal.y <= .5f)
+		return false;
+	const auto rise = double(lift) - double(down) * hit.fraction;
+	if (rise <= kGroundClearance ||
+	    rise > settings_.stepHeight + kGroundClearance)
+		return false;
+	const float landed = worldMatrix_._42 + float(rise + kGroundClearance);
+	raised._42 = landed;
+	if (!world.CanPlace(collider_, raised))
+		return false;
+
+	movement = {{horizontal.x, landed - worldMatrix_._42, horizontal.z}, true};
+	return true;
+}
+
 bool CharacterController::Step(const CharacterInput &input,
                                const CollisionWorld &world) {
 	CollisionMoveResult ground;
@@ -174,6 +211,9 @@ bool CharacterController::Step(const CharacterInput &input,
 		return false;
 	}
 
+	const bool stepped =
+	    grounded_ && settings_.stepHeight > 0 && movement.hitWall &&
+	    TryStepUp(world, {requested.x, 0, requested.z}, movement);
 	auto transform = transform_;
 	transform.translation.x += movement.displacement.x;
 	transform.translation.y += movement.displacement.y;
@@ -185,7 +225,7 @@ bool CharacterController::Step(const CharacterInput &input,
 
 	// 直前まで床にいた場合だけ、移動後の位置から下方向の最初の面へ寄せる。
 	// Sweepで停止位置を得るため、斜面の横方向へは滑らせない。
-	if (canSnap) {
+	if (canSnap && !stepped) {
 		const auto distance =
 		    (std::max)(settings_.groundSnapDistance, kGroundProbeDistance);
 		CollisionSweepResult floor;
@@ -196,7 +236,7 @@ bool CharacterController::Step(const CharacterInput &input,
 			const auto drop =
 			    (std::min)(double(settings_.groundSnapDistance),
 			               (std::max)(0.0, distance * floor.fraction -
-			                                   kGroundSnapClearance));
+			                                   kGroundClearance));
 			transform.translation.y -= static_cast<float>(drop);
 			matrix._42 = transform.translation.y;
 		}
