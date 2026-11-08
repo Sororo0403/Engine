@@ -386,7 +386,8 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 	    !ImGui::GetIO().WantTextInput) {
 		const auto &keys = input.GetKeyboard();
 
-		if (keys.IsPressed(Key::ESCAPE)) {
+		if (keys.IsPressed(Key::ESCAPE) &&
+		    !GameActionBinding::UsesKey(actionBindings_, Key::ESCAPE)) {
 			Stop();
 			return true;
 		}

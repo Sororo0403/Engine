@@ -141,10 +141,12 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 			if (ImGui::BeginCombo(
 			        "Keyboard",
 			        action.keyboard
-			            ? GameInputBindings::GetName(*action.keyboard).data()
+			            ? GameActionBinding::GetKeyName(*action.keyboard).data()
 			            : "None")) {
 				if (ui.Selectable("None", !action.keyboard))
 					action.keyboard.reset();
+				if (ui.Selectable("Escape", action.keyboard == Key::ESCAPE))
+					action.keyboard = Key::ESCAPE;
 				for (const auto &option : GameInputBindings::kOptions) {
 					if (ui.Selectable(option.name.data(),
 					                  action.keyboard == option.key))

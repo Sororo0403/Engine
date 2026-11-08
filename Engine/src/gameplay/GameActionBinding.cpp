@@ -1,5 +1,13 @@
 #include "gameplay/GameActionBinding.h"
 #include "platform/windows/StringConversion.h"
+#include <algorithm>
+
+bool GameActionBinding::UsesKey(std::span<const GameActionBinding> bindings,
+                                Key key) {
+	return std::ranges::any_of(bindings, [key](const auto &binding) {
+		return binding.keyboard == key;
+	});
+}
 
 bool GameActionBinding::IsValidName(std::string_view name) {
 	return !name.empty() && name.size() <= kMaximumNameBytes &&
@@ -13,7 +21,7 @@ bool GameActionBinding::IsValid(std::span<const GameActionBinding> bindings) {
 	for (std::size_t i = 0; i < bindings.size(); ++i) {
 		const auto &b = bindings[i];
 		if (!IsValidName(b.name) ||
-		    (b.keyboard && GameInputBindings::GetName(*b.keyboard).empty()) ||
+		    (b.keyboard && GetKeyName(*b.keyboard).empty()) ||
 		    (b.mouse &&
 		     static_cast<std::size_t>(*b.mouse) >= kMouseOptions.size()) ||
 		    (b.gamepad &&

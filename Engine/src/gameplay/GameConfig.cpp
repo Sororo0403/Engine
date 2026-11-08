@@ -80,7 +80,7 @@ bool GameConfig::Serialize(std::string &text, std::string &error) const {
 			                     {"gamepadAxis", nullptr}};
 			if (action.keyboard)
 				entry["keyboard"] =
-				    GameInputBindings::GetName(*action.keyboard);
+				    GameActionBinding::GetKeyName(*action.keyboard);
 			if (action.mouse)
 				entry["mouse"] =
 				    GameActionBinding::kMouseOptions[static_cast<std::size_t>(
@@ -275,8 +275,9 @@ bool GameConfig::Deserialize(std::string_view text, std::string &error) {
 				const auto &key = entry.at("keyboard");
 				if (!key.is_null()) {
 					action.keyboard =
-					    GameInputBindings::FromName(key.get<std::string>());
-					if (!action.keyboard)
+					    GameActionBinding::FromKeyName(key.get<std::string>());
+					if (!action.keyboard || (action.keyboard == Key::ESCAPE &&
+					                         data.at("version") < 10))
 						throw std::runtime_error("Unsupported action key.");
 				}
 				const auto readButton = [](const auto &value,

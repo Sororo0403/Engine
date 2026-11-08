@@ -72,6 +72,33 @@ struct GameActionBinding {
 	     {GamepadAxis::RIGHT_RIGHT, "RightStickRight"}}};
 
 	/// <summary>
+	/// 名前付き操作の設定に保存するキー名を取得する
+	/// </summary>
+	/// <param name="key">割り当てたキー</param>
+	/// <returns>保存用の名前。未対応のキーは空</returns>
+	static constexpr std::string_view GetKeyName(Key key) {
+		return key == Key::ESCAPE ? "Escape" : GameInputBindings::GetName(key);
+	}
+
+	/// <summary>
+	/// 名前付き操作の設定からキー名を読み取る
+	/// </summary>
+	/// <param name="name">設定に保存されたキー名</param>
+	/// <returns>対応するキー。未対応の名前はnullopt</returns>
+	static constexpr std::optional<Key> FromKeyName(std::string_view name) {
+		return name == "Escape" ? std::optional{Key::ESCAPE}
+		                        : GameInputBindings::FromName(name);
+	}
+
+	/// <summary>
+	/// 指定のキーが名前付き操作に割り当て済みか確認する
+	/// </summary>
+	/// <param name="bindings">ゲーム全体の操作一覧</param>
+	/// <param name="key">確認するキー</param>
+	/// <returns>true:割り当てあり false:割り当てなし</returns>
+	static bool UsesKey(std::span<const GameActionBinding> bindings, Key key);
+
+	/// <summary>
 	/// 操作名が空でなく、64バイト以内のNULを含まないUTF-8か確認する
 	/// </summary>
 	/// <param name="name">大文字・小文字を区別する操作名</param>
