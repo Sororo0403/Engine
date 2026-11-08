@@ -3,6 +3,7 @@
 #include "ui/CanvasLayout.h"
 
 #include "gameplay/CharacterController.h"
+#include "gameplay/GameActionBinding.h"
 #include "gameplay/SceneCameraUtils.h"
 #include "graphics/camera/Camera.h"
 #include "math/TransformUtils.h"
@@ -13,6 +14,7 @@
 #include "scene/SceneAudio.h"
 #include "scene/SceneHierarchy.h"
 #include "scene/SceneLighting.h"
+#include <algorithm>
 #include <format>
 #include <map>
 #include <optional>
@@ -381,5 +383,38 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 			add(invalidAudio, audioError);
 	}
 
+	return issues;
+}
+
+std::vector<SceneValidationIssue>
+SceneValidation::InspectInputs(const Scene &scene,
+                               std::span<const GameActionBinding> bindings) {
+	std::vector<SceneValidationIssue> issues;
+	for (const auto &[id, object] : scene.GetObjects()) {
+		if (!object.triggerActions)
+			continue;
+		const auto &actions = object.triggerActions->actions;
+		for (std::size_t i = 0; i < actions.size(); ++i) {
+			const auto &name = actions[i].inputAction;
+			if (name.empty())
+				continue;
+			const auto binding =
+			    std::ranges::find(bindings, name, &GameActionBinding::name);
+			if (binding != bindings.end() &&
+			    (binding->keyboard || binding->mouse || binding->gamepad ||
+			     binding->gamepadAxis))
+				continue;
+			const char *problem =
+			    binding == bindings.end()
+			        ? "does not exist in Game Settings"
+			        : "has no keyboard, mouse or gamepad binding";
+			issues.push_back(
+			    {id, std::format("Named input '{}' {}. Object {} (ID {}), "
+			                     "Trigger Action {}.",
+			                     name, problem,
+			                     object.name.empty() ? "Object" : object.name,
+			                     id, i + 1)});
+		}
+	}
 	return issues;
 }

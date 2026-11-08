@@ -35,7 +35,9 @@ class SceneCheckPanel {
 	/// </summary>
 	/// <param name="scene">変更しない検証対象</param>
 	/// <param name="fallback">Primary Cameraがない場合のSceneカメラ姿勢</param>
-	void Check(const Scene &scene, const CameraPose &fallback);
+	/// <param name="bindings">現在のゲーム設定にある名前付き操作</param>
+	void Check(const Scene &scene, const CameraPose &fallback,
+	           std::span<const GameActionBinding> bindings = {});
 
 	/// <summary>
 	/// 最後の検証結果を、共有・記録用のUTF-8テキストとして取得する
@@ -49,9 +51,11 @@ class SceneCheckPanel {
 	/// <param name="ui">フレーム開始済みのUI</param>
 	/// <param name="scene">検証対象と選択先を確認する編集シーン</param>
 	/// <param name="fallback">現在のSceneカメラ姿勢</param>
+	/// <param name="bindings">現在のゲーム設定にある名前付き操作</param>
 	/// <returns>選択する既存物体の一覧とフレーム・Inspector表示の要求。要求なしは空の一覧。Inspector表示は単独の物体への明示操作のみ</returns>
 	Request Draw(const ImGuiSystem &ui, const Scene &scene,
-	             const CameraPose &fallback);
+	             const CameraPose &fallback,
+	             std::span<const GameActionBinding> bindings = {});
 
   private:
 	/// <summary>

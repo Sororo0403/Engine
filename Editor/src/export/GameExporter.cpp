@@ -5,6 +5,7 @@
 #include "audio/WaveReader.h"
 #include "files/OutputDirectory.h"
 #include "gameplay/SceneSimulation.h"
+#include "gameplay/SceneValidation.h"
 #include "platform/windows/PathUtils.h"
 #include "scene/PrefabSerializer.h"
 #include "scene/SceneAssetReferences.h"
@@ -567,6 +568,14 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 		for (auto &entry : graph) {
 			Scene candidate;
 			candidate.ReplaceObjects(entry.objects);
+			const auto inputIssues = SceneValidation::InspectInputs(
+			    candidate, options.config.actions);
+			if (!inputIssues.empty())
+				throw std::runtime_error(
+				    entry.source.empty()
+				        ? inputIssues.front().message
+				        : std::format("{}: {}", PathUtils::ToUtf8(entry.source),
+				                      inputIssues.front().message));
 			SceneSimulation check;
 			std::string issue;
 			if (!entry.prefab &&

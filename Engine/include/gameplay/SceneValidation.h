@@ -2,10 +2,12 @@
 
 #include "graphics/camera/CameraPose.h"
 #include "scene/SceneObjectId.h"
+#include <span>
 #include <string>
 #include <vector>
 
 class Scene;
+struct GameActionBinding;
 
 /// <summary>
 /// 再生に必要なコンポーネント設定や初期配置の検証結果
@@ -27,4 +29,12 @@ namespace SceneValidation {
 std::vector<SceneValidationIssue>
 Inspect(const Scene &scene, const CameraPose &fallbackPose = CameraPose{},
         bool resolveInitialPose = true);
+/// <summary>
+/// Trigger Actionsが参照する名前付き操作を、現在のゲーム設定と照合する
+/// </summary>
+/// <param name="scene">変更しない検証対象</param>
+/// <param name="bindings">Playとゲーム出力で使用する名前付き操作一覧</param>
+/// <returns>削除された操作、または入力機器に割り当てられていない操作を使う物体と原因</returns>
+std::vector<SceneValidationIssue>
+InspectInputs(const Scene &scene, std::span<const GameActionBinding> bindings);
 } // namespace SceneValidation

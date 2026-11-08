@@ -20,8 +20,12 @@ void SceneCheckPanel::Reset() {
 	*this = SceneCheckPanel{};
 }
 
-void SceneCheckPanel::Check(const Scene &scene, const CameraPose &fallback) {
+void SceneCheckPanel::Check(const Scene &scene, const CameraPose &fallback,
+                            std::span<const GameActionBinding> bindings) {
 	auto issues = SceneValidation::Inspect(scene, fallback);
+	auto inputs = SceneValidation::InspectInputs(scene, bindings);
+	issues.insert(issues.end(), std::make_move_iterator(inputs.begin()),
+	              std::make_move_iterator(inputs.end()));
 	auto assets = SceneAssetValidation::Inspect(scene);
 	issues.insert(issues.end(), std::make_move_iterator(assets.begin()),
 	              std::make_move_iterator(assets.end()));
@@ -75,9 +79,10 @@ bool SceneCheckPanel::MatchesFilter(const SceneValidationIssue &issue,
 	return name.find(filter_) != std::string_view::npos;
 }
 
-SceneCheckPanel::Request SceneCheckPanel::Draw(const ImGuiSystem &ui,
-                                               const Scene &scene,
-                                               const CameraPose &fallback) {
+SceneCheckPanel::Request
+SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
+                      const CameraPose &fallback,
+                      std::span<const GameActionBinding> bindings) {
 	if (!open_) {
 		return {};
 	}
@@ -107,7 +112,7 @@ SceneCheckPanel::Request SceneCheckPanel::Draw(const ImGuiSystem &ui,
 		checkRequested_ = false;
 
 		try {
-			Check(scene, fallback);
+			Check(scene, fallback, bindings);
 		} catch (const std::exception &error) {
 			error_ = error.what();
 		}

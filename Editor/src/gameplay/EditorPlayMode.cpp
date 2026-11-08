@@ -1,5 +1,6 @@
 #include "gameplay/EditorPlayMode.h"
 #include "gameplay/GameplayInput.h"
+#include "gameplay/SceneValidation.h"
 #include "graphics/model/ModelManager.h"
 #include "graphics/render/RenderSystem.h"
 #include "graphics/render/RenderTexture.h"
@@ -252,6 +253,15 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
 	    !GameActionBinding::IsValid(config.actions)) {
 		error = "Use distinct supported gameplay keys and valid, unique named "
 		        "input actions before Play.";
+		return false;
+	}
+
+	const auto inputIssues =
+	    SceneValidation::InspectInputs(scene, config.actions);
+	if (!inputIssues.empty()) {
+		error = inputIssues.front().message;
+		if (invalidObject)
+			*invalidObject = inputIssues.front().objectId;
 		return false;
 	}
 
