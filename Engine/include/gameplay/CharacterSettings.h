@@ -11,10 +11,13 @@ struct CharacterSettings {
 	// 足場を離れた後のジャンプ猶予と、着地前の入力保持時間（秒）。0は無効
 	float coyoteTime = 0.0f;
 	float jumpBufferTime = 0.0f;
+	// 接地中の移動後に足元を探す距離。0は無効。
+	float groundSnapDistance = 0.0f;
 
 	static constexpr float kMaximumSpeed = 1000.0f;
 	static constexpr float kMaximumGravity = 1000.0f;
 	static constexpr float kMaximumJumpGraceSeconds = 1.0f;
+	static constexpr float kMaximumGroundSnapDistance = 2.0f;
 
 	/// <summary>
 	/// 移動と重力が有限で正、ジャンプ猶予が有限で0以上、かつ設定範囲内か確認する

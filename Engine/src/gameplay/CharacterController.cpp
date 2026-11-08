@@ -16,7 +16,9 @@ bool CharacterSettings::IsValid() const {
 	       std::isfinite(coyoteTime) && coyoteTime >= 0.0f &&
 	       coyoteTime <= kMaximumJumpGraceSeconds &&
 	       std::isfinite(jumpBufferTime) && jumpBufferTime >= 0.0f &&
-	       jumpBufferTime <= kMaximumJumpGraceSeconds;
+	       jumpBufferTime <= kMaximumJumpGraceSeconds &&
+	       std::isfinite(groundSnapDistance) && groundSnapDistance >= 0.0f &&
+	       groundSnapDistance <= kMaximumGroundSnapDistance;
 }
 
 bool CharacterController::Initialize(const Transform &transform,
@@ -151,6 +153,7 @@ bool CharacterController::Step(const CharacterInput &input,
 		jumpBufferRemaining_ = 0.0;
 	}
 
+	const bool canSnap = grounded_ && settings_.groundSnapDistance > 0;
 	jumpPending_ = false;
 	const float step = static_cast<float>(kFixedStepSeconds);
 	verticalVelocity_ =
@@ -179,6 +182,25 @@ bool CharacterController::Step(const CharacterInput &input,
 	matrix._41 = transform.translation.x;
 	matrix._42 = transform.translation.y;
 	matrix._43 = transform.translation.z;
+
+	// 直前まで床にいた場合だけ、移動後の位置から下方向の最初の面へ寄せる。
+	// Sweepで停止位置を得るため、斜面の横方向へは滑らせない。
+	if (canSnap) {
+		const auto distance =
+		    (std::max)(settings_.groundSnapDistance, kGroundProbeDistance);
+		CollisionSweepResult floor;
+		if (!world.Sweep(collider_, matrix, {0, -distance, 0}, floor))
+			return false;
+		movement.grounded = floor.objectId != 0 && floor.normal.y > .5f;
+		if (movement.grounded) {
+			const auto drop =
+			    (std::min)(double(settings_.groundSnapDistance),
+			               (std::max)(0.0, distance * floor.fraction -
+			                                   kGroundSnapClearance));
+			transform.translation.y -= static_cast<float>(drop);
+			matrix._42 = transform.translation.y;
+		}
+	}
 
 	if (!world.CanPlace(collider_, matrix)) {
 		return false;

@@ -1620,6 +1620,11 @@ void ControlsPanel::Draw() {
 	         "the whole scene. It changes no scene data, selection or history. "
 	         "Off by default; the preference is saved. Available while editing "
 	         "only. Use Play to test other movement directions and timing."},
+	        {"Inspector > Character Controller > Ground Snap",
+	         "Set Ground Snap Distance above zero to stay grounded on shallow "
+	         "descents or small drops. After a grounded move, the controller "
+	         "looks down for a walkable floor within this distance. Jumps and "
+	         "larger drops still leave the ground. The default is zero."},
 	        {"Inspector > Character Controller > Jump Grace",
 	         "Coyote Time allows jumping shortly after leaving a platform. "
 	         "Jump Buffer Time keeps a press made before landing and consumes "

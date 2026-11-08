@@ -177,6 +177,9 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		field("Jump Buffer Time (s)", &CharacterSettings::jumpBufferTime,
 		      CharacterSettings::kMaximumJumpGraceSeconds, 0.0f, 0.005f,
 		      "%.3f");
+		field("Ground Snap Distance", &CharacterSettings::groundSnapDistance,
+		      CharacterSettings::kMaximumGroundSnapDistance, 0.0f, 0.005f,
+		      "%.3f");
 
 		ui.BeginDisabled(!object.collider || !object.character->IsValid());
 

@@ -138,4 +138,5 @@ class CharacterController {
 	static constexpr double kFixedStepSeconds = 1.0 / 120.0;
 	static constexpr float kMaximumFrameSeconds = 0.1f;
 	static constexpr float kGroundProbeDistance = 0.002f;
+	static constexpr double kGroundSnapClearance = 0.0001;
 };
