@@ -499,6 +499,7 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 				objects.back()["motionPath"] = {
 				    {"points", path.points},
 				    {"segmentSeconds", path.segmentSeconds},
+				    {"waypointWaitSeconds", path.waypointWaitSeconds},
 				    {"mode", path.mode == MotionPathComponent::Mode::ONCE
 				                 ? "once"
 				             : path.mode == MotionPathComponent::Mode::LOOP
@@ -1116,6 +1117,13 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					path.points.push_back({p.x, p.y, p.z});
 				}
 				path.segmentSeconds = value.at("segmentSeconds").get<float>();
+				if (version >= 61) {
+					if (!value.at("waypointWaitSeconds").is_number())
+						throw std::runtime_error(
+						    "Motion Path waypoint wait is invalid.");
+					path.waypointWaitSeconds =
+					    value.at("waypointWaitSeconds").get<float>();
+				}
 				path.smooth = value.at("smooth").get<bool>();
 				if (version >= 44) {
 					if (!value.at("playOnStart").is_boolean())

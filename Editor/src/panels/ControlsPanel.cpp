@@ -1976,6 +1976,11 @@ void ControlsPanel::Draw() {
 	         "Game output includes every configured reachable scene and its "
 	         "assets, including inactive references and cycles, up to 256 "
 	         "scenes. Imported games retain the same links."},
+	        {"Motion Path > Waypoint Wait",
+	         "Set Waypoint Wait (s) to hold at each point reached, for example "
+	         "to give players time to board a lift. The path starts moving "
+	         "immediately. Loop and Ping Pong also hold when they return "
+	         "to the starting point. Zero keeps continuous movement."},
 	        {"Motion Path",
 	         "Add Motion Path in Inspector to move an object along offsets "
 	         "from its Play-start local position. The first point stays at "

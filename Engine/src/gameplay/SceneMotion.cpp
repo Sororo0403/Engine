@@ -164,12 +164,9 @@ bool SceneMotion::Advance(Scene &scene, float seconds,
 			if (state.playback == Playback::PAUSE ||
 			    !SceneActivity::IsActive(scene, id))
 				continue;
-			const double segment =
-			    scene.FindObject(id)->motionPath->segmentSeconds;
-			const double phase = std::fmod(state.seconds, segment);
-			const double boundary = state.playback == Playback::REVERSE
-			                            ? (phase > 1e-10 ? phase : segment)
-			                            : segment - phase;
+			const auto &path = *scene.FindObject(id)->motionPath;
+			const double boundary = path.GetTimeToBoundary(
+			    state.seconds, state.playback == Playback::REVERSE);
 			if (boundary > 1e-10)
 				step = (std::min)(step, boundary);
 		}

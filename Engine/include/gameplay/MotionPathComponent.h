@@ -18,9 +18,11 @@ struct MotionPathComponent {
 	Mode mode = Mode::PING_PONG;
 	bool smooth = false;
 	bool playOnStart = true;
+	float waypointWaitSeconds = 0;
 	static constexpr std::size_t kMaximumPoints = 64;
 	static constexpr float kMinimumSegmentSeconds = 0.05f;
 	static constexpr float kMaximumSegmentSeconds = 3600.0f;
+	static constexpr float kMaximumWaypointWaitSeconds = 600.0f;
 	static constexpr float kMaximumOffset = 100000.0f;
 
 	/// <summary>
@@ -34,6 +36,14 @@ struct MotionPathComponent {
 	/// </summary>
 	/// <returns>秒数。無効な設定は0</returns>
 	double GetDuration() const;
+
+	/// <summary>
+	/// 曲がり角を飛び越えないよう、移動と待機が切り替わる時刻までの距離を求める
+	/// </summary>
+	/// <param name="seconds">検証済みの経路の現在時刻</param>
+	/// <param name="reverse">true:逆再生 false:順再生</param>
+	/// <returns>次の境界までの秒数</returns>
+	double GetTimeToBoundary(double seconds, bool reverse) const;
 
 	/// <summary>
 	/// 経過時間に対応する、開始時のローカル位置からの移動量を求める
