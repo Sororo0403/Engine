@@ -47,7 +47,8 @@ struct TriggerAction {
 		PAUSE_GAME,
 		RESUME_GAME,
 		TOGGLE_PAUSE,
-		LAUNCH_CHARACTER
+		LAUNCH_CHARACTER,
+		RESPAWN_CHARACTER
 	};
 
 	/// <summary>
@@ -139,7 +140,8 @@ struct TriggerAction {
 		        operation == Operation::LOAD_SCENE ||
 		        operation == Operation::QUIT_GAME ||
 		        operation == Operation::RESTART_SCENE || IsPauseOperation() ||
-		        operation == Operation::LAUNCH_CHARACTER);
+		        operation == Operation::LAUNCH_CHARACTER ||
+		        operation == Operation::RESPAWN_CHARACTER);
 	}
 
 	/// <summary>
@@ -173,7 +175,8 @@ struct TriggerAction {
 	/// <returns>true:対象の主人公に限定 false:通常の接触条件に従う</returns>
 	bool TargetsContactCharacter() const {
 		return operation == Operation::SET_CHECKPOINT ||
-		       operation == Operation::LAUNCH_CHARACTER;
+		       operation == Operation::LAUNCH_CHARACTER ||
+		       operation == Operation::RESPAWN_CHARACTER;
 	}
 
 	/// <summary>

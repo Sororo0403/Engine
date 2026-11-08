@@ -49,6 +49,8 @@ const char *OperationLabel(TriggerAction::Operation operation) {
 		return "Stop Audio";
 	case TriggerAction::Operation::TELEPORT:
 		return "Teleport";
+	case TriggerAction::Operation::RESPAWN_CHARACTER:
+		return "Respawn Character";
 	case TriggerAction::Operation::LAUNCH_CHARACTER:
 		return "Launch Character";
 	case TriggerAction::Operation::SET_CHECKPOINT:
@@ -300,6 +302,10 @@ bool TriggerActionsInspector::Draw(
 						        TriggerAction::Operation::LAUNCH_CHARACTER &&
 						    !candidate.character)
 							continue;
+						if (action.operation ==
+						        TriggerAction::Operation::RESPAWN_CHARACTER &&
+						    (!candidate.character || !candidate.respawn))
+							continue;
 						if (action.IsAnimatorOperation() && !candidate.animator)
 							continue;
 						if (action.operation ==
@@ -334,6 +340,7 @@ bool TriggerActionsInspector::Draw(
 				         TriggerAction::Operation::TELEPORT,
 				         TriggerAction::Operation::SET_CHECKPOINT,
 				         TriggerAction::Operation::LAUNCH_CHARACTER,
+				         TriggerAction::Operation::RESPAWN_CHARACTER,
 				         TriggerAction::Operation::SET_CAMERA,
 				         TriggerAction::Operation::PLAY_MOTION_PATH,
 				         TriggerAction::Operation::REVERSE_MOTION_PATH,

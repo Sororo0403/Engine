@@ -1040,6 +1040,14 @@ void ControlsPanel::Draw() {
 	         "takes effect at the start. A new target starts from the current "
 	         "view; selecting the same target does not restart the blend. "
 	         "Restart restores the authored Primary Camera."},
+	        {"Trigger Actions > Respawn Character",
+	         "For hazards such as spikes, choose Enter and Respawn Character "
+	         "on a trigger Collider. Select a character with Respawn. It "
+	         "returns "
+	         "to its current respawn point, including a checkpoint set in the "
+	         "same update. Respawn clears velocity, takes priority over Launch "
+	         "Character, and updates the same count as falling below the "
+	         "level."},
 	        {"Trigger Actions > Launch Character",
 	         "For a jump pad, add a trigger Collider and choose Enter and "
 	         "Launch Character. Select the player and set the upward speed. "

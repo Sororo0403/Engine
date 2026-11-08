@@ -221,6 +221,13 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 						        "Character Controller.");
 						break;
 					}
+					if (action.operation ==
+					        TriggerAction::Operation::RESPAWN_CHARACTER &&
+					    (!target.character || !target.respawn)) {
+						add(id, "Respawn Character requires a target with "
+						        "Character Controller and Respawn.");
+						break;
+					}
 					if (action.IsAnimatorOperation() && !target.animator) {
 						add(id, "Animator Trigger Actions require a target "
 						        "with an Animator.");

@@ -267,7 +267,7 @@ bool SceneSimulation::ApplyTriggerActions(
 	std::map<SceneObjectId, SceneObjectId> destinations;
 	// 有効な主人公は一体なので、同じ更新では最後に通った設定を使う。
 	SceneObjectId checkpoint = 0, checkpointTarget = 0;
-	SceneObjectId launchTarget = 0;
+	SceneObjectId launchTarget = 0, respawnTarget = 0;
 	float launchSpeed = 0;
 	SceneObjectId selectedCamera = 0;
 	float cameraBlendSeconds = 0;
@@ -386,6 +386,13 @@ bool SceneSimulation::ApplyTriggerActions(
 					fired.insert(key);
 				continue;
 			}
+			if (action.operation ==
+			    TriggerAction::Operation::RESPAWN_CHARACTER) {
+				respawnTarget = action.target;
+				if (action.once)
+					fired.insert(key);
+				continue;
+			}
 			if (action.UsesDestination()) {
 				const bool settingCheckpoint =
 				    action.operation ==
@@ -497,6 +504,7 @@ bool SceneSimulation::ApplyTriggerActions(
 			case TriggerAction::Operation::TELEPORT:
 			case TriggerAction::Operation::SET_CHECKPOINT:
 			case TriggerAction::Operation::LAUNCH_CHARACTER:
+			case TriggerAction::Operation::RESPAWN_CHARACTER:
 			case TriggerAction::Operation::SET_CAMERA:
 			case TriggerAction::Operation::PLAY_MOTION_PATH:
 			case TriggerAction::Operation::REVERSE_MOTION_PATH:
@@ -639,6 +647,18 @@ bool SceneSimulation::ApplyTriggerActions(
 		}
 	}
 
+	const bool respawning = respawnTarget && respawnTarget == character_;
+	if (respawning) {
+		const auto position = spawn_;
+		if (!ApplyTeleports({{respawnTarget, position}}, error,
+		                    invalidObject)) {
+			error = "Respawn Character failed: " + error;
+			return false;
+		}
+		++respawnCount_;
+		lastRespawnPosition_ = position;
+	}
+
 	for (const auto &[id, playback] : motionPlayback) {
 		if (!motion_.SetPlayback(id, playback)) {
 			error = "Motion Path Trigger Action target is not prepared.";
@@ -695,7 +715,7 @@ bool SceneSimulation::ApplyTriggerActions(
 		}
 	}
 
-	if (launchTarget && launchTarget == character_ &&
+	if (!respawning && launchTarget && launchTarget == character_ &&
 	    !controller_.Launch(launchSpeed)) {
 		error = "Launch Character could not set the vertical speed.";
 		if (invalidObject)
