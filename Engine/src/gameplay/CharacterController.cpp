@@ -296,6 +296,18 @@ bool CharacterController::RefreshContacts(const CollisionWorld &world) {
 	return true;
 }
 
+bool CharacterController::Launch(float speed) {
+	if (!initialized_ || !std::isfinite(speed) || speed <= 0 ||
+	    speed > CharacterSettings::kMaximumSpeed)
+		return false;
+	verticalVelocity_ = speed;
+	grounded_ = false;
+	jumpPending_ = false;
+	coyoteRemaining_ = 0;
+	jumpBufferRemaining_ = 0;
+	return true;
+}
+
 bool CharacterController::SetSettings(const CharacterSettings &settings) {
 	if (!initialized_ || !settings.IsValid())
 		return false;

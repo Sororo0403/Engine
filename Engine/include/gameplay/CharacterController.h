@@ -114,6 +114,13 @@ class CharacterController {
 	/// <returns>true:成功 false:未初期化または設定が無効</returns>
 	bool SetSettings(const CharacterSettings &settings);
 
+	/// <summary>
+	/// 接地やジャンプ入力の猶予を解除し、指定した上向き速度から移動を開始する
+	/// </summary>
+	/// <param name="speed">ワールドY方向の速度</param>
+	/// <returns>true:速度を設定 false:未初期化または速度が無効</returns>
+	bool Launch(float speed);
+
   private:
 	/// <summary>
 	/// 固定刻み1回分の移動を処理する

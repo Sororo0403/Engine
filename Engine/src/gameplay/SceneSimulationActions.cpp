@@ -162,8 +162,7 @@ void SceneSimulation::QueueOccupancySignals(
 			for (std::size_t i = 0; i < actions.size(); ++i) {
 				const auto &action = actions[i];
 				if (!action.UsesOccupancy() ||
-				    (action.operation ==
-				         TriggerAction::Operation::SET_CHECKPOINT &&
+				    (action.TargetsContactCharacter() &&
 				     other != action.target) ||
 				    !MatchesContact(action, scene_.FindObject(other)))
 					continue;
@@ -268,6 +267,8 @@ bool SceneSimulation::ApplyTriggerActions(
 	std::map<SceneObjectId, SceneObjectId> destinations;
 	// 有効な主人公は一体なので、同じ更新では最後に通った設定を使う。
 	SceneObjectId checkpoint = 0, checkpointTarget = 0;
+	SceneObjectId launchTarget = 0;
+	float launchSpeed = 0;
 	SceneObjectId selectedCamera = 0;
 	float cameraBlendSeconds = 0;
 	auto requestedScene = pendingScene_;
@@ -317,6 +318,10 @@ bool SceneSimulation::ApplyTriggerActions(
 				}
 				return false;
 			}
+			if (action.TargetsContactCharacter() &&
+			    (action.target != character_ ||
+			     (action.UsesContact() && signal.other != action.target)))
+				continue;
 			if (!signal.delayElapsed && action.delaySeconds > 0) {
 				if (delayedActions_.size() >= kMaximumDelayedTriggerActions) {
 					error = "Delayed Trigger Actions limit exceeded.";
@@ -373,14 +378,18 @@ bool SceneSimulation::ApplyTriggerActions(
 					fired.insert(key);
 				continue;
 			}
+			if (action.operation ==
+			    TriggerAction::Operation::LAUNCH_CHARACTER) {
+				launchTarget = action.target;
+				launchSpeed = action.launchSpeed;
+				if (action.once)
+					fired.insert(key);
+				continue;
+			}
 			if (action.UsesDestination()) {
 				const bool settingCheckpoint =
 				    action.operation ==
 				    TriggerAction::Operation::SET_CHECKPOINT;
-				if (settingCheckpoint && (action.target != character_ ||
-				                          (!buttonClick && !globalInput &&
-				                           signal.other != action.target)))
-					continue;
 				if (!scene_.Contains(action.destination)) {
 					error = "Teleport and Set Checkpoint require an existing "
 					        "destination.";
@@ -487,6 +496,7 @@ bool SceneSimulation::ApplyTriggerActions(
 			case TriggerAction::Operation::TOGGLE_PAUSE:
 			case TriggerAction::Operation::TELEPORT:
 			case TriggerAction::Operation::SET_CHECKPOINT:
+			case TriggerAction::Operation::LAUNCH_CHARACTER:
 			case TriggerAction::Operation::SET_CAMERA:
 			case TriggerAction::Operation::PLAY_MOTION_PATH:
 			case TriggerAction::Operation::REVERSE_MOTION_PATH:
@@ -683,6 +693,14 @@ bool SceneSimulation::ApplyTriggerActions(
 				*invalidObject = message.sender;
 			return false;
 		}
+	}
+
+	if (launchTarget && launchTarget == character_ &&
+	    !controller_.Launch(launchSpeed)) {
+		error = "Launch Character could not set the vertical speed.";
+		if (invalidObject)
+			*invalidObject = launchTarget;
+		return false;
 	}
 
 	pendingScene_ = std::move(requestedScene);

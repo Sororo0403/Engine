@@ -661,6 +661,9 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 					    : action.operation ==
 					            TriggerAction::Operation::TOGGLE_PAUSE
 					        ? "togglePause"
+					    : action.operation ==
+					            TriggerAction::Operation::LAUNCH_CHARACTER
+					        ? "launchCharacter"
 					        : "loadScene";
 					actions.push_back(
 					    {{"event",
@@ -692,7 +695,8 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 					     {"messageName", action.messageName},
 					     {"delaySeconds", action.delaySeconds},
 					     {"cameraBlendSeconds", action.cameraBlendSeconds},
-					     {"arrivalTag", action.arrivalTag}});
+					     {"arrivalTag", action.arrivalTag},
+					     {"launchSpeed", action.launchSpeed}});
 				}
 				objects.back()["triggerActions"] = {
 				    {"actions", std::move(actions)}};
@@ -1385,6 +1389,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					     !(version >= 23 && operation == "teleport") &&
 					     !(version >= 28 && operation == "loadScene") &&
 					     !(version >= 57 && operation == "quitGame") &&
+					     !(version >= 64 && operation == "launchCharacter") &&
 					     !(version >= 58 && operation == "restartScene") &&
 					     !(version >= 60 && (operation == "pauseGame" ||
 					                         operation == "resumeGame" ||
@@ -1493,6 +1498,8 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					         ? TriggerAction::Operation::RESUME_GAME
 					     : operation == "togglePause"
 					         ? TriggerAction::Operation::TOGGLE_PAUSE
+					     : operation == "launchCharacter"
+					         ? TriggerAction::Operation::LAUNCH_CHARACTER
 					         : TriggerAction::Operation::LOAD_SCENE,
 					     value.at("once").get<bool>(),
 					     version >= 23
@@ -1523,7 +1530,9 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					         : 0.f,
 					     version >= 54
 					         ? value.at("arrivalTag").get<std::string>()
-					         : std::string{}});
+					         : std::string{},
+					     version >= 64 ? value.at("launchSpeed").get<float>()
+					                   : TriggerAction{}.launchSpeed});
 				}
 				object.triggerActions = std::move(component);
 			}

@@ -214,6 +214,13 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 						break;
 					}
 
+					if (action.operation ==
+					        TriggerAction::Operation::LAUNCH_CHARACTER &&
+					    !target.character) {
+						add(id, "Launch Character requires a target with a "
+						        "Character Controller.");
+						break;
+					}
 					if (action.IsAnimatorOperation() && !target.animator) {
 						add(id, "Animator Trigger Actions require a target "
 						        "with an Animator.");

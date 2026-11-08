@@ -1,5 +1,6 @@
 #pragma once
 
+#include "gameplay/CharacterSettings.h"
 #include "gameplay/GameActionBinding.h"
 #include "platform/windows/PathUtils.h"
 #include "scene/ObjectTag.h"
@@ -45,7 +46,8 @@ struct TriggerAction {
 		RESTART_SCENE,
 		PAUSE_GAME,
 		RESUME_GAME,
-		TOGGLE_PAUSE
+		TOGGLE_PAUSE,
+		LAUNCH_CHARACTER
 	};
 
 	/// <summary>
@@ -87,13 +89,17 @@ struct TriggerAction {
 	float cameraBlendSeconds = 0;
 	// Load Sceneで主人公の到着位置を指定する遷移先のタグ。空は配置済みの位置を使う。
 	std::string arrivalTag;
+	// Launch Characterが設定する上向きの速度。ワールド座標の毎秒距離。
+	float launchSpeed = 12.f;
 
 	/// <summary>
 	/// 種別が有効か確認する。未割り当ての対象は編集用に許可し、Play時に存在を確認する
 	/// </summary>
 	/// <returns>true:有効 false:未対応のイベントまたは操作</returns>
 	bool IsValid() const {
-		return std::isfinite(delaySeconds) && delaySeconds >= 0 &&
+		return std::isfinite(launchSpeed) && launchSpeed > 0 &&
+		       launchSpeed <= CharacterSettings::kMaximumSpeed &&
+		       std::isfinite(delaySeconds) && delaySeconds >= 0 &&
 		       delaySeconds <= kMaximumDelaySeconds &&
 		       std::isfinite(cameraBlendSeconds) && cameraBlendSeconds >= 0 &&
 		       cameraBlendSeconds <= kMaximumCameraBlendSeconds &&
@@ -132,7 +138,8 @@ struct TriggerAction {
 		        operation == Operation::SEND_SCRIPT_MESSAGE ||
 		        operation == Operation::LOAD_SCENE ||
 		        operation == Operation::QUIT_GAME ||
-		        operation == Operation::RESTART_SCENE || IsPauseOperation());
+		        operation == Operation::RESTART_SCENE || IsPauseOperation() ||
+		        operation == Operation::LAUNCH_CHARACTER);
 	}
 
 	/// <summary>
@@ -157,7 +164,16 @@ struct TriggerAction {
 	/// <returns>true:動的剛体で発火可能 false:主人公の操作または復帰先設定</returns>
 	bool AllowsDynamicContact() const {
 		return UsesContact() && event != Event::INTERACT &&
-		       operation != Operation::SET_CHECKPOINT;
+		       !TargetsContactCharacter();
+	}
+
+	/// <summary>
+	/// 接触イベントを使う場合に、操作対象の主人公との接触だけを許可するか確認する
+	/// </summary>
+	/// <returns>true:対象の主人公に限定 false:通常の接触条件に従う</returns>
+	bool TargetsContactCharacter() const {
+		return operation == Operation::SET_CHECKPOINT ||
+		       operation == Operation::LAUNCH_CHARACTER;
 	}
 
 	/// <summary>

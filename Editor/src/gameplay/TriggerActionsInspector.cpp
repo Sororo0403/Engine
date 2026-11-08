@@ -49,6 +49,8 @@ const char *OperationLabel(TriggerAction::Operation operation) {
 		return "Stop Audio";
 	case TriggerAction::Operation::TELEPORT:
 		return "Teleport";
+	case TriggerAction::Operation::LAUNCH_CHARACTER:
+		return "Launch Character";
 	case TriggerAction::Operation::SET_CHECKPOINT:
 		return "Set Checkpoint";
 	case TriggerAction::Operation::SET_CAMERA:
@@ -294,6 +296,10 @@ bool TriggerActionsInspector::Draw(
 						if (action.IsTransformAnimationOperation() &&
 						    !candidate.transformAnimation)
 							continue;
+						if (action.operation ==
+						        TriggerAction::Operation::LAUNCH_CHARACTER &&
+						    !candidate.character)
+							continue;
 						if (action.IsAnimatorOperation() && !candidate.animator)
 							continue;
 						if (action.operation ==
@@ -327,6 +333,7 @@ bool TriggerActionsInspector::Draw(
 				         TriggerAction::Operation::STOP_AUDIO,
 				         TriggerAction::Operation::TELEPORT,
 				         TriggerAction::Operation::SET_CHECKPOINT,
+				         TriggerAction::Operation::LAUNCH_CHARACTER,
 				         TriggerAction::Operation::SET_CAMERA,
 				         TriggerAction::Operation::PLAY_MOTION_PATH,
 				         TriggerAction::Operation::REVERSE_MOTION_PATH,
@@ -454,6 +461,18 @@ bool TriggerActionsInspector::Draw(
 					changed = true;
 				}
 			}
+			if (action.operation ==
+			    TriggerAction::Operation::LAUNCH_CHARACTER) {
+				float speed = action.launchSpeed;
+				if (ImGui::InputFloat("Launch Speed", &speed, 0, 0, "%.3f",
+				                      ImGuiInputTextFlags_EnterReturnsTrue) &&
+				    std::isfinite(speed) && speed > 0 &&
+				    speed <= CharacterSettings::kMaximumSpeed &&
+				    speed != action.launchSpeed) {
+					action.launchSpeed = speed;
+					changed = true;
+				}
+			}
 			float delay = action.delaySeconds;
 			if (ImGui::InputFloat("Delay (s)", &delay, 0, 0, "%.3f",
 			                      ImGuiInputTextFlags_EnterReturnsTrue) &&
@@ -537,6 +556,8 @@ void TriggerActionsInspector::DrawReadOnly(const ImGuiSystem &ui,
 			ui.Text("Message: " + action.messageName);
 		if (action.operation == TriggerAction::Operation::LOAD_SCENE)
 			ui.Text("Scene: " + PathUtils::ToUtf8(action.scenePath));
+		if (action.operation == TriggerAction::Operation::LAUNCH_CHARACTER)
+			ui.Text(std::format("Launch Speed: {:.3f}", action.launchSpeed));
 		if (!action.arrivalTag.empty())
 			ui.Text("Arrival Tag: " + action.arrivalTag);
 		if (action.UsesDestination()) {

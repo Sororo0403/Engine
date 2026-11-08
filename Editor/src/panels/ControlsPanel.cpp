@@ -1040,6 +1040,12 @@ void ControlsPanel::Draw() {
 	         "takes effect at the start. A new target starts from the current "
 	         "view; selecting the same target does not restart the blend. "
 	         "Restart restores the authored Primary Camera."},
+	        {"Trigger Actions > Launch Character",
+	         "For a jump pad, add a trigger Collider and choose Enter and "
+	         "Launch Character. Select the player and set the upward speed. "
+	         "When using a contact event, only that character can activate "
+	         "the action. The launch replaces vertical speed and gravity and "
+	         "solid surfaces still apply."},
 	        {"Trigger Actions > Set Checkpoint",
 	         "Choose a target with Character Controller and Respawn, and a "
 	         "destination object. The action runs when that character enters, "
