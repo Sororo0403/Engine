@@ -121,7 +121,7 @@ bool SceneScripts::Run(
 		if (!std::isfinite(seconds) || seconds < 0)
 			throw std::runtime_error("Script time is invalid.");
 		logs_.clear();
-		auto incoming = mailbox_.BeginStep(!startOnly && seconds > 0);
+		auto incoming = mailbox_.BeginStep(!startOnly);
 		std::string game = sharedState ? *sharedState : std::string("{}");
 		std::size_t callbacks = 0;
 		int budget = kFrameInstructions;
@@ -224,7 +224,7 @@ bool SceneScripts::Run(
 						                                 : event.contact.first);
 			}
 		}
-		if (!startOnly && seconds > 0) {
+		if (!startOnly) {
 			std::set<SceneObjectId> delivered;
 			for (auto id : uiClicks) {
 				const auto *object = scene.FindObject(id);

@@ -168,13 +168,14 @@ bool EditorPlaySession::Update(float seconds, const CharacterInput &input,
 	}
 
 	const auto revision = simulation_.GetSceneRevision();
+	const bool gamePaused = simulation_.IsGamePaused();
 	if (!simulation_.Update(*time, input, cameraInput, uiInput, actions)) {
 		return false;
 	}
 
 	if (simulation_.GetSceneRevision() != revision)
 		triggerRecordCount_ = 0;
-	if (*time > 0.0f) {
+	if (*time > 0.0f && !gamePaused) {
 		elapsedSeconds_ += static_cast<double>(*time);
 		++simulationFrameCount_;
 		RememberTriggerEvents();

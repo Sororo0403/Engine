@@ -47,7 +47,8 @@ bool RuntimeScene::Initialize() {
 		return false;
 	}
 
-	if (!audioPlayer_.Start(simulation_.GetCameraPose(), false, error, nullptr,
+	if (!audioPlayer_.Start(simulation_.GetCameraPose(),
+	                        simulation_.IsGamePaused(), error, nullptr,
 	                        simulation_.GetAudioActions())) {
 		Logger::Error(error);
 		return false;
@@ -103,12 +104,14 @@ bool RuntimeScene::Update(float seconds) {
 	std::string audioError;
 	const bool audioReady =
 	    simulation_.GetSceneRevision() != revision
-	        ? audioPlayer_.Start(simulation_.GetCameraPose(),
-	                             !input_.IsActive(), audioError, nullptr,
-	                             simulation_.GetAudioActions())
-	        : audioPlayer_.Update(simulation_.GetCameraPose(),
-	                              !input_.IsActive(), audioError, nullptr,
-	                              simulation_.GetAudioActions());
+	        ? audioPlayer_.Start(
+	              simulation_.GetCameraPose(),
+	              !input_.IsActive() || simulation_.IsGamePaused(), audioError,
+	              nullptr, simulation_.GetAudioActions())
+	        : audioPlayer_.Update(
+	              simulation_.GetCameraPose(),
+	              !input_.IsActive() || simulation_.IsGamePaused(), audioError,
+	              nullptr, simulation_.GetAudioActions());
 	if (!audioReady) {
 		Logger::Error(audioError);
 		return false;

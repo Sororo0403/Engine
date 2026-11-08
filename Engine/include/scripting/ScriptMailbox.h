@@ -27,7 +27,7 @@ class ScriptMailbox {
 	             std::string &error);
 
 	/// <summary>
-	/// 送信回数を初期化し、正の時間では前回までの通知を取り出す
+	/// 送信回数を初期化し、開始処理以外では前回までの通知を取り出す
 	/// </summary>
 	/// <param name="deliver">true:前回分を返す false:開始処理なので保持する</param>
 	/// <returns>今回だけ配信する通知。新しく送った通知は含めない</returns>

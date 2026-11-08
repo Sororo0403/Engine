@@ -34,6 +34,13 @@ class CollisionEvents {
 	}
 
 	/// <summary>
+	/// 接触の継続状態を保持したまま、今回の通知だけを空にする
+	/// </summary>
+	void ClearEvents() {
+		events_.clear();
+	}
+
+	/// <summary>
 	/// 最後の更新の終点で接触している組を取得する
 	/// </summary>
 	/// <returns>物体ID順の重複しない一覧</returns>

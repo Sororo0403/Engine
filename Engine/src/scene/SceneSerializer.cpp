@@ -649,6 +649,15 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 					    : action.operation ==
 					            TriggerAction::Operation::RESTART_SCENE
 					        ? "restartScene"
+					    : action.operation ==
+					            TriggerAction::Operation::PAUSE_GAME
+					        ? "pauseGame"
+					    : action.operation ==
+					            TriggerAction::Operation::RESUME_GAME
+					        ? "resumeGame"
+					    : action.operation ==
+					            TriggerAction::Operation::TOGGLE_PAUSE
+					        ? "togglePause"
 					        : "loadScene";
 					actions.push_back(
 					    {{"event",
@@ -1353,6 +1362,9 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					     !(version >= 28 && operation == "loadScene") &&
 					     !(version >= 57 && operation == "quitGame") &&
 					     !(version >= 58 && operation == "restartScene") &&
+					     !(version >= 60 && (operation == "pauseGame" ||
+					                         operation == "resumeGame" ||
+					                         operation == "togglePause")) &&
 					     !(version >= 39 && operation == "setCheckpoint") &&
 					     !(version >= 40 && operation == "setCamera") &&
 					     !(version >= 44 && (operation == "playMotionPath" ||
@@ -1451,6 +1463,12 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					         ? TriggerAction::Operation::QUIT_GAME
 					     : operation == "restartScene"
 					         ? TriggerAction::Operation::RESTART_SCENE
+					     : operation == "pauseGame"
+					         ? TriggerAction::Operation::PAUSE_GAME
+					     : operation == "resumeGame"
+					         ? TriggerAction::Operation::RESUME_GAME
+					     : operation == "togglePause"
+					         ? TriggerAction::Operation::TOGGLE_PAUSE
 					         : TriggerAction::Operation::LOAD_SCENE,
 					     value.at("once").get<bool>(),
 					     version >= 23

@@ -495,6 +495,7 @@ void SceneSimulation::Stop() {
 	pendingScene_ = {};
 	restartSource_.reset();
 	quitRequested_ = false;
+	gamePaused_ = false;
 	cameraTransition_.reset();
 	motion_ = SceneMotion{};
 	animations_ = SceneAnimations{};
@@ -536,7 +537,7 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 		if (quitRequested_)
 			return true;
 		if (seconds == 0) {
-			if (!Advance(seconds, input, cameraInput)) {
+			if (!gamePaused_ && !Advance(seconds, input, cameraInput)) {
 				lastUpdateError_ = "The zero-time simulation update failed.";
 				return false;
 			}
@@ -584,35 +585,43 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 			lastUpdateError_ = std::move(uiError);
 			return false;
 		}
-		const auto controls =
-		    working.ui_.ConsumesNavigation() ? CharacterInput{} : input;
+		const bool paused = working.gamePaused_;
+		const auto controls = paused || working.ui_.ConsumesNavigation()
+		                          ? CharacterInput{}
+		                          : input;
 		const auto orbit =
 		    (working.ui_.ConsumesNavigation() || working.ui_.ConsumesPointer())
 		        ? OrbitCameraInput{}
 		        : cameraInput;
-		if (!working.Advance(seconds, controls, orbit)) {
-			lastUpdateError_ = working.lastUpdateError_.empty()
-			                       ? "Simulation update failed. Check active "
-			                         "physics and camera settings."
-			                       : working.lastUpdateError_;
-			return false;
-		}
-		// 主人公や追従の最終姿勢で問い合わせる。実行中のKinematic速度は変えない。
-		auto contactPhysics = working.physics_;
-		std::string contactError;
-		if (!contactPhysics.Configure(working.scene_, true, contactError)) {
-			lastUpdateError_ = std::move(contactError);
-			return false;
-		}
-		const auto *physicalWorld = working.physics_.GetWorld();
-		const auto impacts = physicalWorld && seconds >= .000001f
-		                         ? physicalWorld->GetFrameContacts()
-		                         : std::span<const CollisionContact>{};
-		if (!working.collisions_.Update(working.scene_,
-		                                contactPhysics.GetWorld(), impacts)) {
-			lastUpdateError_ =
-			    "Collision notification shapes or contact count are invalid.";
-			return false;
+		if (paused) {
+			working.frameEvents_.clear();
+			working.collisions_.ClearEvents();
+		} else {
+			if (!working.Advance(seconds, controls, orbit)) {
+				lastUpdateError_ =
+				    working.lastUpdateError_.empty()
+				        ? "Simulation update failed. Check active "
+				          "physics and camera settings."
+				        : working.lastUpdateError_;
+				return false;
+			}
+			// 主人公や追従の最終姿勢で問い合わせる。実行中のKinematic速度は変えない。
+			auto contactPhysics = working.physics_;
+			std::string contactError;
+			if (!contactPhysics.Configure(working.scene_, true, contactError)) {
+				lastUpdateError_ = std::move(contactError);
+				return false;
+			}
+			const auto *physicalWorld = working.physics_.GetWorld();
+			const auto impacts = physicalWorld && seconds >= .000001f
+			                         ? physicalWorld->GetFrameContacts()
+			                         : std::span<const CollisionContact>{};
+			if (!working.collisions_.Update(
+			        working.scene_, contactPhysics.GetWorld(), impacts)) {
+				lastUpdateError_ = "Collision notification shapes or contact "
+				                   "count are invalid.";
+				return false;
+			}
 		}
 		std::string error;
 		const bool uiConsumesInput =
@@ -635,8 +644,9 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 		auto scriptViewport = uiInput;
 		// UIがポインターを使用した更新では、同じクリックを3D操作へ渡さない。
 		scriptViewport.pointerValid &= !working.ui_.ConsumesPointer();
-		if (!working.ApplyScripts(seconds, controls, false, error, nullptr,
-		                          scriptActions, &scriptViewport)) {
+		if (!working.ApplyScripts(paused ? 0.f : seconds, controls, false,
+		                          error, nullptr, scriptActions,
+		                          &scriptViewport)) {
 			lastUpdateError_ = std::move(error);
 			return false;
 		}

@@ -79,6 +79,12 @@ const char *OperationLabel(TriggerAction::Operation operation) {
 		return "Send Script Message";
 	case TriggerAction::Operation::EMIT_PARTICLES:
 		return "Emit Particles";
+	case TriggerAction::Operation::PAUSE_GAME:
+		return "Pause Game";
+	case TriggerAction::Operation::RESUME_GAME:
+		return "Resume Game";
+	case TriggerAction::Operation::TOGGLE_PAUSE:
+		return "Toggle Pause";
 	case TriggerAction::Operation::RESTART_SCENE:
 		return "Restart Scene";
 	case TriggerAction::Operation::QUIT_GAME:
@@ -337,7 +343,10 @@ bool TriggerActionsInspector::Draw(
 				         TriggerAction::Operation::EMIT_PARTICLES,
 				         TriggerAction::Operation::LOAD_SCENE,
 				         TriggerAction::Operation::QUIT_GAME,
-				         TriggerAction::Operation::RESTART_SCENE}) {
+				         TriggerAction::Operation::RESTART_SCENE,
+				         TriggerAction::Operation::PAUSE_GAME,
+				         TriggerAction::Operation::RESUME_GAME,
+				         TriggerAction::Operation::TOGGLE_PAUSE}) {
 					if (ImGui::Selectable(OperationLabel(operation),
 					                      action.operation == operation) &&
 					    action.operation != operation) {

@@ -269,6 +269,14 @@ class EditorPlaySession {
 	}
 
 	/// <summary>
+	/// シミュレーションがゲーム内操作で一時停止しているか確認する
+	/// </summary>
+	/// <returns>true:ゲーム内の一時停止中 false:通常進行</returns>
+	bool IsGamePaused() const {
+		return simulation_.IsGamePaused();
+	}
+
+	/// <summary>
 	/// 現在のシミュレーションがゲーム終了を要求したか取得する
 	/// </summary>
 	/// <returns>true:Playを停止する false:継続</returns>

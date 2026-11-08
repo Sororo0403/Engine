@@ -272,8 +272,8 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
 		return false;
 	}
 
-	if (!audioPlayer_.Start(session_.GetCameraPose(), false, error,
-	                        invalidObject, session_.GetAudioActions())) {
+	if (!audioPlayer_.Start(session_.GetCameraPose(), session_.IsGamePaused(),
+	                        error, invalidObject, session_.GetAudioActions())) {
 		Stop();
 		return false;
 	}
@@ -301,7 +301,8 @@ bool EditorPlayMode::Restart(std::string &error) {
 	}
 	actionReader_.Reset();
 
-	if (!audioPlayer_.Start(session_.GetCameraPose(), session_.IsPaused(),
+	if (!audioPlayer_.Start(session_.GetCameraPose(),
+	                        session_.IsPaused() || session_.IsGamePaused(),
 	                        error, nullptr, session_.GetAudioActions())) {
 		Stop();
 		return false;
@@ -317,7 +318,8 @@ bool EditorPlayMode::Restart(std::string &error) {
 void EditorPlayMode::TogglePause() {
 	session_.TogglePause();
 	std::string error;
-	if (!audioPlayer_.Update(session_.GetCameraPose(), session_.IsPaused(),
+	if (!audioPlayer_.Update(session_.GetCameraPose(),
+	                         session_.IsPaused() || session_.IsGamePaused(),
 	                         error, nullptr, session_.GetAudioActions()))
 		lastUpdateError_ = std::move(error);
 }
@@ -435,12 +437,14 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 	}
 
 	if (session_.GetSceneRevision() != revision) {
-		if (!audioPlayer_.Start(session_.GetCameraPose(), session_.IsPaused(),
+		if (!audioPlayer_.Start(session_.GetCameraPose(),
+		                        session_.IsPaused() || session_.IsGamePaused(),
 		                        lastUpdateError_, nullptr,
 		                        session_.GetAudioActions()))
 			return false;
 	} else {
-		if (!audioPlayer_.Update(session_.GetCameraPose(), session_.IsPaused(),
+		if (!audioPlayer_.Update(session_.GetCameraPose(),
+		                         session_.IsPaused() || session_.IsGamePaused(),
 		                         lastUpdateError_, nullptr,
 		                         session_.GetAudioActions()))
 			return false;

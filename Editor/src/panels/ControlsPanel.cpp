@@ -942,6 +942,12 @@ void ControlsPanel::Draw() {
 	         "does "
 	         "not change the authored offsets. Exported games use the same "
 	         "input."},
+	        {"Trigger Actions > Pause Game",
+	         "Use Pause Game, Resume Game or Toggle Pause with Button Click "
+	         "or Input Pressed. These operations stop gameplay time, motion, "
+	         "audio and Lua update while leaving menu input and Lua click "
+	         "callbacks available. Use zero Delay on the resume action. "
+	         "This pause is separate from the editor's Play controls."},
 	        {"Trigger Actions > Input Pressed",
 	         "Choose Input Pressed on an active object, then select a named "
 	         "action from Game Settings. The press can toggle a menu or run "

@@ -70,6 +70,7 @@ void SceneSimulation::CopyFrom(const SceneSimulation &source) {
 	occupiedActions_ = source.occupiedActions_;
 	lastUpdateError_ = source.lastUpdateError_;
 	pendingScene_ = source.pendingScene_;
+	gamePaused_ = source.gamePaused_;
 	restartSource_ = source.restartSource_;
 	quitRequested_ = source.quitRequested_;
 	sceneRevision_ = source.sceneRevision_;
@@ -114,6 +115,7 @@ void SceneSimulation::Adopt(SceneSimulation &source) {
 	occupiedActions_ = std::move(source.occupiedActions_);
 	lastUpdateError_ = std::move(source.lastUpdateError_);
 	pendingScene_ = std::move(source.pendingScene_);
+	gamePaused_ = source.gamePaused_;
 	restartSource_ = std::move(source.restartSource_);
 	quitRequested_ = source.quitRequested_;
 	sceneRevision_ = source.sceneRevision_;
@@ -194,19 +196,21 @@ bool SceneSimulation::ApplyTriggerActions(
     bool uiConsumesInput) {
 	error.clear();
 	std::vector<ActionSignal> signals;
-	// 新しく予約する操作には、条件を満たすまでに使った今回の時間を引かない。
-	for (auto &delayed : delayedActions_) {
-		delayed.remaining -= seconds;
-		if (delayed.remaining <= 0)
-			signals.push_back(delayed.signal);
+	if (!gamePaused_) {
+		// 新しく予約する操作には、条件を満たすまでに使った今回の時間を引かない。
+		for (auto &delayed : delayedActions_) {
+			delayed.remaining -= seconds;
+			if (delayed.remaining <= 0)
+				signals.push_back(delayed.signal);
+		}
+		std::erase_if(delayedActions_, [](const DelayedTriggerAction &delayed) {
+			return delayed.remaining <= 0;
+		});
+		signals.insert(signals.end(), pendingActionSignals_.begin(),
+		               pendingActionSignals_.end());
+		pendingActionSignals_.clear();
+		QueueActionSignals(frameEvents_, signals);
 	}
-	std::erase_if(delayedActions_, [](const DelayedTriggerAction &delayed) {
-		return delayed.remaining <= 0;
-	});
-	signals.insert(signals.end(), pendingActionSignals_.begin(),
-	               pendingActionSignals_.end());
-	pendingActionSignals_.clear();
-	QueueActionSignals(frameEvents_, signals);
 	const bool namedPressed =
 	    std::ranges::any_of(namedInputs, &GameActionState::pressed);
 	const auto isPressed = [&](std::string_view name) {
@@ -215,7 +219,7 @@ bool SceneSimulation::ApplyTriggerActions(
 			    return input.pressed && input.name == name;
 		    });
 	};
-	if (character_ != 0 &&
+	if (!gamePaused_ && character_ != 0 &&
 	    (interactPressed || (namedPressed && !uiConsumesInput))) {
 		// 通過経路ではなく現在の接触を使い、床や他の物体の重なりからは操作しない。
 		for (const auto &contact : triggers_.GetContacts()) {
@@ -234,7 +238,10 @@ bool SceneSimulation::ApplyTriggerActions(
 	}
 
 	std::set<std::pair<SceneObjectId, std::size_t>> occupied;
-	QueueOccupancySignals(signals, occupied);
+	if (gamePaused_)
+		occupied = occupiedActions_;
+	else
+		QueueOccupancySignals(signals, occupied);
 	for (const auto button : ui_.GetClicks())
 		signals.push_back({button, TriggerAction::Event::BUTTON_CLICK});
 	if (namedPressed) {
@@ -265,6 +272,7 @@ bool SceneSimulation::ApplyTriggerActions(
 	float cameraBlendSeconds = 0;
 	auto requestedScene = pendingScene_;
 	bool quit = quitRequested_;
+	bool paused = gamePaused_;
 	for (const auto &signal : signals) {
 		const auto *object = scene_.FindObject(signal.receiver);
 		if (!object || !SceneActivity::IsActive(scene_, signal.receiver) ||
@@ -319,6 +327,16 @@ bool SceneSimulation::ApplyTriggerActions(
 				delayedActions_.push_back(
 				    {{signal.receiver, signal.event, signal.other, i, true},
 				     action.delaySeconds});
+				if (action.once)
+					fired.insert(key);
+				continue;
+			}
+			if (action.IsPauseOperation()) {
+				paused =
+				    action.operation == TriggerAction::Operation::TOGGLE_PAUSE
+				        ? !paused
+				        : action.operation ==
+				              TriggerAction::Operation::PAUSE_GAME;
 				if (action.once)
 					fired.insert(key);
 				continue;
@@ -464,6 +482,9 @@ bool SceneSimulation::ApplyTriggerActions(
 			case TriggerAction::Operation::LOAD_SCENE:
 			case TriggerAction::Operation::QUIT_GAME:
 			case TriggerAction::Operation::RESTART_SCENE:
+			case TriggerAction::Operation::PAUSE_GAME:
+			case TriggerAction::Operation::RESUME_GAME:
+			case TriggerAction::Operation::TOGGLE_PAUSE:
 			case TriggerAction::Operation::TELEPORT:
 			case TriggerAction::Operation::SET_CHECKPOINT:
 			case TriggerAction::Operation::SET_CAMERA:
@@ -666,6 +687,7 @@ bool SceneSimulation::ApplyTriggerActions(
 
 	pendingScene_ = std::move(requestedScene);
 	quitRequested_ = quit;
+	gamePaused_ = paused;
 	firedActions_.swap(fired);
 	occupiedActions_.swap(occupied);
 	audioActions_.swap(audio);

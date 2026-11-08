@@ -314,6 +314,14 @@ class SceneSimulation {
 	}
 
 	/// <summary>
+	/// ゲーム内操作による一時停止状態を取得する
+	/// </summary>
+	/// <returns>true:物理と時間の進行を停止中 false:通常進行</returns>
+	bool IsGamePaused() const {
+		return gamePaused_;
+	}
+
+	/// <summary>
 	/// 確定済みのゲーム終了要求を取得する。アプリケーション側でPlay停止または終了に使う
 	/// </summary>
 	/// <returns>true:終了を要求済み false:通常の実行状態</returns>
@@ -566,5 +574,6 @@ class SceneSimulation {
 	// 到着位置を反映済みで、Lua開始処理とシミュレーションを実行する前の状態。
 	std::shared_ptr<const Scene> restartSource_;
 	bool quitRequested_ = false;
+	bool gamePaused_ = false;
 	std::uint64_t sceneRevision_ = 0;
 };

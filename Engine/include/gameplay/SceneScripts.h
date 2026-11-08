@@ -62,7 +62,7 @@ class SceneScripts {
 	/// <param name="startOnly">true:startだけ実行する</param>
 	/// <param name="error">失敗理由</param>
 	/// <param name="invalidObject">指定時は失敗した物体ID</param>
-	/// <param name="uiClicks">今回クリックされたButtonのID。正の時間でだけclickを通知する</param>
+	/// <param name="uiClicks">今回クリックされたButtonのID。ゲーム内一時停止中もclickを通知する</param>
 	/// <param name="physics">指定時はSceneと同じトランザクションの物理候補。失敗時は呼び出し側で破棄する</param>
 	/// <param name="collisions">今回の通常接触。正の時間でTriggerの後、clickの前に両物体へ通知する</param>
 	/// <param name="audioActions">指定時は成功した全コールバックの音声要求を末尾へ追加する。削除した音源への要求は取り除く</param>
@@ -141,7 +141,7 @@ class SceneScripts {
 	}
 
 	/// <summary>
-	/// 次の正の時間の更新を待つ通知の件数を取得する
+	/// 次の更新を待つ通知の件数を取得する
 	/// </summary>
 	/// <returns>送信成功後、まだ受信処理していない件数</returns>
 	std::size_t GetPendingMessageCount() const {

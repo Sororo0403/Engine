@@ -5,7 +5,7 @@
 #include <string_view>
 
 /// <summary>
-/// 次の正の時間の更新でLuaへ渡す通知。物体のアドレスを保持せず、データをJSONとして複製する
+/// 次の配信更新でLuaへ渡す通知。物体のアドレスを保持せず、データをJSONとして複製する
 /// </summary>
 struct ScriptMessage {
 	static constexpr std::size_t kMaximumNameBytes = 64;

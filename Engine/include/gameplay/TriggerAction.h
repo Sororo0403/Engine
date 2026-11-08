@@ -42,7 +42,10 @@ struct TriggerAction {
 		SEND_SCRIPT_MESSAGE,
 		LOAD_SCENE,
 		QUIT_GAME,
-		RESTART_SCENE
+		RESTART_SCENE,
+		PAUSE_GAME,
+		RESUME_GAME,
+		TOGGLE_PAUSE
 	};
 
 	/// <summary>
@@ -129,7 +132,7 @@ struct TriggerAction {
 		        operation == Operation::SEND_SCRIPT_MESSAGE ||
 		        operation == Operation::LOAD_SCENE ||
 		        operation == Operation::QUIT_GAME ||
-		        operation == Operation::RESTART_SCENE);
+		        operation == Operation::RESTART_SCENE || IsPauseOperation());
 	}
 
 	/// <summary>
@@ -160,11 +163,21 @@ struct TriggerAction {
 	/// <summary>
 	/// 操作の対象としてシーン内の物体を使うか確認する
 	/// </summary>
-	/// <returns>true:物体を使う false:シーンの読み込み・再開またはゲームの終了</returns>
+	/// <returns>true:物体を使う false:シーンの読み込み・再開、またはゲームの進行状態の変更</returns>
 	bool UsesTarget() const {
 		return operation != Operation::LOAD_SCENE &&
 		       operation != Operation::QUIT_GAME &&
-		       operation != Operation::RESTART_SCENE;
+		       operation != Operation::RESTART_SCENE && !IsPauseOperation();
+	}
+
+	/// <summary>
+	/// ゲーム内の一時停止状態を変更する操作か確認する
+	/// </summary>
+	/// <returns>true:一時停止の操作 false:その他の操作</returns>
+	bool IsPauseOperation() const {
+		return operation == Operation::PAUSE_GAME ||
+		       operation == Operation::RESUME_GAME ||
+		       operation == Operation::TOGGLE_PAUSE;
 	}
 
 	/// <summary>
