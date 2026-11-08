@@ -1135,7 +1135,6 @@ exit /b 0</Command>
       <FloatingPointModel>Precise</FloatingPointModel>
       <ObjectFileName>$(IntDir)jolt\Physics\Collision\Shape\TaperedCapsuleShape.obj</ObjectFileName>
     </ClCompile>
-    <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\Shape\TaperedCapsuleShape.gliffy" />
     <ClInclude Include="external\jolt\src\Jolt\Physics\Collision\Shape\TaperedCapsuleShape.h" />
     <ClCompile Include="external\jolt\src\Jolt\Physics\Collision\Shape\TaperedCylinderShape.cpp">
       <AdditionalIncludeDirectories>$(EngineExternalRoot)jolt\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
