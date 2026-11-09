@@ -1594,6 +1594,7 @@ void EditorScene::Finalize() {
 			current.lastProject = project_.GetRoot();
 			current.RememberProjectScene(project_.GetRoot(), document_.GetFilePath());
 		}
+		current.RememberSceneView(document_.GetFilePath(), cameraController_.GetViewState());
 		const auto recent = recentScenes_.GetPaths();
 		current.recentScenes.assign(recent.begin(), recent.end());
 
@@ -3048,6 +3049,7 @@ void EditorScene::ExecutePendingAction() {
 				return;
 			}
 
+			SaveEditorSession();
 			document_.New();
 			sceneCheckPanel_.Reset();
 			frameRequest_ = FrameRequest::NONE;
@@ -3100,7 +3102,7 @@ void EditorScene::ExecutePendingAction() {
 		return;
 	case EditorAction::OPEN_PATH:
 		if (OpenScene(pendingOpenPath_)) {
-			SaveProjectSession();
+			SaveEditorSession();
 		}
 		return;
 	case EditorAction::RESTORE_RECOVERY:
@@ -3120,7 +3122,7 @@ void EditorScene::StartSave(bool saveAs) {
 	if (!saveAs && !document_.GetFilePath().empty()) {
 		if (document_.Save()) {
 			recentScenes_.Add(document_.GetFilePath());
-			SaveProjectSession();
+			SaveEditorSession();
 			ClearRecovery();
 			assets_.Refresh();
 			ExecutePendingAction();
@@ -3652,6 +3654,7 @@ void EditorScene::RestoreRecovery() {
 		                         : project_.GetScenesDirectory());
 		assets.Refresh();
 		auto restoredPath = pendingRecoveryPath_;
+		SaveEditorSession();
 		document_.GetScene().ReplaceObjects(snapshot.scene.GetObjects());
 		document_.SetUntitled();
 		ClearRecovery(pendingRecoveryPath_);
@@ -3834,7 +3837,7 @@ bool EditorScene::RelocateAssets(const AssetUsage::Moves &moves,
 		return false;
 	}
 
-	SaveProjectSession();
+	SaveEditorSession();
 	const auto &destination = moves.front().second;
 
 	clipboard_.Clear();
@@ -3983,7 +3986,7 @@ void EditorScene::UpdateDialogs() {
 
 		if (result == FileDialogResult::ACCEPTED) {
 			if (OpenScene(fileDialog_.GetSelectedPath())) {
-				SaveProjectSession();
+				SaveEditorSession();
 			}
 		}
 
@@ -4001,9 +4004,10 @@ void EditorScene::UpdateDialogs() {
 		}
 
 		if (result == FileDialogResult::ACCEPTED) {
+			SaveEditorSession();
 			if (document_.SaveAs(fileDialog_.GetSelectedPath())) {
 				recentScenes_.Add(document_.GetFilePath());
-				SaveProjectSession();
+				SaveEditorSession();
 				ClearRecovery();
 				assets_.Refresh();
 				ExecutePendingAction();
@@ -4168,6 +4172,7 @@ void EditorScene::UpdateDialogs() {
 				}
 			}
 
+			SaveEditorSession();
 			document_.SetUntitled();
 			ClearRecovery();
 			sceneCheckPanel_.Reset();
@@ -4560,20 +4565,25 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		texturePreviewPanel_.Clear();
 		stage_ = DialogStage::IDLE;
 
-		SaveProjectSession();
+		SaveEditorSession();
 	} catch (const std::exception &error) {
 		ShowError(error.what());
 	}
 }
 
-void EditorScene::SaveProjectSession() {
-	if (!canSavePreferences_ || project_.GetRoot().empty()) {
+void EditorScene::SaveEditorSession() {
+	if (!canSavePreferences_) {
 		return;
 	}
 
 	auto current = preferences_;
-	current.lastProject = project_.GetRoot();
-	current.RememberProjectScene(project_.GetRoot(), document_.GetFilePath());
+
+	if (!project_.GetRoot().empty()) {
+		current.lastProject = project_.GetRoot();
+		current.RememberProjectScene(project_.GetRoot(), document_.GetFilePath());
+	}
+
+	current.RememberSceneView(document_.GetFilePath(), cameraController_.GetViewState());
 
 	if (!(current == preferences_) && current.Save()) {
 		preferences_ = std::move(current);
@@ -4581,6 +4591,7 @@ void EditorScene::SaveProjectSession() {
 }
 
 bool EditorScene::OpenScene(const std::filesystem::path &path, bool reportError) {
+	SaveEditorSession();
 	const bool opened = document_.Open(path);
 
 	if (!opened) {
@@ -4599,6 +4610,11 @@ bool EditorScene::OpenScene(const std::filesystem::path &path, bool reportError)
 	FinishEdit();
 	selection_.Clear();
 	cameraController_.Reset();
+
+	if (const auto *view = preferences_.FindSceneView(document_.GetFilePath())) {
+		cameraController_.SetViewState(*view);
+	}
+
 	hierarchyPanel_.Clear();
 	pendingPlayCamera_ = 0;
 	playMode_.SetPreviewCamera(0);

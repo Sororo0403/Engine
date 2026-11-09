@@ -345,9 +345,9 @@ class EditorScene final : public IScene {
 	void SwitchProject(const std::filesystem::path &folder, bool create);
 
 	/// <summary>
-	/// 現在のプロジェクトとシーンをEditor設定に記録する
+	/// 現在のプロジェクト・シーンとSceneビューの視点をEditor設定に記録する
 	/// </summary>
-	void SaveProjectSession();
+	void SaveEditorSession();
 
 	/// <summary>
 	/// 選択した素材の参照元を調べ、ごみ箱へ移せるか確認する

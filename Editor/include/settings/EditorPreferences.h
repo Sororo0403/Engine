@@ -44,6 +44,7 @@ class EditorPreferences {
 	std::vector<std::filesystem::path> recentScenes;
 	std::filesystem::path lastProject;
 	std::map<std::filesystem::path, std::filesystem::path> projectScenes;
+	std::map<std::filesystem::path, EditorCameraController::ViewState> sceneViews;
 	AssetSources assets;
 
 	/// <summary>
@@ -56,6 +57,18 @@ class EditorPreferences {
 	/// 記憶したシーンが現在もプロジェクト内にあれば絶対パスを返す
 	/// </summary>
 	std::filesystem::path LastProjectScene(const std::filesystem::path &root) const;
+
+	/// <summary>
+	/// 保存済みシーンに対して、Sceneビューの位置と向きを記憶する
+	/// </summary>
+	void RememberSceneView(const std::filesystem::path &scene,
+	                        const EditorCameraController::ViewState &view);
+
+	/// <summary>
+	/// シーンの保存済み視点を取得する。未記録ならnullptrを返す
+	/// </summary>
+	const EditorCameraController::ViewState *
+	FindSceneView(const std::filesystem::path &scene) const;
 
 	/// <summary>
 	/// 設定を読み込む。ファイルがない場合は現在の値を保持する

@@ -11,10 +11,68 @@
 #include <exception>
 #include <format>
 #include <fstream>
+#include <optional>
 #include <stdexcept>
 #include <utility>
 
 namespace {
+using ViewState = EditorCameraController::ViewState;
+
+/// <summary>
+/// 保存した位置と向きを読み、Sceneビューで復元できるか検証する
+/// </summary>
+std::optional<ViewState> ReadCameraView(const nlohmann::json &json) {
+	if (!json.is_object()) {
+		return std::nullopt;
+	}
+
+	const auto position = json.find("position");
+	const auto yaw = json.find("yaw");
+	const auto pitch = json.find("pitch");
+
+	if (position == json.end() || !position->is_array() ||
+	    position->size() != 3 ||
+	    !std::ranges::all_of(*position, [](const auto &value) {
+		    return value.is_number();
+	    }) ||
+	    yaw == json.end() || !yaw->is_number() ||
+	    pitch == json.end() || !pitch->is_number()) {
+		return std::nullopt;
+	}
+
+	const auto &values = *position;
+	ViewState view{{values[0].get<float>(), values[1].get<float>(),
+	                values[2].get<float>()},
+	               yaw->get<float>(), pitch->get<float>()};
+	EditorCameraController validator;
+	return validator.SetViewState(view) ? std::optional<ViewState>{view}
+	                                    : std::nullopt;
+}
+
+/// <summary>
+/// 位置と向きをカメラ設定用のJSONに変換する
+/// </summary>
+nlohmann::json CameraViewJson(const ViewState &view) {
+	return {{"position", {view.position.x, view.position.y, view.position.z}},
+	        {"yaw", view.yaw},
+	        {"pitch", view.pitch}};
+}
+
+/// <summary>
+/// 保存済みシーンの絶対パスを、視点の記録に使うパスへ揃える
+/// </summary>
+std::filesystem::path SceneViewKey(const std::filesystem::path &path) {
+	if (!path.is_absolute() || path.native().find(L'\0') != std::wstring::npos) {
+		return {};
+	}
+
+	std::error_code error;
+	auto key = std::filesystem::canonical(path, error);
+	return !error && std::filesystem::is_regular_file(key, error)
+	           ? key
+	           : std::filesystem::path{};
+}
+
 bool IsProjectScenePath(const std::filesystem::path &path) {
 	return !path.empty() && !path.has_root_path() &&
 	       PathUtils::HasExtension(path, ".json") &&
@@ -53,6 +111,22 @@ nlohmann::json ProjectionJson(const CameraSettings &settings) {
 	        {"farClip", settings.farClip}};
 }
 } // namespace
+
+void EditorPreferences::RememberSceneView(const std::filesystem::path &scene,
+                                          const ViewState &view) {
+	auto key = SceneViewKey(scene);
+	EditorCameraController validator;
+
+	if (!key.empty() && validator.SetViewState(view)) {
+		sceneViews.insert_or_assign(std::move(key), view);
+	}
+}
+
+const ViewState *
+EditorPreferences::FindSceneView(const std::filesystem::path &scene) const {
+	const auto found = sceneViews.find(SceneViewKey(scene));
+	return found == sceneViews.end() ? nullptr : &found->second;
+}
 
 void EditorPreferences::RememberProjectScene(const std::filesystem::path &root,
                                               const std::filesystem::path &scene) {
@@ -423,21 +497,23 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 					projection = ReadProjection(bookmark.at("projection"));
 				}
 
-				const auto &position = bookmark.at("position");
-				if (!position.is_array() || position.size() != 3 ||
-				    !position[0].is_number() || !position[1].is_number() ||
-				    !position[2].is_number() ||
-				    !bookmark.at("yaw").is_number() ||
-				    !bookmark.at("pitch").is_number() ||
-				    !loaded.cameraBookmarks.Set(
-				        i,
-				        {{position[0].get<float>(), position[1].get<float>(),
-				          position[2].get<float>()},
-				         bookmark.at("yaw").get<float>(),
-				         bookmark.at("pitch").get<float>()},
-				        projection)) {
+				const auto view = ReadCameraView(bookmark);
+
+				if (!view || !loaded.cameraBookmarks.Set(i, *view, projection)) {
 					throw std::runtime_error(
 					    "カメラのブックマークが無効です。");
+				}
+			}
+		}
+
+		if (json.contains("sceneViews") && json.at("sceneViews").is_object()) {
+			for (const auto &[key, value] : json.at("sceneViews").items()) {
+				const auto scene = PathUtils::FromUtf8(key);
+				const auto view = ReadCameraView(value);
+
+				if (scene.is_absolute() &&
+				    scene.native().find(L'\0') == std::wstring::npos && view) {
+					loaded.sceneViews.insert_or_assign(scene.lexically_normal(), *view);
 				}
 			}
 		}
@@ -519,12 +595,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 
 		for (std::size_t i = 0; i < EditorCameraBookmarks::kSlotCount; ++i) {
 			if (const auto *bookmark = cameraBookmarks.Get(i)) {
-				nlohmann::json saved{
-				    {"position",
-				     {bookmark->position.x, bookmark->position.y,
-				      bookmark->position.z}},
-				    {"yaw", bookmark->yaw},
-				    {"pitch", bookmark->pitch}};
+				auto saved = CameraViewJson(*bookmark);
 				if (const auto *projection = cameraBookmarks.GetProjection(i)) {
 					saved["projection"] = ProjectionJson(*projection);
 				}
@@ -538,6 +609,11 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		auto projectScenesJson = nlohmann::json::object();
 		for (const auto &[root, scene] : projectScenes) {
 			projectScenesJson[PathUtils::ToUtf8(root)] = PathUtils::ToUtf8(scene);
+		}
+
+		auto sceneViewsJson = nlohmann::json::object();
+		for (const auto &[scene, view] : sceneViews) {
+			sceneViewsJson[PathUtils::ToUtf8(scene)] = CameraViewJson(view);
 		}
 
 		const nlohmann::json json{
@@ -580,6 +656,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		    {"recentScenes", recentJson},
 		    {"lastProject", PathUtils::ToUtf8(lastProject)},
 		    {"projectScenes", std::move(projectScenesJson)},
+		    {"sceneViews", std::move(sceneViewsJson)},
 		    {"grid",
 		     {{"spacing", grid.spacing},
 		      {"height", grid.height},
@@ -614,7 +691,8 @@ bool EditorPreferences::operator==(const EditorPreferences &other) const {
 	       colliderDisplay == other.colliderDisplay &&
 	       pivotMode == other.pivotMode && grid == other.grid &&
 	       recentScenes == other.recentScenes && lastProject == other.lastProject &&
-	       projectScenes == other.projectScenes && assets == other.assets &&
+	       projectScenes == other.projectScenes && sceneViews == other.sceneViews &&
+	       assets == other.assets &&
 	       gameExport.title == other.gameExport.title &&
 	       gameExport.width == other.gameExport.width &&
 	       gameExport.height == other.gameExport.height &&
