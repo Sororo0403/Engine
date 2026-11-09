@@ -1,6 +1,21 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <Filter Include="include\scripting">
+      <UniqueIdentifier>{2c16fba3-d9fc-4edd-a672-001ffb96c4f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\ui">
+      <UniqueIdentifier>{6ef459b5-73d3-431a-a9cc-3f58c479654f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="resources\shaders\particles">
+      <UniqueIdentifier>{d339981f-ed76-4ec6-91be-9e27b51e117f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="resources\shaders\ui">
+      <UniqueIdentifier>{8878c9a7-a04d-4620-aece-768386f7610f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\ui">
+      <UniqueIdentifier>{ee5cbddf-5050-4183-aa59-891b9c5025fc}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
@@ -745,51 +760,129 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\gameplay\ScriptComponent.h" />
-    <ClInclude Include="include\gameplay\SceneScripts.h" />
-    <ClInclude Include="include\scripting\LuaScript.h" />
-    <ClCompile Include="src\gameplay\ScriptComponent.cpp" />
-    <ClCompile Include="src\gameplay\SceneScripts.cpp" />
-    <ClCompile Include="src\gameplay\SceneSimulationScripts.cpp" />
-    <ClCompile Include="src\scripting\LuaScript.cpp" />
-    <ClInclude Include="src\scripting\LuaBindings.h" />
-    <ClCompile Include="src\scripting\LuaBindings.cpp" />
-    <ClInclude Include="src\scripting\LuaStateData.h" />
-    <ClCompile Include="src\scripting\LuaStateData.cpp" />
+    <ClInclude Include="include\gameplay\ScriptComponent.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gameplay\SceneScripts.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scripting\LuaScript.h">
+      <Filter>include\scripting</Filter>
+    </ClInclude>
+    <ClCompile Include="src\gameplay\ScriptComponent.cpp">
+      <Filter>src\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gameplay\SceneScripts.cpp">
+      <Filter>src\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gameplay\SceneSimulationScripts.cpp">
+      <Filter>src\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scripting\LuaScript.cpp">
+      <Filter>src\scripting</Filter>
+    </ClCompile>
+    <ClInclude Include="src\scripting\LuaBindings.h">
+      <Filter>src\scripting</Filter>
+    </ClInclude>
+    <ClCompile Include="src\scripting\LuaBindings.cpp">
+      <Filter>src\scripting</Filter>
+    </ClCompile>
+    <ClInclude Include="src\scripting\LuaStateData.h">
+      <Filter>src\scripting</Filter>
+    </ClInclude>
+    <ClCompile Include="src\scripting\LuaStateData.cpp">
+      <Filter>src\scripting</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\scene\CanvasComponent.h" />
-    <ClCompile Include="src\scene\CanvasComponent.cpp" />
-    <ClInclude Include="include\scene\RectTransformComponent.h" />
-    <ClCompile Include="src\scene\RectTransformComponent.cpp" />
-    <ClInclude Include="include\scene\TextComponent.h" />
-    <ClCompile Include="src\scene\TextComponent.cpp" />
-    <ClInclude Include="include\scene\ImageComponent.h" />
-    <ClCompile Include="src\scene\ImageComponent.cpp" />
-    <ClInclude Include="include\ui\CanvasLayout.h" />
-    <ClCompile Include="src\ui\CanvasLayout.cpp" />
-    <ClInclude Include="src\scene\SceneUISerializer.h" />
-    <ClCompile Include="src\scene\SceneUISerializer.cpp" />
-    <ClInclude Include="include\platform\windows\TextRasterizer.h" />
-    <ClCompile Include="src\platform\windows\TextRasterizer.cpp" />
-    <ClInclude Include="include\graphics\ui\CanvasRenderer.h" />
-    <None Include="resources\shaders\ui\Canvas.VS.hlsl" />
-    <None Include="resources\shaders\ui\Canvas.PS.hlsl" />
-    <ClCompile Include="src\graphics\ui\CanvasRenderer.cpp" />
+    <ClInclude Include="include\scene\CanvasComponent.h">
+      <Filter>include\scene</Filter>
+    </ClInclude>
+    <ClCompile Include="src\scene\CanvasComponent.cpp">
+      <Filter>src\scene</Filter>
+    </ClCompile>
+    <ClInclude Include="include\scene\RectTransformComponent.h">
+      <Filter>include\scene</Filter>
+    </ClInclude>
+    <ClCompile Include="src\scene\RectTransformComponent.cpp">
+      <Filter>src\scene</Filter>
+    </ClCompile>
+    <ClInclude Include="include\scene\TextComponent.h">
+      <Filter>include\scene</Filter>
+    </ClInclude>
+    <ClCompile Include="src\scene\TextComponent.cpp">
+      <Filter>src\scene</Filter>
+    </ClCompile>
+    <ClInclude Include="include\scene\ImageComponent.h">
+      <Filter>include\scene</Filter>
+    </ClInclude>
+    <ClCompile Include="src\scene\ImageComponent.cpp">
+      <Filter>src\scene</Filter>
+    </ClCompile>
+    <ClInclude Include="include\ui\CanvasLayout.h">
+      <Filter>include\ui</Filter>
+    </ClInclude>
+    <ClCompile Include="src\ui\CanvasLayout.cpp">
+      <Filter>src\ui</Filter>
+    </ClCompile>
+    <ClInclude Include="src\scene\SceneUISerializer.h">
+      <Filter>src\scene</Filter>
+    </ClInclude>
+    <ClCompile Include="src\scene\SceneUISerializer.cpp">
+      <Filter>src\scene</Filter>
+    </ClCompile>
+    <ClInclude Include="include\platform\windows\TextRasterizer.h">
+      <Filter>include\platform\windows</Filter>
+    </ClInclude>
+    <ClCompile Include="src\platform\windows\TextRasterizer.cpp">
+      <Filter>src\platform\windows</Filter>
+    </ClCompile>
+    <ClInclude Include="include\graphics\ui\CanvasRenderer.h">
+      <Filter>include\graphics\ui</Filter>
+    </ClInclude>
+    <None Include="resources\shaders\ui\Canvas.VS.hlsl">
+      <Filter>resources\shaders\ui</Filter>
+    </None>
+    <None Include="resources\shaders\ui\Canvas.PS.hlsl">
+      <Filter>resources\shaders\ui</Filter>
+    </None>
+    <ClCompile Include="src\graphics\ui\CanvasRenderer.cpp">
+      <Filter>src\graphics\ui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\scripting\LuaUIBindings.cpp" />
+    <ClCompile Include="src\scripting\LuaUIBindings.cpp">
+      <Filter>src\scripting</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\scene\ButtonComponent.h" />
-    <ClCompile Include="src\scene\ButtonComponent.cpp" />
-    <ClInclude Include="include\ui\UIInput.h" />
-    <ClCompile Include="src\ui\UIInput.cpp" />
-    <ClInclude Include="include\ui\UIButtonVisual.h" />
-    <ClInclude Include="include\ui\SceneUI.h" />
-    <ClCompile Include="src\ui\SceneUI.cpp" />
-    <ClInclude Include="include\ui\UIInputReader.h" />
-    <ClCompile Include="src\ui\UIInputReader.cpp" />
+    <ClInclude Include="include\scene\ButtonComponent.h">
+      <Filter>include\scene</Filter>
+    </ClInclude>
+    <ClCompile Include="src\scene\ButtonComponent.cpp">
+      <Filter>src\scene</Filter>
+    </ClCompile>
+    <ClInclude Include="include\ui\UIInput.h">
+      <Filter>include\ui</Filter>
+    </ClInclude>
+    <ClCompile Include="src\ui\UIInput.cpp">
+      <Filter>src\ui</Filter>
+    </ClCompile>
+    <ClInclude Include="include\ui\UIButtonVisual.h">
+      <Filter>include\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ui\SceneUI.h">
+      <Filter>include\ui</Filter>
+    </ClInclude>
+    <ClCompile Include="src\ui\SceneUI.cpp">
+      <Filter>src\ui</Filter>
+    </ClCompile>
+    <ClInclude Include="include\ui\UIInputReader.h">
+      <Filter>include\ui</Filter>
+    </ClInclude>
+    <ClCompile Include="src\ui\UIInputReader.cpp">
+      <Filter>src\ui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\physics\RigidBodySettings.h">
@@ -914,7 +1007,9 @@
     <ClCompile Include="src\graphics\camera\ShadowCamera.cpp"><Filter>src\graphics\camera</Filter></ClCompile>
     <ClInclude Include="include\graphics\render\ShadowMap.h"><Filter>include\graphics\render</Filter></ClInclude>
     <ClCompile Include="src\graphics\render\ShadowMap.cpp"><Filter>src\graphics\render</Filter></ClCompile>
-    <None Include="resources\shaders\mesh\Shadow.VS.hlsl" />
+    <None Include="resources\shaders\mesh\Shadow.VS.hlsl">
+      <Filter>resources\shaders\mesh</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup><Filter Include="include\animation"><UniqueIdentifier>{C3268274-74D9-4B92-BE19-2C972DB83821}</UniqueIdentifier></Filter><Filter Include="src\animation"><UniqueIdentifier>{6AF0FA94-0469-4F76-A54A-238D89CFBCA1}</UniqueIdentifier></Filter></ItemGroup>
   <ItemGroup>
@@ -939,8 +1034,12 @@
     <ClCompile Include="src\particles\SceneParticles.cpp"><Filter>src\particles</Filter></ClCompile>
     <ClInclude Include="include\graphics\render\ParticleRenderer.h"><Filter>include\graphics\render</Filter></ClInclude>
     <ClCompile Include="src\graphics\render\ParticleRenderer.cpp"><Filter>src\graphics\render</Filter></ClCompile>
-    <None Include="resources\shaders\particles\Particle.VS.hlsl" />
-    <None Include="resources\shaders\particles\Particle.PS.hlsl" />
+    <None Include="resources\shaders\particles\Particle.VS.hlsl">
+      <Filter>resources\shaders\particles</Filter>
+    </None>
+    <None Include="resources\shaders\particles\Particle.PS.hlsl">
+      <Filter>resources\shaders\particles</Filter>
+    </None>
     <ClCompile Include="src\scripting\LuaParticleBindings.cpp"><Filter>src\scripting</Filter></ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -957,9 +1056,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\graphics\mesh\SkinningConstants.h"><Filter>include\graphics\mesh</Filter></ClInclude>
-    <None Include="resources\shaders\mesh\Skinning.hlsli" />
-    <None Include="resources\shaders\mesh\SkinnedMesh.VS.hlsl" />
-    <None Include="resources\shaders\mesh\SkinnedShadow.VS.hlsl" />
+    <None Include="resources\shaders\mesh\Skinning.hlsli">
+      <Filter>resources\shaders\mesh</Filter>
+    </None>
+    <None Include="resources\shaders\mesh\SkinnedMesh.VS.hlsl">
+      <Filter>resources\shaders\mesh</Filter>
+    </None>
+    <None Include="resources\shaders\mesh\SkinnedShadow.VS.hlsl">
+      <Filter>resources\shaders\mesh</Filter>
+    </None>
     <ClCompile Include="src\graphics\model\ModelSkinning.cpp"><Filter>src\graphics\model</Filter></ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -972,16 +1077,38 @@
     <ClCompile Include="src\scripting\LuaAnimatorBindings.cpp"><Filter>src\scripting</Filter></ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\physics\Collider.h" />
-    <ClCompile Include="src\physics\Collider.cpp" />
+    <ClInclude Include="include\physics\Collider.h">
+      <Filter>include\physics</Filter>
+    </ClInclude>
+    <ClCompile Include="src\physics\Collider.cpp">
+      <Filter>src\physics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\physics\JoltRuntime.h" />
-    <ClCompile Include="src\physics\JoltRuntime.cpp" />
-    <ClInclude Include="include\physics\ColliderCastHit.h" />
-    <ClInclude Include="include\physics\WorldCollider.h" />
-    <ClCompile Include="src\physics\WorldCollider.cpp" />
+    <ClInclude Include="src\physics\JoltRuntime.h">
+      <Filter>src\physics</Filter>
+    </ClInclude>
+    <ClCompile Include="src\physics\JoltRuntime.cpp">
+      <Filter>src\physics</Filter>
+    </ClCompile>
+    <ClInclude Include="include\physics\ColliderCastHit.h">
+      <Filter>include\physics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\physics\WorldCollider.h">
+      <Filter>include\physics</Filter>
+    </ClInclude>
+    <ClCompile Include="src\physics\WorldCollider.cpp">
+      <Filter>src\physics</Filter>
+    </ClCompile>
   </ItemGroup>
-  <ItemGroup><ClInclude Include="include\physics\ColliderUtils.h" /></ItemGroup>
-  <ItemGroup><ClInclude Include="src\physics\WorldColliderImpl.h" /></ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\physics\ColliderUtils.h">
+      <Filter>include\physics</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\physics\WorldColliderImpl.h">
+      <Filter>src\physics</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>

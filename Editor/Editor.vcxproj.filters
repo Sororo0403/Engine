@@ -1,6 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <Filter Include="include\ui">
+      <UniqueIdentifier>{55b2582e-97f9-431a-a6f8-b24d79c14f7b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\ui">
+      <UniqueIdentifier>{357b2058-1e79-47ee-8fe3-8089110e3ff2}</UniqueIdentifier>
+    </Filter>
     <Filter Include="include\settings">
       <UniqueIdentifier>{8bc170cb-2ac2-4749-b75f-71c3626b52e1}</UniqueIdentifier>
     </Filter>
@@ -814,16 +820,32 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\gameplay\ScriptInspector.h" />
-    <ClCompile Include="src\gameplay\ScriptInspector.cpp" />
-    <ClInclude Include="include\dialogs\ScriptEditorDialog.h" />
-    <ClCompile Include="src\dialogs\ScriptEditorDialog.cpp" />
+    <ClInclude Include="include\gameplay\ScriptInspector.h">
+      <Filter>include\gameplay</Filter>
+    </ClInclude>
+    <ClCompile Include="src\gameplay\ScriptInspector.cpp">
+      <Filter>src\gameplay</Filter>
+    </ClCompile>
+    <ClInclude Include="include\dialogs\ScriptEditorDialog.h">
+      <Filter>include\dialogs</Filter>
+    </ClInclude>
+    <ClCompile Include="src\dialogs\ScriptEditorDialog.cpp">
+      <Filter>src\dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\ui\UIInspector.h" />
-    <ClCompile Include="src\ui\UIInspector.cpp" />
-    <ClInclude Include="include\ui\UIObjects.h" />
-    <ClCompile Include="src\ui\UIObjects.cpp" />
+    <ClInclude Include="include\ui\UIInspector.h">
+      <Filter>include\ui</Filter>
+    </ClInclude>
+    <ClCompile Include="src\ui\UIInspector.cpp">
+      <Filter>src\ui</Filter>
+    </ClCompile>
+    <ClInclude Include="include\ui\UIObjects.h">
+      <Filter>include\ui</Filter>
+    </ClInclude>
+    <ClCompile Include="src\ui\UIObjects.cpp">
+      <Filter>src\ui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\physics\RigidBodyInspector.h">
