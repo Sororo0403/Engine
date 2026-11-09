@@ -1,0 +1,63 @@
+{
+  "format": "EditorProject",
+  "game": {
+    "actions": [],
+    "camera": {
+      "position": [
+        0.0,
+        0.0,
+        -2.0
+      ],
+      "target": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "up": [
+        0.0,
+        1.0,
+        0.0
+      ]
+    },
+    "cameraRelativeMovement": false,
+    "format": "EngineGame",
+    "gamepadEnabled": true,
+    "height": 720,
+    "input": {
+      "backward": "S",
+      "forward": "W",
+      "interact": "E",
+      "jump": "Space",
+      "left": "A",
+      "right": "D"
+    },
+    "lighting": {
+      "ambient": 0.20000000298023224,
+      "color": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "direction": [
+        1.0,
+        -1.0,
+        1.0
+      ],
+      "intensity": 0.800000011920929,
+      "shadows": {
+        "bias": 0.0005000000237487257,
+        "enabled": false,
+        "extent": 30.0,
+        "normalBias": 0.019999999552965164,
+        "resolution": 1024,
+        "strength": 0.800000011920929
+      }
+    },
+    "scene": "resources/game/scene.json",
+    "title": "GuruttoWorld",
+    "version": 10,
+    "width": 1280
+  },
+  "startupScene": "scenes/ClockTowerPrototype.scene.json",
+  "version": 1
+}
