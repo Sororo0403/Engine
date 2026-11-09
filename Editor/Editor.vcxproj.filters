@@ -357,26 +357,11 @@
     <Filter Include="external">
       <UniqueIdentifier>{eeaa8ed1-299e-4f23-a29b-77360a34125a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="external\imguizmo">
-      <UniqueIdentifier>{7aad8538-57de-43ca-96f2-28b349cf9260}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="external\imguizmo\include">
-      <UniqueIdentifier>{1823a9f4-1886-4b81-865e-c92684d8f995}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="external\imguizmo\src">
-      <UniqueIdentifier>{320dd245-c205-4743-a1ff-6ff21e3e8031}</UniqueIdentifier>
-    </Filter>
     <Filter Include="external\licenses">
       <UniqueIdentifier>{153a2042-ebb3-443b-9eb5-bdb4a5d00a6a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="external\imguizmo\include\ImGuizmo.h">
-      <Filter>external\imguizmo\include</Filter>
-    </ClInclude>
-    <ClCompile Include="external\imguizmo\src\ImGuizmo.cpp">
-      <Filter>external\imguizmo\src</Filter>
-    </ClCompile>
     <None Include="external\licenses\imguizmo-LICENSE.txt">
       <Filter>external\licenses</Filter>
     </None>

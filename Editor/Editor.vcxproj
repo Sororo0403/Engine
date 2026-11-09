@@ -225,16 +225,15 @@
     <ProjectReference Include="..\Engine\Engine.vcxproj">
       <Project>{b5695b53-5c1d-4b30-887f-99386dedafcd}</Project>
     </ProjectReference>
+    <ProjectReference Include="external\imguizmo\ImGuizmo.vcxproj">
+      <Project>{a723e134-09c4-4b39-8aee-c14e358c739e}</Project>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\models\box.glb" />
   </ItemGroup>
-  <!-- ImGuizmoはEditor専用のUIとしてコンパイルする。取得元: CedricGuillemet/ImGuizmo@105e4fde45e4e74aae8973d98750820ef7aca7e2 -->
   <ItemGroup>
-    <ClInclude Include="external\imguizmo\include\ImGuizmo.h" />
-    <ClCompile Include="external\imguizmo\src\ImGuizmo.cpp">
-      <TreatWarningAsError>false</TreatWarningAsError>
-    </ClCompile>
     <None Include="external\licenses\imguizmo-LICENSE.txt" />
   </ItemGroup>
   <!-- 全構成のビルド後イベントで、Editorが所有するリソースとライセンスを配置する -->

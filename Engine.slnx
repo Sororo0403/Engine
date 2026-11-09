@@ -12,5 +12,6 @@
   <Folder Name="/External/">
     <Project Path="Engine/external/jolt/Jolt.vcxproj" Id="9bb21d9a-cdc2-44b9-8c50-4d1d4276c81b" />
     <Project Path="Engine/external/lua/Lua.vcxproj" Id="2ccfc879-c866-4c98-8f9b-52900fb3b438" />
+    <Project Path="Editor/external/imguizmo/ImGuizmo.vcxproj" Id="a723e134-09c4-4b39-8aee-c14e358c739e" />
   </Folder>
 </Solution>
