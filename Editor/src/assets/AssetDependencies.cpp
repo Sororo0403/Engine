@@ -77,7 +77,8 @@ fs::path ResolveAsset(const fs::path &path) {
 } // namespace
 
 std::vector<std::filesystem::path>
-AssetDependencies::ModelFiles(const std::filesystem::path &input) {
+AssetDependencies::ModelFiles(const std::filesystem::path &input,
+                              std::vector<fs::path> *absoluteReferences) {
 	const auto model = ResolveAsset(input);
 	std::vector<fs::path> files{model};
 
@@ -91,6 +92,10 @@ AssetDependencies::ModelFiles(const std::filesystem::path &input) {
 	for (const auto &material : data.materials) {
 		if (material.baseColorTexture.source == TextureSource::FILE) {
 			files.push_back(material.baseColorTexture.filePath);
+
+			if (absoluteReferences && material.baseColorTextureUsesAbsolutePath) {
+				absoluteReferences->push_back(material.baseColorTexture.filePath);
+			}
 		}
 	}
 

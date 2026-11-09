@@ -3725,7 +3725,15 @@ bool EditorScene::RelocateAsset(const std::filesystem::path &source,
 	texturePreviewPanel_.Clear();
 	audioPreviewPanel_.Clear();
 	assets_.Refresh();
-	assetsPanel_.RequestReveal(destination);
+	std::error_code typeError;
+
+	if (std::filesystem::is_directory(destination, typeError)) {
+		assetsPanel_.RequestOpenDirectory(
+		    destination.lexically_relative(assets_.GetRootDirectory()));
+	} else {
+		assetsPanel_.RequestReveal(destination);
+	}
+
 	RecordRecovery();
 	return true;
 }
@@ -3741,7 +3749,11 @@ void EditorScene::DrawAssetRename() {
 		return;
 	}
 
-	ui_.InputText("File Name", assetRenameName_);
+	std::error_code typeError;
+	ui_.InputText(std::filesystem::is_directory(pendingRenamePath_, typeError)
+	                  ? "Folder Name"
+	                  : "File Name",
+	              assetRenameName_);
 
 	if (!assetRenameError_.empty() &&
 	    ui_.BeginChild("AssetRenameErrors", 500.0f, 140.0f)) {

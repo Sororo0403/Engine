@@ -203,7 +203,8 @@ bool ModelLoader::Load(const std::filesystem::path &filePath,
 		material.baseColor = {color.r, color.g, color.b, color.a};
 
 		if (!LoadBaseColorTexture(*scene, source, filePath,
-		                          material.baseColorTexture)) {
+		                          material.baseColorTexture,
+		                          material.baseColorTextureUsesAbsolutePath)) {
 			return false;
 		}
 
@@ -306,7 +307,8 @@ bool ModelLoader::Load(const std::filesystem::path &filePath,
 bool ModelLoader::LoadBaseColorTexture(const aiScene &scene,
                                        const aiMaterial &material,
                                        const std::filesystem::path &modelPath,
-                                       TextureData &textureData) {
+                                       TextureData &textureData,
+                                       bool &absoluteReference) {
 	aiString texturePath;
 
 	aiTextureMapping mapping = aiTextureMapping_UV;
@@ -395,6 +397,7 @@ bool ModelLoader::LoadBaseColorTexture(const aiScene &scene,
 		// 相対パスはモデルファイルのフォルダを基準にする
 		try {
 			auto reference = PathUtils::FromUtf8(name);
+			absoluteReference = reference.has_root_path();
 
 			if (!reference.has_root_path() &&
 			    (PathUtils::HasExtension(modelPath, ".gltf") ||

@@ -249,10 +249,11 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			return;
 		}
 
-		auto source = AssetDragDrop::AcceptFileTarget();
+		auto source = AssetDragDrop::AcceptAssetTarget();
 
 		if (!source.empty() &&
-		    !PathUtils::IsSameFile(source.parent_path(), directory)) {
+		    !PathUtils::IsSameFile(source.parent_path(), directory) &&
+		    !PathUtils::IsSameFile(source, directory)) {
 			auto destination = directory / source.filename();
 			moveRequest_ = {std::move(source), std::move(destination)};
 		}
@@ -429,6 +430,19 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				}
 
 				acceptFolder(directory);
+
+				if (canEditAssets && assets.GetRootDirectory().is_absolute()) {
+					AssetDragDrop::DrawSource(directory, AssetDragDrop::Kind::FOLDER);
+
+					if (ImGui::BeginPopupContextItem()) {
+						if (ui.MenuItem("Rename...")) {
+							renamePath_ = directory;
+						}
+
+						ImGui::EndPopup();
+					}
+				}
+
 				ImGui::PopID();
 			}
 		}

@@ -29,6 +29,7 @@ struct ModelMaterialData {
 	DirectX::XMFLOAT4 baseColor{1.0f, 1.0f, 1.0f, 1.0f};
 
 	TextureData baseColorTexture;
+	bool baseColorTextureUsesAbsolutePath = false;
 
 	// 元モデルに記録された材質名。名前がなければ空
 	std::string name;

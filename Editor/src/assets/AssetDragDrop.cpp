@@ -28,6 +28,8 @@ const char *PayloadType(AssetDragDrop::Kind kind) {
 		return "EDITOR_PREFAB_PATH";
 	case AssetDragDrop::Kind::GAME_SETTINGS:
 		return "EDITOR_GAME_SETTINGS";
+	case AssetDragDrop::Kind::FOLDER:
+		return "EDITOR_ASSET_FOLDER";
 	}
 
 	return nullptr;
@@ -59,6 +61,8 @@ bool Matches(const std::filesystem::path &path, AssetDragDrop::Kind kind) {
 	case AssetDragDrop::Kind::GAME_SETTINGS:
 		return PathUtils::HasExtension(path, ".json") &&
 		       PathUtils::HasExtension(path.stem(), ".settings");
+	case AssetDragDrop::Kind::FOLDER:
+		return path.is_absolute();
 	}
 
 	return false;
@@ -114,13 +118,13 @@ std::filesystem::path AssetDragDrop::AcceptTarget(Kind kind) {
 	return result;
 }
 
-std::filesystem::path AssetDragDrop::AcceptFileTarget() {
+std::filesystem::path AssetDragDrop::AcceptAssetTarget() {
 	const auto *payload = ImGui::GetDragDropPayload();
 
 	if (payload) {
 		for (const auto kind : {Kind::TEXTURE, Kind::SCRIPT, Kind::MODEL,
 		                        Kind::SCENE, Kind::AUDIO, Kind::PREFAB,
-		                        Kind::GAME_SETTINGS}) {
+		                        Kind::GAME_SETTINGS, Kind::FOLDER}) {
 			if (payload->IsDataType(PayloadType(kind))) {
 				return AcceptTarget(kind);
 			}

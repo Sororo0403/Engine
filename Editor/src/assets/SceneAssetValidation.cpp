@@ -192,7 +192,9 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 
 		if (object.HasMesh()) {
 			add("Mesh", inspect(object.mesh->modelPath, models,
-			                    AssetDependencies::ModelFiles));
+			                    [](const auto &path) {
+				                    return AssetDependencies::ModelFiles(path);
+			                    }));
 		}
 
 		if (object.meshRenderer) {

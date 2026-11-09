@@ -11,10 +11,12 @@
 #include "scene/SceneSerializer.h"
 
 #include <Windows.h>
+#include <algorithm>
 #include <format>
 #include <fstream>
 #include <iterator>
 #include <json.hpp>
+#include <optional>
 #include <set>
 #include <stdexcept>
 
@@ -24,6 +26,20 @@ enum class Source { SCENE, PREFAB, MODEL };
 using DocumentVisitor = std::function<void(
     const fs::path &, Source, Scene &, SceneObjectId, std::string,
     const fs::path &)>;
+using ModelVisitor = std::function<void(const fs::path &)>;
+using PathMapping = std::function<fs::path(const fs::path &)>;
+
+/// <summary>
+/// ルートと同じ場所または配下の場合にだけ、ルート基準のパスを返す
+/// </summary>
+std::optional<fs::path> RelativeWithin(const fs::path &root,
+                                      const fs::path &path) {
+	try {
+		return PathUtils::RelativeInside(root, path);
+	} catch (const std::runtime_error &) {
+		return std::nullopt;
+	}
+}
 
 std::string ReadText(const fs::path &path) {
 	std::ifstream input(path, std::ios::binary);
@@ -57,7 +73,8 @@ bool IsSceneFile(const fs::path &path) {
 std::vector<std::string> Scan(
     const std::filesystem::path &target, const std::filesystem::path &searchRoot,
     const Scene &scene, const std::filesystem::path &scenePath,
-    const std::filesystem::path &startup, const DocumentVisitor &visit = {}) {
+    const std::filesystem::path &startup, const DocumentVisitor &visit = {},
+    const ModelVisitor &visitModel = {}) {
 	const auto matches = [&](const fs::path &path) {
 		return !path.empty() && PathUtils::IsSameFile(target, path);
 	};
@@ -170,6 +187,11 @@ std::vector<std::string> Scan(
 
 		check(label, [&] {
 			if (source == Source::MODEL) {
+				if (visitModel) {
+					visitModel(path);
+					return;
+				}
+
 				for (const auto &file : AssetDependencies::ModelFiles(path)) {
 					if (matches(file)) {
 						usages.insert("Model: " + label);
@@ -211,15 +233,17 @@ std::vector<std::string> Scan(
 /// <summary>
 /// 直接参照とPrefabインスタンスの基準データに新しいパスを反映する
 /// </summary>
-bool Rewrite(Scene &scene, const fs::path &oldPath, const fs::path &newPath) {
+bool Rewrite(Scene &scene, const PathMapping &map) {
 	bool changed = false;
 	const auto replace = [&](const fs::path &path) {
-		if (!PathUtils::IsSameFile(oldPath, path)) {
+		auto updated = map(path);
+
+		if (updated.empty()) {
 			return path;
 		}
 
 		changed = true;
-		return newPath;
+		return updated;
 	};
 	SceneAssetReferences::Rewrite(scene, replace);
 
@@ -274,26 +298,53 @@ bool AssetUsage::Relocate(const fs::path &source, const fs::path &destination,
 	try {
 		if (!assetRoot.is_absolute() || !source.is_absolute() ||
 		    !destination.is_absolute() ||
-		    !PathUtils::IsValidFileName(destination.filename()) ||
-		    !fs::is_regular_file(fs::symlink_status(source))) {
+		    source.native().find(L'\0') != std::wstring::npos ||
+		    destination.native().find(L'\0') != std::wstring::npos ||
+		    !PathUtils::IsValidFileName(destination.filename())) {
 			throw std::runtime_error("Choose a valid destination for an editable asset.");
+		}
+
+		const auto status = fs::symlink_status(source);
+		const bool folder = fs::is_directory(status);
+
+		if (!folder && !fs::is_regular_file(status)) {
+			throw std::runtime_error("Choose a file or folder inside Assets.");
 		}
 
 		from = fs::canonical(source);
 		const auto assets = fs::canonical(assetRoot);
-		PathUtils::RelativeInside(assets, from);
 		const auto parent = fs::canonical(destination.parent_path());
 		PathUtils::RelativeInside(assets, parent);
 		to = parent / destination.filename();
 
-		if (!PathUtils::HasExtension(to, PathUtils::ToUtf8(from.extension()))) {
-			throw std::runtime_error("Keep the original file extension.");
+		if (PathUtils::RelativeInside(assets, from).empty() ||
+		    !fs::is_directory(parent) || (folder && RelativeWithin(from, parent))) {
+			throw std::runtime_error("Choose a destination outside the source folder.");
 		}
 
-		for (const auto suffix : {".scene", ".prefab", ".settings"}) {
-			if (PathUtils::HasExtension(from.stem(), suffix) &&
-			    !PathUtils::HasExtension(to.stem(), suffix)) {
-				throw std::runtime_error("Keep the original file type suffix.");
+		if (folder) {
+			const auto check = [](const fs::path &path) {
+				const auto attributes = GetFileAttributesW(path.c_str());
+				if (attributes == INVALID_FILE_ATTRIBUTES ||
+				    (attributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0) {
+					throw std::runtime_error("Cannot relocate a folder containing a link or redirected item:\n" +
+					                         PathUtils::ToUtf8(path));
+				}
+			};
+			check(source);
+			for (const auto &entry : fs::recursive_directory_iterator(from)) {
+				check(entry.path());
+			}
+		} else {
+			if (!PathUtils::HasExtension(to, PathUtils::ToUtf8(from.extension()))) {
+				throw std::runtime_error("Keep the original file extension.");
+			}
+
+			for (const auto suffix : {".scene", ".prefab", ".settings"}) {
+				if (PathUtils::HasExtension(from.stem(), suffix) &&
+				    !PathUtils::HasExtension(to.stem(), suffix)) {
+					throw std::runtime_error("Keep the original file type suffix.");
+				}
 			}
 		}
 
@@ -301,35 +352,78 @@ bool AssetUsage::Relocate(const fs::path &source, const fs::path &destination,
 			throw std::runtime_error("A file or folder already uses that name.");
 		}
 
-		if (parent != from.parent_path() && PathUtils::IsModelFile(from)) {
-			for (const auto &file : AssetDependencies::ModelFiles(from)) {
-				if (PathUtils::IsSameFile(from, file)) {
+		const auto map = [&](const fs::path &path) -> fs::path {
+			if (path.empty()) {
+				return {};
+			}
+
+			if (!folder) {
+				return PathUtils::IsSameFile(from, path) ? to : fs::path{};
+			}
+
+			auto absolute = PathUtils::ResolveFromExecutable(path);
+			auto relative = RelativeWithin(from, absolute);
+
+			if (!relative) {
+				std::error_code issue;
+				absolute = fs::weakly_canonical(absolute, issue);
+				if (!issue) {
+					relative = RelativeWithin(from, absolute);
+				}
+			}
+
+			return !relative ? fs::path{} : relative->empty() ? to : to / *relative;
+		};
+		const auto checkModel = [&](const fs::path &model) {
+			const auto movedModel = map(model);
+			const auto newParent =
+			    movedModel.empty() ? model.parent_path() : movedModel.parent_path();
+			std::vector<fs::path> absoluteReferences;
+
+			for (const auto &file :
+			     AssetDependencies::ModelFiles(model, &absoluteReferences)) {
+				if (PathUtils::IsSameFile(model, file)) {
+					continue;
+				}
+
+				const auto movedFile = map(file);
+				if (movedFile.empty() && newParent == model.parent_path()) {
 					continue;
 				}
 
 				const auto relative =
-				    file.lexically_normal().lexically_relative(from.parent_path());
+				    file.lexically_normal().lexically_relative(model.parent_path());
+				const bool absolute = std::ranges::find(absoluteReferences, file) !=
+				                      absoluteReferences.end();
 
-				if (relative.empty() ||
-				    !PathUtils::IsSameFile(file, parent / relative)) {
+				const bool resolves =
+				    absolute ? movedFile.empty()
+				             : !relative.empty() &&
+				                   PathUtils::IsSameFile(
+				                       movedFile.empty() ? file : movedFile,
+				                       newParent / relative);
+
+				if (!resolves) {
 					throw std::runtime_error(
-					    "Moving this model would break an external dependency:\n" +
+					    "This operation would break an external dependency:\n" +
 					    PathUtils::ToUtf8(file));
 				}
 			}
+		};
+
+		if (!folder && parent != from.parent_path() && PathUtils::IsModelFile(from)) {
+			checkModel(from);
 		}
 
 		const auto &projectRoot = project.GetRoot();
 		const auto &root = projectRoot.empty() ? assets : projectRoot;
 		const auto startup = project.GetStartupScene();
-		auto scenePath = document.GetFilePath();
-		const bool renameOpen =
-		    !scenePath.empty() && PathUtils::IsSameFile(from, scenePath);
-		const bool renameStartup =
-		    !startup.empty() && PathUtils::IsSameFile(from, startup);
+		const auto &scenePath = document.GetFilePath();
+		auto movedOpen = map(scenePath);
+		const auto movedStartup = map(startup);
 		Scene live;
 		live.CopyFrom(document.GetScene());
-		Rewrite(live, from, to);
+		Rewrite(live, map);
 		std::string liveSavedText;
 		bool refreshSavedText = false;
 
@@ -338,13 +432,14 @@ bool AssetUsage::Relocate(const fs::path &source, const fs::path &destination,
 		    [&](const fs::path &path, Source kind, Scene &scene,
 		        SceneObjectId nextId, std::string original,
 		        const fs::path &savedRoot) {
-			    const bool changed = Rewrite(scene, from, to);
-			    const bool relocating = PathUtils::IsSameFile(from, path);
-			    const bool rebase = relocating && parent != from.parent_path();
+			    const bool changed = Rewrite(scene, map);
+			    const auto movedPath = map(path);
+			    const bool rebase = !movedPath.empty() &&
+			                        movedPath.parent_path() != path.parent_path();
 			    const bool open =
 			        !scenePath.empty() && PathUtils::IsSameFile(scenePath, path);
 
-			    if ((changed || renameOpen) && open &&
+			    if ((changed || !movedOpen.empty()) && open &&
 			        !document.MatchesSavedText(original)) {
 				    throw std::runtime_error("The open scene changed outside the editor.");
 			    }
@@ -354,7 +449,7 @@ bool AssetUsage::Relocate(const fs::path &source, const fs::path &destination,
 			    }
 
 			    PathUtils::RelativeInside(root, path);
-			    const auto &target = relocating ? to : path;
+			    const auto &target = movedPath.empty() ? path : movedPath;
 			    std::string updated, issue;
 			    SceneObjectId prefabRoot = 0;
 			    const bool serialized =
@@ -376,7 +471,7 @@ bool AssetUsage::Relocate(const fs::path &source, const fs::path &destination,
 			    }
 
 			    edits.push_back({path, std::move(original), std::move(updated)});
-		    });
+		    }, checkModel);
 
 		if (!issues.empty()) {
 			error = "Could not move or rename the asset.";
@@ -386,8 +481,8 @@ bool AssetUsage::Relocate(const fs::path &source, const fs::path &destination,
 			return false;
 		}
 
-		if (renameOpen) {
-			scenePath = to;
+		if (movedOpen.empty()) {
+			movedOpen = scenePath;
 		}
 
 		for (auto &edit : edits) {
@@ -395,13 +490,13 @@ bool AssetUsage::Relocate(const fs::path &source, const fs::path &destination,
 				throw std::runtime_error("A referencing file changed during the operation.");
 			}
 
-			if (PathUtils::IsSameFile(from, edit.path)) {
-				edit.path = to;
+			if (auto movedPath = map(edit.path); !movedPath.empty()) {
+				edit.path = std::move(movedPath);
 			}
 		}
 
 		if (!MoveFileW(from.c_str(), to.c_str())) {
-			throw std::runtime_error(std::format("Could not move the file (Windows error {}).",
+			throw std::runtime_error(std::format("Could not move the asset (Windows error {}).",
 			                                     GetLastError()));
 		}
 
@@ -417,11 +512,12 @@ bool AssetUsage::Relocate(const fs::path &source, const fs::path &destination,
 			++applied;
 		}
 
-		if (renameStartup && !project.Save(project.GetGameConfig(), to, error)) {
+		if (!movedStartup.empty() &&
+		    !project.Save(project.GetGameConfig(), movedStartup, error)) {
 			throw std::runtime_error("Could not update the startup scene.\n" + error);
 		}
 
-		document.ApplyAssetRename(live, std::move(scenePath),
+		document.ApplyAssetRename(live, std::move(movedOpen),
 		                          refreshSavedText ? &liveSavedText : nullptr);
 		error.clear();
 		return true;

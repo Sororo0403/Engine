@@ -33,5 +33,6 @@ class ModelLoader {
 	static bool LoadBaseColorTexture(const aiScene &scene,
 	                                 const aiMaterial &material,
 	                                 const std::filesystem::path &modelPath,
-	                                 TextureData &textureData);
+	                                 TextureData &textureData,
+	                                 bool &absoluteReference);
 };
