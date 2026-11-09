@@ -347,7 +347,7 @@ class EditorScene final : public IScene {
 	/// <summary>
 	/// 選択した素材の参照元を調べ、ごみ箱へ移せるか確認する
 	/// </summary>
-	void CheckAssetRecycle(const std::filesystem::path &path);
+	std::filesystem::path CheckAssetRecycle(const std::filesystem::path &path);
 
 	/// <summary>
 	/// 素材の移動確認または参照元一覧を描画する

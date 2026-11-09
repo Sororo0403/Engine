@@ -19,10 +19,10 @@ enum class WindowVisibility { NORMAL, HIDDEN };
 bool OpenDirectory(const std::filesystem::path &path, std::string &error);
 
 /// <summary>
-/// 既存の通常ファイル1件をWindowsのごみ箱へ移動する
+/// 検証済みの絶対パスにあるファイルまたはフォルダをWindowsのごみ箱へ移動する
 /// </summary>
 /// <remarks>COM初期化済みのスレッドから呼ぶ。ごみ箱へ移せない場合は失敗を返す</remarks>
-bool RecycleFile(const std::filesystem::path &path, std::string &error);
+bool RecycleAsset(const std::filesystem::path &path, std::string &error);
 
 /// <summary>
 /// 実在する.exeを引数なしで独立して起動し、作業ディレクトリをその親フォルダにする

@@ -10,9 +10,9 @@ class ProjectDocument;
 
 namespace AssetUsage {
 /// <summary>
-/// 選択ファイルを参照する編集中の物体・保存済みファイル・起動シーン設定を収集する
+/// 選択した素材またはフォルダ配下を外部から参照する物体・ファイル・起動シーン設定を収集する
 /// </summary>
-/// <param name="target">確認する素材ファイル</param>
+/// <param name="target">確認する素材ファイルまたはフォルダ</param>
 /// <param name="searchRoot">プロジェクトまたはAssetsのルート</param>
 /// <param name="scene">編集中のシーン</param>
 /// <param name="scenePath">編集中のシーンの保存先。未保存なら空</param>

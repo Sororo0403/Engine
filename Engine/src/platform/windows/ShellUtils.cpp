@@ -73,21 +73,21 @@ bool ShellUtils::OpenDirectory(const std::filesystem::path &path,
 	}
 }
 
-bool ShellUtils::RecycleFile(const std::filesystem::path &path,
+bool ShellUtils::RecycleAsset(const std::filesystem::path &path,
                              std::string &error) {
 	try {
-		const auto source = PathUtils::ResolveFromExecutable(path);
-		const auto file = Resolve(source);
+		const auto source = Resolve(path);
+		const auto attributes = GetFileAttributesW(path.c_str());
 
-		if (!std::filesystem::is_regular_file(
-		        std::filesystem::symlink_status(source))) {
-			throw std::invalid_argument("Choose an existing regular file.");
+		if (source != path || attributes == INVALID_FILE_ATTRIBUTES ||
+		    (attributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0) {
+			throw std::invalid_argument("Choose a verified file or folder.");
 		}
 
 		const auto check = [](HRESULT result) {
 			if (FAILED(result)) {
 				throw std::runtime_error(std::format(
-				    "Could not move the file to the Recycle Bin (0x{:08X}).",
+				    "Could not move the item to the Recycle Bin (0x{:08X}).",
 				    static_cast<unsigned long>(result)));
 			}
 		};
@@ -95,7 +95,7 @@ bool ShellUtils::RecycleFile(const std::filesystem::path &path,
 		using Microsoft::WRL::ComPtr;
 		ComPtr<IShellItem> item, parent, bin, recycled;
 		ComPtr<ITransferSource> transfer;
-		check(SHCreateItemFromParsingName(file.c_str(), nullptr,
+		check(SHCreateItemFromParsingName(source.c_str(), nullptr,
 		                                 IID_PPV_ARGS(&item)));
 		check(item->GetParent(&parent));
 		check(parent->BindToHandler(nullptr, BHID_Transfer,
@@ -105,7 +105,7 @@ bool ShellUtils::RecycleFile(const std::filesystem::path &path,
 		check(transfer->RecycleItem(item.Get(), bin.Get(), TSF_NORMAL, &recycled));
 
 		if (!recycled) {
-			throw std::runtime_error("Windows did not recycle the file.");
+			throw std::runtime_error("Windows did not recycle the item.");
 		}
 
 		error.clear();

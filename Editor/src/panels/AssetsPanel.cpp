@@ -439,6 +439,10 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 							renamePath_ = directory;
 						}
 
+						if (ui.MenuItem("Move to Recycle Bin...")) {
+							recyclePath_ = directory;
+						}
+
 						ImGui::EndPopup();
 					}
 				}

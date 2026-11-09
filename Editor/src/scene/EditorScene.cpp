@@ -3633,26 +3633,38 @@ void EditorScene::RestoreRecovery() {
 	}
 }
 
-void EditorScene::CheckAssetRecycle(const std::filesystem::path &path) {
+std::filesystem::path
+EditorScene::CheckAssetRecycle(const std::filesystem::path &path) {
 	try {
 		const auto &assets = assets_.GetRootDirectory();
+		const auto status = std::filesystem::symlink_status(path);
 
-		if (!assets.is_absolute() ||
-		    !std::filesystem::is_regular_file(
-		        std::filesystem::symlink_status(path))) {
-			throw std::runtime_error("Choose a regular file in an editable Assets folder.");
+		if (!assets.is_absolute() || !path.is_absolute() ||
+		    (!std::filesystem::is_regular_file(status) &&
+		     !std::filesystem::is_directory(status))) {
+			throw std::runtime_error(
+			    "Choose a file or folder in an editable Assets folder.");
 		}
 
 		const auto root = std::filesystem::canonical(assets);
-		const auto file = std::filesystem::canonical(path);
-		PathUtils::RelativeInside(root, file);
+		auto target = std::filesystem::canonical(path);
+		const auto relative = PathUtils::RelativeInside(root, target);
+
+		if (relative.empty() ||
+		    PathUtils::RelativeInside(root, path.lexically_normal()) != relative) {
+			throw std::runtime_error(
+			    "Choose an item inside Assets without using a redirected path.");
+		}
+
 		const auto &project = project_.GetRoot();
 		recycleBlockers_ = AssetUsage::Find(
-		    file, project.empty() ? root : project, document_.GetScene(),
+		    path, project.empty() ? root : project, document_.GetScene(),
 		    document_.GetFilePath(), project_.GetStartupScene());
+		return target;
 	} catch (const std::exception &error) {
 		recycleBlockers_ = {"Could not verify asset references.",
 		                    error.what()};
+		return {};
 	}
 }
 
@@ -3670,7 +3682,7 @@ void EditorScene::DrawAssetRecycle() {
 	ui_.Text(PathUtils::ToUtf8(pendingRecyclePath_.filename()));
 
 	if (!recycleBlockers_.empty()) {
-		ui_.Text("This file cannot be moved. References or errors:");
+		ui_.Text("This item cannot be moved. References or errors:");
 
 		if (ui_.BeginChild("AssetReferences", 500.0f, 160.0f)) {
 			for (const auto &source : recycleBlockers_) {
@@ -3684,12 +3696,12 @@ void EditorScene::DrawAssetRecycle() {
 	bool close = false;
 
 	if (recycleBlockers_.empty() && ui_.Button("Move to Recycle Bin")) {
-		CheckAssetRecycle(pendingRecyclePath_);
+		const auto target = CheckAssetRecycle(pendingRecyclePath_);
 
-		if (recycleBlockers_.empty()) {
+		if (!target.empty() && recycleBlockers_.empty()) {
 			std::string error;
 
-			if (ShellUtils::RecycleFile(pendingRecyclePath_, error)) {
+			if (ShellUtils::RecycleAsset(target, error)) {
 				texturePreviewPanel_.Clear();
 				audioPreviewPanel_.Clear();
 				assets_.Refresh();

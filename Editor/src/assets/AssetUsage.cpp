@@ -41,6 +41,48 @@ std::optional<fs::path> RelativeWithin(const fs::path &root,
 	}
 }
 
+/// <summary>
+/// 実行ファイル基準の参照や別名を、フォルダ配下のパスに揃える
+/// </summary>
+std::optional<fs::path> RelativeReference(const fs::path &root,
+                                         const fs::path &path) {
+	const auto absolute = PathUtils::ResolveFromExecutable(path);
+	auto relative = RelativeWithin(root, absolute);
+
+	if (!relative) {
+		std::error_code error;
+		const auto resolved = fs::weakly_canonical(absolute, error);
+
+		if (!error) {
+			relative = RelativeWithin(root, resolved);
+		}
+	}
+
+	return relative;
+}
+
+/// <summary>
+/// フォルダをまとめて操作する前に、リンクやリダイレクトがないことを確認する
+/// </summary>
+void ValidateFolderTree(const fs::path &folder) {
+	const auto check = [](const fs::path &path) {
+		const auto attributes = GetFileAttributesW(path.c_str());
+
+		if (attributes == INVALID_FILE_ATTRIBUTES ||
+		    (attributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0) {
+			throw std::runtime_error(
+			    "Cannot operate on a folder containing a link or redirected item:\n" +
+			    PathUtils::ToUtf8(path));
+		}
+	};
+
+	check(folder);
+
+	for (const auto &entry : fs::recursive_directory_iterator(folder)) {
+		check(entry.path());
+	}
+}
+
 std::string ReadText(const fs::path &path) {
 	std::ifstream input(path, std::ios::binary);
 
@@ -75,8 +117,11 @@ std::vector<std::string> Scan(
     const Scene &scene, const std::filesystem::path &scenePath,
     const std::filesystem::path &startup, const DocumentVisitor &visit = {},
     const ModelVisitor &visitModel = {}) {
+	const bool folder = !visit && fs::is_directory(target);
 	const auto matches = [&](const fs::path &path) {
-		return !path.empty() && PathUtils::IsSameFile(target, path);
+		return !path.empty() &&
+		       (folder ? RelativeReference(target, path).has_value()
+		               : PathUtils::IsSameFile(target, path));
 	};
 	std::set<std::string> usages;
 	std::set<fs::path> scheduled;
@@ -113,7 +158,9 @@ std::vector<std::string> Scan(
 				if (matches(path)) {
 					if (!visit) {
 						usages.insert(std::format("{} / {} (ID {})", label,
-						                          object.name, id));
+						                          object.name, id) +
+						              (folder ? " -> " + PathUtils::ToUtf8(path)
+						                      : ""));
 					}
 				} else if (PrefabSerializer::IsPrefabPath(path)) {
 					schedule(path, Source::PREFAB);
@@ -144,11 +191,12 @@ std::vector<std::string> Scan(
 	};
 
 	if (!visit && matches(scenePath)) {
-		usages.insert("Open scene");
+		usages.insert("Open scene: " + PathUtils::ToUtf8(scenePath));
 	}
 
 	if (!visit && matches(startup)) {
-		usages.insert("Project startup scene (project.json)");
+		usages.insert("Project startup scene (project.json): " +
+		              PathUtils::ToUtf8(startup));
 	}
 
 	const auto openLabel = scenePath.empty()
@@ -161,10 +209,17 @@ std::vector<std::string> Scan(
 	}
 
 	check(PathUtils::ToUtf8(searchRoot), [&] {
-		for (const auto &entry : fs::recursive_directory_iterator(searchRoot)) {
-			const auto &path = entry.path();
+		const fs::recursive_directory_iterator end;
 
-			if (!entry.is_regular_file() || (!visit && matches(path))) {
+		for (fs::recursive_directory_iterator it(searchRoot); it != end; ++it) {
+			const auto &path = it->path();
+
+			if (folder && it->is_directory() && matches(path)) {
+				it.disable_recursion_pending();
+				continue;
+			}
+
+			if (!it->is_regular_file() || (!visit && matches(path))) {
 				continue;
 			}
 
@@ -194,7 +249,9 @@ std::vector<std::string> Scan(
 
 				for (const auto &file : AssetDependencies::ModelFiles(path)) {
 					if (matches(file)) {
-						usages.insert("Model: " + label);
+						usages.insert("Model: " + label +
+						              (folder ? " -> " + PathUtils::ToUtf8(file)
+						                      : ""));
 					}
 				}
 
@@ -284,7 +341,11 @@ struct Edit {
 std::vector<std::string> AssetUsage::Find(
     const fs::path &target, const fs::path &searchRoot, const Scene &scene,
     const fs::path &scenePath, const fs::path &startup) {
-	return Scan(target, searchRoot, scene, scenePath, startup);
+	if (fs::is_directory(target)) {
+		ValidateFolderTree(target);
+	}
+
+	return Scan(fs::canonical(target), searchRoot, scene, scenePath, startup);
 }
 
 bool AssetUsage::Relocate(const fs::path &source, const fs::path &destination,
@@ -323,18 +384,7 @@ bool AssetUsage::Relocate(const fs::path &source, const fs::path &destination,
 		}
 
 		if (folder) {
-			const auto check = [](const fs::path &path) {
-				const auto attributes = GetFileAttributesW(path.c_str());
-				if (attributes == INVALID_FILE_ATTRIBUTES ||
-				    (attributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0) {
-					throw std::runtime_error("Cannot relocate a folder containing a link or redirected item:\n" +
-					                         PathUtils::ToUtf8(path));
-				}
-			};
-			check(source);
-			for (const auto &entry : fs::recursive_directory_iterator(from)) {
-				check(entry.path());
-			}
+			ValidateFolderTree(source);
 		} else {
 			if (!PathUtils::HasExtension(to, PathUtils::ToUtf8(from.extension()))) {
 				throw std::runtime_error("Keep the original file extension.");
@@ -361,17 +411,7 @@ bool AssetUsage::Relocate(const fs::path &source, const fs::path &destination,
 				return PathUtils::IsSameFile(from, path) ? to : fs::path{};
 			}
 
-			auto absolute = PathUtils::ResolveFromExecutable(path);
-			auto relative = RelativeWithin(from, absolute);
-
-			if (!relative) {
-				std::error_code issue;
-				absolute = fs::weakly_canonical(absolute, issue);
-				if (!issue) {
-					relative = RelativeWithin(from, absolute);
-				}
-			}
-
+			const auto relative = RelativeReference(from, path);
 			return !relative ? fs::path{} : relative->empty() ? to : to / *relative;
 		};
 		const auto checkModel = [&](const fs::path &model) {
