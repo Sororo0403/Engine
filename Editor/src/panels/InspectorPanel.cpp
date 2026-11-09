@@ -465,140 +465,6 @@ bool InspectorPanel::Draw(
 		}
 	}
 
-	const auto componentScope = std::to_string(inspectedObjectId);
-	ImGui::PushID(componentScope.c_str());
-
-	if (ui.Button("Add Component"))
-		ImGui::OpenPopup("AddComponentMenu");
-
-	if (ImGui::BeginPopup("AddComponentMenu")) {
-		if (ui.MenuItem("Mesh", nullptr, !object->mesh)) {
-			objectRequest_ = {ObjectAction::ADD_MESH, inspectedObjectId};
-		}
-
-		if (ui.MenuItem("Mesh Renderer", nullptr, !object->meshRenderer)) {
-			objectRequest_ = {ObjectAction::ADD_MESH_RENDERER,
-			                  inspectedObjectId};
-		}
-
-		if (ui.MenuItem("Collider", nullptr, !object->collider))
-			colliderFitRequest_ = inspectedObjectId;
-
-		if (ui.MenuItem("Paste Collider", nullptr,
-		                canPasteCollider && !object->collider)) {
-			objectRequest_ = {ObjectAction::PASTE_COLLIDER, inspectedObjectId};
-		}
-
-		if (ui.MenuItem("Audio Source", nullptr, !object->audioSource))
-			changed |= history.SetAudioSource(inspectedObjectId,
-			                                  AudioSourceComponent{});
-		if (ui.MenuItem("Audio Listener", nullptr, !object->audioListener))
-			changed |= history.SetAudioListener(inspectedObjectId,
-			                                    AudioListenerComponent{});
-
-		if (ui.MenuItem("Point Light", nullptr, !object->pointLight)) {
-			changed |=
-			    history.SetPointLight(inspectedObjectId, PointLightComponent{});
-		}
-
-		if (ui.MenuItem("Canvas", nullptr,
-		                !object->canvas && !object->rectTransform))
-			changed |= history.SetCanvas(inspectedObjectId, CanvasComponent{});
-		if (ui.MenuItem("Rect Transform", nullptr,
-		                !object->rectTransform && !object->canvas))
-			changed |= history.SetRectTransform(inspectedObjectId,
-			                                    RectTransformComponent{});
-		if (ui.MenuItem("UI Button", nullptr,
-		                !object->button && object->rectTransform.has_value()))
-			changed |= history.SetButton(inspectedObjectId, ButtonComponent{});
-		if (ui.MenuItem("UI Text", nullptr,
-		                !object->text && object->rectTransform.has_value()))
-			changed |= history.SetText(inspectedObjectId, TextComponent{});
-		if (ui.MenuItem("UI Image", nullptr,
-		                !object->image && object->rectTransform.has_value()))
-			changed |= history.SetImage(inspectedObjectId, ImageComponent{});
-		if (ui.MenuItem("Rigid Body", nullptr, !object->rigidBody))
-			changed |=
-			    history.SetRigidBody(inspectedObjectId, RigidBodySettings{});
-		if (ui.MenuItem("Lua Script", nullptr, !object->script))
-			changed |= history.SetScript(inspectedObjectId, ScriptComponent{});
-
-		if (ui.MenuItem("Animator", nullptr, !object->animator))
-			changed |=
-			    history.SetAnimator(inspectedObjectId, AnimatorComponent{});
-		if (ui.MenuItem("Particle Emitter", nullptr, !object->particleEmitter))
-			changed |= history.SetParticleEmitter(inspectedObjectId,
-			                                      ParticleEmitterComponent{});
-		if (ui.MenuItem("Transform Animation", nullptr,
-		                !object->transformAnimation))
-			changed |= history.SetTransformAnimation(
-			    inspectedObjectId, TransformAnimationComponent{});
-		if (ui.MenuItem("Motion Path", nullptr, !object->motionPath)) {
-			changed |=
-			    history.SetMotionPath(inspectedObjectId, MotionPathComponent{});
-		}
-
-		if (ui.MenuItem("Spot Light", nullptr, !object->spotLight)) {
-			changed |=
-			    history.SetSpotLight(inspectedObjectId, SpotLightComponent{});
-		}
-
-		if (ui.MenuItem("Color Tint", nullptr, !object->colorTint)) {
-			changed |= history.SetColorTint(inspectedObjectId, ColorTint{});
-		}
-
-		if (ui.MenuItem("Character Controller", nullptr, !object->character)) {
-			changed |=
-			    history.SetCharacter(inspectedObjectId, CharacterSettings{});
-		}
-
-		if (ui.MenuItem("Paste Character Settings", nullptr,
-		                canPasteCharacter && !object->character)) {
-			objectRequest_ = {ObjectAction::PASTE_CHARACTER_SETTINGS,
-			                  inspectedObjectId};
-		}
-
-		if (ui.MenuItem("Camera", nullptr, !object->camera)) {
-			objectRequest_ = {ObjectAction::ADD_CAMERA, inspectedObjectId};
-		}
-
-		if (ui.MenuItem("Paste Camera Lens", nullptr,
-		                canPasteCameraLens && !object->camera)) {
-			objectRequest_ = {ObjectAction::PASTE_CAMERA_LENS,
-			                  inspectedObjectId};
-		}
-
-		if (ui.MenuItem("Follow Camera", nullptr, !object->followCamera)) {
-			changed |= history.SetFollowCamera(inspectedObjectId,
-			                                   FollowCameraSettings{});
-		}
-
-		if (ui.MenuItem("Paste Follow Settings", nullptr,
-		                canPasteFollow && !object->followCamera)) {
-			objectRequest_ = {ObjectAction::PASTE_FOLLOW_SETTINGS,
-			                  inspectedObjectId};
-		}
-
-		if (ui.MenuItem("Trigger Actions", nullptr, !object->triggerActions)) {
-			changed |= history.SetTriggerActions(inspectedObjectId,
-			                                     TriggerActionsComponent{});
-		}
-
-		if (ui.MenuItem("Respawn", nullptr, !object->respawn)) {
-			changed |= history.SetRespawn(inspectedObjectId, RespawnSettings{});
-		}
-
-		if (ui.MenuItem("Paste Respawn Settings", nullptr,
-		                canPasteRespawn && !object->respawn)) {
-			objectRequest_ = {ObjectAction::PASTE_RESPAWN_SETTINGS,
-			                  inspectedObjectId};
-		}
-
-		ImGui::EndPopup();
-	}
-
-	ImGui::PopID();
-
 	if (object->meshRenderer && ui.CollapsingHeader("Mesh Renderer")) {
 		bool visible = object->meshRenderer->visible;
 
@@ -797,6 +663,142 @@ bool InspectorPanel::Draw(
 	    blockerId != 0) {
 		objectRequest_ = {ObjectAction::SELECT_RESPAWN_BLOCKERS, blockerId};
 	}
+
+	ui.Separator();
+
+	const auto componentScope = std::to_string(inspectedObjectId);
+	ImGui::PushID(componentScope.c_str());
+
+	if (ui.Button("Add Component"))
+		ImGui::OpenPopup("AddComponentMenu");
+
+	if (ImGui::BeginPopup("AddComponentMenu")) {
+		if (ui.MenuItem("Mesh", nullptr, !object->mesh)) {
+			objectRequest_ = {ObjectAction::ADD_MESH, inspectedObjectId};
+		}
+
+		if (ui.MenuItem("Mesh Renderer", nullptr, !object->meshRenderer)) {
+			objectRequest_ = {ObjectAction::ADD_MESH_RENDERER,
+			                  inspectedObjectId};
+		}
+
+		if (ui.MenuItem("Collider", nullptr, !object->collider))
+			colliderFitRequest_ = inspectedObjectId;
+
+		if (ui.MenuItem("Paste Collider", nullptr,
+		                canPasteCollider && !object->collider)) {
+			objectRequest_ = {ObjectAction::PASTE_COLLIDER, inspectedObjectId};
+		}
+
+		if (ui.MenuItem("Audio Source", nullptr, !object->audioSource))
+			changed |= history.SetAudioSource(inspectedObjectId,
+			                                  AudioSourceComponent{});
+		if (ui.MenuItem("Audio Listener", nullptr, !object->audioListener))
+			changed |= history.SetAudioListener(inspectedObjectId,
+			                                    AudioListenerComponent{});
+
+		if (ui.MenuItem("Point Light", nullptr, !object->pointLight)) {
+			changed |=
+			    history.SetPointLight(inspectedObjectId, PointLightComponent{});
+		}
+
+		if (ui.MenuItem("Canvas", nullptr,
+		                !object->canvas && !object->rectTransform))
+			changed |= history.SetCanvas(inspectedObjectId, CanvasComponent{});
+		if (ui.MenuItem("Rect Transform", nullptr,
+		                !object->rectTransform && !object->canvas))
+			changed |= history.SetRectTransform(inspectedObjectId,
+			                                    RectTransformComponent{});
+		if (ui.MenuItem("UI Button", nullptr,
+		                !object->button && object->rectTransform.has_value()))
+			changed |= history.SetButton(inspectedObjectId, ButtonComponent{});
+		if (ui.MenuItem("UI Text", nullptr,
+		                !object->text && object->rectTransform.has_value()))
+			changed |= history.SetText(inspectedObjectId, TextComponent{});
+		if (ui.MenuItem("UI Image", nullptr,
+		                !object->image && object->rectTransform.has_value()))
+			changed |= history.SetImage(inspectedObjectId, ImageComponent{});
+		if (ui.MenuItem("Rigid Body", nullptr, !object->rigidBody))
+			changed |=
+			    history.SetRigidBody(inspectedObjectId, RigidBodySettings{});
+		if (ui.MenuItem("Lua Script", nullptr, !object->script))
+			changed |= history.SetScript(inspectedObjectId, ScriptComponent{});
+
+		if (ui.MenuItem("Animator", nullptr, !object->animator))
+			changed |=
+			    history.SetAnimator(inspectedObjectId, AnimatorComponent{});
+		if (ui.MenuItem("Particle Emitter", nullptr, !object->particleEmitter))
+			changed |= history.SetParticleEmitter(inspectedObjectId,
+			                                      ParticleEmitterComponent{});
+		if (ui.MenuItem("Transform Animation", nullptr,
+		                !object->transformAnimation))
+			changed |= history.SetTransformAnimation(
+			    inspectedObjectId, TransformAnimationComponent{});
+		if (ui.MenuItem("Motion Path", nullptr, !object->motionPath)) {
+			changed |=
+			    history.SetMotionPath(inspectedObjectId, MotionPathComponent{});
+		}
+
+		if (ui.MenuItem("Spot Light", nullptr, !object->spotLight)) {
+			changed |=
+			    history.SetSpotLight(inspectedObjectId, SpotLightComponent{});
+		}
+
+		if (ui.MenuItem("Color Tint", nullptr, !object->colorTint)) {
+			changed |= history.SetColorTint(inspectedObjectId, ColorTint{});
+		}
+
+		if (ui.MenuItem("Character Controller", nullptr, !object->character)) {
+			changed |=
+			    history.SetCharacter(inspectedObjectId, CharacterSettings{});
+		}
+
+		if (ui.MenuItem("Paste Character Settings", nullptr,
+		                canPasteCharacter && !object->character)) {
+			objectRequest_ = {ObjectAction::PASTE_CHARACTER_SETTINGS,
+			                  inspectedObjectId};
+		}
+
+		if (ui.MenuItem("Camera", nullptr, !object->camera)) {
+			objectRequest_ = {ObjectAction::ADD_CAMERA, inspectedObjectId};
+		}
+
+		if (ui.MenuItem("Paste Camera Lens", nullptr,
+		                canPasteCameraLens && !object->camera)) {
+			objectRequest_ = {ObjectAction::PASTE_CAMERA_LENS,
+			                  inspectedObjectId};
+		}
+
+		if (ui.MenuItem("Follow Camera", nullptr, !object->followCamera)) {
+			changed |= history.SetFollowCamera(inspectedObjectId,
+			                                   FollowCameraSettings{});
+		}
+
+		if (ui.MenuItem("Paste Follow Settings", nullptr,
+		                canPasteFollow && !object->followCamera)) {
+			objectRequest_ = {ObjectAction::PASTE_FOLLOW_SETTINGS,
+			                  inspectedObjectId};
+		}
+
+		if (ui.MenuItem("Trigger Actions", nullptr, !object->triggerActions)) {
+			changed |= history.SetTriggerActions(inspectedObjectId,
+			                                     TriggerActionsComponent{});
+		}
+
+		if (ui.MenuItem("Respawn", nullptr, !object->respawn)) {
+			changed |= history.SetRespawn(inspectedObjectId, RespawnSettings{});
+		}
+
+		if (ui.MenuItem("Paste Respawn Settings", nullptr,
+		                canPasteRespawn && !object->respawn)) {
+			objectRequest_ = {ObjectAction::PASTE_RESPAWN_SETTINGS,
+			                  inspectedObjectId};
+		}
+
+		ImGui::EndPopup();
+	}
+
+	ImGui::PopID();
 
 	ui.EndWindow();
 	return changed;
