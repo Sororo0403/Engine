@@ -6,6 +6,7 @@
 #include "physics/ColliderUtils.h"
 #include "scene/SceneActivity.h"
 #include "scene/SceneHierarchy.h"
+#include "scene/SceneLighting.h"
 #include "scene/SceneSerializer.h"
 #include <algorithm>
 #include <cmath>
@@ -147,6 +148,7 @@ bool SceneSimulation::StartScene(const Scene &source, std::string &error,
 
 			snapshot->CopyFrom(source);
 			snapshot->ReplaceObjects(std::move(objects));
+			SceneLighting::MigrateLegacyDirectionalLight(*snapshot, legacyLighting_);
 			initialScene = std::move(snapshot);
 		}
 
@@ -154,6 +156,7 @@ bool SceneSimulation::StartScene(const Scene &source, std::string &error,
 		working.restartSource_ = initialScene;
 		working.preparePrefabResources_ = preparePrefabResources_;
 		working.loadAnimatorModel_ = loadAnimatorModel_;
+		working.legacyLighting_ = legacyLighting_;
 		if (preserveSharedData)
 			working.sharedScriptData_ = sharedScriptData_;
 		if (!working.Configure(*initialScene, error, fallbackPose,

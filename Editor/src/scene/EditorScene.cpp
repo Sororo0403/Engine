@@ -2,6 +2,7 @@
 #include "lighting/LightingControls.h"
 #include "scene/SceneActivity.h"
 #include "scene/SceneHierarchy.h"
+#include "scene/SceneLighting.h"
 #include "ui/UIObjects.h"
 
 #include "assets/AssetFolders.h"
@@ -3459,7 +3460,7 @@ void EditorScene::AppendAssetObjects(const std::filesystem::path &path) {
 		std::string error;
 
 		if (prefab ? !PrefabAsset::Load(path, source.GetScene(), error)
-		           : !source.Open(path)) {
+		           : !source.Open(path, nullptr)) {
 			ShowError(error.empty() ? "Could not read the asset objects. The "
 			                          "current scene was kept."
 			                        : error);
@@ -3509,7 +3510,7 @@ bool EditorScene::PlaceDroppedObjects(const std::filesystem::path &path,
 		std::string error;
 		const bool loaded =
 		    prefab ? PrefabAsset::Load(path, source.GetScene(), error)
-		           : source.Open(path);
+		           : source.Open(path, nullptr);
 		auto sources = assetSources_;
 
 		if (prefab) {
@@ -3670,6 +3671,9 @@ void EditorScene::RestoreRecovery() {
 		assets.Refresh();
 		auto restoredPath = pendingRecoveryPath_;
 		SaveEditorSession();
+		SceneLighting::MigrateLegacyDirectionalLight(
+		    snapshot.scene, project_.GetRoot().empty() ? snapshot.game.lighting
+		                                               : exportConfig_.lighting);
 		document_.GetScene().CopyFrom(snapshot.scene);
 		document_.SetUntitled();
 		ClearRecovery(pendingRecoveryPath_);
@@ -4411,15 +4415,7 @@ void EditorScene::UpdateDialogs() {
 		if (ui_.BeginPopupModal(kTitle)) {
 			ImGui::Checkbox("Override Project Lighting", &sceneLightingOverride_);
 			ImGui::BeginDisabled(!sceneLightingOverride_);
-			const auto &objects = document_.GetScene().GetObjects();
-			const bool hasDirectionalLights =
-			    std::ranges::any_of(objects, [](const auto &entry) {
-				    return entry.second.directionalLight.has_value();
-			    });
-			LightingControls::Draw(
-			    ui_, sceneLightingDraft_,
-			    hasDirectionalLights ||
-			        !document_.GetScene().UsesLegacyDirectionalLight());
+			LightingControls::Draw(ui_, sceneLightingDraft_, true);
 			ImGui::EndDisabled();
 
 			const bool valid =
@@ -4567,7 +4563,7 @@ const Scene *EditorScene::GetExportScene(SceneDocument &startup) {
 		return &document_.GetScene();
 	}
 
-	if (!startup.Open(path)) {
+	if (!startup.Open(path, &exportConfig_.lighting)) {
 		ShowError("Could not load the project startup scene: " +
 		          startup.GetError());
 		return nullptr;
@@ -4605,7 +4601,7 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		                         : preferences_.LastProjectScene(candidate.GetRoot());
 		const bool restored =
 		    !last.empty() && (startup.empty() || !PathUtils::IsSameFile(last, startup)) &&
-		    OpenScene(last, false);
+		    OpenScene(last, false, &config.lighting);
 
 		if (!restored) {
 			if (startup.empty()) {
@@ -4615,7 +4611,7 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 				if (stage_ != DialogStage::IDLE) {
 					return;
 				}
-			} else if (!OpenScene(startup)) {
+			} else if (!OpenScene(startup, true, &config.lighting)) {
 				return;
 			}
 		}
@@ -4654,9 +4650,11 @@ void EditorScene::SaveEditorSession() {
 	}
 }
 
-bool EditorScene::OpenScene(const std::filesystem::path &path, bool reportError) {
+bool EditorScene::OpenScene(const std::filesystem::path &path, bool reportError,
+                            const LightingSettings *projectLighting) {
 	SaveEditorSession();
-	const bool opened = document_.Open(path);
+	const bool opened = document_.Open(
+	    path, projectLighting ? projectLighting : &exportConfig_.lighting);
 
 	if (!opened) {
 		if (reportError) {

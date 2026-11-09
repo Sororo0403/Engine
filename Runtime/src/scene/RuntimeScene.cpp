@@ -15,6 +15,7 @@ RuntimeScene::RuntimeScene(const EngineContext &context, GameConfig config)
       config_(std::move(config)),
       renderer_(simulation_.GetScene(), context.models, context.render),
       audioPlayer_(simulation_.GetScene(), context.audioClips, context.audio) {
+	simulation_.SetLegacyLighting(config_.lighting);
 	simulation_.SetAnimatorModelLoading(
 	    [&models = context.models](const std::filesystem::path &path,
 	                               std::string &error) {

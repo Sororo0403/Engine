@@ -20,7 +20,13 @@ namespace SceneLighting {
 SceneObject CreateDirectionalLight(const LightingSettings &settings);
 
 /// <summary>
-/// 有効な平行光を集める。旧形式のシーンだけ従来の平行光にフォールバックする
+/// 旧形式の平行光をオブジェクトへ移し、以後の互換フラグを解除する
+/// </summary>
+void MigrateLegacyDirectionalLight(Scene &scene, const LightingSettings &fallback);
+
+
+/// <summary>
+/// 有効な平行光を集め、シーンまたはプロジェクトの環境光を適用する
 /// </summary>
 bool CollectDirectionalLights(const Scene &scene,
                               const SceneHierarchy::WorldTransforms &transforms,

@@ -15,6 +15,13 @@ class EditorPlaySession {
 
   public:
 	/// <summary>
+	/// 旧シーンの移行に使うプロジェクト照明を再生側へ渡す
+	/// </summary>
+	void SetLegacyLighting(const LightingSettings &lighting) {
+		simulation_.SetLegacyLighting(lighting);
+	}
+
+	/// <summary>
 	/// 描画と同じモデル内クリップを準備する処理を登録する
 	/// </summary>
 	/// <param name="load">モデル所有側の読み込み処理。StopとRestartでも保持する</param>

@@ -84,9 +84,11 @@ class SceneDocument {
 	/// 候補シーンを読み込み、事前確認の成功後に反映する。失敗時は現在の状態を保持する
 	/// </summary>
 	/// <param name="filePath">読み込むファイルのパス</param>
+	/// <param name="lighting">旧形式の平行光に使うプロジェクト設定。配置用に物体だけを読むときはnullptr</param>
 	/// <param name="validate">候補の事前確認（省略可）。現在のドキュメントは変更しない</param>
 	/// <returns>true:成功 false:読み込み・事前確認の失敗。編集履歴と保存状態は保持する</returns>
 	bool Open(const std::filesystem::path &filePath,
+	          const LightingSettings *lighting,
 	          const std::function<bool(const Scene &)> &validate = {});
 
 	/// <summary>

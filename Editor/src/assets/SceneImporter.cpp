@@ -10,6 +10,7 @@
 #include "platform/windows/PathUtils.h"
 #include "scene/PrefabSerializer.h"
 #include "scene/Scene.h"
+#include "scene/SceneLighting.h"
 #include "scene/SceneSerializer.h"
 #include "scripting/LuaScript.h"
 #include <Windows.h>
@@ -266,6 +267,8 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 			    "Could not read the exported scene. See Console for details.");
 		}
 
+		SceneLighting::MigrateLegacyDirectionalLight(candidate, config.lighting);
+
 		const auto root = AssetFolders::Resolve(options.assetRoot, {});
 		const auto destination =
 		    AssetFolders::Resolve(options.assetRoot, options.folder) /
@@ -313,6 +316,7 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 			    if (!SceneSerializer::Deserialize(loaded, document.dump()))
 				    throw std::runtime_error(
 				        "Could not read an imported destination scene.");
+			    SceneLighting::MigrateLegacyDirectionalLight(loaded, config.lighting);
 		    },
 		    [&](const auto &path, Scene &loaded, SceneObjectId &counter) {
 			    auto document = Json::parse(ReadScene(path));
@@ -429,7 +433,6 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 			Scene loaded;
 			loaded.ReplaceObjects(entry.objects);
 			loaded.SetLighting(entry.lighting);
-			loaded.SetUseLegacyDirectionalLight(entry.legacyDirectionalLight);
 			std::string text;
 
 			if (entry.prefab) {
@@ -479,7 +482,7 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 			output.Text(path, text);
 		imported.ReplaceObjects(std::move(graph.front().objects));
 		imported.SetLighting(graph.front().lighting);
-		imported.SetUseLegacyDirectionalLight(graph.front().legacyDirectionalLight);
+		imported.SetUseLegacyDirectionalLight(false);
 		createdFolder.swap(folderReference);
 
 		if (configuration) {

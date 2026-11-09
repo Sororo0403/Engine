@@ -325,7 +325,8 @@ class EditorScene final : public IScene {
 	/// </summary>
 	/// <param name="path">読み込むシーンのパス</param>
 	/// <returns>true:読み込み成功 false:現在のシーンを保持</returns>
-	bool OpenScene(const std::filesystem::path &path, bool reportError = true);
+	bool OpenScene(const std::filesystem::path &path, bool reportError = true,
+	               const LightingSettings *projectLighting = nullptr);
 
 	/// <summary>
 	/// 保存を開始する。保存先がない場合は選択ダイアログを開く

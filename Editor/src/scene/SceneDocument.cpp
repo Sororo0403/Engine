@@ -2,6 +2,7 @@
 
 #include "core/Logger.h"
 #include "platform/windows/PathUtils.h"
+#include "scene/SceneLighting.h"
 #include "scene/SceneSerializer.h"
 
 #include <exception>
@@ -108,6 +109,7 @@ void SceneDocument::SetUntitled() {
 }
 
 bool SceneDocument::Open(const std::filesystem::path &filePath,
+                         const LightingSettings *lighting,
                          const std::function<bool(const Scene &)> &validate) {
 	try {
 		auto resolvedPath = PathUtils::ResolveFromExecutable(filePath);
@@ -125,6 +127,10 @@ bool SceneDocument::Open(const std::filesystem::path &filePath,
 			if (!SceneSerializer::Deserialize(candidate, sourceText, resolvedPath,
 			                                  &projectRoot)) {
 				return false;
+			}
+
+			if (lighting) {
+				SceneLighting::MigrateLegacyDirectionalLight(candidate, *lighting);
 			}
 
 			if (validate && !validate(candidate)) {

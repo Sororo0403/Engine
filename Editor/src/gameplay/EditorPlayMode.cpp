@@ -278,6 +278,7 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
 		}
 	}
 
+	session_.SetLegacyLighting(config.lighting);
 	if (!session_.Start(scene, error, fallbackPose, invalidObject,
 	                    cameraOverride)) {
 		return false;

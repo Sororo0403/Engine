@@ -9,6 +9,7 @@
 #include "platform/windows/PathUtils.h"
 #include "scene/PrefabSerializer.h"
 #include "scene/SceneAssetReferences.h"
+#include "scene/SceneLighting.h"
 #include "scene/SceneSerializer.h"
 #include "scripting/LuaScript.h"
 #include <Windows.h>
@@ -816,9 +817,12 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 				        snapshot, root, destination / scenePaths[i], text,
 				        problem, entry.nextSourceId))
 					throw std::runtime_error(problem);
-			} else if (!SceneSerializer::Serialize(snapshot, text))
-				throw std::runtime_error(
-				    "Could not serialize an exported scene.");
+			} else {
+				SceneLighting::MigrateLegacyDirectionalLight(snapshot,
+				                                             options.config.lighting);
+				if (!SceneSerializer::Serialize(snapshot, text))
+					throw std::runtime_error("Could not serialize an exported scene.");
+			}
 			sceneTexts.push_back(std::move(text));
 		}
 

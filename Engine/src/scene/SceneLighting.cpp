@@ -3,6 +3,7 @@
 #include "scene/Scene.h"
 #include "scene/SceneActivity.h"
 #include "scene/SceneHierarchy.h"
+#include <algorithm>
 #include <cmath>
 #include <format>
 
@@ -22,6 +23,24 @@ SceneObject SceneLighting::CreateDirectionalLight(const LightingSettings &settin
 	return sun;
 }
 
+void SceneLighting::MigrateLegacyDirectionalLight(
+    Scene &scene, const LightingSettings &fallback) {
+	if (!scene.UsesLegacyDirectionalLight())
+		return;
+
+	const bool hasLight = std::ranges::any_of(
+	    scene.GetObjects(), [](const auto &entry) {
+		    return entry.second.directionalLight.has_value();
+	    });
+
+	if (!hasLight) {
+		scene.CreateObject(
+		    CreateDirectionalLight(scene.GetLighting().value_or(fallback)));
+	}
+
+	scene.SetUseLegacyDirectionalLight(false);
+}
+
 bool SceneLighting::CollectDirectionalLights(
     const Scene &scene, const SceneHierarchy::WorldTransforms &transforms,
     const SceneActivity::States &active, const LightingSettings &fallback,
@@ -36,13 +55,11 @@ bool SceneLighting::CollectDirectionalLights(
 	result.ambient = settings.ambient;
 	result.count = 0;
 	ShadowSettings shadow;
-	bool hasLightObjects = false;
 
 	for (const auto &[id, object] : scene.GetObjects()) {
 		if (!object.directionalLight)
 			continue;
 
-		hasLightObjects = true;
 		const auto &light = *object.directionalLight;
 		if (!active.at(id))
 			continue;
@@ -71,17 +88,6 @@ bool SceneLighting::CollectDirectionalLights(
 		    direction, light.intensity, {light.color[0], light.color[1], light.color[2]}};
 	}
 
-	if (!hasLightObjects && scene.UsesLegacyDirectionalLight()) {
-		const auto &direction = settings.direction;
-		const double length = std::sqrt(double(direction.x) * direction.x +
-		                                double(direction.y) * direction.y +
-		                                double(direction.z) * direction.z);
-		result.lights[0] = {{float(direction.x / length), float(direction.y / length),
-		                     float(direction.z / length)}, settings.intensity, settings.color};
-		result.count = 1;
-		result.shadowIndex = settings.shadows.enabled ? 0 : -1;
-		shadow = settings.shadows;
-	}
 
 	lights = result;
 	shadows = shadow;

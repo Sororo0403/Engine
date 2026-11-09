@@ -124,12 +124,12 @@ class Scene {
 	bool SetLighting(std::optional<LightingSettings> lighting);
 
 	/// <summary>
-	/// 平行光オブジェクトがない場合に旧形式の照明を使うか確認する
+	/// 旧形式の平行光がオブジェクトへの移行待ちか確認する
 	/// </summary>
 	bool UsesLegacyDirectionalLight() const { return legacyDirectionalLight_; }
 
 	/// <summary>
-	/// 旧形式で保存された平行光の互換動作を設定する
+	/// 旧形式の平行光をオブジェクトへ移行する必要があるか設定する
 	/// </summary>
 	void SetUseLegacyDirectionalLight(bool enabled) {
 		legacyDirectionalLight_ = enabled;

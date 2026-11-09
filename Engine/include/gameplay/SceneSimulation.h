@@ -38,6 +38,13 @@ class SceneSimulation {
 
   public:
 	/// <summary>
+	/// 旧シーンの移行に使うプロジェクト照明を設定する
+	/// </summary>
+	void SetLegacyLighting(const LightingSettings &lighting) {
+		legacyLighting_ = lighting;
+	}
+
+	/// <summary>
 	/// モデルの所有側と同じ骨・クリップを読み込む処理を登録する。Stopでも保持する
 	/// </summary>
 	/// <param name="load">GPUの利用完了後に呼ぶ読み込み。空はCPUだけの検証用読み込み</param>
@@ -526,6 +533,7 @@ class SceneSimulation {
 	SceneParticles particles_;
 	SceneAnimators animators_;
 	SceneAnimators::LoadModel loadAnimatorModel_;
+	LightingSettings legacyLighting_;
 	ScenePhysics physics_;
 	SceneScripts scripts_;
 	SceneUI ui_;
