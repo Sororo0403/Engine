@@ -1,9 +1,11 @@
 #pragma once
 
+#include "graphics/lighting/LightingSettings.h"
 #include "scene/SceneObject.h"
 #include <filesystem>
 #include <functional>
 #include <map>
+#include <optional>
 #include <vector>
 class Scene;
 
@@ -17,6 +19,7 @@ class SceneDependencyGraph {
 		std::map<SceneObjectId, SceneObject> objects;
 		bool prefab = false;
 		SceneObjectId nextSourceId = 0;
+		std::optional<LightingSettings> lighting;
 	};
 
 	using Resolve =

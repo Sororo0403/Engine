@@ -40,9 +40,9 @@ class SceneRenderer {
 	/// <summary>
 	/// 検証した照明を描画ワールドへ反映する
 	/// </summary>
-	/// <param name="settings">ゲーム全体の照明。方向は正規化して使用する</param>
+	/// <param name="fallback">シーン固有の設定がない場合に使う照明設定</param>
 	/// <returns>true:成功 false:未初期化または設定が無効。以前の照明は保持する</returns>
-	bool SetLighting(const LightingSettings &settings);
+	bool SetLighting(const LightingSettings &fallback);
 
 	/// <summary>
 	/// 読み込み不能なモデルに対する描画更新の扱い

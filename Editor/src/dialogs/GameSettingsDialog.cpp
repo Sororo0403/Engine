@@ -1,4 +1,5 @@
 #include "dialogs/GameSettingsDialog.h"
+#include "lighting/LightingControls.h"
 
 #include "graphics/ui/ImGuiSystem.h"
 #include "platform/windows/PathUtils.h"
@@ -79,41 +80,8 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 
 	ImGui::Checkbox("Camera Relative Movement", &cameraRelativeMovement_);
 
-	ImGui::SeparatorText("Lighting");
-	ImGui::InputFloat3("Light Direction", &lighting_.direction.x);
-	ImGui::ColorEdit3("Light Color", &lighting_.color.x);
-	ImGui::SliderFloat("Light Intensity", &lighting_.intensity, 0.0f,
-	                   LightingSettings::kMaxIntensity);
-	ImGui::SliderFloat("Ambient Light", &lighting_.ambient, 0.0f, 1.0f);
-
-	if (ui.Button("Reset Lighting")) {
-		lighting_ = {};
-	}
-
-	ImGui::SeparatorText("Directional Shadows");
-	ImGui::Checkbox("Enable Shadows", &lighting_.shadows.enabled);
-	ImGui::BeginDisabled(!lighting_.shadows.enabled);
-	const auto resolution = std::to_string(lighting_.shadows.resolution);
-
-	if (ImGui::BeginCombo("Shadow Resolution", resolution.c_str())) {
-		for (int size : {512, 1024, 2048}) {
-			const auto label = std::to_string(size);
-			if (ImGui::Selectable(label.c_str(),
-			                      lighting_.shadows.resolution == size))
-				lighting_.shadows.resolution = size;
-		}
-
-		ImGui::EndCombo();
-	}
-
-	ImGui::DragFloat("Shadow Extent", &lighting_.shadows.extent, .1f, 1, 1000,
-	                 "%.1f", ImGuiSliderFlags_AlwaysClamp);
-	ImGui::SliderFloat("Shadow Strength", &lighting_.shadows.strength, 0, 1);
-	ImGui::DragFloat("Shadow Depth Bias", &lighting_.shadows.bias, .00001f, 0,
-	                 .02f, "%.5f", ImGuiSliderFlags_AlwaysClamp);
-	ImGui::DragFloat("Shadow Normal Bias", &lighting_.shadows.normalBias, .001f,
-	                 0, 1, "%.3f", ImGuiSliderFlags_AlwaysClamp);
-	ImGui::EndDisabled();
+	ImGui::SeparatorText("Default Scene Lighting");
+	LightingControls::Draw(ui, lighting_);
 	ImGui::SeparatorText("Gameplay Input");
 	ImGui::Checkbox("Enable Gamepad", &gamepadEnabled_);
 	const std::array<const char *, GameInputBindings::kActions.size()> labels{

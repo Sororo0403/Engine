@@ -2929,6 +2929,32 @@ bool EditorHistory::SetTriggerActions(
 	return true;
 }
 
+bool EditorHistory::SceneLightingCommand::Undo(Scene &scene) const {
+	return scene.SetLighting(before);
+}
+
+bool EditorHistory::SceneLightingCommand::Redo(Scene &scene) const {
+	return scene.SetLighting(after);
+}
+
+bool EditorHistory::SetSceneLighting(std::optional<LightingSettings> lighting) {
+	CommitEdit();
+
+	if (scene_.GetLighting() == lighting) {
+		return true;
+	}
+
+	SceneLightingCommand command{scene_.GetLighting(), lighting};
+	const auto next = PrepareAppend();
+
+	if (!command.Redo(scene_)) {
+		return false;
+	}
+
+	AppendPrepared(Command{std::move(command)}, next, "Edit Scene Lighting");
+	return true;
+}
+
 bool EditorHistory::SetPointLight(SceneObjectId id,
                                   std::optional<PointLightComponent> value) {
 	CommitEdit();

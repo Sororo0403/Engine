@@ -79,7 +79,7 @@ bool EditorGamePreview::Prepare(const Scene &source, const CameraPose &fallback,
 			return false;
 		}
 
-		scene_.ReplaceObjects(objects);
+		scene_.CopyFrom(resolved);
 		pose_ = pose;
 		settings_ = settings;
 		return true;

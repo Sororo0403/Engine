@@ -1,6 +1,7 @@
 #pragma once
 
 #include "graphics/camera/CameraPose.h"
+#include "graphics/lighting/LightingSettings.h"
 #include "history/ActiveCommand.h"
 #include "history/AlignmentAxis.h"
 #include "history/ColliderCommand.h"
@@ -869,7 +870,20 @@ class EditorHistory {
 	/// <returns>true:開始成功 false:対象またはコンポーネントなし</returns>
 	bool BeginRigidBody(SceneObjectId id);
 
+	/// <summary>
+	/// シーン固有の照明設定を変更し、履歴に登録する
+	/// </summary>
+	bool SetSceneLighting(std::optional<LightingSettings> lighting);
+
   private:
+	struct SceneLightingCommand {
+		std::optional<LightingSettings> before;
+		std::optional<LightingSettings> after;
+
+		bool Undo(Scene &scene) const;
+		bool Redo(Scene &scene) const;
+	};
+
 	// 単独の編集操作、または複数の編集操作を保持する
 	using Command = std::variant<
 	    TransformCommand, ObjectCommand, ParentCommand, RenameCommand,
@@ -880,7 +894,7 @@ class EditorHistory {
 	    CanvasCommand, ButtonCommand, RigidBodyCommand, RectTransformCommand,
 	    TextCommand, ImageCommand, AudioSourceCommand, AudioListenerCommand,
 	    RespawnCommand, CameraCommand, MeshRendererCommand, ColorTintCommand,
-	    TextureSlotsCommand, CommandGroup, ScenePatchCommand>;
+	    TextureSlotsCommand, CommandGroup, ScenePatchCommand, SceneLightingCommand>;
 
 	/// <summary>
 	/// 操作と、その前後の状態を識別する情報

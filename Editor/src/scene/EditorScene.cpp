@@ -1,4 +1,5 @@
 #include "scene/EditorScene.h"
+#include "lighting/LightingControls.h"
 #include "scene/SceneActivity.h"
 #include "scene/SceneHierarchy.h"
 #include "ui/UIObjects.h"
@@ -1773,6 +1774,10 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			action = EditorAction::ASSETS_FOLDER;
 		}
 
+		if (ui_.MenuItem("Scene Lighting...", nullptr, enabled)) {
+			action = EditorAction::SCENE_LIGHTING;
+		}
+
 		if (ui_.MenuItem("Game Settings...", nullptr, enabled)) {
 			action = EditorAction::GAME_SETTINGS;
 		}
@@ -2602,6 +2607,16 @@ void EditorScene::StartAction(EditorAction action) {
 		}
 
 		return;
+
+	case EditorAction::SCENE_LIGHTING: {
+		FinishEdit();
+		const auto &lighting = document_.GetScene().GetLighting();
+		sceneLightingOverride_ = lighting.has_value();
+		sceneLightingDraft_ = lighting.value_or(exportConfig_.lighting);
+		sceneLightingOpenRequested_ = true;
+		stage_ = DialogStage::SCENE_LIGHTING;
+		return;
+	}
 
 	case EditorAction::GAME_SETTINGS:
 	case EditorAction::LOAD_GAME_SETTINGS:
@@ -3655,7 +3670,7 @@ void EditorScene::RestoreRecovery() {
 		assets.Refresh();
 		auto restoredPath = pendingRecoveryPath_;
 		SaveEditorSession();
-		document_.GetScene().ReplaceObjects(snapshot.scene.GetObjects());
+		document_.GetScene().CopyFrom(snapshot.scene);
 		document_.SetUntitled();
 		ClearRecovery(pendingRecoveryPath_);
 		assetSources_ = std::move(snapshot.assets);
@@ -4385,6 +4400,47 @@ void EditorScene::UpdateDialogs() {
 
 		return;
 
+	case DialogStage::SCENE_LIGHTING: {
+		constexpr const char *kTitle = "Scene Lighting";
+
+		if (sceneLightingOpenRequested_) {
+			ui_.OpenPopup(kTitle);
+			sceneLightingOpenRequested_ = false;
+		}
+
+		if (ui_.BeginPopupModal(kTitle)) {
+			ImGui::Checkbox("Override Project Lighting", &sceneLightingOverride_);
+			ImGui::BeginDisabled(!sceneLightingOverride_);
+			LightingControls::Draw(ui_, sceneLightingDraft_);
+			ImGui::EndDisabled();
+
+			const bool valid =
+			    !sceneLightingOverride_ || sceneLightingDraft_.IsValid();
+
+			if (!valid) {
+				ui_.Text("Enter a nonzero light direction and valid shadow settings.");
+			}
+
+			ImGui::BeginDisabled(!valid);
+			const bool apply = ui_.Button("Apply");
+			ImGui::EndDisabled();
+			ui_.SameLine();
+			const bool cancel = ui_.Button("Cancel");
+
+			if ((apply && document_.GetHistory().SetSceneLighting(
+			                  sceneLightingOverride_
+			                      ? std::optional{sceneLightingDraft_}
+			                      : std::nullopt)) ||
+			    cancel) {
+				ui_.CloseCurrentPopup();
+				stage_ = DialogStage::IDLE;
+			}
+
+			ui_.EndPopup();
+		}
+
+		return;
+	}
 	case DialogStage::GAME_SETTINGS: {
 		const auto result = gameSettingsDialog_.Draw(ui_);
 

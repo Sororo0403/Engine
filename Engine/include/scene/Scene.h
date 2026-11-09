@@ -1,11 +1,13 @@
 #pragma once
 
+#include "graphics/lighting/LightingSettings.h"
 #include "scene/SceneObject.h"
 #include "scene/SceneObjectId.h"
 
 #include <filesystem>
 #include <functional>
 #include <map>
+#include <optional>
 #include <string>
 
 /// <summary>
@@ -82,7 +84,7 @@ class Scene {
 	const std::map<SceneObjectId, SceneObject> &GetObjects() const;
 
 	/// <summary>
-	/// 全物体を削除する。発行済みのIDは再利用しない
+	/// 全物体とシーン固有の照明設定を削除する。発行済みのIDは再利用しない
 	/// </summary>
 	void Clear();
 
@@ -109,7 +111,20 @@ class Scene {
 	/// <remarks>成功後、取得済みの物体ポインターとイテレーターは無効になる</remarks>
 	bool ApplyTransaction(const std::function<bool(Scene &)> &operation);
 
+	/// <summary>
+	/// シーン固有の照明設定を取得する。未設定ならプロジェクトの設定を使用する
+	/// </summary>
+	const std::optional<LightingSettings> &GetLighting() const {
+		return lighting_;
+	}
+
+	/// <summary>
+	/// シーン固有の照明設定を変更する。無効な値は適用しない
+	/// </summary>
+	bool SetLighting(std::optional<LightingSettings> lighting);
+
   private:
+	std::optional<LightingSettings> lighting_;
 	std::map<SceneObjectId, SceneObject> objects_;
 	SceneObjectId nextObjectId_ = 1;
 };

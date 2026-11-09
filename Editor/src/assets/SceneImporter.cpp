@@ -428,6 +428,7 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 				    "An imported scene path conflicts with an asset.");
 			Scene loaded;
 			loaded.ReplaceObjects(entry.objects);
+			loaded.SetLighting(entry.lighting);
 			std::string text;
 
 			if (entry.prefab) {
@@ -476,6 +477,7 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 		for (const auto &[path, text] : sceneTexts)
 			output.Text(path, text);
 		imported.ReplaceObjects(std::move(graph.front().objects));
+		imported.SetLighting(graph.front().lighting);
 		createdFolder.swap(folderReference);
 
 		if (configuration) {

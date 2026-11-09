@@ -30,7 +30,8 @@ SceneRenderer::SceneRenderer(const Scene &scene, ModelManager &models,
 
 SceneRenderer::~SceneRenderer() = default;
 
-bool SceneRenderer::SetLighting(const LightingSettings &settings) {
+bool SceneRenderer::SetLighting(const LightingSettings &fallback) {
+	const auto settings = scene_.GetLighting().value_or(fallback);
 	if (!world_ || !settings.IsValid()) {
 		return false;
 	}

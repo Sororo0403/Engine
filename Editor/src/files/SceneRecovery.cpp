@@ -359,7 +359,7 @@ bool SceneRecovery::Read(const std::filesystem::path &path, Snapshot &snapshot,
 
 		candidate.assets.Select(
 		    PathUtils::FromUtf8(data.at("assetDirectory").get<std::string>()));
-		snapshot.scene.ReplaceObjects(candidate.scene.GetObjects());
+		snapshot.scene.CopyFrom(candidate.scene);
 		snapshot.assets = std::move(candidate.assets);
 		snapshot.game = std::move(candidate.game);
 		snapshot.sourceFile.swap(candidate.sourceFile);

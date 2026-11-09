@@ -318,7 +318,7 @@ bool SerializeSceneFile(const Scene &scene, std::string &text,
 	}
 
 	Scene snapshot;
-	snapshot.ReplaceObjects(scene.GetObjects());
+	snapshot.CopyFrom(scene);
 	RewriteProjectReferences(snapshot, [&](const auto &path) {
 		const auto absolute = PathUtils::ResolveFromExecutable(path);
 		const auto relative =
@@ -861,11 +861,27 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 			}
 		}
 
-		const Json document{
+		Json document{
 		    {"format", "EngineScene"},
 		    {"version", SceneSerializer::kCurrentVersion},
 		    {"objects", std::move(objects)},
 		};
+
+		if (const auto &lighting = scene.GetLighting()) {
+			const auto &shadow = lighting->shadows;
+			document["lighting"] = {
+			    {"direction", ToJson(lighting->direction)},
+			    {"color", ToJson(lighting->color)},
+			    {"intensity", lighting->intensity},
+			    {"ambient", lighting->ambient},
+			    {"shadows",
+			     {{"enabled", shadow.enabled},
+			      {"resolution", shadow.resolution},
+			      {"extent", shadow.extent},
+			      {"strength", shadow.strength},
+			      {"bias", shadow.bias},
+			      {"normalBias", shadow.normalBias}}}};
+		}
 
 		// 文字列への変換に成功してから、呼び出し側の出力を置き換える
 		std::string serialized = document.dump(2);
@@ -1817,6 +1833,33 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 		// 親のID順に依存せず全件を読み込み、循環・不在の親・合成後の形状を検証する。
 		Scene candidate;
 		candidate.ReplaceObjects(std::move(objects));
+
+		if (version >= 67 && document.contains("lighting")) {
+			const auto &value = document.at("lighting");
+			const auto &shadow = value.at("shadows");
+			const auto &resolution = shadow.at("resolution");
+
+			if (!resolution.is_number_integer() ||
+			    (resolution != 512 && resolution != 1024 && resolution != 2048)) {
+				throw std::runtime_error("シーンの影解像度が無効です。");
+			}
+
+			LightingSettings lighting;
+			lighting.direction = ReadFloat3(value.at("direction"));
+			lighting.color = ReadFloat3(value.at("color"));
+			lighting.intensity = value.at("intensity").get<float>();
+			lighting.ambient = value.at("ambient").get<float>();
+			lighting.shadows.enabled = shadow.at("enabled").get<bool>();
+			lighting.shadows.resolution = resolution.get<int>();
+			lighting.shadows.extent = shadow.at("extent").get<float>();
+			lighting.shadows.strength = shadow.at("strength").get<float>();
+			lighting.shadows.bias = shadow.at("bias").get<float>();
+			lighting.shadows.normalBias = shadow.at("normalBias").get<float>();
+
+			if (!candidate.SetLighting(lighting)) {
+				throw std::runtime_error("シーンの照明設定が無効です。");
+			}
+		}
 		SceneHierarchy::WorldTransforms transforms;
 
 		if (!SceneHierarchy::BuildWorldTransforms(candidate, transforms)) {
@@ -1867,7 +1910,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 		ValidatePrefabLinks(candidate);
 
 		// 全データの読み込みに成功してから、現在のシーンへ反映する。
-		scene.ReplaceObjects(candidate.GetObjects());
+		scene.CopyFrom(candidate);
 
 		if (logSuccess) {
 			Logger::Info("シーンを読み込みました。");

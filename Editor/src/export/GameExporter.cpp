@@ -802,6 +802,7 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 			const auto &entry = graph[i];
 			Scene snapshot;
 			snapshot.ReplaceObjects(entry.objects);
+			snapshot.SetLighting(entry.lighting);
 			std::string text;
 
 			if (entry.prefab) {

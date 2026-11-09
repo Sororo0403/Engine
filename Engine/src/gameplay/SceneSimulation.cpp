@@ -600,7 +600,7 @@ void SceneSimulation::Stop() {
 	lastUpdateError_.clear();
 	triggers_.Clear();
 	collisions_ = CollisionEvents{};
-	scene_.ReplaceObjects({});
+	scene_.Clear();
 	character_ = camera_ = 0;
 	updateOrder_.clear();
 	followPoses_.clear();

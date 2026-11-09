@@ -456,6 +456,8 @@ exit /b 0</Command>
     <ClCompile Include="src\panels\SelectionMeasurementsPanel.cpp"></ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\lighting\LightingControls.h" />
+    <ClCompile Include="src\lighting\LightingControls.cpp" />
     <ClInclude Include="include\lighting\PointLightInspector.h" />
     <ClCompile Include="src\lighting\PointLightInspector.cpp" />
   </ItemGroup>
