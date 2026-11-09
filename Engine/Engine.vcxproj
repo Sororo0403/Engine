@@ -34,7 +34,7 @@
     <ClCompile Include="src\graphics\model\Model.cpp" />
     <ClCompile Include="src\graphics\model\ModelLoader.cpp" />
     <ClCompile Include="src\graphics\material\Material.cpp" />
-    <ClCompile Include="src\graphics\DirectionalLight.cpp" />
+    <ClCompile Include="src\graphics\lighting\DirectionalLight.cpp" />
     <ClCompile Include="src\graphics\mesh\MeshInstance.cpp" />
     <ClCompile Include="src\graphics\mesh\Mesh.cpp" />
     <ClCompile Include="src\input\Gamepad.cpp" />
@@ -65,8 +65,8 @@
     <ClInclude Include="include\graphics\render\D3D12Helpers.h" />
     <ClInclude Include="include\graphics\buffer\ConstantBuffer.h" />
     <ClInclude Include="include\core\EngineConfig.h" />
-    <ClInclude Include="include\graphics\DirectionalLightData.h" />
-    <ClInclude Include="include\graphics\LightingSettings.h" />
+    <ClInclude Include="include\graphics\lighting\DirectionalLightData.h" />
+    <ClInclude Include="include\graphics\lighting\LightingSettings.h" />
     <ClInclude Include="include\core\Engine.h" />
     <ClInclude Include="include\core\EngineContext.h" />
     <ClInclude Include="include\graphics\camera\CameraPose.h" />
@@ -74,7 +74,7 @@
     <ClInclude Include="include\graphics\ui\ImGuiSystem.h" />
     <ClInclude Include="include\graphics\ui\UITexture.h" />
     <ClInclude Include="include\graphics\ui\DockDirection.h" />
-    <ClInclude Include="include\graphics\DirectionalLight.h" />
+    <ClInclude Include="include\graphics\lighting\DirectionalLight.h" />
     <ClInclude Include="include\math\Transform.h" />
     <ClInclude Include="include\input\MouseState.h" />
     <ClInclude Include="include\input\Gamepad.h" />
@@ -394,9 +394,9 @@ exit /b 0</Command>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\scene\PointLightComponent.h" />
-    <ClInclude Include="include\graphics\PointLightData.h" />
-    <ClInclude Include="include\graphics\PointLights.h" />
-    <ClCompile Include="src\graphics\PointLights.cpp" />
+    <ClInclude Include="include\graphics\lighting\PointLightData.h" />
+    <ClInclude Include="include\graphics\lighting\PointLights.h" />
+    <ClCompile Include="src\graphics\lighting\PointLights.cpp" />
     <ClInclude Include="include\scene\SceneLighting.h" />
     <ClCompile Include="src\scene\SceneLighting.cpp" />
   </ItemGroup>
@@ -431,9 +431,9 @@ exit /b 0</Command>
     <ClInclude Include="include\scene\SceneAudioActions.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\graphics\SpotLightData.h" />
-    <ClInclude Include="include\graphics\SpotLights.h" />
-    <ClCompile Include="src\graphics\SpotLights.cpp" />
+    <ClInclude Include="include\graphics\lighting\SpotLightData.h" />
+    <ClInclude Include="include\graphics\lighting\SpotLights.h" />
+    <ClCompile Include="src\graphics\lighting\SpotLights.cpp" />
     <ClInclude Include="include\scene\SpotLightComponent.h" />
   </ItemGroup>
   <ItemGroup>
@@ -538,7 +538,7 @@ exit /b 0</Command>
     <ClCompile Include="src\gameplay\GameActionReader.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\graphics\ShadowSettings.h" />
+    <ClInclude Include="include\graphics\lighting\ShadowSettings.h" />
     <ClInclude Include="include\graphics\camera\ShadowCamera.h" />
     <ClCompile Include="src\graphics\camera\ShadowCamera.cpp" />
     <ClInclude Include="include\graphics\render\ShadowMap.h" />

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "graphics/PointLightData.h"
+#include "graphics/lighting/PointLightData.h"
 #include <array>
 #include <cmath>
 

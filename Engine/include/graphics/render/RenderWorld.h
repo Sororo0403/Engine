@@ -1,9 +1,9 @@
 #pragma once
-#include "graphics/ShadowSettings.h"
+#include "graphics/lighting/ShadowSettings.h"
 
-#include "graphics/DirectionalLightData.h"
-#include "graphics/PointLightData.h"
-#include "graphics/SpotLightData.h"
+#include "graphics/lighting/DirectionalLightData.h"
+#include "graphics/lighting/PointLightData.h"
+#include "graphics/lighting/SpotLightData.h"
 #include "graphics/camera/CameraPose.h"
 #include "graphics/camera/CameraSettings.h"
 #include "graphics/material/ColorTint.h"

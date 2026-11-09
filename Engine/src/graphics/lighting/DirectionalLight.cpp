@@ -1,4 +1,4 @@
-#include "graphics/DirectionalLight.h"
+#include "graphics/lighting/DirectionalLight.h"
 #include "core/Logger.h"
 #include "math/MathUtils.h"
 

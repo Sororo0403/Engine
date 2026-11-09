@@ -1,6 +1,6 @@
 #pragma once
 
-#include "graphics/ShadowSettings.h"
+#include "graphics/lighting/ShadowSettings.h"
 #include <DirectXMath.h>
 #include <cmath>
 

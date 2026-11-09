@@ -4,7 +4,7 @@
 #include "ui/UIButtonVisual.h"
 #include <vector>
 
-#include "graphics/LightingSettings.h"
+#include "graphics/lighting/LightingSettings.h"
 #include "graphics/model/ModelHandle.h"
 #include <cstdint>
 

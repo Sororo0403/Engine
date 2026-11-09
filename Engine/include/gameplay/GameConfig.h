@@ -2,7 +2,7 @@
 
 #include "gameplay/GameActionBinding.h"
 #include "gameplay/GameInputBindings.h"
-#include "graphics/LightingSettings.h"
+#include "graphics/lighting/LightingSettings.h"
 #include "graphics/camera/CameraPose.h"
 #include <filesystem>
 #include <string>

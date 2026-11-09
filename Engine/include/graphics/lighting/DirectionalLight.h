@@ -1,6 +1,6 @@
 #pragma once
 
-#include "graphics/DirectionalLightData.h"
+#include "graphics/lighting/DirectionalLightData.h"
 #include "graphics/buffer/ConstantBuffer.h"
 
 #include <d3d12.h>

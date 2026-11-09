@@ -1,7 +1,7 @@
 #pragma once
 
-#include "graphics/PointLightData.h"
-#include "graphics/SpotLightData.h"
+#include "graphics/lighting/PointLightData.h"
+#include "graphics/lighting/SpotLightData.h"
 #include "scene/SceneObjectId.h"
 #include <string>
 #include <vector>

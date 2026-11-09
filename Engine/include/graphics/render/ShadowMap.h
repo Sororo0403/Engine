@@ -1,5 +1,5 @@
 #pragma once
-#include "graphics/ShadowSettings.h"
+#include "graphics/lighting/ShadowSettings.h"
 #include "graphics/buffer/ConstantBuffer.h"
 #include <DirectXMath.h>
 #include <cstdint>

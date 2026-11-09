@@ -1,6 +1,6 @@
 #pragma once
 
-#include "graphics/SpotLightData.h"
+#include "graphics/lighting/SpotLightData.h"
 #include <array>
 #include <cmath>
 

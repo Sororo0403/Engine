@@ -93,6 +93,12 @@
     <Filter Include="src\scene">
       <UniqueIdentifier>{43a873c1-39bc-4942-815a-3e3e34e9eb88}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\graphics\lighting">
+      <UniqueIdentifier>{d70fa219-141f-4fbf-beb9-8f31fa627e2c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\graphics\lighting">
+      <UniqueIdentifier>{0044d2b0-f03d-4957-889c-e9d6fbfd538d}</UniqueIdentifier>
+    </Filter>
     <Filter Include="include\graphics\camera">
       <UniqueIdentifier>{a57aa792-14e7-48c5-b010-17841f508923}</UniqueIdentifier>
     </Filter>
@@ -170,8 +176,8 @@
     <ClCompile Include="src\graphics\mesh\MeshInstance.cpp">
       <Filter>src\graphics\mesh</Filter>
     </ClCompile>
-    <ClCompile Include="src\graphics\DirectionalLight.cpp">
-      <Filter>src\graphics</Filter>
+    <ClCompile Include="src\graphics\lighting\DirectionalLight.cpp">
+      <Filter>src\graphics\lighting</Filter>
     </ClCompile>
     <ClCompile Include="src\graphics\material\Material.cpp">
       <Filter>src\graphics\material</Filter>
@@ -310,8 +316,8 @@
     <ClInclude Include="include\graphics\mesh\MeshInstance.h">
       <Filter>include\graphics\mesh</Filter>
     </ClInclude>
-    <ClInclude Include="include\graphics\DirectionalLight.h">
-      <Filter>include\graphics</Filter>
+    <ClInclude Include="include\graphics\lighting\DirectionalLight.h">
+      <Filter>include\graphics\lighting</Filter>
     </ClInclude>
     <ClInclude Include="include\graphics\material\Material.h">
       <Filter>include\graphics\material</Filter>
@@ -361,11 +367,11 @@
     <ClInclude Include="include\graphics\material\ColorTint.h">
       <Filter>include\graphics\material</Filter>
     </ClInclude>
-    <ClInclude Include="include\graphics\DirectionalLightData.h">
-      <Filter>include\graphics</Filter>
+    <ClInclude Include="include\graphics\lighting\DirectionalLightData.h">
+      <Filter>include\graphics\lighting</Filter>
     </ClInclude>
-    <ClInclude Include="include\graphics\LightingSettings.h">
-      <Filter>include\graphics</Filter>
+    <ClInclude Include="include\graphics\lighting\LightingSettings.h">
+      <Filter>include\graphics\lighting</Filter>
     </ClInclude>
     <ClInclude Include="include\graphics\render\RenderWorld.h">
       <Filter>include\graphics\render</Filter>
@@ -691,14 +697,14 @@
     <ClInclude Include="include\scene\PointLightComponent.h">
       <Filter>include\scene</Filter>
     </ClInclude>
-    <ClInclude Include="include\graphics\PointLightData.h">
-      <Filter>include\graphics</Filter>
+    <ClInclude Include="include\graphics\lighting\PointLightData.h">
+      <Filter>include\graphics\lighting</Filter>
     </ClInclude>
-    <ClInclude Include="include\graphics\PointLights.h">
-      <Filter>include\graphics</Filter>
+    <ClInclude Include="include\graphics\lighting\PointLights.h">
+      <Filter>include\graphics\lighting</Filter>
     </ClInclude>
-    <ClCompile Include="src\graphics\PointLights.cpp">
-      <Filter>src\graphics</Filter>
+    <ClCompile Include="src\graphics\lighting\PointLights.cpp">
+      <Filter>src\graphics\lighting</Filter>
     </ClCompile>
     <ClInclude Include="include\scene\SceneLighting.h">
       <Filter>include\scene</Filter>
@@ -740,9 +746,9 @@
     <ClInclude Include="include\scene\SceneAudioActions.h"><Filter>include\scene</Filter></ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\graphics\SpotLightData.h"><Filter>include\graphics</Filter></ClInclude>
-    <ClInclude Include="include\graphics\SpotLights.h"><Filter>include\graphics</Filter></ClInclude>
-    <ClCompile Include="src\graphics\SpotLights.cpp"><Filter>src\graphics</Filter></ClCompile>
+    <ClInclude Include="include\graphics\lighting\SpotLightData.h"><Filter>include\graphics\lighting</Filter></ClInclude>
+    <ClInclude Include="include\graphics\lighting\SpotLights.h"><Filter>include\graphics\lighting</Filter></ClInclude>
+    <ClCompile Include="src\graphics\lighting\SpotLights.cpp"><Filter>src\graphics\lighting</Filter></ClCompile>
     <ClInclude Include="include\scene\SpotLightComponent.h"><Filter>include\scene</Filter></ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1002,7 +1008,7 @@
     <ClCompile Include="src\gameplay\GameActionReader.cpp"><Filter>src\gameplay</Filter></ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\graphics\ShadowSettings.h"><Filter>include\graphics</Filter></ClInclude>
+    <ClInclude Include="include\graphics\lighting\ShadowSettings.h"><Filter>include\graphics\lighting</Filter></ClInclude>
     <ClInclude Include="include\graphics\camera\ShadowCamera.h"><Filter>include\graphics\camera</Filter></ClInclude>
     <ClCompile Include="src\graphics\camera\ShadowCamera.cpp"><Filter>src\graphics\camera</Filter></ClCompile>
     <ClInclude Include="include\graphics\render\ShadowMap.h"><Filter>include\graphics\render</Filter></ClInclude>
