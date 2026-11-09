@@ -58,6 +58,6 @@
     "version": 10,
     "width": 1280
   },
-  "startupScene": "scenes/ClockTowerPrototype.scene.json",
+  "startupScene": "scenes/TitleStreet.scene.json",
   "version": 1
 }
