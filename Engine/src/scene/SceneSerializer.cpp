@@ -880,6 +880,20 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 	}
 }
 
+bool SceneSerializer::SerializeForFile(
+    const Scene &scene, std::string &text, const std::filesystem::path &filePath,
+    const std::filesystem::path &projectRoot) {
+	try {
+		return SerializeSceneFile(scene, text,
+		                          PathUtils::ResolveFromExecutable(filePath),
+		                          projectRoot);
+	} catch (const std::exception &error) {
+		Logger::Error(std::format("SceneSerializer::SerializeForFile: {}",
+		                          error.what()));
+		return false;
+	}
+}
+
 bool SceneSerializer::Save(const Scene &scene,
                            const std::filesystem::path &filePath,
                            const std::filesystem::path &projectRoot,

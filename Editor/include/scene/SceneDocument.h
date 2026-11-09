@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <functional>
 #include <string>
+#include <string_view>
 
 /// <summary>
 /// 編集中のシーン・保存先・未保存の変更を管理する
@@ -56,6 +57,17 @@ class SceneDocument {
 	/// 保存時に素材参照を相対化するプロジェクトのルートを指定する
 	/// </summary>
 	void SetProjectRoot(std::filesystem::path root);
+
+	/// <summary>
+	/// 保存済みファイルの内容が開いている時点の記録と一致するか確認する
+	/// </summary>
+	bool MatchesSavedText(std::string_view text) const;
+
+	/// <summary>
+	/// ファイル名の変更と参照の書き換えを反映し、未保存状態を引き継ぐ
+	/// </summary>
+	void ApplyAssetRename(Scene &scene, std::filesystem::path path,
+	                      std::string *savedText);
 
 	/// <summary>
 	/// 空のシーンを作成し、保存先と変更状態をクリアする

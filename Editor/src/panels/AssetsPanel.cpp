@@ -33,6 +33,7 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	instanceSelectionPath_.clear();
 	modelReloadPath_.clear();
 	recyclePath_.clear();
+	renamePath_.clear();
 	meshReplacementPath_.clear();
 	textureReloadPath_.clear();
 	textureUsageSelectionPath_.clear();
@@ -137,6 +138,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	instanceSelectionPath_.clear();
 	modelReloadPath_.clear();
 	recyclePath_.clear();
+	renamePath_.clear();
 	meshReplacementPath_.clear();
 	textureReloadPath_.clear();
 	textureUsageSelectionPath_.clear();
@@ -472,6 +474,12 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				scrollToSelected_ = false;
 				revealMessage_.clear();
 
+				if (ui.MenuItem("Rename...", nullptr,
+				                canEditAssets &&
+				                    assets.GetRootDirectory().is_absolute())) {
+					renamePath_ = assetPath;
+				}
+
 				if (ui.MenuItem("Move to Recycle Bin...", nullptr,
 				                canEditAssets &&
 				                    assets.GetRootDirectory().is_absolute())) {
@@ -757,6 +765,7 @@ const std::filesystem::path &AssetsPanel::GetTexturePreviewRequest() const {
 
 void AssetsPanel::Clear() {
 	recyclePath_.clear();
+	renamePath_.clear();
 	directoryOpenRequested_ = false;
 	requestedDirectory_.clear();
 	type_ = AssetType::MODEL;
@@ -791,6 +800,10 @@ void AssetsPanel::Clear() {
 
 const std::filesystem::path &AssetsPanel::GetRecycleRequest() const {
 	return recyclePath_;
+}
+
+const std::filesystem::path &AssetsPanel::GetRenameRequest() const {
+	return renamePath_;
 }
 
 std::uint32_t AssetsPanel::GetTextureSlot() const {

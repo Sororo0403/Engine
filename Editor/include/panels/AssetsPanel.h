@@ -167,6 +167,11 @@ class AssetsPanel {
 	const std::filesystem::path &GetRecycleRequest() const;
 
 	/// <summary>
+	/// 名前変更が要求された素材ファイルを取得する
+	/// </summary>
+	const std::filesystem::path &GetRenameRequest() const;
+
+	/// <summary>
 	/// このフレームで確認用ウィンドウに開くことを要求した画像を取得する
 	/// </summary>
 	/// <returns>画像パス。要求なしは空。次のDrawまたはClearまで有効</returns>
@@ -255,6 +260,7 @@ class AssetsPanel {
 	std::string revealMessage_;
 	int textureSlot_ = 0;
 	std::filesystem::path recyclePath_;
+	std::filesystem::path renamePath_;
 	bool textureClearRequested_ = false;
 	bool textureImportRequested_ = false;
 	bool audioImportRequested_ = false;

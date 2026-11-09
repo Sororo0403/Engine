@@ -22,6 +22,11 @@ class Scene {
 	/// <remarks>このシーンで既に発行したIDの上限も保持する。失敗時は全状態を保持する</remarks>
 	void CopyFrom(const Scene &source);
 
+	/// <summary>
+	/// 検証済みの作業用シーンと物体・発行済みIDを交換する
+	/// </summary>
+	void Swap(Scene &other) noexcept;
+
 	Scene(const Scene &) = delete;
 	Scene &operator=(const Scene &) = delete;
 

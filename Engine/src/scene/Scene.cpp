@@ -169,3 +169,8 @@ void Scene::CopyFrom(const Scene &source) {
 	objects_.swap(candidate.objects_);
 	nextObjectId_ = next;
 }
+
+void Scene::Swap(Scene &other) noexcept {
+	objects_.swap(other.objects_);
+	std::swap(nextObjectId_, other.nextObjectId_);
+}

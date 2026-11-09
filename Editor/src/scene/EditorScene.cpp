@@ -676,6 +676,17 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	if (!wasBusy) {
+		const auto &rename = assetsPanel_.GetRenameRequest();
+
+		if (!rename.empty() && !IsBusy() && action == EditorAction::NONE &&
+		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
+			FinishEdit();
+			pendingRenamePath_ = rename;
+			assetRenameName_ = PathUtils::ToUtf8(rename.filename());
+			assetRenameError_.clear();
+			stage_ = DialogStage::RENAME_ASSET;
+		}
+
 		const auto &recycle = assetsPanel_.GetRecycleRequest();
 
 		if (!recycle.empty() && !IsBusy() && action == EditorAction::NONE &&
@@ -3690,6 +3701,67 @@ void EditorScene::DrawAssetRecycle() {
 	ui_.EndPopup();
 }
 
+void EditorScene::DrawAssetRename() {
+	constexpr const char *kTitle = "Rename Asset";
+
+	if (!ImGui::IsPopupOpen(kTitle)) {
+		ui_.OpenPopup(kTitle);
+	}
+
+	if (!ui_.BeginPopupModal(kTitle)) {
+		return;
+	}
+
+	ui_.InputText("File Name", assetRenameName_);
+
+	if (!assetRenameError_.empty() &&
+	    ui_.BeginChild("AssetRenameErrors", 500.0f, 140.0f)) {
+		ImGui::TextWrapped("%s", assetRenameError_.c_str());
+	}
+
+	if (!assetRenameError_.empty()) {
+		ui_.EndChild();
+	}
+
+	bool close = false;
+
+	if (ui_.Button("Rename")) {
+		try {
+			const auto name = PathUtils::FromUtf8(assetRenameName_);
+
+			if (!PathUtils::IsValidFileName(name)) {
+				throw std::runtime_error("Enter a single valid file name.");
+			}
+
+			const auto target = pendingRenamePath_.parent_path() / name;
+			close = AssetUsage::Rename(pendingRenamePath_, target,
+			                           assets_.GetRootDirectory(), document_,
+			                           project_, assetRenameError_);
+
+			if (close) {
+				clipboard_.Clear();
+				texturePreviewPanel_.Clear();
+				audioPreviewPanel_.Clear();
+				assets_.Refresh();
+				assetsPanel_.RequestReveal(target);
+				RecordRecovery();
+			}
+		} catch (const std::exception &error) {
+			assetRenameError_ = error.what();
+		}
+	}
+
+	ui_.SameLine();
+
+	if (ui_.Button("Cancel") || ImGui::IsKeyPressed(ImGuiKey_Escape) || close) {
+		ui_.CloseCurrentPopup();
+		pendingRenamePath_.clear();
+		stage_ = DialogStage::IDLE;
+	}
+
+	ui_.EndPopup();
+}
+
 void EditorScene::UpdateDialogs() {
 	switch (stage_) {
 	case DialogStage::IDLE:
@@ -3697,6 +3769,10 @@ void EditorScene::UpdateDialogs() {
 
 	case DialogStage::RECYCLE_ASSET:
 		DrawAssetRecycle();
+		return;
+
+	case DialogStage::RENAME_ASSET:
+		DrawAssetRename();
 		return;
 
 	case DialogStage::RECOVERY: {

@@ -67,6 +67,28 @@ void SceneDocument::SetProjectRoot(std::filesystem::path root) {
 	projectRoot_.swap(root);
 }
 
+bool SceneDocument::MatchesSavedText(std::string_view text) const {
+	return savedText_ == text;
+}
+
+void SceneDocument::ApplyAssetRename(Scene &scene, std::filesystem::path path,
+                                    std::string *savedText) {
+	const bool modified = IsModified();
+	scene_.Swap(scene);
+	filePath_.swap(path);
+
+	if (savedText) {
+		savedText_.swap(*savedText);
+	}
+
+	// 以前の素材パスを持つコマンドを再実行できないようにする。
+	history_.Reset();
+
+	if (modified) {
+		history_.Invalidate();
+	}
+}
+
 void SceneDocument::New() {
 	scene_.Clear();
 	filePath_.clear();

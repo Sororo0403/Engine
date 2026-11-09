@@ -5,6 +5,8 @@
 #include <vector>
 
 class Scene;
+class SceneDocument;
+class ProjectDocument;
 
 namespace AssetUsage {
 /// <summary>
@@ -20,4 +22,12 @@ std::vector<std::string>
 Find(const std::filesystem::path &target, const std::filesystem::path &searchRoot,
      const Scene &scene, const std::filesystem::path &scenePath,
      const std::filesystem::path &startup);
+
+/// <summary>
+/// 同じフォルダ内で素材の名前を変え、保存済みと編集中の参照を更新する
+/// </summary>
+bool Rename(const std::filesystem::path &source,
+            const std::filesystem::path &destination,
+            const std::filesystem::path &assetRoot, SceneDocument &document,
+            ProjectDocument &project, std::string &error);
 } // namespace AssetUsage

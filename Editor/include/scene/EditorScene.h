@@ -266,6 +266,7 @@ class EditorScene final : public IScene {
 		EDIT_SCRIPT,
 		SELECT_ASSET_FOLDER,
 		RECYCLE_ASSET,
+		RENAME_ASSET,
 		EXPORT_GAME,
 		EXPORT_RESULT,
 		GAME_SETTINGS,
@@ -352,6 +353,11 @@ class EditorScene final : public IScene {
 	/// 素材の移動確認または参照元一覧を描画する
 	/// </summary>
 	void DrawAssetRecycle();
+
+	/// <summary>
+	/// 素材の名前変更と参照更新のダイアログを描画する
+	/// </summary>
+	void DrawAssetRename();
 
 	/// <summary>
 	/// 出力するシーンを取得する。別の起動シーンが指定されていれば一時ドキュメントに読み込む
@@ -821,6 +827,8 @@ class EditorScene final : public IScene {
 	std::filesystem::path pendingOpenPath_;
 	std::filesystem::path pendingRecyclePath_;
 	std::vector<std::string> recycleBlockers_;
+	std::filesystem::path pendingRenamePath_;
+	std::string assetRenameName_, assetRenameError_;
 	FrameRequest frameRequest_ = FrameRequest::NONE;
 	SceneObjectId frameObject_ = 0;
 	bool hierarchySelectionScope_ = false;

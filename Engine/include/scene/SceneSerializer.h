@@ -25,6 +25,13 @@ class SceneSerializer {
 	static bool Serialize(const Scene &scene, std::string &text);
 
 	/// <summary>
+	/// 保存先とプロジェクトを基準に、ディスクへ書き込まずシーンを変換する
+	/// </summary>
+	static bool SerializeForFile(const Scene &scene, std::string &text,
+	                             const std::filesystem::path &filePath,
+	                             const std::filesystem::path &projectRoot);
+
+	/// <summary>
 	/// JSON文字列を読み込む。プロジェクト参照がある場合はファイルの位置を基準に解決する
 	/// </summary>
 	/// <param name="scene">成功時に置き換えるシーン</param>
