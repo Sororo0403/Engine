@@ -2,7 +2,7 @@
 #include "scene/PrimitiveObjects.h"
 #include "scene/SceneLighting.h"
 
-std::map<SceneObjectId, SceneObject> SampleStage::Create(const LightingSettings &lighting) {
+std::map<SceneObjectId, SceneObject> SampleStage::Create() {
 	std::map<SceneObjectId, SceneObject> objects;
 
 	auto box = [&](SceneObjectId id, const char *name,
@@ -30,6 +30,11 @@ std::map<SceneObjectId, SceneObject> SampleStage::Create(const LightingSettings 
 	camera.followCamera->target = 5;
 	objects.emplace(6, std::move(camera));
 
+	LightingSettings lighting;
+	lighting.direction = {1.0f, -2.0f, 1.0f};
+	lighting.color = {1.0f, 1.0f, 1.0f};
+	lighting.intensity = 0.8f;
+	lighting.shadows.enabled = true;
 	objects.emplace(7, SceneLighting::CreateDirectionalLight(lighting));
 
 	return objects;

@@ -3054,7 +3054,7 @@ void EditorScene::ExecutePendingAction() {
 	case EditorAction::NEW: {
 		try {
 			auto objects = action == EditorAction::NEW_SAMPLE
-			                   ? SampleStage::Create(exportConfig_.lighting)
+			                   ? SampleStage::Create()
 			                   : std::map<SceneObjectId, SceneObject>{};
 
 			if (action == EditorAction::NEW_SAMPLE &&
