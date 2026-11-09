@@ -36,10 +36,12 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 	        cameraTransition_ ? &transitionView : nullptr))
 		return false;
 	std::string serialized;
+
 	if (!SceneSerializer::Serialize(candidate, serialized)) {
 		error = "Script changes contain invalid scene data.";
 		return false;
 	}
+
 	if (candidate.GetObjects() == scene_.GetObjects()) {
 		scene_.CopyFrom(candidate);
 		audioActions_ = std::move(audio);
@@ -53,7 +55,9 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 		animators_ = std::move(animators);
 		return true;
 	}
+
 	std::vector<SceneObjectId> transformed;
+
 	for (const auto &[id, object] : candidate.GetObjects()) {
 		const auto *before = scene_.FindObject(id);
 		if (!before)
@@ -61,6 +65,7 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 		if (!TransformUtils::AreEqual(before->transform, object.transform))
 			transformed.push_back(id);
 	}
+
 	SceneSimulation next;
 	next.CopyFrom(*this);
 	next.scripts_ = std::move(scripts);

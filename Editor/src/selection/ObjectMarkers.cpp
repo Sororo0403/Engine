@@ -148,6 +148,7 @@ bool ObjectMarkers::Update(SceneRenderer &renderer, const Scene &scene,
 		    std::find(selected.begin(), selected.end(), id) == selected.end()) {
 			continue;
 		}
+
 		Lines lines;
 
 		SceneWorldTransform world;

@@ -30,9 +30,11 @@ bool FollowCameraOrbit::Update(float seconds, const OrbitCameraInput &input,
 	    !std::isfinite(seconds) || seconds < 0) {
 		return false;
 	}
+
 	if (seconds == 0) {
 		return true;
 	}
+
 	if (input.reset) {
 		return Initialize(settings);
 	}

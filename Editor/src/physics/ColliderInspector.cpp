@@ -93,23 +93,28 @@ bool ColliderInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 				const bool supported = ColliderUtils::GetWorldBounds(
 				    proposed, scene, id, supportedBounds);
 				ImGui::BeginDisabled(!supported);
+
 				if (ImGui::Selectable(name, edited.shape == shape)) {
 					edited.shape = shape;
 					changed |= history.SetCollider(id, edited);
 				}
+
 				ImGui::EndDisabled();
 				if (!supported &&
 				    ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
 					ImGui::SetTooltip(
 					    "Use uniform world scale for Sphere and Capsule.");
 			}
+
 			ImGui::EndCombo();
 		}
+
 		edited = *object.collider;
 		bool valueChanged = ui.DragFloat3("Collider Center", edited.center,
 		                                  0.01f, -10000, 10000);
 		changed |= ApplyEdit(history, scene, id, object, edited, valueChanged);
 		edited = *object.collider;
+
 		if (edited.shape == Collider::Shape::BOX) {
 			// 内部の半寸法は保持し、UIではローカル座標の全体の寸法を扱う。
 			// doubleで表示し、既存データの大きな半寸法を2倍しても桁あふれさせない。
@@ -143,6 +148,7 @@ bool ColliderInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 			changed |=
 			    ApplyEdit(history, scene, id, object, edited, valueChanged);
 			edited = *object.collider;
+
 			if (edited.shape == Collider::Shape::CAPSULE) {
 				double height = double(edited.halfHeight) * 2;
 				const double minimum = .002, maximum = 20000;
@@ -158,6 +164,7 @@ bool ColliderInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		}
 
 		edited = *object.collider;
+
 		if (ImGui::Checkbox("Is Trigger", &edited.isTrigger)) {
 			changed |= history.SetCollider(id, edited);
 		}
@@ -193,10 +200,12 @@ bool ColliderInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 				edited.filter.mask = CollisionFilter::kAllLayers;
 				changed |= history.SetCollider(id, edited);
 			}
+
 			if (ImGui::Selectable("Nothing", edited.filter.mask == 0)) {
 				edited.filter.mask = 0;
 				changed |= history.SetCollider(id, edited);
 			}
+
 			ImGui::Separator();
 			for (std::uint32_t layer = 0; layer < CollisionFilter::kLayerCount;
 			     ++layer) {

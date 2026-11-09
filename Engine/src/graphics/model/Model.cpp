@@ -35,11 +35,13 @@ bool Model::Initialize(ID3D12Device *device, ID3D12CommandQueue *commandQueue,
 	try {
 		if (data.animation) {
 			std::string error;
+
 			if (!data.animation->IsValid(error)) {
 				Logger::Error(error);
 				return false;
 			}
 		}
+
 		// 既定材質も独立した共有リソースとして作成し、モデルは参照だけを持つ。
 		defaultMaterials_.reserve(data.materials.size());
 		materialNames_.reserve(data.materials.size());
@@ -73,6 +75,7 @@ bool Model::Initialize(ID3D12Device *device, ID3D12CommandQueue *commandQueue,
 	}
 
 	animation_ = data.animation;
+
 	try {
 		if (!CreateAnimationMeshes(device)) {
 			Finalize();

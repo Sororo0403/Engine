@@ -74,12 +74,14 @@ std::string ImageValidation::Read(const std::filesystem::path &path,
 	}
 
 	const auto source = PathUtils::ResolveFromExecutable(path);
+
 	if (!std::filesystem::is_regular_file(source)) {
 		throw std::invalid_argument("The source image is not a regular file.");
 	}
 
 	std::ifstream file(source, std::ios::binary | std::ios::ate);
 	const auto size = file.tellg();
+
 	if (!file || size <= 0 ||
 	    static_cast<std::uint64_t>(size) > kMaximumSourceBytes) {
 		throw std::runtime_error(
@@ -89,6 +91,7 @@ std::string ImageValidation::Read(const std::filesystem::path &path,
 	std::string bytes(static_cast<std::size_t>(size), '\0');
 	file.seekg(0);
 	file.read(bytes.data(), static_cast<std::streamsize>(bytes.size()));
+
 	if (!file || file.peek() != std::char_traits<char>::eof()) {
 		throw std::runtime_error(
 		    "The source image changed or could not be read completely.");

@@ -17,6 +17,7 @@
 bool SceneScripts::Configure(const Scene &scene, bool preserve,
                              std::string &error, SceneObjectId *invalidObject) {
 	SceneObjectId current = 0;
+
 	try {
 		auto instances =
 		    preserve ? instances_ : std::map<SceneObjectId, Instance>{};
@@ -54,6 +55,7 @@ bool SceneScripts::Configure(const Scene &scene, bool preserve,
 				++i;
 			}
 		}
+
 		for (const auto &[id, object] : scene.GetObjects()) {
 			current = id;
 			if (!object.script || !object.script->enabled ||
@@ -67,6 +69,7 @@ bool SceneScripts::Configure(const Scene &scene, bool preserve,
 			auto path = PathUtils::ResolveFromExecutable(object.script->asset);
 			path.make_preferred();
 			auto program = programs.find(path);
+
 			if (program == programs.end()) {
 				std::string source;
 				if (!LuaScript::Read(path, source, error))
@@ -77,6 +80,7 @@ bool SceneScripts::Configure(const Scene &scene, bool preserve,
 					throw std::runtime_error(error);
 				program = programs.emplace(path, std::move(compiled)).first;
 			}
+
 			Instance instance;
 			instance.settings = *object.script;
 			instance.program = program->second;
@@ -85,14 +89,17 @@ bool SceneScripts::Configure(const Scene &scene, bool preserve,
 				throw std::runtime_error(error);
 			instances.emplace(id, std::move(instance));
 		}
+
 		prefabs_ = std::move(prefabs);
 		instances_.swap(instances);
 		programs_.swap(programs);
+
 		if (!preserve) {
 			mailbox_.Clear();
 			pending_.clear();
 			logs_.clear();
 		}
+
 		mailbox_.RemoveMissingReceivers(scene);
 		error.clear();
 		return true;
@@ -117,6 +124,7 @@ bool SceneScripts::Run(
     const UIInput *viewport, const CharacterRuntimeState *character,
     const CameraTransitionView *transitionView) {
 	SceneObjectId current = 0;
+
 	try {
 		if (!std::isfinite(seconds) || seconds < 0)
 			throw std::runtime_error("Script time is invalid.");
@@ -172,6 +180,7 @@ bool SceneScripts::Run(
 			for (auto &line : messages)
 				logs_.emplace_back(id, std::move(line));
 		};
+
 		for (auto &[id, instance] : instances_) {
 			if (!active(id))
 				continue;
@@ -179,13 +188,16 @@ bool SceneScripts::Run(
 				invoke(id, "start", 0);
 				instance.started = true;
 			}
+
 			if (!startOnly && seconds > 0 && active(id))
 				invoke(id, "update", 0);
 		}
+
 		if (!startOnly && seconds > 0) {
 			auto queued = std::move(pending_);
 			pending_.clear();
 			queued.insert(queued.end(), events.begin(), events.end());
+
 			for (const auto &event : queued) {
 				if (event.type != TriggerEvent::Type::EXIT &&
 				    (!scene.Contains(event.contact.first) ||
@@ -204,6 +216,7 @@ bool SceneScripts::Run(
 				}
 			}
 		}
+
 		if (!startOnly && seconds > 0) {
 			for (const auto &event : collisions) {
 				if (event.type != CollisionEvent::Type::EXIT &&
@@ -224,8 +237,10 @@ bool SceneScripts::Run(
 						                                 : event.contact.first);
 			}
 		}
+
 		if (!startOnly) {
 			std::set<SceneObjectId> delivered;
+
 			for (auto id : uiClicks) {
 				const auto *object = scene.FindObject(id);
 				if (delivered.insert(id).second && instances_.contains(id) &&
@@ -234,15 +249,18 @@ bool SceneScripts::Run(
 					invoke(id, "click", 0);
 			}
 		}
+
 		for (const auto &message : incoming) {
 			if (instances_.contains(message.receiver) &&
 			    active(message.receiver) &&
 			    instances_.at(message.receiver).started)
 				invoke(message.receiver, "message", message.sender, &message);
 		}
+
 		if (!SceneDestruction::Apply(scene, pendingDestructions, error))
 			throw std::runtime_error(error);
 		mailbox_.RemoveMissingReceivers(scene);
+
 		if (audioActions) {
 			auto combined = *audioActions;
 			combined.insert(combined.end(), requestedAudio.begin(),
@@ -253,6 +271,7 @@ bool SceneScripts::Run(
 			});
 			audioActions->swap(combined);
 		}
+
 		if (sceneRequest && !requestedScene.empty())
 			*sceneRequest = std::move(requestedScene);
 		if (sharedState)

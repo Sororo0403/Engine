@@ -21,6 +21,7 @@ namespace {
 /// <returns>ほかの基盤で使用していない番号</returns>
 std::uint64_t AllocateSystemId() {
 	static std::uint64_t next = 1;
+
 	if (next == (std::numeric_limits<std::uint64_t>::max)()) {
 		throw std::overflow_error("Audio system IDs are exhausted.");
 	}
@@ -120,6 +121,7 @@ AudioSystem::~AudioSystem() {
 
 bool AudioSystem::Initialize(std::string &error) {
 	error.clear();
+
 	try {
 		if (impl_->engine)
 			throw std::logic_error("The audio system is already initialized.");
@@ -137,6 +139,7 @@ bool AudioSystem::Initialize(std::string &error) {
 
 bool AudioSystem::ResetDevice(std::string &error) {
 	error.clear();
+
 	try {
 		if (!impl_->engine)
 			throw std::logic_error(
@@ -157,6 +160,7 @@ bool AudioSystem::ResetDevice(std::string &error) {
 
 bool AudioSystem::Update(std::string &error) {
 	error.clear();
+
 	try {
 		if (!impl_->engine)
 			throw std::logic_error(
@@ -171,6 +175,7 @@ bool AudioSystem::Update(std::string &error) {
 		}
 
 		impl_->CollectFinished();
+
 		for (auto &slot : impl_->slots) {
 			if (slot.voice && !impl_->ApplySpatial(*slot.voice)) {
 				throw std::runtime_error(
@@ -208,6 +213,7 @@ AudioPlaybackHandle AudioSystem::Play(const AudioClipHandle &clip,
                                       const AudioPlaybackSettings &settings,
                                       std::string &error) {
 	error.clear();
+
 	try {
 		if (!IsAvailable())
 			throw std::runtime_error("No audio output device is available.");
@@ -258,6 +264,7 @@ AudioPlaybackHandle AudioSystem::Play(const AudioClipHandle &clip,
 		buffer.AudioBytes = static_cast<UINT32>(voice->data->samples.size());
 		buffer.pAudioData = voice->data->samples.data();
 		buffer.LoopCount = settings.loop ? XAUDIO2_LOOP_INFINITE : 0;
+
 		if (FAILED(voice->source->SubmitSourceBuffer(&buffer)) ||
 		    (!settings.startPaused && FAILED(voice->source->Start()))) {
 			throw std::runtime_error(
@@ -366,6 +373,7 @@ bool AudioSystem::SetSpatialState(const AudioListenerPose &listener,
 	if (!listener.IsValid() || changes.size() > kMaximumVoices)
 		return false;
 	std::array<Impl::Voice *, kMaximumVoices> voices{};
+
 	for (std::size_t i = 0; i < changes.size(); ++i) {
 		voices[i] = impl_->Find(changes[i].handle);
 		if (!voices[i] || !voices[i]->settings.spatial)

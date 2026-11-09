@@ -74,6 +74,7 @@ int LoadScene(lua_State *state) {
 		lua_pushlstring(state, call.error.data(), call.error.size());
 		return lua_error(state);
 	}
+
 	return 0;
 }
 } // namespace

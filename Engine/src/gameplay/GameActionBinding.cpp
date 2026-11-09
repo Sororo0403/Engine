@@ -34,5 +34,6 @@ bool GameActionBinding::IsValid(std::span<const GameActionBinding> bindings) {
 				return false;
 		}
 	}
+
 	return true;
 }

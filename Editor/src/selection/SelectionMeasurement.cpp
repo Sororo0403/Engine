@@ -18,15 +18,18 @@ bool SelectionMeasurement::Measure(const Scene &scene,
 	std::set<SceneObjectId> seen;
 	std::array<std::optional<AxisAlignedBox>, 2> pairBounds;
 	Pair pair;
+
 	for (std::size_t i = 0; i < ids.size(); ++i) {
 		const auto *object = scene.FindObject(ids[i]);
 		SceneWorldTransform world;
+
 		if (!object || !seen.insert(ids[i]).second ||
 		    !SceneHierarchy::GetWorldTransform(scene, ids[i], world)) {
 			error = "Select existing objects with finite positions and no "
 			        "duplicate IDs.";
 			return false;
 		}
+
 		if (ids.size() == 2) {
 			if (i == 0) {
 				pair.from = ids[i];
@@ -36,19 +39,24 @@ bool SelectionMeasurement::Measure(const Scene &scene,
 				pair.end = world.GetPosition();
 			}
 		}
+
 		if (!object->collider) {
 			continue;
 		}
+
 		AxisAlignedBox bounds;
+
 		if (!ColliderUtils::GetWorldBounds(*object->collider, world.matrix,
 		                                   bounds)) {
 			++candidate.invalidColliders;
 			continue;
 		}
 		++candidate.colliders;
+
 		if (ids.size() == 2) {
 			pairBounds[i] = bounds;
 		}
+
 		if (!candidate.colliderBounds) {
 			candidate.colliderBounds = bounds;
 		} else {
@@ -63,12 +71,14 @@ bool SelectionMeasurement::Measure(const Scene &scene,
 			    (std::max)(combined.maximum.z, bounds.maximum.z)};
 		}
 	}
+
 	if (ids.size() == 2) {
 		pair.delta = {double(pair.end.x) - pair.start.x,
 		              double(pair.end.y) - pair.start.y,
 		              double(pair.end.z) - pair.start.z};
 		pair.distance = std::hypot(pair.delta[0], pair.delta[1], pair.delta[2]);
 		pair.horizontalDistance = std::hypot(pair.delta[0], pair.delta[2]);
+
 		if (pairBounds[0] && pairBounds[1]) {
 			const auto &a = *pairBounds[0];
 			const auto &b = *pairBounds[1];
@@ -88,8 +98,10 @@ bool SelectionMeasurement::Measure(const Scene &scene,
 			    a.minimum.y < b.maximum.y && a.maximum.y > b.minimum.y &&
 			    a.minimum.z < b.maximum.z && a.maximum.z > b.minimum.z;
 		}
+
 		candidate.pair = pair;
 	}
+
 	result = std::move(candidate);
 	error.clear();
 	return true;
@@ -111,6 +123,7 @@ bool SelectionMeasurement::AppendLine(SceneRenderer &renderer,
 	if (ids.size() != 2) {
 		return true;
 	}
+
 	Result result;
 	std::string error;
 	DebugLine line;

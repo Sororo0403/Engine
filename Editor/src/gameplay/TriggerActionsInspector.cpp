@@ -26,6 +26,7 @@ std::string TargetLabel(const Scene &scene, SceneObjectId id) {
 	if (id == 0) {
 		return "None";
 	}
+
 	const auto *object = scene.FindObject(id);
 	return std::format("{} (ID {})", object ? object->name : "Missing", id);
 }
@@ -96,6 +97,7 @@ const char *OperationLabel(TriggerAction::Operation operation) {
 	case TriggerAction::Operation::LOAD_SCENE:
 		return "Load Scene";
 	}
+
 	return "Invalid";
 }
 
@@ -121,6 +123,7 @@ const char *EventLabel(TriggerAction::Event event) {
 	case TriggerAction::Event::INPUT_PRESSED:
 		return "Input Pressed";
 	}
+
 	return "Invalid";
 }
 
@@ -136,6 +139,7 @@ const char *ContactLabel(TriggerAction::Contact contact) {
 	case TriggerAction::Contact::DYNAMIC_BODY:
 		return "Dynamic Rigid Body";
 	}
+
 	return "Invalid";
 }
 } // namespace
@@ -148,23 +152,28 @@ bool TriggerActionsInspector::Draw(
 	if (!object.triggerActions || !ui.CollapsingHeader("Trigger Actions")) {
 		return false;
 	}
+
 	const auto scope = std::to_string(id);
 	ImGui::PushID(scope.c_str());
 	ImGui::PushID("TriggerActionsInspector");
 	auto edited = *object.triggerActions;
 	std::set<std::string_view> tags;
+
 	for (const auto &[objectId, candidate] : scene.GetObjects()) {
 		(void)objectId;
 		if (!candidate.tag.empty())
 			tags.insert(candidate.tag);
 	}
+
 	bool changed = false;
 	std::optional<std::size_t> remove;
 	std::optional<std::pair<std::size_t, std::size_t>> move;
+
 	for (std::size_t i = 0; i < edited.actions.size(); ++i) {
 		ImGui::PushID(static_cast<int>(i));
 		auto &action = edited.actions[i];
 		const auto title = std::format("Action {}", i + 1);
+
 		if (ui.CollapsingHeader(title.c_str())) {
 			if (ImGui::BeginCombo("Event", EventLabel(action.event))) {
 				for (const auto event :
@@ -186,6 +195,7 @@ bool TriggerActionsInspector::Draw(
 							action.contact = TriggerAction::Contact::ANY;
 							action.contactTag.clear();
 						}
+
 						if (!action.AllowsDynamicContact() &&
 						    action.contact ==
 						        TriggerAction::Contact::DYNAMIC_BODY)
@@ -195,6 +205,7 @@ bool TriggerActionsInspector::Draw(
 				}
 				ImGui::EndCombo();
 			}
+
 			const bool interact =
 			    action.event == TriggerAction::Event::INTERACT;
 			const char *defaultInput = interact ? "Default Interact" : "None";
@@ -224,6 +235,7 @@ bool TriggerActionsInspector::Draw(
 					    name.c_str());
 					ImGui::PopID();
 				}
+
 				ImGui::EndCombo();
 			}
 			if (action.UsesContact() &&
@@ -244,6 +256,7 @@ bool TriggerActionsInspector::Draw(
 				}
 				ImGui::EndCombo();
 			}
+
 			if (action.UsesContact() &&
 			    ImGui::BeginCombo("Contact Tag",
 			                      action.contactTag.empty()
@@ -258,32 +271,38 @@ bool TriggerActionsInspector::Draw(
 				for (const auto tag : tags) {
 					ImGui::PushID(tag.data(), tag.data() + tag.size());
 					const auto position = ImGui::GetCursorScreenPos();
+
 					if (ImGui::Selectable("##tag", tag == action.contactTag) &&
 					    tag != action.contactTag) {
 						action.contactTag = tag;
 						changed = true;
 					}
+
 					ImGui::GetWindowDrawList()->AddText(
 					    position, ImGui::GetColorU32(ImGuiCol_Text), tag.data(),
 					    tag.data() + tag.size());
 					ImGui::PopID();
 				}
+
 				ImGui::EndCombo();
 			}
 			if (action.UsesTarget()) {
 				const auto target = TargetLabel(scene, action.target);
+
 				if (ImGui::BeginCombo("Target", target.c_str())) {
 					if (ImGui::Selectable("None", action.target == 0) &&
 					    action.target != 0) {
 						action.target = 0;
 						changed = true;
 					}
+
 					for (const auto &[targetId, candidate] :
 					     scene.GetObjects()) {
 						if (action.IsAudioOperation() &&
 						    !candidate.audioSource) {
 							continue;
 						}
+
 						if (action.operation ==
 						        TriggerAction::Operation::SET_CHECKPOINT &&
 						    (!candidate.character || !candidate.respawn))
@@ -325,6 +344,7 @@ bool TriggerActionsInspector::Draw(
 							changed = true;
 						}
 					}
+
 					ImGui::EndCombo();
 				}
 			}
@@ -365,10 +385,12 @@ bool TriggerActionsInspector::Draw(
 					                      action.operation == operation) &&
 					    action.operation != operation) {
 						action.operation = operation;
+
 						if (!action.UsesTarget()) {
 							action.target = 0;
 							action.destination = 0;
 						}
+
 						if (operation != TriggerAction::Operation::LOAD_SCENE)
 							action.arrivalTag.clear();
 						if (operation != TriggerAction::Operation::SET_CAMERA)
@@ -385,6 +407,7 @@ bool TriggerActionsInspector::Draw(
 				}
 				ImGui::EndCombo();
 			}
+
 			if (action.operation ==
 			    TriggerAction::Operation::SEND_SCRIPT_MESSAGE) {
 				auto name = action.messageName;
@@ -399,12 +422,14 @@ bool TriggerActionsInspector::Draw(
 
 			if (action.UsesDestination()) {
 				const auto destination = TargetLabel(scene, action.destination);
+
 				if (ImGui::BeginCombo("Destination", destination.c_str())) {
 					if (ImGui::Selectable("None", action.destination == 0) &&
 					    action.destination != 0) {
 						action.destination = 0;
 						changed = true;
 					}
+
 					for (const auto &[targetId, candidate] :
 					     scene.GetObjects()) {
 						(void)candidate;
@@ -416,6 +441,7 @@ bool TriggerActionsInspector::Draw(
 							changed = true;
 						}
 					}
+
 					ImGui::EndCombo();
 				}
 			}
@@ -430,6 +456,7 @@ bool TriggerActionsInspector::Draw(
 						changed |= !action.scenePath.empty();
 						action.scenePath.clear();
 					}
+
 					for (const auto &path : scenes) {
 						if (ImGui::Selectable(PathUtils::ToUtf8(path).c_str(),
 						                      path == action.scenePath)) {
@@ -437,8 +464,10 @@ bool TriggerActionsInspector::Draw(
 							action.scenePath = path;
 						}
 					}
+
 					ImGui::EndCombo();
 				}
+
 				ImGui::Button("Drop Scene Asset");
 				if (const auto path =
 				        AssetDragDrop::AcceptTarget(AssetDragDrop::Kind::SCENE);
@@ -457,6 +486,7 @@ bool TriggerActionsInspector::Draw(
 					changed = true;
 				}
 			}
+
 			if (action.operation == TriggerAction::Operation::SET_CAMERA) {
 				float blend = action.cameraBlendSeconds;
 				if (ImGui::InputFloat("Blend (s)", &blend, 0, 0, "%.3f",
@@ -468,6 +498,7 @@ bool TriggerActionsInspector::Draw(
 					changed = true;
 				}
 			}
+
 			if (action.operation ==
 			    TriggerAction::Operation::LAUNCH_CHARACTER) {
 				float speed = action.launchSpeed;
@@ -480,6 +511,7 @@ bool TriggerActionsInspector::Draw(
 					changed = true;
 				}
 			}
+
 			float delay = action.delaySeconds;
 			if (ImGui::InputFloat("Delay (s)", &delay, 0, 0, "%.3f",
 			                      ImGuiInputTextFlags_EnterReturnsTrue) &&
@@ -491,23 +523,30 @@ bool TriggerActionsInspector::Draw(
 			}
 			changed |= ImGui::Checkbox("Once per Scene", &action.once);
 			ui.BeginDisabled(i == 0);
+
 			if (ImGui::SmallButton("Move Up")) {
 				move = std::pair{i, i - 1};
 			}
+
 			ui.EndDisabled();
 			ui.SameLine();
 			ui.BeginDisabled(i + 1 == edited.actions.size());
+
 			if (ImGui::SmallButton("Move Down")) {
 				move = std::pair{i, i + 1};
 			}
+
 			ui.EndDisabled();
 			ui.SameLine();
+
 			if (ImGui::SmallButton("Remove Action")) {
 				remove = i;
 			}
 		}
+
 		ImGui::PopID();
 	}
+
 	if (remove) {
 		edited.actions.erase(edited.actions.begin() +
 		                     static_cast<std::ptrdiff_t>(*remove));
@@ -516,6 +555,7 @@ bool TriggerActionsInspector::Draw(
 		std::swap(edited.actions[move->first], edited.actions[move->second]);
 		changed = true;
 	}
+
 	ui.BeginDisabled(edited.actions.size() >=
 	                 TriggerActionsComponent::kMaximumActions);
 	if (ImGui::Button("Add Action")) {
@@ -524,13 +564,16 @@ bool TriggerActionsInspector::Draw(
 			action.event = TriggerAction::Event::BUTTON_CLICK;
 		changed = true;
 	}
+
 	ui.EndDisabled();
 	const bool removeComponent = ImGui::Button("Remove Trigger Actions");
 	ImGui::PopID();
 	ImGui::PopID();
+
 	if (removeComponent) {
 		return history.SetTriggerActions(id, std::nullopt);
 	}
+
 	return changed && history.SetTriggerActions(id, std::move(edited));
 }
 
@@ -540,6 +583,7 @@ void TriggerActionsInspector::DrawReadOnly(const ImGuiSystem &ui,
 	if (!object.triggerActions || !ui.CollapsingHeader("Trigger Actions")) {
 		return;
 	}
+
 	for (std::size_t i = 0; i < object.triggerActions->actions.size(); ++i) {
 		const auto &action = object.triggerActions->actions[i];
 		ui.Text(std::format(

@@ -105,10 +105,12 @@ void MeshRenderer::Draw(ID3D12GraphicsCommandList *commandList,
 	commandList->SetDescriptorHeaps(1, &heap);
 	commandList->SetGraphicsRootSignature(rootSignature_.Get());
 	const bool skinned = instance.GetSkinningAddress() != 0;
+
 	if (skinned && !skinnedPipeline_) {
 		Logger::Error("Skinned pipeline is unavailable.");
 		return;
 	}
+
 	commandList->SetPipelineState(skinned ? skinnedPipeline_.Get()
 	                                      : pipelineState_.Get());
 
@@ -363,11 +365,13 @@ bool MeshRenderer::CreatePipelineState(ID3D12Device *device,
 bool MeshRenderer::CreateShadowPipeline(ID3D12Device *device, IDxcBlob *shader,
                                         bool skinned) {
 	D3D12_ROOT_PARAMETER parameters[3]{};
+
 	for (UINT i = 0; i < 3; ++i) {
 		parameters[i].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 		parameters[i].Descriptor.ShaderRegister = i == 2 ? 6 : i ? 5 : 0;
 		parameters[i].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
 	}
+
 	D3D12_ROOT_SIGNATURE_DESC root{};
 	root.NumParameters = 3;
 	root.pParameters = parameters;
@@ -391,6 +395,7 @@ bool MeshRenderer::CreateShadowPipeline(ID3D12Device *device, IDxcBlob *shader,
 	    0};
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC desc{};
 	desc.pRootSignature = shadowRoot_.Get();
+
 	for (auto &target : desc.BlendState.RenderTarget) {
 		target.SrcBlend = D3D12_BLEND_ONE;
 		target.DestBlend = D3D12_BLEND_ZERO;
@@ -400,6 +405,7 @@ bool MeshRenderer::CreateShadowPipeline(ID3D12Device *device, IDxcBlob *shader,
 		target.BlendOpAlpha = D3D12_BLEND_OP_ADD;
 		target.LogicOp = D3D12_LOGIC_OP_NOOP;
 	}
+
 	desc.VS = {shader->GetBufferPointer(), shader->GetBufferSize()};
 	desc.InputLayout =
 	    skinned ? D3D12_INPUT_LAYOUT_DESC{kSkinnedLayout,
@@ -430,10 +436,12 @@ void MeshRenderer::DrawShadow(ID3D12GraphicsCommandList *commands,
 		return;
 	commands->SetGraphicsRootSignature(shadowRoot_.Get());
 	const bool skinned = instance.GetSkinningAddress() != 0;
+
 	if (skinned && !skinnedShadowPipeline_) {
 		Logger::Error("Skinned shadow pipeline is unavailable.");
 		return;
 	}
+
 	commands->SetPipelineState(skinned ? skinnedShadowPipeline_.Get()
 	                                   : shadowPipeline_.Get());
 	commands->SetGraphicsRootConstantBufferView(

@@ -32,20 +32,24 @@ bool AnimatorInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 			edited.clip.clear();
 			changed |= history.SetAnimator(id, edited);
 		}
+
 		if (data)
 			for (std::size_t i = 0; i < data->clips.size(); ++i) {
 				ImGui::PushID(static_cast<int>(i));
+
 				if (ui.Selectable(data->clips[i].name.c_str(),
 				                  edited.clip == data->clips[i].name)) {
 					edited.clip = data->clips[i].name;
 					changed |= history.SetAnimator(id, edited);
 				}
+
 				ImGui::PopID();
 			}
 		else
 			ui.Text("No animation clips");
 		ImGui::EndCombo();
 	}
+
 	const bool speedChanged = ImGui::DragFloat(
 	    "Animator Speed", &edited.speed, .05f, .01f,
 	    AnimatorComponent::kMaximumSpeed, "%.2f", ImGuiSliderFlags_AlwaysClamp);
@@ -73,6 +77,7 @@ bool AnimatorInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		if (at != data->clips.end())
 			ui.Text(std::format("Clip Duration: {:.2f} s", at->duration));
 	}
+
 	if (ui.Button("Reset Animator"))
 		changed |= history.SetAnimator(id, AnimatorComponent{});
 	if (ui.Button("Remove Animator"))

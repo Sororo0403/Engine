@@ -170,6 +170,7 @@ struct ParticleRenderer::Impl {
 		desc.SampleDesc.Count = 1;
 		desc.SampleMask = UINT_MAX;
 		desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+
 		for (auto &target : desc.BlendState.RenderTarget) {
 			target.BlendEnable = TRUE;
 			target.SrcBlend = D3D12_BLEND_SRC_ALPHA;
@@ -181,6 +182,7 @@ struct ParticleRenderer::Impl {
 			target.LogicOp = D3D12_LOGIC_OP_NOOP;
 			target.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 		}
+
 		ComPtr<ID3D12PipelineState> normal, plus;
 		Require(device->CreateGraphicsPipelineState(
 		    &desc, IID_PPV_ARGS(normal.GetAddressOf())));
@@ -227,6 +229,7 @@ bool ParticleRenderer::PrepareImages(
 			impl_->prepared.emplace(key, handle.resource_);
 			impl_->imageBytes += bytes;
 		}
+
 		error.clear();
 		return true;
 	} catch (const std::exception &e) {
@@ -240,10 +243,12 @@ bool ParticleRenderer::Update(std::span<const ParticleDrawBatch> batches,
                               const DirectX::XMFLOAT4X4 &projection,
                               std::string &error) {
 	impl_->runs.clear();
+
 	try {
 		std::vector<Impl::Item> items;
 		std::vector<std::filesystem::path> paths;
 		std::size_t count = 0;
+
 		for (const auto &batch : batches) {
 			if (batch.sprites.size() >
 			    SceneParticles::kMaximumTotalParticles - count)
@@ -253,10 +258,12 @@ bool ParticleRenderer::Update(std::span<const ParticleDrawBatch> batches,
 			if (!batch.sprites.empty())
 				paths.push_back(batch.texture);
 		}
+
 		if (count == 0) {
 			error.clear();
 			return true;
 		}
+
 		if (!PrepareImages(paths, error))
 			return false;
 		impl_->Initialize();
@@ -273,6 +280,7 @@ bool ParticleRenderer::Update(std::span<const ParticleDrawBatch> batches,
 			        ? std::filesystem::path{}
 			        : PathUtils::ResolveFromExecutable(batch.texture);
 			const auto image = impl_->prepared.at(key);
+
 			for (const auto &sprite : batch.sprites) {
 				const auto &c = sprite.color;
 				if (!MathUtils::IsFinite(sprite.position) ||
@@ -297,6 +305,7 @@ bool ParticleRenderer::Update(std::span<const ParticleDrawBatch> batches,
 				                 depth});
 			}
 		}
+
 		std::stable_sort(
 		    items.begin(), items.end(),
 		    [](const auto &a, const auto &b) { return a.depth > b.depth; });
@@ -326,6 +335,7 @@ bool ParticleRenderer::Update(std::span<const ParticleDrawBatch> batches,
 			impl_->mapped = static_cast<Impl::Vertex *>(data);
 			impl_->capacity = capacity;
 		}
+
 		for (std::size_t i = 0; i < items.size(); ++i) {
 			impl_->mapped[i] = items[i].vertex;
 			if (impl_->runs.empty() ||
@@ -336,6 +346,7 @@ bool ParticleRenderer::Update(std::span<const ParticleDrawBatch> batches,
 			else
 				++impl_->runs.back().count;
 		}
+
 		impl_->view = {impl_->buffer->GetGPUVirtualAddress(),
 		               static_cast<UINT>(items.size() * sizeof(Impl::Vertex)),
 		               sizeof(Impl::Vertex)};
@@ -366,6 +377,7 @@ void ParticleRenderer::Draw() const {
 	    0, impl_->camera.GetGPUVirtualAddress());
 	commands->IASetVertexBuffers(0, 1, &impl_->view);
 	commands->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
 	for (const auto &run : impl_->runs) {
 		auto *heap = run.image->GetDescriptorHeap();
 		commands->SetDescriptorHeaps(1, &heap);

@@ -19,6 +19,7 @@ bool TransformAnimationComponent::IsValid() const {
 	     interpolation != Interpolation::STEP))
 		return false;
 	float previous = -1;
+
 	for (const auto &key : keys) {
 		if (!std::isfinite(key.seconds) || key.seconds <= previous ||
 		    key.seconds > kMaximumSeconds ||
@@ -37,6 +38,7 @@ bool TransformAnimationComponent::IsValid() const {
 			return false;
 		previous = key.seconds;
 	}
+
 	return GetDuration() >= .001;
 }
 
@@ -90,6 +92,7 @@ bool TransformAnimationComponent::Sample(double seconds,
 		                  XMLoadFloat4(&a.offset.rotation),
 		                  XMLoadFloat4(&b.offset.rotation), t)));
 	}
+
 	if (!TransformUtils::IsValid(result))
 		return false;
 	offset = result;

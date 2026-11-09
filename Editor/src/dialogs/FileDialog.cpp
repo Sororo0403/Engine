@@ -173,6 +173,7 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 
 		if (mode_ == FileDialogMode::SELECT_DIRECTORY) {
 			ui.InputText("New Folder Name", folderName_);
+
 			if (ui.Button("Create Folder")) {
 				CreateFolder();
 			}
@@ -304,6 +305,7 @@ void FileDialog::ChangeDirectory(const std::filesystem::path &path) {
 bool FileDialog::AcceptSelection() {
 	try {
 		error_.clear();
+
 		if (mode_ == FileDialogMode::SELECT_DIRECTORY) {
 			auto selected = ReadDirectory();
 			selectedPath_.swap(selected);
@@ -380,28 +382,36 @@ bool FileDialog::AcceptSelection() {
 
 std::filesystem::path FileDialog::ReadDirectory() const {
 	const auto directory = PathUtils::FromUtf8(directoryText_);
+
 	if (!directory.is_absolute() ||
 	    directory.native().find(L'\0') != std::wstring::npos) {
 		throw std::invalid_argument("Enter an absolute folder path.");
 	}
+
 	const auto resolved = std::filesystem::canonical(directory);
+
 	if (!std::filesystem::is_directory(resolved)) {
 		throw std::invalid_argument("Choose an existing folder.");
 	}
+
 	return resolved;
 }
 
 void FileDialog::CreateFolder() {
 	try {
 		const auto name = PathUtils::FromUtf8(folderName_);
+
 		if (!PathUtils::IsValidFileName(name)) {
 			throw std::invalid_argument("Enter a single valid folder name.");
 		}
+
 		const auto created = ReadDirectory() / name;
+
 		if (!std::filesystem::create_directory(created)) {
 			throw std::runtime_error(
 			    "That folder already exists. Choose another name.");
 		}
+
 		folderName_.clear();
 		ChangeDirectory(created);
 	} catch (const std::exception &error) {

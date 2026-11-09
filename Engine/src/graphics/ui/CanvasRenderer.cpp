@@ -213,11 +213,13 @@ bool CanvasRenderer::PrepareImages(std::span<const std::filesystem::path> paths,
 		auto &p = *impl_;
 		auto next = p.preparedImages;
 		std::size_t bytes = 0;
+
 		for (const auto &[path, entry] : next) {
 			(void)path;
 			bytes += static_cast<std::size_t>(entry.texture->GetWidth()) *
 			         entry.texture->GetHeight() * 4;
 		}
+
 		for (const auto &source : paths) {
 			if (source.empty())
 				continue;
@@ -236,6 +238,7 @@ bool CanvasRenderer::PrepareImages(std::span<const std::filesystem::path> paths,
 			bytes += needed;
 			next.emplace(path, std::move(entry));
 		}
+
 		p.preparedImages = std::move(next);
 		error.clear();
 		return true;
@@ -255,18 +258,21 @@ bool CanvasRenderer::Update(const Scene &scene, int width, int height,
 	auto &p = *impl_;
 	p.prepared = false;
 	SceneObjectId current = 0;
+
 	try {
 		std::map<SceneObjectId, UIButtonVisual::State> states;
 		if (visuals.size() > CanvasLayout::kMaximumElements)
 			throw std::runtime_error("Too many Button visual states.");
 		for (const auto &visual : visuals) {
 			const auto *object = scene.FindObject(visual.object);
+
 			if (!object || !object->button ||
 			    visual.state < UIButtonVisual::State::NORMAL ||
 			    visual.state > UIButtonVisual::State::DISABLED ||
 			    !states.emplace(visual.object, visual.state).second)
 				throw std::runtime_error("Invalid Button visual state.");
 		}
+
 		const auto color = [&](const SceneObject &object, SceneObjectId id,
 		                       const std::array<float, 4> &base, bool text) {
 			auto result = base;
@@ -310,6 +316,7 @@ bool CanvasRenderer::Update(const Scene &scene, int width, int height,
 				bytes += size;
 			}
 		};
+
 		for (const auto &element : elements) {
 			try {
 				current = element.object;
@@ -324,6 +331,7 @@ bool CanvasRenderer::Update(const Scene &scene, int width, int height,
 				    object.image->fillAmount > 0) {
 					const auto &image = *object.image;
 					std::shared_ptr<Texture> texture;
+
 					if (image.texture.empty()) {
 						if (!p.white) {
 							auto white = std::make_shared<Texture>();
@@ -336,14 +344,17 @@ bool CanvasRenderer::Update(const Scene &scene, int width, int height,
 								    "Could not create solid UI image.");
 							p.white = std::move(white);
 						}
+
 						texture = p.white;
 					} else {
 						const auto path =
 						    PathUtils::ResolveFromExecutable(image.texture)
 						        .lexically_normal();
 						auto found = images.find(path);
+
 						if (found == images.end()) {
 							const auto pinned = p.preparedImages.find(path);
+
 							if (pinned != p.preparedImages.end()) {
 								found =
 								    images.emplace(path, pinned->second).first;
@@ -372,14 +383,18 @@ bool CanvasRenderer::Update(const Scene &scene, int width, int height,
 										throw std::runtime_error(
 										    "Could not load UI image.");
 								}
+
 								found = images.emplace(path, std::move(entry))
 								            .first;
 							}
 						}
+
 						texture = found->second.texture;
 					}
+
 					account(texture);
 					auto bounds = r;
+
 					if (image.preserveAspect && !image.texture.empty()) {
 						const float scale =
 						    (std::min)(r.width / static_cast<float>(
@@ -393,16 +408,19 @@ bool CanvasRenderer::Update(const Scene &scene, int width, int height,
 						bounds.x += (r.width - bounds.width) * .5f;
 						bounds.y += (r.height - bounds.height) * .5f;
 					}
+
 					std::array<float, 4> uv{0, 0, 1, 1};
 					const auto amount = image.fillAmount;
 					const auto remaining = 1 - amount;
 					using Origin = ImageComponent::FillOrigin;
+
 					if (image.fillOrigin == Origin::LEFT ||
 					    image.fillOrigin == Origin::RIGHT) {
 						if (image.fillOrigin == Origin::RIGHT) {
 							bounds.x += bounds.width * remaining;
 							uv[0] = remaining;
 						}
+
 						bounds.width *= amount;
 						uv[2] = amount;
 					} else {
@@ -410,9 +428,11 @@ bool CanvasRenderer::Update(const Scene &scene, int width, int height,
 							bounds.y += bounds.height * remaining;
 							uv[1] = remaining;
 						}
+
 						bounds.height *= amount;
 						uv[3] = amount;
 					}
+
 					commands.push_back(
 					    {std::move(texture), bounds,
 					     color(object, current, image.color, false), uv});
@@ -456,6 +476,7 @@ bool CanvasRenderer::Update(const Scene &scene, int width, int height,
 							throw std::runtime_error(
 							    "Could not upload UI text.");
 					}
+
 					account(entry.texture);
 					commands.push_back(
 					    {entry.texture, r,
@@ -469,6 +490,7 @@ bool CanvasRenderer::Update(const Scene &scene, int width, int height,
 					throw;
 			}
 		}
+
 		if (!commands.empty()) {
 			p.Initialize();
 			auto *device = p.graphics.GetDevice();
@@ -488,6 +510,7 @@ bool CanvasRenderer::Update(const Scene &scene, int width, int height,
 				descriptor.ptr += stride;
 			}
 		}
+
 		p.commands.swap(commands);
 		p.texts.swap(texts);
 		p.images.swap(images);

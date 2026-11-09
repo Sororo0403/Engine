@@ -30,10 +30,12 @@ SceneCameraUtils::MakeFollowPose(const DirectX::XMFLOAT3 &target,
                                  const FollowCameraSettings &settings) {
 	if (settings.orbit.enabled) {
 		FollowCameraOrbit orbit;
+
 		if (orbit.Initialize(settings)) {
 			return orbit.MakePose(target, settings);
 		}
 	}
+
 	CameraPose result;
 	result.position = {target.x + settings.offset.x,
 	                   target.y + settings.offset.y,
@@ -48,26 +50,34 @@ bool SceneCameraUtils::AvoidFollowObstacles(const Scene &scene,
                                             SceneObjectId id,
                                             CameraPose &pose) {
 	const auto *object = scene.FindObject(id);
+
 	if (!object || !object->camera || !object->followCamera ||
 	    !object->followCamera->IsValid()) {
 		return false;
 	}
+
 	const auto &settings = *object->followCamera;
+
 	if (!settings.avoidObstacles) {
 		return true;
 	}
+
 	Camera validator;
+
 	if (!validator.SetPose(pose)) {
 		return false;
 	}
 
 	std::vector<SceneObjectId> ignored{settings.target};
+
 	for (const auto &[objectId, candidate] : scene.GetObjects()) {
 		if (candidate.character || candidate.followCamera) {
 			ignored.push_back(objectId);
 		}
 	}
+
 	CollisionWorld world;
+
 	if (!world.Rebuild(scene, std::span<const SceneObjectId>{ignored})) {
 		return false;
 	}
@@ -82,9 +92,11 @@ bool SceneCameraUtils::AvoidFollowObstacles(const Scene &scene,
 	                                 pose.position.y - pose.target.y,
 	                                 pose.position.z - pose.target.z};
 	CollisionSweepResult hit;
+
 	if (!world.Sweep(boxAt(pose.target), movement, hit)) {
 		return false;
 	}
+
 	if (!hit.objectId) {
 		return true;
 	}
@@ -94,6 +106,7 @@ bool SceneCameraUtils::AvoidFollowObstacles(const Scene &scene,
 	if (distance == 0 || hit.fraction <= 0) {
 		return false;
 	}
+
 	const double magnitude = (std::max)({std::abs(double(pose.position.x)),
 	                                     std::abs(double(pose.position.y)),
 	                                     std::abs(double(pose.position.z))});
@@ -110,6 +123,7 @@ bool SceneCameraUtils::AvoidFollowObstacles(const Scene &scene,
 	    !validator.SetPose(adjusted)) {
 		return false;
 	}
+
 	pose = adjusted;
 	return true;
 }
@@ -133,6 +147,7 @@ bool SceneCameraUtils::SetPrimary(Scene &scene, SceneObjectId id) {
 		if (!target || !target->camera || !SceneActivity::IsActive(scene, id))
 			return false;
 	}
+
 	for (const auto &[candidate, object] : scene.GetObjects())
 		if (object.camera)
 			scene.FindObject(candidate)->camera->primary = candidate == id;
@@ -255,6 +270,7 @@ bool ApplyInitialFollows(Scene &working,
 		if (!SceneActivity::IsActive(working, id) || !object.followCamera)
 			continue;
 		SceneWorldTransform target;
+
 		if (!SceneHierarchy::GetWorldTransform(
 		        working, object.followCamera->target, target)) {
 			error = std::format(
@@ -264,6 +280,7 @@ bool ApplyInitialFollows(Scene &working,
 				*invalidObject = id;
 			return false;
 		}
+
 		auto pose = SceneCameraUtils::MakeFollowPose(target.GetPosition(),
 		                                             *object.followCamera);
 		if (!SceneCameraUtils::AvoidFollowObstacles(working, id, pose) ||
@@ -275,6 +292,7 @@ bool ApplyInitialFollows(Scene &working,
 			return false;
 		}
 	}
+
 	return true;
 }
 } // namespace
@@ -289,20 +307,24 @@ bool SceneCameraUtils::ResolveInitialDependencies(const Scene &scene,
 	// 依存の検証は対象の枝だけに限定し、障害物は元のシーン全体から参照する。
 	std::map<SceneObjectId, SceneObject> objects;
 	std::vector<SceneObjectId> pending{id};
+
 	while (!pending.empty()) {
 		const auto current = pending.back();
 		pending.pop_back();
+
 		if (current == 0 || objects.contains(current)) {
 			continue;
 		}
 
 		const auto *node = scene.FindObject(current);
+
 		if (!node) {
 			return false;
 		}
 
 		objects.emplace(current, *node);
 		pending.push_back(node->parentId);
+
 		if (node->followCamera && SceneActivity::IsActive(scene, current)) {
 			pending.push_back(node->followCamera->target);
 		}
@@ -313,16 +335,19 @@ bool SceneCameraUtils::ResolveInitialDependencies(const Scene &scene,
 		dependencies.ReplaceObjects(std::move(objects));
 		std::vector<SceneObjectId> order;
 		std::string error;
+
 		if (!GetUpdateOrder(dependencies, order, error)) {
 			return false;
 		}
 
 		working.CopyFrom(scene);
+
 		if (!ApplyInitialFollows(working, order, error, nullptr)) {
 			return false;
 		}
 
 		SceneWorldTransform world;
+
 		if (!SceneHierarchy::GetWorldTransform(working, id, world)) {
 			return false;
 		}
@@ -337,6 +362,7 @@ bool SceneCameraUtils::ResolveInitialDependencies(const Scene &scene,
 bool SceneCameraUtils::GetInitialTransform(const Scene &scene, SceneObjectId id,
                                            Transform &resultTransform) {
 	const auto *object = scene.FindObject(id);
+
 	if (!object || !object->camera || !object->camera->IsValid()) {
 		return false;
 	}
@@ -357,9 +383,11 @@ bool SceneCameraUtils::GetInitialTransform(const Scene &scene, SceneObjectId id,
 bool SceneCameraUtils::GetInitialPose(const Scene &scene, SceneObjectId id,
                                       CameraPose &pose) {
 	Transform transform;
+
 	if (!GetInitialTransform(scene, id, transform)) {
 		return false;
 	}
+
 	pose = FromTransform(transform);
 	return true;
 }
@@ -369,28 +397,38 @@ bool SceneCameraUtils::CanSetFollowTarget(const Scene &scene, SceneObjectId id,
 	if (!scene.Contains(id)) {
 		return false;
 	}
+
 	std::vector<SceneObjectId> pending{target};
 	std::set<SceneObjectId> visited;
+
 	while (!pending.empty()) {
 		const auto current = pending.back();
 		pending.pop_back();
+
 		if (current == id) {
 			return false;
 		}
+
 		if (current == 0 || !visited.insert(current).second) {
 			continue;
 		}
+
 		const auto *node = scene.FindObject(current);
+
 		if (!node) {
 			return false;
 		}
+
 		pending.push_back(node->parentId);
+
 		if (node->followCamera) {
 			pending.push_back(node->followCamera->target);
 		}
 	}
+
 	// 対象側に既存の循環があっても許可しない。依存先だけの部分グラフを検証する。
 	std::map<SceneObjectId, std::set<SceneObjectId>> dependencies;
+
 	for (const auto current : visited) {
 		const auto &node = *scene.FindObject(current);
 		if (node.parentId)
@@ -399,6 +437,7 @@ bool SceneCameraUtils::CanSetFollowTarget(const Scene &scene, SceneObjectId id,
 			dependencies[current].insert(node.followCamera->target);
 		dependencies.try_emplace(current);
 	}
+
 	while (!dependencies.empty()) {
 		auto ready = std::find_if(
 		    dependencies.begin(), dependencies.end(),
@@ -407,11 +446,13 @@ bool SceneCameraUtils::CanSetFollowTarget(const Scene &scene, SceneObjectId id,
 			return false;
 		const auto completed = ready->first;
 		dependencies.erase(ready);
+
 		for (auto &[key, values] : dependencies) {
 			(void)key;
 			values.erase(completed);
 		}
 	}
+
 	return true;
 }
 
@@ -435,16 +476,20 @@ bool SceneCameraUtils::GetUpdateOrder(const Scene &scene,
 	std::map<SceneObjectId, std::vector<SceneObjectId>> dependents;
 	std::set<SceneObjectId> ready;
 	SceneActivity::States active;
+
 	if (!SceneActivity::BuildStates(scene, active)) {
 		return fail(0, "The parent hierarchy is invalid.");
 	}
+
 	for (const auto &[id, object] : scene.GetObjects()) {
 		auto &values = dependencies[id];
+
 		if (object.parentId) {
 			if (!scene.Contains(object.parentId))
 				return fail(id, "The parent does not exist.");
 			values.insert(object.parentId);
 		}
+
 		if (active.at(id) && object.followCamera) {
 			if (!FollowTarget(scene, id))
 				return fail(id,
@@ -452,25 +497,31 @@ bool SceneCameraUtils::GetUpdateOrder(const Scene &scene,
 				            "and no Character Controller on the same object.");
 			values.insert(object.followCamera->target);
 		}
+
 		if (values.empty())
 			ready.insert(id);
 		for (auto dependency : values)
 			dependents[dependency].push_back(id);
 	}
+
 	std::vector<SceneObjectId> result;
 	result.reserve(dependencies.size());
+
 	while (!ready.empty()) {
 		const auto id = *ready.begin();
 		ready.erase(ready.begin());
 		result.push_back(id);
+
 		for (const auto child : dependents[id]) {
 			auto &values = dependencies.at(child);
 			values.erase(id);
 			if (values.empty())
 				ready.insert(child);
 		}
+
 		dependencies.erase(id);
 	}
+
 	if (!dependencies.empty()) {
 		// 未解決の依存先をたどり、循環そのものに含まれる物体を通知する。
 		auto current = dependencies.begin()->first;
@@ -480,6 +531,7 @@ bool SceneCameraUtils::GetUpdateOrder(const Scene &scene,
 		return fail(current,
 		            "Parent and Follow Camera dependencies form a cycle.");
 	}
+
 	order.swap(result);
 	return true;
 }
@@ -507,15 +559,18 @@ bool SceneCameraUtils::ResolveInitialScene(const Scene &source, Scene &result,
 		return false;
 	Scene working;
 	working.CopyFrom(source);
+
 	if (!ApplyInitialFollows(working, order, error, invalidObject)) {
 		return false;
 	}
 
 	SceneHierarchy::WorldTransforms transforms;
+
 	if (!SceneHierarchy::BuildWorldTransforms(working, transforms)) {
 		error = "World transforms cannot be represented.";
 		return false;
 	}
+
 	result.CopyFrom(working);
 	return true;
 }

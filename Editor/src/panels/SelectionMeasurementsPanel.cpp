@@ -12,13 +12,17 @@ void SelectionMeasurementsPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 	if (!open) {
 		return;
 	}
+
 	ImGui::SetNextWindowSize({420, 440}, ImGuiCond_FirstUseEver);
+
 	if (!ImGui::Begin("Selection Measurements", &open)) {
 		ImGui::End();
 		return;
 	}
+
 	SelectionMeasurement::Result result;
 	std::string error;
+
 	if (!SelectionMeasurement::Measure(scene, ids, result, error)) {
 		ImGui::TextWrapped("%s", error.c_str());
 	} else {
@@ -29,6 +33,7 @@ void SelectionMeasurementsPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 			ui.Text(
 			    std::format("Invalid Colliders: {}", result.invalidColliders));
 		}
+
 		if (result.colliderBounds) {
 			const auto &box = *result.colliderBounds;
 			ImGui::SeparatorText("Combined Collider Bounds");
@@ -39,6 +44,7 @@ void SelectionMeasurementsPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 			ui.Text(std::format("Size Z: {:.3f}",
 			                    double(box.maximum.z) - box.minimum.z));
 		}
+
 		if (result.pair) {
 			const auto &pair = *result.pair;
 			ImGui::SeparatorText("Object Origins");
@@ -54,6 +60,7 @@ void SelectionMeasurementsPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 			ui.Text(std::format("Delta X: {:.3f}", pair.delta[0]));
 			ui.Text(std::format("Delta Y: {:.3f}", pair.delta[1]));
 			ui.Text(std::format("Delta Z: {:.3f}", pair.delta[2]));
+
 			if (pair.colliderGap) {
 				ImGui::SeparatorText("Collider Gap");
 				ui.Text(
@@ -66,5 +73,6 @@ void SelectionMeasurementsPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 			}
 		}
 	}
+
 	ImGui::End();
 }

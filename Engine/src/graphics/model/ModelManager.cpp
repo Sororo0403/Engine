@@ -84,6 +84,7 @@ ModelManager::FindLoaded(const std::filesystem::path &filePath) const {
 		const auto key = std::filesystem::weakly_canonical(
 		    PathUtils::ResolveFromExecutable(filePath));
 		const auto found = impl_->cache.find(key);
+
 		if (found == impl_->cache.end()) {
 			return {};
 		}
@@ -176,6 +177,7 @@ ModelHandle ModelManager::LoadFile(const std::filesystem::path &filePath,
 		// 初期化に成功したモデルだけをキャッシュへ登録する
 		impl_->cache.insert_or_assign(key, model);
 		++impl_->cacheRevision;
+
 		if (reload) {
 			++impl_->reloadRevision;
 		}

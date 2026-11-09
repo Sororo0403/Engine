@@ -14,20 +14,25 @@ namespace OrbitCameraInputReader {
 inline OrbitCameraInput Read(const Mouse *mouse,
                              const Gamepad *gamepad = nullptr) {
 	OrbitCameraInput result;
+
 	if (mouse && mouse->IsConnected()) {
 		const auto &state = mouse->GetState();
+
 		if (mouse->IsDown(MouseButton::RIGHT)) {
 			result.mouseX = static_cast<float>(state.deltaX);
 			result.mouseY = static_cast<float>(state.deltaY);
 		}
+
 		result.zoom = static_cast<float>(state.wheelY) / 120.0f;
 		result.reset = mouse->IsPressed(MouseButton::MIDDLE);
 	}
+
 	if (gamepad && gamepad->IsConnected()) {
 		result.stickX = gamepad->GetState().rightStick.x;
 		result.stickY = gamepad->GetState().rightStick.y;
 		result.reset |= gamepad->IsPressed(GamepadButton::RIGHT_STICK);
 	}
+
 	return result;
 }
 } // namespace OrbitCameraInputReader

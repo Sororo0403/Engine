@@ -11,6 +11,7 @@ namespace {
 float AxisValue(GameActionBinding::GamepadAxis axis,
                 const GamepadState &state) {
 	using Axis = GameActionBinding::GamepadAxis;
+
 	switch (axis) {
 	case Axis::LEFT_TRIGGER:
 		return state.leftTrigger;
@@ -33,6 +34,7 @@ float AxisValue(GameActionBinding::GamepadAxis axis,
 	case Axis::RIGHT_RIGHT:
 		return state.rightStick.x;
 	}
+
 	return 0;
 }
 } // namespace
@@ -46,15 +48,18 @@ GameActionReader::Read(std::span<const GameActionBinding> bindings,
 		Reset();
 		return {};
 	}
+
 	std::vector<History> next;
 	next.reserve(bindings.size());
 	states_.clear();
 	states_.reserve(bindings.size());
+
 	for (const auto &binding : bindings) {
 		const auto previous =
 		    std::find_if(history_.begin(), history_.end(),
 		                 [&](const auto &h) { return h.binding == binding; });
 		History h = previous == history_.end() ? History{binding} : *previous;
+
 		if (!enabled) {
 			h.blocked.fill(true);
 			h.held.fill(false);
@@ -83,6 +88,7 @@ GameActionReader::Read(std::span<const GameActionBinding> bindings,
 			bool down = false;
 			bool cancelled = false;
 			float value = 0.f;
+
 			for (std::size_t i = 0; i < raw.size(); ++i) {
 				if (!allowed[i]) {
 					h.blocked[i] = true;
@@ -92,7 +98,9 @@ GameActionReader::Read(std::span<const GameActionBinding> bindings,
 				} else if (!h.blocked[i]) {
 					down = true;
 				}
+
 				h.held[i] = allowed[i] && raw[i] && !h.blocked[i];
+
 				if (allowed[i] && !h.blocked[i]) {
 					const float strengthForDevice =
 					    i == raw.size() - 1 ? (std::max)(0.f, strength)
@@ -100,12 +108,15 @@ GameActionReader::Read(std::span<const GameActionBinding> bindings,
 					value = (std::max)(value, strengthForDevice);
 				}
 			}
+
 			states_.push_back({binding.name, down, down && !h.down,
 			                   !down && h.down && !cancelled, value});
 			h.down = down;
 		}
+
 		next.push_back(std::move(h));
 	}
+
 	history_ = std::move(next);
 	return states_;
 }

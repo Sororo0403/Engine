@@ -598,14 +598,17 @@ bool EditorCameraController::SetViewState(const ViewState &state) {
 	    !std::isfinite(state.pitch) || std::abs(state.pitch) > kPitchLimit) {
 		return false;
 	}
+
 	auto candidate = *this;
 	candidate.position_ = state.position;
 	candidate.yaw_ = state.yaw;
 	candidate.pitch_ = state.pitch;
 	Camera validation;
+
 	if (!validation.SetPose(candidate.GetPose())) {
 		return false;
 	}
+
 	candidate.navigating_ = false;
 	candidate.panning_ = false;
 	candidate.orbiting_ = false;

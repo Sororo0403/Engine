@@ -13,17 +13,20 @@ void GameExportResultDialog::Show(std::filesystem::path directory) {
 
 GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 	constexpr const char *title = "Game Exported###GameExportResultDialog";
+
 	if (opening_) {
 		ui.OpenPopup(title);
 		opening_ = false;
 	}
 
 	ImGui::SetNextWindowSize({600, 0}, ImGuiCond_Appearing);
+
 	if (!ui.BeginPopupModal(title)) {
 		return GameExportResultAction::NONE;
 	}
 
 	ImGui::TextWrapped("%s", PathUtils::ToUtf8(directory_).c_str());
+
 	if (!error_.empty()) {
 		ImGui::TextWrapped("%s", error_.c_str());
 	}
@@ -31,12 +34,16 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 	if (ui.Button("Open Output Folder")) {
 		ShellUtils::OpenDirectory(directory_, error_);
 	}
+
 	ui.SameLine();
+
 	if (ui.Button("Run Game")) {
 		ShellUtils::RunExecutable(directory_ / L"Game.exe", error_);
 	}
+
 	ui.SameLine();
 	GameExportResultAction action = GameExportResultAction::NONE;
+
 	if (ui.Button("Close") || ImGui::IsKeyPressed(ImGuiKey_Escape, false)) {
 		action = GameExportResultAction::CLOSE;
 		ui.CloseCurrentPopup();

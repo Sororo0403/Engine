@@ -52,6 +52,7 @@ void RenderSystem::Draw(const RenderWorld &world, RenderTexture &target,
 	}
 
 	world.DrawShadows(renderer_);
+
 	if (!target.Begin(clearColor)) {
 		return;
 	}
@@ -126,11 +127,14 @@ bool RenderSystem::UpdateCanvas(CanvasRenderer &canvas, const Scene &scene,
 		width = app_.GetWidth();
 		height = app_.GetHeight();
 	}
+
 	std::string error;
+
 	if (!canvas.Update(scene, width, height, error, visuals)) {
 		Logger::Error(error);
 		return false;
 	}
+
 	return true;
 }
 

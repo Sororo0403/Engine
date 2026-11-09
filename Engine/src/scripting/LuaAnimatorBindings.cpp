@@ -52,6 +52,7 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id,
 		if (!call.scene || !call.scene->Contains(id) || !call.animators)
 			throw std::runtime_error("Animator runtime is unavailable.");
 		auto state = call.animators->GetState(id);
+
 		if (!state && call.executing && call.scene->FindObject(id)->animator) {
 			// 生成直後のPrefabは開始前に準備した共有モデルだけを使用する。
 			if (!call.animators->Configure(*call.scene, true, call.error,
@@ -59,33 +60,40 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id,
 				return false;
 			state = call.animators->GetState(id);
 		}
+
 		if (!state)
 			throw std::runtime_error("This object requires Animator.");
 		if (op == Op::TIME) {
 			value = state->seconds;
 			return true;
 		}
+
 		if (op == Op::DURATION) {
 			value = state->duration;
 			return true;
 		}
+
 		if (op == Op::SPEED) {
 			value = state->speed;
 			return true;
 		}
+
 		if (op == Op::PLAYING) {
 			value = state->playing;
 			return true;
 		}
+
 		if (op == Op::CLIP) {
 			call.returnText = state->clip;
 			return true;
 		}
+
 		if ((op == Op::PLAY || op == Op::CROSS_FADE) &&
 		    !SceneActivity::IsActive(*call.scene, id)) {
 			value = 0;
 			return true;
 		}
+
 		const auto operation =
 		    op == Op::CROSS_FADE  ? SceneAnimators::Operation::CROSS_FADE
 		    : op == Op::PLAY      ? SceneAnimators::Operation::PLAY
@@ -122,32 +130,38 @@ int Dispatch(lua_State *state) {
 	std::size_t length = 0;
 	double number = 0, value = 0;
 	bool flag = true;
+
 	if (op == Op::PLAY) {
 		if (!lua_isnoneornil(state, 2)) {
 			luaL_checktype(state, 2, LUA_TSTRING);
 			clip = luaL_checklstring(state, 2, &length);
 		}
+
 		if (!lua_isnoneornil(state, 3)) {
 			luaL_checktype(state, 3, LUA_TBOOLEAN);
 			flag = lua_toboolean(state, 3) != 0;
 		}
 	}
+
 	if (op == Op::CROSS_FADE) {
 		luaL_checktype(state, 2, LUA_TSTRING);
 		clip = luaL_checklstring(state, 2, &length);
 		luaL_checktype(state, 3, LUA_TNUMBER);
 		number = lua_tonumber(state, 3);
 	}
+
 	if (op == Op::SEEK || op == Op::SET_SPEED)
 		number = luaL_checknumber(state, 2);
 	if (op == Op::SET_LOOP) {
 		luaL_checktype(state, 2, LUA_TBOOLEAN);
 		flag = lua_toboolean(state, 2) != 0;
 	}
+
 	if (!Perform(call, op, id, {clip, length}, number, flag, value)) {
 		lua_pushlstring(state, call.error.data(), call.error.size());
 		return lua_error(state);
 	}
+
 	if (op == Op::CLIP)
 		lua_pushlstring(state, call.returnText.data(), call.returnText.size());
 	else if (op == Op::TIME || op == Op::DURATION || op == Op::SPEED)

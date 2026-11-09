@@ -24,7 +24,9 @@ bool CollisionEvents::Update(const Scene &scene, const RigidBodyWorld *world,
 			    b->collider->isTrigger)
 				return false;
 		}
+
 		std::vector<CollisionContact> current;
+
 		if (world) {
 			if (!world->FindContacts(current))
 				return false;
@@ -41,6 +43,7 @@ bool CollisionEvents::Update(const Scene &scene, const RigidBodyWorld *world,
 			};
 
 			std::map<SceneObjectId, Shape> shapes;
+
 			for (const auto &[id, object] : scene.GetObjects()) {
 				if (!active.at(id) || !object.collider ||
 				    object.collider->isTrigger)
@@ -60,6 +63,7 @@ bool CollisionEvents::Update(const Scene &scene, const RigidBodyWorld *world,
 				shape.filter = object.collider->filter;
 				shapes.emplace(id, shape);
 			}
+
 			for (auto a = shapes.begin(); a != shapes.end(); ++a)
 				for (auto b = std::next(a); b != shapes.end(); ++b) {
 					const auto &x = a->second, &y = b->second;
@@ -76,12 +80,14 @@ bool CollisionEvents::Update(const Scene &scene, const RigidBodyWorld *world,
 					}
 				}
 		}
+
 		std::set<CollisionContact> pairs(contacts_.begin(), contacts_.end());
 		pairs.insert(current.begin(), current.end());
 		pairs.insert(impacts.begin(), impacts.end());
 		if (pairs.size() > kMaximumContacts * 3)
 			return false;
 		std::vector<CollisionEvent> events;
+
 		for (const auto &pair : pairs) {
 			const bool previous =
 			    std::binary_search(contacts_.begin(), contacts_.end(), pair);
@@ -98,6 +104,7 @@ bool CollisionEvents::Update(const Scene &scene, const RigidBodyWorld *world,
 				events.push_back({pair, CollisionEvent::Type::EXIT});
 			}
 		}
+
 		contacts_.swap(current);
 		events_.swap(events);
 		return true;

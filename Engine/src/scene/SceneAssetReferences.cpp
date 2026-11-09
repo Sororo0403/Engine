@@ -12,6 +12,7 @@ void SceneAssetReferences::Rewrite(
 		if (!path.empty())
 			path = rewrite(path);
 	};
+
 	for (const auto &[id, value] : scene.GetObjects()) {
 		(void)value;
 		auto &object = *scene.FindObject(id);
@@ -28,6 +29,7 @@ void SceneAssetReferences::Rewrite(
 					apply(path);
 				}
 		}
+
 		if (object.particleEmitter)
 			apply(object.particleEmitter->texture);
 		if (object.image)

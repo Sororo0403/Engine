@@ -34,6 +34,7 @@ bool SceneRenderer::SetLighting(const LightingSettings &settings) {
 	if (!world_ || !settings.IsValid()) {
 		return false;
 	}
+
 	const auto &direction = settings.direction;
 	const double length = std::sqrt(double(direction.x) * direction.x +
 	                                double(direction.y) * direction.y +
@@ -61,10 +62,12 @@ bool SceneRenderer::Initialize() {
 	}
 
 	canvas_ = render_.CreateCanvas(modelLoadFailure_ == ModelLoadFailure::SKIP);
+
 	if (!canvas_) {
 		world_.reset();
 		return false;
 	}
+
 	particles_ = render_.CreateParticles();
 	return bool(particles_);
 }
@@ -78,6 +81,7 @@ bool SceneRenderer::PreparePrefabResources(
 			    "Initialize the renderer before preparing Prefabs.");
 		auto next = preparedPrefabs_;
 		std::vector<std::filesystem::path> images, particleImages;
+
 		for (const auto &scene : prefabs) {
 			if (!scene)
 				throw std::runtime_error("Prefab scene is missing.");
@@ -104,13 +108,16 @@ bool SceneRenderer::PreparePrefabResources(
 						throw std::runtime_error(
 						    "Spatial Prefab audio requires mono WAV.");
 				}
+
 				if (o.particleEmitter && !o.particleEmitter->texture.empty())
 					particleImages.push_back(o.particleEmitter->texture);
 				if (o.image && !o.image->texture.empty())
 					images.push_back(o.image->texture);
 			}
+
 			next.push_back(scene);
 		}
+
 		if (!canvas_->PrepareImages(images, error) ||
 		    !particles_->PrepareImages(particleImages, error))
 			return false;
@@ -138,19 +145,24 @@ bool SceneRenderer::Update(int width, int height) {
 		Logger::Error("SceneRenderer is not initialized.");
 		return false;
 	}
+
 	try {
 		std::vector<std::filesystem::path> images;
+
 		for (const auto &[id, o] : scene_.GetObjects()) {
 			(void)id;
 			if (o.particleEmitter && !o.particleEmitter->texture.empty())
 				images.push_back(o.particleEmitter->texture);
 		}
+
 		std::string error;
+
 		if (modelLoadFailure_ != ModelLoadFailure::SKIP &&
 		    !particles_->PrepareImages(images, error)) {
 			Logger::Error(error);
 			return false;
 		}
+
 		if (!SynchronizeObjects())
 			return false;
 		const bool updated = width == 0 && height == 0
@@ -159,11 +171,13 @@ bool SceneRenderer::Update(int width, int height) {
 		if (!updated)
 			return false;
 		DirectX::XMFLOAT4X4 view, projection;
+
 		if (!world_->GetCameraMatrices(view, projection) ||
 		    !particles_->Update(particleBatches_, view, projection, error)) {
 			Logger::Error(error);
 			return false;
 		}
+
 		return !screenUIEnabled_ ||
 		       render_.UpdateCanvas(*canvas_, scene_, width, height,
 		                            buttonVisuals_);
@@ -205,11 +219,14 @@ bool SceneRenderer::SynchronizeObjects() {
 	}
 
 	SceneActivity::States active;
+
 	if (!SceneActivity::BuildStates(scene_, active)) {
 		return false;
 	}
+
 	std::vector<PointLightData> lights;
 	std::string lightError;
+
 	if (!SceneLighting::CollectPointLights(scene_, lights, lightError) ||
 	    !world_->SetPointLights(lights)) {
 		Logger::Error(lightError.empty() ? "Point Light update failed."
@@ -218,12 +235,14 @@ bool SceneRenderer::SynchronizeObjects() {
 	}
 
 	std::vector<SpotLightData> spotLights;
+
 	if (!SceneLighting::CollectSpotLights(scene_, spotLights, lightError) ||
 	    !world_->SetSpotLights(spotLights)) {
 		Logger::Error(lightError.empty() ? "Spot Light update failed."
 		                                 : lightError);
 		return false;
 	}
+
 	const auto revision = models_.GetReloadRevision();
 	const bool modelsChanged = revision != modelRevision_;
 
@@ -266,6 +285,7 @@ bool SceneRenderer::SynchronizeObjects() {
 
 		if (needsCreate || modelsChanged) {
 			model = models_.Load(object.mesh->modelPath);
+
 			if (!model && !needsCreate) {
 				// 他のモデルの更新時にも、以前の有効な描画を保持する。
 				model = renderObject.model;
@@ -346,6 +366,7 @@ bool SceneRenderer::SynchronizeObjects() {
 
 		const auto animator = animatorPoses_.find(id);
 		const ModelAnimationPose *skin = nullptr;
+
 		if (object.animator && animator != animatorPoses_.end()) {
 			if (animator->second.model !=
 			    models_.GetAnimationData(renderObject.model)) {
@@ -353,8 +374,10 @@ bool SceneRenderer::SynchronizeObjects() {
 				              "Play to reload its clips.");
 				return false;
 			}
+
 			skin = animator->second.pose.get();
 		}
+
 		if (!world_->SetAnimationPose(renderObject.handle, skin))
 			return false;
 		// 親子の合成結果を、描画・選択・外接ボックスで共通に使用する。
@@ -508,6 +531,7 @@ bool SceneRenderer::SetUIButtonVisuals(
 	if (visuals.size() > CanvasLayout::kMaximumElements)
 		return false;
 	std::set<SceneObjectId> seen;
+
 	for (const auto &visual : visuals) {
 		const auto *object = scene_.FindObject(visual.object);
 		if (!object || !object->button || !seen.insert(visual.object).second ||
@@ -515,6 +539,7 @@ bool SceneRenderer::SetUIButtonVisuals(
 		    visual.state > UIButtonVisual::State::DISABLED)
 			return false;
 	}
+
 	std::vector<UIButtonVisual> candidate(visuals.begin(), visuals.end());
 	buttonVisuals_.swap(candidate);
 	return true;
@@ -526,12 +551,14 @@ void SceneRenderer::SetParticles(std::vector<ParticleDrawBatch> batches) {
 
 bool SceneRenderer::SetAnimatorPoses(std::vector<AnimatorDrawPose> poses) {
 	std::map<SceneObjectId, AnimatorDrawPose> next;
+
 	for (auto &pose : poses) {
 		const auto *object = scene_.FindObject(pose.object);
 		if (!object || !object->animator || !pose.model || !pose.pose ||
 		    !next.emplace(pose.object, std::move(pose)).second)
 			return false;
 	}
+
 	animatorPoses_ = std::move(next);
 	return true;
 }

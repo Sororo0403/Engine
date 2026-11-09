@@ -34,27 +34,32 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, int count,
 		if (!call.scene || !call.scene->Contains(id) || !call.particles)
 			throw std::runtime_error("Particle runtime is unavailable.");
 		auto state = call.particles->GetState(id);
+
 		if (!state && call.executing &&
 		    call.scene->FindObject(id)->particleEmitter) {
 			if (!call.particles->Configure(*call.scene, true, call.error))
 				return false;
 			state = call.particles->GetState(id);
 		}
+
 		if (!state)
 			throw std::runtime_error("This object requires Particle Emitter.");
 		if (op == Op::COUNT) {
 			value = static_cast<double>(state->count);
 			return true;
 		}
+
 		if (op == Op::EMITTING) {
 			value = state->emitting;
 			return true;
 		}
+
 		if ((op == Op::PLAY || op == Op::EMIT) &&
 		    !SceneActivity::IsActive(*call.scene, id)) {
 			value = 0;
 			return true;
 		}
+
 		const auto operation =
 		    op == Op::PLAY    ? SceneParticles::Operation::PLAY
 		    : op == Op::STOP  ? SceneParticles::Operation::STOP
@@ -87,20 +92,24 @@ int Dispatch(lua_State *state) {
 	int count = 0;
 	bool restart = true;
 	double value = 0;
+
 	if (op == Op::PLAY && !lua_isnoneornil(state, 2)) {
 		luaL_checktype(state, 2, LUA_TBOOLEAN);
 		restart = lua_toboolean(state, 2) != 0;
 	}
+
 	if (op == Op::EMIT) {
 		const auto n = luaL_checkinteger(state, 2);
 		if (n < 0 || n > ParticleEmitterComponent::kMaximumParticles)
 			return luaL_error(state, "Emit count must be between 0 and 4096.");
 		count = static_cast<int>(n);
 	}
+
 	if (!Perform(call, op, id, count, restart, value)) {
 		lua_pushlstring(state, call.error.data(), call.error.size());
 		return lua_error(state);
 	}
+
 	if (op == Op::COUNT)
 		lua_pushinteger(state, static_cast<lua_Integer>(value));
 	else

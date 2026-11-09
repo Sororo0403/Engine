@@ -744,6 +744,7 @@ bool RenderWorld::SetPointLights(std::span<const PointLightData> lights) {
 	                 [](const auto &light) { return light.IsValid(); })) {
 		return false;
 	}
+
 	std::vector<PointLightData> next(lights.begin(), lights.end());
 	impl_->pointLightData_.swap(next);
 	impl_->prepared_ = false;
@@ -756,6 +757,7 @@ bool RenderWorld::SetSpotLights(std::span<const SpotLightData> lights) {
 	                 [](const auto &light) { return light.IsValid(); })) {
 		return false;
 	}
+
 	std::vector<SpotLightData> next(lights.begin(), lights.end());
 	impl_->spotLightData_.swap(next);
 	impl_->prepared_ = false;
@@ -780,6 +782,7 @@ void RenderWorld::DrawShadows(MeshRenderer &renderer) const {
 			for (const auto &mesh : slot.object_->instance_.GetMeshes())
 				renderer.DrawShadow(commands, mesh, impl_->shadows_);
 	}
+
 	impl_->shadows_.End(commands);
 }
 

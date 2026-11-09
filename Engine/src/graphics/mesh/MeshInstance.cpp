@@ -33,14 +33,18 @@ bool MeshInstance::Initialize(ID3D12Device *device, const Mesh &mesh,
 			constantBuffer_.Finalize();
 			return false;
 		}
+
 		auto buffer = std::make_unique<ConstantBuffer<SkinningConstants>>();
+
 		if (!buffer->Initialize(device)) {
 			constantBuffer_.Finalize();
 			return false;
 		}
+
 		skinning_ = std::move(buffer);
 		weights_ = weights;
 	}
+
 	mesh_ = &mesh;
 	material_ = &material;
 

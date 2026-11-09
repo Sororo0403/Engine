@@ -118,6 +118,7 @@ bool SceneHierarchy::GetSubtree(const Scene &scene, SceneObjectId id,
 	if (!scene.Contains(id) || !GetEvaluationOrder(scene, order))
 		return false;
 	std::set<SceneObjectId> included;
+
 	for (const auto current : order) {
 		if (current == id ||
 		    included.contains(scene.FindObject(current)->parentId)) {
@@ -125,6 +126,7 @@ bool SceneHierarchy::GetSubtree(const Scene &scene, SceneObjectId id,
 			included.insert(current);
 		}
 	}
+
 	objects.swap(result);
 	return true;
 }
@@ -136,10 +138,12 @@ bool SceneHierarchy::GetSelectionRoots(const Scene &scene,
 	if (ids.empty() || !GetEvaluationOrder(scene, order))
 		return false;
 	std::set<SceneObjectId> selected;
+
 	for (const auto id : ids) {
 		if (!scene.Contains(id) || !selected.insert(id).second)
 			return false;
 	}
+
 	for (const auto id : ids) {
 		auto parent = scene.FindObject(id)->parentId;
 		while (parent != 0 && !selected.contains(parent))
@@ -147,6 +151,7 @@ bool SceneHierarchy::GetSelectionRoots(const Scene &scene,
 		if (parent == 0)
 			result.push_back(id);
 	}
+
 	roots.swap(result);
 	return true;
 }
@@ -159,6 +164,7 @@ bool SceneHierarchy::ExpandSelection(const Scene &scene,
 	    !GetEvaluationOrder(scene, order))
 		return false;
 	std::set<SceneObjectId> included(roots.begin(), roots.end());
+
 	for (const auto id : order) {
 		if (included.contains(id) ||
 		    included.contains(scene.FindObject(id)->parentId)) {
@@ -166,6 +172,7 @@ bool SceneHierarchy::ExpandSelection(const Scene &scene,
 			result.push_back(id);
 		}
 	}
+
 	objects.swap(result);
 	return true;
 }
@@ -367,11 +374,13 @@ bool SceneHierarchy::LookAt(Scene &scene, SceneObjectId id,
 	// 親の拡縮・せん断も含めて方向を逆変換し、負のZ拡縮による反転を補正する。
 	double localDirection[3]{};
 	const double sign = object->transform.scale.z < 0 ? -1. : 1.;
+
 	for (int axis = 0; axis < 3; ++axis) {
 		for (int component = 0; component < 3; ++component)
 			localDirection[axis] +=
 			    direction[component] * inverse.m[component][axis] * sign;
 	}
+
 	const double length =
 	    std::hypot(localDirection[0], localDirection[1], localDirection[2]);
 	if (!std::isfinite(length) || length == 0)
@@ -420,9 +429,11 @@ bool SceneHierarchy::SetWorldPose(Scene &scene, SceneObjectId id,
 	XMStoreFloat4(&local.rotation,
 	              XMQuaternionNormalize(XMQuaternionRotationMatrix(relative)));
 	SceneWorldTransform candidate;
+
 	if (!Compose(local, &parent, candidate)) {
 		return false;
 	}
+
 	object->transform = local;
 	return true;
 }
@@ -441,23 +452,27 @@ bool SceneHierarchy::SetWorldPositions(
 
 	return scene.ApplyTransaction([&](Scene &working) {
 		std::vector<SceneObjectId> order;
+
 		if (!GetEvaluationOrder(working, order)) {
 			return false;
 		}
 
 		for (const auto id : order) {
 			const auto found = positions.find(id);
+
 			if (found == positions.end()) {
 				continue;
 			}
 
 			SceneWorldTransform current;
+
 			if (!GetWorldTransform(working, id, current)) {
 				return false;
 			}
 
 			const auto position = current.GetPosition();
 			const auto &desired = found->second;
+
 			if (position.x == desired.x && position.y == desired.y &&
 			    position.z == desired.z) {
 				continue;
@@ -485,6 +500,7 @@ bool SceneHierarchy::TranslateSelection(Scene &scene,
 	}
 
 	std::map<SceneObjectId, DirectX::XMFLOAT3> positions;
+
 	for (const auto id : roots) {
 		const auto position = transforms.at(id).GetPosition();
 		positions.emplace(id, DirectX::XMFLOAT3{position.x + translation.x,

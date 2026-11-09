@@ -29,6 +29,7 @@ bool Valid(const Json &value, int depth, std::size_t &count) {
 				return false;
 		return true;
 	}
+
 	if (value.is_number_unsigned())
 		return value.get<std::uint64_t>() <=
 		       std::uint64_t((std::numeric_limits<lua_Integer>::max)());
@@ -79,6 +80,7 @@ Json Read(
 		throw std::runtime_error("Script state supports numbers, booleans, "
 		                         "strings and tables only.");
 	}
+
 	const void *identity = lua_topointer(state, index);
 	if (std::find(parents.begin(), parents.begin() + depth, identity) !=
 	    parents.begin() + depth)
@@ -86,12 +88,15 @@ Json Read(
 	parents[depth] = identity;
 	bool strings = true, integers = true, marked = false;
 	std::size_t count = 0, maximum = 0;
+
 	if (lua_getmetatable(state, index)) {
 		lua_rawgetp(state, LUA_REGISTRYINDEX, &kArrayMarker);
 		marked = lua_rawequal(state, -1, -2) != 0;
 		lua_pop(state, 2);
 	}
+
 	lua_pushnil(state);
+
 	while (lua_next(state, index)) {
 		if (++count > LuaScript::kMaximumStateValues)
 			throw std::runtime_error("Script state has too many table fields.");
@@ -108,11 +113,13 @@ Json Read(
 			               static_cast<std::size_t>(lua_tointeger(state, -2)));
 		lua_pop(state, 1);
 	}
+
 	if (count && ((!strings && !integers) || (integers && maximum != count)))
 		throw std::runtime_error("Script state tables need string keys or "
 		                         "contiguous array indices.");
 	const bool array = (count && integers) || (!count && marked);
 	Json result = array ? Json::array() : Json::object();
+
 	if (array) {
 		for (std::size_t i = 1; i <= count; ++i) {
 			lua_rawgeti(state, index, static_cast<lua_Integer>(i));
@@ -122,6 +129,7 @@ Json Read(
 		}
 	} else {
 		lua_pushnil(state);
+
 		while (lua_next(state, index)) {
 			std::size_t size = 0;
 			const char *key = lua_tolstring(state, -2, &size);
@@ -134,6 +142,7 @@ Json Read(
 			lua_pop(state, 1);
 		}
 	}
+
 	return result;
 }
 } // namespace
@@ -152,10 +161,12 @@ void LuaInternal::PrepareState(lua_State *state) {
 
 LuaInternal::StateNode LuaInternal::BuildState(const nlohmann::json &value) {
 	StateNode node;
+
 	if (value.is_object() || value.is_array()) {
 		node.kind = value.is_object() ? StateNode::Kind::OBJECT
 		                              : StateNode::Kind::ARRAY;
 		node.children.reserve(value.size());
+
 		for (auto i = value.cbegin(); i != value.cend(); ++i) {
 			auto child = BuildState(i.value());
 			if (value.is_object())
@@ -175,6 +186,7 @@ LuaInternal::StateNode LuaInternal::BuildState(const nlohmann::json &value) {
 		node.kind = StateNode::Kind::STRING;
 		node.text = value.get_ref<const std::string &>();
 	}
+
 	return node;
 }
 
@@ -183,21 +195,25 @@ void LuaInternal::PushState(lua_State *state, const StateNode &value) {
 	switch (value.kind) {
 	case StateNode::Kind::OBJECT:
 		lua_createtable(state, 0, static_cast<int>(value.children.size()));
+
 		for (std::size_t i = 0; i < value.children.size(); ++i) {
 			const auto &child = value.children[i];
 			lua_pushlstring(state, child.key.data(), child.key.size());
 			PushState(state, child);
 			lua_rawset(state, -3);
 		}
+
 		break;
 	case StateNode::Kind::ARRAY:
 		lua_createtable(state, static_cast<int>(value.children.size()), 0);
 		lua_rawgetp(state, LUA_REGISTRYINDEX, &kArrayMarker);
 		lua_setmetatable(state, -2);
+
 		for (std::size_t i = 0; i < value.children.size(); ++i) {
 			PushState(state, value.children[i]);
 			lua_rawseti(state, -2, static_cast<lua_Integer>(i + 1));
 		}
+
 		break;
 	case StateNode::Kind::BOOLEAN:
 		lua_pushboolean(state, value.boolean);

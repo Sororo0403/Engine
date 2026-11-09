@@ -19,14 +19,17 @@ std::filesystem::path Normalize(std::filesystem::path directory) {
 	}
 
 	directory = directory.lexically_normal();
+
 	if (!directory.has_filename() && directory != directory.root_path()) {
 		directory = directory.parent_path();
 	}
+
 	for (const auto &part : directory.relative_path()) {
 		if (!PathUtils::IsValidFileName(part)) {
 			throw std::invalid_argument("An Assets folder name is invalid.");
 		}
 	}
+
 	return directory;
 }
 
@@ -41,6 +44,7 @@ bool Contains(const std::filesystem::path &directory,
 	if (!path.is_absolute()) {
 		return false;
 	}
+
 	try {
 		PathUtils::RelativeInside(directory, path.lexically_normal());
 		return true;
@@ -52,21 +56,25 @@ bool Contains(const std::filesystem::path &directory,
 
 void AssetSources::Select(std::filesystem::path directory) {
 	directory = Normalize(std::move(directory));
+
 	if (directory.is_absolute()) {
 		Register(directory);
 	} else {
 		PathUtils::RelativeInside(std::filesystem::path(L"resources"),
 		                          directory);
 	}
+
 	directory_.swap(directory);
 }
 
 void AssetSources::Register(std::filesystem::path directory) {
 	directory = Normalize(std::move(directory));
+
 	if (!directory.is_absolute()) {
 		throw std::invalid_argument(
 		    "External asset sources need absolute paths.");
 	}
+
 	if (std::ranges::any_of(directories_, [&](const auto &existing) {
 		    return Contains(existing, directory) &&
 		           Contains(directory, existing);
@@ -145,6 +153,7 @@ AssetSources::ForScene(const Scene &scene) const {
 			        Contains(directory, object.mesh->modelPath)) {
 				    return true;
 			    }
+
 			    return object.meshRenderer &&
 			           std::ranges::any_of(object.meshRenderer->textures.slots,
 			                               [&](const auto &binding) {
@@ -153,10 +162,12 @@ AssetSources::ForScene(const Scene &scene) const {
 			                               });
 		    });
 		std::error_code directoryError;
+
 		if (used || (transitions && std::filesystem::is_directory(
 		                                directory, directoryError))) {
 			result.push_back(directory);
 		}
 	}
+
 	return result;
 }

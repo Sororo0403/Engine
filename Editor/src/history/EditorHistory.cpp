@@ -34,14 +34,17 @@ namespace {
 bool ReadWorldPositions(const Scene &scene, std::span<const SceneObjectId> ids,
                         std::map<SceneObjectId, DirectX::XMFLOAT3> &positions) {
 	SceneHierarchy::WorldTransforms transforms;
+
 	if (ids.empty() ||
 	    !SceneHierarchy::BuildWorldTransforms(scene, transforms)) {
 		return false;
 	}
 
 	std::map<SceneObjectId, DirectX::XMFLOAT3> result;
+
 	for (const auto id : ids) {
 		const auto found = transforms.find(id);
+
 		if (found == transforms.end() ||
 		    !result.emplace(id, found->second.GetPosition()).second) {
 			return false;
@@ -84,6 +87,7 @@ SceneObjectId EditorHistory::CreateObject(std::string name,
 
 	SceneObject object;
 	object.name = std::move(name);
+
 	if (!modelPath.empty()) {
 		object.mesh = MeshComponent{std::move(modelPath)};
 		object.meshRenderer = MeshRendererComponent{};
@@ -113,6 +117,7 @@ bool EditorHistory::SetParent(std::span<const SceneObjectId> ids,
 	Scene working;
 	working.ReplaceObjects(scene_.GetObjects());
 	std::vector<CommandGroup::Command> commands;
+
 	for (const auto id : roots) {
 		const auto &before = *scene_.FindObject(id);
 		if (before.parentId == parent)
@@ -123,6 +128,7 @@ bool EditorHistory::SetParent(std::span<const SceneObjectId> ids,
 		commands.emplace_back(ParentCommand{id, before.parentId, after.parentId,
 		                                    before.transform, after.transform});
 	}
+
 	if (commands.empty())
 		return true;
 	SceneHierarchy::WorldTransforms transforms;
@@ -175,15 +181,18 @@ bool EditorHistory::DeleteObjects(std::span<const SceneObjectId> objectIds) {
 		    [&](Scene &candidate) {
 			    for (const auto &[id, object] : candidate.GetObjects()) {
 				    (void)object;
+
 				    if (!seen.contains(id)) {
 					    SceneObjectReferences::ClearTargets(
 					        *candidate.FindObject(id), expanded);
 				    }
 			    }
+
 			    for (auto it = expanded.rbegin(); it != expanded.rend(); ++it) {
 				    if (!candidate.DestroyObject(*it))
 					    return false;
 			    }
+
 			    return true;
 		    },
 		    objectIds.size() == 1 ? "Delete Object" : "Delete Objects");
@@ -197,16 +206,20 @@ bool EditorHistory::DeleteObjects(std::span<const SceneObjectId> objectIds) {
 		if (seen.contains(id)) {
 			continue;
 		}
+
 		auto cleared = object;
 		SceneObjectReferences::ClearTargets(cleared, expanded);
+
 		if (cleared.script != object.script) {
 			commands.emplace_back(
 			    ScriptCommand{id, object.script, cleared.script});
 		}
+
 		if (cleared.followCamera != object.followCamera) {
 			commands.emplace_back(FollowCameraCommand{id, object.followCamera,
 			                                          cleared.followCamera});
 		}
+
 		if (cleared.triggerActions != object.triggerActions) {
 			commands.emplace_back(TriggerActionsCommand{
 			    id, object.triggerActions, cleared.triggerActions});
@@ -283,9 +296,11 @@ EditorHistory::DuplicateObjectsInArray(std::span<const SceneObjectId> objectIds,
 	std::vector<SceneObject> copies;
 	const auto count = settings.GetCopyCount();
 	copies.reserve(expanded.size() * static_cast<std::size_t>(count));
+
 	for (int copy = 1; copy <= count; ++copy) {
 		Scene working;
 		working.ReplaceObjects(scene_.GetObjects());
+
 		for (const auto id : roots) {
 			SceneWorldTransform world;
 			if (!SceneHierarchy::GetWorldTransform(scene_, id, world))
@@ -294,6 +309,7 @@ EditorHistory::DuplicateObjectsInArray(std::span<const SceneObjectId> objectIds,
 			if (!SceneHierarchy::SetWorldPosition(working, id, moved))
 				return {};
 		}
+
 		for (const auto id : expanded) {
 			auto object = *working.FindObject(id);
 			object.name =
@@ -302,6 +318,7 @@ EditorHistory::DuplicateObjectsInArray(std::span<const SceneObjectId> objectIds,
 			copies.push_back(std::move(object));
 		}
 	}
+
 	return CreateObjectGroups(std::move(copies), expanded);
 }
 
@@ -357,6 +374,7 @@ EditorHistory::CreateObjectGroups(std::vector<SceneObject> objects,
 
 	for (std::size_t i = 0; i < objects.size(); ++i) {
 		auto &object = objects[i];
+
 		if (object.prefabLink &&
 		    std::find(sourceIds.begin(), sourceIds.end(),
 		              object.prefabLink->root) == sourceIds.end()) {
@@ -439,6 +457,7 @@ EditorHistory::CreateObjectGroups(std::vector<SceneObject> objects,
 				commands.emplace_back(ObjectCommand{
 				    id, *working.FindObject(id), ObjectCommand::Kind::CREATE});
 		}
+
 		return true;
 	});
 
@@ -465,6 +484,7 @@ bool EditorHistory::BeginTransforms(std::span<const SceneObjectId> objectIds) {
 		return false;
 	std::vector<TransformSnapshot> snapshots;
 	snapshots.reserve(roots.size());
+
 	for (const auto id : roots) {
 		const auto *object = scene_.FindObject(id);
 		SceneWorldTransform world;
@@ -594,6 +614,7 @@ bool EditorHistory::UpdateTransforms(const Transform &beforePivot,
 		if (!object || object->parentId != snapshot.parentId)
 			return false;
 		object->transform = snapshot.before;
+
 		if (snapshot.parentId == 0) {
 			object->transform = makeEdited(snapshot);
 			if (!TransformUtils::IsValid(object->transform))
@@ -618,6 +639,7 @@ bool EditorHistory::UpdateTransforms(const Transform &beforePivot,
 				return false;
 		}
 	}
+
 	SceneHierarchy::WorldTransforms transforms;
 	if (!SceneHierarchy::BuildWorldTransforms(working, transforms))
 		return false;
@@ -791,6 +813,7 @@ bool EditorHistory::SetModelPaths(std::span<const SceneObjectId> ids,
 
 	for (const auto id : ids) {
 		const auto *object = scene_.FindObject(id);
+
 		if (!seen.insert(id).second || !object || !object->mesh ||
 		    !object->mesh->IsValid()) {
 			return false;
@@ -808,6 +831,7 @@ bool EditorHistory::SetModelPaths(std::span<const SceneObjectId> ids,
 
 	CommandGroup group{std::move(commands)};
 	const auto next = PrepareAppend();
+
 	if (!group.Redo(scene_)) {
 		return false;
 	}
@@ -967,12 +991,14 @@ bool EditorHistory::AlignCameraView(SceneObjectId id, const CameraPose &pose,
 	}
 
 	Scene working;
+
 	if (!SceneCameraUtils::ResolveInitialDependencies(scene_, id, working)) {
 		return false;
 	}
 
 	Transform desiredView, currentView;
 	SceneWorldTransform currentWorld;
+
 	if (!SceneCameraUtils::ApplyPose(pose, desiredView) ||
 	    !SceneHierarchy::GetWorldTransform(working, id, currentWorld) ||
 	    !SceneCameraUtils::ApplyPose(
@@ -985,6 +1011,7 @@ bool EditorHistory::AlignCameraView(SceneObjectId id, const CameraPose &pose,
 	// 同じ開始ビューでは、親の逆変換やオフセットの再計算による丸め誤差を履歴へ加えない。
 	if (!TransformUtils::AreEqual(currentView, desiredView)) {
 		auto desiredPose = pose;
+
 		if (follow) {
 			SceneWorldTransform target;
 			if (object->character ||
@@ -1136,12 +1163,14 @@ bool EditorHistory::SnapObjectsToGrid(std::span<const SceneObjectId> objectIds,
                                       const DirectX::XMFLOAT3 &step) {
 	CommitEdit();
 	std::map<SceneObjectId, DirectX::XMFLOAT3> positions;
+
 	if (!ReadWorldPositions(scene_, objectIds, positions)) {
 		return false;
 	}
 
 	for (auto &[id, position] : positions) {
 		(void)id;
+
 		if (!MathUtils::SnapToGrid(position, step, position)) {
 			return false;
 		}
@@ -1224,6 +1253,7 @@ bool EditorHistory::AlignObjects(std::span<const SceneObjectId> objectIds,
 	}
 
 	const float reference = Coordinate(positions.at(referenceId), axis);
+
 	for (auto &[id, position] : positions) {
 		(void)id;
 		Coordinate(position, axis) = reference;
@@ -1242,6 +1272,7 @@ bool EditorHistory::AlignColliderBounds(
 	std::map<SceneObjectId, DirectX::XMFLOAT3> positions;
 	AxisAlignedBox referenceBounds;
 	const auto *reference = scene_.FindObject(referenceId);
+
 	if (objectIds.size() < 2 || !IsPlacementAxis(axis) || !reference ||
 	    !reference->collider ||
 	    !ReadWorldPositions(scene_, objectIds, positions) ||
@@ -1256,15 +1287,18 @@ bool EditorHistory::AlignColliderBounds(
 		return double(Coordinate(value, axis));
 	};
 	const double target = edge(referenceBounds);
+
 	for (auto &[id, position] : positions) {
 		const auto *object = scene_.FindObject(id);
 		AxisAlignedBox bounds;
+
 		if (!object->collider || !ColliderUtils::GetWorldBounds(
 		                             *object->collider, scene_, id, bounds)) {
 			return false;
 		}
 
 		const double delta = target - edge(bounds);
+
 		if (id != referenceId &&
 		    std::abs(delta) > kColliderAlignmentTolerance) {
 			Coordinate(position, axis) =
@@ -1274,6 +1308,7 @@ bool EditorHistory::AlignColliderBounds(
 
 	Scene working;
 	working.ReplaceObjects(scene_.GetObjects());
+
 	if (!SceneHierarchy::SetWorldPositions(working, positions)) {
 		return false;
 	}
@@ -1296,6 +1331,7 @@ bool EditorHistory::DistributeObjects(std::span<const SceneObjectId> objectIds,
                                       AlignmentAxis axis) {
 	CommitEdit();
 	std::map<SceneObjectId, DirectX::XMFLOAT3> positions;
+
 	if (objectIds.size() < 3 || !IsPlacementAxis(axis) ||
 	    !ReadWorldPositions(scene_, objectIds, positions)) {
 		return false;
@@ -1327,6 +1363,7 @@ bool EditorHistory::DistributeColliderGaps(
     std::span<const SceneObjectId> objectIds, AlignmentAxis axis) {
 	CommitEdit();
 	std::map<SceneObjectId, DirectX::XMFLOAT3> positions;
+
 	if (objectIds.size() < 3 || !IsPlacementAxis(axis) ||
 	    !ReadWorldPositions(scene_, objectIds, positions)) {
 		return false;
@@ -1343,9 +1380,11 @@ bool EditorHistory::DistributeColliderGaps(
 	};
 	std::vector<Placement> placements;
 	double totalWidth = 0;
+
 	for (const auto id : objectIds) {
 		const auto *object = scene_.FindObject(id);
 		AxisAlignedBox bounds;
+
 		if (!object->collider || !ColliderUtils::GetWorldBounds(
 		                             *object->collider, scene_, id, bounds)) {
 			return false;
@@ -1364,6 +1403,7 @@ bool EditorHistory::DistributeColliderGaps(
 	const double first = coordinate(placements.front().bounds.minimum);
 	const double last = coordinate(placements.back().bounds.maximum);
 	const double available = last - first - totalWidth;
+
 	if (!std::isfinite(available) || available < -kColliderAlignmentTolerance) {
 		return false;
 	}
@@ -1371,6 +1411,7 @@ bool EditorHistory::DistributeColliderGaps(
 	const double gap =
 	    (std::max)(0.0, available) / double(placements.size() - 1);
 	bool evenlySpaced = true;
+
 	for (std::size_t i = 1; i < placements.size(); ++i) {
 		const double actual = coordinate(placements[i].bounds.minimum) -
 		                      coordinate(placements[i - 1].bounds.maximum);
@@ -1386,12 +1427,14 @@ bool EditorHistory::DistributeColliderGaps(
 	}
 
 	double cursor = first;
+
 	for (std::size_t i = 0; i < placements.size(); ++i) {
 		auto &placement = placements[i];
 		const double low = coordinate(placement.bounds.minimum);
 		const double width = coordinate(placement.bounds.maximum) - low;
 		placement.minimum = cursor;
 		placement.maximum = cursor + width;
+
 		if (i != 0 && i + 1 != placements.size() &&
 		    std::abs(cursor - low) > kColliderAlignmentTolerance) {
 			auto &position = positions.at(placement.id);
@@ -1404,11 +1447,13 @@ bool EditorHistory::DistributeColliderGaps(
 
 	Scene working;
 	working.ReplaceObjects(scene_.GetObjects());
+
 	if (!SceneHierarchy::SetWorldPositions(working, positions)) {
 		return false;
 	}
 
 	double previous = first;
+
 	for (std::size_t i = 0; i < placements.size(); ++i) {
 		const auto &placement = placements[i];
 		AxisAlignedBox bounds;
@@ -1421,6 +1466,7 @@ bool EditorHistory::DistributeColliderGaps(
 		const double low = coordinate(bounds.minimum),
 		             high = coordinate(bounds.maximum);
 		const double actualGap = low - previous;
+
 		if (std::abs(low - placement.minimum) > kColliderAlignmentTolerance ||
 		    std::abs(high - placement.maximum) > kColliderAlignmentTolerance ||
 		    (i != 0 && (actualGap < 0 || std::abs(actualGap - gap) >
@@ -2807,16 +2853,19 @@ bool EditorHistory::ApplyWorldPositions(
     std::string_view description) {
 	Scene working;
 	working.ReplaceObjects(scene_.GetObjects());
+
 	if (!SceneHierarchy::SetWorldPositions(working, positions)) {
 		return false;
 	}
 
 	std::vector<CommandGroup::Command> commands;
 	commands.reserve(positions.size());
+
 	for (const auto &[id, position] : positions) {
 		(void)position;
 		const auto &before = scene_.FindObject(id)->transform;
 		const auto &after = working.FindObject(id)->transform;
+
 		if (!TransformUtils::AreEqual(before, after)) {
 			commands.emplace_back(TransformCommand{id, before, after});
 		}
@@ -2828,6 +2877,7 @@ bool EditorHistory::ApplyWorldPositions(
 
 	CommandGroup group{std::move(commands)};
 	const auto next = PrepareAppend();
+
 	if (!group.Redo(scene_)) {
 		return false;
 	}
@@ -2846,9 +2896,11 @@ bool EditorHistory::SetTriggerActions(
     SceneObjectId id, std::optional<TriggerActionsComponent> value) {
 	CommitEdit();
 	const auto *object = scene_.FindObject(id);
+
 	if (!object || (value && !value->IsValid())) {
 		return false;
 	}
+
 	if (value) {
 		for (const auto &action : value->actions) {
 			if (action.target != 0 && !scene_.Contains(action.target)) {
@@ -2856,15 +2908,20 @@ bool EditorHistory::SetTriggerActions(
 			}
 		}
 	}
+
 	const bool adding = !object->triggerActions;
 	TriggerActionsCommand command{id, object->triggerActions, value};
+
 	if (!command.HasChanges()) {
 		return true;
 	}
+
 	const auto next = PrepareAppend();
+
 	if (!command.Redo(scene_)) {
 		return false;
 	}
+
 	AppendPrepared(Command{std::move(command)}, next,
 	               !value   ? "Remove Trigger Actions"
 	               : adding ? "Add Trigger Actions"
@@ -3194,25 +3251,33 @@ bool EditorHistory::ApplySceneChanges(
 	if (IsEditing() || !operation) {
 		return false;
 	}
+
 	std::optional<ScenePatchCommand> command;
 	std::optional<std::uint64_t> state;
 	const bool applied = scene_.ApplyTransaction([&](Scene &candidate) {
 		if (!operation(candidate)) {
 			return false;
 		}
+
 		std::string text;
+
 		if (!SceneSerializer::Serialize(candidate, text)) {
 			return false;
 		}
+
 		command.emplace(scene_, candidate);
+
 		if (command->HasChanges()) {
 			state = PrepareAppend();
 		}
+
 		return true;
 	});
+
 	if (applied && state) {
 		AppendPrepared(Command{std::move(*command)}, *state, description);
 	}
+
 	return applied;
 }
 
@@ -3224,6 +3289,7 @@ bool EditorHistory::SetScript(SceneObjectId id,
 			return false;
 		value->initialState = std::move(normalized);
 	}
+
 	CommitEdit();
 	auto *object = scene_.FindObject(id);
 

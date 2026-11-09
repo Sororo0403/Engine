@@ -58,6 +58,7 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id,
 			                 : 0.0f;
 			return true;
 		}
+
 		if (!call.physics)
 			throw std::runtime_error(
 			    "Rigid Body APIs require a physical runtime.");
@@ -66,11 +67,13 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id,
 			throw std::runtime_error(
 			    "This object needs an active, enabled Rigid Body.");
 		std::string error;
+
 		if (call.physicsDirty) {
 			if (!call.physics->Configure(*call.scene, true, error))
 				throw std::runtime_error(error);
 			call.physicsDirty = false;
 		}
+
 		const auto *world = call.physics->GetWorld();
 		const auto state = world ? world->GetState(id) : std::nullopt;
 		if (!state)
@@ -95,6 +98,7 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id,
 			if (!applied)
 				throw std::runtime_error(error);
 		}
+
 		return true;
 	} catch (const std::exception &exception) {
 		call.error.assign(
@@ -133,15 +137,18 @@ int Dispatch(lua_State *state) {
 		lua_pushlstring(state, call.error.data(), call.error.size());
 		return lua_error(state);
 	}
+
 	if (op == Op::SLEEPING || op == Op::DYNAMIC) {
 		lua_pushboolean(state, numbers[0] != 0);
 		return 1;
 	}
+
 	if (op == Op::VELOCITY || op == Op::ANGULAR_VELOCITY) {
 		for (int i = 0; i < 3; ++i)
 			lua_pushnumber(state, numbers[i]);
 		return 3;
 	}
+
 	return 0;
 }
 } // namespace

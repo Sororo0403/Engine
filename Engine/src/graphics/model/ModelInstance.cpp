@@ -168,6 +168,7 @@ void ModelInstance::Finalize() {
 		instance.Finalize();
 	animatedInstances_.clear();
 	animationPose_.reset();
+
 	for (auto &material : materials_) {
 		material.Finalize();
 	}
@@ -211,6 +212,7 @@ bool ModelInstance::SetAnimationPose(const ModelAnimationPose *pose) {
 		animationPose_.reset();
 		return true;
 	}
+
 	const auto &data = model_->GetAnimationData();
 	if (!data)
 		return false;
@@ -220,6 +222,7 @@ bool ModelInstance::SetAnimationPose(const ModelAnimationPose *pose) {
 	try {
 		// 複製と検証を先に済ませ、無効な入力で以前のGPU行列を上書きしない。
 		std::optional<ModelAnimationPose> next{*pose};
+
 		if (animatedInstances_.empty()) {
 			std::vector<MeshInstance> instances(data->meshes.size());
 			for (std::size_t i = 0; i < instances.size(); ++i)
@@ -230,6 +233,7 @@ bool ModelInstance::SetAnimationPose(const ModelAnimationPose *pose) {
 					return false;
 			animatedInstances_ = std::move(instances);
 		}
+
 		for (std::size_t i = 0; i < animatedInstances_.size(); ++i) {
 			SkinningConstants constants;
 			constants.boneCount =
@@ -247,9 +251,11 @@ bool ModelInstance::SetAnimationPose(const ModelAnimationPose *pose) {
 				    DirectX::XMMatrixTranspose(
 				        DirectX::XMLoadFloat4x4(&inverse)));
 			}
+
 			if (!animatedInstances_[i].UpdateSkinning(constants))
 				return false;
 		}
+
 		animationPose_ = std::move(next);
 		return true;
 	} catch (const std::exception &e) {

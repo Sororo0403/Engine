@@ -25,6 +25,7 @@ bool TextureImporter::Import(const TextureImportOptions &options,
 		    AssetFolders::Resolve(options.assetRoot, options.folder);
 
 		const auto destination = folder / options.fileName;
+
 		if (std::filesystem::exists(destination)) {
 			throw std::runtime_error(
 			    "An asset with that name already exists. Choose another name.");

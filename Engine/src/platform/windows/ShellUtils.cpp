@@ -17,6 +17,7 @@ std::filesystem::path Resolve(const std::filesystem::path &path) {
 	    (path.has_root_path() && !path.is_absolute())) {
 		throw std::invalid_argument("Choose a valid local path.");
 	}
+
 	return std::filesystem::canonical(PathUtils::ResolveFromExecutable(path));
 }
 
@@ -45,6 +46,7 @@ void Open(const std::filesystem::path &path,
 		    std::format("Could not open {} (Windows error {}).",
 		                PathUtils::ToUtf8(path), code));
 	}
+
 	if (info.hProcess) {
 		CloseHandle(info.hProcess);
 	}
@@ -55,9 +57,11 @@ bool ShellUtils::OpenDirectory(const std::filesystem::path &path,
                                std::string &error) {
 	try {
 		const auto resolved = Resolve(path);
+
 		if (!std::filesystem::is_directory(resolved)) {
 			throw std::invalid_argument("Choose an existing folder.");
 		}
+
 		Open(resolved, resolved, WindowVisibility::NORMAL);
 		error.clear();
 		return true;
@@ -72,10 +76,12 @@ bool ShellUtils::RunExecutable(const std::filesystem::path &path,
                                WindowVisibility visibility) {
 	try {
 		const auto resolved = Resolve(path);
+
 		if (!PathUtils::HasExtension(resolved, ".exe") ||
 		    !std::filesystem::is_regular_file(resolved)) {
 			throw std::invalid_argument("Choose an existing .exe file.");
 		}
+
 		Open(resolved, resolved.parent_path(), visibility);
 		error.clear();
 		return true;

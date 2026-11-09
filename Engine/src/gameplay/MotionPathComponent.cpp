@@ -36,12 +36,14 @@ double MotionPathComponent::GetTimeToBoundary(double seconds,
 	const double interval = travel + waypointWaitSeconds;
 	const double phase = std::fmod(seconds, interval);
 	constexpr double tolerance = 1e-10;
+
 	if (reverse) {
 		if (phase <= tolerance)
 			return waypointWaitSeconds > tolerance ? waypointWaitSeconds
 			                                       : travel;
 		return phase > travel + tolerance ? phase - travel : phase;
 	}
+
 	if (phase < travel - tolerance)
 		return travel - phase;
 	return interval - phase;

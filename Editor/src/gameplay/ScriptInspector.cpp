@@ -36,6 +36,7 @@ bool ScriptInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		draft_ = initial_;
 		error_.clear();
 	}
+
 	if (!ui.CollapsingHeader("Lua Script"))
 		return false;
 	const auto scope = std::to_string(id);
@@ -53,15 +54,19 @@ bool ScriptInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 			value.asset.clear();
 			changed |= history.SetScript(id, value);
 		}
+
 		for (const auto &path : scripts) {
 			const auto label = PathUtils::ToUtf8(path);
+
 			if (ui.Selectable(label.c_str(), path == value.asset)) {
 				value.asset = path;
 				changed |= history.SetScript(id, value);
 			}
 		}
+
 		ImGui::EndCombo();
 	}
+
 	if (auto path = AssetDragDrop::AcceptTarget(AssetDragDrop::Kind::SCRIPT);
 	    !path.empty()) {
 		value.asset = std::move(path);
@@ -77,6 +82,7 @@ bool ScriptInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		                  "one undo step.");
 	if (ui.Button("Apply Initial State")) {
 		std::string normalized;
+
 		if (LuaScript::NormalizeState(draft_, normalized, error_)) {
 			value.initialState = std::move(normalized);
 			changed |= history.SetScript(id, value);
@@ -84,13 +90,17 @@ bool ScriptInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 			draft_ = initial_;
 		}
 	}
+
 	ui.SameLine();
+
 	if (ui.Button("Reload Initial State")) {
 		initial_ = object.script->initialState;
 		draft_ = initial_;
 		error_.clear();
 	}
+
 	std::size_t remove = value.references.size();
+
 	for (std::size_t i = 0; i < value.references.size(); ++i) {
 		ImGui::PushID(static_cast<int>(i));
 		auto &[name, target] = value.references[i];
@@ -104,24 +114,30 @@ bool ScriptInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 				target = 0;
 				changed |= history.SetScript(id, value);
 			}
+
 			for (const auto &[other, entry] : scene.GetObjects()) {
 				const auto item = std::format("{} (ID {})", entry.name, other);
+
 				if (ui.Selectable(item.c_str(), target == other)) {
 					target = other;
 					changed |= history.SetScript(id, value);
 				}
 			}
+
 			ImGui::EndCombo();
 		}
+
 		if (ui.Button("Remove Reference"))
 			remove = i;
 		ImGui::PopID();
 	}
+
 	if (remove < value.references.size()) {
 		value.references.erase(value.references.begin() +
 		                       static_cast<std::ptrdiff_t>(remove));
 		changed |= history.SetScript(id, value);
 	}
+
 	ui.InputText("Reference Name", referenceName_);
 	ImGui::BeginDisabled(value.references.size() >=
 	                     ScriptComponent::kMaximumReferences);
@@ -136,10 +152,12 @@ bool ScriptInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 			error_.clear();
 		}
 	}
+
 	ImGui::EndDisabled();
 
 	std::size_t removePrefab = value.prefabs.size();
 	ImGui::PushID("PrefabSlots");
+
 	for (std::size_t i = 0; i < value.prefabs.size(); ++i) {
 		ImGui::PushID(static_cast<int>(i));
 		auto &[name, path] = value.prefabs[i];
@@ -147,20 +165,25 @@ bool ScriptInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		                               ? std::string("None")
 		                               : PathUtils::ToUtf8(path.filename());
 		const auto label = "Prefab: " + name;
+
 		if (ImGui::BeginCombo(label.c_str(), prefabPreview.c_str())) {
 			if (ui.Selectable("None", path.empty())) {
 				path.clear();
 				changed |= history.SetScript(id, value);
 			}
+
 			for (const auto &candidate : prefabs) {
 				const auto title = PathUtils::ToUtf8(candidate);
+
 				if (ui.Selectable(title.c_str(), path == candidate)) {
 					path = candidate;
 					changed |= history.SetScript(id, value);
 				}
 			}
+
 			ImGui::EndCombo();
 		}
+
 		if (auto droppedPrefab =
 		        AssetDragDrop::AcceptTarget(AssetDragDrop::Kind::PREFAB);
 		    !droppedPrefab.empty()) {
@@ -171,11 +194,13 @@ bool ScriptInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 			removePrefab = i;
 		ImGui::PopID();
 	}
+
 	if (removePrefab < value.prefabs.size()) {
 		value.prefabs.erase(value.prefabs.begin() +
 		                    static_cast<std::ptrdiff_t>(removePrefab));
 		changed |= history.SetScript(id, value);
 	}
+
 	ui.InputText("Prefab Name", prefabName_);
 	ImGui::BeginDisabled(value.prefabs.size() >=
 	                     ScriptComponent::kMaximumPrefabs);
@@ -189,10 +214,12 @@ bool ScriptInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 			error_.clear();
 		}
 	}
+
 	ImGui::EndDisabled();
 	ImGui::PopID();
 	std::size_t removeScene = value.scenes.size();
 	ImGui::PushID("SceneSlots");
+
 	for (std::size_t i = 0; i < value.scenes.size(); ++i) {
 		ImGui::PushID(static_cast<int>(i));
 		auto &[name, path] = value.scenes[i];
@@ -200,20 +227,25 @@ bool ScriptInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		                              ? std::string("None")
 		                              : PathUtils::ToUtf8(path.filename());
 		const auto label = "Scene: " + name;
+
 		if (ImGui::BeginCombo(label.c_str(), scenePreview.c_str())) {
 			if (ui.Selectable("None", path.empty())) {
 				path.clear();
 				changed |= history.SetScript(id, value);
 			}
+
 			for (const auto &candidate : scenes) {
 				const auto title = PathUtils::ToUtf8(candidate);
+
 				if (ui.Selectable(title.c_str(), path == candidate)) {
 					path = candidate;
 					changed |= history.SetScript(id, value);
 				}
 			}
+
 			ImGui::EndCombo();
 		}
+
 		if (auto droppedScene =
 		        AssetDragDrop::AcceptTarget(AssetDragDrop::Kind::SCENE);
 		    !droppedScene.empty()) {
@@ -224,11 +256,13 @@ bool ScriptInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 			removeScene = i;
 		ImGui::PopID();
 	}
+
 	if (removeScene < value.scenes.size()) {
 		value.scenes.erase(value.scenes.begin() +
 		                   static_cast<std::ptrdiff_t>(removeScene));
 		changed |= history.SetScript(id, value);
 	}
+
 	ui.InputText("Scene Name", sceneName_);
 	ImGui::BeginDisabled(value.scenes.size() >=
 	                     ScriptComponent::kMaximumScenes);
@@ -242,6 +276,7 @@ bool ScriptInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 			error_.clear();
 		}
 	}
+
 	ImGui::EndDisabled();
 	ImGui::PopID();
 	if (!error_.empty())
@@ -250,6 +285,7 @@ bool ScriptInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		changed |= history.SetScript(id, std::nullopt);
 		Clear();
 	}
+
 	ImGui::PopID();
 	ImGui::PopID();
 	return changed;

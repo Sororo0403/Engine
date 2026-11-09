@@ -59,7 +59,9 @@ bool ShadowMap::Update(const DirectX::XMFLOAT4X4 &view,
 		depth_ = std::move(candidate);
 		resolution_ = size;
 	}
+
 	materials_.clear();
+
 	for (const auto *material : materials) {
 		if (!material)
 			return false;
@@ -71,7 +73,9 @@ bool ShadowMap::Update(const DirectX::XMFLOAT4X4 &view,
 			                   static_cast<UINT>(materials_.size()) + 1);
 		}
 	}
+
 	const auto required = static_cast<UINT>(materials_.size()) + 1;
+
 	if (required > capacity_) {
 		D3D12_DESCRIPTOR_HEAP_DESC heap{};
 		heap.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
@@ -84,6 +88,7 @@ bool ShadowMap::Update(const DirectX::XMFLOAT4X4 &view,
 		views_ = std::move(candidate);
 		capacity_ = required;
 	}
+
 	const auto start = views_->GetCPUDescriptorHandleForHeapStart();
 	D3D12_SHADER_RESOURCE_VIEW_DESC srv{};
 	srv.Format = DXGI_FORMAT_R32_FLOAT;
@@ -91,12 +96,14 @@ bool ShadowMap::Update(const DirectX::XMFLOAT4X4 &view,
 	srv.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srv.Texture2D.MipLevels = 1;
 	device_->CreateShaderResourceView(depth_.Get(), &srv, start);
+
 	for (const auto &[material, index] : materials_) {
 		auto handle = start;
 		handle.ptr += static_cast<SIZE_T>(index) * stride_;
 		if (!material->CreateTextureView(device_, handle))
 			return false;
 	}
+
 	data.enabled = settings.enabled;
 	data.strength = settings.strength;
 	data.bias = settings.bias;

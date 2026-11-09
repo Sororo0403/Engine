@@ -66,6 +66,7 @@ bool TransformAnimationInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 	if (ImGui::Checkbox("Play On Start", &edited.playOnStart))
 		changed |= history.SetTransformAnimation(id, edited);
 	std::size_t remove = edited.keys.size();
+
 	if (ImGui::BeginChild("AnimationKeys", {0, 300}, ImGuiChildFlags_Borders)) {
 		for (std::size_t i = 0; i < edited.keys.size(); ++i) {
 			ImGui::PushID(static_cast<int>(i));
@@ -115,12 +116,15 @@ bool TransformAnimationInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 			ImGui::PopID();
 		}
 	}
+
 	ImGui::EndChild();
+
 	if (remove < edited.keys.size()) {
 		edited.keys.erase(edited.keys.begin() +
 		                  static_cast<std::ptrdiff_t>(remove));
 		changed |= history.SetTransformAnimation(id, edited);
 	}
+
 	ui.BeginDisabled(
 	    edited.keys.size() >= TransformAnimationComponent::kMaximumKeys ||
 	    edited.GetDuration() >= TransformAnimationComponent::kMaximumSeconds);
@@ -131,6 +135,7 @@ bool TransformAnimationInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		edited.keys.push_back(key);
 		changed |= history.SetTransformAnimation(id, edited);
 	}
+
 	ui.EndDisabled();
 	if (ui.Button("Reset Transform Animation"))
 		changed |=

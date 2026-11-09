@@ -169,6 +169,7 @@ bool EditorPlaySession::Update(float seconds, const CharacterInput &input,
 
 	const auto revision = simulation_.GetSceneRevision();
 	const bool gamePaused = simulation_.IsGamePaused();
+
 	if (!simulation_.Update(*time, input, cameraInput, uiInput, actions)) {
 		return false;
 	}
@@ -231,11 +232,13 @@ void EditorPlaySession::RememberTriggerEvents() {
 		if (event.type == TriggerEvent::Type::STAY) {
 			continue;
 		}
+
 		if (triggerRecordCount_ == triggerRecords_.size()) {
 			std::move(triggerRecords_.begin() + 1, triggerRecords_.end(),
 			          triggerRecords_.begin());
 			--triggerRecordCount_;
 		}
+
 		triggerRecords_[triggerRecordCount_++] = {event, simulationFrameCount_,
 		                                          elapsedSeconds_};
 	}

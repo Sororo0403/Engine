@@ -41,6 +41,7 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, float &volume,
 			volume = source.volume;
 			return true;
 		}
+
 		if (op == Op::SET_VOLUME) {
 			if (!std::isfinite(volume) || volume < 0 ||
 			    volume > AudioPlaybackSettings::kMaximumVolume)
@@ -49,6 +50,7 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, float &volume,
 			source.volume = volume;
 			return true;
 		}
+
 		if (!call.audioActions)
 			throw std::runtime_error(
 			    "Audio playback requires a simulation command queue.");
@@ -81,6 +83,7 @@ int Dispatch(lua_State *state) {
 	const auto id = *static_cast<SceneObjectId *>(
 	    luaL_checkudata(state, 1, "Engine.ScriptObject"));
 	float volume = 0;
+
 	if (op == Op::SET_VOLUME) {
 		luaL_checktype(state, 2, LUA_TNUMBER);
 		const double value = lua_tonumber(state, 2);
@@ -89,19 +92,24 @@ int Dispatch(lua_State *state) {
 			return luaL_error(state, "Audio volume must be between 0 and 4.");
 		volume = static_cast<float>(value);
 	}
+
 	bool queued = false;
+
 	if (!Perform(call, op, id, volume, queued)) {
 		lua_pushlstring(state, call.error.data(), call.error.size());
 		return lua_error(state);
 	}
+
 	if (op == Op::VOLUME) {
 		lua_pushnumber(state, volume);
 		return 1;
 	}
+
 	if (op == Op::PLAY || op == Op::STOP) {
 		lua_pushboolean(state, queued);
 		return 1;
 	}
+
 	return 0;
 }
 } // namespace

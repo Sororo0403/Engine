@@ -212,6 +212,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 					throw std::runtime_error(
 					    "Folder is not in the current Assets index.");
 				}
+
 				selected = found->lexically_relative(assets.GetRootDirectory());
 			}
 
@@ -264,9 +265,11 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	ui.BeginDisabled(!canEditAssets);
 
 	ui.BeginDisabled(!canCreatePrefab);
+
 	if (ui.Button("Create Prefab from Selection")) {
 		prefabCreateRequested_ = true;
 	}
+
 	ui.EndDisabled();
 
 	if (ui.Button("Create Script"))
@@ -308,6 +311,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		case AssetType::GAME_SETTINGS:
 			return "Game Settings";
 		}
+
 		return "";
 	};
 
@@ -570,15 +574,19 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		}
 
 		ui.BeginDisabled(!canEditAssets || !canReplaceMesh);
+
 		if (ui.Button("Replace Mesh of Selection")) {
 			meshReplacementPath_ = selectedPath_;
 		}
+
 		ui.EndDisabled();
 
 		ui.BeginDisabled(!canEditAssets);
+
 		if (ui.Button("Reload Model")) {
 			modelReloadPath_ = selectedPath_;
 		}
+
 		ui.EndDisabled();
 		ui.EndDisabled();
 	} else if (type_ == AssetType::TEXTURE) {
@@ -589,9 +597,11 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		}
 
 		ui.BeginDisabled(!canEditAssets);
+
 		if (ui.Button("Reload Texture")) {
 			textureReloadPath_ = selectedPath_;
 		}
+
 		ui.EndDisabled();
 
 		ui.EndDisabled();
@@ -635,6 +645,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 			ImGui::EndCombo();
 		}
+
 		ui.BeginDisabled(!canSetTexture || textureSlot_ < 0);
 		ui.BeginDisabled(selectedPath_.empty());
 
@@ -673,9 +684,11 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		ui.EndDisabled();
 	} else if (type_ == AssetType::SCENE) {
 		ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
+
 		if (ui.Button("Open Scene")) {
 			sceneOpenPath_ = selectedPath_;
 		}
+
 		if (ui.Button("Add Objects")) {
 			sceneAppendPath_ = selectedPath_;
 		}
@@ -683,15 +696,19 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		ui.EndDisabled();
 	} else if (type_ == AssetType::PREFAB) {
 		ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
+
 		if (ui.Button("Add Prefab")) {
 			prefabAppendPath_ = selectedPath_;
 		}
+
 		ui.EndDisabled();
 	} else if (type_ == AssetType::GAME_SETTINGS) {
 		ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
+
 		if (ui.Button("Load Game Settings")) {
 			gameSettingsPath_ = selectedPath_;
 		}
+
 		ui.EndDisabled();
 	} else if (type_ != AssetType::AUDIO) {
 		ui.BeginDisabled(selectedPath_.empty());

@@ -28,6 +28,7 @@ struct SpotLightComponent {
 				return false;
 			}
 		}
+
 		return std::isfinite(intensity) && intensity >= 0 &&
 		       intensity <= kMaxIntensity && std::isfinite(range) &&
 		       range > 0 && range <= kMaxRange && std::isfinite(innerAngle) &&

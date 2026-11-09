@@ -37,12 +37,15 @@ bool RecoveryName(const std::filesystem::path &path) {
 	const auto name = PathUtils::ToUtf8(path.filename());
 	constexpr std::string_view prefix = "session-";
 	constexpr std::string_view suffix = ".recovery.json";
+
 	if (name.size() != prefix.size() + 36 + suffix.size() ||
 	    !name.starts_with(prefix) || !name.ends_with(suffix)) {
 		return false;
 	}
+
 	for (std::size_t i = 0; i < 36; ++i) {
 		const char c = name[prefix.size() + i];
+
 		if (i == 8 || i == 13 || i == 18 || i == 23) {
 			if (c != '-') {
 				return false;
@@ -51,6 +54,7 @@ bool RecoveryName(const std::filesystem::path &path) {
 			return false;
 		}
 	}
+
 	return true;
 }
 
@@ -77,15 +81,19 @@ void TakeLock(const std::filesystem::path &path, Lock &lock,
 /// </summary>
 Json ReadDocument(const std::filesystem::path &path) {
 	const auto attributes = GetFileAttributesW(path.c_str());
+
 	if (attributes == INVALID_FILE_ATTRIBUTES ||
 	    (attributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0) {
 		throw std::runtime_error(
 		    "The recovery file is missing or linked to another location.");
 	}
+
 	std::ifstream file(path, std::ios::binary);
+
 	if (!file) {
 		throw std::runtime_error("Could not open the recovery file.");
 	}
+
 	file.exceptions(std::ios::badbit);
 	auto data = Json::parse(file);
 	if (data.at("format") != "EditorRecovery" ||
@@ -106,6 +114,7 @@ std::filesystem::path SourceFile(const Json &data) {
 	if (!path.empty() && !path.is_absolute()) {
 		throw std::runtime_error("The original scene path is invalid.");
 	}
+
 	return path;
 }
 
@@ -134,11 +143,14 @@ struct SceneRecovery::Impl {
 		if (directory.empty() || !input.is_absolute()) {
 			throw std::runtime_error("Choose a recovery in this folder.");
 		}
+
 		auto candidate = input.lexically_normal();
 		auto relative = PathUtils::RelativeInside(directory, candidate);
+
 		if (!relative.parent_path().empty() || !RecoveryName(relative)) {
 			throw std::runtime_error("Choose a recovery in this folder.");
 		}
+
 		return candidate;
 	}
 };
@@ -154,18 +166,23 @@ bool SceneRecovery::Initialize(const std::filesystem::path &directory,
 		if (IsReady()) {
 			throw std::runtime_error("The recovery session is already open.");
 		}
+
 		auto candidate = std::make_unique<Impl>();
 		candidate->directory = PathUtils::ResolveFromExecutable(directory);
+
 		if (candidate->directory.native().find(L'\0') != std::wstring::npos) {
 			throw std::runtime_error("Invalid recovery folder.");
 		}
+
 		std::filesystem::create_directories(candidate->directory);
 		candidate->directory = std::filesystem::canonical(candidate->directory);
 		GUID id{};
 		wchar_t text[39]{};
+
 		if (FAILED(CoCreateGuid(&id)) || StringFromGUID2(id, text, 39) != 39) {
 			throw std::runtime_error("Could not create a recovery session ID.");
 		}
+
 		candidate->session = PathUtils::ToUtf8(
 		    std::filesystem::path(std::wstring(text + 1, 36)));
 		candidate->path = candidate->directory /
@@ -174,6 +191,7 @@ bool SceneRecovery::Initialize(const std::filesystem::path &directory,
 		if (std::filesystem::exists(candidate->path)) {
 			throw std::runtime_error("The recovery session already exists.");
 		}
+
 		candidate->lock = std::make_unique<Lock>();
 		TakeLock(candidate->path, *candidate->lock, true);
 		impl_ = std::move(candidate);
@@ -193,35 +211,44 @@ bool SceneRecovery::Record(const Scene &scene,
 		if (!IsReady()) {
 			throw std::runtime_error("Recovery is not initialized.");
 		}
+
 		if (!sourceFile.empty() &&
 		    (!sourceFile.is_absolute() ||
 		     sourceFile.native().find(L'\0') != std::wstring::npos)) {
 			throw std::runtime_error("Invalid original scene path.");
 		}
+
 		auto temporary = impl_->path;
 		temporary += L".tmp";
+
 		if (!sourceFile.empty() &&
 		    (PathUtils::IsSameFile(sourceFile, impl_->path) ||
 		     PathUtils::IsSameFile(sourceFile, temporary))) {
 			throw std::runtime_error(
 			    "The scene conflicts with recovery storage.");
 		}
+
 		if (std::filesystem::exists(impl_->path) &&
 		    (!impl_->recorded ||
 		     ReadDocument(impl_->path).at("session") != impl_->session)) {
 			throw std::runtime_error(
 			    "The recovery file was replaced outside the editor.");
 		}
+
 		std::string sceneText, gameText;
+
 		if (!SceneSerializer::Serialize(scene, sceneText) ||
 		    !game.Serialize(gameText, error)) {
 			throw std::runtime_error(
 			    "The editing scene or game settings could not be recorded.");
 		}
+
 		Json directories = Json::array();
+
 		for (const auto &path : assets.GetDirectories()) {
 			directories.push_back(PathUtils::ToUtf8(path));
 		}
+
 		Json data{{"format", "EditorRecovery"},
 		          {"version", 1},
 		          {"session", impl_->session},
@@ -234,6 +261,7 @@ bool SceneRecovery::Record(const Scene &scene,
 		if (!FileUtils::WriteTextAtomically(impl_->path, data.dump(2), error)) {
 			return false;
 		}
+
 		impl_->recorded = true;
 		error.clear();
 		return true;
@@ -249,13 +277,17 @@ bool SceneRecovery::Enumerate(std::vector<Entry> &entries,
 		if (impl_->directory.empty()) {
 			throw std::runtime_error("Recovery is not initialized.");
 		}
+
 		std::vector<Entry> result;
+
 		for (const auto &file :
 		     std::filesystem::directory_iterator(impl_->directory)) {
 			if (!RecoveryName(file.path()) || file.is_directory()) {
 				continue;
 			}
+
 			Lock lock;
+
 			try {
 				TakeLock(file.path(), lock);
 			} catch (const std::system_error &lockError) {
@@ -263,14 +295,17 @@ bool SceneRecovery::Enumerate(std::vector<Entry> &entries,
 				    lockError.code().value() == ERROR_LOCK_VIOLATION) {
 					continue;
 				}
+
 				Entry unavailable;
 				unavailable.path = file.path();
 				unavailable.error = lockError.what();
 				result.push_back(std::move(unavailable));
 				continue;
 			}
+
 			Entry entry;
 			entry.path = file.path();
+
 			try {
 				auto data = ReadDocument(entry.path);
 				entry.sourceFile = SourceFile(data);
@@ -278,8 +313,10 @@ bool SceneRecovery::Enumerate(std::vector<Entry> &entries,
 			} catch (const std::exception &e) {
 				entry.error = e.what();
 			}
+
 			result.push_back(std::move(entry));
 		}
+
 		std::sort(result.begin(), result.end(),
 		          [](const Entry &a, const Entry &b) {
 			          return a.capturedUtc != b.capturedUtc
@@ -314,10 +351,12 @@ bool SceneRecovery::Read(const std::filesystem::path &path, Snapshot &snapshot,
 		if (!data.at("assetDirectories").is_array()) {
 			throw std::runtime_error("Invalid asset sources.");
 		}
+
 		for (const auto &directory : data.at("assetDirectories")) {
 			candidate.assets.Register(
 			    PathUtils::FromUtf8(directory.get<std::string>()));
 		}
+
 		candidate.assets.Select(
 		    PathUtils::FromUtf8(data.at("assetDirectory").get<std::string>()));
 		snapshot.scene.ReplaceObjects(candidate.scene.GetObjects());
@@ -337,9 +376,11 @@ bool SceneRecovery::Remove(const std::filesystem::path &path,
                            std::string &error) const {
 	try {
 		auto candidate = impl_->Candidate(path);
+
 		if (std::filesystem::is_directory(candidate)) {
 			throw std::runtime_error("Choose a recovery file, not a folder.");
 		}
+
 		Lock lock;
 		TakeLock(candidate, lock);
 		std::filesystem::remove(candidate);
@@ -358,21 +399,26 @@ bool SceneRecovery::Clear(const std::filesystem::path &protectedFile,
 			error.clear();
 			return true;
 		}
+
 		if (!IsReady()) {
 			throw std::runtime_error("Recovery is not initialized.");
 		}
+
 		if (!protectedFile.empty() &&
 		    PathUtils::IsSameFile(protectedFile, impl_->path)) {
 			throw std::runtime_error(
 			    "The active scene is using the recovery file.");
 		}
+
 		if (std::filesystem::exists(impl_->path)) {
 			if (ReadDocument(impl_->path).at("session") != impl_->session) {
 				throw std::runtime_error(
 				    "The recovery file was replaced outside the editor.");
 			}
+
 			std::filesystem::remove(impl_->path);
 		}
+
 		impl_->recorded = false;
 		error.clear();
 		return true;

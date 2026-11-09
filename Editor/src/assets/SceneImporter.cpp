@@ -48,32 +48,40 @@ fs::path PackageFile(const fs::path &root, const fs::path &input) {
 	    (input.has_root_path() && !input.is_absolute())) {
 		throw std::invalid_argument("A scene asset has an invalid path.");
 	}
+
 	const auto normal =
 	    (input.is_absolute() ? input : root / input).lexically_normal();
 	const auto relative = PathUtils::RelativeInside(root, normal);
+
 	if (relative.empty()) {
 		throw std::runtime_error(
 		    "A scene asset must be a file inside the game package.");
 	}
+
 	for (const auto &part : relative) {
 		if (!PathUtils::IsValidFileName(part)) {
 			throw std::runtime_error(
 			    "A scene asset has an invalid local file name.");
 		}
 	}
+
 	for (auto part = normal; part.has_filename(); part = part.parent_path()) {
 		const auto attributes = GetFileAttributesW(part.c_str());
+
 		if (attributes != INVALID_FILE_ATTRIBUTES &&
 		    (attributes & FILE_ATTRIBUTE_REPARSE_POINT)) {
 			throw std::runtime_error("Copy linked scene assets into the game "
 			                         "package before importing.");
 		}
 	}
+
 	const auto file = fs::canonical(normal);
 	PathUtils::RelativeInside(root, file);
+
 	if (!fs::is_regular_file(file)) {
 		throw std::runtime_error("A scene asset is not a regular file.");
 	}
+
 	return file;
 }
 
@@ -134,9 +142,11 @@ void ValidateScript(const fs::path &path) {
 /// <returns>読み取ったバイト列。読み込み失敗や制限超過は例外</returns>
 std::string ReadScene(const fs::path &file) {
 	const auto size = fs::file_size(file);
+
 	if (size > SceneImporter::kMaximumSceneBytes) {
 		throw std::runtime_error("The scene exceeds the import size limit.");
 	}
+
 	std::ifstream input(file, std::ios::binary);
 	std::string text(static_cast<std::size_t>(size), '\0');
 	if (!input ||
@@ -157,6 +167,7 @@ void ResolveReferences(Json &document, const fs::path &root,
 	const int version = document.at("version").get<int>();
 	const auto resolve = [&](Json &value) {
 		const auto path = PathUtils::FromUtf8(value.get<std::string>());
+
 		if (!path.empty()) {
 			value = PathUtils::ToUtf8(
 			    PackageFile(root, path.is_absolute()
@@ -164,6 +175,7 @@ void ResolveReferences(Json &document, const fs::path &root,
 			                          : (base.empty() ? root : base) / path));
 		}
 	};
+
 	for (auto &object : document.at("objects")) {
 		if (version >= 36 && object.contains("particleEmitter"))
 			resolve(object.at("particleEmitter").at("texture"));
@@ -183,6 +195,7 @@ void ResolveReferences(Json &document, const fs::path &root,
 					resolve(action.at("scene"));
 			}
 		}
+
 		if (version >= 20 && object.contains("audioSource")) {
 			resolve(object.at("audioSource").at("clip"));
 		}
@@ -191,6 +204,7 @@ void ResolveReferences(Json &document, const fs::path &root,
 			if (object.contains("mesh")) {
 				resolve(object.at("mesh").at("model"));
 			}
+
 			if (object.contains("meshRenderer")) {
 				for (auto &binding :
 				     object.at("meshRenderer")
@@ -200,6 +214,7 @@ void ResolveReferences(Json &document, const fs::path &root,
 			}
 		} else {
 			resolve(object.at("model"));
+
 			if (version >= 8 && object.contains("materials")) {
 				for (auto &binding : object.at("materials")) {
 					resolve(binding.at("path"));
@@ -215,6 +230,7 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
                            GameConfig *configuration) {
 	static_assert(std::is_nothrow_move_assignable_v<GameConfig>);
 	OutputDirectory output;
+
 	try {
 		if (options.source.empty() ||
 		    options.source.native().find(L'\0') != std::wstring::npos ||
@@ -227,23 +243,29 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 		    fs::canonical(PathUtils::ResolveFromExecutable(options.source));
 		const auto sourceRoot = source.parent_path();
 		PackageFile(sourceRoot, source);
+
 		if (fs::file_size(source) > kMaximumSceneBytes) {
 			throw std::runtime_error(
 			    "The game configuration exceeds the import size limit.");
 		}
+
 		GameConfig config;
 		std::string problem;
+
 		if (!config.Load(source, problem)) {
 			throw std::runtime_error(problem);
 		}
+
 		const auto sceneFile = PackageFile(sourceRoot, config.scenePath);
 		auto document = Json::parse(ReadScene(sceneFile));
 		ResolveReferences(document, sourceRoot);
 		Scene candidate;
+
 		if (!SceneSerializer::Deserialize(candidate, document.dump())) {
 			throw std::runtime_error(
 			    "Could not read the exported scene. See Console for details.");
 		}
+
 		const auto root = AssetFolders::Resolve(options.assetRoot, {});
 		const auto destination =
 		    AssetFolders::Resolve(options.assetRoot, options.folder) /
@@ -252,16 +274,20 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 			throw std::runtime_error(
 			    "The Assets folder already exists. Choose another name.");
 		}
+
 		bool inside = false;
+
 		try {
 			PathUtils::RelativeInside(sourceRoot, destination);
 			inside = true;
 		} catch (const std::runtime_error &) {
 		}
+
 		if (inside) {
 			throw std::runtime_error("Import into an Assets folder outside the "
 			                         "source game package.");
 		}
+
 		auto folderReference = PathUtils::RelativeInside(root, destination);
 		std::map<fs::path, fs::path, PathLess> files;
 		std::set<fs::path, PathLess> textures, scripts, uiTextures;
@@ -270,10 +296,12 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 			const auto file = PackageFile(sourceRoot, path);
 			const auto relative = PathUtils::RelativeInside(sourceRoot, file);
 			const auto [found, inserted] = files.try_emplace(relative, file);
+
 			if (!inserted && !fs::equivalent(found->second, file)) {
 				throw std::runtime_error(
 				    "Imported scene assets would use the same output path.");
 			}
+
 			return relative;
 		};
 		auto graph = SceneDependencyGraph::Read(
@@ -298,6 +326,7 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 			const auto target = destination / addFile(path);
 			return AssetFolders::MakeReference(options.assetRoot, target);
 		};
+
 		for (auto &entry : graph) {
 			for (auto &[id, object] : entry.objects) {
 				if (object.triggerActions)
@@ -329,6 +358,7 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 					object.image->texture = AssetFolders::MakeReference(
 					    options.assetRoot, destination / relative);
 				}
+
 				if (object.particleEmitter &&
 				    !object.particleEmitter->texture.empty()) {
 					const auto relative =
@@ -339,6 +369,7 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 					    AssetFolders::MakeReference(options.assetRoot,
 					                                destination / relative);
 				}
+
 				if (object.script && !object.script->asset.empty()) {
 					const auto relative = addFile(object.script->asset);
 					if (scripts.insert(relative).second)
@@ -346,6 +377,7 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 					object.script->asset = AssetFolders::MakeReference(
 					    options.assetRoot, destination / relative);
 				}
+
 				if (object.audioSource &&
 				    !object.audioSource->clipPath.empty()) {
 					auto &emitter = *object.audioSource;
@@ -361,8 +393,10 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 					         object.mesh->modelPath)) {
 						addFile(file);
 					}
+
 					object.mesh->modelPath = reference(object.mesh->modelPath);
 				}
+
 				if (object.meshRenderer) {
 					for (auto &[slot, path] :
 					     object.meshRenderer->textures.slots) {
@@ -379,11 +413,13 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 				}
 			}
 		}
+
 		for (const auto &[relative, spatial] : audio) {
 			ValidateAudio(files.at(relative), spatial);
 		}
 
 		std::vector<std::pair<fs::path, std::string>> sceneTexts;
+
 		for (const auto &entry : graph) {
 			const auto relative =
 			    PathUtils::RelativeInside(sourceRoot, entry.source);
@@ -393,6 +429,7 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 			Scene loaded;
 			loaded.ReplaceObjects(entry.objects);
 			std::string text;
+
 			if (entry.prefab) {
 				SceneObjectId prefabRoot = 0;
 				if (!PrefabSerializer::Validate(loaded, prefabRoot, problem) ||
@@ -404,16 +441,20 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 				throw std::runtime_error("Could not encode an imported scene.");
 			sceneTexts.emplace_back(relative, std::move(text));
 		}
+
 		output.Create(destination);
+
 		for (const auto &[relative, sourceFile] : files) {
 			output.Copy(sourceFile, relative);
 		}
+
 		for (const auto &relative : uiTextures)
 			ValidateTexture(PackageFile(destination, destination / relative),
 			                4096);
 		for (const auto &relative : textures) {
 			ValidateTexture(PackageFile(destination, destination / relative));
 		}
+
 		for (const auto &[relative, spatial] : audio) {
 			ValidateAudio(PackageFile(destination, destination / relative),
 			              spatial);
@@ -436,9 +477,11 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 			output.Text(path, text);
 		imported.ReplaceObjects(std::move(graph.front().objects));
 		createdFolder.swap(folderReference);
+
 		if (configuration) {
 			*configuration = std::move(config);
 		}
+
 		output.Complete();
 		error.clear();
 		return true;

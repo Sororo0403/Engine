@@ -29,6 +29,7 @@ DirectX::XMFLOAT4X4 Matrix(const aiMatrix4x4 &m) {
 /// <returns>対応する方式。不明な指定は例外</returns>
 ModelAnimationTrack::Boundary Boundary(aiAnimBehaviour mode) {
 	using B = ModelAnimationTrack::Boundary;
+
 	switch (mode) {
 	case aiAnimBehaviour_DEFAULT:
 		return B::DEFAULT;
@@ -81,6 +82,7 @@ bool ModelAnimationLoader::Read(const aiScene &scene, ModelAnimationData &data,
 		std::vector<const aiNode *> sources;
 		std::set<const aiNode *> visited;
 		std::map<std::string, std::vector<std::uint32_t>> named;
+
 		while (!pending.empty()) {
 			const auto entry = pending.back();
 			pending.pop_back();
@@ -109,6 +111,7 @@ bool ModelAnimationLoader::Read(const aiScene &scene, ModelAnimationData &data,
 				pending.push_back({source.mChildren[i - 1],
 				                   static_cast<int>(index), entry.depth + 1});
 		}
+
 		const auto findNode = [&](const aiString &name) {
 			auto at = named.find(name.C_Str());
 			if (at == named.end() || at->second.size() != 1)
@@ -118,6 +121,7 @@ bool ModelAnimationLoader::Read(const aiScene &scene, ModelAnimationData &data,
 			return at->second[0];
 		};
 		std::size_t vertexCount = 0, indexCount = 0;
+
 		for (std::size_t node = 0; node < sources.size(); ++node) {
 			const auto &owner = *sources[node];
 			if (owner.mNumMeshes > ModelAnimationData::kMaximumMeshes)
@@ -148,6 +152,7 @@ bool ModelAnimationLoader::Read(const aiScene &scene, ModelAnimationData &data,
 				mesh.materialIndex = source.mMaterialIndex;
 				mesh.mesh.vertices.resize(source.mNumVertices);
 				mesh.weights.resize(source.mNumVertices);
+
 				for (unsigned i = 0; i < source.mNumVertices; ++i) {
 					auto &v = mesh.mesh.vertices[i];
 					const auto &p = source.mVertices[i];
@@ -155,16 +160,20 @@ bool ModelAnimationLoader::Read(const aiScene &scene, ModelAnimationData &data,
 					v.position = {p.x, p.y, p.z};
 					v.normal = {n.x, n.y, n.z};
 					v.color = {1, 1, 1, 1};
+
 					if (source.HasTextureCoords(0)) {
 						const auto &uv = source.mTextureCoords[0][i];
 						v.texcoord = {uv.x, uv.y};
 					}
+
 					if (source.HasVertexColors(0)) {
 						const auto &c = source.mColors[0][i];
 						v.color = {c.r, c.g, c.b, c.a};
 					}
 				}
+
 				mesh.mesh.indices.reserve(std::size_t(source.mNumFaces) * 3);
+
 				for (unsigned i = 0; i < source.mNumFaces; ++i) {
 					const auto &face = source.mFaces[i];
 					if (face.mNumIndices != 3)
@@ -173,6 +182,7 @@ bool ModelAnimationLoader::Read(const aiScene &scene, ModelAnimationData &data,
 					for (unsigned k = 0; k < 3; ++k)
 						mesh.mesh.indices.push_back(face.mIndices[k]);
 				}
+
 				for (unsigned b = 0; b < source.mNumBones; ++b) {
 					const auto &bone = *source.mBones[b];
 					mesh.bones.push_back(
@@ -202,6 +212,7 @@ bool ModelAnimationLoader::Read(const aiScene &scene, ModelAnimationData &data,
 						weights.weights[slot] += w.mWeight;
 					}
 				}
+
 				for (auto &w : mesh.weights) {
 					double sum = 0;
 					for (float v : w.weights)
@@ -213,11 +224,14 @@ bool ModelAnimationLoader::Read(const aiScene &scene, ModelAnimationData &data,
 						for (auto &v : w.weights)
 							v = static_cast<float>(v / sum);
 				}
+
 				result.meshes.push_back(std::move(mesh));
 			}
 		}
+
 		std::size_t totalKeys = 0;
 		std::set<std::string> clipNames;
+
 		for (unsigned i = 0; i < scene.mNumAnimations; ++i) {
 			const auto &a = *scene.mAnimations[i];
 			if (a.mNumMeshChannels || a.mNumMorphMeshChannels)
@@ -230,6 +244,7 @@ bool ModelAnimationLoader::Read(const aiScene &scene, ModelAnimationData &data,
 				    "Animation duration, tick rate or channels are invalid.");
 			const double ticks = a.mTicksPerSecond > 0 ? a.mTicksPerSecond : 25;
 			double origin = 0, end = a.mDuration / ticks;
+
 			for (unsigned c = 0; c < a.mNumChannels; ++c) {
 				const auto &channel = *a.mChannels[c];
 				const std::size_t count =
@@ -253,6 +268,7 @@ bool ModelAnimationLoader::Read(const aiScene &scene, ModelAnimationData &data,
 				range(channel.mRotationKeys, channel.mNumRotationKeys);
 				range(channel.mScalingKeys, channel.mNumScalingKeys);
 			}
+
 			ModelAnimationClip clip;
 			const std::string base = a.mName.length
 			                             ? a.mName.C_Str()
@@ -274,6 +290,7 @@ bool ModelAnimationLoader::Read(const aiScene &scene, ModelAnimationData &data,
 				                         unsigned count,
 				                         std::vector<ModelVectorKey> &out) {
 					out.reserve(count);
+
 					for (unsigned k = 0; k < count; ++k) {
 						const auto &v = keys[k];
 						out.push_back({v.mTime / ticks - origin,
@@ -286,6 +303,7 @@ bool ModelAnimationLoader::Read(const aiScene &scene, ModelAnimationData &data,
 				vectors(channel.mScalingKeys, channel.mNumScalingKeys,
 				        track.scales);
 				track.rotations.reserve(channel.mNumRotationKeys);
+
 				for (unsigned k = 0; k < channel.mNumRotationKeys; ++k) {
 					const auto &v = channel.mRotationKeys[k];
 					DirectX::XMFLOAT4 q{v.mValue.x, v.mValue.y, v.mValue.z,
@@ -296,10 +314,13 @@ bool ModelAnimationLoader::Read(const aiScene &scene, ModelAnimationData &data,
 					track.rotations.push_back(
 					    {v.mTime / ticks - origin, q, Step(v.mInterpolation)});
 				}
+
 				clip.tracks.push_back(std::move(track));
 			}
+
 			result.clips.push_back(std::move(clip));
 		}
+
 		if (metadata && !metadata->Apply(result, error))
 			return false;
 		if (!result.IsValid(error))

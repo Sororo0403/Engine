@@ -42,6 +42,7 @@ bool CheckBranch(const Scene &before, const Scene &after,
                  std::span<const SceneObjectId> characterBranch,
                  const CollisionWorld &obstacles, bool &blocked) {
 	blocked = false;
+
 	for (auto id : branch) {
 		const auto &object = *before.FindObject(id);
 		if (object.rigidBody && object.rigidBody->enabled &&
@@ -65,6 +66,7 @@ bool CheckBranch(const Scene &before, const Scene &after,
 			return true;
 		}
 	}
+
 	return true;
 }
 
@@ -103,12 +105,14 @@ bool SeparatePassenger(Scene &scene, SceneObjectId character,
 		    !SceneHierarchy::GetWorldTransform(scene, character, pose))
 			return false;
 	}
+
 	return false;
 }
 } // namespace
 
 bool SceneMotion::Configure(const Scene &scene, bool preserve) {
 	std::map<SceneObjectId, State> candidate;
+
 	for (const auto &[id, object] : scene.GetObjects()) {
 		if (!object.motionPath)
 			continue;
@@ -117,6 +121,7 @@ bool SceneMotion::Configure(const Scene &scene, bool preserve) {
 				return false;
 			continue;
 		}
+
 		State state{object.transform.translation, 0,
 		            object.motionPath->playOnStart ? Playback::FORWARD
 		                                           : Playback::PAUSE};
@@ -130,6 +135,7 @@ bool SceneMotion::Configure(const Scene &scene, bool preserve) {
 		}
 		candidate.emplace(id, state);
 	}
+
 	states_.swap(candidate);
 	return true;
 }
@@ -157,6 +163,7 @@ bool SceneMotion::Advance(Scene &scene, float seconds,
 	     !SceneHierarchy::GetSubtree(scene, character, characterBranch)))
 		return false;
 	double remaining = (std::min)(seconds, kMaximumFrameSeconds);
+
 	while (remaining > 0) {
 		double step = (std::min)(remaining, kMaximumStep);
 		// 曲がり角や往復端で移動を区切り、角を横切る近道を作らない。
@@ -170,6 +177,7 @@ bool SceneMotion::Advance(Scene &scene, float seconds,
 			if (boundary > 1e-10)
 				step = (std::min)(step, boundary);
 		}
+
 		for (const auto id : order) {
 			auto found = states_.find(id);
 			if (found == states_.end() ||
@@ -183,6 +191,7 @@ bool SceneMotion::Advance(Scene &scene, float seconds,
 			const auto duration = settings.GetDuration();
 			const bool reverse = state.playback == Playback::REVERSE;
 			const double nextTime = state.seconds + (reverse ? -step : step);
+
 			if (settings.mode == MotionPathComponent::Mode::ONCE) {
 				state.seconds = (std::clamp)(nextTime, 0., duration);
 				if (reverse ? state.seconds == 0 : state.seconds == duration)
@@ -192,6 +201,7 @@ bool SceneMotion::Advance(Scene &scene, float seconds,
 				if (state.seconds < 0)
 					state.seconds += duration;
 			}
+
 			DirectX::XMFLOAT3 offset;
 			if (!settings.Sample(state.seconds, offset))
 				return false;
@@ -199,11 +209,13 @@ bool SceneMotion::Advance(Scene &scene, float seconds,
 			                                 state.origin.y + offset.y,
 			                                 state.origin.z + offset.z};
 			const auto current = scene.FindObject(id)->transform.translation;
+
 			if (position.x == current.x && position.y == current.y &&
 			    position.z == current.z) {
 				found->second = state;
 				continue;
 			}
+
 			Scene candidate;
 			candidate.CopyFrom(scene);
 			candidate.FindObject(id)->transform.translation = position;
@@ -214,12 +226,14 @@ bool SceneMotion::Advance(Scene &scene, float seconds,
 				return std::ranges::find(branch, object) != branch.end();
 			};
 			SceneObjectId ground = 0;
+
 			if (controller && controller->IsGrounded()) {
 				CollisionWorld oldWorld;
 				if (!oldWorld.Rebuild(scene, characterBranch) ||
 				    !controller->FindGroundObject(oldWorld, ground))
 					return false;
 			}
+
 			const bool carried = controller && (inBranch(character) ||
 			                                    (ground && inBranch(ground)));
 			auto ignored = branch;
@@ -241,6 +255,7 @@ bool SceneMotion::Advance(Scene &scene, float seconds,
 			if (blocked)
 				continue;
 			std::optional<CharacterController> passenger;
+
 			if (controller) {
 				SceneWorldTransform beforePose, afterPose;
 				if (!SceneHierarchy::GetWorldTransform(scene, character,
@@ -266,6 +281,7 @@ bool SceneMotion::Advance(Scene &scene, float seconds,
 					                                       afterPose))
 						return false;
 				}
+
 				const auto &collider = *scene.FindObject(character)->collider;
 				if (carried && ground && inBranch(ground) &&
 				    collider.shape == Collider::Shape::BOX &&
@@ -281,6 +297,7 @@ bool SceneMotion::Advance(Scene &scene, float seconds,
 					if (hit.objectId && hit.fraction < 1.0)
 						continue;
 				}
+
 				CollisionWorld finalWorld;
 				if (!finalWorld.Rebuild(candidate, characterBranch))
 					return false;
@@ -290,6 +307,7 @@ bool SceneMotion::Advance(Scene &scene, float seconds,
 				    !passenger->RefreshContacts(finalWorld))
 					continue;
 			}
+
 			if (triggers) {
 				if (!triggers->Update(candidate))
 					return false;
@@ -298,12 +316,15 @@ bool SceneMotion::Advance(Scene &scene, float seconds,
 						events->push_back(event);
 				}
 			}
+
 			scene.CopyFrom(candidate);
 			if (passenger)
 				*controller = *passenger;
 			found->second = state;
 		}
+
 		remaining = (std::max)(0.0, remaining - step);
 	}
+
 	return true;
 }

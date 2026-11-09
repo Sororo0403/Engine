@@ -83,6 +83,7 @@ Hit PointerHit(const Scene &scene, std::span<const UIElement> elements,
 		if (!target)
 			continue;
 		auto id = i->object;
+
 		while (id) {
 			const auto &candidate = *scene.FindObject(id);
 			if (candidate.button)
@@ -91,8 +92,10 @@ Hit PointerHit(const Scene &scene, std::span<const UIElement> elements,
 				break;
 			id = candidate.parentId;
 		}
+
 		return {true, 0};
 	}
+
 	return {};
 }
 
@@ -123,6 +126,7 @@ void SceneUI::Synchronize(const Scene &scene,
 		selected_ = 0;
 		keyboardMode_ = false;
 	}
+
 	if (pressed_) {
 		const auto *element = Element(elements, pressed_);
 		const auto *object = scene.FindObject(pressed_);
@@ -132,11 +136,13 @@ void SceneUI::Synchronize(const Scene &scene,
 		    !SameRect(element->rect, pressedRect_))
 			pressed_ = 0;
 	}
+
 	const auto hit = PointerHit(scene, elements, last_);
 	hovered_ = Usable(scene, elements, last_, hit.button) ? hit.button : 0;
 	if (pressed_ && hovered_ != pressed_)
 		pressed_ = 0;
 	std::vector<UIButtonVisual> visuals;
+
 	for (const auto &element : elements) {
 		const auto &object = *scene.FindObject(element.object);
 		if (!object.button)
@@ -155,6 +161,7 @@ void SceneUI::Synchronize(const Scene &scene,
 			state = UIButtonVisual::State::HIGHLIGHTED;
 		visuals.push_back({element.object, state});
 	}
+
 	visuals_.swap(visuals);
 }
 
@@ -184,12 +191,14 @@ bool SceneUI::Update(const Scene &scene, const UIInput &input,
 		auto next = *this;
 		next.clicks_.clear();
 		next.consumesPointer_ = next.consumesNavigation_ = false;
+
 		if (!input.enabled) {
 			next.Cancel();
 			*this = std::move(next);
 			error.clear();
 			return true;
 		}
+
 		std::vector<UIElement> elements;
 		if (!CanvasLayout::Collect(scene, input.width, input.height, elements,
 		                           error))
@@ -215,6 +224,7 @@ bool SceneUI::Update(const Scene &scene, const UIInput &input,
 			next.keyboardMode_ = false;
 			next.pressed_ = 0;
 			next.pointerSequence_ = hit.blocked;
+
 			if (Usable(scene, elements, input, hit.button)) {
 				next.pressed_ = hit.button;
 				next.selected_ = hit.button;
@@ -222,17 +232,20 @@ bool SceneUI::Update(const Scene &scene, const UIInput &input,
 				const auto &element = *Element(elements, hit.button);
 				next.pressedRect_ = element.rect;
 				next.pressedCanvas_ = element.canvas;
+
 				if (!input.pointerDown) {
 					click(hit.button);
 					next.pressed_ = 0;
 				}
 			}
 		}
+
 		if (released) {
 			if (next.pressed_ && next.pressed_ == hit.button)
 				click(next.pressed_);
 			next.pressed_ = 0;
 		}
+
 		next.consumesPointer_ =
 		    hit.blocked || sequence || next.pointerSequence_;
 		if (!input.pointerDown)
@@ -250,6 +263,7 @@ bool SceneUI::Update(const Scene &scene, const UIInput &input,
 			if (!input.submitDown)
 				next.submitArmed_ = true;
 			const int step = int(input.next) - int(input.previous);
+
 			if (!buttons.empty() && (step || input.horizontal ||
 			                         input.vertical || input.submitPressed)) {
 				next.keyboardMode_ = true;
@@ -272,6 +286,7 @@ bool SceneUI::Update(const Scene &scene, const UIInput &input,
 					             y = r.y + r.height * .5;
 					double nearest = (std::numeric_limits<double>::max)();
 					SceneObjectId best = next.selected_;
+
 					for (auto id : buttons) {
 						if (id == next.selected_)
 							continue;
@@ -289,16 +304,21 @@ bool SceneUI::Update(const Scene &scene, const UIInput &input,
 							best = id;
 						}
 					}
+
 					next.selected_ = best;
 				}
+
 				if (input.submitPressed && submitReady)
 					click(next.selected_);
 			}
+
 			next.consumesNavigation_ =
 			    (!buttons.empty() && input.submitDown && !submitReady) ||
 			    (next.keyboardMode_ && next.selected_ != 0);
 		}
+
 		next.Synchronize(scene, elements);
+
 		if (input.submitPressed && input.navigationEnabled &&
 		    next.submitArmed_ && next.keyboardMode_ && next.selected_) {
 			for (auto &visual : next.visuals_)
@@ -307,6 +327,7 @@ bool SceneUI::Update(const Scene &scene, const UIInput &input,
 				        next.clicks_.end())
 					visual.state = UIButtonVisual::State::PRESSED;
 		}
+
 		*this = std::move(next);
 		error.clear();
 		return true;

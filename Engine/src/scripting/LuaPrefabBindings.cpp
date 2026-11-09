@@ -81,6 +81,7 @@ int Instantiate(lua_State *state) {
 		return luaL_error(state,
 		                  "Prefab names require 1 to 64 bytes without NUL.");
 	float position[3]{};
+
 	for (int i = 0; i < 3; ++i) {
 		luaL_checktype(state, i + 3, LUA_TNUMBER);
 		const double value = lua_tonumber(state, i + 3);
@@ -89,11 +90,14 @@ int Instantiate(lua_State *state) {
 			return luaL_error(state, "Prefab positions require finite floats.");
 		position[i] = static_cast<float>(value);
 	}
+
 	SceneObjectId created = 0;
+
 	if (!Perform(call, owner, name, length, position, created)) {
 		lua_pushlstring(state, call.error.data(), call.error.size());
 		return lua_error(state);
 	}
+
 	LuaInternal::PushObject(state, created);
 	return 1;
 }

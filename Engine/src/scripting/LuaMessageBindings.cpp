@@ -71,6 +71,7 @@ int SendMessage(lua_State *state) {
 		return luaL_error(state,
 		                  "Message names require 1 to 64 bytes without NUL.");
 	call.messageData.clear();
+
 	if (!lua_isnoneornil(state, 3)) {
 		luaL_checktype(state, 3, LUA_TTABLE);
 		if (!lua_checkstack(state, LuaScript::kMaximumStateDepth * 4 + 32))
@@ -80,11 +81,14 @@ int SendMessage(lua_State *state) {
 			return lua_error(state);
 		}
 	}
+
 	bool queued = false;
+
 	if (!Perform(call, receiver, name, length, queued)) {
 		lua_pushlstring(state, call.error.data(), call.error.size());
 		return lua_error(state);
 	}
+
 	lua_pushboolean(state, queued);
 	return 1;
 }

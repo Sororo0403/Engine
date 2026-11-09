@@ -26,17 +26,20 @@ void ModelImportDialog::Show(const AssetDatabase &assets,
 ModelImportResult ModelImportDialog::Draw(const ImGuiSystem &ui,
                                           ModelManager &models) {
 	constexpr const char *title = "Import Model###ModelImportDialog";
+
 	if (opening_) {
 		ui.OpenPopup(title);
 		opening_ = false;
 	}
 
 	ImGui::SetNextWindowSize({660, 0}, ImGuiCond_Appearing);
+
 	if (!ui.BeginPopupModal(title)) {
 		return ModelImportResult::NONE;
 	}
 
 	ui.BeginDisabled(selecting_);
+
 	if (ui.Button("Choose Model")) {
 		picker_.Show(FileDialogMode::OPEN, options_.source,
 		             FileDialogFilter::MODEL);
@@ -53,6 +56,7 @@ ModelImportResult ModelImportDialog::Draw(const ImGuiSystem &ui,
 		options_.sourceRoot = parent;
 		error_.clear();
 	}
+
 	ui.EndDisabled();
 
 	const auto preview = options_.folder.empty()
@@ -66,20 +70,24 @@ ModelImportResult ModelImportDialog::Draw(const ImGuiSystem &ui,
 				options_.folder = folder;
 			}
 		}
+
 		ImGui::EndCombo();
 	}
 
 	ui.InputText("Model Folder Name", name_);
 	ui.EndDisabled();
+
 	if (!error_.empty()) {
 		ImGui::TextWrapped("%s", error_.c_str());
 	}
 
 	ModelImportResult result = ModelImportResult::NONE;
 	ui.BeginDisabled(selecting_ || options_.source.empty());
+
 	if (ui.Button("Import")) {
 		try {
 			options_.folderName = PathUtils::FromUtf8(name_);
+
 			if (ModelImporter::Import(options_, models, imported_, error_)) {
 				result = ModelImportResult::ACCEPTED;
 			}
@@ -87,18 +95,22 @@ ModelImportResult ModelImportDialog::Draw(const ImGuiSystem &ui,
 			error_ = exception.what();
 		}
 	}
+
 	ui.EndDisabled();
 
 	ui.SameLine();
 	ui.BeginDisabled(selecting_);
+
 	if (ui.Button("Cancel") ||
 	    (!selecting_ && ImGui::IsKeyPressed(ImGuiKey_Escape, false))) {
 		result = ModelImportResult::CANCELLED;
 	}
+
 	ui.EndDisabled();
 
 	if (selecting_) {
 		const auto selected = picker_.Draw(ui);
+
 		if (selected == FileDialogResult::ACCEPTED) {
 			options_.source = picker_.GetSelectedPath();
 			options_.sourceRoot = options_.source.parent_path();
@@ -107,6 +119,7 @@ ModelImportResult ModelImportDialog::Draw(const ImGuiSystem &ui,
 			            : "Model";
 			error_.clear();
 		}
+
 		if (selected != FileDialogResult::NONE) {
 			selecting_ = false;
 		}

@@ -54,10 +54,12 @@ bool ScriptEditorDialog::ShowEdit(const std::filesystem::path &path,
 
 ScriptEditorDialog::Result ScriptEditorDialog::Draw(const ImGuiSystem &ui) {
 	constexpr const char *title = "Lua Script###ScriptEditorDialog";
+
 	if (opening_) {
 		ui.OpenPopup(title);
 		opening_ = false;
 	}
+
 	ImGui::SetNextWindowSize({800, 600}, ImGuiCond_Appearing);
 	if (!ImGui::BeginPopupModal(title, nullptr,
 	                            ImGuiWindowFlags_NoSavedSettings))
@@ -75,14 +77,17 @@ ScriptEditorDialog::Result ScriptEditorDialog::Draw(const ImGuiSystem &ui) {
 		if (LuaScript::Validate(source_, error_))
 			error_ = "Syntax OK";
 	}
+
 	ui.SameLine();
 	Result result = Result::NONE;
+
 	if (ui.Button("Save Script")) {
 		try {
 			if (!LuaScript::Validate(source_, error_))
 				throw std::runtime_error(error_);
 			auto destination = path_;
 			auto reference = path_;
+
 			if (creating_) {
 				auto name = PathUtils::FromUtf8(name_);
 				if (!PathUtils::HasExtension(name, ".lua"))
@@ -101,6 +106,7 @@ ScriptEditorDialog::Result ScriptEditorDialog::Draw(const ImGuiSystem &ui) {
 					    "The Script changed outside this dialog. Cancel and "
 					    "reopen it before saving.");
 			}
+
 			if (!FileUtils::WriteTextAtomically(destination, source_, error_,
 			                                    !creating_))
 				throw std::runtime_error(error_);
@@ -110,6 +116,7 @@ ScriptEditorDialog::Result ScriptEditorDialog::Draw(const ImGuiSystem &ui) {
 			error_ = exception.what();
 		}
 	}
+
 	ui.SameLine();
 	if (ui.Button("Cancel") || ImGui::IsKeyPressed(ImGuiKey_Escape, false))
 		result = Result::CANCELLED;

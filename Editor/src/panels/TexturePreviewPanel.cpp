@@ -57,11 +57,13 @@ void TexturePreviewPanel::Draw(const ImGuiSystem &ui) {
 	}
 
 	ui.Text(label_);
+
 	if (ui.Button("Reload Preview")) {
 		reloadRequested_ = true;
 	}
 
 	ui.SameLine();
+
 	if (ui.Button("Close Preview")) {
 		Clear();
 		ImGui::End();

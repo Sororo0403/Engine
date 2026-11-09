@@ -120,6 +120,7 @@ bool ModelLoader::Load(const std::filesystem::path &filePath,
 	                  PathUtils::HasExtension(filePath, ".glb");
 	GltfAnimationMetadata metadata;
 	std::string metadataError;
+
 	if (gltf && !metadata.Read(absolutePath, metadataError)) {
 		Logger::Error(metadataError);
 		return false;
@@ -160,6 +161,7 @@ bool ModelLoader::Load(const std::filesystem::path &filePath,
 	if (animated) {
 		auto animation = std::make_shared<ModelAnimationData>();
 		std::string error;
+
 		if (!ModelAnimationLoader::Read(*scene, *animation, error,
 		                                gltf ? &metadata : nullptr)) {
 			Logger::Error(std::format(
@@ -167,10 +169,13 @@ bool ModelLoader::Load(const std::filesystem::path &filePath,
 			    path, error));
 			return false;
 		}
+
 		result.animation = std::move(animation);
 	}
+
 	// 既存の静止描画・選択判定は、従来と同じ事前変換済みメッシュを使用する。
 	scene = importer.ApplyPostProcessing(aiProcess_PreTransformVertices);
+
 	if (!scene || !scene->HasMeshes()) {
 		Logger::Error("モデルの静止メッシュを準備できません。");
 		return false;

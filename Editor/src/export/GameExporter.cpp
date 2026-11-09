@@ -157,9 +157,12 @@ class Assets {
 		if (!fs::is_directory(root)) {
 			throw std::invalid_argument("Choose an existing resource folder.");
 		}
+
 		sources_.push_back({std::move(root), L"resources"});
+
 		for (std::size_t i = 0; i < additional.size(); ++i) {
 			const auto &input = additional[i];
+
 			if (input.empty() ||
 			    input.native().find(L'\0') != std::wstring::npos) {
 				throw std::invalid_argument(
@@ -172,6 +175,7 @@ class Assets {
 				throw std::invalid_argument(
 				    "An external asset source is not a folder.");
 			}
+
 			if (std::ranges::any_of(sources_, [&](const auto &source) {
 				    return IsInside(source.directory, directory);
 			    })) {
@@ -192,14 +196,17 @@ class Assets {
 	fs::path AddModel(const fs::path &input) {
 		const auto index = FindSource(input);
 		const auto model = ResourceFile(sources_[index].directory, input);
+
 		if (const auto found = models_.find(model); found != models_.end()) {
 			return found->second;
 		}
 
 		const auto reference = AddFile(index, model);
+
 		for (const auto &file : AssetDependencies::ModelFiles(model)) {
 			AddFile(index, file);
 		}
+
 		models_.emplace(model, reference);
 		return reference;
 	}
@@ -211,6 +218,7 @@ class Assets {
 		const auto &file = files_.at(reference);
 
 		const auto validated = textures_.find(file);
+
 		if (validated == textures_.end() ||
 		    maximumDimension < validated->second) {
 			try {
@@ -233,6 +241,7 @@ class Assets {
 		const auto reference = AddFile(FindSource(input), input);
 		const auto &file = files_.at(reference);
 		auto found = audioChannels_.find(file);
+
 		if (found == audioChannels_.end()) {
 			WaveData wave;
 			std::string error;
@@ -258,12 +267,14 @@ class Assets {
 	fs::path AddScript(const fs::path &input) {
 		const auto reference = AddFile(FindSource(input), input);
 		const auto &file = files_.at(reference);
+
 		if (scripts_.insert(file).second) {
 			std::string source, error;
 			if (!LuaScript::Read(file, source, error) ||
 			    !LuaScript::Validate(source, error))
 				throw std::runtime_error(error);
 		}
+
 		return reference;
 	}
 
@@ -292,11 +303,13 @@ class Assets {
 		    path.native().find(L'\0') != std::wstring::npos) {
 			throw std::invalid_argument("Use valid absolute asset references.");
 		}
+
 		for (std::size_t i = 0; i < sources_.size(); ++i) {
 			if (IsInside(sources_[i].directory, path.lexically_normal())) {
 				return i;
 			}
 		}
+
 		throw std::runtime_error(
 		    "An asset is outside the configured resource folders: " +
 		    PathUtils::ToUtf8(path));
@@ -314,10 +327,12 @@ class Assets {
 		const auto relative =
 		    source.output / PathUtils::RelativeInside(source.directory, file);
 		const auto [found, inserted] = files_.try_emplace(relative, file);
+
 		if (!inserted && !fs::equivalent(found->second, file)) {
 			throw std::runtime_error("Asset output paths conflict: " +
 			                         PathUtils::ToUtf8(relative));
 		}
+
 		source.used = true;
 		return relative;
 	}
@@ -395,6 +410,7 @@ class CopyPlan {
 		}
 
 		bool inside = false;
+
 		try {
 			PathUtils::RelativeInside(fs::canonical(source), destination_);
 			inside = true;
@@ -434,6 +450,7 @@ class CopyPlan {
 bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
                           std::string &error) {
 	OutputDirectory output;
+
 	try {
 		error.clear();
 		PathUtils::RelativeInside(fs::path(L"resources"),
@@ -466,6 +483,7 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 				    "Choose valid resource and Runtime folders.");
 			}
 		}
+
 		const auto resourceRoot = fs::canonical(options.resourceDirectory);
 		std::error_code runtimeError;
 		const auto runtimeRoot =
@@ -506,6 +524,7 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 				sourceDirectories.push_back(entry.source.parent_path());
 		Assets assets(resourceRoot, sourceDirectories);
 		std::vector<fs::path> scenePaths{options.config.scenePath};
+
 		for (std::size_t i = 1; i < graph.size(); ++i) {
 			assets.ValidateScene(graph[i].source);
 			if (graph[i].prefab)
@@ -515,6 +534,7 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 				scenePaths.push_back(fs::path(L"resources/scenes/transitions") /
 				                     std::format("Scene{}.scene.json", i));
 		}
+
 		for (const auto &source : assets.Sources()) {
 			if (IsInside(source.directory, destination)) {
 				throw std::runtime_error(
@@ -526,6 +546,7 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 
 		// アセット参照を出力先へ書き換える前に、遷移先の到着地点を検証する。
 		std::set<std::pair<std::size_t, std::string>> checkedArrivals;
+
 		for (const auto &entry : graph) {
 			for (const auto &[id, object] : entry.objects) {
 				if (!object.triggerActions)
@@ -612,6 +633,7 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 					     {&object.script->prefabs, &object.script->scenes})
 						for (auto &[name, path] : *bindings) {
 							(void)name;
+
 							if (path.empty())
 								continue;
 							const auto found = std::ranges::find_if(
@@ -640,6 +662,7 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 					                             path.lexically_normal());
 					path = assets.AddTexture(input, 4096);
 				}
+
 				if (object.particleEmitter &&
 				    !object.particleEmitter->texture.empty()) {
 					auto &path = object.particleEmitter->texture;
@@ -651,6 +674,7 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 					                             path.lexically_normal());
 					path = assets.AddTexture(input, 4096);
 				}
+
 				if (object.script && !object.script->asset.empty()) {
 					auto &path = object.script->asset;
 					const auto input =
@@ -661,6 +685,7 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 					                             path.lexically_normal());
 					path = assets.AddScript(input);
 				}
+
 				if (object.audioSource &&
 				    !object.audioSource->clipPath.empty()) {
 					auto &path = object.audioSource->clipPath;
@@ -698,6 +723,7 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 				}
 			}
 		}
+
 		std::string problem;
 		CopyPlan plan(destination);
 		for (const auto &path : scenePaths)
@@ -759,7 +785,9 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 			if (!source.used && source.output != L"resources") {
 				continue;
 			}
+
 			const auto licenses = source.directory / L"licenses";
+
 			if (fs::is_directory(licenses)) {
 				plan.Tree(licenses,
 				          fs::path(L"licenses/assets") /
@@ -769,11 +797,13 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 
 		std::string configText;
 		std::vector<std::string> sceneTexts;
+
 		for (std::size_t i = 0; i < graph.size(); ++i) {
 			const auto &entry = graph[i];
 			Scene snapshot;
 			snapshot.ReplaceObjects(entry.objects);
 			std::string text;
+
 			if (entry.prefab) {
 				SceneAssetReferences::Rewrite(snapshot, [&](const auto &path) {
 					return path.is_absolute() ? path : destination / path;

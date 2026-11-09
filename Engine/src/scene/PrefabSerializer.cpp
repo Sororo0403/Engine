@@ -23,26 +23,33 @@ using Json = nlohmann::json;
 SceneObjectId ValidateHierarchy(const Scene &scene) {
 	SceneObjectId root = 0;
 	std::vector<SceneObjectId> ids;
+
 	for (const auto &[id, object] : scene.GetObjects()) {
 		if (object.prefabLink) {
 			throw std::runtime_error(
 			    "Prefab assets must contain unpacked object data.");
 		}
+
 		ids.push_back(id);
+
 		if (!object.parentId) {
 			if (root) {
 				throw std::runtime_error(
 				    "A Prefab must have exactly one root object.");
 			}
+
 			root = id;
 		}
 	}
+
 	std::vector<SceneObjectId> subtree;
+
 	if (!root || !SceneHierarchy::GetSubtree(scene, root, subtree) ||
 	    subtree.size() != ids.size()) {
 		throw std::runtime_error(
 		    "The Prefab hierarchy is empty or disconnected.");
 	}
+
 	for (const auto &[id, object] : scene.GetObjects()) {
 		if (SceneObjectReferences::HasExternal(object, ids)) {
 			throw std::runtime_error(
@@ -52,11 +59,14 @@ SceneObjectId ValidateHierarchy(const Scene &scene) {
 			                object.name, id));
 		}
 	}
+
 	std::string text;
+
 	if (!SceneSerializer::Serialize(scene, text)) {
 		throw std::runtime_error(
 		    "The Prefab contains invalid object settings.");
 	}
+
 	return root;
 }
 
@@ -129,18 +139,23 @@ bool PrefabSerializer::Deserialize(std::string_view text,
 		ValidateHierarchy(candidate);
 		const auto minimum = candidate.GetObjects().rbegin()->first + 1;
 		SceneObjectId counter = minimum;
+
 		if (document.at("version") == 2) {
 			if (!document.at("nextSourceId").is_number_unsigned() ||
 			    document.at("nextSourceId") < minimum) {
 				throw std::runtime_error(
 				    "Prefab source ID counter is invalid.");
 			}
+
 			counter = document.at("nextSourceId").get<SceneObjectId>();
 		}
+
 		result.ReplaceObjects(candidate.GetObjects());
+
 		if (nextSourceId) {
 			*nextSourceId = counter;
 		}
+
 		error.clear();
 		return true;
 	} catch (const std::exception &exception) {
@@ -157,23 +172,29 @@ bool PrefabSerializer::Serialize(const Scene &source, SceneObjectId root,
 		if (!IsPrefabPath(path) || ValidateHierarchy(source) != root) {
 			throw std::runtime_error("Prefab root or destination is invalid.");
 		}
+
 		const auto minimum = source.GetObjects().rbegin()->first + 1;
+
 		if (!nextSourceId) {
 			nextSourceId = minimum;
 		}
+
 		if (nextSourceId < minimum) {
 			throw std::runtime_error(
 			    "Prefab source ID counter must be greater than existing IDs.");
 		}
+
 		Scene candidate;
 		candidate.ReplaceObjects(source.GetObjects());
 		RewriteReferences(candidate,
 		                  PathUtils::ResolveFromExecutable(path).parent_path(),
 		                  true);
 		std::string data;
+
 		if (!SceneSerializer::Serialize(candidate, data)) {
 			throw std::runtime_error("Could not encode the Prefab references.");
 		}
+
 		const Json document{{"format", "EnginePrefab"},
 		                    {"version", 2},
 		                    {"root", root},

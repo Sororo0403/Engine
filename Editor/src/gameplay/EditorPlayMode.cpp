@@ -273,6 +273,7 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
 			if (invalidObject) {
 				*invalidObject = id;
 			}
+
 			return false;
 		}
 	}
@@ -287,6 +288,7 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
 		Stop();
 		return false;
 	}
+
 	lastUpdateError_.clear();
 	lighting_ = config.lighting;
 	inputBindings_ = config.input;
@@ -309,6 +311,7 @@ bool EditorPlayMode::Restart(std::string &error) {
 	if (!session_.Restart(error)) {
 		return false;
 	}
+
 	actionReader_.Reset();
 
 	if (!audioPlayer_.Start(session_.GetCameraPose(),
@@ -437,6 +440,7 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 	uiInput.pointerY = viewport_.imageY;
 	uiInput.pointerPressed = viewport_.leftPressed;
 	uiInput.pointerDown = viewport_.leftDown;
+
 	if (!session_.Update(seconds, controls, cameraControls, uiInput, actions)) {
 		lastUpdateError_ = session_.GetLastUpdateError();
 		return false;

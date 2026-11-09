@@ -12,9 +12,11 @@ std::vector<SceneDependencyGraph::Entry> SceneDependencyGraph::Read(
 		throw std::invalid_argument(
 		    "Scene dependency readers must be provided.");
 	std::vector<Entry> entries{{source, scene.GetObjects()}};
+
 	for (std::size_t i = 0; i < entries.size(); ++i) {
 		auto objects = entries[i].objects;
 		std::vector<std::filesystem::path> targets;
+
 		for (auto &[id, object] : objects) {
 			(void)id;
 			if (object.script)
@@ -22,6 +24,7 @@ std::vector<SceneDependencyGraph::Entry> SceneDependencyGraph::Read(
 				     {&object.script->prefabs, &object.script->scenes})
 					for (auto &[name, path] : *bindings) {
 						(void)name;
+
 						if (!path.empty()) {
 							path = resolve(path);
 							targets.push_back(path);
@@ -37,7 +40,9 @@ std::vector<SceneDependencyGraph::Entry> SceneDependencyGraph::Read(
 				targets.push_back(action.scenePath);
 			}
 		}
+
 		entries[i].objects = std::move(objects);
+
 		for (const auto &path : targets) {
 			if (std::ranges::any_of(entries, [&](const auto &entry) {
 				    return !entry.source.empty() &&
@@ -50,6 +55,7 @@ std::vector<SceneDependencyGraph::Entry> SceneDependencyGraph::Read(
 			Scene target;
 			const bool prefab = PrefabSerializer::IsPrefabPath(path);
 			SceneObjectId counter = 0;
+
 			if (prefab) {
 				if (!loadPrefab)
 					throw std::runtime_error(
@@ -60,5 +66,6 @@ std::vector<SceneDependencyGraph::Entry> SceneDependencyGraph::Read(
 			entries.push_back({path, target.GetObjects(), prefab, counter});
 		}
 	}
+
 	return entries;
 }

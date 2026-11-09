@@ -11,6 +11,7 @@ SceneSimulation::InstantiatePrefab(const Scene &prefab,
 		error = "Start Play before instantiating a Prefab.";
 		return 0;
 	}
+
 	try {
 		Scene candidate;
 		candidate.CopyFrom(scene_);
@@ -41,6 +42,7 @@ bool SceneSimulation::DestroyObjects(std::span<const SceneObjectId> roots,
 		error = "Start Play and specify roots before destroying objects.";
 		return false;
 	}
+
 	try {
 		Scene candidate;
 		candidate.CopyFrom(scene_);

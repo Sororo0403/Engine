@@ -17,6 +17,7 @@ bool TextureSlotInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
                                 bool canApplyUvToSelection,
                                 bool canPasteUv) const {
 	request = {};
+
 	if (!object.meshRenderer) {
 		return false;
 	}

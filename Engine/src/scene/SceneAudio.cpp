@@ -36,9 +36,11 @@ bool SceneAudio::Collect(const Scene &scene, const CameraPose &camera,
 	if (invalidObject)
 		*invalidObject = 0;
 	SceneObjectId current = 0;
+
 	try {
 		SceneHierarchy::WorldTransforms transforms;
 		SceneActivity::States active;
+
 		if (!SceneHierarchy::BuildWorldTransforms(scene, transforms) ||
 		    !SceneActivity::BuildStates(scene, active)) {
 			throw std::runtime_error(
@@ -46,10 +48,12 @@ bool SceneAudio::Collect(const Scene &scene, const CameraPose &camera,
 		}
 
 		SceneAudioFrame next;
+
 		for (const auto &[id, object] : scene.GetObjects()) {
 			if (!active.at(id))
 				continue;
 			current = id;
+
 			if (object.audioListener) {
 				if (next.listenerObject)
 					throw std::runtime_error(
@@ -78,6 +82,7 @@ bool SceneAudio::Collect(const Scene &scene, const CameraPose &camera,
 		}
 
 		current = next.listenerObject;
+
 		if (!next.listenerObject && !next.sources.empty()) {
 			Camera checked;
 			if (!checked.SetPose(camera))
@@ -96,6 +101,7 @@ bool SceneAudio::Collect(const Scene &scene, const CameraPose &camera,
 		if (!next.listener.IsValid())
 			throw std::runtime_error("Audio Listener world pose is invalid.");
 		std::size_t automatic = 0;
+
 		for (const auto &source : next.sources) {
 			current = source.id;
 			if (source.component.playOnStart &&

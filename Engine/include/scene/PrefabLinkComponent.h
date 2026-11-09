@@ -28,15 +28,18 @@ struct PrefabLinkComponent {
 		if (!root || !source) {
 			return false;
 		}
+
 		if (asset.empty()) {
 			return baseline.empty() && objects.empty();
 		}
+
 		if (asset.native().find(L'\0') != std::wstring::npos ||
 		    baseline.empty() || !ContainsSource(source) ||
 		    GetInstance(source) != root) {
 			return false;
 		}
 		std::set<SceneObjectId> used, originals;
+
 		for (const auto &[original, current] : objects) {
 			if (!original || !originals.insert(original).second ||
 			    original == (std::numeric_limits<SceneObjectId>::max)() ||
@@ -45,6 +48,7 @@ struct PrefabLinkComponent {
 				return false;
 			}
 		}
+
 		return true;
 	}
 

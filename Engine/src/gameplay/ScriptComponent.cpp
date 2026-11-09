@@ -14,13 +14,16 @@ bool ScriptComponent::IsValid() const {
 	if (!LuaScript::NormalizeState(initialState, normalized, error))
 		return false;
 	std::set<std::string> names;
+
 	for (const auto &[name, id] : references) {
 		(void)id;
 		if (name.empty() || name.size() > kMaximumReferenceNameBytes ||
 		    name.find('\0') != std::string::npos || !names.insert(name).second)
 			return false;
 	}
+
 	names.clear();
+
 	for (const auto &[name, path] : prefabs) {
 		if (name.empty() || name.size() > kMaximumReferenceNameBytes ||
 		    name.find('\0') != std::string::npos || !names.insert(name).second)
@@ -32,7 +35,9 @@ bool ScriptComponent::IsValid() const {
 		     (path.has_root_path() && !path.is_absolute())))
 			return false;
 	}
+
 	names.clear();
+
 	for (const auto &[name, path] : scenes) {
 		if (name.empty() || name.size() > kMaximumReferenceNameBytes ||
 		    name.find('\0') != std::string::npos || !names.insert(name).second)
@@ -43,5 +48,6 @@ bool ScriptComponent::IsValid() const {
 		                      (path.has_root_path() && !path.is_absolute())))
 			return false;
 	}
+
 	return true;
 }

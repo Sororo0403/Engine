@@ -130,6 +130,7 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 				object->rectTransform = value;
 			}
 		}
+
 		return true;
 	} catch (const std::exception &exception) {
 		call.error.assign(
@@ -155,14 +156,17 @@ int Dispatch(lua_State *state) {
 	float numbers[4]{};
 	const char *text = nullptr;
 	std::size_t length = 0;
+
 	if (op == Op::SET_INTERACTABLE) {
 		luaL_checktype(state, 2, LUA_TBOOLEAN);
 		numbers[0] = lua_toboolean(state, 2) ? 1.0f : 0.0f;
 	}
+
 	if (op == Op::SET_TEXT) {
 		luaL_checktype(state, 2, LUA_TSTRING);
 		text = lua_tolstring(state, 2, &length);
 	}
+
 	if (op == Op::SET_POSITION || op == Op::SET_SIZE ||
 	    op == Op::SET_TEXT_COLOR || op == Op::SET_IMAGE_COLOR ||
 	    op == Op::SET_IMAGE_FILL) {
@@ -182,14 +186,17 @@ int Dispatch(lua_State *state) {
 		lua_pushlstring(state, call.error.data(), call.error.size());
 		return lua_error(state);
 	}
+
 	if (op == Op::INTERACTABLE) {
 		lua_pushboolean(state, numbers[0] != 0);
 		return 1;
 	}
+
 	if (op == Op::TEXT) {
 		lua_pushlstring(state, call.returnText.data(), call.returnText.size());
 		return 1;
 	}
+
 	const int result = op == Op::IMAGE_FILL                              ? 1
 	                   : (op == Op::POSITION || op == Op::SIZE)          ? 2
 	                   : (op == Op::TEXT_COLOR || op == Op::IMAGE_COLOR) ? 4

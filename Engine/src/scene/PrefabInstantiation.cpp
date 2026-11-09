@@ -15,10 +15,12 @@ PrefabInstantiation::Instantiate(const Scene &prefab, Scene &scene,
                                  std::string &error) {
 	try {
 		SceneObjectId root = 0;
+
 		if (!MathUtils::IsFinite(position)) {
 			error = "Prefab placement requires a finite world position.";
 			return 0;
 		}
+
 		if (!PrefabSerializer::Validate(prefab, root, error))
 			return 0;
 		if (prefab.GetObjects().size() > kMaximumObjects ||
@@ -37,8 +39,10 @@ PrefabInstantiation::Instantiate(const Scene &prefab, Scene &scene,
 			throw std::runtime_error(
 			    "Prefab placement offset is outside the supported range.");
 		SceneObjectId created = 0;
+
 		if (!scene.ApplyTransaction([&](Scene &candidate) {
 			    std::map<SceneObjectId, SceneObjectId> remap;
+
 			    for (auto id : order) {
 				    auto object = *prefab.FindObject(id);
 				    object.parentId =
@@ -52,15 +56,18 @@ PrefabInstantiation::Instantiate(const Scene &prefab, Scene &scene,
 					                  r.position.y + delta.y,
 					                  r.position.z + delta.z};
 				    }
+
 				    const auto added =
 				        candidate.CreateObject(std::move(object));
 				    remap.emplace(id, added);
 			    }
+
 			    for (const auto &[source, target] : remap) {
 				    (void)source;
 				    SceneObjectReferences::Remap(*candidate.FindObject(target),
 				                                 remap);
 			    }
+
 			    std::string serialized;
 			    if (!SceneSerializer::Serialize(candidate, serialized))
 				    throw std::runtime_error(

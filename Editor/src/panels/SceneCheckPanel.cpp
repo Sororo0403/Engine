@@ -154,13 +154,17 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 	Request requested;
 	const auto objects = GetIssueObjects(scene);
 	ui.BeginDisabled(objects.empty());
+
 	if (ui.Button("Select Listed Issue Objects")) {
 		requested.objectIds = objects;
 	}
+
 	ui.SameLine();
+
 	if (ui.Button("Frame Listed Issue Objects")) {
 		requested = {objects, true};
 	}
+
 	ui.EndDisabled();
 
 	for (std::size_t i = 0; i < issues_.size(); ++i) {
@@ -182,6 +186,7 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 			}
 
 			ui.SameLine();
+
 			if (ui.Button("Frame Object")) {
 				requested = {{issue.objectId}, true};
 			}
@@ -206,11 +211,13 @@ std::vector<SceneObjectId>
 SceneCheckPanel::GetIssueObjects(const Scene &scene) const {
 	std::vector<SceneObjectId> ids;
 	std::set<SceneObjectId> seen;
+
 	for (const auto &issue : issues_) {
 		if (MatchesFilter(issue, scene) && scene.Contains(issue.objectId) &&
 		    seen.insert(issue.objectId).second) {
 			ids.push_back(issue.objectId);
 		}
 	}
+
 	return ids;
 }

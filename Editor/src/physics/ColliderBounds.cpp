@@ -71,6 +71,7 @@ bool ColliderBounds::Update(SceneRenderer &renderer, const Scene &scene,
 			if (!SceneActivity::IsActive(scene, id)) {
 				continue;
 			}
+
 			if (!Update(renderer, scene, id)) {
 				return false;
 			}
@@ -188,6 +189,7 @@ bool ColliderBounds::BuildLines(const Collider &collider,
 	                      const DirectX::XMFLOAT3 &b) {
 		next.push_back({point(a), point(b), color_});
 	};
+
 	if (collider.shape == Collider::Shape::BOX) {
 		std::array<DirectX::XMFLOAT3, 8> corners;
 		const auto &h = collider.halfExtents;
@@ -214,6 +216,7 @@ bool ColliderBounds::BuildLines(const Collider &collider,
 				     at(start + (end - start) * (i + 1) / segments));
 		};
 		const float pi = std::numbers::pi_v<float>;
+
 		if (collider.shape == Collider::Shape::SPHERE) {
 			for (int plane = 0; plane < 3; ++plane)
 				circle(plane, 0, 0, 2 * pi, kCircleSegments);
@@ -225,6 +228,7 @@ bool ColliderBounds::BuildLines(const Collider &collider,
 				circle(plane, height, 0, pi, kCircleSegments / 2);
 				circle(plane, -height, pi, 2 * pi, kCircleSegments / 2);
 			}
+
 			for (const DirectX::XMFLOAT3 p :
 			     std::array<DirectX::XMFLOAT3, 4>{{{radius, 0, 0},
 			                                       {-radius, 0, 0},
@@ -233,6 +237,7 @@ bool ColliderBounds::BuildLines(const Collider &collider,
 				line({p.x, -height, p.z}, {p.x, height, p.z});
 		}
 	}
+
 	if (!valid)
 		return false;
 	lines = std::move(next);

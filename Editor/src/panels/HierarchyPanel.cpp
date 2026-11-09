@@ -215,6 +215,7 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 			parent = object->parentId;
 		}
 	}
+
 	const auto visibleIds = GetVisibleIds(scene);
 	ui.BeginDisabled(visibleIds.empty());
 
@@ -247,12 +248,14 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 					result.action = Action::REPARENT_OBJECTS;
 				}
 			}
+
 			ImGui::EndDragDropTarget();
 		};
 		ui.Selectable("Scene Root###HierarchyRoot", false);
 		acceptParent(0);
 		const bool filtered = IsFiltered();
 		std::set<SceneObjectId> hasChildren;
+
 		for (const auto &[id, object] : objects) {
 			(void)id;
 			if (object.parentId)
@@ -288,6 +291,7 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 			const auto &io = ImGui::GetIO();
 
 			float indent = 0;
+
 			if (!filtered) {
 				auto parent = object.parentId;
 				for (std::size_t depth = 0;
@@ -299,6 +303,7 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 					parent = ancestor->parentId;
 				}
 			}
+
 			if (indent > 0)
 				ImGui::Indent(indent);
 			const bool branch = !filtered && hasChildren.contains(id);
@@ -311,12 +316,14 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 				flags |= ImGuiTreeNodeFlags_Selected;
 			ImGui::SetNextItemOpen(!collapsed_.contains(id), ImGuiCond_Always);
 			const bool open = ImGui::TreeNodeEx(label.c_str(), flags);
+
 			if (branch && ImGui::IsItemToggledOpen()) {
 				if (open)
 					collapsed_.erase(id);
 				else
 					collapsed_.insert(id);
 			}
+
 			if (ImGui::IsItemClicked(ImGuiMouseButton_Left) &&
 			    !ImGui::IsItemToggledOpen()) {
 				const bool changed = SelectObject(id, visibleIds, io.KeyCtrl,
@@ -353,6 +360,7 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 			if (editable && ImGui::BeginDragDropSource()) {
 				const auto selectedIds = selection.GetIds();
+
 				if (selection.Contains(id)) {
 					ImGui::SetDragDropPayload(
 					    "EDITOR_HIERARCHY_OBJECTS", selectedIds.data(),
@@ -361,12 +369,14 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 					ImGui::SetDragDropPayload("EDITOR_HIERARCHY_OBJECTS", &id,
 					                          sizeof(id), ImGuiCond_Once);
 				}
+
 				ui.Text(std::format("{}", name));
 				ui.Text(ImGui::GetIO().KeyAlt
 				            ? "Keep Local Transform"
 				            : "Keep World Transform (Alt: Keep Local)");
 				ImGui::EndDragDropSource();
 			}
+
 			acceptParent(id);
 
 			if (ImGui::BeginPopupContextItem()) {
@@ -385,6 +395,7 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 					result.parentId = 0;
 					result.keepWorld = true;
 				}
+
 				if (ui.MenuItem("Unparent (Keep Local)", nullptr,
 				                editable && object.parentId != 0)) {
 					result.action = Action::REPARENT_OBJECTS;
@@ -492,9 +503,11 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 				if (ui.MenuItem("Enable Selected", nullptr, canEnable)) {
 					result.action = Action::ENABLE_OBJECTS;
 				}
+
 				if (ui.MenuItem("Disable Selected", nullptr, canDisable)) {
 					result.action = Action::DISABLE_OBJECTS;
 				}
+
 				if (ui.MenuItem("Hide Selected", nullptr, canHide)) {
 					result.action = Action::HIDE_OBJECTS;
 				}
@@ -622,6 +635,7 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 				ui.EndDisabled();
 				ImGui::EndPopup();
 			}
+
 			if (indent > 0)
 				ImGui::Unindent(indent);
 		}

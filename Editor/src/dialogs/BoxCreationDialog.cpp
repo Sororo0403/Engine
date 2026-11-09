@@ -18,11 +18,14 @@ void BoxCreationDialog::Show(const Collider &bounds, float planeHeight) {
 
 BoxCreationResult BoxCreationDialog::Draw(const ImGuiSystem &ui) {
 	constexpr const char *title = "Box with Size###BoxCreationDialog";
+
 	if (opening_) {
 		ui.OpenPopup(title);
 		opening_ = false;
 	}
+
 	ImGui::SetNextWindowSize({460, 0}, ImGuiCond_Appearing);
+
 	if (!ui.BeginPopupModal(title)) {
 		return BoxCreationResult::NONE;
 	}
@@ -67,6 +70,7 @@ BoxCreationResult BoxCreationDialog::Draw(const ImGuiSystem &ui) {
 
 	BoxCreationResult result = BoxCreationResult::NONE;
 	ui.BeginDisabled(!valid);
+
 	if (ui.Button("Frame Preview")) {
 		result = BoxCreationResult::FRAME_PREVIEW;
 	}
@@ -74,16 +78,20 @@ BoxCreationResult BoxCreationDialog::Draw(const ImGuiSystem &ui) {
 	if (ui.Button("Create Box")) {
 		result = BoxCreationResult::ACCEPTED;
 	}
+
 	ui.EndDisabled();
 	ui.SameLine();
+
 	if (result == BoxCreationResult::NONE &&
 	    (ui.Button("Cancel") || ImGui::IsKeyPressed(ImGuiKey_Escape, false))) {
 		result = BoxCreationResult::CANCELLED;
 	}
+
 	if (result == BoxCreationResult::ACCEPTED ||
 	    result == BoxCreationResult::CANCELLED) {
 		ui.CloseCurrentPopup();
 	}
+
 	ui.EndPopup();
 	return result;
 }

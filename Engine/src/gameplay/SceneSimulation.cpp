@@ -28,6 +28,7 @@ bool PlaceSceneArrival(Scene &scene, std::string_view tag, std::string &error) {
 	if (tag.empty())
 		return true;
 	SceneObjectId arrival = 0, character = 0;
+
 	for (const auto &[id, object] : scene.GetObjects()) {
 		if (!SceneActivity::IsActive(scene, id))
 			continue;
@@ -37,28 +38,35 @@ bool PlaceSceneArrival(Scene &scene, std::string_view tag, std::string &error) {
 				    "Arrival Tag '{}' matches multiple active objects.", tag);
 				return false;
 			}
+
 			arrival = id;
 		}
+
 		if (object.character) {
 			if (character) {
 				error = "A tagged arrival requires exactly one active "
 				        "Character Controller.";
 				return false;
 			}
+
 			character = id;
 		}
 	}
+
 	if (!arrival) {
 		error = std::format(
 		    "Arrival Tag '{}' has no active object in the destination scene.",
 		    tag);
 		return false;
 	}
+
 	if (!character) {
 		error = "A tagged arrival requires an active Character Controller.";
 		return false;
 	}
+
 	SceneWorldTransform world;
+
 	if (!SceneHierarchy::GetWorldTransform(scene, arrival, world) ||
 	    !SceneHierarchy::SetWorldPosition(scene, character,
 	                                      world.GetPosition())) {
@@ -66,6 +74,7 @@ bool PlaceSceneArrival(Scene &scene, std::string_view tag, std::string &error) {
 		        "Arrival Tag.";
 		return false;
 	}
+
 	return true;
 }
 } // namespace
@@ -84,10 +93,12 @@ bool SceneSimulation::Validate(const Scene &source, std::string &error,
 	try {
 		Scene runtime;
 		runtime.CopyFrom(source);
+
 		for (const auto &[id, value] : runtime.GetObjects()) {
 			(void)value;
 			runtime.FindObject(id)->prefabLink.reset();
 		}
+
 		SceneSimulation check;
 		return check.Configure(runtime, error, fallbackPose, invalidObject,
 		                       false);
@@ -117,22 +128,28 @@ bool SceneSimulation::StartScene(const Scene &source, std::string &error,
 			error = "The scene revision limit was reached.";
 			return false;
 		}
+
 		if (audioRevision_ == (std::numeric_limits<std::uint64_t>::max)()) {
 			error = "The simulation audio revision limit was reached.";
 			return false;
 		}
+
 		auto initialScene = restartSource_;
+
 		if (&source != initialScene.get()) {
 			auto snapshot = std::make_shared<Scene>();
 			auto objects = source.GetObjects();
+
 			for (auto &[id, object] : objects) {
 				(void)id;
 				object.prefabLink.reset();
 			}
+
 			snapshot->CopyFrom(source);
 			snapshot->ReplaceObjects(std::move(objects));
 			initialScene = std::move(snapshot);
 		}
+
 		SceneSimulation working;
 		working.restartSource_ = initialScene;
 		working.preparePrefabResources_ = preparePrefabResources_;
@@ -143,19 +160,24 @@ bool SceneSimulation::StartScene(const Scene &source, std::string &error,
 		                       invalidObject, false)) {
 			return false;
 		}
+
 		if (!working.ApplyScripts(0, CharacterInput{}, true, error,
 		                          invalidObject))
 			return false;
 		working.pendingActionSignals_.clear();
+
 		if (!working.triggers_.Reset(working.scene_)) {
 			error = "Initial Script trigger shapes are invalid.";
 			return false;
 		}
+
 		const auto events = working.triggers_.GetEvents();
 		working.frameEvents_.assign(events.begin(), events.end());
+
 		if (!working.ApplyTriggerActions(error, invalidObject)) {
 			return false;
 		}
+
 		working.scripts_.QueueTriggers(working.frameEvents_);
 		working.audioRevision_ = audioRevision_ + 1;
 		working.sceneRevision_ = sceneRevision_ + 1;
@@ -180,40 +202,52 @@ bool SceneSimulation::SetActive(std::span<const SceneActiveChange> changes,
                                 std::string &error,
                                 SceneObjectId *invalidObject) {
 	error.clear();
+
 	if (invalidObject) {
 		*invalidObject = 0;
 	}
+
 	if (!playing_ || changes.empty()) {
 		error =
 		    "Start Play and specify existing objects before changing activity.";
 		return false;
 	}
+
 	try {
 		Scene working;
 		working.CopyFrom(scene_);
 		std::set<SceneObjectId> seen;
 		bool changed = false;
+
 		for (const auto &change : changes) {
 			auto *object = working.FindObject(change.objectId);
+
 			if (!object || !seen.insert(change.objectId).second) {
 				error = "Activity changes require unique, existing object IDs.";
+
 				if (invalidObject) {
 					*invalidObject = change.objectId;
 				}
+
 				return false;
 			}
+
 			changed |= object->active != change.active;
 			object->active = change.active;
 		}
+
 		if (!changed) {
 			return true;
 		}
+
 		SceneSimulation next;
 		next.CopyFrom(*this);
+
 		if (!next.Configure(working, error, next.fallbackPose_, invalidObject,
 		                    true)) {
 			return false;
 		}
+
 		const auto events = next.triggers_.GetEvents();
 		next.frameEvents_.assign(events.begin(), events.end());
 		next.QueueActionSignals(events, next.pendingActionSignals_);
@@ -231,6 +265,7 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 	if (invalidObject) {
 		*invalidObject = 0;
 	}
+
 	try {
 		error.clear();
 		Scene source;
@@ -247,20 +282,27 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 			if (invalidObject) {
 				*invalidObject = id;
 			}
+
 			return false;
 		};
 		std::vector<SceneObjectId> order;
+
 		if (!SceneCameraUtils::GetUpdateOrder(source, order, error,
 		                                      invalidObject)) {
 			return false;
 		}
+
 		std::map<SceneObjectId, FollowCameraOrbit> orbits;
+
 		for (const auto id : order) {
 			const auto &object = *source.FindObject(id);
+
 			if (!object.followCamera || !object.followCamera->orbit.enabled) {
 				continue;
 			}
+
 			const auto found = orbitStates_.find(id);
+
 			if (preserve && found != orbitStates_.end()) {
 				orbits.emplace(id, found->second);
 			} else if (SceneActivity::IsActive(source, id) &&
@@ -268,6 +310,7 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 				return fail(id, "Orbit Camera settings are invalid.");
 			}
 		}
+
 		const auto makeFollow = [&](SceneObjectId id,
 		                            const DirectX::XMFLOAT3 &target,
 		                            const FollowCameraSettings &settings) {
@@ -278,6 +321,7 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 		};
 
 		Scene working;
+
 		if (!preserve) {
 			if (!SceneCameraUtils::ResolveInitialScene(source, working, error,
 			                                           invalidObject)) {
@@ -288,16 +332,20 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 			// 継続する追従は現在姿勢を保ち、新しく有効になった枝だけを依存順で初期化する。
 			for (const auto id : order) {
 				const auto &object = *working.FindObject(id);
+
 				if (!SceneActivity::IsActive(working, id) ||
 				    !object.followCamera || followPoses_.contains(id)) {
 					continue;
 				}
+
 				SceneWorldTransform target;
+
 				if (!SceneHierarchy::GetWorldTransform(
 				        working, object.followCamera->target, target)) {
 					return fail(id,
 					            "Follow Camera target transform is invalid.");
 				}
+
 				auto pose =
 				    makeFollow(id, target.GetPosition(), *object.followCamera);
 				if (!SceneCameraUtils::AvoidFollowObstacles(working, id,
@@ -308,51 +356,66 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 				}
 			}
 		}
+
 		// 現在の姿勢を検証し、既存の追従や移動を開始時へ巻き戻さない。
 		const auto issues =
 		    SceneValidation::Inspect(working, fallbackPose, false);
 		if (!issues.empty()) {
 			error = issues.front().message;
+
 			if (invalidObject) {
 				*invalidObject = issues.front().objectId;
 			}
+
 			return false;
 		}
+
 		SceneObjectId character = 0, camera = 0;
+
 		for (const auto &[id, object] : working.GetObjects()) {
 			if (!SceneActivity::IsActive(working, id)) {
 				continue;
 			}
+
 			if (object.character) {
 				character = id;
 			}
+
 			if (object.camera && object.camera->primary) {
 				camera = id;
 			}
 		}
+
 		std::vector<SceneObjectId> ignored;
+
 		if (character &&
 		    !SceneHierarchy::GetSubtree(working, character, ignored)) {
 			return fail(character, "Character hierarchy is invalid.");
 		}
+
 		auto physics = preserve ? physics_ : ScenePhysics{};
 		if (!physics.Configure(working, preserve, error, invalidObject))
 			return false;
 		CollisionWorld world;
 		SceneObjectId invalidCollider = 0;
+
 		if (!world.Rebuild(working, std::span<const SceneObjectId>{ignored},
 		                   &invalidCollider, physics.GetWorld())) {
 			return fail(
 			    invalidCollider,
 			    "Collider cannot be represented at its world transform.");
 		}
+
 		const bool continuing =
 		    preserve && character != 0 && character == character_;
 		CharacterController controller;
+
 		if (continuing) {
 			controller = controller_;
 		}
+
 		DirectX::XMFLOAT3 spawn{};
+
 		if (character) {
 			const auto &object = *working.FindObject(character);
 			SceneWorldTransform transform;
@@ -369,11 +432,14 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 				                       "has an invalid world transform.");
 			}
 			spawn = continuing ? spawn_ : transform.GetPosition();
+
 			if (object.respawn) {
 				const auto &settings = *object.respawn;
+
 				if (!settings.useStartPosition) {
 					spawn = settings.position;
 				}
+
 				// 復帰先の検証はコピーで行い、継続する主人公の速度と入力を消さない。
 				auto placement = controller;
 				if (spawn.y <= settings.minimumY ||
@@ -387,53 +453,72 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 				}
 			}
 		}
+
 		std::map<SceneObjectId, CameraPose> follows;
+
 		for (const auto id : order) {
 			const auto &object = *working.FindObject(id);
+
 			if (!SceneActivity::IsActive(working, id) || !object.followCamera) {
 				continue;
 			}
+
 			if (preserve) {
 				const auto found = followPoses_.find(id);
+
 				if (found != followPoses_.end()) {
 					follows.emplace(id, found->second);
 					continue;
 				}
 			}
+
 			SceneWorldTransform target;
+
 			if (!SceneHierarchy::GetWorldTransform(
 			        working, object.followCamera->target, target)) {
 				return fail(id, "Follow Camera target transform is invalid.");
 			}
+
 			auto pose =
 			    makeFollow(id, target.GetPosition(), *object.followCamera);
 			if (!SceneCameraUtils::AvoidFollowObstacles(working, id, pose)) {
 				return fail(id, "Follow Camera pose is invalid.");
 			}
+
 			follows.emplace(id, pose);
 		}
+
 		auto pose = fallbackPose;
+
 		if (camera) {
 			SceneWorldTransform transform;
+
 			if (!SceneHierarchy::GetWorldTransform(working, camera,
 			                                       transform)) {
 				return fail(camera, "Camera world transform is invalid.");
 			}
+
 			pose = SceneCameraUtils::FromWorldTransform(transform);
 		}
+
 		const auto lens = camera ? working.FindObject(camera)->camera->settings
 		                         : CameraSettings{};
 		Camera validator;
+
 		if (!validator.SetPose(pose) || !validator.SetSettings(lens)) {
 			return fail(camera, "Camera pose or projection is invalid.");
 		}
+
 		TriggerWorld triggers;
+
 		if (preserve) {
 			triggers = triggers_;
 		}
+
 		if (preserve ? !triggers.Update(working) : !triggers.Reset(working)) {
 			return fail(0, "Trigger world shapes or hierarchy are invalid.");
 		}
+
 		auto particles = particles_;
 		if (!particles.Configure(working, preserve, error, invalidObject))
 			return false;
@@ -474,10 +559,12 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 		orbitStates_ = std::move(orbits);
 		cameraSettings_ = lens;
 		spawn_ = spawn;
+
 		if (!continuing) {
 			respawnCount_ = 0;
 			lastRespawnPosition_.reset();
 		}
+
 		if (!cameraTransition_)
 			pose_ = pose;
 		fallbackPose_ = fallbackPose;
@@ -541,50 +628,62 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 				lastUpdateError_ = "The zero-time simulation update failed.";
 				return false;
 			}
+
 			ui_.Cancel();
 			lastUpdateError_.clear();
 			return true;
 		}
+
 		if (pendingScene_.restart || !pendingScene_.path.empty()) {
 			Scene destination;
 			std::string error;
+
 			if (!pendingScene_.restart) {
 				if (!SceneSerializer::Load(destination, pendingScene_.path)) {
 					lastUpdateError_ = "Could not load destination scene: " +
 					                   PathUtils::ToUtf8(pendingScene_.path);
 					return false;
 				}
+
 				if (!PlaceSceneArrival(destination, pendingScene_.arrivalTag,
 				                       error)) {
 					lastUpdateError_ = std::move(error);
 					return false;
 				}
 			}
+
 			const auto &source =
 			    pendingScene_.restart ? *restartSource_ : destination;
 			SceneSimulation destinationSimulation;
 			destinationSimulation.CopyFrom(*this);
+
 			if (!destinationSimulation.StartScene(source, error, fallbackPose_,
 			                                      nullptr, true)) {
 				lastUpdateError_ = std::move(error);
 				return false;
 			}
+
 			Adopt(destinationSimulation);
 			return true;
 		}
+
 		SceneSimulation working;
 		working.CopyFrom(*this);
 		working.audioActions_.clear();
+
 		if (audioRevision_ == (std::numeric_limits<std::uint64_t>::max)()) {
 			lastUpdateError_ =
 			    "The simulation audio revision limit was reached.";
 			return false;
 		}
+
 		std::string uiError;
+
 		if (!working.ui_.Update(working.scene_, uiInput, uiError)) {
 			lastUpdateError_ = std::move(uiError);
 			return false;
 		}
+
 		const bool paused = working.gamePaused_;
 		const auto controls = paused || working.ui_.ConsumesNavigation()
 		                          ? CharacterInput{}
@@ -605,13 +704,16 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 				        : working.lastUpdateError_;
 				return false;
 			}
+
 			// 主人公や追従の最終姿勢で問い合わせる。実行中のKinematic速度は変えない。
 			auto contactPhysics = working.physics_;
 			std::string contactError;
+
 			if (!contactPhysics.Configure(working.scene_, true, contactError)) {
 				lastUpdateError_ = std::move(contactError);
 				return false;
 			}
+
 			const auto *physicalWorld = working.physics_.GetWorld();
 			const auto impacts = physicalWorld && seconds >= .000001f
 			                         ? physicalWorld->GetFrameContacts()
@@ -623,6 +725,7 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 				return false;
 			}
 		}
+
 		std::string error;
 		const bool uiConsumesInput =
 		    working.ui_.ConsumesNavigation() || working.ui_.ConsumesPointer();
@@ -641,6 +744,7 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 				action.value = 0;
 			}
 		}
+
 		auto scriptViewport = uiInput;
 		// UIがポインターを使用した更新では、同じクリックを3D操作へ渡さない。
 		scriptViewport.pointerValid &= !working.ui_.ConsumesPointer();
@@ -654,6 +758,7 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 			lastUpdateError_ = std::move(error);
 			return false;
 		}
+
 		working.lastUpdateError_.clear();
 		working.audioRevision_ = audioRevision_ + 1;
 		Adopt(working);
@@ -670,16 +775,19 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 	if (!playing_ || !std::isfinite(seconds) || seconds < 0)
 		return false;
 	lastUpdateError_.clear();
+
 	try {
 		Scene working;
 		working.CopyFrom(scene_);
 		auto next = controller_;
 		auto animations = animations_;
 		std::string animationError;
+
 		if (!animations.Advance(working, seconds, animationError)) {
 			lastUpdateError_ = std::move(animationError);
 			return false;
 		}
+
 		auto motion = motion_;
 		std::optional<TriggerWorld> triggers;
 		std::vector<TriggerEvent> motionEvents;
@@ -691,10 +799,12 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 			return false;
 		auto physics = physics_;
 		std::string physicsError;
+
 		if (!physics.Advance(working, seconds, physicsError)) {
 			lastUpdateError_ = std::move(physicsError);
 			return false;
 		}
+
 		auto follows = followPoses_;
 		auto orbits = orbitStates_;
 		if (const auto found = orbits.find(camera_);
@@ -703,6 +813,7 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 		                          *working.FindObject(camera_)->followCamera)) {
 			return false;
 		}
+
 		CollisionWorld world;
 		std::vector<SceneObjectId> ignored;
 		if (character_ &&
@@ -726,6 +837,7 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 				                  state->transform.rotation))
 					return false;
 			}
+
 			if (id == character_) {
 				SceneWorldTransform transform;
 				if (!object->collider || !object->character ||
@@ -743,10 +855,12 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 						return false;
 					respawned = true;
 				}
+
 				if (!SceneHierarchy::SetWorldPosition(
 				        working, id, next.GetTransform().translation))
 					return false;
 			}
+
 			if (object->followCamera) {
 				const auto &settings = *object->followCamera;
 				const auto found = follows.find(id);
@@ -774,6 +888,7 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 				const auto previous = found->second;
 				auto &pose = found->second;
 				lerp(pose.target, desired.target);
+
 				if (orbit != orbits.end()) {
 					// 注視点の追従だけを補間し、旋回中に半径が縮んで対象を横切ることを避ける。
 					pose.position = {
@@ -783,6 +898,7 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 				} else {
 					lerp(pose.position, desired.position);
 				}
+
 				if (!SceneCameraUtils::AvoidFollowObstacles(working, id,
 				                                            pose)) {
 					pose.position = previous.position;
@@ -790,11 +906,14 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 					if (!validator.SetPose(pose))
 						pose = previous;
 				}
+
 				if (!SceneCameraUtils::ApplyWorldPose(working, id, pose))
 					return false;
 			}
 		}
+
 		auto pose = pose_;
+
 		if (camera_) {
 			SceneWorldTransform transform;
 			if (!SceneHierarchy::GetWorldTransform(working, camera_, transform))
@@ -804,11 +923,14 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 			if (!validator.SetPose(pose))
 				return false;
 		}
+
 		auto transition = cameraTransition_;
+
 		if (transition && seconds == 0) {
 			pose = pose_;
 		} else if (transition) {
 			transition->elapsed += seconds;
+
 			if (transition->elapsed >= transition->duration) {
 				transition.reset();
 			} else {
@@ -820,6 +942,7 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 					return false;
 			}
 		}
+
 		// 全更新の成功後に確定し、失敗したフレームは位置・速度・追従状態を保持する。
 		if (!world.Rebuild(working, std::span<const SceneObjectId>{ignored},
 		                   nullptr, physics.GetWorld()))
@@ -831,6 +954,7 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 			    !next.SynchronizeWorldMatrix(transform.matrix, world))
 				return false;
 		}
+
 		// 落下復帰では主人公と子孫の瞬間移動経路を検知しない。
 		// 終点でのEnterと、開始時の接触に対するExitは通常どおり生成する。
 		if (seconds > 0) {
@@ -840,6 +964,7 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 				return false;
 			}
 		}
+
 		auto particles = particles_;
 		if (!particles.Advance(working, seconds, lastUpdateError_))
 			return false;
@@ -847,6 +972,7 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 		if (!animators.Advance(working, seconds, lastUpdateError_))
 			return false;
 		scene_.CopyFrom(working);
+
 		if (triggers) {
 			for (const auto &event : triggers->GetEvents()) {
 				if (event.type == TriggerEvent::Type::STAY &&
@@ -856,9 +982,11 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 					continue;
 				motionEvents.push_back(event);
 			}
+
 			frameEvents_ = std::move(motionEvents);
 			triggers_ = std::move(*triggers);
 		}
+
 		controller_ = next;
 		motion_ = std::move(motion);
 		animations_ = std::move(animations);
@@ -870,10 +998,12 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 		orbitStates_ = std::move(orbits);
 		pose_ = pose;
 		cameraTransition_ = transition;
+
 		if (respawned) {
 			++respawnCount_;
 			lastRespawnPosition_ = next.GetTransform().translation;
 		}
+
 		return true;
 	} catch (const std::exception &) {
 		return false;

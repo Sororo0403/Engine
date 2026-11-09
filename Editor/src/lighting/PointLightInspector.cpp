@@ -13,6 +13,7 @@ bool PointLightInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 	if (!object.pointLight || !ui.CollapsingHeader("Point Light")) {
 		return false;
 	}
+
 	const auto scope = std::to_string(id);
 	ImGui::PushID(scope.c_str());
 	ImGui::PushID("PointLightInspector");
@@ -43,9 +44,11 @@ bool PointLightInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		changed |= history.SetPointLight(id, PointLightComponent{}) &&
 		           object.pointLight != before;
 	}
+
 	if (ImGui::Button("Remove Point Light")) {
 		changed |= history.SetPointLight(id, std::nullopt);
 	}
+
 	ImGui::PopID();
 	ImGui::PopID();
 	return changed;
@@ -56,6 +59,7 @@ void PointLightInspector::DrawReadOnly(const ImGuiSystem &ui,
 	if (!object.pointLight || !ui.CollapsingHeader("Point Light")) {
 		return;
 	}
+
 	const auto &light = *object.pointLight;
 	ui.Text(std::format("Color: {:.3f}, {:.3f}, {:.3f}", light.color[0],
 	                    light.color[1], light.color[2]));

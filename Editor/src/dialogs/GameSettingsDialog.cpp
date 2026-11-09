@@ -27,6 +27,7 @@ void GameSettingsDialog::Show(const GameConfig &config,
 	saving_ = false;
 	opening_ = true;
 	selecting_ = false;
+
 	if (!source_.empty()) {
 		try {
 			source_ = PathUtils::ResolveFromExecutable(source_);
@@ -53,12 +54,14 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 	}
 
 	ui.BeginDisabled(selecting_);
+
 	if (ui.Button("Load Game Configuration")) {
 		saving_ = false;
 		picker_.Show(FileDialogMode::OPEN, source_,
 		             FileDialogFilter::GAME_CONFIG);
 		selecting_ = true;
 	}
+
 	ui.EndDisabled();
 	ui.BeginDisabled(selecting_);
 	const bool saveConfiguration = ui.Button("Save Game Configuration");
@@ -82,6 +85,7 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 	ImGui::SliderFloat("Light Intensity", &lighting_.intensity, 0.0f,
 	                   LightingSettings::kMaxIntensity);
 	ImGui::SliderFloat("Ambient Light", &lighting_.ambient, 0.0f, 1.0f);
+
 	if (ui.Button("Reset Lighting")) {
 		lighting_ = {};
 	}
@@ -90,6 +94,7 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 	ImGui::Checkbox("Enable Shadows", &lighting_.shadows.enabled);
 	ImGui::BeginDisabled(!lighting_.shadows.enabled);
 	const auto resolution = std::to_string(lighting_.shadows.resolution);
+
 	if (ImGui::BeginCombo("Shadow Resolution", resolution.c_str())) {
 		for (int size : {512, 1024, 2048}) {
 			const auto label = std::to_string(size);
@@ -97,8 +102,10 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 			                      lighting_.shadows.resolution == size))
 				lighting_.shadows.resolution = size;
 		}
+
 		ImGui::EndCombo();
 	}
+
 	ImGui::DragFloat("Shadow Extent", &lighting_.shadows.extent, .1f, 1, 1000,
 	                 "%.1f", ImGuiSliderFlags_AlwaysClamp);
 	ImGui::SliderFloat("Shadow Strength", &lighting_.shadows.strength, 0, 1);
@@ -133,6 +140,7 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 	}
 
 	ImGui::SeparatorText("Named Input Actions");
+
 	if (ImGui::BeginChild("NamedActions", {0, 200}, ImGuiChildFlags_Borders)) {
 		for (std::size_t i = 0; i < actions_.size();) {
 			ImGui::PushID(static_cast<int>(i));
@@ -152,15 +160,18 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 					                  action.keyboard == option.key))
 						action.keyboard = option.key;
 				}
+
 				ImGui::EndCombo();
 			}
 			const auto buttons = [&](const char *label, auto &selected,
 			                         const auto &options) {
 				const char *preview = "None";
+
 				for (const auto &option : options) {
 					if (selected == option.button)
 						preview = option.name;
 				}
+
 				if (ImGui::BeginCombo(label, preview)) {
 					if (ui.Selectable("None", !selected))
 						selected.reset();
@@ -169,6 +180,7 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 						                  selected == option.button))
 							selected = option.button;
 					}
+
 					ImGui::EndCombo();
 				}
 			};
@@ -187,11 +199,14 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 				++i;
 		}
 	}
+
 	ImGui::EndChild();
 	ui.BeginDisabled(actions_.size() >= GameActionBinding::kMaximumCount);
+
 	if (ui.Button("Add Action")) {
 		for (std::size_t suffix = 1;; ++suffix) {
 			const auto name = "action" + std::to_string(suffix);
+
 			if (std::none_of(actions_.begin(), actions_.end(),
 			                 [&](const auto &a) { return a.name == name; })) {
 				actions_.push_back({name});
@@ -199,6 +214,7 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 			}
 		}
 	}
+
 	ui.EndDisabled();
 	ImGui::EndChild();
 	ui.EndDisabled();
@@ -233,6 +249,7 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 		result = GameSettingsResult::CANCELLED;
 	} else if (apply) {
 		GameConfig candidate;
+
 		if (BuildConfiguration(candidate)) {
 			config_ = std::move(candidate);
 			result = GameSettingsResult::ACCEPTED;
@@ -243,9 +260,11 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 
 	if (selecting_) {
 		const auto selected = picker_.Draw(ui);
+
 		if (selected == FileDialogResult::ACCEPTED) {
 			if (saving_) {
 				destination_ = picker_.GetSelectedPath();
+
 				if (pendingSave_.Save(destination_, error_)) {
 					lastSavedPath_ = destination_;
 				}
@@ -254,6 +273,7 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 				LoadConfiguration(source_);
 			}
 		}
+
 		if (selected != FileDialogResult::NONE) {
 			selecting_ = false;
 		}
@@ -269,6 +289,7 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 
 bool GameSettingsDialog::LoadConfiguration(const std::filesystem::path &path) {
 	GameConfig loaded;
+
 	if (!loaded.Load(path, error_)) {
 		return false;
 	}
@@ -294,6 +315,7 @@ bool GameSettingsDialog::BuildConfiguration(GameConfig &candidate) {
 	value.cameraRelativeMovement = cameraRelativeMovement_;
 	value.gamepadEnabled = gamepadEnabled_;
 	value.lighting = lighting_;
+
 	if (!value.IsValid()) {
 		error_ =
 		    !GameActionBinding::IsValid(value.actions)
@@ -307,6 +329,7 @@ bool GameSettingsDialog::BuildConfiguration(GameConfig &candidate) {
 		        : "Enter a title and a valid window size (1-8192).";
 		return false;
 	}
+
 	candidate = std::move(value);
 	error_.clear();
 	return true;

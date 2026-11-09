@@ -35,28 +35,35 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 	};
 	SceneObjectId firstCharacter = 0, primary = 0;
 	SceneActivity::States active;
+
 	if (!SceneActivity::BuildStates(scene, active)) {
 		add(0, "Parent hierarchy is invalid.");
 		return issues;
 	}
 
 	SceneHierarchy::WorldTransforms sourceTransforms;
+
 	if (!SceneHierarchy::BuildWorldTransforms(scene, sourceTransforms)) {
 		add(0, "Parent hierarchy or composed world transform is invalid.");
 		return issues;
 	}
+
 	std::vector<PointLightData> lights;
 	std::string lightError;
 	SceneObjectId invalidLight = 0;
+
 	if (!SceneLighting::CollectPointLights(scene, lights, lightError,
 	                                       &invalidLight)) {
 		add(invalidLight, lightError);
 	}
+
 	std::vector<SpotLightData> spotLights;
+
 	if (!SceneLighting::CollectSpotLights(scene, spotLights, lightError,
 	                                      &invalidLight)) {
 		add(invalidLight, lightError);
 	}
+
 	std::string physicsError;
 	SceneObjectId invalidPhysics = 0;
 	if (!ScenePhysics::Validate(scene, physicsError, &invalidPhysics))
@@ -78,14 +85,17 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 	const auto &initial =
 	    resolvedInitial && resolveInitialPose ? resolved : scene;
 	SceneHierarchy::WorldTransforms transforms;
+
 	if (!SceneHierarchy::BuildWorldTransforms(initial, transforms)) {
 		add(0, "Initial world transforms are invalid.");
 		return issues;
 	}
+
 	for (const auto &[id, object] : scene.GetObjects()) {
 		if (!active.at(id)) {
 			continue;
 		}
+
 		if ((object.mesh && !object.mesh->IsValid()) ||
 		    (object.meshRenderer && !object.meshRenderer->IsValid())) {
 			add(id, "Mesh or Mesh Renderer settings are invalid.");
@@ -101,6 +111,7 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 			else if (!object.script->asset.empty())
 				for (const auto &[name, target] : object.script->references) {
 					(void)name;
+
 					if (target && !scene.Contains(target)) {
 						add(id, "A Script object reference points to a missing "
 						        "object.");
@@ -136,11 +147,13 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 				add(id, "Trigger Actions settings are invalid.");
 			} else if (!object.triggerActions->actions.empty()) {
 				bool requiresTrigger = false, requiresButton = false;
+
 				for (const auto &action : object.triggerActions->actions) {
 					requiresButton |=
 					    action.event == TriggerAction::Event::BUTTON_CLICK;
 					requiresTrigger |= action.UsesContact();
 				}
+
 				if (requiresTrigger &&
 				    (!object.collider || !object.collider->isTrigger))
 					add(id, "Contact Trigger Actions require a Collider with "
@@ -154,6 +167,7 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 						add(id, "Input Pressed requires a named input action.");
 						break;
 					}
+
 					if (action.operation ==
 					    TriggerAction::Operation::LOAD_SCENE) {
 						if (action.scenePath.empty())
@@ -161,6 +175,7 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 							        "asset.");
 						continue;
 					}
+
 					if (!action.UsesTarget())
 						continue;
 					if (!scene.Contains(action.target)) {
@@ -168,6 +183,7 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 						        "for each action.");
 						break;
 					}
+
 					if (action.UsesDestination() &&
 					    !scene.Contains(action.destination)) {
 						add(id,
@@ -327,6 +343,7 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 		CollisionWorld world;
 
 		std::vector<SceneObjectId> ignored;
+
 		if (!SceneHierarchy::GetSubtree(initial, id, ignored) ||
 		    !world.Rebuild(initial, std::span<const SceneObjectId>{ignored})) {
 			// 不正な障害物は上の一覧で報告し、修正後に主人公の配置を再検証する。
@@ -370,11 +387,13 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 		CameraPose pose;
 
 		bool hasPose = true;
+
 		if (resolveInitialPose) {
 			hasPose = SceneCameraUtils::GetInitialPose(scene, primary, pose);
 		} else {
 			pose = SceneCameraUtils::FromWorldTransform(transforms.at(primary));
 		}
+
 		if (!hasPose || !validator.SetPose(pose) ||
 		    !validator.SetSettings(object.camera->settings)) {
 			add(primary, "Camera pose or projection is invalid.");
@@ -404,10 +423,12 @@ std::vector<SceneValidationIssue>
 SceneValidation::InspectInputs(const Scene &scene,
                                std::span<const GameActionBinding> bindings) {
 	std::vector<SceneValidationIssue> issues;
+
 	for (const auto &[id, object] : scene.GetObjects()) {
 		if (!object.triggerActions)
 			continue;
 		const auto &actions = object.triggerActions->actions;
+
 		for (std::size_t i = 0; i < actions.size(); ++i) {
 			const auto &name = actions[i].inputAction;
 			if (name.empty())
@@ -430,5 +451,6 @@ SceneValidation::InspectInputs(const Scene &scene,
 			                     id, i + 1)});
 		}
 	}
+
 	return issues;
 }

@@ -43,6 +43,7 @@ std::uint32_t ReadCollisionValue(const Json &value) {
 		throw std::runtime_error(
 		    "衝突設定には32ビット符号なし整数が必要です。");
 	}
+
 	return value.get<std::uint32_t>();
 }
 
@@ -161,6 +162,7 @@ TextureBindings ReadBindings(const Json &bindings, int version) {
 
 	TextureBindings result;
 	std::set<std::uint32_t> seen;
+
 	for (const auto &binding : bindings) {
 		const auto &slot = binding.at("slot");
 		if (!slot.is_number_unsigned() ||
@@ -171,6 +173,7 @@ TextureBindings ReadBindings(const Json &bindings, int version) {
 		}
 
 		auto path = PathUtils::FromUtf8(binding.at("path").get<std::string>());
+
 		if (version <= 10) {
 			if (path.empty() ||
 			    path.native().find(L'\0') != std::wstring::npos ||
@@ -181,6 +184,7 @@ TextureBindings ReadBindings(const Json &bindings, int version) {
 
 			LegacyMaterial legacy;
 			std::string error;
+
 			if (!LegacyMaterialReader::Load(path, legacy, error)) {
 				throw std::runtime_error("旧材質の画像参照を移行できません: " +
 				                         error);
@@ -222,18 +226,23 @@ bool ApplySceneDocument(Scene &scene, const Json &document,
 /// <param name="scene">保存または読み込むシーン</param>
 void ValidatePrefabLinks(const Scene &scene) {
 	std::map<SceneObjectId, std::set<SceneObjectId>> members;
+
 	for (const auto &[id, object] : scene.GetObjects()) {
 		if (!object.prefabLink) {
 			continue;
 		}
+
 		const auto &link = *object.prefabLink;
+
 		if (!link.IsValid()) {
 			throw std::runtime_error("Prefab link data is invalid.");
 		}
+
 		if (!members[link.root].insert(link.source).second) {
 			throw std::runtime_error(
 			    "Prefab source IDs must be unique within an instance.");
 		}
+
 		const auto *owner = scene.FindObject(link.root);
 		if (!owner || !owner->prefabLink ||
 		    owner->prefabLink->root != link.root ||
@@ -249,20 +258,24 @@ void ValidatePrefabLinks(const Scene &scene) {
 				throw std::runtime_error(
 				    "Only a Prefab root may store its baseline.");
 			}
+
 			continue;
 		}
+
 		if (!PathUtils::HasExtension(link.asset, ".json") ||
 		    !PathUtils::HasExtension(link.asset.stem(), ".prefab") ||
 		    (link.asset.has_root_path() && !link.asset.is_absolute())) {
 			throw std::runtime_error("Prefab asset path is invalid.");
 		}
 		const auto baseline = Json::parse(link.baseline);
+
 		for (const auto &value : baseline.at("objects")) {
 			if (value.contains("prefabLink")) {
 				throw std::runtime_error(
 				    "Prefab baselines cannot contain nested links.");
 			}
 		}
+
 		Scene original;
 		if (!ApplySceneDocument(original, baseline, false) ||
 		    !original.Contains(link.source) ||
@@ -272,10 +285,12 @@ void ValidatePrefabLinks(const Scene &scene) {
 			    "Prefab baseline or source map is invalid.");
 		}
 		std::vector<SceneObjectId> ids;
+
 		if (!SceneHierarchy::GetSubtree(original, link.source, ids) ||
 		    ids.size() != original.GetObjects().size()) {
 			throw std::runtime_error("Prefab baseline must be one hierarchy.");
 		}
+
 		for (const auto &[source, value] : original.GetObjects()) {
 			if (!link.ContainsSource(source) ||
 			    SceneObjectReferences::HasExternal(value, ids)) {
@@ -291,9 +306,11 @@ void ValidatePrefabLinks(const Scene &scene) {
 bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 	try {
 		SceneHierarchy::WorldTransforms transforms;
+
 		if (!SceneHierarchy::BuildWorldTransforms(scene, transforms)) {
 			throw std::runtime_error("親子関係または合成後の変形が無効です。");
 		}
+
 		ValidatePrefabLinks(scene);
 		Json objects = Json::array();
 
@@ -379,10 +396,12 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 			if (object.prefabLink) {
 				const auto &link = *object.prefabLink;
 				Json mappings = Json::array();
+
 				for (const auto &[source, instance] : link.objects) {
 					mappings.push_back(
 					    {{"source", source}, {"instance", instance}});
 				}
+
 				objects.back()["prefabLink"] = {
 				    {"root", link.root},
 				    {"source", link.source},
@@ -415,6 +434,7 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 
 			SceneUISerializer::Write(objects.back(), object);
 			SceneRigidBodySerializer::Write(objects.back(), object);
+
 			if (object.script) {
 				const auto &script = *object.script;
 				Json references = Json::array();
@@ -444,6 +464,7 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 				                              {"loop", a.loop},
 				                              {"playOnStart", a.playOnStart}};
 			}
+
 			if (object.particleEmitter) {
 				const auto &p = *object.particleEmitter;
 				objects.back()["particleEmitter"] = {
@@ -467,6 +488,7 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 				    {"colorStart", p.colorStart},
 				    {"colorEnd", p.colorEnd}};
 			}
+
 			if (object.transformAnimation) {
 				const auto &a = *object.transformAnimation;
 				auto keys = Json::array();
@@ -494,6 +516,7 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 				    {"speed", a.speed},
 				    {"playOnStart", a.playOnStart}};
 			}
+
 			if (object.motionPath) {
 				const auto &path = *object.motionPath;
 				objects.back()["motionPath"] = {
@@ -585,6 +608,7 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 
 			if (object.triggerActions) {
 				Json actions = Json::array();
+
 				for (const auto &action : object.triggerActions->actions) {
 					const auto operation =
 					    action.operation == TriggerAction::Operation::ENABLE
@@ -701,6 +725,7 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 					     {"arrivalTag", action.arrivalTag},
 					     {"launchSpeed", action.launchSpeed}});
 				}
+
 				objects.back()["triggerActions"] = {
 				    {"actions", std::move(actions)}};
 			}
@@ -799,14 +824,18 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 			const SceneObjectId id = idValue.get<SceneObjectId>();
 
 			SceneObject object;
+
 			if (version >= 17) {
 				object.active = item.at("active").get<bool>();
 			}
+
 			if (version >= 14) {
 				const auto &parent = item.at("parent");
+
 				if (!parent.is_number_unsigned()) {
 					throw std::runtime_error("親IDには0以上の整数が必要です。");
 				}
+
 				object.parentId = parent.get<SceneObjectId>();
 			}
 
@@ -897,11 +926,13 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 
 			if (version >= 19 && item.contains("pointLight")) {
 				const auto &light = item.at("pointLight");
+
 				if (!light.at("intensity").is_number() ||
 				    !light.at("range").is_number()) {
 					throw std::runtime_error(
 					    "Point Lightの強さと範囲には数値が必要です。");
 				}
+
 				const auto color = ReadFloat3(light.at("color"));
 				object.pointLight =
 				    PointLightComponent{{color.x, color.y, color.z},
@@ -911,6 +942,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 
 			SceneUISerializer::Read(item, object, version);
 			SceneRigidBodySerializer::Read(item, object, version);
+
 			if (version >= 29 && item.contains("script")) {
 				const auto &value = item.at("script");
 				if (!value.at("asset").is_string() ||
@@ -925,6 +957,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 				    PathUtils::FromUtf8(value.at("asset").get<std::string>());
 				script.enabled = value.at("enabled").get<bool>();
 				script.initialState = value.at("state").dump();
+
 				for (const auto &reference : value.at("references")) {
 					if (!reference.at("name").is_string() ||
 					    !reference.at("target").is_number_unsigned())
@@ -934,6 +967,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					    reference.at("name").get<std::string>(),
 					    reference.at("target").get<SceneObjectId>());
 				}
+
 				if (version >= 33) {
 					const auto &prefabs = value.at("prefabs");
 					if (!prefabs.is_array() ||
@@ -951,6 +985,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 						        entry.at("path").get<std::string>()));
 					}
 				}
+
 				if (version >= 34) {
 					const auto &scenes = value.at("scenes");
 					if (!scenes.is_array() ||
@@ -968,6 +1003,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 						        entry.at("path").get<std::string>()));
 					}
 				}
+
 				if (!script.IsValid())
 					throw std::runtime_error(
 					    "Lua Script settings are invalid.");
@@ -989,6 +1025,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					throw std::runtime_error("Animator settings are invalid.");
 				object.animator = std::move(value);
 			}
+
 			if (version >= 36 && item.contains("particleEmitter")) {
 				const auto &v = item.at("particleEmitter");
 				ParticleEmitterComponent p;
@@ -1037,6 +1074,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 				p.speedMax = speed[1];
 				p.sizeStart = size[0];
 				p.sizeEnd = size[1];
+
 				for (auto field : {"colorStart", "colorEnd"}) {
 					const auto &color = v.at(field);
 					if (!color.is_array() || color.size() != 4)
@@ -1051,11 +1089,13 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 						     : p.colorEnd)[c] = color[c].get<float>();
 					}
 				}
+
 				if (!p.IsValid())
 					throw std::runtime_error(
 					    "Particle Emitter settings are invalid.");
 				object.particleEmitter = std::move(p);
 			}
+
 			if (version >= 35 && item.contains("transformAnimation")) {
 				const auto &value = item.at("transformAnimation"),
 				           &keys = value.at("keys");
@@ -1067,6 +1107,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					    "Transform Animation fields are invalid.");
 				TransformAnimationComponent animation;
 				animation.keys.clear();
+
 				for (const auto &key : keys) {
 					if (!key.at("seconds").is_number())
 						throw std::runtime_error(
@@ -1079,6 +1120,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					frame.offset.rotation = ReadRotation(key.at("rotation"));
 					animation.keys.push_back(frame);
 				}
+
 				const auto mode = value.at("mode").get<std::string>(),
 				           interpolation =
 				               value.at("interpolation").get<std::string>();
@@ -1110,6 +1152,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					    "Transform Animation settings are invalid.");
 				object.transformAnimation = std::move(animation);
 			}
+
 			if (version >= 27 && item.contains("motionPath")) {
 				const auto &value = item.at("motionPath");
 				const auto &points = value.at("points");
@@ -1121,11 +1164,14 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					throw std::runtime_error("Motion Path fields are invalid.");
 				MotionPathComponent path;
 				path.points.clear();
+
 				for (const auto &point : points) {
 					const auto p = ReadFloat3(point);
 					path.points.push_back({p.x, p.y, p.z});
 				}
+
 				path.segmentSeconds = value.at("segmentSeconds").get<float>();
+
 				if (version >= 61) {
 					if (!value.at("waypointWaitSeconds").is_number())
 						throw std::runtime_error(
@@ -1133,13 +1179,16 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					path.waypointWaitSeconds =
 					    value.at("waypointWaitSeconds").get<float>();
 				}
+
 				path.smooth = value.at("smooth").get<bool>();
+
 				if (version >= 44) {
 					if (!value.at("playOnStart").is_boolean())
 						throw std::runtime_error(
 						    "Motion Path Play on Start is invalid.");
 					path.playOnStart = value.at("playOnStart").get<bool>();
 				}
+
 				const auto mode = value.at("mode").get<std::string>();
 				if (mode == "once")
 					path.mode = MotionPathComponent::Mode::ONCE;
@@ -1157,6 +1206,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 
 			if (version >= 22 && item.contains("spotLight")) {
 				const auto &light = item.at("spotLight");
+
 				for (const auto *field :
 				     {"intensity", "range", "innerAngle", "outerAngle"}) {
 					if (!light.at(field).is_number()) {
@@ -1164,6 +1214,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 						    "Spot Lightの強さ・範囲・角度には数値が必要です。");
 					}
 				}
+
 				const auto color = ReadFloat3(light.at("color"));
 				object.spotLight =
 				    SpotLightComponent{{color.x, color.y, color.z},
@@ -1206,10 +1257,12 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					object.collider->halfHeight =
 					    collider.at("halfHeight").get<float>();
 				}
+
 				if (version >= 16) {
 					object.collider->isTrigger =
 					    collider.at("isTrigger").get<bool>();
 				}
+
 				if (version >= 15) {
 					const auto &filter = collider.at("filter");
 					object.collider->filter = {
@@ -1265,6 +1318,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					object.character->jumpBufferTime =
 					    v.at("jumpBufferTime").get<float>();
 				}
+
 				if (version >= 62) {
 					if (!v.at("groundSnapDistance").is_number())
 						throw std::runtime_error(
@@ -1272,6 +1326,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					object.character->groundSnapDistance =
 					    v.at("groundSnapDistance").get<float>();
 				}
+
 				if (version >= 63) {
 					if (!v.at("stepHeight").is_number())
 						throw std::runtime_error(
@@ -1299,17 +1354,21 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 						throw std::runtime_error(
 						    "追従カメラの障害物回避設定が無効です。");
 					}
+
 					object.followCamera->avoidObstacles =
 					    v.at("avoidObstacles").get<bool>();
 					object.followCamera->clearance =
 					    v.at("clearance").get<float>();
 				}
+
 				if (version >= 24) {
 					const auto &orbit = v.at("orbit");
+
 					if (!orbit.at("enabled").is_boolean()) {
 						throw std::runtime_error(
 						    "Orbit Cameraの有効設定が無効です。");
 					}
+
 					for (const auto *field :
 					     {"mouseSensitivity", "stickSpeed", "zoomSensitivity",
 					      "minimumPitch", "maximumPitch", "minimumDistance",
@@ -1350,6 +1409,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 				link.asset =
 				    PathUtils::FromUtf8(value.at("asset").get<std::string>());
 				link.baseline = value.at("baseline").get<std::string>();
+
 				for (const auto &entry : value.at("objects")) {
 					if (!entry.at("source").is_number_unsigned() ||
 					    !entry.at("instance").is_number_unsigned() ||
@@ -1358,10 +1418,12 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 						throw std::runtime_error(
 						    "Prefab source map is invalid.");
 					}
+
 					link.objects.emplace_back(
 					    entry.at("source").get<SceneObjectId>(),
 					    entry.at("instance").get<SceneObjectId>());
 				}
+
 				std::ranges::sort(link.objects);
 
 				object.prefabLink = std::move(link);
@@ -1369,12 +1431,15 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 
 			if (version >= 18 && item.contains("triggerActions")) {
 				const auto &actions = item.at("triggerActions").at("actions");
+
 				if (!actions.is_array() ||
 				    actions.size() > TriggerActionsComponent::kMaximumActions) {
 					throw std::runtime_error(
 					    "Trigger Actionsの操作配列が無効です。");
 				}
+
 				TriggerActionsComponent component;
+
 				for (const auto &value : actions) {
 					const auto event = value.at("event").get<std::string>();
 					const auto operation =
@@ -1540,6 +1605,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 					     version >= 64 ? value.at("launchSpeed").get<float>()
 					                   : TriggerAction{}.launchSpeed});
 				}
+
 				object.triggerActions = std::move(component);
 			}
 
@@ -1605,11 +1671,14 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 		Scene candidate;
 		candidate.ReplaceObjects(std::move(objects));
 		SceneHierarchy::WorldTransforms transforms;
+
 		if (!SceneHierarchy::BuildWorldTransforms(candidate, transforms)) {
 			throw std::runtime_error("親子関係または合成後の変形が無効です。");
 		}
+
 		for (const auto &[id, object] : candidate.GetObjects()) {
 			AxisAlignedBox bounds;
+
 			if (object.collider &&
 			    !ColliderUtils::GetWorldBounds(
 			        *object.collider, transforms.at(id).matrix, bounds)) {
@@ -1626,6 +1695,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 		if (logSuccess) {
 			Logger::Info("シーンを読み込みました。");
 		}
+
 		return true;
 	} catch (const std::exception &exception) {
 		Logger::Error(std::format("SceneSerializer: {}", exception.what()));

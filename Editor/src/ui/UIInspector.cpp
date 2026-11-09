@@ -26,11 +26,13 @@ bool Apply(EditorHistory &history, SceneObjectId id, std::optional<T> &current,
            bool (EditorHistory::*begin)(SceneObjectId)) {
 	const bool ready = !ImGui::IsItemActivated() || (history.*begin)(id);
 	bool changed = false;
+
 	if (ready && edited && current && value.IsValid() && value != *current &&
 	    (history.IsEditing() || (history.*begin)(id))) {
 		current = value;
 		changed = true;
 	}
+
 	if (ImGui::IsItemDeactivated() && !ImGui::IsAnyItemActive())
 		history.CommitEdit();
 	return changed;
@@ -44,6 +46,7 @@ bool UIInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 	ImGui::PushID(scope.c_str());
 	ImGui::PushID("UIInspector");
 	bool changed = false;
+
 	if (object.canvas && ui.CollapsingHeader("Canvas")) {
 		auto c = *object.canvas;
 		if (ui.Checkbox("Canvas Enabled", c.enabled))
@@ -67,23 +70,28 @@ bool UIInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		if (ui.Button("Remove Canvas"))
 			changed |= history.SetCanvas(id, std::nullopt);
 	}
+
 	if (object.rectTransform && ui.CollapsingHeader("Rect Transform")) {
 		auto r = *object.rectTransform;
+
 		if (ImGui::BeginCombo("Anchor Preset", "Choose...")) {
 			if (ui.Selectable("Top Left", false)) {
 				r.anchorMin = r.anchorMax = r.pivot = {0, 0};
 				changed |= history.SetRectTransform(id, r);
 			}
+
 			if (ui.Selectable("Center", false)) {
 				r.anchorMin = r.anchorMax = r.pivot = {.5f, .5f};
 				if (r.sizeDelta[0] <= 0 || r.sizeDelta[1] <= 0)
 					r.sizeDelta = {240, 60};
 				changed |= history.SetRectTransform(id, r);
 			}
+
 			if (ui.Selectable("Bottom Right", false)) {
 				r.anchorMin = r.anchorMax = r.pivot = {1, 1};
 				changed |= history.SetRectTransform(id, r);
 			}
+
 			if (ui.Selectable("Stretch", false)) {
 				r.anchorMin = {0, 0};
 				r.anchorMax = {1, 1};
@@ -92,8 +100,10 @@ bool UIInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 				r.sizeDelta = {0, 0};
 				changed |= history.SetRectTransform(id, r);
 			}
+
 			ImGui::EndCombo();
 		}
+
 		changed |=
 		    Apply(history, id, object.rectTransform, r,
 		          ImGui::DragFloat2("Anchor Min", r.anchorMin.data(), .01f, 0,
@@ -122,6 +132,7 @@ bool UIInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		if (ui.Button("Remove Rect Transform"))
 			changed |= history.SetRectTransform(id, std::nullopt);
 	}
+
 	if (object.button && ui.CollapsingHeader("UI Button")) {
 		auto b = *object.button;
 		if (ui.Checkbox("Button Enabled", b.enabled))
@@ -149,6 +160,7 @@ bool UIInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		if (ui.Button("Remove UI Button"))
 			changed |= history.SetButton(id, std::nullopt);
 	}
+
 	if (object.text && ui.CollapsingHeader("UI Text")) {
 		auto t = *object.text;
 		if (ui.Checkbox("Text Enabled", t.enabled))
@@ -179,6 +191,7 @@ bool UIInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 				}
 			ImGui::EndCombo();
 		}
+
 		if (ImGui::BeginCombo(
 		        "Vertical Alignment",
 		        vertical[static_cast<int>(t.verticalAlignment)])) {
@@ -197,6 +210,7 @@ bool UIInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		if (ui.Button("Remove UI Text"))
 			changed |= history.SetText(id, std::nullopt);
 	}
+
 	if (object.image && ui.CollapsingHeader("UI Image")) {
 		auto i = *object.image;
 		if (ui.Checkbox("Image Enabled", i.enabled))
@@ -211,6 +225,7 @@ bool UIInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 				i.texture.clear();
 				changed |= history.SetImage(id, i);
 			}
+
 			for (const auto &path : images)
 				if (ui.Selectable(PathUtils::ToUtf8(path).c_str(),
 				                  path == i.texture)) {
@@ -219,6 +234,7 @@ bool UIInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 				}
 			ImGui::EndCombo();
 		}
+
 		if (auto path =
 		        AssetDragDrop::AcceptTarget(AssetDragDrop::Kind::TEXTURE);
 		    !path.empty()) {
@@ -232,10 +248,12 @@ bool UIInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		                 &EditorHistory::BeginImage);
 		const char *origins[]{"Left", "Right", "Top", "Bottom"};
 		auto origin = static_cast<int>(i.fillOrigin);
+
 		if (ImGui::Combo("Fill Origin", &origin, origins, 4)) {
 			i.fillOrigin = static_cast<ImageComponent::FillOrigin>(origin);
 			changed |= history.SetImage(id, i);
 		}
+
 		changed |=
 		    Apply(history, id, object.image, i,
 		          ImGui::SliderFloat("Fill Amount", &i.fillAmount, 0, 1, "%.3f",
@@ -244,6 +262,7 @@ bool UIInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		if (ui.Button("Remove UI Image"))
 			changed |= history.SetImage(id, std::nullopt);
 	}
+
 	ImGui::PopID();
 	ImGui::PopID();
 	return changed;
@@ -258,6 +277,7 @@ void UIInspector::DrawReadOnly(const ImGuiSystem &ui,
 		                    c.referenceSize[1]));
 		ui.Text(std::format("Sort Order: {}", c.sortOrder));
 	}
+
 	if (object.rectTransform && ui.CollapsingHeader("Rect Transform")) {
 		const auto &r = *object.rectTransform;
 		ui.Text(std::format("Position: {:.1f}, {:.1f}", r.position[0],
@@ -265,6 +285,7 @@ void UIInspector::DrawReadOnly(const ImGuiSystem &ui,
 		ui.Text(std::format("Size Delta: {:.1f}, {:.1f}", r.sizeDelta[0],
 		                    r.sizeDelta[1]));
 	}
+
 	if (object.button && ui.CollapsingHeader("UI Button")) {
 		ui.Text(object.button->enabled ? "Enabled" : "Disabled");
 		ui.Text(object.button->interactable ? "Interactable: Yes"
@@ -272,12 +293,14 @@ void UIInspector::DrawReadOnly(const ImGuiSystem &ui,
 		ui.Text(object.button->navigation ? "Navigation: Yes"
 		                                  : "Navigation: No");
 	}
+
 	if (object.text && ui.CollapsingHeader("UI Text")) {
 		ui.Text(object.text->enabled ? "Enabled" : "Disabled");
 		ImGui::TextWrapped("%s", object.text->text.c_str());
 		ui.Text(std::format("Font: {} / {:.1f}", object.text->fontFamily,
 		                    object.text->fontSize));
 	}
+
 	if (object.image && ui.CollapsingHeader("UI Image")) {
 		ui.Text(object.image->enabled ? "Enabled" : "Disabled");
 		ui.Text(object.image->texture.empty()

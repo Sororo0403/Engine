@@ -182,6 +182,7 @@ bool PathUtils::IsValidFileName(const std::filesystem::path &name) {
 	}
 
 	auto base = text.substr(0, text.find(L'.'));
+
 	while (!base.empty() && base.back() == L' ') {
 		base.pop_back();
 	}
@@ -199,6 +200,7 @@ bool PathUtils::IsValidFileName(const std::filesystem::path &name) {
 	if (base.size() == 4 &&
 	    (base.starts_with(L"COM") || base.starts_with(L"LPT"))) {
 		const auto digit = base.back();
+
 		if ((digit >= L'1' && digit <= L'9') || digit == L'\u00b9' ||
 		    digit == L'\u00b2' || digit == L'\u00b3') {
 			return false;

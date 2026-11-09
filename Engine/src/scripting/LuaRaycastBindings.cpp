@@ -88,6 +88,7 @@ void ReadNumbers(lua_State *state, std::span<float> values) {
 QueryOptions ReadOptions(lua_State *state, int first, SceneObjectId self) {
 	QueryOptions options;
 	options.ignored = self;
+
 	if (!lua_isnoneornil(state, first)) {
 		luaL_checktype(state, first, LUA_TNUMBER);
 		int valid = 0;
@@ -98,10 +99,12 @@ QueryOptions ReadOptions(lua_State *state, int first, SceneObjectId self) {
 			                  "32-bit integer.");
 		options.layerMask = static_cast<std::uint32_t>(value);
 	}
+
 	if (!lua_isnoneornil(state, first + 1)) {
 		luaL_checktype(state, first + 1, LUA_TBOOLEAN);
 		options.includeTriggers = lua_toboolean(state, first + 1) != 0;
 	}
+
 	if (!lua_isnoneornil(state, first + 2))
 		options.ignored = *static_cast<SceneObjectId *>(
 		    luaL_checkudata(state, first + 2, "Engine.ScriptObject"));
@@ -121,14 +124,17 @@ template <bool sphere> int Cast(lua_State *state) {
 	              values[6]};
 	const auto radius = sphere ? std::optional<float>{values[7]} : std::nullopt;
 	RaycastHit hit;
+
 	if (!Perform(call, ray, radius, query, hit)) {
 		lua_pushlstring(state, call.error.data(), call.error.size());
 		return lua_error(state);
 	}
+
 	if (!hit.objectId) {
 		lua_pushnil(state);
 		return 1;
 	}
+
 	lua_createtable(state, 0, 8);
 	LuaInternal::PushObject(state, hit.objectId);
 	lua_setfield(state, -2, "object");
@@ -141,6 +147,7 @@ template <bool sphere> int Cast(lua_State *state) {
 		lua_pushnumber(state, numbers[i]);
 		lua_setfield(state, -2, names[i]);
 	}
+
 	return 1;
 }
 
@@ -187,16 +194,20 @@ int OverlapSphere(lua_State *state) {
 	std::array<SceneObjectId, kMaximumSphereResults> objects{};
 	int count = 0;
 	bool truncated = false;
+
 	if (!FindInSphere(call, {values[0], values[1], values[2]}, values[3], query,
 	                  objects, count, truncated)) {
 		lua_pushlstring(state, call.error.data(), call.error.size());
 		return lua_error(state);
 	}
+
 	lua_createtable(state, count, 0);
+
 	for (int i = 0; i < count; ++i) {
 		LuaInternal::PushObject(state, objects[i]);
 		lua_rawseti(state, -2, i + 1);
 	}
+
 	lua_pushboolean(state, truncated);
 	return 2;
 }

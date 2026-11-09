@@ -21,11 +21,14 @@ bool EditorClipboard::Copy(const Scene &scene,
 	const std::set<SceneObjectId> seen(sourceIds.begin(), sourceIds.end());
 	std::vector<SceneObject> objects;
 	objects.reserve(sourceIds.size());
+
 	for (const auto id : sourceIds) {
 		auto object = *scene.FindObject(id);
+
 		if (object.prefabLink && !seen.contains(object.prefabLink->root)) {
 			object.prefabLink.reset();
 		}
+
 		if (object.parentId != 0 && !seen.contains(object.parentId)) {
 			SceneWorldTransform world;
 			if (!SceneHierarchy::GetWorldTransform(scene, id, world) ||
@@ -34,6 +37,7 @@ bool EditorClipboard::Copy(const Scene &scene,
 				return false;
 			object.parentId = 0;
 		}
+
 		if (!TransformUtils::IsValid(object.transform))
 			return false;
 		objects.push_back(std::move(object));

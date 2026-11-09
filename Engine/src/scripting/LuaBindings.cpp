@@ -121,16 +121,19 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 			call.logs.push_back(call.returnText);
 			return true;
 		}
+
 		if (op == Op::GET_CAMERA) {
 			result.id = SceneCameraUtils::FindPrimary(*call.scene);
 			return true;
 		}
+
 		if (op == Op::SET_CAMERA) {
 			if (!SceneCameraUtils::SetPrimary(*call.scene, id))
 				throw std::runtime_error(
 				    "Set Camera requires an active target Camera.");
 			return true;
 		}
+
 		if (op == Op::FIND) {
 			const std::string_view name(text, length);
 			for (const auto &[candidate, object] : call.scene->GetObjects())
@@ -140,6 +143,7 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 				}
 			return true;
 		}
+
 		if (op == Op::FIND_ID) {
 			SceneObjectId parsed = 0;
 			const auto converted = std::from_chars(text, text + length, parsed);
@@ -149,14 +153,17 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 			result.id = call.scene->Contains(parsed) ? parsed : 0;
 			return true;
 		}
+
 		if (op == Op::ID) {
 			call.returnText = std::to_string(id);
 			return true;
 		}
+
 		if (op == Op::VALID) {
 			result.boolean = call.scene->Contains(id);
 			return true;
 		}
+
 		if (op == Op::DESTROY) {
 			if (!call.pendingDestructions)
 				throw std::runtime_error(
@@ -175,6 +182,7 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 				call.pendingDestructions->push_back(id);
 			return true;
 		}
+
 		auto *object = call.scene->FindObject(id);
 		if (!object)
 			throw std::runtime_error("The referenced object no longer exists.");
@@ -213,11 +221,13 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 				throw std::runtime_error(
 				    "This object requires Character Controller.");
 			auto settings = *object->character;
+
 			if (op == Op::CHARACTER_SPEEDS) {
 				result.numbers[0] = settings.moveSpeed;
 				result.numbers[1] = settings.jumpSpeed;
 				break;
 			}
+
 			settings.moveSpeed = numbers[0];
 			settings.jumpSpeed = numbers[1];
 			if (!settings.IsValid())
@@ -242,12 +252,14 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 		}
 		case Op::FIND_CHILD: {
 			const std::string_view name(text, length);
+
 			for (const auto &[childId, child] : call.scene->GetObjects()) {
 				if (child.parentId == id && child.name == name) {
 					result.id = childId;
 					break;
 				}
 			}
+
 			break;
 		}
 		case Op::REFERENCE:
@@ -289,6 +301,7 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 				result.numbers[1] = color.y;
 				result.numbers[2] = color.z;
 			}
+
 			break;
 		case Op::CAMERA_LENS:
 		case Op::SET_CAMERA_LENS:
@@ -296,17 +309,21 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 			if (!object->camera)
 				throw std::runtime_error("This object requires a Camera.");
 			auto settings = object->camera->settings;
+
 			if (op == Op::CAMERA_LENS) {
 				result.numbers[0] = settings.verticalFovDegrees;
 				result.numbers[1] = settings.nearClip;
 				result.numbers[2] = settings.farClip;
 				break;
 			}
+
 			settings.verticalFovDegrees = numbers[0];
+
 			if (op == Op::SET_CAMERA_LENS) {
 				settings.nearClip = numbers[1];
 				settings.farClip = numbers[2];
 			}
+
 			if (!settings.IsValid())
 				throw std::runtime_error(
 				    "Camera lens requires a field of view from 1 to 179 "
@@ -358,6 +375,7 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 				result.numbers[6] = ray.maxDistance;
 				break;
 			}
+
 			const auto projected =
 			    camera.Project({numbers[0], numbers[1], numbers[2]});
 			if (projected) {
@@ -367,6 +385,7 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 				result.numbers[2] = projected->depth;
 				result.boolean = projected->visible;
 			}
+
 			break;
 		}
 		case Op::POSITION: {
@@ -404,6 +423,7 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 					    "Converted coordinates cannot be represented.");
 				result.numbers[axis] = static_cast<float>(value);
 			}
+
 			break;
 		}
 		case Op::SET_POSITION:
@@ -462,6 +482,7 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 		case Op::LOG:
 			break;
 		}
+
 		if (op == Op::SET_ACTIVE || op == Op::SET_PARENT ||
 		    op == Op::SET_POSITION || op == Op::SET_LOCAL_POSITION ||
 		    op == Op::SET_ROTATION ||
@@ -492,6 +513,7 @@ int Dispatch(lua_State *state) {
 	float numbers[5]{};
 	bool flag = false;
 	SceneObjectId parent = 0;
+
 	if (op == Op::SET_CAMERA) {
 		if (!lua_isnil(state, 1))
 			id = *static_cast<SceneObjectId *>(
@@ -521,6 +543,7 @@ int Dispatch(lua_State *state) {
 			parent = *static_cast<SceneObjectId *>(
 			    luaL_checkudata(state, 2, kObjectType));
 		flag = true;
+
 		if (!lua_isnoneornil(state, 3)) {
 			luaL_checktype(state, 3, LUA_TBOOLEAN);
 			flag = lua_toboolean(state, 3) != 0;
@@ -545,11 +568,14 @@ int Dispatch(lua_State *state) {
 			numbers[i] = static_cast<float>(value);
 		}
 	}
+
 	Result result;
+
 	if (!Perform(call, op, id, text, length, numbers, flag, parent, result)) {
 		lua_pushlstring(state, call.error.data(), call.error.size());
 		return lua_error(state);
 	}
+
 	switch (op) {
 	case Op::NAME:
 	case Op::TAG:
@@ -595,6 +621,7 @@ int Dispatch(lua_State *state) {
 			lua_pushnil(state);
 			return 1;
 		}
+
 		for (int i = 0; i < 3; ++i)
 			lua_pushnumber(state, result.numbers[i]);
 		lua_pushboolean(state, result.boolean);
@@ -631,8 +658,10 @@ bool CollectTagged(LuaInternal::Call &call, std::string_view tag,
 				truncated = true;
 				break;
 			}
+
 			matches[count++] = id;
 		}
+
 		return true;
 	} catch (const std::exception &e) {
 		call.error = e.what();
@@ -649,10 +678,12 @@ bool CollectTagged(LuaInternal::Call &call, std::string_view tag,
 int PushObjectResults(lua_State *state, std::span<const SceneObjectId> objects,
                       bool truncated) {
 	lua_createtable(state, static_cast<int>(objects.size()), 0);
+
 	for (std::size_t i = 0; i < objects.size(); ++i) {
 		LuaInternal::PushObject(state, objects[i]);
 		lua_rawseti(state, -2, static_cast<lua_Integer>(i + 1));
 	}
+
 	lua_pushboolean(state, truncated);
 	return 2;
 }
@@ -668,6 +699,7 @@ int GetChildren(lua_State *state) {
 		return luaL_error(state, "The referenced object no longer exists.");
 	std::array<SceneObjectId, kMaximumObjectResults> children{};
 	std::size_t count = 0;
+
 	for (const auto &[childId, object] : scene->GetObjects()) {
 		if (object.parentId != id)
 			continue;
@@ -675,6 +707,7 @@ int GetChildren(lua_State *state) {
 			return PushObjectResults(state, children, true);
 		children[count++] = childId;
 	}
+
 	return PushObjectResults(state, std::span{children}.first(count), false);
 }
 
@@ -692,11 +725,13 @@ int FindAllByTag(lua_State *state) {
 	std::size_t count = 0;
 	bool truncated = false;
 	auto &call = Context(state);
+
 	if (!CollectTagged(call, {tag, length}, includeInactive, matches, count,
 	                   truncated)) {
 		lua_pushlstring(state, call.error.data(), call.error.size());
 		return lua_error(state);
 	}
+
 	return PushObjectResults(state, std::span{matches}.first(count), truncated);
 }
 
@@ -739,10 +774,12 @@ void Library(lua_State *state, int environment, const char *name,
 	luaL_requiref(state, name, open, 0);
 	const int library = lua_gettop(state);
 	lua_newtable(state);
+
 	for (int i = 0; names[i]; ++i) {
 		lua_getfield(state, library, names[i]);
 		lua_setfield(state, -2, names[i]);
 	}
+
 	lua_setfield(state, environment, name);
 	lua_pop(state, 1);
 }
@@ -753,6 +790,7 @@ void LuaInternal::PushObject(lua_State *state, SceneObjectId id) {
 		lua_pushnil(state);
 		return;
 	}
+
 	*static_cast<SceneObjectId *>(
 	    lua_newuserdatauv(state, sizeof(SceneObjectId), 0)) = id;
 	luaL_getmetatable(state, kObjectType);
@@ -773,6 +811,7 @@ int LuaInternal::OpenEnvironment(lua_State *state, Call &call) {
 		lua_getglobal(state, base[i]);
 		lua_setfield(state, environment, base[i]);
 	}
+
 	lua_pushvalue(state, environment);
 	lua_setfield(state, environment, "_G");
 	const char *const math[]{
@@ -792,11 +831,13 @@ int LuaInternal::OpenEnvironment(lua_State *state, Call &call) {
 	Library(state, environment, "utf8", luaopen_utf8, utf8);
 	// stringのメタテーブルからも、許可していないパターン処理へ到達させない。
 	lua_pushliteral(state, "");
+
 	if (lua_getmetatable(state, -1)) {
 		lua_getfield(state, environment, "string");
 		lua_setfield(state, -2, "__index");
 		lua_pop(state, 1);
 	}
+
 	lua_pop(state, 1);
 	luaL_newmetatable(state, kObjectType);
 	lua_pushliteral(state, "Scene object");

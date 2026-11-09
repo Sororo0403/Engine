@@ -28,9 +28,11 @@ UIInput UIInputReader::Read(const Keyboard &keyboard, const Mouse *mouse,
 			result.pointerY = static_cast<float>(state.positionY) /
 			                  static_cast<float>(height);
 		}
+
 		result.pointerPressed = mouse->IsPressed(MouseButton::LEFT);
 		result.pointerDown = mouse->IsDown(MouseButton::LEFT);
 	}
+
 	const bool shift = keyboard.IsDown(Key::SHIFT),
 	           tab = keyboard.IsPressed(Key::TAB);
 	result.next = tab && !shift;
@@ -52,6 +54,7 @@ UIInput UIInputReader::Read(const Keyboard &keyboard, const Mouse *mouse,
 		result.submitPressed |= gamepad->IsPressed(GamepadButton::SOUTH);
 		result.submitDown |= gamepad->IsDown(GamepadButton::SOUTH);
 	}
+
 	result.horizontal = std::clamp(result.horizontal, -1, 1);
 	result.vertical = std::clamp(result.vertical, -1, 1);
 	return result;

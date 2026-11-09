@@ -17,12 +17,14 @@ bool SceneDestruction::Apply(Scene &scene, std::span<const SceneObjectId> roots,
 		if (roots.empty())
 			return true;
 		std::set<SceneObjectId> requested;
+
 		for (auto id : roots) {
 			if (!scene.Contains(id))
 				throw std::runtime_error(
 				    "Destruction requires existing roots.");
 			requested.insert(id);
 		}
+
 		std::vector<SceneObjectId> order;
 		if (!SceneHierarchy::GetEvaluationOrder(scene, order))
 			throw std::runtime_error("Destruction hierarchy is invalid.");
@@ -33,11 +35,13 @@ bool SceneDestruction::Apply(Scene &scene, std::span<const SceneObjectId> roots,
 				removed.emplace(id, 0);
 		if (!scene.ApplyTransaction([&](Scene &working) {
 			    auto objects = working.GetObjects();
+
 			    for (auto id : order) {
 				    if (removed.contains(id)) {
 					    objects.erase(id);
 					    continue;
 				    }
+
 				    auto &o = objects.at(id);
 				    if (o.followCamera &&
 				        removed.contains(o.followCamera->target))
@@ -57,6 +61,7 @@ bool SceneDestruction::Apply(Scene &scene, std::span<const SceneObjectId> roots,
 					    o.prefabLink.reset();
 				    SceneObjectReferences::Remap(o, removed);
 			    }
+
 			    working.ReplaceObjects(std::move(objects));
 			    std::string serialized;
 			    if (!SceneSerializer::Serialize(working, serialized))

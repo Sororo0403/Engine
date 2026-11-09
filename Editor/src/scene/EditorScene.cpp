@@ -69,6 +69,7 @@ EditorScene::~EditorScene() = default;
 bool EditorScene::Initialize() {
 	renderer_.SetScreenUIEnabled(false);
 	playSceneRenderer_.SetScreenUIEnabled(false);
+
 	if (!ui_.EnableDocking()) {
 		return false;
 	}
@@ -140,9 +141,11 @@ bool EditorScene::Initialize() {
 
 	// 未接続の保存先も保持し、別のフォルダへ取り込んでしまうことを防ぐ。
 	assets_ = AssetDatabase(assetSources_.GetDirectory());
+
 	if (assets_.Refresh()) {
 		assetSources_.Select(assets_.GetRootDirectory());
 	}
+
 	clipboard_.Clear();
 
 	recoveryElapsed_ = 0;
@@ -150,10 +153,12 @@ bool EditorScene::Initialize() {
 	pendingRecoveryPath_.clear();
 	restoredRecoveryPath_.clear();
 	std::string recoveryError;
+
 	if (!recovery_.Initialize(L"config/recovery", recoveryError)) {
 		Logger::Error("EditorScene::Recovery: " + recoveryError);
 	} else {
 		std::vector<SceneRecovery::Entry> entries;
+
 		if (!recovery_.Enumerate(entries, recoveryError)) {
 			Logger::Error("EditorScene::Recovery: " + recoveryError);
 		} else if (!entries.empty()) {
@@ -318,6 +323,7 @@ bool EditorScene::Update(float deltaTime) {
 		}
 
 		SynchronizePlayScene();
+
 		if (showMotionTrail_) {
 			motionTrail_.Record(playMode_.GetSession());
 		} else {
@@ -383,6 +389,7 @@ bool EditorScene::Update(float deltaTime) {
 		}
 
 		SynchronizePlayScene();
+
 		if (showMotionTrail_) {
 			motionTrail_.Record(playMode_.GetSession());
 		} else {
@@ -479,6 +486,7 @@ bool EditorScene::Update(float deltaTime) {
 
 	if (!wasBusy && hasCheckRequest) {
 		FinishEdit();
+
 		if (selection_.Set(std::move(checkedRequest.objectIds))) {
 			hierarchyPanel_.RequestReveal(selection_.GetActiveId());
 
@@ -555,6 +563,7 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	texturePreviewPanel_.Draw(ui_);
+
 	if (!wasBusy && !assetsPanel_.GetAudioPreviewRequest().empty()) {
 		audioPreviewPanel_.Open(assetsPanel_.GetAudioPreviewRequest());
 	}
@@ -621,6 +630,7 @@ bool EditorScene::Update(float deltaTime) {
 		FinishEdit();
 		std::string error;
 		bool success = true;
+
 		switch (prefabRequest.action) {
 		case PrefabInspector::Action::REFRESH:
 			success =
@@ -640,6 +650,7 @@ bool EditorScene::Update(float deltaTime) {
 			if (success) {
 				assets_.Refresh();
 			}
+
 			break;
 		case PrefabInspector::Action::UNPACK:
 			success =
@@ -656,6 +667,7 @@ bool EditorScene::Update(float deltaTime) {
 		case PrefabInspector::Action::NONE:
 			break;
 		}
+
 		if (!success) {
 			ShowError(error);
 		}
@@ -802,6 +814,7 @@ bool EditorScene::Update(float deltaTime) {
 					} else {
 						hierarchyPanel_.RequestReveal(selection_.GetActiveId());
 					}
+
 					break;
 				case HierarchyPanel::Action::CREATE_EMPTY:
 					CreateObject(SceneObject{});
@@ -918,6 +931,7 @@ bool EditorScene::Update(float deltaTime) {
 					            HierarchyPanel::Action::ENABLE_OBJECTS)) {
 						ShowError("Could not change object activity.");
 					}
+
 					break;
 				case HierarchyPanel::Action::HIDE_OBJECTS:
 					ChangeVisibility(selection_.GetIds(), false);
@@ -963,6 +977,7 @@ bool EditorScene::Update(float deltaTime) {
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 			try {
 				FinishEdit();
+
 				if (!models_.Reload(requestedModelReload)) {
 					ShowError("Could not reload the model. Its previous valid "
 					          "data was kept. See the log for details.");
@@ -980,6 +995,7 @@ bool EditorScene::Update(float deltaTime) {
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 			try {
 				FinishEdit();
+
 				if (!materials_.ReloadTexture(requestedTextureReload)) {
 					ShowError(
 					    "Could not reload the texture. Its previous valid "
@@ -1112,6 +1128,7 @@ bool EditorScene::Update(float deltaTime) {
 			if (const auto *object =
 			        scene.FindObject(selection_.GetActiveId())) {
 				SceneWorldTransform world;
+
 				if (SceneHierarchy::GetWorldTransform(
 				        scene, selection_.GetActiveId(), world)) {
 					orbitTransform.translation = world.GetPosition();
@@ -1199,6 +1216,7 @@ bool EditorScene::Update(float deltaTime) {
 	    hasAssetDrop) {
 		Ray ray;
 		const auto &drop = sceneDrop.path.empty() ? modelDrop : sceneDrop;
+
 		if (!renderer_.CreatePickingRay(drop.imagePosition.x,
 		                                drop.imagePosition.y, ray)) {
 			ShowError("Could not determine the asset placement position.");
@@ -1232,6 +1250,7 @@ bool EditorScene::Update(float deltaTime) {
 		}
 	} else if (HasSingleSelection() && selected) {
 		SceneWorldTransform world;
+
 		if (SceneHierarchy::GetWorldTransform(scene, activeId, world)) {
 			singleGizmo = selected->transform;
 			singleGizmo.translation = world.GetPosition();
@@ -1304,6 +1323,7 @@ bool EditorScene::Update(float deltaTime) {
 					applied = false;
 				break;
 			}
+
 			if (!applied)
 				FinishEdit();
 		}
@@ -1406,15 +1426,18 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	AxisAlignedBox boxDraft;
+
 	if (stage_ == DialogStage::BOX_CREATION &&
 	    boxCreationDialog_.GetPreviewBounds(boxDraft)) {
 		ColliderBounds::Lines lines;
+
 		if (!colliderBounds_.BuildLines(boxDraft, lines)) {
 			return false;
 		}
 
 		for (auto &line : lines) {
 			line.color = {0.2f, 0.85f, 1.0f, 1.0f};
+
 			if (!renderer_.AddDebugLine(line)) {
 				return false;
 			}
@@ -1455,11 +1478,13 @@ void EditorScene::Draw() const {
 
 void EditorScene::Finalize() {
 	FinishEdit();
+
 	if (closeApproved_ || !document_.IsModified()) {
 		ClearRecovery();
 	} else {
 		RecordRecovery();
 	}
+
 	recovery_.Release();
 
 	if (canSavePreferences_) {
@@ -2044,21 +2069,26 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			for (std::size_t i = 0; i < EditorCameraBookmarks::kSlotCount;
 			     ++i) {
 				const auto label = std::format("View {}", i + 1);
+
 				if (ui_.BeginMenu(label.c_str())) {
 					const bool saved = cameraBookmarks_.Get(i) != nullptr;
+
 					if (ui_.MenuItem("Save Current View", nullptr, enabled)) {
 						cameraBookmarkSlot_ = i;
 						action = EditorAction::SAVE_CAMERA_BOOKMARK;
 					}
+
 					if (ui_.MenuItem("Restore View", nullptr,
 					                 enabled && saved)) {
 						cameraBookmarkSlot_ = i;
 						action = EditorAction::RESTORE_CAMERA_BOOKMARK;
 					}
+
 					if (ui_.MenuItem("Clear View", nullptr, enabled && saved)) {
 						cameraBookmarkSlot_ = i;
 						action = EditorAction::CLEAR_CAMERA_BOOKMARK;
 					}
+
 					ui_.EndMenu();
 				}
 			}
@@ -2452,6 +2482,7 @@ void EditorScene::StartAction(EditorAction action) {
 			ShowError(
 			    "Could not select an Assets folder. See the log for details.");
 		}
+
 		return;
 
 	case EditorAction::GAME_SETTINGS:
@@ -2466,6 +2497,7 @@ void EditorScene::StartAction(EditorAction action) {
 		return;
 	case EditorAction::EXPORT_GAME:
 		pendingAction_ = action;
+
 		try {
 			ExecutePendingAction();
 		} catch (const std::exception &error) {
@@ -2474,6 +2506,7 @@ void EditorScene::StartAction(EditorAction action) {
 			ShowError(
 			    "Could not prepare game export. See the log for details.");
 		}
+
 		return;
 
 	case EditorAction::RENAME_OBJECT:
@@ -2518,12 +2551,14 @@ void EditorScene::StartAction(EditorAction action) {
 				if (projection) {
 					sceneProjection_ = *projection;
 				}
+
 				frameRequest_ = FrameRequest::NONE;
 				ShowSceneView();
 			} else {
 				ShowError("Could not restore this Scene camera view.");
 			}
 		}
+
 		return;
 	case EditorAction::CLEAR_CAMERA_BOOKMARK:
 		cameraBookmarks_.Clear(cameraBookmarkSlot_);
@@ -2756,6 +2791,7 @@ void EditorScene::StartAction(EditorAction action) {
 			inspectorPanel_.RequestInspect(id);
 			windowFocusRequest_ = "Game";
 		}
+
 		return;
 	}
 
@@ -2768,17 +2804,20 @@ void EditorScene::StartAction(EditorAction action) {
 	case EditorAction::CREATE_SIZED_BOX: {
 		try {
 			Collider bounds;
+
 			if (!GetFittedCollider(PrimitiveObjects::CreateBox(), bounds)) {
 				ShowError(
 				    "Could not load the built-in Box. No object was created.");
 				return;
 			}
+
 			boxCreationDialog_.Show(bounds, sceneGrid_.GetSettings().height);
 			stage_ = DialogStage::BOX_CREATION;
 			ShowSceneView();
 		} catch (const std::exception &error) {
 			ShowError(error.what());
 		}
+
 		return;
 	}
 	case EditorAction::CREATE_CAMERA:
@@ -2907,6 +2946,7 @@ void EditorScene::ExecutePendingAction() {
 			ShowError(
 			    "Could not prepare scene import. See the log for details.");
 		}
+
 		return;
 
 	case EditorAction::OPEN:
@@ -3028,12 +3068,14 @@ void EditorScene::FitCollider(SceneObjectId id) {
 bool EditorScene::GetFittedCollider(const SceneObject &object,
                                     Collider &collider) {
 	Collider fitted = object.collider.value_or(Collider{});
+
 	if (!object.HasMesh()) {
 		fitted.center = {};
 		fitted.halfExtents = {.5f, .5f, .5f};
 		fitted.radius = .5f;
 		fitted.halfHeight = .5f;
 	}
+
 	if (object.HasMesh()) {
 		const auto model = models_.Load(object.mesh->modelPath);
 		std::array<DirectX::XMFLOAT3, 8> corners;
@@ -3187,9 +3229,11 @@ void EditorScene::SetCameraView(CameraView view) {
 std::filesystem::path
 EditorScene::GetNewScenePath(const std::filesystem::path &name) const {
 	const auto &directory = assetSources_.GetDirectory();
+
 	if (name.empty()) {
 		return directory.is_absolute() ? directory : std::filesystem::path{};
 	}
+
 	return directory.is_absolute() ? directory / name : name;
 }
 
@@ -3219,6 +3263,7 @@ void EditorScene::StartSaveSelection() {
 			    "Could not prepare the selected objects. No file was written.");
 			return;
 		}
+
 		const auto folder = AssetFolders::Resolve(
 		    assets_.GetRootDirectory(), assetsPanel_.GetOpenDirectory());
 		fileDialog_.Show(FileDialogMode::SAVE_COPY,
@@ -3237,10 +3282,12 @@ void EditorScene::AppendAssetObjects(const std::filesystem::path &path) {
 	    gizmoEditActive_ || sceneViewPanel_.IsSelecting()) {
 		return;
 	}
+
 	try {
 		SceneDocument source;
 		const bool prefab = PrefabAsset::IsPrefabPath(path);
 		std::string error;
+
 		if (prefab ? !PrefabAsset::Load(path, source.GetScene(), error)
 		           : !source.Open(path)) {
 			ShowError(error.empty() ? "Could not read the asset objects. The "
@@ -3248,11 +3295,14 @@ void EditorScene::AppendAssetObjects(const std::filesystem::path &path) {
 			                        : error);
 			return;
 		}
+
 		auto sources = assetSources_;
+
 		if (prefab) {
 			sources.Register(
 			    PathUtils::ResolveFromExecutable(assets_.GetRootDirectory()));
 		}
+
 		auto ids =
 		    prefab ? PrefabInstances::Instantiate(path, source.GetScene(),
 		                                          document_.GetHistory(), error)
@@ -3264,6 +3314,7 @@ void EditorScene::AppendAssetObjects(const std::filesystem::path &path) {
 			                        : error);
 			return;
 		}
+
 		assetSources_ = std::move(sources);
 		selection_.Set(std::move(ids));
 		hierarchyPanel_.RequestReveal(selection_.GetActiveId());
@@ -3281,6 +3332,7 @@ bool EditorScene::PlaceDroppedObjects(const std::filesystem::path &path,
 	    gizmoEditActive_ || sceneViewPanel_.IsSelecting()) {
 		return false;
 	}
+
 	try {
 		SceneDocument source;
 		const bool prefab = PrefabAsset::IsPrefabPath(path);
@@ -3289,10 +3341,12 @@ bool EditorScene::PlaceDroppedObjects(const std::filesystem::path &path,
 		    prefab ? PrefabAsset::Load(path, source.GetScene(), error)
 		           : source.Open(path);
 		auto sources = assetSources_;
+
 		if (prefab) {
 			sources.Register(
 			    PathUtils::ResolveFromExecutable(assets_.GetRootDirectory()));
 		}
+
 		if (!loaded ||
 		    !ScenePlacement::Place(
 		        source.GetScene(), document_.GetScene(), ray, models_,
@@ -3315,6 +3369,7 @@ bool EditorScene::PlaceDroppedObjects(const std::filesystem::path &path,
 			                        : error);
 			return false;
 		}
+
 		assetSources_ = std::move(sources);
 		selection_.Set(std::move(ids));
 		hierarchyPanel_.RequestReveal(selection_.GetActiveId());
@@ -3331,14 +3386,17 @@ void EditorScene::UpdateRecovery(float deltaTime) {
 	if (!recovery_.IsReady()) {
 		return;
 	}
+
 	if (!document_.IsModified()) {
 		if (recoveryWasDirty_) {
 			ClearRecovery();
 		}
+
 		recoveryWasDirty_ = false;
 		recoveryElapsed_ = 0;
 		return;
 	}
+
 	recoveryWasDirty_ = true;
 	recoveryElapsed_ = (std::min)(SceneRecovery::kIntervalSeconds,
 	                              recoveryElapsed_ + deltaTime);
@@ -3353,15 +3411,19 @@ void EditorScene::UpdateRecovery(float deltaTime) {
 
 void EditorScene::RecordRecovery() {
 	recoveryElapsed_ = 0;
+
 	if (!recovery_.IsReady()) {
 		return;
 	}
+
 	std::string error;
+
 	if (!recovery_.Record(document_.GetScene(), document_.GetFilePath(),
 	                      assetSources_, exportConfig_, error)) {
 		Logger::Error("EditorScene::RecordRecovery: " + error);
 		return;
 	}
+
 	if (!restoredRecoveryPath_.empty()) {
 		if (!document_.GetFilePath().empty() &&
 		    PathUtils::IsSameFile(restoredRecoveryPath_,
@@ -3379,9 +3441,11 @@ void EditorScene::ClearRecovery(
     const std::filesystem::path &protectedRecovery) {
 	recoveryElapsed_ = 0;
 	std::string error;
+
 	if (!recovery_.Clear(document_.GetFilePath(), error)) {
 		Logger::Error("EditorScene::ClearRecovery: " + error);
 	}
+
 	if (!restoredRecoveryPath_.empty()) {
 		const auto &protectedCandidate =
 		    pendingAction_ == EditorAction::RESTORE_RECOVERY
@@ -3414,12 +3478,14 @@ void EditorScene::RestoreRecovery() {
 	try {
 		SceneRecovery::Snapshot snapshot;
 		std::string error;
+
 		if (!recovery_.Read(pendingRecoveryPath_, snapshot, error)) {
 			ShowError(
 			    "Could not restore the scene. The current scene was kept: " +
 			    error);
 			return;
 		}
+
 		AssetDatabase assets(snapshot.assets.GetDirectory());
 		assets.Refresh();
 		auto restoredPath = pendingRecoveryPath_;
@@ -3467,6 +3533,7 @@ void EditorScene::UpdateDialogs() {
 			stage_ = DialogStage::IDLE;
 			StartAction(EditorAction::RESTORE_RECOVERY);
 		}
+
 		return;
 	}
 
@@ -3547,6 +3614,7 @@ void EditorScene::UpdateDialogs() {
 
 	case DialogStage::SAVE_SELECTION_FILE: {
 		const auto result = fileDialog_.Draw(ui_);
+
 		if (result == FileDialogResult::CANCELLED) {
 			selectionSnapshot_.Clear();
 			stage_ = DialogStage::IDLE;
@@ -3561,6 +3629,7 @@ void EditorScene::UpdateDialogs() {
 				ShowError(document_.GetError());
 			}
 		}
+
 		return;
 	}
 
@@ -3584,14 +3653,17 @@ void EditorScene::UpdateDialogs() {
 
 	case DialogStage::SELECT_ASSET_FOLDER: {
 		const auto result = fileDialog_.Draw(ui_);
+
 		if (result == FileDialogResult::CANCELLED) {
 			stage_ = DialogStage::IDLE;
 		} else if (result == FileDialogResult::ACCEPTED) {
 			try {
 				AssetDatabase candidate(fileDialog_.GetSelectedPath());
+
 				if (!candidate.Refresh()) {
 					throw std::runtime_error(candidate.GetError());
 				}
+
 				auto sources = assetSources_;
 				sources.Select(candidate.GetRootDirectory());
 				assets_ = std::move(candidate);
@@ -3606,11 +3678,13 @@ void EditorScene::UpdateDialogs() {
 				          std::string(error.what()));
 			}
 		}
+
 		return;
 	}
 
 	case DialogStage::EDIT_SCRIPT: {
 		const auto result = scriptEditorDialog_.Draw(ui_);
+
 		if (result == ScriptEditorDialog::Result::SAVED) {
 			stage_ = DialogStage::IDLE;
 			if (!assets_.Refresh())
@@ -3624,8 +3698,10 @@ void EditorScene::UpdateDialogs() {
 
 	case DialogStage::CREATE_PREFAB: {
 		const auto result = prefabCreateDialog_.Draw(ui_);
+
 		if (result == PrefabCreateResult::ACCEPTED) {
 			stage_ = DialogStage::IDLE;
+
 			if (!assets_.Refresh()) {
 				ShowError(
 				    "The Prefab was created, but Assets could not refresh: " +
@@ -3637,6 +3713,7 @@ void EditorScene::UpdateDialogs() {
 		} else if (result == PrefabCreateResult::CANCELLED) {
 			stage_ = DialogStage::IDLE;
 		}
+
 		return;
 	}
 
@@ -3645,6 +3722,7 @@ void EditorScene::UpdateDialogs() {
 
 		if (result == AssetFolderResult::ACCEPTED) {
 			stage_ = DialogStage::IDLE;
+
 			if (!assets_.Refresh()) {
 				ShowError(
 				    "The folder was created, but Assets could not refresh: " +
@@ -3656,11 +3734,13 @@ void EditorScene::UpdateDialogs() {
 		} else if (result == AssetFolderResult::CANCELLED) {
 			stage_ = DialogStage::IDLE;
 		}
+
 		return;
 	}
 
 	case DialogStage::IMPORT_SCENE: {
 		const auto result = sceneImportDialog_.Draw(ui_, document_.GetScene());
+
 		if (result == SceneImportResult::ACCEPTED) {
 			if (const auto *imported =
 			        sceneImportDialog_.GetImportedSettings()) {
@@ -3670,6 +3750,7 @@ void EditorScene::UpdateDialogs() {
 				settings.fallbackCamera = exportConfig_.fallbackCamera;
 				exportConfig_ = std::move(settings);
 			}
+
 			document_.SetUntitled();
 			ClearRecovery();
 			sceneCheckPanel_.Reset();
@@ -3685,6 +3766,7 @@ void EditorScene::UpdateDialogs() {
 			playMode_.SetPreviewCamera(0);
 			inspectorPanel_.Clear();
 			stage_ = DialogStage::IDLE;
+
 			if (!assets_.Refresh()) {
 				ShowError(
 				    "The scene was imported, but Assets could not refresh: " +
@@ -3696,13 +3778,16 @@ void EditorScene::UpdateDialogs() {
 		} else if (result == SceneImportResult::CANCELLED) {
 			stage_ = DialogStage::IDLE;
 		}
+
 		return;
 	}
 
 	case DialogStage::IMPORT_MODEL: {
 		const auto result = modelImportDialog_.Draw(ui_, models_);
+
 		if (result == ModelImportResult::ACCEPTED) {
 			stage_ = DialogStage::IDLE;
+
 			if (!assets_.Refresh()) {
 				ShowError(
 				    "The model was imported, but Assets could not refresh: " +
@@ -3714,13 +3799,16 @@ void EditorScene::UpdateDialogs() {
 		} else if (result == ModelImportResult::CANCELLED) {
 			stage_ = DialogStage::IDLE;
 		}
+
 		return;
 	}
 
 	case DialogStage::IMPORT_TEXTURE: {
 		const auto result = textureImportDialog_.Draw(ui_);
+
 		if (result == TextureImportResult::ACCEPTED) {
 			stage_ = DialogStage::IDLE;
+
 			if (!assets_.Refresh()) {
 				ShowError(
 				    "The image was imported, but Assets could not refresh: " +
@@ -3732,13 +3820,16 @@ void EditorScene::UpdateDialogs() {
 		} else if (result == TextureImportResult::CANCELLED) {
 			stage_ = DialogStage::IDLE;
 		}
+
 		return;
 	}
 
 	case DialogStage::IMPORT_AUDIO: {
 		const auto result = audioImportDialog_.Draw(ui_);
+
 		if (result == AudioImportResult::ACCEPTED) {
 			stage_ = DialogStage::IDLE;
+
 			if (!assets_.Refresh()) {
 				ShowError(
 				    "The audio was imported, but Assets could not refresh: " +
@@ -3750,11 +3841,13 @@ void EditorScene::UpdateDialogs() {
 		} else if (result == AudioImportResult::CANCELLED) {
 			stage_ = DialogStage::IDLE;
 		}
+
 		return;
 	}
 
 	case DialogStage::BOX_CREATION: {
 		const auto result = boxCreationDialog_.Draw(ui_);
+
 		if (result == BoxCreationResult::FRAME_PREVIEW) {
 			frameRequest_ = FrameRequest::DRAFT;
 			return;
@@ -3763,15 +3856,19 @@ void EditorScene::UpdateDialogs() {
 		if (result == BoxCreationResult::NONE) {
 			return;
 		}
+
 		if (frameRequest_ == FrameRequest::DRAFT) {
 			frameRequest_ = FrameRequest::NONE;
 		}
+
 		stage_ = DialogStage::IDLE;
+
 		if (result == BoxCreationResult::ACCEPTED) {
 			try {
 				Collider bounds;
 				SceneObject object;
 				std::string error;
+
 				if (!GetFittedCollider(PrimitiveObjects::CreateBox(), bounds)) {
 					ShowError("Could not load the built-in Box. No object was "
 					          "created.");
@@ -3786,6 +3883,7 @@ void EditorScene::UpdateDialogs() {
 				ShowError(error.what());
 			}
 		}
+
 		return;
 	}
 
@@ -3800,6 +3898,7 @@ void EditorScene::UpdateDialogs() {
 		if (result == ObjectArrayResult::NONE) {
 			return;
 		}
+
 		if (frameRequest_ == FrameRequest::DRAFT) {
 			frameRequest_ = FrameRequest::NONE;
 		}
@@ -3861,6 +3960,7 @@ void EditorScene::UpdateDialogs() {
 		if (exportResultDialog_.Draw(ui_) == GameExportResultAction::CLOSE) {
 			stage_ = DialogStage::IDLE;
 		}
+
 		return;
 
 	case DialogStage::GAME_SETTINGS: {
@@ -3874,6 +3974,7 @@ void EditorScene::UpdateDialogs() {
 			if (!gameSettingsDialog_.GetLastSavedPath().empty()) {
 				assets_.Refresh();
 			}
+
 			stage_ = DialogStage::IDLE;
 		}
 
@@ -4241,6 +4342,7 @@ void EditorScene::ApplyInspectorRequest(
 
 		if (request.action == InspectorPanel::ObjectAction::FRAME_FOLLOW_PATH) {
 			std::array<DirectX::XMFLOAT3, 8> corners;
+
 			if (!followCameraPreview_.GetFrameBounds(
 			        document_.GetScene(), request.objectId, corners)) {
 				ShowError("Could not frame the Follow Camera path. Check its "
@@ -4248,6 +4350,7 @@ void EditorScene::ApplyInspectorRequest(
 				          request.objectId);
 				return;
 			}
+
 			frameObject_ = request.objectId;
 			frameRequest_ = FrameRequest::FOLLOW_PATH;
 			ShowSceneView();
@@ -4630,6 +4733,7 @@ bool EditorScene::ReplaceSelectedMeshes(
     const std::filesystem::path &modelPath) {
 	try {
 		FinishEdit();
+
 		if (modelPath.empty() || !models_.Load(modelPath)) {
 			ShowError(
 			    "Could not load the model. The selected meshes were kept.");
@@ -4874,9 +4978,11 @@ bool EditorScene::FrameDraft(const DirectX::XMFLOAT4X4 &projection) {
 
 		if (stage_ == DialogStage::BOX_CREATION) {
 			AxisAlignedBox box;
+
 			if (!boxCreationDialog_.GetPreviewBounds(box)) {
 				return false;
 			}
+
 			bounds.push_back(box);
 		} else if (stage_ == DialogStage::OBJECT_ARRAY &&
 		           objectArrayDialog_.CanPreview()) {
@@ -4892,6 +4998,7 @@ bool EditorScene::FrameDraft(const DirectX::XMFLOAT4X4 &projection) {
 		}
 
 		auto combined = bounds.front();
+
 		for (const auto &box : bounds) {
 			combined.minimum = {(std::min)(combined.minimum.x, box.minimum.x),
 			                    (std::min)(combined.minimum.y, box.minimum.y),
@@ -4902,6 +5009,7 @@ bool EditorScene::FrameDraft(const DirectX::XMFLOAT4X4 &projection) {
 		}
 
 		std::array<DirectX::XMFLOAT3, 8> corners;
+
 		for (std::size_t i = 0; i < corners.size(); ++i) {
 			corners[i] = {(i & 1) ? combined.maximum.x : combined.minimum.x,
 			              (i & 2) ? combined.maximum.y : combined.minimum.y,
@@ -4911,6 +5019,7 @@ bool EditorScene::FrameDraft(const DirectX::XMFLOAT4X4 &projection) {
 		if (cameraController_.FrameBounds(corners, projection)) {
 			return true;
 		}
+
 		Logger::Warning(
 		    "EditorScene: 下書き全体を現在の描画範囲に収められませんでした。");
 	} catch (const std::exception &error) {
@@ -5099,17 +5208,21 @@ bool EditorScene::UpdatePlaySceneView(float deltaTime, EditorAction action,
 
 	std::vector<ParticleDrawBatch> particles;
 	std::string particleError;
+
 	if (!playMode_.GetSession().GetParticles(particles, particleError)) {
 		Logger::Error(particleError);
 		return false;
 	}
+
 	playSceneRenderer_.SetParticles(std::move(particles));
 	std::vector<AnimatorDrawPose> poses;
+
 	if (!playMode_.GetSession().GetAnimatorPoses(poses, particleError) ||
 	    !playSceneRenderer_.SetAnimatorPoses(std::move(poses))) {
 		Logger::Error(particleError);
 		return false;
 	}
+
 	if (!playSceneRenderer_.SetCameraSettings(sceneProjection_) ||
 	    !playSceneRenderer_.SetLighting(playMode_.GetLighting()) ||
 	    !playSceneRenderer_.SetCameraPose(cameraController_.GetPose()) ||
@@ -5172,6 +5285,7 @@ bool EditorScene::UpdatePlaySceneView(float deltaTime, EditorAction action,
 	                                      playSelection_.GetIds())) {
 		return false;
 	}
+
 	if (showMotionTrail_ && !motionTrail_.Update(playSceneRenderer_)) {
 		return false;
 	}
@@ -5265,6 +5379,7 @@ void EditorScene::StopAndSelectEditingObjects() {
 void EditorScene::UpdatePlaySelectionFollow() {
 	const auto id = playSelection_.GetActiveId();
 	SceneWorldTransform world;
+
 	if (!followPlaySelection_ || !playMode_.IsPlaying() ||
 	    !SceneHierarchy::GetWorldTransform(playMode_.GetSession().GetScene(),
 	                                       id, world)) {
@@ -5311,11 +5426,14 @@ void EditorScene::SynchronizePlayScene() {
 		playSceneRevision_ = 0;
 		return;
 	}
+
 	const auto revision = playMode_.GetSession().GetSceneRevision();
+
 	if (playSceneRevision_ != 0 && playSceneRevision_ != revision) {
 		ClearPlaySelection();
 		playSelectionActive_ = true;
 	}
+
 	playSceneRevision_ = revision;
 }
 

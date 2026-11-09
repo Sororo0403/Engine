@@ -111,6 +111,7 @@ JPH::RefConst<JPH::Shape> CreateShape(const RigidBodyDescription &d) {
 	const auto &c = d.collider;
 	const auto &s = d.transform.scale;
 	JPH::ShapeSettings::ShapeResult result;
+
 	switch (c.shape) {
 	case Collider::Shape::BOX:
 		result =
@@ -129,6 +130,7 @@ JPH::RefConst<JPH::Shape> CreateShape(const RigidBodyDescription &d) {
 	default:
 		throw std::runtime_error("Unsupported Collider shape.");
 	}
+
 	if (result.HasError())
 		throw std::runtime_error(std::format("Object ID {}: {}", d.object,
 		                                     result.GetError().c_str()));
@@ -204,6 +206,7 @@ class Contacts final : public JPH::ContactListener {
 			overflow = true;
 			return;
 		}
+
 		touched.insert(position, pair);
 	}
 
@@ -249,6 +252,7 @@ struct RigidBodyWorld::Impl {
 		            layers, broadFilter, layerFilter);
 		system.SetGravity({0, -9.8f, 0});
 		system.SetContactListener(&contacts);
+
 		if (!group) {
 			group = new JPH::GroupFilterTable(
 			    static_cast<JPH::uint>(descriptions.size()));
@@ -259,7 +263,9 @@ struct RigidBodyWorld::Impl {
 						group->DisableCollision(static_cast<JPH::uint>(i),
 						                        static_cast<JPH::uint>(j));
 		}
+
 		auto &interface = system.GetBodyInterface();
+
 		for (std::size_t index = 0; index < descriptions.size(); ++index) {
 			const auto &d = descriptions[index];
 			const auto shape = CreateShape(d);
@@ -270,6 +276,7 @@ struct RigidBodyWorld::Impl {
 			settings.mCollisionGroup =
 			    JPH::CollisionGroup(group, 0, static_cast<JPH::uint>(index));
 			settings.mUserData = d.object;
+
 			if (d.rigidBody) {
 				const auto &r = *d.rigidBody;
 				settings.mFriction = r.friction;
@@ -281,15 +288,18 @@ struct RigidBodyWorld::Impl {
 				settings.mOverrideMassProperties =
 				    JPH::EOverrideMassProperties::CalculateInertia;
 				settings.mMassPropertiesOverride.mMass = r.mass;
+
 				if (motion != JPH::EMotionType::Static) {
 					settings.mLinearVelocity = Vector(r.linearVelocity);
 					settings.mAngularVelocity = Vector(r.angularVelocity);
 				}
+
 				for (unsigned axis = 0; axis < 3; ++axis)
 					if (r.freezeRotation[axis])
 						settings.mAllowedDOFs &=
 						    ~static_cast<JPH::EAllowedDOFs>(1 << (axis + 3));
 			}
+
 			// 動的な形状はCCDを使い、薄い床を高速で通り抜けることを防ぐ。
 			settings.mMotionQuality = motion == JPH::EMotionType::Dynamic
 			                              ? JPH::EMotionQuality::LinearCast
@@ -304,6 +314,7 @@ struct RigidBodyWorld::Impl {
 				    "The rigid body count limit was reached.");
 			bodies.emplace(d.object, std::pair{id, index});
 		}
+
 		system.OptimizeBroadPhase();
 	}
 
@@ -354,6 +365,7 @@ bool RigidBodyWorld::Rebuild(std::span<const RigidBodyDescription> bodies,
 			throw std::runtime_error(
 			    "A physics world supports at most 1024 bodies.");
 		std::map<SceneObjectId, bool> ids;
+
 		for (const auto &d : bodies) {
 			current = d.object;
 			if (!d.object || !ids.emplace(d.object, true).second ||
@@ -382,6 +394,7 @@ bool RigidBodyWorld::Rebuild(std::span<const RigidBodyDescription> bodies,
 				    "Rigid body center or scaled half extents are outside the "
 				    "supported range.");
 		}
+
 		current = 0;
 		auto next = std::make_shared<Impl>(bodies, JoltRuntime::Initialize());
 		impl_ = std::move(next);
@@ -404,6 +417,7 @@ bool RigidBodyWorld::Update(float seconds, std::string &error) {
 			error.clear();
 			return true;
 		}
+
 		auto next = impl_.use_count() == 1 ? impl_ : impl_->Clone();
 		JPH::StateRecorderImpl saved;
 		next->system.SaveState(saved);
@@ -412,6 +426,7 @@ bool RigidBodyWorld::Update(float seconds, std::string &error) {
 		auto previousContacts = next->contacts.touched;
 		next->contacts.touched.clear();
 		next->contacts.overflow = false;
+
 		try {
 			const float duration = (std::min)(seconds, kMaximumFrameSeconds);
 			const int steps =
@@ -443,6 +458,7 @@ bool RigidBodyWorld::Update(float seconds, std::string &error) {
 				    "Could not restore failed physics step.");
 			throw;
 		}
+
 		impl_ = std::move(next);
 		error.clear();
 		return true;
@@ -643,15 +659,18 @@ bool ResolveInitialContact(JPH::Vec3Arg center, JPH::Vec3Arg half,
 	const std::array<JPH::Vec3, 3> local{
 	    rotation * world[0], rotation * world[1], rotation * world[2]};
 	std::array<JPH::Vec3, 15> axes;
+
 	for (int i = 0; i < 3; ++i) {
 		axes[i] = world[i];
 		axes[i + 3] = local[i];
 	}
+
 	for (int i = 0; i < 3; ++i)
 		for (int j = 0; j < 3; ++j)
 			axes[6 + i * 3 + j] = world[i].Cross(local[j]);
 	const auto delta = center - body.GetCenterOfMassPosition();
 	float minimum = (std::numeric_limits<float>::max)();
+
 	for (auto axis : axes) {
 		const float length = axis.Length();
 		if (length < .000001f)
@@ -672,6 +691,7 @@ bool ResolveInitialContact(JPH::Vec3Arg center, JPH::Vec3Arg half,
 			normal = outward;
 		}
 	}
+
 	return true;
 }
 
@@ -781,6 +801,7 @@ bool RigidBodyWorld::Sweep(const ShapeQuery &query,
 		        Vector(displacement)),
 		    settings, query.center, contacts, {}, {}, bodies);
 		CollisionSweepResult next;
+
 		for (const auto &hit : contacts.mHits) {
 			auto normal =
 			    -hit.mPenetrationAxis.NormalizedOr(JPH::Vec3::sAxisY());
@@ -808,6 +829,7 @@ bool RigidBodyWorld::Sweep(const ShapeQuery &query,
 					    hit.mSubShapeID2, query.center + hit.mContactPointOn2);
 				}
 			}
+
 			if (hit.mPenetrationDepth <= 0.00001f &&
 			    normal.Dot(Vector(displacement)) >= -0.0000001f)
 				continue;
@@ -819,6 +841,7 @@ bool RigidBodyWorld::Sweep(const ShapeQuery &query,
 			    (fraction == next.fraction && id < next.objectId))
 				next = {id, fraction, Vector(normal)};
 		}
+
 		result = next;
 		return true;
 	} catch (const std::exception &) {
@@ -871,6 +894,7 @@ bool RigidBodyWorld::FindContacts(
 		if (!impl_)
 			return false;
 		std::vector<CollisionContact> found;
+
 		for (const auto &[id, entry] : impl_->bodies) {
 			const auto &[body, index] = entry;
 			const auto &source = impl_->descriptions[index];
@@ -901,6 +925,7 @@ bool RigidBodyWorld::FindContacts(
 				found.push_back({id, other});
 			}
 		}
+
 		std::ranges::sort(found);
 		found.erase(std::unique(found.begin(), found.end()), found.end());
 		contacts.swap(found);

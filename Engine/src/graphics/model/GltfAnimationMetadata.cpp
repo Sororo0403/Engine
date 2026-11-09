@@ -35,6 +35,7 @@ bool GltfAnimationMetadata::Read(const std::filesystem::path &path,
 			throw std::runtime_error("Could not measure glTF metadata.");
 		input.seekg(0);
 		std::uint64_t count = static_cast<std::uint64_t>(length);
+
 		if (PathUtils::HasExtension(path, ".glb")) {
 			if (Read32(input) != 0x46546c67 || Read32(input) != 2 ||
 			    Read32(input) != count)
@@ -44,6 +45,7 @@ bool GltfAnimationMetadata::Read(const std::filesystem::path &path,
 			    count + 20 > static_cast<std::uint64_t>(length))
 				throw std::runtime_error("GLB JSON chunk is invalid.");
 		}
+
 		if (count > 256 * 1024 * 1024)
 			throw std::runtime_error("glTF JSON exceeds 256 MiB.");
 		std::string text(static_cast<std::size_t>(count), '\0');
@@ -51,6 +53,7 @@ bool GltfAnimationMetadata::Read(const std::filesystem::path &path,
 			throw std::runtime_error("glTF JSON is truncated.");
 		const auto json = nlohmann::json::parse(text);
 		std::vector<std::map<std::string, Modes>> clips;
+
 		if (json.contains("animations")) {
 			const auto &animations = json.at("animations");
 			const auto &nodes = json.at("nodes");
@@ -104,9 +107,11 @@ bool GltfAnimationMetadata::Read(const std::filesystem::path &path,
 						                         "unsupported or duplicated.");
 					*value = mode == "STEP";
 				}
+
 				clips.push_back(std::move(modes));
 			}
 		}
+
 		clips_ = std::move(clips);
 		error.clear();
 		return true;
@@ -124,8 +129,10 @@ bool GltfAnimationMetadata::Apply(ModelAnimationData &data,
 			    "glTF animation clips were not retained completely.");
 		for (std::size_t i = 0; i < clips_.size(); ++i) {
 			std::size_t applied = 0;
+
 			for (auto &track : data.clips[i].tracks) {
 				auto at = clips_[i].find(data.nodes.at(track.node).name);
+
 				if (at == clips_[i].end())
 					throw std::runtime_error(
 					    "glTF animation target name was not retained.");
@@ -147,10 +154,12 @@ bool GltfAnimationMetadata::Apply(ModelAnimationData &data,
 				track.before = track.after =
 				    ModelAnimationTrack::Boundary::CONSTANT;
 			}
+
 			if (applied != clips_[i].size())
 				throw std::runtime_error(
 				    "glTF animation channels were not retained completely.");
 		}
+
 		error.clear();
 		return true;
 	} catch (const std::exception &e) {

@@ -42,6 +42,7 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, double &value,
 			call.physicsDirty = true;
 			current = call.animations->GetState(id);
 		}
+
 		if (!current)
 			throw std::runtime_error(
 			    "This object requires Transform Animation.");
@@ -49,14 +50,17 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, double &value,
 			value = current->playing;
 			return true;
 		}
+
 		if (op == Op::TIME) {
 			value = current->seconds;
 			return true;
 		}
+
 		if (op == Op::PLAY && !SceneActivity::IsActive(*call.scene, id)) {
 			value = 0;
 			return true;
 		}
+
 		const auto operation =
 		    op == Op::PLAY    ? SceneAnimations::Operation::PLAY
 		    : op == Op::PAUSE ? SceneAnimations::Operation::PAUSE
@@ -89,10 +93,12 @@ int Dispatch(lua_State *state) {
 	    luaL_checkudata(state, 1, "Engine.ScriptObject"));
 	double value = 0;
 	bool restart = true;
+
 	if (op == Op::PLAY && !lua_isnoneornil(state, 2)) {
 		luaL_checktype(state, 2, LUA_TBOOLEAN);
 		restart = lua_toboolean(state, 2) != 0;
 	}
+
 	if (op == Op::SEEK) {
 		luaL_checktype(state, 2, LUA_TNUMBER);
 		value = lua_tonumber(state, 2);
@@ -100,10 +106,12 @@ int Dispatch(lua_State *state) {
 			return luaL_error(
 			    state, "Animation seek must use a finite non-negative time.");
 	}
+
 	if (!Perform(call, op, id, value, restart)) {
 		lua_pushlstring(state, call.error.data(), call.error.size());
 		return lua_error(state);
 	}
+
 	if (op == Op::TIME)
 		lua_pushnumber(state, value);
 	else

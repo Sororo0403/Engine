@@ -16,9 +16,11 @@ SceneObjectId UIObjects::Create(const Scene &scene, EditorHistory &history,
 		    kind != Kind::BUTTON)
 			throw std::runtime_error("Invalid UI object kind.");
 		SceneObjectId selectedParent = 0;
+
 		if (kind != Kind::CANVAS) {
 			auto ancestor = parent;
 			std::size_t depth = 0;
+
 			while (ancestor) {
 				const auto *object = scene.FindObject(ancestor);
 				if (!object || ++depth > scene.GetObjects().size())
@@ -27,8 +29,10 @@ SceneObjectId UIObjects::Create(const Scene &scene, EditorHistory &history,
 					selectedParent = parent;
 					break;
 				}
+
 				ancestor = object->parentId;
 			}
+
 			if (!selectedParent)
 				for (const auto &[id, object] : scene.GetObjects())
 					if (object.canvas && object.canvas->enabled &&
@@ -37,6 +41,7 @@ SceneObjectId UIObjects::Create(const Scene &scene, EditorHistory &history,
 						break;
 					}
 		}
+
 		SceneObjectId created = 0;
 		const bool applied = history.ApplySceneChanges(
 		    [&](Scene &candidate) {
@@ -46,11 +51,13 @@ SceneObjectId UIObjects::Create(const Scene &scene, EditorHistory &history,
 					    return false;
 				    candidate.FindObject(id)->canvas = CanvasComponent{};
 				    selectedParent = id;
+
 				    if (kind == Kind::CANVAS) {
 					    created = id;
 					    return true;
 				    }
 			    }
+
 			    created =
 			        candidate.CreateObject(kind == Kind::BUTTON ? "Button"
 			                               : kind == Kind::TEXT ? "Text"
@@ -60,6 +67,7 @@ SceneObjectId UIObjects::Create(const Scene &scene, EditorHistory &history,
 			    auto &object = *candidate.FindObject(created);
 			    object.parentId = selectedParent;
 			    object.rectTransform = RectTransformComponent{};
+
 			    if (kind == Kind::BUTTON) {
 				    object.button = ButtonComponent{};
 				    object.image = ImageComponent{};

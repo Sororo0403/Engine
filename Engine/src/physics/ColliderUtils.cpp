@@ -53,6 +53,7 @@ bool ColliderUtils::FitToPoints(std::span<const DirectX::XMFLOAT3> points,
 		candidate.halfHeight = static_cast<float>(
 		    (std::max)(double(minimumHalfExtent), double(h.y) - radial));
 		double radius = minimumHalfExtent;
+
 		for (const auto &point : points) {
 			const double y = std::abs(double(point.y) - candidate.center.y);
 			const double vertical =
@@ -65,6 +66,7 @@ bool ColliderUtils::FitToPoints(std::span<const DirectX::XMFLOAT3> points,
 			                          vertical,
 			                          double(point.z) - candidate.center.z));
 		}
+
 		candidate.radius = static_cast<float>(radius);
 	}
 
@@ -99,11 +101,14 @@ bool ColliderUtils::GetWorldBounds(const Collider &collider,
                                    const DirectX::XMFLOAT4X4 &matrix,
                                    AxisAlignedBox &bounds) {
 	DirectX::XMFLOAT4X4 inverse;
+
 	if (!IsValid(collider) ||
 	    !TransformUtils::TryInverseWorldMatrix(matrix, inverse)) {
 		return false;
 	}
+
 	const auto world = DirectX::XMLoadFloat4x4(&matrix);
+
 	if (collider.shape != Collider::Shape::BOX) {
 		std::array<DirectX::XMFLOAT3, 3> axes{
 		    {{matrix._11, matrix._12, matrix._13},
@@ -114,6 +119,7 @@ bool ColliderUtils::GetWorldBounds(const Collider &collider,
 			lengths[i] = std::hypot(double(axes[i].x), double(axes[i].y),
 			                        double(axes[i].z));
 		const auto scale = lengths[0];
+
 		for (int i = 0; i < 3; ++i) {
 			if (!std::isfinite(lengths[i]) ||
 			    std::abs(lengths[i] - scale) > scale * .00001)
@@ -126,6 +132,7 @@ bool ColliderUtils::GetWorldBounds(const Collider &collider,
 					return false;
 			}
 		}
+
 		DirectX::XMFLOAT3 center;
 		DirectX::XMStoreFloat3(
 		    &center, DirectX::XMVector3TransformCoord(

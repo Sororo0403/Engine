@@ -59,6 +59,7 @@ void ReadFormat(std::span<const std::uint8_t> format, WaveData &data) {
 	data.channels = Read16(format, 2);
 	data.sampleRate = Read32(format, 4);
 	const auto bits = Read16(format, 14);
+
 	if (tag == 0xfffe) {
 		// EXTENSIBLEでは、コンテナと有効ビット数が同じ標準PCM/floatだけを受け入れる。
 		constexpr std::array<std::uint8_t, 12> guidTail{
@@ -73,6 +74,7 @@ void ReadFormat(std::span<const std::uint8_t> format, WaveData &data) {
 		}
 
 		const auto mask = Read32(format, 20);
+
 		if (mask != 0 && mask != (data.channels == 1 ? 4u : 3u)) {
 			throw std::runtime_error("Only mono-center or stereo-left/right "
 			                         "WAV channel layouts are supported.");
@@ -107,6 +109,7 @@ void ReadFormat(std::span<const std::uint8_t> format, WaveData &data) {
 bool WaveReader::Decode(std::span<const std::uint8_t> bytes, WaveData &data,
                         std::string &error) {
 	error.clear();
+
 	try {
 		if (bytes.size() < 12 || bytes.size() > WaveData::kMaximumBytes ||
 		    !HasId(bytes, 0, "RIFF") || !HasId(bytes, 8, "WAVE")) {
@@ -115,6 +118,7 @@ bool WaveReader::Decode(std::span<const std::uint8_t> bytes, WaveData &data,
 		}
 
 		const auto declared = std::uint64_t(Read32(bytes, 4)) + 8;
+
 		if (declared < 12 || declared > bytes.size()) {
 			throw std::runtime_error("The WAV RIFF extent is invalid.");
 		}
@@ -122,6 +126,7 @@ bool WaveReader::Decode(std::span<const std::uint8_t> bytes, WaveData &data,
 		bytes = bytes.first(static_cast<std::size_t>(declared));
 		std::span<const std::uint8_t> format, samples;
 		bool foundFormat = false, foundData = false;
+
 		for (std::size_t offset = 12; offset < bytes.size();) {
 			if (bytes.size() - offset < 8) {
 				throw std::runtime_error("The WAV chunk header is truncated.");
@@ -129,12 +134,14 @@ bool WaveReader::Decode(std::span<const std::uint8_t> bytes, WaveData &data,
 
 			const auto length = Read32(bytes, offset + 4);
 			const std::uint64_t padded = std::uint64_t(length) + (length & 1u);
+
 			if (padded > bytes.size() - offset - 8) {
 				throw std::runtime_error(
 				    "The WAV chunk or its alignment byte exceeds RIFF.");
 			}
 
 			const auto chunk = bytes.subspan(offset + 8, length);
+
 			if (HasId(bytes, offset, "fmt ")) {
 				if (foundFormat)
 					throw std::runtime_error(
@@ -160,6 +167,7 @@ bool WaveReader::Decode(std::span<const std::uint8_t> bytes, WaveData &data,
 		WaveData next;
 		ReadFormat(format, next);
 		next.samples.assign(samples.begin(), samples.end());
+
 		if (!next.IsValid()) {
 			throw std::runtime_error("The WAV samples contain incomplete "
 			                         "frames or non-finite float values.");
@@ -176,6 +184,7 @@ bool WaveReader::Decode(std::span<const std::uint8_t> bytes, WaveData &data,
 bool WaveReader::Load(const std::filesystem::path &path, WaveData &data,
                       std::string &error) {
 	error.clear();
+
 	try {
 		if (path.empty() || !PathUtils::HasExtension(path, ".wav")) {
 			throw std::runtime_error("Choose a WAV audio file.");
@@ -184,6 +193,7 @@ bool WaveReader::Load(const std::filesystem::path &path, WaveData &data,
 		const auto resolved = PathUtils::ResolveFromExecutable(path);
 		std::ifstream file(resolved, std::ios::binary | std::ios::ate);
 		const auto size = file.tellg();
+
 		if (!file || size < 12 ||
 		    size > static_cast<std::streamoff>(WaveData::kMaximumBytes)) {
 			throw std::runtime_error(
@@ -192,6 +202,7 @@ bool WaveReader::Load(const std::filesystem::path &path, WaveData &data,
 
 		std::vector<std::uint8_t> bytes(static_cast<std::size_t>(size));
 		file.seekg(0);
+
 		if (!file.read(reinterpret_cast<char *>(bytes.data()),
 		               static_cast<std::streamsize>(bytes.size()))) {
 			throw std::runtime_error(

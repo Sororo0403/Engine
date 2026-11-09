@@ -18,6 +18,7 @@ template <std::size_t N> std::array<float, N> ReadArray(const Json &value) {
 	if (!value.is_array() || value.size() != N)
 		throw std::runtime_error("UI array dimensions are invalid.");
 	std::array<float, N> result;
+
 	for (std::size_t i = 0; i < N; ++i) {
 		if (!value.at(i).is_number())
 			throw std::runtime_error("UI array needs numbers.");
@@ -25,6 +26,7 @@ template <std::size_t N> std::array<float, N> ReadArray(const Json &value) {
 		if (!std::isfinite(result[i]))
 			throw std::runtime_error("UI number is not finite.");
 	}
+
 	return result;
 }
 
@@ -66,6 +68,7 @@ const std::array<const char *, 4> kFillOrigins{"left", "right", "top",
 
 void SceneUISerializer::Write(nlohmann::json &item, const SceneObject &object) {
 	Validate(object);
+
 	if (object.canvas) {
 		const auto &c = *object.canvas;
 		item["canvas"] = {{"enabled", c.enabled},
@@ -74,6 +77,7 @@ void SceneUISerializer::Write(nlohmann::json &item, const SceneObject &object) {
 		                  {"matchWidthOrHeight", c.matchWidthOrHeight},
 		                  {"sortOrder", c.sortOrder}};
 	}
+
 	if (object.rectTransform) {
 		const auto &r = *object.rectTransform;
 		item["rectTransform"] = {{"anchorMin", r.anchorMin},
@@ -82,6 +86,7 @@ void SceneUISerializer::Write(nlohmann::json &item, const SceneObject &object) {
 		                         {"position", r.position},
 		                         {"sizeDelta", r.sizeDelta}};
 	}
+
 	if (object.text) {
 		const auto &t = *object.text;
 		item["text"] = {
@@ -96,6 +101,7 @@ void SceneUISerializer::Write(nlohmann::json &item, const SceneObject &object) {
 		     kVertical[static_cast<std::size_t>(t.verticalAlignment)]},
 		    {"color", t.color}};
 	}
+
 	if (object.image) {
 		const auto &i = *object.image;
 		item["image"] = {{"enabled", i.enabled},
@@ -107,6 +113,7 @@ void SceneUISerializer::Write(nlohmann::json &item, const SceneObject &object) {
 		                  kFillOrigins[static_cast<std::size_t>(i.fillOrigin)]},
 		                 {"fillAmount", i.fillAmount}};
 	}
+
 	if (object.button) {
 		const auto &b = *object.button;
 		item["button"] = {{"enabled", b.enabled},
@@ -138,6 +145,7 @@ void SceneUISerializer::Read(const nlohmann::json &item, SceneObject &object,
 		c.sortOrder = v.at("sortOrder").get<int>();
 		object.canvas = c;
 	}
+
 	if (item.contains("rectTransform")) {
 		const auto &v = item.at("rectTransform");
 		RectTransformComponent r;
@@ -148,6 +156,7 @@ void SceneUISerializer::Read(const nlohmann::json &item, SceneObject &object,
 		r.sizeDelta = ReadArray<2>(v.at("sizeDelta"));
 		object.rectTransform = r;
 	}
+
 	if (item.contains("text")) {
 		const auto &v = item.at("text");
 		TextComponent t;
@@ -167,6 +176,7 @@ void SceneUISerializer::Read(const nlohmann::json &item, SceneObject &object,
 		t.color = ReadArray<4>(v.at("color"));
 		object.text = std::move(t);
 	}
+
 	if (item.contains("image")) {
 		const auto &v = item.at("image");
 		ImageComponent i;
@@ -176,6 +186,7 @@ void SceneUISerializer::Read(const nlohmann::json &item, SceneObject &object,
 		i.texture = PathUtils::FromUtf8(v.at("texture").get<std::string>());
 		i.color = ReadArray<4>(v.at("color"));
 		i.preserveAspect = v.at("preserveAspect").get<bool>();
+
 		if (version >= 55) {
 			i.fillOrigin = static_cast<ImageComponent::FillOrigin>(
 			    Choice(v.at("fillOrigin"), kFillOrigins));
@@ -183,8 +194,10 @@ void SceneUISerializer::Read(const nlohmann::json &item, SceneObject &object,
 				throw std::runtime_error("UI image fill needs a number.");
 			i.fillAmount = v.at("fillAmount").get<float>();
 		}
+
 		object.image = std::move(i);
 	}
+
 	if (version >= 31 && item.contains("button")) {
 		const auto &v = item.at("button");
 		ButtonComponent b;
@@ -197,5 +210,6 @@ void SceneUISerializer::Read(const nlohmann::json &item, SceneObject &object,
 		b.disabledColor = ReadArray<4>(v.at("disabledColor"));
 		object.button = b;
 	}
+
 	Validate(object);
 }

@@ -177,6 +177,7 @@ bool AssetDatabase::Refresh() {
 bool AssetDatabase::SetRootDirectory(std::filesystem::path rootDirectory) {
 	try {
 		AssetDatabase candidate(std::move(rootDirectory));
+
 		if (!candidate.Refresh()) {
 			error_ = candidate.GetError();
 			return false;

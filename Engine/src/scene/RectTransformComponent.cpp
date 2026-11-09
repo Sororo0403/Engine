@@ -10,5 +10,6 @@ bool RectTransformComponent::IsValid() const {
 		    !std::isfinite(sizeDelta[i]) || std::abs(sizeDelta[i]) > 100000)
 			return false;
 	}
+
 	return true;
 }

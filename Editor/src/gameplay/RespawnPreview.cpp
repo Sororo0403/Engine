@@ -29,6 +29,7 @@ bool GetRespawnPose(const Scene &scene, SceneObjectId id,
 		world.matrix._42 = position.y;
 		world.matrix._43 = position.z;
 	}
+
 	return true;
 }
 } // namespace
@@ -44,9 +45,11 @@ bool RespawnPreview::BuildGeometry(const Scene &scene, SceneObjectId id,
 
 	const auto &settings = *object->respawn;
 	SceneWorldTransform pose;
+
 	if (GetRespawnPose(scene, id, pose)) {
 		ColliderBounds bounds;
 		std::vector<DebugLine> outline;
+
 		if (object->collider->shape == Collider::Shape::BOX) {
 			AxisAlignedBox body;
 			ColliderBounds::Lines boxOutline;
@@ -57,6 +60,7 @@ bool RespawnPreview::BuildGeometry(const Scene &scene, SceneObjectId id,
 		} else {
 			bounds.BuildLines(*object->collider, pose.matrix, outline);
 		}
+
 		if (!outline.empty())
 			result.collider = std::move(outline);
 
@@ -104,6 +108,7 @@ bool RespawnPreview::BuildLines(const Scene &scene, SceneObjectId id,
                                 Lines &lines) const {
 	const auto *object = scene.FindObject(id);
 	SceneWorldTransform world;
+
 	if (!object || !object->respawn || !object->respawn->IsValid() ||
 	    !SceneHierarchy::GetWorldTransform(scene, id, world)) {
 		return false;
@@ -175,6 +180,7 @@ bool RespawnPreview::GetFrameBounds(const Scene &scene, SceneObjectId id,
                                     std::array<DirectX::XMFLOAT3, 8> &corners) {
 	const auto *object = scene.FindObject(id);
 	SceneWorldTransform world;
+
 	if (!object || !object->respawn || !object->respawn->IsValid() ||
 	    !SceneHierarchy::GetWorldTransform(scene, id, world)) {
 		return false;
@@ -256,6 +262,7 @@ bool RespawnPreview::FindBlockingObjects(const Scene &scene, SceneObjectId id,
                                          std::vector<SceneObjectId> &objects) {
 	SceneWorldTransform pose;
 	std::vector<SceneObjectId> result, ignored;
+
 	if (!GetRespawnPose(scene, id, pose) ||
 	    !SceneHierarchy::GetSubtree(scene, id, ignored) ||
 	    !CollisionWorld::FindOverlaps(scene, *scene.FindObject(id)->collider,

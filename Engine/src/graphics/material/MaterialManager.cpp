@@ -54,6 +54,7 @@ MaterialHandle
 MaterialManager::LoadTextureFile(const std::filesystem::path &path,
                                  bool reload) {
 	Impl::Entry *previous = nullptr;
+
 	try {
 		if ((reload && path.empty()) ||
 		    (!path.empty() &&

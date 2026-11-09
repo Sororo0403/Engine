@@ -15,6 +15,7 @@ bool Model::CreateAnimationMeshes(ID3D12Device *device) {
 	if (!animation_)
 		return true;
 	animationParts_.resize(animation_->meshes.size());
+
 	for (std::size_t i = 0; i < animationParts_.size(); ++i) {
 		auto &part = animationParts_[i];
 		const auto &source = animation_->meshes[i];
@@ -32,6 +33,7 @@ bool Model::CreateAnimationMeshes(ID3D12Device *device) {
 		const auto extend = [&](std::size_t group,
 		                        const DirectX::XMFLOAT3 &point) {
 			DirectX::BoundingBox box{point, {0, 0, 0}};
+
 			if (part.bounds[group]) {
 				DirectX::BoundingBox merged;
 				DirectX::BoundingBox::CreateMerged(merged, *part.bounds[group],
@@ -40,6 +42,7 @@ bool Model::CreateAnimationMeshes(ID3D12Device *device) {
 			} else
 				part.bounds[group] = box;
 		};
+
 		for (std::size_t v = 0; v < source.mesh.vertices.size(); ++v) {
 			bool weighted = false;
 			for (std::size_t w = 0; w < ModelVertexWeights::kMaximumInfluences;
@@ -53,6 +56,7 @@ bool Model::CreateAnimationMeshes(ID3D12Device *device) {
 				extend(source.bones.size(), source.mesh.vertices[v].position);
 		}
 	}
+
 	return true;
 }
 
@@ -74,6 +78,7 @@ bool Model::GetAnimationBounds(
 	using namespace DirectX;
 	XMFLOAT3 low{FLT_MAX, FLT_MAX, FLT_MAX}, high{-FLT_MAX, -FLT_MAX, -FLT_MAX};
 	bool found = false;
+
 	for (std::size_t i = 0; i < animationParts_.size(); ++i) {
 		const auto &part = animationParts_[i];
 		const auto &source = animation_->meshes[i];
@@ -90,6 +95,7 @@ bool Model::GetAnimationBounds(
 				continue;
 			std::array<XMFLOAT3, 8> points;
 			part.bounds[group]->GetCorners(points.data());
+
 			for (auto point : points) {
 				XMStoreFloat3(&point,
 				              XMVector3TransformCoord(XMLoadFloat3(&point),
@@ -106,6 +112,7 @@ bool Model::GetAnimationBounds(
 			}
 		}
 	}
+
 	if (!found)
 		return false;
 	// 正規化した重みの許容誤差と、CPU・GPUの浮動小数点の丸めを含める。
@@ -157,6 +164,7 @@ bool Model::RaycastAnimation(const ModelAnimationPose &pose, const Ray &ray,
 			return false;
 		float nearest = ray.maxDistance;
 		bool hit = false;
+
 		for (std::size_t i = 0; i < animation_->meshes.size(); ++i) {
 			MeshData mesh;
 			if (!sampler.Deform(i, pose, mesh, error))
@@ -175,6 +183,7 @@ bool Model::RaycastAnimation(const ModelAnimationPose &pose, const Ray &ray,
 				}
 			}
 		}
+
 		if (hit)
 			distance = nearest;
 		return hit;

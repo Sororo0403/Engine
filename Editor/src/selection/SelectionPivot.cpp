@@ -20,6 +20,7 @@ bool SelectionPivot::Make(const Scene &scene, const EditorSelection &selection,
 
 	for (const auto id : selection.GetIds()) {
 		SceneWorldTransform world;
+
 		if (!SceneHierarchy::GetWorldTransform(scene, id, world)) {
 			return false;
 		}

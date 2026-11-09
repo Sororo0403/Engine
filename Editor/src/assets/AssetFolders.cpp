@@ -13,9 +13,11 @@ AssetFolders::MakeReference(const std::filesystem::path &assetRoot,
 		throw std::invalid_argument("Choose valid asset references.");
 	}
 	const auto target = absolutePath.lexically_normal();
+
 	if (assetRoot.is_absolute()) {
 		return target;
 	}
+
 	const auto relative =
 	    target.lexically_relative(PathUtils::GetExecutableDirectory());
 	return relative.empty() ? target : relative;
@@ -40,6 +42,7 @@ AssetFolders::Resolve(const std::filesystem::path &assetRoot,
 	const auto root =
 	    std::filesystem::canonical(PathUtils::ResolveFromExecutable(assetRoot));
 	const auto resolved = std::filesystem::canonical(root / folder);
+
 	if (!std::filesystem::is_directory(root) ||
 	    !std::filesystem::is_directory(resolved)) {
 		throw std::invalid_argument("The Assets folder does not exist.");

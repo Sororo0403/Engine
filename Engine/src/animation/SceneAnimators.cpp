@@ -22,10 +22,12 @@ bool SceneAnimators::Apply(State &state, std::string &error) {
 		state.pose.reset();
 		return true;
 	}
+
 	if (state.fadeSource && state.fadeElapsed == 0) {
 		state.pose = state.fadeSource;
 		return true;
 	}
+
 	const float weight =
 	    state.fadeSource
 	        ? static_cast<float>(state.fadeElapsed / state.fadeDuration)
@@ -44,15 +46,18 @@ bool SceneAnimators::Configure(
     std::span<const std::shared_ptr<const Scene>> prefabs, bool allowLoad) {
 	error.clear();
 	SceneObjectId current = 0;
+
 	try {
 		auto models = preserve ? models_ : decltype(models_){};
 		std::map<SceneObjectId, State> next;
 		std::size_t totalVertices = 0, totalKeys = 0;
+
 		for (const auto &[path, resource] : models) {
 			(void)path;
 			totalVertices += resource->vertices;
 			totalKeys += resource->keys;
 		}
+
 		const auto resourceFor = [&](const SceneObject &object) {
 			if (!object.HasMesh())
 				throw std::runtime_error(
@@ -76,6 +81,7 @@ bool SceneAnimators::Configure(
 				if (ModelLoader::Load(path, model))
 					resource->data = std::move(model.animation);
 			}
+
 			if (!resource->data || resource->data->clips.empty())
 				throw std::runtime_error(
 				    error.empty()
@@ -140,15 +146,19 @@ bool SceneAnimators::Configure(
 				state.loop = settings.loop;
 				state.playing = state.pendingStart = settings.playOnStart;
 			}
+
 			if (state.pendingStart && active.at(id)) {
 				state.pendingStart = false;
 				state.applied = true;
 				if (!Apply(state, error))
 					throw std::runtime_error(error);
 			}
+
 			next.emplace(id, std::move(state));
 		}
+
 		current = 0;
+
 		for (const auto &prefab : prefabs) {
 			if (!prefab)
 				throw std::runtime_error("Animator Prefab data is missing.");
@@ -164,6 +174,7 @@ bool SceneAnimators::Configure(
 				(void)clipFor(*resource, object.animator->clip);
 			}
 		}
+
 		models_ = std::move(models);
 		states_ = std::move(next);
 		error.clear();
@@ -187,6 +198,7 @@ bool SceneAnimators::Advance(const Scene &scene, float seconds,
 			error.clear();
 			return true;
 		}
+
 		SceneActivity::States active;
 		if (!SceneActivity::BuildStates(scene, active))
 			throw std::runtime_error("Animator hierarchy is invalid.");
@@ -201,11 +213,13 @@ bool SceneAnimators::Advance(const Scene &scene, float seconds,
 			const double duration =
 			    state.resource->data->clips[state.clip].duration;
 			const double step = (std::min)(seconds, .1f);
+
 			if (state.fadeSource) {
 				state.fadeElapsed += step;
 				if (state.fadeElapsed >= state.fadeDuration)
 					state.fadeSource.reset();
 			}
+
 			state.cursor += step * state.speed;
 			if (state.loop)
 				state.cursor = std::fmod(state.cursor, duration);
@@ -213,9 +227,11 @@ bool SceneAnimators::Advance(const Scene &scene, float seconds,
 				state.cursor = duration;
 				state.playing = bool(state.fadeSource);
 			}
+
 			if (!Apply(state, error))
 				throw std::runtime_error(error);
 		}
+
 		error.clear();
 		return true;
 	} catch (const std::exception &e) {
@@ -250,6 +266,7 @@ bool SceneAnimators::Control(const Scene &scene, SceneObjectId id,
 			if (!AnimatorComponent::IsValidClip(clip))
 				throw std::runtime_error("Animator clip name is invalid.");
 			std::size_t index = state.clip;
+
 			if (!clip.empty()) {
 				const auto &clips = state.resource->data->clips;
 				index = 0;
@@ -258,8 +275,10 @@ bool SceneAnimators::Control(const Scene &scene, SceneObjectId id,
 				if (index == clips.size())
 					throw std::runtime_error("Animator clip was not found.");
 			}
+
 			if (fade && number > 0 && (index != state.clip || !state.applied)) {
 				state.fadeSource = state.pose;
+
 				if (!state.fadeSource) {
 					auto bind = std::make_shared<ModelAnimationPose>();
 					if (!state.resource->sampler.Sample(std::nullopt, 0, false,
@@ -267,6 +286,7 @@ bool SceneAnimators::Control(const Scene &scene, SceneObjectId id,
 						return false;
 					state.fadeSource = std::move(bind);
 				}
+
 				state.fadeElapsed = 0;
 				state.fadeDuration = number;
 			} else if ((!fade && (flag || index != state.clip)) ||
@@ -338,12 +358,14 @@ bool SceneAnimators::Snapshot(const Scene &scene,
 		if (!SceneActivity::BuildStates(scene, active))
 			throw std::runtime_error("Animator hierarchy is invalid.");
 		std::vector<AnimatorDrawPose> next;
+
 		for (const auto &[id, state] : states_) {
 			if (!scene.Contains(id))
 				throw std::runtime_error("Animator object is missing.");
 			if (active.at(id) && state.applied && state.pose)
 				next.push_back({id, state.resource->data, state.pose});
 		}
+
 		poses = std::move(next);
 		error.clear();
 		return true;

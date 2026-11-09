@@ -55,6 +55,7 @@ bool MotionPathInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		changed |= history.SetMotionPath(id, edited);
 	ui.Text("Point 0: 0, 0, 0");
 	std::size_t remove = edited.points.size();
+
 	for (std::size_t i = 1; i < edited.points.size(); ++i) {
 		const auto label = std::format("Point {}", i);
 		apply(ImGui::DragFloat3(label.c_str(), edited.points[i].data(), .05f,
@@ -68,11 +69,13 @@ bool MotionPathInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		ImGui::EndDisabled();
 		ImGui::PopID();
 	}
+
 	if (remove < edited.points.size()) {
 		edited.points.erase(edited.points.begin() +
 		                    static_cast<std::ptrdiff_t>(remove));
 		changed |= history.SetMotionPath(id, edited);
 	}
+
 	ImGui::BeginDisabled(edited.points.size() >=
 	                     MotionPathComponent::kMaximumPoints);
 	if (ImGui::Button("Add Path Point")) {
@@ -82,6 +85,7 @@ bool MotionPathInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		edited.points.push_back(point);
 		changed |= history.SetMotionPath(id, edited);
 	}
+
 	ImGui::EndDisabled();
 	if (ImGui::Button("Reset Motion Path"))
 		changed |= history.SetMotionPath(id, MotionPathComponent{});

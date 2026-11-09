@@ -32,6 +32,7 @@ void RequireKeys(const std::vector<Key> &keys, double duration,
 		throw std::runtime_error("Model animation key limit exceeded.");
 	total += keys.size();
 	double prior = -1;
+
 	for (const auto &key : keys) {
 		if (!std::isfinite(key.seconds) || key.seconds < 0 ||
 		    key.seconds > duration || key.seconds <= prior ||
@@ -62,7 +63,9 @@ bool ModelAnimationData::IsValid(std::string &error) const {
 				throw std::runtime_error(
 				    "Animation bind transform is invalid.");
 		}
+
 		std::size_t vertices = 0, indices = 0;
+
 		for (const auto &part : meshes) {
 			if (part.node >= nodes.size() ||
 			    part.bones.size() > kMaximumBones ||
@@ -75,11 +78,13 @@ bool ModelAnimationData::IsValid(std::string &error) const {
 				    "Animated mesh count or references are invalid.");
 			vertices += part.mesh.vertices.size();
 			indices += part.mesh.indices.size();
+
 			for (const auto &bone : part.bones) {
 				if (bone.node >= nodes.size())
 					throw std::runtime_error("Animation bone node is missing.");
 				RequireMatrix(bone.inverseBind);
 			}
+
 			for (auto index : part.mesh.indices)
 				if (index >= part.mesh.vertices.size())
 					throw std::runtime_error(
@@ -110,8 +115,10 @@ bool ModelAnimationData::IsValid(std::string &error) const {
 					    "Animated vertex weights must sum to one.");
 			}
 		}
+
 		std::size_t total = 0;
 		std::set<std::string> names;
+
 		for (const auto &clip : clips) {
 			if (clip.name.empty() || !names.insert(clip.name).second ||
 			    !std::isfinite(clip.duration) || clip.duration <= 0 ||
@@ -120,6 +127,7 @@ bool ModelAnimationData::IsValid(std::string &error) const {
 				throw std::runtime_error(
 				    "Animation clip name, duration or tracks are invalid.");
 			std::set<std::uint32_t> tracked;
+
 			for (const auto &track : clip.tracks) {
 				if (track.node >= nodes.size() ||
 				    !nodes[track.node].hasBindTransform ||
@@ -135,6 +143,7 @@ bool ModelAnimationData::IsValid(std::string &error) const {
 				RequireKeys(track.positions, clip.duration, total);
 				RequireKeys(track.scales, clip.duration, total);
 				RequireKeys(track.rotations, clip.duration, total);
+
 				for (std::size_t i = 0; i < track.scales.size(); ++i) {
 					const auto &s = track.scales[i].value;
 					if (s.x == 0 || s.y == 0 || s.z == 0)
@@ -149,6 +158,7 @@ bool ModelAnimationData::IsValid(std::string &error) const {
 							    "Interpolated scale must not cross zero.");
 					}
 				}
+
 				for (const auto &key : track.rotations) {
 					const auto &q = key.value;
 					const double length = double(q.x) * q.x +
@@ -160,6 +170,7 @@ bool ModelAnimationData::IsValid(std::string &error) const {
 				}
 			}
 		}
+
 		error.clear();
 		return true;
 	} catch (const std::exception &e) {

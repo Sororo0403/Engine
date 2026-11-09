@@ -25,12 +25,14 @@ CameraSettings ReadProjection(const nlohmann::json &json) {
 	    !json.at("nearClip").is_number() || !json.at("farClip").is_number()) {
 		throw std::runtime_error("Sceneカメラの投影設定には数値が必要です。");
 	}
+
 	CameraSettings settings{json.at("verticalFovDegrees").get<float>(),
 	                        json.at("nearClip").get<float>(),
 	                        json.at("farClip").get<float>()};
 	if (!settings.IsValid()) {
 		throw std::runtime_error("Sceneカメラの投影設定が無効です。");
 	}
+
 	return settings;
 }
 
@@ -265,15 +267,19 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 
 			if (settings.contains("lighting") || settings.contains("actions")) {
 				std::string text, error;
+
 				if (!loaded.gameExport.Serialize(text, error)) {
 					throw std::runtime_error(error);
 				}
+
 				auto configuration = nlohmann::json::parse(text);
+
 				if (settings.contains("lighting")) {
 					configuration["lighting"] = settings.at("lighting");
 					if (!settings.at("lighting").contains("shadows"))
 						configuration["version"] = 7;
 				}
+
 				if (settings.contains("actions")) {
 					auto &actions = configuration["actions"];
 					actions = settings.at("actions");
@@ -285,6 +291,7 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 								action["gamepadAxis"] = nullptr;
 					}
 				}
+
 				if (!loaded.gameExport.Deserialize(configuration.dump(),
 				                                   error)) {
 					throw std::runtime_error(error);
@@ -299,14 +306,17 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 
 		if (json.contains("assetDirectories")) {
 			const auto &directories = json.at("assetDirectories");
+
 			if (!directories.is_array()) {
 				throw std::runtime_error("素材の取得元には配列が必要です。");
 			}
+
 			for (const auto &directory : directories) {
 				loaded.assets.Register(
 				    PathUtils::FromUtf8(directory.get<std::string>()));
 			}
 		}
+
 		if (json.contains("assetDirectory")) {
 			loaded.assets.Select(PathUtils::FromUtf8(
 			    json.at("assetDirectory").get<std::string>()));
@@ -314,19 +324,25 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 
 		if (json.contains("cameraBookmarks")) {
 			const auto &bookmarks = json.at("cameraBookmarks");
+
 			if (!bookmarks.is_array() ||
 			    bookmarks.size() != EditorCameraBookmarks::kSlotCount) {
 				throw std::runtime_error("カメラのブックマーク数が無効です。");
 			}
+
 			for (std::size_t i = 0; i < bookmarks.size(); ++i) {
 				const auto &bookmark = bookmarks[i];
+
 				if (bookmark.is_null()) {
 					continue;
 				}
+
 				std::optional<CameraSettings> projection;
+
 				if (bookmark.contains("projection")) {
 					projection = ReadProjection(bookmark.at("projection"));
 				}
+
 				const auto &position = bookmark.at("position");
 				if (!position.is_array() || position.size() != 3 ||
 				    !position[0].is_number() || !position[1].is_number() ||
@@ -402,18 +418,22 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		}
 
 		auto assetDirectories = nlohmann::json::array();
+
 		for (const auto &directory : assets.GetDirectories()) {
 			assetDirectories.push_back(PathUtils::ToUtf8(directory));
 		}
 
 		std::string gameText, gameError;
+
 		if (!gameExport.Serialize(gameText, gameError)) {
 			throw std::runtime_error(gameError);
 		}
+
 		const auto gameJson = nlohmann::json::parse(gameText);
 		const auto lighting = gameJson.at("lighting");
 
 		auto bookmarks = nlohmann::json::array();
+
 		for (std::size_t i = 0; i < EditorCameraBookmarks::kSlotCount; ++i) {
 			if (const auto *bookmark = cameraBookmarks.Get(i)) {
 				nlohmann::json saved{
@@ -425,6 +445,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 				if (const auto *projection = cameraBookmarks.GetProjection(i)) {
 					saved["projection"] = ProjectionJson(*projection);
 				}
+
 				bookmarks.push_back(std::move(saved));
 			} else {
 				bookmarks.push_back(nullptr);

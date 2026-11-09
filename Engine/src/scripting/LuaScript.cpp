@@ -37,11 +37,13 @@ void *Allocate(void *data, void *pointer, std::size_t oldSize,
                std::size_t newSize) {
 	auto &memory = *static_cast<Memory *>(data);
 	const auto old = pointer ? oldSize : 0;
+
 	if (!newSize) {
 		std::free(pointer);
 		memory.used -= old;
 		return nullptr;
 	}
+
 	if (old > memory.used ||
 	    newSize > LuaScript::kMaximumVmBytes - (memory.used - old))
 		return nullptr;
@@ -60,11 +62,13 @@ void Instructions(lua_State *state, lua_Debug *debug) {
 	(void)debug;
 	auto &call = **static_cast<LuaInternal::Call **>(lua_getextraspace(state));
 	call.instructions += LuaScript::kHookInterval;
+
 	if (call.remainingInstructions) {
 		*call.remainingInstructions -= LuaScript::kHookInterval;
 		if (*call.remainingInstructions < 0)
 			luaL_error(state, "Script frame instruction limit exceeded.");
 	}
+
 	if (call.instructions > LuaScript::kMaximumInstructions)
 		luaL_error(state, "Script callback instruction limit exceeded.");
 }
@@ -93,6 +97,7 @@ int WriteProgram(lua_State *state, const void *data, std::size_t size,
                  void *context) {
 	(void)state;
 	auto &call = *static_cast<LuaInternal::Call *>(context);
+
 	try {
 		if (size > LuaScript::kMaximumBytecodeBytes - call.bytecode.size())
 			return 1;
@@ -130,12 +135,14 @@ int Invoke(lua_State *state) {
 	const int environment = LuaInternal::OpenEnvironment(state, call);
 	LuaInternal::PrepareState(state);
 	int sharedIndex = 0;
+
 	if (call.sharedInitial) {
 		LuaInternal::PushState(state, *call.sharedInitial);
 		sharedIndex = lua_gettop(state);
 		lua_pushvalue(state, sharedIndex);
 		lua_setfield(state, environment, "game");
 	}
+
 	if (luaL_loadbufferx(state, call.source.data(), call.source.size(),
 	                     call.name.c_str(), "b") != LUA_OK)
 		return lua_error(state);
@@ -160,10 +167,12 @@ int Invoke(lua_State *state) {
 			lua_pushlstring(state, call.error.data(), call.error.size());
 			return lua_error(state);
 		}
+
 		if (call.sharedResult != call.sharedInput)
 			return luaL_error(state, "Change shared game data inside "
 			                         "callbacks, not at module scope.");
 	}
+
 	LuaInternal::PushState(state, *call.initial);
 	const int initial = lua_gettop(state);
 	lua_getfield(state, module, call.callback);
@@ -176,6 +185,7 @@ int Invoke(lua_State *state) {
 	LuaInternal::PushObject(state, call.self);
 	lua_pushvalue(state, initial);
 	int arguments = 2;
+
 	if (std::strcmp(call.callback, "update") == 0) {
 		lua_pushnumber(state, call.seconds);
 		lua_createtable(state, 0, 8);
@@ -195,6 +205,7 @@ int Invoke(lua_State *state) {
 			lua_pushinteger(state, viewport->height);
 			lua_setfield(state, -2, "height");
 			lua_setfield(state, -2, "viewport");
+
 			if (viewport->enabled && viewport->pointerValid) {
 				lua_createtable(state, 0, 4);
 				lua_pushnumber(state, viewport->pointerX);
@@ -226,6 +237,7 @@ int Invoke(lua_State *state) {
 		}
 
 		lua_createtable(state, 0, static_cast<int>(call.actions.size()));
+
 		for (std::size_t i = 0; i < call.actions.size(); ++i) {
 			lua_pushlstring(state, call.actions[i].name.data(),
 			                call.actions[i].name.size());
@@ -240,6 +252,7 @@ int Invoke(lua_State *state) {
 			lua_setfield(state, -2, "released");
 			lua_rawset(state, -3);
 		}
+
 		lua_setfield(state, -2, "actions");
 		arguments = 4;
 	} else if (std::strcmp(call.callback, "message") == 0) {
@@ -261,6 +274,7 @@ int Invoke(lua_State *state) {
 		lua_pushlstring(state, call.error.data(), call.error.size());
 		return lua_error(state);
 	}
+
 	if (sharedIndex) {
 		lua_getfield(state, environment, "game");
 		if (!lua_rawequal(state, -1, sharedIndex))
@@ -268,12 +282,14 @@ int Invoke(lua_State *state) {
 			    state,
 			    "Modify game fields instead of replacing the shared table.");
 		lua_pop(state, 1);
+
 		if (!LuaInternal::ReadState(state, sharedIndex, call.sharedResult,
 		                            call.error)) {
 			lua_pushlstring(state, call.error.data(), call.error.size());
 			return lua_error(state);
 		}
 	}
+
 	return 0;
 }
 
@@ -292,6 +308,7 @@ bool Run(LuaInternal::Call &call, lua_CFunction function, std::string &error) {
 		error = "Script VM could not be allocated.";
 		return false;
 	}
+
 	call.error.reserve(1024);
 	*static_cast<LuaInternal::Call **>(lua_getextraspace(state.get())) = &call;
 	lua_sethook(state.get(), Instructions, LUA_MASKCOUNT,
@@ -300,12 +317,14 @@ bool Run(LuaInternal::Call &call, lua_CFunction function, std::string &error) {
 	const int handler = lua_gettop(state.get());
 	lua_pushcfunction(state.get(), function);
 	lua_pushlightuserdata(state.get(), &call);
+
 	if (lua_pcall(state.get(), 1, 0, handler) != LUA_OK) {
 		std::size_t size = 0;
 		const char *text = lua_tolstring(state.get(), -1, &size);
 		error = text ? std::string(text, size) : "Script execution failed.";
 		return false;
 	}
+
 	error.clear();
 	return true;
 }
@@ -451,6 +470,7 @@ bool LuaScript::Invoke(
 		    (remainingAnimatorOperations && *remainingAnimatorOperations < 0))
 			throw std::runtime_error("Script callback arguments are invalid.");
 		std::string messageNormalized;
+
 		if (callback == "message") {
 			if (!message || message->receiver != self ||
 			    message->name.empty() ||

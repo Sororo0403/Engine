@@ -38,6 +38,7 @@ bool ParticleEmitterInspector::Draw(
 			p.texture.clear();
 			changed |= history.SetParticleEmitter(id, p);
 		}
+
 		for (const auto &path : textures)
 			if (ui.Selectable(PathUtils::ToUtf8(path.filename()).c_str(),
 			                  !p.texture.empty() &&
@@ -47,12 +48,14 @@ bool ParticleEmitterInspector::Draw(
 			}
 		ImGui::EndCombo();
 	}
+
 	const auto dropped =
 	    AssetDragDrop::AcceptTarget(AssetDragDrop::Kind::TEXTURE);
 	if (!dropped.empty()) {
 		p.texture = dropped;
 		changed |= history.SetParticleEmitter(id, p);
 	}
+
 	if (ImGui::Checkbox("Play On Start", &p.playOnStart))
 		changed |= history.SetParticleEmitter(id, p);
 	if (ImGui::Checkbox("Loop", &p.loop))

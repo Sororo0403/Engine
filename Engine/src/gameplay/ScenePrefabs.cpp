@@ -35,6 +35,7 @@ struct ScenePrefabs::Data {
 bool ScenePrefabs::Configure(const Scene &scene, bool preserve,
                              std::string &error) {
 	std::filesystem::path current;
+
 	try {
 		auto next = preserve && data_ ? std::make_shared<Data>(*data_)
 		                              : std::make_shared<Data>();
@@ -60,13 +61,16 @@ bool ScenePrefabs::Configure(const Scene &scene, bool preserve,
 		};
 		collect(scene);
 		bool changed = !preserve || !data_;
+
 		for (std::size_t i = 0; i < pending.size(); ++i) {
 			current = pending[i];
 			const auto found = next->assets.find(current);
+
 			if (found != next->assets.end()) {
 				collect(*found->second);
 				continue;
 			}
+
 			if (next->assets.size() >= kMaximumAssets)
 				throw std::runtime_error("Prefab asset limit of 256 exceeded.");
 			const auto size = std::filesystem::file_size(current);
@@ -97,6 +101,7 @@ bool ScenePrefabs::Configure(const Scene &scene, bool preserve,
 			changed = true;
 			collect(*loaded);
 		}
+
 		if (changed)
 			data_ = std::move(next);
 		error.clear();

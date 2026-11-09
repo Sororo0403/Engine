@@ -18,6 +18,7 @@ bool PointLights::Update(std::span<const PointLightData> lights) {
 	                 [](const auto &light) { return light.IsValid(); })) {
 		return false;
 	}
+
 	Constants data;
 	data.count = static_cast<std::uint32_t>(lights.size());
 	std::copy(lights.begin(), lights.end(), data.lights.begin());

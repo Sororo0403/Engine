@@ -12,6 +12,7 @@ SceneObjectId Scene::CreateObject(std::string name,
                                   std::filesystem::path modelPath) {
 	SceneObject object;
 	object.name = std::move(name);
+
 	if (!modelPath.empty()) {
 		object.mesh = MeshComponent{std::move(modelPath)};
 		object.meshRenderer = MeshRendererComponent{};

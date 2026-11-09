@@ -51,6 +51,7 @@ bool SceneAudioPlayer::Synchronize(const SceneAudioFrame &frame, bool paused,
 	if (invalidObject)
 		*invalidObject = 0;
 	SceneObjectId current = 0;
+
 	try {
 		if (!restart && actionRevision_ &&
 		    actions.revision < *actionRevision_) {
@@ -61,24 +62,29 @@ bool SceneAudioPlayer::Synchronize(const SceneAudioFrame &frame, bool paused,
 		}
 
 		std::map<SceneObjectId, SceneAudioAction::Operation> requested;
+
 		if (restart || !actionRevision_ ||
 		    actions.revision != *actionRevision_) {
 			for (const auto &action : actions.commands) {
 				current = action.target;
 				const auto *target = scene_.FindObject(action.target);
+
 				if (!action.IsValid() || !target || !target->audioSource) {
 					error = "Scene audio actions require a valid operation and "
 					        "an existing Audio Source target.";
 					if (invalidObject) {
 						*invalidObject = current;
 					}
+
 					return false;
 				}
+
 				requested[action.target] = action.operation;
 			}
 		}
 
 		std::map<SceneObjectId, Entry> next;
+
 		for (const auto &source : frame.sources) {
 			current = source.id;
 			const auto old = entries_.find(source.id);
@@ -96,6 +102,7 @@ bool SceneAudioPlayer::Synchronize(const SceneAudioFrame &frame, bool paused,
 			entry.component = source.component;
 			entry.playback = source.playback;
 			entry.clip = clips_.Load(source.component.clipPath, error);
+
 			if (!entry.clip) {
 				if (invalidObject)
 					*invalidObject = current;
@@ -135,8 +142,10 @@ bool SceneAudioPlayer::Synchronize(const SceneAudioFrame &frame, bool paused,
 		const bool deviceChanged =
 		    deviceRevision_ != audio_.GetDeviceRevision();
 		std::vector<AudioEmitterChange> changes;
+
 		for (const auto &source : frame.sources) {
 			auto &entry = entries_.at(source.id);
+
 			if (!audio_.IsAvailable()) {
 				if (entry.handle) {
 					audio_.Stop(entry.handle);
@@ -169,10 +178,12 @@ bool SceneAudioPlayer::Synchronize(const SceneAudioFrame &frame, bool paused,
 		for (const auto &source : frame.sources) {
 			current = source.id;
 			auto &entry = entries_.at(source.id);
+
 			if (entry.pending && audio_.IsAvailable()) {
 				auto settings = source.playback;
 				settings.startPaused = paused;
 				entry.handle = audio_.Play(entry.clip, settings, error);
+
 				if (!entry.handle) {
 					if (invalidObject)
 						*invalidObject = current;
@@ -246,11 +257,13 @@ std::uint64_t SceneAudioPlayer::GetPlayedFrames(SceneObjectId id) const {
 bool SceneAudioPlayer::PlaySource(SceneObjectId id, std::string &error) {
 	error.clear();
 	auto found = entries_.find(id);
+
 	if (!started_ || found == entries_.end()) {
 		error = "Choose an active configured Audio Source after starting scene "
 		        "audio.";
 		return false;
 	}
+
 	auto &entry = found->second;
 	audio_.Stop(entry.handle);
 	entry.handle = {};
@@ -260,10 +273,12 @@ bool SceneAudioPlayer::PlaySource(SceneObjectId id, std::string &error) {
 	auto settings = entry.playback;
 	settings.startPaused = paused_;
 	entry.handle = audio_.Play(entry.clip, settings, error);
+
 	if (!entry.handle) {
 		entry.pending = false;
 		return false;
 	}
+
 	entry.pending = false;
 	return true;
 }

@@ -260,6 +260,7 @@ struct OutputDirectory::Impl {
 
 	HANDLE OpenNewFile(const fs::path &relative) {
 		const auto normalized = relative.lexically_normal();
+
 		if (normalized.empty() || normalized.has_root_path() ||
 		    !normalized.has_filename()) {
 			throw std::invalid_argument("Use a relative output file path.");

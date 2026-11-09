@@ -92,9 +92,11 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 						if (!error.empty())
 							entry->second.push_back(std::move(error));
 					}
+
 					add("Load Scene", entry->second);
 					continue;
 				}
+
 				add("Load Scene",
 				    inspect(action.scenePath, scenes, [](const auto &path) {
 					    Scene target;
@@ -164,6 +166,7 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 				        PathUtils::ResolveFromExecutable(path)};
 			    }));
 		}
+
 		if (object.audioSource && !object.audioSource->clipPath.empty()) {
 			const bool spatial = object.audioSource->spatial;
 			add("Audio Source",

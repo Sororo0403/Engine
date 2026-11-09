@@ -28,6 +28,7 @@ bool RigidBodyInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 			object.rigidBody = value;
 			changed = true;
 		}
+
 		if (ImGui::IsItemDeactivated() && !ImGui::IsAnyItemActive())
 			history.CommitEdit();
 	};

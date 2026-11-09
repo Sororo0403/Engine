@@ -31,10 +31,12 @@ float ShadowVisibility(float3 position, float3 normal) {
 	float3 dy = ddy(float3(uv, p.z));
 	float determinant = dx.x * dy.y - dx.y * dy.x;
 	float2 gradient = float2(0.0f, 0.0f);
+
 	if (abs(determinant) > 0.0000000001f) {
 		gradient = float2(dx.z * dy.y - dy.z * dx.y,
 		                  dx.x * dy.z - dy.x * dx.z) / determinant;
 	}
+
 	float filterBias = 0.5f * shadowTexelSize * (abs(gradient.x) + abs(gradient.y));
 
 	if (p.z <= 0.0f || p.z >= 1.0f || any(abs(p.xy) >= 1.0f)) {
@@ -120,6 +122,7 @@ float4 PSMain(VertexOutput input) : SV_Target0 {
 			float3 offset = pointLights[i].position - input.worldPosition;
 			float distanceSquared = dot(offset, offset);
 			float distance = sqrt(distanceSquared);
+
 			if (distance > 0.0f && distance < pointLights[i].range) {
 				float attenuation = 1.0f - distance / pointLights[i].range;
 				float3 direction = offset / distance;
@@ -128,9 +131,11 @@ float4 PSMain(VertexOutput input) : SV_Target0 {
 				            pointDiffuse * attenuation * attenuation;
 			}
 		}
+
 		for (uint j = 0; j < spotLightCount; ++j) {
 			float3 offset = spotLights[j].position - input.worldPosition;
 			float distance = length(offset);
+
 			if (distance > 0.0f && distance < spotLights[j].range) {
 				float3 toSpot = offset / distance;
 				float cosine = dot(-toSpot, spotLights[j].direction);
@@ -143,6 +148,7 @@ float4 PSMain(VertexOutput input) : SV_Target0 {
 					                   (spotLights[j].cosInner - spotLights[j].cosOuter));
 					cone = t * t * (3.0f - 2.0f * t);
 				}
+
 				float attenuation = 1.0f - distance / spotLights[j].range;
 				float spotDiffuse = saturate(dot(normal, toSpot));
 				lighting += spotLights[j].color * spotLights[j].intensity *

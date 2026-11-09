@@ -26,6 +26,7 @@ bool Collider::IsValid() const {
 		       std::isfinite(halfHeight) && halfHeight > 0 &&
 		       std::isfinite(radius + halfHeight);
 	}
+
 	return false;
 }
 
@@ -38,6 +39,7 @@ DirectX::XMFLOAT3 Collider::GetHalfExtents() const {
 	case Shape::CAPSULE:
 		return {radius, radius + halfHeight, radius};
 	}
+
 	return {};
 }
 

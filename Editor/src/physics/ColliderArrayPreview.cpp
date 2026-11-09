@@ -25,6 +25,7 @@ bool ColliderArrayPreview::BuildBounds(
 	}
 
 	SceneHierarchy::WorldTransforms original;
+
 	if (!SceneHierarchy::BuildWorldTransforms(scene, original)) {
 		return false;
 	}
@@ -39,6 +40,7 @@ bool ColliderArrayPreview::BuildBounds(
 		Scene working;
 		working.ReplaceObjects(scene.GetObjects());
 		std::map<SceneObjectId, DirectX::XMFLOAT3> positions;
+
 		for (const auto id : roots) {
 			const auto position = original.at(id).GetPosition();
 			positions.emplace(id, settings.GetPosition(position, copy));
@@ -50,11 +52,13 @@ bool ColliderArrayPreview::BuildBounds(
 
 		for (const auto id : expanded) {
 			const auto &object = *working.FindObject(id);
+
 			if (!object.collider) {
 				continue;
 			}
 
 			AxisAlignedBox box;
+
 			if (!ColliderUtils::GetWorldBounds(*object.collider, working, id,
 			                                   box)) {
 				return false;

@@ -24,6 +24,7 @@ void SkinVertex(SkinnedVertexInput input, out float3 position, out float3 normal
 	[unroll] for (uint i = 0; i < 8; ++i) {
 		uint bone = i < 4 ? input.bones0[i] : input.bones1[i - 4];
 		float weight = i < 4 ? input.weights0[i] : input.weights1[i - 4];
+
 		if (weight > 0 && bone < skinBoneCount) {
 			position += mul(float4(input.position, 1), skinTransforms[bone]).xyz * weight;
 			normal += mul(input.normal, (float3x3)skinNormals[bone]) * weight;
@@ -34,5 +35,6 @@ void SkinVertex(SkinnedVertexInput input, out float3 position, out float3 normal
 		position = mul(float4(input.position, 1), skinTransforms[skinBoneCount]).xyz;
 		normal = mul(input.normal, (float3x3)skinNormals[skinBoneCount]);
 	}
+
 	normal /= sqrt(max(dot(normal, normal), 1.0e-20f));
 }

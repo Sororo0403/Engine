@@ -58,6 +58,7 @@ bool ModelImporter::Import(const ModelImportOptions &options,
                            std::filesystem::path &imported,
                            std::string &error) {
 	OutputDirectory output;
+
 	try {
 		if (!PathUtils::IsModelFile(options.source) ||
 		    options.source.native().find(L'\0') != std::wstring::npos ||
@@ -94,6 +95,7 @@ bool ModelImporter::Import(const ModelImportOptions &options,
 		}
 
 		std::map<std::filesystem::path, std::filesystem::path, PathLess> plan;
+
 		for (const auto &file : AssetDependencies::ModelFiles(source)) {
 			const auto relative = RelativeFile(sourceRoot, file);
 			const auto canonical = std::filesystem::canonical(file);
@@ -110,6 +112,7 @@ bool ModelImporter::Import(const ModelImportOptions &options,
 		    options.assetRoot, destination / modelRelative);
 
 		output.Create(destination);
+
 		for (const auto &[relative, file] : plan) {
 			output.Copy(file, relative);
 		}

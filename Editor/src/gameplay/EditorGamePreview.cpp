@@ -14,10 +14,12 @@ bool EditorGamePreview::Prepare(const Scene &source, const CameraPose &fallback,
 	try {
 		Scene resolved;
 		std::string error;
+
 		if (!SceneCameraUtils::ResolveInitialScene(source, resolved, error)) {
 			Reset();
 			return false;
 		}
+
 		const auto &objects = resolved.GetObjects();
 		CameraPose pose = fallback;
 		CameraSettings settings;
@@ -37,10 +39,12 @@ bool EditorGamePreview::Prepare(const Scene &source, const CameraPose &fallback,
 
 			primary = true;
 			SceneWorldTransform transform;
+
 			if (!SceneHierarchy::GetWorldTransform(resolved, id, transform)) {
 				Reset();
 				return false;
 			}
+
 			pose = SceneCameraUtils::FromWorldTransform(transform);
 			settings = object.camera->settings;
 		}
@@ -57,11 +61,13 @@ bool EditorGamePreview::Prepare(const Scene &source, const CameraPose &fallback,
 			}
 
 			SceneWorldTransform transform;
+
 			if (!SceneHierarchy::GetWorldTransform(resolved, cameraOverride,
 			                                       transform)) {
 				Reset();
 				return false;
 			}
+
 			pose = SceneCameraUtils::FromWorldTransform(transform);
 			settings = found->second.camera->settings;
 		}

@@ -15,5 +15,6 @@ bool GameActionState::IsValid(std::span<const GameActionState> states) {
 				return false;
 		}
 	}
+
 	return true;
 }

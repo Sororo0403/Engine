@@ -59,9 +59,11 @@ bool WorldCollider::Create(const Collider &collider,
 		    JPH::Vec3{world._21, world._22, world._23},
 		    JPH::Vec3{world._31, world._32, world._33}};
 		JPH::ShapeSettings::ShapeResult created;
+
 		if (collider.shape == Collider::Shape::BOX) {
 			const auto &h = collider.halfExtents;
 			std::array<JPH::Vec3, 8> points;
+
 			for (unsigned i = 0; i < 8; ++i) {
 				points[i] = basis[0] * ((i & 1) ? h.x : -h.x) +
 				            basis[1] * ((i & 2) ? h.y : -h.y) +
@@ -100,6 +102,7 @@ bool WorldCollider::Create(const Collider &collider,
 						throw std::runtime_error(
 						    "Sphere and Capsule do not support shear.");
 			}
+
 			const float radius = collider.radius * scale;
 			const float height = collider.halfHeight * scale;
 			if (!std::isfinite(radius) || radius < kMinimumExtent ||
@@ -117,6 +120,7 @@ bool WorldCollider::Create(const Collider &collider,
 				                                    basis[1] / lengths[1]);
 			}
 		}
+
 		if (created.HasError())
 			throw std::runtime_error(created.GetError().c_str());
 		next->shape = created.Get();
@@ -209,6 +213,7 @@ bool WorldCollider::DepthAt(const WorldCollider &other,
 			           ? (p2 - p1).Length()
 			           : 0;
 		}
+
 		depth = next;
 		return true;
 	} catch (const std::exception &) {
@@ -256,6 +261,7 @@ bool WorldCollider::CastAt(const WorldCollider &other,
 		    cast, settings, other.impl_->shape, other.impl_->scale, {},
 		    JPH::Mat44::sRotation(other.impl_->rotation), {}, {}, collector);
 		std::optional<ColliderCastHit> next;
+
 		if (collector.HadHit()) {
 			const auto &value = collector.mHit;
 			next =
@@ -263,6 +269,7 @@ bool WorldCollider::CastAt(const WorldCollider &other,
 			                    Vector(-value.mPenetrationAxis.NormalizedOr(
 			                        JPH::Vec3::sAxisY()))};
 		}
+
 		hit = next;
 		return true;
 	} catch (const std::exception &) {
@@ -289,12 +296,14 @@ bool WorldCollider::Crosses(const WorldCollider &other,
 		crosses = true;
 		return true;
 	}
+
 	if (!OverlapAt(other, displacement, minimumDepth, inside))
 		return false;
 	if (inside) {
 		crosses = true;
 		return true;
 	}
+
 	std::optional<ColliderCastHit> first, last;
 	if (!CastAt(other, {}, displacement, first))
 		return false;
@@ -302,6 +311,7 @@ bool WorldCollider::Crosses(const WorldCollider &other,
 		crosses = false;
 		return true;
 	}
+
 	const DirectX::XMFLOAT3 reverse{-displacement.x, -displacement.y,
 	                                -displacement.z};
 	if (!CastAt(other, displacement, reverse, last))
@@ -310,6 +320,7 @@ bool WorldCollider::Crosses(const WorldCollider &other,
 		crosses = false;
 		return true;
 	}
+
 	const float fraction =
 	    static_cast<float>((first->fraction + 1 - last->fraction) * .5);
 	const DirectX::XMFLOAT3 offset{displacement.x * fraction,
@@ -321,9 +332,11 @@ bool WorldCollider::Crosses(const WorldCollider &other,
 		crosses = inside;
 		return true;
 	}
+
 	// 斜めの箱などでは、接触区間の中央と最大の深さの位置が一致しない。
 	// 凸形状の内部距離を区間内で比較し、指定した深さを途中で超える場合も検知する。
 	double low = first->fraction, high = 1 - last->fraction;
+
 	for (int iteration = 0; iteration < 40; ++iteration) {
 		const double left = (2 * low + high) / 3, right = (low + 2 * high) / 3;
 		const auto depthAt = [&](double t, float &depth) {
@@ -340,11 +353,13 @@ bool WorldCollider::Crosses(const WorldCollider &other,
 			crosses = true;
 			return true;
 		}
+
 		if (a < b)
 			low = left;
 		else
 			high = right;
 	}
+
 	crosses = false;
 	return true;
 }

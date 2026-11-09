@@ -88,6 +88,7 @@ bool SceneDocument::Open(const std::filesystem::path &filePath,
 			error_ = "Choose a valid scene path.";
 			return false;
 		}
+
 		auto sourceText = ReadSceneText(resolvedPath);
 
 		// 読み込みと事前確認は一時シーンで実行し、両方成功した場合だけ置き換える
@@ -158,6 +159,7 @@ bool SceneDocument::SaveCopy(const std::filesystem::path &filePath,
 		}
 
 		history_.CommitEdit();
+
 		if (!SceneSerializer::Save(snapshot, resolvedPath)) {
 			error_ = "Could not save a scene copy. See the log for details.";
 			return false;

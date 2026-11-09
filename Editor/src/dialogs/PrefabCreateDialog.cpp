@@ -13,17 +13,21 @@ bool PrefabCreateDialog::Show(const Scene &scene, SceneObjectId root,
                               std::string &error) {
 	try {
 		AssetFolders::Resolve(assetRoot, parent);
+
 		if (!PrefabAsset::Capture(scene, root, snapshot_, error)) {
 			return false;
 		}
+
 		assets_ = assetRoot;
 		folder_ = parent;
 		root_ = root;
 		created_.clear();
 		name_ = snapshot_.FindObject(root)->name;
+
 		if (!PathUtils::IsValidFileName(PathUtils::FromUtf8(name_))) {
 			name_ = "New Prefab";
 		}
+
 		error_.clear();
 		opening_ = true;
 		error.clear();
@@ -37,30 +41,40 @@ bool PrefabCreateDialog::Show(const Scene &scene, SceneObjectId root,
 PrefabCreateResult PrefabCreateDialog::Draw(const ImGuiSystem &ui) {
 	constexpr const char *title = "Create Prefab###PrefabCreateDialog";
 	const bool focus = opening_;
+
 	if (opening_) {
 		ui.OpenPopup(title);
 		opening_ = false;
 	}
+
 	ImGui::SetNextWindowSize({480, 0}, ImGuiCond_Appearing);
+
 	if (!ui.BeginPopupModal(title)) {
 		return PrefabCreateResult::NONE;
 	}
+
 	ui.Text(PathUtils::ToUtf8(assets_ / folder_));
+
 	if (focus) {
 		ImGui::SetKeyboardFocusHere();
 	}
+
 	ui.InputText("Prefab Name", name_);
+
 	if (!error_.empty()) {
 		ImGui::TextWrapped("%s", error_.c_str());
 	}
 
 	PrefabCreateResult result = PrefabCreateResult::NONE;
+
 	if (ui.Button("Create Prefab")) {
 		try {
 			auto name = PathUtils::FromUtf8(name_);
+
 			if (!PrefabAsset::IsPrefabPath(name)) {
 				name += L".prefab.json";
 			}
+
 			if (!PathUtils::IsValidFileName(name)) {
 				error_ = "Enter a single valid Prefab name.";
 			} else {
@@ -77,13 +91,17 @@ PrefabCreateResult PrefabCreateDialog::Draw(const ImGuiSystem &ui) {
 			error_ = exception.what();
 		}
 	}
+
 	ui.SameLine();
+
 	if (ui.Button("Cancel") || ImGui::IsKeyPressed(ImGuiKey_Escape, false)) {
 		result = PrefabCreateResult::CANCELLED;
 	}
+
 	if (result != PrefabCreateResult::NONE) {
 		ui.CloseCurrentPopup();
 	}
+
 	ui.EndPopup();
 	return result;
 }

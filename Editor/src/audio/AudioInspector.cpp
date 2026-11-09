@@ -31,6 +31,7 @@ bool ValidateClip(const AudioSourceComponent &source, std::string &error) {
 		error = "Spatial audio requires a mono WAV clip.";
 		return false;
 	}
+
 	return true;
 }
 } // namespace
@@ -42,11 +43,13 @@ bool AudioInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		Clear();
 		objectId_ = id;
 	}
+
 	reveal_.clear();
 	const auto scope = std::to_string(id);
 	ImGui::PushID(scope.c_str());
 	ImGui::PushID("AudioInspector");
 	bool changed = false;
+
 	if (object.audioSource && ui.CollapsingHeader("Audio Source")) {
 		auto edited = *object.audioSource;
 		const auto assign = [&](const std::filesystem::path &path) {
@@ -84,6 +87,7 @@ bool AudioInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 						assign(path);
 				}
 			}
+
 			ImGui::EndCombo();
 		}
 		edited = *object.audioSource;
@@ -112,6 +116,7 @@ bool AudioInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 			else
 				edited = *object.audioSource;
 		}
+
 		ui.BeginDisabled(!edited.spatial);
 		continuous(ImGui::DragFloat("Min Distance", &edited.minDistance, .05f,
 		                            0, std::nextafter(edited.maxDistance, 0.f),
@@ -132,15 +137,18 @@ bool AudioInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 			error_.clear();
 			changed |= history.SetAudioSource(id, AudioSourceComponent{});
 		}
+
 		if (ImGui::Button("Remove Audio Source")) {
 			error_.clear();
 			changed |= history.SetAudioSource(id, std::nullopt);
 		}
 	}
+
 	if (object.audioListener && ui.CollapsingHeader("Audio Listener")) {
 		if (ImGui::Button("Remove Audio Listener"))
 			changed |= history.SetAudioListener(id, std::nullopt);
 	}
+
 	ImGui::PopID();
 	ImGui::PopID();
 	return changed;
@@ -158,6 +166,7 @@ void AudioInspector::DrawReadOnly(const ImGuiSystem &ui,
 		                    v.spatial ? "Yes" : "No", v.minDistance,
 		                    v.maxDistance));
 	}
+
 	if (object.audioListener)
 		ui.CollapsingHeader("Audio Listener");
 }

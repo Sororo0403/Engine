@@ -41,6 +41,7 @@ bool CanvasLayout::Collect(const Scene &scene, int width, int height,
 
 		std::map<SceneObjectId, Context> contexts;
 		std::vector<Entry> result;
+
 		for (std::size_t index = 0; index < order.size(); ++index) {
 			const auto id = order[index];
 			current = id;
@@ -48,10 +49,12 @@ bool CanvasLayout::Collect(const Scene &scene, int width, int height,
 			auto context =
 			    object.parentId ? contexts.at(object.parentId) : Context{};
 			context.visible &= active.at(id);
+
 			if (!context.visible) {
 				contexts.emplace(id, context);
 				continue;
 			}
+
 			if (object.canvas) {
 				if (!object.canvas->IsValid() || object.rectTransform) {
 					if (skipIncomplete) {
@@ -59,10 +62,12 @@ bool CanvasLayout::Collect(const Scene &scene, int width, int height,
 						contexts.emplace(id, context);
 						continue;
 					}
+
 					throw std::runtime_error(
 					    "Canvas needs valid settings and cannot also have Rect "
 					    "Transform.");
 				}
+
 				const auto &canvas = *object.canvas;
 				context.visible &= canvas.enabled;
 				context.canvas = id;
@@ -77,6 +82,7 @@ bool CanvasLayout::Collect(const Scene &scene, int width, int height,
 				        : 1;
 				context.rect = {0, 0, float(width), float(height)};
 			}
+
 			if (object.rectTransform) {
 				if (!object.rectTransform->IsValid())
 					throw std::runtime_error(
@@ -102,6 +108,7 @@ bool CanvasLayout::Collect(const Scene &scene, int width, int height,
 					    w, h};
 				}
 			}
+
 			contexts.emplace(id, context);
 			if (!context.visible)
 				continue;
@@ -121,6 +128,7 @@ bool CanvasLayout::Collect(const Scene &scene, int width, int height,
 				throw std::runtime_error("Text, Image and Button need Rect "
 				                         "Transform and a parent Canvas.");
 			}
+
 			const auto &rect = context.rect;
 			if (!std::isfinite(rect.x) || !std::isfinite(rect.y) ||
 			    !std::isfinite(rect.width) || !std::isfinite(rect.height))
@@ -134,10 +142,12 @@ bool CanvasLayout::Collect(const Scene &scene, int width, int height,
 				throw std::runtime_error(
 				    "A scene can show at most 256 UI elements.");
 			}
+
 			result.push_back({{id, context.canvas, rect, context.scale},
 			                  context.sort,
 			                  index});
 		}
+
 		std::ranges::sort(result, [](const Entry &a, const Entry &b) {
 			return std::tie(a.sort, a.element.canvas, a.index) <
 			       std::tie(b.sort, b.element.canvas, b.index);

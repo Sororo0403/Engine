@@ -17,12 +17,15 @@ template <class T, class F> void Visit(T &object, F visit) {
 			visit(target);
 		}
 	}
+
 	if (object.prefabLink) {
 		visit(object.prefabLink->root);
 	}
+
 	if (object.followCamera) {
 		visit(object.followCamera->target);
 	}
+
 	if (object.triggerActions) {
 		for (auto &action : object.triggerActions->actions) {
 			if (!action.UsesTarget())
@@ -44,8 +47,10 @@ void SceneObjectReferences::Remap(
 			current = found == remap.end() ? 0 : found->second;
 		}
 	}
+
 	Visit(object, [&](SceneObjectId &target) {
 		const auto found = remap.find(target);
+
 		if (target != 0 && found != remap.end()) {
 			target = found->second;
 		}
@@ -70,6 +75,7 @@ void SceneObjectReferences::ClearExternal(
 	        allowed.end()) {
 		object.prefabLink.reset();
 	}
+
 	Visit(object, [&](SceneObjectId &target) {
 		if (target != 0 && std::find(allowed.begin(), allowed.end(), target) ==
 		                       allowed.end()) {
@@ -85,6 +91,7 @@ void SceneObjectReferences::ClearTargets(
 	        removed.end()) {
 		object.prefabLink.reset();
 	}
+
 	Visit(object, [&](SceneObjectId &target) {
 		if (std::find(removed.begin(), removed.end(), target) !=
 		    removed.end()) {

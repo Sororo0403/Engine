@@ -45,6 +45,7 @@ void SceneParticles::Emit(State &state, const DirectX::XMFLOAT4X4 &matrix,
 	                                      state.particles.size(),
 	                                  kMaximumTotalParticles - total);
 	const int make = (std::min)(count, static_cast<int>(available));
+
 	for (int i = 0; i < make; ++i) {
 		Particle p;
 		p.lifetime =
@@ -63,6 +64,7 @@ void SceneParticles::Emit(State &state, const DirectX::XMFLOAT4X4 &matrix,
 		auto direction =
 		    XMVectorSet(sine * std::cos(phi), cosine, sine * std::sin(phi), 0);
 		p.rotation = XM_2PI * Random(state);
+
 		if (!s.localSpace) {
 			const auto world = XMLoadFloat4x4(&matrix);
 			position = XMVector3TransformCoord(position, world);
@@ -76,9 +78,11 @@ void SceneParticles::Emit(State &state, const DirectX::XMFLOAT4X4 &matrix,
 			                      XMVectorGetX(XMVector3Length(world.r[1])),
 			                      XMVectorGetX(XMVector3Length(world.r[2]))});
 		}
+
 		XMStoreFloat3(&p.position, position);
 		XMStoreFloat3(&p.velocity, XMVectorScale(direction, speed));
 		Integrate(p, s, matrix, age);
+
 		if (p.age < p.lifetime) {
 			state.particles.push_back(p);
 			++total;
@@ -90,6 +94,7 @@ bool SceneParticles::Configure(const Scene &scene, bool preserve,
                                std::string &error,
                                SceneObjectId *invalidObject) {
 	SceneObjectId current = 0;
+
 	try {
 		std::map<SceneObjectId, State> next;
 		SceneActivity::States active;
@@ -98,6 +103,7 @@ bool SceneParticles::Configure(const Scene &scene, bool preserve,
 		    !SceneHierarchy::BuildWorldTransforms(scene, transforms))
 			throw std::runtime_error("Particle hierarchy is invalid.");
 		std::size_t total = 0;
+
 		for (const auto &[id, o] : scene.GetObjects()) {
 			if (!o.particleEmitter)
 				continue;
@@ -117,9 +123,11 @@ bool SceneParticles::Configure(const Scene &scene, bool preserve,
 				    state.settings.playOnStart;
 				state.lastOrigin = transforms.at(id).GetPosition();
 			}
+
 			total += state.particles.size();
 			next.emplace(id, std::move(state));
 		}
+
 		for (auto &[id, state] : next)
 			if (state.pendingStart && active.at(id)) {
 				state.pendingStart = false;
@@ -149,27 +157,34 @@ bool SceneParticles::Advance(const Scene &scene, float seconds,
 			error.clear();
 			return true;
 		}
+
 		SceneActivity::States active;
 		SceneHierarchy::WorldTransforms transforms;
 		if (!SceneActivity::BuildStates(scene, active) ||
 		    !SceneHierarchy::BuildWorldTransforms(scene, transforms))
 			throw std::runtime_error("Particle hierarchy is invalid.");
 		std::size_t total = 0;
+
 		for (const auto &[id, s] : states_) {
 			(void)id;
 			total += s.particles.size();
 		}
+
 		const double duration = (std::min)(double(seconds), .1);
+
 		for (auto &[id, state] : states_) {
 			if (!scene.FindObject(id) || !scene.FindObject(id)->particleEmitter)
 				throw std::runtime_error("Particle Emitter is missing.");
 			const auto &world = transforms.at(id);
 			const auto origin = world.GetPosition();
+
 			if (!active.at(id)) {
 				state.lastOrigin = origin;
 				continue;
 			}
+
 			double advanced = 0;
+
 			while (advanced < duration) {
 				const double h =
 				    (std::min)({duration - advanced, 1.0 / 120.0,
@@ -187,6 +202,7 @@ bool SceneParticles::Advance(const Scene &scene, float seconds,
 					return p.age >= p.lifetime;
 				});
 				total -= before - state.particles.size();
+
 				if (state.emitting) {
 					const double sum = state.fraction + h * state.settings.rate;
 					const int count = static_cast<int>(std::floor(sum + 1e-9));
@@ -215,6 +231,7 @@ bool SceneParticles::Advance(const Scene &scene, float seconds,
 					}
 					state.fraction = (std::max)(0.0, sum - count);
 					state.elapsed += h;
+
 					if (state.elapsed >= state.settings.duration - 1e-9) {
 						if (state.settings.loop) {
 							state.elapsed = 0;
@@ -226,8 +243,10 @@ bool SceneParticles::Advance(const Scene &scene, float seconds,
 						}
 					}
 				}
+
 				advanced += h;
 			}
+
 			for (const auto &p : state.particles)
 				if (!MathUtils::IsFinite(p.position) ||
 				    !MathUtils::IsFinite(p.velocity))
@@ -235,6 +254,7 @@ bool SceneParticles::Advance(const Scene &scene, float seconds,
 					    "Particle motion became non-finite.");
 			state.lastOrigin = origin;
 		}
+
 		error.clear();
 		return true;
 	} catch (const std::exception &e) {
@@ -259,10 +279,12 @@ bool SceneParticles::Control(const Scene &scene, SceneObjectId id,
 		if (!SceneHierarchy::GetWorldTransform(scene, id, world))
 			throw std::runtime_error("Particle transform is invalid.");
 		std::size_t total = 0;
+
 		for (const auto &[key, value] : states_) {
 			(void)key;
 			total += value.particles.size();
 		}
+
 		if (operation == Operation::PLAY) {
 			if (!SceneActivity::IsActive(scene, id))
 				throw std::runtime_error(
@@ -275,6 +297,7 @@ bool SceneParticles::Control(const Scene &scene, SceneObjectId id,
 				Emit(state, world.matrix, world.GetPosition(),
 				     state.settings.burst, 0, total);
 			}
+
 			state.emitting =
 			    state.settings.loop || state.elapsed < state.settings.duration;
 		} else if (operation == Operation::STOP)
@@ -379,8 +402,10 @@ bool SceneParticles::Snapshot(const Scene &scene,
 					    "Particle snapshot is non-finite.");
 				batch.sprites.push_back(sprite);
 			}
+
 			result.push_back(std::move(batch));
 		}
+
 		batches = std::move(result);
 		error.clear();
 		return true;

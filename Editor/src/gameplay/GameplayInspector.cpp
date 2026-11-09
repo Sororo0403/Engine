@@ -332,6 +332,7 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 		if (ui.Button("Frame Follow Path")) {
 			followRequest_ = {FollowAction::FRAME_PATH, id};
 		}
+
 		ui.EndDisabled();
 
 		ui.BeginDisabled(!object.followCamera->IsValid());
@@ -390,6 +391,7 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 			if (ui.Button("Use Current Position")) {
 				edited = *object.respawn;
 				SceneWorldTransform world;
+
 				if (SceneHierarchy::GetWorldTransform(scene, id, world)) {
 					edited.position = world.GetPosition();
 					changed |= history.SetRespawn(id, edited);

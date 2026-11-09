@@ -27,12 +27,14 @@ Vector Value(const DirectX::XMFLOAT3 &v) {
 Vector TransformVector(const Vector &v, const DirectX::XMFLOAT4X4 &m,
                        bool point) {
 	Vector result{};
+
 	for (int axis = 0; axis < 3; ++axis) {
 		result[axis] =
 		    v[0] * m.m[0][axis] + v[1] * m.m[1][axis] + v[2] * m.m[2][axis];
 		if (point)
 			result[axis] += m.m[3][axis];
 	}
+
 	return result;
 }
 
@@ -46,6 +48,7 @@ bool IntersectBox(const Collider &box, const Vector &origin,
 	double enter = -(std::numeric_limits<double>::infinity)();
 	double exit = maximum;
 	normal = {};
+
 	for (int axis = 0; axis < 3; ++axis) {
 		const auto low = center[axis] - half[axis],
 		           high = center[axis] + half[axis];
@@ -54,6 +57,7 @@ bool IntersectBox(const Collider &box, const Vector &origin,
 				return false;
 			continue;
 		}
+
 		double near = (low - origin[axis]) / direction[axis];
 		double far = (high - origin[axis]) / direction[axis];
 		const double sign = direction[axis] > 0 ? -1 : 1;
@@ -64,10 +68,12 @@ bool IntersectBox(const Collider &box, const Vector &origin,
 			normal = {};
 			normal[axis] = sign;
 		}
+
 		exit = (std::min)(exit, far);
 		if (enter > exit)
 			return false;
 	}
+
 	if (exit < 0)
 		return false;
 	distance = (std::max)(0.0, enter);
@@ -89,11 +95,13 @@ bool IntersectRound(const Collider &shape, const Vector &origin,
 	                              ? shape.halfHeight
 	                              : 0;
 	const double y = o[1] - (std::clamp)(o[1], -halfHeight, halfHeight);
+
 	if (o[0] * o[0] + y * y + o[2] * o[2] <= radius * radius) {
 		distance = 0;
 		normal = {};
 		return true;
 	}
+
 	bool hit = false;
 	double closest = maximum;
 	const auto accept = [&](double t, const Vector &n) {
@@ -118,6 +126,7 @@ bool IntersectRound(const Collider &shape, const Vector &origin,
 		if (discriminant < 0)
 			return;
 		const double root = std::sqrt(discriminant);
+
 		for (const double t : {(-b - root) / a, (-b + root) / a}) {
 			const double worldY = o[1] + t * direction[1];
 			if ((cap > 0 && worldY < halfHeight) ||
@@ -136,8 +145,10 @@ bool IntersectRound(const Collider &shape, const Vector &origin,
 			const double b = o[0] * direction[0] + o[2] * direction[2];
 			const double cross = o[0] * direction[2] - o[2] * direction[0];
 			const double discriminant = a * radius * radius - cross * cross;
+
 			if (discriminant >= 0) {
 				const double root = std::sqrt(discriminant);
+
 				for (const double t : {(-b - root) / a, (-b + root) / a}) {
 					const double localY = o[1] + t * direction[1];
 					if (localY >= -halfHeight && localY <= halfHeight)
@@ -146,9 +157,11 @@ bool IntersectRound(const Collider &shape, const Vector &origin,
 				}
 			}
 		}
+
 		sphere(halfHeight, 1);
 		sphere(-halfHeight, -1);
 	}
+
 	if (hit)
 		distance = closest;
 	return hit;
@@ -197,6 +210,7 @@ bool SceneRaycast::Cast(const Scene &scene, const Ray &ray, RaycastHit &hit,
 		RaycastHit next;
 		double closest = ray.maxDistance;
 		const auto origin = Value(ray.origin);
+
 		for (const auto &[id, object] : scene.GetObjects()) {
 			if (!object.collider || !active.at(id) ||
 			    std::ranges::find(options.ignored, id) !=
@@ -212,6 +226,7 @@ bool SceneRaycast::Cast(const Scene &scene, const Ray &ray, RaycastHit &hit,
 				        box, transforms.at(id).matrix, bounds))
 					return false;
 			}
+
 			if (!(options.layerMask & (std::uint32_t{1} << box.filter.layer)))
 				continue;
 			DirectX::XMFLOAT4X4 inverse;
@@ -243,6 +258,7 @@ bool SceneRaycast::Cast(const Scene &scene, const Ray &ray, RaycastHit &hit,
 				for (int axis = 0; axis < 3; ++axis)
 					normal[axis] = world[axis] / magnitude;
 			}
+
 			next.objectId = id;
 			next.distance = static_cast<float>(distance);
 			next.position = {
@@ -256,6 +272,7 @@ bool SceneRaycast::Cast(const Scene &scene, const Ray &ray, RaycastHit &hit,
 				return false;
 			closest = distance;
 		}
+
 		hit = next;
 		return true;
 	} catch (...) {
@@ -294,6 +311,7 @@ bool SceneRaycast::CastSphere(const Scene &scene, const Ray &ray, float radius,
 		    float(-direction[0]), float(-direction[1]), float(-direction[2])};
 		RaycastHit next;
 		double closest = 1;
+
 		for (const auto &[id, object] : scene.GetObjects()) {
 			if (!object.collider || !active.at(id) ||
 			    std::ranges::find(options.ignored, id) !=
@@ -311,6 +329,7 @@ bool SceneRaycast::CastSphere(const Scene &scene, const Ray &ray, float radius,
 			const auto lower = Value(bounds.minimum),
 			           upper = Value(bounds.maximum);
 			bool near = true;
+
 			for (int axis = 0; axis < 3; ++axis) {
 				const double from = origin[axis],
 				             to = from + displacement[axis];
@@ -318,6 +337,7 @@ bool SceneRaycast::CastSphere(const Scene &scene, const Ray &ray, float radius,
 				near &= (std::min)(from, to) - padding <= upper[axis] &&
 				        (std::max)(from, to) + padding >= lower[axis];
 			}
+
 			if (!near)
 				continue;
 			WorldCollider target;
@@ -342,6 +362,7 @@ bool SceneRaycast::CastSphere(const Scene &scene, const Ray &ray, float radius,
 			         float(origin[2] + displacement[2] * closest)},
 			        contact->normal};
 		}
+
 		hit = next;
 		return true;
 	} catch (...) {

@@ -14,6 +14,7 @@ bool SpotLightInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 	if (!object.spotLight || !ui.CollapsingHeader("Spot Light")) {
 		return false;
 	}
+
 	const auto scope = std::to_string(id);
 	ImGui::PushID(scope.c_str());
 	ImGui::PushID("SpotLightInspector");
@@ -52,9 +53,11 @@ bool SpotLightInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		changed |= history.SetSpotLight(id, SpotLightComponent{}) &&
 		           object.spotLight != before;
 	}
+
 	if (ImGui::Button("Remove Spot Light")) {
 		changed |= history.SetSpotLight(id, std::nullopt);
 	}
+
 	ImGui::PopID();
 	ImGui::PopID();
 	return changed;
@@ -65,6 +68,7 @@ void SpotLightInspector::DrawReadOnly(const ImGuiSystem &ui,
 	if (!object.spotLight || !ui.CollapsingHeader("Spot Light")) {
 		return;
 	}
+
 	const auto &light = *object.spotLight;
 	ui.Text(std::format("Color: {:.3f}, {:.3f}, {:.3f}", light.color[0],
 	                    light.color[1], light.color[2]));

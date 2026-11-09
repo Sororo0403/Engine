@@ -36,6 +36,7 @@ bool SceneAnimations::Rebase(State &state, const Transform &transform) {
 		state.base = state.last = transform;
 		return true;
 	}
+
 	if (TransformUtils::AreEqual(state.last, transform))
 		return true;
 	Transform delta, base;
@@ -62,6 +63,7 @@ bool SceneAnimations::Rebase(State &state, const Transform &transform) {
 bool SceneAnimations::Configure(Scene &scene, bool preserve, std::string &error,
                                 SceneObjectId *invalidObject) {
 	SceneObjectId current = 0;
+
 	try {
 		std::map<SceneObjectId, State> next;
 		SceneActivity::States active;
@@ -77,6 +79,7 @@ bool SceneAnimations::Configure(Scene &scene, bool preserve, std::string &error,
 				    "Transform Animation settings are invalid.");
 			State state;
 			const auto old = states_.find(id);
+
 			if (preserve && old != states_.end() &&
 			    old->second.settings == settings) {
 				state = old->second;
@@ -87,14 +90,17 @@ bool SceneAnimations::Configure(Scene &scene, bool preserve, std::string &error,
 				state.base = state.last = object.transform;
 				state.playing = state.pendingStart = settings.playOnStart;
 			}
+
 			if (state.pendingStart && active.at(id)) {
 				state.pendingStart = false;
 				if (!Apply(state, scene.FindObject(id)->transform))
 					throw std::runtime_error(
 					    "Animation start pose is invalid.");
 			}
+
 			next.emplace(id, std::move(state));
 		}
+
 		states_ = std::move(next);
 		error.clear();
 		if (invalidObject)
@@ -116,6 +122,7 @@ bool SceneAnimations::Advance(Scene &scene, float seconds, std::string &error) {
 			error.clear();
 			return true;
 		}
+
 		for (auto &[id, state] : states_) {
 			auto *object = scene.FindObject(id);
 			if (!object || !object->transformAnimation)
@@ -127,6 +134,7 @@ bool SceneAnimations::Advance(Scene &scene, float seconds, std::string &error) {
 			state.cursor +=
 			    double((std::min)(seconds, .1f)) * state.settings.speed;
 			const auto duration = state.settings.GetDuration();
+
 			if (state.settings.mode ==
 			    TransformAnimationComponent::Mode::ONCE) {
 				if (state.cursor >= duration) {
@@ -143,6 +151,7 @@ bool SceneAnimations::Advance(Scene &scene, float seconds, std::string &error) {
 			if (!Apply(state, object->transform))
 				throw std::runtime_error("Animated pose is invalid.");
 		}
+
 		error.clear();
 		return true;
 	} catch (const std::exception &e) {
@@ -165,6 +174,7 @@ bool SceneAnimations::Control(Scene &scene, SceneObjectId id,
 		if (!Rebase(state, transform))
 			throw std::runtime_error("Animation origin is invalid.");
 		state.pendingStart = false;
+
 		if (operation == Operation::PLAY) {
 			if (!SceneActivity::IsActive(scene, id))
 				throw std::runtime_error(

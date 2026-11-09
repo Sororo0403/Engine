@@ -14,6 +14,7 @@ bool CharacterJumpPreview::BuildPaths(const Scene &scene, SceneObjectId id,
                                       Paths &paths) const {
 	const auto *object = scene.FindObject(id);
 	SceneWorldTransform transform;
+
 	if (!object || !SceneActivity::IsActive(scene, id) ||
 	    !SceneHierarchy::GetWorldTransform(scene, id, transform) ||
 	    !object->character || !object->collider ||

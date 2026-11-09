@@ -290,12 +290,14 @@ bool InspectorPanel::Draw(
 	}
 
 	bool active = object->active;
+
 	if (ImGui::Checkbox("Active", &active)) {
 		const SceneObjectId targets[]{inspectedObjectId};
 		changed |= history.SetActive(targets, active);
 		// グループ履歴の確定でシーンの物体を置き換えるため、参照を取得し直す。
 		object = scene.FindObject(inspectedObjectId);
 	}
+
 	ui.Text(SceneActivity::IsActive(scene, inspectedObjectId)
 	            ? "Active in Hierarchy: Yes"
 	            : "Active in Hierarchy: No");
@@ -952,6 +954,7 @@ std::optional<Transform> InspectorPanel::DrawReadOnly(
 		ui.DragFloat3("Look Offset", settings.lookOffset, 0.01f, 0.0f, 0.0f);
 		ImGui::DragFloat("Follow Smoothing", &settings.smoothing);
 		ui.Checkbox("Orbit Input", settings.orbit.enabled);
+
 		if (settings.orbit.enabled) {
 			ui.Text(std::format(
 			    "Mouse: {:.2f} / Stick: {:.2f} deg/s / Zoom: {:.2f}",

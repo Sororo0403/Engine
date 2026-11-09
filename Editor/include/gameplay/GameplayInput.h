@@ -45,6 +45,7 @@ inline OrbitCameraInput ReadOrbit(const Mouse &mouse,
 	    viewport.widgetActive || textEditing) {
 		return {};
 	}
+
 	return OrbitCameraInputReader::Read(
 	    viewport.imageHovered ? &mouse : nullptr, gamepad);
 }

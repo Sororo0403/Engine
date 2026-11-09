@@ -54,6 +54,7 @@ void Collect(const Scene &scene, std::vector<RigidBodyDescription> &bodies,
 		throw std::runtime_error(
 		    "Rigid Body hierarchy or world transform is invalid.");
 	bool enabled = false;
+
 	for (const auto &[id, o] : scene.GetObjects()) {
 		if (!active.at(id) || !o.rigidBody)
 			continue;
@@ -92,10 +93,12 @@ void Collect(const Scene &scene, std::vector<RigidBodyDescription> &bodies,
 			throw std::runtime_error(
 			    "Rigid Body requires a positive world scale without shear.");
 	}
+
 	if (!enabled) {
 		invalid = 0;
 		return;
 	}
+
 	for (const auto &[id, o] : scene.GetObjects()) {
 		if (!active.at(id) || !o.collider || o.collider->isTrigger)
 			continue;
@@ -137,6 +140,7 @@ void Collect(const Scene &scene, std::vector<RigidBodyDescription> &bodies,
 			d.collider.center.z *= scale.z < 0 ? -1.f : 1.f;
 			scale = {std::abs(scale.x), std::abs(scale.x), std::abs(scale.x)};
 		}
+
 		if ((character && d.collider.shape == Collider::Shape::BOX) ||
 		    !decomposed || d.transform.scale.x <= 0 ||
 		    d.transform.scale.y <= 0 || d.transform.scale.z <= 0) {
@@ -166,8 +170,10 @@ void Collect(const Scene &scene, std::vector<RigidBodyDescription> &bodies,
 			d.rigidBody->angularVelocity = {};
 			driven.insert(id);
 		}
+
 		bodies.push_back(d);
 	}
+
 	if (bodies.size() > RigidBodyWorld::kMaximumBodies)
 		throw std::runtime_error(
 		    "A scene with Rigid Body supports at most 1024 solid Colliders.");
@@ -204,11 +210,13 @@ bool ScenePhysics::Configure(const Scene &scene, bool preserve,
 		std::set<SceneObjectId> driven;
 		Collect(scene, descriptions, driven, invalid);
 		ScenePhysics next;
+
 		if (descriptions.empty()) {
 			*this = std::move(next);
 			error.clear();
 			return true;
 		}
+
 		for (const auto &d : descriptions)
 			next.definitions_.emplace(d.object, d);
 		next.driven_ = std::move(driven);
@@ -220,8 +228,10 @@ bool ScenePhysics::Configure(const Scene &scene, bool preserve,
 		    });
 		if (same) {
 			next.world_ = world_;
+
 			for (const auto &d : descriptions) {
 				const auto state = next.world_->GetState(d.object);
+
 				if (!state ||
 				    (!SamePose(state->transform, d.transform) &&
 				     !next.world_->Teleport(d.object, d.transform, error))) {
@@ -249,6 +259,7 @@ bool ScenePhysics::Configure(const Scene &scene, bool preserve,
 			if (!next.world_->Rebuild(descriptions, error, invalidObject))
 				return false;
 		}
+
 		*this = std::move(next);
 		error.clear();
 		return true;
@@ -269,6 +280,7 @@ bool ScenePhysics::Advance(Scene &scene, float seconds, std::string &error) {
 			error.clear();
 			return true;
 		}
+
 		auto next = *this;
 		std::vector<RigidBodyDescription> current;
 		std::set<SceneObjectId> driven;
@@ -300,6 +312,7 @@ bool ScenePhysics::Advance(Scene &scene, float seconds, std::string &error) {
 					return false;
 			}
 		}
+
 		if (!next.world_->Update(duration, error))
 			return false;
 		std::vector<SceneObjectId> order;
@@ -318,6 +331,7 @@ bool ScenePhysics::Advance(Scene &scene, float seconds, std::string &error) {
 				    "Rigid Body pose cannot be represented in the parent "
 				    "hierarchy.");
 		}
+
 		*this = std::move(next);
 		error.clear();
 		return true;
@@ -335,6 +349,7 @@ bool ScenePhysics::SetLinearVelocity(SceneObjectId id,
 		        "Motion Path.";
 		return false;
 	}
+
 	return world_->SetLinearVelocity(id, velocity, error);
 }
 
@@ -346,6 +361,7 @@ bool ScenePhysics::SetAngularVelocity(SceneObjectId id,
 		        "override Motion Path.";
 		return false;
 	}
+
 	return world_->SetAngularVelocity(id, velocity, error);
 }
 
@@ -356,5 +372,6 @@ bool ScenePhysics::AddImpulse(SceneObjectId id,
 		error = "Impulse requires a physical runtime.";
 		return false;
 	}
+
 	return world_->AddImpulse(id, impulse, error);
 }

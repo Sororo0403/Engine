@@ -28,9 +28,11 @@ bool SameBasis(const DirectX::XMFLOAT4X4 &a, const DirectX::XMFLOAT4X4 &b) {
 
 bool TriggerWorld::Reset(const Scene &scene) {
 	TriggerWorld candidate;
+
 	if (!candidate.Update(scene)) {
 		return false;
 	}
+
 	*this = std::move(candidate);
 	return true;
 }
@@ -39,23 +41,31 @@ bool TriggerWorld::Update(const Scene &scene,
                           std::span<const SceneObjectId> teleported) {
 	try {
 		SceneHierarchy::WorldTransforms transforms;
+
 		if (!SceneHierarchy::BuildWorldTransforms(scene, transforms)) {
 			return false;
 		}
+
 		SceneActivity::States active;
+
 		if (!SceneActivity::BuildStates(scene, active)) {
 			return false;
 		}
+
 		std::map<SceneObjectId, Shape> shapes;
+
 		for (const auto &[id, object] : scene.GetObjects()) {
 			if (!active.at(id) || !object.collider) {
 				continue;
 			}
+
 			AxisAlignedBox bounds;
+
 			if (!ColliderUtils::GetWorldBounds(
 			        *object.collider, transforms.at(id).matrix, bounds)) {
 				return false;
 			}
+
 			WorldCollider geometry;
 			std::string error;
 			if (!WorldCollider::Create(*object.collider,
@@ -67,12 +77,15 @@ bool TriggerWorld::Update(const Scene &scene,
 			                         *object.collider, transforms.at(id).matrix,
 			                         std::move(geometry)});
 		}
+
 		// 現在Triggerを持つ組と、退出が必要になる前回の接触を一度ずつ処理する。
 		std::set<TriggerContact> pairs(contacts_.begin(), contacts_.end());
+
 		for (const auto &[id, shape] : shapes) {
 			if (!shape.trigger) {
 				continue;
 			}
+
 			for (const auto &[other, otherShape] : shapes) {
 				if (id != other && shape.filter.CanCollide(otherShape.filter)) {
 					pairs.insert(
@@ -80,8 +93,10 @@ bool TriggerWorld::Update(const Scene &scene,
 				}
 			}
 		}
+
 		std::vector<TriggerContact> contacts;
 		std::vector<TriggerEvent> events;
+
 		for (const auto &pair : pairs) {
 			const bool wasInside =
 			    std::binary_search(contacts_.begin(), contacts_.end(), pair);
@@ -133,6 +148,7 @@ bool TriggerWorld::Update(const Scene &scene,
 				}
 			}
 		}
+
 		shapes_.swap(shapes);
 		contacts_.swap(contacts);
 		events_.swap(events);

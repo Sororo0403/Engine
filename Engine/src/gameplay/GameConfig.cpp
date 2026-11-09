@@ -72,6 +72,7 @@ bool GameConfig::Serialize(std::string &text, std::string &error) const {
 		}
 
 		auto actionsJson = nlohmann::json::array();
+
 		for (const auto &action : actions) {
 			nlohmann::json entry{{"name", action.name},
 			                     {"keyboard", nullptr},
@@ -98,6 +99,7 @@ bool GameConfig::Serialize(std::string &text, std::string &error) const {
 				            .name;
 			actionsJson.push_back(std::move(entry));
 		}
+
 		const nlohmann::json data = {
 		    {"format", "EngineGame"},
 		    {"version", kCurrentVersion},
@@ -161,9 +163,11 @@ bool GameConfig::Save(const std::filesystem::path &path,
 bool GameConfig::Load(const std::filesystem::path &path, std::string &error) {
 	try {
 		std::ifstream file(path, std::ios::binary);
+
 		if (!file) {
 			throw std::runtime_error("Could not open game.json.");
 		}
+
 		file.exceptions(std::ios::badbit);
 		const std::string text{std::istreambuf_iterator<char>(file), {}};
 		return Deserialize(text, error);
@@ -204,6 +208,7 @@ bool GameConfig::Deserialize(std::string_view text, std::string &error) {
 				    action.member == &GameInputBindings::interact) {
 					continue;
 				}
+
 				const auto key = GameInputBindings::FromName(
 				    data.at("input").at(action.name).get<std::string>());
 
@@ -220,12 +225,14 @@ bool GameConfig::Deserialize(std::string_view text, std::string &error) {
 			for (const auto key :
 			     std::array{Key::E, Key::F, Key::Q, Key::G, Key::R, Key::T}) {
 				bool used = false;
+
 				for (const auto &action : GameInputBindings::kActions) {
 					if (action.member != &GameInputBindings::interact &&
 					    candidate.input.*action.member == key) {
 						used = true;
 					}
 				}
+
 				if (!used) {
 					candidate.input.interact = key;
 					break;
@@ -246,11 +253,13 @@ bool GameConfig::Deserialize(std::string_view text, std::string &error) {
 			const auto &light = data.at("lighting");
 			candidate.lighting.direction = ReadVector(light.at("direction"));
 			candidate.lighting.color = ReadVector(light.at("color"));
+
 			if (!light.at("intensity").is_number() ||
 			    !light.at("ambient").is_number()) {
 				throw std::runtime_error(
 				    "Light intensity and ambient must be numbers.");
 			}
+
 			candidate.lighting.intensity = light.at("intensity").get<float>();
 			candidate.lighting.ambient = light.at("ambient").get<float>();
 		}
@@ -273,6 +282,7 @@ bool GameConfig::Deserialize(std::string_view text, std::string &error) {
 				GameActionBinding action;
 				action.name = entry.at("name").get<std::string>();
 				const auto &key = entry.at("keyboard");
+
 				if (!key.is_null()) {
 					action.keyboard =
 					    GameActionBinding::FromKeyName(key.get<std::string>());
@@ -280,18 +290,21 @@ bool GameConfig::Deserialize(std::string_view text, std::string &error) {
 					                         data.at("version") < 10))
 						throw std::runtime_error("Unsupported action key.");
 				}
+
 				const auto readButton = [](const auto &value,
 				                           const auto &options,
 				                           auto &destination) {
 					if (value.is_null())
 						return;
 					const auto name = value.template get<std::string>();
+
 					for (const auto &option : options) {
 						if (name == option.name) {
 							destination = option.button;
 							return;
 						}
 					}
+
 					throw std::runtime_error(
 					    "Unsupported action button or axis.");
 				};
@@ -331,6 +344,7 @@ bool GameConfig::Deserialize(std::string_view text, std::string &error) {
 			s.bias = number("bias");
 			s.normalBias = number("normalBias");
 		}
+
 		const auto &camera = data.at("camera");
 		candidate.fallbackCamera = {ReadVector(camera.at("position")),
 		                            ReadVector(camera.at("target")),

@@ -29,9 +29,11 @@ using IdMap = std::map<SceneObjectId, SceneObjectId>;
 /// <returns>検証済みJSON。無効なデータは例外</returns>
 Json Document(const Scene &scene) {
 	std::string text;
+
 	if (!SceneSerializer::Serialize(scene, text)) {
 		throw std::runtime_error("Could not encode the Prefab scene.");
 	}
+
 	return Json::parse(text);
 }
 
@@ -43,31 +45,40 @@ Json Document(const Scene &scene) {
 SceneObjectId RootOf(const Scene &source) {
 	SceneObjectId root = 0;
 	std::vector<SceneObjectId> ids;
+
 	for (const auto &[id, object] : source.GetObjects()) {
 		ids.push_back(id);
+
 		if (object.prefabLink) {
 			throw std::runtime_error(
 			    "Unpack nested Prefabs before saving this asset.");
 		}
+
 		if (!object.parentId) {
 			if (root) {
 				throw std::runtime_error("A Prefab must have one root.");
 			}
+
 			root = id;
 		}
 	}
+
 	std::vector<SceneObjectId> subtree;
+
 	if (!root || !SceneHierarchy::GetSubtree(source, root, subtree) ||
 	    subtree.size() != ids.size()) {
 		throw std::runtime_error("The Prefab hierarchy is invalid.");
 	}
+
 	for (const auto &[id, object] : source.GetObjects()) {
 		(void)id;
+
 		if (SceneObjectReferences::HasExternal(object, ids)) {
 			throw std::runtime_error(
 			    "A Prefab asset cannot reference objects outside its root.");
 		}
 	}
+
 	Document(source);
 	return root;
 }
@@ -78,6 +89,7 @@ SceneObjectId RootOf(const Scene &source) {
 /// <param name="source">読み込んだ最新アセット</param>
 void ValidateResources(const Scene &source) {
 	const auto issues = SceneAssetValidation::Inspect(source);
+
 	if (!issues.empty()) {
 		throw std::runtime_error(issues.front().message);
 	}
@@ -109,8 +121,10 @@ void Align(Scene &scene, SceneObjectId root,
 	const DirectX::XMFLOAT3 delta{position.x - old.x, position.y - old.y,
 	                              position.z - old.z};
 	scene.FindObject(root)->transform.translation = position;
+
 	for (const auto &[id, value] : scene.GetObjects()) {
 		(void)value;
+
 		if (auto &respawn = scene.FindObject(id)->respawn; respawn) {
 			respawn->minimumY += delta.y;
 			respawn->position = {respawn->position.x + delta.x,
@@ -149,6 +163,7 @@ Json Mapped(SceneObject source, SceneObjectId id, const IdMap &map) {
 	if (source.parentId) {
 		source.parentId = map.at(source.parentId);
 	}
+
 	SceneObjectReferences::Remap(source, map);
 	return ObjectData(std::move(source), map.at(id));
 }
@@ -166,29 +181,35 @@ std::optional<Json> Merge(const std::optional<Json> &base,
 	if (current == base) {
 		return latest;
 	}
+
 	if (!base || !current || !latest || !base->is_object() ||
 	    !current->is_object() || !latest->is_object()) {
 		return current;
 	}
+
 	std::set<std::string> keys;
+
 	for (const auto *value : {&*base, &*current, &*latest}) {
 		for (const auto &[key, field] : value->items()) {
 			(void)field;
 			keys.insert(key);
 		}
 	}
+
 	Json result = Json::object();
 	const auto field = [](const Json &value,
 	                      const std::string &key) -> std::optional<Json> {
 		return value.contains(key) ? std::optional{value.at(key)}
 		                           : std::nullopt;
 	};
+
 	for (const auto &key : keys) {
 		if (const auto value = Merge(field(*base, key), field(*current, key),
 		                             field(*latest, key))) {
 			result[key] = *value;
 		}
 	}
+
 	return result;
 }
 
@@ -205,6 +226,7 @@ void PreservePrimary(Scene &scene, const std::set<SceneObjectId> &affected) {
 	    });
 	for (const auto id : affected) {
 		auto *object = scene.FindObject(id);
+
 		if (object && object->camera && object->camera->primary) {
 			object->camera->primary = !primary;
 			primary = true;
@@ -227,35 +249,47 @@ void RefreshOne(Scene &scene, SceneObjectId root, const Scene &latest,
 	const IdMap baselineMap(link.objects.begin(), link.objects.end());
 	Scene base, next;
 	ReadBaseline(link, base);
+
 	if (RootOf(latest) != link.source) {
 		throw std::runtime_error("The Prefab root identity changed. Unpack and "
 		                         "recreate this instance.");
 	}
+
 	next.ReplaceObjects(latest.GetObjects());
 	auto anchor = base.FindObject(link.source)->transform.translation;
+
 	if (revert) {
 		SceneWorldTransform world;
+
 		if (!SceneHierarchy::GetWorldTransform(scene, root, world)) {
 			throw std::runtime_error("The Prefab root transform is invalid.");
 		}
+
 		anchor = world.GetPosition();
 	}
+
 	Align(next, link.source, anchor);
 
 	IdMap current;
+
 	for (const auto &[id, object] : scene.GetObjects()) {
 		if (object.prefabLink && object.prefabLink->root == root) {
 			current.emplace(object.prefabLink->source, id);
 		}
 	}
+
 	std::set<SceneObjectId> originalMembers;
+
 	for (const auto &[source, id] : current) {
 		(void)source;
 		originalMembers.insert(id);
 	}
+
 	IdMap mappings;
+
 	for (const auto &[source, value] : next.GetObjects()) {
 		(void)value;
+
 		if (const auto found = current.find(source); found != current.end()) {
 			mappings[source] = found->second;
 		} else if (const auto adopted = adopt.find(source);
@@ -268,27 +302,37 @@ void RefreshOne(Scene &scene, SceneObjectId root, const Scene &latest,
 			mappings[source] = 0;
 		}
 	}
+
 	std::vector<SceneObjectId> order;
+
 	if (!SceneHierarchy::GetEvaluationOrder(next, order)) {
 		throw std::runtime_error("The asset hierarchy is invalid.");
 	}
+
 	std::set<SceneObjectId> eligible;
+
 	for (const auto source : order) {
 		if (current.contains(source)) {
 			eligible.insert(source);
 			continue;
 		}
+
 		if (!revert && base.Contains(source)) {
 			continue;
 		}
+
 		const auto parent = next.FindObject(source)->parentId;
+
 		if (parent && !eligible.contains(parent)) {
 			continue;
 		}
+
 		mappings[source] = scene.CreateObject("Prefab Object");
 		eligible.insert(source);
 	}
+
 	IdMap references = mappings;
+
 	for (auto &[source, id] : references) {
 		if (!eligible.contains(source)) {
 			id = 0;
@@ -297,30 +341,38 @@ void RefreshOne(Scene &scene, SceneObjectId root, const Scene &latest,
 
 	std::map<SceneObjectId, Json> objects;
 	std::map<SceneObjectId, PrefabLinkComponent> previousLinks;
+
 	for (const auto &[id, object] : scene.GetObjects()) {
 		objects.emplace(id, ObjectData(object, id));
+
 		if (object.prefabLink) {
 			previousLinks.emplace(id, *object.prefabLink);
 		}
 	}
+
 	std::set<SceneObjectId> remove;
+
 	for (const auto &[source, id] : current) {
 		if (next.Contains(source)) {
 			continue;
 		}
+
 		if (revert || (base.Contains(source) &&
 		               objects.at(id) == Mapped(*base.FindObject(source),
 		                                        source, baselineMap))) {
 			remove.insert(id);
 		}
 	}
+
 	if (revert) {
 		for (const auto id : originalMembers) {
 			std::vector<SceneObjectId> subtree;
+
 			if (!SceneHierarchy::GetSubtree(scene, id, subtree)) {
 				throw std::runtime_error(
 				    "The current instance hierarchy is invalid.");
 			}
+
 			for (const auto child : subtree) {
 				if (!originalMembers.contains(child)) {
 					remove.insert(child);
@@ -328,30 +380,38 @@ void RefreshOne(Scene &scene, SceneObjectId root, const Scene &latest,
 			}
 		}
 	}
+
 	std::set<SceneObjectId> affected;
+
 	for (const auto source : eligible) {
 		const auto id = mappings.at(source);
 		const auto value = Mapped(*next.FindObject(source), source, references);
 		Json merged = value;
+
 		if (!revert && current.contains(source) && base.Contains(source)) {
 			merged =
 			    *Merge(Mapped(*base.FindObject(source), source, baselineMap),
 			           objects.at(id), value);
 		}
+
 		if (source == link.source) {
 			merged["parent"] = originalRoot.parentId;
 			merged["transform"] =
 			    ObjectData(originalRoot, root).at("transform");
 		}
+
 		objects[id] = std::move(merged);
 		remove.erase(id);
 		affected.insert(id);
 	}
+
 	if (!revert) {
 		// 残すローカル子を持つ古い親は、通常物体として残して階層を壊さない。
 		bool changed;
+
 		do {
 			changed = false;
+
 			for (const auto &[id, object] : objects) {
 				if (!remove.contains(id)) {
 					changed |=
@@ -361,41 +421,51 @@ void RefreshOne(Scene &scene, SceneObjectId root, const Scene &latest,
 			}
 		} while (changed);
 	}
+
 	for (const auto id : remove) {
 		objects.erase(id);
 	}
+
 	auto document = Document(scene);
 	document["objects"] = Json::array();
+
 	for (const auto &[id, object] : objects) {
 		(void)id;
 		document["objects"].push_back(object);
 	}
+
 	Scene result;
+
 	if (!SceneSerializer::Deserialize(result, document.dump())) {
 		throw std::runtime_error(
 		    "Prefab update conflicts with the current hierarchy or transforms. "
 		    "The scene was kept.");
 	}
+
 	for (const auto &[id, previous] : previousLinks) {
 		if (result.Contains(id) && previous.root != root &&
 		    result.Contains(previous.root)) {
 			result.FindObject(id)->prefabLink = previous;
 		}
 	}
+
 	for (const auto source : eligible) {
 		const auto id = mappings.at(source);
 		result.FindObject(id)->prefabLink =
 		    PrefabLinkComponent{root, source, {}, {}, {}};
 	}
+
 	auto &updated = *result.FindObject(root)->prefabLink;
 	updated.asset = link.asset;
 	updated.baseline = Document(next).dump(2);
 	updated.objects.assign(mappings.begin(), mappings.end());
 	const std::vector<SceneObjectId> removed(remove.begin(), remove.end());
+
 	for (const auto &[id, object] : result.GetObjects()) {
 		(void)object;
 		SceneObjectReferences::ClearTargets(*result.FindObject(id), removed);
 	}
+
 	PreservePrimary(result, affected);
 	Document(result);
 	scene.ReplaceObjects(result.GetObjects());
@@ -414,6 +484,7 @@ bool RefreshGroup(EditorHistory &history, SceneObjectId root, bool revert,
                   bool all, const IdMap &adopt = {}) {
 	const auto path = history.GetScene().FindObject(root)->prefabLink->asset;
 	std::vector<SceneObjectId> roots;
+
 	for (const auto &[id, object] : history.GetScene().GetObjects()) {
 		if (object.prefabLink && object.prefabLink->root == id &&
 		    (id == root ||
@@ -421,7 +492,9 @@ bool RefreshGroup(EditorHistory &history, SceneObjectId root, bool revert,
 			roots.push_back(id);
 		}
 	}
+
 	std::map<SceneObjectId, std::map<SceneObjectId, SceneObject>> latest;
+
 	for (const auto id : roots) {
 		Scene source;
 		std::string error;
@@ -433,6 +506,7 @@ bool RefreshGroup(EditorHistory &history, SceneObjectId root, bool revert,
 		ValidateResources(source);
 		latest.emplace(id, source.GetObjects());
 	}
+
 	return history.ApplySceneChanges(
 	    [&](Scene &candidate) {
 		    for (const auto id : roots) {
@@ -441,6 +515,7 @@ bool RefreshGroup(EditorHistory &history, SceneObjectId root, bool revert,
 			    RefreshOne(candidate, id, source, revert,
 			               id == root ? adopt : IdMap{});
 		    }
+
 		    return true;
 	    },
 	    revert ? "Revert Prefab Overrides"
@@ -452,9 +527,11 @@ bool RefreshGroup(EditorHistory &history, SceneObjectId root, bool revert,
 SceneObjectId PrefabInstances::GetRoot(const Scene &scene,
                                        SceneObjectId member) {
 	const auto *object = scene.FindObject(member);
+
 	if (!object || !object->prefabLink) {
 		return 0;
 	}
+
 	const auto root = object->prefabLink->root;
 	const auto *owner = scene.FindObject(root);
 	return owner && owner->prefabLink && owner->prefabLink->root == root &&
@@ -468,22 +545,28 @@ PrefabInstances::Instantiate(const std::filesystem::path &asset,
                              const Scene &placed, EditorHistory &history,
                              std::string &error) {
 	std::vector<SceneObjectId> ids;
+
 	try {
 		error.clear();
+
 		if (history.IsEditing()) {
 			throw std::runtime_error(
 			    "Finish the current edit before placing a Prefab.");
 		}
+
 		const auto sourceRoot = RootOf(placed);
 		ValidateResources(placed);
 		const auto path = PathUtils::ResolveFromExecutable(asset);
+
 		if (!PrefabAsset::IsPrefabPath(path)) {
 			throw std::runtime_error("Choose a Prefab asset.");
 		}
+
 		const auto baseline = Document(placed).dump(2);
 		const bool applied = history.ApplySceneChanges(
 		    [&](Scene &candidate) {
 			    IdMap map;
+
 			    for (const auto &[source, object] : placed.GetObjects()) {
 				    auto initial = object;
 				    initial.parentId = 0;
@@ -491,17 +574,22 @@ PrefabInstances::Instantiate(const std::filesystem::path &asset,
 				    map[source] = id;
 				    ids.push_back(id);
 			    }
+
 			    const auto root = map.at(sourceRoot);
+
 			    for (const auto &[source, value] : placed.GetObjects()) {
 				    auto object = value;
+
 				    if (object.parentId) {
 					    object.parentId = map.at(object.parentId);
 				    }
+
 				    SceneObjectReferences::Remap(object, map);
 				    object.prefabLink =
 				        PrefabLinkComponent{root, source, {}, {}, {}};
 				    *candidate.FindObject(map.at(source)) = std::move(object);
 			    }
+
 			    auto &link = *candidate.FindObject(root)->prefabLink;
 			    link.asset = path;
 			    link.baseline = baseline;
@@ -515,6 +603,7 @@ PrefabInstances::Instantiate(const std::filesystem::path &asset,
 			throw std::runtime_error("Could not create the linked Prefab "
 			                         "instance. The scene was kept.");
 		}
+
 		return ids;
 	} catch (const std::exception &exception) {
 		error = exception.what();
@@ -528,14 +617,17 @@ bool PrefabInstances::Refresh(EditorHistory &history, SceneObjectId member,
 	try {
 		error.clear();
 		const auto root = GetRoot(history.GetScene(), member);
+
 		if (!root || history.IsEditing()) {
 			throw std::runtime_error(
 			    "Select a linked Prefab and finish the current edit first.");
 		}
+
 		if (!RefreshGroup(history, root, revert, allInstances)) {
 			throw std::runtime_error(
 			    "Could not record the Prefab update. The scene was kept.");
 		}
+
 		return true;
 	} catch (const std::exception &exception) {
 		error = exception.what();
@@ -548,10 +640,12 @@ bool PrefabInstances::Unpack(EditorHistory &history, SceneObjectId member,
 	try {
 		error.clear();
 		const auto root = GetRoot(history.GetScene(), member);
+
 		if (!root || history.IsEditing()) {
 			throw std::runtime_error(
 			    "Select a linked Prefab and finish the current edit first.");
 		}
+
 		if (!history.ApplySceneChanges(
 		        [&](Scene &candidate) {
 			        for (const auto &[id, value] : candidate.GetObjects()) {
@@ -560,6 +654,7 @@ bool PrefabInstances::Unpack(EditorHistory &history, SceneObjectId member,
 					        candidate.FindObject(id)->prefabLink.reset();
 				        }
 			        }
+
 			        return true;
 		        },
 		        "Unpack Prefab")) {
@@ -576,25 +671,31 @@ bool PrefabInstances::Unpack(EditorHistory &history, SceneObjectId member,
 bool PrefabInstances::SaveToAsset(EditorHistory &history, SceneObjectId member,
                                   std::string &error) {
 	bool saved = false;
+
 	try {
 		error.clear();
 		const auto root = GetRoot(history.GetScene(), member);
+
 		if (!root || history.IsEditing()) {
 			throw std::runtime_error(
 			    "Select a linked Prefab and finish the current edit first.");
 		}
+
 		const auto &scene = history.GetScene();
 		const auto link = *scene.FindObject(root)->prefabLink;
 		Scene base, disk;
 		ReadBaseline(link, base);
 		SceneObjectId counter = 0;
+
 		if (!PrefabAsset::Load(link.asset, disk, error, &counter)) {
 			return false;
 		}
+
 		if (RootOf(disk) != link.source) {
 			throw std::runtime_error("The Prefab root identity changed. "
 			                         "Refresh or unpack the instance first.");
 		}
+
 		Scene aligned;
 		aligned.ReplaceObjects(disk.GetObjects());
 		Align(aligned, link.source,
@@ -604,21 +705,28 @@ bool PrefabInstances::SaveToAsset(EditorHistory &history, SceneObjectId member,
 			    "The Prefab asset changed outside this instance. Refresh "
 			    "before saving to the asset.");
 		}
+
 		std::vector<SceneObjectId> subtree;
 		SceneWorldTransform world;
+
 		if (!SceneHierarchy::GetSubtree(scene, root, subtree) ||
 		    !SceneHierarchy::GetWorldTransform(scene, root, world)) {
 			throw std::runtime_error(
 			    "The current Prefab hierarchy is invalid.");
 		}
+
 		IdMap inverse, adopt;
+
 		for (const auto id : subtree) {
 			const auto &object = *scene.FindObject(id);
+
 			if (object.prefabLink && object.prefabLink->root != root) {
 				throw std::runtime_error(
 				    "Unpack nested Prefabs before saving this asset.");
 			}
+
 			SceneObjectId source = 0;
+
 			if (object.prefabLink) {
 				source = object.prefabLink->source;
 			} else {
@@ -626,27 +734,35 @@ bool PrefabInstances::SaveToAsset(EditorHistory &history, SceneObjectId member,
 					throw std::runtime_error(
 					    "The Prefab source ID space is exhausted.");
 				}
+
 				source = counter++;
 			}
+
 			inverse.emplace(id, source);
 			adopt.emplace(source, id);
 		}
+
 		std::map<SceneObjectId, SceneObject> objects;
 		const auto anchor = base.FindObject(link.source)->transform.translation;
+
 		for (const auto id : subtree) {
 			auto object = *scene.FindObject(id);
 			object.prefabLink.reset();
+
 			if (SceneObjectReferences::HasExternal(object, subtree)) {
 				throw std::runtime_error(
 				    "Include external object references under the Prefab root "
 				    "before saving.");
 			}
+
 			const auto source = inverse.at(id);
 			object.parentId = id == root ? 0 : inverse.at(object.parentId);
 			SceneObjectReferences::Remap(object, inverse);
+
 			if (id == root) {
 				object.transform = disk.FindObject(link.source)->transform;
 			}
+
 			if (object.respawn) {
 				const auto *old = base.FindObject(source);
 				const auto prior = old ? old->respawn : std::nullopt;
@@ -665,8 +781,10 @@ bool PrefabInstances::SaveToAsset(EditorHistory &history, SceneObjectId member,
 				        ? anchor.y
 				        : world.GetPosition().y;
 			}
+
 			objects.emplace(source, std::move(object));
 		}
+
 		Scene source;
 		source.ReplaceObjects(std::move(objects));
 		RootOf(source);
@@ -678,10 +796,12 @@ bool PrefabInstances::SaveToAsset(EditorHistory &history, SceneObjectId member,
 			return false;
 		}
 		saved = true;
+
 		if (!RefreshGroup(history, root, false, true, adopt)) {
 			throw std::runtime_error(
 			    "Could not record the saved Prefab baseline.");
 		}
+
 		return true;
 	} catch (const std::exception &exception) {
 		error = std::string(saved ? "The Prefab file was saved, but instance "

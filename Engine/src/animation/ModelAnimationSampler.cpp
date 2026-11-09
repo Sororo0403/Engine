@@ -38,6 +38,7 @@ Value Evaluate(const std::vector<Key> &keys, double time, const Value &fallback,
 			time += keys.front().seconds;
 		}
 	}
+
 	if (keys.size() == 1)
 		return keys[0].value;
 	auto next = std::upper_bound(
@@ -94,6 +95,7 @@ bool ModelAnimationSampler::Initialize(
 		error = "Model animation data is missing.";
 		return false;
 	}
+
 	if (!data->IsValid(error))
 		return false;
 	data_ = std::move(data);
@@ -116,6 +118,7 @@ bool ModelAnimationSampler::Sample(std::optional<std::size_t> clip,
 		ModelAnimationPose result;
 		auto &local = result.localTransforms;
 		local.resize(data_->nodes.size());
+
 		if (clip) {
 			const auto &animation = data_->clips[*clip];
 			const double time = loop ? std::fmod(seconds, animation.duration)
@@ -131,9 +134,12 @@ bool ModelAnimationSampler::Sample(std::optional<std::size_t> clip,
 				local[track.node] = t;
 			}
 		}
+
 		result.nodes.resize(local.size());
+
 		for (std::size_t i = 0; i < local.size(); ++i) {
 			const auto &node = data_->nodes[i];
+
 			if (source && weight < 1 &&
 			    (source->localTransforms[i] || local[i])) {
 				const auto from =
@@ -146,7 +152,9 @@ bool ModelAnimationSampler::Sample(std::optional<std::size_t> clip,
 				    BlendRotation(from.rotation, to.rotation, weight),
 				    BlendVector(from.translation, to.translation, weight)};
 			}
+
 			auto matrix = XMLoadFloat4x4(&node.localBind);
+
 			if (auto &t = local[i]) {
 				if (!TransformUtils::TryNormalizeRotation(t->rotation,
 				                                          t->rotation) ||
@@ -155,6 +163,7 @@ bool ModelAnimationSampler::Sample(std::optional<std::size_t> clip,
 					    "Model animation transform became invalid.");
 				matrix = TransformUtils::MakeWorldMatrix(*t);
 			}
+
 			const int parent = data_->nodes[i].parent;
 			if (parent >= 0)
 				matrix = matrix * XMLoadFloat4x4(&result.nodes[parent]);
@@ -163,6 +172,7 @@ bool ModelAnimationSampler::Sample(std::optional<std::size_t> clip,
 				throw std::runtime_error(
 				    "Model animation hierarchy became non-finite.");
 		}
+
 		result.bones.resize(data_->meshes.size());
 		for (std::size_t i = 0; i < data_->meshes.size(); ++i)
 			for (const auto &bone : data_->meshes[i].bones) {
@@ -206,10 +216,12 @@ bool ModelAnimationSampler::Deform(std::size_t meshIndex,
 			XMStoreFloat4x4(&out, XMMatrixTranspose(XMLoadFloat4x4(&inverse)));
 			normalMatrices.push_back(out);
 		};
+
 		for (const auto &bone : pose.bones[meshIndex])
 			normal(bone);
 		normal(pose.nodes[source.node]);
 		MeshData result = source.mesh;
+
 		for (std::size_t i = 0; i < result.vertices.size(); ++i) {
 			auto &v = result.vertices[i];
 			const auto &p = source.mesh.vertices[i];
@@ -236,6 +248,7 @@ bool ModelAnimationSampler::Deform(std::size_t meshIndex,
 				                  w));
 				sum += w;
 			}
+
 			if (sum == 0) {
 				position = XMVector3TransformCoord(
 				    XMLoadFloat3(&p.position),
@@ -244,6 +257,7 @@ bool ModelAnimationSampler::Deform(std::size_t meshIndex,
 				    XMLoadFloat3(&p.normal),
 				    XMLoadFloat4x4(&normalMatrices.back()));
 			}
+
 			XMStoreFloat3(&v.position, position);
 			const float length = XMVectorGetX(XMVector3LengthSq(direction));
 			if (!std::isfinite(length) || length <= 0)
@@ -254,6 +268,7 @@ bool ModelAnimationSampler::Deform(std::size_t meshIndex,
 				throw std::runtime_error(
 				    "Model skin vertex became non-finite.");
 		}
+
 		mesh = std::move(result);
 		error.clear();
 		return true;

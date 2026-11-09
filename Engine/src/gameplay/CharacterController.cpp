@@ -30,13 +30,16 @@ bool CharacterController::Initialize(const Transform &transform,
 	if (!TransformUtils::IsValid(transform)) {
 		return false;
 	}
+
 	DirectX::XMFLOAT4X4 matrix;
 	DirectX::XMStoreFloat4x4(&matrix,
 	                         TransformUtils::MakeWorldMatrix(transform));
 	auto candidate = *this;
+
 	if (!candidate.Initialize(matrix, collider, settings, world)) {
 		return false;
 	}
+
 	candidate.transform_ = transform;
 	*this = candidate;
 	return true;
@@ -82,9 +85,11 @@ bool CharacterController::Teleport(const DirectX::XMFLOAT3 &position,
 	matrix._42 = position.y;
 	matrix._43 = position.z;
 	auto candidate = *this;
+
 	if (!candidate.Initialize(matrix, collider_, settings_, world)) {
 		return false;
 	}
+
 	candidate.transform_.scale = transform_.scale;
 	candidate.transform_.rotation = transform_.rotation;
 	*this = candidate;
@@ -232,6 +237,7 @@ bool CharacterController::Step(const CharacterInput &input,
 		if (!world.Sweep(collider_, matrix, {0, -distance, 0}, floor))
 			return false;
 		movement.grounded = floor.objectId != 0 && floor.normal.y > .5f;
+
 		if (movement.grounded) {
 			const auto drop =
 			    (std::min)(double(settings_.groundSnapDistance),
@@ -277,6 +283,7 @@ bool CharacterController::SynchronizeWorldMatrix(
 	if (!initialized_ || !world.CanPlace(collider_, worldMatrix)) {
 		return false;
 	}
+
 	worldMatrix_ = worldMatrix;
 	transform_.translation = {worldMatrix._41, worldMatrix._42,
 	                          worldMatrix._43};
@@ -285,14 +292,18 @@ bool CharacterController::SynchronizeWorldMatrix(
 
 bool CharacterController::RefreshContacts(const CollisionWorld &world) {
 	CollisionMoveResult ground;
+
 	if (!initialized_ || !world.Move(collider_, worldMatrix_,
 	                                 {0, -kGroundProbeDistance, 0}, ground)) {
 		return false;
 	}
+
 	grounded_ = verticalVelocity_ <= 0 && ground.grounded;
+
 	if (grounded_) {
 		coyoteRemaining_ = settings_.coyoteTime;
 	}
+
 	return true;
 }
 

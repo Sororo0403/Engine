@@ -16,6 +16,7 @@ bool ObjectArrayDialog::Show(const Scene &scene,
 	ObjectArraySettings settings;
 
 	std::vector<SceneObjectId> expanded;
+
 	if (!SceneHierarchy::ExpandSelection(scene, ids, expanded) ||
 	    !settings.IsValid(expanded.size())) {
 		return false;
@@ -61,14 +62,18 @@ ObjectArrayResult ObjectArrayDialog::Draw(const ImGuiSystem &ui,
 		spacingFace_.reset();
 		spacingError_.clear();
 	}
+
 	ImGui::InputInt("Rows", &settings_.rows, 1, 10);
+
 	if (ui.DragFloat3("World Offset", settings_.offset, 0.1f, 0, 0)) {
 		spacingFace_.reset();
 		spacingError_.clear();
 	}
+
 	if (settings_.rows > 1) {
 		ui.DragFloat3("Row Offset", settings_.rowOffset, 0.1f, 0, 0);
 	}
+
 	ImGui::SeparatorText("Spacing from Colliders");
 	const bool gapChanged =
 	    ImGui::InputDouble("Minimum Gap", &minimumGap_, 0.1, 1.0, "%.3f");
@@ -89,11 +94,13 @@ ObjectArrayResult ObjectArrayDialog::Draw(const ImGuiSystem &ui,
 		if (i % 2 != 0) {
 			ui.SameLine();
 		}
+
 		if (ui.Button(directions[i].first)) {
 			spacingFace_ = directions[i].second;
 			fitRequested = true;
 		}
 	}
+
 	ui.EndDisabled();
 	const auto fit = [&] {
 		fittedCopies_ = settings_.copies;
@@ -101,12 +108,15 @@ ObjectArrayResult ObjectArrayDialog::Draw(const ImGuiSystem &ui,
 		    scene, sourceIds_, *spacingFace_, settings_.copies,
 		    settings_.offset, spacingError_, minimumGap_);
 	};
+
 	if (spacingFace_ &&
 	    (fitRequested || fittedCopies_ != settings_.copies || gapChanged)) {
 		fit();
 	}
+
 	const bool validSettings = settings_.IsValid(sourceCount_);
 	const bool valid = validSettings && spacingError_.empty();
+
 	if (!spacingError_.empty()) {
 		ImGui::TextWrapped("%s", spacingError_.c_str());
 	}

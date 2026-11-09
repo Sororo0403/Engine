@@ -10,21 +10,27 @@ bool SceneLighting::CollectPointLights(const Scene &scene,
                                        std::string &error,
                                        SceneObjectId *invalidObject) {
 	error.clear();
+
 	if (invalidObject) {
 		*invalidObject = 0;
 	}
+
 	SceneHierarchy::WorldTransforms transforms;
 	SceneActivity::States active;
+
 	if (!SceneHierarchy::BuildWorldTransforms(scene, transforms) ||
 	    !SceneActivity::BuildStates(scene, active)) {
 		error = "Point Light hierarchy or world transform is invalid.";
 		return false;
 	}
+
 	std::vector<PointLightData> result;
+
 	for (const auto &[id, object] : scene.GetObjects()) {
 		if (!object.pointLight || !active.at(id)) {
 			continue;
 		}
+
 		if (!object.pointLight->IsValid() ||
 		    result.size() >= PointLightData::kMaximumLights) {
 			error = !object.pointLight->IsValid()
@@ -35,8 +41,10 @@ bool SceneLighting::CollectPointLights(const Scene &scene,
 			if (invalidObject) {
 				*invalidObject = id;
 			}
+
 			return false;
 		}
+
 		const auto &value = *object.pointLight;
 		PointLightData light{transforms.at(id).GetPosition(),
 		                     value.range,
@@ -44,13 +52,17 @@ bool SceneLighting::CollectPointLights(const Scene &scene,
 		                     value.intensity};
 		if (!light.IsValid()) {
 			error = "Point Light world position is invalid.";
+
 			if (invalidObject) {
 				*invalidObject = id;
 			}
+
 			return false;
 		}
+
 		result.push_back(light);
 	}
+
 	lights.swap(result);
 	return true;
 }
@@ -60,21 +72,27 @@ bool SceneLighting::CollectSpotLights(const Scene &scene,
                                       std::string &error,
                                       SceneObjectId *invalidObject) {
 	error.clear();
+
 	if (invalidObject) {
 		*invalidObject = 0;
 	}
+
 	SceneHierarchy::WorldTransforms transforms;
 	SceneActivity::States active;
+
 	if (!SceneHierarchy::BuildWorldTransforms(scene, transforms) ||
 	    !SceneActivity::BuildStates(scene, active)) {
 		error = "Spot Light hierarchy or world transform is invalid.";
 		return false;
 	}
+
 	std::vector<SpotLightData> result;
+
 	for (const auto &[id, object] : scene.GetObjects()) {
 		if (!object.spotLight || !active.at(id)) {
 			continue;
 		}
+
 		if (!object.spotLight->IsValid() ||
 		    result.size() >= SpotLightData::kMaximumLights) {
 			error = !object.spotLight->IsValid()
@@ -85,8 +103,10 @@ bool SceneLighting::CollectSpotLights(const Scene &scene,
 			if (invalidObject) {
 				*invalidObject = id;
 			}
+
 			return false;
 		}
+
 		const auto &value = *object.spotLight;
 		const auto &world = transforms.at(id);
 		DirectX::XMFLOAT3 direction;
@@ -104,13 +124,17 @@ bool SceneLighting::CollectSpotLights(const Scene &scene,
 		    std::cos(DirectX::XMConvertToRadians(value.outerAngle * .5f))};
 		if (!light.IsValid()) {
 			error = "Spot Light world position or direction is invalid.";
+
 			if (invalidObject) {
 				*invalidObject = id;
 			}
+
 			return false;
 		}
+
 		result.push_back(light);
 	}
+
 	lights.swap(result);
 	return true;
 }

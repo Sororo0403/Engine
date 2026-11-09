@@ -25,17 +25,20 @@ void AudioImportDialog::Show(const AssetDatabase &assets,
 
 AudioImportResult AudioImportDialog::Draw(const ImGuiSystem &ui) {
 	constexpr const char *title = "Import Audio###AudioImportDialog";
+
 	if (opening_) {
 		ui.OpenPopup(title);
 		opening_ = false;
 	}
 
 	ImGui::SetNextWindowSize({600, 0}, ImGuiCond_Appearing);
+
 	if (!ui.BeginPopupModal(title)) {
 		return AudioImportResult::NONE;
 	}
 
 	ui.BeginDisabled(selecting_);
+
 	if (ui.Button("Choose WAV")) {
 		picker_.Show(FileDialogMode::OPEN, options_.source,
 		             FileDialogFilter::AUDIO);
@@ -54,20 +57,24 @@ AudioImportResult AudioImportDialog::Draw(const ImGuiSystem &ui) {
 				options_.folder = folder;
 			}
 		}
+
 		ImGui::EndCombo();
 	}
 
 	ui.InputText("Audio Name", name_);
 	ui.EndDisabled();
+
 	if (!error_.empty()) {
 		ImGui::TextWrapped("%s", error_.c_str());
 	}
 
 	AudioImportResult result = AudioImportResult::NONE;
 	ui.BeginDisabled(selecting_ || options_.source.empty());
+
 	if (ui.Button("Import")) {
 		try {
 			options_.fileName = PathUtils::FromUtf8(name_);
+
 			if (AudioImporter::Import(options_, imported_, error_)) {
 				result = AudioImportResult::ACCEPTED;
 			}
@@ -79,19 +86,23 @@ AudioImportResult AudioImportDialog::Draw(const ImGuiSystem &ui) {
 	ui.EndDisabled();
 	ui.SameLine();
 	ui.BeginDisabled(selecting_);
+
 	if (ui.Button("Cancel") ||
 	    (!selecting_ && ImGui::IsKeyPressed(ImGuiKey_Escape, false))) {
 		result = AudioImportResult::CANCELLED;
 	}
+
 	ui.EndDisabled();
 
 	if (selecting_) {
 		const auto selected = picker_.Draw(ui);
+
 		if (selected == FileDialogResult::ACCEPTED) {
 			options_.source = picker_.GetSelectedPath();
 			name_ = PathUtils::ToUtf8(options_.source.filename());
 			error_.clear();
 		}
+
 		if (selected != FileDialogResult::NONE) {
 			selecting_ = false;
 		}

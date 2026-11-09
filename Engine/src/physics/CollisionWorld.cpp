@@ -95,10 +95,12 @@ std::optional<ColliderCastHit> SweepBox(const AxisAlignedBox &body,
 	      double(box.halfExtents.z) * matrix._33}}};
 	const std::array<Vector, 3> world{{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}};
 	std::array<Vector, 15> axes;
+
 	for (int i = 0; i < 3; ++i) {
 		axes[i] = world[i];
 		axes[i + 3] = Cross(edges[(i + 1) % 3], edges[(i + 2) % 3]);
 	}
+
 	for (int i = 0; i < 3; ++i)
 		for (int j = 0; j < 3; ++j)
 			axes[6 + i * 3 + j] = Cross(world[i], edges[j]);
@@ -109,6 +111,7 @@ std::optional<ColliderCastHit> SweepBox(const AxisAlignedBox &body,
 	       exit = std::numeric_limits<double>::infinity();
 	double minimumDepth = std::numeric_limits<double>::infinity();
 	Vector firstNormal{}, closestNormal{};
+
 	for (auto axis : axes) {
 		const double length = std::hypot(axis[0], axis[1], axis[2]);
 		if (length <= std::numeric_limits<double>::epsilon())
@@ -122,15 +125,18 @@ std::optional<ColliderCastHit> SweepBox(const AxisAlignedBox &body,
 		const double offset = Dot(delta, axis), speed = Dot(velocity, axis),
 		             depth = radius - std::abs(offset);
 		const double sign = offset >= 0 ? 1. : -1.;
+
 		if (depth < minimumDepth) {
 			minimumDepth = depth;
 			closestNormal = {axis[0] * sign, axis[1] * sign, axis[2] * sign};
 		}
+
 		if (std::abs(speed) <= 1e-12) {
 			if (depth <= tolerance)
 				return std::nullopt;
 			continue;
 		}
+
 		double first = (-radius - offset) / speed,
 		       last = (radius - offset) / speed;
 		if (first > last)
@@ -141,13 +147,16 @@ std::optional<ColliderCastHit> SweepBox(const AxisAlignedBox &body,
 			firstNormal = {axis[0] * outward, axis[1] * outward,
 			               axis[2] * outward};
 		}
+
 		exit = (std::min)(exit, last);
 		if (enter >= exit)
 			return std::nullopt;
 	}
+
 	if (exit < 0 || enter > 1)
 		return std::nullopt;
 	Vector normal = firstNormal;
+
 	if (enter <= 0) {
 		if (minimumDepth <= tolerance &&
 		    Dot(closestNormal, velocity) >= -.0000001)
@@ -155,6 +164,7 @@ std::optional<ColliderCastHit> SweepBox(const AxisAlignedBox &body,
 		normal = closestNormal;
 		enter = 0;
 	}
+
 	return ColliderCastHit{enter,
 	                       {static_cast<float>(normal[0]),
 	                        static_cast<float>(normal[1]),
@@ -198,13 +208,17 @@ bool CollisionWorld::Rebuild(const Scene &scene,
 	}
 
 	SceneHierarchy::WorldTransforms transforms;
+
 	if (!SceneHierarchy::BuildWorldTransforms(scene, transforms)) {
 		return false;
 	}
+
 	SceneActivity::States active;
+
 	if (!SceneActivity::BuildStates(scene, active)) {
 		return false;
 	}
+
 	std::vector<Obstacle> candidate;
 
 	for (const auto &[id, object] : scene.GetObjects()) {
@@ -326,13 +340,17 @@ bool CollisionWorld::FindOverlaps(const Scene &scene,
                                   bool includeTriggers,
                                   std::uint32_t layerMask) {
 	SceneHierarchy::WorldTransforms transforms;
+
 	if (!SceneHierarchy::BuildWorldTransforms(scene, transforms)) {
 		return false;
 	}
+
 	SceneActivity::States active;
+
 	if (!SceneActivity::BuildStates(scene, active)) {
 		return false;
 	}
+
 	std::vector<SceneObjectId> result;
 
 	for (const auto &[id, object] : scene.GetObjects()) {
@@ -384,6 +402,7 @@ bool CollisionWorld::FindColliderOverlaps(const Scene &scene,
 	                           transforms.at(objectId).matrix, query, error))
 		return false;
 	std::vector<SceneObjectId> next;
+
 	for (const auto &[id, object] : scene.GetObjects()) {
 		if (id == objectId || !object.collider || !active.at(id))
 			continue;
@@ -396,6 +415,7 @@ bool CollisionWorld::FindColliderOverlaps(const Scene &scene,
 		if (overlap)
 			next.push_back(id);
 	}
+
 	objects = std::move(next);
 	return true;
 }
@@ -417,10 +437,12 @@ bool CollisionWorld::Sweep(const AxisAlignedBox &body,
 	if (!QueryShape(body, query))
 		return false;
 	CollisionSweepResult candidate;
+
 	for (const auto &obstacle : obstacles_) {
 		if (filter && !filter->CanCollide(obstacle.filter))
 			continue;
 		std::optional<ColliderCastHit> hit;
+
 		if (obstacle.collider.shape == Collider::Shape::BOX) {
 			hit = SweepBox(body, obstacle.collider, obstacle.matrix,
 			               displacement, kOverlapTolerance);
@@ -431,6 +453,7 @@ bool CollisionWorld::Sweep(const AxisAlignedBox &body,
 				candidate = {obstacle.objectId, hit->fraction, hit->normal};
 			continue;
 		}
+
 		if (!query.Cast(obstacle.geometry, displacement, hit))
 			return false;
 		if (!hit)
@@ -461,6 +484,7 @@ bool CollisionWorld::CanPlace(const Collider &collider,
 		return ColliderUtils::GetWorldBounds(collider, matrix, body) &&
 		       CanPlace(body, collider.filter);
 	}
+
 	WorldCollider body;
 	std::string error;
 	return WorldCollider::Create(collider, matrix, body, error) &&
@@ -476,6 +500,7 @@ bool CollisionWorld::Sweep(const Collider &collider,
 		return ColliderUtils::GetWorldBounds(collider, matrix, body) &&
 		       Sweep(body, displacement, result, collider.filter);
 	}
+
 	WorldCollider body;
 	std::string error;
 	return WorldCollider::Create(collider, matrix, body, error) &&
@@ -492,6 +517,7 @@ bool CollisionWorld::Sweep(const WorldCollider &body,
 		return rigidBodies_->Sweep(body, displacement, result, ignoredBodies_,
 		                           filter);
 	CollisionSweepResult candidate;
+
 	for (const auto &obstacle : obstacles_) {
 		if (filter && !filter->CanCollide(obstacle.filter))
 			continue;
@@ -510,6 +536,7 @@ bool CollisionWorld::Sweep(const WorldCollider &body,
 		     obstacle.objectId < candidate.objectId))
 			candidate = {obstacle.objectId, hit->fraction, hit->normal};
 	}
+
 	result = candidate;
 	return true;
 }
@@ -523,6 +550,7 @@ bool CollisionWorld::Move(const Collider &collider,
 		return ColliderUtils::GetWorldBounds(collider, matrix, body) &&
 		       Move(body, displacement, result, collider.filter);
 	}
+
 	WorldCollider body;
 	std::string error;
 	return MathUtils::IsFinite(displacement) &&
@@ -539,6 +567,7 @@ bool CollisionWorld::FindOverlaps(const Scene &scene, const Collider &collider,
 		return ColliderUtils::GetWorldBounds(collider, matrix, body) &&
 		       FindOverlaps(scene, body, objects, 0, collider.filter, false);
 	}
+
 	WorldCollider body;
 	std::string error;
 	return WorldCollider::Create(collider, matrix, body, error) &&
@@ -561,6 +590,7 @@ bool CollisionWorld::MoveAlongSurfaces(
     const std::optional<CollisionFilter> &filter) const {
 	DirectX::XMFLOAT3 moved{}, remaining = displacement;
 	CollisionMoveResult next;
+
 	for (int iteration = 0; iteration < kMaximumSlideIterations; ++iteration) {
 		Body current;
 		CollisionSweepResult hit;
@@ -598,6 +628,7 @@ bool CollisionWorld::MoveAlongSurfaces(
 		} else
 			break;
 	}
+
 	Body finalBody;
 	if (!Translate(body, moved, finalBody) || !CanPlace(finalBody, filter))
 		return false;

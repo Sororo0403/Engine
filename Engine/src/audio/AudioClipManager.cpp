@@ -33,6 +33,7 @@ AudioClipManager::~AudioClipManager() = default;
 
 AudioClipHandle AudioClipManager::Create(WaveData data, std::string &error) {
 	error.clear();
+
 	try {
 		if (!data.IsValid()) {
 			throw std::invalid_argument(
@@ -61,6 +62,7 @@ AudioClipHandle AudioClipManager::Reload(const std::filesystem::path &path,
 AudioClipHandle AudioClipManager::LoadFile(const std::filesystem::path &path,
                                            bool reload, std::string &error) {
 	error.clear();
+
 	try {
 		if (path.empty() || !PathUtils::HasExtension(path, ".wav")) {
 			throw std::invalid_argument("Choose a WAV audio file.");
@@ -69,16 +71,19 @@ AudioClipHandle AudioClipManager::LoadFile(const std::filesystem::path &path,
 		const auto key = std::filesystem::weakly_canonical(
 		    PathUtils::ResolveFromExecutable(path));
 		const auto found = impl_->cache.find(key);
+
 		if (!reload && found != impl_->cache.end()) {
 			return found->second;
 		}
 
 		WaveData data;
+
 		if (!WaveReader::Load(key, data, error)) {
 			return {};
 		}
 
 		auto handle = Create(std::move(data), error);
+
 		if (handle) {
 			impl_->cache.insert_or_assign(key, handle);
 		}

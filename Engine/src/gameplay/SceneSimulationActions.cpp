@@ -28,6 +28,7 @@ bool MatchesContact(const TriggerAction &action, const SceneObject *other) {
 		return other && other->rigidBody && other->rigidBody->enabled &&
 		       !other->rigidBody->isKinematic;
 	}
+
 	return false;
 }
 } // namespace
@@ -128,6 +129,7 @@ void SceneSimulation::QueueActionSignals(
 		if (event.type == TriggerEvent::Type::STAY) {
 			continue;
 		}
+
 		for (const auto id :
 		     std::array{event.contact.first, event.contact.second}) {
 			const auto *object = scene_.FindObject(id);
@@ -159,6 +161,7 @@ void SceneSimulation::QueueOccupancySignals(
 			const auto other =
 			    id == contact.first ? contact.second : contact.first;
 			const auto &actions = object->triggerActions->actions;
+
 			for (std::size_t i = 0; i < actions.size(); ++i) {
 				const auto &action = actions[i];
 				if (!action.UsesOccupancy() ||
@@ -170,6 +173,7 @@ void SceneSimulation::QueueOccupancySignals(
 			}
 		}
 	}
+
 	std::vector<std::pair<SceneObjectId, std::size_t>> changed;
 	std::set_symmetric_difference(occupiedActions_.begin(),
 	                              occupiedActions_.end(), occupied.begin(),
@@ -195,6 +199,7 @@ bool SceneSimulation::ApplyTriggerActions(
     bool uiConsumesInput) {
 	error.clear();
 	std::vector<ActionSignal> signals;
+
 	if (!gamePaused_) {
 		// 新しく予約する操作には、条件を満たすまでに使った今回の時間を引かない。
 		for (auto &delayed : delayedActions_) {
@@ -202,6 +207,7 @@ bool SceneSimulation::ApplyTriggerActions(
 			if (delayed.remaining <= 0)
 				signals.push_back(delayed.signal);
 		}
+
 		std::erase_if(delayedActions_, [](const DelayedTriggerAction &delayed) {
 			return delayed.remaining <= 0;
 		});
@@ -210,6 +216,7 @@ bool SceneSimulation::ApplyTriggerActions(
 		pendingActionSignals_.clear();
 		QueueActionSignals(frameEvents_, signals);
 	}
+
 	const bool namedPressed =
 	    std::ranges::any_of(namedInputs, &GameActionState::pressed);
 	const auto isPressed = [&](std::string_view name) {
@@ -218,6 +225,7 @@ bool SceneSimulation::ApplyTriggerActions(
 			    return input.pressed && input.name == name;
 		    });
 	};
+
 	if (!gamePaused_ && character_ != 0 &&
 	    (interactPressed || (namedPressed && !uiConsumesInput))) {
 		// 通過経路ではなく現在の接触を使い、床や他の物体の重なりからは操作しない。
@@ -248,6 +256,7 @@ bool SceneSimulation::ApplyTriggerActions(
 			if (!object.triggerActions || !SceneActivity::IsActive(scene_, id))
 				continue;
 			const auto &actions = object.triggerActions->actions;
+
 			for (std::size_t i = 0; i < actions.size(); ++i) {
 				if (actions[i].event == TriggerAction::Event::INPUT_PRESSED &&
 				    isPressed(actions[i].inputAction))
@@ -256,6 +265,7 @@ bool SceneSimulation::ApplyTriggerActions(
 			}
 		}
 	}
+
 	auto fired = firedActions_;
 	std::map<SceneObjectId, bool> requested;
 	std::map<SceneObjectId, SceneMotion::Playback> motionPlayback;
@@ -274,12 +284,15 @@ bool SceneSimulation::ApplyTriggerActions(
 	auto requestedScene = pendingScene_;
 	bool quit = quitRequested_;
 	bool paused = gamePaused_;
+
 	for (const auto &signal : signals) {
 		const auto *object = scene_.FindObject(signal.receiver);
+
 		if (!object || !SceneActivity::IsActive(scene_, signal.receiver) ||
 		    !object->triggerActions) {
 			continue;
 		}
+
 		const bool buttonClick =
 		    signal.event == TriggerAction::Event::BUTTON_CLICK;
 		const bool globalInput =
@@ -289,9 +302,11 @@ bool SceneSimulation::ApplyTriggerActions(
 		     (!object->collider || !object->collider->isTrigger)))
 			continue;
 		const auto &actions = object->triggerActions->actions;
+
 		for (std::size_t i = 0; i < actions.size(); ++i) {
 			const auto &action = actions[i];
 			const auto key = std::pair{signal.receiver, i};
+
 			if ((signal.actionIndex && *signal.actionIndex != i) ||
 			    action.event != signal.event ||
 			    (!signal.delayElapsed && action.once && fired.contains(key)) ||
@@ -299,6 +314,7 @@ bool SceneSimulation::ApplyTriggerActions(
 			     !MatchesContact(action, scene_.FindObject(signal.other)))) {
 				continue;
 			}
+
 			if (!signal.delayElapsed &&
 			    action.event == TriggerAction::Event::INTERACT) {
 				const bool pressed =
@@ -308,7 +324,9 @@ bool SceneSimulation::ApplyTriggerActions(
 				if (!pressed)
 					continue;
 			}
+
 			const auto *target = scene_.FindObject(action.target);
+
 			if (!action.IsValid() || (action.UsesTarget() && !target)) {
 				error = std::format("Trigger Actions on object ID {} have an "
 				                    "invalid action or target.",
@@ -316,8 +334,10 @@ bool SceneSimulation::ApplyTriggerActions(
 				if (invalidObject) {
 					*invalidObject = signal.receiver;
 				}
+
 				return false;
 			}
+
 			if (action.TargetsContactCharacter() &&
 			    (action.target != character_ ||
 			     (action.UsesContact() && signal.other != action.target)))
@@ -329,6 +349,7 @@ bool SceneSimulation::ApplyTriggerActions(
 						*invalidObject = signal.receiver;
 					return false;
 				}
+
 				delayedActions_.push_back(
 				    {{signal.receiver, signal.event, signal.other, i, true},
 				     action.delaySeconds});
@@ -336,6 +357,7 @@ bool SceneSimulation::ApplyTriggerActions(
 					fired.insert(key);
 				continue;
 			}
+
 			if (action.IsPauseOperation()) {
 				paused =
 				    action.operation == TriggerAction::Operation::TOGGLE_PAUSE
@@ -346,23 +368,27 @@ bool SceneSimulation::ApplyTriggerActions(
 					fired.insert(key);
 				continue;
 			}
+
 			if (action.operation == TriggerAction::Operation::QUIT_GAME) {
 				quit = true;
 				if (action.once)
 					fired.insert(key);
 				continue;
 			}
+
 			if (action.operation == TriggerAction::Operation::RESTART_SCENE) {
 				requestedScene = {{}, {}, true};
 				if (action.once)
 					fired.insert(key);
 				continue;
 			}
+
 			if (action.operation == TriggerAction::Operation::LOAD_SCENE) {
 				if (action.scenePath.empty()) {
 					error = "Load Scene requires a destination scene asset.";
 					return false;
 				}
+
 				// 同じ更新に複数の要求があれば、既存の操作順で最後の要求を使用する。
 				requestedScene = {
 				    PathUtils::ResolveFromExecutable(action.scenePath),
@@ -371,6 +397,7 @@ bool SceneSimulation::ApplyTriggerActions(
 					fired.insert(key);
 				continue;
 			}
+
 			if (action.operation == TriggerAction::Operation::SET_CAMERA) {
 				selectedCamera = action.target;
 				cameraBlendSeconds = action.cameraBlendSeconds;
@@ -378,6 +405,7 @@ bool SceneSimulation::ApplyTriggerActions(
 					fired.insert(key);
 				continue;
 			}
+
 			if (action.operation ==
 			    TriggerAction::Operation::LAUNCH_CHARACTER) {
 				launchTarget = action.target;
@@ -386,6 +414,7 @@ bool SceneSimulation::ApplyTriggerActions(
 					fired.insert(key);
 				continue;
 			}
+
 			if (action.operation ==
 			    TriggerAction::Operation::RESPAWN_CHARACTER) {
 				respawnTarget = action.target;
@@ -393,6 +422,7 @@ bool SceneSimulation::ApplyTriggerActions(
 					fired.insert(key);
 				continue;
 			}
+
 			if (action.UsesDestination()) {
 				const bool settingCheckpoint =
 				    action.operation ==
@@ -403,17 +433,21 @@ bool SceneSimulation::ApplyTriggerActions(
 					if (invalidObject) {
 						*invalidObject = signal.receiver;
 					}
+
 					return false;
 				}
+
 				if (settingCheckpoint) {
 					checkpoint = action.destination;
 					checkpointTarget = action.target;
 				} else {
 					destinations[action.target] = action.destination;
 				}
+
 				if (action.once) {
 					fired.insert(key);
 				}
+
 				continue;
 			}
 
@@ -469,8 +503,10 @@ bool SceneSimulation::ApplyTriggerActions(
 					if (invalidObject) {
 						*invalidObject = signal.receiver;
 					}
+
 					return false;
 				}
+
 				audio.push_back(
 				    {action.target,
 				     action.operation == TriggerAction::Operation::PLAY_AUDIO
@@ -479,8 +515,10 @@ bool SceneSimulation::ApplyTriggerActions(
 				if (action.once) {
 					fired.insert(key);
 				}
+
 				continue;
 			}
+
 			auto entry =
 			    requested.try_emplace(action.target, target->active).first;
 			switch (action.operation) {
@@ -521,35 +559,45 @@ bool SceneSimulation::ApplyTriggerActions(
 			case TriggerAction::Operation::EMIT_PARTICLES:
 				break;
 			}
+
 			if (action.once) {
 				fired.insert(key);
 			}
 		}
 	}
+
 	std::vector<SceneActiveChange> changes;
+
 	for (const auto &[id, active] : requested) {
 		if (scene_.FindObject(id)->active != active) {
 			changes.push_back({id, active});
 		}
 	}
+
 	if (!changes.empty()) {
 		auto events = frameEvents_;
+
 		if (!SetActive(changes, error, invalidObject)) {
 			error = "Trigger Actions could not apply their activity changes: " +
 			        error;
 			return false;
 		}
+
 		// 操作が生成した検知は観察用に残し、操作の実行だけを次の正の時間の更新へ送る。
 		for (const auto &event : frameEvents_) {
 			if (event.type != TriggerEvent::Type::STAY) {
 				events.push_back(event);
 			}
 		}
+
 		frameEvents_.swap(events);
 	}
+
 	std::optional<DirectX::XMFLOAT3> checkpointPosition;
+
 	if (checkpoint && character_ == checkpointTarget) {
 		SceneWorldTransform destination;
+
 		if (!SceneHierarchy::GetWorldTransform(scene_, checkpoint,
 		                                       destination)) {
 			error = "Checkpoint destination has an invalid world transform.";
@@ -557,24 +605,31 @@ bool SceneSimulation::ApplyTriggerActions(
 				*invalidObject = checkpoint;
 			return false;
 		}
+
 		checkpointPosition = destination.GetPosition();
 	}
 
 	if (!destinations.empty()) {
 		// 全移動先を変更前のシーンから取得し、親子や相互参照でも順序に依存させない。
 		std::map<SceneObjectId, DirectX::XMFLOAT3> positions;
+
 		for (const auto &[target, destination] : destinations) {
 			SceneWorldTransform transform;
+
 			if (!SceneHierarchy::GetWorldTransform(scene_, destination,
 			                                       transform)) {
 				error = "Teleport destination has an invalid world transform.";
+
 				if (invalidObject) {
 					*invalidObject = destination;
 				}
+
 				return false;
 			}
+
 			positions.emplace(target, transform.GetPosition());
 		}
+
 		if (!ApplyTeleports(positions, error, invalidObject)) {
 			return false;
 		}
@@ -586,16 +641,20 @@ bool SceneSimulation::ApplyTriggerActions(
 			*invalidObject = selectedCamera;
 		return false;
 	}
+
 	const bool changingCamera = selectedCamera && selectedCamera != camera_;
+
 	if (checkpointPosition || changingCamera || !animationPlayback.empty()) {
 		const auto previousCameraPose = pose_;
 		Scene candidate;
 		candidate.CopyFrom(scene_);
+
 		if (checkpointPosition) {
 			auto &settings = *candidate.FindObject(checkpointTarget)->respawn;
 			settings.useStartPosition = false;
 			settings.position = *checkpointPosition;
 		}
+
 		// 再生シーンだけのPrimaryを切り替え、追従姿勢や他の実行状態を引き継ぐ。
 		if (selectedCamera &&
 		    !SceneCameraUtils::SetPrimary(candidate, selectedCamera)) {
@@ -604,7 +663,9 @@ bool SceneSimulation::ApplyTriggerActions(
 				*invalidObject = selectedCamera;
 			return false;
 		}
+
 		std::vector<SceneObjectId> transformed;
+
 		for (const auto &[id, operation] : animationPlayback) {
 			const auto before = candidate.FindObject(id)->transform;
 			const auto control =
@@ -628,6 +689,7 @@ bool SceneSimulation::ApplyTriggerActions(
 			                              candidate.FindObject(id)->transform))
 				transformed.push_back(id);
 		}
+
 		if (!SynchronizeSceneChanges(candidate, transformed, error,
 		                             invalidObject)) {
 			const char *operation =
@@ -640,6 +702,7 @@ bool SceneSimulation::ApplyTriggerActions(
 			        " failed: " + error;
 			return false;
 		}
+
 		if (changingCamera && cameraBlendSeconds > 0) {
 			cameraTransition_ =
 			    CameraTransition{previousCameraPose, cameraBlendSeconds};
@@ -648,8 +711,10 @@ bool SceneSimulation::ApplyTriggerActions(
 	}
 
 	const bool respawning = respawnTarget && respawnTarget == character_;
+
 	if (respawning) {
 		const auto position = spawn_;
+
 		if (!ApplyTeleports({{respawnTarget, position}}, error,
 		                    invalidObject)) {
 			error = "Respawn Character failed: " + error;
@@ -689,12 +754,14 @@ bool SceneSimulation::ApplyTriggerActions(
 	// 移動・有効設定・アニメーションの確定後の発生元の位置を使う。
 	for (const auto id : particleBursts) {
 		const auto *object = scene_.FindObject(id);
+
 		if (!object || !object->particleEmitter) {
 			error = "Emit Particles requires a target with a Particle Emitter.";
 			if (invalidObject)
 				*invalidObject = id;
 			return false;
 		}
+
 		if (!particles_.Control(scene_, id, SceneParticles::Operation::EMIT,
 		                        object->particleEmitter->burst, false, error)) {
 			error = "Emit Particles failed: " + error;
@@ -737,16 +804,19 @@ bool SceneSimulation::ApplyTeleports(
     std::string &error, SceneObjectId *invalidObject) {
 	Scene working;
 	working.CopyFrom(scene_);
+
 	if (!SceneHierarchy::SetWorldPositions(working, positions)) {
 		error = "Teleport positions cannot be represented in this hierarchy.";
 		return false;
 	}
 
 	std::vector<SceneObjectId> transformed;
+
 	for (const auto &[id, position] : positions) {
 		(void)position;
 		transformed.push_back(id);
 	}
+
 	return SynchronizeSceneChanges(working, transformed, error, invalidObject);
 }
 
@@ -765,6 +835,7 @@ bool SceneSimulation::SynchronizeSceneChanges(
 		                   sizeof(before.matrix)) != 0;
 	};
 	std::set<SceneObjectId> followMoved;
+
 	for (const auto id : updateOrder_) {
 		if (!working.Contains(id))
 			continue;
@@ -775,13 +846,16 @@ bool SceneSimulation::SynchronizeSceneChanges(
 		     followMoved.contains(object.followCamera->target))) {
 			next.followPoses_.erase(id);
 			std::vector<SceneObjectId> subtree;
+
 			if (!SceneHierarchy::GetSubtree(working, id, subtree)) {
 				error = "Teleport Follow Camera hierarchy is invalid.";
 				return false;
 			}
+
 			followMoved.insert(subtree.begin(), subtree.end());
 		}
 	}
+
 	if (!next.Configure(working, error, fallbackPose_, invalidObject, true)) {
 		return false;
 	}
@@ -815,6 +889,7 @@ bool SceneSimulation::SynchronizeSceneChanges(
 			++current;
 		}
 	}
+
 	next.firedActions_ = std::move(fired);
 	next.occupiedActions_ = std::move(occupied);
 	std::erase_if(
@@ -834,20 +909,25 @@ bool SceneSimulation::SynchronizeSceneChanges(
 	});
 	bool resetCharacter = false;
 	std::set<SceneObjectId> teleported;
+
 	for (const auto id : transformed) {
 		std::vector<SceneObjectId> subtree;
+
 		if (!SceneHierarchy::GetSubtree(scene_, id, subtree)) {
 			error = "Teleport hierarchy is invalid.";
 			return false;
 		}
+
 		teleported.insert(subtree.begin(), subtree.end());
 		resetCharacter |= std::find(subtree.begin(), subtree.end(),
 		                            character_) != subtree.end();
 	}
+
 	// 追従によって移動したColliderにも途中経路の検知を適用しない。
 	for (const auto &[id, object] : next.scene_.GetObjects()) {
 		(void)object;
 		SceneWorldTransform before, after;
+
 		if (SceneHierarchy::GetWorldTransform(scene_, id, before) &&
 		    SceneHierarchy::GetWorldTransform(next.scene_, id, after) &&
 		    (std::memcmp(&before.matrix, &after.matrix,
@@ -855,26 +935,33 @@ bool SceneSimulation::SynchronizeSceneChanges(
 			teleported.insert(id);
 		}
 	}
+
 	resetCharacter |= teleported.contains(character_);
+
 	if (next.character_ && resetCharacter &&
 	    !next.controller_.Teleport(next.controller_.GetTransform().translation,
 	                               next.world_)) {
 		error = "Teleport character destination overlaps a solid collider.";
+
 		if (invalidObject) {
 			*invalidObject = character_;
 		}
+
 		return false;
 	}
 
 	const std::vector<SceneObjectId> ids(teleported.begin(), teleported.end());
 	auto triggers = triggers_;
+
 	if (!triggers.Update(next.scene_, ids)) {
 		error = "Teleport trigger shapes are invalid.";
 		return false;
 	}
+
 	next.triggers_ = std::move(triggers);
 	const auto events = next.triggers_.GetEvents();
 	next.QueueActionSignals(events, next.pendingActionSignals_);
+
 	for (const auto &event : events) {
 		if (event.type != TriggerEvent::Type::STAY) {
 			next.frameEvents_.push_back(event);
@@ -882,6 +969,7 @@ bool SceneSimulation::SynchronizeSceneChanges(
 				generated->push_back(event);
 		}
 	}
+
 	Adopt(next);
 	return true;
 }
