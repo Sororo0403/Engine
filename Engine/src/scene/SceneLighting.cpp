@@ -3,7 +3,24 @@
 #include "scene/Scene.h"
 #include "scene/SceneActivity.h"
 #include "scene/SceneHierarchy.h"
+#include <cmath>
 #include <format>
+
+SceneObject SceneLighting::CreateDirectionalLight(const LightingSettings &settings) {
+	SceneObject sun;
+	sun.name = "Directional Light";
+	sun.directionalLight = DirectionalLightComponent{
+	    {settings.color.x, settings.color.y, settings.color.z},
+	    settings.intensity, settings.shadows};
+
+	const auto &direction = settings.direction;
+	const float yaw = std::atan2(direction.x, direction.z);
+	const float pitch = static_cast<float>(std::atan2(
+	    -double(direction.y), std::hypot(double(direction.x), double(direction.z))));
+	DirectX::XMStoreFloat4(&sun.transform.rotation,
+	                      DirectX::XMQuaternionRotationRollPitchYaw(pitch, yaw, 0));
+	return sun;
+}
 
 bool SceneLighting::CollectDirectionalLights(
     const Scene &scene, const SceneHierarchy::WorldTransforms &transforms,
@@ -54,7 +71,7 @@ bool SceneLighting::CollectDirectionalLights(
 		    direction, light.intensity, {light.color[0], light.color[1], light.color[2]}};
 	}
 
-	if (!hasLightObjects) {
+	if (!hasLightObjects && scene.UsesLegacyDirectionalLight()) {
 		const auto &direction = settings.direction;
 		const double length = std::sqrt(double(direction.x) * direction.x +
 		                                double(direction.y) * direction.y +

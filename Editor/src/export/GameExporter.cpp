@@ -803,6 +803,7 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 			Scene snapshot;
 			snapshot.ReplaceObjects(entry.objects);
 			snapshot.SetLighting(entry.lighting);
+			snapshot.SetUseLegacyDirectionalLight(entry.legacyDirectionalLight);
 			std::string text;
 
 			if (entry.prefab) {

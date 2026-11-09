@@ -3054,7 +3054,7 @@ void EditorScene::ExecutePendingAction() {
 	case EditorAction::NEW: {
 		try {
 			auto objects = action == EditorAction::NEW_SAMPLE
-			                   ? SampleStage::Create()
+			                   ? SampleStage::Create(exportConfig_.lighting)
 			                   : std::map<SceneObjectId, SceneObject>{};
 
 			if (action == EditorAction::NEW_SAMPLE &&
@@ -4416,7 +4416,10 @@ void EditorScene::UpdateDialogs() {
 			    std::ranges::any_of(objects, [](const auto &entry) {
 				    return entry.second.directionalLight.has_value();
 			    });
-			LightingControls::Draw(ui_, sceneLightingDraft_, hasDirectionalLights);
+			LightingControls::Draw(
+			    ui_, sceneLightingDraft_,
+			    hasDirectionalLights ||
+			        !document_.GetScene().UsesLegacyDirectionalLight());
 			ImGui::EndDisabled();
 
 			const bool valid =

@@ -93,6 +93,7 @@ const std::map<SceneObjectId, SceneObject> &Scene::GetObjects() const {
 void Scene::Clear() {
 	objects_.clear();
 	lighting_.reset();
+	legacyDirectionalLight_ = false;
 }
 
 void Scene::ReplaceObjects(std::map<SceneObjectId, SceneObject> objects) {
@@ -143,6 +144,7 @@ bool Scene::ApplyTransaction(const std::function<bool(Scene &)> &operation) {
 
 	working.objects_ = objects_;
 	working.lighting_ = lighting_;
+	working.legacyDirectionalLight_ = legacyDirectionalLight_;
 
 	// 削除済み物体のIDも復元できるよう、発行済み番号を引き継ぐ
 	working.nextObjectId_ = nextObjectId_;
@@ -160,6 +162,7 @@ bool Scene::ApplyTransaction(const std::function<bool(Scene &)> &operation) {
 	// 全操作が成功してから、保持するデータを置き換える
 	objects_.swap(working.objects_);
 	lighting_.swap(working.lighting_);
+	legacyDirectionalLight_ = working.legacyDirectionalLight_;
 	nextObjectId_ = working.nextObjectId_;
 
 	return true;
@@ -171,6 +174,7 @@ void Scene::CopyFrom(const Scene &source) {
 	const auto next = (std::max)(nextObjectId_, source.nextObjectId_);
 	objects_.swap(candidate.objects_);
 	lighting_ = source.lighting_;
+	legacyDirectionalLight_ = source.legacyDirectionalLight_;
 	nextObjectId_ = next;
 }
 
@@ -186,5 +190,6 @@ bool Scene::SetLighting(std::optional<LightingSettings> lighting) {
 void Scene::Swap(Scene &other) noexcept {
 	objects_.swap(other.objects_);
 	lighting_.swap(other.lighting_);
+	std::swap(legacyDirectionalLight_, other.legacyDirectionalLight_);
 	std::swap(nextObjectId_, other.nextObjectId_);
 }

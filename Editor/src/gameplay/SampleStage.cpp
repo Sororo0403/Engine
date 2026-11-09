@@ -1,7 +1,8 @@
 #include "gameplay/SampleStage.h"
 #include "scene/PrimitiveObjects.h"
+#include "scene/SceneLighting.h"
 
-std::map<SceneObjectId, SceneObject> SampleStage::Create() {
+std::map<SceneObjectId, SceneObject> SampleStage::Create(const LightingSettings &lighting) {
 	std::map<SceneObjectId, SceneObject> objects;
 
 	auto box = [&](SceneObjectId id, const char *name,
@@ -28,6 +29,8 @@ std::map<SceneObjectId, SceneObject> SampleStage::Create() {
 	camera.followCamera = FollowCameraSettings{};
 	camera.followCamera->target = 5;
 	objects.emplace(6, std::move(camera));
+
+	objects.emplace(7, SceneLighting::CreateDirectionalLight(lighting));
 
 	return objects;
 }

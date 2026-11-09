@@ -11,10 +11,16 @@
 #include <vector>
 
 class Scene;
+struct SceneObject;
 
 namespace SceneLighting {
 /// <summary>
-/// 有効な平行光を集める。平行光オブジェクトがないシーンには従来の照明を適用する
+/// 照明設定と同じ向き・色・強さ・影を持つ平行光オブジェクトを作る
+/// </summary>
+SceneObject CreateDirectionalLight(const LightingSettings &settings);
+
+/// <summary>
+/// 有効な平行光を集める。旧形式のシーンだけ従来の平行光にフォールバックする
 /// </summary>
 bool CollectDirectionalLights(const Scene &scene,
                               const SceneHierarchy::WorldTransforms &transforms,

@@ -20,6 +20,7 @@ class SceneDependencyGraph {
 		bool prefab = false;
 		SceneObjectId nextSourceId = 0;
 		std::optional<LightingSettings> lighting;
+		bool legacyDirectionalLight = false;
 	};
 
 	using Resolve =

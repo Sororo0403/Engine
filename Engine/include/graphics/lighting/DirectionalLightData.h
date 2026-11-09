@@ -21,7 +21,7 @@ struct DirectionalLightData {
 struct DirectionalLightsData {
 	static constexpr std::uint32_t kMaximumLights = 32;
 	float ambient = 0.2f;
-	std::uint32_t count = 1;
+	std::uint32_t count = 0;
 	std::int32_t shadowIndex = -1;
 	float padding = 0.0f;
 	std::array<DirectionalLightData, kMaximumLights> lights{};

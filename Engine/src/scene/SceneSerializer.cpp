@@ -897,6 +897,10 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 		    {"objects", std::move(objects)},
 		};
 
+		if (scene.UsesLegacyDirectionalLight()) {
+			document["legacyDirectionalLight"] = true;
+		}
+
 		if (const auto &lighting = scene.GetLighting()) {
 			document["lighting"] = {
 			    {"direction", ToJson(lighting->direction)},
@@ -1866,6 +1870,8 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 		// 親のID順に依存せず全件を読み込み、循環・不在の親・合成後の形状を検証する。
 		Scene candidate;
 		candidate.ReplaceObjects(std::move(objects));
+		candidate.SetUseLegacyDirectionalLight(
+		    version < 69 || document.value("legacyDirectionalLight", false));
 
 		if (version >= 67 && document.contains("lighting")) {
 			const auto &value = document.at("lighting");
