@@ -115,13 +115,13 @@ bool TextureSlotInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 			    [slot](const auto &binding) { return binding.first == slot; });
 			const auto preview =
 			    found == object.meshRenderer->textures.slots.end()
-			        ? std::string("White (No Texture)")
+			        ? std::string("Model Default")
 			        : PathUtils::ToUtf8(found->second);
 			const auto label = std::format("Slot {}", slot);
 
 			if (ImGui::BeginCombo(label.c_str(), preview.c_str())) {
 				if (ui.Selectable(
-				        "White (No Texture)",
+				        "Model Default",
 				        found == object.meshRenderer->textures.slots.end())) {
 					changed |= history.SetTexturePath(
 					    id, static_cast<std::uint32_t>(slot), {});

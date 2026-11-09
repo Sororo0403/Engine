@@ -727,8 +727,8 @@ void ControlsPanel::Draw() {
 	         "separately."},
 
 	        {"Mesh Renderer > Texture Slots",
-	         "Choose an image directly for each model slot. White (No Texture) "
-	         "clears the explicit assignment and uses a white image. "
+	         "Choose an image directly for each model slot. Model Default "
+	         "clears the explicit assignment and restores the model material. "
 	         "Assignments "
 	         "are saved in the scene and support Undo/Redo. Show Texture in "
 	         "Assets "

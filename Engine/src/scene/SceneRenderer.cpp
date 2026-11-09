@@ -342,17 +342,10 @@ bool SceneRenderer::SynchronizeObjects() {
 			    [slot](const auto &binding) { return binding.first == slot; });
 			auto material =
 			    found == object.meshRenderer->textures.slots.end()
-			        ? render_.GetMaterials().LoadTexture({})
+			        ? MaterialHandle{}
 			        : render_.GetMaterials().LoadTexture(found->second);
 
-			if (!material) {
-				material = render_.GetMaterials().LoadTexture({});
-			}
-
-			if (!material) {
-				return false;
-			}
-
+			// 上書きがない場合は、モデルの既定の材質へ戻す。
 			if (!world_->SetMaterial(renderObject.handle, slot, material)) {
 				return false;
 			}
