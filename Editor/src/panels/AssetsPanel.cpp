@@ -456,6 +456,50 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			selectRow(path, false);
 		}
 	};
+	const auto &root = assets.GetRootDirectory();
+	const bool clipboardEnabled = canEditAssets && root.is_absolute();
+
+	if (!clipboardItems_.empty() && clipboardRoot_ != root) {
+		clipboardItems_.clear();
+		clipboardCut_ = false;
+	}
+
+	const auto currentFolder = [&] {
+		return currentDirectory_.empty() ? root : root / currentDirectory_;
+	};
+	const auto storeClipboard = [&](bool cut) {
+		clipboardItems_ = selectedItems_;
+		clipboardRoot_ = root;
+		clipboardCut_ = cut;
+	};
+	const auto requestPaste = [&](const std::filesystem::path &folder) {
+		pasteRequest_ = {clipboardItems_, folder};
+	};
+	const auto drawPaste = [&](const char *label, const std::filesystem::path &folder) {
+		if (ui.MenuItem(label, "Ctrl+V", clipboardEnabled && !clipboardItems_.empty())) {
+			requestPaste(folder);
+		}
+	};
+	const auto drawClipboardMenu = [&] {
+		const bool enabled = clipboardEnabled && !selectedItems_.empty();
+
+		if (ui.MenuItem("Copy", "Ctrl+C", enabled)) {
+			storeClipboard(false);
+		}
+
+		if (ui.MenuItem("Cut", "Ctrl+X", enabled)) {
+			storeClipboard(true);
+		}
+	};
+	const auto drawBackgroundMenu = [&] {
+		if (clipboardEnabled &&
+		    ImGui::BeginPopupContextWindow("AssetsBackground",
+		                                   ImGuiPopupFlags_MouseButtonRight |
+		                                       ImGuiPopupFlags_NoOpenOverItems)) {
+			drawPaste("Paste", currentFolder());
+			ImGui::EndPopup();
+		}
+	};
 
 	if (!assets.GetError().empty()) {
 		ui.Text(assets.GetError());
@@ -520,6 +564,10 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 					if (ImGui::BeginPopupContextItem()) {
 						selectContext(directory);
+						drawClipboardMenu();
+						drawPaste("Paste into Folder", directory);
+						ImGui::Separator();
+
 						if (ui.MenuItem("Rename...", nullptr, selectedItems_.size() == 1)) {
 							renamePath_ = directory;
 						}
@@ -597,6 +645,9 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 			if (ImGui::BeginPopupContextItem()) {
 				selectContext(assetPath);
+				drawClipboardMenu();
+				drawPaste("Paste", currentFolder());
+				ImGui::Separator();
 
 				if (ui.MenuItem("Rename...", nullptr,
 				                selectedItems_.size() == 1 && canEditAssets &&
@@ -695,6 +746,8 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			ui.Text(filter_.empty() ? "No folders or assets."
 			                        : "No matching assets.");
 		}
+
+		drawBackgroundMenu();
 	}
 
 	ui.EndChild();
@@ -704,14 +757,8 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	}
 
 	const auto &io = ImGui::GetIO();
-	const auto &root = assets.GetRootDirectory();
 
-	if (!clipboardItems_.empty() && clipboardRoot_ != root) {
-		clipboardItems_.clear();
-		clipboardCut_ = false;
-	}
-
-	if (canEditAssets && root.is_absolute() &&
+	if (clipboardEnabled &&
 	    ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows |
 	                           ImGuiFocusedFlags_NoPopupHierarchy) &&
 	    !io.AppFocusLost && !ui.IsTextInputActive() && !ImGui::IsAnyItemActive() &&
@@ -723,14 +770,11 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		const bool cut = ImGui::IsKeyPressed(ImGuiKey_X, false);
 
 		if (!selectedItems_.empty() && (copy || cut)) {
-			clipboardItems_ = selectedItems_;
-			clipboardRoot_ = root;
-			clipboardCut_ = cut;
+			storeClipboard(cut);
 		}
 
 		if (!clipboardItems_.empty() && ImGui::IsKeyPressed(ImGuiKey_V, false)) {
-			pasteRequest_ = {clipboardItems_,
-			                 currentDirectory_.empty() ? root : root / currentDirectory_};
+			requestPaste(currentFolder());
 		}
 	}
 
@@ -905,6 +949,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		ui.EndDisabled();
 	}
 
+	drawBackgroundMenu();
 	ui.EndWindow();
 	return requestedPath;
 }
