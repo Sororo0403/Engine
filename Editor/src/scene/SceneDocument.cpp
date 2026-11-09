@@ -63,9 +63,14 @@ void SceneDocument::MarkModified() {
 	history_.Invalidate();
 }
 
+void SceneDocument::SetProjectRoot(std::filesystem::path root) {
+	projectRoot_.swap(root);
+}
+
 void SceneDocument::New() {
 	scene_.Clear();
 	filePath_.clear();
+	fileProjectRoot_.clear();
 	savedText_.clear();
 	error_.clear();
 	history_.Reset();
@@ -73,6 +78,7 @@ void SceneDocument::New() {
 
 void SceneDocument::SetUntitled() {
 	filePath_.clear();
+	fileProjectRoot_.clear();
 	savedText_.clear();
 	error_.clear();
 	history_.Reset();
@@ -90,10 +96,12 @@ bool SceneDocument::Open(const std::filesystem::path &filePath,
 		}
 
 		auto sourceText = ReadSceneText(resolvedPath);
+		std::filesystem::path projectRoot;
 
 		// 読み込みと事前確認は一時シーンで実行し、両方成功した場合だけ置き換える
 		const bool loaded = scene_.ApplyTransaction([&](Scene &candidate) {
-			if (!SceneSerializer::Deserialize(candidate, sourceText)) {
+			if (!SceneSerializer::Deserialize(candidate, sourceText, resolvedPath,
+			                                  &projectRoot)) {
 				return false;
 			}
 
@@ -114,6 +122,7 @@ bool SceneDocument::Open(const std::filesystem::path &filePath,
 
 		// 読み込み成功後に、保存先と変更状態を更新する
 		filePath_.swap(resolvedPath);
+		fileProjectRoot_.swap(projectRoot);
 		savedText_.swap(sourceText);
 		history_.Reset();
 		error_.clear();
@@ -160,7 +169,10 @@ bool SceneDocument::SaveCopy(const std::filesystem::path &filePath,
 
 		history_.CommitEdit();
 
-		if (!SceneSerializer::Save(snapshot, resolvedPath)) {
+		const auto &root =
+		    projectRoot_.empty() ? fileProjectRoot_ : projectRoot_;
+
+		if (!SceneSerializer::Save(snapshot, resolvedPath, root)) {
 			error_ = "Could not save a scene copy. See the log for details.";
 			return false;
 		}
@@ -205,9 +217,10 @@ bool SceneDocument::SaveAs(const std::filesystem::path &filePath) {
 		history_.CommitEdit();
 
 		std::string savedText;
+		const auto &root =
+		    projectRoot_.empty() ? fileProjectRoot_ : projectRoot_;
 
-		if (!SceneSerializer::Serialize(scene_, savedText) ||
-		    !SceneSerializer::Save(scene_, resolvedPath)) {
+		if (!SceneSerializer::Save(scene_, resolvedPath, root, &savedText)) {
 			error_ = "Could not save the scene. See the log for details.";
 			return false;
 		}

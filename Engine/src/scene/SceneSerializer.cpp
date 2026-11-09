@@ -10,6 +10,7 @@
 #include "platform/windows/FileUtils.h"
 #include "platform/windows/PathUtils.h"
 #include "scene/Scene.h"
+#include "scene/SceneAssetReferences.h"
 #include "scene/SceneHierarchy.h"
 #include "scene/SceneObjectReferences.h"
 
@@ -21,6 +22,7 @@
 #include <exception>
 #include <format>
 #include <fstream>
+#include <iterator>
 #include <limits>
 #include <map>
 #include <set>
@@ -218,7 +220,127 @@ TextureBindings ReadBindings(const Json &bindings, int version) {
 /// <param name="logSuccess">成功メッセージを記録するか</param>
 /// <returns>true:成功 false:形式や設定が無効</returns>
 bool ApplySceneDocument(Scene &scene, const Json &document,
-                        bool logSuccess = true);
+                        bool logSuccess = true,
+                        const std::filesystem::path &projectRoot = {});
+
+constexpr std::wstring_view kProjectReference = L"@project";
+
+/// <summary>
+/// プロジェクト内のパスを取得する。プロジェクト外のパスには空を返す
+/// </summary>
+std::filesystem::path RelativeProjectPath(const std::filesystem::path &root,
+                                          const std::filesystem::path &path) {
+	try {
+		return PathUtils::RelativeInside(root, path);
+	} catch (const std::runtime_error &) {
+		return {};
+	}
+}
+
+/// <summary>
+/// シーンの格納場所から、保存データに記録されたプロジェクトのルートを解決する
+/// </summary>
+std::filesystem::path ReadProjectRoot(const Json &document,
+                                      const std::filesystem::path &filePath) {
+	if (!document.contains("projectRoot")) {
+		return {};
+	}
+
+	const auto relative =
+	    PathUtils::FromUtf8(document.at("projectRoot").get<std::string>());
+
+	if (filePath.empty() || relative.empty() ||
+	    !std::ranges::all_of(relative, [](const auto &part) {
+		    return part == L"." || part == L"..";
+	    })) {
+		throw std::runtime_error("The scene has an invalid project root.");
+	}
+
+	const auto file = PathUtils::ResolveFromExecutable(filePath);
+	const auto parent = std::filesystem::weakly_canonical(file.parent_path());
+	return std::filesystem::canonical(parent / relative);
+}
+
+/// <summary>
+/// シーンとPrefabリンクの基準データに含まれる素材参照を変換する
+/// </summary>
+void RewriteProjectReferences(
+    Scene &scene,
+    const std::function<std::filesystem::path(const std::filesystem::path &)> &
+        rewrite) {
+	SceneAssetReferences::Rewrite(scene, rewrite);
+
+	for (const auto &[id, object] : scene.GetObjects()) {
+		if (!object.prefabLink || object.prefabLink->asset.empty()) {
+			continue;
+		}
+
+		auto &link = *scene.FindObject(id)->prefabLink;
+		link.asset = rewrite(link.asset);
+		Scene baseline;
+		const auto document = Json::parse(link.baseline);
+
+		for (const auto &value : document.at("objects")) {
+			if (value.contains("prefabLink")) {
+				throw std::runtime_error(
+				    "Prefab baselines cannot contain nested links.");
+			}
+		}
+
+		if (!ApplySceneDocument(baseline, document, false)) {
+			throw std::runtime_error("Could not read the Prefab baseline.");
+		}
+
+		SceneAssetReferences::Rewrite(baseline, rewrite);
+
+		if (!SceneSerializer::Serialize(baseline, link.baseline)) {
+			throw std::runtime_error("Could not serialize the Prefab baseline.");
+		}
+	}
+}
+
+/// <summary>
+/// プロジェクト内の保存では、プロジェクト内の素材だけを相対パスに変換する
+/// </summary>
+bool SerializeSceneFile(const Scene &scene, std::string &text,
+                        const std::filesystem::path &file,
+                        const std::filesystem::path &projectRoot) {
+	if (projectRoot.empty()) {
+		return SceneSerializer::Serialize(scene, text);
+	}
+
+	const auto root = std::filesystem::weakly_canonical(projectRoot);
+	const auto parent = std::filesystem::weakly_canonical(file.parent_path());
+	const auto target = parent / file.filename();
+
+	if (RelativeProjectPath(root, target).empty()) {
+		return SceneSerializer::Serialize(scene, text);
+	}
+
+	Scene snapshot;
+	snapshot.ReplaceObjects(scene.GetObjects());
+	RewriteProjectReferences(snapshot, [&](const auto &path) {
+		const auto absolute = PathUtils::ResolveFromExecutable(path);
+		const auto relative =
+		    RelativeProjectPath(root, std::filesystem::weakly_canonical(absolute));
+
+		if (!relative.empty()) {
+			return std::filesystem::path(kProjectReference) / relative;
+		}
+
+		return *path.begin() == kProjectReference ? absolute : path;
+	});
+
+	if (!SceneSerializer::Serialize(snapshot, text)) {
+		return false;
+	}
+
+	auto document = Json::parse(text);
+	document["projectRoot"] =
+	    PathUtils::ToUtf8(root.lexically_relative(parent));
+	text = document.dump(2) + '\n';
+	return true;
+}
 
 /// <summary>
 /// Prefabの根・元ID・保存済み対応表と、再帰を含まない基準シーンを検証する
@@ -759,15 +881,16 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 }
 
 bool SceneSerializer::Save(const Scene &scene,
-                           const std::filesystem::path &filePath) {
+                           const std::filesystem::path &filePath,
+                           const std::filesystem::path &projectRoot,
+                           std::string *savedText) {
 	try {
 		std::string text;
+		const auto targetPath = PathUtils::ResolveFromExecutable(filePath);
 
-		if (!Serialize(scene, text)) {
+		if (!SerializeSceneFile(scene, text, targetPath, projectRoot)) {
 			return false;
 		}
-
-		const auto targetPath = PathUtils::ResolveFromExecutable(filePath);
 
 		std::filesystem::create_directories(targetPath.parent_path());
 
@@ -776,6 +899,10 @@ bool SceneSerializer::Save(const Scene &scene,
 		if (!FileUtils::WriteTextAtomically(targetPath, text, error)) {
 			Logger::Error(std::format("SceneSerializer::Save: {}", error));
 			return false;
+		}
+
+		if (savedText) {
+			savedText->swap(text);
 		}
 
 		Logger::Info("シーンを保存しました。");
@@ -794,7 +921,8 @@ namespace {
 /// <param name="scene">読み込み先</param>
 /// <param name="document">version 1から22のJSON</param>
 /// <returns>true:成功 false:内容が無効</returns>
-bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
+bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
+                        const std::filesystem::path &projectRoot) {
 	try {
 		if (!document.is_object() || document.at("format") != "EngineScene" ||
 		    !document.at("version").is_number_integer() ||
@@ -804,6 +932,11 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 		}
 
 		const int version = document.at("version").get<int>();
+
+		if (document.contains("projectRoot") &&
+		    (version < 66 || projectRoot.empty())) {
+			throw std::runtime_error("The scene requires a valid project root.");
+		}
 
 		const Json &items = document.at("objects");
 
@@ -1687,6 +1820,36 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 			}
 		}
 
+		if (!projectRoot.empty()) {
+			RewriteProjectReferences(candidate, [&](const auto &path) {
+				if (path.has_root_path() || *path.begin() != kProjectReference) {
+					return path;
+				}
+
+				std::filesystem::path relative;
+
+				for (auto part = std::next(path.begin()); part != path.end(); ++part) {
+					if (!PathUtils::IsValidFileName(*part)) {
+						throw std::runtime_error("Invalid project asset reference.");
+					}
+
+					relative /= *part;
+				}
+
+				if (relative.empty()) {
+					throw std::runtime_error("Missing project asset path.");
+				}
+
+				const auto resolved =
+				    std::filesystem::weakly_canonical(projectRoot / relative);
+				if (RelativeProjectPath(projectRoot, resolved).empty()) {
+					throw std::runtime_error("A project asset is outside the project.");
+				}
+
+				return resolved;
+			});
+		}
+
 		ValidatePrefabLinks(candidate);
 
 		// 全データの読み込みに成功してから、現在のシーンへ反映する。
@@ -1705,9 +1868,22 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess) {
 
 } // namespace
 
-bool SceneSerializer::Deserialize(Scene &scene, std::string_view text) {
+bool SceneSerializer::Deserialize(Scene &scene, std::string_view text,
+                                  const std::filesystem::path &filePath,
+                                  std::filesystem::path *projectRoot) {
 	try {
-		return ApplySceneDocument(scene, Json::parse(text));
+		const auto document = Json::parse(text);
+		auto root = ReadProjectRoot(document, filePath);
+
+		if (!ApplySceneDocument(scene, document, true, root)) {
+			return false;
+		}
+
+		if (projectRoot) {
+			projectRoot->swap(root);
+		}
+
+		return true;
 	} catch (const std::exception &error) {
 		Logger::Error(
 		    std::format("SceneSerializer::Deserialize: {}", error.what()));
@@ -1726,7 +1902,9 @@ bool SceneSerializer::Load(Scene &scene,
 		}
 
 		input.exceptions(std::ios::badbit);
-		return ApplySceneDocument(scene, Json::parse(input));
+		const auto document = Json::parse(input);
+		return ApplySceneDocument(scene, document, true,
+		                          ReadProjectRoot(document, filePath));
 	} catch (const std::exception &error) {
 		Logger::Error(std::format("SceneSerializer::Load: {}", error.what()));
 		return false;

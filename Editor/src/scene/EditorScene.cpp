@@ -4170,7 +4170,10 @@ void EditorScene::UpdateDialogs() {
 const Scene *EditorScene::GetExportScene(SceneDocument &startup) {
 	const auto path = project_.GetStartupScene();
 
-	if (path.empty() || PathUtils::IsSameFile(path, document_.GetFilePath())) {
+	const auto &current = document_.GetFilePath();
+
+	if (path.empty() ||
+	    (!current.empty() && PathUtils::IsSameFile(path, current))) {
 		return &document_.GetScene();
 	}
 
@@ -4220,6 +4223,7 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 			return;
 		}
 
+		document_.SetProjectRoot(candidate.GetRoot());
 		project_ = std::move(candidate);
 		exportConfig_ = std::move(config);
 		assetSources_ = std::move(sources);

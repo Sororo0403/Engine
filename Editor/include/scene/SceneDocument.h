@@ -53,6 +53,11 @@ class SceneDocument {
 	void MarkModified();
 
 	/// <summary>
+	/// 保存時に素材参照を相対化するプロジェクトのルートを指定する
+	/// </summary>
+	void SetProjectRoot(std::filesystem::path root);
+
+	/// <summary>
 	/// 空のシーンを作成し、保存先と変更状態をクリアする
 	/// </summary>
 	void New();
@@ -117,6 +122,8 @@ class SceneDocument {
 	EditorHistory history_{scene_};
 
 	std::filesystem::path filePath_;
+	std::filesystem::path projectRoot_;
+	std::filesystem::path fileProjectRoot_;
 	std::string savedText_;
 	std::string error_;
 };
