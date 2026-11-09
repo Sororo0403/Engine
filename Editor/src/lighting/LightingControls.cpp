@@ -6,19 +6,12 @@
 #include <initializer_list>
 #include <string>
 
-void LightingControls::Draw(const ImGuiSystem &ui, LightingSettings &lighting,
-                            bool ambientOnly) {
-	if (!ambientOnly) {
-		ImGui::InputFloat3("Light Direction", &lighting.direction.x);
-		ImGui::ColorEdit3("Light Color", &lighting.color.x);
-		ImGui::SliderFloat("Light Intensity", &lighting.intensity, 0.0f,
-		                   LightingSettings::kMaxIntensity);
-	}
-
+void LightingControls::Draw(const ImGuiSystem &ui, LightingSettings &lighting) {
+	ImGui::InputFloat3("Light Direction", &lighting.direction.x);
+	ImGui::ColorEdit3("Light Color", &lighting.color.x);
+	ImGui::SliderFloat("Light Intensity", &lighting.intensity, 0.0f,
+	                   LightingSettings::kMaxIntensity);
 	ImGui::SliderFloat("Ambient Light", &lighting.ambient, 0.0f, 1.0f);
-
-	if (ambientOnly)
-		return;
 
 	if (ui.Button("Reset Lighting")) {
 		lighting = {};

@@ -150,7 +150,7 @@ class EditorScene final : public IScene {
 		EXPORT_GAME,
 		GAME_SETTINGS,
 		LOAD_GAME_SETTINGS,
-		SCENE_LIGHTING,
+		SCENE_SETTINGS,
 		ASSETS_FOLDER,
 		RELOAD_SCENE,
 		EXIT,
@@ -271,7 +271,7 @@ class EditorScene final : public IScene {
 		EXPORT_GAME,
 		EXPORT_RESULT,
 		GAME_SETTINGS,
-		SCENE_LIGHTING,
+		SCENE_SETTINGS,
 		CONFIRM_RELOAD,
 		BATCH_RENAME,
 		OBJECT_ARRAY,
@@ -895,9 +895,9 @@ class EditorScene final : public IScene {
 	GameExportDialog exportDialog_;
 	GameExportResultDialog exportResultDialog_;
 	GameSettingsDialog gameSettingsDialog_;
-	LightingSettings sceneLightingDraft_;
-	bool sceneLightingOverride_ = false;
-	bool sceneLightingOpenRequested_ = false;
+	float sceneAmbientDraft_ = 0.0f;
+	bool sceneAmbientOverride_ = false;
+	bool sceneSettingsOpenRequested_ = false;
 	GameConfig exportConfig_;
 	SceneReloadDialog sceneReloadDialog_;
 
