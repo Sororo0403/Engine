@@ -24,6 +24,14 @@ Find(const std::filesystem::path &target, const std::filesystem::path &searchRoo
      const std::filesystem::path &startup);
 
 /// <summary>
+/// Assets内でファイルまたはフォルダを同じ場所に複製する
+/// </summary>
+/// <returns>成功時に複製先を返す。失敗時は空で、errorに理由を返す</returns>
+std::filesystem::path Duplicate(const std::filesystem::path &source,
+                                const std::filesystem::path &assetRoot,
+                                std::string &error);
+
+/// <summary>
 /// Assets内で素材を移動または改名し、保存済みと編集中の参照を更新する
 /// </summary>
 bool Relocate(const std::filesystem::path &source,

@@ -172,6 +172,11 @@ class AssetsPanel {
 	const std::filesystem::path &GetRenameRequest() const;
 
 	/// <summary>
+	/// 複製が要求された素材ファイルまたはフォルダを取得する
+	/// </summary>
+	const std::filesystem::path &GetDuplicateRequest() const;
+
+	/// <summary>
 	/// フォルダへのドロップで要求された移動元と移動先
 	/// </summary>
 	struct MoveRequest {
@@ -271,6 +276,7 @@ class AssetsPanel {
 	int textureSlot_ = 0;
 	std::filesystem::path recyclePath_;
 	std::filesystem::path renamePath_;
+	std::filesystem::path duplicatePath_;
 	MoveRequest moveRequest_;
 	bool textureClearRequested_ = false;
 	bool textureImportRequested_ = false;

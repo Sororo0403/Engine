@@ -22,6 +22,16 @@ class OutputDirectory {
 	void Create(const std::filesystem::path &path);
 
 	/// <summary>
+	/// 既存フォルダを出力先に指定する。フォルダ自身は片付けの対象にしない
+	/// </summary>
+	void OpenExisting(const std::filesystem::path &path);
+
+	/// <summary>
+	/// 出力先に新しいサブフォルダを作成する。既存フォルダは拒否する
+	/// </summary>
+	void CreateSubdirectory(const std::filesystem::path &relative);
+
+	/// <summary>
 	/// 通常ファイルを新規出力へコピーする。既存項目や参照元は変更しない
 	/// </summary>
 	/// <param name="source">通常ファイルの絶対パス</param>

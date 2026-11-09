@@ -1,6 +1,7 @@
 #include "assets/AssetUsage.h"
 
 #include "assets/AssetDependencies.h"
+#include "files/OutputDirectory.h"
 #include "platform/windows/FileUtils.h"
 #include "platform/windows/PathUtils.h"
 #include "scene/PrefabSerializer.h"
@@ -62,24 +63,66 @@ std::optional<fs::path> RelativeReference(const fs::path &root,
 }
 
 /// <summary>
-/// フォルダをまとめて操作する前に、リンクやリダイレクトがないことを確認する
+/// リンクやリダイレクトでない通常の項目を確認する
+/// </summary>
+void CheckOrdinaryAsset(const fs::path &path) {
+	const auto attributes = GetFileAttributesW(path.c_str());
+
+	if (attributes == INVALID_FILE_ATTRIBUTES ||
+	    (attributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0) {
+		throw std::runtime_error(
+		    "Cannot operate on a missing, linked or redirected item:\n" +
+		    PathUtils::ToUtf8(path));
+	}
+}
+
+/// <summary>
+/// フォルダをまとめて操作する前に、配下にリンクがないことを確認する
 /// </summary>
 void ValidateFolderTree(const fs::path &folder) {
-	const auto check = [](const fs::path &path) {
-		const auto attributes = GetFileAttributesW(path.c_str());
-
-		if (attributes == INVALID_FILE_ATTRIBUTES ||
-		    (attributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0) {
-			throw std::runtime_error(
-			    "Cannot operate on a folder containing a link or redirected item:\n" +
-			    PathUtils::ToUtf8(path));
-		}
-	};
-
-	check(folder);
+	CheckOrdinaryAsset(folder);
 
 	for (const auto &entry : fs::recursive_directory_iterator(folder)) {
-		check(entry.path());
+		CheckOrdinaryAsset(entry.path());
+	}
+}
+
+/// <summary>
+/// ファイル形式を保ったまま、同じフォルダで空いている複製名を探す
+/// </summary>
+fs::path DuplicateDestination(const fs::path &source, bool folder) {
+	const auto parent = source.parent_path();
+	auto stem = folder ? source.filename() : source.stem();
+	auto suffix = folder ? fs::path{} : source.extension();
+
+	if (!folder && PathUtils::HasExtension(source, ".json")) {
+		for (const auto kind : {".scene", ".prefab", ".settings"}) {
+			if (PathUtils::HasExtension(stem, kind)) {
+				suffix = stem.extension().native() + suffix.native();
+				stem = stem.stem();
+				break;
+			}
+		}
+	}
+
+	for (std::size_t index = 1;; ++index) {
+		auto name = stem.native() + L" Copy";
+
+		if (index > 1) {
+			name += L" " + std::to_wstring(index);
+		}
+
+		name += suffix.native();
+
+		if (!PathUtils::IsValidFileName(name)) {
+			throw std::runtime_error("The generated copy name is too long or invalid.");
+		}
+
+		auto candidate = parent / name;
+
+		if (!fs::exists(fs::symlink_status(candidate))) {
+			return candidate;
+		}
 	}
 }
 
@@ -346,6 +389,58 @@ std::vector<std::string> AssetUsage::Find(
 	}
 
 	return Scan(fs::canonical(target), searchRoot, scene, scenePath, startup);
+}
+
+fs::path AssetUsage::Duplicate(const fs::path &source, const fs::path &assetRoot,
+                              std::string &error) {
+	OutputDirectory output;
+
+	try {
+		if (!assetRoot.is_absolute() || !source.is_absolute() ||
+		    source.native().find(L'\0') != std::wstring::npos) {
+			throw std::runtime_error("Choose a file or folder inside editable Assets.");
+		}
+
+		const auto root = fs::canonical(assetRoot);
+		const auto resolved = fs::canonical(source);
+		const auto relative = PathUtils::RelativeInside(root, resolved);
+
+		if (relative.empty() ||
+		    PathUtils::RelativeInside(root, source.lexically_normal()) != relative) {
+			throw std::runtime_error("Choose an item inside Assets without using a redirected path.");
+		}
+
+		CheckOrdinaryAsset(source);
+		const bool folder = fs::is_directory(resolved);
+		auto destination = DuplicateDestination(resolved, folder);
+		output.OpenExisting(destination.parent_path());
+
+		if (folder) {
+			const auto name = destination.filename();
+			output.CreateSubdirectory(name);
+
+			for (const auto &entry : fs::recursive_directory_iterator(resolved)) {
+				CheckOrdinaryAsset(entry.path());
+				const auto copy = name / PathUtils::RelativeInside(resolved, entry.path());
+
+				if (entry.is_directory()) {
+					output.CreateSubdirectory(copy);
+				} else {
+					output.Copy(entry.path(), copy);
+				}
+			}
+		} else {
+			output.Copy(resolved, destination.filename());
+		}
+
+		output.Complete();
+		error.clear();
+		return destination;
+	} catch (const std::exception &failure) {
+		error = failure.what();
+		error += output.Cleanup();
+		return {};
+	}
 }
 
 bool AssetUsage::Relocate(const fs::path &source, const fs::path &destination,

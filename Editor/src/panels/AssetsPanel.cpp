@@ -34,6 +34,7 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	modelReloadPath_.clear();
 	recyclePath_.clear();
 	renamePath_.clear();
+	duplicatePath_.clear();
 	moveRequest_ = {};
 	meshReplacementPath_.clear();
 	textureReloadPath_.clear();
@@ -140,6 +141,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	modelReloadPath_.clear();
 	recyclePath_.clear();
 	renamePath_.clear();
+	duplicatePath_.clear();
 	moveRequest_ = {};
 	meshReplacementPath_.clear();
 	textureReloadPath_.clear();
@@ -439,6 +441,10 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 							renamePath_ = directory;
 						}
 
+						if (ui.MenuItem("Duplicate")) {
+							duplicatePath_ = directory;
+						}
+
 						if (ui.MenuItem("Move to Recycle Bin...")) {
 							recyclePath_ = directory;
 						}
@@ -516,6 +522,12 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				                canEditAssets &&
 				                    assets.GetRootDirectory().is_absolute())) {
 					renamePath_ = assetPath;
+				}
+
+				if (ui.MenuItem("Duplicate", nullptr,
+				                canEditAssets &&
+				                    assets.GetRootDirectory().is_absolute())) {
+					duplicatePath_ = assetPath;
 				}
 
 				if (ui.MenuItem("Move to Recycle Bin...", nullptr,
@@ -802,6 +814,7 @@ const std::filesystem::path &AssetsPanel::GetTexturePreviewRequest() const {
 void AssetsPanel::Clear() {
 	recyclePath_.clear();
 	renamePath_.clear();
+	duplicatePath_.clear();
 	moveRequest_ = {};
 	directoryOpenRequested_ = false;
 	requestedDirectory_.clear();
@@ -841,6 +854,10 @@ const std::filesystem::path &AssetsPanel::GetRecycleRequest() const {
 
 const std::filesystem::path &AssetsPanel::GetRenameRequest() const {
 	return renamePath_;
+}
+
+const std::filesystem::path &AssetsPanel::GetDuplicateRequest() const {
+	return duplicatePath_;
 }
 
 const AssetsPanel::MoveRequest &AssetsPanel::GetMoveRequest() const {

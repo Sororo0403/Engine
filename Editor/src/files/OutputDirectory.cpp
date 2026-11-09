@@ -79,6 +79,16 @@ struct OutputDirectory::Impl {
 		CreateOwnedDirectory(path, true);
 	}
 
+	void OpenExisting(const fs::path &path) {
+		root_ = path;
+	}
+
+	void CreateSubdirectory(const fs::path &relative) {
+		const auto path = OutputPath(relative);
+		EnsureDirectory(path.parent_path());
+		CreateOwnedDirectory(path, true);
+	}
+
 	void Copy(const fs::path &source, const fs::path &relative) {
 		FileHandle input(CreateFileW(
 		    source.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_DELETE,
@@ -258,7 +268,7 @@ struct OutputDirectory::Impl {
 		CreateOwnedDirectory(path, false);
 	}
 
-	HANDLE OpenNewFile(const fs::path &relative) {
+	fs::path OutputPath(const fs::path &relative) const {
 		const auto normalized = relative.lexically_normal();
 
 		if (normalized.empty() || normalized.has_root_path() ||
@@ -273,7 +283,11 @@ struct OutputDirectory::Impl {
 			}
 		}
 
-		const auto path = root_ / normalized;
+		return root_ / normalized;
+	}
+
+	HANDLE OpenNewFile(const fs::path &relative) {
+		const auto path = OutputPath(relative);
 		EnsureDirectory(path.parent_path());
 		entries_.push_back({path});
 		FileHandle handle(CreateFileW(
@@ -326,6 +340,29 @@ void OutputDirectory::Create(const std::filesystem::path &path) {
 
 	impl_ = std::make_unique<Impl>();
 	impl_->Create(path);
+}
+
+void OutputDirectory::OpenExisting(const std::filesystem::path &path) {
+	if (impl_) {
+		throw std::logic_error("Output creation has already started.");
+	}
+
+	if (!path.is_absolute() || path.native().find(L'\0') != std::wstring::npos ||
+	    !std::filesystem::is_directory(std::filesystem::symlink_status(path))) {
+		throw std::invalid_argument("Choose an existing absolute output folder.");
+	}
+
+	impl_ = std::make_unique<Impl>();
+	impl_->OpenExisting(path);
+}
+
+void OutputDirectory::CreateSubdirectory(
+    const std::filesystem::path &relative) {
+	if (!impl_) {
+		throw std::logic_error("Choose the output folder before creating a subfolder.");
+	}
+
+	impl_->CreateSubdirectory(relative);
 }
 
 void OutputDirectory::Copy(const std::filesystem::path &source,

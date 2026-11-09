@@ -699,6 +699,29 @@ bool EditorScene::Update(float deltaTime) {
 			stage_ = DialogStage::RENAME_ASSET;
 		}
 
+		const auto &duplicate = assetsPanel_.GetDuplicateRequest();
+
+		if (!duplicate.empty() && !IsBusy() && action == EditorAction::NONE &&
+		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
+			std::string error;
+			const auto copy =
+			    AssetUsage::Duplicate(duplicate, assets_.GetRootDirectory(), error);
+
+			if (copy.empty()) {
+				ShowError(std::move(error));
+			} else {
+				assets_.Refresh();
+				std::error_code typeError;
+
+				if (std::filesystem::is_directory(copy, typeError)) {
+					assetsPanel_.RequestOpenDirectory(
+					    copy.lexically_relative(assets_.GetRootDirectory()));
+				} else {
+					assetsPanel_.RequestReveal(copy);
+				}
+			}
+		}
+
 		const auto &recycle = assetsPanel_.GetRecycleRequest();
 
 		if (!recycle.empty() && !IsBusy() && action == EditorAction::NONE &&
