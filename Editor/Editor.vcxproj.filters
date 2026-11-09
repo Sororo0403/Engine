@@ -113,6 +113,9 @@
     <ClCompile Include="src\scene\SceneObjects.cpp">
       <Filter>src\scene</Filter>
     </ClCompile>
+    <ClCompile Include="src\scene\ProjectDocument.cpp">
+      <Filter>src\scene</Filter>
+    </ClCompile>
     <ClCompile Include="src\scene\SceneDocument.cpp">
       <Filter>src\scene</Filter>
     </ClCompile>
@@ -240,6 +243,9 @@
     </ClInclude>
     <ClInclude Include="include\scene\SceneObjects.h">
       <Filter>include\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scene\ProjectDocument.h">
+      <Filter>include\scene</Filter>
     </ClInclude>
     <ClInclude Include="include\scene\SceneDocument.h">
       <Filter>include\dialogs</Filter>

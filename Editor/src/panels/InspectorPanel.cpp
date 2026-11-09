@@ -411,7 +411,7 @@ bool InspectorPanel::Draw(
 	           : std::span<const std::filesystem::path>{},
 	    assets ? std::span<const std::filesystem::path>{assets->GetPrefabs()}
 	           : std::span<const std::filesystem::path>{},
-	    assets ? std::span<const std::filesystem::path>{assets->GetScenes()}
+	    assets ? std::span<const std::filesystem::path>{assets->GetSceneTargets()}
 	           : std::span<const std::filesystem::path>{});
 	changed |=
 	    MotionPathInspector{}.Draw(ui, inspectedObjectId, *object, history);
@@ -694,7 +694,7 @@ bool InspectorPanel::Draw(
 
 	changed |= TriggerActionsInspector{}.Draw(
 	    ui, scene, inspectedObjectId, *object, history,
-	    assets ? std::span<const std::filesystem::path>(assets->GetScenes())
+	    assets ? std::span<const std::filesystem::path>(assets->GetSceneTargets())
 	           : std::span<const std::filesystem::path>{},
 	    inputBindings);
 

@@ -47,6 +47,7 @@
 #include "physics/ColliderBounds.h"
 #include "physics/ColliderPlacement.h"
 #include "scene/IScene.h"
+#include "scene/ProjectDocument.h"
 #include "scene/SceneDocument.h"
 #include "scene/SceneGrid.h"
 #include "scene/SceneRenderer.h"
@@ -136,6 +137,9 @@ class EditorScene final : public IScene {
 	/// </summary>
 	enum class EditorAction {
 		NONE,
+		NEW_PROJECT,
+		OPEN_PROJECT,
+		SET_STARTUP_SCENE,
 		NEW,
 		NEW_SAMPLE,
 		OPEN,
@@ -248,6 +252,8 @@ class EditorScene final : public IScene {
 	enum class DialogStage {
 		IDLE,
 		CONFIRM_SAVE,
+		CREATE_PROJECT,
+		OPEN_PROJECT,
 		OPEN_FILE,
 		SAVE_FILE,
 		SAVE_COPY_FILE,
@@ -314,7 +320,8 @@ class EditorScene final : public IScene {
 	/// シーンを読み込み、成功した場合に選択・カメラ・最近の一覧を更新する
 	/// </summary>
 	/// <param name="path">読み込むシーンのパス</param>
-	void OpenScene(const std::filesystem::path &path);
+	/// <returns>true:読み込み成功 false:現在のシーンを保持</returns>
+	bool OpenScene(const std::filesystem::path &path);
 
 	/// <summary>
 	/// 保存を開始する。保存先がない場合は選択ダイアログを開く
@@ -329,6 +336,16 @@ class EditorScene final : public IScene {
 	/// <returns>外部Assets内の絶対パス、または従来の実行ファイル基準の指定</returns>
 	std::filesystem::path
 	GetNewScenePath(const std::filesystem::path &name) const;
+
+	/// <summary>
+	/// プロジェクトを作成または開き、読み込み成功後に編集対象を切り替える
+	/// </summary>
+	void SwitchProject(const std::filesystem::path &folder, bool create);
+
+	/// <summary>
+	/// 出力するシーンを取得する。別の起動シーンが指定されていれば一時ドキュメントに読み込む
+	/// </summary>
+	const Scene *GetExportScene(SceneDocument &startup);
 
 	/// <summary>
 	/// 現在の保存先と保存地点を保持するコピーの保存先選択を開始する
@@ -754,6 +771,7 @@ class EditorScene final : public IScene {
 	MaterialManager &materials_;
 
 	// 描画側の参照より先に宣言する
+	ProjectDocument project_;
 	SceneDocument document_;
 	SceneRecovery recovery_;
 	SceneRecoveryDialog recoveryDialog_;

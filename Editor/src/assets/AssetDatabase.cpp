@@ -12,8 +12,10 @@
 #include <system_error>
 #include <utility>
 
-AssetDatabase::AssetDatabase(std::filesystem::path rootDirectory)
-    : rootDirectory_(std::move(rootDirectory).lexically_normal()) {
+AssetDatabase::AssetDatabase(std::filesystem::path rootDirectory,
+                             std::filesystem::path sceneDirectory)
+    : rootDirectory_(rootDirectory.lexically_normal()),
+      sceneDirectory_(std::move(sceneDirectory)) {
 }
 
 bool AssetDatabase::Refresh() {
@@ -138,10 +140,25 @@ bool AssetDatabase::Refresh() {
 			throw std::system_error(error, "アセットの検索に失敗しました。");
 		}
 
+		std::vector<std::filesystem::path> projectScenes;
+
+		if (!sceneDirectory_.empty()) {
+			for (const auto &entry :
+			     std::filesystem::recursive_directory_iterator(sceneDirectory_)) {
+				const auto &path = entry.path();
+
+				if (entry.is_regular_file() && PathUtils::HasExtension(path, ".json") &&
+				    PathUtils::HasExtension(path.stem(), ".scene")) {
+					projectScenes.push_back(path);
+				}
+			}
+		}
+
 		std::sort(models.begin(), models.end());
 		std::sort(textures.begin(), textures.end());
 		std::sort(audioClips.begin(), audioClips.end());
 		std::sort(scenes.begin(), scenes.end());
+		std::sort(projectScenes.begin(), projectScenes.end());
 		std::sort(scripts.begin(), scripts.end());
 		std::sort(prefabs.begin(), prefabs.end());
 		std::sort(gameConfigurations.begin(), gameConfigurations.end());
@@ -152,6 +169,7 @@ bool AssetDatabase::Refresh() {
 		textures_.swap(textures);
 		audioClips_.swap(audioClips);
 		scenes_.swap(scenes);
+		projectScenes_.swap(projectScenes);
 		scripts_.swap(scripts);
 		prefabs_.swap(prefabs);
 		gameConfigurations_.swap(gameConfigurations);
@@ -163,6 +181,7 @@ bool AssetDatabase::Refresh() {
 		textures_.clear();
 		audioClips_.clear();
 		scenes_.clear();
+		projectScenes_.clear();
 		scripts_.clear();
 		prefabs_.clear();
 		gameConfigurations_.clear();
@@ -176,7 +195,7 @@ bool AssetDatabase::Refresh() {
 
 bool AssetDatabase::SetRootDirectory(std::filesystem::path rootDirectory) {
 	try {
-		AssetDatabase candidate(std::move(rootDirectory));
+		AssetDatabase candidate(std::move(rootDirectory), sceneDirectory_);
 
 		if (!candidate.Refresh()) {
 			error_ = candidate.GetError();
@@ -188,6 +207,7 @@ bool AssetDatabase::SetRootDirectory(std::filesystem::path rootDirectory) {
 		textures_.swap(candidate.textures_);
 		audioClips_.swap(candidate.audioClips_);
 		scenes_.swap(candidate.scenes_);
+		projectScenes_.swap(candidate.projectScenes_);
 		scripts_.swap(candidate.scripts_);
 		prefabs_.swap(candidate.prefabs_);
 		gameConfigurations_.swap(candidate.gameConfigurations_);
@@ -222,6 +242,7 @@ void AssetDatabase::Clear() {
 	textures_.clear();
 	audioClips_.clear();
 	scenes_.clear();
+	projectScenes_.clear();
 	scripts_.clear();
 	prefabs_.clear();
 	gameConfigurations_.clear();
@@ -239,6 +260,10 @@ const std::vector<std::filesystem::path> &AssetDatabase::GetPrefabs() const {
 
 const std::vector<std::filesystem::path> &AssetDatabase::GetScenes() const {
 	return scenes_;
+}
+
+const std::vector<std::filesystem::path> &AssetDatabase::GetSceneTargets() const {
+	return sceneDirectory_.empty() ? scenes_ : projectScenes_;
 }
 
 const std::vector<std::filesystem::path> &

@@ -1488,7 +1488,7 @@ void EditorScene::Finalize() {
 	recovery_.Release();
 
 	if (canSavePreferences_) {
-		EditorPreferences current;
+		auto current = preferences_;
 		current.showGrid = showGrid_;
 		current.showSelectionBounds = showSelectionBounds_;
 		current.showCameraGuides = showCameraGuides_;
@@ -1508,8 +1508,10 @@ void EditorScene::Finalize() {
 		current.sceneProjection = sceneProjection_;
 		current.cameraBookmarks = cameraBookmarks_;
 		current.grid = sceneGrid_.GetSettings();
-		current.gameExport = exportConfig_;
-		current.assets = assetSources_;
+		if (project_.GetRoot().empty()) {
+			current.gameExport = exportConfig_;
+			current.assets = assetSources_;
+		}
 		const auto recent = recentScenes_.GetPaths();
 		current.recentScenes.assign(recent.begin(), recent.end());
 
@@ -1574,6 +1576,12 @@ std::string EditorScene::GetWindowTitle() const {
 	        ? "Untitled"
 	        : PathUtils::ToUtf8(document_.GetFilePath().filename());
 
+	if (!project_.GetRoot().empty()) {
+		return std::format("{}{} - {} - Editor", name,
+		                   document_.IsModified() ? "*" : "",
+		                   project_.GetGameConfig().title);
+	}
+
 	return std::format("{}{} - Editor", name,
 	                   document_.IsModified() ? "*" : "");
 }
@@ -1589,6 +1597,22 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 
 	if (ui_.BeginMenu("File")) {
 		const bool enabled = !IsBusy();
+
+		if (ui_.MenuItem("New Project...", nullptr, enabled)) {
+			action = EditorAction::NEW_PROJECT;
+		}
+
+		if (ui_.MenuItem("Open Project...", nullptr, enabled)) {
+			action = EditorAction::OPEN_PROJECT;
+		}
+
+		if (ui_.MenuItem("Set Current Scene as Startup", nullptr,
+		                 enabled && !project_.GetRoot().empty() &&
+		                     !document_.GetFilePath().empty())) {
+			action = EditorAction::SET_STARTUP_SCENE;
+		}
+
+		ui_.Separator();
 
 		if (ui_.MenuItem("New", "Ctrl+N", enabled)) {
 			action = EditorAction::NEW;
@@ -1661,7 +1685,8 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			action = EditorAction::RECOVER_SCENE;
 		}
 
-		if (ui_.MenuItem("Assets Folder...", nullptr, enabled)) {
+		if (ui_.MenuItem("Assets Folder...", nullptr,
+		                 enabled && project_.GetRoot().empty())) {
 			action = EditorAction::ASSETS_FOLDER;
 		}
 
@@ -2463,6 +2488,16 @@ void EditorScene::StartAction(EditorAction action) {
 	FinishEdit();
 
 	switch (action) {
+	case EditorAction::SET_STARTUP_SCENE: {
+		std::string error;
+
+		if (!project_.Save(exportConfig_, document_.GetFilePath(), error)) {
+			ShowError(std::move(error));
+		}
+
+		return;
+	}
+
 	case EditorAction::RECOVER_SCENE:
 		ShowRecovery();
 		return;
@@ -2730,6 +2765,8 @@ void EditorScene::StartAction(EditorAction action) {
 
 		return;
 
+	case EditorAction::NEW_PROJECT:
+	case EditorAction::OPEN_PROJECT:
 	case EditorAction::NEW:
 	case EditorAction::NEW_SAMPLE:
 	case EditorAction::OPEN:
@@ -2876,7 +2913,26 @@ void EditorScene::ExecutePendingAction() {
 	stage_ = DialogStage::IDLE;
 
 	switch (action) {
+	case EditorAction::NEW_PROJECT:
+	case EditorAction::OPEN_PROJECT: {
+		const auto directory = project_.GetRoot().empty()
+		                           ? document_.GetFilePath().parent_path()
+		                           : project_.GetRoot();
+		fileDialog_.Show(FileDialogMode::SELECT_DIRECTORY, directory);
+		stage_ = action == EditorAction::NEW_PROJECT
+		             ? DialogStage::CREATE_PROJECT
+		             : DialogStage::OPEN_PROJECT;
+		return;
+	}
+
 	case EditorAction::EXPORT_GAME: {
+		SceneDocument startup;
+		const auto *scene = GetExportScene(startup);
+
+		if (!scene) {
+			return;
+		}
+
 		GameExportOptions options;
 		const auto root = PathUtils::GetExecutableDirectory();
 #if defined(_DEBUG)
@@ -2885,10 +2941,12 @@ void EditorScene::ExecutePendingAction() {
 		options.runtimeDirectory = root;
 #endif
 		options.resourceDirectory = root / L"resources";
-		options.assetDirectories = assetSources_.ForScene(document_.GetScene());
+		options.assetDirectories = assetSources_.ForScene(*scene);
 		options.destination = root / L"exports" / L"Game";
 		options.config = exportConfig_;
-		options.config.fallbackCamera = cameraController_.GetPose();
+		if (scene == &document_.GetScene()) {
+			options.config.fallbackCamera = cameraController_.GetPose();
+		}
 		exportDialog_.Show(std::move(options));
 		stage_ = DialogStage::EXPORT_GAME;
 		return;
@@ -2950,9 +3008,11 @@ void EditorScene::ExecutePendingAction() {
 		return;
 
 	case EditorAction::OPEN:
-		fileDialog_.Show(FileDialogMode::OPEN, document_.GetFilePath().empty()
-		                                           ? GetNewScenePath({})
-		                                           : document_.GetFilePath());
+		fileDialog_.Show(FileDialogMode::OPEN,
+		                 !project_.GetRoot().empty() ||
+		                         document_.GetFilePath().empty()
+		                     ? GetNewScenePath({})
+		                     : document_.GetFilePath());
 
 		stage_ = DialogStage::OPEN_FILE;
 		return;
@@ -2986,9 +3046,12 @@ void EditorScene::StartSave(bool saveAs) {
 		return;
 	}
 
-	const auto path = document_.GetFilePath().empty()
+	const auto &current = document_.GetFilePath();
+	const auto path = current.empty()
 	                      ? GetNewScenePath(L"Untitled.scene.json")
-	                      : document_.GetFilePath();
+	                  : !project_.GetRoot().empty()
+	                      ? GetNewScenePath(current.filename())
+	                      : current;
 	fileDialog_.Show(FileDialogMode::SAVE, path);
 
 	stage_ = DialogStage::SAVE_FILE;
@@ -3228,6 +3291,11 @@ void EditorScene::SetCameraView(CameraView view) {
 
 std::filesystem::path
 EditorScene::GetNewScenePath(const std::filesystem::path &name) const {
+	if (!project_.GetRoot().empty()) {
+		return name.empty() ? project_.GetScenesDirectory()
+		                    : project_.GetScenesDirectory() / name;
+	}
+
 	const auto &directory = assetSources_.GetDirectory();
 
 	if (name.empty()) {
@@ -3486,14 +3554,26 @@ void EditorScene::RestoreRecovery() {
 			return;
 		}
 
-		AssetDatabase assets(snapshot.assets.GetDirectory());
+		if (!project_.GetRoot().empty() &&
+		    !PathUtils::IsSameFile(project_.GetAssetsDirectory(),
+		                           snapshot.assets.GetDirectory())) {
+			ShowError("This recovery belongs to a different Assets folder.");
+			return;
+		}
+
+		AssetDatabase assets(snapshot.assets.GetDirectory(),
+		                     project_.GetRoot().empty()
+		                         ? std::filesystem::path{}
+		                         : project_.GetScenesDirectory());
 		assets.Refresh();
 		auto restoredPath = pendingRecoveryPath_;
 		document_.GetScene().ReplaceObjects(snapshot.scene.GetObjects());
 		document_.SetUntitled();
 		ClearRecovery(pendingRecoveryPath_);
 		assetSources_ = std::move(snapshot.assets);
-		exportConfig_ = std::move(snapshot.game);
+		if (project_.GetRoot().empty()) {
+			exportConfig_ = std::move(snapshot.game);
+		}
 		assets_ = std::move(assets);
 		restoredRecoveryPath_.swap(restoredPath);
 		sceneCheckPanel_.Reset();
@@ -3556,6 +3636,20 @@ void EditorScene::UpdateDialogs() {
 
 		case SaveChangesResult::NONE:
 			break;
+		}
+
+		return;
+	}
+
+	case DialogStage::CREATE_PROJECT:
+	case DialogStage::OPEN_PROJECT: {
+		const auto result = fileDialog_.Draw(ui_);
+
+		if (result == FileDialogResult::CANCELLED) {
+			stage_ = DialogStage::IDLE;
+		} else if (result == FileDialogResult::ACCEPTED) {
+			SwitchProject(fileDialog_.GetSelectedPath(),
+			              stage_ == DialogStage::CREATE_PROJECT);
 		}
 
 		return;
@@ -3748,7 +3842,9 @@ void EditorScene::UpdateDialogs() {
 				// パッケージのシーン参照・予備カメラは現在のEditor設定へ持ち込まない。
 				settings.scenePath = exportConfig_.scenePath;
 				settings.fallbackCamera = exportConfig_.fallbackCamera;
-				exportConfig_ = std::move(settings);
+				if (project_.GetRoot().empty()) {
+					exportConfig_ = std::move(settings);
+				}
 			}
 
 			document_.SetUntitled();
@@ -3967,7 +4063,16 @@ void EditorScene::UpdateDialogs() {
 		const auto result = gameSettingsDialog_.Draw(ui_);
 
 		if (result == GameSettingsResult::ACCEPTED) {
-			exportConfig_ = gameSettingsDialog_.GetConfig();
+			const auto &settings = gameSettingsDialog_.GetConfig();
+			std::string error;
+
+			if (!project_.GetRoot().empty() &&
+			    !project_.Save(settings, project_.GetStartupScene(), error)) {
+				ShowError(std::move(error));
+				return;
+			}
+
+			exportConfig_ = settings;
 		}
 
 		if (result != GameSettingsResult::NONE) {
@@ -3988,14 +4093,23 @@ void EditorScene::UpdateDialogs() {
 		}
 
 		if (result == GameExportResult::ACCEPTED) {
+			SceneDocument startup;
+			const auto *scene = GetExportScene(startup);
+
+			if (!scene) {
+				return;
+			}
+
 			std::string error;
 
-			if (GameExporter::Export(document_.GetScene(),
-			                         exportDialog_.GetOptions(), error)) {
+			if (GameExporter::Export(*scene, exportDialog_.GetOptions(),
+			                         error)) {
 				Logger::Info(
 				    "Game exported to " +
 				    PathUtils::ToUtf8(exportDialog_.GetOptions().destination));
-				exportConfig_ = exportDialog_.GetOptions().config;
+				if (project_.GetRoot().empty()) {
+					exportConfig_ = exportDialog_.GetOptions().config;
+				}
 				exportResultDialog_.Show(
 				    exportDialog_.GetOptions().destination);
 				stage_ = DialogStage::EXPORT_RESULT;
@@ -4053,13 +4167,78 @@ void EditorScene::UpdateDialogs() {
 	}
 }
 
-void EditorScene::OpenScene(const std::filesystem::path &path) {
+const Scene *EditorScene::GetExportScene(SceneDocument &startup) {
+	const auto path = project_.GetStartupScene();
+
+	if (path.empty() || PathUtils::IsSameFile(path, document_.GetFilePath())) {
+		return &document_.GetScene();
+	}
+
+	if (!startup.Open(path)) {
+		ShowError("Could not load the project startup scene: " +
+		          startup.GetError());
+		return nullptr;
+	}
+
+	return &startup.GetScene();
+}
+
+void EditorScene::SwitchProject(const std::filesystem::path &folder,
+                                bool create) {
+	try {
+		ProjectDocument candidate;
+		std::string error;
+
+		if (!(create ? candidate.Create(folder, error)
+		             : candidate.Open(folder, error))) {
+			ShowError(std::move(error));
+			return;
+		}
+
+		AssetDatabase assets(candidate.GetAssetsDirectory(),
+		                     candidate.GetScenesDirectory());
+
+		if (!assets.Refresh()) {
+			ShowError(assets.GetError());
+			return;
+		}
+
+		AssetSources sources;
+		sources.Select(assets.GetRootDirectory());
+		sources.Register(candidate.GetScenesDirectory());
+		auto config = candidate.GetGameConfig();
+		const auto startup = candidate.GetStartupScene();
+
+		if (startup.empty()) {
+			pendingAction_ = EditorAction::NEW;
+			ExecutePendingAction();
+
+			if (stage_ != DialogStage::IDLE) {
+				return;
+			}
+		} else if (!OpenScene(startup)) {
+			return;
+		}
+
+		project_ = std::move(candidate);
+		exportConfig_ = std::move(config);
+		assetSources_ = std::move(sources);
+		assets_ = std::move(assets);
+		assetsPanel_.Clear();
+		texturePreviewPanel_.Clear();
+		stage_ = DialogStage::IDLE;
+	} catch (const std::exception &error) {
+		ShowError(error.what());
+	}
+}
+
+bool EditorScene::OpenScene(const std::filesystem::path &path) {
 	const bool opened = document_.Open(path);
 
 	if (!opened) {
 		ShowError("Could not open the scene. The current scene was kept. See "
 		          "the log for details.");
-		return;
+		return false;
 	}
 
 	ClearRecovery();
@@ -4076,6 +4255,7 @@ void EditorScene::OpenScene(const std::filesystem::path &path) {
 	inspectorPanel_.Clear();
 	recentScenes_.Add(document_.GetFilePath());
 	stage_ = DialogStage::IDLE;
+	return true;
 }
 
 void EditorScene::ShowError(std::string message, SceneObjectId objectId) {

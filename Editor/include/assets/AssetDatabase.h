@@ -13,7 +13,9 @@ class AssetDatabase {
 	/// アセットを検索するフォルダを指定する。ファイルの検索はまだ行わない
 	/// </summary>
 	/// <param name="rootDirectory">絶対パス、または実行ファイルのフォルダを基準にした相対パス</param>
-	explicit AssetDatabase(std::filesystem::path rootDirectory);
+	/// <param name="sceneDirectory">プロジェクトのシーンフォルダ。空ならAssets内を使う</param>
+	explicit AssetDatabase(std::filesystem::path rootDirectory,
+	                       std::filesystem::path sceneDirectory = {});
 
 	AssetDatabase(const AssetDatabase &) = delete;
 	AssetDatabase &operator=(const AssetDatabase &) = delete;
@@ -64,6 +66,11 @@ class AssetDatabase {
 	const std::vector<std::filesystem::path> &GetScenes() const;
 
 	/// <summary>
+	/// TriggerやLuaの遷移先として選択できるシーン一覧を取得する
+	/// </summary>
+	const std::vector<std::filesystem::path> &GetSceneTargets() const;
+
+	/// <summary>
 	/// Prefab専用の標準名を持つ候補を取得する。内容は配置時に検証する
 	/// </summary>
 	/// <returns>検索先と同じ絶対・相対指定の.prefab.json一覧</returns>
@@ -100,10 +107,12 @@ class AssetDatabase {
 
   private:
 	std::filesystem::path rootDirectory_;
+	std::filesystem::path sceneDirectory_;
 	std::vector<std::filesystem::path> models_;
 	std::vector<std::filesystem::path> textures_;
 	std::vector<std::filesystem::path> audioClips_;
 	std::vector<std::filesystem::path> scenes_;
+	std::vector<std::filesystem::path> projectScenes_;
 	std::vector<std::filesystem::path> scripts_;
 	std::vector<std::filesystem::path> prefabs_;
 	std::vector<std::filesystem::path> gameConfigurations_;

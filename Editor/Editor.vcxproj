@@ -152,6 +152,7 @@
     <ClInclude Include="include\history\AlignmentAxis.h" />
     <ClInclude Include="include\dialogs\FileDialog.h" />
     <ClInclude Include="include\scene\SceneObjects.h" />
+    <ClInclude Include="include\scene\ProjectDocument.h" />
     <ClInclude Include="include\scene\SceneDocument.h" />
     <ClInclude Include="include\gizmo\TransformGizmo.h" />
     <ClInclude Include="include\history\TransformCommand.h" />
@@ -195,6 +196,7 @@
     <ClCompile Include="src\dialogs\PrefabCreateDialog.cpp" />
     <ClCompile Include="src\assets\ModelPlacement.cpp" />
     <ClCompile Include="src\scene\SceneObjects.cpp" />
+    <ClCompile Include="src\scene\ProjectDocument.cpp" />
     <ClCompile Include="src\scene\SceneDocument.cpp" />
     <ClCompile Include="src\dialogs\SaveChangesDialog.cpp" />
     <ClCompile Include="src\dialogs\BatchRenameDialog.cpp" />
