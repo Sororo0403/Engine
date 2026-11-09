@@ -150,6 +150,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	renamePath_.clear();
 	duplicatePaths_.clear();
 	moveRequest_ = {};
+	pasteRequest_ = {};
 	meshReplacementPath_.clear();
 	textureReloadPath_.clear();
 	textureUsageSelectionPath_.clear();
@@ -702,6 +703,37 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		OpenDirectory(std::move(nextDirectory));
 	}
 
+	const auto &io = ImGui::GetIO();
+	const auto &root = assets.GetRootDirectory();
+
+	if (!clipboardItems_.empty() && clipboardRoot_ != root) {
+		clipboardItems_.clear();
+		clipboardCut_ = false;
+	}
+
+	if (canEditAssets && root.is_absolute() &&
+	    ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows |
+	                           ImGuiFocusedFlags_NoPopupHierarchy) &&
+	    !io.AppFocusLost && !ui.IsTextInputActive() && !ImGui::IsAnyItemActive() &&
+	    !ImGui::GetDragDropPayload() &&
+	    !ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopupId |
+	                                     ImGuiPopupFlags_AnyPopupLevel) &&
+	    io.KeyCtrl && !io.KeyShift && !io.KeyAlt) {
+		const bool copy = ImGui::IsKeyPressed(ImGuiKey_C, false);
+		const bool cut = ImGui::IsKeyPressed(ImGuiKey_X, false);
+
+		if (!selectedItems_.empty() && (copy || cut)) {
+			clipboardItems_ = selectedItems_;
+			clipboardRoot_ = root;
+			clipboardCut_ = cut;
+		}
+
+		if (!clipboardItems_.empty() && ImGui::IsKeyPressed(ImGuiKey_V, false)) {
+			pasteRequest_ = {clipboardItems_,
+			                 currentDirectory_.empty() ? root : root / currentDirectory_};
+		}
+	}
+
 	if (selectedItems_.size() > 1) {
 		ui.Text(std::format("{} items selected", selectedItems_.size()));
 	}
@@ -899,6 +931,10 @@ void AssetsPanel::Clear() {
 	renamePath_.clear();
 	duplicatePaths_.clear();
 	moveRequest_ = {};
+	pasteRequest_ = {};
+	clipboardItems_.clear();
+	clipboardRoot_.clear();
+	clipboardCut_ = false;
 	directoryOpenRequested_ = false;
 	requestedDirectory_.clear();
 	type_ = AssetType::MODEL;
@@ -947,6 +983,21 @@ const std::vector<std::filesystem::path> &AssetsPanel::GetDuplicateRequest() con
 
 const AssetsPanel::MoveRequest &AssetsPanel::GetMoveRequest() const {
 	return moveRequest_;
+}
+
+const AssetsPanel::MoveRequest &AssetsPanel::GetPasteRequest() const {
+	return pasteRequest_;
+}
+
+bool AssetsPanel::IsCutPaste() const {
+	return clipboardCut_;
+}
+
+void AssetsPanel::FinishPaste() {
+	if (clipboardCut_) {
+		clipboardItems_.clear();
+		clipboardCut_ = false;
+	}
 }
 
 std::uint32_t AssetsPanel::GetTextureSlot() const {

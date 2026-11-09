@@ -187,6 +187,13 @@ class AssetsPanel {
 	const MoveRequest &GetMoveRequest() const;
 
 	/// <summary>
+	/// Assets内のクリップボードから、現在のフォルダへの貼り付け要求を取得する
+	/// </summary>
+	const MoveRequest &GetPasteRequest() const;
+	bool IsCutPaste() const;
+	void FinishPaste();
+
+	/// <summary>
 	/// このフレームで確認用ウィンドウに開くことを要求した画像を取得する
 	/// </summary>
 	/// <returns>画像パス。要求なしは空。次のDrawまたはClearまで有効</returns>
@@ -280,6 +287,10 @@ class AssetsPanel {
 	std::filesystem::path renamePath_;
 	std::vector<std::filesystem::path> duplicatePaths_;
 	MoveRequest moveRequest_;
+	MoveRequest pasteRequest_;
+	std::vector<std::filesystem::path> clipboardItems_;
+	std::filesystem::path clipboardRoot_;
+	bool clipboardCut_ = false;
 	bool textureClearRequested_ = false;
 	bool textureImportRequested_ = false;
 	bool audioImportRequested_ = false;

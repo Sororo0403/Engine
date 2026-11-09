@@ -367,6 +367,12 @@ class EditorScene final : public IScene {
 	    std::string &error);
 
 	/// <summary>
+	/// 素材を複製または貼り付けし、成功時に一覧を更新する
+	/// </summary>
+	bool CopyAssets(std::span<const std::filesystem::path> sources,
+	                const std::filesystem::path &directory, std::string &error);
+
+	/// <summary>
 	/// 出力するシーンを取得する。別の起動シーンが指定されていれば一時ドキュメントに読み込む
 	/// </summary>
 	const Scene *GetExportScene(SceneDocument &startup);

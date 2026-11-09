@@ -38,6 +38,14 @@ Paths Duplicate(std::span<const std::filesystem::path> sources,
                 const std::filesystem::path &assetRoot, std::string &error);
 
 /// <summary>
+/// 指定フォルダに素材をコピーし、同名項目には複製名を割り当てる
+/// </summary>
+Paths CopyTo(std::span<const std::filesystem::path> sources,
+             const std::filesystem::path &destination,
+             const std::filesystem::path &assetRoot,
+             const std::filesystem::path &projectRoot, std::string &error);
+
+/// <summary>
 /// Assets内で素材を移動または改名し、保存済みと編集中の参照を更新する
 /// </summary>
 bool Relocate(const Moves &moves, const std::filesystem::path &assetRoot,

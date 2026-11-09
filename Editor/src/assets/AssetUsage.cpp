@@ -93,8 +93,21 @@ void ValidateFolderTree(const fs::path &folder) {
 /// <summary>
 /// ファイル形式を保ったまま、同じフォルダで空いている複製名を探す
 /// </summary>
-fs::path DuplicateDestination(const fs::path &source, bool folder) {
-	const auto parent = source.parent_path();
+fs::path DuplicateDestination(const fs::path &source, bool folder,
+                              const fs::path &directory,
+                              const AssetUsage::Paths &reserved) {
+	const auto parent = directory.empty() ? source.parent_path() : directory;
+	const auto available = [&](const fs::path &path) {
+		return !fs::exists(fs::symlink_status(path)) &&
+		       std::ranges::none_of(reserved, [&](const auto &other) {
+			       return PathUtils::IsSameFile(path, other);
+		       });
+	};
+
+	if (!directory.empty() && available(parent / source.filename())) {
+		return parent / source.filename();
+	}
+
 	auto stem = folder ? source.filename() : source.stem();
 	auto suffix = folder ? fs::path{} : source.extension();
 
@@ -123,7 +136,7 @@ fs::path DuplicateDestination(const fs::path &source, bool folder) {
 
 		auto candidate = parent / name;
 
-		if (!fs::exists(fs::symlink_status(candidate))) {
+		if (available(candidate)) {
 			return candidate;
 		}
 	}
@@ -396,13 +409,16 @@ fs::path EditableAsset(const fs::path &source, const fs::path &root) {
 	return resolved;
 }
 
+using CopyEntry = std::function<void(const fs::path &, const fs::path &,
+                                     OutputDirectory &)>;
+
 void CopyAsset(const fs::path &source, const fs::path &destination,
-               OutputDirectory &output) {
+               OutputDirectory &output, const CopyEntry &copyEntry) {
 	output.OpenExisting(destination.parent_path());
 	const auto name = destination.filename();
 
 	if (!fs::is_directory(source)) {
-		output.Copy(source, name);
+		copyEntry(source, name, output);
 		return;
 	}
 
@@ -415,7 +431,7 @@ void CopyAsset(const fs::path &source, const fs::path &destination,
 		if (entry.is_directory()) {
 			output.CreateSubdirectory(copy);
 		} else {
-			output.Copy(entry.path(), copy);
+			copyEntry(entry.path(), copy, output);
 		}
 	}
 }
@@ -424,6 +440,49 @@ struct MoveEntry {
 	fs::path from, to;
 	bool folder;
 };
+/// <summary>
+/// モデル内部の相対参照が、移動先または複製先で有効か確認する
+/// </summary>
+void CheckModelRelocation(const fs::path &model, const PathMapping &map,
+                          bool copying) {
+	const auto movedModel = map(model);
+	const auto newParent =
+	    movedModel.empty() ? model.parent_path() : movedModel.parent_path();
+	std::vector<fs::path> absoluteReferences;
+
+	for (const auto &file :
+	     AssetDependencies::ModelFiles(model, &absoluteReferences)) {
+		if (PathUtils::IsSameFile(model, file)) {
+			continue;
+		}
+
+		const auto movedFile = map(file);
+		if (movedFile.empty() && newParent == model.parent_path()) {
+			continue;
+		}
+
+		const auto relative =
+		    file.lexically_normal().lexically_relative(model.parent_path());
+		const bool absolute = std::ranges::find(absoluteReferences, file) !=
+		                      absoluteReferences.end();
+
+		const bool resolves =
+		    absolute ? copying || movedFile.empty()
+		             : !relative.empty() &&
+		                   PathUtils::IsSameFile(
+		                       movedFile.empty() ? file : movedFile,
+		                       newParent / relative);
+
+		if (!resolves &&
+		    (!copying || relative.empty() ||
+		     !PathUtils::IsSameFile(file, newParent / relative))) {
+			throw std::runtime_error(
+			    "This operation would break an external dependency:\n" +
+			    PathUtils::ToUtf8(file));
+		}
+	}
+}
+
 } // namespace
 
 std::vector<std::string> AssetUsage::Find(
@@ -506,6 +565,14 @@ std::vector<std::string> AssetUsage::Find(
 AssetUsage::Paths AssetUsage::Duplicate(std::span<const fs::path> sources,
                                         const fs::path &assetRoot,
                                         std::string &error) {
+	return CopyTo(sources, {}, assetRoot, {}, error);
+}
+
+AssetUsage::Paths AssetUsage::CopyTo(std::span<const fs::path> sources,
+                                    const fs::path &destination,
+                                    const fs::path &assetRoot,
+                                    const fs::path &projectRoot,
+                                    std::string &error) {
 	std::vector<std::unique_ptr<OutputDirectory>> outputs;
 
 	try {
@@ -514,7 +581,22 @@ AssetUsage::Paths AssetUsage::Duplicate(std::span<const fs::path> sources,
 		}
 
 		const auto root = fs::canonical(assetRoot);
+		fs::path directory;
 		Paths originals, copies;
+
+		if (!destination.empty()) {
+			if (!destination.is_absolute() ||
+			    destination.native().find(L'\0') != std::wstring::npos) {
+				throw std::runtime_error("Choose a destination folder inside Assets.");
+			}
+
+			directory = fs::canonical(destination);
+			if (!fs::is_directory(directory) ||
+			    PathUtils::RelativeInside(root, destination.lexically_normal()) !=
+			        PathUtils::RelativeInside(root, directory)) {
+				throw std::runtime_error("Choose an ordinary destination folder.");
+			}
+		}
 
 		for (const auto &source : sources) {
 			originals.push_back(EditableAsset(source, root));
@@ -530,10 +612,73 @@ AssetUsage::Paths AssetUsage::Duplicate(std::span<const fs::path> sources,
 		}
 
 		for (const auto &source : originals) {
-			auto destination = DuplicateDestination(source, fs::is_directory(source));
+			const bool folder = fs::is_directory(source);
+			if (folder && !directory.empty() && RelativeWithin(source, directory)) {
+				throw std::runtime_error("Choose a destination outside the source folder.");
+			}
+
+			copies.push_back(DuplicateDestination(source, folder, directory, copies));
+		}
+
+		const auto map = [&](const fs::path &path) -> fs::path {
+			for (std::size_t i = 0; i < originals.size(); ++i) {
+				if (fs::is_directory(originals[i])) {
+					const auto relative = RelativeReference(originals[i], path);
+					if (relative) {
+						return relative->empty() ? copies[i] : copies[i] / *relative;
+					}
+				} else if (PathUtils::IsSameFile(originals[i], path)) {
+					return copies[i];
+				}
+			}
+			return {};
+		};
+
+		for (std::size_t i = 0; i < originals.size(); ++i) {
+			const auto &source = originals[i];
+			const auto &target = copies[i];
+			const bool rebase = !directory.empty() &&
+			                    !PathUtils::IsSameFile(source.parent_path(), target.parent_path());
 			outputs.push_back(std::make_unique<OutputDirectory>());
-			CopyAsset(source, destination, *outputs.back());
-			copies.push_back(std::move(destination));
+			CopyAsset(source, target, *outputs.back(),
+			          [&](const fs::path &file, const fs::path &relative,
+			              OutputDirectory &output) {
+				          if (rebase) {
+					          const auto copiedFile = target.parent_path() / relative;
+
+					          if (PathUtils::IsModelFile(file)) {
+						          CheckModelRelocation(file, map, true);
+					          } else if (PrefabSerializer::IsPrefabPath(file)) {
+						          Scene prefab;
+						          SceneObjectId nextId = 0, prefabRoot = 0;
+						          std::string text, issue;
+						          if (!PrefabSerializer::Load(file, prefab, issue, &nextId) ||
+						              !PrefabSerializer::Validate(prefab, prefabRoot, issue) ||
+						              !PrefabSerializer::Serialize(prefab, prefabRoot,
+						                                           copiedFile, text, issue, nextId)) {
+							          throw std::runtime_error("Could not copy Prefab: " + issue);
+						          }
+
+						          output.Text(relative, text);
+						          return;
+					          } else if (PathUtils::HasExtension(file, ".json") && IsSceneFile(file)) {
+						          Scene scene;
+						          fs::path savedRoot;
+						          std::string text;
+						          if (!SceneSerializer::Deserialize(scene, ReadText(file), file, &savedRoot) ||
+						              !SceneSerializer::SerializeForFile(
+						                  scene, text, copiedFile,
+						                  savedRoot.empty() ? projectRoot : savedRoot)) {
+							          throw std::runtime_error("Could not copy scene: " + PathUtils::ToUtf8(file));
+						          }
+
+						          output.Text(relative, text);
+						          return;
+					          }
+				          }
+
+				          output.Copy(file, relative);
+			          });
 		}
 
 		for (auto &output : outputs) {
@@ -651,40 +796,7 @@ bool AssetUsage::Relocate(const Moves &moves, const fs::path &assetRoot,
 			return {};
 		};
 		const auto checkModel = [&](const fs::path &model) {
-			const auto movedModel = map(model);
-			const auto newParent =
-			    movedModel.empty() ? model.parent_path() : movedModel.parent_path();
-			std::vector<fs::path> absoluteReferences;
-
-			for (const auto &file :
-			     AssetDependencies::ModelFiles(model, &absoluteReferences)) {
-				if (PathUtils::IsSameFile(model, file)) {
-					continue;
-				}
-
-				const auto movedFile = map(file);
-				if (movedFile.empty() && newParent == model.parent_path()) {
-					continue;
-				}
-
-				const auto relative =
-				    file.lexically_normal().lexically_relative(model.parent_path());
-				const bool absolute = std::ranges::find(absoluteReferences, file) !=
-				                      absoluteReferences.end();
-
-				const bool resolves =
-				    absolute ? movedFile.empty()
-				             : !relative.empty() &&
-				                   PathUtils::IsSameFile(
-				                       movedFile.empty() ? file : movedFile,
-				                       newParent / relative);
-
-				if (!resolves) {
-					throw std::runtime_error(
-					    "This operation would break an external dependency:\n" +
-					    PathUtils::ToUtf8(file));
-				}
-			}
+			CheckModelRelocation(model, map, false);
 		};
 
 		const auto &projectRoot = project.GetRoot();

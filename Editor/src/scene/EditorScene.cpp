@@ -676,7 +676,9 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	if (!wasBusy) {
-		const auto &move = assetsPanel_.GetMoveRequest();
+		const auto &paste = assetsPanel_.GetPasteRequest();
+		const bool cutPaste = !paste.sources.empty() && assetsPanel_.IsCutPaste();
+		const auto &move = cutPaste ? paste : assetsPanel_.GetMoveRequest();
 
 		if (!move.sources.empty() && !IsBusy() && action == EditorAction::NONE &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
@@ -692,6 +694,8 @@ bool EditorScene::Update(float deltaTime) {
 
 			if (!moves.empty() && !RelocateAssets(moves, error)) {
 				ShowError(std::move(error));
+			} else if (cutPaste) {
+				assetsPanel_.FinishPaste();
 			}
 		}
 
@@ -706,27 +710,17 @@ bool EditorScene::Update(float deltaTime) {
 			stage_ = DialogStage::RENAME_ASSET;
 		}
 
-		const auto &duplicate = assetsPanel_.GetDuplicateRequest();
+		const bool copyPaste = !paste.sources.empty() && !cutPaste;
+		const auto &duplicate =
+		    copyPaste ? paste.sources : assetsPanel_.GetDuplicateRequest();
 
 		if (!duplicate.empty() && !IsBusy() && action == EditorAction::NONE &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 			std::string error;
-			const auto copies =
-			    AssetUsage::Duplicate(duplicate, assets_.GetRootDirectory(), error);
 
-			if (copies.empty()) {
+			if (!CopyAssets(duplicate, copyPaste ? paste.directory
+			                                     : std::filesystem::path{}, error)) {
 				ShowError(std::move(error));
-			} else {
-				assets_.Refresh();
-				const auto &copy = copies.front();
-				std::error_code typeError;
-
-				if (std::filesystem::is_directory(copy, typeError)) {
-					assetsPanel_.RequestOpenDirectory(
-					    copy.lexically_relative(assets_.GetRootDirectory()));
-				} else {
-					assetsPanel_.RequestReveal(copy);
-				}
 			}
 		}
 
@@ -3779,6 +3773,33 @@ void EditorScene::DrawAssetRecycle() {
 	}
 
 	ui_.EndPopup();
+}
+
+bool EditorScene::CopyAssets(std::span<const std::filesystem::path> sources,
+                             const std::filesystem::path &directory,
+                             std::string &error) {
+	const auto &root = assets_.GetRootDirectory();
+	const auto copies = directory.empty()
+	                        ? AssetUsage::Duplicate(sources, root, error)
+	                        : AssetUsage::CopyTo(sources, directory, root,
+	                                             project_.GetRoot(), error);
+
+	if (copies.empty()) {
+		return false;
+	}
+
+	assets_.Refresh();
+	const auto &copy = copies.front();
+	std::error_code typeError;
+
+	if (std::filesystem::is_directory(copy, typeError)) {
+		const auto &visibleDirectory = directory.empty() ? copy : directory;
+		assetsPanel_.RequestOpenDirectory(visibleDirectory.lexically_relative(root));
+	} else {
+		assetsPanel_.RequestReveal(copy);
+	}
+
+	return true;
 }
 
 bool EditorScene::RelocateAssets(const AssetUsage::Moves &moves,
