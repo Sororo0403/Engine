@@ -1592,6 +1592,7 @@ void EditorScene::Finalize() {
 			current.assets = assetSources_;
 		} else {
 			current.lastProject = project_.GetRoot();
+			current.RememberProjectScene(project_.GetRoot(), document_.GetFilePath());
 		}
 		const auto recent = recentScenes_.GetPaths();
 		current.recentScenes.assign(recent.begin(), recent.end());
@@ -3098,7 +3099,9 @@ void EditorScene::ExecutePendingAction() {
 		stage_ = DialogStage::OPEN_FILE;
 		return;
 	case EditorAction::OPEN_PATH:
-		OpenScene(pendingOpenPath_);
+		if (OpenScene(pendingOpenPath_)) {
+			SaveProjectSession();
+		}
 		return;
 	case EditorAction::RESTORE_RECOVERY:
 		RestoreRecovery();
@@ -3117,6 +3120,7 @@ void EditorScene::StartSave(bool saveAs) {
 	if (!saveAs && !document_.GetFilePath().empty()) {
 		if (document_.Save()) {
 			recentScenes_.Add(document_.GetFilePath());
+			SaveProjectSession();
 			ClearRecovery();
 			assets_.Refresh();
 			ExecutePendingAction();
@@ -3830,6 +3834,7 @@ bool EditorScene::RelocateAssets(const AssetUsage::Moves &moves,
 		return false;
 	}
 
+	SaveProjectSession();
 	const auto &destination = moves.front().second;
 
 	clipboard_.Clear();
@@ -3977,7 +3982,9 @@ void EditorScene::UpdateDialogs() {
 		}
 
 		if (result == FileDialogResult::ACCEPTED) {
-			OpenScene(fileDialog_.GetSelectedPath());
+			if (OpenScene(fileDialog_.GetSelectedPath())) {
+				SaveProjectSession();
+			}
 		}
 
 		return;
@@ -3996,6 +4003,7 @@ void EditorScene::UpdateDialogs() {
 		if (result == FileDialogResult::ACCEPTED) {
 			if (document_.SaveAs(fileDialog_.GetSelectedPath())) {
 				recentScenes_.Add(document_.GetFilePath());
+				SaveProjectSession();
 				ClearRecovery();
 				assets_.Refresh();
 				ExecutePendingAction();
@@ -4524,16 +4532,23 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		sources.Register(candidate.GetScenesDirectory());
 		auto config = candidate.GetGameConfig();
 		const auto startup = candidate.GetStartupScene();
+		const auto last = create ? std::filesystem::path{}
+		                         : preferences_.LastProjectScene(candidate.GetRoot());
+		const bool restored =
+		    !last.empty() && (startup.empty() || !PathUtils::IsSameFile(last, startup)) &&
+		    OpenScene(last, false);
 
-		if (startup.empty()) {
-			pendingAction_ = EditorAction::NEW;
-			ExecutePendingAction();
+		if (!restored) {
+			if (startup.empty()) {
+				pendingAction_ = EditorAction::NEW;
+				ExecutePendingAction();
 
-			if (stage_ != DialogStage::IDLE) {
+				if (stage_ != DialogStage::IDLE) {
+					return;
+				}
+			} else if (!OpenScene(startup)) {
 				return;
 			}
-		} else if (!OpenScene(startup)) {
-			return;
 		}
 
 		document_.SetProjectRoot(candidate.GetRoot());
@@ -4545,25 +4560,34 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		texturePreviewPanel_.Clear();
 		stage_ = DialogStage::IDLE;
 
-		if (canSavePreferences_ && preferences_.lastProject != project_.GetRoot()) {
-			auto current = preferences_;
-			current.lastProject = project_.GetRoot();
-
-			if (current.Save()) {
-				preferences_ = std::move(current);
-			}
-		}
+		SaveProjectSession();
 	} catch (const std::exception &error) {
 		ShowError(error.what());
 	}
 }
 
-bool EditorScene::OpenScene(const std::filesystem::path &path) {
+void EditorScene::SaveProjectSession() {
+	if (!canSavePreferences_ || project_.GetRoot().empty()) {
+		return;
+	}
+
+	auto current = preferences_;
+	current.lastProject = project_.GetRoot();
+	current.RememberProjectScene(project_.GetRoot(), document_.GetFilePath());
+
+	if (!(current == preferences_) && current.Save()) {
+		preferences_ = std::move(current);
+	}
+}
+
+bool EditorScene::OpenScene(const std::filesystem::path &path, bool reportError) {
 	const bool opened = document_.Open(path);
 
 	if (!opened) {
-		ShowError("Could not open the scene. The current scene was kept. See "
-		          "the log for details.");
+		if (reportError) {
+			ShowError("Could not open the scene. The current scene was kept. See "
+			          "the log for details.");
+		}
 		return false;
 	}
 

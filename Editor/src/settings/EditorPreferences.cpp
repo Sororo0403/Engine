@@ -15,6 +15,12 @@
 #include <utility>
 
 namespace {
+bool IsProjectScenePath(const std::filesystem::path &path) {
+	return !path.empty() && !path.has_root_path() &&
+	       PathUtils::HasExtension(path, ".json") &&
+	       std::ranges::all_of(path, PathUtils::IsValidFileName);
+}
+
 /// <summary>
 /// Sceneとブックマークに共通する投影設定を読み、数値型と範囲を検証する
 /// </summary>
@@ -47,6 +53,51 @@ nlohmann::json ProjectionJson(const CameraSettings &settings) {
 	        {"farClip", settings.farClip}};
 }
 } // namespace
+
+void EditorPreferences::RememberProjectScene(const std::filesystem::path &root,
+                                              const std::filesystem::path &scene) {
+	if (root.empty() || scene.empty()) {
+		return;
+	}
+
+	std::error_code error;
+	const auto resolved = std::filesystem::canonical(scene, error);
+
+	if (!error && std::filesystem::is_regular_file(resolved, error)) {
+		try {
+			auto relative = PathUtils::RelativeInside(root, resolved);
+
+			if (IsProjectScenePath(relative)) {
+				projectScenes.insert_or_assign(root, std::move(relative));
+			}
+		} catch (const std::runtime_error &) {
+			// プロジェクト外のシーンは、再開先の記録を変更しない。
+		}
+	}
+}
+
+std::filesystem::path EditorPreferences::LastProjectScene(
+    const std::filesystem::path &root) const {
+	const auto saved = projectScenes.find(root);
+
+	if (saved == projectScenes.end() || !IsProjectScenePath(saved->second)) {
+		return {};
+	}
+
+	std::error_code error;
+	const auto path = std::filesystem::canonical(root / saved->second, error);
+
+	if (error || !std::filesystem::is_regular_file(path, error)) {
+		return {};
+	}
+
+	try {
+		PathUtils::RelativeInside(root, path);
+		return path;
+	} catch (const std::runtime_error &) {
+		return {};
+	}
+}
 
 bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 	try {
@@ -212,6 +263,25 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 			if (projectPath.is_absolute() &&
 			    projectPath.native().find(L'\0') == std::wstring::npos) {
 				loaded.lastProject = projectPath.lexically_normal();
+			}
+		}
+
+		if (json.contains("projectScenes") && json.at("projectScenes").is_object()) {
+			for (const auto &[key, value] : json.at("projectScenes").items()) {
+				const auto root = PathUtils::FromUtf8(key);
+
+				if (!root.is_absolute() ||
+				    root.native().find(L'\0') != std::wstring::npos ||
+				    !value.is_string()) {
+					continue;
+				}
+
+				auto scene = PathUtils::FromUtf8(value.get<std::string>());
+
+				if (IsProjectScenePath(scene)) {
+					loaded.projectScenes.insert_or_assign(root.lexically_normal(),
+					                                      std::move(scene));
+				}
 			}
 		}
 
@@ -465,6 +535,11 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 			}
 		}
 
+		auto projectScenesJson = nlohmann::json::object();
+		for (const auto &[root, scene] : projectScenes) {
+			projectScenesJson[PathUtils::ToUtf8(root)] = PathUtils::ToUtf8(scene);
+		}
+
 		const nlohmann::json json{
 		    {"version", 1},
 		    {"cameraBookmarks", bookmarks},
@@ -504,6 +579,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		    {"scaleStepRatio", snap.scaleRatio},
 		    {"recentScenes", recentJson},
 		    {"lastProject", PathUtils::ToUtf8(lastProject)},
+		    {"projectScenes", std::move(projectScenesJson)},
 		    {"grid",
 		     {{"spacing", grid.spacing},
 		      {"height", grid.height},
@@ -538,7 +614,7 @@ bool EditorPreferences::operator==(const EditorPreferences &other) const {
 	       colliderDisplay == other.colliderDisplay &&
 	       pivotMode == other.pivotMode && grid == other.grid &&
 	       recentScenes == other.recentScenes && lastProject == other.lastProject &&
-	       assets == other.assets &&
+	       projectScenes == other.projectScenes && assets == other.assets &&
 	       gameExport.title == other.gameExport.title &&
 	       gameExport.width == other.gameExport.width &&
 	       gameExport.height == other.gameExport.height &&

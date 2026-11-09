@@ -10,6 +10,7 @@
 #include "scene/SceneGrid.h"
 
 #include <filesystem>
+#include <map>
 #include <vector>
 
 /// <summary>
@@ -42,7 +43,19 @@ class EditorPreferences {
 
 	std::vector<std::filesystem::path> recentScenes;
 	std::filesystem::path lastProject;
+	std::map<std::filesystem::path, std::filesystem::path> projectScenes;
 	AssetSources assets;
+
+	/// <summary>
+	/// プロジェクト内の保存済みシーンを、ルート基準で記憶する
+	/// </summary>
+	void RememberProjectScene(const std::filesystem::path &root,
+	                          const std::filesystem::path &scene);
+
+	/// <summary>
+	/// 記憶したシーンが現在もプロジェクト内にあれば絶対パスを返す
+	/// </summary>
+	std::filesystem::path LastProjectScene(const std::filesystem::path &root) const;
 
 	/// <summary>
 	/// 設定を読み込む。ファイルがない場合は現在の値を保持する

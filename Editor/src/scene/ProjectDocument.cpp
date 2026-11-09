@@ -29,14 +29,16 @@ void ValidateDirectory(const std::filesystem::path &root,
 /// 起動シーンを確認し、プロジェクト基準の保存用パスを取得する
 /// </summary>
 std::filesystem::path StartupReference(const std::filesystem::path &root,
-                                       const std::filesystem::path &path) {
+                                       const std::filesystem::path &path,
+                                       bool requireFile = true) {
 	if (path.empty()) {
 		return {};
 	}
 
-	const auto scene = std::filesystem::canonical(path);
+	const auto scene = std::filesystem::weakly_canonical(path);
 
-	if (!std::filesystem::is_regular_file(scene) ||
+	if (((requireFile || std::filesystem::exists(scene)) &&
+	     !std::filesystem::is_regular_file(scene)) ||
 	    !PathUtils::HasExtension(scene, ".json")) {
 		throw std::runtime_error(
 		    "Choose a saved scene in the project's scenes folder.");
@@ -146,7 +148,7 @@ bool ProjectDocument::Open(const std::filesystem::path &folder,
 
 		if (!startup.empty() &&
 		    (startup.has_root_path() ||
-		     StartupReference(root, root / startup) != startup)) {
+		     StartupReference(root, root / startup, false) != startup)) {
 			throw std::runtime_error("Invalid project startup scene path.");
 		}
 

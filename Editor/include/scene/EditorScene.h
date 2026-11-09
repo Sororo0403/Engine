@@ -323,7 +323,7 @@ class EditorScene final : public IScene {
 	/// </summary>
 	/// <param name="path">読み込むシーンのパス</param>
 	/// <returns>true:読み込み成功 false:現在のシーンを保持</returns>
-	bool OpenScene(const std::filesystem::path &path);
+	bool OpenScene(const std::filesystem::path &path, bool reportError = true);
 
 	/// <summary>
 	/// 保存を開始する。保存先がない場合は選択ダイアログを開く
@@ -343,6 +343,11 @@ class EditorScene final : public IScene {
 	/// プロジェクトを作成または開き、読み込み成功後に編集対象を切り替える
 	/// </summary>
 	void SwitchProject(const std::filesystem::path &folder, bool create);
+
+	/// <summary>
+	/// 現在のプロジェクトとシーンをEditor設定に記録する
+	/// </summary>
+	void SaveProjectSession();
 
 	/// <summary>
 	/// 選択した素材の参照元を調べ、ごみ箱へ移せるか確認する
