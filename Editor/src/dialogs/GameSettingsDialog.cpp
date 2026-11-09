@@ -1,5 +1,4 @@
 #include "dialogs/GameSettingsDialog.h"
-#include "lighting/LightingControls.h"
 
 #include "graphics/ui/ImGuiSystem.h"
 #include "platform/windows/PathUtils.h"
@@ -80,8 +79,9 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 
 	ImGui::Checkbox("Camera Relative Movement", &cameraRelativeMovement_);
 
-	ImGui::SeparatorText("Default Scene Lighting");
-	LightingControls::Draw(ui, lighting_);
+	ImGui::SeparatorText("Lighting");
+	ImGui::SliderFloat("Default Ambient Light", &lighting_.ambient, 0.0f, 1.0f,
+	                   "%.2f", ImGuiSliderFlags_AlwaysClamp);
 	ImGui::SeparatorText("Gameplay Input");
 	ImGui::Checkbox("Enable Gamepad", &gamepadEnabled_);
 	const std::array<const char *, GameInputBindings::kActions.size()> labels{
@@ -292,8 +292,8 @@ bool GameSettingsDialog::BuildConfiguration(GameConfig &candidate) {
 		    : !value.input.IsValid()
 		        ? "Choose different supported keys for every gameplay action."
 		    : !value.lighting.IsValid()
-		        ? "Enter a nonzero finite light direction, color/ambient (0-1) "
-		          "and intensity (0-16), plus valid shadow settings."
+		        ? "Ambient light must be between 0 and 1, and the saved legacy "
+		          "lighting settings must be valid."
 		        : "Enter a title and a valid window size (1-8192).";
 		return false;
 	}
