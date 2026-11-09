@@ -4,6 +4,8 @@
 #include "ui/UIObjects.h"
 
 #include "assets/AssetFolders.h"
+#include "assets/AssetUsage.h"
+#include "platform/windows/ShellUtils.h"
 #include "assets/ModelPlacement.h"
 #include "assets/ModelUsage.h"
 #include "assets/PrefabAsset.h"
@@ -674,6 +676,16 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	if (!wasBusy) {
+		const auto &recycle = assetsPanel_.GetRecycleRequest();
+
+		if (!recycle.empty() && !IsBusy() && action == EditorAction::NONE &&
+		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
+			FinishEdit();
+			pendingRecyclePath_ = recycle;
+			CheckAssetRecycle(pendingRecyclePath_);
+			stage_ = DialogStage::RECYCLE_ASSET;
+		}
+
 		if (!requestedObjects.empty() && !IsBusy() &&
 		    action == EditorAction::NONE &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
@@ -3598,9 +3610,93 @@ void EditorScene::RestoreRecovery() {
 	}
 }
 
+void EditorScene::CheckAssetRecycle(const std::filesystem::path &path) {
+	try {
+		const auto &assets = assets_.GetRootDirectory();
+
+		if (!assets.is_absolute() ||
+		    !std::filesystem::is_regular_file(
+		        std::filesystem::symlink_status(path))) {
+			throw std::runtime_error("Choose a regular file in an editable Assets folder.");
+		}
+
+		const auto root = std::filesystem::canonical(assets);
+		const auto file = std::filesystem::canonical(path);
+		PathUtils::RelativeInside(root, file);
+		const auto &project = project_.GetRoot();
+		recycleBlockers_ = AssetUsage::Find(
+		    file, project.empty() ? root : project, document_.GetScene(),
+		    document_.GetFilePath(), project_.GetStartupScene());
+	} catch (const std::exception &error) {
+		recycleBlockers_ = {"Could not verify asset references.",
+		                    error.what()};
+	}
+}
+
+void EditorScene::DrawAssetRecycle() {
+	constexpr const char *kTitle = "Move Asset to Recycle Bin";
+
+	if (!ImGui::IsPopupOpen(kTitle)) {
+		ui_.OpenPopup(kTitle);
+	}
+
+	if (!ui_.BeginPopupModal(kTitle)) {
+		return;
+	}
+
+	ui_.Text(PathUtils::ToUtf8(pendingRecyclePath_.filename()));
+
+	if (!recycleBlockers_.empty()) {
+		ui_.Text("This file cannot be moved. References or errors:");
+
+		if (ui_.BeginChild("AssetReferences", 500.0f, 160.0f)) {
+			for (const auto &source : recycleBlockers_) {
+				ImGui::TextWrapped("%s", source.c_str());
+			}
+		}
+
+		ui_.EndChild();
+	}
+
+	bool close = false;
+
+	if (recycleBlockers_.empty() && ui_.Button("Move to Recycle Bin")) {
+		CheckAssetRecycle(pendingRecyclePath_);
+
+		if (recycleBlockers_.empty()) {
+			std::string error;
+
+			if (ShellUtils::RecycleFile(pendingRecyclePath_, error)) {
+				texturePreviewPanel_.Clear();
+				audioPreviewPanel_.Clear();
+				assets_.Refresh();
+				close = true;
+			} else {
+				recycleBlockers_ = {std::move(error)};
+			}
+		}
+
+		ui_.SameLine();
+	}
+
+	if (ui_.Button(recycleBlockers_.empty() ? "Cancel" : "Close") ||
+	    ImGui::IsKeyPressed(ImGuiKey_Escape) || close) {
+		ui_.CloseCurrentPopup();
+		pendingRecyclePath_.clear();
+		recycleBlockers_.clear();
+		stage_ = DialogStage::IDLE;
+	}
+
+	ui_.EndPopup();
+}
+
 void EditorScene::UpdateDialogs() {
 	switch (stage_) {
 	case DialogStage::IDLE:
+		return;
+
+	case DialogStage::RECYCLE_ASSET:
+		DrawAssetRecycle();
 		return;
 
 	case DialogStage::RECOVERY: {

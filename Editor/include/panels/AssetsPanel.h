@@ -162,6 +162,11 @@ class AssetsPanel {
 	void Clear();
 
 	/// <summary>
+	/// コンテキストメニューでごみ箱への移動を要求されたファイルを取得する
+	/// </summary>
+	const std::filesystem::path &GetRecycleRequest() const;
+
+	/// <summary>
 	/// このフレームで確認用ウィンドウに開くことを要求した画像を取得する
 	/// </summary>
 	/// <returns>画像パス。要求なしは空。次のDrawまたはClearまで有効</returns>
@@ -249,6 +254,7 @@ class AssetsPanel {
 	std::filesystem::path revealPath_;
 	std::string revealMessage_;
 	int textureSlot_ = 0;
+	std::filesystem::path recyclePath_;
 	bool textureClearRequested_ = false;
 	bool textureImportRequested_ = false;
 	bool audioImportRequested_ = false;

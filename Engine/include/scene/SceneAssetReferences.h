@@ -2,8 +2,15 @@
 #include <filesystem>
 #include <functional>
 class Scene;
+struct SceneObject;
 
 namespace SceneAssetReferences {
+/// <summary>
+/// 物体が直接参照する空でない素材・Prefab・遷移先を列挙する
+/// </summary>
+void Visit(const SceneObject &object,
+           const std::function<void(const std::filesystem::path &)> &visit);
+
 /// <summary>
 /// 各物体の素材・Prefab・遷移先のパスを共通の規則で変換する
 /// </summary>

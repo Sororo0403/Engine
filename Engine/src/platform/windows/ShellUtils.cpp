@@ -4,7 +4,9 @@
 #include <Windows.h>
 #include <format>
 #include <shellapi.h>
+#include <shlobj.h>
 #include <stdexcept>
+#include <wrl/client.h>
 
 namespace {
 /// <summary>
@@ -63,6 +65,49 @@ bool ShellUtils::OpenDirectory(const std::filesystem::path &path,
 		}
 
 		Open(resolved, resolved, WindowVisibility::NORMAL);
+		error.clear();
+		return true;
+	} catch (const std::exception &exception) {
+		error = exception.what();
+		return false;
+	}
+}
+
+bool ShellUtils::RecycleFile(const std::filesystem::path &path,
+                             std::string &error) {
+	try {
+		const auto source = PathUtils::ResolveFromExecutable(path);
+		const auto file = Resolve(source);
+
+		if (!std::filesystem::is_regular_file(
+		        std::filesystem::symlink_status(source))) {
+			throw std::invalid_argument("Choose an existing regular file.");
+		}
+
+		const auto check = [](HRESULT result) {
+			if (FAILED(result)) {
+				throw std::runtime_error(std::format(
+				    "Could not move the file to the Recycle Bin (0x{:08X}).",
+				    static_cast<unsigned long>(result)));
+			}
+		};
+
+		using Microsoft::WRL::ComPtr;
+		ComPtr<IShellItem> item, parent, bin, recycled;
+		ComPtr<ITransferSource> transfer;
+		check(SHCreateItemFromParsingName(file.c_str(), nullptr,
+		                                 IID_PPV_ARGS(&item)));
+		check(item->GetParent(&parent));
+		check(parent->BindToHandler(nullptr, BHID_Transfer,
+		                            IID_PPV_ARGS(&transfer)));
+		check(SHGetKnownFolderItem(FOLDERID_RecycleBinFolder, KF_FLAG_DEFAULT,
+		                           nullptr, IID_PPV_ARGS(&bin)));
+		check(transfer->RecycleItem(item.Get(), bin.Get(), TSF_NORMAL, &recycled));
+
+		if (!recycled) {
+			throw std::runtime_error("Windows did not recycle the file.");
+		}
+
 		error.clear();
 		return true;
 	} catch (const std::exception &exception) {

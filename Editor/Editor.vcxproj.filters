@@ -721,6 +721,8 @@
   <ItemGroup>
     <ClInclude Include="include\assets\AssetDependencies.h"><Filter>include\assets</Filter></ClInclude>
     <ClCompile Include="src\assets\AssetDependencies.cpp"><Filter>src\assets</Filter></ClCompile>
+    <ClInclude Include="include\assets\AssetUsage.h"><Filter>include\assets</Filter></ClInclude>
+    <ClCompile Include="src\assets\AssetUsage.cpp"><Filter>src\assets</Filter></ClCompile>
     <ClInclude Include="include\assets\SceneAssetValidation.h"><Filter>include\assets</Filter></ClInclude>
     <ClCompile Include="src\assets\SceneAssetValidation.cpp"><Filter>src\assets</Filter></ClCompile>
   </ItemGroup>

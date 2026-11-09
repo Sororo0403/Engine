@@ -32,6 +32,7 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	prefabAppendPath_.clear();
 	instanceSelectionPath_.clear();
 	modelReloadPath_.clear();
+	recyclePath_.clear();
 	meshReplacementPath_.clear();
 	textureReloadPath_.clear();
 	textureUsageSelectionPath_.clear();
@@ -135,6 +136,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	prefabAppendPath_.clear();
 	instanceSelectionPath_.clear();
 	modelReloadPath_.clear();
+	recyclePath_.clear();
 	meshReplacementPath_.clear();
 	textureReloadPath_.clear();
 	textureUsageSelectionPath_.clear();
@@ -470,6 +472,12 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				scrollToSelected_ = false;
 				revealMessage_.clear();
 
+				if (ui.MenuItem("Move to Recycle Bin...", nullptr,
+				                canEditAssets &&
+				                    assets.GetRootDirectory().is_absolute())) {
+					recyclePath_ = assetPath;
+				}
+
 				if (type_ == AssetType::PREFAB &&
 				    ui.MenuItem("Add Prefab", nullptr, canEditAssets)) {
 					prefabAppendPath_ = assetPath;
@@ -748,6 +756,7 @@ const std::filesystem::path &AssetsPanel::GetTexturePreviewRequest() const {
 }
 
 void AssetsPanel::Clear() {
+	recyclePath_.clear();
 	directoryOpenRequested_ = false;
 	requestedDirectory_.clear();
 	type_ = AssetType::MODEL;
@@ -778,6 +787,10 @@ void AssetsPanel::Clear() {
 	revealMessage_.clear();
 	scrollToSelected_ = false;
 	scrollToTop_ = true;
+}
+
+const std::filesystem::path &AssetsPanel::GetRecycleRequest() const {
+	return recyclePath_;
 }
 
 std::uint32_t AssetsPanel::GetTextureSlot() const {

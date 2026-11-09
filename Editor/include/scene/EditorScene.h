@@ -265,6 +265,7 @@ class EditorScene final : public IScene {
 		CREATE_PREFAB,
 		EDIT_SCRIPT,
 		SELECT_ASSET_FOLDER,
+		RECYCLE_ASSET,
 		EXPORT_GAME,
 		EXPORT_RESULT,
 		GAME_SETTINGS,
@@ -341,6 +342,16 @@ class EditorScene final : public IScene {
 	/// プロジェクトを作成または開き、読み込み成功後に編集対象を切り替える
 	/// </summary>
 	void SwitchProject(const std::filesystem::path &folder, bool create);
+
+	/// <summary>
+	/// 選択した素材の参照元を調べ、ごみ箱へ移せるか確認する
+	/// </summary>
+	void CheckAssetRecycle(const std::filesystem::path &path);
+
+	/// <summary>
+	/// 素材の移動確認または参照元一覧を描画する
+	/// </summary>
+	void DrawAssetRecycle();
 
 	/// <summary>
 	/// 出力するシーンを取得する。別の起動シーンが指定されていれば一時ドキュメントに読み込む
@@ -808,6 +819,8 @@ class EditorScene final : public IScene {
 	bool gridSettingsRequested_ = false;
 	RecentScenes recentScenes_;
 	std::filesystem::path pendingOpenPath_;
+	std::filesystem::path pendingRecyclePath_;
+	std::vector<std::string> recycleBlockers_;
 	FrameRequest frameRequest_ = FrameRequest::NONE;
 	SceneObjectId frameObject_ = 0;
 	bool hierarchySelectionScope_ = false;
