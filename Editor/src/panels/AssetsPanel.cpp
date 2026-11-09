@@ -568,7 +568,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 						drawPaste("Paste into Folder", directory);
 						ImGui::Separator();
 
-						if (ui.MenuItem("Rename...", nullptr, selectedItems_.size() == 1)) {
+						if (ui.MenuItem("Rename...", "F2", selectedItems_.size() == 1)) {
 							renamePath_ = directory;
 						}
 
@@ -576,7 +576,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 							duplicatePaths_ = selectedItems_;
 						}
 
-						if (ui.MenuItem("Move to Recycle Bin...")) {
+						if (ui.MenuItem("Move to Recycle Bin...", "Delete")) {
 							recyclePaths_ = selectedItems_;
 						}
 
@@ -649,7 +649,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				drawPaste("Paste", currentFolder());
 				ImGui::Separator();
 
-				if (ui.MenuItem("Rename...", nullptr,
+				if (ui.MenuItem("Rename...", "F2",
 				                selectedItems_.size() == 1 && canEditAssets &&
 				                    assets.GetRootDirectory().is_absolute())) {
 					renamePath_ = assetPath;
@@ -661,7 +661,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 					duplicatePaths_ = selectedItems_;
 				}
 
-				if (ui.MenuItem("Move to Recycle Bin...", nullptr,
+				if (ui.MenuItem("Move to Recycle Bin...", "Delete",
 				                canEditAssets &&
 				                    assets.GetRootDirectory().is_absolute())) {
 					recyclePaths_ = selectedItems_;
@@ -765,16 +765,24 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	    !ImGui::GetDragDropPayload() &&
 	    !ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopupId |
 	                                     ImGuiPopupFlags_AnyPopupLevel) &&
-	    io.KeyCtrl && !io.KeyShift && !io.KeyAlt) {
-		const bool copy = ImGui::IsKeyPressed(ImGuiKey_C, false);
-		const bool cut = ImGui::IsKeyPressed(ImGuiKey_X, false);
+	    !io.KeyShift && !io.KeyAlt && !io.KeySuper) {
+		if (io.KeyCtrl) {
+			const bool copy = ImGui::IsKeyPressed(ImGuiKey_C, false);
+			const bool cut = ImGui::IsKeyPressed(ImGuiKey_X, false);
 
-		if (!selectedItems_.empty() && (copy || cut)) {
-			storeClipboard(cut);
-		}
+			if (!selectedItems_.empty() && (copy || cut)) {
+				storeClipboard(cut);
+			}
 
-		if (!clipboardItems_.empty() && ImGui::IsKeyPressed(ImGuiKey_V, false)) {
-			requestPaste(currentFolder());
+			if (!clipboardItems_.empty() && ImGui::IsKeyPressed(ImGuiKey_V, false)) {
+				requestPaste(currentFolder());
+			}
+		} else if (selectedItems_.size() == 1 &&
+		           ImGui::IsKeyPressed(ImGuiKey_F2, false)) {
+			renamePath_ = selectedItems_.front();
+		} else if (!selectedItems_.empty() &&
+		           ImGui::IsKeyPressed(ImGuiKey_Delete, false)) {
+			recyclePaths_ = selectedItems_;
 		}
 	}
 
