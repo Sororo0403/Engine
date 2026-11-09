@@ -758,7 +758,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 	const auto &io = ImGui::GetIO();
 
-	if (clipboardEnabled &&
+	if (!openRequested &&
 	    ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows |
 	                           ImGuiFocusedFlags_NoPopupHierarchy) &&
 	    !io.AppFocusLost && !ui.IsTextInputActive() && !ImGui::IsAnyItemActive() &&
@@ -766,7 +766,16 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	    !ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopupId |
 	                                     ImGuiPopupFlags_AnyPopupLevel) &&
 	    !io.KeyShift && !io.KeyAlt && !io.KeySuper) {
-		if (io.KeyCtrl) {
+		if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_A, false)) {
+			selectedItems_ = visible;
+			selectionAnchor_ = visible.empty() ? std::filesystem::path{} : visible.front();
+			syncSingle();
+		} else if (!io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_Escape, false)) {
+			selectedItems_.clear();
+			selectionAnchor_.clear();
+			scrollToSelected_ = false;
+			syncSingle();
+		} else if (clipboardEnabled && io.KeyCtrl) {
 			const bool copy = ImGui::IsKeyPressed(ImGuiKey_C, false);
 			const bool cut = ImGui::IsKeyPressed(ImGuiKey_X, false);
 
@@ -777,10 +786,10 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			if (!clipboardItems_.empty() && ImGui::IsKeyPressed(ImGuiKey_V, false)) {
 				requestPaste(currentFolder());
 			}
-		} else if (selectedItems_.size() == 1 &&
+		} else if (clipboardEnabled && !io.KeyCtrl && selectedItems_.size() == 1 &&
 		           ImGui::IsKeyPressed(ImGuiKey_F2, false)) {
 			renamePath_ = selectedItems_.front();
-		} else if (!selectedItems_.empty() &&
+		} else if (clipboardEnabled && !io.KeyCtrl && !selectedItems_.empty() &&
 		           ImGui::IsKeyPressed(ImGuiKey_Delete, false)) {
 			recyclePaths_ = selectedItems_;
 		}
