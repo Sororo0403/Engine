@@ -1,5 +1,7 @@
 #pragma once
 
+#include "scene/DirectionalLightComponent.h"
+
 #include "audio/AudioInspector.h"
 #include "gameplay/GameplayInspector.h"
 #include "gameplay/ScriptInspector.h"
@@ -201,6 +203,7 @@ class InspectorPanel {
 	}
 
   private:
+	DirectionalLightComponent directionalLightDraft_;
 	ScriptInspector scriptInspector_;
 	PrefabInspector::Request prefabRequest_;
 

@@ -1,6 +1,10 @@
 #pragma once
 
+#include "graphics/lighting/DirectionalLightData.h"
+#include "graphics/lighting/LightingSettings.h"
 #include "graphics/lighting/PointLightData.h"
+#include "scene/SceneActivity.h"
+#include "scene/SceneHierarchy.h"
 #include "graphics/lighting/SpotLightData.h"
 #include "scene/SceneObjectId.h"
 #include <string>
@@ -9,6 +13,18 @@
 class Scene;
 
 namespace SceneLighting {
+/// <summary>
+/// 有効な平行光を集める。平行光オブジェクトがないシーンには従来の照明を適用する
+/// </summary>
+bool CollectDirectionalLights(const Scene &scene,
+                              const SceneHierarchy::WorldTransforms &transforms,
+                              const SceneActivity::States &active,
+                              const LightingSettings &fallback,
+                              DirectionalLightsData &lights, ShadowSettings &shadows,
+                              std::string &error,
+                              SceneObjectId *invalidObject = nullptr);
+
+
 /// <summary>
 /// 有効な親子の点光源をID順に集める。失敗時は出力配列を保持し、黙って上限で切り捨てない
 /// </summary>

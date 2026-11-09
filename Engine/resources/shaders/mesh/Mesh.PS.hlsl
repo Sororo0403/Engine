@@ -58,12 +58,19 @@ float ShadowVisibility(float3 position, float3 normal) {
 	return lerp(1.0f, visible / 9.0f, shadowStrength * fade);
 }
 
-cbuffer DirectionalLightBuffer : register(b1) {
-	float3 lightDirection;
-	float lightIntensity;
+struct DirectionalLight {
+	float3 direction;
+	float intensity;
+	float3 color;
+	float padding;
+};
 
-	float3 lightColor;
+cbuffer DirectionalLightBuffer : register(b1) {
 	float ambient;
+	uint directionalLightCount;
+	int shadowLightIndex;
+	float directionalLightPadding;
+	DirectionalLight directionalLights[32];
 };
 
 struct PointLight {
@@ -113,10 +120,14 @@ float4 PSMain(VertexOutput input) : SV_Target0 {
 
 	if (shadingMode == 0) {
 		float3 normal = normalize(input.normal);
-		float3 toLight = -normalize(lightDirection);
-		float diffuse = saturate(dot(normal, toLight));
-		lighting = lightColor * lightIntensity * diffuse *
-		           ShadowVisibility(input.worldPosition, normal) + ambient;
+		lighting = ambient;
+		float shadow = ShadowVisibility(input.worldPosition, normal);
+		for (uint i = 0; i < directionalLightCount; ++i) {
+			DirectionalLight light = directionalLights[i];
+			float diffuse = saturate(dot(normal, -normalize(light.direction)));
+			float visibility = int(i) == shadowLightIndex ? shadow : 1.0f;
+			lighting += light.color * light.intensity * diffuse * visibility;
+		}
 		// 範囲端で滑らかに0へ近づけ、光源位置そのものでは零除算を避ける。
 		for (uint i = 0; i < pointLightCount; ++i) {
 			float3 offset = pointLights[i].position - input.worldPosition;

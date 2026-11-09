@@ -31,22 +31,11 @@ SceneRenderer::SceneRenderer(const Scene &scene, ModelManager &models,
 SceneRenderer::~SceneRenderer() = default;
 
 bool SceneRenderer::SetLighting(const LightingSettings &fallback) {
-	const auto settings = scene_.GetLighting().value_or(fallback);
-	if (!world_ || !settings.IsValid()) {
+	if (!world_ || !fallback.IsValid())
 		return false;
-	}
 
-	const auto &direction = settings.direction;
-	const double length = std::sqrt(double(direction.x) * direction.x +
-	                                double(direction.y) * direction.y +
-	                                double(direction.z) * direction.z);
-	auto &light = world_->GetLight();
-	light.direction = {float(direction.x / length), float(direction.y / length),
-	                   float(direction.z / length)};
-	light.intensity = settings.intensity;
-	light.color = settings.color;
-	light.ambient = settings.ambient;
-	return world_->SetShadows(settings.shadows);
+	fallbackLighting_ = fallback;
+	return true;
 }
 
 bool SceneRenderer::Initialize() {
@@ -225,8 +214,21 @@ bool SceneRenderer::SynchronizeObjects() {
 		return false;
 	}
 
-	std::vector<PointLightData> lights;
 	std::string lightError;
+	DirectionalLightsData directionalLights;
+	ShadowSettings shadows;
+
+	if (!SceneLighting::CollectDirectionalLights(scene_, transforms, active,
+	                                             fallbackLighting_, directionalLights,
+	                                             shadows, lightError) ||
+	    !world_->SetShadows(shadows)) {
+		Logger::Error(lightError.empty() ? "Directional Light update failed."
+		                                 : lightError);
+		return false;
+	}
+	world_->SetDirectionalLights(directionalLights);
+
+	std::vector<PointLightData> lights;
 
 	if (!SceneLighting::CollectPointLights(scene_, lights, lightError) ||
 	    !world_->SetPointLights(lights)) {

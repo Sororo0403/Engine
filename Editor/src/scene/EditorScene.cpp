@@ -4411,7 +4411,12 @@ void EditorScene::UpdateDialogs() {
 		if (ui_.BeginPopupModal(kTitle)) {
 			ImGui::Checkbox("Override Project Lighting", &sceneLightingOverride_);
 			ImGui::BeginDisabled(!sceneLightingOverride_);
-			LightingControls::Draw(ui_, sceneLightingDraft_);
+			const auto &objects = document_.GetScene().GetObjects();
+			const bool hasDirectionalLights =
+			    std::ranges::any_of(objects, [](const auto &entry) {
+				    return entry.second.directionalLight.has_value();
+			    });
+			LightingControls::Draw(ui_, sceneLightingDraft_, hasDirectionalLights);
 			ImGui::EndDisabled();
 
 			const bool valid =

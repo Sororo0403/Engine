@@ -6,6 +6,7 @@
 #include "gameplay/MotionPathInspector.h"
 #include "lighting/PointLightInspector.h"
 #include "lighting/SpotLightInspector.h"
+#include "lighting/LightingControls.h"
 #include "particles/ParticleEmitterInspector.h"
 #include "physics/RigidBodyInspector.h"
 #include "scene/SceneActivity.h"
@@ -553,6 +554,40 @@ bool InspectorPanel::Draw(
 	if (!audioInspector_.GetRevealRequest().empty())
 		assetRevealPath_ = audioInspector_.GetRevealRequest();
 
+	std::optional<std::optional<DirectionalLightComponent>> directionalLightChange;
+	if (object->directionalLight) {
+		ImGui::SeparatorText("Directional Light");
+
+		if (ui.Button("Edit Directional Light...")) {
+			directionalLightDraft_ = *object->directionalLight;
+			ui.OpenPopup("Edit Directional Light");
+		}
+
+		if (ui.BeginPopupModal("Edit Directional Light")) {
+			auto &draft = directionalLightDraft_;
+			ImGui::ColorEdit3("Light Color", draft.color.data());
+			ImGui::SliderFloat("Light Intensity", &draft.intensity, 0.0f,
+			                   LightingSettings::kMaxIntensity);
+			LightingControls::DrawShadows(draft.shadows);
+
+			if (ui.Button("Apply") && draft.IsValid()) {
+				directionalLightChange.emplace(draft);
+				ui.CloseCurrentPopup();
+			}
+
+			ui.SameLine();
+			if (ui.Button("Cancel")) {
+				ui.CloseCurrentPopup();
+			}
+			ui.EndPopup();
+		}
+
+		ui.SameLine();
+		if (ui.Button("Remove Directional Light")) {
+			directionalLightChange.emplace(std::nullopt);
+		}
+	}
+
 	changed |=
 	    PointLightInspector{}.Draw(ui, inspectedObjectId, *object, history);
 	changed |=
@@ -697,6 +732,10 @@ bool InspectorPanel::Draw(
 			changed |= history.SetAudioListener(inspectedObjectId,
 			                                    AudioListenerComponent{});
 
+		if (ui.MenuItem("Directional Light", nullptr, !object->directionalLight)) {
+			directionalLightChange.emplace(DirectionalLightComponent{});
+		}
+
 		if (ui.MenuItem("Point Light", nullptr, !object->pointLight)) {
 			changed |=
 			    history.SetPointLight(inspectedObjectId, PointLightComponent{});
@@ -799,6 +838,33 @@ bool InspectorPanel::Draw(
 	}
 
 	ImGui::PopID();
+
+	if (directionalLightChange) {
+		history.CommitEdit();
+		changed |= history.ApplySceneChanges(
+		    [&](Scene &candidate) {
+			    auto *edited = candidate.FindObject(inspectedObjectId);
+			    if (!edited)
+				    return false;
+
+			    edited->directionalLight = *directionalLightChange;
+
+			    if (edited->directionalLight &&
+			        edited->directionalLight->shadows.enabled) {
+				    // 影を有効にした平行光へ、影の担当を移す。
+				    for (const auto &[id, other] : candidate.GetObjects()) {
+					    if (id != inspectedObjectId && other.directionalLight &&
+					        other.directionalLight->shadows.enabled) {
+						    candidate.FindObject(id)->directionalLight->shadows.enabled =
+						        false;
+					    }
+				    }
+			    }
+
+			    return true;
+		    },
+		    "Edit Directional Light");
+	}
 
 	ui.EndWindow();
 	return changed;
@@ -910,6 +976,10 @@ std::optional<Transform> InspectorPanel::DrawReadOnly(
 
 	PointLightInspector{}.DrawReadOnly(ui, *object);
 	SpotLightInspector{}.DrawReadOnly(ui, *object);
+	if (object->directionalLight) {
+		ImGui::SeparatorText("Directional Light");
+		ImGui::Text("Intensity: %.2f", object->directionalLight->intensity);
+	}
 	MotionPathInspector{}.DrawReadOnly(ui, *object);
 	TransformAnimationInspector{}.DrawReadOnly(ui, *object);
 	ParticleEmitterInspector{}.DrawReadOnly(ui, *object);

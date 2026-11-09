@@ -33,6 +33,27 @@
 namespace {
 using Json = nlohmann::json;
 
+Json WriteShadows(const ShadowSettings &shadow) {
+	return {{"enabled", shadow.enabled},
+	        {"resolution", shadow.resolution},
+	        {"extent", shadow.extent},
+	        {"strength", shadow.strength},
+	        {"bias", shadow.bias},
+	        {"normalBias", shadow.normalBias}};
+}
+
+ShadowSettings ReadShadows(const Json &shadow) {
+	const auto &resolution = shadow.at("resolution");
+	if (!resolution.is_number_integer() ||
+	    (resolution != 512 && resolution != 1024 && resolution != 2048)) {
+		throw std::runtime_error("シーンの影解像度が無効です。");
+	}
+
+	return {shadow.at("enabled").get<bool>(), resolution.get<int>(),
+	        shadow.at("extent").get<float>(), shadow.at("strength").get<float>(),
+	        shadow.at("bias").get<float>(), shadow.at("normalBias").get<float>()};
+}
+
 /// <summary>
 /// 衝突設定に使う32ビット符号なし整数を、切り捨てや桁あふれなしで読み込む
 /// </summary>
@@ -468,6 +489,7 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 			    (object.triggerActions && !object.triggerActions->IsValid()) ||
 			    (object.pointLight && !object.pointLight->IsValid()) ||
 			    (object.spotLight && !object.spotLight->IsValid()) ||
+			    (object.directionalLight && !object.directionalLight->IsValid()) ||
 			    (object.motionPath && !object.motionPath->IsValid()) ||
 			    (object.transformAnimation &&
 			     !object.transformAnimation->IsValid()) ||
@@ -652,6 +674,14 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 				                 : "pingPong"},
 				    {"smooth", path.smooth},
 				    {"playOnStart", path.playOnStart}};
+			}
+
+			if (object.directionalLight) {
+				const auto &light = *object.directionalLight;
+				objects.back()["directionalLight"] = {
+				    {"color", light.color},
+				    {"intensity", light.intensity},
+				    {"shadows", WriteShadows(light.shadows)}};
 			}
 
 			if (object.spotLight) {
@@ -868,19 +898,12 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 		};
 
 		if (const auto &lighting = scene.GetLighting()) {
-			const auto &shadow = lighting->shadows;
 			document["lighting"] = {
 			    {"direction", ToJson(lighting->direction)},
 			    {"color", ToJson(lighting->color)},
 			    {"intensity", lighting->intensity},
 			    {"ambient", lighting->ambient},
-			    {"shadows",
-			     {{"enabled", shadow.enabled},
-			      {"resolution", shadow.resolution},
-			      {"extent", shadow.extent},
-			      {"strength", shadow.strength},
-			      {"bias", shadow.bias},
-			      {"normalBias", shadow.normalBias}}}};
+			    {"shadows", WriteShadows(lighting->shadows)}};
 		}
 
 		// 文字列への変換に成功してから、呼び出し側の出力を置き換える
@@ -1367,6 +1390,15 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 				object.motionPath = std::move(path);
 			}
 
+			if (version >= 68 && item.contains("directionalLight")) {
+				const auto &light = item.at("directionalLight");
+				const auto color = ReadFloat3(light.at("color"));
+				object.directionalLight = DirectionalLightComponent{
+				    {color.x, color.y, color.z},
+				    light.at("intensity").get<float>(),
+				    ReadShadows(light.at("shadows"))};
+			}
+
 			if (version >= 22 && item.contains("spotLight")) {
 				const auto &light = item.at("spotLight");
 
@@ -1792,6 +1824,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 			    (object.triggerActions && !object.triggerActions->IsValid()) ||
 			    (object.pointLight && !object.pointLight->IsValid()) ||
 			    (object.spotLight && !object.spotLight->IsValid()) ||
+			    (object.directionalLight && !object.directionalLight->IsValid()) ||
 			    (object.motionPath && !object.motionPath->IsValid()) ||
 			    (object.transformAnimation &&
 			     !object.transformAnimation->IsValid()) ||
@@ -1837,24 +1870,12 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 		if (version >= 67 && document.contains("lighting")) {
 			const auto &value = document.at("lighting");
 			const auto &shadow = value.at("shadows");
-			const auto &resolution = shadow.at("resolution");
-
-			if (!resolution.is_number_integer() ||
-			    (resolution != 512 && resolution != 1024 && resolution != 2048)) {
-				throw std::runtime_error("シーンの影解像度が無効です。");
-			}
-
 			LightingSettings lighting;
 			lighting.direction = ReadFloat3(value.at("direction"));
 			lighting.color = ReadFloat3(value.at("color"));
 			lighting.intensity = value.at("intensity").get<float>();
 			lighting.ambient = value.at("ambient").get<float>();
-			lighting.shadows.enabled = shadow.at("enabled").get<bool>();
-			lighting.shadows.resolution = resolution.get<int>();
-			lighting.shadows.extent = shadow.at("extent").get<float>();
-			lighting.shadows.strength = shadow.at("strength").get<float>();
-			lighting.shadows.bias = shadow.at("bias").get<float>();
-			lighting.shadows.normalBias = shadow.at("normalBias").get<float>();
+			lighting.shadows = ReadShadows(shadow);
 
 			if (!candidate.SetLighting(lighting)) {
 				throw std::runtime_error("シーンの照明設定が無効です。");

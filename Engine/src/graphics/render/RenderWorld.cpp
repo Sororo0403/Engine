@@ -168,7 +168,7 @@ struct RenderWorld::Impl {
 	SpotLights spotLights_;
 	std::vector<PointLightData> pointLightData_;
 	std::vector<SpotLightData> spotLightData_;
-	DirectionalLightData lightData_{};
+	DirectionalLightsData lightData_{};
 	ShadowSettings shadowSettings_;
 	ShadowMap shadows_;
 
@@ -473,13 +473,9 @@ const MaterialData &RenderWorld::GetMaterial(RenderObjectHandle handle,
 	return impl.GetObject(handle).instance_.GetMaterialData(materialIndex);
 }
 
-DirectionalLightData &RenderWorld::GetLight() {
+void RenderWorld::SetDirectionalLights(const DirectionalLightsData &lights) {
+	impl_->lightData_ = lights;
 	impl_->prepared_ = false;
-	return impl_->lightData_;
-}
-
-const DirectionalLightData &RenderWorld::GetLight() const {
-	return impl_->lightData_;
 }
 
 void RenderWorld::MoveCamera(const DirectX::XMFLOAT3 &offset) {
@@ -503,7 +499,7 @@ void RenderWorld::Clear() {
 
 	// スロットと世代番号は残し、古いハンドルを再び有効にしない
 	impl_->camera_ = Camera{};
-	impl_->lightData_ = DirectionalLightData{};
+	impl_->lightData_ = {};
 	impl_->pointLightData_.clear();
 	impl_->spotLightData_.clear();
 	impl_->prepared_ = false;
@@ -562,8 +558,10 @@ bool RenderWorld::Update(int width, int height) {
 		if (slot.object_)
 			for (const auto &mesh : slot.object_->instance_.GetMeshes())
 				materials.push_back(mesh.GetMaterial()->GetResource().get());
+	const auto shadowIndex = impl_->lightData_.shadowIndex;
+	const auto &shadowLight = impl_->lightData_.lights[shadowIndex < 0 ? 0 : shadowIndex];
 	if (!impl_->shadows_.Update(impl_->camera_.GetViewMatrix(),
-	                            impl_->lightData_.direction,
+	                            shadowLight.direction,
 	                            impl_->shadowSettings_, materials))
 		return false;
 	impl_->prepared_ = true;

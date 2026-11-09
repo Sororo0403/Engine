@@ -750,6 +750,7 @@
     <ClInclude Include="include\graphics\lighting\SpotLights.h"><Filter>include\graphics\lighting</Filter></ClInclude>
     <ClCompile Include="src\graphics\lighting\SpotLights.cpp"><Filter>src\graphics\lighting</Filter></ClCompile>
     <ClInclude Include="include\scene\SpotLightComponent.h"><Filter>include\scene</Filter></ClInclude>
+    <ClInclude Include="include\scene\DirectionalLightComponent.h"><Filter>include\scene</Filter></ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\gameplay\MotionPathComponent.h">

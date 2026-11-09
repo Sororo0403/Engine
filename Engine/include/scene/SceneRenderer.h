@@ -239,6 +239,7 @@ class SceneRenderer {
 
 	// 参照先はSceneRendererより長く保持する
 	const Scene &scene_;
+	LightingSettings fallbackLighting_;
 	ModelManager &models_;
 	RenderSystem &render_;
 	const ModelLoadFailure modelLoadFailure_;

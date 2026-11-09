@@ -51,6 +51,13 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 	std::vector<PointLightData> lights;
 	std::string lightError;
 	SceneObjectId invalidLight = 0;
+	DirectionalLightsData directionalLights;
+	ShadowSettings shadows;
+	if (!SceneLighting::CollectDirectionalLights(scene, sourceTransforms, active,
+	                                             LightingSettings{}, directionalLights,
+	                                             shadows, lightError, &invalidLight)) {
+		add(invalidLight, lightError);
+	}
 
 	if (!SceneLighting::CollectPointLights(scene, lights, lightError,
 	                                       &invalidLight)) {

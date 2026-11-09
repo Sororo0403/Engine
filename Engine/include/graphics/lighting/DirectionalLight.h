@@ -17,9 +17,9 @@ class DirectionalLight {
 	/// <summary>
 	/// 光源情報を定数バッファへ書き込む
 	/// </summary>
-	/// <param name="data">光が進む方向・強さ・色・環境光の強さ</param>
+	/// <param name="data">平行光の配列・影を担当する添字・環境光の強さ</param>
 	/// <returns>true:成功 false:未初期化、またはデータが無効</returns>
-	bool Update(const DirectionalLightData &data);
+	bool Update(const DirectionalLightsData &data);
 
 	/// <summary>
 	/// 定数バッファのGPUアドレスを取得する
@@ -33,5 +33,5 @@ class DirectionalLight {
 	void Finalize();
 
   private:
-	ConstantBuffer<DirectionalLightData> constantBuffer_;
+	ConstantBuffer<DirectionalLightsData> constantBuffer_;
 };

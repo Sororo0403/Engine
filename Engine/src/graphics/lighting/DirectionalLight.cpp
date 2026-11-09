@@ -3,6 +3,7 @@
 #include "math/MathUtils.h"
 
 #include <cmath>
+#include <cstddef>
 
 bool DirectionalLight::Initialize(ID3D12Device *device) {
 	if (!device || constantBuffer_.IsInitialized()) {
@@ -12,6 +13,9 @@ bool DirectionalLight::Initialize(ID3D12Device *device) {
 	}
 
 	static_assert(sizeof(DirectionalLightData) == 32);
+	static_assert(offsetof(DirectionalLightsData, lights) == 16);
+	static_assert(sizeof(DirectionalLightsData) ==
+	              16 + 32 * DirectionalLightsData::kMaximumLights);
 
 	if (!constantBuffer_.Initialize(device)) {
 		return false;
@@ -21,23 +25,33 @@ bool DirectionalLight::Initialize(ID3D12Device *device) {
 	return true;
 }
 
-bool DirectionalLight::Update(const DirectionalLightData &data) {
+bool DirectionalLight::Update(const DirectionalLightsData &data) {
 	if (!constantBuffer_.IsInitialized()) {
 		Logger::Error("DirectionalLight::Update: 未初期化です。");
 		return false;
 	}
 
-	const float lengthSquared = data.direction.x * data.direction.x +
-	                            data.direction.y * data.direction.y +
-	                            data.direction.z * data.direction.z;
-
-	if (!std::isfinite(lengthSquared) || lengthSquared <= 0.0f ||
-	    !std::isfinite(data.intensity) || data.intensity < 0.0f ||
-	    !std::isfinite(data.ambient) || data.ambient < 0.0f ||
-	    !MathUtils::IsFinite(data.color) || data.color.x < 0.0f ||
-	    data.color.y < 0.0f || data.color.z < 0.0f) {
+	if (data.count > data.lights.size() || data.shadowIndex < -1 ||
+	    data.shadowIndex >= static_cast<std::int32_t>(data.count) ||
+	    !std::isfinite(data.ambient) || data.ambient < 0.0f) {
 		Logger::Error("DirectionalLight::Update: 光源データが無効です。");
 		return false;
+	}
+
+	for (std::uint32_t i = 0; i < data.count; ++i) {
+		const auto &light = data.lights[i];
+		const auto &direction = light.direction;
+		const float lengthSquared = direction.x * direction.x +
+		                            direction.y * direction.y +
+		                            direction.z * direction.z;
+
+		if (!std::isfinite(lengthSquared) || lengthSquared <= 0.0f ||
+		    !std::isfinite(light.intensity) || light.intensity < 0.0f ||
+		    !MathUtils::IsFinite(light.color) || light.color.x < 0.0f ||
+		    light.color.y < 0.0f || light.color.z < 0.0f) {
+			Logger::Error("DirectionalLight::Update: 光源データが無効です。");
+			return false;
+		}
 	}
 
 	return constantBuffer_.Update(data);

@@ -5,6 +5,72 @@
 #include "scene/SceneHierarchy.h"
 #include <format>
 
+bool SceneLighting::CollectDirectionalLights(
+    const Scene &scene, const SceneHierarchy::WorldTransforms &transforms,
+    const SceneActivity::States &active, const LightingSettings &fallback,
+    DirectionalLightsData &lights, ShadowSettings &shadows, std::string &error,
+    SceneObjectId *invalidObject) {
+	error.clear();
+	if (invalidObject)
+		*invalidObject = 0;
+
+	const auto settings = scene.GetLighting().value_or(fallback);
+	DirectionalLightsData result;
+	result.ambient = settings.ambient;
+	result.count = 0;
+	ShadowSettings shadow;
+	bool hasLightObjects = false;
+
+	for (const auto &[id, object] : scene.GetObjects()) {
+		if (!object.directionalLight)
+			continue;
+
+		hasLightObjects = true;
+		const auto &light = *object.directionalLight;
+		if (!active.at(id))
+			continue;
+
+		if (!light.IsValid() || result.count == result.lights.size()) {
+			error = !light.IsValid()
+			            ? "Directional Light settings are invalid."
+			            : std::format("At most {} Directional Lights can be active at once.",
+			                          result.lights.size());
+			if (invalidObject)
+				*invalidObject = id;
+			return false;
+		}
+
+		DirectX::XMFLOAT3 direction;
+		DirectX::XMStoreFloat3(
+		    &direction, DirectX::XMVector3Rotate(
+		                    DirectX::XMVectorSet(0, 0, 1, 0),
+		                    DirectX::XMLoadFloat4(&transforms.at(id).rotation)));
+		if (light.shadows.enabled && result.shadowIndex < 0) {
+			result.shadowIndex = static_cast<std::int32_t>(result.count);
+			shadow = light.shadows;
+		}
+
+		result.lights[result.count++] = {
+		    direction, light.intensity, {light.color[0], light.color[1], light.color[2]}};
+	}
+
+	if (!hasLightObjects) {
+		const auto &direction = settings.direction;
+		const double length = std::sqrt(double(direction.x) * direction.x +
+		                                double(direction.y) * direction.y +
+		                                double(direction.z) * direction.z);
+		result.lights[0] = {{float(direction.x / length), float(direction.y / length),
+		                     float(direction.z / length)}, settings.intensity, settings.color};
+		result.count = 1;
+		result.shadowIndex = settings.shadows.enabled ? 0 : -1;
+		shadow = settings.shadows;
+	}
+
+	lights = result;
+	shadows = shadow;
+	return true;
+}
+
 bool SceneLighting::CollectPointLights(const Scene &scene,
                                        std::vector<PointLightData> &lights,
                                        std::string &error,
