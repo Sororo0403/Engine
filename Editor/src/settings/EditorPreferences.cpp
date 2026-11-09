@@ -205,6 +205,16 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 			loaded.recentScenes.assign(normalized.begin(), normalized.end());
 		}
 
+		if (json.contains("lastProject") && json.at("lastProject").is_string()) {
+			const auto projectPath =
+			    PathUtils::FromUtf8(json.at("lastProject").get<std::string>());
+
+			if (projectPath.is_absolute() &&
+			    projectPath.native().find(L'\0') == std::wstring::npos) {
+				loaded.lastProject = projectPath.lexically_normal();
+			}
+		}
+
 		// グリッド設定がない旧ファイルでは初期値を使う
 		if (json.contains("grid")) {
 			const auto &settings = json.at("grid");
@@ -382,6 +392,9 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		    !cameraValidator.SetSettings(camera) ||
 		    !sceneProjection.IsValid() || !cameraBookmarks.IsValid() ||
 		    !gridValidator.SetSettings(grid) || !gameExport.IsValid() ||
+		    (!lastProject.empty() &&
+		     (!lastProject.is_absolute() ||
+		      lastProject.native().find(L'\0') != std::wstring::npos)) ||
 		    (colliderDisplay != ColliderBounds::Mode::NONE &&
 		     colliderDisplay != ColliderBounds::Mode::SELECTED &&
 		     colliderDisplay != ColliderBounds::Mode::ALL)) {
@@ -490,6 +503,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		    {"rotationStepDegrees", snap.rotationDegrees},
 		    {"scaleStepRatio", snap.scaleRatio},
 		    {"recentScenes", recentJson},
+		    {"lastProject", PathUtils::ToUtf8(lastProject)},
 		    {"grid",
 		     {{"spacing", grid.spacing},
 		      {"height", grid.height},
@@ -523,7 +537,8 @@ bool EditorPreferences::operator==(const EditorPreferences &other) const {
 	       cameraBookmarks == other.cameraBookmarks &&
 	       colliderDisplay == other.colliderDisplay &&
 	       pivotMode == other.pivotMode && grid == other.grid &&
-	       recentScenes == other.recentScenes && assets == other.assets &&
+	       recentScenes == other.recentScenes && lastProject == other.lastProject &&
+	       assets == other.assets &&
 	       gameExport.title == other.gameExport.title &&
 	       gameExport.width == other.gameExport.width &&
 	       gameExport.height == other.gameExport.height &&

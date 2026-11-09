@@ -127,6 +127,8 @@ bool EditorScene::Initialize() {
 	errorMessage_.clear();
 	errorObjectId_ = 0;
 
+	project_ = ProjectDocument{};
+	document_.SetProjectRoot({});
 	document_.New();
 	sceneCheckPanel_.Reset();
 	frameRequest_ = FrameRequest::NONE;
@@ -156,14 +158,31 @@ bool EditorScene::Initialize() {
 	restoredRecoveryPath_.clear();
 	std::string recoveryError;
 
-	if (!recovery_.Initialize(L"config/recovery", recoveryError)) {
+	const bool recoveryReady =
+	    recovery_.Initialize(L"config/recovery", recoveryError);
+
+	if (!recoveryReady) {
 		Logger::Error("EditorScene::Recovery: " + recoveryError);
-	} else {
+	}
+
+	if (!preferences_.lastProject.empty()) {
+		SwitchProject(preferences_.lastProject, false);
+
+		if (stage_ == DialogStage::ERROR) {
+			errorMessage_ =
+			    "Could not reopen the last project:\n" +
+			    PathUtils::ToUtf8(preferences_.lastProject) + "\n" +
+			    errorMessage_ + "\nChoose a project with File > Open Project...";
+			Logger::Error(errorMessage_);
+		}
+	}
+
+	if (recoveryReady) {
 		std::vector<SceneRecovery::Entry> entries;
 
 		if (!recovery_.Enumerate(entries, recoveryError)) {
 			Logger::Error("EditorScene::Recovery: " + recoveryError);
-		} else if (!entries.empty()) {
+		} else if (!entries.empty() && stage_ == DialogStage::IDLE) {
 			recoveryDialog_.Show(std::move(entries));
 			stage_ = DialogStage::RECOVERY;
 		}
@@ -1571,6 +1590,8 @@ void EditorScene::Finalize() {
 		if (project_.GetRoot().empty()) {
 			current.gameExport = exportConfig_;
 			current.assets = assetSources_;
+		} else {
+			current.lastProject = project_.GetRoot();
 		}
 		const auto recent = recentScenes_.GetPaths();
 		current.recentScenes.assign(recent.begin(), recent.end());
@@ -4523,6 +4544,15 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		assetsPanel_.Clear();
 		texturePreviewPanel_.Clear();
 		stage_ = DialogStage::IDLE;
+
+		if (canSavePreferences_ && preferences_.lastProject != project_.GetRoot()) {
+			auto current = preferences_;
+			current.lastProject = project_.GetRoot();
+
+			if (current.Save()) {
+				preferences_ = std::move(current);
+			}
+		}
 	} catch (const std::exception &error) {
 		ShowError(error.what());
 	}

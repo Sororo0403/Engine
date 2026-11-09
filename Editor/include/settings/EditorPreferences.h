@@ -41,6 +41,7 @@ class EditorPreferences {
 	GameConfig gameExport;
 
 	std::vector<std::filesystem::path> recentScenes;
+	std::filesystem::path lastProject;
 	AssetSources assets;
 
 	/// <summary>
