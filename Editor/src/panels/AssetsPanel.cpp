@@ -11,6 +11,7 @@
 #include <exception>
 #include <format>
 #include <imgui.h>
+#include <iterator>
 #include <stdexcept>
 #include <system_error>
 #include <utility>
@@ -26,15 +27,17 @@ void AssetsPanel::SetAssetType(AssetType type) {
 
 	type_ = type;
 	selectedPath_.clear();
+	selectedItems_.clear();
+	selectionAnchor_.clear();
 	sceneOpenPath_.clear();
 	gameSettingsPath_.clear();
 	sceneAppendPath_.clear();
 	prefabAppendPath_.clear();
 	instanceSelectionPath_.clear();
 	modelReloadPath_.clear();
-	recyclePath_.clear();
+	recyclePaths_.clear();
 	renamePath_.clear();
-	duplicatePath_.clear();
+	duplicatePaths_.clear();
 	moveRequest_ = {};
 	meshReplacementPath_.clear();
 	textureReloadPath_.clear();
@@ -58,6 +61,8 @@ void AssetsPanel::SetAssetType(AssetType type) {
 void AssetsPanel::OpenDirectory(std::filesystem::path directory) {
 	currentDirectory_.swap(directory);
 	selectedPath_.clear();
+	selectedItems_.clear();
+	selectionAnchor_.clear();
 	filter_.clear();
 	revealMessage_.clear();
 	scrollToSelected_ = false;
@@ -104,6 +109,8 @@ bool AssetsPanel::SelectAsset(const std::filesystem::path &path,
 		                  .parent_path();
 		SetAssetType(type);
 		selectedPath_.swap(selected);
+		selectedItems_ = {selectedPath_};
+		selectionAnchor_ = selectedPath_;
 		currentDirectory_.swap(folder);
 		filter_.clear();
 		scrollToSelected_ = true;
@@ -139,9 +146,9 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	prefabAppendPath_.clear();
 	instanceSelectionPath_.clear();
 	modelReloadPath_.clear();
-	recyclePath_.clear();
+	recyclePaths_.clear();
 	renamePath_.clear();
-	duplicatePath_.clear();
+	duplicatePaths_.clear();
 	moveRequest_ = {};
 	meshReplacementPath_.clear();
 	textureReloadPath_.clear();
@@ -253,11 +260,12 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 		auto source = AssetDragDrop::AcceptAssetTarget();
 
-		if (!source.empty() &&
-		    !PathUtils::IsSameFile(source.parent_path(), directory) &&
-		    !PathUtils::IsSameFile(source, directory)) {
-			auto destination = directory / source.filename();
-			moveRequest_ = {std::move(source), std::move(destination)};
+		if (!source.empty()) {
+			moveRequest_.sources =
+			    std::ranges::find(selectedItems_, source) != selectedItems_.end()
+			        ? selectedItems_
+			        : std::vector<std::filesystem::path>{std::move(source)};
+			moveRequest_.directory = directory;
 		}
 	};
 
@@ -358,12 +366,14 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		scrollToTop_ = true;
 		// 検索で隠れたアセットを誤って操作しないよう選択を解除する
 		selectedPath_.clear();
+		selectedItems_.clear();
+		selectionAnchor_.clear();
 		scrollToSelected_ = false;
 		revealMessage_.clear();
 	}
 
 	if (type_ != AssetType::AUDIO) {
-		ImGui::TextDisabled("%s", filter_.empty() ? "Click a folder to open it."
+		ImGui::TextDisabled("%s", filter_.empty() ? "Double-click a folder to open it."
 		                                          : "Searching all folders.");
 	}
 
@@ -376,11 +386,75 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	                          ? assets.GetPrefabs()
 	                          : assets.GetGameConfigurations();
 
-	if (!selectedPath_.empty() && std::find(entries.begin(), entries.end(),
-	                                        selectedPath_) == entries.end()) {
-		selectedPath_.clear();
-		scrollToSelected_ = false;
+	const auto visibleFile = [&](const std::filesystem::path &path) {
+		const auto relative = path.lexically_relative(assets.GetRootDirectory());
+		return filter_.empty()
+		           ? relative.parent_path() == currentDirectory_
+		           : PathUtils::ToUtf8(relative).find(filter_) != std::string::npos;
+	};
+	std::vector<std::filesystem::path> visible;
+
+	if (filter_.empty()) {
+		for (const auto &directory : directories) {
+			if (directory.lexically_relative(assets.GetRootDirectory()).parent_path() ==
+			    currentDirectory_) {
+				visible.push_back(directory);
+			}
+		}
 	}
+
+	for (const auto &path : entries) {
+		if (visibleFile(path)) {
+			visible.push_back(path);
+		}
+	}
+
+	const auto isSelected = [&](const std::filesystem::path &path) {
+		return std::ranges::find(selectedItems_, path) != selectedItems_.end();
+	};
+	const auto syncSingle = [&] {
+		selectedPath_ = selectedItems_.size() == 1 &&
+		                        std::ranges::find(entries, selectedItems_.front()) != entries.end()
+		                    ? selectedItems_.front()
+		                    : std::filesystem::path{};
+	};
+	std::erase_if(selectedItems_, [&](const auto &path) {
+		return std::ranges::find(visible, path) == visible.end();
+	});
+	syncSingle();
+
+	const auto selectRow = [&](const std::filesystem::path &path, bool modifiers) {
+		const auto &io = ImGui::GetIO();
+		auto anchor = std::ranges::find(visible, selectionAnchor_);
+
+		auto last = std::ranges::find(visible, path);
+
+		if (modifiers && io.KeyShift && anchor != visible.end() &&
+		    last != visible.end()) {
+			if (last < anchor) {
+				std::swap(anchor, last);
+			}
+			selectedItems_.assign(anchor, std::next(last));
+		} else {
+			if (modifiers && io.KeyCtrl) {
+				if (!std::erase(selectedItems_, path)) {
+					selectedItems_.push_back(path);
+				}
+			} else {
+				selectedItems_ = {path};
+			}
+			selectionAnchor_ = path;
+		}
+
+		syncSingle();
+		scrollToSelected_ = false;
+		revealMessage_.clear();
+	};
+	const auto selectContext = [&](const std::filesystem::path &path) {
+		if (!isSelected(path)) {
+			selectRow(path, false);
+		}
+	};
 
 	if (!assets.GetError().empty()) {
 		ui.Text(assets.GetError());
@@ -426,7 +500,12 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				    "[Folder] {}", PathUtils::ToUtf8(relative.filename()));
 				ImGui::PushID(PathUtils::ToUtf8(directory).c_str());
 
-				if (ui.Selectable(label.c_str(), false)) {
+				if (ui.Selectable(label.c_str(), isSelected(directory))) {
+					selectRow(directory, true);
+				}
+				if (ImGui::IsItemHovered() &&
+				    ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) &&
+				    !ImGui::GetIO().KeyCtrl && !ImGui::GetIO().KeyShift) {
 					nextDirectory = relative;
 					openRequested = true;
 				}
@@ -434,19 +513,22 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				acceptFolder(directory);
 
 				if (canEditAssets && assets.GetRootDirectory().is_absolute()) {
-					AssetDragDrop::DrawSource(directory, AssetDragDrop::Kind::FOLDER);
+					if (AssetDragDrop::DrawSource(directory, AssetDragDrop::Kind::FOLDER)) {
+						selectContext(directory);
+					}
 
 					if (ImGui::BeginPopupContextItem()) {
-						if (ui.MenuItem("Rename...")) {
+						selectContext(directory);
+						if (ui.MenuItem("Rename...", nullptr, selectedItems_.size() == 1)) {
 							renamePath_ = directory;
 						}
 
 						if (ui.MenuItem("Duplicate")) {
-							duplicatePath_ = directory;
+							duplicatePaths_ = selectedItems_;
 						}
 
 						if (ui.MenuItem("Move to Recycle Bin...")) {
-							recyclePath_ = directory;
+							recyclePaths_ = selectedItems_;
 						}
 
 						ImGui::EndPopup();
@@ -484,15 +566,14 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			                       : searchPath;
 
 			const bool selected =
-			    ui.Selectable(label.c_str(), selectedPath_ == assetPath);
+			    ui.Selectable(label.c_str(), isSelected(assetPath));
 			// 通常の選択確定はボタンを離した時。ダブルクリックの押下は別に受け取る。
 			const bool doubleClicked =
 			    ImGui::IsItemHovered() &&
-			    ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left);
+			    ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) &&
+			    !ImGui::GetIO().KeyCtrl && !ImGui::GetIO().KeyShift;
 			if (selected || doubleClicked) {
-				selectedPath_ = assetPath;
-				scrollToSelected_ = false;
-				revealMessage_.clear();
+				selectRow(assetPath, !doubleClicked);
 
 				if (type_ == AssetType::SCRIPT && canEditAssets &&
 				    ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
@@ -514,12 +595,10 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			}
 
 			if (ImGui::BeginPopupContextItem()) {
-				selectedPath_ = assetPath;
-				scrollToSelected_ = false;
-				revealMessage_.clear();
+				selectContext(assetPath);
 
 				if (ui.MenuItem("Rename...", nullptr,
-				                canEditAssets &&
+				                selectedItems_.size() == 1 && canEditAssets &&
 				                    assets.GetRootDirectory().is_absolute())) {
 					renamePath_ = assetPath;
 				}
@@ -527,13 +606,13 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				if (ui.MenuItem("Duplicate", nullptr,
 				                canEditAssets &&
 				                    assets.GetRootDirectory().is_absolute())) {
-					duplicatePath_ = assetPath;
+					duplicatePaths_ = selectedItems_;
 				}
 
 				if (ui.MenuItem("Move to Recycle Bin...", nullptr,
 				                canEditAssets &&
 				                    assets.GetRootDirectory().is_absolute())) {
-					recyclePath_ = assetPath;
+					recyclePaths_ = selectedItems_;
 				}
 
 				if (type_ == AssetType::PREFAB &&
@@ -605,7 +684,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			        : type_ == AssetType::PREFAB ? AssetDragDrop::Kind::PREFAB
 			        : type_ == AssetType::SCENE  ? AssetDragDrop::Kind::SCENE
 			                                    : AssetDragDrop::Kind::GAME_SETTINGS)) {
-				selectedPath_ = assetPath;
+				selectContext(assetPath);
 			}
 
 			ui.PopID();
@@ -621,6 +700,10 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 	if (openRequested) {
 		OpenDirectory(std::move(nextDirectory));
+	}
+
+	if (selectedItems_.size() > 1) {
+		ui.Text(std::format("{} items selected", selectedItems_.size()));
 	}
 
 	if (!selectedPath_.empty() && type_ != AssetType::AUDIO) {
@@ -812,9 +895,9 @@ const std::filesystem::path &AssetsPanel::GetTexturePreviewRequest() const {
 }
 
 void AssetsPanel::Clear() {
-	recyclePath_.clear();
+	recyclePaths_.clear();
 	renamePath_.clear();
-	duplicatePath_.clear();
+	duplicatePaths_.clear();
 	moveRequest_ = {};
 	directoryOpenRequested_ = false;
 	requestedDirectory_.clear();
@@ -832,6 +915,8 @@ void AssetsPanel::Clear() {
 	texturePreviewPath_.clear();
 	audioPreviewPath_.clear();
 	selectedPath_.clear();
+	selectedItems_.clear();
+	selectionAnchor_.clear();
 	sceneOpenPath_.clear();
 	gameSettingsPath_.clear();
 	sceneAppendPath_.clear();
@@ -848,16 +933,16 @@ void AssetsPanel::Clear() {
 	scrollToTop_ = true;
 }
 
-const std::filesystem::path &AssetsPanel::GetRecycleRequest() const {
-	return recyclePath_;
+const std::vector<std::filesystem::path> &AssetsPanel::GetRecycleRequest() const {
+	return recyclePaths_;
 }
 
 const std::filesystem::path &AssetsPanel::GetRenameRequest() const {
 	return renamePath_;
 }
 
-const std::filesystem::path &AssetsPanel::GetDuplicateRequest() const {
-	return duplicatePath_;
+const std::vector<std::filesystem::path> &AssetsPanel::GetDuplicateRequest() const {
+	return duplicatePaths_;
 }
 
 const AssetsPanel::MoveRequest &AssetsPanel::GetMoveRequest() const {

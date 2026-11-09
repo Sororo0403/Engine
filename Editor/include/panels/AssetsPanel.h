@@ -164,7 +164,7 @@ class AssetsPanel {
 	/// <summary>
 	/// コンテキストメニューでごみ箱への移動を要求されたファイルを取得する
 	/// </summary>
-	const std::filesystem::path &GetRecycleRequest() const;
+	const std::vector<std::filesystem::path> &GetRecycleRequest() const;
 
 	/// <summary>
 	/// 名前変更が要求された素材ファイルを取得する
@@ -174,14 +174,14 @@ class AssetsPanel {
 	/// <summary>
 	/// 複製が要求された素材ファイルまたはフォルダを取得する
 	/// </summary>
-	const std::filesystem::path &GetDuplicateRequest() const;
+	const std::vector<std::filesystem::path> &GetDuplicateRequest() const;
 
 	/// <summary>
 	/// フォルダへのドロップで要求された移動元と移動先
 	/// </summary>
 	struct MoveRequest {
-		std::filesystem::path source;
-		std::filesystem::path destination;
+		std::vector<std::filesystem::path> sources;
+		std::filesystem::path directory;
 	};
 
 	const MoveRequest &GetMoveRequest() const;
@@ -261,6 +261,8 @@ class AssetsPanel {
 	std::filesystem::path audioPreviewPath_;
 	std::filesystem::path textureUsageSelectionPath_;
 	std::filesystem::path selectedPath_;
+	std::vector<std::filesystem::path> selectedItems_;
+	std::filesystem::path selectionAnchor_;
 	std::filesystem::path sceneOpenPath_;
 	std::filesystem::path gameSettingsPath_;
 	std::filesystem::path sceneAppendPath_;
@@ -274,9 +276,9 @@ class AssetsPanel {
 	std::filesystem::path revealPath_;
 	std::string revealMessage_;
 	int textureSlot_ = 0;
-	std::filesystem::path recyclePath_;
+	std::vector<std::filesystem::path> recyclePaths_;
 	std::filesystem::path renamePath_;
-	std::filesystem::path duplicatePath_;
+	std::vector<std::filesystem::path> duplicatePaths_;
 	MoveRequest moveRequest_;
 	bool textureClearRequested_ = false;
 	bool textureImportRequested_ = false;

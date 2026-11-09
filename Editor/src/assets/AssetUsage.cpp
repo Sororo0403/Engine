@@ -17,6 +17,7 @@
 #include <fstream>
 #include <iterator>
 #include <json.hpp>
+#include <memory>
 #include <optional>
 #include <set>
 #include <stdexcept>
@@ -29,6 +30,8 @@ using DocumentVisitor = std::function<void(
     const fs::path &)>;
 using ModelVisitor = std::function<void(const fs::path &)>;
 using PathMapping = std::function<fs::path(const fs::path &)>;
+using PathMatch = std::function<bool(const fs::path &)>;
+using ReferenceEdge = std::function<bool(const fs::path &, const fs::path &)>;
 
 /// <summary>
 /// ルートと同じ場所または配下の場合にだけ、ルート基準のパスを返す
@@ -156,16 +159,10 @@ bool IsSceneFile(const fs::path &path) {
 	       data.at("format") == "EngineScene";
 }
 std::vector<std::string> Scan(
-    const std::filesystem::path &target, const std::filesystem::path &searchRoot,
+    const PathMatch &matches, const std::filesystem::path &searchRoot,
     const Scene &scene, const std::filesystem::path &scenePath,
     const std::filesystem::path &startup, const DocumentVisitor &visit = {},
-    const ModelVisitor &visitModel = {}) {
-	const bool folder = !visit && fs::is_directory(target);
-	const auto matches = [&](const fs::path &path) {
-		return !path.empty() &&
-		       (folder ? RelativeReference(target, path).has_value()
-		               : PathUtils::IsSameFile(target, path));
-	};
+    const ModelVisitor &visitModel = {}, const ReferenceEdge &recordEdge = {}) {
 	std::set<std::string> usages;
 	std::set<fs::path> scheduled;
 	std::vector<std::pair<fs::path, Source>> pending;
@@ -178,7 +175,7 @@ std::vector<std::string> Scan(
 	};
 
 	const auto schedule = [&](const fs::path &path, Source source) {
-		if (matches(path) && (!visit || source == Source::MODEL)) {
+		if (!recordEdge && matches(path) && (!visit || source == Source::MODEL)) {
 			return;
 		}
 
@@ -195,15 +192,15 @@ std::vector<std::string> Scan(
 		}
 	};
 
-	const auto inspect = [&](const Scene &document, const std::string &label) {
+	const auto inspect = [&](const Scene &document, const std::string &label,
+	                         const fs::path &source) {
 		for (const auto &[id, object] : document.GetObjects()) {
 			const auto reference = [&](const fs::path &path) {
 				if (matches(path)) {
-					if (!visit) {
+					if (!visit && (!recordEdge || !recordEdge(source, path))) {
 						usages.insert(std::format("{} / {} (ID {})", label,
 						                          object.name, id) +
-						              (folder ? " -> " + PathUtils::ToUtf8(path)
-						                      : ""));
+						              " -> " + PathUtils::ToUtf8(path));
 					}
 				} else if (PrefabSerializer::IsPrefabPath(path)) {
 					schedule(path, Source::PREFAB);
@@ -225,8 +222,8 @@ std::vector<std::string> Scan(
 					                         label);
 				}
 
-				for (const auto &[source, original] : baseline.GetObjects()) {
-					(void)source;
+				for (const auto &[sourceId, original] : baseline.GetObjects()) {
+					(void)sourceId;
 					SceneAssetReferences::Visit(original, reference);
 				}
 			}
@@ -245,7 +242,7 @@ std::vector<std::string> Scan(
 	const auto openLabel = scenePath.empty()
 	                           ? "Open scene (unsaved)"
 	                           : "Open scene: " + PathUtils::ToUtf8(scenePath);
-	check(openLabel, [&] { inspect(scene, openLabel); });
+	check(openLabel, [&] { inspect(scene, openLabel, {}); });
 
 	if (!scenePath.empty()) {
 		check(openLabel, [&] { schedule(scenePath, Source::SCENE); });
@@ -257,12 +254,12 @@ std::vector<std::string> Scan(
 		for (fs::recursive_directory_iterator it(searchRoot); it != end; ++it) {
 			const auto &path = it->path();
 
-			if (folder && it->is_directory() && matches(path)) {
+			if (!visit && !recordEdge && it->is_directory() && matches(path)) {
 				it.disable_recursion_pending();
 				continue;
 			}
 
-			if (!it->is_regular_file() || (!visit && matches(path))) {
+			if (!it->is_regular_file() || (!visit && !recordEdge && matches(path))) {
 				continue;
 			}
 
@@ -291,10 +288,10 @@ std::vector<std::string> Scan(
 				}
 
 				for (const auto &file : AssetDependencies::ModelFiles(path)) {
-					if (matches(file)) {
-						usages.insert("Model: " + label +
-						              (folder ? " -> " + PathUtils::ToUtf8(file)
-						                      : ""));
+					if (matches(file) && !PathUtils::IsSameFile(path, file) &&
+					    (!recordEdge || !recordEdge(path, file))) {
+						usages.insert("Model: " + label + " -> " +
+						              PathUtils::ToUtf8(file));
 					}
 				}
 
@@ -318,7 +315,7 @@ std::vector<std::string> Scan(
 				    error.empty() ? "Could not read the scene." : error);
 			}
 
-			inspect(document, label);
+			inspect(document, label, path);
 
 			if (visit) {
 				visit(path, source, document, nextSourceId, std::move(original),
@@ -379,122 +376,260 @@ struct Edit {
 	std::string before;
 	std::string after;
 };
+/// <summary>
+/// Assets配下の通常項目を確認し、別名やルート自体の操作を防ぐ
+/// </summary>
+fs::path EditableAsset(const fs::path &source, const fs::path &root) {
+	if (!source.is_absolute() || source.native().find(L'\0') != std::wstring::npos) {
+		throw std::runtime_error("Choose an item inside editable Assets.");
+	}
+
+	CheckOrdinaryAsset(source);
+	auto resolved = fs::canonical(source);
+	const auto relative = PathUtils::RelativeInside(root, resolved);
+
+	if (relative.empty() ||
+	    PathUtils::RelativeInside(root, source.lexically_normal()) != relative) {
+		throw std::runtime_error("Choose an item inside Assets without using a redirected path.");
+	}
+
+	return resolved;
+}
+
+void CopyAsset(const fs::path &source, const fs::path &destination,
+               OutputDirectory &output) {
+	output.OpenExisting(destination.parent_path());
+	const auto name = destination.filename();
+
+	if (!fs::is_directory(source)) {
+		output.Copy(source, name);
+		return;
+	}
+
+	output.CreateSubdirectory(name);
+
+	for (const auto &entry : fs::recursive_directory_iterator(source)) {
+		CheckOrdinaryAsset(entry.path());
+		const auto copy = name / PathUtils::RelativeInside(source, entry.path());
+
+		if (entry.is_directory()) {
+			output.CreateSubdirectory(copy);
+		} else {
+			output.Copy(entry.path(), copy);
+		}
+	}
+}
+
+struct MoveEntry {
+	fs::path from, to;
+	bool folder;
+};
 } // namespace
 
 std::vector<std::string> AssetUsage::Find(
-    const fs::path &target, const fs::path &searchRoot, const Scene &scene,
-    const fs::path &scenePath, const fs::path &startup) {
-	if (fs::is_directory(target)) {
-		ValidateFolderTree(target);
+    std::span<const fs::path> targets, const fs::path &searchRoot,
+    const Scene &scene, const fs::path &scenePath, const fs::path &startup,
+    Paths &ordered) {
+	std::vector<MoveEntry> items;
+
+	for (const auto &target : targets) {
+		const bool folder = fs::is_directory(target);
+		if (folder) {
+			ValidateFolderTree(target);
+		}
+
+		items.push_back({fs::canonical(target), {}, folder});
 	}
 
-	return Scan(fs::canonical(target), searchRoot, scene, scenePath, startup);
+	const auto owner = [&](const fs::path &path) -> std::size_t {
+		if (!path.empty()) {
+			for (std::size_t i = 0; i < items.size(); ++i) {
+				const auto &item = items[i];
+				if (item.folder ? RelativeReference(item.from, path).has_value()
+				                : PathUtils::IsSameFile(item.from, path)) {
+					return i;
+				}
+			}
+		}
+		return items.size();
+	};
+	std::vector<std::set<std::size_t>> edges(items.size());
+	const auto record = [&](const fs::path &source, const fs::path &target) {
+		const auto from = owner(source);
+		if (from == items.size()) {
+			return false;
+		}
+
+		const auto to = owner(target);
+		if (from != to && to < items.size()) {
+			edges[from].insert(to);
+		}
+		return true;
+	};
+
+	auto issues = Scan([&](const auto &path) { return owner(path) < items.size(); },
+	                   searchRoot, scene, scenePath, startup, {}, {},
+	                   items.size() > 1 ? ReferenceEdge(record) : ReferenceEdge{});
+	ordered.clear();
+
+	if (!issues.empty()) {
+		return issues;
+	}
+
+	std::vector<std::size_t> incoming(items.size());
+	for (const auto &targetsOfItem : edges) {
+		for (const auto target : targetsOfItem) {
+			++incoming[target];
+		}
+	}
+
+	// 途中で停止しても、残った項目が先に移動した素材を参照しない順にする。
+	while (ordered.size() < items.size()) {
+		const auto next = std::ranges::find(incoming, std::size_t{0});
+		if (next == incoming.end()) {
+			ordered.clear();
+			return {"The selected items reference each other in a cycle. "
+			        "Clear the references before moving them to the Recycle Bin."};
+		}
+
+		const auto index = static_cast<std::size_t>(next - incoming.begin());
+		ordered.push_back(items[index].from);
+		*next = items.size();
+		for (const auto target : edges[index]) {
+			--incoming[target];
+		}
+	}
+
+	return {};
 }
 
-fs::path AssetUsage::Duplicate(const fs::path &source, const fs::path &assetRoot,
-                              std::string &error) {
-	OutputDirectory output;
+AssetUsage::Paths AssetUsage::Duplicate(std::span<const fs::path> sources,
+                                        const fs::path &assetRoot,
+                                        std::string &error) {
+	std::vector<std::unique_ptr<OutputDirectory>> outputs;
 
 	try {
-		if (!assetRoot.is_absolute() || !source.is_absolute() ||
-		    source.native().find(L'\0') != std::wstring::npos) {
-			throw std::runtime_error("Choose a file or folder inside editable Assets.");
+		if (!assetRoot.is_absolute() || sources.empty()) {
+			throw std::runtime_error("Choose items inside editable Assets.");
 		}
 
 		const auto root = fs::canonical(assetRoot);
-		const auto resolved = fs::canonical(source);
-		const auto relative = PathUtils::RelativeInside(root, resolved);
+		Paths originals, copies;
 
-		if (relative.empty() ||
-		    PathUtils::RelativeInside(root, source.lexically_normal()) != relative) {
-			throw std::runtime_error("Choose an item inside Assets without using a redirected path.");
+		for (const auto &source : sources) {
+			originals.push_back(EditableAsset(source, root));
 		}
 
-		CheckOrdinaryAsset(source);
-		const bool folder = fs::is_directory(resolved);
-		auto destination = DuplicateDestination(resolved, folder);
-		output.OpenExisting(destination.parent_path());
-
-		if (folder) {
-			const auto name = destination.filename();
-			output.CreateSubdirectory(name);
-
-			for (const auto &entry : fs::recursive_directory_iterator(resolved)) {
-				CheckOrdinaryAsset(entry.path());
-				const auto copy = name / PathUtils::RelativeInside(resolved, entry.path());
-
-				if (entry.is_directory()) {
-					output.CreateSubdirectory(copy);
-				} else {
-					output.Copy(entry.path(), copy);
-				}
+		for (const auto &source : originals) {
+			if (fs::is_directory(source) &&
+			    std::ranges::any_of(originals, [&](const auto &other) {
+				    return other != source && RelativeWithin(source, other).has_value();
+			    })) {
+				throw std::runtime_error("Select a folder or its contents, not both.");
 			}
-		} else {
-			output.Copy(resolved, destination.filename());
 		}
 
-		output.Complete();
+		for (const auto &source : originals) {
+			auto destination = DuplicateDestination(source, fs::is_directory(source));
+			outputs.push_back(std::make_unique<OutputDirectory>());
+			CopyAsset(source, destination, *outputs.back());
+			copies.push_back(std::move(destination));
+		}
+
+		for (auto &output : outputs) {
+			output->Complete();
+		}
+
 		error.clear();
-		return destination;
+		return copies;
 	} catch (const std::exception &failure) {
 		error = failure.what();
-		error += output.Cleanup();
+
+		for (auto it = outputs.rbegin(); it != outputs.rend(); ++it) {
+			error += (*it)->Cleanup();
+		}
+
 		return {};
 	}
 }
 
-bool AssetUsage::Relocate(const fs::path &source, const fs::path &destination,
-                        const fs::path &assetRoot, SceneDocument &document,
-                        ProjectDocument &project, std::string &error) {
+bool AssetUsage::Relocate(const Moves &moves, const fs::path &assetRoot,
+                          SceneDocument &document, ProjectDocument &project,
+                          std::string &error) {
 	std::vector<Edit> edits;
-	std::size_t applied = 0;
-	fs::path from, to;
-	bool moved = false;
+	std::vector<MoveEntry> items;
+	std::size_t applied = 0, moved = 0;
 
 	try {
-		if (!assetRoot.is_absolute() || !source.is_absolute() ||
-		    !destination.is_absolute() ||
-		    source.native().find(L'\0') != std::wstring::npos ||
-		    destination.native().find(L'\0') != std::wstring::npos ||
-		    !PathUtils::IsValidFileName(destination.filename())) {
-			throw std::runtime_error("Choose a valid destination for an editable asset.");
+		if (!assetRoot.is_absolute() || moves.empty()) {
+			throw std::runtime_error("Choose items inside editable Assets.");
 		}
 
-		const auto status = fs::symlink_status(source);
-		const bool folder = fs::is_directory(status);
-
-		if (!folder && !fs::is_regular_file(status)) {
-			throw std::runtime_error("Choose a file or folder inside Assets.");
-		}
-
-		from = fs::canonical(source);
 		const auto assets = fs::canonical(assetRoot);
-		const auto parent = fs::canonical(destination.parent_path());
-		PathUtils::RelativeInside(assets, parent);
-		to = parent / destination.filename();
 
-		if (PathUtils::RelativeInside(assets, from).empty() ||
-		    !fs::is_directory(parent) || (folder && RelativeWithin(from, parent))) {
-			throw std::runtime_error("Choose a destination outside the source folder.");
-		}
-
-		if (folder) {
-			ValidateFolderTree(source);
-		} else {
-			if (!PathUtils::HasExtension(to, PathUtils::ToUtf8(from.extension()))) {
-				throw std::runtime_error("Keep the original file extension.");
+		for (const auto &[source, destination] : moves) {
+			if (!destination.is_absolute() ||
+			    destination.native().find(L'\0') != std::wstring::npos ||
+			    !PathUtils::IsValidFileName(destination.filename())) {
+				throw std::runtime_error("Choose a valid asset destination.");
 			}
 
-			for (const auto suffix : {".scene", ".prefab", ".settings"}) {
-				if (PathUtils::HasExtension(from.stem(), suffix) &&
-				    !PathUtils::HasExtension(to.stem(), suffix)) {
-					throw std::runtime_error("Keep the original file type suffix.");
+			auto from = EditableAsset(source, assets);
+			const bool folder = fs::is_directory(from);
+			const auto parent = fs::canonical(destination.parent_path());
+			PathUtils::RelativeInside(assets, parent);
+
+			if (!fs::is_directory(parent) ||
+			    PathUtils::RelativeInside(assets, destination.parent_path().lexically_normal()) !=
+			        PathUtils::RelativeInside(assets, parent)) {
+				throw std::runtime_error("Choose an ordinary destination folder.");
+			}
+
+			auto to = parent / destination.filename();
+			if (from == to) {
+				continue;
+			}
+
+			if (folder) {
+				ValidateFolderTree(from);
+			} else {
+				if (!PathUtils::HasExtension(to, PathUtils::ToUtf8(from.extension()))) {
+					throw std::runtime_error("Keep the original file extension.");
+				}
+
+				for (const auto suffix : {".scene", ".prefab", ".settings"}) {
+					if (PathUtils::HasExtension(from.stem(), suffix) &&
+					    !PathUtils::HasExtension(to.stem(), suffix)) {
+						throw std::runtime_error("Keep the original file type suffix.");
+					}
+				}
+			}
+
+			if (fs::exists(fs::symlink_status(to)) ||
+			    std::ranges::any_of(items, [&](const auto &item) {
+				    return PathUtils::IsSameFile(item.to, to);
+			    })) {
+				throw std::runtime_error("A file or folder already uses that name: " +
+				                         PathUtils::ToUtf8(to));
+			}
+
+			items.push_back({std::move(from), std::move(to), folder});
+		}
+
+		for (const auto &item : items) {
+			for (const auto &other : items) {
+				if ((&item != &other && PathUtils::IsSameFile(item.from, other.from)) ||
+				    (other.folder &&
+				     (RelativeWithin(other.from, item.to.parent_path()) ||
+				      (&item != &other && RelativeWithin(other.from, item.from))))) {
+					throw std::runtime_error("A selected folder contains another source or the destination.");
 				}
 			}
 		}
 
-		if (fs::exists(fs::symlink_status(to))) {
-			throw std::runtime_error("A file or folder already uses that name.");
+		if (items.empty()) {
+			error.clear();
+			return true;
 		}
 
 		const auto map = [&](const fs::path &path) -> fs::path {
@@ -502,12 +637,18 @@ bool AssetUsage::Relocate(const fs::path &source, const fs::path &destination,
 				return {};
 			}
 
-			if (!folder) {
-				return PathUtils::IsSameFile(from, path) ? to : fs::path{};
+			for (const auto &item : items) {
+				if (item.folder) {
+					const auto relative = RelativeReference(item.from, path);
+					if (relative) {
+						return relative->empty() ? item.to : item.to / *relative;
+					}
+				} else if (PathUtils::IsSameFile(item.from, path)) {
+					return item.to;
+				}
 			}
 
-			const auto relative = RelativeReference(from, path);
-			return !relative ? fs::path{} : relative->empty() ? to : to / *relative;
+			return {};
 		};
 		const auto checkModel = [&](const fs::path &model) {
 			const auto movedModel = map(model);
@@ -546,10 +687,6 @@ bool AssetUsage::Relocate(const fs::path &source, const fs::path &destination,
 			}
 		};
 
-		if (!folder && parent != from.parent_path() && PathUtils::IsModelFile(from)) {
-			checkModel(from);
-		}
-
 		const auto &projectRoot = project.GetRoot();
 		const auto &root = projectRoot.empty() ? assets : projectRoot;
 		const auto startup = project.GetStartupScene();
@@ -563,7 +700,8 @@ bool AssetUsage::Relocate(const fs::path &source, const fs::path &destination,
 		bool refreshSavedText = false;
 
 		const auto issues = Scan(
-		    from, root, document.GetScene(), scenePath, startup,
+		    [](const auto &) { return false; }, root, document.GetScene(),
+		    scenePath, startup,
 		    [&](const fs::path &path, Source kind, Scene &scene,
 		        SceneObjectId nextId, std::string original,
 		        const fs::path &savedRoot) {
@@ -630,12 +768,15 @@ bool AssetUsage::Relocate(const fs::path &source, const fs::path &destination,
 			}
 		}
 
-		if (!MoveFileW(from.c_str(), to.c_str())) {
-			throw std::runtime_error(std::format("Could not move the asset (Windows error {}).",
-			                                     GetLastError()));
-		}
+		for (const auto &item : items) {
+			if (!MoveFileW(item.from.c_str(), item.to.c_str())) {
+				throw std::runtime_error(std::format(
+				    "Could not move {} (Windows error {}).",
+				    PathUtils::ToUtf8(item.from), GetLastError()));
+			}
 
-		moved = true;
+			++moved;
+		}
 
 		for (const auto &edit : edits) {
 			if (ReadText(edit.path) != edit.before ||
@@ -674,9 +815,12 @@ bool AssetUsage::Relocate(const fs::path &source, const fs::path &destination,
 		}
 	}
 
-	if (moved && !MoveFileW(to.c_str(), from.c_str())) {
-		error += "\nCould not restore the original file path. File is at " +
-		         PathUtils::ToUtf8(to);
+	while (moved != 0) {
+		const auto &item = items[--moved];
+		if (!MoveFileW(item.to.c_str(), item.from.c_str())) {
+			error += "\nCould not restore the original path. Item is at " +
+			         PathUtils::ToUtf8(item.to);
+		}
 	}
 
 	return false;

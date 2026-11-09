@@ -678,12 +678,19 @@ bool EditorScene::Update(float deltaTime) {
 	if (!wasBusy) {
 		const auto &move = assetsPanel_.GetMoveRequest();
 
-		if (!move.source.empty() && !IsBusy() && action == EditorAction::NONE &&
+		if (!move.sources.empty() && !IsBusy() && action == EditorAction::NONE &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 			FinishEdit();
 			std::string error;
 
-			if (!RelocateAsset(move.source, move.destination, error)) {
+			AssetUsage::Moves moves;
+			for (const auto &source : move.sources) {
+				if (!PathUtils::IsSameFile(source.parent_path(), move.directory)) {
+					moves.emplace_back(source, move.directory / source.filename());
+				}
+			}
+
+			if (!moves.empty() && !RelocateAssets(moves, error)) {
 				ShowError(std::move(error));
 			}
 		}
@@ -704,13 +711,14 @@ bool EditorScene::Update(float deltaTime) {
 		if (!duplicate.empty() && !IsBusy() && action == EditorAction::NONE &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 			std::string error;
-			const auto copy =
+			const auto copies =
 			    AssetUsage::Duplicate(duplicate, assets_.GetRootDirectory(), error);
 
-			if (copy.empty()) {
+			if (copies.empty()) {
 				ShowError(std::move(error));
 			} else {
 				assets_.Refresh();
+				const auto &copy = copies.front();
 				std::error_code typeError;
 
 				if (std::filesystem::is_directory(copy, typeError)) {
@@ -727,8 +735,8 @@ bool EditorScene::Update(float deltaTime) {
 		if (!recycle.empty() && !IsBusy() && action == EditorAction::NONE &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 			FinishEdit();
-			pendingRecyclePath_ = recycle;
-			CheckAssetRecycle(pendingRecyclePath_);
+			pendingRecyclePaths_ = recycle;
+			CheckAssetRecycle();
 			stage_ = DialogStage::RECYCLE_ASSET;
 		}
 
@@ -3656,37 +3664,44 @@ void EditorScene::RestoreRecovery() {
 	}
 }
 
-std::filesystem::path
-EditorScene::CheckAssetRecycle(const std::filesystem::path &path) {
+std::vector<std::filesystem::path> EditorScene::CheckAssetRecycle() {
 	try {
 		const auto &assets = assets_.GetRootDirectory();
-		const auto status = std::filesystem::symlink_status(path);
 
-		if (!assets.is_absolute() || !path.is_absolute() ||
-		    (!std::filesystem::is_regular_file(status) &&
-		     !std::filesystem::is_directory(status))) {
-			throw std::runtime_error(
-			    "Choose a file or folder in an editable Assets folder.");
+		if (!assets.is_absolute() || pendingRecyclePaths_.empty()) {
+			throw std::runtime_error("Choose items inside editable Assets.");
 		}
 
 		const auto root = std::filesystem::canonical(assets);
-		auto target = std::filesystem::canonical(path);
-		const auto relative = PathUtils::RelativeInside(root, target);
+		for (const auto &path : pendingRecyclePaths_) {
+			const auto status = std::filesystem::symlink_status(path);
 
-		if (relative.empty() ||
-		    PathUtils::RelativeInside(root, path.lexically_normal()) != relative) {
-			throw std::runtime_error(
-			    "Choose an item inside Assets without using a redirected path.");
+			if (!path.is_absolute() ||
+			    (!std::filesystem::is_regular_file(status) &&
+			     !std::filesystem::is_directory(status))) {
+				throw std::runtime_error("Choose a file or folder inside Assets.");
+			}
+
+			auto target = std::filesystem::canonical(path);
+			const auto relative = PathUtils::RelativeInside(root, target);
+
+			if (relative.empty() ||
+			    PathUtils::RelativeInside(root, path.lexically_normal()) != relative) {
+				throw std::runtime_error(
+				    "Choose an item inside Assets without using a redirected path.");
+			}
+
 		}
 
 		const auto &project = project_.GetRoot();
+		AssetUsage::Paths targets;
 		recycleBlockers_ = AssetUsage::Find(
-		    path, project.empty() ? root : project, document_.GetScene(),
-		    document_.GetFilePath(), project_.GetStartupScene());
-		return target;
+		    pendingRecyclePaths_, project.empty() ? root : project,
+		    document_.GetScene(), document_.GetFilePath(), project_.GetStartupScene(),
+		    targets);
+		return targets;
 	} catch (const std::exception &error) {
-		recycleBlockers_ = {"Could not verify asset references.",
-		                    error.what()};
+		recycleBlockers_ = {"Could not verify asset references.", error.what()};
 		return {};
 	}
 }
@@ -3702,10 +3717,18 @@ void EditorScene::DrawAssetRecycle() {
 		return;
 	}
 
-	ui_.Text(PathUtils::ToUtf8(pendingRecyclePath_.filename()));
+	ui_.Text(std::format("{} item(s) selected", pendingRecyclePaths_.size()));
+
+	if (ui_.BeginChild("RecycleSelection", 500.0f, 90.0f)) {
+		for (const auto &path : pendingRecyclePaths_) {
+			ui_.Text(PathUtils::ToUtf8(path.filename()));
+		}
+	}
+
+	ui_.EndChild();
 
 	if (!recycleBlockers_.empty()) {
-		ui_.Text("This item cannot be moved. References or errors:");
+		ui_.Text("The selection could not be moved. References or errors:");
 
 		if (ui_.BeginChild("AssetReferences", 500.0f, 160.0f)) {
 			for (const auto &source : recycleBlockers_) {
@@ -3719,19 +3742,29 @@ void EditorScene::DrawAssetRecycle() {
 	bool close = false;
 
 	if (recycleBlockers_.empty() && ui_.Button("Move to Recycle Bin")) {
-		const auto target = CheckAssetRecycle(pendingRecyclePath_);
+		const auto targets = CheckAssetRecycle();
 
-		if (!target.empty() && recycleBlockers_.empty()) {
+		if (!targets.empty() && recycleBlockers_.empty()) {
+			std::size_t completed = 0;
 			std::string error;
 
-			if (ShellUtils::RecycleAsset(target, error)) {
+			for (const auto &target : targets) {
+				if (!ShellUtils::RecycleAsset(target, error)) {
+					recycleBlockers_ = {
+					    std::format("{} of {} items moved.", completed, targets.size()),
+					    PathUtils::ToUtf8(target), std::move(error)};
+					break;
+				}
+				++completed;
+			}
+
+			if (completed != 0) {
 				texturePreviewPanel_.Clear();
 				audioPreviewPanel_.Clear();
 				assets_.Refresh();
-				close = true;
-			} else {
-				recycleBlockers_ = {std::move(error)};
 			}
+
+			close = completed == targets.size();
 		}
 
 		ui_.SameLine();
@@ -3740,7 +3773,7 @@ void EditorScene::DrawAssetRecycle() {
 	if (ui_.Button(recycleBlockers_.empty() ? "Cancel" : "Close") ||
 	    ImGui::IsKeyPressed(ImGuiKey_Escape) || close) {
 		ui_.CloseCurrentPopup();
-		pendingRecyclePath_.clear();
+		pendingRecyclePaths_.clear();
 		recycleBlockers_.clear();
 		stage_ = DialogStage::IDLE;
 	}
@@ -3748,13 +3781,14 @@ void EditorScene::DrawAssetRecycle() {
 	ui_.EndPopup();
 }
 
-bool EditorScene::RelocateAsset(const std::filesystem::path &source,
-                                const std::filesystem::path &destination,
-                                std::string &error) {
-	if (!AssetUsage::Relocate(source, destination, assets_.GetRootDirectory(),
-	                          document_, project_, error)) {
+bool EditorScene::RelocateAssets(const AssetUsage::Moves &moves,
+                                 std::string &error) {
+	if (!AssetUsage::Relocate(moves, assets_.GetRootDirectory(), document_,
+	                          project_, error)) {
 		return false;
 	}
+
+	const auto &destination = moves.front().second;
 
 	clipboard_.Clear();
 	texturePreviewPanel_.Clear();
@@ -3810,7 +3844,7 @@ void EditorScene::DrawAssetRename() {
 			}
 
 			const auto target = pendingRenamePath_.parent_path() / name;
-			close = RelocateAsset(pendingRenamePath_, target, assetRenameError_);
+			close = RelocateAssets({{pendingRenamePath_, target}}, assetRenameError_);
 		} catch (const std::exception &error) {
 			assetRenameError_ = error.what();
 		}

@@ -347,7 +347,7 @@ class EditorScene final : public IScene {
 	/// <summary>
 	/// 選択した素材の参照元を調べ、ごみ箱へ移せるか確認する
 	/// </summary>
-	std::filesystem::path CheckAssetRecycle(const std::filesystem::path &path);
+	std::vector<std::filesystem::path> CheckAssetRecycle();
 
 	/// <summary>
 	/// 素材の移動確認または参照元一覧を描画する
@@ -362,9 +362,9 @@ class EditorScene final : public IScene {
 	/// <summary>
 	/// 素材のパス変更を実行し、成功時に一覧とプレビューを更新する
 	/// </summary>
-	bool RelocateAsset(const std::filesystem::path &source,
-	                   const std::filesystem::path &destination,
-	                   std::string &error);
+	bool RelocateAssets(
+	    const std::vector<std::pair<std::filesystem::path, std::filesystem::path>> &moves,
+	    std::string &error);
 
 	/// <summary>
 	/// 出力するシーンを取得する。別の起動シーンが指定されていれば一時ドキュメントに読み込む
@@ -832,7 +832,7 @@ class EditorScene final : public IScene {
 	bool gridSettingsRequested_ = false;
 	RecentScenes recentScenes_;
 	std::filesystem::path pendingOpenPath_;
-	std::filesystem::path pendingRecyclePath_;
+	std::vector<std::filesystem::path> pendingRecyclePaths_;
 	std::vector<std::string> recycleBlockers_;
 	std::filesystem::path pendingRenamePath_;
 	std::string assetRenameName_, assetRenameError_;
