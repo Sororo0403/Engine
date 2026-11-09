@@ -572,7 +572,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 							renamePath_ = directory;
 						}
 
-						if (ui.MenuItem("Duplicate")) {
+						if (ui.MenuItem("Duplicate", "Ctrl+D")) {
 							duplicatePaths_ = selectedItems_;
 						}
 
@@ -655,7 +655,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 					renamePath_ = assetPath;
 				}
 
-				if (ui.MenuItem("Duplicate", nullptr,
+				if (ui.MenuItem("Duplicate", "Ctrl+D",
 				                canEditAssets &&
 				                    assets.GetRootDirectory().is_absolute())) {
 					duplicatePaths_ = selectedItems_;
@@ -785,6 +785,9 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 			if (!clipboardItems_.empty() && ImGui::IsKeyPressed(ImGuiKey_V, false)) {
 				requestPaste(currentFolder());
+			} else if (!selectedItems_.empty() &&
+			           ImGui::IsKeyPressed(ImGuiKey_D, false)) {
+				duplicatePaths_ = selectedItems_;
 			}
 		} else if (clipboardEnabled && !io.KeyCtrl && selectedItems_.size() == 1 &&
 		           ImGui::IsKeyPressed(ImGuiKey_F2, false)) {
