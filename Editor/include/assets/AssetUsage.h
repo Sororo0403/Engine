@@ -24,9 +24,9 @@ Find(const std::filesystem::path &target, const std::filesystem::path &searchRoo
      const std::filesystem::path &startup);
 
 /// <summary>
-/// 同じフォルダ内で素材の名前を変え、保存済みと編集中の参照を更新する
+/// Assets内で素材を移動または改名し、保存済みと編集中の参照を更新する
 /// </summary>
-bool Rename(const std::filesystem::path &source,
+bool Relocate(const std::filesystem::path &source,
             const std::filesystem::path &destination,
             const std::filesystem::path &assetRoot, SceneDocument &document,
             ProjectDocument &project, std::string &error);

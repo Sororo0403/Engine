@@ -10,7 +10,7 @@ class AssetDragDrop {
 	/// <summary>
 	/// 誤った対象へ受け渡さないためのアセット種別
 	/// </summary>
-	enum class Kind { TEXTURE, SCRIPT, MODEL, SCENE, AUDIO, PREFAB };
+	enum class Kind { TEXTURE, SCRIPT, MODEL, SCENE, AUDIO, PREFAB, GAME_SETTINGS };
 
 	/// <summary>
 	/// 直前のUI項目を指定種別のアセットのドラッグ元として扱う
@@ -26,4 +26,9 @@ class AssetDragDrop {
 	/// <param name="kind">受け入れるアセット種別。他の種別は受け取らない</param>
 	/// <returns>受け取ったパス。未確定・対象外・データ不正の場合は空</returns>
 	static std::filesystem::path AcceptTarget(Kind kind);
+
+	/// <summary>
+	/// フォルダのドロップ先で、いずれかの素材ファイルを受け取る
+	/// </summary>
+	static std::filesystem::path AcceptFileTarget();
 };

@@ -172,6 +172,16 @@ class AssetsPanel {
 	const std::filesystem::path &GetRenameRequest() const;
 
 	/// <summary>
+	/// フォルダへのドロップで要求された移動元と移動先
+	/// </summary>
+	struct MoveRequest {
+		std::filesystem::path source;
+		std::filesystem::path destination;
+	};
+
+	const MoveRequest &GetMoveRequest() const;
+
+	/// <summary>
 	/// このフレームで確認用ウィンドウに開くことを要求した画像を取得する
 	/// </summary>
 	/// <returns>画像パス。要求なしは空。次のDrawまたはClearまで有効</returns>
@@ -261,6 +271,7 @@ class AssetsPanel {
 	int textureSlot_ = 0;
 	std::filesystem::path recyclePath_;
 	std::filesystem::path renamePath_;
+	MoveRequest moveRequest_;
 	bool textureClearRequested_ = false;
 	bool textureImportRequested_ = false;
 	bool audioImportRequested_ = false;

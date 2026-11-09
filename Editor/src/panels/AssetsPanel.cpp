@@ -34,6 +34,7 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	modelReloadPath_.clear();
 	recyclePath_.clear();
 	renamePath_.clear();
+	moveRequest_ = {};
 	meshReplacementPath_.clear();
 	textureReloadPath_.clear();
 	textureUsageSelectionPath_.clear();
@@ -139,6 +140,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	modelReloadPath_.clear();
 	recyclePath_.clear();
 	renamePath_.clear();
+	moveRequest_ = {};
 	meshReplacementPath_.clear();
 	textureReloadPath_.clear();
 	textureUsageSelectionPath_.clear();
@@ -242,6 +244,20 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		OpenDirectory({});
 	}
 
+	const auto acceptFolder = [&](const std::filesystem::path &directory) {
+		if (!canEditAssets || !assets.GetRootDirectory().is_absolute()) {
+			return;
+		}
+
+		auto source = AssetDragDrop::AcceptFileTarget();
+
+		if (!source.empty() &&
+		    !PathUtils::IsSameFile(source.parent_path(), directory)) {
+			auto destination = directory / source.filename();
+			moveRequest_ = {std::move(source), std::move(destination)};
+		}
+	};
+
 	ui.SameLine();
 	ui.BeginDisabled(currentDirectory_.empty() && filter_.empty());
 
@@ -249,12 +265,15 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		OpenDirectory({});
 	}
 
+	acceptFolder(assets.GetRootDirectory());
 	ui.EndDisabled();
 	ui.SameLine();
 	ui.BeginDisabled(currentDirectory_.empty());
 
 	if (ui.Button("Up")) {
 		OpenDirectory(currentDirectory_.parent_path());
+	} else if (!currentDirectory_.empty()) {
+		acceptFolder(assets.GetRootDirectory() / currentDirectory_.parent_path());
 	}
 
 	ui.EndDisabled();
@@ -409,6 +428,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 					openRequested = true;
 				}
 
+				acceptFolder(directory);
 				ImGui::PopID();
 			}
 		}
@@ -545,18 +565,16 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				scrollToSelected_ = false;
 			}
 
-			if ((type_ == AssetType::MODEL || type_ == AssetType::SCENE ||
-			     type_ == AssetType::AUDIO || type_ == AssetType::PREFAB ||
-			     type_ == AssetType::SCRIPT || type_ == AssetType::TEXTURE) &&
+			if ((type_ != AssetType::GAME_SETTINGS || canEditAssets) &&
 			    AssetDragDrop::DrawSource(
 			        assetPath,
 			        type_ == AssetType::TEXTURE  ? AssetDragDrop::Kind::TEXTURE
 			        : type_ == AssetType::SCRIPT ? AssetDragDrop::Kind::SCRIPT
 			        : type_ == AssetType::MODEL  ? AssetDragDrop::Kind::MODEL
 			        : type_ == AssetType::AUDIO  ? AssetDragDrop::Kind::AUDIO
-			        : type_ == AssetType::PREFAB
-			            ? AssetDragDrop::Kind::PREFAB
-			            : AssetDragDrop::Kind::SCENE)) {
+			        : type_ == AssetType::PREFAB ? AssetDragDrop::Kind::PREFAB
+			        : type_ == AssetType::SCENE  ? AssetDragDrop::Kind::SCENE
+			                                    : AssetDragDrop::Kind::GAME_SETTINGS)) {
 				selectedPath_ = assetPath;
 			}
 
@@ -766,6 +784,7 @@ const std::filesystem::path &AssetsPanel::GetTexturePreviewRequest() const {
 void AssetsPanel::Clear() {
 	recyclePath_.clear();
 	renamePath_.clear();
+	moveRequest_ = {};
 	directoryOpenRequested_ = false;
 	requestedDirectory_.clear();
 	type_ = AssetType::MODEL;
@@ -804,6 +823,10 @@ const std::filesystem::path &AssetsPanel::GetRecycleRequest() const {
 
 const std::filesystem::path &AssetsPanel::GetRenameRequest() const {
 	return renamePath_;
+}
+
+const AssetsPanel::MoveRequest &AssetsPanel::GetMoveRequest() const {
+	return moveRequest_;
 }
 
 std::uint32_t AssetsPanel::GetTextureSlot() const {

@@ -263,7 +263,7 @@ std::vector<std::string> AssetUsage::Find(
 	return Scan(target, searchRoot, scene, scenePath, startup);
 }
 
-bool AssetUsage::Rename(const fs::path &source, const fs::path &destination,
+bool AssetUsage::Relocate(const fs::path &source, const fs::path &destination,
                         const fs::path &assetRoot, SceneDocument &document,
                         ProjectDocument &project, std::string &error) {
 	std::vector<Edit> edits;
@@ -273,16 +273,18 @@ bool AssetUsage::Rename(const fs::path &source, const fs::path &destination,
 
 	try {
 		if (!assetRoot.is_absolute() || !source.is_absolute() ||
-		    destination.parent_path() != source.parent_path() ||
+		    !destination.is_absolute() ||
 		    !PathUtils::IsValidFileName(destination.filename()) ||
 		    !fs::is_regular_file(fs::symlink_status(source))) {
-			throw std::runtime_error("Choose a valid name for an editable asset.");
+			throw std::runtime_error("Choose a valid destination for an editable asset.");
 		}
 
 		from = fs::canonical(source);
 		const auto assets = fs::canonical(assetRoot);
 		PathUtils::RelativeInside(assets, from);
-		to = from.parent_path() / destination.filename();
+		const auto parent = fs::canonical(destination.parent_path());
+		PathUtils::RelativeInside(assets, parent);
+		to = parent / destination.filename();
 
 		if (!PathUtils::HasExtension(to, PathUtils::ToUtf8(from.extension()))) {
 			throw std::runtime_error("Keep the original file extension.");
@@ -297,6 +299,24 @@ bool AssetUsage::Rename(const fs::path &source, const fs::path &destination,
 
 		if (fs::exists(fs::symlink_status(to))) {
 			throw std::runtime_error("A file or folder already uses that name.");
+		}
+
+		if (parent != from.parent_path() && PathUtils::IsModelFile(from)) {
+			for (const auto &file : AssetDependencies::ModelFiles(from)) {
+				if (PathUtils::IsSameFile(from, file)) {
+					continue;
+				}
+
+				const auto relative =
+				    file.lexically_normal().lexically_relative(from.parent_path());
+
+				if (relative.empty() ||
+				    !PathUtils::IsSameFile(file, parent / relative)) {
+					throw std::runtime_error(
+					    "Moving this model would break an external dependency:\n" +
+					    PathUtils::ToUtf8(file));
+				}
+			}
 		}
 
 		const auto &projectRoot = project.GetRoot();
@@ -319,6 +339,8 @@ bool AssetUsage::Rename(const fs::path &source, const fs::path &destination,
 		        SceneObjectId nextId, std::string original,
 		        const fs::path &savedRoot) {
 			    const bool changed = Rewrite(scene, from, to);
+			    const bool relocating = PathUtils::IsSameFile(from, path);
+			    const bool rebase = relocating && parent != from.parent_path();
 			    const bool open =
 			        !scenePath.empty() && PathUtils::IsSameFile(scenePath, path);
 
@@ -327,12 +349,12 @@ bool AssetUsage::Rename(const fs::path &source, const fs::path &destination,
 				    throw std::runtime_error("The open scene changed outside the editor.");
 			    }
 
-			    if (!changed) {
+			    if (!changed && !rebase) {
 				    return;
 			    }
 
 			    PathUtils::RelativeInside(root, path);
-			    const auto &target = PathUtils::IsSameFile(from, path) ? to : path;
+			    const auto &target = relocating ? to : path;
 			    std::string updated, issue;
 			    SceneObjectId prefabRoot = 0;
 			    const bool serialized =
@@ -357,7 +379,7 @@ bool AssetUsage::Rename(const fs::path &source, const fs::path &destination,
 		    });
 
 		if (!issues.empty()) {
-			error = "Could not rename the asset.";
+			error = "Could not move or rename the asset.";
 			for (const auto &issue : issues) {
 				error += "\n" + issue;
 			}
@@ -370,7 +392,7 @@ bool AssetUsage::Rename(const fs::path &source, const fs::path &destination,
 
 		for (auto &edit : edits) {
 			if (ReadText(edit.path) != edit.before) {
-				throw std::runtime_error("A referencing file changed during the rename.");
+				throw std::runtime_error("A referencing file changed during the operation.");
 			}
 
 			if (PathUtils::IsSameFile(from, edit.path)) {
@@ -379,7 +401,7 @@ bool AssetUsage::Rename(const fs::path &source, const fs::path &destination,
 		}
 
 		if (!MoveFileW(from.c_str(), to.c_str())) {
-			throw std::runtime_error(std::format("Could not rename the file (Windows error {}).",
+			throw std::runtime_error(std::format("Could not move the file (Windows error {}).",
 			                                     GetLastError()));
 		}
 
@@ -422,7 +444,7 @@ bool AssetUsage::Rename(const fs::path &source, const fs::path &destination,
 	}
 
 	if (moved && !MoveFileW(to.c_str(), from.c_str())) {
-		error += "\nCould not restore the original file name. File is at " +
+		error += "\nCould not restore the original file path. File is at " +
 		         PathUtils::ToUtf8(to);
 	}
 

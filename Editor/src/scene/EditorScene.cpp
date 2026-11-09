@@ -676,6 +676,18 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	if (!wasBusy) {
+		const auto &move = assetsPanel_.GetMoveRequest();
+
+		if (!move.source.empty() && !IsBusy() && action == EditorAction::NONE &&
+		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
+			FinishEdit();
+			std::string error;
+
+			if (!RelocateAsset(move.source, move.destination, error)) {
+				ShowError(std::move(error));
+			}
+		}
+
 		const auto &rename = assetsPanel_.GetRenameRequest();
 
 		if (!rename.empty() && !IsBusy() && action == EditorAction::NONE &&
@@ -3701,6 +3713,23 @@ void EditorScene::DrawAssetRecycle() {
 	ui_.EndPopup();
 }
 
+bool EditorScene::RelocateAsset(const std::filesystem::path &source,
+                                const std::filesystem::path &destination,
+                                std::string &error) {
+	if (!AssetUsage::Relocate(source, destination, assets_.GetRootDirectory(),
+	                          document_, project_, error)) {
+		return false;
+	}
+
+	clipboard_.Clear();
+	texturePreviewPanel_.Clear();
+	audioPreviewPanel_.Clear();
+	assets_.Refresh();
+	assetsPanel_.RequestReveal(destination);
+	RecordRecovery();
+	return true;
+}
+
 void EditorScene::DrawAssetRename() {
 	constexpr const char *kTitle = "Rename Asset";
 
@@ -3734,18 +3763,7 @@ void EditorScene::DrawAssetRename() {
 			}
 
 			const auto target = pendingRenamePath_.parent_path() / name;
-			close = AssetUsage::Rename(pendingRenamePath_, target,
-			                           assets_.GetRootDirectory(), document_,
-			                           project_, assetRenameError_);
-
-			if (close) {
-				clipboard_.Clear();
-				texturePreviewPanel_.Clear();
-				audioPreviewPanel_.Clear();
-				assets_.Refresh();
-				assetsPanel_.RequestReveal(target);
-				RecordRecovery();
-			}
+			close = RelocateAsset(pendingRenamePath_, target, assetRenameError_);
 		} catch (const std::exception &error) {
 			assetRenameError_ = error.what();
 		}

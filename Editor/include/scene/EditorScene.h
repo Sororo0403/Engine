@@ -360,6 +360,13 @@ class EditorScene final : public IScene {
 	void DrawAssetRename();
 
 	/// <summary>
+	/// 素材のパス変更を実行し、成功時に一覧とプレビューを更新する
+	/// </summary>
+	bool RelocateAsset(const std::filesystem::path &source,
+	                   const std::filesystem::path &destination,
+	                   std::string &error);
+
+	/// <summary>
 	/// 出力するシーンを取得する。別の起動シーンが指定されていれば一時ドキュメントに読み込む
 	/// </summary>
 	const Scene *GetExportScene(SceneDocument &startup);
