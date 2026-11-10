@@ -77,7 +77,7 @@ local function update_hint(self, state, x, z, inRange, seconds)
             text = state.introText
         end
     end
-    if not inRange then
+    if not inRange and not enemyAlert then
         text = canal_bridge_hint(self, x, z) or market_supply_hint(self, x, z) or text
         local practice = self:reference("jumpPractice")
         if practice then
