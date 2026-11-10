@@ -503,6 +503,23 @@
             "operation": "loadScene",
             "scene": "@project/scenes/TitleStreet.scene.json",
             "target": 0
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "inputPressed",
+            "inputAction": "Restart",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "restartScene",
+            "scene": "",
+            "target": 0
           }
         ]
       }
@@ -818,7 +835,7 @@
       "text": {
         "enabled": true,
         "raycastTarget": false,
-        "value": "もう一度",
+        "value": "もう一度 ［R / Start］",
         "fontFamily": "Yu Gothic UI",
         "fontSize": 22,
         "bold": true,
