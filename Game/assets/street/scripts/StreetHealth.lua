@@ -373,8 +373,14 @@ return {
     end,
 
     message = function(self, state, name)
-        if name == "courtyard" or name == "roof" then
+        if name == "canal" or name == "courtyard" or name == "roof" then
             state.spawnX, state.spawnY, state.spawnZ = self:reference(name):get_position()
+            if name ~= "canal" then
+                local canalCheckpoint = self:reference("canalCheckpoint")
+                if canalCheckpoint then
+                    canalCheckpoint:set_active(false)
+                end
+            end
         elseif name == "street_result_ready" then
             state.resultReady = true
         elseif state.completed and name == "street_retry" then
