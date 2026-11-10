@@ -239,6 +239,9 @@ bool SceneRenderer::SynchronizeObjects(bool keepBackground) {
 		return false;
 	}
 
+	// 同じ更新内のモデル参照を共有し、ファイルパスの解決を繰り返さない。
+	std::map<std::filesystem::path, ModelHandle> loadedModels;
+
 	// ファイルの更新確認は描画更新ごとに同じ画像につき一度だけ行う。
 	std::map<std::filesystem::path, MaterialHandle> materials;
 	const auto loadMaterial = [&](const std::filesystem::path &path) {
@@ -352,7 +355,14 @@ bool SceneRenderer::SynchronizeObjects(bool keepBackground) {
 		ModelHandle model;
 
 		if (needsCreate || modelsChanged) {
-			model = models_.Load(object.mesh->modelPath);
+			const auto found = loadedModels.find(object.mesh->modelPath);
+			if (found != loadedModels.end()) {
+				model = found->second;
+			} else {
+				model = models_.Load(object.mesh->modelPath);
+				if (model)
+					loadedModels.emplace(object.mesh->modelPath, model);
+			}
 
 			if (!model && !needsCreate) {
 				// 他のモデルの更新時にも、以前の有効な描画を保持する。
