@@ -293,14 +293,14 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 
 	try {
 		error.clear();
-		Scene source;
-		source.CopyFrom(original);
+		Scene working;
+		working.CopyFrom(original);
 		auto animations = animations_;
-		if (!animations.Configure(source, preserve, error, invalidObject))
+		if (!animations.Configure(working, preserve, error, invalidObject))
 			return false;
 
 		const auto fail = [&](SceneObjectId id, std::string_view reason) {
-			const auto *object = source.FindObject(id);
+			const auto *object = working.FindObject(id);
 			error = std::format(
 			    "{} Object: \"{}\" (ID {}).", reason,
 			    object && !object->name.empty() ? object->name : "Object", id);
@@ -312,7 +312,7 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 		};
 		std::vector<SceneObjectId> order;
 
-		if (!SceneCameraUtils::GetUpdateOrder(source, order, error,
+		if (!SceneCameraUtils::GetUpdateOrder(working, order, error,
 		                                      invalidObject)) {
 			return false;
 		}
@@ -320,7 +320,7 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 		std::map<SceneObjectId, FollowCameraOrbit> orbits;
 
 		for (const auto id : order) {
-			const auto &object = *source.FindObject(id);
+			const auto &object = *working.FindObject(id);
 
 			if (!object.followCamera || !object.followCamera->orbit.enabled) {
 				continue;
@@ -330,7 +330,7 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 
 			if (preserve && found != orbitStates_.end()) {
 				orbits.emplace(id, found->second);
-			} else if (SceneActivity::IsActive(source, id) &&
+			} else if (SceneActivity::IsActive(working, id) &&
 			           !orbits[id].Initialize(*object.followCamera)) {
 				return fail(id, "Orbit Camera settings are invalid.");
 			}
@@ -345,15 +345,14 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 			           : SceneCameraUtils::MakeFollowPose(target, settings);
 		};
 
-		Scene working;
-
 		if (!preserve) {
-			if (!SceneCameraUtils::ResolveInitialScene(source, working, error,
+			Scene resolved;
+			if (!SceneCameraUtils::ResolveInitialScene(working, resolved, error,
 			                                           invalidObject)) {
 				return false;
 			}
+			working.AdoptValidated(resolved);
 		} else {
-			working.CopyFrom(source);
 			// 継続する追従は現在姿勢を保ち、新しく有効になった枝だけを依存順で初期化する。
 			for (const auto id : order) {
 				const auto &object = *working.FindObject(id);
