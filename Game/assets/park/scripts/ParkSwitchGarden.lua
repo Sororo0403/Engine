@@ -11,6 +11,13 @@ local function record_time(key, time)
         improved and "（更新）" or "")
 end
 
+local function open_flower_bridge(self, state)
+    if state.west and state.east and state.flowers == state.totalFlowers then
+        self:reference("flowerBridge"):set_active(true)
+        self:reference("label"):set_text("花がそろった！  /  左の花の橋を渡って展望台へ")
+    end
+end
+
 return {
     start = function(self, state)
         state.pondHint = self:reference("label"):get_text()
@@ -81,6 +88,7 @@ return {
             self:reference("flowerCue"):play_audio()
             self:reference("flowerLabel"):set_text(
                 "公園の花 " .. state.flowers .. " / " .. state.totalFlowers)
+            open_flower_bridge(self, state)
             return
         end
 
@@ -132,6 +140,7 @@ return {
             self:reference("gateCue"):play_audio()
             self:reference("goal"):set_active(true)
             label:set_text("門が開いた！  /  飛び石を跳ぶか、右の段を登って展望台へ")
+            open_flower_bridge(self, state)
         else
             self:reference("switchCue"):play_audio()
             label:set_text("スイッチ 1 / 2  /  カートに気をつけて中央を抜けるか、外側を回ろう")
