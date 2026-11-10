@@ -6,6 +6,7 @@
 #include "input/Gamepad.h"
 #include "input/Keyboard.h"
 #include "math/MathUtils.h"
+#include <algorithm>
 #include <cmath>
 
 namespace CharacterInputReader {
@@ -27,10 +28,20 @@ inline CharacterInput Read(const Keyboard &keyboard,
 		return {};
 	}
 
-	CharacterInput input{float(keyboard.IsDown(bindings.right)) -
-	                         float(keyboard.IsDown(bindings.left)),
-	                     float(keyboard.IsDown(bindings.forward)) -
-	                         float(keyboard.IsDown(bindings.backward)),
+	auto moveDown = [&](Key primary, Key arrow) {
+		if (keyboard.IsDown(primary))
+			return true;
+		return bindings.arrowMovement && keyboard.IsDown(arrow) &&
+		       std::ranges::none_of(GameInputBindings::kActions,
+		                            [&](const auto &action) {
+			                            return bindings.*action.member == arrow;
+		                            });
+	};
+
+	CharacterInput input{float(moveDown(bindings.right, Key::RIGHT)) -
+	                         float(moveDown(bindings.left, Key::LEFT)),
+	                     float(moveDown(bindings.forward, Key::UP)) -
+	                         float(moveDown(bindings.backward, Key::DOWN)),
 	                     keyboard.IsPressed(bindings.jump),
 	                     keyboard.IsPressed(bindings.interact),
 	                     keyboard.IsDown(bindings.jump)};

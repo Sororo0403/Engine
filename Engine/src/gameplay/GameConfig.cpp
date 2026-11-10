@@ -80,7 +80,7 @@ bool GameConfig::Serialize(std::string &text, std::string &error) const {
 		auto vector = [](const auto &v) {
 			return nlohmann::json::array({v.x, v.y, v.z});
 		};
-		nlohmann::json inputJson = nlohmann::json::object();
+		nlohmann::json inputJson{{"arrowMovement", input.arrowMovement}};
 
 		for (const auto &action : GameInputBindings::kActions) {
 			inputJson[action.name] =
@@ -221,6 +221,9 @@ bool GameConfig::Deserialize(std::string_view text, std::string &error) {
 		candidate.scenePath =
 		    PathUtils::FromUtf8(data.at("scene").get<std::string>());
 		if (data.at("version") >= 2) {
+			candidate.input.arrowMovement =
+			    data.at("input").value("arrowMovement", false);
+
 			for (const auto &action : GameInputBindings::kActions) {
 				if (data.at("version") < 6 &&
 				    action.member == &GameInputBindings::interact) {

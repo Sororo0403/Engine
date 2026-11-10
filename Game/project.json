@@ -13,7 +13,7 @@
         "name": "Restart",
         "keyboard": "R",
         "mouse": null,
-        "gamepad": "RightShoulder",
+        "gamepad": "Menu",
         "gamepadAxis": null
       },
       {
@@ -53,6 +53,7 @@
     "gamepadEnabled": true,
     "height": 720,
     "input": {
+      "arrowMovement": true,
       "backward": "S",
       "forward": "W",
       "interact": "E",

@@ -10708,7 +10708,7 @@
         "fontFamily": "Yu Gothic UI",
         "fontSize": 22,
         "raycastTarget": false,
-        "value": "運河を目指そう  ［移動：WASD / 左スティック］",
+        "value": "運河を目指そう  ［移動：WASD・矢印キー / 左スティック］",
         "verticalAlignment": "middle"
       },
       "transform": {
@@ -31533,17 +31533,17 @@
         ],
         "position": [
           0,
-          -69
+          -72
         ],
         "sizeDelta": [
           432,
-          24
+          34
         ]
       },
       "text": {
         "enabled": true,
         "raycastTarget": false,
-        "value": "移動 WASD / 左スティック　ジャンプ Space / A　攻撃 J / X",
+        "value": "移動 WASD・矢印キー / 左スティック・十字キー\nジャンプ Space / A　攻撃 J / X",
         "fontFamily": "Yu Gothic UI",
         "fontSize": 16,
         "bold": false,

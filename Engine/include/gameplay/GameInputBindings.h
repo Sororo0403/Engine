@@ -15,6 +15,7 @@ struct GameInputBindings {
 	Key right = Key::D;
 	Key jump = Key::SPACE;
 	Key interact = Key::E;
+	bool arrowMovement = false;
 
 	/// <summary>
 	/// 設定ファイルで使用するキー名と共通キーの対応

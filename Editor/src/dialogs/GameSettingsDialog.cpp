@@ -84,6 +84,7 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 	                   "%.2f", ImGuiSliderFlags_AlwaysClamp);
 	ImGui::SeparatorText("Gameplay Input");
 	ImGui::Checkbox("Enable Gamepad", &gamepadEnabled_);
+	ImGui::Checkbox("Also Move with Arrow Keys", &input_.arrowMovement);
 	const std::array<const char *, GameInputBindings::kActions.size()> labels{
 	    "Move Forward", "Move Backward", "Move Left",
 	    "Move Right",   "Jump",          "Interact"};

@@ -404,6 +404,9 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 			    settings.value("gamepadEnabled", true);
 
 			if (settings.contains("input")) {
+				loaded.gameExport.input.arrowMovement =
+				    settings.at("input").value("arrowMovement", false);
+
 				for (const auto &action : GameInputBindings::kActions) {
 					const auto key =
 					    GameInputBindings::FromName(settings.at("input")
@@ -569,7 +572,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 			recentJson.push_back(PathUtils::ToUtf8(recentPath));
 		}
 
-		nlohmann::json inputJson = nlohmann::json::object();
+		nlohmann::json inputJson{{"arrowMovement", gameExport.input.arrowMovement}};
 
 		for (const auto &action : GameInputBindings::kActions) {
 			inputJson[action.name] =
