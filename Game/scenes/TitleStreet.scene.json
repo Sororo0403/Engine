@@ -845,52 +845,20 @@
             "target": 636
           },
           {
-            "event": "buttonClick",
-            "operation": "pauseAnimationClip",
-            "target": 1,
-            "once": false,
-            "destination": 0,
-            "scene": "",
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
             "contact": "any",
             "contactTag": "",
-            "inputAction": "",
-            "messageName": "",
             "delaySeconds": 0,
-            "cameraBlendSeconds": 0,
-            "arrivalTag": "",
-            "launchSpeed": 12
-          },
-          {
-            "event": "buttonClick",
-            "operation": "disable",
-            "target": 192,
-            "once": false,
             "destination": 0,
-            "scene": "",
-            "contact": "any",
-            "contactTag": "",
-            "inputAction": "",
-            "messageName": "",
-            "delaySeconds": 0,
-            "cameraBlendSeconds": 0,
-            "arrivalTag": "",
-            "launchSpeed": 12
-          },
-          {
             "event": "buttonClick",
-            "operation": "enable",
-            "target": 193,
-            "once": false,
-            "destination": 0,
-            "scene": "",
-            "contact": "any",
-            "contactTag": "",
             "inputAction": "",
-            "messageName": "",
-            "delaySeconds": 0,
-            "cameraBlendSeconds": 0,
-            "arrivalTag": "",
-            "launchSpeed": 12
+            "launchSpeed": 12,
+            "messageName": "motion_off",
+            "once": false,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 630
           }
         ]
       }
@@ -961,52 +929,20 @@
             "target": 636
           },
           {
-            "event": "buttonClick",
-            "operation": "resumeAnimationClip",
-            "target": 1,
-            "once": false,
-            "destination": 0,
-            "scene": "",
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
             "contact": "any",
             "contactTag": "",
-            "inputAction": "",
-            "messageName": "",
             "delaySeconds": 0,
-            "cameraBlendSeconds": 0,
-            "arrivalTag": "",
-            "launchSpeed": 12
-          },
-          {
-            "event": "buttonClick",
-            "operation": "disable",
-            "target": 193,
-            "once": false,
             "destination": 0,
-            "scene": "",
-            "contact": "any",
-            "contactTag": "",
-            "inputAction": "",
-            "messageName": "",
-            "delaySeconds": 0,
-            "cameraBlendSeconds": 0,
-            "arrivalTag": "",
-            "launchSpeed": 12
-          },
-          {
             "event": "buttonClick",
-            "operation": "enable",
-            "target": 192,
-            "once": false,
-            "destination": 0,
-            "scene": "",
-            "contact": "any",
-            "contactTag": "",
             "inputAction": "",
-            "messageName": "",
-            "delaySeconds": 0,
-            "cameraBlendSeconds": 0,
-            "arrivalTag": "",
-            "launchSpeed": 12
+            "launchSpeed": 12,
+            "messageName": "motion_on",
+            "once": false,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 630
           }
         ]
       }
@@ -9062,6 +8998,18 @@
           {
             "name": "quitButton",
             "target": 189
+          },
+          {
+            "name": "idleCamera",
+            "target": 1
+          },
+          {
+            "name": "motionOnButton",
+            "target": 192
+          },
+          {
+            "name": "motionOffButton",
+            "target": 193
           }
         ],
         "scenes": [],

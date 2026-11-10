@@ -14,6 +14,19 @@ local function show_volume(self, state)
     self:reference("volumeLabel"):set_text(volume_level(state) * 10 .. "%")
 end
 
+local function apply_motion(self, state)
+    local enabled = state.motionDraft
+    if enabled == nil then
+        enabled = game.backgroundMotion ~= false
+    end
+    local camera = self:reference("idleCamera")
+    if camera then
+        camera:set_animation_clip_paused(not enabled)
+        self:reference("motionOnButton"):set_active(enabled)
+        self:reference("motionOffButton"):set_active(not enabled)
+    end
+end
+
 local function apply_volume(self, state)
     local progress = state.elapsed / math.max(0.01, state.duration)
     local volume = state.departing and state.fromVolume * (1 - progress)
@@ -35,6 +48,7 @@ return {
             state.cueVolumes[i] = self:reference(name):get_audio_volume()
         end
         apply_cue_volume(self, state)
+        apply_motion(self, state)
     end,
 
     message = function(self, state, name)
@@ -53,10 +67,20 @@ return {
             if name == "save_config" and state.volumeDraft ~= nil then
                 game.volumeLevel = state.volumeDraft
             end
+            if name == "save_config" and state.motionDraft ~= nil then
+                game.backgroundMotion = state.motionDraft
+            end
             state.volumeDraft = nil
+            state.motionDraft = nil
             show_volume(self, state)
             apply_volume(self, state)
             apply_cue_volume(self, state)
+            apply_motion(self, state)
+            return
+        end
+        if name == "motion_on" or name == "motion_off" then
+            state.motionDraft = name == "motion_on"
+            apply_motion(self, state)
             return
         end
         if name ~= "start_departure" and name ~= "quit_departure" then
