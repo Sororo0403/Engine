@@ -2417,10 +2417,20 @@
           {
             "name": "label",
             "target": 26
+          },
+          {
+            "name": "flowerLabel",
+            "target": 55
+          },
+          {
+            "name": "result",
+            "target": 34
           }
         ],
         "scenes": [],
-        "state": {}
+        "state": {
+          "totalFlowers": 3
+        }
       }
     },
     {
@@ -3240,6 +3250,418 @@
             "scene": "",
             "target": 37
           }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.68,
+        "shape": "Sphere"
+      },
+      "id": 51,
+      "mesh": {
+        "model": "@project/assets/street/models/FlowerFragment.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Park Ferry Flower",
+      "parent": 14,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.44927536231884063,
+          3.263157894736842,
+          0.5794392523364486
+        ],
+        "translation": [
+          0.6811594202898551,
+          5.894736842105264,
+          0.09345794392523364
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "park_flower",
+            "once": true,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 37
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "disable",
+            "scene": "",
+            "target": 51
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.68,
+        "shape": "Sphere"
+      },
+      "id": 52,
+      "mesh": {
+        "model": "@project/assets/street/models/FlowerFragment.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Park Stepping Stone Flower",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.72,
+          0.72,
+          0.72
+        ],
+        "translation": [
+          -3.6,
+          0.96,
+          8.4
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "park_flower",
+            "once": true,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 37
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "disable",
+            "scene": "",
+            "target": 52
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.68,
+        "shape": "Sphere"
+      },
+      "id": 53,
+      "mesh": {
+        "model": "@project/assets/street/models/FlowerFragment.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Park Garden Flower",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.72,
+          0.72,
+          0.72
+        ],
+        "translation": [
+          -5.15,
+          0.95,
+          24.65
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "park_flower",
+            "once": true,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 37
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "disable",
+            "scene": "",
+            "target": 53
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 54,
+      "image": {
+        "color": [
+          0.035,
+          0.075,
+          0.1,
+          0.9
+        ],
+        "enabled": true,
+        "fillAmount": 1,
+        "fillOrigin": "left",
+        "preserveAspect": false,
+        "raycastTarget": false,
+        "texture": "@project/assets/textures/PrototypeWhite.png"
+      },
+      "name": "Park Flower Counter Backdrop",
+      "parent": 24,
+      "rectTransform": {
+        "anchorMax": [
+          0,
+          0
+        ],
+        "anchorMin": [
+          0,
+          0
+        ],
+        "pivot": [
+          0,
+          0
+        ],
+        "position": [
+          812,
+          33
+        ],
+        "sizeDelta": [
+          320,
+          52
+        ]
+      },
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 55,
+      "name": "Park Flower Counter",
+      "parent": 24,
+      "rectTransform": {
+        "anchorMax": [
+          0.0,
+          0.0
+        ],
+        "anchorMin": [
+          0.0,
+          0.0
+        ],
+        "pivot": [
+          0.0,
+          0.0
+        ],
+        "position": [
+          830,
+          35
+        ],
+        "sizeDelta": [
+          350,
+          44
+        ]
+      },
+      "tag": "",
+      "text": {
+        "alignment": "left",
+        "bold": true,
+        "color": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "enabled": true,
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 24,
+        "raycastTarget": false,
+        "value": "公園の花 0 / 3",
+        "verticalAlignment": "middle"
+      },
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          0.0
         ]
       }
     }

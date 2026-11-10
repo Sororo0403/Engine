@@ -1,7 +1,21 @@
 return {
     message = function(self, state, name)
+        if name == "park_flower" then
+            state.flowers = (state.flowers or 0) + 1
+            self:reference("flowerLabel"):set_text(
+                "公園の花 " .. state.flowers .. " / " .. state.totalFlowers)
+            return
+        end
+
         if name == "park_cleared" then
             game.parkUnlocked = true
+            local flowers = state.flowers or 0
+            local result = self:reference("result")
+            local summary = "公園の花 " .. flowers .. " / " .. state.totalFlowers
+            if flowers == state.totalFlowers then
+                summary = summary .. "    池と庭の花をすべて見つけた！"
+            end
+            result:set_text(result:get_text() .. "\n" .. summary)
             return
         end
 
