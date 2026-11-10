@@ -2,6 +2,7 @@
 #include "gameplay/SceneSimulation.h"
 #include "math/TransformUtils.h"
 #include "scene/SceneSerializer.h"
+#include <algorithm>
 #include <utility>
 
 bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
@@ -53,7 +54,15 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 		}
 	};
 
-	if (candidate.GetObjects() == scene_.GetObjects()) {
+	const auto &beforeObjects = scene_.GetObjects();
+	const auto &afterObjects = candidate.GetObjects();
+	// Meshの見た目だけの変更は、物理やカメラを組み直さず反映する。
+	if (std::ranges::equal(beforeObjects, afterObjects,
+	                       [](const auto &before, const auto &after) {
+		                       return before.first == after.first &&
+		                              before.second.HasSameSimulationSettings(
+		                                  after.second);
+	                       })) {
 		scene_.AdoptValidated(candidate);
 		audioActions_ = std::move(audio);
 		if (!requestedScene.empty())

@@ -136,6 +136,11 @@ struct SceneObject {
 	bool operator==(const SceneObject &other) const;
 
 	/// <summary>
+	/// Meshの描画設定と色を除き、シミュレーションに必要な設定が一致するか確認する
+	/// </summary>
+	bool HasSameSimulationSettings(const SceneObject &other) const;
+
+	/// <summary>
 	/// 既存の姿勢制御と競合せず、指定トラックの値を適用できるか確認する
 	/// </summary>
 	bool CanAnimate(const AnimationClipTrack &track) const;

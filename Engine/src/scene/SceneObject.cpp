@@ -7,11 +7,15 @@ bool SceneObject::IsValidTag(std::string_view tag) {
 }
 
 bool SceneObject::operator==(const SceneObject &other) const {
+	return meshRenderer == other.meshRenderer && colorTint == other.colorTint &&
+	       HasSameSimulationSettings(other);
+}
+
+bool SceneObject::HasSameSimulationSettings(const SceneObject &other) const {
 	return name == other.name && tag == other.tag && active == other.active &&
 	       parentId == other.parentId &&
 	       TransformUtils::AreEqual(transform, other.transform) &&
-	       mesh == other.mesh && meshRenderer == other.meshRenderer &&
-	       colorTint == other.colorTint && collider == other.collider &&
+	       mesh == other.mesh && collider == other.collider &&
 	       rigidBody == other.rigidBody && character == other.character &&
 	       camera == other.camera && followCamera == other.followCamera &&
 	       respawn == other.respawn && triggerActions == other.triggerActions &&
