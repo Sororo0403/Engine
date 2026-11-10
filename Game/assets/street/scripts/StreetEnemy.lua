@@ -57,16 +57,19 @@ return {
         local dx, dz = px - x, pz - z
         local distance = math.sqrt(dx * dx + dz * dz)
         local dy = py - y
+        local distanceSquared = dx * dx + dy * dy + dz * dz
         local cycle = state.time
         state.time = cycle + dt
 
         local visual = self:reference("visual")
         if cycle < 1.2 then
             local detectionRadius = state.detectionRadius or 7
-            local distanceSquared = dx * dx + dy * dy + dz * dz
             if cycle >= 0.7 and distanceSquared < detectionRadius * detectionRadius
                 and can_see_player(self, player, x, y, z, dx, dy, dz, math.sqrt(distanceSquared)) then
                 state.time = 1.2
+                if distance > 0.01 then
+                    state.dx, state.dz = dx / distance, dz / distance
+                end
                 if state.patrolDistance then
                     state.chargeOriginX, state.chargeOriginZ = x, z
                 end
@@ -97,7 +100,8 @@ return {
             end
         elseif cycle < 1.85 then
             local aimLockTime = state.aimLockTime or 1.65
-            if cycle < aimLockTime and distance > 0.01 then
+            if cycle < aimLockTime and distance > 0.01
+                and can_see_player(self, player, x, y, z, dx, dy, dz, math.sqrt(distanceSquared)) then
                 state.dx, state.dz = dx / distance, dz / distance
             end
             local sx, sy, sz = table.unpack(state.visualScale)
