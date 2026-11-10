@@ -66,7 +66,8 @@ return {
                 state.time = math.min(state.time, 0.75)
             end
         elseif cycle < 1.85 then
-            if cycle < 1.65 and distance > 0.01 then
+            local aimLockTime = state.aimLockTime or 1.65
+            if cycle < aimLockTime and distance > 0.01 then
                 state.dx, state.dz = dx / distance, dz / distance
             end
             local sx, sy, sz = table.unpack(state.visualScale)
