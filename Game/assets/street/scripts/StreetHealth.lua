@@ -109,7 +109,34 @@ local function update_motion_sound(self, state, character)
     state.motionVelocity = character.verticalVelocity
 end
 
+local function finish_damage_flash(self, state)
+    if state.damageTint then
+        self:reference("visual"):set_mesh_tint(table.unpack(state.damageTint))
+        state.damageTint, state.damageFlashDim = nil, nil
+    end
+end
+
+local function update_damage_flash(self, state)
+    if not state.damageTint then
+        return
+    end
+    if state.invulnerable == 0 then
+        finish_damage_flash(self, state)
+        return
+    end
+
+    local elapsed = state.invulnerabilitySeconds - state.invulnerable
+    local dim = math.floor(elapsed / 0.12) % 2 == 0
+    if dim ~= state.damageFlashDim then
+        local r, g, b = table.unpack(state.damageTint)
+        local brightness = dim and 0.45 or 1
+        self:reference("visual"):set_mesh_tint(r * brightness, g * brightness, b * brightness)
+        state.damageFlashDim = dim
+    end
+end
+
 local function start_death(self, state, falling)
+    finish_damage_flash(self, state)
     game.streetDeathActive = true
     state.deathTime = 0
     state.motionGrounded, state.motionVelocity = nil, nil
@@ -254,6 +281,8 @@ local function on_contact(self, state, other)
     if state.life == 0 then
         start_death(self, state, false)
     else
+        state.damageTint = {self:reference("visual"):get_mesh_tint()}
+        update_damage_flash(self, state)
         self:reference("damageSound"):play_audio()
     end
     show_life(self, state)
@@ -276,6 +305,7 @@ return {
             game.returningToTitle = true
             self:load_scene("title")
         elseif name == "street_clear" then
+            finish_damage_flash(self, state)
             state.completed = true
             self:set_character_input_enabled(false)
             pose(self, 0, 1)
@@ -309,9 +339,11 @@ return {
         end
 
         state.invulnerable = math.max(0, state.invulnerable - seconds)
+        update_damage_flash(self, state)
 
         if input.character and state.respawnCount ~= input.character.respawnCount then
             state.respawnCount = input.character.respawnCount
+            finish_damage_flash(self, state)
             state.motionGrounded, state.motionVelocity = nil, nil
             state.life = state.maximumLife
             state.invulnerable = state.invulnerabilitySeconds
