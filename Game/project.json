@@ -85,7 +85,7 @@
     "scene": "resources/game/scene.json",
     "title": "GuruttoWorld",
     "settingsId": "gurutto-world",
-    "persistentScriptKeys": ["volumeLevel", "backgroundMotion"],
+    "persistentScriptKeys": ["volumeLevel", "backgroundMotion", "streetBestFlowers", "streetBestFullTime"],
     "version": 11,
     "width": 1280
   },
