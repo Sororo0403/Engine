@@ -12504,6 +12504,10 @@
           {
             "name": "clearSound",
             "target": 460
+          },
+          {
+            "name": "pickupSparkles",
+            "target": 525
           }
         ],
         "scenes": [],
@@ -12615,9 +12619,9 @@
           1
         ],
         "translation": [
-          -3.0,
+          -16.2,
           1.100000023841858,
-          9.0
+          3.6
         ]
       },
       "triggerActions": {
@@ -30794,6 +30798,75 @@
         "preserveAspect": false,
         "fillOrigin": "left",
         "fillAmount": 1
+      }
+    },
+    {
+      "active": true,
+      "id": 525,
+      "name": "Flower Pickup Sparkles",
+      "parent": 1,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0.3,
+          0
+        ]
+      },
+      "particleEmitter": {
+        "playOnStart": false,
+        "loop": false,
+        "localSpace": false,
+        "additive": true,
+        "texture": "",
+        "seed": 128,
+        "maxParticles": 64,
+        "burst": 0,
+        "duration": 0.6,
+        "rate": 0,
+        "lifetime": [
+          0.24,
+          0.52
+        ],
+        "speed": [
+          1.1,
+          3.0
+        ],
+        "radius": 0.2,
+        "coneDegrees": 80,
+        "size": [
+          0.12,
+          0.018
+        ],
+        "rotationSpeed": 100,
+        "gravity": [
+          0,
+          -2,
+          0
+        ],
+        "colorStart": [
+          1,
+          0.77,
+          0.28,
+          0.86
+        ],
+        "colorEnd": [
+          1,
+          0.35,
+          0.14,
+          0
+        ]
       }
     }
   ],

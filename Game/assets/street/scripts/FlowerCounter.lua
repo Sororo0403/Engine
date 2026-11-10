@@ -12,6 +12,10 @@ return {
 
         if name == "collect_flower" and state.count < state.total then
             state.count = state.count + 1
+            local sparkles = self:reference("pickupSparkles")
+            if sparkles then
+                sparkles:emit_particles(16)
+            end
             self:set_text("花のかけら " .. state.count .. " / " .. state.total)
         elseif name == "street_clear" then
             state.completed = true
