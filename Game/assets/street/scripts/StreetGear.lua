@@ -132,6 +132,11 @@ return {
                 local approaching = onRoof and px >= state.roofNearX
                     and px <= state.roofFarX and math.abs(pz - state.roofGapZ) <= state.roofHintDepth
                 local text = approaching and state.roofJumpText or state.roofText
+                if onRoof and state.roofReturnText and px >= state.roofReturnMinX
+                    and px <= state.roofReturnMaxX
+                    and math.abs(pz - state.roofGapZ) <= state.roofReturnDepth then
+                    text = state.roofReturnText
+                end
                 local stair = self:reference("balconyStair")
                 if onRoof and stair and state.balconyStairText and px >= state.roofNearX
                     and px <= state.roofFarX then

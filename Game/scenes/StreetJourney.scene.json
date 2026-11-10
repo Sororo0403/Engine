@@ -11458,6 +11458,10 @@
           "roofFarX": 8,
           "roofGapZ": 74,
           "roofHintDepth": 2.5,
+          "roofReturnMinX": -2.5,
+          "roofReturnMaxX": 1.4,
+          "roofReturnDepth": 1.1,
+          "roofReturnText": "戻るなら矢印から東の屋上へ ［Space / A 長押し］",
           "shutterClearY": 2.5,
           "shutterOpeningText": "シャッターが開いていく…",
           "stairsText": "開いた門の先の階段を上ろう",
@@ -30410,11 +30414,11 @@
     {
       "active": true,
       "id": 547,
-      "name": "Rooftop Landing Arrow",
+      "name": "Rooftop Return Arrow",
       "parent": 0,
       "tag": "",
       "transform": {
-        "rotation": [0, 0, 0, 1],
+        "rotation": [0, 1, 0, 0],
         "scale": [1, 1, 1],
         "translation": [-0.65, 3.955, 74]
       },
