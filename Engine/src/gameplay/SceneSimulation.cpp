@@ -431,7 +431,7 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 		auto physics = preserve ? physics_ : ScenePhysics{};
 		if (!physics.Configure(working, preserve, error, invalidObject))
 			return false;
-		CollisionWorld world;
+		auto world = preserve ? world_ : CollisionWorld{};
 		SceneObjectId invalidCollider = 0;
 
 		if (!world.Rebuild(working, std::span<const SceneObjectId>{ignored},
@@ -855,7 +855,7 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 			return false;
 		}
 
-		CollisionWorld world;
+		auto world = character_ ? world_ : CollisionWorld{};
 		std::vector<SceneObjectId> ignored;
 		if (character_ &&
 		    !SceneHierarchy::GetSubtree(working, character_, ignored))

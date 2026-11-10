@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <cstring>
 #include <exception>
 #include <set>
 #include <utility>
@@ -56,6 +57,15 @@ bool TriggerWorld::Update(const Scene &scene,
 
 		for (const auto &[id, object] : scene.GetObjects()) {
 			if (!active.at(id) || !object.collider) {
+				continue;
+			}
+
+			const auto &matrix = transforms.at(id).matrix;
+			const auto previous = shapes_.find(id);
+			if (previous != shapes_.end() &&
+			    previous->second.collider == *object.collider &&
+			    std::memcmp(&previous->second.matrix, &matrix, sizeof(matrix)) == 0) {
+				shapes.emplace(id, previous->second);
 				continue;
 			}
 

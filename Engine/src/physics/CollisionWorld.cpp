@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <cstring>
 #include <limits>
 
 namespace {
@@ -225,6 +226,16 @@ bool CollisionWorld::Rebuild(const Scene &scene,
 		if (!active.at(id) || !object.collider ||
 		    std::find(ignoredObjects.begin(), ignoredObjects.end(), id) !=
 		        ignoredObjects.end()) {
+			continue;
+		}
+
+		const auto &matrix = transforms.at(id).matrix;
+		const auto previous =
+		    std::ranges::lower_bound(obstacles_, id, {}, &Obstacle::objectId);
+		if (previous != obstacles_.end() && previous->objectId == id &&
+		    previous->collider == *object.collider &&
+		    std::memcmp(&previous->matrix, &matrix, sizeof(matrix)) == 0) {
+			candidate.push_back(*previous);
 			continue;
 		}
 
