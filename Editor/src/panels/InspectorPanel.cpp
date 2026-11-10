@@ -559,8 +559,8 @@ bool InspectorPanel::Draw(
 		assetRevealPath_ = audioInspector_.GetRevealRequest();
 
 	std::optional<std::optional<AnimationClipComponent>> animationClipChange;
-	if (object->animationClip && object->animationClip->usesAsset) {
-		ImGui::SeparatorText("Animation Player");
+	if (object->animationClip && object->animationClip->usesAsset &&
+	    ui.CollapsingHeader("Animation Player")) {
 		auto player = *object->animationClip;
 		const auto label = player.asset.empty() ? std::string("(None)")
 		                                        : PathUtils::ToUtf8(player.asset.filename());
@@ -638,8 +638,8 @@ bool InspectorPanel::Draw(
 			animationClipChange.emplace(std::nullopt);
 		else if (player != *object->animationClip)
 			animationClipChange.emplace(std::move(player));
-	} else if (object->animationClip) {
-		ImGui::SeparatorText("Legacy Animation Clip");
+	} else if (object->animationClip && !object->animationClip->usesAsset &&
+	           ui.CollapsingHeader("Legacy Animation Clip")) {
 		ImGui::Text("%.2f s  /  %zu tracks", object->animationClip->duration,
 		            object->animationClip->tracks.size());
 		if (ui.Button("Edit Timeline...")) {
@@ -682,8 +682,7 @@ bool InspectorPanel::Draw(
 	}
 
 	std::optional<std::optional<DirectionalLightComponent>> directionalLightChange;
-	if (object->directionalLight) {
-		ImGui::SeparatorText("Directional Light");
+	if (object->directionalLight && ui.CollapsingHeader("Directional Light")) {
 
 		if (ui.Button("Edit Directional Light...")) {
 			directionalLightDraft_ = *object->directionalLight;
@@ -1122,14 +1121,12 @@ std::optional<Transform> InspectorPanel::DrawReadOnly(
 
 	PointLightInspector{}.DrawReadOnly(ui, *object);
 	SpotLightInspector{}.DrawReadOnly(ui, *object);
-	if (object->directionalLight) {
-		ImGui::SeparatorText("Directional Light");
+	if (object->directionalLight && ui.CollapsingHeader("Directional Light")) {
 		ImGui::Text("Intensity: %.2f", object->directionalLight->intensity);
 	}
 	MotionPathInspector{}.DrawReadOnly(ui, *object);
 	TransformAnimationInspector{}.DrawReadOnly(ui, *object);
-	if (object->animationClip) {
-		ImGui::SeparatorText("Animation Clip");
+	if (object->animationClip && ui.CollapsingHeader("Animation Clip")) {
 		ImGui::Text("%.2f s  /  %zu tracks", object->animationClip->duration,
 		            object->animationClip->tracks.size());
 	}
