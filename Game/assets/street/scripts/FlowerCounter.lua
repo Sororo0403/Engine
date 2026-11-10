@@ -79,6 +79,12 @@ return {
         if name == "street_goal_reached" and not state.finishedTime then
             state.finishedTime = state.elapsed
             self:reference("hint"):set_active(false)
+            if state.count == state.total then
+                local celebration = self:reference("clearCelebration")
+                if celebration then
+                    celebration:emit_particles(64)
+                end
+            end
         elseif name == "collect_flower" and not state.finishedTime and state.count < state.total then
             state.count = state.count + 1
             local sparkles = self:reference("pickupSparkles")

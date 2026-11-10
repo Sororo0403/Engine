@@ -12032,6 +12032,10 @@
         "prefabs": [],
         "references": [
           {
+            "name": "clearCelebration",
+            "target": 582
+          },
+          {
             "name": "result",
             "target": 184
           },
@@ -31401,6 +31405,75 @@
         ],
         "alignment": "center",
         "verticalAlignment": "middle"
+      }
+    },
+    {
+      "active": true,
+      "id": 582,
+      "name": "Full Collection Celebration",
+      "parent": 1,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0.18,
+          0
+        ]
+      },
+      "particleEmitter": {
+        "playOnStart": false,
+        "loop": false,
+        "localSpace": false,
+        "additive": true,
+        "texture": "",
+        "seed": 834,
+        "maxParticles": 96,
+        "burst": 0,
+        "duration": 0.82,
+        "rate": 0,
+        "lifetime": [
+          0.48,
+          0.8
+        ],
+        "speed": [
+          2.5,
+          4.8
+        ],
+        "radius": 0.75,
+        "coneDegrees": 64,
+        "size": [
+          0.16,
+          0.035
+        ],
+        "rotationSpeed": 120,
+        "gravity": [
+          0,
+          -3.7,
+          0
+        ],
+        "colorStart": [
+          1,
+          0.84,
+          0.37,
+          0.95
+        ],
+        "colorEnd": [
+          1,
+          0.48,
+          0.17,
+          0
+        ]
       }
     }
   ],
