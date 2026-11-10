@@ -10666,7 +10666,23 @@
             "once": true,
             "operation": "enable",
             "scene": "",
-            "target": 159
+            "target": 180
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "street_clear",
+            "once": true,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 171
           }
         ]
       }
@@ -10811,69 +10827,6 @@
         "fontSize": 24,
         "raycastTarget": false,
         "value": "屋上の時計台を目指そう",
-        "verticalAlignment": "middle"
-      },
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          1,
-          1,
-          1
-        ],
-        "translation": [
-          0,
-          0,
-          0
-        ]
-      }
-    },
-    {
-      "active": false,
-      "id": 159,
-      "name": "Street Journey Clear",
-      "parent": 156,
-      "rectTransform": {
-        "anchorMax": [
-          0.0,
-          0.0
-        ],
-        "anchorMin": [
-          0.0,
-          0.0
-        ],
-        "pivot": [
-          0.0,
-          0.0
-        ],
-        "position": [
-          24.0,
-          24
-        ],
-        "sizeDelta": [
-          1150.0,
-          44.0
-        ]
-      },
-      "tag": "",
-      "text": {
-        "alignment": "left",
-        "bold": true,
-        "color": [
-          1.0,
-          0.8199999928474426,
-          0.36000001430511475,
-          1.0
-        ],
-        "enabled": true,
-        "fontFamily": "Yu Gothic UI",
-        "fontSize": 24,
-        "raycastTarget": false,
-        "value": "時計台に到着！",
         "verticalAlignment": "middle"
       },
       "transform": {
@@ -11584,10 +11537,17 @@
         "asset": "@project/assets/street/scripts/FlowerCounter.lua",
         "enabled": true,
         "prefabs": [],
-        "references": [],
+        "references": [
+          {
+            "name": "result",
+            "target": 184
+          }
+        ],
         "scenes": [],
         "state": {
+          "completed": false,
           "count": 0,
+          "elapsed": 0,
           "total": 8
         }
       },
@@ -12480,6 +12440,289 @@
             "scene": "",
             "target": 179
           }
+        ]
+      }
+    },
+    {
+      "active": false,
+      "canvas": {
+        "enabled": true,
+        "matchWidthOrHeight": 0.5,
+        "referenceSize": [
+          1280.0,
+          720.0
+        ],
+        "scaleWithScreen": true,
+        "sortOrder": 1
+      },
+      "id": 180,
+      "name": "Street Clear Overlay",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 181,
+      "image": {
+        "color": [
+          0.015,
+          0.035,
+          0.05,
+          0.55
+        ],
+        "enabled": true,
+        "fillAmount": 1,
+        "fillOrigin": "left",
+        "preserveAspect": false,
+        "raycastTarget": false,
+        "texture": "@project/assets/textures/PrototypeWhite.png"
+      },
+      "name": "Clear Screen Shade",
+      "parent": 180,
+      "rectTransform": {
+        "anchorMax": [
+          0,
+          0
+        ],
+        "anchorMin": [
+          0,
+          0
+        ],
+        "pivot": [
+          0,
+          0
+        ],
+        "position": [
+          0,
+          0
+        ],
+        "sizeDelta": [
+          1280,
+          720
+        ]
+      },
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 182,
+      "image": {
+        "color": [
+          0.035,
+          0.075,
+          0.1,
+          0.97
+        ],
+        "enabled": true,
+        "fillAmount": 1,
+        "fillOrigin": "left",
+        "preserveAspect": false,
+        "raycastTarget": false,
+        "texture": "@project/assets/textures/PrototypeWhite.png"
+      },
+      "name": "Clear Result Panel",
+      "parent": 180,
+      "rectTransform": {
+        "anchorMax": [
+          0,
+          0
+        ],
+        "anchorMin": [
+          0,
+          0
+        ],
+        "pivot": [
+          0,
+          0
+        ],
+        "position": [
+          160,
+          204
+        ],
+        "sizeDelta": [
+          960,
+          312
+        ]
+      },
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 183,
+      "name": "Street Journey Clear",
+      "parent": 180,
+      "rectTransform": {
+        "anchorMax": [
+          0,
+          0
+        ],
+        "anchorMin": [
+          0,
+          0
+        ],
+        "pivot": [
+          0,
+          0
+        ],
+        "position": [
+          202,
+          228
+        ],
+        "sizeDelta": [
+          880,
+          55
+        ]
+      },
+      "tag": "",
+      "text": {
+        "alignment": "left",
+        "bold": true,
+        "color": [
+          1,
+          0.83,
+          0.4,
+          1
+        ],
+        "enabled": true,
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 40,
+        "raycastTarget": false,
+        "value": "STAGE CLEAR",
+        "verticalAlignment": "middle"
+      },
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 184,
+      "name": "Street Clear Result",
+      "parent": 180,
+      "rectTransform": {
+        "anchorMax": [
+          0,
+          0
+        ],
+        "anchorMin": [
+          0,
+          0
+        ],
+        "pivot": [
+          0,
+          0
+        ],
+        "position": [
+          202,
+          307
+        ],
+        "sizeDelta": [
+          880,
+          180
+        ]
+      },
+      "tag": "",
+      "text": {
+        "alignment": "left",
+        "bold": false,
+        "color": [
+          1,
+          1,
+          0.95,
+          1
+        ],
+        "enabled": true,
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 25,
+        "raycastTarget": false,
+        "value": "",
+        "verticalAlignment": "middle"
+      },
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
         ]
       }
     }
