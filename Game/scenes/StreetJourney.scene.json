@@ -24875,6 +24875,8 @@
         "state": {
           "dx": 0,
           "dz": 1,
+          "patrolDistance": 3.2,
+          "patrolSpeed": 1.15,
           "range": 2,
           "speed": 3.5,
           "time": 0,

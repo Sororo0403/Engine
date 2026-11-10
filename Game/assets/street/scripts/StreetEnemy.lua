@@ -16,6 +16,18 @@ local function can_see_player(self, player, x, y, z, dx, dy, dz, distance)
     return not hit or hit.object == player
 end
 
+local function move_enemy(self, player, x, y, z, mx, mz)
+    local length = math.sqrt(mx * mx + mz * mz)
+    if length <= 0.0001 then
+        return
+    end
+    local hit, fraction = scene.cast_collider(self, mx, 0, mz)
+    if hit and hit ~= player then
+        fraction = math.max(0, fraction - 0.01 / length)
+    end
+    self:set_local_position(x + mx * fraction, y, z + mz * fraction)
+end
+
 return {
     start = function(self, state)
         local x, _, z = self:get_local_position()
@@ -55,6 +67,9 @@ return {
             if cycle >= 0.7 and distanceSquared < detectionRadius * detectionRadius
                 and can_see_player(self, player, x, y, z, dx, dy, dz, math.sqrt(distanceSquared)) then
                 state.time = 1.2
+                if state.patrolDistance then
+                    state.chargeOriginX, state.chargeOriginZ = x, z
+                end
                 if state.warningEnabled then
                     self:play_audio()
                 end
@@ -64,6 +79,21 @@ return {
                 end
             else
                 state.time = math.min(state.time, 0.75)
+                if state.patrolDistance and state.patrolSpeed
+                    and distanceSquared < (detectionRadius + 5) ^ 2 then
+                    local targetX = state.patrolReturning and state.originX
+                        or state.originX + state.patrolDistance
+                    local offsetX, offsetZ = targetX - x, state.originZ - z
+                    local length = math.sqrt(offsetX * offsetX + offsetZ * offsetZ)
+                    if length < 0.05 then
+                        state.patrolReturning = not state.patrolReturning
+                    else
+                        state.dx, state.dz = offsetX / length, offsetZ / length
+                        aim(visual, state, 0)
+                        local step = math.min(length, state.patrolSpeed * dt)
+                        move_enemy(self, player, x, y, z, state.dx * step, state.dz * step)
+                    end
+                end
             end
         elseif cycle < 1.85 then
             local aimLockTime = state.aimLockTime or 1.65
@@ -79,17 +109,11 @@ return {
             visual:set_scale(table.unpack(state.visualScale))
             aim(visual, state, 0)
             local limit, speed = state.range, state.speed
-            local nx = clamp(x + state.dx * dt * speed, state.originX - limit, state.originX + limit)
-            local nz = clamp(z + state.dz * dt * speed, state.originZ - limit, state.originZ + limit)
-            local mx, mz = nx - x, nz - z
-            local length = math.sqrt(mx * mx + mz * mz)
-            if length > 0.0001 then
-                local hit, fraction = scene.cast_collider(self, mx, 0, mz)
-                if hit and hit ~= player then
-                    fraction = math.max(0, fraction - 0.01 / length)
-                end
-                self:set_local_position(x + mx * fraction, y, z + mz * fraction)
-            end
+            local originX = state.chargeOriginX or state.originX
+            local originZ = state.chargeOriginZ or state.originZ
+            local nx = clamp(x + state.dx * dt * speed, originX - limit, originX + limit)
+            local nz = clamp(z + state.dz * dt * speed, originZ - limit, originZ + limit)
+            move_enemy(self, player, x, y, z, nx - x, nz - z)
         elseif cycle > 3.6 then
             state.time = 0
         end
