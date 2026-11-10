@@ -7258,6 +7258,46 @@
           34.96
         ]
       }
+    },
+    {
+      "active": true,
+      "id": 125,
+      "name": "Vista Flower Bridge Arrow",
+      "parent": 119,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.707106781,
+          0,
+          0.707106781
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          -2.25,
+          0.035,
+          28.75
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
+        ]
+      }
     }
   ],
   "projectRoot": "..",
