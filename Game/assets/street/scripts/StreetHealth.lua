@@ -83,8 +83,8 @@ local function start_death(self, state, falling)
     state.falling = falling
     state.attack = 0
     state.reaction = 0
-    state.moveSpeed, state.jumpSpeed = self:get_character_speeds()
-    self:set_character_speeds(0.001, 0.001)
+    state.inputBeforeDeath = self:is_character_input_enabled()
+    self:set_character_input_enabled(false)
     lock_camera(self, state, falling)
 end
 
@@ -141,7 +141,8 @@ local function update_death(self, state, seconds, viewport)
     state.deathTime = t
     if t >= finish then
         pose(self, 0, 1)
-        self:set_character_speeds(state.moveSpeed, state.jumpSpeed)
+        self:set_character_input_enabled(state.inputBeforeDeath)
+        state.inputBeforeDeath = nil
         state.invulnerable = state.invulnerabilitySeconds
         game.streetDeathActive = false
         state.deathTime = nil
@@ -226,7 +227,7 @@ return {
             state.spawnX, state.spawnY, state.spawnZ = self:reference(name):get_position()
         elseif name == "street_clear" then
             state.completed = true
-            self:set_character_speeds(0.001, 0.001)
+            self:set_character_input_enabled(false)
             pose(self, 0, 1)
             for _, enemy in ipairs(scene.find_all_by_tag("street_enemy")) do
                 enemy:send_message("street_clear")
