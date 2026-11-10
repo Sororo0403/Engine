@@ -1,12 +1,31 @@
-local function best_record(state, seconds)
+local function valid_time(value)
+    if type(value) == "number" and value >= 0 and value < math.huge then
+        return value
+    end
+end
+
+local function clear_time_line(state, tenths)
+    local saved = valid_time(game.streetBestClearTime)
+    local full = valid_time(game.streetBestFullTime)
+    local previous = saved
+    if full and (not previous or full < previous) then
+        previous = full
+    end
+    local improved = not previous or tenths < previous
+    local best = improved and tenths or previous
+    if saved ~= best then
+        game.streetBestClearTime = best
+    end
+    return string.format("花のかけら %d / %d    タイム %.1f 秒    クリア最速 %.1f 秒%s",
+        state.count, state.total, tenths / 10, best / 10, improved and "（更新）" or "")
+end
+
+local function best_record(state, tenths)
     local bestFlowers = game.streetBestFlowers
     if type(bestFlowers) ~= "number" or bestFlowers < 0 or bestFlowers > state.total then
         bestFlowers = 0
     end
-    local bestTime = game.streetBestFullTime
-    if type(bestTime) ~= "number" or bestTime < 0 or bestTime >= math.huge then
-        bestTime = nil
-    end
+    local bestTime = valid_time(game.streetBestFullTime)
     local timeDifference
     local newRecord = state.count > bestFlowers
     if newRecord then
@@ -14,7 +33,6 @@ local function best_record(state, seconds)
         game.streetBestFlowers = bestFlowers
     end
     if state.count == state.total then
-        local tenths = math.floor(seconds * 10)
         if bestTime then
             timeDifference = tenths - bestTime
         end
@@ -122,11 +140,11 @@ return {
         elseif name == "street_clear" then
             state.completed = true
             local seconds = state.finishedTime or state.elapsed
+            local tenths = math.floor(seconds * 10)
             self:reference("result"):set_text(
-                "花のかけら " .. state.count .. " / " .. state.total ..
-                string.format("    タイム %.1f 秒\n", math.floor(seconds * 10) / 10) ..
+                clear_time_line(state, tenths) .. "\n" ..
                 collection_summary(self, state) .. "\n" ..
-                best_record(state, seconds))
+                best_record(state, tenths))
             if not state.finishedTime then
                 self:reference("hint"):set_active(false)
             end
