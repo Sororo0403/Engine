@@ -169,7 +169,7 @@
         "visible": true
       },
       "name": "Street Hero",
-      "parent": 1,
+      "parent": 450,
       "tag": "",
       "transform": {
         "rotation": [
@@ -10836,27 +10836,27 @@
           0.0
         ],
         "position": [
-          24.0,
-          24
+          42,
+          622
         ],
         "sizeDelta": [
-          1150.0,
-          44.0
+          1190,
+          44
         ]
       },
       "tag": "",
       "text": {
         "alignment": "left",
-        "bold": true,
+        "bold": false,
         "color": [
-          1.0,
-          0.8199999928474426,
-          0.36000001430511475,
-          1.0
+          1,
+          1,
+          0.95,
+          0
         ],
         "enabled": true,
         "fontFamily": "Yu Gothic UI",
-        "fontSize": 24,
+        "fontSize": 22,
         "raycastTarget": false,
         "value": "歯車を回して屋上へ進もう",
         "verticalAlignment": "middle"
@@ -10899,27 +10899,27 @@
           0.0
         ],
         "position": [
-          24.0,
-          24
+          42,
+          622
         ],
         "sizeDelta": [
-          1150.0,
-          44.0
+          1190,
+          44
         ]
       },
       "tag": "",
       "text": {
         "alignment": "left",
-        "bold": true,
+        "bold": false,
         "color": [
-          1.0,
-          0.8199999928474426,
-          0.36000001430511475,
-          1.0
+          1,
+          1,
+          0.95,
+          0
         ],
         "enabled": true,
         "fontFamily": "Yu Gothic UI",
-        "fontSize": 24,
+        "fontSize": 22,
         "raycastTarget": false,
         "value": "屋上の時計台を目指そう",
         "verticalAlignment": "middle"
@@ -11620,12 +11620,12 @@
           0.0
         ],
         "position": [
-          24.0,
-          59
+          198,
+          30
         ],
         "sizeDelta": [
-          1150.0,
-          44.0
+          400,
+          30
         ]
       },
       "script": {
@@ -11649,16 +11649,16 @@
       "tag": "",
       "text": {
         "alignment": "left",
-        "bold": true,
+        "bold": false,
         "color": [
-          1.0,
-          0.8199999928474426,
-          0.36000001430511475,
-          1.0
+          1,
+          1,
+          0.95,
+          0
         ],
         "enabled": true,
         "fontFamily": "Yu Gothic UI",
-        "fontSize": 24,
+        "fontSize": 22,
         "raycastTarget": false,
         "value": "花のかけら 0 / 8",
         "verticalAlignment": "middle"
@@ -25912,27 +25912,27 @@
           0.0
         ],
         "position": [
-          24.0,
-          94
+          42,
+          30
         ],
         "sizeDelta": [
-          1150.0,
-          44.0
+          150,
+          30
         ]
       },
       "tag": "",
       "text": {
         "alignment": "left",
-        "bold": true,
+        "bold": false,
         "color": [
-          1.0,
-          0.8199999928474426,
-          0.36000001430511475,
-          1.0
+          1,
+          1,
+          0.95,
+          0
         ],
         "enabled": true,
         "fontFamily": "Yu Gothic UI",
-        "fontSize": 24,
+        "fontSize": 22,
         "raycastTarget": false,
         "value": "ライフ 3 / 3",
         "verticalAlignment": "middle"
@@ -26455,6 +26455,183 @@
         "sizeDelta": [
           1,
           1
+        ]
+      },
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 450,
+      "name": "Street Arrival Gesture",
+      "parent": 1,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "animationPlayer": {
+        "asset": "@project/assets/street/animations/StreetArrival.clip.json",
+        "bindings": [
+          {
+            "slot": 1,
+            "target": 450
+          },
+          {
+            "slot": 2,
+            "target": 453
+          },
+          {
+            "slot": 3,
+            "target": 439
+          },
+          {
+            "slot": 4,
+            "target": 171
+          },
+          {
+            "slot": 5,
+            "target": 157
+          },
+          {
+            "slot": 6,
+            "target": 158
+          }
+        ],
+        "loop": false,
+        "playOnStart": true
+      },
+      "id": 451,
+      "name": "Street Arrival",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "canvas": {
+        "enabled": true,
+        "matchWidthOrHeight": 0.5,
+        "referenceSize": [
+          1280.0,
+          720.0
+        ],
+        "scaleWithScreen": true,
+        "sortOrder": -1
+      },
+      "id": 452,
+      "name": "Street HUD Background",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 453,
+      "image": {
+        "color": [
+          0.035,
+          0.075,
+          0.1,
+          0
+        ],
+        "enabled": true,
+        "fillAmount": 1,
+        "fillOrigin": "left",
+        "preserveAspect": false,
+        "raycastTarget": false,
+        "texture": "@project/assets/textures/PrototypeWhite.png"
+      },
+      "name": "Street Status Panel",
+      "parent": 452,
+      "rectTransform": {
+        "anchorMax": [
+          0,
+          0
+        ],
+        "anchorMin": [
+          0,
+          0
+        ],
+        "pivot": [
+          0,
+          0
+        ],
+        "position": [
+          24,
+          22
+        ],
+        "sizeDelta": [
+          610,
+          48
         ]
       },
       "tag": "",
