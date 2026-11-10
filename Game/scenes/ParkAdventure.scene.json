@@ -2898,7 +2898,7 @@
         ],
         "visible": true
       },
-      "name": "Garden East Inner Hedge",
+      "name": "Garden East Inner Hedge South",
       "parent": 0,
       "tag": "",
       "transform": {
@@ -2911,12 +2911,12 @@
         "scale": [
           0.25,
           0.62,
-          1.4
+          0.375
         ],
         "translation": [
           1.65,
           0.62,
-          23.3
+          22.275
         ]
       }
     },
@@ -6783,6 +6783,130 @@
           0,
           0,
           0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.25,
+          0.45,
+          0.24
+        ]
+      },
+      "id": 117,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Garden East Inner Hedge North",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.25,
+          0.62,
+          0.325
+        ],
+        "translation": [
+          1.65,
+          0.62,
+          24.375
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.72,
+          0.65,
+          0.47
+        ]
+      },
+      "id": 118,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Garden Central Shortcut Paving",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          2.1,
+          0.013,
+          0.62
+        ],
+        "translation": [
+          -0.25,
+          0.013,
+          23.45
         ]
       }
     }

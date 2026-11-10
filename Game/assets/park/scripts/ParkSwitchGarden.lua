@@ -126,7 +126,7 @@ return {
             label:set_text("門が開いた！  /  飛び石を跳ぶか、右の段を登って展望台へ")
         else
             self:reference("switchCue"):play_audio()
-            label:set_text("スイッチ 1 / 2  /  もう片方を踏んで門を開けよう")
+            label:set_text("スイッチ 1 / 2  /  カートに気をつけて中央を抜けるか、外側を回ろう")
         end
     end
 }
