@@ -139,6 +139,11 @@ local function update_death(self, state, seconds, viewport)
     end
 
     state.deathTime = t
+    local monochrome = t < hold
+        and smooth((t - state.deathColorHold) / state.deathColorFade)
+        or 1 - smooth((t - opening) / state.deathReveal)
+    self:set_background_monochrome(t >= finish and 0 or monochrome, state.deathColorLow,
+        state.deathColorHigh, state.deathColorThreshold, state.deathColorSoftness)
     if t >= finish then
         pose(self, 0, 1)
         self:set_character_input_enabled(state.inputBeforeDeath)
