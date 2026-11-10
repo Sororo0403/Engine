@@ -274,6 +274,7 @@ return {
             local seconds = state.finishedTime or state.elapsed
             local tenths = math.floor(seconds * 10)
             game.journeyStreetTime = tenths
+            game.journeyStreetFlowers = state.count
             local previous = previous_clear_time()
             local record = record_splits(state, tenths, "streetBestClearSplits")
             if state.count == state.total then

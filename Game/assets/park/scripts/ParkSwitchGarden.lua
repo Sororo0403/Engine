@@ -40,8 +40,12 @@ end
 return {
     start = function(self, state)
         state.journeyStreetTime = game.journeyStreetTime
+        state.journeyStreetFlowers = game.journeyStreetFlowers
         state.journeyStreetFull = game.streetAllFlowers == true
         game.journeyStreetTime = nil
+        game.journeyStreetFlowers = nil
+        game.sunriseJourneyTime = nil
+        game.sunriseJourneyFlowers = nil
         state.pondHint = self:reference("label"):get_text()
         state.elapsed = 0
         state.ferryDocked = true
@@ -169,6 +173,8 @@ return {
                 self:reference("resultHeading"):set_text("GURUTTO WORLD CLEAR")
                 self:reference("journeyRetry"):set_active(true)
                 local total = state.journeyStreetTime + time
+                game.sunriseJourneyTime = total
+                game.sunriseJourneyFlowers = (state.journeyStreetFlowers or 0) + flowers
                 journey = string.format("\n街＋公園 %.1f 秒    通しベスト %s", total / 10,
                     record_time("journeyBestTime", total))
                 if state.journeyStreetFull and flowers == state.totalFlowers then

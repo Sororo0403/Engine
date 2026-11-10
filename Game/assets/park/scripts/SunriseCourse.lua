@@ -11,6 +11,10 @@ return {
     start = function(_, state)
         game.sunriseUnlocked = true
         state.flowers = 0
+        state.journeyTime = game.sunriseJourneyTime
+        state.journeyFlowers = game.sunriseJourneyFlowers
+        game.sunriseJourneyTime = nil
+        game.sunriseJourneyFlowers = nil
     end,
 
     update = function(self, state, seconds, input)
@@ -62,6 +66,10 @@ return {
             result = result .. string.format("\n花 %d / 2", state.flowers)
             if state.flowers == 2 then
                 result = result .. "    水路の花をすべて集めた！"
+            end
+            if state.journeyTime then
+                result = result .. string.format("\n3コース合計 %.1f 秒    花 %d / 13",
+                    (state.journeyTime + time) / 10, state.journeyFlowers + state.flowers)
             end
             self:reference("result"):set_text(result)
         end
