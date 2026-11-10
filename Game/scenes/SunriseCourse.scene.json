@@ -429,7 +429,7 @@
         "fontFamily": "Yu Gothic UI",
         "fontSize": 24,
         "raycastTarget": false,
-        "value": "朝焼けの水路  /  左の足場を登って橋をつなごう",
+        "value": "朝焼けの水路  /  左で橋を架けるか、右の動く足場で先に渡ろう",
         "verticalAlignment": "middle"
       },
       "transform": {
@@ -3349,6 +3349,177 @@
           0,
           3.0,
           26.8
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.69,
+          0.43,
+          0.23
+        ]
+      },
+      "id": 98,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Sunrise Moving Canal Platform",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.92,
+          0.15,
+          0.88
+        ],
+        "translation": [
+          3.8,
+          0.24,
+          6.65
+        ]
+      },
+      "motionPath": {
+        "points": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            5.05
+          ]
+        ],
+        "segmentSeconds": 2.4,
+        "smooth": true,
+        "waypointWaitSeconds": 1.55,
+        "playOnStart": true,
+        "mode": "pingPong"
+      }
+    },
+    {
+      "active": true,
+      "id": 99,
+      "name": "Moving Platform South Dock Arrow",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.70710678,
+          0,
+          0.70710678
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          3.8,
+          0.025,
+          4.95
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 100,
+      "name": "Moving Platform North Dock Arrow",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          -0.70710678,
+          0,
+          0.70710678
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          3.8,
+          0.76,
+          13.1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
         ]
       }
     }
