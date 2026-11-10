@@ -12,4 +12,7 @@ struct EngineConfig {
 
 	// Editorなど、ImGuiを使用するアプリだけUIを初期化する
 	bool enableUI = true;
+
+	// 内蔵GPUなど、消費電力の少ないGPUを優先する
+	bool preferLowPowerGpu = false;
 };

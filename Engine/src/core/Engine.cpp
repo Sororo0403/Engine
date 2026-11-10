@@ -150,7 +150,7 @@ struct Engine::Impl {
 		}
 
 		if (!graphics_.Initialize(app_.GetHwnd(), config.windowWidth,
-		                          config.windowHeight)) {
+		                          config.windowHeight, config.preferLowPowerGpu)) {
 			return false;
 		}
 

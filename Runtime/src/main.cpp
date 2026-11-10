@@ -55,7 +55,8 @@ std::unique_ptr<IScene> CreateScene(const EngineContext &context) {
 } // namespace
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR commandLine, int) {
-	if (commandLine && std::string_view(commandLine) == "--write-build-info") {
+	const std::string_view arguments = commandLine ? commandLine : "";
+	if (arguments == "--write-build-info") {
 		return WriteBuildInfo();
 	}
 
@@ -73,6 +74,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR commandLine, int) {
 	config.windowWidth = game.width;
 	config.windowHeight = game.height;
 	config.enableUI = false;
+	config.preferLowPowerGpu = arguments == "--low-power-gpu";
 	const auto result = Engine::Run(config, CreateScene);
 
 	if (result != 0) {
