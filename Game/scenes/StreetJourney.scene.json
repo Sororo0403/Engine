@@ -124,6 +124,14 @@
           {
             "name": "damageSound",
             "target": 463
+          },
+          {
+            "name": "followCamera",
+            "target": 4
+          },
+          {
+            "name": "deathCamera",
+            "target": 465
           }
         ],
         "scenes": [
@@ -28411,6 +28419,37 @@
           0,
           -4,
           43
+        ]
+      }
+    },
+    {
+      "active": true,
+      "camera": {
+        "farClip": 150,
+        "nearClip": 0.10000000149011612,
+        "primary": false,
+        "verticalFovDegrees": 58
+      },
+      "id": 465,
+      "name": "Street Death Camera",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          -13.5,
+          4.4,
+          -7.6
         ]
       }
     }

@@ -55,6 +55,27 @@ local function iris(self, viewport, open)
     cover(bottomCover, x0, y1, x1 - x0, height - y1, 0)
 end
 
+local function camera_pose(camera)
+    return {position = {camera:get_position()}, rotation = {camera:get_rotation()}}
+end
+
+local function lock_camera(self, state, falling)
+    local follow = self:reference("followCamera")
+    local fixed = self:reference("deathCamera")
+    local shot = falling and state.lastGroundCamera or camera_pose(follow)
+    fixed:set_position(table.unpack(shot.position))
+    fixed:set_rotation(table.unpack(shot.rotation))
+    fixed:set_camera_lens(follow:get_camera_lens())
+    scene.set_camera(fixed)
+    follow:set_active(false)
+end
+
+local function restore_camera(self)
+    local follow = self:reference("followCamera")
+    follow:set_active(true)
+    scene.set_camera(follow)
+end
+
 local function start_death(self, state, falling)
     state.deathTime = 0
     state.falling = falling
@@ -62,6 +83,7 @@ local function start_death(self, state, falling)
     state.reaction = 0
     state.moveSpeed, state.jumpSpeed = self:get_character_speeds()
     self:set_character_speeds(0.001, 0.001)
+    lock_camera(self, state, falling)
 end
 
 local function update_fall_pose(self, state, seconds)
@@ -96,6 +118,7 @@ local function update_death(self, state, seconds, viewport)
         -- 復帰のフレームは暗幕を閉じた状態で表示する。
         iris(self, viewport, 0)
         self:set_position(state.spawnX, state.spawnY, state.spawnZ)
+        restore_camera(self)
         state.life = state.maximumLife
         state.deathReturned = true
         t = blackout
@@ -185,6 +208,7 @@ return {
     start = function(self, state)
         state.spawnX, state.spawnY, state.spawnZ = self:get_position()
         state.lastGroundY = state.spawnY
+        state.lastGroundCamera = camera_pose(self:reference("followCamera"))
     end,
 
     message = function(self, state, name)
@@ -249,6 +273,7 @@ return {
             end
             if input.character.grounded then
                 state.lastGroundY = y
+                state.lastGroundCamera = camera_pose(self:reference("followCamera"))
             end
         end
 
