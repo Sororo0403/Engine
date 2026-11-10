@@ -10,6 +10,19 @@ local config_rows = {
     config_focus_save = 3,
 }
 
+local home_buttons = {
+    title_focus_start = "startButton",
+    title_focus_config = "configButton",
+    title_focus_quit = "quitButton",
+}
+
+local function mark_home_button(self, name)
+    local marker = self:reference("homeMarker")
+    if marker then
+        marker:set_parent(self:reference(name), false)
+    end
+end
+
 local function mark_config_row(self, state, row)
     local marker = self:reference("configMarker")
     if marker then
@@ -102,6 +115,10 @@ return {
             set_menu_interactable(self, true)
             return
         end
+        if home_buttons[name] then
+            mark_home_button(self, home_buttons[name])
+            return
+        end
         if config_rows[name] then
             mark_config_row(self, state, config_rows[name])
             return
@@ -121,6 +138,7 @@ return {
             return
         end
         if name == "save_config" or name == "cancel_config" then
+            mark_home_button(self, "startButton")
             if name == "save_config" and state.volumeDraft ~= nil then
                 game.volumeLevel = state.volumeDraft
             end

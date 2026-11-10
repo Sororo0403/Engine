@@ -531,6 +531,22 @@
             "operation": "playAudio",
             "scene": "",
             "target": 638
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonFocus",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "title_focus_start",
+            "once": false,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 630
           }
         ]
       }
@@ -622,6 +638,22 @@
             "operation": "playAudio",
             "scene": "",
             "target": 638
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonFocus",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "title_focus_config",
+            "once": false,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 630
           }
         ]
       }
@@ -729,6 +761,22 @@
             "operation": "playAudio",
             "scene": "",
             "target": 638
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonFocus",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "title_focus_quit",
+            "once": false,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 630
           }
         ]
       }
@@ -9031,6 +9079,10 @@
         "prefabs": [],
         "references": [
           {
+            "name": "homeMarker",
+            "target": 643
+          },
+          {
             "name": "volumeLabel",
             "target": 632
           },
@@ -9731,6 +9783,67 @@
         "rotation": [0, 0, 0, 1],
         "scale": [1, 1, 1],
         "translation": [0, 0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 643,
+      "name": "Home Selection Marker",
+      "parent": 187,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "rectTransform": {
+        "anchorMin": [
+          0,
+          0
+        ],
+        "anchorMax": [
+          0,
+          0
+        ],
+        "pivot": [
+          0,
+          0
+        ],
+        "position": [
+          -18,
+          26
+        ],
+        "sizeDelta": [
+          5,
+          5
+        ]
+      },
+      "image": {
+        "enabled": true,
+        "raycastTarget": false,
+        "texture": "",
+        "color": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "preserveAspect": false,
+        "fillOrigin": "left",
+        "fillAmount": 1
       }
     }
   ],
