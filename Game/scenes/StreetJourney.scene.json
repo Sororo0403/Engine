@@ -77,6 +77,10 @@
         "prefabs": [],
         "references": [
           {
+            "name": "attackFlash",
+            "target": 580
+          },
+          {
             "name": "life",
             "target": 439
           },
@@ -31276,6 +31280,46 @@
           8.0,
           -2.15,
           99.0
+        ]
+      }
+    },
+    {
+      "active": false,
+      "id": 580,
+      "name": "Street Attack Flash",
+      "parent": 1,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          -0.55,
+          0
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/StreetAttackFlash.obj"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
         ]
       }
     }

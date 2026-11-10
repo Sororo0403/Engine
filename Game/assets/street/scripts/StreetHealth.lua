@@ -178,6 +178,14 @@ local function return_to_title(self)
     self:load_scene("title")
 end
 
+local function stop_attack(self, state)
+    state.attack = 0
+    local flash = self:reference("attackFlash")
+    if flash then
+        flash:set_active(false)
+    end
+end
+
 local function start_death(self, state, falling)
     finish_damage_flash(self, state)
     set_pause_available(self, false)
@@ -185,7 +193,7 @@ local function start_death(self, state, falling)
     state.deathTime = 0
     state.motionGrounded, state.motionVelocity = nil, nil
     state.falling = falling
-    state.attack = 0
+    stop_attack(self, state)
     state.reaction = 0
     state.inputBeforeDeath = self:is_character_input_enabled()
     self:set_character_input_enabled(false)
@@ -275,14 +283,21 @@ local function update_attack(self, state, seconds, input)
     state.attackCooldown = math.max(0, state.attackCooldown - seconds)
     local wasAttacking = state.attack > 0
     state.attack = math.max(0, state.attack - seconds)
+    local attackFlash = self:reference("attackFlash")
 
     local action = input.actions.Attack
     if action and action.pressed and state.attackCooldown == 0 then
         state.attack = state.attackSeconds
         state.attackCooldown = state.attackCooldownSeconds
+        if attackFlash then
+            attackFlash:set_active(true)
+        end
         self:reference("attackSound"):play_audio()
     end
     if state.attack == 0 then
+        if wasAttacking and attackFlash then
+            attackFlash:set_active(false)
+        end
         if wasAttacking and state.reaction == 0 then
             pose(self, state, 0, 1)
         end
@@ -311,8 +326,12 @@ local function update_attack(self, state, seconds, input)
         self:reference("hitSound"):play_audio()
     end
 
+    local progress = 1 - state.attack / state.attackSeconds
+    if attackFlash then
+        local radius = state.attackDistance * (0.42 + 0.58 * progress)
+        attackFlash:set_scale(radius, 1, radius)
+    end
     if state.reaction == 0 then
-        local progress = 1 - state.attack / state.attackSeconds
         pose(self, state, 0, 1 - 0.18 * math.sin(math.pi * progress))
     end
 end
@@ -360,6 +379,7 @@ return {
             set_pause_available(self, false)
             finish_damage_flash(self, state)
             state.completed = true
+            stop_attack(self, state)
             self:set_character_input_enabled(false)
             local camera = scene.get_camera()
             if camera then
@@ -410,7 +430,7 @@ return {
             state.life = state.maximumLife
             state.invulnerable = state.invulnerabilitySeconds
             state.reaction = 0
-            state.attack = 0
+            stop_attack(self, state)
             pose(self, state, 0, 1)
             show_life(self, state)
         end
