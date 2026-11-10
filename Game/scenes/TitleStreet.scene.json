@@ -9498,6 +9498,103 @@
           0,
           0
         ]
+      },
+      "button": {
+        "disabledColor": [
+          0.47,
+          0.49,
+          0.5,
+          0.8
+        ],
+        "enabled": true,
+        "highlightedColor": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "interactable": true,
+        "navigation": true,
+        "normalColor": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "pressedColor": [
+          0.61,
+          0.7,
+          0.73,
+          1
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonClick",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 634
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonClick",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "volume_cycle",
+            "once": false,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 630
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonFocus",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 638
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonFocus",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "config_focus_volume",
+            "once": false,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 630
+          }
+        ]
       }
     },
     {

@@ -78,10 +78,15 @@ return {
             mark_config_row(self, state, config_rows[name])
             return
         end
-        if name == "volume_down" or name == "volume_up" then
+        if name == "volume_down" or name == "volume_up" or name == "volume_cycle" then
             mark_config_row(self, state, 1)
-            local step = name == "volume_down" and -1 or 1
-            state.volumeDraft = math.min(10, math.max(0, volume_level(state) + step))
+            local level = volume_level(state)
+            if name == "volume_cycle" then
+                state.volumeDraft = (level + 1) % 11
+            else
+                local step = name == "volume_down" and -1 or 1
+                state.volumeDraft = math.min(10, math.max(0, level + step))
+            end
             show_volume(self, state)
             apply_volume(self, state)
             apply_cue_volume(self, state)
