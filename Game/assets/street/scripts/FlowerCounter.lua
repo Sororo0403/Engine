@@ -4,13 +4,18 @@ local function valid_time(value)
     end
 end
 
-local function clear_time_line(state, tenths)
+local function previous_clear_time()
     local saved = valid_time(game.streetBestClearTime)
     local full = valid_time(game.streetBestFullTime)
     local previous = saved
     if full and (not previous or full < previous) then
         previous = full
     end
+    return previous
+end
+
+local function clear_time_line(state, tenths, previous)
+    local saved = valid_time(game.streetBestClearTime)
     local improved = not previous or tenths < previous
     local best = improved and tenths or previous
     if saved ~= best then
@@ -61,17 +66,51 @@ local splitCheckpoints = {
     {"finish", "時計台"}
 }
 
-local function split_line(state, finish)
-    local parts, previous = {}, 0
-    for _, checkpoint in ipairs(splitCheckpoints) do
+local function record_splits(state, finish, key, best)
+    local record = game[key]
+    local a, b, c, total
+    if type(record) == "string" and #record == 36 then
+        a, b = tonumber(string.sub(record, 1, 9)), tonumber(string.sub(record, 10, 18))
+        c, total = tonumber(string.sub(record, 19, 27)), tonumber(string.sub(record, 28, 36))
+    end
+    local previous
+    if a and b and c and total and total == best and 0 <= a and a <= b and b <= c and c <= total then
+        previous = {a, b, c, total}
+    end
+
+    if not best or finish < best or (finish == best and not previous) then
+        local splits = state.splits
+        if splits.canal and splits.courtyard and splits.roof
+            and splits.canal <= splits.courtyard and splits.courtyard <= splits.roof
+            and splits.roof <= finish and finish <= 999999999 then
+            game[key] = string.format("%09d%09d%09d%09d", splits.canal, splits.courtyard, splits.roof, finish)
+        else
+            game[key] = nil
+        end
+    end
+    return previous
+end
+
+local function split_line(state, finish, record)
+    local parts, differences, previous = {}, {}, 0
+    for i, checkpoint in ipairs(splitCheckpoints) do
         local key, label = table.unpack(checkpoint)
         local time = key == "finish" and finish or state.splits[key]
-        local value = time and previous and time >= previous
-            and string.format("%.1f", (time - previous) / 10) or "—"
+        local duration = time and previous and time >= previous and time - previous
+        local value = duration and string.format("%.1f", duration / 10) or "—"
         parts[#parts + 1] = label .. " " .. value
+        if record then
+            local bestDuration = record[i] - (record[i - 1] or 0)
+            local difference = duration and string.format("%+.1f", (duration - bestDuration) / 10) or "—"
+            differences[#differences + 1] = label .. " " .. difference
+        end
         previous = time
     end
-    return "区間  " .. table.concat(parts, "  /  ") .. " 秒"
+    local line = "区間  " .. table.concat(parts, "  /  ") .. " 秒"
+    if record then
+        line = line .. "\n前ベスト比  " .. table.concat(differences, "  /  ") .. " 秒"
+    end
+    return line
 end
 
 local function collection_summary(self, state)
@@ -197,10 +236,16 @@ return {
             state.completed = true
             local seconds = state.finishedTime or state.elapsed
             local tenths = math.floor(seconds * 10)
+            local previous = previous_clear_time()
+            local record = record_splits(state, tenths, "streetBestClearSplits", previous)
+            if state.count == state.total then
+                record = record_splits(state, tenths, "streetBestFullSplits",
+                    valid_time(game.streetBestFullTime))
+            end
             self:reference("result"):set_text(
-                clear_time_line(state, tenths) .. "\n" ..
+                clear_time_line(state, tenths, previous) .. "\n" ..
                 collection_summary(self, state) .. "\n" ..
-                best_record(state, tenths) .. "\n" .. split_line(state, tenths))
+                best_record(state, tenths) .. "\n" .. split_line(state, tenths, record))
             if not state.finishedTime then
                 self:reference("hint"):set_active(false)
             end
