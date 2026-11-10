@@ -54,6 +54,26 @@ local function best_record(state, tenths)
     return newRecord and "新記録！  " .. line or line
 end
 
+local splitCheckpoints = {
+    {"canal", "運河"},
+    {"courtyard", "中庭"},
+    {"roof", "屋上"},
+    {"finish", "時計台"}
+}
+
+local function split_line(state, finish)
+    local parts, previous = {}, 0
+    for _, checkpoint in ipairs(splitCheckpoints) do
+        local key, label = table.unpack(checkpoint)
+        local time = key == "finish" and finish or state.splits[key]
+        local value = time and previous and time >= previous
+            and string.format("%.1f", (time - previous) / 10) or "—"
+        parts[#parts + 1] = label .. " " .. value
+        previous = time
+    end
+    return "区間  " .. table.concat(parts, "  /  ") .. " 秒"
+end
+
 local function collection_summary(self, state)
     if state.count == state.total then
         return "街じゅうの花を見つけた！"
@@ -123,6 +143,7 @@ end
 
 return {
     start = function(_, state)
+        state.splits = {}
         game.streetAllFlowers = state.count == state.total
         game.streetGoalWaiting = nil
         game.streetRemainingFlowers = nil
@@ -150,7 +171,9 @@ return {
             return
         end
 
-        if name == "street_goal_reached" and not state.finishedTime then
+        if not state.finishedTime and (name == "canal" or name == "courtyard" or name == "roof") then
+            state.splits[name] = state.splits[name] or math.floor(state.elapsed * 10)
+        elseif name == "street_goal_reached" and not state.finishedTime then
             state.finishedTime = state.elapsed
             self:reference("hint"):set_active(false)
             if state.count == state.total then
@@ -177,7 +200,7 @@ return {
             self:reference("result"):set_text(
                 clear_time_line(state, tenths) .. "\n" ..
                 collection_summary(self, state) .. "\n" ..
-                best_record(state, tenths))
+                best_record(state, tenths) .. "\n" .. split_line(state, tenths))
             if not state.finishedTime then
                 self:reference("hint"):set_active(false)
             end

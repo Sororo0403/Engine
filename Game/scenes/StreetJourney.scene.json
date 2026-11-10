@@ -10883,6 +10883,22 @@
             "event": "enter",
             "inputAction": "",
             "launchSpeed": 12,
+            "messageName": "canal",
+            "once": true,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 171
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
             "messageName": "",
             "once": true,
             "operation": "playAudio",
@@ -11021,6 +11037,22 @@
             "event": "enter",
             "inputAction": "",
             "launchSpeed": 12,
+            "messageName": "courtyard",
+            "once": true,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 171
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
             "messageName": "",
             "once": true,
             "operation": "playAudio",
@@ -11148,6 +11180,22 @@
             "operation": "sendScriptMessage",
             "scene": "",
             "target": 1
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "roof",
+            "once": true,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 171
           },
           {
             "arrivalTag": "",
@@ -14202,7 +14250,7 @@
         ],
         "sizeDelta": [
           880,
-          113
+          140
         ]
       },
       "tag": "",
