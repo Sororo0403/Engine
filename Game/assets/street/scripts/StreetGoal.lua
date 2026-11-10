@@ -1,5 +1,13 @@
 return {
-    update = function(self, state)
+    update = function(self, state, seconds)
+        if state.finishTime then
+            state.finishTime = state.finishTime - seconds
+            if state.finishTime <= 0 then
+                state.finishTime = nil
+                self:reference("resultCounter"):send_message("street_clear")
+            end
+            return
+        end
         if state.completed or game.streetDeathActive then
             return
         end
@@ -14,7 +22,14 @@ return {
 
         state.completed = true
         player:set_character_input_enabled(false)
-        self:reference("resultCounter"):send_message("street_clear")
+        local counter = self:reference("resultCounter")
+        counter:send_message("street_goal_reached")
         player:send_message("street_clear")
+
+        local camera = self:reference("finishCamera")
+        if camera then
+            scene.set_camera(camera)
+        end
+        state.finishTime = state.finishDelay or 0
     end
 }
