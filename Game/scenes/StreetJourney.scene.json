@@ -10625,7 +10625,7 @@
         "fontFamily": "Yu Gothic UI",
         "fontSize": 22,
         "raycastTarget": false,
-        "value": "歯車を回して屋上へ進もう  ［J / X］",
+        "value": "運河を目指して街を進もう",
         "verticalAlignment": "middle"
       },
       "transform": {
@@ -10766,7 +10766,15 @@
         "state": {
           "height": 1.5,
           "open": false,
-          "range": 3
+          "range": 3,
+          "nearBankX": -4,
+          "farBankX": 2.3,
+          "crossingMinZ": 19,
+          "crossingMaxZ": 28,
+          "findCanalText": "運河を目指して街を進もう",
+          "jumpText": "運河をジャンプで渡ろう  ［Space / A］",
+          "findGearText": "広場の歯車を探そう",
+          "activateGearText": "歯車をたたいて道を開こう  ［J / X］"
         }
       },
       "tag": "street_sound",

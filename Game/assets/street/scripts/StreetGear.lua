@@ -1,7 +1,24 @@
+local function update_hint(self, state, x, z, inRange)
+    if not state.findCanalText then
+        return
+    end
+    local text = state.findCanalText
+    if inRange then
+        text = state.activateGearText
+    elseif (x >= state.farBankX and z >= state.crossingMinZ) or z >= state.crossingMaxZ then
+        text = state.findGearText
+    elseif x >= state.nearBankX and z >= state.crossingMinZ then
+        text = state.jumpText
+    end
+    if text ~= state.currentHint then
+        self:reference("hint"):set_text(text)
+        state.currentHint = text
+    end
+end
+
 return {
     update = function(self, state, _, input)
-        local attack = input.actions.Attack
-        if state.open or game.streetDeathActive or not attack or not attack.pressed then
+        if state.open or game.streetDeathActive then
             return
         end
 
@@ -13,7 +30,10 @@ return {
         local x, y, z = self:get_position()
         local px, py, pz = player:get_position()
         local dx, dy, dz = x - px, y - py, z - pz
-        if dx * dx + dz * dz >= state.range * state.range or math.abs(dy) >= state.height then
+        local inRange = dx * dx + dz * dz < state.range * state.range and math.abs(dy) < state.height
+        update_hint(self, state, px, pz, inRange)
+        local attack = input.actions.Attack
+        if not inRange or not attack or not attack.pressed then
             return
         end
 
