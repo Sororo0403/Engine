@@ -15,7 +15,7 @@ return {
     end,
 
     update = function(self, state, seconds)
-        if state.completed then
+        if state.completed or game.streetDeathActive then
             return
         end
 

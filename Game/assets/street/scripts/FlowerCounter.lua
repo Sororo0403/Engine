@@ -1,6 +1,6 @@
 return {
     update = function(self, state, seconds)
-        if not state.completed then
+        if not state.completed and not game.streetDeathActive then
             state.elapsed = state.elapsed + seconds
         end
     end,

@@ -77,6 +77,7 @@ local function restore_camera(self)
 end
 
 local function start_death(self, state, falling)
+    game.streetDeathActive = true
     state.deathTime = 0
     state.falling = falling
     state.attack = 0
@@ -136,6 +137,7 @@ local function update_death(self, state, seconds, viewport)
         pose(self, 0, 1)
         self:set_character_speeds(state.moveSpeed, state.jumpSpeed)
         state.invulnerable = state.invulnerabilitySeconds
+        game.streetDeathActive = false
         state.deathTime = nil
         state.deathReturned = nil
         state.falling = nil
@@ -206,6 +208,7 @@ end
 
 return {
     start = function(self, state)
+        game.streetDeathActive = false
         state.spawnX, state.spawnY, state.spawnZ = self:get_position()
         state.lastGroundY = state.spawnY
         state.lastGroundCamera = camera_pose(self:reference("followCamera"))

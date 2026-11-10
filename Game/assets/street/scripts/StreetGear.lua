@@ -1,7 +1,7 @@
 return {
     update = function(self, state, _, input)
         local attack = input.actions.Attack
-        if state.open or not attack or not attack.pressed then
+        if state.open or game.streetDeathActive or not attack or not attack.pressed then
             return
         end
 
