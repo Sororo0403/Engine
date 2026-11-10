@@ -162,6 +162,7 @@ return {
             local journey = ""
             if type(state.journeyStreetTime) == "number" then
                 self:reference("resultHeading"):set_text("GURUTTO WORLD CLEAR")
+                self:reference("journeyRetry"):set_active(true)
                 local total = state.journeyStreetTime + time
                 journey = string.format("\n街＋公園 %.1f 秒    通しベスト %s", total / 10,
                     record_time("journeyBestTime", total))
