@@ -7,10 +7,29 @@ local function smooth(amount)
     return t * t * (3 - 2 * t)
 end
 
-local function pose(self, tilt, height)
+local function pose(self, state, tilt, height)
     local visual = self:reference("visual")
-    visual:set_rotation(0, 0, math.sin(tilt / 2), math.cos(tilt / 2))
+    local yaw = (state.facingYaw or 0) / 2
+    local sy, cy = math.sin(yaw), math.cos(yaw)
+    local sr, cr = math.sin(tilt / 2), math.cos(tilt / 2)
+    visual:set_rotation(sy * sr, sy * cr, cy * sr, cy * cr)
     visual:set_scale(1, height, 1)
+end
+
+local function update_facing(state, input, seconds)
+    local x, z = input.moveX, input.moveZ
+    if x * x + z * z < 0.01 then
+        return false
+    end
+    local yaw = state.facingYaw or 0
+    local target = math.atan(x, z)
+    local turn = (target - yaw + math.pi) % (2 * math.pi) - math.pi
+    if math.abs(turn) < 0.001 then
+        return false
+    end
+    local step = math.min(1, 16 * seconds)
+    state.facingYaw = (yaw + turn * step + math.pi) % (2 * math.pi) - math.pi
+    return true
 end
 
 local function cover(image, x, y, width, height, tint)
@@ -162,7 +181,7 @@ local function update_fall_pose(self, state, seconds)
     local height = state.fallStartY + (peak - state.fallStartY) * lift - state.fallDrop * drop
     local _, y = self:get_position()
     self:reference("visual"):set_local_position(0, height - y, 0)
-    pose(self, 0.12 * drop, 1 + 0.30 * math.sin(math.pi * reaction))
+    pose(self, state, 0.12 * drop, 1 + 0.30 * math.sin(math.pi * reaction))
 end
 
 local function update_death(self, state, seconds, viewport)
@@ -184,7 +203,7 @@ local function update_death(self, state, seconds, viewport)
         else
             local reaction = smooth((t - state.deathReactionDelay) / state.deathReactionSeconds)
             local bounce = math.sin(reaction * math.pi)
-            pose(self, -0.48 * reaction, 1 - 0.34 * bounce)
+            pose(self, state, -0.48 * reaction, 1 - 0.34 * bounce)
         end
         iris(self, state, viewport, 1 - smooth((t - hold) / state.deathClose))
     elseif not state.deathReturned then
@@ -198,12 +217,12 @@ local function update_death(self, state, seconds, viewport)
         state.deathReturned = true
         t = blackout
         self:reference("visual"):set_local_position(0, 0, 0)
-        pose(self, 0, 1)
+        pose(self, state, 0, 1)
         show_life(self, state)
     else
         local reveal = smooth((t - opening) / state.deathReveal)
         iris(self, state, viewport, reveal)
-        pose(self, 0, 1 + 0.12 * math.sin(reveal * math.pi))
+        pose(self, state, 0, 1 + 0.12 * math.sin(reveal * math.pi))
     end
 
     state.deathTime = t
@@ -212,7 +231,7 @@ local function update_death(self, state, seconds, viewport)
         or 1 - smooth((t - opening) / state.deathReveal)
     background(self, state, t >= finish and 0 or monochrome)
     if t >= finish then
-        pose(self, 0, 1)
+        pose(self, state, 0, 1)
         self:set_character_input_enabled(state.inputBeforeDeath)
         state.inputBeforeDeath = nil
         state.invulnerable = state.invulnerabilitySeconds
@@ -237,7 +256,7 @@ local function update_attack(self, state, seconds, input)
     end
     if state.attack == 0 then
         if wasAttacking and state.reaction == 0 then
-            pose(self, 0, 1)
+            pose(self, state, 0, 1)
         end
         return
     end
@@ -266,7 +285,7 @@ local function update_attack(self, state, seconds, input)
 
     if state.reaction == 0 then
         local progress = 1 - state.attack / state.attackSeconds
-        pose(self, 0, 1 - 0.18 * math.sin(math.pi * progress))
+        pose(self, state, 0, 1 - 0.18 * math.sin(math.pi * progress))
     end
 end
 
@@ -308,7 +327,13 @@ return {
             finish_damage_flash(self, state)
             state.completed = true
             self:set_character_input_enabled(false)
-            pose(self, 0, 1)
+            local camera = scene.get_camera()
+            if camera then
+                local cx, _, cz = camera:get_position()
+                local x, _, z = self:get_position()
+                state.facingYaw = math.atan(cx - x, cz - z)
+            end
+            pose(self, state, 0, 1)
             for _, enemy in ipairs(scene.find_all_by_tag("street_enemy")) do
                 enemy:send_message("street_clear")
             end
@@ -349,7 +374,7 @@ return {
             state.invulnerable = state.invulnerabilitySeconds
             state.reaction = 0
             state.attack = 0
-            pose(self, 0, 1)
+            pose(self, state, 0, 1)
             show_life(self, state)
         end
 
@@ -369,13 +394,16 @@ return {
             end
         end
 
+        local turned = self:is_character_input_enabled() and update_facing(state, input, seconds)
         update_attack(self, state, seconds, input)
 
         if state.reaction > 0 then
             state.reaction = math.max(0, state.reaction - seconds)
             local t = 1 - state.reaction / state.reactionSeconds
             local tilt = math.sin(math.pi * t) * 0.3
-            pose(self, tilt, 1)
+            pose(self, state, tilt, 1)
+        elseif turned and state.attack == 0 then
+            pose(self, state, 0, 1)
         end
     end
 }
