@@ -16,6 +16,13 @@ return {
         state.pondHint = self:reference("label"):get_text()
         state.transferHint = false
         state.elapsed = 0
+        state.ferryDocked = true
+        local volume = type(game.volumeLevel) == "number" and game.volumeLevel or 10
+        volume = math.max(0, math.min(10, volume)) / 10
+        for _, name in ipairs({"ferry", "switchCue", "gateCue", "flowerCue", "clearCue"}) do
+            local cue = self:reference(name)
+            cue:set_audio_volume(cue:get_audio_volume() * volume)
+        end
     end,
 
     update = function(self, state, seconds, input)
@@ -27,7 +34,15 @@ return {
             return
         end
 
-        local showTransfer = input.character.ground == self:reference("ferry")
+        local ferry = self:reference("ferry")
+        local _, _, z = ferry:get_position()
+        local docked = z <= state.nearDockZ + 0.08 or z >= state.farDockZ - 0.08
+        if docked and not state.ferryDocked then
+            ferry:play_audio()
+        end
+        state.ferryDocked = docked
+
+        local showTransfer = input.character.ground == ferry
             and not self:reference("ferryFlower"):is_active()
             and self:reference("stoneFlower"):is_active()
         if showTransfer ~= state.transferHint then
@@ -40,6 +55,7 @@ return {
     message = function(self, state, name)
         if name == "park_flower" then
             state.flowers = (state.flowers or 0) + 1
+            self:reference("flowerCue"):play_audio()
             self:reference("flowerLabel"):set_text(
                 "公園の花 " .. state.flowers .. " / " .. state.totalFlowers)
             return
@@ -48,6 +64,7 @@ return {
         if name == "park_cleared" then
             state.finished = true
             game.parkUnlocked = true
+            self:reference("clearCue"):play_audio()
             local flowers = state.flowers or 0
             local result = self:reference("result")
             local summary = "公園の花 " .. flowers .. " / " .. state.totalFlowers
@@ -85,9 +102,11 @@ return {
         local count = (state.west and 1 or 0) + (state.east and 1 or 0)
         if count == 2 then
             self:reference("gate"):set_active(false)
+            self:reference("gateCue"):play_audio()
             self:reference("goal"):set_active(true)
             label:set_text("門が開いた！  /  飛び石を跳ぶか、右の段を登って展望台へ")
         else
+            self:reference("switchCue"):play_audio()
             label:set_text("スイッチ 1 / 2  /  もう片方を踏んで門を開けよう")
         end
     end

@@ -924,6 +924,15 @@
         "waypointWaitSeconds": 1.35,
         "playOnStart": true,
         "mode": "pingPong"
+      },
+      "audioSource": {
+        "clip": "@project/assets/street/audio/Checkpoint.wav",
+        "loop": false,
+        "maxDistance": 14,
+        "minDistance": 2,
+        "playOnStart": false,
+        "spatial": true,
+        "volume": 0.34
       }
     },
     {
@@ -2437,11 +2446,29 @@
           {
             "name": "stoneFlower",
             "target": 52
+          },
+          {
+            "name": "switchCue",
+            "target": 105
+          },
+          {
+            "name": "gateCue",
+            "target": 106
+          },
+          {
+            "name": "flowerCue",
+            "target": 107
+          },
+          {
+            "name": "clearCue",
+            "target": 108
           }
         ],
         "scenes": [],
         "state": {
-          "totalFlowers": 3
+          "totalFlowers": 3,
+          "nearDockZ": 5.15,
+          "farDockZ": 11.85
         }
       }
     },
@@ -6199,6 +6226,142 @@
             "scene": "",
             "target": 1
           }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "audioSource": {
+        "clip": "@project/assets/street/audio/Checkpoint.wav",
+        "loop": false,
+        "maxDistance": 20,
+        "minDistance": 1,
+        "playOnStart": false,
+        "spatial": false,
+        "volume": 0.45
+      },
+      "id": 105,
+      "name": "Park Switch Cue",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "audioSource": {
+        "clip": "@project/assets/street/audio/GearMechanism.wav",
+        "loop": false,
+        "maxDistance": 20,
+        "minDistance": 1,
+        "playOnStart": false,
+        "spatial": false,
+        "volume": 0.48
+      },
+      "id": 106,
+      "name": "Park Gate Cue",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "audioSource": {
+        "clip": "@project/assets/street/audio/FlowerPickup.wav",
+        "loop": false,
+        "maxDistance": 20,
+        "minDistance": 1,
+        "playOnStart": false,
+        "spatial": false,
+        "volume": 0.38
+      },
+      "id": 107,
+      "name": "Park Flower Cue",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "audioSource": {
+        "clip": "@project/assets/street/audio/StreetClear.wav",
+        "loop": false,
+        "maxDistance": 20,
+        "minDistance": 1,
+        "playOnStart": false,
+        "spatial": false,
+        "volume": 0.42
+      },
+      "id": 108,
+      "name": "Park Clear Cue",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
         ]
       }
     }
