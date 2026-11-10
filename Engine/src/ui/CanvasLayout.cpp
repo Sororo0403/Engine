@@ -1,6 +1,5 @@
 ﻿#include "ui/CanvasLayout.h"
 #include "scene/Scene.h"
-#include "scene/SceneActivity.h"
 #include "scene/SceneHierarchy.h"
 #include <algorithm>
 #include <cmath>
@@ -32,9 +31,7 @@ bool CanvasLayout::Collect(const Scene &scene, int width, int height,
 		if (width < 1 || height < 1 || width > 16384 || height > 16384)
 			throw std::runtime_error("UI target dimensions are invalid.");
 		std::vector<SceneObjectId> order;
-		SceneActivity::States active;
-		if (!SceneHierarchy::GetEvaluationOrder(scene, order) ||
-		    !SceneActivity::BuildStates(scene, active))
+		if (!SceneHierarchy::GetEvaluationOrder(scene, order))
 			throw std::runtime_error("UI parent hierarchy is invalid.");
 
 		struct Context {
@@ -61,7 +58,7 @@ bool CanvasLayout::Collect(const Scene &scene, int width, int height,
 			const auto &object = *scene.FindObject(id);
 			auto context =
 			    object.parentId ? contexts.at(object.parentId) : Context{};
-			context.visible &= active.at(id);
+			context.visible &= object.active;
 
 			if (!context.visible) {
 				contexts.emplace(id, context);
