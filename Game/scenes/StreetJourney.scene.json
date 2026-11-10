@@ -30443,6 +30443,54 @@
           68.875
         ]
       }
+    },
+    {
+      "active": true,
+      "audioSource": {
+        "clip": "@project/assets/street/audio/StreetMusic.wav",
+        "loop": true,
+        "maxDistance": 100,
+        "minDistance": 1,
+        "playOnStart": true,
+        "spatial": false,
+        "volume": 0.3
+      },
+      "id": 516,
+      "name": "Street Music",
+      "parent": 0,
+      "script": {
+        "asset": "@project/assets/street/scripts/StreetArrivalMusic.lua",
+        "enabled": true,
+        "prefabs": [],
+        "references": [],
+        "scenes": [],
+        "state": {
+          "elapsed": 0,
+          "hushGain": 0.06,
+          "quietGain": 0.18,
+          "release": 0.92,
+          "restoreAt": 1.8
+        }
+      },
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
     }
   ],
   "projectRoot": "..",
