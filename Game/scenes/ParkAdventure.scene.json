@@ -2480,7 +2480,8 @@
         "state": {
           "totalFlowers": 3,
           "nearDockZ": 5.15,
-          "farDockZ": 11.85
+          "farDockZ": 11.85,
+          "pondReturnZ": 13.65
         }
       }
     },

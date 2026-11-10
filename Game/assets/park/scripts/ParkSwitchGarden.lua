@@ -41,7 +41,6 @@ return {
         state.journeyStreetTime = game.journeyStreetTime
         game.journeyStreetTime = nil
         state.pondHint = self:reference("label"):get_text()
-        state.transferHint = false
         state.elapsed = 0
         state.ferryDocked = true
         state.flowers = 0
@@ -72,25 +71,45 @@ return {
             end
             return
         end
-        if state.farBank or not input.character then
+        if not input.character then
             return
         end
 
+        local _, _, playerZ = self:reference("player"):get_position()
+        local backAtPond = state.farBank and playerZ < state.pondReturnZ
+        local atPond = not state.farBank or backAtPond
         local ferry = self:reference("ferry")
         local _, _, z = ferry:get_position()
         local docked = z <= state.nearDockZ + 0.08 or z >= state.farDockZ - 0.08
-        if docked and not state.ferryDocked then
+        if atPond and docked and not state.ferryDocked then
             ferry:play_audio()
         end
         state.ferryDocked = docked
 
+        local label = self:reference("label")
+        if backAtPond and not state.backAtPond then
+            state.gardenHint = label:get_text()
+        elseif not backAtPond and state.backAtPond then
+            label:set_text(state.gardenHint)
+            state.lastPondHint = nil
+        end
+        state.backAtPond = backAtPond
+        if not atPond then
+            return
+        end
+
         local showTransfer = input.character.ground == ferry
             and not self:reference("ferryFlower"):is_active()
             and self:reference("stoneFlower"):is_active()
-        if showTransfer ~= state.transferHint then
-            state.transferHint = showTransfer
-            self:reference("label"):set_text(showTransfer
-                and "中央の飛び石と並んだら左へジャンプ ［Space / A 長押し］" or state.pondHint)
+        local hint = state.pondHint
+        if showTransfer then
+            hint = "中央の飛び石と並んだら左へジャンプ ［Space / A 長押し］"
+        elseif backAtPond then
+            hint = "池へ引き返す  /  飛び石を跳ぶか、いかだを待とう"
+        end
+        if hint ~= state.lastPondHint then
+            label:set_text(hint)
+            state.lastPondHint = hint
         end
     end,
 
