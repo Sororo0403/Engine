@@ -139,6 +139,8 @@ class CharacterController {
 	double accumulatedTime_ = 0.0;
 	double coyoteRemaining_ = 0.0;
 	double jumpBufferRemaining_ = 0.0;
+	double airborneSeconds_ = 0.0;
+	double airFloatUsedSeconds_ = 0.0;
 	bool initialized_ = false;
 	bool grounded_ = false;
 	bool jumpPending_ = false;

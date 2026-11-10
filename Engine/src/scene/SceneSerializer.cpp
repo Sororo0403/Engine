@@ -735,7 +735,9 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 				    {"coyoteTime", v.coyoteTime},
 				    {"jumpBufferTime", v.jumpBufferTime},
 				    {"groundSnapDistance", v.groundSnapDistance},
-				    {"stepHeight", v.stepHeight}};
+				    {"stepHeight", v.stepHeight},
+				    {"airFloatDelay", v.airFloatDelay},
+				    {"airFloatDuration", v.airFloatDuration}};
 			}
 
 			if (object.followCamera) {
@@ -1546,6 +1548,16 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 						    "Character step height is invalid.");
 					object.character->stepHeight =
 					    v.at("stepHeight").get<float>();
+				}
+
+				if (version >= 74) {
+					if (!v.at("airFloatDelay").is_number() ||
+					    !v.at("airFloatDuration").is_number())
+						throw std::runtime_error(
+						    "Character air float settings require numbers.");
+					object.character->airFloatDelay = v.at("airFloatDelay").get<float>();
+					object.character->airFloatDuration =
+					    v.at("airFloatDuration").get<float>();
 				}
 			}
 

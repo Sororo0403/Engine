@@ -20,7 +20,10 @@ bool CharacterSettings::IsValid() const {
 	       std::isfinite(groundSnapDistance) && groundSnapDistance >= 0.0f &&
 	       groundSnapDistance <= kMaximumGroundSnapDistance &&
 	       std::isfinite(stepHeight) && stepHeight >= 0.0f &&
-	       stepHeight <= kMaximumStepHeight;
+	       stepHeight <= kMaximumStepHeight && std::isfinite(airFloatDelay) &&
+	       airFloatDelay >= 0.0f && airFloatDelay <= kMaximumAirFloatSeconds &&
+	       std::isfinite(airFloatDuration) && airFloatDuration >= 0.0f &&
+	       airFloatDuration <= kMaximumAirFloatSeconds;
 }
 
 bool CharacterController::Initialize(const Transform &transform,
@@ -65,6 +68,7 @@ bool CharacterController::Initialize(const DirectX::XMFLOAT4X4 &worldMatrix,
 	jumpPending_ = false;
 	coyoteRemaining_ = 0.0;
 	jumpBufferRemaining_ = 0.0;
+	airborneSeconds_ = airFloatUsedSeconds_ = 0.0;
 	initialized_ = true;
 	CollisionMoveResult contact;
 	grounded_ = world.Move(collider_, worldMatrix_,
@@ -178,7 +182,9 @@ bool CharacterController::Step(const CharacterInput &input,
 
 	if (grounded_) {
 		coyoteRemaining_ = settings_.coyoteTime;
+		airborneSeconds_ = airFloatUsedSeconds_ = 0.0;
 	} else {
+		airborneSeconds_ += kFixedStepSeconds;
 		coyoteRemaining_ =
 		    (std::max)(0.0, coyoteRemaining_ - kFixedStepSeconds);
 	}
@@ -190,6 +196,7 @@ bool CharacterController::Step(const CharacterInput &input,
 	if ((jumpPending_ || jumpBufferRemaining_ > 0.0) &&
 	    (grounded_ || coyoteRemaining_ > 0.0)) {
 		verticalVelocity_ = settings_.jumpSpeed;
+		airborneSeconds_ = 0.0;
 		grounded_ = false;
 		coyoteRemaining_ = 0.0;
 		jumpBufferRemaining_ = 0.0;
@@ -198,9 +205,20 @@ bool CharacterController::Step(const CharacterInput &input,
 	const bool canSnap = grounded_ && settings_.groundSnapDistance > 0;
 	jumpPending_ = false;
 	const float step = static_cast<float>(kFixedStepSeconds);
-	verticalVelocity_ =
-	    (std::max)(-settings_.terminalSpeed,
-	               verticalVelocity_ - settings_.gravity * step);
+	const bool canFloat = !grounded_ && input.jumpHeld && !input.jumpPressed &&
+	                      airborneSeconds_ >= settings_.airFloatDelay &&
+	                      airFloatUsedSeconds_ < settings_.airFloatDuration;
+	CollisionSweepResult nearGround;
+	if (canFloat && !world.Sweep(collider_, worldMatrix_, {0, -0.1f, 0}, nearGround))
+		return false;
+	if (canFloat && (!nearGround.objectId || nearGround.normal.y <= .5f)) {
+		verticalVelocity_ = 0.0f;
+		airFloatUsedSeconds_ += kFixedStepSeconds;
+	} else {
+		verticalVelocity_ =
+		    (std::max)(-settings_.terminalSpeed,
+		               verticalVelocity_ - settings_.gravity * step);
+	}
 	const double magnitude =
 	    (std::max)(1.0, std::hypot(static_cast<double>(input.moveX),
 	                               static_cast<double>(input.moveZ)));
@@ -263,6 +281,8 @@ bool CharacterController::Step(const CharacterInput &input,
 	if (grounded_) {
 		coyoteRemaining_ = settings_.coyoteTime;
 
+		airborneSeconds_ = airFloatUsedSeconds_ = 0.0;
+
 		// 着地した固定更新内で入力を消費し、次の更新から上昇する。
 		if (jumpBufferRemaining_ > 0.0) {
 			verticalVelocity_ = settings_.jumpSpeed;
@@ -316,6 +336,7 @@ bool CharacterController::Launch(float speed) {
 	jumpPending_ = false;
 	coyoteRemaining_ = 0;
 	jumpBufferRemaining_ = 0;
+	airborneSeconds_ = airFloatUsedSeconds_ = 0.0;
 	return true;
 }
 

@@ -32,7 +32,8 @@ inline CharacterInput Read(const Keyboard &keyboard,
 	                     float(keyboard.IsDown(bindings.forward)) -
 	                         float(keyboard.IsDown(bindings.backward)),
 	                     keyboard.IsPressed(bindings.jump),
-	                     keyboard.IsPressed(bindings.interact)};
+	                     keyboard.IsPressed(bindings.interact),
+	                     keyboard.IsDown(bindings.jump)};
 
 	if (gamepad && gamepad->IsConnected()) {
 		const auto &stick = gamepad->GetState().leftStick;
@@ -43,6 +44,7 @@ inline CharacterInput Read(const Keyboard &keyboard,
 		               float(gamepad->IsDown(GamepadButton::DPAD_UP)) -
 		               float(gamepad->IsDown(GamepadButton::DPAD_DOWN));
 		input.jumpPressed |= gamepad->IsPressed(GamepadButton::SOUTH);
+		input.jumpHeld |= gamepad->IsDown(GamepadButton::SOUTH);
 		input.interactPressed |= gamepad->IsPressed(GamepadButton::WEST);
 	}
 
@@ -77,6 +79,6 @@ inline CharacterInput Read(const Keyboard &keyboard,
 	return {
 	    static_cast<float>(input.moveX * forwardZ + input.moveZ * forwardX),
 	    static_cast<float>(-input.moveX * forwardX + input.moveZ * forwardZ),
-	    input.jumpPressed, input.interactPressed};
+	    input.jumpPressed, input.interactPressed, input.jumpHeld};
 }
 } // namespace CharacterInputReader

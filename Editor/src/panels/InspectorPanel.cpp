@@ -1144,6 +1144,8 @@ std::optional<Transform> InspectorPanel::DrawReadOnly(
 		ImGui::DragFloat("Terminal Speed", &settings.terminalSpeed);
 		ImGui::DragFloat("Coyote Time (s)", &settings.coyoteTime);
 		ImGui::DragFloat("Jump Buffer Time (s)", &settings.jumpBufferTime);
+		ImGui::DragFloat("Air Float Delay (s)", &settings.airFloatDelay);
+		ImGui::DragFloat("Air Float Duration (s)", &settings.airFloatDuration);
 		ui.EndDisabled();
 	}
 

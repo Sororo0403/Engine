@@ -8,4 +8,5 @@ struct CharacterInput {
 	float moveZ = 0.0f;
 	bool jumpPressed = false;
 	bool interactPressed = false;
+	bool jumpHeld = false;
 };

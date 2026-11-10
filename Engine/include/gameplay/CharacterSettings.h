@@ -15,12 +15,16 @@ struct CharacterSettings {
 	float groundSnapDistance = 0.0f;
 	// 地上を歩くときに乗り越えられる段差の高さ。0は無効。
 	float stepHeight = 0.0f;
+	// ジャンプを押し続けたときの滞空開始までの時間と、1回の滞空上限（秒）。
+	float airFloatDelay = 0.0f;
+	float airFloatDuration = 0.0f;
 
 	static constexpr float kMaximumSpeed = 1000.0f;
 	static constexpr float kMaximumGravity = 1000.0f;
 	static constexpr float kMaximumJumpGraceSeconds = 1.0f;
 	static constexpr float kMaximumGroundSnapDistance = 2.0f;
 	static constexpr float kMaximumStepHeight = 2.0f;
+	static constexpr float kMaximumAirFloatSeconds = 5.0f;
 
 	/// <summary>
 	/// 移動と重力が有限で正、ジャンプ猶予が有限で0以上、かつ設定範囲内か確認する
