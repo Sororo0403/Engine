@@ -9,6 +9,16 @@ local function update_hint(self, state, x, z, inRange)
         text = state.findGearText
     elseif x >= state.nearBankX and z >= state.crossingMinZ then
         text = state.jumpText
+    elseif state.introRadius and not state.introFinished then
+        state.introText = state.introText or self:reference("hint"):get_text()
+        state.introStartX = state.introStartX or x
+        state.introStartZ = state.introStartZ or z
+        local dx, dz = x - state.introStartX, z - state.introStartZ
+        if dx * dx + dz * dz >= state.introRadius * state.introRadius then
+            state.introFinished = true
+        else
+            text = state.introText
+        end
     end
     if text ~= state.currentHint then
         self:reference("hint"):set_text(text)

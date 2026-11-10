@@ -10662,7 +10662,7 @@
         "fontFamily": "Yu Gothic UI",
         "fontSize": 22,
         "raycastTarget": false,
-        "value": "運河を目指して街を進もう",
+        "value": "運河を目指そう  ［移動：WASD / 左スティック］",
         "verticalAlignment": "middle"
       },
       "transform": {
@@ -10809,6 +10809,7 @@
           "crossingMinZ": 19,
           "crossingMaxZ": 28,
           "findCanalText": "運河を目指して街を進もう",
+          "introRadius": 4,
           "jumpText": "運河をジャンプで渡ろう  ［Space / A］",
           "findGearText": "広場の歯車を探そう",
           "activateGearText": "歯車をたたいて道を開こう  ［J / X］",
