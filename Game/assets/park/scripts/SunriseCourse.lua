@@ -70,6 +70,7 @@ return {
             if state.journeyTime then
                 result = result .. string.format("\n3コース合計 %.1f 秒    花 %d / 13",
                     (state.journeyTime + time) / 10, state.journeyFlowers + state.flowers)
+                self:reference("journeyRetry"):set_active(true)
             end
             self:reference("result"):set_text(result)
         end
