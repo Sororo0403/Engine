@@ -201,7 +201,11 @@ return {
             open_flower_bridge(self, state)
         else
             self:reference("switchCue"):play_audio()
-            label:set_text("スイッチ 1 / 2  /  黄色い板でカートを止めるか、外側を回ろう")
+            if name == "west" then
+                label:set_text("スイッチ 1 / 2  /  矢印からカートを跳び越すか、黄色い板で止めよう")
+            else
+                label:set_text("スイッチ 1 / 2  /  黄色い板でカートを止めるか、外側を回ろう")
+            end
         end
     end
 }
