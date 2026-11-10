@@ -135,9 +135,9 @@
       "parent": 0,
       "tag": "",
       "transform": {
-        "rotation": [-0.07038425030028704, 0.0126823154318188, -0.03136250335294976, 0.9969461417591177],
+        "rotation": [0, 0, 0, 1],
         "scale": [1, 1, 1],
-        "translation": [-0.800000011920929, 2.200000047683716, -8.0]
+        "translation": [0, 2.2, 14]
       },
       "camera": {
         "primary": false,
@@ -480,22 +480,6 @@
             "operation": "playAudio",
             "scene": "",
             "target": 634
-          },
-          {
-            "event": "buttonClick",
-            "operation": "setCamera",
-            "target": 6,
-            "once": false,
-            "destination": 0,
-            "scene": "",
-            "contact": "any",
-            "contactTag": "",
-            "inputAction": "",
-            "messageName": "",
-            "delaySeconds": 0,
-            "cameraBlendSeconds": 0.18,
-            "arrivalTag": "",
-            "launchSpeed": 12
           },
           {
             "event": "buttonClick",
@@ -1490,6 +1474,23 @@
           },
           {
             "event": "animationClipMarker",
+            "operation": "setCamera",
+            "target": 6,
+            "once": false,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 3.2,
+            "arrivalTag": "",
+            "launchSpeed": 12,
+            "clipTime": 0
+          },
+          {
+            "event": "animationClipMarker",
             "operation": "disable",
             "target": 2,
             "once": false,
@@ -1633,10 +1634,6 @@
           {
             "slot": 1,
             "target": 202
-          },
-          {
-            "slot": 2,
-            "target": 6
           },
           {
             "slot": 3,
