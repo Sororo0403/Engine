@@ -176,6 +176,14 @@ return {
                         end
                     end
                 end
+                local returnMarker = self:reference("courtyardReturnMarker")
+                if onRoof and returnMarker and state.courtyardReturnText then
+                    local mx, my, mz = returnMarker:get_position()
+                    if math.abs(px - mx) <= 2.5 and math.abs(py - my) <= 1.5
+                        and math.abs(pz - mz) <= 2 then
+                        text = state.courtyardReturnText
+                    end
+                end
                 if game.streetGoalWaiting and state.finishPrompt then
                     text = state.finishPrompt
                     if game.streetRemainingFlowers then

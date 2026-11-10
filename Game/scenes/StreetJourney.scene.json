@@ -11513,6 +11513,10 @@
         "prefabs": [],
         "references": [
           {
+            "name": "courtyardReturnMarker",
+            "target": 603
+          },
+          {
             "name": "player",
             "target": 1
           },
@@ -11609,6 +11613,7 @@
           "balconyStairText": "踊り場へ降り、階段を登って向かいの屋上へ",
           "roofJumpText": "矢印から向かいの屋上へ  ［Space / A 長押しで遠くへ］",
           "roofText": "屋上の時計台を目指そう",
+          "courtyardReturnText": "中庭へ戻るなら矢印の通路へ",
           "finishPrompt": "花を探しに戻る / ここでクリア ［Enter / Y］"
         }
       },
@@ -31603,12 +31608,12 @@
           1
         ],
         "scale": [
-          4.012,
+          1.512,
           0.027,
           0.162
         ],
         "translation": [
-          8.0,
+          5.5,
           4.754,
           69.0
         ]
@@ -32532,24 +32537,24 @@
         ],
         "visible": true
       },
-      "name": "Rooftop Courtyard Return Ramp",
+      "name": "Rooftop Courtyard Return Walkway",
       "parent": 9,
       "tag": "street_wave_far",
       "transform": {
         "rotation": [
-          -0.032921278,
           0,
           0,
-          0.999457948
+          0,
+          1
         ],
         "scale": [
           1,
           0.12,
-          6.990152
+          6.975
         ],
         "translation": [
           8,
-          3.35,
+          3.8,
           62.275
         ]
       }
@@ -32609,19 +32614,19 @@
       "tag": "street_wave_far",
       "transform": {
         "rotation": [
-          -0.032921278,
           0,
           0,
-          0.999457948
+          0,
+          1
         ],
         "scale": [
           0.07,
           0.22,
-          6.990152
+          6.975
         ],
         "translation": [
           6.93,
-          3.66,
+          4.13,
           62.275
         ]
       }
@@ -32681,20 +32686,152 @@
       "tag": "street_wave_far",
       "transform": {
         "rotation": [
-          -0.032921278,
           0,
           0,
-          0.999457948
+          0,
+          1
         ],
         "scale": [
           0.07,
           0.22,
-          6.990152
+          6.975
         ],
         "translation": [
           9.07,
-          3.66,
+          4.13,
           62.275
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 603,
+      "name": "Rooftop Courtyard Return Arrow 1",
+      "parent": 9,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          -0.707106781,
+          0,
+          0.707106781
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          8,
+          3.975,
+          69.75
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 604,
+      "name": "Rooftop Courtyard Return Arrow 2",
+      "parent": 9,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          -0.707106781,
+          0,
+          0.707106781
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          8,
+          3.975,
+          70.55
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.19,
+          0.21,
+          0.25
+        ]
+      },
+      "id": 605,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "East South Return Parapet Cap",
+      "parent": 9,
+      "tag": "street_wave_near",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.512,
+          0.027,
+          0.162
+        ],
+        "translation": [
+          10.5,
+          4.754,
+          69.0
         ]
       }
     }
