@@ -19,13 +19,15 @@ end
 local function move_enemy(self, player, x, y, z, mx, mz)
     local length = math.sqrt(mx * mx + mz * mz)
     if length <= 0.0001 then
-        return
+        return false
     end
     local hit, fraction = scene.cast_collider(self, mx, 0, mz)
-    if hit and hit ~= player then
+    local blocked = hit ~= nil and hit ~= player
+    if blocked then
         fraction = math.max(0, fraction - 0.01 / length)
     end
     self:set_local_position(x + mx * fraction, y, z + mz * fraction)
+    return blocked
 end
 
 return {
@@ -117,9 +119,13 @@ return {
             local originZ = state.chargeOriginZ or state.originZ
             local nx = clamp(x + state.dx * dt * speed, originX - limit, originX + limit)
             local nz = clamp(z + state.dz * dt * speed, originZ - limit, originZ + limit)
-            move_enemy(self, player, x, y, z, nx - x, nz - z)
-        elseif cycle > 3.6 then
+            if move_enemy(self, player, x, y, z, nx - x, nz - z) then
+                state.time = 2.45
+                state.hitCover = true
+            end
+        elseif cycle > (state.hitCover and 4.35 or 3.6) then
             state.time = 0
+            state.hitCover = nil
         end
     end
 }
