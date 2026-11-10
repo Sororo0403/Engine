@@ -8116,6 +8116,207 @@
     },
     {
       "active": true,
+      "colorTint": {
+        "color": [
+          0.75,
+          0.64,
+          0.53
+        ]
+      },
+      "id": 591,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Balcony Stair 1",
+      "parent": 9,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.26,
+          0.14,
+          0.95
+        ],
+        "translation": [
+          2.65,
+          2.94,
+          77.3
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.75,
+          0.64,
+          0.53
+        ]
+      },
+      "id": 592,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Balcony Stair 2",
+      "parent": 9,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.26,
+          0.28,
+          0.95
+        ],
+        "translation": [
+          2.15,
+          3.08,
+          77.3
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.75,
+          0.64,
+          0.53
+        ]
+      },
+      "id": 593,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Balcony Stair 3",
+      "parent": 9,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.26,
+          0.42,
+          0.95
+        ],
+        "translation": [
+          1.65,
+          3.22,
+          77.3
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 594,
+      "name": "Balcony Stair Collision",
+      "parent": 9,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          -0.29038377,
+          0.95691027
+        ],
+        "scale": [
+          1.106628,
+          0.08,
+          0.95
+        ],
+        "translation": [
+          2.115541,
+          3.308492,
+          77.3
+        ]
+      }
+    },
+    {
+      "active": true,
       "collider": {
         "center": [
           0,
@@ -11201,6 +11402,10 @@
             "target": 117
           },
           {
+            "name": "balconyStair",
+            "target": 592
+          },
+          {
             "name": "canalMarker",
             "target": 546
           },
@@ -11255,7 +11460,8 @@
           "shutterClearY": 2.5,
           "shutterOpeningText": "シャッターが開いていく…",
           "stairsText": "開いた門の先の階段を上ろう",
-          "balconyText": "踊り場の中央から向かいの屋上へジャンプ",
+          "balconyText": "踊り場の階段から向かいの屋上へ",
+          "balconyStairText": "踊り場へ降り、階段を登って向かいの屋上へ",
           "roofJumpText": "矢印から向かいの屋上へ  ［Space / A 長押しで遠くへ］",
           "roofText": "屋上の時計台を目指そう"
         }
