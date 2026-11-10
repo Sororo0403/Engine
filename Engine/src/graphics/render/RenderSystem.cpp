@@ -57,11 +57,13 @@ void RenderSystem::Draw(const RenderWorld &world, RenderTexture &target,
 		return;
 	}
 
+	if (canvas)
+		canvas->Draw(true);
 	world.Draw(renderer_, debugRenderer_);
 	if (particles)
 		particles->Draw();
 	if (canvas)
-		canvas->Draw();
+		canvas->Draw(false);
 
 	target.End();
 }
@@ -97,11 +99,13 @@ void RenderSystem::Draw(const RenderWorld &world, const CanvasRenderer *canvas,
 
 	world.DrawShadows(renderer_);
 	graphics_.BindBackBuffer();
+	if (canvas)
+		canvas->Draw(true);
 	world.Draw(renderer_, debugRenderer_);
 	if (particles)
 		particles->Draw();
 	if (canvas)
-		canvas->Draw();
+		canvas->Draw(false);
 }
 
 MaterialManager &RenderSystem::GetMaterials() {
@@ -122,7 +126,7 @@ RenderSystem::CreateCanvas(bool skipUnavailable) {
 
 bool RenderSystem::UpdateCanvas(CanvasRenderer &canvas, const Scene &scene,
                                 int width, int height,
-                                std::span<const UIButtonVisual> visuals) {
+                                std::span<const UIButtonVisual> visuals, bool includeOverlay) {
 	if (width == 0 && height == 0) {
 		width = app_.GetWidth();
 		height = app_.GetHeight();
@@ -130,7 +134,7 @@ bool RenderSystem::UpdateCanvas(CanvasRenderer &canvas, const Scene &scene,
 
 	std::string error;
 
-	if (!canvas.Update(scene, width, height, error, visuals)) {
+	if (!canvas.Update(scene, width, height, error, visuals, includeOverlay)) {
 		Logger::Error(error);
 		return false;
 	}

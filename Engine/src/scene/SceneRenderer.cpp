@@ -185,8 +185,13 @@ bool SceneRenderer::Update(int width, int height) {
 			return false;
 		}
 
-		if (screenUIEnabled_ &&
-		    !render_.UpdateCanvas(*canvas_, scene_, width, height, buttonVisuals_))
+		const bool hasBackground = std::ranges::any_of(scene_.GetObjects(), [](const auto &entry) {
+			const auto &canvas = entry.second.canvas;
+			return canvas && canvas->enabled && canvas->background;
+		});
+		drawCanvas_ = screenUIEnabled_ || hasBackground;
+		if (drawCanvas_ && !render_.UpdateCanvas(*canvas_, scene_, width, height,
+		                                         buttonVisuals_, screenUIEnabled_))
 			return false;
 		backgroundFreeze_ = freeze;
 		return true;
@@ -211,10 +216,10 @@ void SceneRenderer::Draw(RenderTexture *target) const {
 		};
 
 		render_.Draw(*world_, *target, clearColor,
-		             screenUIEnabled_ ? canvas_.get() : nullptr,
+		             drawCanvas_ ? canvas_.get() : nullptr,
 		             particles_.get());
 	} else {
-		render_.Draw(*world_, screenUIEnabled_ ? canvas_.get() : nullptr,
+		render_.Draw(*world_, drawCanvas_ ? canvas_.get() : nullptr,
 		             particles_.get());
 	}
 }

@@ -2,7 +2,7 @@
 #include <array>
 
 /// <summary>
-/// 画面に重ねるUIの基準解像度・拡縮と描画順を保持する
+/// 画面用Canvasの基準解像度・拡縮と描画順を保持する
 /// </summary>
 struct CanvasComponent {
 	bool enabled = true;
@@ -10,6 +10,8 @@ struct CanvasComponent {
 	std::array<float, 2> referenceSize{1280, 720};
 	float matchWidthOrHeight = .5f;
 	int sortOrder = 0;
+	// 背景Canvasは3Dより先に描画し、UI入力の対象から外す
+	bool background = false;
 
 	/// <summary>
 	/// 解像度・幅と高さの比重・描画順が範囲内か確認する

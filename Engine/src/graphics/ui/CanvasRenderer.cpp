@@ -49,6 +49,7 @@ struct CanvasRenderer::Impl {
 		UITransform transform;
 		std::array<float, 4> color;
 		std::array<float, 4> uv{0, 0, 1, 1};
+		bool background;
 	};
 
 	struct TextEntry {
@@ -256,7 +257,7 @@ void CanvasRenderer::ClearPreparedImages() {
 
 bool CanvasRenderer::Update(const Scene &scene, int width, int height,
                             std::string &error,
-                            std::span<const UIButtonVisual> visuals) {
+                            std::span<const UIButtonVisual> visuals, bool includeOverlay) {
 	auto &p = *impl_;
 	p.prepared = false;
 	SceneObjectId current = 0;
@@ -320,6 +321,10 @@ bool CanvasRenderer::Update(const Scene &scene, int width, int height,
 		};
 
 		for (const auto &element : elements) {
+			const bool background = scene.FindObject(element.canvas)->canvas->background;
+			if (!background && !includeOverlay)
+				continue;
+
 			try {
 				current = element.object;
 				const auto &r = element.rect;
@@ -435,7 +440,7 @@ bool CanvasRenderer::Update(const Scene &scene, int width, int height,
 
 					commands.push_back(
 					    {std::move(texture), bounds, element.transform,
-					     color(object, current, image.color, false), uv});
+					     color(object, current, image.color, false), uv, background});
 				}
 				if (object.text && object.text->enabled &&
 				    !object.text->text.empty() && object.text->color[3] > 0) {
@@ -480,7 +485,8 @@ bool CanvasRenderer::Update(const Scene &scene, int width, int height,
 					account(entry.texture);
 					commands.push_back(
 					    {entry.texture, r, element.transform,
-					     color(object, current, object.text->color, true)});
+					     color(object, current, object.text->color, true),
+					     {0, 0, 1, 1}, background});
 					texts.emplace(current, std::move(entry));
 				}
 			} catch (const std::bad_alloc &) {
@@ -526,7 +532,7 @@ bool CanvasRenderer::Update(const Scene &scene, int width, int height,
 	}
 }
 
-void CanvasRenderer::Draw() const {
+void CanvasRenderer::Draw(bool background) const {
 	const auto &p = *impl_;
 	if (!p.prepared || p.commands.empty())
 		return;
@@ -543,6 +549,10 @@ void CanvasRenderer::Draw() const {
 	    p.graphics.GetDevice()->GetDescriptorHandleIncrementSize(
 	        D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	for (const auto &command : p.commands) {
+		if (command.background != background) {
+			descriptor.ptr += stride;
+			continue;
+		}
 		const auto &r = command.rect;
 		const auto &transform = command.transform;
 		const auto &color = command.color;

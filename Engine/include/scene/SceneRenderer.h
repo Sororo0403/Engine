@@ -255,6 +255,7 @@ class SceneRenderer {
 	std::map<SceneObjectId, AnimatorDrawPose> animatorPoses_;
 	std::vector<std::shared_ptr<const Scene>> preparedPrefabs_;
 	bool screenUIEnabled_ = true;
+	bool drawCanvas_ = false;
 	std::vector<UIButtonVisual> buttonVisuals_;
 
 	// シーン上の物体IDと、対応する描画物体の情報

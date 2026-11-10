@@ -161,6 +161,9 @@ bool SceneUI::Refresh(const Scene &scene, std::string &error) {
 		if (!CanvasLayout::Collect(scene, last_.width, last_.height, elements,
 		                           error))
 			return false;
+		std::erase_if(elements, [&](const UIElement &element) {
+			return scene.FindObject(element.canvas)->canvas->background;
+		});
 		auto next = *this;
 		next.Synchronize(scene, elements);
 		*this = std::move(next);
@@ -193,6 +196,9 @@ bool SceneUI::Update(const Scene &scene, const UIInput &input,
 		if (!CanvasLayout::Collect(scene, input.width, input.height, elements,
 		                           error))
 			return false;
+		std::erase_if(elements, [&](const UIElement &element) {
+			return scene.FindObject(element.canvas)->canvas->background;
+		});
 		const bool released = last_.pointerDown && !input.pointerDown;
 		const bool sequence = next.pointerSequence_;
 		if (input.pointerValid &&

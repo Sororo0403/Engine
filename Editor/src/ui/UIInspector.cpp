@@ -51,6 +51,8 @@ bool UIInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		auto c = *object.canvas;
 		if (ui.Checkbox("Canvas Enabled", c.enabled))
 			changed |= history.SetCanvas(id, c);
+		if (ui.Checkbox("Draw Behind 3D", c.background))
+			changed |= history.SetCanvas(id, c);
 		if (ui.Checkbox("Scale With Screen", c.scaleWithScreen))
 			changed |= history.SetCanvas(id, c);
 		changed |= Apply(
@@ -281,6 +283,7 @@ void UIInspector::DrawReadOnly(const ImGuiSystem &ui,
 		ui.Text(std::format("Reference: {:.0f} x {:.0f}", c.referenceSize[0],
 		                    c.referenceSize[1]));
 		ui.Text(std::format("Sort Order: {}", c.sortOrder));
+		ui.Text(c.background ? "Layer: Background" : "Layer: Overlay");
 	}
 
 	if (object.rectTransform && ui.CollapsingHeader("Rect Transform")) {

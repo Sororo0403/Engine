@@ -8,7 +8,7 @@ class Scene;
 class D3D12Graphics;
 
 /// <summary>
-/// シーンのCanvasを、3Dの後へアルファ合成する。ImGuiを使用しない
+/// シーンのCanvasを、3Dの前後へアルファ合成する。ImGuiを使用しない
 /// </summary>
 class CanvasRenderer {
   public:
@@ -34,15 +34,18 @@ class CanvasRenderer {
 	/// <param name="height">描画先の高さ</param>
 	/// <param name="error">失敗理由。成功時は空</param>
 	/// <param name="visuals">実行中のボタン表示。未指定のボタンには設定の通常色・無効色を使う</param>
+	/// <param name="includeOverlay">3Dの後に描画するCanvasも準備する</param>
 	/// <returns>true:準備成功 false:設定・画像・文字・GPU準備が無効。失敗後は描画しない</returns>
 	/// <remarks>COM初期化済み、GPU完了後、BeginFrame前に呼ぶ。画像1辺4096・表示素材合計128 MiBを上限とする</remarks>
 	bool Update(const Scene &scene, int width, int height, std::string &error,
-	            std::span<const UIButtonVisual> visuals = {});
+	            std::span<const UIButtonVisual> visuals = {},
+	            bool includeOverlay = true);
 	/// <summary>
 	/// 最後のUpdateで準備したUIを、設定済みの描画先とビューポートへ重ねる
 	/// </summary>
+	/// <param name="background">true:背景 false:オーバーレイ</param>
 	/// <remarks>同じ描画基盤のBeginFrameからEndFrameの間に呼ぶ。深度を参照・変更しない</remarks>
-	void Draw() const;
+	void Draw(bool background) const;
 
 	/// <summary>
 	/// 生成予定のUI画像を上限128 MiBで読み込み、元ファイルによらず保持する

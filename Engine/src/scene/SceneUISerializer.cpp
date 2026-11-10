@@ -113,6 +113,9 @@ void SceneUISerializer::Write(nlohmann::json &item, const SceneObject &object) {
 		                  {"referenceSize", c.referenceSize},
 		                  {"matchWidthOrHeight", c.matchWidthOrHeight},
 		                  {"sortOrder", c.sortOrder}};
+		if (c.background) {
+			item["canvas"]["background"] = true;
+		}
 	}
 
 	if (object.rectTransform) {
@@ -244,6 +247,7 @@ void SceneUISerializer::Read(const nlohmann::json &item, SceneObject &object,
 		c.referenceSize = ReadArray<2>(v.at("referenceSize"));
 		c.matchWidthOrHeight = v.at("matchWidthOrHeight").get<float>();
 		c.sortOrder = v.at("sortOrder").get<int>();
+		c.background = v.value("background", false);
 		object.canvas = c;
 	}
 

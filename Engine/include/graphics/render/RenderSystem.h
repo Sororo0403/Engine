@@ -58,7 +58,7 @@ class RenderSystem {
 	/// <param name="world">描画するワールド</param>
 	/// <param name="target">描画先</param>
 	/// <param name="clearColor">赤・緑・青・アルファの4要素</param>
-	/// <param name="canvas">3Dの後に重ねるUI。nullptrはUIなし</param>
+	/// <param name="canvas">3Dの前後に描画するCanvas。nullptrはCanvasなし</param>
 	/// <param name="particles">3DとUIの間へ合成する粒子。nullptrはなし</param>
 	void Draw(const RenderWorld &world, RenderTexture &target,
 	          const float (&clearColor)[4],
@@ -82,7 +82,7 @@ class RenderSystem {
 	/// 現在の描画先へワールドの描画命令を記録する
 	/// </summary>
 	/// <param name="world">描画するワールド</param>
-	/// <param name="canvas">3Dの後に重ねるUI。nullptrはUIなし</param>
+	/// <param name="canvas">3Dの前後に描画するCanvas。nullptrはCanvasなし</param>
 	/// <param name="particles">3DとUIの間へ合成する粒子。nullptrはなし</param>
 	void Draw(const RenderWorld &world, const CanvasRenderer *canvas = nullptr,
 	          const ParticleRenderer *particles = nullptr) const;
@@ -110,7 +110,8 @@ class RenderSystem {
 	/// <returns>true:成功 false:配置・素材・描画準備が無効</returns>
 	bool UpdateCanvas(CanvasRenderer &canvas, const Scene &scene, int width = 0,
 	                  int height = 0,
-	                  std::span<const UIButtonVisual> visuals = {});
+	                  std::span<const UIButtonVisual> visuals = {},
+	                  bool includeOverlay = true);
 
 	/// <summary>
 	/// 実行ウィンドウの現在のクライアント寸法を取得する
