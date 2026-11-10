@@ -153,41 +153,15 @@
       "parent": 0,
       "tag": "",
       "transform": {
-        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "rotation": [-0.07038425030028704, 0.0126823154318188, -0.03136250335294976, 0.9969461417591177],
         "scale": [1, 1, 1],
-        "translation": [0, 0, 0]
+        "translation": [-0.800000011920929, 2.200000047683716, -8.0]
       },
       "camera": {
         "primary": false,
         "verticalFovDegrees": 45,
         "nearClip": 0.1,
         "farClip": 220
-      },
-      "transformAnimation": {
-        "keys": [
-          {
-            "seconds": 0,
-            "translation": [-0.800000011920929, 2.200000047683716, -8.0],
-            "rotation": [-0.07038425030028704, 0.0126823154318188, -0.03136250335294976, 0.9969461417591177],
-            "scale": [1, 1, 1]
-          },
-          {
-            "seconds": 0.55,
-            "translation": [-0.65, 2.2, -7.5],
-            "rotation": [-0.06025248259400865, 0.01097445599329118, -0.02420116837156038, 0.9978293957918667],
-            "scale": [1, 1, 1]
-          },
-          {
-            "seconds": 3.05,
-            "translation": [0, 2.2, 14],
-            "rotation": [0.0, 0.0, 0.0, 1.0],
-            "scale": [1, 1, 1]
-          }
-        ],
-        "mode": "once",
-        "interpolation": "smooth",
-        "speed": 1,
-        "playOnStart": false
       }
     },
     {
@@ -561,22 +535,6 @@
           },
           {
             "event": "buttonClick",
-            "operation": "playTransformAnimation",
-            "target": 6,
-            "once": false,
-            "destination": 0,
-            "scene": "",
-            "contact": "any",
-            "contactTag": "",
-            "inputAction": "",
-            "messageName": "",
-            "delaySeconds": 0,
-            "cameraBlendSeconds": 0,
-            "arrivalTag": "",
-            "launchSpeed": 12
-          },
-          {
-            "event": "buttonClick",
             "operation": "disable",
             "target": 183,
             "once": false,
@@ -593,7 +551,7 @@
           },
           {
             "event": "buttonClick",
-            "operation": "playUITimeline",
+            "operation": "playAnimationClip",
             "target": 204,
             "once": false,
             "destination": 0,
@@ -1411,7 +1369,7 @@
           },
           {
             "event": "buttonClick",
-            "operation": "playUITimeline",
+            "operation": "playAnimationClip",
             "target": 206,
             "once": false,
             "destination": 0,
@@ -1486,7 +1444,7 @@
         "scale": [1, 1, 1],
         "translation": [0, 0, 0]
       },
-      "uiTimeline": {
+      "animationClip": {
         "duration": 1.32,
         "playOnStart": true,
         "tracks": [
@@ -1497,11 +1455,11 @@
             "keys": [
               {
                 "time": 0,
-                "value": [0, 0]
+                "value": [0, 0, 0, 0]
               },
               {
                 "time": 0.55,
-                "value": [1, 0]
+                "value": [1, 0, 0, 0]
               }
             ]
           },
@@ -1512,19 +1470,19 @@
             "keys": [
               {
                 "time": 0,
-                "value": [-380, 450]
+                "value": [-380, 450, 0, 0]
               },
               {
                 "time": 0.55,
-                "value": [-380, 450]
+                "value": [-380, 450, 0, 0]
               },
               {
                 "time": 1.02,
-                "value": [100, 450]
+                "value": [100, 450, 0, 0]
               },
               {
                 "time": 1.12,
-                "value": [88, 450]
+                "value": [88, 450, 0, 0]
               }
             ]
           },
@@ -1535,19 +1493,19 @@
             "keys": [
               {
                 "time": 0,
-                "value": [-378, 452]
+                "value": [-378, 452, 0, 0]
               },
               {
                 "time": 0.55,
-                "value": [-378, 452]
+                "value": [-378, 452, 0, 0]
               },
               {
                 "time": 1.02,
-                "value": [102, 452]
+                "value": [102, 452, 0, 0]
               },
               {
                 "time": 1.12,
-                "value": [90, 452]
+                "value": [90, 452, 0, 0]
               }
             ]
           },
@@ -1558,19 +1516,19 @@
             "keys": [
               {
                 "time": 0,
-                "value": [-380, 518]
+                "value": [-380, 518, 0, 0]
               },
               {
                 "time": 0.65,
-                "value": [-380, 518]
+                "value": [-380, 518, 0, 0]
               },
               {
                 "time": 1.12,
-                "value": [100, 518]
+                "value": [100, 518, 0, 0]
               },
               {
                 "time": 1.22,
-                "value": [88, 518]
+                "value": [88, 518, 0, 0]
               }
             ]
           },
@@ -1581,19 +1539,19 @@
             "keys": [
               {
                 "time": 0,
-                "value": [-378, 520]
+                "value": [-378, 520, 0, 0]
               },
               {
                 "time": 0.65,
-                "value": [-378, 520]
+                "value": [-378, 520, 0, 0]
               },
               {
                 "time": 1.12,
-                "value": [102, 520]
+                "value": [102, 520, 0, 0]
               },
               {
                 "time": 1.22,
-                "value": [90, 520]
+                "value": [90, 520, 0, 0]
               }
             ]
           },
@@ -1604,19 +1562,19 @@
             "keys": [
               {
                 "time": 0,
-                "value": [-380, 586]
+                "value": [-380, 586, 0, 0]
               },
               {
                 "time": 0.75,
-                "value": [-380, 586]
+                "value": [-380, 586, 0, 0]
               },
               {
                 "time": 1.22,
-                "value": [100, 586]
+                "value": [100, 586, 0, 0]
               },
               {
                 "time": 1.32,
-                "value": [88, 586]
+                "value": [88, 586, 0, 0]
               }
             ]
           },
@@ -1627,19 +1585,19 @@
             "keys": [
               {
                 "time": 0,
-                "value": [-378, 588]
+                "value": [-378, 588, 0, 0]
               },
               {
                 "time": 0.75,
-                "value": [-378, 588]
+                "value": [-378, 588, 0, 0]
               },
               {
                 "time": 1.22,
-                "value": [102, 588]
+                "value": [102, 588, 0, 0]
               },
               {
                 "time": 1.32,
-                "value": [90, 588]
+                "value": [90, 588, 0, 0]
               }
             ]
           }
@@ -1649,7 +1607,7 @@
     {
       "active": true,
       "id": 204,
-      "name": "START Cover Timeline",
+      "name": "START Animation Clip",
       "parent": 0,
       "tag": "",
       "transform": {
@@ -1657,31 +1615,10 @@
         "scale": [1, 1, 1],
         "translation": [0, 0, 0]
       },
-      "uiTimeline": {
-        "duration": 0.3,
-        "playOnStart": false,
-        "tracks": [
-          {
-            "target": 202,
-            "property": "opacity",
-            "interpolation": "smooth",
-            "keys": [
-              {
-                "time": 0,
-                "value": [0, 0]
-              },
-              {
-                "time": 0.3,
-                "value": [1, 0]
-              }
-            ]
-          }
-        ]
-      },
       "triggerActions": {
         "actions": [
           {
-            "event": "uiTimelineFinished",
+            "event": "animationClipMarker",
             "operation": "disable",
             "target": 2,
             "once": false,
@@ -1694,10 +1631,11 @@
             "delaySeconds": 0,
             "cameraBlendSeconds": 0,
             "arrivalTag": "",
-            "launchSpeed": 12
+            "launchSpeed": 12,
+            "clipTime": 0.3
           },
           {
-            "event": "uiTimelineFinished",
+            "event": "animationClipMarker",
             "operation": "disable",
             "target": 232,
             "once": false,
@@ -1710,10 +1648,11 @@
             "delaySeconds": 0,
             "cameraBlendSeconds": 0,
             "arrivalTag": "",
-            "launchSpeed": 12
+            "launchSpeed": 12,
+            "clipTime": 0.3
           },
           {
-            "event": "uiTimelineFinished",
+            "event": "animationClipMarker",
             "operation": "enable",
             "target": 220,
             "once": false,
@@ -1726,10 +1665,11 @@
             "delaySeconds": 0,
             "cameraBlendSeconds": 0,
             "arrivalTag": "",
-            "launchSpeed": 12
+            "launchSpeed": 12,
+            "clipTime": 0.3
           },
           {
-            "event": "uiTimelineFinished",
+            "event": "animationClipMarker",
             "operation": "enable",
             "target": 233,
             "once": false,
@@ -1742,10 +1682,11 @@
             "delaySeconds": 0,
             "cameraBlendSeconds": 0,
             "arrivalTag": "",
-            "launchSpeed": 12
+            "launchSpeed": 12,
+            "clipTime": 0.3
           },
           {
-            "event": "uiTimelineFinished",
+            "event": "animationClipMarker",
             "operation": "enable",
             "target": 234,
             "once": false,
@@ -1758,10 +1699,11 @@
             "delaySeconds": 0,
             "cameraBlendSeconds": 0,
             "arrivalTag": "",
-            "launchSpeed": 12
+            "launchSpeed": 12,
+            "clipTime": 0.3
           },
           {
-            "event": "uiTimelineFinished",
+            "event": "animationClipMarker",
             "operation": "enable",
             "target": 230,
             "once": false,
@@ -1774,75 +1716,11 @@
             "delaySeconds": 0,
             "cameraBlendSeconds": 0,
             "arrivalTag": "",
-            "launchSpeed": 12
+            "launchSpeed": 12,
+            "clipTime": 0.3
           },
           {
-            "event": "uiTimelineFinished",
-            "operation": "playUITimeline",
-            "target": 205,
-            "once": false,
-            "destination": 0,
-            "scene": "",
-            "contact": "any",
-            "contactTag": "",
-            "inputAction": "",
-            "messageName": "",
-            "delaySeconds": 0,
-            "cameraBlendSeconds": 0,
-            "arrivalTag": "",
-            "launchSpeed": 12
-          }
-        ]
-      }
-    },
-    {
-      "active": true,
-      "id": 205,
-      "name": "START Departure Timeline",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [0, 0, 0, 1],
-        "scale": [1, 1, 1],
-        "translation": [0, 0, 0]
-      },
-      "uiTimeline": {
-        "duration": 2.9,
-        "playOnStart": false,
-        "tracks": [
-          {
-            "target": 202,
-            "property": "opacity",
-            "interpolation": "smooth",
-            "keys": [
-              {
-                "time": 0,
-                "value": [1, 0]
-              },
-              {
-                "time": 0.45,
-                "value": [0, 0]
-              },
-              {
-                "time": 1.15,
-                "value": [0, 0]
-              },
-              {
-                "time": 1.8,
-                "value": [1, 0]
-              },
-              {
-                "time": 2.9,
-                "value": [1, 0]
-              }
-            ]
-          }
-        ]
-      },
-      "triggerActions": {
-        "actions": [
-          {
-            "event": "uiTimelineFinished",
+            "event": "animationClipFinished",
             "operation": "loadScene",
             "target": 0,
             "once": false,
@@ -1858,6 +1736,81 @@
             "launchSpeed": 12
           }
         ]
+      },
+      "animationClip": {
+        "duration": 3.2,
+        "playOnStart": false,
+        "tracks": [
+          {
+            "target": 202,
+            "property": "opacity",
+            "interpolation": "smooth",
+            "keys": [
+              {
+                "time": 0,
+                "value": [0, 0, 0, 0]
+              },
+              {
+                "time": 0.3,
+                "value": [1, 0, 0, 0]
+              },
+              {
+                "time": 0.75,
+                "value": [0, 0, 0, 0]
+              },
+              {
+                "time": 1.45,
+                "value": [0, 0, 0, 0]
+              },
+              {
+                "time": 2.1,
+                "value": [1, 0, 0, 0]
+              },
+              {
+                "time": 3.2,
+                "value": [1, 0, 0, 0]
+              }
+            ]
+          },
+          {
+            "target": 6,
+            "property": "translation",
+            "interpolation": "smooth",
+            "keys": [
+              {
+                "time": 0,
+                "value": [-0.800000011920929, 2.200000047683716, -8.0, 0]
+              },
+              {
+                "time": 0.55,
+                "value": [-0.65, 2.2, -7.5, 0]
+              },
+              {
+                "time": 3.05,
+                "value": [0, 2.2, 14, 0]
+              }
+            ]
+          },
+          {
+            "target": 6,
+            "property": "rotation",
+            "interpolation": "smooth",
+            "keys": [
+              {
+                "time": 0,
+                "value": [-0.07038425030028704, 0.0126823154318188, -0.03136250335294976, 0.9969461417591177]
+              },
+              {
+                "time": 0.55,
+                "value": [-0.06025248259400865, 0.01097445599329118, -0.02420116837156038, 0.9978293957918667]
+              },
+              {
+                "time": 3.05,
+                "value": [0.0, 0.0, 0.0, 1.0]
+              }
+            ]
+          }
+        ]
       }
     },
     {
@@ -1871,31 +1824,10 @@
         "scale": [1, 1, 1],
         "translation": [0, 0, 0]
       },
-      "uiTimeline": {
-        "duration": 0.3,
-        "playOnStart": false,
-        "tracks": [
-          {
-            "target": 202,
-            "property": "opacity",
-            "interpolation": "smooth",
-            "keys": [
-              {
-                "time": 0,
-                "value": [0, 0]
-              },
-              {
-                "time": 0.3,
-                "value": [1, 0]
-              }
-            ]
-          }
-        ]
-      },
       "triggerActions": {
         "actions": [
           {
-            "event": "uiTimelineFinished",
+            "event": "animationClipFinished",
             "operation": "disable",
             "target": 2,
             "once": false,
@@ -1911,7 +1843,7 @@
             "launchSpeed": 12
           },
           {
-            "event": "uiTimelineFinished",
+            "event": "animationClipFinished",
             "operation": "disable",
             "target": 232,
             "once": false,
@@ -1927,7 +1859,7 @@
             "launchSpeed": 12
           },
           {
-            "event": "uiTimelineFinished",
+            "event": "animationClipFinished",
             "operation": "enable",
             "target": 220,
             "once": false,
@@ -1943,7 +1875,7 @@
             "launchSpeed": 12
           },
           {
-            "event": "uiTimelineFinished",
+            "event": "animationClipFinished",
             "operation": "enable",
             "target": 233,
             "once": false,
@@ -1959,7 +1891,7 @@
             "launchSpeed": 12
           },
           {
-            "event": "uiTimelineFinished",
+            "event": "animationClipFinished",
             "operation": "enable",
             "target": 231,
             "once": false,
@@ -1975,8 +1907,8 @@
             "launchSpeed": 12
           },
           {
-            "event": "uiTimelineFinished",
-            "operation": "playUITimeline",
+            "event": "animationClipFinished",
+            "operation": "playAnimationClip",
             "target": 207,
             "once": false,
             "destination": 0,
@@ -1989,6 +1921,27 @@
             "cameraBlendSeconds": 0,
             "arrivalTag": "",
             "launchSpeed": 12
+          }
+        ]
+      },
+      "animationClip": {
+        "duration": 0.3,
+        "playOnStart": false,
+        "tracks": [
+          {
+            "target": 202,
+            "property": "opacity",
+            "interpolation": "smooth",
+            "keys": [
+              {
+                "time": 0,
+                "value": [0, 0, 0, 0]
+              },
+              {
+                "time": 0.3,
+                "value": [1, 0, 0, 0]
+              }
+            ]
           }
         ]
       }
@@ -2004,43 +1957,10 @@
         "scale": [1, 1, 1],
         "translation": [0, 0, 0]
       },
-      "uiTimeline": {
-        "duration": 1.98,
-        "playOnStart": false,
-        "tracks": [
-          {
-            "target": 202,
-            "property": "opacity",
-            "interpolation": "smooth",
-            "keys": [
-              {
-                "time": 0,
-                "value": [1, 0]
-              },
-              {
-                "time": 0.45,
-                "value": [0, 0]
-              },
-              {
-                "time": 1.15,
-                "value": [0, 0]
-              },
-              {
-                "time": 1.8,
-                "value": [1, 0]
-              },
-              {
-                "time": 1.98,
-                "value": [1, 0]
-              }
-            ]
-          }
-        ]
-      },
       "triggerActions": {
         "actions": [
           {
-            "event": "uiTimelineFinished",
+            "event": "animationClipFinished",
             "operation": "quitGame",
             "target": 0,
             "once": false,
@@ -2054,6 +1974,39 @@
             "cameraBlendSeconds": 0,
             "arrivalTag": "",
             "launchSpeed": 12
+          }
+        ]
+      },
+      "animationClip": {
+        "duration": 1.98,
+        "playOnStart": false,
+        "tracks": [
+          {
+            "target": 202,
+            "property": "opacity",
+            "interpolation": "smooth",
+            "keys": [
+              {
+                "time": 0,
+                "value": [1, 0, 0, 0]
+              },
+              {
+                "time": 0.45,
+                "value": [0, 0, 0, 0]
+              },
+              {
+                "time": 1.15,
+                "value": [0, 0, 0, 0]
+              },
+              {
+                "time": 1.8,
+                "value": [1, 0, 0, 0]
+              },
+              {
+                "time": 1.98,
+                "value": [1, 0, 0, 0]
+              }
+            ]
           }
         ]
       }
@@ -8925,5 +8878,5 @@
     }
   ],
   "projectRoot": "..",
-  "version": 70
+  "version": 71
 }
