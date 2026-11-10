@@ -823,6 +823,12 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 					            TriggerAction::Operation::PLAY_ANIMATION_CLIP
 					        ? "playAnimationClip"
 					    : action.operation ==
+					            TriggerAction::Operation::PAUSE_ANIMATION_CLIP
+					        ? "pauseAnimationClip"
+					    : action.operation ==
+					            TriggerAction::Operation::RESUME_ANIMATION_CLIP
+					        ? "resumeAnimationClip"
+					    : action.operation ==
 					            TriggerAction::Operation::SEND_SCRIPT_MESSAGE
 					        ? "sendScriptMessage"
 					    : action.operation ==
@@ -1665,6 +1671,8 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 					    (operation != "enable" && operation != "disable" &&
 					     operation != "toggle" &&
 					     !(version >= 70 && operation == "playAnimationClip") &&
+					     !(version >= 72 && (operation == "pauseAnimationClip" ||
+					                         operation == "resumeAnimationClip")) &&
 					     !(version >= 21 && (operation == "playAudio" ||
 					                         operation == "stopAudio")) &&
 					     !(version >= 23 && operation == "teleport") &&
@@ -1774,6 +1782,10 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 					         ? TriggerAction::Operation::STOP_ANIMATOR
 					     : operation == "playAnimationClip"
 					         ? TriggerAction::Operation::PLAY_ANIMATION_CLIP
+					     : operation == "pauseAnimationClip"
+					         ? TriggerAction::Operation::PAUSE_ANIMATION_CLIP
+					     : operation == "resumeAnimationClip"
+					         ? TriggerAction::Operation::RESUME_ANIMATION_CLIP
 					     : operation == "sendScriptMessage"
 					         ? TriggerAction::Operation::SEND_SCRIPT_MESSAGE
 					     : operation == "quitGame"

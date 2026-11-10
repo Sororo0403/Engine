@@ -570,17 +570,25 @@ class SceneSimulation {
 	                       bool queueStartMarkers = true);
 
 	/// <summary>
+	/// クリップ内の再生位置と一時停止状態
+	/// </summary>
+	struct AnimationClipPlayback {
+		double seconds = 0;
+		bool paused = false;
+	};
+
+	/// <summary>
 	/// クリップを進め、マーカーと完了のイベントを時刻順に追加する
 	/// </summary>
 	static bool AdvanceAnimationClips(Scene &scene, float seconds,
-	                                  std::map<SceneObjectId, double> &clips,
+	                                  std::map<SceneObjectId, AnimationClipPlayback> &clips,
 	                                  std::vector<ActionSignal> &signals,
 	                                  std::string &error);
 	static void QueueClipMarkers(const SceneObject &object, SceneObjectId id,
 	                             double previous, double current,
 	                             std::vector<ActionSignal> &signals);
 
-	std::map<SceneObjectId, double> animationClips_;
+	std::map<SceneObjectId, AnimationClipPlayback> animationClips_;
 	std::vector<ActionSignal> pendingActionSignals_;
 	std::vector<DelayedTriggerAction> delayedActions_;
 	std::set<std::pair<SceneObjectId, std::size_t>> firedActions_,

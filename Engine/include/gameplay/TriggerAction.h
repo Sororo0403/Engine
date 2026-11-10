@@ -33,6 +33,8 @@ struct TriggerAction {
 		PAUSE_MOTION_PATH,
 		PLAY_TRANSFORM_ANIMATION,
 		PLAY_ANIMATION_CLIP,
+		PAUSE_ANIMATION_CLIP,
+		RESUME_ANIMATION_CLIP,
 		RESTART_TRANSFORM_ANIMATION,
 		PAUSE_TRANSFORM_ANIMATION,
 		STOP_TRANSFORM_ANIMATION,
@@ -146,7 +148,7 @@ struct TriggerAction {
 		        operation == Operation::EMIT_PARTICLES ||
 		        operation == Operation::SEND_SCRIPT_MESSAGE ||
 		        operation == Operation::LOAD_SCENE ||
-		        operation == Operation::QUIT_GAME || operation == Operation::PLAY_ANIMATION_CLIP ||
+		        operation == Operation::QUIT_GAME || IsAnimationClipOperation() ||
 		        operation == Operation::RESTART_SCENE || IsPauseOperation() ||
 		        operation == Operation::LAUNCH_CHARACTER ||
 		        operation == Operation::RESPAWN_CHARACTER);
@@ -237,6 +239,15 @@ struct TriggerAction {
 		       operation == Operation::RESTART_TRANSFORM_ANIMATION ||
 		       operation == Operation::PAUSE_TRANSFORM_ANIMATION ||
 		       operation == Operation::STOP_TRANSFORM_ANIMATION;
+	}
+
+	/// <summary>
+	/// 対象のAnimation Clipを開始、一時停止または再開する種別か確認する
+	/// </summary>
+	bool IsAnimationClipOperation() const {
+		return operation == Operation::PLAY_ANIMATION_CLIP ||
+		       operation == Operation::PAUSE_ANIMATION_CLIP ||
+		       operation == Operation::RESUME_ANIMATION_CLIP;
 	}
 
 	/// <summary>

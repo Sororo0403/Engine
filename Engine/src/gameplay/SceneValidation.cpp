@@ -239,9 +239,9 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 						break;
 					}
 
-					if (action.operation == TriggerAction::Operation::PLAY_ANIMATION_CLIP &&
+					if (action.IsAnimationClipOperation() &&
 					    !target.animationClip) {
-						add(id, "Play Animation Clip requires a target with Animation Clip.");
+						add(id, "Animation Clip controls require a target with Animation Clip.");
 						break;
 					}
 

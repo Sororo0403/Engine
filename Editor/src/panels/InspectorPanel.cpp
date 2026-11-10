@@ -41,6 +41,8 @@ namespace {
 void DrawAnimationClipKeys(const Scene &scene, AnimationClipComponent &timeline,
                         float &playhead) {
 	ImGui::Checkbox("Play on Start", &timeline.playOnStart);
+	ImGui::SameLine();
+	ImGui::Checkbox("Loop", &timeline.loop);
 	ImGui::DragFloat("Duration (s)", &timeline.duration, .05f, .01f,
 	                 AnimationClipComponent::kMaximumSeconds, "%.3f",
 	                 ImGuiSliderFlags_AlwaysClamp);

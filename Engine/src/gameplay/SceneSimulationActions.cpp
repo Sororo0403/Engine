@@ -276,6 +276,7 @@ bool SceneSimulation::ApplyTriggerActions(
 	std::map<SceneObjectId, TriggerAction::Operation> animationPlayback;
 	std::map<SceneObjectId, TriggerAction::Operation> animatorPlayback;
 	std::map<SceneObjectId, bool> animationClips;
+	std::map<SceneObjectId, bool> clipPaused;
 	std::vector<SceneObjectId> particleBursts;
 	std::vector<ScriptMessage> scriptMessages;
 	auto audio = audioActions_;
@@ -475,7 +476,24 @@ bool SceneSimulation::ApplyTriggerActions(
 				continue;
 			}
 
+			if (action.operation == TriggerAction::Operation::PAUSE_ANIMATION_CLIP ||
+			    action.operation == TriggerAction::Operation::RESUME_ANIMATION_CLIP) {
+				if (!target->animationClip) {
+					error = "Animation Clip controls require a target Animation Clip.";
+					if (invalidObject)
+						*invalidObject = action.target;
+					return false;
+				}
+
+				clipPaused[action.target] =
+				    action.operation == TriggerAction::Operation::PAUSE_ANIMATION_CLIP;
+				if (action.once)
+					fired.insert(key);
+				continue;
+			}
+
 			if (action.operation == TriggerAction::Operation::PLAY_ANIMATION_CLIP) {
+				clipPaused.erase(action.target);
 				// 先頭のマーカーは、ボタン操作と同じ更新で発火させる。
 				// 同じクリップは1更新につき一度だけ開始し、循環するマーカーも打ち切る。
 				const bool dispatchNow = !gamePaused_ && target->animationClip &&
@@ -572,6 +590,8 @@ bool SceneSimulation::ApplyTriggerActions(
 			case TriggerAction::Operation::REVERSE_MOTION_PATH:
 			case TriggerAction::Operation::PAUSE_MOTION_PATH:
 			case TriggerAction::Operation::PLAY_ANIMATION_CLIP:
+			case TriggerAction::Operation::PAUSE_ANIMATION_CLIP:
+			case TriggerAction::Operation::RESUME_ANIMATION_CLIP:
 			case TriggerAction::Operation::PLAY_TRANSFORM_ANIMATION:
 			case TriggerAction::Operation::RESTART_TRANSFORM_ANIMATION:
 			case TriggerAction::Operation::PAUSE_TRANSFORM_ANIMATION:
@@ -825,6 +845,12 @@ bool SceneSimulation::ApplyTriggerActions(
 				*invalidObject = id;
 			return false;
 		}
+	}
+
+	for (const auto &[id, pauseClip] : clipPaused) {
+		if (const auto playing = animationClips_.find(id);
+		    playing != animationClips_.end())
+			playing->second.paused = pauseClip;
 	}
 
 	pendingScene_ = std::move(requestedScene);

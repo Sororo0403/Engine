@@ -33,7 +33,7 @@ struct AnimationClipTrack {
 		       property == Property::SCALE;
 	}
 
-	std::array<float, 4> Sample(float seconds) const {
+	std::array<float, 4> Sample(double seconds) const {
 		auto next = std::ranges::upper_bound(keys, seconds, {},
 		                                     &AnimationClipKey::seconds);
 		if (next == keys.begin())
@@ -42,8 +42,8 @@ struct AnimationClipTrack {
 		if (next == keys.end() || interpolation == Interpolation::STEP)
 			return previous.value;
 
-		float amount = (seconds - previous.seconds) /
-		               (next->seconds - previous.seconds);
+		float amount = static_cast<float>((seconds - previous.seconds) /
+		                                  (next->seconds - previous.seconds));
 		if (interpolation == Interpolation::SMOOTH)
 			amount = amount * amount * (3 - 2 * amount);
 		if (property == Property::ROTATION) {
@@ -74,6 +74,7 @@ struct AnimationClipComponent {
 	static constexpr float kMaximumSeconds = 3600;
 	float duration = 1;
 	bool playOnStart = false;
+	bool loop = false;
 	std::vector<AnimationClipTrack> tracks;
 
 	bool IsValid() const {

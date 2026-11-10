@@ -88,6 +88,7 @@ void SceneUISerializer::Write(nlohmann::json &item, const SceneObject &object) {
 		}
 		item["animationClip"] = {{"duration", timeline.duration},
 		                      {"playOnStart", timeline.playOnStart},
+		                      {"loop", timeline.loop},
 		                      {"tracks", std::move(tracks)}};
 	}
 
@@ -164,6 +165,7 @@ void SceneUISerializer::Read(const nlohmann::json &item, SceneObject &object,
 		AnimationClipComponent timeline;
 		timeline.duration = value.at("duration").get<float>();
 		timeline.playOnStart = value.at("playOnStart").get<bool>();
+		timeline.loop = version >= 72 && value.value("loop", false);
 		for (const auto &entry : tracks) {
 			const auto &keys = entry.at("keys");
 			if (!entry.at("target").is_number_unsigned() || !keys.is_array() ||

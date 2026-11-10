@@ -1075,7 +1075,7 @@ namespace {
 /// キーから求めた値を再生シーンのローカル座標・UIへ適用する
 /// </summary>
 bool ApplyAnimationClip(Scene &scene, const AnimationClipComponent &clip,
-                        float seconds, std::string &error) {
+                        double seconds, std::string &error) {
 	for (const auto &track : clip.tracks) {
 		auto *target = scene.FindObject(track.target);
 		if (!target || !target->CanAnimate(track)) {
@@ -1153,7 +1153,7 @@ bool SceneSimulation::PlayAnimationClip(SceneObjectId id, std::string &error,
 		return false;
 	}
 
-	animationClips_[id] = 0;
+	animationClips_[id] = {};
 	if (queueStartMarkers)
 		QueueClipMarkers(*scene_.FindObject(id), id, -1, 0,
 		                 pendingActionSignals_);
@@ -1161,7 +1161,7 @@ bool SceneSimulation::PlayAnimationClip(SceneObjectId id, std::string &error,
 }
 
 bool SceneSimulation::AdvanceAnimationClips(
-    Scene &scene, float seconds, std::map<SceneObjectId, double> &clips,
+    Scene &scene, float seconds, std::map<SceneObjectId, AnimationClipPlayback> &clips,
     std::vector<ActionSignal> &signals, std::string &error) {
 	if (seconds <= 0)
 		return true;
@@ -1174,17 +1174,49 @@ bool SceneSimulation::AdvanceAnimationClips(
 			continue;
 		}
 
-		const auto &clip = *object->animationClip;
-		const double time = (std::min)(it->second + seconds, double(clip.duration));
-		if (!ApplyAnimationClip(scene, clip, float(time), error))
-			return false;
-		QueueClipMarkers(*object, id, it->second, time, signals);
+		auto &playback = it->second;
+		if (playback.paused) {
+			++it;
+			continue;
+		}
 
-		if (time >= clip.duration) {
+		const auto &clip = *object->animationClip;
+		const double duration = clip.duration;
+		// ループするTransform Animationと同じように、大きな更新での姿勢の飛びを抑える。
+		const double elapsed = playback.seconds +
+		    (clip.loop ? (std::min)(seconds, .1f) : seconds);
+		const double time = clip.loop ? std::fmod(elapsed, duration)
+		                              : (std::min)(elapsed, duration);
+		if (!ApplyAnimationClip(scene, clip, time, error))
+			return false;
+
+		if (clip.loop && elapsed >= duration) {
+			QueueClipMarkers(*object, id, playback.seconds, duration, signals);
+			const bool hasMarkers = object->triggerActions &&
+			    std::ranges::any_of(object->triggerActions->actions, [](const auto &action) {
+				    return action.event == TriggerAction::Event::ANIMATION_CLIP_MARKER;
+			    });
+			if (hasMarkers) {
+				// 極端に短いクリップのマーカーで、1更新の処理量が膨らまないようにする。
+				const double completed = std::floor(elapsed / duration);
+				if (completed > kMaximumDelayedTriggerActions) {
+					error = "Too many Animation Clip loops crossed in one update.";
+					return false;
+				}
+
+				for (std::size_t loop = 1; loop < static_cast<std::size_t>(completed); ++loop)
+					QueueClipMarkers(*object, id, -1, duration, signals);
+				QueueClipMarkers(*object, id, -1, time, signals);
+			}
+		} else {
+			QueueClipMarkers(*object, id, playback.seconds, time, signals);
+		}
+
+		if (!clip.loop && time >= duration) {
 			signals.push_back({id, TriggerAction::Event::ANIMATION_CLIP_FINISHED});
 			it = clips.erase(it);
 		} else {
-			it->second = time;
+			playback.seconds = time;
 			++it;
 		}
 	}

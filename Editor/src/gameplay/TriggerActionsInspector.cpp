@@ -64,6 +64,10 @@ const char *OperationLabel(TriggerAction::Operation operation) {
 		return "Reverse Motion Path";
 	case TriggerAction::Operation::PAUSE_MOTION_PATH:
 		return "Pause Motion Path";
+	case TriggerAction::Operation::PAUSE_ANIMATION_CLIP:
+		return "Pause Animation Clip";
+	case TriggerAction::Operation::RESUME_ANIMATION_CLIP:
+		return "Resume Animation Clip";
 	case TriggerAction::Operation::PLAY_ANIMATION_CLIP:
 		return "Play Animation Clip";
 	case TriggerAction::Operation::PLAY_TRANSFORM_ANIMATION:
@@ -385,6 +389,8 @@ bool TriggerActionsInspector::Draw(
 				         TriggerAction::Operation::PAUSE_MOTION_PATH,
 				         TriggerAction::Operation::PLAY_TRANSFORM_ANIMATION,
 				         TriggerAction::Operation::PLAY_ANIMATION_CLIP,
+				         TriggerAction::Operation::PAUSE_ANIMATION_CLIP,
+				         TriggerAction::Operation::RESUME_ANIMATION_CLIP,
 				         TriggerAction::Operation::RESTART_TRANSFORM_ANIMATION,
 				         TriggerAction::Operation::PAUSE_TRANSFORM_ANIMATION,
 				         TriggerAction::Operation::STOP_TRANSFORM_ANIMATION,
