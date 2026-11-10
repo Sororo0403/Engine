@@ -1,8 +1,14 @@
 return {
     message = function(self, state, name)
+        if name == "park_cleared" then
+            game.parkUnlocked = true
+            return
+        end
+
+        local label = self:reference("label")
         if name == "far_bank" then
             if not state.west and not state.east then
-                self:set_text("スイッチの庭  /  左の段と右の生け垣にあるスイッチを踏もう  0 / 2")
+                label:set_text("スイッチの庭  /  左の段と右の生け垣にあるスイッチを踏もう  0 / 2")
             end
             return
         end
@@ -20,9 +26,9 @@ return {
         if count == 2 then
             self:reference("gate"):set_active(false)
             self:reference("goal"):set_active(true)
-            self:set_text("スイッチ 2 / 2  /  門が開いた。展望台へ進もう")
+            label:set_text("スイッチ 2 / 2  /  門が開いた。展望台へ進もう")
         else
-            self:set_text("スイッチ 1 / 2  /  もう片方を踏んで門を開けよう")
+            label:set_text("スイッチ 1 / 2  /  もう片方を踏んで門を開けよう")
         end
     end
 }

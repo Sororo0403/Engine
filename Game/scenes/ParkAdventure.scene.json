@@ -1583,31 +1583,6 @@
           0.0,
           0.0
         ]
-      },
-      "script": {
-        "asset": "@project/assets/park/scripts/ParkSwitchGarden.lua",
-        "enabled": true,
-        "prefabs": [],
-        "references": [
-          {
-            "name": "west",
-            "target": 46
-          },
-          {
-            "name": "east",
-            "target": 47
-          },
-          {
-            "name": "gate",
-            "target": 48
-          },
-          {
-            "name": "goal",
-            "target": 29
-          }
-        ],
-        "scenes": [],
-        "state": {}
       }
     },
     {
@@ -1713,7 +1688,7 @@
             "once": true,
             "operation": "sendScriptMessage",
             "scene": "",
-            "target": 26
+            "target": 37
           }
         ]
       }
@@ -1764,6 +1739,23 @@
       },
       "triggerActions": {
         "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "park_cleared",
+            "once": true,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 37
+          },
           {
             "arrivalTag": "",
             "cameraBlendSeconds": 0,
@@ -2400,6 +2392,35 @@
             "target": 0
           }
         ]
+      },
+      "script": {
+        "asset": "@project/assets/park/scripts/ParkSwitchGarden.lua",
+        "enabled": true,
+        "prefabs": [],
+        "references": [
+          {
+            "name": "west",
+            "target": 46
+          },
+          {
+            "name": "east",
+            "target": 47
+          },
+          {
+            "name": "gate",
+            "target": 48
+          },
+          {
+            "name": "goal",
+            "target": 29
+          },
+          {
+            "name": "label",
+            "target": 26
+          }
+        ],
+        "scenes": [],
+        "state": {}
       }
     },
     {
@@ -3151,7 +3172,7 @@
             "once": true,
             "operation": "sendScriptMessage",
             "scene": "",
-            "target": 26
+            "target": 37
           }
         ]
       }
@@ -3217,7 +3238,7 @@
             "once": true,
             "operation": "sendScriptMessage",
             "scene": "",
-            "target": 26
+            "target": 37
           }
         ]
       }
