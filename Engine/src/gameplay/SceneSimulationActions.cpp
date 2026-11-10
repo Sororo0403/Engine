@@ -921,7 +921,9 @@ bool SceneSimulation::SynchronizeSceneChanges(
 		}
 	}
 
-	if (!next.Configure(working, error, fallbackPose_, invalidObject, true)) {
+	// Triggerは瞬間移動した物体を確定してから一度だけ更新する。
+	if (!next.Configure(working, error, fallbackPose_, invalidObject, true,
+	                    /*deferTriggerUpdate=*/true)) {
 		return false;
 	}
 

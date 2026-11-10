@@ -478,10 +478,11 @@ class SceneSimulation {
 	/// <param name="fallbackPose">Primaryがない場合の固定姿勢</param>
 	/// <param name="invalidObject">問題のIDの出力先</param>
 	/// <param name="preserve">継続するコンポーネントの実行状態を引き継ぐか</param>
+	/// <param name="deferTriggerUpdate">呼び出し側で瞬間移動を判定してからTriggerを更新するか</param>
 	/// <returns>true:確定成功 false:検証失敗。現在のシーンと実行状態は保持する</returns>
 	bool Configure(const Scene &source, std::string &error,
 	               const CameraPose &fallbackPose, SceneObjectId *invalidObject,
-	               bool preserve);
+	               bool preserve, bool deferTriggerUpdate = false);
 
 	/// <summary>
 	/// Trigger操作の瞬間移動をまとめて検証し、衝突・追従・接触を同期する

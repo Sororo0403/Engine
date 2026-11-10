@@ -285,7 +285,8 @@ bool SceneSimulation::SetActive(std::span<const SceneActiveChange> changes,
 
 bool SceneSimulation::Configure(const Scene &original, std::string &error,
                                 const CameraPose &fallbackPose,
-                                SceneObjectId *invalidObject, bool preserve) {
+                                SceneObjectId *invalidObject, bool preserve,
+                                bool deferTriggerUpdate) {
 	if (invalidObject) {
 		*invalidObject = 0;
 	}
@@ -544,13 +545,11 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 		}
 
 		TriggerWorld triggers;
-
-		if (preserve) {
-			triggers = triggers_;
-		}
-
-		if (preserve ? !triggers.Update(working) : !triggers.Reset(working)) {
-			return fail(0, "Trigger world shapes or hierarchy are invalid.");
+		if (!deferTriggerUpdate) {
+			if (preserve)
+				triggers = triggers_;
+			if (preserve ? !triggers.Update(working) : !triggers.Reset(working))
+				return fail(0, "Trigger world shapes or hierarchy are invalid.");
 		}
 
 		auto particles = particles_;
@@ -575,7 +574,8 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 		// 全候補が有効な場合だけ確定し、失敗時は再生シーンと実行状態をすべて保持する。
 		scene_.CopyFrom(working);
 		world_ = std::move(world);
-		triggers_ = std::move(triggers);
+		if (!deferTriggerUpdate)
+			triggers_ = std::move(triggers);
 		controller_ = controller;
 		motion_ = std::move(motion);
 		animations_ = std::move(animations);
