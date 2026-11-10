@@ -584,8 +584,8 @@
         "actions": [
           {
             "event": "buttonClick",
-            "operation": "disable",
-            "target": 183,
+            "operation": "playAnimationClip",
+            "target": 208,
             "once": false,
             "destination": 0,
             "scene": "",
@@ -595,38 +595,6 @@
             "messageName": "",
             "delaySeconds": 0,
             "cameraBlendSeconds": 0,
-            "arrivalTag": "",
-            "launchSpeed": 12
-          },
-          {
-            "event": "buttonClick",
-            "operation": "enable",
-            "target": 184,
-            "once": false,
-            "destination": 0,
-            "scene": "",
-            "contact": "any",
-            "contactTag": "",
-            "inputAction": "",
-            "messageName": "",
-            "delaySeconds": 0,
-            "cameraBlendSeconds": 0,
-            "arrivalTag": "",
-            "launchSpeed": 12
-          },
-          {
-            "event": "buttonClick",
-            "operation": "setCamera",
-            "target": 4,
-            "once": false,
-            "destination": 0,
-            "scene": "",
-            "contact": "any",
-            "contactTag": "",
-            "inputAction": "",
-            "messageName": "",
-            "delaySeconds": 0,
-            "cameraBlendSeconds": 0.62,
             "arrivalTag": "",
             "launchSpeed": 12
           }
@@ -1035,8 +1003,8 @@
         "actions": [
           {
             "event": "buttonClick",
-            "operation": "disable",
-            "target": 184,
+            "operation": "playAnimationClip",
+            "target": 209,
             "once": false,
             "destination": 0,
             "scene": "",
@@ -1046,38 +1014,6 @@
             "messageName": "",
             "delaySeconds": 0,
             "cameraBlendSeconds": 0,
-            "arrivalTag": "",
-            "launchSpeed": 12
-          },
-          {
-            "event": "buttonClick",
-            "operation": "enable",
-            "target": 183,
-            "once": false,
-            "destination": 0,
-            "scene": "",
-            "contact": "any",
-            "contactTag": "",
-            "inputAction": "",
-            "messageName": "",
-            "delaySeconds": 0,
-            "cameraBlendSeconds": 0,
-            "arrivalTag": "",
-            "launchSpeed": 12
-          },
-          {
-            "event": "buttonClick",
-            "operation": "setCamera",
-            "target": 1,
-            "once": false,
-            "destination": 0,
-            "scene": "",
-            "contact": "any",
-            "contactTag": "",
-            "inputAction": "",
-            "messageName": "",
-            "delaySeconds": 0,
-            "cameraBlendSeconds": 0.56,
             "arrivalTag": "",
             "launchSpeed": 12
           }
@@ -1959,6 +1895,150 @@
                 "value": [-0.10471169771160235, -0.2984782326740243, -0.03296567452747275, 0.9480819950221046]
               }
             ]
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 208,
+      "name": "CONFIG Animation Clip",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [0, 0, 0, 1],
+        "scale": [1, 1, 1],
+        "translation": [0, 0, 0]
+      },
+      "animationClip": {
+        "duration": 0.62,
+        "playOnStart": false,
+        "tracks": []
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "event": "animationClipMarker",
+            "operation": "disable",
+            "target": 183,
+            "once": false,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 0,
+            "arrivalTag": "",
+            "launchSpeed": 12,
+            "clipTime": 0
+          },
+          {
+            "event": "animationClipMarker",
+            "operation": "enable",
+            "target": 184,
+            "once": false,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 0,
+            "arrivalTag": "",
+            "launchSpeed": 12,
+            "clipTime": 0
+          },
+          {
+            "event": "animationClipMarker",
+            "operation": "setCamera",
+            "target": 4,
+            "once": false,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 0.62,
+            "arrivalTag": "",
+            "launchSpeed": 12,
+            "clipTime": 0
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 209,
+      "name": "CONFIG Back Animation Clip",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [0, 0, 0, 1],
+        "scale": [1, 1, 1],
+        "translation": [0, 0, 0]
+      },
+      "animationClip": {
+        "duration": 0.56,
+        "playOnStart": false,
+        "tracks": []
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "event": "animationClipMarker",
+            "operation": "disable",
+            "target": 184,
+            "once": false,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 0,
+            "arrivalTag": "",
+            "launchSpeed": 12,
+            "clipTime": 0
+          },
+          {
+            "event": "animationClipMarker",
+            "operation": "enable",
+            "target": 183,
+            "once": false,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 0,
+            "arrivalTag": "",
+            "launchSpeed": 12,
+            "clipTime": 0
+          },
+          {
+            "event": "animationClipMarker",
+            "operation": "setCamera",
+            "target": 1,
+            "once": false,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 0.56,
+            "arrivalTag": "",
+            "launchSpeed": 12,
+            "clipTime": 0
           }
         ]
       }
