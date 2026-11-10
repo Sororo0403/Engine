@@ -14,6 +14,7 @@ end
 local function open_flower_bridge(self, state)
     if state.west and state.east and state.flowers == state.totalFlowers then
         self:reference("flowerBridge"):set_active(true)
+        self:reference("goalFinish"):set_active(true)
         self:reference("label"):set_text("花がそろった！  /  左の花の橋を渡って展望台へ")
     end
 end
@@ -74,6 +75,10 @@ return {
         end
         if not input.character then
             return
+        end
+        local confirm = input.actions.Confirm
+        if state.vistaPrompt and confirm and confirm.pressed then
+            self:reference("goalFinish"):set_active(true)
         end
 
         local _, _, playerZ = self:reference("player"):get_position()
@@ -175,6 +180,21 @@ return {
         end
 
         local label = self:reference("label")
+        if name == "vista_enter" then
+            if not state.finished and state.flowers < state.totalFlowers then
+                state.vistaPrompt = label:get_text()
+                label:set_text("花を探しに戻るか、このままクリア ［Enter / Y］")
+            end
+            return
+        elseif name == "vista_exit" then
+            if state.vistaPrompt and not state.finished then
+                self:reference("goalFinish"):set_active(false)
+                label:set_text(state.vistaPrompt)
+                state.vistaPrompt = nil
+            end
+            return
+        end
+
         if name == "far_bank" then
             state.farBank = true
             if not state.west and not state.east then

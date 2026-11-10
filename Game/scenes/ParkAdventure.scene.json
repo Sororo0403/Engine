@@ -1772,8 +1772,8 @@
             "event": "enter",
             "inputAction": "",
             "launchSpeed": 12,
-            "messageName": "park_cleared",
-            "once": true,
+            "messageName": "vista_enter",
+            "once": false,
             "operation": "sendScriptMessage",
             "scene": "",
             "target": 37
@@ -1786,65 +1786,14 @@
             "contactTag": "",
             "delaySeconds": 0,
             "destination": 0,
-            "event": "enter",
+            "event": "exit",
             "inputAction": "",
             "launchSpeed": 12,
-            "messageName": "",
-            "once": true,
-            "operation": "disable",
+            "messageName": "vista_exit",
+            "once": false,
+            "operation": "sendScriptMessage",
             "scene": "",
-            "target": 24
-          },
-          {
-            "arrivalTag": "",
-            "cameraBlendSeconds": 0,
-            "clipTime": 0,
-            "contact": "character",
-            "contactTag": "",
-            "delaySeconds": 0,
-            "destination": 0,
-            "event": "enter",
-            "inputAction": "",
-            "launchSpeed": 12,
-            "messageName": "",
-            "once": true,
-            "operation": "disable",
-            "scene": "",
-            "target": 129
-          },
-          {
-            "arrivalTag": "",
-            "cameraBlendSeconds": 0,
-            "clipTime": 0,
-            "contact": "character",
-            "contactTag": "",
-            "delaySeconds": 0,
-            "destination": 0,
-            "event": "enter",
-            "inputAction": "",
-            "launchSpeed": 12,
-            "messageName": "",
-            "once": true,
-            "operation": "enable",
-            "scene": "",
-            "target": 30
-          },
-          {
-            "arrivalTag": "",
-            "cameraBlendSeconds": 0,
-            "clipTime": 0,
-            "contact": "character",
-            "contactTag": "",
-            "delaySeconds": 0,
-            "destination": 0,
-            "event": "enter",
-            "inputAction": "",
-            "launchSpeed": 12,
-            "messageName": "",
-            "once": true,
-            "operation": "pauseGame",
-            "scene": "",
-            "target": 0
+            "target": 37
           }
         ]
       }
@@ -2520,6 +2469,10 @@
           {
             "name": "pauseMenu",
             "target": 130
+          },
+          {
+            "name": "goalFinish",
+            "target": 154
           }
         ],
         "scenes": [],
@@ -9889,6 +9842,140 @@
         "uvOffset": [
           0,
           0
+        ]
+      }
+    },
+    {
+      "active": false,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.8,
+          0.8,
+          0.55
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 154,
+      "name": "Park Vista Finish",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          0,
+          1.73,
+          39.25
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "park_cleared",
+            "once": true,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 37
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "disable",
+            "scene": "",
+            "target": 24
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "disable",
+            "scene": "",
+            "target": 129
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "enable",
+            "scene": "",
+            "target": 30
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "pauseGame",
+            "scene": "",
+            "target": 0
+          }
         ]
       }
     }
