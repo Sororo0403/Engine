@@ -77,6 +77,11 @@ local function restore_camera(self)
     game.streetCameraReset = true
 end
 
+local function background(self, state, amount)
+    self:set_background_monochrome(amount, state.deathColorLow, state.deathColorHigh,
+        state.deathColorThreshold, state.deathColorSoftness, not state.deathReturned)
+end
+
 local function start_death(self, state, falling)
     game.streetDeathActive = true
     state.deathTime = 0
@@ -86,6 +91,7 @@ local function start_death(self, state, falling)
     state.inputBeforeDeath = self:is_character_input_enabled()
     self:set_character_input_enabled(false)
     lock_camera(self, state, falling)
+    background(self, state, 0)
 end
 
 local function update_fall_pose(self, state, seconds)
@@ -142,8 +148,7 @@ local function update_death(self, state, seconds, viewport)
     local monochrome = t < hold
         and smooth((t - state.deathColorHold) / state.deathColorFade)
         or 1 - smooth((t - opening) / state.deathReveal)
-    self:set_background_monochrome(t >= finish and 0 or monochrome, state.deathColorLow,
-        state.deathColorHigh, state.deathColorThreshold, state.deathColorSoftness)
+    background(self, state, t >= finish and 0 or monochrome)
     if t >= finish then
         pose(self, 0, 1)
         self:set_character_input_enabled(state.inputBeforeDeath)
