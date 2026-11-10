@@ -30,6 +30,9 @@ return {
             return
         end
         state.elapsed = state.elapsed + seconds
+        if input.character and input.character.respawnCount > 0 then
+            state.missedCleanRun = true
+        end
         if state.cartRecovery then
             state.cartRecovery = state.cartRecovery - seconds
             if state.cartRecovery <= 0 then
@@ -65,6 +68,7 @@ return {
     message = function(self, state, name)
         if name == "cart_hit" then
             local label = self:reference("label")
+            state.missedCleanRun = true
             state.cartRecovery = 0.6
             state.cartHint = label:get_text()
             label:set_text("カートにぶつかった！ 対岸から庭へ戻ろう")
@@ -96,7 +100,11 @@ return {
             if flowers == state.totalFlowers then
                 times = times .. "    全収集ベスト " .. record_time("parkBestFullTime", time)
             end
-            result:set_text(result:get_text() .. "\n" .. summary .. "\n" .. times)
+            local clean = "次の挑戦：落下もカートとの接触もなしでクリア"
+            if not state.missedCleanRun then
+                clean = "ノーミスクリア！    ベスト " .. record_time("parkBestCleanTime", time)
+            end
+            result:set_text(result:get_text() .. "\n" .. summary .. "\n" .. times .. "\n" .. clean)
             return
         end
 

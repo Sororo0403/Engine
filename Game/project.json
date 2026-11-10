@@ -86,7 +86,7 @@
     "scene": "resources/game/scene.json",
     "title": "GuruttoWorld",
     "settingsId": "gurutto-world",
-    "persistentScriptKeys": ["volumeLevel", "backgroundMotion", "streetBestFlowers", "streetBestFullTime", "streetBestClearTime", "streetBestFullSplits", "streetBestClearSplits", "parkUnlocked", "parkBestClearTime", "parkBestFullTime"],
+    "persistentScriptKeys": ["volumeLevel", "backgroundMotion", "streetBestFlowers", "streetBestFullTime", "streetBestClearTime", "streetBestFullSplits", "streetBestClearSplits", "parkUnlocked", "parkBestClearTime", "parkBestFullTime", "parkBestCleanTime"],
     "version": 11,
     "width": 1280
   },
