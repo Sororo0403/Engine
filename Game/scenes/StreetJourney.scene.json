@@ -32961,6 +32961,130 @@
           }
         ]
       }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.86,
+          0.78,
+          0.64
+        ]
+      },
+      "id": 607,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Courtyard Cover Planter",
+      "parent": 8,
+      "tag": "street_wave_far",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.9,
+          0.5,
+          0.5
+        ],
+        "translation": [
+          11.65,
+          1.06,
+          50.75
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.36,
+          0.51,
+          0.26
+        ]
+      },
+      "id": 608,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Courtyard Cover Foliage",
+      "parent": 287,
+      "tag": "street_wave_far",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.79,
+          0.035,
+          0.43
+        ],
+        "translation": [
+          11.65,
+          1.57,
+          50.75
+        ]
+      }
     }
   ],
   "projectRoot": "..",
