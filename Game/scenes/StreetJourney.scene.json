@@ -10871,7 +10871,7 @@
           "introRadius": 4,
           "canalApproachText": "岸に沿って金色の矢印を探そう",
           "canalMarkerDepth": 1.6,
-          "jumpText": "足元の矢印から運河をジャンプで渡ろう  ［Space / A］",
+          "jumpText": "矢印から対岸へジャンプ  ［Space / A 長押しで遠くへ］",
           "findGearText": "広場の歯車を探そう",
           "enemyHintText": "敵が身構えた！ 横に避けるか、攻撃で切り抜けよう ［J / X］",
           "enemyHintSeconds": 2.5,
@@ -10886,7 +10886,7 @@
           "shutterOpeningText": "シャッターが開いていく…",
           "stairsText": "開いた門の先の階段を上ろう",
           "balconyText": "踊り場の中央から向かいの屋上へジャンプ",
-          "roofJumpText": "矢印を目印に向かいの屋上へ  ［Space / A 長押し］",
+          "roofJumpText": "矢印から向かいの屋上へ  ［Space / A 長押しで遠くへ］",
           "roofText": "屋上の時計台を目指そう"
         }
       },
@@ -29268,7 +29268,7 @@
         ],
         "position": [
           0,
-          -112
+          -117
         ],
         "sizeDelta": [
           350,
@@ -31533,7 +31533,7 @@
         ],
         "position": [
           0,
-          -72
+          -77
         ],
         "sizeDelta": [
           432,
@@ -31543,7 +31543,7 @@
       "text": {
         "enabled": true,
         "raycastTarget": false,
-        "value": "移動 WASD・矢印キー / 左スティック・十字キー\nジャンプ Space / A　攻撃 J / X",
+        "value": "移動 WASD・矢印キー / 左スティック・十字キー\nジャンプ Space / A（長押しで遠くへ）　攻撃 J / X",
         "fontFamily": "Yu Gothic UI",
         "fontSize": 16,
         "bold": false,
