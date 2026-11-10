@@ -154,8 +154,21 @@ local function update_damage_flash(self, state)
     end
 end
 
+local function set_pause_available(self, available)
+    local receiver = self:reference("pauseReceiver")
+    if receiver then
+        receiver:set_active(available)
+    end
+end
+
+local function return_to_title(self)
+    game.returningToTitle = true
+    self:load_scene("title")
+end
+
 local function start_death(self, state, falling)
     finish_damage_flash(self, state)
+    set_pause_available(self, false)
     game.streetDeathActive = true
     state.deathTime = 0
     state.motionGrounded, state.motionVelocity = nil, nil
@@ -236,6 +249,7 @@ local function update_death(self, state, seconds, viewport)
         state.inputBeforeDeath = nil
         state.invulnerable = state.invulnerabilitySeconds
         game.streetDeathActive = false
+        set_pause_available(self, true)
         state.deathTime = nil
         state.deathReturned = nil
         state.deathCuePlayed = nil
@@ -320,10 +334,10 @@ return {
             state.spawnX, state.spawnY, state.spawnZ = self:reference(name):get_position()
         elseif state.completed and name == "street_retry" then
             self:load_scene("restart")
-        elseif state.completed and name == "street_title" then
-            game.returningToTitle = true
-            self:load_scene("title")
+        elseif name == "pause_title" or (state.completed and name == "street_title") then
+            return_to_title(self)
         elseif name == "street_clear" then
+            set_pause_available(self, false)
             finish_damage_flash(self, state)
             state.completed = true
             self:set_character_input_enabled(false)
@@ -354,9 +368,8 @@ return {
             self:load_scene("restart")
             return
         end
-        if cancel and cancel.pressed then
-            game.returningToTitle = true
-            self:load_scene("title")
+        if cancel and cancel.pressed and (state.completed or not self:reference("pauseReceiver")) then
+            return_to_title(self)
             return
         end
         if state.completed then
