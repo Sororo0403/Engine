@@ -149,17 +149,15 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 			add(id, "Color Tint settings are invalid.");
 		}
 
-		if (object.uiTimeline) {
-			if (!object.uiTimeline->IsValid()) {
-				add(id, "UI Timeline settings are invalid.");
+		if (object.animationClip) {
+			if (!object.animationClip->IsValid()) {
+				add(id, "Animation Clip settings are invalid.");
 			} else {
-				for (const auto &track : object.uiTimeline->tracks) {
+				for (const auto &track : object.animationClip->tracks) {
 					const auto *target = scene.FindObject(track.target);
-					if (!target || !target->rectTransform ||
-					    (track.property == UITimelineTrack::Property::OPACITY &&
-					     !target->text && !target->image)) {
-						add(id, "UI Timeline requires Rect Transform and, for "
-						        "opacity, Text or Image on its targets.");
+					if (!target || !target->CanAnimate(track)) {
+						add(id, "Animation Clip target is missing a required "
+						        "component or has another transform controller.");
 						break;
 					}
 				}
@@ -186,9 +184,11 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 					add(id,
 					    "Button Click Trigger Actions require a UI Button.");
 				for (const auto &action : object.triggerActions->actions) {
-					if (action.event == TriggerAction::Event::UI_TIMELINE_FINISHED &&
-					    !object.uiTimeline) {
-						add(id, "UI Timeline Finished requires a UI Timeline.");
+					const bool marker = action.event == TriggerAction::Event::ANIMATION_CLIP_MARKER;
+					if ((marker || action.event == TriggerAction::Event::ANIMATION_CLIP_FINISHED) &&
+					    (!object.animationClip ||
+					     (marker && action.clipTime > object.animationClip->duration))) {
+						add(id, "Animation Clip events require a clip and markers within its duration.");
 						break;
 					}
 
@@ -239,9 +239,9 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 						break;
 					}
 
-					if (action.operation == TriggerAction::Operation::PLAY_UI_TIMELINE &&
-					    !target.uiTimeline) {
-						add(id, "Play UI Timeline requires a target with UI Timeline.");
+					if (action.operation == TriggerAction::Operation::PLAY_ANIMATION_CLIP &&
+					    !target.animationClip) {
+						add(id, "Play Animation Clip requires a target with Animation Clip.");
 						break;
 					}
 

@@ -820,8 +820,8 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 					            TriggerAction::Operation::STOP_ANIMATOR
 					        ? "stopAnimator"
 					    : action.operation ==
-					            TriggerAction::Operation::PLAY_UI_TIMELINE
-					        ? "playUITimeline"
+					            TriggerAction::Operation::PLAY_ANIMATION_CLIP
+					        ? "playAnimationClip"
 					    : action.operation ==
 					            TriggerAction::Operation::SEND_SCRIPT_MESSAGE
 					        ? "sendScriptMessage"
@@ -857,8 +857,10 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 					          ? "lastExit"
 					      : action.event == TriggerAction::Event::BUTTON_CLICK
 					          ? "buttonClick"
-					      : action.event == TriggerAction::Event::UI_TIMELINE_FINISHED
-					          ? "uiTimelineFinished"
+					      : action.event == TriggerAction::Event::ANIMATION_CLIP_FINISHED
+					          ? "animationClipFinished"
+					      : action.event == TriggerAction::Event::ANIMATION_CLIP_MARKER
+					          ? "animationClipMarker"
 					      : action.event == TriggerAction::Event::INPUT_PRESSED
 					          ? "inputPressed"
 					          : "interact"},
@@ -880,7 +882,8 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 					     {"delaySeconds", action.delaySeconds},
 					     {"cameraBlendSeconds", action.cameraBlendSeconds},
 					     {"arrivalTag", action.arrivalTag},
-					     {"launchSpeed", action.launchSpeed}});
+					     {"launchSpeed", action.launchSpeed},
+					     {"clipTime", action.clipTime}});
 				}
 
 				objects.back()["triggerActions"] = {
@@ -1645,19 +1648,23 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 				TriggerActionsComponent component;
 
 				for (const auto &value : actions) {
-					const auto event = value.at("event").get<std::string>();
-					const auto operation =
-					    value.at("operation").get<std::string>();
+					auto event = value.at("event").get<std::string>();
+					if (version == 70 && event == "uiTimelineFinished")
+						event = "animationClipFinished";
+					auto operation = value.at("operation").get<std::string>();
+					if (version == 70 && operation == "playUITimeline")
+						operation = "playAnimationClip";
 					if ((event != "enter" && event != "exit" &&
 					     !(version >= 25 && event == "interact") &&
 					     !(version >= 46 &&
 					       (event == "firstEnter" || event == "lastExit")) &&
 					     !(version >= 56 && event == "buttonClick") &&
 					     !(version >= 59 && event == "inputPressed") &&
-					     !(version >= 70 && event == "uiTimelineFinished")) ||
+					     !(version >= 70 && event == "animationClipFinished") &&
+					     !(version >= 71 && event == "animationClipMarker")) ||
 					    (operation != "enable" && operation != "disable" &&
 					     operation != "toggle" &&
-					     !(version >= 70 && operation == "playUITimeline") &&
+					     !(version >= 70 && operation == "playAnimationClip") &&
 					     !(version >= 21 && (operation == "playAudio" ||
 					                         operation == "stopAudio")) &&
 					     !(version >= 23 && operation == "teleport") &&
@@ -1713,8 +1720,10 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 					     : event == "lastExit" ? TriggerAction::Event::LAST_EXIT
 					     : event == "buttonClick"
 					         ? TriggerAction::Event::BUTTON_CLICK
-					     : event == "uiTimelineFinished"
-					         ? TriggerAction::Event::UI_TIMELINE_FINISHED
+					     : event == "animationClipFinished"
+					         ? TriggerAction::Event::ANIMATION_CLIP_FINISHED
+					     : event == "animationClipMarker"
+					         ? TriggerAction::Event::ANIMATION_CLIP_MARKER
 					     : event == "inputPressed"
 					         ? TriggerAction::Event::INPUT_PRESSED
 					         : TriggerAction::Event::INTERACT,
@@ -1763,8 +1772,8 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 					         ? TriggerAction::Operation::PAUSE_ANIMATOR
 					     : operation == "stopAnimator"
 					         ? TriggerAction::Operation::STOP_ANIMATOR
-					     : operation == "playUITimeline"
-					         ? TriggerAction::Operation::PLAY_UI_TIMELINE
+					     : operation == "playAnimationClip"
+					         ? TriggerAction::Operation::PLAY_ANIMATION_CLIP
 					     : operation == "sendScriptMessage"
 					         ? TriggerAction::Operation::SEND_SCRIPT_MESSAGE
 					     : operation == "quitGame"
@@ -1813,7 +1822,8 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 					         ? value.at("arrivalTag").get<std::string>()
 					         : std::string{},
 					     version >= 64 ? value.at("launchSpeed").get<float>()
-					                   : TriggerAction{}.launchSpeed});
+					                   : TriggerAction{}.launchSpeed,
+					     version >= 71 ? value.value("clipTime", 0.f) : 0.f});
 				}
 
 				object.triggerActions = std::move(component);

@@ -7,7 +7,8 @@
 
 namespace {
 using Json = nlohmann::json;
-const std::array<const char *, 2> kTimelineProperties{"position", "opacity"};
+const std::array<const char *, 5> kTimelineProperties{
+    "position", "opacity", "translation", "rotation", "scale"};
 const std::array<const char *, 3> kTimelineInterpolation{"linear", "smooth", "step"};
 
 /// <summary>
@@ -54,7 +55,7 @@ std::size_t Choice(const Json &value,
 /// </summary>
 /// <param name="object">確認する物体</param>
 void Validate(const SceneObject &object) {
-	if ((object.uiTimeline && !object.uiTimeline->IsValid()) ||
+	if ((object.animationClip && !object.animationClip->IsValid()) ||
 	    (object.canvas && !object.canvas->IsValid()) ||
 	    (object.rectTransform && !object.rectTransform->IsValid()) ||
 	    (object.text && !object.text->IsValid()) ||
@@ -72,8 +73,8 @@ const std::array<const char *, 4> kFillOrigins{"left", "right", "top",
 void SceneUISerializer::Write(nlohmann::json &item, const SceneObject &object) {
 	Validate(object);
 
-	if (object.uiTimeline) {
-		const auto &timeline = *object.uiTimeline;
+	if (object.animationClip) {
+		const auto &timeline = *object.animationClip;
 		Json tracks = Json::array();
 		for (const auto &track : timeline.tracks) {
 			Json keys = Json::array();
@@ -85,7 +86,7 @@ void SceneUISerializer::Write(nlohmann::json &item, const SceneObject &object) {
 			    {"interpolation", kTimelineInterpolation[static_cast<std::size_t>(track.interpolation)]},
 			    {"keys", std::move(keys)}});
 		}
-		item["uiTimeline"] = {{"duration", timeline.duration},
+		item["animationClip"] = {{"duration", timeline.duration},
 		                      {"playOnStart", timeline.playOnStart},
 		                      {"tracks", std::move(tracks)}};
 	}
@@ -152,38 +153,45 @@ void SceneUISerializer::Read(const nlohmann::json &item, SceneObject &object,
 	if (version < 30)
 		return;
 
-	if (version >= 70 && item.contains("uiTimeline")) {
-		const auto &value = item.at("uiTimeline");
+	const bool legacyTimeline = version == 70 && item.contains("uiTimeline");
+	if (legacyTimeline || (version >= 71 && item.contains("animationClip"))) {
+		const auto &value = item.at(legacyTimeline ? "uiTimeline" : "animationClip");
 		const auto &tracks = value.at("tracks");
 		if (!value.at("duration").is_number() || !tracks.is_array() ||
-		    tracks.size() > UITimelineComponent::kMaximumTracks)
-			throw std::runtime_error("UI Timeline fields are invalid.");
+		    tracks.size() > AnimationClipComponent::kMaximumTracks)
+			throw std::runtime_error("Animation Clip fields are invalid.");
 
-		UITimelineComponent timeline;
+		AnimationClipComponent timeline;
 		timeline.duration = value.at("duration").get<float>();
 		timeline.playOnStart = value.at("playOnStart").get<bool>();
 		for (const auto &entry : tracks) {
 			const auto &keys = entry.at("keys");
 			if (!entry.at("target").is_number_unsigned() || !keys.is_array() ||
-			    keys.size() > UITimelineComponent::kMaximumKeys)
-				throw std::runtime_error("UI Timeline track is invalid.");
+			    keys.size() > AnimationClipComponent::kMaximumKeys)
+				throw std::runtime_error("Animation Clip track is invalid.");
 
-			UITimelineTrack track;
+			AnimationClipTrack track;
 			track.target = entry.at("target").get<SceneObjectId>();
-			track.property = static_cast<UITimelineTrack::Property>(
+			track.property = static_cast<AnimationClipTrack::Property>(
 			    Choice(entry.at("property"), kTimelineProperties));
-			track.interpolation = static_cast<UITimelineTrack::Interpolation>(
+			track.interpolation = static_cast<AnimationClipTrack::Interpolation>(
 			    Choice(entry.at("interpolation"), kTimelineInterpolation));
 			track.keys.clear();
 			for (const auto &key : keys) {
 				if (!key.at("time").is_number())
-					throw std::runtime_error("UI Timeline time must be numeric.");
-				track.keys.push_back({key.at("time").get<float>(),
-				                      ReadArray<2>(key.at("value"))});
+					throw std::runtime_error("Animation Clip time must be numeric.");
+				std::array<float, 4> sample{};
+				if (legacyTimeline) {
+					const auto pair = ReadArray<2>(key.at("value"));
+					sample = {pair[0], pair[1], 0, 0};
+				} else {
+					sample = ReadArray<4>(key.at("value"));
+				}
+				track.keys.push_back({key.at("time").get<float>(), sample});
 			}
 			timeline.tracks.push_back(std::move(track));
 		}
-		object.uiTimeline = std::move(timeline);
+		object.animationClip = std::move(timeline);
 	}
 
 	if (item.contains("canvas")) {

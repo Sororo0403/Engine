@@ -16,7 +16,7 @@ bool SceneObject::operator==(const SceneObject &other) const {
 	       camera == other.camera && followCamera == other.followCamera &&
 	       respawn == other.respawn && triggerActions == other.triggerActions &&
 	       pointLight == other.pointLight && spotLight == other.spotLight &&
-	       directionalLight == other.directionalLight && uiTimeline == other.uiTimeline &&
+	       directionalLight == other.directionalLight && animationClip == other.animationClip &&
 	       audioSource == other.audioSource &&
 	       audioListener == other.audioListener &&
 	       prefabLink == other.prefabLink && motionPath == other.motionPath &&
@@ -25,4 +25,14 @@ bool SceneObject::operator==(const SceneObject &other) const {
 	       particleEmitter == other.particleEmitter && script == other.script &&
 	       canvas == other.canvas && rectTransform == other.rectTransform &&
 	       text == other.text && image == other.image && button == other.button;
+}
+
+bool SceneObject::CanAnimate(const AnimationClipTrack &track) const {
+	if (track.IsTransform()) {
+		return !transformAnimation && !motionPath && !character && !followCamera &&
+		       (!rigidBody || !rigidBody->enabled || rigidBody->isKinematic);
+	}
+
+	return rectTransform &&
+	       (track.property != AnimationClipTrack::Property::OPACITY || text || image);
 }

@@ -566,14 +566,20 @@ class SceneSimulation {
 	/// <summary>
 	/// タイムラインを先頭から再生し、最初の値を即座に反映する
 	/// </summary>
-	bool PlayUITimeline(SceneObjectId id, std::string &error);
+	bool PlayAnimationClip(SceneObjectId id, std::string &error);
 
 	/// <summary>
-	/// UIを更新し、完了したタイムラインのイベントをキューに入れる
+	/// クリップを進め、マーカーと完了のイベントを時刻順に追加する
 	/// </summary>
-	bool AdvanceUITimelines(float seconds, std::string &error);
+	static bool AdvanceAnimationClips(Scene &scene, float seconds,
+	                                  std::map<SceneObjectId, double> &clips,
+	                                  std::vector<ActionSignal> &signals,
+	                                  std::string &error);
+	static void QueueClipMarkers(const SceneObject &object, SceneObjectId id,
+	                             double previous, double current,
+	                             std::vector<ActionSignal> &signals);
 
-	std::map<SceneObjectId, float> uiTimelines_;
+	std::map<SceneObjectId, double> animationClips_;
 	std::vector<ActionSignal> pendingActionSignals_;
 	std::vector<DelayedTriggerAction> delayedActions_;
 	std::set<std::pair<SceneObjectId, std::size_t>> firedActions_,

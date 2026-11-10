@@ -22,8 +22,8 @@ template <class T, class F> void Visit(T &object, F visit) {
 		visit(object.prefabLink->root);
 	}
 
-	if (object.uiTimeline) {
-		for (auto &track : object.uiTimeline->tracks)
+	if (object.animationClip) {
+		for (auto &track : object.animationClip->tracks)
 			visit(track.target);
 	}
 

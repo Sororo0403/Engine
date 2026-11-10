@@ -751,7 +751,7 @@
     <ClCompile Include="src\graphics\lighting\SpotLights.cpp"><Filter>src\graphics\lighting</Filter></ClCompile>
     <ClInclude Include="include\scene\SpotLightComponent.h"><Filter>include\scene</Filter></ClInclude>
     <ClInclude Include="include\scene\DirectionalLightComponent.h"><Filter>include\scene</Filter></ClInclude>
-    <ClInclude Include="include\scene\UITimelineComponent.h"><Filter>include\scene</Filter></ClInclude>
+    <ClInclude Include="include\animation\AnimationClipComponent.h"><Filter>include\animation</Filter></ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\gameplay\MotionPathComponent.h">

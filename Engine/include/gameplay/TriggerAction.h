@@ -32,7 +32,7 @@ struct TriggerAction {
 		REVERSE_MOTION_PATH,
 		PAUSE_MOTION_PATH,
 		PLAY_TRANSFORM_ANIMATION,
-		PLAY_UI_TIMELINE,
+		PLAY_ANIMATION_CLIP,
 		RESTART_TRANSFORM_ANIMATION,
 		PAUSE_TRANSFORM_ANIMATION,
 		STOP_TRANSFORM_ANIMATION,
@@ -62,7 +62,8 @@ struct TriggerAction {
 		FIRST_ENTER,
 		LAST_EXIT,
 		BUTTON_CLICK,
-		UI_TIMELINE_FINISHED,
+		ANIMATION_CLIP_FINISHED,
+		ANIMATION_CLIP_MARKER,
 		INPUT_PRESSED
 	};
 
@@ -94,13 +95,17 @@ struct TriggerAction {
 	std::string arrivalTag;
 	// Launch Characterが設定する上向きの速度。ワールド座標の毎秒距離。
 	float launchSpeed = 12.f;
+	// Animation Clip Markerのクリップ内時刻。
+	float clipTime = 0;
 
 	/// <summary>
 	/// 種別が有効か確認する。未割り当ての対象は編集用に許可し、Play時に存在を確認する
 	/// </summary>
 	/// <returns>true:有効 false:未対応のイベントまたは操作</returns>
 	bool IsValid() const {
-		return std::isfinite(launchSpeed) && launchSpeed > 0 &&
+		return std::isfinite(clipTime) && clipTime >= 0 && clipTime <= 3600 &&
+		       (clipTime == 0 || event == Event::ANIMATION_CLIP_MARKER) &&
+		       std::isfinite(launchSpeed) && launchSpeed > 0 &&
 		       launchSpeed <= CharacterSettings::kMaximumSpeed &&
 		       std::isfinite(delaySeconds) && delaySeconds >= 0 &&
 		       delaySeconds <= kMaximumDelaySeconds &&
@@ -127,7 +132,8 @@ struct TriggerAction {
 		       (event == Event::ENTER || event == Event::EXIT ||
 		        event == Event::INTERACT || event == Event::FIRST_ENTER ||
 		        event == Event::LAST_EXIT || event == Event::BUTTON_CLICK ||
-		        event == Event::INPUT_PRESSED || event == Event::UI_TIMELINE_FINISHED) &&
+		        event == Event::INPUT_PRESSED || event == Event::ANIMATION_CLIP_FINISHED ||
+		        event == Event::ANIMATION_CLIP_MARKER) &&
 		       (UsesContact() ||
 		        (contact == Contact::ANY && contactTag.empty())) &&
 		       (contact != Contact::DYNAMIC_BODY || AllowsDynamicContact()) &&
@@ -140,7 +146,7 @@ struct TriggerAction {
 		        operation == Operation::EMIT_PARTICLES ||
 		        operation == Operation::SEND_SCRIPT_MESSAGE ||
 		        operation == Operation::LOAD_SCENE ||
-		        operation == Operation::QUIT_GAME || operation == Operation::PLAY_UI_TIMELINE ||
+		        operation == Operation::QUIT_GAME || operation == Operation::PLAY_ANIMATION_CLIP ||
 		        operation == Operation::RESTART_SCENE || IsPauseOperation() ||
 		        operation == Operation::LAUNCH_CHARACTER ||
 		        operation == Operation::RESPAWN_CHARACTER);
@@ -160,7 +166,8 @@ struct TriggerAction {
 	/// <returns>true:接触を使う false:UI Buttonまたは名前付き入力</returns>
 	bool UsesContact() const {
 		return event != Event::BUTTON_CLICK && event != Event::INPUT_PRESSED &&
-		       event != Event::UI_TIMELINE_FINISHED;
+		       event != Event::ANIMATION_CLIP_FINISHED &&
+		       event != Event::ANIMATION_CLIP_MARKER;
 	}
 
 	/// <summary>

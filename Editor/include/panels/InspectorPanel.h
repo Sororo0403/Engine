@@ -1,7 +1,7 @@
 #pragma once
 
 #include "scene/DirectionalLightComponent.h"
-#include "scene/UITimelineComponent.h"
+#include "animation/AnimationClipComponent.h"
 
 #include "audio/AudioInspector.h"
 #include "gameplay/GameplayInspector.h"
@@ -205,8 +205,8 @@ class InspectorPanel {
 
   private:
 	DirectionalLightComponent directionalLightDraft_;
-	UITimelineComponent uiTimelineDraft_;
-	float uiTimelinePlayhead_ = 0;
+	AnimationClipComponent animationClipDraft_;
+	float animationClipPlayhead_ = 0;
 	ScriptInspector scriptInspector_;
 	PrefabInspector::Request prefabRequest_;
 

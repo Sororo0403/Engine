@@ -64,8 +64,8 @@ const char *OperationLabel(TriggerAction::Operation operation) {
 		return "Reverse Motion Path";
 	case TriggerAction::Operation::PAUSE_MOTION_PATH:
 		return "Pause Motion Path";
-	case TriggerAction::Operation::PLAY_UI_TIMELINE:
-		return "Play UI Timeline";
+	case TriggerAction::Operation::PLAY_ANIMATION_CLIP:
+		return "Play Animation Clip";
 	case TriggerAction::Operation::PLAY_TRANSFORM_ANIMATION:
 		return "Play Transform Animation";
 	case TriggerAction::Operation::RESTART_TRANSFORM_ANIMATION:
@@ -120,8 +120,10 @@ const char *EventLabel(TriggerAction::Event event) {
 		return "Last Exit";
 	case TriggerAction::Event::INTERACT:
 		return "Interact";
-	case TriggerAction::Event::UI_TIMELINE_FINISHED:
-		return "UI Timeline Finished";
+	case TriggerAction::Event::ANIMATION_CLIP_MARKER:
+		return "Animation Clip Marker";
+	case TriggerAction::Event::ANIMATION_CLIP_FINISHED:
+		return "Animation Clip Finished";
 	case TriggerAction::Event::BUTTON_CLICK:
 		return "Button Click";
 	case TriggerAction::Event::INPUT_PRESSED:
@@ -187,12 +189,14 @@ bool TriggerActionsInspector::Draw(
 				                TriggerAction::Event::LAST_EXIT,
 				                TriggerAction::Event::INTERACT,
 				                TriggerAction::Event::BUTTON_CLICK,
-				                TriggerAction::Event::UI_TIMELINE_FINISHED,
+				                TriggerAction::Event::ANIMATION_CLIP_FINISHED,
+				                TriggerAction::Event::ANIMATION_CLIP_MARKER,
 				                TriggerAction::Event::INPUT_PRESSED}) {
 					if (ImGui::Selectable(EventLabel(event),
 					                      action.event == event) &&
 					    action.event != event) {
 						action.event = event;
+						action.clipTime = 0;
 						if (event != TriggerAction::Event::INTERACT &&
 						    event != TriggerAction::Event::INPUT_PRESSED)
 							action.inputAction.clear();
@@ -209,6 +213,15 @@ bool TriggerActionsInspector::Draw(
 					}
 				}
 				ImGui::EndCombo();
+			}
+
+			if (action.event == TriggerAction::Event::ANIMATION_CLIP_MARKER) {
+				const float duration = object.animationClip
+				                           ? object.animationClip->duration
+				                           : AnimationClipComponent::kMaximumSeconds;
+				changed |= ImGui::DragFloat("Clip Time (s)", &action.clipTime,
+				                            .01f, 0.f, duration, "%.3f",
+				                            ImGuiSliderFlags_AlwaysClamp);
 			}
 
 			const bool interact =
@@ -371,7 +384,7 @@ bool TriggerActionsInspector::Draw(
 				         TriggerAction::Operation::REVERSE_MOTION_PATH,
 				         TriggerAction::Operation::PAUSE_MOTION_PATH,
 				         TriggerAction::Operation::PLAY_TRANSFORM_ANIMATION,
-				         TriggerAction::Operation::PLAY_UI_TIMELINE,
+				         TriggerAction::Operation::PLAY_ANIMATION_CLIP,
 				         TriggerAction::Operation::RESTART_TRANSFORM_ANIMATION,
 				         TriggerAction::Operation::PAUSE_TRANSFORM_ANIMATION,
 				         TriggerAction::Operation::STOP_TRANSFORM_ANIMATION,
@@ -566,8 +579,8 @@ bool TriggerActionsInspector::Draw(
 	                 TriggerActionsComponent::kMaximumActions);
 	if (ImGui::Button("Add Action")) {
 		auto &action = edited.actions.emplace_back();
-		if (object.uiTimeline)
-			action.event = TriggerAction::Event::UI_TIMELINE_FINISHED;
+		if (object.animationClip)
+			action.event = TriggerAction::Event::ANIMATION_CLIP_FINISHED;
 		else if (object.button && (!object.collider || !object.collider->isTrigger))
 			action.event = TriggerAction::Event::BUTTON_CLICK;
 		changed = true;

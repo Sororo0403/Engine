@@ -164,10 +164,16 @@ bool SceneSimulation::StartScene(const Scene &source, std::string &error,
 			return false;
 		}
 
+		std::vector<SceneObjectId> autoplay;
 		for (const auto &[id, object] : working.scene_.GetObjects()) {
-			if (object.uiTimeline && object.uiTimeline->playOnStart &&
-			    SceneActivity::IsActive(working.scene_, id) &&
-			    !working.PlayUITimeline(id, error)) {
+			if (object.animationClip && object.animationClip->playOnStart &&
+			    SceneActivity::IsActive(working.scene_, id))
+				autoplay.push_back(id);
+		}
+
+		working.pendingActionSignals_.clear();
+		for (const auto id : autoplay) {
+			if (!working.PlayAnimationClip(id, error)) {
 				if (invalidObject)
 					*invalidObject = id;
 				return false;
@@ -177,7 +183,6 @@ bool SceneSimulation::StartScene(const Scene &source, std::string &error,
 		if (!working.ApplyScripts(0, CharacterInput{}, true, error,
 		                          invalidObject))
 			return false;
-		working.pendingActionSignals_.clear();
 
 		if (!working.triggers_.Reset(working.scene_)) {
 			error = "Initial Script trigger shapes are invalid.";
@@ -202,6 +207,7 @@ bool SceneSimulation::StartScene(const Scene &source, std::string &error,
 		return false;
 	}
 }
+
 
 bool SceneSimulation::SetActive(SceneObjectId id, bool active,
                                 std::string &error,
@@ -599,7 +605,7 @@ void SceneSimulation::Stop() {
 	cameraTransition_.reset();
 	motion_ = SceneMotion{};
 	animations_ = SceneAnimations{};
-	uiTimelines_.clear();
+	animationClips_.clear();
 	particles_ = SceneParticles{};
 	animators_ = SceneAnimators{};
 	physics_ = ScenePhysics{};
@@ -741,10 +747,6 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 		}
 
 		std::string error;
-		if (!paused && !working.AdvanceUITimelines(seconds, error)) {
-			lastUpdateError_ = std::move(error);
-			return false;
-		}
 		const bool uiConsumesInput =
 		    working.ui_.ConsumesNavigation() || working.ui_.ConsumesPointer();
 		if (!working.ApplyTriggerActions(error, nullptr,
@@ -805,6 +807,12 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 			lastUpdateError_ = std::move(animationError);
 			return false;
 		}
+
+		auto clips = animationClips_;
+		auto clipSignals = pendingActionSignals_;
+		if (!AdvanceAnimationClips(working, seconds, clips, clipSignals,
+		                           lastUpdateError_))
+			return false;
 
 		auto motion = motion_;
 		std::optional<TriggerWorld> triggers;
@@ -1008,6 +1016,8 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 		controller_ = next;
 		motion_ = std::move(motion);
 		animations_ = std::move(animations);
+		animationClips_ = std::move(clips);
+		pendingActionSignals_.swap(clipSignals);
 		particles_ = std::move(particles);
 		animators_ = std::move(animators);
 		physics_ = std::move(physics);
@@ -1062,28 +1072,38 @@ SceneSimulation::GetRigidBodyState(SceneObjectId id) const {
 
 namespace {
 /// <summary>
-/// キーから求めたUIの値を再生シーンだけへ適用する
+/// キーから求めた値を再生シーンのローカル座標・UIへ適用する
 /// </summary>
-bool ApplyUITimeline(Scene &scene, const UITimelineComponent &timeline,
-                     float seconds, std::string &error) {
-	for (const auto &track : timeline.tracks) {
+bool ApplyAnimationClip(Scene &scene, const AnimationClipComponent &clip,
+                        float seconds, std::string &error) {
+	for (const auto &track : clip.tracks) {
 		auto *target = scene.FindObject(track.target);
-		if (!target || !target->rectTransform ||
-		    (track.property == UITimelineTrack::Property::OPACITY &&
-		     !target->text && !target->image)) {
-			error = "UI Timeline requires a target with Rect Transform and, "
-			        "for opacity, Text or Image.";
+		if (!target || !target->CanAnimate(track)) {
+			error = "Animation Clip target is missing a required component or "
+			        "has another transform controller.";
 			return false;
 		}
 
 		const auto value = track.Sample(seconds);
-		if (track.property == UITimelineTrack::Property::POSITION) {
-			target->rectTransform->position = value;
-		} else {
+		switch (track.property) {
+		case AnimationClipTrack::Property::POSITION:
+			target->rectTransform->position = {value[0], value[1]};
+			break;
+		case AnimationClipTrack::Property::OPACITY:
 			if (target->text)
 				target->text->color[3] = value[0];
 			if (target->image)
 				target->image->color[3] = value[0];
+			break;
+		case AnimationClipTrack::Property::TRANSLATION:
+			target->transform.translation = {value[0], value[1], value[2]};
+			break;
+		case AnimationClipTrack::Property::ROTATION:
+			target->transform.rotation = {value[0], value[1], value[2], value[3]};
+			break;
+		case AnimationClipTrack::Property::SCALE:
+			target->transform.scale = {value[0], value[1], value[2]};
+			break;
 		}
 	}
 
@@ -1091,41 +1111,75 @@ bool ApplyUITimeline(Scene &scene, const UITimelineComponent &timeline,
 }
 } // namespace
 
-bool SceneSimulation::PlayUITimeline(SceneObjectId id, std::string &error) {
+void SceneSimulation::QueueClipMarkers(const SceneObject &object, SceneObjectId id,
+                                       double previous, double current,
+                                       std::vector<ActionSignal> &signals) {
+	if (!object.triggerActions)
+		return;
+
+	const auto &actions = object.triggerActions->actions;
+	std::vector<std::size_t> markers;
+	for (std::size_t i = 0; i < actions.size(); ++i) {
+		const auto &action = actions[i];
+		if (action.event == TriggerAction::Event::ANIMATION_CLIP_MARKER &&
+		    action.clipTime > previous && action.clipTime <= current)
+			markers.push_back(i);
+	}
+
+	std::stable_sort(markers.begin(), markers.end(), [&](auto a, auto b) {
+		return actions[a].clipTime < actions[b].clipTime;
+	});
+	for (const auto index : markers)
+		signals.push_back({id, TriggerAction::Event::ANIMATION_CLIP_MARKER, 0, index});
+}
+
+bool SceneSimulation::PlayAnimationClip(SceneObjectId id, std::string &error) {
 	const auto *object = scene_.FindObject(id);
-	if (!object || !object->uiTimeline || !object->uiTimeline->IsValid() ||
+	if (!object || !object->animationClip || !object->animationClip->IsValid() ||
 	    !SceneActivity::IsActive(scene_, id)) {
-		error = "Play UI Timeline requires an active target UI Timeline.";
+		error = "Play Animation Clip requires an active target Animation Clip.";
 		return false;
 	}
 
-	if (!ApplyUITimeline(scene_, *object->uiTimeline, 0, error))
+	if (std::ranges::any_of(object->animationClip->tracks,
+	                       &AnimationClipTrack::IsTransform)) {
+		Scene candidate;
+		candidate.CopyFrom(scene_);
+		if (!ApplyAnimationClip(candidate, *object->animationClip, 0, error) ||
+		    !SynchronizeSceneChanges(candidate, {}, error, nullptr))
+			return false;
+	} else if (!ApplyAnimationClip(scene_, *object->animationClip, 0, error)) {
 		return false;
+	}
 
-	uiTimelines_[id] = 0;
+	animationClips_[id] = 0;
+	QueueClipMarkers(*scene_.FindObject(id), id, -1, 0, pendingActionSignals_);
 	return true;
 }
 
-bool SceneSimulation::AdvanceUITimelines(float seconds, std::string &error) {
+bool SceneSimulation::AdvanceAnimationClips(
+    Scene &scene, float seconds, std::map<SceneObjectId, double> &clips,
+    std::vector<ActionSignal> &signals, std::string &error) {
 	if (seconds <= 0)
 		return true;
 
-	for (auto it = uiTimelines_.begin(); it != uiTimelines_.end();) {
+	for (auto it = clips.begin(); it != clips.end();) {
 		const auto id = it->first;
-		const auto *object = scene_.FindObject(id);
-		if (!object || !object->uiTimeline || !SceneActivity::IsActive(scene_, id)) {
-			it = uiTimelines_.erase(it);
+		const auto *object = scene.FindObject(id);
+		if (!object || !object->animationClip || !SceneActivity::IsActive(scene, id)) {
+			it = clips.erase(it);
 			continue;
 		}
 
-		const auto &timeline = *object->uiTimeline;
-		const float time = (std::min)(it->second + seconds, timeline.duration);
-		if (!ApplyUITimeline(scene_, timeline, time, error))
+		const auto &clip = *object->animationClip;
+		const double time = (std::min)(it->second + seconds, double(clip.duration));
+		if (!ApplyAnimationClip(scene, clip, float(time), error))
 			return false;
+		QueueClipMarkers(*object, id, it->second, time, signals);
 
-		if (time >= timeline.duration) {
-			pendingActionSignals_.push_back({id, TriggerAction::Event::UI_TIMELINE_FINISHED});
-			it = uiTimelines_.erase(it);
+		if (time >= clip.duration) {
+			signals.push_back({id, TriggerAction::Event::ANIMATION_CLIP_FINISHED});
+			it = clips.erase(it);
 		} else {
 			it->second = time;
 			++it;

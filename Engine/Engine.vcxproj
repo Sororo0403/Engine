@@ -436,7 +436,7 @@ exit /b 0</Command>
     <ClCompile Include="src\graphics\lighting\SpotLights.cpp" />
     <ClInclude Include="include\scene\SpotLightComponent.h" />
     <ClInclude Include="include\scene\DirectionalLightComponent.h" />
-    <ClInclude Include="include\scene\UITimelineComponent.h" />
+    <ClInclude Include="include\animation\AnimationClipComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\gameplay\MotionPathComponent.h" />

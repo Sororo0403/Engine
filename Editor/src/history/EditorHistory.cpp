@@ -220,9 +220,9 @@ bool EditorHistory::DeleteObjects(std::span<const SceneObjectId> objectIds) {
 			                                          cleared.followCamera});
 		}
 
-		if (cleared.uiTimeline != object.uiTimeline) {
-			commands.emplace_back(UITimelineCommand{
-			    id, object.uiTimeline, cleared.uiTimeline});
+		if (cleared.animationClip != object.animationClip) {
+			commands.emplace_back(AnimationClipCommand{
+			    id, object.animationClip, cleared.animationClip});
 		}
 
 		if (cleared.triggerActions != object.triggerActions) {

@@ -28,7 +28,7 @@
 #include "scene/SceneObjectId.h"
 #include "scene/DirectionalLightComponent.h"
 #include "scene/SpotLightComponent.h"
-#include "scene/UITimelineComponent.h"
+#include "animation/AnimationClipComponent.h"
 
 #include <filesystem>
 #include <optional>
@@ -73,7 +73,7 @@ struct SceneObject {
 	std::optional<PointLightComponent> pointLight;
 	// ワールド位置と親子合成した回転から円錐状に照らす
 	std::optional<SpotLightComponent> spotLight;
-	std::optional<UITimelineComponent> uiTimeline;
+	std::optional<AnimationClipComponent> animationClip;
 	std::optional<DirectionalLightComponent> directionalLight;
 	// 親子合成後の位置で再生する音源と、受信姿勢の指定
 	std::optional<AudioSourceComponent> audioSource;
@@ -134,4 +134,9 @@ struct SceneObject {
 	/// <param name="other">比較対象</param>
 	/// <returns>true:一致 false:不一致または無効な変形</returns>
 	bool operator==(const SceneObject &other) const;
+
+	/// <summary>
+	/// 既存の姿勢制御と競合せず、指定トラックの値を適用できるか確認する
+	/// </summary>
+	bool CanAnimate(const AnimationClipTrack &track) const;
 };
