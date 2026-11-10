@@ -73,6 +73,15 @@ local function update(self, state, seconds)
     local aimZ = z + lerp(3.2, 2, roof) + state.lead - 3
         - (state.returnLookAhead or 0) * state.returnWeight
 
+    local trellis = self:reference("courtyardTrellis")
+    if trellis and trellis:is_active() then
+        local tx, _, tz = trellis:get_position()
+        local underTrellis = (1 - ease(math.abs(px - tx - 2.1), 3, 5.8))
+            * (1 - ease(math.abs(pz - tz - 1.5), 3.3, 6.4))
+        height = lerp(height, 3.15, underTrellis)
+        back = lerp(back, 6.4, underTrellis)
+    end
+
     local passage = self:reference("coveredPassage")
     if passage and passage:is_active() then
         local passageX, _, passageZ = passage:get_position()

@@ -299,6 +299,10 @@
           {
             "name": "coveredPassage",
             "target": 590
+          },
+          {
+            "name": "courtyardTrellis",
+            "target": 607
           }
         ],
         "scenes": [],
