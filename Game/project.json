@@ -8,6 +8,20 @@
         "mouse": null,
         "gamepad": "West",
         "gamepadAxis": null
+      },
+      {
+        "name": "Restart",
+        "keyboard": "R",
+        "mouse": null,
+        "gamepad": "RightShoulder",
+        "gamepadAxis": null
+      },
+      {
+        "name": "Cancel",
+        "keyboard": "Escape",
+        "mouse": null,
+        "gamepad": "East",
+        "gamepadAxis": null
       }
     ],
     "camera": {

@@ -8,7 +8,17 @@ return {
         state.originX, state.originZ = x, z
     end,
 
+    message = function(_, state, name)
+        if name == "street_clear" then
+            state.completed = true
+        end
+    end,
+
     update = function(self, state, seconds)
+        if state.completed then
+            return
+        end
+
         local player = self:reference("player")
         if not player or not player:is_active() then
             return

@@ -139,7 +139,7 @@ local function update_attack(self, state, seconds, input)
 end
 
 local function on_contact(self, state, other)
-    if not other or other:get_tag() ~= "street_enemy" or state.invulnerable > 0 or state.deathTime then
+    if not other or other:get_tag() ~= "street_enemy" or state.invulnerable > 0 or state.deathTime or state.completed then
         return
     end
 
@@ -166,6 +166,13 @@ return {
     message = function(self, state, name)
         if name == "courtyard" or name == "roof" then
             state.spawnX, state.spawnY, state.spawnZ = self:reference(name):get_position()
+        elseif name == "street_clear" then
+            state.completed = true
+            self:set_character_speeds(0.001, 0.001)
+            pose(self, 0, 1)
+            for _, enemy in ipairs(scene.find_all_by_tag("street_enemy")) do
+                enemy:send_message("street_clear")
+            end
         end
     end,
 
@@ -175,6 +182,19 @@ return {
     update = function(self, state, seconds, input)
         if state.deathTime then
             update_death(self, state, seconds, input.viewport)
+            return
+        end
+
+        local restart, cancel = input.actions.Restart, input.actions.Cancel
+        if restart and restart.pressed then
+            self:load_scene("restart")
+            return
+        end
+        if cancel and cancel.pressed then
+            self:load_scene("title")
+            return
+        end
+        if state.completed then
             return
         end
 
