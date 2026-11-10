@@ -24,7 +24,7 @@ namespace {
 constexpr std::size_t kMaximumBytes = 128 * 1024 * 1024;
 constexpr UINT kDescriptorCount =
     static_cast<UINT>(CanvasLayout::kMaximumElements * 2);
-constexpr UINT kElementConstants = 16;
+constexpr UINT kElementConstants = 21;
 
 /// <summary>
 /// 描画準備のHRESULTを例外へ変換する
@@ -76,6 +76,7 @@ struct CanvasRenderer::Impl {
 	std::map<std::filesystem::path, ImageEntry> images;
 	std::map<std::filesystem::path, ImageEntry> preparedImages;
 	std::vector<Command> commands;
+	MonochromeEffect backgroundMonochrome;
 	int width = 0, height = 0;
 	bool prepared = false;
 	Failure failure = Failure::FAIL;
@@ -518,6 +519,7 @@ bool CanvasRenderer::Update(const Scene &scene, int width, int height,
 		}
 
 		p.commands.swap(commands);
+		p.backgroundMonochrome = scene.GetMonochrome();
 		p.texts.swap(texts);
 		p.images.swap(images);
 		p.width = width;
@@ -548,6 +550,7 @@ void CanvasRenderer::Draw(bool background) const {
 	const UINT stride =
 	    p.graphics.GetDevice()->GetDescriptorHandleIncrementSize(
 	        D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	const auto effect = background ? p.backgroundMonochrome : MonochromeEffect{};
 	for (const auto &command : p.commands) {
 		if (command.background != background) {
 			descriptor.ptr += stride;
@@ -573,7 +576,12 @@ void CanvasRenderer::Draw(bool background) const {
 		                        command.uv[0],
 		                        command.uv[1],
 		                        command.uv[2],
-		                        command.uv[3]};
+		                        command.uv[3],
+		                        effect.amount,
+		                        effect.low,
+		                        effect.high,
+		                        effect.threshold,
+		                        effect.softness};
 		static_assert(std::size(constants) == kElementConstants);
 		list->SetGraphicsRoot32BitConstants(0, kElementConstants, constants, 0);
 		list->SetGraphicsRootDescriptorTable(1, descriptor);
