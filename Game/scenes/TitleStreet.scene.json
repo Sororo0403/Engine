@@ -504,8 +504,8 @@
           },
           {
             "event": "buttonClick",
-            "operation": "disable",
-            "target": 183,
+            "operation": "pauseAnimationClip",
+            "target": 203,
             "once": false,
             "destination": 0,
             "scene": "",
@@ -1614,6 +1614,23 @@
             "clipTime": 0.3
           },
           {
+            "event": "animationClipMarker",
+            "operation": "disable",
+            "target": 183,
+            "once": false,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 0,
+            "arrivalTag": "",
+            "launchSpeed": 12,
+            "clipTime": 0.8
+          },
+          {
             "event": "animationClipFinished",
             "operation": "loadScene",
             "target": 0,
@@ -1643,6 +1660,34 @@
           {
             "slot": 2,
             "target": 6
+          },
+          {
+            "slot": 3,
+            "target": 173
+          },
+          {
+            "slot": 4,
+            "target": 187
+          },
+          {
+            "slot": 5,
+            "target": 188
+          },
+          {
+            "slot": 6,
+            "target": 189
+          },
+          {
+            "slot": 7,
+            "target": 165
+          },
+          {
+            "slot": 8,
+            "target": 166
+          },
+          {
+            "slot": 9,
+            "target": 167
           }
         ]
       }
@@ -8841,6 +8886,18 @@
           {
             "name": "adjustSound",
             "target": 636
+          },
+          {
+            "name": "startButton",
+            "target": 187
+          },
+          {
+            "name": "configButton",
+            "target": 188
+          },
+          {
+            "name": "quitButton",
+            "target": 189
           }
         ],
         "scenes": [],

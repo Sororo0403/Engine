@@ -52,6 +52,14 @@ return {
         if name ~= "start_departure" and name ~= "quit_departure" then
             return
         end
+        if name == "start_departure" then
+            for _, buttonName in ipairs({"startButton", "configButton", "quitButton"}) do
+                local button = self:reference(buttonName)
+                if button then
+                    button:set_interactable(false)
+                end
+            end
+        end
         state.departing = true
         state.elapsed = 0
         state.fromVolume = self:get_audio_volume()
