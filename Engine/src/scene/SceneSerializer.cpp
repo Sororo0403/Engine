@@ -446,7 +446,9 @@ void ValidatePrefabLinks(const Scene &scene) {
 
 } // namespace
 
-bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
+namespace {
+bool SerializeScene(const Scene &scene, std::string &text,
+                    const Scene *validated) {
 	try {
 		SceneHierarchy::WorldTransforms transforms;
 
@@ -500,6 +502,12 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 			    (object.audioSource && !object.audioSource->IsValid())) {
 				throw std::runtime_error(
 				    "ゲーム用コンポーネントの設定が無効です。");
+			}
+
+			if (validated) {
+				const auto *previous = validated->FindObject(id);
+				if (previous && *previous == object)
+					continue;
 			}
 
 			objects.push_back({
@@ -954,6 +962,17 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 		    std::format("SceneSerializer::Serialize: {}", exception.what()));
 		return false;
 	}
+}
+
+} // namespace
+
+bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
+	return SerializeScene(scene, text, nullptr);
+}
+
+bool SceneSerializer::ValidateChanges(const Scene &scene, const Scene &validated) {
+	std::string discarded;
+	return SerializeScene(scene, discarded, &validated);
 }
 
 bool SceneSerializer::SerializeForFile(

@@ -25,6 +25,14 @@ class SceneSerializer {
 	static bool Serialize(const Scene &scene, std::string &text);
 
 	/// <summary>
+	/// シーン全体の階層と設定を確認し、変更された物体だけJSONに変換できるか検証する
+	/// </summary>
+	/// <param name="scene">変更後のシーン</param>
+	/// <param name="validated">変更前の検証済みシーン</param>
+	/// <returns>true:有効 false:無効なデータあり</returns>
+	static bool ValidateChanges(const Scene &scene, const Scene &validated);
+
+	/// <summary>
 	/// 保存先とプロジェクトを基準に、ディスクへ書き込まずシーンを変換する
 	/// </summary>
 	static bool SerializeForFile(const Scene &scene, std::string &text,

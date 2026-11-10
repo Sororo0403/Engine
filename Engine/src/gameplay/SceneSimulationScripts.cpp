@@ -38,7 +38,10 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 		return false;
 	std::string serialized;
 
-	if (!SceneSerializer::Serialize(candidate, serialized)) {
+	const bool valid = startOnly
+	                       ? SceneSerializer::Serialize(candidate, serialized)
+	                       : SceneSerializer::ValidateChanges(candidate, scene_);
+	if (!valid) {
 		error = "Script changes contain invalid scene data.";
 		return false;
 	}
