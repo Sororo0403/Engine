@@ -43,6 +43,9 @@ return {
         if cycle < 1.2 then
             if cycle >= 0.7 and dx * dx + dy * dy + dz * dz < 49 then
                 state.time = 1.2
+                if state.warningEnabled then
+                    self:play_audio()
+                end
             else
                 state.time = math.min(state.time, 0.75)
             end

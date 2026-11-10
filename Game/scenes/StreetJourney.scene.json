@@ -26689,6 +26689,15 @@
         "radius": 0.5,
         "shape": "Box"
       },
+      "audioSource": {
+        "clip": "@project/assets/street/audio/EnemyWindup.wav",
+        "loop": false,
+        "maxDistance": 15,
+        "minDistance": 3,
+        "playOnStart": false,
+        "spatial": true,
+        "volume": 0.55
+      },
       "id": 436,
       "name": "Street Enemy 1",
       "parent": 0,
@@ -26737,7 +26746,8 @@
           "dz": 1,
           "range": 2,
           "speed": 3.5,
-          "time": 0
+          "time": 0,
+          "warningEnabled": true
         }
       },
       "tag": "street_enemy",
@@ -26781,6 +26791,15 @@
         "isTrigger": false,
         "radius": 0.5,
         "shape": "Box"
+      },
+      "audioSource": {
+        "clip": "@project/assets/street/audio/EnemyWindup.wav",
+        "loop": false,
+        "maxDistance": 15,
+        "minDistance": 3,
+        "playOnStart": false,
+        "spatial": true,
+        "volume": 0.55
       },
       "id": 437,
       "name": "Street Enemy 2",
@@ -26830,7 +26849,8 @@
           "dz": 1,
           "range": 2,
           "speed": 3.5,
-          "time": 0
+          "time": 0,
+          "warningEnabled": true
         }
       },
       "tag": "street_enemy",
@@ -26874,6 +26894,15 @@
         "isTrigger": false,
         "radius": 0.5,
         "shape": "Box"
+      },
+      "audioSource": {
+        "clip": "@project/assets/street/audio/EnemyWindup.wav",
+        "loop": false,
+        "maxDistance": 15,
+        "minDistance": 3,
+        "playOnStart": false,
+        "spatial": true,
+        "volume": 0.55
       },
       "id": 438,
       "name": "Street Enemy 3",
@@ -26923,7 +26952,8 @@
           "dz": 1,
           "range": 2,
           "speed": 3.5,
-          "time": 0
+          "time": 0,
+          "warningEnabled": true
         }
       },
       "tag": "street_enemy",
