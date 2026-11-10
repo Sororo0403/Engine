@@ -247,35 +247,28 @@
         "primary": true,
         "verticalFovDegrees": 58
       },
-      "followCamera": {
-        "avoidObstacles": true,
-        "clearance": 0.30000001192092896,
-        "lookOffset": [
-          0,
-          0.65,
-          3
-        ],
-        "offset": [
-          0.5,
-          4.5,
-          -7.6
-        ],
-        "orbit": {
-          "enabled": false,
-          "maximumDistance": 20.0,
-          "maximumPitch": 75.0,
-          "minimumDistance": 2.0,
-          "minimumPitch": -75.0,
-          "mouseSensitivity": 0.18000000715255737,
-          "stickSpeed": 120.0,
-          "zoomSensitivity": 1.0
-        },
-        "smoothing": 8.0,
-        "target": 1
-      },
       "id": 4,
       "name": "Follow Camera",
       "parent": 0,
+      "script": {
+        "asset": "@project/assets/street/scripts/StreetCamera.lua",
+        "enabled": true,
+        "prefabs": [],
+        "references": [
+          {
+            "name": "player",
+            "target": 1
+          }
+        ],
+        "scenes": [],
+        "state": {
+          "avoidObstacles": true,
+          "clearance": 0.4,
+          "distance": 7.6,
+          "height": 4.5,
+          "lead": 3
+        }
+      },
       "tag": "",
       "transform": {
         "rotation": [

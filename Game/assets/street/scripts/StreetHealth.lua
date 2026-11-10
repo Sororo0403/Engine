@@ -74,6 +74,7 @@ local function restore_camera(self)
     local follow = self:reference("followCamera")
     follow:set_active(true)
     scene.set_camera(follow)
+    game.streetCameraReset = true
 end
 
 local function start_death(self, state, falling)
