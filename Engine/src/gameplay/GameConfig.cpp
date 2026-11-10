@@ -54,7 +54,7 @@ bool GameConfig::IsValid() const {
 
 	if (settingsId.empty() != persistentScriptKeys.empty() ||
 	    (!settingsId.empty() && !IsSettingsName(settingsId)) ||
-	    persistentScriptKeys.size() > 16 ||
+	    persistentScriptKeys.size() > 32 ||
 	    !std::ranges::all_of(persistentScriptKeys, IsSettingsName)) {
 		return false;
 	}
