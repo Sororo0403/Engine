@@ -25,6 +25,7 @@
   "objects": [
     {
       "active": true,
+      "audioListener": {},
       "character": {
         "coyoteTime": 0.07999999821186066,
         "gravity": 20.0,
@@ -26556,6 +26557,61 @@
           0,
           0
         ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0.92,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "animationClipMarker",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 454
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0.991053,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "animationClipMarker",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 455
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 1.024211,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "animationClipMarker",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 456
+          }
+        ]
       }
     },
     {
@@ -26651,6 +26707,108 @@
           0,
           0,
           0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "audioSource": {
+        "clip": "@project/assets/street/audio/ArrivalRelease.wav",
+        "loop": false,
+        "maxDistance": 100,
+        "minDistance": 1,
+        "playOnStart": false,
+        "spatial": false,
+        "volume": 0.55
+      },
+      "id": 454,
+      "name": "ArrivalRelease",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "audioSource": {
+        "clip": "@project/assets/street/audio/ArrivalNearReply.wav",
+        "loop": false,
+        "maxDistance": 40,
+        "minDistance": 5,
+        "playOnStart": false,
+        "spatial": true,
+        "volume": 0.48
+      },
+      "id": 455,
+      "name": "ArrivalNearReply",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          -12,
+          3.6,
+          7.1
+        ]
+      }
+    },
+    {
+      "active": true,
+      "audioSource": {
+        "clip": "@project/assets/street/audio/ArrivalFarReply.wav",
+        "loop": false,
+        "maxDistance": 40,
+        "minDistance": 5,
+        "playOnStart": false,
+        "spatial": true,
+        "volume": 0.43
+      },
+      "id": 456,
+      "name": "ArrivalFarReply",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          -20.5,
+          1.5,
+          13
         ]
       }
     }
