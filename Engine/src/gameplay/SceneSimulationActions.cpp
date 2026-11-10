@@ -275,7 +275,7 @@ bool SceneSimulation::ApplyTriggerActions(
 	std::map<SceneObjectId, SceneMotion::Playback> motionPlayback;
 	std::map<SceneObjectId, TriggerAction::Operation> animationPlayback;
 	std::map<SceneObjectId, TriggerAction::Operation> animatorPlayback;
-	std::set<SceneObjectId> animationClips;
+	std::map<SceneObjectId, bool> animationClips;
 	std::vector<SceneObjectId> particleBursts;
 	std::vector<ScriptMessage> scriptMessages;
 	auto audio = audioActions_;
@@ -290,7 +290,8 @@ bool SceneSimulation::ApplyTriggerActions(
 	bool quit = quitRequested_;
 	bool paused = gamePaused_;
 
-	for (const auto &signal : signals) {
+	for (std::size_t signalIndex = 0; signalIndex < signals.size(); ++signalIndex) {
+		const auto signal = signals[signalIndex];
 		const auto *object = scene_.FindObject(signal.receiver);
 
 		if (!object || !SceneActivity::IsActive(scene_, signal.receiver) ||
@@ -475,7 +476,14 @@ bool SceneSimulation::ApplyTriggerActions(
 			}
 
 			if (action.operation == TriggerAction::Operation::PLAY_ANIMATION_CLIP) {
-				animationClips.insert(action.target);
+				// 先頭のマーカーは、ボタン操作と同じ更新で発火させる。
+				// 同じクリップは1更新につき一度だけ開始し、循環するマーカーも打ち切る。
+				const bool dispatchNow = !gamePaused_ && target->animationClip &&
+				    SceneActivity::IsActive(scene_, action.target);
+				if (animationClips.try_emplace(action.target, dispatchNow).second &&
+				    dispatchNow) {
+					QueueClipMarkers(*target, action.target, -1, 0, signals);
+				}
 				if (action.once)
 					fired.insert(key);
 				continue;
@@ -807,8 +815,12 @@ bool SceneSimulation::ApplyTriggerActions(
 		return false;
 	}
 
-	for (const auto id : animationClips) {
-		if (!PlayAnimationClip(id, error)) {
+	for (const auto &[id, startMarkersDispatched] : animationClips) {
+		// 先頭マーカーで無効になったクリップは再生しない。
+		if (startMarkersDispatched && !SceneActivity::IsActive(scene_, id))
+			continue;
+
+		if (!PlayAnimationClip(id, error, !startMarkersDispatched)) {
 			if (invalidObject)
 				*invalidObject = id;
 			return false;

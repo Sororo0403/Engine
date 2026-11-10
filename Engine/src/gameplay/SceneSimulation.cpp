@@ -1133,7 +1133,8 @@ void SceneSimulation::QueueClipMarkers(const SceneObject &object, SceneObjectId 
 		signals.push_back({id, TriggerAction::Event::ANIMATION_CLIP_MARKER, 0, index});
 }
 
-bool SceneSimulation::PlayAnimationClip(SceneObjectId id, std::string &error) {
+bool SceneSimulation::PlayAnimationClip(SceneObjectId id, std::string &error,
+                                         bool queueStartMarkers) {
 	const auto *object = scene_.FindObject(id);
 	if (!object || !object->animationClip || !object->animationClip->IsValid() ||
 	    !SceneActivity::IsActive(scene_, id)) {
@@ -1153,7 +1154,9 @@ bool SceneSimulation::PlayAnimationClip(SceneObjectId id, std::string &error) {
 	}
 
 	animationClips_[id] = 0;
-	QueueClipMarkers(*scene_.FindObject(id), id, -1, 0, pendingActionSignals_);
+	if (queueStartMarkers)
+		QueueClipMarkers(*scene_.FindObject(id), id, -1, 0,
+		                 pendingActionSignals_);
 	return true;
 }
 

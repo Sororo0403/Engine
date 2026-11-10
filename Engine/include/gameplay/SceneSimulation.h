@@ -566,7 +566,8 @@ class SceneSimulation {
 	/// <summary>
 	/// タイムラインを先頭から再生し、最初の値を即座に反映する
 	/// </summary>
-	bool PlayAnimationClip(SceneObjectId id, std::string &error);
+	bool PlayAnimationClip(SceneObjectId id, std::string &error,
+	                       bool queueStartMarkers = true);
 
 	/// <summary>
 	/// クリップを進め、マーカーと完了のイベントを時刻順に追加する
