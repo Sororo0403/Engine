@@ -632,6 +632,40 @@
             "value": [0, 0, -0.0, 1.0]
           }
         ]
+      },
+      {
+        "target": 10,
+        "property": "opacity",
+        "interpolation": "smooth",
+        "keys": [
+          {
+            "time": 0,
+            "value": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "time": 1.077895,
+            "value": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "time": 1.22,
+            "value": [
+              1,
+              0,
+              0,
+              0
+            ]
+          }
+        ]
       }
     ]
   }
