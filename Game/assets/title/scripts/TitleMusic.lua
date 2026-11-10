@@ -1,23 +1,23 @@
-local function gain()
-    return (game.volumeLevel or 10) / 10
+local function volume_level(state)
+    return state.volumeDraft or game.volumeLevel or 10
 end
 
 local cue_names = {"confirmSound", "backSound", "adjustSound"}
 
 local function apply_cue_volume(self, state)
     for i, name in ipairs(cue_names) do
-        self:reference(name):set_audio_volume(state.cueVolumes[i] * gain())
+        self:reference(name):set_audio_volume(state.cueVolumes[i] * volume_level(state) / 10)
     end
 end
 
-local function show_volume(self)
-    self:reference("volumeLabel"):set_text((game.volumeLevel or 10) * 10 .. "%")
+local function show_volume(self, state)
+    self:reference("volumeLabel"):set_text(volume_level(state) * 10 .. "%")
 end
 
 local function apply_volume(self, state)
     local progress = state.elapsed / math.max(0.01, state.duration)
     local volume = state.departing and state.fromVolume * (1 - progress)
-        or state.baseVolume * gain() * progress
+        or state.baseVolume * volume_level(state) / 10 * progress
     self:set_audio_volume(volume)
 end
 
@@ -29,7 +29,7 @@ return {
         end
         state.baseVolume = self:get_audio_volume()
         self:set_audio_volume(0)
-        show_volume(self)
+        show_volume(self, state)
         state.cueVolumes = {}
         for i, name in ipairs(cue_names) do
             state.cueVolumes[i] = self:reference(name):get_audio_volume()
@@ -43,8 +43,18 @@ return {
         end
         if name == "volume_down" or name == "volume_up" then
             local step = name == "volume_down" and -1 or 1
-            game.volumeLevel = math.min(10, math.max(0, (game.volumeLevel or 10) + step))
-            show_volume(self)
+            state.volumeDraft = math.min(10, math.max(0, volume_level(state) + step))
+            show_volume(self, state)
+            apply_volume(self, state)
+            apply_cue_volume(self, state)
+            return
+        end
+        if name == "save_config" or name == "cancel_config" then
+            if name == "save_config" and state.volumeDraft ~= nil then
+                game.volumeLevel = state.volumeDraft
+            end
+            state.volumeDraft = nil
+            show_volume(self, state)
             apply_volume(self, state)
             apply_cue_volume(self, state)
             return
