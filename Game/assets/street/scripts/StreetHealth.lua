@@ -90,9 +90,29 @@ local function background(self, state, amount)
         state.deathColorThreshold, state.deathColorSoftness, not state.deathReturned)
 end
 
+local function update_motion_sound(self, state, character)
+    local previous = state.motionVelocity
+    if state.motionGrounded then
+        if not character.grounded and character.verticalVelocity > 0 and previous and previous <= 0 then
+            local sound = self:reference("jumpSound")
+            if sound then
+                sound:play_audio()
+            end
+        elseif character.grounded and previous and previous < -1.5 then
+            local sound = self:reference("landSound")
+            if sound then
+                sound:play_audio()
+            end
+        end
+    end
+    state.motionGrounded = state.motionGrounded or character.grounded
+    state.motionVelocity = character.verticalVelocity
+end
+
 local function start_death(self, state, falling)
     game.streetDeathActive = true
     state.deathTime = 0
+    state.motionGrounded, state.motionVelocity = nil, nil
     state.falling = falling
     state.attack = 0
     state.reaction = 0
@@ -292,6 +312,7 @@ return {
 
         if input.character and state.respawnCount ~= input.character.respawnCount then
             state.respawnCount = input.character.respawnCount
+            state.motionGrounded, state.motionVelocity = nil, nil
             state.life = state.maximumLife
             state.invulnerable = state.invulnerabilitySeconds
             state.reaction = 0
@@ -309,6 +330,7 @@ return {
                 show_life(self, state)
                 return
             end
+            update_motion_sound(self, state, input.character)
             if input.character.grounded then
                 state.lastGroundY = y
                 state.lastGroundCamera = camera_pose(self:reference("followCamera"))

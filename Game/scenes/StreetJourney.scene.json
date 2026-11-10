@@ -143,6 +143,14 @@
           {
             "name": "deathFallSound",
             "target": 467
+          },
+          {
+            "name": "jumpSound",
+            "target": 533
+          },
+          {
+            "name": "landSound",
+            "target": 534
           }
         ],
         "scenes": [
@@ -31385,6 +31393,74 @@
         "nearClip": 0.1,
         "primary": false,
         "verticalFovDegrees": 64
+      }
+    },
+    {
+      "active": true,
+      "id": 533,
+      "name": "Player Jump Cue",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "audioSource": {
+        "clip": "@project/assets/street/audio/StreetJump.wav",
+        "loop": false,
+        "maxDistance": 20,
+        "minDistance": 1,
+        "playOnStart": false,
+        "spatial": false,
+        "volume": 0.55
+      }
+    },
+    {
+      "active": true,
+      "id": 534,
+      "name": "Player Landing Cue",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "audioSource": {
+        "clip": "@project/assets/street/audio/StreetLanding.wav",
+        "loop": false,
+        "maxDistance": 20,
+        "minDistance": 1,
+        "playOnStart": false,
+        "spatial": false,
+        "volume": 0.55
       }
     }
   ],
