@@ -368,6 +368,34 @@
     },
     {
       "active": true,
+      "id": 640,
+      "name": "Config Row Marker",
+      "parent": 184,
+      "tag": "",
+      "transform": {
+        "rotation": [0, 0, 0, 1],
+        "scale": [1, 1, 1],
+        "translation": [0, 0, 0]
+      },
+      "rectTransform": {
+        "anchorMin": [0, 0],
+        "anchorMax": [0, 0],
+        "pivot": [0, 0],
+        "position": [78, 467],
+        "sizeDelta": [5, 29]
+      },
+      "image": {
+        "enabled": true,
+        "raycastTarget": false,
+        "texture": "",
+        "color": [1, 0.4, 0.17, 1],
+        "preserveAspect": false,
+        "fillOrigin": "left",
+        "fillAmount": 1
+      }
+    },
+    {
+      "active": true,
       "id": 176,
       "name": "Menu Backplate",
       "parent": 185,
@@ -944,6 +972,22 @@
             "operation": "playAudio",
             "scene": "",
             "target": 638
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonFocus",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "config_focus_motion",
+            "once": false,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 630
           }
         ]
       }
@@ -1035,6 +1079,22 @@
             "operation": "playAudio",
             "scene": "",
             "target": 638
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonFocus",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "config_focus_motion",
+            "once": false,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 630
           }
         ]
       }
@@ -1297,6 +1357,22 @@
             "operation": "playAudio",
             "scene": "",
             "target": 638
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonFocus",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "config_focus_save",
+            "once": false,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 630
           }
         ]
       }
@@ -9160,6 +9236,10 @@
           {
             "name": "selectSound",
             "target": 638
+          },
+          {
+            "name": "configMarker",
+            "target": 640
           }
         ],
         "scenes": [],
@@ -9168,7 +9248,13 @@
           "duration": 0.4,
           "elapsed": 0,
           "quitFade": 2.28,
-          "startFade": 3.2
+          "startFade": 3.2,
+          "configMarkerX": 78,
+          "configMarkerRows": [
+            467,
+            524,
+            581
+          ]
         }
       },
       "tag": "",
@@ -9331,6 +9417,22 @@
             "operation": "playAudio",
             "scene": "",
             "target": 638
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonFocus",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "config_focus_volume",
+            "once": false,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 630
           }
         ]
       }
@@ -9538,6 +9640,22 @@
             "operation": "playAudio",
             "scene": "",
             "target": 638
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonFocus",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "config_focus_volume",
+            "once": false,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 630
           }
         ]
       }

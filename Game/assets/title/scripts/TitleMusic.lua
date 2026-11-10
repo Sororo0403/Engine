@@ -4,6 +4,19 @@ end
 
 local cue_names = {"confirmSound", "backSound", "adjustSound", "selectSound"}
 
+local config_rows = {
+    config_focus_volume = 1,
+    config_focus_motion = 2,
+    config_focus_save = 3,
+}
+
+local function mark_config_row(self, state, row)
+    local marker = self:reference("configMarker")
+    if marker then
+        marker:set_ui_position(state.configMarkerX, state.configMarkerRows[row])
+    end
+end
+
 local function apply_cue_volume(self, state)
     for i, name in ipairs(cue_names) do
         local cue = self:reference(name)
@@ -61,7 +74,12 @@ return {
         if state.departing then
             return
         end
+        if config_rows[name] then
+            mark_config_row(self, state, config_rows[name])
+            return
+        end
         if name == "volume_down" or name == "volume_up" then
+            mark_config_row(self, state, 1)
             local step = name == "volume_down" and -1 or 1
             state.volumeDraft = math.min(10, math.max(0, volume_level(state) + step))
             show_volume(self, state)
@@ -78,6 +96,7 @@ return {
             end
             state.volumeDraft = nil
             state.motionDraft = nil
+            mark_config_row(self, state, 1)
             show_volume(self, state)
             apply_volume(self, state)
             apply_cue_volume(self, state)
@@ -85,6 +104,7 @@ return {
             return
         end
         if name == "motion_on" or name == "motion_off" then
+            mark_config_row(self, state, 2)
             state.motionDraft = name == "motion_on"
             apply_motion(self, state)
             return
