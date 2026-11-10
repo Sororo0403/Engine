@@ -9446,9 +9446,9 @@
       },
       "colorTint": {
         "color": [
-          0.35,
-          0.48,
-          0.26
+          0.86,
+          0.77,
+          0.62
         ]
       },
       "id": 137,
@@ -9518,9 +9518,9 @@
       },
       "colorTint": {
         "color": [
-          0.35,
-          0.48,
-          0.26
+          0.86,
+          0.77,
+          0.62
         ]
       },
       "id": 138,
@@ -9878,9 +9878,9 @@
       },
       "colorTint": {
         "color": [
-          0.75,
-          0.64,
-          0.53
+          0.93,
+          0.83,
+          0.73
         ]
       },
       "id": 143,
@@ -9890,7 +9890,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/textures/PrototypeWhite.png",
+            "path": "@project/assets/street/textures/QuayBrick.png",
             "slot": 0
           }
         ],
@@ -9899,8 +9899,8 @@
           0.0
         ],
         "uvScale": [
-          1.0,
-          1.0
+          2,
+          7
         ],
         "visible": true
       },
@@ -24322,6 +24322,1200 @@
           2.5,
           1.27,
           52
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 412,
+      "name": "Clock Tower Exterior",
+      "parent": 9,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          -19,
+          0,
+          85
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.22,
+          0.43,
+          0.43
+        ]
+      },
+      "id": 413,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Clock Tower Cornice",
+      "parent": 412,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.875,
+          0.12,
+          1.875
+        ],
+        "translation": [
+          0,
+          13.12,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.78,
+          0.43,
+          0.25
+        ]
+      },
+      "id": 414,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Clock Tower Roof",
+      "parent": 412,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          2.0,
+          0.25,
+          2.0
+        ],
+        "translation": [
+          0,
+          13.34,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.22,
+          0.43,
+          0.43
+        ]
+      },
+      "id": 415,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Clock Dial Frame",
+      "parent": 412,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.275,
+          1.275,
+          0.08
+        ],
+        "translation": [
+          0,
+          10.8,
+          -1.89
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.86,
+          0.77,
+          0.62
+        ]
+      },
+      "id": 416,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Clock Dial",
+      "parent": 412,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.1,
+          1.1,
+          0.03
+        ],
+        "translation": [
+          0,
+          10.8,
+          -2
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.22,
+          0.43,
+          0.43
+        ]
+      },
+      "id": 417,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Clock Minute Hand",
+      "parent": 412,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.05,
+          0.45,
+          0.02
+        ],
+        "translation": [
+          0,
+          11.2,
+          -2.06
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.22,
+          0.43,
+          0.43
+        ]
+      },
+      "id": 418,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Clock Hour Hand",
+      "parent": 412,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.36,
+          0.05,
+          0.02
+        ],
+        "translation": [
+          0.32,
+          10.8,
+          -2.07
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.78,
+          0.43,
+          0.25
+        ]
+      },
+      "id": 419,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Clock Marker 1",
+      "parent": 412,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.06,
+          0.06,
+          0.02
+        ],
+        "translation": [
+          0.0,
+          11.680000000000001,
+          -2.07
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.78,
+          0.43,
+          0.25
+        ]
+      },
+      "id": 420,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Clock Marker 2",
+      "parent": 412,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.06,
+          0.06,
+          0.02
+        ],
+        "translation": [
+          0.0,
+          9.92,
+          -2.07
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.78,
+          0.43,
+          0.25
+        ]
+      },
+      "id": 421,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Clock Marker 3",
+      "parent": 412,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.06,
+          0.06,
+          0.02
+        ],
+        "translation": [
+          0.88,
+          10.8,
+          -2.07
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.78,
+          0.43,
+          0.25
+        ]
+      },
+      "id": 422,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Clock Marker 4",
+      "parent": 412,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.06,
+          0.06,
+          0.02
+        ],
+        "translation": [
+          -0.88,
+          10.8,
+          -2.07
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.86,
+          0.77,
+          0.62
+        ]
+      },
+      "id": 423,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Clock Tower Buttress",
+      "parent": 412,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.5,
+          3.76,
+          2.0
+        ],
+        "translation": [
+          1.5,
+          0.16,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 424,
+      "name": "Clock Lookout Details",
+      "parent": 9,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          -12,
+          3.92,
+          82
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.86,
+          0.77,
+          0.62
+        ]
+      },
+      "id": 425,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Lookout Lintel",
+      "parent": 424,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          3.925,
+          0.15,
+          0.35
+        ],
+        "translation": [
+          0,
+          3.5,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.78,
+          0.43,
+          0.25
+        ]
+      },
+      "id": 426,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Lookout Crown",
+      "parent": 424,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          4.05,
+          0.06,
+          0.475
+        ],
+        "translation": [
+          0,
+          3.7,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.86,
+          0.77,
+          0.62
+        ]
+      },
+      "id": 427,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Lookout Post Base 1",
+      "parent": 424,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.425,
+          0.18,
+          0.475
+        ],
+        "translation": [
+          -3.5,
+          0.18,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.86,
+          0.77,
+          0.62
+        ]
+      },
+      "id": 428,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Lookout Post Base 2",
+      "parent": 424,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.425,
+          0.18,
+          0.475
+        ],
+        "translation": [
+          3.5,
+          0.18,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          1,
+          0.73,
+          0.59
+        ]
+      },
+      "id": 429,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayPaving.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          8,
+          6
+        ],
+        "visible": true
+      },
+      "name": "East Roof Terracotta Paving",
+      "parent": 9,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          8.0,
+          0.015,
+          6.5
+        ],
+        "translation": [
+          12.0,
+          3.9349999272823335,
+          75.5
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          1,
+          0.73,
+          0.59
+        ]
+      },
+      "id": 430,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayPaving.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          9,
+          6
+        ],
+        "visible": true
+      },
+      "name": "West Roof Terracotta Paving",
+      "parent": 9,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          8.699999809265137,
+          0.015,
+          6.5
+        ],
+        "translation": [
+          -7.300000190734863,
+          3.9349999272823335,
+          75.5
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          1,
+          0.73,
+          0.59
+        ]
+      },
+      "id": 431,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayPaving.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          4,
+          4
+        ],
+        "visible": true
+      },
+      "name": "Clock Lookout Terracotta Paving",
+      "parent": 9,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          4.0,
+          0.015,
+          3.5
+        ],
+        "translation": [
+          -12.0,
+          3.9349999272823335,
+          85.5
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.36,
+          0.51,
+          0.26
+        ]
+      },
+      "id": 432,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Roof East Bed Foliage",
+      "parent": 9,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          2.39,
+          0.01,
+          0.89
+        ],
+        "translation": [
+          10.0,
+          4.629999974966049,
+          79.0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.36,
+          0.51,
+          0.26
+        ]
+      },
+      "id": 433,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Roof West Bed Foliage",
+      "parent": 9,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          2.39,
+          0.01,
+          1.14
+        ],
+        "translation": [
+          -5.5,
+          4.629999974966049,
+          76.0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.3,
+          0.22
+        ]
+      },
+      "id": 434,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Clock Bench Backrest",
+      "parent": 9,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          2.0,
+          0.21,
+          0.08
+        ],
+        "translation": [
+          -12.0,
+          4.790000185966492,
+          87.52000305175781
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.3,
+          0.22
+        ]
+      },
+      "id": 435,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Roof Garden Bench Backrest",
+      "parent": 9,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.399999976158142,
+          0.21,
+          0.08
+        ],
+        "translation": [
+          -4.0,
+          4.790000185966492,
+          81.47
         ]
       }
     }
