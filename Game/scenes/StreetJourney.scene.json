@@ -10626,12 +10626,12 @@
       "parent": 156,
       "rectTransform": {
         "anchorMax": [
-          0.0,
-          0.0
+          1,
+          1
         ],
         "anchorMin": [
-          0.0,
-          0.0
+          0,
+          1
         ],
         "pivot": [
           0.0,
@@ -10639,10 +10639,10 @@
         ],
         "position": [
           42,
-          622
+          -98
         ],
         "sizeDelta": [
-          1190,
+          -90,
           44
         ]
       },
@@ -10689,12 +10689,12 @@
       "parent": 156,
       "rectTransform": {
         "anchorMax": [
-          0.0,
-          0.0
+          1,
+          1
         ],
         "anchorMin": [
-          0.0,
-          0.0
+          0,
+          1
         ],
         "pivot": [
           0.0,
@@ -10702,10 +10702,10 @@
         ],
         "position": [
           42,
-          622
+          -98
         ],
         "sizeDelta": [
-          1190,
+          -90,
           44
         ]
       },
@@ -13592,7 +13592,7 @@
       "active": false,
       "canvas": {
         "enabled": true,
-        "matchWidthOrHeight": 0.5,
+        "matchWidthOrHeight": 0,
         "referenceSize": [
           1280.0,
           720.0
@@ -13644,8 +13644,8 @@
       "parent": 180,
       "rectTransform": {
         "anchorMax": [
-          0,
-          0
+          1,
+          1
         ],
         "anchorMin": [
           0,
@@ -13660,8 +13660,8 @@
           0
         ],
         "sizeDelta": [
-          1280,
-          720
+          0,
+          0
         ]
       },
       "tag": "",
@@ -13705,20 +13705,20 @@
       "parent": 180,
       "rectTransform": {
         "anchorMax": [
-          0,
-          0
+          0.5,
+          0.5
         ],
         "anchorMin": [
-          0,
-          0
+          0.5,
+          0.5
         ],
         "pivot": [
           0,
           0
         ],
         "position": [
-          160,
-          204
+          -480,
+          -156
         ],
         "sizeDelta": [
           960,
@@ -13752,20 +13752,20 @@
       "parent": 180,
       "rectTransform": {
         "anchorMax": [
-          0,
-          0
+          0.5,
+          0.5
         ],
         "anchorMin": [
-          0,
-          0
+          0.5,
+          0.5
         ],
         "pivot": [
           0,
           0
         ],
         "position": [
-          202,
-          228
+          -438,
+          -132
         ],
         "sizeDelta": [
           880,
@@ -13815,20 +13815,20 @@
       "parent": 180,
       "rectTransform": {
         "anchorMax": [
-          0,
-          0
+          0.5,
+          0.5
         ],
         "anchorMin": [
-          0,
-          0
+          0.5,
+          0.5
         ],
         "pivot": [
           0,
           0
         ],
         "position": [
-          202,
-          290
+          -438,
+          -70
         ],
         "sizeDelta": [
           880,
@@ -30987,20 +30987,20 @@
       },
       "rectTransform": {
         "anchorMin": [
-          0,
-          0
+          0.5,
+          0.5
         ],
         "anchorMax": [
-          0,
-          0
+          0.5,
+          0.5
         ],
         "pivot": [
           0,
           0
         ],
         "position": [
-          202,
-          435
+          -438,
+          75
         ],
         "sizeDelta": [
           250,
@@ -31114,20 +31114,20 @@
       },
       "rectTransform": {
         "anchorMin": [
-          0,
-          0
+          0.5,
+          0.5
         ],
         "anchorMax": [
-          0,
-          0
+          0.5,
+          0.5
         ],
         "pivot": [
           0,
           0
         ],
         "position": [
-          468,
-          435
+          -172,
+          75
         ],
         "sizeDelta": [
           250,
