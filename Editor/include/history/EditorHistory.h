@@ -873,12 +873,15 @@ class EditorHistory {
 	/// <summary>
 	/// シーン固有の照明設定を変更し、履歴に登録する
 	/// </summary>
-	bool SetSceneLighting(std::optional<LightingSettings> lighting);
+	bool SetSceneLighting(std::optional<LightingSettings> lighting,
+	                      const FogSettings &fog);
 
   private:
 	struct SceneLightingCommand {
 		std::optional<LightingSettings> before;
 		std::optional<LightingSettings> after;
+		FogSettings fogBefore;
+		FogSettings fogAfter;
 
 		bool Undo(Scene &scene) const;
 		bool Redo(Scene &scene) const;

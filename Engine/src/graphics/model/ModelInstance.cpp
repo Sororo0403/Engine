@@ -131,7 +131,7 @@ void ModelInstance::Draw(ID3D12GraphicsCommandList *commandList,
                          MeshRenderer &renderer, const DirectionalLight &light,
                          const PointLights &pointLights,
                          const SpotLights &spotLights,
-                         const ShadowMap &shadows) const {
+                         const ShadowMap &shadows, const MeshFogData &fog) const {
 	if (!commandList || !model_) {
 		Logger::Error("ModelInstance::Draw: 引数が無効、または未初期化です。");
 		return;
@@ -139,7 +139,7 @@ void ModelInstance::Draw(ID3D12GraphicsCommandList *commandList,
 
 	for (const auto &instance : GetMeshes()) {
 		renderer.Draw(commandList, instance, light, pointLights, spotLights,
-		              shadows);
+		              shadows, fog);
 	}
 }
 

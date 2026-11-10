@@ -24,6 +24,7 @@ class D3D12Graphics;
 class MeshRenderer;
 class RenderSystem;
 class DebugLineRenderer;
+struct FogSettings;
 struct Ray;
 struct ModelAnimationPose;
 
@@ -161,6 +162,11 @@ class RenderWorld {
 	/// 平行光と環境光を一括設定する
 	/// </summary>
 	void SetDirectionalLights(const DirectionalLightsData &lights);
+
+	/// <summary>
+	/// このワールドの距離霧を設定する
+	/// </summary>
+	void SetFog(const FogSettings &fog);
 
 	/// <summary>
 	/// ワールド座標の点光源を一括設定する。更新成功前の設定では描画しない

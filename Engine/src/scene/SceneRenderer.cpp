@@ -171,6 +171,7 @@ bool SceneRenderer::Update(int width, int height) {
 
 		if (!SynchronizeObjects(keepBackground))
 			return false;
+		world_->SetFog(scene_.GetFog());
 		const bool updated = width == 0 && height == 0
 		                         ? render_.Update(*world_)
 		                         : render_.Update(*world_, width, height);

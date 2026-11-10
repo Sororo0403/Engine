@@ -66,6 +66,7 @@
     <ClInclude Include="include\graphics\buffer\ConstantBuffer.h" />
     <ClInclude Include="include\core\EngineConfig.h" />
     <ClInclude Include="include\graphics\lighting\DirectionalLightData.h" />
+    <ClInclude Include="include\graphics\lighting\FogSettings.h" />
     <ClInclude Include="include\graphics\lighting\LightingSettings.h" />
     <ClInclude Include="include\core\Engine.h" />
     <ClInclude Include="include\core\EngineContext.h" />

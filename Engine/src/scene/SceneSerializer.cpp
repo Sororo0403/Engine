@@ -934,6 +934,12 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 			    {"shadows", WriteShadows(lighting->shadows)}};
 		}
 
+		if (const auto &fog = scene.GetFog(); fog != FogSettings{}) {
+			document["fog"] = {
+			    {"enabled", fog.enabled}, {"color", ToJson(fog.color)},
+			    {"start", fog.start}, {"end", fog.end}, {"strength", fog.strength}};
+		}
+
 		// 文字列への変換に成功してから、呼び出し側の出力を置き換える
 		std::string serialized = document.dump(2);
 		serialized += '\n';
@@ -1955,6 +1961,18 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 				throw std::runtime_error("シーンの照明設定が無効です。");
 			}
 		}
+		if (const auto it = document.find("fog"); it != document.end()) {
+			FogSettings fog;
+			fog.enabled = it->at("enabled").get<bool>();
+			fog.color = ReadFloat3(it->at("color"));
+			fog.start = it->at("start").get<float>();
+			fog.end = it->at("end").get<float>();
+			fog.strength = it->at("strength").get<float>();
+			if (!candidate.SetFog(fog)) {
+				throw std::runtime_error("シーンの霧の設定が無効です。");
+			}
+		}
+
 		SceneHierarchy::WorldTransforms transforms;
 
 		if (!SceneHierarchy::BuildWorldTransforms(candidate, transforms)) {

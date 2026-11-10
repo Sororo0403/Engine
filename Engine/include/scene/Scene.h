@@ -1,5 +1,6 @@
 #pragma once
 
+#include "graphics/lighting/FogSettings.h"
 #include "graphics/lighting/LightingSettings.h"
 #include "scene/SceneObject.h"
 #include "scene/SceneObjectId.h"
@@ -130,6 +131,16 @@ class Scene {
 	bool SetLighting(std::optional<LightingSettings> lighting);
 
 	/// <summary>
+	/// シーンの距離霧を取得する
+	/// </summary>
+	const FogSettings &GetFog() const { return fog_; }
+
+	/// <summary>
+	/// 有効な距離霧の設定を保存する
+	/// </summary>
+	bool SetFog(const FogSettings &fog);
+
+	/// <summary>
 	/// 再生中のメッシュの白黒効果を取得する。前景の物体と子は対象外
 	/// </summary>
 	const MonochromeEffect &GetMonochrome() const { return monochrome_; }
@@ -162,6 +173,7 @@ class Scene {
 
   private:
 	std::optional<LightingSettings> lighting_;
+	FogSettings fog_;
 	MonochromeEffect monochrome_;
 	SceneObjectId monochromeForeground_ = 0;
 	std::shared_ptr<const SceneBackgroundFreeze> backgroundFreeze_;

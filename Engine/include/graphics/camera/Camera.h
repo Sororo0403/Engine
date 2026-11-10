@@ -33,6 +33,11 @@ class Camera {
 	const DirectX::XMFLOAT4X4 &GetViewMatrix() const;
 
 	/// <summary>
+	/// 更新済みのビュー行列に対応するカメラ位置を取得する
+	/// </summary>
+	const DirectX::XMFLOAT3 &GetViewOrigin() const { return viewOrigin_; }
+
+	/// <summary>
 	/// 更新済みの投影行列を取得する
 	/// </summary>
 	/// <returns>このカメラが保持する投影行列への読み取り専用参照</returns>

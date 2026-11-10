@@ -1,5 +1,6 @@
 #pragma once
 
+#include <DirectXMath.h>
 #include <Windows.h>
 #include <d3d12.h>
 #include <dxcapi.h>
@@ -10,6 +11,17 @@ class DirectionalLight;
 class PointLights;
 class SpotLights;
 class ShadowMap;
+
+/// <summary>
+/// ピクセルシェーダーに渡すカメラ位置と霧の定数
+/// </summary>
+struct MeshFogData {
+	DirectX::XMFLOAT3 cameraPosition;
+	float start;
+	DirectX::XMFLOAT3 color;
+	float end;
+	float strength;
+};
 
 class MeshRenderer {
   public:
@@ -39,12 +51,13 @@ class MeshRenderer {
 	/// <param name="instance">初期化・更新済みの物体</param>
 	/// <param name="pointLights">更新済みの点光源配列</param>
 	/// <param name="shadows">このワールド専用の影と材質画像の参照</param>
+	/// <param name="fog">カメラ位置と距離霧の定数</param>
 	/// <param name="spotLights">更新済みのスポットライト配列</param>
 	/// <param name="light">初期化・更新済みの平行光源</param>
 	void Draw(ID3D12GraphicsCommandList *commandList,
 	          const MeshInstance &instance, const DirectionalLight &light,
 	          const PointLights &pointLights, const SpotLights &spotLights,
-	          const ShadowMap &shadows);
+	          const ShadowMap &shadows, const MeshFogData &fog);
 
 	/// <summary>
 	/// 描画用オブジェクトを解放する。GPUの利用完了後に呼び出す

@@ -93,6 +93,7 @@ const std::map<SceneObjectId, SceneObject> &Scene::GetObjects() const {
 void Scene::Clear() {
 	objects_.clear();
 	lighting_.reset();
+	fog_ = {};
 	monochrome_ = {};
 	monochromeForeground_ = 0;
 	backgroundFreeze_.reset();
@@ -147,6 +148,7 @@ bool Scene::ApplyTransaction(const std::function<bool(Scene &)> &operation) {
 
 	working.objects_ = objects_;
 	working.lighting_ = lighting_;
+	working.fog_ = fog_;
 	working.monochrome_ = monochrome_;
 	working.monochromeForeground_ = monochromeForeground_;
 	working.backgroundFreeze_ = backgroundFreeze_;
@@ -183,6 +185,7 @@ void Scene::CopyFrom(const Scene &source) {
 	const auto next = (std::max)(nextObjectId_, source.nextObjectId_);
 	objects_.swap(candidate.objects_);
 	lighting_ = source.lighting_;
+	fog_ = source.fog_;
 	monochrome_ = source.monochrome_;
 	monochromeForeground_ = source.monochromeForeground_;
 	backgroundFreeze_ = source.backgroundFreeze_;
@@ -196,6 +199,15 @@ bool Scene::SetLighting(std::optional<LightingSettings> lighting) {
 	}
 
 	lighting_ = lighting;
+	return true;
+}
+
+bool Scene::SetFog(const FogSettings &fog) {
+	if (!fog.IsValid()) {
+		return false;
+	}
+
+	fog_ = fog;
 	return true;
 }
 

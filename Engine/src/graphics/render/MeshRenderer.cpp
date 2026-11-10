@@ -76,7 +76,7 @@ void MeshRenderer::Draw(ID3D12GraphicsCommandList *commandList,
                         const DirectionalLight &light,
                         const PointLights &pointLights,
                         const SpotLights &spotLights,
-                        const ShadowMap &shadows) {
+                        const ShadowMap &shadows, const MeshFogData &fog) {
 	const Mesh *mesh = instance.GetMesh();
 	const Material *material = instance.GetMaterial();
 
@@ -138,6 +138,7 @@ void MeshRenderer::Draw(ID3D12GraphicsCommandList *commandList,
 	if (skinned)
 		commandList->SetGraphicsRootConstantBufferView(
 		    8, instance.GetSkinningAddress());
+	commandList->SetGraphicsRoot32BitConstants(9, 9, &fog, 0);
 	mesh->Draw(commandList, instance.GetSkinningWeights());
 }
 
@@ -160,7 +161,12 @@ bool MeshRenderer::CreateRootSignature(ID3D12Device *device) {
 	range.OffsetInDescriptorsFromTableStart =
 	    D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	D3D12_ROOT_PARAMETER parameters[9]{};
+	static_assert(sizeof(MeshFogData) == 9 * sizeof(float));
+	D3D12_ROOT_PARAMETER parameters[10]{};
+	parameters[9].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+	parameters[9].Constants.ShaderRegister = 7;
+	parameters[9].Constants.Num32BitValues = 9;
+	parameters[9].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	parameters[8].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	parameters[8].Descriptor.ShaderRegister = 6;
 	parameters[8].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;

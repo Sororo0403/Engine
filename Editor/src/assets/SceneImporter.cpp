@@ -442,6 +442,7 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 			Scene loaded;
 			loaded.ReplaceObjects(entry.objects);
 			loaded.SetLighting(entry.lighting);
+			loaded.SetFog(entry.fog);
 			std::string text;
 
 			if (entry.prefab) {
@@ -491,6 +492,7 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 			output.Text(path, text);
 		imported.ReplaceObjects(std::move(graph.front().objects));
 		imported.SetLighting(graph.front().lighting);
+		imported.SetFog(graph.front().fog);
 		imported.SetUseLegacyDirectionalLight(false);
 		createdFolder.swap(folderReference);
 

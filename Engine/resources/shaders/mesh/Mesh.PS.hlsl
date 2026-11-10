@@ -116,6 +116,14 @@ cbuffer MaterialBuffer : register(b2) {
 	float monochromeSoftness;
 };
 
+cbuffer FogBuffer : register(b7) {
+	float3 fogCameraPosition;
+	float fogStart;
+	float3 fogColor;
+	float fogEnd;
+	float fogStrength;
+};
+
 float4 PSMain(VertexOutput input) : SV_Target0 {
 	float2 texcoord = input.texcoord * uvScale + uvOffset;
 
@@ -175,6 +183,11 @@ float4 PSMain(VertexOutput input) : SV_Target0 {
 
 	float3 color =
 	    textureColor.rgb * input.color.rgb * baseColor.rgb * lighting;
+	if (fogStrength > 0.0f) {
+		float distanceToCamera = length(input.worldPosition - fogCameraPosition);
+		float fogAmount = smoothstep(fogStart, fogEnd, distanceToCamera) * fogStrength;
+		color = lerp(color, fogColor, fogAmount);
+	}
 	if (revealFeather > 0.0f) {
 		float distanceToOrigin = length(input.worldPosition - revealOriginRadius.xyz);
 		color *= smoothstep(-revealFeather, revealFeather,

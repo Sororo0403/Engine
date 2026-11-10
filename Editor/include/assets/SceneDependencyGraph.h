@@ -1,5 +1,6 @@
 #pragma once
 
+#include "graphics/lighting/FogSettings.h"
 #include "graphics/lighting/LightingSettings.h"
 #include "scene/SceneObject.h"
 #include <filesystem>
@@ -21,6 +22,7 @@ class SceneDependencyGraph {
 		SceneObjectId nextSourceId = 0;
 		std::optional<LightingSettings> lighting;
 		bool legacyDirectionalLight = false;
+		FogSettings fog;
 	};
 
 	using Resolve =

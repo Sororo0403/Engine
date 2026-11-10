@@ -2634,6 +2634,7 @@ void EditorScene::StartAction(EditorAction action) {
 		const auto &lighting = document_.GetScene().GetLighting();
 		sceneAmbientOverride_ = lighting.has_value();
 		sceneAmbientDraft_ = lighting ? lighting->ambient : exportConfig_.lighting.ambient;
+		sceneFogDraft_ = document_.GetScene().GetFog();
 		sceneSettingsOpenRequested_ = true;
 		stage_ = DialogStage::SCENE_SETTINGS;
 		return;
@@ -4458,7 +4459,22 @@ void EditorScene::UpdateDialogs() {
 			}
 			ImGui::EndDisabled();
 
+			ImGui::Separator();
+			ImGui::Checkbox("Distance Fog", &sceneFogDraft_.enabled);
+			ImGui::BeginDisabled(!sceneFogDraft_.enabled);
+			ImGui::ColorEdit3("Fog Color", &sceneFogDraft_.color.x);
+			ImGui::InputFloat("Fog Start", &sceneFogDraft_.start);
+			ImGui::InputFloat("Fog End", &sceneFogDraft_.end);
+			ImGui::SliderFloat("Fog Strength", &sceneFogDraft_.strength, 0.0f,
+			                   1.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+			ImGui::EndDisabled();
+
+			const bool validFog = sceneFogDraft_.IsValid();
+			if (!validFog) {
+				ImGui::TextUnformatted("Fog End must be greater than Fog Start (0 or above).");
+			}
 			bool applied = false;
+			ImGui::BeginDisabled(!validFog);
 			if (ui_.Button("Apply")) {
 				std::optional<LightingSettings> lighting;
 				if (sceneAmbientOverride_) {
@@ -4466,8 +4482,9 @@ void EditorScene::UpdateDialogs() {
 					    exportConfig_.lighting);
 					lighting->ambient = sceneAmbientDraft_;
 				}
-				applied = document_.GetHistory().SetSceneLighting(lighting);
+				applied = document_.GetHistory().SetSceneLighting(lighting, sceneFogDraft_);
 			}
+			ImGui::EndDisabled();
 
 			ui_.SameLine();
 			if (ui_.Button("Cancel") || applied) {

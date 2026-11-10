@@ -1,6 +1,7 @@
 #include "graphics/render/RenderWorld.h"
 #include "core/Logger.h"
 #include "graphics/lighting/DirectionalLight.h"
+#include "graphics/lighting/FogSettings.h"
 #include "graphics/lighting/PointLights.h"
 #include "graphics/lighting/SpotLights.h"
 #include "graphics/camera/Camera.h"
@@ -170,6 +171,7 @@ struct RenderWorld::Impl {
 	std::vector<PointLightData> pointLightData_;
 	std::vector<SpotLightData> spotLightData_;
 	DirectionalLightsData lightData_{};
+	FogSettings fog_;
 	ShadowSettings shadowSettings_;
 	ShadowMap shadows_;
 
@@ -479,6 +481,12 @@ void RenderWorld::SetDirectionalLights(const DirectionalLightsData &lights) {
 	impl_->prepared_ = false;
 }
 
+void RenderWorld::SetFog(const FogSettings &fog) {
+	if (fog.IsValid()) {
+		impl_->fog_ = fog;
+	}
+}
+
 void RenderWorld::MoveCamera(const DirectX::XMFLOAT3 &offset) {
 	if (!MathUtils::IsFinite(offset)) {
 		throw std::invalid_argument(
@@ -501,6 +509,7 @@ void RenderWorld::Clear() {
 	// スロットと世代番号は残し、古いハンドルを再び有効にしない
 	impl_->camera_ = Camera{};
 	impl_->lightData_ = {};
+	impl_->fog_ = {};
 	impl_->pointLightData_.clear();
 	impl_->spotLightData_.clear();
 	impl_->prepared_ = false;
@@ -587,6 +596,10 @@ void RenderWorld::Draw(MeshRenderer &renderer,
 		return;
 	}
 
+	const auto &settings = impl_->fog_;
+	const MeshFogData fog{impl_->camera_.GetViewOrigin(), settings.start,
+	                      settings.color, settings.end,
+	                      settings.enabled ? settings.strength : 0.0f};
 	for (const auto &slot : impl_->slots_) {
 		if (!slot.object_) {
 			continue;
@@ -594,7 +607,7 @@ void RenderWorld::Draw(MeshRenderer &renderer,
 
 		slot.object_->instance_.Draw(commandList, renderer, impl_->light_,
 		                             impl_->pointLights_, impl_->spotLights_,
-		                             impl_->shadows_);
+		                             impl_->shadows_, fog);
 	}
 
 	// モデルの深度を使い、登録された線をまとめて描画する

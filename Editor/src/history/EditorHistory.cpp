@@ -2935,21 +2935,26 @@ bool EditorHistory::SetTriggerActions(
 }
 
 bool EditorHistory::SceneLightingCommand::Undo(Scene &scene) const {
-	return scene.SetLighting(before);
+	return scene.SetLighting(before) && scene.SetFog(fogBefore);
 }
 
 bool EditorHistory::SceneLightingCommand::Redo(Scene &scene) const {
-	return scene.SetLighting(after);
+	return scene.SetLighting(after) && scene.SetFog(fogAfter);
 }
 
-bool EditorHistory::SetSceneLighting(std::optional<LightingSettings> lighting) {
+bool EditorHistory::SetSceneLighting(std::optional<LightingSettings> lighting,
+                                     const FogSettings &fog) {
+	if ((lighting && !lighting->IsValid()) || !fog.IsValid()) {
+		return false;
+	}
+
 	CommitEdit();
 
-	if (scene_.GetLighting() == lighting) {
+	if (scene_.GetLighting() == lighting && scene_.GetFog() == fog) {
 		return true;
 	}
 
-	SceneLightingCommand command{scene_.GetLighting(), lighting};
+	SceneLightingCommand command{scene_.GetLighting(), lighting, scene_.GetFog(), fog};
 	const auto next = PrepareAppend();
 
 	if (!command.Redo(scene_)) {

@@ -18,6 +18,7 @@ class PointLights;
 class SpotLights;
 class ShadowMap;
 class MeshRenderer;
+struct MeshFogData;
 class Model;
 struct Ray;
 
@@ -57,11 +58,13 @@ class ModelInstance {
 	/// <param name="renderer">初期化済みのメッシュ描画クラス</param>
 	/// <param name="pointLights">更新済みの点光源配列</param>
 	/// <param name="shadows">このワールド専用の影と材質画像の参照</param>
+	/// <param name="fog">カメラ位置と距離霧の定数</param>
 	/// <param name="spotLights">更新済みのスポットライト配列</param>
 	/// <param name="light">更新済みの平行光源</param>
 	void Draw(ID3D12GraphicsCommandList *commandList, MeshRenderer &renderer,
 	          const DirectionalLight &light, const PointLights &pointLights,
-	          const SpotLights &spotLights, const ShadowMap &shadows) const;
+	          const SpotLights &spotLights, const ShadowMap &shadows,
+	          const MeshFogData &fog) const;
 
 	/// <summary>
 	/// 材質数を取得する

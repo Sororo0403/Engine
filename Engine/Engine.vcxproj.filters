@@ -370,6 +370,9 @@
     <ClInclude Include="include\graphics\lighting\DirectionalLightData.h">
       <Filter>include\graphics\lighting</Filter>
     </ClInclude>
+    <ClInclude Include="include\graphics\lighting\FogSettings.h">
+      <Filter>include\graphics\lighting</Filter>
+    </ClInclude>
     <ClInclude Include="include\graphics\lighting\LightingSettings.h">
       <Filter>include\graphics\lighting</Filter>
     </ClInclude>

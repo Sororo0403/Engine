@@ -13,7 +13,7 @@ std::vector<SceneDependencyGraph::Entry> SceneDependencyGraph::Read(
 		    "Scene dependency readers must be provided.");
 	std::vector<Entry> entries{
 	    {source, scene.GetObjects(), false, 0, scene.GetLighting(),
-	     scene.UsesLegacyDirectionalLight()}};
+	     scene.UsesLegacyDirectionalLight(), scene.GetFog()}};
 
 	for (std::size_t i = 0; i < entries.size(); ++i) {
 		auto objects = entries[i].objects;
@@ -66,7 +66,8 @@ std::vector<SceneDependencyGraph::Entry> SceneDependencyGraph::Read(
 			} else
 				load(path, target);
 			entries.push_back({path, target.GetObjects(), prefab, counter,
-			                   target.GetLighting(), target.UsesLegacyDirectionalLight()});
+			                   target.GetLighting(), target.UsesLegacyDirectionalLight(),
+			                   target.GetFog()});
 		}
 	}
 
