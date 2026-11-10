@@ -28,15 +28,14 @@ return {
     message = function(self, state, name)
         local label = self:reference("objective")
         if name == "bridge" then
-            state.bridge = true
             self:reference("bridgePad"):set_mesh_tint(0.30, 0.87, 0.48)
-            label:set_text("橋がつながった！ 対岸の高い足場にあるスイッチへ")
-        elseif name == "gate" then
-            state.gate = true
-            self:reference("gatePad"):set_mesh_tint(0.30, 0.87, 0.48)
-            if not state.bridge then
-                label:set_text("動く足場で手前に戻り、左のスイッチで橋を架けよう")
+            if self:reference("gate"):is_active() then
+                label:set_text("橋がつながった！ 対岸の高い足場にあるスイッチへ")
             end
+        elseif name == "gate" then
+            self:reference("gatePad"):set_mesh_tint(0.30, 0.87, 0.48)
+            self:reference("gate"):set_active(false)
+            label:set_text("見晴らし台へ  /  中央はジャンプ ［Space / A］、右は階段")
         elseif name == "finish" then
             local time = math.floor((state.elapsed or 0) * 10)
             local best = record_time("sunriseBestClearTime", time)
@@ -46,12 +45,6 @@ return {
                 result = result .. "\n落下なし！    ベスト " .. record_time("sunriseBestCleanTime", time)
             end
             self:reference("result"):set_text(result)
-            return
-        end
-
-        if state.bridge and state.gate then
-            self:reference("gate"):set_active(false)
-            label:set_text("見晴らし台へ  /  中央はジャンプ ［Space / A］、右は階段")
         end
     end
 }
