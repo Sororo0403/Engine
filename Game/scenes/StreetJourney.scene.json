@@ -12245,8 +12245,12 @@
               "label": "運河の手前"
             },
             {
-              "flowers": ["flower3", "flower4", "flower5", "flower6"],
-              "label": "運河の対岸"
+              "flowers": ["flower3", "flower4"],
+              "label": "市場通り"
+            },
+            {
+              "flowers": ["flower5", "flower6"],
+              "label": "歯車の広場"
             },
             {
               "flowers": ["flower7", "flower8"],

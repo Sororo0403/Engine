@@ -34,16 +34,19 @@ local function collection_summary(self, state)
 
     local remaining = {}
     for _, area in ipairs(state.flowerAreas or {}) do
+        local count = 0
         for _, reference in ipairs(area.flowers) do
             local flower = self:reference(reference)
             if flower and flower:is_active() then
-                remaining[#remaining + 1] = area.label
-                break
+                count = count + 1
             end
+        end
+        if count > 0 then
+            remaining[#remaining + 1] = area.label .. " " .. count .. "個"
         end
     end
     if #remaining > 0 then
-        return "まだ花がある場所： " .. table.concat(remaining, "・")
+        return "残り： " .. table.concat(remaining, " ・ ")
     end
     return "まだ見つけていない花のかけらがあるよ"
 end
