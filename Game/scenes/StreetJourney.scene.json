@@ -32834,6 +32834,133 @@
           69.0
         ]
       }
+    },
+    {
+      "active": true,
+      "id": 606,
+      "name": "Street Clear Park",
+      "parent": 180,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "rectTransform": {
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "pivot": [
+          0,
+          0
+        ],
+        "position": [
+          94,
+          106
+        ],
+        "sizeDelta": [
+          250,
+          50
+        ]
+      },
+      "image": {
+        "enabled": true,
+        "raycastTarget": true,
+        "texture": "",
+        "color": [
+          0.25,
+          0.29,
+          0.25,
+          1
+        ],
+        "preserveAspect": false,
+        "fillOrigin": "left",
+        "fillAmount": 1
+      },
+      "text": {
+        "enabled": true,
+        "raycastTarget": false,
+        "value": "公園へ",
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 22,
+        "bold": true,
+        "color": [
+          1,
+          1,
+          0.92,
+          1
+        ],
+        "alignment": "center",
+        "verticalAlignment": "middle"
+      },
+      "button": {
+        "enabled": true,
+        "interactable": true,
+        "navigation": true,
+        "normalColor": [
+          0.77,
+          0.8,
+          0.75,
+          1
+        ],
+        "highlightedColor": [
+          1,
+          1,
+          0.8,
+          1
+        ],
+        "pressedColor": [
+          0.85,
+          0.78,
+          0.56,
+          1
+        ],
+        "disabledColor": [
+          0.5,
+          0.5,
+          0.5,
+          1
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonClick",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "loadScene",
+            "scene": "@project/scenes/ParkAdventure.scene.json",
+            "target": 0
+          }
+        ]
+      }
     }
   ],
   "projectRoot": "..",
