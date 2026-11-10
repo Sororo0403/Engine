@@ -5,6 +5,7 @@
 #include "scene/SceneAudioAction.h"
 #include "scene/SceneObjectId.h"
 #include <filesystem>
+#include <map>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -62,6 +63,7 @@ struct Call {
 	const CameraTransitionView *transitionView = nullptr;
 	std::span<const GameActionState> actions;
 	SceneAnimations *animations = nullptr;
+	std::map<SceneObjectId, bool> *clipPauses = nullptr;
 	int animationOperations = 0;
 	SceneParticles *particles = nullptr;
 	SceneAnimators *animators = nullptr;

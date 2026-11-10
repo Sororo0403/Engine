@@ -7,6 +7,7 @@
 #include "scene/SceneObjectId.h"
 #include <cstddef>
 #include <filesystem>
+#include <map>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -53,7 +54,7 @@ class LuaScript {
 	/// <summary>
 	/// 公開するスクリプトAPIの版。Runtimeの出力互換性を照合する
 	/// </summary>
-	static constexpr int kApiVersion = 32;
+	static constexpr int kApiVersion = 33;
 	static constexpr std::size_t kMaximumSourceBytes = 256 * 1024;
 	static constexpr std::size_t kMaximumBytecodeBytes = 1024 * 1024;
 	static constexpr std::size_t kMaximumStateBytes = 64 * 1024;
@@ -145,6 +146,7 @@ class LuaScript {
 	/// <param name="animators">指定時は同じ候補のモデル内クリップの再生状態</param>
 	/// <param name="viewport">指定時はLuaのupdateへ描画寸法と利用可能なポインターを渡す</param>
 	/// <param name="transitionView">切り替え中のゲームカメラの描画姿勢。通常はnullptr</param>
+	/// <param name="clipPauses">指定時はAnimation Playerの一時停止・再開要求を受け取る</param>
 	/// <param name="character">指定時はLuaのupdateへ主人公の更新済み状態を渡す</param>
 	/// <param name="remainingAnimatorOperations">指定時はフレーム全体で共有する残りAnimator操作回数</param>
 	/// <returns>true:成功またはコールバックなし false:コード・API・状態・実行制限が無効</returns>
@@ -176,5 +178,6 @@ class LuaScript {
 	       int *remainingAnimatorOperations = nullptr,
 	       const UIInput *viewport = nullptr,
 	       const CharacterRuntimeState *character = nullptr,
-	       const CameraTransitionView *transitionView = nullptr);
+	       const CameraTransitionView *transitionView = nullptr,
+	       std::map<SceneObjectId, bool> *clipPauses = nullptr);
 };

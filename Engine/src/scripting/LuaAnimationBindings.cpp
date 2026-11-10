@@ -4,10 +4,11 @@
 #include "scene/SceneActivity.h"
 #include <cmath>
 #include <cstring>
+#include <iterator>
 #include <stdexcept>
 
 namespace {
-enum class Op { PLAY, PAUSE, STOP, SEEK, PLAYING, TIME };
+enum class Op { PLAY, PAUSE, STOP, SEEK, PLAYING, TIME, SET_CLIP_PAUSED };
 
 /// <summary>
 /// Lua APIを呼ばずに、作業中のアニメーションを操作・参照する
@@ -31,12 +32,19 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, double &value,
 			    "Script animation API call limit exceeded.");
 		if (call.remainingAnimationOperations)
 			--*call.remainingAnimationOperations;
-		if (!call.scene || !call.scene->Contains(id) || !call.animations)
+		const auto *object = call.scene ? call.scene->FindObject(id) : nullptr;
+		if (op == Op::SET_CLIP_PAUSED) {
+			if (!object || !object->animationClip || !call.clipPauses)
+				throw std::runtime_error("This object requires an Animation Player.");
+			call.clipPauses->insert_or_assign(id, value != 0);
+			value = 1;
+			return true;
+		}
+		if (!object || !call.animations)
 			throw std::runtime_error("Animation runtime is unavailable.");
 		auto current = call.animations->GetState(id);
 		// 同じコールバックで生成したPrefabも、その開始姿勢を基準に操作できるよう準備する。
-		if (!current && call.executing &&
-		    call.scene->FindObject(id)->transformAnimation) {
+		if (!current && call.executing && object->transformAnimation) {
 			if (!call.animations->Configure(*call.scene, true, call.error))
 				return false;
 			call.physicsDirty = true;
@@ -106,6 +114,10 @@ int Dispatch(lua_State *state) {
 			return luaL_error(
 			    state, "Animation seek must use a finite non-negative time.");
 	}
+	if (op == Op::SET_CLIP_PAUSED) {
+		luaL_checktype(state, 2, LUA_TBOOLEAN);
+		value = lua_toboolean(state, 2);
+	}
 
 	if (!Perform(call, op, id, value, restart)) {
 		lua_pushlstring(state, call.error.data(), call.error.size());
@@ -123,8 +135,9 @@ int Dispatch(lua_State *state) {
 void LuaInternal::AddAnimationMethods(lua_State *state) {
 	const char *names[]{"play_animation",       "pause_animation",
 	                    "stop_animation",       "seek_animation",
-	                    "is_animation_playing", "get_animation_time"};
-	for (int i = 0; i < 6; ++i) {
+	                    "is_animation_playing", "get_animation_time",
+	                    "set_animation_clip_paused"};
+	for (std::size_t i = 0; i < std::size(names); ++i) {
 		lua_pushinteger(state, i);
 		lua_pushcclosure(state, Dispatch, 1);
 		lua_setfield(state, -2, names[i]);

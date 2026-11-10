@@ -21,6 +21,7 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 	auto audio = audioActions_;
 	std::filesystem::path requestedScene;
 	auto game = sharedScriptData_;
+	std::map<SceneObjectId, bool> clipPauses;
 	// すべてのupdateに、物理・Trigger処理後でLua変更前の同じ主人公状態を渡す。
 	const auto character = startOnly ? std::nullopt : GetCharacterState();
 	const CameraTransitionView transitionView{camera_, pose_};
@@ -33,7 +34,7 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 	                  : collisions_.GetEvents(),
 	        &audio, &requestedScene, &game, actions, &animations, &particles,
 	        &animators, viewport, character ? &*character : nullptr,
-	        cameraTransition_ ? &transitionView : nullptr))
+	        cameraTransition_ ? &transitionView : nullptr, &clipPauses))
 		return false;
 	std::string serialized;
 
@@ -41,6 +42,13 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 		error = "Script changes contain invalid scene data.";
 		return false;
 	}
+	const auto applyClipPauses = [&](SceneSimulation &simulation) {
+		for (const auto &[id, paused] : clipPauses) {
+			const auto playing = simulation.animationClips_.find(id);
+			if (playing != simulation.animationClips_.end())
+				playing->second.paused = paused;
+		}
+	};
 
 	if (candidate.GetObjects() == scene_.GetObjects()) {
 		scene_.CopyFrom(candidate);
@@ -53,6 +61,7 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 		animations_ = std::move(animations);
 		particles_ = std::move(particles);
 		animators_ = std::move(animators);
+		applyClipPauses(*this);
 		return true;
 	}
 
@@ -83,6 +92,7 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 		return false;
 	if (!startOnly)
 		next.scripts_.QueueTriggers(generated);
+	applyClipPauses(next);
 	Adopt(next);
 	return true;
 }

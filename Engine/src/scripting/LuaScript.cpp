@@ -448,7 +448,8 @@ bool LuaScript::Invoke(
     SceneParticles *particles, int *remainingParticleOperations,
     SceneAnimators *animators, int *remainingAnimatorOperations,
     const UIInput *viewport, const CharacterRuntimeState *character,
-    const CameraTransitionView *transitionView) {
+    const CameraTransitionView *transitionView,
+    std::map<SceneObjectId, bool> *clipPauses) {
 	try {
 		const char *name = Callback(callback);
 		if (!program || !name || !scene.Contains(self) ||
@@ -513,6 +514,7 @@ bool LuaScript::Invoke(
 		call.viewport = viewport;
 		call.character = character;
 		call.transitionView = transitionView;
+		call.clipPauses = clipPauses;
 		call.animations = animations;
 		call.particles = particles;
 		call.animators = animators;

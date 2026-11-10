@@ -75,6 +75,7 @@ class SceneScripts {
 	/// <param name="viewport">指定時はLuaのupdateへ描画寸法と利用可能なポインターを渡す</param>
 	/// <param name="transitionView">切り替え中のゲームカメラの描画姿勢。通常はnullptr</param>
 	/// <param name="character">指定時はLuaのupdateへ主人公の更新済み状態を渡す</param>
+	/// <param name="clipPauses">指定時はAnimation Playerの一時停止・再開要求を受け取る</param>
 	/// <returns>true:実行成功 false:コールバック・状態・制限が無効。呼び出し側は候補を破棄する</returns>
 	bool Run(Scene &scene, float seconds, const CharacterInput &input,
 	         std::span<const TriggerEvent> events, bool startOnly,
@@ -91,7 +92,8 @@ class SceneScripts {
 	         SceneAnimators *animators = nullptr,
 	         const UIInput *viewport = nullptr,
 	         const CharacterRuntimeState *character = nullptr,
-	         const CameraTransitionView *transitionView = nullptr);
+	         const CameraTransitionView *transitionView = nullptr,
+	         std::map<SceneObjectId, bool> *clipPauses = nullptr);
 
 	/// <summary>
 	/// スクリプトが生成した接触を再帰実行せず、次の正の時間の更新へ送る
