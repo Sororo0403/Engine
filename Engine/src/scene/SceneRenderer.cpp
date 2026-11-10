@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <exception>
 #include <format>
+#include <map>
 #include <set>
 #include <utility>
 #include <vector>
@@ -238,6 +239,15 @@ bool SceneRenderer::SynchronizeObjects(bool keepBackground) {
 		return false;
 	}
 
+	// ファイルの更新確認は描画更新ごとに同じ画像につき一度だけ行う。
+	std::map<std::filesystem::path, MaterialHandle> materials;
+	const auto loadMaterial = [&](const std::filesystem::path &path) {
+		auto [entry, inserted] = materials.try_emplace(path);
+		if (inserted)
+			entry->second = render_.GetMaterials().LoadTexture(path);
+		return entry->second;
+	};
+
 	const auto &monochrome = scene_.GetMonochrome();
 	const auto foreground = scene_.GetMonochromeForeground();
 	std::vector<SceneObjectId> coloredObjects;
@@ -399,7 +409,7 @@ bool SceneRenderer::SynchronizeObjects(bool keepBackground) {
 			auto material =
 			    found == object.meshRenderer->textures.slots.end()
 			        ? MaterialHandle{}
-			        : render_.GetMaterials().LoadTexture(found->second);
+			        : loadMaterial(found->second);
 
 			// 上書きがない場合は、モデルの既定の材質へ戻す。
 			if (!world_->SetMaterial(renderObject.handle, slot, material)) {
