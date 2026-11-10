@@ -10691,6 +10691,10 @@
             "target": 117
           },
           {
+            "name": "canalMarker",
+            "target": 546
+          },
+          {
             "name": "goal",
             "target": 155
           },
@@ -10719,6 +10723,8 @@
           "crossingMaxZ": 28,
           "findCanalText": "運河を目指して街を進もう",
           "introRadius": 4,
+          "canalApproachText": "岸に沿って金色の矢印を探そう",
+          "canalMarkerDepth": 1.6,
           "jumpText": "足元の矢印から運河をジャンプで渡ろう  ［Space / A］",
           "findGearText": "広場の歯車を探そう",
           "enemyHintText": "敵が身構えた！ 横に避けるか、攻撃で切り抜けよう ［J / X］",

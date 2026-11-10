@@ -15,6 +15,13 @@ local function update_hint(self, state, x, z, inRange, seconds)
         text = state.findGearText
     elseif x >= state.nearBankX and z >= state.crossingMinZ then
         text = state.jumpText
+        local marker = self:reference("canalMarker")
+        if marker and state.canalApproachText and state.canalMarkerDepth then
+            local _, _, markerZ = marker:get_position()
+            if math.abs(z - markerZ) > state.canalMarkerDepth then
+                text = state.canalApproachText
+            end
+        end
     elseif state.introRadius and not state.introFinished then
         state.introStartX = state.introStartX or x
         state.introStartZ = state.introStartZ or z
