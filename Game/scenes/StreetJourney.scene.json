@@ -23465,13 +23465,6 @@
     },
     {
       "active": true,
-      "colorTint": {
-        "color": [
-          1,
-          0.73,
-          0.59
-        ]
-      },
       "id": 429,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -23479,7 +23472,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/street/textures/QuayPaving.png",
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
             "slot": 0
           }
         ],
@@ -23488,8 +23481,8 @@
           0
         ],
         "uvScale": [
-          8,
-          6
+          5,
+          4
         ],
         "visible": true
       },
@@ -23517,13 +23510,6 @@
     },
     {
       "active": true,
-      "colorTint": {
-        "color": [
-          1,
-          0.73,
-          0.59
-        ]
-      },
       "id": 430,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -23531,7 +23517,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/street/textures/QuayPaving.png",
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
             "slot": 0
           }
         ],
@@ -23540,8 +23526,8 @@
           0
         ],
         "uvScale": [
-          9,
-          6
+          5,
+          4
         ],
         "visible": true
       },
@@ -23569,13 +23555,6 @@
     },
     {
       "active": true,
-      "colorTint": {
-        "color": [
-          1,
-          0.73,
-          0.59
-        ]
-      },
       "id": 431,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -23583,7 +23562,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/street/textures/QuayPaving.png",
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
             "slot": 0
           }
         ],
@@ -23592,8 +23571,8 @@
           0
         ],
         "uvScale": [
-          4,
-          4
+          3,
+          2
         ],
         "visible": true
       },
