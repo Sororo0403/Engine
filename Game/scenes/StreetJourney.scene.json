@@ -11538,6 +11538,7 @@
           "canalReturnText": "戻るなら矢印から運河を渡ろう ［Space / A 長押し］",
           "canalStepText": "飛び石に着地してから、もう一度ジャンプ ［Space / A］",
           "canalStepHintDepth": 0.9,
+          "canalStepReturnText": "飛び石を使って対岸へ戻ろう ［Space / A］",
           "jumpText": "矢印から対岸へジャンプ  ［Space / A 長押しで遠くへ］",
           "findGearText": "広場の歯車を探そう",
           "enemyHintText": "敵が身構えた！ 横に避けるか、攻撃で切り抜けよう ［J / X］",

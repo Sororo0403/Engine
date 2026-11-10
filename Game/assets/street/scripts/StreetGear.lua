@@ -167,6 +167,14 @@ return {
                             text = state.canalReturnText
                         end
                     end
+                    local step = self:reference("canalStep")
+                    if step and state.canalStepReturnText and state.canalStepHintDepth then
+                        local sx, sy, sz = step:get_position()
+                        if px <= sx + 3 and math.abs(py - sy) < 1.6
+                            and math.abs(pz - sz) <= state.canalStepHintDepth then
+                            text = state.canalStepReturnText
+                        end
+                    end
                 end
                 if game.streetGoalWaiting and state.finishPrompt then
                     text = state.finishPrompt
