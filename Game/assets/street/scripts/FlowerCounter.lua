@@ -100,7 +100,7 @@ return {
             game.streetRemainingFlowers = collection_summary(self, state)
             state.remainingSummaryCount = state.count
         end
-        if not state.finishedTime and not state.completed and not game.streetDeathActive then
+        if not state.finishedTime and not state.completed then
             state.elapsed = state.elapsed + seconds
         end
         if state.pickupHighlight then
