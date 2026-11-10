@@ -376,6 +376,10 @@ return {
     message = function(self, state, name)
         if name == "canal" or name == "courtyard" or name == "roof" then
             state.spawnX, state.spawnY, state.spawnZ = self:reference(name):get_position()
+            if not state.deathTime and state.life < state.maximumLife then
+                state.life = state.life + 1
+                show_life(self, state)
+            end
             if name ~= "canal" then
                 local canalCheckpoint = self:reference("canalCheckpoint")
                 if canalCheckpoint then
