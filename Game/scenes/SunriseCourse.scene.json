@@ -2915,7 +2915,7 @@
             "inputAction": "",
             "launchSpeed": 12,
             "messageName": "",
-            "once": true,
+            "once": false,
             "operation": "setCheckpoint",
             "scene": "",
             "target": 1
@@ -3956,7 +3956,7 @@
             "inputAction": "",
             "launchSpeed": 12,
             "messageName": "",
-            "once": true,
+            "once": false,
             "operation": "setCheckpoint",
             "scene": "",
             "target": 1
@@ -7600,6 +7600,97 @@
             "operation": "pauseGame",
             "scene": "",
             "target": 0
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 189,
+      "name": "South Bank Spawn",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          0,
+          0.74,
+          5.1
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          5.9,
+          1.6,
+          0.62
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 190,
+      "name": "South Bank Checkpoint",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          0,
+          0.74,
+          5.12
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 189,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "setCheckpoint",
+            "scene": "",
+            "target": 1
           }
         ]
       }
