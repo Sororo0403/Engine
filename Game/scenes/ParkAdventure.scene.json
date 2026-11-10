@@ -610,12 +610,12 @@
         "scale": [
           6,
           0.28,
-          9.9
+          7.9
         ],
         "translation": [
           0,
           -0.28,
-          24.1
+          22.1
         ]
       }
     },
@@ -1153,8 +1153,8 @@
         ],
         "translation": [
           0,
-          -0.04,
-          32.85
+          0.5,
+          37.55
         ]
       }
     },
@@ -1225,8 +1225,8 @@
         ],
         "translation": [
           0,
-          0.14,
-          34.4
+          0.68,
+          39.1
         ]
       }
     },
@@ -1297,8 +1297,8 @@
         ],
         "translation": [
           -2.2,
-          1.25,
-          34.9
+          1.79,
+          39.6
         ]
       }
     },
@@ -1369,8 +1369,8 @@
         ],
         "translation": [
           2.2,
-          1.25,
-          34.9
+          1.79,
+          39.6
         ]
       }
     },
@@ -1421,8 +1421,8 @@
         ],
         "translation": [
           0,
-          2.04,
-          34.9
+          2.58,
+          39.6
         ]
       }
     },
@@ -1733,8 +1733,8 @@
         ],
         "translation": [
           0,
-          1.19,
-          34.55
+          1.73,
+          39.25
         ]
       },
       "triggerActions": {
@@ -5316,6 +5316,877 @@
           6,
           1.46,
           27
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.22,
+          0.61,
+          0.72
+        ]
+      },
+      "id": 91,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Vista Lower Pond",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          6,
+          0.05,
+          2.75
+        ],
+        "translation": [
+          0,
+          -0.72,
+          32.75
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.48,
+          0.64,
+          0.31
+        ]
+      },
+      "id": 92,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Vista High Lawn",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          6,
+          0.4,
+          2.05
+        ],
+        "translation": [
+          0,
+          0.14,
+          37.55
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.82,
+          0.77,
+          0.61
+        ]
+      },
+      "id": 93,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CourtyardStone.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Vista Jump Stone One",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1,
+          0.24,
+          0.65
+        ],
+        "translation": [
+          0,
+          -0.01,
+          31.6
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.82,
+          0.77,
+          0.61
+        ]
+      },
+      "id": 94,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CourtyardStone.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Vista Jump Stone Two",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1,
+          0.25,
+          0.65
+        ],
+        "translation": [
+          0,
+          0.11,
+          34
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.7,
+          0.69,
+          0.61
+        ]
+      },
+      "id": 95,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CourtyardStone.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Vista Walkway Step 1",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.17,
+          0.24,
+          0.47
+        ],
+        "translation": [
+          4.7,
+          -0.15,
+          30.44
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.7,
+          0.69,
+          0.61
+        ]
+      },
+      "id": 96,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CourtyardStone.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Vista Walkway Step 2",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.17,
+          0.24,
+          0.47
+        ],
+        "translation": [
+          4.7,
+          -0.06,
+          31.38
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.7,
+          0.69,
+          0.61
+        ]
+      },
+      "id": 97,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CourtyardStone.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Vista Walkway Step 3",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.17,
+          0.24,
+          0.47
+        ],
+        "translation": [
+          4.7,
+          0.03,
+          32.32
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.7,
+          0.69,
+          0.61
+        ]
+      },
+      "id": 98,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CourtyardStone.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Vista Walkway Step 4",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.17,
+          0.24,
+          0.47
+        ],
+        "translation": [
+          4.7,
+          0.12,
+          33.26
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.7,
+          0.69,
+          0.61
+        ]
+      },
+      "id": 99,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CourtyardStone.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Vista Walkway Step 5",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.17,
+          0.24,
+          0.47
+        ],
+        "translation": [
+          4.7,
+          0.21,
+          34.2
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.7,
+          0.69,
+          0.61
+        ]
+      },
+      "id": 100,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CourtyardStone.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Vista Walkway Step 6",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.17,
+          0.24,
+          0.47
+        ],
+        "translation": [
+          4.7,
+          0.3,
+          35.14
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 101,
+      "name": "Vista Jump Route Arrow",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.707106781,
+          0,
+          0.707106781
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0.035,
+          29.35
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 102,
+      "name": "Vista Walkway Arrow",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.707106781,
+          0,
+          0.707106781
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          4.7,
+          0.035,
+          29.42
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 103,
+      "name": "Vista Approach Spawn",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          0,
+          0.7,
+          28.6
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          5.8,
+          0.85,
+          0.42
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 104,
+      "name": "Vista Approach Checkpoint",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          0,
+          0.7,
+          28.6
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 103,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "setCheckpoint",
+            "scene": "",
+            "target": 1
+          }
         ]
       }
     }

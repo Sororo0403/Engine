@@ -40,7 +40,7 @@ return {
         if count == 2 then
             self:reference("gate"):set_active(false)
             self:reference("goal"):set_active(true)
-            label:set_text("スイッチ 2 / 2  /  門が開いた。展望台へ進もう")
+            label:set_text("門が開いた！  /  飛び石を跳ぶか、右の段を登って展望台へ")
         else
             label:set_text("スイッチ 1 / 2  /  もう片方を踏んで門を開けよう")
         end
