@@ -15,6 +15,7 @@ local home_buttons = {
     title_focus_config = "configButton",
     title_focus_quit = "quitButton",
     title_focus_park = "parkButton",
+    title_focus_sunrise = "sunriseButton",
 }
 
 local function mark_home_button(self, name)
@@ -45,7 +46,7 @@ local function show_volume(self, state)
 end
 
 local function set_menu_interactable(self, enabled)
-    for _, name in ipairs({"startButton", "configButton", "quitButton", "parkButton"}) do
+    for _, name in ipairs({"startButton", "configButton", "quitButton", "parkButton", "sunriseButton"}) do
         local button = self:reference(name)
         if button then
             button:set_interactable(enabled)
@@ -83,6 +84,10 @@ return {
         local park = self:reference("parkButton")
         if park then
             park:set_active(game.parkUnlocked == true)
+        end
+        local sunrise = self:reference("sunriseButton")
+        if sunrise then
+            sunrise:set_active(game.sunriseUnlocked == true)
         end
         local level = game.volumeLevel
         if type(level) ~= "number" or level < 0 or level > 10 or level % 1 ~= 0 then

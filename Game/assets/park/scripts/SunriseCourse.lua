@@ -1,4 +1,8 @@
 return {
+    start = function()
+        game.sunriseUnlocked = true
+    end,
+
     update = function(self, state, seconds, input)
         state.elapsed = (state.elapsed or 0) + seconds
         local restart, cancel = input.actions.Restart, input.actions.Cancel
