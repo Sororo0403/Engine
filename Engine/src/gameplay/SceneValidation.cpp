@@ -395,7 +395,7 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 		std::vector<SceneObjectId> ignored;
 
 		if (!SceneHierarchy::GetSubtree(initial, id, ignored) ||
-		    !world.Rebuild(initial, std::span<const SceneObjectId>{ignored})) {
+		    !world.Rebuild(initial, transforms, active, ignored)) {
 			// 不正な障害物は上の一覧で報告し、修正後に主人公の配置を再検証する。
 			continue;
 		}
@@ -461,8 +461,8 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 		SceneAudioFrame audioFrame;
 		std::string audioError;
 		SceneObjectId invalidAudio = 0;
-		if (!SceneAudio::Collect(initial, listenerCamera, audioFrame,
-		                         audioError, &invalidAudio))
+		if (!SceneAudio::Collect(initial, listenerCamera, transforms, active,
+		                         audioFrame, audioError, &invalidAudio))
 			add(invalidAudio, audioError);
 	}
 

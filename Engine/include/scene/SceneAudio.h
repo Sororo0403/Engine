@@ -3,6 +3,8 @@
 #include "audio/AudioSettings.h"
 #include "graphics/camera/CameraPose.h"
 #include "scene/AudioSourceComponent.h"
+#include "scene/SceneActivity.h"
+#include "scene/SceneHierarchy.h"
 #include "scene/SceneObjectId.h"
 #include <string>
 #include <vector>
@@ -40,4 +42,12 @@ namespace SceneAudio {
 bool Collect(const Scene &scene, const CameraPose &camera,
              SceneAudioFrame &frame, std::string &error,
              SceneObjectId *invalidObject = nullptr);
+
+/// <summary>
+/// 同じシーンから計算済みのワールド変形と有効状態を使って音源を収集する
+/// </summary>
+bool Collect(const Scene &scene, const CameraPose &camera,
+             const SceneHierarchy::WorldTransforms &transforms,
+             const SceneActivity::States &active, SceneAudioFrame &frame,
+             std::string &error, SceneObjectId *invalidObject = nullptr);
 } // namespace SceneAudio

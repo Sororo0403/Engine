@@ -6,6 +6,8 @@
 #include "physics/CollisionSweepResult.h"
 #include "physics/RigidBodyWorld.h"
 #include "physics/WorldCollider.h"
+#include "scene/SceneActivity.h"
+#include "scene/SceneHierarchy.h"
 #include "scene/SceneObjectId.h"
 
 #include <cstdint>
@@ -41,6 +43,16 @@ class CollisionWorld {
 	/// <param name="rigidBodies">指定時はコピーした剛体形状で移動・重なりを判定する</param>
 	/// <returns>true:成功 false:形状が無効。失敗時は現在の障害物を保持する</returns>
 	bool Rebuild(const Scene &scene,
+	             std::span<const SceneObjectId> ignoredObjects,
+	             SceneObjectId *invalidObject = nullptr,
+	             const RigidBodyWorld *rigidBodies = nullptr);
+
+	/// <summary>
+	/// 同じシーンから計算済みのワールド変形と有効状態を使って障害物を作る
+	/// </summary>
+	bool Rebuild(const Scene &scene,
+	             const SceneHierarchy::WorldTransforms &transforms,
+	             const SceneActivity::States &active,
 	             std::span<const SceneObjectId> ignoredObjects,
 	             SceneObjectId *invalidObject = nullptr,
 	             const RigidBodyWorld *rigidBodies = nullptr);

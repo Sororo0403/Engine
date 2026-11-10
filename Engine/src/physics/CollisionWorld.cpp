@@ -220,6 +220,19 @@ bool CollisionWorld::Rebuild(const Scene &scene,
 		return false;
 	}
 
+	return Rebuild(scene, transforms, active, ignoredObjects, invalidObject,
+	               rigidBodies);
+}
+
+bool CollisionWorld::Rebuild(
+    const Scene &scene, const SceneHierarchy::WorldTransforms &transforms,
+    const SceneActivity::States &active,
+    std::span<const SceneObjectId> ignoredObjects, SceneObjectId *invalidObject,
+    const RigidBodyWorld *rigidBodies) {
+	if (invalidObject) {
+		*invalidObject = 0;
+	}
+
 	std::vector<Obstacle> candidate;
 
 	for (const auto &[id, object] : scene.GetObjects()) {

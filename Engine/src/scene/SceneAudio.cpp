@@ -32,10 +32,8 @@ AudioListenerPose FromWorld(const SceneWorldTransform &world) {
 bool SceneAudio::Collect(const Scene &scene, const CameraPose &camera,
                          SceneAudioFrame &frame, std::string &error,
                          SceneObjectId *invalidObject) {
-	error.clear();
 	if (invalidObject)
 		*invalidObject = 0;
-	SceneObjectId current = 0;
 
 	try {
 		SceneHierarchy::WorldTransforms transforms;
@@ -46,7 +44,25 @@ bool SceneAudio::Collect(const Scene &scene, const CameraPose &camera,
 			throw std::runtime_error(
 			    "Audio source or listener hierarchy is invalid.");
 		}
+		return Collect(scene, camera, transforms, active, frame, error,
+		               invalidObject);
+	} catch (const std::exception &exception) {
+		error = exception.what();
+		return false;
+	}
+}
 
+bool SceneAudio::Collect(const Scene &scene, const CameraPose &camera,
+                         const SceneHierarchy::WorldTransforms &transforms,
+                         const SceneActivity::States &active,
+                         SceneAudioFrame &frame, std::string &error,
+                         SceneObjectId *invalidObject) {
+	error.clear();
+	if (invalidObject)
+		*invalidObject = 0;
+	SceneObjectId current = 0;
+
+	try {
 		SceneAudioFrame next;
 
 		for (const auto &[id, object] : scene.GetObjects()) {
