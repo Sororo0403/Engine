@@ -11560,7 +11560,7 @@
           "balconyStairText": "踊り場へ降り、階段を登って向かいの屋上へ",
           "roofJumpText": "矢印から向かいの屋上へ  ［Space / A 長押しで遠くへ］",
           "roofText": "屋上の時計台を目指そう",
-          "finishPrompt": "花を探しに戻る / ここでクリア ［Enter / A］"
+          "finishPrompt": "花を探しに戻る / ここでクリア ［Enter / Y］"
         }
       },
       "tag": "street_sound",

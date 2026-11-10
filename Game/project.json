@@ -27,7 +27,7 @@
         "name": "Confirm",
         "keyboard": "Enter",
         "mouse": null,
-        "gamepad": "South",
+        "gamepad": "North",
         "gamepadAxis": null
       }
     ],
