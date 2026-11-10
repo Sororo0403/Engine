@@ -14160,7 +14160,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/street/textures/QuayPaving.png",
+            "path": "@project/assets/street/textures/ArrivalCobblestone.png",
             "slot": 0
           }
         ],
@@ -14169,8 +14169,8 @@
           0
         ],
         "uvScale": [
-          9,
-          8
+          36,
+          32
         ],
         "visible": true
       },
@@ -14250,7 +14250,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/street/textures/QuayPaving.png",
+            "path": "@project/assets/street/textures/ArrivalCobblestone.png",
             "slot": 0
           }
         ],
@@ -14259,8 +14259,8 @@
           0
         ],
         "uvScale": [
-          4,
-          2
+          16,
+          8
         ],
         "visible": true
       },
@@ -14340,7 +14340,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/street/textures/QuayPaving.png",
+            "path": "@project/assets/street/textures/ArrivalCobblestone.png",
             "slot": 0
           }
         ],
@@ -14349,8 +14349,8 @@
           0
         ],
         "uvScale": [
-          13,
-          8
+          52,
+          32
         ],
         "visible": true
       },
