@@ -13,21 +13,63 @@ local function pose(self, tilt, height)
     visual:set_scale(1, height, 1)
 end
 
-local function update_death(self, state, seconds)
+local function cover(image, x, y, width, height, tint)
+    image:set_ui_position(x, y)
+    image:set_ui_size(math.max(1, width), math.max(1, height))
+    image:set_image_color(tint, tint, tint, width > 0 and height > 0 and 1 or 0)
+end
+
+local function iris(self, viewport, open)
+    local shade = self:reference("deathShade")
+    local aperture = self:reference("iris")
+    local leftCover, rightCover = self:reference("coverLeft"), self:reference("coverRight")
+    local topCover, bottomCover = self:reference("coverTop"), self:reference("coverBottom")
+    if open <= 0 or open >= 1 then
+        shade:set_image_color(0, 0, 0, open <= 0 and 1 or 0)
+        aperture:set_image_color(1, 1, 1, 0)
+        for _, image in ipairs({leftCover, rightCover, topCover, bottomCover}) do
+            image:set_image_color(0, 0, 0, 0)
+        end
+        return
+    end
+
+    local width, height = viewport.width, viewport.height
+    local x, y, z = self:reference("visual"):get_position()
+    local camera = scene.get_camera()
+    local u, v
+    if camera then
+        u, v = camera:world_to_viewport(x, y - 0.15, z, width, height)
+    end
+    local cx = math.max(0, math.min(1, u or 0.5)) * width
+    local cy = math.max(0, math.min(1, v or 0.5)) * height
+    local farX, farY = math.max(cx, width - cx), math.max(cy, height - cy)
+    local radius = math.sqrt(farX * farX + farY * farY) * open / 0.90
+    local x0, x1 = math.max(0, cx - radius), math.min(width, cx + radius)
+    local y0, y1 = math.max(0, cy - radius), math.min(height, cy + radius)
+
+    shade:set_image_color(0, 0, 0, 0)
+    cover(aperture, cx - radius, cy - radius, radius * 2, radius * 2, 1)
+    cover(leftCover, 0, 0, x0, height, 0)
+    cover(rightCover, x1, 0, width - x1, height, 0)
+    cover(topCover, x0, 0, x1 - x0, y0, 0)
+    cover(bottomCover, x0, y1, x1 - x0, height - y1, 0)
+end
+
+local function update_death(self, state, seconds, viewport)
     local blackout = state.deathHold + state.deathClose
     local opening = blackout + state.deathCovered
     local finish = opening + state.deathReveal
     local t = math.min(finish, state.deathTime + seconds)
-    local shade = self:reference("deathShade")
+    viewport = viewport or {width = 1280, height = 720}
 
     if t < blackout then
         local reaction = smooth((t - state.deathReactionDelay) / state.deathReactionSeconds)
         local bounce = math.sin(reaction * math.pi)
         pose(self, -0.48 * reaction, 1 - 0.34 * bounce)
-        shade:set_image_color(0, 0, 0, smooth((t - state.deathHold) / state.deathClose))
+        iris(self, viewport, 1 - smooth((t - state.deathHold) / state.deathClose))
     elseif not state.deathReturned then
         -- 復帰のフレームは暗幕を閉じた状態で表示する。
-        shade:set_image_color(0, 0, 0, 1)
+        iris(self, viewport, 0)
         self:set_position(state.spawnX, state.spawnY, state.spawnZ)
         state.life = state.maximumLife
         state.deathReturned = true
@@ -36,7 +78,7 @@ local function update_death(self, state, seconds)
         show_life(self, state)
     else
         local reveal = smooth((t - opening) / state.deathReveal)
-        shade:set_image_color(0, 0, 0, 1 - reveal)
+        iris(self, viewport, reveal)
         pose(self, 0, 1 + 0.12 * math.sin(reveal * math.pi))
     end
 
@@ -83,7 +125,7 @@ return {
 
     update = function(self, state, seconds, input)
         if state.deathTime then
-            update_death(self, state, seconds)
+            update_death(self, state, seconds, input.viewport)
             return
         end
 

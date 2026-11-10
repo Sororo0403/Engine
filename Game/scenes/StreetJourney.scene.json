@@ -91,6 +91,26 @@
           {
             "name": "deathShade",
             "target": 444
+          },
+          {
+            "name": "iris",
+            "target": 445
+          },
+          {
+            "name": "coverLeft",
+            "target": 446
+          },
+          {
+            "name": "coverRight",
+            "target": 447
+          },
+          {
+            "name": "coverTop",
+            "target": 448
+          },
+          {
+            "name": "coverBottom",
+            "target": 449
           }
         ],
         "scenes": [],
@@ -26065,7 +26085,7 @@
           1280.0,
           720.0
         ],
-        "scaleWithScreen": true,
+        "scaleWithScreen": false,
         "sortOrder": 2
       },
       "id": 443,
@@ -26112,6 +26132,67 @@
       "parent": 443,
       "rectTransform": {
         "anchorMax": [
+          1,
+          1
+        ],
+        "anchorMin": [
+          0,
+          0
+        ],
+        "pivot": [
+          0,
+          0
+        ],
+        "position": [
+          0,
+          0
+        ],
+        "sizeDelta": [
+          0,
+          0
+        ]
+      },
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 445,
+      "image": {
+        "color": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "enabled": true,
+        "fillAmount": 1,
+        "fillOrigin": "left",
+        "preserveAspect": false,
+        "raycastTarget": false,
+        "texture": "@project/assets/street/textures/DeathIris.png"
+      },
+      "name": "Death Iris",
+      "parent": 443,
+      "rectTransform": {
+        "anchorMax": [
           0,
           0
         ],
@@ -26128,8 +26209,252 @@
           0
         ],
         "sizeDelta": [
-          1280,
-          720
+          1,
+          1
+        ]
+      },
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 446,
+      "image": {
+        "color": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "enabled": true,
+        "fillAmount": 1,
+        "fillOrigin": "left",
+        "preserveAspect": false,
+        "raycastTarget": false,
+        "texture": "@project/assets/textures/PrototypeWhite.png"
+      },
+      "name": "Death Cover Left",
+      "parent": 443,
+      "rectTransform": {
+        "anchorMax": [
+          0,
+          0
+        ],
+        "anchorMin": [
+          0,
+          0
+        ],
+        "pivot": [
+          0,
+          0
+        ],
+        "position": [
+          0,
+          0
+        ],
+        "sizeDelta": [
+          1,
+          1
+        ]
+      },
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 447,
+      "image": {
+        "color": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "enabled": true,
+        "fillAmount": 1,
+        "fillOrigin": "left",
+        "preserveAspect": false,
+        "raycastTarget": false,
+        "texture": "@project/assets/textures/PrototypeWhite.png"
+      },
+      "name": "Death Cover Right",
+      "parent": 443,
+      "rectTransform": {
+        "anchorMax": [
+          0,
+          0
+        ],
+        "anchorMin": [
+          0,
+          0
+        ],
+        "pivot": [
+          0,
+          0
+        ],
+        "position": [
+          0,
+          0
+        ],
+        "sizeDelta": [
+          1,
+          1
+        ]
+      },
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 448,
+      "image": {
+        "color": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "enabled": true,
+        "fillAmount": 1,
+        "fillOrigin": "left",
+        "preserveAspect": false,
+        "raycastTarget": false,
+        "texture": "@project/assets/textures/PrototypeWhite.png"
+      },
+      "name": "Death Cover Top",
+      "parent": 443,
+      "rectTransform": {
+        "anchorMax": [
+          0,
+          0
+        ],
+        "anchorMin": [
+          0,
+          0
+        ],
+        "pivot": [
+          0,
+          0
+        ],
+        "position": [
+          0,
+          0
+        ],
+        "sizeDelta": [
+          1,
+          1
+        ]
+      },
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 449,
+      "image": {
+        "color": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "enabled": true,
+        "fillAmount": 1,
+        "fillOrigin": "left",
+        "preserveAspect": false,
+        "raycastTarget": false,
+        "texture": "@project/assets/textures/PrototypeWhite.png"
+      },
+      "name": "Death Cover Bottom",
+      "parent": 443,
+      "rectTransform": {
+        "anchorMax": [
+          0,
+          0
+        ],
+        "anchorMin": [
+          0,
+          0
+        ],
+        "pivot": [
+          0,
+          0
+        ],
+        "position": [
+          0,
+          0
+        ],
+        "sizeDelta": [
+          1,
+          1
         ]
       },
       "tag": "",
