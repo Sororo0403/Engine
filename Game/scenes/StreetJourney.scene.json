@@ -610,7 +610,7 @@
       },
       "name": "Entry West",
       "parent": 6,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -682,7 +682,7 @@
       },
       "name": "Entry East",
       "parent": 6,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -754,7 +754,7 @@
       },
       "name": "Cafe",
       "parent": 6,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -898,7 +898,7 @@
       },
       "name": "Arrival Back",
       "parent": 6,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -970,7 +970,7 @@
       },
       "name": "Quay North",
       "parent": 6,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -1042,7 +1042,7 @@
       },
       "name": "Quay West",
       "parent": 6,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -1114,7 +1114,7 @@
       },
       "name": "Quay Bench",
       "parent": 6,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -1330,7 +1330,7 @@
       },
       "name": "Canal West South",
       "parent": 6,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -1402,7 +1402,7 @@
       },
       "name": "Canal West North",
       "parent": 6,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -1474,7 +1474,7 @@
       },
       "name": "Canal West 1",
       "parent": 6,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -1546,7 +1546,7 @@
       },
       "name": "Canal West1",
       "parent": 6,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -1618,7 +1618,7 @@
       },
       "name": "Canal East South",
       "parent": 6,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -1690,7 +1690,7 @@
       },
       "name": "Canal East North",
       "parent": 6,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -1762,7 +1762,7 @@
       },
       "name": "Canal East 1",
       "parent": 6,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -1834,7 +1834,7 @@
       },
       "name": "Canal East1",
       "parent": 6,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -1906,7 +1906,7 @@
       },
       "name": "Market South",
       "parent": 7,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -1978,7 +1978,7 @@
       },
       "name": "East Shop",
       "parent": 7,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -2050,7 +2050,7 @@
       },
       "name": "Market Counter",
       "parent": 7,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -2122,7 +2122,7 @@
       },
       "name": "Market Stock",
       "parent": 7,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -2266,7 +2266,7 @@
       },
       "name": "Market Hall",
       "parent": 7,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -2338,7 +2338,7 @@
       },
       "name": "Garden West",
       "parent": 6,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -2410,7 +2410,7 @@
       },
       "name": "Market Common Roof",
       "parent": 7,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -2482,7 +2482,7 @@
       },
       "name": "Arcade Loading 0",
       "parent": 7,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -2554,7 +2554,7 @@
       },
       "name": "Arcade Loading 1",
       "parent": 7,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -2626,7 +2626,7 @@
       },
       "name": "Arcade Loading 2",
       "parent": 7,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -2698,7 +2698,7 @@
       },
       "name": "Arcade Hall 0",
       "parent": 7,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -2770,7 +2770,7 @@
       },
       "name": "Arcade Hall 1",
       "parent": 7,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -2842,7 +2842,7 @@
       },
       "name": "Arcade Hall 2",
       "parent": 7,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -2914,7 +2914,7 @@
       },
       "name": "Arcade West 0",
       "parent": 7,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -2986,7 +2986,7 @@
       },
       "name": "Arcade West 1",
       "parent": 7,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -3058,7 +3058,7 @@
       },
       "name": "Arcade West 2",
       "parent": 7,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -3130,7 +3130,7 @@
       },
       "name": "Arcade East 0",
       "parent": 7,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -3202,7 +3202,7 @@
       },
       "name": "Arcade East 1",
       "parent": 7,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -3274,7 +3274,7 @@
       },
       "name": "Arcade East 2",
       "parent": 7,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -3346,7 +3346,7 @@
       },
       "name": "Warehouse Post 0 0",
       "parent": 7,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -3418,7 +3418,7 @@
       },
       "name": "Warehouse Post 0 1",
       "parent": 7,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -3490,7 +3490,7 @@
       },
       "name": "Warehouse Stock 0",
       "parent": 7,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -3562,7 +3562,7 @@
       },
       "name": "Warehouse Post 1 0",
       "parent": 7,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -3634,7 +3634,7 @@
       },
       "name": "Warehouse Post 1 1",
       "parent": 7,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -3706,7 +3706,7 @@
       },
       "name": "Warehouse Stock 1",
       "parent": 7,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -3778,7 +3778,7 @@
       },
       "name": "Warehouse Post 2 0",
       "parent": 7,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -3850,7 +3850,7 @@
       },
       "name": "Warehouse Post 2 1",
       "parent": 7,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -3922,7 +3922,7 @@
       },
       "name": "Warehouse Stock 2",
       "parent": 7,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -3994,7 +3994,7 @@
       },
       "name": "Packing Table",
       "parent": 7,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -4066,7 +4066,7 @@
       },
       "name": "Market West Return",
       "parent": 8,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -4138,7 +4138,7 @@
       },
       "name": "Market Bench",
       "parent": 8,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -4210,7 +4210,7 @@
       },
       "name": "Garden Court",
       "parent": 8,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -4282,7 +4282,7 @@
       },
       "name": "Garden East",
       "parent": 8,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -4354,7 +4354,7 @@
       },
       "name": "Court West",
       "parent": 8,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -4426,7 +4426,7 @@
       },
       "name": "Court North",
       "parent": 8,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -4498,7 +4498,7 @@
       },
       "name": "Court North East",
       "parent": 8,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -4570,7 +4570,7 @@
       },
       "name": "Court Planting",
       "parent": 8,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -4642,7 +4642,7 @@
       },
       "name": "Trellis  5.5 50.5",
       "parent": 8,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -4714,7 +4714,7 @@
       },
       "name": "Trellis  5.5 56.5",
       "parent": 8,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -4786,7 +4786,7 @@
       },
       "name": "Trellis 4.3 50.5",
       "parent": 8,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -4858,7 +4858,7 @@
       },
       "name": "Trellis 4.3 56.5",
       "parent": 8,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -4930,7 +4930,7 @@
       },
       "name": "Trellis 10.5 50.5",
       "parent": 8,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -5002,7 +5002,7 @@
       },
       "name": "Trellis 10.5 56.5",
       "parent": 8,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -5074,7 +5074,7 @@
       },
       "name": "Trellis 19.5 50.5",
       "parent": 8,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -5146,7 +5146,7 @@
       },
       "name": "Trellis 19.5 56.5",
       "parent": 8,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -5218,7 +5218,7 @@
       },
       "name": "Gear Pedestal",
       "parent": 8,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -5290,7 +5290,7 @@
       },
       "name": "Gear Wheel",
       "parent": 8,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -5362,7 +5362,7 @@
       },
       "name": "Roof Step 0",
       "parent": 8,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -5434,7 +5434,7 @@
       },
       "name": "Stair Cheek 0 11.75",
       "parent": 8,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -5506,7 +5506,7 @@
       },
       "name": "Stair Cheek 0 16.25",
       "parent": 8,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -5578,7 +5578,7 @@
       },
       "name": "Roof Step 1",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -5650,7 +5650,7 @@
       },
       "name": "Stair Cheek 1 11.75",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -5722,7 +5722,7 @@
       },
       "name": "Stair Cheek 1 16.25",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -5794,7 +5794,7 @@
       },
       "name": "Roof Step 2",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -5866,7 +5866,7 @@
       },
       "name": "Stair Cheek 2 11.75",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -5938,7 +5938,7 @@
       },
       "name": "Stair Cheek 2 16.25",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -6010,7 +6010,7 @@
       },
       "name": "Roof Step 3",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -6082,7 +6082,7 @@
       },
       "name": "Stair Cheek 3 11.75",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -6154,7 +6154,7 @@
       },
       "name": "Stair Cheek 3 16.25",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -6226,7 +6226,7 @@
       },
       "name": "Roof Step 4",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -6298,7 +6298,7 @@
       },
       "name": "Stair Cheek 4 11.75",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -6370,7 +6370,7 @@
       },
       "name": "Stair Cheek 4 16.25",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -6442,7 +6442,7 @@
       },
       "name": "Roof Step 5",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -6514,7 +6514,7 @@
       },
       "name": "Stair Cheek 5 11.75",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -6586,7 +6586,7 @@
       },
       "name": "Stair Cheek 5 16.25",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -6658,7 +6658,7 @@
       },
       "name": "Roof Step 6",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -6730,7 +6730,7 @@
       },
       "name": "Stair Cheek 6 11.75",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -6802,7 +6802,7 @@
       },
       "name": "Stair Cheek 6 16.25",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -6874,7 +6874,7 @@
       },
       "name": "Roof Step 7",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -6946,7 +6946,7 @@
       },
       "name": "Stair Cheek 7 11.75",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -7018,7 +7018,7 @@
       },
       "name": "Stair Cheek 7 16.25",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -7090,7 +7090,7 @@
       },
       "name": "Roof Step 8",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -7162,7 +7162,7 @@
       },
       "name": "Stair Cheek 8 11.75",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -7234,7 +7234,7 @@
       },
       "name": "Stair Cheek 8 16.25",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -7306,7 +7306,7 @@
       },
       "name": "Roof Step 9",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -7378,7 +7378,7 @@
       },
       "name": "Stair Cheek 9 11.75",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -7450,7 +7450,7 @@
       },
       "name": "Stair Cheek 9 16.25",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -7522,7 +7522,7 @@
       },
       "name": "Roof Step 10",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -7594,7 +7594,7 @@
       },
       "name": "Stair Cheek 10 11.75",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -7666,7 +7666,7 @@
       },
       "name": "Stair Cheek 10 16.25",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -7738,7 +7738,7 @@
       },
       "name": "Roof Step 11",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -7810,7 +7810,7 @@
       },
       "name": "Stair Cheek 11 11.75",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -7882,7 +7882,7 @@
       },
       "name": "Stair Cheek 11 16.25",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -7954,7 +7954,7 @@
       },
       "name": "East Roof",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -8026,7 +8026,7 @@
       },
       "name": "West Roof",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -8098,7 +8098,7 @@
       },
       "name": "Catch Balcony",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -8170,7 +8170,7 @@
       },
       "name": "Clock Lookout",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -8242,7 +8242,7 @@
       },
       "name": "Roof East South",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -8314,7 +8314,7 @@
       },
       "name": "Roof East North",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -8386,7 +8386,7 @@
       },
       "name": "Roof East 1",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -8458,7 +8458,7 @@
       },
       "name": "Roof East1",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -8530,7 +8530,7 @@
       },
       "name": "Roof West South",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -8602,7 +8602,7 @@
       },
       "name": "Roof West North",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -8674,7 +8674,7 @@
       },
       "name": "Roof West 1",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -8746,7 +8746,7 @@
       },
       "name": "Roof West1",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -8818,7 +8818,7 @@
       },
       "name": "East End",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -8890,7 +8890,7 @@
       },
       "name": "East North",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -8962,7 +8962,7 @@
       },
       "name": "East South Left",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -9034,7 +9034,7 @@
       },
       "name": "East South Right",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -9106,7 +9106,7 @@
       },
       "name": "West End",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -9178,7 +9178,7 @@
       },
       "name": "West South",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -9250,7 +9250,7 @@
       },
       "name": "West North",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -9322,7 +9322,7 @@
       },
       "name": "Lookout Left",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -9394,7 +9394,7 @@
       },
       "name": "Lookout Right",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -9466,7 +9466,7 @@
       },
       "name": "Lookout End",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -9538,7 +9538,7 @@
       },
       "name": "Roof East Bed",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -9610,7 +9610,7 @@
       },
       "name": "Roof West Bed",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -9682,7 +9682,7 @@
       },
       "name": "Roof Garden Bench",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -9754,7 +9754,7 @@
       },
       "name": "Lookout Entrance 1",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -9826,7 +9826,7 @@
       },
       "name": "Lookout Entrance1",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -9898,7 +9898,7 @@
       },
       "name": "Clock Bench",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -9970,7 +9970,7 @@
       },
       "name": "Clock",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -10042,7 +10042,7 @@
       },
       "name": "Distant 0",
       "parent": 10,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -10114,7 +10114,7 @@
       },
       "name": "Distant 1",
       "parent": 10,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -10186,7 +10186,7 @@
       },
       "name": "Distant 2",
       "parent": 10,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -10258,7 +10258,7 @@
       },
       "name": "Distant 3",
       "parent": 10,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -10330,7 +10330,7 @@
       },
       "name": "Distant 4",
       "parent": 10,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -10382,7 +10382,7 @@
       },
       "name": "Canal Water",
       "parent": 6,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -13304,7 +13304,7 @@
       },
       "name": "Arrival Back Teal Cap",
       "parent": 6,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -13356,7 +13356,7 @@
       },
       "name": "Quay North Teal Cap",
       "parent": 6,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -13408,7 +13408,7 @@
       },
       "name": "Quay West Teal Cap",
       "parent": 6,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -13460,7 +13460,7 @@
       },
       "name": "Canal West South Teal Cap",
       "parent": 6,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -13512,7 +13512,7 @@
       },
       "name": "Canal West North Teal Cap",
       "parent": 6,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -13564,7 +13564,7 @@
       },
       "name": "Canal West 1 Teal Cap",
       "parent": 6,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -13616,7 +13616,7 @@
       },
       "name": "Canal West1 Teal Cap",
       "parent": 6,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -13668,7 +13668,7 @@
       },
       "name": "Canal East South Teal Cap",
       "parent": 6,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -13720,7 +13720,7 @@
       },
       "name": "Canal East North Teal Cap",
       "parent": 6,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -13772,7 +13772,7 @@
       },
       "name": "Canal East 1 Teal Cap",
       "parent": 6,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -13824,7 +13824,7 @@
       },
       "name": "Canal East1 Teal Cap",
       "parent": 6,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -13876,7 +13876,7 @@
       },
       "name": "Market South Teal Cap",
       "parent": 7,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -13953,7 +13953,7 @@
       },
       "name": "Stone Plinth",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -14005,7 +14005,7 @@
       },
       "name": "Stone Stringcourse",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -14057,7 +14057,7 @@
       },
       "name": "Teal Cornice",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -14109,7 +14109,7 @@
       },
       "name": "Canvas Awning",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           -0.0799146939691727,
@@ -14161,7 +14161,7 @@
       },
       "name": "Awning Valance",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -14213,7 +14213,7 @@
       },
       "name": "Awning Wall Rail",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -14265,7 +14265,7 @@
       },
       "name": "Awning Post 1",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -14317,7 +14317,7 @@
       },
       "name": "Awning Post 2",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -14369,7 +14369,7 @@
       },
       "name": "Storefront Frame 1",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -14421,7 +14421,7 @@
       },
       "name": "Storefront Glass 1",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -14473,7 +14473,7 @@
       },
       "name": "Storefront Mullion 1",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -14525,7 +14525,7 @@
       },
       "name": "Storefront Sill 1",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -14577,7 +14577,7 @@
       },
       "name": "Storefront Frame 2",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -14629,7 +14629,7 @@
       },
       "name": "Storefront Glass 2",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -14681,7 +14681,7 @@
       },
       "name": "Storefront Mullion 2",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -14733,7 +14733,7 @@
       },
       "name": "Storefront Sill 2",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -14785,7 +14785,7 @@
       },
       "name": "Storefront Frame 3",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -14837,7 +14837,7 @@
       },
       "name": "Storefront Glass 3",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -14889,7 +14889,7 @@
       },
       "name": "Storefront Mullion 3",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -14941,7 +14941,7 @@
       },
       "name": "Storefront Sill 3",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -14993,7 +14993,7 @@
       },
       "name": "Door Surround",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -15045,7 +15045,7 @@
       },
       "name": "Wood Door 1",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -15097,7 +15097,7 @@
       },
       "name": "Door Glass 1",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -15149,7 +15149,7 @@
       },
       "name": "Door Handle 1",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -15201,7 +15201,7 @@
       },
       "name": "Wood Door 2",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -15253,7 +15253,7 @@
       },
       "name": "Door Glass 2",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -15305,7 +15305,7 @@
       },
       "name": "Door Handle 2",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -15357,7 +15357,7 @@
       },
       "name": "Side Window Frame 1",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -15409,7 +15409,7 @@
       },
       "name": "Side Window Glass 1",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -15461,7 +15461,7 @@
       },
       "name": "Side Window Mullion 1",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -15513,7 +15513,7 @@
       },
       "name": "Side Window Frame 2",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -15565,7 +15565,7 @@
       },
       "name": "Side Window Glass 2",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -15617,7 +15617,7 @@
       },
       "name": "Side Window Mullion 2",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -15669,7 +15669,7 @@
       },
       "name": "Side Window Frame 3",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -15721,7 +15721,7 @@
       },
       "name": "Side Window Glass 3",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -15773,7 +15773,7 @@
       },
       "name": "Side Window Mullion 3",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -15825,7 +15825,7 @@
       },
       "name": "Upper Window Frame 1",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -15877,7 +15877,7 @@
       },
       "name": "Upper Window Glass 1",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -15929,7 +15929,7 @@
       },
       "name": "Upper Window Frame 2",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -15981,7 +15981,7 @@
       },
       "name": "Upper Window Glass 2",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -16033,7 +16033,7 @@
       },
       "name": "Upper Window Frame 3",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -16085,7 +16085,7 @@
       },
       "name": "Upper Window Glass 3",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -16137,7 +16137,7 @@
       },
       "name": "Upper Window Frame 4",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -16189,7 +16189,7 @@
       },
       "name": "Upper Window Glass 4",
       "parent": 207,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -16266,7 +16266,7 @@
       },
       "name": "Table Top",
       "parent": 252,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -16318,7 +16318,7 @@
       },
       "name": "Table Base",
       "parent": 252,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -16370,7 +16370,7 @@
       },
       "name": "Chair Seat 1",
       "parent": 252,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -16422,7 +16422,7 @@
       },
       "name": "Chair Back 1",
       "parent": 252,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -16474,7 +16474,7 @@
       },
       "name": "Chair Leg",
       "parent": 252,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -16526,7 +16526,7 @@
       },
       "name": "Chair Leg",
       "parent": 252,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -16578,7 +16578,7 @@
       },
       "name": "Chair Leg",
       "parent": 252,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -16630,7 +16630,7 @@
       },
       "name": "Chair Leg",
       "parent": 252,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -16682,7 +16682,7 @@
       },
       "name": "Chair Seat 2",
       "parent": 252,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -16734,7 +16734,7 @@
       },
       "name": "Chair Back 2",
       "parent": 252,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -16786,7 +16786,7 @@
       },
       "name": "Chair Leg",
       "parent": 252,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -16838,7 +16838,7 @@
       },
       "name": "Chair Leg",
       "parent": 252,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -16890,7 +16890,7 @@
       },
       "name": "Chair Leg",
       "parent": 252,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -16942,7 +16942,7 @@
       },
       "name": "Chair Leg",
       "parent": 252,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -16994,7 +16994,7 @@
       },
       "name": "Table Planter",
       "parent": 252,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -17046,7 +17046,7 @@
       },
       "name": "Table Leaves",
       "parent": 252,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -17123,7 +17123,7 @@
       },
       "name": "Table Top",
       "parent": 269,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -17175,7 +17175,7 @@
       },
       "name": "Table Base",
       "parent": 269,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -17227,7 +17227,7 @@
       },
       "name": "Chair Seat 1",
       "parent": 269,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -17279,7 +17279,7 @@
       },
       "name": "Chair Back 1",
       "parent": 269,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -17331,7 +17331,7 @@
       },
       "name": "Chair Leg",
       "parent": 269,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -17383,7 +17383,7 @@
       },
       "name": "Chair Leg",
       "parent": 269,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -17435,7 +17435,7 @@
       },
       "name": "Chair Leg",
       "parent": 269,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -17487,7 +17487,7 @@
       },
       "name": "Chair Leg",
       "parent": 269,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -17539,7 +17539,7 @@
       },
       "name": "Chair Seat 2",
       "parent": 269,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -17591,7 +17591,7 @@
       },
       "name": "Chair Back 2",
       "parent": 269,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -17643,7 +17643,7 @@
       },
       "name": "Chair Leg",
       "parent": 269,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -17695,7 +17695,7 @@
       },
       "name": "Chair Leg",
       "parent": 269,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -17747,7 +17747,7 @@
       },
       "name": "Chair Leg",
       "parent": 269,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -17799,7 +17799,7 @@
       },
       "name": "Chair Leg",
       "parent": 269,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -17851,7 +17851,7 @@
       },
       "name": "Table Planter",
       "parent": 269,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -17903,7 +17903,7 @@
       },
       "name": "Table Leaves",
       "parent": 269,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0.0,
@@ -18005,7 +18005,7 @@
       },
       "name": "Arcade Teal Fascia",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -18057,7 +18057,7 @@
       },
       "name": "Arcade Long Beam",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -18109,7 +18109,7 @@
       },
       "name": "Arcade Long Beam",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -18161,7 +18161,7 @@
       },
       "name": "Arcade Long Beam",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -18213,7 +18213,7 @@
       },
       "name": "Arcade Long Beam",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -18265,7 +18265,7 @@
       },
       "name": "Arcade Crossbeam",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -18317,7 +18317,7 @@
       },
       "name": "Arcade Crossbeam",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -18369,7 +18369,7 @@
       },
       "name": "Arcade Crossbeam",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -18421,7 +18421,7 @@
       },
       "name": "Arcade Loading 0 Stone Base",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -18473,7 +18473,7 @@
       },
       "name": "Arcade Loading 0 Capital",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -18525,7 +18525,7 @@
       },
       "name": "Arcade Loading 1 Stone Base",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -18577,7 +18577,7 @@
       },
       "name": "Arcade Loading 1 Capital",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -18629,7 +18629,7 @@
       },
       "name": "Arcade Loading 2 Stone Base",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -18681,7 +18681,7 @@
       },
       "name": "Arcade Loading 2 Capital",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -18733,7 +18733,7 @@
       },
       "name": "Arcade Hall 0 Stone Base",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -18785,7 +18785,7 @@
       },
       "name": "Arcade Hall 0 Capital",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -18837,7 +18837,7 @@
       },
       "name": "Arcade Hall 1 Stone Base",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -18889,7 +18889,7 @@
       },
       "name": "Arcade Hall 1 Capital",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -18941,7 +18941,7 @@
       },
       "name": "Arcade Hall 2 Stone Base",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -18993,7 +18993,7 @@
       },
       "name": "Arcade Hall 2 Capital",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -19045,7 +19045,7 @@
       },
       "name": "Arcade West 0 Stone Base",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -19097,7 +19097,7 @@
       },
       "name": "Arcade West 0 Capital",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -19149,7 +19149,7 @@
       },
       "name": "Arcade West 1 Stone Base",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -19201,7 +19201,7 @@
       },
       "name": "Arcade West 1 Capital",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -19253,7 +19253,7 @@
       },
       "name": "Arcade West 2 Stone Base",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -19305,7 +19305,7 @@
       },
       "name": "Arcade West 2 Capital",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -19357,7 +19357,7 @@
       },
       "name": "Arcade East 0 Stone Base",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -19409,7 +19409,7 @@
       },
       "name": "Arcade East 0 Capital",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -19461,7 +19461,7 @@
       },
       "name": "Arcade East 1 Stone Base",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -19513,7 +19513,7 @@
       },
       "name": "Arcade East 1 Capital",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -19565,7 +19565,7 @@
       },
       "name": "Arcade East 2 Stone Base",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -19617,7 +19617,7 @@
       },
       "name": "Arcade East 2 Capital",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -19669,7 +19669,7 @@
       },
       "name": "Warehouse Canopy",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -19721,7 +19721,7 @@
       },
       "name": "Market Hall Cornice",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -19773,7 +19773,7 @@
       },
       "name": "Market Hall Window Frame",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -19825,7 +19825,7 @@
       },
       "name": "Market Hall Window Glass",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -19877,7 +19877,7 @@
       },
       "name": "Market Hall Window Frame",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -19929,7 +19929,7 @@
       },
       "name": "Market Hall Window Glass",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -19981,7 +19981,7 @@
       },
       "name": "Garden West Cornice",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -20033,7 +20033,7 @@
       },
       "name": "Garden West Window Frame",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -20085,7 +20085,7 @@
       },
       "name": "Garden West Window Glass",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -20137,7 +20137,7 @@
       },
       "name": "Garden West Window Frame",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -20189,7 +20189,7 @@
       },
       "name": "Garden West Window Glass",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -20241,7 +20241,7 @@
       },
       "name": "Garden West Window Frame",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -20293,7 +20293,7 @@
       },
       "name": "Garden West Window Glass",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -20345,7 +20345,7 @@
       },
       "name": "Garden West Window Frame",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -20397,7 +20397,7 @@
       },
       "name": "Garden West Window Glass",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -20449,7 +20449,7 @@
       },
       "name": "Garden West Window Frame",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -20501,7 +20501,7 @@
       },
       "name": "Garden West Window Glass",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -20553,7 +20553,7 @@
       },
       "name": "Garden West Window Frame",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -20605,7 +20605,7 @@
       },
       "name": "Garden West Window Glass",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -20657,7 +20657,7 @@
       },
       "name": "Garden West Window Frame",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -20709,7 +20709,7 @@
       },
       "name": "Garden West Window Glass",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -20761,7 +20761,7 @@
       },
       "name": "Garden West Window Frame",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -20813,7 +20813,7 @@
       },
       "name": "Garden West Window Glass",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -20865,7 +20865,7 @@
       },
       "name": "East Shop Cornice",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -20917,7 +20917,7 @@
       },
       "name": "East Shop Window Frame",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -20969,7 +20969,7 @@
       },
       "name": "East Shop Window Glass",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -21021,7 +21021,7 @@
       },
       "name": "East Shop Window Frame",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -21073,7 +21073,7 @@
       },
       "name": "East Shop Window Glass",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -21125,7 +21125,7 @@
       },
       "name": "East Shop Window Frame",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -21177,7 +21177,7 @@
       },
       "name": "East Shop Window Glass",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -21229,7 +21229,7 @@
       },
       "name": "East Shop Window Frame",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -21281,7 +21281,7 @@
       },
       "name": "East Shop Window Glass",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -21333,7 +21333,7 @@
       },
       "name": "East Shop Window Frame",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -21385,7 +21385,7 @@
       },
       "name": "East Shop Window Glass",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -21437,7 +21437,7 @@
       },
       "name": "East Shop Window Frame",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -21489,7 +21489,7 @@
       },
       "name": "East Shop Window Glass",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -21541,7 +21541,7 @@
       },
       "name": "East Shop Window Frame",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -21593,7 +21593,7 @@
       },
       "name": "East Shop Window Glass",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -21645,7 +21645,7 @@
       },
       "name": "East Shop Window Frame",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -21697,7 +21697,7 @@
       },
       "name": "East Shop Window Glass",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -21749,7 +21749,7 @@
       },
       "name": "East Shop Window Frame",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -21801,7 +21801,7 @@
       },
       "name": "East Shop Window Glass",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -21853,7 +21853,7 @@
       },
       "name": "East Shop Window Frame",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -21905,7 +21905,7 @@
       },
       "name": "East Shop Window Glass",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -21957,7 +21957,7 @@
       },
       "name": "East Shop Window Frame",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -22009,7 +22009,7 @@
       },
       "name": "East Shop Window Glass",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -22061,7 +22061,7 @@
       },
       "name": "East Shop Window Frame",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -22113,7 +22113,7 @@
       },
       "name": "East Shop Window Glass",
       "parent": 286,
-      "tag": "",
+      "tag": "street_wave_near",
       "transform": {
         "rotation": [
           0,
@@ -22165,7 +22165,7 @@
       },
       "name": "Garden East Cornice",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -22217,7 +22217,7 @@
       },
       "name": "Garden East Window Frame",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -22269,7 +22269,7 @@
       },
       "name": "Garden East Window Glass",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -22321,7 +22321,7 @@
       },
       "name": "Garden East Window Frame",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -22373,7 +22373,7 @@
       },
       "name": "Garden East Window Glass",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -22425,7 +22425,7 @@
       },
       "name": "Garden East Window Frame",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -22477,7 +22477,7 @@
       },
       "name": "Garden East Window Glass",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -22529,7 +22529,7 @@
       },
       "name": "Garden East Window Frame",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -22581,7 +22581,7 @@
       },
       "name": "Garden East Window Glass",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -22633,7 +22633,7 @@
       },
       "name": "Garden East Window Frame",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -22685,7 +22685,7 @@
       },
       "name": "Garden East Window Glass",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -22737,7 +22737,7 @@
       },
       "name": "Garden East Window Frame",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -22789,7 +22789,7 @@
       },
       "name": "Garden East Window Glass",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -22841,7 +22841,7 @@
       },
       "name": "Garden East Window Frame",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -22893,7 +22893,7 @@
       },
       "name": "Garden East Window Glass",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -22945,7 +22945,7 @@
       },
       "name": "Garden East Window Frame",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -22997,7 +22997,7 @@
       },
       "name": "Garden East Window Glass",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -23049,7 +23049,7 @@
       },
       "name": "Garden East Window Frame",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -23101,7 +23101,7 @@
       },
       "name": "Garden East Window Glass",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -23153,7 +23153,7 @@
       },
       "name": "Garden East Window Frame",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -23205,7 +23205,7 @@
       },
       "name": "Garden East Window Glass",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -23257,7 +23257,7 @@
       },
       "name": "Garden East Window Frame",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -23309,7 +23309,7 @@
       },
       "name": "Garden East Window Glass",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -23361,7 +23361,7 @@
       },
       "name": "Garden East Window Frame",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -23413,7 +23413,7 @@
       },
       "name": "Garden East Window Glass",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -23465,7 +23465,7 @@
       },
       "name": "Trellis Long Beam",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -23517,7 +23517,7 @@
       },
       "name": "Trellis Long Beam",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -23569,7 +23569,7 @@
       },
       "name": "Trellis Long Beam",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -23621,7 +23621,7 @@
       },
       "name": "Trellis Long Beam",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -23673,7 +23673,7 @@
       },
       "name": "Trellis Crossbeam",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -23725,7 +23725,7 @@
       },
       "name": "Trellis Crossbeam",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -23777,7 +23777,7 @@
       },
       "name": "Trellis Crossbeam",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -23829,7 +23829,7 @@
       },
       "name": "Trellis Slat 1",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -23881,7 +23881,7 @@
       },
       "name": "Trellis Slat 2",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -23933,7 +23933,7 @@
       },
       "name": "Trellis Slat 3",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -23985,7 +23985,7 @@
       },
       "name": "Trellis Slat 4",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -24037,7 +24037,7 @@
       },
       "name": "Trellis Slat 5",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -24089,7 +24089,7 @@
       },
       "name": "Trellis Slat 6",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -24141,7 +24141,7 @@
       },
       "name": "Trellis Slat 7",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -24193,7 +24193,7 @@
       },
       "name": "Trellis Slat 8",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -24245,7 +24245,7 @@
       },
       "name": "Trellis Slat 9",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -24297,7 +24297,7 @@
       },
       "name": "Trellis Slat 10",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -24349,7 +24349,7 @@
       },
       "name": "Trellis Slat 11",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -24401,7 +24401,7 @@
       },
       "name": "Courtyard Planter Foliage",
       "parent": 287,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -24478,7 +24478,7 @@
       },
       "name": "Clock Tower Cornice",
       "parent": 412,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -24530,7 +24530,7 @@
       },
       "name": "Clock Tower Roof",
       "parent": 412,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -24582,7 +24582,7 @@
       },
       "name": "Clock Dial Frame",
       "parent": 412,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -24634,7 +24634,7 @@
       },
       "name": "Clock Dial",
       "parent": 412,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -24686,7 +24686,7 @@
       },
       "name": "Clock Minute Hand",
       "parent": 412,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -24738,7 +24738,7 @@
       },
       "name": "Clock Hour Hand",
       "parent": 412,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -24790,7 +24790,7 @@
       },
       "name": "Clock Marker 1",
       "parent": 412,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -24842,7 +24842,7 @@
       },
       "name": "Clock Marker 2",
       "parent": 412,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -24894,7 +24894,7 @@
       },
       "name": "Clock Marker 3",
       "parent": 412,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -24946,7 +24946,7 @@
       },
       "name": "Clock Marker 4",
       "parent": 412,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -24998,7 +24998,7 @@
       },
       "name": "Clock Tower Buttress",
       "parent": 412,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -25075,7 +25075,7 @@
       },
       "name": "Lookout Lintel",
       "parent": 424,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -25127,7 +25127,7 @@
       },
       "name": "Lookout Crown",
       "parent": 424,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -25179,7 +25179,7 @@
       },
       "name": "Lookout Post Base 1",
       "parent": 424,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -25231,7 +25231,7 @@
       },
       "name": "Lookout Post Base 2",
       "parent": 424,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -25283,7 +25283,7 @@
       },
       "name": "East Roof Terracotta Paving",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -25335,7 +25335,7 @@
       },
       "name": "West Roof Terracotta Paving",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -25387,7 +25387,7 @@
       },
       "name": "Clock Lookout Terracotta Paving",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -25439,7 +25439,7 @@
       },
       "name": "Roof East Bed Foliage",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -25491,7 +25491,7 @@
       },
       "name": "Roof West Bed Foliage",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -25543,7 +25543,7 @@
       },
       "name": "Clock Bench Backrest",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -25595,7 +25595,7 @@
       },
       "name": "Roof Garden Bench Backrest",
       "parent": 9,
-      "tag": "",
+      "tag": "street_wave_far",
       "transform": {
         "rotation": [
           0,
@@ -26809,6 +26809,88 @@
           -20.5,
           1.5,
           13
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 457,
+      "name": "Street Color Wave Near",
+      "parent": 0,
+      "script": {
+        "asset": "@project/assets/street/scripts/StreetColorWave.lua",
+        "enabled": true,
+        "prefabs": [],
+        "references": [
+          {
+            "name": "origin",
+            "target": 1
+          }
+        ],
+        "scenes": [],
+        "state": {
+          "elapsed": 0,
+          "targetTag": "street_wave_near"
+        }
+      },
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 458,
+      "name": "Street Color Wave Far",
+      "parent": 0,
+      "script": {
+        "asset": "@project/assets/street/scripts/StreetColorWave.lua",
+        "enabled": true,
+        "prefabs": [],
+        "references": [
+          {
+            "name": "origin",
+            "target": 1
+          }
+        ],
+        "scenes": [],
+        "state": {
+          "elapsed": 0,
+          "targetTag": "street_wave_far"
+        }
+      },
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
         ]
       }
     }
