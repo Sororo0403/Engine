@@ -34923,9 +34923,9 @@
       },
       "colorTint": {
         "color": [
-          0.49,
-          0.56,
-          0.6
+          0.65,
+          0.55,
+          0.42
         ]
       },
       "id": 640,
@@ -34949,7 +34949,7 @@
         ],
         "visible": true
       },
-      "name": "Market Storehouse Back",
+      "name": "Market Storehouse Exit Step",
       "parent": 7,
       "tag": "street_wave_near",
       "transform": {
@@ -34961,12 +34961,12 @@
         ],
         "scale": [
           1.7,
-          1.17,
-          0.16
+          0.335,
+          0.26
         ],
         "translation": [
           17.5,
-          1.73,
+          0.895,
           42.1
         ]
       }
@@ -35532,6 +35532,190 @@
           11.6,
           1.13,
           25.1
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.49,
+          0.56,
+          0.6
+        ]
+      },
+      "id": 650,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Market Service Wall West",
+      "parent": 7,
+      "tag": "street_wave_near",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          3.3,
+          1.17,
+          0.16
+        ],
+        "translation": [
+          12.35,
+          1.73,
+          42.1
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.49,
+          0.56,
+          0.6
+        ]
+      },
+      "id": 651,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Market Service Wall East",
+      "parent": 7,
+      "tag": "street_wave_near",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.49,
+          1.17,
+          0.16
+        ],
+        "translation": [
+          19.83,
+          1.73,
+          42.1
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 652,
+      "name": "Market Storehouse Exit Arrow",
+      "parent": 7,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.70710678,
+          0,
+          0.70710678
+        ],
+        "scale": [
+          0.87,
+          0.87,
+          0.87
+        ],
+        "translation": [
+          17.5,
+          0.585,
+          41.32
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
         ]
       }
     }

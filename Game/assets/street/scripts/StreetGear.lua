@@ -20,7 +20,7 @@ end
 local function market_supply_hint(self, x, z)
     local crate = self:reference("supplyCrate")
     local supply = self:reference("marketSupply")
-    if not crate or not supply or not supply:is_active() then
+    if not crate or not supply then
         return nil
     end
     local cx, _, cz = supply:get_position()
@@ -30,7 +30,10 @@ local function market_supply_hint(self, x, z)
     if crate:is_active() then
         return "箱をたたいて物置を開ける ［J / X］"
     end
-    return "物置の救急箱でライフを1回復"
+    if supply:is_active() and z < cz - 0.35 then
+        return "物置の救急箱でライフを1回復"
+    end
+    return "奥の段を跳び越えると中庭への近道 ［Space / A］"
 end
 
 local function update_hint(self, state, x, z, inRange, seconds)
