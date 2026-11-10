@@ -120,8 +120,13 @@ return {
                 result = result .. "    水路の花をすべて集めた！"
             end
             if state.journeyTime then
+                local totalTime = state.journeyTime + time
+                local totalFlowers = state.journeyFlowers + state.flowers
                 result = result .. string.format("\n3コース合計 %.1f 秒    花 %d / 13",
-                    (state.journeyTime + time) / 10, state.journeyFlowers + state.flowers)
+                    totalTime / 10, totalFlowers)
+                if totalFlowers == 13 then
+                    result = result .. "    全収集ベスト " .. record_time("sunriseJourneyBestFullTime", totalTime)
+                end
                 self:reference("journeyRetry"):set_active(true)
             end
             self:reference("result"):set_text(result)
