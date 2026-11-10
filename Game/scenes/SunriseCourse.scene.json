@@ -2702,6 +2702,14 @@
             "target": 195
           },
           {
+            "name": "canalFlower",
+            "target": 184
+          },
+          {
+            "name": "lookoutFlower",
+            "target": 185
+          },
+          {
             "name": "flowerCue",
             "target": 196
           },

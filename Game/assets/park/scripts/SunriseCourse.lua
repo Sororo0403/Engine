@@ -101,7 +101,13 @@ return {
             end
         elseif name == "lookout_enter" and state.flowers < 2 then
             state.lookoutPrompt = true
-            show_hint(self, state, "花を探しに戻るか、このままクリア ［Enter / Y］")
+            local canalFlower = self:reference("canalFlower"):is_active()
+            local lookoutFlower = self:reference("lookoutFlower"):is_active()
+            local remaining = canalFlower and "水路の飛び石" or "見晴らし台の手前"
+            if canalFlower and lookoutFlower then
+                remaining = remaining .. "・見晴らし台の手前"
+            end
+            show_hint(self, state, "花を探しに戻る / クリア ［Enter / Y］　残り " .. remaining)
         elseif name == "lookout_exit" and state.lookoutPrompt then
             self:reference("finish"):set_active(false)
             state.lookoutPrompt = nil
