@@ -40,6 +40,17 @@ return {
         local x, y, z = self:get_position()
         local px, py, pz = player:get_position()
         if state.open then
+            if state.shutterClearY and not state.shutterReleased then
+                local shutterVisual = self:reference("shutterVisual")
+                if shutterVisual then
+                    local _, centerY = shutterVisual:get_position()
+                    local _, halfHeight = shutterVisual:get_scale()
+                    if centerY - halfHeight >= state.shutterClearY then
+                        self:reference("shutter"):set_active(false)
+                        state.shutterReleased = true
+                    end
+                end
+            end
             local hint = self:reference("openHint")
             if state.roofJumpText and hint:is_active() then
                 local approaching = py >= state.roofMinY and px >= state.roofNearX
@@ -70,7 +81,12 @@ return {
         end
 
         state.open = true
-        self:reference("shutter"):set_active(false)
+        local shutterVisual = self:reference("shutterVisual")
+        if shutterVisual and state.shutterClearY then
+            shutterVisual:play_animation()
+        else
+            self:reference("shutter"):set_active(false)
+        end
         self:reference("goal"):set_active(true)
         self:reference("hint"):set_active(false)
         self:reference("openHint"):set_active(true)

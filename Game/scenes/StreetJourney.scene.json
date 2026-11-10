@@ -10494,34 +10494,7 @@
         "radius": 0.5,
         "shape": "Box"
       },
-      "colorTint": {
-        "color": [
-          0.18,
-          0.4,
-          0.47
-        ]
-      },
       "id": 154,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
       "name": "Street Shutter",
       "parent": 0,
       "tag": "",
@@ -10791,6 +10764,10 @@
             "target": 154
           },
           {
+            "name": "shutterVisual",
+            "target": 535
+          },
+          {
             "name": "goal",
             "target": 155
           },
@@ -10826,6 +10803,7 @@
           "roofFarX": 8,
           "roofGapZ": 74,
           "roofHintDepth": 2.5,
+          "shutterClearY": 2.5,
           "roofJumpText": "矢印の先へジャンプ  長押しでふわっと進める",
           "roofText": "屋上の時計台を目指そう"
         }
@@ -31491,6 +31469,142 @@
         "playOnStart": false,
         "spatial": false,
         "volume": 0.55
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.18,
+          0.4,
+          0.47
+        ]
+      },
+      "id": 535,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Street Shutter Visual",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          2,
+          1.55,
+          0.12
+        ],
+        "translation": [
+          14,
+          2.1,
+          57
+        ]
+      },
+      "transformAnimation": {
+        "mode": "once",
+        "interpolation": "smooth",
+        "speed": 1,
+        "playOnStart": false,
+        "keys": [
+          {
+            "seconds": 0,
+            "translation": [
+              0,
+              0,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ]
+          },
+          {
+            "seconds": 0.1,
+            "translation": [
+              0,
+              0.06,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "scale": [
+              1,
+              0.9612903225806452,
+              1
+            ]
+          },
+          {
+            "seconds": 0.5,
+            "translation": [
+              0,
+              1.08,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "scale": [
+              1,
+              0.3032258064516129,
+              1
+            ]
+          },
+          {
+            "seconds": 0.78,
+            "translation": [
+              0,
+              1.45,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "scale": [
+              1,
+              0.06451612903225806,
+              1
+            ]
+          }
+        ]
       }
     }
   ],
