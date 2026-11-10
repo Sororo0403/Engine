@@ -1,8 +1,11 @@
 ﻿#include "SceneUISerializer.h"
+#include "animation/AnimationClipAsset.h"
+#include "platform/windows/FileUtils.h"
 #include "platform/windows/PathUtils.h"
 #include "scene/SceneObject.h"
 #include <array>
 #include <cmath>
+#include <fstream>
 #include <stdexcept>
 
 namespace {
@@ -73,7 +76,16 @@ const std::array<const char *, 4> kFillOrigins{"left", "right", "top",
 void SceneUISerializer::Write(nlohmann::json &item, const SceneObject &object) {
 	Validate(object);
 
-	if (object.animationClip) {
+	if (object.animationClip && object.animationClip->usesAsset) {
+		const auto &player = *object.animationClip;
+		Json bindings = Json::array();
+		for (const auto &[slot, target] : player.bindings)
+			bindings.push_back({{"slot", slot}, {"target", target}});
+		item["animationPlayer"] = {{"asset", PathUtils::ToUtf8(player.asset)},
+		                           {"playOnStart", player.playOnStart},
+		                           {"loop", player.loop},
+		                           {"bindings", std::move(bindings)}};
+	} else if (object.animationClip) {
 		const auto &timeline = *object.animationClip;
 		Json tracks = Json::array();
 		for (const auto &track : timeline.tracks) {
@@ -155,7 +167,27 @@ void SceneUISerializer::Read(const nlohmann::json &item, SceneObject &object,
 		return;
 
 	const bool legacyTimeline = version == 70 && item.contains("uiTimeline");
-	if (legacyTimeline || (version >= 71 && item.contains("animationClip"))) {
+	if (version >= 73 && item.contains("animationPlayer")) {
+		const auto &value = item.at("animationPlayer");
+		const auto &bindings = value.at("bindings");
+		if (item.contains("animationClip") || !bindings.is_array() ||
+		    bindings.size() > AnimationClipComponent::kMaximumTracks)
+			throw std::runtime_error("Animation Player fields are invalid.");
+
+		AnimationClipComponent player;
+		player.usesAsset = true;
+		player.asset = PathUtils::FromUtf8(value.at("asset").get<std::string>());
+		player.playOnStart = value.at("playOnStart").get<bool>();
+		player.loop = value.at("loop").get<bool>();
+		for (const auto &binding : bindings) {
+			if (!binding.at("slot").is_number_unsigned() ||
+			    !binding.at("target").is_number_unsigned())
+				throw std::runtime_error("Animation Player binding is invalid.");
+			player.bindings.emplace_back(binding.at("slot").get<SceneObjectId>(),
+			                             binding.at("target").get<SceneObjectId>());
+		}
+		object.animationClip = std::move(player);
+	} else if (legacyTimeline || (version >= 71 && item.contains("animationClip"))) {
 		const auto &value = item.at(legacyTimeline ? "uiTimeline" : "animationClip");
 		const auto &tracks = value.at("tracks");
 		if (!value.at("duration").is_number() || !tracks.is_array() ||
@@ -278,4 +310,112 @@ void SceneUISerializer::Read(const nlohmann::json &item, SceneObject &object,
 	}
 
 	Validate(object);
+}
+
+namespace {
+bool ValidClipAsset(const AnimationClipComponent &clip) {
+	return !clip.usesAsset && clip.IsValid() &&
+	       std::ranges::all_of(clip.tracks, [](const auto &track) {
+		       return track.target > 0 &&
+		              track.target <= AnimationClipComponent::kMaximumTracks;
+	       });
+}
+} // namespace
+
+bool AnimationClipAsset::IsPath(const std::filesystem::path &path) {
+	return PathUtils::HasExtension(path, ".json") &&
+	       PathUtils::HasExtension(path.stem(), ".clip");
+}
+
+bool AnimationClipAsset::Load(const std::filesystem::path &path,
+                              AnimationClipComponent &clip, std::string &error) {
+	try {
+		if (!IsPath(path))
+			throw std::runtime_error("Choose an Animation Clip (.clip.json).");
+		const auto file = PathUtils::ResolveFromExecutable(path);
+		constexpr std::uintmax_t kMaximumBytes = 1024 * 1024;
+		const auto size = std::filesystem::file_size(file);
+		if (size > kMaximumBytes)
+			throw std::runtime_error("Animation Clip is too large.");
+		std::ifstream input(file, std::ios::binary);
+		std::string content(static_cast<std::size_t>(size), '\0');
+		if (!input.read(content.data(), static_cast<std::streamsize>(size)) ||
+		    input.peek() != std::char_traits<char>::eof())
+			throw std::runtime_error("Could not read Animation Clip.");
+
+		const auto document = Json::parse(content);
+		if (document.at("format") != "EngineAnimationClip" ||
+		    document.at("version") != 1)
+			throw std::runtime_error("Unsupported Animation Clip asset format.");
+		auto value = document.at("clip");
+		value["playOnStart"] = false;
+		value["loop"] = false;
+		SceneObject object;
+		SceneUISerializer::Read({{"animationClip", std::move(value)}},
+		                        object, 72);
+		if (!object.animationClip || !ValidClipAsset(*object.animationClip))
+			throw std::runtime_error("Animation Clip has invalid keys or slots.");
+		clip = std::move(*object.animationClip);
+		error.clear();
+		return true;
+	} catch (const std::exception &e) {
+		error = e.what();
+		return false;
+	}
+}
+
+bool AnimationClipAsset::Save(const std::filesystem::path &path,
+                              const AnimationClipComponent &clip,
+                              std::string &error, bool overwrite) {
+	try {
+		if (!IsPath(path) || !ValidClipAsset(clip))
+			throw std::runtime_error("Animation Clip has an invalid filename, keys or slots.");
+
+		SceneObject object;
+		object.animationClip = clip;
+		Json encoded;
+		SceneUISerializer::Write(encoded, object);
+		auto &value = encoded.at("animationClip");
+		value.erase("playOnStart");
+		value.erase("loop");
+		auto content = Json{{"format", "EngineAnimationClip"}, {"version", 1},
+		                    {"clip", std::move(value)}}.dump(2);
+		content += '\n';
+		return FileUtils::WriteTextAtomically(path, content, error, overwrite);
+	} catch (const std::exception &e) {
+		error = e.what();
+		return false;
+	}
+}
+
+bool AnimationClipAsset::Resolve(const AnimationClipComponent &player,
+                                 AnimationClipComponent &clip, std::string &error) {
+	if (!player.usesAsset || !player.IsValid()) {
+		error = "Animation Player settings are invalid.";
+		return false;
+	}
+
+	AnimationClipComponent loaded;
+	if (!Load(player.asset, loaded, error))
+		return false;
+	for (auto &track : loaded.tracks) {
+		const auto binding = std::ranges::find_if(player.bindings, [&](const auto &entry) {
+			return entry.first == track.target;
+		});
+		if (binding == player.bindings.end() || binding->second == 0) {
+			error = "Assign an object to each Animation Player binding slot.";
+			return false;
+		}
+		track.target = binding->second;
+	}
+	if (!loaded.IsValid()) {
+		error = "Animation Player bindings animate the same property more than once.";
+		return false;
+	}
+
+	loaded.playOnStart = player.playOnStart;
+	loaded.loop = player.loop;
+	clip = std::move(loaded);
+	error.clear();
+	return true;
 }

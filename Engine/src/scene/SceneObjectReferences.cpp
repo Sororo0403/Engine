@@ -25,6 +25,10 @@ template <class T, class F> void Visit(T &object, F visit) {
 	if (object.animationClip) {
 		for (auto &track : object.animationClip->tracks)
 			visit(track.target);
+		for (auto &[slot, target] : object.animationClip->bindings) {
+			(void)slot;
+			visit(target);
+		}
 	}
 
 	if (object.followCamera) {

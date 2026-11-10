@@ -11,7 +11,7 @@ class AssetDragDrop {
 	/// 誤った対象へ受け渡さないためのアセット種別
 	/// </summary>
 	enum class Kind {
-		TEXTURE, SCRIPT, MODEL, SCENE, AUDIO, PREFAB, GAME_SETTINGS, FOLDER
+		TEXTURE, SCRIPT, MODEL, SCENE, AUDIO, PREFAB, GAME_SETTINGS, ANIMATION_CLIP, FOLDER
 	};
 
 	/// <summary>

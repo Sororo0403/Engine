@@ -19,6 +19,9 @@ void ForEach(Object &object, const Apply &apply) {
 			}
 	}
 
+	if (object.animationClip && object.animationClip->usesAsset)
+		apply(object.animationClip->asset);
+
 	if (object.particleEmitter)
 		apply(object.particleEmitter->texture);
 	if (object.image)

@@ -437,6 +437,7 @@ exit /b 0</Command>
     <ClInclude Include="include\scene\SpotLightComponent.h" />
     <ClInclude Include="include\scene\DirectionalLightComponent.h" />
     <ClInclude Include="include\animation\AnimationClipComponent.h" />
+    <ClInclude Include="include\animation\AnimationClipAsset.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\gameplay\MotionPathComponent.h" />

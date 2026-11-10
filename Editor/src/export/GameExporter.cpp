@@ -1,4 +1,5 @@
 #include "export/GameExporter.h"
+#include "animation/AnimationClipAsset.h"
 #include "assets/AssetDependencies.h"
 #include "assets/ImageValidation.h"
 #include "assets/SceneDependencyGraph.h"
@@ -276,6 +277,15 @@ class Assets {
 				throw std::runtime_error(error);
 		}
 
+		return reference;
+	}
+
+	fs::path AddAnimationClip(const fs::path &input) {
+		const auto reference = AddFile(FindSource(input), input);
+		AnimationClipComponent clip;
+		std::string error;
+		if (!AnimationClipAsset::Load(files_.at(reference), clip, error))
+			throw std::runtime_error(error);
 		return reference;
 	}
 
@@ -676,6 +686,17 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 					path = assets.AddTexture(input, 4096);
 				}
 
+				if (object.animationClip && object.animationClip->usesAsset) {
+					auto &path = object.animationClip->asset;
+					const auto input =
+					    path.is_absolute()
+					        ? path
+					        : resourceRoot / PathUtils::RelativeInside(
+					                             fs::path(L"resources"),
+					                             path.lexically_normal());
+					path = assets.AddAnimationClip(input);
+				}
+
 				if (object.script && !object.script->asset.empty()) {
 					auto &path = object.script->asset;
 					const auto input =
@@ -849,6 +870,8 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 				    !object.particleEmitter->texture.empty())
 					exportedAssets.AddTexture(
 					    destination / object.particleEmitter->texture, 4096);
+				if (object.animationClip && object.animationClip->usesAsset)
+					exportedAssets.AddAnimationClip(destination / object.animationClip->asset);
 				if (object.script && !object.script->asset.empty())
 					exportedAssets.AddScript(destination /
 					                         object.script->asset);

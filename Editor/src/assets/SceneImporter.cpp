@@ -188,6 +188,8 @@ void ResolveReferences(Json &document, const fs::path &root,
 		if (version >= 33 && object.contains("script"))
 			for (auto &entry : object.at("script").at("prefabs"))
 				resolve(entry.at("path"));
+		if (version >= 73 && object.contains("animationPlayer"))
+			resolve(object.at("animationPlayer").at("asset"));
 		if (version >= 29 && object.contains("script"))
 			resolve(object.at("script").at("asset"));
 		if (version >= 28 && object.contains("triggerActions")) {
@@ -372,6 +374,13 @@ bool SceneImporter::Import(const SceneImportOptions &options, Scene &imported,
 					object.particleEmitter->texture =
 					    AssetFolders::MakeReference(options.assetRoot,
 					                                destination / relative);
+				}
+
+				if (object.animationClip && object.animationClip->usesAsset &&
+				    !object.animationClip->asset.empty()) {
+					const auto relative = addFile(object.animationClip->asset);
+					object.animationClip->asset = AssetFolders::MakeReference(
+					    root, destination / relative);
 				}
 
 				if (object.script && !object.script->asset.empty()) {

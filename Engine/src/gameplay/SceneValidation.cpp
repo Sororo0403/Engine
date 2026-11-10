@@ -1,4 +1,5 @@
 #include "gameplay/SceneValidation.h"
+#include "animation/AnimationClipAsset.h"
 #include "gameplay/ScenePhysics.h"
 #include "ui/CanvasLayout.h"
 
@@ -149,11 +150,23 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 			add(id, "Color Tint settings are invalid.");
 		}
 
-		if (object.animationClip) {
-			if (!object.animationClip->IsValid()) {
+		AnimationClipComponent resolvedClip;
+		const auto *clip = object.animationClip ? &*object.animationClip : nullptr;
+		if (clip && clip->usesAsset) {
+			std::string issue;
+			if (AnimationClipAsset::Resolve(*clip, resolvedClip, issue))
+				clip = &resolvedClip;
+			else {
+				add(id, issue);
+				clip = nullptr;
+			}
+		}
+
+		if (clip) {
+			if (!clip->IsValid()) {
 				add(id, "Animation Clip settings are invalid.");
 			} else {
-				for (const auto &track : object.animationClip->tracks) {
+				for (const auto &track : clip->tracks) {
 					const auto *target = scene.FindObject(track.target);
 					if (!target || !target->CanAnimate(track)) {
 						add(id, "Animation Clip target is missing a required "
@@ -186,8 +199,7 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 				for (const auto &action : object.triggerActions->actions) {
 					const bool marker = action.event == TriggerAction::Event::ANIMATION_CLIP_MARKER;
 					if ((marker || action.event == TriggerAction::Event::ANIMATION_CLIP_FINISHED) &&
-					    (!object.animationClip ||
-					     (marker && action.clipTime > object.animationClip->duration))) {
+					    (!clip || (marker && action.clipTime > clip->duration))) {
 						add(id, "Animation Clip events require a clip and markers within its duration.");
 						break;
 					}

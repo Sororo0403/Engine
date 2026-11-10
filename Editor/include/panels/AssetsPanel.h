@@ -227,6 +227,11 @@ class AssetsPanel {
 		return scriptEditPath_;
 	}
 
+	bool IsAnimationClipCreateRequested() const { return clipCreateRequested_; }
+	const std::filesystem::path &GetAnimationClipEditRequest() const {
+		return clipEditPath_;
+	}
+
   private:
 	/// <summary>
 	/// 一覧に表示するアセットの種類
@@ -238,7 +243,8 @@ class AssetsPanel {
 		SCENE,
 		GAME_SETTINGS,
 		PREFAB,
-		SCRIPT
+		SCRIPT,
+		ANIMATION_CLIP
 	};
 
 	/// <summary>
@@ -297,7 +303,8 @@ class AssetsPanel {
 	bool modelImportRequested_ = false;
 	bool folderCreateRequested_ = false;
 	bool scriptCreateRequested_ = false;
-	std::filesystem::path scriptEditPath_;
+	std::filesystem::path scriptEditPath_, clipEditPath_;
+	bool clipCreateRequested_ = false;
 	bool prefabCreateRequested_ = false;
 	bool directoryOpenRequested_ = false;
 	std::filesystem::path requestedDirectory_;

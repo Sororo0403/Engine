@@ -797,6 +797,27 @@ bool EditorScene::Update(float deltaTime) {
 				ShowError(error);
 		}
 
+		const auto &clipEdit = assetsPanel_.GetAnimationClipEditRequest();
+		if ((assetsPanel_.IsAnimationClipCreateRequested() || !clipEdit.empty()) &&
+		    !IsBusy() && action == EditorAction::NONE &&
+		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
+			FinishEdit();
+			try {
+				std::string error;
+				if (clipEdit.empty()) {
+					animationClipEditor_.ShowCreate(AssetFolders::Resolve(
+					    assets_.GetRootDirectory(), assetsPanel_.GetOpenDirectory()));
+					stage_ = DialogStage::EDIT_ANIMATION_CLIP;
+				} else if (animationClipEditor_.ShowEdit(clipEdit, error)) {
+					stage_ = DialogStage::EDIT_ANIMATION_CLIP;
+				} else {
+					ShowError(std::move(error));
+				}
+			} catch (const std::exception &error) {
+				ShowError(error.what());
+			}
+		}
+
 		if (assetsPanel_.IsPrefabCreateRequested() &&
 		    selection_.GetCount() == 1 && !IsBusy() &&
 		    action == EditorAction::NONE &&
@@ -4117,6 +4138,20 @@ void EditorScene::UpdateDialogs() {
 		}
 
 		return;
+	}
+
+	case DialogStage::EDIT_ANIMATION_CLIP: {
+		const auto result = animationClipEditor_.Draw(ui_);
+		if (result == AnimationClipEditor::Result::SAVED) {
+			stage_ = DialogStage::IDLE;
+			if (!assets_.Refresh())
+				ShowError(assets_.GetError());
+			else
+				assetsPanel_.RequestReveal(animationClipEditor_.GetSavedPath());
+		} else if (result == AnimationClipEditor::Result::CANCELLED) {
+			stage_ = DialogStage::IDLE;
+		}
+		break;
 	}
 
 	case DialogStage::EDIT_SCRIPT: {

@@ -51,6 +51,8 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	prefabCreateRequested_ = false;
 	scriptCreateRequested_ = false;
 	scriptEditPath_.clear();
+	clipEditPath_.clear();
+	clipCreateRequested_ = false;
 	texturePreviewPath_.clear();
 	audioPreviewPath_.clear();
 	revealMessage_.clear();
@@ -120,7 +122,8 @@ bool AssetsPanel::SelectAsset(const std::filesystem::path &path,
 
 	// 全種類の通常パスを先に探し、別名の場合だけファイルの照合を行う。
 	for (const bool aliases : {false, true}) {
-		if (select(assets.GetScripts(), AssetType::SCRIPT, aliases) ||
+		if (select(assets.GetAnimationClips(), AssetType::ANIMATION_CLIP, aliases) ||
+		    select(assets.GetScripts(), AssetType::SCRIPT, aliases) ||
 		    select(assets.GetModels(), AssetType::MODEL, aliases) ||
 		    select(assets.GetTextures(), AssetType::TEXTURE, aliases) ||
 		    select(assets.GetAudioClips(), AssetType::AUDIO, aliases) ||
@@ -163,6 +166,8 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	prefabCreateRequested_ = false;
 	scriptCreateRequested_ = false;
 	scriptEditPath_.clear();
+	clipEditPath_.clear();
+	clipCreateRequested_ = false;
 	texturePreviewPath_.clear();
 	audioPreviewPath_.clear();
 
@@ -309,6 +314,8 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 	if (ui.Button("Create Script"))
 		scriptCreateRequested_ = true;
+	if (ui.Button("Create Animation Clip"))
+		clipCreateRequested_ = true;
 	if (ui.Button("Import Texture")) {
 		textureImportRequested_ = true;
 	}
@@ -331,6 +338,8 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 	const auto typeLabel = [](AssetType type) {
 		switch (type) {
+		case AssetType::ANIMATION_CLIP:
+			return "Animation Clips";
 		case AssetType::SCRIPT:
 			return "Scripts";
 		case AssetType::MODEL:
@@ -354,7 +363,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		for (const auto type :
 		     {AssetType::MODEL, AssetType::TEXTURE, AssetType::AUDIO,
 		      AssetType::SCENE, AssetType::PREFAB, AssetType::GAME_SETTINGS,
-		      AssetType::SCRIPT}) {
+		      AssetType::SCRIPT, AssetType::ANIMATION_CLIP}) {
 			if (ui.Selectable(typeLabel(type), type_ == type)) {
 				SetAssetType(type);
 			}
@@ -378,7 +387,8 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		                                          : "Searching all folders.");
 	}
 
-	const auto &entries = type_ == AssetType::SCRIPT    ? assets.GetScripts()
+	const auto &entries = type_ == AssetType::ANIMATION_CLIP ? assets.GetAnimationClips()
+	                      : type_ == AssetType::SCRIPT ? assets.GetScripts()
 	                      : type_ == AssetType::MODEL   ? assets.GetModels()
 	                      : type_ == AssetType::TEXTURE ? assets.GetTextures()
 	                      : type_ == AssetType::AUDIO   ? assets.GetAudioClips()
@@ -627,6 +637,8 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				if (type_ == AssetType::SCRIPT && canEditAssets &&
 				    ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 					scriptEditPath_ = assetPath;
+				if (type_ == AssetType::ANIMATION_CLIP && canEditAssets && doubleClicked)
+					clipEditPath_ = assetPath;
 				if (type_ == AssetType::SCENE && canEditAssets &&
 				    doubleClicked) {
 					sceneOpenPath_ = assetPath;
@@ -735,6 +747,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			        : type_ == AssetType::AUDIO  ? AssetDragDrop::Kind::AUDIO
 			        : type_ == AssetType::PREFAB ? AssetDragDrop::Kind::PREFAB
 			        : type_ == AssetType::SCENE  ? AssetDragDrop::Kind::SCENE
+			        : type_ == AssetType::ANIMATION_CLIP ? AssetDragDrop::Kind::ANIMATION_CLIP
 			                                    : AssetDragDrop::Kind::GAME_SETTINGS)) {
 				selectContext(assetPath);
 			}
@@ -920,7 +933,12 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		}
 	}
 
-	if (type_ == AssetType::SCRIPT) {
+	if (type_ == AssetType::ANIMATION_CLIP) {
+		ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
+		if (ui.Button("Edit Animation Clip"))
+			clipEditPath_ = selectedPath_;
+		ui.EndDisabled();
+	} else if (type_ == AssetType::SCRIPT) {
 		ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
 		if (ui.Button("Edit Script"))
 			scriptEditPath_ = selectedPath_;
@@ -1013,6 +1031,8 @@ void AssetsPanel::Clear() {
 	prefabCreateRequested_ = false;
 	scriptCreateRequested_ = false;
 	scriptEditPath_.clear();
+	clipEditPath_.clear();
+	clipCreateRequested_ = false;
 	texturePreviewPath_.clear();
 	audioPreviewPath_.clear();
 	selectedPath_.clear();

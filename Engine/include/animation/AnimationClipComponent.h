@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <filesystem>
+#include <utility>
 #include <vector>
 
 /// <summary>
@@ -76,8 +78,27 @@ struct AnimationClipComponent {
 	bool playOnStart = false;
 	bool loop = false;
 	std::vector<AnimationClipTrack> tracks;
+	// アセットを使うプレイヤーでは、トラックの対象枠をシーン内の物体に割り当てる。
+	bool usesAsset = false;
+	std::filesystem::path asset;
+	std::vector<std::pair<SceneObjectId, SceneObjectId>> bindings;
 
 	bool IsValid() const {
+		if (usesAsset) {
+			if (!tracks.empty() || bindings.size() > kMaximumTracks ||
+			    asset.native().find(L'\0') != std::wstring::npos)
+				return false;
+
+			std::array<bool, kMaximumTracks + 1> used{};
+			for (const auto &[slot, target] : bindings) {
+				(void)target;
+				if (slot == 0 || slot > kMaximumTracks || used[slot])
+					return false;
+				used[slot] = true;
+			}
+			return true;
+		}
+
 		if (!std::isfinite(duration) || duration <= 0 ||
 		    duration > kMaximumSeconds || tracks.size() > kMaximumTracks)
 			return false;

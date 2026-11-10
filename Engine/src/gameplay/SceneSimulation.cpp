@@ -1,4 +1,5 @@
 #include "gameplay/SceneSimulation.h"
+#include "animation/AnimationClipAsset.h"
 #include "gameplay/SceneCameraUtils.h"
 #include "gameplay/SceneValidation.h"
 #include "graphics/camera/Camera.h"
@@ -373,6 +374,16 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 					return fail(
 					    id, "The newly active Follow Camera pose is invalid.");
 				}
+			}
+		}
+
+		for (const auto &[id, object] : working.GetObjects()) {
+			if (object.animationClip && object.animationClip->usesAsset) {
+				AnimationClipComponent resolved;
+				std::string issue;
+				if (!AnimationClipAsset::Resolve(*object.animationClip, resolved, issue))
+					return fail(id, issue);
+				working.FindObject(id)->animationClip = std::move(resolved);
 			}
 		}
 

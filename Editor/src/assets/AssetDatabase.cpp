@@ -1,4 +1,5 @@
 #include "assets/AssetDatabase.h"
+#include "animation/AnimationClipAsset.h"
 #include "assets/PrefabAsset.h"
 
 #include "core/Logger.h"
@@ -56,7 +57,7 @@ bool AssetDatabase::Refresh() {
 		std::vector<std::filesystem::path> textures;
 		std::vector<std::filesystem::path> audioClips;
 		std::vector<std::filesystem::path> scenes;
-		std::vector<std::filesystem::path> scripts;
+		std::vector<std::filesystem::path> scripts, animationClips;
 		std::vector<std::filesystem::path> prefabs;
 		std::vector<std::filesystem::path> gameConfigurations;
 		std::vector<std::filesystem::path> directories;
@@ -96,6 +97,8 @@ bool AssetDatabase::Refresh() {
 
 				if (PathUtils::HasExtension(path, ".lua"))
 					scripts.push_back(reference(path));
+				if (AnimationClipAsset::IsPath(path))
+					animationClips.push_back(reference(path));
 				if (PathUtils::HasExtension(path, ".wav"))
 					audioClips.push_back(reference(path));
 
@@ -160,6 +163,7 @@ bool AssetDatabase::Refresh() {
 		std::sort(scenes.begin(), scenes.end());
 		std::sort(projectScenes.begin(), projectScenes.end());
 		std::sort(scripts.begin(), scripts.end());
+		std::sort(animationClips.begin(), animationClips.end());
 		std::sort(prefabs.begin(), prefabs.end());
 		std::sort(gameConfigurations.begin(), gameConfigurations.end());
 		std::sort(directories.begin(), directories.end());
@@ -171,6 +175,7 @@ bool AssetDatabase::Refresh() {
 		scenes_.swap(scenes);
 		projectScenes_.swap(projectScenes);
 		scripts_.swap(scripts);
+		animationClips_.swap(animationClips);
 		prefabs_.swap(prefabs);
 		gameConfigurations_.swap(gameConfigurations);
 		directories_.swap(directories);
@@ -183,6 +188,7 @@ bool AssetDatabase::Refresh() {
 		scenes_.clear();
 		projectScenes_.clear();
 		scripts_.clear();
+		animationClips_.clear();
 		prefabs_.clear();
 		gameConfigurations_.clear();
 		directories_.clear();
@@ -209,6 +215,7 @@ bool AssetDatabase::SetRootDirectory(std::filesystem::path rootDirectory) {
 		scenes_.swap(candidate.scenes_);
 		projectScenes_.swap(candidate.projectScenes_);
 		scripts_.swap(candidate.scripts_);
+		animationClips_.swap(candidate.animationClips_);
 		prefabs_.swap(candidate.prefabs_);
 		gameConfigurations_.swap(candidate.gameConfigurations_);
 		directories_.swap(candidate.directories_);
@@ -244,6 +251,7 @@ void AssetDatabase::Clear() {
 	scenes_.clear();
 	projectScenes_.clear();
 	scripts_.clear();
+	animationClips_.clear();
 	prefabs_.clear();
 	gameConfigurations_.clear();
 	directories_.clear();
@@ -273,6 +281,10 @@ AssetDatabase::GetGameConfigurations() const {
 
 const std::vector<std::filesystem::path> &AssetDatabase::GetAudioClips() const {
 	return audioClips_;
+}
+
+const std::vector<std::filesystem::path> &AssetDatabase::GetAnimationClips() const {
+	return animationClips_;
 }
 
 const std::vector<std::filesystem::path> &AssetDatabase::GetScripts() const {

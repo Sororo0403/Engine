@@ -752,6 +752,7 @@
     <ClInclude Include="include\scene\SpotLightComponent.h"><Filter>include\scene</Filter></ClInclude>
     <ClInclude Include="include\scene\DirectionalLightComponent.h"><Filter>include\scene</Filter></ClInclude>
     <ClInclude Include="include\animation\AnimationClipComponent.h"><Filter>include\animation</Filter></ClInclude>
+    <ClInclude Include="include\animation\AnimationClipAsset.h"><Filter>include\animation</Filter></ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\gameplay\MotionPathComponent.h">

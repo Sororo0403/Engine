@@ -1,4 +1,5 @@
 #include "gameplay/TriggerActionsInspector.h"
+#include "animation/AnimationClipAsset.h"
 #include "assets/AssetDragDrop.h"
 #include "platform/windows/PathUtils.h"
 
@@ -220,9 +221,15 @@ bool TriggerActionsInspector::Draw(
 			}
 
 			if (action.event == TriggerAction::Event::ANIMATION_CLIP_MARKER) {
-				const float duration = object.animationClip
-				                           ? object.animationClip->duration
-				                           : AnimationClipComponent::kMaximumSeconds;
+				float duration = AnimationClipComponent::kMaximumSeconds;
+				if (object.animationClip && object.animationClip->usesAsset) {
+					AnimationClipComponent clip;
+					std::string error;
+					if (AnimationClipAsset::Load(object.animationClip->asset, clip, error))
+						duration = clip.duration;
+				} else if (object.animationClip) {
+					duration = object.animationClip->duration;
+				}
 				changed |= ImGui::DragFloat("Clip Time (s)", &action.clipTime,
 				                            .01f, 0.f, duration, "%.3f",
 				                            ImGuiSliderFlags_AlwaysClamp);

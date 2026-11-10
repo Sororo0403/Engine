@@ -104,6 +104,7 @@ class AssetDatabase {
 	/// </summary>
 	/// <returns>検索先と同じ絶対・相対指定の.lua一覧。構文は保存・再生時に検証する</returns>
 	const std::vector<std::filesystem::path> &GetScripts() const;
+	const std::vector<std::filesystem::path> &GetAnimationClips() const;
 
   private:
 	std::filesystem::path rootDirectory_;
@@ -113,7 +114,7 @@ class AssetDatabase {
 	std::vector<std::filesystem::path> audioClips_;
 	std::vector<std::filesystem::path> scenes_;
 	std::vector<std::filesystem::path> projectScenes_;
-	std::vector<std::filesystem::path> scripts_;
+	std::vector<std::filesystem::path> scripts_, animationClips_;
 	std::vector<std::filesystem::path> prefabs_;
 	std::vector<std::filesystem::path> gameConfigurations_;
 	std::vector<std::filesystem::path> directories_;

@@ -1,5 +1,7 @@
 #include "panels/InspectorPanel.h"
 #include "animation/AnimatorInspector.h"
+#include "animation/AnimationClipAsset.h"
+#include "animation/AnimationClipEditor.h"
 #include "animation/TransformAnimationInspector.h"
 #include "appearance/ColorTintInspector.h"
 #include "appearance/TextureSlotInspector.h"
@@ -30,176 +32,12 @@
 #include <DirectXMath.h>
 #include <algorithm>
 #include <format>
+#include <set>
 #include <string>
 #include <utility>
 
 namespace {
 
-/// <summary>
-/// タイムラインの時刻、対象、キーフレームを一時データ上で編集する
-/// </summary>
-void DrawAnimationClipKeys(const Scene &scene, AnimationClipComponent &timeline,
-                        float &playhead) {
-	ImGui::Checkbox("Play on Start", &timeline.playOnStart);
-	ImGui::SameLine();
-	ImGui::Checkbox("Loop", &timeline.loop);
-	ImGui::DragFloat("Duration (s)", &timeline.duration, .05f, .01f,
-	                 AnimationClipComponent::kMaximumSeconds, "%.3f",
-	                 ImGuiSliderFlags_AlwaysClamp);
-	playhead = std::clamp(playhead, 0.f, timeline.duration);
-	ImGui::SliderFloat("Playhead", &playhead, 0.f, timeline.duration, "%.3f s");
-
-	std::optional<std::size_t> removedTrack;
-	for (std::size_t i = 0; i < timeline.tracks.size(); ++i) {
-		auto &track = timeline.tracks[i];
-		ImGui::PushID(static_cast<int>(i));
-		const auto *target = scene.FindObject(track.target);
-		const auto title = std::format("Track {}  /  {}", i + 1,
-		                               target ? target->name : "(No target)");
-		if (ImGui::TreeNodeEx("Track", ImGuiTreeNodeFlags_DefaultOpen, "%s",
-		                     title.c_str())) {
-			if (ImGui::BeginCombo("Target", target ? target->name.c_str() : "(None)")) {
-				for (const auto &[id, object] : scene.GetObjects()) {
-					if (!object.CanAnimate(track))
-						continue;
-					const auto label = std::format("{}##timeline-target-{}", object.name, id);
-					if (ImGui::Selectable(label.c_str(), id == track.target))
-						track.target = id;
-				}
-				ImGui::EndCombo();
-			}
-
-			int property = static_cast<int>(track.property);
-			if (ImGui::Combo("Property", &property,
-			                 "UI Position\0UI Opacity\0Translation\0Rotation\0Scale\0")) {
-				track.property = static_cast<AnimationClipTrack::Property>(property);
-				const auto *selected = scene.FindObject(track.target);
-				if (selected && !selected->CanAnimate(track))
-					track.target = 0;
-				for (auto &key : track.keys) {
-					if (track.property == AnimationClipTrack::Property::OPACITY)
-						key.value = {std::clamp(key.value[0], 0.f, 1.f), 0};
-					else if (track.property == AnimationClipTrack::Property::ROTATION)
-						key.value = {0, 0, 0, 1};
-					else if (track.property == AnimationClipTrack::Property::SCALE)
-						key.value = {1, 1, 1, 0};
-				}
-			}
-			const bool opacity = track.property == AnimationClipTrack::Property::OPACITY;
-			const bool rotation = track.property == AnimationClipTrack::Property::ROTATION;
-			int interpolation = static_cast<int>(track.interpolation);
-			if (ImGui::Combo("Interpolation", &interpolation, "Linear\0Smooth\0Step\0"))
-				track.interpolation = static_cast<AnimationClipTrack::Interpolation>(interpolation);
-
-			// キーの印をクリックすると、その時刻へプレイヘッドを移す。
-			const auto origin = ImGui::GetCursorScreenPos();
-			const float width = (std::max)(ImGui::GetContentRegionAvail().x, 1.f);
-			ImGui::InvisibleButton("Key Strip", {width, 19});
-			if (ImGui::IsItemClicked()) {
-				const float fraction = (ImGui::GetMousePos().x - origin.x) / width;
-				const float time = std::clamp(fraction, 0.f, 1.f) * timeline.duration;
-				const auto closest = std::ranges::min_element(track.keys, {},
-				    [&](const auto &key) { return std::abs(key.seconds - time); });
-				playhead = closest != track.keys.end() &&
-				                   std::abs(closest->seconds - time) <= 7 * timeline.duration / width
-				               ? closest->seconds
-				               : time;
-			}
-			auto *draw = ImGui::GetWindowDrawList();
-			draw->AddLine({origin.x, origin.y + 9}, {origin.x + width, origin.y + 9},
-			              ImGui::GetColorU32(ImGuiCol_Border));
-			for (const auto &key : track.keys) {
-				const float x = origin.x + width *
-				    std::clamp(key.seconds / timeline.duration, 0.f, 1.f);
-				draw->AddCircleFilled({x, origin.y + 9}, 4,
-				                      ImGui::GetColorU32(ImGuiCol_SliderGrab));
-			}
-			const float x = origin.x + width * playhead / timeline.duration;
-			draw->AddLine({x, origin.y}, {x, origin.y + 18},
-			              ImGui::GetColorU32(ImGuiCol_Text));
-
-			std::optional<std::size_t> removedKey;
-			for (std::size_t k = 0; k < track.keys.size(); ++k) {
-				auto &key = track.keys[k];
-				ImGui::PushID(static_cast<int>(k));
-				ImGui::SetNextItemWidth(105);
-				ImGui::DragFloat("Time", &key.seconds, .02f, 0.f, timeline.duration,
-				                 "%.3f", ImGuiSliderFlags_AlwaysClamp);
-				ImGui::SameLine();
-				ImGui::SetNextItemWidth(160);
-				if (opacity)
-					ImGui::SliderFloat("Alpha", &key.value[0], 0.f, 1.f,
-					                   "%.2f", ImGuiSliderFlags_AlwaysClamp);
-				else if (rotation) {
-					auto radians = TransformUtils::RotationToEuler(
-					    {key.value[0], key.value[1], key.value[2], key.value[3]});
-					float degrees[]{DirectX::XMConvertToDegrees(radians.x),
-					                DirectX::XMConvertToDegrees(radians.y),
-					                DirectX::XMConvertToDegrees(radians.z)};
-					if (ImGui::DragFloat3("Rotation (deg)", degrees, .5f)) {
-						const auto q = TransformUtils::RotationFromEuler(
-						    {DirectX::XMConvertToRadians(degrees[0]),
-						     DirectX::XMConvertToRadians(degrees[1]),
-						     DirectX::XMConvertToRadians(degrees[2])});
-						key.value = {q.x, q.y, q.z, q.w};
-					}
-				} else if (track.IsTransform()) {
-					const float limit = track.property == AnimationClipTrack::Property::SCALE
-					                        ? 1000.f : 100000.f;
-					ImGui::DragFloat3("XYZ", key.value.data(), .05f, -limit, limit,
-					                  "%.3f", ImGuiSliderFlags_AlwaysClamp);
-				} else
-					ImGui::DragFloat2("XY", key.value.data(), 1.f, -100000, 100000,
-					                  "%.1f", ImGuiSliderFlags_AlwaysClamp);
-				ImGui::SameLine();
-				ImGui::BeginDisabled(track.keys.size() == 1);
-				if (ImGui::SmallButton("Remove Key"))
-					removedKey = k;
-				ImGui::EndDisabled();
-				ImGui::PopID();
-			}
-			if (removedKey)
-				track.keys.erase(track.keys.begin() + static_cast<std::ptrdiff_t>(*removedKey));
-			std::ranges::sort(track.keys, {}, &AnimationClipKey::seconds);
-			const bool hasKey = std::ranges::any_of(track.keys, [&](const auto &key) {
-				return std::abs(key.seconds - playhead) < .0001f;
-			});
-			ImGui::BeginDisabled(hasKey || track.keys.size() >= AnimationClipComponent::kMaximumKeys);
-			if (ImGui::Button("Add Key at Playhead")) {
-				track.keys.push_back({playhead, track.Sample(playhead)});
-				std::ranges::sort(track.keys, {}, &AnimationClipKey::seconds);
-			}
-			ImGui::EndDisabled();
-			const auto sample = track.Sample(playhead);
-			if (opacity)
-				ImGui::Text("At playhead: %.2f", sample[0]);
-			else if (rotation) {
-				const auto euler = TransformUtils::RotationToEuler(
-				    {sample[0], sample[1], sample[2], sample[3]});
-				ImGui::Text("At playhead: %.1f, %.1f, %.1f deg",
-				            DirectX::XMConvertToDegrees(euler.x),
-				            DirectX::XMConvertToDegrees(euler.y),
-				            DirectX::XMConvertToDegrees(euler.z));
-			} else if (track.IsTransform())
-				ImGui::Text("At playhead: %.3f, %.3f, %.3f", sample[0], sample[1], sample[2]);
-			else
-				ImGui::Text("At playhead: %.1f, %.1f", sample[0], sample[1]);
-			if (ImGui::Button("Remove Track"))
-				removedTrack = i;
-			ImGui::TreePop();
-		}
-		ImGui::PopID();
-	}
-	if (removedTrack)
-		timeline.tracks.erase(timeline.tracks.begin() + static_cast<std::ptrdiff_t>(*removedTrack));
-
-	ImGui::BeginDisabled(timeline.tracks.size() >= AnimationClipComponent::kMaximumTracks);
-	if (ImGui::Button("Add Track")) {
-		auto &track = timeline.tracks.emplace_back();
-		track.keys.back().seconds = timeline.duration;
-	}
-	ImGui::EndDisabled();
-}
 
 /// <summary>
 /// 直前の編集UIの開始・変更・終了を名前と履歴へ反映する
@@ -721,8 +559,87 @@ bool InspectorPanel::Draw(
 		assetRevealPath_ = audioInspector_.GetRevealRequest();
 
 	std::optional<std::optional<AnimationClipComponent>> animationClipChange;
-	if (object->animationClip) {
-		ImGui::SeparatorText("Animation Clip");
+	if (object->animationClip && object->animationClip->usesAsset) {
+		ImGui::SeparatorText("Animation Player");
+		auto player = *object->animationClip;
+		const auto label = player.asset.empty() ? std::string("(None)")
+		                                        : PathUtils::ToUtf8(player.asset.filename());
+		const auto selectClip = [&](const std::filesystem::path &path) {
+			if (player.asset != path) {
+				player.asset = path;
+				player.bindings.clear();
+			}
+		};
+
+		if (ImGui::BeginCombo("Animation Clip", label.c_str())) {
+			if (ImGui::Selectable("None", player.asset.empty()))
+				selectClip({});
+			if (assets)
+				for (const auto &path : assets->GetAnimationClips()) {
+					const auto name = PathUtils::ToUtf8(path.lexically_relative(
+					    assets->GetRootDirectory()));
+					if (ImGui::Selectable(name.c_str(), path == player.asset))
+						selectClip(path);
+				}
+			ImGui::EndCombo();
+		}
+		if (const auto dropped = AssetDragDrop::AcceptTarget(AssetDragDrop::Kind::ANIMATION_CLIP);
+		    !dropped.empty())
+			selectClip(dropped);
+
+		ImGui::Checkbox("Play on Start##AnimationPlayer", &player.playOnStart);
+		ImGui::SameLine();
+		ImGui::Checkbox("Loop##AnimationPlayer", &player.loop);
+		if (!player.asset.empty() && ImGui::TreeNode("Clip Bindings")) {
+			AnimationClipComponent assetClip;
+			std::string error;
+			if (AnimationClipAsset::Load(player.asset, assetClip, error)) {
+				std::set<SceneObjectId> slots;
+				for (const auto &track : assetClip.tracks)
+					slots.insert(track.target);
+				for (const auto slot : slots) {
+					const auto binding = std::ranges::find_if(player.bindings, [&](const auto &entry) {
+						return entry.first == slot;
+					});
+					const auto id = binding == player.bindings.end() ? 0 : binding->second;
+					const auto *target = scene.FindObject(id);
+					ImGui::PushID(static_cast<int>(slot));
+					const auto field = std::format("Binding {}", slot);
+					if (ImGui::BeginCombo(field.c_str(), target ? target->name.c_str() : "(None)")) {
+						if (ImGui::Selectable("None", id == 0) &&
+						    binding != player.bindings.end())
+							binding->second = 0;
+						for (const auto &[candidateId, candidate] : scene.GetObjects()) {
+							const bool compatible = std::ranges::all_of(
+							    assetClip.tracks, [&](const auto &track) {
+								    return track.target != slot || candidate.CanAnimate(track);
+							    });
+							if (!compatible)
+								continue;
+							const auto name = std::format("{}##{}", candidate.name, candidateId);
+							if (ImGui::Selectable(name.c_str(), candidateId == id)) {
+								if (binding == player.bindings.end())
+									player.bindings.emplace_back(slot, candidateId);
+								else
+									binding->second = candidateId;
+								break;
+							}
+						}
+						ImGui::EndCombo();
+					}
+					ImGui::PopID();
+				}
+			} else {
+				ui.Text(error);
+			}
+			ImGui::TreePop();
+		}
+		if (ui.Button("Remove Animation Player"))
+			animationClipChange.emplace(std::nullopt);
+		else if (player != *object->animationClip)
+			animationClipChange.emplace(std::move(player));
+	} else if (object->animationClip) {
+		ImGui::SeparatorText("Legacy Animation Clip");
 		ImGui::Text("%.2f s  /  %zu tracks", object->animationClip->duration,
 		            object->animationClip->tracks.size());
 		if (ui.Button("Edit Timeline...")) {
@@ -743,7 +660,7 @@ bool InspectorPanel::Draw(
 		if (ImGui::BeginPopupModal("Animation Clip", nullptr,
 		                           ImGuiWindowFlags_NoSavedSettings)) {
 			ImGui::BeginChild("Timeline Tracks", {0, -ImGui::GetFrameHeightWithSpacing() * 2});
-			DrawAnimationClipKeys(scene, animationClipDraft_, animationClipPlayhead_);
+			AnimationClipEditor::DrawKeys(&scene, animationClipDraft_, animationClipPlayhead_);
 			ImGui::EndChild();
 			const bool valid = animationClipDraft_.IsValid();
 			if (!valid)
@@ -1029,8 +946,11 @@ bool InspectorPanel::Draw(
 			                  inspectedObjectId};
 		}
 
-		if (ui.MenuItem("Animation Clip", nullptr, !object->animationClip))
-			animationClipChange.emplace(AnimationClipComponent{});
+		if (ui.MenuItem("Animation Player", nullptr, !object->animationClip)) {
+			AnimationClipComponent player;
+			player.usesAsset = true;
+			animationClipChange.emplace(std::move(player));
+		}
 
 		if (ui.MenuItem("Trigger Actions", nullptr, !object->triggerActions)) {
 			changed |= history.SetTriggerActions(inspectedObjectId,
@@ -1062,7 +982,7 @@ bool InspectorPanel::Draw(
 			    target->animationClip = *animationClipChange;
 			    return true;
 		    },
-		    "Edit Animation Clip");
+		    "Edit Animation Player");
 	}
 
 	if (directionalLightChange) {

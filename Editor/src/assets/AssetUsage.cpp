@@ -112,7 +112,7 @@ fs::path DuplicateDestination(const fs::path &source, bool folder,
 	auto suffix = folder ? fs::path{} : source.extension();
 
 	if (!folder && PathUtils::HasExtension(source, ".json")) {
-		for (const auto kind : {".scene", ".prefab", ".settings"}) {
+		for (const auto kind : {".scene", ".prefab", ".settings", ".clip"}) {
 			if (PathUtils::HasExtension(stem, kind)) {
 				suffix = stem.extension().native() + suffix.native();
 				stem = stem.stem();
@@ -742,7 +742,7 @@ bool AssetUsage::Relocate(const Moves &moves, const fs::path &assetRoot,
 					throw std::runtime_error("Keep the original file extension.");
 				}
 
-				for (const auto suffix : {".scene", ".prefab", ".settings"}) {
+				for (const auto suffix : {".scene", ".prefab", ".settings", ".clip"}) {
 					if (PathUtils::HasExtension(from.stem(), suffix) &&
 					    !PathUtils::HasExtension(to.stem(), suffix)) {
 						throw std::runtime_error("Keep the original file type suffix.");

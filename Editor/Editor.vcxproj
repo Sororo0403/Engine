@@ -502,6 +502,8 @@ exit /b 0</Command>
     <ClCompile Include="src\ui\UIObjects.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\animation\AnimationClipEditor.h" />
+    <ClCompile Include="src\animation\AnimationClipEditor.cpp" />
     <ClInclude Include="include\animation\TransformAnimationInspector.h" />
     <ClCompile Include="src\animation\TransformAnimationInspector.cpp" />
   </ItemGroup>
