@@ -55,18 +55,43 @@ local function iris(self, viewport, open)
     cover(bottomCover, x0, y1, x1 - x0, height - y1, 0)
 end
 
+local function start_death(self, state, falling)
+    state.deathTime = 0
+    state.falling = falling
+    state.attack = 0
+    state.reaction = 0
+    state.moveSpeed, state.jumpSpeed = self:get_character_speeds()
+    self:set_character_speeds(0.001, 0.001)
+end
+
+local function update_fall_pose(self, state, seconds)
+    local reaction = smooth((seconds - state.deathReactionDelay) / state.fallReactionSeconds)
+    local lift = smooth(reaction / 0.45)
+    local drop = smooth((reaction - 0.55) / 0.45)
+    local peak = state.lastGroundY + state.fallRise
+    local height = state.fallStartY + (peak - state.fallStartY) * lift - state.fallDrop * drop
+    local _, y = self:get_position()
+    self:reference("visual"):set_local_position(0, height - y, 0)
+    pose(self, 0.12 * drop, 1 + 0.30 * math.sin(math.pi * reaction))
+end
+
 local function update_death(self, state, seconds, viewport)
-    local blackout = state.deathHold + state.deathClose
+    local hold = state.falling and state.fallHold or state.deathHold
+    local blackout = hold + state.deathClose
     local opening = blackout + state.deathCovered
     local finish = opening + state.deathReveal
     local t = math.min(finish, state.deathTime + seconds)
     viewport = viewport or {width = 1280, height = 720}
 
     if t < blackout then
-        local reaction = smooth((t - state.deathReactionDelay) / state.deathReactionSeconds)
-        local bounce = math.sin(reaction * math.pi)
-        pose(self, -0.48 * reaction, 1 - 0.34 * bounce)
-        iris(self, viewport, 1 - smooth((t - state.deathHold) / state.deathClose))
+        if state.falling then
+            update_fall_pose(self, state, t)
+        else
+            local reaction = smooth((t - state.deathReactionDelay) / state.deathReactionSeconds)
+            local bounce = math.sin(reaction * math.pi)
+            pose(self, -0.48 * reaction, 1 - 0.34 * bounce)
+        end
+        iris(self, viewport, 1 - smooth((t - hold) / state.deathClose))
     elseif not state.deathReturned then
         -- 復帰のフレームは暗幕を閉じた状態で表示する。
         iris(self, viewport, 0)
@@ -74,6 +99,7 @@ local function update_death(self, state, seconds, viewport)
         state.life = state.maximumLife
         state.deathReturned = true
         t = blackout
+        self:reference("visual"):set_local_position(0, 0, 0)
         pose(self, 0, 1)
         show_life(self, state)
     else
@@ -89,6 +115,7 @@ local function update_death(self, state, seconds, viewport)
         state.invulnerable = state.invulnerabilitySeconds
         state.deathTime = nil
         state.deathReturned = nil
+        state.falling = nil
     end
 end
 
@@ -147,11 +174,7 @@ local function on_contact(self, state, other)
     state.invulnerable = state.invulnerabilitySeconds
     state.reaction = state.reactionSeconds
     if state.life == 0 then
-        state.deathTime = 0
-        state.attack = 0
-        state.reaction = 0
-        state.moveSpeed, state.jumpSpeed = self:get_character_speeds()
-        self:set_character_speeds(0.001, 0.001)
+        start_death(self, state, false)
     else
         self:reference("damageSound"):play_audio()
     end
@@ -161,6 +184,7 @@ end
 return {
     start = function(self, state)
         state.spawnX, state.spawnY, state.spawnZ = self:get_position()
+        state.lastGroundY = state.spawnY
     end,
 
     message = function(self, state, name)
@@ -212,6 +236,20 @@ return {
             state.attack = 0
             pose(self, 0, 1)
             show_life(self, state)
+        end
+
+        if input.character then
+            local _, y = self:get_position()
+            if y <= state.fallY then
+                state.fallStartY = y
+                state.life = 0
+                start_death(self, state, true)
+                show_life(self, state)
+                return
+            end
+            if input.character.grounded then
+                state.lastGroundY = y
+            end
         end
 
         update_attack(self, state, seconds, input)
