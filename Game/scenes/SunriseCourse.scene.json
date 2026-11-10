@@ -2670,10 +2670,6 @@
           {
             "name": "retry",
             "path": "@project/scenes/SunriseCourse.scene.json"
-          },
-          {
-            "name": "title",
-            "path": "@project/scenes/TitleStreet.scene.json"
           }
         ],
         "state": {}
@@ -2998,6 +2994,23 @@
             "operation": "disable",
             "scene": "",
             "target": 24
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "disable",
+            "scene": "",
+            "target": 129
           },
           {
             "arrivalTag": "",
@@ -3992,6 +4005,840 @@
             "target": 1
           }
         ]
+      }
+    },
+    {
+      "active": true,
+      "id": 129,
+      "name": "Sunrise Pause Input",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "inputPressed",
+            "inputAction": "Cancel",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "pauseGame",
+            "scene": "",
+            "target": 0
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "inputPressed",
+            "inputAction": "Cancel",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "enable",
+            "scene": "",
+            "target": 130
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "inputPressed",
+            "inputAction": "Cancel",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "disable",
+            "scene": "",
+            "target": 129
+          }
+        ]
+      }
+    },
+    {
+      "active": false,
+      "id": 130,
+      "name": "Sunrise Pause Menu",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "canvas": {
+        "enabled": true,
+        "matchWidthOrHeight": 0.5,
+        "referenceSize": [
+          1280,
+          720
+        ],
+        "scaleWithScreen": true,
+        "sortOrder": 5
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "inputPressed",
+            "inputAction": "Cancel",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "resumeGame",
+            "scene": "",
+            "target": 0
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "inputPressed",
+            "inputAction": "Cancel",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "disable",
+            "scene": "",
+            "target": 130
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "inputPressed",
+            "inputAction": "Cancel",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "enable",
+            "scene": "",
+            "target": 129
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 131,
+      "name": "Pause Backdrop",
+      "parent": 130,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "rectTransform": {
+        "anchorMin": [
+          0,
+          0
+        ],
+        "anchorMax": [
+          1,
+          1
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "position": [
+          0,
+          0
+        ],
+        "sizeDelta": [
+          0,
+          0
+        ]
+      },
+      "image": {
+        "enabled": true,
+        "raycastTarget": true,
+        "texture": "",
+        "color": [
+          0.04,
+          0.06,
+          0.07,
+          0.67
+        ],
+        "preserveAspect": false,
+        "fillOrigin": "left",
+        "fillAmount": 1
+      }
+    },
+    {
+      "active": true,
+      "id": 132,
+      "name": "Pause Panel",
+      "parent": 130,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "rectTransform": {
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "position": [
+          0,
+          0
+        ],
+        "sizeDelta": [
+          460,
+          346
+        ]
+      },
+      "image": {
+        "enabled": true,
+        "raycastTarget": false,
+        "texture": "",
+        "color": [
+          0.11,
+          0.16,
+          0.15,
+          0.97
+        ],
+        "preserveAspect": false,
+        "fillOrigin": "left",
+        "fillAmount": 1
+      }
+    },
+    {
+      "active": true,
+      "id": 133,
+      "name": "Pause Heading",
+      "parent": 130,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "rectTransform": {
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "position": [
+          0,
+          -117
+        ],
+        "sizeDelta": [
+          350,
+          62
+        ]
+      },
+      "text": {
+        "enabled": true,
+        "raycastTarget": false,
+        "value": "ひとやすみ",
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 36,
+        "bold": true,
+        "color": [
+          1,
+          1,
+          0.92,
+          1
+        ],
+        "alignment": "center",
+        "verticalAlignment": "middle"
+      }
+    },
+    {
+      "active": true,
+      "id": 134,
+      "name": "つづける",
+      "parent": 130,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "rectTransform": {
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "position": [
+          0,
+          -30
+        ],
+        "sizeDelta": [
+          320,
+          51
+        ]
+      },
+      "image": {
+        "enabled": true,
+        "raycastTarget": true,
+        "texture": "",
+        "color": [
+          0.27,
+          0.33,
+          0.31,
+          1
+        ],
+        "preserveAspect": false,
+        "fillOrigin": "left",
+        "fillAmount": 1
+      },
+      "text": {
+        "enabled": true,
+        "raycastTarget": false,
+        "value": "つづける",
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 23,
+        "bold": true,
+        "color": [
+          1,
+          1,
+          0.92,
+          1
+        ],
+        "alignment": "center",
+        "verticalAlignment": "middle"
+      },
+      "button": {
+        "enabled": true,
+        "interactable": true,
+        "navigation": true,
+        "initialSelection": true,
+        "normalColor": [
+          0.78,
+          0.81,
+          0.75,
+          1
+        ],
+        "highlightedColor": [
+          1,
+          1,
+          0.85,
+          1
+        ],
+        "pressedColor": [
+          0.86,
+          0.78,
+          0.55,
+          1
+        ],
+        "disabledColor": [
+          0.5,
+          0.5,
+          0.5,
+          1
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonClick",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "resumeGame",
+            "scene": "",
+            "target": 0
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonClick",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "disable",
+            "scene": "",
+            "target": 130
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonClick",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "enable",
+            "scene": "",
+            "target": 129
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 135,
+      "name": "最初からやり直す",
+      "parent": 130,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "rectTransform": {
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "position": [
+          0,
+          36
+        ],
+        "sizeDelta": [
+          320,
+          51
+        ]
+      },
+      "image": {
+        "enabled": true,
+        "raycastTarget": true,
+        "texture": "",
+        "color": [
+          0.27,
+          0.33,
+          0.31,
+          1
+        ],
+        "preserveAspect": false,
+        "fillOrigin": "left",
+        "fillAmount": 1
+      },
+      "text": {
+        "enabled": true,
+        "raycastTarget": false,
+        "value": "最初からやり直す",
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 23,
+        "bold": true,
+        "color": [
+          1,
+          1,
+          0.92,
+          1
+        ],
+        "alignment": "center",
+        "verticalAlignment": "middle"
+      },
+      "button": {
+        "enabled": true,
+        "interactable": true,
+        "navigation": true,
+        "normalColor": [
+          0.78,
+          0.81,
+          0.75,
+          1
+        ],
+        "highlightedColor": [
+          1,
+          1,
+          0.85,
+          1
+        ],
+        "pressedColor": [
+          0.86,
+          0.78,
+          0.55,
+          1
+        ],
+        "disabledColor": [
+          0.5,
+          0.5,
+          0.5,
+          1
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonClick",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "restartScene",
+            "scene": "",
+            "target": 0
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 136,
+      "name": "タイトルへ",
+      "parent": 130,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "rectTransform": {
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "position": [
+          0,
+          102
+        ],
+        "sizeDelta": [
+          320,
+          51
+        ]
+      },
+      "image": {
+        "enabled": true,
+        "raycastTarget": true,
+        "texture": "",
+        "color": [
+          0.27,
+          0.33,
+          0.31,
+          1
+        ],
+        "preserveAspect": false,
+        "fillOrigin": "left",
+        "fillAmount": 1
+      },
+      "text": {
+        "enabled": true,
+        "raycastTarget": false,
+        "value": "タイトルへ",
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 23,
+        "bold": true,
+        "color": [
+          1,
+          1,
+          0.92,
+          1
+        ],
+        "alignment": "center",
+        "verticalAlignment": "middle"
+      },
+      "button": {
+        "enabled": true,
+        "interactable": true,
+        "navigation": true,
+        "normalColor": [
+          0.78,
+          0.81,
+          0.75,
+          1
+        ],
+        "highlightedColor": [
+          1,
+          1,
+          0.85,
+          1
+        ],
+        "pressedColor": [
+          0.86,
+          0.78,
+          0.55,
+          1
+        ],
+        "disabledColor": [
+          0.5,
+          0.5,
+          0.5,
+          1
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonClick",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "loadScene",
+            "scene": "@project/scenes/TitleStreet.scene.json",
+            "target": 0
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 137,
+      "name": "Pause Controls",
+      "parent": 130,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "rectTransform": {
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "position": [
+          0,
+          -77
+        ],
+        "sizeDelta": [
+          432,
+          34
+        ]
+      },
+      "text": {
+        "enabled": true,
+        "raycastTarget": false,
+        "value": "移動 WASD・矢印キー / 左スティック・十字キー\nジャンプ Space / A（長押し可）　再挑戦 R / Start",
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 16,
+        "bold": false,
+        "color": [
+          0.9,
+          0.92,
+          0.85,
+          1
+        ],
+        "alignment": "center",
+        "verticalAlignment": "middle"
       }
     }
   ],

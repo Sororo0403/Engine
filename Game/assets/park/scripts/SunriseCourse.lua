@@ -17,11 +17,9 @@ return {
         if input.character and input.character.respawnCount > 0 then
             state.fell = true
         end
-        local restart, cancel = input.actions.Restart, input.actions.Cancel
+        local restart = input.actions.Restart
         if restart and restart.pressed then
             self:load_scene("retry")
-        elseif cancel and cancel.pressed then
-            self:load_scene("title")
         end
     end,
 
