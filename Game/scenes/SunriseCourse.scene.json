@@ -2688,6 +2688,22 @@
           {
             "name": "southDock",
             "target": 192
+          },
+          {
+            "name": "bridgeCue",
+            "target": 194
+          },
+          {
+            "name": "gateCue",
+            "target": 195
+          },
+          {
+            "name": "flowerCue",
+            "target": 196
+          },
+          {
+            "name": "clearCue",
+            "target": 197
           }
         ],
         "scenes": [
@@ -2745,6 +2761,23 @@
       },
       "triggerActions": {
         "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 194
+          },
           {
             "arrivalTag": "",
             "cameraBlendSeconds": 0,
@@ -2828,6 +2861,23 @@
       },
       "triggerActions": {
         "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 195
+          },
           {
             "arrivalTag": "",
             "cameraBlendSeconds": 0,
@@ -7230,6 +7280,22 @@
             "event": "enter",
             "inputAction": "",
             "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 196
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
             "messageName": "flower",
             "once": true,
             "operation": "sendScriptMessage",
@@ -7327,6 +7393,22 @@
       },
       "triggerActions": {
         "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 196
+          },
           {
             "arrivalTag": "",
             "cameraBlendSeconds": 0,
@@ -7532,6 +7614,23 @@
       },
       "triggerActions": {
         "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 197
+          },
           {
             "arrivalTag": "",
             "cameraBlendSeconds": 0,
@@ -7979,6 +8078,142 @@
             "scene": "@project/scenes/StreetJourney.scene.json",
             "target": 0
           }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "audioSource": {
+        "clip": "@project/assets/street/audio/Checkpoint.wav",
+        "loop": false,
+        "maxDistance": 20,
+        "minDistance": 1,
+        "playOnStart": false,
+        "spatial": false,
+        "volume": 0.45
+      },
+      "id": 194,
+      "name": "Sunrise Bridge Cue",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "audioSource": {
+        "clip": "@project/assets/street/audio/GearMechanism.wav",
+        "loop": false,
+        "maxDistance": 20,
+        "minDistance": 1,
+        "playOnStart": false,
+        "spatial": false,
+        "volume": 0.48
+      },
+      "id": 195,
+      "name": "Sunrise Gate Cue",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "audioSource": {
+        "clip": "@project/assets/street/audio/FlowerPickup.wav",
+        "loop": false,
+        "maxDistance": 20,
+        "minDistance": 1,
+        "playOnStart": false,
+        "spatial": false,
+        "volume": 0.38
+      },
+      "id": 196,
+      "name": "Sunrise Flower Cue",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "audioSource": {
+        "clip": "@project/assets/street/audio/StreetClear.wav",
+        "loop": false,
+        "maxDistance": 20,
+        "minDistance": 1,
+        "playOnStart": false,
+        "spatial": false,
+        "volume": 0.42
+      },
+      "id": 197,
+      "name": "Sunrise Clear Cue",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
         ]
       }
     }

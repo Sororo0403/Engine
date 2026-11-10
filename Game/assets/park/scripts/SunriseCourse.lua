@@ -48,6 +48,12 @@ return {
         state.journeyFlowers = game.sunriseJourneyFlowers
         game.sunriseJourneyTime = nil
         game.sunriseJourneyFlowers = nil
+        local volume = type(game.volumeLevel) == "number" and game.volumeLevel or 10
+        volume = math.max(0, math.min(10, volume)) / 10
+        for _, name in ipairs({"bridgeCue", "gateCue", "flowerCue", "clearCue"}) do
+            local cue = self:reference(name)
+            cue:set_audio_volume(cue:get_audio_volume() * volume)
+        end
     end,
 
     update = function(self, state, seconds, input)
