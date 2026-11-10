@@ -1,0 +1,79 @@
+newmtl Masonry
+Kd 0.391 0.427 0.383
+illum 1
+
+newmtl Mortar
+Kd 0.333 0.366 0.330
+illum 1
+
+newmtl StoneBand
+Kd 0.655 0.634 0.488
+illum 1
+
+newmtl Plinth
+Kd 0.540 0.512 0.396
+illum 1
+
+newmtl GroundFrame
+Kd 0.368 0.378 0.343
+illum 1
+
+newmtl GroundGlass
+Kd 0.092 0.106 0.143
+illum 1
+
+newmtl UpperFrame
+Kd 0.494 0.525 0.475
+illum 1
+
+newmtl UpperGlass
+Kd 0.101 0.124 0.172
+illum 1
+
+newmtl Mullion
+Kd 0.437 0.476 0.436
+illum 1
+
+newmtl Cornice
+Kd 0.310 0.329 0.290
+illum 1
+
+newmtl EastMasonry
+Kd 0.918 0.892 0.696
+illum 1
+
+newmtl EastMortar
+Kd 0.783 0.765 0.600
+illum 1
+
+newmtl EastStoneBand
+Kd 0.960 0.960 0.888
+illum 1
+
+newmtl EastPlinth
+Kd 0.960 0.960 0.720
+illum 1
+
+newmtl EastGroundFrame
+Kd 0.864 0.790 0.624
+illum 1
+
+newmtl EastGroundGlass
+Kd 0.216 0.222 0.259
+illum 1
+
+newmtl EastUpperFrame
+Kd 0.960 0.960 0.864
+illum 1
+
+newmtl EastUpperGlass
+Kd 0.238 0.260 0.312
+illum 1
+
+newmtl EastMullion
+Kd 0.960 0.960 0.792
+illum 1
+
+newmtl EastCornice
+Kd 0.729 0.689 0.528
+illum 1

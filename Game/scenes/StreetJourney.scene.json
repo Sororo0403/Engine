@@ -630,24 +630,12 @@
         "radius": 0.5,
         "shape": "Box"
       },
-      "colorTint": {
-        "color": [
-          0.75,
-          0.49,
-          0.39
-        ]
-      },
       "id": 13,
       "mesh": {
-        "model": "@project/assets/models/box/box.glb"
+        "model": "@project/assets/street/models/ArrivalWestFacade.obj"
       },
       "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
+        "textures": [],
         "uvOffset": [
           0.0,
           0.0
@@ -702,24 +690,12 @@
         "radius": 0.5,
         "shape": "Box"
       },
-      "colorTint": {
-        "color": [
-          0.75,
-          0.49,
-          0.39
-        ]
-      },
       "id": 14,
       "mesh": {
-        "model": "@project/assets/models/box/box.glb"
+        "model": "@project/assets/street/models/ArrivalEastFacade.obj"
       },
       "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
+        "textures": [],
         "uvOffset": [
           0.0,
           0.0
