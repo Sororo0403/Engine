@@ -13640,7 +13640,7 @@
         ],
         "halfHeight": 0.5,
         "isTrigger": true,
-        "radius": 1.25,
+        "radius": 0.55,
         "shape": "Sphere"
       },
       "id": 178,
@@ -13675,9 +13675,9 @@
           1
         ],
         "translation": [
-          17.0,
-          4.920000076293945,
-          75.0
+          10.0,
+          5.42,
+          79.0
         ]
       },
       "triggerActions": {
