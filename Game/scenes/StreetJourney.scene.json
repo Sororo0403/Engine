@@ -87,10 +87,20 @@
           {
             "name": "roof",
             "target": 152
+          },
+          {
+            "name": "deathShade",
+            "target": 444
           }
         ],
         "scenes": [],
         "state": {
+          "deathClose": 0.25,
+          "deathCovered": 0.08,
+          "deathHold": 1.3,
+          "deathReactionDelay": 0.22,
+          "deathReactionSeconds": 0.65,
+          "deathReveal": 0.45,
           "invulnerabilitySeconds": 1.5,
           "invulnerable": 0,
           "life": 3,
@@ -26026,6 +26036,102 @@
       },
       "name": "Street Enemy 3 Visual",
       "parent": 438,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "canvas": {
+        "enabled": true,
+        "matchWidthOrHeight": 0.5,
+        "referenceSize": [
+          1280.0,
+          720.0
+        ],
+        "scaleWithScreen": true,
+        "sortOrder": 2
+      },
+      "id": 443,
+      "name": "Street Death Overlay",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 444,
+      "image": {
+        "color": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "enabled": true,
+        "fillAmount": 1,
+        "fillOrigin": "left",
+        "preserveAspect": false,
+        "raycastTarget": false,
+        "texture": "@project/assets/textures/PrototypeWhite.png"
+      },
+      "name": "Street Death Shade",
+      "parent": 443,
+      "rectTransform": {
+        "anchorMax": [
+          0,
+          0
+        ],
+        "anchorMin": [
+          0,
+          0
+        ],
+        "pivot": [
+          0,
+          0
+        ],
+        "position": [
+          0,
+          0
+        ],
+        "sizeDelta": [
+          1280,
+          720
+        ]
+      },
       "tag": "",
       "transform": {
         "rotation": [
