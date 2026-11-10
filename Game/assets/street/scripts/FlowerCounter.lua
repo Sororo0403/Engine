@@ -66,26 +66,27 @@ local splitCheckpoints = {
     {"finish", "時計台"}
 }
 
-local function record_splits(state, finish, key, best)
+local splitRecordVersion = "2:"
+
+local function record_splits(state, finish, key)
     local record = game[key]
     local a, b, c, total
-    if type(record) == "string" and #record == 36 then
-        a, b = tonumber(string.sub(record, 1, 9)), tonumber(string.sub(record, 10, 18))
-        c, total = tonumber(string.sub(record, 19, 27)), tonumber(string.sub(record, 28, 36))
+    if type(record) == "string" and #record == 38 and string.sub(record, 1, 2) == splitRecordVersion then
+        a, b = tonumber(string.sub(record, 3, 11)), tonumber(string.sub(record, 12, 20))
+        c, total = tonumber(string.sub(record, 21, 29)), tonumber(string.sub(record, 30, 38))
     end
     local previous
-    if a and b and c and total and total == best and 0 <= a and a <= b and b <= c and c <= total then
+    if a and b and c and total and 0 <= a and a <= b and b <= c and c <= total then
         previous = {a, b, c, total}
     end
 
-    if not best or finish < best or (finish == best and not previous) then
+    if not previous or finish < previous[4] then
         local splits = state.splits
         if splits.canal and splits.courtyard and splits.roof
             and splits.canal <= splits.courtyard and splits.courtyard <= splits.roof
             and splits.roof <= finish and finish <= 999999999 then
-            game[key] = string.format("%09d%09d%09d%09d", splits.canal, splits.courtyard, splits.roof, finish)
-        else
-            game[key] = nil
+            game[key] = splitRecordVersion ..
+                string.format("%09d%09d%09d%09d", splits.canal, splits.courtyard, splits.roof, finish)
         end
     end
     return previous
@@ -108,7 +109,7 @@ local function split_line(state, finish, record)
     end
     local line = "区間  " .. table.concat(parts, "  /  ") .. " 秒"
     if record then
-        line = line .. "\n前ベスト比  " .. table.concat(differences, "  /  ") .. " 秒"
+        line = line .. "\n同じ計測地点の前ベスト比  " .. table.concat(differences, "  /  ") .. " 秒"
     end
     return line
 end
@@ -239,10 +240,9 @@ return {
             local tenths = math.floor(seconds * 10)
             game.journeyStreetTime = tenths
             local previous = previous_clear_time()
-            local record = record_splits(state, tenths, "streetBestClearSplits", previous)
+            local record = record_splits(state, tenths, "streetBestClearSplits")
             if state.count == state.total then
-                record = record_splits(state, tenths, "streetBestFullSplits",
-                    valid_time(game.streetBestFullTime))
+                record = record_splits(state, tenths, "streetBestFullSplits")
             end
             self:reference("result"):set_text(
                 clear_time_line(state, tenths, previous) .. "\n" ..
