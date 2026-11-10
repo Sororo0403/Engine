@@ -7,13 +7,21 @@ local function smooth(amount)
     return t * t * (3 - 2 * t)
 end
 
-local function pose(self, state, tilt, height)
+local function pose(self, state, tilt, height, eyeHeight)
     local visual = self:reference("visual")
     local yaw = (state.facingYaw or 0) / 2
     local sy, cy = math.sin(yaw), math.cos(yaw)
     local sr, cr = math.sin(tilt / 2), math.cos(tilt / 2)
     visual:set_rotation(sy * sr, sy * cr, cy * sr, cy * cr)
     visual:set_scale(1, height, 1)
+    eyeHeight = eyeHeight or 1
+    if state.eyeHeight ~= eyeHeight then
+        local eyes = self:reference("eyes")
+        if eyes then
+            eyes:set_scale(1, eyeHeight, 1)
+        end
+        state.eyeHeight = eyeHeight
+    end
 end
 
 local function update_facing(state, input, seconds)
@@ -194,7 +202,7 @@ local function update_fall_pose(self, state, seconds)
     local height = state.fallStartY + (peak - state.fallStartY) * lift - state.fallDrop * drop
     local _, y = self:get_position()
     self:reference("visual"):set_local_position(0, height - y, 0)
-    pose(self, state, 0.12 * drop, 1 + 0.30 * math.sin(math.pi * reaction))
+    pose(self, state, 0.12 * drop, 1 + 0.30 * math.sin(math.pi * reaction), 1 + 0.4 * lift)
 end
 
 local function update_death(self, state, seconds, viewport)
@@ -216,7 +224,7 @@ local function update_death(self, state, seconds, viewport)
         else
             local reaction = smooth((t - state.deathReactionDelay) / state.deathReactionSeconds)
             local bounce = math.sin(reaction * math.pi)
-            pose(self, state, -0.48 * reaction, 1 - 0.34 * bounce)
+            pose(self, state, -0.48 * reaction, 1 - 0.34 * bounce, 1 - 0.85 * reaction)
         end
         iris(self, state, viewport, 1 - smooth((t - hold) / state.deathClose))
     elseif not state.deathReturned then
@@ -420,7 +428,7 @@ return {
             state.reaction = math.max(0, state.reaction - seconds)
             local t = 1 - state.reaction / state.reactionSeconds
             local tilt = math.sin(math.pi * t) * 0.3
-            pose(self, state, tilt, 1)
+            pose(self, state, tilt, 1, 1 - 0.65 * math.sin(math.pi * t))
         elseif turned and state.attack == 0 then
             pose(self, state, 0, 1)
         end

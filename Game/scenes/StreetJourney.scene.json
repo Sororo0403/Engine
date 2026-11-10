@@ -85,6 +85,10 @@
             "target": 2
           },
           {
+            "name": "eyes",
+            "target": 548
+          },
+          {
             "name": "courtyard",
             "target": 150
           },
@@ -224,7 +228,7 @@
       "active": true,
       "id": 2,
       "mesh": {
-        "model": "@project/assets/models/hero/StreetHero.glb"
+        "model": "@project/assets/models/hero/StreetHeroBody.glb"
       },
       "meshRenderer": {
         "textures": [],
@@ -32589,6 +32593,27 @@
       },
       "mesh": {
         "model": "@project/assets/street/models/RooftopJumpMarker.obj"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [1, 1],
+        "uvOffset": [0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 548,
+      "name": "Street Hero Eyes",
+      "parent": 2,
+      "tag": "",
+      "transform": {
+        "rotation": [0, 0, 0, 1],
+        "scale": [1, 1, 1],
+        "translation": [0, -0.07, 0]
+      },
+      "mesh": {
+        "model": "@project/assets/models/hero/StreetHeroEyes.glb"
       },
       "meshRenderer": {
         "visible": true,
