@@ -2676,6 +2676,18 @@
           {
             "name": "journeyRetry",
             "target": 193
+          },
+          {
+            "name": "player",
+            "target": 1
+          },
+          {
+            "name": "movingPlatform",
+            "target": 98
+          },
+          {
+            "name": "southDock",
+            "target": 192
           }
         ],
         "scenes": [

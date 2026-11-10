@@ -7,9 +7,42 @@ local function record_time(key, time)
     return string.format("%.1f 秒", previous / 10)
 end
 
+local function show_hint(self, state, text)
+    if text ~= state.shownHint then
+        self:reference("objective"):set_text(text)
+        state.shownHint = text
+    end
+end
+
+local function dock_hint(self, character)
+    if not character then
+        return nil
+    end
+    local platform = self:reference("movingPlatform")
+    local _, _, platformZ = platform:get_position()
+    if character.ground == platform then
+        if platformZ >= 11.62 then
+            return "対岸に到着  /  左の岸に下りるか、正面の段へジャンプ"
+        elseif platformZ <= 6.73 then
+            return "動く足場に乗船中  /  手前の岸に停泊中"
+        end
+        return "動く足場に乗船中  /  岸に着くまで待とう"
+    end
+    local x, _, z = self:reference("player"):get_position()
+    local dockX, _, dockZ = self:reference("southDock"):get_position()
+    if math.abs(x - dockX) <= 1.1 and z >= dockZ - 1.25 and z <= dockZ + 0.27 then
+        if platformZ <= 6.73 then
+            return "足場が着いた！ まっすぐ歩いて乗ろう"
+        end
+        return "足場が戻るまで船着き場で待とう"
+    end
+end
+
 return {
-    start = function(_, state)
+    start = function(self, state)
         game.sunriseUnlocked = true
+        state.objective = self:reference("objective"):get_text()
+        state.shownHint = state.objective
         state.flowers = 0
         state.journeyTime = game.sunriseJourneyTime
         state.journeyFlowers = game.sunriseJourneyFlowers
@@ -28,19 +61,23 @@ return {
         elseif state.lookoutPrompt and confirm and confirm.pressed then
             self:reference("finish"):set_active(true)
         end
+        if not state.lookoutPrompt then
+            show_hint(self, state, dock_hint(self, input.character) or state.objective)
+        end
     end,
 
     message = function(self, state, name)
-        local label = self:reference("objective")
         if name == "bridge" then
             self:reference("bridgePad"):set_mesh_tint(0.30, 0.87, 0.48)
             if self:reference("gate"):is_active() then
-                label:set_text("橋がつながった！ 対岸の高い足場にあるスイッチへ")
+                state.objective = "橋がつながった！ 対岸の高い足場にあるスイッチへ"
+                show_hint(self, state, state.objective)
             end
         elseif name == "gate" then
             self:reference("gatePad"):set_mesh_tint(0.30, 0.87, 0.48)
             self:reference("gate"):set_active(false)
-            label:set_text("見晴らし台へ  /  中央はジャンプ ［Space / A］、右は階段")
+            state.objective = "見晴らし台へ  /  中央はジャンプ ［Space / A］、右は階段"
+            show_hint(self, state, state.objective)
         elseif name == "flower" then
             state.flowers = state.flowers + 1
             self:reference("flowerCount"):set_text(string.format("花 %d / 2", state.flowers))
@@ -48,12 +85,12 @@ return {
                 self:reference("finish"):set_active(true)
             end
         elseif name == "lookout_enter" and state.flowers < 2 then
-            state.lookoutPrompt = label:get_text()
-            label:set_text("花を探しに戻るか、このままクリア ［Enter / Y］")
+            state.lookoutPrompt = true
+            show_hint(self, state, "花を探しに戻るか、このままクリア ［Enter / Y］")
         elseif name == "lookout_exit" and state.lookoutPrompt then
             self:reference("finish"):set_active(false)
-            label:set_text(state.lookoutPrompt)
             state.lookoutPrompt = nil
+            show_hint(self, state, state.objective)
         elseif name == "finish" then
             state.lookoutPrompt = nil
             local time = math.floor((state.elapsed or 0) * 10)
