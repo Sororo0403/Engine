@@ -10117,7 +10117,7 @@
           650
         ],
         "sizeDelta": [
-          270,
+          148,
           58
         ]
       },
@@ -10142,9 +10142,9 @@
         "interactable": true,
         "navigation": true,
         "normalColor": [
-          0.65,
-          0.65,
-          0.65,
+          0.83,
+          0.83,
+          0.83,
           1
         ],
         "highlightedColor": [
@@ -10273,11 +10273,11 @@
           0
         ],
         "position": [
-          380,
+          236,
           650
         ],
         "sizeDelta": [
-          270,
+          134,
           58
         ]
       },
@@ -10286,7 +10286,7 @@
         "raycastTarget": false,
         "value": "SUNRISE",
         "fontFamily": "Segoe UI",
-        "fontSize": 34,
+        "fontSize": 33,
         "bold": false,
         "alignment": "left",
         "verticalAlignment": "middle",
@@ -10302,9 +10302,9 @@
         "interactable": true,
         "navigation": true,
         "normalColor": [
-          0.65,
-          0.65,
-          0.65,
+          0.83,
+          0.83,
+          0.83,
           1
         ],
         "highlightedColor": [
