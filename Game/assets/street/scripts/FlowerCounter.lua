@@ -64,9 +64,15 @@ return {
     start = function(_, state)
         game.streetAllFlowers = state.count == state.total
         game.streetGoalWaiting = nil
+        game.streetRemainingFlowers = nil
     end,
 
     update = function(self, state, seconds)
+        if game.streetGoalWaiting and state.count < state.total
+            and state.remainingSummaryCount ~= state.count then
+            game.streetRemainingFlowers = collection_summary(self, state)
+            state.remainingSummaryCount = state.count
+        end
         if not state.finishedTime and not state.completed and not game.streetDeathActive then
             state.elapsed = state.elapsed + seconds
         end
