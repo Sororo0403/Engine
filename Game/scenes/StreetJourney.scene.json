@@ -2194,26 +2194,6 @@
     },
     {
       "active": true,
-      "collider": {
-        "center": [
-          0,
-          0,
-          0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1,
-          1,
-          1
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
       "colorTint": {
         "color": [
           0.75,
@@ -4486,26 +4466,6 @@
     },
     {
       "active": true,
-      "collider": {
-        "center": [
-          0,
-          0,
-          0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1,
-          1,
-          1
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
       "id": 63,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -4546,6 +4506,51 @@
           7.0,
           0.20999999344348907,
           52.5
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 596,
+      "name": "Market and Courtyard Floor Collision",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          13,
+          0.3499999940395355,
+          12.5
+        ],
+        "translation": [
+          7,
+          0.20999999344348907,
+          44.5
         ]
       }
     },
