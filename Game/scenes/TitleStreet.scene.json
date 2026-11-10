@@ -93,8 +93,8 @@
       "active": true,
       "id": 3,
       "name": "Morning Sky",
-      "parent": 0,
-      "tag": "title_dark",
+      "parent": 232,
+      "tag": "",
       "transform": {
         "rotation": [0, 0, 0, 1],
         "scale": [1, 1, 1],
@@ -547,7 +547,7 @@
             "event": "buttonClick",
             "operation": "setCamera",
             "target": 6,
-            "once": true,
+            "once": false,
             "destination": 0,
             "scene": "",
             "contact": "any",
@@ -563,7 +563,7 @@
             "event": "buttonClick",
             "operation": "playTransformAnimation",
             "target": 6,
-            "once": true,
+            "once": false,
             "destination": 0,
             "scene": "",
             "contact": "any",
@@ -577,15 +577,15 @@
           },
           {
             "event": "buttonClick",
-            "operation": "sendScriptMessage",
-            "target": 203,
-            "once": true,
+            "operation": "disable",
+            "target": 183,
+            "once": false,
             "destination": 0,
             "scene": "",
             "contact": "any",
             "contactTag": "",
             "inputAction": "",
-            "messageName": "start",
+            "messageName": "",
             "delaySeconds": 0,
             "cameraBlendSeconds": 0,
             "arrivalTag": "",
@@ -593,16 +593,16 @@
           },
           {
             "event": "buttonClick",
-            "operation": "loadScene",
-            "target": 0,
-            "once": true,
+            "operation": "playUITimeline",
+            "target": 204,
+            "once": false,
             "destination": 0,
-            "scene": "@project/scenes/ClockTowerPrototype.scene.json",
+            "scene": "",
             "contact": "any",
             "contactTag": "",
             "inputAction": "",
             "messageName": "",
-            "delaySeconds": 3.2,
+            "delaySeconds": 0,
             "cameraBlendSeconds": 0,
             "arrivalTag": "",
             "launchSpeed": 12
@@ -1365,7 +1365,7 @@
             "event": "buttonClick",
             "operation": "setCamera",
             "target": 7,
-            "once": true,
+            "once": false,
             "destination": 0,
             "scene": "",
             "contact": "any",
@@ -1381,7 +1381,7 @@
             "event": "buttonClick",
             "operation": "playTransformAnimation",
             "target": 7,
-            "once": true,
+            "once": false,
             "destination": 0,
             "scene": "",
             "contact": "any",
@@ -1395,15 +1395,15 @@
           },
           {
             "event": "buttonClick",
-            "operation": "sendScriptMessage",
-            "target": 203,
-            "once": true,
+            "operation": "disable",
+            "target": 185,
+            "once": false,
             "destination": 0,
             "scene": "",
             "contact": "any",
             "contactTag": "",
             "inputAction": "",
-            "messageName": "quit",
+            "messageName": "",
             "delaySeconds": 0,
             "cameraBlendSeconds": 0,
             "arrivalTag": "",
@@ -1411,16 +1411,16 @@
           },
           {
             "event": "buttonClick",
-            "operation": "quitGame",
-            "target": 0,
-            "once": true,
+            "operation": "playUITimeline",
+            "target": 206,
+            "once": false,
             "destination": 0,
             "scene": "",
             "contact": "any",
             "contactTag": "",
             "inputAction": "",
             "messageName": "",
-            "delaySeconds": 2.28,
+            "delaySeconds": 0,
             "cameraBlendSeconds": 0,
             "arrivalTag": "",
             "launchSpeed": 12
@@ -1478,7 +1478,7 @@
     {
       "active": true,
       "id": 203,
-      "name": "Title Presentation",
+      "name": "Title Intro Timeline",
       "parent": 0,
       "tag": "",
       "transform": {
@@ -1486,82 +1486,576 @@
         "scale": [1, 1, 1],
         "translation": [0, 0, 0]
       },
-      "script": {
-        "asset": "@project/assets/title/scripts/TitlePresentation.lua",
-        "enabled": true,
-        "state": {},
-        "references": [
+      "uiTimeline": {
+        "duration": 1.32,
+        "playOnStart": true,
+        "tracks": [
           {
-            "name": "start",
-            "target": 187
+            "target": 173,
+            "property": "opacity",
+            "interpolation": "smooth",
+            "keys": [
+              {
+                "time": 0,
+                "value": [0, 0]
+              },
+              {
+                "time": 0.55,
+                "value": [1, 0]
+              }
+            ]
           },
           {
-            "name": "config",
-            "target": 188
+            "target": 187,
+            "property": "position",
+            "interpolation": "smooth",
+            "keys": [
+              {
+                "time": 0,
+                "value": [-380, 450]
+              },
+              {
+                "time": 0.55,
+                "value": [-380, 450]
+              },
+              {
+                "time": 1.02,
+                "value": [100, 450]
+              },
+              {
+                "time": 1.12,
+                "value": [88, 450]
+              }
+            ]
           },
           {
-            "name": "quit",
-            "target": 189
+            "target": 165,
+            "property": "position",
+            "interpolation": "smooth",
+            "keys": [
+              {
+                "time": 0,
+                "value": [-378, 452]
+              },
+              {
+                "time": 0.55,
+                "value": [-378, 452]
+              },
+              {
+                "time": 1.02,
+                "value": [102, 452]
+              },
+              {
+                "time": 1.12,
+                "value": [90, 452]
+              }
+            ]
           },
           {
-            "name": "start_shadow",
-            "target": 165
+            "target": 188,
+            "property": "position",
+            "interpolation": "smooth",
+            "keys": [
+              {
+                "time": 0,
+                "value": [-380, 518]
+              },
+              {
+                "time": 0.65,
+                "value": [-380, 518]
+              },
+              {
+                "time": 1.12,
+                "value": [100, 518]
+              },
+              {
+                "time": 1.22,
+                "value": [88, 518]
+              }
+            ]
           },
           {
-            "name": "config_shadow",
-            "target": 166
+            "target": 166,
+            "property": "position",
+            "interpolation": "smooth",
+            "keys": [
+              {
+                "time": 0,
+                "value": [-378, 520]
+              },
+              {
+                "time": 0.65,
+                "value": [-378, 520]
+              },
+              {
+                "time": 1.12,
+                "value": [102, 520]
+              },
+              {
+                "time": 1.22,
+                "value": [90, 520]
+              }
+            ]
           },
           {
-            "name": "quit_shadow",
-            "target": 167
+            "target": 189,
+            "property": "position",
+            "interpolation": "smooth",
+            "keys": [
+              {
+                "time": 0,
+                "value": [-380, 586]
+              },
+              {
+                "time": 0.75,
+                "value": [-380, 586]
+              },
+              {
+                "time": 1.22,
+                "value": [100, 586]
+              },
+              {
+                "time": 1.32,
+                "value": [88, 586]
+              }
+            ]
           },
           {
-            "name": "logo",
-            "target": 173
-          },
-          {
-            "name": "cover",
-            "target": 202
-          },
-          {
-            "name": "confirm",
-            "target": 198
-          },
-          {
-            "name": "quit_panel",
-            "target": 176
-          },
-          {
-            "name": "quit_heading",
-            "target": 195
-          },
-          {
-            "name": "quit_caption",
-            "target": 196
-          },
-          {
-            "name": "quit_cancel",
-            "target": 197
-          },
-          {
-            "name": "morning_light",
-            "target": 2
-          },
-          {
-            "name": "palette_lights",
-            "target": 220
-          },
-          {
-            "name": "start_palette",
-            "target": 230
-          },
-          {
-            "name": "quit_palette",
-            "target": 231
+            "target": 167,
+            "property": "position",
+            "interpolation": "smooth",
+            "keys": [
+              {
+                "time": 0,
+                "value": [-378, 588]
+              },
+              {
+                "time": 0.75,
+                "value": [-378, 588]
+              },
+              {
+                "time": 1.22,
+                "value": [102, 588]
+              },
+              {
+                "time": 1.32,
+                "value": [90, 588]
+              }
+            ]
           }
-        ],
-        "prefabs": [],
-        "scenes": []
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 204,
+      "name": "START Cover Timeline",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [0, 0, 0, 1],
+        "scale": [1, 1, 1],
+        "translation": [0, 0, 0]
+      },
+      "uiTimeline": {
+        "duration": 0.3,
+        "playOnStart": false,
+        "tracks": [
+          {
+            "target": 202,
+            "property": "opacity",
+            "interpolation": "smooth",
+            "keys": [
+              {
+                "time": 0,
+                "value": [0, 0]
+              },
+              {
+                "time": 0.3,
+                "value": [1, 0]
+              }
+            ]
+          }
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "event": "uiTimelineFinished",
+            "operation": "disable",
+            "target": 2,
+            "once": false,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 0,
+            "arrivalTag": "",
+            "launchSpeed": 12
+          },
+          {
+            "event": "uiTimelineFinished",
+            "operation": "disable",
+            "target": 232,
+            "once": false,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 0,
+            "arrivalTag": "",
+            "launchSpeed": 12
+          },
+          {
+            "event": "uiTimelineFinished",
+            "operation": "enable",
+            "target": 220,
+            "once": false,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 0,
+            "arrivalTag": "",
+            "launchSpeed": 12
+          },
+          {
+            "event": "uiTimelineFinished",
+            "operation": "enable",
+            "target": 233,
+            "once": false,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 0,
+            "arrivalTag": "",
+            "launchSpeed": 12
+          },
+          {
+            "event": "uiTimelineFinished",
+            "operation": "enable",
+            "target": 234,
+            "once": false,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 0,
+            "arrivalTag": "",
+            "launchSpeed": 12
+          },
+          {
+            "event": "uiTimelineFinished",
+            "operation": "enable",
+            "target": 230,
+            "once": false,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 0,
+            "arrivalTag": "",
+            "launchSpeed": 12
+          },
+          {
+            "event": "uiTimelineFinished",
+            "operation": "playUITimeline",
+            "target": 205,
+            "once": false,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 0,
+            "arrivalTag": "",
+            "launchSpeed": 12
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 205,
+      "name": "START Departure Timeline",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [0, 0, 0, 1],
+        "scale": [1, 1, 1],
+        "translation": [0, 0, 0]
+      },
+      "uiTimeline": {
+        "duration": 2.9,
+        "playOnStart": false,
+        "tracks": [
+          {
+            "target": 202,
+            "property": "opacity",
+            "interpolation": "smooth",
+            "keys": [
+              {
+                "time": 0,
+                "value": [1, 0]
+              },
+              {
+                "time": 0.45,
+                "value": [0, 0]
+              },
+              {
+                "time": 1.15,
+                "value": [0, 0]
+              },
+              {
+                "time": 1.8,
+                "value": [1, 0]
+              },
+              {
+                "time": 2.9,
+                "value": [1, 0]
+              }
+            ]
+          }
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "event": "uiTimelineFinished",
+            "operation": "loadScene",
+            "target": 0,
+            "once": false,
+            "destination": 0,
+            "scene": "@project/scenes/ClockTowerPrototype.scene.json",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 0,
+            "arrivalTag": "",
+            "launchSpeed": 12
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 206,
+      "name": "QUIT Cover Timeline",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [0, 0, 0, 1],
+        "scale": [1, 1, 1],
+        "translation": [0, 0, 0]
+      },
+      "uiTimeline": {
+        "duration": 0.3,
+        "playOnStart": false,
+        "tracks": [
+          {
+            "target": 202,
+            "property": "opacity",
+            "interpolation": "smooth",
+            "keys": [
+              {
+                "time": 0,
+                "value": [0, 0]
+              },
+              {
+                "time": 0.3,
+                "value": [1, 0]
+              }
+            ]
+          }
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "event": "uiTimelineFinished",
+            "operation": "disable",
+            "target": 2,
+            "once": false,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 0,
+            "arrivalTag": "",
+            "launchSpeed": 12
+          },
+          {
+            "event": "uiTimelineFinished",
+            "operation": "disable",
+            "target": 232,
+            "once": false,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 0,
+            "arrivalTag": "",
+            "launchSpeed": 12
+          },
+          {
+            "event": "uiTimelineFinished",
+            "operation": "enable",
+            "target": 220,
+            "once": false,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 0,
+            "arrivalTag": "",
+            "launchSpeed": 12
+          },
+          {
+            "event": "uiTimelineFinished",
+            "operation": "enable",
+            "target": 233,
+            "once": false,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 0,
+            "arrivalTag": "",
+            "launchSpeed": 12
+          },
+          {
+            "event": "uiTimelineFinished",
+            "operation": "enable",
+            "target": 231,
+            "once": false,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 0,
+            "arrivalTag": "",
+            "launchSpeed": 12
+          },
+          {
+            "event": "uiTimelineFinished",
+            "operation": "playUITimeline",
+            "target": 207,
+            "once": false,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 0,
+            "arrivalTag": "",
+            "launchSpeed": 12
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 207,
+      "name": "QUIT Departure Timeline",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [0, 0, 0, 1],
+        "scale": [1, 1, 1],
+        "translation": [0, 0, 0]
+      },
+      "uiTimeline": {
+        "duration": 1.98,
+        "playOnStart": false,
+        "tracks": [
+          {
+            "target": 202,
+            "property": "opacity",
+            "interpolation": "smooth",
+            "keys": [
+              {
+                "time": 0,
+                "value": [1, 0]
+              },
+              {
+                "time": 0.45,
+                "value": [0, 0]
+              },
+              {
+                "time": 1.15,
+                "value": [0, 0]
+              },
+              {
+                "time": 1.8,
+                "value": [1, 0]
+              },
+              {
+                "time": 1.98,
+                "value": [1, 0]
+              }
+            ]
+          }
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "event": "uiTimelineFinished",
+            "operation": "quitGame",
+            "target": 0,
+            "once": false,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 0,
+            "arrivalTag": "",
+            "launchSpeed": 12
+          }
+        ]
       }
     },
     {
@@ -1746,10 +2240,70 @@
     },
     {
       "active": true,
+      "id": 232,
+      "name": "Morning Street Geometry",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [0, 0, 0, 1],
+        "scale": [1, 1, 1],
+        "translation": [0, 0, 0]
+      }
+    },
+    {
+      "active": false,
+      "id": 233,
+      "name": "Departure Black Background",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [0, 0, 0, 1],
+        "scale": [1, 1, 1],
+        "translation": [0, 0, 0]
+      }
+    },
+    {
+      "active": false,
+      "id": 234,
+      "name": "START Black Geometry",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [0, 0, 0, 1],
+        "scale": [1, 1, 1],
+        "translation": [0, 0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 235,
+      "name": "Inward Black Backdrop",
+      "parent": 233,
+      "tag": "",
+      "transform": {
+        "rotation": [0, 0, 0, 1],
+        "scale": [1, 1, 1],
+        "translation": [0, 0, 0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/SilhouetteBackdrop.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      },
+      "colorTint": {
+        "color": [0, 0, 0]
+      }
+    },
+    {
+      "active": true,
       "id": 300,
       "name": "ground",
-      "parent": 0,
-      "tag": "title_dark",
+      "parent": 232,
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [140.0, 4.0, 180.0],
@@ -1770,7 +2324,7 @@
       "id": 301,
       "name": "road-00",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -1791,7 +2345,7 @@
       "id": 302,
       "name": "sidewalk-00-left",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -1812,7 +2366,7 @@
       "id": 303,
       "name": "sidewalk-00-right",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -1833,7 +2387,7 @@
       "id": 304,
       "name": "road-01",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -1854,7 +2408,7 @@
       "id": 305,
       "name": "sidewalk-01-left",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -1875,7 +2429,7 @@
       "id": 306,
       "name": "sidewalk-01-right",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -1896,7 +2450,7 @@
       "id": 307,
       "name": "road-02",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -1917,7 +2471,7 @@
       "id": 308,
       "name": "sidewalk-02-left",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -1938,7 +2492,7 @@
       "id": 309,
       "name": "sidewalk-02-right",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -1959,7 +2513,7 @@
       "id": 310,
       "name": "road-03",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -1980,7 +2534,7 @@
       "id": 311,
       "name": "sidewalk-03-left",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2001,7 +2555,7 @@
       "id": 312,
       "name": "sidewalk-03-right",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2022,7 +2576,7 @@
       "id": 313,
       "name": "road-04",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -2043,7 +2597,7 @@
       "id": 314,
       "name": "sidewalk-04-left",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2064,7 +2618,7 @@
       "id": 315,
       "name": "sidewalk-04-right",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2085,7 +2639,7 @@
       "id": 316,
       "name": "road-05",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -2106,7 +2660,7 @@
       "id": 317,
       "name": "sidewalk-05-left",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2127,7 +2681,7 @@
       "id": 318,
       "name": "sidewalk-05-right",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2148,7 +2702,7 @@
       "id": 319,
       "name": "road-06",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -2169,7 +2723,7 @@
       "id": 320,
       "name": "sidewalk-06-left",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2190,7 +2744,7 @@
       "id": 321,
       "name": "sidewalk-06-right",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2211,7 +2765,7 @@
       "id": 322,
       "name": "road-07",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -2232,7 +2786,7 @@
       "id": 323,
       "name": "sidewalk-07-left",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2253,7 +2807,7 @@
       "id": 324,
       "name": "sidewalk-07-right",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2274,7 +2828,7 @@
       "id": 325,
       "name": "road-08",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -2295,7 +2849,7 @@
       "id": 326,
       "name": "sidewalk-08-left",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2316,7 +2870,7 @@
       "id": 327,
       "name": "sidewalk-08-right",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2337,7 +2891,7 @@
       "id": 328,
       "name": "road-09",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -2358,7 +2912,7 @@
       "id": 329,
       "name": "sidewalk-09-left",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2379,7 +2933,7 @@
       "id": 330,
       "name": "sidewalk-09-right",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2400,7 +2954,7 @@
       "id": 331,
       "name": "road-10",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -2421,7 +2975,7 @@
       "id": 332,
       "name": "sidewalk-10-left",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2442,7 +2996,7 @@
       "id": 333,
       "name": "sidewalk-10-right",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2463,7 +3017,7 @@
       "id": 334,
       "name": "road-11",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -2484,7 +3038,7 @@
       "id": 335,
       "name": "sidewalk-11-left",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2505,7 +3059,7 @@
       "id": 336,
       "name": "sidewalk-11-right",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2526,7 +3080,7 @@
       "id": 337,
       "name": "road-12",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -2547,7 +3101,7 @@
       "id": 338,
       "name": "sidewalk-12-left",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2568,7 +3122,7 @@
       "id": 339,
       "name": "sidewalk-12-right",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2589,7 +3143,7 @@
       "id": 340,
       "name": "road-13",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -2610,7 +3164,7 @@
       "id": 341,
       "name": "sidewalk-13-left",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2631,7 +3185,7 @@
       "id": 342,
       "name": "sidewalk-13-right",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2652,7 +3206,7 @@
       "id": 343,
       "name": "road-14",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -2673,7 +3227,7 @@
       "id": 344,
       "name": "sidewalk-14-left",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2694,7 +3248,7 @@
       "id": 345,
       "name": "sidewalk-14-right",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2715,7 +3269,7 @@
       "id": 346,
       "name": "road-15",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -2736,7 +3290,7 @@
       "id": 347,
       "name": "sidewalk-15-left",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2757,7 +3311,7 @@
       "id": 348,
       "name": "sidewalk-15-right",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2778,7 +3332,7 @@
       "id": 349,
       "name": "road-16",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -2799,7 +3353,7 @@
       "id": 350,
       "name": "sidewalk-16-left",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2820,7 +3374,7 @@
       "id": 351,
       "name": "sidewalk-16-right",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2841,7 +3395,7 @@
       "id": 352,
       "name": "road-17",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -2862,7 +3416,7 @@
       "id": 353,
       "name": "sidewalk-17-left",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2883,7 +3437,7 @@
       "id": 354,
       "name": "sidewalk-17-right",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2904,7 +3458,7 @@
       "id": 355,
       "name": "road-18",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -2925,7 +3479,7 @@
       "id": 356,
       "name": "sidewalk-18-left",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2946,7 +3500,7 @@
       "id": 357,
       "name": "sidewalk-18-right",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2967,7 +3521,7 @@
       "id": 358,
       "name": "road-19",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -2988,7 +3542,7 @@
       "id": 359,
       "name": "sidewalk-19-left",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -3009,7 +3563,7 @@
       "id": 360,
       "name": "sidewalk-19-right",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -3030,7 +3584,7 @@
       "id": 361,
       "name": "road-20",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -3051,7 +3605,7 @@
       "id": 362,
       "name": "sidewalk-20-left",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -3072,7 +3626,7 @@
       "id": 363,
       "name": "sidewalk-20-right",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -3093,7 +3647,7 @@
       "id": 364,
       "name": "road-21",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -3114,7 +3668,7 @@
       "id": 365,
       "name": "sidewalk-21-left",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -3135,7 +3689,7 @@
       "id": 366,
       "name": "sidewalk-21-right",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -3156,7 +3710,7 @@
       "id": 367,
       "name": "road-22",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -3177,7 +3731,7 @@
       "id": 368,
       "name": "sidewalk-22-left",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -3198,7 +3752,7 @@
       "id": 369,
       "name": "sidewalk-22-right",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -3219,7 +3773,7 @@
       "id": 370,
       "name": "road-23",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -3240,7 +3794,7 @@
       "id": 371,
       "name": "sidewalk-23-left",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -3261,7 +3815,7 @@
       "id": 372,
       "name": "sidewalk-23-right",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -3282,7 +3836,7 @@
       "id": 373,
       "name": "plaza-paving-0-0",
       "parent": 394,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 4.0, 4.0],
@@ -3303,7 +3857,7 @@
       "id": 374,
       "name": "plaza-paving-0-1",
       "parent": 394,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 4.0, 4.0],
@@ -3324,7 +3878,7 @@
       "id": 375,
       "name": "plaza-paving-0-2",
       "parent": 394,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 4.0, 4.0],
@@ -3345,7 +3899,7 @@
       "id": 376,
       "name": "plaza-paving-0-3",
       "parent": 394,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 4.0, 4.0],
@@ -3366,7 +3920,7 @@
       "id": 377,
       "name": "plaza-paving-1-0",
       "parent": 394,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 4.0, 4.0],
@@ -3387,7 +3941,7 @@
       "id": 378,
       "name": "plaza-paving-1-1",
       "parent": 394,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 4.0, 4.0],
@@ -3408,7 +3962,7 @@
       "id": 379,
       "name": "plaza-paving-1-2",
       "parent": 394,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 4.0, 4.0],
@@ -3429,7 +3983,7 @@
       "id": 380,
       "name": "plaza-paving-1-3",
       "parent": 394,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 4.0, 4.0],
@@ -3450,7 +4004,7 @@
       "id": 381,
       "name": "plaza-paving-2-0",
       "parent": 394,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 4.0, 4.0],
@@ -3471,7 +4025,7 @@
       "id": 382,
       "name": "plaza-paving-2-1",
       "parent": 394,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 4.0, 4.0],
@@ -3492,7 +4046,7 @@
       "id": 383,
       "name": "plaza-paving-2-2",
       "parent": 394,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 4.0, 4.0],
@@ -3513,7 +4067,7 @@
       "id": 384,
       "name": "plaza-paving-2-3",
       "parent": 394,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 4.0, 4.0],
@@ -3533,7 +4087,7 @@
       "active": true,
       "id": 385,
       "name": "街 / 朝の交差点",
-      "parent": 0,
+      "parent": 232,
       "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
@@ -3546,7 +4100,7 @@
       "id": 386,
       "name": "street-building-0",
       "parent": 385,
-      "tag": "title_dark",
+      "tag": "",
       "transform": {
         "rotation": [0.0, -0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.199999809265137, 4.5, 4.0],
@@ -3567,7 +4121,7 @@
       "id": 387,
       "name": "street-building-1",
       "parent": 385,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, -0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 5.5, 4.0],
@@ -3588,7 +4142,7 @@
       "id": 388,
       "name": "street-building-2",
       "parent": 385,
-      "tag": "title_dark",
+      "tag": "",
       "transform": {
         "rotation": [0.0, -0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.300000190734863, 4.599999904632568, 4.0],
@@ -3609,7 +4163,7 @@
       "id": 389,
       "name": "street-building-3",
       "parent": 385,
-      "tag": "title_dark",
+      "tag": "",
       "transform": {
         "rotation": [0.0, -0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 6.0, 4.0],
@@ -3630,7 +4184,7 @@
       "id": 390,
       "name": "street-building-4",
       "parent": 385,
-      "tag": "title_dark",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 5.0, 4.0],
@@ -3651,7 +4205,7 @@
       "id": 391,
       "name": "street-building-5",
       "parent": 385,
-      "tag": "title_dark",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 5.0, 4.0],
@@ -3672,7 +4226,7 @@
       "id": 392,
       "name": "street-building-6",
       "parent": 385,
-      "tag": "title_dark",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.5, 5.5, 4.0],
@@ -3693,7 +4247,7 @@
       "id": 393,
       "name": "street-building-7",
       "parent": 385,
-      "tag": "title_dark",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -3713,7 +4267,7 @@
       "active": true,
       "id": 394,
       "name": "広場 / 朝の街角",
-      "parent": 0,
+      "parent": 232,
       "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
@@ -3726,7 +4280,7 @@
       "id": 395,
       "name": "plaza-step-1",
       "parent": 394,
-      "tag": "title_dark",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [7.5, 8.0, 1.0],
@@ -3747,7 +4301,7 @@
       "id": 396,
       "name": "plaza-step-2",
       "parent": 394,
-      "tag": "title_dark",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [7.5, 8.0, 1.0],
@@ -3768,7 +4322,7 @@
       "id": 397,
       "name": "plaza-step-3",
       "parent": 394,
-      "tag": "title_dark",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [7.5, 8.0, 1.0],
@@ -3789,7 +4343,7 @@
       "id": 398,
       "name": "plaza-plinth",
       "parent": 394,
-      "tag": "title_dark",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [8.5, 28.0, 7.0],
@@ -3810,7 +4364,7 @@
       "id": 399,
       "name": "plaza-landmark",
       "parent": 394,
-      "tag": "title_dark",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.999999999999999, -0.0, -4.371139000186241e-08],
         "scale": [8.0, 7.5, 6.0],
@@ -3831,7 +4385,7 @@
       "id": 400,
       "name": "plaza-cafe",
       "parent": 394,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, -0.08987855275981559, 0.0, 0.9959527326905635],
         "scale": [4.0, 4.0, 4.0],
@@ -3852,7 +4406,7 @@
       "id": 401,
       "name": "landmark-awning",
       "parent": 394,
-      "tag": "title_dark",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.999999999999999, -0.0, -4.371139000186241e-08],
         "scale": [5.0, 5.0, 5.0],
@@ -3873,7 +4427,7 @@
       "id": 402,
       "name": "cafe-table-0",
       "parent": 394,
-      "tag": "title_dark",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.1494381383671341, 0.0, 0.9887710770453216],
         "scale": [2.799999952316284, 2.799999952316284, 2.799999952316284],
@@ -3894,7 +4448,7 @@
       "id": 403,
       "name": "cafe-table-1",
       "parent": 394,
-      "tag": "title_dark",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.1494381383671341, 0.0, 0.9887710770453216],
         "scale": [2.799999952316284, 2.799999952316284, 2.799999952316284],
@@ -3915,7 +4469,7 @@
       "id": 404,
       "name": "street-light-0",
       "parent": 394,
-      "tag": "title_dark",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 4.0, 4.0],
@@ -3936,7 +4490,7 @@
       "id": 405,
       "name": "street-light-1",
       "parent": 394,
-      "tag": "title_dark",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 4.0, 4.0],
@@ -3957,7 +4511,7 @@
       "id": 406,
       "name": "street-light-2",
       "parent": 394,
-      "tag": "title_dark",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 4.0, 4.0],
@@ -3978,7 +4532,7 @@
       "id": 407,
       "name": "street-light-3",
       "parent": 394,
-      "tag": "title_dark",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 4.0, 4.0],
@@ -3999,7 +4553,7 @@
       "id": 408,
       "name": "street-light-4",
       "parent": 394,
-      "tag": "title_dark",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 4.0, 4.0],
@@ -4019,7 +4573,7 @@
       "active": true,
       "id": 409,
       "name": "街並み / 高層建築",
-      "parent": 0,
+      "parent": 232,
       "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
@@ -4032,7 +4586,7 @@
       "id": 410,
       "name": "skyline-0",
       "parent": 409,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, -0.059964005140753354, 0.0, 0.9982005400156222],
         "scale": [5.0, 6.0, 5.0],
@@ -4053,7 +4607,7 @@
       "id": 411,
       "name": "skyline-1",
       "parent": 409,
-      "tag": "title_dark",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [5.0, 7.0, 5.0],
@@ -4074,7 +4628,7 @@
       "id": 412,
       "name": "skyline-2",
       "parent": 409,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.059964005140753354, 0.0, 0.9982005400156222],
         "scale": [5.0, 7.0, 5.0],
@@ -4095,7 +4649,7 @@
       "id": 413,
       "name": "skyline-3",
       "parent": 409,
-      "tag": "title_dark",
+      "tag": "",
       "transform": {
         "rotation": [0.0, -0.059964005140753354, 0.0, 0.9982005400156222],
         "scale": [5.0, 8.0, 5.0],
@@ -4116,7 +4670,7 @@
       "id": 414,
       "name": "skyline-4",
       "parent": 409,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [5.0, 8.0, 5.0],
@@ -4137,7 +4691,7 @@
       "id": 415,
       "name": "skyline-5",
       "parent": 409,
-      "tag": "title_dark",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.059964005140753354, 0.0, 0.9982005400156222],
         "scale": [5.0, 9.0, 5.0],
@@ -4158,7 +4712,7 @@
       "id": 416,
       "name": "skyline-6",
       "parent": 409,
-      "tag": "title_dark",
+      "tag": "",
       "transform": {
         "rotation": [0.0, -0.059964005140753354, 0.0, 0.9982005400156222],
         "scale": [5.0, 8.0, 5.0],
@@ -4179,7 +4733,7 @@
       "id": 417,
       "name": "skyline-7",
       "parent": 409,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [5.0, 7.0, 5.0],
@@ -4200,7 +4754,7 @@
       "id": 418,
       "name": "skyline-8",
       "parent": 409,
-      "tag": "title_dark",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.059964005140753354, 0.0, 0.9982005400156222],
         "scale": [5.0, 9.0, 5.0],
@@ -4221,7 +4775,7 @@
       "id": 419,
       "name": "skyline-9",
       "parent": 409,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, -0.059964005140753354, 0.0, 0.9982005400156222],
         "scale": [5.0, 9.0, 5.0],
@@ -4242,7 +4796,7 @@
       "id": 420,
       "name": "skyline-10",
       "parent": 409,
-      "tag": "title_dark",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [5.0, 10.0, 5.0],
@@ -4263,7 +4817,7 @@
       "id": 421,
       "name": "skyline-11",
       "parent": 409,
-      "tag": "title_dark",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.059964005140753354, 0.0, 0.9982005400156222],
         "scale": [5.0, 8.0, 5.0],
@@ -4284,7 +4838,7 @@
       "id": 422,
       "name": "bridge-0",
       "parent": 409,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 8.0, 4.0],
@@ -4305,7 +4859,7 @@
       "id": 423,
       "name": "bridge-1",
       "parent": 409,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 8.0, 4.0],
@@ -4326,7 +4880,7 @@
       "id": 424,
       "name": "bridge-2",
       "parent": 409,
-      "tag": "title_start_source",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 8.0, 4.0],
@@ -4346,8 +4900,8 @@
       "active": true,
       "id": 425,
       "name": "CONFIG / 歯車工房",
-      "parent": 0,
-      "tag": "title_start_source",
+      "parent": 232,
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4, 8, 4],
@@ -4367,7 +4921,7 @@
       "active": true,
       "id": 426,
       "name": "CONFIG / 歯車の回転軸",
-      "parent": 0,
+      "parent": 232,
       "tag": "",
       "transform": {
         "rotation": [0.707106771713121, 0.0, 0.0, 0.707106790659974],
@@ -4380,7 +4934,7 @@
       "id": 427,
       "name": "CONFIG / 歯車看板",
       "parent": 426,
-      "tag": "title_dark",
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [3.2, 3.2, 3.2],
@@ -4400,8 +4954,8 @@
       "active": true,
       "id": 428,
       "name": "QUIT / 左のビル上部の避難口看板",
-      "parent": 0,
-      "tag": "title_quit_source",
+      "parent": 232,
+      "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1, 1, 1],
@@ -7600,8 +8154,776 @@
         "uvScale": [1, 1],
         "visible": true
       }
+    },
+    {
+      "active": true,
+      "id": 596,
+      "name": "ground / black silhouette",
+      "parent": 234,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [140.0, 4.0, 180.0],
+        "translation": [0.0, -0.11999999731779099, 60.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Ground.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      },
+      "colorTint": {
+        "color": [0, 0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 597,
+      "name": "街 / 朝の交差点 / silhouette",
+      "parent": 234,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.0, 1.0, 1.0],
+        "translation": [0.0, 0.0, 0.0]
+      }
+    },
+    {
+      "active": true,
+      "id": 598,
+      "name": "street-building-0 / black silhouette",
+      "parent": 597,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, -0.7071067966408575, 0.0, 0.7071067657322372],
+        "scale": [4.199999809265137, 4.5, 4.0],
+        "translation": [-7.199999809265137, 0.07999999821186066, 2.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/LongTownhouse.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      },
+      "colorTint": {
+        "color": [0, 0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 599,
+      "name": "street-building-2 / black silhouette",
+      "parent": 597,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, -0.7071067966408575, 0.0, 0.7071067657322372],
+        "scale": [4.300000190734863, 4.599999904632568, 4.0],
+        "translation": [-6.199999809265137, 0.07999999821186066, 27.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/TallTownhouse.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      },
+      "colorTint": {
+        "color": [0, 0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 600,
+      "name": "street-building-3 / black silhouette",
+      "parent": 597,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, -0.7071067966408575, 0.0, 0.7071067657322372],
+        "scale": [4.0, 6.0, 4.0],
+        "translation": [-5.800000190734863, 0.07999999821186066, 37.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/NarrowTownhouse.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      },
+      "colorTint": {
+        "color": [0, 0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 601,
+      "name": "street-building-4 / black silhouette",
+      "parent": 597,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
+        "scale": [4.0, 5.0, 4.0],
+        "translation": [19.5, 0.07999999821186066, 4.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/LongTownhouse.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      },
+      "colorTint": {
+        "color": [0, 0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 602,
+      "name": "street-building-5 / black silhouette",
+      "parent": 597,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
+        "scale": [4.0, 5.0, 4.0],
+        "translation": [21.0, 0.07999999821186066, 15.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Workshop.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      },
+      "colorTint": {
+        "color": [0, 0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 603,
+      "name": "street-building-6 / black silhouette",
+      "parent": 597,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
+        "scale": [4.5, 5.5, 4.0],
+        "translation": [17.5, 0.07999999821186066, 30.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/NarrowTownhouse.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      },
+      "colorTint": {
+        "color": [0, 0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 604,
+      "name": "street-building-7 / black silhouette",
+      "parent": 597,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [5.199999809265137, 0.07999999821186066, 38.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/TallTownhouse.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      },
+      "colorTint": {
+        "color": [0, 0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 605,
+      "name": "広場 / 朝の街角 / silhouette",
+      "parent": 234,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.0, 1.0, 1.0],
+        "translation": [0.0, 0.0, 0.0]
+      }
+    },
+    {
+      "active": true,
+      "id": 606,
+      "name": "plaza-step-1 / black silhouette",
+      "parent": 605,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [7.5, 8.0, 1.0],
+        "translation": [9.0, 0.1599999964237213, 17.5]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/PlazaStep.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      },
+      "colorTint": {
+        "color": [0, 0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 607,
+      "name": "plaza-step-2 / black silhouette",
+      "parent": 605,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [7.5, 8.0, 1.0],
+        "translation": [9.0, 0.3199999928474426, 18.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/PlazaStep.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      },
+      "colorTint": {
+        "color": [0, 0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 608,
+      "name": "plaza-step-3 / black silhouette",
+      "parent": 605,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [7.5, 8.0, 1.0],
+        "translation": [9.0, 0.47999998927116394, 18.5]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/PlazaStep.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      },
+      "colorTint": {
+        "color": [0, 0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 609,
+      "name": "plaza-plinth / black silhouette",
+      "parent": 605,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [8.5, 28.0, 7.0],
+        "translation": [9.0, 0.07999999821186066, 22.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/PlazaStep.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      },
+      "colorTint": {
+        "color": [0, 0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 610,
+      "name": "plaza-landmark / black silhouette",
+      "parent": 605,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.999999999999999, -0.0, -4.371139000186241e-08],
+        "scale": [8.0, 7.5, 6.0],
+        "translation": [9.0, 0.6399999856948853, 22.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/TallTownhouse.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      },
+      "colorTint": {
+        "color": [0, 0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 611,
+      "name": "landmark-awning / black silhouette",
+      "parent": 605,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.999999999999999, -0.0, -4.371139000186241e-08],
+        "scale": [5.0, 5.0, 5.0],
+        "translation": [9.0, 1.0, 18.700000762939453]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/CafeAwning.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      },
+      "colorTint": {
+        "color": [0, 0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 612,
+      "name": "cafe-table-0 / black silhouette",
+      "parent": 605,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.1494381383671341, 0.0, 0.9887710770453216],
+        "scale": [2.799999952316284, 2.799999952316284, 2.799999952316284],
+        "translation": [5.0, 0.17000000178813934, 11.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/CafeParasol.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      },
+      "colorTint": {
+        "color": [0, 0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 613,
+      "name": "cafe-table-1 / black silhouette",
+      "parent": 605,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.1494381383671341, 0.0, 0.9887710770453216],
+        "scale": [2.799999952316284, 2.799999952316284, 2.799999952316284],
+        "translation": [13.5, 0.17000000178813934, 12.5]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/CafeParasol.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      },
+      "colorTint": {
+        "color": [0, 0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 614,
+      "name": "street-light-0 / black silhouette",
+      "parent": 605,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [3.299999952316284, 0.11999999731779099, 5.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/StreetLamp.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      },
+      "colorTint": {
+        "color": [0, 0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 615,
+      "name": "street-light-1 / black silhouette",
+      "parent": 605,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [16.0, 0.11999999731779099, 8.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/StreetLamp.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      },
+      "colorTint": {
+        "color": [0, 0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 616,
+      "name": "street-light-2 / black silhouette",
+      "parent": 605,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [16.0, 0.11999999731779099, 17.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/StreetLamp.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      },
+      "colorTint": {
+        "color": [0, 0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 617,
+      "name": "street-light-3 / black silhouette",
+      "parent": 605,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [-2.799999952316284, 0.11999999731779099, 1.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/StreetLamp.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      },
+      "colorTint": {
+        "color": [0, 0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 618,
+      "name": "street-light-4 / black silhouette",
+      "parent": 605,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [-2.799999952316284, 0.11999999731779099, 15.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/StreetLamp.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      },
+      "colorTint": {
+        "color": [0, 0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 619,
+      "name": "街並み / 高層建築 / silhouette",
+      "parent": 234,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.0, 1.0, 1.0],
+        "translation": [0.0, 0.0, 0.0]
+      }
+    },
+    {
+      "active": true,
+      "id": 620,
+      "name": "skyline-1 / black silhouette",
+      "parent": 619,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [5.0, 7.0, 5.0],
+        "translation": [-10.0, 0.07999999821186066, 32.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/TowerMedium.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      },
+      "colorTint": {
+        "color": [0, 0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 621,
+      "name": "skyline-3 / black silhouette",
+      "parent": 619,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, -0.059964005140753354, 0.0, 0.9982005400156222],
+        "scale": [5.0, 8.0, 5.0],
+        "translation": [22.0, 0.07999999821186066, 43.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/TowerWide.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      },
+      "colorTint": {
+        "color": [0, 0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 622,
+      "name": "skyline-5 / black silhouette",
+      "parent": 619,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.059964005140753354, 0.0, 0.9982005400156222],
+        "scale": [5.0, 9.0, 5.0],
+        "translation": [-9.0, 0.07999999821186066, 60.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/TowerMedium.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      },
+      "colorTint": {
+        "color": [0, 0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 623,
+      "name": "skyline-6 / black silhouette",
+      "parent": 619,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, -0.059964005140753354, 0.0, 0.9982005400156222],
+        "scale": [5.0, 8.0, 5.0],
+        "translation": [9.0, 0.07999999821186066, 62.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/TowerTall.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      },
+      "colorTint": {
+        "color": [0, 0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 624,
+      "name": "skyline-8 / black silhouette",
+      "parent": 619,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.059964005140753354, 0.0, 0.9982005400156222],
+        "scale": [5.0, 9.0, 5.0],
+        "translation": [-30.0, 0.07999999821186066, 65.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/TowerShort.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      },
+      "colorTint": {
+        "color": [0, 0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 625,
+      "name": "skyline-10 / black silhouette",
+      "parent": 619,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [5.0, 10.0, 5.0],
+        "translation": [21.0, 0.07999999821186066, 83.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/TowerTall.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      },
+      "colorTint": {
+        "color": [0, 0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 626,
+      "name": "skyline-11 / black silhouette",
+      "parent": 619,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.059964005140753354, 0.0, 0.9982005400156222],
+        "scale": [5.0, 8.0, 5.0],
+        "translation": [40.0, 0.07999999821186066, 75.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/TowerWide.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      },
+      "colorTint": {
+        "color": [0, 0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 627,
+      "name": "CONFIG / 歯車の回転軸 / silhouette",
+      "parent": 234,
+      "tag": "",
+      "transform": {
+        "rotation": [0.707106771713121, 0.0, 0.0, 0.707106790659974],
+        "scale": [1, 1, 1],
+        "translation": [9, 5.6, 15.65]
+      }
+    },
+    {
+      "active": true,
+      "id": 628,
+      "name": "CONFIG / 歯車看板 / black silhouette",
+      "parent": 627,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [3.2, 3.2, 3.2],
+        "translation": [0, 0, 0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/WorkshopGear.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      },
+      "colorTint": {
+        "color": [0, 0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 629,
+      "name": "QUIT / 左のビル上部の避難口看板 / black silhouette",
+      "parent": 234,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1, 1, 1],
+        "translation": [-7.2, 7.4, -2.8]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/ExitSign.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      },
+      "colorTint": {
+        "color": [0, 0, 0]
+      }
     }
   ],
   "projectRoot": "..",
-  "version": 69
+  "version": 70
 }
