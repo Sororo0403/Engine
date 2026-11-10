@@ -171,41 +171,15 @@
       "parent": 0,
       "tag": "",
       "transform": {
-        "rotation": [0, 0, 0, 1],
+        "rotation": [-0.10471169771160235, -0.2984782326740243, -0.03296567452747275, 0.9480819950221046],
         "scale": [1, 1, 1],
-        "translation": [0, 0, 0]
+        "translation": [-1.5, 5.2, -11]
       },
       "camera": {
         "primary": false,
         "verticalFovDegrees": 45,
         "nearClip": 0.1,
         "farClip": 220
-      },
-      "transformAnimation": {
-        "keys": [
-          {
-            "seconds": 0,
-            "translation": [-1.5, 5.2, -11],
-            "rotation": [-0.10471169771160235, -0.2984782326740243, -0.03296567452747275, 0.9480819950221046],
-            "scale": [1, 1, 1]
-          },
-          {
-            "seconds": 1.4,
-            "translation": [-1.5, 5.2, -11],
-            "rotation": [-0.10471169771160235, -0.2984782326740243, -0.03296567452747275, 0.9480819950221046],
-            "scale": [1, 1, 1]
-          },
-          {
-            "seconds": 2.0,
-            "translation": [-18, 7.4, -2.8],
-            "rotation": [-0.10471169771160235, -0.2984782326740243, -0.03296567452747275, 0.9480819950221046],
-            "scale": [1, 1, 1]
-          }
-        ],
-        "mode": "once",
-        "interpolation": "smooth",
-        "speed": 1,
-        "playOnStart": false
       }
     },
     {
@@ -1337,22 +1311,6 @@
           },
           {
             "event": "buttonClick",
-            "operation": "playTransformAnimation",
-            "target": 7,
-            "once": false,
-            "destination": 0,
-            "scene": "",
-            "contact": "any",
-            "contactTag": "",
-            "inputAction": "",
-            "messageName": "",
-            "delaySeconds": 0,
-            "cameraBlendSeconds": 0,
-            "arrivalTag": "",
-            "launchSpeed": 12
-          },
-          {
-            "event": "buttonClick",
             "operation": "disable",
             "target": 185,
             "once": false,
@@ -1816,7 +1774,7 @@
     {
       "active": true,
       "id": 206,
-      "name": "QUIT Cover Timeline",
+      "name": "QUIT Animation Clip",
       "parent": 0,
       "tag": "",
       "transform": {
@@ -1827,7 +1785,7 @@
       "triggerActions": {
         "actions": [
           {
-            "event": "animationClipFinished",
+            "event": "animationClipMarker",
             "operation": "disable",
             "target": 2,
             "once": false,
@@ -1840,10 +1798,11 @@
             "delaySeconds": 0,
             "cameraBlendSeconds": 0,
             "arrivalTag": "",
-            "launchSpeed": 12
+            "launchSpeed": 12,
+            "clipTime": 0.3
           },
           {
-            "event": "animationClipFinished",
+            "event": "animationClipMarker",
             "operation": "disable",
             "target": 232,
             "once": false,
@@ -1856,10 +1815,11 @@
             "delaySeconds": 0,
             "cameraBlendSeconds": 0,
             "arrivalTag": "",
-            "launchSpeed": 12
+            "launchSpeed": 12,
+            "clipTime": 0.3
           },
           {
-            "event": "animationClipFinished",
+            "event": "animationClipMarker",
             "operation": "enable",
             "target": 220,
             "once": false,
@@ -1872,10 +1832,11 @@
             "delaySeconds": 0,
             "cameraBlendSeconds": 0,
             "arrivalTag": "",
-            "launchSpeed": 12
+            "launchSpeed": 12,
+            "clipTime": 0.3
           },
           {
-            "event": "animationClipFinished",
+            "event": "animationClipMarker",
             "operation": "enable",
             "target": 233,
             "once": false,
@@ -1888,10 +1849,11 @@
             "delaySeconds": 0,
             "cameraBlendSeconds": 0,
             "arrivalTag": "",
-            "launchSpeed": 12
+            "launchSpeed": 12,
+            "clipTime": 0.3
           },
           {
-            "event": "animationClipFinished",
+            "event": "animationClipMarker",
             "operation": "enable",
             "target": 231,
             "once": false,
@@ -1904,61 +1866,9 @@
             "delaySeconds": 0,
             "cameraBlendSeconds": 0,
             "arrivalTag": "",
-            "launchSpeed": 12
+            "launchSpeed": 12,
+            "clipTime": 0.3
           },
-          {
-            "event": "animationClipFinished",
-            "operation": "playAnimationClip",
-            "target": 207,
-            "once": false,
-            "destination": 0,
-            "scene": "",
-            "contact": "any",
-            "contactTag": "",
-            "inputAction": "",
-            "messageName": "",
-            "delaySeconds": 0,
-            "cameraBlendSeconds": 0,
-            "arrivalTag": "",
-            "launchSpeed": 12
-          }
-        ]
-      },
-      "animationClip": {
-        "duration": 0.3,
-        "playOnStart": false,
-        "tracks": [
-          {
-            "target": 202,
-            "property": "opacity",
-            "interpolation": "smooth",
-            "keys": [
-              {
-                "time": 0,
-                "value": [0, 0, 0, 0]
-              },
-              {
-                "time": 0.3,
-                "value": [1, 0, 0, 0]
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "active": true,
-      "id": 207,
-      "name": "QUIT Departure Timeline",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [0, 0, 0, 1],
-        "scale": [1, 1, 1],
-        "translation": [0, 0, 0]
-      },
-      "triggerActions": {
-        "actions": [
           {
             "event": "animationClipFinished",
             "operation": "quitGame",
@@ -1978,7 +1888,7 @@
         ]
       },
       "animationClip": {
-        "duration": 1.98,
+        "duration": 2.28,
         "playOnStart": false,
         "tracks": [
           {
@@ -1988,23 +1898,65 @@
             "keys": [
               {
                 "time": 0,
-                "value": [1, 0, 0, 0]
-              },
-              {
-                "time": 0.45,
                 "value": [0, 0, 0, 0]
               },
               {
-                "time": 1.15,
+                "time": 0.3,
+                "value": [1, 0, 0, 0]
+              },
+              {
+                "time": 0.75,
                 "value": [0, 0, 0, 0]
               },
               {
-                "time": 1.8,
+                "time": 1.45,
+                "value": [0, 0, 0, 0]
+              },
+              {
+                "time": 2.1,
                 "value": [1, 0, 0, 0]
               },
               {
-                "time": 1.98,
+                "time": 2.28,
                 "value": [1, 0, 0, 0]
+              }
+            ]
+          },
+          {
+            "target": 7,
+            "property": "translation",
+            "interpolation": "smooth",
+            "keys": [
+              {
+                "time": 0,
+                "value": [-1.5, 5.2, -11, 0]
+              },
+              {
+                "time": 1.4,
+                "value": [-1.5, 5.2, -11, 0]
+              },
+              {
+                "time": 2.0,
+                "value": [-18, 7.4, -2.8, 0]
+              }
+            ]
+          },
+          {
+            "target": 7,
+            "property": "rotation",
+            "interpolation": "smooth",
+            "keys": [
+              {
+                "time": 0,
+                "value": [-0.10471169771160235, -0.2984782326740243, -0.03296567452747275, 0.9480819950221046]
+              },
+              {
+                "time": 1.4,
+                "value": [-0.10471169771160235, -0.2984782326740243, -0.03296567452747275, 0.9480819950221046]
+              },
+              {
+                "time": 2.0,
+                "value": [-0.10471169771160235, -0.2984782326740243, -0.03296567452747275, 0.9480819950221046]
               }
             ]
           }
