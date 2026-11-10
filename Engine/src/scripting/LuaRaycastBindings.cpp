@@ -47,10 +47,15 @@ bool Perform(LuaInternal::Call &call, const Ray &ray,
 		options.layerMask = query.layerMask;
 		options.includeTriggers = query.includeTriggers;
 		options.ignored = {&query.ignored, 1};
+		if (!radius && !call.raycast) {
+			call.raycast.emplace();
+			if (!call.raycast->Build(*call.scene))
+				throw std::runtime_error("Raycast requires a valid scene hierarchy.");
+		}
 		const bool ok =
 		    radius ? SceneRaycast::CastSphere(*call.scene, ray, *radius, hit,
 		                                      options)
-		           : SceneRaycast::Cast(*call.scene, ray, hit, options);
+		           : call.raycast->Cast(ray, hit, options);
 		if (!ok)
 			throw std::runtime_error(
 			    radius ? "Sphere cast requires a valid center, radius, "

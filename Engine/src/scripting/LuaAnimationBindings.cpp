@@ -47,7 +47,7 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, double &value,
 		if (!current && call.executing && object->transformAnimation) {
 			if (!call.animations->Configure(*call.scene, true, call.error))
 				return false;
-			call.physicsDirty = true;
+			call.InvalidateSpatialQueries();
 			current = call.animations->GetState(id);
 		}
 
@@ -78,7 +78,7 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, double &value,
 		                              restart, call.error))
 			return false;
 		value = 1;
-		call.physicsDirty = true;
+		call.InvalidateSpatialQueries();
 		return true;
 	} catch (const std::exception &e) {
 		call.error = e.what();

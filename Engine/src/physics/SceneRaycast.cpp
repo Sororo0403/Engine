@@ -198,21 +198,35 @@ bool Normalize(const Ray &ray, Vector &direction) {
 
 bool SceneRaycast::Cast(const Scene &scene, const Ray &ray, RaycastHit &hit,
                         const RaycastOptions &options) {
+	Prepared prepared;
+	return prepared.Build(scene) && prepared.Cast(ray, hit, options);
+}
+
+bool SceneRaycast::Prepared::Build(const Scene &scene) {
+	scene_ = nullptr;
+	try {
+		if (!SceneHierarchy::BuildWorldTransforms(scene, transforms_) ||
+		    !SceneActivity::BuildStates(scene, active_))
+			return false;
+		scene_ = &scene;
+		return true;
+	} catch (...) {
+		return false;
+	}
+}
+
+bool SceneRaycast::Prepared::Cast(const Ray &ray, RaycastHit &hit,
+                                 const RaycastOptions &options) const {
 	try {
 		Vector direction;
-		if (!Normalize(ray, direction))
-			return false;
-		SceneHierarchy::WorldTransforms transforms;
-		SceneActivity::States active;
-		if (!SceneHierarchy::BuildWorldTransforms(scene, transforms) ||
-		    !SceneActivity::BuildStates(scene, active))
+		if (!scene_ || !Normalize(ray, direction))
 			return false;
 		RaycastHit next;
 		double closest = ray.maxDistance;
 		const auto origin = Value(ray.origin);
 
-		for (const auto &[id, object] : scene.GetObjects()) {
-			if (!object.collider || !active.at(id) ||
+		for (const auto &[id, object] : scene_->GetObjects()) {
+			if (!object.collider || !active_.at(id) ||
 			    std::ranges::find(options.ignored, id) !=
 			        options.ignored.end() ||
 			    (!options.includeTriggers && object.collider->isTrigger))
@@ -223,14 +237,14 @@ bool SceneRaycast::Cast(const Scene &scene, const Ray &ray, RaycastHit &hit,
 			if (box.shape != Collider::Shape::BOX) {
 				AxisAlignedBox bounds;
 				if (!ColliderUtils::GetWorldBounds(
-				        box, transforms.at(id).matrix, bounds))
+				        box, transforms_.at(id).matrix, bounds))
 					return false;
 			}
 
 			if (!(options.layerMask & (std::uint32_t{1} << box.filter.layer)))
 				continue;
 			DirectX::XMFLOAT4X4 inverse;
-			if (!TransformUtils::TryInverseWorldMatrix(transforms.at(id).matrix,
+			if (!TransformUtils::TryInverseWorldMatrix(transforms_.at(id).matrix,
 			                                           inverse))
 				return false;
 			const auto localOrigin = TransformVector(origin, inverse, true);

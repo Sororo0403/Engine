@@ -2,10 +2,12 @@
 
 #include "gameplay/CharacterInput.h"
 #include "gameplay/GameActionState.h"
+#include "physics/SceneRaycast.h"
 #include "scene/SceneAudioAction.h"
 #include "scene/SceneObjectId.h"
 #include <filesystem>
 #include <map>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -54,6 +56,13 @@ struct Call {
 	int *remainingInstantiations = nullptr;
 	std::size_t *remainingSpawnedObjects = nullptr;
 	bool physicsDirty = true;
+	std::optional<SceneRaycast::Prepared> raycast;
+
+	void InvalidateSpatialQueries() {
+		physicsDirty = true;
+		raycast.reset();
+	}
+
 	int physicsOperations = 0;
 	int *remainingPhysicsOperations = nullptr;
 	SceneObjectId self = 0, other = 0;

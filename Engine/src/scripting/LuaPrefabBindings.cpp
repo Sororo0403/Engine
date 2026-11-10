@@ -54,7 +54,7 @@ bool Perform(LuaInternal::Call &call, SceneObjectId owner, const char *name,
 		    error);
 		if (!created)
 			throw std::runtime_error(error);
-		call.physicsDirty = true;
+		call.InvalidateSpatialQueries();
 		return true;
 	} catch (const std::exception &exception) {
 		call.error.assign(

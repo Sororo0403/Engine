@@ -2,10 +2,28 @@
 #include "math/Ray.h"
 #include "physics/RaycastHit.h"
 #include "physics/RaycastOptions.h"
+#include "scene/SceneActivity.h"
+#include "scene/SceneHierarchy.h"
 class Scene;
 
 namespace SceneRaycast {
 static constexpr float kMaximumDistance = 1000000;
+
+/// <summary>
+/// 姿勢と有効状態を共有して、同じシーンに複数のレイを飛ばす
+/// </summary>
+/// <remarks>物体の追加・削除、親子関係、姿勢、有効状態の変更後は再構築する</remarks>
+class Prepared {
+  public:
+	bool Build(const Scene &scene);
+	bool Cast(const Ray &ray, RaycastHit &hit,
+	          const RaycastOptions &options = {}) const;
+
+  private:
+	const Scene *scene_ = nullptr;
+	SceneHierarchy::WorldTransforms transforms_;
+	SceneActivity::States active_;
+};
 
 /// <summary>
 /// 有効なColliderをワールド行列で変形した箱・球・カプセルと、レイの最も近い交点を求める

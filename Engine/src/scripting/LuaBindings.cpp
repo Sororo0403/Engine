@@ -537,7 +537,7 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 		    op == Op::SET_POSITION || op == Op::SET_LOCAL_POSITION ||
 		    op == Op::SET_ROTATION ||
 		    (op == Op::SET_SCALE || op == Op::LOOK_AT))
-			call.physicsDirty = true;
+			call.InvalidateSpatialQueries();
 		return true;
 	} catch (const std::exception &error) {
 		call.error.assign(error.what(), (std::min)(std::strlen(error.what()),
