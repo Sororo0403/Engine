@@ -84,7 +84,9 @@
     },
     "scene": "resources/game/scene.json",
     "title": "GuruttoWorld",
-    "version": 10,
+    "settingsId": "gurutto-world",
+    "persistentScriptKeys": ["volumeLevel"],
+    "version": 11,
     "width": 1280
   },
   "startupScene": "scenes/TitleStreet.scene.json",

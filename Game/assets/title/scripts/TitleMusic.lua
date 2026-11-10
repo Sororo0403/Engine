@@ -23,6 +23,10 @@ end
 
 return {
     start = function(self, state)
+        local level = game.volumeLevel
+        if type(level) ~= "number" or level < 0 or level > 10 or level % 1 ~= 0 then
+            game.volumeLevel = nil
+        end
         state.baseVolume = self:get_audio_volume()
         self:set_audio_volume(0)
         show_volume(self)
