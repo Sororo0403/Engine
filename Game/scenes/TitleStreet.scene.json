@@ -3658,7 +3658,7 @@
     {
       "active": true,
       "id": 409,
-      "name": "街並み / CC0の高層建築",
+      "name": "街並み / 高層建築",
       "parent": 0,
       "tag": "",
       "transform": {
@@ -3985,7 +3985,7 @@
     {
       "active": true,
       "id": 425,
-      "name": "CONFIG / CC0の歯車付き施設",
+      "name": "CONFIG / 歯車工房",
       "parent": 0,
       "tag": "",
       "transform": {
@@ -4018,7 +4018,7 @@
     {
       "active": true,
       "id": 427,
-      "name": "CONFIG / Kenney CC0の歯車看板",
+      "name": "CONFIG / 歯車看板",
       "parent": 426,
       "tag": "",
       "transform": {
@@ -4039,7 +4039,7 @@
     {
       "active": true,
       "id": 428,
-      "name": "QUIT / 左のビル上部のCC0避難口看板",
+      "name": "QUIT / 左のビル上部の避難口看板",
       "parent": 0,
       "tag": "",
       "transform": {
