@@ -6,9 +6,75 @@
 #include "graphics/model/ModelManager.h"
 #include "graphics/render/RenderSystem.h"
 #include "input/InputSystem.h"
+#include "platform/windows/FileUtils.h"
 #include "scene/SceneSerializer.h"
 #include "ui/UIInputReader.h"
+#include <cstdlib>
+#include <fstream>
+#include <json.hpp>
+#include <memory>
 #include <utility>
+
+namespace {
+constexpr std::size_t kMaxScriptSettingsBytes = 32768;
+
+/// <summary>
+/// ゲームごとのユーザー設定ファイルの場所を取得する
+/// </summary>
+std::filesystem::path GetScriptSettingsPath(const std::string &settingsId) {
+	wchar_t *localAppData = nullptr;
+	const auto result = _wdupenv_s(&localAppData, nullptr, L"LOCALAPPDATA");
+	const std::unique_ptr<wchar_t, decltype(&std::free)> directory(
+	    localAppData, &std::free);
+	if (result != 0 || !directory)
+		return {};
+	const std::filesystem::path root(directory.get());
+	if (!root.is_absolute())
+		return {};
+	return root / L"Engine" / L"GameSettings" /
+	       ("game-" + settingsId + ".json");
+}
+
+/// <summary>
+/// 設定に登録されたキーから、保存可能な単一の値だけを取り出す
+/// </summary>
+std::string SelectScriptSettings(std::string_view text,
+                                 const std::vector<std::string> &keys) {
+	const auto data = nlohmann::json::parse(text, nullptr, false);
+	auto settings = nlohmann::json::object();
+	if (data.is_object()) {
+		for (const auto &key : keys) {
+			const auto value = data.find(key);
+			if (value == data.end())
+				continue;
+			if (value->is_boolean() || value->is_number() ||
+			    (value->is_string() &&
+			     value->get_ref<const std::string &>().size() <= 256)) {
+				settings[key] = *value;
+			}
+		}
+	}
+	return settings.dump();
+}
+
+/// <summary>
+/// ユーザー設定を上限付きで読み込み、起動時の共有データを作る
+/// </summary>
+std::string LoadScriptSettings(const std::filesystem::path &path,
+                               const std::vector<std::string> &keys) {
+	std::ifstream file(path, std::ios::binary);
+	if (!file)
+		return "{}";
+	std::string text(kMaxScriptSettingsBytes + 1, '\0');
+	file.read(text.data(), static_cast<std::streamsize>(text.size()));
+	if (!file.eof() || file.bad()) {
+		Logger::Warning("Could not read game script settings.");
+		return "{}";
+	}
+	text.resize(static_cast<std::size_t>(file.gcount()));
+	return SelectScriptSettings(text, keys);
+}
+} // namespace
 
 RuntimeScene::RuntimeScene(const EngineContext &context, GameConfig config)
     : input_(context.input), render_(context.render),
@@ -43,7 +109,20 @@ bool RuntimeScene::Initialize() {
 
 	if (!renderer_.Initialize())
 		return false;
-	if (!simulation_.Start(source, error, config_.fallbackCamera)) {
+
+	savedScriptSettings_ = "{}";
+	observedScriptData_.clear();
+	if (!config_.settingsId.empty()) {
+		scriptSettingsPath_ = GetScriptSettingsPath(config_.settingsId);
+		if (scriptSettingsPath_.empty())
+			Logger::Warning("Game script settings directory is unavailable.");
+		else
+			savedScriptSettings_ = LoadScriptSettings(
+			    scriptSettingsPath_, config_.persistentScriptKeys);
+	}
+
+	if (!simulation_.Start(source, error, config_.fallbackCamera, nullptr,
+	                       savedScriptSettings_)) {
 		Logger::Error(error);
 		return false;
 	}
@@ -55,6 +134,31 @@ bool RuntimeScene::Initialize() {
 		return false;
 	}
 	return true;
+}
+
+void RuntimeScene::SaveScriptSettings() {
+	const auto current = simulation_.GetSharedScriptData();
+	if (scriptSettingsPath_.empty() || current == observedScriptData_)
+		return;
+	observedScriptData_ = current;
+	auto settings =
+	    SelectScriptSettings(current, config_.persistentScriptKeys);
+	if (settings == savedScriptSettings_)
+		return;
+
+	std::error_code directoryError;
+	std::filesystem::create_directories(scriptSettingsPath_.parent_path(),
+	                                    directoryError);
+	std::string writeError;
+	if (directoryError ||
+	    !FileUtils::WriteTextAtomically(scriptSettingsPath_, settings,
+	                                    writeError)) {
+		Logger::Warning("Could not save game script settings: " +
+		                (directoryError ? directoryError.message()
+		                                : writeError));
+		return;
+	}
+	savedScriptSettings_ = std::move(settings);
 }
 
 bool RuntimeScene::Update(float seconds) {
@@ -94,6 +198,7 @@ bool RuntimeScene::Update(float seconds) {
 			Logger::Error(simulation_.GetLastUpdateError());
 			return false;
 		}
+		SaveScriptSettings();
 	}
 
 	if (simulation_.IsQuitRequested()) {

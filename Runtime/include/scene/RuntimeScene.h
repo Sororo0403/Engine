@@ -53,6 +53,11 @@ class RuntimeScene final : public IScene {
 	bool IsCloseApproved() const override;
 
   private:
+	/// <summary>
+	/// 保存対象の共有データに変更があればユーザー設定を保存する
+	/// </summary>
+	void SaveScriptSettings();
+
 	const InputSystem &input_;
 	RenderSystem &render_;
 	GameConfig config_;
@@ -60,5 +65,8 @@ class RuntimeScene final : public IScene {
 	SceneSimulation simulation_;
 	SceneRenderer renderer_;
 	SceneAudioPlayer audioPlayer_;
+	std::filesystem::path scriptSettingsPath_;
+	std::string observedScriptData_;
+	std::string savedScriptSettings_;
 	bool close_ = false;
 };

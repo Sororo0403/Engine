@@ -45,7 +45,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <ExternalIncludePath>$(EngineExternalRoot)directxmath\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>$(EngineExternalRoot)directxmath\include;$(EngineExternalRoot)nlohmann\include;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)build\bin\$(VCToolsVersion)\$(Configuration)\</OutDir>

@@ -189,10 +189,12 @@ class SceneSimulation {
 	/// <param name="error">失敗理由。成功時は空</param>
 	/// <param name="fallbackPose">Primary Cameraがない場合に使用する固定の描画姿勢</param>
 	/// <param name="invalidObject">指定時は問題の物体IDを設定する。成功時や物体に紐付かない失敗では0</param>
+	/// <param name="initialScriptData">スクリプトの開始前に共有テーブルへ読み込むJSONオブジェクト</param>
 	/// <returns>true:再生開始 false:追加済みコンポーネントの設定や配置、または描画姿勢が無効</returns>
 	bool Start(const Scene &source, std::string &error,
 	           const CameraPose &fallbackPose = CameraPose{},
-	           SceneObjectId *invalidObject = nullptr);
+	           SceneObjectId *invalidObject = nullptr,
+	           std::string_view initialScriptData = "{}");
 
 	/// <summary>
 	/// 再生中の有効設定をまとめて変更し、描画用シーン・衝突・Trigger・Cameraの選択を同期する
@@ -385,10 +387,12 @@ class SceneSimulation {
 	/// <param name="fallbackPose">Cameraがない場合の姿勢</param>
 	/// <param name="invalidObject">指定時は問題の物体ID</param>
 	/// <param name="preserveSharedData">true:シーン遷移 false:新しいPlayを開始する</param>
+	/// <param name="initialScriptData">新規開始時の共有テーブルを表すJSONオブジェクト</param>
 	/// <returns>true:開始成功 false:失敗。全実行状態を保持する</returns>
 	bool StartScene(const Scene &source, std::string &error,
 	                const CameraPose &fallbackPose,
-	                SceneObjectId *invalidObject, bool preserveSharedData);
+	                SceneObjectId *invalidObject, bool preserveSharedData,
+	                std::string_view initialScriptData = "{}");
 
 	/// <summary>
 	/// 次の正の時間の更新で操作を受け取るTrigger Actionsと、その原因イベント

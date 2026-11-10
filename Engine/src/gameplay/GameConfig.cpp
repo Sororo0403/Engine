@@ -3,6 +3,7 @@
 #include "platform/windows/FileUtils.h"
 #include "platform/windows/PathUtils.h"
 #include "platform/windows/StringConversion.h"
+#include <algorithm>
 #include <fstream>
 #include <iterator>
 #include <json.hpp>
@@ -10,6 +11,14 @@
 #include <utility>
 
 namespace {
+bool IsSettingsName(std::string_view name) {
+	return !name.empty() && name.size() <= 64 &&
+	       std::ranges::all_of(name, [](char c) {
+		       return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+		              (c >= '0' && c <= '9') || c == '-' || c == '_';
+	       });
+}
+
 /// <summary>
 /// JSONから有限な3成分の数値を読み込む
 /// </summary>
@@ -40,6 +49,13 @@ bool GameConfig::IsValid() const {
 	    scenePath.has_root_path() ||
 	    scenePath.native().find(L'\0') != std::wstring::npos ||
 	    !PathUtils::HasExtension(scenePath, ".json")) {
+		return false;
+	}
+
+	if (settingsId.empty() != persistentScriptKeys.empty() ||
+	    (!settingsId.empty() && !IsSettingsName(settingsId)) ||
+	    persistentScriptKeys.size() > 16 ||
+	    !std::ranges::all_of(persistentScriptKeys, IsSettingsName)) {
 		return false;
 	}
 
@@ -107,6 +123,8 @@ bool GameConfig::Serialize(std::string &text, std::string &error) const {
 		    {"cameraRelativeMovement", cameraRelativeMovement},
 		    {"input", inputJson},
 		    {"actions", actionsJson},
+		    {"settingsId", settingsId},
+		    {"persistentScriptKeys", persistentScriptKeys},
 		    {"lighting",
 		     {{"direction", vector(lighting.direction)},
 		      {"color", vector(lighting.color)},
@@ -343,6 +361,12 @@ bool GameConfig::Deserialize(std::string_view text, std::string &error) {
 			s.strength = number("strength");
 			s.bias = number("bias");
 			s.normalBias = number("normalBias");
+		}
+
+		if (data.at("version") >= 11) {
+			candidate.settingsId = data.at("settingsId").get<std::string>();
+			candidate.persistentScriptKeys =
+			    data.at("persistentScriptKeys").get<std::vector<std::string>>();
 		}
 
 		const auto &camera = data.at("camera");

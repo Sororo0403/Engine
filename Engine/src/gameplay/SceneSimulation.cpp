@@ -83,8 +83,10 @@ bool PlaceSceneArrival(Scene &scene, std::string_view tag, std::string &error) {
 
 bool SceneSimulation::Start(const Scene &source, std::string &error,
                             const CameraPose &fallbackPose,
-                            SceneObjectId *invalidObject) {
-	return StartScene(source, error, fallbackPose, invalidObject, false);
+                            SceneObjectId *invalidObject,
+                            std::string_view initialScriptData) {
+	return StartScene(source, error, fallbackPose, invalidObject, false,
+	                  initialScriptData);
 }
 
 bool SceneSimulation::Validate(const Scene &source, std::string &error,
@@ -122,7 +124,8 @@ bool SceneSimulation::ValidateArrival(const Scene &source, std::string_view tag,
 bool SceneSimulation::StartScene(const Scene &source, std::string &error,
                                  const CameraPose &fallbackPose,
                                  SceneObjectId *invalidObject,
-                                 bool preserveSharedData) {
+                                 bool preserveSharedData,
+                                 std::string_view initialScriptData) {
 	if (invalidObject)
 		*invalidObject = 0;
 	try {
@@ -158,8 +161,9 @@ bool SceneSimulation::StartScene(const Scene &source, std::string &error,
 		working.preparePrefabResources_ = preparePrefabResources_;
 		working.loadAnimatorModel_ = loadAnimatorModel_;
 		working.legacyLighting_ = legacyLighting_;
-		if (preserveSharedData)
-			working.sharedScriptData_ = sharedScriptData_;
+		working.sharedScriptData_ =
+		    preserveSharedData ? std::string_view(sharedScriptData_)
+		                       : initialScriptData;
 		if (!working.Configure(*initialScene, error, fallbackPose,
 		                       invalidObject, false)) {
 			return false;

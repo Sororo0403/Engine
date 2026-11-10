@@ -16,7 +16,7 @@ struct GameConfig {
 	/// <summary>
 	/// 保存する形式のバージョン。読み込みはversion 1からこの値まで対応する
 	/// </summary>
-	static constexpr int kCurrentVersion = 10;
+	static constexpr int kCurrentVersion = 11;
 
 	std::string title = "Game";
 	int width = 1280, height = 720;
@@ -29,13 +29,19 @@ struct GameConfig {
 	bool gamepadEnabled = true;
 
 	/// <summary>
+	/// ユーザー設定の保存先を識別するIDと、保存するスクリプト共有テーブルのキー
+	/// </summary>
+	std::string settingsId;
+	std::vector<std::string> persistentScriptKeys;
+
+	/// <summary>
 	/// 起動値と、パッケージ内を指す相対シーンパスを確認する
 	/// </summary>
 	/// <returns>true:有効 false:範囲外またはパス・カメラ・照明が無効</returns>
 	bool IsValid() const;
 
 	/// <summary>
-	/// 起動設定を検証し、ファイルへ書き込まずversion 10のJSON文字列に変換する
+	/// 起動設定を検証し、ファイルへ書き込まず現在の形式のJSON文字列に変換する
 	/// </summary>
 	/// <param name="text">成功時に置き換えるJSON文字列。失敗時は保持する</param>
 	/// <param name="error">失敗理由。成功時は空</param>
@@ -51,7 +57,7 @@ struct GameConfig {
 	bool Save(const std::filesystem::path &path, std::string &error) const;
 
 	/// <summary>
-	/// version 1から10を読み込み、全設定の検証成功後だけ現在値を置き換える。version 1の操作キーはWASDとSpace、version 1・2の移動はワールド基準、version 1から3の照明は従来の初期値、version 1から4のゲームパッドは有効。version 1から5の操作キーはEを優先し、既存の割り当てと重複しないキーを選ぶ。version 1から6の名前付き操作は空。version 1から7の影は無効。version 1から8のゲームパッド軸は未割り当て
+	/// 旧形式にも対応し、全設定の検証成功後だけ現在値を置き換える。version 1の操作キーはWASDとSpace、version 1・2の移動はワールド基準、version 1から3の照明は従来の初期値、version 1から4のゲームパッドは有効。version 1から5の操作キーはEを優先し、既存の割り当てと重複しないキーを選ぶ。version 1から6の名前付き操作は空。version 1から7の影は無効。version 1から8のゲームパッド軸は未割り当て。version 10以前ではスクリプトの設定を永続化しない
 	/// </summary>
 	/// <param name="path">読み込む設定ファイル</param>
 	/// <param name="error">失敗理由。成功時は空</param>
@@ -59,7 +65,7 @@ struct GameConfig {
 	bool Load(const std::filesystem::path &path, std::string &error);
 
 	/// <summary>
-	/// version 1から10のJSON文字列を検証し、全設定の読み込み成功後だけ現在値を置き換える
+	/// JSON文字列を検証し、全設定の読み込み成功後だけ現在値を置き換える
 	/// </summary>
 	/// <param name="text">ファイル操作を行わず読み込む起動設定</param>
 	/// <param name="error">失敗理由。成功時は空</param>
