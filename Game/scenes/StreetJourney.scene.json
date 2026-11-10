@@ -15184,7 +15184,7 @@
         "visible": true
       },
       "name": "Canvas Awning",
-      "parent": 207,
+      "parent": 517,
       "tag": "street_wave_near",
       "transform": {
         "rotation": [
@@ -15200,8 +15200,8 @@
         ],
         "translation": [
           0,
-          3.6,
-          -0.9
+          -0.07,
+          -0.83
         ]
       }
     },
@@ -15236,7 +15236,7 @@
         "visible": true
       },
       "name": "Awning Valance",
-      "parent": 207,
+      "parent": 517,
       "tag": "street_wave_near",
       "transform": {
         "rotation": [
@@ -15252,8 +15252,8 @@
         ],
         "translation": [
           0,
-          3.3,
-          -1.83
+          -0.37,
+          -1.76
         ]
       }
     },
@@ -27607,6 +27607,18 @@
           {
             "slot": 6,
             "target": 158
+          },
+          {
+            "slot": 7,
+            "target": 517
+          },
+          {
+            "slot": 8,
+            "target": 519
+          },
+          {
+            "slot": 9,
+            "target": 521
           }
         ],
         "loop": false,
@@ -30489,6 +30501,215 @@
         ],
         "translation": [
           0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 517,
+      "name": "Cafe Awning Hinge",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          3.67,
+          -0.07
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 518,
+      "name": "Arrival Oak Planter 518",
+      "parent": 0,
+      "tag": "street_wave_near",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.43,
+          0.145,
+          0.43
+        ],
+        "translation": [
+          -2.2,
+          0.145,
+          5
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "colorTint": {
+        "color": [
+          0.61,
+          0.35,
+          0.23
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 519,
+      "name": "Arrival Oak 519",
+      "parent": 0,
+      "tag": "street_wave_near",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          -2.2,
+          0.29,
+          5
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/ArrivalOak.glb"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 520,
+      "name": "Arrival Oak Planter 520",
+      "parent": 0,
+      "tag": "street_wave_near",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.43,
+          0.145,
+          0.43
+        ],
+        "translation": [
+          -20.5,
+          0.145,
+          13
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "colorTint": {
+        "color": [
+          0.61,
+          0.35,
+          0.23
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 521,
+      "name": "Arrival Oak 521",
+      "parent": 0,
+      "tag": "street_wave_near",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          -20.5,
+          0.29,
+          13
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/ArrivalOak.glb"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
           0,
           0
         ]
