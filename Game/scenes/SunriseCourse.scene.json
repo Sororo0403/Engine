@@ -2664,6 +2664,10 @@
           {
             "name": "gatePad",
             "target": 84
+          },
+          {
+            "name": "flowerCount",
+            "target": 187
           }
         ],
         "scenes": [
@@ -7100,6 +7104,416 @@
           11.1,
           -1.31,
           12.6
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.43
+        ]
+      },
+      "id": 183,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Canal Flower Step",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.66,
+          0.42,
+          0.68
+        ],
+        "translation": [
+          -2.55,
+          -0.2,
+          8.5
+        ]
+      }
+    },
+    {
+      "active": true,
+      "animationPlayer": {
+        "asset": "@project/assets/street/animations/FlowerSpin.clip.json",
+        "bindings": [
+          {
+            "slot": 1,
+            "target": 184
+          }
+        ],
+        "loop": true,
+        "playOnStart": true
+      },
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.53,
+        "shape": "Sphere"
+      },
+      "id": 184,
+      "mesh": {
+        "model": "@project/assets/street/models/FlowerFragment.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Canal Flower",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          -2.55,
+          1.1,
+          8.5
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "flower",
+            "once": true,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 85
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "disable",
+            "scene": "",
+            "target": 184
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "animationPlayer": {
+        "asset": "@project/assets/street/animations/FlowerSpin.clip.json",
+        "bindings": [
+          {
+            "slot": 1,
+            "target": 185
+          }
+        ],
+        "loop": true,
+        "playOnStart": true
+      },
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.53,
+        "shape": "Sphere"
+      },
+      "id": 185,
+      "mesh": {
+        "model": "@project/assets/street/models/FlowerFragment.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Lookout Jump Flower",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          2.55,
+          24.05
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "flower",
+            "once": true,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 85
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "disable",
+            "scene": "",
+            "target": 185
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 186,
+      "image": {
+        "color": [
+          0.035,
+          0.075,
+          0.1,
+          0.9
+        ],
+        "enabled": true,
+        "fillAmount": 1,
+        "fillOrigin": "left",
+        "preserveAspect": false,
+        "raycastTarget": false,
+        "texture": "@project/assets/textures/PrototypeWhite.png"
+      },
+      "name": "Sunrise Flower Count Backdrop",
+      "parent": 24,
+      "rectTransform": {
+        "anchorMax": [
+          0,
+          0
+        ],
+        "anchorMin": [
+          0,
+          0
+        ],
+        "pivot": [
+          0,
+          0
+        ],
+        "position": [
+          1116,
+          33
+        ],
+        "sizeDelta": [
+          140,
+          52
+        ]
+      },
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 187,
+      "name": "Sunrise Flower Count",
+      "parent": 24,
+      "rectTransform": {
+        "anchorMax": [
+          0.0,
+          0.0
+        ],
+        "anchorMin": [
+          0.0,
+          0.0
+        ],
+        "pivot": [
+          0.0,
+          0.0
+        ],
+        "position": [
+          1116,
+          35
+        ],
+        "sizeDelta": [
+          140,
+          44
+        ]
+      },
+      "tag": "",
+      "text": {
+        "alignment": "center",
+        "bold": true,
+        "color": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "enabled": true,
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 24,
+        "raycastTarget": false,
+        "value": "花 0 / 2",
+        "verticalAlignment": "middle"
+      },
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          0.0
         ]
       }
     }

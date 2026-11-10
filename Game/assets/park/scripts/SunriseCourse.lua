@@ -8,8 +8,9 @@ local function record_time(key, time)
 end
 
 return {
-    start = function()
+    start = function(_, state)
         game.sunriseUnlocked = true
+        state.flowers = 0
     end,
 
     update = function(self, state, seconds, input)
@@ -34,6 +35,9 @@ return {
             self:reference("gatePad"):set_mesh_tint(0.30, 0.87, 0.48)
             self:reference("gate"):set_active(false)
             label:set_text("見晴らし台へ  /  中央はジャンプ ［Space / A］、右は階段")
+        elseif name == "flower" then
+            state.flowers = state.flowers + 1
+            self:reference("flowerCount"):set_text(string.format("花 %d / 2", state.flowers))
         elseif name == "finish" then
             local time = math.floor((state.elapsed or 0) * 10)
             local best = record_time("sunriseBestClearTime", time)
@@ -41,6 +45,10 @@ return {
                 time / 10, best)
             if not state.fell then
                 result = result .. "\n落下なし！    ベスト " .. record_time("sunriseBestCleanTime", time)
+            end
+            result = result .. string.format("\n花 %d / 2", state.flowers)
+            if state.flowers == 2 then
+                result = result .. "    水路の花をすべて集めた！"
             end
             self:reference("result"):set_text(result)
         end
