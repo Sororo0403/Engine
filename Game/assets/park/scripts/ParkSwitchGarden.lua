@@ -38,6 +38,8 @@ end
 
 return {
     start = function(self, state)
+        state.journeyStreetTime = game.journeyStreetTime
+        game.journeyStreetTime = nil
         state.pondHint = self:reference("label"):get_text()
         state.transferHint = false
         state.elapsed = 0
@@ -135,7 +137,13 @@ return {
             if not state.missedCleanRun then
                 clean = "ノーミスクリア！    ベスト " .. record_time("parkBestCleanTime", time)
             end
-            result:set_text(result:get_text() .. "\n" .. summary .. "\n" .. times .. "\n" .. clean)
+            local journey = ""
+            if type(state.journeyStreetTime) == "number" then
+                local total = state.journeyStreetTime + time
+                journey = string.format("\n街＋公園 %.1f 秒    通しベスト %s", total / 10,
+                    record_time("journeyBestTime", total))
+            end
+            result:set_text(result:get_text() .. "\n" .. summary .. "\n" .. times .. "\n" .. clean .. journey)
             return
         end
 

@@ -79,6 +79,7 @@ end
 
 return {
     start = function(self, state)
+        game.journeyStreetTime = nil
         local park = self:reference("parkButton")
         if park then
             park:set_active(game.parkUnlocked == true)

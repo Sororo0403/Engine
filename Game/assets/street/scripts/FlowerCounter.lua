@@ -183,6 +183,7 @@ end
 return {
     start = function(_, state)
         state.splits = {}
+        game.journeyStreetTime = nil
         game.streetAllFlowers = state.count == state.total
         game.streetGoalWaiting = nil
         game.streetRemainingFlowers = nil
@@ -236,6 +237,7 @@ return {
             state.completed = true
             local seconds = state.finishedTime or state.elapsed
             local tenths = math.floor(seconds * 10)
+            game.journeyStreetTime = tenths
             local previous = previous_clear_time()
             local record = record_splits(state, tenths, "streetBestClearSplits", previous)
             if state.count == state.total then
