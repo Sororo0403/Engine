@@ -662,9 +662,9 @@
       },
       "colorTint": {
         "color": [
-          0.75,
-          0.49,
-          0.39
+          1,
+          0.85,
+          0.72
         ]
       },
       "id": 15,
@@ -674,7 +674,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/textures/PrototypeWhite.png",
+            "path": "@project/assets/street/textures/QuayBrick.png",
             "slot": 0
           }
         ],
@@ -683,8 +683,8 @@
           0.0
         ],
         "uvScale": [
-          1.0,
-          1.0
+          4,
+          3
         ],
         "visible": true
       },
@@ -758,7 +758,7 @@
           1.0,
           1.0
         ],
-        "visible": true
+        "visible": false
       },
       "name": "Cafe Weather Roof",
       "parent": 6,
@@ -13797,6 +13797,4033 @@
           11.0,
           1.4949999785423278,
           16.0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 207,
+      "name": "Cafe Exterior",
+      "parent": 6,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          -12,
+          0,
+          8
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.86,
+          0.77,
+          0.62
+        ]
+      },
+      "id": 208,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Stone Plinth",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          4.03,
+          0.18,
+          3.53
+        ],
+        "translation": [
+          0,
+          0.18,
+          3.5
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.86,
+          0.77,
+          0.62
+        ]
+      },
+      "id": 209,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Stone Stringcourse",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          4.06,
+          0.06,
+          3.56
+        ],
+        "translation": [
+          0,
+          3,
+          3.5
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.22,
+          0.43,
+          0.43
+        ]
+      },
+      "id": 210,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Teal Cornice",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          4.175,
+          0.12,
+          3.675
+        ],
+        "translation": [
+          0,
+          5.12,
+          3.5
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.78,
+          0.43,
+          0.25
+        ]
+      },
+      "id": 211,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Canvas Awning",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          -0.0799146939691727,
+          0,
+          0,
+          0.9968017063026194
+        ],
+        "scale": [
+          3.5,
+          0.06,
+          0.95
+        ],
+        "translation": [
+          0,
+          3.6,
+          -0.9
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.86,
+          0.77,
+          0.62
+        ]
+      },
+      "id": 212,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Awning Valance",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          3.5,
+          0.175,
+          0.06
+        ],
+        "translation": [
+          0,
+          3.3,
+          -1.83
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.27,
+          0.18
+        ]
+      },
+      "id": 213,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Awning Wall Rail",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          3.5,
+          0.06,
+          0.07
+        ],
+        "translation": [
+          0,
+          3.67,
+          -0.07
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.27,
+          0.18
+        ]
+      },
+      "id": 214,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Awning Post 1",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.07,
+          1.79,
+          0.07
+        ],
+        "translation": [
+          -3.32,
+          1.82,
+          -0.24
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.27,
+          0.18
+        ]
+      },
+      "id": 215,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Awning Post 2",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.07,
+          1.79,
+          0.07
+        ],
+        "translation": [
+          3.32,
+          1.82,
+          -0.24
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.86,
+          0.77,
+          0.62
+        ]
+      },
+      "id": 216,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Storefront Frame 1",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.79,
+          0.95,
+          0.075
+        ],
+        "translation": [
+          -3,
+          1.68,
+          -0.055
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.21,
+          0.36,
+          0.42
+        ]
+      },
+      "id": 217,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Storefront Glass 1",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.67,
+          0.77,
+          0.025
+        ],
+        "translation": [
+          -3,
+          1.69,
+          -0.135
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.27,
+          0.18
+        ]
+      },
+      "id": 218,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Storefront Mullion 1",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.034,
+          0.77,
+          0.025
+        ],
+        "translation": [
+          -3,
+          1.69,
+          -0.17
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.86,
+          0.77,
+          0.62
+        ]
+      },
+      "id": 219,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Storefront Sill 1",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.85,
+          0.055,
+          0.14
+        ],
+        "translation": [
+          -3,
+          0.73,
+          -0.105
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.86,
+          0.77,
+          0.62
+        ]
+      },
+      "id": 220,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Storefront Frame 2",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.79,
+          0.95,
+          0.075
+        ],
+        "translation": [
+          1,
+          1.68,
+          -0.055
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.21,
+          0.36,
+          0.42
+        ]
+      },
+      "id": 221,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Storefront Glass 2",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.67,
+          0.77,
+          0.025
+        ],
+        "translation": [
+          1,
+          1.69,
+          -0.135
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.27,
+          0.18
+        ]
+      },
+      "id": 222,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Storefront Mullion 2",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.034,
+          0.77,
+          0.025
+        ],
+        "translation": [
+          1,
+          1.69,
+          -0.17
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.86,
+          0.77,
+          0.62
+        ]
+      },
+      "id": 223,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Storefront Sill 2",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.85,
+          0.055,
+          0.14
+        ],
+        "translation": [
+          1,
+          0.73,
+          -0.105
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.86,
+          0.77,
+          0.62
+        ]
+      },
+      "id": 224,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Storefront Frame 3",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.79,
+          0.95,
+          0.075
+        ],
+        "translation": [
+          3,
+          1.68,
+          -0.055
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.21,
+          0.36,
+          0.42
+        ]
+      },
+      "id": 225,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Storefront Glass 3",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.67,
+          0.77,
+          0.025
+        ],
+        "translation": [
+          3,
+          1.69,
+          -0.135
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.27,
+          0.18
+        ]
+      },
+      "id": 226,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Storefront Mullion 3",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.034,
+          0.77,
+          0.025
+        ],
+        "translation": [
+          3,
+          1.69,
+          -0.17
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.86,
+          0.77,
+          0.62
+        ]
+      },
+      "id": 227,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Storefront Sill 3",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.85,
+          0.055,
+          0.14
+        ],
+        "translation": [
+          3,
+          0.73,
+          -0.105
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.86,
+          0.77,
+          0.62
+        ]
+      },
+      "id": 228,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Door Surround",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.98,
+          1.37,
+          0.09
+        ],
+        "translation": [
+          -1.5,
+          1.37,
+          -0.07
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.27,
+          0.18
+        ]
+      },
+      "id": 229,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Wood Door 1",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.41,
+          1.21,
+          0.055
+        ],
+        "translation": [
+          -1.93,
+          1.21,
+          -0.17
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.21,
+          0.36,
+          0.42
+        ]
+      },
+      "id": 230,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Door Glass 1",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.3,
+          0.54,
+          0.02
+        ],
+        "translation": [
+          -1.93,
+          1.72,
+          -0.234
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.86,
+          0.77,
+          0.62
+        ]
+      },
+      "id": 231,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Door Handle 1",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.025,
+          0.08,
+          0.03
+        ],
+        "translation": [
+          -1.62,
+          1.09,
+          -0.245
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.27,
+          0.18
+        ]
+      },
+      "id": 232,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Wood Door 2",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.41,
+          1.21,
+          0.055
+        ],
+        "translation": [
+          -1.07,
+          1.21,
+          -0.17
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.21,
+          0.36,
+          0.42
+        ]
+      },
+      "id": 233,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Door Glass 2",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.3,
+          0.54,
+          0.02
+        ],
+        "translation": [
+          -1.07,
+          1.72,
+          -0.234
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.86,
+          0.77,
+          0.62
+        ]
+      },
+      "id": 234,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Door Handle 2",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.025,
+          0.08,
+          0.03
+        ],
+        "translation": [
+          -1.38,
+          1.09,
+          -0.245
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.86,
+          0.77,
+          0.62
+        ]
+      },
+      "id": 235,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Side Window Frame 1",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.07,
+          0.81,
+          0.72
+        ],
+        "translation": [
+          4.05,
+          1.7,
+          1
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.21,
+          0.36,
+          0.42
+        ]
+      },
+      "id": 236,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Side Window Glass 1",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.025,
+          0.65,
+          0.6
+        ],
+        "translation": [
+          4.128,
+          1.71,
+          1
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.27,
+          0.18
+        ]
+      },
+      "id": 237,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Side Window Mullion 1",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.026,
+          0.65,
+          0.035
+        ],
+        "translation": [
+          4.16,
+          1.71,
+          1
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.86,
+          0.77,
+          0.62
+        ]
+      },
+      "id": 238,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Side Window Frame 2",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.07,
+          0.81,
+          0.72
+        ],
+        "translation": [
+          4.05,
+          1.7,
+          3
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.21,
+          0.36,
+          0.42
+        ]
+      },
+      "id": 239,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Side Window Glass 2",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.025,
+          0.65,
+          0.6
+        ],
+        "translation": [
+          4.128,
+          1.71,
+          3
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.27,
+          0.18
+        ]
+      },
+      "id": 240,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Side Window Mullion 2",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.026,
+          0.65,
+          0.035
+        ],
+        "translation": [
+          4.16,
+          1.71,
+          3
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.86,
+          0.77,
+          0.62
+        ]
+      },
+      "id": 241,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Side Window Frame 3",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.07,
+          0.81,
+          0.72
+        ],
+        "translation": [
+          4.05,
+          1.7,
+          5
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.21,
+          0.36,
+          0.42
+        ]
+      },
+      "id": 242,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Side Window Glass 3",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.025,
+          0.65,
+          0.6
+        ],
+        "translation": [
+          4.128,
+          1.71,
+          5
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.27,
+          0.18
+        ]
+      },
+      "id": 243,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Side Window Mullion 3",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.026,
+          0.65,
+          0.035
+        ],
+        "translation": [
+          4.16,
+          1.71,
+          5
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.86,
+          0.77,
+          0.62
+        ]
+      },
+      "id": 244,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Upper Window Frame 1",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.51,
+          0.59,
+          0.07
+        ],
+        "translation": [
+          -3,
+          4.04,
+          -0.053
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.21,
+          0.36,
+          0.42
+        ]
+      },
+      "id": 245,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Upper Window Glass 1",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.4,
+          0.48,
+          0.022
+        ],
+        "translation": [
+          -3,
+          4.04,
+          -0.128
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.86,
+          0.77,
+          0.62
+        ]
+      },
+      "id": 246,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Upper Window Frame 2",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.51,
+          0.59,
+          0.07
+        ],
+        "translation": [
+          -1,
+          4.04,
+          -0.053
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.21,
+          0.36,
+          0.42
+        ]
+      },
+      "id": 247,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Upper Window Glass 2",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.4,
+          0.48,
+          0.022
+        ],
+        "translation": [
+          -1,
+          4.04,
+          -0.128
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.86,
+          0.77,
+          0.62
+        ]
+      },
+      "id": 248,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Upper Window Frame 3",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.51,
+          0.59,
+          0.07
+        ],
+        "translation": [
+          1,
+          4.04,
+          -0.053
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.21,
+          0.36,
+          0.42
+        ]
+      },
+      "id": 249,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Upper Window Glass 3",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.4,
+          0.48,
+          0.022
+        ],
+        "translation": [
+          1,
+          4.04,
+          -0.128
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.86,
+          0.77,
+          0.62
+        ]
+      },
+      "id": 250,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Upper Window Frame 4",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.51,
+          0.59,
+          0.07
+        ],
+        "translation": [
+          3,
+          4.04,
+          -0.053
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.21,
+          0.36,
+          0.42
+        ]
+      },
+      "id": 251,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Upper Window Glass 4",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.4,
+          0.48,
+          0.022
+        ],
+        "translation": [
+          3,
+          4.04,
+          -0.128
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 252,
+      "name": "Cafe Seating 1",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          -1
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.27,
+          0.18
+        ]
+      },
+      "id": 253,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Table Top",
+      "parent": 252,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.3185,
+          0.039,
+          0.3185
+        ],
+        "translation": [
+          0,
+          0.5005000000000001,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.22,
+          0.43,
+          0.43
+        ]
+      },
+      "id": 254,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Table Base",
+      "parent": 252,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.04875,
+          0.24700000000000003,
+          0.04875
+        ],
+        "translation": [
+          0,
+          0.24700000000000003,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.27,
+          0.18
+        ]
+      },
+      "id": 255,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Chair Seat 1",
+      "parent": 252,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.156,
+          0.039,
+          0.156
+        ],
+        "translation": [
+          0,
+          0.24700000000000003,
+          -0.6174999999999999
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.22,
+          0.43,
+          0.43
+        ]
+      },
+      "id": 256,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Chair Back 1",
+      "parent": 252,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.156,
+          0.14950000000000002,
+          0.022750000000000003
+        ],
+        "translation": [
+          0,
+          0.403,
+          -0.754
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.27,
+          0.18
+        ]
+      },
+      "id": 257,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Chair Leg",
+      "parent": 252,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.0169,
+          0.11050000000000001,
+          0.0169
+        ],
+        "translation": [
+          -0.11699999999999999,
+          0.11050000000000001,
+          -0.7344999999999999
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.27,
+          0.18
+        ]
+      },
+      "id": 258,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Chair Leg",
+      "parent": 252,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.0169,
+          0.11050000000000001,
+          0.0169
+        ],
+        "translation": [
+          -0.11699999999999999,
+          0.11050000000000001,
+          -0.5005
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.27,
+          0.18
+        ]
+      },
+      "id": 259,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Chair Leg",
+      "parent": 252,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.0169,
+          0.11050000000000001,
+          0.0169
+        ],
+        "translation": [
+          0.11699999999999999,
+          0.11050000000000001,
+          -0.7344999999999999
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.27,
+          0.18
+        ]
+      },
+      "id": 260,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Chair Leg",
+      "parent": 252,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.0169,
+          0.11050000000000001,
+          0.0169
+        ],
+        "translation": [
+          0.11699999999999999,
+          0.11050000000000001,
+          -0.5005
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.27,
+          0.18
+        ]
+      },
+      "id": 261,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Chair Seat 2",
+      "parent": 252,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.156,
+          0.039,
+          0.156
+        ],
+        "translation": [
+          0,
+          0.24700000000000003,
+          0.6174999999999999
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.22,
+          0.43,
+          0.43
+        ]
+      },
+      "id": 262,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Chair Back 2",
+      "parent": 252,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.156,
+          0.14950000000000002,
+          0.022750000000000003
+        ],
+        "translation": [
+          0,
+          0.403,
+          0.754
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.27,
+          0.18
+        ]
+      },
+      "id": 263,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Chair Leg",
+      "parent": 252,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.0169,
+          0.11050000000000001,
+          0.0169
+        ],
+        "translation": [
+          -0.11699999999999999,
+          0.11050000000000001,
+          0.5005
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.27,
+          0.18
+        ]
+      },
+      "id": 264,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Chair Leg",
+      "parent": 252,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.0169,
+          0.11050000000000001,
+          0.0169
+        ],
+        "translation": [
+          -0.11699999999999999,
+          0.11050000000000001,
+          0.7344999999999999
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.27,
+          0.18
+        ]
+      },
+      "id": 265,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Chair Leg",
+      "parent": 252,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.0169,
+          0.11050000000000001,
+          0.0169
+        ],
+        "translation": [
+          0.11699999999999999,
+          0.11050000000000001,
+          0.5005
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.27,
+          0.18
+        ]
+      },
+      "id": 266,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Chair Leg",
+      "parent": 252,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.0169,
+          0.11050000000000001,
+          0.0169
+        ],
+        "translation": [
+          0.11699999999999999,
+          0.11050000000000001,
+          0.7344999999999999
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.78,
+          0.43,
+          0.25
+        ]
+      },
+      "id": 267,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Table Planter",
+      "parent": 252,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.058499999999999996,
+          0.052000000000000005,
+          0.058499999999999996
+        ],
+        "translation": [
+          0,
+          0.5720000000000001,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.33,
+          0.48,
+          0.25
+        ]
+      },
+      "id": 268,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Table Leaves",
+      "parent": 252,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.09100000000000001,
+          0.078,
+          0.078
+        ],
+        "translation": [
+          0,
+          0.663,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 269,
+      "name": "Cafe Seating 2",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          6.8,
+          0,
+          2
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.27,
+          0.18
+        ]
+      },
+      "id": 270,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Table Top",
+      "parent": 269,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.4165,
+          0.051,
+          0.4165
+        ],
+        "translation": [
+          0,
+          0.6545,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.22,
+          0.43,
+          0.43
+        ]
+      },
+      "id": 271,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Table Base",
+      "parent": 269,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.06375,
+          0.323,
+          0.06375
+        ],
+        "translation": [
+          0,
+          0.323,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.27,
+          0.18
+        ]
+      },
+      "id": 272,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Chair Seat 1",
+      "parent": 269,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.204,
+          0.051,
+          0.204
+        ],
+        "translation": [
+          0,
+          0.323,
+          -0.8075
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.22,
+          0.43,
+          0.43
+        ]
+      },
+      "id": 273,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Chair Back 1",
+      "parent": 269,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.204,
+          0.1955,
+          0.029750000000000002
+        ],
+        "translation": [
+          0,
+          0.527,
+          -0.986
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.27,
+          0.18
+        ]
+      },
+      "id": 274,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Chair Leg",
+      "parent": 269,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.022099999999999998,
+          0.14450000000000002,
+          0.022099999999999998
+        ],
+        "translation": [
+          -0.153,
+          0.14450000000000002,
+          -0.9605
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.27,
+          0.18
+        ]
+      },
+      "id": 275,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Chair Leg",
+      "parent": 269,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.022099999999999998,
+          0.14450000000000002,
+          0.022099999999999998
+        ],
+        "translation": [
+          -0.153,
+          0.14450000000000002,
+          -0.6545
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.27,
+          0.18
+        ]
+      },
+      "id": 276,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Chair Leg",
+      "parent": 269,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.022099999999999998,
+          0.14450000000000002,
+          0.022099999999999998
+        ],
+        "translation": [
+          0.153,
+          0.14450000000000002,
+          -0.9605
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.27,
+          0.18
+        ]
+      },
+      "id": 277,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Chair Leg",
+      "parent": 269,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.022099999999999998,
+          0.14450000000000002,
+          0.022099999999999998
+        ],
+        "translation": [
+          0.153,
+          0.14450000000000002,
+          -0.6545
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.27,
+          0.18
+        ]
+      },
+      "id": 278,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Chair Seat 2",
+      "parent": 269,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.204,
+          0.051,
+          0.204
+        ],
+        "translation": [
+          0,
+          0.323,
+          0.8075
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.22,
+          0.43,
+          0.43
+        ]
+      },
+      "id": 279,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Chair Back 2",
+      "parent": 269,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.204,
+          0.1955,
+          0.029750000000000002
+        ],
+        "translation": [
+          0,
+          0.527,
+          0.986
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.27,
+          0.18
+        ]
+      },
+      "id": 280,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Chair Leg",
+      "parent": 269,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.022099999999999998,
+          0.14450000000000002,
+          0.022099999999999998
+        ],
+        "translation": [
+          -0.153,
+          0.14450000000000002,
+          0.6545
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.27,
+          0.18
+        ]
+      },
+      "id": 281,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Chair Leg",
+      "parent": 269,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.022099999999999998,
+          0.14450000000000002,
+          0.022099999999999998
+        ],
+        "translation": [
+          -0.153,
+          0.14450000000000002,
+          0.9605
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.27,
+          0.18
+        ]
+      },
+      "id": 282,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Chair Leg",
+      "parent": 269,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.022099999999999998,
+          0.14450000000000002,
+          0.022099999999999998
+        ],
+        "translation": [
+          0.153,
+          0.14450000000000002,
+          0.6545
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.27,
+          0.18
+        ]
+      },
+      "id": 283,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Chair Leg",
+      "parent": 269,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.022099999999999998,
+          0.14450000000000002,
+          0.022099999999999998
+        ],
+        "translation": [
+          0.153,
+          0.14450000000000002,
+          0.9605
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.78,
+          0.43,
+          0.25
+        ]
+      },
+      "id": 284,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Table Planter",
+      "parent": 269,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.0765,
+          0.068,
+          0.0765
+        ],
+        "translation": [
+          0,
+          0.748,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.33,
+          0.48,
+          0.25
+        ]
+      },
+      "id": 285,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4,
+          3
+        ],
+        "visible": true
+      },
+      "name": "Table Leaves",
+      "parent": 269,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.11900000000000001,
+          0.102,
+          0.102
+        ],
+        "translation": [
+          0,
+          0.867,
+          0
         ]
       }
     }
