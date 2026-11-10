@@ -84,6 +84,7 @@ using CharacterCommand =
 using FollowCameraCommand =
     ComponentCommand<FollowCameraSettings, &SceneObject::followCamera>;
 using RespawnCommand = ComponentCommand<RespawnSettings, &SceneObject::respawn>;
+using UITimelineCommand = ComponentCommand<UITimelineComponent, &SceneObject::uiTimeline>;
 using TriggerActionsCommand =
     ComponentCommand<TriggerActionsComponent, &SceneObject::triggerActions>;
 

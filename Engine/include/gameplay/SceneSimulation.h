@@ -563,6 +563,17 @@ class SceneSimulation {
 	std::vector<TriggerEvent> frameEvents_;
 	std::vector<SceneAudioAction> audioActions_;
 	std::uint64_t audioRevision_ = 0;
+	/// <summary>
+	/// タイムラインを先頭から再生し、最初の値を即座に反映する
+	/// </summary>
+	bool PlayUITimeline(SceneObjectId id, std::string &error);
+
+	/// <summary>
+	/// UIを更新し、完了したタイムラインのイベントをキューに入れる
+	/// </summary>
+	bool AdvanceUITimelines(float seconds, std::string &error);
+
+	std::map<SceneObjectId, float> uiTimelines_;
 	std::vector<ActionSignal> pendingActionSignals_;
 	std::vector<DelayedTriggerAction> delayedActions_;
 	std::set<std::pair<SceneObjectId, std::size_t>> firedActions_,

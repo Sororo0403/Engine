@@ -66,6 +66,7 @@ void SceneSimulation::CopyFrom(const SceneSimulation &source) {
 	frameEvents_ = source.frameEvents_;
 	audioActions_ = source.audioActions_;
 	audioRevision_ = source.audioRevision_;
+	uiTimelines_ = source.uiTimelines_;
 	pendingActionSignals_ = source.pendingActionSignals_;
 	delayedActions_ = source.delayedActions_;
 	firedActions_ = source.firedActions_;
@@ -112,6 +113,7 @@ void SceneSimulation::Adopt(SceneSimulation &source) {
 	frameEvents_ = std::move(source.frameEvents_);
 	audioActions_ = std::move(source.audioActions_);
 	audioRevision_ = source.audioRevision_;
+	uiTimelines_ = std::move(source.uiTimelines_);
 	pendingActionSignals_ = std::move(source.pendingActionSignals_);
 	delayedActions_ = std::move(source.delayedActions_);
 	firedActions_ = std::move(source.firedActions_);
@@ -273,6 +275,7 @@ bool SceneSimulation::ApplyTriggerActions(
 	std::map<SceneObjectId, SceneMotion::Playback> motionPlayback;
 	std::map<SceneObjectId, TriggerAction::Operation> animationPlayback;
 	std::map<SceneObjectId, TriggerAction::Operation> animatorPlayback;
+	std::set<SceneObjectId> uiTimelines;
 	std::vector<SceneObjectId> particleBursts;
 	std::vector<ScriptMessage> scriptMessages;
 	auto audio = audioActions_;
@@ -299,8 +302,11 @@ bool SceneSimulation::ApplyTriggerActions(
 		    signal.event == TriggerAction::Event::BUTTON_CLICK;
 		const bool globalInput =
 		    signal.event == TriggerAction::Event::INPUT_PRESSED;
+		const bool timelineFinished =
+		    signal.event == TriggerAction::Event::UI_TIMELINE_FINISHED;
 		if ((buttonClick && (!object->button || !object->button->enabled)) ||
-		    (!buttonClick && !globalInput &&
+		    (timelineFinished && !object->uiTimeline) ||
+		    (!buttonClick && !globalInput && !timelineFinished &&
 		     (!object->collider || !object->collider->isTrigger)))
 			continue;
 		const auto &actions = object->triggerActions->actions;
@@ -467,6 +473,13 @@ bool SceneSimulation::ApplyTriggerActions(
 				continue;
 			}
 
+			if (action.operation == TriggerAction::Operation::PLAY_UI_TIMELINE) {
+				uiTimelines.insert(action.target);
+				if (action.once)
+					fired.insert(key);
+				continue;
+			}
+
 			if (action.IsTransformAnimationOperation()) {
 				animationPlayback[action.target] = action.operation;
 				if (action.once)
@@ -549,6 +562,7 @@ bool SceneSimulation::ApplyTriggerActions(
 			case TriggerAction::Operation::PLAY_MOTION_PATH:
 			case TriggerAction::Operation::REVERSE_MOTION_PATH:
 			case TriggerAction::Operation::PAUSE_MOTION_PATH:
+			case TriggerAction::Operation::PLAY_UI_TIMELINE:
 			case TriggerAction::Operation::PLAY_TRANSFORM_ANIMATION:
 			case TriggerAction::Operation::RESTART_TRANSFORM_ANIMATION:
 			case TriggerAction::Operation::PAUSE_TRANSFORM_ANIMATION:
@@ -790,6 +804,14 @@ bool SceneSimulation::ApplyTriggerActions(
 		if (invalidObject)
 			*invalidObject = launchTarget;
 		return false;
+	}
+
+	for (const auto id : uiTimelines) {
+		if (!PlayUITimeline(id, error)) {
+			if (invalidObject)
+				*invalidObject = id;
+			return false;
+		}
 	}
 
 	pendingScene_ = std::move(requestedScene);

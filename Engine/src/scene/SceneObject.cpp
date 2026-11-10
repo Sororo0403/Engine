@@ -16,7 +16,7 @@ bool SceneObject::operator==(const SceneObject &other) const {
 	       camera == other.camera && followCamera == other.followCamera &&
 	       respawn == other.respawn && triggerActions == other.triggerActions &&
 	       pointLight == other.pointLight && spotLight == other.spotLight &&
-	       directionalLight == other.directionalLight &&
+	       directionalLight == other.directionalLight && uiTimeline == other.uiTimeline &&
 	       audioSource == other.audioSource &&
 	       audioListener == other.audioListener &&
 	       prefabLink == other.prefabLink && motionPath == other.motionPath &&

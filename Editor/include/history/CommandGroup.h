@@ -25,7 +25,7 @@ class CommandGroup {
 	    std::variant<TransformCommand, ObjectCommand, ParentCommand,
 	                 RenameCommand, ModelPathCommand, VisibilityCommand,
 	                 ActiveCommand, ColliderCommand, CharacterCommand,
-	                 FollowCameraCommand, TriggerActionsCommand, ScriptCommand,
+	                 FollowCameraCommand, TriggerActionsCommand, UITimelineCommand, ScriptCommand,
 	                 PointLightCommand, SpotLightCommand, AudioSourceCommand,
 	                 AudioListenerCommand, RespawnCommand, CameraCommand,
 	                 MeshRendererCommand, TextureSlotsCommand>;

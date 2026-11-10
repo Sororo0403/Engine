@@ -32,6 +32,7 @@ struct TriggerAction {
 		REVERSE_MOTION_PATH,
 		PAUSE_MOTION_PATH,
 		PLAY_TRANSFORM_ANIMATION,
+		PLAY_UI_TIMELINE,
 		RESTART_TRANSFORM_ANIMATION,
 		PAUSE_TRANSFORM_ANIMATION,
 		STOP_TRANSFORM_ANIMATION,
@@ -61,6 +62,7 @@ struct TriggerAction {
 		FIRST_ENTER,
 		LAST_EXIT,
 		BUTTON_CLICK,
+		UI_TIMELINE_FINISHED,
 		INPUT_PRESSED
 	};
 
@@ -125,7 +127,7 @@ struct TriggerAction {
 		       (event == Event::ENTER || event == Event::EXIT ||
 		        event == Event::INTERACT || event == Event::FIRST_ENTER ||
 		        event == Event::LAST_EXIT || event == Event::BUTTON_CLICK ||
-		        event == Event::INPUT_PRESSED) &&
+		        event == Event::INPUT_PRESSED || event == Event::UI_TIMELINE_FINISHED) &&
 		       (UsesContact() ||
 		        (contact == Contact::ANY && contactTag.empty())) &&
 		       (contact != Contact::DYNAMIC_BODY || AllowsDynamicContact()) &&
@@ -138,7 +140,7 @@ struct TriggerAction {
 		        operation == Operation::EMIT_PARTICLES ||
 		        operation == Operation::SEND_SCRIPT_MESSAGE ||
 		        operation == Operation::LOAD_SCENE ||
-		        operation == Operation::QUIT_GAME ||
+		        operation == Operation::QUIT_GAME || operation == Operation::PLAY_UI_TIMELINE ||
 		        operation == Operation::RESTART_SCENE || IsPauseOperation() ||
 		        operation == Operation::LAUNCH_CHARACTER ||
 		        operation == Operation::RESPAWN_CHARACTER);
@@ -157,7 +159,8 @@ struct TriggerAction {
 	/// </summary>
 	/// <returns>true:接触を使う false:UI Buttonまたは名前付き入力</returns>
 	bool UsesContact() const {
-		return event != Event::BUTTON_CLICK && event != Event::INPUT_PRESSED;
+		return event != Event::BUTTON_CLICK && event != Event::INPUT_PRESSED &&
+		       event != Event::UI_TIMELINE_FINISHED;
 	}
 
 	/// <summary>

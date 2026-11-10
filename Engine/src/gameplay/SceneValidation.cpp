@@ -149,6 +149,23 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 			add(id, "Color Tint settings are invalid.");
 		}
 
+		if (object.uiTimeline) {
+			if (!object.uiTimeline->IsValid()) {
+				add(id, "UI Timeline settings are invalid.");
+			} else {
+				for (const auto &track : object.uiTimeline->tracks) {
+					const auto *target = scene.FindObject(track.target);
+					if (!target || !target->rectTransform ||
+					    (track.property == UITimelineTrack::Property::OPACITY &&
+					     !target->text && !target->image)) {
+						add(id, "UI Timeline requires Rect Transform and, for "
+						        "opacity, Text or Image on its targets.");
+						break;
+					}
+				}
+			}
+		}
+
 		if (object.triggerActions) {
 			if (!object.triggerActions->IsValid()) {
 				add(id, "Trigger Actions settings are invalid.");
@@ -169,6 +186,12 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 					add(id,
 					    "Button Click Trigger Actions require a UI Button.");
 				for (const auto &action : object.triggerActions->actions) {
+					if (action.event == TriggerAction::Event::UI_TIMELINE_FINISHED &&
+					    !object.uiTimeline) {
+						add(id, "UI Timeline Finished requires a UI Timeline.");
+						break;
+					}
+
 					if (action.event == TriggerAction::Event::INPUT_PRESSED &&
 					    action.inputAction.empty()) {
 						add(id, "Input Pressed requires a named input action.");
@@ -213,6 +236,12 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 					    !target.camera) {
 						add(id, "Set Camera requires a target with a Camera "
 						        "component.");
+						break;
+					}
+
+					if (action.operation == TriggerAction::Operation::PLAY_UI_TIMELINE &&
+					    !target.uiTimeline) {
+						add(id, "Play UI Timeline requires a target with UI Timeline.");
 						break;
 					}
 

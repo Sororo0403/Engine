@@ -22,6 +22,11 @@ template <class T, class F> void Visit(T &object, F visit) {
 		visit(object.prefabLink->root);
 	}
 
+	if (object.uiTimeline) {
+		for (auto &track : object.uiTimeline->tracks)
+			visit(track.target);
+	}
+
 	if (object.followCamera) {
 		visit(object.followCamera->target);
 	}

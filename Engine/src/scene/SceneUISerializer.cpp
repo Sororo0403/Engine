@@ -7,6 +7,8 @@
 
 namespace {
 using Json = nlohmann::json;
+const std::array<const char *, 2> kTimelineProperties{"position", "opacity"};
+const std::array<const char *, 3> kTimelineInterpolation{"linear", "smooth", "step"};
 
 /// <summary>
 /// 有限な固定長のUI配列を読み込む
@@ -52,7 +54,8 @@ std::size_t Choice(const Json &value,
 /// </summary>
 /// <param name="object">確認する物体</param>
 void Validate(const SceneObject &object) {
-	if ((object.canvas && !object.canvas->IsValid()) ||
+	if ((object.uiTimeline && !object.uiTimeline->IsValid()) ||
+	    (object.canvas && !object.canvas->IsValid()) ||
 	    (object.rectTransform && !object.rectTransform->IsValid()) ||
 	    (object.text && !object.text->IsValid()) ||
 	    (object.image && !object.image->IsValid()) ||
@@ -68,6 +71,24 @@ const std::array<const char *, 4> kFillOrigins{"left", "right", "top",
 
 void SceneUISerializer::Write(nlohmann::json &item, const SceneObject &object) {
 	Validate(object);
+
+	if (object.uiTimeline) {
+		const auto &timeline = *object.uiTimeline;
+		Json tracks = Json::array();
+		for (const auto &track : timeline.tracks) {
+			Json keys = Json::array();
+			for (const auto &key : track.keys)
+				keys.push_back({{"time", key.seconds}, {"value", key.value}});
+			tracks.push_back({
+			    {"target", track.target},
+			    {"property", kTimelineProperties[static_cast<std::size_t>(track.property)]},
+			    {"interpolation", kTimelineInterpolation[static_cast<std::size_t>(track.interpolation)]},
+			    {"keys", std::move(keys)}});
+		}
+		item["uiTimeline"] = {{"duration", timeline.duration},
+		                      {"playOnStart", timeline.playOnStart},
+		                      {"tracks", std::move(tracks)}};
+	}
 
 	if (object.canvas) {
 		const auto &c = *object.canvas;
@@ -130,6 +151,41 @@ void SceneUISerializer::Read(const nlohmann::json &item, SceneObject &object,
                              int version) {
 	if (version < 30)
 		return;
+
+	if (version >= 70 && item.contains("uiTimeline")) {
+		const auto &value = item.at("uiTimeline");
+		const auto &tracks = value.at("tracks");
+		if (!value.at("duration").is_number() || !tracks.is_array() ||
+		    tracks.size() > UITimelineComponent::kMaximumTracks)
+			throw std::runtime_error("UI Timeline fields are invalid.");
+
+		UITimelineComponent timeline;
+		timeline.duration = value.at("duration").get<float>();
+		timeline.playOnStart = value.at("playOnStart").get<bool>();
+		for (const auto &entry : tracks) {
+			const auto &keys = entry.at("keys");
+			if (!entry.at("target").is_number_unsigned() || !keys.is_array() ||
+			    keys.size() > UITimelineComponent::kMaximumKeys)
+				throw std::runtime_error("UI Timeline track is invalid.");
+
+			UITimelineTrack track;
+			track.target = entry.at("target").get<SceneObjectId>();
+			track.property = static_cast<UITimelineTrack::Property>(
+			    Choice(entry.at("property"), kTimelineProperties));
+			track.interpolation = static_cast<UITimelineTrack::Interpolation>(
+			    Choice(entry.at("interpolation"), kTimelineInterpolation));
+			track.keys.clear();
+			for (const auto &key : keys) {
+				if (!key.at("time").is_number())
+					throw std::runtime_error("UI Timeline time must be numeric.");
+				track.keys.push_back({key.at("time").get<float>(),
+				                      ReadArray<2>(key.at("value"))});
+			}
+			timeline.tracks.push_back(std::move(track));
+		}
+		object.uiTimeline = std::move(timeline);
+	}
+
 	if (item.contains("canvas")) {
 		const auto &v = item.at("canvas");
 		CanvasComponent c;

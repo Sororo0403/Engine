@@ -164,6 +164,16 @@ bool SceneSimulation::StartScene(const Scene &source, std::string &error,
 			return false;
 		}
 
+		for (const auto &[id, object] : working.scene_.GetObjects()) {
+			if (object.uiTimeline && object.uiTimeline->playOnStart &&
+			    SceneActivity::IsActive(working.scene_, id) &&
+			    !working.PlayUITimeline(id, error)) {
+				if (invalidObject)
+					*invalidObject = id;
+				return false;
+			}
+		}
+
 		if (!working.ApplyScripts(0, CharacterInput{}, true, error,
 		                          invalidObject))
 			return false;
@@ -589,6 +599,7 @@ void SceneSimulation::Stop() {
 	cameraTransition_.reset();
 	motion_ = SceneMotion{};
 	animations_ = SceneAnimations{};
+	uiTimelines_.clear();
 	particles_ = SceneParticles{};
 	animators_ = SceneAnimators{};
 	physics_ = ScenePhysics{};
@@ -730,6 +741,10 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 		}
 
 		std::string error;
+		if (!paused && !working.AdvanceUITimelines(seconds, error)) {
+			lastUpdateError_ = std::move(error);
+			return false;
+		}
 		const bool uiConsumesInput =
 		    working.ui_.ConsumesNavigation() || working.ui_.ConsumesPointer();
 		if (!working.ApplyTriggerActions(error, nullptr,
@@ -1043,4 +1058,79 @@ SceneSimulation::GetRigidBodyState(SceneObjectId id) const {
 	               SceneActivity::IsActive(scene_, id)
 	           ? world->GetState(id)
 	           : std::nullopt;
+}
+
+namespace {
+/// <summary>
+/// キーから求めたUIの値を再生シーンだけへ適用する
+/// </summary>
+bool ApplyUITimeline(Scene &scene, const UITimelineComponent &timeline,
+                     float seconds, std::string &error) {
+	for (const auto &track : timeline.tracks) {
+		auto *target = scene.FindObject(track.target);
+		if (!target || !target->rectTransform ||
+		    (track.property == UITimelineTrack::Property::OPACITY &&
+		     !target->text && !target->image)) {
+			error = "UI Timeline requires a target with Rect Transform and, "
+			        "for opacity, Text or Image.";
+			return false;
+		}
+
+		const auto value = track.Sample(seconds);
+		if (track.property == UITimelineTrack::Property::POSITION) {
+			target->rectTransform->position = value;
+		} else {
+			if (target->text)
+				target->text->color[3] = value[0];
+			if (target->image)
+				target->image->color[3] = value[0];
+		}
+	}
+
+	return true;
+}
+} // namespace
+
+bool SceneSimulation::PlayUITimeline(SceneObjectId id, std::string &error) {
+	const auto *object = scene_.FindObject(id);
+	if (!object || !object->uiTimeline || !object->uiTimeline->IsValid() ||
+	    !SceneActivity::IsActive(scene_, id)) {
+		error = "Play UI Timeline requires an active target UI Timeline.";
+		return false;
+	}
+
+	if (!ApplyUITimeline(scene_, *object->uiTimeline, 0, error))
+		return false;
+
+	uiTimelines_[id] = 0;
+	return true;
+}
+
+bool SceneSimulation::AdvanceUITimelines(float seconds, std::string &error) {
+	if (seconds <= 0)
+		return true;
+
+	for (auto it = uiTimelines_.begin(); it != uiTimelines_.end();) {
+		const auto id = it->first;
+		const auto *object = scene_.FindObject(id);
+		if (!object || !object->uiTimeline || !SceneActivity::IsActive(scene_, id)) {
+			it = uiTimelines_.erase(it);
+			continue;
+		}
+
+		const auto &timeline = *object->uiTimeline;
+		const float time = (std::min)(it->second + seconds, timeline.duration);
+		if (!ApplyUITimeline(scene_, timeline, time, error))
+			return false;
+
+		if (time >= timeline.duration) {
+			pendingActionSignals_.push_back({id, TriggerAction::Event::UI_TIMELINE_FINISHED});
+			it = uiTimelines_.erase(it);
+		} else {
+			it->second = time;
+			++it;
+		}
+	}
+
+	return true;
 }

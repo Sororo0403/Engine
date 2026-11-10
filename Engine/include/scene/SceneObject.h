@@ -28,6 +28,7 @@
 #include "scene/SceneObjectId.h"
 #include "scene/DirectionalLightComponent.h"
 #include "scene/SpotLightComponent.h"
+#include "scene/UITimelineComponent.h"
 
 #include <filesystem>
 #include <optional>
@@ -72,6 +73,7 @@ struct SceneObject {
 	std::optional<PointLightComponent> pointLight;
 	// ワールド位置と親子合成した回転から円錐状に照らす
 	std::optional<SpotLightComponent> spotLight;
+	std::optional<UITimelineComponent> uiTimeline;
 	std::optional<DirectionalLightComponent> directionalLight;
 	// 親子合成後の位置で再生する音源と、受信姿勢の指定
 	std::optional<AudioSourceComponent> audioSource;

@@ -64,6 +64,8 @@ const char *OperationLabel(TriggerAction::Operation operation) {
 		return "Reverse Motion Path";
 	case TriggerAction::Operation::PAUSE_MOTION_PATH:
 		return "Pause Motion Path";
+	case TriggerAction::Operation::PLAY_UI_TIMELINE:
+		return "Play UI Timeline";
 	case TriggerAction::Operation::PLAY_TRANSFORM_ANIMATION:
 		return "Play Transform Animation";
 	case TriggerAction::Operation::RESTART_TRANSFORM_ANIMATION:
@@ -118,6 +120,8 @@ const char *EventLabel(TriggerAction::Event event) {
 		return "Last Exit";
 	case TriggerAction::Event::INTERACT:
 		return "Interact";
+	case TriggerAction::Event::UI_TIMELINE_FINISHED:
+		return "UI Timeline Finished";
 	case TriggerAction::Event::BUTTON_CLICK:
 		return "Button Click";
 	case TriggerAction::Event::INPUT_PRESSED:
@@ -183,6 +187,7 @@ bool TriggerActionsInspector::Draw(
 				                TriggerAction::Event::LAST_EXIT,
 				                TriggerAction::Event::INTERACT,
 				                TriggerAction::Event::BUTTON_CLICK,
+				                TriggerAction::Event::UI_TIMELINE_FINISHED,
 				                TriggerAction::Event::INPUT_PRESSED}) {
 					if (ImGui::Selectable(EventLabel(event),
 					                      action.event == event) &&
@@ -366,6 +371,7 @@ bool TriggerActionsInspector::Draw(
 				         TriggerAction::Operation::REVERSE_MOTION_PATH,
 				         TriggerAction::Operation::PAUSE_MOTION_PATH,
 				         TriggerAction::Operation::PLAY_TRANSFORM_ANIMATION,
+				         TriggerAction::Operation::PLAY_UI_TIMELINE,
 				         TriggerAction::Operation::RESTART_TRANSFORM_ANIMATION,
 				         TriggerAction::Operation::PAUSE_TRANSFORM_ANIMATION,
 				         TriggerAction::Operation::STOP_TRANSFORM_ANIMATION,
@@ -560,7 +566,9 @@ bool TriggerActionsInspector::Draw(
 	                 TriggerActionsComponent::kMaximumActions);
 	if (ImGui::Button("Add Action")) {
 		auto &action = edited.actions.emplace_back();
-		if (object.button && (!object.collider || !object.collider->isTrigger))
+		if (object.uiTimeline)
+			action.event = TriggerAction::Event::UI_TIMELINE_FINISHED;
+		else if (object.button && (!object.collider || !object.collider->isTrigger))
 			action.event = TriggerAction::Event::BUTTON_CLICK;
 		changed = true;
 	}

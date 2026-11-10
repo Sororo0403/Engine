@@ -820,6 +820,9 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 					            TriggerAction::Operation::STOP_ANIMATOR
 					        ? "stopAnimator"
 					    : action.operation ==
+					            TriggerAction::Operation::PLAY_UI_TIMELINE
+					        ? "playUITimeline"
+					    : action.operation ==
 					            TriggerAction::Operation::SEND_SCRIPT_MESSAGE
 					        ? "sendScriptMessage"
 					    : action.operation ==
@@ -854,6 +857,8 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 					          ? "lastExit"
 					      : action.event == TriggerAction::Event::BUTTON_CLICK
 					          ? "buttonClick"
+					      : action.event == TriggerAction::Event::UI_TIMELINE_FINISHED
+					          ? "uiTimelineFinished"
 					      : action.event == TriggerAction::Event::INPUT_PRESSED
 					          ? "inputPressed"
 					          : "interact"},
@@ -1648,9 +1653,11 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 					     !(version >= 46 &&
 					       (event == "firstEnter" || event == "lastExit")) &&
 					     !(version >= 56 && event == "buttonClick") &&
-					     !(version >= 59 && event == "inputPressed")) ||
+					     !(version >= 59 && event == "inputPressed") &&
+					     !(version >= 70 && event == "uiTimelineFinished")) ||
 					    (operation != "enable" && operation != "disable" &&
 					     operation != "toggle" &&
+					     !(version >= 70 && operation == "playUITimeline") &&
 					     !(version >= 21 && (operation == "playAudio" ||
 					                         operation == "stopAudio")) &&
 					     !(version >= 23 && operation == "teleport") &&
@@ -1706,6 +1713,8 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 					     : event == "lastExit" ? TriggerAction::Event::LAST_EXIT
 					     : event == "buttonClick"
 					         ? TriggerAction::Event::BUTTON_CLICK
+					     : event == "uiTimelineFinished"
+					         ? TriggerAction::Event::UI_TIMELINE_FINISHED
 					     : event == "inputPressed"
 					         ? TriggerAction::Event::INPUT_PRESSED
 					         : TriggerAction::Event::INTERACT,
@@ -1754,6 +1763,8 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 					         ? TriggerAction::Operation::PAUSE_ANIMATOR
 					     : operation == "stopAnimator"
 					         ? TriggerAction::Operation::STOP_ANIMATOR
+					     : operation == "playUITimeline"
+					         ? TriggerAction::Operation::PLAY_UI_TIMELINE
 					     : operation == "sendScriptMessage"
 					         ? TriggerAction::Operation::SEND_SCRIPT_MESSAGE
 					     : operation == "quitGame"
