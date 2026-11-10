@@ -78,9 +78,32 @@ local function collection_summary(self, state)
     return "まだ見つけていない花のかけらがあるよ"
 end
 
+local function resize_status_panel(self, state, expanded)
+    if expanded == (state.statusPanelWidth ~= nil) then
+        return
+    end
+    local panel = self:reference("statusPanel")
+    if not panel then
+        return
+    end
+    local width, height = panel:get_ui_size()
+    if expanded then
+        state.statusPanelWidth = width
+        local panelX = panel:get_ui_position()
+        local textX = self:get_ui_position()
+        local textWidth = self:get_ui_size()
+        panel:set_ui_size(math.max(width, textX - panelX + textWidth + 12), height)
+    else
+        panel:set_ui_size(state.statusPanelWidth, height)
+        state.statusPanelWidth = nil
+    end
+end
+
 local function show_count(self, state)
     local text = "花のかけら " .. state.count .. " / " .. state.total
-    if state.searching and state.count < state.total then
+    local showRemaining = state.searching == true and state.count < state.total
+    resize_status_panel(self, state, showRemaining)
+    if showRemaining then
         game.streetRemainingFlowers = collection_summary(self, state)
         text = text .. "    " .. game.streetRemainingFlowers
     else
