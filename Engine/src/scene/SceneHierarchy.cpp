@@ -6,6 +6,7 @@
 
 #include <cmath>
 #include <set>
+#include <unordered_map>
 
 namespace {
 /// <summary>
@@ -70,29 +71,35 @@ bool SceneHierarchy::GetEvaluationOrder(const Scene &scene,
                                         std::vector<SceneObjectId> &order) {
 	std::vector<SceneObjectId> result;
 	result.reserve(scene.GetObjects().size());
-	std::set<SceneObjectId> completed;
+	enum class Visit { VISITING, COMPLETE };
+	std::unordered_map<SceneObjectId, Visit> visits;
+	visits.reserve(scene.GetObjects().size());
+	std::vector<SceneObjectId> pending;
 
 	for (const auto &[id, object] : scene.GetObjects()) {
 		(void)object;
-		std::vector<SceneObjectId> pending;
-		std::set<SceneObjectId> visiting;
 		auto current = id;
 
-		while (current != 0 && !completed.contains(current)) {
-			const auto *node = scene.FindObject(current);
-
-			if (!node || !visiting.insert(current).second) {
-				return false;
+		while (current != 0) {
+			const auto [visit, inserted] =
+			    visits.try_emplace(current, Visit::VISITING);
+			if (!inserted) {
+				if (visit->second == Visit::VISITING)
+					return false;
+				break;
 			}
-
+			const auto *node = scene.FindObject(current);
+			if (!node)
+				return false;
 			pending.push_back(current);
 			current = node->parentId;
 		}
 
 		for (auto it = pending.rbegin(); it != pending.rend(); ++it) {
-			completed.insert(*it);
+			visits.at(*it) = Visit::COMPLETE;
 			result.push_back(*it);
 		}
+		pending.clear();
 	}
 
 	order.swap(result);
