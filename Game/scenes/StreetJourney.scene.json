@@ -13887,7 +13887,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/street/textures/QuayPaving.png",
+            "path": "@project/assets/street/textures/ArrivalCobblestone.png",
             "slot": 0
           }
         ],
@@ -13977,7 +13977,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/street/textures/QuayPaving.png",
+            "path": "@project/assets/street/textures/ArrivalCobblestone.png",
             "slot": 0
           }
         ],
