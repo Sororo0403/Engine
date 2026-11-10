@@ -14,7 +14,7 @@ local function show_hint(self, state, text)
     end
 end
 
-local function dock_hint(self, character)
+local function crossing_hint(self, character)
     if not character then
         return nil
     end
@@ -29,6 +29,12 @@ local function dock_hint(self, character)
         return "動く足場に乗船中  /  岸に着くまで待とう"
     end
     local x, _, z = self:reference("player"):get_position()
+    local longJumpArrow = self:reference("longJumpArrow")
+    local arrowX, _, arrowZ = longJumpArrow:get_position()
+    if character.grounded and longJumpArrow:is_active()
+        and math.abs(x - arrowX) <= 0.45 and z >= arrowZ - 0.65 and z <= arrowZ + 0.25 then
+        return "矢印の先から、ジャンプを長押しして対岸へ ［Space / A］"
+    end
     local dockX, _, dockZ = self:reference("southDock"):get_position()
     if math.abs(x - dockX) <= 1.1 and z >= dockZ - 1.25 and z <= dockZ + 0.27 then
         if platformZ <= 6.73 then
@@ -68,13 +74,14 @@ return {
             self:reference("finish"):set_active(true)
         end
         if not state.lookoutPrompt then
-            show_hint(self, state, dock_hint(self, input.character) or state.objective)
+            show_hint(self, state, crossing_hint(self, input.character) or state.objective)
         end
     end,
 
     message = function(self, state, name)
         if name == "bridge" then
             self:reference("bridgePad"):set_mesh_tint(0.30, 0.87, 0.48)
+            self:reference("longJumpArrow"):set_active(false)
             if self:reference("gate"):is_active() then
                 state.objective = "橋がつながった！ 対岸の高い足場にあるスイッチへ"
                 show_hint(self, state, state.objective)
@@ -82,6 +89,7 @@ return {
         elseif name == "gate" then
             self:reference("gatePad"):set_mesh_tint(0.30, 0.87, 0.48)
             self:reference("bridgePad"):set_mesh_tint(0.30, 0.87, 0.48)
+            self:reference("longJumpArrow"):set_active(false)
             self:reference("gate"):set_active(false)
             state.objective = "見晴らし台へ  /  中央はジャンプ ［Space / A］、右は階段"
             show_hint(self, state, state.objective)

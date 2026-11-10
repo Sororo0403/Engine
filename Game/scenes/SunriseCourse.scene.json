@@ -2690,6 +2690,10 @@
             "target": 192
           },
           {
+            "name": "longJumpArrow",
+            "target": 201
+          },
+          {
             "name": "bridgeCue",
             "target": 194
           },
@@ -8325,7 +8329,7 @@
           0.72
         ],
         "translation": [
-          2.25,
+          1.95,
           0.025,
           5.53
         ]
@@ -8365,9 +8369,49 @@
           0.72
         ],
         "translation": [
-          2.25,
+          1.95,
           0.18,
           8.4
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 201,
+      "name": "Canal Long Jump Takeoff Arrow",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.707106781,
+          0,
+          0.707106781
+        ],
+        "scale": [
+          0.72,
+          0.72,
+          0.72
+        ],
+        "translation": [
+          0.8,
+          0.025,
+          5.78
         ]
       },
       "mesh": {
