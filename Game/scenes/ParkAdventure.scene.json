@@ -2506,6 +2506,10 @@
             "target": 116
           },
           {
+            "name": "cartTurnCue",
+            "target": 149
+          },
+          {
             "name": "player",
             "target": 1
           },
@@ -7582,6 +7586,57 @@
             "operation": "playMotionPath",
             "scene": "",
             "target": 109
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "disable",
+            "scene": "",
+            "target": 147
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "disable",
+            "scene": "",
+            "target": 148
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 2.0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "enable",
+            "scene": "",
+            "target": 147
           }
         ]
       }
@@ -9176,6 +9231,274 @@
             "scene": "@project/scenes/StreetJourney.scene.json",
             "target": 0
           }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.1,
+          0.49,
+          1.14
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 147,
+      "name": "Cart Reverse Attack Trigger",
+      "parent": 109,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          0,
+          0.02,
+          0
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "interact",
+            "inputAction": "Attack",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "reverseMotionPath",
+            "scene": "",
+            "target": 109
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "interact",
+            "inputAction": "Attack",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "disable",
+            "scene": "",
+            "target": 147
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "interact",
+            "inputAction": "Attack",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "enable",
+            "scene": "",
+            "target": 148
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "interact",
+            "inputAction": "Attack",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 149
+          }
+        ]
+      }
+    },
+    {
+      "active": false,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.1,
+          0.49,
+          1.14
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 148,
+      "name": "Cart Forward Attack Trigger",
+      "parent": 109,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          0,
+          0.02,
+          0
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "interact",
+            "inputAction": "Attack",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "playMotionPath",
+            "scene": "",
+            "target": 109
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "interact",
+            "inputAction": "Attack",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "disable",
+            "scene": "",
+            "target": 148
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "interact",
+            "inputAction": "Attack",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "enable",
+            "scene": "",
+            "target": 147
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "interact",
+            "inputAction": "Attack",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 149
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "audioSource": {
+        "clip": "@project/assets/street/audio/StreetHit.wav",
+        "loop": false,
+        "maxDistance": 14,
+        "minDistance": 2,
+        "playOnStart": false,
+        "spatial": true,
+        "volume": 0.34
+      },
+      "id": 149,
+      "name": "Cart Reverse Cue",
+      "parent": 109,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
         ]
       }
     }

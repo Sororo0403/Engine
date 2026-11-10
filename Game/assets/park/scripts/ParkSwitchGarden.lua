@@ -48,7 +48,7 @@ return {
         update_flower_label(self, state)
         local volume = type(game.volumeLevel) == "number" and game.volumeLevel or 10
         volume = math.max(0, math.min(10, volume)) / 10
-        for _, name in ipairs({"ferry", "switchCue", "gateCue", "flowerCue", "clearCue", "cartCue"}) do
+        for _, name in ipairs({"ferry", "switchCue", "gateCue", "flowerCue", "clearCue", "cartCue", "cartTurnCue"}) do
             local cue = self:reference(name)
             cue:set_audio_volume(cue:get_audio_volume() * volume)
         end
@@ -178,7 +178,7 @@ return {
         if name == "far_bank" then
             state.farBank = true
             if not state.west and not state.east then
-                label:set_text("スイッチの庭  /  カートをよけ、左右のスイッチを踏もう  0 / 2")
+                label:set_text("スイッチ 0 / 2  /  カートは近くで攻撃すると反転 ［J / X］")
             end
             return
         end
