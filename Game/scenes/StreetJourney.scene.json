@@ -31338,6 +31338,69 @@
           0
         ]
       }
+    },
+    {
+      "active": true,
+      "id": 581,
+      "name": "Pause Controls",
+      "parent": 537,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "rectTransform": {
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "position": [
+          0,
+          -69
+        ],
+        "sizeDelta": [
+          432,
+          24
+        ]
+      },
+      "text": {
+        "enabled": true,
+        "raycastTarget": false,
+        "value": "移動 WASD / 左スティック　ジャンプ Space / A　攻撃 J / X",
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 16,
+        "bold": false,
+        "color": [
+          0.9,
+          0.92,
+          0.85,
+          1
+        ],
+        "alignment": "center",
+        "verticalAlignment": "middle"
+      }
     }
   ],
   "projectRoot": "..",
