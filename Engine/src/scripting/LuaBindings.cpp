@@ -39,6 +39,7 @@ enum class Op {
 	SET_MESH_VISIBLE,
 	MESH_TINT,
 	SET_MESH_TINT,
+	SET_MESH_RADIAL_REVEAL,
 	POSITION,
 	SET_POSITION,
 	LOCAL_POSITION,
@@ -102,7 +103,8 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 		    op == Op::DESTROY || op == Op::SET_NAME || op == Op::SET_ACTIVE ||
 		    op == Op::SET_PARENT || op == Op::SET_CHECKPOINT ||
 		    op == Op::SET_CHARACTER_SPEEDS || op == Op::SET_MESH_VISIBLE ||
-		    op == Op::SET_MESH_TINT || op == Op::SET_CAMERA ||
+		    op == Op::SET_MESH_TINT || op == Op::SET_MESH_RADIAL_REVEAL ||
+		    op == Op::SET_CAMERA ||
 		    op == Op::SET_CAMERA_LENS || op == Op::SET_CAMERA_FOV ||
 		    op == Op::SET_POSITION || op == Op::SET_LOCAL_POSITION ||
 		    op == Op::SET_ROTATION || op == Op::LOOK_AT ||
@@ -303,6 +305,16 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 			}
 
 			break;
+		case Op::SET_MESH_RADIAL_REVEAL: {
+			if (!object->meshRenderer)
+				throw std::runtime_error("This object requires a Mesh Renderer.");
+			const RadialReveal reveal{
+			    {numbers[0], numbers[1], numbers[2], numbers[3]}, numbers[4]};
+			if (!reveal.IsValid())
+				throw std::runtime_error("Mesh radial reveal values are out of range.");
+			object->meshRenderer->reveal = reveal;
+			break;
+		}
 		case Op::CAMERA_LENS:
 		case Op::SET_CAMERA_LENS:
 		case Op::SET_CAMERA_FOV: {
@@ -552,7 +564,8 @@ int Dispatch(lua_State *state) {
 		luaL_checktype(state, 2, LUA_TBOOLEAN);
 		flag = lua_toboolean(state, 2) != 0;
 	} else {
-		const int count = op == Op::WORLD_TO_VIEWPORT ? 5
+		const int count = (op == Op::WORLD_TO_VIEWPORT ||
+		                   op == Op::SET_MESH_RADIAL_REVEAL) ? 5
 		                  : (op == Op::SET_ROTATION || op == Op::VIEWPORT_RAY)
 		                      ? 4
 		                  : op == Op::SET_CHARACTER_SPEEDS ? 2
@@ -872,6 +885,7 @@ int LuaInternal::OpenEnvironment(lua_State *state, Call &call) {
 	Method(state, "set_mesh_visible", Op::SET_MESH_VISIBLE);
 	Method(state, "get_mesh_tint", Op::MESH_TINT);
 	Method(state, "set_mesh_tint", Op::SET_MESH_TINT);
+	Method(state, "set_mesh_radial_reveal", Op::SET_MESH_RADIAL_REVEAL);
 	Method(state, "get_position", Op::POSITION);
 	Method(state, "set_position", Op::SET_POSITION);
 	Method(state, "get_local_position", Op::LOCAL_POSITION);

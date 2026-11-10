@@ -1,7 +1,15 @@
 #include "graphics/material/MaterialData.h"
 #include "math/MathUtils.h"
+#include <algorithm>
 #include <cmath>
 #include <initializer_list>
+
+bool RadialReveal::IsValid() const {
+	return std::isfinite(feather) && feather >= 0 && feather <= 100000 &&
+	       std::ranges::all_of(originRadius, [](float value) {
+		       return std::isfinite(value) && std::abs(value) <= 100000;
+	       });
+}
 
 bool MaterialData::IsValid() const {
 	for (const float value :
@@ -11,7 +19,7 @@ bool MaterialData::IsValid() const {
 		}
 	}
 
-	return MathUtils::IsFinite(uvScale) && MathUtils::IsFinite(uvOffset) &&
+	return reveal.IsValid() && MathUtils::IsFinite(uvScale) && MathUtils::IsFinite(uvOffset) &&
 	       (shadingMode == ShadingMode::LIT ||
 	        shadingMode == ShadingMode::UNLIT);
 }
@@ -22,5 +30,6 @@ bool MaterialData::operator==(const MaterialData &other) const {
 	       baseColor.z == other.baseColor.z &&
 	       baseColor.w == other.baseColor.w && uvScale.x == other.uvScale.x &&
 	       uvScale.y == other.uvScale.y && uvOffset.x == other.uvOffset.x &&
-	       uvOffset.y == other.uvOffset.y && shadingMode == other.shadingMode;
+	       uvOffset.y == other.uvOffset.y && shadingMode == other.shadingMode &&
+	       reveal == other.reveal;
 }

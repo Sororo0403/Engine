@@ -26,11 +26,9 @@ bool TextureSlotInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 	ImGui::PushID(std::to_string(id).c_str());
 	ImGui::PushID("TextureSlots");
 
-	const auto editUv = [&](const char *label, bool scale) {
+	const auto editRenderer = [&](const auto &draw) {
 		auto edited = *object.meshRenderer;
-		auto &values = scale ? edited.uvScale : edited.uvOffset;
-		const bool valueChanged =
-		    ImGui::DragFloat2(label, values.data(), 0.01f);
+		const bool valueChanged = draw(edited);
 		const bool begin =
 		    !ImGui::IsItemActivated() || history.BeginMeshRenderer(id);
 
@@ -46,8 +44,27 @@ bool TextureSlotInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		}
 	};
 
-	editUv("UV Tiling", true);
-	editUv("UV Offset", false);
+	editRenderer([](auto &renderer) {
+		return ImGui::DragFloat2("UV Tiling", renderer.uvScale.data(), .01f);
+	});
+	editRenderer([](auto &renderer) {
+		return ImGui::DragFloat2("UV Offset", renderer.uvOffset.data(), .01f);
+	});
+	if (ImGui::TreeNode("Radial Reveal")) {
+		editRenderer([](auto &renderer) {
+			return ImGui::DragFloat3("World Origin",
+			                        renderer.reveal.originRadius.data(), .1f);
+		});
+		editRenderer([](auto &renderer) {
+			return ImGui::DragFloat("Radius", &renderer.reveal.originRadius[3], .1f);
+		});
+		editRenderer([](auto &renderer) {
+			return ImGui::DragFloat("Edge Width (0 = Off)", &renderer.reveal.feather,
+			                       .01f, 0.f, 100000.f, "%.2f",
+			                       ImGuiSliderFlags_AlwaysClamp);
+		});
+		ImGui::TreePop();
+	}
 
 	if (ui.Button("Reset UV")) {
 		const auto before = object.meshRenderer;

@@ -14,11 +14,13 @@ bool Material::Initialize(ID3D12Device *device,
 		return false;
 	}
 
-	static_assert(sizeof(MaterialData) == 48);
+	static_assert(sizeof(MaterialData) == 80);
 	static_assert(offsetof(MaterialData, baseColor) == 0);
 	static_assert(offsetof(MaterialData, uvScale) == 16);
 	static_assert(offsetof(MaterialData, uvOffset) == 24);
 	static_assert(offsetof(MaterialData, shadingMode) == 32);
+	static_assert(offsetof(MaterialData, reveal) == 48);
+	static_assert(offsetof(RadialReveal, feather) == 16);
 
 	if (!constantBuffer_.Initialize(device)) {
 		return false;

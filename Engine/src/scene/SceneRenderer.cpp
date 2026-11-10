@@ -358,6 +358,7 @@ bool SceneRenderer::SynchronizeObjects() {
 			                object.meshRenderer->uvScale[1]};
 			data.uvOffset = {object.meshRenderer->uvOffset[0],
 			                 object.meshRenderer->uvOffset[1]};
+			data.reveal = object.meshRenderer->reveal;
 		}
 
 		const auto animator = animatorPoses_.find(id);

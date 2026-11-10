@@ -1,5 +1,6 @@
 #pragma once
 
+#include "graphics/material/MaterialData.h"
 #include "graphics/material/TextureBindings.h"
 #include <array>
 #include <cmath>
@@ -14,13 +15,14 @@ struct MeshRendererComponent {
 	// 全画像スロットへ適用するUVの倍率と移動量。負の倍率は反転、0は同じ座標の参照に使える
 	std::array<float, 2> uvScale{1.0f, 1.0f};
 	std::array<float, 2> uvOffset{0.0f, 0.0f};
+	RadialReveal reveal;
 
 	/// <summary>
 	/// 画像スロットとUVの設定を検証する。Meshが未設定でも保持できる
 	/// </summary>
 	/// <returns>true:有効 false:画像の参照またはUVが無効</returns>
 	bool IsValid() const {
-		return textures.IsValid() && std::isfinite(uvScale[0]) &&
+		return reveal.IsValid() && textures.IsValid() && std::isfinite(uvScale[0]) &&
 		       std::isfinite(uvScale[1]) && std::isfinite(uvOffset[0]) &&
 		       std::isfinite(uvOffset[1]);
 	}

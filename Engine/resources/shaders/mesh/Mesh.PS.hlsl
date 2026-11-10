@@ -109,6 +109,8 @@ cbuffer MaterialBuffer : register(b2) {
 	float2 uvOffset;
 	uint shadingMode;
 	uint3 materialPadding;
+	float4 revealOriginRadius;
+	float revealFeather;
 };
 
 float4 PSMain(VertexOutput input) : SV_Target0 {
@@ -170,6 +172,11 @@ float4 PSMain(VertexOutput input) : SV_Target0 {
 
 	float3 color =
 	    textureColor.rgb * input.color.rgb * baseColor.rgb * lighting;
+	if (revealFeather > 0.0f) {
+		float distanceToOrigin = length(input.worldPosition - revealOriginRadius.xyz);
+		color *= smoothstep(-revealFeather, revealFeather,
+		                   revealOriginRadius.w - distanceToOrigin);
+	}
 
 	float alpha = textureColor.a * input.color.a * baseColor.a;
 

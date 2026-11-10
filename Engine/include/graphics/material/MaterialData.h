@@ -1,7 +1,19 @@
 #pragma once
 
 #include <DirectXMath.h>
+#include <array>
 #include <cstdint>
+
+/// <summary>
+/// ワールド座標を中心に、球の内側へ向けて材質の色を表示する
+/// </summary>
+struct RadialReveal {
+	std::array<float, 4> originRadius{};
+	// 半径の前後に取る幅。0なら効果を無効にする
+	float feather = 0;
+	bool IsValid() const;
+	bool operator==(const RadialReveal &) const = default;
+};
 
 /// <summary>
 /// GPUへ渡す材質の情報
@@ -27,6 +39,8 @@ struct MaterialData {
 	ShadingMode shadingMode = ShadingMode::LIT;
 	// HLSLの定数バッファを16バイト境界へ合わせる予約領域
 	std::uint32_t padding[3]{};
+	RadialReveal reveal;
+	std::uint32_t revealPadding[3]{};
 
 	/// <summary>
 	/// 色・UV・照明方式が有効か確認する

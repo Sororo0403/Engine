@@ -535,6 +535,11 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 				    {"textures", std::move(bindings)},
 				    {"uvScale", object.meshRenderer->uvScale},
 				    {"uvOffset", object.meshRenderer->uvOffset}};
+				const auto &reveal = object.meshRenderer->reveal;
+				if (reveal.feather > 0)
+					objects.back()["meshRenderer"]["radialReveal"] = {
+					    {"originRadius", reveal.originRadius},
+					    {"feather", reveal.feather}};
 			}
 
 			if (object.prefabLink) {
@@ -1076,6 +1081,16 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 						    ReadFloat2(renderer.at("uvScale"));
 						object.meshRenderer->uvOffset =
 						    ReadFloat2(renderer.at("uvOffset"));
+					}
+					if (version >= 78 && renderer.contains("radialReveal")) {
+						const auto &reveal = renderer.at("radialReveal");
+						const auto &originRadius = reveal.at("originRadius");
+						if (!originRadius.is_array() || originRadius.size() != 4 ||
+						    !reveal.at("feather").is_number())
+							throw std::runtime_error("Invalid radial reveal fields.");
+						object.meshRenderer->reveal = {
+						    originRadius.get<std::array<float, 4>>(),
+						    reveal.at("feather").get<float>()};
 					}
 				}
 			} else {
