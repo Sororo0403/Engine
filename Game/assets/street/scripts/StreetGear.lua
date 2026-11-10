@@ -1,10 +1,16 @@
-local function update_hint(self, state, x, z, inRange)
+local function update_hint(self, state, x, z, inRange, seconds)
     if not state.findCanalText then
         return
     end
     local text = state.findCanalText
+    local enemyAlert = state.enemyHintRemaining and state.enemyHintRemaining > 0
+    if enemyAlert then
+        state.enemyHintRemaining = state.enemyHintRemaining - seconds
+    end
     if inRange then
         text = state.activateGearText
+    elseif enemyAlert then
+        text = state.enemyHintText
     elseif (x >= state.farBankX and z >= state.crossingMinZ) or z >= state.crossingMaxZ then
         text = state.findGearText
     elseif x >= state.nearBankX and z >= state.crossingMinZ then
@@ -27,7 +33,13 @@ local function update_hint(self, state, x, z, inRange)
 end
 
 return {
-    update = function(self, state, _, input)
+    message = function(_, state, name)
+        if name == "street_enemy_alert" and state.enemyHintText then
+            state.enemyHintRemaining = state.enemyHintSeconds
+        end
+    end,
+
+    update = function(self, state, seconds, input)
         if game.streetDeathActive then
             return
         end
@@ -65,7 +77,7 @@ return {
         end
         local dx, dy, dz = x - px, y - py, z - pz
         local inRange = dx * dx + dz * dz < state.range * state.range and math.abs(dy) < state.height
-        update_hint(self, state, px, pz, inRange)
+        update_hint(self, state, px, pz, inRange, seconds)
         local attack = input.actions.Attack
         if not inRange or not attack or not attack.pressed then
             return

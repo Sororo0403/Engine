@@ -46,6 +46,10 @@ return {
                 if state.warningEnabled then
                     self:play_audio()
                 end
+                local objective = self:reference("objective")
+                if objective then
+                    objective:send_message("street_enemy_alert")
+                end
             else
                 state.time = math.min(state.time, 0.75)
             end

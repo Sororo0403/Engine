@@ -10797,6 +10797,8 @@
           "introRadius": 4,
           "jumpText": "運河をジャンプで渡ろう  ［Space / A］",
           "findGearText": "広場の歯車を探そう",
+          "enemyHintText": "敵が身構えた！ 横に避けるか、攻撃で切り抜けよう ［J / X］",
+          "enemyHintSeconds": 2.5,
           "activateGearText": "歯車をたたいて道を開こう  ［J / X］",
           "roofMinY": 4.2,
           "roofNearX": 3.5,
@@ -26716,6 +26718,10 @@
           {
             "name": "visual",
             "target": 440
+          },
+          {
+            "name": "objective",
+            "target": 160
           }
         ],
         "scenes": [],
@@ -26819,6 +26825,10 @@
           {
             "name": "visual",
             "target": 441
+          },
+          {
+            "name": "objective",
+            "target": 160
           }
         ],
         "scenes": [],
@@ -26922,6 +26932,10 @@
           {
             "name": "visual",
             "target": 442
+          },
+          {
+            "name": "objective",
+            "target": 160
           }
         ],
         "scenes": [],
