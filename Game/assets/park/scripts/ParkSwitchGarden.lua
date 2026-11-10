@@ -174,7 +174,7 @@ return {
             open_flower_bridge(self, state)
         else
             self:reference("switchCue"):play_audio()
-            label:set_text("スイッチ 1 / 2  /  カートに気をつけて中央を抜けるか、外側を回ろう")
+            label:set_text("スイッチ 1 / 2  /  黄色い板でカートを止めるか、外側を回ろう")
         end
     end
 }

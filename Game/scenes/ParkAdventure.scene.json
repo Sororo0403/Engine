@@ -7298,6 +7298,210 @@
           0
         ]
       }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.31,
+          0.29,
+          0.22
+        ]
+      },
+      "id": 126,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Garden Brake Pad Base",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.49,
+          0.024,
+          0.48
+        ],
+        "translation": [
+          -1.83,
+          0.022,
+          22.44
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.96,
+          0.75,
+          0.26
+        ]
+      },
+      "id": 127,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Garden Brake Pad Ready",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.38,
+          0.014,
+          0.37
+        ],
+        "translation": [
+          -1.83,
+          0.052,
+          22.44
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.31,
+          0.37,
+          0.32
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 128,
+      "name": "Garden Brake Pad Trigger",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          -1.83,
+          0.43,
+          22.44
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "pauseMotionPath",
+            "scene": "",
+            "target": 109
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "disable",
+            "scene": "",
+            "target": 127
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 2.0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "playMotionPath",
+            "scene": "",
+            "target": 109
+          }
+        ]
+      }
     }
   ],
   "projectRoot": "..",
