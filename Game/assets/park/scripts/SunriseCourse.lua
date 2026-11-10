@@ -33,7 +33,7 @@ return {
 
         if state.bridge and state.gate then
             self:reference("gate"):set_active(false)
-            label:set_text("二つのスイッチがそろった！ 奥の段を登って見晴らし台へ")
+            label:set_text("見晴らし台へ  /  中央はジャンプ ［Space / A］、右は階段")
         end
     end
 }
