@@ -429,7 +429,7 @@
         "fontFamily": "Yu Gothic UI",
         "fontSize": 24,
         "raycastTarget": false,
-        "value": "朝焼けの水路  /  左で橋を架けるか、右の動く足場で先に渡ろう",
+        "value": "朝焼けの水路  /  左は橋、右は着いた足場に歩いて乗ろう",
         "verticalAlignment": "middle"
       },
       "transform": {
@@ -3433,8 +3433,8 @@
         ],
         "translation": [
           3.8,
-          0.025,
-          4.95
+          0.16,
+          5.03
         ]
       },
       "mesh": {
@@ -7692,6 +7692,150 @@
             "scene": "",
             "target": 1
           }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.58,
+          0.48,
+          0.39
+        ]
+      },
+      "id": 191,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "South Dock Landing Step",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.78,
+          0.07,
+          0.35
+        ],
+        "translation": [
+          3.8,
+          0.07,
+          5.02
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.58,
+          0.48,
+          0.39
+        ]
+      },
+      "id": 192,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "South Dock Boarding Step",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.78,
+          0.14,
+          0.19
+        ],
+        "translation": [
+          3.8,
+          0.14,
+          5.54
         ]
       }
     }
