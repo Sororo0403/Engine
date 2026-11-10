@@ -112,6 +112,18 @@
           {
             "name": "coverBottom",
             "target": 449
+          },
+          {
+            "name": "attackSound",
+            "target": 461
+          },
+          {
+            "name": "hitSound",
+            "target": 462
+          },
+          {
+            "name": "damageSound",
+            "target": 463
           }
         ],
         "scenes": [],
@@ -28203,6 +28215,108 @@
       },
       "id": 460,
       "name": "Street Clear Sound",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "audioSource": {
+        "clip": "@project/assets/street/audio/StreetAttack.wav",
+        "loop": false,
+        "maxDistance": 20,
+        "minDistance": 1,
+        "playOnStart": false,
+        "spatial": false,
+        "volume": 0.35
+      },
+      "id": 461,
+      "name": "StreetAttack",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "audioSource": {
+        "clip": "@project/assets/street/audio/StreetHit.wav",
+        "loop": false,
+        "maxDistance": 20,
+        "minDistance": 1,
+        "playOnStart": false,
+        "spatial": false,
+        "volume": 0.35
+      },
+      "id": 462,
+      "name": "StreetHit",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "audioSource": {
+        "clip": "@project/assets/street/audio/StreetDamage.wav",
+        "loop": false,
+        "maxDistance": 20,
+        "minDistance": 1,
+        "playOnStart": false,
+        "spatial": false,
+        "volume": 0.35
+      },
+      "id": 463,
+      "name": "StreetDamage",
       "parent": 0,
       "tag": "",
       "transform": {

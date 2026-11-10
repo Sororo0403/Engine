@@ -101,6 +101,7 @@ local function update_attack(self, state, seconds, input)
     if action and action.pressed and state.attackCooldown == 0 then
         state.attack = state.attackSeconds
         state.attackCooldown = state.attackCooldownSeconds
+        self:reference("attackSound"):play_audio()
     end
     if state.attack == 0 then
         if wasAttacking and state.reaction == 0 then
@@ -110,6 +111,7 @@ local function update_attack(self, state, seconds, input)
     end
 
     local x, y, z = self:get_position()
+    local struck = false
     for _, enemy in ipairs(scene.find_all_by_tag("street_enemy")) do
         local ex, ey, ez = enemy:get_position()
         local dx, dy, dz = ex - x, ey - y, ez - z
@@ -121,8 +123,13 @@ local function update_attack(self, state, seconds, input)
             end
             if not hit or hit.object == enemy then
                 enemy:destroy()
+                struck = true
             end
         end
+    end
+
+    if struck then
+        self:reference("hitSound"):play_audio()
     end
 
     if state.reaction == 0 then
@@ -145,6 +152,8 @@ local function on_contact(self, state, other)
         state.reaction = 0
         state.moveSpeed, state.jumpSpeed = self:get_character_speeds()
         self:set_character_speeds(0.001, 0.001)
+    else
+        self:reference("damageSound"):play_audio()
     end
     show_life(self, state)
 end
