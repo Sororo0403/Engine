@@ -425,6 +425,8 @@ bool SceneRenderer::SynchronizeObjects(bool keepBackground) {
 
 		if (!world_->SetAnimationPose(renderObject.handle, skin))
 			return false;
+		if (!world_->SetShadowCaster(renderObject.handle, !isForeground(id)))
+			return false;
 		// 親子の合成結果を、描画・選択・外接ボックスで共通に使用する。
 		const bool transformed =
 		    object.parentId == 0

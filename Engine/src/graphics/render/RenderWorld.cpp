@@ -64,6 +64,7 @@ struct RenderWorld::Impl {
 		Transform transform_{};
 		std::optional<DirectX::XMFLOAT4X4> worldMatrix_;
 		bool matrixHasSrt_ = true;
+		bool castsShadow_ = true;
 		ColorTint tint_{};
 		ModelInstance instance_;
 	};
@@ -769,6 +770,17 @@ bool RenderWorld::SetShadows(const ShadowSettings &settings) {
 	return true;
 }
 
+bool RenderWorld::SetShadowCaster(RenderObjectHandle handle, bool enabled) {
+	if (!impl_->initialized_ || !impl_->Contains(handle))
+		return false;
+	auto &object = impl_->GetObject(handle);
+	if (object.castsShadow_ != enabled) {
+		object.castsShadow_ = enabled;
+		impl_->prepared_ = false;
+	}
+	return true;
+}
+
 void RenderWorld::DrawShadows(MeshRenderer &renderer) const {
 	if (!impl_->prepared_)
 		return;
@@ -776,7 +788,7 @@ void RenderWorld::DrawShadows(MeshRenderer &renderer) const {
 	if (!impl_->shadows_.Begin(commands))
 		return;
 	for (const auto &slot : impl_->slots_) {
-		if (slot.object_)
+		if (slot.object_ && slot.object_->castsShadow_)
 			for (const auto &mesh : slot.object_->instance_.GetMeshes())
 				renderer.DrawShadow(commands, mesh, impl_->shadows_);
 	}
