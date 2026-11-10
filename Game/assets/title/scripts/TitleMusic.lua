@@ -38,6 +38,10 @@ local function apply_motion(self, state)
     local camera = self:reference("idleCamera")
     if camera then
         camera:set_animation_clip_paused(not enabled)
+        local logo = self:reference("idleLogo")
+        if logo then
+            logo:set_animation_clip_paused(not enabled)
+        end
         self:reference("motionOnButton"):set_active(enabled)
         self:reference("motionOffButton"):set_active(not enabled)
     end

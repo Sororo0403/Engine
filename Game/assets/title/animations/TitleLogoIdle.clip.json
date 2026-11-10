@@ -1,0 +1,36 @@
+{
+  "format": "EngineAnimationClip",
+  "version": 1,
+  "clip": {
+    "duration": 12,
+    "tracks": [
+      {
+        "target": 1,
+        "property": "uiRotation",
+        "interpolation": "smooth",
+        "keys": [
+          {
+            "time": 0,
+            "value": [0.0, 0, 0, 0]
+          },
+          {
+            "time": 3,
+            "value": [0.22918312, 0, 0, 0]
+          },
+          {
+            "time": 6,
+            "value": [0.0, 0, 0, 0]
+          },
+          {
+            "time": 9,
+            "value": [-0.22918312, 0, 0, 0]
+          },
+          {
+            "time": 12,
+            "value": [0.0, 0, 0, 0]
+          }
+        ]
+      }
+    ]
+  }
+}

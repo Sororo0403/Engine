@@ -42,6 +42,27 @@
             "target": 1
           }
         ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 2.4,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "animationClipMarker",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "playAnimationClip",
+            "scene": "",
+            "target": 641
+          }
+        ]
       }
     },
     {
@@ -1791,6 +1812,42 @@
           {
             "slot": 7,
             "target": 167
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 641,
+      "name": "Title Logo Idle",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "animationPlayer": {
+        "asset": "@project/assets/title/animations/TitleLogoIdle.clip.json",
+        "playOnStart": false,
+        "loop": true,
+        "bindings": [
+          {
+            "slot": 1,
+            "target": 173
           }
         ]
       }
@@ -9240,6 +9297,10 @@
           {
             "name": "configMarker",
             "target": 640
+          },
+          {
+            "name": "idleLogo",
+            "target": 641
           }
         ],
         "scenes": [],
