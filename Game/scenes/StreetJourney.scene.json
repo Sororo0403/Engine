@@ -10692,6 +10692,86 @@
     },
     {
       "active": true,
+      "id": 597,
+      "name": "Canal Step Takeoff Mark",
+      "parent": 6,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          -0.68,
+          0.04,
+          20.75
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/CanalStepMarker.obj"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 598,
+      "name": "Canal Step Landing Mark",
+      "parent": 6,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          1,
+          0.132,
+          20.75
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/CanalStepMarker.obj"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
       "id": 583,
       "name": "Canal Checkpoint Spawn",
       "parent": 0,
