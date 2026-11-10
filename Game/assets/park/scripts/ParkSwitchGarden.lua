@@ -18,12 +18,32 @@ local function open_flower_bridge(self, state)
     end
 end
 
+local flowerLocations = {
+    {"ferry_flower", "いかだ"},
+    {"stone_flower", "飛び石"},
+    {"garden_flower", "庭"}
+}
+
+local function update_flower_label(self, state)
+    local remaining = {}
+    for _, flower in ipairs(flowerLocations) do
+        if not state[flower[1]] then
+            remaining[#remaining + 1] = flower[2]
+        end
+    end
+    local suffix = #remaining > 0 and table.concat(remaining, "・") or "全収集"
+    self:reference("flowerLabel"):set_text(
+        "花 " .. state.flowers .. "/" .. state.totalFlowers .. "　" .. suffix)
+end
+
 return {
     start = function(self, state)
         state.pondHint = self:reference("label"):get_text()
         state.transferHint = false
         state.elapsed = 0
         state.ferryDocked = true
+        state.flowers = 0
+        update_flower_label(self, state)
         local volume = type(game.volumeLevel) == "number" and game.volumeLevel or 10
         volume = math.max(0, math.min(10, volume)) / 10
         for _, name in ipairs({"ferry", "switchCue", "gateCue", "flowerCue", "clearCue", "cartCue"}) do
@@ -83,11 +103,14 @@ return {
             return
         end
 
-        if name == "park_flower" then
-            state.flowers = (state.flowers or 0) + 1
+        if name == "ferry_flower" or name == "stone_flower" or name == "garden_flower" then
+            if state[name] then
+                return
+            end
+            state[name] = true
+            state.flowers = state.flowers + 1
             self:reference("flowerCue"):play_audio()
-            self:reference("flowerLabel"):set_text(
-                "公園の花 " .. state.flowers .. " / " .. state.totalFlowers)
+            update_flower_label(self, state)
             open_flower_bridge(self, state)
             return
         end
@@ -96,7 +119,7 @@ return {
             state.finished = true
             game.parkUnlocked = true
             self:reference("clearCue"):play_audio()
-            local flowers = state.flowers or 0
+            local flowers = state.flowers
             local result = self:reference("result")
             local summary = "公園の花 " .. flowers .. " / " .. state.totalFlowers
             if flowers == state.totalFlowers then
@@ -139,7 +162,7 @@ return {
             self:reference("gate"):set_active(false)
             self:reference("gateCue"):play_audio()
             self:reference("goal"):set_active(true)
-            label:set_text("門が開いた！  /  飛び石を跳ぶか、右の段を登って展望台へ")
+            label:set_text("門が開いた！  /  飛び石か右の段へ。花3つで左の橋が開く")
             open_flower_bridge(self, state)
         else
             self:reference("switchCue"):play_audio()
