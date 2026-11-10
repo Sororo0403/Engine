@@ -296,8 +296,8 @@
       "rectTransform": {
         "anchorMin": [1, 0],
         "anchorMax": [1, 0],
-        "pivot": [1, 0],
-        "position": [-66, 58],
+        "pivot": [0, 0],
+        "position": [-606, 58],
         "sizeDelta": [540, 289]
       },
       "image": {
