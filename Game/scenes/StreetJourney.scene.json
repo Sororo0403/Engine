@@ -30640,15 +30640,10 @@
         ]
       },
       "mesh": {
-        "model": "@project/assets/models/box/box.glb"
+        "model": "@project/assets/street/models/ArrivalPlanter.obj"
       },
       "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/street/textures/QuayBrick.png",
-            "slot": 0
-          }
-        ],
+        "textures": [],
         "uvOffset": [
           0.0,
           0.0
@@ -30658,13 +30653,6 @@
           3
         ],
         "visible": true
-      },
-      "colorTint": {
-        "color": [
-          0.61,
-          0.35,
-          0.23
-        ]
       }
     },
     {
@@ -30732,15 +30720,10 @@
         ]
       },
       "mesh": {
-        "model": "@project/assets/models/box/box.glb"
+        "model": "@project/assets/street/models/ArrivalPlanter.obj"
       },
       "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/street/textures/QuayBrick.png",
-            "slot": 0
-          }
-        ],
+        "textures": [],
         "uvOffset": [
           0.0,
           0.0
@@ -30750,13 +30733,6 @@
           3
         ],
         "visible": true
-      },
-      "colorTint": {
-        "color": [
-          0.61,
-          0.35,
-          0.23
-        ]
       }
     },
     {
