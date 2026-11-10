@@ -98,12 +98,13 @@ return {
             return
         end
 
-        local showTransfer = input.character.ground == ferry
-            and not self:reference("ferryFlower"):is_active()
-            and self:reference("stoneFlower"):is_active()
         local hint = state.pondHint
-        if showTransfer then
-            hint = "中央の飛び石と並んだら左へジャンプ ［Space / A 長押し］"
+        if input.character.ground == ferry then
+            if not self:reference("ferryFlower"):is_active() and self:reference("stoneFlower"):is_active() then
+                hint = "中央の飛び石へ左ジャンプ（長押し） / 反転 E・X"
+            else
+                hint = "いかだに乗船中  /  E・Xで進行方向を反転"
+            end
         elseif backAtPond then
             hint = "池へ引き返す  /  飛び石を跳ぶか、いかだを待とう"
         end
