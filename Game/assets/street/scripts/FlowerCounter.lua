@@ -7,6 +7,7 @@ local function best_record(state, seconds)
     if type(bestTime) ~= "number" or bestTime < 0 or bestTime >= math.huge then
         bestTime = nil
     end
+    local timeDifference
     local newRecord = state.count > bestFlowers
     if newRecord then
         bestFlowers = state.count
@@ -14,6 +15,9 @@ local function best_record(state, seconds)
     end
     if state.count == state.total then
         local tenths = math.floor(seconds * 10)
+        if bestTime then
+            timeDifference = tenths - bestTime
+        end
         if not bestTime or tenths < bestTime then
             bestTime = tenths
             game.streetBestFullTime = bestTime
@@ -23,6 +27,11 @@ local function best_record(state, seconds)
     local line = "最高収集 " .. math.floor(bestFlowers) .. " / " .. state.total
     if bestTime then
         line = line .. string.format("    全収集ベスト %.1f 秒", bestTime / 10)
+    end
+    if timeDifference == 0 then
+        line = line .. "（同タイム）"
+    elseif timeDifference then
+        line = line .. string.format("（前ベスト比 %+.1f 秒）", timeDifference / 10)
     end
     return newRecord and "新記録！  " .. line or line
 end
