@@ -1,10 +1,28 @@
+local function record_time(key, time)
+    local previous = game[key]
+    if type(previous) ~= "number" or previous < 0 or previous >= math.huge then
+        previous = nil
+    end
+    local improved = not previous or time < previous
+    if improved then
+        game[key] = time
+    end
+    return string.format("%.1f 秒%s", (improved and time or previous) / 10,
+        improved and "（更新）" or "")
+end
+
 return {
     start = function(self, state)
         state.pondHint = self:reference("label"):get_text()
         state.transferHint = false
+        state.elapsed = 0
     end,
 
-    update = function(self, state, _, input)
+    update = function(self, state, seconds, input)
+        if state.finished then
+            return
+        end
+        state.elapsed = state.elapsed + seconds
         if state.farBank or not input.character then
             return
         end
@@ -28,6 +46,7 @@ return {
         end
 
         if name == "park_cleared" then
+            state.finished = true
             game.parkUnlocked = true
             local flowers = state.flowers or 0
             local result = self:reference("result")
@@ -35,7 +54,13 @@ return {
             if flowers == state.totalFlowers then
                 summary = summary .. "    池と庭の花をすべて見つけた！"
             end
-            result:set_text(result:get_text() .. "\n" .. summary)
+            local time = math.floor(state.elapsed * 10)
+            local clear = record_time("parkBestClearTime", time)
+            local times = string.format("タイム %.1f 秒    最速クリア %s", time / 10, clear)
+            if flowers == state.totalFlowers then
+                times = times .. "    全収集ベスト " .. record_time("parkBestFullTime", time)
+            end
+            result:set_text(result:get_text() .. "\n" .. summary .. "\n" .. times)
             return
         end
 
