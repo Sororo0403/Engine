@@ -30,6 +30,10 @@ return {
         if camera then
             scene.set_camera(camera)
         end
+        local bell = self:reference("clockBell")
+        if bell then
+            bell:play_audio()
+        end
         player:send_message("street_clear")
         state.finishTime = state.finishDelay or 0
     end

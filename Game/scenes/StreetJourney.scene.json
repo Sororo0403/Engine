@@ -10578,6 +10578,10 @@
           {
             "name": "finishCamera",
             "target": 532
+          },
+          {
+            "name": "clockBell",
+            "target": 412
           }
         ],
         "scenes": [],
@@ -25526,7 +25530,16 @@
       "id": 412,
       "name": "Clock Tower Exterior",
       "parent": 9,
-      "tag": "",
+      "tag": "street_sound",
+      "audioSource": {
+        "clip": "@project/assets/street/audio/ClockBell.wav",
+        "loop": false,
+        "maxDistance": 30,
+        "minDistance": 8,
+        "playOnStart": false,
+        "spatial": true,
+        "volume": 0.55
+      },
       "transform": {
         "rotation": [
           0,

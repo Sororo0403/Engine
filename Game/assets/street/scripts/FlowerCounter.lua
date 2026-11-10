@@ -79,7 +79,6 @@ return {
         if name == "street_goal_reached" and not state.finishedTime then
             state.finishedTime = state.elapsed
             self:reference("hint"):set_active(false)
-            self:reference("clearSound"):play_audio()
         elseif name == "collect_flower" and not state.finishedTime and state.count < state.total then
             state.count = state.count + 1
             local sparkles = self:reference("pickupSparkles")
@@ -100,8 +99,8 @@ return {
                 best_record(state, seconds))
             if not state.finishedTime then
                 self:reference("hint"):set_active(false)
-                self:reference("clearSound"):play_audio()
             end
+            self:reference("clearSound"):play_audio()
             self:reference("resultPanel"):set_active(true)
         end
     end
