@@ -621,16 +621,20 @@ class QueryBodies final : public JPH::BodyFilter {
 	const std::vector<RigidBodyDescription> &descriptions;
 	std::span<const SceneObjectId> ignored;
 	const std::optional<CollisionFilter> &filter;
+	SceneObjectId minimumExclusive;
 
 	QueryBodies(const auto &entries, const auto &source,
 	            std::span<const SceneObjectId> skip,
-	            const std::optional<CollisionFilter> &collision)
+	            const std::optional<CollisionFilter> &collision,
+	            SceneObjectId minimum = 0)
 	    : bodies(entries), descriptions(source), ignored(skip),
-	      filter(collision) {
+	      filter(collision), minimumExclusive(minimum) {
 	}
 
 	bool ShouldCollideLocked(const JPH::Body &body) const override {
 		const auto id = body.GetUserData();
+		if (id <= minimumExclusive)
+			return false;
 		const auto found = bodies.find(id);
 		return found != bodies.end() &&
 		       std::ranges::find(ignored, id) == ignored.end() &&
@@ -894,31 +898,30 @@ bool RigidBodyWorld::FindContacts(
 		if (!impl_)
 			return false;
 		std::vector<CollisionContact> found;
+		const auto &bodies = impl_->system.GetBodyInterface();
+		JPH::CollideShapeSettings settings;
+		settings.mCollisionTolerance = 0.000001f;
+		settings.mPenetrationTolerance = 0.000001f;
+		settings.mMaxSeparationDistance = CollisionEvents::kContactTolerance;
 
 		for (const auto &[id, entry] : impl_->bodies) {
 			const auto &[body, index] = entry;
 			const auto &source = impl_->descriptions[index];
-			const auto shape = CreateShape(source);
-			JPH::CollideShapeSettings settings;
-			settings.mCollisionTolerance = 0.000001f;
-			settings.mPenetrationTolerance = 0.000001f;
-			settings.mMaxSeparationDistance =
-			    CollisionEvents::kContactTolerance;
+			const auto shape = bodies.GetShape(body);
+			if (!shape)
+				return false;
 			JPH::AllHitCollisionCollector<JPH::CollideShapeCollector> collector;
 			const std::optional<CollisionFilter> filter =
 			    source.collider.filter;
-			QueryBodies selected(impl_->bodies, impl_->descriptions, {&id, 1},
-			                     filter);
-			const auto matrix =
-			    impl_->system.GetBodyInterface().GetCenterOfMassTransform(body);
+			// 小さいIDから大きいIDへの問い合わせだけで組を確定する。
+			QueryBodies selected(impl_->bodies, impl_->descriptions, {}, filter, id);
+			const auto matrix = bodies.GetCenterOfMassTransform(body);
 			impl_->system.GetNarrowPhaseQuery().CollideShape(
 			    shape, JPH::Vec3::sReplicate(1), matrix, settings,
 			    matrix.GetTranslation(), collector, {}, {}, selected);
 			for (const auto &hit : collector.mHits) {
-				const auto other =
-				    impl_->system.GetBodyInterface().GetUserData(hit.mBodyID2);
-				if (id >= other ||
-				    hit.mPenetrationDepth < -CollisionEvents::kContactTolerance)
+				const auto other = bodies.GetUserData(hit.mBodyID2);
+				if (hit.mPenetrationDepth < -CollisionEvents::kContactTolerance)
 					continue;
 				if (found.size() >= CollisionEvents::kMaximumContacts)
 					return false;
