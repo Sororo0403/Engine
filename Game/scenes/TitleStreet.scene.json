@@ -533,6 +533,22 @@
             "cameraBlendSeconds": 0,
             "arrivalTag": "",
             "launchSpeed": 12
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonFocus",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 638
           }
         ]
       }
@@ -608,6 +624,22 @@
             "cameraBlendSeconds": 0,
             "arrivalTag": "",
             "launchSpeed": 12
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonFocus",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 638
           }
         ]
       }
@@ -715,6 +747,22 @@
             "cameraBlendSeconds": 0.58,
             "arrivalTag": "",
             "launchSpeed": 12
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonFocus",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 638
           }
         ]
       }
@@ -859,6 +907,22 @@
             "operation": "sendScriptMessage",
             "scene": "",
             "target": 630
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonFocus",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 638
           }
         ]
       }
@@ -943,6 +1007,22 @@
             "operation": "sendScriptMessage",
             "scene": "",
             "target": 630
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonFocus",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 638
           }
         ]
       }
@@ -1091,6 +1171,22 @@
             "cameraBlendSeconds": 0,
             "arrivalTag": "",
             "launchSpeed": 12
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonFocus",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 638
           }
         ]
       }
@@ -1191,6 +1287,22 @@
             "cameraBlendSeconds": 0,
             "arrivalTag": "",
             "launchSpeed": 12
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonFocus",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 638
           }
         ]
       }
@@ -1367,6 +1479,22 @@
             "cameraBlendSeconds": 0.56,
             "arrivalTag": "",
             "launchSpeed": 12
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonFocus",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 638
           }
         ]
       }
@@ -1483,6 +1611,22 @@
             "cameraBlendSeconds": 0,
             "arrivalTag": "",
             "launchSpeed": 12
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonFocus",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 638
           }
         ]
       }
@@ -9010,6 +9154,10 @@
           {
             "name": "motionOffButton",
             "target": 193
+          },
+          {
+            "name": "selectSound",
+            "target": 638
           }
         ],
         "scenes": [],
@@ -9179,6 +9327,22 @@
             "operation": "sendScriptMessage",
             "scene": "",
             "target": 630
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonFocus",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 638
           }
         ]
       }
@@ -9384,6 +9548,22 @@
             "operation": "sendScriptMessage",
             "scene": "",
             "target": 630
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonFocus",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 638
           }
         ]
       }
@@ -9489,8 +9669,29 @@
           0
         ]
       }
+    },
+    {
+      "active": true,
+      "audioSource": {
+        "clip": "@project/assets/title/audio/MenuSelect.wav",
+        "loop": false,
+        "maxDistance": 20,
+        "minDistance": 1,
+        "playOnStart": false,
+        "spatial": false,
+        "volume": 0.24
+      },
+      "id": 638,
+      "name": "MenuSelect",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [0, 0, 0, 1],
+        "scale": [1, 1, 1],
+        "translation": [0, 0, 0]
+      }
     }
   ],
   "projectRoot": "..",
-  "version": 73
+  "version": 77
 }

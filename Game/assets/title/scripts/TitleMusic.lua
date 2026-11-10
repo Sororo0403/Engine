@@ -2,11 +2,14 @@ local function volume_level(state)
     return state.volumeDraft or game.volumeLevel or 10
 end
 
-local cue_names = {"confirmSound", "backSound", "adjustSound"}
+local cue_names = {"confirmSound", "backSound", "adjustSound", "selectSound"}
 
 local function apply_cue_volume(self, state)
     for i, name in ipairs(cue_names) do
-        self:reference(name):set_audio_volume(state.cueVolumes[i] * volume_level(state) / 10)
+        local cue = self:reference(name)
+        if cue then
+            cue:set_audio_volume(state.cueVolumes[i] * volume_level(state) / 10)
+        end
     end
 end
 
@@ -45,7 +48,10 @@ return {
         show_volume(self, state)
         state.cueVolumes = {}
         for i, name in ipairs(cue_names) do
-            state.cueVolumes[i] = self:reference(name):get_audio_volume()
+            local cue = self:reference(name)
+            if cue then
+                state.cueVolumes[i] = cue:get_audio_volume()
+            end
         end
         apply_cue_volume(self, state)
         apply_motion(self, state)
