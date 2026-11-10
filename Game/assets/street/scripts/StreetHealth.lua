@@ -7,12 +7,16 @@ local function smooth(amount)
     return t * t * (3 - 2 * t)
 end
 
-local function pose(self, state, tilt, height, eyeHeight)
+local function pose(self, state, tilt, height, eyeHeight, pitch, facingYaw)
     local visual = self:reference("visual")
-    local yaw = (state.facingYaw or 0) / 2
+    local yaw = (facingYaw or state.facingYaw or 0) / 2
     local sy, cy = math.sin(yaw), math.cos(yaw)
     local sr, cr = math.sin(tilt / 2), math.cos(tilt / 2)
-    visual:set_rotation(sy * sr, sy * cr, cy * sr, cy * cr)
+    local sp, cp = math.sin((pitch or 0) / 2), math.cos((pitch or 0) / 2)
+    -- 体の傾きを主人公の向きに合わせる。
+    visual:set_rotation(cy * sp * cr + sy * cp * sr,
+        sy * cp * cr - cy * sp * sr, cy * cp * sr - sy * sp * cr,
+        cy * cp * cr + sy * sp * sr)
     visual:set_scale(1, height, 1)
     eyeHeight = eyeHeight or 1
     if state.eyeHeight ~= eyeHeight then
@@ -224,7 +228,9 @@ local function update_death(self, state, seconds, viewport)
         else
             local reaction = smooth((t - state.deathReactionDelay) / state.deathReactionSeconds)
             local bounce = math.sin(reaction * math.pi)
-            pose(self, state, -0.48 * reaction, 1 - 0.34 * bounce, 1 - 0.85 * reaction)
+            local facingYaw = reaction > 0 and state.deathFacingYaw or state.facingYaw
+            pose(self, state, 0, 1 - 0.34 * bounce, 1 - 0.85 * reaction,
+                -0.48 * reaction, facingYaw)
         end
         iris(self, state, viewport, 1 - smooth((t - hold) / state.deathClose))
     elseif not state.deathReturned then
@@ -320,6 +326,10 @@ local function on_contact(self, state, other)
     state.invulnerable = state.invulnerabilitySeconds
     state.reaction = state.reactionSeconds
     if state.life == 0 then
+        local x, _, z = self:get_position()
+        local ex, _, ez = other:get_position()
+        local dx, dz = ex - x, ez - z
+        state.deathFacingYaw = dx * dx + dz * dz > 0.0001 and math.atan(dx, dz) or state.facingYaw
         start_death(self, state, false)
     else
         state.damageTint = {self:reference("visual"):get_mesh_tint()}
