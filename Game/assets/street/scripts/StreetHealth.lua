@@ -250,6 +250,11 @@ return {
     message = function(self, state, name)
         if name == "courtyard" or name == "roof" then
             state.spawnX, state.spawnY, state.spawnZ = self:reference(name):get_position()
+        elseif state.completed and name == "street_retry" then
+            self:load_scene("restart")
+        elseif state.completed and name == "street_title" then
+            game.returningToTitle = true
+            self:load_scene("title")
         elseif name == "street_clear" then
             state.completed = true
             self:set_character_input_enabled(false)
@@ -280,11 +285,6 @@ return {
             return
         end
         if state.completed then
-            local confirm = input.actions.Confirm
-            if confirm and confirm.pressed then
-                game.returningToTitle = true
-                self:load_scene("title")
-            end
             return
         end
 
