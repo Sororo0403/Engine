@@ -730,8 +730,18 @@ bool InspectorPanel::Draw(
 			animationClipPlayhead_ = 0;
 			ui.OpenPopup("Animation Clip");
 		}
-		ImGui::SetNextWindowSize({700, 540}, ImGuiCond_Appearing);
-		if (ui.BeginPopupModal("Animation Clip")) {
+		const auto workSize = ImGui::GetMainViewport()->WorkSize;
+		const ImVec2 maximumSize{(std::max)(1.f, workSize.x - 24.f),
+		                        (std::max)(1.f, workSize.y - 24.f)};
+		ImGui::SetNextWindowSize(
+		    {(std::min)(700.f, maximumSize.x), (std::min)(540.f, maximumSize.y)},
+		    ImGuiCond_Appearing);
+		ImGui::SetNextWindowSizeConstraints(
+		    {(std::min)(420.f, maximumSize.x), (std::min)(300.f, maximumSize.y)},
+		    maximumSize);
+		// トラック領域はウィンドウの残り高さを使うため、自動リサイズを使わない。
+		if (ImGui::BeginPopupModal("Animation Clip", nullptr,
+		                           ImGuiWindowFlags_NoSavedSettings)) {
 			ImGui::BeginChild("Timeline Tracks", {0, -ImGui::GetFrameHeightWithSpacing() * 2});
 			DrawAnimationClipKeys(scene, animationClipDraft_, animationClipPlayhead_);
 			ImGui::EndChild();
