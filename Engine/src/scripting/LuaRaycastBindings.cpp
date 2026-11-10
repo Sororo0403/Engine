@@ -2,6 +2,7 @@
 #include "physics/CollisionWorld.h"
 #include "physics/SceneRaycast.h"
 #include "scene/Scene.h"
+#include "scene/SceneHierarchy.h"
 #include "scripting/LuaScript.h"
 #include <algorithm>
 #include <array>
@@ -70,16 +71,60 @@ bool Perform(LuaInternal::Call &call, const Ray &ray,
 /// <summary>
 /// 空間問い合わせに渡す有限な座標・距離を読み取る
 /// </summary>
-void ReadNumbers(lua_State *state, std::span<float> values) {
+void ReadNumbers(lua_State *state, std::span<float> values, int first = 1) {
 	for (int i = 0; i < static_cast<int>(values.size()); ++i) {
-		luaL_checktype(state, i + 1, LUA_TNUMBER);
-		const double value = lua_tonumber(state, i + 1);
+		luaL_checktype(state, i + first, LUA_TNUMBER);
+		const double value = lua_tonumber(state, i + first);
 		if (!std::isfinite(value) ||
 		    std::abs(value) > (std::numeric_limits<float>::max)())
 			luaL_error(state,
 			           "Spatial query arguments require finite float values.");
 		values[i] = static_cast<float>(value);
 	}
+}
+
+/// <summary>
+/// 物体自身を除外し、実際のColliderを移動させたときの最初の接触を求める
+/// </summary>
+bool SweepCollider(LuaInternal::Call &call, SceneObjectId id,
+                   const DirectX::XMFLOAT3 &displacement,
+                   CollisionSweepResult &hit) noexcept {
+	try {
+		CheckQuery(call, id);
+		const auto *object = call.scene->FindObject(id);
+		SceneWorldTransform transform;
+		WorldCollider body;
+		CollisionWorld world;
+		if (!object || !object->collider || object->collider->isTrigger ||
+		    !SceneHierarchy::GetWorldTransform(*call.scene, id, transform) ||
+		    !WorldCollider::Create(*object->collider, transform.matrix, body, call.error) ||
+		    !world.Rebuild(*call.scene, id) ||
+		    !world.Sweep(body, displacement, hit, object->collider->filter))
+			throw std::runtime_error("Collider cast requires a valid solid Collider and scene.");
+		return true;
+	} catch (const std::exception &e) {
+		call.error = e.what();
+		return false;
+	} catch (...) {
+		call.error = "Collider cast failed.";
+		return false;
+	}
+}
+
+int CastCollider(lua_State *state) {
+	auto &call = **static_cast<LuaInternal::Call **>(lua_getextraspace(state));
+	const auto id = *static_cast<SceneObjectId *>(
+	    luaL_checkudata(state, 1, "Engine.ScriptObject"));
+	float values[3]{};
+	ReadNumbers(state, values, 2);
+	CollisionSweepResult hit;
+	if (!SweepCollider(call, id, {values[0], values[1], values[2]}, hit)) {
+		lua_pushlstring(state, call.error.data(), call.error.size());
+		return lua_error(state);
+	}
+	LuaInternal::PushObject(state, hit.objectId);
+	lua_pushnumber(state, hit.fraction);
+	return 2;
 }
 
 /// <summary>
@@ -218,6 +263,8 @@ void LuaInternal::AddSpatialQueryMethods(lua_State *state) {
 	lua_setfield(state, -2, "raycast");
 	lua_pushcfunction(state, Cast<true>);
 	lua_setfield(state, -2, "cast_sphere");
+	lua_pushcfunction(state, CastCollider);
+	lua_setfield(state, -2, "cast_collider");
 	lua_pushcfunction(state, OverlapSphere);
 	lua_setfield(state, -2, "overlap_sphere");
 }

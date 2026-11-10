@@ -132,6 +132,13 @@ class CollisionWorld {
 	           CollisionSweepResult &result) const;
 
 	/// <summary>
+	/// ワールド形状を直線移動し、実形状が最初に接触する位置を調べる
+	/// </summary>
+	bool Sweep(const WorldCollider &body, const DirectX::XMFLOAT3 &displacement,
+	           CollisionSweepResult &result,
+	           const std::optional<CollisionFilter> &filter) const;
+
+	/// <summary>
 	/// 実行時の形状に合わせて、衝突と滑りを反映した移動量を求める
 	/// </summary>
 	/// <param name="collider">移動する形状とマスク</param>
@@ -175,9 +182,6 @@ class CollisionWorld {
   private:
 	bool CanPlace(const WorldCollider &body,
 	              const std::optional<CollisionFilter> &filter) const;
-	bool Sweep(const WorldCollider &body, const DirectX::XMFLOAT3 &displacement,
-	           CollisionSweepResult &result,
-	           const std::optional<CollisionFilter> &filter) const;
 	static bool FindOverlaps(const Scene &scene, const WorldCollider &body,
 	                         std::vector<SceneObjectId> &objects,
 	                         SceneObjectId ignoredObject,
