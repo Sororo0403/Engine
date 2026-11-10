@@ -10504,6 +10504,22 @@
             "operation": "sendScriptMessage",
             "scene": "",
             "target": 1
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 160
           }
         ]
       }
@@ -10610,6 +10626,22 @@
             "operation": "sendScriptMessage",
             "scene": "",
             "target": 1
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 160
           }
         ]
       }
@@ -10779,6 +10811,22 @@
             "operation": "sendScriptMessage",
             "scene": "",
             "target": 171
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 460
           }
         ]
       }
@@ -11783,6 +11831,22 @@
             "launchSpeed": 12,
             "messageName": "",
             "once": true,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 459
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
             "operation": "disable",
             "scene": "",
             "target": 172
@@ -11877,6 +11941,22 @@
             "operation": "sendScriptMessage",
             "scene": "",
             "target": 171
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 459
           },
           {
             "arrivalTag": "",
@@ -11997,6 +12077,22 @@
             "launchSpeed": 12,
             "messageName": "",
             "once": true,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 459
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
             "operation": "disable",
             "scene": "",
             "target": 174
@@ -12091,6 +12187,22 @@
             "operation": "sendScriptMessage",
             "scene": "",
             "target": 171
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 459
           },
           {
             "arrivalTag": "",
@@ -12211,6 +12323,22 @@
             "launchSpeed": 12,
             "messageName": "",
             "once": true,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 459
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
             "operation": "disable",
             "scene": "",
             "target": 176
@@ -12305,6 +12433,22 @@
             "operation": "sendScriptMessage",
             "scene": "",
             "target": 171
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 459
           },
           {
             "arrivalTag": "",
@@ -12425,6 +12569,22 @@
             "launchSpeed": 12,
             "messageName": "",
             "once": true,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 459
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
             "operation": "disable",
             "scene": "",
             "target": 178
@@ -12519,6 +12679,22 @@
             "operation": "sendScriptMessage",
             "scene": "",
             "target": 171
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 459
           },
           {
             "arrivalTag": "",
@@ -26874,6 +27050,74 @@
           "targetTag": "street_wave_far"
         }
       },
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "audioSource": {
+        "clip": "@project/assets/street/audio/FlowerPickup.wav",
+        "loop": false,
+        "maxDistance": 20,
+        "minDistance": 1,
+        "playOnStart": false,
+        "spatial": false,
+        "volume": 0.35
+      },
+      "id": 459,
+      "name": "Flower Pickup Sound",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "audioSource": {
+        "clip": "@project/assets/street/audio/StreetClear.wav",
+        "loop": false,
+        "maxDistance": 20,
+        "minDistance": 1,
+        "playOnStart": false,
+        "spatial": false,
+        "volume": 0.35
+      },
+      "id": 460,
+      "name": "Street Clear Sound",
+      "parent": 0,
       "tag": "",
       "transform": {
         "rotation": [
