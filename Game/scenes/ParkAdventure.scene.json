@@ -5641,9 +5641,9 @@
       },
       "colorTint": {
         "color": [
-          0.82,
-          0.77,
-          0.61
+          0.92,
+          0.66,
+          0.37
         ]
       },
       "id": 94,
@@ -5667,7 +5667,7 @@
         ],
         "visible": true
       },
-      "name": "Vista Jump Stone Two",
+      "name": "Vista Sliding Jump Stone",
       "parent": 0,
       "tag": "",
       "transform": {
@@ -5687,6 +5687,25 @@
           0.11,
           34
         ]
+      },
+      "motionPath": {
+        "mode": "pingPong",
+        "playOnStart": true,
+        "points": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            2.05,
+            0,
+            0
+          ]
+        ],
+        "segmentSeconds": 1.9,
+        "smooth": true,
+        "waypointWaitSeconds": 0.6
       }
     },
     {

@@ -197,7 +197,7 @@ return {
             self:reference("gate"):set_active(false)
             self:reference("gateCue"):play_audio()
             self:reference("goal"):set_active(true)
-            label:set_text("門が開いた！  /  飛び石か右の段へ。花3つで左の橋が開く")
+            label:set_text("門が開いた！  /  動く飛び石か右の階段へ。花3つで左の橋")
             open_flower_bridge(self, state)
         else
             self:reference("switchCue"):play_audio()
