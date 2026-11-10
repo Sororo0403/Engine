@@ -48,6 +48,29 @@
       },
       {
         "target": 1,
+        "property": "uiRotation",
+        "interpolation": "smooth",
+        "keys": [
+          {
+            "time": 0,
+            "value": [-9.1673247, 0, 0, 0]
+          },
+          {
+            "time": 0.42,
+            "value": [-9.1673247, 0, 0, 0]
+          },
+          {
+            "time": 1,
+            "value": [0.6875494, 0, 0, 0]
+          },
+          {
+            "time": 1.25,
+            "value": [0, 0, 0, 0]
+          }
+        ]
+      },
+      {
+        "target": 1,
         "property": "opacity",
         "interpolation": "smooth",
         "keys": [
