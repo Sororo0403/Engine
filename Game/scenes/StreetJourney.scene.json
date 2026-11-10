@@ -11565,6 +11565,10 @@
             "target": 628
           },
           {
+            "name": "longJumpPractice",
+            "target": 647
+          },
+          {
             "name": "supplyCrate",
             "target": 641
           },
@@ -35232,6 +35236,230 @@
           0.0,
           0.0,
           -1.058621
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.57,
+          0.39,
+          0.24
+        ]
+      },
+      "id": 645,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Cafe Long Jump Takeoff Deck",
+      "parent": 6,
+      "tag": "street_wave_near",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.95,
+          0.14,
+          0.74
+        ],
+        "translation": [
+          -3.35,
+          0.14,
+          11.05
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.57,
+          0.39,
+          0.24
+        ]
+      },
+      "id": 646,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Cafe Long Jump Landing Deck",
+      "parent": 6,
+      "tag": "street_wave_near",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.95,
+          0.14,
+          0.65
+        ],
+        "translation": [
+          -3.35,
+          0.14,
+          16.02
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 647,
+      "name": "Cafe Long Jump Arrow",
+      "parent": 6,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.70710678,
+          0,
+          0.70710678
+        ],
+        "scale": [
+          0.87,
+          0.87,
+          0.87
+        ],
+        "translation": [
+          -3.35,
+          0.3,
+          11.2
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 648,
+      "name": "Cafe Long Jump Landing Mark",
+      "parent": 6,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.87,
+          0.87,
+          0.87
+        ],
+        "translation": [
+          -3.35,
+          0.3,
+          16.02
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/CanalStepMarker.obj"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
         ]
       }
     }
