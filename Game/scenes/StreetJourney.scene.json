@@ -10687,6 +10687,10 @@
             "target": 535
           },
           {
+            "name": "catchBalcony",
+            "target": 117
+          },
+          {
             "name": "goal",
             "target": 155
           },
@@ -10729,6 +10733,7 @@
           "shutterClearY": 2.5,
           "shutterOpeningText": "シャッターが開いていく…",
           "stairsText": "開いた門の先の階段を上ろう",
+          "balconyText": "踊り場の中央から向かいの屋上へジャンプ",
           "roofJumpText": "矢印を目印に向かいの屋上へ  ［Space / A 長押し］",
           "roofText": "屋上の時計台を目指そう"
         }

@@ -120,6 +120,14 @@ return {
                 local text = approaching and state.roofJumpText or state.roofText
                 if not onRoof and state.stairsText then
                     text = state.stairsText
+                    local balcony = self:reference("catchBalcony")
+                    if balcony and state.balconyText then
+                        local bx, by, bz = balcony:get_position()
+                        local sx, sy, sz = balcony:get_scale()
+                        if py >= by + sy and math.abs(px - bx) <= sx and math.abs(pz - bz) <= sz then
+                            text = state.balconyText
+                        end
+                    end
                 end
                 if text ~= state.currentRoofHint then
                     hint:set_text(text)
