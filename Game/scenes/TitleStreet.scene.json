@@ -471,6 +471,22 @@
       "triggerActions": {
         "actions": [
           {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonClick",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 634
+          },
+          {
             "event": "buttonClick",
             "operation": "setCamera",
             "target": 6,
@@ -562,6 +578,22 @@
       "triggerActions": {
         "actions": [
           {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonClick",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 634
+          },
+          {
             "event": "buttonClick",
             "operation": "playAnimationClip",
             "target": 208,
@@ -620,6 +652,22 @@
       },
       "triggerActions": {
         "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonClick",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 634
+          },
           {
             "event": "buttonClick",
             "operation": "disable",
@@ -781,6 +829,22 @@
       "triggerActions": {
         "actions": [
           {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonClick",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 636
+          },
+          {
             "event": "buttonClick",
             "operation": "pauseAnimationClip",
             "target": 1,
@@ -881,6 +945,22 @@
       "triggerActions": {
         "actions": [
           {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonClick",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 636
+          },
+          {
             "event": "buttonClick",
             "operation": "resumeAnimationClip",
             "target": 1,
@@ -980,6 +1060,22 @@
       },
       "triggerActions": {
         "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonClick",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 635
+          },
           {
             "event": "buttonClick",
             "operation": "playAnimationClip",
@@ -1109,6 +1205,22 @@
       "triggerActions": {
         "actions": [
           {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonClick",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 635
+          },
+          {
             "event": "buttonClick",
             "operation": "disable",
             "target": 185,
@@ -1208,6 +1320,22 @@
       },
       "triggerActions": {
         "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonClick",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 634
+          },
           {
             "event": "buttonClick",
             "operation": "setCamera",
@@ -8701,6 +8829,18 @@
           {
             "name": "volumeLabel",
             "target": 632
+          },
+          {
+            "name": "confirmSound",
+            "target": 634
+          },
+          {
+            "name": "backSound",
+            "target": 635
+          },
+          {
+            "name": "adjustSound",
+            "target": 636
           }
         ],
         "scenes": [],
@@ -8839,6 +8979,22 @@
       },
       "triggerActions": {
         "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonClick",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 636
+          },
           {
             "arrivalTag": "",
             "cameraBlendSeconds": 0,
@@ -9038,12 +9194,130 @@
             "event": "buttonClick",
             "inputAction": "",
             "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 636
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonClick",
+            "inputAction": "",
+            "launchSpeed": 12,
             "messageName": "volume_up",
             "once": false,
             "operation": "sendScriptMessage",
             "scene": "",
             "target": 630
           }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "audioSource": {
+        "clip": "@project/assets/title/audio/MenuConfirm.wav",
+        "loop": false,
+        "maxDistance": 20,
+        "minDistance": 1,
+        "playOnStart": false,
+        "spatial": false,
+        "volume": 0.35
+      },
+      "id": 634,
+      "name": "MenuConfirm",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "audioSource": {
+        "clip": "@project/assets/title/audio/MenuBack.wav",
+        "loop": false,
+        "maxDistance": 20,
+        "minDistance": 1,
+        "playOnStart": false,
+        "spatial": false,
+        "volume": 0.3
+      },
+      "id": 635,
+      "name": "MenuBack",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "audioSource": {
+        "clip": "@project/assets/title/audio/MenuAdjust.wav",
+        "loop": false,
+        "maxDistance": 20,
+        "minDistance": 1,
+        "playOnStart": false,
+        "spatial": false,
+        "volume": 0.3
+      },
+      "id": 636,
+      "name": "MenuAdjust",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
         ]
       }
     }
