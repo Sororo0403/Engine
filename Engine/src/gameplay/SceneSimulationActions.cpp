@@ -80,8 +80,8 @@ void SceneSimulation::CopyFrom(const SceneSimulation &source) {
 }
 
 void SceneSimulation::Adopt(SceneSimulation &source) {
-	// シーンの複製と検証が完了してから、確保を伴わない移動で残りの状態を確定する。
-	scene_.CopyFrom(source.scene_);
+	// 検証済みの候補を、物体を複製せずに反映する。
+	scene_.AdoptValidated(source.scene_);
 	sharedScriptData_ = std::move(source.sharedScriptData_);
 	world_ = std::move(source.world_);
 	triggers_ = std::move(source.triggers_);
@@ -108,7 +108,7 @@ void SceneSimulation::Adopt(SceneSimulation &source) {
 	cameraTransition_ = std::move(source.cameraTransition_);
 	fallbackPose_ = source.fallbackPose_;
 	cameraSettings_ = source.cameraSettings_;
-	preparePrefabResources_ = source.preparePrefabResources_;
+	preparePrefabResources_ = std::move(source.preparePrefabResources_);
 	playing_ = source.playing_;
 	frameEvents_ = std::move(source.frameEvents_);
 	audioActions_ = std::move(source.audioActions_);

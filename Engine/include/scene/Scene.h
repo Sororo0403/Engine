@@ -36,6 +36,12 @@ class Scene {
 	/// </summary>
 	void Swap(Scene &other) noexcept;
 
+	/// <summary>
+	/// 検証済みの作業用シーンを反映し、発行済みIDの上限を保持する
+	/// </summary>
+	/// <param name="candidate">反映するシーン。反映前の内容を受け取る</param>
+	void AdoptValidated(Scene &candidate) noexcept;
+
 	Scene(const Scene &) = delete;
 	Scene &operator=(const Scene &) = delete;
 

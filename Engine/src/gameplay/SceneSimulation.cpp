@@ -572,7 +572,7 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 		                         loadAnimatorModel_, scripts.GetPrefabScenes()))
 			return false;
 		// 全候補が有効な場合だけ確定し、失敗時は再生シーンと実行状態をすべて保持する。
-		scene_.CopyFrom(working);
+		scene_.AdoptValidated(working);
 		world_ = std::move(world);
 		if (!deferTriggerUpdate)
 			triggers_ = std::move(triggers);
@@ -1012,7 +1012,6 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 		auto animators = animators_;
 		if (!animators.Advance(working, seconds, lastUpdateError_))
 			return false;
-		scene_.CopyFrom(working);
 
 		if (triggers) {
 			for (const auto &event : triggers->GetEvents()) {
@@ -1028,6 +1027,7 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 			triggers_ = std::move(*triggers);
 		}
 
+		scene_.AdoptValidated(working);
 		controller_ = next;
 		motion_ = std::move(motion);
 		animations_ = std::move(animations);

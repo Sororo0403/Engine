@@ -227,9 +227,16 @@ bool Scene::SetMonochrome(const MonochromeEffect &effect, SceneObjectId foregrou
 void Scene::Swap(Scene &other) noexcept {
 	objects_.swap(other.objects_);
 	lighting_.swap(other.lighting_);
+	std::swap(fog_, other.fog_);
 	std::swap(monochrome_, other.monochrome_);
 	std::swap(monochromeForeground_, other.monochromeForeground_);
 	backgroundFreeze_.swap(other.backgroundFreeze_);
 	std::swap(legacyDirectionalLight_, other.legacyDirectionalLight_);
 	std::swap(nextObjectId_, other.nextObjectId_);
+}
+
+void Scene::AdoptValidated(Scene &candidate) noexcept {
+	const auto next = (std::max)(nextObjectId_, candidate.nextObjectId_);
+	Swap(candidate);
+	nextObjectId_ = next;
 }

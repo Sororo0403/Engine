@@ -54,7 +54,7 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 	};
 
 	if (candidate.GetObjects() == scene_.GetObjects()) {
-		scene_.CopyFrom(candidate);
+		scene_.AdoptValidated(candidate);
 		audioActions_ = std::move(audio);
 		if (!requestedScene.empty())
 			pendingScene_ = {std::move(requestedScene), {}};
