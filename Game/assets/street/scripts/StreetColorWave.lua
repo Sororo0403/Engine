@@ -20,18 +20,15 @@ end
 
 return {
     start = function(self, state)
-        local x, y, z = self:reference("origin"):get_position()
+        state.x, state.y, state.z = self:reference("origin"):get_position()
+        state.edgeWidth = state.edgeWidth or 0.45
         local objects, truncated = scene.find_all_by_tag(state.targetTag)
         assert(not truncated, "Too many targets for one street color wave")
         state.pending = {}
         for _, object in ipairs(objects) do
-            local px, py, pz = object:get_position()
-            local dx, dy, dz = px - x, py - y, pz - z
-            local r, g, b = object:get_mesh_tint()
-            state.pending[#state.pending + 1] = {
-                object:get_id(), math.sqrt(dx * dx + dy * dy + dz * dz), r, g, b
-            }
-            object:set_mesh_tint(0, 0, 0)
+            state.pending[#state.pending + 1] = object:get_id()
+            object:set_mesh_radial_reveal(state.x, state.y, state.z,
+                radius_keys[1][2], state.edgeWidth)
         end
     end,
 
@@ -40,26 +37,21 @@ return {
             return
         end
         state.elapsed = state.elapsed + seconds
-        if state.elapsed < 0.92 then
+        if state.elapsed <= radius_keys[1][1] then
             return
         end
 
         local radius = wave_radius(state.elapsed)
-        local pending = {}
-        for _, target in ipairs(state.pending) do
-            local distance = target[2]
-            local t = math.min(1, math.max(0, (radius - distance + 0.45) / 0.9))
-            if t > 0 then
-                local object = scene.find_id(target[1])
-                if object then
-                    local blend = t * t * (3 - 2 * t)
-                    object:set_mesh_tint(target[3] * blend, target[4] * blend, target[5] * blend)
-                end
-            end
-            if t < 1 then
-                pending[#pending + 1] = target
+        local finished = state.elapsed >= radius_keys[#radius_keys][1]
+        for _, id in ipairs(state.pending) do
+            local object = scene.find_id(id)
+            if object then
+                object:set_mesh_radial_reveal(state.x, state.y, state.z,
+                    radius, finished and 0 or state.edgeWidth)
             end
         end
-        state.pending = pending
+        if finished then
+            state.pending = {}
+        end
     end
 }

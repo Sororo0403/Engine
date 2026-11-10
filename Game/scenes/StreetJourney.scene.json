@@ -27905,6 +27905,7 @@
         ],
         "scenes": [],
         "state": {
+          "edgeWidth": 0.45,
           "elapsed": 0,
           "targetTag": "street_wave_near"
         }
@@ -27946,6 +27947,7 @@
         ],
         "scenes": [],
         "state": {
+          "edgeWidth": 0.45,
           "elapsed": 0,
           "targetTag": "street_wave_far"
         }
