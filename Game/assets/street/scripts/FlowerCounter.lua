@@ -27,10 +27,26 @@ local function best_record(state, seconds)
     return newRecord and "新記録！  " .. line or line
 end
 
+local pickupHighlightSeconds = 0.55
+
+local function show_pickup_highlight(self, state, amount)
+    local _, _, _, alpha = self:get_text_color()
+    local r, g, b = table.unpack(state.normalColor)
+    self:set_text_color(r + (1 - r) * amount, g + (0.82 - g) * amount,
+        b + (0.30 - b) * amount, alpha)
+end
+
 return {
     update = function(self, state, seconds)
         if not state.finishedTime and not state.completed and not game.streetDeathActive then
             state.elapsed = state.elapsed + seconds
+        end
+        if state.pickupHighlight then
+            state.pickupHighlight = math.max(0, state.pickupHighlight - seconds)
+            show_pickup_highlight(self, state, state.pickupHighlight / pickupHighlightSeconds)
+            if state.pickupHighlight == 0 then
+                state.pickupHighlight = nil
+            end
         end
     end,
 
@@ -50,6 +66,9 @@ return {
                 sparkles:emit_particles(16)
             end
             self:set_text("花のかけら " .. state.count .. " / " .. state.total)
+            state.normalColor = state.normalColor or {self:get_text_color()}
+            state.pickupHighlight = pickupHighlightSeconds
+            show_pickup_highlight(self, state, 1)
         elseif name == "street_clear" then
             state.completed = true
             local seconds = state.finishedTime or state.elapsed
