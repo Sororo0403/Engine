@@ -11552,6 +11552,936 @@
           0
         ]
       }
+    },
+    {
+      "active": true,
+      "id": 171,
+      "name": "Flower Fragment Counter",
+      "parent": 156,
+      "rectTransform": {
+        "anchorMax": [
+          0.0,
+          0.0
+        ],
+        "anchorMin": [
+          0.0,
+          0.0
+        ],
+        "pivot": [
+          0.0,
+          0.0
+        ],
+        "position": [
+          24.0,
+          59
+        ],
+        "sizeDelta": [
+          1150.0,
+          44.0
+        ]
+      },
+      "script": {
+        "asset": "@project/assets/street/scripts/FlowerCounter.lua",
+        "enabled": true,
+        "prefabs": [],
+        "references": [],
+        "scenes": [],
+        "state": {
+          "count": 0,
+          "total": 8
+        }
+      },
+      "tag": "",
+      "text": {
+        "alignment": "left",
+        "bold": true,
+        "color": [
+          1.0,
+          0.8199999928474426,
+          0.36000001430511475,
+          1.0
+        ],
+        "enabled": true,
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 24,
+        "raycastTarget": false,
+        "value": "花のかけら 0 / 8",
+        "verticalAlignment": "middle"
+      },
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "animationPlayer": {
+        "asset": "@project/assets/street/animations/FlowerSpin.clip.json",
+        "bindings": [
+          {
+            "slot": 1,
+            "target": 172
+          }
+        ],
+        "loop": true,
+        "playOnStart": true
+      },
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 1.25,
+        "shape": "Sphere"
+      },
+      "id": 172,
+      "mesh": {
+        "model": "@project/assets/street/models/FlowerFragment.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Flower Fragment 1",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          -3.0,
+          1.100000023841858,
+          9.0
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "collect_flower",
+            "once": true,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 171
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "disable",
+            "scene": "",
+            "target": 172
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "animationPlayer": {
+        "asset": "@project/assets/street/animations/FlowerSpin.clip.json",
+        "bindings": [
+          {
+            "slot": 1,
+            "target": 173
+          }
+        ],
+        "loop": true,
+        "playOnStart": true
+      },
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 1.25,
+        "shape": "Sphere"
+      },
+      "id": 173,
+      "mesh": {
+        "model": "@project/assets/street/models/FlowerFragment.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Flower Fragment 2",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          -19.0,
+          1.100000023841858,
+          24.0
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "collect_flower",
+            "once": true,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 171
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "disable",
+            "scene": "",
+            "target": 173
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "animationPlayer": {
+        "asset": "@project/assets/street/animations/FlowerSpin.clip.json",
+        "bindings": [
+          {
+            "slot": 1,
+            "target": 174
+          }
+        ],
+        "loop": true,
+        "playOnStart": true
+      },
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 1.25,
+        "shape": "Sphere"
+      },
+      "id": 174,
+      "mesh": {
+        "model": "@project/assets/street/models/FlowerFragment.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Flower Fragment 3",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          4.5,
+          1.649999976158142,
+          19.0
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "collect_flower",
+            "once": true,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 171
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "disable",
+            "scene": "",
+            "target": 174
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "animationPlayer": {
+        "asset": "@project/assets/street/animations/FlowerSpin.clip.json",
+        "bindings": [
+          {
+            "slot": 1,
+            "target": 175
+          }
+        ],
+        "loop": true,
+        "playOnStart": true
+      },
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 1.25,
+        "shape": "Sphere"
+      },
+      "id": 175,
+      "mesh": {
+        "model": "@project/assets/street/models/FlowerFragment.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Flower Fragment 4",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          -1.0,
+          1.649999976158142,
+          36.0
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "collect_flower",
+            "once": true,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 171
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "disable",
+            "scene": "",
+            "target": 175
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "animationPlayer": {
+        "asset": "@project/assets/street/animations/FlowerSpin.clip.json",
+        "bindings": [
+          {
+            "slot": 1,
+            "target": 176
+          }
+        ],
+        "loop": true,
+        "playOnStart": true
+      },
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 1.25,
+        "shape": "Sphere"
+      },
+      "id": 176,
+      "mesh": {
+        "model": "@project/assets/street/models/FlowerFragment.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Flower Fragment 5",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          -3.0,
+          1.649999976158142,
+          50.0
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "collect_flower",
+            "once": true,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 171
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "disable",
+            "scene": "",
+            "target": 176
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "animationPlayer": {
+        "asset": "@project/assets/street/animations/FlowerSpin.clip.json",
+        "bindings": [
+          {
+            "slot": 1,
+            "target": 177
+          }
+        ],
+        "loop": true,
+        "playOnStart": true
+      },
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 1.25,
+        "shape": "Sphere"
+      },
+      "id": 177,
+      "mesh": {
+        "model": "@project/assets/street/models/FlowerFragment.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Flower Fragment 6",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          18.0,
+          1.649999976158142,
+          50.0
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "collect_flower",
+            "once": true,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 171
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "disable",
+            "scene": "",
+            "target": 177
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "animationPlayer": {
+        "asset": "@project/assets/street/animations/FlowerSpin.clip.json",
+        "bindings": [
+          {
+            "slot": 1,
+            "target": 178
+          }
+        ],
+        "loop": true,
+        "playOnStart": true
+      },
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 1.25,
+        "shape": "Sphere"
+      },
+      "id": 178,
+      "mesh": {
+        "model": "@project/assets/street/models/FlowerFragment.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Flower Fragment 7",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          17.0,
+          4.920000076293945,
+          75.0
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "collect_flower",
+            "once": true,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 171
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "disable",
+            "scene": "",
+            "target": 178
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "animationPlayer": {
+        "asset": "@project/assets/street/animations/FlowerSpin.clip.json",
+        "bindings": [
+          {
+            "slot": 1,
+            "target": 179
+          }
+        ],
+        "loop": true,
+        "playOnStart": true
+      },
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 1.25,
+        "shape": "Sphere"
+      },
+      "id": 179,
+      "mesh": {
+        "model": "@project/assets/street/models/FlowerFragment.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Flower Fragment 8",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          -1.0,
+          4.920000076293945,
+          80.0
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "collect_flower",
+            "once": true,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 171
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "disable",
+            "scene": "",
+            "target": 179
+          }
+        ]
+      }
     }
   ],
   "projectRoot": "..",
