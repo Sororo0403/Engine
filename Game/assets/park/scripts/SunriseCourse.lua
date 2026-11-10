@@ -34,7 +34,7 @@ local function dock_hint(self, character)
         if platformZ <= 6.73 then
             return "足場が着いた！ まっすぐ歩いて乗ろう"
         end
-        return "足場が戻るまで船着き場で待とう"
+        return "船着き場で待とう。急ぐなら左の飛び石へ ［Space / A］"
     end
 end
 
