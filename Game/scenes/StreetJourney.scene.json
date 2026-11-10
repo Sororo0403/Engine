@@ -27,6 +27,8 @@
       "active": true,
       "audioListener": {},
       "character": {
+        "airFloatDelay": 0.25,
+        "airFloatDuration": 0.85,
         "coyoteTime": 0.07999999821186066,
         "gravity": 20.0,
         "groundSnapDistance": 0.11999999731779099,
@@ -30444,5 +30446,5 @@
     }
   ],
   "projectRoot": "..",
-  "version": 73
+  "version": 74
 }
