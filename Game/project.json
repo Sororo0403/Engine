@@ -1,7 +1,15 @@
 {
   "format": "EditorProject",
   "game": {
-    "actions": [],
+    "actions": [
+      {
+        "name": "Attack",
+        "keyboard": "J",
+        "mouse": null,
+        "gamepad": "West",
+        "gamepadAxis": null
+      }
+    ],
     "camera": {
       "position": [
         0.0,

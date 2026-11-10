@@ -116,6 +116,11 @@
         ],
         "scenes": [],
         "state": {
+          "attack": 0,
+          "attackCooldown": 0,
+          "attackCooldownSeconds": 0.4,
+          "attackDistance": 3.1,
+          "attackSeconds": 0.22,
           "deathClose": 0.25,
           "deathCovered": 0.08,
           "deathHold": 1.3,

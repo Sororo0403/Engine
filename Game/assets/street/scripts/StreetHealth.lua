@@ -92,6 +92,45 @@ local function update_death(self, state, seconds, viewport)
     end
 end
 
+local function update_attack(self, state, seconds, input)
+    state.attackCooldown = math.max(0, state.attackCooldown - seconds)
+    local wasAttacking = state.attack > 0
+    state.attack = math.max(0, state.attack - seconds)
+
+    local action = input.actions.Attack
+    if action and action.pressed and state.attackCooldown == 0 then
+        state.attack = state.attackSeconds
+        state.attackCooldown = state.attackCooldownSeconds
+    end
+    if state.attack == 0 then
+        if wasAttacking and state.reaction == 0 then
+            pose(self, 0, 1)
+        end
+        return
+    end
+
+    local x, y, z = self:get_position()
+    for _, enemy in ipairs(scene.find_all_by_tag("street_enemy")) do
+        local ex, ey, ez = enemy:get_position()
+        local dx, dy, dz = ex - x, ey - y, ez - z
+        local distance = math.sqrt(dx * dx + dy * dy + dz * dz)
+        if distance < state.attackDistance then
+            local hit
+            if distance > 0.001 then
+                hit = scene.raycast(x, y, z, dx / distance, dy / distance, dz / distance, distance)
+            end
+            if not hit or hit.object == enemy then
+                enemy:destroy()
+            end
+        end
+    end
+
+    if state.reaction == 0 then
+        local progress = 1 - state.attack / state.attackSeconds
+        pose(self, 0, 1 - 0.18 * math.sin(math.pi * progress))
+    end
+end
+
 local function on_contact(self, state, other)
     if not other or other:get_tag() ~= "street_enemy" or state.invulnerable > 0 or state.deathTime then
         return
@@ -102,6 +141,7 @@ local function on_contact(self, state, other)
     state.reaction = state.reactionSeconds
     if state.life == 0 then
         state.deathTime = 0
+        state.attack = 0
         state.reaction = 0
         state.moveSpeed, state.jumpSpeed = self:get_character_speeds()
         self:set_character_speeds(0.001, 0.001)
@@ -136,15 +176,18 @@ return {
             state.life = state.maximumLife
             state.invulnerable = state.invulnerabilitySeconds
             state.reaction = 0
-            self:reference("visual"):set_rotation(0, 0, 0, 1)
+            state.attack = 0
+            pose(self, 0, 1)
             show_life(self, state)
         end
+
+        update_attack(self, state, seconds, input)
 
         if state.reaction > 0 then
             state.reaction = math.max(0, state.reaction - seconds)
             local t = 1 - state.reaction / state.reactionSeconds
             local tilt = math.sin(math.pi * t) * 0.3
-            self:reference("visual"):set_rotation(0, 0, math.sin(tilt / 2), math.cos(tilt / 2))
+            pose(self, tilt, 1)
         end
     end
 }
