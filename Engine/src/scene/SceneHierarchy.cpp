@@ -7,6 +7,7 @@
 #include <cmath>
 #include <set>
 #include <unordered_map>
+#include <utility>
 
 namespace {
 /// <summary>
@@ -74,10 +75,9 @@ bool SceneHierarchy::GetEvaluationOrder(const Scene &scene,
 	enum class Visit { VISITING, COMPLETE };
 	std::unordered_map<SceneObjectId, Visit> visits;
 	visits.reserve(scene.GetObjects().size());
-	std::vector<SceneObjectId> pending;
+	std::vector<std::pair<SceneObjectId, Visit *>> pending;
 
 	for (const auto &[id, object] : scene.GetObjects()) {
-		(void)object;
 		auto current = id;
 
 		while (current != 0) {
@@ -88,16 +88,16 @@ bool SceneHierarchy::GetEvaluationOrder(const Scene &scene,
 					return false;
 				break;
 			}
-			const auto *node = scene.FindObject(current);
+			const auto *node = current == id ? &object : scene.FindObject(current);
 			if (!node)
 				return false;
-			pending.push_back(current);
+			pending.emplace_back(current, &visit->second);
 			current = node->parentId;
 		}
 
 		for (auto it = pending.rbegin(); it != pending.rend(); ++it) {
-			visits.at(*it) = Visit::COMPLETE;
-			result.push_back(*it);
+			*it->second = Visit::COMPLETE;
+			result.push_back(it->first);
 		}
 		pending.clear();
 	}
