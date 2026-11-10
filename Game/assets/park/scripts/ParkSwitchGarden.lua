@@ -138,6 +138,7 @@ return {
 
         if name == "park_cleared" then
             state.finished = true
+            self:reference("pauseMenu"):set_active(false)
             game.parkUnlocked = true
             self:reference("clearCue"):play_audio()
             local flowers = state.flowers
