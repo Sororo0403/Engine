@@ -29,6 +29,13 @@
         "mouse": null,
         "gamepad": "North",
         "gamepadAxis": null
+      },
+      {
+        "name": "FlowerHints",
+        "keyboard": "H",
+        "mouse": null,
+        "gamepad": "View",
+        "gamepadAxis": null
       }
     ],
     "camera": {

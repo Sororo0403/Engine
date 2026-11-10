@@ -161,14 +161,17 @@ end
 
 local function show_count(self, state)
     local text = "花のかけら " .. state.count .. " / " .. state.total
-    local showRemaining = state.searching == true and state.count < state.total
+    local unfinished = state.count < state.total
+    local showRemaining = unfinished and (state.searching == true or state.hintHeld == true)
     resize_status_panel(self, state, showRemaining)
+    local remaining
     if showRemaining then
-        game.streetRemainingFlowers = collection_summary(self, state)
-        text = text .. "    " .. game.streetRemainingFlowers
-    else
-        game.streetRemainingFlowers = nil
+        remaining = collection_summary(self, state)
+        text = text .. "    " .. remaining
+    elseif unfinished and not state.finishedTime and not state.completed then
+        text = text .. "    残りの場所 ［H / View 長押し］"
     end
+    game.streetRemainingFlowers = state.searching and remaining or nil
     self:set_text(text)
 end
 
@@ -182,17 +185,22 @@ local function show_pickup_highlight(self, state, amount)
 end
 
 return {
-    start = function(_, state)
+    start = function(self, state)
         state.splits = {}
         game.journeyStreetTime = nil
         game.streetAllFlowers = state.count == state.total
         game.streetGoalWaiting = nil
-        game.streetRemainingFlowers = nil
+        show_count(self, state)
     end,
 
-    update = function(self, state, seconds)
-        if game.streetGoalWaiting and state.count < state.total and not state.searching then
-            state.searching = true
+    update = function(self, state, seconds, input)
+        local action = input.actions.FlowerHints
+        local playing = not state.finishedTime and not state.completed
+        local hintHeld = playing and action ~= nil and action.down
+        local searching = playing and (state.searching == true or game.streetGoalWaiting == true)
+        if hintHeld ~= state.hintHeld or searching ~= state.searching then
+            state.hintHeld = hintHeld
+            state.searching = searching
             show_count(self, state)
         end
         if not state.finishedTime and not state.completed then
@@ -216,6 +224,9 @@ return {
             state.splits[name] = state.splits[name] or math.floor(state.elapsed * 10)
         elseif name == "street_goal_reached" and not state.finishedTime then
             state.finishedTime = state.elapsed
+            state.hintHeld = false
+            state.searching = false
+            show_count(self, state)
             self:reference("hint"):set_active(false)
             if state.count == state.total then
                 local celebration = self:reference("clearCelebration")
