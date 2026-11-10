@@ -1,6 +1,8 @@
 #include "gameplay/SceneCameraUtils.h"
 #include "gameplay/SceneSimulation.h"
+#include "graphics/camera/Camera.h"
 #include "math/TransformUtils.h"
+#include "scene/SceneHierarchy.h"
 #include "scene/SceneSerializer.h"
 #include <algorithm>
 #include <utility>
@@ -56,13 +58,56 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 
 	const auto &beforeObjects = scene_.GetObjects();
 	const auto &afterObjects = candidate.GetObjects();
-	// Meshの見た目だけの変更は、物理やカメラを組み直さず反映する。
-	if (std::ranges::equal(beforeObjects, afterObjects,
-	                       [](const auto &before, const auto &after) {
-		                       return before.first == after.first &&
-		                              before.second.HasSameSimulationSettings(
-		                                  after.second);
-	                       })) {
+	std::optional<CameraPose> updatedPose;
+	// 描画と音量だけが変わるフレームは、物理やTriggerの状態を保つ。
+	const bool presentationOnly = std::ranges::equal(
+	    beforeObjects, afterObjects, [&](const auto &before, const auto &after) {
+		    if (before.first != after.first)
+			    return false;
+		    const auto &oldObject = before.second;
+		    const auto &newObject = after.second;
+		    if (oldObject.HasSameSimulationSettings(newObject))
+			    return true;
+		    if (startOnly)
+			    return false;
+
+		    auto compared = newObject;
+		    if (compared.audioSource && oldObject.audioSource)
+			    compared.audioSource->volume = oldObject.audioSource->volume;
+
+		    const bool moved = !TransformUtils::AreEqual(oldObject.transform,
+		                                                newObject.transform);
+		    if (moved) {
+			    // 他の物体や物理が参照する姿勢は、通常の同期処理で更新する。
+			    if (after.first != camera_ || cameraTransition_ ||
+			        !newObject.camera || newObject.parentId || newObject.collider ||
+			        newObject.rigidBody || newObject.character || newObject.followCamera ||
+			        newObject.motionPath || newObject.transformAnimation ||
+			        std::ranges::any_of(afterObjects, [&](const auto &entry) {
+				        const auto &object = entry.second;
+				        return object.parentId == camera_ ||
+				               (object.followCamera && object.followCamera->target == camera_);
+			        }))
+				    return false;
+			    compared.transform = oldObject.transform;
+		    }
+		    if (!oldObject.HasSameSimulationSettings(compared))
+			    return false;
+		    if (moved) {
+			    SceneWorldTransform transform;
+			    if (!SceneHierarchy::GetWorldTransform(candidate, camera_, transform))
+				    return false;
+			    const auto pose = SceneCameraUtils::FromWorldTransform(transform);
+			    Camera validator;
+			    if (!validator.SetPose(pose))
+				    return false;
+			    updatedPose = pose;
+		    }
+		    return true;
+	    });
+	if (presentationOnly) {
+		if (updatedPose)
+			pose_ = *updatedPose;
 		scene_.AdoptValidated(candidate);
 		audioActions_ = std::move(audio);
 		if (!requestedScene.empty())
