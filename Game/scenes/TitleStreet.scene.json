@@ -172,6 +172,84 @@
     },
     {
       "active": true,
+      "id": 644,
+      "name": "Exit Sign Focus Camera",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          -0.10471169771160235,
+          -0.2984782326740243,
+          -0.03296567452747275,
+          0.9480819950221046
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          -1.5,
+          5.2,
+          -11
+        ]
+      },
+      "camera": {
+        "primary": false,
+        "verticalFovDegrees": 45,
+        "nearClip": 0.1,
+        "farClip": 220
+      }
+    },
+    {
+      "active": false,
+      "id": 645,
+      "name": "QUIT Black Backdrop",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.155,
+          0.155,
+          0.155
+        ],
+        "translation": [
+          -6,
+          6,
+          -6
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/SilhouetteBackdrop.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "colorTint": {
+        "color": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
       "id": 165,
       "name": "Menu Text Shadow",
       "parent": 183,
@@ -1910,8 +1988,25 @@
           },
           {
             "arrivalTag": "",
-            "cameraBlendSeconds": 1.28,
+            "cameraBlendSeconds": 0.58,
             "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "animationClipMarker",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "setCamera",
+            "scene": "",
+            "target": 644
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0.6,
+            "clipTime": 1.9,
             "contact": "any",
             "contactTag": "",
             "delaySeconds": 0,
@@ -1979,7 +2074,7 @@
           {
             "event": "animationClipMarker",
             "operation": "enable",
-            "target": 233,
+            "target": 645,
             "once": false,
             "destination": 0,
             "scene": "",
