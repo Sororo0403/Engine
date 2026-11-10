@@ -1474,7 +1474,7 @@
             "target": 0,
             "once": false,
             "destination": 0,
-            "scene": "@project/scenes/ClockTowerPrototype.scene.json",
+            "scene": "@project/scenes/StreetJourney.scene.json",
             "contact": "any",
             "contactTag": "",
             "inputAction": "",
