@@ -19,7 +19,7 @@ return {
         state.ferryDocked = true
         local volume = type(game.volumeLevel) == "number" and game.volumeLevel or 10
         volume = math.max(0, math.min(10, volume)) / 10
-        for _, name in ipairs({"ferry", "switchCue", "gateCue", "flowerCue", "clearCue"}) do
+        for _, name in ipairs({"ferry", "switchCue", "gateCue", "flowerCue", "clearCue", "cartCue"}) do
             local cue = self:reference(name)
             cue:set_audio_volume(cue:get_audio_volume() * volume)
         end
@@ -30,6 +30,16 @@ return {
             return
         end
         state.elapsed = state.elapsed + seconds
+        if state.cartRecovery then
+            state.cartRecovery = state.cartRecovery - seconds
+            if state.cartRecovery <= 0 then
+                self:reference("player"):set_character_input_enabled(true)
+                self:reference("label"):set_text(state.cartHint)
+                state.cartRecovery = nil
+                state.cartHint = nil
+            end
+            return
+        end
         if state.farBank or not input.character then
             return
         end
@@ -53,6 +63,15 @@ return {
     end,
 
     message = function(self, state, name)
+        if name == "cart_hit" then
+            local label = self:reference("label")
+            state.cartRecovery = 0.6
+            state.cartHint = label:get_text()
+            label:set_text("カートにぶつかった！ 対岸から庭へ戻ろう")
+            self:reference("player"):set_character_input_enabled(false)
+            return
+        end
+
         if name == "park_flower" then
             state.flowers = (state.flowers or 0) + 1
             self:reference("flowerCue"):play_audio()
@@ -85,7 +104,7 @@ return {
         if name == "far_bank" then
             state.farBank = true
             if not state.west and not state.east then
-                label:set_text("スイッチの庭  /  左の段と右の生け垣にあるスイッチを踏もう  0 / 2")
+                label:set_text("スイッチの庭  /  カートをよけ、左右のスイッチを踏もう  0 / 2")
             end
             return
         end
