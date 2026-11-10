@@ -164,6 +164,8 @@ void SceneUISerializer::Write(nlohmann::json &item, const SceneObject &object) {
 		                  {"highlightedColor", b.highlightedColor},
 		                  {"pressedColor", b.pressedColor},
 		                  {"disabledColor", b.disabledColor}};
+		if (b.initialSelection)
+			item["button"]["initialSelection"] = true;
 	}
 }
 
@@ -314,6 +316,7 @@ void SceneUISerializer::Read(const nlohmann::json &item, SceneObject &object,
 		b.enabled = v.at("enabled").get<bool>();
 		b.interactable = v.at("interactable").get<bool>();
 		b.navigation = v.at("navigation").get<bool>();
+		b.initialSelection = v.value("initialSelection", false);
 		b.normalColor = ReadArray<4>(v.at("normalColor"));
 		b.highlightedColor = ReadArray<4>(v.at("highlightedColor"));
 		b.pressedColor = ReadArray<4>(v.at("pressedColor"));

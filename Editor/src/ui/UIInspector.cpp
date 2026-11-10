@@ -148,6 +148,8 @@ bool UIInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 			changed |= history.SetButton(id, b);
 		if (ui.Checkbox("Button Navigation", b.navigation))
 			changed |= history.SetButton(id, b);
+		if (ui.Checkbox("Initial Selection", b.initialSelection))
+			changed |= history.SetButton(id, b);
 		changed |=
 		    Apply(history, id, object.button, b,
 		          ImGui::ColorEdit4("Normal Color", b.normalColor.data()),

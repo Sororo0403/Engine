@@ -8,6 +8,7 @@ struct ButtonComponent {
 	bool enabled = true;
 	bool interactable = true;
 	bool navigation = true;
+	bool initialSelection = false;
 	std::array<float, 4> normalColor{1, 1, 1, 1};
 	std::array<float, 4> highlightedColor{.85f, .85f, 1, 1};
 	std::array<float, 4> pressedColor{.6f, .6f, .8f, 1};

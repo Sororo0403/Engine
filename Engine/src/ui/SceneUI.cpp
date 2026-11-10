@@ -201,6 +201,7 @@ bool SceneUI::Update(const Scene &scene, const UIInput &input,
 		});
 		const bool released = last_.pointerDown && !input.pointerDown;
 		const bool sequence = next.pointerSequence_;
+		SceneObjectId initialSelection = 0;
 		if (input.pointerValid &&
 		    (!last_.pointerValid || input.pointerX != last_.pointerX ||
 		     input.pointerY != last_.pointerY))
@@ -261,6 +262,16 @@ bool SceneUI::Update(const Scene &scene, const UIInput &input,
 				next.submitArmed_ = true;
 			const int step = int(input.next) - int(input.previous);
 
+			if (!next.selected_ && !hit.button && !input.pointerDown) {
+				const auto initial = std::ranges::find_if(buttons, [&](auto id) {
+					return scene.FindObject(id)->button->initialSelection;
+				});
+				if (initial != buttons.end()) {
+					initialSelection = next.selected_ = *initial;
+					next.keyboardMode_ = true;
+				}
+			}
+
 			if (!buttons.empty() && (step || input.horizontal ||
 			                         input.vertical || input.submitPressed)) {
 				next.keyboardMode_ = true;
@@ -316,7 +327,8 @@ bool SceneUI::Update(const Scene &scene, const UIInput &input,
 
 		next.Synchronize(scene, elements);
 
-		const auto previousFocus = keyboardMode_ ? selected_ : hovered_;
+		const auto previousFocus =
+		    initialSelection ? initialSelection : keyboardMode_ ? selected_ : hovered_;
 		const auto currentFocus = next.keyboardMode_ ? next.selected_ : next.hovered_;
 		next.focusEntered_ =
 		    currentFocus != previousFocus && currentFocus != next.pressed_ &&

@@ -459,6 +459,7 @@
       "button": {
         "enabled": true,
         "interactable": true,
+        "initialSelection": true,
         "navigation": true,
         "normalColor": [0.65, 0.65, 0.65, 1],
         "highlightedColor": [1, 1, 1, 1],
