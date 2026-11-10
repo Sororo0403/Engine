@@ -35,11 +35,13 @@ local function update(self, state, seconds)
     local px, py, pz = player:get_position()
     local reset = not state.previousX or game.streetCameraReset
     local returnWeight = 0
+    local lateralWeight = 0
     if not reset then
         local dx, dz = px - state.previousX, pz - state.previousZ
         reset = dx * dx + dz * dz > 36
         if not reset and seconds > 0 then
             returnWeight = clamp(-dz / (seconds * 4), 0, 1)
+            lateralWeight = clamp(dx / (seconds * 4), -1, 1)
         end
     end
     state.previousX, state.previousZ = px, pz
@@ -47,6 +49,7 @@ local function update(self, state, seconds)
 
     local blend = reset and 1 or 1 - math.exp(-5 * seconds)
     state.returnWeight = lerp(state.returnWeight or 0, returnWeight, blend)
+    state.lateralWeight = lerp(state.lateralWeight or 0, lateralWeight, blend)
     local ground = scene.raycast(px, py, pz, 0, -1, 0, 1.8, nil, false, player)
     if ground and ground.normal_y > 0.7 then
         state.floor = lerp(state.floor or ground.y, ground.y,
@@ -61,10 +64,11 @@ local function update(self, state, seconds)
     local quay = ease(z, 14, 24)
     local court = ease(z, 42, 49) * (1 - ease(z, 56, 63)) * (1 - ease(x, 4, 12))
     local roof = ease(z, 60, 70)
-    local side = lerp(lerp(0.5, 2.6, quay) + 1.8 * court, 2, roof)
+    local lateral = state.lateralWeight * ease(z, 14, 20)
+    local side = lerp(lerp(0.5, 2.6, quay) + 1.8 * court, 2, roof) + lateral * 0.45
     local height = lerp(lerp(4.4, 4.8, quay), 5.4, roof) + state.height - 4.5
     local back = lerp(lerp(7.6, 7.8, quay), 8, roof) + state.distance - 7.6
-    local aimX = x + lerp(lerp(0.2, 0.4, quay) + 1.8 * court, -0.8, roof)
+    local aimX = x + lerp(lerp(0.2, 0.4, quay) + 1.8 * court, -0.8, roof) + lateral * 1.35
     local aimY = state.floor + lerp(1.7, 1.6, math.max(quay, roof))
     local aimZ = z + lerp(3.2, 2, roof) + state.lead - 3
         - (state.returnLookAhead or 0) * state.returnWeight
