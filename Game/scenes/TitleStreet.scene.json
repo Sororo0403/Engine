@@ -1361,6 +1361,67 @@
     },
     {
       "active": true,
+      "id": 642,
+      "name": "Title Return Cover",
+      "parent": 201,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "rectTransform": {
+        "anchorMin": [
+          0,
+          0
+        ],
+        "anchorMax": [
+          1,
+          1
+        ],
+        "pivot": [
+          0,
+          0
+        ],
+        "position": [
+          0,
+          0
+        ],
+        "sizeDelta": [
+          0,
+          0
+        ]
+      },
+      "image": {
+        "enabled": true,
+        "raycastTarget": true,
+        "texture": "",
+        "color": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "preserveAspect": false,
+        "fillOrigin": "left",
+        "fillAmount": 1
+      }
+    },
+    {
+      "active": true,
       "id": 203,
       "name": "Title Intro Timeline",
       "parent": 0,
@@ -1402,6 +1463,106 @@
           {
             "slot": 7,
             "target": 167
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 199,
+      "name": "Title Return Timeline",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "animationPlayer": {
+        "asset": "@project/assets/title/animations/TitleReturn.clip.json",
+        "playOnStart": true,
+        "loop": false,
+        "bindings": [
+          {
+            "slot": 1,
+            "target": 173
+          },
+          {
+            "slot": 2,
+            "target": 187
+          },
+          {
+            "slot": 3,
+            "target": 165
+          },
+          {
+            "slot": 4,
+            "target": 188
+          },
+          {
+            "slot": 5,
+            "target": 166
+          },
+          {
+            "slot": 6,
+            "target": 189
+          },
+          {
+            "slot": 7,
+            "target": 167
+          },
+          {
+            "slot": 8,
+            "target": 642
+          }
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "animationClipFinished",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "disable",
+            "scene": "",
+            "target": 642
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "animationClipFinished",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "title_return_complete",
+            "once": false,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 630
           }
         ]
       }
@@ -8917,6 +9078,18 @@
           {
             "name": "idleLogo",
             "target": 641
+          },
+          {
+            "name": "returnTimeline",
+            "target": 199
+          },
+          {
+            "name": "returnCover",
+            "target": 642
+          },
+          {
+            "name": "introTimeline",
+            "target": 203
           }
         ],
         "scenes": [],

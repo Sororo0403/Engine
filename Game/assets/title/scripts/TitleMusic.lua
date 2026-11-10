@@ -30,6 +30,15 @@ local function show_volume(self, state)
     self:reference("volumeLabel"):set_text(volume_level(state) * 10 .. "%")
 end
 
+local function set_menu_interactable(self, enabled)
+    for _, name in ipairs({"startButton", "configButton", "quitButton"}) do
+        local button = self:reference(name)
+        if button then
+            button:set_interactable(enabled)
+        end
+    end
+end
+
 local function apply_motion(self, state)
     local enabled = state.motionDraft
     if enabled == nil then
@@ -72,10 +81,25 @@ return {
         end
         apply_cue_volume(self, state)
         apply_motion(self, state)
+        local returnTimeline = self:reference("returnTimeline")
+        if returnTimeline then
+            local returning = game.returningToTitle == true
+            game.returningToTitle = nil
+            returnTimeline:set_active(returning)
+            self:reference("returnCover"):set_active(returning)
+            if returning then
+                self:reference("introTimeline"):set_animation_clip_paused(true)
+                set_menu_interactable(self, false)
+            end
+        end
     end,
 
     message = function(self, state, name)
         if state.departing then
+            return
+        end
+        if name == "title_return_complete" then
+            set_menu_interactable(self, true)
             return
         end
         if config_rows[name] then
@@ -122,12 +146,7 @@ return {
             return
         end
         if name == "start_departure" then
-            for _, buttonName in ipairs({"startButton", "configButton", "quitButton"}) do
-                local button = self:reference(buttonName)
-                if button then
-                    button:set_interactable(false)
-                end
-            end
+            set_menu_interactable(self, false)
         end
         state.departing = true
         state.elapsed = 0

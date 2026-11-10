@@ -260,12 +260,14 @@ return {
             return
         end
         if cancel and cancel.pressed then
+            game.returningToTitle = true
             self:load_scene("title")
             return
         end
         if state.completed then
             local confirm = input.actions.Confirm
             if confirm and confirm.pressed then
+                game.returningToTitle = true
                 self:load_scene("title")
             end
             return
