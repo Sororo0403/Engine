@@ -2512,6 +2512,27 @@
           "farDockZ": 11.85,
           "pondReturnZ": 13.65
         }
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "inputPressed",
+            "inputAction": "Restart",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "restartScene",
+            "scene": "",
+            "target": 0
+          }
+        ]
       }
     },
     {
@@ -8353,7 +8374,7 @@
       "text": {
         "enabled": true,
         "raycastTarget": false,
-        "value": "移動 WASD・矢印キー / 左スティック・十字キー\nジャンプ Space / A（長押しで遠くへ）",
+        "value": "移動 WASD・矢印キー / 左スティック・十字キー\nジャンプ Space / A（長押し可）　再挑戦 R / Start",
         "fontFamily": "Yu Gothic UI",
         "fontSize": 16,
         "bold": false,
