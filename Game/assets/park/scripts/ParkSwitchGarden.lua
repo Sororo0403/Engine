@@ -1,4 +1,24 @@
 return {
+    start = function(self, state)
+        state.pondHint = self:reference("label"):get_text()
+        state.transferHint = false
+    end,
+
+    update = function(self, state, _, input)
+        if state.farBank or not input.character then
+            return
+        end
+
+        local showTransfer = input.character.ground == self:reference("ferry")
+            and not self:reference("ferryFlower"):is_active()
+            and self:reference("stoneFlower"):is_active()
+        if showTransfer ~= state.transferHint then
+            state.transferHint = showTransfer
+            self:reference("label"):set_text(showTransfer
+                and "中央の飛び石と並んだら左へジャンプ ［Space / A 長押し］" or state.pondHint)
+        end
+    end,
+
     message = function(self, state, name)
         if name == "park_flower" then
             state.flowers = (state.flowers or 0) + 1
@@ -21,6 +41,7 @@ return {
 
         local label = self:reference("label")
         if name == "far_bank" then
+            state.farBank = true
             if not state.west and not state.east then
                 label:set_text("スイッチの庭  /  左の段と右の生け垣にあるスイッチを踏もう  0 / 2")
             end

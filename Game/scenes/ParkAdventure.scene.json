@@ -2425,6 +2425,18 @@
           {
             "name": "result",
             "target": 34
+          },
+          {
+            "name": "ferry",
+            "target": 14
+          },
+          {
+            "name": "ferryFlower",
+            "target": 51
+          },
+          {
+            "name": "stoneFlower",
+            "target": 52
           }
         ],
         "scenes": [],
