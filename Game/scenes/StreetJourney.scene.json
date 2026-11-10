@@ -81,6 +81,10 @@
             "target": 580
           },
           {
+            "name": "gearSwitch",
+            "target": 160
+          },
+          {
             "name": "life",
             "target": 439
           },
@@ -10702,6 +10706,7 @@
         "scenes": [],
         "state": {
           "height": 1.5,
+          "attackFromPlayer": true,
           "open": false,
           "range": 3,
           "nearBankX": -4,

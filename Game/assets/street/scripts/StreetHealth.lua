@@ -293,6 +293,11 @@ local function update_attack(self, state, seconds, input)
             attackFlash:set_active(true)
         end
         self:reference("attackSound"):play_audio()
+        local gear = self:reference("gearSwitch")
+        if gear then
+            local x, y, z = self:get_position()
+            gear:send_message("street_attack_started", {x = x, y = y, z = z})
+        end
     end
     if state.attack == 0 then
         if wasAttacking and attackFlash then
