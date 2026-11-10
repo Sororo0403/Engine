@@ -153,6 +153,10 @@ bool GameplayInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 			ImGui::TextWrapped("Collider is missing.");
 		}
 
+		auto character = *object.character;
+		if (ui.Checkbox("Input Enabled", character.inputEnabled))
+			changed |= history.SetCharacter(id, character);
+
 		auto field = [&](const char *label, float CharacterSettings::*member,
 		                 float maximum, float minimum = 0.01f,
 		                 float speed = 0.05f, const char *format = "%.2f") {

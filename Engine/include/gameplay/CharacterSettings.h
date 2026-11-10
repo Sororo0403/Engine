@@ -18,6 +18,8 @@ struct CharacterSettings {
 	// ジャンプを押し続けたときの滞空開始までの時間と、1回の滞空上限（秒）。
 	float airFloatDelay = 0.0f;
 	float airFloatDuration = 0.0f;
+	// 移動・ジャンプ入力を使うか。無効でも重力と接触を更新する
+	bool inputEnabled = true;
 
 	static constexpr float kMaximumSpeed = 1000.0f;
 	static constexpr float kMaximumGravity = 1000.0f;

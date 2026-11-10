@@ -108,11 +108,12 @@ bool CharacterController::Update(float deltaTime, const CharacterInput &input,
 	}
 
 	auto candidate = *this;
-	candidate.jumpPending_ |= input.jumpPressed;
+	const auto controls = settings_.inputEnabled ? input : CharacterInput{};
+	candidate.jumpPending_ |= controls.jumpPressed;
 	candidate.accumulatedTime_ += (std::min)(deltaTime, kMaximumFrameSeconds);
 
 	while (candidate.accumulatedTime_ >= kFixedStepSeconds) {
-		if (!candidate.Step(input, world)) {
+		if (!candidate.Step(controls, world)) {
 			return false;
 		}
 
@@ -344,5 +345,9 @@ bool CharacterController::SetSettings(const CharacterSettings &settings) {
 	if (!initialized_ || !settings.IsValid())
 		return false;
 	settings_ = settings;
+	if (!settings_.inputEnabled) {
+		jumpPending_ = false;
+		jumpBufferRemaining_ = 0;
+	}
 	return true;
 }

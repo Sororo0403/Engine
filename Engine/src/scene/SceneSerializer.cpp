@@ -742,7 +742,8 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 				    {"groundSnapDistance", v.groundSnapDistance},
 				    {"stepHeight", v.stepHeight},
 				    {"airFloatDelay", v.airFloatDelay},
-				    {"airFloatDuration", v.airFloatDuration}};
+				    {"airFloatDuration", v.airFloatDuration},
+				    {"inputEnabled", v.inputEnabled}};
 			}
 
 			if (object.followCamera) {
@@ -1576,6 +1577,8 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 					object.character->airFloatDuration =
 					    v.at("airFloatDuration").get<float>();
 				}
+				if (version >= 79)
+					object.character->inputEnabled = v.at("inputEnabled").get<bool>();
 			}
 
 			if (version >= 5 && item.contains("followCamera")) {

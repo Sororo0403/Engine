@@ -31,6 +31,8 @@ enum class Op {
 	SET_CHECKPOINT,
 	CHARACTER_SPEEDS,
 	SET_CHARACTER_SPEEDS,
+	CHARACTER_INPUT_ENABLED,
+	SET_CHARACTER_INPUT_ENABLED,
 	FIND_CHILD,
 	REFERENCE,
 	ACTIVE,
@@ -102,7 +104,8 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 		const bool mutation =
 		    op == Op::DESTROY || op == Op::SET_NAME || op == Op::SET_ACTIVE ||
 		    op == Op::SET_PARENT || op == Op::SET_CHECKPOINT ||
-		    op == Op::SET_CHARACTER_SPEEDS || op == Op::SET_MESH_VISIBLE ||
+		    op == Op::SET_CHARACTER_SPEEDS || op == Op::SET_CHARACTER_INPUT_ENABLED ||
+		    op == Op::SET_MESH_VISIBLE ||
 		    op == Op::SET_MESH_TINT || op == Op::SET_MESH_RADIAL_REVEAL ||
 		    op == Op::SET_CAMERA ||
 		    op == Op::SET_CAMERA_LENS || op == Op::SET_CAMERA_FOV ||
@@ -218,11 +221,23 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 				    "world transform.");
 			break;
 		case Op::CHARACTER_SPEEDS:
+		case Op::CHARACTER_INPUT_ENABLED:
+		case Op::SET_CHARACTER_INPUT_ENABLED:
 		case Op::SET_CHARACTER_SPEEDS: {
 			if (!object->character)
 				throw std::runtime_error(
 				    "This object requires Character Controller.");
 			auto settings = *object->character;
+
+			if (op == Op::CHARACTER_INPUT_ENABLED) {
+				result.boolean = settings.inputEnabled;
+				break;
+			}
+
+			if (op == Op::SET_CHARACTER_INPUT_ENABLED) {
+				object->character->inputEnabled = flag;
+				break;
+			}
 
 			if (op == Op::CHARACTER_SPEEDS) {
 				result.numbers[0] = settings.moveSpeed;
@@ -538,6 +553,7 @@ int Dispatch(lua_State *state) {
 	    op == Op::LOCAL_POSITION || op == Op::ROTATION || op == Op::SCALE ||
 	    op == Op::ACTIVE || op == Op::MESH_VISIBLE || op == Op::MESH_TINT ||
 	    op == Op::CAMERA_LENS || op == Op::CHARACTER_SPEEDS ||
+	    op == Op::CHARACTER_INPUT_ENABLED ||
 	    op == Op::PARENT || op == Op::ID || op == Op::VALID ||
 	    op == Op::DESTROY || op == Op::GET_CAMERA || op == Op::SET_CAMERA) {
 		// 引数はselfだけ。値はPerformで取得する。
@@ -560,7 +576,8 @@ int Dispatch(lua_State *state) {
 			luaL_checktype(state, 3, LUA_TBOOLEAN);
 			flag = lua_toboolean(state, 3) != 0;
 		}
-	} else if (op == Op::SET_ACTIVE || op == Op::SET_MESH_VISIBLE) {
+	} else if (op == Op::SET_ACTIVE || op == Op::SET_MESH_VISIBLE ||
+	           op == Op::SET_CHARACTER_INPUT_ENABLED) {
 		luaL_checktype(state, 2, LUA_TBOOLEAN);
 		flag = lua_toboolean(state, 2) != 0;
 	} else {
@@ -605,6 +622,7 @@ int Dispatch(lua_State *state) {
 		return 1;
 	case Op::ACTIVE:
 	case Op::MESH_VISIBLE:
+	case Op::CHARACTER_INPUT_ENABLED:
 	case Op::VALID:
 	case Op::DESTROY:
 		lua_pushboolean(state, result.boolean);
@@ -870,6 +888,8 @@ int LuaInternal::OpenEnvironment(lua_State *state, Call &call) {
 	Method(state, "set_checkpoint", Op::SET_CHECKPOINT);
 	Method(state, "get_character_speeds", Op::CHARACTER_SPEEDS);
 	Method(state, "set_character_speeds", Op::SET_CHARACTER_SPEEDS);
+	Method(state, "is_character_input_enabled", Op::CHARACTER_INPUT_ENABLED);
+	Method(state, "set_character_input_enabled", Op::SET_CHARACTER_INPUT_ENABLED);
 	Method(state, "find_child", Op::FIND_CHILD);
 	lua_pushcfunction(state, GetChildren);
 	lua_setfield(state, -2, "get_children");
