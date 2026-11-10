@@ -10529,26 +10529,6 @@
     },
     {
       "active": false,
-      "collider": {
-        "center": [
-          0,
-          0,
-          0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1.5,
-          1.3,
-          1.5
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": true,
-        "radius": 0.5,
-        "shape": "Box"
-      },
       "id": 155,
       "name": "Clock Lookout Goal",
       "parent": 0,
@@ -10571,89 +10551,25 @@
           84
         ]
       },
-      "triggerActions": {
-        "actions": [
+      "script": {
+        "asset": "@project/assets/street/scripts/StreetGoal.lua",
+        "enabled": true,
+        "prefabs": [],
+        "references": [
           {
-            "arrivalTag": "",
-            "cameraBlendSeconds": 0,
-            "contact": "character",
-            "contactTag": "",
-            "delaySeconds": 0,
-            "destination": 0,
-            "event": "enter",
-            "inputAction": "",
-            "launchSpeed": 12,
-            "messageName": "",
-            "once": true,
-            "operation": "disable",
-            "scene": "",
-            "target": 158
-          },
-          {
-            "arrivalTag": "",
-            "cameraBlendSeconds": 0,
-            "contact": "character",
-            "contactTag": "",
-            "delaySeconds": 0,
-            "destination": 0,
-            "event": "enter",
-            "inputAction": "",
-            "launchSpeed": 12,
-            "messageName": "",
-            "once": true,
-            "operation": "enable",
-            "scene": "",
-            "target": 180
-          },
-          {
-            "arrivalTag": "",
-            "cameraBlendSeconds": 0,
-            "contact": "character",
-            "contactTag": "",
-            "delaySeconds": 0,
-            "destination": 0,
-            "event": "enter",
-            "inputAction": "",
-            "launchSpeed": 12,
-            "messageName": "street_clear",
-            "once": true,
-            "operation": "sendScriptMessage",
-            "scene": "",
-            "target": 171
-          },
-          {
-            "arrivalTag": "",
-            "cameraBlendSeconds": 0,
-            "contact": "character",
-            "contactTag": "",
-            "delaySeconds": 0,
-            "destination": 0,
-            "event": "enter",
-            "inputAction": "",
-            "launchSpeed": 12,
-            "messageName": "",
-            "once": true,
-            "operation": "playAudio",
-            "scene": "",
-            "target": 460
-          },
-          {
-            "arrivalTag": "",
-            "cameraBlendSeconds": 0,
-            "contact": "character",
-            "contactTag": "",
-            "delaySeconds": 0,
-            "destination": 0,
-            "event": "enter",
-            "inputAction": "",
-            "launchSpeed": 12,
-            "messageName": "street_clear",
-            "once": true,
-            "operation": "sendScriptMessage",
-            "scene": "",
+            "name": "player",
             "target": 1
+          },
+          {
+            "name": "resultCounter",
+            "target": 171
           }
-        ]
+        ],
+        "scenes": [],
+        "state": {
+          "radius": 1.5,
+          "height": 1.3
+        }
       }
     },
     {
@@ -12591,6 +12507,18 @@
           {
             "name": "result",
             "target": 184
+          },
+          {
+            "name": "hint",
+            "target": 158
+          },
+          {
+            "name": "resultPanel",
+            "target": 180
+          },
+          {
+            "name": "clearSound",
+            "target": 460
           }
         ],
         "scenes": [],

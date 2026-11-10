@@ -18,6 +18,9 @@ return {
             self:reference("result"):set_text(
                 "花のかけら " .. state.count .. " / " .. state.total ..
                 "    タイム " .. math.floor(state.elapsed) .. " 秒")
+            self:reference("hint"):set_active(false)
+            self:reference("resultPanel"):set_active(true)
+            self:reference("clearSound"):play_audio()
         end
     end
 }
