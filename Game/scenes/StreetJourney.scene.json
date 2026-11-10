@@ -67,6 +67,39 @@
         ],
         "useStartPosition": true
       },
+      "script": {
+        "asset": "@project/assets/street/scripts/StreetHealth.lua",
+        "enabled": true,
+        "prefabs": [],
+        "references": [
+          {
+            "name": "life",
+            "target": 439
+          },
+          {
+            "name": "visual",
+            "target": 2
+          },
+          {
+            "name": "courtyard",
+            "target": 150
+          },
+          {
+            "name": "roof",
+            "target": 152
+          }
+        ],
+        "scenes": [],
+        "state": {
+          "invulnerabilitySeconds": 1.5,
+          "invulnerable": 0,
+          "life": 3,
+          "maximumLife": 3,
+          "reaction": 0,
+          "reactionSeconds": 0.26,
+          "respawnCount": 0
+        }
+      },
       "tag": "",
       "transform": {
         "rotation": [
@@ -10424,6 +10457,22 @@
             "operation": "setCheckpoint",
             "scene": "",
             "target": 1
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "courtyard",
+            "once": true,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 1
           }
         ]
       }
@@ -10512,6 +10561,22 @@
             "messageName": "",
             "once": true,
             "operation": "setCheckpoint",
+            "scene": "",
+            "target": 1
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "roof",
+            "once": true,
+            "operation": "sendScriptMessage",
             "scene": "",
             "target": 1
           }
@@ -25542,21 +25607,6 @@
         "shape": "Box"
       },
       "id": 436,
-      "mesh": {
-        "model": "@project/assets/street/models/StreetEnemy.glb"
-      },
-      "meshRenderer": {
-        "textures": [],
-        "uvOffset": [
-          0,
-          0
-        ],
-        "uvScale": [
-          1,
-          1
-        ],
-        "visible": true
-      },
       "name": "Street Enemy 1",
       "parent": 0,
       "rigidBody": {
@@ -25592,6 +25642,10 @@
           {
             "name": "player",
             "target": 1
+          },
+          {
+            "name": "visual",
+            "target": 440
           }
         ],
         "scenes": [],
@@ -25646,21 +25700,6 @@
         "shape": "Box"
       },
       "id": 437,
-      "mesh": {
-        "model": "@project/assets/street/models/StreetEnemy.glb"
-      },
-      "meshRenderer": {
-        "textures": [],
-        "uvOffset": [
-          0,
-          0
-        ],
-        "uvScale": [
-          1,
-          1
-        ],
-        "visible": true
-      },
       "name": "Street Enemy 2",
       "parent": 0,
       "rigidBody": {
@@ -25696,6 +25735,10 @@
           {
             "name": "player",
             "target": 1
+          },
+          {
+            "name": "visual",
+            "target": 441
           }
         ],
         "scenes": [],
@@ -25750,21 +25793,6 @@
         "shape": "Box"
       },
       "id": 438,
-      "mesh": {
-        "model": "@project/assets/street/models/StreetEnemy.glb"
-      },
-      "meshRenderer": {
-        "textures": [],
-        "uvOffset": [
-          0,
-          0
-        ],
-        "uvScale": [
-          1,
-          1
-        ],
-        "visible": true
-      },
       "name": "Street Enemy 3",
       "parent": 0,
       "rigidBody": {
@@ -25800,6 +25828,10 @@
           {
             "name": "player",
             "target": 1
+          },
+          {
+            "name": "visual",
+            "target": 442
           }
         ],
         "scenes": [],
@@ -25828,6 +25860,189 @@
           10.0,
           1.2599999904632568,
           52.0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 439,
+      "name": "Street Life Counter",
+      "parent": 156,
+      "rectTransform": {
+        "anchorMax": [
+          0.0,
+          0.0
+        ],
+        "anchorMin": [
+          0.0,
+          0.0
+        ],
+        "pivot": [
+          0.0,
+          0.0
+        ],
+        "position": [
+          24.0,
+          94
+        ],
+        "sizeDelta": [
+          1150.0,
+          44.0
+        ]
+      },
+      "tag": "",
+      "text": {
+        "alignment": "left",
+        "bold": true,
+        "color": [
+          1.0,
+          0.8199999928474426,
+          0.36000001430511475,
+          1.0
+        ],
+        "enabled": true,
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 24,
+        "raycastTarget": false,
+        "value": "ライフ 3 / 3",
+        "verticalAlignment": "middle"
+      },
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 440,
+      "mesh": {
+        "model": "@project/assets/street/models/StreetEnemy.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Street Enemy 1 Visual",
+      "parent": 436,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 441,
+      "mesh": {
+        "model": "@project/assets/street/models/StreetEnemy.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Street Enemy 2 Visual",
+      "parent": 437,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 442,
+      "mesh": {
+        "model": "@project/assets/street/models/StreetEnemy.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Street Enemy 3 Visual",
+      "parent": 438,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
         ]
       }
     }

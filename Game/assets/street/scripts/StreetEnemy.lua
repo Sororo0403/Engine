@@ -31,17 +31,17 @@ return {
                 state.dx, state.dz = dx / distance, dz / distance
             end
             local yaw = math.atan(state.dx, state.dz) + math.sin(cycle * 45) * 0.045
-            self:set_rotation(0, math.sin(yaw / 2), 0, math.cos(yaw / 2))
+            self:reference("visual"):set_rotation(0, math.sin(yaw / 2), 0, math.cos(yaw / 2))
         elseif cycle < 2.45 then
             local yaw = math.atan(state.dx, state.dz)
-            self:set_rotation(0, math.sin(yaw / 2), 0, math.cos(yaw / 2))
+            self:reference("visual"):set_rotation(0, math.sin(yaw / 2), 0, math.cos(yaw / 2))
             local limit, speed = state.range, state.speed
             local nx = clamp(x + state.dx * dt * speed, state.originX - limit, state.originX + limit)
             local nz = clamp(z + state.dz * dt * speed, state.originZ - limit, state.originZ + limit)
             local mx, mz = nx - x, nz - z
             local length = math.sqrt(mx * mx + mz * mz)
             if length > 0.0001 then
-                local hit = scene.cast_sphere(x, y, z, mx / length, 0, mz / length, length, 0.54)
+                local hit = scene.cast_sphere(x, y + 0.13, z, mx / length, 0, mz / length, length, 0.79)
                 local travel = hit and math.max(0, hit.distance - 0.01) or length
                 self:set_local_position(x + mx * travel / length, y, z + mz * travel / length)
             end
