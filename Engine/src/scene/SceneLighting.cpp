@@ -95,6 +95,8 @@ bool SceneLighting::CollectDirectionalLights(
 }
 
 bool SceneLighting::CollectPointLights(const Scene &scene,
+                                       const SceneHierarchy::WorldTransforms &transforms,
+                                       const SceneActivity::States &active,
                                        std::vector<PointLightData> &lights,
                                        std::string &error,
                                        SceneObjectId *invalidObject) {
@@ -102,15 +104,6 @@ bool SceneLighting::CollectPointLights(const Scene &scene,
 
 	if (invalidObject) {
 		*invalidObject = 0;
-	}
-
-	SceneHierarchy::WorldTransforms transforms;
-	SceneActivity::States active;
-
-	if (!SceneHierarchy::BuildWorldTransforms(scene, transforms) ||
-	    !SceneActivity::BuildStates(scene, active)) {
-		error = "Point Light hierarchy or world transform is invalid.";
-		return false;
 	}
 
 	std::vector<PointLightData> result;
@@ -157,6 +150,8 @@ bool SceneLighting::CollectPointLights(const Scene &scene,
 }
 
 bool SceneLighting::CollectSpotLights(const Scene &scene,
+                                      const SceneHierarchy::WorldTransforms &transforms,
+                                      const SceneActivity::States &active,
                                       std::vector<SpotLightData> &lights,
                                       std::string &error,
                                       SceneObjectId *invalidObject) {
@@ -164,15 +159,6 @@ bool SceneLighting::CollectSpotLights(const Scene &scene,
 
 	if (invalidObject) {
 		*invalidObject = 0;
-	}
-
-	SceneHierarchy::WorldTransforms transforms;
-	SceneActivity::States active;
-
-	if (!SceneHierarchy::BuildWorldTransforms(scene, transforms) ||
-	    !SceneActivity::BuildStates(scene, active)) {
-		error = "Spot Light hierarchy or world transform is invalid.";
-		return false;
 	}
 
 	std::vector<SpotLightData> result;

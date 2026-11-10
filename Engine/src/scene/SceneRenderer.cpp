@@ -280,7 +280,8 @@ bool SceneRenderer::SynchronizeObjects(bool keepBackground) {
 
 		std::vector<PointLightData> lights;
 
-		if (!SceneLighting::CollectPointLights(scene_, lights, lightError) ||
+		if (!SceneLighting::CollectPointLights(scene_, transforms, active,
+		                                      lights, lightError) ||
 		    !world_->SetPointLights(lights)) {
 			Logger::Error(lightError.empty() ? "Point Light update failed."
 			                                 : lightError);
@@ -289,7 +290,8 @@ bool SceneRenderer::SynchronizeObjects(bool keepBackground) {
 
 		std::vector<SpotLightData> spotLights;
 
-		if (!SceneLighting::CollectSpotLights(scene_, spotLights, lightError) ||
+		if (!SceneLighting::CollectSpotLights(scene_, transforms, active,
+		                                     spotLights, lightError) ||
 		    !world_->SetSpotLights(spotLights)) {
 			Logger::Error(lightError.empty() ? "Spot Light update failed."
 			                                 : lightError);

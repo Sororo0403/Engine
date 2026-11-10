@@ -60,15 +60,15 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 		add(invalidLight, lightError);
 	}
 
-	if (!SceneLighting::CollectPointLights(scene, lights, lightError,
-	                                       &invalidLight)) {
+	if (!SceneLighting::CollectPointLights(scene, sourceTransforms, active,
+	                                       lights, lightError, &invalidLight)) {
 		add(invalidLight, lightError);
 	}
 
 	std::vector<SpotLightData> spotLights;
 
-	if (!SceneLighting::CollectSpotLights(scene, spotLights, lightError,
-	                                      &invalidLight)) {
+	if (!SceneLighting::CollectSpotLights(scene, sourceTransforms, active,
+	                                      spotLights, lightError, &invalidLight)) {
 		add(invalidLight, lightError);
 	}
 
