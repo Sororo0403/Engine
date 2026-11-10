@@ -78,6 +78,17 @@ local function collection_summary(self, state)
     return "まだ見つけていない花のかけらがあるよ"
 end
 
+local function show_count(self, state)
+    local text = "花のかけら " .. state.count .. " / " .. state.total
+    if state.searching and state.count < state.total then
+        game.streetRemainingFlowers = collection_summary(self, state)
+        text = text .. "    " .. game.streetRemainingFlowers
+    else
+        game.streetRemainingFlowers = nil
+    end
+    self:set_text(text)
+end
+
 local pickupHighlightSeconds = 0.55
 
 local function show_pickup_highlight(self, state, amount)
@@ -95,10 +106,9 @@ return {
     end,
 
     update = function(self, state, seconds)
-        if game.streetGoalWaiting and state.count < state.total
-            and state.remainingSummaryCount ~= state.count then
-            game.streetRemainingFlowers = collection_summary(self, state)
-            state.remainingSummaryCount = state.count
+        if game.streetGoalWaiting and state.count < state.total and not state.searching then
+            state.searching = true
+            show_count(self, state)
         end
         if not state.finishedTime and not state.completed then
             state.elapsed = state.elapsed + seconds
@@ -133,7 +143,7 @@ return {
             if sparkles then
                 sparkles:emit_particles(16)
             end
-            self:set_text("花のかけら " .. state.count .. " / " .. state.total)
+            show_count(self, state)
             state.normalColor = state.normalColor or {self:get_text_color()}
             state.pickupHighlight = pickupHighlightSeconds
             show_pickup_highlight(self, state, 1)
