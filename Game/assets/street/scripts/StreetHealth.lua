@@ -104,6 +104,11 @@ local function update_death(self, state, seconds, viewport)
     local opening = blackout + state.deathCovered
     local finish = opening + state.deathReveal
     local t = math.min(finish, state.deathTime + seconds)
+    if not state.deathCuePlayed and t >= state.deathReactionDelay then
+        local cue = state.falling and "deathFallSound" or "deathContactSound"
+        self:reference(cue):play_audio()
+        state.deathCuePlayed = true
+    end
     viewport = viewport or {width = 1280, height = 720}
 
     if t < blackout then
@@ -140,6 +145,7 @@ local function update_death(self, state, seconds, viewport)
         game.streetDeathActive = false
         state.deathTime = nil
         state.deathReturned = nil
+        state.deathCuePlayed = nil
         state.falling = nil
     end
 end

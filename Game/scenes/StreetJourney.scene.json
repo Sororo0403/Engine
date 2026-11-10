@@ -132,6 +132,14 @@
           {
             "name": "deathCamera",
             "target": 465
+          },
+          {
+            "name": "deathContactSound",
+            "target": 466
+          },
+          {
+            "name": "deathFallSound",
+            "target": 467
           }
         ],
         "scenes": [
@@ -28450,6 +28458,74 @@
           -13.5,
           4.4,
           -7.6
+        ]
+      }
+    },
+    {
+      "active": true,
+      "audioSource": {
+        "clip": "@project/assets/street/audio/DeathContact.wav",
+        "loop": false,
+        "maxDistance": 20,
+        "minDistance": 1,
+        "playOnStart": false,
+        "spatial": false,
+        "volume": 0.7
+      },
+      "id": 466,
+      "name": "DeathContact",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "audioSource": {
+        "clip": "@project/assets/street/audio/DeathFall.wav",
+        "loop": false,
+        "maxDistance": 20,
+        "minDistance": 1,
+        "playOnStart": false,
+        "spatial": false,
+        "volume": 0.7
+      },
+      "id": 467,
+      "name": "DeathFall",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
         ]
       }
     }
