@@ -74,9 +74,13 @@ return {
             end
             local hint = self:reference("openHint")
             if state.roofJumpText and hint:is_active() then
-                local approaching = py >= state.roofMinY and px >= state.roofNearX
+                local onRoof = py >= state.roofMinY and pz >= (state.roofEntryZ or -math.huge)
+                local approaching = onRoof and px >= state.roofNearX
                     and px <= state.roofFarX and math.abs(pz - state.roofGapZ) <= state.roofHintDepth
                 local text = approaching and state.roofJumpText or state.roofText
+                if not onRoof and state.stairsText then
+                    text = state.stairsText
+                end
                 if text ~= state.currentRoofHint then
                     hint:set_text(text)
                     state.currentRoofHint = text

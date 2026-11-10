@@ -10712,12 +10712,14 @@
           "enemyHintSeconds": 2.5,
           "activateGearText": "歯車をたたいて道を開こう  ［J / X］",
           "roofMinY": 4.2,
+          "roofEntryZ": 69,
           "roofNearX": 3.5,
           "roofFarX": 8,
           "roofGapZ": 74,
           "roofHintDepth": 2.5,
           "shutterClearY": 2.5,
           "shutterOpeningText": "シャッターが開いていく…",
+          "stairsText": "開いた門の先の階段を上ろう",
           "roofJumpText": "矢印を目印に向かいの屋上へ  ［Space / A 長押し］",
           "roofText": "屋上の時計台を目指そう"
         }
