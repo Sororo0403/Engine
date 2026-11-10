@@ -313,7 +313,8 @@ local function update_attack(self, state, seconds, input)
         if distance < state.attackDistance then
             local hit
             if distance > 0.001 then
-                hit = scene.raycast(x, y, z, dx / distance, dy / distance, dz / distance, distance)
+                hit = scene.raycast(x, y, z, dx / distance, dy / distance, dz / distance,
+                    distance, nil, false, self)
             end
             if not hit or hit.object == enemy then
                 enemy:destroy()
