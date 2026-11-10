@@ -23,7 +23,8 @@
 
 std::vector<SceneValidationIssue>
 SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
-                         bool resolveInitialPose) {
+                         bool resolveInitialPose,
+                         const CollisionWorld *previousWorld) {
 	std::vector<SceneValidationIssue> issues;
 	const auto add = [&](SceneObjectId id, std::string_view reason) {
 		const auto *object = scene.FindObject(id);
@@ -389,7 +390,7 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 			continue;
 		}
 
-		CollisionWorld world;
+		auto world = previousWorld ? *previousWorld : CollisionWorld{};
 
 		std::vector<SceneObjectId> ignored;
 

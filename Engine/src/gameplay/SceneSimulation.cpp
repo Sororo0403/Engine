@@ -394,7 +394,8 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 
 		// 現在の姿勢を検証し、既存の追従や移動を開始時へ巻き戻さない。
 		const auto issues =
-		    SceneValidation::Inspect(working, fallbackPose, false);
+		    SceneValidation::Inspect(working, fallbackPose, false,
+		                             preserve ? &world_ : nullptr);
 		if (!issues.empty()) {
 			error = issues.front().message;
 

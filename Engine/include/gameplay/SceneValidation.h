@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+class CollisionWorld;
 class Scene;
 struct GameActionBinding;
 
@@ -24,11 +25,13 @@ namespace SceneValidation {
 /// <param name="scene">変更しない検証対象。空のシーンも有効</param>
 /// <param name="fallbackPose">Primary Cameraがない場合の描画姿勢</param>
 /// <param name="resolveInitialPose">true:開始時の追従姿勢と復帰配置を検証 false:現在のワールド姿勢と明示的な復帰先を検証。保持中の開始位置は呼び出し側で確認する</param>
+/// <param name="previousWorld">指定時は形状と変形が一致する既存の障害物を再利用する</param>
 /// <returns>検出した問題。空なら再生設定は有効。リソースファイルの有無やGPU描画は検証しない</returns>
 /// <remarks>前提となる設定が不正な場合、その設定に依存する衝突検証は修正後に再実行する</remarks>
 std::vector<SceneValidationIssue>
 Inspect(const Scene &scene, const CameraPose &fallbackPose = CameraPose{},
-        bool resolveInitialPose = true);
+        bool resolveInitialPose = true,
+        const CollisionWorld *previousWorld = nullptr);
 /// <summary>
 /// Trigger Actionsが参照する名前付き操作を、現在のゲーム設定と照合する
 /// </summary>
