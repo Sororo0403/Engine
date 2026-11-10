@@ -32,6 +32,9 @@ struct GameActionBinding {
 	};
 	std::optional<GamepadAxis> gamepadAxis;
 
+	static constexpr std::array<GameInputBindings::Option, 2>
+	    kAdditionalKeyboardOptions{{{Key::ESCAPE, "Escape"}, {Key::ENTER, "Enter"}}};
+
 	template <class T> struct Option {
 		T button;
 		const char *name;
@@ -77,7 +80,10 @@ struct GameActionBinding {
 	/// <param name="key">割り当てたキー</param>
 	/// <returns>保存用の名前。未対応のキーは空</returns>
 	static constexpr std::string_view GetKeyName(Key key) {
-		return key == Key::ESCAPE ? "Escape" : GameInputBindings::GetName(key);
+		for (const auto &option : kAdditionalKeyboardOptions)
+			if (key == option.key)
+				return option.name;
+		return GameInputBindings::GetName(key);
 	}
 
 	/// <summary>
@@ -86,8 +92,10 @@ struct GameActionBinding {
 	/// <param name="name">設定に保存されたキー名</param>
 	/// <returns>対応するキー。未対応の名前はnullopt</returns>
 	static constexpr std::optional<Key> FromKeyName(std::string_view name) {
-		return name == "Escape" ? std::optional{Key::ESCAPE}
-		                        : GameInputBindings::FromName(name);
+		for (const auto &option : kAdditionalKeyboardOptions)
+			if (name == option.name)
+				return option.key;
+		return GameInputBindings::FromName(name);
 	}
 
 	/// <summary>
