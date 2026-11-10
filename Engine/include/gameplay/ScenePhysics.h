@@ -1,5 +1,7 @@
 #pragma once
 #include "physics/RigidBodyWorld.h"
+#include "scene/SceneActivity.h"
+#include "scene/SceneHierarchy.h"
 #include <map>
 #include <optional>
 #include <set>
@@ -19,6 +21,13 @@ class ScenePhysics {
 	/// <returns>true:有効 false:形状や構成が無効</returns>
 	static bool Validate(const Scene &scene, std::string &error,
 	                     SceneObjectId *invalidObject = nullptr);
+
+	/// <summary>
+	/// 同じシーンから計算済みの有効状態とワールド変換で剛体設定を検証する
+	/// </summary>
+	static bool Validate(const Scene &scene, const SceneActivity::States &active,
+	                     const SceneHierarchy::WorldTransforms &transforms,
+	                     std::string &error, SceneObjectId *invalidObject = nullptr);
 
 	/// <summary>
 	/// 現在のシーンへ物理状態を同期し、継続する剛体の速度と休止状態を保持する

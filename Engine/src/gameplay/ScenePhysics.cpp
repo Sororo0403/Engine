@@ -45,14 +45,10 @@ bool SamePose(const Transform &a, const Transform &b) {
 /// <param name="bodies">成功時に設定する箱。剛体がなければ空</param>
 /// <param name="driven">経路や主人公から姿勢を受け取る箱</param>
 /// <param name="invalid">失敗した物体ID</param>
-void Collect(const Scene &scene, std::vector<RigidBodyDescription> &bodies,
+void Collect(const Scene &scene, const SceneActivity::States &active,
+             const SceneHierarchy::WorldTransforms &transforms,
+             std::vector<RigidBodyDescription> &bodies,
              std::set<SceneObjectId> &driven, SceneObjectId &invalid) {
-	SceneActivity::States active;
-	SceneHierarchy::WorldTransforms transforms;
-	if (!SceneActivity::BuildStates(scene, active) ||
-	    !SceneHierarchy::BuildWorldTransforms(scene, transforms))
-		throw std::runtime_error(
-		    "Rigid Body hierarchy or world transform is invalid.");
 	bool enabled = false;
 
 	for (const auto &[id, o] : scene.GetObjects()) {
@@ -179,6 +175,17 @@ void Collect(const Scene &scene, std::vector<RigidBodyDescription> &bodies,
 		    "A scene with Rigid Body supports at most 1024 solid Colliders.");
 	invalid = 0;
 }
+void Collect(const Scene &scene, std::vector<RigidBodyDescription> &bodies,
+             std::set<SceneObjectId> &driven, SceneObjectId &invalid) {
+	SceneActivity::States active;
+	SceneHierarchy::WorldTransforms transforms;
+	if (!SceneActivity::BuildStates(scene, active) ||
+	    !SceneHierarchy::BuildWorldTransforms(scene, transforms))
+		throw std::runtime_error(
+		    "Rigid Body hierarchy or world transform is invalid.");
+	Collect(scene, active, transforms, bodies, driven, invalid);
+}
+
 } // namespace
 
 bool ScenePhysics::Validate(const Scene &scene, std::string &error,
@@ -190,6 +197,26 @@ bool ScenePhysics::Validate(const Scene &scene, std::string &error,
 		std::vector<RigidBodyDescription> bodies;
 		std::set<SceneObjectId> driven;
 		Collect(scene, bodies, driven, invalid);
+		error.clear();
+		return true;
+	} catch (const std::exception &exception) {
+		if (invalidObject)
+			*invalidObject = invalid;
+		error = std::format("Rigid Body ID {}: {}", invalid, exception.what());
+		return false;
+	}
+}
+
+bool ScenePhysics::Validate(const Scene &scene, const SceneActivity::States &active,
+                            const SceneHierarchy::WorldTransforms &transforms,
+                            std::string &error, SceneObjectId *invalidObject) {
+	SceneObjectId invalid = 0;
+	if (invalidObject)
+		*invalidObject = 0;
+	try {
+		std::vector<RigidBodyDescription> bodies;
+		std::set<SceneObjectId> driven;
+		Collect(scene, active, transforms, bodies, driven, invalid);
 		error.clear();
 		return true;
 	} catch (const std::exception &exception) {

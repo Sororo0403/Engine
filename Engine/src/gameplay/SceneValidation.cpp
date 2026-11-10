@@ -74,7 +74,8 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 
 	std::string physicsError;
 	SceneObjectId invalidPhysics = 0;
-	if (!ScenePhysics::Validate(scene, physicsError, &invalidPhysics))
+	if (!ScenePhysics::Validate(scene, active, sourceTransforms, physicsError,
+	                            &invalidPhysics))
 		add(invalidPhysics, physicsError);
 	std::vector<UIElement> uiElements;
 	std::string uiError;
@@ -90,14 +91,15 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 	        ? SceneCameraUtils::ResolveInitialScene(scene, resolved,
 	                                                followError)
 	        : SceneCameraUtils::GetUpdateOrder(scene, order, followError);
-	const auto &initial =
-	    resolvedInitial && resolveInitialPose ? resolved : scene;
-	SceneHierarchy::WorldTransforms transforms;
-
-	if (!SceneHierarchy::BuildWorldTransforms(initial, transforms)) {
+	const bool useResolved = resolvedInitial && resolveInitialPose;
+	const auto &initial = useResolved ? resolved : scene;
+	SceneHierarchy::WorldTransforms resolvedTransforms;
+	if (useResolved &&
+	    !SceneHierarchy::BuildWorldTransforms(resolved, resolvedTransforms)) {
 		add(0, "Initial world transforms are invalid.");
 		return issues;
 	}
+	const auto &transforms = useResolved ? resolvedTransforms : sourceTransforms;
 
 	for (const auto &[id, object] : scene.GetObjects()) {
 		if (!active.at(id)) {
