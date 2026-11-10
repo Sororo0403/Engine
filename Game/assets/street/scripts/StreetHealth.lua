@@ -373,8 +373,15 @@ return {
         state.lastGroundCamera = camera_pose(self:reference("followCamera"))
     end,
 
-    message = function(self, state, name)
-        if name == "canal" or name == "courtyard" or name == "roof" then
+    message = function(self, state, name, _, sender)
+        if name == "market_supply" then
+            if sender and sender:is_active() and not state.deathTime and not state.completed
+                and state.life < state.maximumLife then
+                state.life = state.life + 1
+                show_life(self, state)
+                sender:set_active(false)
+            end
+        elseif name == "canal" or name == "courtyard" or name == "roof" then
             state.spawnX, state.spawnY, state.spawnZ = self:reference(name):get_position()
             if not state.deathTime and state.life < state.maximumLife then
                 state.life = state.life + 1

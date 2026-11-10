@@ -17,6 +17,22 @@ local function canal_bridge_hint(self, x, z)
     end
 end
 
+local function market_supply_hint(self, x, z)
+    local crate = self:reference("supplyCrate")
+    local supply = self:reference("marketSupply")
+    if not crate or not supply or not supply:is_active() then
+        return nil
+    end
+    local cx, _, cz = supply:get_position()
+    if math.abs(x - cx) > 2.7 or z < cz - 6 or z > cz + 1.5 then
+        return nil
+    end
+    if crate:is_active() then
+        return "箱をたたいて物置を開ける ［J / X］"
+    end
+    return "物置の救急箱でライフを1回復"
+end
+
 local function update_hint(self, state, x, z, inRange, seconds)
     if not state.findCanalText then
         return
@@ -59,7 +75,7 @@ local function update_hint(self, state, x, z, inRange, seconds)
         end
     end
     if not inRange then
-        text = canal_bridge_hint(self, x, z) or text
+        text = canal_bridge_hint(self, x, z) or market_supply_hint(self, x, z) or text
         local practice = self:reference("jumpPractice")
         if practice then
             local px, _, pz = practice:get_position()
@@ -71,6 +87,25 @@ local function update_hint(self, state, x, z, inRange, seconds)
     if text ~= state.currentHint then
         self:reference("hint"):set_text(text)
         state.currentHint = text
+    end
+end
+
+local function try_break_supply_crate(self, player, px, py, pz)
+    local crate = self:reference("supplyCrate")
+    if not crate or not crate:is_active() then
+        return
+    end
+    local x, y, z = crate:get_position()
+    local dx, dy, dz = x - px, y - py, z - pz
+    local distance = math.sqrt(dx * dx + dy * dy + dz * dz)
+    if distance <= 0.01 or distance > 3 then
+        return
+    end
+    local hit = scene.raycast(px, py, pz, dx / distance, dy / distance, dz / distance,
+        distance, nil, false, player)
+    if hit and hit.object == crate then
+        crate:set_active(false)
+        self:play_audio()
     end
 end
 
@@ -119,11 +154,14 @@ return {
     message = function(self, state, name, data, sender)
         if name == "street_enemy_alert" and state.enemyHintText then
             state.enemyHintRemaining = state.enemyHintSeconds
-        elseif name == "street_attack_started" and state.attackFromPlayer and not state.open
+        elseif name == "street_attack_started" and state.attackFromPlayer
             and not game.streetDeathActive then
             local player = self:reference("player")
             if player and player == sender and player:is_active() then
-                try_open(self, state, player, data.x, data.y, data.z)
+                try_break_supply_crate(self, player, data.x, data.y, data.z)
+                if not state.open then
+                    try_open(self, state, player, data.x, data.y, data.z)
+                end
             end
         end
     end,
