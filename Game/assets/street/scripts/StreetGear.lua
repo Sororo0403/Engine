@@ -60,6 +60,13 @@ local function update_hint(self, state, x, z, inRange, seconds)
     end
     if not inRange then
         text = canal_bridge_hint(self, x, z) or text
+        local practice = self:reference("jumpPractice")
+        if practice then
+            local px, _, pz = practice:get_position()
+            if (x - px) ^ 2 + (z - pz) ^ 2 < 12 then
+                text = "荷箱を跳んでカフェの右へ ［Space / A］"
+            end
+        end
     end
     if text ~= state.currentHint then
         self:reference("hint"):set_text(text)
