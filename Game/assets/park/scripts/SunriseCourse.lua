@@ -81,6 +81,7 @@ return {
             end
         elseif name == "gate" then
             self:reference("gatePad"):set_mesh_tint(0.30, 0.87, 0.48)
+            self:reference("bridgePad"):set_mesh_tint(0.30, 0.87, 0.48)
             self:reference("gate"):set_active(false)
             state.objective = "見晴らし台へ  /  中央はジャンプ ［Space / A］、右は階段"
             show_hint(self, state, state.objective)
