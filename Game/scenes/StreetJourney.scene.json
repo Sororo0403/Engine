@@ -11193,7 +11193,8 @@
         "state": {
           "radius": 1.5,
           "height": 1.3,
-          "finishDelay": 0.9
+          "finishDelay": 0.9,
+          "confirmIncomplete": true
         }
       }
     },
@@ -11463,7 +11464,8 @@
           "balconyText": "踊り場の階段から向かいの屋上へ",
           "balconyStairText": "踊り場へ降り、階段を登って向かいの屋上へ",
           "roofJumpText": "矢印から向かいの屋上へ  ［Space / A 長押しで遠くへ］",
-          "roofText": "屋上の時計台を目指そう"
+          "roofText": "屋上の時計台を目指そう",
+          "finishPrompt": "花を探しに戻る / ここでクリア ［Enter / A］"
         }
       },
       "tag": "street_sound",

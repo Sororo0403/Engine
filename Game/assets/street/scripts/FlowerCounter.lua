@@ -61,6 +61,11 @@ local function show_pickup_highlight(self, state, amount)
 end
 
 return {
+    start = function(_, state)
+        game.streetAllFlowers = state.count == state.total
+        game.streetGoalWaiting = nil
+    end,
+
     update = function(self, state, seconds)
         if not state.finishedTime and not state.completed and not game.streetDeathActive then
             state.elapsed = state.elapsed + seconds
@@ -90,6 +95,7 @@ return {
             end
         elseif name == "collect_flower" and not state.finishedTime and state.count < state.total then
             state.count = state.count + 1
+            game.streetAllFlowers = state.count == state.total
             local sparkles = self:reference("pickupSparkles")
             if sparkles then
                 sparkles:emit_particles(16)

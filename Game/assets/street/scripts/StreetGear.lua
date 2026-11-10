@@ -152,6 +152,9 @@ return {
                         end
                     end
                 end
+                if game.streetGoalWaiting and state.finishPrompt then
+                    text = state.finishPrompt
+                end
                 if text ~= state.currentRoofHint then
                     hint:set_text(text)
                     state.currentRoofHint = text

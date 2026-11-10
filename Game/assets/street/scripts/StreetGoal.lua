@@ -1,5 +1,5 @@
 return {
-    update = function(self, state, seconds)
+    update = function(self, state, seconds, input)
         if state.finishTime then
             state.finishTime = state.finishTime - seconds
             if state.finishTime <= 0 then
@@ -10,6 +10,7 @@ return {
             return
         end
         if state.completed or game.streetDeathActive then
+            game.streetGoalWaiting = nil
             return
         end
 
@@ -18,9 +19,18 @@ return {
         local px, py, pz = player:get_position()
         local dx, dz = px - x, pz - z
         if dx * dx + dz * dz >= state.radius * state.radius or math.abs(py - y) >= state.height then
+            game.streetGoalWaiting = nil
             return
         end
 
+        if state.confirmIncomplete and not game.streetAllFlowers then
+            local confirm = input.actions.Confirm
+            if not confirm or not confirm.pressed then
+                game.streetGoalWaiting = true
+                return
+            end
+        end
+        game.streetGoalWaiting = nil
         state.completed = true
         player:set_character_input_enabled(false)
         local counter = self:reference("resultCounter")
