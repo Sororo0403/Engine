@@ -10912,7 +10912,7 @@
         "fontFamily": "Yu Gothic UI",
         "fontSize": 22,
         "raycastTarget": false,
-        "value": "歯車を回して屋上へ進もう",
+        "value": "歯車を回して屋上へ進もう  ［J / X］",
         "verticalAlignment": "middle"
       },
       "transform": {
@@ -10999,17 +10999,6 @@
     },
     {
       "active": true,
-      "animationPlayer": {
-        "asset": "@project/assets/street/animations/GearWobble.clip.json",
-        "bindings": [
-          {
-            "slot": 1,
-            "target": 170
-          }
-        ],
-        "loop": false,
-        "playOnStart": false
-      },
       "audioSource": {
         "clip": "@project/assets/street/audio/GearMechanism.wav",
         "loop": false,
@@ -11019,29 +11008,54 @@
         "spatial": false,
         "volume": 0.35
       },
-      "collider": {
-        "center": [
-          0,
-          0,
-          0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          2.9,
-          1.5,
-          2.9
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": true,
-        "radius": 0.5,
-        "shape": "Box"
-      },
       "id": 160,
       "name": "Street Gear Switch",
       "parent": 0,
+      "script": {
+        "asset": "@project/assets/street/scripts/StreetGear.lua",
+        "enabled": true,
+        "prefabs": [],
+        "references": [
+          {
+            "name": "player",
+            "target": 1
+          },
+          {
+            "name": "pedestal",
+            "target": 77
+          },
+          {
+            "name": "wheel",
+            "target": 78
+          },
+          {
+            "name": "shutter",
+            "target": 154
+          },
+          {
+            "name": "goal",
+            "target": 155
+          },
+          {
+            "name": "hint",
+            "target": 157
+          },
+          {
+            "name": "openHint",
+            "target": 158
+          },
+          {
+            "name": "visual",
+            "target": 170
+          }
+        ],
+        "scenes": [],
+        "state": {
+          "height": 1.5,
+          "open": false,
+          "range": 3
+        }
+      },
       "tag": "",
       "transform": {
         "rotation": [
@@ -11059,106 +11073,6 @@
           19,
           1.5,
           54
-        ]
-      },
-      "triggerActions": {
-        "actions": [
-          {
-            "arrivalTag": "",
-            "cameraBlendSeconds": 0,
-            "contact": "character",
-            "contactTag": "",
-            "delaySeconds": 0,
-            "destination": 0,
-            "event": "interact",
-            "inputAction": "",
-            "launchSpeed": 12,
-            "messageName": "",
-            "once": true,
-            "operation": "disable",
-            "scene": "",
-            "target": 154
-          },
-          {
-            "arrivalTag": "",
-            "cameraBlendSeconds": 0,
-            "contact": "character",
-            "contactTag": "",
-            "delaySeconds": 0,
-            "destination": 0,
-            "event": "interact",
-            "inputAction": "",
-            "launchSpeed": 12,
-            "messageName": "",
-            "once": true,
-            "operation": "enable",
-            "scene": "",
-            "target": 155
-          },
-          {
-            "arrivalTag": "",
-            "cameraBlendSeconds": 0,
-            "contact": "character",
-            "contactTag": "",
-            "delaySeconds": 0,
-            "destination": 0,
-            "event": "interact",
-            "inputAction": "",
-            "launchSpeed": 12,
-            "messageName": "",
-            "once": true,
-            "operation": "disable",
-            "scene": "",
-            "target": 157
-          },
-          {
-            "arrivalTag": "",
-            "cameraBlendSeconds": 0,
-            "contact": "character",
-            "contactTag": "",
-            "delaySeconds": 0,
-            "destination": 0,
-            "event": "interact",
-            "inputAction": "",
-            "launchSpeed": 12,
-            "messageName": "",
-            "once": true,
-            "operation": "enable",
-            "scene": "",
-            "target": 158
-          },
-          {
-            "arrivalTag": "",
-            "cameraBlendSeconds": 0,
-            "contact": "character",
-            "contactTag": "",
-            "delaySeconds": 0,
-            "destination": 0,
-            "event": "interact",
-            "inputAction": "",
-            "launchSpeed": 12,
-            "messageName": "",
-            "once": true,
-            "operation": "playAnimationClip",
-            "scene": "",
-            "target": 160
-          },
-          {
-            "arrivalTag": "",
-            "cameraBlendSeconds": 0,
-            "contact": "character",
-            "contactTag": "",
-            "delaySeconds": 0,
-            "destination": 0,
-            "event": "interact",
-            "inputAction": "",
-            "launchSpeed": 12,
-            "messageName": "",
-            "once": true,
-            "operation": "playAudio",
-            "scene": "",
-            "target": 160
-          }
         ]
       }
     },
@@ -11653,6 +11567,1173 @@
           0,
           0
         ]
+      },
+      "transformAnimation": {
+        "interpolation": "linear",
+        "keys": [
+          {
+            "rotation": [
+              0,
+              0,
+              0.0,
+              1.0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.059417218,
+              0.998233236
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.06666666666666667,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.095640786,
+              0.995415913
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.13333333333333333,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.102119378,
+              0.994772151
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.2,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.080899299,
+              0.99672228
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.26666666666666666,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.04094482,
+              0.999161409
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.3333333333333333,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.00489115,
+              0.999988038
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.4,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.043710372,
+              0.999044245
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.4666666666666667,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.066118056,
+              0.997811807
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.5333333333333333,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.068285162,
+              0.997665844
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.6,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.052173455,
+              0.998638038
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.6666666666666666,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.024287803,
+              0.999705008
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.7333333333333333,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.00654607,
+              0.999978574
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.8,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.031799622,
+              0.999494264
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.8666666666666667,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.04549829,
+              0.998964417
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.9333333333333333,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.045479877,
+              0.998965255
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.033461856,
+              0.999439995
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.0666666666666667,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.014105569,
+              0.999900512
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.1333333333333333,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.00656323,
+              0.999978462
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.2,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.022917725,
+              0.999737354
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.2666666666666666,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.031178348,
+              0.999513837
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.3333333333333333,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.030178199,
+              0.999544534
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.4,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.021336858,
+              0.999772343
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.4666666666666666,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.0079645,
+              0.999968283
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.5333333333333334,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.005842595,
+              0.999982932
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.6,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.016383081,
+              0.999865788
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.6666666666666667,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.021282064,
+              0.999773511
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.7333333333333334,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.019951446,
+              0.99980095
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.8,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.013519837,
+              0.999908603
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.8666666666666667,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.004321169,
+              0.999990664
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.9333333333333333,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.004870415,
+              0.999988139
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.011628582,
+              0.999932386
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.066666666666667,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.014472975,
+              0.999895261
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.1333333333333333,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.013141493,
+              0.999913647
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.2,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.00850678,
+              0.999963817
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.2666666666666666,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.002204552,
+              0.99999757
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.3333333333333335,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.003893094,
+              0.999992422
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.4,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.008201696,
+              0.999966366
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.466666666666667,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.009807113,
+              0.999951909
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.533333333333333,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.008623011,
+              0.999962821
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.6,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.005310156,
+              0.999985901
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.6666666666666665,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.00100884,
+              0.999999491
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.7333333333333334,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.003021919,
+              0.999995434
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.8,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.005751687,
+              0.999983459
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.8666666666666667,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.006622197,
+              0.999978073
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.933333333333333,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.005635732,
+              0.999984119
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.003284507,
+              0.999994606
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.066666666666667,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.000359616,
+              0.999999935
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.1333333333333333,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.002295117,
+              0.999997366
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.2,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.004012524,
+              0.99999195
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.2666666666666666,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.004456204,
+              0.999990071
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.3333333333333335,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.003668019,
+              0.999993273
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.4,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.002009822,
+              0.99999798
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.466666666666667,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              2.7992e-05,
+              1.0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.533333333333333,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.001713843,
+              0.999998531
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.6,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.002785775,
+              0.99999612
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.6666666666666665,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.002988426,
+              0.999995535
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.7333333333333334,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.002376806,
+              0.999997175
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.8,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.001214028,
+              0.999999263
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.8666666666666667,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.000124122,
+              0.999999992
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.933333333333333,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.0,
+              1.0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 4.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "mode": "once",
+        "playOnStart": false,
+        "speed": 1
       }
     },
     {
