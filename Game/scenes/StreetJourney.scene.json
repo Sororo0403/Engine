@@ -34330,6 +34330,422 @@
           0
         ]
       }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.57,
+          0.39,
+          0.24
+        ]
+      },
+      "id": 630,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Cafe Roof Step Low",
+      "parent": 6,
+      "tag": "street_wave_near",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.64,
+          0.865,
+          0.7
+        ],
+        "translation": [
+          -7.02,
+          0.865,
+          7.2
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.57,
+          0.39,
+          0.24
+        ]
+      },
+      "id": 631,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Cafe Roof Step Middle",
+      "parent": 6,
+      "tag": "street_wave_near",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.66,
+          1.35,
+          0.75
+        ],
+        "translation": [
+          -6.94,
+          1.35,
+          9.28
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.57,
+          0.39,
+          0.24
+        ]
+      },
+      "id": 632,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Cafe Roof Step High",
+      "parent": 6,
+      "tag": "street_wave_near",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.74,
+          1.925,
+          0.8
+        ],
+        "translation": [
+          -6.94,
+          1.925,
+          11.4
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 633,
+      "name": "Cafe Roof Route Entry Arrow",
+      "parent": 6,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.92387953,
+          0,
+          0.38268343
+        ],
+        "scale": [
+          0.68,
+          0.68,
+          0.68
+        ],
+        "translation": [
+          -8.24,
+          0.8,
+          5.73
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 634,
+      "name": "Cafe Roof Route Low Arrow",
+      "parent": 6,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.70710678,
+          0,
+          0.70710678
+        ],
+        "scale": [
+          0.68,
+          0.68,
+          0.68
+        ],
+        "translation": [
+          -7.02,
+          1.75,
+          7.2
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 635,
+      "name": "Cafe Roof Route Middle Arrow",
+      "parent": 6,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.70710678,
+          0,
+          0.70710678
+        ],
+        "scale": [
+          0.68,
+          0.68,
+          0.68
+        ],
+        "translation": [
+          -6.94,
+          2.72,
+          9.28
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 636,
+      "name": "Cafe Roof Route Takeoff Arrow",
+      "parent": 6,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.68,
+          0.68,
+          0.68
+        ],
+        "translation": [
+          -6.55,
+          3.87,
+          11.4
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 637,
+      "name": "Cafe Roof Route Descent Arrow",
+      "parent": 6,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.68,
+          0.68,
+          0.68
+        ],
+        "translation": [
+          -14.1,
+          5.02,
+          11.4
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
+        ]
+      }
     }
   ],
   "projectRoot": "..",
