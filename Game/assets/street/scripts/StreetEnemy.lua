@@ -41,7 +41,8 @@ return {
 
         local visual = self:reference("visual")
         if cycle < 1.2 then
-            if cycle >= 0.7 and dx * dx + dy * dy + dz * dz < 49 then
+            local detectionRadius = state.detectionRadius or 7
+            if cycle >= 0.7 and dx * dx + dy * dy + dz * dz < detectionRadius * detectionRadius then
                 state.time = 1.2
                 if state.warningEnabled then
                     self:play_audio()

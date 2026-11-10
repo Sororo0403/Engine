@@ -26789,6 +26789,7 @@
         ],
         "scenes": [],
         "state": {
+          "detectionRadius": 5.5,
           "dx": 0,
           "dz": 1,
           "range": 2,
