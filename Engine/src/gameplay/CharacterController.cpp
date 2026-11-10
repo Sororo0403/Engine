@@ -204,11 +204,12 @@ bool CharacterController::Step(const CharacterInput &input,
 	}
 
 	const bool canSnap = grounded_ && settings_.groundSnapDistance > 0;
-	jumpPending_ = false;
 	const float step = static_cast<float>(kFixedStepSeconds);
-	const bool canFloat = !grounded_ && input.jumpHeld && !input.jumpPressed &&
+	// 押下は固定更新1回分だけ消費し、後続の更新には長押しを渡す。
+	const bool canFloat = !grounded_ && input.jumpHeld && !jumpPending_ &&
 	                      airborneSeconds_ >= settings_.airFloatDelay &&
 	                      airFloatUsedSeconds_ < settings_.airFloatDuration;
+	jumpPending_ = false;
 	CollisionSweepResult nearGround;
 	if (canFloat && !world.Sweep(collider_, worldMatrix_, {0, -0.1f, 0}, nearGround))
 		return false;
