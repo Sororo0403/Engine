@@ -7,6 +7,15 @@ local function aim(visual, state, offset)
     visual:set_rotation(0, math.sin(yaw / 2), 0, math.cos(yaw / 2))
 end
 
+local function can_see_player(self, player, x, y, z, dx, dy, dz, distance)
+    if distance < 0.01 then
+        return true
+    end
+    local hit = scene.raycast(x, y, z, dx / distance, dy / distance, dz / distance,
+        distance, nil, false, self)
+    return not hit or hit.object == player
+end
+
 return {
     start = function(self, state)
         local x, _, z = self:get_local_position()
@@ -42,7 +51,9 @@ return {
         local visual = self:reference("visual")
         if cycle < 1.2 then
             local detectionRadius = state.detectionRadius or 7
-            if cycle >= 0.7 and dx * dx + dy * dy + dz * dz < detectionRadius * detectionRadius then
+            local distanceSquared = dx * dx + dy * dy + dz * dz
+            if cycle >= 0.7 and distanceSquared < detectionRadius * detectionRadius
+                and can_see_player(self, player, x, y, z, dx, dy, dz, math.sqrt(distanceSquared)) then
                 state.time = 1.2
                 if state.warningEnabled then
                     self:play_audio()
