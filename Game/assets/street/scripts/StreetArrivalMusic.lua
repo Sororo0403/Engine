@@ -8,7 +8,11 @@ end
 
 return {
     start = function(self, state)
-        state.baseVolume = self:get_audio_volume()
+        local gain = (game.volumeLevel or 10) / 10
+        state.baseVolume = self:get_audio_volume() * gain
+        for _, source in ipairs(scene.find_all_by_tag("street_sound")) do
+            source:set_audio_volume(source:get_audio_volume() * gain)
+        end
         self:set_audio_volume(state.baseVolume * state.quietGain)
     end,
 
