@@ -3062,43 +3062,16 @@
           "mask": 4294967295
         },
         "halfExtents": [
-          1.0,
-          1.0,
-          1.0
+          6.23,
+          1.6,
+          0.18
         ],
         "halfHeight": 0.5,
         "isTrigger": false,
         "radius": 0.5,
         "shape": "Box"
       },
-      "colorTint": {
-        "color": [
-          0.31,
-          0.24,
-          0.19
-        ]
-      },
       "id": 48,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
       "name": "Park Vista Locked Gate",
       "parent": 0,
       "tag": "",
@@ -3110,9 +3083,9 @@
           1.0
         ],
         "scale": [
-          6.23,
-          1.6,
-          0.18
+          1,
+          1,
+          1
         ],
         "translation": [
           0,
@@ -3662,6 +3635,1687 @@
           0.0,
           0.0,
           0.0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 56,
+      "name": "Park Sky Background",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "canvas": {
+        "enabled": true,
+        "scaleWithScreen": true,
+        "referenceSize": [
+          1280,
+          720
+        ],
+        "matchWidthOrHeight": 0.5,
+        "sortOrder": 0,
+        "background": true
+      }
+    },
+    {
+      "active": true,
+      "id": 57,
+      "name": "Park Morning Sky",
+      "parent": 56,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "rectTransform": {
+        "anchorMin": [
+          0,
+          0
+        ],
+        "anchorMax": [
+          1,
+          1
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "position": [
+          0,
+          0
+        ],
+        "sizeDelta": [
+          0,
+          0
+        ]
+      },
+      "image": {
+        "enabled": true,
+        "raycastTarget": false,
+        "texture": "@project/assets/street/textures/StreetMorningSky.png",
+        "color": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "preserveAspect": false,
+        "fillOrigin": "left",
+        "fillAmount": 1
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.43,
+          0.59,
+          0.32
+        ]
+      },
+      "id": 58,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Park Lower Landscape",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          52,
+          0.45,
+          66
+        ],
+        "translation": [
+          0,
+          -4.4,
+          17
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.67,
+          0.66,
+          0.58
+        ]
+      },
+      "id": 59,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CourtyardStone.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Pond Near Retaining Wall",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          5.52,
+          0.31,
+          0.14
+        ],
+        "translation": [
+          0,
+          -0.5,
+          4.02
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.67,
+          0.66,
+          0.58
+        ]
+      },
+      "id": 60,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CourtyardStone.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Pond Far Retaining Wall",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          5.52,
+          0.31,
+          0.14
+        ],
+        "translation": [
+          0,
+          -0.5,
+          12.98
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.65,
+          0.65,
+          0.58
+        ]
+      },
+      "id": 61,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CourtyardStone.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Pond Side Retaining Wall",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.14,
+          0.28,
+          4.5
+        ],
+        "translation": [
+          -6.13,
+          -0.56,
+          8.5
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.65,
+          0.65,
+          0.58
+        ]
+      },
+      "id": 62,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CourtyardStone.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Pond Side Retaining Wall",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.14,
+          0.28,
+          4.5
+        ],
+        "translation": [
+          6.13,
+          -0.56,
+          8.5
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 63,
+      "name": "Park Perimeter Oak",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          2.3,
+          2.3,
+          2.3
+        ],
+        "translation": [
+          -9,
+          -3.93,
+          -1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/ArrivalOak.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 64,
+      "name": "Park Perimeter Oak",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          2.4,
+          2.4,
+          2.4
+        ],
+        "translation": [
+          9,
+          -3.93,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/ArrivalOak.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 65,
+      "name": "Park Perimeter Oak",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          2.25,
+          2.25,
+          2.25
+        ],
+        "translation": [
+          -9,
+          -3.93,
+          9
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/ArrivalOak.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 66,
+      "name": "Park Perimeter Oak",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          2.1,
+          2.1,
+          2.1
+        ],
+        "translation": [
+          10,
+          -3.93,
+          11
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/ArrivalOak.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 67,
+      "name": "Park Perimeter Oak",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          2.7,
+          2.7,
+          2.7
+        ],
+        "translation": [
+          -10,
+          -3.93,
+          19
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/ArrivalOak.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 68,
+      "name": "Park Perimeter Oak",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          2.4,
+          2.4,
+          2.4
+        ],
+        "translation": [
+          10,
+          -3.93,
+          23
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/ArrivalOak.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 69,
+      "name": "Park Perimeter Oak",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          2.6,
+          2.6,
+          2.6
+        ],
+        "translation": [
+          -11,
+          -3.93,
+          32
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/ArrivalOak.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 70,
+      "name": "Park Perimeter Oak",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          2.6,
+          2.6,
+          2.6
+        ],
+        "translation": [
+          12,
+          -3.93,
+          34
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/ArrivalOak.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 71,
+      "name": "Park Perimeter Oak",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          3.4,
+          3.4,
+          3.4
+        ],
+        "translation": [
+          0,
+          -3.93,
+          41
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/ArrivalOak.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 72,
+      "name": "Park Perimeter Oak",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          3.2,
+          3.2,
+          3.2
+        ],
+        "translation": [
+          -7,
+          -3.93,
+          39
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/ArrivalOak.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 73,
+      "name": "Park Perimeter Oak",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          3.2,
+          3.2,
+          3.2
+        ],
+        "translation": [
+          7,
+          -3.93,
+          40
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/ArrivalOak.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.31,
+          0.22,
+          0.15
+        ]
+      },
+      "id": 74,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Park Gate Upright",
+      "parent": 48,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.065,
+          1.6,
+          0.085
+        ],
+        "translation": [
+          -6,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.31,
+          0.22,
+          0.15
+        ]
+      },
+      "id": 75,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Park Gate Upright",
+      "parent": 48,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.065,
+          1.6,
+          0.085
+        ],
+        "translation": [
+          -5,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.31,
+          0.22,
+          0.15
+        ]
+      },
+      "id": 76,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Park Gate Upright",
+      "parent": 48,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.065,
+          1.6,
+          0.085
+        ],
+        "translation": [
+          -4,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.31,
+          0.22,
+          0.15
+        ]
+      },
+      "id": 77,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Park Gate Upright",
+      "parent": 48,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.065,
+          1.6,
+          0.085
+        ],
+        "translation": [
+          -3,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.31,
+          0.22,
+          0.15
+        ]
+      },
+      "id": 78,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Park Gate Upright",
+      "parent": 48,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.065,
+          1.6,
+          0.085
+        ],
+        "translation": [
+          -2,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.31,
+          0.22,
+          0.15
+        ]
+      },
+      "id": 79,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Park Gate Upright",
+      "parent": 48,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.065,
+          1.6,
+          0.085
+        ],
+        "translation": [
+          -1,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.31,
+          0.22,
+          0.15
+        ]
+      },
+      "id": 80,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Park Gate Upright",
+      "parent": 48,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.065,
+          1.6,
+          0.085
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.31,
+          0.22,
+          0.15
+        ]
+      },
+      "id": 81,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Park Gate Upright",
+      "parent": 48,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.065,
+          1.6,
+          0.085
+        ],
+        "translation": [
+          1,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.31,
+          0.22,
+          0.15
+        ]
+      },
+      "id": 82,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Park Gate Upright",
+      "parent": 48,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.065,
+          1.6,
+          0.085
+        ],
+        "translation": [
+          2,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.31,
+          0.22,
+          0.15
+        ]
+      },
+      "id": 83,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Park Gate Upright",
+      "parent": 48,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.065,
+          1.6,
+          0.085
+        ],
+        "translation": [
+          3,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.31,
+          0.22,
+          0.15
+        ]
+      },
+      "id": 84,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Park Gate Upright",
+      "parent": 48,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.065,
+          1.6,
+          0.085
+        ],
+        "translation": [
+          4,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.31,
+          0.22,
+          0.15
+        ]
+      },
+      "id": 85,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Park Gate Upright",
+      "parent": 48,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.065,
+          1.6,
+          0.085
+        ],
+        "translation": [
+          5,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.31,
+          0.22,
+          0.15
+        ]
+      },
+      "id": 86,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Park Gate Upright",
+      "parent": 48,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.065,
+          1.6,
+          0.085
+        ],
+        "translation": [
+          6,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.4,
+          0.28,
+          0.18
+        ]
+      },
+      "id": 87,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Park Gate Lower Rail",
+      "parent": 48,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          6.23,
+          0.09,
+          0.11
+        ],
+        "translation": [
+          0,
+          -0.96,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.4,
+          0.28,
+          0.18
+        ]
+      },
+      "id": 88,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Park Gate Upper Rail",
+      "parent": 48,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          6.23,
+          0.09,
+          0.11
+        ],
+        "translation": [
+          0,
+          1.12,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.72,
+          0.68,
+          0.54
+        ]
+      },
+      "id": 89,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CourtyardStone.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Park Gate Stone Post",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.25,
+          1.46,
+          0.26
+        ],
+        "translation": [
+          -6,
+          1.46,
+          27
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.72,
+          0.68,
+          0.54
+        ]
+      },
+      "id": 90,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CourtyardStone.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Park Gate Stone Post",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.25,
+          1.46,
+          0.26
+        ],
+        "translation": [
+          6,
+          1.46,
+          27
         ]
       }
     }
