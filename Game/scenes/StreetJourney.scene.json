@@ -28165,6 +28165,7 @@
         "enabled": true,
         "interactable": true,
         "navigation": true,
+        "initialSelection": true,
         "normalColor": [
           0.77,
           0.8,
