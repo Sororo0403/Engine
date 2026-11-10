@@ -72,6 +72,13 @@ class SceneUI {
 		return selected_;
 	}
 
+	/// <summary>
+	/// 今回の入力で新しくハイライトされたボタンを返す
+	/// </summary>
+	SceneObjectId GetFocusEntered() const {
+		return focusEntered_;
+	}
+
   private:
 	/// <summary>
 	/// 反映済みの入力に対して押下・選択の有効性と表示を再評価する
@@ -80,6 +87,7 @@ class SceneUI {
 	/// <param name="elements">現在の配置</param>
 	void Synchronize(const Scene &scene, std::span<const UIElement> elements);
 	SceneObjectId selected_ = 0, pressed_ = 0, hovered_ = 0;
+	SceneObjectId focusEntered_ = 0;
 	SceneObjectId pressedParent_ = 0, pressedCanvas_ = 0;
 	UIRect pressedRect_;
 	UITransform pressedTransform_;

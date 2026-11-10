@@ -184,8 +184,7 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 				bool requiresTrigger = false, requiresButton = false;
 
 				for (const auto &action : object.triggerActions->actions) {
-					requiresButton |=
-					    action.event == TriggerAction::Event::BUTTON_CLICK;
+					requiresButton |= action.UsesButton();
 					requiresTrigger |= action.UsesContact();
 				}
 
@@ -195,7 +194,7 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 					        "Is Trigger enabled.");
 				if (requiresButton && !object.button)
 					add(id,
-					    "Button Click Trigger Actions require a UI Button.");
+					    "Button Trigger Actions require a UI Button.");
 				for (const auto &action : object.triggerActions->actions) {
 					const bool marker = action.event == TriggerAction::Event::ANIMATION_CLIP_MARKER;
 					if ((marker || action.event == TriggerAction::Event::ANIMATION_CLIP_FINISHED) &&

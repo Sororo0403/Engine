@@ -101,6 +101,7 @@ bool SameRect(const UIRect &a, const UIRect &b) {
 
 void SceneUI::Cancel() noexcept {
 	selected_ = pressed_ = hovered_ = pressedParent_ = pressedCanvas_ = 0;
+	focusEntered_ = 0;
 	pointerSequence_ = keyboardMode_ = pointerArmed_ = submitArmed_ = false;
 	consumesPointer_ = consumesNavigation_ = false;
 	last_ = UIInput{};
@@ -308,6 +309,13 @@ bool SceneUI::Update(const Scene &scene, const UIInput &input,
 		}
 
 		next.Synchronize(scene, elements);
+
+		const auto previousFocus = keyboardMode_ ? selected_ : hovered_;
+		const auto currentFocus = next.keyboardMode_ ? next.selected_ : next.hovered_;
+		next.focusEntered_ =
+		    currentFocus != previousFocus && currentFocus != next.pressed_ &&
+		            std::ranges::find(next.clicks_, currentFocus) == next.clicks_.end()
+		        ? currentFocus : 0;
 
 		if (input.submitPressed && input.navigationEnabled &&
 		    next.submitArmed_ && next.keyboardMode_ && next.selected_) {

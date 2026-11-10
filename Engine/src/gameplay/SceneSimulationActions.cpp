@@ -255,6 +255,8 @@ bool SceneSimulation::ApplyTriggerActions(
 		QueueOccupancySignals(signals, occupied);
 	for (const auto button : ui_.GetClicks())
 		signals.push_back({button, TriggerAction::Event::BUTTON_CLICK});
+	if (const auto button = ui_.GetFocusEntered())
+		signals.push_back({button, TriggerAction::Event::BUTTON_FOCUS});
 	if (namedPressed) {
 		for (const auto &[id, object] : scene_.GetObjects()) {
 			if (!object.triggerActions || !SceneActivity::IsActive(scene_, id))
@@ -300,16 +302,16 @@ bool SceneSimulation::ApplyTriggerActions(
 			continue;
 		}
 
-		const bool buttonClick =
-		    signal.event == TriggerAction::Event::BUTTON_CLICK;
+		const bool buttonEvent = signal.event == TriggerAction::Event::BUTTON_CLICK ||
+		                         signal.event == TriggerAction::Event::BUTTON_FOCUS;
 		const bool globalInput =
 		    signal.event == TriggerAction::Event::INPUT_PRESSED;
 		const bool clipEvent =
 		    signal.event == TriggerAction::Event::ANIMATION_CLIP_FINISHED ||
 		    signal.event == TriggerAction::Event::ANIMATION_CLIP_MARKER;
-		if ((buttonClick && (!object->button || !object->button->enabled)) ||
+		if ((buttonEvent && (!object->button || !object->button->enabled)) ||
 		    (clipEvent && !object->animationClip) ||
-		    (!buttonClick && !globalInput && !clipEvent &&
+		    (!buttonEvent && !globalInput && !clipEvent &&
 		     (!object->collider || !object->collider->isTrigger)))
 			continue;
 		const auto &actions = object->triggerActions->actions;

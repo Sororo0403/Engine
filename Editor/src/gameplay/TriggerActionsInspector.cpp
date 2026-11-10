@@ -131,6 +131,8 @@ const char *EventLabel(TriggerAction::Event event) {
 		return "Animation Clip Finished";
 	case TriggerAction::Event::BUTTON_CLICK:
 		return "Button Click";
+	case TriggerAction::Event::BUTTON_FOCUS:
+		return "Button Focus";
 	case TriggerAction::Event::INPUT_PRESSED:
 		return "Input Pressed";
 	}
@@ -194,6 +196,7 @@ bool TriggerActionsInspector::Draw(
 				                TriggerAction::Event::LAST_EXIT,
 				                TriggerAction::Event::INTERACT,
 				                TriggerAction::Event::BUTTON_CLICK,
+				                TriggerAction::Event::BUTTON_FOCUS,
 				                TriggerAction::Event::ANIMATION_CLIP_FINISHED,
 				                TriggerAction::Event::ANIMATION_CLIP_MARKER,
 				                TriggerAction::Event::INPUT_PRESSED}) {

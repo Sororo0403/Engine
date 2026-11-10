@@ -66,7 +66,8 @@ struct TriggerAction {
 		BUTTON_CLICK,
 		ANIMATION_CLIP_FINISHED,
 		ANIMATION_CLIP_MARKER,
-		INPUT_PRESSED
+		INPUT_PRESSED,
+		BUTTON_FOCUS
 	};
 
 	/// <summary>
@@ -133,7 +134,7 @@ struct TriggerAction {
 		        contact == Contact::DYNAMIC_BODY) &&
 		       (event == Event::ENTER || event == Event::EXIT ||
 		        event == Event::INTERACT || event == Event::FIRST_ENTER ||
-		        event == Event::LAST_EXIT || event == Event::BUTTON_CLICK ||
+		        event == Event::LAST_EXIT || UsesButton() ||
 		        event == Event::INPUT_PRESSED || event == Event::ANIMATION_CLIP_FINISHED ||
 		        event == Event::ANIMATION_CLIP_MARKER) &&
 		       (UsesContact() ||
@@ -167,9 +168,16 @@ struct TriggerAction {
 	/// </summary>
 	/// <returns>true:接触を使う false:UI Buttonまたは名前付き入力</returns>
 	bool UsesContact() const {
-		return event != Event::BUTTON_CLICK && event != Event::INPUT_PRESSED &&
+		return !UsesButton() && event != Event::INPUT_PRESSED &&
 		       event != Event::ANIMATION_CLIP_FINISHED &&
 		       event != Event::ANIMATION_CLIP_MARKER;
+	}
+
+	/// <summary>
+	/// 実行条件がUI Buttonの選択またはクリックを使うか確認する
+	/// </summary>
+	bool UsesButton() const {
+		return event == Event::BUTTON_CLICK || event == Event::BUTTON_FOCUS;
 	}
 
 	/// <summary>

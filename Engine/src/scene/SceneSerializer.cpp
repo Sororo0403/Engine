@@ -865,6 +865,8 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 					          ? "lastExit"
 					      : action.event == TriggerAction::Event::BUTTON_CLICK
 					          ? "buttonClick"
+					      : action.event == TriggerAction::Event::BUTTON_FOCUS
+					          ? "buttonFocus"
 					      : action.event == TriggerAction::Event::ANIMATION_CLIP_FINISHED
 					          ? "animationClipFinished"
 					      : action.event == TriggerAction::Event::ANIMATION_CLIP_MARKER
@@ -1677,6 +1679,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 					     !(version >= 46 &&
 					       (event == "firstEnter" || event == "lastExit")) &&
 					     !(version >= 56 && event == "buttonClick") &&
+					     !(version >= 77 && event == "buttonFocus") &&
 					     !(version >= 59 && event == "inputPressed") &&
 					     !(version >= 70 && event == "animationClipFinished") &&
 					     !(version >= 71 && event == "animationClipMarker")) ||
@@ -1740,6 +1743,8 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 					     : event == "lastExit" ? TriggerAction::Event::LAST_EXIT
 					     : event == "buttonClick"
 					         ? TriggerAction::Event::BUTTON_CLICK
+					     : event == "buttonFocus"
+					         ? TriggerAction::Event::BUTTON_FOCUS
 					     : event == "animationClipFinished"
 					         ? TriggerAction::Event::ANIMATION_CLIP_FINISHED
 					     : event == "animationClipMarker"
