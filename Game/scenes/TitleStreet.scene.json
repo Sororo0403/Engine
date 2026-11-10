@@ -105,6 +105,7 @@
         "model": "@project/assets/title/models/MorningSky.obj"
       },
       "meshRenderer": {
+        "receiveFog": false,
         "textures": [],
         "uvOffset": [0, 0],
         "uvScale": [1, 1],
