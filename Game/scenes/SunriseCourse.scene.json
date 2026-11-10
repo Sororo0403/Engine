@@ -1399,9 +1399,9 @@
       },
       "colorTint": {
         "color": [
-          0.61,
-          0.42,
-          0.3
+          0.67,
+          0.58,
+          0.47
         ]
       },
       "id": 64,
@@ -1471,9 +1471,9 @@
       },
       "colorTint": {
         "color": [
-          0.61,
-          0.42,
-          0.3
+          0.67,
+          0.58,
+          0.47
         ]
       },
       "id": 65,
@@ -1543,9 +1543,9 @@
       },
       "colorTint": {
         "color": [
-          0.61,
-          0.42,
-          0.3
+          0.67,
+          0.58,
+          0.47
         ]
       },
       "id": 66,
@@ -1615,9 +1615,9 @@
       },
       "colorTint": {
         "color": [
-          0.61,
-          0.42,
-          0.3
+          0.67,
+          0.58,
+          0.47
         ]
       },
       "id": 67,
@@ -2143,7 +2143,7 @@
           1.0,
           1.0
         ],
-        "visible": true
+        "visible": false
       },
       "name": "Closed Lookout Gate",
       "parent": 0,
@@ -4839,6 +4839,2268 @@
         ],
         "alignment": "center",
         "verticalAlignment": "middle"
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.22,
+          0.3,
+          0.31
+        ]
+      },
+      "id": 138,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Lookout Gate Bar",
+      "parent": 76,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.009,
+          0.95,
+          0.6
+        ],
+        "translation": [
+          -0.8899999999999999,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.22,
+          0.3,
+          0.31
+        ]
+      },
+      "id": 139,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Lookout Gate Bar",
+      "parent": 76,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.009,
+          0.95,
+          0.6
+        ],
+        "translation": [
+          -0.712,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.22,
+          0.3,
+          0.31
+        ]
+      },
+      "id": 140,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Lookout Gate Bar",
+      "parent": 76,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.009,
+          0.95,
+          0.6
+        ],
+        "translation": [
+          -0.534,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.22,
+          0.3,
+          0.31
+        ]
+      },
+      "id": 141,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Lookout Gate Bar",
+      "parent": 76,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.009,
+          0.95,
+          0.6
+        ],
+        "translation": [
+          -0.356,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.22,
+          0.3,
+          0.31
+        ]
+      },
+      "id": 142,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Lookout Gate Bar",
+      "parent": 76,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.009,
+          0.95,
+          0.6
+        ],
+        "translation": [
+          -0.178,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.22,
+          0.3,
+          0.31
+        ]
+      },
+      "id": 143,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Lookout Gate Bar",
+      "parent": 76,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.009,
+          0.95,
+          0.6
+        ],
+        "translation": [
+          0.0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.22,
+          0.3,
+          0.31
+        ]
+      },
+      "id": 144,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Lookout Gate Bar",
+      "parent": 76,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.009,
+          0.95,
+          0.6
+        ],
+        "translation": [
+          0.178,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.22,
+          0.3,
+          0.31
+        ]
+      },
+      "id": 145,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Lookout Gate Bar",
+      "parent": 76,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.009,
+          0.95,
+          0.6
+        ],
+        "translation": [
+          0.356,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.22,
+          0.3,
+          0.31
+        ]
+      },
+      "id": 146,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Lookout Gate Bar",
+      "parent": 76,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.009,
+          0.95,
+          0.6
+        ],
+        "translation": [
+          0.534,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.22,
+          0.3,
+          0.31
+        ]
+      },
+      "id": 147,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Lookout Gate Bar",
+      "parent": 76,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.009,
+          0.95,
+          0.6
+        ],
+        "translation": [
+          0.712,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.22,
+          0.3,
+          0.31
+        ]
+      },
+      "id": 148,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Lookout Gate Bar",
+      "parent": 76,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.009,
+          0.95,
+          0.6
+        ],
+        "translation": [
+          0.8899999999999999,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.22,
+          0.3,
+          0.31
+        ]
+      },
+      "id": 149,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Lookout Gate Cross Rail",
+      "parent": 76,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.98,
+          0.065,
+          0.84
+        ],
+        "translation": [
+          0,
+          -0.62,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.22,
+          0.3,
+          0.31
+        ]
+      },
+      "id": 150,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Lookout Gate Cross Rail",
+      "parent": 76,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.98,
+          0.065,
+          0.84
+        ],
+        "translation": [
+          0,
+          0.64,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.76,
+          0.67,
+          0.52
+        ]
+      },
+      "id": 151,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Quay Coping",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.2,
+          0.065,
+          15.75
+        ],
+        "translation": [
+          -6.18,
+          1.68,
+          12.75
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.76,
+          0.67,
+          0.52
+        ]
+      },
+      "id": 152,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Quay Stone Pier",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.24,
+          1.1,
+          0.22
+        ],
+        "translation": [
+          -6.18,
+          1.1,
+          -1
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.76,
+          0.67,
+          0.52
+        ]
+      },
+      "id": 153,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Quay Stone Pier",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.24,
+          1.1,
+          0.22
+        ],
+        "translation": [
+          -6.18,
+          1.1,
+          4.7
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.76,
+          0.67,
+          0.52
+        ]
+      },
+      "id": 154,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Quay Stone Pier",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.24,
+          1.1,
+          0.22
+        ],
+        "translation": [
+          -6.18,
+          1.1,
+          11.75
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.76,
+          0.67,
+          0.52
+        ]
+      },
+      "id": 155,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Quay Stone Pier",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.24,
+          1.1,
+          0.22
+        ],
+        "translation": [
+          -6.18,
+          1.1,
+          18.1
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.76,
+          0.67,
+          0.52
+        ]
+      },
+      "id": 156,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Quay Stone Pier",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.24,
+          1.1,
+          0.22
+        ],
+        "translation": [
+          -6.18,
+          1.1,
+          25.2
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.76,
+          0.67,
+          0.52
+        ]
+      },
+      "id": 157,
+      "mesh": {
+        "model": "@project/assets/street/models/ArrivalWestFacade.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Sunrise Canal House",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          2.2,
+          1.7,
+          2.65
+        ],
+        "translation": [
+          -9.1,
+          1.0,
+          1.5
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.76,
+          0.67,
+          0.52
+        ]
+      },
+      "id": 158,
+      "mesh": {
+        "model": "@project/assets/street/models/ArrivalWestFacade.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Sunrise Canal House",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          2.2,
+          2.5,
+          2.65
+        ],
+        "translation": [
+          -9.6,
+          1.8,
+          15.8
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.76,
+          0.67,
+          0.52
+        ]
+      },
+      "id": 159,
+      "mesh": {
+        "model": "@project/assets/street/models/ArrivalWestFacade.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Sunrise Canal House",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          2.2,
+          2.1,
+          2.65
+        ],
+        "translation": [
+          -9.6,
+          1.4000000000000001,
+          22.7
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 160,
+      "mesh": {
+        "model": "@project/assets/street/models/ArrivalOak.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Quay Tree",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.9,
+          0.9,
+          0.9
+        ],
+        "translation": [
+          -7.9,
+          -0.68,
+          6.0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 161,
+      "mesh": {
+        "model": "@project/assets/street/models/ArrivalOak.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Quay Tree",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.9,
+          0.9,
+          0.9
+        ],
+        "translation": [
+          -7.9,
+          -0.68,
+          12.85
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.76,
+          0.67,
+          0.52
+        ]
+      },
+      "id": 162,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Quay Coping",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.2,
+          0.065,
+          15.75
+        ],
+        "translation": [
+          6.18,
+          1.68,
+          12.75
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.76,
+          0.67,
+          0.52
+        ]
+      },
+      "id": 163,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Quay Stone Pier",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.24,
+          1.1,
+          0.22
+        ],
+        "translation": [
+          6.18,
+          1.1,
+          -1
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.76,
+          0.67,
+          0.52
+        ]
+      },
+      "id": 164,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Quay Stone Pier",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.24,
+          1.1,
+          0.22
+        ],
+        "translation": [
+          6.18,
+          1.1,
+          4.7
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.76,
+          0.67,
+          0.52
+        ]
+      },
+      "id": 165,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Quay Stone Pier",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.24,
+          1.1,
+          0.22
+        ],
+        "translation": [
+          6.18,
+          1.1,
+          11.75
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.76,
+          0.67,
+          0.52
+        ]
+      },
+      "id": 166,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Quay Stone Pier",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.24,
+          1.1,
+          0.22
+        ],
+        "translation": [
+          6.18,
+          1.1,
+          18.1
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.76,
+          0.67,
+          0.52
+        ]
+      },
+      "id": 167,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Quay Stone Pier",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.24,
+          1.1,
+          0.22
+        ],
+        "translation": [
+          6.18,
+          1.1,
+          25.2
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.76,
+          0.67,
+          0.52
+        ]
+      },
+      "id": 168,
+      "mesh": {
+        "model": "@project/assets/street/models/ArrivalEastFacade.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Sunrise Canal House",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          2.2,
+          1.7,
+          2.65
+        ],
+        "translation": [
+          9.1,
+          1.0,
+          1.5
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.76,
+          0.67,
+          0.52
+        ]
+      },
+      "id": 169,
+      "mesh": {
+        "model": "@project/assets/street/models/ArrivalEastFacade.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Sunrise Canal House",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          2.2,
+          2.5,
+          2.65
+        ],
+        "translation": [
+          9.6,
+          1.8,
+          15.8
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.76,
+          0.67,
+          0.52
+        ]
+      },
+      "id": 170,
+      "mesh": {
+        "model": "@project/assets/street/models/ArrivalEastFacade.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Sunrise Canal House",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          2.2,
+          2.1,
+          2.65
+        ],
+        "translation": [
+          9.6,
+          1.4000000000000001,
+          22.7
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 171,
+      "mesh": {
+        "model": "@project/assets/street/models/ArrivalOak.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Quay Tree",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.9,
+          0.9,
+          0.9
+        ],
+        "translation": [
+          7.9,
+          -0.68,
+          6.0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 172,
+      "mesh": {
+        "model": "@project/assets/street/models/ArrivalOak.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Quay Tree",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.9,
+          0.9,
+          0.9
+        ],
+        "translation": [
+          7.9,
+          -0.68,
+          12.85
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.55,
+          0.4,
+          0.27
+        ]
+      },
+      "id": 173,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Bridge Bank Post",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.12,
+          0.48,
+          0.12
+        ],
+        "translation": [
+          -1.35,
+          0.48,
+          5.81
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.55,
+          0.4,
+          0.27
+        ]
+      },
+      "id": 174,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Bridge Bank Post",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.12,
+          0.48,
+          0.12
+        ],
+        "translation": [
+          -1.35,
+          0.48,
+          11.39
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.55,
+          0.4,
+          0.27
+        ]
+      },
+      "id": 175,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Bridge Bank Post",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.12,
+          0.48,
+          0.12
+        ],
+        "translation": [
+          1.35,
+          0.48,
+          5.81
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.55,
+          0.4,
+          0.27
+        ]
+      },
+      "id": 176,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Bridge Bank Post",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.12,
+          0.48,
+          0.12
+        ],
+        "translation": [
+          1.35,
+          0.48,
+          11.39
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.34,
+          0.46,
+          0.49
+        ]
+      },
+      "id": 177,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Moving Dock Beacon",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.13,
+          0.51,
+          0.13
+        ],
+        "translation": [
+          4.96,
+          0.51,
+          5.33
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.9,
+          0.65,
+          0.29
+        ]
+      },
+      "id": 178,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Moving Dock Lantern",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.19,
+          0.12,
+          0.19
+        ],
+        "translation": [
+          4.96,
+          1.1,
+          5.33
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.34,
+          0.46,
+          0.49
+        ]
+      },
+      "id": 179,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Moving Dock Beacon",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.13,
+          0.51,
+          0.13
+        ],
+        "translation": [
+          4.96,
+          0.51,
+          12.12
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.9,
+          0.65,
+          0.29
+        ]
+      },
+      "id": 180,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Moving Dock Lantern",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.19,
+          0.12,
+          0.19
+        ],
+        "translation": [
+          4.96,
+          1.1,
+          12.12
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.57,
+          0.48,
+          0.37
+        ]
+      },
+      "id": 181,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Sunrise Quay Embankment",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          4.83,
+          0.61,
+          17.9
+        ],
+        "translation": [
+          -11.1,
+          -1.31,
+          12.6
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.57,
+          0.48,
+          0.37
+        ]
+      },
+      "id": 182,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Sunrise Quay Embankment",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          4.83,
+          0.61,
+          17.9
+        ],
+        "translation": [
+          11.1,
+          -1.31,
+          12.6
+        ]
       }
     }
   ],
