@@ -10823,6 +10823,7 @@
           "roofGapZ": 74,
           "roofHintDepth": 2.5,
           "shutterClearY": 2.5,
+          "shutterOpeningText": "シャッターが開いていく…",
           "roofJumpText": "矢印の先へジャンプ  長押しでふわっと進める",
           "roofText": "屋上の時計台を目指そう"
         }

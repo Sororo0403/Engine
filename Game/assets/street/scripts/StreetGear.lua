@@ -62,6 +62,9 @@ return {
                         state.shutterReleased = true
                     end
                 end
+                if shutterVisual and not state.shutterReleased then
+                    return
+                end
             end
             local hint = self:reference("openHint")
             if state.roofJumpText and hint:is_active() then
@@ -93,15 +96,19 @@ return {
         end
 
         state.open = true
+        local openHint = self:reference("openHint")
         local shutterVisual = self:reference("shutterVisual")
         if shutterVisual and state.shutterClearY then
             shutterVisual:play_animation()
+            if state.shutterOpeningText and state.roofJumpText then
+                openHint:set_text(state.shutterOpeningText)
+            end
         else
             self:reference("shutter"):set_active(false)
         end
         self:reference("goal"):set_active(true)
         self:reference("hint"):set_active(false)
-        self:reference("openHint"):set_active(true)
+        openHint:set_active(true)
         self:reference("visual"):play_animation()
         self:play_audio()
     end
