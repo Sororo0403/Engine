@@ -1,0 +1,12 @@
+mtllib RooftopJumpMarker.mtl
+o RooftopJumpMarker
+v -0.34 0 0
+v 0.05 0 -0.48
+v 0.31 0 -0.48
+v -0.08 0 0
+v 0.31 0 0.48
+v 0.05 0 0.48
+vn 0 1 0
+usemtl PaintedGold
+f 1//1 4//1 3//1 2//1
+f 1//1 6//1 5//1 4//1

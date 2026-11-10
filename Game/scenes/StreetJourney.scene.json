@@ -10806,7 +10806,14 @@
           "findCanalText": "運河を目指して街を進もう",
           "jumpText": "運河をジャンプで渡ろう  ［Space / A］",
           "findGearText": "広場の歯車を探そう",
-          "activateGearText": "歯車をたたいて道を開こう  ［J / X］"
+          "activateGearText": "歯車をたたいて道を開こう  ［J / X］",
+          "roofMinY": 4.2,
+          "roofNearX": 3.5,
+          "roofFarX": 8,
+          "roofGapZ": 74,
+          "roofHintDepth": 2.5,
+          "roofJumpText": "矢印の先へジャンプ  長押しでふわっと進める",
+          "roofText": "屋上の時計台を目指そう"
         }
       },
       "tag": "street_sound",
@@ -31261,6 +31268,86 @@
         "playOnStart": false,
         "spatial": false,
         "volume": 0.55
+      }
+    },
+    {
+      "active": true,
+      "id": 530,
+      "name": "Rooftop Jump Arrow 1",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          5.5,
+          3.955,
+          74
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 531,
+      "name": "Rooftop Jump Arrow 2",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          4.7,
+          3.955,
+          74
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
+        ]
       }
     }
   ],

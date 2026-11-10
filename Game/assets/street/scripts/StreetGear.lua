@@ -18,7 +18,7 @@ end
 
 return {
     update = function(self, state, _, input)
-        if state.open or game.streetDeathActive then
+        if game.streetDeathActive then
             return
         end
 
@@ -29,6 +29,19 @@ return {
 
         local x, y, z = self:get_position()
         local px, py, pz = player:get_position()
+        if state.open then
+            local hint = self:reference("openHint")
+            if state.roofJumpText and hint:is_active() then
+                local approaching = py >= state.roofMinY and px >= state.roofNearX
+                    and px <= state.roofFarX and math.abs(pz - state.roofGapZ) <= state.roofHintDepth
+                local text = approaching and state.roofJumpText or state.roofText
+                if text ~= state.currentRoofHint then
+                    hint:set_text(text)
+                    state.currentRoofHint = text
+                end
+            end
+            return
+        end
         local dx, dy, dz = x - px, y - py, z - pz
         local inRange = dx * dx + dz * dz < state.range * state.range and math.abs(dy) < state.height
         update_hint(self, state, px, pz, inRange)
