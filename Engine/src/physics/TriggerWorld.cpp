@@ -54,6 +54,7 @@ bool TriggerWorld::Update(const Scene &scene,
 		}
 
 		std::map<SceneObjectId, Shape> shapes;
+		std::set<SceneObjectId> changed;
 
 		for (const auto &[id, object] : scene.GetObjects()) {
 			if (!active.at(id) || !object.collider) {
@@ -82,13 +83,14 @@ bool TriggerWorld::Update(const Scene &scene,
 			                           transforms.at(id).matrix, geometry,
 			                           error))
 				return false;
+			changed.insert(id);
 			shapes.emplace(id, Shape{bounds, object.collider->filter,
 			                         object.collider->isTrigger,
 			                         *object.collider, transforms.at(id).matrix,
 			                         std::move(geometry)});
 		}
 
-		// 現在Triggerを持つ組と、退出が必要になる前回の接触を一度ずつ処理する。
+		// 変化した形状の組と、Stay・Exitの確認が必要な前回の接触だけを調べる。
 		std::set<TriggerContact> pairs(contacts_.begin(), contacts_.end());
 
 		for (const auto &[id, shape] : shapes) {
@@ -96,8 +98,10 @@ bool TriggerWorld::Update(const Scene &scene,
 				continue;
 			}
 
+			const bool triggerChanged = changed.contains(id);
 			for (const auto &[other, otherShape] : shapes) {
-				if (id != other && shape.filter.CanCollide(otherShape.filter)) {
+				if (id != other && (triggerChanged || changed.contains(other)) &&
+				    shape.filter.CanCollide(otherShape.filter)) {
 					pairs.insert(
 					    {(std::min)(id, other), (std::max)(id, other)});
 				}
