@@ -4012,8 +4012,8 @@
       "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
-        "scale": [4.0, 4.0, 4.0],
-        "translation": [4.800000190734863, 0.07999999821186066, 6.0]
+        "scale": [3.2, 4.0, 4.0],
+        "translation": [5.2, 0.07999999821186066, 6.0]
       },
       "mesh": {
         "model": "@project/assets/title/models/Sidewalk.obj"
@@ -4033,8 +4033,8 @@
       "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
-        "scale": [4.0, 4.0, 4.0],
-        "translation": [4.800000190734863, 0.07999999821186066, 10.0]
+        "scale": [3.2, 4.0, 4.0],
+        "translation": [5.2, 0.07999999821186066, 10.0]
       },
       "mesh": {
         "model": "@project/assets/title/models/Sidewalk.obj"
@@ -4054,8 +4054,8 @@
       "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
-        "scale": [4.0, 4.0, 4.0],
-        "translation": [4.800000190734863, 0.07999999821186066, 14.0]
+        "scale": [3.2, 4.0, 4.0],
+        "translation": [5.2, 0.07999999821186066, 14.0]
       },
       "mesh": {
         "model": "@project/assets/title/models/Sidewalk.obj"
@@ -4075,8 +4075,8 @@
       "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
-        "scale": [4.0, 4.0, 4.0],
-        "translation": [4.800000190734863, 0.07999999821186066, 18.0]
+        "scale": [3.2, 4.0, 4.0],
+        "translation": [5.2, 0.07999999821186066, 18.0]
       },
       "mesh": {
         "model": "@project/assets/title/models/Sidewalk.obj"
@@ -7408,8 +7408,8 @@
       "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
-        "scale": [4.0, 4.0, 4.0],
-        "translation": [4.800000190734863, 0.07999999821186066, 6.0]
+        "scale": [3.2, 4.0, 4.0],
+        "translation": [5.2, 0.07999999821186066, 6.0]
       },
       "mesh": {
         "model": "@project/assets/title/models/Sidewalk.obj"
@@ -7438,8 +7438,8 @@
       "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
-        "scale": [4.0, 4.0, 4.0],
-        "translation": [4.800000190734863, 0.07999999821186066, 10.0]
+        "scale": [3.2, 4.0, 4.0],
+        "translation": [5.2, 0.07999999821186066, 10.0]
       },
       "mesh": {
         "model": "@project/assets/title/models/Sidewalk.obj"
@@ -7468,8 +7468,8 @@
       "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
-        "scale": [4.0, 4.0, 4.0],
-        "translation": [4.800000190734863, 0.07999999821186066, 14.0]
+        "scale": [3.2, 4.0, 4.0],
+        "translation": [5.2, 0.07999999821186066, 14.0]
       },
       "mesh": {
         "model": "@project/assets/title/models/Sidewalk.obj"
@@ -7498,8 +7498,8 @@
       "tag": "",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
-        "scale": [4.0, 4.0, 4.0],
-        "translation": [4.800000190734863, 0.07999999821186066, 18.0]
+        "scale": [3.2, 4.0, 4.0],
+        "translation": [5.2, 0.07999999821186066, 18.0]
       },
       "mesh": {
         "model": "@project/assets/title/models/Sidewalk.obj"
