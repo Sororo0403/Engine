@@ -231,6 +231,25 @@
       "id": 4,
       "name": "Park Follow Camera",
       "parent": 0,
+      "script": {
+        "asset": "@project/assets/park/scripts/ParkCamera.lua",
+        "enabled": true,
+        "prefabs": [],
+        "references": [
+          {
+            "name": "player",
+            "target": 1
+          },
+          {
+            "name": "westSwitch",
+            "target": 46
+          }
+        ],
+        "scenes": [],
+        "state": {
+          "jumpFov": 61
+        }
+      },
       "tag": "",
       "transform": {
         "rotation": [
