@@ -990,9 +990,10 @@ bool SceneSimulation::SynchronizeSceneChanges(
 		                            character_) != subtree.end();
 	}
 
-	// 追従によって移動したColliderにも途中経路の検知を適用しない。
+	// 追従で移動したColliderと主人公も瞬間移動として扱う。
 	for (const auto &[id, object] : next.scene_.GetObjects()) {
-		(void)object;
+		if ((!object.collider && id != character_) || teleported.contains(id))
+			continue;
 		SceneWorldTransform before, after;
 
 		if (SceneHierarchy::GetWorldTransform(scene_, id, before) &&
