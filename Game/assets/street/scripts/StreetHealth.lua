@@ -19,7 +19,7 @@ local function cover(image, x, y, width, height, tint)
     image:set_image_color(tint, tint, tint, width > 0 and height > 0 and 1 or 0)
 end
 
-local function iris(self, viewport, open)
+local function iris(self, state, viewport, open)
     local shade = self:reference("deathShade")
     local aperture = self:reference("iris")
     local leftCover, rightCover = self:reference("coverLeft"), self:reference("coverRight")
@@ -34,14 +34,22 @@ local function iris(self, viewport, open)
     end
 
     local width, height = viewport.width, viewport.height
-    local x, y, z = self:reference("visual"):get_position()
-    local camera = scene.get_camera()
-    local u, v
-    if camera then
-        u, v = camera:world_to_viewport(x, y - 0.15, z, width, height)
+    if not state.irisU then
+        local camera = scene.get_camera()
+        local u, v, depth
+        if camera then
+            u, v, depth = camera:world_to_viewport(
+                state.irisX, state.irisY, state.irisZ, width, height)
+            local _, nearClip, farClip = camera:get_camera_lens()
+            if depth and (depth < nearClip or depth > farClip) then
+                u, v = nil, nil
+            end
+        end
+        state.irisU = math.max(0.03, math.min(0.97, u or 0.5))
+        state.irisV = math.max(0.03, math.min(0.97, v or 0.5))
     end
-    local cx = math.max(0, math.min(1, u or 0.5)) * width
-    local cy = math.max(0, math.min(1, v or 0.5)) * height
+    local cx = state.irisU * width
+    local cy = state.irisV * height
     local farX, farY = math.max(cx, width - cx), math.max(cy, height - cy)
     local radius = math.sqrt(farX * farX + farY * farY) * open / 0.90
     local x0, x1 = math.max(0, cx - radius), math.min(width, cx + radius)
@@ -91,6 +99,11 @@ local function start_death(self, state, falling)
     state.inputBeforeDeath = self:is_character_input_enabled()
     self:set_character_input_enabled(false)
     lock_camera(self, state, falling)
+    state.irisX, state.irisY, state.irisZ = self:get_position()
+    if falling then
+        state.irisY = state.lastGroundY
+    end
+    state.irisU, state.irisV = nil, nil
     background(self, state, 0)
 end
 
@@ -126,12 +139,14 @@ local function update_death(self, state, seconds, viewport)
             local bounce = math.sin(reaction * math.pi)
             pose(self, -0.48 * reaction, 1 - 0.34 * bounce)
         end
-        iris(self, viewport, 1 - smooth((t - hold) / state.deathClose))
+        iris(self, state, viewport, 1 - smooth((t - hold) / state.deathClose))
     elseif not state.deathReturned then
         -- 復帰のフレームは暗幕を閉じた状態で表示する。
-        iris(self, viewport, 0)
+        iris(self, state, viewport, 0)
         self:set_position(state.spawnX, state.spawnY, state.spawnZ)
         restore_camera(self)
+        state.irisX, state.irisY, state.irisZ = state.spawnX, state.spawnY, state.spawnZ
+        state.irisU, state.irisV = nil, nil
         state.life = state.maximumLife
         state.deathReturned = true
         t = blackout
@@ -140,7 +155,7 @@ local function update_death(self, state, seconds, viewport)
         show_life(self, state)
     else
         local reveal = smooth((t - opening) / state.deathReveal)
-        iris(self, viewport, reveal)
+        iris(self, state, viewport, reveal)
         pose(self, 0, 1 + 0.12 * math.sin(reveal * math.pi))
     end
 
