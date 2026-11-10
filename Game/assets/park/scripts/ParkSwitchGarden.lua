@@ -39,6 +39,7 @@ end
 return {
     start = function(self, state)
         state.journeyStreetTime = game.journeyStreetTime
+        state.journeyStreetFull = game.streetAllFlowers == true
         game.journeyStreetTime = nil
         state.pondHint = self:reference("label"):get_text()
         state.elapsed = 0
@@ -160,9 +161,13 @@ return {
             end
             local journey = ""
             if type(state.journeyStreetTime) == "number" then
+                self:reference("resultHeading"):set_text("GURUTTO WORLD CLEAR")
                 local total = state.journeyStreetTime + time
                 journey = string.format("\n街＋公園 %.1f 秒    通しベスト %s", total / 10,
                     record_time("journeyBestTime", total))
+                if state.journeyStreetFull and flowers == state.totalFlowers then
+                    journey = journey .. "    全収集ベスト " .. record_time("journeyBestFullTime", total)
+                end
             end
             result:set_text(result:get_text() .. "\n" .. summary .. "\n" .. times .. "\n" .. clean .. journey)
             return
