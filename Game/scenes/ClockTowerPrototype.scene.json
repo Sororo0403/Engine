@@ -67,24 +67,12 @@
     },
     {
       "active": true,
-      "colorTint": {
-        "color": [
-          0.949999988079071,
-          0.6200000047683716,
-          0.1599999964237213
-        ]
-      },
       "id": 2,
       "mesh": {
-        "model": "@project/assets/models/box/box.glb"
+        "model": "@project/assets/models/hero/StreetHero.glb"
       },
       "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
+        "textures": [],
         "uvOffset": [
           0.0,
           0.0
@@ -95,7 +83,7 @@
         ],
         "visible": true
       },
-      "name": "Player Body",
+      "name": "Street Hero",
       "parent": 1,
       "tag": "",
       "transform": {
@@ -106,66 +94,14 @@
           1.0
         ],
         "scale": [
-          0.28999999165534973,
-          0.4399999976158142,
-          0.23999999463558197
-        ],
-        "translation": [
-          0.0,
-          -0.11999999731779099,
-          0.0
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
           1.0,
-          0.8299999833106995,
-          0.5799999833106995
-        ]
-      },
-      "id": 3,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
           1.0,
           1.0
         ],
-        "visible": true
-      },
-      "name": "Player Head",
-      "parent": 1,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          0.20999999344348907,
-          0.1899999976158142,
-          0.20000000298023224
-        ],
         "translation": [
           0.0,
-          0.4300000071525574,
-          0.03999999910593033
+          0.0,
+          0.0
         ]
       }
     },
