@@ -195,6 +195,10 @@ return {
             return
         end
         if state.completed then
+            local confirm = input.actions.Confirm
+            if confirm and confirm.pressed then
+                self:load_scene("title")
+            end
             return
         end
 
