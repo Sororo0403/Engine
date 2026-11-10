@@ -32541,7 +32541,7 @@
       "transform": {
         "rotation": [0, 1, 0, 0],
         "scale": [1, 1, 1],
-        "translation": [-2.1, 0.012, 23]
+        "translation": [-2.1, 0.035, 23]
       },
       "mesh": {
         "model": "@project/assets/street/models/RooftopJumpMarker.obj"
@@ -32562,7 +32562,7 @@
       "transform": {
         "rotation": [0, 1, 0, 0],
         "scale": [1, 1, 1],
-        "translation": [-1.3, 0.012, 23]
+        "translation": [-1.3, 0.035, 23]
       },
       "mesh": {
         "model": "@project/assets/street/models/RooftopJumpMarker.obj"
