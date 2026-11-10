@@ -29,11 +29,12 @@ return {
         local px, py, pz = player:get_position()
         local dx, dz = px - x, pz - z
         local distance = math.sqrt(dx * dx + dz * dz)
+        local dy = py - y
         local cycle = state.time
         state.time = cycle + dt
 
         if cycle < 1.2 then
-            if cycle > 0.7 and distance < 7 and math.abs(py - y) < 1.5 then
+            if cycle > 0.7 and dx * dx + dy * dy + dz * dz < 49 then
                 state.time = 1.2
             end
         elseif cycle < 1.85 then
@@ -51,9 +52,11 @@ return {
             local mx, mz = nx - x, nz - z
             local length = math.sqrt(mx * mx + mz * mz)
             if length > 0.0001 then
-                local hit = scene.cast_sphere(x, y + 0.13, z, mx / length, 0, mz / length, length, 0.79)
-                local travel = hit and math.max(0, hit.distance - 0.01) or length
-                self:set_local_position(x + mx * travel / length, y, z + mz * travel / length)
+                local hit, fraction = scene.cast_collider(self, mx, 0, mz)
+                if hit and hit ~= player then
+                    fraction = math.max(0, fraction - 0.01 / length)
+                end
+                self:set_local_position(x + mx * fraction, y, z + mz * fraction)
             end
         elseif cycle > 3.6 then
             state.time = 0
