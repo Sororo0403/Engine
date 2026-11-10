@@ -12558,6 +12558,38 @@
           {
             "name": "pickupSparkles",
             "target": 525
+          },
+          {
+            "name": "flower1",
+            "target": 172
+          },
+          {
+            "name": "flower2",
+            "target": 173
+          },
+          {
+            "name": "flower3",
+            "target": 174
+          },
+          {
+            "name": "flower4",
+            "target": 175
+          },
+          {
+            "name": "flower5",
+            "target": 176
+          },
+          {
+            "name": "flower6",
+            "target": 177
+          },
+          {
+            "name": "flower7",
+            "target": 178
+          },
+          {
+            "name": "flower8",
+            "target": 179
           }
         ],
         "scenes": [],
@@ -12565,6 +12597,20 @@
           "completed": false,
           "count": 0,
           "elapsed": 0,
+          "flowerAreas": [
+            {
+              "flowers": ["flower1", "flower2"],
+              "label": "運河の手前"
+            },
+            {
+              "flowers": ["flower3", "flower4", "flower5", "flower6"],
+              "label": "運河の対岸"
+            },
+            {
+              "flowers": ["flower7", "flower8"],
+              "label": "屋上"
+            }
+          ],
           "total": 8
         }
       },

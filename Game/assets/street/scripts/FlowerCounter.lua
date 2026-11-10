@@ -27,6 +27,27 @@ local function best_record(state, seconds)
     return newRecord and "新記録！  " .. line or line
 end
 
+local function collection_summary(self, state)
+    if state.count == state.total then
+        return "街じゅうの花を見つけた！"
+    end
+
+    local remaining = {}
+    for _, area in ipairs(state.flowerAreas or {}) do
+        for _, reference in ipairs(area.flowers) do
+            local flower = self:reference(reference)
+            if flower and flower:is_active() then
+                remaining[#remaining + 1] = area.label
+                break
+            end
+        end
+    end
+    if #remaining > 0 then
+        return "まだ花がある場所： " .. table.concat(remaining, "・")
+    end
+    return "まだ見つけていない花のかけらがあるよ"
+end
+
 local pickupHighlightSeconds = 0.55
 
 local function show_pickup_highlight(self, state, amount)
@@ -75,8 +96,7 @@ return {
             self:reference("result"):set_text(
                 "花のかけら " .. state.count .. " / " .. state.total ..
                 string.format("    タイム %.1f 秒\n", math.floor(seconds * 10) / 10) ..
-                (state.count == state.total and "街じゅうの花を見つけた！"
-                    or "まだ見つけていない花のかけらがあるよ") .. "\n" ..
+                collection_summary(self, state) .. "\n" ..
                 best_record(state, seconds))
             if not state.finishedTime then
                 self:reference("hint"):set_active(false)
