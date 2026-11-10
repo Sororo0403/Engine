@@ -311,7 +311,7 @@
       }
     },
     {
-      "active": true,
+      "active": false,
       "id": 174,
       "name": "Config Logo",
       "parent": 184,
@@ -353,14 +353,14 @@
         "anchorMin": [0, 0],
         "anchorMax": [0, 0],
         "pivot": [0, 0],
-        "position": [64, 389],
+        "position": [64, 390],
         "sizeDelta": [410, 282]
       },
       "image": {
         "enabled": true,
         "raycastTarget": false,
         "texture": "",
-        "color": [0.025, 0.065, 0.11, 0.92],
+        "color": [0.025, 0.065, 0.11, 0.94],
         "preserveAspect": false,
         "fillOrigin": "left",
         "fillAmount": 1
@@ -782,19 +782,19 @@
         "anchorMin": [0, 0],
         "anchorMax": [0, 0],
         "pivot": [0, 0],
-        "position": [85, 406],
-        "sizeDelta": [340, 31]
+        "position": [90, 407],
+        "sizeDelta": [340, 36]
       },
       "text": {
         "enabled": true,
         "raycastTarget": false,
-        "value": "CONFIG",
-        "fontFamily": "Segoe UI",
-        "fontSize": 23,
-        "bold": true,
+        "value": "CONFIG / 設定",
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 28,
+        "bold": false,
         "alignment": "left",
         "verticalAlignment": "middle",
-        "color": [1, 0.75, 0.36, 1]
+        "color": [1, 0.98, 0.94, 1]
       }
     },
     {
@@ -812,19 +812,49 @@
         "anchorMin": [0, 0],
         "anchorMax": [0, 0],
         "pivot": [0, 0],
-        "position": [85, 441],
-        "sizeDelta": [340, 30]
+        "position": [95, 460],
+        "sizeDelta": [160, 45]
       },
       "text": {
         "enabled": true,
         "raycastTarget": false,
-        "value": "VOLUME",
-        "fontFamily": "Segoe UI",
-        "fontSize": 19,
+        "value": "音量",
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 28,
         "bold": false,
         "alignment": "left",
         "verticalAlignment": "middle",
-        "color": [0.75, 0.87, 0.88, 1]
+        "color": [1, 0.98, 0.94, 1]
+      }
+    },
+    {
+      "active": true,
+      "id": 639,
+      "name": "Config Motion Caption",
+      "parent": 184,
+      "tag": "",
+      "transform": {
+        "rotation": [0, 0, 0, 1],
+        "scale": [1, 1, 1],
+        "translation": [0, 0, 0]
+      },
+      "rectTransform": {
+        "anchorMin": [0, 0],
+        "anchorMax": [0, 0],
+        "pivot": [0, 0],
+        "position": [95, 517],
+        "sizeDelta": [192, 45]
+      },
+      "text": {
+        "enabled": true,
+        "raycastTarget": false,
+        "value": "背景演出",
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 28,
+        "bold": false,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "color": [1, 0.98, 0.94, 1]
       }
     },
     {
@@ -842,28 +872,19 @@
         "anchorMin": [0, 0],
         "anchorMax": [0, 0],
         "pivot": [0, 0],
-        "position": [85, 487],
-        "sizeDelta": [340, 47]
-      },
-      "image": {
-        "enabled": true,
-        "raycastTarget": false,
-        "texture": "",
-        "color": [0.22, 0.33, 0.38, 1],
-        "preserveAspect": false,
-        "fillOrigin": "left",
-        "fillAmount": 1
+        "position": [300, 517],
+        "sizeDelta": [105, 40]
       },
       "text": {
         "enabled": true,
         "raycastTarget": false,
-        "value": "MOTION: ON",
-        "fontFamily": "Segoe UI",
-        "fontSize": 22,
-        "bold": true,
-        "alignment": "center",
+        "value": "ON",
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 28,
+        "bold": false,
+        "alignment": "left",
         "verticalAlignment": "middle",
-        "color": [1, 0.95, 0.83, 1]
+        "color": [1, 0.98, 0.94, 1]
       },
       "button": {
         "enabled": true,
@@ -942,28 +963,19 @@
         "anchorMin": [0, 0],
         "anchorMax": [0, 0],
         "pivot": [0, 0],
-        "position": [85, 487],
-        "sizeDelta": [340, 47]
-      },
-      "image": {
-        "enabled": true,
-        "raycastTarget": false,
-        "texture": "",
-        "color": [0.22, 0.33, 0.38, 1],
-        "preserveAspect": false,
-        "fillOrigin": "left",
-        "fillAmount": 1
+        "position": [300, 517],
+        "sizeDelta": [105, 40]
       },
       "text": {
         "enabled": true,
         "raycastTarget": false,
-        "value": "MOTION: OFF",
-        "fontFamily": "Segoe UI",
-        "fontSize": 22,
-        "bold": true,
-        "alignment": "center",
+        "value": "OFF",
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 28,
+        "bold": false,
+        "alignment": "left",
         "verticalAlignment": "middle",
-        "color": [1, 0.95, 0.83, 1]
+        "color": [1, 0.98, 0.94, 1]
       },
       "button": {
         "enabled": true,
@@ -1045,25 +1057,16 @@
         "position": [95, 633],
         "sizeDelta": [335, 27]
       },
-      "image": {
-        "enabled": true,
-        "raycastTarget": false,
-        "texture": "",
-        "color": [0.22, 0.33, 0.38, 1],
-        "preserveAspect": false,
-        "fillOrigin": "left",
-        "fillAmount": 1
-      },
       "text": {
         "enabled": true,
         "raycastTarget": false,
         "value": "戻る",
         "fontFamily": "Yu Gothic UI",
-        "fontSize": 22,
-        "bold": true,
-        "alignment": "center",
+        "fontSize": 20,
+        "bold": false,
+        "alignment": "left",
         "verticalAlignment": "middle",
-        "color": [1, 0.95, 0.83, 1]
+        "color": [1, 0.98, 0.94, 1]
       },
       "button": {
         "enabled": true,
@@ -1209,25 +1212,16 @@
         "position": [95, 574],
         "sizeDelta": [335, 45]
       },
-      "image": {
-        "enabled": true,
-        "raycastTarget": false,
-        "texture": "",
-        "color": [0.22, 0.33, 0.38, 1],
-        "preserveAspect": false,
-        "fillOrigin": "left",
-        "fillAmount": 1
-      },
       "text": {
         "enabled": true,
         "raycastTarget": false,
         "value": "保存して戻る",
         "fontFamily": "Yu Gothic UI",
-        "fontSize": 22,
-        "bold": true,
-        "alignment": "center",
+        "fontSize": 28,
+        "bold": false,
+        "alignment": "left",
         "verticalAlignment": "middle",
-        "color": [1, 0.95, 0.83, 1]
+        "color": [1, 0.98, 0.94, 1]
       },
       "button": {
         "enabled": true,
@@ -9229,20 +9223,6 @@
         ]
       },
       "id": 631,
-      "image": {
-        "color": [
-          0.22,
-          0.33,
-          0.38,
-          1
-        ],
-        "enabled": true,
-        "fillAmount": 1,
-        "fillOrigin": "left",
-        "preserveAspect": false,
-        "raycastTarget": false,
-        "texture": ""
-      },
       "name": "Decrease Title Volume",
       "parent": 184,
       "rectTransform": {
@@ -9259,27 +9239,27 @@
           0
         ],
         "position": [
-          201,
-          444
+          258,
+          460
         ],
         "sizeDelta": [
-          38,
-          34
+          35,
+          40
         ]
       },
       "tag": "",
       "text": {
         "alignment": "center",
-        "bold": true,
+        "bold": false,
         "color": [
           1,
-          0.95,
-          0.83,
+          0.98,
+          0.94,
           1
         ],
         "enabled": true,
-        "fontFamily": "Segoe UI",
-        "fontSize": 20,
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 22,
         "raycastTarget": false,
         "value": "−",
         "verticalAlignment": "middle"
@@ -9374,27 +9354,27 @@
           0
         ],
         "position": [
-          243,
-          444
+          300,
+          460
         ],
         "sizeDelta": [
-          106,
-          34
+          105,
+          40
         ]
       },
       "tag": "",
       "text": {
-        "alignment": "center",
-        "bold": true,
+        "alignment": "left",
+        "bold": false,
         "color": [
           1,
-          0.95,
-          0.83,
+          0.98,
+          0.94,
           1
         ],
         "enabled": true,
-        "fontFamily": "Segoe UI",
-        "fontSize": 19,
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 28,
         "raycastTarget": false,
         "value": "100%",
         "verticalAlignment": "middle"
@@ -9450,20 +9430,6 @@
         ]
       },
       "id": 633,
-      "image": {
-        "color": [
-          0.22,
-          0.33,
-          0.38,
-          1
-        ],
-        "enabled": true,
-        "fillAmount": 1,
-        "fillOrigin": "left",
-        "preserveAspect": false,
-        "raycastTarget": false,
-        "texture": ""
-      },
       "name": "Increase Title Volume",
       "parent": 184,
       "rectTransform": {
@@ -9480,27 +9446,27 @@
           0
         ],
         "position": [
-          352,
-          444
+          408,
+          460
         ],
         "sizeDelta": [
-          38,
-          34
+          35,
+          40
         ]
       },
       "tag": "",
       "text": {
         "alignment": "center",
-        "bold": true,
+        "bold": false,
         "color": [
           1,
-          0.95,
-          0.83,
+          0.98,
+          0.94,
           1
         ],
         "enabled": true,
-        "fontFamily": "Segoe UI",
-        "fontSize": 20,
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 22,
         "raycastTarget": false,
         "value": "+",
         "verticalAlignment": "middle"
