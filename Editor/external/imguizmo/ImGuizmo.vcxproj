@@ -36,8 +36,8 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <PropertyGroup>
     <ExternalIncludePath>$(ImGuiInclude);$(ExternalIncludePath)</ExternalIncludePath>
-    <OutDir>$(SolutionDir)build\lib\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)build\obj\$(ProjectName)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)build\lib\$(VCToolsVersion)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\obj\$(VCToolsVersion)\$(ProjectName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>

@@ -51,13 +51,13 @@
     <ExternalIncludePath>$(ProjectDir)external\imguizmo\include;$(EngineExternalRoot)imgui\include;$(EngineExternalRoot)directxmath\include;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)build\bin\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)build\obj\$(ProjectName)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)build\bin\$(VCToolsVersion)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\obj\$(VCToolsVersion)\$(ProjectName)\$(Configuration)\</IntDir>
     <LocalDebuggerWorkingDirectory>$(OutDir)</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)build\bin\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)build\obj\$(ProjectName)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)build\bin\$(VCToolsVersion)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\obj\$(VCToolsVersion)\$(ProjectName)\$(Configuration)\</IntDir>
     <LocalDebuggerWorkingDirectory>$(OutDir)</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <!-- Engine.libが使用する外部ライブラリは、Editorの最終リンクで追加する -->

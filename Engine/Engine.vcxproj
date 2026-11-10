@@ -206,12 +206,12 @@
     <ExternalIncludePath>$(EngineExternalRoot)jolt\src;$(EngineExternalRoot)lua\include;$(EngineExternalRoot)nlohmann\include;$(EngineExternalRoot)gameinput\include;$(EngineExternalRoot)dxc\include;$(EngineExternalRoot)directxtk12\include;$(EngineExternalRoot)assimp\include;$(EngineExternalRoot)imgui\include;$(EngineExternalRoot)directxmath\include;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)build\lib\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)build\obj\$(ProjectName)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)build\lib\$(VCToolsVersion)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\obj\$(VCToolsVersion)\$(ProjectName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)build\lib\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)build\obj\$(ProjectName)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)build\lib\$(VCToolsVersion)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\obj\$(VCToolsVersion)\$(ProjectName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -264,16 +264,16 @@
   <!-- 全構成のビルド後イベントで、Engineが所有するファイルを配置する -->
   <ItemDefinitionGroup>
     <PostBuildEvent>
-      <Command>robocopy "$(EngineExternalRoot)dxc\bin\x64" "$(SolutionDir)build\bin\$(Configuration)" dxcompiler.dll dxil.dll /R:1 /W:1 /NFL /NDL /NJH /NJS /NP
+      <Command>robocopy "$(EngineExternalRoot)dxc\bin\x64" "$(SolutionDir)build\bin\$(VCToolsVersion)\$(Configuration)" dxcompiler.dll dxil.dll /R:1 /W:1 /NFL /NDL /NJH /NJS /NP
 if errorlevel 8 exit /b %errorlevel%
 
-robocopy "$(EngineExternalRoot)gameinput\bin\x64" "$(SolutionDir)build\bin\$(Configuration)" GameInputRedist.dll GameInputRawInputProxy.exe /R:1 /W:1 /NFL /NDL /NJH /NJS /NP
+robocopy "$(EngineExternalRoot)gameinput\bin\x64" "$(SolutionDir)build\bin\$(VCToolsVersion)\$(Configuration)" GameInputRedist.dll GameInputRawInputProxy.exe /R:1 /W:1 /NFL /NDL /NJH /NJS /NP
 if errorlevel 8 exit /b %errorlevel%
 
-robocopy "$(ProjectDir)resources" "$(SolutionDir)build\bin\$(Configuration)\resources\engine" /E /R:1 /W:1 /NFL /NDL /NJH /NJS /NP
+robocopy "$(ProjectDir)resources" "$(SolutionDir)build\bin\$(VCToolsVersion)\$(Configuration)\resources\engine" /E /R:1 /W:1 /NFL /NDL /NJH /NJS /NP
 if errorlevel 8 exit /b %errorlevel%
 
-robocopy "$(EngineExternalRoot)licenses" "$(SolutionDir)build\bin\$(Configuration)\licenses" /R:1 /W:1 /NFL /NDL /NJH /NJS /NP
+robocopy "$(EngineExternalRoot)licenses" "$(SolutionDir)build\bin\$(VCToolsVersion)\$(Configuration)\licenses" /R:1 /W:1 /NFL /NDL /NJH /NJS /NP
 if errorlevel 8 exit /b %errorlevel%
 
 exit /b 0</Command>
