@@ -309,13 +309,16 @@ local function update_attack(self, state, seconds, input)
         return
     end
 
+    local progress = 1 - state.attack / state.attackSeconds
+    local reach = math.min(1, progress / 0.8)
+    local radius = state.attackDistance * (0.42 + 0.58 * reach)
     local x, y, z = self:get_position()
     local struck = false
     for _, enemy in ipairs(scene.find_all_by_tag("street_enemy")) do
         local ex, ey, ez = enemy:get_position()
         local dx, dy, dz = ex - x, ey - y, ez - z
         local distance = math.sqrt(dx * dx + dy * dy + dz * dz)
-        if distance < state.attackDistance then
+        if distance < radius then
             local hit
             if distance > 0.001 then
                 hit = scene.raycast(x, y, z, dx / distance, dy / distance, dz / distance,
@@ -332,9 +335,7 @@ local function update_attack(self, state, seconds, input)
         self:reference("hitSound"):play_audio()
     end
 
-    local progress = 1 - state.attack / state.attackSeconds
     if attackFlash then
-        local radius = state.attackDistance * (0.42 + 0.58 * progress)
         attackFlash:set_scale(radius, 1, radius)
     end
     if state.reaction == 0 then
