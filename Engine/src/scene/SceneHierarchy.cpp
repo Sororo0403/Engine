@@ -218,13 +218,14 @@ bool SceneHierarchy::GetWorldTransform(const Scene &scene, SceneObjectId id,
 	}
 
 	std::vector<SceneObjectId> pending;
-	std::set<SceneObjectId> visiting;
+	// 物体数を超えて親をたどる場合は、同じ物体を再訪している。
+	const auto objectCount = scene.GetObjects().size();
 	auto current = id;
 
 	while (current != 0) {
 		const auto *object = scene.FindObject(current);
 
-		if (!object || !visiting.insert(current).second) {
+		if (!object || pending.size() == objectCount) {
 			return false;
 		}
 
