@@ -93,6 +93,8 @@ const std::map<SceneObjectId, SceneObject> &Scene::GetObjects() const {
 void Scene::Clear() {
 	objects_.clear();
 	lighting_.reset();
+	monochrome_ = {};
+	monochromeForeground_ = 0;
 	legacyDirectionalLight_ = false;
 }
 
@@ -144,6 +146,8 @@ bool Scene::ApplyTransaction(const std::function<bool(Scene &)> &operation) {
 
 	working.objects_ = objects_;
 	working.lighting_ = lighting_;
+	working.monochrome_ = monochrome_;
+	working.monochromeForeground_ = monochromeForeground_;
 	working.legacyDirectionalLight_ = legacyDirectionalLight_;
 
 	// 削除済み物体のIDも復元できるよう、発行済み番号を引き継ぐ
@@ -162,6 +166,8 @@ bool Scene::ApplyTransaction(const std::function<bool(Scene &)> &operation) {
 	// 全操作が成功してから、保持するデータを置き換える
 	objects_.swap(working.objects_);
 	lighting_.swap(working.lighting_);
+	monochrome_ = working.monochrome_;
+	monochromeForeground_ = working.monochromeForeground_;
 	legacyDirectionalLight_ = working.legacyDirectionalLight_;
 	nextObjectId_ = working.nextObjectId_;
 
@@ -174,6 +180,8 @@ void Scene::CopyFrom(const Scene &source) {
 	const auto next = (std::max)(nextObjectId_, source.nextObjectId_);
 	objects_.swap(candidate.objects_);
 	lighting_ = source.lighting_;
+	monochrome_ = source.monochrome_;
+	monochromeForeground_ = source.monochromeForeground_;
 	legacyDirectionalLight_ = source.legacyDirectionalLight_;
 	nextObjectId_ = next;
 }
@@ -187,9 +195,19 @@ bool Scene::SetLighting(std::optional<LightingSettings> lighting) {
 	return true;
 }
 
+bool Scene::SetMonochrome(const MonochromeEffect &effect, SceneObjectId foreground) {
+	if (!effect.IsValid() || (foreground && !Contains(foreground)))
+		return false;
+	monochrome_ = effect;
+	monochromeForeground_ = foreground;
+	return true;
+}
+
 void Scene::Swap(Scene &other) noexcept {
 	objects_.swap(other.objects_);
 	lighting_.swap(other.lighting_);
+	std::swap(monochrome_, other.monochrome_);
+	std::swap(monochromeForeground_, other.monochromeForeground_);
 	std::swap(legacyDirectionalLight_, other.legacyDirectionalLight_);
 	std::swap(nextObjectId_, other.nextObjectId_);
 }

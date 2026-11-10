@@ -214,6 +214,14 @@ bool SceneRenderer::SynchronizeObjects() {
 		return false;
 	}
 
+	const auto &monochrome = scene_.GetMonochrome();
+	const auto foreground = scene_.GetMonochromeForeground();
+	std::vector<SceneObjectId> coloredObjects;
+	if (monochrome.amount > 0 && foreground && scene_.Contains(foreground) &&
+	    !SceneHierarchy::GetSubtree(scene_, foreground, coloredObjects))
+		return false;
+	std::ranges::sort(coloredObjects);
+
 	std::string lightError;
 	DirectionalLightsData directionalLights;
 	ShadowSettings shadows;
@@ -359,6 +367,8 @@ bool SceneRenderer::SynchronizeObjects() {
 			data.uvOffset = {object.meshRenderer->uvOffset[0],
 			                 object.meshRenderer->uvOffset[1]};
 			data.reveal = object.meshRenderer->reveal;
+			data.monochrome = std::ranges::binary_search(coloredObjects, id)
+			                      ? MonochromeEffect{} : monochrome;
 		}
 
 		const auto animator = animatorPoses_.find(id);

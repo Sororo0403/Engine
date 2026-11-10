@@ -16,6 +16,19 @@ struct RadialReveal {
 };
 
 /// <summary>
+/// 明度を低・高の2段階へ寄せる白黒効果
+/// </summary>
+struct MonochromeEffect {
+	float amount = 0;
+	float low = .035f;
+	float high = .22f;
+	float threshold = .42f;
+	float softness = .055f;
+	bool IsValid() const;
+	bool operator==(const MonochromeEffect &) const = default;
+};
+
+/// <summary>
 /// GPUへ渡す材質の情報
 /// </summary>
 struct MaterialData {
@@ -41,6 +54,8 @@ struct MaterialData {
 	std::uint32_t padding[3]{};
 	RadialReveal reveal;
 	std::uint32_t revealPadding[3]{};
+	MonochromeEffect monochrome;
+	std::uint32_t monochromePadding[3]{};
 
 	/// <summary>
 	/// 色・UV・照明方式が有効か確認する

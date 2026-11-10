@@ -124,6 +124,17 @@ class Scene {
 	bool SetLighting(std::optional<LightingSettings> lighting);
 
 	/// <summary>
+	/// 再生中のメッシュの白黒効果を取得する。前景の物体と子は対象外
+	/// </summary>
+	const MonochromeEffect &GetMonochrome() const { return monochrome_; }
+	SceneObjectId GetMonochromeForeground() const { return monochromeForeground_; }
+
+	/// <summary>
+	/// シーンの保存内容に含めず、描画時だけ白黒効果を使う
+	/// </summary>
+	bool SetMonochrome(const MonochromeEffect &effect, SceneObjectId foreground);
+
+	/// <summary>
 	/// 旧形式の平行光がオブジェクトへの移行待ちか確認する
 	/// </summary>
 	bool UsesLegacyDirectionalLight() const { return legacyDirectionalLight_; }
@@ -137,6 +148,8 @@ class Scene {
 
   private:
 	std::optional<LightingSettings> lighting_;
+	MonochromeEffect monochrome_;
+	SceneObjectId monochromeForeground_ = 0;
 	bool legacyDirectionalLight_ = false;
 	std::map<SceneObjectId, SceneObject> objects_;
 	SceneObjectId nextObjectId_ = 1;

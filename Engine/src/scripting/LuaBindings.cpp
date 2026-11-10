@@ -42,6 +42,7 @@ enum class Op {
 	MESH_TINT,
 	SET_MESH_TINT,
 	SET_MESH_RADIAL_REVEAL,
+	SET_BACKGROUND_MONOCHROME,
 	POSITION,
 	SET_POSITION,
 	LOCAL_POSITION,
@@ -107,6 +108,7 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 		    op == Op::SET_CHARACTER_SPEEDS || op == Op::SET_CHARACTER_INPUT_ENABLED ||
 		    op == Op::SET_MESH_VISIBLE ||
 		    op == Op::SET_MESH_TINT || op == Op::SET_MESH_RADIAL_REVEAL ||
+		    op == Op::SET_BACKGROUND_MONOCHROME ||
 		    op == Op::SET_CAMERA ||
 		    op == Op::SET_CAMERA_LENS || op == Op::SET_CAMERA_FOV ||
 		    op == Op::SET_POSITION || op == Op::SET_LOCAL_POSITION ||
@@ -328,6 +330,13 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 			if (!reveal.IsValid())
 				throw std::runtime_error("Mesh radial reveal values are out of range.");
 			object->meshRenderer->reveal = reveal;
+			break;
+		}
+		case Op::SET_BACKGROUND_MONOCHROME: {
+			const MonochromeEffect effect{
+			    numbers[0], numbers[1], numbers[2], numbers[3], numbers[4]};
+			if (!call.scene->SetMonochrome(effect, id))
+				throw std::runtime_error("Background monochrome values are out of range.");
 			break;
 		}
 		case Op::CAMERA_LENS:
@@ -582,7 +591,8 @@ int Dispatch(lua_State *state) {
 		flag = lua_toboolean(state, 2) != 0;
 	} else {
 		const int count = (op == Op::WORLD_TO_VIEWPORT ||
-		                   op == Op::SET_MESH_RADIAL_REVEAL) ? 5
+		                   op == Op::SET_MESH_RADIAL_REVEAL ||
+		                   op == Op::SET_BACKGROUND_MONOCHROME) ? 5
 		                  : (op == Op::SET_ROTATION || op == Op::VIEWPORT_RAY)
 		                      ? 4
 		                  : op == Op::SET_CHARACTER_SPEEDS ? 2
@@ -906,6 +916,7 @@ int LuaInternal::OpenEnvironment(lua_State *state, Call &call) {
 	Method(state, "get_mesh_tint", Op::MESH_TINT);
 	Method(state, "set_mesh_tint", Op::SET_MESH_TINT);
 	Method(state, "set_mesh_radial_reveal", Op::SET_MESH_RADIAL_REVEAL);
+	Method(state, "set_background_monochrome", Op::SET_BACKGROUND_MONOCHROME);
 	Method(state, "get_position", Op::POSITION);
 	Method(state, "set_position", Op::SET_POSITION);
 	Method(state, "get_local_position", Op::LOCAL_POSITION);

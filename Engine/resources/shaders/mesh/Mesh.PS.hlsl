@@ -111,6 +111,9 @@ cbuffer MaterialBuffer : register(b2) {
 	uint3 materialPadding;
 	float4 revealOriginRadius;
 	float revealFeather;
+	float3 revealPadding;
+	float4 monochromeLevels;
+	float monochromeSoftness;
 };
 
 float4 PSMain(VertexOutput input) : SV_Target0 {
@@ -176,6 +179,14 @@ float4 PSMain(VertexOutput input) : SV_Target0 {
 		float distanceToOrigin = length(input.worldPosition - revealOriginRadius.xyz);
 		color *= smoothstep(-revealFeather, revealFeather,
 		                   revealOriginRadius.w - distanceToOrigin);
+	}
+	if (monochromeLevels.x > 0.0f) {
+		float luminance = dot(color, float3(.2126, .7152, .0722));
+		float threshold = monochromeLevels.w;
+		float tone = smoothstep(threshold - monochromeSoftness,
+		                        threshold + monochromeSoftness, luminance);
+		float gray = lerp(monochromeLevels.y, monochromeLevels.z, tone);
+		color = lerp(color, gray.xxx, monochromeLevels.x);
 	}
 
 	float alpha = textureColor.a * input.color.a * baseColor.a;

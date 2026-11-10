@@ -11,6 +11,12 @@ bool RadialReveal::IsValid() const {
 	       });
 }
 
+bool MonochromeEffect::IsValid() const {
+	return amount >= 0 && amount <= 1 && low >= 0 && low <= high &&
+	       high <= 1 && threshold >= 0 && threshold <= 1 &&
+	       softness >= .0001f && softness <= 1;
+}
+
 bool MaterialData::IsValid() const {
 	for (const float value :
 	     {baseColor.x, baseColor.y, baseColor.z, baseColor.w}) {
@@ -19,7 +25,8 @@ bool MaterialData::IsValid() const {
 		}
 	}
 
-	return reveal.IsValid() && MathUtils::IsFinite(uvScale) && MathUtils::IsFinite(uvOffset) &&
+	return reveal.IsValid() && monochrome.IsValid() &&
+	       MathUtils::IsFinite(uvScale) && MathUtils::IsFinite(uvOffset) &&
 	       (shadingMode == ShadingMode::LIT ||
 	        shadingMode == ShadingMode::UNLIT);
 }
@@ -31,5 +38,5 @@ bool MaterialData::operator==(const MaterialData &other) const {
 	       baseColor.w == other.baseColor.w && uvScale.x == other.uvScale.x &&
 	       uvScale.y == other.uvScale.y && uvOffset.x == other.uvOffset.x &&
 	       uvOffset.y == other.uvOffset.y && shadingMode == other.shadingMode &&
-	       reveal == other.reveal;
+	       reveal == other.reveal && monochrome == other.monochrome;
 }
