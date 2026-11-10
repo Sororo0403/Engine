@@ -1,0 +1,78 @@
+{
+  "format": "EngineAnimationClip",
+  "version": 1,
+  "clip": {
+    "duration": 3.2,
+    "tracks": [
+      {
+        "target": 1,
+        "property": "opacity",
+        "interpolation": "smooth",
+        "keys": [
+          {
+            "time": 0,
+            "value": [0, 0, 0, 0]
+          },
+          {
+            "time": 0.3,
+            "value": [1, 0, 0, 0]
+          },
+          {
+            "time": 0.75,
+            "value": [0, 0, 0, 0]
+          },
+          {
+            "time": 1.45,
+            "value": [0, 0, 0, 0]
+          },
+          {
+            "time": 2.1,
+            "value": [1, 0, 0, 0]
+          },
+          {
+            "time": 3.2,
+            "value": [1, 0, 0, 0]
+          }
+        ]
+      },
+      {
+        "target": 2,
+        "property": "translation",
+        "interpolation": "smooth",
+        "keys": [
+          {
+            "time": 0,
+            "value": [-0.800000011920929, 2.200000047683716, -8.0, 0]
+          },
+          {
+            "time": 0.55,
+            "value": [-0.65, 2.2, -7.5, 0]
+          },
+          {
+            "time": 3.05,
+            "value": [0, 2.2, 14, 0]
+          }
+        ]
+      },
+      {
+        "target": 2,
+        "property": "rotation",
+        "interpolation": "smooth",
+        "keys": [
+          {
+            "time": 0,
+            "value": [-0.07038425030028704, 0.0126823154318188, -0.03136250335294976, 0.9969461417591177]
+          },
+          {
+            "time": 0.55,
+            "value": [-0.06025248259400865, 0.01097445599329118, -0.02420116837156038, 0.9978293957918667]
+          },
+          {
+            "time": 3.05,
+            "value": [0.0, 0.0, 0.0, 1.0]
+          }
+        ]
+      }
+    ]
+  }
+}
