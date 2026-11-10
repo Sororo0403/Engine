@@ -398,7 +398,7 @@
           1.0,
           1.0
         ],
-        "visible": true
+        "visible": false
       },
       "name": "Arrival Square",
       "parent": 6,
@@ -470,7 +470,7 @@
           1.0,
           1.0
         ],
-        "visible": true
+        "visible": false
       },
       "name": "Quayside",
       "parent": 6,
@@ -806,9 +806,9 @@
       },
       "colorTint": {
         "color": [
+          0.77,
           0.71,
-          0.62,
-          0.51
+          0.57
         ]
       },
       "id": 17,
@@ -878,9 +878,9 @@
       },
       "colorTint": {
         "color": [
+          0.77,
           0.71,
-          0.62,
-          0.51
+          0.57
         ]
       },
       "id": 18,
@@ -950,9 +950,9 @@
       },
       "colorTint": {
         "color": [
+          0.77,
           0.71,
-          0.62,
-          0.51
+          0.57
         ]
       },
       "id": 19,
@@ -1118,7 +1118,7 @@
           1.0,
           1.0
         ],
-        "visible": true
+        "visible": false
       },
       "name": "Market Apron",
       "parent": 7,
@@ -1190,7 +1190,7 @@
           1.0,
           1.0
         ],
-        "visible": true
+        "visible": false
       },
       "name": "Market West Forecourt",
       "parent": 7,
@@ -1238,9 +1238,9 @@
       },
       "colorTint": {
         "color": [
+          0.77,
           0.71,
-          0.62,
-          0.51
+          0.57
         ]
       },
       "id": 23,
@@ -1310,9 +1310,9 @@
       },
       "colorTint": {
         "color": [
+          0.77,
           0.71,
-          0.62,
-          0.51
+          0.57
         ]
       },
       "id": 24,
@@ -1382,9 +1382,9 @@
       },
       "colorTint": {
         "color": [
+          0.77,
           0.71,
-          0.62,
-          0.51
+          0.57
         ]
       },
       "id": 25,
@@ -1454,9 +1454,9 @@
       },
       "colorTint": {
         "color": [
+          0.77,
           0.71,
-          0.62,
-          0.51
+          0.57
         ]
       },
       "id": 26,
@@ -1526,9 +1526,9 @@
       },
       "colorTint": {
         "color": [
+          0.77,
           0.71,
-          0.62,
-          0.51
+          0.57
         ]
       },
       "id": 27,
@@ -1598,9 +1598,9 @@
       },
       "colorTint": {
         "color": [
+          0.77,
           0.71,
-          0.62,
-          0.51
+          0.57
         ]
       },
       "id": 28,
@@ -1670,9 +1670,9 @@
       },
       "colorTint": {
         "color": [
+          0.77,
           0.71,
-          0.62,
-          0.51
+          0.57
         ]
       },
       "id": 29,
@@ -1742,9 +1742,9 @@
       },
       "colorTint": {
         "color": [
+          0.77,
           0.71,
-          0.62,
-          0.51
+          0.57
         ]
       },
       "id": 30,
@@ -1814,9 +1814,9 @@
       },
       "colorTint": {
         "color": [
-          0.75,
-          0.62,
-          0.46
+          0.77,
+          0.71,
+          0.57
         ]
       },
       "id": 31,
@@ -2126,7 +2126,7 @@
           1.0,
           1.0
         ],
-        "visible": true
+        "visible": false
       },
       "name": "Market Streets",
       "parent": 7,
@@ -10290,9 +10290,9 @@
       "active": true,
       "colorTint": {
         "color": [
-          0.25,
-          0.52,
-          0.59
+          0.22,
+          0.46,
+          0.52
         ]
       },
       "id": 149,
@@ -10329,12 +10329,12 @@
         "scale": [
           1,
           0.04,
-          6
+          12.5
         ],
         "translation": [
           1,
-          -0.44,
-          22
+          -0.8,
+          23
         ]
       }
     },
@@ -12723,6 +12723,1080 @@
           0,
           0,
           0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 185,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          11,
+          2
+        ],
+        "visible": true
+      },
+      "name": "Arrival Square Brick Foundation",
+      "parent": 6,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          11.0,
+          1.8,
+          11.0
+        ],
+        "translation": [
+          -11.0,
+          -1.8,
+          5.0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 186,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayPaving.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          11,
+          11
+        ],
+        "visible": true
+      },
+      "name": "Arrival Square Paving",
+      "parent": 6,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          11.0,
+          0.015,
+          11.0
+        ],
+        "translation": [
+          -11.0,
+          0.015,
+          5.0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 187,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          11,
+          2
+        ],
+        "visible": true
+      },
+      "name": "Quayside Brick Foundation",
+      "parent": 6,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          11.0,
+          1.8,
+          6.0
+        ],
+        "translation": [
+          -11.0,
+          -1.8,
+          22.0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 188,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayPaving.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          11,
+          6
+        ],
+        "visible": true
+      },
+      "name": "Quayside Paving",
+      "parent": 6,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          11.0,
+          0.015,
+          6.0
+        ],
+        "translation": [
+          -11.0,
+          0.015,
+          22.0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 189,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          9,
+          2
+        ],
+        "visible": true
+      },
+      "name": "Market Apron Brick Foundation",
+      "parent": 7,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          9.0,
+          2.079999993741512,
+          8.0
+        ],
+        "translation": [
+          11.0,
+          -1.5200000062584877,
+          24.0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 190,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayPaving.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          9,
+          8
+        ],
+        "visible": true
+      },
+      "name": "Market Apron Paving",
+      "parent": 7,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          9.0,
+          0.015,
+          8.0
+        ],
+        "translation": [
+          11.0,
+          0.5749999874830246,
+          24.0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 191,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          4,
+          2
+        ],
+        "visible": true
+      },
+      "name": "Market West Forecourt Brick Foundation",
+      "parent": 7,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          4.0,
+          2.079999993741512,
+          2.0
+        ],
+        "translation": [
+          -2.0,
+          -1.5200000062584877,
+          30.0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 192,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayPaving.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          4,
+          2
+        ],
+        "visible": true
+      },
+      "name": "Market West Forecourt Paving",
+      "parent": 7,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          4.0,
+          0.015,
+          2.0
+        ],
+        "translation": [
+          -2.0,
+          0.5749999874830246,
+          30.0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 193,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayBrick.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          13,
+          2
+        ],
+        "visible": true
+      },
+      "name": "Market Streets Brick Foundation",
+      "parent": 7,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          13.0,
+          2.079999993741512,
+          8.0
+        ],
+        "translation": [
+          7.0,
+          -1.5200000062584877,
+          40.0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 194,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/QuayPaving.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          13,
+          8
+        ],
+        "visible": true
+      },
+      "name": "Market Streets Paving",
+      "parent": 7,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          13.0,
+          0.015,
+          8.0
+        ],
+        "translation": [
+          7.0,
+          0.5749999874830246,
+          40.0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.23,
+          0.46,
+          0.45
+        ]
+      },
+      "id": 195,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Arrival Back Teal Cap",
+      "parent": 6,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          11.025,
+          0.035,
+          0.17500000596046447
+        ],
+        "translation": [
+          -11.0,
+          1.035,
+          -6.0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.23,
+          0.46,
+          0.45
+        ]
+      },
+      "id": 196,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Quay North Teal Cap",
+      "parent": 6,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          11.025,
+          0.035,
+          0.17500000596046447
+        ],
+        "translation": [
+          -11.0,
+          1.035,
+          28.0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.23,
+          0.46,
+          0.45
+        ]
+      },
+      "id": 197,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Quay West Teal Cap",
+      "parent": 6,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.17500000596046447,
+          0.035,
+          6.025
+        ],
+        "translation": [
+          -22.0,
+          1.035,
+          22.0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.23,
+          0.46,
+          0.45
+        ]
+      },
+      "id": 198,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Canal West South Teal Cap",
+      "parent": 6,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.16500000059604644,
+          0.035,
+          1.7250000476837157
+        ],
+        "translation": [
+          -0.15000000596046448,
+          0.7949999904632569,
+          17.899999618530273
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.23,
+          0.46,
+          0.45
+        ]
+      },
+      "id": 199,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Canal West North Teal Cap",
+      "parent": 6,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.16500000059604644,
+          0.035,
+          0.7249999880790711
+        ],
+        "translation": [
+          -0.15000000596046448,
+          0.7949999904632569,
+          27.100000381469727
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.23,
+          0.46,
+          0.45
+        ]
+      },
+      "id": 200,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Canal West 1 Teal Cap",
+      "parent": 6,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.275,
+          0.035,
+          0.275
+        ],
+        "translation": [
+          -0.15000000596046448,
+          0.7949999904632569,
+          19.600000381469727
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.23,
+          0.46,
+          0.45
+        ]
+      },
+      "id": 201,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Canal West1 Teal Cap",
+      "parent": 6,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.275,
+          0.035,
+          0.275
+        ],
+        "translation": [
+          -0.15000000596046448,
+          0.7949999904632569,
+          26.399999618530273
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.23,
+          0.46,
+          0.45
+        ]
+      },
+      "id": 202,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Canal East South Teal Cap",
+      "parent": 6,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.16500000059604644,
+          0.035,
+          1.7250000476837157
+        ],
+        "translation": [
+          2.1500000953674316,
+          1.3549999928474425,
+          17.899999618530273
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.23,
+          0.46,
+          0.45
+        ]
+      },
+      "id": 203,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Canal East North Teal Cap",
+      "parent": 6,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.16500000059604644,
+          0.035,
+          2.7250000476837157
+        ],
+        "translation": [
+          2.1500000953674316,
+          1.3549999928474425,
+          29.100000381469727
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.23,
+          0.46,
+          0.45
+        ]
+      },
+      "id": 204,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Canal East 1 Teal Cap",
+      "parent": 6,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.275,
+          0.035,
+          0.275
+        ],
+        "translation": [
+          2.1500000953674316,
+          1.3549999928474425,
+          19.600000381469727
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.23,
+          0.46,
+          0.45
+        ]
+      },
+      "id": 205,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Canal East1 Teal Cap",
+      "parent": 6,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.275,
+          0.035,
+          0.275
+        ],
+        "translation": [
+          2.1500000953674316,
+          1.3549999928474425,
+          26.399999618530273
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.23,
+          0.46,
+          0.45
+        ]
+      },
+      "id": 206,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Market South Teal Cap",
+      "parent": 7,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          9.025,
+          0.035,
+          0.17500000596046447
+        ],
+        "translation": [
+          11.0,
+          1.4949999785423278,
+          16.0
         ]
       }
     }
