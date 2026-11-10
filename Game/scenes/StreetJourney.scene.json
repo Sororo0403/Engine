@@ -9174,12 +9174,12 @@
           1
         ],
         "scale": [
-          4.0,
+          1.5,
           0.42500001192092896,
           0.15000000596046448
         ],
         "translation": [
-          8.0,
+          5.5,
           4.34499979019165,
           69.0
         ]
@@ -32407,6 +32407,294 @@
           0.48,
           0.17,
           0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.75,
+          0.64,
+          0.53
+        ]
+      },
+      "id": 599,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "East South Return Parapet",
+      "parent": 9,
+      "tag": "street_wave_far",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.5,
+          0.425,
+          0.15
+        ],
+        "translation": [
+          10.5,
+          4.345,
+          69
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.53,
+          0.39,
+          0.29
+        ]
+      },
+      "id": 600,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Rooftop Courtyard Return Ramp",
+      "parent": 9,
+      "tag": "street_wave_far",
+      "transform": {
+        "rotation": [
+          -0.032921278,
+          0,
+          0,
+          0.999457948
+        ],
+        "scale": [
+          1,
+          0.12,
+          6.990152
+        ],
+        "translation": [
+          8,
+          3.35,
+          62.275
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.72,
+          0.59,
+          0.42
+        ]
+      },
+      "id": 601,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Rooftop Return West Rail",
+      "parent": 9,
+      "tag": "street_wave_far",
+      "transform": {
+        "rotation": [
+          -0.032921278,
+          0,
+          0,
+          0.999457948
+        ],
+        "scale": [
+          0.07,
+          0.22,
+          6.990152
+        ],
+        "translation": [
+          6.93,
+          3.66,
+          62.275
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.72,
+          0.59,
+          0.42
+        ]
+      },
+      "id": 602,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Rooftop Return East Rail",
+      "parent": 9,
+      "tag": "street_wave_far",
+      "transform": {
+        "rotation": [
+          -0.032921278,
+          0,
+          0,
+          0.999457948
+        ],
+        "scale": [
+          0.07,
+          0.22,
+          6.990152
+        ],
+        "translation": [
+          9.07,
+          3.66,
+          62.275
         ]
       }
     }
