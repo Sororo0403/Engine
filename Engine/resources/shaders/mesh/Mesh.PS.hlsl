@@ -108,7 +108,8 @@ cbuffer MaterialBuffer : register(b2) {
 	float2 uvScale;
 	float2 uvOffset;
 	uint shadingMode;
-	uint3 materialPadding;
+	uint receiveFog;
+	uint2 materialPadding;
 	float4 revealOriginRadius;
 	float revealFeather;
 	float3 revealPadding;
@@ -183,7 +184,7 @@ float4 PSMain(VertexOutput input) : SV_Target0 {
 
 	float3 color =
 	    textureColor.rgb * input.color.rgb * baseColor.rgb * lighting;
-	if (fogStrength > 0.0f) {
+	if (receiveFog != 0 && fogStrength > 0.0f) {
 		float distanceToCamera = length(input.worldPosition - fogCameraPosition);
 		float fogAmount = smoothstep(fogStart, fogEnd, distanceToCamera) * fogStrength;
 		color = lerp(color, fogColor, fogAmount);

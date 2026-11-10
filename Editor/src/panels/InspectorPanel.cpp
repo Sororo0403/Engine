@@ -477,6 +477,11 @@ bool InspectorPanel::Draw(
 			visibilityRequest_ = {inspectedObjectId, visible};
 		}
 
+		auto renderer = *object->meshRenderer;
+		if (ImGui::Checkbox("Receive Fog", &renderer.receiveFog)) {
+			changed |= history.SetMeshRenderer(inspectedObjectId, std::move(renderer));
+		}
+
 		if (models && assets) {
 			if (object->HasMesh() &&
 			    !models->FindLoaded(object->mesh->modelPath) &&

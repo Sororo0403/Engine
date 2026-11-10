@@ -535,6 +535,9 @@ bool SceneSerializer::Serialize(const Scene &scene, std::string &text) {
 				    {"textures", std::move(bindings)},
 				    {"uvScale", object.meshRenderer->uvScale},
 				    {"uvOffset", object.meshRenderer->uvOffset}};
+				if (!object.meshRenderer->receiveFog) {
+					objects.back()["meshRenderer"]["receiveFog"] = false;
+				}
 				const auto &reveal = object.meshRenderer->reveal;
 				if (reveal.feather > 0)
 					objects.back()["meshRenderer"]["radialReveal"] = {
@@ -1089,6 +1092,7 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 						object.meshRenderer->uvOffset =
 						    ReadFloat2(renderer.at("uvOffset"));
 					}
+					object.meshRenderer->receiveFog = renderer.value("receiveFog", true);
 					if (version >= 78 && renderer.contains("radialReveal")) {
 						const auto &reveal = renderer.at("radialReveal");
 						const auto &originRadius = reveal.at("originRadius");

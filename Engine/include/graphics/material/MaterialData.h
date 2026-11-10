@@ -50,8 +50,9 @@ struct MaterialData {
 	DirectX::XMFLOAT2 uvOffset{0.0f, 0.0f};
 
 	ShadingMode shadingMode = ShadingMode::LIT;
+	std::uint32_t receiveFog = 1;
 	// HLSLの定数バッファを16バイト境界へ合わせる予約領域
-	std::uint32_t padding[3]{};
+	std::uint32_t padding[2]{};
 	RadialReveal reveal;
 	std::uint32_t revealPadding[3]{};
 	MonochromeEffect monochrome;

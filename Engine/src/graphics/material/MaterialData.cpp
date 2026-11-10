@@ -38,5 +38,6 @@ bool MaterialData::operator==(const MaterialData &other) const {
 	       baseColor.w == other.baseColor.w && uvScale.x == other.uvScale.x &&
 	       uvScale.y == other.uvScale.y && uvOffset.x == other.uvOffset.x &&
 	       uvOffset.y == other.uvOffset.y && shadingMode == other.shadingMode &&
-	       reveal == other.reveal && monochrome == other.monochrome;
+	       receiveFog == other.receiveFog && reveal == other.reveal &&
+	       monochrome == other.monochrome;
 }

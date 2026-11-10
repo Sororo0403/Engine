@@ -16,6 +16,7 @@ struct MeshRendererComponent {
 	std::array<float, 2> uvScale{1.0f, 1.0f};
 	std::array<float, 2> uvOffset{0.0f, 0.0f};
 	RadialReveal reveal;
+	bool receiveFog = true;
 
 	/// <summary>
 	/// 画像スロットとUVの設定を検証する。Meshが未設定でも保持できる

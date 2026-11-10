@@ -407,6 +407,7 @@ bool SceneRenderer::SynchronizeObjects(bool keepBackground) {
 			data.uvOffset = {object.meshRenderer->uvOffset[0],
 			                 object.meshRenderer->uvOffset[1]};
 			data.reveal = object.meshRenderer->reveal;
+			data.receiveFog = object.meshRenderer->receiveFog ? 1 : 0;
 			data.monochrome = isForeground(id) ? MonochromeEffect{} : monochrome;
 		}
 

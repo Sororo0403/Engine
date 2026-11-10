@@ -19,6 +19,7 @@ bool Material::Initialize(ID3D12Device *device,
 	static_assert(offsetof(MaterialData, uvScale) == 16);
 	static_assert(offsetof(MaterialData, uvOffset) == 24);
 	static_assert(offsetof(MaterialData, shadingMode) == 32);
+	static_assert(offsetof(MaterialData, receiveFog) == 36);
 	static_assert(offsetof(MaterialData, reveal) == 48);
 	static_assert(offsetof(RadialReveal, feather) == 16);
 	static_assert(offsetof(MaterialData, monochrome) == 80);
