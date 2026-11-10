@@ -31,7 +31,6 @@ bool Material::Initialize(ID3D12Device *device,
 
 	resource_ = std::move(resource);
 
-	Logger::Info("Materialを初期化しました。");
 	return true;
 }
 

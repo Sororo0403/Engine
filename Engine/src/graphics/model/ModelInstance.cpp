@@ -78,7 +78,6 @@ bool ModelInstance::Initialize(ID3D12Device *device, const Model &model) {
 	model_ = &model;
 	device_ = device;
 
-	Logger::Info("ModelInstanceを初期化しました。");
 	return true;
 }
 
