@@ -157,6 +157,17 @@ return {
                         end
                     end
                 end
+                if state.canalReturnText and px >= state.farBankX
+                    and pz >= state.crossingMinZ and pz <= state.crossingMaxZ then
+                    local canalReturn = self:reference("canalReturnMarker")
+                    if canalReturn then
+                        local bx, by, bz = canalReturn:get_position()
+                        if px <= bx + 1.1 and math.abs(py - by) < 1.5
+                            and math.abs(pz - bz) <= state.canalMarkerDepth then
+                            text = state.canalReturnText
+                        end
+                    end
+                end
                 if game.streetGoalWaiting and state.finishPrompt then
                     text = state.finishPrompt
                     if game.streetRemainingFlowers then

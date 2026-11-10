@@ -11411,6 +11411,10 @@
             "target": 546
           },
           {
+            "name": "canalReturnMarker",
+            "target": 595
+          },
+          {
             "name": "canalStep",
             "target": 586
           },
@@ -11445,6 +11449,7 @@
           "introRadius": 4,
           "canalApproachText": "岸に沿って、金色の矢印か飛び石を探そう",
           "canalMarkerDepth": 1.6,
+          "canalReturnText": "戻るなら矢印から運河を渡ろう ［Space / A 長押し］",
           "canalStepText": "飛び石に着地してから、もう一度ジャンプ ［Space / A］",
           "canalStepHintDepth": 0.9,
           "jumpText": "矢印から対岸へジャンプ  ［Space / A 長押しで遠くへ］",
@@ -30379,6 +30384,27 @@
         "rotation": [0, 1, 0, 0],
         "scale": [1, 1, 1],
         "translation": [-2.1, 0.035, 23]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [1, 1],
+        "uvOffset": [0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 595,
+      "name": "Canal Return Arrow",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [0, 0, 0, 1],
+        "scale": [1, 1, 1],
+        "translation": [2.9, 0.595, 23]
       },
       "mesh": {
         "model": "@project/assets/street/models/RooftopJumpMarker.obj"
