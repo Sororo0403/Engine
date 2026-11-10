@@ -28977,6 +28977,23 @@
             "operation": "sendScriptMessage",
             "scene": "",
             "target": 1
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "inputPressed",
+            "inputAction": "Restart",
+            "launchSpeed": 12,
+            "messageName": "street_retry",
+            "once": false,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 1
           }
         ]
       }
