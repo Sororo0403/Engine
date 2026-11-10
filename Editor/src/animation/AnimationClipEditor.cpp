@@ -57,8 +57,11 @@ void AnimationClipEditor::DrawKeys(const Scene *scene, AnimationClipComponent &t
 
 			int property = static_cast<int>(track.property);
 			if (ImGui::Combo("Property", &property,
-			                 "UI Position\0UI Opacity\0Translation\0Rotation\0Scale\0")) {
+			                 "UI Position\0UI Opacity\0Translation\0Rotation\0Scale\0UI Size Delta\0")) {
 				track.property = static_cast<AnimationClipTrack::Property>(property);
+				if (track.property != AnimationClipTrack::Property::POSITION &&
+				    track.interpolation == AnimationClipTrack::Interpolation::EASE_OUT_BACK)
+					track.interpolation = AnimationClipTrack::Interpolation::LINEAR;
 				const auto *selected = scene ? scene->FindObject(track.target) : nullptr;
 				if (selected && !selected->CanAnimate(track))
 					track.target = 0;
@@ -74,7 +77,10 @@ void AnimationClipEditor::DrawKeys(const Scene *scene, AnimationClipComponent &t
 			const bool opacity = track.property == AnimationClipTrack::Property::OPACITY;
 			const bool rotation = track.property == AnimationClipTrack::Property::ROTATION;
 			int interpolation = static_cast<int>(track.interpolation);
-			if (ImGui::Combo("Interpolation", &interpolation, "Linear\0Smooth\0Step\0"))
+			const char *interpolations = track.property == AnimationClipTrack::Property::POSITION
+			    ? "Linear\0Smooth\0Step\0Ease Out Cubic\0Ease Out Back\0"
+			    : "Linear\0Smooth\0Step\0Ease Out Cubic\0";
+			if (ImGui::Combo("Interpolation", &interpolation, interpolations))
 				track.interpolation = static_cast<AnimationClipTrack::Interpolation>(interpolation);
 
 			// キーの印をクリックすると、その時刻へプレイヘッドを移す。
@@ -135,7 +141,9 @@ void AnimationClipEditor::DrawKeys(const Scene *scene, AnimationClipComponent &t
 					ImGui::DragFloat3("XYZ", key.value.data(), .05f, -limit, limit,
 					                  "%.3f", ImGuiSliderFlags_AlwaysClamp);
 				} else
-					ImGui::DragFloat2("XY", key.value.data(), 1.f, -100000, 100000,
+					ImGui::DragFloat2(track.property == AnimationClipTrack::Property::SIZE_DELTA
+					                      ? "Width / Height" : "XY",
+					                  key.value.data(), 1.f, -100000, 100000,
 					                  "%.1f", ImGuiSliderFlags_AlwaysClamp);
 				ImGui::SameLine();
 				ImGui::BeginDisabled(track.keys.size() == 1);

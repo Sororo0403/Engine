@@ -1104,6 +1104,9 @@ bool ApplyAnimationClip(Scene &scene, const AnimationClipComponent &clip,
 		case AnimationClipTrack::Property::POSITION:
 			target->rectTransform->position = {value[0], value[1]};
 			break;
+		case AnimationClipTrack::Property::SIZE_DELTA:
+			target->rectTransform->sizeDelta = {value[0], value[1]};
+			break;
 		case AnimationClipTrack::Property::OPACITY:
 			if (target->text)
 				target->text->color[3] = value[0];

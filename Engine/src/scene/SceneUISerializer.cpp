@@ -10,9 +10,10 @@
 
 namespace {
 using Json = nlohmann::json;
-const std::array<const char *, 5> kTimelineProperties{
-    "position", "opacity", "translation", "rotation", "scale"};
-const std::array<const char *, 3> kTimelineInterpolation{"linear", "smooth", "step"};
+const std::array<const char *, 6> kTimelineProperties{
+    "position", "opacity", "translation", "rotation", "scale", "sizeDelta"};
+const std::array<const char *, 5> kTimelineInterpolation{
+    "linear", "smooth", "step", "easeOutCubic", "easeOutBack"};
 
 /// <summary>
 /// 有限な固定長のUI配列を読み込む

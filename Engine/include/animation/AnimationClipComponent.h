@@ -19,8 +19,8 @@ struct AnimationClipKey {
 };
 
 struct AnimationClipTrack {
-	enum class Property { POSITION, OPACITY, TRANSLATION, ROTATION, SCALE };
-	enum class Interpolation { LINEAR, SMOOTH, STEP };
+	enum class Property { POSITION, OPACITY, TRANSLATION, ROTATION, SCALE, SIZE_DELTA };
+	enum class Interpolation { LINEAR, SMOOTH, STEP, EASE_OUT_CUBIC, EASE_OUT_BACK };
 
 	SceneObjectId target = 0;
 	Property property = Property::POSITION;
@@ -48,6 +48,15 @@ struct AnimationClipTrack {
 		                                  (next->seconds - previous.seconds));
 		if (interpolation == Interpolation::SMOOTH)
 			amount = amount * amount * (3 - 2 * amount);
+		else if (interpolation == Interpolation::EASE_OUT_CUBIC) {
+			const float remaining = 1 - amount;
+			amount = 1 - remaining * remaining * remaining;
+		} else if (interpolation == Interpolation::EASE_OUT_BACK) {
+			constexpr float overshoot = 1.70158f;
+			const float remaining = amount - 1;
+			amount = 1 + remaining * remaining *
+			                 ((overshoot + 1) * remaining + overshoot);
+		}
 		if (property == Property::ROTATION) {
 			using namespace DirectX;
 			const auto &a = previous.value;
@@ -58,10 +67,14 @@ struct AnimationClipTrack {
 			    XMVectorSet(b[0], b[1], b[2], b[3]), amount)));
 			return {value.x, value.y, value.z, value.w};
 		}
-		return {std::lerp(previous.value[0], next->value[0], amount),
-		        std::lerp(previous.value[1], next->value[1], amount),
-		        std::lerp(previous.value[2], next->value[2], amount),
-		        std::lerp(previous.value[3], next->value[3], amount)};
+		std::array<float, 4> value;
+		for (std::size_t i = 0; i < value.size(); ++i)
+			value[i] = std::lerp(previous.value[i], next->value[i], amount);
+		if (interpolation == Interpolation::EASE_OUT_BACK) {
+			value[0] = std::clamp(value[0], -100000.f, 100000.f);
+			value[1] = std::clamp(value[1], -100000.f, 100000.f);
+		}
+		return value;
 	}
 
 	bool operator==(const AnimationClipTrack &) const = default;
@@ -107,10 +120,14 @@ struct AnimationClipComponent {
 			const auto &track = tracks[i];
 			if ((track.property != AnimationClipTrack::Property::POSITION &&
 			     track.property != AnimationClipTrack::Property::OPACITY &&
+			     track.property != AnimationClipTrack::Property::SIZE_DELTA &&
 			     !track.IsTransform()) ||
 			    (track.interpolation != AnimationClipTrack::Interpolation::LINEAR &&
 			     track.interpolation != AnimationClipTrack::Interpolation::SMOOTH &&
-			     track.interpolation != AnimationClipTrack::Interpolation::STEP) ||
+			     track.interpolation != AnimationClipTrack::Interpolation::STEP &&
+			     track.interpolation != AnimationClipTrack::Interpolation::EASE_OUT_CUBIC &&
+			     !(track.interpolation == AnimationClipTrack::Interpolation::EASE_OUT_BACK &&
+			       track.property == AnimationClipTrack::Property::POSITION)) ||
 			    track.keys.empty() || track.keys.size() > kMaximumKeys)
 				return false;
 
