@@ -1,0 +1,52 @@
+{
+  "format": "EngineAnimationClip",
+  "version": 1,
+  "clip": {
+    "duration": 1.8,
+    "tracks": [
+      {
+        "target": 1,
+        "property": "opacity",
+        "interpolation": "smooth",
+        "keys": [
+          {
+            "time": 0,
+            "value": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "time": 0.14,
+            "value": [
+              1,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "time": 1.28,
+            "value": [
+              1,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "time": 1.8,
+            "value": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

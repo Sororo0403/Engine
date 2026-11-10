@@ -10305,7 +10305,23 @@
             "once": true,
             "operation": "playAudio",
             "scene": "",
-            "target": 160
+            "target": 529
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "playAnimationClip",
+            "scene": "",
+            "target": 528
           }
         ]
       }
@@ -10427,7 +10443,23 @@
             "once": true,
             "operation": "playAudio",
             "scene": "",
-            "target": 160
+            "target": 529
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "playAnimationClip",
+            "scene": "",
+            "target": 528
           }
         ]
       }
@@ -31121,6 +31153,114 @@
             "target": 1
           }
         ]
+      }
+    },
+    {
+      "active": true,
+      "id": 528,
+      "name": "Checkpoint Notice",
+      "parent": 156,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "rectTransform": {
+        "anchorMin": [
+          0.5,
+          0
+        ],
+        "anchorMax": [
+          0.5,
+          0
+        ],
+        "pivot": [
+          0.5,
+          0
+        ],
+        "position": [
+          0,
+          76
+        ],
+        "sizeDelta": [
+          460,
+          52
+        ]
+      },
+      "text": {
+        "enabled": true,
+        "raycastTarget": false,
+        "value": "チェックポイント",
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 26,
+        "bold": true,
+        "color": [
+          1,
+          0.85,
+          0.5,
+          0
+        ],
+        "alignment": "center",
+        "verticalAlignment": "middle"
+      },
+      "animationPlayer": {
+        "asset": "@project/assets/street/animations/CheckpointNotice.clip.json",
+        "bindings": [
+          {
+            "slot": 1,
+            "target": 528
+          }
+        ],
+        "loop": false,
+        "playOnStart": false
+      }
+    },
+    {
+      "active": true,
+      "id": 529,
+      "name": "Checkpoint Chime",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "audioSource": {
+        "clip": "@project/assets/street/audio/Checkpoint.wav",
+        "loop": false,
+        "maxDistance": 20,
+        "minDistance": 1,
+        "playOnStart": false,
+        "spatial": false,
+        "volume": 0.55
       }
     }
   ],
