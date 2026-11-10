@@ -1,3 +1,22 @@
+local function canal_bridge_hint(self, x, z)
+    local bridge = self:reference("canalBridge")
+    local winch = self:reference("canalWinch")
+    if not bridge or not winch then
+        return nil
+    end
+    local wx, _, wz = winch:get_position()
+    if math.abs(z - wz) > 1.1 then
+        return nil
+    end
+    if bridge:is_active() then
+        if x >= -3.5 and x <= 5 then
+            return "開いた橋を歩いて運河を渡ろう"
+        end
+    elseif math.abs(x - wx) <= 1.25 then
+        return "巻き上げ機を操作して運河に橋を架ける ［E / X］"
+    end
+end
+
 local function update_hint(self, state, x, z, inRange, seconds)
     if not state.findCanalText then
         return
@@ -38,6 +57,9 @@ local function update_hint(self, state, x, z, inRange, seconds)
         else
             text = state.introText
         end
+    end
+    if not inRange then
+        text = canal_bridge_hint(self, x, z) or text
     end
     if text ~= state.currentHint then
         self:reference("hint"):set_text(text)
@@ -176,6 +198,7 @@ return {
                         end
                     end
                 end
+                text = canal_bridge_hint(self, px, pz) or text
                 local returnMarker = self:reference("courtyardReturnMarker")
                 if onRoof and returnMarker and state.courtyardReturnText then
                     local mx, my, mz = returnMarker:get_position()
