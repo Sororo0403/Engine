@@ -95,6 +95,7 @@ void Scene::Clear() {
 	lighting_.reset();
 	monochrome_ = {};
 	monochromeForeground_ = 0;
+	backgroundFreeze_.reset();
 	legacyDirectionalLight_ = false;
 }
 
@@ -148,6 +149,7 @@ bool Scene::ApplyTransaction(const std::function<bool(Scene &)> &operation) {
 	working.lighting_ = lighting_;
 	working.monochrome_ = monochrome_;
 	working.monochromeForeground_ = monochromeForeground_;
+	working.backgroundFreeze_ = backgroundFreeze_;
 	working.legacyDirectionalLight_ = legacyDirectionalLight_;
 
 	// 削除済み物体のIDも復元できるよう、発行済み番号を引き継ぐ
@@ -168,6 +170,7 @@ bool Scene::ApplyTransaction(const std::function<bool(Scene &)> &operation) {
 	lighting_.swap(working.lighting_);
 	monochrome_ = working.monochrome_;
 	monochromeForeground_ = working.monochromeForeground_;
+	backgroundFreeze_.swap(working.backgroundFreeze_);
 	legacyDirectionalLight_ = working.legacyDirectionalLight_;
 	nextObjectId_ = working.nextObjectId_;
 
@@ -182,6 +185,7 @@ void Scene::CopyFrom(const Scene &source) {
 	lighting_ = source.lighting_;
 	monochrome_ = source.monochrome_;
 	monochromeForeground_ = source.monochromeForeground_;
+	backgroundFreeze_ = source.backgroundFreeze_;
 	legacyDirectionalLight_ = source.legacyDirectionalLight_;
 	nextObjectId_ = next;
 }
@@ -195,9 +199,14 @@ bool Scene::SetLighting(std::optional<LightingSettings> lighting) {
 	return true;
 }
 
-bool Scene::SetMonochrome(const MonochromeEffect &effect, SceneObjectId foreground) {
+bool Scene::SetMonochrome(const MonochromeEffect &effect, SceneObjectId foreground,
+                          bool freezeBackground) {
 	if (!effect.IsValid() || (foreground && !Contains(foreground)))
 		return false;
+	if (!freezeBackground)
+		backgroundFreeze_.reset();
+	else if (!backgroundFreeze_ || foreground != monochromeForeground_)
+		backgroundFreeze_ = std::make_shared<SceneBackgroundFreeze>();
 	monochrome_ = effect;
 	monochromeForeground_ = foreground;
 	return true;
@@ -208,6 +217,7 @@ void Scene::Swap(Scene &other) noexcept {
 	lighting_.swap(other.lighting_);
 	std::swap(monochrome_, other.monochrome_);
 	std::swap(monochromeForeground_, other.monochromeForeground_);
+	backgroundFreeze_.swap(other.backgroundFreeze_);
 	std::swap(legacyDirectionalLight_, other.legacyDirectionalLight_);
 	std::swap(nextObjectId_, other.nextObjectId_);
 }

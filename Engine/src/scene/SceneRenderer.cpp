@@ -122,6 +122,9 @@ bool SceneRenderer::PreparePrefabResources(
 
 void SceneRenderer::ClearPrefabResources() {
 	preparedPrefabs_.clear();
+	backgroundFreeze_.reset();
+	frozenParticles_.clear();
+	frozenForeground_.clear();
 	particleBatches_.clear();
 	animatorPoses_.clear();
 	if (particles_)
@@ -137,12 +140,25 @@ bool SceneRenderer::Update(int width, int height) {
 	}
 
 	try {
+		const auto &freeze = scene_.GetBackgroundFreeze();
+		const bool keepBackground = freeze && freeze == backgroundFreeze_;
+		if (!keepBackground) {
+			if (freeze)
+				frozenParticles_ = particleBatches_;
+			else
+				frozenParticles_.clear();
+		}
+		const auto &batches = freeze ? frozenParticles_ : particleBatches_;
 		std::vector<std::filesystem::path> images;
 
 		for (const auto &[id, o] : scene_.GetObjects()) {
 			(void)id;
 			if (o.particleEmitter && !o.particleEmitter->texture.empty())
 				images.push_back(o.particleEmitter->texture);
+		}
+		for (const auto &batch : batches) {
+			if (!batch.texture.empty())
+				images.push_back(batch.texture);
 		}
 
 		std::string error;
@@ -153,7 +169,7 @@ bool SceneRenderer::Update(int width, int height) {
 			return false;
 		}
 
-		if (!SynchronizeObjects())
+		if (!SynchronizeObjects(keepBackground))
 			return false;
 		const bool updated = width == 0 && height == 0
 		                         ? render_.Update(*world_)
@@ -163,14 +179,16 @@ bool SceneRenderer::Update(int width, int height) {
 		DirectX::XMFLOAT4X4 view, projection;
 
 		if (!world_->GetCameraMatrices(view, projection) ||
-		    !particles_->Update(particleBatches_, view, projection, error)) {
+		    !particles_->Update(batches, view, projection, error)) {
 			Logger::Error(error);
 			return false;
 		}
 
-		return !screenUIEnabled_ ||
-		       render_.UpdateCanvas(*canvas_, scene_, width, height,
-		                            buttonVisuals_);
+		if (screenUIEnabled_ &&
+		    !render_.UpdateCanvas(*canvas_, scene_, width, height, buttonVisuals_))
+			return false;
+		backgroundFreeze_ = freeze;
+		return true;
 	} catch (const std::exception &error) {
 		Logger::Error(std::format("SceneRenderer update: {}", error.what()));
 		return false;
@@ -200,7 +218,7 @@ void SceneRenderer::Draw(RenderTexture *target) const {
 	}
 }
 
-bool SceneRenderer::SynchronizeObjects() {
+bool SceneRenderer::SynchronizeObjects(bool keepBackground) {
 	SceneHierarchy::WorldTransforms transforms;
 
 	if (!SceneHierarchy::BuildWorldTransforms(scene_, transforms)) {
@@ -217,41 +235,50 @@ bool SceneRenderer::SynchronizeObjects() {
 	const auto &monochrome = scene_.GetMonochrome();
 	const auto foreground = scene_.GetMonochromeForeground();
 	std::vector<SceneObjectId> coloredObjects;
-	if (monochrome.amount > 0 && foreground && scene_.Contains(foreground) &&
+	const bool freezing = static_cast<bool>(scene_.GetBackgroundFreeze());
+	if ((freezing || monochrome.amount > 0) && foreground &&
+	    scene_.Contains(foreground) &&
 	    !SceneHierarchy::GetSubtree(scene_, foreground, coloredObjects))
 		return false;
 	std::ranges::sort(coloredObjects);
+	if (!keepBackground)
+		frozenForeground_ = freezing ? coloredObjects : std::vector<SceneObjectId>{};
+	const auto isForeground = [&](SceneObjectId id) {
+		return std::ranges::binary_search(coloredObjects, id);
+	};
 
-	std::string lightError;
-	DirectionalLightsData directionalLights;
-	ShadowSettings shadows;
+	if (!keepBackground) {
+		std::string lightError;
+		DirectionalLightsData directionalLights;
+		ShadowSettings shadows;
 
-	if (!SceneLighting::CollectDirectionalLights(scene_, transforms, active,
-	                                             fallbackLighting_, directionalLights,
-	                                             shadows, lightError) ||
-	    !world_->SetShadows(shadows)) {
-		Logger::Error(lightError.empty() ? "Directional Light update failed."
-		                                 : lightError);
-		return false;
-	}
-	world_->SetDirectionalLights(directionalLights);
+		if (!SceneLighting::CollectDirectionalLights(scene_, transforms, active,
+		                                             fallbackLighting_, directionalLights,
+		                                             shadows, lightError) ||
+		    !world_->SetShadows(shadows)) {
+			Logger::Error(lightError.empty() ? "Directional Light update failed."
+			                                 : lightError);
+			return false;
+		}
+		world_->SetDirectionalLights(directionalLights);
 
-	std::vector<PointLightData> lights;
+		std::vector<PointLightData> lights;
 
-	if (!SceneLighting::CollectPointLights(scene_, lights, lightError) ||
-	    !world_->SetPointLights(lights)) {
-		Logger::Error(lightError.empty() ? "Point Light update failed."
-		                                 : lightError);
-		return false;
-	}
+		if (!SceneLighting::CollectPointLights(scene_, lights, lightError) ||
+		    !world_->SetPointLights(lights)) {
+			Logger::Error(lightError.empty() ? "Point Light update failed."
+			                                 : lightError);
+			return false;
+		}
 
-	std::vector<SpotLightData> spotLights;
+		std::vector<SpotLightData> spotLights;
 
-	if (!SceneLighting::CollectSpotLights(scene_, spotLights, lightError) ||
-	    !world_->SetSpotLights(spotLights)) {
-		Logger::Error(lightError.empty() ? "Spot Light update failed."
-		                                 : lightError);
-		return false;
+		if (!SceneLighting::CollectSpotLights(scene_, spotLights, lightError) ||
+		    !world_->SetSpotLights(spotLights)) {
+			Logger::Error(lightError.empty() ? "Spot Light update failed."
+			                                 : lightError);
+			return false;
+		}
 	}
 
 	const auto revision = models_.GetReloadRevision();
@@ -259,9 +286,19 @@ bool SceneRenderer::SynchronizeObjects() {
 
 	// 削除・非表示・モデルなしの物体を描画ワールドから取り除く
 	for (auto it = objects_.begin(); it != objects_.end();) {
+		if (keepBackground && !isForeground(it->first) &&
+		    !std::ranges::binary_search(frozenForeground_, it->first)) {
+			const auto handle = it->second.handle;
+			if (world_->Contains(handle))
+				for (std::size_t slot = 0; slot < world_->GetMaterialCount(handle); ++slot)
+					world_->GetMaterial(handle, slot).monochrome = monochrome;
+			++it;
+			continue;
+		}
 		const SceneObject *object = scene_.FindObject(it->first);
 
-		if (!object || !active.at(it->first) || !object->IsRenderable()) {
+		if (!object || !active.at(it->first) || !object->IsRenderable() ||
+		    (keepBackground && !isForeground(it->first))) {
 			world_->DestroyObject(it->second.handle);
 			it = objects_.erase(it);
 		} else {
@@ -270,6 +307,8 @@ bool SceneRenderer::SynchronizeObjects() {
 	}
 
 	for (const auto &[id, object] : scene_.GetObjects()) {
+		if (keepBackground && !isForeground(id))
+			continue;
 		if (!active.at(id) || !object.IsRenderable()) {
 			continue;
 		}
@@ -367,8 +406,7 @@ bool SceneRenderer::SynchronizeObjects() {
 			data.uvOffset = {object.meshRenderer->uvOffset[0],
 			                 object.meshRenderer->uvOffset[1]};
 			data.reveal = object.meshRenderer->reveal;
-			data.monochrome = std::ranges::binary_search(coloredObjects, id)
-			                      ? MonochromeEffect{} : monochrome;
+			data.monochrome = isForeground(id) ? MonochromeEffect{} : monochrome;
 		}
 
 		const auto animator = animatorPoses_.find(id);
@@ -406,7 +444,8 @@ bool SceneRenderer::SynchronizeObjects() {
 		}
 	}
 
-	modelRevision_ = revision;
+	if (!keepBackground)
+		modelRevision_ = revision;
 	return true;
 }
 
@@ -415,6 +454,9 @@ void SceneRenderer::Finalize() {
 	world_.reset();
 	particles_.reset();
 	particleBatches_.clear();
+	frozenParticles_.clear();
+	backgroundFreeze_.reset();
+	frozenForeground_.clear();
 	animatorPoses_.clear();
 	canvas_.reset();
 	preparedPrefabs_.clear();

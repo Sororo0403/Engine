@@ -7,8 +7,14 @@
 #include <filesystem>
 #include <functional>
 #include <map>
+#include <memory>
 #include <optional>
 #include <string>
+
+/// <summary>
+/// 背景を保持している区間を識別する
+/// </summary>
+struct SceneBackgroundFreeze {};
 
 /// <summary>
 /// シーン上の物体データの作成・削除・取得を管理する
@@ -130,9 +136,17 @@ class Scene {
 	SceneObjectId GetMonochromeForeground() const { return monochromeForeground_; }
 
 	/// <summary>
+	/// 背景を保持している区間を識別する。新しく開始した区間には別の参照を使う
+	/// </summary>
+	const std::shared_ptr<const SceneBackgroundFreeze> &GetBackgroundFreeze() const {
+		return backgroundFreeze_;
+	}
+
+	/// <summary>
 	/// シーンの保存内容に含めず、描画時だけ白黒効果を使う
 	/// </summary>
-	bool SetMonochrome(const MonochromeEffect &effect, SceneObjectId foreground);
+	bool SetMonochrome(const MonochromeEffect &effect, SceneObjectId foreground,
+	                   bool freezeBackground = false);
 
 	/// <summary>
 	/// 旧形式の平行光がオブジェクトへの移行待ちか確認する
@@ -150,6 +164,7 @@ class Scene {
 	std::optional<LightingSettings> lighting_;
 	MonochromeEffect monochrome_;
 	SceneObjectId monochromeForeground_ = 0;
+	std::shared_ptr<const SceneBackgroundFreeze> backgroundFreeze_;
 	bool legacyDirectionalLight_ = false;
 	std::map<SceneObjectId, SceneObject> objects_;
 	SceneObjectId nextObjectId_ = 1;

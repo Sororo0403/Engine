@@ -335,7 +335,7 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 		case Op::SET_BACKGROUND_MONOCHROME: {
 			const MonochromeEffect effect{
 			    numbers[0], numbers[1], numbers[2], numbers[3], numbers[4]};
-			if (!call.scene->SetMonochrome(effect, id))
+			if (!call.scene->SetMonochrome(effect, id, flag))
 				throw std::runtime_error("Background monochrome values are out of range.");
 			break;
 		}
@@ -607,6 +607,10 @@ int Dispatch(lua_State *state) {
 				                  "Transform values must be finite floats.");
 			numbers[i] = static_cast<float>(value);
 		}
+	}
+	if (op == Op::SET_BACKGROUND_MONOCHROME && !lua_isnoneornil(state, 7)) {
+		luaL_checktype(state, 7, LUA_TBOOLEAN);
+		flag = lua_toboolean(state, 7) != 0;
 	}
 
 	Result result;
