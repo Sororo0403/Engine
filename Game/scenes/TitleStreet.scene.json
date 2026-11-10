@@ -94,7 +94,7 @@
       "id": 3,
       "name": "Morning Sky",
       "parent": 0,
-      "tag": "",
+      "tag": "title_dark",
       "transform": {
         "rotation": [0, 0, 0, 1],
         "scale": [1, 1, 1],
@@ -181,6 +181,50 @@
             "seconds": 3.05,
             "translation": [0, 2.2, 14],
             "rotation": [0.0, 0.0, 0.0, 1.0],
+            "scale": [1, 1, 1]
+          }
+        ],
+        "mode": "once",
+        "interpolation": "smooth",
+        "speed": 1,
+        "playOnStart": false
+      }
+    },
+    {
+      "active": true,
+      "id": 7,
+      "name": "Exit Departure Camera",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [0, 0, 0, 1],
+        "scale": [1, 1, 1],
+        "translation": [0, 0, 0]
+      },
+      "camera": {
+        "primary": false,
+        "verticalFovDegrees": 45,
+        "nearClip": 0.1,
+        "farClip": 220
+      },
+      "transformAnimation": {
+        "keys": [
+          {
+            "seconds": 0,
+            "translation": [-1.5, 5.2, -11],
+            "rotation": [-0.10471169771160235, -0.2984782326740243, -0.03296567452747275, 0.9480819950221046],
+            "scale": [1, 1, 1]
+          },
+          {
+            "seconds": 1.4,
+            "translation": [-1.5, 5.2, -11],
+            "rotation": [-0.10471169771160235, -0.2984782326740243, -0.03296567452747275, 0.9480819950221046],
+            "scale": [1, 1, 1]
+          },
+          {
+            "seconds": 2.0,
+            "translation": [-18, 7.4, -2.8],
+            "rotation": [-0.10471169771160235, -0.2984782326740243, -0.03296567452747275, 0.9480819950221046],
             "scale": [1, 1, 1]
           }
         ],
@@ -533,63 +577,15 @@
           },
           {
             "event": "buttonClick",
-            "operation": "disable",
-            "target": 166,
+            "operation": "sendScriptMessage",
+            "target": 203,
             "once": true,
             "destination": 0,
             "scene": "",
             "contact": "any",
             "contactTag": "",
             "inputAction": "",
-            "messageName": "",
-            "delaySeconds": 0,
-            "cameraBlendSeconds": 0,
-            "arrivalTag": "",
-            "launchSpeed": 12
-          },
-          {
-            "event": "buttonClick",
-            "operation": "disable",
-            "target": 167,
-            "once": true,
-            "destination": 0,
-            "scene": "",
-            "contact": "any",
-            "contactTag": "",
-            "inputAction": "",
-            "messageName": "",
-            "delaySeconds": 0,
-            "cameraBlendSeconds": 0,
-            "arrivalTag": "",
-            "launchSpeed": 12
-          },
-          {
-            "event": "buttonClick",
-            "operation": "disable",
-            "target": 188,
-            "once": true,
-            "destination": 0,
-            "scene": "",
-            "contact": "any",
-            "contactTag": "",
-            "inputAction": "",
-            "messageName": "",
-            "delaySeconds": 0,
-            "cameraBlendSeconds": 0,
-            "arrivalTag": "",
-            "launchSpeed": 12
-          },
-          {
-            "event": "buttonClick",
-            "operation": "disable",
-            "target": 189,
-            "once": true,
-            "destination": 0,
-            "scene": "",
-            "contact": "any",
-            "contactTag": "",
-            "inputAction": "",
-            "messageName": "",
+            "messageName": "start",
             "delaySeconds": 0,
             "cameraBlendSeconds": 0,
             "arrivalTag": "",
@@ -1367,9 +1363,25 @@
         "actions": [
           {
             "event": "buttonClick",
-            "operation": "quitGame",
-            "target": 0,
-            "once": false,
+            "operation": "setCamera",
+            "target": 7,
+            "once": true,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 0.12,
+            "arrivalTag": "",
+            "launchSpeed": 12
+          },
+          {
+            "event": "buttonClick",
+            "operation": "playTransformAnimation",
+            "target": 7,
+            "once": true,
             "destination": 0,
             "scene": "",
             "contact": "any",
@@ -1380,8 +1392,356 @@
             "cameraBlendSeconds": 0,
             "arrivalTag": "",
             "launchSpeed": 12
+          },
+          {
+            "event": "buttonClick",
+            "operation": "sendScriptMessage",
+            "target": 203,
+            "once": true,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "quit",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 0,
+            "arrivalTag": "",
+            "launchSpeed": 12
+          },
+          {
+            "event": "buttonClick",
+            "operation": "quitGame",
+            "target": 0,
+            "once": true,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 2.28,
+            "cameraBlendSeconds": 0,
+            "arrivalTag": "",
+            "launchSpeed": 12
           }
         ]
+      }
+    },
+    {
+      "active": true,
+      "id": 201,
+      "name": "Title Effects Canvas",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [0, 0, 0, 1],
+        "scale": [1, 1, 1],
+        "translation": [0, 0, 0]
+      },
+      "canvas": {
+        "enabled": true,
+        "scaleWithScreen": true,
+        "referenceSize": [1280, 720],
+        "matchWidthOrHeight": 1,
+        "sortOrder": 100
+      }
+    },
+    {
+      "active": true,
+      "id": 202,
+      "name": "Departure Cover",
+      "parent": 201,
+      "tag": "",
+      "transform": {
+        "rotation": [0, 0, 0, 1],
+        "scale": [1, 1, 1],
+        "translation": [0, 0, 0]
+      },
+      "rectTransform": {
+        "anchorMin": [0, 0],
+        "anchorMax": [1, 1],
+        "pivot": [0, 0],
+        "position": [0, 0],
+        "sizeDelta": [0, 0]
+      },
+      "image": {
+        "enabled": true,
+        "raycastTarget": false,
+        "texture": "",
+        "color": [0, 0, 0, 0],
+        "preserveAspect": false,
+        "fillOrigin": "left",
+        "fillAmount": 1
+      }
+    },
+    {
+      "active": true,
+      "id": 203,
+      "name": "Title Presentation",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [0, 0, 0, 1],
+        "scale": [1, 1, 1],
+        "translation": [0, 0, 0]
+      },
+      "script": {
+        "asset": "@project/assets/title/scripts/TitlePresentation.lua",
+        "enabled": true,
+        "state": {},
+        "references": [
+          {
+            "name": "start",
+            "target": 187
+          },
+          {
+            "name": "config",
+            "target": 188
+          },
+          {
+            "name": "quit",
+            "target": 189
+          },
+          {
+            "name": "start_shadow",
+            "target": 165
+          },
+          {
+            "name": "config_shadow",
+            "target": 166
+          },
+          {
+            "name": "quit_shadow",
+            "target": 167
+          },
+          {
+            "name": "logo",
+            "target": 173
+          },
+          {
+            "name": "cover",
+            "target": 202
+          },
+          {
+            "name": "confirm",
+            "target": 198
+          },
+          {
+            "name": "quit_panel",
+            "target": 176
+          },
+          {
+            "name": "quit_heading",
+            "target": 195
+          },
+          {
+            "name": "quit_caption",
+            "target": 196
+          },
+          {
+            "name": "quit_cancel",
+            "target": 197
+          },
+          {
+            "name": "morning_light",
+            "target": 2
+          },
+          {
+            "name": "palette_lights",
+            "target": 220
+          },
+          {
+            "name": "start_palette",
+            "target": 230
+          },
+          {
+            "name": "quit_palette",
+            "target": 231
+          }
+        ],
+        "prefabs": [],
+        "scenes": []
+      }
+    },
+    {
+      "active": false,
+      "id": 220,
+      "name": "Silhouette Lighting",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [0, 0, 0, 1],
+        "scale": [1, 1, 1],
+        "translation": [0, 0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 221,
+      "name": "Silhouette Fill",
+      "parent": 220,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1, 1, 1],
+        "translation": [0, 0, 0]
+      },
+      "directionalLight": {
+        "color": [1, 1, 1],
+        "intensity": 1.1,
+        "shadows": {
+          "enabled": false,
+          "resolution": 1024,
+          "extent": 30,
+          "strength": 0.8,
+          "bias": 0.0005,
+          "normalBias": 0.02
+        }
+      }
+    },
+    {
+      "active": true,
+      "id": 222,
+      "name": "Silhouette Fill",
+      "parent": 220,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 1.0, 0.0, 6.123233995736766e-17],
+        "scale": [1, 1, 1],
+        "translation": [0, 0, 0]
+      },
+      "directionalLight": {
+        "color": [1, 1, 1],
+        "intensity": 1.1,
+        "shadows": {
+          "enabled": false,
+          "resolution": 1024,
+          "extent": 30,
+          "strength": 0.8,
+          "bias": 0.0005,
+          "normalBias": 0.02
+        }
+      }
+    },
+    {
+      "active": true,
+      "id": 223,
+      "name": "Silhouette Fill",
+      "parent": 220,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.7071067811865476, 0.0, 0.7071067811865476],
+        "scale": [1, 1, 1],
+        "translation": [0, 0, 0]
+      },
+      "directionalLight": {
+        "color": [1, 1, 1],
+        "intensity": 1.1,
+        "shadows": {
+          "enabled": false,
+          "resolution": 1024,
+          "extent": 30,
+          "strength": 0.8,
+          "bias": 0.0005,
+          "normalBias": 0.02
+        }
+      }
+    },
+    {
+      "active": true,
+      "id": 224,
+      "name": "Silhouette Fill",
+      "parent": 220,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, -0.7071067811865476, 0.0, 0.7071067811865476],
+        "scale": [1, 1, 1],
+        "translation": [0, 0, 0]
+      },
+      "directionalLight": {
+        "color": [1, 1, 1],
+        "intensity": 1.1,
+        "shadows": {
+          "enabled": false,
+          "resolution": 1024,
+          "extent": 30,
+          "strength": 0.8,
+          "bias": 0.0005,
+          "normalBias": 0.02
+        }
+      }
+    },
+    {
+      "active": true,
+      "id": 225,
+      "name": "Silhouette Fill",
+      "parent": 220,
+      "tag": "",
+      "transform": {
+        "rotation": [0.7071067811865476, 0.0, 0.0, 0.7071067811865476],
+        "scale": [1, 1, 1],
+        "translation": [0, 0, 0]
+      },
+      "directionalLight": {
+        "color": [1, 1, 1],
+        "intensity": 1.1,
+        "shadows": {
+          "enabled": false,
+          "resolution": 1024,
+          "extent": 30,
+          "strength": 0.8,
+          "bias": 0.0005,
+          "normalBias": 0.02
+        }
+      }
+    },
+    {
+      "active": true,
+      "id": 226,
+      "name": "Silhouette Fill",
+      "parent": 220,
+      "tag": "",
+      "transform": {
+        "rotation": [-0.7071067811865476, 0.0, 0.0, 0.7071067811865476],
+        "scale": [1, 1, 1],
+        "translation": [0, 0, 0]
+      },
+      "directionalLight": {
+        "color": [1, 1, 1],
+        "intensity": 1.1,
+        "shadows": {
+          "enabled": false,
+          "resolution": 1024,
+          "extent": 30,
+          "strength": 0.8,
+          "bias": 0.0005,
+          "normalBias": 0.02
+        }
+      }
+    },
+    {
+      "active": false,
+      "id": 230,
+      "name": "START White Geometry",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [0, 0, 0, 1],
+        "scale": [1, 1, 1],
+        "translation": [0, 0, 0]
+      }
+    },
+    {
+      "active": false,
+      "id": 231,
+      "name": "QUIT White Geometry",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [0, 0, 0, 1],
+        "scale": [1, 1, 1],
+        "translation": [0, 0, 0]
       }
     },
     {
@@ -1389,7 +1749,7 @@
       "id": 300,
       "name": "ground",
       "parent": 0,
-      "tag": "",
+      "tag": "title_dark",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [140.0, 4.0, 180.0],
@@ -1410,7 +1770,7 @@
       "id": 301,
       "name": "road-00",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -1431,7 +1791,7 @@
       "id": 302,
       "name": "sidewalk-00-left",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -1452,7 +1812,7 @@
       "id": 303,
       "name": "sidewalk-00-right",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -1473,7 +1833,7 @@
       "id": 304,
       "name": "road-01",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -1494,7 +1854,7 @@
       "id": 305,
       "name": "sidewalk-01-left",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -1515,7 +1875,7 @@
       "id": 306,
       "name": "sidewalk-01-right",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -1536,7 +1896,7 @@
       "id": 307,
       "name": "road-02",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -1557,7 +1917,7 @@
       "id": 308,
       "name": "sidewalk-02-left",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -1578,7 +1938,7 @@
       "id": 309,
       "name": "sidewalk-02-right",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -1599,7 +1959,7 @@
       "id": 310,
       "name": "road-03",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -1620,7 +1980,7 @@
       "id": 311,
       "name": "sidewalk-03-left",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -1641,7 +2001,7 @@
       "id": 312,
       "name": "sidewalk-03-right",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -1662,7 +2022,7 @@
       "id": 313,
       "name": "road-04",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -1683,7 +2043,7 @@
       "id": 314,
       "name": "sidewalk-04-left",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -1704,7 +2064,7 @@
       "id": 315,
       "name": "sidewalk-04-right",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -1725,7 +2085,7 @@
       "id": 316,
       "name": "road-05",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -1746,7 +2106,7 @@
       "id": 317,
       "name": "sidewalk-05-left",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -1767,7 +2127,7 @@
       "id": 318,
       "name": "sidewalk-05-right",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -1788,7 +2148,7 @@
       "id": 319,
       "name": "road-06",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -1809,7 +2169,7 @@
       "id": 320,
       "name": "sidewalk-06-left",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -1830,7 +2190,7 @@
       "id": 321,
       "name": "sidewalk-06-right",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -1851,7 +2211,7 @@
       "id": 322,
       "name": "road-07",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -1872,7 +2232,7 @@
       "id": 323,
       "name": "sidewalk-07-left",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -1893,7 +2253,7 @@
       "id": 324,
       "name": "sidewalk-07-right",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -1914,7 +2274,7 @@
       "id": 325,
       "name": "road-08",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -1935,7 +2295,7 @@
       "id": 326,
       "name": "sidewalk-08-left",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -1956,7 +2316,7 @@
       "id": 327,
       "name": "sidewalk-08-right",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -1977,7 +2337,7 @@
       "id": 328,
       "name": "road-09",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -1998,7 +2358,7 @@
       "id": 329,
       "name": "sidewalk-09-left",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2019,7 +2379,7 @@
       "id": 330,
       "name": "sidewalk-09-right",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2040,7 +2400,7 @@
       "id": 331,
       "name": "road-10",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -2061,7 +2421,7 @@
       "id": 332,
       "name": "sidewalk-10-left",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2082,7 +2442,7 @@
       "id": 333,
       "name": "sidewalk-10-right",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2103,7 +2463,7 @@
       "id": 334,
       "name": "road-11",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -2124,7 +2484,7 @@
       "id": 335,
       "name": "sidewalk-11-left",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2145,7 +2505,7 @@
       "id": 336,
       "name": "sidewalk-11-right",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2166,7 +2526,7 @@
       "id": 337,
       "name": "road-12",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -2187,7 +2547,7 @@
       "id": 338,
       "name": "sidewalk-12-left",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2208,7 +2568,7 @@
       "id": 339,
       "name": "sidewalk-12-right",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2229,7 +2589,7 @@
       "id": 340,
       "name": "road-13",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -2250,7 +2610,7 @@
       "id": 341,
       "name": "sidewalk-13-left",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2271,7 +2631,7 @@
       "id": 342,
       "name": "sidewalk-13-right",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2292,7 +2652,7 @@
       "id": 343,
       "name": "road-14",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -2313,7 +2673,7 @@
       "id": 344,
       "name": "sidewalk-14-left",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2334,7 +2694,7 @@
       "id": 345,
       "name": "sidewalk-14-right",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2355,7 +2715,7 @@
       "id": 346,
       "name": "road-15",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -2376,7 +2736,7 @@
       "id": 347,
       "name": "sidewalk-15-left",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2397,7 +2757,7 @@
       "id": 348,
       "name": "sidewalk-15-right",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2418,7 +2778,7 @@
       "id": 349,
       "name": "road-16",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -2439,7 +2799,7 @@
       "id": 350,
       "name": "sidewalk-16-left",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2460,7 +2820,7 @@
       "id": 351,
       "name": "sidewalk-16-right",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2481,7 +2841,7 @@
       "id": 352,
       "name": "road-17",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -2502,7 +2862,7 @@
       "id": 353,
       "name": "sidewalk-17-left",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2523,7 +2883,7 @@
       "id": 354,
       "name": "sidewalk-17-right",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2544,7 +2904,7 @@
       "id": 355,
       "name": "road-18",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -2565,7 +2925,7 @@
       "id": 356,
       "name": "sidewalk-18-left",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2586,7 +2946,7 @@
       "id": 357,
       "name": "sidewalk-18-right",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2607,7 +2967,7 @@
       "id": 358,
       "name": "road-19",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -2628,7 +2988,7 @@
       "id": 359,
       "name": "sidewalk-19-left",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2649,7 +3009,7 @@
       "id": 360,
       "name": "sidewalk-19-right",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2670,7 +3030,7 @@
       "id": 361,
       "name": "road-20",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -2691,7 +3051,7 @@
       "id": 362,
       "name": "sidewalk-20-left",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2712,7 +3072,7 @@
       "id": 363,
       "name": "sidewalk-20-right",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2733,7 +3093,7 @@
       "id": 364,
       "name": "road-21",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -2754,7 +3114,7 @@
       "id": 365,
       "name": "sidewalk-21-left",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2775,7 +3135,7 @@
       "id": 366,
       "name": "sidewalk-21-right",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2796,7 +3156,7 @@
       "id": 367,
       "name": "road-22",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -2817,7 +3177,7 @@
       "id": 368,
       "name": "sidewalk-22-left",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2838,7 +3198,7 @@
       "id": 369,
       "name": "sidewalk-22-right",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2859,7 +3219,7 @@
       "id": 370,
       "name": "road-23",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -2880,7 +3240,7 @@
       "id": 371,
       "name": "sidewalk-23-left",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2901,7 +3261,7 @@
       "id": 372,
       "name": "sidewalk-23-right",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1.600000023841858, 4.0, 4.0],
@@ -2922,7 +3282,7 @@
       "id": 373,
       "name": "plaza-paving-0-0",
       "parent": 394,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 4.0, 4.0],
@@ -2943,7 +3303,7 @@
       "id": 374,
       "name": "plaza-paving-0-1",
       "parent": 394,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 4.0, 4.0],
@@ -2964,7 +3324,7 @@
       "id": 375,
       "name": "plaza-paving-0-2",
       "parent": 394,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 4.0, 4.0],
@@ -2985,7 +3345,7 @@
       "id": 376,
       "name": "plaza-paving-0-3",
       "parent": 394,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 4.0, 4.0],
@@ -3006,7 +3366,7 @@
       "id": 377,
       "name": "plaza-paving-1-0",
       "parent": 394,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 4.0, 4.0],
@@ -3027,7 +3387,7 @@
       "id": 378,
       "name": "plaza-paving-1-1",
       "parent": 394,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 4.0, 4.0],
@@ -3048,7 +3408,7 @@
       "id": 379,
       "name": "plaza-paving-1-2",
       "parent": 394,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 4.0, 4.0],
@@ -3069,7 +3429,7 @@
       "id": 380,
       "name": "plaza-paving-1-3",
       "parent": 394,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 4.0, 4.0],
@@ -3090,7 +3450,7 @@
       "id": 381,
       "name": "plaza-paving-2-0",
       "parent": 394,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 4.0, 4.0],
@@ -3111,7 +3471,7 @@
       "id": 382,
       "name": "plaza-paving-2-1",
       "parent": 394,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 4.0, 4.0],
@@ -3132,7 +3492,7 @@
       "id": 383,
       "name": "plaza-paving-2-2",
       "parent": 394,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 4.0, 4.0],
@@ -3153,7 +3513,7 @@
       "id": 384,
       "name": "plaza-paving-2-3",
       "parent": 394,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 4.0, 4.0],
@@ -3186,7 +3546,7 @@
       "id": 386,
       "name": "street-building-0",
       "parent": 385,
-      "tag": "",
+      "tag": "title_dark",
       "transform": {
         "rotation": [0.0, -0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.199999809265137, 4.5, 4.0],
@@ -3207,7 +3567,7 @@
       "id": 387,
       "name": "street-building-1",
       "parent": 385,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, -0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 5.5, 4.0],
@@ -3228,7 +3588,7 @@
       "id": 388,
       "name": "street-building-2",
       "parent": 385,
-      "tag": "",
+      "tag": "title_dark",
       "transform": {
         "rotation": [0.0, -0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.300000190734863, 4.599999904632568, 4.0],
@@ -3249,7 +3609,7 @@
       "id": 389,
       "name": "street-building-3",
       "parent": 385,
-      "tag": "",
+      "tag": "title_dark",
       "transform": {
         "rotation": [0.0, -0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 6.0, 4.0],
@@ -3270,7 +3630,7 @@
       "id": 390,
       "name": "street-building-4",
       "parent": 385,
-      "tag": "",
+      "tag": "title_dark",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 5.0, 4.0],
@@ -3291,7 +3651,7 @@
       "id": 391,
       "name": "street-building-5",
       "parent": 385,
-      "tag": "",
+      "tag": "title_dark",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 5.0, 4.0],
@@ -3312,7 +3672,7 @@
       "id": 392,
       "name": "street-building-6",
       "parent": 385,
-      "tag": "",
+      "tag": "title_dark",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.5, 5.5, 4.0],
@@ -3333,7 +3693,7 @@
       "id": 393,
       "name": "street-building-7",
       "parent": 385,
-      "tag": "",
+      "tag": "title_dark",
       "transform": {
         "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
         "scale": [4.0, 4.0, 4.0],
@@ -3366,7 +3726,7 @@
       "id": 395,
       "name": "plaza-step-1",
       "parent": 394,
-      "tag": "",
+      "tag": "title_dark",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [7.5, 8.0, 1.0],
@@ -3387,7 +3747,7 @@
       "id": 396,
       "name": "plaza-step-2",
       "parent": 394,
-      "tag": "",
+      "tag": "title_dark",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [7.5, 8.0, 1.0],
@@ -3408,7 +3768,7 @@
       "id": 397,
       "name": "plaza-step-3",
       "parent": 394,
-      "tag": "",
+      "tag": "title_dark",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [7.5, 8.0, 1.0],
@@ -3429,7 +3789,7 @@
       "id": 398,
       "name": "plaza-plinth",
       "parent": 394,
-      "tag": "",
+      "tag": "title_dark",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [8.5, 28.0, 7.0],
@@ -3450,7 +3810,7 @@
       "id": 399,
       "name": "plaza-landmark",
       "parent": 394,
-      "tag": "",
+      "tag": "title_dark",
       "transform": {
         "rotation": [0.0, 0.999999999999999, -0.0, -4.371139000186241e-08],
         "scale": [8.0, 7.5, 6.0],
@@ -3471,7 +3831,7 @@
       "id": 400,
       "name": "plaza-cafe",
       "parent": 394,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, -0.08987855275981559, 0.0, 0.9959527326905635],
         "scale": [4.0, 4.0, 4.0],
@@ -3492,7 +3852,7 @@
       "id": 401,
       "name": "landmark-awning",
       "parent": 394,
-      "tag": "",
+      "tag": "title_dark",
       "transform": {
         "rotation": [0.0, 0.999999999999999, -0.0, -4.371139000186241e-08],
         "scale": [5.0, 5.0, 5.0],
@@ -3513,7 +3873,7 @@
       "id": 402,
       "name": "cafe-table-0",
       "parent": 394,
-      "tag": "",
+      "tag": "title_dark",
       "transform": {
         "rotation": [0.0, 0.1494381383671341, 0.0, 0.9887710770453216],
         "scale": [2.799999952316284, 2.799999952316284, 2.799999952316284],
@@ -3534,7 +3894,7 @@
       "id": 403,
       "name": "cafe-table-1",
       "parent": 394,
-      "tag": "",
+      "tag": "title_dark",
       "transform": {
         "rotation": [0.0, 0.1494381383671341, 0.0, 0.9887710770453216],
         "scale": [2.799999952316284, 2.799999952316284, 2.799999952316284],
@@ -3555,7 +3915,7 @@
       "id": 404,
       "name": "street-light-0",
       "parent": 394,
-      "tag": "",
+      "tag": "title_dark",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 4.0, 4.0],
@@ -3576,7 +3936,7 @@
       "id": 405,
       "name": "street-light-1",
       "parent": 394,
-      "tag": "",
+      "tag": "title_dark",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 4.0, 4.0],
@@ -3597,7 +3957,7 @@
       "id": 406,
       "name": "street-light-2",
       "parent": 394,
-      "tag": "",
+      "tag": "title_dark",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 4.0, 4.0],
@@ -3618,7 +3978,7 @@
       "id": 407,
       "name": "street-light-3",
       "parent": 394,
-      "tag": "",
+      "tag": "title_dark",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 4.0, 4.0],
@@ -3639,7 +3999,7 @@
       "id": 408,
       "name": "street-light-4",
       "parent": 394,
-      "tag": "",
+      "tag": "title_dark",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 4.0, 4.0],
@@ -3672,7 +4032,7 @@
       "id": 410,
       "name": "skyline-0",
       "parent": 409,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, -0.059964005140753354, 0.0, 0.9982005400156222],
         "scale": [5.0, 6.0, 5.0],
@@ -3693,7 +4053,7 @@
       "id": 411,
       "name": "skyline-1",
       "parent": 409,
-      "tag": "",
+      "tag": "title_dark",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [5.0, 7.0, 5.0],
@@ -3714,7 +4074,7 @@
       "id": 412,
       "name": "skyline-2",
       "parent": 409,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.059964005140753354, 0.0, 0.9982005400156222],
         "scale": [5.0, 7.0, 5.0],
@@ -3735,7 +4095,7 @@
       "id": 413,
       "name": "skyline-3",
       "parent": 409,
-      "tag": "",
+      "tag": "title_dark",
       "transform": {
         "rotation": [0.0, -0.059964005140753354, 0.0, 0.9982005400156222],
         "scale": [5.0, 8.0, 5.0],
@@ -3756,7 +4116,7 @@
       "id": 414,
       "name": "skyline-4",
       "parent": 409,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [5.0, 8.0, 5.0],
@@ -3777,7 +4137,7 @@
       "id": 415,
       "name": "skyline-5",
       "parent": 409,
-      "tag": "",
+      "tag": "title_dark",
       "transform": {
         "rotation": [0.0, 0.059964005140753354, 0.0, 0.9982005400156222],
         "scale": [5.0, 9.0, 5.0],
@@ -3798,7 +4158,7 @@
       "id": 416,
       "name": "skyline-6",
       "parent": 409,
-      "tag": "",
+      "tag": "title_dark",
       "transform": {
         "rotation": [0.0, -0.059964005140753354, 0.0, 0.9982005400156222],
         "scale": [5.0, 8.0, 5.0],
@@ -3819,7 +4179,7 @@
       "id": 417,
       "name": "skyline-7",
       "parent": 409,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [5.0, 7.0, 5.0],
@@ -3840,7 +4200,7 @@
       "id": 418,
       "name": "skyline-8",
       "parent": 409,
-      "tag": "",
+      "tag": "title_dark",
       "transform": {
         "rotation": [0.0, 0.059964005140753354, 0.0, 0.9982005400156222],
         "scale": [5.0, 9.0, 5.0],
@@ -3861,7 +4221,7 @@
       "id": 419,
       "name": "skyline-9",
       "parent": 409,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, -0.059964005140753354, 0.0, 0.9982005400156222],
         "scale": [5.0, 9.0, 5.0],
@@ -3882,7 +4242,7 @@
       "id": 420,
       "name": "skyline-10",
       "parent": 409,
-      "tag": "",
+      "tag": "title_dark",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [5.0, 10.0, 5.0],
@@ -3903,7 +4263,7 @@
       "id": 421,
       "name": "skyline-11",
       "parent": 409,
-      "tag": "",
+      "tag": "title_dark",
       "transform": {
         "rotation": [0.0, 0.059964005140753354, 0.0, 0.9982005400156222],
         "scale": [5.0, 8.0, 5.0],
@@ -3924,7 +4284,7 @@
       "id": 422,
       "name": "bridge-0",
       "parent": 409,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 8.0, 4.0],
@@ -3945,7 +4305,7 @@
       "id": 423,
       "name": "bridge-1",
       "parent": 409,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 8.0, 4.0],
@@ -3966,7 +4326,7 @@
       "id": 424,
       "name": "bridge-2",
       "parent": 409,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4.0, 8.0, 4.0],
@@ -3987,7 +4347,7 @@
       "id": 425,
       "name": "CONFIG / 歯車工房",
       "parent": 0,
-      "tag": "",
+      "tag": "title_start_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [4, 8, 4],
@@ -4020,7 +4380,7 @@
       "id": 427,
       "name": "CONFIG / 歯車看板",
       "parent": 426,
-      "tag": "",
+      "tag": "title_dark",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [3.2, 3.2, 3.2],
@@ -4041,7 +4401,7 @@
       "id": 428,
       "name": "QUIT / 左のビル上部の避難口看板",
       "parent": 0,
-      "tag": "",
+      "tag": "title_quit_source",
       "transform": {
         "rotation": [0.0, 0.0, 0.0, 1.0],
         "scale": [1, 1, 1],
@@ -4052,6 +4412,3190 @@
       },
       "meshRenderer": {
         "textures": [],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 500,
+      "name": "road-00 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [0.0, 0.0, -8.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Road.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 2,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 3,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 4,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 501,
+      "name": "sidewalk-00-left / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [-2.799999952316284, 0.07999999821186066, -8.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 502,
+      "name": "sidewalk-00-right / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [2.799999952316284, 0.07999999821186066, -8.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 503,
+      "name": "road-01 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [0.0, 0.0, -4.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Road.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 2,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 3,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 4,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 504,
+      "name": "sidewalk-01-left / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [-2.799999952316284, 0.07999999821186066, -4.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 505,
+      "name": "sidewalk-01-right / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [2.799999952316284, 0.07999999821186066, -4.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 506,
+      "name": "road-02 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [0.0, 0.0, 0.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Road.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 2,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 3,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 4,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 507,
+      "name": "sidewalk-02-left / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [-2.799999952316284, 0.07999999821186066, 0.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 508,
+      "name": "sidewalk-02-right / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [2.799999952316284, 0.07999999821186066, 0.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 509,
+      "name": "road-03 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [0.0, 0.0, 4.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Road.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 2,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 3,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 4,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 510,
+      "name": "sidewalk-03-left / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [-2.799999952316284, 0.07999999821186066, 4.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 511,
+      "name": "sidewalk-03-right / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [2.799999952316284, 0.07999999821186066, 4.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 512,
+      "name": "road-04 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [0.0, 0.0, 8.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Road.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 2,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 3,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 4,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 513,
+      "name": "sidewalk-04-left / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [-2.799999952316284, 0.07999999821186066, 8.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 514,
+      "name": "sidewalk-04-right / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [2.799999952316284, 0.07999999821186066, 8.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 515,
+      "name": "road-05 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [0.0, 0.0, 12.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Road.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 2,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 3,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 4,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 516,
+      "name": "sidewalk-05-left / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [-2.799999952316284, 0.07999999821186066, 12.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 517,
+      "name": "sidewalk-05-right / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [2.799999952316284, 0.07999999821186066, 12.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 518,
+      "name": "road-06 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [0.0, 0.0, 16.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Road.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 2,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 3,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 4,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 519,
+      "name": "sidewalk-06-left / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [-2.799999952316284, 0.07999999821186066, 16.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 520,
+      "name": "sidewalk-06-right / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [2.799999952316284, 0.07999999821186066, 16.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 521,
+      "name": "road-07 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [0.0, 0.0, 20.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Road.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 2,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 3,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 4,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 522,
+      "name": "sidewalk-07-left / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [-2.799999952316284, 0.07999999821186066, 20.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 523,
+      "name": "sidewalk-07-right / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [2.799999952316284, 0.07999999821186066, 20.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 524,
+      "name": "road-08 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [0.0, 0.0, 24.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Road.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 2,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 3,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 4,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 525,
+      "name": "sidewalk-08-left / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [-2.799999952316284, 0.07999999821186066, 24.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 526,
+      "name": "sidewalk-08-right / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [2.799999952316284, 0.07999999821186066, 24.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 527,
+      "name": "road-09 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [0.0, 0.0, 28.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Road.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 2,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 3,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 4,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 528,
+      "name": "sidewalk-09-left / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [-2.799999952316284, 0.07999999821186066, 28.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 529,
+      "name": "sidewalk-09-right / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [2.799999952316284, 0.07999999821186066, 28.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 530,
+      "name": "road-10 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [0.0, 0.0, 32.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Road.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 2,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 3,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 4,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 531,
+      "name": "sidewalk-10-left / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [-2.799999952316284, 0.07999999821186066, 32.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 532,
+      "name": "sidewalk-10-right / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [2.799999952316284, 0.07999999821186066, 32.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 533,
+      "name": "road-11 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [0.0, 0.0, 36.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Road.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 2,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 3,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 4,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 534,
+      "name": "sidewalk-11-left / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [-2.799999952316284, 0.07999999821186066, 36.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 535,
+      "name": "sidewalk-11-right / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [2.799999952316284, 0.07999999821186066, 36.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 536,
+      "name": "road-12 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [0.0, 0.0, 40.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Road.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 2,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 3,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 4,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 537,
+      "name": "sidewalk-12-left / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [-2.799999952316284, 0.07999999821186066, 40.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 538,
+      "name": "sidewalk-12-right / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [2.799999952316284, 0.07999999821186066, 40.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 539,
+      "name": "road-13 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [0.0, 0.0, 44.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Road.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 2,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 3,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 4,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 540,
+      "name": "sidewalk-13-left / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [-2.799999952316284, 0.07999999821186066, 44.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 541,
+      "name": "sidewalk-13-right / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [2.799999952316284, 0.07999999821186066, 44.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 542,
+      "name": "road-14 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [0.0, 0.0, 48.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Road.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 2,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 3,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 4,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 543,
+      "name": "sidewalk-14-left / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [-2.799999952316284, 0.07999999821186066, 48.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 544,
+      "name": "sidewalk-14-right / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [2.799999952316284, 0.07999999821186066, 48.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 545,
+      "name": "road-15 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [0.0, 0.0, 52.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Road.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 2,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 3,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 4,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 546,
+      "name": "sidewalk-15-left / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [-2.799999952316284, 0.07999999821186066, 52.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 547,
+      "name": "sidewalk-15-right / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [2.799999952316284, 0.07999999821186066, 52.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 548,
+      "name": "road-16 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [0.0, 0.0, 56.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Road.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 2,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 3,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 4,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 549,
+      "name": "sidewalk-16-left / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [-2.799999952316284, 0.07999999821186066, 56.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 550,
+      "name": "sidewalk-16-right / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [2.799999952316284, 0.07999999821186066, 56.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 551,
+      "name": "road-17 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [0.0, 0.0, 60.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Road.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 2,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 3,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 4,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 552,
+      "name": "sidewalk-17-left / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [-2.799999952316284, 0.07999999821186066, 60.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 553,
+      "name": "sidewalk-17-right / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [2.799999952316284, 0.07999999821186066, 60.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 554,
+      "name": "road-18 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [0.0, 0.0, 64.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Road.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 2,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 3,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 4,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 555,
+      "name": "sidewalk-18-left / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [-2.799999952316284, 0.07999999821186066, 64.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 556,
+      "name": "sidewalk-18-right / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [2.799999952316284, 0.07999999821186066, 64.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 557,
+      "name": "road-19 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [0.0, 0.0, 68.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Road.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 2,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 3,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 4,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 558,
+      "name": "sidewalk-19-left / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [-2.799999952316284, 0.07999999821186066, 68.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 559,
+      "name": "sidewalk-19-right / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [2.799999952316284, 0.07999999821186066, 68.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 560,
+      "name": "road-20 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [0.0, 0.0, 72.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Road.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 2,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 3,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 4,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 561,
+      "name": "sidewalk-20-left / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [-2.799999952316284, 0.07999999821186066, 72.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 562,
+      "name": "sidewalk-20-right / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [2.799999952316284, 0.07999999821186066, 72.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 563,
+      "name": "road-21 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [0.0, 0.0, 76.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Road.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 2,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 3,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 4,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 564,
+      "name": "sidewalk-21-left / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [-2.799999952316284, 0.07999999821186066, 76.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 565,
+      "name": "sidewalk-21-right / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [2.799999952316284, 0.07999999821186066, 76.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 566,
+      "name": "road-22 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [0.0, 0.0, 80.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Road.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 2,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 3,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 4,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 567,
+      "name": "sidewalk-22-left / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [-2.799999952316284, 0.07999999821186066, 80.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 568,
+      "name": "sidewalk-22-right / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [2.799999952316284, 0.07999999821186066, 80.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 569,
+      "name": "road-23 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.7071067966408575, 0.0, 0.7071067657322372],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [0.0, 0.0, 84.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Road.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 2,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 3,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 4,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 570,
+      "name": "sidewalk-23-left / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [-2.799999952316284, 0.07999999821186066, 84.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 571,
+      "name": "sidewalk-23-right / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1.600000023841858, 4.0, 4.0],
+        "translation": [2.799999952316284, 0.07999999821186066, 84.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 572,
+      "name": "plaza-paving-0-0 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [4.800000190734863, 0.07999999821186066, 6.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 573,
+      "name": "plaza-paving-0-1 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [4.800000190734863, 0.07999999821186066, 10.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 574,
+      "name": "plaza-paving-0-2 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [4.800000190734863, 0.07999999821186066, 14.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 575,
+      "name": "plaza-paving-0-3 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [4.800000190734863, 0.07999999821186066, 18.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 576,
+      "name": "plaza-paving-1-0 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [8.800000190734863, 0.07999999821186066, 6.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 577,
+      "name": "plaza-paving-1-1 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [8.800000190734863, 0.07999999821186066, 10.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 578,
+      "name": "plaza-paving-1-2 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [8.800000190734863, 0.07999999821186066, 14.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 579,
+      "name": "plaza-paving-1-3 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [8.800000190734863, 0.07999999821186066, 18.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 580,
+      "name": "plaza-paving-2-0 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [12.800000190734863, 0.07999999821186066, 6.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 581,
+      "name": "plaza-paving-2-1 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [12.800000190734863, 0.07999999821186066, 10.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 582,
+      "name": "plaza-paving-2-2 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [12.800000190734863, 0.07999999821186066, 14.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 583,
+      "name": "plaza-paving-2-3 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [12.800000190734863, 0.07999999821186066, 18.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Sidewalk.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 5,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 6,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 584,
+      "name": "street-building-1 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, -0.7071067966408575, 0.0, 0.7071067657322372],
+        "scale": [4.0, 5.5, 4.0],
+        "translation": [-6.800000190734863, 0.07999999821186066, 13.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Workshop.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 7,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 8,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 9,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 10,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 11,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 12,
+            "path": "@project/assets/title/textures/SilhouetteBlack.png"
+          },
+          {
+            "slot": 13,
+            "path": "@project/assets/title/textures/SilhouetteBlack.png"
+          },
+          {
+            "slot": 14,
+            "path": "@project/assets/title/textures/SilhouetteBlack.png"
+          },
+          {
+            "slot": 19,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 585,
+      "name": "plaza-cafe / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, -0.08987855275981559, 0.0, 0.9959527326905635],
+        "scale": [4.0, 4.0, 4.0],
+        "translation": [15.5, 0.07999999821186066, 24.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/NarrowTownhouse.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 7,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 8,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 9,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 10,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 11,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 12,
+            "path": "@project/assets/title/textures/SilhouetteBlack.png"
+          },
+          {
+            "slot": 13,
+            "path": "@project/assets/title/textures/SilhouetteBlack.png"
+          },
+          {
+            "slot": 14,
+            "path": "@project/assets/title/textures/SilhouetteBlack.png"
+          },
+          {
+            "slot": 19,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 586,
+      "name": "skyline-0 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, -0.059964005140753354, 0.0, 0.9982005400156222],
+        "scale": [5.0, 6.0, 5.0],
+        "translation": [-16.0, 0.07999999821186066, 24.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/TowerShort.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 9,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 10,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 11,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 12,
+            "path": "@project/assets/title/textures/SilhouetteBlack.png"
+          },
+          {
+            "slot": 14,
+            "path": "@project/assets/title/textures/SilhouetteBlack.png"
+          },
+          {
+            "slot": 15,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 16,
+            "path": "@project/assets/title/textures/SilhouetteBlack.png"
+          },
+          {
+            "slot": 17,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 587,
+      "name": "skyline-2 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.059964005140753354, 0.0, 0.9982005400156222],
+        "scale": [5.0, 7.0, 5.0],
+        "translation": [16.0, 0.07999999821186066, 35.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/TowerTall.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 9,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 10,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 11,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 12,
+            "path": "@project/assets/title/textures/SilhouetteBlack.png"
+          },
+          {
+            "slot": 14,
+            "path": "@project/assets/title/textures/SilhouetteBlack.png"
+          },
+          {
+            "slot": 15,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 16,
+            "path": "@project/assets/title/textures/SilhouetteBlack.png"
+          },
+          {
+            "slot": 17,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 588,
+      "name": "skyline-4 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [5.0, 8.0, 5.0],
+        "translation": [-19.0, 0.07999999821186066, 50.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/TowerShort.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 9,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 10,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 11,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 12,
+            "path": "@project/assets/title/textures/SilhouetteBlack.png"
+          },
+          {
+            "slot": 14,
+            "path": "@project/assets/title/textures/SilhouetteBlack.png"
+          },
+          {
+            "slot": 15,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 16,
+            "path": "@project/assets/title/textures/SilhouetteBlack.png"
+          },
+          {
+            "slot": 17,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 589,
+      "name": "skyline-7 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [5.0, 7.0, 5.0],
+        "translation": [29.0, 0.07999999821186066, 54.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/TowerWide.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 9,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 10,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 11,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 12,
+            "path": "@project/assets/title/textures/SilhouetteBlack.png"
+          },
+          {
+            "slot": 14,
+            "path": "@project/assets/title/textures/SilhouetteBlack.png"
+          },
+          {
+            "slot": 15,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 16,
+            "path": "@project/assets/title/textures/SilhouetteBlack.png"
+          },
+          {
+            "slot": 17,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 590,
+      "name": "skyline-9 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, -0.059964005140753354, 0.0, 0.9982005400156222],
+        "scale": [5.0, 9.0, 5.0],
+        "translation": [0.0, 0.07999999821186066, 83.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/TowerMedium.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 9,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 10,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 11,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 12,
+            "path": "@project/assets/title/textures/SilhouetteBlack.png"
+          },
+          {
+            "slot": 14,
+            "path": "@project/assets/title/textures/SilhouetteBlack.png"
+          },
+          {
+            "slot": 15,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 16,
+            "path": "@project/assets/title/textures/SilhouetteBlack.png"
+          },
+          {
+            "slot": 17,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 591,
+      "name": "bridge-0 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [4.0, 8.0, 4.0],
+        "translation": [-4.0, 0.0, 42.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/RoadBridge.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 9,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 19,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 592,
+      "name": "bridge-1 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [4.0, 8.0, 4.0],
+        "translation": [0.0, 0.0, 42.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/RoadBridge.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 9,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 19,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 593,
+      "name": "bridge-2 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [4.0, 8.0, 4.0],
+        "translation": [4.0, 0.0, 42.0]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/RoadBridge.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 9,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 19,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 594,
+      "name": "CONFIG / 歯車工房 / silhouette",
+      "parent": 230,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [4, 8, 4],
+        "translation": [9, 0.08, 18]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/Workshop.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 7,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 8,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 9,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 10,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 11,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          },
+          {
+            "slot": 12,
+            "path": "@project/assets/title/textures/SilhouetteBlack.png"
+          },
+          {
+            "slot": 13,
+            "path": "@project/assets/title/textures/SilhouetteBlack.png"
+          },
+          {
+            "slot": 14,
+            "path": "@project/assets/title/textures/SilhouetteBlack.png"
+          },
+          {
+            "slot": 19,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [0, 0],
+        "uvScale": [1, 1],
+        "visible": true
+      }
+    },
+    {
+      "active": true,
+      "id": 595,
+      "name": "QUIT / 左のビル上部の避難口看板 / silhouette",
+      "parent": 231,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1, 1, 1],
+        "translation": [-7.2, 7.4, -2.8]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/ExitSign.obj"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 19,
+            "path": "@project/assets/title/textures/SilhouetteBlack.png"
+          },
+          {
+            "slot": 26,
+            "path": "@project/assets/title/textures/SilhouetteBlack.png"
+          },
+          {
+            "slot": 27,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
         "uvOffset": [0, 0],
         "uvScale": [1, 1],
         "visible": true
