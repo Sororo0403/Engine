@@ -1,3 +1,12 @@
+local function record_time(key, time)
+    local previous = game[key]
+    if type(previous) ~= "number" or previous < 0 or previous >= math.huge or time < previous then
+        game[key] = time
+        return string.format("%.1f 秒（更新）", time / 10)
+    end
+    return string.format("%.1f 秒", previous / 10)
+end
+
 return {
     start = function()
         game.sunriseUnlocked = true
@@ -5,6 +14,9 @@ return {
 
     update = function(self, state, seconds, input)
         state.elapsed = (state.elapsed or 0) + seconds
+        if input.character and input.character.respawnCount > 0 then
+            state.fell = true
+        end
         local restart, cancel = input.actions.Restart, input.actions.Cancel
         if restart and restart.pressed then
             self:load_scene("retry")
@@ -26,8 +38,14 @@ return {
                 label:set_text("動く足場で手前に戻り、左のスイッチで橋を架けよう")
             end
         elseif name == "finish" then
-            self:reference("result"):set_text(string.format("水路を抜けて朝焼けの見晴らし台に到着！\nクリアタイム %.1f 秒",
-                state.elapsed or 0))
+            local time = math.floor((state.elapsed or 0) * 10)
+            local best = record_time("sunriseBestClearTime", time)
+            local result = string.format("水路を抜けて朝焼けの見晴らし台に到着！\nクリアタイム %.1f 秒    最速 %s",
+                time / 10, best)
+            if not state.fell then
+                result = result .. "\n落下なし！    ベスト " .. record_time("sunriseBestCleanTime", time)
+            end
+            self:reference("result"):set_text(result)
             return
         end
 
