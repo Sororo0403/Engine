@@ -10897,6 +10897,26 @@
     },
     {
       "active": true,
+      "animationPlayer": {
+        "asset": "@project/assets/street/animations/GearWobble.clip.json",
+        "bindings": [
+          {
+            "slot": 1,
+            "target": 170
+          }
+        ],
+        "loop": false,
+        "playOnStart": false
+      },
+      "audioSource": {
+        "clip": "@project/assets/street/audio/GearMechanism.wav",
+        "loop": false,
+        "maxDistance": 20,
+        "minDistance": 1,
+        "playOnStart": false,
+        "spatial": false,
+        "volume": 0.35
+      },
       "collider": {
         "center": [
           0,
@@ -11004,6 +11024,38 @@
             "operation": "enable",
             "scene": "",
             "target": 158
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "interact",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "playAnimationClip",
+            "scene": "",
+            "target": 160
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "interact",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 160
           }
         ]
       }
@@ -11039,7 +11091,7 @@
         "visible": true
       },
       "name": "Gear Wheel",
-      "parent": 160,
+      "parent": 170,
       "tag": "",
       "transform": {
         "rotation": [
@@ -11091,7 +11143,7 @@
         "visible": true
       },
       "name": "Gear Tooth 1",
-      "parent": 160,
+      "parent": 170,
       "tag": "",
       "transform": {
         "rotation": [
@@ -11143,7 +11195,7 @@
         "visible": true
       },
       "name": "Gear Tooth 2",
-      "parent": 160,
+      "parent": 170,
       "tag": "",
       "transform": {
         "rotation": [
@@ -11195,7 +11247,7 @@
         "visible": true
       },
       "name": "Gear Tooth 3",
-      "parent": 160,
+      "parent": 170,
       "tag": "",
       "transform": {
         "rotation": [
@@ -11247,7 +11299,7 @@
         "visible": true
       },
       "name": "Gear Tooth 4",
-      "parent": 160,
+      "parent": 170,
       "tag": "",
       "transform": {
         "rotation": [
@@ -11299,7 +11351,7 @@
         "visible": true
       },
       "name": "Gear Tooth 5",
-      "parent": 160,
+      "parent": 170,
       "tag": "",
       "transform": {
         "rotation": [
@@ -11351,7 +11403,7 @@
         "visible": true
       },
       "name": "Gear Tooth 6",
-      "parent": 160,
+      "parent": 170,
       "tag": "",
       "transform": {
         "rotation": [
@@ -11403,7 +11455,7 @@
         "visible": true
       },
       "name": "Gear Tooth 7",
-      "parent": 160,
+      "parent": 170,
       "tag": "",
       "transform": {
         "rotation": [
@@ -11455,7 +11507,7 @@
         "visible": true
       },
       "name": "Gear Tooth 8",
-      "parent": 160,
+      "parent": 170,
       "tag": "",
       "transform": {
         "rotation": [
@@ -11472,6 +11524,31 @@
         "translation": [
           0.37476659402887014,
           -0.3747665940288703,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 170,
+      "name": "Gear Visual",
+      "parent": 160,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
           0
         ]
       }
