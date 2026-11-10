@@ -34,6 +34,30 @@ bool Bounded(const DirectX::XMFLOAT3 &v, float bound) {
 bool Depth(float v) {
 	return std::isfinite(v) && std::abs(v) <= .01f;
 }
+
+/// <summary>
+/// 移動前後を覆う境界ボックスが交わり得るか確認する
+/// </summary>
+bool BoundsCanMeet(const AxisAlignedBox &a, const AxisAlignedBox &b,
+                   const DirectX::XMFLOAT3 &displacement, float separation) {
+	const auto overlaps = [separation](float aMin, float aMax, float bMin,
+	                                   float bMax, float delta) {
+		// ワールド座標と移動量に応じた丸め誤差を残し、形状判定の候補を取りこぼさない。
+		const float margin =
+		    separation + 8 * std::numeric_limits<float>::epsilon() *
+		                     (std::max)({1.f, std::abs(aMin), std::abs(aMax),
+		                                 std::abs(bMin), std::abs(bMax),
+		                                 std::abs(delta)});
+		return double(aMin) + (std::min)(0.f, delta) <= double(bMax) + margin &&
+		       double(aMax) + (std::max)(0.f, delta) >= double(bMin) - margin;
+	};
+	return overlaps(a.minimum.x, a.maximum.x, b.minimum.x, b.maximum.x,
+	                displacement.x) &&
+	       overlaps(a.minimum.y, a.maximum.y, b.minimum.y, b.maximum.y,
+	                displacement.y) &&
+	       overlaps(a.minimum.z, a.maximum.z, b.minimum.z, b.maximum.z,
+	                displacement.z);
+}
 } // namespace
 
 bool WorldCollider::Create(const Collider &collider,
@@ -233,6 +257,13 @@ bool WorldCollider::OverlapAt(const WorldCollider &other,
 
 bool WorldCollider::Overlaps(const WorldCollider &other, float minimumDepth,
                              bool &overlap) const {
+	if (!impl_ || !other.impl_ || !Depth(minimumDepth))
+		return false;
+	if (!BoundsCanMeet(impl_->bounds, other.impl_->bounds, {},
+	                   (std::max)(0.f, -minimumDepth))) {
+		overlap = false;
+		return true;
+	}
 	return OverlapAt(other, {}, minimumDepth, overlap);
 }
 
@@ -289,6 +320,10 @@ bool WorldCollider::Crosses(const WorldCollider &other,
 	if (!impl_ || !other.impl_ || !Depth(minimumDepth) || minimumDepth < 0 ||
 	    !Bounded(displacement, 2 * kMaximumCoordinate))
 		return false;
+	if (!BoundsCanMeet(impl_->bounds, other.impl_->bounds, displacement, 0)) {
+		crosses = false;
+		return true;
+	}
 	bool inside = false;
 	if (!OverlapAt(other, {}, minimumDepth, inside))
 		return false;
