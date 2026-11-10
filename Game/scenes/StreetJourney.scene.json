@@ -10150,21 +10150,14 @@
     },
     {
       "active": true,
-      "colorTint": {
-        "color": [
-          0.22,
-          0.46,
-          0.52
-        ]
-      },
       "id": 149,
       "mesh": {
-        "model": "@project/assets/models/box/box.glb"
+        "model": "@project/assets/street/models/CanalWater.obj"
       },
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/textures/PrototypeWhite.png",
+            "path": "@project/assets/street/textures/CanalRipples.png",
             "slot": 0
           }
         ],
@@ -10173,8 +10166,8 @@
           0.0
         ],
         "uvScale": [
-          1.0,
-          1.0
+          1,
+          5
         ],
         "visible": true
       },
@@ -10195,9 +10188,19 @@
         ],
         "translation": [
           1,
-          -0.8,
+          -0.76,
           23
         ]
+      },
+      "script": {
+        "asset": "@project/assets/street/scripts/CanalWater.lua",
+        "enabled": true,
+        "prefabs": [],
+        "references": [],
+        "scenes": [],
+        "state": {
+          "speed": 0.13
+        }
       }
     },
     {
