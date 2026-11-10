@@ -768,9 +768,9 @@
       },
       "colorTint": {
         "color": [
-          1,
-          0.85,
-          0.72
+          0.55,
+          0.54,
+          0.44
         ]
       },
       "id": 15,
@@ -780,7 +780,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/street/textures/QuayBrick.png",
+            "path": "@project/assets/textures/PrototypeWhite.png",
             "slot": 0
           }
         ],
@@ -15133,9 +15133,9 @@
       "active": true,
       "colorTint": {
         "color": [
-          0.22,
-          0.43,
-          0.43
+          0.59,
+          0.57,
+          0.46
         ]
       },
       "id": 210,
@@ -15159,7 +15159,7 @@
         ],
         "visible": true
       },
-      "name": "Teal Cornice",
+      "name": "Stone Cornice",
       "parent": 207,
       "tag": "street_wave_near",
       "transform": {
@@ -16925,7 +16925,7 @@
           4,
           3
         ],
-        "visible": true
+        "visible": false
       },
       "name": "Upper Window Frame 1",
       "parent": 207,
@@ -16977,7 +16977,7 @@
           4,
           3
         ],
-        "visible": true
+        "visible": false
       },
       "name": "Upper Window Glass 1",
       "parent": 207,
@@ -17029,7 +17029,7 @@
           4,
           3
         ],
-        "visible": true
+        "visible": false
       },
       "name": "Upper Window Frame 2",
       "parent": 207,
@@ -17081,7 +17081,7 @@
           4,
           3
         ],
-        "visible": true
+        "visible": false
       },
       "name": "Upper Window Glass 2",
       "parent": 207,
@@ -17133,7 +17133,7 @@
           4,
           3
         ],
-        "visible": true
+        "visible": false
       },
       "name": "Upper Window Frame 3",
       "parent": 207,
@@ -17185,7 +17185,7 @@
           4,
           3
         ],
-        "visible": true
+        "visible": false
       },
       "name": "Upper Window Glass 3",
       "parent": 207,
@@ -17237,7 +17237,7 @@
           4,
           3
         ],
-        "visible": true
+        "visible": false
       },
       "name": "Upper Window Frame 4",
       "parent": 207,
@@ -17289,7 +17289,7 @@
           4,
           3
         ],
-        "visible": true
+        "visible": false
       },
       "name": "Upper Window Glass 4",
       "parent": 207,
@@ -32627,6 +32627,27 @@
       },
       "mesh": {
         "model": "@project/assets/models/hero/StreetHeroEyes.glb"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [1, 1],
+        "uvOffset": [0, 0]
+      }
+    },
+    {
+      "active": true,
+      "id": 549,
+      "name": "Cafe Gear Plaque",
+      "parent": 207,
+      "tag": "",
+      "transform": {
+        "rotation": [-0.70710678, 0, 0, 0.70710678],
+        "scale": [0.9, 0.28, 0.9],
+        "translation": [0, 4.32, -0.075]
+      },
+      "mesh": {
+        "model": "@project/assets/title/models/WorkshopGear.obj"
       },
       "meshRenderer": {
         "visible": true,
