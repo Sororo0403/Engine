@@ -4198,13 +4198,6 @@
         "radius": 0.5,
         "shape": "Box"
       },
-      "colorTint": {
-        "color": [
-          0.62,
-          0.66,
-          0.47
-        ]
-      },
       "id": 63,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -4212,7 +4205,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/textures/PrototypeWhite.png",
+            "path": "@project/assets/street/textures/CourtyardStone.png",
             "slot": 0
           }
         ],
@@ -4221,8 +4214,8 @@
           0.0
         ],
         "uvScale": [
-          1.0,
-          1.0
+          11,
+          4
         ],
         "visible": true
       },
@@ -4630,13 +4623,6 @@
         "radius": 0.5,
         "shape": "Box"
       },
-      "colorTint": {
-        "color": [
-          0.46,
-          0.31,
-          0.22
-        ]
-      },
       "id": 69,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -4644,7 +4630,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/textures/PrototypeWhite.png",
+            "path": "@project/assets/street/textures/ArcadeTimber.png",
             "slot": 0
           }
         ],
@@ -4653,8 +4639,8 @@
           0.0
         ],
         "uvScale": [
-          1.0,
-          1.0
+          1,
+          2
         ],
         "visible": true
       },
@@ -4702,13 +4688,6 @@
         "radius": 0.5,
         "shape": "Box"
       },
-      "colorTint": {
-        "color": [
-          0.46,
-          0.31,
-          0.22
-        ]
-      },
       "id": 70,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -4716,7 +4695,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/textures/PrototypeWhite.png",
+            "path": "@project/assets/street/textures/ArcadeTimber.png",
             "slot": 0
           }
         ],
@@ -4725,8 +4704,8 @@
           0.0
         ],
         "uvScale": [
-          1.0,
-          1.0
+          1,
+          2
         ],
         "visible": true
       },
@@ -4774,13 +4753,6 @@
         "radius": 0.5,
         "shape": "Box"
       },
-      "colorTint": {
-        "color": [
-          0.46,
-          0.31,
-          0.22
-        ]
-      },
       "id": 71,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -4788,7 +4760,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/textures/PrototypeWhite.png",
+            "path": "@project/assets/street/textures/ArcadeTimber.png",
             "slot": 0
           }
         ],
@@ -4797,8 +4769,8 @@
           0.0
         ],
         "uvScale": [
-          1.0,
-          1.0
+          1,
+          2
         ],
         "visible": true
       },
@@ -4846,13 +4818,6 @@
         "radius": 0.5,
         "shape": "Box"
       },
-      "colorTint": {
-        "color": [
-          0.46,
-          0.31,
-          0.22
-        ]
-      },
       "id": 72,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -4860,7 +4825,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/textures/PrototypeWhite.png",
+            "path": "@project/assets/street/textures/ArcadeTimber.png",
             "slot": 0
           }
         ],
@@ -4869,8 +4834,8 @@
           0.0
         ],
         "uvScale": [
-          1.0,
-          1.0
+          1,
+          2
         ],
         "visible": true
       },
@@ -4918,13 +4883,6 @@
         "radius": 0.5,
         "shape": "Box"
       },
-      "colorTint": {
-        "color": [
-          0.46,
-          0.31,
-          0.22
-        ]
-      },
       "id": 73,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -4932,7 +4890,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/textures/PrototypeWhite.png",
+            "path": "@project/assets/street/textures/ArcadeTimber.png",
             "slot": 0
           }
         ],
@@ -4941,8 +4899,8 @@
           0.0
         ],
         "uvScale": [
-          1.0,
-          1.0
+          1,
+          2
         ],
         "visible": true
       },
@@ -4990,13 +4948,6 @@
         "radius": 0.5,
         "shape": "Box"
       },
-      "colorTint": {
-        "color": [
-          0.46,
-          0.31,
-          0.22
-        ]
-      },
       "id": 74,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -5004,7 +4955,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/textures/PrototypeWhite.png",
+            "path": "@project/assets/street/textures/ArcadeTimber.png",
             "slot": 0
           }
         ],
@@ -5013,8 +4964,8 @@
           0.0
         ],
         "uvScale": [
-          1.0,
-          1.0
+          1,
+          2
         ],
         "visible": true
       },
@@ -5062,13 +5013,6 @@
         "radius": 0.5,
         "shape": "Box"
       },
-      "colorTint": {
-        "color": [
-          0.46,
-          0.31,
-          0.22
-        ]
-      },
       "id": 75,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -5076,7 +5020,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/textures/PrototypeWhite.png",
+            "path": "@project/assets/street/textures/ArcadeTimber.png",
             "slot": 0
           }
         ],
@@ -5085,8 +5029,8 @@
           0.0
         ],
         "uvScale": [
-          1.0,
-          1.0
+          1,
+          2
         ],
         "visible": true
       },
@@ -5134,13 +5078,6 @@
         "radius": 0.5,
         "shape": "Box"
       },
-      "colorTint": {
-        "color": [
-          0.46,
-          0.31,
-          0.22
-        ]
-      },
       "id": 76,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -5148,7 +5085,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/textures/PrototypeWhite.png",
+            "path": "@project/assets/street/textures/ArcadeTimber.png",
             "slot": 0
           }
         ],
@@ -5157,8 +5094,8 @@
           0.0
         ],
         "uvScale": [
-          1.0,
-          1.0
+          1,
+          2
         ],
         "visible": true
       },
@@ -22282,13 +22219,6 @@
     },
     {
       "active": true,
-      "colorTint": {
-        "color": [
-          0.43,
-          0.3,
-          0.22
-        ]
-      },
       "id": 393,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -22296,7 +22226,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/textures/PrototypeWhite.png",
+            "path": "@project/assets/street/textures/ArcadeTimber.png",
             "slot": 0
           }
         ],
@@ -22306,7 +22236,7 @@
         ],
         "uvScale": [
           1,
-          1
+          4
         ],
         "visible": true
       },
@@ -22334,13 +22264,6 @@
     },
     {
       "active": true,
-      "colorTint": {
-        "color": [
-          0.43,
-          0.3,
-          0.22
-        ]
-      },
       "id": 394,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -22348,7 +22271,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/textures/PrototypeWhite.png",
+            "path": "@project/assets/street/textures/ArcadeTimber.png",
             "slot": 0
           }
         ],
@@ -22358,7 +22281,7 @@
         ],
         "uvScale": [
           1,
-          1
+          4
         ],
         "visible": true
       },
@@ -22386,13 +22309,6 @@
     },
     {
       "active": true,
-      "colorTint": {
-        "color": [
-          0.43,
-          0.3,
-          0.22
-        ]
-      },
       "id": 395,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -22400,7 +22316,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/textures/PrototypeWhite.png",
+            "path": "@project/assets/street/textures/ArcadeTimber.png",
             "slot": 0
           }
         ],
@@ -22410,7 +22326,7 @@
         ],
         "uvScale": [
           1,
-          1
+          4
         ],
         "visible": true
       },
@@ -22438,13 +22354,6 @@
     },
     {
       "active": true,
-      "colorTint": {
-        "color": [
-          0.43,
-          0.3,
-          0.22
-        ]
-      },
       "id": 396,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -22452,7 +22361,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/textures/PrototypeWhite.png",
+            "path": "@project/assets/street/textures/ArcadeTimber.png",
             "slot": 0
           }
         ],
@@ -22462,7 +22371,7 @@
         ],
         "uvScale": [
           1,
-          1
+          4
         ],
         "visible": true
       },
@@ -22490,13 +22399,6 @@
     },
     {
       "active": true,
-      "colorTint": {
-        "color": [
-          0.43,
-          0.3,
-          0.22
-        ]
-      },
       "id": 397,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -22504,7 +22406,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/textures/PrototypeWhite.png",
+            "path": "@project/assets/street/textures/ArcadeTimber.png",
             "slot": 0
           }
         ],
@@ -22513,7 +22415,7 @@
           0
         ],
         "uvScale": [
-          1,
+          8,
           1
         ],
         "visible": true
@@ -22542,13 +22444,6 @@
     },
     {
       "active": true,
-      "colorTint": {
-        "color": [
-          0.43,
-          0.3,
-          0.22
-        ]
-      },
       "id": 398,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -22556,7 +22451,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/textures/PrototypeWhite.png",
+            "path": "@project/assets/street/textures/ArcadeTimber.png",
             "slot": 0
           }
         ],
@@ -22565,7 +22460,7 @@
           0
         ],
         "uvScale": [
-          1,
+          8,
           1
         ],
         "visible": true
@@ -22594,13 +22489,6 @@
     },
     {
       "active": true,
-      "colorTint": {
-        "color": [
-          0.43,
-          0.3,
-          0.22
-        ]
-      },
       "id": 399,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -22608,7 +22496,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/textures/PrototypeWhite.png",
+            "path": "@project/assets/street/textures/ArcadeTimber.png",
             "slot": 0
           }
         ],
@@ -22617,7 +22505,7 @@
           0
         ],
         "uvScale": [
-          1,
+          8,
           1
         ],
         "visible": true
@@ -22646,13 +22534,6 @@
     },
     {
       "active": true,
-      "colorTint": {
-        "color": [
-          0.43,
-          0.3,
-          0.22
-        ]
-      },
       "id": 400,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -22660,7 +22541,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/textures/PrototypeWhite.png",
+            "path": "@project/assets/street/textures/ArcadeTimber.png",
             "slot": 0
           }
         ],
@@ -22669,7 +22550,7 @@
           0
         ],
         "uvScale": [
-          1,
+          8,
           1
         ],
         "visible": true
@@ -22698,13 +22579,6 @@
     },
     {
       "active": true,
-      "colorTint": {
-        "color": [
-          0.43,
-          0.3,
-          0.22
-        ]
-      },
       "id": 401,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -22712,7 +22586,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/textures/PrototypeWhite.png",
+            "path": "@project/assets/street/textures/ArcadeTimber.png",
             "slot": 0
           }
         ],
@@ -22721,7 +22595,7 @@
           0
         ],
         "uvScale": [
-          1,
+          8,
           1
         ],
         "visible": true
@@ -22750,13 +22624,6 @@
     },
     {
       "active": true,
-      "colorTint": {
-        "color": [
-          0.43,
-          0.3,
-          0.22
-        ]
-      },
       "id": 402,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -22764,7 +22631,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/textures/PrototypeWhite.png",
+            "path": "@project/assets/street/textures/ArcadeTimber.png",
             "slot": 0
           }
         ],
@@ -22773,7 +22640,7 @@
           0
         ],
         "uvScale": [
-          1,
+          8,
           1
         ],
         "visible": true
@@ -22802,13 +22669,6 @@
     },
     {
       "active": true,
-      "colorTint": {
-        "color": [
-          0.43,
-          0.3,
-          0.22
-        ]
-      },
       "id": 403,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -22816,7 +22676,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/textures/PrototypeWhite.png",
+            "path": "@project/assets/street/textures/ArcadeTimber.png",
             "slot": 0
           }
         ],
@@ -22825,7 +22685,7 @@
           0
         ],
         "uvScale": [
-          1,
+          8,
           1
         ],
         "visible": true
@@ -22854,13 +22714,6 @@
     },
     {
       "active": true,
-      "colorTint": {
-        "color": [
-          0.43,
-          0.3,
-          0.22
-        ]
-      },
       "id": 404,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -22868,7 +22721,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/textures/PrototypeWhite.png",
+            "path": "@project/assets/street/textures/ArcadeTimber.png",
             "slot": 0
           }
         ],
@@ -22877,7 +22730,7 @@
           0
         ],
         "uvScale": [
-          1,
+          8,
           1
         ],
         "visible": true
@@ -22906,13 +22759,6 @@
     },
     {
       "active": true,
-      "colorTint": {
-        "color": [
-          0.43,
-          0.3,
-          0.22
-        ]
-      },
       "id": 405,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -22920,7 +22766,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/textures/PrototypeWhite.png",
+            "path": "@project/assets/street/textures/ArcadeTimber.png",
             "slot": 0
           }
         ],
@@ -22929,7 +22775,7 @@
           0
         ],
         "uvScale": [
-          1,
+          8,
           1
         ],
         "visible": true
@@ -22958,13 +22804,6 @@
     },
     {
       "active": true,
-      "colorTint": {
-        "color": [
-          0.43,
-          0.3,
-          0.22
-        ]
-      },
       "id": 406,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -22972,7 +22811,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/textures/PrototypeWhite.png",
+            "path": "@project/assets/street/textures/ArcadeTimber.png",
             "slot": 0
           }
         ],
@@ -22981,7 +22820,7 @@
           0
         ],
         "uvScale": [
-          1,
+          8,
           1
         ],
         "visible": true
@@ -23010,13 +22849,6 @@
     },
     {
       "active": true,
-      "colorTint": {
-        "color": [
-          0.43,
-          0.3,
-          0.22
-        ]
-      },
       "id": 407,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -23024,7 +22856,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/textures/PrototypeWhite.png",
+            "path": "@project/assets/street/textures/ArcadeTimber.png",
             "slot": 0
           }
         ],
@@ -23033,7 +22865,7 @@
           0
         ],
         "uvScale": [
-          1,
+          8,
           1
         ],
         "visible": true
@@ -23062,13 +22894,6 @@
     },
     {
       "active": true,
-      "colorTint": {
-        "color": [
-          0.43,
-          0.3,
-          0.22
-        ]
-      },
       "id": 408,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -23076,7 +22901,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/textures/PrototypeWhite.png",
+            "path": "@project/assets/street/textures/ArcadeTimber.png",
             "slot": 0
           }
         ],
@@ -23085,7 +22910,7 @@
           0
         ],
         "uvScale": [
-          1,
+          8,
           1
         ],
         "visible": true
@@ -23114,13 +22939,6 @@
     },
     {
       "active": true,
-      "colorTint": {
-        "color": [
-          0.43,
-          0.3,
-          0.22
-        ]
-      },
       "id": 409,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -23128,7 +22946,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/textures/PrototypeWhite.png",
+            "path": "@project/assets/street/textures/ArcadeTimber.png",
             "slot": 0
           }
         ],
@@ -23137,7 +22955,7 @@
           0
         ],
         "uvScale": [
-          1,
+          8,
           1
         ],
         "visible": true
@@ -23166,13 +22984,6 @@
     },
     {
       "active": true,
-      "colorTint": {
-        "color": [
-          0.43,
-          0.3,
-          0.22
-        ]
-      },
       "id": 410,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -23180,7 +22991,7 @@
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/textures/PrototypeWhite.png",
+            "path": "@project/assets/street/textures/ArcadeTimber.png",
             "slot": 0
           }
         ],
@@ -23189,7 +23000,7 @@
           0
         ],
         "uvScale": [
-          1,
+          8,
           1
         ],
         "visible": true
