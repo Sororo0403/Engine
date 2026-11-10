@@ -311,7 +311,8 @@
           "clearance": 0.4,
           "distance": 7.6,
           "height": 4.5,
-          "lead": 3
+          "lead": 3,
+          "returnLookAhead": 2.0
         }
       },
       "tag": "",
