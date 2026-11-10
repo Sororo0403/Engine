@@ -2668,6 +2668,10 @@
           {
             "name": "flowerCount",
             "target": 187
+          },
+          {
+            "name": "finish",
+            "target": 188
           }
         ],
         "scenes": [
@@ -2942,7 +2946,7 @@
         "shape": "Box"
       },
       "id": 90,
-      "name": "Sunrise Lookout Finish",
+      "name": "Sunrise Lookout Approach",
       "parent": 0,
       "tag": "",
       "transform": {
@@ -2976,8 +2980,8 @@
             "event": "enter",
             "inputAction": "",
             "launchSpeed": 12,
-            "messageName": "finish",
-            "once": true,
+            "messageName": "lookout_enter",
+            "once": false,
             "operation": "sendScriptMessage",
             "scene": "",
             "target": 85
@@ -2990,65 +2994,14 @@
             "contactTag": "",
             "delaySeconds": 0,
             "destination": 0,
-            "event": "enter",
+            "event": "exit",
             "inputAction": "",
             "launchSpeed": 12,
-            "messageName": "",
-            "once": true,
-            "operation": "disable",
+            "messageName": "lookout_exit",
+            "once": false,
+            "operation": "sendScriptMessage",
             "scene": "",
-            "target": 24
-          },
-          {
-            "arrivalTag": "",
-            "cameraBlendSeconds": 0,
-            "clipTime": 0,
-            "contact": "character",
-            "contactTag": "",
-            "delaySeconds": 0,
-            "destination": 0,
-            "event": "enter",
-            "inputAction": "",
-            "launchSpeed": 12,
-            "messageName": "",
-            "once": true,
-            "operation": "disable",
-            "scene": "",
-            "target": 129
-          },
-          {
-            "arrivalTag": "",
-            "cameraBlendSeconds": 0,
-            "clipTime": 0,
-            "contact": "character",
-            "contactTag": "",
-            "delaySeconds": 0,
-            "destination": 0,
-            "event": "enter",
-            "inputAction": "",
-            "launchSpeed": 12,
-            "messageName": "",
-            "once": true,
-            "operation": "enable",
-            "scene": "",
-            "target": 30
-          },
-          {
-            "arrivalTag": "",
-            "cameraBlendSeconds": 0,
-            "clipTime": 0,
-            "contact": "character",
-            "contactTag": "",
-            "delaySeconds": 0,
-            "destination": 0,
-            "event": "enter",
-            "inputAction": "",
-            "launchSpeed": 12,
-            "messageName": "",
-            "once": true,
-            "operation": "pauseGame",
-            "scene": "",
-            "target": 0
+            "target": 85
           }
         ]
       }
@@ -7514,6 +7467,140 @@
           0.0,
           0.0,
           0.0
+        ]
+      }
+    },
+    {
+      "active": false,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          2.0,
+          1.05,
+          0.65
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 188,
+      "name": "Sunrise Lookout Finish",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          0,
+          1.55,
+          27.58
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "finish",
+            "once": true,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 85
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "disable",
+            "scene": "",
+            "target": 24
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "disable",
+            "scene": "",
+            "target": 129
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "enable",
+            "scene": "",
+            "target": 30
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "pauseGame",
+            "scene": "",
+            "target": 0
+          }
         ]
       }
     }

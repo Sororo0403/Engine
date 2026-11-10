@@ -18,9 +18,11 @@ return {
         if input.character and input.character.respawnCount > 0 then
             state.fell = true
         end
-        local restart = input.actions.Restart
+        local restart, confirm = input.actions.Restart, input.actions.Confirm
         if restart and restart.pressed then
             self:load_scene("retry")
+        elseif state.lookoutPrompt and confirm and confirm.pressed then
+            self:reference("finish"):set_active(true)
         end
     end,
 
@@ -38,7 +40,18 @@ return {
         elseif name == "flower" then
             state.flowers = state.flowers + 1
             self:reference("flowerCount"):set_text(string.format("花 %d / 2", state.flowers))
+            if state.flowers == 2 then
+                self:reference("finish"):set_active(true)
+            end
+        elseif name == "lookout_enter" and state.flowers < 2 then
+            state.lookoutPrompt = label:get_text()
+            label:set_text("花を探しに戻るか、このままクリア ［Enter / Y］")
+        elseif name == "lookout_exit" and state.lookoutPrompt then
+            self:reference("finish"):set_active(false)
+            label:set_text(state.lookoutPrompt)
+            state.lookoutPrompt = nil
         elseif name == "finish" then
+            state.lookoutPrompt = nil
             local time = math.floor((state.elapsed or 0) * 10)
             local best = record_time("sunriseBestClearTime", time)
             local result = string.format("水路を抜けて朝焼けの見晴らし台に到着！\nクリアタイム %.1f 秒    最速 %s",
