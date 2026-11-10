@@ -10121,6 +10121,78 @@
     },
     {
       "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.79,
+          0.73,
+          0.62
+        ]
+      },
+      "id": 586,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Canal Stepping Stone",
+      "parent": 6,
+      "tag": "street_wave_near",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.57,
+          0.21,
+          0.67
+        ],
+        "translation": [
+          1,
+          -0.09,
+          20.75
+        ]
+      }
+    },
+    {
+      "active": true,
       "id": 583,
       "name": "Canal Checkpoint Spawn",
       "parent": 0,
@@ -10159,7 +10231,7 @@
         "halfExtents": [
           1.25,
           1,
-          1.25
+          2.35
         ],
         "halfHeight": 0.5,
         "isTrigger": true,
@@ -10185,7 +10257,7 @@
         "translation": [
           -2.3,
           0.7,
-          23
+          22
         ]
       },
       "triggerActions": {
@@ -10841,6 +10913,10 @@
             "target": 546
           },
           {
+            "name": "canalStep",
+            "target": 586
+          },
+          {
             "name": "goal",
             "target": 155
           },
@@ -10869,8 +10945,10 @@
           "crossingMaxZ": 28,
           "findCanalText": "運河を目指して街を進もう",
           "introRadius": 4,
-          "canalApproachText": "岸に沿って金色の矢印を探そう",
+          "canalApproachText": "岸に沿って、金色の矢印か飛び石を探そう",
           "canalMarkerDepth": 1.6,
+          "canalStepText": "飛び石に着地してから、もう一度ジャンプ ［Space / A］",
+          "canalStepHintDepth": 0.9,
           "jumpText": "矢印から対岸へジャンプ  ［Space / A 長押しで遠くへ］",
           "findGearText": "広場の歯車を探そう",
           "enemyHintText": "敵が身構えた！ 横に避けるか、攻撃で切り抜けよう ［J / X］",

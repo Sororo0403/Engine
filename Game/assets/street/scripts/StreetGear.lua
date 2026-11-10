@@ -22,6 +22,13 @@ local function update_hint(self, state, x, z, inRange, seconds)
                 text = state.canalApproachText
             end
         end
+        local step = self:reference("canalStep")
+        if step and state.canalStepText and state.canalStepHintDepth then
+            local _, _, stepZ = step:get_position()
+            if math.abs(z - stepZ) <= state.canalStepHintDepth then
+                text = state.canalStepText
+            end
+        end
     elseif state.introRadius and not state.introFinished then
         state.introStartX = state.introStartX or x
         state.introStartZ = state.introStartZ or z
