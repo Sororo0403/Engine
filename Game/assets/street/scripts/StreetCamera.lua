@@ -63,6 +63,19 @@ local function update(self, state, seconds)
     local aimY = state.floor + lerp(1.7, 1.6, math.max(quay, roof))
     local aimZ = z + lerp(3.2, 2, roof) + state.lead - 3
 
+    local passage = self:reference("coveredPassage")
+    if passage and passage:is_active() then
+        local passageX, _, passageZ = passage:get_position()
+        local halfWidth, _, halfLength = passage:get_scale()
+        local through = (1 - ease(math.abs(px - passageX), halfWidth * 0.65, halfWidth + 0.55))
+            * (1 - ease(math.abs(pz - passageZ), halfLength, halfLength + 2))
+        side = lerp(side, passageX - x, through)
+        height = lerp(height, 2.05, through)
+        back = lerp(back, 3.6, through)
+        aimX = lerp(aimX, passageX, through)
+        aimY = lerp(aimY, state.floor + 1.32, through)
+    end
+
     local tx, ty, tz = x + side, state.floor + height, z - back
     if state.avoidObstacles then
         local distance
