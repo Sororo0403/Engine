@@ -22,9 +22,9 @@
       "parent": 0,
       "tag": "",
       "transform": {
-        "rotation": [-0.07038425030028704, 0.0126823154318188, -0.03136250335294976, 0.9969461417591177],
+        "rotation": [0, 0, 0, 1],
         "scale": [1, 1, 1],
-        "translation": [-0.800000011920929, 2.200000047683716, -8.0]
+        "translation": [0, 0, 0]
       },
       "camera": {
         "primary": true,
@@ -35,19 +35,31 @@
       "transformAnimation": {
         "keys": [
           {
-            "seconds": 0,
-            "translation": [0, 0, 0],
-            "rotation": [0, 0, 0, 1],
+            "seconds": 0.0,
+            "translation": [-0.800000011920929, 2.200000047683716, -8.0],
+            "rotation": [-0.07038425030028704, 0.0126823154318188, -0.03136250335294976, 0.9969461417591177],
             "scale": [1, 1, 1]
           },
           {
-            "seconds": 14,
-            "translation": [0.8, 0.18, 1.2],
-            "rotation": [0, 0, 0, 1],
+            "seconds": 8.0,
+            "translation": [-0.5, 2.2799999713897705, -8.25],
+            "rotation": [-0.07295922222067938, 0.0167680434814168, -0.028535710904502118, 0.9967855826675733],
+            "scale": [1, 1, 1]
+          },
+          {
+            "seconds": 16.0,
+            "translation": [-1.0499999523162842, 2.1500000953674316, -7.800000190734863],
+            "rotation": [-0.06775320389121664, 0.007610844030662892, -0.03423735803499463, 0.9970854435455366],
+            "scale": [1, 1, 1]
+          },
+          {
+            "seconds": 24.0,
+            "translation": [-0.800000011920929, 2.200000047683716, -8.0],
+            "rotation": [-0.07038425030028704, 0.0126823154318188, -0.03136250335294976, 0.9969461417591177],
             "scale": [1, 1, 1]
           }
         ],
-        "mode": "pingPong",
+        "mode": "loop",
         "interpolation": "smooth",
         "speed": 1,
         "playOnStart": true
@@ -100,6 +112,176 @@
     },
     {
       "active": true,
+      "id": 4,
+      "name": "Workshop Camera",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [-0.0954252305109745, 0.05850540870021455, -0.0067333493615631184, 0.9936930132295001],
+        "scale": [1, 1, 1],
+        "translation": [7.1, 2.9, 5.2]
+      },
+      "camera": {
+        "primary": false,
+        "verticalFovDegrees": 45,
+        "nearClip": 0.1,
+        "farClip": 220
+      }
+    },
+    {
+      "active": true,
+      "id": 5,
+      "name": "Exit Camera",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [-0.10471169771160235, -0.2984782326740243, -0.03296567452747275, 0.9480819950221046],
+        "scale": [1, 1, 1],
+        "translation": [-1.5, 5.2, -11]
+      },
+      "camera": {
+        "primary": false,
+        "verticalFovDegrees": 45,
+        "nearClip": 0.1,
+        "farClip": 220
+      }
+    },
+    {
+      "active": true,
+      "id": 6,
+      "name": "Street Departure Camera",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "scale": [1, 1, 1],
+        "translation": [0, 0, 0]
+      },
+      "camera": {
+        "primary": false,
+        "verticalFovDegrees": 45,
+        "nearClip": 0.1,
+        "farClip": 220
+      },
+      "transformAnimation": {
+        "keys": [
+          {
+            "seconds": 0,
+            "translation": [-0.800000011920929, 2.200000047683716, -8.0],
+            "rotation": [-0.07038425030028704, 0.0126823154318188, -0.03136250335294976, 0.9969461417591177],
+            "scale": [1, 1, 1]
+          },
+          {
+            "seconds": 0.55,
+            "translation": [-0.65, 2.2, -7.5],
+            "rotation": [-0.06025248259400865, 0.01097445599329118, -0.02420116837156038, 0.9978293957918667],
+            "scale": [1, 1, 1]
+          },
+          {
+            "seconds": 3.05,
+            "translation": [0, 2.2, 14],
+            "rotation": [0.0, 0.0, 0.0, 1.0],
+            "scale": [1, 1, 1]
+          }
+        ],
+        "mode": "once",
+        "interpolation": "smooth",
+        "speed": 1,
+        "playOnStart": false
+      }
+    },
+    {
+      "active": true,
+      "id": 165,
+      "name": "Menu Text Shadow",
+      "parent": 183,
+      "tag": "",
+      "transform": {
+        "rotation": [0, 0, 0, 1],
+        "scale": [1, 1, 1],
+        "translation": [0, 0, 0]
+      },
+      "rectTransform": {
+        "anchorMin": [0, 0],
+        "anchorMax": [0, 0],
+        "pivot": [0, 0],
+        "position": [90, 452],
+        "sizeDelta": [270, 58]
+      },
+      "text": {
+        "enabled": true,
+        "raycastTarget": false,
+        "value": "START",
+        "fontFamily": "Segoe UI",
+        "fontSize": 34,
+        "bold": false,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "color": [0.04, 0.05, 0.07, 0.76]
+      }
+    },
+    {
+      "active": true,
+      "id": 166,
+      "name": "Menu Text Shadow",
+      "parent": 183,
+      "tag": "",
+      "transform": {
+        "rotation": [0, 0, 0, 1],
+        "scale": [1, 1, 1],
+        "translation": [0, 0, 0]
+      },
+      "rectTransform": {
+        "anchorMin": [0, 0],
+        "anchorMax": [0, 0],
+        "pivot": [0, 0],
+        "position": [90, 520],
+        "sizeDelta": [270, 58]
+      },
+      "text": {
+        "enabled": true,
+        "raycastTarget": false,
+        "value": "CONFIG",
+        "fontFamily": "Segoe UI",
+        "fontSize": 34,
+        "bold": false,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "color": [0.04, 0.05, 0.07, 0.76]
+      }
+    },
+    {
+      "active": true,
+      "id": 167,
+      "name": "Menu Text Shadow",
+      "parent": 183,
+      "tag": "",
+      "transform": {
+        "rotation": [0, 0, 0, 1],
+        "scale": [1, 1, 1],
+        "translation": [0, 0, 0]
+      },
+      "rectTransform": {
+        "anchorMin": [0, 0],
+        "anchorMax": [0, 0],
+        "pivot": [0, 0],
+        "position": [90, 588],
+        "sizeDelta": [270, 58]
+      },
+      "text": {
+        "enabled": true,
+        "raycastTarget": false,
+        "value": "QUIT",
+        "fontFamily": "Segoe UI",
+        "fontSize": 34,
+        "bold": false,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "color": [0.04, 0.05, 0.07, 0.76]
+      }
+    },
+    {
+      "active": true,
       "id": 171,
       "name": "Title Canvas",
       "parent": 0,
@@ -120,36 +302,20 @@
     {
       "active": true,
       "id": 172,
-      "name": "Menu Panel",
+      "name": "Title Menus",
       "parent": 171,
       "tag": "",
       "transform": {
         "rotation": [0, 0, 0, 1],
         "scale": [1, 1, 1],
         "translation": [0, 0, 0]
-      },
-      "rectTransform": {
-        "anchorMin": [0, 0],
-        "anchorMax": [0, 0],
-        "pivot": [0, 0],
-        "position": [34, 33],
-        "sizeDelta": [405, 654]
-      },
-      "image": {
-        "enabled": true,
-        "raycastTarget": false,
-        "texture": "",
-        "color": [0.043, 0.096, 0.13, 0.94],
-        "preserveAspect": false,
-        "fillOrigin": "left",
-        "fillAmount": 1
       }
     },
     {
       "active": true,
       "id": 173,
-      "name": "Copper Accent",
-      "parent": 172,
+      "name": "Recreated Title Logo",
+      "parent": 183,
       "tag": "",
       "transform": {
         "rotation": [0, 0, 0, 1],
@@ -157,18 +323,18 @@
         "translation": [0, 0, 0]
       },
       "rectTransform": {
-        "anchorMin": [0, 0],
-        "anchorMax": [0, 0],
-        "pivot": [0, 0],
-        "position": [0, 0],
-        "sizeDelta": [5, 654]
+        "anchorMin": [1, 0],
+        "anchorMax": [1, 0],
+        "pivot": [1, 0],
+        "position": [-66, 58],
+        "sizeDelta": [540, 289]
       },
       "image": {
         "enabled": true,
         "raycastTarget": false,
-        "texture": "",
-        "color": [1, 0.54, 0.24, 1],
-        "preserveAspect": false,
+        "texture": "@project/assets/title/textures/TitleLogo.png",
+        "color": [1, 1, 1, 1],
+        "preserveAspect": true,
         "fillOrigin": "left",
         "fillAmount": 1
       }
@@ -176,8 +342,8 @@
     {
       "active": true,
       "id": 174,
-      "name": "Title Eyebrow",
-      "parent": 172,
+      "name": "Config Logo",
+      "parent": 184,
       "tag": "",
       "transform": {
         "rotation": [0, 0, 0, 1],
@@ -185,29 +351,27 @@
         "translation": [0, 0, 0]
       },
       "rectTransform": {
-        "anchorMin": [0, 0],
-        "anchorMax": [0, 0],
-        "pivot": [0, 0],
-        "position": [30, 39],
-        "sizeDelta": [340, 26]
+        "anchorMin": [1, 0],
+        "anchorMax": [1, 0],
+        "pivot": [1, 0],
+        "position": [-80, 42],
+        "sizeDelta": [300, 160]
       },
-      "text": {
+      "image": {
         "enabled": true,
         "raycastTarget": false,
-        "value": "CLOCK TOWER DISTRICT",
-        "fontFamily": "Segoe UI",
-        "fontSize": 17,
-        "bold": true,
-        "alignment": "left",
-        "verticalAlignment": "middle",
-        "color": [1, 0.75, 0.36, 1]
+        "texture": "@project/assets/title/textures/TitleLogo.png",
+        "color": [1, 1, 1, 1],
+        "preserveAspect": true,
+        "fillOrigin": "left",
+        "fillAmount": 1
       }
     },
     {
       "active": true,
       "id": 175,
-      "name": "Title Wordmark Top",
-      "parent": 172,
+      "name": "Menu Backplate",
+      "parent": 184,
       "tag": "",
       "transform": {
         "rotation": [0, 0, 0, 1],
@@ -218,26 +382,24 @@
         "anchorMin": [0, 0],
         "anchorMax": [0, 0],
         "pivot": [0, 0],
-        "position": [29, 71],
-        "sizeDelta": [358, 75]
+        "position": [64, 389],
+        "sizeDelta": [410, 282]
       },
-      "text": {
+      "image": {
         "enabled": true,
         "raycastTarget": false,
-        "value": "GURUTTO",
-        "fontFamily": "Segoe UI",
-        "fontSize": 56,
-        "bold": true,
-        "alignment": "left",
-        "verticalAlignment": "middle",
-        "color": [1, 0.95, 0.83, 1]
+        "texture": "",
+        "color": [0.025, 0.065, 0.11, 0.92],
+        "preserveAspect": false,
+        "fillOrigin": "left",
+        "fillAmount": 1
       }
     },
     {
       "active": true,
       "id": 176,
-      "name": "Title Wordmark Bottom",
-      "parent": 172,
+      "name": "Menu Backplate",
+      "parent": 185,
       "tag": "",
       "transform": {
         "rotation": [0, 0, 0, 1],
@@ -248,195 +410,17 @@
         "anchorMin": [0, 0],
         "anchorMax": [0, 0],
         "pivot": [0, 0],
-        "position": [29, 126],
-        "sizeDelta": [358, 75]
-      },
-      "text": {
-        "enabled": true,
-        "raycastTarget": false,
-        "value": "WORLD",
-        "fontFamily": "Segoe UI",
-        "fontSize": 56,
-        "bold": true,
-        "alignment": "left",
-        "verticalAlignment": "middle",
-        "color": [1, 0.95, 0.83, 1]
-      }
-    },
-    {
-      "active": true,
-      "id": 177,
-      "name": "Japanese Subtitle",
-      "parent": 172,
-      "tag": "",
-      "transform": {
-        "rotation": [0, 0, 0, 1],
-        "scale": [1, 1, 1],
-        "translation": [0, 0, 0]
-      },
-      "rectTransform": {
-        "anchorMin": [0, 0],
-        "anchorMax": [0, 0],
-        "pivot": [0, 0],
-        "position": [32, 210],
-        "sizeDelta": [335, 31]
-      },
-      "text": {
-        "enabled": true,
-        "raycastTarget": false,
-        "value": "ぐるっとワールド",
-        "fontFamily": "Yu Gothic UI",
-        "fontSize": 22,
-        "bold": true,
-        "alignment": "left",
-        "verticalAlignment": "middle",
-        "color": [0.75, 0.87, 0.88, 1]
-      }
-    },
-    {
-      "active": true,
-      "id": 178,
-      "name": "Title Divider",
-      "parent": 172,
-      "tag": "",
-      "transform": {
-        "rotation": [0, 0, 0, 1],
-        "scale": [1, 1, 1],
-        "translation": [0, 0, 0]
-      },
-      "rectTransform": {
-        "anchorMin": [0, 0],
-        "anchorMax": [0, 0],
-        "pivot": [0, 0],
-        "position": [32, 259],
-        "sizeDelta": [340, 2]
+        "position": [64, 389],
+        "sizeDelta": [410, 282]
       },
       "image": {
         "enabled": true,
         "raycastTarget": false,
         "texture": "",
-        "color": [0.34, 0.54, 0.57, 1],
+        "color": [0.025, 0.065, 0.11, 0.92],
         "preserveAspect": false,
         "fillOrigin": "left",
         "fillAmount": 1
-      }
-    },
-    {
-      "active": true,
-      "id": 179,
-      "name": "Navigation Hint",
-      "parent": 172,
-      "tag": "",
-      "transform": {
-        "rotation": [0, 0, 0, 1],
-        "scale": [1, 1, 1],
-        "translation": [0, 0, 0]
-      },
-      "rectTransform": {
-        "anchorMin": [0, 0],
-        "anchorMax": [0, 0],
-        "pivot": [0, 0],
-        "position": [32, 600],
-        "sizeDelta": [342, 32]
-      },
-      "text": {
-        "enabled": true,
-        "raycastTarget": false,
-        "value": "UP / DOWN   SELECT     ENTER / A   OK",
-        "fontFamily": "Segoe UI",
-        "fontSize": 15,
-        "bold": true,
-        "alignment": "left",
-        "verticalAlignment": "middle",
-        "color": [0.54, 0.69, 0.71, 1]
-      }
-    },
-    {
-      "active": true,
-      "id": 180,
-      "name": "District Plate",
-      "parent": 171,
-      "tag": "",
-      "transform": {
-        "rotation": [0, 0, 0, 1],
-        "scale": [1, 1, 1],
-        "translation": [0, 0, 0]
-      },
-      "rectTransform": {
-        "anchorMin": [1, 1],
-        "anchorMax": [1, 1],
-        "pivot": [1, 1],
-        "position": [-34, -33],
-        "sizeDelta": [272, 82]
-      },
-      "image": {
-        "enabled": true,
-        "raycastTarget": false,
-        "texture": "",
-        "color": [0.04, 0.1, 0.13, 0.85],
-        "preserveAspect": false,
-        "fillOrigin": "left",
-        "fillAmount": 1
-      }
-    },
-    {
-      "active": true,
-      "id": 181,
-      "name": "District Plate Heading",
-      "parent": 180,
-      "tag": "",
-      "transform": {
-        "rotation": [0, 0, 0, 1],
-        "scale": [1, 1, 1],
-        "translation": [0, 0, 0]
-      },
-      "rectTransform": {
-        "anchorMin": [0, 0],
-        "anchorMax": [0, 0],
-        "pivot": [0, 0],
-        "position": [18, 10],
-        "sizeDelta": [236, 33]
-      },
-      "text": {
-        "enabled": true,
-        "raycastTarget": false,
-        "value": "MORNING STREET",
-        "fontFamily": "Segoe UI",
-        "fontSize": 21,
-        "bold": true,
-        "alignment": "left",
-        "verticalAlignment": "middle",
-        "color": [1, 0.95, 0.83, 1]
-      }
-    },
-    {
-      "active": true,
-      "id": 182,
-      "name": "District Plate Caption",
-      "parent": 180,
-      "tag": "",
-      "transform": {
-        "rotation": [0, 0, 0, 1],
-        "scale": [1, 1, 1],
-        "translation": [0, 0, 0]
-      },
-      "rectTransform": {
-        "anchorMin": [0, 0],
-        "anchorMax": [0, 0],
-        "pivot": [0, 0],
-        "position": [18, 44],
-        "sizeDelta": [236, 22]
-      },
-      "text": {
-        "enabled": true,
-        "raycastTarget": false,
-        "value": "01  /  CLOCK TOWER DISTRICT",
-        "fontFamily": "Segoe UI",
-        "fontSize": 13,
-        "bold": true,
-        "alignment": "left",
-        "verticalAlignment": "middle",
-        "color": [1, 0.75, 0.36, 1]
       }
     },
     {
@@ -477,36 +461,6 @@
     },
     {
       "active": true,
-      "id": 186,
-      "name": "Home Heading",
-      "parent": 183,
-      "tag": "",
-      "transform": {
-        "rotation": [0, 0, 0, 1],
-        "scale": [1, 1, 1],
-        "translation": [0, 0, 0]
-      },
-      "rectTransform": {
-        "anchorMin": [0, 0],
-        "anchorMax": [0, 0],
-        "pivot": [0, 0],
-        "position": [32, 281],
-        "sizeDelta": [340, 27]
-      },
-      "text": {
-        "enabled": true,
-        "raycastTarget": false,
-        "value": "MAIN MENU",
-        "fontFamily": "Segoe UI",
-        "fontSize": 15,
-        "bold": true,
-        "alignment": "left",
-        "verticalAlignment": "middle",
-        "color": [0.75, 0.87, 0.88, 1]
-      }
-    },
-    {
-      "active": true,
       "id": 187,
       "name": "Start",
       "parent": 183,
@@ -520,52 +474,139 @@
         "anchorMin": [0, 0],
         "anchorMax": [0, 0],
         "pivot": [0, 0],
-        "position": [32, 322],
-        "sizeDelta": [340, 55]
-      },
-      "image": {
-        "enabled": true,
-        "raycastTarget": false,
-        "texture": "",
-        "color": [0.66, 0.4, 0.16, 1],
-        "preserveAspect": false,
-        "fillOrigin": "left",
-        "fillAmount": 1
+        "position": [88, 450],
+        "sizeDelta": [270, 58]
       },
       "text": {
         "enabled": true,
         "raycastTarget": false,
         "value": "START",
         "fontFamily": "Segoe UI",
-        "fontSize": 22,
-        "bold": true,
-        "alignment": "center",
+        "fontSize": 34,
+        "bold": false,
+        "alignment": "left",
         "verticalAlignment": "middle",
-        "color": [1, 0.95, 0.83, 1]
+        "color": [1, 1, 1, 1]
       },
       "button": {
         "enabled": true,
         "interactable": true,
         "navigation": true,
-        "normalColor": [0.74, 0.85, 0.86, 1],
+        "normalColor": [0.65, 0.65, 0.65, 1],
         "highlightedColor": [1, 1, 1, 1],
-        "pressedColor": [0.61, 0.7, 0.73, 1],
+        "pressedColor": [0.7, 0.7, 0.7, 1],
         "disabledColor": [0.47, 0.49, 0.5, 0.8]
       },
       "triggerActions": {
         "actions": [
           {
             "event": "buttonClick",
+            "operation": "setCamera",
+            "target": 6,
+            "once": true,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 0.18,
+            "arrivalTag": "",
+            "launchSpeed": 12
+          },
+          {
+            "event": "buttonClick",
+            "operation": "playTransformAnimation",
+            "target": 6,
+            "once": true,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 0,
+            "arrivalTag": "",
+            "launchSpeed": 12
+          },
+          {
+            "event": "buttonClick",
+            "operation": "disable",
+            "target": 166,
+            "once": true,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 0,
+            "arrivalTag": "",
+            "launchSpeed": 12
+          },
+          {
+            "event": "buttonClick",
+            "operation": "disable",
+            "target": 167,
+            "once": true,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 0,
+            "arrivalTag": "",
+            "launchSpeed": 12
+          },
+          {
+            "event": "buttonClick",
+            "operation": "disable",
+            "target": 188,
+            "once": true,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 0,
+            "arrivalTag": "",
+            "launchSpeed": 12
+          },
+          {
+            "event": "buttonClick",
+            "operation": "disable",
+            "target": 189,
+            "once": true,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 0,
+            "arrivalTag": "",
+            "launchSpeed": 12
+          },
+          {
+            "event": "buttonClick",
             "operation": "loadScene",
             "target": 0,
-            "once": false,
+            "once": true,
             "destination": 0,
             "scene": "@project/scenes/ClockTowerPrototype.scene.json",
             "contact": "any",
             "contactTag": "",
             "inputAction": "",
             "messageName": "",
-            "delaySeconds": 0,
+            "delaySeconds": 3.2,
             "cameraBlendSeconds": 0,
             "arrivalTag": "",
             "launchSpeed": 12
@@ -588,36 +629,27 @@
         "anchorMin": [0, 0],
         "anchorMax": [0, 0],
         "pivot": [0, 0],
-        "position": [32, 391],
-        "sizeDelta": [340, 55]
-      },
-      "image": {
-        "enabled": true,
-        "raycastTarget": false,
-        "texture": "",
-        "color": [0.22, 0.33, 0.38, 1],
-        "preserveAspect": false,
-        "fillOrigin": "left",
-        "fillAmount": 1
+        "position": [88, 518],
+        "sizeDelta": [270, 58]
       },
       "text": {
         "enabled": true,
         "raycastTarget": false,
         "value": "CONFIG",
         "fontFamily": "Segoe UI",
-        "fontSize": 22,
-        "bold": true,
-        "alignment": "center",
+        "fontSize": 34,
+        "bold": false,
+        "alignment": "left",
         "verticalAlignment": "middle",
-        "color": [1, 0.95, 0.83, 1]
+        "color": [1, 1, 1, 1]
       },
       "button": {
         "enabled": true,
         "interactable": true,
         "navigation": true,
-        "normalColor": [0.74, 0.85, 0.86, 1],
+        "normalColor": [0.65, 0.65, 0.65, 1],
         "highlightedColor": [1, 1, 1, 1],
-        "pressedColor": [0.61, 0.7, 0.73, 1],
+        "pressedColor": [0.7, 0.7, 0.7, 1],
         "disabledColor": [0.47, 0.49, 0.5, 0.8]
       },
       "triggerActions": {
@@ -653,6 +685,22 @@
             "cameraBlendSeconds": 0,
             "arrivalTag": "",
             "launchSpeed": 12
+          },
+          {
+            "event": "buttonClick",
+            "operation": "setCamera",
+            "target": 4,
+            "once": false,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 0.62,
+            "arrivalTag": "",
+            "launchSpeed": 12
           }
         ]
       }
@@ -672,36 +720,27 @@
         "anchorMin": [0, 0],
         "anchorMax": [0, 0],
         "pivot": [0, 0],
-        "position": [32, 460],
-        "sizeDelta": [340, 55]
-      },
-      "image": {
-        "enabled": true,
-        "raycastTarget": false,
-        "texture": "",
-        "color": [0.22, 0.33, 0.38, 1],
-        "preserveAspect": false,
-        "fillOrigin": "left",
-        "fillAmount": 1
+        "position": [88, 586],
+        "sizeDelta": [270, 58]
       },
       "text": {
         "enabled": true,
         "raycastTarget": false,
         "value": "QUIT",
         "fontFamily": "Segoe UI",
-        "fontSize": 22,
-        "bold": true,
-        "alignment": "center",
+        "fontSize": 34,
+        "bold": false,
+        "alignment": "left",
         "verticalAlignment": "middle",
-        "color": [1, 0.95, 0.83, 1]
+        "color": [1, 1, 1, 1]
       },
       "button": {
         "enabled": true,
         "interactable": true,
         "navigation": true,
-        "normalColor": [0.74, 0.85, 0.86, 1],
+        "normalColor": [0.65, 0.65, 0.65, 1],
         "highlightedColor": [1, 1, 1, 1],
-        "pressedColor": [0.61, 0.7, 0.73, 1],
+        "pressedColor": [0.7, 0.7, 0.7, 1],
         "disabledColor": [0.47, 0.49, 0.5, 0.8]
       },
       "triggerActions": {
@@ -737,6 +776,22 @@
             "cameraBlendSeconds": 0,
             "arrivalTag": "",
             "launchSpeed": 12
+          },
+          {
+            "event": "buttonClick",
+            "operation": "setCamera",
+            "target": 5,
+            "once": false,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 0.58,
+            "arrivalTag": "",
+            "launchSpeed": 12
           }
         ]
       }
@@ -756,7 +811,7 @@
         "anchorMin": [0, 0],
         "anchorMax": [0, 0],
         "pivot": [0, 0],
-        "position": [32, 282],
+        "position": [85, 406],
         "sizeDelta": [340, 31]
       },
       "text": {
@@ -786,7 +841,7 @@
         "anchorMin": [0, 0],
         "anchorMax": [0, 0],
         "pivot": [0, 0],
-        "position": [32, 317],
+        "position": [85, 441],
         "sizeDelta": [340, 30]
       },
       "text": {
@@ -816,8 +871,8 @@
         "anchorMin": [0, 0],
         "anchorMax": [0, 0],
         "pivot": [0, 0],
-        "position": [32, 363],
-        "sizeDelta": [340, 55]
+        "position": [85, 487],
+        "sizeDelta": [340, 47]
       },
       "image": {
         "enabled": true,
@@ -852,7 +907,7 @@
         "actions": [
           {
             "event": "buttonClick",
-            "operation": "stopTransformAnimation",
+            "operation": "pauseTransformAnimation",
             "target": 1,
             "once": false,
             "destination": 0,
@@ -916,8 +971,8 @@
         "anchorMin": [0, 0],
         "anchorMax": [0, 0],
         "pivot": [0, 0],
-        "position": [32, 363],
-        "sizeDelta": [340, 55]
+        "position": [85, 487],
+        "sizeDelta": [340, 47]
       },
       "image": {
         "enabled": true,
@@ -1016,8 +1071,8 @@
         "anchorMin": [0, 0],
         "anchorMax": [0, 0],
         "pivot": [0, 0],
-        "position": [32, 460],
-        "sizeDelta": [340, 55]
+        "position": [85, 584],
+        "sizeDelta": [340, 47]
       },
       "image": {
         "enabled": true,
@@ -1081,6 +1136,22 @@
             "cameraBlendSeconds": 0,
             "arrivalTag": "",
             "launchSpeed": 12
+          },
+          {
+            "event": "buttonClick",
+            "operation": "setCamera",
+            "target": 1,
+            "once": false,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 0.56,
+            "arrivalTag": "",
+            "launchSpeed": 12
           }
         ]
       }
@@ -1100,7 +1171,7 @@
         "anchorMin": [0, 0],
         "anchorMax": [0, 0],
         "pivot": [0, 0],
-        "position": [32, 282],
+        "position": [85, 406],
         "sizeDelta": [340, 31]
       },
       "text": {
@@ -1130,7 +1201,7 @@
         "anchorMin": [0, 0],
         "anchorMax": [0, 0],
         "pivot": [0, 0],
-        "position": [32, 316],
+        "position": [85, 440],
         "sizeDelta": [340, 32]
       },
       "text": {
@@ -1160,8 +1231,8 @@
         "anchorMin": [0, 0],
         "anchorMax": [0, 0],
         "pivot": [0, 0],
-        "position": [32, 363],
-        "sizeDelta": [340, 55]
+        "position": [85, 487],
+        "sizeDelta": [340, 47]
       },
       "image": {
         "enabled": true,
@@ -1225,6 +1296,22 @@
             "cameraBlendSeconds": 0,
             "arrivalTag": "",
             "launchSpeed": 12
+          },
+          {
+            "event": "buttonClick",
+            "operation": "setCamera",
+            "target": 1,
+            "once": false,
+            "destination": 0,
+            "scene": "",
+            "contact": "any",
+            "contactTag": "",
+            "inputAction": "",
+            "messageName": "",
+            "delaySeconds": 0,
+            "cameraBlendSeconds": 0.56,
+            "arrivalTag": "",
+            "launchSpeed": 12
           }
         ]
       }
@@ -1244,8 +1331,8 @@
         "anchorMin": [0, 0],
         "anchorMax": [0, 0],
         "pivot": [0, 0],
-        "position": [32, 460],
-        "sizeDelta": [340, 55]
+        "position": [85, 584],
+        "sizeDelta": [340, 47]
       },
       "image": {
         "enabled": true,
