@@ -24,12 +24,12 @@ return {
         player:set_character_input_enabled(false)
         local counter = self:reference("resultCounter")
         counter:send_message("street_goal_reached")
-        player:send_message("street_clear")
 
         local camera = self:reference("finishCamera")
         if camera then
             scene.set_camera(camera)
         end
+        player:send_message("street_clear")
         state.finishTime = state.finishDelay or 0
     end
 }
