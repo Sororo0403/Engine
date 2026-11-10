@@ -1,0 +1,3358 @@
+{
+  "format": "EngineScene",
+  "fog": {
+    "color": [
+      0.77,
+      0.89,
+      0.95
+    ],
+    "enabled": true,
+    "end": 95,
+    "start": 42,
+    "strength": 0.5
+  },
+  "lighting": {
+    "ambient": 0.4,
+    "color": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "direction": [
+      1.0,
+      -2.0,
+      1.0
+    ],
+    "intensity": 0.800000011920929,
+    "shadows": {
+      "bias": 0.0005000000237487257,
+      "enabled": false,
+      "extent": 30.0,
+      "normalBias": 0.019999999552965164,
+      "resolution": 1024,
+      "strength": 0.800000011920929
+    }
+  },
+  "objects": [
+    {
+      "active": true,
+      "audioListener": {},
+      "character": {
+        "airFloatDelay": 0.25,
+        "airFloatDuration": 0.85,
+        "coyoteTime": 0.07999999821186066,
+        "gravity": 20.0,
+        "groundSnapDistance": 0.11999999731779099,
+        "jumpBufferTime": 0.11999999731779099,
+        "jumpSpeed": 7.5,
+        "moveSpeed": 4.6,
+        "stepHeight": 0.36,
+        "terminalSpeed": 30.0
+      },
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.3199999928474426,
+          0.6499999761581421,
+          0.3199999928474426
+        ],
+        "halfHeight": 0.35,
+        "isTrigger": false,
+        "radius": 0.35,
+        "shape": "Capsule"
+      },
+      "id": 1,
+      "name": "Player",
+      "parent": 0,
+      "respawn": {
+        "minimumY": -3,
+        "position": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "useStartPosition": true
+      },
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          0,
+          0.74,
+          0
+        ]
+      },
+      "script": {
+        "asset": "@project/assets/park/scripts/ParkHeroFacing.lua",
+        "enabled": true,
+        "prefabs": [],
+        "references": [
+          {
+            "name": "visual",
+            "target": 2
+          }
+        ],
+        "scenes": [],
+        "state": {}
+      }
+    },
+    {
+      "active": true,
+      "id": 2,
+      "mesh": {
+        "model": "@project/assets/models/hero/StreetHeroBody.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Park Hero",
+      "parent": 1,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 3,
+      "name": "Park Hero Eyes",
+      "parent": 2,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          -0.07,
+          0
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/models/hero/StreetHeroEyes.glb"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "camera": {
+        "farClip": 120.0,
+        "nearClip": 0.10000000149011612,
+        "primary": true,
+        "verticalFovDegrees": 52.0
+      },
+      "followCamera": {
+        "avoidObstacles": true,
+        "clearance": 0.30000001192092896,
+        "lookOffset": [
+          0,
+          1.05,
+          2.8
+        ],
+        "offset": [
+          0,
+          5,
+          -7.8
+        ],
+        "orbit": {
+          "enabled": false,
+          "maximumDistance": 20.0,
+          "maximumPitch": 75.0,
+          "minimumDistance": 2.0,
+          "minimumPitch": -75.0,
+          "mouseSensitivity": 0.18000000715255737,
+          "stickSpeed": 120.0,
+          "zoomSensitivity": 1.0
+        },
+        "smoothing": 8.0,
+        "target": 1
+      },
+      "id": 4,
+      "name": "Sunrise Follow Camera",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          0.0,
+          5.5,
+          -8.5
+        ]
+      }
+    },
+    {
+      "active": true,
+      "directionalLight": {
+        "color": [
+          1,
+          0.82,
+          0.66
+        ],
+        "intensity": 1.03,
+        "shadows": {
+          "bias": 0.00019999999494757503,
+          "enabled": true,
+          "extent": 55,
+          "normalBias": 0.02500000037252903,
+          "resolution": 2048,
+          "strength": 0.7900000214576721
+        }
+      },
+      "id": 5,
+      "name": "Sunrise Light",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.3760794699192047,
+          -0.46904659271240234,
+          0.23055104911327362,
+          0.7651181221008301
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "canvas": {
+        "enabled": true,
+        "matchWidthOrHeight": 0.5,
+        "referenceSize": [
+          1280.0,
+          720.0
+        ],
+        "scaleWithScreen": true,
+        "sortOrder": 0
+      },
+      "id": 24,
+      "name": "Park HUD",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 25,
+      "image": {
+        "color": [
+          0.035,
+          0.075,
+          0.1,
+          0.9
+        ],
+        "enabled": true,
+        "fillAmount": 1,
+        "fillOrigin": "left",
+        "preserveAspect": false,
+        "raycastTarget": false,
+        "texture": "@project/assets/textures/PrototypeWhite.png"
+      },
+      "name": "Park Objective Backdrop",
+      "parent": 24,
+      "rectTransform": {
+        "anchorMax": [
+          0,
+          0
+        ],
+        "anchorMin": [
+          0,
+          0
+        ],
+        "pivot": [
+          0,
+          0
+        ],
+        "position": [
+          24,
+          33
+        ],
+        "sizeDelta": [
+          1080,
+          52
+        ]
+      },
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 26,
+      "name": "Park Objective",
+      "parent": 24,
+      "rectTransform": {
+        "anchorMax": [
+          0.0,
+          0.0
+        ],
+        "anchorMin": [
+          0.0,
+          0.0
+        ],
+        "pivot": [
+          0.0,
+          0.0
+        ],
+        "position": [
+          42,
+          35
+        ],
+        "sizeDelta": [
+          1150.0,
+          44.0
+        ]
+      },
+      "tag": "",
+      "text": {
+        "alignment": "left",
+        "bold": true,
+        "color": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "enabled": true,
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 24,
+        "raycastTarget": false,
+        "value": "朝焼けの水路  /  左の足場を登って橋をつなごう",
+        "verticalAlignment": "middle"
+      },
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "active": false,
+      "canvas": {
+        "enabled": true,
+        "matchWidthOrHeight": 0,
+        "referenceSize": [
+          1280.0,
+          720.0
+        ],
+        "scaleWithScreen": true,
+        "sortOrder": 1
+      },
+      "id": 30,
+      "name": "Park Clear Overlay",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "inputPressed",
+            "inputAction": "Cancel",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "loadScene",
+            "scene": "@project/scenes/TitleStreet.scene.json",
+            "target": 0
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 31,
+      "image": {
+        "color": [
+          0.015,
+          0.035,
+          0.05,
+          0.55
+        ],
+        "enabled": true,
+        "fillAmount": 1,
+        "fillOrigin": "left",
+        "preserveAspect": false,
+        "raycastTarget": false,
+        "texture": "@project/assets/textures/PrototypeWhite.png"
+      },
+      "name": "Park Clear Shade",
+      "parent": 30,
+      "rectTransform": {
+        "anchorMax": [
+          1,
+          1
+        ],
+        "anchorMin": [
+          0,
+          0
+        ],
+        "pivot": [
+          0,
+          0
+        ],
+        "position": [
+          0,
+          0
+        ],
+        "sizeDelta": [
+          0,
+          0
+        ]
+      },
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 32,
+      "image": {
+        "color": [
+          0.035,
+          0.075,
+          0.1,
+          0.97
+        ],
+        "enabled": true,
+        "fillAmount": 1,
+        "fillOrigin": "left",
+        "preserveAspect": false,
+        "raycastTarget": false,
+        "texture": "@project/assets/textures/PrototypeWhite.png"
+      },
+      "name": "Park Clear Panel",
+      "parent": 30,
+      "rectTransform": {
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "pivot": [
+          0,
+          0
+        ],
+        "position": [
+          -480,
+          -156
+        ],
+        "sizeDelta": [
+          960,
+          340
+        ]
+      },
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 33,
+      "name": "Park Clear Heading",
+      "parent": 30,
+      "rectTransform": {
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "pivot": [
+          0,
+          0
+        ],
+        "position": [
+          -438,
+          -132
+        ],
+        "sizeDelta": [
+          880,
+          55
+        ]
+      },
+      "tag": "",
+      "text": {
+        "alignment": "left",
+        "bold": true,
+        "color": [
+          1,
+          0.83,
+          0.4,
+          1
+        ],
+        "enabled": true,
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 40,
+        "raycastTarget": false,
+        "value": "SUNRISE COURSE CLEAR",
+        "verticalAlignment": "middle"
+      },
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 34,
+      "name": "Park Clear Result",
+      "parent": 30,
+      "rectTransform": {
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "pivot": [
+          0,
+          0
+        ],
+        "position": [
+          -438,
+          -70
+        ],
+        "sizeDelta": [
+          880,
+          170
+        ]
+      },
+      "tag": "",
+      "text": {
+        "alignment": "left",
+        "bold": false,
+        "color": [
+          1,
+          1,
+          0.95,
+          1
+        ],
+        "enabled": true,
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 25,
+        "raycastTarget": false,
+        "value": "朝焼けの水路",
+        "verticalAlignment": "middle"
+      },
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 35,
+      "name": "Park Retry Button",
+      "parent": 30,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "rectTransform": {
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "pivot": [
+          0,
+          0
+        ],
+        "position": [
+          -438,
+          106
+        ],
+        "sizeDelta": [
+          250,
+          50
+        ]
+      },
+      "image": {
+        "enabled": true,
+        "raycastTarget": true,
+        "texture": "",
+        "color": [
+          0.25,
+          0.29,
+          0.25,
+          1
+        ],
+        "preserveAspect": false,
+        "fillOrigin": "left",
+        "fillAmount": 1
+      },
+      "text": {
+        "enabled": true,
+        "raycastTarget": false,
+        "value": "もう一度",
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 22,
+        "bold": true,
+        "color": [
+          1,
+          1,
+          0.92,
+          1
+        ],
+        "alignment": "center",
+        "verticalAlignment": "middle"
+      },
+      "button": {
+        "enabled": true,
+        "interactable": true,
+        "navigation": true,
+        "initialSelection": true,
+        "normalColor": [
+          0.77,
+          0.8,
+          0.75,
+          1
+        ],
+        "highlightedColor": [
+          1,
+          1,
+          0.8,
+          1
+        ],
+        "pressedColor": [
+          0.85,
+          0.78,
+          0.56,
+          1
+        ],
+        "disabledColor": [
+          0.5,
+          0.5,
+          0.5,
+          1
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonClick",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "loadScene",
+            "scene": "@project/scenes/SunriseCourse.scene.json",
+            "target": 0
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 36,
+      "name": "Park Title Button",
+      "parent": 30,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "rectTransform": {
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "pivot": [
+          0,
+          0
+        ],
+        "position": [
+          -172,
+          106
+        ],
+        "sizeDelta": [
+          250,
+          50
+        ]
+      },
+      "image": {
+        "enabled": true,
+        "raycastTarget": true,
+        "texture": "",
+        "color": [
+          0.25,
+          0.29,
+          0.25,
+          1
+        ],
+        "preserveAspect": false,
+        "fillOrigin": "left",
+        "fillAmount": 1
+      },
+      "text": {
+        "enabled": true,
+        "raycastTarget": false,
+        "value": "タイトルへ",
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 22,
+        "bold": true,
+        "color": [
+          1,
+          1,
+          0.92,
+          1
+        ],
+        "alignment": "center",
+        "verticalAlignment": "middle"
+      },
+      "button": {
+        "enabled": true,
+        "interactable": true,
+        "navigation": true,
+        "normalColor": [
+          0.77,
+          0.8,
+          0.75,
+          1
+        ],
+        "highlightedColor": [
+          1,
+          1,
+          0.8,
+          1
+        ],
+        "pressedColor": [
+          0.85,
+          0.78,
+          0.56,
+          1
+        ],
+        "disabledColor": [
+          0.5,
+          0.5,
+          0.5,
+          1
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonClick",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "loadScene",
+            "scene": "@project/scenes/TitleStreet.scene.json",
+            "target": 0
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 56,
+      "name": "Park Sky Background",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "canvas": {
+        "enabled": true,
+        "scaleWithScreen": true,
+        "referenceSize": [
+          1280,
+          720
+        ],
+        "matchWidthOrHeight": 0.5,
+        "sortOrder": 0,
+        "background": true
+      }
+    },
+    {
+      "active": true,
+      "id": 57,
+      "name": "Park Morning Sky",
+      "parent": 56,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "rectTransform": {
+        "anchorMin": [
+          0,
+          0
+        ],
+        "anchorMax": [
+          1,
+          1
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "position": [
+          0,
+          0
+        ],
+        "sizeDelta": [
+          0,
+          0
+        ]
+      },
+      "image": {
+        "enabled": true,
+        "raycastTarget": false,
+        "texture": "@project/assets/street/textures/StreetMorningSky.png",
+        "color": [
+          1,
+          0.86,
+          0.77,
+          1
+        ],
+        "preserveAspect": false,
+        "fillOrigin": "left",
+        "fillAmount": 1
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.66,
+          0.55,
+          0.39
+        ]
+      },
+      "id": 60,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "South Bank",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          6,
+          0.26,
+          4.5
+        ],
+        "translation": [
+          0,
+          -0.26,
+          1.5
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.66,
+          0.55,
+          0.39
+        ]
+      },
+      "id": 61,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "North Bank",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          6,
+          0.26,
+          6
+        ],
+        "translation": [
+          0,
+          -0.26,
+          17
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.58,
+          0.48,
+          0.39
+        ]
+      },
+      "id": 62,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Lookout Foundation",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          6,
+          0.55,
+          2.5
+        ],
+        "translation": [
+          0,
+          0.29,
+          25.5
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.18,
+          0.37,
+          0.52
+        ]
+      },
+      "id": 63,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Sunrise Canal",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          6,
+          0.06,
+          2.5
+        ],
+        "translation": [
+          0,
+          -0.65,
+          8.5
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.61,
+          0.42,
+          0.3
+        ]
+      },
+      "id": 64,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Waterfront Boundary",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.18,
+          0.83,
+          15
+        ],
+        "translation": [
+          -6.18,
+          0.83,
+          12
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.61,
+          0.42,
+          0.3
+        ]
+      },
+      "id": 65,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Waterfront Boundary",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.18,
+          0.83,
+          15
+        ],
+        "translation": [
+          6.18,
+          0.83,
+          12
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.61,
+          0.42,
+          0.3
+        ]
+      },
+      "id": 66,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "South Boundary",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          6,
+          0.61,
+          0.16
+        ],
+        "translation": [
+          0,
+          0.61,
+          -3.0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.61,
+          0.42,
+          0.3
+        ]
+      },
+      "id": 67,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Lookout Boundary",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          6,
+          0.48,
+          0.16
+        ],
+        "translation": [
+          0,
+          1.3,
+          28
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.58,
+          0.48,
+          0.39
+        ]
+      },
+      "id": 70,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "South Switch Low Step",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.78,
+          0.29,
+          0.75
+        ],
+        "translation": [
+          -3.8,
+          0.29,
+          2.85
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.58,
+          0.48,
+          0.39
+        ]
+      },
+      "id": 71,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "South Switch Platform",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          0.58,
+          0.79
+        ],
+        "translation": [
+          -3.8,
+          0.58,
+          4.6
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.58,
+          0.48,
+          0.39
+        ]
+      },
+      "id": 72,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "North Switch Low Step",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.76,
+          0.37,
+          0.7
+        ],
+        "translation": [
+          3.8,
+          0.37,
+          13.5
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.58,
+          0.48,
+          0.39
+        ]
+      },
+      "id": 73,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "North Switch Platform",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.05,
+          0.77,
+          0.78
+        ],
+        "translation": [
+          3.8,
+          0.77,
+          15.35
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.58,
+          0.48,
+          0.39
+        ]
+      },
+      "id": 74,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Lookout Front Step",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          2.0,
+          0.23,
+          0.75
+        ],
+        "translation": [
+          0,
+          0.23,
+          22.25
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.58,
+          0.48,
+          0.39
+        ]
+      },
+      "id": 75,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Lookout Top Step",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          2.0,
+          0.2,
+          0.63
+        ],
+        "translation": [
+          0,
+          0.66,
+          23.4
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.4,
+          0.24,
+          0.14
+        ]
+      },
+      "id": 76,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Closed Lookout Gate",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          6,
+          1.55,
+          0.16
+        ],
+        "translation": [
+          0,
+          1.55,
+          21.15
+        ]
+      }
+    },
+    {
+      "active": false,
+      "id": 77,
+      "name": "Canal Bridge",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.65,
+          0.43,
+          0.24
+        ]
+      },
+      "id": 78,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Canal Bridge Deck",
+      "parent": 77,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          0.13,
+          0.96
+        ],
+        "translation": [
+          0,
+          -0.13,
+          6.6
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.65,
+          0.43,
+          0.24
+        ]
+      },
+      "id": 79,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Canal Bridge Deck",
+      "parent": 77,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          0.13,
+          0.96
+        ],
+        "translation": [
+          0,
+          -0.13,
+          8.5
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.65,
+          0.43,
+          0.24
+        ]
+      },
+      "id": 80,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Canal Bridge Deck",
+      "parent": 77,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          0.13,
+          0.96
+        ],
+        "translation": [
+          0,
+          -0.13,
+          10.4
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.61,
+          0.42,
+          0.3
+        ]
+      },
+      "id": 81,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Canal Bridge Edge",
+      "parent": 77,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.05,
+          0.055,
+          2.79
+        ],
+        "translation": [
+          -1.0,
+          0.075,
+          8.5
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.61,
+          0.42,
+          0.3
+        ]
+      },
+      "id": 82,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Canal Bridge Edge",
+      "parent": 77,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.05,
+          0.055,
+          2.79
+        ],
+        "translation": [
+          1.0,
+          0.075,
+          8.5
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.83,
+          0.49,
+          0.26
+        ]
+      },
+      "id": 83,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Sunrise Switch Pad",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.57,
+          0.035,
+          0.57
+        ],
+        "translation": [
+          -3.8,
+          1.19,
+          4.6
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.83,
+          0.49,
+          0.26
+        ]
+      },
+      "id": 84,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Sunrise Switch Pad",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.57,
+          0.035,
+          0.57
+        ],
+        "translation": [
+          3.8,
+          1.57,
+          15.35
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 85,
+      "name": "Sunrise Course Controller",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "script": {
+        "asset": "@project/assets/park/scripts/SunriseCourse.lua",
+        "enabled": true,
+        "prefabs": [],
+        "references": [
+          {
+            "name": "objective",
+            "target": 26
+          },
+          {
+            "name": "gate",
+            "target": 76
+          },
+          {
+            "name": "result",
+            "target": 34
+          },
+          {
+            "name": "bridgePad",
+            "target": 83
+          },
+          {
+            "name": "gatePad",
+            "target": 84
+          }
+        ],
+        "scenes": [
+          {
+            "name": "retry",
+            "path": "@project/scenes/SunriseCourse.scene.json"
+          },
+          {
+            "name": "title",
+            "path": "@project/scenes/TitleStreet.scene.json"
+          }
+        ],
+        "state": {}
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.56,
+          0.58,
+          0.56
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 86,
+      "name": "Bridge Switch",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          -3.8,
+          1.61,
+          4.6
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "enable",
+            "scene": "",
+            "target": 77
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "bridge",
+            "once": true,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 85
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.56,
+          0.58,
+          0.56
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 87,
+      "name": "Lookout Switch",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          3.8,
+          1.99,
+          15.35
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "gate",
+            "once": true,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 85
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 88,
+      "name": "North Bank Spawn",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          0,
+          0.74,
+          11.95
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          5.9,
+          0.88,
+          0.64
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 89,
+      "name": "North Bank Checkpoint",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          0,
+          0.74,
+          12.05
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 88,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "setCheckpoint",
+            "scene": "",
+            "target": 1
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          2.0,
+          1.05,
+          0.65
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 90,
+      "name": "Sunrise Lookout Finish",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          0,
+          1.55,
+          26.4
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "finish",
+            "once": true,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 85
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "disable",
+            "scene": "",
+            "target": 24
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "enable",
+            "scene": "",
+            "target": 30
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "pauseGame",
+            "scene": "",
+            "target": 0
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 91,
+      "name": "Sunrise Route Arrow",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.707106781,
+          0,
+          0.707106781
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          -3.8,
+          0.025,
+          1.7
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 92,
+      "name": "Sunrise Route Arrow",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.707106781,
+          0,
+          0.707106781
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0.025,
+          5.35
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 93,
+      "name": "Sunrise Route Arrow",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.707106781,
+          0,
+          0.707106781
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          3.8,
+          0.025,
+          12.4
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 94,
+      "name": "Sunrise Route Arrow",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.707106781,
+          0,
+          0.707106781
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0.88,
+          25.2
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.61,
+          0.42,
+          0.3
+        ]
+      },
+      "id": 95,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Lookout Pillar",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.18,
+          1.06,
+          0.18
+        ],
+        "translation": [
+          -2.0,
+          1.9,
+          26.8
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.61,
+          0.42,
+          0.3
+        ]
+      },
+      "id": 96,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Lookout Pillar",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.18,
+          1.06,
+          0.18
+        ],
+        "translation": [
+          2.0,
+          1.9,
+          26.8
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.61,
+          0.42,
+          0.3
+        ]
+      },
+      "id": 97,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/CanalRipples.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Lookout Crossbeam",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          2.36,
+          0.14,
+          0.29
+        ],
+        "translation": [
+          0,
+          3.0,
+          26.8
+        ]
+      }
+    }
+  ],
+  "projectRoot": "..",
+  "version": 74
+}
