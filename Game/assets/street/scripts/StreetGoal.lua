@@ -5,6 +5,7 @@ return {
             if state.finishTime <= 0 then
                 state.finishTime = nil
                 self:reference("resultCounter"):send_message("street_clear")
+                self:reference("player"):send_message("street_result_ready")
             end
             return
         end

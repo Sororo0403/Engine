@@ -332,6 +332,8 @@ return {
     message = function(self, state, name)
         if name == "courtyard" or name == "roof" then
             state.spawnX, state.spawnY, state.spawnZ = self:reference(name):get_position()
+        elseif name == "street_result_ready" then
+            state.resultReady = true
         elseif state.completed and name == "street_retry" then
             self:load_scene("restart")
         elseif name == "pause_title" or (state.completed and name == "street_title") then
@@ -360,6 +362,10 @@ return {
     update = function(self, state, seconds, input)
         if state.deathTime then
             update_death(self, state, seconds, input.viewport)
+            return
+        end
+
+        if state.completed and not state.resultReady then
             return
         end
 
