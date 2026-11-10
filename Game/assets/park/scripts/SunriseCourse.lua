@@ -22,7 +22,10 @@ local function crossing_hint(self, character)
     local _, _, platformZ = platform:get_position()
     if character.ground == platform then
         if platformZ >= 11.62 then
-            return "対岸に到着  /  左の岸に下りるか、正面の段へジャンプ"
+            if self:reference("gate"):is_active() then
+                return "左の岸へ下りるか、足場の前端から長押しで上のスイッチへ ［Space / A］"
+            end
+            return "対岸に到着  /  左の岸に下りよう"
         elseif platformZ <= 6.73 then
             return "動く足場に乗船中  /  手前の岸に停泊中"
         end
