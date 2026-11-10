@@ -12929,6 +12929,10 @@
             "target": 453
           },
           {
+            "name": "checkpointNotice",
+            "target": 528
+          },
+          {
             "name": "clearCelebration",
             "target": 582
           },
@@ -29344,7 +29348,7 @@
           76
         ],
         "sizeDelta": [
-          460,
+          640,
           52
         ]
       },

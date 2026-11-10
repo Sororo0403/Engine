@@ -68,18 +68,19 @@ local splitCheckpoints = {
 
 local splitRecordVersion = "2:"
 
-local function record_splits(state, finish, key)
-    local record = game[key]
+local function read_split_record(record)
     local a, b, c, total
     if type(record) == "string" and #record == 38 and string.sub(record, 1, 2) == splitRecordVersion then
         a, b = tonumber(string.sub(record, 3, 11)), tonumber(string.sub(record, 12, 20))
         c, total = tonumber(string.sub(record, 21, 29)), tonumber(string.sub(record, 30, 38))
     end
-    local previous
     if a and b and c and total and 0 <= a and a <= b and b <= c and c <= total then
-        previous = {a, b, c, total}
+        return {a, b, c, total}
     end
+end
 
+local function record_splits(state, finish, key)
+    local previous = read_split_record(game[key])
     if not previous or finish < previous[4] then
         local splits = state.splits
         if splits.canal and splits.courtyard and splits.roof
@@ -90,6 +91,24 @@ local function record_splits(state, finish, key)
         end
     end
     return previous
+end
+
+local function show_checkpoint(self, state, name, time)
+    local notice = self:reference("checkpointNotice")
+    if not notice then
+        return
+    end
+    for index, checkpoint in ipairs(splitCheckpoints) do
+        if checkpoint[1] == name then
+            local text = string.format("%s  %.1f 秒", checkpoint[2], time / 10)
+            if state.clearSplitRecord then
+                local difference = time - state.clearSplitRecord[index]
+                text = text .. string.format("  /  計測ベスト比 %+.1f 秒", difference / 10)
+            end
+            notice:set_text(text)
+            return
+        end
+    end
 end
 
 local function split_line(state, finish, record)
@@ -187,6 +206,7 @@ end
 return {
     start = function(self, state)
         state.splits = {}
+        state.clearSplitRecord = read_split_record(game.streetBestClearSplits)
         game.journeyStreetTime = nil
         game.streetAllFlowers = state.count == state.total
         game.streetGoalWaiting = nil
@@ -221,7 +241,11 @@ return {
         end
 
         if not state.finishedTime and (name == "canal" or name == "courtyard" or name == "roof") then
-            state.splits[name] = state.splits[name] or math.floor(state.elapsed * 10)
+            if not state.splits[name] then
+                local time = math.floor(state.elapsed * 10)
+                state.splits[name] = time
+                show_checkpoint(self, state, name, time)
+            end
         elseif name == "street_goal_reached" and not state.finishedTime then
             state.finishedTime = state.elapsed
             state.hintHeld = false
