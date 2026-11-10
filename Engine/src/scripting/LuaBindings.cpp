@@ -41,6 +41,8 @@ enum class Op {
 	SET_MESH_VISIBLE,
 	MESH_TINT,
 	SET_MESH_TINT,
+	MESH_UV_OFFSET,
+	SET_MESH_UV_OFFSET,
 	SET_MESH_RADIAL_REVEAL,
 	SET_BACKGROUND_MONOCHROME,
 	POSITION,
@@ -107,7 +109,8 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 		    op == Op::SET_PARENT || op == Op::SET_CHECKPOINT ||
 		    op == Op::SET_CHARACTER_SPEEDS || op == Op::SET_CHARACTER_INPUT_ENABLED ||
 		    op == Op::SET_MESH_VISIBLE ||
-		    op == Op::SET_MESH_TINT || op == Op::SET_MESH_RADIAL_REVEAL ||
+		    op == Op::SET_MESH_TINT || op == Op::SET_MESH_UV_OFFSET ||
+		    op == Op::SET_MESH_RADIAL_REVEAL ||
 		    op == Op::SET_BACKGROUND_MONOCHROME ||
 		    op == Op::SET_CAMERA ||
 		    op == Op::SET_CAMERA_LENS || op == Op::SET_CAMERA_FOV ||
@@ -321,6 +324,17 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 				result.numbers[2] = color.z;
 			}
 
+			break;
+		case Op::MESH_UV_OFFSET:
+		case Op::SET_MESH_UV_OFFSET:
+			if (!object->meshRenderer)
+				throw std::runtime_error("This object requires a Mesh Renderer.");
+			if (op == Op::SET_MESH_UV_OFFSET) {
+				object->meshRenderer->uvOffset = {numbers[0], numbers[1]};
+			} else {
+				result.numbers[0] = object->meshRenderer->uvOffset[0];
+				result.numbers[1] = object->meshRenderer->uvOffset[1];
+			}
 			break;
 		case Op::SET_MESH_RADIAL_REVEAL: {
 			if (!object->meshRenderer)
@@ -561,6 +575,7 @@ int Dispatch(lua_State *state) {
 	if (op == Op::NAME || op == Op::TAG || op == Op::POSITION ||
 	    op == Op::LOCAL_POSITION || op == Op::ROTATION || op == Op::SCALE ||
 	    op == Op::ACTIVE || op == Op::MESH_VISIBLE || op == Op::MESH_TINT ||
+	    op == Op::MESH_UV_OFFSET ||
 	    op == Op::CAMERA_LENS || op == Op::CHARACTER_SPEEDS ||
 	    op == Op::CHARACTER_INPUT_ENABLED ||
 	    op == Op::PARENT || op == Op::ID || op == Op::VALID ||
@@ -595,7 +610,7 @@ int Dispatch(lua_State *state) {
 		                   op == Op::SET_BACKGROUND_MONOCHROME) ? 5
 		                  : (op == Op::SET_ROTATION || op == Op::VIEWPORT_RAY)
 		                      ? 4
-		                  : op == Op::SET_CHARACTER_SPEEDS ? 2
+		                  : (op == Op::SET_CHARACTER_SPEEDS || op == Op::SET_MESH_UV_OFFSET) ? 2
 		                  : op == Op::SET_CAMERA_FOV       ? 1
 		                                                   : 3;
 		for (int i = 0; i < count; ++i) {
@@ -654,6 +669,7 @@ int Dispatch(lua_State *state) {
 			lua_pushnumber(state, result.numbers[i]);
 		return 3;
 	case Op::CHARACTER_SPEEDS:
+	case Op::MESH_UV_OFFSET:
 		lua_pushnumber(state, result.numbers[0]);
 		lua_pushnumber(state, result.numbers[1]);
 		return 2;
@@ -919,6 +935,8 @@ int LuaInternal::OpenEnvironment(lua_State *state, Call &call) {
 	Method(state, "set_mesh_visible", Op::SET_MESH_VISIBLE);
 	Method(state, "get_mesh_tint", Op::MESH_TINT);
 	Method(state, "set_mesh_tint", Op::SET_MESH_TINT);
+	Method(state, "get_mesh_uv_offset", Op::MESH_UV_OFFSET);
+	Method(state, "set_mesh_uv_offset", Op::SET_MESH_UV_OFFSET);
 	Method(state, "set_mesh_radial_reveal", Op::SET_MESH_RADIAL_REVEAL);
 	Method(state, "set_background_monochrome", Op::SET_BACKGROUND_MONOCHROME);
 	Method(state, "get_position", Op::POSITION);
