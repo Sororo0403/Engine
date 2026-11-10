@@ -129,6 +129,11 @@ bool UIInspector::Draw(const ImGuiSystem &ui, SceneObjectId id,
 		                                   1, -100000, 100000, "%.1f",
 		                                   ImGuiSliderFlags_AlwaysClamp),
 		                 &EditorHistory::BeginRectTransform);
+		changed |= Apply(history, id, object.rectTransform, r,
+		                 ImGui::DragFloat("UI Rotation (deg)", &r.rotationDegrees,
+		                                  .5f, -36000, 36000, "%.2f",
+		                                  ImGuiSliderFlags_AlwaysClamp),
+		                 &EditorHistory::BeginRectTransform);
 		if (ui.Button("Remove Rect Transform"))
 			changed |= history.SetRectTransform(id, std::nullopt);
 	}

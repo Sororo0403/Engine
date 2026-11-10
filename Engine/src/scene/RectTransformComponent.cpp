@@ -2,6 +2,9 @@
 #include <cmath>
 
 bool RectTransformComponent::IsValid() const {
+	if (!std::isfinite(rotationDegrees) || std::abs(rotationDegrees) > 36000)
+		return false;
+
 	for (std::size_t i = 0; i < 2; ++i) {
 		if (!std::isfinite(anchorMin[i]) || !std::isfinite(anchorMax[i]) ||
 		    !std::isfinite(pivot[i]) || anchorMin[i] < 0 || anchorMax[i] > 1 ||

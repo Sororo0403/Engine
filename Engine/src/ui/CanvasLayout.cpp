@@ -7,8 +7,20 @@
 #include <exception>
 #include <format>
 #include <map>
+#include <numbers>
 #include <stdexcept>
 #include <tuple>
+
+bool UIElement::IntersectsViewport(int width, int height) const {
+	const auto center = transform.ToScreen(rect.x + rect.width * .5f,
+	                                       rect.y + rect.height * .5f);
+	const float c = std::abs(transform.cosine), s = std::abs(transform.sine);
+	const float halfWidth = (c * rect.width + s * rect.height) * .5f;
+	const float halfHeight = (s * rect.width + c * rect.height) * .5f;
+	return center[0] + halfWidth > 0 && center[1] + halfHeight > 0 &&
+	       center[0] - halfWidth < static_cast<float>(width) &&
+	       center[1] - halfHeight < static_cast<float>(height);
+}
 
 bool CanvasLayout::Collect(const Scene &scene, int width, int height,
                            std::vector<UIElement> &elements, std::string &error,
@@ -29,6 +41,7 @@ bool CanvasLayout::Collect(const Scene &scene, int width, int height,
 			SceneObjectId canvas = 0;
 			UIRect rect;
 			float scale = 1;
+			UITransform transform;
 			bool visible = true;
 			int sort = 0;
 		};
@@ -81,6 +94,7 @@ bool CanvasLayout::Collect(const Scene &scene, int width, int height,
 				              std::pow(sy, canvas.matchWidthOrHeight))
 				        : 1;
 				context.rect = {0, 0, float(width), float(height)};
+				context.transform = {};
 			}
 
 			if (object.rectTransform) {
@@ -106,6 +120,21 @@ bool CanvasLayout::Collect(const Scene &scene, int width, int height,
 					        rect.position[1] * context.scale -
 					        h * rect.pivot[1],
 					    w, h};
+					if (rect.rotationDegrees != 0) {
+						const float px = context.rect.x + w * .5f,
+						            py = context.rect.y + h * .5f;
+						const auto pivot = context.transform.ToScreen(px, py);
+						const float radians = rect.rotationDegrees *
+						                      (std::numbers::pi_v<float> / 180.f);
+						const float c = std::cos(radians), s = std::sin(radians);
+						const float parentC = context.transform.cosine,
+						            parentS = context.transform.sine;
+						const float cosine = parentC * c - parentS * s,
+						            sine = parentS * c + parentC * s;
+						context.transform = {
+						    cosine, sine, pivot[0] - (cosine * px - sine * py),
+						    pivot[1] - (sine * px + cosine * py)};
+					}
 				}
 			}
 
@@ -143,7 +172,7 @@ bool CanvasLayout::Collect(const Scene &scene, int width, int height,
 				    "A scene can show at most 256 UI elements.");
 			}
 
-			result.push_back({{id, context.canvas, rect, context.scale},
+			result.push_back({{id, context.canvas, rect, context.scale, context.transform},
 			                  context.sort,
 			                  index});
 		}

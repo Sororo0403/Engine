@@ -8,19 +8,6 @@
 
 namespace {
 /// <summary>
-/// 画面と交差するUI矩形か確認する
-/// </summary>
-/// <param name="element">配置済みの要素</param>
-/// <param name="input">表示寸法</param>
-/// <returns>true:画面に一部以上表示される false:画面外</returns>
-bool Visible(const UIElement &element, const UIInput &input) {
-	const auto &r = element.rect;
-	return r.width > 0 && r.height > 0 && r.x + r.width > 0 &&
-	       r.y + r.height > 0 && r.x < static_cast<float>(input.width) &&
-	       r.y < static_cast<float>(input.height);
-}
-
-/// <summary>
 /// 指定したボタンの、描画順に並ぶ現在の矩形を探す
 /// </summary>
 /// <param name="elements">有効なCanvas配下の要素</param>
@@ -49,7 +36,7 @@ bool Usable(const Scene &scene, std::span<const UIElement> elements,
 	return object && object->button && object->button->enabled &&
 	       object->button->interactable &&
 	       (!navigation || object->button->navigation) && element &&
-	       Visible(*element, input);
+	       element->IntersectsViewport(input.width, input.height);
 }
 
 struct Hit {
@@ -72,7 +59,8 @@ Hit PointerHit(const Scene &scene, std::span<const UIElement> elements,
 	            y = input.pointerY * static_cast<float>(input.height);
 	for (auto i = elements.rbegin(); i != elements.rend(); ++i) {
 		const auto &r = i->rect;
-		if (x < r.x || y < r.y || x >= r.x + r.width || y >= r.y + r.height)
+		const auto [px, py] = i->transform.ToLayout(x, y);
+		if (px < r.x || py < r.y || px >= r.x + r.width || py >= r.y + r.height)
 			continue;
 		const auto *object = scene.FindObject(i->object);
 		const bool target = (object->image && object->image->enabled &&
@@ -133,7 +121,8 @@ void SceneUI::Synchronize(const Scene &scene,
 		if (!Usable(scene, elements, last_, pressed_) ||
 		    object->parentId != pressedParent_ ||
 		    element->canvas != pressedCanvas_ ||
-		    !SameRect(element->rect, pressedRect_))
+		    !SameRect(element->rect, pressedRect_) ||
+		    element->transform != pressedTransform_)
 			pressed_ = 0;
 	}
 
@@ -231,6 +220,7 @@ bool SceneUI::Update(const Scene &scene, const UIInput &input,
 				next.pressedParent_ = scene.FindObject(hit.button)->parentId;
 				const auto &element = *Element(elements, hit.button);
 				next.pressedRect_ = element.rect;
+				next.pressedTransform_ = element.transform;
 				next.pressedCanvas_ = element.canvas;
 
 				if (!input.pointerDown) {

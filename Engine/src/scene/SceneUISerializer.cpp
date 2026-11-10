@@ -10,8 +10,9 @@
 
 namespace {
 using Json = nlohmann::json;
-const std::array<const char *, 6> kTimelineProperties{
-    "position", "opacity", "translation", "rotation", "scale", "sizeDelta"};
+const std::array<const char *, 7> kTimelineProperties{
+    "position", "opacity", "translation", "rotation", "scale", "sizeDelta",
+    "uiRotation"};
 const std::array<const char *, 5> kTimelineInterpolation{
     "linear", "smooth", "step", "easeOutCubic", "easeOutBack"};
 
@@ -120,7 +121,8 @@ void SceneUISerializer::Write(nlohmann::json &item, const SceneObject &object) {
 		                         {"anchorMax", r.anchorMax},
 		                         {"pivot", r.pivot},
 		                         {"position", r.position},
-		                         {"sizeDelta", r.sizeDelta}};
+		                         {"sizeDelta", r.sizeDelta},
+		                         {"rotationDegrees", r.rotationDegrees}};
 	}
 
 	if (object.text) {
@@ -253,6 +255,11 @@ void SceneUISerializer::Read(const nlohmann::json &item, SceneObject &object,
 		r.pivot = ReadArray<2>(v.at("pivot"));
 		r.position = ReadArray<2>(v.at("position"));
 		r.sizeDelta = ReadArray<2>(v.at("sizeDelta"));
+		if (v.contains("rotationDegrees")) {
+			if (!v.at("rotationDegrees").is_number())
+				throw std::runtime_error("UI rotation must be numeric.");
+			r.rotationDegrees = v.at("rotationDegrees").get<float>();
+		}
 		object.rectTransform = r;
 	}
 

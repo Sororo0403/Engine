@@ -1,5 +1,6 @@
 ﻿cbuffer Element : register(b0) {
-    float4 rectangle;
+    float4 originAndXAxis;
+    float4 yAxis;
     float4 tint;
     float4 uvRect;
 };
@@ -14,6 +15,8 @@ Output main(uint id : SV_VertexID) {
     };
     Output result;
     result.uv = uvRect.xy + corners[id] * uvRect.zw;
-    result.position = float4(rectangle.xy + corners[id] * rectangle.zw, 0, 1);
+    result.position = float4(originAndXAxis.xy +
+                             corners[id].x * originAndXAxis.zw +
+                             corners[id].y * yAxis.xy, 0, 1);
     return result;
 }

@@ -1,5 +1,6 @@
 ﻿cbuffer Element : register(b0) {
-    float4 rectangle;
+    float4 originAndXAxis;
+    float4 yAxis;
     float4 tint;
     float4 uvRect;
 };

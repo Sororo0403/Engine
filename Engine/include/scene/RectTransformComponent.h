@@ -10,6 +10,8 @@ struct RectTransformComponent {
 	std::array<float, 2> position{};
 	// アンカー間の距離に加える大きさ。伸縮指定時は負の値も使用できる
 	std::array<float, 2> sizeDelta{240, 60};
+	// 矩形の中心を軸に、画面上で時計回りに回転する角度
+	float rotationDegrees = 0;
 
 	/// <summary>
 	/// アンカー・ピボット・位置・サイズ差分が表現可能か確認する

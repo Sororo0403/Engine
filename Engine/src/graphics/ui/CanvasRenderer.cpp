@@ -24,6 +24,7 @@ namespace {
 constexpr std::size_t kMaximumBytes = 128 * 1024 * 1024;
 constexpr UINT kDescriptorCount =
     static_cast<UINT>(CanvasLayout::kMaximumElements * 2);
+constexpr UINT kElementConstants = 16;
 
 /// <summary>
 /// 描画準備のHRESULTを例外へ変換する
@@ -45,6 +46,7 @@ struct CanvasRenderer::Impl {
 	struct Command {
 		std::shared_ptr<Texture> texture;
 		UIRect rect;
+		UITransform transform;
 		std::array<float, 4> color;
 		std::array<float, 4> uv{0, 0, 1, 1};
 	};
@@ -102,7 +104,7 @@ struct CanvasRenderer::Impl {
 		range.NumDescriptors = 1;
 		D3D12_ROOT_PARAMETER parameters[2]{};
 		parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
-		parameters[0].Constants.Num32BitValues = 12;
+		parameters[0].Constants.Num32BitValues = kElementConstants;
 		parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 		parameters[1].ParameterType =
 		    D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
@@ -321,9 +323,7 @@ bool CanvasRenderer::Update(const Scene &scene, int width, int height,
 			try {
 				current = element.object;
 				const auto &r = element.rect;
-				if (r.x + r.width <= 0 || r.y + r.height <= 0 ||
-				    r.x >= static_cast<float>(width) ||
-				    r.y >= static_cast<float>(height))
+				if (!element.IntersectsViewport(width, height))
 					continue;
 				const auto &object = *scene.FindObject(element.object);
 				if (object.image && object.image->enabled &&
@@ -434,7 +434,7 @@ bool CanvasRenderer::Update(const Scene &scene, int width, int height,
 					}
 
 					commands.push_back(
-					    {std::move(texture), bounds,
+					    {std::move(texture), bounds, element.transform,
 					     color(object, current, image.color, false), uv});
 				}
 				if (object.text && object.text->enabled &&
@@ -479,7 +479,7 @@ bool CanvasRenderer::Update(const Scene &scene, int width, int height,
 
 					account(entry.texture);
 					commands.push_back(
-					    {entry.texture, r,
+					    {entry.texture, r, element.transform,
 					     color(object, current, object.text->color, true)});
 					texts.emplace(current, std::move(entry));
 				}
@@ -544,11 +544,18 @@ void CanvasRenderer::Draw() const {
 	        D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	for (const auto &command : p.commands) {
 		const auto &r = command.rect;
+		const auto &transform = command.transform;
 		const auto &color = command.color;
-		const float constants[]{2 * r.x / static_cast<float>(p.width) - 1,
-		                        1 - 2 * r.y / static_cast<float>(p.height),
-		                        2 * r.width / static_cast<float>(p.width),
-		                        -2 * r.height / static_cast<float>(p.height),
+		const auto [x, y] = transform.ToScreen(r.x, r.y);
+		const float sx = 2.f / static_cast<float>(p.width),
+		            sy = -2.f / static_cast<float>(p.height);
+		const float constants[]{sx * x - 1,
+		                        sy * y + 1,
+		                        sx * transform.cosine * r.width,
+		                        sy * transform.sine * r.width,
+		                        -sx * transform.sine * r.height,
+		                        sy * transform.cosine * r.height,
+		                        0, 0,
 		                        color[0],
 		                        color[1],
 		                        color[2],
@@ -557,7 +564,8 @@ void CanvasRenderer::Draw() const {
 		                        command.uv[1],
 		                        command.uv[2],
 		                        command.uv[3]};
-		list->SetGraphicsRoot32BitConstants(0, 12, constants, 0);
+		static_assert(std::size(constants) == kElementConstants);
+		list->SetGraphicsRoot32BitConstants(0, kElementConstants, constants, 0);
 		list->SetGraphicsRootDescriptorTable(1, descriptor);
 		list->DrawInstanced(6, 1, 0, 0);
 		descriptor.ptr += stride;

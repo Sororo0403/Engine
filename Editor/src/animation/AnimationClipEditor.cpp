@@ -57,7 +57,7 @@ void AnimationClipEditor::DrawKeys(const Scene *scene, AnimationClipComponent &t
 
 			int property = static_cast<int>(track.property);
 			if (ImGui::Combo("Property", &property,
-			                 "UI Position\0UI Opacity\0Translation\0Rotation\0Scale\0UI Size Delta\0")) {
+			                 "UI Position\0UI Opacity\0Translation\0Rotation\0Scale\0UI Size Delta\0UI Rotation\0")) {
 				track.property = static_cast<AnimationClipTrack::Property>(property);
 				if (track.property != AnimationClipTrack::Property::POSITION &&
 				    track.interpolation == AnimationClipTrack::Interpolation::EASE_OUT_BACK)
@@ -72,10 +72,13 @@ void AnimationClipEditor::DrawKeys(const Scene *scene, AnimationClipComponent &t
 						key.value = {0, 0, 0, 1};
 					else if (track.property == AnimationClipTrack::Property::SCALE)
 						key.value = {1, 1, 1, 0};
+					else if (track.property == AnimationClipTrack::Property::UI_ROTATION)
+						key.value = {};
 				}
 			}
 			const bool opacity = track.property == AnimationClipTrack::Property::OPACITY;
 			const bool rotation = track.property == AnimationClipTrack::Property::ROTATION;
+			const bool uiRotation = track.property == AnimationClipTrack::Property::UI_ROTATION;
 			int interpolation = static_cast<int>(track.interpolation);
 			const char *interpolations = track.property == AnimationClipTrack::Property::POSITION
 			    ? "Linear\0Smooth\0Step\0Ease Out Cubic\0Ease Out Back\0"
@@ -122,6 +125,9 @@ void AnimationClipEditor::DrawKeys(const Scene *scene, AnimationClipComponent &t
 				if (opacity)
 					ImGui::SliderFloat("Alpha", &key.value[0], 0.f, 1.f,
 					                   "%.2f", ImGuiSliderFlags_AlwaysClamp);
+				else if (uiRotation)
+					ImGui::DragFloat("Angle (deg)", &key.value[0], .5f, -36000, 36000,
+					                 "%.2f", ImGuiSliderFlags_AlwaysClamp);
 				else if (rotation) {
 					auto radians = TransformUtils::RotationToEuler(
 					    {key.value[0], key.value[1], key.value[2], key.value[3]});
@@ -167,6 +173,8 @@ void AnimationClipEditor::DrawKeys(const Scene *scene, AnimationClipComponent &t
 			const auto sample = track.Sample(playhead);
 			if (opacity)
 				ImGui::Text("At playhead: %.2f", sample[0]);
+			else if (uiRotation)
+				ImGui::Text("At playhead: %.2f deg", sample[0]);
 			else if (rotation) {
 				const auto euler = TransformUtils::RotationToEuler(
 				    {sample[0], sample[1], sample[2], sample[3]});

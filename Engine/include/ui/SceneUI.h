@@ -82,6 +82,7 @@ class SceneUI {
 	SceneObjectId selected_ = 0, pressed_ = 0, hovered_ = 0;
 	SceneObjectId pressedParent_ = 0, pressedCanvas_ = 0;
 	UIRect pressedRect_;
+	UITransform pressedTransform_;
 	UIInput last_;
 	bool pointerSequence_ = false, keyboardMode_ = false, pointerArmed_ = false,
 	     submitArmed_ = false;

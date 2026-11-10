@@ -19,7 +19,9 @@ struct AnimationClipKey {
 };
 
 struct AnimationClipTrack {
-	enum class Property { POSITION, OPACITY, TRANSLATION, ROTATION, SCALE, SIZE_DELTA };
+	enum class Property {
+		POSITION, OPACITY, TRANSLATION, ROTATION, SCALE, SIZE_DELTA, UI_ROTATION
+	};
 	enum class Interpolation { LINEAR, SMOOTH, STEP, EASE_OUT_CUBIC, EASE_OUT_BACK };
 
 	SceneObjectId target = 0;
@@ -121,6 +123,7 @@ struct AnimationClipComponent {
 			if ((track.property != AnimationClipTrack::Property::POSITION &&
 			     track.property != AnimationClipTrack::Property::OPACITY &&
 			     track.property != AnimationClipTrack::Property::SIZE_DELTA &&
+			     track.property != AnimationClipTrack::Property::UI_ROTATION &&
 			     !track.IsTransform()) ||
 			    (track.interpolation != AnimationClipTrack::Interpolation::LINEAR &&
 			     track.interpolation != AnimationClipTrack::Interpolation::SMOOTH &&
@@ -145,7 +148,9 @@ struct AnimationClipComponent {
 					    return std::isfinite(value) && std::abs(value) <= 100000;
 				    }) ||
 				    (track.property == AnimationClipTrack::Property::OPACITY &&
-				     (key.value[0] < 0 || key.value[0] > 1)))
+				     (key.value[0] < 0 || key.value[0] > 1)) ||
+				    (track.property == AnimationClipTrack::Property::UI_ROTATION &&
+				     std::abs(key.value[0]) > 36000))
 					return false;
 				if (track.property == AnimationClipTrack::Property::ROTATION) {
 					const auto &v = key.value;

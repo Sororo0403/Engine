@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "scene/SceneObjectId.h"
+#include <array>
 #include <cstddef>
 #include <string>
 #include <vector>
@@ -13,12 +14,38 @@ struct UIRect {
 };
 
 /// <summary>
+/// 配置座標と画面座標を結ぶ、親から継承した回転と移動
+/// </summary>
+struct UITransform {
+	float cosine = 1, sine = 0;
+	float x = 0, y = 0;
+
+	std::array<float, 2> ToScreen(float px, float py) const {
+		return {cosine * px - sine * py + x, sine * px + cosine * py + y};
+	}
+
+	std::array<float, 2> ToLayout(float px, float py) const {
+		px -= x;
+		py -= y;
+		return {cosine * px + sine * py, -sine * px + cosine * py};
+	}
+
+	bool operator==(const UITransform &) const = default;
+};
+
+/// <summary>
 /// 描画順に並べるUI物体の、画面上の矩形と基準座標からの拡縮率
 /// </summary>
 struct UIElement {
 	SceneObjectId object = 0, canvas = 0;
 	UIRect rect;
 	float scale = 1;
+	UITransform transform;
+
+	/// <summary>
+	/// 回転した矩形の外接範囲が画面と重なるか確認する
+	/// </summary>
+	bool IntersectsViewport(int width, int height) const;
 };
 
 namespace CanvasLayout {
