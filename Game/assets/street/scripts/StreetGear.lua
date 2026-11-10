@@ -16,7 +16,6 @@ local function update_hint(self, state, x, z, inRange, seconds)
     elseif x >= state.nearBankX and z >= state.crossingMinZ then
         text = state.jumpText
     elseif state.introRadius and not state.introFinished then
-        state.introText = state.introText or self:reference("hint"):get_text()
         state.introStartX = state.introStartX or x
         state.introStartZ = state.introStartZ or z
         local dx, dz = x - state.introStartX, z - state.introStartZ
@@ -33,6 +32,12 @@ local function update_hint(self, state, x, z, inRange, seconds)
 end
 
 return {
+    start = function(self, state)
+        if state.findCanalText and state.introRadius then
+            state.introText = self:reference("hint"):get_text()
+        end
+    end,
+
     message = function(_, state, name)
         if name == "street_enemy_alert" and state.enemyHintText then
             state.enemyHintRemaining = state.enemyHintSeconds
@@ -41,6 +46,7 @@ return {
 
     update = function(self, state, seconds, input)
         if game.streetDeathActive then
+            state.enemyHintRemaining = nil
             return
         end
 
