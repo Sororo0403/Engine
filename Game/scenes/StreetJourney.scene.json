@@ -299,7 +299,7 @@
     {
       "active": true,
       "camera": {
-        "farClip": 150,
+        "farClip": 225,
         "nearClip": 0.10000000149011612,
         "primary": true,
         "verticalFovDegrees": 58
@@ -11585,14 +11585,6 @@
             "target": 615
           },
           {
-            "name": "jumpPractice",
-            "target": 628
-          },
-          {
-            "name": "longJumpPractice",
-            "target": 647
-          },
-          {
             "name": "supplyCrate",
             "target": 641
           },
@@ -11627,7 +11619,7 @@
           "farBankX": 2.3,
           "crossingMinZ": 19,
           "crossingMaxZ": 28,
-          "findCanalText": "運河を目指して街を進もう",
+          "findCanalText": "奥に見える時計台へ。まず運河まで進もう",
           "introRadius": 4,
           "canalApproachText": "岸に沿って、金色の矢印か飛び石を探そう",
           "canalMarkerDepth": 1.6,
@@ -23585,7 +23577,7 @@
     {
       "active": true,
       "id": 412,
-      "name": "Clock Tower Exterior",
+      "name": "Clock tower at the goal",
       "parent": 9,
       "tag": "street_sound",
       "audioSource": {
@@ -23610,581 +23602,9 @@
           1
         ],
         "translation": [
-          -19,
+          -5.66,
           0,
-          85
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.2,
-          0.22,
-          0.26
-        ]
-      },
-      "id": 413,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0,
-          0
-        ],
-        "uvScale": [
-          1,
-          1
-        ],
-        "visible": true
-      },
-      "name": "Clock Tower Cornice",
-      "parent": 412,
-      "tag": "street_wave_far",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          1.875,
-          0.12,
-          1.875
-        ],
-        "translation": [
-          0,
-          13.12,
-          0
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.78,
-          0.43,
-          0.25
-        ]
-      },
-      "id": 414,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0,
-          0
-        ],
-        "uvScale": [
-          1,
-          1
-        ],
-        "visible": true
-      },
-      "name": "Clock Tower Roof",
-      "parent": 412,
-      "tag": "street_wave_far",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          2.0,
-          0.25,
-          2.0
-        ],
-        "translation": [
-          0,
-          13.34,
-          0
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.19,
-          0.21,
-          0.25
-        ]
-      },
-      "id": 415,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0,
-          0
-        ],
-        "uvScale": [
-          1,
-          1
-        ],
-        "visible": true
-      },
-      "name": "Clock Dial Frame",
-      "parent": 412,
-      "tag": "street_wave_far",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          1.275,
-          1.275,
-          0.08
-        ],
-        "translation": [
-          0,
-          10.8,
-          -1.89
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.86,
-          0.77,
-          0.62
-        ]
-      },
-      "id": 416,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0,
-          0
-        ],
-        "uvScale": [
-          1,
-          1
-        ],
-        "visible": true
-      },
-      "name": "Clock Dial",
-      "parent": 412,
-      "tag": "street_wave_far",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          1.1,
-          1.1,
-          0.03
-        ],
-        "translation": [
-          0,
-          10.8,
-          -2
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.19,
-          0.21,
-          0.25
-        ]
-      },
-      "id": 417,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0,
-          0
-        ],
-        "uvScale": [
-          1,
-          1
-        ],
-        "visible": true
-      },
-      "name": "Clock Minute Hand",
-      "parent": 412,
-      "tag": "street_wave_far",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          0.05,
-          0.45,
-          0.02
-        ],
-        "translation": [
-          0,
-          11.2,
-          -2.06
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.19,
-          0.21,
-          0.25
-        ]
-      },
-      "id": 418,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0,
-          0
-        ],
-        "uvScale": [
-          1,
-          1
-        ],
-        "visible": true
-      },
-      "name": "Clock Hour Hand",
-      "parent": 412,
-      "tag": "street_wave_far",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          0.36,
-          0.05,
-          0.02
-        ],
-        "translation": [
-          0.32,
-          10.8,
-          -2.07
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.78,
-          0.43,
-          0.25
-        ]
-      },
-      "id": 419,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0,
-          0
-        ],
-        "uvScale": [
-          1,
-          1
-        ],
-        "visible": true
-      },
-      "name": "Clock Marker 1",
-      "parent": 412,
-      "tag": "street_wave_far",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          0.06,
-          0.06,
-          0.02
-        ],
-        "translation": [
-          0.0,
-          11.680000000000001,
-          -2.07
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.78,
-          0.43,
-          0.25
-        ]
-      },
-      "id": 420,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0,
-          0
-        ],
-        "uvScale": [
-          1,
-          1
-        ],
-        "visible": true
-      },
-      "name": "Clock Marker 2",
-      "parent": 412,
-      "tag": "street_wave_far",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          0.06,
-          0.06,
-          0.02
-        ],
-        "translation": [
-          0.0,
-          9.92,
-          -2.07
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.78,
-          0.43,
-          0.25
-        ]
-      },
-      "id": 421,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0,
-          0
-        ],
-        "uvScale": [
-          1,
-          1
-        ],
-        "visible": true
-      },
-      "name": "Clock Marker 3",
-      "parent": 412,
-      "tag": "street_wave_far",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          0.06,
-          0.06,
-          0.02
-        ],
-        "translation": [
-          0.88,
-          10.8,
-          -2.07
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.78,
-          0.43,
-          0.25
-        ]
-      },
-      "id": 422,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0,
-          0
-        ],
-        "uvScale": [
-          1,
-          1
-        ],
-        "visible": true
-      },
-      "name": "Clock Marker 4",
-      "parent": 412,
-      "tag": "street_wave_far",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          0.06,
-          0.06,
-          0.02
-        ],
-        "translation": [
-          -0.88,
-          10.8,
-          -2.07
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.59,
-          0.57,
-          0.5
-        ]
-      },
-      "id": 423,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0,
-          0
-        ],
-        "uvScale": [
-          1,
-          1
-        ],
-        "visible": true
-      },
-      "name": "Clock Tower Buttress",
-      "parent": 412,
-      "tag": "street_wave_far",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          1.5,
-          3.76,
-          2.0
-        ],
-        "translation": [
-          1.5,
-          0.16,
-          0
+          158.55
         ]
       }
     },
@@ -29526,10 +28946,10 @@
       "tag": "",
       "transform": {
         "rotation": [
-          0.165,
-          0,
-          0,
-          0.98629357
+          0.0089,
+          -0.0981,
+          0.00088,
+          0.99513
         ],
         "scale": [
           1,
@@ -29537,9 +28957,9 @@
           1
         ],
         "translation": [
-          -5.66,
-          14.3,
-          146.3
+          -1.6,
+          21.8,
+          134.2
         ]
       },
       "camera": {
@@ -34167,646 +33587,6 @@
       },
       "colorTint": {
         "color": [
-          0.57,
-          0.39,
-          0.24
-        ]
-      },
-      "id": 626,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Cafe Practice Crate Lower",
-      "parent": 6,
-      "tag": "street_wave_near",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          0.74,
-          0.27,
-          0.73
-        ],
-        "translation": [
-          -10.6,
-          0.27,
-          3.95
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0,
-          0,
-          0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1,
-          1,
-          1
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.57,
-          0.39,
-          0.24
-        ]
-      },
-      "id": 627,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Cafe Practice Crate Upper",
-      "parent": 6,
-      "tag": "street_wave_near",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          0.8,
-          0.39,
-          0.67
-        ],
-        "translation": [
-          -8.35,
-          0.39,
-          5.6
-        ]
-      }
-    },
-    {
-      "active": true,
-      "id": 628,
-      "name": "Cafe Practice Takeoff Arrow",
-      "parent": 6,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0,
-          0.92387953,
-          0,
-          0.38268343
-        ],
-        "scale": [
-          0.75,
-          0.75,
-          0.75
-        ],
-        "translation": [
-          -11.8,
-          0.035,
-          2.68
-        ]
-      },
-      "mesh": {
-        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
-      },
-      "meshRenderer": {
-        "visible": true,
-        "textures": [],
-        "uvScale": [
-          1,
-          1
-        ],
-        "uvOffset": [
-          0,
-          0
-        ]
-      }
-    },
-    {
-      "active": true,
-      "id": 629,
-      "name": "Cafe Practice Crate Arrow",
-      "parent": 6,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0,
-          0.92387953,
-          0,
-          0.38268343
-        ],
-        "scale": [
-          0.68,
-          0.68,
-          0.68
-        ],
-        "translation": [
-          -10.6,
-          0.563,
-          3.95
-        ]
-      },
-      "mesh": {
-        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
-      },
-      "meshRenderer": {
-        "visible": true,
-        "textures": [],
-        "uvScale": [
-          1,
-          1
-        ],
-        "uvOffset": [
-          0,
-          0
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0,
-          0,
-          0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1,
-          1,
-          1
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.57,
-          0.39,
-          0.24
-        ]
-      },
-      "id": 630,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Cafe Roof Step Low",
-      "parent": 6,
-      "tag": "street_wave_near",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          0.64,
-          0.865,
-          0.7
-        ],
-        "translation": [
-          -7.02,
-          0.865,
-          7.2
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0,
-          0,
-          0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1,
-          1,
-          1
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.57,
-          0.39,
-          0.24
-        ]
-      },
-      "id": 631,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Cafe Roof Step Middle",
-      "parent": 6,
-      "tag": "street_wave_near",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          0.66,
-          1.35,
-          0.75
-        ],
-        "translation": [
-          -6.94,
-          1.35,
-          9.28
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0,
-          0,
-          0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1,
-          1,
-          1
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.57,
-          0.39,
-          0.24
-        ]
-      },
-      "id": 632,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Cafe Roof Step High",
-      "parent": 6,
-      "tag": "street_wave_near",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          0.74,
-          1.925,
-          0.8
-        ],
-        "translation": [
-          -6.94,
-          1.925,
-          11.4
-        ]
-      }
-    },
-    {
-      "active": true,
-      "id": 633,
-      "name": "Cafe Roof Route Entry Arrow",
-      "parent": 6,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0,
-          0.92387953,
-          0,
-          0.38268343
-        ],
-        "scale": [
-          0.68,
-          0.68,
-          0.68
-        ],
-        "translation": [
-          -8.24,
-          0.8,
-          5.73
-        ]
-      },
-      "mesh": {
-        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
-      },
-      "meshRenderer": {
-        "visible": true,
-        "textures": [],
-        "uvScale": [
-          1,
-          1
-        ],
-        "uvOffset": [
-          0,
-          0
-        ]
-      }
-    },
-    {
-      "active": true,
-      "id": 634,
-      "name": "Cafe Roof Route Low Arrow",
-      "parent": 6,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0,
-          0.70710678,
-          0,
-          0.70710678
-        ],
-        "scale": [
-          0.68,
-          0.68,
-          0.68
-        ],
-        "translation": [
-          -7.02,
-          1.75,
-          7.2
-        ]
-      },
-      "mesh": {
-        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
-      },
-      "meshRenderer": {
-        "visible": true,
-        "textures": [],
-        "uvScale": [
-          1,
-          1
-        ],
-        "uvOffset": [
-          0,
-          0
-        ]
-      }
-    },
-    {
-      "active": true,
-      "id": 635,
-      "name": "Cafe Roof Route Middle Arrow",
-      "parent": 6,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0,
-          0.70710678,
-          0,
-          0.70710678
-        ],
-        "scale": [
-          0.68,
-          0.68,
-          0.68
-        ],
-        "translation": [
-          -6.94,
-          2.72,
-          9.28
-        ]
-      },
-      "mesh": {
-        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
-      },
-      "meshRenderer": {
-        "visible": true,
-        "textures": [],
-        "uvScale": [
-          1,
-          1
-        ],
-        "uvOffset": [
-          0,
-          0
-        ]
-      }
-    },
-    {
-      "active": true,
-      "id": 636,
-      "name": "Cafe Roof Route Takeoff Arrow",
-      "parent": 6,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          0.68,
-          0.68,
-          0.68
-        ],
-        "translation": [
-          -6.55,
-          3.87,
-          11.4
-        ]
-      },
-      "mesh": {
-        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
-      },
-      "meshRenderer": {
-        "visible": true,
-        "textures": [],
-        "uvScale": [
-          1,
-          1
-        ],
-        "uvOffset": [
-          0,
-          0
-        ]
-      }
-    },
-    {
-      "active": true,
-      "id": 637,
-      "name": "Cafe Roof Route Descent Arrow",
-      "parent": 6,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          0.68,
-          0.68,
-          0.68
-        ],
-        "translation": [
-          -14.1,
-          5.02,
-          11.4
-        ]
-      },
-      "mesh": {
-        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
-      },
-      "meshRenderer": {
-        "visible": true,
-        "textures": [],
-        "uvScale": [
-          1,
-          1
-        ],
-        "uvOffset": [
-          0,
-          0
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0,
-          0,
-          0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1,
-          1,
-          1
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
           0.49,
           0.56,
           0.6
@@ -35264,230 +34044,6 @@
           0.0,
           0.0,
           -1.058621
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0,
-          0,
-          0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1,
-          1,
-          1
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.57,
-          0.39,
-          0.24
-        ]
-      },
-      "id": 645,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Cafe Long Jump Takeoff Deck",
-      "parent": 6,
-      "tag": "street_wave_near",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          0.95,
-          0.14,
-          0.74
-        ],
-        "translation": [
-          -3.35,
-          0.14,
-          11.05
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0,
-          0,
-          0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1,
-          1,
-          1
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.57,
-          0.39,
-          0.24
-        ]
-      },
-      "id": 646,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Cafe Long Jump Landing Deck",
-      "parent": 6,
-      "tag": "street_wave_near",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          0.95,
-          0.14,
-          0.65
-        ],
-        "translation": [
-          -3.35,
-          0.14,
-          16.02
-        ]
-      }
-    },
-    {
-      "active": true,
-      "id": 647,
-      "name": "Cafe Long Jump Arrow",
-      "parent": 6,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0,
-          0.70710678,
-          0,
-          0.70710678
-        ],
-        "scale": [
-          0.87,
-          0.87,
-          0.87
-        ],
-        "translation": [
-          -3.35,
-          0.3,
-          11.2
-        ]
-      },
-      "mesh": {
-        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
-      },
-      "meshRenderer": {
-        "visible": true,
-        "textures": [],
-        "uvScale": [
-          1,
-          1
-        ],
-        "uvOffset": [
-          0,
-          0
-        ]
-      }
-    },
-    {
-      "active": true,
-      "id": 648,
-      "name": "Cafe Long Jump Landing Mark",
-      "parent": 6,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          0.87,
-          0.87,
-          0.87
-        ],
-        "translation": [
-          -3.35,
-          0.3,
-          16.02
-        ]
-      },
-      "mesh": {
-        "model": "@project/assets/street/models/CanalStepMarker.obj"
-      },
-      "meshRenderer": {
-        "visible": true,
-        "textures": [],
-        "uvScale": [
-          1,
-          1
-        ],
-        "uvOffset": [
-          0,
-          0
         ]
       }
     },
@@ -38692,294 +37248,6 @@
     },
     {
       "active": true,
-      "collider": {
-        "center": [
-          0,
-          0,
-          0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1,
-          1,
-          1
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.88,
-          0.68,
-          0.28
-        ]
-      },
-      "id": 684,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/street/textures/RoofTerracotta.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          0.13,
-          0.15
-        ],
-        "visible": true
-      },
-      "name": "Bell arcade brass marker",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          0.13,
-          0.34,
-          0.15
-        ],
-        "translation": [
-          -10.75,
-          4.8100000000000005,
-          91.2
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0,
-          0,
-          0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1,
-          1,
-          1
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.88,
-          0.68,
-          0.28
-        ]
-      },
-      "id": 685,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/street/textures/RoofTerracotta.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          0.13,
-          0.15
-        ],
-        "visible": true
-      },
-      "name": "Bell arcade brass marker",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          0.13,
-          0.34,
-          0.15
-        ],
-        "translation": [
-          8.55,
-          4.8100000000000005,
-          97.1
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0,
-          0,
-          0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1,
-          1,
-          1
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.88,
-          0.68,
-          0.28
-        ]
-      },
-      "id": 686,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/street/textures/RoofTerracotta.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          0.13,
-          0.15
-        ],
-        "visible": true
-      },
-      "name": "Bell arcade brass marker",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          0.13,
-          0.34,
-          0.15
-        ],
-        "translation": [
-          20.05,
-          4.8100000000000005,
-          101.7
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0,
-          0,
-          0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1,
-          1,
-          1
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.88,
-          0.68,
-          0.28
-        ]
-      },
-      "id": 687,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/street/textures/RoofTerracotta.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          0.13,
-          0.15
-        ],
-        "visible": true
-      },
-      "name": "Bell arcade brass marker",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          0.13,
-          0.34,
-          0.15
-        ],
-        "translation": [
-          26.25,
-          6.61,
-          116.5
-        ]
-      }
-    },
-    {
-      "active": true,
       "id": 688,
       "name": "Bell arcade shops and rooftop masonry",
       "parent": 0,
@@ -39136,11 +37404,11 @@
         ],
         "uvScale": [
           1.82,
-          1.2
+          2.36
         ],
         "visible": true
       },
-      "name": "Service roof west turn",
+      "name": "Service roof approach",
       "parent": 0,
       "tag": "",
       "transform": {
@@ -39153,84 +37421,12 @@
         "scale": [
           1.82,
           0.34,
-          1.2
+          2.36
         ],
         "translation": [
           20.4,
           5.66,
-          117
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0,
-          0,
-          0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1,
-          1,
-          1
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.64,
-          0.54,
-          0.4
-        ]
-      },
-      "id": 691,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/street/textures/RoofTerracotta.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.22,
-          1.25
-        ],
-        "visible": true
-      },
-      "name": "Service roof lower walk",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          1.22,
-          0.34,
-          1.25
-        ],
-        "translation": [
-          20.4,
-          5.66,
-          119.25
+          118.14
         ]
       }
     },
@@ -39351,7 +37547,7 @@
           0.0
         ],
         "uvScale": [
-          3.18,
+          4.97,
           1.14
         ],
         "visible": true
@@ -39367,84 +37563,12 @@
           1
         ],
         "scale": [
-          3.18,
+          4.97,
           0.34,
           1.14
         ],
         "translation": [
-          15.95,
-          5.91,
-          124.94
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0,
-          0,
-          0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1,
-          1,
-          1
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.64,
-          0.54,
-          0.4
-        ]
-      },
-      "id": 694,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/street/textures/RoofTerracotta.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.88,
-          1.14
-        ],
-        "visible": true
-      },
-      "name": "Service roof second landing",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          1.88,
-          0.34,
-          1.14
-        ],
-        "translation": [
-          11.07,
+          14.16,
           5.91,
           124.94
         ]
@@ -39568,11 +37692,11 @@
         ],
         "uvScale": [
           1.35,
-          2.1
+          2.635
         ],
         "visible": true
       },
-      "name": "Service roof north walk",
+      "name": "Service roof lift walk",
       "parent": 0,
       "tag": "",
       "transform": {
@@ -39585,84 +37709,12 @@
         "scale": [
           1.35,
           0.34,
-          2.1
+          2.635
         ],
         "translation": [
           6.75,
           5.91,
-          130.1
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0,
-          0,
-          0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1,
-          1,
-          1
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.64,
-          0.54,
-          0.4
-        ]
-      },
-      "id": 697,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/street/textures/RoofTerracotta.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          2.1,
-          0.55
-        ],
-        "visible": true
-      },
-      "name": "Service roof lift boarding",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          2.1,
-          0.34,
-          0.55
-        ],
-        "translation": [
-          6.75,
-          5.91,
-          132.72
+          130.635
         ]
       }
     },
@@ -39858,78 +37910,6 @@
           0.4
         ]
       },
-      "id": 700,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/street/textures/RoofTerracotta.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.62,
-          1.2
-        ],
-        "visible": true
-      },
-      "name": "Clockworks broken west roof",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          1.62,
-          0.34,
-          1.2
-        ],
-        "translation": [
-          1.34,
-          9.06,
-          137.85
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0,
-          0,
-          0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1,
-          1,
-          1
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.64,
-          0.54,
-          0.4
-        ]
-      },
       "id": 701,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -39946,7 +37926,7 @@
           0.0
         ],
         "uvScale": [
-          3.56,
+          5.17,
           1.2
         ],
         "visible": true
@@ -39962,12 +37942,12 @@
           1
         ],
         "scale": [
-          3.56,
+          5.17,
           0.34,
           1.2
         ],
         "translation": [
-          -3.82,
+          -2.21,
           9.06,
           137.85
         ]
@@ -40434,78 +38414,6 @@
           0.4
         ]
       },
-      "id": 708,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/street/textures/RoofTerracotta.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.05,
-          1.3
-        ],
-        "visible": true
-      },
-      "name": "Clockworks bell approach",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          1.05,
-          0.34,
-          1.3
-        ],
-        "translation": [
-          -5.66,
-          10.06,
-          149.63
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0,
-          0,
-          0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1,
-          1,
-          1
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.64,
-          0.54,
-          0.4
-        ]
-      },
       "id": 709,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -40523,11 +38431,11 @@
         ],
         "uvScale": [
           2.8,
-          2.65
+          4.16
         ],
         "visible": true
       },
-      "name": "Clockworks tower court",
+      "name": "Clock tower terrace",
       "parent": 0,
       "tag": "",
       "transform": {
@@ -40540,12 +38448,12 @@
         "scale": [
           2.8,
           0.34,
-          2.65
+          4.16
         ],
         "translation": [
           -5.66,
           10.06,
-          154.0
+          152.49
         ]
       }
     },
@@ -41413,86 +39321,6 @@
     },
     {
       "active": true,
-      "id": 724,
-      "name": "Clockworks takeoff arrow",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0,
-          0.0,
-          0,
-          1.0
-        ],
-        "scale": [
-          0.64,
-          0.64,
-          0.64
-        ],
-        "translation": [
-          -5.66,
-          10.425,
-          146.38
-        ]
-      },
-      "mesh": {
-        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
-      },
-      "meshRenderer": {
-        "visible": true,
-        "textures": [],
-        "uvScale": [
-          1,
-          1
-        ],
-        "uvOffset": [
-          0,
-          0
-        ]
-      }
-    },
-    {
-      "active": true,
-      "id": 725,
-      "name": "Clockworks takeoff arrow",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0,
-          0.0,
-          0,
-          1.0
-        ],
-        "scale": [
-          0.64,
-          0.64,
-          0.64
-        ],
-        "translation": [
-          -5.66,
-          10.425,
-          150.52
-        ]
-      },
-      "mesh": {
-        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
-      },
-      "meshRenderer": {
-        "visible": true,
-        "textures": [],
-        "uvScale": [
-          1,
-          1
-        ],
-        "uvOffset": [
-          0,
-          0
-        ]
-      }
-    },
-    {
-      "active": true,
       "id": 726,
       "name": "ClockworksRoofMasonry",
       "parent": 0,
@@ -41517,6 +39345,46 @@
       },
       "mesh": {
         "model": "@project/assets/street/models/ClockworksRoofMasonry.glb"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 727,
+      "name": "Clock tower stonework and dial",
+      "parent": 412,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/GoalClockTower.glb"
       },
       "meshRenderer": {
         "visible": true,

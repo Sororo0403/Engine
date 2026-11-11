@@ -79,20 +79,6 @@ local function update_hint(self, state, x, z, inRange, seconds)
     end
     if not inRange and not enemyAlert then
         text = canal_bridge_hint(self, x, z) or market_supply_hint(self, x, z) or text
-        local practice = self:reference("jumpPractice")
-        if practice then
-            local px, _, pz = practice:get_position()
-            if (x - px) ^ 2 + (z - pz) ^ 2 < 12 then
-                text = "荷箱を跳んでカフェの右へ ［Space / A］"
-            end
-        end
-        local longJump = self:reference("longJumpPractice")
-        if longJump then
-            local px, _, pz = longJump:get_position()
-            if math.abs(x - px) < 1.15 and math.abs(z - pz) < 1.6 then
-                text = "手前の台に上がり、矢印から長押しで跳ぼう ［Space / A］"
-            end
-        end
     end
     if text ~= state.currentHint then
         self:reference("hint"):set_text(text)
