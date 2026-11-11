@@ -1246,9 +1246,9 @@
       "transform": {
         "rotation": [
           0,
-          0.7071067811865476,
           0,
-          0.7071067811865476
+          0,
+          1
         ],
         "scale": [
           1.0,
@@ -1256,9 +1256,9 @@
           1.0
         ],
         "translation": [
-          71.8,
-          11.42,
-          13.8
+          85.2,
+          15.44,
+          53.4
         ]
       },
       "triggerActions": {
@@ -3300,9 +3300,9 @@
       "transform": {
         "rotation": [
           0,
-          0.7071067811865476,
           0,
-          0.7071067811865476
+          0,
+          1
         ],
         "scale": [
           1.2,
@@ -3310,9 +3310,9 @@
           0.52
         ],
         "translation": [
-          71.8,
-          10.71,
-          13.8
+          85.2,
+          14.73,
+          53.4
         ]
       }
     },
@@ -8333,6 +8333,2748 @@
         ],
         "translation": [
           0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.68,
+          0.63,
+          0.45
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 376,
+      "name": "Panorama turning wind",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          71.0,
+          11.31,
+          15.95
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 15.9,
+            "messageName": "",
+            "once": false,
+            "operation": "launchCharacter",
+            "scene": "",
+            "target": 1
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.38,
+          0.78,
+          0.69
+        ]
+      },
+      "id": 377,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Panorama turning wind inlay",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.115,
+          0.012,
+          0.37
+        ],
+        "translation": [
+          70.51,
+          10.693,
+          15.95
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.38,
+          0.78,
+          0.69
+        ]
+      },
+      "id": 378,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Panorama turning wind inlay",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.115,
+          0.012,
+          0.37
+        ],
+        "translation": [
+          71.0,
+          10.693,
+          15.95
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.38,
+          0.78,
+          0.69
+        ]
+      },
+      "id": 379,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Panorama turning wind inlay",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.115,
+          0.012,
+          0.37
+        ],
+        "translation": [
+          71.49,
+          10.693,
+          15.95
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 380,
+      "name": "Panorama crosswind mill",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.37,
+          0.37,
+          0.37
+        ],
+        "translation": [
+          72.8,
+          12.0,
+          15.7
+        ]
+      },
+      "transformAnimation": {
+        "interpolation": "linear",
+        "keys": [
+          {
+            "rotation": [
+              0,
+              0,
+              0.0,
+              1.0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.7071067811865476,
+              0.7071067811865476
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.75,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              1.0,
+              6.123233995736766e-17
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.5,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.7071067811865476,
+              -0.7071067811865475
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.25,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              1.2246467991473532e-16,
+              -1.0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "mode": "loop",
+        "playOnStart": true,
+        "speed": 1
+      }
+    },
+    {
+      "active": true,
+      "id": 381,
+      "mesh": {
+        "model": "@project/assets/windmill/models/LatticeRotor.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Panorama crosswind mill sails",
+      "parent": 380,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 382,
+      "name": "North wind landing",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.72,
+          0.23,
+          1.45
+        ],
+        "translation": [
+          73.8,
+          13.07,
+          20.72
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 383,
+      "name": "North wind gallery",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          2.6,
+          0.23,
+          1.02
+        ],
+        "translation": [
+          69.7,
+          13.07,
+          20.72
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 384,
+      "name": "North wind turning deck",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.95,
+          0.23,
+          1.55
+        ],
+        "translation": [
+          66.93,
+          13.07,
+          21.4
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 385,
+      "name": "North sheltered stair 1",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.02,
+          0.23,
+          0.66
+        ],
+        "translation": [
+          66.93,
+          12.82,
+          23.57
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 386,
+      "name": "North sheltered stair 2",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.02,
+          0.23,
+          0.66
+        ],
+        "translation": [
+          66.93,
+          12.57,
+          24.87
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 387,
+      "name": "North sheltered stair 3",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.02,
+          0.23,
+          0.66
+        ],
+        "translation": [
+          66.93,
+          12.32,
+          26.17
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 388,
+      "name": "North sheltered stair 4",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.02,
+          0.23,
+          0.66
+        ],
+        "translation": [
+          66.93,
+          12.07,
+          27.47
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 389,
+      "name": "North sheltered stair 5",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.02,
+          0.23,
+          0.66
+        ],
+        "translation": [
+          66.93,
+          11.82,
+          28.77
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 390,
+      "name": "Wind brake court",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          2.4,
+          0.23,
+          1.7
+        ],
+        "translation": [
+          66.93,
+          11.82,
+          31.1
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 391,
+      "name": "Wind brake ferry dock",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.31,
+          0.23,
+          0.58
+        ],
+        "translation": [
+          66.93,
+          11.82,
+          33.3
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.68,
+          0.63,
+          0.45
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 392,
+      "name": "Brakeable headwind",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          66.93,
+          12.680000000000001,
+          32.87
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 8.0,
+            "messageName": "",
+            "once": false,
+            "operation": "launchCharacter",
+            "scene": "",
+            "target": 1
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.38,
+          0.78,
+          0.69
+        ]
+      },
+      "id": 393,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Brakeable headwind inlay",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.115,
+          0.012,
+          0.37
+        ],
+        "translation": [
+          66.44000000000001,
+          12.063,
+          32.87
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.38,
+          0.78,
+          0.69
+        ]
+      },
+      "id": 394,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Brakeable headwind inlay",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.115,
+          0.012,
+          0.37
+        ],
+        "translation": [
+          66.93,
+          12.063,
+          32.87
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.38,
+          0.78,
+          0.69
+        ]
+      },
+      "id": 395,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Brakeable headwind inlay",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.115,
+          0.012,
+          0.37
+        ],
+        "translation": [
+          67.42,
+          12.063,
+          32.87
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 396,
+      "name": "Brakeable windmill",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.37,
+          0.37,
+          0.37
+        ],
+        "translation": [
+          68.84,
+          13.33,
+          32.25
+        ]
+      },
+      "transformAnimation": {
+        "interpolation": "linear",
+        "keys": [
+          {
+            "rotation": [
+              0,
+              0,
+              0.0,
+              1.0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.7071067811865476,
+              0.7071067811865476
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.75,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              1.0,
+              6.123233995736766e-17
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.5,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.7071067811865476,
+              -0.7071067811865475
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.25,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              1.2246467991473532e-16,
+              -1.0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "mode": "loop",
+        "playOnStart": true,
+        "speed": 1
+      }
+    },
+    {
+      "active": true,
+      "id": 397,
+      "mesh": {
+        "model": "@project/assets/windmill/models/LatticeRotor.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Brakeable windmill sails",
+      "parent": 396,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.31,
+          0.36,
+          0.31
+        ]
+      },
+      "id": 398,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Wind brake timber shutter",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.4,
+          1.6,
+          0.15
+        ],
+        "translation": [
+          66.93,
+          13.6,
+          33.23
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.66,
+          0.59,
+          0.44
+        ]
+      },
+      "id": 399,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/ArcadeTimber.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Gorge cable platform",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.01,
+          0.23,
+          1.0
+        ],
+        "translation": [
+          66.93,
+          11.82,
+          34.99
+        ]
+      },
+      "motionPath": {
+        "points": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            6.35
+          ]
+        ],
+        "segmentSeconds": 2.65,
+        "smooth": true,
+        "waypointWaitSeconds": 1.7,
+        "playOnStart": false,
+        "mode": "pingPong"
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.68,
+          1.02,
+          0.84
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 400,
+      "name": "Wind brake control",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          65.4,
+          12.78,
+          31.4
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "interact",
+            "inputAction": "Attack",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "disable",
+            "scene": "",
+            "target": 398
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "interact",
+            "inputAction": "Attack",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "disable",
+            "scene": "",
+            "target": 392
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "interact",
+            "inputAction": "Attack",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "pauseTransformAnimation",
+            "scene": "",
+            "target": 396
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "interact",
+            "inputAction": "Attack",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "playMotionPath",
+            "scene": "",
+            "target": 399
+          }
+        ]
+      },
+      "script": {
+        "asset": "@project/assets/common/scripts/MechanismHint.lua",
+        "enabled": true,
+        "prefabs": [],
+        "references": [
+          {
+            "name": "player",
+            "target": 1
+          },
+          {
+            "name": "mechanism",
+            "target": 398
+          },
+          {
+            "name": "hint",
+            "target": 26
+          }
+        ],
+        "scenes": [],
+        "state": {
+          "radius": 4.5,
+          "openWhenActive": false,
+          "closedText": "歯車をたたいて風を止めよう ［J / X］",
+          "openText": "風が止んだ。桟橋から渡り台に乗ろう"
+        }
+      }
+    },
+    {
+      "active": true,
+      "id": 401,
+      "name": "Wind brake drive shaft",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.22,
+          0.22,
+          0.22
+        ],
+        "translation": [
+          65.25,
+          12.94,
+          31.4
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 402,
+      "mesh": {
+        "model": "@project/assets/windmill/models/LatticeRotor.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Wind brake drive spokes",
+      "parent": 401,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 403,
+      "name": "Gorge far dock",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.55,
+          0.23,
+          1.05
+        ],
+        "translation": [
+          66.93,
+          11.82,
+          43.48
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 404,
+      "name": "Final wind terrace",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.7,
+          0.23,
+          0.66
+        ],
+        "translation": [
+          66.93,
+          11.82,
+          45.15
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.68,
+          0.63,
+          0.45
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 405,
+      "name": "Final ridge wind",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          67.12,
+          12.680000000000001,
+          45.2
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 15.9,
+            "messageName": "",
+            "once": false,
+            "operation": "launchCharacter",
+            "scene": "",
+            "target": 1
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.38,
+          0.78,
+          0.69
+        ]
+      },
+      "id": 406,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Final ridge wind inlay",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.115,
+          0.012,
+          0.37
+        ],
+        "translation": [
+          66.63000000000001,
+          12.063,
+          45.2
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.38,
+          0.78,
+          0.69
+        ]
+      },
+      "id": 407,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Final ridge wind inlay",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.115,
+          0.012,
+          0.37
+        ],
+        "translation": [
+          67.12,
+          12.063,
+          45.2
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.38,
+          0.78,
+          0.69
+        ]
+      },
+      "id": 408,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Final ridge wind inlay",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.115,
+          0.012,
+          0.37
+        ],
+        "translation": [
+          67.61,
+          12.063,
+          45.2
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 409,
+      "name": "Final ridge windmill",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.37,
+          0.37,
+          0.37
+        ],
+        "translation": [
+          65.65,
+          13.4,
+          45.23
+        ]
+      },
+      "transformAnimation": {
+        "interpolation": "linear",
+        "keys": [
+          {
+            "rotation": [
+              0,
+              0,
+              0.0,
+              1.0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.7071067811865476,
+              0.7071067811865476
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.75,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              1.0,
+              6.123233995736766e-17
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.5,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.7071067811865476,
+              -0.7071067811865475
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.25,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              1.2246467991473532e-16,
+              -1.0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "mode": "loop",
+        "playOnStart": true,
+        "speed": 1
+      }
+    },
+    {
+      "active": true,
+      "id": 410,
+      "mesh": {
+        "model": "@project/assets/windmill/models/LatticeRotor.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Final ridge windmill sails",
+      "parent": 409,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 411,
+      "name": "Final ridge landing",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.52,
+          0.23,
+          1.4
+        ],
+        "translation": [
+          70.4,
+          14.47,
+          50.1
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 412,
+      "name": "Final ridge turn",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.28,
+          0.23,
+          1.4
+        ],
+        "translation": [
+          73.12,
+          14.47,
+          50.1
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 413,
+      "name": "Final ridge narrow roof",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.5,
+          0.23,
+          1.21
+        ],
+        "translation": [
+          77.06,
+          14.47,
+          50.1
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 414,
+      "name": "Final ridge final island",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.66,
+          0.23,
+          1.52
+        ],
+        "translation": [
+          82.02,
+          14.47,
+          51.1
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 415,
+      "name": "Gorge observatory finish terrace",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.9,
+          0.23,
+          2.2
+        ],
+        "translation": [
+          85.2,
+          14.47,
+          52.4
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 416,
+      "name": "North gallery spawn",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          73.8,
+          14.04,
+          20.72
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.2,
+          1.1,
+          0.65
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 417,
+      "name": "North gallery checkpoint",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          73.8,
+          14.04,
+          20.72
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 416,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "setCheckpoint",
+            "scene": "",
+            "target": 1
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 418,
+      "name": "Wind brake spawn",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          66.93,
+          12.79,
+          30.72
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.2,
+          1.1,
+          0.65
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 419,
+      "name": "Wind brake checkpoint",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          66.93,
+          12.79,
+          30.72
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 418,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "setCheckpoint",
+            "scene": "",
+            "target": 1
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 420,
+      "name": "Final wind spawn",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          66.93,
+          12.79,
+          44.0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.2,
+          1.1,
+          0.65
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 421,
+      "name": "Final wind checkpoint",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          66.93,
+          12.79,
+          44.0
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 420,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "setCheckpoint",
+            "scene": "",
+            "target": 1
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "camera": {
+        "farClip": 120.0,
+        "nearClip": 0.10000000149011612,
+        "primary": false,
+        "verticalFovDegrees": 52.0
+      },
+      "followCamera": {
+        "avoidObstacles": true,
+        "clearance": 0.30000001192092896,
+        "lookOffset": [
+          1.65,
+          1.35,
+          3.8
+        ],
+        "offset": [
+          -4.1,
+          6.3,
+          -8.1
+        ],
+        "orbit": {
+          "enabled": false,
+          "maximumDistance": 20.0,
+          "maximumPitch": 75.0,
+          "minimumDistance": 2.0,
+          "minimumPitch": -75.0,
+          "mouseSensitivity": 0.18000000715255737,
+          "stickSpeed": 120.0,
+          "zoomSensitivity": 1.0
+        },
+        "smoothing": 8.0,
+        "target": 1
+      },
+      "id": 422,
+      "name": "North ravine camera",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          0,
+          6,
+          -9
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          2.05,
+          1.75,
+          0.47
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 423,
+      "name": "North ravine view",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          71.3,
+          11.37,
+          14.9
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0.72,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "setCamera",
+            "scene": "",
+            "target": 422
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 424,
+      "name": "NorthRavineWorks",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/windmill/models/NorthRavineWorks.glb"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
           0,
           0
         ]
