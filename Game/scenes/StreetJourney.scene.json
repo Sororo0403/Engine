@@ -179,6 +179,18 @@
           {
             "name": "bell_court",
             "target": 676
+          },
+          {
+            "name": "service_roof",
+            "target": 710
+          },
+          {
+            "name": "lift_base",
+            "target": 712
+          },
+          {
+            "name": "lift_upper",
+            "target": 714
           }
         ],
         "scenes": [
@@ -11304,9 +11316,9 @@
           1
         ],
         "translation": [
-          25,
-          6.7,
-          119.2
+          -5.66,
+          11.1,
+          154.55
         ]
       },
       "script": {
@@ -29514,10 +29526,10 @@
       "tag": "",
       "transform": {
         "rotation": [
-          -0.12,
-          0.36,
-          0.048,
-          0.924
+          0.165,
+          0,
+          0,
+          0.98629357
         ],
         "scale": [
           1,
@@ -29525,9 +29537,9 @@
           1
         ],
         "translation": [
-          30.7,
-          10.7,
-          112.8
+          -5.66,
+          14.3,
+          146.3
         ]
       },
       "camera": {
@@ -39075,6 +39087,2447 @@
           18.8,
           5.23,
           108.25
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 690,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.82,
+          1.2
+        ],
+        "visible": true
+      },
+      "name": "Service roof west turn",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.82,
+          0.34,
+          1.2
+        ],
+        "translation": [
+          20.4,
+          5.66,
+          117
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 691,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.22,
+          1.25
+        ],
+        "visible": true
+      },
+      "name": "Service roof lower walk",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.22,
+          0.34,
+          1.25
+        ],
+        "translation": [
+          20.4,
+          5.66,
+          119.25
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 692,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.4,
+          1.67
+        ],
+        "visible": true
+      },
+      "name": "Service roof first landing",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.4,
+          0.34,
+          1.67
+        ],
+        "translation": [
+          20.4,
+          5.91,
+          124.04
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 693,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          3.18,
+          1.14
+        ],
+        "visible": true
+      },
+      "name": "Service roof west arcade",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          3.18,
+          0.34,
+          1.14
+        ],
+        "translation": [
+          15.95,
+          5.91,
+          124.94
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 694,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.88,
+          1.14
+        ],
+        "visible": true
+      },
+      "name": "Service roof second landing",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.88,
+          0.34,
+          1.14
+        ],
+        "translation": [
+          11.07,
+          5.91,
+          124.94
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 695,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          2.49,
+          2.3
+        ],
+        "visible": true
+      },
+      "name": "Service roof guard court",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          2.49,
+          0.34,
+          2.3
+        ],
+        "translation": [
+          6.75,
+          5.91,
+          125.72
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 696,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.35,
+          2.1
+        ],
+        "visible": true
+      },
+      "name": "Service roof north walk",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.35,
+          0.34,
+          2.1
+        ],
+        "translation": [
+          6.75,
+          5.91,
+          130.1
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 697,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          2.1,
+          0.55
+        ],
+        "visible": true
+      },
+      "name": "Service roof lift boarding",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          2.1,
+          0.34,
+          0.55
+        ],
+        "translation": [
+          6.75,
+          5.91,
+          132.72
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.4,
+          0.47,
+          0.42
+        ]
+      },
+      "id": 698,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/ArcadeTimber.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.16,
+          1.02
+        ],
+        "visible": true
+      },
+      "name": "Clockworks moving lift",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.16,
+          0.21,
+          0.91
+        ],
+        "translation": [
+          6.75,
+          6.04,
+          134.25
+        ]
+      },
+      "motionPath": {
+        "points": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            3.15,
+            0
+          ]
+        ],
+        "segmentSeconds": 2.1,
+        "smooth": true,
+        "waypointWaitSeconds": 1.85,
+        "playOnStart": false,
+        "mode": "pingPong"
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 699,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          2.15,
+          1.67
+        ],
+        "visible": true
+      },
+      "name": "Clockworks upper lift landing",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          2.15,
+          0.34,
+          1.67
+        ],
+        "translation": [
+          6.75,
+          9.06,
+          136.99
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 700,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.62,
+          1.2
+        ],
+        "visible": true
+      },
+      "name": "Clockworks broken west roof",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.62,
+          0.34,
+          1.2
+        ],
+        "translation": [
+          1.34,
+          9.06,
+          137.85
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 701,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          3.56,
+          1.2
+        ],
+        "visible": true
+      },
+      "name": "Clockworks west gallery",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          3.56,
+          0.34,
+          1.2
+        ],
+        "translation": [
+          -3.82,
+          9.06,
+          137.85
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 702,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.13,
+          1.82
+        ],
+        "visible": true
+      },
+      "name": "Clockworks corner landing",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.13,
+          0.34,
+          1.82
+        ],
+        "translation": [
+          -8.46,
+          9.06,
+          138.47
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 703,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.22,
+          0.66
+        ],
+        "visible": true
+      },
+      "name": "Clockworks roof stair 1",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.22,
+          0.34,
+          0.66
+        ],
+        "translation": [
+          -8.46,
+          9.31,
+          140.9
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 704,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.22,
+          0.66
+        ],
+        "visible": true
+      },
+      "name": "Clockworks roof stair 2",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.22,
+          0.34,
+          0.66
+        ],
+        "translation": [
+          -8.46,
+          9.56,
+          142.20000000000002
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 705,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.22,
+          0.66
+        ],
+        "visible": true
+      },
+      "name": "Clockworks roof stair 3",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.22,
+          0.34,
+          0.66
+        ],
+        "translation": [
+          -8.46,
+          9.81,
+          143.5
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 706,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.22,
+          0.66
+        ],
+        "visible": true
+      },
+      "name": "Clockworks roof stair 4",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.22,
+          0.34,
+          0.66
+        ],
+        "translation": [
+          -8.46,
+          10.06,
+          144.8
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 707,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          2.48,
+          1.17
+        ],
+        "visible": true
+      },
+      "name": "Clockworks top bend",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          2.48,
+          0.34,
+          1.17
+        ],
+        "translation": [
+          -7.2,
+          10.06,
+          145.62
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 708,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.05,
+          1.3
+        ],
+        "visible": true
+      },
+      "name": "Clockworks bell approach",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.05,
+          0.34,
+          1.3
+        ],
+        "translation": [
+          -5.66,
+          10.06,
+          149.63
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 709,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          2.8,
+          2.65
+        ],
+        "visible": true
+      },
+      "name": "Clockworks tower court",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          2.8,
+          0.34,
+          2.65
+        ],
+        "translation": [
+          -5.66,
+          10.06,
+          154.0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 710,
+      "name": "Clockworks service_roof spawn",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          20.4,
+          6.95,
+          124.05
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.1,
+          1.0,
+          0.55
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 711,
+      "name": "Clockworks service_roof checkpoint",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          20.4,
+          6.95,
+          124.05
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 710,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "setCheckpoint",
+            "scene": "",
+            "target": 1
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "service_roof",
+            "once": false,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 1
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 529
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 712,
+      "name": "Clockworks lift_base spawn",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          6.75,
+          6.95,
+          132.65
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.1,
+          1.0,
+          0.55
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 713,
+      "name": "Clockworks lift_base checkpoint",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          6.75,
+          6.95,
+          132.65
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 712,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "setCheckpoint",
+            "scene": "",
+            "target": 1
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "lift_base",
+            "once": false,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 1
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 529
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 714,
+      "name": "Clockworks lift_upper spawn",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          6.75,
+          10.1,
+          137.15
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.1,
+          1.0,
+          0.55
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 715,
+      "name": "Clockworks lift_upper checkpoint",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          6.75,
+          10.1,
+          137.15
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 714,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "setCheckpoint",
+            "scene": "",
+            "target": 1
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "lift_upper",
+            "once": false,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 1
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 529
+          }
+        ]
+      }
+    },
+    {
+      "active": false,
+      "id": 716,
+      "name": "Clockworks lift signal",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          6.75,
+          6.95,
+          132.9
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.22,
+          0.92,
+          0.92
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 717,
+      "name": "Clockworks lift drive",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          7.6,
+          6.95,
+          132.65
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "interact",
+            "inputAction": "Attack",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "playMotionPath",
+            "scene": "",
+            "target": 698
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "interact",
+            "inputAction": "Attack",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "enable",
+            "scene": "",
+            "target": 716
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "interact",
+            "inputAction": "Attack",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 529
+          }
+        ]
+      },
+      "script": {
+        "asset": "@project/assets/common/scripts/MechanismHint.lua",
+        "enabled": true,
+        "prefabs": [],
+        "references": [
+          {
+            "name": "player",
+            "target": 1
+          },
+          {
+            "name": "mechanism",
+            "target": 716
+          },
+          {
+            "name": "hint",
+            "target": 158
+          }
+        ],
+        "scenes": [],
+        "state": {
+          "radius": 4,
+          "openWhenActive": true,
+          "closedText": "歯車をたたいて昇降台を動かそう ［J / X］",
+          "openText": "下りてきた昇降台に乗り、上の屋根へ"
+        }
+      }
+    },
+    {
+      "active": true,
+      "id": 718,
+      "mesh": {
+        "model": "@project/assets/title/models/WorkshopGear.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Clockworks lift gear wheel",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          -0.70710678,
+          0,
+          0,
+          0.70710678
+        ],
+        "scale": [
+          0.64,
+          0.64,
+          0.64
+        ],
+        "translation": [
+          7.67,
+          7.04,
+          133.01
+        ]
+      },
+      "colorTint": {
+        "color": [
+          0.652174,
+          0.6,
+          0.553846
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.43,
+          0.48,
+          0.43
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "audioSource": {
+        "clip": "@project/assets/street/audio/EnemyWindup.wav",
+        "loop": false,
+        "maxDistance": 15,
+        "minDistance": 3,
+        "playOnStart": false,
+        "spatial": true,
+        "volume": 0.55
+      },
+      "id": 719,
+      "name": "Service roof sentry",
+      "parent": 0,
+      "rigidBody": {
+        "angularDamping": 0,
+        "angularVelocity": [
+          0,
+          0,
+          0
+        ],
+        "enabled": true,
+        "freezeRotation": [
+          false,
+          false,
+          false
+        ],
+        "friction": 0.5,
+        "gravityFactor": 0,
+        "isKinematic": true,
+        "linearDamping": 0,
+        "linearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "mass": 1,
+        "restitution": 0
+      },
+      "script": {
+        "asset": "@project/assets/street/scripts/StreetEnemy.lua",
+        "enabled": true,
+        "prefabs": [],
+        "references": [
+          {
+            "name": "player",
+            "target": 1
+          },
+          {
+            "name": "visual",
+            "target": 720
+          },
+          {
+            "name": "objective",
+            "target": 160
+          }
+        ],
+        "scenes": [],
+        "state": {
+          "detectionRadius": 5.4,
+          "dx": 0,
+          "dz": 1,
+          "range": 2.3,
+          "speed": 3.5,
+          "time": 0,
+          "warningEnabled": true,
+          "aimLockTime": 1.45
+        }
+      },
+      "tag": "street_enemy",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.3,
+          1.2,
+          1.3
+        ],
+        "translation": [
+          7.03,
+          6.95,
+          126.45
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 720,
+      "mesh": {
+        "model": "@project/assets/street/models/StreetEnemy.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Service roof sentry body",
+      "parent": 719,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.34,
+          0.28,
+          0.19
+        ]
+      },
+      "id": 721,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 0,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          0.35,
+          0.48
+        ],
+        "visible": true
+      },
+      "name": "Service roof cover",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.36,
+          0.45,
+          0.46
+        ],
+        "translation": [
+          8.03,
+          6.7,
+          125.56
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 722,
+      "name": "Clockworks takeoff arrow",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.64,
+          0.64,
+          0.64
+        ],
+        "translation": [
+          20.4,
+          6.025,
+          120.02
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 723,
+      "name": "Clockworks takeoff arrow",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          -0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          0.64,
+          0.64,
+          0.64
+        ],
+        "translation": [
+          4.96,
+          9.425,
+          137.82
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 724,
+      "name": "Clockworks takeoff arrow",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.64,
+          0.64,
+          0.64
+        ],
+        "translation": [
+          -5.66,
+          10.425,
+          146.38
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 725,
+      "name": "Clockworks takeoff arrow",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.0,
+          0,
+          1.0
+        ],
+        "scale": [
+          0.64,
+          0.64,
+          0.64
+        ],
+        "translation": [
+          -5.66,
+          10.425,
+          150.52
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 726,
+      "name": "ClockworksRoofMasonry",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/ClockworksRoofMasonry.glb"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
         ]
       }
     }
