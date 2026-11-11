@@ -23,13 +23,11 @@ class ShadowMap {
 	/// <summary>
 	/// GPUの利用完了後、描画命令の記録前に設定・深度・材質の参照を更新する
 	/// </summary>
-	/// <param name="view">描画カメラのビュー行列</param>
-	/// <param name="direction">光が進むワールド方向</param>
+	/// <param name="lightViewProjection">光源からのビュー投影行列</param>
 	/// <param name="settings">影の設定。無効時は1画素の深度リソースを用意する</param>
 	/// <param name="materials">このワールドで使う材質。重複可、null不可</param>
 	/// <returns>true:成功 false:未初期化・設定・リソース作成が無効</returns>
-	bool Update(const DirectX::XMFLOAT4X4 &view,
-	            const DirectX::XMFLOAT3 &direction,
+	bool Update(const DirectX::XMFLOAT4X4 &lightViewProjection,
 	            const ShadowSettings &settings,
 	            std::span<const MaterialResource *const> materials);
 

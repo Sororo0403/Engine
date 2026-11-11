@@ -1,6 +1,6 @@
 #include "graphics/render/ShadowMap.h"
-#include "graphics/camera/ShadowCamera.h"
 #include "graphics/material/MaterialResource.h"
+#include "math/MathUtils.h"
 #include <limits>
 
 bool ShadowMap::Initialize(ID3D12Device *device) {
@@ -19,15 +19,15 @@ bool ShadowMap::Initialize(ID3D12Device *device) {
 	return true;
 }
 
-bool ShadowMap::Update(const DirectX::XMFLOAT4X4 &view,
-                       const DirectX::XMFLOAT3 &direction,
+bool ShadowMap::Update(const DirectX::XMFLOAT4X4 &lightViewProjection,
                        const ShadowSettings &settings,
                        std::span<const MaterialResource *const> materials) {
 	enabled_ = false;
-	Data data;
-	if (!device_ ||
-	    !ShadowCamera::Build(view, direction, settings, data.matrix))
+	if (!device_ || !settings.IsValid() ||
+	    !MathUtils::IsFinite(lightViewProjection))
 		return false;
+	Data data;
+	data.matrix = lightViewProjection;
 	const UINT size =
 	    settings.enabled ? static_cast<UINT>(settings.resolution) : 1;
 	if (size != resolution_) {

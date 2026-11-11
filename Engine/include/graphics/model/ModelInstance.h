@@ -138,5 +138,6 @@ class ModelInstance {
 	std::vector<MeshInstance> meshInstances_;
 	std::vector<MeshInstance> animatedInstances_;
 	std::optional<ModelAnimationPose> animationPose_;
+	std::array<DirectX::XMFLOAT3, 8> animationBounds_{};
 	ID3D12Device *device_ = nullptr;
 };

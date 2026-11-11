@@ -256,6 +256,7 @@ bool ModelInstance::SetAnimationPose(const ModelAnimationPose *pose) {
 		}
 
 		animationPose_ = std::move(next);
+		animationBounds_ = bounds;
 		return true;
 	} catch (const std::exception &e) {
 		Logger::Error(e.what());
@@ -265,9 +266,13 @@ bool ModelInstance::SetAnimationPose(const ModelAnimationPose *pose) {
 
 bool ModelInstance::GetBoundsCorners(
     std::array<DirectX::XMFLOAT3, 8> &corners) const {
-	return model_ && (animationPose_
-	                      ? model_->GetAnimationBounds(*animationPose_, corners)
-	                      : model_->GetBoundsCorners(corners));
+	if (!model_)
+		return false;
+	if (animationPose_) {
+		corners = animationBounds_;
+		return true;
+	}
+	return model_->GetBoundsCorners(corners);
 }
 
 bool ModelInstance::Raycast(const Ray &ray, float &distance) const {

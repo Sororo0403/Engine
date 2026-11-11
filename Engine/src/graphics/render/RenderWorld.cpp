@@ -5,6 +5,7 @@
 #include "graphics/lighting/PointLights.h"
 #include "graphics/lighting/SpotLights.h"
 #include "graphics/camera/Camera.h"
+#include "graphics/camera/ShadowCamera.h"
 #include "graphics/material/Material.h"
 #include "graphics/mesh/MeshInstance.h"
 #include "graphics/model/Model.h"
@@ -19,6 +20,7 @@
 #include "math/TransformUtils.h"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstdint>
 #include <exception>
@@ -46,6 +48,41 @@ std::uint64_t AllocateWorldId() {
 	return nextWorldId++;
 }
 
+/// <summary>
+/// 外接箱の全頂点が同じクリップ面の外側にあるか確認する
+/// </summary>
+/// <param name="corners">モデル座標での外接箱の頂点</param>
+/// <param name="localToClip">モデル座標からクリップ座標への行列</param>
+/// <returns>true:完全に範囲外 false:描画に残す</returns>
+bool IsOutsideClipVolume(const std::array<DirectX::XMFLOAT3, 8> &corners,
+                         const DirectX::XMMATRIX &localToClip) {
+	using namespace DirectX;
+	unsigned outside = 0x3f;
+	for (const auto &corner : corners) {
+		XMFLOAT4 clip;
+		XMStoreFloat4(&clip, XMVector3Transform(XMLoadFloat3(&corner),
+		                                        localToClip));
+		if (!MathUtils::IsFinite(clip))
+			return false;
+
+		// 透視除算前のDirect3Dの範囲。境界の丸め誤差は描画側へ含める。
+		const float margin = 1.0e-5f * (std::max)(
+		    {1.0f, std::abs(clip.x), std::abs(clip.y), std::abs(clip.z),
+		     std::abs(clip.w)});
+		const float limit = clip.w + margin;
+		const unsigned planes = (clip.x < -limit ? 1u : 0u) |
+		                        (clip.x > limit ? 2u : 0u) |
+		                        (clip.y < -limit ? 4u : 0u) |
+		                        (clip.y > limit ? 8u : 0u) |
+		                        (clip.z < -margin ? 16u : 0u) |
+		                        (clip.z > limit ? 32u : 0u);
+		outside &= planes;
+		if (!outside)
+			return false;
+	}
+	return true;
+}
+
 } // namespace
 
 /// <summary>
@@ -66,6 +103,8 @@ struct RenderWorld::Impl {
 		std::optional<DirectX::XMFLOAT4X4> worldMatrix_;
 		bool matrixHasSrt_ = true;
 		bool castsShadow_ = true;
+		bool visibleInCamera_ = false;
+		bool visibleInShadow_ = false;
 		ColorTint tint_{};
 		ModelInstance instance_;
 	};
@@ -547,32 +586,50 @@ bool RenderWorld::Update(int width, int height) {
 		return false;
 	}
 
+	using namespace DirectX;
+	const auto view = XMLoadFloat4x4(&impl_->camera_.GetViewMatrix());
+	const auto projection =
+	    XMLoadFloat4x4(&impl_->camera_.GetProjectionMatrix());
+	const auto shadowIndex = impl_->lightData_.shadowIndex;
+	const auto &shadowLight =
+	    impl_->lightData_.lights[shadowIndex < 0 ? 0 : shadowIndex];
+	XMFLOAT4X4 lightViewProjection;
+	if (!ShadowCamera::Build(impl_->camera_.GetViewMatrix(),
+	                         shadowLight.direction, impl_->shadowSettings_,
+	                         lightViewProjection))
+		return false;
+	const auto lightClip = XMLoadFloat4x4(&lightViewProjection);
+	std::vector<const MaterialResource *> materials;
+
 	for (const auto &slot : impl_->slots_) {
-		if (!slot.object_) {
+		if (!slot.object_)
 			continue;
-		}
 
 		auto &object = *slot.object_;
-
-		DirectX::XMFLOAT4X4 worldMatrix;
-
-		if (!impl_->GetWorldMatrix(object, worldMatrix) ||
-		    !object.instance_.Update(impl_->camera_, worldMatrix,
-		                             object.tint_)) {
+		XMFLOAT4X4 worldMatrix;
+		if (!impl_->GetWorldMatrix(object, worldMatrix))
 			return false;
-		}
+		const auto world = XMLoadFloat4x4(&worldMatrix);
+		std::array<XMFLOAT3, 8> corners;
+		const bool hasBounds = object.instance_.GetBoundsCorners(corners);
+		object.visibleInCamera_ =
+		    !hasBounds || !IsOutsideClipVolume(corners, world * view * projection);
+		// 画面外の物体も、光源の範囲に入っていれば影を描く。
+		object.visibleInShadow_ =
+		    impl_->shadowSettings_.enabled && object.castsShadow_ &&
+		    (!hasBounds || !IsOutsideClipVolume(corners, world * lightClip));
+		if (!object.visibleInCamera_ && !object.visibleInShadow_)
+			continue;
+
+		if (!object.instance_.Update(impl_->camera_, worldMatrix, object.tint_))
+			return false;
+		if (object.visibleInCamera_)
+			for (const auto &mesh : object.instance_.GetMeshes())
+				materials.push_back(mesh.GetMaterial()->GetResource().get());
 	}
 
-	std::vector<const MaterialResource *> materials;
-	for (const auto &slot : impl_->slots_)
-		if (slot.object_)
-			for (const auto &mesh : slot.object_->instance_.GetMeshes())
-				materials.push_back(mesh.GetMaterial()->GetResource().get());
-	const auto shadowIndex = impl_->lightData_.shadowIndex;
-	const auto &shadowLight = impl_->lightData_.lights[shadowIndex < 0 ? 0 : shadowIndex];
-	if (!impl_->shadows_.Update(impl_->camera_.GetViewMatrix(),
-	                            shadowLight.direction,
-	                            impl_->shadowSettings_, materials))
+	if (!impl_->shadows_.Update(lightViewProjection, impl_->shadowSettings_,
+	                            materials))
 		return false;
 	impl_->prepared_ = true;
 	return true;
@@ -601,7 +658,7 @@ void RenderWorld::Draw(MeshRenderer &renderer,
 	                      settings.color, settings.end,
 	                      settings.enabled ? settings.strength : 0.0f};
 	for (const auto &slot : impl_->slots_) {
-		if (!slot.object_) {
+		if (!slot.object_ || !slot.object_->visibleInCamera_) {
 			continue;
 		}
 
@@ -801,7 +858,7 @@ void RenderWorld::DrawShadows(MeshRenderer &renderer) const {
 	if (!impl_->shadows_.Begin(commands))
 		return;
 	for (const auto &slot : impl_->slots_) {
-		if (slot.object_ && slot.object_->castsShadow_)
+		if (slot.object_ && slot.object_->visibleInShadow_)
 			for (const auto &mesh : slot.object_->instance_.GetMeshes())
 				renderer.DrawShadow(commands, mesh, impl_->shadows_);
 	}
