@@ -1,0 +1,8064 @@
+{
+  "format": "EngineScene",
+  "version": 74,
+  "projectRoot": "..",
+  "lighting": {
+    "ambient": 0.55,
+    "color": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "direction": [
+      1.0,
+      -2.0,
+      1.0
+    ],
+    "intensity": 0.800000011920929,
+    "shadows": {
+      "bias": 0.0005000000237487257,
+      "enabled": false,
+      "extent": 30.0,
+      "normalBias": 0.019999999552965164,
+      "resolution": 1024,
+      "strength": 0.800000011920929
+    }
+  },
+  "fog": {
+    "color": [
+      0.74,
+      0.88,
+      0.95
+    ],
+    "enabled": true,
+    "start": 28,
+    "end": 119,
+    "strength": 0.73
+  },
+  "objects": [
+    {
+      "active": true,
+      "audioListener": {},
+      "character": {
+        "airFloatDelay": 0.25,
+        "airFloatDuration": 0.85,
+        "coyoteTime": 0.07999999821186066,
+        "gravity": 20.0,
+        "groundSnapDistance": 0.11999999731779099,
+        "jumpBufferTime": 0.11999999731779099,
+        "jumpSpeed": 7.5,
+        "moveSpeed": 4.6,
+        "stepHeight": 0.36,
+        "terminalSpeed": 30.0
+      },
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.3199999928474426,
+          0.6499999761581421,
+          0.3199999928474426
+        ],
+        "halfHeight": 0.35,
+        "isTrigger": false,
+        "radius": 0.35,
+        "shape": "Capsule"
+      },
+      "id": 1,
+      "name": "Player",
+      "parent": 0,
+      "respawn": {
+        "minimumY": -7,
+        "position": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "useStartPosition": true
+      },
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          0,
+          0.72,
+          -2
+        ]
+      },
+      "script": {
+        "asset": "@project/assets/park/scripts/ParkHeroFacing.lua",
+        "enabled": true,
+        "prefabs": [],
+        "references": [
+          {
+            "name": "visual",
+            "target": 2
+          }
+        ],
+        "scenes": [],
+        "state": {}
+      }
+    },
+    {
+      "active": true,
+      "id": 2,
+      "mesh": {
+        "model": "@project/assets/models/hero/StreetHeroBody.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Hero Body",
+      "parent": 1,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 3,
+      "name": "Hero Eyes",
+      "parent": 2,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          -0.07,
+          0
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/models/hero/StreetHeroEyes.glb"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "camera": {
+        "farClip": 150,
+        "nearClip": 0.10000000149011612,
+        "primary": true,
+        "verticalFovDegrees": 52.0
+      },
+      "followCamera": {
+        "avoidObstacles": true,
+        "clearance": 0.30000001192092896,
+        "lookOffset": [
+          0,
+          1.5,
+          4.5
+        ],
+        "offset": [
+          0,
+          5.2,
+          -8.2
+        ],
+        "orbit": {
+          "enabled": false,
+          "maximumDistance": 20.0,
+          "maximumPitch": 75.0,
+          "minimumDistance": 2.0,
+          "minimumPitch": -75.0,
+          "mouseSensitivity": 0.18000000715255737,
+          "stickSpeed": 120.0,
+          "zoomSensitivity": 1.0
+        },
+        "smoothing": 8.0,
+        "target": 1
+      },
+      "id": 4,
+      "name": "Skywind Follow Camera",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          0,
+          5.9,
+          -10.2
+        ]
+      }
+    },
+    {
+      "active": true,
+      "directionalLight": {
+        "color": [
+          1,
+          0.93,
+          0.86
+        ],
+        "intensity": 1.1,
+        "shadows": {
+          "bias": 0.00019999999494757503,
+          "enabled": true,
+          "extent": 36,
+          "normalBias": 0.02500000037252903,
+          "resolution": 2048,
+          "strength": 0.63
+        }
+      },
+      "id": 5,
+      "name": "Skywind Sun",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.3760794699192047,
+          -0.46904659271240234,
+          0.23055104911327362,
+          0.7651181221008301
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "canvas": {
+        "enabled": true,
+        "matchWidthOrHeight": 0.5,
+        "referenceSize": [
+          1280.0,
+          720.0
+        ],
+        "scaleWithScreen": true,
+        "sortOrder": 0
+      },
+      "id": 24,
+      "name": "Skywind HUD",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 25,
+      "image": {
+        "color": [
+          0.035,
+          0.075,
+          0.1,
+          0.9
+        ],
+        "enabled": true,
+        "fillAmount": 1,
+        "fillOrigin": "left",
+        "preserveAspect": false,
+        "raycastTarget": false,
+        "texture": "@project/assets/textures/PrototypeWhite.png"
+      },
+      "name": "Skywind Objective Backdrop",
+      "parent": 24,
+      "rectTransform": {
+        "anchorMax": [
+          0,
+          0
+        ],
+        "anchorMin": [
+          0,
+          0
+        ],
+        "pivot": [
+          0,
+          0
+        ],
+        "position": [
+          24,
+          33
+        ],
+        "sizeDelta": [
+          535,
+          52
+        ]
+      },
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 26,
+      "name": "Skywind Objective",
+      "parent": 24,
+      "rectTransform": {
+        "anchorMax": [
+          0.0,
+          0.0
+        ],
+        "anchorMin": [
+          0.0,
+          0.0
+        ],
+        "pivot": [
+          0.0,
+          0.0
+        ],
+        "position": [
+          42,
+          35
+        ],
+        "sizeDelta": [
+          1150.0,
+          44.0
+        ]
+      },
+      "tag": "",
+      "text": {
+        "alignment": "left",
+        "bold": true,
+        "color": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "enabled": true,
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 24,
+        "raycastTarget": false,
+        "value": "風見の浮島　　風車の風を乗り継いで雲の上へ",
+        "verticalAlignment": "middle"
+      },
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "active": false,
+      "canvas": {
+        "enabled": true,
+        "matchWidthOrHeight": 0,
+        "referenceSize": [
+          1280.0,
+          720.0
+        ],
+        "scaleWithScreen": true,
+        "sortOrder": 1
+      },
+      "id": 30,
+      "name": "Skywind Clear Overlay",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "inputPressed",
+            "inputAction": "Cancel",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "loadScene",
+            "scene": "@project/scenes/TitleStreet.scene.json",
+            "target": 0
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "inputPressed",
+            "inputAction": "Restart",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "restartScene",
+            "scene": "",
+            "target": 0
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 31,
+      "image": {
+        "color": [
+          0.015,
+          0.035,
+          0.05,
+          0.55
+        ],
+        "enabled": true,
+        "fillAmount": 1,
+        "fillOrigin": "left",
+        "preserveAspect": false,
+        "raycastTarget": false,
+        "texture": "@project/assets/textures/PrototypeWhite.png"
+      },
+      "name": "Skywind Clear Shade",
+      "parent": 30,
+      "rectTransform": {
+        "anchorMax": [
+          1,
+          1
+        ],
+        "anchorMin": [
+          0,
+          0
+        ],
+        "pivot": [
+          0,
+          0
+        ],
+        "position": [
+          0,
+          0
+        ],
+        "sizeDelta": [
+          0,
+          0
+        ]
+      },
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 32,
+      "image": {
+        "color": [
+          0.035,
+          0.075,
+          0.1,
+          0.97
+        ],
+        "enabled": true,
+        "fillAmount": 1,
+        "fillOrigin": "left",
+        "preserveAspect": false,
+        "raycastTarget": false,
+        "texture": "@project/assets/textures/PrototypeWhite.png"
+      },
+      "name": "Skywind Clear Panel",
+      "parent": 30,
+      "rectTransform": {
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "pivot": [
+          0,
+          0
+        ],
+        "position": [
+          -480,
+          -156
+        ],
+        "sizeDelta": [
+          960,
+          340
+        ]
+      },
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 33,
+      "name": "Skywind Clear Heading",
+      "parent": 30,
+      "rectTransform": {
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "pivot": [
+          0,
+          0
+        ],
+        "position": [
+          -438,
+          -132
+        ],
+        "sizeDelta": [
+          880,
+          55
+        ]
+      },
+      "tag": "",
+      "text": {
+        "alignment": "left",
+        "bold": true,
+        "color": [
+          1,
+          0.83,
+          0.4,
+          1
+        ],
+        "enabled": true,
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 40,
+        "raycastTarget": false,
+        "value": "ステージクリア",
+        "verticalAlignment": "middle"
+      },
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 34,
+      "name": "Skywind Clear Result",
+      "parent": 30,
+      "rectTransform": {
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "pivot": [
+          0,
+          0
+        ],
+        "position": [
+          -438,
+          -70
+        ],
+        "sizeDelta": [
+          880,
+          170
+        ]
+      },
+      "tag": "",
+      "text": {
+        "alignment": "left",
+        "bold": false,
+        "color": [
+          1,
+          1,
+          0.95,
+          1
+        ],
+        "enabled": true,
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 25,
+        "raycastTarget": false,
+        "value": "雲の上の鐘に到着！",
+        "verticalAlignment": "middle"
+      },
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 35,
+      "name": "Skywind Retry Button",
+      "parent": 30,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "rectTransform": {
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "pivot": [
+          0,
+          0
+        ],
+        "position": [
+          -438,
+          106
+        ],
+        "sizeDelta": [
+          250,
+          50
+        ]
+      },
+      "image": {
+        "enabled": true,
+        "raycastTarget": true,
+        "texture": "",
+        "color": [
+          0.25,
+          0.29,
+          0.25,
+          1
+        ],
+        "preserveAspect": false,
+        "fillOrigin": "left",
+        "fillAmount": 1
+      },
+      "text": {
+        "enabled": true,
+        "raycastTarget": false,
+        "value": "もう一度 ［R / Start］",
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 22,
+        "bold": true,
+        "color": [
+          1,
+          1,
+          0.92,
+          1
+        ],
+        "alignment": "center",
+        "verticalAlignment": "middle"
+      },
+      "button": {
+        "enabled": true,
+        "interactable": true,
+        "navigation": true,
+        "initialSelection": true,
+        "normalColor": [
+          0.77,
+          0.8,
+          0.75,
+          1
+        ],
+        "highlightedColor": [
+          1,
+          1,
+          0.8,
+          1
+        ],
+        "pressedColor": [
+          0.85,
+          0.78,
+          0.56,
+          1
+        ],
+        "disabledColor": [
+          0.5,
+          0.5,
+          0.5,
+          1
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonClick",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "restartScene",
+            "scene": "",
+            "target": 0
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 36,
+      "name": "Skywind Title Button",
+      "parent": 30,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "rectTransform": {
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "pivot": [
+          0,
+          0
+        ],
+        "position": [
+          -172,
+          106
+        ],
+        "sizeDelta": [
+          250,
+          50
+        ]
+      },
+      "image": {
+        "enabled": true,
+        "raycastTarget": true,
+        "texture": "",
+        "color": [
+          0.25,
+          0.29,
+          0.25,
+          1
+        ],
+        "preserveAspect": false,
+        "fillOrigin": "left",
+        "fillAmount": 1
+      },
+      "text": {
+        "enabled": true,
+        "raycastTarget": false,
+        "value": "タイトルへ",
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 22,
+        "bold": true,
+        "color": [
+          1,
+          1,
+          0.92,
+          1
+        ],
+        "alignment": "center",
+        "verticalAlignment": "middle"
+      },
+      "button": {
+        "enabled": true,
+        "interactable": true,
+        "navigation": true,
+        "normalColor": [
+          0.77,
+          0.8,
+          0.75,
+          1
+        ],
+        "highlightedColor": [
+          1,
+          1,
+          0.8,
+          1
+        ],
+        "pressedColor": [
+          0.85,
+          0.78,
+          0.56,
+          1
+        ],
+        "disabledColor": [
+          0.5,
+          0.5,
+          0.5,
+          1
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonClick",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "loadScene",
+            "scene": "@project/scenes/TitleStreet.scene.json",
+            "target": 0
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 56,
+      "name": "Skywind Sky Background",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "canvas": {
+        "enabled": true,
+        "scaleWithScreen": true,
+        "referenceSize": [
+          1280,
+          720
+        ],
+        "matchWidthOrHeight": 0.5,
+        "sortOrder": 0,
+        "background": true
+      }
+    },
+    {
+      "active": true,
+      "id": 57,
+      "name": "Skywind Morning Sky",
+      "parent": 56,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "rectTransform": {
+        "anchorMin": [
+          0,
+          0
+        ],
+        "anchorMax": [
+          1,
+          1
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "position": [
+          0,
+          0
+        ],
+        "sizeDelta": [
+          0,
+          0
+        ]
+      },
+      "image": {
+        "enabled": true,
+        "raycastTarget": false,
+        "texture": "@project/assets/street/textures/StreetMorningSky.png",
+        "color": [
+          0.9,
+          0.98,
+          1,
+          1
+        ],
+        "preserveAspect": false,
+        "fillOrigin": "left",
+        "fillAmount": 1
+      }
+    },
+    {
+      "active": true,
+      "id": 129,
+      "name": "Skywind Pause Input",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "inputPressed",
+            "inputAction": "Cancel",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "pauseGame",
+            "scene": "",
+            "target": 0
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "inputPressed",
+            "inputAction": "Cancel",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "enable",
+            "scene": "",
+            "target": 130
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "inputPressed",
+            "inputAction": "Cancel",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "disable",
+            "scene": "",
+            "target": 129
+          }
+        ]
+      }
+    },
+    {
+      "active": false,
+      "id": 130,
+      "name": "Skywind Pause Menu",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "canvas": {
+        "enabled": true,
+        "matchWidthOrHeight": 0.5,
+        "referenceSize": [
+          1280,
+          720
+        ],
+        "scaleWithScreen": true,
+        "sortOrder": 5
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "inputPressed",
+            "inputAction": "Cancel",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "resumeGame",
+            "scene": "",
+            "target": 0
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "inputPressed",
+            "inputAction": "Cancel",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "disable",
+            "scene": "",
+            "target": 130
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "inputPressed",
+            "inputAction": "Cancel",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "enable",
+            "scene": "",
+            "target": 129
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 131,
+      "name": "Pause Backdrop",
+      "parent": 130,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "rectTransform": {
+        "anchorMin": [
+          0,
+          0
+        ],
+        "anchorMax": [
+          1,
+          1
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "position": [
+          0,
+          0
+        ],
+        "sizeDelta": [
+          0,
+          0
+        ]
+      },
+      "image": {
+        "enabled": true,
+        "raycastTarget": true,
+        "texture": "",
+        "color": [
+          0.04,
+          0.06,
+          0.07,
+          0.67
+        ],
+        "preserveAspect": false,
+        "fillOrigin": "left",
+        "fillAmount": 1
+      }
+    },
+    {
+      "active": true,
+      "id": 132,
+      "name": "Pause Panel",
+      "parent": 130,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "rectTransform": {
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "position": [
+          0,
+          0
+        ],
+        "sizeDelta": [
+          460,
+          346
+        ]
+      },
+      "image": {
+        "enabled": true,
+        "raycastTarget": false,
+        "texture": "",
+        "color": [
+          0.11,
+          0.16,
+          0.15,
+          0.97
+        ],
+        "preserveAspect": false,
+        "fillOrigin": "left",
+        "fillAmount": 1
+      }
+    },
+    {
+      "active": true,
+      "id": 133,
+      "name": "Pause Heading",
+      "parent": 130,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "rectTransform": {
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "position": [
+          0,
+          -117
+        ],
+        "sizeDelta": [
+          350,
+          62
+        ]
+      },
+      "text": {
+        "enabled": true,
+        "raycastTarget": false,
+        "value": "ひとやすみ",
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 36,
+        "bold": true,
+        "color": [
+          1,
+          1,
+          0.92,
+          1
+        ],
+        "alignment": "center",
+        "verticalAlignment": "middle"
+      }
+    },
+    {
+      "active": true,
+      "id": 134,
+      "name": "つづける",
+      "parent": 130,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "rectTransform": {
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "position": [
+          0,
+          -30
+        ],
+        "sizeDelta": [
+          320,
+          51
+        ]
+      },
+      "image": {
+        "enabled": true,
+        "raycastTarget": true,
+        "texture": "",
+        "color": [
+          0.27,
+          0.33,
+          0.31,
+          1
+        ],
+        "preserveAspect": false,
+        "fillOrigin": "left",
+        "fillAmount": 1
+      },
+      "text": {
+        "enabled": true,
+        "raycastTarget": false,
+        "value": "つづける",
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 23,
+        "bold": true,
+        "color": [
+          1,
+          1,
+          0.92,
+          1
+        ],
+        "alignment": "center",
+        "verticalAlignment": "middle"
+      },
+      "button": {
+        "enabled": true,
+        "interactable": true,
+        "navigation": true,
+        "initialSelection": true,
+        "normalColor": [
+          0.78,
+          0.81,
+          0.75,
+          1
+        ],
+        "highlightedColor": [
+          1,
+          1,
+          0.85,
+          1
+        ],
+        "pressedColor": [
+          0.86,
+          0.78,
+          0.55,
+          1
+        ],
+        "disabledColor": [
+          0.5,
+          0.5,
+          0.5,
+          1
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonClick",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "resumeGame",
+            "scene": "",
+            "target": 0
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonClick",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "disable",
+            "scene": "",
+            "target": 130
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonClick",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "enable",
+            "scene": "",
+            "target": 129
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 135,
+      "name": "最初からやり直す",
+      "parent": 130,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "rectTransform": {
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "position": [
+          0,
+          36
+        ],
+        "sizeDelta": [
+          320,
+          51
+        ]
+      },
+      "image": {
+        "enabled": true,
+        "raycastTarget": true,
+        "texture": "",
+        "color": [
+          0.27,
+          0.33,
+          0.31,
+          1
+        ],
+        "preserveAspect": false,
+        "fillOrigin": "left",
+        "fillAmount": 1
+      },
+      "text": {
+        "enabled": true,
+        "raycastTarget": false,
+        "value": "最初からやり直す",
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 23,
+        "bold": true,
+        "color": [
+          1,
+          1,
+          0.92,
+          1
+        ],
+        "alignment": "center",
+        "verticalAlignment": "middle"
+      },
+      "button": {
+        "enabled": true,
+        "interactable": true,
+        "navigation": true,
+        "normalColor": [
+          0.78,
+          0.81,
+          0.75,
+          1
+        ],
+        "highlightedColor": [
+          1,
+          1,
+          0.85,
+          1
+        ],
+        "pressedColor": [
+          0.86,
+          0.78,
+          0.55,
+          1
+        ],
+        "disabledColor": [
+          0.5,
+          0.5,
+          0.5,
+          1
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonClick",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "restartScene",
+            "scene": "",
+            "target": 0
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 136,
+      "name": "タイトルへ",
+      "parent": 130,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "rectTransform": {
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "position": [
+          0,
+          102
+        ],
+        "sizeDelta": [
+          320,
+          51
+        ]
+      },
+      "image": {
+        "enabled": true,
+        "raycastTarget": true,
+        "texture": "",
+        "color": [
+          0.27,
+          0.33,
+          0.31,
+          1
+        ],
+        "preserveAspect": false,
+        "fillOrigin": "left",
+        "fillAmount": 1
+      },
+      "text": {
+        "enabled": true,
+        "raycastTarget": false,
+        "value": "タイトルへ",
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 23,
+        "bold": true,
+        "color": [
+          1,
+          1,
+          0.92,
+          1
+        ],
+        "alignment": "center",
+        "verticalAlignment": "middle"
+      },
+      "button": {
+        "enabled": true,
+        "interactable": true,
+        "navigation": true,
+        "normalColor": [
+          0.78,
+          0.81,
+          0.75,
+          1
+        ],
+        "highlightedColor": [
+          1,
+          1,
+          0.85,
+          1
+        ],
+        "pressedColor": [
+          0.86,
+          0.78,
+          0.55,
+          1
+        ],
+        "disabledColor": [
+          0.5,
+          0.5,
+          0.5,
+          1
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonClick",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "loadScene",
+            "scene": "@project/scenes/TitleStreet.scene.json",
+            "target": 0
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 137,
+      "name": "Pause Controls",
+      "parent": 130,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "rectTransform": {
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "position": [
+          0,
+          -77
+        ],
+        "sizeDelta": [
+          432,
+          34
+        ]
+      },
+      "text": {
+        "enabled": true,
+        "raycastTarget": false,
+        "value": "移動 WASD・矢印キー / 左スティック・十字キー\nジャンプ Space / A（長押し可）　再挑戦 R / Start",
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 16,
+        "bold": false,
+        "color": [
+          0.9,
+          0.92,
+          0.85,
+          1
+        ],
+        "alignment": "center",
+        "verticalAlignment": "middle"
+      }
+    },
+    {
+      "active": true,
+      "audioSource": {
+        "clip": "@project/assets/street/audio/StreetClear.wav",
+        "loop": false,
+        "maxDistance": 20,
+        "minDistance": 1,
+        "playOnStart": false,
+        "spatial": false,
+        "volume": 0.42
+      },
+      "id": 197,
+      "name": "Sunrise Clear Cue",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": 198,
+      "name": "Floating landing 1",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/FloatingIsland01.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          -0.16,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          3.9,
+          0.16,
+          5.1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 199,
+      "name": "Floating landing 2",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          1.05,
+          0,
+          7.7
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/FloatingIsland02.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          -0.16,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.95,
+          0.16,
+          1.48
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 200,
+      "name": "Floating landing 3",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          3.2,
+          0.2,
+          12.25
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/FloatingIsland03.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          -0.16,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          2.3,
+          0.16,
+          1.75
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 201,
+      "name": "Windmill island 4",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          4.2,
+          0.3,
+          19.05
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/FloatingIsland04.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          -0.16,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          3.5,
+          0.16,
+          3.45
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 202,
+      "name": "Wind relay checkpoint Spawn",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          4.2,
+          1.02,
+          19.05
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "id": 203,
+      "name": "Wind relay checkpoint",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          4.2,
+          1.02,
+          19.05
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          3.2,
+          1,
+          1.7940000000000003
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 202,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "setCheckpoint",
+            "scene": "",
+            "target": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": 204,
+      "name": "Mill tower",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          2.08,
+          0.3,
+          18.63
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/SkyMill.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          1.82,
+          0.06
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.04,
+          1.82,
+          0.98
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 205,
+      "name": "Turning cloth sails",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          2.08,
+          3.69,
+          17.29
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/ClothSails.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "transformAnimation": {
+        "interpolation": "linear",
+        "keys": [
+          {
+            "rotation": [
+              0,
+              0,
+              0.0,
+              1.0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.7071067811865476,
+              0.7071067811865476
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.75,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              1.0,
+              6.123233995736766e-17
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.5,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.7071067811865476,
+              -0.7071067811865475
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.25,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              1.2246467991473532e-16,
+              -1.0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "mode": "loop",
+        "playOnStart": true,
+        "speed": 0.762
+      }
+    },
+    {
+      "id": 206,
+      "name": "Wind takeoff inlay",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          4.572754285714286,
+          0.3,
+          22.07
+        ],
+        "rotation": [
+          0,
+          0.08478721951666225,
+          0,
+          0.9963990803923062
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/WindInlay.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      }
+    },
+    {
+      "id": 207,
+      "name": "Wind current",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          4.572754285714286,
+          1.07,
+          22.07
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.78,
+          0.52,
+          0.52
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 15.1,
+            "messageName": "",
+            "once": false,
+            "operation": "launchCharacter",
+            "scene": "",
+            "target": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": 208,
+      "name": "Follow camera at the turn",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          4.2,
+          5.3,
+          19.05
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "camera": {
+        "farClip": 150,
+        "nearClip": 0.10000000149011612,
+        "primary": false,
+        "verticalFovDegrees": 52.0
+      },
+      "followCamera": {
+        "avoidObstacles": true,
+        "clearance": 0.30000001192092896,
+        "lookOffset": [
+          0.6251661159101292,
+          1.2,
+          3.646802342809087
+        ],
+        "offset": [
+          -1.3179177578645964,
+          5.1,
+          -7.68785358754348
+        ],
+        "orbit": {
+          "enabled": false,
+          "maximumDistance": 20.0,
+          "maximumPitch": 75.0,
+          "minimumDistance": 2.0,
+          "minimumPitch": -75.0,
+          "mouseSensitivity": 0.18000000715255737,
+          "stickSpeed": 120.0,
+          "zoomSensitivity": 1.0
+        },
+        "smoothing": 8.0,
+        "target": 1
+      }
+    },
+    {
+      "id": 209,
+      "name": "Turn to the next stretch",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          4.2,
+          1.04,
+          19.05
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          2.25,
+          1.6,
+          2.25
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0.85,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "setCamera",
+            "scene": "",
+            "target": 208
+          }
+        ]
+      }
+    },
+    {
+      "id": 210,
+      "name": "Floating landing 5",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          6,
+          2.75,
+          29.55
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/FloatingIsland05.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          -0.16,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          2.8,
+          0.16,
+          2.28
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 211,
+      "name": "Floating landing 6",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          9.8,
+          2.8,
+          34.2
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/FloatingIsland06.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          -0.16,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.8,
+          0.16,
+          1.6
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 212,
+      "name": "Floating landing 7",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          12.4,
+          2.88,
+          38.35
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/FloatingIsland07.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          -0.16,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.85,
+          0.16,
+          1.5
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 213,
+      "name": "Windmill island 8",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          15,
+          3.0,
+          44.65
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/FloatingIsland08.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          -0.16,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          3.5,
+          0.16,
+          3.35
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 214,
+      "name": "Wind relay checkpoint Spawn",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          15,
+          3.7199999999999998,
+          44.65
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "id": 215,
+      "name": "Wind relay checkpoint",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          15,
+          3.7199999999999998,
+          44.65
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          3.2,
+          1,
+          1.7420000000000002
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 214,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "setCheckpoint",
+            "scene": "",
+            "target": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": 216,
+      "name": "Mill tower",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          12.879999999999999,
+          3.0,
+          44.23
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/SkyMill.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          1.82,
+          0.06
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.04,
+          1.82,
+          0.98
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 217,
+      "name": "Turning cloth sails",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          12.879999999999999,
+          6.390000000000001,
+          42.88999999999999
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/ClothSails.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "transformAnimation": {
+        "interpolation": "linear",
+        "keys": [
+          {
+            "rotation": [
+              0,
+              0,
+              0.0,
+              1.0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.7071067811865476,
+              0.7071067811865476
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.75,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              1.0,
+              6.123233995736766e-17
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.5,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.7071067811865476,
+              -0.7071067811865475
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.25,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              1.2246467991473532e-16,
+              -1.0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "mode": "loop",
+        "playOnStart": true,
+        "speed": 0.818
+      }
+    },
+    {
+      "id": 218,
+      "name": "Wind takeoff inlay",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          15.430258604651163,
+          3.0,
+          47.57
+        ],
+        "rotation": [
+          0,
+          0.10076062021051146,
+          0,
+          0.994910698211047
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/WindInlay.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      }
+    },
+    {
+      "id": 219,
+      "name": "Wind current",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          15.430258604651163,
+          3.77,
+          47.57
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.78,
+          0.52,
+          0.52
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 15.6,
+            "messageName": "",
+            "once": false,
+            "operation": "launchCharacter",
+            "scene": "",
+            "target": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": 220,
+      "name": "Follow camera at the turn",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          15,
+          8.0,
+          44.65
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "camera": {
+        "farClip": 150,
+        "nearClip": 0.10000000149011612,
+        "primary": false,
+        "verticalFovDegrees": 52.0
+      },
+      "followCamera": {
+        "avoidObstacles": true,
+        "clearance": 0.30000001192092896,
+        "lookOffset": [
+          0.741833860643054,
+          1.2,
+          3.624870000869469
+        ],
+        "offset": [
+          -1.5638659764907623,
+          5.1,
+          -7.641617839670772
+        ],
+        "orbit": {
+          "enabled": false,
+          "maximumDistance": 20.0,
+          "maximumPitch": 75.0,
+          "minimumDistance": 2.0,
+          "minimumPitch": -75.0,
+          "mouseSensitivity": 0.18000000715255737,
+          "stickSpeed": 120.0,
+          "zoomSensitivity": 1.0
+        },
+        "smoothing": 8.0,
+        "target": 1
+      }
+    },
+    {
+      "id": 221,
+      "name": "Turn to the next stretch",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          15,
+          3.74,
+          44.65
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          2.25,
+          1.6,
+          2.25
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0.85,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "setCamera",
+            "scene": "",
+            "target": 220
+          }
+        ]
+      }
+    },
+    {
+      "id": 222,
+      "name": "Floating landing 9",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          17.2,
+          5.6,
+          55.4
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/FloatingIsland09.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          -0.16,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          2.65,
+          0.16,
+          2.42
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 223,
+      "name": "Floating landing 10",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          14,
+          5.7,
+          60.1
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/FloatingIsland10.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          -0.16,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.7,
+          0.16,
+          1.52
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 224,
+      "name": "Floating landing 11",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          10.5,
+          5.75,
+          64.85
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/FloatingIsland11.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          -0.16,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.8,
+          0.16,
+          1.61
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 225,
+      "name": "Windmill island 12",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          8,
+          5.9,
+          71.4
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/FloatingIsland12.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          -0.16,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          3.6,
+          0.16,
+          3.52
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 226,
+      "name": "Wind relay checkpoint Spawn",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          8,
+          6.62,
+          71.4
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "id": 227,
+      "name": "Wind relay checkpoint",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          8,
+          6.62,
+          71.4
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          3.3000000000000003,
+          1,
+          1.8304
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 226,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "setCheckpoint",
+            "scene": "",
+            "target": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": 228,
+      "name": "Mill tower",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          10.22,
+          5.9,
+          70.98
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/SkyMill.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          1.82,
+          0.06
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.04,
+          1.82,
+          0.98
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 229,
+      "name": "Turning cloth sails",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          10.22,
+          9.290000000000001,
+          69.64
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/ClothSails.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "transformAnimation": {
+        "interpolation": "linear",
+        "keys": [
+          {
+            "rotation": [
+              0,
+              0,
+              0.0,
+              1.0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.7071067811865476,
+              0.7071067811865476
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.75,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              1.0,
+              6.123233995736766e-17
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.5,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.7071067811865476,
+              -0.7071067811865475
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.25,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              1.2246467991473532e-16,
+              -1.0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "mode": "loop",
+        "playOnStart": true,
+        "speed": 0.874
+      }
+    },
+    {
+      "id": 230,
+      "name": "Wind takeoff inlay",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          7.312334545454548,
+          5.9,
+          74.49
+        ],
+        "rotation": [
+          0,
+          -0.1493274238328285,
+          0,
+          0.9887878035713481
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/WindInlay.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      }
+    },
+    {
+      "id": 231,
+      "name": "Wind current",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          7.312334545454548,
+          6.67,
+          74.49
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.78,
+          0.52,
+          0.52
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 15.8,
+            "messageName": "",
+            "once": false,
+            "operation": "launchCharacter",
+            "scene": "",
+            "target": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": 232,
+      "name": "Follow camera at the turn",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          8,
+          10.9,
+          71.4
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "camera": {
+        "farClip": 150,
+        "nearClip": 0.10000000149011612,
+        "primary": false,
+        "verticalFovDegrees": 52.0
+      },
+      "followCamera": {
+        "avoidObstacles": true,
+        "clearance": 0.30000001192092896,
+        "lookOffset": [
+          -1.092633202142264,
+          1.2,
+          3.5349897716367362
+        ],
+        "offset": [
+          2.303388912624232,
+          5.1,
+          -7.452140599666633
+        ],
+        "orbit": {
+          "enabled": false,
+          "maximumDistance": 20.0,
+          "maximumPitch": 75.0,
+          "minimumDistance": 2.0,
+          "minimumPitch": -75.0,
+          "mouseSensitivity": 0.18000000715255737,
+          "stickSpeed": 120.0,
+          "zoomSensitivity": 1.0
+        },
+        "smoothing": 8.0,
+        "target": 1
+      }
+    },
+    {
+      "id": 233,
+      "name": "Turn to the next stretch",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          8,
+          6.640000000000001,
+          71.4
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          2.25,
+          1.6,
+          2.25
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0.85,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "setCamera",
+            "scene": "",
+            "target": 232
+          }
+        ]
+      }
+    },
+    {
+      "id": 234,
+      "name": "Floating landing 13",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          4.6,
+          8.55,
+          82.4
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/FloatingIsland13.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          -0.16,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          2.8,
+          0.16,
+          2.4
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 235,
+      "name": "Floating landing 14",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          0.5,
+          8.65,
+          87.2
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/FloatingIsland14.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          -0.16,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.7,
+          0.16,
+          1.56
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 236,
+      "name": "Floating landing 15",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          -3.3,
+          8.7,
+          91.85
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/FloatingIsland15.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          -0.16,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.68,
+          0.16,
+          1.42
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 237,
+      "name": "Windmill island 16",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          -7,
+          8.8,
+          98.25
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/FloatingIsland16.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          -0.16,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          3.65,
+          0.16,
+          3.35
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 238,
+      "name": "Wind relay checkpoint Spawn",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          -7,
+          9.520000000000001,
+          98.25
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "id": 239,
+      "name": "Wind relay checkpoint",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          -7,
+          9.520000000000001,
+          98.25
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          3.35,
+          1,
+          1.7420000000000002
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 238,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "setCheckpoint",
+            "scene": "",
+            "target": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": 240,
+      "name": "Mill tower",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          -4.73,
+          8.8,
+          97.83
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/SkyMill.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          1.82,
+          0.06
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.04,
+          1.82,
+          0.98
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 241,
+      "name": "Turning cloth sails",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          -4.73,
+          12.190000000000001,
+          96.49
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/ClothSails.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "transformAnimation": {
+        "interpolation": "linear",
+        "keys": [
+          {
+            "rotation": [
+              0,
+              0,
+              0.0,
+              1.0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.7071067811865476,
+              0.7071067811865476
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.75,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              1.0,
+              6.123233995736766e-17
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.5,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.7071067811865476,
+              -0.7071067811865475
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.25,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              1.2246467991473532e-16,
+              -1.0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "mode": "loop",
+        "playOnStart": true,
+        "speed": 0.9299999999999999
+      }
+    },
+    {
+      "id": 242,
+      "name": "Wind takeoff inlay",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          -7.293358139534883,
+          8.8,
+          101.16999999999999
+        ],
+        "rotation": [
+          0,
+          -0.06926436542158868,
+          0,
+          0.9975983398556478
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/WindInlay.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      }
+    },
+    {
+      "id": 243,
+      "name": "Wind current",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          -7.293358139534883,
+          9.57,
+          101.16999999999999
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.78,
+          0.52,
+          0.52
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 15.4,
+            "messageName": "",
+            "once": false,
+            "operation": "launchCharacter",
+            "scene": "",
+            "target": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": 244,
+      "name": "Follow camera at the turn",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          -7,
+          13.8,
+          98.25
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "camera": {
+        "farClip": 150,
+        "nearClip": 0.10000000149011612,
+        "primary": false,
+        "verticalFovDegrees": 52.0
+      },
+      "followCamera": {
+        "avoidObstacles": true,
+        "clearance": 0.30000001192092896,
+        "lookOffset": [
+          -0.5113253180724154,
+          1.2,
+          3.6644981128523106
+        ],
+        "offset": [
+          1.0779290489094162,
+          5.1,
+          -7.725158183850816
+        ],
+        "orbit": {
+          "enabled": false,
+          "maximumDistance": 20.0,
+          "maximumPitch": 75.0,
+          "minimumDistance": 2.0,
+          "minimumPitch": -75.0,
+          "mouseSensitivity": 0.18000000715255737,
+          "stickSpeed": 120.0,
+          "zoomSensitivity": 1.0
+        },
+        "smoothing": 8.0,
+        "target": 1
+      }
+    },
+    {
+      "id": 245,
+      "name": "Turn to the next stretch",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          -7,
+          9.540000000000001,
+          98.25
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          2.25,
+          1.6,
+          2.25
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0.85,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "setCamera",
+            "scene": "",
+            "target": 244
+          }
+        ]
+      }
+    },
+    {
+      "id": 246,
+      "name": "Floating landing 17",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          -8.5,
+          11.05,
+          109
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/FloatingIsland17.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          -0.16,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          2.48,
+          0.16,
+          2.35
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 247,
+      "name": "Floating landing 18",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          -5.3,
+          11.12,
+          113.6
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/FloatingIsland18.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          -0.16,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.72,
+          0.16,
+          1.56
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 248,
+      "name": "Floating landing 19",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          -2,
+          11.2,
+          118.4
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/FloatingIsland19.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          -0.16,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.69,
+          0.16,
+          1.53
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 249,
+      "name": "Windmill island 20",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          1.4,
+          11.3,
+          125.15
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/FloatingIsland20.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          -0.16,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          3.55,
+          0.16,
+          3.44
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 250,
+      "name": "Wind relay checkpoint Spawn",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          1.4,
+          12.020000000000001,
+          125.15
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "id": 251,
+      "name": "Wind relay checkpoint",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          1.4,
+          12.020000000000001,
+          125.15
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          3.25,
+          1,
+          1.7888
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 250,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "setCheckpoint",
+            "scene": "",
+            "target": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": 252,
+      "name": "Mill tower",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          -0.77,
+          11.3,
+          124.73
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/SkyMill.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          1.82,
+          0.06
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.04,
+          1.82,
+          0.98
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 253,
+      "name": "Turning cloth sails",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          -0.77,
+          14.690000000000001,
+          123.39
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/ClothSails.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "transformAnimation": {
+        "interpolation": "linear",
+        "keys": [
+          {
+            "rotation": [
+              0,
+              0,
+              0.0,
+              1.0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.7071067811865476,
+              0.7071067811865476
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.75,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              1.0,
+              6.123233995736766e-17
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.5,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.7071067811865476,
+              -0.7071067811865475
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.25,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              1.2246467991473532e-16,
+              -1.0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "mode": "loop",
+        "playOnStart": true,
+        "speed": 0.986
+      }
+    },
+    {
+      "id": 254,
+      "name": "Wind takeoff inlay",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          1.9393919999999985,
+          11.3,
+          128.16
+        ],
+        "rotation": [
+          0,
+          0.12166415328717388,
+          0,
+          0.9925713242910632
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/WindInlay.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      }
+    },
+    {
+      "id": 255,
+      "name": "Wind current",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          1.9393919999999985,
+          12.07,
+          128.16
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.78,
+          0.52,
+          0.52
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 15.9,
+            "messageName": "",
+            "once": false,
+            "operation": "launchCharacter",
+            "scene": "",
+            "target": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": 256,
+      "name": "Follow camera at the turn",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          1.4,
+          16.3,
+          125.15
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "camera": {
+        "farClip": 150,
+        "nearClip": 0.10000000149011612,
+        "primary": false,
+        "verticalFovDegrees": 52.0
+      },
+      "followCamera": {
+        "avoidObstacles": true,
+        "clearance": 0.30000001192092896,
+        "lookOffset": [
+          0.8936265881278082,
+          1.2,
+          3.5904639701563714
+        ],
+        "offset": [
+          -1.883861456053217,
+          5.1,
+          -7.5690862073566745
+        ],
+        "orbit": {
+          "enabled": false,
+          "maximumDistance": 20.0,
+          "maximumPitch": 75.0,
+          "minimumDistance": 2.0,
+          "minimumPitch": -75.0,
+          "mouseSensitivity": 0.18000000715255737,
+          "stickSpeed": 120.0,
+          "zoomSensitivity": 1.0
+        },
+        "smoothing": 8.0,
+        "target": 1
+      }
+    },
+    {
+      "id": 257,
+      "name": "Turn to the next stretch",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          1.4,
+          12.040000000000001,
+          125.15
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          2.25,
+          1.6,
+          2.25
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0.85,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "setCamera",
+            "scene": "",
+            "target": 256
+          }
+        ]
+      }
+    },
+    {
+      "id": 258,
+      "name": "Floating landing 21",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          4.2,
+          13.7,
+          136.4
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/FloatingIsland21.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          -0.16,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          2.8,
+          0.16,
+          2.5
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 259,
+      "name": "Floating landing 22",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          8.25,
+          13.7,
+          141.2
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/FloatingIsland22.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          -0.16,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.74,
+          0.16,
+          1.58
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 260,
+      "name": "Floating landing 23",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          12.15,
+          13.8,
+          145.9
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/FloatingIsland23.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          -0.16,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.72,
+          0.16,
+          1.56
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 261,
+      "name": "Windmill island 24",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          15.4,
+          13.9,
+          152.2
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/FloatingIsland24.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          -0.16,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          3.55,
+          0.16,
+          3.22
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 262,
+      "name": "Wind relay checkpoint Spawn",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          15.4,
+          14.620000000000001,
+          152.2
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "id": 263,
+      "name": "Wind relay checkpoint",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          15.4,
+          14.620000000000001,
+          152.2
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          3.25,
+          1,
+          1.6744
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 262,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "setCheckpoint",
+            "scene": "",
+            "target": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": 264,
+      "name": "Mill tower",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          13.23,
+          13.9,
+          151.78
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/SkyMill.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          1.82,
+          0.06
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.04,
+          1.82,
+          0.98
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 265,
+      "name": "Turning cloth sails",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          13.23,
+          17.29,
+          150.44
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/ClothSails.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "transformAnimation": {
+        "interpolation": "linear",
+        "keys": [
+          {
+            "rotation": [
+              0,
+              0,
+              0.0,
+              1.0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.7071067811865476,
+              0.7071067811865476
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.75,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              1.0,
+              6.123233995736766e-17
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.5,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.7071067811865476,
+              -0.7071067811865475
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.25,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              1.2246467991473532e-16,
+              -1.0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "mode": "loop",
+        "playOnStart": true,
+        "speed": 1.042
+      }
+    },
+    {
+      "id": 266,
+      "name": "Wind takeoff inlay",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          15.821939726027395,
+          13.9,
+          154.98999999999998
+        ],
+        "rotation": [
+          0,
+          0.10333318012644223,
+          0,
+          0.9946467985596477
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/WindInlay.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      }
+    },
+    {
+      "id": 267,
+      "name": "Wind current",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          15.821939726027395,
+          14.67,
+          154.98999999999998
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.78,
+          0.52,
+          0.52
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 15.8,
+            "messageName": "",
+            "once": false,
+            "operation": "launchCharacter",
+            "scene": "",
+            "target": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": 268,
+      "name": "Follow camera at the turn",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          15.4,
+          18.9,
+          152.2
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "camera": {
+        "farClip": 150,
+        "nearClip": 0.10000000149011612,
+        "primary": false,
+        "verticalFovDegrees": 52.0
+      },
+      "followCamera": {
+        "avoidObstacles": true,
+        "clearance": 0.30000001192092896,
+        "lookOffset": [
+          0.7605721243033735,
+          1.2,
+          3.6209846787486764
+        ],
+        "offset": [
+          -1.6033682620449494,
+          5.1,
+          -7.633427160605318
+        ],
+        "orbit": {
+          "enabled": false,
+          "maximumDistance": 20.0,
+          "maximumPitch": 75.0,
+          "minimumDistance": 2.0,
+          "minimumPitch": -75.0,
+          "mouseSensitivity": 0.18000000715255737,
+          "stickSpeed": 120.0,
+          "zoomSensitivity": 1.0
+        },
+        "smoothing": 8.0,
+        "target": 1
+      }
+    },
+    {
+      "id": 269,
+      "name": "Turn to the next stretch",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          15.4,
+          14.64,
+          152.2
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          2.25,
+          1.6,
+          2.25
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0.85,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "setCamera",
+            "scene": "",
+            "target": 268
+          }
+        ]
+      }
+    },
+    {
+      "id": 270,
+      "name": "Floating landing 25",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          17.7,
+          16.2,
+          163.15
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/FloatingIsland25.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          -0.16,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          2.7,
+          0.16,
+          2.42
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 271,
+      "name": "Floating landing 26",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          14.65,
+          16.24,
+          167.7
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/FloatingIsland26.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          -0.16,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.76,
+          0.16,
+          1.44
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 272,
+      "name": "Floating landing 27",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          10.8,
+          16.31,
+          172.25
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/FloatingIsland27.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          -0.16,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.77,
+          0.16,
+          1.5
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 273,
+      "name": "Windmill island 28",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          6.75,
+          16.45,
+          179.9
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/FloatingIsland28.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          -0.16,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          3.95,
+          0.16,
+          3.95
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 274,
+      "name": "Wind relay checkpoint Spawn",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          6.75,
+          17.169999999999998,
+          179.9
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "id": 275,
+      "name": "Wind relay checkpoint",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          6.75,
+          17.169999999999998,
+          179.9
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          3.6500000000000004,
+          1,
+          2.0540000000000003
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 274,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "setCheckpoint",
+            "scene": "",
+            "target": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": 276,
+      "name": "Mill tower",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          9.32,
+          16.45,
+          179.48000000000002
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/SkyMill.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          1.82,
+          0.06
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.04,
+          1.82,
+          0.98
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 277,
+      "name": "Turning cloth sails",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          9.32,
+          19.84,
+          178.14000000000001
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/ClothSails.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "transformAnimation": {
+        "interpolation": "linear",
+        "keys": [
+          {
+            "rotation": [
+              0,
+              0,
+              0.0,
+              1.0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.7071067811865476,
+              0.7071067811865476
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.75,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              1.0,
+              6.123233995736766e-17
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.5,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.7071067811865476,
+              -0.7071067811865475
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.25,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              1.2246467991473532e-16,
+              -1.0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "mode": "loop",
+        "playOnStart": true,
+        "speed": 1.0979999999999999
+      }
+    },
+    {
+      "id": 278,
+      "name": "Wind takeoff inlay",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          5.942580530973454,
+          16.45,
+          183.42
+        ],
+        "rotation": [
+          0,
+          -0.1535985394408265,
+          0,
+          0.9881333354773761
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/WindInlay.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      }
+    },
+    {
+      "id": 279,
+      "name": "Wind current",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          5.942580530973454,
+          17.22,
+          183.42
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.78,
+          0.52,
+          0.52
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 16.4,
+            "messageName": "",
+            "once": false,
+            "operation": "launchCharacter",
+            "scene": "",
+            "target": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": 280,
+      "name": "Follow camera at the turn",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          6.75,
+          21.45,
+          179.9
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "camera": {
+        "farClip": 150,
+        "nearClip": 0.10000000149011612,
+        "primary": false,
+        "verticalFovDegrees": 52.0
+      },
+      "followCamera": {
+        "avoidObstacles": true,
+        "clearance": 0.30000001192092896,
+        "lookOffset": [
+          -1.1231411945556673,
+          1.2,
+          3.525415416244172
+        ],
+        "offset": [
+          2.3677030587930283,
+          5.1,
+          -7.43195682343366
+        ],
+        "orbit": {
+          "enabled": false,
+          "maximumDistance": 20.0,
+          "maximumPitch": 75.0,
+          "minimumDistance": 2.0,
+          "minimumPitch": -75.0,
+          "mouseSensitivity": 0.18000000715255737,
+          "stickSpeed": 120.0,
+          "zoomSensitivity": 1.0
+        },
+        "smoothing": 8.0,
+        "target": 1
+      }
+    },
+    {
+      "id": 281,
+      "name": "Turn to the next stretch",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          6.75,
+          17.189999999999998,
+          179.9
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          2.25,
+          1.6,
+          2.25
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0.85,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "setCamera",
+            "scene": "",
+            "target": 280
+          }
+        ]
+      }
+    },
+    {
+      "id": 282,
+      "name": "Floating landing 29",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          3.15,
+          19.4,
+          191.2
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/FloatingIsland29.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          -0.16,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          3.1,
+          0.16,
+          2.45
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 283,
+      "name": "Floating landing 30",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          0,
+          19.45,
+          196.8
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/FloatingIsland30.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          -0.16,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.74,
+          0.16,
+          1.66
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 284,
+      "name": "Floating landing 31",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          -2.55,
+          19.55,
+          204.3
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/FloatingIsland31.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          -0.16,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          4.65,
+          0.16,
+          4.1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 285,
+      "name": "Wind relay checkpoint Spawn",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          -2.55,
+          20.27,
+          204.3
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "id": 286,
+      "name": "Wind relay checkpoint",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          -2.55,
+          20.27,
+          204.3
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          4.3500000000000005,
+          1,
+          2.1319999999999997
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 285,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "setCheckpoint",
+            "scene": "",
+            "target": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": 287,
+      "name": "Distant clouds 1",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          0,
+          -7.0,
+          12
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/CloudBanks01.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      }
+    },
+    {
+      "id": 288,
+      "name": "Distant clouds 2",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          0,
+          -6.24,
+          44
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/CloudBanks02.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      }
+    },
+    {
+      "id": 289,
+      "name": "Distant clouds 3",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          0,
+          -5.48,
+          76
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/CloudBanks03.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      }
+    },
+    {
+      "id": 290,
+      "name": "Distant clouds 4",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          0,
+          -4.72,
+          108
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/CloudBanks04.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      }
+    },
+    {
+      "id": 291,
+      "name": "Distant clouds 5",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          0,
+          -3.96,
+          140
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/CloudBanks05.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      }
+    },
+    {
+      "id": 292,
+      "name": "Distant clouds 6",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          0,
+          -3.2,
+          172
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/CloudBanks06.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      }
+    },
+    {
+      "id": 293,
+      "name": "Distant clouds 7",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          0,
+          -2.4399999999999995,
+          204
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/CloudBanks07.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      }
+    },
+    {
+      "id": 294,
+      "name": "Bell above the clouds",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          -2.55,
+          19.55,
+          206.65
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/skywind/models/CloudBellArch.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      }
+    },
+    {
+      "id": 295,
+      "name": "Ring the cloud bell",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          -2.55,
+          20.3,
+          206.65
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.18,
+          0.8,
+          0.52
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 197
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "disable",
+            "scene": "",
+            "target": 24
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "disable",
+            "scene": "",
+            "target": 129
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "enable",
+            "scene": "",
+            "target": 30
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "pauseGame",
+            "scene": "",
+            "target": 0
+          }
+        ]
+      }
+    }
+  ]
+}
