@@ -171,6 +171,14 @@
           {
             "name": "pauseReceiver",
             "target": 536
+          },
+          {
+            "name": "bell_walk",
+            "target": 674
+          },
+          {
+            "name": "bell_court",
+            "target": 676
           }
         ],
         "scenes": [
@@ -9678,12 +9686,12 @@
           1
         ],
         "scale": [
-          4.0,
+          1.35,
           0.42500001192092896,
           0.15000000596046448
         ],
         "translation": [
-          -12.0,
+          -14.65,
           4.34499979019165,
           89.0
         ]
@@ -10110,12 +10118,12 @@
           1
         ],
         "scale": [
-          2.0,
+          0.5,
           0.3799999952316284,
           0.30000001192092896
         ],
         "translation": [
-          -12.0,
+          -14.7,
           4.300000190734863,
           87.30000305175781
         ]
@@ -10547,9 +10555,9 @@
           4.0
         ],
         "translation": [
-          8.0,
+          37,
           4.5,
-          99.0
+          108
         ]
       }
     },
@@ -11296,9 +11304,9 @@
           1
         ],
         "translation": [
-          -12,
-          4.77,
-          84
+          25,
+          6.7,
+          119.2
         ]
       },
       "script": {
@@ -11636,7 +11644,7 @@
           "balconyText": "踊り場の階段から向かいの屋上へ",
           "balconyStairText": "踊り場へ降り、階段を登って向かいの屋上へ",
           "roofJumpText": "矢印から向かいの屋上へ  ［Space / A 長押しで遠くへ］",
-          "roofText": "屋上の時計台を目指そう",
+          "roofText": "時計台の奥へ。屋根を渡って鐘楼を目指そう",
           "courtyardReturnText": "中庭へ戻るなら矢印の通路へ",
           "finishPrompt": "花を探しに戻る / ここでクリア ［Enter / Y］"
         }
@@ -29506,10 +29514,10 @@
       "tag": "",
       "transform": {
         "rotation": [
-          -0.02805126,
-          -0.379673,
-          -0.01151853,
-          0.92462363
+          -0.12,
+          0.36,
+          0.048,
+          0.924
         ],
         "scale": [
           1,
@@ -29517,9 +29525,9 @@
           1
         ],
         "translation": [
-          -7.4,
-          7.3,
-          76.2
+          30.7,
+          10.7,
+          112.8
         ]
       },
       "camera": {
@@ -32000,12 +32008,12 @@
           1
         ],
         "scale": [
-          4.012,
+          1.37,
           0.027,
           0.162
         ],
         "translation": [
-          -12.0,
+          -14.65,
           4.754,
           89.0
         ]
@@ -35751,19 +35759,19 @@
       },
       "colorTint": {
         "color": [
-          0.53,
-          0.55,
-          0.37
+          0.64,
+          0.54,
+          0.4
         ]
       },
-      "id": 653,
+      "id": 658,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
       },
       "meshRenderer": {
         "textures": [
           {
-            "path": "@project/assets/textures/PrototypeWhite.png",
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
             "slot": 0
           }
         ],
@@ -35772,14 +35780,14 @@
           0.0
         ],
         "uvScale": [
-          1.0,
-          1.0
+          2,
+          3.1
         ],
         "visible": true
       },
-      "name": "Courtyard Trellis Lower Step",
-      "parent": 8,
-      "tag": "street_wave_near",
+      "name": "Bell arcade approach",
+      "parent": 0,
+      "tag": "",
       "transform": {
         "rotation": [
           0,
@@ -35788,14 +35796,14 @@
           1
         ],
         "scale": [
-          0.6,
-          0.7849999999999999,
-          0.53
+          2,
+          0.34,
+          3.1
         ],
         "translation": [
-          13.55,
-          1.345,
-          52.02
+          -12,
+          3.58,
+          92.0
         ]
       }
     },
@@ -35823,12 +35831,948 @@
       },
       "colorTint": {
         "color": [
-          0.53,
-          0.55,
-          0.37
+          0.64,
+          0.54,
+          0.4
         ]
       },
-      "id": 654,
+      "id": 659,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.7,
+          1.65
+        ],
+        "visible": true
+      },
+      "name": "Bell arcade first roof",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.7,
+          0.34,
+          1.65
+        ],
+        "translation": [
+          -5.8,
+          3.9800000000000004,
+          92
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 660,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.7,
+          1.8
+        ],
+        "visible": true
+      },
+      "name": "Bell arcade second roof",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.7,
+          0.34,
+          1.8
+        ],
+        "translation": [
+          -5.8,
+          3.9800000000000004,
+          98
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 661,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          4.25,
+          1.4
+        ],
+        "visible": true
+      },
+      "name": "Bell arcade turning balcony",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          4.25,
+          0.34,
+          1.4
+        ],
+        "translation": [
+          -0.05,
+          3.9800000000000004,
+          98.4
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 662,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          3.2,
+          3.0
+        ],
+        "visible": true
+      },
+      "name": "Bell arcade gear court",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          3.2,
+          0.34,
+          3.0
+        ],
+        "translation": [
+          8.5,
+          3.9800000000000004,
+          99
+        ]
+      }
+    },
+    {
+      "active": false,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.36,
+          0.45,
+          0.4
+        ]
+      },
+      "id": 663,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          2.5,
+          1.04
+        ],
+        "visible": true
+      },
+      "name": "Bell arcade folding bridge",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          2.5,
+          0.34,
+          1.04
+        ],
+        "translation": [
+          14.15,
+          3.9800000000000004,
+          100.7
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 664,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          2,
+          1.7
+        ],
+        "visible": true
+      },
+      "name": "Bell arcade far balcony",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          2,
+          0.34,
+          1.7
+        ],
+        "translation": [
+          18.8,
+          3.9800000000000004,
+          100.7
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 665,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.32,
+          0.92
+        ],
+        "visible": true
+      },
+      "name": "Bell arcade rising stair 1",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.32,
+          0.34,
+          0.66
+        ],
+        "translation": [
+          18.8,
+          4.23,
+          103.05
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 666,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.32,
+          0.92
+        ],
+        "visible": true
+      },
+      "name": "Bell arcade rising stair 2",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.32,
+          0.34,
+          0.66
+        ],
+        "translation": [
+          18.8,
+          4.48,
+          104.35
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 667,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.32,
+          0.92
+        ],
+        "visible": true
+      },
+      "name": "Bell arcade rising stair 3",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.32,
+          0.34,
+          0.66
+        ],
+        "translation": [
+          18.8,
+          4.73,
+          105.64999999999999
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 668,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.32,
+          0.92
+        ],
+        "visible": true
+      },
+      "name": "Bell arcade rising stair 4",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.32,
+          0.34,
+          0.66
+        ],
+        "translation": [
+          18.8,
+          4.98,
+          106.95
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 669,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          3.87,
+          1.2
+        ],
+        "visible": true
+      },
+      "name": "Bell arcade upper turn",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          3.87,
+          0.34,
+          1.2
+        ],
+        "translation": [
+          21.35,
+          5.3,
+          109.42
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 670,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.4,
+          1.3
+        ],
+        "visible": true
+      },
+      "name": "Bell arcade upper jump",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.4,
+          0.34,
+          1.3
+        ],
+        "translation": [
+          25,
+          5.66,
+          113
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 671,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          3,
+          2.7
+        ],
+        "visible": true
+      },
+      "name": "Bell arcade final court",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          3,
+          0.34,
+          2.7
+        ],
+        "translation": [
+          25,
+          5.66,
+          118
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.75,
+          0.64,
+          0.53
+        ]
+      },
+      "id": 672,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
       },
@@ -35849,9 +36793,9 @@
         ],
         "visible": true
       },
-      "name": "Courtyard Trellis Upper Step",
-      "parent": 8,
-      "tag": "street_wave_near",
+      "name": "Lookout east end rail",
+      "parent": 0,
+      "tag": "",
       "transform": {
         "rotation": [
           0,
@@ -35860,43 +36804,2194 @@
           1
         ],
         "scale": [
-          0.52,
-          0.855,
-          0.57
+          1.35,
+          0.425,
+          0.15
         ],
         "translation": [
-          15.45,
-          1.415,
-          52.78
+          -9.35,
+          4.345,
+          89
         ]
       }
     },
     {
       "active": true,
-      "id": 655,
-      "name": "Courtyard Planter Takeoff Arrow",
-      "parent": 8,
+      "colorTint": {
+        "color": [
+          0.19,
+          0.21,
+          0.25
+        ]
+      },
+      "id": 673,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Lookout east end cap",
+      "parent": 0,
       "tag": "",
       "transform": {
         "rotation": [
           0,
-          0.70710678,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.37,
+          0.027,
+          0.162
+        ],
+        "translation": [
+          -9.35,
+          4.754,
+          89
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 674,
+      "name": "Bell arcade bell_walk spawn",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          -12,
+          4.62,
+          91.1
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.3,
+          1.3,
+          0.6
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 675,
+      "name": "Bell arcade bell_walk checkpoint",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          -12,
+          4.62,
+          91.1
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 674,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "setCheckpoint",
+            "scene": "",
+            "target": 1
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "bell_walk",
+            "once": false,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 1
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 529
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 676,
+      "name": "Bell arcade bell_court spawn",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          7.5,
+          5.02,
+          97.3
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.3,
+          1.3,
+          0.6
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 677,
+      "name": "Bell arcade bell_court checkpoint",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          7.5,
+          5.02,
+          97.3
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 676,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "setCheckpoint",
+            "scene": "",
+            "target": 1
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "bell_court",
+            "once": false,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 1
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 529
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 678,
+      "name": "Bell arcade winch",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          10.3,
+          5.02,
+          100.9
+        ]
+      },
+      "transformAnimation": {
+        "interpolation": "linear",
+        "keys": [
+          {
+            "rotation": [
+              0,
+              0,
+              0.0,
+              1.0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.059417218,
+              0.998233236
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.06666666666666667,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.095640786,
+              0.995415913
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.13333333333333333,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.102119378,
+              0.994772151
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.2,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.080899299,
+              0.99672228
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.26666666666666666,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.04094482,
+              0.999161409
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.3333333333333333,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.00489115,
+              0.999988038
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.4,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.043710372,
+              0.999044245
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.4666666666666667,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.066118056,
+              0.997811807
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.5333333333333333,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.068285162,
+              0.997665844
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.6,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.052173455,
+              0.998638038
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.6666666666666666,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.024287803,
+              0.999705008
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.7333333333333333,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.00654607,
+              0.999978574
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.8,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.031799622,
+              0.999494264
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.8666666666666667,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.04549829,
+              0.998964417
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.9333333333333333,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.045479877,
+              0.998965255
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.033461856,
+              0.999439995
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.0666666666666667,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.014105569,
+              0.999900512
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.1333333333333333,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.00656323,
+              0.999978462
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.2,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.022917725,
+              0.999737354
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.2666666666666666,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.031178348,
+              0.999513837
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.3333333333333333,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.030178199,
+              0.999544534
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.4,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.021336858,
+              0.999772343
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.4666666666666666,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.0079645,
+              0.999968283
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.5333333333333334,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.005842595,
+              0.999982932
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.6,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.016383081,
+              0.999865788
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.6666666666666667,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.021282064,
+              0.999773511
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.7333333333333334,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.019951446,
+              0.99980095
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.8,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.013519837,
+              0.999908603
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.8666666666666667,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.004321169,
+              0.999990664
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.9333333333333333,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.004870415,
+              0.999988139
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.011628582,
+              0.999932386
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.066666666666667,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.014472975,
+              0.999895261
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.1333333333333333,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.013141493,
+              0.999913647
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.2,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.00850678,
+              0.999963817
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.2666666666666666,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.002204552,
+              0.99999757
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.3333333333333335,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.003893094,
+              0.999992422
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.4,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.008201696,
+              0.999966366
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.466666666666667,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.009807113,
+              0.999951909
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.533333333333333,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.008623011,
+              0.999962821
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.6,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.005310156,
+              0.999985901
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.6666666666666665,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.00100884,
+              0.999999491
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.7333333333333334,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.003021919,
+              0.999995434
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.8,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.005751687,
+              0.999983459
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.8666666666666667,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.006622197,
+              0.999978073
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.933333333333333,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.005635732,
+              0.999984119
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.003284507,
+              0.999994606
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.066666666666667,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.000359616,
+              0.999999935
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.1333333333333333,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.002295117,
+              0.999997366
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.2,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.004012524,
+              0.99999195
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.2666666666666666,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.004456204,
+              0.999990071
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.3333333333333335,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.003668019,
+              0.999993273
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.4,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.002009822,
+              0.99999798
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.466666666666667,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              2.7992e-05,
+              1.0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.533333333333333,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.001713843,
+              0.999998531
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.6,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.002785775,
+              0.99999612
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.6666666666666665,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.002988426,
+              0.999995535
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.7333333333333334,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.002376806,
+              0.999997175
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.8,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              -0.001214028,
+              0.999999263
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.8666666666666667,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.000124122,
+              0.999999992
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.933333333333333,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.0,
+              1.0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 4.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "mode": "once",
+        "playOnStart": false,
+        "speed": 1
+      }
+    },
+    {
+      "active": true,
+      "id": 679,
+      "mesh": {
+        "model": "@project/assets/title/models/WorkshopGear.obj"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Bell arcade gear wheel",
+      "parent": 678,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          -0.70710678,
+          0,
           0,
           0.70710678
         ],
         "scale": [
-          0.72,
-          0.72,
-          0.72
+          0.7,
+          0.7,
+          0.7
         ],
         "translation": [
-          11.7,
-          0.585,
-          49.1
+          0,
+          0,
+          -0.2
+        ]
+      },
+      "colorTint": {
+        "color": [
+          0.652174,
+          0.6,
+          0.553846
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.5,
+          1.3,
+          1.4
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 680,
+      "name": "Bell arcade bridge gear",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          10.0,
+          5.02,
+          100.3
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "interact",
+            "inputAction": "Attack",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "enable",
+            "scene": "",
+            "target": 663
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "interact",
+            "inputAction": "Attack",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "playAudio",
+            "scene": "",
+            "target": 529
+          }
+        ]
+      },
+      "script": {
+        "asset": "@project/assets/common/scripts/MechanismHint.lua",
+        "enabled": true,
+        "prefabs": [],
+        "references": [
+          {
+            "name": "player",
+            "target": 1
+          },
+          {
+            "name": "mechanism",
+            "target": 663
+          },
+          {
+            "name": "hint",
+            "target": 158
+          }
+        ],
+        "scenes": [],
+        "state": {
+          "radius": 4,
+          "openWhenActive": true,
+          "closedText": "歯車をたたいて橋を架けよう ［J / X］",
+          "openText": "橋が架かった。階段を上って鐘楼へ"
+        }
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.43,
+          0.48,
+          0.43
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "audioSource": {
+        "clip": "@project/assets/street/audio/EnemyWindup.wav",
+        "loop": false,
+        "maxDistance": 15,
+        "minDistance": 3,
+        "playOnStart": false,
+        "spatial": true,
+        "volume": 0.55
+      },
+      "id": 681,
+      "name": "Bell arcade charging guard",
+      "parent": 0,
+      "rigidBody": {
+        "angularDamping": 0,
+        "angularVelocity": [
+          0,
+          0,
+          0
+        ],
+        "enabled": true,
+        "freezeRotation": [
+          false,
+          false,
+          false
+        ],
+        "friction": 0.5,
+        "gravityFactor": 0,
+        "isKinematic": true,
+        "linearDamping": 0,
+        "linearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "mass": 1,
+        "restitution": 0
+      },
+      "script": {
+        "asset": "@project/assets/street/scripts/StreetEnemy.lua",
+        "enabled": true,
+        "prefabs": [],
+        "references": [
+          {
+            "name": "player",
+            "target": 1
+          },
+          {
+            "name": "visual",
+            "target": 682
+          },
+          {
+            "name": "objective",
+            "target": 160
+          }
+        ],
+        "scenes": [],
+        "state": {
+          "detectionRadius": 4.8,
+          "dx": 0,
+          "dz": 1,
+          "range": 2.1,
+          "speed": 3.5,
+          "time": 0,
+          "warningEnabled": true,
+          "aimLockTime": 1.48
+        }
+      },
+      "tag": "street_enemy",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.3,
+          1.2,
+          1.3
+        ],
+        "translation": [
+          8.8,
+          5.02,
+          100.6
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 682,
+      "mesh": {
+        "model": "@project/assets/street/models/StreetEnemy.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0,
+          0
+        ],
+        "uvScale": [
+          1,
+          1
+        ],
+        "visible": true
+      },
+      "name": "Bell arcade guard body",
+      "parent": 681,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.34,
+          0.28,
+          0.19
+        ]
+      },
+      "id": 683,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "slot": 0,
+            "path": "@project/assets/textures/PrototypeWhite.png"
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          0.35,
+          0.48
+        ],
+        "visible": true
+      },
+      "name": "Bell arcade timber cover",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.35,
+          0.49,
+          0.48
+        ],
+        "translation": [
+          7.2,
+          4.81,
+          99.2
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.88,
+          0.68,
+          0.28
+        ]
+      },
+      "id": 684,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          0.13,
+          0.15
+        ],
+        "visible": true
+      },
+      "name": "Bell arcade brass marker",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.13,
+          0.34,
+          0.15
+        ],
+        "translation": [
+          -10.75,
+          4.8100000000000005,
+          91.2
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.88,
+          0.68,
+          0.28
+        ]
+      },
+      "id": 685,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          0.13,
+          0.15
+        ],
+        "visible": true
+      },
+      "name": "Bell arcade brass marker",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.13,
+          0.34,
+          0.15
+        ],
+        "translation": [
+          8.55,
+          4.8100000000000005,
+          97.1
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.88,
+          0.68,
+          0.28
+        ]
+      },
+      "id": 686,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          0.13,
+          0.15
+        ],
+        "visible": true
+      },
+      "name": "Bell arcade brass marker",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.13,
+          0.34,
+          0.15
+        ],
+        "translation": [
+          20.05,
+          4.8100000000000005,
+          101.7
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.88,
+          0.68,
+          0.28
+        ]
+      },
+      "id": 687,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          0.13,
+          0.15
+        ],
+        "visible": true
+      },
+      "name": "Bell arcade brass marker",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          0.13,
+          0.34,
+          0.15
+        ],
+        "translation": [
+          26.25,
+          6.61,
+          116.5
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 688,
+      "name": "Bell arcade shops and rooftop masonry",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
         ]
       },
       "mesh": {
-        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
+        "model": "@project/assets/street/models/BellArcadeExterior.glb"
       },
       "meshRenderer": {
         "visible": true,
@@ -35913,81 +39008,73 @@
     },
     {
       "active": true,
-      "id": 656,
-      "name": "Courtyard Trellis Route Arrow",
-      "parent": 8,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 689,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.32,
+          0.92
+        ],
+        "visible": true
+      },
+      "name": "Bell arcade rising stair 5",
+      "parent": 0,
       "tag": "",
       "transform": {
         "rotation": [
           0,
-          0.96592583,
           0,
-          0.25881905
-        ],
-        "scale": [
-          0.72,
-          0.72,
-          0.72
-        ],
-        "translation": [
-          12.13,
-          1.58,
-          50.75
-        ]
-      },
-      "mesh": {
-        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
-      },
-      "meshRenderer": {
-        "visible": true,
-        "textures": [],
-        "uvScale": [
-          1,
+          0,
           1
         ],
-        "uvOffset": [
-          0,
-          0
-        ]
-      }
-    },
-    {
-      "active": true,
-      "id": 657,
-      "name": "Courtyard Trellis Step Arrow",
-      "parent": 8,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0,
-          0.98162718,
-          0,
-          0.190809
-        ],
         "scale": [
-          0.72,
-          0.72,
-          0.72
+          1.32,
+          0.34,
+          0.66
         ],
         "translation": [
-          13.55,
-          2.15,
-          52.02
-        ]
-      },
-      "mesh": {
-        "model": "@project/assets/street/models/RooftopJumpMarker.obj"
-      },
-      "meshRenderer": {
-        "visible": true,
-        "textures": [],
-        "uvScale": [
-          1,
-          1
-        ],
-        "uvOffset": [
-          0,
-          0
+          18.8,
+          5.23,
+          108.25
         ]
       }
     }

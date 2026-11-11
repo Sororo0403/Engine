@@ -381,7 +381,8 @@ return {
                 show_life(self, state)
                 sender:set_active(false)
             end
-        elseif name == "canal" or name == "courtyard" or name == "roof" then
+        elseif name == "canal" or name == "courtyard" or name == "roof"
+            or name == "bell_walk" or name == "bell_court" then
             state.spawnX, state.spawnY, state.spawnZ = self:reference(name):get_position()
             state.visitedCheckpoints = state.visitedCheckpoints or {}
             if not state.visitedCheckpoints[name] then
