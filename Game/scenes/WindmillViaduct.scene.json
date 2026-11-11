@@ -7,9 +7,9 @@
       0.95
     ],
     "enabled": true,
-    "end": 95,
-    "start": 42,
-    "strength": 0.5
+    "end": 108,
+    "start": 37,
+    "strength": 0.67
   },
   "lighting": {
     "ambient": 0.4,
@@ -431,7 +431,7 @@
         "fontFamily": "Yu Gothic UI",
         "fontSize": 24,
         "raycastTarget": false,
-        "value": "風見の高架　　風車の風に乗って展望台へ",
+        "value": "風見の高架　　風車を乗り継いで谷の向こうへ",
         "verticalAlignment": "middle"
       },
       "transform": {
@@ -1230,9 +1230,9 @@
           "mask": 4294967295
         },
         "halfExtents": [
-          1.35,
+          1.3,
           0.55,
-          0.32
+          0.54
         ],
         "halfHeight": 0.5,
         "isTrigger": true,
@@ -1245,10 +1245,10 @@
       "tag": "",
       "transform": {
         "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
         ],
         "scale": [
           1.0,
@@ -1256,9 +1256,9 @@
           1.0
         ],
         "translation": [
-          0,
-          8.16,
-          39.04
+          71.8,
+          11.42,
+          13.8
         ]
       },
       "triggerActions": {
@@ -2241,34 +2241,7 @@
         "radius": 0.5,
         "shape": "Box"
       },
-      "colorTint": {
-        "color": [
-          0.64,
-          0.67,
-          0.62
-        ]
-      },
       "id": 200,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
       "name": "Arrival terrace",
       "parent": 0,
       "tag": "",
@@ -2313,34 +2286,7 @@
         "radius": 0.5,
         "shape": "Box"
       },
-      "colorTint": {
-        "color": [
-          0.24,
-          0.52,
-          0.48
-        ]
-      },
       "id": 201,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
       "name": "West approach",
       "parent": 0,
       "tag": "",
@@ -2385,34 +2331,7 @@
         "radius": 0.5,
         "shape": "Box"
       },
-      "colorTint": {
-        "color": [
-          0.24,
-          0.52,
-          0.48
-        ]
-      },
       "id": 202,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
       "name": "West viaduct stair 1",
       "parent": 0,
       "tag": "",
@@ -2457,34 +2376,7 @@
         "radius": 0.5,
         "shape": "Box"
       },
-      "colorTint": {
-        "color": [
-          0.24,
-          0.52,
-          0.48
-        ]
-      },
       "id": 203,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
       "name": "West viaduct stair 2",
       "parent": 0,
       "tag": "",
@@ -2529,34 +2421,7 @@
         "radius": 0.5,
         "shape": "Box"
       },
-      "colorTint": {
-        "color": [
-          0.24,
-          0.52,
-          0.48
-        ]
-      },
       "id": 204,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
       "name": "West viaduct stair 3",
       "parent": 0,
       "tag": "",
@@ -2601,34 +2466,7 @@
         "radius": 0.5,
         "shape": "Box"
       },
-      "colorTint": {
-        "color": [
-          0.24,
-          0.52,
-          0.48
-        ]
-      },
       "id": 205,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
       "name": "West viaduct stair 4",
       "parent": 0,
       "tag": "",
@@ -2673,34 +2511,7 @@
         "radius": 0.5,
         "shape": "Box"
       },
-      "colorTint": {
-        "color": [
-          0.24,
-          0.52,
-          0.48
-        ]
-      },
       "id": 206,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
       "name": "West viaduct stair 5",
       "parent": 0,
       "tag": "",
@@ -2745,511 +2556,7 @@
         "radius": 0.5,
         "shape": "Box"
       },
-      "colorTint": {
-        "color": [
-          0.24,
-          0.52,
-          0.48
-        ]
-      },
-      "id": 207,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "West viaduct stair 6",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          1.35,
-          0.34,
-          0.89
-        ],
-        "translation": [
-          -8,
-          1.16,
-          13.5
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0.0,
-          0.0,
-          0.0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1.0,
-          1.0,
-          1.0
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.24,
-          0.52,
-          0.48
-        ]
-      },
-      "id": 208,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "West viaduct stair 7",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          1.35,
-          0.34,
-          0.89
-        ],
-        "translation": [
-          -8,
-          1.41,
-          15.25
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0.0,
-          0.0,
-          0.0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1.0,
-          1.0,
-          1.0
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.24,
-          0.52,
-          0.48
-        ]
-      },
-      "id": 209,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "West viaduct stair 8",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          1.35,
-          0.34,
-          0.89
-        ],
-        "translation": [
-          -8,
-          1.66,
-          17.0
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0.0,
-          0.0,
-          0.0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1.0,
-          1.0,
-          1.0
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "id": 210,
-      "name": "West bend",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          2.85,
-          0.34,
-          1.35
-        ],
-        "translation": [
-          -6.5,
-          1.66,
-          18
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0.0,
-          0.0,
-          0.0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1.0,
-          1.0,
-          1.0
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.72,
-          0.43,
-          0.24
-        ]
-      },
-      "id": 211,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "East jump pier 1",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          1.18,
-          0.42,
-          1.06
-        ],
-        "translation": [
-          3.0,
-          0.03,
-          7.2
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0.0,
-          0.0,
-          0.0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1.0,
-          1.0,
-          1.0
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.72,
-          0.43,
-          0.24
-        ]
-      },
-      "id": 212,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "East jump pier 2",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          1.18,
-          0.42,
-          1.06
-        ],
-        "translation": [
-          3.0,
-          0.53,
-          11.15
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0.0,
-          0.0,
-          0.0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1.0,
-          1.0,
-          1.0
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.72,
-          0.43,
-          0.24
-        ]
-      },
-      "id": 213,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "East jump pier 3",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          1.18,
-          0.42,
-          1.06
-        ],
-        "translation": [
-          3.0,
-          1.03,
-          15.05
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0.0,
-          0.0,
-          0.0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1.0,
-          1.0,
-          1.0
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.64,
-          0.67,
-          0.62
-        ]
-      },
       "id": 214,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
       "name": "Midpoint terrace",
       "parent": 0,
       "tag": "",
@@ -3294,709 +2601,16 @@
         "radius": 0.5,
         "shape": "Box"
       },
-      "id": 215,
-      "name": "East approach",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          2.3,
-          0.34,
-          1.2
-        ],
-        "translation": [
-          6.05,
-          1.66,
-          21.8
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0.0,
-          0.0,
-          0.0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1.0,
-          1.0,
-          1.0
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.24,
-          0.52,
-          0.48
-        ]
-      },
-      "id": 216,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "East ridge stair 1",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          1.35,
-          0.34,
-          0.92
-        ],
-        "translation": [
-          8,
-          1.91,
-          23.4
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0.0,
-          0.0,
-          0.0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1.0,
-          1.0,
-          1.0
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.24,
-          0.52,
-          0.48
-        ]
-      },
-      "id": 217,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "East ridge stair 2",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          1.35,
-          0.34,
-          0.92
-        ],
-        "translation": [
-          8,
-          2.16,
-          25.2
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0.0,
-          0.0,
-          0.0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1.0,
-          1.0,
-          1.0
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.24,
-          0.52,
-          0.48
-        ]
-      },
-      "id": 218,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "East ridge stair 3",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          1.35,
-          0.34,
-          0.92
-        ],
-        "translation": [
-          8,
-          2.41,
-          27.0
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0.0,
-          0.0,
-          0.0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1.0,
-          1.0,
-          1.0
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.24,
-          0.52,
-          0.48
-        ]
-      },
-      "id": 219,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "East ridge stair 4",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          1.35,
-          0.34,
-          0.92
-        ],
-        "translation": [
-          8,
-          2.66,
-          28.799999999999997
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0.0,
-          0.0,
-          0.0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1.0,
-          1.0,
-          1.0
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.24,
-          0.52,
-          0.48
-        ]
-      },
-      "id": 220,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "East ridge stair 5",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          1.35,
-          0.34,
-          0.92
-        ],
-        "translation": [
-          8,
-          2.91,
-          30.599999999999998
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0.0,
-          0.0,
-          0.0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1.0,
-          1.0,
-          1.0
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.24,
-          0.52,
-          0.48
-        ]
-      },
-      "id": 221,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "East ridge stair 6",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          1.35,
-          0.34,
-          0.92
-        ],
-        "translation": [
-          8,
-          3.16,
-          32.4
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0.0,
-          0.0,
-          0.0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1.0,
-          1.0,
-          1.0
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "id": 222,
-      "name": "East ridge bend",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          2.9,
-          0.34,
-          1.0
-        ],
-        "translation": [
-          6.3,
-          3.16,
-          33.95
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0.0,
-          0.0,
-          0.0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1.0,
-          1.0,
-          1.0
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.72,
-          0.43,
-          0.24
-        ]
-      },
-      "id": 223,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "West ridge jump pier 1",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          1.2,
-          0.42,
-          1.05
-        ],
-        "translation": [
-          -2.8,
-          2.06,
-          25.55
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0.0,
-          0.0,
-          0.0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1.0,
-          1.0,
-          1.0
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.72,
-          0.43,
-          0.24
-        ]
-      },
-      "id": 224,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "West ridge jump pier 2",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          1.2,
-          0.42,
-          1.05
-        ],
-        "translation": [
-          -2.8,
-          2.54,
-          29.38
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0.0,
-          0.0,
-          0.0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1.0,
-          1.0,
-          1.0
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.64,
-          0.67,
-          0.62
-        ]
-      },
       "id": 225,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
       "name": "Windmill summit",
       "parent": 0,
       "tag": "",
       "transform": {
         "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
         ],
         "scale": [
           5.2,
@@ -4004,945 +2618,9 @@
           3.45
         ],
         "translation": [
-          0,
+          17.05,
           2.77,
-          35.25
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.29,
-          0.35,
-          0.37
-        ]
-      },
-      "id": 226,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Viaduct outer coping",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          0.12,
-          0.12,
-          1.15
-        ],
-        "translation": [
-          -9.23,
-          0.56,
-          5.5
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.29,
-          0.35,
-          0.37
-        ]
-      },
-      "id": 227,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Viaduct outer coping",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          0.12,
-          0.12,
-          1.15
-        ],
-        "translation": [
-          -9.23,
-          1.06,
-          9
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.29,
-          0.35,
-          0.37
-        ]
-      },
-      "id": 228,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Viaduct outer coping",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          0.12,
-          0.12,
-          1.15
-        ],
-        "translation": [
-          -9.23,
-          1.56,
-          12.5
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.29,
-          0.35,
-          0.37
-        ]
-      },
-      "id": 229,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Viaduct outer coping",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          0.12,
-          0.12,
-          1.15
-        ],
-        "translation": [
-          -9.23,
-          2.06,
-          16
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.29,
-          0.35,
-          0.37
-        ]
-      },
-      "id": 230,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Viaduct outer coping",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          0.12,
-          0.12,
-          1.15
-        ],
-        "translation": [
-          9.23,
-          2.56,
-          24
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.29,
-          0.35,
-          0.37
-        ]
-      },
-      "id": 231,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Viaduct outer coping",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          0.12,
-          0.12,
-          1.15
-        ],
-        "translation": [
-          9.23,
-          3.06,
-          27.6
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.29,
-          0.35,
-          0.37
-        ]
-      },
-      "id": 232,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Viaduct outer coping",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          0.12,
-          0.12,
-          1.15
-        ],
-        "translation": [
-          9.23,
-          3.56,
-          31.2
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.29,
-          0.35,
-          0.37
-        ]
-      },
-      "id": 233,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Viaduct support",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          0.56,
-          3.8,
-          0.62
-        ],
-        "translation": [
-          -8,
-          -3.85,
-          5
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.29,
-          0.35,
-          0.37
-        ]
-      },
-      "id": 234,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Viaduct support",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          0.56,
-          3.8,
-          0.62
-        ],
-        "translation": [
-          -8,
-          -2.85,
-          12.5
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.29,
-          0.35,
-          0.37
-        ]
-      },
-      "id": 235,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Viaduct support",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          0.56,
-          3.8,
-          0.62
-        ],
-        "translation": [
-          3,
-          -3.65,
-          7.2
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.29,
-          0.35,
-          0.37
-        ]
-      },
-      "id": 236,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Viaduct support",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          0.56,
-          3.8,
-          0.62
-        ],
-        "translation": [
-          3,
-          -3.15,
-          11.15
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.29,
-          0.35,
-          0.37
-        ]
-      },
-      "id": 237,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Viaduct support",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          0.56,
-          3.8,
-          0.62
-        ],
-        "translation": [
-          3,
-          -2.65,
-          15.05
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.29,
-          0.35,
-          0.37
-        ]
-      },
-      "id": 238,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Viaduct support",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          0.56,
-          3.8,
-          0.62
-        ],
-        "translation": [
-          8,
-          -1.85,
-          24
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.29,
-          0.35,
-          0.37
-        ]
-      },
-      "id": 239,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Viaduct support",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          0.56,
-          3.8,
-          0.62
-        ],
-        "translation": [
-          8,
-          -0.85,
-          30.6
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.29,
-          0.35,
-          0.37
-        ]
-      },
-      "id": 240,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Viaduct support",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          0.56,
-          3.8,
-          0.62
-        ],
-        "translation": [
-          -2.8,
-          -1.62,
-          25.55
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.29,
-          0.35,
-          0.37
-        ]
-      },
-      "id": 241,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Viaduct support",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          0.56,
-          3.8,
-          0.62
-        ],
-        "translation": [
-          -2.8,
-          -1.14,
-          29.38
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.29,
-          0.35,
-          0.37
-        ]
-      },
-      "id": 242,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Viaduct support",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          0.56,
-          3.8,
-          0.62
-        ],
-        "translation": [
-          0,
-          -2.1,
-          20
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.29,
-          0.35,
-          0.37
-        ]
-      },
-      "id": 243,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Viaduct support",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          0.56,
-          3.8,
-          0.62
-        ],
-        "translation": [
-          0,
-          -0.6,
-          35
+          20.1
         ]
       }
     },
@@ -4968,34 +2646,7 @@
         "radius": 0.5,
         "shape": "Box"
       },
-      "colorTint": {
-        "color": [
-          0.45,
-          0.56,
-          0.39
-        ]
-      },
       "id": 244,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
       "name": "Terrace stone planter",
       "parent": 0,
       "tag": "",
@@ -5040,34 +2691,7 @@
         "radius": 0.5,
         "shape": "Box"
       },
-      "colorTint": {
-        "color": [
-          0.45,
-          0.56,
-          0.39
-        ]
-      },
       "id": 245,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
       "name": "Terrace stone planter",
       "parent": 0,
       "tag": "",
@@ -5112,34 +2736,7 @@
         "radius": 0.5,
         "shape": "Box"
       },
-      "colorTint": {
-        "color": [
-          0.45,
-          0.56,
-          0.39
-        ]
-      },
       "id": 246,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
       "name": "Terrace stone planter",
       "parent": 0,
       "tag": "",
@@ -5184,34 +2781,7 @@
         "radius": 0.5,
         "shape": "Box"
       },
-      "colorTint": {
-        "color": [
-          0.45,
-          0.56,
-          0.39
-        ]
-      },
       "id": 247,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
       "name": "Terrace stone planter",
       "parent": 0,
       "tag": "",
@@ -5256,43 +2826,16 @@
         "radius": 0.5,
         "shape": "Box"
       },
-      "colorTint": {
-        "color": [
-          0.45,
-          0.56,
-          0.39
-        ]
-      },
       "id": 248,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
       "name": "Terrace stone planter",
       "parent": 0,
       "tag": "",
       "transform": {
         "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
         ],
         "scale": [
           0.37,
@@ -5300,9 +2843,9 @@
           0.9
         ],
         "translation": [
-          -4.5,
+          16.8,
           3.6,
-          35
+          24.6
         ]
       }
     },
@@ -5328,43 +2871,16 @@
         "radius": 0.5,
         "shape": "Box"
       },
-      "colorTint": {
-        "color": [
-          0.45,
-          0.56,
-          0.39
-        ]
-      },
       "id": 249,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
       "name": "Terrace stone planter",
       "parent": 0,
       "tag": "",
       "transform": {
         "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
         ],
         "scale": [
           0.37,
@@ -5372,9 +2888,9 @@
           0.9
         ],
         "translation": [
-          4.5,
+          16.8,
           3.6,
-          35
+          15.6
         ]
       }
     },
@@ -5434,58 +2950,6 @@
       "active": true,
       "colorTint": {
         "color": [
-          0.72,
-          0.43,
-          0.24
-        ]
-      },
-      "id": 251,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Route inlay",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          0.35,
-          0.018,
-          0.5
-        ],
-        "translation": [
-          3.0,
-          0.007,
-          4.2
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
           0.24,
           0.52,
           0.48
@@ -5517,10 +2981,10 @@
       "tag": "",
       "transform": {
         "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
         ],
         "scale": [
           0.35,
@@ -5528,9 +2992,9 @@
           0.5
         ],
         "translation": [
-          4.35,
-          2.007,
-          21.8
+          4.82,
+          2.025,
+          17.5
         ]
       }
     },
@@ -5569,10 +3033,10 @@
       "tag": "",
       "transform": {
         "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
         ],
         "scale": [
           0.35,
@@ -5580,9 +3044,9 @@
           0.5
         ],
         "translation": [
-          -2.8,
-          2.007,
-          22.6
+          4.4,
+          2.025,
+          22.9
         ]
       }
     },
@@ -5660,43 +3124,16 @@
         "radius": 0.5,
         "shape": "Box"
       },
-      "colorTint": {
-        "color": [
-          0.29,
-          0.35,
-          0.37
-        ]
-      },
       "id": 255,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
       "name": "Windmill base",
       "parent": 0,
       "tag": "",
       "transform": {
         "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
         ],
         "scale": [
           1.25,
@@ -5704,945 +3141,9 @@
           0.65
         ],
         "translation": [
-          3,
+          19.25,
           3.87,
-          37.45
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.91,
-          0.83,
-          0.63
-        ]
-      },
-      "id": 256,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Windmill tower",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          0.82,
-          2.53,
-          0.7
-        ],
-        "translation": [
-          3,
-          6.72,
-          37.6
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.72,
-          0.43,
-          0.24
-        ]
-      },
-      "id": 257,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Windmill cap",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          1.04,
-          0.16,
-          0.83
-        ],
-        "translation": [
-          3,
-          9.39,
-          37.6
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.29,
-          0.35,
-          0.37
-        ]
-      },
-      "id": 258,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Windmill axle",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          0.26,
-          0.26,
-          0.21
-        ],
-        "translation": [
-          3,
-          8.31,
-          36.78
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.91,
-          0.83,
-          0.63
-        ]
-      },
-      "id": 259,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Windmill sail",
-      "parent": 282,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0.3826834323650898,
-          0.9238795325112867
-        ],
-        "scale": [
-          0.2,
-          2.25,
-          0.12
-        ],
-        "translation": [
-          0,
-          0.01,
-          0
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.91,
-          0.83,
-          0.63
-        ]
-      },
-      "id": 260,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Windmill sail",
-      "parent": 282,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0.9238795325112867,
-          0.38268343236508984
-        ],
-        "scale": [
-          0.2,
-          2.25,
-          0.12
-        ],
-        "translation": [
-          0,
-          0.01,
-          0
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.24,
-          0.52,
-          0.48
-        ]
-      },
-      "id": 261,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Finish approach pillar",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          0.18,
-          1.2,
-          0.19
-        ],
-        "translation": [
-          -1.5,
-          4.7,
-          35.4
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.24,
-          0.52,
-          0.48
-        ]
-      },
-      "id": 262,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Finish approach pillar",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          0.18,
-          1.2,
-          0.19
-        ],
-        "translation": [
-          1.5,
-          4.7,
-          35.4
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.24,
-          0.52,
-          0.48
-        ]
-      },
-      "id": 263,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Finish approach lintel",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          1.68,
-          0.15,
-          0.19
-        ],
-        "translation": [
-          0,
-          5.85,
-          35.4
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.49,
-          0.56,
-          0.58
-        ]
-      },
-      "id": 264,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Distant rock",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          2.7,
-          3.1,
-          2.5
-        ],
-        "translation": [
-          -18,
-          -4.1,
-          4
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.49,
-          0.56,
-          0.58
-        ]
-      },
-      "id": 265,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Distant rock",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          2.7,
-          3.1,
-          2.5
-        ],
-        "translation": [
-          -19,
-          -0.8,
-          12
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.49,
-          0.56,
-          0.58
-        ]
-      },
-      "id": 266,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Distant rock",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          2.7,
-          3.1,
-          2.5
-        ],
-        "translation": [
-          -20,
-          -3.0,
-          20
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.49,
-          0.56,
-          0.58
-        ]
-      },
-      "id": 267,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Distant rock",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          2.7,
-          3.1,
-          2.5
-        ],
-        "translation": [
-          -21,
-          0.3,
-          28
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.49,
-          0.56,
-          0.58
-        ]
-      },
-      "id": 268,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Distant rock",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          2.7,
-          3.1,
-          2.5
-        ],
-        "translation": [
-          -22,
-          -1.9,
-          36
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.49,
-          0.56,
-          0.58
-        ]
-      },
-      "id": 269,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Distant rock",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          2.7,
-          3.1,
-          2.5
-        ],
-        "translation": [
-          18,
-          -4.1,
-          4
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.49,
-          0.56,
-          0.58
-        ]
-      },
-      "id": 270,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Distant rock",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          2.7,
-          3.1,
-          2.5
-        ],
-        "translation": [
-          19,
-          -0.8,
-          12
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.49,
-          0.56,
-          0.58
-        ]
-      },
-      "id": 271,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Distant rock",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          2.7,
-          3.1,
-          2.5
-        ],
-        "translation": [
-          20,
-          -3.0,
-          20
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.49,
-          0.56,
-          0.58
-        ]
-      },
-      "id": 272,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Distant rock",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          2.7,
-          3.1,
-          2.5
-        ],
-        "translation": [
-          21,
-          0.3,
-          28
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.49,
-          0.56,
-          0.58
-        ]
-      },
-      "id": 273,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Distant rock",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          2.7,
-          3.1,
-          2.5
-        ],
-        "translation": [
-          22,
-          -1.9,
-          36
+          17.1
         ]
       }
     },
@@ -6668,43 +3169,16 @@
         "radius": 0.5,
         "shape": "Box"
       },
-      "colorTint": {
-        "color": [
-          0.75,
-          0.67,
-          0.49
-        ]
-      },
       "id": 274,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
       "name": "Windmill upper lookout",
       "parent": 0,
       "tag": "",
       "transform": {
         "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
         ],
         "scale": [
           2.25,
@@ -6712,81 +3186,9 @@
           1.32
         ],
         "translation": [
-          0,
+          20.32,
           7.19,
-          38.52
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0.0,
-          0.0,
-          0.0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1.0,
-          1.0,
-          1.0
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.25,
-          0.49,
-          0.44
-        ]
-      },
-      "id": 275,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Lookout side rail",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          0.11,
-          0.47,
-          1.18
-        ],
-        "translation": [
-          -2.1,
-          7.89,
-          38.63
+          20.1
         ]
       }
     },
@@ -6845,10 +3247,10 @@
       "tag": "",
       "transform": {
         "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
         ],
         "scale": [
           0.11,
@@ -6856,9 +3258,9 @@
           1.18
         ],
         "translation": [
-          2.1,
+          20.43,
           7.89,
-          38.63
+          18.0
         ]
       }
     },
@@ -6897,20 +3299,20 @@
       "tag": "",
       "transform": {
         "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
         ],
         "scale": [
-          1.24,
+          1.2,
           0.015,
-          0.53
+          0.52
         ],
         "translation": [
-          0,
-          7.43,
-          39.04
+          71.8,
+          10.71,
+          13.8
         ]
       }
     },
@@ -6949,10 +3351,10 @@
       "tag": "",
       "transform": {
         "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
         ],
         "scale": [
           0.18,
@@ -6960,9 +3362,9 @@
           0.58
         ],
         "translation": [
-          -0.75,
+          17.25,
           3.509,
-          35.45
+          20.85
         ]
       }
     },
@@ -7001,10 +3403,10 @@
       "tag": "",
       "transform": {
         "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
         ],
         "scale": [
           0.18,
@@ -7012,9 +3414,9 @@
           0.58
         ],
         "translation": [
-          0,
+          17.25,
           3.509,
-          35.45
+          20.1
         ]
       }
     },
@@ -7053,10 +3455,10 @@
       "tag": "",
       "transform": {
         "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
         ],
         "scale": [
           0.18,
@@ -7064,9 +3466,9 @@
           0.58
         ],
         "translation": [
-          0.75,
+          17.25,
           3.509,
-          35.45
+          19.35
         ]
       }
     },
@@ -7098,10 +3500,10 @@
       "tag": "",
       "transform": {
         "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
         ],
         "scale": [
           1.0,
@@ -7109,9 +3511,9 @@
           1.0
         ],
         "translation": [
-          0,
+          17.2,
           4.13,
-          35.4
+          20.1
         ]
       },
       "triggerActions": {
@@ -7144,10 +3546,10 @@
       "tag": "",
       "transform": {
         "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
         ],
         "scale": [
           1.0,
@@ -7155,9 +3557,9 @@
           1.0
         ],
         "translation": [
-          3,
+          18.29,
           8.3,
-          36.49
+          17.1
         ]
       },
       "transformAnimation": {
@@ -7266,162 +3668,6 @@
     },
     {
       "active": true,
-      "colorTint": {
-        "color": [
-          0.24,
-          0.52,
-          0.48
-        ]
-      },
-      "id": 283,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "West bend surface",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          2.85,
-          0.34,
-          1.35
-        ],
-        "translation": [
-          -6.5,
-          1.644,
-          18
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.24,
-          0.52,
-          0.48
-        ]
-      },
-      "id": 284,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "East approach surface",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          2.3,
-          0.34,
-          1.2
-        ],
-        "translation": [
-          6.05,
-          1.644,
-          21.8
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.24,
-          0.52,
-          0.48
-        ]
-      },
-      "id": 285,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "East ridge bend surface",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          2.9,
-          0.34,
-          1.0
-        ],
-        "translation": [
-          6.3,
-          3.144,
-          33.95
-        ]
-      }
-    },
-    {
-      "active": true,
       "collider": {
         "center": [
           0.0,
@@ -7442,43 +3688,16 @@
         "radius": 0.5,
         "shape": "Box"
       },
-      "colorTint": {
-        "color": [
-          0.75,
-          0.67,
-          0.49
-        ]
-      },
       "id": 286,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
       "name": "Wind relay landing",
       "parent": 0,
       "tag": "",
       "transform": {
         "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
         ],
         "scale": [
           1.74,
@@ -7486,9 +3705,9 @@
           1.46
         ],
         "translation": [
-          0,
+          8.03,
           4.87,
-          26.23
+          20.1
         ]
       }
     },
@@ -7547,10 +3766,10 @@
       "tag": "",
       "transform": {
         "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
         ],
         "scale": [
           0.1,
@@ -7558,9 +3777,9 @@
           1.04
         ],
         "translation": [
-          -1.62,
+          7.85,
           5.31,
-          26.05
+          21.72
         ]
       }
     },
@@ -7619,10 +3838,10 @@
       "tag": "",
       "transform": {
         "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
         ],
         "scale": [
           0.1,
@@ -7630,9 +3849,9 @@
           1.04
         ],
         "translation": [
-          1.62,
+          7.85,
           5.31,
-          26.05
+          18.48
         ]
       }
     },
@@ -7671,10 +3890,10 @@
       "tag": "",
       "transform": {
         "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
         ],
         "scale": [
           0.115,
@@ -7682,9 +3901,9 @@
           0.44
         ],
         "translation": [
-          -0.54,
+          3.92,
           2.01,
-          22.12
+          20.64
         ]
       }
     },
@@ -7723,10 +3942,10 @@
       "tag": "",
       "transform": {
         "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
         ],
         "scale": [
           0.115,
@@ -7734,9 +3953,9 @@
           0.44
         ],
         "translation": [
-          0,
+          3.92,
           2.01,
-          22.12
+          20.1
         ]
       }
     },
@@ -7775,10 +3994,10 @@
       "tag": "",
       "transform": {
         "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
         ],
         "scale": [
           0.115,
@@ -7786,9 +4005,9 @@
           0.44
         ],
         "translation": [
-          0.54,
+          3.92,
           2.01,
-          22.12
+          19.56
         ]
       }
     },
@@ -7820,10 +4039,10 @@
       "tag": "",
       "transform": {
         "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
         ],
         "scale": [
           1.0,
@@ -7831,9 +4050,9 @@
           1.0
         ],
         "translation": [
-          0,
+          3.92,
           2.63,
-          22.12
+          20.1
         ]
       },
       "triggerActions": {
@@ -7860,68 +4079,16 @@
     },
     {
       "active": true,
-      "colorTint": {
-        "color": [
-          0.29,
-          0.35,
-          0.37
-        ]
-      },
-      "id": 293,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Viaduct first wind windmill post",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          0.17,
-          0.65,
-          0.19
-        ],
-        "translation": [
-          1.95,
-          2.65,
-          22.12
-        ]
-      }
-    },
-    {
-      "active": true,
       "id": 294,
       "name": "Viaduct first wind rotor",
       "parent": 0,
       "tag": "",
       "transform": {
         "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
         ],
         "scale": [
           0.37,
@@ -7929,9 +4096,9 @@
           0.37
         ],
         "translation": [
-          1.95,
+          3.72,
           3.45,
-          21.92
+          18.15
         ]
       },
       "transformAnimation": {
@@ -8042,110 +4209,6 @@
       "active": true,
       "colorTint": {
         "color": [
-          0.91,
-          0.83,
-          0.63
-        ]
-      },
-      "id": 295,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Viaduct first wind sail",
-      "parent": 294,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0.3826834323650898,
-          0.9238795325112867
-        ],
-        "scale": [
-          0.2,
-          2.25,
-          0.12
-        ],
-        "translation": [
-          0,
-          0.01,
-          0
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
-          0.91,
-          0.83,
-          0.63
-        ]
-      },
-      "id": 296,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Viaduct first wind sail",
-      "parent": 294,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0.9238795325112867,
-          0.38268343236508984
-        ],
-        "scale": [
-          0.2,
-          2.25,
-          0.12
-        ],
-        "translation": [
-          0,
-          0.01,
-          0
-        ]
-      }
-    },
-    {
-      "active": true,
-      "colorTint": {
-        "color": [
           0.38,
           0.78,
           0.69
@@ -8177,10 +4240,10 @@
       "tag": "",
       "transform": {
         "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
         ],
         "scale": [
           0.115,
@@ -8188,9 +4251,9 @@
           0.44
         ],
         "translation": [
-          -0.54,
+          9.07,
           5.109999999999999,
-          27.27
+          20.64
         ]
       }
     },
@@ -8229,10 +4292,10 @@
       "tag": "",
       "transform": {
         "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
         ],
         "scale": [
           0.115,
@@ -8240,9 +4303,9 @@
           0.44
         ],
         "translation": [
-          0,
+          9.07,
           5.109999999999999,
-          27.27
+          20.1
         ]
       }
     },
@@ -8281,10 +4344,10 @@
       "tag": "",
       "transform": {
         "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
         ],
         "scale": [
           0.115,
@@ -8292,9 +4355,9 @@
           0.44
         ],
         "translation": [
-          0.54,
+          9.07,
           5.109999999999999,
-          27.27
+          19.56
         ]
       }
     },
@@ -8326,10 +4389,10 @@
       "tag": "",
       "transform": {
         "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
         ],
         "scale": [
           1.0,
@@ -8337,9 +4400,9 @@
           1.0
         ],
         "translation": [
-          0,
+          9.07,
           5.7299999999999995,
-          27.27
+          20.1
         ]
       },
       "triggerActions": {
@@ -8366,64 +4429,743 @@
     },
     {
       "active": true,
-      "colorTint": {
-        "color": [
-          0.29,
-          0.35,
-          0.37
-        ]
-      },
-      "id": 301,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/textures/PrototypeWhite.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.0,
-          1.0
-        ],
-        "visible": true
-      },
-      "name": "Viaduct relay wind windmill post",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "scale": [
-          0.17,
-          0.65,
-          0.19
-        ],
-        "translation": [
-          1.95,
-          5.75,
-          27.27
-        ]
-      }
-    },
-    {
-      "active": true,
       "id": 302,
       "name": "Viaduct relay wind rotor",
       "parent": 0,
       "tag": "",
       "transform": {
         "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          0.37,
+          0.37,
+          0.37
+        ],
+        "translation": [
+          8.87,
+          6.55,
+          18.15
+        ]
+      },
+      "transformAnimation": {
+        "interpolation": "linear",
+        "keys": [
+          {
+            "rotation": [
+              0,
+              0,
+              0.0,
+              1.0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.7071067811865476,
+              0.7071067811865476
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.75,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              1.0,
+              6.123233995736766e-17
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.5,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.7071067811865476,
+              -0.7071067811865475
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.25,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              1.2246467991473532e-16,
+              -1.0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "mode": "loop",
+        "playOnStart": true,
+        "speed": 1
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 305,
+      "name": "Upper gallery crosswalk",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          1.82,
+          0.23,
+          1.02
+        ],
+        "translation": [
+          20.3,
+          7.19,
+          24.02
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 306,
+      "name": "Upper gallery corner",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          0.71,
+          0.23,
+          1.47
+        ],
+        "translation": [
+          20.77,
+          7.19,
+          26.14
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 307,
+      "name": "Panorama balcony",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          1.88,
+          0.23,
+          1.45
+        ],
+        "translation": [
+          23.35,
+          7.19,
+          26.25
+        ]
+      }
+    },
+    {
+      "active": true,
+      "camera": {
+        "farClip": 120.0,
+        "nearClip": 0.10000000149011612,
+        "primary": false,
+        "verticalFovDegrees": 52.0
+      },
+      "followCamera": {
+        "avoidObstacles": true,
+        "clearance": 0.30000001192092896,
+        "lookOffset": [
+          2.6,
+          1.0,
+          2.2
+        ],
+        "offset": [
+          -6.2,
+          6.3,
+          -7.1
+        ],
+        "orbit": {
+          "enabled": false,
+          "maximumDistance": 20.0,
+          "maximumPitch": 75.0,
+          "minimumDistance": 2.0,
+          "minimumPitch": -75.0,
+          "mouseSensitivity": 0.18000000715255737,
+          "stickSpeed": 120.0,
+          "zoomSensitivity": 1.0
+        },
+        "smoothing": 8.0,
+        "target": 1
+      },
+      "id": 308,
+      "name": "Ravine bend camera",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          0.0,
+          5.5,
+          -8.5
+        ]
+      }
+    },
+    {
+      "active": true,
+      "camera": {
+        "farClip": 120.0,
+        "nearClip": 0.10000000149011612,
+        "primary": false,
+        "verticalFovDegrees": 52.0
+      },
+      "followCamera": {
+        "avoidObstacles": true,
+        "clearance": 0.30000001192092896,
+        "lookOffset": [
+          2.7,
+          1.4,
+          1.2
+        ],
+        "offset": [
+          -7.2,
+          6.4,
+          -5.9
+        ],
+        "orbit": {
+          "enabled": false,
+          "maximumDistance": 20.0,
+          "maximumPitch": 75.0,
+          "minimumDistance": 2.0,
+          "minimumPitch": -75.0,
+          "mouseSensitivity": 0.18000000715255737,
+          "stickSpeed": 120.0,
+          "zoomSensitivity": 1.0
+        },
+        "smoothing": 8.0,
+        "target": 1
+      },
+      "id": 309,
+      "name": "Upper gallery camera",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          0.0,
+          5.5,
+          -8.5
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.72,
+          2.7,
+          3.06
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 310,
+      "name": "Enter east viaduct view",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          2.35,
+          2.72,
+          20.24
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0.72,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "setCamera",
+            "scene": "",
+            "target": 308
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.54,
+          2.7,
+          2.89
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 311,
+      "name": "Return to west viaduct view",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          0.13,
+          2.72,
+          20.2
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0.72,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "setCamera",
+            "scene": "",
+            "target": 4
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.13,
+          0.8,
+          2.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 312,
+      "name": "Upper gallery view",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          20.3,
+          8.12,
+          20.1
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0.6,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "setCamera",
+            "scene": "",
+            "target": 309
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 313,
+      "name": "West staircase wind shelf",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.35,
+          0.34,
+          0.83
+        ],
+        "translation": [
+          -6.04,
+          0.91,
+          11.83
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 314,
+      "name": "West wind overlook",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.16,
+          0.34,
+          1.22
+        ],
+        "translation": [
+          -4.47,
+          2.91,
+          15.65
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.52,
+          0.63,
+          0.38
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 315,
+      "name": "West staircase side wind",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          -5.73,
+          1.88,
+          11.93
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 13.6,
+            "messageName": "",
+            "once": false,
+            "operation": "launchCharacter",
+            "scene": "",
+            "target": 1
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 316,
+      "name": "West staircase windmill rotor",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
           0.0,
           0.0,
           0.0,
@@ -8435,9 +5177,9 @@
           0.37
         ],
         "translation": [
-          1.95,
-          6.55,
-          27.07
+          -5.1,
+          2.63,
+          12.55
         ]
       },
       "transformAnimation": {
@@ -8548,12 +5290,12 @@
       "active": true,
       "colorTint": {
         "color": [
-          0.91,
-          0.83,
-          0.63
+          0.38,
+          0.78,
+          0.69
         ]
       },
-      "id": 303,
+      "id": 317,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
       },
@@ -8574,25 +5316,220 @@
         ],
         "visible": true
       },
-      "name": "Viaduct relay wind sail",
-      "parent": 302,
+      "name": "West side wind paving stripe",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.08,
+          0.012,
+          0.38
+        ],
+        "translation": [
+          -6.07,
+          1.26,
+          11.96
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.38,
+          0.78,
+          0.69
+        ]
+      },
+      "id": 318,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "West side wind paving stripe",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.08,
+          0.012,
+          0.38
+        ],
+        "translation": [
+          -5.73,
+          1.26,
+          11.96
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.38,
+          0.78,
+          0.69
+        ]
+      },
+      "id": 319,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "West side wind paving stripe",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.08,
+          0.012,
+          0.38
+        ],
+        "translation": [
+          -5.39,
+          1.26,
+          11.96
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 320,
+      "name": "Windmill plaza respawn",
+      "parent": 0,
       "tag": "",
       "transform": {
         "rotation": [
           0,
+          0.7071067811865476,
           0,
-          0.3826834323650898,
-          0.9238795325112867
+          0.7071067811865476
         ],
         "scale": [
-          0.2,
-          2.25,
-          0.12
+          1.0,
+          1.0,
+          1.0
         ],
         "translation": [
+          15.6,
+          4.24,
+          20.1
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          2.95,
+          1.1,
+          0.52
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 321,
+      "name": "Windmill plaza checkpoint",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
           0,
-          0.01,
-          0
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          15.6,
+          4.24,
+          20.1
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 320,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "setCheckpoint",
+            "scene": "",
+            "target": 1
+          }
         ]
       }
     },
@@ -8605,7 +5542,7 @@
           0.63
         ]
       },
-      "id": 304,
+      "id": 322,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
       },
@@ -8626,24 +5563,2777 @@
         ],
         "visible": true
       },
-      "name": "Viaduct relay wind sail",
+      "name": "Windmill plaza checkpoint inlay",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          0.85,
+          0.012,
+          0.42
+        ],
+        "translation": [
+          15.6,
+          3.519,
+          20.1
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 323,
+      "name": "Gallery north passage",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          0.82,
+          0.23,
+          1.44
+        ],
+        "translation": [
+          25.84,
+          7.19,
+          26.25
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 324,
+      "name": "Upper wind takeoff",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          1.18,
+          0.23,
+          0.73
+        ],
+        "translation": [
+          27.45,
+          7.19,
+          26.25
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 325,
+      "name": "Diagonal wind landing",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          1.8,
+          0.23,
+          1.18
+        ],
+        "translation": [
+          31.93,
+          9.47,
+          23.15
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 326,
+      "name": "Crosswind jump landing",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          1.32,
+          0.23,
+          1.18
+        ],
+        "translation": [
+          31.93,
+          9.47,
+          17.45
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 327,
+      "name": "East upper corner",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          0.75,
+          0.23,
+          1.18
+        ],
+        "translation": [
+          31.93,
+          9.47,
+          15.55
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 328,
+      "name": "Final descent 1",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          0.75,
+          0.23,
+          0.78
+        ],
+        "translation": [
+          33.84,
+          9.14,
+          15.55
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 329,
+      "name": "Final descent 2",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          0.75,
+          0.23,
+          0.78
+        ],
+        "translation": [
+          35.36,
+          8.81,
+          15.55
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 330,
+      "name": "Final descent 3",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          0.75,
+          0.23,
+          0.78
+        ],
+        "translation": [
+          36.88,
+          8.48,
+          15.55
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 331,
+      "name": "Windward observation court",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          2.5,
+          0.23,
+          2.3
+        ],
+        "translation": [
+          39.9,
+          8.48,
+          15.55
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.83,
+          0.65,
+          0.36
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 332,
+      "name": "Upper crosswind lift",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          27.48,
+          8.05,
+          26.25
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 14.5,
+            "messageName": "",
+            "once": false,
+            "operation": "launchCharacter",
+            "scene": "",
+            "target": 1
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 333,
+      "name": "Upper crosswind rotor",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          0.37,
+          0.37,
+          0.37
+        ],
+        "translation": [
+          27.54,
+          8.92,
+          27.75
+        ]
+      },
+      "transformAnimation": {
+        "interpolation": "linear",
+        "keys": [
+          {
+            "rotation": [
+              0,
+              0,
+              0.0,
+              1.0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.7071067811865476,
+              0.7071067811865476
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.75,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              1.0,
+              6.123233995736766e-17
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.5,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.7071067811865476,
+              -0.7071067811865475
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.25,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              1.2246467991473532e-16,
+              -1.0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "mode": "loop",
+        "playOnStart": true,
+        "speed": 1
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.38,
+          0.78,
+          0.69
+        ]
+      },
+      "id": 334,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Upper lift paving stripe",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          0.1,
+          0.012,
+          0.44
+        ],
+        "translation": [
+          27.5,
+          7.433,
+          26.8
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.38,
+          0.78,
+          0.69
+        ]
+      },
+      "id": 335,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Upper lift paving stripe",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          0.1,
+          0.012,
+          0.44
+        ],
+        "translation": [
+          27.5,
+          7.433,
+          26.25
+        ]
+      }
+    },
+    {
+      "active": true,
+      "colorTint": {
+        "color": [
+          0.38,
+          0.78,
+          0.69
+        ]
+      },
+      "id": 336,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Upper lift paving stripe",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          0.1,
+          0.012,
+          0.44
+        ],
+        "translation": [
+          27.5,
+          7.433,
+          25.7
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 337,
+      "name": "Upper gallery respawn",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          23.35,
+          8.16,
+          26.25
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.2,
+          1.1,
+          0.65
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 338,
+      "name": "Upper gallery checkpoint",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          23.35,
+          8.16,
+          26.25
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 337,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "setCheckpoint",
+            "scene": "",
+            "target": 1
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 339,
+      "name": "Mill yard exit",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          1.25,
+          0.23,
+          1.15
+        ],
+        "translation": [
+          43.25,
+          8.48,
+          15.55
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 340,
+      "name": "Mill yard west gallery",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          4.15,
+          0.23,
+          1.05
+        ],
+        "translation": [
+          43.85,
+          8.48,
+          20.5
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 341,
+      "name": "Mill yard turning landing",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          0.9,
+          0.23,
+          1.68
+        ],
+        "translation": [
+          44.48,
+          8.48,
+          25.38
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 342,
+      "name": "Mill machinery court",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          2.2,
+          0.23,
+          2.0
+        ],
+        "translation": [
+          48.1,
+          8.48,
+          25.4
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 343,
+      "name": "Mill machinery takeoff",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          1.05,
+          0.23,
+          1.0
+        ],
+        "translation": [
+          50.88,
+          8.48,
+          25.4
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 344,
+      "name": "Upper mill roof",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          1.5,
+          0.23,
+          1.4
+        ],
+        "translation": [
+          55.8,
+          10.77,
+          25.4
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 345,
+      "name": "Upper mill jump landing",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          1.1,
+          0.23,
+          1.4
+        ],
+        "translation": [
+          55.8,
+          10.77,
+          20.4
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 346,
+      "name": "Upper mill crosswind deck",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          0.62,
+          0.23,
+          1.4
+        ],
+        "translation": [
+          55.8,
+          10.77,
+          18.95
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 347,
+      "name": "Mill crown landing",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          1.6,
+          0.23,
+          1.5
+        ],
+        "translation": [
+          59.15,
+          11.77,
+          13.8
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 348,
+      "name": "Mill crown descent 1",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          0.9,
+          0.23,
+          0.9
+        ],
+        "translation": [
+          61.52,
+          11.44,
+          13.8
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 349,
+      "name": "Mill crown descent 2",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          0.9,
+          0.23,
+          0.9
+        ],
+        "translation": [
+          63.28,
+          11.11,
+          13.8
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 350,
+      "name": "Mill crown descent 3",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          0.9,
+          0.23,
+          0.9
+        ],
+        "translation": [
+          65.04,
+          10.78,
+          13.8
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 351,
+      "name": "Mill crown descent 4",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          0.9,
+          0.23,
+          0.9
+        ],
+        "translation": [
+          66.8,
+          10.45,
+          13.8
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 352,
+      "name": "Valley end panorama",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          3.0,
+          0.23,
+          2.95
+        ],
+        "translation": [
+          70.6,
+          10.45,
+          13.8
+        ]
+      }
+    },
+    {
+      "active": false,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.54,
+          0.65,
+          0.43
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 353,
+      "name": "Mill machinery wind",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          50.88,
+          9.34,
+          25.4
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 14.8,
+            "messageName": "",
+            "once": false,
+            "operation": "launchCharacter",
+            "scene": "",
+            "target": 1
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.54,
+          0.65,
+          0.43
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 354,
+      "name": "Mill crown crosswind",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          55.8,
+          11.63,
+          18.92
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 16.0,
+            "messageName": "",
+            "once": false,
+            "operation": "launchCharacter",
+            "scene": "",
+            "target": 1
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 355,
+      "name": "Machinery rotor",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          0.37,
+          0.37,
+          0.37
+        ],
+        "translation": [
+          51.1,
+          10.25,
+          27.7
+        ]
+      },
+      "transformAnimation": {
+        "interpolation": "linear",
+        "keys": [
+          {
+            "rotation": [
+              0,
+              0,
+              0.0,
+              1.0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.7071067811865476,
+              0.7071067811865476
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.75,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              1.0,
+              6.123233995736766e-17
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.5,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.7071067811865476,
+              -0.7071067811865475
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.25,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              1.2246467991473532e-16,
+              -1.0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "mode": "loop",
+        "playOnStart": false,
+        "speed": 1
+      }
+    },
+    {
+      "active": true,
+      "id": 356,
+      "name": "Crown rotor",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          0.37,
+          0.37,
+          0.37
+        ],
+        "translation": [
+          57.4,
+          12.45,
+          18.4
+        ]
+      },
+      "transformAnimation": {
+        "interpolation": "linear",
+        "keys": [
+          {
+            "rotation": [
+              0,
+              0,
+              0.0,
+              1.0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.7071067811865476,
+              0.7071067811865476
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 0.75,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              1.0,
+              6.123233995736766e-17
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 1.5,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              0.7071067811865476,
+              -0.7071067811865475
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 2.25,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "rotation": [
+              0,
+              0,
+              1.2246467991473532e-16,
+              -1.0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "seconds": 3.0,
+            "translation": [
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "mode": "loop",
+        "playOnStart": true,
+        "speed": 1
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.75,
+          0.67,
+          0.49
+        ]
+      },
+      "id": 357,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/textures/PrototypeWhite.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Mill machinery shutter",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          2.2,
+          0.9,
+          0.18
+        ],
+        "translation": [
+          50.03,
+          9.61,
+          25.4
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.72,
+          1.05,
+          0.82
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 358,
+      "name": "Mill machinery gear control",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          48.5,
+          9.41,
+          26.6
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "interact",
+            "inputAction": "Attack",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "enable",
+            "scene": "",
+            "target": 353
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "interact",
+            "inputAction": "Attack",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "disable",
+            "scene": "",
+            "target": 357
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "interact",
+            "inputAction": "Attack",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": true,
+            "operation": "playTransformAnimation",
+            "scene": "",
+            "target": 355
+          }
+        ]
+      },
+      "script": {
+        "asset": "@project/assets/common/scripts/MechanismHint.lua",
+        "enabled": true,
+        "prefabs": [],
+        "references": [
+          {
+            "name": "player",
+            "target": 1
+          },
+          {
+            "name": "mechanism",
+            "target": 357
+          },
+          {
+            "name": "hint",
+            "target": 26
+          }
+        ],
+        "scenes": [],
+        "state": {
+          "radius": 4.5,
+          "openWhenActive": false,
+          "closedText": "歯車をたたいて風車を回そう ［J / X］",
+          "openText": "風車が動いた。手前の風に乗って屋根へ"
+        }
+      }
+    },
+    {
+      "active": true,
+      "id": 359,
+      "name": "Machinery court spawn",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          47.5,
+          9.45,
+          25.4
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.45,
+          1.1,
+          0.5
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "id": 360,
+      "name": "Machinery court checkpoint",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          47.5,
+          9.45,
+          25.4
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 359,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "setCheckpoint",
+            "scene": "",
+            "target": 1
+          }
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 361,
+      "mesh": {
+        "model": "@project/assets/windmill/models/PavedDecks.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Hand-laid viaduct decks",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 362,
+      "mesh": {
+        "model": "@project/assets/windmill/models/MasonryViaduct.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Masonry arches and bridge piers",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 363,
+      "mesh": {
+        "model": "@project/assets/windmill/models/WindcutRavine.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Windcut ravine scenery",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 364,
+      "mesh": {
+        "model": "@project/assets/windmill/models/ViaductJoinery.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Terrace planters",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 365,
+      "mesh": {
+        "model": "@project/assets/windmill/models/EastPavedDecks.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "East viaduct decks",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          -18.2,
+          0,
+          20.1
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 366,
+      "mesh": {
+        "model": "@project/assets/windmill/models/EastMasonryViaduct.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "East viaduct arches",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          -18.2,
+          0,
+          20.1
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 367,
+      "mesh": {
+        "model": "@project/assets/windmill/models/EastViaductJoinery.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Upper gallery timber",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          -18.2,
+          0,
+          20.1
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 368,
+      "mesh": {
+        "model": "@project/assets/windmill/models/StoneWindmill.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Stone windmill with tiled roof",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          19.4,
+          3.5,
+          17.1
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 369,
+      "mesh": {
+        "model": "@project/assets/windmill/models/LatticeRotor.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Framed sail assembly",
+      "parent": 282,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 370,
+      "mesh": {
+        "model": "@project/assets/windmill/models/LatticeRotor.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Framed sail assembly",
+      "parent": 294,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 371,
+      "mesh": {
+        "model": "@project/assets/windmill/models/LatticeRotor.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Framed sail assembly",
       "parent": 302,
       "tag": "",
       "transform": {
         "rotation": [
           0,
           0,
-          0.9238795325112867,
-          0.38268343236508984
+          0,
+          1
         ],
         "scale": [
-          0.2,
-          2.25,
-          0.12
+          1,
+          1,
+          1
         ],
         "translation": [
           0,
-          0.01,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 372,
+      "mesh": {
+        "model": "@project/assets/windmill/models/LatticeRotor.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Framed sail assembly",
+      "parent": 316,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 373,
+      "mesh": {
+        "model": "@project/assets/windmill/models/LatticeRotor.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Framed sail assembly",
+      "parent": 333,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 374,
+      "mesh": {
+        "model": "@project/assets/windmill/models/LatticeRotor.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Framed sail assembly",
+      "parent": 355,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 375,
+      "mesh": {
+        "model": "@project/assets/windmill/models/LatticeRotor.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "name": "Framed sail assembly",
+      "parent": 356,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
           0
         ]
       }
