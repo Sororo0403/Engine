@@ -55,7 +55,7 @@
         0.0
       ]
     },
-    "cameraRelativeMovement": false,
+    "cameraRelativeMovement": true,
     "format": "EngineGame",
     "gamepadEnabled": true,
     "height": 720,
