@@ -265,6 +265,8 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		OpenDirectory(std::move(visibleDirectory));
 	}
 
+	std::filesystem::path draggedPath;
+	std::filesystem::path dropDirectory;
 	const auto acceptFolder = [&](const std::filesystem::path &directory) {
 		if (!canEditAssets || !assets.GetRootDirectory().is_absolute()) {
 			return;
@@ -273,11 +275,8 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		auto source = AssetDragDrop::AcceptAssetTarget();
 
 		if (!source.empty()) {
-			moveRequest_.sources =
-			    std::ranges::find(selectedItems_, source) != selectedItems_.end()
-			        ? selectedItems_
-			        : std::vector<std::filesystem::path>{std::move(source)};
-			moveRequest_.directory = directory;
+			draggedPath = std::move(source);
+			dropDirectory = directory;
 		}
 	};
 
@@ -438,6 +437,10 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	std::erase_if(selectedItems_, [&](const auto &path) {
 		return std::ranges::find(visible, path) == visible.end();
 	});
+	if (std::ranges::find(visible, selectionAnchor_) == visible.end()) {
+		selectionAnchor_ = selectedItems_.empty() ? std::filesystem::path{}
+		                                         : selectedItems_.back();
+	}
 	syncSingle();
 
 	const auto selectRow = [&](const std::filesystem::path &path, bool modifiers) {
@@ -1028,6 +1031,13 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	}
 
 	drawBackgroundMenu();
+	// 上部の移動先も、現在の一覧と選択を確定してから処理する。
+	if (!draggedPath.empty() && std::ranges::find(visible, draggedPath) != visible.end()) {
+		moveRequest_.sources = isSelected(draggedPath)
+		                           ? selectedItems_
+		                           : std::vector<std::filesystem::path>{std::move(draggedPath)};
+		moveRequest_.directory = std::move(dropDirectory);
+	}
 	ui.EndWindow();
 	return requestedPath;
 }
