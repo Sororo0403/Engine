@@ -73,6 +73,25 @@ void AssetsPanel::OpenDirectory(std::filesystem::path directory) {
 	scrollToTop_ = true;
 }
 
+void AssetsPanel::RestoreDirectory(std::filesystem::path folder,
+                                   const AssetDatabase &assets) {
+	const auto &root = assets.GetRootDirectory();
+	while (!folder.empty() &&
+	       std::ranges::none_of(assets.GetDirectories(), [&](const auto &directory) {
+		       return directory.lexically_relative(root) == folder;
+	       })) {
+		auto parent = folder.parent_path();
+		if (parent == folder) {
+			folder.clear();
+			break;
+		}
+		folder = std::move(parent);
+	}
+	if (folder != currentDirectory_) {
+		OpenDirectory(std::move(folder));
+	}
+}
+
 bool AssetsPanel::SelectAsset(const std::filesystem::path &path,
                               const AssetDatabase &assets) {
 	if (path.native().find(L'\0') != std::wstring::npos) {
@@ -251,19 +270,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		requestedDirectory_.clear();
 	}
 
-	auto visibleDirectory = currentDirectory_;
-	while (!visibleDirectory.empty() &&
-	       std::none_of(directories.begin(), directories.end(),
-	                    [&](const auto &directory) {
-		                    return directory.lexically_relative(
-		                               assets.GetRootDirectory()) == visibleDirectory;
-	                    })) {
-		visibleDirectory = visibleDirectory.parent_path();
-	}
-	if (visibleDirectory != currentDirectory_) {
-		// 更新で開いていたフォルダが消えた場合は、残っている親へ戻る。
-		OpenDirectory(std::move(visibleDirectory));
-	}
+	RestoreDirectory(currentDirectory_, assets);
 
 	std::filesystem::path draggedPath;
 	std::filesystem::path dropDirectory;

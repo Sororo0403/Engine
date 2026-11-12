@@ -190,6 +190,29 @@ void EditorPreferences::RememberProjectScene(const std::filesystem::path &root,
 	}
 }
 
+void EditorPreferences::RememberProjectAssetFolder(
+    const std::filesystem::path &root, const std::filesystem::path &folder) {
+	if (!root.is_absolute() || root.native().find(L'\0') != std::wstring::npos ||
+	    folder.has_root_path() ||
+	    !std::ranges::all_of(folder, PathUtils::IsValidFileName)) {
+		return;
+	}
+
+	auto key = root.lexically_normal();
+	if (folder.empty()) {
+		projectAssetFolders_.erase(key);
+	} else {
+		projectAssetFolders_.insert_or_assign(std::move(key), folder);
+	}
+}
+
+std::filesystem::path EditorPreferences::LastProjectAssetFolder(
+    const std::filesystem::path &root) const {
+	const auto found = projectAssetFolders_.find(root.lexically_normal());
+	return found == projectAssetFolders_.end() ? std::filesystem::path{}
+	                                           : found->second;
+}
+
 std::filesystem::path EditorPreferences::LastProjectScene(
     const std::filesystem::path &root) const {
 	const auto saved = projectScenes.find(root);
@@ -426,6 +449,20 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 				if (IsProjectScenePath(scene)) {
 					loaded.projectScenes.insert_or_assign(root.lexically_normal(),
 					                                      std::move(scene));
+				}
+			}
+		}
+
+		const auto assetFolders = json.find("projectAssetFolders");
+		if (assetFolders != json.end() && assetFolders->is_object()) {
+			for (const auto &[key, value] : assetFolders->items()) {
+				if (!value.is_string() || key.find('\0') != std::string::npos) {
+					continue;
+				}
+				const auto &folder = value.get_ref<const std::string &>();
+				if (folder.find('\0') == std::string::npos) {
+					loaded.RememberProjectAssetFolder(PathUtils::FromUtf8(key),
+					                                  PathUtils::FromUtf8(folder));
 				}
 			}
 		}
@@ -693,6 +730,10 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		for (const auto &[root, directory] : lastGameExports_) {
 			lastGameExportsJson[PathUtils::ToUtf8(root)] = PathUtils::ToUtf8(directory);
 		}
+		auto projectAssetFoldersJson = nlohmann::json::object();
+		for (const auto &[root, folder] : projectAssetFolders_) {
+			projectAssetFoldersJson[PathUtils::ToUtf8(root)] = PathUtils::ToUtf8(folder);
+		}
 
 		auto sceneViewsJson = nlohmann::json::object();
 		for (const auto &[scene, view] : sceneViews) {
@@ -741,6 +782,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		    {"recentProjects", std::move(recentProjectsJson)},
 		    {"projectScenes", std::move(projectScenesJson)},
 		    {"lastGameExports", std::move(lastGameExportsJson)},
+		    {"projectAssetFolders", std::move(projectAssetFoldersJson)},
 		    {"sceneViews", std::move(sceneViewsJson)},
 		    {"grid",
 		     {{"spacing", grid.spacing},
@@ -778,6 +820,7 @@ bool EditorPreferences::operator==(const EditorPreferences &other) const {
 	       recentScenes == other.recentScenes && lastProject == other.lastProject &&
 	       recentProjects == other.recentProjects &&
 	       lastGameExports_ == other.lastGameExports_ &&
+	       projectAssetFolders_ == other.projectAssetFolders_ &&
 	       projectScenes == other.projectScenes && sceneViews == other.sceneViews &&
 	       assets == other.assets &&
 	       gameExport.title == other.gameExport.title &&

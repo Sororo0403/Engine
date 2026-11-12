@@ -1613,6 +1613,8 @@ void EditorScene::Finalize() {
 			current.lastProject = project_.GetRoot();
 			current.RememberProject(project_.GetRoot());
 			current.RememberProjectScene(project_.GetRoot(), document_.GetFilePath());
+			current.RememberProjectAssetFolder(project_.GetRoot(),
+			                                  assetsPanel_.GetOpenDirectory());
 		}
 		current.RememberSceneView(document_.GetFilePath(), cameraController_.GetViewState());
 		const auto recent = recentScenes_.GetPaths();
@@ -5038,6 +5040,8 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		assetSources_ = std::move(sources);
 		assets_ = std::move(assets);
 		assetsPanel_.Clear();
+		assetsPanel_.RestoreDirectory(
+		    preferences_.LastProjectAssetFolder(project_.GetRoot()), assets_);
 		texturePreviewPanel_.Clear();
 		stage_ = DialogStage::IDLE;
 
@@ -5065,6 +5069,8 @@ void EditorScene::SaveEditorSession() {
 		current.lastProject = project_.GetRoot();
 		current.RememberProject(project_.GetRoot());
 		current.RememberProjectScene(project_.GetRoot(), document_.GetFilePath());
+		current.RememberProjectAssetFolder(project_.GetRoot(),
+		                                  assetsPanel_.GetOpenDirectory());
 	}
 
 	current.RememberSceneView(document_.GetFilePath(), cameraController_.GetViewState());

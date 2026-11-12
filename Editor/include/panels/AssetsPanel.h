@@ -151,6 +151,11 @@ class AssetsPanel {
 	void RequestOpenDirectory(const std::filesystem::path &folder);
 
 	/// <summary>
+	/// Assets基準のフォルダを開く。消えていた場合は一覧に残る親へ戻る
+	/// </summary>
+	void RestoreDirectory(std::filesystem::path folder, const AssetDatabase &assets);
+
+	/// <summary>
 	/// 開いているAssetsフォルダを取得する
 	/// </summary>
 	/// <returns>検索先を基準にした相対パス。空は検索先自身</returns>

@@ -76,6 +76,17 @@ class EditorPreferences {
 	std::filesystem::path LastProjectScene(const std::filesystem::path &root) const;
 
 	/// <summary>
+	/// Assetsパネルで開いたフォルダをAssets基準の相対パスで記憶する。空はルート
+	/// </summary>
+	void RememberProjectAssetFolder(const std::filesystem::path &root,
+	                                const std::filesystem::path &folder);
+
+	/// <summary>
+	/// プロジェクトで最後に開いたAssetsフォルダを取得する。未記録なら空
+	/// </summary>
+	std::filesystem::path LastProjectAssetFolder(const std::filesystem::path &root) const;
+
+	/// <summary>
 	/// 保存済みシーンに対して、Sceneビューの位置と向きを記憶する
 	/// </summary>
 	void RememberSceneView(const std::filesystem::path &scene,
@@ -111,4 +122,5 @@ class EditorPreferences {
 
   private:
 	std::map<std::filesystem::path, std::filesystem::path> lastGameExports_;
+	std::map<std::filesystem::path, std::filesystem::path> projectAssetFolders_;
 };
