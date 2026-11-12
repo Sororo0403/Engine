@@ -16,7 +16,8 @@ class GameExportResultDialog {
 	/// 成功した出力先を保持し、完了画面の表示を予約する
 	/// </summary>
 	/// <param name="directory">出力済みパッケージの絶対パス</param>
-	void Show(std::filesystem::path directory);
+	/// <param name="reopening">前回の出力として開くか</param>
+	void Show(std::filesystem::path directory, bool reopening = false);
 
 	/// <summary>
 	/// 出力先を表示し、開く・起動・閉じる操作を受け付ける。失敗時は画面を保持する
@@ -29,4 +30,5 @@ class GameExportResultDialog {
 	std::filesystem::path directory_;
 	std::string error_;
 	bool opening_ = false;
+	bool reopening_ = false;
 };

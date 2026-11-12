@@ -148,6 +148,26 @@ void EditorPreferences::RememberProject(const std::filesystem::path &root) {
 	}
 }
 
+void EditorPreferences::RememberGameExport(
+    const std::filesystem::path &root, const std::filesystem::path &directory) {
+	if ((!root.empty() && !root.is_absolute()) ||
+	    root.native().find(L'\0') != std::wstring::npos ||
+	    !directory.is_absolute() ||
+	    directory.native().find(L'\0') != std::wstring::npos) {
+		return;
+	}
+
+	lastGameExports_.insert_or_assign(root.lexically_normal(),
+	                                  directory.lexically_normal());
+}
+
+std::filesystem::path EditorPreferences::LastGameExport(
+    const std::filesystem::path &root) const {
+	const auto found = lastGameExports_.find(root.lexically_normal());
+	return found == lastGameExports_.end() ? std::filesystem::path{}
+	                                      : found->second;
+}
+
 void EditorPreferences::RememberProjectScene(const std::filesystem::path &root,
                                               const std::filesystem::path &scene) {
 	if (root.empty() || scene.empty()) {
@@ -375,6 +395,20 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 			}
 		} else {
 			loaded.RememberProject(loaded.lastProject);
+		}
+
+		const auto exports = json.find("lastGameExports");
+		if (exports != json.end() && exports->is_object()) {
+			for (const auto &[key, value] : exports->items()) {
+				if (!value.is_string() || key.find('\0') != std::string::npos) {
+					continue;
+				}
+				const auto &directory = value.get_ref<const std::string &>();
+				if (directory.find('\0') == std::string::npos) {
+					loaded.RememberGameExport(PathUtils::FromUtf8(key),
+					                          PathUtils::FromUtf8(directory));
+				}
+			}
 		}
 
 		if (json.contains("projectScenes") && json.at("projectScenes").is_object()) {
@@ -655,6 +689,11 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 			projectScenesJson[PathUtils::ToUtf8(root)] = PathUtils::ToUtf8(scene);
 		}
 
+		auto lastGameExportsJson = nlohmann::json::object();
+		for (const auto &[root, directory] : lastGameExports_) {
+			lastGameExportsJson[PathUtils::ToUtf8(root)] = PathUtils::ToUtf8(directory);
+		}
+
 		auto sceneViewsJson = nlohmann::json::object();
 		for (const auto &[scene, view] : sceneViews) {
 			sceneViewsJson[PathUtils::ToUtf8(scene)] = CameraViewJson(view);
@@ -701,6 +740,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		    {"lastProject", PathUtils::ToUtf8(lastProject)},
 		    {"recentProjects", std::move(recentProjectsJson)},
 		    {"projectScenes", std::move(projectScenesJson)},
+		    {"lastGameExports", std::move(lastGameExportsJson)},
 		    {"sceneViews", std::move(sceneViewsJson)},
 		    {"grid",
 		     {{"spacing", grid.spacing},
@@ -737,6 +777,7 @@ bool EditorPreferences::operator==(const EditorPreferences &other) const {
 	       pivotMode == other.pivotMode && grid == other.grid &&
 	       recentScenes == other.recentScenes && lastProject == other.lastProject &&
 	       recentProjects == other.recentProjects &&
+	       lastGameExports_ == other.lastGameExports_ &&
 	       projectScenes == other.projectScenes && sceneViews == other.sceneViews &&
 	       assets == other.assets &&
 	       gameExport.title == other.gameExport.title &&

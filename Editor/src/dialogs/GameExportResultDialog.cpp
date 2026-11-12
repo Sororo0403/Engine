@@ -5,14 +5,17 @@
 #include <imgui.h>
 #include <utility>
 
-void GameExportResultDialog::Show(std::filesystem::path directory) {
+void GameExportResultDialog::Show(std::filesystem::path directory,
+                                  bool reopening) {
 	directory_ = std::move(directory);
+	reopening_ = reopening;
 	error_.clear();
 	opening_ = true;
 }
 
 GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
-	constexpr const char *title = "Game Exported###GameExportResultDialog";
+	const char *title = reopening_ ? "Last Game Export###GameExportResultDialog"
+	                              : "Game Exported###GameExportResultDialog";
 
 	if (opening_) {
 		ui.OpenPopup(title);

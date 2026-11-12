@@ -1848,6 +1848,12 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			action = EditorAction::EXPORT_GAME;
 		}
 
+		const auto lastExport = preferences_.LastGameExport(project_.GetRoot());
+		if (ui_.MenuItem("Last Game Export...", nullptr,
+		                 enabled && !lastExport.empty())) {
+			action = EditorAction::LAST_GAME_EXPORT;
+		}
+
 		if (ui_.MenuItem("Reload Scene...", nullptr,
 		                 enabled && !document_.GetFilePath().empty())) {
 			action = EditorAction::RELOAD_SCENE;
@@ -2696,6 +2702,15 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 		pendingAction_ = action;
 		ConfirmSceneChanges();
 		return;
+
+	case EditorAction::LAST_GAME_EXPORT: {
+		auto directory = preferences_.LastGameExport(project_.GetRoot());
+		if (!directory.empty()) {
+			exportResultDialog_.Show(std::move(directory), true);
+			stage_ = DialogStage::EXPORT_RESULT;
+		}
+		return;
+	}
 
 	case EditorAction::RENAME_OBJECT:
 		if (HasSingleSelection()) {
@@ -4662,14 +4677,17 @@ void EditorScene::UpdateDialogs() {
 
 			if (GameExporter::Export(*scene, exportDialog_.GetOptions(),
 			                         error)) {
+				const auto &directory = exportDialog_.GetOptions().destination;
 				Logger::Info(
-				    "Game exported to " +
-				    PathUtils::ToUtf8(exportDialog_.GetOptions().destination));
+				    "Game exported to " + PathUtils::ToUtf8(directory));
 				if (project_.GetRoot().empty()) {
 					exportConfig_ = exportDialog_.GetOptions().config;
 				}
-				exportResultDialog_.Show(
-				    exportDialog_.GetOptions().destination);
+				preferences_.RememberGameExport(project_.GetRoot(), directory);
+				if (canSavePreferences_) {
+					preferences_.Save();
+				}
+				exportResultDialog_.Show(directory);
 				stage_ = DialogStage::EXPORT_RESULT;
 			} else {
 				ShowError(std::move(error));

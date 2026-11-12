@@ -60,6 +60,17 @@ class EditorPreferences {
 	void RememberProject(const std::filesystem::path &root);
 
 	/// <summary>
+	/// プロジェクトごとに最後に成功したゲームの出力先を記憶する
+	/// </summary>
+	void RememberGameExport(const std::filesystem::path &root,
+	                        const std::filesystem::path &directory);
+
+	/// <summary>
+	/// 最後の出力先を取得する。プロジェクトなしの場合は空のルートを指定する
+	/// </summary>
+	std::filesystem::path LastGameExport(const std::filesystem::path &root) const;
+
+	/// <summary>
 	/// 記憶したシーンが現在もプロジェクト内にあれば絶対パスを返す
 	/// </summary>
 	std::filesystem::path LastProjectScene(const std::filesystem::path &root) const;
@@ -97,4 +108,7 @@ class EditorPreferences {
 	/// <param name="other">比較する設定</param>
 	/// <returns>true:一致 false:不一致</returns>
 	bool operator==(const EditorPreferences &other) const;
+
+  private:
+	std::map<std::filesystem::path, std::filesystem::path> lastGameExports_;
 };
