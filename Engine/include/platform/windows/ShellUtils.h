@@ -19,6 +19,12 @@ enum class WindowVisibility { NORMAL, HIDDEN };
 bool OpenDirectory(const std::filesystem::path &path, std::string &error);
 
 /// <summary>
+/// 実在するファイルまたはフォルダの親をExplorerで開き、対象を選択する
+/// </summary>
+/// <remarks>COM初期化済みのスレッドから呼ぶ。パスは絶対または実行ファイル基準</remarks>
+bool RevealInExplorer(const std::filesystem::path &path, std::string &error);
+
+/// <summary>
 /// 検証済みの絶対パスにあるファイルまたはフォルダをWindowsのごみ箱へ移動する
 /// </summary>
 /// <remarks>COM初期化済みのスレッドから呼ぶ。ごみ箱へ移せない場合は失敗を返す</remarks>

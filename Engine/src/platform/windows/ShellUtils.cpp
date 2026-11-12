@@ -3,9 +3,11 @@
 
 #include <Windows.h>
 #include <format>
+#include <memory>
 #include <shellapi.h>
 #include <shlobj.h>
 #include <stdexcept>
+#include <type_traits>
 #include <wrl/client.h>
 
 namespace {
@@ -65,6 +67,37 @@ bool ShellUtils::OpenDirectory(const std::filesystem::path &path,
 		}
 
 		Open(resolved, resolved, WindowVisibility::NORMAL);
+		error.clear();
+		return true;
+	} catch (const std::exception &exception) {
+		error = exception.what();
+		return false;
+	}
+}
+
+bool ShellUtils::RevealInExplorer(const std::filesystem::path &path,
+                                  std::string &error) {
+	try {
+		// 元の表示名を保つため、リンクがある場合もExplorerには元のパスを渡す。
+		Resolve(path);
+		const auto absolute = PathUtils::ResolveFromExecutable(path);
+		const auto check = [&](HRESULT result) {
+			if (FAILED(result)) {
+				throw std::runtime_error(std::format(
+				    "Could not show {} in Explorer (0x{:08X}).",
+				    PathUtils::ToUtf8(absolute),
+				    static_cast<unsigned long>(result)));
+			}
+		};
+
+		PIDLIST_ABSOLUTE parsed = nullptr;
+		const auto result =
+		    SHParseDisplayName(absolute.c_str(), nullptr, &parsed, 0, nullptr);
+		const std::unique_ptr<std::remove_pointer_t<PIDLIST_ABSOLUTE>,
+		                      decltype(&CoTaskMemFree)>
+		    item(parsed, CoTaskMemFree);
+		check(result);
+		check(SHOpenFolderAndSelectItems(item.get(), 0, nullptr, 0));
 		error.clear();
 		return true;
 	} catch (const std::exception &exception) {

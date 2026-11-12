@@ -6,6 +6,7 @@
 #include "core/Logger.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "platform/windows/PathUtils.h"
+#include "platform/windows/ShellUtils.h"
 
 #include <algorithm>
 #include <exception>
@@ -516,6 +517,21 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		}
 	};
 
+	const auto drawLocationMenu = [&](const std::filesystem::path &path) {
+		if (ui.MenuItem("Show in Explorer")) {
+			ShellUtils::RevealInExplorer(path, revealMessage_);
+		}
+		if (ui.MenuItem("Copy Full Path")) {
+			try {
+				const auto absolute = PathUtils::ResolveFromExecutable(path);
+				ImGui::SetClipboardText(PathUtils::ToUtf8(absolute).c_str());
+				revealMessage_.clear();
+			} catch (const std::exception &error) {
+				revealMessage_ = error.what();
+			}
+		}
+	};
+
 	if (!assets.GetError().empty()) {
 		ui.Text("Assets could not be updated. Try Refresh again.");
 		ImGui::TextWrapped("%s", assets.GetError().c_str());
@@ -573,13 +589,19 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 				acceptFolder(directory);
 
-				if (canEditAssets && assets.GetRootDirectory().is_absolute()) {
+				const bool canMove = canEditAssets &&
+				                     assets.GetRootDirectory().is_absolute();
+				if (canMove) {
 					if (AssetDragDrop::DrawSource(directory, AssetDragDrop::Kind::FOLDER)) {
 						selectContext(directory);
 					}
+				}
 
-					if (ImGui::BeginPopupContextItem()) {
-						selectContext(directory);
+				if (ImGui::BeginPopupContextItem()) {
+					selectContext(directory);
+					drawLocationMenu(directory);
+					if (canMove) {
+						ImGui::Separator();
 						drawClipboardMenu();
 						drawPaste("Paste into Folder", directory);
 						ImGui::Separator();
@@ -600,8 +622,8 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 							recyclePaths_ = selectedItems_;
 						}
 
-						ImGui::EndPopup();
 					}
+					ImGui::EndPopup();
 				}
 
 				ImGui::PopID();
@@ -667,6 +689,8 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 			if (ImGui::BeginPopupContextItem()) {
 				selectContext(assetPath);
+				drawLocationMenu(assetPath);
+				ImGui::Separator();
 				drawClipboardMenu();
 				drawPaste("Paste", currentFolder());
 				ImGui::Separator();
