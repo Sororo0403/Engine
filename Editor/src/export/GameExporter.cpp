@@ -506,6 +506,18 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 			    "Runtime before exporting.");
 		}
 
+		// 事前検査では、同じ検査で独立して直せる問題をまとめて表示する。
+		const auto reportIssue = [&](std::string issue) {
+			if (writeOutput) {
+				throw std::runtime_error(std::move(issue));
+			}
+
+			if (!error.empty()) {
+				error += "\n\n";
+			}
+			error += issue;
+		};
+
 		bool startupIsTarget = false;
 		auto graph = SceneDependencyGraph::Read(
 		    scene, options.startupScenePath,
@@ -534,7 +546,9 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 			    std::string issue;
 			    if (!PrefabSerializer::Load(path, loaded, issue, &counter))
 				    throw std::runtime_error(issue);
-		    });
+		    },
+		    reportIssue);
+		const bool incompleteGraph = !error.empty();
 		auto sourceDirectories = options.assetDirectories;
 		for (std::size_t i = 1; i < graph.size(); ++i)
 			sourceDirectories.push_back(graph[i].source.parent_path());
@@ -566,24 +580,12 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 
 		ValidateRuntimeBuild(runtimeRoot);
 
-		// 事前検査では、同じ検査で独立して直せる問題をまとめて表示する。
-		const auto reportIssue = [&](std::string issue) {
-			if (writeOutput) {
-				throw std::runtime_error(std::move(issue));
-			}
-
-			if (!error.empty()) {
-				error += "\n\n";
-			}
-			error += issue;
-		};
-
 		// アセット参照を出力先へ書き換える前に、遷移先の到着地点を検証する。
 		std::set<std::pair<std::size_t, std::string>> checkedArrivals;
 
 		for (const auto &entry : graph) {
 			for (const auto &[id, object] : entry.objects) {
-				if (!object.triggerActions)
+				if (incompleteGraph || !object.triggerActions)
 					continue;
 				for (const auto &action : object.triggerActions->actions) {
 					if (action.operation !=
@@ -641,7 +643,8 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 			SceneSimulation check;
 			std::string issue;
 			SceneObjectId invalidObject = 0;
-			if (!entry.prefab &&
+			// 参照先が欠けている場合も、読めたシーンの入力設定と素材を検査する。
+			if (!incompleteGraph && !entry.prefab &&
 			    !(&entry == &graph.front()
 			          ? check.Start(candidate, issue,
 			                        options.config.fallbackCamera,
@@ -654,7 +657,7 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 
 			for (auto &[id, object] : objects) {
 				object.prefabLink.reset();
-				if (object.triggerActions)
+				if (!incompleteGraph && object.triggerActions)
 					for (auto &action : object.triggerActions->actions) {
 						if (action.operation !=
 						        TriggerAction::Operation::LOAD_SCENE ||
@@ -672,7 +675,7 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 						action.scenePath = scenePaths[static_cast<std::size_t>(
 						    found - graph.begin())];
 					}
-				if (object.script)
+				if (!incompleteGraph && object.script)
 					for (auto *bindings :
 					     {&object.script->prefabs, &object.script->scenes})
 						for (auto &[name, path] : *bindings) {

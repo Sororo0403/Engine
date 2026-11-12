@@ -4,27 +4,30 @@
 #include "scene/Scene.h"
 #include <algorithm>
 #include <format>
+#include <new>
 #include <stdexcept>
+#include <utility>
 
 namespace {
 /// <summary>
 /// 遷移先やPrefabの読み込みに失敗した場合に参照元も示す
 /// </summary>
-std::runtime_error DependencyError(const std::filesystem::path &source,
-                                   const SceneObject &object,
-                                   SceneObjectId id,
-                                   const std::filesystem::path &target,
-                                   const std::exception &error) {
-	return std::runtime_error(std::format(
+std::string DescribeDependencyError(const std::filesystem::path &source,
+                                    const SceneObject &object,
+                                    SceneObjectId id,
+                                    const std::filesystem::path &target,
+                                    const std::exception &error) {
+	return std::format(
 	    "{} / {} (ID {}) references {}\n{}",
 	    source.empty() ? "Startup scene" : PathUtils::ToUtf8(source),
-	    object.name, id, PathUtils::ToUtf8(target), error.what()));
+	    object.name, id, PathUtils::ToUtf8(target), error.what());
 }
 } // namespace
 
 std::vector<SceneDependencyGraph::Entry> SceneDependencyGraph::Read(
     const Scene &scene, const std::filesystem::path &source,
-    const Resolve &resolve, const Load &load, const LoadPrefab &loadPrefab) {
+    const Resolve &resolve, const Load &load, const LoadPrefab &loadPrefab,
+    const ReportIssue &reportIssue) {
 	if (!resolve || !load)
 		throw std::invalid_argument(
 		    "Scene dependency readers must be provided.");
@@ -35,14 +38,25 @@ std::vector<SceneDependencyGraph::Entry> SceneDependencyGraph::Read(
 	for (std::size_t i = 0; i < entries.size(); ++i) {
 		auto objects = entries[i].objects;
 		std::vector<std::pair<std::filesystem::path, SceneObjectId>> targets;
+		const auto report = [&](SceneObjectId id, const auto &path,
+		                        const std::exception &error) {
+			auto message = DescribeDependencyError(entries[i].source, objects.at(id),
+			                                       id, path, error);
+			if (!reportIssue) {
+				throw std::runtime_error(message);
+			}
+			reportIssue(std::move(message));
+		};
 
 		for (auto &[id, object] : objects) {
 			const auto addTarget = [&](std::filesystem::path &path) {
 				try {
 					path = resolve(path);
+				} catch (const std::bad_alloc &) {
+					throw;
 				} catch (const std::exception &error) {
-					throw DependencyError(entries[i].source, object, id, path,
-					                      error);
+					report(id, path, error);
+					return;
 				}
 				targets.emplace_back(path, id);
 			};
@@ -66,8 +80,6 @@ std::vector<SceneDependencyGraph::Entry> SceneDependencyGraph::Read(
 			}
 		}
 
-		entries[i].objects = std::move(objects);
-
 		for (const auto &[path, referringId] : targets) {
 			if (std::ranges::any_of(entries, [&](const auto &entry) {
 				    return !entry.source.empty() &&
@@ -90,15 +102,17 @@ std::vector<SceneDependencyGraph::Entry> SceneDependencyGraph::Read(
 				} else {
 					load(path, target);
 				}
+			} catch (const std::bad_alloc &) {
+				throw;
 			} catch (const std::exception &error) {
-				throw DependencyError(entries[i].source,
-				                      entries[i].objects.at(referringId),
-				                      referringId, path, error);
+				report(referringId, path, error);
+				continue;
 			}
 			entries.push_back({path, target.GetObjects(), prefab, counter,
 			                   target.GetLighting(), target.UsesLegacyDirectionalLight(),
 			                   target.GetFog()});
 		}
+		entries[i].objects = std::move(objects);
 	}
 
 	return entries;
