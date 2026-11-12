@@ -76,6 +76,7 @@ void SceneSimulation::CopyFrom(const SceneSimulation &source) {
 	pendingScene_ = source.pendingScene_;
 	gamePaused_ = source.gamePaused_;
 	restartSource_ = source.restartSource_;
+	loadedScenePath_ = source.loadedScenePath_;
 	quitRequested_ = source.quitRequested_;
 	sceneRevision_ = source.sceneRevision_;
 }
@@ -124,6 +125,7 @@ void SceneSimulation::Adopt(SceneSimulation &source) {
 	pendingScene_ = std::move(source.pendingScene_);
 	gamePaused_ = source.gamePaused_;
 	restartSource_ = std::move(source.restartSource_);
+	loadedScenePath_ = std::move(source.loadedScenePath_);
 	quitRequested_ = source.quitRequested_;
 	sceneRevision_ = source.sceneRevision_;
 }

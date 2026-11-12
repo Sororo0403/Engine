@@ -248,6 +248,13 @@ class SceneSimulation {
 	}
 
 	/// <summary>
+	/// 遷移先から読み込んだ現在のシーンファイル。最初のシーンではnullptr
+	/// </summary>
+	const std::filesystem::path *GetLoadedScenePath() const {
+		return loadedScenePath_.get();
+	}
+
+	/// <summary>
 	/// 再生状態を確認する
 	/// </summary>
 	/// <returns>true:再生中 false:停止中</returns>
@@ -615,6 +622,7 @@ class SceneSimulation {
 	SceneLoadRequest pendingScene_;
 	// 到着位置を反映済みで、Lua開始処理とシミュレーションを実行する前の状態。
 	std::shared_ptr<const Scene> restartSource_;
+	std::shared_ptr<const std::filesystem::path> loadedScenePath_;
 	bool quitRequested_ = false;
 	bool gamePaused_ = false;
 	std::uint64_t sceneRevision_ = 0;

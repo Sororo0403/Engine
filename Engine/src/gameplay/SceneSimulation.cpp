@@ -158,6 +158,9 @@ bool SceneSimulation::StartScene(const Scene &source, std::string &error,
 
 		SceneSimulation working;
 		working.restartSource_ = initialScene;
+		if (preserveSharedData) {
+			working.loadedScenePath_ = loadedScenePath_;
+		}
 		working.preparePrefabResources_ = preparePrefabResources_;
 		working.loadAnimatorModel_ = loadAnimatorModel_;
 		working.legacyLighting_ = legacyLighting_;
@@ -618,6 +621,7 @@ void SceneSimulation::Stop() {
 	playing_ = false;
 	pendingScene_ = {};
 	restartSource_.reset();
+	loadedScenePath_.reset();
 	quitRequested_ = false;
 	gamePaused_ = false;
 	cameraTransition_.reset();
@@ -700,6 +704,10 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 			    pendingScene_.restart ? *restartSource_ : destination;
 			SceneSimulation destinationSimulation;
 			destinationSimulation.CopyFrom(*this);
+			if (!pendingScene_.restart) {
+				destinationSimulation.loadedScenePath_ =
+				    std::make_shared<const std::filesystem::path>(pendingScene_.path);
+			}
 
 			if (!destinationSimulation.StartScene(source, error, fallbackPose_,
 			                                      nullptr, true)) {

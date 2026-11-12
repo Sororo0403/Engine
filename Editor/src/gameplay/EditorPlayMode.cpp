@@ -7,6 +7,7 @@
 #include "graphics/ui/ImGuiSystem.h"
 #include "input/InputSystem.h"
 #include "layout/GameViewLayout.h"
+#include "platform/windows/PathUtils.h"
 #include "ui/UIInputReader.h"
 #include <cmath>
 #include <format>
@@ -165,6 +166,13 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 		ui.EndDisabled();
 		ui.BeginDisabled(!canStart);
 
+		if (const auto *path = session_.GetLoadedScenePath()) {
+			if (ui.Button("Stop and Open Scene")) {
+				action = Action::STOP_AND_OPEN_SCENE;
+			}
+			ImGui::SetItemTooltip("%s",
+			                      PathUtils::ToUtf8(path->filename()).c_str());
+		}
 		if (ui.Button(maximized_ ? "Restore Layout" : "Maximize Game")) {
 			maximizeRequested_ = true;
 		}

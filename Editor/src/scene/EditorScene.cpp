@@ -274,6 +274,18 @@ bool EditorScene::Update(float deltaTime) {
 		playMode_.Stop();
 	}
 
+	if (playAction == EditorPlayMode::Action::STOP_AND_OPEN_SCENE && !IsBusy()) {
+		if (const auto *path = playMode_.GetSession().GetLoadedScenePath()) {
+			auto target = *path;
+			playMode_.Stop();
+			const auto &current = document_.GetFilePath();
+			if (current.empty() || !PathUtils::IsSameFile(current, target)) {
+				pendingOpenPath_ = std::move(target);
+				StartAction(EditorAction::OPEN_PATH);
+			}
+		}
+	}
+
 	if (playAction == EditorPlayMode::Action::RENDER_ERROR) {
 		playMode_.Stop();
 		ShowError("Could not create or resize the Game render target.");

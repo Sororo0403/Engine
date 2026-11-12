@@ -188,6 +188,13 @@ class EditorPlaySession {
 	}
 
 	/// <summary>
+	/// 再生中に遷移して読み込んだシーンファイルを取得する
+	/// </summary>
+	const std::filesystem::path *GetLoadedScenePath() const {
+		return simulation_.GetLoadedScenePath();
+	}
+
+	/// <summary>
 	/// Play開始時の編集シーンと同じ物体IDの集合を使用しているか確認する
 	/// </summary>
 	/// <returns>true:開始シーンを再生中 false:停止中または遷移後</returns>
