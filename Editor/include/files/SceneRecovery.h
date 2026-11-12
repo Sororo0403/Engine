@@ -21,8 +21,14 @@ class SceneRecovery {
 	struct Entry {
 		std::filesystem::path path;
 		std::filesystem::path sourceFile;
+		std::filesystem::path assetDirectory;
 		std::string capturedUtc;
 		std::string error;
+
+		/// <summary>
+		/// 現在のプロジェクトで復旧できる候補か確認する。未接続の場合は読み取れる候補を許可する
+		/// </summary>
+		bool CanRestore(const std::filesystem::path &projectAssets) const;
 	};
 
 	/// <summary>

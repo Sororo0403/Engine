@@ -180,15 +180,9 @@ bool EditorScene::Initialize() {
 		}
 	}
 
-	if (recoveryReady) {
-		std::vector<SceneRecovery::Entry> entries;
-
-		if (!recovery_.Enumerate(entries, recoveryError)) {
-			Logger::Error("EditorScene::Recovery: " + recoveryError);
-		} else if (!entries.empty() && stage_ == DialogStage::IDLE) {
-			recoveryDialog_.Show(std::move(entries));
-			stage_ = DialogStage::RECOVERY;
-		}
+	if (recoveryReady && stage_ == DialogStage::IDLE &&
+	    project_.GetRoot().empty()) {
+		ShowRecovery(true);
 	}
 
 	Logger::Info("EditorSceneを初期化しました。");
@@ -3761,11 +3755,25 @@ void EditorScene::ClearRecovery(
 	}
 }
 
-void EditorScene::ShowRecovery() {
+void EditorScene::ShowRecovery(bool automatic) {
 	std::vector<SceneRecovery::Entry> entries;
 	std::string error;
-	recovery_.Enumerate(entries, error);
-	recoveryDialog_.Show(std::move(entries), std::move(error));
+	const auto projectAssets = project_.GetRoot().empty()
+	                               ? std::filesystem::path{}
+	                               : project_.GetAssetsDirectory();
+	const bool enumerated = recovery_.Enumerate(entries, error);
+	if (automatic) {
+		if (!enumerated) {
+			Logger::Error("EditorScene::Recovery: " + error);
+			return;
+		}
+		if (std::ranges::none_of(entries, [&](const auto &entry) {
+			    return entry.CanRestore(projectAssets);
+		    })) {
+			return;
+		}
+	}
+	recoveryDialog_.Show(std::move(entries), projectAssets, std::move(error));
 	stage_ = DialogStage::RECOVERY;
 }
 
@@ -5004,6 +5012,9 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		if (!startupError.empty()) {
 			Logger::Warning(startupError);
 			consolePanel_.Show();
+		}
+		if (recovery_.IsReady()) {
+			ShowRecovery(true);
 		}
 	} catch (const std::exception &error) {
 		ShowError(error.what());

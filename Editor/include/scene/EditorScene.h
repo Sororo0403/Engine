@@ -550,7 +550,8 @@ class EditorScene final : public IScene {
 	/// <summary>
 	/// 復旧候補を列挙して選択画面を開く
 	/// </summary>
-	void ShowRecovery();
+	/// <param name="automatic">trueなら現在のプロジェクトで復旧可能な候補があるときだけ開く</param>
+	void ShowRecovery(bool automatic = false);
 
 	/// <summary>
 	/// 確認済みの候補を独立した未保存シーンとして復旧する。元ファイルは上書きしない

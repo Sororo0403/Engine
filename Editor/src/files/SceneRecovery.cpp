@@ -271,6 +271,13 @@ bool SceneRecovery::Record(const Scene &scene,
 	}
 }
 
+bool SceneRecovery::Entry::CanRestore(
+    const std::filesystem::path &projectAssets) const {
+	return error.empty() && !assetDirectory.empty() &&
+	       (projectAssets.empty() ||
+	        PathUtils::IsSameFile(assetDirectory, projectAssets));
+}
+
 bool SceneRecovery::Enumerate(std::vector<Entry> &entries,
                               std::string &error) const {
 	try {
@@ -309,6 +316,10 @@ bool SceneRecovery::Enumerate(std::vector<Entry> &entries,
 			try {
 				auto data = ReadDocument(entry.path);
 				entry.sourceFile = SourceFile(data);
+				AssetSources sources;
+				sources.Select(PathUtils::FromUtf8(
+				    data.at("assetDirectory").get<std::string>()));
+				entry.assetDirectory = sources.GetDirectory();
 				entry.capturedUtc = data.at("capturedUtc").get<std::string>();
 			} catch (const std::exception &e) {
 				entry.error = e.what();

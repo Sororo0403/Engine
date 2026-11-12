@@ -17,8 +17,10 @@ class SceneRecoveryDialog {
 	/// 復旧候補の列挙結果を保持し、選択画面の表示を予約する
 	/// </summary>
 	/// <param name="entries">使用中でない記録の一覧</param>
+	/// <param name="projectAssets">現在のプロジェクトのAssetsフォルダ。未接続なら空</param>
 	/// <param name="error">列挙失敗時に表示する理由。候補がなくても保留で閉じられる</param>
 	void Show(std::vector<SceneRecovery::Entry> entries,
+	          std::filesystem::path projectAssets,
 	          std::string error = {});
 
 	/// <summary>
@@ -37,7 +39,13 @@ class SceneRecoveryDialog {
 	const std::filesystem::path &GetSelectedPath() const;
 
   private:
+	/// <summary>
+	/// 復旧できる候補を先頭に並べ、最初の項目を選択する
+	/// </summary>
+	void SetEntries(std::vector<SceneRecovery::Entry> entries);
+
 	std::vector<SceneRecovery::Entry> entries_;
+	std::filesystem::path projectAssets_;
 	std::filesystem::path selectedPath_;
 	std::string error_;
 	std::size_t selected_ = 0;

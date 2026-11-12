@@ -1,18 +1,28 @@
 #include "dialogs/SceneRecoveryDialog.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "platform/windows/PathUtils.h"
+#include <algorithm>
 #include <format>
 #include <imgui.h>
 #include <utility>
 
 void SceneRecoveryDialog::Show(std::vector<SceneRecovery::Entry> entries,
+                               std::filesystem::path projectAssets,
                                std::string error) {
-	entries_ = std::move(entries);
+	projectAssets_ = std::move(projectAssets);
+	SetEntries(std::move(entries));
 	error_ = std::move(error);
 	selectedPath_.clear();
-	selected_ = 0;
 	confirmingDelete_ = false;
 	openRequested_ = true;
+}
+
+void SceneRecoveryDialog::SetEntries(std::vector<SceneRecovery::Entry> entries) {
+	std::stable_partition(entries.begin(), entries.end(), [&](const auto &entry) {
+		return entry.CanRestore(projectAssets_);
+	});
+	entries_ = std::move(entries);
+	selected_ = 0;
 }
 
 SceneRecoveryDialog::Result
@@ -35,8 +45,7 @@ SceneRecoveryDialog::Draw(const ImGuiSystem &ui, SceneRecovery &recovery,
 		std::vector<SceneRecovery::Entry> refreshed;
 
 		if (recovery.Enumerate(refreshed, error_)) {
-			entries_.swap(refreshed);
-			selected_ = 0;
+			SetEntries(std::move(refreshed));
 		}
 	}
 
@@ -103,12 +112,23 @@ SceneRecoveryDialog::Draw(const ImGuiSystem &ui, SceneRecovery &recovery,
 
 		ui.EndChild();
 
-		if (selected && !entries_[selected_].error.empty()) {
-			ImGui::TextWrapped("%s", entries_[selected_].error.c_str());
+		const bool canRestore =
+		    selected && entries_[selected_].CanRestore(projectAssets_);
+		if (selected) {
+			const auto &entry = entries_[selected_];
+			if (!entry.assetDirectory.empty()) {
+				ImGui::TextWrapped("Assets: %s",
+				                   PathUtils::ToUtf8(entry.assetDirectory).c_str());
+			}
+			if (!entry.error.empty()) {
+				ImGui::TextWrapped("%s", entry.error.c_str());
+			} else if (!canRestore) {
+				ImGui::TextWrapped(
+				    "Open the project for this Assets folder to restore this scene.");
+			}
 		}
 
-		ui.BeginDisabled(!selected ||
-		                 (selected && !entries_[selected_].error.empty()));
+		ui.BeginDisabled(!canRestore);
 		const bool restore = ui.Button("Restore");
 		ui.EndDisabled();
 
