@@ -4366,8 +4366,10 @@ void EditorScene::UpdateDialogs() {
 		}
 
 		if (result == FileDialogResult::ACCEPTED) {
-			if (OpenScene(fileDialog_.GetSelectedPath())) {
+			if (OpenScene(fileDialog_.GetSelectedPath(), false)) {
 				SaveEditorSession();
+			} else {
+				fileDialog_.RetryOpen(document_.GetError());
 			}
 		}
 

@@ -9,6 +9,7 @@
 #include <imgui.h>
 #include <stdexcept>
 #include <system_error>
+#include <utility>
 
 void FileDialog::Show(FileDialogMode mode,
                       const std::filesystem::path &initialPath,
@@ -63,6 +64,17 @@ void FileDialog::Show(FileDialogMode mode,
 	} catch (const std::exception &error) {
 		error_ = error.what();
 	}
+}
+
+void FileDialog::RetryOpen(std::string error) {
+	const auto parent = selectedPath_.parent_path();
+	if (!parent.empty() && parent != directory_) {
+		ChangeDirectory(parent);
+		fileName_ = PathUtils::ToUtf8(selectedPath_.filename());
+	}
+	selectedPath_.clear();
+	error_ = std::move(error);
+	openRequested_ = true;
 }
 
 FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
@@ -156,6 +168,8 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 					if (entry.directory) {
 						nextDirectory = entry.path;
 					} else {
+						if (!selected)
+							error_.clear();
 						fileName_ = name;
 					}
 				}
@@ -177,12 +191,12 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 			if (ui.Button("Create Folder")) {
 				CreateFolder();
 			}
-		} else {
-			ui.InputText("File name", fileName_);
+		} else if (ui.InputText("File name", fileName_)) {
+			error_.clear();
 		}
 
 		if (!error_.empty()) {
-			ui.Text(error_);
+			ImGui::TextWrapped("%s", error_.c_str());
 		}
 
 		ui.Separator();
