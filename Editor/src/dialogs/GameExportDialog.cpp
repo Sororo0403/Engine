@@ -240,7 +240,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 			selected.config.width = width_;
 			selected.config.height = height_;
 
-			if (!selected.config.IsValid()) {
+			if (exportRequested && !selected.config.HasValidWindowSettings()) {
 				throw std::runtime_error(
 				    "Enter a title and a valid window size (1-8192).");
 			}

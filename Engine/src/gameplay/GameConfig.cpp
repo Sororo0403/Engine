@@ -41,11 +41,18 @@ DirectX::XMFLOAT3 ReadVector(const nlohmann::json &value) {
 } // namespace
 
 bool GameConfig::IsValid() const {
+	return HasValidWindowSettings() && HasValidStartupSettings();
+}
+
+bool GameConfig::HasValidWindowSettings() const {
+	return !title.empty() && title.find('\0') == std::string::npos &&
+	       !StringConversion::Utf8ToWide(title).empty() && width >= 1 &&
+	       height >= 1 && width <= 8192 && height <= 8192;
+}
+
+bool GameConfig::HasValidStartupSettings() const {
 	if (!lighting.IsValid() || !input.IsValid() ||
-	    !GameActionBinding::IsValid(actions) || title.empty() ||
-	    title.find('\0') != std::string::npos ||
-	    StringConversion::Utf8ToWide(title).empty() || width < 1 ||
-	    height < 1 || width > 8192 || height > 8192 || scenePath.empty() ||
+	    !GameActionBinding::IsValid(actions) || scenePath.empty() ||
 	    scenePath.has_root_path() ||
 	    scenePath.native().find(L'\0') != std::wstring::npos ||
 	    !PathUtils::HasExtension(scenePath, ".json")) {

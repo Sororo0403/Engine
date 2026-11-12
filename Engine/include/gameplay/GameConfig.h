@@ -41,6 +41,16 @@ struct GameConfig {
 	bool IsValid() const;
 
 	/// <summary>
+	/// ウィンドウのタイトルとサイズを検証する
+	/// </summary>
+	bool HasValidWindowSettings() const;
+
+	/// <summary>
+	/// シーン、カメラ、入力、照明、永続化の起動設定を検証する
+	/// </summary>
+	bool HasValidStartupSettings() const;
+
+	/// <summary>
 	/// 起動設定を検証し、ファイルへ書き込まず現在の形式のJSON文字列に変換する
 	/// </summary>
 	/// <param name="text">成功時に置き換えるJSON文字列。失敗時は保持する</param>

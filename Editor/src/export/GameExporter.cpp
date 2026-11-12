@@ -519,12 +519,19 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 		if (issues) {
 			issues->clear();
 		}
-		PathUtils::RelativeInside(fs::path(L"resources"),
-		                          options.config.scenePath.lexically_normal());
-
-		if (!options.config.IsValid()) {
-			throw std::runtime_error(
-			    "Game title, size or fallback camera is invalid.");
+		if (!options.config.HasValidWindowSettings()) {
+			reportIssue("Enter a title and a valid window size (1-8192).");
+		}
+		const bool startupSettingsValid = options.config.HasValidStartupSettings();
+		if (!startupSettingsValid) {
+			reportIssue("Game startup settings are invalid. Check Game Settings.");
+		} else {
+			try {
+				PathUtils::RelativeInside(fs::path(L"resources"),
+				                          options.config.scenePath.lexically_normal());
+			} catch (const std::runtime_error &issue) {
+				reportIssue(issue.what());
+			}
 		}
 
 		fs::path destination;
@@ -634,7 +641,7 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 
 		for (const auto &entry : graph) {
 			for (const auto &[id, object] : entry.objects) {
-				if (incompleteGraph || !object.triggerActions)
+				if (!startupSettingsValid || incompleteGraph || !object.triggerActions)
 					continue;
 				for (const auto &action : object.triggerActions->actions) {
 					if (action.operation !=
@@ -695,7 +702,7 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 			std::string issue;
 			SceneObjectId invalidObject = 0;
 			// 参照先が欠けている場合も、読めたシーンの入力設定と素材を検査する。
-			if (!incompleteGraph && !entry.prefab &&
+			if (startupSettingsValid && !incompleteGraph && !entry.prefab &&
 			    !(&entry == &graph.front()
 			          ? check.Start(candidate, issue,
 			                        options.config.fallbackCamera,
