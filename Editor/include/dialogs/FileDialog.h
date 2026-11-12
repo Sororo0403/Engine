@@ -46,9 +46,9 @@ class FileDialog {
 	          FileDialogFilter filter = FileDialogFilter::SCENE);
 
 	/// <summary>
-	/// 選択したファイルを読み込めなかったとき、同じ場所から選び直す
+	/// 選択したファイルやフォルダを使えなかったとき、同じ場所から選び直す
 	/// </summary>
-	/// <param name="error">選択後の読み込みエラー</param>
+	/// <param name="error">選択後の処理で発生したエラー</param>
 	void RetryOpen(std::string error);
 
 	/// <summary>

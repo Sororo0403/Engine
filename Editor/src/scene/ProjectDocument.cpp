@@ -7,6 +7,7 @@
 
 #include <fstream>
 #include <stdexcept>
+#include <system_error>
 #include <utility>
 
 namespace {
@@ -121,7 +122,16 @@ bool ProjectDocument::Open(const std::filesystem::path &folder,
 		auto root = std::filesystem::canonical(folder);
 		const auto manifest = root / L"project.json";
 
-		if (std::filesystem::canonical(manifest) != manifest) {
+		std::error_code status;
+		const auto resolved = std::filesystem::canonical(manifest, status);
+		if (status == std::errc::no_such_file_or_directory) {
+			throw std::runtime_error("This folder does not contain project.json.");
+		}
+		if (status) {
+			throw std::filesystem::filesystem_error("Could not locate project.json",
+			                                        manifest, status);
+		}
+		if (resolved != manifest) {
 			throw std::runtime_error(
 			    "The project manifest must be inside its project folder.");
 		}

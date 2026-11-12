@@ -5159,13 +5159,21 @@ void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject) {
 
 void EditorScene::SwitchProject(const std::filesystem::path &folder,
                                 bool create) {
+	const auto reportFailure = [&](std::string error) {
+		if (stage_ == DialogStage::CREATE_PROJECT ||
+		    stage_ == DialogStage::OPEN_PROJECT) {
+			fileDialog_.RetryOpen(std::move(error));
+		} else {
+			ShowError(std::move(error));
+		}
+	};
 	try {
 		ProjectDocument candidate;
 		std::string error;
 
 		if (!(create ? candidate.Create(folder, error)
 		             : candidate.Open(folder, error))) {
-			ShowError(std::move(error));
+			reportFailure(std::move(error));
 			return;
 		}
 
@@ -5173,7 +5181,7 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		                     candidate.GetScenesDirectory());
 
 		if (!assets.Refresh()) {
-			ShowError(assets.GetError());
+			reportFailure(assets.GetError());
 			return;
 		}
 
@@ -5234,7 +5242,7 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 			StartAction(EditorAction::OPEN);
 		}
 	} catch (const std::exception &error) {
-		ShowError(error.what());
+		reportFailure(error.what());
 	}
 }
 
