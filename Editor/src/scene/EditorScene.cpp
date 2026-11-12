@@ -1736,9 +1736,9 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 
 		const auto startup = project_.GetStartupScene();
 		const auto &current = document_.GetFilePath();
-		const bool canOpenStartup = enabled && !startup.empty() &&
-		                            (current.empty() ||
-		                             !PathUtils::IsSameFile(startup, current));
+		const bool currentIsStartup = !startup.empty() && !current.empty() &&
+		                              PathUtils::IsSameFile(startup, current);
+		const bool canOpenStartup = enabled && !startup.empty() && !currentIsStartup;
 		if (ui_.MenuItem("Open Startup Scene", nullptr, canOpenStartup)) {
 			pendingOpenPath_ = startup;
 			action = EditorAction::OPEN_PATH;
@@ -1749,8 +1749,26 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 
 		if (ui_.MenuItem("Set Current Scene as Startup", nullptr,
 		                 enabled && !project_.GetRoot().empty() &&
-		                     !document_.GetFilePath().empty())) {
+		                     !current.empty() && !currentIsStartup)) {
+			pendingOpenPath_ = current;
 			action = EditorAction::SET_STARTUP_SCENE;
+		}
+
+		const auto &projectScenes = assets_.GetSceneTargets();
+		const bool canBrowseProjectScenes =
+		    enabled && !project_.GetRoot().empty() && !projectScenes.empty();
+		if (ImGui::BeginMenu("Choose Startup Scene", canBrowseProjectScenes)) {
+			const auto directory = project_.GetScenesDirectory();
+			for (const auto &path : projectScenes) {
+				const auto label = PathUtils::ToUtf8(path.lexically_relative(directory));
+				const bool selected =
+				    !startup.empty() && PathUtils::IsSameFile(path, startup);
+				if (ImGui::MenuItem(label.c_str(), nullptr, selected, !selected)) {
+					pendingOpenPath_ = path;
+					action = EditorAction::SET_STARTUP_SCENE;
+				}
+			}
+			ui_.EndMenu();
 		}
 
 		ui_.Separator();
@@ -1767,9 +1785,6 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			action = EditorAction::OPEN;
 		}
 
-		const auto &projectScenes = assets_.GetSceneTargets();
-		const bool canBrowseProjectScenes =
-		    enabled && !project_.GetRoot().empty() && !projectScenes.empty();
 		if (ImGui::BeginMenu("Project Scenes", canBrowseProjectScenes)) {
 			const auto directory = project_.GetScenesDirectory();
 			for (const auto &path : projectScenes) {
@@ -2660,9 +2675,18 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 
 	switch (action) {
 	case EditorAction::SET_STARTUP_SCENE: {
+		const auto path = std::exchange(pendingOpenPath_, std::filesystem::path{});
+		SceneDocument candidate;
+		const auto &config = project_.GetGameConfig();
+		if (!candidate.Open(path, &config.lighting)) {
+			ShowError(std::format("Could not set the startup scene: {}\n{}",
+			                      PathUtils::ToUtf8(path), candidate.GetError()));
+			return;
+		}
+
 		std::string error;
 
-		if (!project_.Save(exportConfig_, document_.GetFilePath(), error)) {
+		if (!project_.Save(config, candidate.GetFilePath(), error)) {
 			ShowError(std::move(error));
 		}
 
@@ -3093,7 +3117,7 @@ const Scene *EditorScene::PrepareGameExport(SceneDocument &startup,
 		if (!scene) {
 			error = std::format(
 			    "Could not load the project startup scene: {}\n{}\n"
-			    "Open a valid scene and choose File > Set Current Scene as Startup.",
+			    "Choose a valid scene from File > Choose Startup Scene.",
 			    PathUtils::ToUtf8(project_.GetStartupScene()), startup.GetError());
 			return nullptr;
 		}
