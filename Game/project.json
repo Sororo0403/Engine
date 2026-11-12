@@ -93,10 +93,10 @@
     "scene": "resources/game/scene.json",
     "title": "GuruttoWorld",
     "settingsId": "gurutto-world",
-    "persistentScriptKeys": ["volumeLevel", "backgroundMotion", "streetBestFlowers", "streetBestFullTime", "streetBestClearTime", "streetBestFullSplits", "streetBestClearSplits", "parkUnlocked", "parkBestClearTime", "parkBestFullTime", "parkBestCleanTime", "journeyBestTime", "journeyBestFullTime", "sunriseUnlocked", "sunriseBestClearTime", "sunriseBestCleanTime", "sunriseJourneyBestFullTime"],
+    "persistentScriptKeys": ["pushRingRecords", "volumeLevel", "backgroundMotion", "streetBestFlowers", "streetBestFullTime", "streetBestClearTime", "streetBestFullSplits", "streetBestClearSplits", "parkUnlocked", "parkBestClearTime", "parkBestFullTime", "parkBestCleanTime", "journeyBestTime", "journeyBestFullTime", "sunriseUnlocked", "sunriseBestClearTime", "sunriseBestCleanTime", "sunriseJourneyBestFullTime"],
     "version": 11,
     "width": 1280
   },
-  "startupScene": "scenes/TitleStreet.scene.json",
+  "startupScene": "scenes/StageSelect.scene.json",
   "version": 1
 }

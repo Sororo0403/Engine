@@ -503,7 +503,7 @@
             "messageName": "",
             "once": false,
             "operation": "loadScene",
-            "scene": "@project/scenes/TitleStreet.scene.json",
+            "scene": "@project/scenes/StageSelect.scene.json",
             "target": 0
           },
           {
@@ -965,7 +965,7 @@
       "text": {
         "enabled": true,
         "raycastTarget": false,
-        "value": "タイトルへ",
+        "value": "セレクトへ",
         "fontFamily": "Yu Gothic UI",
         "fontSize": 22,
         "bold": true,
@@ -1023,7 +1023,7 @@
             "messageName": "",
             "once": false,
             "operation": "loadScene",
-            "scene": "@project/scenes/TitleStreet.scene.json",
+            "scene": "@project/scenes/StageSelect.scene.json",
             "target": 0
           }
         ]
@@ -1773,7 +1773,7 @@
     {
       "active": true,
       "id": 136,
-      "name": "タイトルへ",
+      "name": "セレクトへ",
       "parent": 130,
       "tag": "",
       "transform": {
@@ -1833,7 +1833,7 @@
       "text": {
         "enabled": true,
         "raycastTarget": false,
-        "value": "タイトルへ",
+        "value": "セレクトへ",
         "fontFamily": "Yu Gothic UI",
         "fontSize": 23,
         "bold": true,
@@ -1891,7 +1891,7 @@
             "messageName": "",
             "once": false,
             "operation": "loadScene",
-            "scene": "@project/scenes/TitleStreet.scene.json",
+            "scene": "@project/scenes/StageSelect.scene.json",
             "target": 0
           }
         ]
