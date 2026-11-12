@@ -237,7 +237,8 @@ bool EditorScene::Update(float deltaTime) {
 	                                       playSelectionActive_ &&
 	                                       playSelection_.GetCount() != 0,
 	                                   &document_.GetScene(),
-	                                   !project_.GetStartupScene().empty());
+	                                   document_.GetFilePath(),
+	                                   project_.GetStartupScene());
 	const bool playShortcutEnabled =
 	    input_.IsActive() && playInputWasActive_ && !exitQueued_ &&
 	    action == EditorAction::NONE && !cameraSettingsRequested_ &&
@@ -4454,8 +4455,18 @@ void EditorScene::UpdateDialogs() {
 		}
 
 		if (result == FileDialogResult::ACCEPTED) {
+			const auto previousPath = document_.GetFilePath();
+			const auto startup = project_.GetStartupScene();
 			SaveEditorSession();
 			if (document_.SaveAs(fileDialog_.GetSelectedPath())) {
+				if (!startup.empty() && !previousPath.empty() &&
+				    PathUtils::IsSameFile(previousPath, startup) &&
+				    !PathUtils::IsSameFile(document_.GetFilePath(), startup)) {
+					Logger::Info(std::format(
+					    "Project startup scene: {}. To use the newly saved scene, "
+					    "choose File > Set Current Scene as Startup.",
+					    PathUtils::ToUtf8(startup)));
+				}
 				recentScenes_.Add(document_.GetFilePath());
 				SaveEditorSession();
 				ClearRecovery();

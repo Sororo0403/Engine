@@ -56,7 +56,8 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
                                               const GameConfig &config,
                                               bool canUseSelection,
                                               const Scene *editingScene,
-                                              bool hasStartupScene) {
+                                              const std::filesystem::path &editingScenePath,
+                                              const std::filesystem::path &startupScenePath) {
 	visible_ = false;
 	ready_ = false;
 	viewport_ = {};
@@ -214,12 +215,16 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 		if (ui.Button("Play")) {
 			action = Action::PLAY;
 		}
+		ImGui::SetItemTooltip(
+		    "%s", editingScenePath.empty() ? "Untitled Scene"
+		                                  : PathUtils::ToUtf8(editingScenePath).c_str());
 
-		if (hasStartupScene) {
+		if (!startupScenePath.empty()) {
 			ui.SameLine();
 			if (ui.Button("Play Startup Scene")) {
 				action = Action::PLAY_STARTUP;
 			}
+			ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(startupScenePath).c_str());
 		}
 
 		ui.EndDisabled();
