@@ -1,6 +1,8 @@
 #pragma once
 
+#include <cstdint>
 #include <filesystem>
+#include <optional>
 #include <string>
 
 class ImGuiSystem;
@@ -35,8 +37,10 @@ class GameExportResultDialog {
 	std::filesystem::path directory_;
 	std::string error_;
 	std::string log_, logError_;
+	std::optional<std::uintmax_t> logLaunchStart_;
 	bool opening_ = false;
 	bool reopening_ = false;
 	bool showLog_ = false;
 	bool logTruncated_ = false;
+	bool sinceLaunchOnly_ = false;
 };

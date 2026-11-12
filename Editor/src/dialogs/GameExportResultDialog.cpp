@@ -10,6 +10,10 @@
 
 void GameExportResultDialog::Show(std::filesystem::path directory,
                                   bool reopening) {
+	if (directory_ != directory) {
+		logLaunchStart_.reset();
+		sinceLaunchOnly_ = false;
+	}
 	directory_ = std::move(directory);
 	reopening_ = reopening;
 	error_.clear();
@@ -27,6 +31,8 @@ void GameExportResultDialog::RefreshLog() {
 	const auto path = directory_ / L"logs" / L"Engine.log";
 	std::error_code status;
 	if (!std::filesystem::exists(path, status) && !status) {
+		if (logLaunchStart_)
+			*logLaunchStart_ = 0;
 		logError_ = "Game log hasn't been created yet.";
 		return;
 	}
@@ -37,14 +43,21 @@ void GameExportResultDialog::RefreshLog() {
 		logError_ = "Could not read the game log.";
 		return;
 	}
-	const auto size = (std::min)(end, maximumBytes);
+	if (logLaunchStart_ && *logLaunchStart_ > static_cast<std::uintmax_t>(end)) {
+		// ログが切り詰められた場合は、新しいファイルの先頭から表示する。
+		*logLaunchStart_ = 0;
+	}
+	const auto firstIncluded = sinceLaunchOnly_ && logLaunchStart_
+	                               ? static_cast<std::streamoff>(*logLaunchStart_)
+	                               : 0;
+	const auto size = (std::min)(end - firstIncluded, maximumBytes);
 	const auto start = end - size;
 	bool partialLine = false;
-	if (start > 0) {
+	if (start > firstIncluded) {
 		input.seekg(start - 1);
 		partialLine = input.get() != '\n';
 	} else {
-		input.seekg(0);
+		input.seekg(start);
 	}
 	std::string text(static_cast<std::size_t>(size), '\0');
 	if (size > 0 && !input.read(text.data(), size)) {
@@ -52,17 +65,17 @@ void GameExportResultDialog::RefreshLog() {
 		return;
 	}
 
-	logTruncated_ = start > 0;
+	logTruncated_ = start > firstIncluded;
 	if (partialLine) {
 		// 先頭が行の途中なら取り除く。長い1行ではUTF-8の継続バイトだけ除く。
 		const auto newline = text.find('\n');
 		if (newline != std::string::npos && newline + 1 < text.size()) {
 			text.erase(0, newline + 1);
 		} else {
-			const auto first = std::ranges::find_if(text, [](unsigned char byte) {
+			const auto firstByte = std::ranges::find_if(text, [](unsigned char byte) {
 				return (byte & 0xc0) != 0x80;
 			});
-			text.erase(text.begin(), first);
+			text.erase(text.begin(), firstByte);
 		}
 	}
 	for (const char byte : text) {
@@ -100,11 +113,26 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 
 	ui.SameLine();
 
+	bool refreshedLog = false;
 	if (ui.Button("Run Game")) {
-		ShellUtils::RunExecutable(directory_ / L"Game.exe", error_);
+		// 起動後すぐにログが追記されても、今回の行を落とさないよう先に記録する。
+		std::error_code status;
+		const auto size = std::filesystem::file_size(
+		    directory_ / L"logs" / L"Engine.log", status);
+		if (ShellUtils::RunExecutable(directory_ / L"Game.exe", error_)) {
+			logLaunchStart_.reset();
+			if (!status)
+				logLaunchStart_ = size;
+			else if (status == std::errc::no_such_file_or_directory)
+				logLaunchStart_ = 0;
+			sinceLaunchOnly_ = logLaunchStart_.has_value();
+			if (showLog_) {
+				RefreshLog();
+				refreshedLog = true;
+			}
+		}
 	}
 
-	bool refreshedLog = false;
 	ui.SameLine();
 	if (ui.Button(showLog_ ? "Hide Game Log" : "View Game Log")) {
 		showLog_ = !showLog_;
@@ -123,6 +151,11 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 	}
 
 	if (showLog_) {
+		if (logLaunchStart_ &&
+		    ImGui::Checkbox("Since Run Game", &sinceLaunchOnly_)) {
+			RefreshLog();
+			refreshedLog = true;
+		}
 		if (ui.Button("Refresh Log")) {
 			RefreshLog();
 			refreshedLog = true;
@@ -136,7 +169,8 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		if (!logError_.empty()) {
 			ui.Text(logError_);
 		} else if (log_.empty()) {
-			ui.Text("Game log is empty.");
+			ui.Text(sinceLaunchOnly_ ? "No log messages since Run Game yet."
+			                         : "Game log is empty.");
 		} else {
 			if (logTruncated_)
 				ui.Text("Showing the end of the game log.");
