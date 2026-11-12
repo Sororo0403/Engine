@@ -559,7 +559,9 @@ class EditorScene final : public IScene {
 	/// </summary>
 	/// <param name="message">表示するメッセージ</param>
 	/// <param name="objectId">表示する問題の物体。0は物体選択の操作なし</param>
-	void ShowError(std::string message, SceneObjectId objectId = 0);
+	/// <param name="scriptPath">編集できる原因スクリプトのパス。空なら編集操作なし</param>
+	void ShowError(std::string message, SceneObjectId objectId = 0,
+	               std::filesystem::path scriptPath = {});
 
 	/// <summary>
 	/// 編集操作を保留しているか取得する
@@ -934,6 +936,8 @@ class EditorScene final : public IScene {
 	EditorAction pendingAction_ = EditorAction::NONE;
 
 	std::string errorMessage_;
+	std::filesystem::path errorScriptPath_;
+	std::string errorScriptOpenMessage_;
 	SceneObjectId errorObjectId_ = 0;
 	bool errorOpenRequested_ = false;
 

@@ -126,6 +126,8 @@ bool EditorScene::Initialize() {
 	closeApproved_ = false;
 	errorOpenRequested_ = false;
 	errorMessage_.clear();
+	errorScriptPath_.clear();
+	errorScriptOpenMessage_.clear();
 	errorObjectId_ = 0;
 
 	project_ = ProjectDocument{};
@@ -1636,6 +1638,8 @@ void EditorScene::Finalize() {
 	closeApproved_ = false;
 	errorOpenRequested_ = false;
 	errorMessage_.clear();
+	errorScriptPath_.clear();
+	errorScriptOpenMessage_.clear();
 	errorObjectId_ = 0;
 
 	assetsPanel_.Clear();
@@ -4654,6 +4658,24 @@ void EditorScene::UpdateDialogs() {
 		if (ui_.BeginPopupModal(kTitle)) {
 			ui_.Text(errorMessage_);
 
+			if (!errorScriptOpenMessage_.empty()) {
+				ImGui::TextWrapped("%s", errorScriptOpenMessage_.c_str());
+			}
+
+			if (!errorScriptPath_.empty()) {
+				if (ui_.Button("Edit Script")) {
+					std::string error;
+					if (scriptEditorDialog_.ShowEdit(errorScriptPath_, error)) {
+						ui_.CloseCurrentPopup();
+						stage_ = DialogStage::EDIT_SCRIPT;
+						ui_.EndPopup();
+						return;
+					}
+					errorScriptOpenMessage_ = "Could not open the script: " + error;
+				}
+				ui_.SameLine();
+			}
+
 			if (document_.GetScene().Contains(errorObjectId_)) {
 				if (ui_.Button("Show Object")) {
 					try {
@@ -4745,10 +4767,15 @@ void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject) {
 	auto message = reason.empty()
 	                   ? "Play stopped because simulation or Game rendering failed."
 	                   : "Play stopped: " + reason;
-	const bool canReveal =
-	    playUsesEditingScene_ && playMode_.GetSession().IsInitialScene();
+	const auto &session = playMode_.GetSession();
+	const bool canReveal = playUsesEditingScene_ && session.IsInitialScene();
+	const auto *object = session.GetScene().FindObject(invalidObject);
+	auto scriptPath = object && object->script
+	                      ? object->script->asset
+	                      : std::filesystem::path{};
 	playMode_.Stop();
-	ShowError(std::move(message), canReveal ? invalidObject : 0);
+	ShowError(std::move(message), canReveal ? invalidObject : 0,
+	          std::move(scriptPath));
 }
 
 void EditorScene::SwitchProject(const std::filesystem::path &folder,
@@ -4876,8 +4903,11 @@ bool EditorScene::OpenScene(const std::filesystem::path &path, bool reportError,
 	return true;
 }
 
-void EditorScene::ShowError(std::string message, SceneObjectId objectId) {
+void EditorScene::ShowError(std::string message, SceneObjectId objectId,
+                            std::filesystem::path scriptPath) {
 	errorMessage_ = std::move(message);
+	errorScriptPath_ = std::move(scriptPath);
+	errorScriptOpenMessage_.clear();
 	errorObjectId_ = document_.GetScene().Contains(objectId) ? objectId : 0;
 	errorOpenRequested_ = true;
 
