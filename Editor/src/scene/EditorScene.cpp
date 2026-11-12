@@ -4369,7 +4369,7 @@ void EditorScene::UpdateDialogs() {
 			if (OpenScene(fileDialog_.GetSelectedPath(), false)) {
 				SaveEditorSession();
 			} else {
-				fileDialog_.RetryOpen(document_.GetError());
+				fileDialog_.RetrySelection(document_.GetError());
 			}
 		}
 
@@ -4394,7 +4394,11 @@ void EditorScene::UpdateDialogs() {
 				assets_.Refresh();
 				ExecutePendingAction();
 			} else {
-				ShowSceneSaveError();
+				fileDialog_.RetrySelection(
+				    document_.HasSaveConflict()
+				        ? "The scene changed outside the editor. Choose a different "
+				          "file name to preserve both versions."
+				        : document_.GetError());
 			}
 		}
 
@@ -4427,7 +4431,7 @@ void EditorScene::UpdateDialogs() {
 				selectionSnapshot_.Clear();
 				stage_ = DialogStage::IDLE;
 			} else {
-				ShowError(document_.GetError());
+				fileDialog_.RetrySelection(document_.GetError());
 			}
 		}
 
@@ -4445,7 +4449,7 @@ void EditorScene::UpdateDialogs() {
 				assets_.Refresh();
 				stage_ = DialogStage::IDLE;
 			} else {
-				ShowError(document_.GetError());
+				fileDialog_.RetrySelection(document_.GetError());
 			}
 		}
 
@@ -5162,7 +5166,7 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 	const auto reportFailure = [&](std::string error) {
 		if (stage_ == DialogStage::CREATE_PROJECT ||
 		    stage_ == DialogStage::OPEN_PROJECT) {
-			fileDialog_.RetryOpen(std::move(error));
+			fileDialog_.RetrySelection(std::move(error));
 		} else {
 			ShowError(std::move(error));
 		}

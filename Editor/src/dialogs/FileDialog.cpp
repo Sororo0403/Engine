@@ -66,17 +66,18 @@ void FileDialog::Show(FileDialogMode mode,
 	}
 }
 
-void FileDialog::RetryOpen(std::string error) {
+void FileDialog::RetrySelection(std::string error) {
 	const bool selectingFolder = mode_ == FileDialogMode::SELECT_DIRECTORY;
 	const auto folder = selectingFolder ? selectedPath_ : selectedPath_.parent_path();
 	if (!folder.empty() && folder != directory_) {
 		ChangeDirectory(folder);
-		if (!selectingFolder) {
-			fileName_ = PathUtils::ToUtf8(selectedPath_.filename());
-		}
+	}
+	if (!selectingFolder && !selectedPath_.empty()) {
+		fileName_ = PathUtils::ToUtf8(selectedPath_.filename());
 	}
 	selectedPath_.clear();
 	error_ = std::move(error);
+	confirmOverwrite_ = false;
 	openRequested_ = true;
 }
 
