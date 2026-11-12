@@ -52,8 +52,17 @@ void ConsolePanel::Show() {
 	scrollRequested_ = true;
 }
 
+void ConsolePanel::MarkPlayStart() {
+	playStartBoundary_ = Logger::GetEntryBoundary();
+	if (latestPlayOnly_) {
+		selectedId_ = 0;
+		scrollRequested_ = true;
+	}
+}
+
 bool ConsolePanel::MatchesFilter(const LogEntry &entry) const {
-	if ((entry.level == LogLevel::LOG_INFO && !showInfo_) ||
+	if ((latestPlayOnly_ && entry.id <= playStartBoundary_) ||
+	    (entry.level == LogLevel::LOG_INFO && !showInfo_) ||
 	    (entry.level == LogLevel::LOG_WARNING && !showWarnings_) ||
 	    (entry.level == LogLevel::LOG_ERROR && !showErrors_)) {
 		return false;
@@ -113,6 +122,13 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 	ImGui::Checkbox("Warnings", &showWarnings_);
 	ui.SameLine();
 	ImGui::Checkbox("Errors", &showErrors_);
+	ui.SameLine();
+	ui.BeginDisabled(playStartBoundary_ == 0);
+	if (ImGui::Checkbox("Latest Play Run", &latestPlayOnly_)) {
+		scrollRequested_ = true;
+	}
+	ImGui::SetItemTooltip("Show messages since the most recent Play or Restart attempt.");
+	ui.EndDisabled();
 	ui.InputText("Search", filter_);
 	Logger::ReadEntries(revision_, entries_);
 	const auto matchingCount = std::count_if(

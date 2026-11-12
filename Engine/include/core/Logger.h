@@ -56,6 +56,11 @@ class Logger {
 	                        std::vector<LogEntry> &entries);
 
 	/// <summary>
+	/// 現在までのログと、この後のログを分ける識別子を取得する
+	/// </summary>
+	static std::uint64_t GetEntryBoundary();
+
+	/// <summary>
 	/// 参照用の直近ログをクリアする。ファイルの出力内容は保持する
 	/// </summary>
 	static void ClearEntries();

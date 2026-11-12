@@ -299,8 +299,10 @@ bool EditorScene::Update(float deltaTime) {
 	if ((playAction == EditorPlayMode::Action::RESTART || restartCurrentScene) &&
 	    playMode_.IsPlaying()) {
 		std::string error;
+		consolePanel_.MarkPlayStart();
 
 		if (!playMode_.Restart(error, restartCurrentScene)) {
+			Logger::Error(error);
 			ShowError(std::move(error));
 		}
 	}
@@ -5095,6 +5097,7 @@ const Scene *EditorScene::GetStartupSceneForRun(SceneDocument &startup,
 }
 
 void EditorScene::StartPlay(bool fromStartup, SceneObjectId cameraOverride) {
+	consolePanel_.MarkPlayStart();
 	audioPreviewPanel_.Stop();
 	frameRequest_ = FrameRequest::NONE;
 	frameObject_ = 0;

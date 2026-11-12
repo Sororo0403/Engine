@@ -1875,6 +1875,8 @@ void ControlsPanel::Draw() {
 	        {"View > Console",
 	         "Filter recent logs by level or text, read details, copy a "
 	         "message or copy all matching logs with timestamps and levels. "
+	         "Latest Play Run shows messages from the most recent Play or "
+	         "Restart attempt onward. "
 	         "Clear Console resets recent messages while file output is kept."},
 	        {"File picker: Folder",
 	         "Open, Save and Save Copy use the absolute Folder field even "

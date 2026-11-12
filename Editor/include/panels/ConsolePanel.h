@@ -24,6 +24,11 @@ class ConsolePanel {
 	void Show();
 
 	/// <summary>
+	/// 試遊の開始または再開より前のログを区別するため、現在位置を記録する
+	/// </summary>
+	void MarkPlayStart();
+
+	/// <summary>
 	/// Consoleが開いている場合にログの一覧と操作用UIを描画する
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
@@ -52,9 +57,11 @@ class ConsolePanel {
 	bool showInfo_ = true;
 	bool showWarnings_ = true;
 	bool showErrors_ = true;
+	bool latestPlayOnly_ = false;
 	std::string filter_;
 	std::uint64_t revision_ = 0;
 	std::uint64_t selectedId_ = 0;
 	std::uint64_t lastVisibleId_ = 0;
+	std::uint64_t playStartBoundary_ = 0;
 	std::vector<LogEntry> entries_;
 };
