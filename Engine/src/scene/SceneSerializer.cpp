@@ -527,6 +527,8 @@ bool SerializeScene(const Scene &scene, std::string &text,
 			if (object.mesh) {
 				objects.back()["mesh"] = {
 				    {"model", PathUtils::ToUtf8(object.mesh->modelPath)}};
+				if (object.mesh->preload)
+					objects.back()["mesh"]["preload"] = true;
 			}
 
 			if (object.meshRenderer) {
@@ -1093,8 +1095,10 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 
 			if (version >= 9) {
 				if (item.contains("mesh")) {
+					const auto &mesh = item.at("mesh");
 					object.mesh = MeshComponent{PathUtils::FromUtf8(
-					    item.at("mesh").at("model").get<std::string>())};
+					    mesh.at("model").get<std::string>()),
+					                            mesh.value("preload", false)};
 				}
 
 				if (item.contains("meshRenderer")) {

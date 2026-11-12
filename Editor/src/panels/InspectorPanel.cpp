@@ -459,6 +459,11 @@ bool InspectorPanel::Draw(
 
 		ImGui::BeginDisabled(object->mesh->modelPath.empty());
 
+		auto mesh = *object->mesh;
+		if (ImGui::Checkbox("Preload on Scene Load", &mesh.preload)) {
+			changed |= history.SetMesh(inspectedObjectId, std::move(mesh));
+		}
+
 		if (ImGui::Button("Clear Mesh Reference")) {
 			modelRequest_ = {inspectedObjectId, {}};
 		}

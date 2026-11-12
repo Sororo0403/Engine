@@ -191,6 +191,14 @@ class SceneRenderer {
 	bool SetUIButtonVisuals(std::span<const UIButtonVisual> visuals);
 
 	/// <summary>
+	/// 先読みを指定したモデルを、物体の表示状態に関係なく準備する
+	/// </summary>
+	/// <param name="error">成功時は空、失敗時は対象と理由</param>
+	/// <returns>true:準備成功 false:モデルの読み込み失敗</returns>
+	/// <remarks>シーン読み込み後、最初の描画前に呼ぶ</remarks>
+	bool PrepareSceneModels(std::string &error);
+
+	/// <summary>
 	/// 宣言されたPrefabのモデル・材質・音声・UI画像を生成前に準備する
 	/// </summary>
 	/// <param name="prefabs">再生中に共有する不変のPrefab階層</param>

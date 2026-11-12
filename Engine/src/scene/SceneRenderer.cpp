@@ -63,6 +63,22 @@ bool SceneRenderer::Initialize() {
 	return bool(particles_);
 }
 
+bool SceneRenderer::PrepareSceneModels(std::string &error) {
+	std::set<std::filesystem::path> prepared;
+	for (const auto &[id, object] : scene_.GetObjects()) {
+		if (!object.HasMesh() || !object.mesh->preload ||
+		    !prepared.insert(object.mesh->modelPath).second)
+			continue;
+		if (!models_.Load(object.mesh->modelPath)) {
+			error = std::format("Could not preload the model for object \"{}\" "
+			                    "(ID {}).", object.name, id);
+			return false;
+		}
+	}
+	error.clear();
+	return true;
+}
+
 bool SceneRenderer::PreparePrefabResources(
     std::span<const std::shared_ptr<const Scene>> prefabs,
     AudioClipManager &clips, std::string &error) {

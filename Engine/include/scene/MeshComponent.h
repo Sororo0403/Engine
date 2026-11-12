@@ -8,6 +8,8 @@
 struct MeshComponent {
 	// 実行ファイル基準の相対パス、または絶対パス。空は形状の未割り当て
 	std::filesystem::path modelPath;
+	// シーンの読み込み時に、非表示や無効な物体のモデルも準備する
+	bool preload = false;
 
 	/// <summary>
 	/// 形状の参照パスを検証する。空の参照も保持できる

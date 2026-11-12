@@ -122,7 +122,8 @@ bool RuntimeScene::Initialize() {
 	}
 
 	if (!simulation_.Start(source, error, config_.fallbackCamera, nullptr,
-	                       savedScriptSettings_)) {
+	                       savedScriptSettings_) ||
+	    !renderer_.PrepareSceneModels(error)) {
 		Logger::Error(error);
 		return false;
 	}
@@ -209,8 +210,13 @@ bool RuntimeScene::Update(float seconds) {
 	if (!input_.IsActive())
 		simulation_.CancelUIInput();
 	std::string audioError;
+	const bool sceneChanged = simulation_.GetSceneRevision() != revision;
+	if (sceneChanged && !renderer_.PrepareSceneModels(audioError)) {
+		Logger::Error(audioError);
+		return false;
+	}
 	const bool audioReady =
-	    simulation_.GetSceneRevision() != revision
+	    sceneChanged
 	        ? audioPlayer_.Start(
 	              simulation_.GetCameraPose(),
 	              !input_.IsActive() || simulation_.IsGamePaused(), audioError,

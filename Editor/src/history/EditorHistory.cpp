@@ -800,7 +800,9 @@ bool EditorHistory::BeginCollider(SceneObjectId objectId) {
 
 bool EditorHistory::SetModelPath(SceneObjectId objectId,
                                  std::filesystem::path modelPath) {
-	return SetMesh(objectId, MeshComponent{std::move(modelPath)});
+	const auto *object = scene_.FindObject(objectId);
+	const bool preload = object && object->mesh && object->mesh->preload;
+	return SetMesh(objectId, MeshComponent{std::move(modelPath), preload});
 }
 
 bool EditorHistory::SetModelPaths(std::span<const SceneObjectId> ids,
@@ -824,9 +826,11 @@ bool EditorHistory::SetModelPaths(std::span<const SceneObjectId> ids,
 			return false;
 		}
 
-		if (*object->mesh != replacement) {
+		auto next = replacement;
+		next.preload = object->mesh->preload;
+		if (*object->mesh != next) {
 			commands.emplace_back(
-			    ModelPathCommand{id, object->mesh, replacement});
+			    ModelPathCommand{id, object->mesh, std::move(next)});
 		}
 	}
 
