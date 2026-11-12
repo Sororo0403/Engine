@@ -4742,6 +4742,18 @@ void EditorScene::UpdateDialogs() {
 		if (ui_.BeginPopupModal(kTitle)) {
 			ui_.Text(errorMessage_);
 
+			if (!errorScenePath_.empty()) {
+				if (ui_.Button("Open Play Scene")) {
+					pendingOpenPath_ = std::move(errorScenePath_);
+					ui_.CloseCurrentPopup();
+					ui_.EndPopup();
+					stage_ = DialogStage::IDLE;
+					StartAction(EditorAction::OPEN_PATH);
+					return;
+				}
+				ui_.SameLine();
+			}
+
 			if (sceneSaveConflict_) {
 				EditorAction action = EditorAction::NONE;
 				if (ui_.Button("Save Copy...")) {
@@ -4866,6 +4878,8 @@ void EditorScene::StartPlay(bool fromStartup, SceneObjectId cameraOverride) {
 	}
 
 	playUsesEditingScene_ = usesEditingScene;
+	playInitialScenePath_ =
+	    usesEditingScene ? document_.GetFilePath() : startup.GetFilePath();
 }
 
 void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject) {
@@ -4875,6 +4889,15 @@ void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject) {
 	                   : "Play stopped: " + reason;
 	const auto &session = playMode_.GetSession();
 	const bool canReveal = playUsesEditingScene_ && session.IsInitialScene();
+	const auto *loaded = session.GetLoadedScenePath();
+	auto scenePath = loaded ? *loaded : playInitialScenePath_;
+	if (!scenePath.empty()) {
+		message += "\nPlay scene: " + PathUtils::ToUtf8(scenePath);
+		const auto &current = document_.GetFilePath();
+		if (!current.empty() && PathUtils::IsSameFile(current, scenePath)) {
+			scenePath.clear();
+		}
+	}
 	const auto *object = session.GetScene().FindObject(invalidObject);
 	auto scriptPath = object && object->script
 	                      ? object->script->asset
@@ -4882,6 +4905,7 @@ void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject) {
 	playMode_.Stop();
 	ShowError(std::move(message), canReveal ? invalidObject : 0,
 	          std::move(scriptPath));
+	errorScenePath_ = std::move(scenePath);
 }
 
 void EditorScene::SwitchProject(const std::filesystem::path &folder,
@@ -5014,6 +5038,7 @@ void EditorScene::ShowError(std::string message, SceneObjectId objectId,
                             std::filesystem::path scriptPath) {
 	errorMessage_ = std::move(message);
 	errorScriptPath_ = std::move(scriptPath);
+	errorScenePath_.clear();
 	errorScriptOpenMessage_.clear();
 	sceneSaveConflict_ = false;
 	errorObjectId_ = document_.GetScene().Contains(objectId) ? objectId : 0;

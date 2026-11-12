@@ -911,6 +911,7 @@ class EditorScene final : public IScene {
 	HierarchyPanel playHierarchyPanel_;
 	bool playSelectionActive_ = false;
 	bool playUsesEditingScene_ = true;
+	std::filesystem::path playInitialScenePath_;
 	bool followPlaySelection_ = false;
 	SceneObjectId followedPlayObject_ = 0;
 	DirectX::XMFLOAT3 followedPlayPosition_{};
@@ -945,6 +946,7 @@ class EditorScene final : public IScene {
 
 	std::string errorMessage_;
 	std::filesystem::path errorScriptPath_;
+	std::filesystem::path errorScenePath_;
 	std::string errorScriptOpenMessage_;
 	bool sceneSaveConflict_ = false;
 	SceneObjectId errorObjectId_ = 0;
