@@ -2119,7 +2119,7 @@
       },
       "text": {
         "enabled": true,
-        "value": "← →／Lスティックで選ぶ　　Enter／Aで決定",
+        "value": "クリックで決定　　← →／Lスティックで選ぶ　Enter／Aで決定",
         "fontFamily": "UD Digi Kyokasho NK",
         "fontSize": 17,
         "bold": false,
@@ -2252,6 +2252,351 @@
           1.0
         ],
         "visible": true
+      }
+    },
+    {
+      "id": 52,
+      "name": "おしだせリング model hit area",
+      "active": true,
+      "parent": 26,
+      "tag": "",
+      "transform": {
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "rectTransform": {
+        "anchorMin": [
+          0,
+          0
+        ],
+        "anchorMax": [
+          0,
+          0
+        ],
+        "pivot": [
+          0,
+          0
+        ],
+        "position": [
+          150,
+          175
+        ],
+        "sizeDelta": [
+          316,
+          324
+        ]
+      },
+      "button": {
+        "enabled": true,
+        "interactable": true,
+        "navigation": false,
+        "initialSelection": false,
+        "normalColor": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "highlightedColor": [
+          1,
+          0.94,
+          0.84,
+          1
+        ],
+        "pressedColor": [
+          0.91,
+          0.8,
+          0.63,
+          1
+        ],
+        "disabledColor": [
+          0.5,
+          0.5,
+          0.5,
+          1
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonClick",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "loadScene",
+            "scene": "@project/scenes/PushRing.scene.json",
+            "target": 0
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonFocus",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "ring",
+            "once": false,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 36
+          }
+        ]
+      }
+    },
+    {
+      "id": 53,
+      "name": "時計台アウトレット model hit area",
+      "active": true,
+      "parent": 26,
+      "tag": "",
+      "transform": {
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "rectTransform": {
+        "anchorMin": [
+          0,
+          0
+        ],
+        "anchorMax": [
+          0,
+          0
+        ],
+        "pivot": [
+          0,
+          0
+        ],
+        "position": [
+          482,
+          175
+        ],
+        "sizeDelta": [
+          316,
+          324
+        ]
+      },
+      "button": {
+        "enabled": true,
+        "interactable": true,
+        "navigation": false,
+        "initialSelection": false,
+        "normalColor": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "highlightedColor": [
+          1,
+          0.94,
+          0.84,
+          1
+        ],
+        "pressedColor": [
+          0.91,
+          0.8,
+          0.63,
+          1
+        ],
+        "disabledColor": [
+          0.5,
+          0.5,
+          0.5,
+          1
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonClick",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "loadScene",
+            "scene": "@project/scenes/OutletPromenade.scene.json",
+            "target": 0
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonFocus",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "outlet",
+            "once": false,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 36
+          }
+        ]
+      }
+    },
+    {
+      "id": 54,
+      "name": "風見の浮島 model hit area",
+      "active": true,
+      "parent": 26,
+      "tag": "",
+      "transform": {
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "rectTransform": {
+        "anchorMin": [
+          0,
+          0
+        ],
+        "anchorMax": [
+          0,
+          0
+        ],
+        "pivot": [
+          0,
+          0
+        ],
+        "position": [
+          814,
+          175
+        ],
+        "sizeDelta": [
+          316,
+          324
+        ]
+      },
+      "button": {
+        "enabled": true,
+        "interactable": true,
+        "navigation": false,
+        "initialSelection": false,
+        "normalColor": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "highlightedColor": [
+          1,
+          0.94,
+          0.84,
+          1
+        ],
+        "pressedColor": [
+          0.91,
+          0.8,
+          0.63,
+          1
+        ],
+        "disabledColor": [
+          0.5,
+          0.5,
+          0.5,
+          1
+        ]
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonClick",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "loadScene",
+            "scene": "@project/scenes/SkywindIslands.scene.json",
+            "target": 0
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "buttonFocus",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "wind",
+            "once": false,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 36
+          }
+        ]
       }
     }
   ]
