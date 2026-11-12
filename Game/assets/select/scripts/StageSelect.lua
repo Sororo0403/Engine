@@ -14,6 +14,12 @@ return {
     end,
 
     message = function(self, state, name)
+        if name == "return_to_title" then
+            game.returningToTitle = true
+            self:load_scene("title")
+            return
+        end
+
         if not details[name] or state.selected == name then
             return
         end

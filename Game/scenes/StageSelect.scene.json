@@ -1283,7 +1283,12 @@
         "asset": "@project/assets/select/scripts/StageSelect.lua",
         "enabled": true,
         "prefabs": [],
-        "scenes": [],
+        "scenes": [
+          {
+            "name": "title",
+            "path": "@project/scenes/TitleStreet.scene.json"
+          }
+        ],
         "references": [
           {
             "name": "ring",
@@ -1898,7 +1903,7 @@
     },
     {
       "id": 46,
-      "name": "Quit game",
+      "name": "Return to Title",
       "active": true,
       "parent": 26,
       "tag": "",
@@ -1934,11 +1939,11 @@
           0
         ],
         "position": [
-          1121,
+          1077,
           651
         ],
         "sizeDelta": [
-          112,
+          156,
           38
         ]
       },
@@ -1999,18 +2004,35 @@
             "event": "buttonClick",
             "inputAction": "",
             "launchSpeed": 12,
-            "messageName": "",
+            "messageName": "return_to_title",
             "once": false,
-            "operation": "quitGame",
+            "operation": "sendScriptMessage",
             "scene": "",
-            "target": 0
+            "target": 36
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "any",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "inputPressed",
+            "inputAction": "Cancel",
+            "launchSpeed": 12,
+            "messageName": "return_to_title",
+            "once": false,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 36
           }
         ]
       }
     },
     {
       "id": 47,
-      "name": "Quit label",
+      "name": "Return to Title label",
       "active": true,
       "parent": 26,
       "tag": "",
@@ -2046,17 +2068,17 @@
           0
         ],
         "position": [
-          1121,
+          1077,
           651
         ],
         "sizeDelta": [
-          112,
+          156,
           38
         ]
       },
       "text": {
         "enabled": true,
-        "value": "終了",
+        "value": "タイトルへ",
         "fontFamily": "UD Digi Kyokasho NK",
         "fontSize": 20,
         "bold": false,

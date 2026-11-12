@@ -97,6 +97,6 @@
     "version": 11,
     "width": 1280
   },
-  "startupScene": "scenes/StageSelect.scene.json",
+  "startupScene": "scenes/TitleStreet.scene.json",
   "version": 1
 }
