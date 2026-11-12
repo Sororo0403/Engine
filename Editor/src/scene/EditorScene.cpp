@@ -3124,6 +3124,13 @@ void EditorScene::ExecutePendingAction() {
 			options.resourceDirectory = root / L"resources";
 			options.assetDirectories = assetSources_.ForScene(*scene);
 			options.destination = root / L"exports" / L"Game";
+			const auto lastExport = preferences_.LastGameExport(project_.GetRoot());
+			const auto lastParent = lastExport.parent_path();
+			std::error_code statusError;
+			if (!lastParent.empty() &&
+			    std::filesystem::is_directory(lastParent, statusError)) {
+				options.destination = lastParent / options.destination.filename();
+			}
 			options.config = exportConfig_;
 			const bool isCurrentScene = scene == &document_.GetScene();
 			if (isCurrentScene) {

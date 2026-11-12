@@ -23,6 +23,23 @@ std::filesystem::path FindAvailableDestination(
 
 	return candidate;
 }
+
+/// <summary>
+/// 選択ダイアログを開けるよう、候補の親から既存のフォルダを探す
+/// </summary>
+std::filesystem::path FindExistingParent(const std::filesystem::path &output) {
+	auto parent = output.parent_path();
+	std::error_code error;
+	while (!parent.empty() && !std::filesystem::is_directory(parent, error)) {
+		auto next = parent.parent_path();
+		if (next == parent) {
+			return {};
+		}
+		parent = std::move(next);
+	}
+
+	return parent;
+}
 } // namespace
 
 void GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits) {
@@ -35,6 +52,7 @@ void GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits
 	width_ = options_.config.width;
 	height_ = options_.config.height;
 	error_.clear();
+	browsing_ = false;
 
 	try {
 		output_ = PathUtils::ToUtf8(FindAvailableDestination(options_.destination));
@@ -63,7 +81,25 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 	if (includesUnsavedEdits_) {
 		ui.Text("Includes unsaved changes to the startup scene.");
 	}
-	ui.InputText("Output Folder", output_);
+	const bool wasBrowsing = browsing_;
+	ui.BeginDisabled(wasBrowsing);
+	ui.Text("Output Folder");
+	ui.InputText("##OutputFolder", output_);
+	ui.SameLine();
+	if (ui.Button("Browse...")) {
+		auto output = options_.destination;
+		try {
+			if (!output_.empty()) {
+				output = PathUtils::ResolveFromExecutable(
+				    PathUtils::FromUtf8(output_));
+			}
+		} catch (const std::exception &) {
+			// 入力途中のパスを読めない場合は初期の出力先から探す。
+		}
+		folderDialog_.Show(FileDialogMode::SELECT_DIRECTORY,
+		                   FindExistingParent(output));
+		browsing_ = true;
+	}
 	ui.InputText("Game Title", title_);
 	ImGui::InputInt("Width", &width_);
 	ImGui::InputInt("Height", &height_);
@@ -107,11 +143,30 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 
 	ui.SameLine();
 
-	if (ui.Button("Cancel") || ImGui::IsKeyPressed(ImGuiKey_Escape, false)) {
+	if (ui.Button("Cancel") ||
+	    (!wasBrowsing && ImGui::IsKeyPressed(ImGuiKey_Escape, false))) {
 		result = GameExportResult::CANCELLED;
 	}
 
 	ImGui::SetItemDefaultFocus();
+	ui.EndDisabled();
+
+	if (browsing_ && result == GameExportResult::NONE) {
+		const auto folderResult = folderDialog_.Draw(ui);
+		if (folderResult != FileDialogResult::NONE) {
+			browsing_ = false;
+		}
+		if (folderResult == FileDialogResult::ACCEPTED) {
+			try {
+				const auto candidate = folderDialog_.GetSelectedPath() /
+				                       options_.destination.filename();
+				output_ = PathUtils::ToUtf8(FindAvailableDestination(candidate));
+				error_.clear();
+			} catch (const std::exception &e) {
+				error_ = e.what();
+			}
+		}
+	}
 
 	if (result != GameExportResult::NONE) {
 		ui.CloseCurrentPopup();

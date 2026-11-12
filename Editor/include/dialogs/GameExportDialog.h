@@ -1,5 +1,6 @@
 #pragma once
 
+#include "dialogs/FileDialog.h"
 #include "export/GameExporter.h"
 #include <string>
 
@@ -36,8 +37,10 @@ class GameExportDialog {
 
   private:
 	GameExportOptions options_;
+	FileDialog folderDialog_;
 	std::string output_, startupScene_, title_, error_;
 	int width_ = 1280, height_ = 720;
 	bool opening_ = false;
 	bool includesUnsavedEdits_ = false;
+	bool browsing_ = false;
 };
