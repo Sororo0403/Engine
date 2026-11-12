@@ -7,6 +7,17 @@
 
 namespace {
 /// <summary>
+/// 出力欄の入力を読み取り、通常の相対パスは実行ファイルを基準にする
+/// </summary>
+std::filesystem::path ReadDestination(const std::string &input) {
+	auto path = PathUtils::FromUtf8(input);
+	if (!path.empty() && !path.has_root_path()) {
+		path = PathUtils::ResolveFromExecutable(path);
+	}
+	return path;
+}
+
+/// <summary>
 /// 初期値と同じ名前の項目があれば、空いている連番の出力先を探す
 /// </summary>
 std::filesystem::path FindAvailableDestination(
@@ -18,7 +29,11 @@ std::filesystem::path FindAvailableDestination(
 	for (std::size_t index = 2;
 	     std::filesystem::exists(std::filesystem::symlink_status(candidate));
 	     ++index) {
-		candidate = parent / (name + L"-" + std::to_wstring(index));
+		const auto numbered = name + L"-" + std::to_wstring(index);
+		if (!PathUtils::IsValidFileName(numbered)) {
+			throw std::runtime_error("The suggested output folder name is too long or invalid.");
+		}
+		candidate = parent / numbered;
 	}
 
 	return candidate;
@@ -64,7 +79,7 @@ void GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits
 		height_ = options_.config.height;
 		try {
 			output_ = PathUtils::ToUtf8(FindAvailableDestination(options_.destination));
-		} catch (const std::filesystem::filesystem_error &e) {
+		} catch (const std::exception &e) {
 			error_ = e.what();
 		}
 	}
@@ -134,9 +149,9 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 	if (ui.Button("Browse...")) {
 		auto output = options_.destination;
 		try {
-			if (!output_.empty()) {
-				output = PathUtils::ResolveFromExecutable(
-				    PathUtils::FromUtf8(output_));
+			const auto entered = ReadDestination(output_);
+			if (entered.is_absolute()) {
+				output = entered;
 			}
 		} catch (const std::exception &) {
 			// 入力途中のパスを読めない場合は初期の出力先から探す。
@@ -145,6 +160,25 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 		                   FindExistingParent(output));
 		browsing_ = true;
 	}
+	ui.SameLine();
+	ui.BeginDisabled(output_.empty());
+	if (ui.Button("Suggest Name")) {
+		try {
+			const auto output = ReadDestination(output_);
+			if (!output.is_absolute() ||
+			    !PathUtils::IsValidFileName(output.filename())) {
+				throw std::runtime_error("Enter a valid output folder name.");
+			}
+			const auto suggested = FindAvailableDestination(output);
+			if (suggested != output) {
+				output_ = PathUtils::ToUtf8(suggested);
+			}
+			changed = true;
+		} catch (const std::exception &e) {
+			error_ = e.what();
+		}
+	}
+	ui.EndDisabled();
 	changed |= ui.InputText("Game Title", title_);
 	changed |= ImGui::InputInt("Width", &width_);
 	changed |= ImGui::InputInt("Height", &height_);
@@ -194,10 +228,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 		ClearCheckResult();
 		try {
 			auto selected = options_;
-			selected.destination = PathUtils::FromUtf8(output_);
-			if (!selected.destination.empty() && !selected.destination.has_root_path()) {
-				selected.destination = PathUtils::ResolveFromExecutable(selected.destination);
-			}
+			selected.destination = ReadDestination(output_);
 			selected.config.title = title_;
 			selected.config.width = width_;
 			selected.config.height = height_;
