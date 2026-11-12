@@ -1,4 +1,5 @@
 #include "core/Engine.h"
+#include "core/Logger.h"
 #include "platform/windows/PathUtils.h"
 #include "platform/windows/StringConversion.h"
 #include "scene/RuntimeScene.h"
@@ -61,8 +62,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR commandLine, int) {
 	}
 
 	std::string error;
+	const auto executableDirectory = PathUtils::GetExecutableDirectory();
 
-	if (!game.Load(PathUtils::GetExecutableDirectory() / L"game.json", error)) {
+	if (!game.Load(executableDirectory / L"game.json", error)) {
+		// Engine::Runの前に失敗した場合も、配布結果画面から原因を読めるようにする。
+		if (!executableDirectory.empty() &&
+		    Logger::Initialize(PathUtils::ToUtf8(executableDirectory / L"logs" /
+		                                         L"Engine.log"))) {
+			Logger::Error("Could not load game.json: " + error);
+			Logger::Finalize();
+		}
 		const auto text = StringConversion::Utf8ToWide(error);
 		MessageBoxW(nullptr, text.c_str(), L"Could not start game",
 		            MB_OK | MB_ICONERROR);
