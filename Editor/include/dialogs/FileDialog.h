@@ -41,9 +41,11 @@ class FileDialog {
 	/// <param name="mode">開く、保存、コピーを保存、またはフォルダを選択</param>
 	/// <param name="initialPath">初期ファイルまたはフォルダ。空の場合は実行ファイルのフォルダ</param>
 	/// <param name="filter">一覧と確定時のファイル種別。IMAGE・MODEL・AUDIOはOPENのみ、GAME_CONFIGはファイルの保存にも対応する</param>
+	/// <param name="title">用途を示す任意のダイアログ名。空なら種別に応じた名前</param>
 	void Show(FileDialogMode mode,
 	          const std::filesystem::path &initialPath = {},
-	          FileDialogFilter filter = FileDialogFilter::SCENE);
+	          FileDialogFilter filter = FileDialogFilter::SCENE,
+	          std::string title = {});
 
 	/// <summary>
 	/// インポート元を選ぶ。指定がなければ、このダイアログで前回使ったフォルダを開く
@@ -121,6 +123,7 @@ class FileDialog {
 	std::string fileName_;
 	std::string folderName_;
 	std::string error_;
+	std::string title_;
 
 	std::vector<Entry> entries_;
 

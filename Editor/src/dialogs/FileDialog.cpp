@@ -15,7 +15,7 @@
 
 void FileDialog::Show(FileDialogMode mode,
                       const std::filesystem::path &initialPath,
-                      FileDialogFilter filter) {
+                      FileDialogFilter filter, std::string title) {
 	if (((filter == FileDialogFilter::IMAGE ||
 	      filter == FileDialogFilter::MODEL ||
 	      filter == FileDialogFilter::AUDIO) &&
@@ -27,6 +27,7 @@ void FileDialog::Show(FileDialogMode mode,
 	}
 
 	filter_ = filter;
+	title_ = std::move(title);
 	mode_ = mode;
 	selectedPath_.clear();
 	entries_.clear();
@@ -101,7 +102,8 @@ void FileDialog::RetrySelection(std::string error) {
 
 FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 	const char *title =
-	    mode_ == FileDialogMode::SELECT_DIRECTORY ? "Select Folder###FileDialog"
+	    !title_.empty() ? title_.c_str()
+	    : mode_ == FileDialogMode::SELECT_DIRECTORY ? "Select Folder###FileDialog"
 	    : filter_ == FileDialogFilter::GAME_CONFIG
 	        ? (mode_ == FileDialogMode::OPEN
 	               ? "Open Game Configuration###FileDialog"

@@ -1794,7 +1794,8 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		const auto &projectScenes = assets_.GetSceneTargets();
 		const bool canBrowseProjectScenes =
 		    enabled && !project_.GetRoot().empty() && !projectScenes.empty();
-		if (ImGui::BeginMenu("Choose Startup Scene", canBrowseProjectScenes)) {
+		if (ImGui::BeginMenu("Choose Startup Scene",
+		                     enabled && !project_.GetRoot().empty())) {
 			const auto directory = project_.GetScenesDirectory();
 			for (const auto &path : projectScenes) {
 				const auto label = PathUtils::ToUtf8(path.lexically_relative(directory));
@@ -1804,6 +1805,11 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 					pendingOpenPath_ = path;
 					action = EditorAction::SET_STARTUP_SCENE;
 				}
+			}
+			if (!projectScenes.empty())
+				ui_.Separator();
+			if (ui_.MenuItem("Browse...")) {
+				action = EditorAction::BROWSE_STARTUP_SCENE;
 			}
 			ui_.EndMenu();
 		}
@@ -2730,22 +2736,16 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	switch (action) {
 	case EditorAction::SET_STARTUP_SCENE: {
 		const auto path = std::exchange(pendingOpenPath_, std::filesystem::path{});
-		SceneDocument candidate;
-		const auto &config = project_.GetGameConfig();
-		if (!candidate.Open(path, &config.lighting)) {
-			ShowError(std::format("Could not set the startup scene: {}\n{}",
-			                      PathUtils::ToUtf8(path), candidate.GetError()));
-			return;
-		}
-
 		std::string error;
-
-		if (!project_.Save(config, candidate.GetFilePath(), error)) {
+		if (!SetStartupScene(path, error))
 			ShowError(std::move(error));
-		}
-
 		return;
 	}
+	case EditorAction::BROWSE_STARTUP_SCENE:
+		fileDialog_.Show(FileDialogMode::OPEN, project_.GetScenesDirectory(),
+		                 FileDialogFilter::SCENE, "Choose Startup Scene###FileDialog");
+		stage_ = DialogStage::SELECT_STARTUP_SCENE;
+		return;
 
 	case EditorAction::RECOVER_SCENE:
 		ShowRecovery();
@@ -3231,6 +3231,24 @@ void EditorScene::WriteGameExport() {
 	}
 	exportResultDialog_.Show(directory);
 	stage_ = DialogStage::EXPORT_RESULT;
+}
+
+bool EditorScene::SetStartupScene(const std::filesystem::path &path,
+                                  std::string &error) {
+	if (!project_.CanUseAsStartupScene(path)) {
+		error = "Choose a saved scene in the project's scenes folder.";
+		return false;
+	}
+
+	SceneDocument candidate;
+	const auto &config = project_.GetGameConfig();
+	if (!candidate.Open(path, &config.lighting)) {
+		error = std::format("Could not set the startup scene: {}\n{}",
+		                    PathUtils::ToUtf8(path), candidate.GetError());
+		return false;
+	}
+
+	return project_.Save(config, candidate.GetFilePath(), error);
 }
 
 bool EditorScene::OpenGameExport(std::filesystem::path directory) {
@@ -4900,6 +4918,20 @@ void EditorScene::UpdateDialogs() {
 		} else if (result == FileDialogResult::ACCEPTED &&
 		           !OpenGameExport(fileDialog_.GetSelectedPath())) {
 			fileDialog_.RetrySelection("Choose a folder containing Game.exe and game.json.");
+		}
+		return;
+	}
+
+	case DialogStage::SELECT_STARTUP_SCENE: {
+		const auto result = fileDialog_.Draw(ui_);
+		if (result == FileDialogResult::CANCELLED) {
+			stage_ = DialogStage::IDLE;
+		} else if (result == FileDialogResult::ACCEPTED) {
+			std::string error;
+			if (SetStartupScene(fileDialog_.GetSelectedPath(), error))
+				stage_ = DialogStage::IDLE;
+			else
+				fileDialog_.RetrySelection(std::move(error));
 		}
 		return;
 	}

@@ -143,6 +143,7 @@ class EditorScene final : public IScene {
 		OPEN_PROJECT,
 		OPEN_PROJECT_PATH,
 		SET_STARTUP_SCENE,
+		BROWSE_STARTUP_SCENE,
 		NEW,
 		NEW_SAMPLE,
 		OPEN,
@@ -280,6 +281,7 @@ class EditorScene final : public IScene {
 		EXPORT_GAME,
 		EXPORT_RESULT,
 		SELECT_GAME_EXPORT,
+		SELECT_STARTUP_SCENE,
 		GAME_SETTINGS,
 		SCENE_SETTINGS,
 		CONFIRM_RELOAD,
@@ -359,6 +361,11 @@ class EditorScene final : public IScene {
 	/// 既存の配布フォルダを開き、現在のプロジェクトの最近の出力に記録する
 	/// </summary>
 	bool OpenGameExport(std::filesystem::path directory);
+
+	/// <summary>
+	/// 指定したシーンを検証し、プロジェクトの起動先として保存する
+	/// </summary>
+	bool SetStartupScene(const std::filesystem::path &path, std::string &error);
 
 	/// <summary>
 	/// 保存を開始する。保存先がない場合は選択ダイアログを開く
