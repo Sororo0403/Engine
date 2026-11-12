@@ -294,11 +294,13 @@ bool EditorScene::Update(float deltaTime) {
 		          useRequestedCamera ? requestedCamera : 0);
 	}
 
-	if (playAction == EditorPlayMode::Action::RESTART &&
+	const bool restartCurrentScene =
+	    playAction == EditorPlayMode::Action::RESTART_CURRENT_SCENE;
+	if ((playAction == EditorPlayMode::Action::RESTART || restartCurrentScene) &&
 	    playMode_.IsPlaying()) {
 		std::string error;
 
-		if (!playMode_.Restart(error)) {
+		if (!playMode_.Restart(error, restartCurrentScene)) {
 			ShowError(std::move(error));
 		}
 	}

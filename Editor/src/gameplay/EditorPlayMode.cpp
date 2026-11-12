@@ -167,6 +167,12 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 		ui.BeginDisabled(!canStart);
 
 		if (const auto *path = session_.GetLoadedScenePath()) {
+			if (ui.Button("Restart Current Scene")) {
+				action = Action::RESTART_CURRENT_SCENE;
+			}
+			ImGui::SetItemTooltip(
+			    "Restart %s from its entry point. Shared game data is kept.",
+			    PathUtils::ToUtf8(path->filename()).c_str());
 			if (ui.Button("Stop and Open Scene")) {
 				action = Action::STOP_AND_OPEN_SCENE;
 			}
@@ -325,8 +331,8 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
 	return true;
 }
 
-bool EditorPlayMode::Restart(std::string &error) {
-	if (!session_.Restart(error)) {
+bool EditorPlayMode::Restart(std::string &error, bool currentScene) {
+	if (!session_.Restart(error, currentScene)) {
 		return false;
 	}
 

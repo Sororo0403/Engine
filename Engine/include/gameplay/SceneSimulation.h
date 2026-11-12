@@ -255,6 +255,13 @@ class SceneSimulation {
 	}
 
 	/// <summary>
+	/// 現在のシーンを入場時の配置から再開し、シーン間の共有データを引き継ぐ
+	/// </summary>
+	/// <param name="error">失敗理由。成功時は空</param>
+	/// <returns>true:再開成功 false:停止中または初期化失敗</returns>
+	bool RestartCurrentScene(std::string &error);
+
+	/// <summary>
 	/// 現在のシーンの開始時データに物体があるか確認する
 	/// </summary>
 	bool HasSourceObject(SceneObjectId id) const {

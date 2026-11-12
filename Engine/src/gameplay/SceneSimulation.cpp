@@ -89,6 +89,15 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 	                  initialScriptData);
 }
 
+bool SceneSimulation::RestartCurrentScene(std::string &error) {
+	if (!IsPlaying() || !restartSource_) {
+		error = "Start Play before restarting the scene.";
+		return false;
+	}
+
+	return StartScene(*restartSource_, error, fallbackPose_, nullptr, true);
+}
+
 bool SceneSimulation::Validate(const Scene &source, std::string &error,
                                const CameraPose &fallbackPose,
                                SceneObjectId *invalidObject) {

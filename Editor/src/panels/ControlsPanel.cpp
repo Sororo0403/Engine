@@ -775,6 +775,10 @@ void ControlsPanel::Draw() {
 	         "Editor test control: scene data, movement settings, history, "
 	         "preferences and exported games are unchanged. Speed changes "
 	         "are unavailable while another dialog is open."},
+	        {"Game > Restart Current Scene",
+	         "After a scene transition, restart from the current scene's "
+	         "entry point. Shared game data, pause and playback speed carry "
+	         "over. Restart returns to the original Play scene."},
 	        {"Game > Stop and Select in Editing Scene",
 	         "Stop Play and select the same objects in the editing Hierarchy. "
 	         "Selection order and the active object are kept. All selected "

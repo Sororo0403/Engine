@@ -111,11 +111,12 @@ class EditorPlaySession {
 	           SceneObjectId cameraOverride = 0);
 
 	/// <summary>
-	/// Play開始時のシーンから再実行する。一時停止と再生速度は保持し、予約済みのStepは破棄する
+	/// 指定したシーンから再実行する。一時停止と再生速度は保持し、予約済みのStepは破棄する
 	/// </summary>
 	/// <param name="error">失敗理由。成功時は空</param>
+	/// <param name="currentScene">true:現在のシーンの入場時点 false:Play開始時点</param>
 	/// <returns>true:再実行成功 false:未再生、または初期化失敗。失敗時は現在の状態を保持する</returns>
-	bool Restart(std::string &error);
+	bool Restart(std::string &error, bool currentScene = false);
 
 	/// <summary>
 	/// 再生シーンと開始時データを破棄し、時間制御を初期化する

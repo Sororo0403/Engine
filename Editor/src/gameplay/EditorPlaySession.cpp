@@ -78,17 +78,23 @@ bool EditorPlaySession::Start(const Scene &scene, std::string &error,
 	}
 }
 
-bool EditorPlaySession::Restart(std::string &error) {
+bool EditorPlaySession::Restart(std::string &error, bool currentScene) {
 	if (!IsPlaying() || !initialScene_) {
 		error = "Start Play before restarting.";
 		return false;
 	}
 
-	if (!simulation_.Start(*initialScene_, error, initialFallback_)) {
+	const bool isInitial = !currentScene || IsInitialScene();
+	const bool restarted = currentScene
+	                           ? simulation_.RestartCurrentScene(error)
+	                           : simulation_.Start(*initialScene_, error, initialFallback_);
+	if (!restarted) {
 		return false;
 	}
 
-	initialSceneRevision_ = simulation_.GetSceneRevision();
+	if (isInitial) {
+		initialSceneRevision_ = simulation_.GetSceneRevision();
+	}
 	const bool paused = clock_.IsPaused();
 	const auto speed = clock_.GetTimeScale();
 	clock_.Reset();
