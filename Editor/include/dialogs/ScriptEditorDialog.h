@@ -42,10 +42,17 @@ class ScriptEditorDialog {
 	}
 
   private:
+	enum class Confirmation { NONE, DISCARD, RELOAD };
+
+	/// <summary>
+	/// ディスク上のLuaを読み直し、成功時にだけ下書きと保存時の比較元を更新する
+	/// </summary>
+	void ReloadFromDisk();
+
 	std::filesystem::path assets_, folder_, path_, saved_;
 	std::string name_, source_, original_, error_;
 	std::uint32_t inputRevision_ = 0;
 	bool opening_ = false, creating_ = false;
 	bool saveConflict_ = false;
-	bool confirmDiscard_ = false;
+	Confirmation confirmation_ = Confirmation::NONE;
 };

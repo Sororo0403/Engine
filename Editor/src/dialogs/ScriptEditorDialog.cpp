@@ -53,7 +53,7 @@ bool ScriptEditorDialog::ShowCreate(const std::filesystem::path &assets,
 		error_.clear();
 		creating_ = true;
 		saveConflict_ = false;
-		confirmDiscard_ = false;
+		confirmation_ = Confirmation::NONE;
 		++inputRevision_;
 		opening_ = true;
 		error.clear();
@@ -76,11 +76,22 @@ bool ScriptEditorDialog::ShowEdit(const std::filesystem::path &path,
 	error_.clear();
 	creating_ = false;
 	saveConflict_ = false;
-	confirmDiscard_ = false;
+	confirmation_ = Confirmation::NONE;
 	++inputRevision_;
 	opening_ = true;
 	error.clear();
 	return true;
+}
+
+void ScriptEditorDialog::ReloadFromDisk() {
+	std::string current;
+	if (!LuaScript::Read(path_, current, error_))
+		return;
+
+	source_ = current;
+	original_ = std::move(current);
+	saveConflict_ = false;
+	++inputRevision_;
 }
 
 ScriptEditorDialog::Result ScriptEditorDialog::Draw(const ImGuiSystem &ui) {
@@ -99,25 +110,34 @@ ScriptEditorDialog::Result ScriptEditorDialog::Draw(const ImGuiSystem &ui) {
 	const bool escape = ImGui::IsKeyPressed(ImGuiKey_Escape, false);
 	if (escape) {
 		// テキスト欄がEscで編集中の値を戻す前に、ダイアログが処理する。
-		ImGui::SetKeyOwner(ImGuiKey_Escape, ImGui::GetID("Discard Script Changes"),
+		ImGui::SetKeyOwner(ImGuiKey_Escape, ImGui::GetID("Script Editor Escape"),
 		                   ImGuiInputFlags_LockThisFrame);
 	}
 
 	Result result = Result::NONE;
-	const bool confirming = confirmDiscard_;
+	const bool confirming = confirmation_ != Confirmation::NONE;
+	bool reload = false;
 	if (confirming) {
-		ui.Text("Discard unsaved script changes?");
+		const bool confirmingReload = confirmation_ == Confirmation::RELOAD;
+		ui.Text(confirmingReload
+		            ? "Discard unsaved changes and reload the script from disk?"
+		            : "Discard unsaved script changes?");
 		if (ui.Button("Keep Editing") || escape) {
-			confirmDiscard_ = false;
+			confirmation_ = Confirmation::NONE;
 		}
 		ui.SameLine();
-		if (ui.Button("Discard Changes")) {
-			result = Result::CANCELLED;
+		if (ui.Button(confirmingReload ? "Reload Script" : "Discard Changes") &&
+		    confirmation_ != Confirmation::NONE) {
+			confirmation_ = Confirmation::NONE;
+			if (confirmingReload)
+				reload = true;
+			else
+				result = Result::CANCELLED;
 		}
 	}
 
 	ui.BeginDisabled(confirming);
-	// 閉じたダイアログの入力状態が、新しい下書きに反映されるのを防ぐ。
+	// 開き直しや再読み込みの前の入力状態を引き継がない。
 	ImGui::PushID(static_cast<int>(inputRevision_));
 	if (creating_) {
 		ui.Text(PathUtils::ToUtf8(assets_ / folder_));
@@ -140,6 +160,13 @@ ScriptEditorDialog::Result ScriptEditorDialog::Draw(const ImGuiSystem &ui) {
 	if (saveConflict_) {
 		ui.SameLine();
 		saveCopy = ui.Button("Save Copy");
+		ui.SameLine();
+		if (ui.Button("Reload from Disk")) {
+			if (source_ != original_)
+				confirmation_ = Confirmation::RELOAD;
+			else
+				reload = true;
+		}
 	}
 
 	if (save || saveCopy) {
@@ -168,8 +195,8 @@ ScriptEditorDialog::Result ScriptEditorDialog::Draw(const ImGuiSystem &ui) {
 				}
 				if (current != original_) {
 					saveConflict_ = true;
-					throw std::runtime_error("The Script changed outside this dialog. "
-					                         "Use Save Copy to keep your edits.");
+					throw std::runtime_error("The script changed on disk. "
+					                         "Save a copy or reload it to continue.");
 				}
 			}
 
@@ -188,11 +215,13 @@ ScriptEditorDialog::Result ScriptEditorDialog::Draw(const ImGuiSystem &ui) {
 	ui.EndDisabled();
 	if (!confirming && result == Result::NONE && (cancel || escape)) {
 		if (source_ != original_ || (creating_ && name_ != kDefaultScriptName)) {
-			confirmDiscard_ = true;
+			confirmation_ = Confirmation::DISCARD;
 		} else {
 			result = Result::CANCELLED;
 		}
 	}
+	if (reload)
+		ReloadFromDisk();
 	if (!error_.empty())
 		ImGui::TextWrapped("%s", error_.c_str());
 	if (result != Result::NONE)
