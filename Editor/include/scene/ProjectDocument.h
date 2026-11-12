@@ -26,6 +26,13 @@ class ProjectDocument {
 	bool Save(const GameConfig &game, const std::filesystem::path &startupScene,
 	          std::string &error);
 
+	/// <summary>
+	/// 保存済みのファイルを、このプロジェクトの起動シーンに指定できるか確認する
+	/// </summary>
+	/// <param name="scene">確認するシーンのパス</param>
+	/// <returns>true:プロジェクトのscenes内にある既存のJSONファイル</returns>
+	bool CanUseAsStartupScene(const std::filesystem::path &scene) const;
+
 	const std::filesystem::path &GetRoot() const;
 	std::filesystem::path GetAssetsDirectory() const;
 	std::filesystem::path GetScenesDirectory() const;

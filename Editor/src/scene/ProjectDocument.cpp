@@ -198,6 +198,18 @@ bool ProjectDocument::Save(const GameConfig &game,
 	}
 }
 
+bool ProjectDocument::CanUseAsStartupScene(
+    const std::filesystem::path &scene) const {
+	if (root_.empty() || scene.empty())
+		return false;
+
+	try {
+		return !StartupReference(root_, scene).empty();
+	} catch (const std::exception &) {
+		return false;
+	}
+}
+
 const std::filesystem::path &ProjectDocument::GetRoot() const {
 	return root_;
 }
