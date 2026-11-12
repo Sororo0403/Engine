@@ -5,13 +5,42 @@
 #include <stdexcept>
 #include <utility>
 
-void GameExportDialog::Show(GameExportOptions options) {
+namespace {
+/// <summary>
+/// 初期値と同じ名前の項目があれば、空いている連番の出力先を探す
+/// </summary>
+std::filesystem::path FindAvailableDestination(
+    const std::filesystem::path &destination) {
+	auto candidate = destination;
+	const auto parent = destination.parent_path();
+	const auto name = destination.filename().native();
+
+	for (std::size_t index = 2;
+	     std::filesystem::exists(std::filesystem::symlink_status(candidate));
+	     ++index) {
+		candidate = parent / (name + L"-" + std::to_wstring(index));
+	}
+
+	return candidate;
+}
+} // namespace
+
+void GameExportDialog::Show(GameExportOptions options,
+                            std::filesystem::path scenePath) {
 	options_ = std::move(options);
 	output_ = PathUtils::ToUtf8(options_.destination);
+	startupScene_ = scenePath.empty() ? "Untitled" : PathUtils::ToUtf8(scenePath);
 	title_ = options_.config.title;
 	width_ = options_.config.width;
 	height_ = options_.config.height;
 	error_.clear();
+
+	try {
+		output_ = PathUtils::ToUtf8(FindAvailableDestination(options_.destination));
+	} catch (const std::filesystem::filesystem_error &e) {
+		error_ = e.what();
+	}
+
 	opening_ = true;
 }
 
@@ -29,6 +58,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 		return GameExportResult::NONE;
 	}
 
+	ImGui::TextWrapped("Startup Scene: %s", startupScene_.c_str());
 	ui.InputText("Output Folder", output_);
 	ui.InputText("Game Title", title_);
 	ImGui::InputInt("Width", &width_);
@@ -58,9 +88,10 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 				    "Enter a title and a valid window size (1-8192).");
 			}
 
-			if (std::filesystem::exists(selected.destination)) {
+			if (std::filesystem::exists(
+			        std::filesystem::symlink_status(selected.destination))) {
 				throw std::runtime_error(
-				    "That folder already exists. Choose a new folder.");
+				    "That output path already exists. Choose a new folder.");
 			}
 
 			options_ = std::move(selected);

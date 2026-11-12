@@ -16,7 +16,8 @@ class GameExportDialog {
 	/// 初期値を設定し、ダイアログを開く
 	/// </summary>
 	/// <param name="options">入力元・カメラ・初期の出力先</param>
-	void Show(GameExportOptions options);
+	/// <param name="scenePath">出力時に起動するシーンのパス</param>
+	void Show(GameExportOptions options, std::filesystem::path scenePath);
 
 	/// <summary>
 	/// 出力設定の入力を描画する
@@ -35,7 +36,7 @@ class GameExportDialog {
 
   private:
 	GameExportOptions options_;
-	std::string output_, title_, error_;
+	std::string output_, startupScene_, title_, error_;
 	int width_ = 1280, height_ = 720;
 	bool opening_ = false;
 };

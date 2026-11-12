@@ -3064,10 +3064,13 @@ void EditorScene::ExecutePendingAction() {
 		options.assetDirectories = assetSources_.ForScene(*scene);
 		options.destination = root / L"exports" / L"Game";
 		options.config = exportConfig_;
-		if (scene == &document_.GetScene()) {
+		const bool isCurrentScene = scene == &document_.GetScene();
+		if (isCurrentScene) {
 			options.config.fallbackCamera = cameraController_.GetPose();
 		}
-		exportDialog_.Show(std::move(options));
+		exportDialog_.Show(std::move(options), isCurrentScene
+		                                          ? document_.GetFilePath()
+		                                          : startup.GetFilePath());
 		stage_ = DialogStage::EXPORT_GAME;
 		return;
 	}
