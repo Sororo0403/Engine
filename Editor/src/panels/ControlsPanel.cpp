@@ -1822,6 +1822,9 @@ void ControlsPanel::Draw() {
 	         "title, size, keys and movement basis. Cancel keeps the previous "
 	         "settings. The active scene and camera view are kept. Old "
 	         "configurations use WASD and Space."},
+	        {"File > Project Scenes",
+	         "Open a scene from the project by its path relative to the scenes "
+	         "folder. Switching scenes prompts you to save any pending edits."},
 	        {"File > Import Game Scene",
 	         "Choose an exported game's game.json and a new Assets folder. "
 	         "Import its startup scene and referenced models, buffers and "

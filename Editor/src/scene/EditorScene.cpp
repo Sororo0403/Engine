@@ -1737,6 +1737,25 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			action = EditorAction::OPEN;
 		}
 
+		const auto &projectScenes = assets_.GetSceneTargets();
+		const bool canBrowseProjectScenes =
+		    enabled && !project_.GetRoot().empty() && !projectScenes.empty();
+		if (ImGui::BeginMenu("Project Scenes", canBrowseProjectScenes)) {
+			const auto directory = project_.GetScenesDirectory();
+			for (const auto &path : projectScenes) {
+				const auto relative = path.lexically_relative(directory);
+				const bool isCurrent =
+				    !current.empty() && PathUtils::IsSameFile(path, current);
+				const auto label = PathUtils::ToUtf8(relative);
+				if (ImGui::MenuItem(label.c_str(), nullptr, isCurrent,
+				                    !isCurrent)) {
+					pendingOpenPath_ = path;
+					action = EditorAction::OPEN_PATH;
+				}
+			}
+			ui_.EndMenu();
+		}
+
 		if (ui_.MenuItem("Import Game Scene...", nullptr, enabled)) {
 			action = EditorAction::IMPORT_SCENE;
 		}
