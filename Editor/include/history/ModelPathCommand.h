@@ -1,4 +1,5 @@
 #pragma once
+#include "scene/SceneAssetReferences.h"
 
 #include "scene/SceneObjectId.h"
 
@@ -41,6 +42,11 @@ class ModelPathCommand {
 	/// <param name="scene">編集対象のシーン</param>
 	/// <returns>true:成功 false:物体がない、または現在値が履歴と一致しない</returns>
 	bool Redo(Scene &scene) const;
+
+	/// <summary>
+	/// 履歴に保持する値の素材参照を更新する
+	/// </summary>
+	void RewriteObjects(const SceneAssetReferences::ObjectRewrite &rewrite);
 
   private:
 	SceneObjectId objectId_ = 0;

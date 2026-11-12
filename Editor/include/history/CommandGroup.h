@@ -1,4 +1,5 @@
 #pragma once
+#include "scene/SceneAssetReferences.h"
 
 #include "history/ActiveCommand.h"
 #include "history/ColliderCommand.h"
@@ -49,6 +50,11 @@ class CommandGroup {
 	/// <param name="scene">編集対象のシーン</param>
 	/// <returns>true:全操作成功 false:シーンと履歴が一致しない</returns>
 	bool Redo(Scene &scene) const;
+
+	/// <summary>
+	/// 履歴に保持する値の素材参照を更新する
+	/// </summary>
+	void RewriteObjects(const SceneAssetReferences::ObjectRewrite &rewrite);
 
   private:
 	std::vector<Command> commands_;

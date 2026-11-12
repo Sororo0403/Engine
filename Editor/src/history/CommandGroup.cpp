@@ -8,6 +8,17 @@ CommandGroup::CommandGroup(std::vector<Command> commands) noexcept
     : commands_(std::move(commands)) {
 }
 
+void CommandGroup::RewriteObjects(
+    const SceneAssetReferences::ObjectRewrite &rewrite) {
+	for (auto &entry : commands_) {
+		std::visit([&](auto &command) {
+			if constexpr (requires { command.RewriteObjects(rewrite); }) {
+				command.RewriteObjects(rewrite);
+			}
+		}, entry);
+	}
+}
+
 bool CommandGroup::Undo(Scene &scene) const {
 	if (commands_.empty()) {
 		return true;

@@ -16,6 +16,17 @@ bool TextureSlotsCommand::Redo(Scene &scene) const {
 	return Apply(scene, before_, after_);
 }
 
+void TextureSlotsCommand::RewriteObjects(
+    const SceneAssetReferences::ObjectRewrite &rewrite) {
+	SceneObject object;
+	auto &textures = object.meshRenderer.emplace().textures;
+	for (auto *value : {&before_, &after_}) {
+		textures.slots.swap(value->slots);
+		rewrite(object);
+		textures.slots.swap(value->slots);
+	}
+}
+
 bool TextureSlotsCommand::Apply(Scene &scene, const TextureBindings &expected,
                                 const TextureBindings &value) const {
 	auto *object = scene.FindObject(id_);

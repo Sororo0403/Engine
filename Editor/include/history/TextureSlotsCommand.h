@@ -1,4 +1,5 @@
 #pragma once
+#include "scene/SceneAssetReferences.h"
 
 #include "graphics/material/TextureBindings.h"
 #include "scene/SceneObjectId.h"
@@ -31,6 +32,11 @@ class TextureSlotsCommand {
 	/// <param name="scene">対象シーン</param>
 	/// <returns>true:成功 false:対象・現在値・設定が無効</returns>
 	bool Redo(Scene &scene) const;
+
+	/// <summary>
+	/// 履歴に保持する値の素材参照を更新する
+	/// </summary>
+	void RewriteObjects(const SceneAssetReferences::ObjectRewrite &rewrite);
 
   private:
 	bool Apply(Scene &scene, const TextureBindings &expected,

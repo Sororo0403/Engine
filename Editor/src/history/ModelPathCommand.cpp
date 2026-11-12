@@ -39,3 +39,15 @@ bool ModelPathCommand::Redo(Scene &scene) const {
 	object->mesh.swap(restored);
 	return true;
 }
+
+void ModelPathCommand::RewriteObjects(
+    const SceneAssetReferences::ObjectRewrite &rewrite) {
+	for (auto *value : {&before_, &after_}) {
+		if (*value) {
+			SceneObject object;
+			object.mesh.swap(*value);
+			rewrite(object);
+			object.mesh.swap(*value);
+		}
+	}
+}

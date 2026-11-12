@@ -73,8 +73,8 @@ bool SceneDocument::MatchesSavedText(std::string_view text) const {
 }
 
 void SceneDocument::ApplyAssetRename(Scene &scene, std::filesystem::path path,
-                                    std::string *savedText) {
-	const bool modified = IsModified();
+                                    std::string *savedText,
+                                    EditorHistory &preparedHistory) {
 	scene_.Swap(scene);
 	filePath_.swap(path);
 
@@ -82,12 +82,7 @@ void SceneDocument::ApplyAssetRename(Scene &scene, std::filesystem::path path,
 		savedText_.swap(*savedText);
 	}
 
-	// 以前の素材パスを持つコマンドを再実行できないようにする。
-	history_.Reset();
-
-	if (modified) {
-		history_.Invalidate();
-	}
+	history_.ApplyAssetRewrite(preparedHistory);
 }
 
 void SceneDocument::New() {

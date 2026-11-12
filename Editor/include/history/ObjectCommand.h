@@ -1,4 +1,5 @@
 #pragma once
+#include "scene/SceneAssetReferences.h"
 
 #include "scene/SceneObject.h"
 #include "scene/SceneObjectId.h"
@@ -40,6 +41,13 @@ class ObjectCommand {
 	/// <param name="scene">編集対象のシーン</param>
 	/// <returns>true:成功 false:シーンが履歴と一致しない</returns>
 	bool Redo(Scene &scene) const;
+
+	/// <summary>
+	/// 履歴に保持する値の素材参照を更新する
+	/// </summary>
+	void RewriteObjects(const SceneAssetReferences::ObjectRewrite &rewrite) {
+		rewrite(object_);
+	}
 
   private:
 	/// <summary>

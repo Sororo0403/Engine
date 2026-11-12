@@ -351,7 +351,7 @@ std::vector<AssetUsage::Reference> Scan(
 /// <summary>
 /// 直接参照とPrefabインスタンスの基準データに新しいパスを反映する
 /// </summary>
-bool Rewrite(Scene &scene, const PathMapping &map) {
+bool RewriteObject(SceneObject &object, const PathMapping &map) {
 	bool changed = false;
 	const auto replace = [&](const fs::path &path) {
 		auto updated = map(path);
@@ -363,14 +363,10 @@ bool Rewrite(Scene &scene, const PathMapping &map) {
 		changed = true;
 		return updated;
 	};
-	SceneAssetReferences::Rewrite(scene, replace);
+	SceneAssetReferences::Rewrite(object, replace);
 
-	for (const auto &[id, object] : scene.GetObjects()) {
-		if (!object.prefabLink || object.prefabLink->asset.empty()) {
-			continue;
-		}
-
-		auto &link = *scene.FindObject(id)->prefabLink;
+	if (object.prefabLink && !object.prefabLink->asset.empty()) {
+		auto &link = *object.prefabLink;
 		link.asset = replace(link.asset);
 		Scene baseline;
 
@@ -389,6 +385,15 @@ bool Rewrite(Scene &scene, const PathMapping &map) {
 		changed |= earlier;
 	}
 
+	return changed;
+}
+
+bool Rewrite(Scene &scene, const PathMapping &map) {
+	bool changed = false;
+	for (const auto &[id, object] : scene.GetObjects()) {
+		(void)object;
+		changed |= RewriteObject(*scene.FindObject(id), map);
+	}
 	return changed;
 }
 
@@ -818,6 +823,8 @@ bool AssetUsage::Relocate(const Moves &moves, const fs::path &assetRoot,
 		Scene live;
 		live.CopyFrom(document.GetScene());
 		Rewrite(live, map);
+		auto history = document.GetHistory().PrepareAssetRewrite(
+		    [&](SceneObject &object) { RewriteObject(object, map); });
 		std::string liveSavedText;
 		bool refreshSavedText = false;
 
@@ -916,7 +923,8 @@ bool AssetUsage::Relocate(const Moves &moves, const fs::path &assetRoot,
 		}
 
 		document.ApplyAssetRename(live, std::move(movedOpen),
-		                          refreshSavedText ? &liveSavedText : nullptr);
+		                          refreshSavedText ? &liveSavedText : nullptr,
+		                          *history);
 		error.clear();
 		return true;
 	} catch (const std::exception &failure) {

@@ -2197,6 +2197,27 @@ void EditorHistory::Invalidate() {
 	currentState_ = AllocateState();
 }
 
+std::unique_ptr<EditorHistory> EditorHistory::PrepareAssetRewrite(
+    const SceneAssetReferences::ObjectRewrite &rewrite) const {
+	if (IsEditing()) {
+		throw std::runtime_error("Finish the current edit before moving assets.");
+	}
+	auto prepared = std::make_unique<EditorHistory>(scene_);
+	prepared->entries_ = entries_;
+	for (auto &entry : prepared->entries_) {
+		std::visit([&](auto &command) {
+			if constexpr (requires { command.RewriteObjects(rewrite); }) {
+				command.RewriteObjects(rewrite);
+			}
+		}, entry.command);
+	}
+	return prepared;
+}
+
+void EditorHistory::ApplyAssetRewrite(EditorHistory &prepared) noexcept {
+	entries_.swap(prepared.entries_);
+}
+
 void EditorHistory::Reset() {
 	pending_.reset();
 	pendingTransforms_.reset();

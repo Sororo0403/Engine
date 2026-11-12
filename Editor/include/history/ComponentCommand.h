@@ -1,4 +1,5 @@
 #pragma once
+#include "scene/SceneAssetReferences.h"
 
 #include "scene/Scene.h"
 #include <optional>
@@ -47,6 +48,20 @@ class ComponentCommand {
 	/// <returns>true:成功 false:対象・想定値・設定が無効</returns>
 	bool Redo(Scene &scene) const {
 		return Apply(scene, before_, after_);
+	}
+
+	/// <summary>
+	/// 履歴に保持する値の素材参照を更新する
+	/// </summary>
+	void RewriteObjects(const SceneAssetReferences::ObjectRewrite &rewrite) {
+		for (auto *value : {&before_, &after_}) {
+			if (*value) {
+				SceneObject object;
+				(object.*Member).swap(*value);
+				rewrite(object);
+				(object.*Member).swap(*value);
+			}
+		}
 	}
 
   private:

@@ -49,18 +49,25 @@ void SceneAssetReferences::Visit(
 }
 
 void SceneAssetReferences::Rewrite(
+    SceneObject &object,
+    const std::function<std::filesystem::path(const std::filesystem::path &)>
+        &rewrite) {
+	if (!rewrite)
+		throw std::invalid_argument("An asset reference resolver is required.");
+	ForEach(object, [&](auto &path) {
+		if (!path.empty())
+			path = rewrite(path);
+	});
+}
+
+void SceneAssetReferences::Rewrite(
     Scene &scene,
     const std::function<std::filesystem::path(const std::filesystem::path &)>
         &rewrite) {
 	if (!rewrite)
 		throw std::invalid_argument("An asset reference resolver is required.");
-	const auto apply = [&](auto &path) {
-		if (!path.empty())
-			path = rewrite(path);
-	};
-
 	for (const auto &[id, value] : scene.GetObjects()) {
 		(void)value;
-		ForEach(*scene.FindObject(id), apply);
+		Rewrite(*scene.FindObject(id), rewrite);
 	}
 }

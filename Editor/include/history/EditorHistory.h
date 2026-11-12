@@ -26,6 +26,7 @@
 #include <filesystem>
 #include <functional>
 #include <map>
+#include <memory>
 #include <optional>
 #include <span>
 #include <string>
@@ -163,6 +164,17 @@ class EditorHistory {
 	/// 履歴と編集状態をクリアし、変更なしの状態へ戻す
 	/// </summary>
 	void Reset();
+
+	/// <summary>
+	/// 確定済みの履歴を複製し、移動前のパスを参照する値を書き換える
+	/// </summary>
+	std::unique_ptr<EditorHistory>
+	PrepareAssetRewrite(const SceneAssetReferences::ObjectRewrite &rewrite) const;
+
+	/// <summary>
+	/// 素材移動が成功したあと、準備済みの履歴を反映する。保存地点と操作位置は保持する
+	/// </summary>
+	void ApplyAssetRewrite(EditorHistory &prepared) noexcept;
 
 	/// <summary>
 	/// 物体を作成し、その追加を履歴へ記録する。

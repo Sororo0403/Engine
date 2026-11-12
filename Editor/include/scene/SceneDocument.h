@@ -69,10 +69,10 @@ class SceneDocument {
 	bool MatchesSavedText(std::string_view text) const;
 
 	/// <summary>
-	/// ファイル名の変更と参照の書き換えを反映し、未保存状態を引き継ぐ
+	/// ファイル名の変更と、準備済みのシーン・履歴の参照書き換えを反映する
 	/// </summary>
 	void ApplyAssetRename(Scene &scene, std::filesystem::path path,
-	                      std::string *savedText);
+	                      std::string *savedText, EditorHistory &preparedHistory);
 
 	/// <summary>
 	/// 空のシーンを作成し、保存先と変更状態をクリアする

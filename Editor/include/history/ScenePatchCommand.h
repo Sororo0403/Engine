@@ -1,4 +1,5 @@
 #pragma once
+#include "scene/SceneAssetReferences.h"
 
 #include "scene/SceneObject.h"
 #include <optional>
@@ -37,6 +38,20 @@ class ScenePatchCommand {
 	/// <param name="scene">編集対象</param>
 	/// <returns>true:成功 false:想定値・階層・データが不一致。失敗時は全物体を保持する</returns>
 	bool Redo(Scene &scene) const;
+
+	/// <summary>
+	/// 履歴に保持する値の素材参照を更新する
+	/// </summary>
+	void RewriteObjects(const SceneAssetReferences::ObjectRewrite &rewrite) {
+		for (auto *values : {&before_, &after_}) {
+			for (auto &[id, object] : *values) {
+				(void)id;
+				if (object) {
+					rewrite(*object);
+				}
+			}
+		}
+	}
 
   private:
 	using Values =
