@@ -33,6 +33,11 @@ class GameExportDialog {
 	void SetCheckResult(std::string message);
 
 	/// <summary>
+	/// 出力に失敗したとき、入力を保持したままダイアログを開き直す
+	/// </summary>
+	void ShowExportFailure(std::string error);
+
+	/// <summary>
 	/// 確定した出力設定を取得する
 	/// </summary>
 	/// <returns>CHECKまたはACCEPTED後に使用する設定</returns>

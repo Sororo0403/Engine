@@ -4667,56 +4667,51 @@ void EditorScene::UpdateDialogs() {
 	}
 	case DialogStage::EXPORT_GAME: {
 		const auto result = exportDialog_.Draw(ui_);
-
 		if (result == GameExportResult::CANCELLED) {
 			stage_ = DialogStage::IDLE;
+			return;
 		}
 
-		if (result == GameExportResult::CHECK) {
-			SceneDocument startup;
-			const auto *scene = GetStartupSceneForRun(startup, false);
-			std::string error;
-			if (!scene) {
-				error = "Could not load the project startup scene: " +
-				        startup.GetError();
-			} else if (GameExporter::Check(*scene, exportDialog_.GetOptions(),
-			                               error)) {
+		const bool checking = result == GameExportResult::CHECK;
+		if (!checking && result != GameExportResult::ACCEPTED) {
+			return;
+		}
+
+		SceneDocument startup;
+		const auto *scene = GetStartupSceneForRun(startup, false);
+		const auto &options = exportDialog_.GetOptions();
+		std::string error;
+		if (!scene) {
+			error = "Could not load the project startup scene: " +
+			        startup.GetError();
+		}
+
+		if (checking) {
+			if (scene && GameExporter::Check(*scene, options, error)) {
 				exportDialog_.SetCheckResult(
 				    "Export check passed. No files were written.");
-				return;
-			}
-			exportDialog_.SetCheckResult("Export check failed: " + error);
-		}
-
-		if (result == GameExportResult::ACCEPTED) {
-			SceneDocument startup;
-			const auto *scene = GetStartupSceneForRun(startup);
-
-			if (!scene) {
-				return;
-			}
-
-			std::string error;
-
-			if (GameExporter::Export(*scene, exportDialog_.GetOptions(),
-			                         error)) {
-				const auto &directory = exportDialog_.GetOptions().destination;
-				Logger::Info(
-				    "Game exported to " + PathUtils::ToUtf8(directory));
-				if (project_.GetRoot().empty()) {
-					exportConfig_ = exportDialog_.GetOptions().config;
-				}
-				preferences_.RememberGameExport(project_.GetRoot(), directory);
-				if (canSavePreferences_) {
-					preferences_.Save();
-				}
-				exportResultDialog_.Show(directory);
-				stage_ = DialogStage::EXPORT_RESULT;
 			} else {
-				ShowError(std::move(error));
+				exportDialog_.SetCheckResult("Export check failed: " + error);
 			}
+			return;
 		}
 
+		if (!scene || !GameExporter::Export(*scene, options, error)) {
+			exportDialog_.ShowExportFailure("Export failed: " + error);
+			return;
+		}
+
+		const auto &directory = options.destination;
+		Logger::Info("Game exported to " + PathUtils::ToUtf8(directory));
+		if (project_.GetRoot().empty()) {
+			exportConfig_ = options.config;
+		}
+		preferences_.RememberGameExport(project_.GetRoot(), directory);
+		if (canSavePreferences_) {
+			preferences_.Save();
+		}
+		exportResultDialog_.Show(directory);
+		stage_ = DialogStage::EXPORT_RESULT;
 		return;
 	}
 	case DialogStage::ERROR: {

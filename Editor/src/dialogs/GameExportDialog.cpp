@@ -69,6 +69,12 @@ void GameExportDialog::SetCheckResult(std::string message) {
 	checkResult_ = std::move(message);
 }
 
+void GameExportDialog::ShowExportFailure(std::string error) {
+	error_ = std::move(error);
+	checkResult_.clear();
+	opening_ = true;
+}
+
 GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 	constexpr const char *title = "Export Game###GameExportDialog";
 
