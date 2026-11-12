@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gameplay/GameConfig.h"
+#include "scene/SceneObjectId.h"
 #include <filesystem>
 #include <string>
 #include <vector>
@@ -23,14 +24,24 @@ struct GameExportOptions {
 	std::filesystem::path startupScenePath;
 };
 
+/// <summary>
+/// 配布前検査の不備と、特定できた場合の修正先シーン・物体
+/// </summary>
+struct GameExportIssue {
+	std::string message;
+	std::filesystem::path scenePath;
+	SceneObjectId objectId = 0;
+};
+
 namespace GameExporter {
 /// <summary>
 /// 出力予定のシーン・依存ファイル・Runtimeを検査する。出力先には書き込まない
 /// </summary>
 /// <param name="error">検査で見つかった不備。複数の場合は空行区切り</param>
+/// <param name="issues">指定時は表示する不備とシーン・物体への移動先を返す</param>
 /// <remarks>COM初期化後に呼び出す。コピー後の検証は実際の出力時に行う</remarks>
 bool Check(const Scene &scene, const GameExportOptions &options,
-           std::string &error);
+           std::string &error, std::vector<GameExportIssue> *issues = nullptr);
 
 /// <summary>
 /// シーンと依存ファイルを新規フォルダへ直接出力する。既存フォルダには書き込まない

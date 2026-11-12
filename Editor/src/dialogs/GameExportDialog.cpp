@@ -1,7 +1,6 @@
 #include "dialogs/GameExportDialog.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "platform/windows/PathUtils.h"
-#include <algorithm>
 #include <imgui.h>
 #include <stdexcept>
 #include <utility>
@@ -54,7 +53,7 @@ void GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits
 	width_ = options_.config.width;
 	height_ = options_.config.height;
 	error_.clear();
-	checkResult_.clear();
+	ClearCheckResult();
 	browsing_ = false;
 
 	try {
@@ -66,14 +65,25 @@ void GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits
 	opening_ = true;
 }
 
-void GameExportDialog::SetCheckResult(std::string message) {
+void GameExportDialog::SetCheckResult(std::string message,
+                                      std::vector<GameExportIssue> issues) {
 	checkResult_ = std::move(message);
+	checkIssues_ = std::move(issues);
 	scrollCheckResultToTop_ = true;
+}
+
+const GameExportIssue &GameExportDialog::GetSelectedIssue() const {
+	return checkIssues_[selectedIssue_];
+}
+
+void GameExportDialog::ClearCheckResult() {
+	checkResult_.clear();
+	checkIssues_.clear();
 }
 
 void GameExportDialog::ShowExportFailure(std::string error) {
 	error_ = std::move(error);
-	checkResult_.clear();
+	ClearCheckResult();
 	opening_ = true;
 }
 
@@ -119,39 +129,48 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 	changed |= ImGui::InputInt("Height", &height_);
 	if (changed) {
 		error_.clear();
-		checkResult_.clear();
+		ClearCheckResult();
 	}
 
 	if (!error_.empty()) {
 		ImGui::TextWrapped("%s", error_.c_str());
 	}
-	if (!checkResult_.empty()) {
-		const float height = 8.0f * ImGui::GetTextLineHeightWithSpacing();
-		const float width = (std::max)(1.0f, ImGui::GetContentRegionAvail().x -
-		                                        ImGui::GetStyle().ScrollbarSize);
-		if (ImGui::CalcTextSize(checkResult_.c_str(), nullptr, false, width).y >
-		    height) {
-			if (scrollCheckResultToTop_) {
-				ImGui::SetNextWindowScroll({-1.0f, 0.0f});
-			}
-			if (ImGui::BeginChild("ExportCheckResult", {0.0f, height})) {
-				ImGui::TextWrapped("%s", checkResult_.c_str());
-			}
-			ImGui::EndChild();
-		} else {
-			ImGui::TextWrapped("%s", checkResult_.c_str());
-		}
-		scrollCheckResultToTop_ = false;
-	}
-
 	GameExportResult result = GameExportResult::NONE;
+	if (!checkIssues_.empty()) {
+		ui.Text("Export check failed.");
+		if (scrollCheckResultToTop_) {
+			ImGui::SetNextWindowScroll({-1.0f, 0.0f});
+		}
+		const float height = 8.0f * ImGui::GetTextLineHeightWithSpacing();
+		if (ImGui::BeginChild("ExportCheckResult", {0.0f, height})) {
+			for (std::size_t i = 0; i < checkIssues_.size(); ++i) {
+				const auto &issue = checkIssues_[i];
+				ImGui::PushID(static_cast<int>(i));
+				ImGui::TextWrapped("%s", issue.message.c_str());
+				if ((issue.objectId != 0 || !issue.scenePath.empty()) &&
+				    ui.Button(issue.objectId == 0 ? "Open Scene" : "Show Object")) {
+					selectedIssue_ = i;
+					result = GameExportResult::OPEN_ISSUE;
+				}
+				ImGui::PopID();
+				ImGui::Spacing();
+			}
+		}
+		ImGui::EndChild();
+		scrollCheckResultToTop_ = false;
+		if (ui.Button("Copy Details")) {
+			ImGui::SetClipboardText(checkResult_.c_str());
+		}
+	} else if (!checkResult_.empty()) {
+		ImGui::TextWrapped("%s", checkResult_.c_str());
+	}
 
 	const bool exportRequested = ui.Button("Export");
 	ui.SameLine();
 	const bool checkRequested = ui.Button("Check Export");
 	if (exportRequested || checkRequested) {
 		error_.clear();
-		checkResult_.clear();
+		ClearCheckResult();
 		try {
 			if (output_.empty()) {
 				throw std::runtime_error("Choose a new output folder.");
@@ -204,7 +223,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 				    folderDialog_.GetSelectedPath() / defaultOutputName_;
 				output_ = PathUtils::ToUtf8(FindAvailableDestination(candidate));
 				error_.clear();
-				checkResult_.clear();
+				ClearCheckResult();
 			} catch (const std::exception &e) {
 				error_ = e.what();
 			}
@@ -212,7 +231,8 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 	}
 
 	if (result == GameExportResult::CANCELLED ||
-	    result == GameExportResult::ACCEPTED) {
+	    result == GameExportResult::ACCEPTED ||
+	    result == GameExportResult::OPEN_ISSUE) {
 		ui.CloseCurrentPopup();
 	}
 

@@ -2,11 +2,12 @@
 
 #include "dialogs/FileDialog.h"
 #include "export/GameExporter.h"
+#include <cstddef>
 #include <string>
 
 class ImGuiSystem;
 
-enum class GameExportResult { NONE, CANCELLED, CHECK, ACCEPTED };
+enum class GameExportResult { NONE, CANCELLED, CHECK, ACCEPTED, OPEN_ISSUE };
 
 /// <summary>
 /// ゲームの出力先・タイトル・画面サイズを選択する
@@ -30,7 +31,12 @@ class GameExportDialog {
 	/// <summary>
 	/// 出力前検査の結果をダイアログに表示する
 	/// </summary>
-	void SetCheckResult(std::string message);
+	void SetCheckResult(std::string message, std::vector<GameExportIssue> issues = {});
+
+	/// <summary>
+	/// OPEN_ISSUEで選択した不備を取得する
+	/// </summary>
+	const GameExportIssue &GetSelectedIssue() const;
 
 	/// <summary>
 	/// 出力に失敗したとき、入力を保持したままダイアログを開き直す
@@ -46,11 +52,15 @@ class GameExportDialog {
 	}
 
   private:
+	void ClearCheckResult();
+
 	GameExportOptions options_;
 	FileDialog folderDialog_;
 	std::filesystem::path defaultOutputName_;
 	std::string output_, startupScene_, title_, error_;
 	std::string checkResult_;
+	std::vector<GameExportIssue> checkIssues_;
+	std::size_t selectedIssue_ = 0;
 	int width_ = 1280, height_ = 720;
 	bool opening_ = false;
 	bool includesUnsavedEdits_ = false;

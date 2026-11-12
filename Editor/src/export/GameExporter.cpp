@@ -459,11 +459,25 @@ class CopyPlan {
 };
 
 bool ProcessExport(const Scene &scene, const GameExportOptions &options,
-                   std::string &error, bool writeOutput) {
+                   std::string &error, bool writeOutput,
+                   std::vector<GameExportIssue> *issues = nullptr) {
 	OutputDirectory output;
+	const auto appendIssue = [&](std::string issue, const fs::path &scenePath,
+	                             SceneObjectId objectId) {
+		if (!error.empty()) {
+			error += "\n\n";
+		}
+		error += issue;
+		if (issues) {
+			issues->push_back({std::move(issue), scenePath, objectId});
+		}
+	};
 
 	try {
 		error.clear();
+		if (issues) {
+			issues->clear();
+		}
 		PathUtils::RelativeInside(fs::path(L"resources"),
 		                          options.config.scenePath.lexically_normal());
 
@@ -507,15 +521,18 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 		}
 
 		// 事前検査では、同じ検査で独立して直せる問題をまとめて表示する。
-		const auto reportIssue = [&](std::string issue) {
+		const auto reportIssue = [&](std::string issue, const fs::path &scenePath = {},
+		                             SceneObjectId objectId = 0) {
 			if (writeOutput) {
 				throw std::runtime_error(std::move(issue));
 			}
 
-			if (!error.empty()) {
-				error += "\n\n";
-			}
-			error += issue;
+			appendIssue(std::move(issue), scenePath, objectId);
+		};
+		const auto reportObjectIssue = [&](std::string issue, const auto &entry,
+		                                   SceneObjectId id) {
+			reportIssue(std::move(issue), entry.prefab ? fs::path{} : entry.source,
+			            entry.prefab || !entry.objects.contains(id) ? 0 : id);
 		};
 
 		bool startupIsTarget = false;
@@ -547,7 +564,7 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 			    if (!PrefabSerializer::Load(path, loaded, issue, &counter))
 				    throw std::runtime_error(issue);
 		    },
-		    reportIssue);
+		    reportObjectIssue);
 		const bool incompleteGraph = !error.empty();
 		auto sourceDirectories = options.assetDirectories;
 		for (std::size_t i = 1; i < graph.size(); ++i)
@@ -617,7 +634,7 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 						    std::format("Load Scene on object ID {} to '{}' "
 						                "(Arrival Tag '{}'): {}",
 						                id, PathUtils::ToUtf8(found->source),
-						                action.arrivalTag, issue));
+							                action.arrivalTag, issue), found->source);
 				}
 			}
 		}
@@ -638,7 +655,9 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 			const auto inputIssues = SceneValidation::InspectInputs(
 			    candidate, options.config.actions);
 			for (const auto &inputIssue : inputIssues) {
-				reportIssue(describe(inputIssue.objectId) + "\n" + inputIssue.message);
+				reportObjectIssue(
+				    describe(inputIssue.objectId) + "\n" + inputIssue.message,
+				    entry, inputIssue.objectId);
 			}
 			SceneSimulation check;
 			std::string issue;
@@ -652,7 +671,8 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 			          : SceneSimulation::Validate(
 			                candidate, issue, options.config.fallbackCamera,
 			                &invalidObject)))
-				reportIssue(describe(invalidObject) + "\n" + issue);
+				reportObjectIssue(describe(invalidObject) + "\n" + issue, entry,
+				                  invalidObject);
 			auto &objects = entry.objects;
 
 			for (auto &[id, object] : objects) {
@@ -712,9 +732,9 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 					} catch (const std::bad_alloc &) {
 						throw;
 					} catch (const std::exception &error) {
-						reportIssue(std::format(
+						reportObjectIssue(std::format(
 						    "{} / {}: {}\n{}", describe(id), kind, PathUtils::ToUtf8(path),
-						    error.what()));
+						    error.what()), entry, id);
 					}
 				};
 				const auto addUITexture = [&](const fs::path &path) {
@@ -917,20 +937,19 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 		output.Complete();
 		return true;
 	} catch (const std::exception &e) {
-		error = e.what();
-		error += output.Cleanup();
+		appendIssue(std::string(e.what()) + output.Cleanup(), {}, 0);
 		return false;
 	} catch (...) {
-		error = "An unknown error interrupted game export preparation or writing.";
-		error += output.Cleanup();
+		appendIssue("An unknown error interrupted game export preparation or writing." +
+		                output.Cleanup(), {}, 0);
 		return false;
 	}
 }
 } // namespace
 
 bool GameExporter::Check(const Scene &scene, const GameExportOptions &options,
-                         std::string &error) {
-	return ProcessExport(scene, options, error, false);
+                         std::string &error, std::vector<GameExportIssue> *issues) {
+	return ProcessExport(scene, options, error, false, issues);
 }
 
 bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,

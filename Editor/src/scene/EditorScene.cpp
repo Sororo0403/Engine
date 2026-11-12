@@ -4754,6 +4754,21 @@ void EditorScene::UpdateDialogs() {
 		}
 
 		const bool checking = result == GameExportResult::CHECK;
+		if (result == GameExportResult::OPEN_ISSUE) {
+			const auto &issue = exportDialog_.GetSelectedIssue();
+			const auto &current = document_.GetFilePath();
+			stage_ = DialogStage::IDLE;
+			if (issue.scenePath.empty() ||
+			    (!current.empty() && PathUtils::IsSameFile(current, issue.scenePath))) {
+				if (issue.objectId != 0) {
+					RevealReferenceObject(issue.objectId);
+				}
+			} else {
+				pendingOpenPath_ = issue.scenePath;
+				StartAction(EditorAction::OPEN_PATH, issue.objectId);
+			}
+			return;
+		}
 		if (!checking && result != GameExportResult::ACCEPTED) {
 			return;
 		}
@@ -4768,11 +4783,16 @@ void EditorScene::UpdateDialogs() {
 		}
 
 		if (checking) {
-			if (scene && GameExporter::Check(*scene, options, error)) {
+			std::vector<GameExportIssue> issues;
+			if (scene && GameExporter::Check(*scene, options, error, &issues)) {
 				exportDialog_.SetCheckResult(
 				    "Export check passed. No files were written.");
 			} else {
-				exportDialog_.SetCheckResult("Export check failed: " + error);
+				if (issues.empty()) {
+					issues.push_back({error});
+				}
+				exportDialog_.SetCheckResult("Export check failed: " + error,
+				                             std::move(issues));
 			}
 			return;
 		}
