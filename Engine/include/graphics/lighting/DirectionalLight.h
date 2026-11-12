@@ -10,9 +10,9 @@ class DirectionalLight {
 	/// <summary>
 	/// 光源用の定数バッファを作成する
 	/// </summary>
-	/// <param name="device">D3D12デバイス</param>
+	/// <param name="pool">描画基盤の共有定数バッファ</param>
 	/// <returns>true:成功 false:引数が無効、初期化済み、または作成失敗</returns>
-	bool Initialize(ID3D12Device *device);
+	bool Initialize(ConstantBufferPool &pool);
 
 	/// <summary>
 	/// 光源情報を定数バッファへ書き込む

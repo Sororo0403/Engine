@@ -36,10 +36,10 @@ class ModelInstance {
 	/// <summary>
 	/// モデルを参照し、物体ごとの材質と描画インスタンスを作成する
 	/// </summary>
-	/// <param name="device">D3D12デバイス</param>
+	/// <param name="pool">描画基盤の共有定数バッファ</param>
 	/// <param name="model">初期化済みのモデル。この物体より長く保持すること</param>
 	/// <returns>true:成功 false:引数が無効、初期化済み、または作成失敗</returns>
-	bool Initialize(ID3D12Device *device, const Model &model);
+	bool Initialize(ConstantBufferPool &pool, const Model &model);
 
 	/// <summary>
 	/// 各メッシュの変換行列と、材質の定数バッファを更新する
@@ -139,5 +139,5 @@ class ModelInstance {
 	std::vector<MeshInstance> animatedInstances_;
 	std::optional<ModelAnimationPose> animationPose_;
 	std::array<DirectX::XMFLOAT3, 8> animationBounds_{};
-	ID3D12Device *device_ = nullptr;
+	ConstantBufferPool *constantBuffers_ = nullptr;
 };

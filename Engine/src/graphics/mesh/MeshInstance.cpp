@@ -5,10 +5,10 @@
 #include "math/MathUtils.h"
 #include "math/TransformUtils.h"
 
-bool MeshInstance::Initialize(ID3D12Device *device, const Mesh &mesh,
+bool MeshInstance::Initialize(ConstantBufferPool &pool, const Mesh &mesh,
                               const Material &material,
                               const D3D12_VERTEX_BUFFER_VIEW *weights) {
-	if (!device || constantBuffer_.IsInitialized() || mesh_ || material_ ||
+	if (constantBuffer_.IsInitialized() || mesh_ || material_ ||
 	    material.GetConstantBufferAddress() == 0 ||
 	    material.GetTextureSrv().ptr == 0) {
 		Logger::Error(
@@ -23,7 +23,7 @@ bool MeshInstance::Initialize(ID3D12Device *device, const Mesh &mesh,
 	DirectX::XMStoreFloat4x4(&initialValue.worldInverseTranspose,
 	                         DirectX::XMMatrixIdentity());
 
-	if (!constantBuffer_.Initialize(device, initialValue)) {
+	if (!constantBuffer_.Initialize(pool, initialValue)) {
 		return false;
 	}
 
@@ -36,7 +36,7 @@ bool MeshInstance::Initialize(ID3D12Device *device, const Mesh &mesh,
 
 		auto buffer = std::make_unique<ConstantBuffer<SkinningConstants>>();
 
-		if (!buffer->Initialize(device)) {
+		if (!buffer->Initialize(pool)) {
 			constantBuffer_.Finalize();
 			return false;
 		}

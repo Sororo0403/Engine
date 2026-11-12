@@ -3,12 +3,12 @@
 #include <algorithm>
 #include <cstddef>
 
-bool PointLights::Initialize(ID3D12Device *device) {
+bool PointLights::Initialize(ConstantBufferPool &pool) {
 	static_assert(sizeof(PointLightData) == 32);
 	static_assert(offsetof(Constants, lights) == 16);
 	static_assert(sizeof(Constants) == 1040);
-	return device && !constantBuffer_.IsInitialized() &&
-	       constantBuffer_.Initialize(device, Constants{});
+	return !constantBuffer_.IsInitialized() &&
+	       constantBuffer_.Initialize(pool, Constants{});
 }
 
 bool PointLights::Update(std::span<const PointLightData> lights) {

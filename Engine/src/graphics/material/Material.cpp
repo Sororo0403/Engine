@@ -5,9 +5,9 @@
 #include <cmath>
 #include <cstddef>
 
-bool Material::Initialize(ID3D12Device *device,
+bool Material::Initialize(ConstantBufferPool &pool,
                           std::shared_ptr<const MaterialResource> resource) {
-	if (!device || !resource || resource->GetTextureSrv().ptr == 0 ||
+	if (!resource || resource->GetTextureSrv().ptr == 0 ||
 	    constantBuffer_.IsInitialized()) {
 		Logger::Error(
 		    "Material::Initialize: 引数が無効、または初期化済みです。");
@@ -25,7 +25,7 @@ bool Material::Initialize(ID3D12Device *device,
 	static_assert(offsetof(MaterialData, monochrome) == 80);
 	static_assert(offsetof(MonochromeEffect, softness) == 16);
 
-	if (!constantBuffer_.Initialize(device)) {
+	if (!constantBuffer_.Initialize(pool)) {
 		return false;
 	}
 

@@ -13,10 +13,10 @@ class Material {
 	/// <summary>
 	/// 共有する材質を指定し、描画用の定数バッファを作成する
 	/// </summary>
-	/// <param name="device">D3D12デバイス</param>
+	/// <param name="pool">描画基盤の共有定数バッファ</param>
 	/// <param name="resource">画像と初期値を持つ材質の共有参照</param>
 	/// <returns>true:成功 false:引数が無効、初期化済み、または作成失敗</returns>
-	bool Initialize(ID3D12Device *device,
+	bool Initialize(ConstantBufferPool &pool,
 	                std::shared_ptr<const MaterialResource> resource);
 
 	/// <summary>

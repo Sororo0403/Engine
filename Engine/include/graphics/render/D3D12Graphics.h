@@ -1,5 +1,7 @@
 #pragma once
 
+#include "graphics/buffer/ConstantBufferPool.h"
+
 #include <Windows.h>
 #include <d3d12.h>
 #include <dxgi1_6.h>
@@ -67,6 +69,12 @@ class D3D12Graphics {
 	/// </summary>
 	/// <returns>デバイスへの借用ポインタ</returns>
 	ID3D12Device *GetDevice() const;
+
+	/// <summary>
+	/// この描画基盤の共有定数バッファを取得する
+	/// </summary>
+	/// <returns>描画基盤が保持するプールへの参照</returns>
+	ConstantBufferPool &GetConstantBuffers() { return constantBuffers_; }
 
 	/// <summary>
 	/// 描画命令の記録先を取得する
@@ -167,6 +175,7 @@ class D3D12Graphics {
   private:
 	Microsoft::WRL::ComPtr<IDXGIFactory6> factory_;
 	Microsoft::WRL::ComPtr<ID3D12Device> device_;
+	ConstantBufferPool constantBuffers_;
 
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue_;
 	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator_;

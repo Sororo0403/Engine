@@ -16,9 +16,9 @@ class ShadowMap {
 	/// <summary>
 	/// 定数バッファと深度用ヒープを作成する
 	/// </summary>
-	/// <param name="device">所有ワールドと同じ描画デバイス</param>
+	/// <param name="graphics">所有ワールドと同じ描画基盤</param>
 	/// <returns>true:成功 false:引数・初期化状態・作成が無効</returns>
-	bool Initialize(ID3D12Device *device);
+	bool Initialize(D3D12Graphics &graphics);
 
 	/// <summary>
 	/// GPUの利用完了後、描画命令の記録前に設定・深度・材質の参照を更新する

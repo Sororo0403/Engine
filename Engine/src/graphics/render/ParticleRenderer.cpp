@@ -189,7 +189,7 @@ struct ParticleRenderer::Impl {
 		desc.BlendState.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
 		Require(device->CreateGraphicsPipelineState(
 		    &desc, IID_PPV_ARGS(plus.GetAddressOf())));
-		if (!camera.Initialize(device))
+		if (!camera.Initialize(graphics.GetConstantBuffers()))
 			throw std::runtime_error(
 			    "Could not initialize particle camera buffer.");
 		alpha = std::move(normal);

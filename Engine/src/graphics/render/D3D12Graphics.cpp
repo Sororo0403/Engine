@@ -29,6 +29,7 @@ bool D3D12Graphics::Initialize(HWND hwnd, int width, int height,
 	}
 
 	UpdateViewport(width, height);
+	constantBuffers_.device_ = device_.Get();
 
 	Logger::Info(
 	    std::format("D3D12の描画基盤を初期化しました。{}x{}、バッファ数={}",
@@ -120,6 +121,8 @@ bool D3D12Graphics::EndFrame() {
 
 	// 表示に失敗した場合も、送信済みのGPU処理の完了を確認する
 	const bool gpuCompleted = WaitForGpu();
+	if (gpuCompleted)
+		constantBuffers_.ReclaimCompletedFrame();
 
 	return SUCCEEDED(presentResult) && gpuCompleted;
 }
@@ -217,6 +220,7 @@ void D3D12Graphics::Finalize() {
 
 	swapChain_.Reset();
 	commandQueue_.Reset();
+	constantBuffers_.Finalize();
 	device_.Reset();
 	factory_.Reset();
 

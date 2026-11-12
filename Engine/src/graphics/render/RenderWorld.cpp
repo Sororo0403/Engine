@@ -325,10 +325,11 @@ bool RenderWorld::Initialize() {
 		return false;
 	}
 
-	if (!impl_->light_.Initialize(device) ||
-	    !impl_->pointLights_.Initialize(device) ||
-	    !impl_->spotLights_.Initialize(device) ||
-	    !impl_->shadows_.Initialize(device)) {
+	auto &constantBuffers = impl_->graphics_.GetConstantBuffers();
+	if (!impl_->light_.Initialize(constantBuffers) ||
+	    !impl_->pointLights_.Initialize(constantBuffers) ||
+	    !impl_->spotLights_.Initialize(constantBuffers) ||
+	    !impl_->shadows_.Initialize(impl_->graphics_)) {
 		return false;
 	}
 
@@ -354,7 +355,7 @@ RenderObjectHandle RenderWorld::CreateObject(const ModelHandle &model) {
 		// ModelInstanceが参照するモデルの寿命を保証する
 		object->model_ = model;
 
-		if (!object->instance_.Initialize(impl_->graphics_.GetDevice(),
+		if (!object->instance_.Initialize(impl_->graphics_.GetConstantBuffers(),
 		                                  *model.model_)) {
 			return {};
 		}

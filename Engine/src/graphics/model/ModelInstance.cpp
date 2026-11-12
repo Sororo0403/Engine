@@ -10,8 +10,8 @@
 #include <exception>
 #include <format>
 
-bool ModelInstance::Initialize(ID3D12Device *device, const Model &model) {
-	if (!device || model.GetMeshCount() == 0 || model.GetMaterialCount() == 0) {
+bool ModelInstance::Initialize(ConstantBufferPool &pool, const Model &model) {
+	if (model.GetMeshCount() == 0 || model.GetMaterialCount() == 0) {
 		Logger::Error("ModelInstance::Initialize: "
 		              "引数が無効、またはモデルが未初期化です。");
 		return false;
@@ -34,7 +34,7 @@ bool ModelInstance::Initialize(ID3D12Device *device, const Model &model) {
 		for (std::size_t i = 0; i < materialCount; ++i) {
 			materialData_[i] = model.GetDefaultMaterialData(i);
 
-			if (!materials_[i].Initialize(device,
+			if (!materials_[i].Initialize(pool,
 			                              model.GetDefaultMaterial(i)) ||
 			    !materials_[i].Update(materialData_[i])) {
 				Logger::Error(std::format(
@@ -58,7 +58,7 @@ bool ModelInstance::Initialize(ID3D12Device *device, const Model &model) {
 				return false;
 			}
 
-			if (!meshInstances_[i].Initialize(device, model.GetMesh(i),
+			if (!meshInstances_[i].Initialize(pool, model.GetMesh(i),
 			                                  materials_[materialIndex])) {
 				Logger::Error(std::format(
 				    "ModelInstance: メッシュ{}の描画準備に失敗しました。", i));
@@ -76,7 +76,7 @@ bool ModelInstance::Initialize(ID3D12Device *device, const Model &model) {
 	}
 
 	model_ = &model;
-	device_ = device;
+	constantBuffers_ = &pool;
 
 	return true;
 }
@@ -176,7 +176,7 @@ void ModelInstance::Finalize() {
 	materialData_.clear();
 
 	model_ = nullptr;
-	device_ = nullptr;
+	constantBuffers_ = nullptr;
 }
 
 bool ModelInstance::SetMaterial(
@@ -226,7 +226,7 @@ bool ModelInstance::SetAnimationPose(const ModelAnimationPose *pose) {
 			std::vector<MeshInstance> instances(data->meshes.size());
 			for (std::size_t i = 0; i < instances.size(); ++i)
 				if (!instances[i].Initialize(
-				        device_, model_->GetAnimationMesh(i),
+				        *constantBuffers_, model_->GetAnimationMesh(i),
 				        materials_.at(data->meshes[i].materialIndex),
 				        &model_->GetAnimationWeights(i)))
 					return false;

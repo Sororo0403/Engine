@@ -5,8 +5,8 @@
 #include <cmath>
 #include <cstddef>
 
-bool DirectionalLight::Initialize(ID3D12Device *device) {
-	if (!device || constantBuffer_.IsInitialized()) {
+bool DirectionalLight::Initialize(ConstantBufferPool &pool) {
+	if (constantBuffer_.IsInitialized()) {
 		Logger::Error(
 		    "DirectionalLight::Initialize: 引数が無効、または初期化済みです。");
 		return false;
@@ -17,7 +17,7 @@ bool DirectionalLight::Initialize(ID3D12Device *device) {
 	static_assert(sizeof(DirectionalLightsData) ==
 	              16 + 32 * DirectionalLightsData::kMaximumLights);
 
-	if (!constantBuffer_.Initialize(device)) {
+	if (!constantBuffer_.Initialize(pool)) {
 		return false;
 	}
 

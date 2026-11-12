@@ -14,9 +14,9 @@ class PointLights {
 	/// <summary>
 	/// 空の点光源配列で定数バッファを初期化する
 	/// </summary>
-	/// <param name="device">描画デバイス</param>
+	/// <param name="pool">描画基盤の共有定数バッファ</param>
 	/// <returns>true:成功 false:未指定、初期化済み、または確保失敗</returns>
-	bool Initialize(ID3D12Device *device);
+	bool Initialize(ConstantBufferPool &pool);
 
 	/// <summary>
 	/// 全点光源を転送する。削除された要素も空に戻す

@@ -1,9 +1,11 @@
 #include "graphics/render/ShadowMap.h"
 #include "graphics/material/MaterialResource.h"
+#include "graphics/render/D3D12Graphics.h"
 #include "math/MathUtils.h"
 #include <limits>
 
-bool ShadowMap::Initialize(ID3D12Device *device) {
+bool ShadowMap::Initialize(D3D12Graphics &graphics) {
+	auto *device = graphics.GetDevice();
 	if (!device || device_)
 		return false;
 	D3D12_DESCRIPTOR_HEAP_DESC heap{};
@@ -11,7 +13,7 @@ bool ShadowMap::Initialize(ID3D12Device *device) {
 	heap.NumDescriptors = 1;
 	if (FAILED(device->CreateDescriptorHeap(
 	        &heap, IID_PPV_ARGS(dsv_.GetAddressOf()))) ||
-	    !constants_.Initialize(device))
+	    !constants_.Initialize(graphics.GetConstantBuffers()))
 		return false;
 	device_ = device;
 	stride_ = device->GetDescriptorHandleIncrementSize(

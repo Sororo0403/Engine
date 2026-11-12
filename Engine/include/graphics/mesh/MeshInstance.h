@@ -26,12 +26,12 @@ class MeshInstance {
 	/// <summary>
 	/// 使用するメッシュと材質を指定し、物体用の定数バッファを作成する
 	/// </summary>
-	/// <param name="device">D3D12デバイス</param>
+	/// <param name="pool">描画基盤の共有定数バッファ</param>
 	/// <param name="mesh">初期化済みのメッシュ。この物体より長く保持すること</param>
 	/// <param name="material">初期化済みの材質。この物体より長く保持すること</param>
 	/// <param name="weights">指定時は共有モデルの重みを借用し、骨用の定数バッファを作る</param>
 	/// <returns>true:成功 false:引数が無効、初期化済み、または作成失敗</returns>
-	bool Initialize(ID3D12Device *device, const Mesh &mesh,
+	bool Initialize(ConstantBufferPool &pool, const Mesh &mesh,
 	                const Material &material,
 	                const D3D12_VERTEX_BUFFER_VIEW *weights = nullptr);
 

@@ -46,6 +46,7 @@
     <ClCompile Include="src\core\DateTime.cpp" />
     <ClCompile Include="src\core\Logger.cpp" />
     <ClCompile Include="src\graphics\render\ShaderCompiler.cpp" />
+    <ClCompile Include="src\graphics\buffer\ConstantBufferPool.cpp" />
     <ClCompile Include="src\graphics\render\D3D12Graphics.cpp" />
     <ClCompile Include="src\platform\windows\Window.cpp" />
     <ClCompile Include="src\platform\windows\WinApp.cpp" />
@@ -64,6 +65,7 @@
     <ClInclude Include="include\math\TransformUtils.h" />
     <ClInclude Include="include\graphics\render\D3D12Helpers.h" />
     <ClInclude Include="include\graphics\buffer\ConstantBuffer.h" />
+    <ClInclude Include="include\graphics\buffer\ConstantBufferPool.h" />
     <ClInclude Include="include\core\EngineConfig.h" />
     <ClInclude Include="include\graphics\lighting\DirectionalLightData.h" />
     <ClInclude Include="include\graphics\lighting\FogSettings.h" />

@@ -75,6 +75,9 @@
     <Filter Include="include\graphics\material">
       <UniqueIdentifier>{b5bf8445-8a58-435c-9830-b72d234f5587}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\graphics\buffer">
+      <UniqueIdentifier>{57a5bc36-4140-4fb5-9a10-31c14144503e}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\graphics\render">
       <UniqueIdentifier>{53c7a0e0-1b1f-4dde-825c-6d9302ae4f46}</UniqueIdentifier>
     </Filter>
@@ -130,6 +133,9 @@
     </ClCompile>
     <ClCompile Include="src\platform\windows\WinApp.cpp">
       <Filter>src\platform\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\graphics\buffer\ConstantBufferPool.cpp">
+      <Filter>src\graphics\buffer</Filter>
     </ClCompile>
     <ClCompile Include="src\graphics\render\D3D12Graphics.cpp">
       <Filter>src\graphics\render</Filter>
@@ -509,6 +515,9 @@
     </ClInclude>
     <ClInclude Include="include\graphics\render\D3D12Helpers.h">
       <Filter>include\graphics\render</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\buffer\ConstantBufferPool.h">
+      <Filter>include\graphics\buffer</Filter>
     </ClInclude>
     <ClInclude Include="include\graphics\buffer\ConstantBuffer.h">
       <Filter>include\graphics\buffer</Filter>

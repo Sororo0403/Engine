@@ -1,15 +1,10 @@
 #pragma once
 
 #include "core/Logger.h"
+#include "graphics/buffer/ConstantBufferPool.h"
 
-#include <directxtk12/BufferHelpers.h>
-#include <wrl/client.h>
-
-#include <cstddef>
 #include <cstring>
-#include <format>
 #include <type_traits>
-#include <utility>
 
 /// <summary>
 /// GPUへ渡す値を保持する、常時Mapされた定数バッファ
@@ -23,76 +18,28 @@ template <typename T> class ConstantBuffer {
   public:
 	ConstantBuffer() = default;
 
-	// 解放前にGPUの利用を完了させること
-	~ConstantBuffer() {
-		Finalize();
-	}
-
 	ConstantBuffer(const ConstantBuffer &) = delete;
 	ConstantBuffer &operator=(const ConstantBuffer &) = delete;
-
-	ConstantBuffer(ConstantBuffer &&other) noexcept
-	    : resource_(std::move(other.resource_)),
-	      mappedData_(std::exchange(other.mappedData_, nullptr)) {
-	}
-
-	/// <summary>
-	/// 所有権を移動する。移動先のバッファはGPUの利用完了後に置き換える
-	/// </summary>
-	/// <param name="other">移動元。移動後は未初期化になる</param>
-	/// <returns>このバッファへの参照</returns>
-	ConstantBuffer &operator=(ConstantBuffer &&other) noexcept {
-		if (this != &other) {
-			Finalize();
-			resource_ = std::move(other.resource_);
-			mappedData_ = std::exchange(other.mappedData_, nullptr);
-		}
-
-		return *this;
-	}
+	ConstantBuffer(ConstantBuffer &&) noexcept = default;
+	ConstantBuffer &operator=(ConstantBuffer &&) noexcept = default;
 
 	/// <summary>
 	/// 型のサイズを256バイト単位に切り上げて確保し、初期値を書き込む
 	/// </summary>
-	/// <param name="device">D3D12デバイス</param>
+	/// <param name="pool">描画基盤の共有定数バッファ</param>
 	/// <param name="initialValue">初期値</param>
 	/// <returns>true:成功 false:引数が無効、初期化済み、または作成失敗</returns>
-	bool Initialize(ID3D12Device *device, const T &initialValue = T{}) {
-		if (!device || resource_) {
-			Logger::Error("ConstantBuffer::Initialize: "
-			              "引数が無効、または初期化済みです。");
+	bool Initialize(ConstantBufferPool &pool, const T &initialValue = T{}) {
+		if (IsInitialized()) {
+			Logger::Error("ConstantBuffer::Initialize: 初期化済みです。");
 			return false;
 		}
 
-		constexpr std::size_t alignment =
-		    D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT;
-		constexpr std::size_t size =
-		    (sizeof(T) + alignment - 1) / alignment * alignment;
-		Microsoft::WRL::ComPtr<ID3D12Resource> resource;
-		HRESULT hr = DirectX::CreateUploadBuffer(device, nullptr, 1, size,
-		                                         resource.GetAddressOf());
-
-		if (FAILED(hr)) {
-			Logger::Error(std::format(
-			    "定数バッファの作成に失敗しました。HRESULT=0x{:08X}",
-			    static_cast<unsigned long>(hr)));
+		allocation_ = pool.Allocate(sizeof(T));
+		if (!IsInitialized())
 			return false;
-		}
 
-		void *mapped = nullptr;
-		const D3D12_RANGE readRange{0, 0};
-		hr = resource->Map(0, &readRange, &mapped);
-
-		if (FAILED(hr)) {
-			Logger::Error(
-			    std::format("定数バッファのMapに失敗しました。HRESULT=0x{:08X}",
-			                static_cast<unsigned long>(hr)));
-			return false;
-		}
-
-		resource_ = std::move(resource);
-		mappedData_ = mapped;
-		std::memcpy(mappedData_, &initialValue, sizeof(T));
+		std::memcpy(allocation_.GetMappedData(), &initialValue, sizeof(T));
 		return true;
 	}
 
@@ -107,7 +54,7 @@ template <typename T> class ConstantBuffer {
 			return false;
 		}
 
-		std::memcpy(mappedData_, &value, sizeof(T));
+		std::memcpy(allocation_.GetMappedData(), &value, sizeof(T));
 		return true;
 	}
 
@@ -116,7 +63,7 @@ template <typename T> class ConstantBuffer {
 	/// </summary>
 	/// <returns>true:初期化済み false:未初期化</returns>
 	bool IsInitialized() const {
-		return mappedData_ != nullptr;
+		return allocation_.GetMappedData() != nullptr;
 	}
 
 	/// <summary>
@@ -124,22 +71,16 @@ template <typename T> class ConstantBuffer {
 	/// </summary>
 	/// <returns>GPUアドレス。未初期化の場合は0</returns>
 	D3D12_GPU_VIRTUAL_ADDRESS GetGPUVirtualAddress() const {
-		return resource_ ? resource_->GetGPUVirtualAddress() : 0;
+		return allocation_.GetGPUVirtualAddress();
 	}
 
 	/// <summary>
-	/// Mapを解除して解放する。GPUの利用完了後に呼び出す
+	/// 領域を解放する。GPUの利用完了後にプールへ戻る
 	/// </summary>
 	void Finalize() {
-		if (resource_ && mappedData_) {
-			resource_->Unmap(0, nullptr);
-		}
-
-		mappedData_ = nullptr;
-		resource_.Reset();
+		allocation_.Reset();
 	}
 
   private:
-	Microsoft::WRL::ComPtr<ID3D12Resource> resource_;
-	void *mappedData_ = nullptr;
+	ConstantBufferPool::Allocation allocation_;
 };

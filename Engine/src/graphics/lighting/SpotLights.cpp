@@ -3,15 +3,15 @@
 #include <algorithm>
 #include <cstddef>
 
-bool SpotLights::Initialize(ID3D12Device *device) {
+bool SpotLights::Initialize(ConstantBufferPool &pool) {
 	static_assert(sizeof(SpotLightData) == 64);
 	static_assert(offsetof(SpotLightData, direction) == 16);
 	static_assert(offsetof(SpotLightData, color) == 32);
 	static_assert(offsetof(SpotLightData, cosOuter) == 48);
 	static_assert(offsetof(Constants, lights) == 16);
 	static_assert(sizeof(Constants) == 2064);
-	return device && !constantBuffer_.IsInitialized() &&
-	       constantBuffer_.Initialize(device, Constants{});
+	return !constantBuffer_.IsInitialized() &&
+	       constantBuffer_.Initialize(pool, Constants{});
 }
 
 bool SpotLights::Update(std::span<const SpotLightData> lights) {
