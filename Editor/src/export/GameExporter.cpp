@@ -197,13 +197,12 @@ class Assets {
 
 	fs::path AddModel(const fs::path &input) {
 		const auto index = FindSource(input);
-		const auto model = ResourceFile(sources_[index].directory, input);
+		const auto reference = AddFile(index, input);
+		const auto &model = files_.at(reference);
 
 		if (const auto found = models_.find(model); found != models_.end()) {
 			return found->second;
 		}
-
-		const auto reference = AddFile(index, model);
 
 		for (const auto &file : AssetDependencies::ModelFiles(model)) {
 			AddFile(index, file);
@@ -292,10 +291,14 @@ class Assets {
 
 	fs::path AddAnimationClip(const fs::path &input) {
 		const auto reference = AddFile(FindSource(input), input);
-		AnimationClipComponent clip;
-		std::string error;
-		if (!AnimationClipAsset::Load(files_.at(reference), clip, error))
-			throw std::runtime_error(error);
+		const auto &file = files_.at(reference);
+		if (!animationClips_.contains(file)) {
+			AnimationClipComponent clip;
+			std::string error;
+			if (!AnimationClipAsset::Load(file, clip, error))
+				throw std::runtime_error(error);
+			animationClips_.insert(file);
+		}
 		return reference;
 	}
 
@@ -343,25 +346,36 @@ class Assets {
 	/// <param name="path">依存ファイルの絶対パス</param>
 	/// <returns>パッケージ基準の参照</returns>
 	fs::path AddFile(std::size_t index, const fs::path &path) {
+		// リンク検査を省略できるのは、同じ取得元と検査済みの生パスの組だけ。
+		const auto key = std::pair{index, path.native()};
+		if (const auto found = registeredFiles_.find(key);
+		    found != registeredFiles_.end()) {
+			return found->second;
+		}
+
 		auto &source = sources_[index];
 		const auto file = ResourceFile(source.directory, path);
 		const auto relative =
 		    source.output / PathUtils::RelativeInside(source.directory, file);
 		const auto [found, inserted] = files_.try_emplace(relative, file);
 
-		if (!inserted && !fs::equivalent(found->second, file)) {
+		if (!inserted && found->second.native() != file.native() &&
+		    !fs::equivalent(found->second, file)) {
 			throw std::runtime_error("Asset output paths conflict: " +
 			                         PathUtils::ToUtf8(relative));
 		}
 
 		source.used = true;
+		registeredFiles_.emplace(key, relative);
 		return relative;
 	}
 
 	std::vector<AssetSource> sources_;
 	std::map<fs::path, fs::path, PathLess> files_, models_;
+	std::map<std::pair<std::size_t, fs::path::string_type>, fs::path> registeredFiles_;
 	std::map<fs::path, unsigned, PathLess> textures_;
 	std::set<fs::path, PathLess> scripts_;
+	std::set<fs::path, PathLess> animationClips_;
 	std::map<fs::path, std::uint16_t, PathLess> audioChannels_;
 };
 
