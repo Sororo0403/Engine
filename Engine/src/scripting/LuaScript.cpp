@@ -8,6 +8,7 @@
 #include "scripting/ScriptMessage.h"
 #include "ui/UIInput.h"
 #include <algorithm>
+#include <charconv>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
@@ -381,6 +382,35 @@ bool LuaScript::Read(const std::filesystem::path &path, std::string &source,
 bool LuaScript::Validate(std::string_view source, std::string &error) {
 	LuaScriptProgram program;
 	return Compile(source, "Script", program, error);
+}
+
+int LuaScript::FindErrorLine(std::string_view name, std::string_view error) {
+	if (name.empty())
+		return 0;
+
+	std::string prefix;
+	if (name.size() >= LUA_IDSIZE) {
+		// Luaは長いファイル名を末尾56バイトと省略記号で表す。
+		constexpr std::string_view ellipsis = "...";
+		prefix = ellipsis;
+		prefix += name.substr(name.size() - (LUA_IDSIZE - 1 - ellipsis.size()));
+	} else {
+		prefix = name;
+	}
+	prefix += ':';
+
+	for (auto offset = error.find(prefix); offset != std::string_view::npos;
+	     offset = error.find(prefix, offset + prefix.size())) {
+		const auto number = error.substr(offset + prefix.size());
+		int line = 0;
+		const auto *end = number.data() + number.size();
+		const auto parsed = std::from_chars(number.data(), end, line);
+		if (parsed.ec == std::errc{} && parsed.ptr != end &&
+		    *parsed.ptr == ':' && line > 0)
+			return line;
+	}
+
+	return 0;
 }
 
 bool LuaScript::Compile(std::string_view source, std::string_view name,

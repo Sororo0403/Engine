@@ -13,6 +13,11 @@ class ImGuiSystem;
 /// </summary>
 class ConsolePanel {
   public:
+	struct ScriptEditRequest {
+		std::filesystem::path path;
+		std::string diagnostic;
+	};
+
 	/// <summary>
 	/// Consoleを開き、次の描画時にフォーカスを移す
 	/// </summary>
@@ -23,8 +28,8 @@ class ConsolePanel {
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
 	/// <param name="canEditScript">ログに対応するLuaファイルを開けるか</param>
-	/// <returns>編集するLuaファイル。操作がなければ空</returns>
-	std::filesystem::path Draw(const ImGuiSystem &ui, bool canEditScript = false);
+	/// <returns>編集するLuaファイルと診断。操作がなければ空</returns>
+	ScriptEditRequest Draw(const ImGuiSystem &ui, bool canEditScript = false);
 
   private:
 	/// <summary>

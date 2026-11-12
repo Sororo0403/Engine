@@ -91,6 +91,14 @@ class LuaScript {
 	static bool Validate(std::string_view source, std::string &error);
 
 	/// <summary>
+	/// 指定したチャンクのエラー位置を取得する
+	/// </summary>
+	/// <param name="name">コンパイル時に渡したチャンク名</param>
+	/// <param name="error">Luaのエラーを含むメッセージ</param>
+	/// <returns>1から始まる行番号。該当箇所がなければ0</returns>
+	static int FindErrorLine(std::string_view name, std::string_view error);
+
+	/// <summary>
 	/// テキストをコンパイルし、実行しない不変のプログラムへ変換する
 	/// </summary>
 	/// <param name="source">Luaテキスト</param>

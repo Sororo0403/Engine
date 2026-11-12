@@ -33,6 +33,28 @@ std::filesystem::path FindScriptCopy(const std::filesystem::path &source) {
 		}
 	}
 }
+
+/// <summary>
+/// Luaの行番号を入力欄のUTF-8バイト位置に変換し、キャレットを移す
+/// </summary>
+int JumpToLine(ImGuiInputTextCallbackData *data) {
+	auto &line = *static_cast<int *>(data->UserData);
+	const std::string_view code(data->Buf, data->BufTextLen);
+	std::size_t start = 0;
+	for (; line > 1; --line) {
+		const auto newline = code.find_first_of("\r\n", start);
+		if (newline == std::string_view::npos)
+			break;
+		start = newline + 1;
+		if (start < code.size() && (code[start] == '\r' || code[start] == '\n') &&
+		    code[start] != code[newline])
+			++start;
+	}
+	data->CursorPos = data->SelectionStart =
+	    data->SelectionEnd = static_cast<int>(start);
+	line = 0;
+	return 0;
+}
 } // namespace
 
 bool ScriptEditorDialog::ShowCreate(const std::filesystem::path &assets,
@@ -54,6 +76,7 @@ bool ScriptEditorDialog::ShowCreate(const std::filesystem::path &assets,
 		creating_ = true;
 		saveConflict_ = false;
 		confirmation_ = Confirmation::NONE;
+		pendingLine_ = 0;
 		++inputRevision_;
 		opening_ = true;
 		error.clear();
@@ -65,7 +88,8 @@ bool ScriptEditorDialog::ShowCreate(const std::filesystem::path &assets,
 }
 
 bool ScriptEditorDialog::ShowEdit(const std::filesystem::path &path,
-                                  std::string &error) {
+                                  std::string &error,
+                                  std::string_view diagnostic) {
 	std::string source;
 	if (!LuaScript::Read(path, source, error))
 		return false;
@@ -77,6 +101,13 @@ bool ScriptEditorDialog::ShowEdit(const std::filesystem::path &path,
 	creating_ = false;
 	saveConflict_ = false;
 	confirmation_ = Confirmation::NONE;
+	pendingLine_ = 0;
+	if (!diagnostic.empty()) {
+		auto absolute = PathUtils::ResolveFromExecutable(path);
+		absolute.make_preferred();
+		pendingLine_ = LuaScript::FindErrorLine(PathUtils::ToUtf8(absolute),
+		                                       diagnostic);
+	}
 	++inputRevision_;
 	opening_ = true;
 	error.clear();
@@ -91,6 +122,7 @@ void ScriptEditorDialog::ReloadFromDisk() {
 	source_ = current;
 	original_ = std::move(current);
 	saveConflict_ = false;
+	pendingLine_ = 0;
 	++inputRevision_;
 }
 
@@ -146,12 +178,24 @@ ScriptEditorDialog::Result ScriptEditorDialog::Draw(const ImGuiSystem &ui) {
 		ui.Text(PathUtils::ToUtf8(path_));
 	const float height =
 	    (std::max)(160.0f, ImGui::GetContentRegionAvail().y - 105.0f);
-	ImGui::InputTextMultiline("Code", &source_, {-1, height},
-	                          ImGuiInputTextFlags_AllowTabInput);
+	ImGuiInputTextFlags flags = ImGuiInputTextFlags_AllowTabInput;
+	if (pendingLine_ > 0 && !confirming) {
+		ImGui::SetKeyboardFocusHere();
+		flags |= ImGuiInputTextFlags_CallbackAlways;
+	}
+	const auto codeId = ImGui::GetID("Code");
+	ImGui::InputTextMultiline("Code", &source_, {-1, height}, flags, JumpToLine,
+	                          &pendingLine_);
+	if ((flags & ImGuiInputTextFlags_CallbackAlways) && pendingLine_ == 0) {
+		if (auto *state = ImGui::GetInputTextState(codeId))
+			state->CursorFollow = true;
+	}
 	ImGui::PopID();
 	if (ui.Button("Check Syntax")) {
 		if (LuaScript::Validate(source_, error_))
 			error_ = "Syntax OK";
+		else
+			pendingLine_ = LuaScript::FindErrorLine("Script", error_);
 	}
 
 	ui.SameLine();

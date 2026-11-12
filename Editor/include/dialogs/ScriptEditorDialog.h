@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <string>
+#include <string_view>
 class ImGuiSystem;
 
 /// <summary>
@@ -24,8 +25,10 @@ class ScriptEditorDialog {
 	/// </summary>
 	/// <param name="path">実行ファイル基準または絶対参照</param>
 	/// <param name="error">失敗理由</param>
+	/// <param name="diagnostic">開いたときに表示位置を合わせるLuaエラー</param>
 	/// <returns>true:表示予約成功 false:読み込み失敗</returns>
-	bool ShowEdit(const std::filesystem::path &path, std::string &error);
+	bool ShowEdit(const std::filesystem::path &path, std::string &error,
+	              std::string_view diagnostic = {});
 	/// <summary>
 	/// 作成・編集ダイアログを表示する。構文エラーと外部変更時は元ファイルを保持する
 	/// </summary>
@@ -52,6 +55,7 @@ class ScriptEditorDialog {
 	std::filesystem::path assets_, folder_, path_, saved_;
 	std::string name_, source_, original_, error_;
 	std::uint32_t inputRevision_ = 0;
+	int pendingLine_ = 0;
 	bool opening_ = false, creating_ = false;
 	bool saveConflict_ = false;
 	Confirmation confirmation_ = Confirmation::NONE;

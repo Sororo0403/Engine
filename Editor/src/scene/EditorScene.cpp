@@ -776,7 +776,7 @@ bool EditorScene::Update(float deltaTime) {
 		}
 
 		const auto &inspectorScript = inspectorPanel_.GetScriptEditRequest();
-		const auto &scriptEdit = !consoleScript.empty() ? consoleScript
+		const auto &scriptEdit = !consoleScript.path.empty() ? consoleScript.path
 		                         : !inspectorScript.empty() ? inspectorScript
 		                                                   : assetsPanel_.GetScriptEditRequest();
 		if ((assetsPanel_.IsScriptCreateRequested() || !scriptEdit.empty()) &&
@@ -786,7 +786,8 @@ bool EditorScene::Update(float deltaTime) {
 			std::string error;
 			const bool opened =
 			    !scriptEdit.empty()
-			        ? scriptEditorDialog_.ShowEdit(scriptEdit, error)
+			        ? scriptEditorDialog_.ShowEdit(scriptEdit, error,
+			                                       consoleScript.diagnostic)
 			        : scriptEditorDialog_.ShowCreate(
 			              assets_.GetRootDirectory(),
 			              assetsPanel_.GetOpenDirectory(), error);
@@ -4946,7 +4947,8 @@ void EditorScene::UpdateDialogs() {
 			if (!errorScriptPath_.empty()) {
 				if (ui_.Button("Edit Script")) {
 					std::string error;
-					if (scriptEditorDialog_.ShowEdit(errorScriptPath_, error)) {
+					if (scriptEditorDialog_.ShowEdit(errorScriptPath_, error,
+					                                 errorMessage_)) {
 						ui_.CloseCurrentPopup();
 						stage_ = DialogStage::EDIT_SCRIPT;
 						ui_.EndPopup();

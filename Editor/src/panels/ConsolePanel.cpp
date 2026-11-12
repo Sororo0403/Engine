@@ -77,8 +77,8 @@ std::string ConsolePanel::BuildFilteredText() const {
 	return text;
 }
 
-std::filesystem::path ConsolePanel::Draw(const ImGuiSystem &ui,
-                                        bool canEditScript) {
+ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
+                                                   bool canEditScript) {
 	if (!open_) {
 		return {};
 	}
@@ -204,7 +204,7 @@ std::filesystem::path ConsolePanel::Draw(const ImGuiSystem &ui,
 	    "ConsoleDetails", {0.0f, 0.0f}, ImGuiChildFlags_Borders,
 	    ImGuiWindowFlags_HorizontalScrollbar);
 
-	std::filesystem::path script;
+	ScriptEditRequest script;
 	if (drawDetails) {
 		if (selected != entries_.end()) {
 			if (ui.Button("Copy Message")) {
@@ -217,7 +217,7 @@ std::filesystem::path ConsolePanel::Draw(const ImGuiSystem &ui,
 				ui.SameLine();
 				ui.BeginDisabled(!canEditScript);
 				if (ui.Button("Edit Script")) {
-					script = selected->sourcePath;
+					script = {selected->sourcePath, selected->message};
 				}
 				ui.EndDisabled();
 				ImGui::SetItemTooltip("%s",
