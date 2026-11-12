@@ -255,6 +255,13 @@ class SceneSimulation {
 	}
 
 	/// <summary>
+	/// 現在のシーンの開始時データに物体があるか確認する
+	/// </summary>
+	bool HasSourceObject(SceneObjectId id) const {
+		return restartSource_ && restartSource_->Contains(id);
+	}
+
+	/// <summary>
 	/// 再生状態を確認する
 	/// </summary>
 	/// <returns>true:再生中 false:停止中</returns>

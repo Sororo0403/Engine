@@ -195,6 +195,13 @@ class EditorPlaySession {
 	}
 
 	/// <summary>
+	/// 現在の再生シーンの開始時データに物体があるか確認する
+	/// </summary>
+	bool HasSourceObject(SceneObjectId id) const {
+		return simulation_.HasSourceObject(id);
+	}
+
+	/// <summary>
 	/// 読み込み後の処理に失敗した遷移先と原因の物体を取得する
 	/// </summary>
 	std::optional<SceneSimulation::FailedSceneDestination>

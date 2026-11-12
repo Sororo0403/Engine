@@ -4913,24 +4913,31 @@ void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject) {
 		return;
 	}
 
-	const bool canReveal = playUsesEditingScene_ && session.IsInitialScene();
 	const auto *loaded = session.GetLoadedScenePath();
+	bool isEditingScene = playUsesEditingScene_ && !loaded;
 	auto scenePath = loaded ? *loaded : playInitialScenePath_;
 	if (!scenePath.empty()) {
 		message += "\nPlay scene: " + PathUtils::ToUtf8(scenePath);
 		const auto &current = document_.GetFilePath();
-		if (!current.empty() && PathUtils::IsSameFile(current, scenePath)) {
+		isEditingScene =
+		    !current.empty() && PathUtils::IsSameFile(current, scenePath);
+		if (isEditingScene) {
 			scenePath.clear();
 		}
 	}
+	const auto sourceObject =
+	    session.HasSourceObject(invalidObject) ? invalidObject : 0;
 	const auto *object = session.GetScene().FindObject(invalidObject);
 	auto scriptPath = object && object->script
 	                      ? object->script->asset
 	                      : std::filesystem::path{};
 	playMode_.Stop();
-	ShowError(std::move(message), canReveal ? invalidObject : 0,
+	ShowError(std::move(message), isEditingScene ? sourceObject : 0,
 	          std::move(scriptPath));
 	errorScenePath_ = std::move(scenePath);
+	if (!errorScenePath_.empty()) {
+		errorObjectId_ = sourceObject;
+	}
 }
 
 void EditorScene::SwitchProject(const std::filesystem::path &folder,
