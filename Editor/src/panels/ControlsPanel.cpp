@@ -1390,6 +1390,8 @@ void ControlsPanel::Draw() {
 	        {"View > Play State",
 	         "Inspect the live character position, vertical velocity and "
 	         "grounded state, plus the rendered camera pose and lens. "
+	         "Copy Summary copies the active scene, playback state and shared "
+	         "Lua data for debugging. "
 	         "Respawns counts successful fall recoveries; Last Respawn shows "
 	         "the most recent recovery position. Both reset on Start, Restart "
 	         "and Stop, and are unchanged by failed updates. The "

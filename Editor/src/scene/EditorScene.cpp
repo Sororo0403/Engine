@@ -432,7 +432,7 @@ bool EditorScene::Update(float deltaTime) {
 
 		ui_.BeginDisabled(IsBusy());
 		const auto stateRequest =
-		    playStatePanel_.Draw(ui_, playMode_.GetSession());
+		    playStatePanel_.Draw(ui_, playMode_.GetSession(), playInitialScenePath_);
 		ui_.EndDisabled();
 
 		if (!IsBusy() && playMode_.IsPlaying() && playSelectionActive_ &&
@@ -484,7 +484,7 @@ bool EditorScene::Update(float deltaTime) {
 
 	controlsPanel_.Draw();
 	const auto consoleScript = consolePanel_.Draw(ui_, !IsBusy());
-	playStatePanel_.Draw(ui_, playMode_.GetSession());
+	playStatePanel_.Draw(ui_, playMode_.GetSession(), playInitialScenePath_);
 
 	const bool wasBusy = IsBusy();
 

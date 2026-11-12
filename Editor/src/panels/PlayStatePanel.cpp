@@ -2,6 +2,7 @@
 
 #include "gameplay/EditorPlaySession.h"
 #include "graphics/ui/ImGuiSystem.h"
+#include "platform/windows/PathUtils.h"
 #include <format>
 #include <imgui.h>
 
@@ -15,8 +16,9 @@ void PlayStatePanel::Reset() {
 	focusRequested_ = false;
 }
 
-PlayStatePanel::Request PlayStatePanel::Draw(const ImGuiSystem &ui,
-                                             const EditorPlaySession &session) {
+PlayStatePanel::Request PlayStatePanel::Draw(
+    const ImGuiSystem &ui, const EditorPlaySession &session,
+    const std::filesystem::path &initialScenePath) {
 	if (!open_) {
 		return {};
 	}
@@ -34,24 +36,47 @@ PlayStatePanel::Request PlayStatePanel::Draw(const ImGuiSystem &ui,
 		return {};
 	}
 
-	ui.Text(!session.IsPlaying() ? "Stopped"
-	        : session.IsPaused() ? "Paused"
-	                             : "Running");
-
 	if (!session.IsPlaying()) {
+		ui.Text("Stopped");
 		ImGui::End();
 		return {};
 	}
 
-	ui.Text(
-	    std::format("Simulated Time: {:.3f} s", session.GetElapsedSeconds()));
-	ui.Text(std::format("Simulation Frames: {}",
-	                    session.GetSimulationFrameCount()));
+	const auto *loaded = session.GetLoadedScenePath();
+	const auto &scenePath = loaded ? *loaded : initialScenePath;
+	const auto sceneName = scenePath.empty() ? "Untitled Scene"
+	                                        : PathUtils::ToUtf8(scenePath.filename());
+	const char *status = session.IsPaused()       ? "Editor Paused"
+	                     : session.IsGamePaused() ? "Game Paused"
+	                                              : "Running";
+	const auto time =
+	    std::format("Simulated Time: {:.3f} s", session.GetElapsedSeconds());
+	const auto frames =
+	    std::format("Simulation Frames: {}", session.GetSimulationFrameCount());
+	const auto messages = std::format("Queued Script Messages: {}",
+	                                  session.GetPendingScriptMessages());
+	ui.Text("Scene: " + sceneName);
+	if (!scenePath.empty()) {
+		ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(scenePath).c_str());
+	}
+	ui.Text(status);
+	ui.Text(time);
+	ui.Text(frames);
+	ui.Text(messages);
 
-	ui.Text(std::format("Queued Script Messages: {}",
-	                    session.GetPendingScriptMessages()));
+	auto data = session.GetSharedScriptData();
+	if (data.empty())
+		data = "{}";
+	if (ui.Button("Copy Summary")) {
+		const auto text = std::format(
+		    "Scene: {}\n{}\n{}\n{}\nPlayback Speed: {:g}x\n{}\n"
+		    "Shared Script Data:\n{}",
+		    scenePath.empty() ? sceneName : PathUtils::ToUtf8(scenePath),
+		    status, time, frames, session.GetTimeScale(), messages,
+		    data);
+		ImGui::SetClipboardText(text.c_str());
+	}
 	if (ImGui::CollapsingHeader("Shared Script Data")) {
-		const auto data = session.GetSharedScriptData();
 		ImGui::TextWrapped("%.*s", static_cast<int>(data.size()), data.data());
 	}
 

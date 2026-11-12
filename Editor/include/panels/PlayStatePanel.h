@@ -1,6 +1,7 @@
 #pragma once
 
 #include "scene/SceneObjectId.h"
+#include <filesystem>
 
 class ImGuiSystem;
 class EditorPlaySession;
@@ -33,8 +34,10 @@ class PlayStatePanel {
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
 	/// <param name="session">参照する再生セッション。シーンと時間制御は変更しない</param>
+	/// <param name="initialScenePath">Play開始時のシーン。未保存なら空</param>
 	/// <returns>選択先のIDとフレーム指定。操作なし・停止中はIDが0</returns>
-	Request Draw(const ImGuiSystem &ui, const EditorPlaySession &session);
+	Request Draw(const ImGuiSystem &ui, const EditorPlaySession &session,
+	             const std::filesystem::path &initialScenePath);
 
   private:
 	bool open_ = false;
