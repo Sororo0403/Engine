@@ -598,6 +598,7 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 
 		if (!continuing) {
 			respawnCount_ = 0;
+			characterAirflow_ = {};
 			lastRespawnPosition_.reset();
 		}
 
@@ -639,6 +640,7 @@ void SceneSimulation::Stop() {
 	collisions_ = CollisionEvents{};
 	scene_.Clear();
 	character_ = camera_ = 0;
+	characterAirflow_ = {};
 	updateOrder_.clear();
 	followPoses_.clear();
 	orbitStates_.clear();
@@ -892,7 +894,9 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 				    !SceneHierarchy::GetWorldTransform(working, id,
 				                                       transform) ||
 				    !next.SynchronizeWorldMatrix(transform.matrix, world) ||
-				    !next.Update(seconds, input, world))
+				    !next.Update(seconds, input, world,
+				                 {characterAirflow_[0], characterAirflow_[1],
+				                  characterAirflow_[2]}))
 					return false;
 				if (object->respawn && next.GetTransform().translation.y <
 				                           object->respawn->minimumY) {
@@ -1050,6 +1054,7 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 		if (respawned) {
 			++respawnCount_;
 			lastRespawnPosition_ = next.GetTransform().translation;
+			characterAirflow_ = {};
 		}
 
 		return true;

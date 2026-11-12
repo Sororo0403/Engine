@@ -123,7 +123,8 @@ bool SceneScripts::Run(
     SceneParticles *particles, SceneAnimators *animators,
     const UIInput *viewport, const CharacterRuntimeState *character,
     const CameraTransitionView *transitionView,
-    std::map<SceneObjectId, bool> *clipPauses) {
+    std::map<SceneObjectId, bool> *clipPauses,
+    std::array<float, 3> *characterAirflow) {
 	SceneObjectId current = 0;
 
 	try {
@@ -172,7 +173,7 @@ bool SceneScripts::Run(
 			        sharedState ? &game : nullptr, &mailbox_, message, actions,
 			        animations, &animationBudget, particles, &particleBudget,
 			        animators, &animatorBudget, viewport, character,
-			        transitionView, clipPauses))
+			        transitionView, clipPauses, characterAirflow))
 				throw std::runtime_error(std::format(
 				    "{} [{}]: {}", PathUtils::ToUtf8(instance.settings.asset),
 				    callback, error));

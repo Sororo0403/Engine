@@ -1,4 +1,5 @@
 #include "gameplay/CharacterController.h"
+#include "math/MathUtils.h"
 
 #include "math/TransformUtils.h"
 #include "physics/CollisionWorld.h"
@@ -64,6 +65,7 @@ bool CharacterController::Initialize(const DirectX::XMFLOAT4X4 &worldMatrix,
 	collider_ = collider;
 	settings_ = settings;
 	verticalVelocity_ = 0.0f;
+	windVelocity_ = {};
 	accumulatedTime_ = 0.0;
 	jumpPending_ = false;
 	coyoteRemaining_ = 0.0;
@@ -101,9 +103,14 @@ bool CharacterController::Teleport(const DirectX::XMFLOAT3 &position,
 }
 
 bool CharacterController::Update(float deltaTime, const CharacterInput &input,
-                                 const CollisionWorld &world) {
+                                 const CollisionWorld &world,
+                                 const DirectX::XMFLOAT3 &airflow) {
 	if (!initialized_ || !std::isfinite(deltaTime) || deltaTime < 0.0f ||
-	    !std::isfinite(input.moveX) || !std::isfinite(input.moveZ)) {
+	    !std::isfinite(input.moveX) || !std::isfinite(input.moveZ) ||
+	    !MathUtils::IsFinite(airflow) ||
+	    std::abs(airflow.x) > CharacterSettings::kMaximumSpeed ||
+	    std::abs(airflow.y) > CharacterSettings::kMaximumSpeed ||
+	    std::abs(airflow.z) > CharacterSettings::kMaximumSpeed) {
 		return false;
 	}
 
@@ -113,7 +120,7 @@ bool CharacterController::Update(float deltaTime, const CharacterInput &input,
 	candidate.accumulatedTime_ += (std::min)(deltaTime, kMaximumFrameSeconds);
 
 	while (candidate.accumulatedTime_ >= kFixedStepSeconds) {
-		if (!candidate.Step(controls, world)) {
+		if (!candidate.Step(controls, world, airflow)) {
 			return false;
 		}
 
@@ -174,7 +181,8 @@ bool CharacterController::TryStepUp(const CollisionWorld &world,
 }
 
 bool CharacterController::Step(const CharacterInput &input,
-                               const CollisionWorld &world) {
+                               const CollisionWorld &world,
+                               const DirectX::XMFLOAT3 &airflow) {
 	CollisionMoveResult ground;
 	grounded_ = verticalVelocity_ <= 0.0f &&
 	            world.Move(collider_, worldMatrix_,
@@ -203,10 +211,12 @@ bool CharacterController::Step(const CharacterInput &input,
 		jumpBufferRemaining_ = 0.0;
 	}
 
-	const bool canSnap = grounded_ && settings_.groundSnapDistance > 0;
+	const bool canSnap =
+	    grounded_ && airflow.y <= 0 && settings_.groundSnapDistance > 0;
 	const float step = static_cast<float>(kFixedStepSeconds);
 	// 押下は固定更新1回分だけ消費し、後続の更新には長押しを渡す。
-	const bool canFloat = !grounded_ && input.jumpHeld && !jumpPending_ &&
+	const bool canFloat = !grounded_ && airflow.y == 0 && input.jumpHeld &&
+	                      !jumpPending_ &&
 	                      airborneSeconds_ >= settings_.airFloatDelay &&
 	                      airFloatUsedSeconds_ < settings_.airFloatDuration;
 	jumpPending_ = false;
@@ -221,15 +231,37 @@ bool CharacterController::Step(const CharacterInput &input,
 		    (std::max)(-settings_.terminalSpeed,
 		               verticalVelocity_ - settings_.gravity * step);
 	}
+	// 風への追従を固定刻みで積分し、流された距離も通常の衝突判定へ渡す。
+	const bool affected = !grounded_ || airflow.y > 0;
+	if (!affected) {
+		windVelocity_ = {};
+	}
+	const float response = -std::expm1(-4.f * step);
+	windVelocity_.x +=
+	    ((affected ? airflow.x : 0.f) - windVelocity_.x) * response;
+	windVelocity_.z +=
+	    ((affected ? airflow.z : 0.f) - windVelocity_.z) * response;
+	if (affected && airflow.y != 0) {
+		verticalVelocity_ += (airflow.y - verticalVelocity_) * response;
+		verticalVelocity_ =
+		    std::clamp(verticalVelocity_, -settings_.terminalSpeed,
+		               settings_.terminalSpeed);
+		if (verticalVelocity_ > 0) {
+			grounded_ = false;
+			coyoteRemaining_ = 0;
+		}
+	}
 	const double magnitude =
 	    (std::max)(1.0, std::hypot(static_cast<double>(input.moveX),
 	                               static_cast<double>(input.moveZ)));
 	const DirectX::XMFLOAT3 requested{
-	    static_cast<float>(input.moveX / magnitude * settings_.moveSpeed *
-	                       step),
+	    static_cast<float>(
+	        (input.moveX / magnitude * settings_.moveSpeed + windVelocity_.x) *
+	        step),
 	    verticalVelocity_ * step,
-	    static_cast<float>(input.moveZ / magnitude * settings_.moveSpeed *
-	                       step)};
+	    static_cast<float>(
+	        (input.moveZ / magnitude * settings_.moveSpeed + windVelocity_.z) *
+	        step)};
 	CollisionMoveResult movement;
 
 	if (!world.Move(collider_, worldMatrix_, requested, movement)) {

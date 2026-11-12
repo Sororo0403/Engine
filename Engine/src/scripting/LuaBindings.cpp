@@ -1,4 +1,5 @@
 #include "LuaBindings.h"
+#include "gameplay/CharacterRuntimeState.h"
 #include "gameplay/SceneCameraUtils.h"
 #include "graphics/camera/Camera.h"
 #include "math/Ray.h"
@@ -33,6 +34,7 @@ enum class Op {
 	SET_CHARACTER_SPEEDS,
 	CHARACTER_INPUT_ENABLED,
 	SET_CHARACTER_INPUT_ENABLED,
+	SET_CHARACTER_AIRFLOW,
 	FIND_CHILD,
 	REFERENCE,
 	ACTIVE,
@@ -107,12 +109,11 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 		const bool mutation =
 		    op == Op::DESTROY || op == Op::SET_NAME || op == Op::SET_ACTIVE ||
 		    op == Op::SET_PARENT || op == Op::SET_CHECKPOINT ||
-		    op == Op::SET_CHARACTER_SPEEDS || op == Op::SET_CHARACTER_INPUT_ENABLED ||
-		    op == Op::SET_MESH_VISIBLE ||
-		    op == Op::SET_MESH_TINT || op == Op::SET_MESH_UV_OFFSET ||
-		    op == Op::SET_MESH_RADIAL_REVEAL ||
-		    op == Op::SET_BACKGROUND_MONOCHROME ||
-		    op == Op::SET_CAMERA ||
+		    op == Op::SET_CHARACTER_SPEEDS || op == Op::SET_CHARACTER_AIRFLOW ||
+		    op == Op::SET_CHARACTER_INPUT_ENABLED ||
+		    op == Op::SET_MESH_VISIBLE || op == Op::SET_MESH_TINT ||
+		    op == Op::SET_MESH_UV_OFFSET || op == Op::SET_MESH_RADIAL_REVEAL ||
+		    op == Op::SET_BACKGROUND_MONOCHROME || op == Op::SET_CAMERA ||
 		    op == Op::SET_CAMERA_LENS || op == Op::SET_CAMERA_FOV ||
 		    op == Op::SET_POSITION || op == Op::SET_LOCAL_POSITION ||
 		    op == Op::SET_ROTATION || op == Op::LOOK_AT ||
@@ -284,6 +285,19 @@ bool Perform(LuaInternal::Call &call, Op op, SceneObjectId id, const char *text,
 
 			break;
 		}
+		case Op::SET_CHARACTER_AIRFLOW:
+			if (!call.characterAirflow || !call.character ||
+			    call.character->objectId != id)
+				throw std::runtime_error(
+				    "Airflow requires the active Character Controller.");
+			for (int i = 0; i < 3; ++i) {
+				if (!std::isfinite(numbers[i]) ||
+				    std::abs(numbers[i]) > CharacterSettings::kMaximumSpeed)
+					throw std::runtime_error(
+					    "Character airflow exceeds the supported speed.");
+			}
+			*call.characterAirflow = {numbers[0], numbers[1], numbers[2]};
+			break;
 		case Op::REFERENCE:
 			if (object->script)
 				for (const auto &[name, target] : object->script->references) {
@@ -918,6 +932,7 @@ int LuaInternal::OpenEnvironment(lua_State *state, Call &call) {
 	Method(state, "set_checkpoint", Op::SET_CHECKPOINT);
 	Method(state, "get_character_speeds", Op::CHARACTER_SPEEDS);
 	Method(state, "set_character_speeds", Op::SET_CHARACTER_SPEEDS);
+	Method(state, "set_character_airflow", Op::SET_CHARACTER_AIRFLOW);
 	Method(state, "is_character_input_enabled", Op::CHARACTER_INPUT_ENABLED);
 	Method(state, "set_character_input_enabled", Op::SET_CHARACTER_INPUT_ENABLED);
 	Method(state, "find_child", Op::FIND_CHILD);

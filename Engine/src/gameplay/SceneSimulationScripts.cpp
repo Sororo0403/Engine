@@ -12,11 +12,14 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
                                    SceneObjectId *invalidObject,
                                    std::span<const GameActionState> actions,
                                    const UIInput *viewport) {
-	if (!scripts_.HasInstances())
+	if (!scripts_.HasInstances()) {
+		characterAirflow_ = {};
 		return true;
+	}
 	Scene candidate;
 	candidate.CopyFrom(scene_);
 	auto scripts = scripts_;
+	std::array<float, 3> airflow{};
 	auto physics = physics_;
 	auto animations = animations_;
 	auto particles = particles_;
@@ -37,7 +40,8 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 	                  : collisions_.GetEvents(),
 	        &audio, &requestedScene, &game, actions, &animations, &particles,
 	        &animators, viewport, character ? &*character : nullptr,
-	        cameraTransition_ ? &transitionView : nullptr, &clipPauses))
+	        cameraTransition_ ? &transitionView : nullptr, &clipPauses,
+	        &airflow))
 		return false;
 	std::string serialized;
 
@@ -114,6 +118,7 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 			pendingScene_ = {std::move(requestedScene), {}};
 		sharedScriptData_ = std::move(game);
 		scripts_ = std::move(scripts);
+		characterAirflow_ = airflow;
 		physics_ = std::move(physics);
 		animations_ = std::move(animations);
 		particles_ = std::move(particles);
@@ -151,5 +156,6 @@ bool SceneSimulation::ApplyScripts(float seconds, const CharacterInput &input,
 		next.scripts_.QueueTriggers(generated);
 	applyClipPauses(next);
 	Adopt(next);
+	characterAirflow_ = airflow;
 	return true;
 }

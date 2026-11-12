@@ -50,6 +50,7 @@ void SceneSimulation::CopyFrom(const SceneSimulation &source) {
 	scripts_ = source.scripts_;
 	ui_ = source.ui_;
 	character_ = source.character_;
+	characterAirflow_ = source.characterAirflow_;
 	camera_ = source.camera_;
 	updateOrder_ = source.updateOrder_;
 	followPoses_ = source.followPoses_;
@@ -97,6 +98,7 @@ void SceneSimulation::Adopt(SceneSimulation &source) {
 	scripts_ = std::move(source.scripts_);
 	ui_ = std::move(source.ui_);
 	character_ = source.character_;
+	characterAirflow_ = source.characterAirflow_;
 	camera_ = source.camera_;
 	updateOrder_ = std::move(source.updateOrder_);
 	followPoses_ = std::move(source.followPoses_);
