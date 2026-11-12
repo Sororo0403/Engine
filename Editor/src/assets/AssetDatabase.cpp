@@ -182,16 +182,6 @@ bool AssetDatabase::Refresh() {
 		error_.clear();
 		return true;
 	} catch (const std::exception &error) {
-		models_.clear();
-		textures_.clear();
-		audioClips_.clear();
-		scenes_.clear();
-		projectScenes_.clear();
-		scripts_.clear();
-		animationClips_.clear();
-		prefabs_.clear();
-		gameConfigurations_.clear();
-		directories_.clear();
 		error_ = error.what();
 
 		Logger::Error(std::format("AssetDatabase::Refresh: {}", error_));

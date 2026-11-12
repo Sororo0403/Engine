@@ -25,7 +25,7 @@ class AssetDatabase {
 	/// <summary>
 	/// 配下のフォルダを含めてアセットの一覧を更新する
 	/// </summary>
-	/// <returns>true:成功 false:検索失敗。失敗時は一覧を空にする</returns>
+	/// <returns>true:成功 false:検索失敗。失敗時は最後に取得した一覧を保持する</returns>
 	bool Refresh();
 
 	/// <summary>

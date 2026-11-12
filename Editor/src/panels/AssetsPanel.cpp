@@ -250,14 +250,18 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		requestedDirectory_.clear();
 	}
 
-	if (!currentDirectory_.empty() &&
-	    std::none_of(
-	        directories.begin(), directories.end(), [&](const auto &directory) {
-		        return directory.lexically_relative(
-		                   assets.GetRootDirectory()) == currentDirectory_;
-	        })) {
-		// 更新で開いていたフォルダが消えた場合は、検索先自身へ戻る
-		OpenDirectory({});
+	auto visibleDirectory = currentDirectory_;
+	while (!visibleDirectory.empty() &&
+	       std::none_of(directories.begin(), directories.end(),
+	                    [&](const auto &directory) {
+		                    return directory.lexically_relative(
+		                               assets.GetRootDirectory()) == visibleDirectory;
+	                    })) {
+		visibleDirectory = visibleDirectory.parent_path();
+	}
+	if (visibleDirectory != currentDirectory_) {
+		// 更新で開いていたフォルダが消えた場合は、残っている親へ戻る。
+		OpenDirectory(std::move(visibleDirectory));
 	}
 
 	const auto acceptFolder = [&](const std::filesystem::path &directory) {
@@ -513,7 +517,8 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	};
 
 	if (!assets.GetError().empty()) {
-		ui.Text(assets.GetError());
+		ui.Text("Assets could not be updated. Try Refresh again.");
+		ImGui::TextWrapped("%s", assets.GetError().c_str());
 	}
 
 	if (!revealMessage_.empty()) {
