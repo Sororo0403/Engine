@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <filesystem>
 #include <string>
 
 /// <summary>
@@ -20,4 +21,5 @@ struct LogEntry {
 	LogLevel level = LogLevel::LOG_INFO;
 	std::string timestamp;
 	std::string message;
+	std::filesystem::path sourcePath;
 };

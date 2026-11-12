@@ -54,6 +54,21 @@
 #include <utility>
 #include <vector>
 
+namespace {
+/// <summary>
+/// Luaの初期化・実行エラーに対応するスクリプトを取得する
+/// </summary>
+std::filesystem::path FindFailedScript(const Scene &scene, SceneObjectId id,
+                                       std::string_view error) {
+	const auto *object = scene.FindObject(id);
+	if (object && object->script &&
+	    error.starts_with(std::format("Script object ID {}: ", id))) {
+		return object->script->asset;
+	}
+	return {};
+}
+} // namespace
+
 EditorScene::EditorScene(const EngineContext &context)
     : ui_(context.ui), input_(context.input), models_(context.models),
       materials_(context.render.GetMaterials()),
@@ -480,7 +495,7 @@ bool EditorScene::Update(float deltaTime) {
 	DrawGridSettings();
 
 	controlsPanel_.Draw();
-	consolePanel_.Draw(ui_);
+	const auto consoleScript = consolePanel_.Draw(ui_, !IsBusy());
 	playStatePanel_.Draw(ui_, playMode_.GetSession());
 
 	const bool wasBusy = IsBusy();
@@ -774,9 +789,10 @@ bool EditorScene::Update(float deltaTime) {
 			action = EditorAction::LOAD_GAME_SETTINGS;
 		}
 
-		const auto &scriptEdit = inspectorPanel_.GetScriptEditRequest().empty()
-		                             ? assetsPanel_.GetScriptEditRequest()
-		                             : inspectorPanel_.GetScriptEditRequest();
+		const auto &inspectorScript = inspectorPanel_.GetScriptEditRequest();
+		const auto &scriptEdit = !consoleScript.empty() ? consoleScript
+		                         : !inspectorScript.empty() ? inspectorScript
+		                                                   : assetsPanel_.GetScriptEditRequest();
 		if ((assetsPanel_.IsScriptCreateRequested() || !scriptEdit.empty()) &&
 		    !IsBusy() && action == EditorAction::NONE &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
@@ -5038,13 +5054,16 @@ void EditorScene::StartPlay(bool fromStartup, SceneObjectId cameraOverride) {
 	SceneObjectId invalidObject = 0;
 	if (!playMode_.Start(*scene, error, fallback, exportConfig_, &invalidObject,
 	                     cameraOverride)) {
-		ShowError(std::move(error), usesEditingScene ? invalidObject : 0);
+		auto scriptPath = FindFailedScript(*scene, invalidObject, error);
+		ShowError(std::move(error), usesEditingScene ? invalidObject : 0,
+		          std::move(scriptPath));
 		if (!usesEditingScene) {
 			errorScenePath_ = startup.GetFilePath();
 			errorMessage_ += "\nPlay scene: " + PathUtils::ToUtf8(errorScenePath_);
 			// 開いている編集シーンとIDが重複しても、起動シーンを開いてから選択する。
 			errorObjectId_ = scene->Contains(invalidObject) ? invalidObject : 0;
 		}
+		Logger::Error(errorMessage_, errorScriptPath_);
 		return;
 	}
 
@@ -5066,6 +5085,7 @@ void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject) {
 		const bool isEditingScene =
 		    !current.empty() && PathUtils::IsSameFile(current, path);
 		message += "\nDestination scene: " + PathUtils::ToUtf8(path);
+		Logger::Error(message);
 		playMode_.Stop();
 		ShowError(std::move(message), isEditingScene ? object : 0);
 		if (!isEditingScene) {
@@ -5089,10 +5109,8 @@ void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject) {
 	}
 	const auto sourceObject =
 	    session.HasSourceObject(invalidObject) ? invalidObject : 0;
-	const auto *object = session.GetScene().FindObject(invalidObject);
-	auto scriptPath = object && object->script
-	                      ? object->script->asset
-	                      : std::filesystem::path{};
+	auto scriptPath = FindFailedScript(session.GetScene(), invalidObject, reason);
+	Logger::Error(message, scriptPath);
 	playMode_.Stop();
 	ShowError(std::move(message), isEditingScene ? sourceObject : 0,
 	          std::move(scriptPath));

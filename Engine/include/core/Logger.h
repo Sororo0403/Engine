@@ -42,6 +42,11 @@ class Logger {
 	static void Error(std::string_view message);
 
 	/// <summary>
+	/// エラーと、その原因を確認できるファイルを直近ログに記録する
+	/// </summary>
+	static void Error(std::string_view message, const std::filesystem::path &sourcePath);
+
+	/// <summary>
 	/// 直近最大1,000件のログを、変更がある場合だけ出力順にコピーする
 	/// </summary>
 	/// <param name="revision">前回取得した版。初回は0。取得成功後に現在の版へ更新する</param>
@@ -61,7 +66,8 @@ class Logger {
 	/// </summary>
 	/// <param name="level">ログレベル</param>
 	/// <param name="message">UTF-8のメッセージ</param>
-	static void Write(LogLevel level, std::string_view message);
+	static void Write(LogLevel level, std::string_view message,
+	                  const std::filesystem::path &sourcePath = {});
 
   private:
 	inline static std::ofstream logFile_;

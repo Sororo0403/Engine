@@ -22,7 +22,9 @@ class ConsolePanel {
 	/// Consoleが開いている場合にログの一覧と操作用UIを描画する
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
-	void Draw(const ImGuiSystem &ui);
+	/// <param name="canEditScript">ログに対応するLuaファイルを開けるか</param>
+	/// <returns>編集するLuaファイル。操作がなければ空</returns>
+	std::filesystem::path Draw(const ImGuiSystem &ui, bool canEditScript = false);
 
   private:
 	/// <summary>

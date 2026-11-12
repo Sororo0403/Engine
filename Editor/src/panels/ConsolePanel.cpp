@@ -2,6 +2,7 @@
 
 #include "core/Logger.h"
 #include "graphics/ui/ImGuiSystem.h"
+#include "platform/windows/PathUtils.h"
 
 #include <algorithm>
 #include <format>
@@ -76,9 +77,10 @@ std::string ConsolePanel::BuildFilteredText() const {
 	return text;
 }
 
-void ConsolePanel::Draw(const ImGuiSystem &ui) {
+std::filesystem::path ConsolePanel::Draw(const ImGuiSystem &ui,
+                                        bool canEditScript) {
 	if (!open_) {
-		return;
+		return {};
 	}
 
 	ImGui::SetNextWindowSize({720.0f, 420.0f}, ImGuiCond_FirstUseEver);
@@ -91,7 +93,7 @@ void ConsolePanel::Draw(const ImGuiSystem &ui) {
 
 	if (!ImGui::Begin("Console", &open_)) {
 		ImGui::End();
-		return;
+		return {};
 	}
 
 	if (ui.Button("Clear Console")) {
@@ -202,12 +204,24 @@ void ConsolePanel::Draw(const ImGuiSystem &ui) {
 	    "ConsoleDetails", {0.0f, 0.0f}, ImGuiChildFlags_Borders,
 	    ImGuiWindowFlags_HorizontalScrollbar);
 
+	std::filesystem::path script;
 	if (drawDetails) {
 		if (selected != entries_.end()) {
 			if (ui.Button("Copy Message")) {
 				std::string text;
 				AppendClipboardMessage(text, selected->message);
 				ImGui::SetClipboardText(text.c_str());
+			}
+
+			if (PathUtils::HasExtension(selected->sourcePath, ".lua")) {
+				ui.SameLine();
+				ui.BeginDisabled(!canEditScript);
+				if (ui.Button("Edit Script")) {
+					script = selected->sourcePath;
+				}
+				ui.EndDisabled();
+				ImGui::SetItemTooltip("%s",
+				                      PathUtils::ToUtf8(selected->sourcePath).c_str());
 			}
 
 			ui.SameLine();
@@ -221,4 +235,5 @@ void ConsolePanel::Draw(const ImGuiSystem &ui) {
 
 	ImGui::EndChild();
 	ImGui::End();
+	return script;
 }

@@ -83,7 +83,13 @@ void Logger::Error(std::string_view message) {
 	Write(LogLevel::LOG_ERROR, message);
 }
 
-void Logger::Write(LogLevel level, std::string_view message) {
+void Logger::Error(std::string_view message, const std::filesystem::path &sourcePath) {
+	const std::scoped_lock lock(mutex_);
+	Write(LogLevel::LOG_ERROR, message, sourcePath);
+}
+
+void Logger::Write(LogLevel level, std::string_view message,
+                   const std::filesystem::path &sourcePath) {
 	const char *levelName = "";
 
 	switch (level) {
@@ -106,7 +112,7 @@ void Logger::Write(LogLevel level, std::string_view message) {
 	const std::string line = stream.str();
 
 	entries_.push_back(
-	    LogEntry{revision_ + 1, level, timestamp, std::string(message)});
+	    LogEntry{revision_ + 1, level, timestamp, std::string(message), sourcePath});
 
 	if (entries_.size() > kMaximumEntries) {
 		entries_.pop_front();
