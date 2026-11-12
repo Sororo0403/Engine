@@ -1711,6 +1711,19 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			action = EditorAction::OPEN_PROJECT;
 		}
 
+		const auto startup = project_.GetStartupScene();
+		const auto &current = document_.GetFilePath();
+		const bool canOpenStartup = enabled && !startup.empty() &&
+		                            (current.empty() ||
+		                             !PathUtils::IsSameFile(startup, current));
+		if (ui_.MenuItem("Open Startup Scene", nullptr, canOpenStartup)) {
+			pendingOpenPath_ = startup;
+			action = EditorAction::OPEN_PATH;
+		}
+		if (!startup.empty()) {
+			ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(startup).c_str());
+		}
+
 		if (ui_.MenuItem("Set Current Scene as Startup", nullptr,
 		                 enabled && !project_.GetRoot().empty() &&
 		                     !document_.GetFilePath().empty())) {
