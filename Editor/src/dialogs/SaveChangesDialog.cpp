@@ -4,8 +4,9 @@
 
 #include <utility>
 
-void SaveChangesDialog::Show(std::string name) {
+void SaveChangesDialog::Show(std::string name, bool beforeExport) {
 	name_ = std::move(name);
+	beforeExport_ = beforeExport;
 	openRequested_ = true;
 }
 
@@ -21,19 +22,22 @@ SaveChangesResult SaveChangesDialog::Draw(const ImGuiSystem &ui) {
 		return SaveChangesResult::NONE;
 	}
 
-	ui.Text("Save changes to:");
+	ui.Text(beforeExport_ ? "Unsaved scene changes:" : "Save changes to:");
 	ui.Text(name_);
+	if (beforeExport_) {
+		ui.Text("Export reads linked scenes from disk. Save changes to include them.");
+	}
 	ui.Separator();
 
 	SaveChangesResult result = SaveChangesResult::NONE;
 
-	if (ui.Button("Save")) {
+	if (ui.Button(beforeExport_ ? "Save and Continue" : "Save")) {
 		result = SaveChangesResult::SAVE;
 	}
 
 	ui.SameLine();
 
-	if (ui.Button("Don't Save")) {
+	if (ui.Button(beforeExport_ ? "Continue Without Saving" : "Don't Save")) {
 		result = SaveChangesResult::DISCARD;
 	}
 

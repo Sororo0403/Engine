@@ -2667,16 +2667,7 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 		return;
 	case EditorAction::EXPORT_GAME:
 		pendingAction_ = action;
-
-		try {
-			ExecutePendingAction();
-		} catch (const std::exception &error) {
-			Logger::Error(
-			    std::format("EditorScene::PrepareExport: {}", error.what()));
-			ShowError(
-			    "Could not prepare game export. See the log for details.");
-		}
-
+		ConfirmSceneChanges();
 		return;
 
 	case EditorAction::RENAME_OBJECT:
@@ -3034,12 +3025,14 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 }
 
 void EditorScene::ConfirmSceneChanges() {
-	if (document_.IsModified()) {
+	const bool exporting = pendingAction_ == EditorAction::EXPORT_GAME;
+	if (document_.IsModified() &&
+	    (!exporting || !UsesEditingSceneForStartup(project_.GetStartupScene()))) {
 		const auto name =
 		    document_.GetFilePath().empty()
 		        ? std::string("Untitled")
 		        : PathUtils::ToUtf8(document_.GetFilePath().filename());
-		saveChangesDialog_.Show(name);
+		saveChangesDialog_.Show(name, exporting);
 		stage_ = DialogStage::CONFIRM_SAVE;
 	} else {
 		ExecutePendingAction();
@@ -3066,32 +3059,40 @@ void EditorScene::ExecutePendingAction() {
 	}
 
 	case EditorAction::EXPORT_GAME: {
-		SceneDocument startup;
-		const auto *scene = GetStartupSceneForRun(startup);
+		try {
+			SceneDocument startup;
+			const auto *scene = GetStartupSceneForRun(startup);
 
-		if (!scene) {
-			return;
-		}
+			if (!scene) {
+				return;
+			}
 
-		GameExportOptions options;
-		const auto root = PathUtils::GetExecutableDirectory();
+			GameExportOptions options;
+			const auto root = PathUtils::GetExecutableDirectory();
 #if defined(_DEBUG)
-		options.runtimeDirectory = root.parent_path() / L"Release";
+			options.runtimeDirectory = root.parent_path() / L"Release";
 #else
-		options.runtimeDirectory = root;
+			options.runtimeDirectory = root;
 #endif
-		options.resourceDirectory = root / L"resources";
-		options.assetDirectories = assetSources_.ForScene(*scene);
-		options.destination = root / L"exports" / L"Game";
-		options.config = exportConfig_;
-		const bool isCurrentScene = scene == &document_.GetScene();
-		if (isCurrentScene) {
-			options.config.fallbackCamera = cameraController_.GetPose();
+			options.resourceDirectory = root / L"resources";
+			options.assetDirectories = assetSources_.ForScene(*scene);
+			options.destination = root / L"exports" / L"Game";
+			options.config = exportConfig_;
+			const bool isCurrentScene = scene == &document_.GetScene();
+			if (isCurrentScene) {
+				options.config.fallbackCamera = cameraController_.GetPose();
+			}
+			const auto &startupPath =
+			    isCurrentScene ? document_.GetFilePath() : startup.GetFilePath();
+			exportDialog_.Show(std::move(options), startupPath,
+			                   isCurrentScene && document_.IsModified());
+			stage_ = DialogStage::EXPORT_GAME;
+		} catch (const std::exception &error) {
+			Logger::Error(
+			    std::format("EditorScene::PrepareExport: {}", error.what()));
+			ShowError(
+			    "Could not prepare game export. See the log for details.");
 		}
-		exportDialog_.Show(std::move(options), isCurrentScene
-		                                          ? document_.GetFilePath()
-		                                          : startup.GetFilePath());
-		stage_ = DialogStage::EXPORT_GAME;
 		return;
 	}
 
@@ -4689,13 +4690,16 @@ void EditorScene::UpdateDialogs() {
 	}
 }
 
+bool EditorScene::UsesEditingSceneForStartup(
+    const std::filesystem::path &startup) const {
+	const auto &current = document_.GetFilePath();
+	return startup.empty() ||
+	       (!current.empty() && PathUtils::IsSameFile(startup, current));
+}
+
 const Scene *EditorScene::GetStartupSceneForRun(SceneDocument &startup) {
 	const auto path = project_.GetStartupScene();
-
-	const auto &current = document_.GetFilePath();
-
-	if (path.empty() ||
-	    (!current.empty() && PathUtils::IsSameFile(path, current))) {
+	if (UsesEditingSceneForStartup(path)) {
 		return &document_.GetScene();
 	}
 

@@ -23,7 +23,8 @@ class SaveChangesDialog {
 	/// 保存確認の表示を予約する
 	/// </summary>
 	/// <param name="name">編集中のファイルの表示名</param>
-	void Show(std::string name);
+	/// <param name="beforeExport">出力前の確認として表示するか</param>
+	void Show(std::string name, bool beforeExport = false);
 
 	/// <summary>
 	/// 保存確認を描画する
@@ -35,4 +36,5 @@ class SaveChangesDialog {
   private:
 	std::string name_;
 	bool openRequested_ = false;
+	bool beforeExport_ = false;
 };

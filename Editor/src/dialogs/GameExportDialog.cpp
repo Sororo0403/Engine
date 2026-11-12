@@ -26,10 +26,12 @@ std::filesystem::path FindAvailableDestination(
 } // namespace
 
 void GameExportDialog::Show(GameExportOptions options,
-                            std::filesystem::path scenePath) {
+                            std::filesystem::path scenePath,
+                            bool includesUnsavedEdits) {
 	options_ = std::move(options);
 	output_ = PathUtils::ToUtf8(options_.destination);
 	startupScene_ = scenePath.empty() ? "Untitled" : PathUtils::ToUtf8(scenePath);
+	includesUnsavedEdits_ = includesUnsavedEdits;
 	title_ = options_.config.title;
 	width_ = options_.config.width;
 	height_ = options_.config.height;
@@ -59,6 +61,9 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 	}
 
 	ImGui::TextWrapped("Startup Scene: %s", startupScene_.c_str());
+	if (includesUnsavedEdits_) {
+		ui.Text("Includes unsaved changes to the startup scene.");
+	}
 	ui.InputText("Output Folder", output_);
 	ui.InputText("Game Title", title_);
 	ImGui::InputInt("Width", &width_);

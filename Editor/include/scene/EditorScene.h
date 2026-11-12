@@ -396,6 +396,11 @@ class EditorScene final : public IScene {
 	const Scene *GetStartupSceneForRun(SceneDocument &startup);
 
 	/// <summary>
+	/// 指定された起動シーンが編集中なら編集内容を使用する
+	/// </summary>
+	bool UsesEditingSceneForStartup(const std::filesystem::path &startup) const;
+
+	/// <summary>
 	/// 編集内容を保持したまま、指定されたシーンから再生を始める
 	/// </summary>
 	void StartPlay(bool fromStartup, SceneObjectId cameraOverride);

@@ -17,7 +17,9 @@ class GameExportDialog {
 	/// </summary>
 	/// <param name="options">入力元・カメラ・初期の出力先</param>
 	/// <param name="scenePath">出力時に起動するシーンのパス</param>
-	void Show(GameExportOptions options, std::filesystem::path scenePath);
+	/// <param name="includesUnsavedEdits">編集中の起動シーンの未保存変更を出力に含むか</param>
+	void Show(GameExportOptions options, std::filesystem::path scenePath,
+	          bool includesUnsavedEdits);
 
 	/// <summary>
 	/// 出力設定の入力を描画する
@@ -39,4 +41,5 @@ class GameExportDialog {
 	std::string output_, startupScene_, title_, error_;
 	int width_ = 1280, height_ = 720;
 	bool opening_ = false;
+	bool includesUnsavedEdits_ = false;
 };
