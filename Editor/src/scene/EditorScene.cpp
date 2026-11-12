@@ -3225,7 +3225,7 @@ void EditorScene::StartSave(bool saveAs) {
 			assets_.Refresh();
 			ExecutePendingAction();
 		} else {
-			ShowError(document_.GetError());
+			ShowSceneSaveError();
 		}
 
 		return;
@@ -3493,11 +3493,14 @@ EditorScene::GetNewScenePath(const std::filesystem::path &name) const {
 void EditorScene::StartSaveCopy() {
 	try {
 		const auto &currentPath = document_.GetFilePath();
+		auto stem = currentPath.stem();
+		if (PathUtils::HasExtension(stem, ".scene")) {
+			stem = stem.stem();
+		}
 		auto copyPath = currentPath.empty()
 		                    ? GetNewScenePath(L"Untitled.copy.scene.json")
 		                    : currentPath.parent_path() /
-		                          (currentPath.stem().native() + L".copy" +
-		                           currentPath.extension().native());
+		                          (stem.native() + L".copy.scene.json");
 		fileDialog_.Show(FileDialogMode::SAVE_COPY, copyPath);
 		stage_ = DialogStage::SAVE_COPY_FILE;
 	} catch (const std::exception &error) {
@@ -4169,7 +4172,7 @@ void EditorScene::UpdateDialogs() {
 				assets_.Refresh();
 				ExecutePendingAction();
 			} else {
-				ShowError(document_.GetError());
+				ShowSceneSaveError();
 			}
 		}
 
@@ -4686,6 +4689,25 @@ void EditorScene::UpdateDialogs() {
 		if (ui_.BeginPopupModal(kTitle)) {
 			ui_.Text(errorMessage_);
 
+			if (sceneSaveConflict_) {
+				EditorAction action = EditorAction::NONE;
+				if (ui_.Button("Save Copy...")) {
+					action = EditorAction::SAVE_COPY;
+				}
+				ui_.SameLine();
+				if (ui_.Button("Reload Scene...")) {
+					action = EditorAction::RELOAD_SCENE;
+				}
+				ui_.SameLine();
+				if (action != EditorAction::NONE) {
+					ui_.CloseCurrentPopup();
+					ui_.EndPopup();
+					stage_ = DialogStage::IDLE;
+					StartAction(action);
+					return;
+				}
+			}
+
 			if (!errorScriptOpenMessage_.empty()) {
 				ImGui::TextWrapped("%s", errorScriptOpenMessage_.c_str());
 			}
@@ -4937,11 +4959,17 @@ void EditorScene::ShowError(std::string message, SceneObjectId objectId,
 	errorMessage_ = std::move(message);
 	errorScriptPath_ = std::move(scriptPath);
 	errorScriptOpenMessage_.clear();
+	sceneSaveConflict_ = false;
 	errorObjectId_ = document_.GetScene().Contains(objectId) ? objectId : 0;
 	errorOpenRequested_ = true;
 
 	pendingAction_ = EditorAction::NONE;
 	stage_ = DialogStage::ERROR;
+}
+
+void EditorScene::ShowSceneSaveError() {
+	ShowError(document_.GetError());
+	sceneSaveConflict_ = document_.HasSaveConflict();
 }
 
 bool EditorScene::IsBusy() const {

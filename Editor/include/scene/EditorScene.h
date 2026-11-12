@@ -565,6 +565,11 @@ class EditorScene final : public IScene {
 	               std::filesystem::path scriptPath = {});
 
 	/// <summary>
+	/// 保存に失敗した理由を表示し、外部変更時はコピーと再読み込みを案内する
+	/// </summary>
+	void ShowSceneSaveError();
+
+	/// <summary>
 	/// 編集操作を保留しているか取得する
 	/// </summary>
 	/// <returns>true:操作中 false:操作なし</returns>
@@ -939,6 +944,7 @@ class EditorScene final : public IScene {
 	std::string errorMessage_;
 	std::filesystem::path errorScriptPath_;
 	std::string errorScriptOpenMessage_;
+	bool sceneSaveConflict_ = false;
 	SceneObjectId errorObjectId_ = 0;
 	bool errorOpenRequested_ = false;
 

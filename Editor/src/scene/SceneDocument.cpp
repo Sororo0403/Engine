@@ -163,6 +163,7 @@ bool SceneDocument::Open(const std::filesystem::path &filePath,
 }
 
 bool SceneDocument::Save() {
+	saveConflict_ = false;
 	if (filePath_.empty()) {
 		error_ = "Choose a scene destination with Save As first.";
 		Logger::Error("SceneDocument::Save: 保存先が未指定です。");
@@ -215,6 +216,7 @@ bool SceneDocument::SaveCopy(const std::filesystem::path &filePath,
 }
 
 bool SceneDocument::SaveAs(const std::filesystem::path &filePath) {
+	saveConflict_ = false;
 	try {
 		auto resolvedPath = PathUtils::ResolveFromExecutable(filePath);
 
@@ -234,11 +236,14 @@ bool SceneDocument::SaveAs(const std::filesystem::path &filePath) {
 		}
 
 		if (!filePath_.empty() &&
-		    PathUtils::IsSameFile(resolvedPath, filePath_) &&
-		    ReadSceneText(resolvedPath) != savedText_) {
-			error_ = "The scene changed outside the editor. Reload it, or use "
-			         "Save As / Save Copy to a different file.";
-			return false;
+		    PathUtils::IsSameFile(resolvedPath, filePath_)) {
+			saveConflict_ = true;
+			if (ReadSceneText(resolvedPath) != savedText_) {
+				error_ = "The scene changed outside the editor. Save a copy of "
+				         "your edits or reload the scene from disk.";
+				return false;
+			}
+			saveConflict_ = false;
 		}
 
 		// 名前の空欄処理などを、保存するデータへ先に反映する

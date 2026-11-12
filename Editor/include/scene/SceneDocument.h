@@ -43,6 +43,11 @@ class SceneDocument {
 	const std::string &GetError() const;
 
 	/// <summary>
+	/// 直前のSaveまたはSaveAsで、元ファイルの外部変更や読み取り失敗を検出したか
+	/// </summary>
+	bool HasSaveConflict() const { return saveConflict_; }
+
+	/// <summary>
 	/// 未保存の変更があるか取得する
 	/// </summary>
 	/// <returns>true:変更あり false:変更なし</returns>
@@ -140,4 +145,5 @@ class SceneDocument {
 	std::filesystem::path fileProjectRoot_;
 	std::string savedText_;
 	std::string error_;
+	bool saveConflict_ = false;
 };
