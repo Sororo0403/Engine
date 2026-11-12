@@ -7,10 +7,13 @@
 #include <algorithm>
 #include <exception>
 #include <imgui.h>
+#include <imgui_internal.h>
 #include <imgui_stdlib.h>
 #include <stdexcept>
 
 namespace {
+constexpr const char *kDefaultScriptName = "New Script.lua";
+
 /// <summary>
 /// 元のLuaと同じフォルダに、既存ファイルと重ならない複製名を選ぶ
 /// </summary>
@@ -41,15 +44,17 @@ bool ScriptEditorDialog::ShowCreate(const std::filesystem::path &assets,
 		folder_ = folder;
 		path_.clear();
 		saved_.clear();
-		name_ = "New Script.lua";
+		name_ = kDefaultScriptName;
 		source_ = "return {\n    start = function(self, state)\n        -- "
 		          "Initialize per-object values in state.\n    end,\n\n    "
 		          "update = function(self, state, seconds, input)\n        -- "
 		          "Example: local x, y, z = self:get_position()\n    end,\n}\n";
-		original_.clear();
+		original_ = source_;
 		error_.clear();
 		creating_ = true;
 		saveConflict_ = false;
+		confirmDiscard_ = false;
+		++inputRevision_;
 		opening_ = true;
 		error.clear();
 		return true;
@@ -71,6 +76,8 @@ bool ScriptEditorDialog::ShowEdit(const std::filesystem::path &path,
 	error_.clear();
 	creating_ = false;
 	saveConflict_ = false;
+	confirmDiscard_ = false;
+	++inputRevision_;
 	opening_ = true;
 	error.clear();
 	return true;
@@ -88,6 +95,30 @@ ScriptEditorDialog::Result ScriptEditorDialog::Draw(const ImGuiSystem &ui) {
 	if (!ImGui::BeginPopupModal(title, nullptr,
 	                            ImGuiWindowFlags_NoSavedSettings))
 		return Result::NONE;
+
+	const bool escape = ImGui::IsKeyPressed(ImGuiKey_Escape, false);
+	if (escape) {
+		// テキスト欄がEscで編集中の値を戻す前に、ダイアログが処理する。
+		ImGui::SetKeyOwner(ImGuiKey_Escape, ImGui::GetID("Discard Script Changes"),
+		                   ImGuiInputFlags_LockThisFrame);
+	}
+
+	Result result = Result::NONE;
+	const bool confirming = confirmDiscard_;
+	if (confirming) {
+		ui.Text("Discard unsaved script changes?");
+		if (ui.Button("Keep Editing") || escape) {
+			confirmDiscard_ = false;
+		}
+		ui.SameLine();
+		if (ui.Button("Discard Changes")) {
+			result = Result::CANCELLED;
+		}
+	}
+
+	ui.BeginDisabled(confirming);
+	// 閉じたダイアログの入力状態が、新しい下書きに反映されるのを防ぐ。
+	ImGui::PushID(static_cast<int>(inputRevision_));
 	if (creating_) {
 		ui.Text(PathUtils::ToUtf8(assets_ / folder_));
 		ui.InputText("Script Name", name_);
@@ -97,14 +128,13 @@ ScriptEditorDialog::Result ScriptEditorDialog::Draw(const ImGuiSystem &ui) {
 	    (std::max)(160.0f, ImGui::GetContentRegionAvail().y - 105.0f);
 	ImGui::InputTextMultiline("Code", &source_, {-1, height},
 	                          ImGuiInputTextFlags_AllowTabInput);
+	ImGui::PopID();
 	if (ui.Button("Check Syntax")) {
 		if (LuaScript::Validate(source_, error_))
 			error_ = "Syntax OK";
 	}
 
 	ui.SameLine();
-	Result result = Result::NONE;
-
 	const bool save = ui.Button("Save Script");
 	bool saveCopy = false;
 	if (saveConflict_) {
@@ -138,8 +168,8 @@ ScriptEditorDialog::Result ScriptEditorDialog::Draw(const ImGuiSystem &ui) {
 				}
 				if (current != original_) {
 					saveConflict_ = true;
-				throw std::runtime_error("The Script changed outside this dialog. "
-				                         "Use Save Copy to keep your edits.");
+					throw std::runtime_error("The Script changed outside this dialog. "
+					                         "Use Save Copy to keep your edits.");
 				}
 			}
 
@@ -154,8 +184,15 @@ ScriptEditorDialog::Result ScriptEditorDialog::Draw(const ImGuiSystem &ui) {
 	}
 
 	ui.SameLine();
-	if (ui.Button("Cancel") || ImGui::IsKeyPressed(ImGuiKey_Escape, false))
-		result = Result::CANCELLED;
+	const bool cancel = ui.Button("Cancel");
+	ui.EndDisabled();
+	if (!confirming && result == Result::NONE && (cancel || escape)) {
+		if (source_ != original_ || (creating_ && name_ != kDefaultScriptName)) {
+			confirmDiscard_ = true;
+		} else {
+			result = Result::CANCELLED;
+		}
+	}
 	if (!error_.empty())
 		ImGui::TextWrapped("%s", error_.c_str());
 	if (result != Result::NONE)

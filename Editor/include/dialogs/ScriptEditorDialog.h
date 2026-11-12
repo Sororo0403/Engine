@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include <cstdint>
 #include <filesystem>
 #include <string>
 class ImGuiSystem;
@@ -43,6 +44,8 @@ class ScriptEditorDialog {
   private:
 	std::filesystem::path assets_, folder_, path_, saved_;
 	std::string name_, source_, original_, error_;
+	std::uint32_t inputRevision_ = 0;
 	bool opening_ = false, creating_ = false;
 	bool saveConflict_ = false;
+	bool confirmDiscard_ = false;
 };
