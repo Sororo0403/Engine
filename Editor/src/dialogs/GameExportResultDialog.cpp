@@ -153,7 +153,8 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		std::error_code status;
 		const auto size = std::filesystem::file_size(
 		    directory_ / L"logs" / L"Engine.log", status);
-		if (process_.Start(directory_ / L"Game.exe", error_)) {
+		if (process_.Start(directory_ / L"Game.exe", error_,
+		                   ShellUtils::WindowVisibility::NORMAL, L"--editor-launch")) {
 			processStatus_ = "Game process running.";
 			logLaunchStart_.reset();
 			if (!status)

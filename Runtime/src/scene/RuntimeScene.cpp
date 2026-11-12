@@ -104,6 +104,8 @@ bool RuntimeScene::Initialize() {
 	std::string error;
 
 	if (!SceneSerializer::Load(source, config_.scenePath)) {
+		Logger::Error("Could not load startup scene: " +
+		              PathUtils::ToUtf8(config_.scenePath));
 		return false;
 	}
 

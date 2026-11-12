@@ -31,15 +31,18 @@ std::filesystem::path Resolve(const std::filesystem::path &path) {
 /// <param name="path">検証済みの絶対パス</param>
 /// <param name="directory">起動先の作業ディレクトリ</param>
 /// <param name="visibility">起動先へ指定する初期表示</param>
+/// <param name="arguments">実行ファイルへ渡すコマンドライン引数</param>
 HANDLE Open(const std::filesystem::path &path,
             const std::filesystem::path &directory,
-            ShellUtils::WindowVisibility visibility) {
+            ShellUtils::WindowVisibility visibility,
+            const std::wstring &arguments = {}) {
 	SHELLEXECUTEINFOW info{};
 	info.cbSize = sizeof(info);
 	info.fMask =
 	    SEE_MASK_NOASYNC | SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS;
 	info.lpVerb = L"open";
 	info.lpFile = path.c_str();
+	info.lpParameters = arguments.empty() ? nullptr : arguments.c_str();
 	info.lpDirectory = directory.c_str();
 	info.nShow = visibility == ShellUtils::WindowVisibility::HIDDEN
 	                 ? SW_HIDE
@@ -55,13 +58,14 @@ HANDLE Open(const std::filesystem::path &path,
 }
 
 HANDLE OpenExecutable(const std::filesystem::path &path,
-                      ShellUtils::WindowVisibility visibility) {
+                      ShellUtils::WindowVisibility visibility,
+                      const std::wstring &arguments = {}) {
 	const auto resolved = Resolve(path);
 	if (!PathUtils::HasExtension(resolved, ".exe") ||
 	    !std::filesystem::is_regular_file(resolved)) {
 		throw std::invalid_argument("Choose an existing .exe file.");
 	}
-	return Open(resolved, resolved.parent_path(), visibility);
+	return Open(resolved, resolved.parent_path(), visibility, arguments);
 }
 } // namespace
 
@@ -178,11 +182,12 @@ ShellUtils::ExecutableProcess::~ExecutableProcess() {
 
 bool ShellUtils::ExecutableProcess::Start(const std::filesystem::path &path,
                                          std::string &error,
-                                         WindowVisibility visibility) {
+                                         WindowVisibility visibility,
+                                         const std::wstring &arguments) {
 	try {
 		if (IsTracking())
 			throw std::runtime_error("A game process is already being tracked.");
-		handle_ = OpenExecutable(path, visibility);
+		handle_ = OpenExecutable(path, visibility, arguments);
 		if (!IsTracking())
 			throw std::runtime_error("Windows did not return a process handle.");
 		error.clear();

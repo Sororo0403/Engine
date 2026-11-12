@@ -60,6 +60,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR commandLine, int) {
 	if (arguments == "--write-build-info") {
 		return WriteBuildInfo();
 	}
+	const bool launchedFromEditor = arguments == "--editor-launch";
 
 	std::string error;
 	const auto executableDirectory = PathUtils::GetExecutableDirectory();
@@ -72,9 +73,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR commandLine, int) {
 			Logger::Error("Could not load game.json: " + error);
 			Logger::Finalize();
 		}
-		const auto text = StringConversion::Utf8ToWide(error);
-		MessageBoxW(nullptr, text.c_str(), L"Could not start game",
-		            MB_OK | MB_ICONERROR);
+		if (!launchedFromEditor) {
+			const auto text = StringConversion::Utf8ToWide(error);
+			MessageBoxW(nullptr, text.c_str(), L"Could not start game",
+			            MB_OK | MB_ICONERROR);
+		}
 		return -1;
 	}
 
@@ -86,7 +89,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR commandLine, int) {
 	config.preferLowPowerGpu = arguments == "--low-power-gpu";
 	const auto result = Engine::Run(config, CreateScene);
 
-	if (result != 0) {
+	if (result != 0 && !launchedFromEditor) {
 		MessageBoxW(nullptr, L"Could not run the game. See logs/Engine.log.",
 		            L"Game", MB_OK | MB_ICONERROR);
 	}

@@ -24,8 +24,10 @@ class ExecutableProcess {
 	/// <summary>
 	/// 起動してプロセスの参照を保持する。COM初期化後に呼ぶ
 	/// </summary>
+	/// <param name="arguments">Windowsに渡すコマンドライン引数。実行ファイルのパスは含めない</param>
 	bool Start(const std::filesystem::path &path, std::string &error,
-	           WindowVisibility visibility = WindowVisibility::NORMAL);
+	           WindowVisibility visibility = WindowVisibility::NORMAL,
+	           const std::wstring &arguments = {});
 
 	/// <summary>
 	/// 待たずに終了コードを確認する。動作中はexitCodeが空で成功する
