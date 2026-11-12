@@ -24,6 +24,7 @@ void ScriptInspector::Clear() {
 bool ScriptInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
                            SceneObjectId id, SceneObject &object,
                            EditorHistory &history,
+                           std::filesystem::path &sceneOpenRequest,
                            std::span<const std::filesystem::path> scripts,
                            std::span<const std::filesystem::path> prefabs,
                            std::span<const std::filesystem::path> scenes) {
@@ -252,6 +253,12 @@ bool ScriptInspector::Draw(const ImGuiSystem &ui, const Scene &scene,
 			value.scenes[i].second = std::move(droppedScene);
 			changed |= history.SetScript(id, value);
 		}
+		ui.BeginDisabled(path.empty());
+		if (ui.Button("Open Scene")) {
+			sceneOpenRequest = path;
+		}
+		ui.EndDisabled();
+		ui.SameLine();
 		if (ui.Button("Remove Scene"))
 			removeScene = i;
 		ImGui::PopID();

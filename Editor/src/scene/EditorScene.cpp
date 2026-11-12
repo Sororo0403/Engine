@@ -745,11 +745,16 @@ bool EditorScene::Update(float deltaTime) {
 			AppendAssetObjects(requestedObjects);
 		}
 
-		const auto &requestedScene = assetsPanel_.GetSceneOpenRequest();
+		const auto &inspectorScene = inspectorPanel_.GetSceneOpenRequest();
+		const auto &requestedScene = inspectorScene.empty()
+		                                 ? assetsPanel_.GetSceneOpenRequest()
+		                                 : inspectorScene;
 		if (!requestedScene.empty() && !IsBusy() &&
 		    action == EditorAction::NONE &&
-		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
-			// 保存先の選択や確認中にAssetsの選択が変わっても、開く対象は保持する。
+		    hierarchyRequest.action == HierarchyPanel::Action::NONE &&
+		    (inspectorScene.empty() || document_.GetFilePath().empty() ||
+		     !PathUtils::IsSameFile(inspectorScene, document_.GetFilePath()))) {
+			// 保存確認が終わるまで、表示中の選択が変わっても開く対象を保持する。
 			pendingOpenPath_ = requestedScene;
 			action = EditorAction::OPEN_PATH;
 		}

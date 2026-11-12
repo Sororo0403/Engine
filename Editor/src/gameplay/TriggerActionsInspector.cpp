@@ -160,6 +160,7 @@ const char *ContactLabel(TriggerAction::Contact contact) {
 bool TriggerActionsInspector::Draw(
     const ImGuiSystem &ui, const Scene &scene, SceneObjectId id,
     SceneObject &object, EditorHistory &history,
+    std::filesystem::path &sceneOpenRequest,
     std::span<const std::filesystem::path> scenes,
     std::span<const GameActionBinding> inputBindings) const {
 	if (!object.triggerActions || !ui.CollapsingHeader("Trigger Actions")) {
@@ -513,6 +514,12 @@ bool TriggerActionsInspector::Draw(
 				if (!action.scenePath.empty() && ImGui::IsItemHovered())
 					ImGui::SetTooltip(
 					    "%s", PathUtils::ToUtf8(action.scenePath).c_str());
+				ui.SameLine();
+				ui.BeginDisabled(action.scenePath.empty());
+				if (ui.Button("Open Scene")) {
+					sceneOpenRequest = action.scenePath;
+				}
+				ui.EndDisabled();
 				auto tag = action.arrivalTag;
 				if (ImGui::InputText("Arrival Tag", &tag,
 				                     ImGuiInputTextFlags_EnterReturnsTrue) &&

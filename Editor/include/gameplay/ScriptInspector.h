@@ -35,12 +35,14 @@ class ScriptInspector {
 	/// <param name="id">編集する物体ID</param>
 	/// <param name="object">編集する物体</param>
 	/// <param name="history">設定を記録する履歴</param>
+	/// <param name="sceneOpenRequest">指定したシーンを開く操作があった場合にパスを返す</param>
 	/// <param name="scripts">割り当て可能なLuaファイル</param>
 	/// <param name="prefabs">割り当て可能なPrefabファイル</param>
 	/// <param name="scenes">割り当て可能なシーンファイル</param>
 	/// <returns>true:設定変更あり false:変更なし</returns>
 	bool Draw(const ImGuiSystem &ui, const Scene &scene, SceneObjectId id,
 	          SceneObject &object, EditorHistory &history,
+	          std::filesystem::path &sceneOpenRequest,
 	          std::span<const std::filesystem::path> scripts,
 	          std::span<const std::filesystem::path> prefabs = {},
 	          std::span<const std::filesystem::path> scenes = {});
