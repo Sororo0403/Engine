@@ -4710,17 +4710,24 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		const bool restored =
 		    !last.empty() && (startup.empty() || !PathUtils::IsSameFile(last, startup)) &&
 		    OpenScene(last, false, &config.lighting);
+		std::string startupError;
 
 		if (!restored) {
-			if (startup.empty()) {
+			if (!startup.empty() && !OpenScene(startup, false, &config.lighting)) {
+				startupError = std::format(
+				    "Could not open the project startup scene: {}\n{}\n"
+				    "Open or save a scene in the project, then choose "
+				    "File > Set Current Scene as Startup.",
+				    PathUtils::ToUtf8(startup), document_.GetError());
+			}
+
+			if (startup.empty() || !startupError.empty()) {
 				pendingAction_ = EditorAction::NEW;
 				ExecutePendingAction();
 
 				if (stage_ != DialogStage::IDLE) {
 					return;
 				}
-			} else if (!OpenScene(startup, true, &config.lighting)) {
-				return;
 			}
 		}
 
@@ -4734,6 +4741,10 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		stage_ = DialogStage::IDLE;
 
 		SaveEditorSession();
+		if (!startupError.empty()) {
+			Logger::Warning(startupError);
+			consolePanel_.Show();
+		}
 	} catch (const std::exception &error) {
 		ShowError(error.what());
 	}
