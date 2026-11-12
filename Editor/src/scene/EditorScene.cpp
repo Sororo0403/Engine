@@ -3732,7 +3732,7 @@ void EditorScene::UpdateRecovery(float deltaTime) {
 void EditorScene::RecordRecovery() {
 	recoveryElapsed_ = 0;
 
-	if (!recovery_.IsReady()) {
+	if (!document_.IsModified() || !recovery_.IsReady()) {
 		return;
 	}
 
@@ -4078,22 +4078,27 @@ bool EditorScene::RelocateAssets(const AssetUsage::Moves &moves,
 		return false;
 	}
 
-	SaveEditorSession();
 	const auto &destination = moves.front().second;
+	const auto &root = assets_.GetRootDirectory();
 
 	clipboard_.Clear();
 	texturePreviewPanel_.Clear();
 	audioPreviewPanel_.Clear();
-	assets_.Refresh();
+	const bool refreshed = assets_.Refresh();
 	std::error_code typeError;
-
-	if (std::filesystem::is_directory(destination, typeError)) {
-		assetsPanel_.RequestOpenDirectory(
-		    destination.lexically_relative(assets_.GetRootDirectory()));
-	} else {
-		assetsPanel_.RequestReveal(destination);
+	const bool folder = std::filesystem::is_directory(destination, typeError);
+	const auto directory = folder ? destination : destination.parent_path();
+	if (refreshed) {
+		assetsPanel_.RestoreDirectory(directory.lexically_relative(root), assets_);
 	}
 
+	if (!folder) {
+		assetsPanel_.RequestReveal(destination);
+	} else if (!refreshed) {
+		assetsPanel_.RequestOpenDirectory(directory.lexically_relative(root));
+	}
+
+	SaveEditorSession();
 	RecordRecovery();
 	return true;
 }
