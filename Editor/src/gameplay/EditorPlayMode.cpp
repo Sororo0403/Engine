@@ -526,6 +526,12 @@ bool EditorPlayMode::SetPreviewCamera(SceneObjectId objectId) {
 	return true;
 }
 
+bool EditorPlayMode::ReloadCanvasImage(const std::filesystem::path &path,
+                                       std::string &error) {
+	return previewRenderer_.ReloadCanvasImage(path, error) &&
+	       renderer_.ReloadCanvasImage(path, error);
+}
+
 bool EditorPlayMode::UpdatePreview(const Scene &scene,
                                    const CameraPose &fallback) {
 	if (!IsPlaying() && previewCamera_ != 0) {

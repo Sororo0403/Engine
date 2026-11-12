@@ -191,6 +191,11 @@ class SceneRenderer {
 	bool SetUIButtonVisuals(std::span<const UIButtonVisual> visuals);
 
 	/// <summary>
+	/// Canvasで使用中の指定画像を読み直す
+	/// </summary>
+	bool ReloadCanvasImage(const std::filesystem::path &path, std::string &error);
+
+	/// <summary>
 	/// 先読みを指定したモデルを、物体の表示状態に関係なく準備する
 	/// </summary>
 	/// <param name="error">成功時は空、失敗時は対象と理由</param>

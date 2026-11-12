@@ -1103,6 +1103,11 @@ bool EditorScene::Update(float deltaTime) {
 					    "data was kept. See the log for details.");
 				} else {
 					texturePreviewPanel_.RequestReload(requestedTextureReload);
+					std::string error;
+					if (!renderer_.ReloadCanvasImage(requestedTextureReload, error) ||
+					    !playMode_.ReloadCanvasImage(requestedTextureReload, error)) {
+						ShowError("Could not reload the Canvas image: " + error);
+					}
 				}
 			} catch (const std::exception &exception) {
 				Logger::Error(std::format("EditorScene::ReloadTexture: {}",

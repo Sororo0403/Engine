@@ -202,6 +202,16 @@ struct CanvasRenderer::Impl {
 			    "UI images support dimensions from 1 to 4096 pixels.");
 		return static_cast<std::size_t>(w) * h * 4;
 	}
+
+	std::shared_ptr<Texture> LoadImage(const std::filesystem::path &path,
+	                                   std::size_t availableBytes) {
+		if (ImageBytes(path) > availableBytes)
+			throw std::runtime_error("UI images exceed 128 MiB.");
+		auto texture = std::make_shared<Texture>();
+		if (!texture->Load(graphics.GetDevice(), graphics.GetCommandQueue(), path))
+			throw std::runtime_error("Could not load UI image.");
+		return texture;
+	}
 };
 
 CanvasRenderer::CanvasRenderer(D3D12Graphics &graphics, Failure failure)
@@ -254,6 +264,46 @@ bool CanvasRenderer::PrepareImages(std::span<const std::filesystem::path> paths,
 
 void CanvasRenderer::ClearPreparedImages() {
 	impl_->preparedImages.clear();
+}
+
+bool CanvasRenderer::ReloadImage(const std::filesystem::path &path,
+                                 std::string &error) {
+	try {
+		const auto absolute = PathUtils::ResolveFromExecutable(path);
+		std::vector<Impl::ImageEntry *> matching;
+		std::size_t availableBytes = kMaximumBytes;
+		for (auto *cache : {&impl_->images, &impl_->preparedImages}) {
+			const auto firstMatch = matching.size();
+			std::set<const Texture *> retained;
+			std::size_t retainedBytes = 0;
+			for (auto &[cachedPath, entry] : *cache) {
+				if (PathUtils::IsSameFile(absolute, cachedPath)) {
+					matching.push_back(&entry);
+				} else if (retained.insert(entry.texture.get()).second) {
+					retainedBytes += static_cast<std::size_t>(entry.texture->GetWidth()) *
+					                 entry.texture->GetHeight() * 4;
+				}
+			}
+			if (matching.size() != firstMatch) {
+				availableBytes = (std::min)(
+				    availableBytes, kMaximumBytes - (std::min)(retainedBytes, kMaximumBytes));
+			}
+		}
+
+		if (!matching.empty()) {
+			const Impl::ImageEntry replacement{
+			    std::filesystem::last_write_time(absolute),
+			    std::filesystem::file_size(absolute),
+			    impl_->LoadImage(absolute, availableBytes)};
+			for (auto *entry : matching)
+				*entry = replacement;
+		}
+		error.clear();
+		return true;
+	} catch (const std::exception &exception) {
+		error = exception.what();
+		return false;
+	}
 }
 
 bool CanvasRenderer::Update(const Scene &scene, int width, int height,
@@ -376,18 +426,9 @@ bool CanvasRenderer::Update(const Scene &scene, int width, int height,
 								    cached->second.size == size)
 									entry = cached->second;
 								else {
-									const auto needed = p.ImageBytes(path);
-									if (needed > kMaximumBytes - bytes)
-										throw std::runtime_error(
-										    "UI images exceed 128 MiB.");
 									entry.modified = modified;
 									entry.size = size;
-									entry.texture = std::make_shared<Texture>();
-									if (!entry.texture->Load(
-									        p.graphics.GetDevice(),
-									        p.graphics.GetCommandQueue(), path))
-										throw std::runtime_error(
-										    "Could not load UI image.");
+									entry.texture = p.LoadImage(path, kMaximumBytes - bytes);
 								}
 
 								found = images.emplace(path, std::move(entry))

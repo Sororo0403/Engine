@@ -124,6 +124,11 @@ class EditorPlayMode {
 	bool UpdatePreview(const Scene &scene, const CameraPose &fallback);
 
 	/// <summary>
+	/// Gameのプレビューと試遊で使用するCanvas画像を読み直す
+	/// </summary>
+	bool ReloadCanvasImage(const std::filesystem::path &path, std::string &error);
+
+	/// <summary>
 	/// 停止中のGame表示で使用するCameraを指定する。PlayとシーンのPrimaryは変更しない
 	/// </summary>
 	/// <param name="objectId">表示するCamera。0は通常のPrimaryへ戻す。対象の存在は描画更新時に確認する</param>

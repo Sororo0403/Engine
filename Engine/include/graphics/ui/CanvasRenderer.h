@@ -58,6 +58,12 @@ class CanvasRenderer {
 	                   std::string &error);
 
 	/// <summary>
+	/// キャッシュ済みの指定画像を読み直す。失敗時は以前の画像を保持する
+	/// </summary>
+	/// <remarks>COM初期化済み、GPU完了後、BeginFrame前に呼ぶ</remarks>
+	bool ReloadImage(const std::filesystem::path &path, std::string &error);
+
+	/// <summary>
 	/// 生成用に保持した画像だけを解放する。GPU完了後に呼ぶ
 	/// </summary>
 	void ClearPreparedImages();

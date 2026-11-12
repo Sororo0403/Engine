@@ -622,6 +622,14 @@ bool SceneRenderer::SetCameraSettings(const CameraSettings &settings) {
 	return world_ && world_->SetCameraSettings(settings);
 }
 
+bool SceneRenderer::ReloadCanvasImage(const std::filesystem::path &path,
+                                      std::string &error) {
+	if (canvas_)
+		return canvas_->ReloadImage(path, error);
+	error.clear();
+	return true;
+}
+
 bool SceneRenderer::SetUIButtonVisuals(
     std::span<const UIButtonVisual> visuals) {
 	if (visuals.size() > CanvasLayout::kMaximumElements)
