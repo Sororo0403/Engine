@@ -10,6 +10,28 @@
 #include <imgui_stdlib.h>
 #include <stdexcept>
 
+namespace {
+/// <summary>
+/// 元のLuaと同じフォルダに、既存ファイルと重ならない複製名を選ぶ
+/// </summary>
+std::filesystem::path FindScriptCopy(const std::filesystem::path &source) {
+	const auto stem = source.stem().native();
+	for (std::size_t index = 1;; ++index) {
+		const auto suffix =
+		    index == 1 ? std::wstring{} : L"-" + std::to_wstring(index);
+		const auto name = stem + L".copy" + suffix + L".lua";
+		if (!PathUtils::IsValidFileName(name)) {
+			throw std::runtime_error("The script copy name is too long or invalid.");
+		}
+		const auto candidate = source.parent_path() / name;
+		const auto absolute = PathUtils::ResolveFromExecutable(candidate);
+		if (!std::filesystem::exists(std::filesystem::symlink_status(absolute))) {
+			return candidate;
+		}
+	}
+}
+} // namespace
+
 bool ScriptEditorDialog::ShowCreate(const std::filesystem::path &assets,
                                     const std::filesystem::path &folder,
                                     std::string &error) {
@@ -27,6 +49,7 @@ bool ScriptEditorDialog::ShowCreate(const std::filesystem::path &assets,
 		original_.clear();
 		error_.clear();
 		creating_ = true;
+		saveConflict_ = false;
 		opening_ = true;
 		error.clear();
 		return true;
@@ -47,6 +70,7 @@ bool ScriptEditorDialog::ShowEdit(const std::filesystem::path &path,
 	saved_.clear();
 	error_.clear();
 	creating_ = false;
+	saveConflict_ = false;
 	opening_ = true;
 	error.clear();
 	return true;
@@ -81,14 +105,23 @@ ScriptEditorDialog::Result ScriptEditorDialog::Draw(const ImGuiSystem &ui) {
 	ui.SameLine();
 	Result result = Result::NONE;
 
-	if (ui.Button("Save Script")) {
+	const bool save = ui.Button("Save Script");
+	bool saveCopy = false;
+	if (saveConflict_) {
+		ui.SameLine();
+		saveCopy = ui.Button("Save Copy");
+	}
+
+	if (save || saveCopy) {
 		try {
 			if (!LuaScript::Validate(source_, error_))
 				throw std::runtime_error(error_);
 			auto destination = path_;
 			auto reference = path_;
 
-			if (creating_) {
+			if (saveCopy) {
+				destination = reference = FindScriptCopy(path_);
+			} else if (creating_) {
 				auto name = PathUtils::FromUtf8(name_);
 				if (!PathUtils::HasExtension(name, ".lua"))
 					name += L".lua";
@@ -99,16 +132,19 @@ ScriptEditorDialog::Result ScriptEditorDialog::Draw(const ImGuiSystem &ui) {
 				reference = AssetFolders::MakeReference(assets_, destination);
 			} else {
 				std::string current;
-				if (!LuaScript::Read(path_, current, error_))
+				if (!LuaScript::Read(path_, current, error_)) {
+					saveConflict_ = true;
 					throw std::runtime_error(error_);
-				if (current != original_)
-					throw std::runtime_error(
-					    "The Script changed outside this dialog. Cancel and "
-					    "reopen it before saving.");
+				}
+				if (current != original_) {
+					saveConflict_ = true;
+				throw std::runtime_error("The Script changed outside this dialog. "
+				                         "Use Save Copy to keep your edits.");
+				}
 			}
 
 			if (!FileUtils::WriteTextAtomically(destination, source_, error_,
-			                                    !creating_))
+			                                    !creating_ && !saveCopy))
 				throw std::runtime_error(error_);
 			saved_.swap(reference);
 			result = Result::SAVED;

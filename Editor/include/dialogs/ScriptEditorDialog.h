@@ -44,4 +44,5 @@ class ScriptEditorDialog {
 	std::filesystem::path assets_, folder_, path_, saved_;
 	std::string name_, source_, original_, error_;
 	bool opening_ = false, creating_ = false;
+	bool saveConflict_ = false;
 };
