@@ -31,9 +31,9 @@ std::filesystem::path Resolve(const std::filesystem::path &path) {
 /// <param name="path">検証済みの絶対パス</param>
 /// <param name="directory">起動先の作業ディレクトリ</param>
 /// <param name="visibility">起動先へ指定する初期表示</param>
-void Open(const std::filesystem::path &path,
-          const std::filesystem::path &directory,
-          ShellUtils::WindowVisibility visibility) {
+HANDLE Open(const std::filesystem::path &path,
+            const std::filesystem::path &directory,
+            ShellUtils::WindowVisibility visibility) {
 	SHELLEXECUTEINFOW info{};
 	info.cbSize = sizeof(info);
 	info.fMask =
@@ -51,9 +51,17 @@ void Open(const std::filesystem::path &path,
 		                PathUtils::ToUtf8(path), code));
 	}
 
-	if (info.hProcess) {
-		CloseHandle(info.hProcess);
+	return info.hProcess;
+}
+
+HANDLE OpenExecutable(const std::filesystem::path &path,
+                      ShellUtils::WindowVisibility visibility) {
+	const auto resolved = Resolve(path);
+	if (!PathUtils::HasExtension(resolved, ".exe") ||
+	    !std::filesystem::is_regular_file(resolved)) {
+		throw std::invalid_argument("Choose an existing .exe file.");
 	}
+	return Open(resolved, resolved.parent_path(), visibility);
 }
 } // namespace
 
@@ -66,7 +74,8 @@ bool ShellUtils::OpenDirectory(const std::filesystem::path &path,
 			throw std::invalid_argument("Choose an existing folder.");
 		}
 
-		Open(resolved, resolved, WindowVisibility::NORMAL);
+		if (const auto process = Open(resolved, resolved, WindowVisibility::NORMAL))
+			CloseHandle(process);
 		error.clear();
 		return true;
 	} catch (const std::exception &exception) {
@@ -153,18 +162,62 @@ bool ShellUtils::RunExecutable(const std::filesystem::path &path,
                                std::string &error,
                                WindowVisibility visibility) {
 	try {
-		const auto resolved = Resolve(path);
-
-		if (!PathUtils::HasExtension(resolved, ".exe") ||
-		    !std::filesystem::is_regular_file(resolved)) {
-			throw std::invalid_argument("Choose an existing .exe file.");
-		}
-
-		Open(resolved, resolved.parent_path(), visibility);
+		if (const auto process = OpenExecutable(path, visibility))
+			CloseHandle(process);
 		error.clear();
 		return true;
 	} catch (const std::exception &exception) {
 		error = exception.what();
 		return false;
 	}
+}
+
+ShellUtils::ExecutableProcess::~ExecutableProcess() {
+	Reset();
+}
+
+bool ShellUtils::ExecutableProcess::Start(const std::filesystem::path &path,
+                                         std::string &error,
+                                         WindowVisibility visibility) {
+	try {
+		if (IsTracking())
+			throw std::runtime_error("A game process is already being tracked.");
+		handle_ = OpenExecutable(path, visibility);
+		if (!IsTracking())
+			throw std::runtime_error("Windows did not return a process handle.");
+		error.clear();
+		return true;
+	} catch (const std::exception &exception) {
+		error = exception.what();
+		return false;
+	}
+}
+
+bool ShellUtils::ExecutableProcess::Poll(
+    std::optional<std::uint32_t> &exitCode, std::string &error) const {
+	exitCode.reset();
+	if (!IsTracking()) {
+		error = "No process is being tracked.";
+		return false;
+	}
+	const auto state = WaitForSingleObject(handle_, 0);
+	if (state == WAIT_TIMEOUT) {
+		error.clear();
+		return true;
+	}
+	DWORD code = 0;
+	if (state != WAIT_OBJECT_0 || !GetExitCodeProcess(handle_, &code)) {
+		error = std::format("Could not check the game process (Windows error {}).",
+		                     GetLastError());
+		return false;
+	}
+	exitCode = code;
+	error.clear();
+	return true;
+}
+
+void ShellUtils::ExecutableProcess::Reset() {
+	if (handle_)
+		CloseHandle(handle_);
+	handle_ = nullptr;
 }

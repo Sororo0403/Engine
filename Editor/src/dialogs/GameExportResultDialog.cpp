@@ -3,6 +3,7 @@
 #include "platform/windows/PathUtils.h"
 #include "platform/windows/ShellUtils.h"
 #include <algorithm>
+#include <format>
 #include <fstream>
 #include <imgui.h>
 #include <system_error>
@@ -13,6 +14,8 @@ void GameExportResultDialog::Show(std::filesystem::path directory,
 	if (directory_ != directory) {
 		logLaunchStart_.reset();
 		sinceLaunchOnly_ = false;
+		process_.Reset();
+		processStatus_.clear();
 	}
 	directory_ = std::move(directory);
 	reopening_ = reopening;
@@ -86,6 +89,33 @@ void GameExportResultDialog::RefreshLog() {
 	}
 }
 
+bool GameExportResultDialog::UpdateGameProcess() {
+	if (!process_.IsTracking())
+		return false;
+
+	std::optional<std::uint32_t> exitCode;
+	std::string error;
+	if (!process_.Poll(exitCode, error)) {
+		processStatus_ = std::move(error);
+		process_.Reset();
+		return false;
+	}
+	if (!exitCode)
+		return false;
+
+	process_.Reset();
+	if (*exitCode == 0) {
+		processStatus_ = "Game exited normally.";
+		if (showLog_)
+			RefreshLog();
+		return showLog_;
+	}
+	processStatus_ = std::format("Game exited with code 0x{:08X}.", *exitCode);
+	showLog_ = true;
+	RefreshLog();
+	return true;
+}
+
 GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 	const char *title = reopening_ ? "Game Export###GameExportResultDialog"
 	                              : "Game Exported###GameExportResultDialog";
@@ -103,6 +133,10 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 
 	ImGui::TextWrapped("%s", PathUtils::ToUtf8(directory_).c_str());
 
+	bool refreshedLog = UpdateGameProcess();
+	if (!processStatus_.empty())
+		ui.Text(processStatus_);
+
 	if (!error_.empty()) {
 		ImGui::TextWrapped("%s", error_.c_str());
 	}
@@ -113,13 +147,14 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 
 	ui.SameLine();
 
-	bool refreshedLog = false;
+	ui.BeginDisabled(process_.IsTracking());
 	if (ui.Button("Run Game")) {
 		// 起動後すぐにログが追記されても、今回の行を落とさないよう先に記録する。
 		std::error_code status;
 		const auto size = std::filesystem::file_size(
 		    directory_ / L"logs" / L"Engine.log", status);
-		if (ShellUtils::RunExecutable(directory_ / L"Game.exe", error_)) {
+		if (process_.Start(directory_ / L"Game.exe", error_)) {
+			processStatus_ = "Game process running.";
 			logLaunchStart_.reset();
 			if (!status)
 				logLaunchStart_ = size;
@@ -132,6 +167,7 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 			}
 		}
 	}
+	ui.EndDisabled();
 
 	ui.SameLine();
 	if (ui.Button(showLog_ ? "Hide Game Log" : "View Game Log")) {

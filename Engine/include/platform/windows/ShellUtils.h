@@ -1,6 +1,8 @@
 #pragma once
 
+#include <cstdint>
 #include <filesystem>
+#include <optional>
 #include <string>
 
 namespace ShellUtils {
@@ -8,6 +10,41 @@ namespace ShellUtils {
 /// 起動するアプリへ指定する初期表示。実際の表示方法は起動先が決める
 /// </summary>
 enum class WindowVisibility { NORMAL, HIDDEN };
+
+/// <summary>
+/// 起動した実行ファイルの終了を待たずに確認する。破棄しても起動先は終了しない
+/// </summary>
+class ExecutableProcess {
+  public:
+	ExecutableProcess() = default;
+	~ExecutableProcess();
+	ExecutableProcess(const ExecutableProcess &) = delete;
+	ExecutableProcess &operator=(const ExecutableProcess &) = delete;
+
+	/// <summary>
+	/// 起動してプロセスの参照を保持する。COM初期化後に呼ぶ
+	/// </summary>
+	bool Start(const std::filesystem::path &path, std::string &error,
+	           WindowVisibility visibility = WindowVisibility::NORMAL);
+
+	/// <summary>
+	/// 待たずに終了コードを確認する。動作中はexitCodeが空で成功する
+	/// </summary>
+	bool Poll(std::optional<std::uint32_t> &exitCode, std::string &error) const;
+
+	/// <summary>
+	/// 起動したプロセスの参照を保持しているか確認する
+	/// </summary>
+	bool IsTracking() const { return handle_ != nullptr; }
+
+	/// <summary>
+	/// プロセスの参照を解放する
+	/// </summary>
+	void Reset();
+
+  private:
+	void *handle_ = nullptr;
+};
 
 /// <summary>
 /// 実在するフォルダをWindowsのシェルで開く

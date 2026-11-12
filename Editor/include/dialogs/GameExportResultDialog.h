@@ -1,5 +1,6 @@
 #pragma once
 
+#include "platform/windows/ShellUtils.h"
 #include <cstdint>
 #include <filesystem>
 #include <optional>
@@ -34,8 +35,14 @@ class GameExportResultDialog {
 	/// </summary>
 	void RefreshLog();
 
+	/// <summary>
+	/// 起動したゲームの終了を確認する。異常終了した場合はログを開く
+	/// </summary>
+	bool UpdateGameProcess();
+
 	std::filesystem::path directory_;
-	std::string error_;
+	ShellUtils::ExecutableProcess process_;
+	std::string error_, processStatus_;
 	std::string log_, logError_;
 	std::optional<std::uintmax_t> logLaunchStart_;
 	bool opening_ = false;
