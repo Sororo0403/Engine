@@ -350,6 +350,11 @@ class EditorScene final : public IScene {
 	GetNewScenePath(const std::filesystem::path &name) const;
 
 	/// <summary>
+	/// 復旧元の名前を使い、まだ存在しない保存先を提案する
+	/// </summary>
+	std::filesystem::path GetRecoveredScenePath() const;
+
+	/// <summary>
 	/// プロジェクトを作成または開き、読み込み成功後に編集対象を切り替える
 	/// </summary>
 	void SwitchProject(const std::filesystem::path &folder, bool create);
@@ -851,6 +856,7 @@ class EditorScene final : public IScene {
 	SceneRecoveryDialog recoveryDialog_;
 	std::filesystem::path pendingRecoveryPath_;
 	std::filesystem::path restoredRecoveryPath_;
+	std::filesystem::path recoverySourceFile_;
 	float recoveryElapsed_ = 0;
 	bool recoveryWasDirty_ = false;
 

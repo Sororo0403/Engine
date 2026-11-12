@@ -159,6 +159,7 @@ bool EditorScene::Initialize() {
 	recoveryWasDirty_ = false;
 	pendingRecoveryPath_.clear();
 	restoredRecoveryPath_.clear();
+	recoverySourceFile_.clear();
 	std::string recoveryError;
 
 	const bool recoveryReady =
@@ -3265,11 +3266,12 @@ void EditorScene::StartSave(bool saveAs) {
 	}
 
 	const auto &current = document_.GetFilePath();
-	const auto path = current.empty()
-	                      ? GetNewScenePath(L"Untitled.scene.json")
-	                  : !project_.GetRoot().empty()
-	                      ? GetNewScenePath(current.filename())
-	                      : current;
+	auto path = current.empty() ? GetNewScenePath(L"Untitled.scene.json")
+	            : !project_.GetRoot().empty() ? GetNewScenePath(current.filename())
+	                                         : current;
+	if (current.empty() && !recoverySourceFile_.empty()) {
+		path = GetRecoveredScenePath();
+	}
 	fileDialog_.Show(FileDialogMode::SAVE, path);
 
 	stage_ = DialogStage::SAVE_FILE;
@@ -3523,6 +3525,30 @@ EditorScene::GetNewScenePath(const std::filesystem::path &name) const {
 	return directory.is_absolute() ? directory / name : name;
 }
 
+std::filesystem::path EditorScene::GetRecoveredScenePath() const {
+	auto stem = recoverySourceFile_.stem();
+	if (PathUtils::HasExtension(stem, ".scene")) {
+		stem = stem.stem();
+	}
+	const auto base = stem.native() + L".recovered";
+
+	for (std::size_t index = 1;; ++index) {
+		const auto suffix =
+		    index == 1 ? std::wstring{} : L"-" + std::to_wstring(index);
+		auto name = std::filesystem::path(base + suffix + L".scene.json");
+		if (!PathUtils::IsValidFileName(name)) {
+			name = L"Recovered" + suffix + L".scene.json";
+		}
+		const auto candidate = GetNewScenePath(name);
+		std::error_code error;
+		const auto status = std::filesystem::symlink_status(
+		    PathUtils::ResolveFromExecutable(candidate), error);
+		if (!std::filesystem::exists(status)) {
+			return candidate;
+		}
+	}
+}
+
 void EditorScene::StartSaveCopy() {
 	try {
 		const auto &currentPath = document_.GetFilePath();
@@ -3534,6 +3560,9 @@ void EditorScene::StartSaveCopy() {
 		                    ? GetNewScenePath(L"Untitled.copy.scene.json")
 		                    : currentPath.parent_path() /
 		                          (stem.native() + L".copy.scene.json");
+		if (currentPath.empty() && !recoverySourceFile_.empty()) {
+			copyPath = GetRecoveredScenePath();
+		}
 		fileDialog_.Show(FileDialogMode::SAVE_COPY, copyPath);
 		stage_ = DialogStage::SAVE_COPY_FILE;
 	} catch (const std::exception &error) {
@@ -3707,7 +3736,9 @@ void EditorScene::RecordRecovery() {
 
 	std::string error;
 
-	if (!recovery_.Record(document_.GetScene(), document_.GetFilePath(),
+	const auto &sourceFile = recoverySourceFile_.empty() ? document_.GetFilePath()
+	                                                     : recoverySourceFile_;
+	if (!recovery_.Record(document_.GetScene(), sourceFile,
 	                      assetSources_, exportConfig_, error)) {
 		Logger::Error("EditorScene::RecordRecovery: " + error);
 		return;
@@ -3729,6 +3760,7 @@ void EditorScene::RecordRecovery() {
 void EditorScene::ClearRecovery(
     const std::filesystem::path &protectedRecovery) {
 	recoveryElapsed_ = 0;
+	recoverySourceFile_.clear();
 	std::string error;
 
 	if (!recovery_.Clear(document_.GetFilePath(), error)) {
@@ -3809,6 +3841,7 @@ void EditorScene::RestoreRecovery() {
 		document_.GetScene().CopyFrom(snapshot.scene);
 		document_.SetUntitled();
 		ClearRecovery(pendingRecoveryPath_);
+		recoverySourceFile_ = std::move(snapshot.sourceFile);
 		assetSources_ = std::move(snapshot.assets);
 		if (project_.GetRoot().empty()) {
 			exportConfig_ = std::move(snapshot.game);
