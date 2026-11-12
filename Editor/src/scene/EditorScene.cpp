@@ -2797,8 +2797,11 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 		}
 
 		pendingGameExportReplacement_ = directory;
-		if (directory.empty())
-			directory = preferences_.LastGameExport(project_.GetRoot());
+		if (directory.empty()) {
+			const auto recent = preferences_.RecentGameExports(project_.GetRoot());
+			if (!recent.empty())
+				directory = recent.front();
+		}
 		std::error_code error;
 		while (!directory.empty() &&
 		       !std::filesystem::is_directory(directory, error)) {
@@ -3227,8 +3230,9 @@ bool EditorScene::OpenGameExport(std::filesystem::path directory) {
 	const auto &root = project_.GetRoot();
 	const auto previous =
 	    std::exchange(pendingGameExportReplacement_, std::filesystem::path{});
-	if (!previous.empty() || preferences_.LastGameExport(root) != directory) {
-		preferences_.RememberGameExport(root, directory, previous);
+	const auto recent = preferences_.RecentGameExports(root);
+	if (!previous.empty() || recent.empty() || recent.front() != directory) {
+		preferences_.RememberOpenedGameExport(root, directory, previous);
 		if (canSavePreferences_)
 			preferences_.Save();
 	}

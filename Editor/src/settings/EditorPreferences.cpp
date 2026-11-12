@@ -150,32 +150,45 @@ void EditorPreferences::RememberProject(const std::filesystem::path &root) {
 }
 
 void EditorPreferences::RememberGameExport(
+    const std::filesystem::path &root, const std::filesystem::path &directory) {
+	if (RememberOpenedGameExport(root, directory))
+		lastGameExports_.insert_or_assign(root.lexically_normal(),
+		                                  directory.lexically_normal());
+}
+
+bool EditorPreferences::RememberOpenedGameExport(
     const std::filesystem::path &root, const std::filesystem::path &directory,
     const std::filesystem::path &previousDirectory) {
 	if ((!root.empty() && !root.is_absolute()) ||
 	    root.native().find(L'\0') != std::wstring::npos ||
 	    !directory.is_absolute() ||
 	    directory.native().find(L'\0') != std::wstring::npos) {
-		return;
+		return false;
 	}
 
 	auto normalized = directory.lexically_normal();
 	const auto previous = previousDirectory.lexically_normal();
-	auto &recent = recentGameExports_[root.lexically_normal()];
+	const auto key = root.lexically_normal();
+	auto &recent = recentGameExports_[key];
 	if (!previous.empty()) {
 		std::erase(recent, previous);
+		const auto last = lastGameExports_.find(key);
+		if (last != lastGameExports_.end() && last->second == previous) {
+			last->second = normalized;
+		}
 	}
 	std::erase(recent, normalized);
 	recent.insert(recent.begin(), std::move(normalized));
 	if (recent.size() > kMaximumRecentGameExports) {
 		recent.resize(kMaximumRecentGameExports);
 	}
+	return true;
 }
 
 std::filesystem::path EditorPreferences::LastGameExport(
     const std::filesystem::path &root) const {
-	const auto recent = RecentGameExports(root);
-	return recent.empty() ? std::filesystem::path{} : recent.front();
+	const auto last = lastGameExports_.find(root.lexically_normal());
+	return last == lastGameExports_.end() ? std::filesystem::path{} : last->second;
 }
 
 std::span<const std::filesystem::path> EditorPreferences::RecentGameExports(
@@ -464,7 +477,7 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 					if (it->is_string()) {
 						const auto &directory = it->get_ref<const std::string &>();
 						if (directory.find('\0') == std::string::npos) {
-							loaded.RememberGameExport(root, PathUtils::FromUtf8(directory));
+							loaded.RememberOpenedGameExport(root, PathUtils::FromUtf8(directory));
 						}
 					}
 				}
@@ -764,13 +777,15 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		}
 
 		auto lastGameExportsJson = nlohmann::json::object();
+		for (const auto &[root, directory] : lastGameExports_) {
+			lastGameExportsJson[PathUtils::ToUtf8(root)] = PathUtils::ToUtf8(directory);
+		}
 		auto recentGameExportsJson = nlohmann::json::object();
 		for (const auto &[root, directories] : recentGameExports_) {
 			if (directories.empty()) {
 				continue;
 			}
 			const auto key = PathUtils::ToUtf8(root);
-			lastGameExportsJson[key] = PathUtils::ToUtf8(directories.front());
 			auto entries = nlohmann::json::array();
 			for (const auto &directory : directories) {
 				entries.push_back(PathUtils::ToUtf8(directory));
@@ -867,6 +882,7 @@ bool EditorPreferences::operator==(const EditorPreferences &other) const {
 	       pivotMode == other.pivotMode && grid == other.grid &&
 	       recentScenes == other.recentScenes && lastProject == other.lastProject &&
 	       recentProjects == other.recentProjects &&
+	       lastGameExports_ == other.lastGameExports_ &&
 	       recentGameExports_ == other.recentGameExports_ &&
 	       projectAssetFolders_ == other.projectAssetFolders_ &&
 	       projectScenes == other.projectScenes && sceneViews == other.sceneViews &&

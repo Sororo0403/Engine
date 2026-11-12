@@ -61,12 +61,19 @@ class EditorPreferences {
 	void RememberProject(const std::filesystem::path &root);
 
 	/// <summary>
-	/// プロジェクトごとに最近のゲーム出力先を記憶する
+	/// プロジェクトごとに成功したゲーム出力先を記憶する
+	/// </summary>
+	void RememberGameExport(const std::filesystem::path &root,
+	                        const std::filesystem::path &directory);
+
+	/// <summary>
+	/// 開いた配布先を履歴へ追加する。最後の出力を移動した場合はその場所も更新する
 	/// </summary>
 	/// <param name="previousDirectory">移動前の出力先。指定した場合は履歴から除く</param>
-	void RememberGameExport(const std::filesystem::path &root,
-	                        const std::filesystem::path &directory,
-	                        const std::filesystem::path &previousDirectory = {});
+	/// <returns>true:有効なパスを記録 false:無効なパス</returns>
+	bool RememberOpenedGameExport(const std::filesystem::path &root,
+	                              const std::filesystem::path &directory,
+	                              const std::filesystem::path &previousDirectory = {});
 
 	/// <summary>
 	/// 最後の出力先を取得する。プロジェクトなしの場合は空のルートを指定する
@@ -130,6 +137,7 @@ class EditorPreferences {
 	bool operator==(const EditorPreferences &other) const;
 
   private:
+	std::map<std::filesystem::path, std::filesystem::path> lastGameExports_;
 	std::map<std::filesystem::path, std::vector<std::filesystem::path>> recentGameExports_;
 	std::map<std::filesystem::path, std::filesystem::path> projectAssetFolders_;
 };
