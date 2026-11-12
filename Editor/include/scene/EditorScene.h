@@ -918,6 +918,7 @@ class EditorScene final : public IScene {
 	bool gridSettingsRequested_ = false;
 	RecentScenes recentScenes_;
 	std::filesystem::path pendingOpenPath_;
+	std::filesystem::path pendingGameExportReplacement_;
 	SceneObjectId pendingOpenObject_ = 0;
 	std::vector<std::filesystem::path> pendingAssetPaths_;
 	std::vector<AssetUsage::Reference> assetReferences_;

@@ -61,10 +61,12 @@ class EditorPreferences {
 	void RememberProject(const std::filesystem::path &root);
 
 	/// <summary>
-	/// プロジェクトごとに最後に成功したゲームの出力先を記憶する
+	/// プロジェクトごとに最近のゲーム出力先を記憶する
 	/// </summary>
+	/// <param name="previousDirectory">移動前の出力先。指定した場合は履歴から除く</param>
 	void RememberGameExport(const std::filesystem::path &root,
-	                        const std::filesystem::path &directory);
+	                        const std::filesystem::path &directory,
+	                        const std::filesystem::path &previousDirectory = {});
 
 	/// <summary>
 	/// 最後の出力先を取得する。プロジェクトなしの場合は空のルートを指定する

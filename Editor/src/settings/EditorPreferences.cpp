@@ -150,7 +150,8 @@ void EditorPreferences::RememberProject(const std::filesystem::path &root) {
 }
 
 void EditorPreferences::RememberGameExport(
-    const std::filesystem::path &root, const std::filesystem::path &directory) {
+    const std::filesystem::path &root, const std::filesystem::path &directory,
+    const std::filesystem::path &previousDirectory) {
 	if ((!root.empty() && !root.is_absolute()) ||
 	    root.native().find(L'\0') != std::wstring::npos ||
 	    !directory.is_absolute() ||
@@ -159,7 +160,11 @@ void EditorPreferences::RememberGameExport(
 	}
 
 	auto normalized = directory.lexically_normal();
+	const auto previous = previousDirectory.lexically_normal();
 	auto &recent = recentGameExports_[root.lexically_normal()];
+	if (!previous.empty()) {
+		std::erase(recent, previous);
+	}
 	std::erase(recent, normalized);
 	recent.insert(recent.begin(), std::move(normalized));
 	if (recent.size() > kMaximumRecentGameExports) {

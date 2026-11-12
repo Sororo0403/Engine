@@ -2791,10 +2791,12 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 
 	case EditorAction::OPEN_GAME_EXPORT: {
 		auto directory = std::exchange(pendingOpenPath_, std::filesystem::path{});
+		pendingGameExportReplacement_.clear();
 		if (OpenGameExport(directory)) {
 			return;
 		}
 
+		pendingGameExportReplacement_ = directory;
 		if (directory.empty())
 			directory = preferences_.LastGameExport(project_.GetRoot());
 		std::error_code error;
@@ -3223,8 +3225,10 @@ bool EditorScene::OpenGameExport(std::filesystem::path directory) {
 		return false;
 
 	const auto &root = project_.GetRoot();
-	if (preferences_.LastGameExport(root) != directory) {
-		preferences_.RememberGameExport(root, directory);
+	const auto previous =
+	    std::exchange(pendingGameExportReplacement_, std::filesystem::path{});
+	if (!previous.empty() || preferences_.LastGameExport(root) != directory) {
+		preferences_.RememberGameExport(root, directory, previous);
 		if (canSavePreferences_)
 			preferences_.Save();
 	}
@@ -4864,6 +4868,7 @@ void EditorScene::UpdateDialogs() {
 	case DialogStage::SELECT_GAME_EXPORT: {
 		const auto result = fileDialog_.Draw(ui_);
 		if (result == FileDialogResult::CANCELLED) {
+			pendingGameExportReplacement_.clear();
 			stage_ = DialogStage::IDLE;
 		} else if (result == FileDialogResult::ACCEPTED &&
 		           !OpenGameExport(fileDialog_.GetSelectedPath())) {
