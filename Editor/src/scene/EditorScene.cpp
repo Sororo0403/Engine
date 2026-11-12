@@ -4478,8 +4478,23 @@ void EditorScene::UpdateDialogs() {
 		break;
 	}
 
-	case DialogStage::EDIT_SCRIPT: {
+	case DialogStage::EDIT_SCRIPT:
+	case DialogStage::EDIT_EXPORT_SCRIPT: {
+		const bool fromExport = stage_ == DialogStage::EDIT_EXPORT_SCRIPT;
 		const auto result = scriptEditorDialog_.Draw(ui_);
+
+		if (fromExport && result != ScriptEditorDialog::Result::NONE) {
+			std::string error;
+			if (result == ScriptEditorDialog::Result::SAVED) {
+				exportDialog_.SetCheckResult(
+				    "Script saved. Run Check Export to refresh the results.");
+				if (!assets_.Refresh())
+					error = assets_.GetError();
+			}
+			exportDialog_.Reopen(std::move(error));
+			stage_ = DialogStage::EXPORT_GAME;
+			break;
+		}
 
 		if (result == ScriptEditorDialog::Result::SAVED) {
 			stage_ = DialogStage::IDLE;
@@ -4866,6 +4881,16 @@ void EditorScene::UpdateDialogs() {
 			} else {
 				pendingOpenPath_ = issue.scenePath;
 				StartAction(EditorAction::OPEN_PATH, issue.objectId);
+			}
+			return;
+		}
+		if (result == GameExportResult::EDIT_ISSUE_SCRIPT) {
+			const auto &issue = exportDialog_.GetSelectedIssue();
+			std::string error;
+			if (scriptEditorDialog_.ShowEdit(issue.scriptPath, error, issue.message)) {
+				stage_ = DialogStage::EDIT_EXPORT_SCRIPT;
+			} else {
+				exportDialog_.Reopen("Could not open the script: " + error);
 			}
 			return;
 		}

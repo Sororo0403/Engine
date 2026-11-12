@@ -265,16 +265,25 @@ class Assets {
 	/// Luaを構文確認し、元のフォルダ構成を保って出力一覧へ登録する
 	/// </summary>
 	/// <param name="input">許可された取得元の絶対パス</param>
+	/// <param name="invalidScript">構文検査に失敗した場合の編集先。不要ならnullptr</param>
 	/// <returns>出力先基準のLuaアセット参照</returns>
-	fs::path AddScript(const fs::path &input) {
+	fs::path AddScript(const fs::path &input, fs::path *invalidScript = nullptr) {
 		const auto reference = AddFile(FindSource(input), input);
 		const auto &file = files_.at(reference);
 
 		if (!scripts_.contains(file)) {
 			std::string source, error;
-			if (!LuaScript::Read(file, source, error) ||
-			    !LuaScript::Validate(source, error))
+			if (!LuaScript::Read(file, source, error))
 				throw std::runtime_error(error);
+			auto scriptPath = file;
+			scriptPath.make_preferred();
+			LuaScriptProgram program;
+			if (!LuaScript::Compile(source, PathUtils::ToUtf8(scriptPath), program,
+			                        error)) {
+				if (invalidScript)
+					*invalidScript = std::move(scriptPath);
+				throw std::runtime_error(error);
+			}
 			scripts_.insert(file);
 		}
 
@@ -495,23 +504,25 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
                    std::vector<GameExportIssue> *issues = nullptr) {
 	OutputDirectory output;
 	const auto appendIssue = [&](std::string issue, const fs::path &scenePath,
-	                             SceneObjectId objectId) {
+	                             SceneObjectId objectId,
+	                             const fs::path &scriptPath = {}) {
 		if (!error.empty()) {
 			error += "\n\n";
 		}
 		error += issue;
 		if (issues) {
-			issues->push_back({std::move(issue), scenePath, objectId});
+			issues->push_back({std::move(issue), scenePath, objectId, scriptPath});
 		}
 	};
 	// 事前検査では、同じ検査で独立して直せる問題をまとめて表示する。
 	const auto reportIssue = [&](std::string issue, const fs::path &scenePath = {},
-	                             SceneObjectId objectId = 0) {
+	                             SceneObjectId objectId = 0,
+	                             const fs::path &scriptPath = {}) {
 		if (writeOutput) {
 			throw std::runtime_error(std::move(issue));
 		}
 
-		appendIssue(std::move(issue), scenePath, objectId);
+		appendIssue(std::move(issue), scenePath, objectId, scriptPath);
 	};
 
 	try {
@@ -565,9 +576,11 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 		}
 
 		const auto reportObjectIssue = [&](std::string issue, const auto &entry,
-		                                   SceneObjectId id) {
+		                                   SceneObjectId id,
+		                                   const fs::path &scriptPath = {}) {
 			reportIssue(std::move(issue), entry.prefab ? fs::path{} : entry.source,
-			            entry.prefab || !entry.objects.contains(id) ? 0 : id);
+			            entry.prefab || !entry.objects.contains(id) ? 0 : id,
+			            scriptPath);
 		};
 
 		bool startupIsTarget = false;
@@ -759,7 +772,8 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 							    found - graph.begin())];
 						}
 				const auto includeAsset = [&](fs::path &path, const char *kind,
-				                              const auto &add) {
+				                              const auto &add,
+				                              const fs::path &failedScript = {}) {
 					try {
 						const auto input =
 						    path.is_absolute()
@@ -773,7 +787,7 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 					} catch (const std::exception &error) {
 						reportObjectIssue(std::format(
 						    "{} / {}: {}\n{}", describe(id), kind, PathUtils::ToUtf8(path),
-						    error.what()), entry, id);
+						    error.what()), entry, id, failedScript);
 					}
 				};
 				const auto addUITexture = [&](const fs::path &path) {
@@ -791,9 +805,14 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 					             [&](const auto &path) {
 						             return assets.AddAnimationClip(path);
 					             });
-				if (object.script && !object.script->asset.empty())
+				if (object.script && !object.script->asset.empty()) {
+					fs::path failedScript;
 					includeAsset(object.script->asset, "Lua Script",
-					             [&](const auto &path) { return assets.AddScript(path); });
+					             [&](const auto &path) {
+						             return assets.AddScript(path, &failedScript);
+					             },
+					             failedScript);
+				}
 				if (object.audioSource && !object.audioSource->clipPath.empty())
 					includeAsset(object.audioSource->clipPath, "Audio Source",
 					             [&](const auto &path) {

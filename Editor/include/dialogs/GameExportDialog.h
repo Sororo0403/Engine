@@ -7,7 +7,14 @@
 
 class ImGuiSystem;
 
-enum class GameExportResult { NONE, CANCELLED, CHECK, ACCEPTED, OPEN_ISSUE };
+enum class GameExportResult {
+	NONE,
+	CANCELLED,
+	CHECK,
+	ACCEPTED,
+	OPEN_ISSUE,
+	EDIT_ISSUE_SCRIPT
+};
 
 /// <summary>
 /// ゲームの出力先・タイトル・画面サイズを選択する
@@ -41,7 +48,7 @@ class GameExportDialog {
 	void SetCheckResult(std::string message, std::vector<GameExportIssue> issues = {});
 
 	/// <summary>
-	/// OPEN_ISSUEで選択した不備を取得する
+	/// OPEN_ISSUEまたはEDIT_ISSUE_SCRIPTで選択した不備を取得する
 	/// </summary>
 	const GameExportIssue &GetSelectedIssue() const;
 
@@ -53,7 +60,8 @@ class GameExportDialog {
 	/// <summary>
 	/// 入力を保持したまま出力画面を開き直す
 	/// </summary>
-	void Reopen();
+	/// <param name="error">移動や編集の失敗理由</param>
+	void Reopen(std::string error = {});
 
 	/// <summary>
 	/// 次に同じ起動シーンの出力画面を開くとき、現在の入力を引き継ぐ

@@ -113,12 +113,12 @@ void GameExportDialog::ClearCheckResult() {
 }
 
 void GameExportDialog::ShowExportFailure(std::string error) {
-	error_ = std::move(error);
 	ClearCheckResult();
-	Reopen();
+	Reopen(std::move(error));
 }
 
-void GameExportDialog::Reopen() {
+void GameExportDialog::Reopen(std::string error) {
+	error_ = std::move(error);
 	opening_ = true;
 }
 
@@ -209,10 +209,20 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 				const auto &issue = checkIssues_[i];
 				ImGui::PushID(static_cast<int>(i));
 				ImGui::TextWrapped("%s", issue.message.c_str());
-				if ((issue.objectId != 0 || !issue.scenePath.empty()) &&
+				const bool hasObject =
+				    issue.objectId != 0 || !issue.scenePath.empty();
+				if (hasObject &&
 				    ui.Button(issue.objectId == 0 ? "Open Scene" : "Show Object")) {
 					selectedIssue_ = i;
 					result = GameExportResult::OPEN_ISSUE;
+				}
+				if (!issue.scriptPath.empty()) {
+					if (hasObject)
+						ui.SameLine();
+					if (ui.Button("Edit Script")) {
+						selectedIssue_ = i;
+						result = GameExportResult::EDIT_ISSUE_SCRIPT;
+					}
 				}
 				ImGui::PopID();
 				ImGui::Spacing();
@@ -294,8 +304,10 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 
 	if (result == GameExportResult::CANCELLED ||
 	    result == GameExportResult::ACCEPTED ||
-	    result == GameExportResult::OPEN_ISSUE) {
-		resumeDraft_ = result == GameExportResult::OPEN_ISSUE;
+	    result == GameExportResult::OPEN_ISSUE ||
+	    result == GameExportResult::EDIT_ISSUE_SCRIPT) {
+		resumeDraft_ = result == GameExportResult::OPEN_ISSUE ||
+		               result == GameExportResult::EDIT_ISSUE_SCRIPT;
 		ui.CloseCurrentPopup();
 	}
 
