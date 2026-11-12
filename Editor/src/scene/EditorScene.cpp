@@ -2714,6 +2714,10 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 		return;
 	case EditorAction::EXPORT_GAME:
 		pendingAction_ = action;
+		ExecutePendingAction();
+		return;
+	case EditorAction::WRITE_GAME_EXPORT:
+		pendingAction_ = action;
 		ConfirmSceneChanges();
 		return;
 
@@ -3081,8 +3085,36 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	}
 }
 
+void EditorScene::WriteGameExport() {
+	SceneDocument startup;
+	const auto *scene = GetStartupSceneForRun(startup, false);
+	const auto &options = exportDialog_.GetOptions();
+	std::string error;
+	if (!scene) {
+		error = "Could not load the project startup scene: " + startup.GetError();
+	}
+
+	if (!scene || !GameExporter::Export(*scene, options, error)) {
+		exportDialog_.ShowExportFailure("Export failed: " + error);
+		stage_ = DialogStage::EXPORT_GAME;
+		return;
+	}
+
+	const auto &directory = options.destination;
+	Logger::Info("Game exported to " + PathUtils::ToUtf8(directory));
+	if (project_.GetRoot().empty()) {
+		exportConfig_ = options.config;
+	}
+	preferences_.RememberGameExport(project_.GetRoot(), directory);
+	if (canSavePreferences_) {
+		preferences_.Save();
+	}
+	exportResultDialog_.Show(directory);
+	stage_ = DialogStage::EXPORT_RESULT;
+}
+
 void EditorScene::ConfirmSceneChanges() {
-	const bool exporting = pendingAction_ == EditorAction::EXPORT_GAME;
+	const bool exporting = pendingAction_ == EditorAction::WRITE_GAME_EXPORT;
 	if (document_.IsModified() &&
 	    (!exporting || !UsesEditingSceneForStartup(project_.GetStartupScene()))) {
 		const auto name =
@@ -3096,6 +3128,15 @@ void EditorScene::ConfirmSceneChanges() {
 	}
 }
 
+void EditorScene::CancelPendingAction() {
+	const auto action = std::exchange(pendingAction_, EditorAction::NONE);
+	stage_ = DialogStage::IDLE;
+	if (action == EditorAction::WRITE_GAME_EXPORT) {
+		exportDialog_.Reopen();
+		stage_ = DialogStage::EXPORT_GAME;
+	}
+}
+
 void EditorScene::ExecutePendingAction() {
 	const EditorAction action = pendingAction_;
 
@@ -3103,6 +3144,10 @@ void EditorScene::ExecutePendingAction() {
 	stage_ = DialogStage::IDLE;
 
 	switch (action) {
+	case EditorAction::WRITE_GAME_EXPORT:
+		WriteGameExport();
+		return;
+
 	case EditorAction::OPEN_PROJECT_PATH:
 		SwitchProject(pendingOpenPath_, false);
 		return;
@@ -4217,8 +4262,7 @@ void EditorScene::UpdateDialogs() {
 			break;
 
 		case SaveChangesResult::CANCEL:
-			pendingAction_ = EditorAction::NONE;
-			stage_ = DialogStage::IDLE;
+			CancelPendingAction();
 			break;
 
 		case SaveChangesResult::NONE:
@@ -4264,8 +4308,7 @@ void EditorScene::UpdateDialogs() {
 
 		if (result == FileDialogResult::CANCELLED) {
 			// 保存先選択を取り消した場合は、NewやExitも取り消す
-			pendingAction_ = EditorAction::NONE;
-			stage_ = DialogStage::IDLE;
+			CancelPendingAction();
 			return;
 		}
 
@@ -4757,7 +4800,6 @@ void EditorScene::UpdateDialogs() {
 			return;
 		}
 
-		const bool checking = result == GameExportResult::CHECK;
 		if (result == GameExportResult::OPEN_ISSUE) {
 			const auto &issue = exportDialog_.GetSelectedIssue();
 			const auto &current = document_.GetFilePath();
@@ -4773,7 +4815,12 @@ void EditorScene::UpdateDialogs() {
 			}
 			return;
 		}
-		if (!checking && result != GameExportResult::ACCEPTED) {
+		if (result == GameExportResult::ACCEPTED) {
+			stage_ = DialogStage::IDLE;
+			StartAction(EditorAction::WRITE_GAME_EXPORT);
+			return;
+		}
+		if (result != GameExportResult::CHECK) {
 			return;
 		}
 
@@ -4786,37 +4833,17 @@ void EditorScene::UpdateDialogs() {
 			        startup.GetError();
 		}
 
-		if (checking) {
-			std::vector<GameExportIssue> issues;
-			if (scene && GameExporter::Check(*scene, options, error, &issues)) {
-				exportDialog_.SetCheckResult(
-				    "Export check passed. No files were written.");
-			} else {
-				if (issues.empty()) {
-					issues.push_back({error});
-				}
-				exportDialog_.SetCheckResult("Export check failed: " + error,
-				                             std::move(issues));
+		std::vector<GameExportIssue> issues;
+		if (scene && GameExporter::Check(*scene, options, error, &issues)) {
+			exportDialog_.SetCheckResult(
+			    "Export check passed. No files were written.");
+		} else {
+			if (issues.empty()) {
+				issues.push_back({error});
 			}
-			return;
+			exportDialog_.SetCheckResult("Export check failed: " + error,
+			                             std::move(issues));
 		}
-
-		if (!scene || !GameExporter::Export(*scene, options, error)) {
-			exportDialog_.ShowExportFailure("Export failed: " + error);
-			return;
-		}
-
-		const auto &directory = options.destination;
-		Logger::Info("Game exported to " + PathUtils::ToUtf8(directory));
-		if (project_.GetRoot().empty()) {
-			exportConfig_ = options.config;
-		}
-		preferences_.RememberGameExport(project_.GetRoot(), directory);
-		if (canSavePreferences_) {
-			preferences_.Save();
-		}
-		exportResultDialog_.Show(directory);
-		stage_ = DialogStage::EXPORT_RESULT;
 		return;
 	}
 	case DialogStage::ERROR: {
@@ -5176,6 +5203,9 @@ void EditorScene::ShowError(std::string message, SceneObjectId objectId,
 }
 
 void EditorScene::ShowSceneSaveError() {
+	if (pendingAction_ == EditorAction::WRITE_GAME_EXPORT) {
+		exportDialog_.PreserveDraft();
+	}
 	ShowError(document_.GetError());
 	sceneSaveConflict_ = document_.HasSaveConflict();
 }

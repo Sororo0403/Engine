@@ -151,6 +151,7 @@ class EditorScene final : public IScene {
 		SAVE_COPY,
 		IMPORT_SCENE,
 		EXPORT_GAME,
+		WRITE_GAME_EXPORT,
 		LAST_GAME_EXPORT,
 		GAME_SETTINGS,
 		LOAD_GAME_SETTINGS,
@@ -321,6 +322,16 @@ class EditorScene final : public IScene {
 	/// 保存確認後に保留していた操作を実行する
 	/// </summary>
 	void ExecutePendingAction();
+
+	/// <summary>
+	/// 保留中の操作を取り消し、配布出力の場合は設定画面へ戻る
+	/// </summary>
+	void CancelPendingAction();
+
+	/// <summary>
+	/// 出力画面で確定した設定を使ってゲームを書き出す
+	/// </summary>
+	void WriteGameExport();
 
 	/// <summary>
 	/// 保留中のNew・Open・Import・Exitに対してシーンの保存を確認し、変更がなければ操作を続ける

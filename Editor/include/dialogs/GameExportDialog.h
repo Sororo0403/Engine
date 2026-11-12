@@ -51,6 +51,16 @@ class GameExportDialog {
 	void ShowExportFailure(std::string error);
 
 	/// <summary>
+	/// 入力を保持したまま出力画面を開き直す
+	/// </summary>
+	void Reopen();
+
+	/// <summary>
+	/// 次に同じ起動シーンの出力画面を開くとき、現在の入力を引き継ぐ
+	/// </summary>
+	void PreserveDraft();
+
+	/// <summary>
 	/// 確定した出力設定を取得する
 	/// </summary>
 	/// <returns>CHECKまたはACCEPTED後に使用する設定</returns>
@@ -74,5 +84,5 @@ class GameExportDialog {
 	bool includesUnsavedEdits_ = false;
 	bool browsing_ = false;
 	bool scrollCheckResultToTop_ = false;
-	bool resumeAfterIssue_ = false;
+	bool resumeDraft_ = false;
 };

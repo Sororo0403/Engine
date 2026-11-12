@@ -44,7 +44,7 @@ std::filesystem::path FindExistingParent(const std::filesystem::path &output) {
 
 void GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits,
                             const std::filesystem::path &projectRoot) {
-	const bool resume = std::exchange(resumeAfterIssue_, false) &&
+	const bool resume = std::exchange(resumeDraft_, false) &&
 	                    projectRoot_ == projectRoot &&
 	                    options_.startupScenePath == options.startupScenePath;
 	projectRoot_ = projectRoot;
@@ -74,7 +74,7 @@ void GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits
 
 void GameExportDialog::ForgetUntitledDraft() {
 	if (options_.startupScenePath.empty()) {
-		resumeAfterIssue_ = false;
+		resumeDraft_ = false;
 	}
 }
 
@@ -97,7 +97,15 @@ void GameExportDialog::ClearCheckResult() {
 void GameExportDialog::ShowExportFailure(std::string error) {
 	error_ = std::move(error);
 	ClearCheckResult();
+	Reopen();
+}
+
+void GameExportDialog::Reopen() {
 	opening_ = true;
+}
+
+void GameExportDialog::PreserveDraft() {
+	resumeDraft_ = true;
 }
 
 GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
@@ -249,7 +257,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 	if (result == GameExportResult::CANCELLED ||
 	    result == GameExportResult::ACCEPTED ||
 	    result == GameExportResult::OPEN_ISSUE) {
-		resumeAfterIssue_ = result == GameExportResult::OPEN_ISSUE;
+		resumeDraft_ = result == GameExportResult::OPEN_ISSUE;
 		ui.CloseCurrentPopup();
 	}
 
