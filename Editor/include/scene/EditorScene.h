@@ -141,6 +141,7 @@ class EditorScene final : public IScene {
 		NONE,
 		NEW_PROJECT,
 		OPEN_PROJECT,
+		OPEN_PROJECT_PATH,
 		SET_STARTUP_SCENE,
 		NEW,
 		NEW_SAMPLE,

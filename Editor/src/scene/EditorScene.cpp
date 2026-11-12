@@ -1599,6 +1599,7 @@ void EditorScene::Finalize() {
 			current.assets = assetSources_;
 		} else {
 			current.lastProject = project_.GetRoot();
+			current.RememberProject(project_.GetRoot());
 			current.RememberProjectScene(project_.GetRoot(), document_.GetFilePath());
 		}
 		current.RememberSceneView(document_.GetFilePath(), cameraController_.GetViewState());
@@ -1696,6 +1697,27 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 
 		if (ui_.MenuItem("Open Project...", nullptr, enabled)) {
 			action = EditorAction::OPEN_PROJECT;
+		}
+
+		const auto &recentProjects = preferences_.recentProjects;
+		if (ImGui::BeginMenu("Recent Projects",
+		                     enabled && !recentProjects.empty())) {
+			const auto &activeRoot = project_.GetRoot();
+			std::size_t index = 0;
+			for (const auto &root : recentProjects) {
+				const auto name = root.has_filename() ? root.filename() : root;
+				const auto label = std::format("{}###RecentProject{}",
+				                               PathUtils::ToUtf8(name), index++);
+				const bool isCurrent =
+				    !activeRoot.empty() && PathUtils::IsSameFile(activeRoot, root);
+				if (ImGui::MenuItem(label.c_str(), nullptr, isCurrent,
+				                    !isCurrent)) {
+					pendingOpenPath_ = root;
+					action = EditorAction::OPEN_PROJECT_PATH;
+				}
+				ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(root).c_str());
+			}
+			ui_.EndMenu();
 		}
 
 		const auto startup = project_.GetStartupScene();
@@ -2584,6 +2606,7 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	    ((action == EditorAction::IMPORT_SCENE ||
 	      action == EditorAction::ASSETS_FOLDER ||
 	      action == EditorAction::OPEN_PATH ||
+	      action == EditorAction::OPEN_PROJECT_PATH ||
 	      action == EditorAction::LOAD_GAME_SETTINGS ||
 	      action == EditorAction::RECOVER_SCENE ||
 	      action == EditorAction::RESTORE_RECOVERY) &&
@@ -2897,6 +2920,7 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 
 	case EditorAction::NEW_PROJECT:
 	case EditorAction::OPEN_PROJECT:
+	case EditorAction::OPEN_PROJECT_PATH:
 	case EditorAction::NEW:
 	case EditorAction::NEW_SAMPLE:
 	case EditorAction::OPEN:
@@ -3050,6 +3074,10 @@ void EditorScene::ExecutePendingAction() {
 	stage_ = DialogStage::IDLE;
 
 	switch (action) {
+	case EditorAction::OPEN_PROJECT_PATH:
+		SwitchProject(pendingOpenPath_, false);
+		return;
+
 	case EditorAction::NEW_PROJECT:
 	case EditorAction::OPEN_PROJECT: {
 		const auto directory = project_.GetRoot().empty()
@@ -4857,6 +4885,7 @@ void EditorScene::SaveEditorSession() {
 
 	if (!project_.GetRoot().empty()) {
 		current.lastProject = project_.GetRoot();
+		current.RememberProject(project_.GetRoot());
 		current.RememberProjectScene(project_.GetRoot(), document_.GetFilePath());
 	}
 

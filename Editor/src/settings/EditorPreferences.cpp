@@ -17,6 +17,7 @@
 
 namespace {
 using ViewState = EditorCameraController::ViewState;
+constexpr std::size_t kMaximumRecentProjects = 8;
 
 /// <summary>
 /// 保存した位置と向きを読み、Sceneビューで復元できるか検証する
@@ -126,6 +127,25 @@ const ViewState *
 EditorPreferences::FindSceneView(const std::filesystem::path &scene) const {
 	const auto found = sceneViews.find(SceneViewKey(scene));
 	return found == sceneViews.end() ? nullptr : &found->second;
+}
+
+void EditorPreferences::RememberProject(const std::filesystem::path &root) {
+	if (!root.is_absolute() || root.native().find(L'\0') != std::wstring::npos) {
+		return;
+	}
+
+	auto normalized = root.lexically_normal();
+	if (!recentProjects.empty() && recentProjects.front() == normalized) {
+		return;
+	}
+
+	std::erase_if(recentProjects, [&](const auto &path) {
+		return PathUtils::IsSameFile(path, normalized);
+	});
+	recentProjects.insert(recentProjects.begin(), std::move(normalized));
+	if (recentProjects.size() > kMaximumRecentProjects) {
+		recentProjects.resize(kMaximumRecentProjects);
+	}
 }
 
 void EditorPreferences::RememberProjectScene(const std::filesystem::path &root,
@@ -338,6 +358,23 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 			    projectPath.native().find(L'\0') == std::wstring::npos) {
 				loaded.lastProject = projectPath.lexically_normal();
 			}
+		}
+
+		const auto recentProjectPaths = json.find("recentProjects");
+		if (recentProjectPaths != json.end() && recentProjectPaths->is_array()) {
+			const auto count =
+			    (std::min)(recentProjectPaths->size(), kMaximumRecentProjects);
+			for (std::size_t i = count; i > 0; --i) {
+				const auto &entry = (*recentProjectPaths)[i - 1];
+				if (entry.is_string()) {
+					const auto &text = entry.get_ref<const std::string &>();
+					if (text.find('\0') == std::string::npos) {
+						loaded.RememberProject(PathUtils::FromUtf8(text));
+					}
+				}
+			}
+		} else {
+			loaded.RememberProject(loaded.lastProject);
 		}
 
 		if (json.contains("projectScenes") && json.at("projectScenes").is_object()) {
@@ -610,6 +647,10 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		}
 
 		auto projectScenesJson = nlohmann::json::object();
+		auto recentProjectsJson = nlohmann::json::array();
+		for (const auto &root : recentProjects) {
+			recentProjectsJson.push_back(PathUtils::ToUtf8(root));
+		}
 		for (const auto &[root, scene] : projectScenes) {
 			projectScenesJson[PathUtils::ToUtf8(root)] = PathUtils::ToUtf8(scene);
 		}
@@ -658,6 +699,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		    {"scaleStepRatio", snap.scaleRatio},
 		    {"recentScenes", recentJson},
 		    {"lastProject", PathUtils::ToUtf8(lastProject)},
+		    {"recentProjects", std::move(recentProjectsJson)},
 		    {"projectScenes", std::move(projectScenesJson)},
 		    {"sceneViews", std::move(sceneViewsJson)},
 		    {"grid",
@@ -694,6 +736,7 @@ bool EditorPreferences::operator==(const EditorPreferences &other) const {
 	       colliderDisplay == other.colliderDisplay &&
 	       pivotMode == other.pivotMode && grid == other.grid &&
 	       recentScenes == other.recentScenes && lastProject == other.lastProject &&
+	       recentProjects == other.recentProjects &&
 	       projectScenes == other.projectScenes && sceneViews == other.sceneViews &&
 	       assets == other.assets &&
 	       gameExport.title == other.gameExport.title &&

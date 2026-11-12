@@ -43,6 +43,7 @@ class EditorPreferences {
 
 	std::vector<std::filesystem::path> recentScenes;
 	std::filesystem::path lastProject;
+	std::vector<std::filesystem::path> recentProjects;
 	std::map<std::filesystem::path, std::filesystem::path> projectScenes;
 	std::map<std::filesystem::path, EditorCameraController::ViewState> sceneViews;
 	AssetSources assets;
@@ -52,6 +53,11 @@ class EditorPreferences {
 	/// </summary>
 	void RememberProjectScene(const std::filesystem::path &root,
 	                          const std::filesystem::path &scene);
+
+	/// <summary>
+	/// 開いたプロジェクトを最近使った順に記憶する
+	/// </summary>
+	void RememberProject(const std::filesystem::path &root);
 
 	/// <summary>
 	/// 記憶したシーンが現在もプロジェクト内にあれば絶対パスを返す
