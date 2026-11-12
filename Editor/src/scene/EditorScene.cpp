@@ -3085,14 +3085,34 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	}
 }
 
+const Scene *EditorScene::PrepareGameExport(SceneDocument &startup,
+                                            GameExportOptions &options,
+                                            std::string &error) {
+	try {
+		const auto *scene = GetStartupSceneForRun(startup, false);
+		if (!scene) {
+			error = std::format(
+			    "Could not load the project startup scene: {}\n{}\n"
+			    "Open a valid scene and choose File > Set Current Scene as Startup.",
+			    PathUtils::ToUtf8(project_.GetStartupScene()), startup.GetError());
+			return nullptr;
+		}
+		options.assetDirectories = assetSources_.ForScene(*scene);
+		options.startupScenePath = scene == &document_.GetScene()
+		                               ? document_.GetFilePath()
+		                               : startup.GetFilePath();
+		return scene;
+	} catch (const std::exception &issue) {
+		error = issue.what();
+		return nullptr;
+	}
+}
+
 void EditorScene::WriteGameExport() {
 	SceneDocument startup;
-	const auto *scene = GetStartupSceneForRun(startup, false);
-	const auto &options = exportDialog_.GetOptions();
+	auto options = exportDialog_.GetOptions();
 	std::string error;
-	if (!scene) {
-		error = "Could not load the project startup scene: " + startup.GetError();
-	}
+	const auto *scene = PrepareGameExport(startup, options, error);
 
 	if (!scene || !GameExporter::Export(*scene, options, error)) {
 		exportDialog_.ShowExportFailure("Export failed: " + error);
@@ -3166,13 +3186,6 @@ void EditorScene::ExecutePendingAction() {
 
 	case EditorAction::EXPORT_GAME: {
 		try {
-			SceneDocument startup;
-			const auto *scene = GetStartupSceneForRun(startup);
-
-			if (!scene) {
-				return;
-			}
-
 			GameExportOptions options;
 			const auto root = PathUtils::GetExecutableDirectory();
 #if defined(_DEBUG)
@@ -3181,7 +3194,6 @@ void EditorScene::ExecutePendingAction() {
 			options.runtimeDirectory = root;
 #endif
 			options.resourceDirectory = root / L"resources";
-			options.assetDirectories = assetSources_.ForScene(*scene);
 			options.destination = root / L"exports" / L"Game";
 			const auto lastExport = preferences_.LastGameExport(project_.GetRoot());
 			const auto lastParent = lastExport.parent_path();
@@ -3191,12 +3203,13 @@ void EditorScene::ExecutePendingAction() {
 				options.destination = lastParent / options.destination.filename();
 			}
 			options.config = exportConfig_;
-			const bool isCurrentScene = scene == &document_.GetScene();
+			const auto startup = project_.GetStartupScene();
+			const bool isCurrentScene = UsesEditingSceneForStartup(startup);
 			if (isCurrentScene) {
 				options.config.fallbackCamera = cameraController_.GetPose();
 			}
 			options.startupScenePath =
-			    isCurrentScene ? document_.GetFilePath() : startup.GetFilePath();
+			    isCurrentScene ? document_.GetFilePath() : startup;
 			exportDialog_.Show(std::move(options),
 			                   isCurrentScene && document_.IsModified(),
 			                   project_.GetRoot());
@@ -4825,13 +4838,9 @@ void EditorScene::UpdateDialogs() {
 		}
 
 		SceneDocument startup;
-		const auto *scene = GetStartupSceneForRun(startup, false);
-		const auto &options = exportDialog_.GetOptions();
+		auto options = exportDialog_.GetOptions();
 		std::string error;
-		if (!scene) {
-			error = "Could not load the project startup scene: " +
-			        startup.GetError();
-		}
+		const auto *scene = PrepareGameExport(startup, options, error);
 
 		std::vector<GameExportIssue> issues;
 		if (scene && GameExporter::Check(*scene, options, error, &issues)) {
