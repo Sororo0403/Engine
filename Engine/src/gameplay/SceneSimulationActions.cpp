@@ -122,6 +122,7 @@ void SceneSimulation::Adopt(SceneSimulation &source) {
 	firedActions_ = std::move(source.firedActions_);
 	occupiedActions_ = std::move(source.occupiedActions_);
 	lastUpdateError_ = std::move(source.lastUpdateError_);
+	failedDestinationObject_.reset();
 	pendingScene_ = std::move(source.pendingScene_);
 	gamePaused_ = source.gamePaused_;
 	restartSource_ = std::move(source.restartSource_);

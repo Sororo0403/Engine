@@ -355,6 +355,23 @@ class SceneSimulation {
 		return lastUpdateError_;
 	}
 
+	struct FailedSceneDestination {
+		const std::filesystem::path &path;
+		SceneObjectId objectId;
+	};
+
+	/// <summary>
+	/// 読み込み後の到着処理や開始処理に失敗した遷移先を取得する。原因の物体が不明ならIDは0
+	/// </summary>
+	/// <returns>次の更新・再生開始・停止まで有効な遷移先。読み込めなかった場合はnullopt</returns>
+	std::optional<FailedSceneDestination> GetFailedSceneDestination() const {
+		if (!failedDestinationObject_) {
+			return std::nullopt;
+		}
+		return FailedSceneDestination{pendingScene_.path,
+		                              *failedDestinationObject_};
+	}
+
 	/// <summary>
 	/// 再生シーンで現在重なるTriggerの組を取得する
 	/// </summary>
@@ -620,6 +637,8 @@ class SceneSimulation {
 	};
 
 	SceneLoadRequest pendingScene_;
+	// 遷移先を読み込めた場合のみ値を持つ。原因の物体が不明な場合は0。
+	std::optional<SceneObjectId> failedDestinationObject_;
 	// 到着位置を反映済みで、Lua開始処理とシミュレーションを実行する前の状態。
 	std::shared_ptr<const Scene> restartSource_;
 	std::shared_ptr<const std::filesystem::path> loadedScenePath_;

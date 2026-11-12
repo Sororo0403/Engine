@@ -195,6 +195,14 @@ class EditorPlaySession {
 	}
 
 	/// <summary>
+	/// 読み込み後の処理に失敗した遷移先と原因の物体を取得する
+	/// </summary>
+	std::optional<SceneSimulation::FailedSceneDestination>
+	GetFailedSceneDestination() const {
+		return simulation_.GetFailedSceneDestination();
+	}
+
+	/// <summary>
 	/// Play開始時の編集シーンと同じ物体IDの集合を使用しているか確認する
 	/// </summary>
 	/// <returns>true:開始シーンを再生中 false:停止中または遷移後</returns>

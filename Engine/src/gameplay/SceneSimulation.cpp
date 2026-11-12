@@ -620,6 +620,7 @@ void SceneSimulation::Stop() {
 	sharedScriptData_ = "{}";
 	playing_ = false;
 	pendingScene_ = {};
+	failedDestinationObject_.reset();
 	restartSource_.reset();
 	loadedScenePath_.reset();
 	quitRequested_ = false;
@@ -657,6 +658,7 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
                              const UIInput &uiInput,
                              std::span<const GameActionState> actions,
                              SceneObjectId *invalidObject) {
+	failedDestinationObject_.reset();
 	if (invalidObject) {
 		*invalidObject = 0;
 	}
@@ -693,6 +695,7 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 					return false;
 				}
 
+				failedDestinationObject_ = 0;
 				if (!PlaceSceneArrival(destination, pendingScene_.arrivalTag,
 				                       error)) {
 					lastUpdateError_ = std::move(error);
@@ -709,8 +712,13 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 				    std::make_shared<const std::filesystem::path>(pendingScene_.path);
 			}
 
+			SceneObjectId destinationObject = 0;
 			if (!destinationSimulation.StartScene(source, error, fallbackPose_,
-			                                      nullptr, true)) {
+			                                      &destinationObject, true)) {
+				if (failedDestinationObject_ &&
+				    destination.Contains(destinationObject)) {
+					failedDestinationObject_ = destinationObject;
+				}
 				lastUpdateError_ = std::move(error);
 				return false;
 			}

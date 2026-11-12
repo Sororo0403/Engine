@@ -4897,6 +4897,22 @@ void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject) {
 	                   ? "Play stopped because simulation or Game rendering failed."
 	                   : "Play stopped: " + reason;
 	const auto &session = playMode_.GetSession();
+	if (const auto failed = session.GetFailedSceneDestination()) {
+		auto path = failed->path;
+		const auto object = failed->objectId;
+		const auto &current = document_.GetFilePath();
+		const bool isEditingScene =
+		    !current.empty() && PathUtils::IsSameFile(current, path);
+		message += "\nDestination scene: " + PathUtils::ToUtf8(path);
+		playMode_.Stop();
+		ShowError(std::move(message), isEditingScene ? object : 0);
+		if (!isEditingScene) {
+			errorScenePath_ = std::move(path);
+			errorObjectId_ = object;
+		}
+		return;
+	}
+
 	const bool canReveal = playUsesEditingScene_ && session.IsInitialScene();
 	const auto *loaded = session.GetLoadedScenePath();
 	auto scenePath = loaded ? *loaded : playInitialScenePath_;
