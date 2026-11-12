@@ -354,6 +354,7 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 			working.AdoptValidated(resolved);
 		} else {
 			// 継続する追従は現在姿勢を保ち、新しく有効になった枝だけを依存順で初期化する。
+			SceneCameraUtils::FollowObstacleCache obstacles(working);
 			for (const auto id : order) {
 				const auto &object = *working.FindObject(id);
 
@@ -372,12 +373,12 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 
 				auto pose =
 				    makeFollow(id, target.GetPosition(), *object.followCamera);
-				if (!SceneCameraUtils::AvoidFollowObstacles(working, id,
-				                                            pose) ||
+				if (!obstacles.AvoidObstacles(id, pose) ||
 				    !SceneCameraUtils::ApplyWorldPose(working, id, pose)) {
 					return fail(
 					    id, "The newly active Follow Camera pose is invalid.");
 				}
+				obstacles.TransformChanged(id);
 			}
 		}
 
@@ -490,6 +491,7 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 		}
 
 		std::map<SceneObjectId, CameraPose> follows;
+		SceneCameraUtils::FollowObstacleCache initialObstacles(working);
 
 		for (const auto id : order) {
 			const auto &object = *working.FindObject(id);
@@ -516,7 +518,7 @@ bool SceneSimulation::Configure(const Scene &original, std::string &error,
 
 			auto pose =
 			    makeFollow(id, target.GetPosition(), *object.followCamera);
-			if (!SceneCameraUtils::AvoidFollowObstacles(working, id, pose)) {
+			if (!initialObstacles.AvoidObstacles(id, pose)) {
 				return fail(id, "Follow Camera pose is invalid.");
 			}
 
@@ -861,6 +863,7 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 		    !SceneHierarchy::GetSubtree(working, character_, ignored))
 			return false;
 		bool respawned = false;
+		SceneCameraUtils::FollowObstacleCache cameraObstacles(working);
 		// 親と追従対象を先に更新する。カメラを親にした主人公も同じ依存順で処理する。
 		for (const auto id : updateOrder_) {
 			const auto *object = working.FindObject(id);
@@ -877,6 +880,7 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 				                  working, id, state->transform.translation,
 				                  state->transform.rotation))
 					return false;
+				cameraObstacles.TransformChanged(id);
 			}
 
 			if (id == character_) {
@@ -900,6 +904,7 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 				if (!SceneHierarchy::SetWorldPosition(
 				        working, id, next.GetTransform().translation))
 					return false;
+				cameraObstacles.TransformChanged(id);
 			}
 
 			if (object->followCamera) {
@@ -940,8 +945,7 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 					lerp(pose.position, desired.position);
 				}
 
-				if (!SceneCameraUtils::AvoidFollowObstacles(working, id,
-				                                            pose)) {
+				if (!cameraObstacles.AvoidObstacles(id, pose)) {
 					pose.position = previous.position;
 					Camera validator;
 					if (!validator.SetPose(pose))
@@ -950,6 +954,7 @@ bool SceneSimulation::Advance(float seconds, const CharacterInput &input,
 
 				if (!SceneCameraUtils::ApplyWorldPose(working, id, pose))
 					return false;
+				cameraObstacles.TransformChanged(id);
 			}
 		}
 

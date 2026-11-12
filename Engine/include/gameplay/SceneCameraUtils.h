@@ -1,7 +1,10 @@
 #pragma once
 
 #include "graphics/camera/CameraPose.h"
+#include "physics/CollisionWorld.h"
 #include "scene/SceneObjectId.h"
+#include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -19,6 +22,38 @@ struct CameraTransitionView {
 };
 
 namespace SceneCameraUtils {
+/// <summary>
+/// 追従カメラの更新中、同じ障害物を調べるカメラ間で衝突形状を共有する
+/// </summary>
+/// <remarks>物体の有効状態・親子関係・Collider設定が変わらない更新区間ごとに作る</remarks>
+class FollowObstacleCache {
+  public:
+	explicit FollowObstacleCache(const Scene &scene) : scene_(scene) {}
+
+	/// <summary>
+	/// 注視点からカメラまでをSweepし、障害物の手前へカメラを寄せる
+	/// </summary>
+	/// <param name="id">補正するFollow Cameraの物体ID</param>
+	/// <param name="pose">補間済みの描画姿勢。成功時は位置だけ更新する</param>
+	/// <returns>true:補正成功または回避無効 false:形状や姿勢が無効</returns>
+	bool AvoidObstacles(SceneObjectId id, CameraPose &pose);
+
+	/// <summary>
+	/// 姿勢を変更した物体が障害物かその祖先なら、保存済みの衝突形状を破棄する
+	/// </summary>
+	void TransformChanged(SceneObjectId id);
+
+  private:
+	const CollisionWorld *GetWorld(SceneObjectId target);
+
+	const Scene &scene_;
+	SceneActivity::States active_;
+	SceneHierarchy::WorldTransforms transforms_;
+	std::vector<SceneObjectId> ignored_;
+	std::set<SceneObjectId> obstacleAncestors_;
+	std::map<SceneObjectId, CollisionWorld> worlds_;
+};
+
 /// <summary>
 /// 2つの描画姿勢の位置を直線補間し、向きを最短の回転で補間する
 /// </summary>

@@ -49,7 +49,67 @@ SceneCameraUtils::MakeFollowPose(const DirectX::XMFLOAT3 &target,
 bool SceneCameraUtils::AvoidFollowObstacles(const Scene &scene,
                                             SceneObjectId id,
                                             CameraPose &pose) {
-	const auto *object = scene.FindObject(id);
+	FollowObstacleCache obstacles(scene);
+	return obstacles.AvoidObstacles(id, pose);
+}
+
+const CollisionWorld *
+SceneCameraUtils::FollowObstacleCache::GetWorld(SceneObjectId target) {
+	if (active_.empty()) {
+		if (!SceneActivity::BuildStates(scene_, active_))
+			return nullptr;
+
+		for (const auto &[id, object] : scene_.GetObjects()) {
+			if (!object.collider || !active_.at(id))
+				continue;
+			if (object.character || object.followCamera) {
+				ignored_.push_back(id);
+				continue;
+			}
+
+			// カメラや主人公自身を除外しても、子のColliderは移動に追従する。
+			for (auto ancestor = id;
+			     ancestor && obstacleAncestors_.insert(ancestor).second;
+			     ancestor = scene_.FindObject(ancestor)->parentId) {
+			}
+		}
+	}
+
+	const auto *object = scene_.FindObject(target);
+	if (!object || !object->collider || !active_.at(target) ||
+	    object->character || object->followCamera) {
+		target = 0;
+	}
+
+	const auto found = worlds_.find(target);
+	if (found != worlds_.end())
+		return &found->second;
+
+	if (transforms_.empty() &&
+	    !SceneHierarchy::BuildWorldTransforms(scene_, transforms_)) {
+		return nullptr;
+	}
+
+	auto ignored = ignored_;
+	if (target)
+		ignored.push_back(target);
+	CollisionWorld world;
+	if (!world.Rebuild(scene_, transforms_, active_, ignored))
+		return nullptr;
+
+	return &worlds_.emplace(target, std::move(world)).first->second;
+}
+
+void SceneCameraUtils::FollowObstacleCache::TransformChanged(SceneObjectId id) {
+	if (obstacleAncestors_.contains(id)) {
+		transforms_.clear();
+		worlds_.clear();
+	}
+}
+
+bool SceneCameraUtils::FollowObstacleCache::AvoidObstacles(SceneObjectId id,
+                                                          CameraPose &pose) {
+	const auto *object = scene_.FindObject(id);
 
 	if (!object || !object->camera || !object->followCamera ||
 	    !object->followCamera->IsValid()) {
@@ -68,17 +128,8 @@ bool SceneCameraUtils::AvoidFollowObstacles(const Scene &scene,
 		return false;
 	}
 
-	std::vector<SceneObjectId> ignored{settings.target};
-
-	for (const auto &[objectId, candidate] : scene.GetObjects()) {
-		if (candidate.character || candidate.followCamera) {
-			ignored.push_back(objectId);
-		}
-	}
-
-	CollisionWorld world;
-
-	if (!world.Rebuild(scene, std::span<const SceneObjectId>{ignored})) {
+	const auto *world = GetWorld(settings.target);
+	if (!world) {
 		return false;
 	}
 
@@ -93,7 +144,7 @@ bool SceneCameraUtils::AvoidFollowObstacles(const Scene &scene,
 	                                 pose.position.z - pose.target.z};
 	CollisionSweepResult hit;
 
-	if (!world.Sweep(boxAt(pose.target), movement, hit)) {
+	if (!world->Sweep(boxAt(pose.target), movement, hit)) {
 		return false;
 	}
 
@@ -119,7 +170,7 @@ bool SceneCameraUtils::AvoidFollowObstacles(const Scene &scene,
 	    static_cast<float>(pose.target.x + movement.x * fraction),
 	    static_cast<float>(pose.target.y + movement.y * fraction),
 	    static_cast<float>(pose.target.z + movement.z * fraction)};
-	if (!world.CanPlace(boxAt(adjusted.position)) ||
+	if (!world->CanPlace(boxAt(adjusted.position)) ||
 	    !validator.SetPose(adjusted)) {
 		return false;
 	}
@@ -265,6 +316,8 @@ const SceneObject *FollowTarget(const Scene &scene, SceneObjectId id) {
 bool ApplyInitialFollows(Scene &working,
                          const std::vector<SceneObjectId> &order,
                          std::string &error, SceneObjectId *invalidObject) {
+	SceneCameraUtils::FollowObstacleCache obstacles(working);
+
 	for (const auto id : order) {
 		const auto &object = *working.FindObject(id);
 		if (!SceneActivity::IsActive(working, id) || !object.followCamera)
@@ -283,7 +336,7 @@ bool ApplyInitialFollows(Scene &working,
 
 		auto pose = SceneCameraUtils::MakeFollowPose(target.GetPosition(),
 		                                             *object.followCamera);
-		if (!SceneCameraUtils::AvoidFollowObstacles(working, id, pose) ||
+		if (!obstacles.AvoidObstacles(id, pose) ||
 		    !SceneCameraUtils::ApplyWorldPose(working, id, pose)) {
 			error = std::format("Follow Camera pose is invalid. Object ID: {}.",
 			                    id);
@@ -291,6 +344,8 @@ bool ApplyInitialFollows(Scene &working,
 				*invalidObject = id;
 			return false;
 		}
+
+		obstacles.TransformChanged(id);
 	}
 
 	return true;
