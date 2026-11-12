@@ -4745,10 +4745,12 @@ void EditorScene::UpdateDialogs() {
 			if (!errorScenePath_.empty()) {
 				if (ui_.Button("Open Play Scene")) {
 					pendingOpenPath_ = std::move(errorScenePath_);
+					const auto object =
+					    std::exchange(errorObjectId_, SceneObjectId{0});
 					ui_.CloseCurrentPopup();
 					ui_.EndPopup();
 					stage_ = DialogStage::IDLE;
-					StartAction(EditorAction::OPEN_PATH);
+					StartAction(EditorAction::OPEN_PATH, object);
 					return;
 				}
 				ui_.SameLine();
@@ -4791,7 +4793,8 @@ void EditorScene::UpdateDialogs() {
 				ui_.SameLine();
 			}
 
-			if (document_.GetScene().Contains(errorObjectId_)) {
+			if (errorScenePath_.empty() &&
+			    document_.GetScene().Contains(errorObjectId_)) {
 				if (ui_.Button("Show Object")) {
 					try {
 						FinishEdit();
@@ -4874,6 +4877,12 @@ void EditorScene::StartPlay(bool fromStartup, SceneObjectId cameraOverride) {
 	if (!playMode_.Start(*scene, error, fallback, exportConfig_, &invalidObject,
 	                     cameraOverride)) {
 		ShowError(std::move(error), usesEditingScene ? invalidObject : 0);
+		if (!usesEditingScene) {
+			errorScenePath_ = startup.GetFilePath();
+			errorMessage_ += "\nPlay scene: " + PathUtils::ToUtf8(errorScenePath_);
+			// 開いている編集シーンとIDが重複しても、起動シーンを開いてから選択する。
+			errorObjectId_ = scene->Contains(invalidObject) ? invalidObject : 0;
+		}
 		return;
 	}
 
