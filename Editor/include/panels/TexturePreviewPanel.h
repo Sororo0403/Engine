@@ -24,6 +24,12 @@ class TexturePreviewPanel {
 	void Open(const std::filesystem::path &path);
 
 	/// <summary>
+	/// 表示中の画像と同じ素材を更新した場合に、プレビューの再読み込みを予約する
+	/// </summary>
+	/// <param name="path">更新した画像のパス</param>
+	void RequestReload(const std::filesystem::path &path);
+
+	/// <summary>
 	/// 画像の縦横比を保って表示し、再読み込みと終了を受け付ける
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI。GPUの利用完了後、描画命令の記録前に呼び出す</param>

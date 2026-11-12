@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <format>
 #include <imgui.h>
+#include <utility>
 
 TexturePreviewPanel::TexturePreviewPanel() = default;
 TexturePreviewPanel::~TexturePreviewPanel() = default;
@@ -16,6 +17,11 @@ void TexturePreviewPanel::Open(const std::filesystem::path &path) {
 		return;
 	}
 
+	if (open_ && PathUtils::IsSameFile(path_, path)) {
+		focusRequested_ = reloadRequested_ = true;
+		return;
+	}
+
 	auto selected = path;
 	auto label = PathUtils::ToUtf8(path);
 	path_.swap(selected);
@@ -23,6 +29,12 @@ void TexturePreviewPanel::Open(const std::filesystem::path &path) {
 	error_.clear();
 	texture_.reset();
 	open_ = focusRequested_ = reloadRequested_ = true;
+}
+
+void TexturePreviewPanel::RequestReload(const std::filesystem::path &path) {
+	if (open_ && !path.empty() && PathUtils::IsSameFile(path_, path)) {
+		reloadRequested_ = true;
+	}
 }
 
 void TexturePreviewPanel::Draw(const ImGuiSystem &ui) {
@@ -72,10 +84,15 @@ void TexturePreviewPanel::Draw(const ImGuiSystem &ui) {
 
 	if (reloadRequested_) {
 		reloadRequested_ = false;
-		texture_ = ui.LoadImageTexture(path_);
-		error_ = texture_
-		             ? ""
-		             : "Could not preview this image. See Console for details.";
+		auto updated = ui.LoadImageTexture(path_);
+		if (updated) {
+			texture_ = std::move(updated);
+			error_.clear();
+		} else {
+			error_ = texture_ ? "Could not reload this image. Showing the "
+			                    "previous preview. See Console for details."
+			                  : "Could not preview this image. See Console for details.";
+		}
 	}
 
 	if (!error_.empty()) {

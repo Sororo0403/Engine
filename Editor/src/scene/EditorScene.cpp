@@ -1101,6 +1101,8 @@ bool EditorScene::Update(float deltaTime) {
 					ShowError(
 					    "Could not reload the texture. Its previous valid "
 					    "data was kept. See the log for details.");
+				} else {
+					texturePreviewPanel_.RequestReload(requestedTextureReload);
 				}
 			} catch (const std::exception &exception) {
 				Logger::Error(std::format("EditorScene::ReloadTexture: {}",

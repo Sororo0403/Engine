@@ -554,7 +554,7 @@ void ControlsPanel::Draw() {
 	         "unchanged. Failed reloads keep the last valid texture; fix the "
 	         "file and retry. Ordinary file changes still reload "
 	         "automatically. "
-	         "Image Preview has its own Reload Preview button. Unavailable "
+	         "A successful reload also refreshes the same image in Image Preview. Unavailable "
 	         "during Play, modal operations or Scene gestures."},
 	        {"Assets > Reload Model",
 	         "Reload the selected model and its linked resources after editing "
@@ -803,8 +803,8 @@ void ControlsPanel::Draw() {
 	         "and "
 	         "aspect preserved as the window resizes. Reload Preview reads "
 	         "external edits; Close Preview or the window close button "
-	         "releases the image. A failed load clears the previous preview "
-	         "and reports an error; fix the file and reload to retry. Uses "
+	         "releases the image. A failed reload keeps the last valid preview "
+	         "of that image and reports an error. Uses "
 	         "PNG, JPEG, BMP, TIFF and GIF images. Scene selection, "
 	         "texture assignments and history stay unchanged. The window can "
 	         "be "
