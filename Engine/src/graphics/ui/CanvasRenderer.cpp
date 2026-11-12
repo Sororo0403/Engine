@@ -15,6 +15,7 @@
 #include <map>
 #include <set>
 #include <stdexcept>
+#include <system_error>
 #include <vector>
 #include <wincodec.h>
 
@@ -211,6 +212,40 @@ struct CanvasRenderer::Impl {
 		if (!texture->Load(graphics.GetDevice(), graphics.GetCommandQueue(), path))
 			throw std::runtime_error("Could not load UI image.");
 		return texture;
+	}
+
+	/// <summary>
+	/// 編集プレビューでは、外部保存の途中で読めない画像の表示を保持する
+	/// </summary>
+	ImageEntry UpdateImage(const std::filesystem::path &path,
+	                       std::size_t availableBytes) {
+		const auto cached = images.find(path);
+		const bool keepPreview = failure == Failure::SKIP_ELEMENT &&
+		                         cached != images.end();
+		std::error_code fileError;
+		const auto modified = std::filesystem::last_write_time(path, fileError);
+		const auto size = fileError ? 0 : std::filesystem::file_size(path, fileError);
+		if (fileError) {
+			if (keepPreview)
+				return cached->second;
+			throw std::filesystem::filesystem_error("Could not inspect UI image",
+			                                        path, fileError);
+		}
+		if (cached != images.end() && cached->second.modified == modified &&
+		    cached->second.size == size) {
+			return cached->second;
+		}
+
+		try {
+			return {modified, size, LoadImage(path, availableBytes)};
+		} catch (const std::bad_alloc &) {
+			throw;
+		} catch (const std::exception &) {
+			if (!keepPreview)
+				throw;
+			// 同じ壊れた版を毎フレーム復号せず、次の変更を待つ。
+			return {modified, size, cached->second.texture};
+		}
 	}
 };
 
@@ -415,23 +450,8 @@ bool CanvasRenderer::Update(const Scene &scene, int width, int height,
 								found =
 								    images.emplace(path, pinned->second).first;
 							} else {
-								const auto modified =
-								    std::filesystem::last_write_time(path);
-								const auto size =
-								    std::filesystem::file_size(path);
-								auto cached = p.images.find(path);
-								Impl::ImageEntry entry;
-								if (cached != p.images.end() &&
-								    cached->second.modified == modified &&
-								    cached->second.size == size)
-									entry = cached->second;
-								else {
-									entry.modified = modified;
-									entry.size = size;
-									entry.texture = p.LoadImage(path, kMaximumBytes - bytes);
-								}
-
-								found = images.emplace(path, std::move(entry))
+								found = images.emplace(
+								                  path, p.UpdateImage(path, kMaximumBytes - bytes))
 								            .first;
 							}
 						}
