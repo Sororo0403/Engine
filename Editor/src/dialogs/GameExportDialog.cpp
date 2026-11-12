@@ -1,6 +1,7 @@
 #include "dialogs/GameExportDialog.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "platform/windows/PathUtils.h"
+#include <algorithm>
 #include <imgui.h>
 #include <stdexcept>
 #include <utility>
@@ -67,6 +68,7 @@ void GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits
 
 void GameExportDialog::SetCheckResult(std::string message) {
 	checkResult_ = std::move(message);
+	scrollCheckResultToTop_ = true;
 }
 
 void GameExportDialog::ShowExportFailure(std::string error) {
@@ -124,7 +126,22 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 		ImGui::TextWrapped("%s", error_.c_str());
 	}
 	if (!checkResult_.empty()) {
-		ImGui::TextWrapped("%s", checkResult_.c_str());
+		const float height = 8.0f * ImGui::GetTextLineHeightWithSpacing();
+		const float width = (std::max)(1.0f, ImGui::GetContentRegionAvail().x -
+		                                        ImGui::GetStyle().ScrollbarSize);
+		if (ImGui::CalcTextSize(checkResult_.c_str(), nullptr, false, width).y >
+		    height) {
+			if (scrollCheckResultToTop_) {
+				ImGui::SetNextWindowScroll({-1.0f, 0.0f});
+			}
+			if (ImGui::BeginChild("ExportCheckResult", {0.0f, height})) {
+				ImGui::TextWrapped("%s", checkResult_.c_str());
+			}
+			ImGui::EndChild();
+		} else {
+			ImGui::TextWrapped("%s", checkResult_.c_str());
+		}
+		scrollCheckResultToTop_ = false;
 	}
 
 	GameExportResult result = GameExportResult::NONE;

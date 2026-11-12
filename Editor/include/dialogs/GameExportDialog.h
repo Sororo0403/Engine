@@ -55,4 +55,5 @@ class GameExportDialog {
 	bool opening_ = false;
 	bool includesUnsavedEdits_ = false;
 	bool browsing_ = false;
+	bool scrollCheckResultToTop_ = false;
 };

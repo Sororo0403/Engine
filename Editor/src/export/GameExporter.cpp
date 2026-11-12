@@ -270,11 +270,12 @@ class Assets {
 		const auto reference = AddFile(FindSource(input), input);
 		const auto &file = files_.at(reference);
 
-		if (scripts_.insert(file).second) {
+		if (!scripts_.contains(file)) {
 			std::string source, error;
 			if (!LuaScript::Read(file, source, error) ||
 			    !LuaScript::Validate(source, error))
 				throw std::runtime_error(error);
+			scripts_.insert(file);
 		}
 
 		return reference;
@@ -565,6 +566,18 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 
 		ValidateRuntimeBuild(runtimeRoot);
 
+		// 事前検査では、同じ検査で独立して直せる問題をまとめて表示する。
+		const auto reportIssue = [&](std::string issue) {
+			if (writeOutput) {
+				throw std::runtime_error(std::move(issue));
+			}
+
+			if (!error.empty()) {
+				error += "\n\n";
+			}
+			error += issue;
+		};
+
 		// アセット参照を出力先へ書き換える前に、遷移先の到着地点を検証する。
 		std::set<std::pair<std::size_t, std::string>> checkedArrivals;
 
@@ -598,7 +611,7 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 					if (!SceneSimulation::ValidateArrival(
 					        candidate, action.arrivalTag, issue,
 					        options.config.fallbackCamera))
-						throw std::runtime_error(
+						reportIssue(
 						    std::format("Load Scene on object ID {} to '{}' "
 						                "(Arrival Tag '{}'): {}",
 						                id, PathUtils::ToUtf8(found->source),
@@ -622,10 +635,9 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 			candidate.ReplaceObjects(entry.objects);
 			const auto inputIssues = SceneValidation::InspectInputs(
 			    candidate, options.config.actions);
-			if (!inputIssues.empty())
-				throw std::runtime_error(
-				    describe(inputIssues.front().objectId) + "\n" +
-				    inputIssues.front().message);
+			for (const auto &inputIssue : inputIssues) {
+				reportIssue(describe(inputIssue.objectId) + "\n" + inputIssue.message);
+			}
 			SceneSimulation check;
 			std::string issue;
 			SceneObjectId invalidObject = 0;
@@ -637,7 +649,7 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 			          : SceneSimulation::Validate(
 			                candidate, issue, options.config.fallbackCamera,
 			                &invalidObject)))
-				throw std::runtime_error(describe(invalidObject) + "\n" + issue);
+				reportIssue(describe(invalidObject) + "\n" + issue);
 			auto &objects = entry.objects;
 
 			for (auto &[id, object] : objects) {
@@ -694,8 +706,10 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 						                             fs::path(L"resources"),
 						                             path.lexically_normal());
 						path = add(input);
+					} catch (const std::bad_alloc &) {
+						throw;
 					} catch (const std::exception &error) {
-						throw std::runtime_error(std::format(
+						reportIssue(std::format(
 						    "{} / {}: {}\n{}", describe(id), kind, PathUtils::ToUtf8(path),
 						    error.what()));
 					}
@@ -736,6 +750,10 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 					includeAsset(object.mesh->modelPath, "Mesh",
 					             [&](const auto &path) { return assets.AddModel(path); });
 			}
+		}
+
+		if (!error.empty()) {
+			return false;
 		}
 
 		std::string problem;

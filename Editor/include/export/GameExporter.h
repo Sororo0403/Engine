@@ -27,6 +27,7 @@ namespace GameExporter {
 /// <summary>
 /// 出力予定のシーン・依存ファイル・Runtimeを検査する。出力先には書き込まない
 /// </summary>
+/// <param name="error">検査で見つかった不備。複数の場合は空行区切り</param>
 /// <remarks>COM初期化後に呼び出す。コピー後の検証は実際の出力時に行う</remarks>
 bool Check(const Scene &scene, const GameExportOptions &options,
            std::string &error);
