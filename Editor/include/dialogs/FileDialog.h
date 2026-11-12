@@ -117,6 +117,7 @@ class FileDialog {
 	std::filesystem::path selectedPath_;
 
 	std::string directoryText_;
+	std::string search_;
 	std::string fileName_;
 	std::string folderName_;
 	std::string error_;

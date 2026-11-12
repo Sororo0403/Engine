@@ -2,7 +2,9 @@
 
 #include "graphics/ui/ImGuiSystem.h"
 #include "platform/windows/PathUtils.h"
+#include "platform/windows/StringConversion.h"
 
+#include <Windows.h>
 #include <algorithm>
 #include <exception>
 #include <format>
@@ -32,6 +34,7 @@ void FileDialog::Show(FileDialogMode mode,
 	fileName_.clear();
 	folderName_.clear();
 	directoryText_.clear();
+	search_.clear();
 	confirmOverwrite_ = false;
 	openRequested_ = true;
 
@@ -165,16 +168,33 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 
 		ui.Text(PathUtils::ToUtf8(directory_));
 
+		if (mode_ != FileDialogMode::SELECT_DIRECTORY &&
+		    ui.InputText("Search Files", search_)) {
+			ImGui::SetNextWindowScroll({-1.0f, 0.0f});
+		}
+		const auto search = StringConversion::Utf8ToWide(search_);
 		std::filesystem::path nextDirectory;
 
 		const bool drawEntries = ui.BeginChild("Files", 600.0f, 240.0f);
 
 		if (drawEntries) {
+			bool matchingFile = false;
 			for (std::size_t i = 0; i < entries_.size(); ++i) {
 				const Entry &entry = entries_[i];
+				const auto filename = entry.path.filename();
+				if (!entry.directory) {
+					const auto &native = filename.native();
+					if (!search_.empty() &&
+					    (search.empty() ||
+					     FindStringOrdinal(FIND_FROMSTART, native.c_str(),
+					                       static_cast<int>(native.size()), search.c_str(),
+					                       static_cast<int>(search.size()), TRUE) < 0)) {
+						continue;
+					}
+					matchingFile = true;
+				}
 
-				const std::string name =
-				    PathUtils::ToUtf8(entry.path.filename());
+				const std::string name = PathUtils::ToUtf8(filename);
 
 				const std::string label =
 				    entry.directory ? std::format("[Folder] {}", name) : name;
@@ -194,6 +214,9 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 				}
 
 				ui.PopID();
+			}
+			if (!search_.empty() && !matchingFile) {
+				ui.Text("No matching files.");
 			}
 		}
 
