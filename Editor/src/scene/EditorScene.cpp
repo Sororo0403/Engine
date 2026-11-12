@@ -2658,6 +2658,7 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	    ((action == EditorAction::IMPORT_SCENE ||
 	      action == EditorAction::ASSETS_FOLDER ||
 	      action == EditorAction::OPEN_PATH ||
+	      action == EditorAction::OPEN_EXPORT_ISSUE ||
 	      action == EditorAction::OPEN_PROJECT_PATH ||
 	      action == EditorAction::LOAD_GAME_SETTINGS ||
 	      action == EditorAction::RECOVER_SCENE ||
@@ -3000,6 +3001,7 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	case EditorAction::OPEN:
 	case EditorAction::RESTORE_RECOVERY:
 	case EditorAction::IMPORT_SCENE:
+	case EditorAction::OPEN_EXPORT_ISSUE:
 	case EditorAction::EXIT:
 		// 保存確認が終わるまで、実際の操作は保留する
 		pendingAction_ = action;
@@ -3192,7 +3194,8 @@ void EditorScene::ConfirmSceneChanges() {
 void EditorScene::CancelPendingAction() {
 	const auto action = std::exchange(pendingAction_, EditorAction::NONE);
 	stage_ = DialogStage::IDLE;
-	if (action == EditorAction::WRITE_GAME_EXPORT) {
+	if (action == EditorAction::WRITE_GAME_EXPORT ||
+	    action == EditorAction::OPEN_EXPORT_ISSUE) {
 		exportDialog_.Reopen();
 		stage_ = DialogStage::EXPORT_GAME;
 	}
@@ -3337,6 +3340,20 @@ void EditorScene::ExecutePendingAction() {
 			if (object != 0) {
 				RevealReferenceObject(object);
 			}
+		}
+		return;
+	}
+	case EditorAction::OPEN_EXPORT_ISSUE: {
+		const auto &issue = exportDialog_.GetSelectedIssue();
+		if (!OpenScene(issue.scenePath, false)) {
+			exportDialog_.Reopen("Could not open the referenced scene: " +
+			                     document_.GetError());
+			stage_ = DialogStage::EXPORT_GAME;
+			return;
+		}
+		SaveEditorSession();
+		if (issue.objectId != 0) {
+			RevealReferenceObject(issue.objectId);
 		}
 		return;
 	}
@@ -4872,15 +4889,17 @@ void EditorScene::UpdateDialogs() {
 		if (result == GameExportResult::OPEN_ISSUE) {
 			const auto &issue = exportDialog_.GetSelectedIssue();
 			const auto &current = document_.GetFilePath();
-			stage_ = DialogStage::IDLE;
 			if (issue.scenePath.empty() ||
 			    (!current.empty() && PathUtils::IsSameFile(current, issue.scenePath))) {
+				stage_ = DialogStage::IDLE;
 				if (issue.objectId != 0) {
 					RevealReferenceObject(issue.objectId);
 				}
+			} else if (playMode_.IsPlaying()) {
+				exportDialog_.Reopen("Stop Play before opening the referenced scene.");
 			} else {
-				pendingOpenPath_ = issue.scenePath;
-				StartAction(EditorAction::OPEN_PATH, issue.objectId);
+				stage_ = DialogStage::IDLE;
+				StartAction(EditorAction::OPEN_EXPORT_ISSUE);
 			}
 			return;
 		}
@@ -5010,7 +5029,7 @@ void EditorScene::UpdateDialogs() {
 			if (ui_.Button("OK")) {
 				ui_.CloseCurrentPopup();
 				errorObjectId_ = 0;
-				stage_ = DialogStage::IDLE;
+				CancelPendingAction();
 			}
 
 			ui_.EndPopup();
@@ -5284,11 +5303,16 @@ void EditorScene::ShowError(std::string message, SceneObjectId objectId,
 }
 
 void EditorScene::ShowSceneSaveError() {
+	const auto action = pendingAction_;
 	if (pendingAction_ == EditorAction::WRITE_GAME_EXPORT) {
 		exportDialog_.PreserveDraft();
 	}
 	ShowError(document_.GetError());
 	sceneSaveConflict_ = document_.HasSaveConflict();
+	if (action == EditorAction::OPEN_EXPORT_ISSUE) {
+		// 保存エラーを閉じたら、移動前の配布チェックへ戻す。
+		pendingAction_ = action;
+	}
 }
 
 bool EditorScene::IsBusy() const {
