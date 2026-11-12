@@ -608,25 +608,36 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 		}
 
 		for (auto &entry : graph) {
+			const auto sceneLabel = entry.source.empty()
+			                            ? "Startup scene"
+			                            : PathUtils::ToUtf8(entry.source);
+			const auto describe = [&](SceneObjectId id) {
+				const auto found = entry.objects.find(id);
+				return found == entry.objects.end()
+				           ? sceneLabel
+				           : std::format("{} / {} (ID {})", sceneLabel,
+				                         found->second.name, id);
+			};
 			Scene candidate;
 			candidate.ReplaceObjects(entry.objects);
 			const auto inputIssues = SceneValidation::InspectInputs(
 			    candidate, options.config.actions);
 			if (!inputIssues.empty())
 				throw std::runtime_error(
-				    entry.source.empty()
-				        ? inputIssues.front().message
-				        : std::format("{}: {}", PathUtils::ToUtf8(entry.source),
-				                      inputIssues.front().message));
+				    describe(inputIssues.front().objectId) + "\n" +
+				    inputIssues.front().message);
 			SceneSimulation check;
 			std::string issue;
+			SceneObjectId invalidObject = 0;
 			if (!entry.prefab &&
 			    !(&entry == &graph.front()
 			          ? check.Start(candidate, issue,
-			                        options.config.fallbackCamera)
+			                        options.config.fallbackCamera,
+			                        &invalidObject)
 			          : SceneSimulation::Validate(
-			                candidate, issue, options.config.fallbackCamera)))
-				throw std::runtime_error(issue);
+			                candidate, issue, options.config.fallbackCamera,
+			                &invalidObject)))
+				throw std::runtime_error(describe(invalidObject) + "\n" + issue);
 			auto &objects = entry.objects;
 
 			for (auto &[id, object] : objects) {
@@ -673,86 +684,57 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 							path = scenePaths[static_cast<std::size_t>(
 							    found - graph.begin())];
 						}
-				if (object.image && !object.image->texture.empty()) {
-					auto &path = object.image->texture;
-					const auto input =
-					    path.is_absolute()
-					        ? path
-					        : resourceRoot / PathUtils::RelativeInside(
-					                             fs::path(L"resources"),
-					                             path.lexically_normal());
-					path = assets.AddTexture(input, 4096);
-				}
-
-				if (object.particleEmitter &&
-				    !object.particleEmitter->texture.empty()) {
-					auto &path = object.particleEmitter->texture;
-					const auto input =
-					    path.is_absolute()
-					        ? path
-					        : resourceRoot / PathUtils::RelativeInside(
-					                             fs::path(L"resources"),
-					                             path.lexically_normal());
-					path = assets.AddTexture(input, 4096);
-				}
-
-				if (object.animationClip && object.animationClip->usesAsset) {
-					auto &path = object.animationClip->asset;
-					const auto input =
-					    path.is_absolute()
-					        ? path
-					        : resourceRoot / PathUtils::RelativeInside(
-					                             fs::path(L"resources"),
-					                             path.lexically_normal());
-					path = assets.AddAnimationClip(input);
-				}
-
-				if (object.script && !object.script->asset.empty()) {
-					auto &path = object.script->asset;
-					const auto input =
-					    path.is_absolute()
-					        ? path
-					        : resourceRoot / PathUtils::RelativeInside(
-					                             fs::path(L"resources"),
-					                             path.lexically_normal());
-					path = assets.AddScript(input);
-				}
-
-				if (object.audioSource &&
-				    !object.audioSource->clipPath.empty()) {
-					auto &path = object.audioSource->clipPath;
-					const auto input =
-					    path.is_absolute()
-					        ? path
-					        : resourceRoot / PathUtils::RelativeInside(
-					                             fs::path(L"resources"),
-					                             path.lexically_normal());
-					path = assets.AddAudio(input, object.audioSource->spatial);
-				}
-
-				if (object.meshRenderer) {
-					for (auto &[slot, path] :
-					     object.meshRenderer->textures.slots) {
+				const auto includeAsset = [&](fs::path &path, const char *kind,
+				                              const auto &add) {
+					try {
 						const auto input =
 						    path.is_absolute()
 						        ? path
 						        : resourceRoot / PathUtils::RelativeInside(
 						                             fs::path(L"resources"),
 						                             path.lexically_normal());
-						path = assets.AddTexture(input);
+						path = add(input);
+					} catch (const std::exception &error) {
+						throw std::runtime_error(std::format(
+						    "{} / {}: {}\n{}", describe(id), kind, PathUtils::ToUtf8(path),
+						    error.what()));
 					}
-				}
+				};
+				const auto addUITexture = [&](const fs::path &path) {
+					return assets.AddTexture(path, 4096);
+				};
 
-				if (object.HasMesh()) {
-					const auto path =
-					    object.mesh->modelPath.is_absolute()
-					        ? object.mesh->modelPath
-					        : resourceRoot / PathUtils::RelativeInside(
-					                             fs::path(L"resources"),
-					                             object.mesh->modelPath
-					                                 .lexically_normal());
-					object.mesh->modelPath = assets.AddModel(path);
-				}
+				if (object.image && !object.image->texture.empty())
+					includeAsset(object.image->texture, "Image", addUITexture);
+				if (object.particleEmitter &&
+				    !object.particleEmitter->texture.empty())
+					includeAsset(object.particleEmitter->texture, "Particle texture",
+					             addUITexture);
+				if (object.animationClip && object.animationClip->usesAsset)
+					includeAsset(object.animationClip->asset, "Animation Clip",
+					             [&](const auto &path) {
+						             return assets.AddAnimationClip(path);
+					             });
+				if (object.script && !object.script->asset.empty())
+					includeAsset(object.script->asset, "Lua Script",
+					             [&](const auto &path) { return assets.AddScript(path); });
+				if (object.audioSource && !object.audioSource->clipPath.empty())
+					includeAsset(object.audioSource->clipPath, "Audio Source",
+					             [&](const auto &path) {
+						             return assets.AddAudio(
+						                 path, object.audioSource->spatial);
+					             });
+
+				if (object.meshRenderer)
+					for (auto &[slot, path] : object.meshRenderer->textures.slots)
+						includeAsset(path, "Material texture",
+						             [&](const auto &input) {
+							             return assets.AddTexture(input);
+						             });
+
+				if (object.HasMesh())
+					includeAsset(object.mesh->modelPath, "Mesh",
+					             [&](const auto &path) { return assets.AddModel(path); });
 			}
 		}
 
