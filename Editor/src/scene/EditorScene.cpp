@@ -5186,6 +5186,7 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		    !last.empty() && (startup.empty() || !PathUtils::IsSameFile(last, startup)) &&
 		    OpenScene(last, false, &config.lighting);
 		std::string startupError;
+		bool needsScene = false;
 
 		if (!restored) {
 			if (!startup.empty() && !OpenScene(startup, false, &config.lighting)) {
@@ -5197,6 +5198,7 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 			}
 
 			if (startup.empty() || !startupError.empty()) {
+				needsScene = true;
 				pendingAction_ = EditorAction::NEW;
 				ExecutePendingAction();
 
@@ -5224,6 +5226,10 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		}
 		if (recovery_.IsReady()) {
 			ShowRecovery(true);
+		}
+		if (!create && needsScene && stage_ == DialogStage::IDLE &&
+		    !assets_.GetSceneTargets().empty()) {
+			StartAction(EditorAction::OPEN);
 		}
 	} catch (const std::exception &error) {
 		ShowError(error.what());
