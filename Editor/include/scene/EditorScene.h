@@ -279,6 +279,7 @@ class EditorScene final : public IScene {
 		RENAME_ASSET,
 		EXPORT_GAME,
 		EXPORT_RESULT,
+		SELECT_GAME_EXPORT,
 		GAME_SETTINGS,
 		SCENE_SETTINGS,
 		CONFIRM_RELOAD,
@@ -353,6 +354,11 @@ class EditorScene final : public IScene {
 	/// <returns>true:読み込み成功 false:現在のシーンを保持</returns>
 	bool OpenScene(const std::filesystem::path &path, bool reportError = true,
 	               const LightingSettings *projectLighting = nullptr);
+
+	/// <summary>
+	/// 既存の配布フォルダを開き、現在のプロジェクトの最近の出力に記録する
+	/// </summary>
+	bool OpenGameExport(std::filesystem::path directory);
 
 	/// <summary>
 	/// 保存を開始する。保存先がない場合は選択ダイアログを開く

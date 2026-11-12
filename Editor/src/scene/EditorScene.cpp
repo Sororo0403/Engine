@@ -52,8 +52,21 @@
 #include <limits>
 #include <map>
 #include <stdexcept>
+#include <system_error>
 #include <utility>
 #include <vector>
+
+namespace {
+/// <summary>
+/// 既存の配布版を起動・確認するためのファイルが揃っているか確認する
+/// </summary>
+bool IsGameExportDirectory(const std::filesystem::path &directory) {
+	std::error_code error;
+	return !directory.empty() &&
+	       std::filesystem::is_regular_file(directory / L"Game.exe", error) &&
+	       std::filesystem::is_regular_file(directory / L"game.json", error);
+}
+} // namespace
 
 EditorScene::EditorScene(const EngineContext &context)
     : ui_(context.ui), input_(context.input), models_(context.models),
@@ -1891,18 +1904,20 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			action = EditorAction::EXPORT_GAME;
 		}
 
+		if (ui_.MenuItem("Open Existing Game Export...", nullptr, enabled)) {
+			pendingOpenPath_.clear();
+			action = EditorAction::OPEN_GAME_EXPORT;
+		}
+
 		const auto recentExports = preferences_.RecentGameExports(project_.GetRoot());
 		if (ImGui::BeginMenu("Recent Game Exports", enabled && !recentExports.empty())) {
 			std::size_t index = 0;
 			for (const auto &directory : recentExports) {
-				std::error_code error;
-				const bool available = std::filesystem::is_regular_file(
-				    directory / L"Game.exe", error) &&
-				    std::filesystem::is_regular_file(directory / L"game.json", error);
+				const bool available = IsGameExportDirectory(directory);
 				const auto label = std::format("{}{}###RecentGameExport{}",
 				                               PathUtils::ToUtf8(directory.filename()),
 				                               available ? "" : " (unavailable)", index++);
-				if (ImGui::MenuItem(label.c_str(), nullptr, false, available)) {
+				if (ImGui::MenuItem(label.c_str())) {
 					pendingOpenPath_ = directory;
 					action = EditorAction::OPEN_GAME_EXPORT;
 				}
@@ -2776,10 +2791,26 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 
 	case EditorAction::OPEN_GAME_EXPORT: {
 		auto directory = std::exchange(pendingOpenPath_, std::filesystem::path{});
-		if (!directory.empty()) {
-			exportResultDialog_.Show(std::move(directory), true);
-			stage_ = DialogStage::EXPORT_RESULT;
+		if (OpenGameExport(directory)) {
+			return;
 		}
+
+		if (directory.empty())
+			directory = preferences_.LastGameExport(project_.GetRoot());
+		std::error_code error;
+		while (!directory.empty() &&
+		       !std::filesystem::is_directory(directory, error)) {
+			auto parent = directory.parent_path();
+			if (parent == directory) {
+				directory.clear();
+				break;
+			}
+			directory = std::move(parent);
+		}
+		if (directory.empty())
+			directory = project_.GetRoot();
+		fileDialog_.Show(FileDialogMode::SELECT_DIRECTORY, directory);
+		stage_ = DialogStage::SELECT_GAME_EXPORT;
 		return;
 	}
 
@@ -3185,6 +3216,21 @@ void EditorScene::WriteGameExport() {
 	}
 	exportResultDialog_.Show(directory);
 	stage_ = DialogStage::EXPORT_RESULT;
+}
+
+bool EditorScene::OpenGameExport(std::filesystem::path directory) {
+	if (!IsGameExportDirectory(directory))
+		return false;
+
+	const auto &root = project_.GetRoot();
+	if (preferences_.LastGameExport(root) != directory) {
+		preferences_.RememberGameExport(root, directory);
+		if (canSavePreferences_)
+			preferences_.Save();
+	}
+	exportResultDialog_.Show(std::move(directory), true);
+	stage_ = DialogStage::EXPORT_RESULT;
+	return true;
 }
 
 void EditorScene::ConfirmSceneChanges() {
@@ -4814,6 +4860,17 @@ void EditorScene::UpdateDialogs() {
 		}
 
 		return;
+
+	case DialogStage::SELECT_GAME_EXPORT: {
+		const auto result = fileDialog_.Draw(ui_);
+		if (result == FileDialogResult::CANCELLED) {
+			stage_ = DialogStage::IDLE;
+		} else if (result == FileDialogResult::ACCEPTED &&
+		           !OpenGameExport(fileDialog_.GetSelectedPath())) {
+			fileDialog_.RetrySelection("Choose a folder containing Game.exe and game.json.");
+		}
+		return;
+	}
 
 	case DialogStage::SCENE_SETTINGS: {
 		constexpr const char *kTitle = "Scene Settings";
