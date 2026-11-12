@@ -25,13 +25,14 @@ struct GameExportOptions {
 };
 
 /// <summary>
-/// 配布前検査の不備と、特定できた場合の修正先シーン・物体・Lua
+/// 配布前検査の不備と、特定できた場合の参照元・素材・Lua編集先
 /// </summary>
 struct GameExportIssue {
 	std::string message;
 	std::filesystem::path scenePath;
 	SceneObjectId objectId = 0;
 	std::filesystem::path scriptPath;
+	std::filesystem::path assetPath;
 };
 
 namespace GameExporter {

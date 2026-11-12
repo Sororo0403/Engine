@@ -505,24 +505,27 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 	OutputDirectory output;
 	const auto appendIssue = [&](std::string issue, const fs::path &scenePath,
 	                             SceneObjectId objectId,
-	                             const fs::path &scriptPath = {}) {
+	                             const fs::path &scriptPath,
+	                             const fs::path &assetPath) {
 		if (!error.empty()) {
 			error += "\n\n";
 		}
 		error += issue;
 		if (issues) {
-			issues->push_back({std::move(issue), scenePath, objectId, scriptPath});
+			issues->push_back(
+			    {std::move(issue), scenePath, objectId, scriptPath, assetPath});
 		}
 	};
 	// 事前検査では、同じ検査で独立して直せる問題をまとめて表示する。
 	const auto reportIssue = [&](std::string issue, const fs::path &scenePath = {},
 	                             SceneObjectId objectId = 0,
-	                             const fs::path &scriptPath = {}) {
+	                             const fs::path &scriptPath = {},
+	                             const fs::path &assetPath = {}) {
 		if (writeOutput) {
 			throw std::runtime_error(std::move(issue));
 		}
 
-		appendIssue(std::move(issue), scenePath, objectId, scriptPath);
+		appendIssue(std::move(issue), scenePath, objectId, scriptPath, assetPath);
 	};
 
 	try {
@@ -577,23 +580,26 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 
 		const auto reportObjectIssue = [&](std::string issue, const auto &entry,
 		                                   SceneObjectId id,
-		                                   const fs::path &scriptPath = {}) {
+		                                   const fs::path &scriptPath = {},
+		                                   const fs::path &assetPath = {}) {
 			reportIssue(std::move(issue), entry.prefab ? fs::path{} : entry.source,
 			            entry.prefab || !entry.objects.contains(id) ? 0 : id,
-			            scriptPath);
+			            scriptPath, assetPath);
 		};
 
 		bool startupIsTarget = false;
 		bool incompleteGraph = false;
+		const auto resolveReference = [&](const fs::path &path) {
+			return path.is_absolute()
+			           ? path
+			           : resourceRoot / PathUtils::RelativeInside(
+			                                fs::path(L"resources"),
+			                                path.lexically_normal());
+		};
 		auto graph = SceneDependencyGraph::Read(
 		    scene, options.startupScenePath,
 		    [&](const auto &path) {
-			    const auto absolute =
-			        path.is_absolute()
-			            ? path
-			            : resourceRoot / PathUtils::RelativeInside(
-			                                 fs::path(L"resources"),
-			                                 path.lexically_normal());
+			    const auto absolute = resolveReference(path);
 			    auto resolved = ResourceFile(fs::canonical(absolute.parent_path()),
 			                                 absolute);
 			    if (!startupIsTarget && !options.startupScenePath.empty()) {
@@ -613,9 +619,18 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 			    if (!PrefabSerializer::Load(path, loaded, issue, &counter))
 				    throw std::runtime_error(issue);
 		    },
-		    [&](std::string issue, const auto &entry, SceneObjectId id) {
+		    [&](std::string issue, const auto &entry, SceneObjectId id,
+		        const fs::path &path) {
 			    incompleteGraph = true;
-			    reportObjectIssue(std::move(issue), entry, id);
+			    fs::path target;
+			    try {
+				    target = resolveReference(path);
+			    } catch (const std::bad_alloc &) {
+				    throw;
+			    } catch (const std::exception &) {
+				    // 解決できない参照は、参照元への移動だけを提供する。
+			    }
+			    reportObjectIssue(std::move(issue), entry, id, {}, target);
 		    });
 		auto sourceDirectories = options.assetDirectories;
 		for (std::size_t i = 1; i < graph.size(); ++i)
@@ -774,20 +789,16 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 				const auto includeAsset = [&](fs::path &path, const char *kind,
 				                              const auto &add,
 				                              const fs::path &failedScript = {}) {
+					fs::path input;
 					try {
-						const auto input =
-						    path.is_absolute()
-						        ? path
-						        : resourceRoot / PathUtils::RelativeInside(
-						                             fs::path(L"resources"),
-						                             path.lexically_normal());
+						input = resolveReference(path);
 						path = add(input);
 					} catch (const std::bad_alloc &) {
 						throw;
 					} catch (const std::exception &error) {
 						reportObjectIssue(std::format(
 						    "{} / {}: {}\n{}", describe(id), kind, PathUtils::ToUtf8(path),
-						    error.what()), entry, id, failedScript);
+						    error.what()), entry, id, failedScript, input);
 					}
 				};
 				const auto addUITexture = [&](const fs::path &path) {
@@ -995,11 +1006,11 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 		output.Complete();
 		return true;
 	} catch (const std::exception &e) {
-		appendIssue(std::string(e.what()) + output.Cleanup(), {}, 0);
+		appendIssue(std::string(e.what()) + output.Cleanup(), {}, 0, {}, {});
 		return false;
 	} catch (...) {
 		appendIssue("An unknown error interrupted game export preparation or writing." +
-		                output.Cleanup(), {}, 0);
+		                output.Cleanup(), {}, 0, {}, {});
 		return false;
 	}
 }

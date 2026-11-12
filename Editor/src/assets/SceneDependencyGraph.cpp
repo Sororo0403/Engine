@@ -45,7 +45,7 @@ std::vector<SceneDependencyGraph::Entry> SceneDependencyGraph::Read(
 			if (!reportIssue) {
 				throw std::runtime_error(message);
 			}
-			reportIssue(std::move(message), entries[i], id);
+			reportIssue(std::move(message), entries[i], id, path);
 		};
 
 		for (auto &[id, object] : objects) {

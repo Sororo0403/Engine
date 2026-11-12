@@ -1,6 +1,7 @@
 #include "dialogs/GameExportDialog.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "platform/windows/PathUtils.h"
+#include "platform/windows/ShellUtils.h"
 #include <imgui.h>
 #include <stdexcept>
 #include <utility>
@@ -40,7 +41,7 @@ std::filesystem::path FindAvailableDestination(
 }
 
 /// <summary>
-/// 選択ダイアログを開けるよう、候補の親から既存のフォルダを探す
+/// 候補の親から既存のフォルダを探す
 /// </summary>
 std::filesystem::path FindExistingParent(const std::filesystem::path &output) {
 	auto parent = output.parent_path();
@@ -54,6 +55,34 @@ std::filesystem::path FindExistingParent(const std::filesystem::path &output) {
 	}
 
 	return parent;
+}
+
+/// <summary>
+/// 問題の素材をExplorerで選択する。素材がなければ既存の親フォルダを開く
+/// </summary>
+void ShowAssetInExplorer(const std::filesystem::path &path, std::string &error) {
+	if (!path.is_absolute() || path.native().find(L'\0') != std::wstring::npos) {
+		error = "The asset path is invalid.";
+		return;
+	}
+
+	std::error_code statusError;
+	if (std::filesystem::exists(path, statusError)) {
+		ShellUtils::RevealInExplorer(path, error);
+		return;
+	}
+	if (statusError && statusError != std::errc::no_such_file_or_directory &&
+	    statusError != std::errc::not_a_directory) {
+		error = "Could not check the asset location: " + statusError.message();
+		return;
+	}
+
+	const auto parent = FindExistingParent(path.lexically_normal());
+	if (parent.empty()) {
+		error = "No existing folder was found for this asset.";
+		return;
+	}
+	ShellUtils::OpenDirectory(parent, error);
 }
 } // namespace
 
@@ -223,6 +252,14 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 						selectedIssue_ = i;
 						result = GameExportResult::EDIT_ISSUE_SCRIPT;
 					}
+				}
+				if (!issue.assetPath.empty()) {
+					if (hasObject || !issue.scriptPath.empty())
+						ui.SameLine();
+					if (ui.Button("Show in Explorer"))
+						ShowAssetInExplorer(issue.assetPath, error_);
+					ImGui::SetItemTooltip("%s",
+					                      PathUtils::ToUtf8(issue.assetPath).c_str());
 				}
 				ImGui::PopID();
 				ImGui::Spacing();

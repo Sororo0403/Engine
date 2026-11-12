@@ -31,7 +31,9 @@ class SceneDependencyGraph {
 	using Load = std::function<void(const std::filesystem::path &, Scene &)>;
 	using LoadPrefab = std::function<void(const std::filesystem::path &,
 	                                      Scene &, SceneObjectId &)>;
-	using ReportIssue = std::function<void(std::string, const Entry &, SceneObjectId)>;
+	using ReportIssue = std::function<void(std::string, const Entry &,
+	                                       SceneObjectId,
+	                                       const std::filesystem::path &)>;
 	static constexpr std::size_t kMaximumScenes = 256;
 
 	/// <summary>
