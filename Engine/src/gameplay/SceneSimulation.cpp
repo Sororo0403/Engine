@@ -620,7 +620,7 @@ void SceneSimulation::Stop() {
 	sharedScriptData_ = "{}";
 	playing_ = false;
 	pendingScene_ = {};
-	failedDestinationObject_.reset();
+	failedDestination_.reset();
 	restartSource_.reset();
 	loadedScenePath_.reset();
 	quitRequested_ = false;
@@ -658,7 +658,7 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
                              const UIInput &uiInput,
                              std::span<const GameActionState> actions,
                              SceneObjectId *invalidObject) {
-	failedDestinationObject_.reset();
+	failedDestination_.reset();
 	if (invalidObject) {
 		*invalidObject = 0;
 	}
@@ -695,7 +695,7 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 					return false;
 				}
 
-				failedDestinationObject_ = 0;
+				failedDestination_.emplace();
 				if (!PlaceSceneArrival(destination, pendingScene_.arrivalTag,
 				                       error)) {
 					lastUpdateError_ = std::move(error);
@@ -715,9 +715,12 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 			SceneObjectId destinationObject = 0;
 			if (!destinationSimulation.StartScene(source, error, fallbackPose_,
 			                                      &destinationObject, true)) {
-				if (failedDestinationObject_ &&
+				if (failedDestination_ &&
 				    destination.Contains(destinationObject)) {
-					failedDestinationObject_ = destinationObject;
+					failedDestination_->objectId = destinationObject;
+					failedDestination_->scriptPath =
+					    SceneScripts::FindFailedScript(destination, destinationObject,
+					                                   error);
 				}
 				lastUpdateError_ = std::move(error);
 				return false;

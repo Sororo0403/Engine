@@ -21,6 +21,7 @@
 #include "gameplay/FollowCameraUsage.h"
 #include "gameplay/PlayShortcuts.h"
 #include "gameplay/SampleStage.h"
+#include "gameplay/SceneScripts.h"
 #include "graphics/model/ModelManager.h"
 #include "graphics/render/RenderSystem.h"
 #include "graphics/render/RenderTexture.h"
@@ -53,21 +54,6 @@
 #include <stdexcept>
 #include <utility>
 #include <vector>
-
-namespace {
-/// <summary>
-/// Luaの初期化・実行エラーに対応するスクリプトを取得する
-/// </summary>
-std::filesystem::path FindFailedScript(const Scene &scene, SceneObjectId id,
-                                       std::string_view error) {
-	const auto *object = scene.FindObject(id);
-	if (object && object->script &&
-	    error.starts_with(std::format("Script object ID {}: ", id))) {
-		return object->script->asset;
-	}
-	return {};
-}
-} // namespace
 
 EditorScene::EditorScene(const EngineContext &context)
     : ui_(context.ui), input_(context.input), models_(context.models),
@@ -5054,7 +5040,7 @@ void EditorScene::StartPlay(bool fromStartup, SceneObjectId cameraOverride) {
 	SceneObjectId invalidObject = 0;
 	if (!playMode_.Start(*scene, error, fallback, exportConfig_, &invalidObject,
 	                     cameraOverride)) {
-		auto scriptPath = FindFailedScript(*scene, invalidObject, error);
+		auto scriptPath = SceneScripts::FindFailedScript(*scene, invalidObject, error);
 		ShowError(std::move(error), usesEditingScene ? invalidObject : 0,
 		          std::move(scriptPath));
 		if (!usesEditingScene) {
@@ -5080,14 +5066,16 @@ void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject) {
 	const auto &session = playMode_.GetSession();
 	if (const auto failed = session.GetFailedSceneDestination()) {
 		auto path = failed->path;
+		auto scriptPath = failed->scriptPath;
 		const auto object = failed->objectId;
 		const auto &current = document_.GetFilePath();
 		const bool isEditingScene =
 		    !current.empty() && PathUtils::IsSameFile(current, path);
 		message += "\nDestination scene: " + PathUtils::ToUtf8(path);
-		Logger::Error(message);
+		Logger::Error(message, scriptPath);
 		playMode_.Stop();
-		ShowError(std::move(message), isEditingScene ? object : 0);
+		ShowError(std::move(message), isEditingScene ? object : 0,
+		          std::move(scriptPath));
 		if (!isEditingScene) {
 			errorScenePath_ = std::move(path);
 			errorObjectId_ = object;
@@ -5109,7 +5097,8 @@ void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject) {
 	}
 	const auto sourceObject =
 	    session.HasSourceObject(invalidObject) ? invalidObject : 0;
-	auto scriptPath = FindFailedScript(session.GetScene(), invalidObject, reason);
+	auto scriptPath =
+	    SceneScripts::FindFailedScript(session.GetScene(), invalidObject, reason);
 	Logger::Error(message, scriptPath);
 	playMode_.Stop();
 	ShowError(std::move(message), isEditingScene ? sourceObject : 0,

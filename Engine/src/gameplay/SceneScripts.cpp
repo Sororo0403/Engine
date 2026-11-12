@@ -14,6 +14,25 @@
 #include <stdexcept>
 #include <utility>
 
+namespace {
+/// <summary>
+/// Luaエラーの原因を物体IDと対応付ける接頭辞を返す
+/// </summary>
+std::string ScriptErrorPrefix(SceneObjectId id) {
+	return std::format("Script object ID {}: ", id);
+}
+} // namespace
+
+std::filesystem::path SceneScripts::FindFailedScript(const Scene &scene,
+                                                     SceneObjectId id,
+                                                     std::string_view error) {
+	const auto *object = scene.FindObject(id);
+	if (object && object->script && error.starts_with(ScriptErrorPrefix(id))) {
+		return object->script->asset;
+	}
+	return {};
+}
+
 bool SceneScripts::Configure(const Scene &scene, bool preserve,
                              std::string &error, SceneObjectId *invalidObject) {
 	SceneObjectId current = 0;
@@ -104,8 +123,7 @@ bool SceneScripts::Configure(const Scene &scene, bool preserve,
 		error.clear();
 		return true;
 	} catch (const std::exception &exception) {
-		error =
-		    std::format("Script object ID {}: {}", current, exception.what());
+		error = ScriptErrorPrefix(current) + exception.what();
 		if (invalidObject)
 			*invalidObject = current;
 		return false;
@@ -281,8 +299,7 @@ bool SceneScripts::Run(
 		error.clear();
 		return true;
 	} catch (const std::exception &exception) {
-		error =
-		    std::format("Script object ID {}: {}", current, exception.what());
+		error = ScriptErrorPrefix(current) + exception.what();
 		if (invalidObject)
 			*invalidObject = current;
 		return false;

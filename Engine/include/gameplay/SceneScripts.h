@@ -43,6 +43,12 @@ class SceneScripts {
 	static constexpr float kMaximumFrameSeconds = 0.1f;
 
 	/// <summary>
+	/// Luaの初期化・実行エラーに対応するファイルを、原因の物体が属するシーンから取得する
+	/// </summary>
+	static std::filesystem::path FindFailedScript(const Scene &scene, SceneObjectId id,
+	                                              std::string_view error);
+
+	/// <summary>
 	/// 有効なスクリプトを読み込み、必要なインスタンス状態を準備する。継続時は状態と読み込み済みコードを保持する
 	/// </summary>
 	/// <param name="scene">再生用の候補</param>

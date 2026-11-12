@@ -365,6 +365,7 @@ class SceneSimulation {
 	struct FailedSceneDestination {
 		const std::filesystem::path &path;
 		SceneObjectId objectId;
+		const std::filesystem::path &scriptPath;
 	};
 
 	/// <summary>
@@ -372,11 +373,11 @@ class SceneSimulation {
 	/// </summary>
 	/// <returns>次の更新・再生開始・停止まで有効な遷移先。読み込めなかった場合はnullopt</returns>
 	std::optional<FailedSceneDestination> GetFailedSceneDestination() const {
-		if (!failedDestinationObject_) {
+		if (!failedDestination_) {
 			return std::nullopt;
 		}
-		return FailedSceneDestination{pendingScene_.path,
-		                              *failedDestinationObject_};
+		return FailedSceneDestination{pendingScene_.path, failedDestination_->objectId,
+		                              failedDestination_->scriptPath};
 	}
 
 	/// <summary>
@@ -645,7 +646,11 @@ class SceneSimulation {
 
 	SceneLoadRequest pendingScene_;
 	// 遷移先を読み込めた場合のみ値を持つ。原因の物体が不明な場合は0。
-	std::optional<SceneObjectId> failedDestinationObject_;
+	struct DestinationFailure {
+		SceneObjectId objectId = 0;
+		std::filesystem::path scriptPath;
+	};
+	std::optional<DestinationFailure> failedDestination_;
 	// 到着位置を反映済みで、Lua開始処理とシミュレーションを実行する前の状態。
 	std::shared_ptr<const Scene> restartSource_;
 	std::shared_ptr<const std::filesystem::path> loadedScenePath_;
