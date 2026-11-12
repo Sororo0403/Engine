@@ -458,6 +458,38 @@ class CopyPlan {
 	std::set<fs::path, PathLess> directories_;
 };
 
+/// <summary>
+/// 既存の項目と重ならない出力先を取得する
+/// </summary>
+fs::path ResolveDestination(const fs::path &path) {
+	if (path.empty() || path.native().find(L'\0') != std::wstring::npos ||
+	    (path.has_root_path() && !path.is_absolute())) {
+		throw std::runtime_error("Choose a new output folder.");
+	}
+
+	const auto absolute = fs::absolute(path);
+	const auto destination = fs::weakly_canonical(absolute);
+	if (fs::exists(fs::symlink_status(absolute)) || fs::exists(destination)) {
+		throw std::runtime_error(
+		    "Output folder already exists. Choose a new folder.");
+	}
+
+	for (auto parent = destination.parent_path(); !parent.empty();) {
+		if (fs::exists(parent)) {
+			if (fs::is_directory(parent)) {
+				return destination;
+			}
+			break;
+		}
+		auto next = parent.parent_path();
+		if (next == parent) {
+			break;
+		}
+		parent = std::move(next);
+	}
+	throw std::runtime_error("The output folder has no accessible parent folder.");
+}
+
 bool ProcessExport(const Scene &scene, const GameExportOptions &options,
                    std::string &error, bool writeOutput,
                    std::vector<GameExportIssue> *issues = nullptr) {
@@ -471,6 +503,15 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 		if (issues) {
 			issues->push_back({std::move(issue), scenePath, objectId});
 		}
+	};
+	// 事前検査では、同じ検査で独立して直せる問題をまとめて表示する。
+	const auto reportIssue = [&](std::string issue, const fs::path &scenePath = {},
+	                             SceneObjectId objectId = 0) {
+		if (writeOutput) {
+			throw std::runtime_error(std::move(issue));
+		}
+
+		appendIssue(std::move(issue), scenePath, objectId);
 	};
 
 	try {
@@ -486,17 +527,13 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 			    "Game title, size or fallback camera is invalid.");
 		}
 
-		if (options.destination.empty() ||
-		    options.destination.native().find(L'\0') != std::wstring::npos) {
-			throw std::runtime_error("Choose a new output folder.");
-		}
-
-		const auto destination =
-		    fs::weakly_canonical(fs::absolute(options.destination));
-
-		if (fs::exists(destination)) {
-			throw std::runtime_error(
-			    "Output folder already exists. Choose a new folder.");
+		fs::path destination;
+		try {
+			destination = ResolveDestination(options.destination);
+		} catch (const std::bad_alloc &) {
+			throw;
+		} catch (const std::exception &issue) {
+			reportIssue(issue.what());
 		}
 
 		for (const auto &path :
@@ -520,15 +557,6 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 			    "Runtime before exporting.");
 		}
 
-		// 事前検査では、同じ検査で独立して直せる問題をまとめて表示する。
-		const auto reportIssue = [&](std::string issue, const fs::path &scenePath = {},
-		                             SceneObjectId objectId = 0) {
-			if (writeOutput) {
-				throw std::runtime_error(std::move(issue));
-			}
-
-			appendIssue(std::move(issue), scenePath, objectId);
-		};
 		const auto reportObjectIssue = [&](std::string issue, const auto &entry,
 		                                   SceneObjectId id) {
 			reportIssue(std::move(issue), entry.prefab ? fs::path{} : entry.source,
@@ -536,6 +564,7 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 		};
 
 		bool startupIsTarget = false;
+		bool incompleteGraph = false;
 		auto graph = SceneDependencyGraph::Read(
 		    scene, options.startupScenePath,
 		    [&](const auto &path) {
@@ -564,8 +593,10 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 			    if (!PrefabSerializer::Load(path, loaded, issue, &counter))
 				    throw std::runtime_error(issue);
 		    },
-		    reportObjectIssue);
-		const bool incompleteGraph = !error.empty();
+		    [&](std::string issue, const auto &entry, SceneObjectId id) {
+			    incompleteGraph = true;
+			    reportObjectIssue(std::move(issue), entry, id);
+		    });
 		auto sourceDirectories = options.assetDirectories;
 		for (std::size_t i = 1; i < graph.size(); ++i)
 			sourceDirectories.push_back(graph[i].source.parent_path());
@@ -589,9 +620,10 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 		}
 
 		for (const auto &source : assets.Sources()) {
-			if (IsInside(source.directory, destination)) {
-				throw std::runtime_error(
+			if (!destination.empty() && IsInside(source.directory, destination)) {
+				reportIssue(
 				    "Output must be outside all resource and asset folders.");
+				break;
 			}
 		}
 

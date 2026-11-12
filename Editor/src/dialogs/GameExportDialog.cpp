@@ -185,13 +185,11 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 		error_.clear();
 		ClearCheckResult();
 		try {
-			if (output_.empty()) {
-				throw std::runtime_error("Choose a new output folder.");
-			}
-
 			auto selected = options_;
-			selected.destination =
-			    PathUtils::ResolveFromExecutable(PathUtils::FromUtf8(output_));
+			selected.destination = PathUtils::FromUtf8(output_);
+			if (!selected.destination.empty() && !selected.destination.has_root_path()) {
+				selected.destination = PathUtils::ResolveFromExecutable(selected.destination);
+			}
 			selected.config.title = title_;
 			selected.config.width = width_;
 			selected.config.height = height_;
@@ -201,10 +199,15 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 				    "Enter a title and a valid window size (1-8192).");
 			}
 
-			if (std::filesystem::exists(
-			        std::filesystem::symlink_status(selected.destination))) {
-				throw std::runtime_error(
-				    "That output path already exists. Choose a new folder.");
+			if (exportRequested) {
+				if (!selected.destination.is_absolute()) {
+					throw std::runtime_error("Choose a new output folder.");
+				}
+				if (std::filesystem::exists(
+				        std::filesystem::symlink_status(selected.destination))) {
+					throw std::runtime_error(
+					    "That output path already exists. Choose a new folder.");
+				}
 			}
 
 			options_ = std::move(selected);
