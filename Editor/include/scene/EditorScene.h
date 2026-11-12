@@ -401,6 +401,11 @@ class EditorScene final : public IScene {
 	void StartPlay(bool fromStartup, SceneObjectId cameraOverride);
 
 	/// <summary>
+	/// 再生を停止し、編集中のシーンと対応する場合はエラーの物体を表示できるようにする
+	/// </summary>
+	void ReportPlayUpdateFailure(SceneObjectId invalidObject);
+
+	/// <summary>
 	/// 現在の保存先と保存地点を保持するコピーの保存先選択を開始する
 	/// </summary>
 	void StartSaveCopy();

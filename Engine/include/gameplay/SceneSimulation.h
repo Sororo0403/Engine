@@ -231,11 +231,13 @@ class SceneSimulation {
 	/// <param name="cameraInput">現在のPrimary Follow Cameraの旋回入力。0秒では反映しない</param>
 	/// <param name="uiInput">ゲーム内UIの操作。0秒では押下を解除し、クリックしない</param>
 	/// <param name="actions">今回の名前付き入力。更新時だけLuaのinput.actionsへ渡す</param>
+	/// <param name="invalidObject">指定時は更新に失敗したスクリプトの物体ID。特定できなければ0</param>
 	/// <returns>true:更新成功 false:未再生または更新失敗</returns>
 	bool Update(float seconds, const CharacterInput &input,
 	            const OrbitCameraInput &cameraInput = {},
 	            const UIInput &uiInput = {},
-	            std::span<const GameActionState> actions = {});
+	            std::span<const GameActionState> actions = {},
+	            SceneObjectId *invalidObject = nullptr);
 
 	/// <summary>
 	/// 開始・再開始・シーン遷移のたびに増える識別値を取得する。失敗では変えない

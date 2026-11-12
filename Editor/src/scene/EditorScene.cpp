@@ -321,20 +321,14 @@ bool EditorScene::Update(float deltaTime) {
 		}
 	}
 
+	SceneObjectId playErrorObject = 0;
 	if (playMode_.IsPlaying() && playMode_.IsMaximized()) {
 		playFrame_ = true;
 		sceneViewPanel_.CancelSelection();
 
-		if (!playMode_.Update(deltaTime, input_, IsBusy())) {
-			const auto reason = playMode_.GetLastUpdateError();
-			playMode_.Stop();
-			ShowError(
-			    reason.empty()
-			        ? "Play stopped because simulation or Game rendering "
-			          "failed. Your editing scene is unchanged."
-			        : std::format(
-			              "Play stopped: {} Your editing scene is unchanged.",
-			              reason));
+		if (!playMode_.Update(deltaTime, input_, IsBusy(), false,
+		                      &playErrorObject)) {
+			ReportPlayUpdateFailure(playErrorObject);
 		}
 
 		SynchronizePlayScene();
@@ -390,17 +384,9 @@ bool EditorScene::Update(float deltaTime) {
 		} else if (!playMode_.Update(deltaTime, input_,
 		                             sceneViewPanel_.GetInput().windowFocused ||
 		                                 hierarchy.windowFocused,
-		                             sceneViewPanel_.GetRenderTexture() !=
-		                                 nullptr)) {
-			const auto reason = playMode_.GetLastUpdateError();
-			playMode_.Stop();
-			ShowError(
-			    reason.empty()
-			        ? "Play stopped because simulation or Game rendering "
-			          "failed. Your editing scene is unchanged."
-			        : std::format(
-			              "Play stopped: {} Your editing scene is unchanged.",
-			              reason));
+		                             sceneViewPanel_.GetRenderTexture() != nullptr,
+		                             &playErrorObject)) {
+			ReportPlayUpdateFailure(playErrorObject);
 		}
 
 		SynchronizePlayScene();
@@ -4748,6 +4734,17 @@ void EditorScene::StartPlay(bool fromStartup, SceneObjectId cameraOverride) {
 	}
 
 	playUsesEditingScene_ = usesEditingScene;
+}
+
+void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject) {
+	const auto &reason = playMode_.GetLastUpdateError();
+	auto message = reason.empty()
+	                   ? "Play stopped because simulation or Game rendering failed."
+	                   : "Play stopped: " + reason;
+	const bool canReveal =
+	    playUsesEditingScene_ && playMode_.GetSession().IsInitialScene();
+	playMode_.Stop();
+	ShowError(std::move(message), canReveal ? invalidObject : 0);
 }
 
 void EditorScene::SwitchProject(const std::filesystem::path &folder,

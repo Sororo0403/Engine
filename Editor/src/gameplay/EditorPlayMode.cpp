@@ -380,7 +380,12 @@ void EditorPlayMode::RestoreLayout() {
 }
 
 bool EditorPlayMode::Update(float seconds, const InputSystem &input,
-                            bool inputBlocked, bool sceneVisible) {
+                            bool inputBlocked, bool sceneVisible,
+                            SceneObjectId *invalidObject) {
+	if (invalidObject) {
+		*invalidObject = 0;
+	}
+
 	if (!IsPlaying()) {
 		return true;
 	}
@@ -452,7 +457,8 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 	uiInput.pointerPressed = viewport_.leftPressed;
 	uiInput.pointerDown = viewport_.leftDown;
 
-	if (!session_.Update(seconds, controls, cameraControls, uiInput, actions)) {
+	if (!session_.Update(seconds, controls, cameraControls, uiInput, actions,
+	                     invalidObject)) {
 		lastUpdateError_ = session_.GetLastUpdateError();
 		return false;
 	}

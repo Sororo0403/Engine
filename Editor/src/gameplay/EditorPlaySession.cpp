@@ -150,7 +150,12 @@ std::uint64_t EditorPlaySession::GetSimulationFrameCount() const {
 bool EditorPlaySession::Update(float seconds, const CharacterInput &input,
                                const OrbitCameraInput &cameraInput,
                                const UIInput &uiInput,
-                               std::span<const GameActionState> actions) {
+                               std::span<const GameActionState> actions,
+                               SceneObjectId *invalidObject) {
+	if (invalidObject) {
+		*invalidObject = 0;
+	}
+
 	if (!IsPlaying() || !std::isfinite(seconds) || seconds < 0) {
 		return false;
 	}
@@ -170,7 +175,8 @@ bool EditorPlaySession::Update(float seconds, const CharacterInput &input,
 	const auto revision = simulation_.GetSceneRevision();
 	const bool gamePaused = simulation_.IsGamePaused();
 
-	if (!simulation_.Update(*time, input, cameraInput, uiInput, actions)) {
+	if (!simulation_.Update(*time, input, cameraInput, uiInput, actions,
+	                        invalidObject)) {
 		return false;
 	}
 

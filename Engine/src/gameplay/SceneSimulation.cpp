@@ -651,7 +651,12 @@ void SceneSimulation::Stop() {
 bool SceneSimulation::Update(float seconds, const CharacterInput &input,
                              const OrbitCameraInput &cameraInput,
                              const UIInput &uiInput,
-                             std::span<const GameActionState> actions) {
+                             std::span<const GameActionState> actions,
+                             SceneObjectId *invalidObject) {
+	if (invalidObject) {
+		*invalidObject = 0;
+	}
+
 	if (!playing_ || !std::isfinite(seconds) || seconds < 0 ||
 	    !cameraInput.IsValid() || !uiInput.IsValid() ||
 	    !GameActionState::IsValid(actions)) {
@@ -787,9 +792,13 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 		auto scriptViewport = uiInput;
 		// UIがポインターを使用した更新では、同じクリックを3D操作へ渡さない。
 		scriptViewport.pointerValid &= !working.ui_.ConsumesPointer();
+		SceneObjectId scriptObject = 0;
 		if (!working.ApplyScripts(paused ? 0.f : seconds, controls, false,
-		                          error, nullptr, scriptActions,
+		                          error, &scriptObject, scriptActions,
 		                          &scriptViewport)) {
+			if (invalidObject) {
+				*invalidObject = scriptObject;
+			}
 			lastUpdateError_ = std::move(error);
 			return false;
 		}
