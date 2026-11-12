@@ -16,10 +16,8 @@ class GameExportDialog {
 	/// 初期値を設定し、ダイアログを開く
 	/// </summary>
 	/// <param name="options">入力元・カメラ・初期の出力先</param>
-	/// <param name="scenePath">出力時に起動するシーンのパス</param>
 	/// <param name="includesUnsavedEdits">編集中の起動シーンの未保存変更を出力に含むか</param>
-	void Show(GameExportOptions options, std::filesystem::path scenePath,
-	          bool includesUnsavedEdits);
+	void Show(GameExportOptions options, bool includesUnsavedEdits);
 
 	/// <summary>
 	/// 出力設定の入力を描画する

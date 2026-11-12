@@ -506,8 +506,9 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 			    "Runtime before exporting.");
 		}
 
+		bool startupIsTarget = false;
 		auto graph = SceneDependencyGraph::Read(
-		    scene, {},
+		    scene, options.startupScenePath,
 		    [&](const auto &path) {
 			    const auto absolute =
 			        path.is_absolute()
@@ -515,8 +516,13 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 			            : resourceRoot / PathUtils::RelativeInside(
 			                                 fs::path(L"resources"),
 			                                 path.lexically_normal());
-			    return ResourceFile(fs::canonical(absolute.parent_path()),
-			                        absolute);
+			    auto resolved = ResourceFile(fs::canonical(absolute.parent_path()),
+			                                 absolute);
+			    if (!startupIsTarget && !options.startupScenePath.empty()) {
+				    startupIsTarget =
+				        PathUtils::IsSameFile(resolved, options.startupScenePath);
+			    }
+			    return resolved;
 		    },
 		    [&](const auto &path, Scene &loaded) {
 			    if (!SceneSerializer::Load(loaded, path))
@@ -530,11 +536,16 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 				    throw std::runtime_error(issue);
 		    });
 		auto sourceDirectories = options.assetDirectories;
-		for (const auto &entry : graph)
-			if (!entry.source.empty())
-				sourceDirectories.push_back(entry.source.parent_path());
+		for (std::size_t i = 1; i < graph.size(); ++i)
+			sourceDirectories.push_back(graph[i].source.parent_path());
 		Assets assets(resourceRoot, sourceDirectories);
-		std::vector<fs::path> scenePaths{options.config.scenePath};
+		auto config = options.config;
+		// Luaの遷移先として参照できる名前で、起動シーンも出力する。
+		if (startupIsTarget &&
+		    !PathUtils::HasExtension(config.scenePath.stem(), ".scene")) {
+			config.scenePath.replace_extension(L".scene.json");
+		}
+		std::vector<fs::path> scenePaths{config.scenePath};
 
 		for (std::size_t i = 1; i < graph.size(); ++i) {
 			assets.ValidateScene(graph[i].source);
@@ -848,7 +859,7 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 			sceneTexts.push_back(std::move(text));
 		}
 
-		if (!options.config.Serialize(configText, problem)) {
+		if (!config.Serialize(configText, problem)) {
 			throw std::runtime_error(problem);
 		}
 

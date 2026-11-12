@@ -25,11 +25,10 @@ std::filesystem::path FindAvailableDestination(
 }
 } // namespace
 
-void GameExportDialog::Show(GameExportOptions options,
-                            std::filesystem::path scenePath,
-                            bool includesUnsavedEdits) {
+void GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits) {
 	options_ = std::move(options);
 	output_ = PathUtils::ToUtf8(options_.destination);
+	const auto &scenePath = options_.startupScenePath;
 	startupScene_ = scenePath.empty() ? "Untitled" : PathUtils::ToUtf8(scenePath);
 	includesUnsavedEdits_ = includesUnsavedEdits;
 	title_ = options_.config.title;

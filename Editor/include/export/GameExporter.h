@@ -18,6 +18,9 @@ struct GameExportOptions {
 
 	// 外部素材の許可された取得元。相対指定は実行ファイル基準。素材の参照には絶対パスを使う
 	std::vector<std::filesystem::path> assetDirectories;
+
+	// 起動シーンへの遷移を同じ出力シーンへ割り当てるための元の絶対パス
+	std::filesystem::path startupScenePath;
 };
 
 namespace GameExporter {

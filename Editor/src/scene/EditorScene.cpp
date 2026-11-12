@@ -3082,9 +3082,9 @@ void EditorScene::ExecutePendingAction() {
 			if (isCurrentScene) {
 				options.config.fallbackCamera = cameraController_.GetPose();
 			}
-			const auto &startupPath =
+			options.startupScenePath =
 			    isCurrentScene ? document_.GetFilePath() : startup.GetFilePath();
-			exportDialog_.Show(std::move(options), startupPath,
+			exportDialog_.Show(std::move(options),
 			                   isCurrentScene && document_.IsModified());
 			stage_ = DialogStage::EXPORT_GAME;
 		} catch (const std::exception &error) {
