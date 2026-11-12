@@ -3669,21 +3669,24 @@ std::filesystem::path EditorScene::GetRecoveredScenePath() const {
 	}
 }
 
+std::filesystem::path EditorScene::GetSceneCopyPath() const {
+	const auto &currentPath = document_.GetFilePath();
+	if (currentPath.empty()) {
+		return recoverySourceFile_.empty()
+		           ? GetNewScenePath(L"Untitled.copy.scene.json")
+		           : GetRecoveredScenePath();
+	}
+
+	auto stem = currentPath.stem();
+	if (PathUtils::HasExtension(stem, ".scene")) {
+		stem = stem.stem();
+	}
+	return currentPath.parent_path() / (stem.native() + L".copy.scene.json");
+}
+
 void EditorScene::StartSaveCopy() {
 	try {
-		const auto &currentPath = document_.GetFilePath();
-		auto stem = currentPath.stem();
-		if (PathUtils::HasExtension(stem, ".scene")) {
-			stem = stem.stem();
-		}
-		auto copyPath = currentPath.empty()
-		                    ? GetNewScenePath(L"Untitled.copy.scene.json")
-		                    : currentPath.parent_path() /
-		                          (stem.native() + L".copy.scene.json");
-		if (currentPath.empty() && !recoverySourceFile_.empty()) {
-			copyPath = GetRecoveredScenePath();
-		}
-		fileDialog_.Show(FileDialogMode::SAVE_COPY, copyPath);
+		fileDialog_.Show(FileDialogMode::SAVE_COPY, GetSceneCopyPath());
 		stage_ = DialogStage::SAVE_COPY_FILE;
 	} catch (const std::exception &error) {
 		Logger::Error(
@@ -4972,6 +4975,17 @@ void EditorScene::UpdateDialogs() {
 			}
 
 			if (sceneSaveConflict_) {
+				if (pendingAction_ != EditorAction::NONE &&
+				    ui_.Button("Save As and Continue...")) {
+					ui_.CloseCurrentPopup();
+					ui_.EndPopup();
+					fileDialog_.Show(FileDialogMode::SAVE, GetSceneCopyPath());
+					stage_ = DialogStage::SAVE_FILE;
+					return;
+				}
+				if (pendingAction_ != EditorAction::NONE) {
+					ui_.SameLine();
+				}
 				EditorAction action = EditorAction::NONE;
 				if (ui_.Button("Save Copy...")) {
 					action = EditorAction::SAVE_COPY;
@@ -5324,13 +5338,13 @@ void EditorScene::ShowError(std::string message, SceneObjectId objectId,
 
 void EditorScene::ShowSceneSaveError() {
 	const auto action = pendingAction_;
-	if (pendingAction_ == EditorAction::WRITE_GAME_EXPORT) {
+	if (action == EditorAction::WRITE_GAME_EXPORT) {
 		exportDialog_.PreserveDraft();
 	}
 	ShowError(document_.GetError());
 	sceneSaveConflict_ = document_.HasSaveConflict();
-	if (action == EditorAction::OPEN_EXPORT_ISSUE) {
-		// 保存エラーを閉じたら、移動前の配布チェックへ戻す。
+	if (sceneSaveConflict_ || action == EditorAction::OPEN_EXPORT_ISSUE ||
+	    action == EditorAction::WRITE_GAME_EXPORT) {
 		pendingAction_ = action;
 	}
 }

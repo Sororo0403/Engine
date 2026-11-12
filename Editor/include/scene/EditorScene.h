@@ -374,6 +374,11 @@ class EditorScene final : public IScene {
 	std::filesystem::path GetRecoveredScenePath() const;
 
 	/// <summary>
+	/// 現在のシーンと別の名前で保存する初期パスを作る
+	/// </summary>
+	std::filesystem::path GetSceneCopyPath() const;
+
+	/// <summary>
 	/// プロジェクトを作成または開き、読み込み成功後に編集対象を切り替える
 	/// </summary>
 	void SwitchProject(const std::filesystem::path &folder, bool create);
