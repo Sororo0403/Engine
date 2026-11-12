@@ -1877,10 +1877,24 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			action = EditorAction::EXPORT_GAME;
 		}
 
-		const auto lastExport = preferences_.LastGameExport(project_.GetRoot());
-		if (ui_.MenuItem("Last Game Export...", nullptr,
-		                 enabled && !lastExport.empty())) {
-			action = EditorAction::LAST_GAME_EXPORT;
+		const auto recentExports = preferences_.RecentGameExports(project_.GetRoot());
+		if (ImGui::BeginMenu("Recent Game Exports", enabled && !recentExports.empty())) {
+			std::size_t index = 0;
+			for (const auto &directory : recentExports) {
+				std::error_code error;
+				const bool available = std::filesystem::is_regular_file(
+				    directory / L"Game.exe", error) &&
+				    std::filesystem::is_regular_file(directory / L"game.json", error);
+				const auto label = std::format("{}{}###RecentGameExport{}",
+				                               PathUtils::ToUtf8(directory.filename()),
+				                               available ? "" : " (unavailable)", index++);
+				if (ImGui::MenuItem(label.c_str(), nullptr, false, available)) {
+					pendingOpenPath_ = directory;
+					action = EditorAction::OPEN_GAME_EXPORT;
+				}
+				ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(directory).c_str());
+			}
+			ui_.EndMenu();
 		}
 
 		if (ui_.MenuItem("Reload Scene...", nullptr,
@@ -2745,8 +2759,8 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 		ConfirmSceneChanges();
 		return;
 
-	case EditorAction::LAST_GAME_EXPORT: {
-		auto directory = preferences_.LastGameExport(project_.GetRoot());
+	case EditorAction::OPEN_GAME_EXPORT: {
+		auto directory = std::exchange(pendingOpenPath_, std::filesystem::path{});
 		if (!directory.empty()) {
 			exportResultDialog_.Show(std::move(directory), true);
 			stage_ = DialogStage::EXPORT_RESULT;

@@ -18,6 +18,7 @@
 namespace {
 using ViewState = EditorCameraController::ViewState;
 constexpr std::size_t kMaximumRecentProjects = 8;
+constexpr std::size_t kMaximumRecentGameExports = 8;
 
 /// <summary>
 /// 保存した位置と向きを読み、Sceneビューで復元できるか検証する
@@ -157,15 +158,28 @@ void EditorPreferences::RememberGameExport(
 		return;
 	}
 
-	lastGameExports_.insert_or_assign(root.lexically_normal(),
-	                                  directory.lexically_normal());
+	auto normalized = directory.lexically_normal();
+	auto &recent = recentGameExports_[root.lexically_normal()];
+	std::erase(recent, normalized);
+	recent.insert(recent.begin(), std::move(normalized));
+	if (recent.size() > kMaximumRecentGameExports) {
+		recent.resize(kMaximumRecentGameExports);
+	}
 }
 
 std::filesystem::path EditorPreferences::LastGameExport(
     const std::filesystem::path &root) const {
-	const auto found = lastGameExports_.find(root.lexically_normal());
-	return found == lastGameExports_.end() ? std::filesystem::path{}
-	                                      : found->second;
+	const auto recent = RecentGameExports(root);
+	return recent.empty() ? std::filesystem::path{} : recent.front();
+}
+
+std::span<const std::filesystem::path> EditorPreferences::RecentGameExports(
+    const std::filesystem::path &root) const {
+	const auto found = recentGameExports_.find(root.lexically_normal());
+	if (found == recentGameExports_.end()) {
+		return {};
+	}
+	return found->second;
 }
 
 void EditorPreferences::RememberProjectScene(const std::filesystem::path &root,
@@ -430,6 +444,24 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 				if (directory.find('\0') == std::string::npos) {
 					loaded.RememberGameExport(PathUtils::FromUtf8(key),
 					                          PathUtils::FromUtf8(directory));
+				}
+			}
+		}
+
+		const auto recentExports = json.find("recentGameExports");
+		if (recentExports != json.end() && recentExports->is_object()) {
+			for (const auto &[key, values] : recentExports->items()) {
+				if (!values.is_array() || key.find('\0') != std::string::npos) {
+					continue;
+				}
+				const auto root = PathUtils::FromUtf8(key);
+				for (auto it = values.rbegin(); it != values.rend(); ++it) {
+					if (it->is_string()) {
+						const auto &directory = it->get_ref<const std::string &>();
+						if (directory.find('\0') == std::string::npos) {
+							loaded.RememberGameExport(root, PathUtils::FromUtf8(directory));
+						}
+					}
 				}
 			}
 		}
@@ -727,8 +759,18 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		}
 
 		auto lastGameExportsJson = nlohmann::json::object();
-		for (const auto &[root, directory] : lastGameExports_) {
-			lastGameExportsJson[PathUtils::ToUtf8(root)] = PathUtils::ToUtf8(directory);
+		auto recentGameExportsJson = nlohmann::json::object();
+		for (const auto &[root, directories] : recentGameExports_) {
+			if (directories.empty()) {
+				continue;
+			}
+			const auto key = PathUtils::ToUtf8(root);
+			lastGameExportsJson[key] = PathUtils::ToUtf8(directories.front());
+			auto entries = nlohmann::json::array();
+			for (const auto &directory : directories) {
+				entries.push_back(PathUtils::ToUtf8(directory));
+			}
+			recentGameExportsJson[key] = std::move(entries);
 		}
 		auto projectAssetFoldersJson = nlohmann::json::object();
 		for (const auto &[root, folder] : projectAssetFolders_) {
@@ -782,6 +824,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		    {"recentProjects", std::move(recentProjectsJson)},
 		    {"projectScenes", std::move(projectScenesJson)},
 		    {"lastGameExports", std::move(lastGameExportsJson)},
+		    {"recentGameExports", std::move(recentGameExportsJson)},
 		    {"projectAssetFolders", std::move(projectAssetFoldersJson)},
 		    {"sceneViews", std::move(sceneViewsJson)},
 		    {"grid",
@@ -819,7 +862,7 @@ bool EditorPreferences::operator==(const EditorPreferences &other) const {
 	       pivotMode == other.pivotMode && grid == other.grid &&
 	       recentScenes == other.recentScenes && lastProject == other.lastProject &&
 	       recentProjects == other.recentProjects &&
-	       lastGameExports_ == other.lastGameExports_ &&
+	       recentGameExports_ == other.recentGameExports_ &&
 	       projectAssetFolders_ == other.projectAssetFolders_ &&
 	       projectScenes == other.projectScenes && sceneViews == other.sceneViews &&
 	       assets == other.assets &&

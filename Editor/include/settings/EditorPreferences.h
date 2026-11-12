@@ -11,6 +11,7 @@
 
 #include <filesystem>
 #include <map>
+#include <span>
 #include <vector>
 
 /// <summary>
@@ -71,6 +72,12 @@ class EditorPreferences {
 	std::filesystem::path LastGameExport(const std::filesystem::path &root) const;
 
 	/// <summary>
+	/// プロジェクトの配布先を新しい順に取得する
+	/// </summary>
+	std::span<const std::filesystem::path>
+	RecentGameExports(const std::filesystem::path &root) const;
+
+	/// <summary>
 	/// 記憶したシーンが現在もプロジェクト内にあれば絶対パスを返す
 	/// </summary>
 	std::filesystem::path LastProjectScene(const std::filesystem::path &root) const;
@@ -121,6 +128,6 @@ class EditorPreferences {
 	bool operator==(const EditorPreferences &other) const;
 
   private:
-	std::map<std::filesystem::path, std::filesystem::path> lastGameExports_;
+	std::map<std::filesystem::path, std::vector<std::filesystem::path>> recentGameExports_;
 	std::map<std::filesystem::path, std::filesystem::path> projectAssetFolders_;
 };

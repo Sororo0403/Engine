@@ -14,7 +14,7 @@ void GameExportResultDialog::Show(std::filesystem::path directory,
 }
 
 GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
-	const char *title = reopening_ ? "Last Game Export###GameExportResultDialog"
+	const char *title = reopening_ ? "Game Export###GameExportResultDialog"
 	                              : "Game Exported###GameExportResultDialog";
 
 	if (opening_) {
