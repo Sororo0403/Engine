@@ -383,9 +383,14 @@ class EditorScene final : public IScene {
 	                const std::filesystem::path &directory, std::string &error);
 
 	/// <summary>
-	/// 出力するシーンを取得する。別の起動シーンが指定されていれば一時ドキュメントに読み込む
+	/// 別の起動シーンが指定されていれば一時ドキュメントに読み込む
 	/// </summary>
-	const Scene *GetExportScene(SceneDocument &startup);
+	const Scene *GetStartupSceneForRun(SceneDocument &startup);
+
+	/// <summary>
+	/// 編集内容を保持したまま、指定されたシーンから再生を始める
+	/// </summary>
+	void StartPlay(bool fromStartup, SceneObjectId cameraOverride);
 
 	/// <summary>
 	/// 現在の保存先と保存地点を保持するコピーの保存先選択を開始する
@@ -876,6 +881,7 @@ class EditorScene final : public IScene {
 	EditorSelection playSelection_;
 	HierarchyPanel playHierarchyPanel_;
 	bool playSelectionActive_ = false;
+	bool playUsesEditingScene_ = true;
 	bool followPlaySelection_ = false;
 	SceneObjectId followedPlayObject_ = 0;
 	DirectX::XMFLOAT3 followedPlayPosition_{};

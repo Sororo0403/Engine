@@ -6,6 +6,7 @@
 enum class EditorPlayAction {
 	NONE,
 	PLAY,
+	PLAY_STARTUP,
 	RESTART,
 	STOP,
 	STOP_AND_KEEP_TRANSFORMS,

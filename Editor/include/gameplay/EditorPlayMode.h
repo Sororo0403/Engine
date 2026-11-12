@@ -50,11 +50,13 @@ class EditorPlayMode {
 	/// <param name="config">編集中のプレビューに使用する描画幅・高さ・照明。再生中は開始時の設定を保持する</param>
 	/// <param name="canUseSelection">再生中の選択物体を使った停止操作を許可するか</param>
 	/// <param name="editingScene">指定時は停止中のプレビューCamera名を表示するために参照する。保持しない</param>
+	/// <param name="hasStartupScene">プロジェクトの起動シーンから再生できるか</param>
 	/// <returns>ユーザーが要求した操作</returns>
 	Action DrawUI(const ImGuiSystem &ui, bool canStart,
 	              const GameConfig &config = GameConfig{},
 	              bool canUseSelection = false,
-	              const Scene *editingScene = nullptr);
+	              const Scene *editingScene = nullptr,
+	              bool hasStartupScene = false);
 
 	/// <summary>
 	/// 編集シーンを変更せずに再生を始める

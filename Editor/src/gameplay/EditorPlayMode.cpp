@@ -54,7 +54,8 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
                                               bool canStart,
                                               const GameConfig &config,
                                               bool canUseSelection,
-                                              const Scene *editingScene) {
+                                              const Scene *editingScene,
+                                              bool hasStartupScene) {
 	visible_ = false;
 	ready_ = false;
 	viewport_ = {};
@@ -198,6 +199,13 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 
 		if (ui.Button("Play")) {
 			action = Action::PLAY;
+		}
+
+		if (hasStartupScene) {
+			ui.SameLine();
+			if (ui.Button("Play Startup Scene")) {
+				action = Action::PLAY_STARTUP;
+			}
 		}
 
 		ui.EndDisabled();

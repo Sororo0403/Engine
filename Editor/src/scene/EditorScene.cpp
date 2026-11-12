@@ -222,9 +222,11 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	auto playAction = playMode_.DrawUI(ui_, !IsBusy(), exportConfig_,
-	                                   !IsBusy() && playSelectionActive_ &&
+	                                   !IsBusy() && playUsesEditingScene_ &&
+	                                       playSelectionActive_ &&
 	                                       playSelection_.GetCount() != 0,
-	                                   &document_.GetScene());
+	                                   &document_.GetScene(),
+	                                   !project_.GetStartupScene().empty());
 	const bool playShortcutEnabled =
 	    input_.IsActive() && playInputWasActive_ && !exitQueued_ &&
 	    action == EditorAction::NONE && !cameraSettingsRequested_ &&
@@ -275,22 +277,11 @@ bool EditorScene::Update(float deltaTime) {
 		ShowError("Could not create or resize the Game render target.");
 	}
 
-	if (playAction == EditorPlayMode::Action::PLAY && !IsBusy()) {
-		audioPreviewPanel_.Stop();
-		frameRequest_ = FrameRequest::NONE;
-		frameObject_ = 0;
-		FinishEdit();
-		sceneViewPanel_.CancelSelection();
-		std::string error;
-
-		SceneObjectId invalidObject = 0;
-
-		if (!playMode_.Start(document_.GetScene(), error,
-		                     cameraController_.GetPose(), exportConfig_,
-		                     &invalidObject,
-		                     useRequestedCamera ? requestedCamera : 0)) {
-			ShowError(std::move(error), invalidObject);
-		}
+	if ((playAction == EditorPlayMode::Action::PLAY ||
+	     playAction == EditorPlayMode::Action::PLAY_STARTUP) &&
+	    !IsBusy()) {
+		StartPlay(playAction == EditorPlayMode::Action::PLAY_STARTUP,
+		          useRequestedCamera ? requestedCamera : 0);
 	}
 
 	if (playAction == EditorPlayMode::Action::RESTART &&
@@ -314,9 +305,11 @@ bool EditorScene::Update(float deltaTime) {
 
 	if (playMode_.IsPlaying() && !playSelectionActive_) {
 		try {
-			const auto ids = selection_.GetIds();
-			playSelection_.Set(
-			    std::vector<SceneObjectId>(ids.begin(), ids.end()));
+			if (playUsesEditingScene_) {
+				const auto ids = selection_.GetIds();
+				playSelection_.Set(
+				    std::vector<SceneObjectId>(ids.begin(), ids.end()));
+			}
 			playHierarchyPanel_.Clear();
 			playSelectionActive_ = true;
 		} catch (const std::exception &error) {
@@ -3060,7 +3053,7 @@ void EditorScene::ExecutePendingAction() {
 
 	case EditorAction::EXPORT_GAME: {
 		SceneDocument startup;
-		const auto *scene = GetExportScene(startup);
+		const auto *scene = GetStartupSceneForRun(startup);
 
 		if (!scene) {
 			return;
@@ -4548,7 +4541,7 @@ void EditorScene::UpdateDialogs() {
 
 		if (result == GameExportResult::ACCEPTED) {
 			SceneDocument startup;
-			const auto *scene = GetExportScene(startup);
+			const auto *scene = GetStartupSceneForRun(startup);
 
 			if (!scene) {
 				return;
@@ -4621,7 +4614,7 @@ void EditorScene::UpdateDialogs() {
 	}
 }
 
-const Scene *EditorScene::GetExportScene(SceneDocument &startup) {
+const Scene *EditorScene::GetStartupSceneForRun(SceneDocument &startup) {
 	const auto path = project_.GetStartupScene();
 
 	const auto &current = document_.GetFilePath();
@@ -4638,6 +4631,34 @@ const Scene *EditorScene::GetExportScene(SceneDocument &startup) {
 	}
 
 	return &startup.GetScene();
+}
+
+void EditorScene::StartPlay(bool fromStartup, SceneObjectId cameraOverride) {
+	audioPreviewPanel_.Stop();
+	frameRequest_ = FrameRequest::NONE;
+	frameObject_ = 0;
+	FinishEdit();
+	sceneViewPanel_.CancelSelection();
+
+	SceneDocument startup;
+	const auto *scene =
+	    fromStartup ? GetStartupSceneForRun(startup) : &document_.GetScene();
+	if (!scene) {
+		return;
+	}
+
+	const bool usesEditingScene = scene == &document_.GetScene();
+	const auto fallback = usesEditingScene ? cameraController_.GetPose()
+	                                       : exportConfig_.fallbackCamera;
+	std::string error;
+	SceneObjectId invalidObject = 0;
+	if (!playMode_.Start(*scene, error, fallback, exportConfig_, &invalidObject,
+	                     cameraOverride)) {
+		ShowError(std::move(error), usesEditingScene ? invalidObject : 0);
+		return;
+	}
+
+	playUsesEditingScene_ = usesEditingScene;
 }
 
 void EditorScene::SwitchProject(const std::filesystem::path &folder,
@@ -5971,7 +5992,7 @@ bool EditorScene::UpdatePlaySceneView(float deltaTime, EditorAction action,
 }
 
 void EditorScene::StopAndKeepSelectedTransforms() {
-	if (!playMode_.GetSession().IsInitialScene())
+	if (!playUsesEditingScene_ || !playMode_.GetSession().IsInitialScene())
 		return;
 	if (!playMode_.IsPlaying() || !playSelectionActive_ ||
 	    playSelection_.GetCount() == 0) {
@@ -6014,7 +6035,7 @@ void EditorScene::StopAndKeepSelectedTransforms() {
 }
 
 void EditorScene::StopAndSelectEditingObjects() {
-	if (!playMode_.GetSession().IsInitialScene())
+	if (!playUsesEditingScene_ || !playMode_.GetSession().IsInitialScene())
 		return;
 	if (!playMode_.IsPlaying() || !playSelectionActive_ || IsBusy() ||
 	    playSelection_.GetCount() == 0) {
