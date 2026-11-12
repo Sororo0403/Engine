@@ -2218,6 +2218,20 @@ void EditorHistory::ApplyAssetRewrite(EditorHistory &prepared) noexcept {
 	entries_.swap(prepared.entries_);
 }
 
+void EditorHistory::VisitStoredObjects(
+    const std::function<void(const SceneObject &)> &visit) const {
+	const SceneAssetReferences::ObjectRewrite inspect = visit;
+	for (const auto &entry : entries_) {
+		std::visit([&](const auto &command) {
+			using CommandType = std::decay_t<decltype(command)>;
+			if constexpr (requires(CommandType &copy) { copy.RewriteObjects(inspect); }) {
+				auto copy = command;
+				copy.RewriteObjects(inspect);
+			}
+		}, entry.command);
+	}
+}
+
 void EditorHistory::Reset() {
 	pending_.reset();
 	pendingTransforms_.reset();

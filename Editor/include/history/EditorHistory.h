@@ -177,6 +177,11 @@ class EditorHistory {
 	void ApplyAssetRewrite(EditorHistory &prepared) noexcept;
 
 	/// <summary>
+	/// UndoとRedoが保持する物体・コンポーネントの値を読み取る
+	/// </summary>
+	void VisitStoredObjects(const std::function<void(const SceneObject &)> &visit) const;
+
+	/// <summary>
 	/// 物体を作成し、その追加を履歴へ記録する。
 	/// 編集中の変形情報は先に確定する
 	/// </summary>

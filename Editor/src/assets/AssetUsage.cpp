@@ -175,7 +175,8 @@ std::vector<AssetUsage::Reference> Scan(
     const PathMatch &matches, const std::filesystem::path &searchRoot,
     const Scene &scene, const std::filesystem::path &scenePath,
     const std::filesystem::path &startup, const DocumentVisitor &visit = {},
-    const ModelVisitor &visitModel = {}, const ReferenceEdge &recordEdge = {}) {
+    const ModelVisitor &visitModel = {}, const ReferenceEdge &recordEdge = {},
+    const EditorHistory *history = nullptr) {
 	std::vector<AssetUsage::Reference> usages;
 	std::set<fs::path> scheduled;
 	std::vector<std::pair<fs::path, Source>> pending;
@@ -204,6 +205,31 @@ std::vector<AssetUsage::Reference> Scan(
 			pending.emplace_back(std::move(file), source);
 		}
 	};
+	const auto scheduleReference = [&](const fs::path &path) {
+		if (PrefabSerializer::IsPrefabPath(path)) {
+			schedule(path, Source::PREFAB);
+		} else if (PathUtils::HasExtension(path, ".json")) {
+			schedule(path, Source::SCENE);
+		} else if (PathUtils::IsModelFile(path)) {
+			schedule(path, Source::MODEL);
+		}
+	};
+
+	const auto inspectObject = [](const SceneObject &object, const std::string &label,
+	                              const auto &reference) {
+		SceneAssetReferences::Visit(object, reference);
+		if (object.prefabLink && !object.prefabLink->asset.empty()) {
+			reference(object.prefabLink->asset);
+			Scene baseline;
+			if (!SceneSerializer::Deserialize(baseline, object.prefabLink->baseline)) {
+				throw std::runtime_error("Could not read Prefab baseline in " + label);
+			}
+			for (const auto &[sourceId, original] : baseline.GetObjects()) {
+				(void)sourceId;
+				SceneAssetReferences::Visit(original, reference);
+			}
+		}
+	};
 
 	const auto inspect = [&](const Scene &document, const std::string &label,
 	                         const fs::path &source, const fs::path &openPath) {
@@ -216,31 +242,11 @@ std::vector<AssetUsage::Reference> Scan(
 						                id, PathUtils::ToUtf8(path)),
 						    openPath, id, source.empty()});
 					}
-				} else if (PrefabSerializer::IsPrefabPath(path)) {
-					schedule(path, Source::PREFAB);
-				} else if (PathUtils::HasExtension(path, ".json")) {
-					schedule(path, Source::SCENE);
-				} else if (PathUtils::IsModelFile(path)) {
-					schedule(path, Source::MODEL);
+				} else {
+					scheduleReference(path);
 				}
 			};
-			SceneAssetReferences::Visit(object, reference);
-
-			if (object.prefabLink && !object.prefabLink->asset.empty()) {
-				reference(object.prefabLink->asset);
-				Scene baseline;
-
-				if (!SceneSerializer::Deserialize(baseline,
-				                                  object.prefabLink->baseline)) {
-					throw std::runtime_error("Could not read Prefab baseline in " +
-					                         label);
-				}
-
-				for (const auto &[sourceId, original] : baseline.GetObjects()) {
-					(void)sourceId;
-					SceneAssetReferences::Visit(original, reference);
-				}
-			}
+			inspectObject(object, label, reference);
 		}
 	};
 
@@ -257,6 +263,25 @@ std::vector<AssetUsage::Reference> Scan(
 	                           ? "Open scene (unsaved)"
 	                           : "Open scene: " + PathUtils::ToUtf8(scenePath);
 	check(openLabel, [&] { inspect(scene, openLabel, {}, {}); });
+	if (history) {
+		const std::string label = "Undo / Redo history";
+		check(label, [&] {
+			std::set<fs::path> seen;
+			history->VisitStoredObjects([&](const SceneObject &object) {
+				inspectObject(object, label, [&](const auto &path) {
+					if (!seen.insert(path).second) {
+						return;
+					}
+					if (matches(path)) {
+						usages.push_back({label + " -> " + PathUtils::ToUtf8(path),
+						                  {}, 0, false, true});
+					} else {
+						scheduleReference(path);
+					}
+				});
+			});
+		});
+	}
 
 	if (!scenePath.empty()) {
 		check(openLabel, [&] { schedule(scenePath, Source::SCENE); });
@@ -501,7 +526,7 @@ void CheckModelRelocation(const fs::path &model, const PathMapping &map,
 std::vector<AssetUsage::Reference> AssetUsage::Find(
     std::span<const fs::path> targets, const fs::path &searchRoot,
     const Scene &scene, const fs::path &scenePath, const fs::path &startup,
-    Paths *ordered) {
+    Paths *ordered, const EditorHistory *history) {
 	std::vector<MoveEntry> items;
 
 	for (const auto &target : targets) {
@@ -541,7 +566,7 @@ std::vector<AssetUsage::Reference> AssetUsage::Find(
 
 	auto issues = Scan([&](const auto &path) { return owner(path) < items.size(); },
 	                   searchRoot, scene, scenePath, startup, {}, {},
-	                   items.size() > 1 ? ReferenceEdge(record) : ReferenceEdge{});
+	                   items.size() > 1 ? ReferenceEdge(record) : ReferenceEdge{}, history);
 	if (!ordered) {
 		return issues;
 	}

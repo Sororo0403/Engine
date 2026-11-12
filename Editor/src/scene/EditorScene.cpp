@@ -3907,7 +3907,7 @@ EditorScene::CheckAssetReferences(bool recycle) {
 		assetReferences_ = AssetUsage::Find(
 		    pendingAssetPaths_, project.empty() ? root : project,
 		    document_.GetScene(), document_.GetFilePath(), project_.GetStartupScene(),
-		    recycle ? &targets : nullptr);
+		    recycle ? &targets : nullptr, &document_.GetHistory());
 		return targets;
 	} catch (const std::exception &error) {
 		assetReferences_ = {{std::string("Could not verify asset references.\n") +
@@ -3971,6 +3971,22 @@ void EditorScene::DrawAssetReferences(bool recycle) {
 		ui_.SameLine();
 	} else if (!recycle) {
 		ui_.Text("No external references found.");
+	}
+	const bool historyOnly = recycle && !assetReferences_.empty() &&
+	                         std::ranges::all_of(assetReferences_,
+	                                             &AssetUsage::Reference::undoHistory);
+	if (historyOnly && ui_.Button("Clear Scene Undo History")) {
+		auto &history = document_.GetHistory();
+		const bool modified = history.IsModified();
+		history.Reset();
+		if (modified) {
+			history.Invalidate();
+		}
+		CheckAssetReferences(true);
+	}
+	if (historyOnly) {
+		ImGui::SetItemTooltip("Discards all Undo and Redo operations for the current scene.");
+		ui_.SameLine();
 	}
 
 	bool close = false;

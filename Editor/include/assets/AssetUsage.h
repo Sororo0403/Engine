@@ -10,6 +10,7 @@
 class Scene;
 class SceneDocument;
 class ProjectDocument;
+class EditorHistory;
 
 namespace AssetUsage {
 using Paths = std::vector<std::filesystem::path>;
@@ -23,6 +24,7 @@ struct Reference {
 	std::filesystem::path scenePath;
 	SceneObjectId objectId = 0;
 	bool editingScene = false;
+	bool undoHistory = false;
 };
 
 /// <summary>
@@ -34,12 +36,14 @@ struct Reference {
 /// <param name="scenePath">編集中のシーンの保存先。未保存なら空</param>
 /// <param name="startup">プロジェクトの起動シーン。未指定なら空</param>
 /// <param name="ordered">指定時は、ごみ箱へ移せる場合に参照元を先に並べた絶対パスを返す</param>
+/// <param name="history">指定時は編集中のUndoとRedoに残る参照も確認する</param>
 /// <returns>参照元と確認できなかったファイルの一覧。移動順を指定した場合は循環参照も報告する</returns>
 std::vector<Reference>
 Find(std::span<const std::filesystem::path> targets,
      const std::filesystem::path &searchRoot,
      const Scene &scene, const std::filesystem::path &scenePath,
-     const std::filesystem::path &startup, Paths *ordered = nullptr);
+     const std::filesystem::path &startup, Paths *ordered = nullptr,
+     const EditorHistory *history = nullptr);
 
 /// <summary>
 /// Assets内でファイルまたはフォルダを同じ場所に複製する
