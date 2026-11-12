@@ -8,7 +8,7 @@ class ImGuiSystem;
 enum class GameExportResultAction { NONE, CLOSE };
 
 /// <summary>
-/// ゲーム出力の完了後に、出力フォルダを開く操作と単独起動を表示する
+/// ゲーム出力の完了後に、出力フォルダ・単独起動・起動ログの確認を表示する
 /// </summary>
 class GameExportResultDialog {
   public:
@@ -27,8 +27,16 @@ class GameExportResultDialog {
 	GameExportResultAction Draw(const ImGuiSystem &ui);
 
   private:
+	/// <summary>
+	/// 出力したゲームのログを末尾から読み直す
+	/// </summary>
+	void RefreshLog();
+
 	std::filesystem::path directory_;
 	std::string error_;
+	std::string log_, logError_;
 	bool opening_ = false;
 	bool reopening_ = false;
+	bool showLog_ = false;
+	bool logTruncated_ = false;
 };
