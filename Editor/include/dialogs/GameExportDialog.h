@@ -6,7 +6,7 @@
 
 class ImGuiSystem;
 
-enum class GameExportResult { NONE, CANCELLED, ACCEPTED };
+enum class GameExportResult { NONE, CANCELLED, CHECK, ACCEPTED };
 
 /// <summary>
 /// ゲームの出力先・タイトル・画面サイズを選択する
@@ -28,9 +28,14 @@ class GameExportDialog {
 	GameExportResult Draw(const ImGuiSystem &ui);
 
 	/// <summary>
+	/// 出力前検査の結果をダイアログに表示する
+	/// </summary>
+	void SetCheckResult(std::string message);
+
+	/// <summary>
 	/// 確定した出力設定を取得する
 	/// </summary>
-	/// <returns>ACCEPTED後に使用する設定</returns>
+	/// <returns>CHECKまたはACCEPTED後に使用する設定</returns>
 	const GameExportOptions &GetOptions() const {
 		return options_;
 	}
@@ -38,7 +43,9 @@ class GameExportDialog {
   private:
 	GameExportOptions options_;
 	FileDialog folderDialog_;
+	std::filesystem::path defaultOutputName_;
 	std::string output_, startupScene_, title_, error_;
+	std::string checkResult_;
 	int width_ = 1280, height_ = 720;
 	bool opening_ = false;
 	bool includesUnsavedEdits_ = false;

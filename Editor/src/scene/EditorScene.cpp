@@ -4672,6 +4672,22 @@ void EditorScene::UpdateDialogs() {
 			stage_ = DialogStage::IDLE;
 		}
 
+		if (result == GameExportResult::CHECK) {
+			SceneDocument startup;
+			const auto *scene = GetStartupSceneForRun(startup, false);
+			std::string error;
+			if (!scene) {
+				error = "Could not load the project startup scene: " +
+				        startup.GetError();
+			} else if (GameExporter::Check(*scene, exportDialog_.GetOptions(),
+			                               error)) {
+				exportDialog_.SetCheckResult(
+				    "Export check passed. No files were written.");
+				return;
+			}
+			exportDialog_.SetCheckResult("Export check failed: " + error);
+		}
+
 		if (result == GameExportResult::ACCEPTED) {
 			SceneDocument startup;
 			const auto *scene = GetStartupSceneForRun(startup);
@@ -4794,15 +4810,18 @@ bool EditorScene::UsesEditingSceneForStartup(
 	       (!current.empty() && PathUtils::IsSameFile(startup, current));
 }
 
-const Scene *EditorScene::GetStartupSceneForRun(SceneDocument &startup) {
+const Scene *EditorScene::GetStartupSceneForRun(SceneDocument &startup,
+                                                bool reportError) {
 	const auto path = project_.GetStartupScene();
 	if (UsesEditingSceneForStartup(path)) {
 		return &document_.GetScene();
 	}
 
 	if (!startup.Open(path, &exportConfig_.lighting)) {
-		ShowError("Could not load the project startup scene: " +
-		          startup.GetError());
+		if (reportError) {
+			ShowError("Could not load the project startup scene: " +
+			          startup.GetError());
+		}
 		return nullptr;
 	}
 

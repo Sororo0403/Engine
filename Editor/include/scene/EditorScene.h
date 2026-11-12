@@ -395,7 +395,8 @@ class EditorScene final : public IScene {
 	/// <summary>
 	/// 別の起動シーンが指定されていれば一時ドキュメントに読み込む
 	/// </summary>
-	const Scene *GetStartupSceneForRun(SceneDocument &startup);
+	const Scene *GetStartupSceneForRun(SceneDocument &startup,
+	                                   bool reportError = true);
 
 	/// <summary>
 	/// 指定された起動シーンが編集中なら編集内容を使用する

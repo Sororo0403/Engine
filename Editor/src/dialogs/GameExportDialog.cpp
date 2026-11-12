@@ -44,6 +44,7 @@ std::filesystem::path FindExistingParent(const std::filesystem::path &output) {
 
 void GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits) {
 	options_ = std::move(options);
+	defaultOutputName_ = options_.destination.filename();
 	output_ = PathUtils::ToUtf8(options_.destination);
 	const auto &scenePath = options_.startupScenePath;
 	startupScene_ = scenePath.empty() ? "Untitled" : PathUtils::ToUtf8(scenePath);
@@ -52,6 +53,7 @@ void GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits
 	width_ = options_.config.width;
 	height_ = options_.config.height;
 	error_.clear();
+	checkResult_.clear();
 	browsing_ = false;
 
 	try {
@@ -61,6 +63,10 @@ void GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits
 	}
 
 	opening_ = true;
+}
+
+void GameExportDialog::SetCheckResult(std::string message) {
+	checkResult_ = std::move(message);
 }
 
 GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
@@ -84,7 +90,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 	const bool wasBrowsing = browsing_;
 	ui.BeginDisabled(wasBrowsing);
 	ui.Text("Output Folder");
-	ui.InputText("##OutputFolder", output_);
+	bool changed = ui.InputText("##OutputFolder", output_);
 	ui.SameLine();
 	if (ui.Button("Browse...")) {
 		auto output = options_.destination;
@@ -100,17 +106,29 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 		                   FindExistingParent(output));
 		browsing_ = true;
 	}
-	ui.InputText("Game Title", title_);
-	ImGui::InputInt("Width", &width_);
-	ImGui::InputInt("Height", &height_);
+	changed |= ui.InputText("Game Title", title_);
+	changed |= ImGui::InputInt("Width", &width_);
+	changed |= ImGui::InputInt("Height", &height_);
+	if (changed) {
+		error_.clear();
+		checkResult_.clear();
+	}
 
 	if (!error_.empty()) {
 		ImGui::TextWrapped("%s", error_.c_str());
 	}
+	if (!checkResult_.empty()) {
+		ImGui::TextWrapped("%s", checkResult_.c_str());
+	}
 
 	GameExportResult result = GameExportResult::NONE;
 
-	if (ui.Button("Export")) {
+	const bool exportRequested = ui.Button("Export");
+	ui.SameLine();
+	const bool checkRequested = ui.Button("Check Export");
+	if (exportRequested || checkRequested) {
+		error_.clear();
+		checkResult_.clear();
 		try {
 			if (output_.empty()) {
 				throw std::runtime_error("Choose a new output folder.");
@@ -135,7 +153,8 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 			}
 
 			options_ = std::move(selected);
-			result = GameExportResult::ACCEPTED;
+			result = exportRequested ? GameExportResult::ACCEPTED
+			                         : GameExportResult::CHECK;
 		} catch (const std::exception &e) {
 			error_ = e.what();
 		}
@@ -158,17 +177,19 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 		}
 		if (folderResult == FileDialogResult::ACCEPTED) {
 			try {
-				const auto candidate = folderDialog_.GetSelectedPath() /
-				                       options_.destination.filename();
+				const auto candidate =
+				    folderDialog_.GetSelectedPath() / defaultOutputName_;
 				output_ = PathUtils::ToUtf8(FindAvailableDestination(candidate));
 				error_.clear();
+				checkResult_.clear();
 			} catch (const std::exception &e) {
 				error_ = e.what();
 			}
 		}
 	}
 
-	if (result != GameExportResult::NONE) {
+	if (result == GameExportResult::CANCELLED ||
+	    result == GameExportResult::ACCEPTED) {
 		ui.CloseCurrentPopup();
 	}
 

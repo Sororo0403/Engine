@@ -25,6 +25,13 @@ struct GameExportOptions {
 
 namespace GameExporter {
 /// <summary>
+/// 出力予定のシーン・依存ファイル・Runtimeを検査する。出力先には書き込まない
+/// </summary>
+/// <remarks>COM初期化後に呼び出す。コピー後の検証は実際の出力時に行う</remarks>
+bool Check(const Scene &scene, const GameExportOptions &options,
+           std::string &error);
+
+/// <summary>
 /// シーンと依存ファイルを新規フォルダへ直接出力する。既存フォルダには書き込まない
 /// </summary>
 /// <param name="scene">変更しない編集シーン</param>

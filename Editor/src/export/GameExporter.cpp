@@ -456,10 +456,9 @@ class CopyPlan {
 	std::map<fs::path, fs::path, PathLess> files_;
 	std::set<fs::path, PathLess> directories_;
 };
-} // namespace
 
-bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
-                          std::string &error) {
+bool ProcessExport(const Scene &scene, const GameExportOptions &options,
+                   std::string &error, bool writeOutput) {
 	OutputDirectory output;
 
 	try {
@@ -863,6 +862,10 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 			throw std::runtime_error(problem);
 		}
 
+		if (!writeOutput) {
+			return true;
+		}
+
 		output.Create(destination);
 
 		for (const auto &[relative, source] : plan.Files()) {
@@ -915,8 +918,19 @@ bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
 		error += output.Cleanup();
 		return false;
 	} catch (...) {
-		error = "An unknown error interrupted game export.";
+		error = "An unknown error interrupted game export preparation or writing.";
 		error += output.Cleanup();
 		return false;
 	}
+}
+} // namespace
+
+bool GameExporter::Check(const Scene &scene, const GameExportOptions &options,
+                         std::string &error) {
+	return ProcessExport(scene, options, error, false);
+}
+
+bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
+                          std::string &error) {
+	return ProcessExport(scene, options, error, true);
 }
