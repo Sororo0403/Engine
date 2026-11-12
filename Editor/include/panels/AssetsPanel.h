@@ -167,6 +167,11 @@ class AssetsPanel {
 	const std::vector<std::filesystem::path> &GetRecycleRequest() const;
 
 	/// <summary>
+	/// 参照元を調べる素材・フォルダの選択を取得する
+	/// </summary>
+	const std::vector<std::filesystem::path> &GetReferenceRequest() const;
+
+	/// <summary>
 	/// 名前変更が要求された素材ファイルを取得する
 	/// </summary>
 	const std::filesystem::path &GetRenameRequest() const;
@@ -290,6 +295,7 @@ class AssetsPanel {
 	std::string revealMessage_;
 	int textureSlot_ = 0;
 	std::vector<std::filesystem::path> recyclePaths_;
+	std::vector<std::filesystem::path> referencePaths_;
 	std::filesystem::path renamePath_;
 	std::vector<std::filesystem::path> duplicatePaths_;
 	MoveRequest moveRequest_;

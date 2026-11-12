@@ -269,6 +269,7 @@ class EditorScene final : public IScene {
 		EDIT_ANIMATION_CLIP,
 		SELECT_ASSET_FOLDER,
 		RECYCLE_ASSET,
+		ASSET_REFERENCES,
 		RENAME_ASSET,
 		EXPORT_GAME,
 		EXPORT_RESULT,
@@ -355,14 +356,14 @@ class EditorScene final : public IScene {
 	void SaveEditorSession();
 
 	/// <summary>
-	/// 選択した素材の参照元を調べ、ごみ箱へ移せるか確認する
+	/// 選択した素材の参照元を調べ、ごみ箱へ移すときは移動順も確認する
 	/// </summary>
-	std::vector<std::filesystem::path> CheckAssetRecycle();
+	std::vector<std::filesystem::path> CheckAssetReferences(bool recycle);
 
 	/// <summary>
 	/// 素材の移動確認または参照元一覧を描画する
 	/// </summary>
-	void DrawAssetRecycle();
+	void DrawAssetReferences(bool recycle);
 
 	/// <summary>
 	/// 素材の名前変更と参照更新のダイアログを描画する
@@ -853,8 +854,8 @@ class EditorScene final : public IScene {
 	bool gridSettingsRequested_ = false;
 	RecentScenes recentScenes_;
 	std::filesystem::path pendingOpenPath_;
-	std::vector<std::filesystem::path> pendingRecyclePaths_;
-	std::vector<std::string> recycleBlockers_;
+	std::vector<std::filesystem::path> pendingAssetPaths_;
+	std::vector<std::string> assetReferenceMessages_;
 	std::filesystem::path pendingRenamePath_;
 	std::string assetRenameName_, assetRenameError_;
 	FrameRequest frameRequest_ = FrameRequest::NONE;

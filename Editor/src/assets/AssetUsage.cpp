@@ -488,7 +488,7 @@ void CheckModelRelocation(const fs::path &model, const PathMapping &map,
 std::vector<std::string> AssetUsage::Find(
     std::span<const fs::path> targets, const fs::path &searchRoot,
     const Scene &scene, const fs::path &scenePath, const fs::path &startup,
-    Paths &ordered) {
+    Paths *ordered) {
 	std::vector<MoveEntry> items;
 
 	for (const auto &target : targets) {
@@ -520,7 +520,7 @@ std::vector<std::string> AssetUsage::Find(
 		}
 
 		const auto to = owner(target);
-		if (from != to && to < items.size()) {
+		if (ordered && from != to && to < items.size()) {
 			edges[from].insert(to);
 		}
 		return true;
@@ -529,8 +529,10 @@ std::vector<std::string> AssetUsage::Find(
 	auto issues = Scan([&](const auto &path) { return owner(path) < items.size(); },
 	                   searchRoot, scene, scenePath, startup, {}, {},
 	                   items.size() > 1 ? ReferenceEdge(record) : ReferenceEdge{});
-	ordered.clear();
-
+	if (!ordered) {
+		return issues;
+	}
+	ordered->clear();
 	if (!issues.empty()) {
 		return issues;
 	}
@@ -543,16 +545,16 @@ std::vector<std::string> AssetUsage::Find(
 	}
 
 	// 途中で停止しても、残った項目が先に移動した素材を参照しない順にする。
-	while (ordered.size() < items.size()) {
+	while (ordered->size() < items.size()) {
 		const auto next = std::ranges::find(incoming, std::size_t{0});
 		if (next == incoming.end()) {
-			ordered.clear();
+			ordered->clear();
 			return {"The selected items reference each other in a cycle. "
 			        "Clear the references before moving them to the Recycle Bin."};
 		}
 
 		const auto index = static_cast<std::size_t>(next - incoming.begin());
-		ordered.push_back(items[index].from);
+		ordered->push_back(items[index].from);
 		*next = items.size();
 		for (const auto target : edges[index]) {
 			--incoming[target];

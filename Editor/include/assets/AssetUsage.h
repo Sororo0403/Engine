@@ -17,18 +17,18 @@ using Moves = std::vector<std::pair<std::filesystem::path, std::filesystem::path
 /// <summary>
 /// 選択した素材またはフォルダ配下を外部から参照する物体・ファイル・起動シーン設定を収集する
 /// </summary>
-/// <param name="target">確認する素材ファイルまたはフォルダ</param>
+/// <param name="targets">確認する素材ファイルまたはフォルダ</param>
 /// <param name="searchRoot">プロジェクトまたはAssetsのルート</param>
 /// <param name="scene">編集中のシーン</param>
 /// <param name="scenePath">編集中のシーンの保存先。未保存なら空</param>
 /// <param name="startup">プロジェクトの起動シーン。未指定なら空</param>
-/// <param name="ordered">移動可能な場合に参照元を先に並べた絶対パスを返す</param>
-/// <returns>参照元と確認できなかったファイルの一覧。空の場合のみ移動できる</returns>
+/// <param name="ordered">指定時は、ごみ箱へ移せる場合に参照元を先に並べた絶対パスを返す</param>
+/// <returns>参照元と確認できなかったファイルの一覧。移動順を指定した場合は循環参照も報告する</returns>
 std::vector<std::string>
 Find(std::span<const std::filesystem::path> targets,
      const std::filesystem::path &searchRoot,
      const Scene &scene, const std::filesystem::path &scenePath,
-     const std::filesystem::path &startup, Paths &ordered);
+     const std::filesystem::path &startup, Paths *ordered = nullptr);
 
 /// <summary>
 /// Assets内でファイルまたはフォルダを同じ場所に複製する

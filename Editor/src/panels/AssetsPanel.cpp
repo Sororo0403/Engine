@@ -36,6 +36,7 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	instanceSelectionPath_.clear();
 	modelReloadPath_.clear();
 	recyclePaths_.clear();
+	referencePaths_.clear();
 	renamePath_.clear();
 	duplicatePaths_.clear();
 	moveRequest_ = {};
@@ -586,6 +587,10 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 							duplicatePaths_ = selectedItems_;
 						}
 
+						if (ui.MenuItem("Find References...")) {
+							referencePaths_ = selectedItems_;
+						}
+
 						if (ui.MenuItem("Move to Recycle Bin...", "Delete")) {
 							recyclePaths_ = selectedItems_;
 						}
@@ -671,6 +676,12 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				                canEditAssets &&
 				                    assets.GetRootDirectory().is_absolute())) {
 					duplicatePaths_ = selectedItems_;
+				}
+
+				if (ui.MenuItem("Find References...", nullptr,
+				                canEditAssets &&
+				                    assets.GetRootDirectory().is_absolute())) {
+					referencePaths_ = selectedItems_;
 				}
 
 				if (ui.MenuItem("Move to Recycle Bin...", "Delete",
@@ -1011,6 +1022,7 @@ const std::filesystem::path &AssetsPanel::GetTexturePreviewRequest() const {
 
 void AssetsPanel::Clear() {
 	recyclePaths_.clear();
+	referencePaths_.clear();
 	renamePath_.clear();
 	duplicatePaths_.clear();
 	moveRequest_ = {};
@@ -1056,6 +1068,10 @@ void AssetsPanel::Clear() {
 
 const std::vector<std::filesystem::path> &AssetsPanel::GetRecycleRequest() const {
 	return recyclePaths_;
+}
+
+const std::vector<std::filesystem::path> &AssetsPanel::GetReferenceRequest() const {
+	return referencePaths_;
 }
 
 const std::filesystem::path &AssetsPanel::GetRenameRequest() const {

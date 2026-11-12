@@ -738,13 +738,17 @@ bool EditorScene::Update(float deltaTime) {
 		}
 
 		const auto &recycle = assetsPanel_.GetRecycleRequest();
+		const auto &references = assetsPanel_.GetReferenceRequest();
 
-		if (!recycle.empty() && !IsBusy() && action == EditorAction::NONE &&
+		if ((!recycle.empty() || !references.empty()) && !IsBusy() &&
+		    action == EditorAction::NONE &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 			FinishEdit();
-			pendingRecyclePaths_ = recycle;
-			CheckAssetRecycle();
-			stage_ = DialogStage::RECYCLE_ASSET;
+			const bool moveToRecycleBin = !recycle.empty();
+			pendingAssetPaths_ = moveToRecycleBin ? recycle : references;
+			CheckAssetReferences(moveToRecycleBin);
+			stage_ = moveToRecycleBin ? DialogStage::RECYCLE_ASSET
+			                          : DialogStage::ASSET_REFERENCES;
 		}
 
 		if (!requestedObjects.empty() && !IsBusy() &&
@@ -3754,16 +3758,17 @@ void EditorScene::RestoreRecovery() {
 	}
 }
 
-std::vector<std::filesystem::path> EditorScene::CheckAssetRecycle() {
+std::vector<std::filesystem::path>
+EditorScene::CheckAssetReferences(bool recycle) {
 	try {
 		const auto &assets = assets_.GetRootDirectory();
 
-		if (!assets.is_absolute() || pendingRecyclePaths_.empty()) {
+		if (!assets.is_absolute() || pendingAssetPaths_.empty()) {
 			throw std::runtime_error("Choose items inside editable Assets.");
 		}
 
 		const auto root = std::filesystem::canonical(assets);
-		for (const auto &path : pendingRecyclePaths_) {
+		for (const auto &path : pendingAssetPaths_) {
 			const auto status = std::filesystem::symlink_status(path);
 
 			if (!path.is_absolute() ||
@@ -3785,62 +3790,77 @@ std::vector<std::filesystem::path> EditorScene::CheckAssetRecycle() {
 
 		const auto &project = project_.GetRoot();
 		AssetUsage::Paths targets;
-		recycleBlockers_ = AssetUsage::Find(
-		    pendingRecyclePaths_, project.empty() ? root : project,
+		assetReferenceMessages_ = AssetUsage::Find(
+		    pendingAssetPaths_, project.empty() ? root : project,
 		    document_.GetScene(), document_.GetFilePath(), project_.GetStartupScene(),
-		    targets);
+		    recycle ? &targets : nullptr);
 		return targets;
 	} catch (const std::exception &error) {
-		recycleBlockers_ = {"Could not verify asset references.", error.what()};
+		assetReferenceMessages_ = {"Could not verify asset references.", error.what()};
 		return {};
 	}
 }
 
-void EditorScene::DrawAssetRecycle() {
-	constexpr const char *kTitle = "Move Asset to Recycle Bin";
+void EditorScene::DrawAssetReferences(bool recycle) {
+	const char *title =
+	    recycle ? "Move Asset to Recycle Bin" : "Asset References";
 
-	if (!ImGui::IsPopupOpen(kTitle)) {
-		ui_.OpenPopup(kTitle);
+	if (!ImGui::IsPopupOpen(title)) {
+		ui_.OpenPopup(title);
 	}
 
-	if (!ui_.BeginPopupModal(kTitle)) {
+	if (!ui_.BeginPopupModal(title)) {
 		return;
 	}
 
-	ui_.Text(std::format("{} item(s) selected", pendingRecyclePaths_.size()));
+	ui_.Text(std::format("{} item(s) selected", pendingAssetPaths_.size()));
 
 	if (ui_.BeginChild("RecycleSelection", 500.0f, 90.0f)) {
-		for (const auto &path : pendingRecyclePaths_) {
-			ui_.Text(PathUtils::ToUtf8(path.filename()));
+		for (const auto &path : pendingAssetPaths_) {
+			ui_.Text(PathUtils::ToUtf8(
+			    path.lexically_relative(assets_.GetRootDirectory())));
 		}
 	}
 
 	ui_.EndChild();
 
-	if (!recycleBlockers_.empty()) {
-		ui_.Text("The selection could not be moved. References or errors:");
+	if (!assetReferenceMessages_.empty()) {
+		ui_.Text(recycle ? "The selection could not be moved. References or errors:"
+		                 : "External references or items that could not be checked:");
 
 		if (ui_.BeginChild("AssetReferences", 500.0f, 160.0f)) {
-			for (const auto &source : recycleBlockers_) {
+			for (const auto &source : assetReferenceMessages_) {
 				ImGui::TextWrapped("%s", source.c_str());
 			}
 		}
 
 		ui_.EndChild();
+		if (ui_.Button("Copy List")) {
+			std::string list;
+			for (const auto &source : assetReferenceMessages_) {
+				list += source;
+				list += '\n';
+			}
+			ImGui::SetClipboardText(list.c_str());
+		}
+		ui_.SameLine();
+	} else if (!recycle) {
+		ui_.Text("No external references found.");
 	}
 
 	bool close = false;
 
-	if (recycleBlockers_.empty() && ui_.Button("Move to Recycle Bin")) {
-		const auto targets = CheckAssetRecycle();
+	if (recycle && assetReferenceMessages_.empty() &&
+	    ui_.Button("Move to Recycle Bin")) {
+		const auto targets = CheckAssetReferences(true);
 
-		if (!targets.empty() && recycleBlockers_.empty()) {
+		if (!targets.empty() && assetReferenceMessages_.empty()) {
 			std::size_t completed = 0;
 			std::string error;
 
 			for (const auto &target : targets) {
 				if (!ShellUtils::RecycleAsset(target, error)) {
-					recycleBlockers_ = {
+					assetReferenceMessages_ = {
 					    std::format("{} of {} items moved.", completed, targets.size()),
 					    PathUtils::ToUtf8(target), std::move(error)};
 					break;
@@ -3860,11 +3880,12 @@ void EditorScene::DrawAssetRecycle() {
 		ui_.SameLine();
 	}
 
-	if (ui_.Button(recycleBlockers_.empty() ? "Cancel" : "Close") ||
+	const bool canRecycle = recycle && assetReferenceMessages_.empty();
+	if (ui_.Button(canRecycle ? "Cancel" : "Close") ||
 	    ImGui::IsKeyPressed(ImGuiKey_Escape) || close) {
 		ui_.CloseCurrentPopup();
-		pendingRecyclePaths_.clear();
-		recycleBlockers_.clear();
+		pendingAssetPaths_.clear();
+		assetReferenceMessages_.clear();
 		stage_ = DialogStage::IDLE;
 	}
 
@@ -3985,7 +4006,8 @@ void EditorScene::UpdateDialogs() {
 		return;
 
 	case DialogStage::RECYCLE_ASSET:
-		DrawAssetRecycle();
+	case DialogStage::ASSET_REFERENCES:
+		DrawAssetReferences(stage_ == DialogStage::RECYCLE_ASSET);
 		return;
 
 	case DialogStage::RENAME_ASSET:
