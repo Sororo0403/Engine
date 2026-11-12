@@ -46,6 +46,14 @@ class FileDialog {
 	          FileDialogFilter filter = FileDialogFilter::SCENE);
 
 	/// <summary>
+	/// インポート元を選ぶ。指定がなければ、このダイアログで前回使ったフォルダを開く
+	/// </summary>
+	/// <param name="source">選択し直す場合の現在のファイル。初回の選択では空</param>
+	/// <param name="filter">取り込めるファイルの種類</param>
+	void ShowImportSource(const std::filesystem::path &source,
+	                      FileDialogFilter filter);
+
+	/// <summary>
 	/// 選択したファイルやフォルダを使えなかったとき、同じ場所から選び直す
 	/// </summary>
 	/// <param name="error">選択後の処理で発生したエラー</param>

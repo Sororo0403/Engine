@@ -40,8 +40,7 @@ AudioImportResult AudioImportDialog::Draw(const ImGuiSystem &ui) {
 	ui.BeginDisabled(selecting_);
 
 	if (ui.Button("Choose WAV")) {
-		picker_.Show(FileDialogMode::OPEN, options_.source,
-		             FileDialogFilter::AUDIO);
+		picker_.ShowImportSource(options_.source, FileDialogFilter::AUDIO);
 		selecting_ = true;
 	}
 

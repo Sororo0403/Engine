@@ -41,8 +41,7 @@ ModelImportResult ModelImportDialog::Draw(const ImGuiSystem &ui,
 	ui.BeginDisabled(selecting_);
 
 	if (ui.Button("Choose Model")) {
-		picker_.Show(FileDialogMode::OPEN, options_.source,
-		             FileDialogFilter::MODEL);
+		picker_.ShowImportSource(options_.source, FileDialogFilter::MODEL);
 		selecting_ = true;
 	}
 

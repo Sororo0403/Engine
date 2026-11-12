@@ -66,6 +66,21 @@ void FileDialog::Show(FileDialogMode mode,
 	}
 }
 
+void FileDialog::ShowImportSource(const std::filesystem::path &source,
+                                 FileDialogFilter filter) {
+	if (!source.empty()) {
+		Show(FileDialogMode::OPEN, source, filter);
+		return;
+	}
+
+	auto folder = selectedPath_.empty() ? directory_ : selectedPath_.parent_path();
+	std::error_code status;
+	if (!folder.empty() && !std::filesystem::is_directory(folder, status)) {
+		folder.clear();
+	}
+	Show(FileDialogMode::OPEN, folder, filter);
+}
+
 void FileDialog::RetrySelection(std::string error) {
 	const bool selectingFolder = mode_ == FileDialogMode::SELECT_DIRECTORY;
 	const auto folder = selectingFolder ? selectedPath_ : selectedPath_.parent_path();

@@ -43,8 +43,7 @@ SceneImportResult SceneImportDialog::Draw(const ImGuiSystem &ui, Scene &scene) {
 	ui.BeginDisabled(selecting_);
 
 	if (ui.Button("Choose Game Configuration")) {
-		picker_.Show(FileDialogMode::OPEN, options_.source,
-		             FileDialogFilter::GAME_CONFIG);
+		picker_.ShowImportSource(options_.source, FileDialogFilter::GAME_CONFIG);
 		selecting_ = true;
 	}
 

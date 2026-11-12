@@ -40,8 +40,7 @@ TextureImportResult TextureImportDialog::Draw(const ImGuiSystem &ui) {
 	ui.BeginDisabled(selecting_);
 
 	if (ui.Button("Choose Image")) {
-		picker_.Show(FileDialogMode::OPEN, options_.source,
-		             FileDialogFilter::IMAGE);
+		picker_.ShowImportSource(options_.source, FileDialogFilter::IMAGE);
 		selecting_ = true;
 	}
 
