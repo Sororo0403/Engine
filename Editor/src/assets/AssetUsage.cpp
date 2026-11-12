@@ -171,19 +171,19 @@ bool IsSceneFile(const fs::path &path) {
 	return data.is_object() && data.contains("format") &&
 	       data.at("format") == "EngineScene";
 }
-std::vector<std::string> Scan(
+std::vector<AssetUsage::Reference> Scan(
     const PathMatch &matches, const std::filesystem::path &searchRoot,
     const Scene &scene, const std::filesystem::path &scenePath,
     const std::filesystem::path &startup, const DocumentVisitor &visit = {},
     const ModelVisitor &visitModel = {}, const ReferenceEdge &recordEdge = {}) {
-	std::set<std::string> usages;
+	std::vector<AssetUsage::Reference> usages;
 	std::set<fs::path> scheduled;
 	std::vector<std::pair<fs::path, Source>> pending;
 	const auto check = [&](const std::string &label, const auto &operation) {
 		try {
 			operation();
 		} catch (const std::exception &error) {
-			usages.insert("Could not check " + label + "\n" + error.what());
+			usages.push_back({"Could not check " + label + "\n" + error.what()});
 		}
 	};
 
@@ -206,14 +206,15 @@ std::vector<std::string> Scan(
 	};
 
 	const auto inspect = [&](const Scene &document, const std::string &label,
-	                         const fs::path &source) {
+	                         const fs::path &source, const fs::path &openPath) {
 		for (const auto &[id, object] : document.GetObjects()) {
 			const auto reference = [&](const fs::path &path) {
 				if (matches(path)) {
 					if (!visit && (!recordEdge || !recordEdge(source, path))) {
-						usages.insert(std::format("{} / {} (ID {})", label,
-						                          object.name, id) +
-						              " -> " + PathUtils::ToUtf8(path));
+						usages.push_back({
+						    std::format("{} / {} (ID {}) -> {}", label, object.name,
+						                id, PathUtils::ToUtf8(path)),
+						    openPath, id, source.empty()});
 					}
 				} else if (PrefabSerializer::IsPrefabPath(path)) {
 					schedule(path, Source::PREFAB);
@@ -244,18 +245,18 @@ std::vector<std::string> Scan(
 	};
 
 	if (!visit && matches(scenePath)) {
-		usages.insert("Open scene: " + PathUtils::ToUtf8(scenePath));
+		usages.push_back({"Open scene: " + PathUtils::ToUtf8(scenePath)});
 	}
 
 	if (!visit && matches(startup)) {
-		usages.insert("Project startup scene (project.json): " +
-		              PathUtils::ToUtf8(startup));
+		usages.push_back({"Project startup scene (project.json): " +
+		                  PathUtils::ToUtf8(startup)});
 	}
 
 	const auto openLabel = scenePath.empty()
 	                           ? "Open scene (unsaved)"
 	                           : "Open scene: " + PathUtils::ToUtf8(scenePath);
-	check(openLabel, [&] { inspect(scene, openLabel, {}); });
+	check(openLabel, [&] { inspect(scene, openLabel, {}, {}); });
 
 	if (!scenePath.empty()) {
 		check(openLabel, [&] { schedule(scenePath, Source::SCENE); });
@@ -303,8 +304,8 @@ std::vector<std::string> Scan(
 				for (const auto &file : AssetDependencies::ModelFiles(path)) {
 					if (matches(file) && !PathUtils::IsSameFile(path, file) &&
 					    (!recordEdge || !recordEdge(path, file))) {
-						usages.insert("Model: " + label + " -> " +
-						              PathUtils::ToUtf8(file));
+						usages.push_back({"Model: " + label + " -> " +
+						                  PathUtils::ToUtf8(file)});
 					}
 				}
 
@@ -328,7 +329,10 @@ std::vector<std::string> Scan(
 				    error.empty() ? "Could not read the scene." : error);
 			}
 
-			inspect(document, label, path);
+			const bool canOpen =
+			    !visit && source == Source::SCENE &&
+			    (scenePath.empty() || !PathUtils::IsSameFile(path, scenePath));
+			inspect(document, label, path, canOpen ? path : fs::path{});
 
 			if (visit) {
 				visit(path, source, document, nextSourceId, std::move(original),
@@ -337,7 +341,11 @@ std::vector<std::string> Scan(
 		});
 	}
 
-	return {usages.begin(), usages.end()};
+	std::ranges::sort(usages, {}, &AssetUsage::Reference::message);
+	const auto duplicates =
+	    std::ranges::unique(usages, {}, &AssetUsage::Reference::message);
+	usages.erase(duplicates.begin(), duplicates.end());
+	return usages;
 }
 
 /// <summary>
@@ -485,7 +493,7 @@ void CheckModelRelocation(const fs::path &model, const PathMapping &map,
 
 } // namespace
 
-std::vector<std::string> AssetUsage::Find(
+std::vector<AssetUsage::Reference> AssetUsage::Find(
     std::span<const fs::path> targets, const fs::path &searchRoot,
     const Scene &scene, const fs::path &scenePath, const fs::path &startup,
     Paths *ordered) {
@@ -549,8 +557,8 @@ std::vector<std::string> AssetUsage::Find(
 		const auto next = std::ranges::find(incoming, std::size_t{0});
 		if (next == incoming.end()) {
 			ordered->clear();
-			return {"The selected items reference each other in a cycle. "
-			        "Clear the references before moving them to the Recycle Bin."};
+			return {{"The selected items reference each other in a cycle. "
+			         "Clear the references before moving them to the Recycle Bin."}};
 		}
 
 		const auto index = static_cast<std::size_t>(next - incoming.begin());
@@ -863,7 +871,7 @@ bool AssetUsage::Relocate(const Moves &moves, const fs::path &assetRoot,
 		if (!issues.empty()) {
 			error = "Could not move or rename the asset.";
 			for (const auto &issue : issues) {
-				error += "\n" + issue;
+				error += "\n" + issue.message;
 			}
 			return false;
 		}

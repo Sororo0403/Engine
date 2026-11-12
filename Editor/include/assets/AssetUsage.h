@@ -1,5 +1,6 @@
 #pragma once
 
+#include "scene/SceneObjectId.h"
 #include <filesystem>
 #include <span>
 #include <string>
@@ -15,6 +16,16 @@ using Paths = std::vector<std::filesystem::path>;
 using Moves = std::vector<std::pair<std::filesystem::path, std::filesystem::path>>;
 
 /// <summary>
+/// 参照元の表示と、シーン内で該当する物体を探すための情報
+/// </summary>
+struct Reference {
+	std::string message;
+	std::filesystem::path scenePath;
+	SceneObjectId objectId = 0;
+	bool editingScene = false;
+};
+
+/// <summary>
 /// 選択した素材またはフォルダ配下を外部から参照する物体・ファイル・起動シーン設定を収集する
 /// </summary>
 /// <param name="targets">確認する素材ファイルまたはフォルダ</param>
@@ -24,7 +35,7 @@ using Moves = std::vector<std::pair<std::filesystem::path, std::filesystem::path
 /// <param name="startup">プロジェクトの起動シーン。未指定なら空</param>
 /// <param name="ordered">指定時は、ごみ箱へ移せる場合に参照元を先に並べた絶対パスを返す</param>
 /// <returns>参照元と確認できなかったファイルの一覧。移動順を指定した場合は循環参照も報告する</returns>
-std::vector<std::string>
+std::vector<Reference>
 Find(std::span<const std::filesystem::path> targets,
      const std::filesystem::path &searchRoot,
      const Scene &scene, const std::filesystem::path &scenePath,

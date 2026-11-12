@@ -2588,7 +2588,7 @@ EditorScene::ReadShortcut(bool objectPanelFocused) const {
 	return EditorAction::NONE;
 }
 
-void EditorScene::StartAction(EditorAction action) {
+void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	if (stage_ != DialogStage::IDLE || closeApproved_ ||
 	    action == EditorAction::NONE ||
 	    ((action == EditorAction::IMPORT_SCENE ||
@@ -2919,7 +2919,6 @@ void EditorScene::StartAction(EditorAction action) {
 	case EditorAction::NEW:
 	case EditorAction::NEW_SAMPLE:
 	case EditorAction::OPEN:
-	case EditorAction::OPEN_PATH:
 	case EditorAction::RESTORE_RECOVERY:
 	case EditorAction::IMPORT_SCENE:
 	case EditorAction::EXIT:
@@ -2928,6 +2927,12 @@ void EditorScene::StartAction(EditorAction action) {
 
 		ConfirmSceneChanges();
 
+		return;
+
+	case EditorAction::OPEN_PATH:
+		pendingOpenObject_ = openObject;
+		pendingAction_ = action;
+		ConfirmSceneChanges();
 		return;
 
 	case EditorAction::SAVE:
@@ -3169,11 +3174,16 @@ void EditorScene::ExecutePendingAction() {
 
 		stage_ = DialogStage::OPEN_FILE;
 		return;
-	case EditorAction::OPEN_PATH:
+	case EditorAction::OPEN_PATH: {
+		const auto object = std::exchange(pendingOpenObject_, SceneObjectId{0});
 		if (OpenScene(pendingOpenPath_)) {
 			SaveEditorSession();
+			if (object != 0) {
+				RevealReferenceObject(object);
+			}
 		}
 		return;
+	}
 	case EditorAction::RESTORE_RECOVERY:
 		RestoreRecovery();
 		return;
@@ -3790,13 +3800,14 @@ EditorScene::CheckAssetReferences(bool recycle) {
 
 		const auto &project = project_.GetRoot();
 		AssetUsage::Paths targets;
-		assetReferenceMessages_ = AssetUsage::Find(
+		assetReferences_ = AssetUsage::Find(
 		    pendingAssetPaths_, project.empty() ? root : project,
 		    document_.GetScene(), document_.GetFilePath(), project_.GetStartupScene(),
 		    recycle ? &targets : nullptr);
 		return targets;
 	} catch (const std::exception &error) {
-		assetReferenceMessages_ = {"Could not verify asset references.", error.what()};
+		assetReferences_ = {{std::string("Could not verify asset references.\n") +
+		                     error.what()}};
 		return {};
 	}
 }
@@ -3824,21 +3835,31 @@ void EditorScene::DrawAssetReferences(bool recycle) {
 
 	ui_.EndChild();
 
-	if (!assetReferenceMessages_.empty()) {
+	std::optional<AssetUsage::Reference> destination;
+	if (!assetReferences_.empty()) {
 		ui_.Text(recycle ? "The selection could not be moved. References or errors:"
 		                 : "External references or items that could not be checked:");
 
 		if (ui_.BeginChild("AssetReferences", 500.0f, 160.0f)) {
-			for (const auto &source : assetReferenceMessages_) {
-				ImGui::TextWrapped("%s", source.c_str());
+			for (std::size_t i = 0; i < assetReferences_.size(); ++i) {
+				const auto &source = assetReferences_[i];
+				ImGui::TextWrapped("%s", source.message.c_str());
+				if (source.editingScene || !source.scenePath.empty()) {
+					ImGui::PushID(static_cast<int>(i));
+					if (ui_.Button(source.editingScene ? "Show Object"
+					                                  : "Open Scene and Show Object")) {
+						destination = source;
+					}
+					ImGui::PopID();
+				}
 			}
 		}
 
 		ui_.EndChild();
 		if (ui_.Button("Copy List")) {
 			std::string list;
-			for (const auto &source : assetReferenceMessages_) {
-				list += source;
+			for (const auto &source : assetReferences_) {
+				list += source.message;
 				list += '\n';
 			}
 			ImGui::SetClipboardText(list.c_str());
@@ -3850,19 +3871,19 @@ void EditorScene::DrawAssetReferences(bool recycle) {
 
 	bool close = false;
 
-	if (recycle && assetReferenceMessages_.empty() &&
+	if (recycle && assetReferences_.empty() &&
 	    ui_.Button("Move to Recycle Bin")) {
 		const auto targets = CheckAssetReferences(true);
 
-		if (!targets.empty() && assetReferenceMessages_.empty()) {
+		if (!targets.empty() && assetReferences_.empty()) {
 			std::size_t completed = 0;
 			std::string error;
 
 			for (const auto &target : targets) {
 				if (!ShellUtils::RecycleAsset(target, error)) {
-					assetReferenceMessages_ = {
-					    std::format("{} of {} items moved.", completed, targets.size()),
-					    PathUtils::ToUtf8(target), std::move(error)};
+					assetReferences_ = {{
+					    std::format("{} of {} items moved.\n{}\n{}", completed,
+					                targets.size(), PathUtils::ToUtf8(target), error)}};
 					break;
 				}
 				++completed;
@@ -3880,16 +3901,43 @@ void EditorScene::DrawAssetReferences(bool recycle) {
 		ui_.SameLine();
 	}
 
-	const bool canRecycle = recycle && assetReferenceMessages_.empty();
+	const bool canRecycle = recycle && assetReferences_.empty();
 	if (ui_.Button(canRecycle ? "Cancel" : "Close") ||
-	    ImGui::IsKeyPressed(ImGuiKey_Escape) || close) {
+	    ImGui::IsKeyPressed(ImGuiKey_Escape) || close || destination) {
 		ui_.CloseCurrentPopup();
 		pendingAssetPaths_.clear();
-		assetReferenceMessages_.clear();
+		assetReferences_.clear();
 		stage_ = DialogStage::IDLE;
 	}
 
 	ui_.EndPopup();
+
+	if (destination) {
+		if (destination->editingScene) {
+			RevealReferenceObject(destination->objectId);
+		} else {
+			pendingOpenPath_ = std::move(destination->scenePath);
+			StartAction(EditorAction::OPEN_PATH, destination->objectId);
+		}
+	}
+}
+
+void EditorScene::RevealReferenceObject(SceneObjectId id) {
+	if (!document_.GetScene().Contains(id)) {
+		ShowError("The referencing object no longer exists in this scene.");
+		return;
+	}
+
+	try {
+		selection_.SelectOnly(id);
+		inspectorPanel_.Clear();
+		inspectorPanel_.RequestInspect(id);
+		hierarchyPanel_.RequestReveal(id);
+	} catch (const std::exception &error) {
+		Logger::Error(std::format(
+		    "EditorScene::RevealReferenceObject: {}", error.what()));
+		ShowError("Could not select the referencing object.");
+	}
 }
 
 bool EditorScene::CopyAssets(std::span<const std::filesystem::path> sources,

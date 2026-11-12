@@ -2,6 +2,7 @@
 
 #include "assets/AssetDatabase.h"
 #include "assets/AssetSources.h"
+#include "assets/AssetUsage.h"
 #include "camera/CameraFrustum.h"
 #include "camera/EditorCameraController.h"
 #include "dialogs/AssetFolderDialog.h"
@@ -311,7 +312,8 @@ class EditorScene final : public IScene {
 	/// 編集操作を開始する
 	/// </summary>
 	/// <param name="action">開始する操作</param>
-	void StartAction(EditorAction action);
+	/// <param name="openObject">シーンを開いた後に選択する物体。0なら選択しない</param>
+	void StartAction(EditorAction action, SceneObjectId openObject = 0);
 
 	/// <summary>
 	/// 保存確認後に保留していた操作を実行する
@@ -364,6 +366,11 @@ class EditorScene final : public IScene {
 	/// 素材の移動確認または参照元一覧を描画する
 	/// </summary>
 	void DrawAssetReferences(bool recycle);
+
+	/// <summary>
+	/// 参照元の物体をHierarchyとInspectorに表示する
+	/// </summary>
+	void RevealReferenceObject(SceneObjectId id);
 
 	/// <summary>
 	/// 素材の名前変更と参照更新のダイアログを描画する
@@ -854,8 +861,9 @@ class EditorScene final : public IScene {
 	bool gridSettingsRequested_ = false;
 	RecentScenes recentScenes_;
 	std::filesystem::path pendingOpenPath_;
+	SceneObjectId pendingOpenObject_ = 0;
 	std::vector<std::filesystem::path> pendingAssetPaths_;
-	std::vector<std::string> assetReferenceMessages_;
+	std::vector<AssetUsage::Reference> assetReferences_;
 	std::filesystem::path pendingRenamePath_;
 	std::string assetRenameName_, assetRenameError_;
 	FrameRequest frameRequest_ = FrameRequest::NONE;
