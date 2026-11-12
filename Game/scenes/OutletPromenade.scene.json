@@ -103,17 +103,51 @@
         ]
       },
       "script": {
-        "asset": "@project/assets/park/scripts/ParkHeroFacing.lua",
+        "asset": "@project/assets/outlet/scripts/OutletCombat.lua",
         "enabled": true,
         "prefabs": [],
+        "scenes": [],
         "references": [
           {
             "name": "visual",
             "target": 2
+          },
+          {
+            "name": "life",
+            "target": 402
+          },
+          {
+            "name": "attackFlash",
+            "target": 403
+          },
+          {
+            "name": "hitSparks",
+            "target": 404
+          },
+          {
+            "name": "respawnRequest",
+            "target": 408
+          },
+          {
+            "name": "attackSound",
+            "target": 405
+          },
+          {
+            "name": "hitSound",
+            "target": 406
+          },
+          {
+            "name": "damageSound",
+            "target": 407
           }
         ],
-        "scenes": [],
-        "state": {}
+        "state": {
+          "maximumLife": 3,
+          "invulnerabilitySeconds": 1.15,
+          "attackSeconds": 0.24,
+          "cooldownSeconds": 0.37,
+          "attackDistance": 2.45
+        }
       }
     },
     {
@@ -366,7 +400,7 @@
           33
         ],
         "sizeDelta": [
-          535,
+          650,
           52
         ]
       },
@@ -8286,12 +8320,12 @@
         "clearance": 0.30000001192092896,
         "lookOffset": [
           0.0,
-          1.2,
+          1.5,
           3.7
         ],
         "offset": [
           1.8,
-          5.1,
+          6.35,
           -7.8
         ],
         "orbit": {
@@ -12771,14 +12805,14 @@
     {
       "id": 381,
       "name": "Arrive at the clock tower",
-      "active": true,
+      "active": false,
       "parent": 0,
       "tag": "",
       "transform": {
         "translation": [
           0,
-          0.75,
-          155.9
+          2.3,
+          155.42
         ],
         "rotation": [
           0,
@@ -12803,9 +12837,9 @@
           "mask": 4294967295
         },
         "halfExtents": [
-          2.05,
-          0.8,
-          0.7
+          1.21,
+          0.48,
+          0.62
         ],
         "halfHeight": 0.5,
         "isTrigger": true,
@@ -12898,6 +12932,1460 @@
             "operation": "pauseGame",
             "scene": "",
             "target": 0
+          }
+        ]
+      }
+    },
+    {
+      "id": 396,
+      "name": "Restore camera after respawn",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "script": {
+        "asset": "@project/assets/common/scripts/StageRespawnCamera.lua",
+        "enabled": true,
+        "prefabs": [],
+        "references": [
+          {
+            "name": "battle_586",
+            "target": 308
+          }
+        ],
+        "scenes": [],
+        "state": {}
+      }
+    },
+    {
+      "id": 399,
+      "name": "Clock tower terrace step 1",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          -1.7,
+          0,
+          150.72
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/outlet/models/ClockTowerTerraceStep01.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          0.24,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.12,
+          0.24,
+          0.73
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 400,
+      "name": "Clock tower terrace step 2",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          -2.2,
+          0,
+          152.7
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/outlet/models/ClockTowerTerraceStep02.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          0.51,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.09,
+          0.51,
+          0.91
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 401,
+      "name": "Clock tower terrace step 3",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          0,
+          0,
+          155.26
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/outlet/models/ClockTowerTerraceStep03.glb"
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          0.775,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1.88,
+          0.775,
+          1.3
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "active": true,
+      "id": 402,
+      "name": "Outlet life counter",
+      "parent": 24,
+      "rectTransform": {
+        "anchorMax": [
+          0.0,
+          0.0
+        ],
+        "anchorMin": [
+          0.0,
+          0.0
+        ],
+        "pivot": [
+          0.0,
+          0.0
+        ],
+        "position": [
+          42,
+          92
+        ],
+        "sizeDelta": [
+          250,
+          32
+        ]
+      },
+      "tag": "",
+      "text": {
+        "alignment": "left",
+        "bold": true,
+        "color": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "enabled": true,
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 22,
+        "raycastTarget": false,
+        "value": "ライフ 3 / 3",
+        "verticalAlignment": "middle"
+      },
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "active": false,
+      "id": 403,
+      "name": "Outlet attack flash",
+      "parent": 1,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          -0.55,
+          0
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/street/models/StreetAttackFlash.obj"
+      },
+      "meshRenderer": {
+        "visible": true,
+        "textures": [],
+        "uvScale": [
+          1,
+          1
+        ],
+        "uvOffset": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "id": 404,
+      "name": "Outlet enemy hit sparks",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "particleEmitter": {
+        "playOnStart": false,
+        "loop": false,
+        "localSpace": false,
+        "additive": true,
+        "texture": "",
+        "seed": 164,
+        "maxParticles": 48,
+        "burst": 0,
+        "duration": 0.45,
+        "rate": 0,
+        "lifetime": [
+          0.2,
+          0.38
+        ],
+        "speed": [
+          2.8,
+          5.2
+        ],
+        "radius": 0.16,
+        "coneDegrees": 88,
+        "size": [
+          0.18,
+          0.025
+        ],
+        "rotationSpeed": 150,
+        "gravity": [
+          0,
+          -5,
+          0
+        ],
+        "colorStart": [
+          0.74,
+          1,
+          1,
+          0.95
+        ],
+        "colorEnd": [
+          0.15,
+          0.72,
+          1,
+          0
+        ]
+      }
+    },
+    {
+      "id": 405,
+      "name": "attackSound",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "audioSource": {
+        "clip": "@project/assets/street/audio/StreetAttack.wav",
+        "loop": false,
+        "playOnStart": false,
+        "spatial": false,
+        "volume": 0.42,
+        "minDistance": 1,
+        "maxDistance": 15
+      }
+    },
+    {
+      "id": 406,
+      "name": "hitSound",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "audioSource": {
+        "clip": "@project/assets/street/audio/StreetHit.wav",
+        "loop": false,
+        "playOnStart": false,
+        "spatial": false,
+        "volume": 0.42,
+        "minDistance": 1,
+        "maxDistance": 15
+      }
+    },
+    {
+      "id": 407,
+      "name": "damageSound",
+      "active": true,
+      "parent": 1,
+      "tag": "",
+      "transform": {
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "audioSource": {
+        "clip": "@project/assets/street/audio/StreetDamage.wav",
+        "loop": false,
+        "playOnStart": false,
+        "spatial": false,
+        "volume": 0.42,
+        "minDistance": 1,
+        "maxDistance": 15
+      }
+    },
+    {
+      "id": 408,
+      "name": "Outlet player respawn request",
+      "active": false,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.7,
+          0.9,
+          0.7
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "respawnCharacter",
+            "scene": "",
+            "target": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": 581,
+      "name": "時計台の主 barriers",
+      "active": false,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "id": 582,
+      "name": "Battle west fence",
+      "active": true,
+      "parent": 581,
+      "tag": "",
+      "transform": {
+        "translation": [
+          -6.18,
+          0,
+          150.075
+        ],
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          6.674999999999997,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/outlet/models/MarketBattleFence.glb",
+        "preload": true
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          1.05,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1.05,
+          0.12
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 583,
+      "name": "Battle east fence",
+      "active": true,
+      "parent": 581,
+      "tag": "",
+      "transform": {
+        "translation": [
+          6.18,
+          0,
+          150.075
+        ],
+        "rotation": [
+          0,
+          0.7071067811865476,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          6.674999999999997,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/outlet/models/MarketBattleFence.glb",
+        "preload": true
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          1.05,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1.05,
+          0.12
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 584,
+      "name": "Battle south fence",
+      "active": true,
+      "parent": 581,
+      "tag": "",
+      "transform": {
+        "translation": [
+          0.0,
+          0,
+          143.4
+        ],
+        "rotation": [
+          0,
+          0.0,
+          0,
+          1.0
+        ],
+        "scale": [
+          6.18,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/outlet/models/MarketBattleFence.glb",
+        "preload": true
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          1.05,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1.05,
+          0.12
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 585,
+      "name": "Battle north fence",
+      "active": true,
+      "parent": 581,
+      "tag": "",
+      "transform": {
+        "translation": [
+          0.0,
+          0,
+          156.75
+        ],
+        "rotation": [
+          0,
+          0.0,
+          0,
+          1.0
+        ],
+        "scale": [
+          6.18,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/outlet/models/MarketBattleFence.glb",
+        "preload": true
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      },
+      "collider": {
+        "center": [
+          0,
+          1.05,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1.05,
+          0.12
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      }
+    },
+    {
+      "id": 586,
+      "name": "時計台の主 battle",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "script": {
+        "asset": "@project/assets/outlet/scripts/OutletRush.lua",
+        "enabled": true,
+        "prefabs": [],
+        "scenes": [],
+        "references": [
+          {
+            "name": "barriers",
+            "target": 581
+          },
+          {
+            "name": "hint",
+            "target": 26
+          },
+          {
+            "name": "player",
+            "target": 1
+          },
+          {
+            "name": "clearSound",
+            "target": 197
+          },
+          {
+            "name": "bossLife",
+            "target": 587
+          },
+          {
+            "name": "goal",
+            "target": 381
+          },
+          {
+            "name": "wave1",
+            "target": 588
+          }
+        ],
+        "state": {
+          "title": "時計台の主",
+          "waveCount": 1,
+          "waveDelay": 1.1,
+          "bossEncounter": true,
+          "fallbackSpawns": [
+            [
+              -3.5,
+              148
+            ],
+            [
+              3.7,
+              152.5
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "active": false,
+      "id": 587,
+      "name": "Clock tower boss life",
+      "parent": 24,
+      "rectTransform": {
+        "anchorMax": [
+          0.0,
+          0.0
+        ],
+        "anchorMin": [
+          0.0,
+          0.0
+        ],
+        "pivot": [
+          0.0,
+          0.0
+        ],
+        "position": [
+          42,
+          132
+        ],
+        "sizeDelta": [
+          500,
+          32
+        ]
+      },
+      "tag": "",
+      "text": {
+        "alignment": "left",
+        "bold": true,
+        "color": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "enabled": true,
+        "fontFamily": "Yu Gothic UI",
+        "fontSize": 22,
+        "raycastTarget": false,
+        "value": "時計台の主　12 / 12",
+        "verticalAlignment": "middle"
+      },
+      "transform": {
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "id": 588,
+      "name": "時計台の主 wave 1",
+      "active": false,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "id": 589,
+      "name": "時計台の主 boss 1-1",
+      "active": true,
+      "parent": 588,
+      "tag": "outlet_rush_enemy",
+      "transform": {
+        "translation": [
+          1.25,
+          0.94,
+          151.2
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.72,
+          0.88,
+          0.52
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "rigidBody": {
+        "angularDamping": 0,
+        "angularVelocity": [
+          0,
+          0,
+          0
+        ],
+        "enabled": true,
+        "freezeRotation": [
+          false,
+          false,
+          false
+        ],
+        "friction": 0.5,
+        "gravityFactor": 0,
+        "isKinematic": true,
+        "linearDamping": 0,
+        "linearVelocity": [
+          0,
+          0,
+          0
+        ],
+        "mass": 1,
+        "restitution": 0
+      },
+      "audioSource": {
+        "clip": "@project/assets/street/audio/EnemyWindup.wav",
+        "loop": false,
+        "maxDistance": 15,
+        "minDistance": 3,
+        "playOnStart": false,
+        "spatial": true,
+        "volume": 0.55
+      },
+      "script": {
+        "asset": "@project/assets/outlet/scripts/OutletRushEnemy.lua",
+        "enabled": true,
+        "prefabs": [],
+        "scenes": [],
+        "references": [
+          {
+            "name": "player",
+            "target": 1
+          },
+          {
+            "name": "visual",
+            "target": 590
+          },
+          {
+            "name": "weapon",
+            "target": 591
+          },
+          {
+            "name": "warning",
+            "target": 593
+          },
+          {
+            "name": "bossLife",
+            "target": 587
+          }
+        ],
+        "state": {
+          "maximumLife": 12,
+          "moveSpeed": 1.9,
+          "warningDistance": 3.5,
+          "warningSeconds": 1.0,
+          "chargeSpeed": 8.0,
+          "chargeSeconds": 0.52,
+          "recoverySeconds": 1.1,
+          "startDelay": 0.15,
+          "bag": true,
+          "boss": true,
+          "swingSeconds": 0.68,
+          "attackRadius": 3.8,
+          "unstable": false,
+          "footHeight": 0.94
+        }
+      }
+    },
+    {
+      "id": 590,
+      "name": "Enemy body",
+      "active": true,
+      "parent": 589,
+      "tag": "",
+      "transform": {
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/outlet/models/ClockTowerShoppingBoss.glb",
+        "preload": true
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      }
+    },
+    {
+      "id": 591,
+      "name": "Shopping bag swing pivot",
+      "active": true,
+      "parent": 590,
+      "tag": "",
+      "transform": {
+        "translation": [
+          0,
+          0.1,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.24,
+          1.24,
+          1.24
+        ]
+      }
+    },
+    {
+      "id": 592,
+      "name": "Shopping bag",
+      "active": true,
+      "parent": 591,
+      "tag": "",
+      "transform": {
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/outlet/models/ShoppingBagWeapon.glb",
+        "preload": true
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      }
+    },
+    {
+      "id": 593,
+      "name": "Swing reach warning",
+      "active": false,
+      "parent": 590,
+      "tag": "",
+      "transform": {
+        "translation": [
+          0,
+          -0.9149999999999999,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mesh": {
+        "model": "@project/assets/outlet/models/BossSwingWarning.glb",
+        "preload": true
+      },
+      "meshRenderer": {
+        "textures": [],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.0,
+          1.0
+        ],
+        "visible": true
+      }
+    },
+    {
+      "id": 594,
+      "name": "Enemy body contact",
+      "active": true,
+      "parent": 589,
+      "tag": "",
+      "transform": {
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          0.78,
+          0.85,
+          0.58
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "enemy_contact",
+            "once": false,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": 595,
+      "name": "時計台の主 retry spawn",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          0,
+          0.72,
+          141.25
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "id": 596,
+      "name": "時計台の主 entrance",
+      "active": true,
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "translation": [
+          0,
+          0.74,
+          145.4
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "collider": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          6.25,
+          1.2,
+          0.62
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": true,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "triggerActions": {
+        "actions": [
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 595,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "",
+            "once": false,
+            "operation": "setCheckpoint",
+            "scene": "",
+            "target": 1
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "battle_586",
+            "once": false,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 396
+          },
+          {
+            "arrivalTag": "",
+            "cameraBlendSeconds": 0,
+            "clipTime": 0,
+            "contact": "character",
+            "contactTag": "",
+            "delaySeconds": 0,
+            "destination": 0,
+            "event": "enter",
+            "inputAction": "",
+            "launchSpeed": 12,
+            "messageName": "begin_rush",
+            "once": false,
+            "operation": "sendScriptMessage",
+            "scene": "",
+            "target": 586
           }
         ]
       }
