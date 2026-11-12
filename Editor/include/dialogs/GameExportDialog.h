@@ -19,7 +19,14 @@ class GameExportDialog {
 	/// </summary>
 	/// <param name="options">入力元・カメラ・初期の出力先</param>
 	/// <param name="includesUnsavedEdits">編集中の起動シーンの未保存変更を出力に含むか</param>
-	void Show(GameExportOptions options, bool includesUnsavedEdits);
+	/// <param name="projectRoot">下書きの所属先。プロジェクトなしなら空</param>
+	void Show(GameExportOptions options, bool includesUnsavedEdits,
+	          const std::filesystem::path &projectRoot = {});
+
+	/// <summary>
+	/// 無題の起動シーンが置き換わるとき、その出力下書きを破棄する
+	/// </summary>
+	void ForgetUntitledDraft();
 
 	/// <summary>
 	/// 出力設定の入力を描画する
@@ -57,6 +64,7 @@ class GameExportDialog {
 	GameExportOptions options_;
 	FileDialog folderDialog_;
 	std::filesystem::path defaultOutputName_;
+	std::filesystem::path projectRoot_;
 	std::string output_, startupScene_, title_, error_;
 	std::string checkResult_;
 	std::vector<GameExportIssue> checkIssues_;
@@ -66,4 +74,5 @@ class GameExportDialog {
 	bool includesUnsavedEdits_ = false;
 	bool browsing_ = false;
 	bool scrollCheckResultToTop_ = false;
+	bool resumeAfterIssue_ = false;
 };

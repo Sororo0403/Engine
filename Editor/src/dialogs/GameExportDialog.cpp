@@ -42,27 +42,40 @@ std::filesystem::path FindExistingParent(const std::filesystem::path &output) {
 }
 } // namespace
 
-void GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits) {
+void GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits,
+                            const std::filesystem::path &projectRoot) {
+	const bool resume = std::exchange(resumeAfterIssue_, false) &&
+	                    projectRoot_ == projectRoot &&
+	                    options_.startupScenePath == options.startupScenePath;
+	projectRoot_ = projectRoot;
 	options_ = std::move(options);
 	defaultOutputName_ = options_.destination.filename();
-	output_ = PathUtils::ToUtf8(options_.destination);
 	const auto &scenePath = options_.startupScenePath;
 	startupScene_ = scenePath.empty() ? "Untitled" : PathUtils::ToUtf8(scenePath);
 	includesUnsavedEdits_ = includesUnsavedEdits;
-	title_ = options_.config.title;
-	width_ = options_.config.width;
-	height_ = options_.config.height;
 	error_.clear();
 	ClearCheckResult();
 	browsing_ = false;
 
-	try {
-		output_ = PathUtils::ToUtf8(FindAvailableDestination(options_.destination));
-	} catch (const std::filesystem::filesystem_error &e) {
-		error_ = e.what();
+	if (!resume) {
+		output_ = PathUtils::ToUtf8(options_.destination);
+		title_ = options_.config.title;
+		width_ = options_.config.width;
+		height_ = options_.config.height;
+		try {
+			output_ = PathUtils::ToUtf8(FindAvailableDestination(options_.destination));
+		} catch (const std::filesystem::filesystem_error &e) {
+			error_ = e.what();
+		}
 	}
 
 	opening_ = true;
+}
+
+void GameExportDialog::ForgetUntitledDraft() {
+	if (options_.startupScenePath.empty()) {
+		resumeAfterIssue_ = false;
+	}
 }
 
 void GameExportDialog::SetCheckResult(std::string message,
@@ -233,6 +246,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 	if (result == GameExportResult::CANCELLED ||
 	    result == GameExportResult::ACCEPTED ||
 	    result == GameExportResult::OPEN_ISSUE) {
+		resumeAfterIssue_ = result == GameExportResult::OPEN_ISSUE;
 		ui.CloseCurrentPopup();
 	}
 

@@ -3153,7 +3153,8 @@ void EditorScene::ExecutePendingAction() {
 			options.startupScenePath =
 			    isCurrentScene ? document_.GetFilePath() : startup.GetFilePath();
 			exportDialog_.Show(std::move(options),
-			                   isCurrentScene && document_.IsModified());
+			                   isCurrentScene && document_.IsModified(),
+			                   project_.GetRoot());
 			stage_ = DialogStage::EXPORT_GAME;
 		} catch (const std::exception &error) {
 			Logger::Error(
@@ -3180,6 +3181,7 @@ void EditorScene::ExecutePendingAction() {
 
 			SaveEditorSession();
 			document_.New();
+			exportDialog_.ForgetUntitledDraft();
 			sceneCheckPanel_.Reset();
 			frameRequest_ = FrameRequest::NONE;
 			frameObject_ = 0;
@@ -3842,6 +3844,7 @@ void EditorScene::RestoreRecovery() {
 		                                               : exportConfig_.lighting);
 		document_.GetScene().CopyFrom(snapshot.scene);
 		document_.SetUntitled();
+		exportDialog_.ForgetUntitledDraft();
 		ClearRecovery(pendingRecoveryPath_);
 		recoverySourceFile_ = std::move(snapshot.sourceFile);
 		assetSources_ = std::move(snapshot.assets);
@@ -4451,6 +4454,7 @@ void EditorScene::UpdateDialogs() {
 
 			SaveEditorSession();
 			document_.SetUntitled();
+			exportDialog_.ForgetUntitledDraft();
 			ClearRecovery();
 			sceneCheckPanel_.Reset();
 			clipboard_.DetachExternalReferences();
