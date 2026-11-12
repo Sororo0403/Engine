@@ -65,6 +65,9 @@ void GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits
 	projectRoot_ = projectRoot;
 	options_ = std::move(options);
 	defaultOutputName_ = options_.destination.filename();
+	if (!PathUtils::IsValidFileName(defaultOutputName_)) {
+		defaultOutputName_ = L"Game";
+	}
 	const auto &scenePath = options_.startupScenePath;
 	startupScene_ = scenePath.empty() ? "Untitled" : PathUtils::ToUtf8(scenePath);
 	includesUnsavedEdits_ = includesUnsavedEdits;
@@ -148,8 +151,12 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 	ui.SameLine();
 	if (ui.Button("Browse...")) {
 		auto output = options_.destination;
+		browseOutputName_ = defaultOutputName_;
 		try {
 			const auto entered = ReadDestination(output_);
+			if (PathUtils::IsValidFileName(entered.filename())) {
+				browseOutputName_ = entered.filename();
+			}
 			if (entered.is_absolute()) {
 				output = entered;
 			}
@@ -275,7 +282,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 		if (folderResult == FileDialogResult::ACCEPTED) {
 			try {
 				const auto candidate =
-				    folderDialog_.GetSelectedPath() / defaultOutputName_;
+				    folderDialog_.GetSelectedPath() / browseOutputName_;
 				output_ = PathUtils::ToUtf8(FindAvailableDestination(candidate));
 				error_.clear();
 				ClearCheckResult();

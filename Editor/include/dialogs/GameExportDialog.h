@@ -74,6 +74,7 @@ class GameExportDialog {
 	GameExportOptions options_;
 	FileDialog folderDialog_;
 	std::filesystem::path defaultOutputName_;
+	std::filesystem::path browseOutputName_;
 	std::filesystem::path projectRoot_;
 	std::string output_, startupScene_, title_, error_;
 	std::string checkResult_;
