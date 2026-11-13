@@ -67,7 +67,8 @@ bool MatchesIssue(const GameExportIssue &issue, std::string_view filter) {
 } // namespace
 
 bool GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits,
-                            const std::filesystem::path &projectRoot) {
+                            const std::filesystem::path &projectRoot,
+                            const std::filesystem::path &lastExport) {
 	const bool resume = std::exchange(resumeDraft_, false) &&
 	                    projectRoot_ == projectRoot &&
 	                    options_.startupScenePath == options.startupScenePath;
@@ -79,6 +80,15 @@ bool GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits
 		options.config.height = height_;
 	}
 	projectRoot_ = projectRoot;
+	lastSuccessfulWindow_.reset();
+	if (!projectRoot.empty() && !lastExport.empty()) {
+		GameConfig previous;
+		std::string error;
+		if (previous.Load(lastExport / L"game.json", error)) {
+			lastSuccessfulWindow_ = WindowSettings{
+			    std::move(previous.title), previous.width, previous.height};
+		}
+	}
 	options_ = std::move(options);
 	defaultOutputName_ = options_.destination.filename();
 	if (!PathUtils::IsValidFileName(defaultOutputName_)) {
@@ -208,12 +218,6 @@ void GameExportDialog::PreserveDraft() {
 	resumeDraft_ = true;
 }
 
-void GameExportDialog::RememberSuccessfulExport() {
-	lastSuccessfulProject_ = projectRoot_;
-	lastSuccessfulWindow_ = WindowSettings{
-	    options_.config.title, options_.config.width, options_.config.height};
-}
-
 GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
                                         bool canSaveAndCheck) {
 	constexpr const char *title = "Export Game###GameExportDialog";
@@ -286,8 +290,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 	changed |= ui.InputText("Game Title", title_);
 	changed |= ImGui::InputInt("Width", &width_);
 	changed |= ImGui::InputInt("Height", &height_);
-	if (!projectRoot_.empty() && projectRoot_ == lastSuccessfulProject_ &&
-	    lastSuccessfulWindow_) {
+	if (lastSuccessfulWindow_) {
 		const auto &last = *lastSuccessfulWindow_;
 		ui.BeginDisabled(title_ == last.title && width_ == last.width && height_ == last.height);
 		if (ui.Button("Use Last Export Window Settings")) {

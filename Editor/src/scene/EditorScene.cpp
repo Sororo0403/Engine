@@ -3357,7 +3357,6 @@ void EditorScene::WriteGameExport() {
 
 	const auto &directory = options.destination;
 	Logger::Info("Game exported to " + PathUtils::ToUtf8(directory));
-	exportDialog_.RememberSuccessfulExport();
 	if (project_.GetRoot().empty()) {
 		exportConfig_ = options.config;
 	}
@@ -3533,7 +3532,7 @@ void EditorScene::ExecutePendingAction() {
 			    isCurrentScene ? document_.GetFilePath() : startup;
 			if (exportDialog_.Show(std::move(options),
 			                       isCurrentScene && document_.IsModified(),
-			                       project_.GetRoot())) {
+			                       project_.GetRoot(), lastExport)) {
 				CheckGameExport(true);
 			}
 			stage_ = DialogStage::EXPORT_GAME;
