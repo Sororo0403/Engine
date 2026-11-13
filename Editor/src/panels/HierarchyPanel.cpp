@@ -84,8 +84,11 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 	const bool focusWindow = revealRequested_;
 
 	if (focusWindow) {
-		filter_.Clear();
-		pickingDisabledOnly_ = false;
+		if (!MatchesFilters(scrollToId_, *scene.FindObject(scrollToId_))) {
+			previousFilters_ = FilterState{std::move(filter_), pickingDisabledOnly_};
+			filter_.Clear();
+			pickingDisabledOnly_ = false;
+		}
 		ImGui::SetNextWindowCollapsed(false);
 		ImGui::SetNextWindowFocus();
 	}
@@ -118,6 +121,17 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 	ui.EndDisabled();
 
 	ImGui::Checkbox("Hidden only", &filter_.hiddenOnly);
+	if (previousFilters_) {
+		ui.SameLine();
+		if (ui.Button("Restore Filters")) {
+			filter_ = std::move(previousFilters_->filter);
+			pickingDisabledOnly_ = previousFilters_->pickingDisabledOnly;
+			previousFilters_.reset();
+			scrollToId_ = activeId;
+		}
+		ImGui::SetItemTooltip("Restore the filters cleared to reveal an object.");
+	}
+
 	ImGui::Checkbox("Scene picking disabled only", &pickingDisabledOnly_);
 	using Component = HierarchyFilter::Component;
 	struct ComponentOption {
@@ -732,6 +746,7 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 void HierarchyPanel::Clear() {
 	filter_.Clear();
+	previousFilters_.reset();
 	collapsed_.clear();
 	pickingDisabledOnly_ = false;
 	scenePickingDisabled_.clear();

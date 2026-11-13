@@ -3,6 +3,7 @@
 #include "panels/HierarchyFilter.h"
 #include "scene/SceneObjectId.h"
 
+#include <optional>
 #include <set>
 #include <span>
 #include <string>
@@ -20,7 +21,7 @@ class EditorSelection;
 class HierarchyPanel {
   public:
 	/// <summary>
-	/// 検索・表示条件を解除し、指定物体を表示する。選択状態は変更しない
+	/// 指定物体を表示する。条件外なら絞り込みを一時解除する。選択状態は変更しない
 	/// </summary>
 	/// <param name="objectId">表示する物体のID。0の場合は表示要求を取り消す</param>
 	void RequestReveal(SceneObjectId objectId);
@@ -190,7 +191,13 @@ class HierarchyPanel {
 	/// <returns>true:絞り込み中 false:親子ツリー表示</returns>
 	bool IsFiltered() const;
 
+	struct FilterState {
+		HierarchyFilter filter;
+		bool pickingDisabledOnly = false;
+	};
+
 	HierarchyFilter filter_;
+	std::optional<FilterState> previousFilters_;
 	std::set<SceneObjectId> collapsed_;
 	std::vector<SceneObjectId> scenePickingDisabled_;
 	SortMode sortMode_ = SortMode::CREATION;

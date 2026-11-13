@@ -315,8 +315,9 @@ void ControlsPanel::Draw() {
 	         "Restore every hidden model in one undoable operation without "
 	         "changing selection."},
 	        {"Edit > Reveal Active",
-	         "Clear Hierarchy filters and scroll to the active object without "
-	         "changing visibility or selection."},
+	         "Scroll to the active object without changing visibility or "
+	         "selection. If it is filtered out, use Restore Filters to return "
+	         "to the previous list."},
 	        {"Ctrl + D / Delete", "Duplicate / delete the selected objects."},
 	        {"Deleting referenced objects",
 	         "Remaining Follow Cameras lose targets that were deleted. Undo "
@@ -1737,14 +1738,14 @@ void ControlsPanel::Draw() {
 	         "Select objects that directly follow any selected target. "
 	         "Hidden objects and incomplete Follow Camera components are "
 	         "included. "
-	         "Indirect followers are not included. Hierarchy filters clear "
-	         "to reveal the result; visibility and Inspector locks stay "
+	         "Indirect followers are not included. Hierarchy filters may clear "
+	         "to reveal the active result; visibility and Inspector locks stay "
 	         "unchanged. "
 	         "Selection adds no Undo operation and pending edits finish "
 	         "first."},
 	        {"Inspector > Follow Camera > Select Target",
 	         "Select only the referenced object and reveal it in Hierarchy. "
-	         "This clears Hierarchy filters but keeps hidden models hidden. "
+	         "This can clear Hierarchy filters and keeps hidden models hidden. "
 	         "An Inspector lock stays on its original object. "
 	         "Selection adds no Undo operation; pending edits finish first. "
 	         "Unavailable when the target is missing or refers to itself."},
