@@ -139,6 +139,24 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 	ui.InputText("Search", filter_);
 	ImGui::SetItemTooltip("Search message text and source file paths.");
 	Logger::ReadEntries(revision_, entries_);
+	const auto latestPlayError =
+	    std::find_if(entries_.rbegin(), entries_.rend(), [this](const auto &entry) {
+		    return playStartBoundary_ != 0 && entry.id > playStartBoundary_ &&
+		           entry.level == LogLevel::LOG_ERROR;
+	    });
+	ImGui::BeginDisabled(latestPlayError == entries_.rend());
+	bool jumpToError = false;
+	if (ui.Button("Latest Play Error") && latestPlayError != entries_.rend()) {
+		jumpToError = true;
+		latestPlayOnly_ = true;
+		showErrors_ = true;
+		if (!MatchesFilter(*latestPlayError)) {
+			filter_.clear();
+		}
+		selectedId_ = latestPlayError->id;
+	}
+	ImGui::EndDisabled();
+	ImGui::SameLine();
 	const auto matchingCount = std::count_if(
 	    entries_.begin(), entries_.end(),
 	    [this](const auto &entry) { return MatchesFilter(entry); });
@@ -189,6 +207,9 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 			if (ui.Selectable(label.c_str(), selectedId_ == entry.id)) {
 				selectedId_ = entry.id;
 			}
+			if (jumpToError && selectedId_ == entry.id) {
+				ImGui::SetScrollHereY(0.5f);
+			}
 
 			ImGui::SameLine(messageOffset);
 			ui.Text(std::string_view{entry.message}.substr(
@@ -203,13 +224,16 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 			ui.Text("No matching messages.");
 		}
 
-		if (autoScroll_ &&
+		if (!jumpToError && autoScroll_ &&
 		    (scrollRequested_ || lastVisible != lastVisibleId_)) {
 			ImGui::SetScrollHereY(1.0f);
 			scrollRequested_ = false;
 		}
 
 		lastVisibleId_ = lastVisible;
+		if (jumpToError) {
+			scrollRequested_ = false;
+		}
 	}
 
 	ui.EndChild();
