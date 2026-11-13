@@ -51,6 +51,7 @@
 #include <imgui.h>
 #include <limits>
 #include <map>
+#include <span>
 #include <stdexcept>
 #include <system_error>
 #include <utility>
@@ -70,6 +71,18 @@ std::filesystem::path FindExistingDirectory(std::filesystem::path directory) {
 		directory = std::move(parent);
 	}
 	return directory;
+}
+
+/// <summary>
+/// 履歴内で同じ名前が並ぶ場合は、場所まで表示して選び分けられるようにする
+/// </summary>
+std::string RecentPathName(const std::filesystem::path &path,
+                           std::span<const std::filesystem::path> recent) {
+	const auto name = path.filename();
+	const bool repeated = std::ranges::any_of(recent, [&](const auto &other) {
+		return other != path && other.filename() == name;
+	});
+	return PathUtils::ToUtf8(name.empty() || repeated ? path : name);
 }
 
 } // namespace
@@ -1809,9 +1822,8 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			const auto &activeRoot = project_.GetRoot();
 			std::size_t index = 0;
 			for (const auto &root : recentProjects) {
-				const auto name = root.has_filename() ? root.filename() : root;
 				const auto label = std::format("{}###RecentProject{}",
-				                               PathUtils::ToUtf8(name), index++);
+				                               RecentPathName(root, recentProjects), index++);
 				const bool isCurrent =
 				    !activeRoot.empty() && PathUtils::IsSameFile(activeRoot, root);
 				if (ImGui::MenuItem(label.c_str(), nullptr, isCurrent,
@@ -1937,7 +1949,7 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 				hasMissing |= missing;
 				const auto label =
 				    std::format("{}{}###RecentScene{}",
-				                PathUtils::ToUtf8(path.filename()),
+				                RecentPathName(path, recent),
 				                missing ? " (Missing)" : "", index++);
 
 				if (ui_.MenuItem(label.c_str(), nullptr, enabled)) {
@@ -2028,7 +2040,7 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			for (const auto &directory : recentExports) {
 				const auto problem = FileDialog::GameExportOpenProblem(directory);
 				const auto label = std::format("{}{}###RecentGameExport{}",
-				                               PathUtils::ToUtf8(directory.filename()),
+				                               RecentPathName(directory, recentExports),
 				                               problem.empty() ? "" : " (unavailable)", index++);
 				if (ImGui::MenuItem(label.c_str())) {
 					pendingOpenPath_ = directory;
