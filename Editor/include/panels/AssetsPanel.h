@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <span>
 #include <string>
+#include <utility>
 
 class AssetDatabase;
 class ImGuiSystem;
@@ -29,6 +30,12 @@ class AssetsPanel {
 	/// </summary>
 	/// <param name="path">表示するアセットの相対パスまたは絶対パス</param>
 	void RequestReveal(const std::filesystem::path &path);
+
+	/// <summary>
+	/// 移動が完了した素材と、その配下にあるコピー・切り取り元を更新する
+	/// </summary>
+	void RelocateClipboard(std::span<const std::pair<std::filesystem::path,
+	                                                std::filesystem::path>> moves);
 
 	/// <summary>
 	/// アセットの一覧と操作用UIを構築する

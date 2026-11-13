@@ -21,6 +21,22 @@ void AssetsPanel::RequestReveal(const std::filesystem::path &path) {
 	revealPath_ = path;
 }
 
+void AssetsPanel::RelocateClipboard(
+    std::span<const std::pair<std::filesystem::path, std::filesystem::path>> moves) {
+	for (auto &path : clipboardItems_) {
+		for (const auto &[source, destination] : moves) {
+			try {
+				const auto relative = PathUtils::RelativeInside(
+				    source.lexically_normal(), path.lexically_normal());
+				path = relative.empty() ? destination : destination / relative;
+				break;
+			} catch (const std::runtime_error &) {
+				// この移動元の外にある場合は、次の移動元を確認する。
+			}
+		}
+	}
+}
+
 bool AssetsPanel::ValidateClipboard() {
 	const bool missing = std::ranges::any_of(clipboardItems_, [](const auto &path) {
 		std::error_code error;

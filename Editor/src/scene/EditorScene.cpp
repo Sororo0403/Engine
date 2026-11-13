@@ -4402,6 +4402,7 @@ bool EditorScene::RelocateAssets(const AssetUsage::Moves &moves,
 	                          project_, error)) {
 		return false;
 	}
+	assetsPanel_.RelocateClipboard(moves);
 
 	const auto &destination = moves.front().second;
 	const auto &root = assets_.GetRootDirectory();
