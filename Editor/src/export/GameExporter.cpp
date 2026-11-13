@@ -230,7 +230,15 @@ class Assets {
 		}
 
 		for (const auto &file : AssetDependencies::ModelFiles(model)) {
-			AddFile(index, file);
+			try {
+				AddFile(index, file);
+			} catch (const fs::filesystem_error &error) {
+				if (error.code() == std::errc::no_such_file_or_directory ||
+				    error.code() == std::errc::not_a_directory) {
+					throw AssetDependencies::MissingModelDependency(file.lexically_normal());
+				}
+				throw;
+			}
 		}
 
 		models_.emplace(model, reference);
@@ -909,15 +917,20 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 				                              const auto &add,
 				                              const fs::path &failedScript = {}) {
 					fs::path input;
+					const auto report = [&](const std::exception &error, const fs::path &location) {
+						reportObjectIssue(std::format(
+						    "{} / {}: {}\n{}", describe(id), kind, PathUtils::ToUtf8(path),
+						    error.what()), entry, id, failedScript, location);
+					};
 					try {
 						input = resolveReference(path);
 						path = add(input);
 					} catch (const std::bad_alloc &) {
 						throw;
+					} catch (const AssetDependencies::MissingModelDependency &error) {
+						report(error, error.path);
 					} catch (const std::exception &error) {
-						reportObjectIssue(std::format(
-						    "{} / {}: {}\n{}", describe(id), kind, PathUtils::ToUtf8(path),
-						    error.what()), entry, id, failedScript, input);
+						report(error, input);
 					}
 				};
 				const auto addUITexture = [&](const fs::path &path) {
