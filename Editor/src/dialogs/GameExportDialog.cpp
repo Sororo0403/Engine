@@ -8,6 +8,7 @@
 #include <imgui.h>
 #include <limits>
 #include <stdexcept>
+#include <string_view>
 #include <utility>
 
 namespace {
@@ -82,6 +83,17 @@ std::filesystem::path FindExistingParent(const std::filesystem::path &output) {
 	return parent;
 }
 
+/// <summary>
+/// 検索語が問題の説明または参照先に含まれるか確認する
+/// </summary>
+bool MatchesIssue(const GameExportIssue &issue, std::string_view filter) {
+	return filter.empty() ||
+	       issue.message.find(filter) != std::string::npos ||
+	       PathUtils::ToUtf8(issue.scenePath).find(filter) != std::string::npos ||
+	       PathUtils::ToUtf8(issue.scriptPath).find(filter) != std::string::npos ||
+	       PathUtils::ToUtf8(issue.assetPath).find(filter) != std::string::npos;
+}
+
 } // namespace
 
 bool GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits,
@@ -102,7 +114,12 @@ bool GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits
 	if (!PathUtils::IsValidFileName(defaultOutputName_)) {
 		defaultOutputName_ = L"Game";
 	}
-	UpdateStartupScene(options_.startupScenePath, includesUnsavedEdits);
+	startupScene_ = options_.startupScenePath.empty()
+	                    ? "Untitled" : PathUtils::ToUtf8(options_.startupScenePath);
+	includesUnsavedEdits_ = includesUnsavedEdits;
+	if (!recheck) {
+		ClearCheckResult();
+	}
 	error_.clear();
 	browsing_ = false;
 
@@ -151,10 +168,37 @@ void GameExportDialog::SetCheckResult(std::string message,
                                       std::vector<GameExportIssue> issues,
                                       bool continueFromIssue) {
 	issueToScrollTo_.reset();
-	if (!issues.empty()) {
-		issueToScrollTo_ = continueFromIssue
-		                       ? (std::min)(selectedIssue_, issues.size() - 1)
-		                       : 0;
+	if (!issues.empty() && continueFromIssue && selectedIssue_ < checkIssues_.size()) {
+		const auto &previous = checkIssues_[selectedIssue_];
+		const auto sameIssue = std::ranges::find_if(issues, [&](const auto &issue) {
+			return issue.objectId == previous.objectId &&
+			       issue.scenePath == previous.scenePath &&
+			       issue.scriptPath == previous.scriptPath &&
+			       issue.assetPath == previous.assetPath &&
+			       issue.message == previous.message;
+		});
+		if (sameIssue != issues.end()) {
+			issueToScrollTo_ = static_cast<std::size_t>(sameIssue - issues.begin());
+		} else {
+			// 修正した問題が消えたときは、検索結果に残る最も近い行へ戻る。
+			const auto matches = [&](const auto &issue) {
+				return MatchesIssue(issue, issueFilter_);
+			};
+			auto remaining = std::count_if(checkIssues_.begin(),
+			                               checkIssues_.begin() + selectedIssue_, matches);
+			for (std::size_t i = 0; i < issues.size(); ++i) {
+				if (matches(issues[i])) {
+					issueToScrollTo_ = i;
+					if (remaining == 0) {
+						break;
+					}
+					--remaining;
+				}
+			}
+		}
+	}
+	if (!issues.empty() && !issueToScrollTo_) {
+		issueToScrollTo_ = 0;
 	}
 	checkResult_ = std::move(message);
 	checkIssues_ = std::move(issues);
@@ -268,11 +312,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 	                                        : GameExportResult::NONE;
 	if (!checkIssues_.empty()) {
 		const auto matches = [&](const GameExportIssue &issue) {
-			return issueFilter_.empty() ||
-			       issue.message.find(issueFilter_) != std::string::npos ||
-			       PathUtils::ToUtf8(issue.scenePath).find(issueFilter_) != std::string::npos ||
-			       PathUtils::ToUtf8(issue.scriptPath).find(issueFilter_) != std::string::npos ||
-			       PathUtils::ToUtf8(issue.assetPath).find(issueFilter_) != std::string::npos;
+			return MatchesIssue(issue, issueFilter_);
 		};
 		if (ui.InputText("Search Issues", issueFilter_)) {
 			issueToScrollTo_ = 0;
