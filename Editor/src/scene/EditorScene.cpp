@@ -6705,16 +6705,16 @@ void EditorScene::ReloadAsset(const std::filesystem::path &path, bool texture) {
 		FinishEdit();
 		const bool reloaded = texture ? !!materials_.ReloadTexture(path)
 		                              : !!models_.Reload(path);
-		if (reloaded) {
-			if (!texture) {
-				return;
-			}
+		if (reloaded && texture) {
 			texturePreviewPanel_.RequestReload(path);
-			if (renderer_.ReloadCanvasImage(path, error) &&
-			    playMode_.ReloadCanvasImage(path, error)) {
-				return;
-			}
-		} else {
+		}
+		if (reloaded &&
+		    (!texture || (renderer_.ReloadCanvasImage(path, error) &&
+		                  playMode_.ReloadCanvasImage(path, error)))) {
+			sceneCheckPanel_.RequestRecheckIfOpen();
+			return;
+		}
+		if (!reloaded) {
 			error = "See the log for details.";
 		}
 	} catch (const std::exception &failure) {
