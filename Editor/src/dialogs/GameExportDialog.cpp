@@ -125,6 +125,16 @@ void GameExportDialog::ForgetUntitledDraft() {
 	}
 }
 
+void GameExportDialog::FollowSavedScene(
+    const std::filesystem::path &projectRoot,
+    const std::filesystem::path &previousPath,
+    const std::filesystem::path &savedPath) {
+	if (resumeDraft_ && projectRoot_ == projectRoot &&
+	    options_.startupScenePath == previousPath) {
+		options_.startupScenePath = savedPath;
+	}
+}
+
 void GameExportDialog::SetCheckResult(std::string message,
                                       std::vector<GameExportIssue> issues) {
 	checkResult_ = std::move(message);

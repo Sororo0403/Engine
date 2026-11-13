@@ -4538,6 +4538,10 @@ void EditorScene::UpdateDialogs() {
 			const auto startup = project_.GetStartupScene();
 			SaveEditorSession();
 			if (document_.SaveAs(fileDialog_.GetSelectedPath())) {
+				if (startup.empty()) {
+					exportDialog_.FollowSavedScene(project_.GetRoot(), previousPath,
+					                              document_.GetFilePath());
+				}
 				if (!startup.empty() && !previousPath.empty() &&
 				    PathUtils::IsSameFile(previousPath, startup) &&
 				    !PathUtils::IsSameFile(document_.GetFilePath(), startup)) {
