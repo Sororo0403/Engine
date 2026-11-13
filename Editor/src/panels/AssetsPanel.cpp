@@ -7,7 +7,12 @@
 #include "graphics/ui/ImGuiSystem.h"
 #include "platform/windows/PathUtils.h"
 #include "platform/windows/ShellUtils.h"
+#include "platform/windows/StringConversion.h"
 
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <Windows.h>
 #include <algorithm>
 #include <exception>
 #include <format>
@@ -449,11 +454,16 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	                          ? assets.GetPrefabs()
 	                          : assets.GetGameConfigurations();
 
-	const auto visibleFile = [&](const std::filesystem::path &path) {
-		const auto relative = path.lexically_relative(assets.GetRootDirectory());
-		return filter_.empty()
-		           ? relative.parent_path() == currentDirectory_
-		           : PathUtils::ToUtf8(relative).find(filter_) != std::string::npos;
+	const auto search = StringConversion::Utf8ToWide(filter_);
+	const auto visibleFile = [&](const std::filesystem::path &relative) {
+		if (filter_.empty()) {
+			return relative.parent_path() == currentDirectory_;
+		}
+		const auto path = relative.generic_wstring();
+		return !search.empty() &&
+		       FindStringOrdinal(FIND_FROMSTART, path.c_str(),
+		                         static_cast<int>(path.size()), search.c_str(),
+		                         static_cast<int>(search.size()), TRUE) >= 0;
 	};
 	std::vector<std::filesystem::path> visible;
 
@@ -467,7 +477,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	}
 
 	for (const auto &path : entries) {
-		if (visibleFile(path)) {
+		if (visibleFile(path.lexically_relative(assets.GetRootDirectory()))) {
 			visible.push_back(path);
 		}
 	}
@@ -689,15 +699,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			const auto displayPath =
 			    assetPath.lexically_relative(assets.GetRootDirectory());
 
-			if (filter_.empty() &&
-			    displayPath.parent_path() != currentDirectory_) {
-				continue;
-			}
-
-			const std::string searchPath = PathUtils::ToUtf8(displayPath);
-
-			if (!filter_.empty() &&
-			    searchPath.find(filter_) == std::string::npos) {
+			if (!visibleFile(displayPath)) {
 				continue;
 			}
 
@@ -706,7 +708,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			ui.PushID(static_cast<int>(i));
 			const auto label = filter_.empty()
 			                       ? PathUtils::ToUtf8(displayPath.filename())
-			                       : searchPath;
+			                       : PathUtils::ToUtf8(displayPath);
 
 			const bool selected =
 			    ui.Selectable(label.c_str(), isSelected(assetPath));
