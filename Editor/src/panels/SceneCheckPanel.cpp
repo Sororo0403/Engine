@@ -78,9 +78,23 @@ void SceneCheckPanel::OnSceneSavedAs(const std::filesystem::path &previous,
 
 void SceneCheckPanel::OnAssetsMoved(
     std::span<const std::pair<std::filesystem::path, std::filesystem::path>> moves) {
+	const auto relocateIssue = [&](SceneValidationIssue &issue) {
+		issue.assetPath = PathUtils::AfterMove(issue.assetPath, moves);
+		issue.modelPath = PathUtils::AfterMove(issue.modelPath, moves);
+	};
+	for (auto &issue : issues_) {
+		relocateIssue(issue);
+	}
+	if (issueToRestore_) {
+		relocateIssue(*issueToRestore_);
+	}
+
 	// 移動先に過去の表示状態があれば、実際に移動したシーンの状態を優先する。
 	std::map<std::filesystem::path, SceneCheckPosition> movedPositions;
 	for (auto it = scenePositions_.begin(); it != scenePositions_.end();) {
+		if (it->second.issue) {
+			relocateIssue(*it->second.issue);
+		}
 		auto destination = PathUtils::AfterMove(it->first, moves);
 		if (destination.native() == it->first.native()) {
 			++it;
