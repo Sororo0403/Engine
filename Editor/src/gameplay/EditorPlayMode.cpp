@@ -235,23 +235,39 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 		    "%s", editingScenePath.empty() ? "Untitled Scene"
 		                                  : PathUtils::ToUtf8(editingScenePath).c_str());
 
+		const auto drawPlayScene = [&](const char *label, Action requested,
+		                               const std::filesystem::path &path,
+		                               bool usesEditingScene) {
+			std::error_code status;
+			const bool available = usesEditingScene ||
+			                       std::filesystem::is_regular_file(
+			                           PathUtils::ResolveFromExecutable(path), status);
+			ui.BeginDisabled(!available);
+			if (ui.Button(label)) {
+				action = requested;
+			}
+			ui.EndDisabled();
+			if (ImGui::IsItemHovered(ImGuiHoveredFlags_ForTooltip |
+			                         ImGuiHoveredFlags_AllowWhenDisabled)) {
+				ImGui::SetTooltip(available ? "Start a new play session in %s."
+				                            : "Scene file is unavailable.\n%s",
+				                  PathUtils::ToUtf8(path).c_str());
+			}
+		};
+
 		if (!startupScenePath.empty()) {
 			ui.SameLine();
-			if (ui.Button("Play Startup Scene")) {
-				action = Action::PLAY_STARTUP;
-			}
-			ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(startupScenePath).c_str());
+			drawPlayScene("Play Startup Scene", Action::PLAY_STARTUP, startupScenePath,
+			              !editingScenePath.empty() &&
+			                  PathUtils::IsSameFile(startupScenePath, editingScenePath));
 		}
 		if (!lastPlayScenePath.empty() &&
 		    (editingScenePath.empty() ||
 		     !PathUtils::IsSameFile(lastPlayScenePath, editingScenePath)) &&
 		    (startupScenePath.empty() ||
 		     !PathUtils::IsSameFile(lastPlayScenePath, startupScenePath))) {
-			if (ui.Button("Play Last Scene")) {
-				action = Action::PLAY_LAST_SCENE;
-			}
-			ImGui::SetItemTooltip("Start a new play session in %s.",
-			                      PathUtils::ToUtf8(lastPlayScenePath).c_str());
+			drawPlayScene("Play Last Scene", Action::PLAY_LAST_SCENE, lastPlayScenePath,
+			              false);
 		}
 
 		ui.EndDisabled();
