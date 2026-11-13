@@ -3083,6 +3083,10 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	case EditorAction::OPEN:
 		openSceneDialog_.Show(FileDialogMode::OPEN,
 		                      GetSceneDialogDirectory(document_.GetFilePath()));
+		if (!project_.GetRoot().empty()) {
+			assets_.Refresh();
+			openSceneDialog_.SetProjectScenes(project_.GetRoot(), assets_.GetSceneTargets());
+		}
 		stage_ = DialogStage::OPEN_FILE;
 		return;
 

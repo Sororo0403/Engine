@@ -1,6 +1,7 @@
 #pragma once
 
 #include <filesystem>
+#include <span>
 #include <string>
 #include <vector>
 
@@ -54,6 +55,12 @@ class FileDialog {
 	/// <param name="filter">取り込めるファイルの種類</param>
 	void ShowImportSource(const std::filesystem::path &source,
 	                      FileDialogFilter filter);
+
+	/// <summary>
+	/// 開くダイアログで検索できるプロジェクト内のシーン一覧を設定する
+	/// </summary>
+	void SetProjectScenes(const std::filesystem::path &root,
+	                      std::span<const std::filesystem::path> paths);
 
 	/// <summary>
 	/// 選択したファイルやフォルダを使えなかったとき、同じ場所から選び直す
@@ -131,7 +138,10 @@ class FileDialog {
 	std::string title_;
 
 	std::vector<Entry> entries_;
+	std::vector<Entry> projectScenes_;
+	std::filesystem::path projectRoot_;
 
 	bool openRequested_ = false;
 	bool confirmOverwrite_ = false;
+	bool searchProjectScenes_ = false;
 };

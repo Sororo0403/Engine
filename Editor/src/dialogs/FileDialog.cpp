@@ -60,6 +60,9 @@ void FileDialog::Show(FileDialogMode mode,
 	mode_ = mode;
 	selectedPath_.clear();
 	entries_.clear();
+	projectScenes_.clear();
+	projectRoot_.clear();
+	searchProjectScenes_ = false;
 	error_.clear();
 	fileName_.clear();
 	folderName_.clear();
@@ -117,11 +120,12 @@ void FileDialog::ShowImportSource(const std::filesystem::path &source,
 void FileDialog::RetrySelection(std::string error) {
 	const bool selectingFolder = mode_ == FileDialogMode::SELECT_DIRECTORY;
 	const auto folder = selectingFolder ? selectedPath_ : selectedPath_.parent_path();
-	if (!folder.empty() && folder != directory_) {
+	if (!searchProjectScenes_ && !folder.empty() && folder != directory_) {
 		ChangeDirectory(folder);
 	}
 	if (!selectingFolder && !selectedPath_.empty()) {
-		fileName_ = PathUtils::ToUtf8(selectedPath_.filename());
+		fileName_ = PathUtils::ToUtf8(searchProjectScenes_ ? selectedPath_
+		                                                 : selectedPath_.filename());
 	}
 	selectedPath_.clear();
 	error_ = std::move(error);
@@ -215,6 +219,12 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 
 		ui.Text(PathUtils::ToUtf8(directory_));
 
+		if (!projectScenes_.empty() &&
+		    ImGui::Checkbox("Search Project Scenes", &searchProjectScenes_)) {
+			fileName_.clear();
+			error_.clear();
+			ImGui::SetNextWindowScroll({-1.0f, 0.0f});
+		}
 		if (mode_ != FileDialogMode::SELECT_DIRECTORY &&
 		    ui.InputText("Search Files", search_)) {
 			ImGui::SetNextWindowScroll({-1.0f, 0.0f});
@@ -226,11 +236,16 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 
 		if (drawEntries) {
 			bool matchingFile = false;
-			for (std::size_t i = 0; i < entries_.size(); ++i) {
-				const Entry &entry = entries_[i];
-				const auto filename = entry.path.filename();
+			const auto &entries = searchProjectScenes_ ? projectScenes_ : entries_;
+			for (std::size_t i = 0; i < entries.size(); ++i) {
+				const Entry &entry = entries[i];
+				auto displayPath = entry.path.filename();
+				if (searchProjectScenes_) {
+					const auto relative = entry.path.lexically_relative(projectRoot_);
+					displayPath = relative.empty() ? entry.path : relative;
+				}
 				if (!entry.directory) {
-					const auto &native = filename.native();
+					const auto native = displayPath.generic_wstring();
 					if (!search_.empty() &&
 					    (search.empty() ||
 					     FindStringOrdinal(FIND_FROMSTART, native.c_str(),
@@ -241,14 +256,16 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 					matchingFile = true;
 				}
 
-				const std::string name = PathUtils::ToUtf8(filename);
+				const std::string name = PathUtils::ToUtf8(displayPath);
 
 				const std::string label =
 				    entry.directory ? std::format("[Folder] {}", name) : name;
 
 				ui.PushID(static_cast<int>(i));
 
-				const bool selected = !entry.directory && fileName_ == name;
+				const auto fileInput =
+				    searchProjectScenes_ ? PathUtils::ToUtf8(entry.path) : name;
+				const bool selected = !entry.directory && fileName_ == fileInput;
 
 				if (ui.Selectable(label.c_str(), selected)) {
 					if (entry.directory) {
@@ -256,7 +273,7 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 					} else {
 						if (!selected)
 							error_.clear();
-						fileName_ = name;
+						fileName_ = fileInput;
 					}
 				}
 
@@ -381,6 +398,17 @@ void FileDialog::Refresh() {
 	}
 }
 
+void FileDialog::SetProjectScenes(
+    const std::filesystem::path &root,
+    std::span<const std::filesystem::path> paths) {
+	projectRoot_ = root;
+	projectScenes_.clear();
+	projectScenes_.reserve(paths.size());
+	for (const auto &path : paths) {
+		projectScenes_.push_back({PathUtils::ResolveFromExecutable(path), false});
+	}
+}
+
 void FileDialog::ChangeDirectory(const std::filesystem::path &path) {
 	try {
 		if (!path.is_absolute()) {
@@ -400,6 +428,7 @@ void FileDialog::ChangeDirectory(const std::filesystem::path &path) {
 
 		directory_.swap(next);
 		directoryText_.swap(text);
+		searchProjectScenes_ = false;
 
 		if (mode_ == FileDialogMode::OPEN) {
 			fileName_.clear();
