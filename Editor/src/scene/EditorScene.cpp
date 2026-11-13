@@ -1840,6 +1840,12 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 				}
 				ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(root).c_str());
 			}
+			ui_.Separator();
+			if (ui_.MenuItem("Remove Missing Projects") &&
+			    preferences_.RemoveMissingProjects(activeRoot)) {
+				SaveEditorSession(true);
+			}
+			ImGui::SetItemTooltip("Remove entries whose folder or project.json is missing.");
 			ui_.EndMenu();
 		}
 

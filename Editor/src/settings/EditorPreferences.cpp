@@ -219,6 +219,34 @@ void EditorPreferences::RememberProject(const std::filesystem::path &root) {
 	}
 }
 
+bool EditorPreferences::RemoveMissingProjects(const std::filesystem::path &activeRoot) {
+	const auto missing = [&](const std::filesystem::path &root) {
+		if (root.empty() ||
+		    (!activeRoot.empty() && PathUtils::IsSameFile(root, activeRoot))) {
+			return false;
+		}
+
+		std::error_code error;
+		const auto folder = std::filesystem::symlink_status(root, error);
+		if (folder.type() == std::filesystem::file_type::not_found) {
+			return true;
+		}
+		if (!std::filesystem::is_directory(folder)) {
+			return false;
+		}
+
+		return std::filesystem::symlink_status(root / L"project.json", error).type() ==
+		       std::filesystem::file_type::not_found;
+	};
+
+	const bool removed = std::erase_if(recentProjects, missing) != 0;
+	if (missing(lastProject)) {
+		lastProject.clear();
+		return true;
+	}
+	return removed;
+}
+
 void EditorPreferences::RememberGameExport(
     const std::filesystem::path &root, const std::filesystem::path &directory) {
 	if (RememberOpenedGameExport(root, directory))

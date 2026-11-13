@@ -65,6 +65,13 @@ class EditorPreferences {
 	void RememberProject(const std::filesystem::path &root);
 
 	/// <summary>
+	/// フォルダまたはproject.jsonが見つからないプロジェクトを履歴から取り除く
+	/// </summary>
+	/// <param name="activeRoot">編集中のプロジェクト。指定した場合は履歴に残す</param>
+	/// <returns>設定を変更した場合はtrue</returns>
+	bool RemoveMissingProjects(const std::filesystem::path &activeRoot);
+
+	/// <summary>
 	/// プロジェクトごとに成功したゲーム出力先を記憶する
 	/// </summary>
 	void RememberGameExport(const std::filesystem::path &root,
