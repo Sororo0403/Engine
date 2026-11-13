@@ -208,6 +208,12 @@ void GameExportDialog::PreserveDraft() {
 	resumeDraft_ = true;
 }
 
+void GameExportDialog::RememberSuccessfulExport() {
+	lastSuccessfulProject_ = projectRoot_;
+	lastSuccessfulWindow_ = WindowSettings{
+	    options_.config.title, options_.config.width, options_.config.height};
+}
+
 GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
                                         bool canSaveAndCheck) {
 	constexpr const char *title = "Export Game###GameExportDialog";
@@ -280,6 +286,18 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 	changed |= ui.InputText("Game Title", title_);
 	changed |= ImGui::InputInt("Width", &width_);
 	changed |= ImGui::InputInt("Height", &height_);
+	if (!projectRoot_.empty() && projectRoot_ == lastSuccessfulProject_ &&
+	    lastSuccessfulWindow_) {
+		const auto &last = *lastSuccessfulWindow_;
+		ui.BeginDisabled(title_ == last.title && width_ == last.width && height_ == last.height);
+		if (ui.Button("Use Last Export Window Settings")) {
+			title_ = last.title;
+			width_ = last.width;
+			height_ = last.height;
+			changed = true;
+		}
+		ui.EndDisabled();
+	}
 	if (changed) {
 		error_.clear();
 		checkResultStale_ = !checkResult_.empty();

@@ -3357,6 +3357,7 @@ void EditorScene::WriteGameExport() {
 
 	const auto &directory = options.destination;
 	Logger::Info("Game exported to " + PathUtils::ToUtf8(directory));
+	exportDialog_.RememberSuccessfulExport();
 	if (project_.GetRoot().empty()) {
 		exportConfig_ = options.config;
 	}

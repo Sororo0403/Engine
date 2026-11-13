@@ -89,6 +89,11 @@ class GameExportDialog {
 	void PreserveDraft();
 
 	/// <summary>
+	/// 成功した出力のウィンドウ設定を、同じプロジェクトで再利用できるようにする
+	/// </summary>
+	void RememberSuccessfulExport();
+
+	/// <summary>
 	/// 確定した出力設定を取得する
 	/// </summary>
 	/// <returns>CHECKまたはACCEPTED後に使用する設定</returns>
@@ -97,6 +102,12 @@ class GameExportDialog {
 	}
 
   private:
+	struct WindowSettings {
+		std::string title;
+		int width;
+		int height;
+	};
+
 	void ClearCheckResult();
 
 	GameExportOptions options_;
@@ -104,6 +115,8 @@ class GameExportDialog {
 	std::filesystem::path defaultOutputName_;
 	std::filesystem::path browseOutputName_;
 	std::filesystem::path projectRoot_;
+	std::filesystem::path lastSuccessfulProject_;
+	std::optional<WindowSettings> lastSuccessfulWindow_;
 	std::string output_, startupScene_, title_, error_;
 	std::string checkResult_;
 	bool checkResultStale_ = false;
