@@ -154,7 +154,20 @@ std::string SceneCheckPanel::GetReport() const {
 	    std::format("Last Scene Check: {} issue(s)\n", issues_.size());
 
 	for (std::size_t i = 0; i < issues_.size(); ++i) {
-		report += std::format("\n{}. {}\n", i + 1, issues_[i].message);
+		const auto &issue = issues_[i];
+		report += std::format("\n{}. {}\n", i + 1, issue.message);
+		if (issue.objectId != 0) {
+			report += std::format("   Object ID: {}\n", issue.objectId);
+		}
+		if (!issue.assetPath.empty()) {
+			report += std::format("   Asset: {}\n", PathUtils::ToUtf8(issue.assetPath));
+		}
+		if (!issue.modelPath.empty() && issue.modelPath != issue.assetPath) {
+			report += std::format("   Model: {}\n", PathUtils::ToUtf8(issue.modelPath));
+		}
+		if (issue.destinationObjectId != 0) {
+			report += std::format("   Destination Object ID: {}\n", issue.destinationObjectId);
+		}
 	}
 
 	return report;

@@ -79,7 +79,7 @@ class SceneCheckPanel {
 	/// <summary>
 	/// 最後の検証結果を、共有・記録用のUTF-8テキストとして取得する
 	/// </summary>
-	/// <returns>件数と全メッセージ。未実行は空、検証自体が失敗した場合は失敗理由だけを返す</returns>
+	/// <returns>件数、全メッセージ、関連する物体IDとパス。未実行は空、検証失敗時は失敗理由</returns>
 	std::string GetReport() const;
 
 	/// <summary>
