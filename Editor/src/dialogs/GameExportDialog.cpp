@@ -184,6 +184,21 @@ void GameExportDialog::FollowSavedScene(
 	}
 }
 
+void GameExportDialog::FollowStartupScene(
+    const std::filesystem::path &projectRoot,
+    const std::filesystem::path &previousPath,
+    const std::filesystem::path &startupPath) {
+	if (!resumeDraft_ || projectRoot_ != projectRoot ||
+	    previousPath == startupPath || options_.startupScenePath != previousPath) {
+		return;
+	}
+
+	options_.startupScenePath = startupPath;
+	// 再検査は行うが、変更前の起動シーンの指摘や検索位置は引き継がない。
+	selectedIssue_.reset();
+	issueFilter_.clear();
+}
+
 void GameExportDialog::FollowMovedScene(
     const std::filesystem::path &projectRoot,
     std::span<const std::pair<std::filesystem::path, std::filesystem::path>> moves) {

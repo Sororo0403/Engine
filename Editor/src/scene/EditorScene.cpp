@@ -2963,9 +2963,13 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 		return;
 	}
 	case EditorAction::CLEAR_STARTUP_SCENE: {
+		const auto previous = project_.GetStartupScene();
 		std::string error;
 		if (!project_.Save(project_.GetGameConfig(), {}, error)) {
 			ShowError(std::move(error));
+		} else if (!previous.empty()) {
+			exportDialog_.FollowStartupScene(project_.GetRoot(), previous,
+			                                 document_.GetFilePath());
 		}
 		return;
 	}
@@ -3583,7 +3587,15 @@ bool EditorScene::SetStartupScene(const std::filesystem::path &path,
 		return false;
 	}
 
-	return project_.Save(config, candidate.GetFilePath(), error);
+	const auto previous = project_.GetStartupScene();
+	const auto &previousSource = previous.empty() ? document_.GetFilePath() : previous;
+	if (!project_.Save(config, candidate.GetFilePath(), error)) {
+		return false;
+	}
+
+	exportDialog_.FollowStartupScene(project_.GetRoot(), previousSource,
+	                                 project_.GetStartupScene());
+	return true;
 }
 
 bool EditorScene::OpenGameExport(std::filesystem::path directory) {

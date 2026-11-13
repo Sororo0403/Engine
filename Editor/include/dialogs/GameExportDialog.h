@@ -68,6 +68,13 @@ class GameExportDialog {
 	void UpdateStartupScene(const std::filesystem::path &path, bool includesUnsavedEdits);
 
 	/// <summary>
+	/// プロジェクトの起動シーンを変更したとき、同じ起動シーンの配布下書きを引き継ぐ
+	/// </summary>
+	void FollowStartupScene(const std::filesystem::path &projectRoot,
+	                        const std::filesystem::path &previousPath,
+	                        const std::filesystem::path &startupPath);
+
+	/// <summary>
 	/// 出力設定の入力を描画する
 	/// </summary>
 	/// <param name="ui">UI機能</param>
