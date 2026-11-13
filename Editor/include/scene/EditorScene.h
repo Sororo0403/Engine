@@ -1021,6 +1021,8 @@ class EditorScene final : public IScene {
 	std::string errorMessage_;
 	std::filesystem::path errorScriptPath_;
 	std::filesystem::path errorScenePath_;
+	std::filesystem::path failedOpenScenePath_;
+	SceneObjectId failedOpenSceneObject_ = 0;
 	std::filesystem::path errorReloadAssetPath_;
 	bool errorReloadIsTexture_ = false;
 	std::optional<std::filesystem::path> errorReplayPath_;

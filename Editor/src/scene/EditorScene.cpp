@@ -3529,11 +3529,17 @@ void EditorScene::ExecutePendingAction() {
 		return;
 	case EditorAction::OPEN_PATH: {
 		const auto object = std::exchange(pendingOpenObject_, SceneObjectId{0});
-		if (OpenScene(pendingOpenPath_)) {
+		if (OpenScene(pendingOpenPath_, false)) {
 			SaveEditorSession();
 			if (object != 0) {
 				RevealReferenceObject(object);
 			}
+		} else {
+			ShowError(std::format("Could not open {}. The current scene was kept.\n{}",
+			                      PathUtils::ToUtf8(pendingOpenPath_),
+			                      document_.GetError()));
+			failedOpenScenePath_ = pendingOpenPath_;
+			failedOpenSceneObject_ = object;
 		}
 		return;
 	}
@@ -5279,6 +5285,25 @@ void EditorScene::UpdateDialogs() {
 		if (ui_.BeginPopupModal(kTitle)) {
 			ui_.Text(errorMessage_);
 
+			if (!failedOpenScenePath_.empty()) {
+				if (ui_.Button("Show Scene Location")) {
+					ShellUtils::RevealLocationInExplorer(failedOpenScenePath_,
+					                                     errorActionMessage_);
+				}
+				ui_.SameLine();
+				if (ui_.Button("Retry Open Scene")) {
+					pendingOpenPath_ = std::exchange(failedOpenScenePath_, {});
+					const auto object =
+					    std::exchange(failedOpenSceneObject_, SceneObjectId{0});
+					ui_.CloseCurrentPopup();
+					ui_.EndPopup();
+					stage_ = DialogStage::IDLE;
+					StartAction(EditorAction::OPEN_PATH, object);
+					return;
+				}
+				ui_.SameLine();
+			}
+
 			if (!errorScenePath_.empty()) {
 				if (ui_.Button("Open Play Scene")) {
 					pendingOpenPath_ = std::move(errorScenePath_);
@@ -5734,6 +5759,8 @@ void EditorScene::ShowError(std::string message, SceneObjectId objectId,
 	errorMessage_ = std::move(message);
 	errorScriptPath_ = std::move(scriptPath);
 	errorScenePath_.clear();
+	failedOpenScenePath_.clear();
+	failedOpenSceneObject_ = 0;
 	errorReloadAssetPath_.clear();
 	errorReplayPath_.reset();
 	errorHasPlayLog_ = false;
