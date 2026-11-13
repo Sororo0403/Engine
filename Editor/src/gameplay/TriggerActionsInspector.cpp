@@ -617,21 +617,24 @@ bool TriggerActionsInspector::Draw(
 					}
 					ImGui::EndPopup();
 				}
-				ui.BeginDisabled(action.scenePath.empty() || action.arrivalTag.empty());
-				if (ui.Button("Check Arrival Tag")) {
+				ui.BeginDisabled(action.scenePath.empty());
+				if (ui.Button("Check Destination")) {
 					Scene destination;
 					std::string message;
 					if (!SceneSerializer::Load(destination, action.scenePath)) {
 						message = "Could not read the destination scene.";
 					} else if (SceneSimulation::ValidateArrival(
 					               destination, action.arrivalTag, message)) {
-						message = "Tagged arrival is valid.";
+						message = action.arrivalTag.empty()
+						              ? "Destination is valid with its saved placement."
+						              : "Tagged arrival is valid.";
 					}
 					arrivalCheck_ = ArrivalCheck{id, i, action.scenePath,
 					                             action.arrivalTag, std::move(message)};
 				}
 				ui.EndDisabled();
-				ImGui::SetItemTooltip("Check the saved destination scene without running it.");
+				ImGui::SetItemTooltip(
+				    "Check the saved scene and arrival placement without running it.");
 				if (arrivalCheck_ && arrivalCheck_->objectId == id &&
 				    arrivalCheck_->actionIndex == i &&
 				    arrivalCheck_->path == action.scenePath &&

@@ -1999,13 +1999,13 @@ void ControlsPanel::Draw() {
 	         "height to zero."},
 	        {"Load Scene > Arrival Tag",
 	         "Set a unique tag on an active marker in the destination scene. "
-	         "Enter that tag under Arrival Tag and press Enter. The "
-	         "destination "
+	         "Choose Arrival Tag lists unique active tags from the saved "
+	         "destination. You can also type a tag and press Enter. The destination "
 	         "must have one active Character Controller, and the marker must "
 	         "leave space for its Collider. The character keeps its authored "
-	         "orientation. An empty tag uses the authored position. Scene "
-	         "Check "
-	         "reports invalid tagged arrivals on the source Trigger. Game "
+	         "orientation. An empty tag uses the authored position. Check "
+	         "Destination verifies the saved scene with either placement. "
+	         "Scene Check reports invalid tagged arrivals on the source Trigger. Game "
 	         "Export validates tagged arrivals throughout its scene graph."},
 	        {"Load Scene",
 	         "Use Trigger Actions > Load Scene to choose a saved scene from "
