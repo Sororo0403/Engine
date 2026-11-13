@@ -171,8 +171,7 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 	} else if (clickedFirstPlayError && firstPlayError) {
 		jumpError = &*firstPlayError;
 	}
-	const bool jumpToError = jumpError != nullptr;
-	if (jumpToError) {
+	if (jumpError) {
 		latestPlayOnly_ = true;
 		showErrors_ = true;
 		if (!MatchesFilter(*jumpError)) {
@@ -180,6 +179,23 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 		}
 		selectedId_ = jumpError->id;
 	}
+
+	const bool canShowContext =
+	    (!filter_.empty() || !showInfo_ || !showWarnings_ || !showErrors_) &&
+	    std::ranges::any_of(entries_, [this](const auto &entry) {
+		    return entry.id == selectedId_ && MatchesFilter(entry);
+	    });
+	ui.SameLine();
+	ui.BeginDisabled(!canShowContext);
+	const bool showContext = ui.Button("Show Surrounding Logs");
+	ui.EndDisabled();
+	ImGui::SetItemTooltip("Clear text and level filters and return to the selected message.");
+	if (showContext) {
+		filter_.clear();
+		showInfo_ = showWarnings_ = showErrors_ = true;
+	}
+	const bool jumpToSelection = jumpError || showContext;
+
 	ImGui::SameLine();
 	const auto matchingCount = std::count_if(
 	    entries_.begin(), entries_.end(),
@@ -234,14 +250,14 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 		const bool followLatest = autoScroll_ &&
 		                          (scrollRequested_ ||
 		                           (wasAtBottom && lastVisible != lastVisibleId_));
-		const bool scrollToLatest = !jumpToError && (jumpToLatest || followLatest);
+		const bool scrollToLatest = !jumpToSelection && (jumpToLatest || followLatest);
 		if (rows.empty()) {
 			ui.Text("No matching messages.");
 		}
 
 		ImGuiListClipper clipper;
 		clipper.Begin(static_cast<int>(rows.size()), ImGui::GetTextLineHeightWithSpacing());
-		if (jumpToError) {
+		if (jumpToSelection) {
 			const auto row = std::ranges::lower_bound(
 			    rows, selectedId_, {}, [](const auto &value) { return value.last->id; });
 			if (row != rows.end() && row->first->id <= selectedId_) {
@@ -280,7 +296,7 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 				if (ui.Selectable(label.c_str(), selected)) {
 					selectedId_ = entry.id;
 				}
-				if (jumpToError && selected) {
+				if (jumpToSelection && selected) {
 					ImGui::SetScrollHereY(0.5f);
 				}
 
@@ -298,7 +314,7 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 		}
 
 		lastVisibleId_ = lastVisible;
-		if (jumpToError || scrollToLatest) {
+		if (jumpToSelection || scrollToLatest) {
 			scrollRequested_ = false;
 		}
 	}
