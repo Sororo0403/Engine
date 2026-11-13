@@ -4588,6 +4588,7 @@ void EditorScene::DrawAssetReferences(bool recycle) {
 				texturePreviewPanel_.Clear();
 				audioPreviewPanel_.Clear();
 				assets_.Refresh();
+				assetsPanel_.RemoveMissingPaths();
 			}
 
 			close = completed == targets.size();

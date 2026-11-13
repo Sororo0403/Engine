@@ -53,6 +53,11 @@ class AssetsPanel {
 	                   const std::filesystem::path &root);
 
 	/// <summary>
+	/// 削除済みの素材を選択・操作結果・クリップボードから取り除く
+	/// </summary>
+	void RemoveMissingPaths();
+
+	/// <summary>
 	/// アセットの一覧と操作用UIを構築する
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>

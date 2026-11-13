@@ -24,6 +24,18 @@
 #include <system_error>
 #include <utility>
 
+namespace {
+bool IsMissingAsset(const std::filesystem::path &path) {
+	if (path.empty()) {
+		return false;
+	}
+	std::error_code error;
+	const auto status = std::filesystem::symlink_status(
+	    PathUtils::ResolveFromExecutable(path), error);
+	return status.type() == std::filesystem::file_type::not_found;
+}
+} // namespace
+
 void AssetsPanel::RequestReveal(const std::filesystem::path &path, bool keepResults) {
 	resultPaths_.clear();
 	previousView_.reset();
@@ -73,12 +85,31 @@ std::optional<AssetsPanel::ResultView> AssetsPanel::CaptureResults() const {
 	                  selectionAnchor_, type_, searchAllTypes_, searchCurrentFolderOnly_};
 }
 
+void AssetsPanel::RemoveMissingPaths() {
+	for (auto *paths : {&resultPaths_, &displayedResults_, &selectedItems_}) {
+		std::erase_if(*paths, IsMissingAsset);
+	}
+	if (IsMissingAsset(selectedPath_)) {
+		selectedPath_.clear();
+	}
+	if (IsMissingAsset(selectionAnchor_)) {
+		selectionAnchor_.clear();
+	}
+	if (previousView_) {
+		std::erase_if(previousView_->results, IsMissingAsset);
+		std::erase_if(previousView_->selection, IsMissingAsset);
+		if (IsMissingAsset(previousView_->anchor)) {
+			previousView_->anchor.clear();
+		}
+		if (previousView_->results.empty() && previousView_->search.empty()) {
+			previousView_.reset();
+		}
+	}
+	ValidateClipboard();
+}
+
 bool AssetsPanel::ValidateClipboard() {
-	const bool missing = std::ranges::any_of(clipboardItems_, [](const auto &path) {
-		std::error_code error;
-		const auto status = std::filesystem::symlink_status(path, error);
-		return status.type() == std::filesystem::file_type::not_found;
-	});
+	const bool missing = std::ranges::any_of(clipboardItems_, IsMissingAsset);
 	if (!missing) {
 		return true;
 	}
@@ -300,7 +331,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		if (assets.Refresh()) {
 			refreshed_ = true;
 			RestoreDirectory(currentDirectory_, assets);
-			ValidateClipboard();
+			RemoveMissingPaths();
 		}
 	}
 
