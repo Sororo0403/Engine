@@ -1007,6 +1007,7 @@ class EditorScene final : public IScene {
 	std::filesystem::path errorScriptPath_;
 	std::filesystem::path errorScenePath_;
 	std::optional<std::filesystem::path> errorReplayPath_;
+	bool errorHasPlayLog_ = false;
 	SceneObjectId errorReplayCameraOverride_ = 0;
 	std::string errorScriptOpenMessage_;
 	bool sceneSaveConflict_ = false;

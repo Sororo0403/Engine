@@ -338,6 +338,7 @@ bool EditorScene::Update(float deltaTime) {
 		if (!playMode_.Restart(error, restartCurrentScene)) {
 			Logger::Error(error);
 			ShowError(std::move(error));
+			errorHasPlayLog_ = true;
 		}
 	}
 
@@ -5296,8 +5297,9 @@ void EditorScene::UpdateDialogs() {
 				ui_.SameLine();
 			}
 
-			const bool showPlayError = errorReplayPath_ && ui_.Button("Show in Console");
-			if (errorReplayPath_) {
+			const bool canShowPlayLog = errorHasPlayLog_ || errorReplayPath_.has_value();
+			const bool showPlayError = canShowPlayLog && ui_.Button("Show in Console");
+			if (canShowPlayLog) {
 				ui_.SameLine();
 			}
 			if (ui_.Button("OK") || showPlayError) {
@@ -5354,8 +5356,11 @@ void EditorScene::StartPlay(const std::filesystem::path &path,
 	SceneDocument startup;
 	const bool usesEditingScene = UsesEditingSceneForStartup(path);
 	if (!usesEditingScene && !startup.Open(path, &exportConfig_.lighting)) {
-		ShowError("Could not load the play scene: " + PathUtils::ToUtf8(path) +
-		          "\n" + startup.GetError());
+		auto error = "Could not load the play scene: " + PathUtils::ToUtf8(path) +
+		             "\n" + startup.GetError();
+		Logger::Error(error);
+		ShowError(std::move(error));
+		errorHasPlayLog_ = true;
 		return;
 	}
 
@@ -5608,6 +5613,7 @@ void EditorScene::ShowError(std::string message, SceneObjectId objectId,
 	errorScriptPath_ = std::move(scriptPath);
 	errorScenePath_.clear();
 	errorReplayPath_.reset();
+	errorHasPlayLog_ = false;
 	errorReplayCameraOverride_ = 0;
 	errorScriptOpenMessage_.clear();
 	sceneSaveConflict_ = false;
