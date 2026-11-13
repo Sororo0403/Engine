@@ -1916,6 +1916,9 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 				action = EditorAction::OPEN_PATH;
 			}
 			ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(failedRestoredScene_).c_str());
+			if (ui_.MenuItem("Locate Last Edited Scene...", nullptr, enabled)) {
+				action = EditorAction::BROWSE_LAST_EDITED_SCENE;
+			}
 		}
 
 		const bool canSetCurrentStartup =
@@ -2904,6 +2907,7 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	    ((action == EditorAction::IMPORT_SCENE ||
 	      action == EditorAction::ASSETS_FOLDER ||
 	      action == EditorAction::OPEN_PATH ||
+	      action == EditorAction::BROWSE_LAST_EDITED_SCENE ||
 	      action == EditorAction::OPEN_PREVIOUS_SCENE ||
 	      action == EditorAction::PLAY_ASSET_SCENE ||
 	      action == EditorAction::OPEN_EXPORT_ISSUE ||
@@ -3275,15 +3279,21 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 		return;
 
 	case EditorAction::OPEN:
+	case EditorAction::BROWSE_LAST_EDITED_SCENE: {
+		const bool locating = action == EditorAction::BROWSE_LAST_EDITED_SCENE;
 		openSceneDialog_.Show(FileDialogMode::OPEN,
-		                      GetSceneDialogDirectory(document_.GetFilePath()));
+		                      GetSceneDialogDirectory(locating ? failedRestoredScene_
+		                                                       : document_.GetFilePath()),
+		                      FileDialogFilter::SCENE,
+		                      locating ? "Locate Last Edited Scene###FileDialog" : "");
 		if (!project_.GetRoot().empty()) {
 			assets_.Refresh();
 			openSceneDialog_.SetProjectScenes(project_.GetRoot(), assets_.GetSceneTargets(),
-			                                  preferences_.searchProjectScenes);
+			                                  locating || preferences_.searchProjectScenes);
 		}
 		stage_ = DialogStage::OPEN_FILE;
 		return;
+	}
 
 	case EditorAction::NEW_PROJECT:
 	case EditorAction::OPEN_PROJECT:
@@ -5696,6 +5706,16 @@ void EditorScene::UpdateDialogs() {
 					                                     errorActionMessage_);
 				}
 				ui_.SameLine();
+				if (!failedRestoredScene_.empty() && failedOpenScenePath_ == failedRestoredScene_) {
+					if (ui_.Button("Locate Last Edited Scene...")) {
+						ui_.CloseCurrentPopup();
+						ui_.EndPopup();
+						stage_ = DialogStage::IDLE;
+						StartAction(EditorAction::BROWSE_LAST_EDITED_SCENE);
+						return;
+					}
+					ui_.SameLine();
+				}
 				if (ui_.Button(reloadBackupPath_.empty() ? "Retry Open Scene" : "Retry Reload")) {
 					auto backup = std::exchange(reloadBackupPath_, {});
 					auto path = std::exchange(failedOpenScenePath_, {});
