@@ -2,10 +2,12 @@
 #include "animation/AnimationClipAsset.h"
 #include "assets/AssetDragDrop.h"
 #include "platform/windows/PathUtils.h"
+#include "platform/windows/StringConversion.h"
 
 #include "graphics/ui/ImGuiSystem.h"
 #include "history/EditorHistory.h"
 #include "scene/Scene.h"
+#include <Windows.h>
 #include <array>
 #include <format>
 #include <imgui.h>
@@ -163,7 +165,7 @@ bool TriggerActionsInspector::Draw(
     std::filesystem::path &sceneOpenRequest,
     std::filesystem::path &sceneLocationRequest,
     std::span<const std::filesystem::path> scenes,
-    std::span<const GameActionBinding> inputBindings) const {
+    std::span<const GameActionBinding> inputBindings) {
 	if (!object.triggerActions || !ui.CollapsingHeader("Trigger Actions")) {
 		return false;
 	}
@@ -489,17 +491,37 @@ bool TriggerActionsInspector::Draw(
 				        ? "None"
 				        : PathUtils::ToUtf8(action.scenePath.filename());
 				if (ImGui::BeginCombo("Destination Scene", label.c_str())) {
+					if (ImGui::IsWindowAppearing()) {
+						sceneSearch_.clear();
+						ImGui::SetKeyboardFocusHere();
+					}
+					ImGui::InputTextWithHint("##SceneSearch", "Search scene paths", &sceneSearch_);
 					if (ImGui::Selectable("None", action.scenePath.empty())) {
 						changed |= !action.scenePath.empty();
 						action.scenePath.clear();
 					}
 
+					const auto search = StringConversion::Utf8ToWide(sceneSearch_);
+					bool hasMatches = false;
 					for (const auto &path : scenes) {
+						if (!sceneSearch_.empty()) {
+							const auto &native = path.native();
+							if (search.empty() ||
+							    FindStringOrdinal(FIND_FROMSTART, native.c_str(),
+							                      static_cast<int>(native.size()), search.c_str(),
+							                      static_cast<int>(search.size()), TRUE) < 0) {
+								continue;
+							}
+						}
+						hasMatches = true;
 						if (ImGui::Selectable(PathUtils::ToUtf8(path).c_str(),
 						                      path == action.scenePath)) {
 							changed |= path != action.scenePath;
 							action.scenePath = path;
 						}
+					}
+					if (!hasMatches) {
+						ImGui::TextDisabled("No matching scenes.");
 					}
 
 					ImGui::EndCombo();

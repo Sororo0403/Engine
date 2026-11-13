@@ -1,5 +1,7 @@
 #pragma once
 
+#include "gameplay/TriggerActionsInspector.h"
+
 #include "scene/DirectionalLightComponent.h"
 #include "animation/AnimationClipComponent.h"
 
@@ -242,6 +244,7 @@ class InspectorPanel {
 	std::filesystem::path assetRevealPath_;
 	std::filesystem::path sceneOpenRequest_;
 	std::filesystem::path sceneLocationRequest_;
+	TriggerActionsInspector triggerActionsInspector_;
 	ObjectRequest objectRequest_;
 	SceneObjectId colliderFitRequest_ = 0;
 	// 非表示のモデルも必要時に読み込み、同じ失敗はキャッシュ更新まで繰り返さない。

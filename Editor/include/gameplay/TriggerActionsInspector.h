@@ -3,6 +3,7 @@
 #include "scene/SceneObjectId.h"
 #include <filesystem>
 #include <span>
+#include <string>
 
 class ImGuiSystem;
 class EditorHistory;
@@ -33,7 +34,7 @@ class TriggerActionsInspector {
 	          std::filesystem::path &sceneOpenRequest,
 	          std::filesystem::path &sceneLocationRequest,
 	          std::span<const std::filesystem::path> scenes = {},
-	          std::span<const GameActionBinding> inputBindings = {}) const;
+	          std::span<const GameActionBinding> inputBindings = {});
 
 	/// <summary>
 	/// 再生中の物体の設定を変更せずに表示する
@@ -43,4 +44,7 @@ class TriggerActionsInspector {
 	/// <param name="object">表示する物体</param>
 	void DrawReadOnly(const ImGuiSystem &ui, const Scene &scene,
 	                  const SceneObject &object) const;
+
+  private:
+	std::string sceneSearch_;
 };

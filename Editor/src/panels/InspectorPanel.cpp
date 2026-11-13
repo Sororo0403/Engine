@@ -746,7 +746,7 @@ bool InspectorPanel::Draw(
 	changed |=
 	    SpotLightInspector{}.Draw(ui, inspectedObjectId, *object, history);
 
-	changed |= TriggerActionsInspector{}.Draw(
+	changed |= triggerActionsInspector_.Draw(
 	    ui, scene, inspectedObjectId, *object, history,
 	    sceneOpenRequest_, sceneLocationRequest_,
 	    assets ? std::span<const std::filesystem::path>(assets->GetSceneTargets())
