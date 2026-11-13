@@ -12,6 +12,7 @@ enum class GameExportResult {
 	CANCELLED,
 	CHECK,
 	ACCEPTED,
+	CHOOSE_STARTUP_SCENE,
 	OPEN_ISSUE,
 	EDIT_ISSUE_SCRIPT
 };
@@ -41,6 +42,11 @@ class GameExportDialog {
 	void FollowSavedScene(const std::filesystem::path &projectRoot,
 	                     const std::filesystem::path &previousPath,
 	                     const std::filesystem::path &savedPath);
+
+	/// <summary>
+	/// 出力設定の入力を保持したまま起動シーンの表示を更新する
+	/// </summary>
+	void UpdateStartupScene(const std::filesystem::path &path, bool includesUnsavedEdits);
 
 	/// <summary>
 	/// 出力設定の入力を描画する

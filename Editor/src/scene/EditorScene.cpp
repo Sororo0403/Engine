@@ -3199,7 +3199,7 @@ const Scene *EditorScene::PrepareGameExport(SceneDocument &startup,
 		if (!scene) {
 			error = std::format(
 			    "Could not load the project startup scene: {}\n{}\n"
-			    "Choose a valid scene from File > Choose Startup Scene.",
+			    "Choose a valid scene with Choose Startup Scene.",
 			    PathUtils::ToUtf8(project_.GetStartupScene()), startup.GetError());
 			return nullptr;
 		}
@@ -3207,6 +3207,9 @@ const Scene *EditorScene::PrepareGameExport(SceneDocument &startup,
 		options.startupScenePath = scene == &document_.GetScene()
 		                               ? document_.GetFilePath()
 		                               : startup.GetFilePath();
+		options.config.fallbackCamera = scene == &document_.GetScene()
+		                                    ? cameraController_.GetPose()
+		                                    : exportConfig_.fallbackCamera;
 		return scene;
 	} catch (const std::exception &issue) {
 		error = issue.what();
@@ -4975,16 +4978,29 @@ void EditorScene::UpdateDialogs() {
 		return;
 	}
 
-	case DialogStage::SELECT_STARTUP_SCENE: {
+	case DialogStage::SELECT_STARTUP_SCENE:
+	case DialogStage::SELECT_EXPORT_STARTUP_SCENE: {
+		const bool fromExport = stage_ == DialogStage::SELECT_EXPORT_STARTUP_SCENE;
 		const auto result = fileDialog_.Draw(ui_);
-		if (result == FileDialogResult::CANCELLED) {
-			stage_ = DialogStage::IDLE;
-		} else if (result == FileDialogResult::ACCEPTED) {
+		if (result == FileDialogResult::NONE) {
+			return;
+		}
+		if (result == FileDialogResult::ACCEPTED) {
 			std::string error;
-			if (SetStartupScene(fileDialog_.GetSelectedPath(), error))
-				stage_ = DialogStage::IDLE;
-			else
+			if (!SetStartupScene(fileDialog_.GetSelectedPath(), error)) {
 				fileDialog_.RetrySelection(std::move(error));
+				return;
+			}
+			if (fromExport) {
+				const auto startup = project_.GetStartupScene();
+				exportDialog_.UpdateStartupScene(
+				    startup, UsesEditingSceneForStartup(startup) && document_.IsModified());
+			}
+		}
+		stage_ = DialogStage::IDLE;
+		if (fromExport) {
+			exportDialog_.Reopen();
+			stage_ = DialogStage::EXPORT_GAME;
 		}
 		return;
 	}
@@ -5075,6 +5091,12 @@ void EditorScene::UpdateDialogs() {
 	}
 	case DialogStage::EXPORT_GAME: {
 		const auto result = exportDialog_.Draw(ui_);
+		if (result == GameExportResult::CHOOSE_STARTUP_SCENE) {
+			fileDialog_.Show(FileDialogMode::OPEN, project_.GetScenesDirectory(),
+			                 FileDialogFilter::SCENE, "Choose Startup Scene###FileDialog");
+			stage_ = DialogStage::SELECT_EXPORT_STARTUP_SCENE;
+			return;
+		}
 		if (result == GameExportResult::CANCELLED) {
 			stage_ = DialogStage::IDLE;
 			return;

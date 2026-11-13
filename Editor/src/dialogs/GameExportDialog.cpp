@@ -97,11 +97,8 @@ void GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits
 	if (!PathUtils::IsValidFileName(defaultOutputName_)) {
 		defaultOutputName_ = L"Game";
 	}
-	const auto &scenePath = options_.startupScenePath;
-	startupScene_ = scenePath.empty() ? "Untitled" : PathUtils::ToUtf8(scenePath);
-	includesUnsavedEdits_ = includesUnsavedEdits;
+	UpdateStartupScene(options_.startupScenePath, includesUnsavedEdits);
 	error_.clear();
-	ClearCheckResult();
 	browsing_ = false;
 
 	if (!resume) {
@@ -123,6 +120,14 @@ void GameExportDialog::ForgetUntitledDraft() {
 	if (options_.startupScenePath.empty()) {
 		resumeDraft_ = false;
 	}
+}
+
+void GameExportDialog::UpdateStartupScene(const std::filesystem::path &path,
+                                          bool includesUnsavedEdits) {
+	startupScene_ = path.empty() ? "Untitled" : PathUtils::ToUtf8(path);
+	options_.startupScenePath = path;
+	includesUnsavedEdits_ = includesUnsavedEdits;
+	ClearCheckResult();
 }
 
 void GameExportDialog::FollowSavedScene(
@@ -186,6 +191,11 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 	}
 	const bool wasBrowsing = browsing_;
 	ui.BeginDisabled(wasBrowsing);
+	bool chooseStartup = false;
+	if (!projectRoot_.empty()) {
+		chooseStartup = ui.Button("Choose Startup Scene...");
+		ImGui::SetItemTooltip("Change the startup scene saved in this project.");
+	}
 	ui.Text("Output Folder");
 	bool changed = ui.InputText("##OutputFolder", output_);
 	ui.SameLine();
@@ -237,7 +247,8 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 	if (!error_.empty()) {
 		ImGui::TextWrapped("%s", error_.c_str());
 	}
-	GameExportResult result = GameExportResult::NONE;
+	GameExportResult result = chooseStartup ? GameExportResult::CHOOSE_STARTUP_SCENE
+	                                        : GameExportResult::NONE;
 	if (!checkIssues_.empty()) {
 		ui.Text("Export issues");
 		if (scrollCheckResultToTop_) {
@@ -352,6 +363,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 
 	if (result == GameExportResult::CANCELLED ||
 	    result == GameExportResult::ACCEPTED ||
+	    result == GameExportResult::CHOOSE_STARTUP_SCENE ||
 	    result == GameExportResult::OPEN_ISSUE ||
 	    result == GameExportResult::EDIT_ISSUE_SCRIPT) {
 		resumeDraft_ = result == GameExportResult::OPEN_ISSUE ||
