@@ -11,6 +11,7 @@
 
 namespace {
 constexpr auto kGameLogPath = L"logs/Engine.log";
+constexpr auto kLogRefreshInterval = std::chrono::milliseconds{500};
 }
 
 void GameExportResultDialog::Show(std::filesystem::path directory,
@@ -31,6 +32,7 @@ void GameExportResultDialog::Show(std::filesystem::path directory,
 }
 
 void GameExportResultDialog::RefreshLog() {
+	nextLogRefresh_ = std::chrono::steady_clock::now() + kLogRefreshInterval;
 	constexpr std::streamoff maximumBytes = 64 * 1024;
 	log_.clear();
 	logError_.clear();
@@ -200,6 +202,12 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		if (ui.Button("Refresh Log")) {
 			RefreshLog();
 			refreshedLog = true;
+		}
+		if (process_.IsTracking() &&
+		    std::chrono::steady_clock::now() >= nextLogRefresh_) {
+			const auto previous = std::move(log_);
+			RefreshLog();
+			refreshedLog |= log_ != previous;
 		}
 		ui.SameLine();
 		ui.BeginDisabled(log_.empty());

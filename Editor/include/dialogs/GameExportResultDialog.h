@@ -1,6 +1,7 @@
 #pragma once
 
 #include "platform/windows/ShellUtils.h"
+#include <chrono>
 #include <cstdint>
 #include <filesystem>
 #include <optional>
@@ -45,6 +46,7 @@ class GameExportResultDialog {
 	std::string error_, processStatus_;
 	std::string log_, logError_;
 	std::optional<std::uintmax_t> logLaunchStart_;
+	std::chrono::steady_clock::time_point nextLogRefresh_;
 	bool opening_ = false;
 	bool reopening_ = false;
 	bool showLog_ = false;
