@@ -15,6 +15,7 @@
 namespace {
 constexpr auto kGameLogPath = L"logs/Engine.log";
 constexpr auto kLogRefreshInterval = std::chrono::milliseconds{500};
+constexpr std::streamoff kLogPageBytes = 64 * 1024;
 
 /// <summary>
 /// Loggerのヘッダーを持つ行からログレベルを取得する
@@ -128,7 +129,6 @@ void GameExportResultDialog::Show(std::filesystem::path directory,
 void GameExportResultDialog::RefreshLog() {
 	auto &run = runs_.at(directory_);
 	nextLogRefresh_ = std::chrono::steady_clock::now() + kLogRefreshInterval;
-	constexpr std::streamoff maximumBytes = 64 * 1024;
 	log_.clear();
 	logError_.clear();
 	logTruncated_ = false;
@@ -170,8 +170,8 @@ void GameExportResultDialog::RefreshLog() {
 	}
 	const auto start = run.showLogBeginning
 	                       ? firstIncluded + static_cast<std::streamoff>(run.logPageOffset)
-	                       : end - (std::min)(available, maximumBytes);
-	const auto size = (std::min)(end - start, maximumBytes);
+	                       : end - (std::min)(available, kLogPageBytes);
+	const auto size = (std::min)(end - start, kLogPageBytes);
 	bool partialLine = false;
 	if (!run.showLogBeginning && start > firstIncluded) {
 		input.seekg(start - 1);
@@ -304,20 +304,26 @@ bool GameExportResultDialog::FindLogMatch(bool next) {
 	const auto scanStart = start + static_cast<std::streamoff>(anchor);
 	input.seekg(scanStart);
 	bool isError = next && run.lastMatch->inError;
+	auto entryOffset = next ? run.lastMatch->entryOffset : std::uintmax_t{0};
 	std::string line;
 	for (auto offset = scanStart; offset < end && std::getline(input, line);
 	     offset = static_cast<std::streamoff>(input.tellg())) {
 		const auto level = LogLevelPrefix(line);
+		const auto relative = static_cast<std::uintmax_t>(offset - start);
 		if (IsLogHeader(level)) {
 			isError = level.starts_with(" [ERROR] ");
+			entryOffset = relative;
 		}
-		const auto relative = static_cast<std::uintmax_t>(offset - start);
 		if ((!next || relative > anchor) && (!errorsOnly || isError) &&
 		    line.find(query) != std::string::npos) {
-			OpenLogAtOffset(relative);
-			// 詳細行から開いたページでは、見出しが前のページにある場合がある。
-			run.showErrorsOnly = false;
-			run.lastMatch = GameRun::LogMatch{std::move(query), relative, errorsOnly, isError};
+			// 見出しから開くと一致行がページ外になる場合は、一致行を優先する。
+			const auto lineEnd = input.eof() ? end : static_cast<std::streamoff>(input.tellg());
+			const bool fits = lineEnd - start - static_cast<std::streamoff>(entryOffset) <=
+			                  kLogPageBytes;
+			OpenLogAtOffset(fits ? entryOffset : relative);
+			run.showErrorsOnly = errorsOnly && fits;
+			run.lastMatch = GameRun::LogMatch{
+			    std::move(query), relative, entryOffset, errorsOnly, isError};
 			return true;
 		}
 		if (input.eof()) {

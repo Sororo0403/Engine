@@ -52,6 +52,7 @@ class GameExportResultDialog {
 		struct LogMatch {
 			std::string query;
 			std::uintmax_t offset;
+			std::uintmax_t entryOffset;
 			bool errorsOnly;
 			bool inError;
 		};
