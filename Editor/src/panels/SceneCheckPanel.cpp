@@ -102,6 +102,10 @@ void SceneCheckPanel::Check(const Scene &scene, const CameraPose &fallback,
 		};
 		auto remaining = std::count_if(issues_.begin(),
 		                               issues_.begin() + *lastIssue_, matches);
+		std::optional<std::size_t> sameSource;
+		bool ambiguousSource = false;
+		const bool hasSource = previous.objectId != 0 ||
+		                       !previous.assetPath.empty() || !previous.modelPath.empty();
 		for (std::size_t i = 0; i < issues.size(); ++i) {
 			const auto &issue = issues[i];
 			if (!matches(issue))
@@ -109,15 +113,25 @@ void SceneCheckPanel::Check(const Scene &scene, const CameraPose &fallback,
 			if (issue.objectId == previous.objectId &&
 			    issue.destinationObjectId == previous.destinationObjectId &&
 			    issue.modelPath == previous.modelPath &&
-			    issue.assetPath == previous.assetPath &&
-			    issue.message == previous.message) {
-				scrollToIssue_ = i;
-				break;
+			    issue.assetPath == previous.assetPath) {
+				if (issue.message == previous.message) {
+					scrollToIssue_ = i;
+					sameSource.reset();
+					break;
+				}
+				if (hasSource) {
+					ambiguousSource |= sameSource.has_value();
+					sameSource = i;
+				}
 			}
 			if (remaining >= 0) {
 				scrollToIssue_ = i;
 				--remaining;
 			}
+		}
+		// 診断文が変わったときも、同じ参照元が一件ならその行に戻る。
+		if (sameSource && !ambiguousSource) {
+			scrollToIssue_ = sameSource;
 		}
 	}
 	lastIssue_ = scrollToIssue_;
