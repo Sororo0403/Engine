@@ -405,7 +405,7 @@ class EditorScene final : public IScene {
 	/// <summary>
 	/// 現在のプロジェクト・シーンとSceneビューの視点をEditor設定に記録する
 	/// </summary>
-	void SaveEditorSession();
+	void SaveEditorSession(bool force = false);
 
 	/// <summary>
 	/// 選択した素材の参照元を調べ、ごみ箱へ移すときは移動順も確認する

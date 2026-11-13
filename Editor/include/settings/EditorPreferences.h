@@ -13,6 +13,7 @@
 #include <filesystem>
 #include <map>
 #include <span>
+#include <utility>
 #include <vector>
 
 /// <summary>
@@ -126,6 +127,12 @@ class EditorPreferences {
 	/// </summary>
 	std::span<const SceneObjectId>
 	LastSceneSelection(const std::filesystem::path &scene) const;
+
+	/// <summary>
+	/// 移動に成功した素材の新しいパスをシーンの履歴と編集状態に反映する
+	/// </summary>
+	void RelocateScenes(std::span<const std::pair<std::filesystem::path,
+	                                             std::filesystem::path>> moves);
 
 	/// <summary>
 	/// 設定を読み込む。ファイルがない場合は現在の値を保持する

@@ -153,6 +153,59 @@ EditorPreferences::LastSceneSelection(const std::filesystem::path &scene) const 
 	                                       : std::span<const SceneObjectId>{found->second};
 }
 
+void EditorPreferences::RelocateScenes(
+    std::span<const std::pair<std::filesystem::path, std::filesystem::path>> moves) {
+	namespace fs = std::filesystem;
+	const auto relocate = [&](const fs::path &scene) {
+		for (const auto &[source, destination] : moves) {
+			try {
+				const auto relative = PathUtils::RelativeInside(
+				    source.lexically_normal(), scene.lexically_normal());
+				const auto target = SceneViewKey(
+				    relative.empty() ? destination : destination / relative);
+				if (!target.empty()) {
+					return target;
+				}
+			} catch (const std::runtime_error &) {
+				// 別の場所にあるシーンは次の移動元と比較する。
+			}
+		}
+		return scene;
+	};
+
+	const auto relocateKeys = [&](auto &entries) {
+		auto before = entries;
+		for (auto &[path, value] : before) {
+			const auto target = relocate(path);
+			if (target != path) {
+				entries.erase(path);
+				entries.insert_or_assign(target, std::move(value));
+			}
+		}
+	};
+	relocateKeys(sceneViews);
+	relocateKeys(sceneSelections_);
+
+	RecentScenes recent;
+	for (auto it = recentScenes.rbegin(); it != recentScenes.rend(); ++it) {
+		recent.Add(relocate(*it));
+	}
+	const auto paths = recent.GetPaths();
+	recentScenes.assign(paths.begin(), paths.end());
+
+	for (auto &[root, path] : projectScenes) {
+		const auto original = root / path;
+		const auto target = relocate(original);
+		if (target != original) {
+			try {
+				path = PathUtils::RelativeInside(root, target);
+			} catch (const std::runtime_error &) {
+				// プロジェクト外への移動はプロジェクト内の履歴へ登録しない。
+			}
+		}
+	}
+}
+
 void EditorPreferences::RememberProject(const std::filesystem::path &root) {
 	if (!root.is_absolute() || root.native().find(L'\0') != std::wstring::npos) {
 		return;

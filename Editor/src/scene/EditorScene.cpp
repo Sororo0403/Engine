@@ -4388,7 +4388,17 @@ bool EditorScene::RelocateAssets(const AssetUsage::Moves &moves,
 		assetsPanel_.RequestOpenDirectory(directory.lexically_relative(root));
 	}
 
-	SaveEditorSession();
+	auto updatedPreferences = preferences_;
+	const auto recent = recentScenes_.GetPaths();
+	updatedPreferences.recentScenes.assign(recent.begin(), recent.end());
+	updatedPreferences.RelocateScenes(moves);
+	recentScenes_.Clear();
+	for (auto it = updatedPreferences.recentScenes.rbegin();
+	     it != updatedPreferences.recentScenes.rend(); ++it) {
+		recentScenes_.Add(*it);
+	}
+	preferences_ = std::move(updatedPreferences);
+	SaveEditorSession(true);
 	RecordRecovery();
 	return true;
 }
@@ -5456,7 +5466,7 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 	}
 }
 
-void EditorScene::SaveEditorSession() {
+void EditorScene::SaveEditorSession(bool force) {
 	if (!canSavePreferences_) {
 		return;
 	}
@@ -5474,7 +5484,7 @@ void EditorScene::SaveEditorSession() {
 	current.RememberSceneView(document_.GetFilePath(), cameraController_.GetViewState());
 	current.RememberSceneSelection(document_.GetFilePath(), selection_.GetIds());
 
-	if (!(current == preferences_) && current.Save()) {
+	if ((force || !(current == preferences_)) && current.Save()) {
 		preferences_ = std::move(current);
 	}
 }
