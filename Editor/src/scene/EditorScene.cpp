@@ -3307,6 +3307,8 @@ void EditorScene::BrowseStartupScene() {
 
 	fileDialog_.Show(FileDialogMode::OPEN, initialPath, FileDialogFilter::SCENE,
 	                 "Choose Startup Scene###FileDialog");
+	assets_.Refresh();
+	fileDialog_.SetProjectScenes(project_.GetRoot(), assets_.GetSceneTargets());
 }
 
 bool EditorScene::SetStartupScene(const std::filesystem::path &path,
