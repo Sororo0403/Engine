@@ -612,6 +612,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 			selected.config.width = width_;
 			selected.config.height = height_;
 
+			bool outputOccupied = false;
 			if (exportRequested) {
 				if (!selected.config.HasValidWindowTitle()) {
 					focusField_ = GameExportField::TITLE;
@@ -632,21 +633,29 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 				    !PathUtils::IsValidFileName(selected.destination.filename())) {
 					throw std::runtime_error("Choose a new output folder.");
 				}
-				if (std::filesystem::exists(
-				        std::filesystem::symlink_status(selected.destination))) {
-					throw std::runtime_error(
-					    "That output path already exists. Choose a new folder.");
+				outputOccupied = std::filesystem::exists(
+				    std::filesystem::symlink_status(selected.destination));
+				if (outputOccupied) {
+					const std::string message =
+					    "That output path already exists. Choose a new folder.";
+					issueFilter_.clear();
+					SetCheckResult(message, {{.message = message,
+					                          .locationPath = selected.destination,
+					                          .field = GameExportField::OUTPUT_FOLDER}});
+				} else {
+					focusField_ = GameExportField::NONE;
 				}
-				focusField_ = GameExportField::NONE;
 			}
 
-			options_ = std::move(selected);
-			result = keepDraft              ? GameExportResult::CANCELLED
-			         : chooseStartup         ? GameExportResult::CHOOSE_STARTUP_SCENE
-			         : exportRequested      ? GameExportResult::ACCEPTED
-			         : saveAndCheckRequested ? GameExportResult::SAVE_AND_CHECK
-			         : checkRequested        ? GameExportResult::CHECK
-			                                 : result;
+			if (!outputOccupied) {
+				options_ = std::move(selected);
+				result = keepDraft              ? GameExportResult::CANCELLED
+				         : chooseStartup         ? GameExportResult::CHOOSE_STARTUP_SCENE
+				         : exportRequested      ? GameExportResult::ACCEPTED
+				         : saveAndCheckRequested ? GameExportResult::SAVE_AND_CHECK
+				         : checkRequested        ? GameExportResult::CHECK
+				                                 : result;
+			}
 		} catch (const std::exception &e) {
 			error_ = e.what();
 		}
