@@ -3393,8 +3393,11 @@ void EditorScene::ExecutePendingAction() {
 		const auto directory = project_.GetRoot().empty()
 		                           ? document_.GetFilePath().parent_path()
 		                           : project_.GetRoot();
-		fileDialog_.Show(FileDialogMode::SELECT_DIRECTORY, directory);
-		stage_ = action == EditorAction::NEW_PROJECT
+		const bool creating = action == EditorAction::NEW_PROJECT;
+		fileDialog_.Show(FileDialogMode::SELECT_DIRECTORY, directory,
+		                 creating ? FileDialogFilter::SCENE : FileDialogFilter::PROJECT,
+		                 creating ? "New Project###FileDialog" : "Open Project###FileDialog");
+		stage_ = creating
 		             ? DialogStage::CREATE_PROJECT
 		             : DialogStage::OPEN_PROJECT;
 		return;
@@ -5517,7 +5520,7 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 				missingRecentProject_ = folder;
 			}
 			fileDialog_.Show(FileDialogMode::SELECT_DIRECTORY,
-			                 FindExistingDirectory(folder), FileDialogFilter::SCENE,
+			                 FindExistingDirectory(folder), FileDialogFilter::PROJECT,
 			                 "Open Project###FileDialog");
 			fileDialog_.RetrySelection(std::move(error));
 			stage_ = DialogStage::OPEN_PROJECT;

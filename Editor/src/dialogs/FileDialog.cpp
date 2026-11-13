@@ -21,7 +21,9 @@ void FileDialog::Show(FileDialogMode mode,
 	      filter == FileDialogFilter::AUDIO) &&
 	     mode != FileDialogMode::OPEN) ||
 	    (filter == FileDialogFilter::GAME_CONFIG &&
-	     mode == FileDialogMode::SELECT_DIRECTORY)) {
+	     mode == FileDialogMode::SELECT_DIRECTORY) ||
+	    (filter == FileDialogFilter::PROJECT &&
+	     mode != FileDialogMode::SELECT_DIRECTORY)) {
 		throw std::invalid_argument(
 		    "This file type does not support the requested operation.");
 	}
@@ -143,10 +145,13 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 		}
 	} else {
 		ui.InputText("Folder", directoryText_);
+		if (filter_ == FileDialogFilter::PROJECT) {
+			ImGui::SetItemTooltip("Enter the project folder or the full path to project.json.");
+		}
 
 		if (ui.Button("Go")) {
 			try {
-				ChangeDirectory(PathUtils::FromUtf8(directoryText_));
+				ChangeDirectory(ReadFolderInput());
 			} catch (const std::exception &error) {
 				error_ = error.what();
 			}
@@ -245,7 +250,8 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 
 		ui.Separator();
 
-		const char *button = mode_ == FileDialogMode::SELECT_DIRECTORY
+		const char *button = filter_ == FileDialogFilter::PROJECT ? "Open Project"
+		                     : mode_ == FileDialogMode::SELECT_DIRECTORY
 		                         ? "Select Folder"
 		                     : mode_ == FileDialogMode::OPEN      ? "Open"
 		                     : mode_ == FileDialogMode::SAVE_COPY ? "Save Copy"
@@ -439,7 +445,7 @@ bool FileDialog::AcceptSelection() {
 }
 
 std::filesystem::path FileDialog::ReadDirectory() const {
-	const auto directory = PathUtils::FromUtf8(directoryText_);
+	const auto directory = ReadFolderInput();
 
 	if (!directory.is_absolute() ||
 	    directory.native().find(L'\0') != std::wstring::npos) {
@@ -453,6 +459,17 @@ std::filesystem::path FileDialog::ReadDirectory() const {
 	}
 
 	return resolved;
+}
+
+std::filesystem::path FileDialog::ReadFolderInput() const {
+	auto path = PathUtils::FromUtf8(directoryText_);
+	if (filter_ == FileDialogFilter::PROJECT && path.is_absolute() &&
+	    CompareStringOrdinal(path.filename().c_str(), -1, L"project.json", -1,
+	                         TRUE) == CSTR_EQUAL &&
+	    std::filesystem::is_regular_file(path)) {
+		path = path.parent_path();
+	}
+	return path;
 }
 
 void FileDialog::CreateFolder() {
