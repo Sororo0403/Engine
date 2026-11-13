@@ -554,7 +554,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	const auto inResults = [&](const std::filesystem::path &path) {
 		return std::ranges::find(displayedResults_, path) != displayedResults_.end();
 	};
-	const auto visibleFile = [&](const std::filesystem::path &path) {
+	const auto visiblePath = [&](const std::filesystem::path &path) {
 		if (!displayedResults_.empty()) {
 			return inResults(path);
 		}
@@ -568,19 +568,11 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		                         static_cast<int>(text.size()), search.c_str(),
 		                         static_cast<int>(search.size()), TRUE) >= 0;
 	};
-	const auto visibleFolder = [&](const std::filesystem::path &path) {
-		return !displayedResults_.empty()
-		           ? inResults(path)
-		           : path.lexically_relative(assets.GetRootDirectory()).parent_path() ==
-		                 currentDirectory_;
-	};
 	std::vector<std::filesystem::path> visible;
 
-	if (filter_.empty()) {
-		for (const auto &directory : directories) {
-			if (visibleFolder(directory)) {
-				visible.push_back(directory);
-			}
+	for (const auto &directory : directories) {
+		if (visiblePath(directory)) {
+			visible.push_back(directory);
 		}
 	}
 
@@ -590,7 +582,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			continue;
 		}
 		for (const auto &path : *paths) {
-			if (visibleFile(path)) {
+			if (visiblePath(path)) {
 				visible.push_back(path);
 				visibleFiles.emplace_back(type, &path);
 			}
@@ -763,76 +755,76 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 		bool anyVisible = false;
 
-		if (filter_.empty()) {
-			for (const auto &directory : directories) {
-				const auto relative =
-				    directory.lexically_relative(assets.GetRootDirectory());
+		for (const auto &directory : directories) {
+			const auto relative =
+			    directory.lexically_relative(assets.GetRootDirectory());
 
-				if (!visibleFolder(directory)) {
-					continue;
-				}
-
-				anyVisible = true;
-				const auto label = std::format(
-				    "[Folder] {}", PathUtils::ToUtf8(
-				                      displayedResults_.empty() ? relative.filename() : relative));
-				ImGui::PushID(PathUtils::ToUtf8(directory).c_str());
-
-				if (ui.Selectable(label.c_str(), isSelected(directory))) {
-					selectRow(directory, true);
-				}
-				if (scrollToSelected_ && selectionAnchor_ == directory) {
-					ImGui::SetScrollHereY(0.5f);
-					scrollToSelected_ = false;
-				}
-				if (ImGui::IsItemHovered() &&
-				    ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) &&
-				    !ImGui::GetIO().KeyCtrl && !ImGui::GetIO().KeyShift) {
-					nextDirectory = relative;
-					openRequested = true;
-				}
-
-				acceptFolder(directory);
-
-				const bool canMove = canEditAssets &&
-				                     assets.GetRootDirectory().is_absolute();
-				if (canMove) {
-					if (AssetDragDrop::DrawSource(directory, AssetDragDrop::Kind::FOLDER)) {
-						selectContext(directory);
-					}
-				}
-
-				if (ImGui::BeginPopupContextItem()) {
-					selectContext(directory);
-					drawLocationMenu(directory);
-					if (canMove) {
-						ImGui::Separator();
-						drawClipboardMenu();
-						drawPaste("Paste into Folder", directory);
-						ImGui::Separator();
-
-						if (ui.MenuItem("Rename...", "F2", selectedItems_.size() == 1)) {
-							renamePath_ = directory;
-						}
-
-						if (ui.MenuItem("Duplicate", "Ctrl+D")) {
-							duplicatePaths_ = selectedItems_;
-						}
-
-						if (ui.MenuItem("Find References...")) {
-							referencePaths_ = selectedItems_;
-						}
-
-						if (ui.MenuItem("Move to Recycle Bin...", "Delete")) {
-							recyclePaths_ = selectedItems_;
-						}
-
-					}
-					ImGui::EndPopup();
-				}
-
-				ImGui::PopID();
+			if (!visiblePath(directory)) {
+				continue;
 			}
+
+			anyVisible = true;
+			const auto name = filter_.empty() && displayedResults_.empty()
+			                      ? relative.filename() : relative;
+			const auto label = std::format(
+			    "[Folder] {}", PathUtils::ToUtf8(name));
+			ImGui::PushID(PathUtils::ToUtf8(directory).c_str());
+
+			if (ui.Selectable(label.c_str(), isSelected(directory))) {
+				selectRow(directory, true);
+			}
+			if (scrollToSelected_ && selectionAnchor_ == directory) {
+				ImGui::SetScrollHereY(0.5f);
+				scrollToSelected_ = false;
+			}
+			if (ImGui::IsItemHovered() &&
+			    ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) &&
+			    !ImGui::GetIO().KeyCtrl && !ImGui::GetIO().KeyShift) {
+				selectRow(directory, false);
+				nextDirectory = relative;
+				openRequested = true;
+			}
+
+			acceptFolder(directory);
+
+			const bool canMove = canEditAssets &&
+			                     assets.GetRootDirectory().is_absolute();
+			if (canMove) {
+				if (AssetDragDrop::DrawSource(directory, AssetDragDrop::Kind::FOLDER)) {
+					selectContext(directory);
+				}
+			}
+
+			if (ImGui::BeginPopupContextItem()) {
+				selectContext(directory);
+				drawLocationMenu(directory);
+				if (canMove) {
+					ImGui::Separator();
+					drawClipboardMenu();
+					drawPaste("Paste into Folder", directory);
+					ImGui::Separator();
+
+					if (ui.MenuItem("Rename...", "F2", selectedItems_.size() == 1)) {
+						renamePath_ = directory;
+					}
+
+					if (ui.MenuItem("Duplicate", "Ctrl+D")) {
+						duplicatePaths_ = selectedItems_;
+					}
+
+					if (ui.MenuItem("Find References...")) {
+						referencePaths_ = selectedItems_;
+					}
+
+					if (ui.MenuItem("Move to Recycle Bin...", "Delete")) {
+						recyclePaths_ = selectedItems_;
+					}
+
+				}
+				ImGui::EndPopup();
+			}
+
+			ImGui::PopID();
 		}
 
 		for (const auto &[assetType, path] : visibleFiles) {
@@ -1003,7 +995,9 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	ui.EndChild();
 
 	if (openRequested) {
+		auto previous = CaptureResults();
 		OpenDirectory(std::move(nextDirectory));
+		previousView_ = std::move(previous);
 	}
 
 	const auto &io = ImGui::GetIO();
