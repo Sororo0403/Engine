@@ -845,6 +845,7 @@ bool EditorScene::Update(float deltaTime) {
 			FinishEdit();
 			const bool moveToRecycleBin = !recycle.empty();
 			pendingAssetPaths_ = moveToRecycleBin ? recycle : references;
+			assetReferenceFilter_.clear();
 			CheckAssetReferences(moveToRecycleBin);
 			stage_ = moveToRecycleBin ? DialogStage::RECYCLE_ASSET
 			                          : DialogStage::ASSET_REFERENCES;
@@ -4436,10 +4437,23 @@ void EditorScene::DrawAssetReferences(bool recycle) {
 	if (!assetReferences_.empty()) {
 		ui_.Text(recycle ? "The selection could not be moved. References or errors:"
 		                 : "External references or items that could not be checked:");
+		ui_.InputText("Search References", assetReferenceFilter_);
+		const auto matches = [&](const AssetUsage::Reference &source) {
+			return source.message.find(assetReferenceFilter_) != std::string::npos;
+		};
+		const auto matchingCount = std::ranges::count_if(assetReferences_, matches);
+		ui_.Text(std::format("Matching references: {} / {}", matchingCount,
+		                     assetReferences_.size()));
 
 		if (ui_.BeginChild("AssetReferences", 500.0f, 160.0f)) {
+			if (matchingCount == 0) {
+				ui_.Text("No references match the search.");
+			}
 			for (std::size_t i = 0; i < assetReferences_.size(); ++i) {
 				const auto &source = assetReferences_[i];
+				if (!matches(source)) {
+					continue;
+				}
 				ImGui::TextWrapped("%s", source.message.c_str());
 				if (source.editingScene || !source.scenePath.empty()) {
 					ImGui::PushID(static_cast<int>(i));
@@ -4474,11 +4488,12 @@ void EditorScene::DrawAssetReferences(bool recycle) {
 			}
 			ImGui::SetClipboardText(list.c_str());
 		}
+		ImGui::SetItemTooltip("Copy the full reference list, including entries hidden by search.");
 		ui_.SameLine();
 		if (!recycle) {
 			const auto &scene = document_.GetScene();
 			const auto inCurrentScene = [&](const AssetUsage::Reference &source) {
-				return source.editingScene && scene.Contains(source.objectId);
+				return matches(source) && source.editingScene && scene.Contains(source.objectId);
 			};
 			ui_.BeginDisabled(!std::ranges::any_of(assetReferences_, inCurrentScene));
 			if (ui_.Button("Select Objects in Current Scene")) {
@@ -4492,6 +4507,7 @@ void EditorScene::DrawAssetReferences(bool recycle) {
 				selectedReferences.erase(duplicates.begin(), duplicates.end());
 			}
 			ui_.EndDisabled();
+			ImGui::SetItemTooltip("Select objects in the current scene that match the search.");
 			ui_.SameLine();
 		}
 	} else if (!recycle) {

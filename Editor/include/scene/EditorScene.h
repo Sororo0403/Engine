@@ -977,6 +977,7 @@ class EditorScene final : public IScene {
 	SceneObjectId pendingOpenObject_ = 0;
 	std::vector<std::filesystem::path> pendingAssetPaths_;
 	std::vector<AssetUsage::Reference> assetReferences_;
+	std::string assetReferenceFilter_;
 	std::string assetReferenceLocationError_;
 	std::filesystem::path pendingRenamePath_;
 	std::string assetRenameName_, assetRenameError_;
