@@ -183,7 +183,21 @@ struct AssetSource {
 };
 
 /// <summary>
-/// 明示した取得元からモデル・バッファ・画像・材質を収集し、相対構成を保って出力先へ対応付ける
+/// 配布先に含められないモデルの依存ファイルと理由を保持する
+/// </summary>
+class ModelDependencyExportError : public std::runtime_error {
+  public:
+	ModelDependencyExportError(fs::path file, const std::exception &reason)
+	    : std::runtime_error(std::format("Could not include model dependency {}: {}",
+	                                     PathUtils::ToUtf8(file), reason.what())),
+	      path(std::move(file)) {
+	}
+
+	fs::path path;
+};
+
+/// <summary>
+/// 取得元ごとに素材と依存ファイルを登録する
 /// </summary>
 class Assets {
   public:
@@ -232,12 +246,10 @@ class Assets {
 		for (const auto &file : AssetDependencies::ModelFiles(model)) {
 			try {
 				AddFile(index, file);
-			} catch (const fs::filesystem_error &error) {
-				if (error.code() == std::errc::no_such_file_or_directory ||
-				    error.code() == std::errc::not_a_directory) {
-					throw AssetDependencies::MissingModelDependency(file.lexically_normal());
-				}
+			} catch (const std::bad_alloc &) {
 				throw;
+			} catch (const std::exception &error) {
+				throw ModelDependencyExportError(file.lexically_normal(), error);
 			}
 		}
 
@@ -928,6 +940,8 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 					} catch (const std::bad_alloc &) {
 						throw;
 					} catch (const AssetDependencies::MissingModelDependency &error) {
+						report(error, error.path);
+					} catch (const ModelDependencyExportError &error) {
 						report(error, error.path);
 					} catch (const std::exception &error) {
 						report(error, input);
