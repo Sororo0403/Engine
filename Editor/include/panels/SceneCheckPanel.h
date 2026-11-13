@@ -36,6 +36,11 @@ class SceneCheckPanel {
 	void Show();
 
 	/// <summary>
+	/// パネルが開いていれば、フォーカスを移さずに再検査を予約する
+	/// </summary>
+	void RequestRecheckIfOpen();
+
+	/// <summary>
 	/// 検証結果とパネルの表示状態をクリアする
 	/// </summary>
 	void Reset();

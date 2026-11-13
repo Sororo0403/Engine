@@ -6738,11 +6738,15 @@ bool EditorScene::ReplaceSelectedMeshes(
 			return false;
 		}
 
-		if (!document_.GetHistory().SetModelPaths(selection_.GetIds(),
-		                                          modelPath)) {
+		auto &history = document_.GetHistory();
+		const auto previousState = history.GetCurrentStateId();
+		if (!history.SetModelPaths(selection_.GetIds(), modelPath)) {
 			ShowError("Could not replace the meshes. Every selected object "
 			          "must have a Mesh component.");
 			return false;
+		}
+		if (history.GetCurrentStateId() != previousState) {
+			sceneCheckPanel_.RequestRecheckIfOpen();
 		}
 
 		return true;

@@ -19,6 +19,10 @@ void SceneCheckPanel::Show() {
 	focusRequested_ = true;
 }
 
+void SceneCheckPanel::RequestRecheckIfOpen() {
+	checkRequested_ = open_;
+}
+
 void SceneCheckPanel::Reset() {
 	*this = SceneCheckPanel{};
 }
@@ -44,7 +48,7 @@ void SceneCheckPanel::OnSceneOpened(const std::filesystem::path &previous,
 	assetActionError_.clear();
 	focusRequested_ = false;
 	checked_ = false;
-	checkRequested_ = open_;
+	RequestRecheckIfOpen();
 }
 
 void SceneCheckPanel::OnAssetsMoved(
@@ -63,7 +67,7 @@ void SceneCheckPanel::OnAssetsMoved(
 	for (auto &[path, filter] : movedFilters) {
 		sceneFilters_.insert_or_assign(path, std::move(filter));
 	}
-	checkRequested_ = open_;
+	RequestRecheckIfOpen();
 }
 
 void SceneCheckPanel::Check(const Scene &scene, const CameraPose &fallback,
