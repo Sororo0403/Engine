@@ -224,6 +224,10 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 			RefreshLog();
 			refreshedLog = true;
 		}
+		if (ui.Checkbox("Follow Log", run.followLog) && run.followLog) {
+			refreshedLog = true;
+		}
+		ImGui::SetItemTooltip("Scroll to the latest messages as the log updates.");
 		if (ui.Button("Refresh Log")) {
 			RefreshLog();
 			refreshedLog = true;
@@ -260,7 +264,7 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 				ImGui::PushTextWrapPos();
 				ui.Text(log_);
 				ImGui::PopTextWrapPos();
-				if (refreshedLog)
+				if (refreshedLog && run.followLog)
 					ImGui::SetScrollHereY(1.0f);
 			}
 			ui.EndChild();

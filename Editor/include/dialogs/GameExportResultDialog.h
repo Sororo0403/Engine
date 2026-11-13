@@ -38,6 +38,7 @@ class GameExportResultDialog {
 		std::optional<std::uintmax_t> logStart;
 		bool sinceLaunchOnly = false;
 		bool showLog = false;
+		bool followLog = true;
 		bool launchFailed = false;
 	};
 
