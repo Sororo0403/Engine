@@ -324,6 +324,14 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 				error_.clear();
 			}
 			ImGui::SetItemTooltip("Enter a file name or paste the full save path.");
+			if (!fileName_.empty()) {
+				try {
+					const auto path = PathUtils::ToUtf8(ReadFilePath());
+					ImGui::TextWrapped("Save to: %s", path.c_str());
+				} catch (const std::invalid_argument &) {
+					// 入力途中のエラーは保存を確定したときに表示する。
+				}
+			}
 		}
 
 		if (!error_.empty()) {
@@ -486,6 +494,42 @@ void FileDialog::ChangeDirectory(const std::filesystem::path &path) {
 	}
 }
 
+std::filesystem::path FileDialog::ReadFilePath() const {
+	const auto input = PathUtils::FromPathInput(fileName_);
+	const bool absoluteInput = input.is_absolute();
+	auto name = absoluteInput ? input.filename() : input;
+
+	if (!PathUtils::IsValidFileName(name)) {
+		throw std::invalid_argument("Enter a valid file name.");
+	}
+
+	if (mode_ != FileDialogMode::OPEN && !name.has_extension()) {
+		name += filter_ == FileDialogFilter::GAME_CONFIG ? ".json" : ".scene.json";
+	}
+
+	if (!PathUtils::IsValidFileName(name)) {
+		throw std::invalid_argument("The complete file name is too long or invalid.");
+	}
+
+	if (filter_ == FileDialogFilter::MODEL   ? !PathUtils::IsModelFile(name)
+	    : filter_ == FileDialogFilter::IMAGE ? !PathUtils::IsImageFile(name)
+	    : filter_ == FileDialogFilter::AUDIO ? !PathUtils::HasExtension(name, ".wav")
+	                                         : !PathUtils::HasExtension(name, ".json")) {
+		throw std::invalid_argument(
+		    filter_ == FileDialogFilter::MODEL   ? "Choose a GLB, glTF or OBJ model."
+		    : filter_ == FileDialogFilter::IMAGE ? "Choose a PNG, JPEG, BMP, TIFF or GIF image."
+		    : filter_ == FileDialogFilter::AUDIO ? "Choose a WAV audio file."
+		                                         : "Use a .json file name.");
+	}
+
+	// ファイル名だけなら、Goを押す前でもFolder欄の場所を使う。
+	const auto folder = absoluteInput ? input.parent_path() : ReadFolderInput();
+	if (!folder.is_absolute() || folder.native().find(L'\0') != std::wstring::npos) {
+		throw std::invalid_argument("Enter an absolute folder path.");
+	}
+	return folder / name;
+}
+
 bool FileDialog::AcceptSelection() {
 	try {
 		error_.clear();
@@ -496,43 +540,12 @@ bool FileDialog::AcceptSelection() {
 			return true;
 		}
 
-		const auto input = PathUtils::FromPathInput(fileName_);
-		const bool absoluteInput = input.is_absolute();
-		auto name = absoluteInput ? input.filename() : input;
-
-		if (!PathUtils::IsValidFileName(name)) {
-			error_ = "Enter a valid file name.";
-			return false;
+		const auto path = ReadFilePath();
+		const auto folder = std::filesystem::canonical(path.parent_path());
+		if (!std::filesystem::is_directory(folder)) {
+			throw std::invalid_argument("Choose an existing folder.");
 		}
-
-		if (mode_ != FileDialogMode::OPEN && !name.has_extension()) {
-			name += filter_ == FileDialogFilter::GAME_CONFIG ? ".json"
-			                                                 : ".scene.json";
-		}
-
-		if (!PathUtils::IsValidFileName(name)) {
-			error_ = "The complete file name is too long or invalid.";
-			return false;
-		}
-
-		if (filter_ == FileDialogFilter::MODEL   ? !PathUtils::IsModelFile(name)
-		    : filter_ == FileDialogFilter::IMAGE ? !PathUtils::IsImageFile(name)
-		    : filter_ == FileDialogFilter::AUDIO
-		        ? !PathUtils::HasExtension(name, ".wav")
-		        : !PathUtils::HasExtension(name, ".json")) {
-			error_ = filter_ == FileDialogFilter::MODEL
-			             ? "Choose a GLB, glTF or OBJ model."
-			         : filter_ == FileDialogFilter::IMAGE
-			             ? "Choose a PNG, JPEG, BMP, TIFF or GIF image."
-			         : filter_ == FileDialogFilter::AUDIO
-			             ? "Choose a WAV audio file."
-			             : "Use a .json file name.";
-			return false;
-		}
-
-		// ファイル名だけなら、Goを押す前でもFolder欄の場所を使う。
-		auto candidate = (absoluteInput ? std::filesystem::canonical(input.parent_path())
-		                                : ReadDirectory()) / name;
+		auto candidate = folder / path.filename();
 
 		std::error_code error;
 		const bool exists = std::filesystem::exists(candidate, error);
@@ -556,7 +569,7 @@ bool FileDialog::AcceptSelection() {
 		selectedPath_.swap(candidate);
 
 		if (mode_ != FileDialogMode::OPEN && exists) {
-			if (absoluteInput) {
+			if (PathUtils::FromPathInput(fileName_).is_absolute()) {
 				// 別名を提案するときも、貼り付けたパスの親フォルダを使う。
 				ChangeDirectory(selectedPath_.parent_path());
 				fileName_ = PathUtils::ToUtf8(selectedPath_.filename());

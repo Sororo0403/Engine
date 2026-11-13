@@ -117,6 +117,11 @@ class FileDialog {
 	bool AcceptSelection();
 
 	/// <summary>
+	/// 入力したファイル名とフォルダからパスを組み立てる。ファイルの存在は確認しない
+	/// </summary>
+	std::filesystem::path ReadFilePath() const;
+
+	/// <summary>
 	/// Folder欄の絶対パスを確認する。ファイル・フォルダの選択と新規フォルダ作成に共通の基準を使う
 	/// </summary>
 	/// <returns>存在するフォルダの正規パス。無効な指定は例外</returns>
