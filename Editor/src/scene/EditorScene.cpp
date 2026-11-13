@@ -365,7 +365,7 @@ bool EditorScene::Update(float deltaTime) {
 			errorHasPlayLog_ = true;
 			errorReplayPath_ = retryPath;
 			errorReplayCameraOverride_ = retryLoaded ? 0 : playInitialCameraOverride_;
-			if (!isEditingScene && !playMode_.IsPlaying()) {
+			if (!isEditingScene) {
 				errorScenePath_ = retryPath;
 				errorObjectId_ = invalidObject;
 			}
@@ -5641,12 +5641,17 @@ void EditorScene::UpdateDialogs() {
 				std::error_code status;
 				if (std::filesystem::is_regular_file(errorScenePath_, status)) {
 					ui_.SameLine();
-					if (ui_.Button("Open Play Scene")) {
+					const bool playing = playMode_.IsPlaying();
+					if (ui_.Button(playing ? "Stop and Open Play Scene" : "Open Play Scene")) {
 						pendingOpenPath_ = std::move(errorScenePath_);
 						const auto object =
 						    std::exchange(errorObjectId_, SceneObjectId{0});
 						ui_.CloseCurrentPopup();
 						ui_.EndPopup();
+						if (playing) {
+							playMode_.Stop();
+							ClearPlaySelection();
+						}
 						stage_ = DialogStage::IDLE;
 						StartAction(EditorAction::OPEN_PATH, object);
 						return;
