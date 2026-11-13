@@ -226,6 +226,7 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 		}
 		const auto search = StringConversion::Utf8ToWide(search_);
 		std::filesystem::path nextDirectory;
+		std::filesystem::path openFile;
 
 		const bool drawEntries = ui.BeginChild("Files", 600.0f, 240.0f);
 
@@ -262,7 +263,13 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 				    searchProjectScenes_ ? PathUtils::ToUtf8(entry.path) : name;
 				const bool selected = !entry.directory && fileName_ == fileInput;
 
-				if (ui.Selectable(label.c_str(), selected)) {
+				const bool clicked = ui.Selectable(label.c_str(), selected);
+				if (!entry.directory && mode_ == FileDialogMode::OPEN &&
+				    ImGui::IsItemHovered() &&
+				    ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+					openFile = entry.path;
+				}
+				if (clicked) {
 					if (entry.directory) {
 						nextDirectory = entry.path;
 					} else {
@@ -315,7 +322,11 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 		                     : mode_ == FileDialogMode::SAVE_COPY ? "Save Copy"
 		                                                          : "Save";
 
-		if (ui.Button(button) && AcceptSelection()) {
+		const bool submitted = ui.Button(button);
+		if (!openFile.empty()) {
+			fileName_ = PathUtils::ToUtf8(openFile);
+		}
+		if ((submitted || !openFile.empty()) && AcceptSelection()) {
 			result = FileDialogResult::ACCEPTED;
 		}
 	}
