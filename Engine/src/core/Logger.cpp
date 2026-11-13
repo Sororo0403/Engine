@@ -123,8 +123,11 @@ void Logger::Write(LogLevel level, std::string_view message,
 	}
 
 	++revision_;
-	if (capturePlayError_ && level == LogLevel::LOG_ERROR && !firstPlayError_) {
-		firstPlayError_ = entries_.back();
+	if (capturePlayError_ && level == LogLevel::LOG_ERROR) {
+		latestPlayError_ = entries_.back();
+		if (!firstPlayError_) {
+			firstPlayError_ = entries_.back();
+		}
 	}
 
 	// Visual Studioの出力ウィンドウへ出力する
@@ -159,7 +162,7 @@ void Logger::ClearEntries() {
 	const std::scoped_lock lock(mutex_);
 	entries_.clear();
 	firstPlayError_.reset();
-	capturePlayError_ = false;
+	latestPlayError_.reset();
 	++revision_;
 }
 
@@ -171,6 +174,7 @@ std::uint64_t Logger::GetEntryBoundary() {
 std::uint64_t Logger::BeginPlayLog() {
 	const std::scoped_lock lock(mutex_);
 	firstPlayError_.reset();
+	latestPlayError_.reset();
 	capturePlayError_ = true;
 	return revision_;
 }
@@ -178,4 +182,9 @@ std::uint64_t Logger::BeginPlayLog() {
 std::optional<LogEntry> Logger::GetFirstPlayError() {
 	const std::scoped_lock lock(mutex_);
 	return firstPlayError_;
+}
+
+std::optional<LogEntry> Logger::GetLatestPlayError() {
+	const std::scoped_lock lock(mutex_);
+	return latestPlayError_;
 }

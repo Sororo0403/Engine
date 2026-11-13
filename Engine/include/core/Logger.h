@@ -77,6 +77,11 @@ class Logger {
 	static std::optional<LogEntry> GetFirstPlayError();
 
 	/// <summary>
+	/// 直近の試遊で最後に出たエラーを取得する。ログ一覧の保持上限とは独立する
+	/// </summary>
+	static std::optional<LogEntry> GetLatestPlayError();
+
+	/// <summary>
 	/// 参照用の直近ログをクリアする。ファイルの出力内容は保持する
 	/// </summary>
 	static void ClearEntries();
@@ -95,6 +100,7 @@ class Logger {
 	inline static std::mutex mutex_;
 	inline static std::deque<LogEntry> entries_;
 	inline static std::optional<LogEntry> firstPlayError_;
+	inline static std::optional<LogEntry> latestPlayError_;
 	inline static bool capturePlayError_ = false;
 	inline static std::uint64_t revision_ = 1;
 	static constexpr std::size_t kMaximumEntries = 1000;

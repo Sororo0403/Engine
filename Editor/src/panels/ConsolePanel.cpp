@@ -154,21 +154,17 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 	ImGui::SetItemTooltip("Search message text and source file paths.");
 	Logger::ReadEntries(revision_, entries_);
 	const auto firstPlayError = Logger::GetFirstPlayError();
-	const auto latestPlayError =
-	    std::find_if(entries_.rbegin(), entries_.rend(), [this](const auto &entry) {
-		    return playStartBoundary_ != 0 && entry.id > playStartBoundary_ &&
-		           entry.level == LogLevel::LOG_ERROR;
-	    });
+	const auto latestPlayError = Logger::GetLatestPlayError();
 	ui.BeginDisabled(!firstPlayError);
 	const bool clickedFirstPlayError = ui.Button("First Play Error");
 	ui.EndDisabled();
 	ui.SameLine();
-	ImGui::BeginDisabled(latestPlayError == entries_.rend());
+	ImGui::BeginDisabled(!latestPlayError);
 	const bool clickedLatestPlayError = ui.Button("Latest Play Error");
 	ImGui::EndDisabled();
 	const LogEntry *jumpError = nullptr;
 	if (std::exchange(latestPlayErrorRequested_, false) || clickedLatestPlayError) {
-		if (latestPlayError != entries_.rend()) {
+		if (latestPlayError) {
 			jumpError = &*latestPlayError;
 		}
 	} else if (clickedFirstPlayError && firstPlayError) {
@@ -293,9 +289,10 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 	    });
 
 	const LogEntry *selected = found != entries_.end() ? &*found : nullptr;
-	const bool retained = !selected && firstPlayError && firstPlayError->id == selectedId_;
-	if (retained) {
+	if (!selected && firstPlayError && firstPlayError->id == selectedId_) {
 		selected = &*firstPlayError;
+	} else if (!selected && latestPlayError && latestPlayError->id == selectedId_) {
+		selected = &*latestPlayError;
 	}
 	if (!selected || !MatchesFilter(*selected)) {
 		selectedId_ = 0;
@@ -334,8 +331,8 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 			ui.SameLine();
 			ui.Text(std::format("[{}] {}", selected->timestamp,
 			                    LevelName(selected->level)));
-			if (retained) {
-				ui.Text("First Play Error (outside recent messages)");
+			if (found == entries_.end()) {
+				ui.Text("Play error (outside recent messages)");
 			}
 			if (!selected->sourcePath.empty()) {
 				auto location = PathUtils::ToUtf8(selected->sourcePath);
