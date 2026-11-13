@@ -578,11 +578,20 @@ bool EditorScene::Update(float deltaTime) {
 	const auto consoleScript = consolePanel_.Draw(
 	    ui_, !IsBusy(), false, replay ? replay->logId : 0,
 	    replay ? replay->path : std::filesystem::path{},
-	    replay ? replay->scriptPath : std::filesystem::path{});
+	    replay ? replay->scriptPath : std::filesystem::path{},
+	    replay ? std::string_view{replay->inputAction} : std::string_view{});
 	if (consoleScript.retryPlay && playFailureReplay_ &&
 	    consoleScript.logId == playFailureReplay_->logId) {
 		const auto retry = *playFailureReplay_;
 		StartPlay(retry.path, retry.camera);
+		UpdateDialogs();
+		return true;
+	}
+	if (consoleScript.editInput && replay && consoleScript.logId == replay->logId &&
+	    !replay->inputAction.empty() && !playMode_.IsPlaying()) {
+		FinishEdit();
+		gameSettingsDialog_.Show(exportConfig_, project_.GetRoot(), {}, replay->inputAction);
+		stage_ = DialogStage::EDIT_CONSOLE_PLAY_INPUT;
 		UpdateDialogs();
 		return true;
 	}
@@ -5520,9 +5529,12 @@ void EditorScene::UpdateDialogs() {
 	}
 	case DialogStage::GAME_SETTINGS:
 	case DialogStage::EDIT_PLAY_INPUT:
+	case DialogStage::EDIT_CONSOLE_PLAY_INPUT:
 	case DialogStage::EDIT_EXPORT_INPUT: {
 		const bool fromExport = stage_ == DialogStage::EDIT_EXPORT_INPUT;
-		const bool fromPlay = stage_ == DialogStage::EDIT_PLAY_INPUT;
+		const bool fromPlayError = stage_ == DialogStage::EDIT_PLAY_INPUT;
+		const bool fromConsole = stage_ == DialogStage::EDIT_CONSOLE_PLAY_INPUT;
+		const bool fromPlay = fromPlayError || fromConsole;
 		const auto result = gameSettingsDialog_.Draw(ui_, fromPlay);
 
 		if (result == GameSettingsResult::ACCEPTED) {
@@ -5559,7 +5571,13 @@ void EditorScene::UpdateDialogs() {
 				}
 				exportDialog_.Reopen();
 				stage_ = DialogStage::EXPORT_GAME;
-			} else if (fromPlay) {
+			} else if (fromConsole) {
+				stage_ = DialogStage::IDLE;
+				if (result == GameSettingsResult::ACCEPTED && playFailureReplay_) {
+					const auto retry = *playFailureReplay_;
+					StartPlay(retry.path, retry.camera);
+				}
+			} else if (fromPlayError) {
 				if (result == GameSettingsResult::ACCEPTED && errorReplayPath_) {
 					const auto path = *errorReplayPath_;
 					stage_ = DialogStage::IDLE;
@@ -6086,7 +6104,7 @@ void EditorScene::LogPlayFailure() {
 		    (!editingPath.empty() && PathUtils::IsSameFile(*errorReplayPath_, editingPath));
 		playFailureReplay_ = PlayFailureReplay{
 		    logId, followsEditingScene ? editingPath : *errorReplayPath_,
-		    errorReplayCameraOverride_, followsEditingScene, errorScriptPath_};
+		    errorReplayCameraOverride_, followsEditingScene, errorScriptPath_, errorInputAction_};
 	}
 }
 

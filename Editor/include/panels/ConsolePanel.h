@@ -4,6 +4,7 @@
 
 #include <cstdint>
 #include <string>
+#include <string_view>
 #include <vector>
 
 class ImGuiSystem;
@@ -19,6 +20,7 @@ class ConsolePanel {
 		std::uint64_t logId = 0;
 		bool retryPlay = false;
 		std::filesystem::path diagnosticPath;
+		bool editInput = false;
 	};
 
 	/// <summary>
@@ -45,11 +47,13 @@ class ConsolePanel {
 	/// <param name="retryPlayLogId">再試遊を許可するエラーログのID。0なら無効</param>
 	/// <param name="retryScene">再試遊の開始先。空なら編集中のシーン</param>
 	/// <param name="retryScript">移動後のLuaパス。空ならログのパスを使う</param>
+	/// <param name="retryInput">直近の試遊失敗で修正が必要な名前付き入力。空なら編集操作を表示しない</param>
 	/// <returns>Luaの編集または再試遊の要求。操作がなければ空</returns>
 	Request Draw(const ImGuiSystem &ui, bool canEditScript = false,
 	             bool stopPlayToEdit = false, std::uint64_t retryPlayLogId = 0,
 	             const std::filesystem::path &retryScene = {},
-	             const std::filesystem::path &retryScript = {});
+	             const std::filesystem::path &retryScript = {},
+	             std::string_view retryInput = {});
 
   private:
 	/// <summary>

@@ -106,7 +106,8 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
                                          bool stopPlayToEdit,
                                          std::uint64_t retryPlayLogId,
                                          const std::filesystem::path &retryScene,
-                                         const std::filesystem::path &retryScript) {
+                                         const std::filesystem::path &retryScript,
+                                         std::string_view retryInput) {
 	if (!open_) {
 		return {};
 	}
@@ -405,6 +406,15 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 			}
 
 			if (!stopPlayToEdit && selected->id == retryPlayLogId) {
+				if (!retryInput.empty()) {
+					ui.SameLine();
+					if (ui.Button("Edit Input Binding")) {
+						request.logId = selected->id;
+						request.editInput = true;
+					}
+					ImGui::SetItemTooltip("Edit the input binding for %.*s.",
+					                      static_cast<int>(retryInput.size()), retryInput.data());
+				}
 				ui.SameLine();
 				if (ui.Button("Play Scene Again")) {
 					request.logId = selected->id;

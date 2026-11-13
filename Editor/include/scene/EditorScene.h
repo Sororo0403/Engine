@@ -281,6 +281,7 @@ class EditorScene final : public IScene {
 		EDIT_SCENE_CHECK_SCRIPT,
 		EDIT_PLAY_SCRIPT,
 		EDIT_PLAY_INPUT,
+		EDIT_CONSOLE_PLAY_INPUT,
 		EDIT_EXPORT_SCRIPT,
 		EDIT_EXPORT_INPUT,
 		EDIT_ANIMATION_CLIP,
@@ -1028,6 +1029,7 @@ class EditorScene final : public IScene {
 		SceneObjectId camera;
 		bool followsEditingScene;
 		std::filesystem::path scriptPath;
+		std::string inputAction;
 	};
 	std::optional<PlayFailureReplay> playFailureReplay_;
 	SceneObjectId playInitialCameraOverride_ = 0;
