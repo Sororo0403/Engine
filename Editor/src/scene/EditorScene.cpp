@@ -5679,11 +5679,9 @@ void EditorScene::UpdateDialogs() {
 					    "Retry after restoring the file to the version opened in the editor.");
 				}
 				ui_.SameLine();
-			}
-
-			if (sceneSaveConflict_) {
-				if (pendingAction_ != EditorAction::NONE &&
-				    ui_.Button("Save As and Continue...")) {
+				if (ui_.Button(pendingAction_ == EditorAction::NONE
+				                   ? "Save As..."
+				                   : "Save As and Continue...")) {
 					try {
 						fileDialog_.Show(FileDialogMode::SAVE, GetSceneCopyPath());
 						ui_.CloseCurrentPopup();
@@ -5694,9 +5692,10 @@ void EditorScene::UpdateDialogs() {
 						errorActionMessage_ = error.what();
 					}
 				}
-				if (pendingAction_ != EditorAction::NONE) {
-					ui_.SameLine();
-				}
+				ui_.SameLine();
+			}
+
+			if (sceneSaveConflict_) {
 				if (ui_.Button("Save Copy and Reload...")) {
 					ui_.CloseCurrentPopup();
 					ui_.EndPopup();
