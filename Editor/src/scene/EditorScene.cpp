@@ -5667,16 +5667,18 @@ void EditorScene::UpdateDialogs() {
 					                                     errorActionMessage_);
 				}
 				ui_.SameLine();
-				if (!sceneSaveConflict_ && ui_.Button("Retry Save")) {
+				if (ui_.Button("Retry Save")) {
 					ui_.CloseCurrentPopup();
 					ui_.EndPopup();
 					stage_ = DialogStage::IDLE;
 					StartSave(false);
 					return;
 				}
-				if (!sceneSaveConflict_) {
-					ui_.SameLine();
+				if (sceneSaveConflict_) {
+					ImGui::SetItemTooltip(
+					    "Retry after restoring the file to the version opened in the editor.");
 				}
+				ui_.SameLine();
 			}
 
 			if (sceneSaveConflict_) {
