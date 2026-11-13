@@ -73,9 +73,47 @@ bool HierarchyFilter::Matches(SceneObjectId id,
 		return object.character && !object.collider;
 	case Component::COLOR_TINT:
 		return object.colorTint.has_value();
-	default:
-		return false;
+	case Component::ANIMATION_PLAYER:
+		return object.animationClip.has_value();
+	case Component::ANIMATOR:
+		return object.animator.has_value();
+	case Component::AUDIO_LISTENER:
+		return object.audioListener.has_value();
+	case Component::AUDIO_SOURCE:
+		return object.audioSource.has_value();
+	case Component::CANVAS:
+		return object.canvas.has_value();
+	case Component::DIRECTIONAL_LIGHT:
+		return object.directionalLight.has_value();
+	case Component::LUA_SCRIPT:
+		return object.script.has_value();
+	case Component::MOTION_PATH:
+		return object.motionPath.has_value();
+	case Component::PARTICLE_EMITTER:
+		return object.particleEmitter.has_value();
+	case Component::POINT_LIGHT:
+		return object.pointLight.has_value();
+	case Component::PREFAB_INSTANCE:
+		return object.prefabLink.has_value();
+	case Component::RECT_TRANSFORM:
+		return object.rectTransform.has_value();
+	case Component::RIGID_BODY:
+		return object.rigidBody.has_value();
+	case Component::SPOT_LIGHT:
+		return object.spotLight.has_value();
+	case Component::TRANSFORM_ANIMATION:
+		return object.transformAnimation.has_value();
+	case Component::TRIGGER_ACTIONS:
+		return object.triggerActions.has_value();
+	case Component::UI_BUTTON:
+		return object.button.has_value();
+	case Component::UI_IMAGE:
+		return object.image.has_value();
+	case Component::UI_TEXT:
+		return object.text.has_value();
 	}
+
+	return false;
 }
 
 void HierarchyFilter::Clear() noexcept {

@@ -105,7 +105,7 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 	ui.InputText("Search", filter_.text);
 	ImGui::SetItemTooltip(
-	    "Search by name, or type id:42 for an exact object ID.");
+	    "Search by name, tag:Player for an exact tag, or id:42 for an exact ID.");
 
 	ui.SameLine();
 	ui.BeginDisabled(filter_.text.empty());
@@ -119,15 +119,68 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 	ImGui::Checkbox("Hidden only", &filter_.hiddenOnly);
 	ImGui::Checkbox("Scene picking disabled only", &pickingDisabledOnly_);
-	int component = static_cast<int>(filter_.component);
+	using Component = HierarchyFilter::Component;
+	struct ComponentOption {
+		Component component;
+		const char *label;
+	};
+	constexpr ComponentOption options[] = {
+	    {Component::ALL, "All objects"},
+	    {Component::ANIMATION_PLAYER, "Animation Player"},
+	    {Component::ANIMATOR, "Animator"},
+	    {Component::AUDIO_LISTENER, "Audio Listener"},
+	    {Component::AUDIO_SOURCE, "Audio Source"},
+	    {Component::CAMERA, "Camera"},
+	    {Component::CANVAS, "Canvas"},
+	    {Component::CHARACTER, "Character Controller"},
+	    {Component::BOX_COLLIDER, "Collider"},
+	    {Component::COLOR_TINT, "Color Tint"},
+	    {Component::DIRECTIONAL_LIGHT, "Directional Light"},
+	    {Component::FOLLOW_CAMERA, "Follow Camera"},
+	    {Component::LUA_SCRIPT, "Lua Script"},
+	    {Component::MESH, "Mesh"},
+	    {Component::MESH_RENDERER, "Mesh Renderer"},
+	    {Component::MOTION_PATH, "Motion Path"},
+	    {Component::PARTICLE_EMITTER, "Particle Emitter"},
+	    {Component::POINT_LIGHT, "Point Light"},
+	    {Component::PREFAB_INSTANCE, "Prefab Instance"},
+	    {Component::RECT_TRANSFORM, "Rect Transform"},
+	    {Component::RESPAWN, "Respawn"},
+	    {Component::RIGID_BODY, "Rigid Body"},
+	    {Component::SPOT_LIGHT, "Spot Light"},
+	    {Component::TRANSFORM_ANIMATION, "Transform Animation"},
+	    {Component::TRIGGER_ACTIONS, "Trigger Actions"},
+	    {Component::UI_BUTTON, "UI Button"},
+	    {Component::UI_IMAGE, "UI Image"},
+	    {Component::UI_TEXT, "UI Text"},
+	    {Component::PRIMARY_CAMERA, "Primary Camera"},
+	    {Component::CHARACTERS_WITHOUT_COLLIDER, "Characters without Collider"},
+	    {Component::INCOMPLETE_RENDERING, "Incomplete Mesh / Renderer"},
+	    {Component::MODELS_WITHOUT_COLLIDER, "Models without Collider"},
+	};
+	const char *componentLabel = options[0].label;
+	for (const auto &option : options) {
+		if (option.component == filter_.component) {
+			componentLabel = option.label;
+			break;
+		}
+	}
 
-	if (ImGui::Combo(
-	        "Component", &component,
-	        "All objects\0Collider\0Models without Collider\0Character "
-	        "Controller\0Camera\0Follow Camera\0Respawn\0Color "
-	        "Tint\0Mesh\0Mesh Renderer\0Primary Camera\0Incomplete Mesh / "
-	        "Renderer\0Characters without Collider\0")) {
-		filter_.component = static_cast<HierarchyFilter::Component>(component);
+	if (ImGui::BeginCombo("Component", componentLabel, ImGuiComboFlags_HeightLarge)) {
+		for (const auto &option : options) {
+			if (option.component == Component::PRIMARY_CAMERA) {
+				ImGui::Separator();
+			}
+
+			const bool selected = option.component == filter_.component;
+			if (ImGui::Selectable(option.label, selected)) {
+				filter_.component = option.component;
+			}
+			if (selected) {
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
 	}
 
 	int sort = static_cast<int>(sortMode_);
