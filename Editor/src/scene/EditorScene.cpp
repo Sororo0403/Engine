@@ -577,6 +577,7 @@ bool EditorScene::Update(float deltaTime) {
 	    history.GetCurrentStateId());
 	const bool hasCheckRequest =
 	    !checkedRequest.objectIds.empty() || !checkedRequest.scenePath.empty();
+	SceneObjectId sceneOpenObject = 0;
 
 	if (!wasBusy && !checkedRequest.assetPath.empty()) {
 		assetsPanel_.RequestReveal(checkedRequest.assetPath);
@@ -866,6 +867,9 @@ bool EditorScene::Update(float deltaTime) {
 		if (!requestedScene.empty() && !IsBusy() &&
 		    action == EditorAction::NONE &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
+			sceneOpenObject = !checkedRequest.scenePath.empty()
+			                      ? checkedRequest.destinationObjectId
+			                      : inspectorPanel_.GetSceneOpenObject();
 			const bool sameScene =
 			    (!checkedRequest.scenePath.empty() || !inspectorScene.empty()) &&
 			    !document_.GetFilePath().empty() &&
@@ -874,9 +878,9 @@ bool EditorScene::Update(float deltaTime) {
 				// 保存確認が終わるまで、表示中の選択が変わっても開く対象を保持する。
 				pendingOpenPath_ = requestedScene;
 				action = EditorAction::OPEN_PATH;
-			} else if (checkedRequest.destinationObjectId != 0) {
+			} else if (sceneOpenObject != 0) {
 				FinishEdit();
-				RevealReferenceObject(checkedRequest.destinationObjectId);
+				RevealReferenceObject(sceneOpenObject);
 			}
 		}
 
@@ -1284,7 +1288,7 @@ bool EditorScene::Update(float deltaTime) {
 
 			if (action != EditorAction::NONE) {
 				StartAction(action, action == EditorAction::OPEN_PATH
-				                        ? checkedRequest.destinationObjectId : 0);
+				                        ? sceneOpenObject : 0);
 			}
 		}
 	}

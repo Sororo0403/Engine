@@ -130,6 +130,11 @@ class InspectorPanel {
 	}
 
 	/// <summary>
+	/// 開くシーンで選択する物体を取得する。指定なしは0
+	/// </summary>
+	SceneObjectId GetSceneOpenObject() const { return sceneOpenObject_; }
+
+	/// <summary>
 	/// 遷移先の場所を表示する要求を取得する
 	/// </summary>
 	const std::filesystem::path &GetSceneLocationRequest() const {
@@ -244,6 +249,7 @@ class InspectorPanel {
 	VisibilityRequest visibilityRequest_;
 	std::filesystem::path assetRevealPath_;
 	std::filesystem::path sceneOpenRequest_;
+	SceneObjectId sceneOpenObject_ = 0;
 	std::filesystem::path sceneLocationRequest_;
 	TriggerActionsInspector triggerActionsInspector_;
 	ObjectRequest objectRequest_;

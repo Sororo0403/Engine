@@ -168,6 +168,7 @@ bool TriggerActionsInspector::Draw(
     const ImGuiSystem &ui, const Scene &scene, SceneObjectId id,
     SceneObject &object, EditorHistory &history,
     std::filesystem::path &sceneOpenRequest,
+    SceneObjectId &sceneOpenObject,
     std::filesystem::path &sceneLocationRequest,
     std::span<const std::filesystem::path> scenes,
     std::span<const GameActionBinding> inputBindings) {
@@ -558,6 +559,7 @@ bool TriggerActionsInspector::Draw(
 				ui.BeginDisabled(action.scenePath.empty());
 				if (ui.Button("Open Scene")) {
 					sceneOpenRequest = action.scenePath;
+					sceneOpenObject = 0;
 				}
 				ui.SameLine();
 				if (ui.Button("Show Scene in Explorer")) {
@@ -621,16 +623,17 @@ bool TriggerActionsInspector::Draw(
 				if (ui.Button("Check Destination")) {
 					Scene destination;
 					std::string message;
+					SceneObjectId invalidObject = 0;
 					if (!SceneSerializer::Load(destination, action.scenePath)) {
 						message = "Could not read the destination scene.";
 					} else if (SceneSimulation::ValidateArrival(
-					               destination, action.arrivalTag, message)) {
+					               destination, action.arrivalTag, message, {}, &invalidObject)) {
 						message = action.arrivalTag.empty()
 						              ? "Destination is valid with its saved placement."
 						              : "Tagged arrival is valid.";
 					}
 					arrivalCheck_ = ArrivalCheck{id, i, action.scenePath,
-					                             action.arrivalTag, std::move(message)};
+					                             action.arrivalTag, std::move(message), invalidObject};
 				}
 				ui.EndDisabled();
 				ImGui::SetItemTooltip(
@@ -640,6 +643,10 @@ bool TriggerActionsInspector::Draw(
 				    arrivalCheck_->path == action.scenePath &&
 				    arrivalCheck_->tag == action.arrivalTag) {
 					ImGui::TextWrapped("Last check: %s", arrivalCheck_->message.c_str());
+					if (arrivalCheck_->invalidObject != 0 && ui.Button("Show Destination Object")) {
+						sceneOpenRequest = arrivalCheck_->path;
+						sceneOpenObject = arrivalCheck_->invalidObject;
+					}
 				}
 			}
 
