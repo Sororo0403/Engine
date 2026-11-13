@@ -4,6 +4,7 @@
 #include <map>
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 class ImGuiSystem;
 class Scene;
@@ -44,6 +45,12 @@ class SceneCheckPanel {
 	/// <param name="current">開いたシーンのパス</param>
 	void OnSceneOpened(const std::filesystem::path &previous,
 	                   const std::filesystem::path &current);
+
+	/// <summary>
+	/// 移動したシーンに検索語を引き継ぎ、移動後の参照を再検査する
+	/// </summary>
+	void OnAssetsMoved(
+	    std::span<const std::pair<std::filesystem::path, std::filesystem::path>> moves);
 
 	/// <summary>
 	/// 現在の編集シーンの再生設定・モデル・材質・依存ファイルを検証し、全ての結果をまとめて置き換える

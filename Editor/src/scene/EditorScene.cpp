@@ -4570,6 +4570,7 @@ bool EditorScene::RelocateAssets(const AssetUsage::Moves &moves,
 		return false;
 	}
 	assetsPanel_.RelocateClipboard(moves);
+	sceneCheckPanel_.OnAssetsMoved(moves);
 	lastPlayScenePath_ = PathUtils::AfterMove(lastPlayScenePath_, moves);
 	if (playFailureReplay_ && !playFailureReplay_->path.empty()) {
 		playFailureReplay_->path = PathUtils::AfterMove(playFailureReplay_->path, moves);

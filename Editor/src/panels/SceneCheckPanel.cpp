@@ -46,6 +46,25 @@ void SceneCheckPanel::OnSceneOpened(const std::filesystem::path &previous,
 	checkRequested_ = open_;
 }
 
+void SceneCheckPanel::OnAssetsMoved(
+    std::span<const std::pair<std::filesystem::path, std::filesystem::path>> moves) {
+	// 移動先に過去の検索語があれば、実際に移動したシーンの検索語を優先する。
+	std::map<std::filesystem::path, std::string> movedFilters;
+	for (auto it = sceneFilters_.begin(); it != sceneFilters_.end();) {
+		auto destination = PathUtils::AfterMove(it->first, moves);
+		if (destination.native() == it->first.native()) {
+			++it;
+			continue;
+		}
+		movedFilters.insert_or_assign(std::move(destination), std::move(it->second));
+		it = sceneFilters_.erase(it);
+	}
+	for (auto &[path, filter] : movedFilters) {
+		sceneFilters_.insert_or_assign(path, std::move(filter));
+	}
+	checkRequested_ = open_;
+}
+
 void SceneCheckPanel::Check(const Scene &scene, const CameraPose &fallback,
                             std::span<const GameActionBinding> bindings) {
 	auto issues = SceneValidation::Inspect(scene, fallback);
