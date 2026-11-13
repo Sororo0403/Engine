@@ -105,7 +105,8 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
                                          bool canEditScript,
                                          bool stopPlayToEdit,
                                          std::uint64_t retryPlayLogId,
-                                         const std::filesystem::path &retryScene) {
+                                         const std::filesystem::path &retryScene,
+                                         const std::filesystem::path &retryScript) {
 	if (!open_) {
 		return {};
 	}
@@ -377,6 +378,8 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 	Request request;
 	if (drawDetails) {
 		if (selected) {
+			const auto &sourcePath = selected->id == retryPlayLogId && !retryScript.empty()
+			                             ? retryScript : selected->sourcePath;
 			const bool isLua = PathUtils::HasExtension(selected->sourcePath, ".lua");
 			const bool hasLuaDiagnostic = isLua && selected->level == LogLevel::LOG_ERROR;
 			if (ui.Button("Copy Message")) {
@@ -389,15 +392,16 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 				ui.SameLine();
 				ui.BeginDisabled(!canEditScript);
 				if (ui.Button(stopPlayToEdit ? "Stop and Edit Script" : "Edit Script")) {
-					request.path = selected->sourcePath;
+					request.path = sourcePath;
 					request.logId = selected->id;
 					if (hasLuaDiagnostic) {
 						request.diagnostic = selected->message;
+						request.diagnosticPath = selected->sourcePath;
 					}
 				}
 				ui.EndDisabled();
 				ImGui::SetItemTooltip("%s",
-				                      PathUtils::ToUtf8(selected->sourcePath).c_str());
+				                      PathUtils::ToUtf8(sourcePath).c_str());
 			}
 
 			if (!stopPlayToEdit && selected->id == retryPlayLogId) {
@@ -418,7 +422,7 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 				ui.Text("Play error (outside recent messages)");
 			}
 			if (!selected->sourcePath.empty()) {
-				auto location = PathUtils::ToUtf8(selected->sourcePath);
+				auto location = PathUtils::ToUtf8(sourcePath);
 				if (hasLuaDiagnostic) {
 					auto absolute = PathUtils::ResolveFromExecutable(selected->sourcePath);
 					absolute.make_preferred();
@@ -435,7 +439,7 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 				if (ui.Button("Show Source in Explorer")) {
 					sourceActionErrorId_ = selectedId_;
 					sourceActionError_.clear();
-					ShellUtils::RevealLocationInExplorer(selected->sourcePath,
+					ShellUtils::RevealLocationInExplorer(sourcePath,
 					                                    sourceActionError_);
 				}
 				ui.Text(location);

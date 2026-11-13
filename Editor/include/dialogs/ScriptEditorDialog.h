@@ -27,9 +27,11 @@ class ScriptEditorDialog {
 	/// <param name="path">実行ファイル基準または絶対参照</param>
 	/// <param name="error">失敗理由</param>
 	/// <param name="diagnostic">開いたときに表示位置を合わせるLuaエラー</param>
+	/// <param name="diagnosticPath">診断に記録された移動前のパス。空なら編集先のパスを使う</param>
 	/// <returns>true:表示予約成功 false:読み込み失敗</returns>
 	bool ShowEdit(const std::filesystem::path &path, std::string &error,
-	              std::string_view diagnostic = {});
+	              std::string_view diagnostic = {},
+	              const std::filesystem::path &diagnosticPath = {});
 	/// <summary>
 	/// 作成・編集ダイアログを表示する。構文エラーと外部変更時は元ファイルを保持する
 	/// </summary>

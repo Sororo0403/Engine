@@ -577,7 +577,8 @@ bool EditorScene::Update(float deltaTime) {
 	                         ? &*playFailureReplay_ : nullptr;
 	const auto consoleScript = consolePanel_.Draw(
 	    ui_, !IsBusy(), false, replay ? replay->logId : 0,
-	    replay ? replay->path : std::filesystem::path{});
+	    replay ? replay->path : std::filesystem::path{},
+	    replay ? replay->scriptPath : std::filesystem::path{});
 	if (consoleScript.retryPlay && playFailureReplay_ &&
 	    consoleScript.logId == playFailureReplay_->logId) {
 		const auto retry = *playFailureReplay_;
@@ -936,7 +937,9 @@ bool EditorScene::Update(float deltaTime) {
 			        ? scriptEditorDialog_.ShowEdit(
 			              scriptEdit, error, checkedRequest.scriptPath.empty()
 			                                     ? consoleScript.diagnostic
-			                                     : checkedRequest.scriptDiagnostic)
+			                                     : checkedRequest.scriptDiagnostic,
+			              checkedRequest.scriptPath.empty() ? consoleScript.diagnosticPath
+			                                                : std::filesystem::path{})
 			        : scriptEditorDialog_.ShowCreate(
 			              assets_.GetRootDirectory(),
 			              assetsPanel_.GetOpenDirectory(), error);
@@ -4740,8 +4743,9 @@ bool EditorScene::RelocateAssets(const AssetUsage::Moves &moves,
 	exportDialog_.FollowMovedScene(project_.GetRoot(), moves);
 	failedRestoredScene_ = PathUtils::AfterMove(failedRestoredScene_, moves);
 	lastPlayScenePath_ = PathUtils::AfterMove(lastPlayScenePath_, moves);
-	if (playFailureReplay_ && !playFailureReplay_->path.empty()) {
+	if (playFailureReplay_) {
 		playFailureReplay_->path = PathUtils::AfterMove(playFailureReplay_->path, moves);
+		playFailureReplay_->scriptPath = PathUtils::AfterMove(playFailureReplay_->scriptPath, moves);
 	}
 
 	clipboard_.Clear();
@@ -6014,7 +6018,7 @@ void EditorScene::LogPlayFailure() {
 		    (!editingPath.empty() && PathUtils::IsSameFile(*errorReplayPath_, editingPath));
 		playFailureReplay_ = PlayFailureReplay{
 		    logId, followsEditingScene ? editingPath : *errorReplayPath_,
-		    errorReplayCameraOverride_, followsEditingScene};
+		    errorReplayCameraOverride_, followsEditingScene, errorScriptPath_};
 	}
 }
 

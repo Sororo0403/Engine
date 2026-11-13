@@ -110,7 +110,8 @@ bool ScriptEditorDialog::ShowCreate(const std::filesystem::path &assets,
 
 bool ScriptEditorDialog::ShowEdit(const std::filesystem::path &path,
                                   std::string &error,
-                                  std::string_view diagnostic) {
+                                  std::string_view diagnostic,
+                                  const std::filesystem::path &diagnosticPath) {
 	std::string source;
 	if (!LuaScript::Read(path, source, error))
 		return false;
@@ -124,7 +125,8 @@ bool ScriptEditorDialog::ShowEdit(const std::filesystem::path &path,
 	confirmation_ = Confirmation::NONE;
 	pendingLine_ = 0;
 	if (!diagnostic.empty()) {
-		auto absolute = PathUtils::ResolveFromExecutable(path);
+		auto absolute = PathUtils::ResolveFromExecutable(
+		    diagnosticPath.empty() ? path : diagnosticPath);
 		absolute.make_preferred();
 		pendingLine_ = LuaScript::FindErrorLine(PathUtils::ToUtf8(absolute),
 		                                       diagnostic);

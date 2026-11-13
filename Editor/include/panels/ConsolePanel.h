@@ -18,6 +18,7 @@ class ConsolePanel {
 		std::string diagnostic;
 		std::uint64_t logId = 0;
 		bool retryPlay = false;
+		std::filesystem::path diagnosticPath;
 	};
 
 	/// <summary>
@@ -43,10 +44,12 @@ class ConsolePanel {
 	/// <param name="stopPlayToEdit">編集に移るときに試遊を停止するか</param>
 	/// <param name="retryPlayLogId">再試遊を許可するエラーログのID。0なら無効</param>
 	/// <param name="retryScene">再試遊の開始先。空なら編集中のシーン</param>
+	/// <param name="retryScript">移動後のLuaパス。空ならログのパスを使う</param>
 	/// <returns>Luaの編集または再試遊の要求。操作がなければ空</returns>
 	Request Draw(const ImGuiSystem &ui, bool canEditScript = false,
 	             bool stopPlayToEdit = false, std::uint64_t retryPlayLogId = 0,
-	             const std::filesystem::path &retryScene = {});
+	             const std::filesystem::path &retryScene = {},
+	             const std::filesystem::path &retryScript = {});
 
   private:
 	/// <summary>
