@@ -4486,6 +4486,14 @@ void EditorScene::DrawAssetReferences(bool recycle) {
 					continue;
 				}
 				ImGui::TextWrapped("%s", source.message.c_str());
+				if (recycle && source.startupScene && ui_.Button("Choose Startup Scene...")) {
+					ui_.EndChild();
+					ui_.CloseCurrentPopup();
+					ui_.EndPopup();
+					BrowseStartupScene();
+					stage_ = DialogStage::SELECT_RECYCLE_STARTUP_SCENE;
+					return;
+				}
 				if (source.editingScene || !source.scenePath.empty()) {
 					ImGui::PushID(static_cast<int>(i));
 					if (ui_.Button(source.editingScene ? "Show Object"
@@ -5339,8 +5347,10 @@ void EditorScene::UpdateDialogs() {
 	}
 
 	case DialogStage::SELECT_STARTUP_SCENE:
+	case DialogStage::SELECT_RECYCLE_STARTUP_SCENE:
 	case DialogStage::SELECT_EXPORT_STARTUP_SCENE: {
 		const bool fromExport = stage_ == DialogStage::SELECT_EXPORT_STARTUP_SCENE;
+		const bool fromRecycle = stage_ == DialogStage::SELECT_RECYCLE_STARTUP_SCENE;
 		const auto result = fileDialog_.Draw(ui_);
 		if (const auto search = fileDialog_.TakeProjectSearchChange()) {
 			preferences_.searchProjectScenes = *search;
@@ -5366,6 +5376,9 @@ void EditorScene::UpdateDialogs() {
 		if (fromExport) {
 			exportDialog_.Reopen();
 			stage_ = DialogStage::EXPORT_GAME;
+		} else if (fromRecycle) {
+			CheckAssetReferences(true);
+			stage_ = DialogStage::RECYCLE_ASSET;
 		}
 		return;
 	}

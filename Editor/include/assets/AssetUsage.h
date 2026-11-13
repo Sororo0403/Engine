@@ -27,6 +27,7 @@ struct Reference {
 	bool undoHistory = false;
 	// シーンとして開けないPrefabやモデルの参照元ファイル
 	std::filesystem::path sourcePath;
+	bool startupScene = false;
 };
 
 /// <summary>

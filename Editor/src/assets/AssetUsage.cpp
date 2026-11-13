@@ -256,8 +256,10 @@ std::vector<AssetUsage::Reference> Scan(
 	}
 
 	if (!visit && matches(startup)) {
-		usages.push_back({"Project startup scene (project.json): " +
-		                  PathUtils::ToUtf8(startup)});
+		usages.push_back({
+		    .message = "Project startup scene (project.json): " + PathUtils::ToUtf8(startup),
+		    .startupScene = true,
+		});
 	}
 
 	const auto openLabel = scenePath.empty()
