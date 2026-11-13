@@ -3418,6 +3418,12 @@ const Scene *EditorScene::PrepareGameExport(SceneDocument &startup,
 			return nullptr;
 		}
 		options.assetDirectories = assetSources_.ForScene(*scene);
+		// 配布画面のウィンドウ設定を保ち、入力などは現在のゲーム設定を使う。
+		auto config = exportConfig_;
+		config.title = std::move(options.config.title);
+		config.width = options.config.width;
+		config.height = options.config.height;
+		options.config = std::move(config);
 		options.startupScenePath = scene == &document_.GetScene()
 		                               ? document_.GetFilePath()
 		                               : startup.GetFilePath();
@@ -5504,7 +5510,9 @@ void EditorScene::UpdateDialogs() {
 
 		return;
 	}
-	case DialogStage::GAME_SETTINGS: {
+	case DialogStage::GAME_SETTINGS:
+	case DialogStage::EDIT_EXPORT_INPUT: {
+		const bool fromExport = stage_ == DialogStage::EDIT_EXPORT_INPUT;
 		const auto result = gameSettingsDialog_.Draw(ui_);
 
 		if (result == GameSettingsResult::ACCEPTED) {
@@ -5513,6 +5521,11 @@ void EditorScene::UpdateDialogs() {
 
 			if (!project_.GetRoot().empty() &&
 			    !project_.Save(settings, project_.GetStartupScene(), error)) {
+				if (fromExport) {
+					exportDialog_.Reopen("Could not save Game Settings: " + error);
+					stage_ = DialogStage::EXPORT_GAME;
+					return;
+				}
 				ShowError(std::move(error));
 				return;
 			}
@@ -5525,7 +5538,15 @@ void EditorScene::UpdateDialogs() {
 				assets_.Refresh();
 			}
 
-			stage_ = DialogStage::IDLE;
+			if (fromExport) {
+				if (result == GameSettingsResult::ACCEPTED) {
+					CheckGameExport(true);
+				}
+				exportDialog_.Reopen();
+				stage_ = DialogStage::EXPORT_GAME;
+			} else {
+				stage_ = DialogStage::IDLE;
+			}
 		}
 
 		return;
@@ -5581,6 +5602,12 @@ void EditorScene::UpdateDialogs() {
 			} else {
 				exportDialog_.Reopen("Could not open the script: " + error);
 			}
+			return;
+		}
+		if (result == GameExportResult::EDIT_ISSUE_INPUT) {
+			gameSettingsDialog_.Show(exportConfig_, project_.GetRoot(), {},
+			                         exportDialog_.GetSelectedIssue().inputAction);
+			stage_ = DialogStage::EDIT_EXPORT_INPUT;
 			return;
 		}
 		if (result == GameExportResult::REVEAL_ISSUE_ASSET) {

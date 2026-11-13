@@ -22,6 +22,8 @@ struct SceneValidationIssue {
 	SceneObjectId destinationObjectId = 0;
 	// 依存ファイルに問題がある場合、そのファイルを読み込むモデル本体。
 	std::filesystem::path modelPath;
+	// 名前付き入力の検査で見つかった、設定を修正する操作名。
+	std::string inputAction;
 };
 
 namespace SceneValidation {

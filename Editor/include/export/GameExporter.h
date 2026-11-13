@@ -53,6 +53,7 @@ struct GameExportIssue {
 	SceneObjectId transitionObjectId = 0;
 	// Luaを移動した場合も診断の行番号を読めるよう、出力時のパスを保持する。
 	std::filesystem::path scriptDiagnosticPath;
+	std::string inputAction;
 };
 
 namespace GameExporter {

@@ -242,6 +242,7 @@ void GameExportDialog::SetCheckResult(std::string message,
 			       issue.assetPath == previous.assetPath &&
 			       issue.locationPath == previous.locationPath &&
 			       issue.field == previous.field &&
+			       issue.inputAction == previous.inputAction &&
 			       issue.transitionScenePath == previous.transitionScenePath &&
 			       issue.transitionObjectId == previous.transitionObjectId;
 		};
@@ -547,6 +548,15 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 						result = GameExportResult::EDIT_ISSUE_SCRIPT;
 					}
 				}
+				if (!issue.inputAction.empty()) {
+					if (hasObject) {
+						ui.SameLine();
+					}
+					if (ui.Button("Edit Input Binding")) {
+						selectedIssue_ = i;
+						result = GameExportResult::EDIT_ISSUE_INPUT;
+					}
+				}
 				if (!issue.assetPath.empty()) {
 					const auto assetPath = PathUtils::ToUtf8(issue.assetPath);
 					std::error_code statusError;
@@ -648,6 +658,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 	const bool navigatingIssue = result == GameExportResult::OPEN_ISSUE ||
 	                             result == GameExportResult::OPEN_TRANSITION_SOURCE ||
 	                             result == GameExportResult::EDIT_ISSUE_SCRIPT ||
+	                             result == GameExportResult::EDIT_ISSUE_INPUT ||
 	                             result == GameExportResult::REVEAL_ISSUE_ASSET;
 	ui.SameLine();
 	const bool keepDraft = ui.Button("Keep Draft and Close");
@@ -758,11 +769,8 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 	    result == GameExportResult::OPEN_ISSUE ||
 	    result == GameExportResult::OPEN_TRANSITION_SOURCE ||
 	    result == GameExportResult::REVEAL_ISSUE_ASSET ||
-	    result == GameExportResult::EDIT_ISSUE_SCRIPT) {
-		resumeDraft_ = keepDraft || result == GameExportResult::OPEN_ISSUE ||
-		               result == GameExportResult::OPEN_TRANSITION_SOURCE ||
-		               result == GameExportResult::REVEAL_ISSUE_ASSET ||
-		               result == GameExportResult::EDIT_ISSUE_SCRIPT;
+	    navigatingIssue) {
+		resumeDraft_ = keepDraft || navigatingIssue;
 		ui.CloseCurrentPopup();
 	}
 

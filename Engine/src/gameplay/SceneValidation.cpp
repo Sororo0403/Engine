@@ -494,11 +494,13 @@ SceneValidation::InspectInputs(const Scene &scene,
 			        ? "does not exist in Game Settings"
 			        : "has no keyboard, mouse or gamepad binding";
 			issues.push_back(
-			    {id, std::format("Named input '{}' {}. Object {} (ID {}), "
+			    {.objectId = id,
+			     .message = std::format("Named input '{}' {}. Object {} (ID {}), "
 			                     "Trigger Action {}.",
 			                     name, problem,
 			                     object.name.empty() ? "Object" : object.name,
-			                     id, i + 1)});
+			                     id, i + 1),
+			     .inputAction = name});
 		}
 	}
 

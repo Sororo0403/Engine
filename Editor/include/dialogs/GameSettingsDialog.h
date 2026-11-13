@@ -19,9 +19,11 @@ class GameSettingsDialog {
 	/// <param name="config">変更前のゲーム設定</param>
 	/// <param name="directory">設定保存の初期フォルダ。空の場合は実行ファイルのフォルダ</param>
 	/// <param name="configuration">絶対パスまたは実行ファイル基準の相対パス。指定時は下書きへ読み込み、失敗時は現在値を残してエラーを表示する</param>
+	/// <param name="inputAction">検査から移動したときに表示する名前付き操作</param>
 	void Show(const GameConfig &config,
 	          const std::filesystem::path &directory = {},
-	          const std::filesystem::path &configuration = {});
+	          const std::filesystem::path &configuration = {},
+	          std::string inputAction = {});
 
 	/// <summary>
 	/// 編集用の値と設定の読み込み・保存を表示し、有効な値の適用か取り消しを受け付ける
@@ -73,6 +75,8 @@ class GameSettingsDialog {
 	bool cameraRelativeMovement_ = false;
 	bool gamepadEnabled_ = true;
 	std::string title_, error_;
+	std::string inputAction_;
+	bool focusInputAction_ = false;
 	int width_ = 1280;
 	int height_ = 720;
 	bool opening_ = false;

@@ -612,7 +612,8 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 	                             const fs::path &locationPath = {},
 	                             GameExportField field = GameExportField::NONE,
 	                             const fs::path &transitionScenePath = {},
-	                             SceneObjectId transitionObjectId = 0) {
+	                             SceneObjectId transitionObjectId = 0,
+	                             std::string inputAction = {}) {
 		if (!error.empty()) {
 			error += "\n\n";
 		}
@@ -620,7 +621,8 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 		if (issues) {
 			issues->push_back(
 			    {std::move(issue), scenePath, objectId, scriptPath, assetPath,
-			     locationPath, field, transitionScenePath, transitionObjectId});
+			     locationPath, field, transitionScenePath, transitionObjectId, {},
+			     std::move(inputAction)});
 		}
 	};
 	// 出力前に、同じ検査で独立して直せる問題をまとめる。
@@ -721,10 +723,12 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 		const auto reportObjectIssue = [&](std::string issue, const auto &entry,
 		                                   SceneObjectId id,
 		                                   const fs::path &scriptPath = {},
-		                                   const fs::path &assetPath = {}) {
+		                                   const fs::path &assetPath = {},
+		                                   std::string inputAction = {}) {
 			appendIssue(std::move(issue), entry.prefab ? fs::path{} : entry.source,
 			            entry.prefab || !entry.objects.contains(id) ? 0 : id,
-			            scriptPath, assetPath, entry.prefab ? entry.source : fs::path{});
+			            scriptPath, assetPath, entry.prefab ? entry.source : fs::path{},
+			            GameExportField::NONE, {}, 0, std::move(inputAction));
 		};
 
 		bool startupIsTarget = false;
@@ -904,7 +908,7 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 			for (const auto &inputIssue : inputIssues) {
 				reportObjectIssue(
 				    describe(inputIssue.objectId) + "\n" + inputIssue.message,
-				    entry, inputIssue.objectId);
+				    entry, inputIssue.objectId, {}, {}, inputIssue.inputAction);
 			}
 			SceneSimulation check;
 			std::string issue;

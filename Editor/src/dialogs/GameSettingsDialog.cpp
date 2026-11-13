@@ -10,13 +10,16 @@
 
 void GameSettingsDialog::Show(const GameConfig &config,
                               const std::filesystem::path &directory,
-                              const std::filesystem::path &configuration) {
+                              const std::filesystem::path &configuration,
+                              std::string inputAction) {
 	config_ = config;
 	title_ = config.title;
 	width_ = config.width;
 	height_ = config.height;
 	input_ = config.input;
 	actions_ = config.actions;
+	inputAction_ = std::move(inputAction);
+	focusInputAction_ = !inputAction_.empty();
 	cameraRelativeMovement_ = config.cameraRelativeMovement;
 	gamepadEnabled_ = config.gamepadEnabled;
 	lighting_ = config.lighting;
@@ -109,11 +112,33 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 	}
 
 	ImGui::SeparatorText("Named Input Actions");
+	const bool focusInputAction = std::exchange(focusInputAction_, false);
+	if (focusInputAction) {
+		ImGui::SetScrollHereY(0.0f);
+	}
+	if (!inputAction_.empty() &&
+	    std::ranges::find(actions_, inputAction_, &GameActionBinding::name) == actions_.end()) {
+		ImGui::TextWrapped("Missing action: %s", inputAction_.c_str());
+		const bool canAdd = actions_.size() < GameActionBinding::kMaximumCount &&
+		                    GameActionBinding::IsValidName(inputAction_);
+		ui.BeginDisabled(!canAdd);
+		if (ui.Button("Add Missing Action")) {
+			actions_.push_back({inputAction_});
+			focusInputAction_ = true;
+		}
+		ui.EndDisabled();
+	}
 
 	if (ImGui::BeginChild("NamedActions", {0, 200}, ImGuiChildFlags_Borders)) {
 		for (std::size_t i = 0; i < actions_.size();) {
 			ImGui::PushID(static_cast<int>(i));
 			auto &action = actions_[i];
+			if (!inputAction_.empty() && action.name == inputAction_) {
+				ui.Text("Action reported by export check");
+				if (focusInputAction) {
+					ImGui::SetScrollHereY(0.0f);
+				}
+			}
 			ui.InputText("Name", action.name);
 			if (ImGui::BeginCombo(
 			        "Keyboard",
