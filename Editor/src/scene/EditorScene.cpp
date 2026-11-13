@@ -873,7 +873,8 @@ bool EditorScene::Update(float deltaTime) {
 		}
 
 		const auto &inspectorScript = inspectorPanel_.GetScriptEditRequest();
-		const auto &scriptEdit = !consoleScript.path.empty() ? consoleScript.path
+		const auto &scriptEdit = !checkedRequest.scriptPath.empty() ? checkedRequest.scriptPath
+		                         : !consoleScript.path.empty() ? consoleScript.path
 		                         : !inspectorScript.empty() ? inspectorScript
 		                                                   : assetsPanel_.GetScriptEditRequest();
 		if ((assetsPanel_.IsScriptCreateRequested() || !scriptEdit.empty()) &&
@@ -883,14 +884,17 @@ bool EditorScene::Update(float deltaTime) {
 			std::string error;
 			const bool opened =
 			    !scriptEdit.empty()
-			        ? scriptEditorDialog_.ShowEdit(scriptEdit, error,
-			                                       consoleScript.diagnostic)
+			        ? scriptEditorDialog_.ShowEdit(
+			              scriptEdit, error, checkedRequest.scriptPath.empty()
+			                                     ? consoleScript.diagnostic
+			                                     : checkedRequest.scriptDiagnostic)
 			        : scriptEditorDialog_.ShowCreate(
 			              assets_.GetRootDirectory(),
 			              assetsPanel_.GetOpenDirectory(), error);
 			if (opened) {
-				stage_ = DialogStage::EDIT_SCRIPT;
-				if (playFailureReplay_ &&
+				stage_ = checkedRequest.scriptPath.empty() ? DialogStage::EDIT_SCRIPT
+				                                          : DialogStage::EDIT_SCENE_CHECK_SCRIPT;
+				if (checkedRequest.scriptPath.empty() && playFailureReplay_ &&
 				    consoleScript.logId == playFailureReplay_->logId) {
 					scriptReplayPath_ = playFailureReplay_->path;
 					scriptReplayCameraOverride_ = playFailureReplay_->camera;
@@ -4882,9 +4886,11 @@ void EditorScene::UpdateDialogs() {
 	}
 
 	case DialogStage::EDIT_SCRIPT:
+	case DialogStage::EDIT_SCENE_CHECK_SCRIPT:
 	case DialogStage::EDIT_PLAY_SCRIPT:
 	case DialogStage::EDIT_EXPORT_SCRIPT: {
 		const bool fromExport = stage_ == DialogStage::EDIT_EXPORT_SCRIPT;
+		const bool fromSceneCheck = stage_ == DialogStage::EDIT_SCENE_CHECK_SCRIPT;
 		const auto result =
 		    scriptEditorDialog_.Draw(ui_, stage_ == DialogStage::EDIT_PLAY_SCRIPT);
 
@@ -4903,6 +4909,9 @@ void EditorScene::UpdateDialogs() {
 		const bool playAfterSave = result == ScriptEditorDialog::Result::SAVED_AND_PLAY;
 		if (result == ScriptEditorDialog::Result::SAVED || playAfterSave) {
 			stage_ = DialogStage::IDLE;
+			if (fromSceneCheck) {
+				sceneCheckPanel_.Show();
+			}
 			if (!assets_.Refresh())
 				ShowError(assets_.GetError());
 			else {

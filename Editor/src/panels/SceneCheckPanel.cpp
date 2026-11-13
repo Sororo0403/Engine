@@ -264,6 +264,15 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 				ShellUtils::RevealLocationInExplorer(issue.assetPath, assetActionError_);
 			}
 			ImGui::SetItemTooltip("%s", path.c_str());
+			std::error_code status;
+			if (PathUtils::HasExtension(issue.assetPath, ".lua") &&
+			    std::filesystem::is_regular_file(issue.assetPath, status) &&
+			    ui.Button("Edit Script")) {
+				lastIssue_ = i;
+				requested = {};
+				requested.scriptPath = issue.assetPath;
+				requested.scriptDiagnostic = issue.message;
+			}
 		}
 
 		ImGui::PopID();

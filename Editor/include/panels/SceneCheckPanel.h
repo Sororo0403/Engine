@@ -20,6 +20,8 @@ class SceneCheckPanel {
 		bool frame = false;
 		bool inspect = false;
 		std::filesystem::path assetPath;
+		std::filesystem::path scriptPath;
+		std::string scriptDiagnostic;
 	};
 
 	/// <summary>

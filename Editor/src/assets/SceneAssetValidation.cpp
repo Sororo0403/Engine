@@ -167,12 +167,15 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 		if (object.script && !object.script->asset.empty()) {
 			add("Lua Script",
 			    inspect(object.script->asset, scripts, [](const auto &path) {
+				    auto absolute = PathUtils::ResolveFromExecutable(path);
+				    absolute.make_preferred();
 				    std::string source, error;
-				    if (!LuaScript::Read(path, source, error) ||
-				        !LuaScript::Validate(source, error))
+				    LuaScriptProgram program;
+				    if (!LuaScript::Read(absolute, source, error) ||
+				        !LuaScript::Compile(source, PathUtils::ToUtf8(absolute),
+				                            program, error))
 					    throw std::runtime_error(error);
-				    return std::vector<std::filesystem::path>{
-				        PathUtils::ResolveFromExecutable(path)};
+				    return std::vector<std::filesystem::path>{std::move(absolute)};
 			    }));
 		}
 
