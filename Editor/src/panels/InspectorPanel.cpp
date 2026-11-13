@@ -626,23 +626,43 @@ bool InspectorPanel::Draw(
 				for (const auto &track : assetClip.tracks)
 					slots.insert(track.target);
 				for (const auto slot : slots) {
+					const auto canBind = [&](const SceneObject &candidate) {
+						return std::ranges::all_of(
+						    assetClip.tracks, [&](const auto &track) {
+							    return track.target != slot || candidate.CanAnimate(track);
+						    });
+					};
 					const auto binding = std::ranges::find_if(player.bindings, [&](const auto &entry) {
 						return entry.first == slot;
 					});
 					const auto id = binding == player.bindings.end() ? 0 : binding->second;
 					const auto *target = scene.FindObject(id);
+					const bool incompatible = target && !canBind(*target);
+					std::string preview = "(None)";
+					if (target) {
+						preview = target->name.empty() ? "Object" : target->name;
+						if (incompatible) {
+							preview = "Incompatible: " + preview;
+						}
+					} else if (id != 0) {
+						preview = std::format("Missing object (ID {})", id);
+					}
 					ImGui::PushID(static_cast<int>(slot));
 					const auto field = std::format("Binding {}", slot);
-					if (ImGui::BeginCombo(field.c_str(), target ? target->name.c_str() : "(None)")) {
+					const bool chooseTarget = ImGui::BeginCombo(field.c_str(), preview.c_str());
+					if (incompatible) {
+						ImGui::SetItemTooltip(
+						    "%s\nThe target cannot animate every track in this binding.",
+						    preview.c_str());
+					} else if (!target && id != 0) {
+						ImGui::SetItemTooltip("%s", preview.c_str());
+					}
+					if (chooseTarget) {
 						if (ImGui::Selectable("None", id == 0) &&
 						    binding != player.bindings.end())
 							binding->second = 0;
 						for (const auto &[candidateId, candidate] : scene.GetObjects()) {
-							const bool compatible = std::ranges::all_of(
-							    assetClip.tracks, [&](const auto &track) {
-								    return track.target != slot || candidate.CanAnimate(track);
-							    });
-							if (!compatible)
+							if (!canBind(candidate))
 								continue;
 							const auto name = std::format("{}##{}", candidate.name, candidateId);
 							if (ImGui::Selectable(name.c_str(), candidateId == id)) {
