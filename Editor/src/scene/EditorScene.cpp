@@ -5362,6 +5362,24 @@ void EditorScene::UpdateDialogs() {
 				ui_.SameLine();
 			}
 
+			if (sceneSaveFailed_) {
+				if (ui_.Button("Show Save Location")) {
+					ShellUtils::RevealLocationInExplorer(document_.GetFilePath(),
+					                                     errorActionMessage_);
+				}
+				ui_.SameLine();
+				if (!sceneSaveConflict_ && ui_.Button("Retry Save")) {
+					ui_.CloseCurrentPopup();
+					ui_.EndPopup();
+					stage_ = DialogStage::IDLE;
+					StartSave(false);
+					return;
+				}
+				if (!sceneSaveConflict_) {
+					ui_.SameLine();
+				}
+			}
+
 			if (sceneSaveConflict_) {
 				if (pendingAction_ != EditorAction::NONE &&
 				    ui_.Button("Save As and Continue...")) {
@@ -5826,6 +5844,7 @@ void EditorScene::ShowError(std::string message, SceneObjectId objectId,
 	errorHasPlayLog_ = false;
 	errorReplayCameraOverride_ = 0;
 	errorActionMessage_.clear();
+	sceneSaveFailed_ = false;
 	sceneSaveConflict_ = false;
 	errorObjectId_ = document_.GetScene().Contains(objectId) ? objectId : 0;
 	errorOpenRequested_ = true;
@@ -5840,12 +5859,9 @@ void EditorScene::ShowSceneSaveError() {
 		exportDialog_.PreserveDraft();
 	}
 	ShowError(document_.GetError());
+	sceneSaveFailed_ = true;
 	sceneSaveConflict_ = document_.HasSaveConflict();
-	if (sceneSaveConflict_ || action == EditorAction::OPEN_EXPORT_ISSUE ||
-	    action == EditorAction::SAVE_AND_CHECK_EXPORT ||
-	    action == EditorAction::WRITE_GAME_EXPORT) {
-		pendingAction_ = action;
-	}
+	pendingAction_ = action;
 }
 
 bool EditorScene::IsBusy() const {
