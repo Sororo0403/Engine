@@ -500,14 +500,18 @@ bool TriggerActionsInspector::Draw(
 						sceneSearch_.clear();
 						ImGui::SetKeyboardFocusHere();
 					}
-					ImGui::InputTextWithHint("##SceneSearch", "Search scene paths", &sceneSearch_);
+					const bool submitted = ImGui::InputTextWithHint(
+					    "##SceneSearch", "Search scene paths", &sceneSearch_,
+					    ImGuiInputTextFlags_EnterReturnsTrue);
+					ImGui::SetItemTooltip("Press Enter to select the only matching scene.");
 					if (ImGui::Selectable("None", action.scenePath.empty())) {
 						changed |= !action.scenePath.empty();
 						action.scenePath.clear();
 					}
 
 					const auto search = StringConversion::Utf8ToWide(sceneSearch_);
-					bool hasMatches = false;
+					std::size_t matchCount = 0;
+					const std::filesystem::path *firstMatch = nullptr;
 					for (const auto &path : scenes) {
 						if (!sceneSearch_.empty()) {
 							const auto &native = path.native();
@@ -518,18 +522,26 @@ bool TriggerActionsInspector::Draw(
 								continue;
 							}
 						}
-						hasMatches = true;
+						if (matchCount++ == 0) {
+							firstMatch = &path;
+						}
 						if (ImGui::Selectable(PathUtils::ToUtf8(path).c_str(),
 						                      path == action.scenePath)) {
 							changed |= path != action.scenePath;
 							action.scenePath = path;
 						}
 					}
-					if (!hasMatches) {
+					if (submitted && !sceneSearch_.empty() && matchCount == 1) {
+						changed |= *firstMatch != action.scenePath;
+						action.scenePath = *firstMatch;
+						ImGui::CloseCurrentPopup();
+					} else if (matchCount == 0) {
 						ImGui::TextDisabled("No matching scenes.");
 					}
 
 					ImGui::EndCombo();
+				} else if (!action.scenePath.empty()) {
+					ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(action.scenePath).c_str());
 				}
 
 				ImGui::Button("Drop Scene Asset");
