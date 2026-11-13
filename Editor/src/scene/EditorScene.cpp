@@ -1855,6 +1855,10 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			if (ui_.MenuItem("Browse...")) {
 				action = EditorAction::BROWSE_STARTUP_SCENE;
 			}
+			if (ui_.MenuItem("Clear Startup Scene", nullptr, !startup.empty())) {
+				action = EditorAction::CLEAR_STARTUP_SCENE;
+			}
+			ImGui::SetItemTooltip("Play and export will use the scene you are editing.");
 			ui_.EndMenu();
 		}
 
@@ -2783,6 +2787,13 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 		std::string error;
 		if (!SetStartupScene(path, error))
 			ShowError(std::move(error));
+		return;
+	}
+	case EditorAction::CLEAR_STARTUP_SCENE: {
+		std::string error;
+		if (!project_.Save(project_.GetGameConfig(), {}, error)) {
+			ShowError(std::move(error));
+		}
 		return;
 	}
 	case EditorAction::BROWSE_STARTUP_SCENE:
