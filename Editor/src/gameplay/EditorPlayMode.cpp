@@ -303,9 +303,13 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
                            const CameraPose &fallbackPose,
                            const GameConfig &config,
                            SceneObjectId *invalidObject,
-                           SceneObjectId cameraOverride) {
+                           SceneObjectId cameraOverride,
+                           std::string *invalidInputAction) {
 	if (invalidObject) {
 		*invalidObject = 0;
+	}
+	if (invalidInputAction) {
+		invalidInputAction->clear();
 	}
 
 	if (config.width < 1 || config.width > 8192 || config.height < 1 ||
@@ -332,6 +336,8 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
 		error = inputIssues.front().message;
 		if (invalidObject)
 			*invalidObject = inputIssues.front().objectId;
+		if (invalidInputAction)
+			*invalidInputAction = inputIssues.front().inputAction;
 		return false;
 	}
 

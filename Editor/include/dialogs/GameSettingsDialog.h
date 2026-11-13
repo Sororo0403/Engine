@@ -29,8 +29,14 @@ class GameSettingsDialog {
 	/// 編集用の値と設定の読み込み・保存を表示し、有効な値の適用か取り消しを受け付ける
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
+	/// <param name="retryPlay">設定適用後に呼び出し側が試遊をやり直すか</param>
 	/// <returns>適用・取り消し・編集中</returns>
-	GameSettingsResult Draw(const ImGuiSystem &ui);
+	GameSettingsResult Draw(const ImGuiSystem &ui, bool retryPlay = false);
+
+	/// <summary>
+	/// 設定の保存に失敗した理由を表示し、編集内容を保持したまま開き直す
+	/// </summary>
+	void Reopen(std::string error);
 
 	/// <summary>
 	/// 検証済みの適用値を取得する。編集中や取り消しでは変更しない

@@ -5519,9 +5519,11 @@ void EditorScene::UpdateDialogs() {
 		return;
 	}
 	case DialogStage::GAME_SETTINGS:
+	case DialogStage::EDIT_PLAY_INPUT:
 	case DialogStage::EDIT_EXPORT_INPUT: {
 		const bool fromExport = stage_ == DialogStage::EDIT_EXPORT_INPUT;
-		const auto result = gameSettingsDialog_.Draw(ui_);
+		const bool fromPlay = stage_ == DialogStage::EDIT_PLAY_INPUT;
+		const auto result = gameSettingsDialog_.Draw(ui_, fromPlay);
 
 		if (result == GameSettingsResult::ACCEPTED) {
 			const auto &settings = gameSettingsDialog_.GetConfig();
@@ -5529,6 +5531,10 @@ void EditorScene::UpdateDialogs() {
 
 			if (!project_.GetRoot().empty() &&
 			    !project_.Save(settings, project_.GetStartupScene(), error)) {
+				if (fromPlay) {
+					gameSettingsDialog_.Reopen("Could not save Game Settings: " + error);
+					return;
+				}
 				if (fromExport) {
 					exportDialog_.Reopen("Could not save Game Settings: " + error);
 					stage_ = DialogStage::EXPORT_GAME;
@@ -5553,6 +5559,15 @@ void EditorScene::UpdateDialogs() {
 				}
 				exportDialog_.Reopen();
 				stage_ = DialogStage::EXPORT_GAME;
+			} else if (fromPlay) {
+				if (result == GameSettingsResult::ACCEPTED && errorReplayPath_) {
+					const auto path = *errorReplayPath_;
+					stage_ = DialogStage::IDLE;
+					StartPlay(path, errorReplayCameraOverride_);
+				} else {
+					errorOpenRequested_ = true;
+					stage_ = DialogStage::ERROR;
+				}
 			} else {
 				stage_ = DialogStage::IDLE;
 			}
@@ -5799,6 +5814,18 @@ void EditorScene::UpdateDialogs() {
 				ImGui::TextWrapped("%s", errorActionMessage_.c_str());
 			}
 
+			if (!errorInputAction_.empty() && errorReplayPath_ && !playMode_.IsPlaying()) {
+				if (ui_.Button("Edit Input Binding")) {
+					gameSettingsDialog_.Show(exportConfig_, project_.GetRoot(), {},
+					                         errorInputAction_);
+					ui_.CloseCurrentPopup();
+					ui_.EndPopup();
+					stage_ = DialogStage::EDIT_PLAY_INPUT;
+					return;
+				}
+				ui_.SameLine();
+			}
+
 			if (!errorScriptPath_.empty()) {
 				if (ui_.Button(playMode_.IsPlaying() ? "Stop and Edit Script" : "Edit Script")) {
 					std::string error;
@@ -5960,11 +5987,13 @@ void EditorScene::StartPlay(const std::filesystem::path &path,
 	                                       : exportConfig_.fallbackCamera;
 	std::string error;
 	SceneObjectId invalidObject = 0;
+	std::string invalidInputAction;
 	if (!playMode_.Start(*scene, error, fallback, exportConfig_, &invalidObject,
-	                     cameraOverride)) {
+	                     cameraOverride, &invalidInputAction)) {
 		auto scriptPath = SceneScripts::FindFailedScript(*scene, invalidObject, error);
 		ShowError(std::move(error), usesEditingScene ? invalidObject : 0,
 		          std::move(scriptPath));
+		errorInputAction_ = std::move(invalidInputAction);
 		errorReplayPath_ = usesEditingScene ? document_.GetFilePath()
 		                                   : startup.GetFilePath();
 		errorReplayCameraOverride_ = cameraOverride;
@@ -6298,6 +6327,7 @@ void EditorScene::ShowError(std::string message, SceneObjectId objectId,
                             std::filesystem::path scriptPath) {
 	errorMessage_ = std::move(message);
 	errorScriptPath_ = std::move(scriptPath);
+	errorInputAction_.clear();
 	errorScenePath_.clear();
 	failedOpenScenePath_.clear();
 	reloadBackupPath_.clear();

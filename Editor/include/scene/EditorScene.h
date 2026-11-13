@@ -280,6 +280,7 @@ class EditorScene final : public IScene {
 		EDIT_SCRIPT,
 		EDIT_SCENE_CHECK_SCRIPT,
 		EDIT_PLAY_SCRIPT,
+		EDIT_PLAY_INPUT,
 		EDIT_EXPORT_SCRIPT,
 		EDIT_EXPORT_INPUT,
 		EDIT_ANIMATION_CLIP,
@@ -1066,6 +1067,7 @@ class EditorScene final : public IScene {
 
 	std::string errorMessage_;
 	std::filesystem::path errorScriptPath_;
+	std::string errorInputAction_;
 	std::filesystem::path errorScenePath_;
 	std::filesystem::path failedOpenScenePath_;
 	std::filesystem::path reloadBackupPath_;

@@ -42,7 +42,12 @@ void GameSettingsDialog::Show(const GameConfig &config,
 	}
 }
 
-GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
+void GameSettingsDialog::Reopen(std::string error) {
+	error_ = std::move(error);
+	opening_ = true;
+}
+
+GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui, bool retryPlay) {
 	constexpr const char *title = "Game Settings###GameSettingsDialog";
 
 	if (opening_) {
@@ -235,7 +240,7 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 	GameSettingsResult result = GameSettingsResult::NONE;
 
 	ui.BeginDisabled(selecting_);
-	const bool apply = ui.Button("Apply");
+	const bool apply = ui.Button(retryPlay ? "Apply and Retry Play" : "Apply");
 	ui.SameLine();
 	const bool cancel =
 	    ui.Button("Cancel") ||
