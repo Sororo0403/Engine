@@ -203,6 +203,23 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 			ImGui::SetClipboardText(log_.c_str());
 		ui.EndDisabled();
 
+		if (!processStatus_.empty()) {
+			ui.SameLine();
+			if (ui.Button("Copy Run Report")) {
+				auto report = "Output: " + PathUtils::ToUtf8(directory_) + "\n";
+				report += processStatus_ + "\n";
+				if (!logError_.empty()) {
+					report += logError_ + "\n";
+				} else if (!log_.empty()) {
+					report += sinceLaunchOnly_ ? "\nGame log since Run Game"
+					                           : "\nGame log";
+					report += logTruncated_ ? " (tail):\n" : ":\n";
+					report += log_;
+				}
+				ImGui::SetClipboardText(report.c_str());
+			}
+		}
+
 		if (!logError_.empty()) {
 			ui.Text(logError_);
 		} else if (log_.empty()) {
