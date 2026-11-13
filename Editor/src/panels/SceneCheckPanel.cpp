@@ -94,6 +94,7 @@ void SceneCheckPanel::Check(const Scene &scene, const CameraPose &fallback,
 				continue;
 			if (issue.objectId == previous.objectId &&
 			    issue.destinationObjectId == previous.destinationObjectId &&
+			    issue.modelPath == previous.modelPath &&
 			    issue.assetPath == previous.assetPath &&
 			    issue.message == previous.message) {
 				scrollToIssue_ = i;
@@ -310,11 +311,13 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 		if (!issue.assetPath.empty()) {
 			const auto path = PathUtils::ToUtf8(issue.assetPath);
 			const auto *object = scene.FindObject(issue.objectId);
-			const auto matchesAsset = [&](const std::filesystem::path &reference) {
+			const auto validPath = [](const std::filesystem::path &reference) {
 				return !reference.empty() &&
 				       (!reference.has_root_path() || reference.is_absolute()) &&
-				       reference.native().find(L'\0') == std::wstring::npos &&
-				       PathUtils::IsSameFile(issue.assetPath, reference);
+				       reference.native().find(L'\0') == std::wstring::npos;
+			};
+			const auto matchesAsset = [&](const std::filesystem::path &reference) {
+				return validPath(reference) && PathUtils::IsSameFile(issue.assetPath, reference);
 			};
 			// モデル本体の診断だけを対象にし、依存ファイルの診断からは選択しない。
 			const bool isReferencedModel =
@@ -340,15 +343,22 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 			      std::ranges::any_of(object->meshRenderer->textures.slots,
 			                          [&](const auto &slot) { return matchesAsset(slot.second); })));
 			std::error_code status;
-			if ((isReferencedModel || isReferencedTexture) &&
+			const bool modelDependency =
+			    !isReferencedModel && object && object->HasMesh() &&
+			    validPath(issue.modelPath) && validPath(object->mesh->modelPath) &&
+			    PathUtils::IsSameFile(issue.modelPath, object->mesh->modelPath) &&
+			    std::filesystem::is_regular_file(
+			        PathUtils::ResolveFromExecutable(issue.modelPath), status);
+			const bool reloadModel = isReferencedModel || modelDependency;
+			if ((reloadModel || isReferencedTexture) &&
 			    std::filesystem::is_regular_file(issue.assetPath, status)) {
 				if (isReferencedModel)
 					ui.SameLine();
-				if (ui.Button(isReferencedModel ? "Reload Model" : "Reload Texture")) {
+				if (ui.Button(reloadModel ? "Reload Model" : "Reload Texture")) {
 					lastIssue_ = i;
 					requested = {};
-					if (isReferencedModel)
-						requested.modelReloadPath = issue.assetPath;
+					if (reloadModel)
+						requested.modelReloadPath = modelDependency ? issue.modelPath : issue.assetPath;
 					else
 						requested.textureReloadPath = issue.assetPath;
 				}

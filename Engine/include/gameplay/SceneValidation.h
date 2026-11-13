@@ -20,6 +20,8 @@ struct SceneValidationIssue {
 	std::filesystem::path assetPath;
 	// 遷移先のシーンにある問題物体。objectIdは参照元の物体。
 	SceneObjectId destinationObjectId = 0;
+	// 依存ファイルに問題がある場合、そのファイルを読み込むモデル本体。
+	std::filesystem::path modelPath;
 };
 
 namespace SceneValidation {

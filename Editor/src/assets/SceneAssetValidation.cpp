@@ -60,6 +60,8 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 					                  PathUtils::ToUtf8(file), file});
 				}
 			}
+		} catch (const AssetDependencies::MissingModelDependency &error) {
+			errors.push_back({error.what(), error.path});
 		} catch (const std::bad_alloc &) {
 			throw;
 		} catch (const std::exception &error) {
@@ -72,13 +74,14 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 	};
 
 	for (const auto &[id, object] : scene.GetObjects()) {
-		const auto add = [&](std::string_view field, const auto &errors) {
+		const auto add = [&](std::string_view field, const auto &errors,
+		                     const std::filesystem::path &model = {}) {
 			for (const auto &error : errors) {
 				issues.push_back(
 				    {id,
 				     std::format("{}: {} Object: \"{}\" (ID {}).", field, error.message,
 				                 object.name.empty() ? "Object" : object.name,
-				                 id), error.path, error.destinationObjectId});
+				                 id), error.path, error.destinationObjectId, model});
 			}
 		};
 
@@ -234,7 +237,7 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 			add("Mesh", inspect(object.mesh->modelPath, models,
 			                    [](const auto &path) {
 				                    return AssetDependencies::ModelFiles(path);
-			                    }));
+			                    }), object.mesh->modelPath);
 		}
 
 		if (object.meshRenderer) {

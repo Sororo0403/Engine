@@ -8,6 +8,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 namespace {
 namespace fs = std::filesystem;
@@ -75,6 +76,12 @@ fs::path ResolveAsset(const fs::path &path) {
 	return PathUtils::ResolveFromExecutable(path);
 }
 } // namespace
+
+AssetDependencies::MissingModelDependency::MissingModelDependency(fs::path file)
+    : std::runtime_error("Model dependency is missing or is not a regular file: " +
+                         PathUtils::ToUtf8(file)),
+      path(std::move(file)) {
+}
 
 std::vector<std::filesystem::path>
 AssetDependencies::ModelFiles(const std::filesystem::path &input,
@@ -196,9 +203,7 @@ AssetDependencies::ModelFiles(const std::filesystem::path &input,
 			if (!fs::is_regular_file(file, status) &&
 			    (!status || status == std::errc::no_such_file_or_directory ||
 			     status == std::errc::not_a_directory)) {
-				throw std::runtime_error(
-				    "Model dependency is missing or is not a regular file: " +
-				    PathUtils::ToUtf8(file.lexically_normal()));
+				throw MissingModelDependency(file.lexically_normal());
 			}
 		}
 		throw std::runtime_error("Could not load model: " +
