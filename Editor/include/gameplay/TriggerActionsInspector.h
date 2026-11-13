@@ -24,12 +24,14 @@ class TriggerActionsInspector {
 	/// <param name="object">編集対象の物体</param>
 	/// <param name="history">編集履歴</param>
 	/// <param name="sceneOpenRequest">指定したシーンを開く操作があった場合にパスを返す</param>
+	/// <param name="sceneLocationRequest">遷移先の場所を表示する操作があった場合にパスを返す</param>
 	/// <param name="scenes">Assets内の遷移先候補。未指定でもシーンをドロップできる</param>
 	/// <param name="inputBindings">ゲーム設定の名前付き操作</param>
 	/// <returns>true:設定を変更した false:変更なし</returns>
 	bool Draw(const ImGuiSystem &ui, const Scene &scene, SceneObjectId id,
 	          SceneObject &object, EditorHistory &history,
 	          std::filesystem::path &sceneOpenRequest,
+	          std::filesystem::path &sceneLocationRequest,
 	          std::span<const std::filesystem::path> scenes = {},
 	          std::span<const GameActionBinding> inputBindings = {}) const;
 

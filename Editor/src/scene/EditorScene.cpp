@@ -628,6 +628,13 @@ bool EditorScene::Update(float deltaTime) {
 	if (!wasBusy && !inspectorPanel_.GetAssetRevealPath().empty()) {
 		assetsPanel_.RequestReveal(inspectorPanel_.GetAssetRevealPath());
 	}
+	const auto &sceneLocation = inspectorPanel_.GetSceneLocationRequest();
+	if (!wasBusy && !sceneLocation.empty()) {
+		std::string error;
+		if (!ShellUtils::RevealLocationInExplorer(sceneLocation, error)) {
+			ShowError(std::move(error));
+		}
+	}
 
 	const bool canSetTexture =
 	    HasSelection() && !gizmo_.IsUsing() && !gizmoEditActive_ &&

@@ -166,6 +166,7 @@ void InspectorPanel::Clear() {
 	colliderFitRequest_ = 0;
 	assetRevealPath_.clear();
 	sceneOpenRequest_.clear();
+	sceneLocationRequest_.clear();
 	slotModelPath_.clear();
 	slotModelRevision_ = 0;
 }
@@ -205,6 +206,7 @@ bool InspectorPanel::Draw(
 	modelRequest_ = {};
 	assetRevealPath_.clear();
 	sceneOpenRequest_.clear();
+	sceneLocationRequest_.clear();
 	visibilityRequest_ = {};
 
 	if (lockedObjectId_ != 0 && !scene.Contains(lockedObjectId_)) {
@@ -746,7 +748,7 @@ bool InspectorPanel::Draw(
 
 	changed |= TriggerActionsInspector{}.Draw(
 	    ui, scene, inspectedObjectId, *object, history,
-	    sceneOpenRequest_,
+	    sceneOpenRequest_, sceneLocationRequest_,
 	    assets ? std::span<const std::filesystem::path>(assets->GetSceneTargets())
 	           : std::span<const std::filesystem::path>{},
 	    inputBindings);

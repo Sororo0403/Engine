@@ -128,6 +128,13 @@ class InspectorPanel {
 	}
 
 	/// <summary>
+	/// 遷移先の場所を表示する要求を取得する
+	/// </summary>
+	const std::filesystem::path &GetSceneLocationRequest() const {
+		return sceneLocationRequest_;
+	}
+
+	/// <summary>
 	/// 表示対象のモデルの表示状態の変更要求
 	/// </summary>
 	struct VisibilityRequest {
@@ -234,6 +241,7 @@ class InspectorPanel {
 	VisibilityRequest visibilityRequest_;
 	std::filesystem::path assetRevealPath_;
 	std::filesystem::path sceneOpenRequest_;
+	std::filesystem::path sceneLocationRequest_;
 	ObjectRequest objectRequest_;
 	SceneObjectId colliderFitRequest_ = 0;
 	// 非表示のモデルも必要時に読み込み、同じ失敗はキャッシュ更新まで繰り返さない。

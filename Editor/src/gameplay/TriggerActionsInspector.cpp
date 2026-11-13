@@ -161,6 +161,7 @@ bool TriggerActionsInspector::Draw(
     const ImGuiSystem &ui, const Scene &scene, SceneObjectId id,
     SceneObject &object, EditorHistory &history,
     std::filesystem::path &sceneOpenRequest,
+    std::filesystem::path &sceneLocationRequest,
     std::span<const std::filesystem::path> scenes,
     std::span<const GameActionBinding> inputBindings) const {
 	if (!object.triggerActions || !ui.CollapsingHeader("Trigger Actions")) {
@@ -518,6 +519,10 @@ bool TriggerActionsInspector::Draw(
 				ui.BeginDisabled(action.scenePath.empty());
 				if (ui.Button("Open Scene")) {
 					sceneOpenRequest = action.scenePath;
+				}
+				ui.SameLine();
+				if (ui.Button("Show Scene in Explorer")) {
+					sceneLocationRequest = action.scenePath;
 				}
 				ui.EndDisabled();
 				auto tag = action.arrivalTag;
