@@ -11,6 +11,8 @@
 #include <utility>
 
 namespace {
+constexpr std::size_t kIssuesPerPage = 25;
+
 /// <summary>
 /// 出力欄の入力を読み取り、ルート以外の末尾の区切りを取り除く
 /// </summary>
@@ -183,6 +185,7 @@ void GameExportDialog::SetCheckResult(std::string message,
 		}
 	}
 	selectedIssue_ = issueToScrollTo_;
+	issuePage_ = 0;
 	if (!issues.empty() && !issueToScrollTo_) {
 		issueToScrollTo_ = 0;
 	}
@@ -201,6 +204,7 @@ void GameExportDialog::ClearCheckResult() {
 	checkIssues_.clear();
 	selectedIssue_.reset();
 	issueToScrollTo_.reset();
+	issuePage_ = 0;
 }
 
 void GameExportDialog::ShowExportFailure(std::string error,
@@ -335,6 +339,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 		if (ui.InputText("Search Issues", issueFilter_)) {
 			selectedIssue_.reset();
 			issueToScrollTo_ = 0;
+			issuePage_ = 0;
 		}
 		ui.SameLine();
 		ui.BeginDisabled(issueFilter_.empty());
@@ -342,23 +347,57 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 			issueFilter_.clear();
 			selectedIssue_.reset();
 			issueToScrollTo_ = 0;
+			issuePage_ = 0;
 		}
 		ui.EndDisabled();
-		const auto matching = std::ranges::count_if(checkIssues_, matches);
-		ui.Text(std::format("Matching issues: {} / {}", matching, checkIssues_.size()));
-		if (issueToScrollTo_ == 0) {
+		std::vector<std::size_t> matching;
+		for (std::size_t i = 0; i < checkIssues_.size(); ++i) {
+			if (matches(checkIssues_[i])) {
+				matching.push_back(i);
+			}
+		}
+		ui.Text(std::format("Matching issues: {} / {}", matching.size(), checkIssues_.size()));
+		const auto lastPage = matching.empty() ? 0 : (matching.size() - 1) / kIssuesPerPage;
+		if (issueToScrollTo_) {
+			const auto found = std::ranges::lower_bound(matching, *issueToScrollTo_);
+			issuePage_ = static_cast<std::size_t>(found - matching.begin()) / kIssuesPerPage;
+		}
+		issuePage_ = std::min(issuePage_, lastPage);
+		bool resetScroll = issueToScrollTo_ == 0;
+		const auto goToPage = [&](std::size_t page) {
+			issuePage_ = page;
+			selectedIssue_ = matching[page * kIssuesPerPage];
+			issueToScrollTo_.reset();
+			resetScroll = true;
+		};
+		if (lastPage != 0) {
+			ui.BeginDisabled(issuePage_ == 0);
+			if (ui.Button("Previous Issues")) {
+				goToPage(issuePage_ - 1);
+			}
+			ui.EndDisabled();
+			ui.SameLine();
+			ui.Text(std::format("Page {} / {}", issuePage_ + 1, lastPage + 1));
+			ui.SameLine();
+			ui.BeginDisabled(issuePage_ == lastPage);
+			if (ui.Button("Next Issues")) {
+				goToPage(issuePage_ + 1);
+			}
+			ui.EndDisabled();
+		}
+		if (resetScroll) {
 			ImGui::SetNextWindowScroll({-1.0f, 0.0f});
 		}
 		const float height = 8.0f * ImGui::GetTextLineHeightWithSpacing();
 		if (ImGui::BeginChild("ExportCheckResult", {0.0f, height})) {
-			if (matching == 0) {
+			if (matching.empty()) {
 				ui.Text("No issues match the search. Clear Search to see all issues.");
 			}
-			for (std::size_t i = 0; i < checkIssues_.size(); ++i) {
+			const auto first = issuePage_ * kIssuesPerPage;
+			const auto end = std::min(first + kIssuesPerPage, matching.size());
+			for (auto row = first; row < end; ++row) {
+				const auto i = matching[row];
 				const auto &issue = checkIssues_[i];
-				if (!matches(issue)) {
-					continue;
-				}
 				ImGui::PushID(static_cast<int>(i));
 				ImGui::TextWrapped("%s", issue.message.c_str());
 				if (issueToScrollTo_ == i && i != 0) {
@@ -431,19 +470,18 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 		ImGui::SetItemTooltip("Copy all issues, including those hidden by search.");
 		if (!issueFilter_.empty()) {
 			ui.SameLine();
-			ui.BeginDisabled(matching == 0);
+			ui.BeginDisabled(matching.empty());
 			if (ui.Button("Copy Matching Issues")) {
 				std::string report;
-				for (const auto &issue : checkIssues_) {
-					if (matches(issue)) {
-						if (!report.empty()) {
-							report += "\n\n";
-						}
-						report += issue.message;
+				for (const auto i : matching) {
+					if (!report.empty()) {
+						report += "\n\n";
 					}
+					report += checkIssues_[i].message;
 				}
 				ImGui::SetClipboardText(report.c_str());
 			}
+			ImGui::SetItemTooltip("Copy matching issues from all pages.");
 			ui.EndDisabled();
 		}
 	} else if (!checkResult_.empty() && !checkResultStale_) {

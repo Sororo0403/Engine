@@ -124,5 +124,6 @@ class GameExportDialog {
 	bool includesUnsavedEdits_ = false;
 	bool browsing_ = false;
 	std::optional<std::size_t> issueToScrollTo_;
+	std::size_t issuePage_ = 0;
 	bool resumeDraft_ = false;
 };
