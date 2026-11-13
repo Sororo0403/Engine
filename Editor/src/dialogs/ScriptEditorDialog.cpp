@@ -77,6 +77,7 @@ bool ScriptEditorDialog::ShowCreate(const std::filesystem::path &assets,
 		saveConflict_ = false;
 		confirmation_ = Confirmation::NONE;
 		pendingLine_ = 0;
+		targetLine_ = 1;
 		++inputRevision_;
 		opening_ = true;
 		error.clear();
@@ -108,6 +109,7 @@ bool ScriptEditorDialog::ShowEdit(const std::filesystem::path &path,
 		pendingLine_ = LuaScript::FindErrorLine(PathUtils::ToUtf8(absolute),
 		                                       diagnostic);
 	}
+	targetLine_ = (std::max)(1, pendingLine_);
 	++inputRevision_;
 	opening_ = true;
 	error.clear();
@@ -177,6 +179,14 @@ ScriptEditorDialog::Result ScriptEditorDialog::Draw(const ImGuiSystem &ui,
 		ui.InputText("Script Name", name_);
 	} else
 		ui.Text(PathUtils::ToUtf8(path_));
+	ImGui::SetNextItemWidth(105.0f);
+	const bool jumpSubmitted = ImGui::InputInt(
+	    "Line", &targetLine_, 0, 0, ImGuiInputTextFlags_EnterReturnsTrue);
+	ui.SameLine();
+	const bool jumpClicked = ui.Button("Go to Line");
+	if (!confirming && (jumpSubmitted || jumpClicked)) {
+		pendingLine_ = (std::max)(1, targetLine_);
+	}
 	const float height =
 	    (std::max)(160.0f, ImGui::GetContentRegionAvail().y - 105.0f);
 	ImGuiInputTextFlags flags = ImGuiInputTextFlags_AllowTabInput;
