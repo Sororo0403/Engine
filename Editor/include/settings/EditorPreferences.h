@@ -91,6 +91,12 @@ class EditorPreferences {
 	RecentGameExports(const std::filesystem::path &root) const;
 
 	/// <summary>
+	/// 見つからない配布先を、このプロジェクトの履歴から取り除く
+	/// </summary>
+	/// <returns>履歴を変更した場合はtrue</returns>
+	bool RemoveMissingGameExports(const std::filesystem::path &root);
+
+	/// <summary>
 	/// 記憶したシーンが現在もプロジェクト内にあれば絶対パスを返す
 	/// </summary>
 	/// <param name="root">プロジェクトの絶対パス</param>

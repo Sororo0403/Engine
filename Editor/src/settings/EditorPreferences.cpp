@@ -270,6 +270,27 @@ std::span<const std::filesystem::path> EditorPreferences::RecentGameExports(
 	return found->second;
 }
 
+bool EditorPreferences::RemoveMissingGameExports(const std::filesystem::path &root) {
+	const auto key = root.lexically_normal();
+	const auto missing = [](const std::filesystem::path &directory) {
+		std::error_code error;
+		return std::filesystem::status(directory, error).type() ==
+		       std::filesystem::file_type::not_found;
+	};
+	bool changed = false;
+	if (const auto recent = recentGameExports_.find(key); recent != recentGameExports_.end()) {
+		changed = std::erase_if(recent->second, missing) != 0;
+		if (recent->second.empty())
+			recentGameExports_.erase(recent);
+	}
+	if (const auto last = lastGameExports_.find(key);
+	    last != lastGameExports_.end() && missing(last->second)) {
+		lastGameExports_.erase(last);
+		changed = true;
+	}
+	return changed;
+}
+
 void EditorPreferences::RememberProjectScene(const std::filesystem::path &root,
                                               const std::filesystem::path &scene) {
 	if (root.empty() || scene.empty()) {

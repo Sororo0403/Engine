@@ -2031,7 +2031,8 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		}
 
 		const auto recentExports = preferences_.RecentGameExports(project_.GetRoot());
-		if (ImGui::BeginMenu("Recent Game Exports", enabled && !recentExports.empty())) {
+		if (ImGui::BeginMenu("Recent Game Exports",
+		                     enabled && (!recentExports.empty() || !lastExport.empty()))) {
 			std::size_t index = 0;
 			for (const auto &directory : recentExports) {
 				const bool available = IsGameExportDirectory(directory);
@@ -2044,6 +2045,12 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 				}
 				ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(directory).c_str());
 			}
+			ui_.Separator();
+			if (ui_.MenuItem("Remove Missing Export Folders") &&
+			    preferences_.RemoveMissingGameExports(project_.GetRoot())) {
+				SaveEditorSession(true);
+			}
+			ImGui::SetItemTooltip("Remove history entries whose export folders no longer exist.");
 			ui_.EndMenu();
 		}
 
