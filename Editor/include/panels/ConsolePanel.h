@@ -66,6 +66,7 @@ class ConsolePanel {
 	bool showWarnings_ = true;
 	bool showErrors_ = true;
 	bool latestPlayOnly_ = false;
+	bool collapseRepeated_ = true;
 	std::string filter_;
 	std::uint64_t revision_ = 0;
 	std::uint64_t selectedId_ = 0;

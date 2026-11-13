@@ -130,6 +130,9 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 	if (ImGui::Checkbox("Auto-scroll", &autoScroll_) && autoScroll_) {
 		scrollRequested_ = true;
 	}
+	ui.SameLine();
+	ImGui::Checkbox("Collapse Repeats", &collapseRepeated_);
+	ImGui::SetItemTooltip("Group consecutive messages with the same level, text and source.");
 
 	ImGui::Checkbox("Info", &showInfo_);
 	ui.SameLine();
@@ -189,11 +192,27 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 		bool anyVisible = false;
 		std::uint64_t lastVisible = 0;
 
-		for (const auto &entry : entries_) {
-			if (!MatchesFilter(entry)) {
+		for (auto first = entries_.cbegin(); first != entries_.cend();) {
+			const auto &head = *first;
+			if (!MatchesFilter(head)) {
+				++first;
 				continue;
 			}
 
+			auto last = first;
+			while (collapseRepeated_ && last + 1 != entries_.cend()) {
+				const auto &next = *(last + 1);
+				if (next.level != head.level || next.message != head.message ||
+				    next.sourcePath != head.sourcePath ||
+				    (head.id <= playStartBoundary_ && next.id > playStartBoundary_)) {
+					break;
+				}
+				++last;
+			}
+			const auto count = last - first + 1;
+			first = last + 1;
+			const auto &entry = *last;
+			const bool selected = head.id <= selectedId_ && selectedId_ <= entry.id;
 			anyVisible = true;
 			lastVisible = entry.id;
 			const bool colored = entry.level != LogLevel::LOG_INFO;
@@ -205,18 +224,21 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 				                          : ImVec4{1.0f, 0.8f, 0.3f, 1.0f});
 			}
 
-			const auto title =
+			auto title =
 			    std::format("[{}] {}", entry.timestamp, LevelName(entry.level));
+			if (count > 1) {
+				title += std::format(" (x{})", count);
+			}
 			const auto label =
-			    std::format("{}###ConsoleLog{}", title, entry.id);
+			    std::format("{}###ConsoleLog{}", title, head.id);
 			const float messageOffset = ImGui::GetCursorPosX() +
 			                            ImGui::CalcTextSize(title.c_str()).x +
 			                            ImGui::GetStyle().ItemSpacing.x * 2.0f;
 
-			if (ui.Selectable(label.c_str(), selectedId_ == entry.id)) {
+			if (ui.Selectable(label.c_str(), selected)) {
 				selectedId_ = entry.id;
 			}
-			if (jumpToError && selectedId_ == entry.id) {
+			if (jumpToError && selected) {
 				ImGui::SetScrollHereY(0.5f);
 			}
 
