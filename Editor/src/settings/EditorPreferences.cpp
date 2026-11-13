@@ -316,17 +316,24 @@ std::filesystem::path EditorPreferences::LastProjectAssetFolder(
 }
 
 std::filesystem::path EditorPreferences::LastProjectScene(
-    const std::filesystem::path &root) const {
+    const std::filesystem::path &root, std::filesystem::path *unavailable) const {
+	if (unavailable) {
+		unavailable->clear();
+	}
 	const auto saved = projectScenes.find(root);
 
 	if (saved == projectScenes.end() || !IsProjectScenePath(saved->second)) {
 		return {};
 	}
 
+	const auto remembered = root / saved->second;
 	std::error_code error;
-	const auto path = std::filesystem::canonical(root / saved->second, error);
+	const auto path = std::filesystem::canonical(remembered, error);
 
 	if (error || !std::filesystem::is_regular_file(path, error)) {
+		if (unavailable) {
+			*unavailable = remembered;
+		}
 		return {};
 	}
 
@@ -334,6 +341,9 @@ std::filesystem::path EditorPreferences::LastProjectScene(
 		PathUtils::RelativeInside(root, path);
 		return path;
 	} catch (const std::runtime_error &) {
+		if (unavailable) {
+			*unavailable = remembered;
+		}
 		return {};
 	}
 }

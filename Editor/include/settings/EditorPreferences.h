@@ -93,7 +93,11 @@ class EditorPreferences {
 	/// <summary>
 	/// 記憶したシーンが現在もプロジェクト内にあれば絶対パスを返す
 	/// </summary>
-	std::filesystem::path LastProjectScene(const std::filesystem::path &root) const;
+	/// <param name="root">プロジェクトの絶対パス</param>
+	/// <param name="unavailable">指定時は、記憶していたシーンを利用できない場合にそのパスを返す</param>
+	std::filesystem::path LastProjectScene(
+	    const std::filesystem::path &root,
+	    std::filesystem::path *unavailable = nullptr) const;
 
 	/// <summary>
 	/// Assetsパネルで開いたフォルダをAssets基準の相対パスで記憶する。空はルート

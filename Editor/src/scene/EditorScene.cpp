@@ -5768,11 +5768,18 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		sources.Register(candidate.GetScenesDirectory());
 		auto config = candidate.GetGameConfig();
 		const auto startup = candidate.GetStartupScene();
+		std::filesystem::path unavailableLast;
 		const auto last = create ? std::filesystem::path{}
-		                         : preferences_.LastProjectScene(candidate.GetRoot());
-		const bool restored =
-		    !last.empty() && (startup.empty() || !PathUtils::IsSameFile(last, startup)) &&
-		    OpenScene(last, false, &config.lighting);
+		                         : preferences_.LastProjectScene(candidate.GetRoot(), &unavailableLast);
+		bool restored = false;
+		std::string lastError;
+		if (!last.empty() && (startup.empty() || !PathUtils::IsSameFile(last, startup))) {
+			restored = OpenScene(last, false, &config.lighting);
+			if (!restored) {
+				unavailableLast = last;
+				lastError = document_.GetError();
+			}
+		}
 		std::string startupError;
 		bool needsScene = false;
 
@@ -5816,6 +5823,19 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		            .type() == std::filesystem::file_type::not_found &&
 		    std::erase(preferences_.recentProjects, missing) != 0;
 		SaveEditorSession(removedRecent);
+		if (!unavailableLast.empty() &&
+		    (startup.empty() || !PathUtils::IsSameFile(unavailableLast, startup))) {
+			auto message = "Could not restore the last edited scene: " +
+			               PathUtils::ToUtf8(unavailableLast);
+			if (!lastError.empty()) {
+				message += "\n" + lastError;
+			}
+			message += needsScene
+			               ? "\nOpened an untitled scene."
+			               : "\nOpened the startup scene: " + PathUtils::ToUtf8(startup);
+			Logger::Warning(message);
+			consolePanel_.Show();
+		}
 		if (!startupError.empty()) {
 			Logger::Warning(startupError);
 			consolePanel_.Show();
