@@ -1877,6 +1877,13 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		if (!startup.empty()) {
 			ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(startup).c_str());
 		}
+		if (!failedRestoredScene_.empty()) {
+			if (ui_.MenuItem("Retry Last Edited Scene", nullptr, enabled)) {
+				pendingOpenPath_ = failedRestoredScene_;
+				action = EditorAction::OPEN_PATH;
+			}
+			ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(failedRestoredScene_).c_str());
+		}
 
 		const bool canSetCurrentStartup =
 		    enabled && !currentIsStartup && project_.CanUseAsStartupScene(current);
@@ -3686,6 +3693,18 @@ void EditorScene::ExecutePendingAction() {
 		return;
 	case EditorAction::OPEN_PATH: {
 		const auto object = std::exchange(pendingOpenObject_, SceneObjectId{0});
+		if (!failedRestoredScene_.empty() && pendingOpenPath_ == failedRestoredScene_) {
+			std::error_code status;
+			const auto resolved = std::filesystem::canonical(pendingOpenPath_, status);
+			if (!status) {
+				try {
+					PathUtils::RelativeInside(project_.GetRoot(), resolved);
+				} catch (const std::runtime_error &) {
+					ShowError("The last edited scene points outside the current project.");
+					return;
+				}
+			}
+		}
 		if (OpenScene(pendingOpenPath_, false)) {
 			SaveEditorSession();
 			if (object != 0) {
@@ -4686,6 +4705,7 @@ bool EditorScene::RelocateAssets(const AssetUsage::Moves &moves,
 	assetsPanel_.RelocatePaths(moves, assets_.GetRootDirectory());
 	sceneCheckPanel_.OnAssetsMoved(moves);
 	exportDialog_.FollowMovedScene(project_.GetRoot(), moves);
+	failedRestoredScene_ = PathUtils::AfterMove(failedRestoredScene_, moves);
 	lastPlayScenePath_ = PathUtils::AfterMove(lastPlayScenePath_, moves);
 	if (playFailureReplay_ && !playFailureReplay_->path.empty()) {
 		playFailureReplay_->path = PathUtils::AfterMove(playFailureReplay_->path, moves);
@@ -6016,6 +6036,7 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 
 		document_.SetProjectRoot(candidate.GetRoot());
 		project_ = std::move(candidate);
+		failedRestoredScene_.clear();
 		lastPlayScenePath_.clear();
 		playFailureReplay_.reset();
 		exportConfig_ = std::move(config);
@@ -6037,6 +6058,7 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		SaveEditorSession(removedRecent);
 		if (!unavailableLast.empty() &&
 		    (startup.empty() || !PathUtils::IsSameFile(unavailableLast, startup))) {
+			failedRestoredScene_ = unavailableLast;
 			auto message = "Could not restore the last edited scene: " +
 			               PathUtils::ToUtf8(unavailableLast);
 			if (!lastError.empty()) {
@@ -6111,6 +6133,10 @@ bool EditorScene::OpenScene(const std::filesystem::path &path, bool reportError,
 		return false;
 	}
 
+	if (!failedRestoredScene_.empty() &&
+	    PathUtils::IsSameFile(document_.GetFilePath(), failedRestoredScene_)) {
+		failedRestoredScene_.clear();
+	}
 	if (playFailureReplay_ && playFailureReplay_->path.empty()) {
 		playFailureReplay_.reset();
 	}

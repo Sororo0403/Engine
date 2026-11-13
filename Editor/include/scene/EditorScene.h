@@ -981,6 +981,7 @@ class EditorScene final : public IScene {
 	std::filesystem::path pendingOpenPath_;
 	std::filesystem::path pendingGameExportReplacement_;
 	std::filesystem::path missingRecentProject_;
+	std::filesystem::path failedRestoredScene_;
 	bool startupProjectPicker_ = false;
 	SceneObjectId pendingOpenObject_ = 0;
 	std::vector<std::filesystem::path> pendingAssetPaths_;
