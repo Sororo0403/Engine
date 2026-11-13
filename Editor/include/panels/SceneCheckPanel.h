@@ -28,6 +28,7 @@ class SceneCheckPanel {
 		std::string scriptDiagnostic;
 		std::filesystem::path scenePath;
 		SceneObjectId destinationObjectId = 0;
+		std::filesystem::path modelReloadPath;
 	};
 
 	/// <summary>

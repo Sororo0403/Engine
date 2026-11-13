@@ -311,12 +311,13 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 			const auto path = PathUtils::ToUtf8(issue.assetPath);
 			const auto *object = scene.FindObject(issue.objectId);
 			// モデル本体の診断だけを対象にし、依存ファイルの診断からは選択しない。
-			if (object && object->HasMesh() && PathUtils::IsModelFile(issue.assetPath) &&
+			const bool isReferencedModel =
+			    object && object->HasMesh() && PathUtils::IsModelFile(issue.assetPath) &&
 			    (!object->mesh->modelPath.has_root_path() ||
 			     object->mesh->modelPath.is_absolute()) &&
 			    object->mesh->modelPath.native().find(L'\0') == std::wstring::npos &&
-			    PathUtils::IsSameFile(issue.assetPath, object->mesh->modelPath) &&
-			    ui.Button("Select All Using This Model")) {
+			    PathUtils::IsSameFile(issue.assetPath, object->mesh->modelPath);
+			if (isReferencedModel && ui.Button("Select All Using This Model")) {
 				try {
 					auto users = ModelUsage::FindObjects(scene, issue.assetPath);
 					if (!users.empty()) {
@@ -326,6 +327,17 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 					}
 				} catch (const std::exception &error) {
 					assetActionError_ = error.what();
+				}
+			}
+			if (isReferencedModel) {
+				std::error_code status;
+				if (std::filesystem::is_regular_file(issue.assetPath, status)) {
+					ui.SameLine();
+					if (ui.Button("Reload Model")) {
+						lastIssue_ = i;
+						requested = {};
+						requested.modelReloadPath = issue.assetPath;
+					}
 				}
 			}
 			if (ui.Button("Show in Assets")) {

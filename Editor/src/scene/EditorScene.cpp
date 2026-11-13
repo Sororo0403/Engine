@@ -692,7 +692,9 @@ bool EditorScene::Update(float deltaTime) {
 	                                  ? assetsPanel_.GetPrefabAppendRequest()
 	                                  : assetsPanel_.GetSceneAppendRequest();
 	const auto requestedInstances = assetsPanel_.GetInstanceSelectionRequest();
-	const auto requestedModelReload = assetsPanel_.GetModelReloadRequest();
+	const auto &requestedModelReload = checkedRequest.modelReloadPath.empty()
+	                                      ? assetsPanel_.GetModelReloadRequest()
+	                                      : checkedRequest.modelReloadPath;
 	const auto requestedMeshReplacement =
 	    assetsPanel_.GetMeshReplacementRequest();
 	const auto requestedTextureReload = assetsPanel_.GetTextureReloadRequest();
