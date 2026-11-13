@@ -567,26 +567,33 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 			reportIssue(issue.what());
 		}
 
-		for (const auto &path :
-		     {options.resourceDirectory, options.runtimeDirectory}) {
-			if (path.empty() ||
-			    path.native().find(L'\0') != std::wstring::npos ||
-			    (path.has_root_path() && !path.is_absolute())) {
-				throw std::invalid_argument(
-				    "Choose valid resource and Runtime folders.");
+		const auto validDirectoryPath = [](const fs::path &path) {
+			return !path.empty() && path.native().find(L'\0') == std::wstring::npos &&
+			       (!path.has_root_path() || path.is_absolute());
+		};
+		fs::path runtimeRoot;
+		try {
+			if (!validDirectoryPath(options.runtimeDirectory)) {
+				throw std::invalid_argument("Choose a valid Runtime folder.");
 			}
+			std::error_code runtimeError;
+			runtimeRoot = fs::canonical(options.runtimeDirectory, runtimeError);
+			if (runtimeError || !fs::is_directory(runtimeRoot, runtimeError)) {
+				throw std::runtime_error(
+				    "Release Runtime output folder is unavailable. Build Release "
+				    "Runtime before exporting.");
+			}
+			ValidateRuntimeBuild(runtimeRoot);
+		} catch (const std::bad_alloc &) {
+			throw;
+		} catch (const std::exception &issue) {
+			reportIssue(issue.what());
 		}
 
+		if (!validDirectoryPath(options.resourceDirectory)) {
+			throw std::invalid_argument("Choose a valid resource folder.");
+		}
 		const auto resourceRoot = fs::canonical(options.resourceDirectory);
-		std::error_code runtimeError;
-		const auto runtimeRoot =
-		    fs::canonical(options.runtimeDirectory, runtimeError);
-
-		if (runtimeError || !fs::is_directory(runtimeRoot, runtimeError)) {
-			throw std::runtime_error(
-			    "Release Runtime output folder is unavailable. Build Release "
-			    "Runtime before exporting.");
-		}
 
 		const auto reportObjectIssue = [&](std::string issue, const auto &entry,
 		                                   SceneObjectId id,
@@ -671,8 +678,6 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 				break;
 			}
 		}
-
-		ValidateRuntimeBuild(runtimeRoot);
 
 		// アセット参照を出力先へ書き換える前に、遷移先の到着地点を検証する。
 		std::set<std::pair<std::size_t, std::string>> checkedArrivals;
