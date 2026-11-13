@@ -67,8 +67,8 @@ bool GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits
 	const bool resume = std::exchange(resumeDraft_, false) &&
 	                    projectRoot_ == projectRoot &&
 	                    options_.startupScenePath == options.startupScenePath;
-	const bool recheck = resume && !checkIssues_.empty();
-	if (recheck) {
+	const bool recheck = resume && !checkResult_.empty();
+	if (resume) {
 		options.destination = options_.destination;
 		options.config.title = title_;
 		options.config.width = width_;
@@ -374,18 +374,21 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 	const bool navigatingIssue = result == GameExportResult::OPEN_ISSUE ||
 	                             result == GameExportResult::EDIT_ISSUE_SCRIPT ||
 	                             result == GameExportResult::REVEAL_ISSUE_ASSET;
+	ui.SameLine();
+	const bool keepDraft = ui.Button("Keep Draft and Close");
+	ImGui::SetItemTooltip("Restore these settings when reopening Export Game for the same startup scene.");
 	if (chooseStartup || exportRequested || checkRequested || saveAndCheckRequested ||
-	    navigatingIssue) {
+	    navigatingIssue || keepDraft) {
 		error_.clear();
 		try {
 			auto selected = options_;
 			try {
 				selected.destination = ReadDestination(output_);
 			} catch (const std::invalid_argument &) {
-				if (!chooseStartup && !navigatingIssue) {
+				if (!chooseStartup && !navigatingIssue && !keepDraft) {
 					throw;
 				}
-				// 出力先の入力が無効でも、起動シーンの変更や問題箇所への移動を許可する。
+				// 出力先の入力が無効でも、下書きの保持や修正箇所への移動を許可する。
 				selected.destination.clear();
 			}
 			selected.config.title = title_;
@@ -409,7 +412,8 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 			}
 
 			options_ = std::move(selected);
-			result = chooseStartup          ? GameExportResult::CHOOSE_STARTUP_SCENE
+			result = keepDraft              ? GameExportResult::CANCELLED
+			         : chooseStartup         ? GameExportResult::CHOOSE_STARTUP_SCENE
 			         : exportRequested      ? GameExportResult::ACCEPTED
 			         : saveAndCheckRequested ? GameExportResult::SAVE_AND_CHECK
 			         : checkRequested        ? GameExportResult::CHECK
@@ -457,7 +461,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 	    result == GameExportResult::OPEN_ISSUE ||
 	    result == GameExportResult::REVEAL_ISSUE_ASSET ||
 	    result == GameExportResult::EDIT_ISSUE_SCRIPT) {
-		resumeDraft_ = result == GameExportResult::OPEN_ISSUE ||
+		resumeDraft_ = keepDraft || result == GameExportResult::OPEN_ISSUE ||
 		               result == GameExportResult::REVEAL_ISSUE_ASSET ||
 		               result == GameExportResult::EDIT_ISSUE_SCRIPT;
 		ui.CloseCurrentPopup();
