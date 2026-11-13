@@ -5584,7 +5584,7 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 	const auto reportFailure = [&](std::string error) {
 		if (stage_ == DialogStage::CREATE_PROJECT ||
 		    stage_ == DialogStage::OPEN_PROJECT) {
-			fileDialog_.RetrySelection(std::move(error));
+			fileDialog_.RetrySelection(std::move(error), folder);
 		} else if (fromRecent) {
 			std::error_code status;
 			if (std::filesystem::symlink_status(folder / L"project.json", status)
@@ -5594,7 +5594,7 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 			fileDialog_.Show(FileDialogMode::SELECT_DIRECTORY,
 			                 FindExistingDirectory(folder), FileDialogFilter::PROJECT,
 			                 "Open Project###FileDialog");
-			fileDialog_.RetrySelection(std::move(error));
+			fileDialog_.RetrySelection(std::move(error), folder);
 			stage_ = DialogStage::OPEN_PROJECT;
 		} else {
 			ShowError(std::move(error));

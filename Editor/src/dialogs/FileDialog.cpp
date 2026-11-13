@@ -3,6 +3,7 @@
 #include "assets/AssetFolders.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "platform/windows/PathUtils.h"
+#include "platform/windows/ShellUtils.h"
 #include "platform/windows/StringConversion.h"
 
 #include <Windows.h>
@@ -51,6 +52,8 @@ void FileDialog::Show(FileDialogMode mode,
 	title_ = std::move(title);
 	mode_ = mode;
 	selectedPath_.clear();
+	failedProject_.clear();
+	failedProjectLocationError_.clear();
 	entries_.clear();
 	projectScenes_.clear();
 	projectRoot_.clear();
@@ -110,7 +113,8 @@ void FileDialog::ShowImportSource(const std::filesystem::path &source,
 	Show(FileDialogMode::OPEN, folder, filter);
 }
 
-void FileDialog::RetrySelection(std::string error) {
+void FileDialog::RetrySelection(std::string error,
+                                const std::filesystem::path &failedProject) {
 	const bool selectingFolder = mode_ == FileDialogMode::SELECT_DIRECTORY;
 	const auto folder = selectingFolder ? selectedPath_ : selectedPath_.parent_path();
 	if (!searchProjectScenes_ && !folder.empty() && folder != directory_) {
@@ -122,6 +126,8 @@ void FileDialog::RetrySelection(std::string error) {
 	}
 	selectedPath_.clear();
 	error_ = std::move(error);
+	failedProject_ = failedProject;
+	failedProjectLocationError_.clear();
 	confirmOverwrite_ = false;
 	openRequested_ = true;
 }
@@ -318,6 +324,17 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 
 		if (!error_.empty()) {
 			ImGui::TextWrapped("%s", error_.c_str());
+		}
+
+		if (!failedProject_.empty()) {
+			if (ui.Button("Show Failed Project Location")) {
+				ShellUtils::RevealLocationInExplorer(failedProject_,
+				                                     failedProjectLocationError_);
+			}
+			ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(failedProject_).c_str());
+			if (!failedProjectLocationError_.empty()) {
+				ImGui::TextWrapped("%s", failedProjectLocationError_.c_str());
+			}
 		}
 
 		ui.Separator();
