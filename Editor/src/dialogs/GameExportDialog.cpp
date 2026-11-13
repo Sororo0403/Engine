@@ -3,7 +3,9 @@
 #include "platform/windows/PathUtils.h"
 #include "platform/windows/ShellUtils.h"
 #include <algorithm>
+#include <charconv>
 #include <imgui.h>
+#include <limits>
 #include <stdexcept>
 #include <utility>
 
@@ -26,16 +28,37 @@ std::filesystem::path FindAvailableDestination(
     const std::filesystem::path &destination) {
 	auto candidate = destination;
 	const auto parent = destination.parent_path();
-	const auto name = destination.filename().native();
+	auto name = destination.filename().native();
+	std::size_t index = 2;
 
-	for (std::size_t index = 2;
-	     std::filesystem::exists(std::filesystem::symlink_status(candidate));
-	     ++index) {
+	// 連番の出力先が使用済みになった場合も、同じ名前の連番を進める。
+	const auto separator = name.rfind(L'-');
+	if (std::filesystem::exists(std::filesystem::symlink_status(candidate)) &&
+	    separator != std::wstring::npos && separator != 0) {
+		const auto base = name.substr(0, separator);
+		const auto suffix = PathUtils::ToUtf8(std::filesystem::path(name.substr(separator + 1)));
+		std::size_t number = 0;
+		const auto end = suffix.data() + suffix.size();
+		const auto parsed = std::from_chars(suffix.data(), end, number);
+		if (parsed.ec == std::errc{} && parsed.ptr == end &&
+		    number >= 2 && number < (std::numeric_limits<std::size_t>::max)() &&
+		    suffix.front() != '0' && PathUtils::IsValidFileName(base) &&
+		    std::filesystem::exists(std::filesystem::symlink_status(parent / base))) {
+			name = base;
+			index = number + 1;
+		}
+	}
+
+	while (std::filesystem::exists(std::filesystem::symlink_status(candidate))) {
 		const auto numbered = name + L"-" + std::to_wstring(index);
 		if (!PathUtils::IsValidFileName(numbered)) {
 			throw std::runtime_error("The suggested output folder name is too long or invalid.");
 		}
 		candidate = parent / numbered;
+		if (index == (std::numeric_limits<std::size_t>::max)()) {
+			throw std::runtime_error("No numbered output folder is available.");
+		}
+		++index;
 	}
 
 	return candidate;
