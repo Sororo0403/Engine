@@ -115,6 +115,14 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 	Action action = Action::NONE;
 
 	if (IsPlaying()) {
+		const auto &runningScene = playSourcePath.empty() ? editingScenePath : playSourcePath;
+		ui.Text(runningScene.empty()
+		            ? "Scene: Untitled Scene"
+		            : "Scene: " + PathUtils::ToUtf8(runningScene.filename()));
+		if (!runningScene.empty()) {
+			ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(runningScene).c_str());
+		}
+
 		if (ui.Button("Stop")) {
 			action = Action::STOP;
 		}
