@@ -55,7 +55,7 @@ class GameExportDialog {
 	/// <summary>
 	/// 出力に失敗したとき、入力を保持したままダイアログを開き直す
 	/// </summary>
-	void ShowExportFailure(std::string error);
+	void ShowExportFailure(std::string error, std::vector<GameExportIssue> issues);
 
 	/// <summary>
 	/// 入力を保持したまま出力画面を開き直す

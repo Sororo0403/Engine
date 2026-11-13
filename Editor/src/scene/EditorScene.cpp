@@ -3220,8 +3220,9 @@ void EditorScene::WriteGameExport() {
 	std::string error;
 	const auto *scene = PrepareGameExport(startup, options, error);
 
-	if (!scene || !GameExporter::Export(*scene, options, error)) {
-		exportDialog_.ShowExportFailure("Export failed: " + error);
+	std::vector<GameExportIssue> issues;
+	if (!scene || !GameExporter::Export(*scene, options, error, &issues)) {
+		exportDialog_.ShowExportFailure("Export failed: " + error, std::move(issues));
 		stage_ = DialogStage::EXPORT_GAME;
 		return;
 	}

@@ -141,9 +141,10 @@ void GameExportDialog::ClearCheckResult() {
 	checkIssues_.clear();
 }
 
-void GameExportDialog::ShowExportFailure(std::string error) {
-	ClearCheckResult();
-	Reopen(std::move(error));
+void GameExportDialog::ShowExportFailure(std::string error,
+                                         std::vector<GameExportIssue> issues) {
+	SetCheckResult(std::move(error), std::move(issues));
+	Reopen();
 }
 
 void GameExportDialog::Reopen(std::string error) {
@@ -228,7 +229,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 	}
 	GameExportResult result = GameExportResult::NONE;
 	if (!checkIssues_.empty()) {
-		ui.Text("Export check failed.");
+		ui.Text("Export issues");
 		if (scrollCheckResultToTop_) {
 			ImGui::SetNextWindowScroll({-1.0f, 0.0f});
 		}

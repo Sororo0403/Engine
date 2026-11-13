@@ -515,7 +515,7 @@ fs::path ResolveDestination(const fs::path &path) {
 
 bool ProcessExport(const Scene &scene, const GameExportOptions &options,
                    std::string &error, bool writeOutput,
-                   std::vector<GameExportIssue> *issues = nullptr) {
+                   std::vector<GameExportIssue> *issues) {
 	OutputDirectory output;
 	const auto appendIssue = [&](std::string issue, const fs::path &scenePath,
 	                             SceneObjectId objectId,
@@ -530,15 +530,11 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 			    {std::move(issue), scenePath, objectId, scriptPath, assetPath});
 		}
 	};
-	// 事前検査では、同じ検査で独立して直せる問題をまとめて表示する。
+	// 出力前に、同じ検査で独立して直せる問題をまとめる。
 	const auto reportIssue = [&](std::string issue, const fs::path &scenePath = {},
 	                             SceneObjectId objectId = 0,
 	                             const fs::path &scriptPath = {},
 	                             const fs::path &assetPath = {}) {
-		if (writeOutput) {
-			throw std::runtime_error(std::move(issue));
-		}
-
 		appendIssue(std::move(issue), scenePath, objectId, scriptPath, assetPath);
 	};
 
@@ -1036,6 +1032,6 @@ bool GameExporter::Check(const Scene &scene, const GameExportOptions &options,
 }
 
 bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
-                          std::string &error) {
-	return ProcessExport(scene, options, error, true);
+                          std::string &error, std::vector<GameExportIssue> *issues) {
+	return ProcessExport(scene, options, error, true, issues);
 }
