@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gameplay/SceneValidation.h"
+#include <optional>
 #include <string>
 #include <vector>
 class ImGuiSystem;
@@ -76,6 +77,8 @@ class SceneCheckPanel {
 	std::vector<SceneObjectId> GetIssueObjects(const Scene &scene) const;
 
 	std::vector<SceneValidationIssue> issues_;
+	std::optional<std::size_t> lastIssue_;
+	std::optional<std::size_t> scrollToIssue_;
 	std::string error_;
 	std::string assetActionError_;
 	std::string filter_;

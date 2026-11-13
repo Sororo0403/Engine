@@ -31,6 +31,32 @@ void SceneCheckPanel::Check(const Scene &scene, const CameraPose &fallback,
 	auto assets = SceneAssetValidation::Inspect(scene);
 	issues.insert(issues.end(), std::make_move_iterator(assets.begin()),
 	              std::make_move_iterator(assets.end()));
+
+	scrollToIssue_.reset();
+	if (lastIssue_ && *lastIssue_ < issues_.size()) {
+		const auto &previous = issues_[*lastIssue_];
+		const auto matches = [&](const SceneValidationIssue &issue) {
+			return MatchesFilter(issue, scene);
+		};
+		auto remaining = std::count_if(issues_.begin(),
+		                               issues_.begin() + *lastIssue_, matches);
+		for (std::size_t i = 0; i < issues.size(); ++i) {
+			const auto &issue = issues[i];
+			if (!matches(issue))
+				continue;
+			if (issue.objectId == previous.objectId &&
+			    issue.assetPath == previous.assetPath &&
+			    issue.message == previous.message) {
+				scrollToIssue_ = i;
+				break;
+			}
+			if (remaining >= 0) {
+				scrollToIssue_ = i;
+				--remaining;
+			}
+		}
+	}
+	lastIssue_ = scrollToIssue_;
 	issues_.swap(issues);
 	error_.clear();
 	assetActionError_.clear();
@@ -141,11 +167,16 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 		ImGui::TextWrapped("%s", assetActionError_.c_str());
 	}
 
-	ui.InputText("Search Issues", filter_);
+	if (ui.InputText("Search Issues", filter_)) {
+		lastIssue_.reset();
+		scrollToIssue_.reset();
+	}
 	ui.SameLine();
 
 	if (ui.Button("Clear Search")) {
 		filter_.clear();
+		lastIssue_.reset();
+		scrollToIssue_.reset();
 	}
 
 	const auto matchingCount =
@@ -185,23 +216,30 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 		ImGui::PushID(static_cast<int>(i));
 		ImGui::Separator();
 		ImGui::TextWrapped("%s", issue.message.c_str());
+		if (scrollToIssue_ == i) {
+			ImGui::SetScrollHereY(0.45f);
+			scrollToIssue_.reset();
+		}
 
 		if (issue.objectId != 0) {
 			ui.BeginDisabled(!scene.Contains(issue.objectId));
 
 			if (ui.Button("Select Object")) {
+				lastIssue_ = i;
 				requested = {{issue.objectId}, false};
 			}
 
 			ui.SameLine();
 
 			if (ui.Button("Frame Object")) {
+				lastIssue_ = i;
 				requested = {{issue.objectId}, true};
 			}
 
 			ui.SameLine();
 
 			if (ui.Button("Inspect Object")) {
+				lastIssue_ = i;
 				requested = {{issue.objectId}, false, true};
 			}
 
@@ -211,15 +249,18 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 		if (!issue.assetPath.empty()) {
 			const auto path = PathUtils::ToUtf8(issue.assetPath);
 			if (ui.Button("Show in Assets")) {
+				lastIssue_ = i;
 				requested = {};
 				requested.assetPath = issue.assetPath;
 			}
 			ui.SameLine();
 			if (ui.Button("Copy Asset Path")) {
+				lastIssue_ = i;
 				ImGui::SetClipboardText(path.c_str());
 			}
 			ui.SameLine();
 			if (ui.Button("Show Location in Explorer")) {
+				lastIssue_ = i;
 				ShellUtils::RevealLocationInExplorer(issue.assetPath, assetActionError_);
 			}
 			ImGui::SetItemTooltip("%s", path.c_str());
