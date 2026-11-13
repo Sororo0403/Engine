@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <filesystem>
+#include <optional>
 #include <span>
 #include <string>
 #include <utility>
@@ -45,10 +46,11 @@ class AssetsPanel {
 	                       const AssetDatabase &assets);
 
 	/// <summary>
-	/// 移動が完了した素材と、その配下にあるコピー・切り取り元を更新する
+	/// 移動が完了した素材と、その配下にある一覧・選択・クリップボードの参照を更新する
 	/// </summary>
-	void RelocateClipboard(std::span<const std::pair<std::filesystem::path,
-	                                                std::filesystem::path>> moves);
+	void RelocatePaths(std::span<const std::pair<std::filesystem::path,
+	                                            std::filesystem::path>> moves,
+	                   const std::filesystem::path &root);
 
 	/// <summary>
 	/// アセットの一覧と操作用UIを構築する
@@ -324,15 +326,23 @@ class AssetsPanel {
 	/// </summary>
 	bool ValidateClipboard();
 
+	struct ResultView {
+		std::string search;
+		std::vector<std::filesystem::path> results;
+		std::vector<std::filesystem::path> selection;
+		std::filesystem::path directory;
+		std::filesystem::path anchor;
+		AssetType type = AssetType::MODEL;
+	};
+
+	/// <summary>
+	/// 表示中の検索または操作結果を、あとで戻るために記録する
+	/// </summary>
+	std::optional<ResultView> CaptureResults() const;
+
 	std::filesystem::path currentDirectory_;
 	std::string filter_;
-	// 検索・操作結果から別の素材表示へ移動したときに、元の表示を保持する。
-	std::string previousSearch_;
-	std::vector<std::filesystem::path> previousResults_;
-	std::vector<std::filesystem::path> previousResultSelection_;
-	std::filesystem::path previousSearchDirectory_;
-	std::filesystem::path previousSearchAsset_;
-	AssetType previousSearchType_ = AssetType::MODEL;
+	std::optional<ResultView> previousView_;
 	std::filesystem::path revealPath_;
 	bool keepRevealResults_ = false;
 	std::vector<std::filesystem::path> resultPaths_;

@@ -24,9 +24,7 @@
 
 void AssetsPanel::RequestReveal(const std::filesystem::path &path, bool keepResults) {
 	resultPaths_.clear();
-	previousSearch_.clear();
-	previousResults_.clear();
-	previousResultSelection_.clear();
+	previousView_.reset();
 	unavailableRevealPath_.clear();
 	revealPath_ = path;
 	keepRevealResults_ = keepResults;
@@ -44,18 +42,33 @@ bool AssetsPanel::RevealIndexedAsset(const std::filesystem::path &path,
 		return false;
 	}
 	unavailableRevealPath_.clear();
-	previousSearch_.clear();
-	previousResults_.clear();
-	previousResultSelection_.clear();
+	previousView_.reset();
 	focusRequested_ = true;
 	return true;
 }
 
-void AssetsPanel::RelocateClipboard(
-    std::span<const std::pair<std::filesystem::path, std::filesystem::path>> moves) {
-	for (auto &path : clipboardItems_) {
-		path = PathUtils::AfterMove(path, moves);
+void AssetsPanel::RelocatePaths(
+    std::span<const std::pair<std::filesystem::path, std::filesystem::path>> moves,
+    const std::filesystem::path &root) {
+	for (auto *paths : {&clipboardItems_, &displayedResults_, &selectedItems_}) {
+		for (auto &path : *paths) {
+			path = PathUtils::AfterMove(path, moves);
+		}
 	}
+	selectionAnchor_ = PathUtils::AfterMove(selectionAnchor_, moves);
+	currentDirectory_ = PathUtils::AfterMove(root / currentDirectory_, moves)
+	                        .lexically_relative(root);
+	if (currentDirectory_ == L".") {
+		currentDirectory_.clear();
+	}
+}
+
+std::optional<AssetsPanel::ResultView> AssetsPanel::CaptureResults() const {
+	if (filter_.empty() && displayedResults_.empty()) {
+		return std::nullopt;
+	}
+	return ResultView{filter_, displayedResults_, selectedItems_, currentDirectory_,
+	                  selectionAnchor_, type_};
 }
 
 bool AssetsPanel::ValidateClipboard() {
@@ -83,9 +96,7 @@ void AssetsPanel::SetAssetType(AssetType type) {
 
 	type_ = type;
 	displayedResults_.clear();
-	previousSearch_.clear();
-	previousResults_.clear();
-	previousResultSelection_.clear();
+	previousView_.reset();
 	selectedPath_.clear();
 	selectedItems_.clear();
 	selectionAnchor_.clear();
@@ -129,9 +140,7 @@ void AssetsPanel::OpenDirectory(std::filesystem::path directory) {
 	selectedItems_.clear();
 	selectionAnchor_.clear();
 	filter_.clear();
-	previousSearch_.clear();
-	previousResults_.clear();
-	previousResultSelection_.clear();
+	previousView_.reset();
 	unavailableRevealPath_.clear();
 	revealMessage_.clear();
 	scrollToSelected_ = false;
@@ -292,26 +301,13 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	}
 
 	if (!revealPath_.empty()) {
-		const bool keepResults = std::exchange(keepRevealResults_, false) &&
-		                         (!filter_.empty() || !displayedResults_.empty());
-		auto search = keepResults ? filter_ : std::string{};
-		auto results = keepResults ? displayedResults_ : std::vector<std::filesystem::path>{};
-		auto selection = keepResults ? selectedItems_ : std::vector<std::filesystem::path>{};
-		auto directory = keepResults ? currentDirectory_ : std::filesystem::path{};
-		auto anchor = keepResults ? selectionAnchor_ : std::filesystem::path{};
-		const auto type = type_;
+		auto previous = std::exchange(keepRevealResults_, false)
+		                    ? CaptureResults() : std::nullopt;
 		try {
 			if (SelectAsset(revealPath_, assets) ||
 			    (assets.Refresh() && SelectAsset(revealPath_, assets))) {
 				revealMessage_.clear();
-				if (keepResults) {
-					previousSearch_ = std::move(search);
-					previousResults_ = std::move(results);
-					previousResultSelection_ = std::move(selection);
-					previousSearchDirectory_ = std::move(directory);
-					previousSearchAsset_ = std::move(anchor);
-					previousSearchType_ = type;
-				}
+				previousView_ = std::move(previous);
 			} else if (assets.GetError().empty()) {
 				revealMessage_ = "Asset is not in the indexed Assets folder.";
 			} else {
@@ -332,6 +328,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 	const auto &directories = assets.GetDirectories();
 	if (!resultPaths_.empty()) {
+		auto previous = CaptureResults();
 		const auto parent = resultPaths_.front().parent_path();
 		OpenDirectory(parent.lexically_relative(assets.GetRootDirectory()));
 		// フォルダはどの種類でも表示される。ファイルがあればその種類を開く。
@@ -348,6 +345,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		}
 		selectionAnchor_ = selectedItems_.front();
 		scrollToSelected_ = true;
+		previousView_ = std::move(previous);
 	}
 
 	if (directoryOpenRequested_) {
@@ -499,9 +497,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 	if (ui.InputText("Search", filter_)) {
 		displayedResults_.clear();
-		previousSearch_.clear();
-		previousResults_.clear();
-		previousResultSelection_.clear();
+		previousView_.reset();
 		unavailableRevealPath_.clear();
 		scrollToTop_ = true;
 		// 検索で隠れたアセットを誤って操作しないよう選択を解除する
@@ -512,19 +508,16 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		revealMessage_.clear();
 	}
 
-	if ((!previousResults_.empty() || !previousSearch_.empty()) &&
-	    displayedResults_.empty() && unavailableRevealPath_.empty()) {
+	if (previousView_ && unavailableRevealPath_.empty()) {
 		ui.SameLine();
-		if (ui.Button(previousResults_.empty() ? "Back to Search" : "Back to Results")) {
-			auto search = std::exchange(previousSearch_, {});
-			auto results = std::exchange(previousResults_, {});
-			auto selection = std::exchange(previousResultSelection_, {});
-			SetAssetType(previousSearchType_);
-			RestoreDirectory(previousSearchDirectory_, assets);
-			filter_ = std::move(search);
-			displayedResults_ = std::move(results);
-			selectedItems_ = std::move(selection);
-			selectionAnchor_ = previousSearchAsset_;
+		if (ui.Button(previousView_->results.empty() ? "Back to Search" : "Back to Results")) {
+			auto previous = std::exchange(previousView_, std::nullopt);
+			SetAssetType(previous->type);
+			RestoreDirectory(std::move(previous->directory), assets);
+			filter_ = std::move(previous->search);
+			displayedResults_ = std::move(previous->results);
+			selectedItems_ = std::move(previous->selection);
+			selectionAnchor_ = std::move(previous->anchor);
 			scrollToSelected_ = !selectedItems_.empty();
 			scrollToTop_ = !scrollToSelected_;
 		}
@@ -1283,9 +1276,7 @@ void AssetsPanel::Clear() {
 	textureReloadPath_.clear();
 	currentDirectory_.clear();
 	filter_.clear();
-	previousSearch_.clear();
-	previousResults_.clear();
-	previousResultSelection_.clear();
+	previousView_.reset();
 	revealPath_.clear();
 	resultPaths_.clear();
 	displayedResults_.clear();
