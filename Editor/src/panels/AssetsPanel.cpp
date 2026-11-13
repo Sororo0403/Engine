@@ -24,6 +24,7 @@
 
 void AssetsPanel::RequestReveal(const std::filesystem::path &path) {
 	previousSearch_.clear();
+	unavailableRevealPath_.clear();
 	revealPath_ = path;
 }
 
@@ -32,6 +33,7 @@ bool AssetsPanel::RevealIndexedAsset(const std::filesystem::path &path,
 	if (!SelectAsset(path, assets)) {
 		return false;
 	}
+	unavailableRevealPath_.clear();
 	previousSearch_.clear();
 	focusRequested_ = true;
 	return true;
@@ -57,6 +59,7 @@ bool AssetsPanel::ValidateClipboard() {
 	clipboardItems_.clear();
 	clipboardRoot_.clear();
 	clipboardCut_ = false;
+	unavailableRevealPath_.clear();
 	revealMessage_ = "A copied or cut item is missing. Select the items again.";
 	return false;
 }
@@ -110,6 +113,7 @@ void AssetsPanel::OpenDirectory(std::filesystem::path directory) {
 	selectionAnchor_.clear();
 	filter_.clear();
 	previousSearch_.clear();
+	unavailableRevealPath_.clear();
 	revealMessage_.clear();
 	scrollToSelected_ = false;
 	scrollToTop_ = true;
@@ -257,6 +261,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	std::filesystem::path requestedPath;
 
 	if (ui.Button("Refresh")) {
+		unavailableRevealPath_.clear();
 		revealMessage_.clear();
 		if (assets.Refresh()) {
 			RestoreDirectory(currentDirectory_, assets);
@@ -283,6 +288,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 		if (!revealMessage_.empty()) {
 			previousSearch_.clear();
+			unavailableRevealPath_ = revealPath_;
 		}
 		revealPath_.clear();
 	}
@@ -438,6 +444,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 	if (ui.InputText("Search", filter_)) {
 		previousSearch_.clear();
+		unavailableRevealPath_.clear();
 		scrollToTop_ = true;
 		// 検索で隠れたアセットを誤って操作しないよう選択を解除する
 		selectedPath_.clear();
@@ -610,6 +617,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 	const auto drawLocationMenu = [&](const std::filesystem::path &path) {
 		if (ui.MenuItem("Show in Explorer")) {
+			unavailableRevealPath_.clear();
 			ShellUtils::RevealInExplorer(path, revealMessage_);
 		}
 		if (ui.MenuItem("Copy Full Path")) {
@@ -630,6 +638,13 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 	if (!revealMessage_.empty()) {
 		ImGui::TextWrapped("%s", revealMessage_.c_str());
+		if (!unavailableRevealPath_.empty() &&
+		    ui.Button("Show Location in Explorer")) {
+			std::string error;
+			if (!ShellUtils::RevealLocationInExplorer(unavailableRevealPath_, error)) {
+				revealMessage_ = std::move(error);
+			}
+		}
 	}
 
 	const auto contentSize = ui.GetContentSize();
@@ -1187,6 +1202,7 @@ void AssetsPanel::Clear() {
 	filter_.clear();
 	previousSearch_.clear();
 	revealPath_.clear();
+	unavailableRevealPath_.clear();
 	focusRequested_ = false;
 	revealMessage_.clear();
 	scrollToSelected_ = false;

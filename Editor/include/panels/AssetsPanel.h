@@ -319,6 +319,7 @@ class AssetsPanel {
 	std::filesystem::path previousSearchDirectory_;
 	std::filesystem::path previousSearchAsset_;
 	std::filesystem::path revealPath_;
+	std::filesystem::path unavailableRevealPath_;
 	bool focusRequested_ = false;
 	std::string revealMessage_;
 	int textureSlot_ = 0;
