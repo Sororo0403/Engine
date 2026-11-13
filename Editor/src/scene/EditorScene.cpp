@@ -5470,6 +5470,19 @@ void EditorScene::UpdateDialogs() {
 				}
 				ui_.SameLine();
 			}
+			if (errorReplayPath_ && !playMode_.IsPlaying()) {
+				if (ui_.Button("Play Scene Again")) {
+					auto path = *errorReplayPath_;
+					const auto camera = errorReplayCameraOverride_;
+					ui_.CloseCurrentPopup();
+					ui_.EndPopup();
+					CancelPendingAction();
+					StartPlay(path, camera);
+					return;
+				}
+				ImGui::SetItemTooltip("Start a new Play session from the reported scene.");
+				ui_.SameLine();
+			}
 			const bool canShowPlayLog = errorHasPlayLog_ || errorReplayPath_.has_value();
 			const bool showPlayError = canShowPlayLog && ui_.Button("Show in Console");
 			if (canShowPlayLog) {
@@ -5533,7 +5546,8 @@ void EditorScene::StartPlay(const std::filesystem::path &path,
 		             "\n" + startup.GetError();
 		Logger::Error(error);
 		ShowError(std::move(error));
-		errorHasPlayLog_ = true;
+		errorReplayPath_ = path;
+		errorReplayCameraOverride_ = cameraOverride;
 		return;
 	}
 
