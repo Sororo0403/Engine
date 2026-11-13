@@ -679,7 +679,7 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 
 		for (const auto &entry : graph) {
 			for (const auto &[id, object] : entry.objects) {
-				if (!startupSettingsValid || incompleteGraph || !object.triggerActions)
+				if (!startupSettingsValid || !object.triggerActions)
 					continue;
 				for (const auto &action : object.triggerActions->actions) {
 					if (action.operation !=
@@ -692,10 +692,14 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 						           PathUtils::IsSameFile(target.source,
 						                                 action.scenePath);
 					    });
-					if (found == graph.end())
+					if (found == graph.end()) {
+						// 読み込めなかった遷移先は依存関係の検査で報告済み。
+						if (incompleteGraph)
+							continue;
 						throw std::runtime_error(
 						    "Tagged arrival requires a destination scene in "
 						    "the export graph.");
+					}
 					const auto index =
 					    static_cast<std::size_t>(found - graph.begin());
 					if (!checkedArrivals.emplace(index, action.arrivalTag)
