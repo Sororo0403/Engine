@@ -333,6 +333,7 @@ class AssetsPanel {
 		std::filesystem::path directory;
 		std::filesystem::path anchor;
 		AssetType type = AssetType::MODEL;
+		bool allTypes = false;
 	};
 
 	/// <summary>
@@ -342,6 +343,7 @@ class AssetsPanel {
 
 	std::filesystem::path currentDirectory_;
 	std::string filter_;
+	bool searchAllTypes_ = false;
 	std::optional<ResultView> previousView_;
 	std::filesystem::path revealPath_;
 	bool keepRevealResults_ = false;

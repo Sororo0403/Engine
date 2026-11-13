@@ -69,7 +69,7 @@ std::optional<AssetsPanel::ResultView> AssetsPanel::CaptureResults() const {
 		return std::nullopt;
 	}
 	return ResultView{filter_, displayedResults_, selectedItems_, currentDirectory_,
-	                  selectionAnchor_, type_};
+	                  selectionAnchor_, type_, searchAllTypes_};
 }
 
 bool AssetsPanel::ValidateClipboard() {
@@ -494,7 +494,13 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		ImGui::EndCombo();
 	}
 
-	if (ui.InputText("Search", filter_)) {
+	const bool searchChanged = ui.InputText("Search", filter_);
+	bool scopeChanged = false;
+	if (!filter_.empty()) {
+		ui.SameLine();
+		scopeChanged = ui.Checkbox("All Asset Types", searchAllTypes_);
+	}
+	if (searchChanged || scopeChanged) {
 		displayedResults_.clear();
 		previousView_.reset();
 		unavailableRevealPath_.clear();
@@ -514,6 +520,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			SetAssetType(previous->type);
 			RestoreDirectory(std::move(previous->directory), assets);
 			filter_ = std::move(previous->search);
+			searchAllTypes_ = previous->allTypes;
 			displayedResults_ = std::move(previous->results);
 			selectedItems_ = std::move(previous->selection);
 			selectionAnchor_ = std::move(previous->anchor);
@@ -528,11 +535,12 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		if (ui.Button("Show Current Folder")) {
 			OpenDirectory(currentDirectory_);
 		}
-	} else if (type_ != AssetType::AUDIO) {
-		ImGui::TextDisabled("%s", filter_.empty() ? "Double-click a folder to open it."
-		                                          : "Searching all folders.");
+	} else if (filter_.empty() && type_ != AssetType::AUDIO) {
+		ImGui::TextDisabled("Double-click a folder to open it.");
 	}
 
+	const bool mixedTypes = !displayedResults_.empty() ||
+	                        (!filter_.empty() && searchAllTypes_);
 	const std::array filesByType{
 	    std::pair{AssetType::MODEL, &assets.GetModels()},
 	    std::pair{AssetType::TEXTURE, &assets.GetTextures()},
@@ -578,7 +586,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 	std::vector<std::pair<AssetType, const std::filesystem::path *>> visibleFiles;
 	for (const auto &[type, paths] : filesByType) {
-		if (displayedResults_.empty() && type != type_) {
+		if (!mixedTypes && type != type_) {
 			continue;
 		}
 		for (const auto &path : *paths) {
@@ -735,11 +743,11 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 	const auto contentSize = ui.GetContentSize();
 	const float footerHeight =
-	    (type_ == AssetType::AUDIO
+	    (!mixedTypes && type_ == AssetType::AUDIO
 	         ? ImGui::GetFrameHeightWithSpacing()
 	         : ImGui::GetTextLineHeightWithSpacing() +
 	               ImGui::GetFrameHeightWithSpacing() *
-	                   (type_ == AssetType::TEXTURE ? 6.0f : 4.0f)) +
+	                   (mixedTypes || type_ == AssetType::TEXTURE ? 6.0f : 4.0f)) +
 	    ImGui::GetStyle().ItemSpacing.y;
 	const float listHeight = std::max(1.0f, contentSize.y - footerHeight);
 

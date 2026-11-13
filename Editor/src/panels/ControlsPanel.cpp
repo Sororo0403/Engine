@@ -195,7 +195,8 @@ void ControlsPanel::Draw() {
 	         "reveals the active result in Hierarchy."},
 	        {"Assets folders / Up / Root",
 	         "Open a folder or return to its parent or the Assets root. Search "
-	         "finds paths of the selected Asset Type across all folders."},
+	         "finds paths across all folders. Enable All Asset Types to search "
+	         "models, textures, scenes and other files together."},
 	        {"Click / Ctrl + click",
 	         "Select one object / toggle an object in the selection."},
 	        {"Drag in Scene", "Select models inside the rectangle."},
