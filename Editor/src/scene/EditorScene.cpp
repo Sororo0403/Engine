@@ -2854,7 +2854,9 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 		directory = FindExistingDirectory(std::move(directory));
 		if (directory.empty())
 			directory = project_.GetRoot();
-		fileDialog_.Show(FileDialogMode::SELECT_DIRECTORY, directory);
+		fileDialog_.Show(FileDialogMode::SELECT_DIRECTORY, directory,
+		                 FileDialogFilter::GAME_EXPORT,
+		                 "Open Game Export###FileDialog");
 		stage_ = DialogStage::SELECT_GAME_EXPORT;
 		return;
 	}

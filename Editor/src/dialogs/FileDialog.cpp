@@ -49,7 +49,7 @@ void FileDialog::Show(FileDialogMode mode,
 	     mode != FileDialogMode::OPEN) ||
 	    (filter == FileDialogFilter::GAME_CONFIG &&
 	     mode == FileDialogMode::SELECT_DIRECTORY) ||
-	    (filter == FileDialogFilter::PROJECT &&
+	    ((filter == FileDialogFilter::PROJECT || filter == FileDialogFilter::GAME_EXPORT) &&
 	     mode != FileDialogMode::SELECT_DIRECTORY)) {
 		throw std::invalid_argument(
 		    "This file type does not support the requested operation.");
@@ -192,6 +192,8 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 		ui.InputText("Folder", directoryText_);
 		if (filter_ == FileDialogFilter::PROJECT) {
 			ImGui::SetItemTooltip("Paste the project folder or the full path to project.json.");
+		} else if (filter_ == FileDialogFilter::GAME_EXPORT) {
+			ImGui::SetItemTooltip("Paste the export folder or the full path to Game.exe or game.json.");
 		}
 
 		if (ui.Button("Go")) {
@@ -315,6 +317,7 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 		ui.Separator();
 
 		const char *button = filter_ == FileDialogFilter::PROJECT ? "Open Project"
+		                     : filter_ == FileDialogFilter::GAME_EXPORT ? "Open Game Export"
 		                     : mode_ == FileDialogMode::SELECT_DIRECTORY
 		                         ? "Select Folder"
 		                     : mode_ == FileDialogMode::OPEN      ? "Open"
@@ -552,9 +555,15 @@ std::filesystem::path FileDialog::ReadDirectory() const {
 
 std::filesystem::path FileDialog::ReadFolderInput() const {
 	auto path = PathUtils::FromPathInput(directoryText_);
-	if (filter_ == FileDialogFilter::PROJECT && path.is_absolute() &&
-	    CompareStringOrdinal(path.filename().c_str(), -1, L"project.json", -1,
-	                         TRUE) == CSTR_EQUAL &&
+	const auto filename = path.filename();
+	const auto named = [&](const wchar_t *expected) {
+		return CompareStringOrdinal(filename.c_str(), -1, expected, -1, TRUE) ==
+		       CSTR_EQUAL;
+	};
+	const bool isManifest = filter_ == FileDialogFilter::PROJECT && named(L"project.json");
+	const bool isExportFile = filter_ == FileDialogFilter::GAME_EXPORT &&
+	                          (named(L"Game.exe") || named(L"game.json"));
+	if (path.is_absolute() && (isManifest || isExportFile) &&
 	    std::filesystem::is_regular_file(path)) {
 		path = path.parent_path();
 	}

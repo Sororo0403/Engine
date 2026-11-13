@@ -30,7 +30,7 @@ enum class FileDialogResult {
 /// <summary>
 /// ファイル一覧と確定時に許可する種類
 /// </summary>
-enum class FileDialogFilter { SCENE, IMAGE, MODEL, GAME_CONFIG, AUDIO, PROJECT };
+enum class FileDialogFilter { SCENE, IMAGE, MODEL, GAME_CONFIG, AUDIO, PROJECT, GAME_EXPORT };
 
 /// <summary>
 /// シーンの保存・読み込みと、素材・ゲーム起動設定・フォルダの選択を行う
@@ -121,7 +121,7 @@ class FileDialog {
 	std::filesystem::path ReadDirectory() const;
 
 	/// <summary>
-	/// フォルダ欄を読み取り、プロジェクトを開く場合は設定ファイルの親も受け付ける
+	/// フォルダ欄を読み取る。プロジェクトと配布版では指定されたファイルの親も受け付ける
 	/// </summary>
 	std::filesystem::path ReadFolderInput() const;
 
