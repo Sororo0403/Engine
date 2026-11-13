@@ -141,7 +141,7 @@ bool EditorScene::Initialize() {
 	errorOpenRequested_ = false;
 	errorMessage_.clear();
 	errorScriptPath_.clear();
-	errorScriptOpenMessage_.clear();
+	errorActionMessage_.clear();
 	errorObjectId_ = 0;
 
 	project_ = ProjectDocument{};
@@ -1693,7 +1693,7 @@ void EditorScene::Finalize() {
 	errorOpenRequested_ = false;
 	errorMessage_.clear();
 	errorScriptPath_.clear();
-	errorScriptOpenMessage_.clear();
+	errorActionMessage_.clear();
 	errorObjectId_ = 0;
 
 	assetsPanel_.Clear();
@@ -5276,8 +5276,8 @@ void EditorScene::UpdateDialogs() {
 				}
 			}
 
-			if (!errorScriptOpenMessage_.empty()) {
-				ImGui::TextWrapped("%s", errorScriptOpenMessage_.c_str());
+			if (!errorActionMessage_.empty()) {
+				ImGui::TextWrapped("%s", errorActionMessage_.c_str());
 			}
 
 			if (!errorScriptPath_.empty()) {
@@ -5300,7 +5300,7 @@ void EditorScene::UpdateDialogs() {
 						ui_.EndPopup();
 						return;
 					}
-					errorScriptOpenMessage_ = "Could not open the script: " + error;
+					errorActionMessage_ = "Could not open the script: " + error;
 				}
 				ui_.SameLine();
 			}
@@ -5329,6 +5329,11 @@ void EditorScene::UpdateDialogs() {
 			}
 
 			if (!errorReloadAssetPath_.empty()) {
+				if (ui_.Button("Show in Explorer")) {
+					ShellUtils::RevealLocationInExplorer(errorReloadAssetPath_,
+					                                     errorActionMessage_);
+				}
+				ui_.SameLine();
 				if (ui_.Button("Retry Reload")) {
 					auto path = std::exchange(errorReloadAssetPath_, std::filesystem::path{});
 					ui_.CloseCurrentPopup();
@@ -5658,7 +5663,7 @@ void EditorScene::ShowError(std::string message, SceneObjectId objectId,
 	errorReplayPath_.reset();
 	errorHasPlayLog_ = false;
 	errorReplayCameraOverride_ = 0;
-	errorScriptOpenMessage_.clear();
+	errorActionMessage_.clear();
 	sceneSaveConflict_ = false;
 	errorObjectId_ = document_.GetScene().Contains(objectId) ? objectId : 0;
 	errorOpenRequested_ = true;

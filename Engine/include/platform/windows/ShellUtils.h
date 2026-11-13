@@ -64,6 +64,12 @@ bool OpenDirectory(const std::filesystem::path &path, std::string &error);
 bool RevealInExplorer(const std::filesystem::path &path, std::string &error);
 
 /// <summary>
+/// 項目をExplorerで選択する。項目がない場合は最も近い既存の親フォルダを開く
+/// </summary>
+bool RevealLocationInExplorer(const std::filesystem::path &path,
+                              std::string &error);
+
+/// <summary>
 /// 検証済みの絶対パスにあるファイルまたはフォルダをWindowsのごみ箱へ移動する
 /// </summary>
 /// <remarks>COM初期化済みのスレッドから呼ぶ。ごみ箱へ移せない場合は失敗を返す</remarks>

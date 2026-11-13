@@ -82,33 +82,6 @@ std::filesystem::path FindExistingParent(const std::filesystem::path &output) {
 	return parent;
 }
 
-/// <summary>
-/// 問題の素材をExplorerで選択する。素材がなければ既存の親フォルダを開く
-/// </summary>
-void ShowAssetInExplorer(const std::filesystem::path &path, std::string &error) {
-	if (!path.is_absolute() || path.native().find(L'\0') != std::wstring::npos) {
-		error = "The asset path is invalid.";
-		return;
-	}
-
-	std::error_code statusError;
-	if (std::filesystem::exists(path, statusError)) {
-		ShellUtils::RevealInExplorer(path, error);
-		return;
-	}
-	if (statusError && statusError != std::errc::no_such_file_or_directory &&
-	    statusError != std::errc::not_a_directory) {
-		error = "Could not check the asset location: " + statusError.message();
-		return;
-	}
-
-	const auto parent = FindExistingParent(path.lexically_normal());
-	if (parent.empty()) {
-		error = "No existing folder was found for this asset.";
-		return;
-	}
-	ShellUtils::OpenDirectory(parent, error);
-}
 } // namespace
 
 bool GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits,
@@ -345,7 +318,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 					}
 					ui.SameLine();
 					if (ui.Button("Show in Explorer"))
-						ShowAssetInExplorer(issue.assetPath, error_);
+						ShellUtils::RevealLocationInExplorer(issue.assetPath, error_);
 					ImGui::SetItemTooltip("%s",
 					                      PathUtils::ToUtf8(issue.assetPath).c_str());
 				}

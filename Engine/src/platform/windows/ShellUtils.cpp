@@ -7,6 +7,7 @@
 #include <shellapi.h>
 #include <shlobj.h>
 #include <stdexcept>
+#include <system_error>
 #include <type_traits>
 #include <wrl/client.h>
 
@@ -117,6 +118,38 @@ bool ShellUtils::RevealInExplorer(const std::filesystem::path &path,
 		error = exception.what();
 		return false;
 	}
+}
+
+bool ShellUtils::RevealLocationInExplorer(const std::filesystem::path &path,
+                                           std::string &error) {
+	try {
+		if (path.empty()) {
+			throw std::invalid_argument("Choose a valid local path.");
+		}
+		const auto absolute = PathUtils::ResolveFromExecutable(path);
+		std::error_code status;
+		if (std::filesystem::exists(absolute, status)) {
+			return RevealInExplorer(absolute, error);
+		}
+		if (status && status != std::errc::no_such_file_or_directory &&
+		    status != std::errc::not_a_directory) {
+			throw std::system_error(status, "Could not check the file location");
+		}
+		for (auto parent = absolute.parent_path(); !parent.empty();) {
+			if (std::filesystem::is_directory(parent, status)) {
+				return OpenDirectory(parent, error);
+			}
+			const auto next = parent.parent_path();
+			if (next == parent) {
+				break;
+			}
+			parent = next;
+		}
+		error = "No existing parent folder was found.";
+	} catch (const std::exception &failure) {
+		error = failure.what();
+	}
+	return false;
 }
 
 bool ShellUtils::RecycleAsset(const std::filesystem::path &path,
