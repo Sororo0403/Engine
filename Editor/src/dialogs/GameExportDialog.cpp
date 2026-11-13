@@ -12,12 +12,15 @@
 
 namespace {
 /// <summary>
-/// 出力欄の入力を読み取り、通常の相対パスは実行ファイルを基準にする
+/// 出力欄の入力を読み取り、ルート以外の末尾の区切りを取り除く
 /// </summary>
 std::filesystem::path ReadDestination(const std::string &input) {
 	auto path = PathUtils::FromPathInput(input);
 	if (!path.empty() && !path.has_root_path()) {
 		path = PathUtils::ResolveFromExecutable(path);
+	}
+	if (!path.has_filename() && path.has_relative_path()) {
+		path = path.parent_path();
 	}
 	return path;
 }
