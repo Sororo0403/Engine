@@ -405,7 +405,7 @@ bool EditorScene::Update(float deltaTime) {
 			if (scriptEditorDialog_.ShowEdit(script.path, error, script.diagnostic)) {
 				playMode_.Stop();
 				ClearPlaySelection();
-				stage_ = DialogStage::EDIT_SCRIPT;
+				stage_ = DialogStage::EDIT_PLAY_SCRIPT;
 			} else {
 				ShowError(std::move(error));
 			}
@@ -4713,9 +4713,11 @@ void EditorScene::UpdateDialogs() {
 	}
 
 	case DialogStage::EDIT_SCRIPT:
+	case DialogStage::EDIT_PLAY_SCRIPT:
 	case DialogStage::EDIT_EXPORT_SCRIPT: {
 		const bool fromExport = stage_ == DialogStage::EDIT_EXPORT_SCRIPT;
-		const auto result = scriptEditorDialog_.Draw(ui_);
+		const auto result =
+		    scriptEditorDialog_.Draw(ui_, stage_ == DialogStage::EDIT_PLAY_SCRIPT);
 
 		if (fromExport && result != ScriptEditorDialog::Result::NONE) {
 			std::string error;
@@ -4729,12 +4731,17 @@ void EditorScene::UpdateDialogs() {
 			break;
 		}
 
-		if (result == ScriptEditorDialog::Result::SAVED) {
+		const bool playAfterSave = result == ScriptEditorDialog::Result::SAVED_AND_PLAY;
+		if (result == ScriptEditorDialog::Result::SAVED || playAfterSave) {
 			stage_ = DialogStage::IDLE;
 			if (!assets_.Refresh())
 				ShowError(assets_.GetError());
-			else
+			else {
 				assetsPanel_.RequestReveal(scriptEditorDialog_.GetSavedPath());
+				if (playAfterSave) {
+					StartPlay(lastPlayScenePath_, 0);
+				}
+			}
 		} else if (result == ScriptEditorDialog::Result::CANCELLED)
 			stage_ = DialogStage::IDLE;
 		break;

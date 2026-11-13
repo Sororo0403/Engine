@@ -126,7 +126,8 @@ void ScriptEditorDialog::ReloadFromDisk() {
 	++inputRevision_;
 }
 
-ScriptEditorDialog::Result ScriptEditorDialog::Draw(const ImGuiSystem &ui) {
+ScriptEditorDialog::Result ScriptEditorDialog::Draw(const ImGuiSystem &ui,
+                                                    bool canPlayAfterSave) {
 	constexpr const char *title = "Lua Script###ScriptEditorDialog";
 
 	if (opening_) {
@@ -200,6 +201,11 @@ ScriptEditorDialog::Result ScriptEditorDialog::Draw(const ImGuiSystem &ui) {
 
 	ui.SameLine();
 	const bool save = ui.Button("Save Script");
+	bool saveAndPlay = false;
+	if (canPlayAfterSave && !saveConflict_) {
+		ui.SameLine();
+		saveAndPlay = ui.Button("Save and Play");
+	}
 	bool saveCopy = false;
 	if (saveConflict_) {
 		ui.SameLine();
@@ -213,7 +219,7 @@ ScriptEditorDialog::Result ScriptEditorDialog::Draw(const ImGuiSystem &ui) {
 		}
 	}
 
-	if (save || saveCopy) {
+	if (save || saveCopy || saveAndPlay) {
 		try {
 			if (!LuaScript::Validate(source_, error_))
 				throw std::runtime_error(error_);
@@ -248,7 +254,7 @@ ScriptEditorDialog::Result ScriptEditorDialog::Draw(const ImGuiSystem &ui) {
 			                                    !creating_ && !saveCopy))
 				throw std::runtime_error(error_);
 			saved_.swap(reference);
-			result = Result::SAVED;
+			result = saveAndPlay ? Result::SAVED_AND_PLAY : Result::SAVED;
 		} catch (const std::exception &exception) {
 			error_ = exception.what();
 		}

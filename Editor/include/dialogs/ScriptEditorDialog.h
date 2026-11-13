@@ -10,7 +10,7 @@ class ImGuiSystem;
 /// </summary>
 class ScriptEditorDialog {
   public:
-	enum class Result { NONE, SAVED, CANCELLED };
+	enum class Result { NONE, SAVED, SAVED_AND_PLAY, CANCELLED };
 	/// <summary>
 	/// Assetsの既存フォルダへ作成する新規コードの下書きを準備する
 	/// </summary>
@@ -33,8 +33,9 @@ class ScriptEditorDialog {
 	/// 作成・編集ダイアログを表示する。構文エラーと外部変更時は元ファイルを保持する
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
+	/// <param name="canPlayAfterSave">保存後に試遊を開始できるか</param>
 	/// <returns>確定した操作。表示中はNONE</returns>
-	Result Draw(const ImGuiSystem &ui);
+	Result Draw(const ImGuiSystem &ui, bool canPlayAfterSave = false);
 
 	/// <summary>
 	/// 保存完了したファイルを取得する
