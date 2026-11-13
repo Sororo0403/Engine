@@ -213,10 +213,22 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	std::filesystem::path requestedPath;
 
 	if (ui.Button("Refresh")) {
+		revealMessage_.clear();
 		if (assets.Refresh()) {
 			RestoreDirectory(currentDirectory_, assets);
+			const bool missingClipboardItem =
+			    std::ranges::any_of(clipboardItems_, [](const auto &path) {
+				    std::error_code error;
+				    const auto status = std::filesystem::symlink_status(path, error);
+				    return status.type() == std::filesystem::file_type::not_found;
+			    });
+			if (missingClipboardItem) {
+				clipboardItems_.clear();
+				clipboardRoot_.clear();
+				clipboardCut_ = false;
+				revealMessage_ = "A copied or cut item is missing. Select the items again.";
+			}
 		}
-		revealMessage_.clear();
 	}
 
 	if (!revealPath_.empty()) {
