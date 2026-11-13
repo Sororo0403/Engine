@@ -206,6 +206,13 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 	}
 	ui.EndDisabled();
 
+	if (run.process.IsTracking()) {
+		ui.SameLine();
+		if (ui.Button("Show Running Game")) {
+			run.process.BringToForeground(error_);
+		}
+	}
+
 	ui.SameLine();
 	if (ui.Button(run.showLog ? "Hide Game Log" : "View Game Log")) {
 		run.showLog = !run.showLog;

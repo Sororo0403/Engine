@@ -35,6 +35,12 @@ class ExecutableProcess {
 	bool Poll(std::optional<std::uint32_t> &exitCode, std::string &error) const;
 
 	/// <summary>
+	/// 起動したプロセスのウィンドウを復元して前面への切り替えを要求する
+	/// </summary>
+	/// <returns>前面への切り替えに成功した場合はtrue。失敗時は理由を返す</returns>
+	bool BringToForeground(std::string &error) const;
+
+	/// <summary>
 	/// 起動したプロセスの参照を保持しているか確認する
 	/// </summary>
 	bool IsTracking() const { return handle_ != nullptr; }

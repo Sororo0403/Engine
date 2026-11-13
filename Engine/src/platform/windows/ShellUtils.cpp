@@ -12,6 +12,26 @@
 #include <wrl/client.h>
 
 namespace {
+struct ProcessWindow {
+	DWORD processId;
+	HWND window = nullptr;
+};
+
+/// <summary>
+/// 指定プロセスの表示中のメインウィンドウを探す
+/// </summary>
+BOOL CALLBACK FindProcessWindow(HWND window, LPARAM parameter) {
+	auto &target = *reinterpret_cast<ProcessWindow *>(parameter);
+	DWORD processId = 0;
+	GetWindowThreadProcessId(window, &processId);
+	if (processId != target.processId || !IsWindowVisible(window) ||
+	    GetWindow(window, GW_OWNER)) {
+		return TRUE;
+	}
+	target.window = window;
+	return FALSE;
+}
+
 /// <summary>
 /// シェルへ渡す参照を、存在する絶対パスへ揃える
 /// </summary>
@@ -252,6 +272,41 @@ bool ShellUtils::ExecutableProcess::Poll(
 	exitCode = code;
 	error.clear();
 	return true;
+}
+
+bool ShellUtils::ExecutableProcess::BringToForeground(std::string &error) const {
+	std::optional<std::uint32_t> exitCode;
+	if (!Poll(exitCode, error)) {
+		return false;
+	}
+	if (exitCode) {
+		error = "The game process has already exited.";
+		return false;
+	}
+
+	ProcessWindow target{GetProcessId(handle_)};
+	if (target.processId == 0) {
+		error = "Could not identify the running game process.";
+		return false;
+	}
+	EnumWindows(FindProcessWindow, reinterpret_cast<LPARAM>(&target));
+	if (!target.window) {
+		error = "The running game has no visible window yet.";
+		return false;
+	}
+
+	if (IsIconic(target.window)) {
+		ShowWindowAsync(target.window, SW_RESTORE);
+	}
+	if (SetForegroundWindow(target.window)) {
+		error.clear();
+		return true;
+	}
+
+	FLASHWINFO flash{sizeof(FLASHWINFO), target.window, FLASHW_TRAY, 3, 0};
+	FlashWindowEx(&flash);
+	error = "Windows kept the current window in front. Switch to the game from the taskbar.";
+	return false;
 }
 
 void ShellUtils::ExecutableProcess::Reset() {
