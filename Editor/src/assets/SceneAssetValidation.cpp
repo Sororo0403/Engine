@@ -60,8 +60,9 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 					                  PathUtils::ToUtf8(file), file});
 				}
 			}
-		} catch (const AssetDependencies::MissingModelDependency &error) {
-			errors.push_back({error.what(), error.path});
+		} catch (const AssetDependencies::MissingModelDependencies &error) {
+			for (const auto &file : error.paths)
+				errors.push_back({AssetDependencies::DescribeMissingModelDependency(file), file});
 		} catch (const std::bad_alloc &) {
 			throw;
 		} catch (const std::exception &error) {

@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iomanip>
 #include <json.hpp>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -77,10 +78,23 @@ fs::path ResolveAsset(const fs::path &path) {
 }
 } // namespace
 
-AssetDependencies::MissingModelDependency::MissingModelDependency(fs::path file)
-    : std::runtime_error("Model dependency is missing or is not a regular file: " +
-                         PathUtils::ToUtf8(file)),
-      path(std::move(file)) {
+std::string AssetDependencies::DescribeMissingModelDependency(const fs::path &file) {
+	return "Model dependency is missing or is not a regular file: " +
+	       PathUtils::ToUtf8(file);
+}
+
+AssetDependencies::MissingModelDependencies::MissingModelDependencies(
+    std::vector<fs::path> files)
+    : std::runtime_error([&] {
+	      std::string message;
+	      for (const auto &file : files) {
+		      if (!message.empty())
+			      message += '\n';
+		      message += DescribeMissingModelDependency(file);
+	      }
+	      return message;
+      }()),
+      paths(std::move(files)) {
 }
 
 std::vector<std::filesystem::path>
@@ -198,14 +212,21 @@ AssetDependencies::ModelFiles(const std::filesystem::path &input,
 	if (!ModelLoader::Load(model, data)) {
 		// 外部バッファなどが欠けるとモデル全体を読み込めないため、
 		// 先に調べたファイル参照から具体的な原因を伝える。
+		std::vector<fs::path> missing;
+		std::set<fs::path> seen;
 		for (const auto &file : files) {
+			const auto normalized = file.lexically_normal();
+			if (!seen.insert(normalized).second)
+				continue;
 			std::error_code status;
 			if (!fs::is_regular_file(file, status) &&
 			    (!status || status == std::errc::no_such_file_or_directory ||
 			     status == std::errc::not_a_directory)) {
-				throw MissingModelDependency(file.lexically_normal());
+				missing.push_back(normalized);
 			}
 		}
+		if (!missing.empty())
+			throw MissingModelDependencies(std::move(missing));
 		throw std::runtime_error("Could not load model: " +
 		                         PathUtils::ToUtf8(model));
 	}

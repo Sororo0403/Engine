@@ -187,13 +187,14 @@ struct AssetSource {
 /// </summary>
 class ModelDependencyExportError : public std::runtime_error {
   public:
-	ModelDependencyExportError(fs::path file, const std::exception &reason)
-	    : std::runtime_error(std::format("Could not include model dependency {}: {}",
-	                                     PathUtils::ToUtf8(file), reason.what())),
-	      path(std::move(file)) {
+	using Failure = std::pair<fs::path, std::string>;
+
+	explicit ModelDependencyExportError(std::vector<Failure> items)
+	    : std::runtime_error(items.front().second),
+	      failures(std::move(items)) {
 	}
 
-	fs::path path;
+	std::vector<Failure> failures;
 };
 
 /// <summary>
@@ -243,15 +244,24 @@ class Assets {
 			return found->second;
 		}
 
+		std::vector<ModelDependencyExportError::Failure> failures;
+		std::set<fs::path> failedPaths;
 		for (const auto &file : AssetDependencies::ModelFiles(model)) {
 			try {
 				AddFile(index, file);
 			} catch (const std::bad_alloc &) {
 				throw;
 			} catch (const std::exception &error) {
-				throw ModelDependencyExportError(file.lexically_normal(), error);
+				auto normalized = file.lexically_normal();
+				if (failedPaths.insert(normalized).second) {
+					auto reason = std::format("Could not include model dependency {}: {}",
+					                          PathUtils::ToUtf8(normalized), error.what());
+					failures.emplace_back(std::move(normalized), std::move(reason));
+				}
 			}
 		}
+		if (!failures.empty())
+			throw ModelDependencyExportError(std::move(failures));
 
 		models_.emplace(model, reference);
 		return reference;
@@ -929,22 +939,24 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 				                              const auto &add,
 				                              const fs::path &failedScript = {}) {
 					fs::path input;
-					const auto report = [&](const std::exception &error, const fs::path &location) {
+					const auto report = [&](std::string_view reason, const fs::path &location) {
 						reportObjectIssue(std::format(
 						    "{} / {}: {}\n{}", describe(id), kind, PathUtils::ToUtf8(path),
-						    error.what()), entry, id, failedScript, location);
+						    reason), entry, id, failedScript, location);
 					};
 					try {
 						input = resolveReference(path);
 						path = add(input);
 					} catch (const std::bad_alloc &) {
 						throw;
-					} catch (const AssetDependencies::MissingModelDependency &error) {
-						report(error, error.path);
+					} catch (const AssetDependencies::MissingModelDependencies &error) {
+						for (const auto &file : error.paths)
+							report(AssetDependencies::DescribeMissingModelDependency(file), file);
 					} catch (const ModelDependencyExportError &error) {
-						report(error, error.path);
+						for (const auto &[file, reason] : error.failures)
+							report(reason, file);
 					} catch (const std::exception &error) {
-						report(error, input);
+						report(error.what(), input);
 					}
 				};
 				const auto addUITexture = [&](const fs::path &path) {

@@ -8,10 +8,12 @@ namespace AssetDependencies {
 /// <summary>
 /// 読み込めなかったモデルの依存ファイルと診断を保持する
 /// </summary>
-struct MissingModelDependency : std::runtime_error {
-	explicit MissingModelDependency(std::filesystem::path file);
-	std::filesystem::path path;
+struct MissingModelDependencies : std::runtime_error {
+	explicit MissingModelDependencies(std::vector<std::filesystem::path> files);
+	std::vector<std::filesystem::path> paths;
 };
+
+std::string DescribeMissingModelDependency(const std::filesystem::path &file);
 
 /// <summary>
 /// モデルをCPUで読み込み、本体・外部画像・バッファ・OBJ材質の参照先を収集する
