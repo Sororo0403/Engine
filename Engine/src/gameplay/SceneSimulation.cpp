@@ -700,7 +700,8 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
                              const OrbitCameraInput &cameraInput,
                              const UIInput &uiInput,
                              std::span<const GameActionState> actions,
-                             SceneObjectId *invalidObject) {
+                             SceneObjectId *invalidObject,
+                             std::optional<std::span<const GameActionBinding>> destinationBindings) {
 	failedDestination_.reset();
 	if (invalidObject) {
 		*invalidObject = 0;
@@ -737,6 +738,19 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 					lastUpdateError_ = "Could not load destination scene: " +
 					                   PathUtils::ToUtf8(pendingScene_.path);
 					return false;
+				}
+
+				if (destinationBindings) {
+					const auto issues =
+					    SceneValidation::InspectInputs(destination, *destinationBindings);
+					if (!issues.empty()) {
+						const auto &issue = issues.front();
+						failedDestination_->objectId = issue.objectId;
+						failedDestination_->inputAction = issue.inputAction;
+						lastUpdateError_ = issue.message + "\nDestination scene: " +
+						                   PathUtils::ToUtf8(pendingScene_.path);
+						return false;
+					}
 				}
 
 				if (!PlaceSceneArrival(destination, pendingScene_.arrivalTag,

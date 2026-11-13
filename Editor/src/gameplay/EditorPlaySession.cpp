@@ -177,7 +177,8 @@ bool EditorPlaySession::Update(float seconds, const CharacterInput &input,
                                const OrbitCameraInput &cameraInput,
                                const UIInput &uiInput,
                                std::span<const GameActionState> actions,
-                               SceneObjectId *invalidObject) {
+                               SceneObjectId *invalidObject,
+                               std::optional<std::span<const GameActionBinding>> destinationBindings) {
 	if (invalidObject) {
 		*invalidObject = 0;
 	}
@@ -205,7 +206,7 @@ bool EditorPlaySession::Update(float seconds, const CharacterInput &input,
 	const bool gamePaused = simulation_.IsGamePaused();
 
 	if (!simulation_.Update(*time, input, cameraInput, uiInput, actions,
-	                        invalidObject)) {
+	                        invalidObject, destinationBindings)) {
 		return false;
 	}
 

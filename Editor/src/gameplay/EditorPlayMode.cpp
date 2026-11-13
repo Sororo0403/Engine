@@ -535,7 +535,7 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 	uiInput.pointerDown = viewport_.leftDown;
 
 	if (!session_.Update(seconds, controls, cameraControls, uiInput, actions,
-	                     invalidObject)) {
+	                     invalidObject, std::span<const GameActionBinding>{actionBindings_})) {
 		lastUpdateError_ = session_.GetLastUpdateError();
 		return false;
 	}

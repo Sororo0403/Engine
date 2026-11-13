@@ -172,12 +172,15 @@ class EditorPlaySession {
 	/// <param name="uiInput">ゲーム内UIの入力。Pause中は実行しない</param>
 	/// <param name="actions">今回の名前付き入力。更新時だけLuaのinput.actionsへ渡す</param>
 	/// <param name="invalidObject">指定時は更新に失敗したスクリプトの物体ID。特定できなければ0</param>
+	/// <param name="destinationBindings">指定時は遷移先の名前付き入力を照合する</param>
 	/// <returns>true:更新成功または一時停止 false:未再生、無効な時間、または更新失敗</returns>
 	bool Update(float seconds, const CharacterInput &input,
 	            const OrbitCameraInput &cameraInput = {},
 	            const UIInput &uiInput = {},
 	            std::span<const GameActionState> actions = {},
-	            SceneObjectId *invalidObject = nullptr);
+	            SceneObjectId *invalidObject = nullptr,
+	            std::optional<std::span<const GameActionBinding>> destinationBindings =
+	                std::nullopt);
 
 	/// <summary>
 	/// 再生状態を取得する

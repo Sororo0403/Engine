@@ -6024,6 +6024,7 @@ void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject,
 	if (const auto failed = session.GetFailedSceneDestination()) {
 		auto path = failed->path;
 		auto scriptPath = failed->scriptPath;
+		auto inputAction = failed->inputAction;
 		const auto object = failed->objectId;
 		const auto &current = document_.GetFilePath();
 		const bool isEditingScene =
@@ -6031,6 +6032,7 @@ void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject,
 		playMode_.Stop();
 		ShowError(std::move(message), isEditingScene ? object : 0,
 		          std::move(scriptPath));
+		errorInputAction_ = std::move(inputAction);
 		// 到着タグや共有状態を使う遷移を再現できるよう、最初のシーンから試遊する。
 		errorReplayPath_ = playInitialScenePath_;
 		errorReplayCameraOverride_ = playInitialCameraOverride_;

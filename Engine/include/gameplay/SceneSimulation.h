@@ -234,12 +234,15 @@ class SceneSimulation {
 	/// <param name="uiInput">ゲーム内UIの操作。0秒では押下を解除し、クリックしない</param>
 	/// <param name="actions">今回の名前付き入力。更新時だけLuaのinput.actionsへ渡す</param>
 	/// <param name="invalidObject">指定時は更新に失敗したスクリプトの物体ID。特定できなければ0</param>
+	/// <param name="destinationBindings">指定時は遷移先の名前付き入力を照合する。空の一覧も検査対象</param>
 	/// <returns>true:更新成功 false:未再生または更新失敗</returns>
 	bool Update(float seconds, const CharacterInput &input,
 	            const OrbitCameraInput &cameraInput = {},
 	            const UIInput &uiInput = {},
 	            std::span<const GameActionState> actions = {},
-	            SceneObjectId *invalidObject = nullptr);
+	            SceneObjectId *invalidObject = nullptr,
+	            std::optional<std::span<const GameActionBinding>> destinationBindings =
+	                std::nullopt);
 
 	/// <summary>
 	/// 開始・再開始・シーン遷移のたびに増える識別値を取得する。失敗では変えない
@@ -379,6 +382,7 @@ class SceneSimulation {
 		const std::filesystem::path &path;
 		SceneObjectId objectId;
 		const std::filesystem::path &scriptPath;
+		const std::string &inputAction;
 	};
 
 	/// <summary>
@@ -390,7 +394,8 @@ class SceneSimulation {
 			return std::nullopt;
 		}
 		return FailedSceneDestination{pendingScene_.path, failedDestination_->objectId,
-		                              failedDestination_->scriptPath};
+		                              failedDestination_->scriptPath,
+		                              failedDestination_->inputAction};
 	}
 
 	/// <summary>
@@ -662,6 +667,7 @@ class SceneSimulation {
 	struct DestinationFailure {
 		SceneObjectId objectId = 0;
 		std::filesystem::path scriptPath;
+		std::string inputAction;
 	};
 	std::optional<DestinationFailure> failedDestination_;
 	// 到着位置を反映済みで、Lua開始処理とシミュレーションを実行する前の状態。
