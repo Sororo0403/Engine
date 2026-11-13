@@ -14,6 +14,21 @@
 #include <system_error>
 #include <utility>
 
+namespace {
+/// <summary>
+/// Explorerからコピーしたパスを囲む引用符を除く
+/// </summary>
+std::string_view UnquotePath(std::string_view input) {
+	const auto first = input.find_first_not_of(" \t\r\n");
+	const auto last = input.find_last_not_of(" \t\r\n");
+	if (first != std::string_view::npos && first < last &&
+	    input[first] == '"' && input[last] == '"') {
+		return input.substr(first + 1, last - first - 1);
+	}
+	return input;
+}
+} // namespace
+
 void FileDialog::Show(FileDialogMode mode,
                       const std::filesystem::path &initialPath,
                       FileDialogFilter filter, std::string title) {
@@ -241,8 +256,13 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 			if (ui.Button("Create Folder")) {
 				CreateFolder();
 			}
-		} else if (ui.InputText("File name", fileName_)) {
-			error_.clear();
+		} else {
+			if (ui.InputText("File name", fileName_)) {
+				error_.clear();
+			}
+			if (mode_ == FileDialogMode::OPEN) {
+				ImGui::SetItemTooltip("Enter a file name or paste the full file path.");
+			}
 		}
 
 		if (!error_.empty()) {
@@ -377,7 +397,10 @@ bool FileDialog::AcceptSelection() {
 			return true;
 		}
 
-		auto name = PathUtils::FromUtf8(fileName_);
+		const auto input = PathUtils::FromUtf8(
+		    mode_ == FileDialogMode::OPEN ? UnquotePath(fileName_) : fileName_);
+		const bool absoluteInput = mode_ == FileDialogMode::OPEN && input.is_absolute();
+		auto name = absoluteInput ? input.filename() : input;
 
 		if (!PathUtils::IsValidFileName(name)) {
 			error_ = "Enter a valid file name.";
@@ -409,8 +432,9 @@ bool FileDialog::AcceptSelection() {
 			return false;
 		}
 
-		// Goを押していなくても、表示中のFolder欄と異なる場所へ確定しない。
-		auto candidate = ReadDirectory() / name;
+		// ファイル名だけなら、Goを押す前でもFolder欄の場所を使う。
+		auto candidate = (absoluteInput ? std::filesystem::canonical(input.parent_path())
+		                                : ReadDirectory()) / name;
 
 		std::error_code error;
 		const bool exists = std::filesystem::exists(candidate, error);
@@ -463,15 +487,7 @@ std::filesystem::path FileDialog::ReadDirectory() const {
 }
 
 std::filesystem::path FileDialog::ReadFolderInput() const {
-	std::string_view input = directoryText_;
-	const auto first = input.find_first_not_of(" \t\r\n");
-	const auto last = input.find_last_not_of(" \t\r\n");
-	if (first != std::string_view::npos && first < last &&
-	    input[first] == '"' && input[last] == '"') {
-		input = input.substr(first + 1, last - first - 1);
-	}
-
-	auto path = PathUtils::FromUtf8(input);
+	auto path = PathUtils::FromUtf8(UnquotePath(directoryText_));
 	if (filter_ == FileDialogFilter::PROJECT && path.is_absolute() &&
 	    CompareStringOrdinal(path.filename().c_str(), -1, L"project.json", -1,
 	                         TRUE) == CSTR_EQUAL &&
