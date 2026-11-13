@@ -5280,12 +5280,17 @@ void EditorScene::UpdateDialogs() {
 		return;
 	}
 
-	case DialogStage::EXPORT_RESULT:
-		if (exportResultDialog_.Draw(ui_) == GameExportResultAction::CLOSE) {
+	case DialogStage::EXPORT_RESULT: {
+		const auto result = exportResultDialog_.Draw(ui_);
+		if (result != GameExportResultAction::NONE) {
 			stage_ = DialogStage::IDLE;
+			if (result == GameExportResultAction::NEW_EXPORT) {
+				StartAction(EditorAction::EXPORT_GAME);
+			}
 		}
 
 		return;
+	}
 
 	case DialogStage::SELECT_GAME_EXPORT: {
 		const auto result = fileDialog_.Draw(ui_);

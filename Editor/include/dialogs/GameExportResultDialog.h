@@ -11,7 +11,7 @@
 
 class ImGuiSystem;
 
-enum class GameExportResultAction { NONE, CLOSE };
+enum class GameExportResultAction { NONE, CLOSE, NEW_EXPORT };
 
 /// <summary>
 /// ゲーム出力の完了後に、出力フォルダ・単独起動・起動ログの確認を表示する
@@ -29,7 +29,7 @@ class GameExportResultDialog {
 	/// 出力先を表示し、開く・起動・閉じる操作を受け付ける。失敗時は画面を保持する
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
-	/// <returns>閉じる要求。開く・起動操作の後はNONEで画面を保持する</returns>
+	/// <returns>閉じるか新しい出力へ進む要求。開く・起動操作の後はNONE</returns>
 	GameExportResultAction Draw(const ImGuiSystem &ui);
 
   private:

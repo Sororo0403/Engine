@@ -374,13 +374,15 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 	}
 
 	ui.SameLine();
+	const bool newExport = ui.Button("New Export...");
+	ui.SameLine();
+	const bool close = ui.Button("Close") || ImGui::IsKeyPressed(ImGuiKey_Escape, false);
 	GameExportResultAction action = GameExportResultAction::NONE;
-
-	if (ui.Button("Close") || ImGui::IsKeyPressed(ImGuiKey_Escape, false)) {
+	if (close || newExport) {
 		if (std::exchange(run.restartRequested, false)) {
 			run.status = "Requested game exit. Waiting for the process to finish.";
 		}
-		action = GameExportResultAction::CLOSE;
+		action = close ? GameExportResultAction::CLOSE : GameExportResultAction::NEW_EXPORT;
 		ui.CloseCurrentPopup();
 	}
 
