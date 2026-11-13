@@ -6163,7 +6163,17 @@ bool EditorScene::OpenScene(const std::filesystem::path &path, bool reportError,
 	frameRequest_ = FrameRequest::NONE;
 	frameObject_ = 0;
 	FinishEdit();
-	RestoreSceneViewAndSelection(document_.GetFilePath());
+	if (!previousPath.empty() &&
+	    PathUtils::IsSameFile(previousPath, document_.GetFilePath())) {
+		// 同じシーンの再読み込みでは、設定の保存結果に関わらず現在の視点と選択を使う。
+		hierarchyPanel_.Clear();
+		selection_.RemoveMissing(document_.GetScene());
+		if (const auto active = selection_.GetActiveId()) {
+			hierarchyPanel_.RequestReveal(active);
+		}
+	} else {
+		RestoreSceneViewAndSelection(document_.GetFilePath());
+	}
 	pendingPlayCamera_ = 0;
 	playMode_.SetPreviewCamera(0);
 	inspectorPanel_.Clear();
