@@ -1,6 +1,8 @@
 #pragma once
 
 #include "gameplay/SceneValidation.h"
+#include "gameplay/GameActionBinding.h"
+#include <cstdint>
 #include <map>
 #include <optional>
 #include <string>
@@ -74,10 +76,12 @@ class SceneCheckPanel {
 	/// <param name="scene">検証対象と選択先を確認する編集シーン</param>
 	/// <param name="fallback">現在のSceneカメラ姿勢</param>
 	/// <param name="bindings">現在のゲーム設定にある名前付き操作</param>
+	/// <param name="editStateId">現在の確定済み編集状態の識別子</param>
 	/// <returns>選択する既存物体の一覧とフレーム・Inspector表示の要求。要求なしは空の一覧。Inspector表示は単独の物体への明示操作のみ</returns>
 	Request Draw(const ImGuiSystem &ui, const Scene &scene,
 	             const CameraPose &fallback,
-	             std::span<const GameActionBinding> bindings = {});
+	             std::span<const GameActionBinding> bindings = {},
+	             std::uint64_t editStateId = 0);
 
   private:
 	/// <summary>
@@ -97,6 +101,8 @@ class SceneCheckPanel {
 	std::vector<SceneObjectId> GetIssueObjects(const Scene &scene) const;
 
 	std::vector<SceneValidationIssue> issues_;
+	std::vector<GameActionBinding> checkedBindings_;
+	std::uint64_t checkedEditStateId_ = 0;
 	std::optional<std::size_t> lastIssue_;
 	std::optional<std::size_t> scrollToIssue_;
 	std::string error_;

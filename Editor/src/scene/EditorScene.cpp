@@ -576,7 +576,8 @@ bool EditorScene::Update(float deltaTime) {
 	ui_.BeginDisabled(wasBusy);
 
 	auto checkedRequest = sceneCheckPanel_.Draw(
-	    ui_, scene, cameraController_.GetPose(), exportConfig_.actions);
+	    ui_, scene, cameraController_.GetPose(), exportConfig_.actions,
+	    history.GetCurrentStateId());
 	const bool hasCheckRequest =
 	    !checkedRequest.objectIds.empty() || !checkedRequest.scenePath.empty();
 

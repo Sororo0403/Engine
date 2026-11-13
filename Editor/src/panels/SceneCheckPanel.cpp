@@ -157,7 +157,8 @@ bool SceneCheckPanel::MatchesFilter(const SceneValidationIssue &issue,
 SceneCheckPanel::Request
 SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
                       const CameraPose &fallback,
-                      std::span<const GameActionBinding> bindings) {
+                      std::span<const GameActionBinding> bindings,
+                      std::uint64_t editStateId) {
 	if (!open_) {
 		return {};
 	}
@@ -183,11 +184,19 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 		return {};
 	}
 
-	if (ui.Button("Check Scene") || checkRequested_) {
+	bool resultsOutdated =
+	    checked_ && (checkedEditStateId_ != editStateId ||
+	                 !std::ranges::equal(checkedBindings_, bindings));
+	if (ui.Button(resultsOutdated ? "Recheck Scene" : "Check Scene") ||
+	    checkRequested_) {
 		checkRequested_ = false;
 
 		try {
+			std::vector<GameActionBinding> currentBindings(bindings.begin(), bindings.end());
 			Check(scene, fallback, bindings);
+			checkedBindings_.swap(currentBindings);
+			checkedEditStateId_ = editStateId;
+			resultsOutdated = false;
 		} catch (const std::exception &error) {
 			error_ = error.what();
 		}
@@ -206,6 +215,9 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 		ImGui::TextWrapped("%s", error_.c_str());
 	} else if (checked_) {
 		ui.Text(std::format("Last check: {} issue(s)", issues_.size()));
+		if (resultsOutdated) {
+			ui.Text("Scene or input bindings changed. Recheck to update results.");
+		}
 	}
 	if (!assetActionError_.empty()) {
 		ImGui::TextWrapped("%s", assetActionError_.c_str());

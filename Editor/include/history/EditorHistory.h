@@ -118,6 +118,13 @@ class EditorHistory {
 	std::size_t GetStateCount() const;
 
 	/// <summary>
+	/// 現在の確定済み編集状態を識別する。履歴をリセットするまで有効
+	/// </summary>
+	std::uint64_t GetCurrentStateId() const noexcept {
+		return currentState_;
+	}
+
+	/// <summary>
 	/// 履歴の指定地点の表示情報を取得する
 	/// </summary>
 	/// <param name="index">開始地点を0とした状態番号</param>
