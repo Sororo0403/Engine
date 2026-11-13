@@ -4521,26 +4521,24 @@ void EditorScene::DrawAssetReferences(bool recycle) {
 		}
 		ImGui::SetItemTooltip("Copy the full reference list, including entries hidden by search.");
 		ui_.SameLine();
-		if (!recycle) {
-			const auto &scene = document_.GetScene();
-			const auto inCurrentScene = [&](const AssetUsage::Reference &source) {
-				return matches(source) && source.editingScene && scene.Contains(source.objectId);
-			};
-			ui_.BeginDisabled(!std::ranges::any_of(assetReferences_, inCurrentScene));
-			if (ui_.Button("Select Objects in Current Scene")) {
-				for (const auto &source : assetReferences_) {
-					if (inCurrentScene(source)) {
-						selectedReferences.push_back(source.objectId);
-					}
+		const auto &scene = document_.GetScene();
+		const auto inCurrentScene = [&](const AssetUsage::Reference &source) {
+			return matches(source) && source.editingScene && scene.Contains(source.objectId);
+		};
+		ui_.BeginDisabled(!std::ranges::any_of(assetReferences_, inCurrentScene));
+		if (ui_.Button("Select Objects in Current Scene")) {
+			for (const auto &source : assetReferences_) {
+				if (inCurrentScene(source)) {
+					selectedReferences.push_back(source.objectId);
 				}
-				std::ranges::sort(selectedReferences);
-				const auto duplicates = std::ranges::unique(selectedReferences);
-				selectedReferences.erase(duplicates.begin(), duplicates.end());
 			}
-			ui_.EndDisabled();
-			ImGui::SetItemTooltip("Select objects in the current scene that match the search.");
-			ui_.SameLine();
+			std::ranges::sort(selectedReferences);
+			const auto duplicates = std::ranges::unique(selectedReferences);
+			selectedReferences.erase(duplicates.begin(), duplicates.end());
 		}
+		ui_.EndDisabled();
+		ImGui::SetItemTooltip("Select objects in the current scene that match the search.");
+		ui_.SameLine();
 	} else if (!recycle) {
 		ui_.Text("No external references found.");
 	}
