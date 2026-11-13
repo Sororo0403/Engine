@@ -78,13 +78,15 @@ std::filesystem::path FindExistingParent(const std::filesystem::path &output) {
 /// 検索語が問題の説明または参照先に含まれるか確認する
 /// </summary>
 bool MatchesIssue(const GameExportIssue &issue, std::string_view filter) {
+	const auto matchesPath = [&](std::filesystem::path path) {
+		return PathUtils::ToUtf8(path).find(filter) != std::string::npos ||
+		       PathUtils::ToUtf8(path.make_preferred()).find(filter) != std::string::npos;
+	};
 	return filter.empty() ||
 	       issue.message.find(filter) != std::string::npos ||
-	       PathUtils::ToUtf8(issue.scenePath).find(filter) != std::string::npos ||
-	       PathUtils::ToUtf8(issue.scriptPath).find(filter) != std::string::npos ||
-	       PathUtils::ToUtf8(issue.assetPath).find(filter) != std::string::npos ||
-	       PathUtils::ToUtf8(issue.transitionScenePath).find(filter) != std::string::npos ||
-	       PathUtils::ToUtf8(issue.locationPath).find(filter) != std::string::npos;
+	       matchesPath(issue.scenePath) || matchesPath(issue.scriptPath) ||
+	       matchesPath(issue.assetPath) || matchesPath(issue.transitionScenePath) ||
+	       matchesPath(issue.locationPath);
 }
 
 } // namespace
@@ -187,6 +189,24 @@ void GameExportDialog::FollowMovedScene(
     std::span<const std::pair<std::filesystem::path, std::filesystem::path>> moves) {
 	if (resumeDraft_ && projectRoot_ == projectRoot) {
 		options_.startupScenePath = PathUtils::AfterMove(options_.startupScenePath, moves);
+
+		std::filesystem::path searchPath;
+		try {
+			searchPath = PathUtils::FromPathInput(issueFilter_);
+		} catch (const std::invalid_argument &) {
+			// パスに変換できない検索語はそのまま保持する。
+			return;
+		}
+		if (searchPath.is_absolute()) {
+			auto normalized = searchPath.lexically_normal();
+			if (!normalized.has_filename() && normalized.has_relative_path()) {
+				normalized = normalized.parent_path();
+			}
+			auto relocated = PathUtils::AfterMove(normalized, moves);
+			if (relocated.native() != normalized.native()) {
+				issueFilter_ = PathUtils::ToUtf8(relocated.make_preferred());
+			}
+		}
 	}
 }
 
