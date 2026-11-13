@@ -49,6 +49,11 @@ class GameExportResultDialog {
 	};
 
 	struct GameRun {
+		struct LogMatch {
+			std::string query;
+			std::uintmax_t offset;
+			bool errorsOnly;
+		};
 		ShellUtils::ExecutableProcess process;
 		std::string status;
 		std::optional<std::uintmax_t> logStart;
@@ -57,6 +62,7 @@ class GameExportResultDialog {
 		std::uintmax_t logPageOffset = 0;
 		float logScrollY = 0.0f;
 		std::string logFilter;
+		std::optional<LogMatch> lastMatch;
 		bool sinceLaunchOnly = false;
 		bool showLog = false;
 		bool followLog = true;
@@ -84,9 +90,9 @@ class GameExportResultDialog {
 	bool OpenLogAtError(ErrorSearch search);
 
 	/// <summary>
-	/// 選択中の実行範囲全体から検索語を含む最初の行へ移動する
+	/// 選択中の実行範囲で最初の一致行、または直前の一致行の次へ移動する
 	/// </summary>
-	bool FindFirstLogMatch();
+	bool FindLogMatch(bool next);
 
 	/// <summary>
 	/// 元の閲覧位置を記録してから、指定のオフセットでページを開く

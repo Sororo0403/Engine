@@ -141,6 +141,7 @@ void GameExportResultDialog::RefreshLog() {
 		run.earlierLogPages.clear();
 		run.logPageOffset = 0;
 		run.beforeErrorJump.reset();
+		run.lastMatch.reset();
 		logError_ = "Game log hasn't been created yet.";
 		return;
 	}
@@ -157,6 +158,7 @@ void GameExportResultDialog::RefreshLog() {
 		run.earlierLogPages.clear();
 		run.logPageOffset = 0;
 		run.beforeErrorJump.reset();
+		run.lastMatch.reset();
 	}
 	const auto firstIncluded = run.sinceLaunchOnly && run.logStart
 	                               ? static_cast<std::streamoff>(*run.logStart)
@@ -272,11 +274,17 @@ bool GameExportResultDialog::OpenLogAtError(ErrorSearch search) {
 	}
 
 	OpenLogAtOffset(*match);
+	run.lastMatch.reset();
 	return true;
 }
 
-bool GameExportResultDialog::FindFirstLogMatch() {
-	const auto &run = runs_.at(directory_);
+bool GameExportResultDialog::FindLogMatch(bool next) {
+	auto &run = runs_.at(directory_);
+	if (next && !run.lastMatch) {
+		return false;
+	}
+	auto query = next ? run.lastMatch->query : run.logFilter;
+	const bool errorsOnly = next ? run.lastMatch->errorsOnly : run.showErrorsOnly;
 	std::ifstream input(directory_ / kGameLogPath, std::ios::binary | std::ios::ate);
 	const auto end = static_cast<std::streamoff>(input.tellg());
 	if (end < 0) {
@@ -287,6 +295,7 @@ bool GameExportResultDialog::FindFirstLogMatch() {
 	const auto start = run.sinceLaunchOnly && run.logStart &&
 	                           *run.logStart <= static_cast<std::uintmax_t>(end)
 	                       ? static_cast<std::streamoff>(*run.logStart) : 0;
+	const auto anchor = next ? run.lastMatch->offset : 0;
 	input.seekg(start);
 	bool isError = false;
 	std::string line;
@@ -296,10 +305,13 @@ bool GameExportResultDialog::FindFirstLogMatch() {
 		if (IsLogHeader(level)) {
 			isError = level.starts_with(" [ERROR] ");
 		}
-		if ((!run.showErrorsOnly || isError) && line.find(run.logFilter) != std::string::npos) {
-			OpenLogAtOffset(static_cast<std::uintmax_t>(offset - start));
+		const auto relative = static_cast<std::uintmax_t>(offset - start);
+		if ((!next || relative > anchor) && (!errorsOnly || isError) &&
+		    line.find(query) != std::string::npos) {
+			OpenLogAtOffset(relative);
 			// 詳細行から開いたページでは、見出しが前のページにある場合がある。
-			runs_.at(directory_).showErrorsOnly = false;
+			run.showErrorsOnly = false;
+			run.lastMatch = GameRun::LogMatch{std::move(query), relative, errorsOnly};
 			return true;
 		}
 		if (input.eof()) {
@@ -307,6 +319,7 @@ bool GameExportResultDialog::FindFirstLogMatch() {
 		}
 	}
 	error_ = input.bad() ? "Could not search the game log."
+	         : next      ? "No later matching lines in the selected log range."
 	                     : "No matching lines in the selected log range.";
 	return false;
 }
@@ -357,6 +370,7 @@ bool GameExportResultDialog::StartGame() {
 	run.earlierLogPages.clear();
 	run.logPageOffset = 0;
 	run.beforeErrorJump.reset();
+	run.lastMatch.reset();
 	if (run.showLog)
 		RefreshLog();
 	return run.showLog;
@@ -506,6 +520,7 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		if (run.logStart &&
 		    ImGui::Checkbox("Since Run Game", &run.sinceLaunchOnly)) {
 			run.beforeErrorJump.reset();
+			run.lastMatch.reset();
 			run.earlierLogPages.clear();
 			run.logPageOffset = 0;
 			RefreshLog();
@@ -582,14 +597,24 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		bool changedFilter = ui.Checkbox("Errors Only", run.showErrorsOnly);
 		ImGui::SetItemTooltip("Show errors and their details on the current log page.");
 		changedFilter |= ui.InputText("Search Log Page", run.logFilter);
+		if (changedFilter) {
+			run.lastMatch.reset();
+		}
 		ImGui::SetItemTooltip("Filter entries on the current page or tail by text (case-sensitive).");
 		ui.SameLine();
 		ui.BeginDisabled(run.logFilter.empty());
 		if (ui.Button("Find First in Log") && !run.logFilter.empty()) {
-			jumpToBeginning |= FindFirstLogMatch();
+			jumpToBeginning |= FindLogMatch(false);
 		}
 		ui.EndDisabled();
 		ImGui::SetItemTooltip("Find the first matching line across the selected log range.");
+		if (run.lastMatch) {
+			ui.SameLine();
+			if (ui.Button("Find Next in Log")) {
+				jumpToBeginning |= FindLogMatch(true);
+			}
+			ImGui::SetItemTooltip("Find the next line matching the same search.");
+		}
 		ui.BeginDisabled(log_.empty() || jumpToLatest);
 		if (ui.Button("First Log Error")) {
 			jumpToBeginning |= OpenLogAtError(ErrorSearch::FIRST);
@@ -615,6 +640,7 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 			if (ui.Button("Back to Log Position")) {
 				auto previous = std::move(*run.beforeErrorJump);
 				run.beforeErrorJump.reset();
+				run.lastMatch.reset();
 				run.earlierLogPages = std::move(previous.earlierPages);
 				run.logPageOffset = previous.offset;
 				run.showLogBeginning = previous.paged;
