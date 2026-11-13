@@ -5543,16 +5543,8 @@ void EditorScene::UpdateDialogs() {
 
 			if (!project_.GetRoot().empty() &&
 			    !project_.Save(settings, project_.GetStartupScene(), error)) {
-				if (fromPlay) {
-					gameSettingsDialog_.Reopen("Could not save Game Settings: " + error);
-					return;
-				}
-				if (fromExport) {
-					exportDialog_.Reopen("Could not save Game Settings: " + error);
-					stage_ = DialogStage::EXPORT_GAME;
-					return;
-				}
-				ShowError(std::move(error));
+				gameSettingsDialog_.Reopen("Could not save Game Settings: " + error,
+				                           project_.GetRoot() / L"project.json");
 				return;
 			}
 

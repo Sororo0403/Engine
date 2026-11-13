@@ -2,6 +2,7 @@
 
 #include "graphics/ui/ImGuiSystem.h"
 #include "platform/windows/PathUtils.h"
+#include "platform/windows/ShellUtils.h"
 
 #include <algorithm>
 #include <exception>
@@ -24,6 +25,8 @@ void GameSettingsDialog::Show(const GameConfig &config,
 	gamepadEnabled_ = config.gamepadEnabled;
 	lighting_ = config.lighting;
 	error_.clear();
+	failedProjectFile_.clear();
+	locationError_.clear();
 	source_ = configuration;
 	lastSavedPath_.clear();
 	destination_ = directory / L"Game.settings.json";
@@ -42,8 +45,10 @@ void GameSettingsDialog::Show(const GameConfig &config,
 	}
 }
 
-void GameSettingsDialog::Reopen(std::string error) {
+void GameSettingsDialog::Reopen(std::string error, std::filesystem::path projectFile) {
 	error_ = std::move(error);
+	failedProjectFile_ = std::move(projectFile);
+	locationError_.clear();
 	opening_ = true;
 }
 
@@ -240,6 +245,12 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui, bool retryPla
 	GameSettingsResult result = GameSettingsResult::NONE;
 
 	ui.BeginDisabled(selecting_);
+	if (!failedProjectFile_.empty() && ui.Button("Show Project Location")) {
+		ShellUtils::RevealLocationInExplorer(failedProjectFile_, locationError_);
+	}
+	if (!locationError_.empty()) {
+		ImGui::TextWrapped("%s", locationError_.c_str());
+	}
 	const bool apply = ui.Button(retryPlay ? "Apply and Retry Play" : "Apply");
 	ui.SameLine();
 	const bool cancel =

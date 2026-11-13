@@ -36,7 +36,7 @@ class GameSettingsDialog {
 	/// <summary>
 	/// 設定の保存に失敗した理由を表示し、編集内容を保持したまま開き直す
 	/// </summary>
-	void Reopen(std::string error);
+	void Reopen(std::string error, std::filesystem::path projectFile);
 
 	/// <summary>
 	/// 検証済みの適用値を取得する。編集中や取り消しでは変更しない
@@ -75,12 +75,14 @@ class GameSettingsDialog {
 	std::filesystem::path source_;
 	std::filesystem::path destination_;
 	std::filesystem::path lastSavedPath_;
+	std::filesystem::path failedProjectFile_;
 	GameInputBindings input_;
 	std::vector<GameActionBinding> actions_;
 	LightingSettings lighting_;
 	bool cameraRelativeMovement_ = false;
 	bool gamepadEnabled_ = true;
 	std::string title_, error_;
+	std::string locationError_;
 	std::string inputAction_;
 	bool focusInputAction_ = false;
 	int width_ = 1280;
