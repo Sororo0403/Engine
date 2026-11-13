@@ -303,20 +303,23 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 		}
 
 		bool fileSubmitted = false;
-		if (mode_ == FileDialogMode::SELECT_DIRECTORY) {
+		if (mode_ != FileDialogMode::OPEN) {
 			ui.InputText("New Folder Name", folderName_);
-
+			ui.SameLine();
 			if (ui.Button("Create Folder")) {
 				CreateFolder();
 			}
-		} else if (mode_ == FileDialogMode::OPEN) {
+			ImGui::SetItemTooltip("Create a folder under the path in Folder and open it.");
+		}
+
+		if (mode_ == FileDialogMode::OPEN) {
 			fileSubmitted = ImGui::InputText(
 			    "File name", &fileName_, ImGuiInputTextFlags_EnterReturnsTrue);
 			if (ImGui::IsItemEdited()) {
 				error_.clear();
 			}
 			ImGui::SetItemTooltip("Enter a file name or paste the full file path, then press Enter.");
-		} else {
+		} else if (mode_ != FileDialogMode::SELECT_DIRECTORY) {
 			if (ui.InputText("File name", fileName_)) {
 				error_.clear();
 			}
