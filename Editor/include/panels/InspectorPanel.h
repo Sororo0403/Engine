@@ -235,6 +235,7 @@ class InspectorPanel {
 	DirectX::XMFLOAT4 displayedRotation_{0.0f, 0.0f, 0.0f, 1.0f};
 	std::string tagDraft_;
 	std::string componentSearch_;
+	std::string animationBindingSearch_;
 	SceneObjectId tagObjectId_ = 0;
 	bool tagEditing_ = false;
 	SceneObjectId renameObjectId_ = 0;

@@ -41,9 +41,9 @@
 namespace {
 
 /// <summary>
-/// コンポーネント名を大文字と小文字の区別なく検索する
+/// 表示名を大文字と小文字の区別なく検索する
 /// </summary>
-bool MatchesComponentSearch(std::string_view name, std::string_view search) {
+bool MatchesNameSearch(std::string_view name, std::string_view search) {
 	return search.empty() ||
 	       std::ranges::search(name, search, [](unsigned char a, unsigned char b) {
 		       return std::tolower(a) == std::tolower(b);
@@ -147,6 +147,7 @@ void InspectorPanel::RequestRename(SceneObjectId objectId) {
 void InspectorPanel::Clear() {
 	tagDraft_.clear();
 	componentSearch_.clear();
+	animationBindingSearch_.clear();
 	tagObjectId_ = 0;
 	tagEditing_ = false;
 	audioInspector_.Clear();
@@ -649,7 +650,8 @@ bool InspectorPanel::Draw(
 					}
 					ImGui::PushID(static_cast<int>(slot));
 					const auto field = std::format("Binding {}", slot);
-					const bool chooseTarget = ImGui::BeginCombo(field.c_str(), preview.c_str());
+					const bool chooseTarget = ImGui::BeginCombo(
+					    field.c_str(), preview.c_str(), ImGuiComboFlags_HeightLarge);
 					if (incompatible) {
 						ImGui::SetItemTooltip(
 						    "%s\nThe target cannot animate every track in this binding.",
@@ -658,20 +660,35 @@ bool InspectorPanel::Draw(
 						ImGui::SetItemTooltip("%s", preview.c_str());
 					}
 					if (chooseTarget) {
+						if (ImGui::IsWindowAppearing()) {
+							animationBindingSearch_.clear();
+							ImGui::SetKeyboardFocusHere();
+						}
+						ui.InputText("Search", animationBindingSearch_);
 						if (ImGui::Selectable("None", id == 0) &&
 						    binding != player.bindings.end())
 							binding->second = 0;
+						bool found = false;
 						for (const auto &[candidateId, candidate] : scene.GetObjects()) {
+							const auto name = std::format("{} (ID {})",
+							    candidate.name.empty() ? "Object" : candidate.name,
+							    candidateId);
+							if (!MatchesNameSearch(name, animationBindingSearch_))
+								continue;
 							if (!canBind(candidate))
 								continue;
-							const auto name = std::format("{}##{}", candidate.name, candidateId);
-							if (ImGui::Selectable(name.c_str(), candidateId == id)) {
+							found = true;
+							const auto candidateLabel = name + "###" + std::to_string(candidateId);
+							if (ImGui::Selectable(candidateLabel.c_str(), candidateId == id)) {
 								if (binding == player.bindings.end())
 									player.bindings.emplace_back(slot, candidateId);
 								else
 									binding->second = candidateId;
 								break;
 							}
+						}
+						if (!found) {
+							ImGui::TextDisabled("No compatible objects match.");
 						}
 						ImGui::EndCombo();
 					}
@@ -895,7 +912,7 @@ bool InspectorPanel::Draw(
 
 		bool hasMatches = false;
 		const auto componentItem = [&](const char *name, bool enabled) {
-			if (!MatchesComponentSearch(name, componentSearch_)) {
+			if (!MatchesNameSearch(name, componentSearch_)) {
 				return false;
 			}
 			hasMatches = true;
