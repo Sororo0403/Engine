@@ -1898,7 +1898,8 @@ void ControlsPanel::Draw() {
 	        {"File > Open Recent", "Reopen a recently used scene, with a save "
 	                               "prompt for unsaved changes."},
 	        {"File > Open Previous Scene (Ctrl+Shift+O)",
-	         "Open the most recent scene file other than the current one. "
+	         "Open the most recent other scene in the current project's scenes "
+	         "folder. With no project open, use the full scene history. "
 	         "Hover to see the path before opening it."},
 	    });
 

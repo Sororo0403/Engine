@@ -2828,10 +2828,12 @@ EditorScene::ReadShortcut(bool objectPanelFocused) const {
 
 const std::filesystem::path *EditorScene::FindPreviousScene() const {
 	const auto &current = document_.GetFilePath();
+	const bool projectOpen = !project_.GetRoot().empty();
 	for (const auto &path : recentScenes_.GetPaths()) {
 		std::error_code status;
 		if ((current.empty() || !PathUtils::IsSameFile(path, current)) &&
-		    std::filesystem::is_regular_file(path, status)) {
+		    (projectOpen ? project_.CanUseAsStartupScene(path)
+		                 : std::filesystem::is_regular_file(path, status))) {
 			return &path;
 		}
 	}
