@@ -3397,7 +3397,7 @@ void EditorScene::ExecutePendingAction() {
 		WriteGameExport();
 		return;
 	case EditorAction::SAVE_AND_CHECK_EXPORT:
-		CheckGameExport();
+		CheckGameExport(true);
 		exportDialog_.Reopen();
 		stage_ = DialogStage::EXPORT_GAME;
 		return;
@@ -5304,7 +5304,7 @@ void EditorScene::UpdateDialogs() {
 			return;
 		}
 		if (result == GameExportResult::CHECK) {
-			CheckGameExport();
+			CheckGameExport(true);
 		}
 		return;
 	}

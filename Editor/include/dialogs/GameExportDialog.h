@@ -109,7 +109,7 @@ class GameExportDialog {
 	bool checkResultStale_ = false;
 	std::string issueFilter_;
 	std::vector<GameExportIssue> checkIssues_;
-	std::size_t selectedIssue_ = 0;
+	std::optional<std::size_t> selectedIssue_;
 	int width_ = 1280, height_ = 720;
 	bool opening_ = false;
 	bool includesUnsavedEdits_ = false;

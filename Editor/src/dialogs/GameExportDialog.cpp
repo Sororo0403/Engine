@@ -138,10 +138,14 @@ void GameExportDialog::SetCheckResult(std::string message,
                                       std::vector<GameExportIssue> issues,
                                       bool continueFromIssue) {
 	issueToScrollTo_.reset();
-	if (!issues.empty() && continueFromIssue && selectedIssue_ < checkIssues_.size()) {
-		const auto &previous = checkIssues_[selectedIssue_];
+	if (!issues.empty() && continueFromIssue && selectedIssue_ &&
+	    *selectedIssue_ < checkIssues_.size()) {
+		const auto &previous = checkIssues_[*selectedIssue_];
+		const auto matches = [&](const auto &issue) {
+			return MatchesIssue(issue, issueFilter_);
+		};
 		const auto sameIssue = std::ranges::find_if(issues, [&](const auto &issue) {
-			return issue.objectId == previous.objectId &&
+			return matches(issue) && issue.objectId == previous.objectId &&
 			       issue.scenePath == previous.scenePath &&
 			       issue.scriptPath == previous.scriptPath &&
 			       issue.assetPath == previous.assetPath &&
@@ -152,11 +156,8 @@ void GameExportDialog::SetCheckResult(std::string message,
 			issueToScrollTo_ = static_cast<std::size_t>(sameIssue - issues.begin());
 		} else {
 			// 修正した問題が消えたときは、検索結果に残る最も近い行へ戻る。
-			const auto matches = [&](const auto &issue) {
-				return MatchesIssue(issue, issueFilter_);
-			};
 			auto remaining = std::count_if(checkIssues_.begin(),
-			                               checkIssues_.begin() + selectedIssue_, matches);
+			                               checkIssues_.begin() + *selectedIssue_, matches);
 			for (std::size_t i = 0; i < issues.size(); ++i) {
 				if (matches(issues[i])) {
 					issueToScrollTo_ = i;
@@ -168,6 +169,7 @@ void GameExportDialog::SetCheckResult(std::string message,
 			}
 		}
 	}
+	selectedIssue_ = issueToScrollTo_;
 	if (!issues.empty() && !issueToScrollTo_) {
 		issueToScrollTo_ = 0;
 	}
@@ -177,13 +179,14 @@ void GameExportDialog::SetCheckResult(std::string message,
 }
 
 const GameExportIssue &GameExportDialog::GetSelectedIssue() const {
-	return checkIssues_[selectedIssue_];
+	return checkIssues_[*selectedIssue_];
 }
 
 void GameExportDialog::ClearCheckResult() {
 	checkResult_.clear();
 	checkResultStale_ = false;
 	checkIssues_.clear();
+	selectedIssue_.reset();
 	issueToScrollTo_.reset();
 }
 
@@ -306,12 +309,14 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 			return MatchesIssue(issue, issueFilter_);
 		};
 		if (ui.InputText("Search Issues", issueFilter_)) {
+			selectedIssue_.reset();
 			issueToScrollTo_ = 0;
 		}
 		ui.SameLine();
 		ui.BeginDisabled(issueFilter_.empty());
 		if (ui.Button("Clear Search")) {
 			issueFilter_.clear();
+			selectedIssue_.reset();
 			issueToScrollTo_ = 0;
 		}
 		ui.EndDisabled();
@@ -368,8 +373,10 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 						ImGui::SetTooltip("The referenced file is missing.");
 					}
 					ui.SameLine();
-					if (ui.Button(missing ? "Open Folder in Explorer" : "Show in Explorer"))
+					if (ui.Button(missing ? "Open Folder in Explorer" : "Show in Explorer")) {
+						selectedIssue_ = i;
 						ShellUtils::RevealLocationInExplorer(issue.assetPath, error_);
+					}
 					ImGui::SetItemTooltip("%s", assetPath.c_str());
 					ui.SameLine();
 					if (ui.Button("Copy Asset Path")) {
@@ -379,6 +386,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 				if (!issue.locationPath.empty()) {
 					const auto path = PathUtils::ToUtf8(issue.locationPath);
 					if (ui.Button("Show Location in Explorer")) {
+						selectedIssue_ = i;
 						ShellUtils::RevealLocationInExplorer(issue.locationPath, error_);
 					}
 					ImGui::SetItemTooltip("%s", path.c_str());
