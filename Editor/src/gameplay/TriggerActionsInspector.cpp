@@ -1,12 +1,14 @@
 #include "gameplay/TriggerActionsInspector.h"
 #include "animation/AnimationClipAsset.h"
 #include "assets/AssetDragDrop.h"
+#include "gameplay/SceneSimulation.h"
 #include "platform/windows/PathUtils.h"
 #include "platform/windows/StringConversion.h"
 
 #include "graphics/ui/ImGuiSystem.h"
 #include "history/EditorHistory.h"
 #include "scene/Scene.h"
+#include "scene/SceneSerializer.h"
 #include <Windows.h>
 #include <array>
 #include <format>
@@ -554,6 +556,27 @@ bool TriggerActionsInspector::Draw(
 					action.arrivalTag = std::move(tag);
 					changed = true;
 				}
+				ui.BeginDisabled(action.scenePath.empty() || action.arrivalTag.empty());
+				if (ui.Button("Check Arrival Tag")) {
+					Scene destination;
+					std::string message;
+					if (!SceneSerializer::Load(destination, action.scenePath)) {
+						message = "Could not read the destination scene.";
+					} else if (SceneSimulation::ValidateArrival(
+					               destination, action.arrivalTag, message)) {
+						message = "Tagged arrival is valid.";
+					}
+					arrivalCheck_ = ArrivalCheck{id, i, action.scenePath,
+					                             action.arrivalTag, std::move(message)};
+				}
+				ui.EndDisabled();
+				ImGui::SetItemTooltip("Check the saved destination scene without running it.");
+				if (arrivalCheck_ && arrivalCheck_->objectId == id &&
+				    arrivalCheck_->actionIndex == i &&
+				    arrivalCheck_->path == action.scenePath &&
+				    arrivalCheck_->tag == action.arrivalTag) {
+					ImGui::TextWrapped("Last check: %s", arrivalCheck_->message.c_str());
+				}
 			}
 
 			if (action.operation == TriggerAction::Operation::SET_CAMERA) {
@@ -642,9 +665,13 @@ bool TriggerActionsInspector::Draw(
 	ImGui::PopID();
 
 	if (removeComponent) {
+		arrivalCheck_.reset();
 		return history.SetTriggerActions(id, std::nullopt);
 	}
 
+	if (changed) {
+		arrivalCheck_.reset();
+	}
 	return changed && history.SetTriggerActions(id, std::move(edited));
 }
 

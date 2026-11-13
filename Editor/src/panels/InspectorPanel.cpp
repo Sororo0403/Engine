@@ -167,6 +167,7 @@ void InspectorPanel::Clear() {
 	assetRevealPath_.clear();
 	sceneOpenRequest_.clear();
 	sceneLocationRequest_.clear();
+	triggerActionsInspector_ = {};
 	slotModelPath_.clear();
 	slotModelRevision_ = 0;
 }

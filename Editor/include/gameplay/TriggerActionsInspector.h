@@ -2,6 +2,7 @@
 
 #include "scene/SceneObjectId.h"
 #include <filesystem>
+#include <optional>
 #include <span>
 #include <string>
 
@@ -46,5 +47,14 @@ class TriggerActionsInspector {
 	                  const SceneObject &object) const;
 
   private:
+	struct ArrivalCheck {
+		SceneObjectId objectId;
+		std::size_t actionIndex;
+		std::filesystem::path path;
+		std::string tag;
+		std::string message;
+	};
+
 	std::string sceneSearch_;
+	std::optional<ArrivalCheck> arrivalCheck_;
 };
