@@ -259,7 +259,8 @@ class SceneSimulation {
 	/// </summary>
 	/// <param name="error">失敗理由。成功時は空</param>
 	/// <returns>true:再開成功 false:停止中または初期化失敗</returns>
-	bool RestartCurrentScene(std::string &error);
+	bool RestartCurrentScene(std::string &error,
+	                         std::filesystem::path *failedScript = nullptr);
 
 	/// <summary>
 	/// 現在のシーンの開始時データに物体があるか確認する

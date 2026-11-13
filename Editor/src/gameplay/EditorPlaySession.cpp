@@ -1,4 +1,5 @@
 #include "gameplay/EditorPlaySession.h"
+#include "gameplay/SceneScripts.h"
 #include "gameplay/SceneValidation.h"
 #include "scene/SceneActivity.h"
 
@@ -78,17 +79,26 @@ bool EditorPlaySession::Start(const Scene &scene, std::string &error,
 	}
 }
 
-bool EditorPlaySession::Restart(std::string &error, bool currentScene) {
+bool EditorPlaySession::Restart(std::string &error, bool currentScene,
+                                std::filesystem::path *failedScript) {
+	if (failedScript) {
+		failedScript->clear();
+	}
 	if (!IsPlaying() || !initialScene_) {
 		error = "Start Play before restarting.";
 		return false;
 	}
 
 	const bool isInitial = !currentScene || IsInitialScene();
+	SceneObjectId invalidObject = 0;
 	const bool restarted = currentScene
-	                           ? simulation_.RestartCurrentScene(error)
-	                           : simulation_.Start(*initialScene_, error, initialFallback_);
+	                           ? simulation_.RestartCurrentScene(error, failedScript)
+	                           : simulation_.Start(*initialScene_, error, initialFallback_,
+	                                               &invalidObject);
 	if (!restarted) {
+		if (!currentScene && failedScript) {
+			*failedScript = SceneScripts::FindFailedScript(*initialScene_, invalidObject, error);
+		}
 		return false;
 	}
 

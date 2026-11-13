@@ -351,8 +351,9 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
 	return true;
 }
 
-bool EditorPlayMode::Restart(std::string &error, bool currentScene) {
-	if (!session_.Restart(error, currentScene)) {
+bool EditorPlayMode::Restart(std::string &error, bool currentScene,
+                             std::filesystem::path *failedScript) {
+	if (!session_.Restart(error, currentScene, failedScript)) {
 		return false;
 	}
 

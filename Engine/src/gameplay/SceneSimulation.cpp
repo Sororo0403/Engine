@@ -89,13 +89,24 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 	                  initialScriptData);
 }
 
-bool SceneSimulation::RestartCurrentScene(std::string &error) {
+bool SceneSimulation::RestartCurrentScene(std::string &error,
+                                          std::filesystem::path *failedScript) {
+	if (failedScript) {
+		failedScript->clear();
+	}
 	if (!IsPlaying() || !restartSource_) {
 		error = "Start Play before restarting the scene.";
 		return false;
 	}
 
-	return StartScene(*restartSource_, error, fallbackPose_, nullptr, true);
+	SceneObjectId invalidObject = 0;
+	if (StartScene(*restartSource_, error, fallbackPose_, &invalidObject, true)) {
+		return true;
+	}
+	if (failedScript) {
+		*failedScript = SceneScripts::FindFailedScript(*restartSource_, invalidObject, error);
+	}
+	return false;
 }
 
 bool SceneSimulation::Validate(const Scene &source, std::string &error,

@@ -335,10 +335,17 @@ bool EditorScene::Update(float deltaTime) {
 		std::string error;
 		consolePanel_.MarkPlayStart();
 
-		if (!playMode_.Restart(error, restartCurrentScene)) {
-			Logger::Error(error);
-			ShowError(std::move(error));
+		std::filesystem::path failedScript;
+		if (!playMode_.Restart(error, restartCurrentScene, &failedScript)) {
+			Logger::Error(error, failedScript);
+			ShowError(std::move(error), 0, std::move(failedScript));
 			errorHasPlayLog_ = true;
+			if (!errorScriptPath_.empty()) {
+				const auto *loaded = playMode_.GetSession().GetLoadedScenePath();
+				const bool retryLoaded = restartCurrentScene && loaded;
+				errorReplayPath_ = retryLoaded ? *loaded : playInitialScenePath_;
+				errorReplayCameraOverride_ = retryLoaded ? 0 : playInitialCameraOverride_;
+			}
 		}
 	}
 
@@ -5254,12 +5261,16 @@ void EditorScene::UpdateDialogs() {
 			}
 
 			if (!errorScriptPath_.empty()) {
-				if (ui_.Button("Edit Script")) {
+				if (ui_.Button(playMode_.IsPlaying() ? "Stop and Edit Script" : "Edit Script")) {
 					std::string error;
 					if (scriptEditorDialog_.ShowEdit(errorScriptPath_, error,
 					                                 errorMessage_)) {
 						ui_.CloseCurrentPopup();
 						if (errorReplayPath_) {
+							if (playMode_.IsPlaying()) {
+								playMode_.Stop();
+								ClearPlaySelection();
+							}
 							scriptReplayPath_ = *errorReplayPath_;
 							scriptReplayCameraOverride_ = errorReplayCameraOverride_;
 							stage_ = DialogStage::EDIT_PLAY_SCRIPT;
