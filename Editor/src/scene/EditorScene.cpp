@@ -1137,46 +1137,13 @@ bool EditorScene::Update(float deltaTime) {
 		if (!IsBusy() && action == EditorAction::NONE &&
 		    !requestedModelReload.empty() &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
-			try {
-				FinishEdit();
-
-				if (!models_.Reload(requestedModelReload)) {
-					ShowError("Could not reload the model. Its previous valid "
-					          "data was kept. See the log for details.");
-				}
-			} catch (const std::exception &exception) {
-				Logger::Error(std::format("EditorScene::ReloadModel: {}",
-				                          exception.what()));
-				ShowError("Could not reload the model. Its previous valid data "
-				          "was kept. See the log for details.");
-			}
+			ReloadAsset(requestedModelReload, false);
 		}
 
 		if (!IsBusy() && action == EditorAction::NONE &&
 		    !requestedTextureReload.empty() &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
-			try {
-				FinishEdit();
-
-				if (!materials_.ReloadTexture(requestedTextureReload)) {
-					ShowError(
-					    "Could not reload the texture. Its previous valid "
-					    "data was kept. See the log for details.");
-				} else {
-					texturePreviewPanel_.RequestReload(requestedTextureReload);
-					std::string error;
-					if (!renderer_.ReloadCanvasImage(requestedTextureReload, error) ||
-					    !playMode_.ReloadCanvasImage(requestedTextureReload, error)) {
-						ShowError("Could not reload the Canvas image: " + error);
-					}
-				}
-			} catch (const std::exception &exception) {
-				Logger::Error(std::format("EditorScene::ReloadTexture: {}",
-				                          exception.what()));
-				ShowError(
-				    "Could not reload the texture. Its previous valid data "
-				    "was kept. See the log for details.");
-			}
+			ReloadAsset(requestedTextureReload, true);
 		}
 
 		if (!IsBusy() && action == EditorAction::NONE && textureAssignment &&
@@ -5361,6 +5328,17 @@ void EditorScene::UpdateDialogs() {
 				ui_.SameLine();
 			}
 
+			if (!errorReloadAssetPath_.empty()) {
+				if (ui_.Button("Retry Reload")) {
+					auto path = std::exchange(errorReloadAssetPath_, std::filesystem::path{});
+					ui_.CloseCurrentPopup();
+					ui_.EndPopup();
+					stage_ = DialogStage::IDLE;
+					ReloadAsset(path, errorReloadIsTexture_);
+					return;
+				}
+				ui_.SameLine();
+			}
 			const bool canShowPlayLog = errorHasPlayLog_ || errorReplayPath_.has_value();
 			const bool showPlayError = canShowPlayLog && ui_.Button("Show in Console");
 			if (canShowPlayLog) {
@@ -5676,6 +5654,7 @@ void EditorScene::ShowError(std::string message, SceneObjectId objectId,
 	errorMessage_ = std::move(message);
 	errorScriptPath_ = std::move(scriptPath);
 	errorScenePath_.clear();
+	errorReloadAssetPath_.clear();
 	errorReplayPath_.reset();
 	errorHasPlayLog_ = false;
 	errorReplayCameraOverride_ = 0;
@@ -6342,6 +6321,34 @@ bool EditorScene::AssignModel(SceneObjectId objectId,
 		    "Could not change the object's model. See the log for details.");
 		return false;
 	}
+}
+
+void EditorScene::ReloadAsset(const std::filesystem::path &path, bool texture) {
+	std::string error;
+	try {
+		FinishEdit();
+		const bool reloaded = texture ? !!materials_.ReloadTexture(path)
+		                              : !!models_.Reload(path);
+		if (reloaded) {
+			if (!texture) {
+				return;
+			}
+			texturePreviewPanel_.RequestReload(path);
+			if (renderer_.ReloadCanvasImage(path, error) &&
+			    playMode_.ReloadCanvasImage(path, error)) {
+				return;
+			}
+		} else {
+			error = "See the log for details.";
+		}
+	} catch (const std::exception &failure) {
+		error = failure.what();
+		Logger::Error(error, path);
+	}
+	ShowError(std::format("Could not reload {}:\n{}\n{}", texture ? "texture" : "model",
+	                      PathUtils::ToUtf8(path), error));
+	errorReloadAssetPath_ = path;
+	errorReloadIsTexture_ = texture;
 }
 
 bool EditorScene::ReplaceSelectedMeshes(
