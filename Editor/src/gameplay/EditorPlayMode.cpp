@@ -57,7 +57,9 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
                                               bool canUseSelection,
                                               const Scene *editingScene,
                                               const std::filesystem::path &editingScenePath,
-                                              const std::filesystem::path &startupScenePath) {
+                                              const std::filesystem::path &startupScenePath,
+                                              const std::filesystem::path &playSourcePath,
+                                              bool canRevealPlayObject) {
 	visible_ = false;
 	ready_ = false;
 	viewport_ = {};
@@ -174,11 +176,14 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 			ImGui::SetItemTooltip(
 			    "Restart %s from its entry point. Shared game data is kept.",
 			    PathUtils::ToUtf8(path->filename()).c_str());
-			if (ui.Button("Stop and Open Scene")) {
+		}
+		if (!playSourcePath.empty()) {
+			if (ui.Button(canRevealPlayObject ? "Stop and Show Source Object"
+			                                  : "Stop and Open Scene")) {
 				action = Action::STOP_AND_OPEN_SCENE;
 			}
 			ImGui::SetItemTooltip("%s",
-			                      PathUtils::ToUtf8(path->filename()).c_str());
+			                      PathUtils::ToUtf8(playSourcePath).c_str());
 		}
 		if (ui.Button(maximized_ ? "Restore Layout" : "Maximize Game")) {
 			maximizeRequested_ = true;

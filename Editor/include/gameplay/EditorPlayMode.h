@@ -52,13 +52,17 @@ class EditorPlayMode {
 	/// <param name="editingScene">指定時は停止中のプレビューCamera名を表示するために参照する。保持しない</param>
 	/// <param name="editingScenePath">編集中のシーンのパス。未保存の場合は空</param>
 	/// <param name="startupScenePath">プロジェクトの起動シーンのパス。未設定の場合は空</param>
+	/// <param name="playSourcePath">停止後に編集できる実行元シーン。なければ空</param>
+	/// <param name="canRevealPlayObject">選択中の物体が実行元シーンに存在するか</param>
 	/// <returns>ユーザーが要求した操作</returns>
 	Action DrawUI(const ImGuiSystem &ui, bool canStart,
 	              const GameConfig &config = GameConfig{},
 	              bool canUseSelection = false,
 	              const Scene *editingScene = nullptr,
 	              const std::filesystem::path &editingScenePath = {},
-	              const std::filesystem::path &startupScenePath = {});
+	              const std::filesystem::path &startupScenePath = {},
+	              const std::filesystem::path &playSourcePath = {},
+	              bool canRevealPlayObject = false);
 
 	/// <summary>
 	/// 編集シーンを変更せずに再生を始める

@@ -232,13 +232,26 @@ bool EditorScene::Update(float deltaTime) {
 		playMode_.Stop();
 	}
 
+	const auto &playSession = playMode_.GetSession();
+	const auto *loadedPlayScene = playSession.GetLoadedScenePath();
+	const auto playSource = loadedPlayScene ? *loadedPlayScene
+	                        : playMode_.IsPlaying() && !playUsesEditingScene_
+	                            ? playInitialScenePath_
+	                            : std::filesystem::path{};
+	const auto activePlayObject = playSelection_.GetActiveId();
+	const auto playSourceObject = playSelectionActive_ &&
+	                                      playSession.GetScene().Contains(activePlayObject) &&
+	                                      playSession.HasSourceObject(activePlayObject)
+	                                  ? activePlayObject
+	                                  : SceneObjectId{0};
 	auto playAction = playMode_.DrawUI(ui_, !IsBusy(), exportConfig_,
 	                                   !IsBusy() && playUsesEditingScene_ &&
 	                                       playSelectionActive_ &&
 	                                       playSelection_.GetCount() != 0,
 	                                   &document_.GetScene(),
 	                                   document_.GetFilePath(),
-	                                   project_.GetStartupScene());
+	                                   project_.GetStartupScene(), playSource,
+	                                   playSourceObject != 0);
 	const bool playShortcutEnabled =
 	    input_.IsActive() && playInputWasActive_ && !exitQueued_ &&
 	    action == EditorAction::NONE && !cameraSettingsRequested_ &&
@@ -285,13 +298,14 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	if (playAction == EditorPlayMode::Action::STOP_AND_OPEN_SCENE && !IsBusy()) {
-		if (const auto *path = playMode_.GetSession().GetLoadedScenePath()) {
-			auto target = *path;
+		if (!playSource.empty()) {
 			playMode_.Stop();
 			const auto &current = document_.GetFilePath();
-			if (current.empty() || !PathUtils::IsSameFile(current, target)) {
-				pendingOpenPath_ = std::move(target);
-				StartAction(EditorAction::OPEN_PATH);
+			if (current.empty() || !PathUtils::IsSameFile(current, playSource)) {
+				pendingOpenPath_ = playSource;
+				StartAction(EditorAction::OPEN_PATH, playSourceObject);
+			} else if (playSourceObject != 0) {
+				RevealReferenceObject(playSourceObject);
 			}
 		}
 	}
