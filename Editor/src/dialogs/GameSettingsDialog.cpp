@@ -134,7 +134,7 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui) {
 			ImGui::PushID(static_cast<int>(i));
 			auto &action = actions_[i];
 			if (!inputAction_.empty() && action.name == inputAction_) {
-				ui.Text("Action reported by export check");
+				ui.Text("Action reported by check");
 				if (focusInputAction) {
 					ImGui::SetScrollHereY(0.0f);
 				}

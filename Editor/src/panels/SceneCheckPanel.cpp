@@ -161,7 +161,8 @@ void SceneCheckPanel::Check(const Scene &scene, const CameraPose &fallback,
 			if (issue.objectId == previous.objectId &&
 			    issue.destinationObjectId == previous.destinationObjectId &&
 			    issue.modelPath == previous.modelPath &&
-			    issue.assetPath == previous.assetPath) {
+			    issue.assetPath == previous.assetPath &&
+			    issue.inputAction == previous.inputAction) {
 				if (issue.message == previous.message) {
 					scrollToIssue_ = i;
 					sameSource.reset();
@@ -426,6 +427,19 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 				requested = {{issue.objectId}, false, true};
 			}
 
+			ui.EndDisabled();
+		}
+
+		if (!issue.inputAction.empty()) {
+			if (issue.objectId != 0) {
+				ui.SameLine();
+			}
+			ui.BeginDisabled(resultsOutdated || !error_.empty());
+			if (ui.Button("Edit Input Binding")) {
+				lastIssue_ = i;
+				requested = {};
+				requested.inputAction = issue.inputAction;
+			}
 			ui.EndDisabled();
 		}
 

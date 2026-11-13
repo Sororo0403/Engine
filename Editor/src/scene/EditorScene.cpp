@@ -915,6 +915,14 @@ bool EditorScene::Update(float deltaTime) {
 		}
 
 		const auto &requestedSettings = assetsPanel_.GetGameSettingsRequest();
+		if (!checkedRequest.inputAction.empty() && !IsBusy() &&
+		    action == EditorAction::NONE &&
+		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
+			FinishEdit();
+			gameSettingsDialog_.Show(exportConfig_, project_.GetRoot(), {},
+			                         std::move(checkedRequest.inputAction));
+			stage_ = DialogStage::GAME_SETTINGS;
+		}
 		if (!requestedSettings.empty() && !IsBusy() &&
 		    action == EditorAction::NONE &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
@@ -5531,6 +5539,7 @@ void EditorScene::UpdateDialogs() {
 			}
 
 			exportConfig_ = settings;
+			sceneCheckPanel_.RequestRecheckIfOpen();
 		}
 
 		if (result != GameSettingsResult::NONE) {
