@@ -131,9 +131,12 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 	if (ImGui::Checkbox("Auto-scroll", &autoScroll_) && autoScroll_) {
 		scrollRequested_ = true;
 	}
+	ImGui::SetItemTooltip("Follow new messages while the list is at the bottom.");
 	ui.SameLine();
 	ImGui::Checkbox("Collapse Repeats", &collapseRepeated_);
 	ImGui::SetItemTooltip("Group consecutive messages with the same level, text and source.");
+	ui.SameLine();
+	const bool jumpToLatest = ui.Button("Jump to Latest");
 
 	ImGui::Checkbox("Info", &showInfo_);
 	ui.SameLine();
@@ -201,6 +204,7 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 	                                        (std::max)(1.0f, content.y * 0.6f));
 
 	if (drawMessages) {
+		const bool wasAtBottom = ImGui::GetScrollY() >= ImGui::GetScrollMaxY() - 1.0f;
 		bool anyVisible = false;
 		std::uint64_t lastVisible = 0;
 
@@ -267,8 +271,10 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 			ui.Text("No matching messages.");
 		}
 
-		if (!jumpToError && autoScroll_ &&
-		    (scrollRequested_ || lastVisible != lastVisibleId_)) {
+		const bool followLatest = autoScroll_ &&
+		                          (scrollRequested_ ||
+		                           (wasAtBottom && lastVisible != lastVisibleId_));
+		if (!jumpToError && (jumpToLatest || followLatest)) {
 			ImGui::SetScrollHereY(1.0f);
 			scrollRequested_ = false;
 		}
