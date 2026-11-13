@@ -141,7 +141,7 @@ void SceneCheckPanel::Check(const Scene &scene, const CameraPose &fallback,
 	checked_ = true;
 }
 
-std::string SceneCheckPanel::GetReport() const {
+std::string SceneCheckPanel::GetReport(const Scene *filteredScene) const {
 	if (!error_.empty()) {
 		return std::format("Scene Check failed:\n{}\n", error_);
 	}
@@ -150,11 +150,14 @@ std::string SceneCheckPanel::GetReport() const {
 		return {};
 	}
 
-	auto report =
-	    std::format("Last Scene Check: {} issue(s)\n", issues_.size());
-
+	std::string report;
+	std::size_t count = 0;
 	for (std::size_t i = 0; i < issues_.size(); ++i) {
 		const auto &issue = issues_[i];
+		if (filteredScene && !MatchesFilter(issue, *filteredScene)) {
+			continue;
+		}
+		++count;
 		report += std::format("\n{}. {}\n", i + 1, issue.message);
 		if (issue.objectId != 0) {
 			report += std::format("   Object ID: {}\n", issue.objectId);
@@ -170,7 +173,11 @@ std::string SceneCheckPanel::GetReport() const {
 		}
 	}
 
-	return report;
+	const auto heading = filteredScene
+	                         ? std::format("Last Scene Check: {} of {} issue(s) match the search\n",
+	                                       count, issues_.size())
+	                         : std::format("Last Scene Check: {} issue(s)\n", count);
+	return heading + report;
 }
 
 bool SceneCheckPanel::MatchesFilter(const SceneValidationIssue &issue,
@@ -288,6 +295,15 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 	    });
 	ui.Text(std::format("Showing {} of {} issue(s)", matchingCount,
 	                    issues_.size()));
+	if (!filter_.empty() && checked_ && error_.empty()) {
+		ui.SameLine();
+		ui.BeginDisabled(matchingCount == 0);
+		if (ui.Button("Copy Matching Issues")) {
+			const auto report = GetReport(&scene);
+			ImGui::SetClipboardText(report.c_str());
+		}
+		ui.EndDisabled();
+	}
 
 	if (checked_ && matchingCount == 0 && !issues_.empty()) {
 		ui.Text("No issues match the search.");
