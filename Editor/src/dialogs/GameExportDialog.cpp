@@ -191,7 +191,13 @@ void GameExportDialog::FollowMovedScene(
 		options_.startupScenePath = PathUtils::AfterMove(options_.startupScenePath, moves);
 		for (auto &issue : checkIssues_) {
 			issue.scenePath = PathUtils::AfterMove(issue.scenePath, moves);
-			issue.scriptPath = PathUtils::AfterMove(issue.scriptPath, moves);
+			auto scriptPath = PathUtils::AfterMove(issue.scriptPath, moves);
+			if (scriptPath.native() != issue.scriptPath.native()) {
+				if (issue.scriptDiagnosticPath.empty()) {
+					issue.scriptDiagnosticPath = std::move(issue.scriptPath);
+				}
+				issue.scriptPath = std::move(scriptPath);
+			}
 			issue.assetPath = PathUtils::AfterMove(issue.assetPath, moves);
 			issue.transitionScenePath = PathUtils::AfterMove(issue.transitionScenePath, moves);
 			if (issue.field != GameExportField::OUTPUT_FOLDER) {

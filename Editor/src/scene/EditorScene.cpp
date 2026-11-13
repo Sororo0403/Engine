@@ -5575,7 +5575,8 @@ void EditorScene::UpdateDialogs() {
 		if (result == GameExportResult::EDIT_ISSUE_SCRIPT) {
 			const auto &issue = exportDialog_.GetSelectedIssue();
 			std::string error;
-			if (scriptEditorDialog_.ShowEdit(issue.scriptPath, error, issue.message)) {
+			if (scriptEditorDialog_.ShowEdit(issue.scriptPath, error, issue.message,
+			                                 issue.scriptDiagnosticPath)) {
 				stage_ = DialogStage::EDIT_EXPORT_SCRIPT;
 			} else {
 				exportDialog_.Reopen("Could not open the script: " + error);
