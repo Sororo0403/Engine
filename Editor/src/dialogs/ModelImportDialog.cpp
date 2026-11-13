@@ -3,6 +3,7 @@
 #include "assets/AssetFolders.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "platform/windows/PathUtils.h"
+#include "platform/windows/ShellUtils.h"
 #include <exception>
 #include <imgui.h>
 
@@ -46,6 +47,13 @@ ModelImportResult ModelImportDialog::Draw(const ImGuiSystem &ui,
 		selecting_ = true;
 	}
 
+	ui.SameLine();
+	ui.BeginDisabled(options_.source.empty());
+	if (ui.Button("Show Source in Explorer")) {
+		ShellUtils::RevealLocationInExplorer(options_.source, error_);
+	}
+	ui.EndDisabled();
+
 	ui.Text(PathUtils::ToUtf8(options_.source));
 	ui.Text("Source Folder");
 	ui.Text(PathUtils::ToUtf8(options_.sourceRoot));
@@ -57,6 +65,14 @@ ModelImportResult ModelImportDialog::Draw(const ImGuiSystem &ui,
 		error_.clear();
 	}
 
+	ui.EndDisabled();
+	ui.SameLine();
+	const auto modelFolder = options_.source.parent_path();
+	ui.BeginDisabled(options_.source.empty() || options_.sourceRoot == modelFolder);
+	if (ui.Button("Reset Source Folder")) {
+		options_.sourceRoot = modelFolder;
+		error_.clear();
+	}
 	ui.EndDisabled();
 
 	const auto preview = options_.folder.empty()
@@ -124,11 +140,14 @@ ModelImportResult ModelImportDialog::Draw(const ImGuiSystem &ui,
 		const auto selected = picker_.Draw(ui);
 
 		if (selected == FileDialogResult::ACCEPTED) {
-			options_.source = picker_.GetSelectedPath();
-			options_.sourceRoot = options_.source.parent_path();
-			name_ = PathUtils::IsValidFileName(options_.source.stem())
-			            ? PathUtils::ToUtf8(options_.source.stem())
-			            : "Model";
+			const auto &source = picker_.GetSelectedPath();
+			if (options_.source != source) {
+				options_.source = source;
+				options_.sourceRoot = source.parent_path();
+				name_ = PathUtils::IsValidFileName(source.stem())
+				            ? PathUtils::ToUtf8(source.stem())
+				            : "Model";
+			}
 			error_.clear();
 		}
 
