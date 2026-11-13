@@ -1,7 +1,9 @@
 #include "assets/SceneAssetValidation.h"
+#include "animation/AnimationClipAsset.h"
 #include "animation/SceneAnimators.h"
 #include "scripting/LuaScript.h"
 #include <algorithm>
+#include <array>
 
 #include "assets/AssetDependencies.h"
 #include "assets/ImageValidation.h"
@@ -26,7 +28,7 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 		std::filesystem::path path;
 	};
 	std::map<std::filesystem::path, std::vector<AssetError>> models, textures,
-	    monoAudio, stereoAudio, scenes, scripts, uiTextures, prefabs;
+	    monoAudio, stereoAudio, scenes, scripts, uiTextures, prefabs, clips;
 	std::map<std::pair<std::filesystem::path, std::string>,
 	         std::vector<AssetError>>
 	    arrivals;
@@ -172,6 +174,24 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 				    return std::vector<std::filesystem::path>{
 				        PathUtils::ResolveFromExecutable(path)};
 			    }));
+		}
+
+		if (object.animationClip && object.animationClip->usesAsset) {
+			const auto &asset = object.animationClip->asset;
+			if (asset.empty()) {
+				const std::array missing{AssetError{"Assign an Animation Clip.", {}}};
+				add("Animation Clip", missing);
+			} else {
+				add("Animation Clip",
+				    inspect(asset, clips, [](const auto &path) {
+					    AnimationClipComponent clip;
+					    std::string error;
+					    if (!AnimationClipAsset::Load(path, clip, error))
+						    throw std::runtime_error(error);
+					    return std::vector<std::filesystem::path>{
+					        PathUtils::ResolveFromExecutable(path)};
+				    }));
+			}
 		}
 
 		if (object.audioSource && !object.audioSource->clipPath.empty()) {
