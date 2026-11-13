@@ -576,6 +576,7 @@ bool TriggerActionsInspector::Draw(
 				ui.BeginDisabled(action.scenePath.empty());
 				if (ui.Button("Choose Arrival Tag")) {
 					arrivalTags_.clear();
+					arrivalTagSearch_.clear();
 					Scene destination;
 					arrivalTagsLoaded_ = SceneSerializer::Load(destination, action.scenePath);
 					if (arrivalTagsLoaded_) {
@@ -606,9 +607,26 @@ bool TriggerActionsInspector::Draw(
 					} else if (arrivalTags_.empty()) {
 						ImGui::TextUnformatted("No unique tags on active objects.");
 					} else {
+						if (ImGui::IsWindowAppearing()) {
+							ImGui::SetKeyboardFocusHere();
+						}
+						ImGui::InputTextWithHint("##ArrivalTagSearch", "Search tags or objects",
+						                         &arrivalTagSearch_);
+						const auto search = StringConversion::Utf8ToWide(arrivalTagSearch_);
+						bool found = false;
 						for (const auto &candidate : arrivalTags_) {
 							const auto choiceLabel =
 							    std::format("{} / {}", candidate.tag, candidate.objectLabel);
+							if (!arrivalTagSearch_.empty()) {
+								const auto text = StringConversion::Utf8ToWide(choiceLabel);
+								if (search.empty() ||
+								    FindStringOrdinal(FIND_FROMSTART, text.data(),
+								                      static_cast<int>(text.size()), search.data(),
+								                      static_cast<int>(search.size()), TRUE) < 0) {
+									continue;
+								}
+							}
+							found = true;
 							ImGui::PushID(candidate.tag.c_str());
 							const auto position = ImGui::GetCursorScreenPos();
 							const auto size = ImGui::CalcTextSize(choiceLabel.c_str());
@@ -620,6 +638,9 @@ bool TriggerActionsInspector::Draw(
 							ImGui::GetWindowDrawList()->AddText(
 							    position, ImGui::GetColorU32(ImGuiCol_Text), choiceLabel.c_str());
 							ImGui::PopID();
+						}
+						if (!found) {
+							ImGui::TextDisabled("No matching arrival tags.");
 						}
 					}
 					ImGui::EndPopup();

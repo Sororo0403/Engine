@@ -66,5 +66,6 @@ class TriggerActionsInspector {
 		std::string objectLabel;
 	};
 	std::vector<ArrivalTagChoice> arrivalTags_;
+	std::string arrivalTagSearch_;
 	bool arrivalTagsLoaded_ = false;
 };
