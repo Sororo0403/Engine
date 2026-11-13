@@ -39,6 +39,7 @@ class GameExportResultDialog {
 		bool sinceLaunchOnly = false;
 		bool showLog = false;
 		bool followLog = true;
+		bool showLogBeginning = false;
 		bool launchFailed = false;
 		bool restartRequested = false;
 	};
@@ -49,7 +50,7 @@ class GameExportResultDialog {
 	bool StartGame();
 
 	/// <summary>
-	/// 出力したゲームのログを末尾から読み直す
+	/// 出力したゲームのログの先頭または末尾を読み直す
 	/// </summary>
 	void RefreshLog();
 

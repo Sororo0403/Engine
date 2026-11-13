@@ -82,7 +82,7 @@ void GameExportResultDialog::RefreshLog() {
 	                               ? static_cast<std::streamoff>(*run.logStart)
 	                               : 0;
 	const auto size = (std::min)(end - firstIncluded, maximumBytes);
-	const auto start = end - size;
+	const auto start = run.showLogBeginning ? firstIncluded : end - size;
 	bool partialLine = false;
 	if (start > firstIncluded) {
 		input.seekg(start - 1);
@@ -96,7 +96,20 @@ void GameExportResultDialog::RefreshLog() {
 		return;
 	}
 
-	logTruncated_ = start > firstIncluded;
+	logTruncated_ = size < end - firstIncluded;
+	if (run.showLogBeginning && logTruncated_ && text.back() != '\n') {
+		// 表示上限が行の途中なら、不完全な行を取り除く。
+		if (const auto newline = text.rfind('\n'); newline != std::string::npos) {
+			text.resize(newline + 1);
+		} else if ((input.peek() & 0xc0) == 0x80) {
+			// 1行が上限を超える場合は、末尾の不完全なUTF-8文字だけを除く。
+			auto last = text.size() - 1;
+			while (last > 0 && (text[last] & 0xc0) == 0x80) {
+				--last;
+			}
+			text.resize(last);
+		}
+	}
 	if (partialLine) {
 		// 先頭が行の途中なら取り除く。長い1行ではUTF-8の継続バイトだけ除く。
 		const auto newline = text.find('\n');
@@ -139,6 +152,7 @@ bool GameExportResultDialog::StartGame() {
 	else if (status == std::errc::no_such_file_or_directory)
 		run.logStart = 0;
 	run.sinceLaunchOnly = run.logStart.has_value();
+	run.showLogBeginning = false;
 	if (run.showLog)
 		RefreshLog();
 	return run.showLog;
@@ -174,6 +188,7 @@ bool GameExportResultDialog::UpdateGameProcess(bool &jumpToLatest) {
 	}
 	run.status = std::format("Game exited with code 0x{:08X}.", *exitCode);
 	run.showLog = true;
+	run.showLogBeginning = false;
 	RefreshLog();
 	jumpToLatest = true;
 	return true;
@@ -268,7 +283,10 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 			} else if (!log_.empty()) {
 				report += run.sinceLaunchOnly ? "\nGame log since Run Game"
 				                              : "\nGame log";
-				report += logTruncated_ ? " (tail):\n" : ":\n";
+				if (logTruncated_) {
+					report += run.showLogBeginning ? " (beginning)" : " (tail)";
+				}
+				report += ":\n";
 				report += log_;
 			}
 		}
@@ -276,14 +294,23 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 	}
 
 	if (run.showLog) {
+		bool jumpToBeginning = false;
 		if (run.logStart &&
 		    ImGui::Checkbox("Since Run Game", &run.sinceLaunchOnly)) {
 			RefreshLog();
-			jumpToLatest = true;
+			jumpToBeginning = run.showLogBeginning;
+			jumpToLatest = !run.showLogBeginning;
 		}
+		if (ui.Checkbox("Show Log Beginning", run.showLogBeginning)) {
+			RefreshLog();
+			jumpToBeginning = run.showLogBeginning;
+			jumpToLatest = !run.showLogBeginning;
+		}
+		ui.BeginDisabled(run.showLogBeginning);
 		if (ui.Checkbox("Follow Log", run.followLog) && run.followLog) {
 			jumpToLatest = true;
 		}
+		ui.EndDisabled();
 		ImGui::SetItemTooltip("Follow new messages while the log is at the bottom.");
 		if (ui.Button("Refresh Log")) {
 			RefreshLog();
@@ -309,14 +336,22 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 			ShellUtils::RevealInExplorer(logPath, error_);
 		ui.EndDisabled();
 
-		const auto latestError = FindLatestError(log_);
 		ui.BeginDisabled(log_.empty());
-		jumpToLatest |= ui.Button("Jump to Latest");
+		if (ui.Button("Jump to Latest")) {
+			if (run.showLogBeginning) {
+				run.showLogBeginning = false;
+				RefreshLog();
+			}
+			jumpToLatest = true;
+			jumpToBeginning = false;
+		}
 		ui.EndDisabled();
 		ui.SameLine();
-		ui.BeginDisabled(latestError == std::string_view::npos);
+		const auto latestError = FindLatestError(log_);
+		ui.BeginDisabled(latestError == std::string_view::npos || jumpToLatest);
 		const bool jumpToError = ui.Button("Latest Log Error") &&
-		                         latestError != std::string_view::npos;
+		                         latestError != std::string_view::npos &&
+		                         !jumpToLatest;
 		ui.EndDisabled();
 		ImGui::SetItemTooltip("Jump to the latest error in the displayed log.");
 		if (jumpToError) {
@@ -330,7 +365,8 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 			                         : "Game log is empty.");
 		} else {
 			if (logTruncated_)
-				ui.Text("Showing the end of the game log.");
+				ui.Text(run.showLogBeginning ? "Showing the beginning of the game log."
+				                             : "Showing the end of the game log.");
 			if (ui.BeginChild("GameLog", 570.0f, 210.0f)) {
 				const bool wasAtBottom =
 				    ImGui::GetScrollY() >= ImGui::GetScrollMaxY() - 1.0f;
@@ -345,7 +381,9 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 				ImGui::PushTextWrapPos();
 				ui.Text(log_);
 				ImGui::PopTextWrapPos();
-				if (!jumpToError &&
+				if (jumpToBeginning && !jumpToError) {
+					ImGui::SetScrollY(0.0f);
+				} else if (!jumpToError && !run.showLogBeginning &&
 				    (jumpToLatest || (refreshedLog && run.followLog && wasAtBottom))) {
 					ImGui::SetScrollHereY(1.0f);
 				}
