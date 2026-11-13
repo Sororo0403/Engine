@@ -1893,7 +1893,7 @@ void ControlsPanel::Draw() {
 	         "destination."},
 	        {"File > Open Recent", "Reopen a recently used scene, with a save "
 	                               "prompt for unsaved changes."},
-	        {"File > Open Previous Scene",
+	        {"File > Open Previous Scene (Ctrl+Shift+O)",
 	         "Open the most recent scene other than the current one. "
 	         "Hover to see the path before opening it."},
 	    });

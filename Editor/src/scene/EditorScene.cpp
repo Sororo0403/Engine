@@ -1894,15 +1894,12 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		}
 
 		const auto recent = recentScenes_.GetPaths();
-		const auto previous = std::ranges::find_if(recent, [&](const auto &path) {
-			return current.empty() || !PathUtils::IsSameFile(path, current);
-		});
-		if (ui_.MenuItem("Open Previous Scene", nullptr,
-		                 enabled && previous != recent.end())) {
-			pendingOpenPath_ = *previous;
-			action = EditorAction::OPEN_PATH;
+		const auto *previous = FindPreviousScene();
+		if (ui_.MenuItem("Open Previous Scene", "Ctrl+Shift+O",
+		                 enabled && previous)) {
+			action = EditorAction::OPEN_PREVIOUS_SCENE;
 		}
-		if (previous != recent.end()) {
+		if (previous) {
 			ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(*previous).c_str());
 		}
 
@@ -2742,6 +2739,9 @@ EditorScene::ReadShortcut(bool objectPanelFocused) const {
 	}
 
 	if (keyboard.IsPressed(Key::O)) {
+		if (shift && !alt) {
+			return EditorAction::OPEN_PREVIOUS_SCENE;
+		}
 		return EditorAction::OPEN;
 	}
 
@@ -2752,12 +2752,23 @@ EditorScene::ReadShortcut(bool objectPanelFocused) const {
 	return EditorAction::NONE;
 }
 
+const std::filesystem::path *EditorScene::FindPreviousScene() const {
+	const auto &current = document_.GetFilePath();
+	for (const auto &path : recentScenes_.GetPaths()) {
+		if (current.empty() || !PathUtils::IsSameFile(path, current)) {
+			return &path;
+		}
+	}
+	return nullptr;
+}
+
 void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	if (stage_ != DialogStage::IDLE || closeApproved_ ||
 	    action == EditorAction::NONE ||
 	    ((action == EditorAction::IMPORT_SCENE ||
 	      action == EditorAction::ASSETS_FOLDER ||
 	      action == EditorAction::OPEN_PATH ||
+	      action == EditorAction::OPEN_PREVIOUS_SCENE ||
 	      action == EditorAction::OPEN_EXPORT_ISSUE ||
 	      action == EditorAction::OPEN_PROJECT_PATH ||
 	      action == EditorAction::LOAD_GAME_SETTINGS ||
@@ -2792,6 +2803,14 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	FinishEdit();
 
 	switch (action) {
+	case EditorAction::OPEN_PREVIOUS_SCENE:
+		if (const auto *path = FindPreviousScene()) {
+			pendingOpenPath_ = *path;
+			pendingOpenObject_ = 0;
+			pendingAction_ = EditorAction::OPEN_PATH;
+			ConfirmSceneChanges();
+		}
+		return;
 	case EditorAction::SET_STARTUP_SCENE: {
 		const auto path = std::exchange(pendingOpenPath_, std::filesystem::path{});
 		std::string error;
