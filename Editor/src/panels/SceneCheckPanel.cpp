@@ -310,13 +310,16 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 		if (!issue.assetPath.empty()) {
 			const auto path = PathUtils::ToUtf8(issue.assetPath);
 			const auto *object = scene.FindObject(issue.objectId);
+			const auto matchesAsset = [&](const std::filesystem::path &reference) {
+				return !reference.empty() &&
+				       (!reference.has_root_path() || reference.is_absolute()) &&
+				       reference.native().find(L'\0') == std::wstring::npos &&
+				       PathUtils::IsSameFile(issue.assetPath, reference);
+			};
 			// モデル本体の診断だけを対象にし、依存ファイルの診断からは選択しない。
 			const bool isReferencedModel =
 			    object && object->HasMesh() && PathUtils::IsModelFile(issue.assetPath) &&
-			    (!object->mesh->modelPath.has_root_path() ||
-			     object->mesh->modelPath.is_absolute()) &&
-			    object->mesh->modelPath.native().find(L'\0') == std::wstring::npos &&
-			    PathUtils::IsSameFile(issue.assetPath, object->mesh->modelPath);
+			    matchesAsset(object->mesh->modelPath);
 			if (isReferencedModel && ui.Button("Select All Using This Model")) {
 				try {
 					auto users = ModelUsage::FindObjects(scene, issue.assetPath);
@@ -329,15 +332,25 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 					assetActionError_ = error.what();
 				}
 			}
-			if (isReferencedModel) {
-				std::error_code status;
-				if (std::filesystem::is_regular_file(issue.assetPath, status)) {
+			const bool isReferencedTexture =
+			    object && PathUtils::IsImageFile(issue.assetPath) &&
+			    ((object->image && matchesAsset(object->image->texture)) ||
+			     (object->particleEmitter && matchesAsset(object->particleEmitter->texture)) ||
+			     (object->meshRenderer &&
+			      std::ranges::any_of(object->meshRenderer->textures.slots,
+			                          [&](const auto &slot) { return matchesAsset(slot.second); })));
+			std::error_code status;
+			if ((isReferencedModel || isReferencedTexture) &&
+			    std::filesystem::is_regular_file(issue.assetPath, status)) {
+				if (isReferencedModel)
 					ui.SameLine();
-					if (ui.Button("Reload Model")) {
-						lastIssue_ = i;
-						requested = {};
+				if (ui.Button(isReferencedModel ? "Reload Model" : "Reload Texture")) {
+					lastIssue_ = i;
+					requested = {};
+					if (isReferencedModel)
 						requested.modelReloadPath = issue.assetPath;
-					}
+					else
+						requested.textureReloadPath = issue.assetPath;
 				}
 			}
 			if (ui.Button("Show in Assets")) {
@@ -359,7 +372,6 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 			const bool script = PathUtils::HasExtension(issue.assetPath, ".lua");
 			const bool sceneFile = PathUtils::HasExtension(issue.assetPath, ".json") &&
 			                       PathUtils::HasExtension(issue.assetPath.stem(), ".scene");
-			std::error_code status;
 			if ((script || sceneFile) &&
 			    std::filesystem::is_regular_file(issue.assetPath, status)) {
 				const char *label = script ? "Edit Script"

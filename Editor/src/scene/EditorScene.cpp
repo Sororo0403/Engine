@@ -697,7 +697,9 @@ bool EditorScene::Update(float deltaTime) {
 	                                      : checkedRequest.modelReloadPath;
 	const auto requestedMeshReplacement =
 	    assetsPanel_.GetMeshReplacementRequest();
-	const auto requestedTextureReload = assetsPanel_.GetTextureReloadRequest();
+	const auto &requestedTextureReload = checkedRequest.textureReloadPath.empty()
+	                                        ? assetsPanel_.GetTextureReloadRequest()
+	                                        : checkedRequest.textureReloadPath;
 	const bool textureAssignment =
 	    assetsPanel_.IsTextureClearRequested() || !requestedTexture.empty();
 	const auto requestedTextureUsers =

@@ -29,6 +29,7 @@ class SceneCheckPanel {
 		std::filesystem::path scenePath;
 		SceneObjectId destinationObjectId = 0;
 		std::filesystem::path modelReloadPath;
+		std::filesystem::path textureReloadPath;
 	};
 
 	/// <summary>
