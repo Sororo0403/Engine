@@ -22,13 +22,18 @@ class RecentScenes {
 	/// <summary>
 	/// 最近使用した順の一覧を取得する
 	/// </summary>
-	/// <returns>次のAdd成功またはClearまで有効なパス一覧</returns>
+	/// <returns>次に一覧が変更されるまで有効なパス一覧</returns>
 	std::span<const std::filesystem::path> GetPaths() const;
 
 	/// <summary>
 	/// 一覧をクリアする。シーンファイルは削除しない
 	/// </summary>
 	void Clear();
+
+	/// <summary>
+	/// 存在しないシーンの履歴だけを取り除く。読み取りエラーの項目は保持する
+	/// </summary>
+	void RemoveMissing();
 
   private:
 	std::vector<std::filesystem::path> paths_;

@@ -1907,11 +1907,13 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 
 		if (ui_.BeginMenu("Open Recent")) {
 			std::size_t index = 0;
+			bool hasMissing = false;
 
 			for (const auto &path : recent) {
 				std::error_code status;
 				const bool missing = std::filesystem::status(path, status).type() ==
 				                     std::filesystem::file_type::not_found;
+				hasMissing |= missing;
 				const auto label =
 				    std::format("{}{}###RecentScene{}",
 				                PathUtils::ToUtf8(path.filename()),
@@ -1928,8 +1930,13 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 
 			ui_.Separator();
 
+			if (ui_.MenuItem("Remove Missing Scenes", nullptr, enabled && hasMissing)) {
+				recentScenes_.RemoveMissing();
+				SaveEditorSession();
+			}
 			if (ui_.MenuItem("Clear Recent", nullptr, enabled)) {
 				recentScenes_.Clear();
+				SaveEditorSession();
 			}
 
 			ui_.EndMenu();
@@ -5831,6 +5838,8 @@ void EditorScene::SaveEditorSession(bool force) {
 	}
 
 	auto current = preferences_;
+	const auto recent = recentScenes_.GetPaths();
+	current.recentScenes.assign(recent.begin(), recent.end());
 
 	if (!project_.GetRoot().empty()) {
 		current.lastProject = project_.GetRoot();

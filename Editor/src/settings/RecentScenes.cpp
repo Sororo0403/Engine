@@ -33,3 +33,11 @@ std::span<const std::filesystem::path> RecentScenes::GetPaths() const {
 void RecentScenes::Clear() {
 	paths_.clear();
 }
+
+void RecentScenes::RemoveMissing() {
+	std::erase_if(paths_, [](const auto &path) {
+		std::error_code error;
+		return std::filesystem::status(path, error).type() ==
+		       std::filesystem::file_type::not_found;
+	});
+}
