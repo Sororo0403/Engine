@@ -25,6 +25,31 @@
 #include <utility>
 
 namespace {
+/// <summary>
+/// 貼り付けたパスの引用符と区切りを取り除き、検索に使う文字列へ変換する
+/// </summary>
+std::wstring NormalizeSearch(std::string_view filter) {
+	auto search = StringConversion::Utf8ToWide(filter);
+	if (search.size() >= 2 && search.front() == L'"' && search.back() == L'"') {
+		search = search.substr(1, search.size() - 2);
+	}
+	std::ranges::replace(search, L'\\', L'/');
+	return search;
+}
+
+/// <summary>
+/// フルパス検索では末尾の区切りを除いた絶対パスを返す
+/// </summary>
+std::filesystem::path FullSearchPath(std::wstring_view search) {
+	std::filesystem::path path(search);
+	if (!path.is_absolute()) {
+		return {};
+	}
+	path = path.lexically_normal();
+	return !path.has_filename() && path.has_relative_path() ? path.parent_path()
+	                                                       : path;
+}
+
 bool IsMissingAsset(const std::filesystem::path &path) {
 	if (path.empty()) {
 		return false;
@@ -64,16 +89,39 @@ bool AssetsPanel::RevealIndexedAsset(const std::filesystem::path &path,
 void AssetsPanel::RelocatePaths(
     std::span<const std::pair<std::filesystem::path, std::filesystem::path>> moves,
     const std::filesystem::path &root) {
-	for (auto *paths : {&clipboardItems_, &displayedResults_, &selectedItems_}) {
-		for (auto &path : *paths) {
+	const auto relocateList = [&](auto &paths) {
+		for (auto &path : paths) {
 			path = PathUtils::AfterMove(path, moves);
 		}
-	}
+	};
+	const auto relocateDirectory = [&](const std::filesystem::path &folder) {
+		auto relative =
+		    PathUtils::AfterMove(root / folder, moves).lexically_relative(root);
+		return relative == L"." ? std::filesystem::path{} : relative;
+	};
+	const auto relocateSearch = [&](std::string &filter) {
+		const auto path = FullSearchPath(NormalizeSearch(filter));
+		if (!path.empty()) {
+			const auto relocated = PathUtils::AfterMove(path, moves);
+			if (relocated.native() != path.native()) {
+				filter = PathUtils::ToUtf8(relocated);
+			}
+		}
+	};
+	relocateList(clipboardItems_);
+	relocateList(resultPaths_);
+	relocateList(displayedResults_);
+	relocateList(selectedItems_);
+	selectedPath_ = PathUtils::AfterMove(selectedPath_, moves);
 	selectionAnchor_ = PathUtils::AfterMove(selectionAnchor_, moves);
-	currentDirectory_ = PathUtils::AfterMove(root / currentDirectory_, moves)
-	                        .lexically_relative(root);
-	if (currentDirectory_ == L".") {
-		currentDirectory_.clear();
+	currentDirectory_ = relocateDirectory(currentDirectory_);
+	relocateSearch(filter_);
+	if (previousView_) {
+		relocateList(previousView_->results);
+		relocateList(previousView_->selection);
+		previousView_->anchor = PathUtils::AfterMove(previousView_->anchor, moves);
+		previousView_->directory = relocateDirectory(previousView_->directory);
+		relocateSearch(previousView_->search);
 	}
 }
 
@@ -579,18 +627,10 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		ImGui::TextDisabled("Double-click a folder to open it.");
 	}
 
-	auto search = StringConversion::Utf8ToWide(filter_);
-	if (search.size() >= 2 && search.front() == L'"' && search.back() == L'"') {
-		search = search.substr(1, search.size() - 2);
-	}
-	std::ranges::replace(search, L'\\', L'/');
-	auto searchPath = std::filesystem::path(search);
-	const bool absoluteSearch = searchPath.is_absolute();
+	auto search = NormalizeSearch(filter_);
+	const auto searchPath = FullSearchPath(search);
+	const bool absoluteSearch = !searchPath.empty();
 	if (absoluteSearch) {
-		searchPath = searchPath.lexically_normal();
-		if (!searchPath.has_filename() && searchPath.has_relative_path()) {
-			searchPath = searchPath.parent_path();
-		}
 		search = searchPath.generic_wstring();
 	}
 
