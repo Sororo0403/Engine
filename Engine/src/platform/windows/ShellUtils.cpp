@@ -274,39 +274,60 @@ bool ShellUtils::ExecutableProcess::Poll(
 	return true;
 }
 
-bool ShellUtils::ExecutableProcess::BringToForeground(std::string &error) const {
+void *ShellUtils::ExecutableProcess::FindRunningWindow(std::string &error) const {
 	std::optional<std::uint32_t> exitCode;
 	if (!Poll(exitCode, error)) {
-		return false;
+		return nullptr;
 	}
 	if (exitCode) {
 		error = "The game process has already exited.";
-		return false;
+		return nullptr;
 	}
 
 	ProcessWindow target{GetProcessId(handle_)};
 	if (target.processId == 0) {
 		error = "Could not identify the running game process.";
-		return false;
+		return nullptr;
 	}
 	EnumWindows(FindProcessWindow, reinterpret_cast<LPARAM>(&target));
 	if (!target.window) {
 		error = "The running game has no visible window yet.";
+	}
+	return target.window;
+}
+
+bool ShellUtils::ExecutableProcess::BringToForeground(std::string &error) const {
+	const auto window = static_cast<HWND>(FindRunningWindow(error));
+	if (!window) {
 		return false;
 	}
 
-	if (IsIconic(target.window)) {
-		ShowWindowAsync(target.window, SW_RESTORE);
+	if (IsIconic(window)) {
+		ShowWindowAsync(window, SW_RESTORE);
 	}
-	if (SetForegroundWindow(target.window)) {
+	if (SetForegroundWindow(window)) {
 		error.clear();
 		return true;
 	}
 
-	FLASHWINFO flash{sizeof(FLASHWINFO), target.window, FLASHW_TRAY, 3, 0};
+	FLASHWINFO flash{sizeof(FLASHWINFO), window, FLASHW_TRAY, 3, 0};
 	FlashWindowEx(&flash);
 	error = "Windows kept the current window in front. Switch to the game from the taskbar.";
 	return false;
+}
+
+bool ShellUtils::ExecutableProcess::RequestClose(std::string &error) const {
+	const auto window = static_cast<HWND>(FindRunningWindow(error));
+	if (!window) {
+		return false;
+	}
+	if (!PostMessageW(window, WM_CLOSE, 0, 0)) {
+		error = std::format("Could not request game exit (Windows error {}).",
+		                    GetLastError());
+		return false;
+	}
+	error.clear();
+	return true;
 }
 
 void ShellUtils::ExecutableProcess::Reset() {
