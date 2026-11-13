@@ -4685,6 +4685,7 @@ bool EditorScene::RelocateAssets(const AssetUsage::Moves &moves,
 	}
 	assetsPanel_.RelocatePaths(moves, assets_.GetRootDirectory());
 	sceneCheckPanel_.OnAssetsMoved(moves);
+	exportDialog_.FollowMovedScene(project_.GetRoot(), moves);
 	lastPlayScenePath_ = PathUtils::AfterMove(lastPlayScenePath_, moves);
 	if (playFailureReplay_ && !playFailureReplay_->path.empty()) {
 		playFailureReplay_->path = PathUtils::AfterMove(playFailureReplay_->path, moves);

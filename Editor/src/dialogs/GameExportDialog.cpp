@@ -182,6 +182,14 @@ void GameExportDialog::FollowSavedScene(
 	}
 }
 
+void GameExportDialog::FollowMovedScene(
+    const std::filesystem::path &projectRoot,
+    std::span<const std::pair<std::filesystem::path, std::filesystem::path>> moves) {
+	if (resumeDraft_ && projectRoot_ == projectRoot) {
+		options_.startupScenePath = PathUtils::AfterMove(options_.startupScenePath, moves);
+	}
+}
+
 void GameExportDialog::SetCheckResult(std::string message,
                                       std::vector<GameExportIssue> issues,
                                       bool continueFromIssue) {

@@ -4,7 +4,9 @@
 #include "export/GameExporter.h"
 #include <cstddef>
 #include <optional>
+#include <span>
 #include <string>
+#include <utility>
 
 class ImGuiSystem;
 
@@ -51,6 +53,13 @@ class GameExportDialog {
 	void FollowSavedScene(const std::filesystem::path &projectRoot,
 	                     const std::filesystem::path &previousPath,
 	                     const std::filesystem::path &savedPath);
+
+	/// <summary>
+	/// 起動シーンを移動したとき、その出力下書きを移動先に引き継ぐ
+	/// </summary>
+	void FollowMovedScene(
+	    const std::filesystem::path &projectRoot,
+	    std::span<const std::pair<std::filesystem::path, std::filesystem::path>> moves);
 
 	/// <summary>
 	/// 出力設定の入力を保持したまま起動シーンの表示を更新する
