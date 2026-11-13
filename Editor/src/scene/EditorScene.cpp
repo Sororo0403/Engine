@@ -73,13 +73,30 @@ std::filesystem::path FindExistingDirectory(std::filesystem::path directory) {
 }
 
 /// <summary>
-/// 既存の配布版を起動・確認するためのファイルが揃っているか確認する
+/// 既存の配布版を開けない理由を返す。必要なファイルが揃っていれば空
 /// </summary>
-bool IsGameExportDirectory(const std::filesystem::path &directory) {
+std::string_view GameExportOpenProblem(const std::filesystem::path &directory) {
+	if (directory.empty())
+		return "Choose a game export folder.";
+
 	std::error_code error;
-	return !directory.empty() &&
-	       std::filesystem::is_regular_file(directory / L"Game.exe", error) &&
-	       std::filesystem::is_regular_file(directory / L"game.json", error);
+	const auto folder = std::filesystem::status(directory, error);
+	if (folder.type() == std::filesystem::file_type::not_found)
+		return "The export folder was not found.";
+	if (error)
+		return "Could not access the export folder.";
+	if (!std::filesystem::is_directory(folder))
+		return "The export path is not a folder.";
+
+	const bool hasGame = std::filesystem::is_regular_file(directory / L"Game.exe", error);
+	const bool hasConfig = std::filesystem::is_regular_file(directory / L"game.json", error);
+	if (!hasGame && !hasConfig)
+		return "Game.exe and game.json are missing or are not regular files.";
+	if (!hasGame)
+		return "Game.exe is missing or is not a regular file.";
+	if (!hasConfig)
+		return "game.json is missing or is not a regular file.";
+	return {};
 }
 } // namespace
 
@@ -2035,15 +2052,18 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		                     enabled && (!recentExports.empty() || !lastExport.empty()))) {
 			std::size_t index = 0;
 			for (const auto &directory : recentExports) {
-				const bool available = IsGameExportDirectory(directory);
+				const auto problem = GameExportOpenProblem(directory);
 				const auto label = std::format("{}{}###RecentGameExport{}",
 				                               PathUtils::ToUtf8(directory.filename()),
-				                               available ? "" : " (unavailable)", index++);
+				                               problem.empty() ? "" : " (unavailable)", index++);
 				if (ImGui::MenuItem(label.c_str())) {
 					pendingOpenPath_ = directory;
 					action = EditorAction::OPEN_GAME_EXPORT;
 				}
-				ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(directory).c_str());
+				const auto tooltip = problem.empty()
+				    ? PathUtils::ToUtf8(directory)
+				    : std::format("{}\n{}", PathUtils::ToUtf8(directory), problem);
+				ImGui::SetItemTooltip("%s", tooltip.c_str());
 			}
 			ui_.Separator();
 			if (ui_.MenuItem("Remove Missing Export Folders") &&
@@ -2963,9 +2983,9 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 		                 "Open Game Export###FileDialog");
 		if (!pendingGameExportReplacement_.empty()) {
 			fileDialog_.RetrySelection(
-			    "Could not open the previous game export: " +
-			        PathUtils::ToUtf8(pendingGameExportReplacement_) +
-			        "\nChoose its new location to update the export history.",
+			    std::format("{}\n{}\nChoose a valid export folder to update the history.",
+			                PathUtils::ToUtf8(pendingGameExportReplacement_),
+			                GameExportOpenProblem(pendingGameExportReplacement_)),
 			    pendingGameExportReplacement_);
 		}
 		stage_ = DialogStage::SELECT_GAME_EXPORT;
@@ -3445,7 +3465,7 @@ bool EditorScene::SetStartupScene(const std::filesystem::path &path,
 }
 
 bool EditorScene::OpenGameExport(std::filesystem::path directory) {
-	if (!IsGameExportDirectory(directory))
+	if (!GameExportOpenProblem(directory).empty())
 		return false;
 
 	const auto &root = project_.GetRoot();
@@ -5237,7 +5257,10 @@ void EditorScene::UpdateDialogs() {
 			stage_ = DialogStage::IDLE;
 		} else if (result == FileDialogResult::ACCEPTED &&
 		           !OpenGameExport(fileDialog_.GetSelectedPath())) {
-			fileDialog_.RetrySelection("Choose a folder containing Game.exe and game.json.",
+			fileDialog_.RetrySelection(std::format(
+			                               "{}\n{}",
+			                               PathUtils::ToUtf8(fileDialog_.GetSelectedPath()),
+			                               GameExportOpenProblem(fileDialog_.GetSelectedPath())),
 			                           pendingGameExportReplacement_);
 		}
 		return;
