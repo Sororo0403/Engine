@@ -4091,8 +4091,13 @@ std::filesystem::path EditorScene::GetSceneCopyPath() const {
 		copyStem = L"Scene.copy";
 	}
 
-	return searchDirectory / AssetFolders::SuggestAvailableName(
-	                             searchDirectory, std::move(copyStem), extension);
+	try {
+		return searchDirectory / AssetFolders::SuggestAvailableName(
+		                             searchDirectory, copyStem, extension);
+	} catch (const std::filesystem::filesystem_error &) {
+		// 元の場所を確認できない場合も、保存画面から別の場所を選べるようにする。
+		return PathUtils::GetExecutableDirectory() / (copyStem + extension);
+	}
 }
 
 void EditorScene::StartSaveCopy(bool reload) {
