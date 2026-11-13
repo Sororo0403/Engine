@@ -497,7 +497,8 @@ class EditorScene final : public IScene {
 	/// <summary>
 	/// 再生を停止し、編集中のシーンと対応する場合はエラーの物体を表示できるようにする
 	/// </summary>
-	void ReportPlayUpdateFailure(SceneObjectId invalidObject);
+	void ReportPlayUpdateFailure(SceneObjectId invalidObject,
+	                             std::uint64_t previousRevision);
 
 	/// <summary>
 	/// 試遊の失敗を記録し、そのログから同じ条件で再試遊できるようにする

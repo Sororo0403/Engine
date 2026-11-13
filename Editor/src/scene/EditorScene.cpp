@@ -406,9 +406,10 @@ bool EditorScene::Update(float deltaTime) {
 		playFrame_ = true;
 		sceneViewPanel_.CancelSelection();
 
+		const auto previousRevision = playSession.GetSceneRevision();
 		if (!playMode_.Update(deltaTime, input_, IsBusy(), false,
 		                      &playErrorObject)) {
-			ReportPlayUpdateFailure(playErrorObject);
+			ReportPlayUpdateFailure(playErrorObject, previousRevision);
 		}
 
 		SynchronizePlayScene();
@@ -477,6 +478,7 @@ bool EditorScene::Update(float deltaTime) {
 		historyPanel_.Draw(ui_, document_.GetHistory(), false);
 		ui_.EndDisabled();
 
+		const auto previousRevision = playSession.GetSceneRevision();
 		if (!sceneViewPanel_.DrawUI(ui_, gizmo_,
 		                            TransformGizmo::SelectionMode::SINGLE,
 		                            false, true)) {
@@ -487,7 +489,7 @@ bool EditorScene::Update(float deltaTime) {
 		                                 hierarchy.windowFocused,
 		                             sceneViewPanel_.GetRenderTexture() != nullptr,
 		                             &playErrorObject)) {
-			ReportPlayUpdateFailure(playErrorObject);
+			ReportPlayUpdateFailure(playErrorObject, previousRevision);
 		}
 
 		SynchronizePlayScene();
@@ -5934,7 +5936,8 @@ void EditorScene::StartPlay(const std::filesystem::path &path,
 	playInitialCameraOverride_ = cameraOverride;
 }
 
-void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject) {
+void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject,
+                                          std::uint64_t previousRevision) {
 	const auto &reason = playMode_.GetLastUpdateError();
 	auto message = reason.empty()
 	                   ? "Play stopped because simulation or Game rendering failed."
@@ -5964,8 +5967,10 @@ void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject) {
 	const auto *loaded = session.GetLoadedScenePath();
 	bool isEditingScene = playUsesEditingScene_ && !loaded;
 	auto scenePath = loaded ? *loaded : playInitialScenePath_;
-	const auto replayPath = scenePath;
-	const auto replayCamera = loaded ? SceneObjectId{0} : playInitialCameraOverride_;
+	// 遷移直後の描画・音声エラーでも、到着時の状態を開始シーンから再現する。
+	const bool replayFromStart = !loaded || session.GetSceneRevision() != previousRevision;
+	const auto replayPath = replayFromStart ? playInitialScenePath_ : scenePath;
+	const auto replayCamera = replayFromStart ? playInitialCameraOverride_ : SceneObjectId{0};
 	if (!scenePath.empty()) {
 		message += "\nPlay scene: " + PathUtils::ToUtf8(scenePath);
 		const auto &current = document_.GetFilePath();
