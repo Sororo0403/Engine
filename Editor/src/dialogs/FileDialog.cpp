@@ -236,7 +236,8 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 		const auto search = StringConversion::Utf8ToWide(search_);
 		std::filesystem::path nextDirectory;
 		std::filesystem::path openFile;
-		std::filesystem::path openExport;
+		std::filesystem::path openFolder;
+		const bool choosingProject = filter_ == FileDialogFilter::PROJECT;
 
 		const bool drawEntries = ui.BeginChild("Files", 600.0f, 240.0f);
 
@@ -264,24 +265,28 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 
 				const std::string name = PathUtils::ToUtf8(displayPath);
 
-				const std::string label = entry.gameExport
-				    ? std::format("[Game Export] {}", name)
-				    : entry.directory ? std::format("[Folder] {}", name) : name;
+				const char *folderLabel = entry.openableFolder
+				                              ? (choosingProject ? "[Project]" : "[Game Export]")
+				                              : "[Folder]";
+				const std::string label =
+				    entry.directory ? std::format("{} {}", folderLabel, name) : name;
 
 				ui.PushID(static_cast<int>(i));
 
 				const auto fileInput =
 				    searchProjectScenes_ ? PathUtils::ToUtf8(entry.path) : name;
-				const bool selected = entry.gameExport
+				const bool selected = entry.openableFolder
 				    ? directoryText_ == PathUtils::ToUtf8(entry.path)
 				    : !entry.directory && fileName_ == fileInput;
 
 				const bool clicked = ui.Selectable(label.c_str(), selected);
-				if (entry.gameExport) {
-					ImGui::SetItemTooltip("Select this export folder. Double-click to open it.");
+				if (entry.openableFolder) {
+					ImGui::SetItemTooltip(choosingProject
+					                          ? "Select this project. Double-click to open it."
+					                          : "Select this export folder. Double-click to open it.");
 					if (ImGui::IsItemHovered() &&
 					    ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-						openExport = entry.path;
+						openFolder = entry.path;
 					}
 				}
 				if (!entry.directory && mode_ == FileDialogMode::OPEN &&
@@ -290,7 +295,7 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 					openFile = entry.path;
 				}
 				if (clicked) {
-					if (entry.gameExport) {
+					if (entry.openableFolder) {
 						directoryText_ = PathUtils::ToUtf8(entry.path);
 						error_.clear();
 					} else if (entry.directory) {
@@ -312,8 +317,8 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 		ui.EndChild();
 
 		// 一覧を走査し終えてから表示フォルダを変更する
-		if (!openExport.empty()) {
-			directoryText_ = PathUtils::ToUtf8(openExport);
+		if (!openFolder.empty()) {
+			directoryText_ = PathUtils::ToUtf8(openFolder);
 		} else if (!nextDirectory.empty()) {
 			ChangeDirectory(nextDirectory);
 		}
@@ -382,7 +387,7 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 		if (!openFile.empty()) {
 			fileName_ = PathUtils::ToUtf8(openFile);
 		}
-		if ((submitted || fileSubmitted || !openFile.empty() || !openExport.empty() ||
+		if ((submitted || fileSubmitted || !openFile.empty() || !openFolder.empty() ||
 		     (folderSubmitted && mode_ == FileDialogMode::SELECT_DIRECTORY)) &&
 		    AcceptSelection()) {
 			result = FileDialogResult::ACCEPTED;
@@ -449,9 +454,12 @@ void FileDialog::Refresh() {
 
 			if (!typeError) {
 				if (directory) {
-					const bool gameExport = filter_ == FileDialogFilter::GAME_EXPORT &&
-					                        GameExportOpenProblem(entry.path()).empty();
-					entries_.push_back({entry.path(), true, gameExport});
+					const bool openableFolder =
+					    (filter_ == FileDialogFilter::PROJECT &&
+					     std::filesystem::is_regular_file(entry.path() / L"project.json", typeError)) ||
+					    (filter_ == FileDialogFilter::GAME_EXPORT &&
+					     GameExportOpenProblem(entry.path()).empty());
+					entries_.push_back({entry.path(), true, openableFolder});
 				} else if (mode_ != FileDialogMode::SELECT_DIRECTORY &&
 				           entry.is_regular_file(typeError) && !typeError &&
 				           (filter_ == FileDialogFilter::MODEL

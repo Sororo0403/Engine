@@ -103,7 +103,7 @@ class FileDialog {
 	struct Entry {
 		std::filesystem::path path;
 		bool directory = false;
-		bool gameExport = false;
+		bool openableFolder = false;
 	};
 
 	/// <summary>
