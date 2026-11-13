@@ -46,6 +46,7 @@ void GameExportResultDialog::Show(std::filesystem::path directory,
 	log_.clear();
 	logError_.clear();
 	logTruncated_ = false;
+	nextLogPage_.reset();
 	if (runs_.at(directory_).showLog) {
 		RefreshLog();
 	}
@@ -59,11 +60,14 @@ void GameExportResultDialog::RefreshLog() {
 	log_.clear();
 	logError_.clear();
 	logTruncated_ = false;
+	nextLogPage_.reset();
 	const auto path = directory_ / kGameLogPath;
 	std::error_code status;
 	if (!std::filesystem::exists(path, status) && !status) {
 		if (run.logStart)
 			*run.logStart = 0;
+		run.earlierLogPages.clear();
+		run.logPageOffset = 0;
 		logError_ = "Game log hasn't been created yet.";
 		return;
 	}
@@ -77,14 +81,23 @@ void GameExportResultDialog::RefreshLog() {
 	if (run.logStart && *run.logStart > static_cast<std::uintmax_t>(end)) {
 		// ログが切り詰められた場合は、新しいファイルの先頭から表示する。
 		*run.logStart = 0;
+		run.earlierLogPages.clear();
+		run.logPageOffset = 0;
 	}
 	const auto firstIncluded = run.sinceLaunchOnly && run.logStart
 	                               ? static_cast<std::streamoff>(*run.logStart)
 	                               : 0;
-	const auto size = (std::min)(end - firstIncluded, maximumBytes);
-	const auto start = run.showLogBeginning ? firstIncluded : end - size;
+	const auto available = end - firstIncluded;
+	if (run.logPageOffset >= static_cast<std::uintmax_t>(available)) {
+		run.earlierLogPages.clear();
+		run.logPageOffset = 0;
+	}
+	const auto start = run.showLogBeginning
+	                       ? firstIncluded + static_cast<std::streamoff>(run.logPageOffset)
+	                       : end - (std::min)(available, maximumBytes);
+	const auto size = (std::min)(end - start, maximumBytes);
 	bool partialLine = false;
-	if (start > firstIncluded) {
+	if (!run.showLogBeginning && start > firstIncluded) {
 		input.seekg(start - 1);
 		partialLine = input.get() != '\n';
 	} else {
@@ -97,7 +110,7 @@ void GameExportResultDialog::RefreshLog() {
 	}
 
 	logTruncated_ = size < end - firstIncluded;
-	if (run.showLogBeginning && logTruncated_ && text.back() != '\n') {
+	if (run.showLogBeginning && size < end - start && text.back() != '\n') {
 		// 表示上限が行の途中なら、不完全な行を取り除く。
 		if (const auto newline = text.rfind('\n'); newline != std::string::npos) {
 			text.resize(newline + 1);
@@ -109,6 +122,9 @@ void GameExportResultDialog::RefreshLog() {
 			}
 			text.resize(last);
 		}
+	}
+	if (run.showLogBeginning && start + static_cast<std::streamoff>(text.size()) < end) {
+		nextLogPage_ = run.logPageOffset + text.size();
 	}
 	if (partialLine) {
 		// 先頭が行の途中なら取り除く。長い1行ではUTF-8の継続バイトだけ除く。
@@ -153,6 +169,8 @@ bool GameExportResultDialog::StartGame() {
 		run.logStart = 0;
 	run.sinceLaunchOnly = run.logStart.has_value();
 	run.showLogBeginning = false;
+	run.earlierLogPages.clear();
+	run.logPageOffset = 0;
 	if (run.showLog)
 		RefreshLog();
 	return run.showLog;
@@ -284,7 +302,8 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 				report += run.sinceLaunchOnly ? "\nGame log since Run Game"
 				                              : "\nGame log";
 				if (logTruncated_) {
-					report += run.showLogBeginning ? " (beginning)" : " (tail)";
+					report += !run.showLogBeginning ? " (tail)"
+					          : run.logPageOffset == 0 ? " (beginning)" : " (page)";
 				}
 				report += ":\n";
 				report += log_;
@@ -297,11 +316,15 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		bool jumpToBeginning = false;
 		if (run.logStart &&
 		    ImGui::Checkbox("Since Run Game", &run.sinceLaunchOnly)) {
+			run.earlierLogPages.clear();
+			run.logPageOffset = 0;
 			RefreshLog();
 			jumpToBeginning = run.showLogBeginning;
 			jumpToLatest = !run.showLogBeginning;
 		}
 		if (ui.Checkbox("Show Log Beginning", run.showLogBeginning)) {
+			run.earlierLogPages.clear();
+			run.logPageOffset = 0;
 			RefreshLog();
 			jumpToBeginning = run.showLogBeginning;
 			jumpToLatest = !run.showLogBeginning;
@@ -346,6 +369,25 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 			jumpToBeginning = false;
 		}
 		ui.EndDisabled();
+		if (run.showLogBeginning) {
+			ui.BeginDisabled(run.earlierLogPages.empty());
+			if (ui.Button("Previous Page") && !run.earlierLogPages.empty()) {
+				run.logPageOffset = run.earlierLogPages.back();
+				run.earlierLogPages.pop_back();
+				RefreshLog();
+				jumpToBeginning = true;
+			}
+			ui.EndDisabled();
+			ui.SameLine();
+			ui.BeginDisabled(!nextLogPage_);
+			if (ui.Button("Next Page") && nextLogPage_) {
+				run.earlierLogPages.push_back(run.logPageOffset);
+				run.logPageOffset = *nextLogPage_;
+				RefreshLog();
+				jumpToBeginning = true;
+			}
+			ui.EndDisabled();
+		}
 		ui.SameLine();
 		const auto latestError = FindLatestError(log_);
 		ui.BeginDisabled(latestError == std::string_view::npos || jumpToLatest);
@@ -364,9 +406,11 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 			ui.Text(run.sinceLaunchOnly ? "No log messages since Run Game yet."
 			                         : "Game log is empty.");
 		} else {
-			if (logTruncated_)
-				ui.Text(run.showLogBeginning ? "Showing the beginning of the game log."
-				                             : "Showing the end of the game log.");
+			if (run.showLogBeginning) {
+				ui.Text(std::format("Log page {}", run.earlierLogPages.size() + 1));
+			} else if (logTruncated_) {
+				ui.Text("Showing the end of the game log.");
+			}
 			if (ui.BeginChild("GameLog", 570.0f, 210.0f)) {
 				const bool wasAtBottom =
 				    ImGui::GetScrollY() >= ImGui::GetScrollMaxY() - 1.0f;

@@ -7,6 +7,7 @@
 #include <map>
 #include <optional>
 #include <string>
+#include <vector>
 
 class ImGuiSystem;
 
@@ -36,6 +37,8 @@ class GameExportResultDialog {
 		ShellUtils::ExecutableProcess process;
 		std::string status;
 		std::optional<std::uintmax_t> logStart;
+		std::vector<std::uintmax_t> earlierLogPages;
+		std::uintmax_t logPageOffset = 0;
 		bool sinceLaunchOnly = false;
 		bool showLog = false;
 		bool followLog = true;
@@ -50,7 +53,7 @@ class GameExportResultDialog {
 	bool StartGame();
 
 	/// <summary>
-	/// 出力したゲームのログの先頭または末尾を読み直す
+	/// 出力したゲームのログの指定ページまたは末尾を読み直す
 	/// </summary>
 	void RefreshLog();
 
@@ -67,4 +70,5 @@ class GameExportResultDialog {
 	bool opening_ = false;
 	bool reopening_ = false;
 	bool logTruncated_ = false;
+	std::optional<std::uintmax_t> nextLogPage_;
 };
