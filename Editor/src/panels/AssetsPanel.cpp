@@ -14,6 +14,7 @@
 #endif
 #include <Windows.h>
 #include <algorithm>
+#include <array>
 #include <exception>
 #include <format>
 #include <imgui.h>
@@ -338,9 +339,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			}
 		}
 		selectedItems_ = std::exchange(resultPaths_, {});
-		if (std::ranges::any_of(selectedItems_, [&](const auto &path) {
-			    return path.parent_path() != parent;
-		    })) {
+		if (selectedItems_.size() > 1) {
 			displayedResults_ = selectedItems_;
 		}
 		selectionAnchor_ = selectedItems_.front();
@@ -534,16 +533,15 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		                                          : "Searching all folders.");
 	}
 
-	const auto &entries = type_ == AssetType::ANIMATION_CLIP ? assets.GetAnimationClips()
-	                      : type_ == AssetType::SCRIPT ? assets.GetScripts()
-	                      : type_ == AssetType::MODEL   ? assets.GetModels()
-	                      : type_ == AssetType::TEXTURE ? assets.GetTextures()
-	                      : type_ == AssetType::AUDIO   ? assets.GetAudioClips()
-	                      : type_ == AssetType::SCENE   ? assets.GetScenes()
-	                      : type_ == AssetType::PREFAB
-	                          ? assets.GetPrefabs()
-	                          : assets.GetGameConfigurations();
-
+	const std::array filesByType{
+	    std::pair{AssetType::MODEL, &assets.GetModels()},
+	    std::pair{AssetType::TEXTURE, &assets.GetTextures()},
+	    std::pair{AssetType::AUDIO, &assets.GetAudioClips()},
+	    std::pair{AssetType::SCENE, &assets.GetScenes()},
+	    std::pair{AssetType::PREFAB, &assets.GetPrefabs()},
+	    std::pair{AssetType::SCRIPT, &assets.GetScripts()},
+	    std::pair{AssetType::ANIMATION_CLIP, &assets.GetAnimationClips()},
+	    std::pair{AssetType::GAME_SETTINGS, &assets.GetGameConfigurations()}};
 	const auto search = StringConversion::Utf8ToWide(filter_);
 	const auto inResults = [&](const std::filesystem::path &path) {
 		return std::ranges::find(displayedResults_, path) != displayedResults_.end();
@@ -578,20 +576,35 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		}
 	}
 
-	for (const auto &path : entries) {
-		if (visibleFile(path)) {
-			visible.push_back(path);
+	std::vector<std::pair<AssetType, const std::filesystem::path *>> visibleFiles;
+	for (const auto &[type, paths] : filesByType) {
+		if (displayedResults_.empty() && type != type_) {
+			continue;
+		}
+		for (const auto &path : *paths) {
+			if (visibleFile(path)) {
+				visible.push_back(path);
+				visibleFiles.emplace_back(type, &path);
+			}
 		}
 	}
 
 	const auto isSelected = [&](const std::filesystem::path &path) {
 		return std::ranges::find(selectedItems_, path) != selectedItems_.end();
 	};
+	auto selectedType = type_;
 	const auto syncSingle = [&] {
-		selectedPath_ = selectedItems_.size() == 1 &&
-		                        std::ranges::find(entries, selectedItems_.front()) != entries.end()
-		                    ? selectedItems_.front()
-		                    : std::filesystem::path{};
+		selectedPath_.clear();
+		selectedType = type_;
+		if (selectedItems_.size() == 1) {
+			const auto found = std::ranges::find(
+			    visibleFiles, selectedItems_.front(),
+			    [](const auto &entry) -> const auto & { return *entry.second; });
+			if (found != visibleFiles.end()) {
+				selectedType = found->first;
+				selectedPath_ = *found->second;
+			}
+		}
 	};
 	std::erase_if(selectedItems_, [&](const auto &path) {
 		return std::ranges::find(visible, path) == visible.end();
@@ -814,20 +827,16 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			}
 		}
 
-		for (std::size_t i = 0; i < entries.size(); ++i) {
-			const auto &assetPath = entries[i];
+		for (const auto &[assetType, path] : visibleFiles) {
+			const auto &assetPath = *path;
 
 			// パネル内では、アセットフォルダからのパスを表示する
 			const auto displayPath =
 			    assetPath.lexically_relative(assets.GetRootDirectory());
 
-			if (!visibleFile(assetPath)) {
-				continue;
-			}
-
 			anyVisible = true;
 
-			ui.PushID(static_cast<int>(i));
+			ImGui::PushID(PathUtils::ToUtf8(assetPath).c_str());
 			const auto label = filter_.empty() && displayedResults_.empty()
 			                       ? PathUtils::ToUtf8(displayPath.filename())
 			                       : PathUtils::ToUtf8(displayPath);
@@ -842,22 +851,22 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			if (selected || doubleClicked) {
 				selectRow(assetPath, !doubleClicked);
 
-				if (type_ == AssetType::SCRIPT && canEditAssets &&
+				if (assetType == AssetType::SCRIPT && canEditAssets &&
 				    ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 					scriptEditPath_ = assetPath;
-				if (type_ == AssetType::ANIMATION_CLIP && canEditAssets && doubleClicked)
+				if (assetType == AssetType::ANIMATION_CLIP && canEditAssets && doubleClicked)
 					clipEditPath_ = assetPath;
-				if (type_ == AssetType::SCENE && canEditAssets &&
+				if (assetType == AssetType::SCENE && canEditAssets &&
 				    doubleClicked) {
 					sceneOpenPath_ = assetPath;
 				}
 
-				if (type_ == AssetType::GAME_SETTINGS && canEditAssets &&
+				if (assetType == AssetType::GAME_SETTINGS && canEditAssets &&
 				    doubleClicked) {
 					gameSettingsPath_ = assetPath;
 				}
 
-				if (type_ == AssetType::TEXTURE && canSetTexture &&
+				if (assetType == AssetType::TEXTURE && canSetTexture &&
 				    textureSlot_ >= 0 && doubleClicked) {
 					textureSelectionPath_ = assetPath;
 				}
@@ -899,52 +908,52 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 					recyclePaths_ = selectedItems_;
 				}
 
-				if (type_ == AssetType::PREFAB &&
+				if (assetType == AssetType::PREFAB &&
 				    ui.MenuItem("Add Prefab", nullptr, canEditAssets)) {
 					prefabAppendPath_ = assetPath;
 				}
 
-				if (type_ == AssetType::SCENE &&
+				if (assetType == AssetType::SCENE &&
 				    ui.MenuItem("Add Objects", nullptr, canEditAssets)) {
 					sceneAppendPath_ = assetPath;
 				}
 
-				if (type_ == AssetType::SCENE &&
+				if (assetType == AssetType::SCENE &&
 				    ui.MenuItem("Open Scene", nullptr, canEditAssets)) {
 					sceneOpenPath_ = assetPath;
 				}
 
-				if (type_ == AssetType::TEXTURE &&
+				if (assetType == AssetType::TEXTURE &&
 				    ui.MenuItem("Assign Texture to Selection", nullptr,
 				                canSetTexture && textureSlot_ >= 0)) {
 					textureSelectionPath_ = assetPath;
 				}
 
-				if (type_ == AssetType::TEXTURE &&
+				if (assetType == AssetType::TEXTURE &&
 				    ui.MenuItem("Reload Texture", nullptr, canEditAssets)) {
 					textureReloadPath_ = assetPath;
 				}
 
-				if (type_ == AssetType::MODEL &&
+				if (assetType == AssetType::MODEL &&
 				    ui.MenuItem("Replace Mesh of Selection", nullptr,
 				                canEditAssets && canReplaceMesh)) {
 					meshReplacementPath_ = assetPath;
 				}
 
-				if (type_ == AssetType::MODEL &&
+				if (assetType == AssetType::MODEL &&
 				    ui.MenuItem("Reload Model", nullptr, canEditAssets)) {
 					modelReloadPath_ = assetPath;
 				}
 
-				if (type_ == AssetType::GAME_SETTINGS &&
+				if (assetType == AssetType::GAME_SETTINGS &&
 				    ui.MenuItem("Load Game Settings", nullptr, canEditAssets)) {
 					gameSettingsPath_ = assetPath;
 				}
 
-				if ((type_ == AssetType::MODEL ||
-				     type_ == AssetType::TEXTURE) &&
+				if ((assetType == AssetType::MODEL ||
+				     assetType == AssetType::TEXTURE) &&
 				    ui.MenuItem("Select Instances", nullptr, true)) {
-					if (type_ == AssetType::MODEL) {
+					if (assetType == AssetType::MODEL) {
 						instanceSelectionPath_ = assetPath;
 					} else {
 						textureUsageSelectionPath_ = assetPath;
@@ -958,16 +967,16 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				scrollToSelected_ = false;
 			}
 
-			if ((type_ != AssetType::GAME_SETTINGS || canEditAssets) &&
+			if ((assetType != AssetType::GAME_SETTINGS || canEditAssets) &&
 			    AssetDragDrop::DrawSource(
 			        assetPath,
-			        type_ == AssetType::TEXTURE  ? AssetDragDrop::Kind::TEXTURE
-			        : type_ == AssetType::SCRIPT ? AssetDragDrop::Kind::SCRIPT
-			        : type_ == AssetType::MODEL  ? AssetDragDrop::Kind::MODEL
-			        : type_ == AssetType::AUDIO  ? AssetDragDrop::Kind::AUDIO
-			        : type_ == AssetType::PREFAB ? AssetDragDrop::Kind::PREFAB
-			        : type_ == AssetType::SCENE  ? AssetDragDrop::Kind::SCENE
-			        : type_ == AssetType::ANIMATION_CLIP ? AssetDragDrop::Kind::ANIMATION_CLIP
+			        assetType == AssetType::TEXTURE  ? AssetDragDrop::Kind::TEXTURE
+			        : assetType == AssetType::SCRIPT ? AssetDragDrop::Kind::SCRIPT
+			        : assetType == AssetType::MODEL  ? AssetDragDrop::Kind::MODEL
+			        : assetType == AssetType::AUDIO  ? AssetDragDrop::Kind::AUDIO
+			        : assetType == AssetType::PREFAB ? AssetDragDrop::Kind::PREFAB
+			        : assetType == AssetType::SCENE  ? AssetDragDrop::Kind::SCENE
+			        : assetType == AssetType::ANIMATION_CLIP ? AssetDragDrop::Kind::ANIMATION_CLIP
 			                                    : AssetDragDrop::Kind::GAME_SETTINGS)) {
 				selectContext(assetPath);
 			}
@@ -1035,14 +1044,14 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		ui.Text(std::format("{} items selected", selectedItems_.size()));
 	}
 
-	if (!selectedPath_.empty() && type_ != AssetType::AUDIO) {
+	if (!selectedPath_.empty() && selectedType != AssetType::AUDIO) {
 		const auto displayPath =
 		    selectedPath_.lexically_relative(assets.GetRootDirectory());
 
 		ui.Text(PathUtils::ToUtf8(displayPath));
 	}
 
-	if (type_ == AssetType::MODEL) {
+	if (selectedType == AssetType::MODEL) {
 		ui.BeginDisabled(selectedPath_.empty());
 
 		if (ui.Button("Add to Scene")) {
@@ -1065,7 +1074,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 		ui.EndDisabled();
 		ui.EndDisabled();
-	} else if (type_ == AssetType::TEXTURE) {
+	} else if (selectedType == AssetType::TEXTURE) {
 		ui.BeginDisabled(selectedPath_.empty());
 
 		if (ui.Button("Preview Image")) {
@@ -1137,7 +1146,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		}
 
 		ui.EndDisabled();
-	} else if (type_ == AssetType::AUDIO) {
+	} else if (selectedType == AssetType::AUDIO) {
 		ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
 
 		if (ui.Button("Preview Audio")) {
@@ -1153,17 +1162,17 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		}
 	}
 
-	if (type_ == AssetType::ANIMATION_CLIP) {
+	if (selectedType == AssetType::ANIMATION_CLIP) {
 		ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
 		if (ui.Button("Edit Animation Clip"))
 			clipEditPath_ = selectedPath_;
 		ui.EndDisabled();
-	} else if (type_ == AssetType::SCRIPT) {
+	} else if (selectedType == AssetType::SCRIPT) {
 		ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
 		if (ui.Button("Edit Script"))
 			scriptEditPath_ = selectedPath_;
 		ui.EndDisabled();
-	} else if (type_ == AssetType::SCENE) {
+	} else if (selectedType == AssetType::SCENE) {
 		ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
 
 		if (ui.Button("Open Scene")) {
@@ -1175,7 +1184,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		}
 
 		ui.EndDisabled();
-	} else if (type_ == AssetType::PREFAB) {
+	} else if (selectedType == AssetType::PREFAB) {
 		ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
 
 		if (ui.Button("Add Prefab")) {
@@ -1183,7 +1192,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		}
 
 		ui.EndDisabled();
-	} else if (type_ == AssetType::GAME_SETTINGS) {
+	} else if (selectedType == AssetType::GAME_SETTINGS) {
 		ui.BeginDisabled(selectedPath_.empty() || !canEditAssets);
 
 		if (ui.Button("Load Game Settings")) {
@@ -1191,11 +1200,11 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		}
 
 		ui.EndDisabled();
-	} else if (type_ != AssetType::AUDIO) {
+	} else if (selectedType != AssetType::AUDIO) {
 		ui.BeginDisabled(selectedPath_.empty());
 
 		if (ui.Button("Select Instances")) {
-			if (type_ == AssetType::MODEL) {
+			if (selectedType == AssetType::MODEL) {
 				instanceSelectionPath_ = selectedPath_;
 			} else {
 				textureUsageSelectionPath_ = selectedPath_;
