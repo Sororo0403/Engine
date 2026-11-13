@@ -4,6 +4,7 @@
 #include "platform/windows/ShellUtils.h"
 #include <algorithm>
 #include <charconv>
+#include <format>
 #include <imgui.h>
 #include <limits>
 #include <stdexcept>
@@ -133,6 +134,7 @@ bool GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits
 	browsing_ = false;
 
 	if (!resume) {
+		issueFilter_.clear();
 		output_ = PathUtils::ToUtf8(options_.destination);
 		title_ = options_.config.title;
 		width_ = options_.config.width;
@@ -292,7 +294,18 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 	GameExportResult result = chooseStartup ? GameExportResult::CHOOSE_STARTUP_SCENE
 	                                        : GameExportResult::NONE;
 	if (!checkIssues_.empty()) {
-		ui.Text("Export issues");
+		const auto matches = [&](const GameExportIssue &issue) {
+			return issueFilter_.empty() ||
+			       issue.message.find(issueFilter_) != std::string::npos ||
+			       PathUtils::ToUtf8(issue.scenePath).find(issueFilter_) != std::string::npos ||
+			       PathUtils::ToUtf8(issue.scriptPath).find(issueFilter_) != std::string::npos ||
+			       PathUtils::ToUtf8(issue.assetPath).find(issueFilter_) != std::string::npos;
+		};
+		if (ui.InputText("Search Issues", issueFilter_)) {
+			issueToScrollTo_ = 0;
+		}
+		const auto matching = std::ranges::count_if(checkIssues_, matches);
+		ui.Text(std::format("Matching issues: {} / {}", matching, checkIssues_.size()));
 		if (issueToScrollTo_ == 0) {
 			ImGui::SetNextWindowScroll({-1.0f, 0.0f});
 		}
@@ -300,6 +313,9 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 		if (ImGui::BeginChild("ExportCheckResult", {0.0f, height})) {
 			for (std::size_t i = 0; i < checkIssues_.size(); ++i) {
 				const auto &issue = checkIssues_[i];
+				if (!matches(issue)) {
+					continue;
+				}
 				ImGui::PushID(static_cast<int>(i));
 				ImGui::TextWrapped("%s", issue.message.c_str());
 				if (issueToScrollTo_ == i && i != 0) {
@@ -337,6 +353,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 		if (ui.Button("Copy Details")) {
 			ImGui::SetClipboardText(checkResult_.c_str());
 		}
+		ImGui::SetItemTooltip("Copy all issues, including those hidden by search.");
 	} else if (!checkResult_.empty()) {
 		ImGui::TextWrapped("%s", checkResult_.c_str());
 	}
