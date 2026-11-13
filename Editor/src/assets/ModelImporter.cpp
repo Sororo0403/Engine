@@ -36,11 +36,13 @@ fs::path RelativeFile(const fs::path &root, const fs::path &input) {
 	const auto normal =
 	    PathUtils::ResolveFromExecutable(input).lexically_normal();
 	const auto relative = PathUtils::RelativeInside(root, normal);
-	PathUtils::RelativeInside(root, fs::canonical(normal));
 
 	if (relative.empty() || !fs::is_regular_file(normal)) {
-		throw std::runtime_error("A model dependency is not a regular file.");
+		throw std::runtime_error(
+		    "Model dependency is missing or is not a regular file: " +
+		    PathUtils::ToUtf8(normal));
 	}
+	PathUtils::RelativeInside(root, fs::canonical(normal));
 
 	for (const auto &part : relative) {
 		if (!PathUtils::IsValidFileName(part)) {

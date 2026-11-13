@@ -82,21 +82,9 @@ AssetDependencies::ModelFiles(const std::filesystem::path &input,
 	const auto model = ResolveAsset(input);
 	std::vector<fs::path> files{model};
 
-	ModelData data;
-
-	if (!ModelLoader::Load(model, data)) {
-		throw std::runtime_error("Could not load model: " +
+	if (!fs::is_regular_file(model)) {
+		throw std::runtime_error("Model file is missing or is not a regular file: " +
 		                         PathUtils::ToUtf8(model));
-	}
-
-	for (const auto &material : data.materials) {
-		if (material.baseColorTexture.source == TextureSource::FILE) {
-			files.push_back(material.baseColorTexture.filePath);
-
-			if (absoluteReferences && material.baseColorTextureUsesAbsolutePath) {
-				absoluteReferences->push_back(material.baseColorTexture.filePath);
-			}
-		}
 	}
 
 	if (PathUtils::HasExtension(model, ".gltf") ||
@@ -197,6 +185,34 @@ AssetDependencies::ModelFiles(const std::filesystem::path &input,
 		}
 	} else {
 		throw std::runtime_error("Export supports GLB, glTF and OBJ models.");
+	}
+
+	ModelData data;
+	if (!ModelLoader::Load(model, data)) {
+		// 外部バッファなどが欠けるとモデル全体を読み込めないため、
+		// 先に調べたファイル参照から具体的な原因を伝える。
+		for (const auto &file : files) {
+			std::error_code status;
+			if (!fs::is_regular_file(file, status) &&
+			    (!status || status == std::errc::no_such_file_or_directory ||
+			     status == std::errc::not_a_directory)) {
+				throw std::runtime_error(
+				    "Model dependency is missing or is not a regular file: " +
+				    PathUtils::ToUtf8(file.lexically_normal()));
+			}
+		}
+		throw std::runtime_error("Could not load model: " +
+		                         PathUtils::ToUtf8(model));
+	}
+
+	for (const auto &material : data.materials) {
+		if (material.baseColorTexture.source == TextureSource::FILE) {
+			files.push_back(material.baseColorTexture.filePath);
+
+			if (absoluteReferences && material.baseColorTextureUsesAbsolutePath) {
+				absoluteReferences->push_back(material.baseColorTexture.filePath);
+			}
+		}
 	}
 
 	return files;
