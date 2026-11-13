@@ -170,6 +170,7 @@ void GameExportDialog::SetCheckResult(std::string message,
 		issueToScrollTo_ = 0;
 	}
 	checkResult_ = std::move(message);
+	checkResultStale_ = false;
 	checkIssues_ = std::move(issues);
 }
 
@@ -179,6 +180,7 @@ const GameExportIssue &GameExportDialog::GetSelectedIssue() const {
 
 void GameExportDialog::ClearCheckResult() {
 	checkResult_.clear();
+	checkResultStale_ = false;
 	checkIssues_.clear();
 	issueToScrollTo_.reset();
 }
@@ -259,8 +261,9 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 			const auto suggested = FindAvailableDestination(output);
 			if (suggested != output) {
 				output_ = PathUtils::ToUtf8(suggested);
+				changed = true;
 			}
-			changed = true;
+			error_.clear();
 		} catch (const std::exception &e) {
 			error_ = e.what();
 		}
@@ -271,13 +274,16 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 	changed |= ImGui::InputInt("Height", &height_);
 	if (changed) {
 		error_.clear();
-		ClearCheckResult();
+		checkResultStale_ = !checkResult_.empty();
 	}
 
 	if (!error_.empty()) {
 		ImGui::TextWrapped("%s", error_.c_str());
 	}
 	GameExportResult result = GameExportResult::NONE;
+	if (checkResultStale_) {
+		ui.Text("Settings changed. Run Check Export to update the results.");
+	}
 	if (!checkIssues_.empty()) {
 		const auto matches = [&](const GameExportIssue &issue) {
 			return MatchesIssue(issue, issueFilter_);
@@ -353,7 +359,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 			ImGui::SetClipboardText(checkResult_.c_str());
 		}
 		ImGui::SetItemTooltip("Copy all issues, including those hidden by search.");
-	} else if (!checkResult_.empty()) {
+	} else if (!checkResult_.empty() && !checkResultStale_) {
 		ImGui::TextWrapped("%s", checkResult_.c_str());
 	}
 
@@ -365,20 +371,21 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 		ui.SameLine();
 		saveAndCheckRequested = ui.Button("Save Scene and Check");
 	}
-	if (chooseStartup || exportRequested || checkRequested || saveAndCheckRequested) {
+	const bool navigatingIssue = result == GameExportResult::OPEN_ISSUE ||
+	                             result == GameExportResult::EDIT_ISSUE_SCRIPT ||
+	                             result == GameExportResult::REVEAL_ISSUE_ASSET;
+	if (chooseStartup || exportRequested || checkRequested || saveAndCheckRequested ||
+	    navigatingIssue) {
 		error_.clear();
-		if (!chooseStartup) {
-			ClearCheckResult();
-		}
 		try {
 			auto selected = options_;
 			try {
 				selected.destination = ReadDestination(output_);
 			} catch (const std::invalid_argument &) {
-				if (!chooseStartup) {
+				if (!chooseStartup && !navigatingIssue) {
 					throw;
 				}
-				// 出力先の入力が無効でも、起動シーンを選び直せるようにする。
+				// 出力先の入力が無効でも、起動シーンの変更や問題箇所への移動を許可する。
 				selected.destination.clear();
 			}
 			selected.config.title = title_;
@@ -405,7 +412,8 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 			result = chooseStartup          ? GameExportResult::CHOOSE_STARTUP_SCENE
 			         : exportRequested      ? GameExportResult::ACCEPTED
 			         : saveAndCheckRequested ? GameExportResult::SAVE_AND_CHECK
-			                                 : GameExportResult::CHECK;
+			         : checkRequested        ? GameExportResult::CHECK
+			                                 : result;
 		} catch (const std::exception &e) {
 			error_ = e.what();
 		}
@@ -430,9 +438,12 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 			try {
 				const auto candidate =
 				    folderDialog_.GetSelectedPath() / browseOutputName_;
-				output_ = PathUtils::ToUtf8(FindAvailableDestination(candidate));
+				auto output = PathUtils::ToUtf8(FindAvailableDestination(candidate));
+				if (output != output_) {
+					checkResultStale_ = !checkResult_.empty();
+					output_ = std::move(output);
+				}
 				error_.clear();
-				ClearCheckResult();
 			} catch (const std::exception &e) {
 				error_ = e.what();
 			}

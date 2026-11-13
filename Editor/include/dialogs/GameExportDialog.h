@@ -106,6 +106,7 @@ class GameExportDialog {
 	std::filesystem::path projectRoot_;
 	std::string output_, startupScene_, title_, error_;
 	std::string checkResult_;
+	bool checkResultStale_ = false;
 	std::string issueFilter_;
 	std::vector<GameExportIssue> checkIssues_;
 	std::size_t selectedIssue_ = 0;
