@@ -2021,6 +2021,15 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			action = EditorAction::OPEN_GAME_EXPORT;
 		}
 
+		const auto lastExport = preferences_.LastGameExport(project_.GetRoot());
+		if (ui_.MenuItem("Open Last Game Export", nullptr, enabled && !lastExport.empty())) {
+			pendingOpenPath_ = lastExport;
+			action = EditorAction::OPEN_GAME_EXPORT;
+		}
+		if (!lastExport.empty()) {
+			ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(lastExport).c_str());
+		}
+
 		const auto recentExports = preferences_.RecentGameExports(project_.GetRoot());
 		if (ImGui::BeginMenu("Recent Game Exports", enabled && !recentExports.empty())) {
 			std::size_t index = 0;
@@ -2945,6 +2954,13 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 		fileDialog_.Show(FileDialogMode::SELECT_DIRECTORY, directory,
 		                 FileDialogFilter::GAME_EXPORT,
 		                 "Open Game Export###FileDialog");
+		if (!pendingGameExportReplacement_.empty()) {
+			fileDialog_.RetrySelection(
+			    "Could not open the previous game export: " +
+			        PathUtils::ToUtf8(pendingGameExportReplacement_) +
+			        "\nChoose its new location to update the export history.",
+			    pendingGameExportReplacement_);
+		}
 		stage_ = DialogStage::SELECT_GAME_EXPORT;
 		return;
 	}
@@ -5214,7 +5230,8 @@ void EditorScene::UpdateDialogs() {
 			stage_ = DialogStage::IDLE;
 		} else if (result == FileDialogResult::ACCEPTED &&
 		           !OpenGameExport(fileDialog_.GetSelectedPath())) {
-			fileDialog_.RetrySelection("Choose a folder containing Game.exe and game.json.");
+			fileDialog_.RetrySelection("Choose a folder containing Game.exe and game.json.",
+			                           pendingGameExportReplacement_);
 		}
 		return;
 	}

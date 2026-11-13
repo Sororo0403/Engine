@@ -339,7 +339,10 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 		}
 
 		if (!failedProject_.empty()) {
-			if (ui.Button("Show Failed Project Location")) {
+			const char *label = filter_ == FileDialogFilter::GAME_EXPORT
+			                        ? "Show Previous Export Location"
+			                        : "Show Failed Project Location";
+			if (ui.Button(label)) {
 				ShellUtils::RevealLocationInExplorer(failedProject_,
 				                                     failedProjectLocationError_);
 			}
