@@ -5480,7 +5480,7 @@ void EditorScene::UpdateDialogs() {
 					StartPlay(path, camera);
 					return;
 				}
-				ImGui::SetItemTooltip("Start a new Play session from the reported scene.");
+				ImGui::SetItemTooltip("Start a new Play session. A failed transition retries from the original Play scene.");
 				ui_.SameLine();
 			}
 			const bool canShowPlayLog = errorHasPlayLog_ || errorReplayPath_.has_value();
@@ -5599,7 +5599,9 @@ void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject) {
 		playMode_.Stop();
 		ShowError(std::move(message), isEditingScene ? object : 0,
 		          std::move(scriptPath));
-		errorReplayPath_ = path;
+		// 到着タグや共有状態を使う遷移を再現できるよう、最初のシーンから試遊する。
+		errorReplayPath_ = playInitialScenePath_;
+		errorReplayCameraOverride_ = playInitialCameraOverride_;
 		if (!isEditingScene) {
 			errorScenePath_ = std::move(path);
 			errorObjectId_ = object;
