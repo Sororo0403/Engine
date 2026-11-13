@@ -42,6 +42,7 @@ class GameExportResultDialog {
 		bool sinceLaunchOnly = false;
 		bool showLog = false;
 		bool followLog = true;
+		bool showErrorsOnly = false;
 		bool showLogBeginning = false;
 		bool launchFailed = false;
 		bool restartRequested = false;

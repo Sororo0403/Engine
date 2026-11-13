@@ -35,6 +35,26 @@ void VisitLogLines(std::string_view log, const auto &visit) {
 		start = end;
 	}
 }
+
+/// <summary>
+/// エラーの見出しと、それに続く詳細行を取り出す
+/// </summary>
+std::string CollectLogErrors(std::string_view log) {
+	std::string errors;
+	bool includeLine = false;
+	VisitLogLines(log, [&](std::size_t, std::string_view line) {
+		const auto level = LogLevelPrefix(line);
+		if (level.starts_with(" [ERROR] ")) {
+			includeLine = true;
+		} else if (level.starts_with(" [INFO] ") || level.starts_with(" [WARNING] ")) {
+			includeLine = false;
+		}
+		if (includeLine) {
+			errors.append(line);
+		}
+	});
+	return errors;
+}
 }
 
 void GameExportResultDialog::Show(std::filesystem::path directory,
@@ -388,9 +408,13 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 			}
 			ui.EndDisabled();
 		}
+		const bool changedFilter = ui.Checkbox("Errors Only", run.showErrorsOnly);
+		ImGui::SetItemTooltip("Show errors and their details on the current log page.");
+		const auto errors = run.showErrorsOnly ? CollectLogErrors(log_) : std::string{};
+		const std::string_view displayedLog = run.showErrorsOnly ? errors : log_;
 		std::size_t firstError = std::string_view::npos;
 		std::size_t latestError = std::string_view::npos;
-		VisitLogLines(log_, [&](std::size_t start, std::string_view line) {
+		VisitLogLines(displayedLog, [&](std::size_t start, std::string_view line) {
 			if (LogLevelPrefix(line).starts_with(" [ERROR] ")) {
 				if (firstError == std::string_view::npos) {
 					firstError = start;
@@ -409,20 +433,8 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		}
 		ui.SameLine();
 		if (ui.Button("Copy Displayed Errors") && firstError != std::string_view::npos) {
-			std::string errors;
-			bool includeLine = false;
-			VisitLogLines(log_, [&](std::size_t, std::string_view line) {
-				const auto level = LogLevelPrefix(line);
-				if (level.starts_with(" [ERROR] ")) {
-					includeLine = true;
-				} else if (level.starts_with(" [INFO] ") || level.starts_with(" [WARNING] ")) {
-					includeLine = false;
-				}
-				if (includeLine) {
-					errors.append(line);
-				}
-			});
-			ImGui::SetClipboardText(errors.c_str());
+			const auto copied = run.showErrorsOnly ? errors : CollectLogErrors(log_);
+			ImGui::SetClipboardText(copied.c_str());
 		}
 		ui.EndDisabled();
 		ImGui::SetItemTooltip("Copy errors and their details from the displayed log.");
@@ -447,16 +459,16 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 				    ImGui::GetScrollY() >= ImGui::GetScrollMaxY() - 1.0f;
 				if (jumpToError) {
 					const auto prefixHeight = errorToShow == 0 ? 0.0f
-					    : ImGui::CalcTextSize(log_.data(), log_.data() + errorToShow,
+					    : ImGui::CalcTextSize(displayedLog.data(), displayedLog.data() + errorToShow,
 					                          false, ImGui::GetContentRegionAvail().x).y;
 					ImGui::SetScrollY((std::max)(
 					    0.0f, ImGui::GetCursorPosY() + prefixHeight -
 					              ImGui::GetWindowHeight() * 0.5f));
 				}
 				ImGui::PushTextWrapPos();
-				ui.Text(log_);
+				ui.Text(displayedLog.empty() ? "No errors on this log page." : displayedLog);
 				ImGui::PopTextWrapPos();
-				if (jumpToBeginning && !jumpToError) {
+				if ((jumpToBeginning || (changedFilter && !jumpToLatest)) && !jumpToError) {
 					ImGui::SetScrollY(0.0f);
 				} else if (!jumpToError && !run.showLogBeginning &&
 				    (jumpToLatest || (refreshedLog && run.followLog && wasAtBottom))) {
