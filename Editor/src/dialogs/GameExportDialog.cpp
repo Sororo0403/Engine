@@ -308,6 +308,13 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 		if (ui.InputText("Search Issues", issueFilter_)) {
 			issueToScrollTo_ = 0;
 		}
+		ui.SameLine();
+		ui.BeginDisabled(issueFilter_.empty());
+		if (ui.Button("Clear Search")) {
+			issueFilter_.clear();
+			issueToScrollTo_ = 0;
+		}
+		ui.EndDisabled();
 		const auto matching = std::ranges::count_if(checkIssues_, matches);
 		ui.Text(std::format("Matching issues: {} / {}", matching, checkIssues_.size()));
 		if (issueToScrollTo_ == 0) {
@@ -315,6 +322,9 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 		}
 		const float height = 8.0f * ImGui::GetTextLineHeightWithSpacing();
 		if (ImGui::BeginChild("ExportCheckResult", {0.0f, height})) {
+			if (matching == 0) {
+				ui.Text("No issues match the search. Clear Search to see all issues.");
+			}
 			for (std::size_t i = 0; i < checkIssues_.size(); ++i) {
 				const auto &issue = checkIssues_[i];
 				if (!matches(issue)) {
@@ -387,6 +397,23 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 			ImGui::SetClipboardText(checkResult_.c_str());
 		}
 		ImGui::SetItemTooltip("Copy all issues, including those hidden by search.");
+		if (!issueFilter_.empty()) {
+			ui.SameLine();
+			ui.BeginDisabled(matching == 0);
+			if (ui.Button("Copy Matching Issues")) {
+				std::string report;
+				for (const auto &issue : checkIssues_) {
+					if (matches(issue)) {
+						if (!report.empty()) {
+							report += "\n\n";
+						}
+						report += issue.message;
+					}
+				}
+				ImGui::SetClipboardText(report.c_str());
+			}
+			ui.EndDisabled();
+		}
 	} else if (!checkResult_.empty() && !checkResultStale_) {
 		ImGui::TextWrapped("%s", checkResult_.c_str());
 	}
