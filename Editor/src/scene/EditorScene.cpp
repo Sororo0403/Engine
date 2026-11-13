@@ -3380,6 +3380,47 @@ const Scene *EditorScene::PrepareGameExport(SceneDocument &startup,
 	}
 }
 
+void EditorScene::ShowGameExport(const std::filesystem::path &windowSource) {
+	try {
+		GameExportOptions options;
+		const auto root = PathUtils::GetExecutableDirectory();
+#if defined(_DEBUG)
+		options.runtimeDirectory = root.parent_path() / L"Release";
+#else
+		options.runtimeDirectory = root;
+#endif
+		options.resourceDirectory = root / L"resources";
+		options.destination = root / L"exports" / L"Game";
+		const auto lastExport = preferences_.LastGameExport(project_.GetRoot());
+		const auto lastParent = lastExport.parent_path();
+		std::error_code statusError;
+		if (!lastParent.empty() &&
+		    PathUtils::IsValidFileName(lastExport.filename()) &&
+		    std::filesystem::is_directory(lastParent, statusError)) {
+			options.destination = lastExport;
+		}
+		options.config = exportConfig_;
+		const auto startup = project_.GetStartupScene();
+		const bool isCurrentScene = UsesEditingSceneForStartup(startup);
+		if (isCurrentScene) {
+			options.config.fallbackCamera = cameraController_.GetPose();
+		}
+		options.startupScenePath =
+		    isCurrentScene ? document_.GetFilePath() : startup;
+		if (exportDialog_.Show(std::move(options),
+		                       isCurrentScene && document_.IsModified(),
+		                       project_.GetRoot(), lastExport, windowSource)) {
+			CheckGameExport(true);
+		}
+		stage_ = DialogStage::EXPORT_GAME;
+	} catch (const std::exception &error) {
+		Logger::Error(
+		    std::format("EditorScene::PrepareExport: {}", error.what()));
+		ShowError(
+		    "Could not prepare game export. See the log for details.");
+	}
+}
+
 void EditorScene::WriteGameExport() {
 	SceneDocument startup;
 	auto options = exportDialog_.GetOptions();
@@ -3540,47 +3581,9 @@ void EditorScene::ExecutePendingAction() {
 		return;
 	}
 
-	case EditorAction::EXPORT_GAME: {
-		try {
-			GameExportOptions options;
-			const auto root = PathUtils::GetExecutableDirectory();
-#if defined(_DEBUG)
-			options.runtimeDirectory = root.parent_path() / L"Release";
-#else
-			options.runtimeDirectory = root;
-#endif
-			options.resourceDirectory = root / L"resources";
-			options.destination = root / L"exports" / L"Game";
-			const auto lastExport = preferences_.LastGameExport(project_.GetRoot());
-			const auto lastParent = lastExport.parent_path();
-			std::error_code statusError;
-			if (!lastParent.empty() &&
-			    PathUtils::IsValidFileName(lastExport.filename()) &&
-			    std::filesystem::is_directory(lastParent, statusError)) {
-				options.destination = lastExport;
-			}
-			options.config = exportConfig_;
-			const auto startup = project_.GetStartupScene();
-			const bool isCurrentScene = UsesEditingSceneForStartup(startup);
-			if (isCurrentScene) {
-				options.config.fallbackCamera = cameraController_.GetPose();
-			}
-			options.startupScenePath =
-			    isCurrentScene ? document_.GetFilePath() : startup;
-			if (exportDialog_.Show(std::move(options),
-			                       isCurrentScene && document_.IsModified(),
-			                       project_.GetRoot(), lastExport)) {
-				CheckGameExport(true);
-			}
-			stage_ = DialogStage::EXPORT_GAME;
-		} catch (const std::exception &error) {
-			Logger::Error(
-			    std::format("EditorScene::PrepareExport: {}", error.what()));
-			ShowError(
-			    "Could not prepare game export. See the log for details.");
-		}
+	case EditorAction::EXPORT_GAME:
+		ShowGameExport();
 		return;
-	}
 
 	case EditorAction::NEW_SAMPLE:
 	case EditorAction::NEW: {
@@ -5285,7 +5288,7 @@ void EditorScene::UpdateDialogs() {
 		if (result != GameExportResultAction::NONE) {
 			stage_ = DialogStage::IDLE;
 			if (result == GameExportResultAction::NEW_EXPORT) {
-				StartAction(EditorAction::EXPORT_GAME);
+				ShowGameExport(exportResultDialog_.GetDirectory());
 			}
 		}
 

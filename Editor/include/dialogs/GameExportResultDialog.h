@@ -26,6 +26,11 @@ class GameExportResultDialog {
 	void Show(std::filesystem::path directory, bool reopening = false);
 
 	/// <summary>
+	/// 表示中の配布版のフォルダを取得する
+	/// </summary>
+	const std::filesystem::path &GetDirectory() const { return directory_; }
+
+	/// <summary>
 	/// 出力先を表示し、開く・起動・閉じる操作を受け付ける。失敗時は画面を保持する
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>

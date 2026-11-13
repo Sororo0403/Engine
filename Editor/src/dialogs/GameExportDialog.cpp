@@ -89,8 +89,10 @@ bool MatchesIssue(const GameExportIssue &issue, std::string_view filter) {
 
 bool GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits,
                             const std::filesystem::path &projectRoot,
-                            const std::filesystem::path &lastExport) {
+                            const std::filesystem::path &lastExport,
+                            const std::filesystem::path &windowSource) {
 	const bool resume = std::exchange(resumeDraft_, false) &&
+	                    windowSource.empty() &&
 	                    projectRoot_ == projectRoot &&
 	                    options_.startupScenePath == options.startupScenePath;
 	const bool recheck = resume && !checkResult_.empty();
@@ -102,13 +104,22 @@ bool GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits
 	}
 	projectRoot_ = projectRoot;
 	lastSuccessfulWindow_.reset();
-	if (!projectRoot.empty() && !lastExport.empty()) {
+	const auto &settingsSource = windowSource.empty() ? lastExport : windowSource;
+	if (!settingsSource.empty() && (!projectRoot.empty() || !windowSource.empty())) {
 		GameConfig previous;
 		std::string error;
-		if (previous.Load(lastExport / L"game.json", error)) {
+		if (previous.Load(settingsSource / L"game.json", error)) {
 			lastSuccessfulWindow_ = WindowSettings{
 			    std::move(previous.title), previous.width, previous.height};
 		}
+	}
+	if (!windowSource.empty() && lastSuccessfulWindow_) {
+		options.config.title = lastSuccessfulWindow_->title;
+		options.config.width = lastSuccessfulWindow_->width;
+		options.config.height = lastSuccessfulWindow_->height;
+	}
+	if (!windowSource.empty()) {
+		lastSuccessfulWindow_.reset();
 	}
 	options_ = std::move(options);
 	defaultOutputName_ = options_.destination.filename();

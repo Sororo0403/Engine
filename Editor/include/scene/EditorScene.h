@@ -352,6 +352,12 @@ class EditorScene final : public IScene {
 	void WriteGameExport();
 
 	/// <summary>
+	/// 現在のシーンとプロジェクトの設定で配布画面を開く
+	/// </summary>
+	/// <param name="windowSource">ウィンドウ設定を引き継ぐ配布先。通常は空</param>
+	void ShowGameExport(const std::filesystem::path &windowSource = {});
+
+	/// <summary>
 	/// 現在の配布設定で出力前検査を実行し、結果を出力画面に表示する
 	/// </summary>
 	void CheckGameExport(bool continueFromIssue = false);
