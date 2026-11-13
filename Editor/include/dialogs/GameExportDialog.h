@@ -12,6 +12,7 @@ enum class GameExportResult {
 	NONE,
 	CANCELLED,
 	CHECK,
+	SAVE_AND_CHECK,
 	ACCEPTED,
 	CHOOSE_STARTUP_SCENE,
 	OPEN_ISSUE,
@@ -55,7 +56,8 @@ class GameExportDialog {
 	/// </summary>
 	/// <param name="ui">UI機能</param>
 	/// <returns>確定・キャンセル・入力中</returns>
-	GameExportResult Draw(const ImGuiSystem &ui);
+	/// <param name="canSaveAndCheck">別シーンの未保存変更を保存して再検査できるか</param>
+	GameExportResult Draw(const ImGuiSystem &ui, bool canSaveAndCheck = false);
 
 	/// <summary>
 	/// 出力前検査の結果をダイアログに表示する

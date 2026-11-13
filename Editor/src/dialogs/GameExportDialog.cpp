@@ -210,7 +210,8 @@ void GameExportDialog::PreserveDraft() {
 	resumeDraft_ = true;
 }
 
-GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
+GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
+                                        bool canSaveAndCheck) {
 	constexpr const char *title = "Export Game###GameExportDialog";
 
 	if (opening_) {
@@ -227,6 +228,8 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 	ImGui::TextWrapped("Startup Scene: %s", startupScene_.c_str());
 	if (includesUnsavedEdits_) {
 		ui.Text("Includes unsaved changes to the startup scene.");
+	} else if (canSaveAndCheck) {
+		ui.Text("Check Export reads the saved version of linked scenes.");
 	}
 	const bool wasBrowsing = browsing_;
 	ui.BeginDisabled(wasBrowsing);
@@ -341,7 +344,12 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 	const bool exportRequested = ui.Button("Export");
 	ui.SameLine();
 	const bool checkRequested = ui.Button("Check Export");
-	if (exportRequested || checkRequested) {
+	bool saveAndCheckRequested = false;
+	if (canSaveAndCheck) {
+		ui.SameLine();
+		saveAndCheckRequested = ui.Button("Save Scene and Check");
+	}
+	if (exportRequested || checkRequested || saveAndCheckRequested) {
 		error_.clear();
 		ClearCheckResult();
 		try {
@@ -368,8 +376,9 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 			}
 
 			options_ = std::move(selected);
-			result = exportRequested ? GameExportResult::ACCEPTED
-			                         : GameExportResult::CHECK;
+			result = exportRequested       ? GameExportResult::ACCEPTED
+			         : saveAndCheckRequested ? GameExportResult::SAVE_AND_CHECK
+			                                 : GameExportResult::CHECK;
 		} catch (const std::exception &e) {
 			error_ = e.what();
 		}
@@ -405,6 +414,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 
 	if (result == GameExportResult::CANCELLED ||
 	    result == GameExportResult::ACCEPTED ||
+	    result == GameExportResult::SAVE_AND_CHECK ||
 	    result == GameExportResult::CHOOSE_STARTUP_SCENE ||
 	    result == GameExportResult::OPEN_ISSUE ||
 	    result == GameExportResult::EDIT_ISSUE_SCRIPT) {

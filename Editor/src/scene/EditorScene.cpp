@@ -3388,6 +3388,7 @@ void EditorScene::CancelPendingAction() {
 		openSceneDialog_.RetrySelection();
 		stage_ = DialogStage::OPEN_FILE;
 	} else if (action == EditorAction::WRITE_GAME_EXPORT ||
+	    action == EditorAction::SAVE_AND_CHECK_EXPORT ||
 	    action == EditorAction::OPEN_EXPORT_ISSUE) {
 		exportDialog_.Reopen();
 		stage_ = DialogStage::EXPORT_GAME;
@@ -3403,6 +3404,11 @@ void EditorScene::ExecutePendingAction() {
 	switch (action) {
 	case EditorAction::WRITE_GAME_EXPORT:
 		WriteGameExport();
+		return;
+	case EditorAction::SAVE_AND_CHECK_EXPORT:
+		CheckGameExport();
+		exportDialog_.Reopen();
+		stage_ = DialogStage::EXPORT_GAME;
 		return;
 
 	case EditorAction::OPEN_PROJECT_PATH:
@@ -5178,7 +5184,15 @@ void EditorScene::UpdateDialogs() {
 		return;
 	}
 	case DialogStage::EXPORT_GAME: {
-		const auto result = exportDialog_.Draw(ui_);
+		const bool canSaveAndCheck =
+		    document_.IsModified() && !document_.GetFilePath().empty() &&
+		    !UsesEditingSceneForStartup(project_.GetStartupScene());
+		const auto result = exportDialog_.Draw(ui_, canSaveAndCheck);
+		if (result == GameExportResult::SAVE_AND_CHECK) {
+			pendingAction_ = EditorAction::SAVE_AND_CHECK_EXPORT;
+			StartSave(false);
+			return;
+		}
 		if (result == GameExportResult::CHOOSE_STARTUP_SCENE) {
 			BrowseStartupScene();
 			stage_ = DialogStage::SELECT_EXPORT_STARTUP_SCENE;
@@ -5668,6 +5682,7 @@ void EditorScene::ShowSceneSaveError() {
 	ShowError(document_.GetError());
 	sceneSaveConflict_ = document_.HasSaveConflict();
 	if (sceneSaveConflict_ || action == EditorAction::OPEN_EXPORT_ISSUE ||
+	    action == EditorAction::SAVE_AND_CHECK_EXPORT ||
 	    action == EditorAction::WRITE_GAME_EXPORT) {
 		pendingAction_ = action;
 	}
