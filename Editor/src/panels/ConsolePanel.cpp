@@ -59,7 +59,7 @@ void ConsolePanel::ShowLatestPlayError() {
 }
 
 void ConsolePanel::MarkPlayStart() {
-	playStartBoundary_ = Logger::GetEntryBoundary();
+	playStartBoundary_ = Logger::BeginPlayLog();
 	latestPlayErrorRequested_ = false;
 	if (latestPlayOnly_) {
 		selectedId_ = 0;
@@ -149,25 +149,36 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 	ui.InputText("Search", filter_);
 	ImGui::SetItemTooltip("Search message text and source file paths.");
 	Logger::ReadEntries(revision_, entries_);
+	const auto firstPlayError = Logger::GetFirstPlayError();
 	const auto latestPlayError =
 	    std::find_if(entries_.rbegin(), entries_.rend(), [this](const auto &entry) {
 		    return playStartBoundary_ != 0 && entry.id > playStartBoundary_ &&
 		           entry.level == LogLevel::LOG_ERROR;
 	    });
+	ui.BeginDisabled(!firstPlayError);
+	const bool clickedFirstPlayError = ui.Button("First Play Error");
+	ui.EndDisabled();
+	ui.SameLine();
 	ImGui::BeginDisabled(latestPlayError == entries_.rend());
-	bool jumpToError = false;
 	const bool clickedLatestPlayError = ui.Button("Latest Play Error");
-	if ((std::exchange(latestPlayErrorRequested_, false) || clickedLatestPlayError) &&
-	    latestPlayError != entries_.rend()) {
-		jumpToError = true;
+	ImGui::EndDisabled();
+	const LogEntry *jumpError = nullptr;
+	if (std::exchange(latestPlayErrorRequested_, false) || clickedLatestPlayError) {
+		if (latestPlayError != entries_.rend()) {
+			jumpError = &*latestPlayError;
+		}
+	} else if (clickedFirstPlayError && firstPlayError) {
+		jumpError = &*firstPlayError;
+	}
+	const bool jumpToError = jumpError != nullptr;
+	if (jumpToError) {
 		latestPlayOnly_ = true;
 		showErrors_ = true;
-		if (!MatchesFilter(*latestPlayError)) {
+		if (!MatchesFilter(*jumpError)) {
 			filter_.clear();
 		}
-		selectedId_ = latestPlayError->id;
+		selectedId_ = jumpError->id;
 	}
-	ImGui::EndDisabled();
 	ImGui::SameLine();
 	const auto matchingCount = std::count_if(
 	    entries_.begin(), entries_.end(),
@@ -269,14 +280,19 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 
 	ui.EndChild();
 
-	auto selected =
+	const auto found =
 	    std::find_if(entries_.begin(), entries_.end(), [&](const auto &entry) {
 		    return entry.id == selectedId_;
 	    });
 
-	if (selected == entries_.end() || !MatchesFilter(*selected)) {
+	const LogEntry *selected = found != entries_.end() ? &*found : nullptr;
+	const bool retained = !selected && firstPlayError && firstPlayError->id == selectedId_;
+	if (retained) {
+		selected = &*firstPlayError;
+	}
+	if (!selected || !MatchesFilter(*selected)) {
 		selectedId_ = 0;
-		selected = entries_.end();
+		selected = nullptr;
 	}
 
 	const bool drawDetails = ImGui::BeginChild(
@@ -285,7 +301,7 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 
 	ScriptEditRequest script;
 	if (drawDetails) {
-		if (selected != entries_.end()) {
+		if (selected) {
 			if (ui.Button("Copy Message")) {
 				std::string text;
 				AppendClipboardMessage(text, selected->message);
@@ -306,6 +322,9 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 			ui.SameLine();
 			ui.Text(std::format("[{}] {}", selected->timestamp,
 			                    LevelName(selected->level)));
+			if (retained) {
+				ui.Text("First Play Error (outside recent messages)");
+			}
 			if (!selected->sourcePath.empty()) {
 				ui.Text("Source: " + PathUtils::ToUtf8(selected->sourcePath));
 			}

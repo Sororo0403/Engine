@@ -5,6 +5,7 @@
 #include <deque>
 #include <fstream>
 #include <mutex>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -61,6 +62,16 @@ class Logger {
 	static std::uint64_t GetEntryBoundary();
 
 	/// <summary>
+	/// 試遊の最初のエラーを記録し始め、開始時点のログ識別子を返す
+	/// </summary>
+	static std::uint64_t BeginPlayLog();
+
+	/// <summary>
+	/// 直近の試遊で最初に出たエラーを取得する。ログ一覧の保持上限とは独立する
+	/// </summary>
+	static std::optional<LogEntry> GetFirstPlayError();
+
+	/// <summary>
 	/// 参照用の直近ログをクリアする。ファイルの出力内容は保持する
 	/// </summary>
 	static void ClearEntries();
@@ -78,6 +89,8 @@ class Logger {
 	inline static std::ofstream logFile_;
 	inline static std::mutex mutex_;
 	inline static std::deque<LogEntry> entries_;
+	inline static std::optional<LogEntry> firstPlayError_;
+	inline static bool capturePlayError_ = false;
 	inline static std::uint64_t revision_ = 1;
 	static constexpr std::size_t kMaximumEntries = 1000;
 };
