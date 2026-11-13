@@ -5958,7 +5958,7 @@ bool EditorScene::OpenScene(const std::filesystem::path &path, bool reportError,
 		playFailureReplay_.reset();
 	}
 	ClearRecovery();
-	sceneCheckPanel_.Reset();
+	sceneCheckPanel_.OnSceneOpened();
 	clipboard_.DetachExternalReferences();
 	frameRequest_ = FrameRequest::NONE;
 	frameObject_ = 0;

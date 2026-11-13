@@ -37,6 +37,11 @@ class SceneCheckPanel {
 	void Reset();
 
 	/// <summary>
+	/// シーン切り替え時に前の結果を破棄し、パネルを開いていれば再検査を予約する
+	/// </summary>
+	void OnSceneOpened();
+
+	/// <summary>
 	/// 現在の編集シーンの再生設定・モデル・材質・依存ファイルを検証し、全ての結果をまとめて置き換える
 	/// </summary>
 	/// <param name="scene">変更しない検証対象</param>

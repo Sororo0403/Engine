@@ -22,6 +22,13 @@ void SceneCheckPanel::Reset() {
 	*this = SceneCheckPanel{};
 }
 
+void SceneCheckPanel::OnSceneOpened() {
+	const bool wasOpen = open_;
+	Reset();
+	open_ = wasOpen;
+	checkRequested_ = wasOpen;
+}
+
 void SceneCheckPanel::Check(const Scene &scene, const CameraPose &fallback,
                             std::span<const GameActionBinding> bindings) {
 	auto issues = SceneValidation::Inspect(scene, fallback);
