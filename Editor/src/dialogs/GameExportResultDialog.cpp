@@ -296,10 +296,16 @@ bool GameExportResultDialog::FindLogMatch(bool next) {
 	                           *run.logStart <= static_cast<std::uintmax_t>(end)
 	                       ? static_cast<std::streamoff>(*run.logStart) : 0;
 	const auto anchor = next ? run.lastMatch->offset : 0;
-	input.seekg(start);
-	bool isError = false;
+	if (next && anchor >= static_cast<std::uintmax_t>(end - start)) {
+		run.lastMatch.reset();
+		error_ = "The game log changed. Start the search again.";
+		return false;
+	}
+	const auto scanStart = start + static_cast<std::streamoff>(anchor);
+	input.seekg(scanStart);
+	bool isError = next && run.lastMatch->inError;
 	std::string line;
-	for (auto offset = start; offset < end && std::getline(input, line);
+	for (auto offset = scanStart; offset < end && std::getline(input, line);
 	     offset = static_cast<std::streamoff>(input.tellg())) {
 		const auto level = LogLevelPrefix(line);
 		if (IsLogHeader(level)) {
@@ -311,7 +317,7 @@ bool GameExportResultDialog::FindLogMatch(bool next) {
 			OpenLogAtOffset(relative);
 			// 詳細行から開いたページでは、見出しが前のページにある場合がある。
 			run.showErrorsOnly = false;
-			run.lastMatch = GameRun::LogMatch{std::move(query), relative, errorsOnly};
+			run.lastMatch = GameRun::LogMatch{std::move(query), relative, errorsOnly, isError};
 			return true;
 		}
 		if (input.eof()) {

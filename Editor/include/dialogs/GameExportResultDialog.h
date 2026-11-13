@@ -53,6 +53,7 @@ class GameExportResultDialog {
 			std::string query;
 			std::uintmax_t offset;
 			bool errorsOnly;
+			bool inError;
 		};
 		ShellUtils::ExecutableProcess process;
 		std::string status;
