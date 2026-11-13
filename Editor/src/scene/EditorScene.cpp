@@ -572,6 +572,10 @@ bool EditorScene::Update(float deltaTime) {
 	    ui_, scene, cameraController_.GetPose(), exportConfig_.actions);
 	const bool hasCheckRequest = !checkedRequest.objectIds.empty();
 
+	if (!wasBusy && !checkedRequest.assetPath.empty()) {
+		assetsPanel_.RequestReveal(checkedRequest.assetPath);
+	}
+
 	if (!wasBusy && hasCheckRequest) {
 		FinishEdit();
 

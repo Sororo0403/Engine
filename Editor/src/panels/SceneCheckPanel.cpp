@@ -210,6 +210,11 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 
 		if (!issue.assetPath.empty()) {
 			const auto path = PathUtils::ToUtf8(issue.assetPath);
+			if (ui.Button("Show in Assets")) {
+				requested = {};
+				requested.assetPath = issue.assetPath;
+			}
+			ui.SameLine();
 			if (ui.Button("Copy Asset Path")) {
 				ImGui::SetClipboardText(path.c_str());
 			}

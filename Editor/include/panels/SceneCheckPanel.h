@@ -12,12 +12,13 @@ class Scene;
 class SceneCheckPanel {
   public:
 	/// <summary>
-	/// 描画後に実行する、問題のある物体の選択・Sceneカメラの移動・Inspector表示の要求
+	/// 描画後に実行する、問題のある物体や素材を表示する要求
 	/// </summary>
 	struct Request {
 		std::vector<SceneObjectId> objectIds;
 		bool frame = false;
 		bool inspect = false;
+		std::filesystem::path assetPath;
 	};
 
 	/// <summary>
