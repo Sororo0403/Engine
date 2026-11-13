@@ -167,45 +167,37 @@ struct AssetSource {
 /// </summary>
 class Assets {
   public:
-	explicit Assets(fs::path root,
-	                const std::vector<fs::path> &additional = {}) {
+	explicit Assets(fs::path root) {
 		if (!fs::is_directory(root)) {
 			throw std::invalid_argument("Choose an existing resource folder.");
 		}
 
 		sources_.push_back({std::move(root), L"resources"});
+	}
 
-		for (std::size_t i = 0; i < additional.size(); ++i) {
-			const auto &input = additional[i];
-
-			if (input.empty() ||
-			    input.native().find(L'\0') != std::wstring::npos) {
-				throw std::invalid_argument(
-				    "Choose valid external asset folders.");
-			}
-
-			const auto directory =
-			    fs::canonical(PathUtils::ResolveFromExecutable(input));
-			if (!fs::is_directory(directory)) {
-				throw std::invalid_argument(
-				    "An external asset source is not a folder.");
-			}
-
-			if (std::ranges::any_of(sources_, [&](const auto &source) {
-				    return IsInside(source.directory, directory);
-			    })) {
-				continue;
-			}
-
-			// 追加元どうしが重なる場合は、依存構成を保てる広いフォルダへまとめる。
-			// 組み込み側の取得元は優先し、従来の出力パスを保つ。
-			std::erase_if(sources_, [&](const auto &source) {
-				return source.output != L"resources" &&
-				       IsInside(directory, source.directory);
-			});
-			sources_.push_back({directory, fs::path(L"resources/external") /
-			                                   std::to_wstring(i)});
+	void AddSource(const fs::path &input, std::size_t index) {
+		if (input.empty() || input.native().find(L'\0') != std::wstring::npos) {
+			throw std::invalid_argument("Choose valid external asset folders.");
 		}
+
+		const auto directory = fs::canonical(PathUtils::ResolveFromExecutable(input));
+		if (!fs::is_directory(directory)) {
+			throw std::invalid_argument("An external asset source is not a folder.");
+		}
+
+		if (std::ranges::any_of(sources_, [&](const auto &source) {
+			    return IsInside(source.directory, directory);
+		    })) {
+			return;
+		}
+
+		// 追加元どうしが重なる場合は、依存構成を保てる広いフォルダへまとめる。
+		// 組み込み側の取得元は優先し、従来の出力パスを保つ。
+		std::erase_if(sources_, [&](const auto &source) {
+			return source.output != L"resources" && IsInside(directory, source.directory);
+		});
+		sources_.push_back({directory, fs::path(L"resources/external") /
+		                                   std::to_wstring(index)});
 	}
 
 	fs::path AddModel(const fs::path &input) {
@@ -685,7 +677,19 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 		auto sourceDirectories = options.assetDirectories;
 		for (std::size_t i = 1; i < graph.size(); ++i)
 			sourceDirectories.push_back(graph[i].source.parent_path());
-		Assets assets(resourceRoot, sourceDirectories);
+		Assets assets(resourceRoot);
+		for (std::size_t i = 0; i < sourceDirectories.size(); ++i) {
+			const auto &path = sourceDirectories[i];
+			try {
+				assets.AddSource(path, i);
+			} catch (const std::bad_alloc &) {
+				throw;
+			} catch (const std::exception &issue) {
+				const auto location = validDirectoryPath(path) ? path : fs::path{};
+				appendIssue("Could not use external asset folder: " + PathUtils::ToUtf8(location) +
+				                "\n" + issue.what(), {}, 0, {}, {}, location);
+			}
+		}
 		auto config = options.config;
 		// Luaの遷移先として参照できる名前で、起動シーンも出力する。
 		if (startupIsTarget &&
@@ -695,7 +699,15 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 		std::vector<fs::path> scenePaths{config.scenePath};
 
 		for (std::size_t i = 1; i < graph.size(); ++i) {
-			assets.ValidateScene(graph[i].source);
+			const auto &entry = graph[i];
+			try {
+				assets.ValidateScene(entry.source);
+			} catch (const std::bad_alloc &) {
+				throw;
+			} catch (const std::exception &issue) {
+				reportObjectIssue("Could not use scene dependency: " + PathUtils::ToUtf8(entry.source) +
+				                      "\n" + issue.what(), entry, 0);
+			}
 			if (graph[i].prefab)
 				scenePaths.push_back(fs::path(L"resources/prefabs") /
 				                     std::format("Prefab{}.prefab.json", i));
