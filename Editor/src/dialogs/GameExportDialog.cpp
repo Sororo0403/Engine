@@ -110,11 +110,18 @@ void ShowAssetInExplorer(const std::filesystem::path &path, std::string &error) 
 }
 } // namespace
 
-void GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits,
+bool GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits,
                             const std::filesystem::path &projectRoot) {
 	const bool resume = std::exchange(resumeDraft_, false) &&
 	                    projectRoot_ == projectRoot &&
 	                    options_.startupScenePath == options.startupScenePath;
+	const bool recheck = resume && !checkIssues_.empty();
+	if (recheck) {
+		options.destination = options_.destination;
+		options.config.title = title_;
+		options.config.width = width_;
+		options.config.height = height_;
+	}
 	projectRoot_ = projectRoot;
 	options_ = std::move(options);
 	defaultOutputName_ = options_.destination.filename();
@@ -138,6 +145,7 @@ void GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits
 	}
 
 	opening_ = true;
+	return recheck;
 }
 
 void GameExportDialog::ForgetUntitledDraft() {

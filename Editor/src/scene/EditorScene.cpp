@@ -3447,9 +3447,11 @@ void EditorScene::ExecutePendingAction() {
 			}
 			options.startupScenePath =
 			    isCurrentScene ? document_.GetFilePath() : startup;
-			exportDialog_.Show(std::move(options),
-			                   isCurrentScene && document_.IsModified(),
-			                   project_.GetRoot());
+			if (exportDialog_.Show(std::move(options),
+			                       isCurrentScene && document_.IsModified(),
+			                       project_.GetRoot())) {
+				CheckGameExport(true);
+			}
 			stage_ = DialogStage::EXPORT_GAME;
 		} catch (const std::exception &error) {
 			Logger::Error(
