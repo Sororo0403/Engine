@@ -33,8 +33,10 @@ class ConsolePanel {
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
 	/// <param name="canEditScript">ログに対応するLuaファイルを開けるか</param>
+	/// <param name="stopPlayToEdit">編集に移るときに試遊を停止するか</param>
 	/// <returns>編集するLuaファイルと診断。操作がなければ空</returns>
-	ScriptEditRequest Draw(const ImGuiSystem &ui, bool canEditScript = false);
+	ScriptEditRequest Draw(const ImGuiSystem &ui, bool canEditScript = false,
+	                       bool stopPlayToEdit = false);
 
   private:
 	/// <summary>

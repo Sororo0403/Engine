@@ -399,7 +399,19 @@ bool EditorScene::Update(float deltaTime) {
 	if (playMode_.IsPlaying()) {
 		playFrame_ = true;
 
-		consolePanel_.Draw(ui_);
+		const auto script = consolePanel_.Draw(ui_, !IsBusy(), true);
+		if (!script.path.empty()) {
+			std::string error;
+			if (scriptEditorDialog_.ShowEdit(script.path, error, script.diagnostic)) {
+				playMode_.Stop();
+				ClearPlaySelection();
+				stage_ = DialogStage::EDIT_SCRIPT;
+			} else {
+				ShowError(std::move(error));
+			}
+			UpdateDialogs();
+			return true;
+		}
 		controlsPanel_.Draw();
 		const auto &runtime = playMode_.GetSession().GetScene();
 		const auto hierarchy =

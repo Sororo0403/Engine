@@ -93,7 +93,8 @@ std::string ConsolePanel::BuildFilteredText() const {
 }
 
 ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
-                                                   bool canEditScript) {
+                                                   bool canEditScript,
+                                                   bool stopPlayToEdit) {
 	if (!open_) {
 		return {};
 	}
@@ -239,7 +240,7 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 			if (PathUtils::HasExtension(selected->sourcePath, ".lua")) {
 				ui.SameLine();
 				ui.BeginDisabled(!canEditScript);
-				if (ui.Button("Edit Script")) {
+				if (ui.Button(stopPlayToEdit ? "Stop and Edit Script" : "Edit Script")) {
 					script = {selected->sourcePath, selected->message};
 				}
 				ui.EndDisabled();
