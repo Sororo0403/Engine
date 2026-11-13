@@ -16,6 +16,7 @@ class ConsolePanel {
 	struct ScriptEditRequest {
 		std::filesystem::path path;
 		std::string diagnostic;
+		std::uint64_t logId = 0;
 	};
 
 	/// <summary>

@@ -350,10 +350,10 @@ bool EditorScene::Update(float deltaTime) {
 	    playMode_.IsPlaying()) {
 		std::string error;
 		consolePanel_.MarkPlayStart();
+		playFailureReplay_.reset();
 
 		std::filesystem::path failedScript;
 		if (!playMode_.Restart(error, restartCurrentScene, &failedScript)) {
-			Logger::Error(error, failedScript);
 			ShowError(std::move(error), 0, std::move(failedScript));
 			errorHasPlayLog_ = true;
 			if (!errorScriptPath_.empty()) {
@@ -362,6 +362,7 @@ bool EditorScene::Update(float deltaTime) {
 				errorReplayPath_ = retryLoaded ? *loaded : playInitialScenePath_;
 				errorReplayCameraOverride_ = retryLoaded ? 0 : playInitialCameraOverride_;
 			}
+			LogPlayFailure();
 		}
 	}
 
@@ -427,9 +428,15 @@ bool EditorScene::Update(float deltaTime) {
 		if (!script.path.empty()) {
 			std::string error;
 			if (scriptEditorDialog_.ShowEdit(script.path, error, script.diagnostic)) {
-				scriptReplayPath_ = lastPlayScenePath_;
-				scriptReplayCameraOverride_ =
-				    loadedPlayScene ? 0 : playInitialCameraOverride_;
+				if (playFailureReplay_ &&
+				    script.logId == playFailureReplay_->logId) {
+					scriptReplayPath_ = playFailureReplay_->path;
+					scriptReplayCameraOverride_ = playFailureReplay_->camera;
+				} else {
+					scriptReplayPath_ = lastPlayScenePath_;
+					scriptReplayCameraOverride_ =
+					    loadedPlayScene ? 0 : playInitialCameraOverride_;
+				}
 				playMode_.Stop();
 				ClearPlaySelection();
 				stage_ = DialogStage::EDIT_PLAY_SCRIPT;
@@ -881,10 +888,17 @@ bool EditorScene::Update(float deltaTime) {
 			        : scriptEditorDialog_.ShowCreate(
 			              assets_.GetRootDirectory(),
 			              assetsPanel_.GetOpenDirectory(), error);
-			if (opened)
+			if (opened) {
 				stage_ = DialogStage::EDIT_SCRIPT;
-			else
+				if (playFailureReplay_ &&
+				    consoleScript.logId == playFailureReplay_->logId) {
+					scriptReplayPath_ = playFailureReplay_->path;
+					scriptReplayCameraOverride_ = playFailureReplay_->camera;
+					stage_ = DialogStage::EDIT_PLAY_SCRIPT;
+				}
+			} else {
 				ShowError(error);
+			}
 		}
 
 		const auto &clipEdit = assetsPanel_.GetAnimationClipEditRequest();
@@ -3531,6 +3545,9 @@ void EditorScene::ExecutePendingAction() {
 
 			SaveEditorSession();
 			document_.New();
+			if (playFailureReplay_ && playFailureReplay_->path.empty()) {
+				playFailureReplay_.reset();
+			}
 			exportDialog_.ForgetUntitledDraft();
 			sceneCheckPanel_.Reset();
 			frameRequest_ = FrameRequest::NONE;
@@ -4539,6 +4556,9 @@ bool EditorScene::RelocateAssets(const AssetUsage::Moves &moves,
 	}
 	assetsPanel_.RelocateClipboard(moves);
 	lastPlayScenePath_ = PathUtils::AfterMove(lastPlayScenePath_, moves);
+	if (playFailureReplay_ && !playFailureReplay_->path.empty()) {
+		playFailureReplay_->path = PathUtils::AfterMove(playFailureReplay_->path, moves);
+	}
 
 	clipboard_.Clear();
 	texturePreviewPanel_.Clear();
@@ -4720,6 +4740,10 @@ void EditorScene::UpdateDialogs() {
 			const auto startup = project_.GetStartupScene();
 			SaveEditorSession();
 			if (document_.SaveAs(fileDialog_.GetSelectedPath())) {
+				if (previousPath.empty() && playFailureReplay_ &&
+				    playFailureReplay_->path.empty()) {
+					playFailureReplay_->path = document_.GetFilePath();
+				}
 				if (startup.empty()) {
 					exportDialog_.FollowSavedScene(project_.GetRoot(), previousPath,
 					                              document_.GetFilePath());
@@ -5618,6 +5642,7 @@ const Scene *EditorScene::GetStartupSceneForRun(SceneDocument &startup,
 void EditorScene::StartPlay(const std::filesystem::path &path,
                             SceneObjectId cameraOverride) {
 	consolePanel_.MarkPlayStart();
+	playFailureReplay_.reset();
 	audioPreviewPanel_.Stop();
 	frameRequest_ = FrameRequest::NONE;
 	frameObject_ = 0;
@@ -5655,7 +5680,7 @@ void EditorScene::StartPlay(const std::filesystem::path &path,
 			// 開いている編集シーンとIDが重複しても、起動シーンを開いてから選択する。
 			errorObjectId_ = scene->Contains(invalidObject) ? invalidObject : 0;
 		}
-		Logger::Error(errorMessage_, errorScriptPath_);
+		LogPlayFailure();
 		return;
 	}
 
@@ -5680,7 +5705,6 @@ void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject) {
 		const bool isEditingScene =
 		    !current.empty() && PathUtils::IsSameFile(current, path);
 		message += "\nDestination scene: " + PathUtils::ToUtf8(path);
-		Logger::Error(message, scriptPath);
 		playMode_.Stop();
 		ShowError(std::move(message), isEditingScene ? object : 0,
 		          std::move(scriptPath));
@@ -5691,6 +5715,7 @@ void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject) {
 			errorScenePath_ = std::move(path);
 			errorObjectId_ = object;
 		}
+		LogPlayFailure();
 		return;
 	}
 
@@ -5712,7 +5737,6 @@ void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject) {
 	    session.HasSourceObject(invalidObject) ? invalidObject : 0;
 	auto scriptPath =
 	    SceneScripts::FindFailedScript(session.GetScene(), invalidObject, reason);
-	Logger::Error(message, scriptPath);
 	playMode_.Stop();
 	ShowError(std::move(message), isEditingScene ? sourceObject : 0,
 	          std::move(scriptPath));
@@ -5721,6 +5745,15 @@ void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject) {
 	errorScenePath_ = std::move(scenePath);
 	if (!errorScenePath_.empty()) {
 		errorObjectId_ = sourceObject;
+	}
+	LogPlayFailure();
+}
+
+void EditorScene::LogPlayFailure() {
+	const auto logId = Logger::Error(errorMessage_, errorScriptPath_);
+	if (errorReplayPath_ && !errorScriptPath_.empty()) {
+		playFailureReplay_ = PlayFailureReplay{
+		    logId, *errorReplayPath_, errorReplayCameraOverride_};
 	}
 }
 
@@ -5806,6 +5839,7 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		document_.SetProjectRoot(candidate.GetRoot());
 		project_ = std::move(candidate);
 		lastPlayScenePath_.clear();
+		playFailureReplay_.reset();
 		exportConfig_ = std::move(config);
 		assetSources_ = std::move(sources);
 		assets_ = std::move(assets);
@@ -5891,6 +5925,9 @@ bool EditorScene::OpenScene(const std::filesystem::path &path, bool reportError,
 		return false;
 	}
 
+	if (playFailureReplay_ && playFailureReplay_->path.empty()) {
+		playFailureReplay_.reset();
+	}
 	ClearRecovery();
 	sceneCheckPanel_.Reset();
 	clipboard_.DetachExternalReferences();

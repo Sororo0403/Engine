@@ -480,6 +480,11 @@ class EditorScene final : public IScene {
 	void ReportPlayUpdateFailure(SceneObjectId invalidObject);
 
 	/// <summary>
+	/// 試遊の失敗を記録し、そのログから同じ条件で再試遊できるようにする
+	/// </summary>
+	void LogPlayFailure();
+
+	/// <summary>
 	/// 現在の保存先と保存地点を保持するコピーの保存先選択を開始する
 	/// </summary>
 	void StartSaveCopy(bool reload = false);
@@ -990,6 +995,12 @@ class EditorScene final : public IScene {
 	std::filesystem::path playInitialScenePath_;
 	std::filesystem::path lastPlayScenePath_;
 	std::filesystem::path scriptReplayPath_;
+	struct PlayFailureReplay {
+		std::uint64_t logId;
+		std::filesystem::path path;
+		SceneObjectId camera;
+	};
+	std::optional<PlayFailureReplay> playFailureReplay_;
 	SceneObjectId playInitialCameraOverride_ = 0;
 	SceneObjectId scriptReplayCameraOverride_ = 0;
 	bool followPlaySelection_ = false;

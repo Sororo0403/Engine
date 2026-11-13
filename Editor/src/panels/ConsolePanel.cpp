@@ -323,6 +323,7 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 				ui.BeginDisabled(!canEditScript);
 				if (ui.Button(stopPlayToEdit ? "Stop and Edit Script" : "Edit Script")) {
 					script.path = selected->sourcePath;
+					script.logId = selected->id;
 					if (hasLuaDiagnostic) {
 						script.diagnostic = selected->message;
 					}

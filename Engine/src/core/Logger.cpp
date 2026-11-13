@@ -91,13 +91,13 @@ void Logger::Error(std::string_view message) {
 	Write(LogLevel::LOG_ERROR, message);
 }
 
-void Logger::Error(std::string_view message, const std::filesystem::path &sourcePath) {
+std::uint64_t Logger::Error(std::string_view message, const std::filesystem::path &sourcePath) {
 	const std::scoped_lock lock(mutex_);
-	Write(LogLevel::LOG_ERROR, message, sourcePath);
+	return Write(LogLevel::LOG_ERROR, message, sourcePath);
 }
 
-void Logger::Write(LogLevel level, std::string_view message,
-                   const std::filesystem::path &sourcePath) {
+std::uint64_t Logger::Write(LogLevel level, std::string_view message,
+                            const std::filesystem::path &sourcePath) {
 	const char *levelName = "";
 
 	switch (level) {
@@ -146,6 +146,7 @@ void Logger::Write(LogLevel level, std::string_view message,
 		logFile_ << line;
 		logFile_.flush();
 	}
+	return revision_;
 }
 
 bool Logger::ReadEntries(std::uint64_t &revision,
