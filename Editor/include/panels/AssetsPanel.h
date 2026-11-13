@@ -32,6 +32,12 @@ class AssetsPanel {
 	void RequestReveal(const std::filesystem::path &path);
 
 	/// <summary>
+	/// 素材が現在の一覧にあれば選択し、Assetsパネルの表示を予約する
+	/// </summary>
+	bool RevealIndexedAsset(const std::filesystem::path &path,
+	                       const AssetDatabase &assets);
+
+	/// <summary>
 	/// 移動が完了した素材と、その配下にあるコピー・切り取り元を更新する
 	/// </summary>
 	void RelocateClipboard(std::span<const std::pair<std::filesystem::path,
@@ -309,6 +315,7 @@ class AssetsPanel {
 	std::filesystem::path currentDirectory_;
 	std::string filter_;
 	std::filesystem::path revealPath_;
+	bool focusRequested_ = false;
 	std::string revealMessage_;
 	int textureSlot_ = 0;
 	std::vector<std::filesystem::path> recyclePaths_;

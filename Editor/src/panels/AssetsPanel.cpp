@@ -21,6 +21,15 @@ void AssetsPanel::RequestReveal(const std::filesystem::path &path) {
 	revealPath_ = path;
 }
 
+bool AssetsPanel::RevealIndexedAsset(const std::filesystem::path &path,
+                                     const AssetDatabase &assets) {
+	if (!SelectAsset(path, assets)) {
+		return false;
+	}
+	focusRequested_ = true;
+	return true;
+}
+
 void AssetsPanel::RelocateClipboard(
     std::span<const std::pair<std::filesystem::path, std::filesystem::path>> moves) {
 	for (auto &path : clipboardItems_) {
@@ -225,7 +234,8 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	texturePreviewPath_.clear();
 	audioPreviewPath_.clear();
 
-	const bool focusWindow = !revealPath_.empty() || directoryOpenRequested_;
+	const bool focusWindow = focusRequested_ || !revealPath_.empty() ||
+	                         directoryOpenRequested_;
 
 	if (focusWindow) {
 		ImGui::SetNextWindowCollapsed(false);
@@ -242,6 +252,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		ui.EndWindow();
 		return {};
 	}
+	focusRequested_ = false;
 
 	std::filesystem::path requestedPath;
 
@@ -1147,6 +1158,7 @@ void AssetsPanel::Clear() {
 	currentDirectory_.clear();
 	filter_.clear();
 	revealPath_.clear();
+	focusRequested_ = false;
 	revealMessage_.clear();
 	scrollToSelected_ = false;
 	scrollToTop_ = true;

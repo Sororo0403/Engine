@@ -339,6 +339,11 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 				if (!issue.assetPath.empty()) {
 					if (hasObject || !issue.scriptPath.empty())
 						ui.SameLine();
+					if (ui.Button("Show in Assets")) {
+						selectedIssue_ = i;
+						result = GameExportResult::REVEAL_ISSUE_ASSET;
+					}
+					ui.SameLine();
 					if (ui.Button("Show in Explorer"))
 						ShowAssetInExplorer(issue.assetPath, error_);
 					ImGui::SetItemTooltip("%s",
@@ -434,8 +439,10 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 	    result == GameExportResult::SAVE_AND_CHECK ||
 	    result == GameExportResult::CHOOSE_STARTUP_SCENE ||
 	    result == GameExportResult::OPEN_ISSUE ||
+	    result == GameExportResult::REVEAL_ISSUE_ASSET ||
 	    result == GameExportResult::EDIT_ISSUE_SCRIPT) {
 		resumeDraft_ = result == GameExportResult::OPEN_ISSUE ||
+		               result == GameExportResult::REVEAL_ISSUE_ASSET ||
 		               result == GameExportResult::EDIT_ISSUE_SCRIPT;
 		ui.CloseCurrentPopup();
 	}

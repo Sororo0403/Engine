@@ -16,6 +16,7 @@ enum class GameExportResult {
 	ACCEPTED,
 	CHOOSE_STARTUP_SCENE,
 	OPEN_ISSUE,
+	REVEAL_ISSUE_ASSET,
 	EDIT_ISSUE_SCRIPT
 };
 
@@ -67,7 +68,7 @@ class GameExportDialog {
 	                    bool continueFromIssue = false);
 
 	/// <summary>
-	/// OPEN_ISSUEまたはEDIT_ISSUE_SCRIPTで選択した不備を取得する
+	/// シーン・素材・スクリプトへの移動操作で選択した不備を取得する
 	/// </summary>
 	const GameExportIssue &GetSelectedIssue() const;
 

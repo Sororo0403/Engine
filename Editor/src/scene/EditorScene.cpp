@@ -5230,6 +5230,20 @@ void EditorScene::UpdateDialogs() {
 			}
 			return;
 		}
+		if (result == GameExportResult::REVEAL_ISSUE_ASSET) {
+			try {
+				const auto &path = exportDialog_.GetSelectedIssue().assetPath;
+				if (assetsPanel_.RevealIndexedAsset(path, assets_) ||
+				    (assets_.Refresh() && assetsPanel_.RevealIndexedAsset(path, assets_))) {
+					stage_ = DialogStage::IDLE;
+				} else {
+					exportDialog_.Reopen("This file is unavailable in Assets. Use Show in Explorer to locate it.");
+				}
+			} catch (const std::exception &error) {
+				exportDialog_.Reopen(error.what());
+			}
+			return;
+		}
 		if (result == GameExportResult::ACCEPTED) {
 			stage_ = DialogStage::IDLE;
 			StartAction(EditorAction::WRITE_GAME_EXPORT);
