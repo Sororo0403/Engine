@@ -743,6 +743,9 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 			if (ImGui::BeginPopupContextItem()) {
 				selectContext(assetPath);
+				if (!filter_.empty() && ui.MenuItem("Show in Containing Folder")) {
+					RequestReveal(assetPath);
+				}
 				drawLocationMenu(assetPath);
 				ImGui::Separator();
 				drawClipboardMenu();
