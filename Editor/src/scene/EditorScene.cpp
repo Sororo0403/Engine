@@ -5778,8 +5778,13 @@ void EditorScene::UpdateDialogs() {
 
 			if (errorScenePath_.empty() &&
 			    document_.GetScene().Contains(errorObjectId_)) {
-				if (ui_.Button("Show Object")) {
+				const bool playing = playMode_.IsPlaying();
+				if (ui_.Button(playing ? "Stop and Show Object" : "Show Object")) {
 					try {
+						if (playing) {
+							playMode_.Stop();
+							ClearPlaySelection();
+						}
 						FinishEdit();
 						selection_.SelectOnly(errorObjectId_);
 						inspectorPanel_.Clear();

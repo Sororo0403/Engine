@@ -386,7 +386,7 @@ bool EditorPlayMode::Restart(std::string &error, bool currentScene,
 	if (invalidObject) {
 		*invalidObject = 0;
 	}
-	if (!session_.Restart(error, currentScene, failedScript)) {
+	if (!session_.Restart(error, currentScene, failedScript, invalidObject)) {
 		return false;
 	}
 

@@ -83,9 +83,13 @@ bool EditorPlaySession::Start(const Scene &scene, std::string &error,
 }
 
 bool EditorPlaySession::Restart(std::string &error, bool currentScene,
-                                std::filesystem::path *failedScript) {
+                                std::filesystem::path *failedScript,
+                                SceneObjectId *sourceObject) {
 	if (failedScript) {
 		failedScript->clear();
+	}
+	if (sourceObject) {
+		*sourceObject = 0;
 	}
 	if (!IsPlaying() || !initialScene_) {
 		error = "Start Play before restarting.";
@@ -95,12 +99,15 @@ bool EditorPlaySession::Restart(std::string &error, bool currentScene,
 	const bool isInitial = !currentScene || IsInitialScene();
 	SceneObjectId invalidObject = 0;
 	const bool restarted = currentScene
-	                           ? simulation_.RestartCurrentScene(error, failedScript)
+	                           ? simulation_.RestartCurrentScene(error, failedScript, sourceObject)
 	                           : simulation_.Start(*initialScene_, error, initialFallback_,
 	                                               &invalidObject);
 	if (!restarted) {
 		if (!currentScene && failedScript) {
 			*failedScript = SceneScripts::FindFailedScript(*initialScene_, invalidObject, error);
+		}
+		if (!currentScene && sourceObject && initialScene_->Contains(invalidObject)) {
+			*sourceObject = invalidObject;
 		}
 		return false;
 	}

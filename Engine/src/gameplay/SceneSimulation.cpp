@@ -105,9 +105,13 @@ bool SceneSimulation::Start(const Scene &source, std::string &error,
 }
 
 bool SceneSimulation::RestartCurrentScene(std::string &error,
-                                          std::filesystem::path *failedScript) {
+                                          std::filesystem::path *failedScript,
+                                          SceneObjectId *sourceObject) {
 	if (failedScript) {
 		failedScript->clear();
+	}
+	if (sourceObject) {
+		*sourceObject = 0;
 	}
 	if (!IsPlaying() || !restartSource_) {
 		error = "Start Play before restarting the scene.";
@@ -120,6 +124,9 @@ bool SceneSimulation::RestartCurrentScene(std::string &error,
 	}
 	if (failedScript) {
 		*failedScript = SceneScripts::FindFailedScript(*restartSource_, invalidObject, error);
+	}
+	if (sourceObject && restartSource_->Contains(invalidObject)) {
+		*sourceObject = invalidObject;
 	}
 	return false;
 }
