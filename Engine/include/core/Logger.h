@@ -59,6 +59,13 @@ class Logger {
 	static std::uint64_t Error(std::string_view message, const std::filesystem::path &sourcePath);
 
 	/// <summary>
+	/// 試遊の失敗を記録し、Consoleの保持上限とは独立して次の試遊開始まで保持する
+	/// </summary>
+	static std::uint64_t PlayFailure(std::string_view message,
+	                                 const std::filesystem::path &sourcePath);
+	static std::optional<LogEntry> GetPlayFailure();
+
+	/// <summary>
 	/// 直近最大1,000件のログを、変更がある場合だけ出力順にコピーする
 	/// </summary>
 	/// <param name="revision">前回取得した版。初回は0。取得成功後に現在の版へ更新する</param>
@@ -107,6 +114,7 @@ class Logger {
 	inline static std::deque<LogEntry> entries_;
 	inline static std::optional<LogEntry> firstPlayError_;
 	inline static std::optional<LogEntry> latestPlayError_;
+	inline static std::optional<LogEntry> playFailure_;
 	inline static bool capturePlayError_ = false;
 	inline static std::uint64_t revision_ = 1;
 	static constexpr std::size_t kMaximumEntries = 1000;

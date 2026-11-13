@@ -158,6 +158,7 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 	Logger::ReadEntries(revision_, entries_);
 	const auto firstPlayError = Logger::GetFirstPlayError();
 	const auto latestPlayError = Logger::GetLatestPlayError();
+	const auto playFailure = Logger::GetPlayFailure();
 	ui.BeginDisabled(!firstPlayError);
 	const bool clickedFirstPlayError = ui.Button("First Play Error");
 	ui.EndDisabled();
@@ -165,6 +166,12 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 	ImGui::BeginDisabled(!latestPlayError);
 	const bool clickedLatestPlayError = ui.Button("Latest Play Error");
 	ImGui::EndDisabled();
+	bool clickedPlayFailure = false;
+	if (playFailure && (!latestPlayError || playFailure->id != latestPlayError->id)) {
+		ui.SameLine();
+		clickedPlayFailure = ui.Button("Play Failure");
+		ImGui::SetItemTooltip("Show the error reported by the Play failure dialog.");
+	}
 	const LogEntry *jumpError = nullptr;
 	const auto requested = std::exchange(requestedPlayErrorId_, 0);
 	if (requested != 0) {
@@ -175,6 +182,8 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 			jumpError = &*firstPlayError;
 		} else if (latestPlayError && latestPlayError->id == requested) {
 			jumpError = &*latestPlayError;
+		} else if (playFailure && playFailure->id == requested) {
+			jumpError = &*playFailure;
 		}
 		if (!jumpError) {
 			selectedId_ = 0;
@@ -184,6 +193,8 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 		jumpError = &*latestPlayError;
 	} else if (clickedFirstPlayError && firstPlayError) {
 		jumpError = &*firstPlayError;
+	} else if (clickedPlayFailure) {
+		jumpError = &*playFailure;
 	}
 	if (jumpError) {
 		latestPlayOnly_ = jumpError->id > playStartBoundary_;
@@ -348,6 +359,8 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 		selected = &*firstPlayError;
 	} else if (!selected && latestPlayError && latestPlayError->id == selectedId_) {
 		selected = &*latestPlayError;
+	} else if (!selected && playFailure && playFailure->id == selectedId_) {
+		selected = &*playFailure;
 	}
 	if (!selected || !MatchesFilter(*selected)) {
 		selectedId_ = 0;

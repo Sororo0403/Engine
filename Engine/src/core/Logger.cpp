@@ -149,6 +149,19 @@ std::uint64_t Logger::Write(LogLevel level, std::string_view message,
 	return revision_;
 }
 
+std::uint64_t Logger::PlayFailure(std::string_view message,
+                                 const std::filesystem::path &sourcePath) {
+	const std::scoped_lock lock(mutex_);
+	const auto id = Write(LogLevel::LOG_ERROR, message, sourcePath);
+	playFailure_ = entries_.back();
+	return id;
+}
+
+std::optional<LogEntry> Logger::GetPlayFailure() {
+	const std::scoped_lock lock(mutex_);
+	return playFailure_;
+}
+
 bool Logger::ReadEntries(std::uint64_t &revision,
                          std::vector<LogEntry> &entries) {
 	const std::scoped_lock lock(mutex_);
@@ -168,6 +181,7 @@ void Logger::ClearEntries() {
 	entries_.clear();
 	firstPlayError_.reset();
 	latestPlayError_.reset();
+	playFailure_.reset();
 	++revision_;
 }
 
@@ -180,6 +194,7 @@ std::uint64_t Logger::BeginPlayLog() {
 	const std::scoped_lock lock(mutex_);
 	firstPlayError_.reset();
 	latestPlayError_.reset();
+	playFailure_.reset();
 	capturePlayError_ = true;
 	return revision_;
 }

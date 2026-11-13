@@ -6006,7 +6006,7 @@ void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject,
 
 void EditorScene::LogPlayFailure() {
 	const auto &source = errorScriptPath_.empty() ? errorScenePath_ : errorScriptPath_;
-	const auto logId = Logger::Error(errorMessage_, source);
+	const auto logId = Logger::PlayFailure(errorMessage_, source);
 	errorPlayLogId_ = logId;
 	if (errorReplayPath_) {
 		const auto &editingPath = document_.GetFilePath();
