@@ -10,6 +10,7 @@
 #include <format>
 #include <imgui.h>
 #include <stdexcept>
+#include <string_view>
 #include <system_error>
 #include <utility>
 
@@ -146,7 +147,7 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 	} else {
 		ui.InputText("Folder", directoryText_);
 		if (filter_ == FileDialogFilter::PROJECT) {
-			ImGui::SetItemTooltip("Enter the project folder or the full path to project.json.");
+			ImGui::SetItemTooltip("Paste the project folder or the full path to project.json.");
 		}
 
 		if (ui.Button("Go")) {
@@ -462,7 +463,15 @@ std::filesystem::path FileDialog::ReadDirectory() const {
 }
 
 std::filesystem::path FileDialog::ReadFolderInput() const {
-	auto path = PathUtils::FromUtf8(directoryText_);
+	std::string_view input = directoryText_;
+	const auto first = input.find_first_not_of(" \t\r\n");
+	const auto last = input.find_last_not_of(" \t\r\n");
+	if (first != std::string_view::npos && first < last &&
+	    input[first] == '"' && input[last] == '"') {
+		input = input.substr(first + 1, last - first - 1);
+	}
+
+	auto path = PathUtils::FromUtf8(input);
 	if (filter_ == FileDialogFilter::PROJECT && path.is_absolute() &&
 	    CompareStringOrdinal(path.filename().c_str(), -1, L"project.json", -1,
 	                         TRUE) == CSTR_EQUAL &&
