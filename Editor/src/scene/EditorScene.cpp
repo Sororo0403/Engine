@@ -204,15 +204,7 @@ bool EditorScene::Initialize() {
 	}
 
 	if (!preferences_.lastProject.empty()) {
-		SwitchProject(preferences_.lastProject, false);
-
-		if (stage_ == DialogStage::ERROR) {
-			errorMessage_ =
-			    "Could not reopen the last project:\n" +
-			    PathUtils::ToUtf8(preferences_.lastProject) + "\n" +
-			    errorMessage_ + "\nChoose a project with File > Open Project...";
-			Logger::Error(errorMessage_);
-		}
+		SwitchProject(preferences_.lastProject, false, true);
 	}
 
 	if (recoveryReady && stage_ == DialogStage::IDLE &&
@@ -5852,12 +5844,13 @@ void EditorScene::LogPlayFailure() {
 }
 
 void EditorScene::SwitchProject(const std::filesystem::path &folder,
-                                bool create, bool fromRecent) {
+                                bool create, bool reopenOnFailure) {
 	const auto reportFailure = [&](std::string error) {
 		if (stage_ == DialogStage::CREATE_PROJECT ||
 		    stage_ == DialogStage::OPEN_PROJECT) {
 			fileDialog_.RetrySelection(std::move(error), folder);
-		} else if (fromRecent) {
+		} else if (reopenOnFailure) {
+			Logger::Error("Could not reopen project: " + error, folder / L"project.json");
 			std::error_code status;
 			if (std::filesystem::symlink_status(folder / L"project.json", status)
 			        .type() == std::filesystem::file_type::not_found) {
