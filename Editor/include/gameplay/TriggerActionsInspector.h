@@ -61,6 +61,10 @@ class TriggerActionsInspector {
 
 	std::string sceneSearch_;
 	std::optional<ArrivalCheck> arrivalCheck_;
-	std::vector<std::string> arrivalTags_;
+	struct ArrivalTagChoice {
+		std::string tag;
+		std::string objectLabel;
+	};
+	std::vector<ArrivalTagChoice> arrivalTags_;
 	bool arrivalTagsLoaded_ = false;
 };

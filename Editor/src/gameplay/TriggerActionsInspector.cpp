@@ -579,15 +579,18 @@ bool TriggerActionsInspector::Draw(
 					Scene destination;
 					arrivalTagsLoaded_ = SceneSerializer::Load(destination, action.scenePath);
 					if (arrivalTagsLoaded_) {
-						std::map<std::string, std::size_t> counts;
+						std::map<std::string, SceneObjectId> uniqueTargets;
 						for (const auto &[targetId, target] : destination.GetObjects()) {
 							if (!target.tag.empty() && SceneActivity::IsActive(destination, targetId)) {
-								++counts[target.tag];
+								auto [entry, inserted] = uniqueTargets.try_emplace(target.tag, targetId);
+								if (!inserted) {
+									entry->second = 0;
+								}
 							}
 						}
-						for (const auto &[candidate, count] : counts) {
-							if (count == 1) {
-								arrivalTags_.push_back(candidate);
+						for (const auto &[tagName, targetId] : uniqueTargets) {
+							if (targetId != 0) {
+								arrivalTags_.push_back({tagName, TargetLabel(destination, targetId)});
 							}
 						}
 					}
@@ -604,16 +607,18 @@ bool TriggerActionsInspector::Draw(
 						ImGui::TextUnformatted("No unique tags on active objects.");
 					} else {
 						for (const auto &candidate : arrivalTags_) {
-							ImGui::PushID(candidate.c_str());
+							const auto choiceLabel =
+							    std::format("{} / {}", candidate.tag, candidate.objectLabel);
+							ImGui::PushID(candidate.tag.c_str());
 							const auto position = ImGui::GetCursorScreenPos();
-							const auto size = ImGui::CalcTextSize(candidate.c_str());
-							if (ImGui::Selectable("##ArrivalTag", candidate == action.arrivalTag,
+							const auto size = ImGui::CalcTextSize(choiceLabel.c_str());
+							if (ImGui::Selectable("##ArrivalTag", candidate.tag == action.arrivalTag,
 							                      ImGuiSelectableFlags_None, size)) {
-								changed |= action.arrivalTag != candidate;
-								action.arrivalTag = candidate;
+								changed |= action.arrivalTag != candidate.tag;
+								action.arrivalTag = candidate.tag;
 							}
 							ImGui::GetWindowDrawList()->AddText(
-							    position, ImGui::GetColorU32(ImGuiCol_Text), candidate.c_str());
+							    position, ImGui::GetColorU32(ImGuiCol_Text), choiceLabel.c_str());
 							ImGui::PopID();
 						}
 					}

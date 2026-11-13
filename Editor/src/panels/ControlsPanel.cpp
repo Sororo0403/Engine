@@ -2006,8 +2006,9 @@ void ControlsPanel::Draw() {
 	         "height to zero."},
 	        {"Load Scene > Arrival Tag",
 	         "Set a unique tag on an active marker in the destination scene. "
-	         "Choose Arrival Tag lists unique active tags from the saved "
-	         "destination. You can also type a tag and press Enter. The destination "
+	         "Choose Arrival Tag lists each unique active tag with its object "
+	         "name and ID from the saved destination. You can also type a tag "
+	         "and press Enter. The destination "
 	         "must have one active Character Controller, and the marker must "
 	         "leave space for its Collider. The character keeps its authored "
 	         "orientation. An empty tag uses the authored position. Check "
