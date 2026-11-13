@@ -64,13 +64,18 @@ nlohmann::json CameraViewJson(const ViewState &view) {
 /// <summary>
 /// 保存済みシーンの絶対パスを、視点の記録に使うパスへ揃える
 /// </summary>
-std::filesystem::path SceneViewKey(const std::filesystem::path &path) {
+std::filesystem::path SceneViewKey(const std::filesystem::path &path,
+                                  bool allowMissing = false) {
 	if (!path.is_absolute() || path.native().find(L'\0') != std::wstring::npos) {
 		return {};
 	}
 
 	std::error_code error;
 	auto key = std::filesystem::canonical(path, error);
+	if (allowMissing && error == std::errc::no_such_file_or_directory) {
+		key = path.lexically_normal();
+		return key.make_preferred();
+	}
 	return !error && std::filesystem::is_regular_file(key, error)
 	           ? key
 	           : std::filesystem::path{};
@@ -127,7 +132,7 @@ void EditorPreferences::RememberSceneView(const std::filesystem::path &scene,
 
 const ViewState *
 EditorPreferences::FindSceneView(const std::filesystem::path &scene) const {
-	const auto found = sceneViews.find(SceneViewKey(scene));
+	const auto found = sceneViews.find(SceneViewKey(scene, true));
 	return found == sceneViews.end() ? nullptr : &found->second;
 }
 
@@ -148,7 +153,7 @@ void EditorPreferences::RememberSceneSelection(
 
 std::span<const SceneObjectId>
 EditorPreferences::LastSceneSelection(const std::filesystem::path &scene) const {
-	const auto found = sceneSelections_.find(SceneViewKey(scene));
+	const auto found = sceneSelections_.find(SceneViewKey(scene, true));
 	return found == sceneSelections_.end() ? std::span<const SceneObjectId>{}
 	                                       : std::span<const SceneObjectId>{found->second};
 }

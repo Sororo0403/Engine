@@ -3281,6 +3281,7 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	case EditorAction::OPEN:
 	case EditorAction::BROWSE_LAST_EDITED_SCENE: {
 		const bool locating = action == EditorAction::BROWSE_LAST_EDITED_SCENE;
+		locatedScenePreviousPath_ = locating ? failedRestoredScene_ : std::filesystem::path{};
 		openSceneDialog_.Show(FileDialogMode::OPEN,
 		                      GetSceneDialogDirectory(locating ? failedRestoredScene_
 		                                                       : document_.GetFilePath()),
@@ -3733,7 +3734,9 @@ void EditorScene::ExecutePendingAction() {
 		return;
 
 	case EditorAction::OPEN:
-		if (OpenScene(openSceneDialog_.GetSelectedPath(), false)) {
+		if (OpenScene(openSceneDialog_.GetSelectedPath(), false, nullptr,
+		              locatedScenePreviousPath_)) {
+			locatedScenePreviousPath_.clear();
 			SaveEditorSession();
 		} else {
 			openSceneDialog_.RetrySelection(document_.GetError());
@@ -4946,6 +4949,7 @@ void EditorScene::UpdateDialogs() {
 		}
 
 		if (result == FileDialogResult::CANCELLED) {
+			locatedScenePreviousPath_.clear();
 			stage_ = DialogStage::IDLE;
 			return;
 		}
@@ -6299,7 +6303,8 @@ void EditorScene::SaveEditorSession(bool force,
 }
 
 bool EditorScene::OpenScene(const std::filesystem::path &path, bool reportError,
-                            const LightingSettings *projectLighting) {
+                            const LightingSettings *projectLighting,
+                            const std::filesystem::path &previousLocation) {
 	const auto previousPath = document_.GetFilePath();
 	SaveEditorSession();
 	const bool opened = document_.Open(
@@ -6335,7 +6340,14 @@ bool EditorScene::OpenScene(const std::filesystem::path &path, bool reportError,
 			hierarchyPanel_.RequestReveal(active);
 		}
 	} else {
-		RestoreSceneViewAndSelection(document_.GetFilePath());
+		const auto &openedPath = document_.GetFilePath();
+		// 場所を選び直したシーンに表示状態がなければ、移動前の記録を使う。
+		const bool usePreviousLocation =
+		    !previousLocation.empty() &&
+		    project_.CanUseAsStartupScene(openedPath) &&
+		    !preferences_.FindSceneView(openedPath) &&
+		    preferences_.LastSceneSelection(openedPath).empty();
+		RestoreSceneViewAndSelection(usePreviousLocation ? previousLocation : openedPath);
 	}
 	pendingPlayCamera_ = 0;
 	playMode_.SetPreviewCamera(0);

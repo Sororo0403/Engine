@@ -383,9 +383,11 @@ class EditorScene final : public IScene {
 	/// シーンを読み込み、成功した場合に選択・カメラ・最近の一覧を更新する
 	/// </summary>
 	/// <param name="path">読み込むシーンのパス</param>
+	/// <param name="previousLocation">場所を選び直したシーンの元のパス。未指定なら読み込み先の記録だけを参照する</param>
 	/// <returns>true:読み込み成功 false:現在のシーンを保持</returns>
 	bool OpenScene(const std::filesystem::path &path, bool reportError = true,
-	               const LightingSettings *projectLighting = nullptr);
+	               const LightingSettings *projectLighting = nullptr,
+	               const std::filesystem::path &previousLocation = {});
 
 	/// <summary>
 	/// 既存の配布フォルダを開き、現在のプロジェクトの最近の出力に記録する
@@ -988,6 +990,7 @@ class EditorScene final : public IScene {
 	std::filesystem::path pendingGameExportReplacement_;
 	std::filesystem::path missingRecentProject_;
 	std::filesystem::path failedRestoredScene_;
+	std::filesystem::path locatedScenePreviousPath_;
 	bool startupProjectPicker_ = false;
 	SceneObjectId pendingOpenObject_ = 0;
 	std::vector<std::filesystem::path> pendingAssetPaths_;
