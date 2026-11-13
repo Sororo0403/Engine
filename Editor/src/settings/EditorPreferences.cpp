@@ -157,17 +157,11 @@ void EditorPreferences::RelocateScenes(
     std::span<const std::pair<std::filesystem::path, std::filesystem::path>> moves) {
 	namespace fs = std::filesystem;
 	const auto relocate = [&](const fs::path &scene) {
-		for (const auto &[source, destination] : moves) {
-			try {
-				const auto relative = PathUtils::RelativeInside(
-				    source.lexically_normal(), scene.lexically_normal());
-				const auto target = SceneViewKey(
-				    relative.empty() ? destination : destination / relative);
-				if (!target.empty()) {
-					return target;
-				}
-			} catch (const std::runtime_error &) {
-				// 別の場所にあるシーンは次の移動元と比較する。
+		const auto moved = PathUtils::AfterMove(scene, moves);
+		if (moved != scene) {
+			const auto target = SceneViewKey(moved);
+			if (!target.empty()) {
+				return target;
 			}
 		}
 		return scene;

@@ -1,8 +1,10 @@
 #pragma once
 
 #include <filesystem>
+#include <span>
 #include <string>
 #include <string_view>
+#include <utility>
 
 namespace PathUtils {
 /// <summary>
@@ -90,6 +92,14 @@ bool IsValidFileName(const std::filesystem::path &name);
 /// <returns>基準からの相対パス。外部・空・NULを含む参照では例外。同じ場所では空</returns>
 std::filesystem::path RelativeInside(const std::filesystem::path &root,
                                      const std::filesystem::path &path);
+
+/// <summary>
+/// ファイルまたは親フォルダの移動をパスに反映する。ファイルの存在は確認しない
+/// </summary>
+/// <returns>最初に一致した移動先のパス。一致しない場合は元のパス</returns>
+std::filesystem::path AfterMove(
+    const std::filesystem::path &path,
+    std::span<const std::pair<std::filesystem::path, std::filesystem::path>> moves);
 
 /// <summary>
 /// 対応するモデルファイルの拡張子か確認する。ファイルの実在や内容は確認しない

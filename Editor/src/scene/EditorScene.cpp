@@ -4421,6 +4421,7 @@ bool EditorScene::RelocateAssets(const AssetUsage::Moves &moves,
 		return false;
 	}
 	assetsPanel_.RelocateClipboard(moves);
+	lastPlayScenePath_ = PathUtils::AfterMove(lastPlayScenePath_, moves);
 
 	const auto &destination = moves.front().second;
 	const auto &root = assets_.GetRootDirectory();

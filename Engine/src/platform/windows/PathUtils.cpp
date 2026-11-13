@@ -249,6 +249,25 @@ PathUtils::RelativeInside(const std::filesystem::path &root,
 	return relative;
 }
 
+std::filesystem::path PathUtils::AfterMove(
+    const std::filesystem::path &path,
+    std::span<const std::pair<std::filesystem::path, std::filesystem::path>> moves) {
+	if (path.empty()) {
+		return {};
+	}
+
+	const auto normalized = path.lexically_normal();
+	for (const auto &[source, destination] : moves) {
+		try {
+			const auto relative = RelativeInside(source.lexically_normal(), normalized);
+			return relative.empty() ? destination : destination / relative;
+		} catch (const std::runtime_error &) {
+			// この移動元の外にある場合は、次の移動元を確認する。
+		}
+	}
+	return path;
+}
+
 bool PathUtils::IsModelFile(const std::filesystem::path &path) {
 	return HasExtension(path, ".glb") || HasExtension(path, ".gltf") ||
 	       HasExtension(path, ".obj");

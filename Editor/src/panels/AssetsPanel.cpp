@@ -33,16 +33,7 @@ bool AssetsPanel::RevealIndexedAsset(const std::filesystem::path &path,
 void AssetsPanel::RelocateClipboard(
     std::span<const std::pair<std::filesystem::path, std::filesystem::path>> moves) {
 	for (auto &path : clipboardItems_) {
-		for (const auto &[source, destination] : moves) {
-			try {
-				const auto relative = PathUtils::RelativeInside(
-				    source.lexically_normal(), path.lexically_normal());
-				path = relative.empty() ? destination : destination / relative;
-				break;
-			} catch (const std::runtime_error &) {
-				// この移動元の外にある場合は、次の移動元を確認する。
-			}
-		}
+		path = PathUtils::AfterMove(path, moves);
 	}
 }
 
