@@ -107,6 +107,26 @@ bool IsInside(const fs::path &root, const fs::path &path) {
 }
 
 /// <summary>
+/// シミュレーションを検証できないときも、外部クリップの割り当てを確認する
+/// </summary>
+void CheckAnimationBindings(AnimationClipComponent player, const fs::path &path,
+                            const Scene &scene) {
+	player.asset = path;
+	AnimationClipComponent clip;
+	std::string error;
+	if (!AnimationClipAsset::Resolve(player, clip, error))
+		throw std::runtime_error(error);
+
+	for (const auto &track : clip.tracks) {
+		const auto *target = scene.FindObject(track.target);
+		if (!target || !target->CanAnimate(track))
+			throw std::runtime_error(
+			    "Animation Clip target is missing a required component "
+			    "or has another transform controller.");
+	}
+}
+
+/// <summary>
 /// Runtimeの確認情報を厳密に読み、構成と対応形式を照合する。不正な場合は再ビルドの案内を含む例外
 /// </summary>
 /// <param name="directory">正規化済みのRuntime取得元</param>
@@ -818,7 +838,9 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 			std::string issue;
 			SceneObjectId invalidObject = 0;
 			// 参照先が欠けている場合も、読めたシーンの入力設定と素材を検査する。
-			if (startupSettingsValid && !incompleteGraph && !entry.prefab &&
+			const bool canCheckSimulation =
+			    startupSettingsValid && !incompleteGraph && !entry.prefab;
+			if (canCheckSimulation &&
 			    !(&entry == &graph.front()
 			          ? check.Start(candidate, issue,
 			                        options.config.fallbackCamera,
@@ -911,7 +933,10 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 				if (object.animationClip && object.animationClip->usesAsset)
 					includeAsset(object.animationClip->asset, "Animation Clip",
 					             [&](const auto &path) {
-						             return assets.AddAnimationClip(path);
+						             auto reference = assets.AddAnimationClip(path);
+						             if (!canCheckSimulation)
+							             CheckAnimationBindings(*object.animationClip, path, candidate);
+						             return reference;
 					             });
 				if (object.script && !object.script->asset.empty()) {
 					fs::path failedScript;
