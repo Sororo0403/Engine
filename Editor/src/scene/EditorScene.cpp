@@ -3430,8 +3430,9 @@ void EditorScene::ExecutePendingAction() {
 			const auto lastParent = lastExport.parent_path();
 			std::error_code statusError;
 			if (!lastParent.empty() &&
+			    PathUtils::IsValidFileName(lastExport.filename()) &&
 			    std::filesystem::is_directory(lastParent, statusError)) {
-				options.destination = lastParent / options.destination.filename();
+				options.destination = lastExport;
 			}
 			options.config = exportConfig_;
 			const auto startup = project_.GetStartupScene();
