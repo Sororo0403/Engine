@@ -21,6 +21,23 @@ void AssetsPanel::RequestReveal(const std::filesystem::path &path) {
 	revealPath_ = path;
 }
 
+bool AssetsPanel::ValidateClipboard() {
+	const bool missing = std::ranges::any_of(clipboardItems_, [](const auto &path) {
+		std::error_code error;
+		const auto status = std::filesystem::symlink_status(path, error);
+		return status.type() == std::filesystem::file_type::not_found;
+	});
+	if (!missing) {
+		return true;
+	}
+
+	clipboardItems_.clear();
+	clipboardRoot_.clear();
+	clipboardCut_ = false;
+	revealMessage_ = "A copied or cut item is missing. Select the items again.";
+	return false;
+}
+
 void AssetsPanel::SetAssetType(AssetType type) {
 	if (type_ == type) {
 		return;
@@ -216,18 +233,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		revealMessage_.clear();
 		if (assets.Refresh()) {
 			RestoreDirectory(currentDirectory_, assets);
-			const bool missingClipboardItem =
-			    std::ranges::any_of(clipboardItems_, [](const auto &path) {
-				    std::error_code error;
-				    const auto status = std::filesystem::symlink_status(path, error);
-				    return status.type() == std::filesystem::file_type::not_found;
-			    });
-			if (missingClipboardItem) {
-				clipboardItems_.clear();
-				clipboardRoot_.clear();
-				clipboardCut_ = false;
-				revealMessage_ = "A copied or cut item is missing. Select the items again.";
-			}
+			ValidateClipboard();
 		}
 	}
 
@@ -515,7 +521,9 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		clipboardCut_ = cut;
 	};
 	const auto requestPaste = [&](const std::filesystem::path &folder) {
-		pasteRequest_ = {clipboardItems_, folder};
+		if (ValidateClipboard()) {
+			pasteRequest_ = {clipboardItems_, folder};
+		}
 	};
 	const auto drawPaste = [&](const char *label, const std::filesystem::path &folder) {
 		if (ui.MenuItem(label, "Ctrl+V", clipboardEnabled && !clipboardItems_.empty())) {

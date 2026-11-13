@@ -294,6 +294,11 @@ class AssetsPanel {
 	std::filesystem::path modelReloadPath_;
 	std::filesystem::path meshReplacementPath_;
 	std::filesystem::path textureReloadPath_;
+	/// <summary>
+	/// コピー・切り取り元が消えていたら一括操作を解除する
+	/// </summary>
+	bool ValidateClipboard();
+
 	std::filesystem::path currentDirectory_;
 	std::string filter_;
 	std::filesystem::path revealPath_;
