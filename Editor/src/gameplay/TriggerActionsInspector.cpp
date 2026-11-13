@@ -610,10 +610,13 @@ bool TriggerActionsInspector::Draw(
 						if (ImGui::IsWindowAppearing()) {
 							ImGui::SetKeyboardFocusHere();
 						}
-						ImGui::InputTextWithHint("##ArrivalTagSearch", "Search tags or objects",
-						                         &arrivalTagSearch_);
+						const bool submitted = ImGui::InputTextWithHint(
+						    "##ArrivalTagSearch", "Search tags or objects", &arrivalTagSearch_,
+						    ImGuiInputTextFlags_EnterReturnsTrue);
+						ImGui::SetItemTooltip("Press Enter to choose the only matching tag.");
 						const auto search = StringConversion::Utf8ToWide(arrivalTagSearch_);
-						bool found = false;
+						std::size_t matchCount = 0;
+						const ArrivalTagChoice *firstMatch = nullptr;
 						for (const auto &candidate : arrivalTags_) {
 							const auto choiceLabel =
 							    std::format("{} / {}", candidate.tag, candidate.objectLabel);
@@ -626,7 +629,9 @@ bool TriggerActionsInspector::Draw(
 									continue;
 								}
 							}
-							found = true;
+							if (matchCount++ == 0) {
+								firstMatch = &candidate;
+							}
 							ImGui::PushID(candidate.tag.c_str());
 							const auto position = ImGui::GetCursorScreenPos();
 							const auto size = ImGui::CalcTextSize(choiceLabel.c_str());
@@ -639,7 +644,11 @@ bool TriggerActionsInspector::Draw(
 							    position, ImGui::GetColorU32(ImGuiCol_Text), choiceLabel.c_str());
 							ImGui::PopID();
 						}
-						if (!found) {
+						if (submitted && !arrivalTagSearch_.empty() && matchCount == 1) {
+							changed |= action.arrivalTag != firstMatch->tag;
+							action.arrivalTag = firstMatch->tag;
+							ImGui::CloseCurrentPopup();
+						} else if (matchCount == 0) {
 							ImGui::TextDisabled("No matching arrival tags.");
 						}
 					}
