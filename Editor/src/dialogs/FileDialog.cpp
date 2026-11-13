@@ -236,6 +236,7 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 		const auto search = StringConversion::Utf8ToWide(search_);
 		std::filesystem::path nextDirectory;
 		std::filesystem::path openFile;
+		std::filesystem::path openExport;
 
 		const bool drawEntries = ui.BeginChild("Files", 600.0f, 240.0f);
 
@@ -263,23 +264,36 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 
 				const std::string name = PathUtils::ToUtf8(displayPath);
 
-				const std::string label =
-				    entry.directory ? std::format("[Folder] {}", name) : name;
+				const std::string label = entry.gameExport
+				    ? std::format("[Game Export] {}", name)
+				    : entry.directory ? std::format("[Folder] {}", name) : name;
 
 				ui.PushID(static_cast<int>(i));
 
 				const auto fileInput =
 				    searchProjectScenes_ ? PathUtils::ToUtf8(entry.path) : name;
-				const bool selected = !entry.directory && fileName_ == fileInput;
+				const bool selected = entry.gameExport
+				    ? directoryText_ == PathUtils::ToUtf8(entry.path)
+				    : !entry.directory && fileName_ == fileInput;
 
 				const bool clicked = ui.Selectable(label.c_str(), selected);
+				if (entry.gameExport) {
+					ImGui::SetItemTooltip("Select this export folder. Double-click to open it.");
+					if (ImGui::IsItemHovered() &&
+					    ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+						openExport = entry.path;
+					}
+				}
 				if (!entry.directory && mode_ == FileDialogMode::OPEN &&
 				    ImGui::IsItemHovered() &&
 				    ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
 					openFile = entry.path;
 				}
 				if (clicked) {
-					if (entry.directory) {
+					if (entry.gameExport) {
+						directoryText_ = PathUtils::ToUtf8(entry.path);
+						error_.clear();
+					} else if (entry.directory) {
 						nextDirectory = entry.path;
 					} else {
 						if (!selected)
@@ -298,7 +312,9 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 		ui.EndChild();
 
 		// 一覧を走査し終えてから表示フォルダを変更する
-		if (!nextDirectory.empty()) {
+		if (!openExport.empty()) {
+			directoryText_ = PathUtils::ToUtf8(openExport);
+		} else if (!nextDirectory.empty()) {
 			ChangeDirectory(nextDirectory);
 		}
 
@@ -366,7 +382,7 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 		if (!openFile.empty()) {
 			fileName_ = PathUtils::ToUtf8(openFile);
 		}
-		if ((submitted || fileSubmitted || !openFile.empty() ||
+		if ((submitted || fileSubmitted || !openFile.empty() || !openExport.empty() ||
 		     (folderSubmitted && mode_ == FileDialogMode::SELECT_DIRECTORY)) &&
 		    AcceptSelection()) {
 			result = FileDialogResult::ACCEPTED;
@@ -391,6 +407,30 @@ const std::filesystem::path &FileDialog::GetSelectedPath() const {
 	return selectedPath_;
 }
 
+std::string_view FileDialog::GameExportOpenProblem(const std::filesystem::path &directory) {
+	if (directory.empty())
+		return "Choose a game export folder.";
+
+	std::error_code error;
+	const auto folder = std::filesystem::status(directory, error);
+	if (folder.type() == std::filesystem::file_type::not_found)
+		return "The export folder was not found.";
+	if (error)
+		return "Could not access the export folder.";
+	if (!std::filesystem::is_directory(folder))
+		return "The export path is not a folder.";
+
+	const bool hasGame = std::filesystem::is_regular_file(directory / L"Game.exe", error);
+	const bool hasConfig = std::filesystem::is_regular_file(directory / L"game.json", error);
+	if (!hasGame && !hasConfig)
+		return "Game.exe and game.json are missing or are not regular files.";
+	if (!hasGame)
+		return "Game.exe is missing or is not a regular file.";
+	if (!hasConfig)
+		return "game.json is missing or is not a regular file.";
+	return {};
+}
+
 void FileDialog::Refresh() {
 	entries_.clear();
 	error_.clear();
@@ -409,7 +449,9 @@ void FileDialog::Refresh() {
 
 			if (!typeError) {
 				if (directory) {
-					entries_.push_back({entry.path(), true});
+					const bool gameExport = filter_ == FileDialogFilter::GAME_EXPORT &&
+					                        GameExportOpenProblem(entry.path()).empty();
+					entries_.push_back({entry.path(), true, gameExport});
 				} else if (mode_ != FileDialogMode::SELECT_DIRECTORY &&
 				           entry.is_regular_file(typeError) && !typeError &&
 				           (filter_ == FileDialogFilter::MODEL

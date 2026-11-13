@@ -4,6 +4,7 @@
 #include <optional>
 #include <span>
 #include <string>
+#include <string_view>
 #include <vector>
 
 class ImGuiSystem;
@@ -90,6 +91,11 @@ class FileDialog {
 	/// <returns>ACCEPTEDが返された場合に使用できる絶対パス</returns>
 	const std::filesystem::path &GetSelectedPath() const;
 
+	/// <summary>
+	/// 配布版に必要なフォルダとファイルを確認し、開けない理由を返す
+	/// </summary>
+	static std::string_view GameExportOpenProblem(const std::filesystem::path &directory);
+
   private:
 	/// <summary>
 	/// 一覧に表示するフォルダまたはファイル
@@ -97,6 +103,7 @@ class FileDialog {
 	struct Entry {
 		std::filesystem::path path;
 		bool directory = false;
+		bool gameExport = false;
 	};
 
 	/// <summary>
