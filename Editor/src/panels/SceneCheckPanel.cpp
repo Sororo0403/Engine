@@ -51,6 +51,20 @@ void SceneCheckPanel::OnSceneOpened(const std::filesystem::path &previous,
 	RequestRecheckIfOpen();
 }
 
+void SceneCheckPanel::OnSceneSavedAs(const std::filesystem::path &previous,
+                                    const std::filesystem::path &current) {
+	for (const auto *path : {&previous, &current}) {
+		if (!path->empty()) {
+			if (filter_.empty()) {
+				sceneFilters_.erase(*path);
+			} else {
+				sceneFilters_.insert_or_assign(*path, filter_);
+			}
+		}
+	}
+	RequestRecheckIfOpen();
+}
+
 void SceneCheckPanel::OnAssetsMoved(
     std::span<const std::pair<std::filesystem::path, std::filesystem::path>> moves) {
 	// 移動先に過去の検索語があれば、実際に移動したシーンの検索語を優先する。

@@ -4914,6 +4914,9 @@ void EditorScene::UpdateDialogs() {
 			const auto startup = project_.GetStartupScene();
 			SaveEditorSession();
 			if (document_.SaveAs(fileDialog_.GetSelectedPath())) {
+				if (previousPath != document_.GetFilePath()) {
+					sceneCheckPanel_.OnSceneSavedAs(previousPath, document_.GetFilePath());
+				}
 				if (previousPath.empty() && playFailureReplay_ &&
 				    playFailureReplay_->path.empty()) {
 					playFailureReplay_->path = document_.GetFilePath();

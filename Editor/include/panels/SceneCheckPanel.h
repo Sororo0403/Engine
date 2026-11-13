@@ -56,6 +56,12 @@ class SceneCheckPanel {
 	                   const std::filesystem::path &current);
 
 	/// <summary>
+	/// 別名保存で現在の検索語を元のシーンと新しい保存先に記録する
+	/// </summary>
+	void OnSceneSavedAs(const std::filesystem::path &previous,
+	                    const std::filesystem::path &current);
+
+	/// <summary>
 	/// 移動したシーンに検索語を引き継ぎ、移動後の参照を再検査する
 	/// </summary>
 	void OnAssetsMoved(
