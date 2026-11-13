@@ -15,25 +15,25 @@ constexpr auto kGameLogPath = L"logs/Engine.log";
 constexpr auto kLogRefreshInterval = std::chrono::milliseconds{500};
 
 /// <summary>
-/// 表示中のログから、Loggerが出力した最後のエラー行の先頭を探す
+/// Loggerのヘッダーを持つ行からログレベルを取得する
 /// </summary>
-std::size_t FindLatestError(std::string_view log) {
-	std::size_t latest = std::string_view::npos;
+std::string_view LogLevelPrefix(std::string_view line) {
+	const auto timestampEnd = line.find(']');
+	return line.starts_with('[') && timestampEnd != std::string_view::npos
+	           ? line.substr(timestampEnd + 1)
+	           : std::string_view{};
+}
+
+/// <summary>
+/// 表示中のログを行単位で走査する。行末の改行も範囲に含める
+/// </summary>
+void VisitLogLines(std::string_view log, const auto &visit) {
 	for (std::size_t start = 0; start < log.size();) {
-		const auto end = log.find('\n', start);
-		const auto line = log.substr(start, end == std::string_view::npos
-		                                       ? end : end - start);
-		const auto timestampEnd = line.find(']');
-		if (line.starts_with('[') && timestampEnd != std::string_view::npos &&
-		    line.substr(timestampEnd + 1).starts_with(" [ERROR] ")) {
-			latest = start;
-		}
-		if (end == std::string_view::npos) {
-			break;
-		}
-		start = end + 1;
+		const auto newline = log.find('\n', start);
+		const auto end = newline == std::string_view::npos ? log.size() : newline + 1;
+		visit(start, log.substr(start, end - start));
+		start = end;
 	}
-	return latest;
 }
 }
 
@@ -388,14 +388,45 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 			}
 			ui.EndDisabled();
 		}
+		std::size_t firstError = std::string_view::npos;
+		std::size_t latestError = std::string_view::npos;
+		VisitLogLines(log_, [&](std::size_t start, std::string_view line) {
+			if (LogLevelPrefix(line).starts_with(" [ERROR] ")) {
+				if (firstError == std::string_view::npos) {
+					firstError = start;
+				}
+				latestError = start;
+			}
+		});
+		ui.BeginDisabled(firstError == std::string_view::npos || jumpToLatest);
+		std::size_t errorToShow = std::string_view::npos;
+		if (ui.Button("First Log Error")) {
+			errorToShow = firstError;
+		}
 		ui.SameLine();
-		const auto latestError = FindLatestError(log_);
-		ui.BeginDisabled(latestError == std::string_view::npos || jumpToLatest);
-		const bool jumpToError = ui.Button("Latest Log Error") &&
-		                         latestError != std::string_view::npos &&
-		                         !jumpToLatest;
+		if (ui.Button("Latest Log Error")) {
+			errorToShow = latestError;
+		}
+		ui.SameLine();
+		if (ui.Button("Copy Displayed Errors") && firstError != std::string_view::npos) {
+			std::string errors;
+			bool includeLine = false;
+			VisitLogLines(log_, [&](std::size_t, std::string_view line) {
+				const auto level = LogLevelPrefix(line);
+				if (level.starts_with(" [ERROR] ")) {
+					includeLine = true;
+				} else if (level.starts_with(" [INFO] ") || level.starts_with(" [WARNING] ")) {
+					includeLine = false;
+				}
+				if (includeLine) {
+					errors.append(line);
+				}
+			});
+			ImGui::SetClipboardText(errors.c_str());
+		}
 		ui.EndDisabled();
-		ImGui::SetItemTooltip("Jump to the latest error in the displayed log.");
+		ImGui::SetItemTooltip("Copy errors and their details from the displayed log.");
+		const bool jumpToError = errorToShow != std::string_view::npos && !jumpToLatest;
 		if (jumpToError) {
 			run.followLog = false;
 		}
@@ -415,8 +446,8 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 				const bool wasAtBottom =
 				    ImGui::GetScrollY() >= ImGui::GetScrollMaxY() - 1.0f;
 				if (jumpToError) {
-					const auto prefixHeight = latestError == 0 ? 0.0f
-					    : ImGui::CalcTextSize(log_.data(), log_.data() + latestError,
+					const auto prefixHeight = errorToShow == 0 ? 0.0f
+					    : ImGui::CalcTextSize(log_.data(), log_.data() + errorToShow,
 					                          false, ImGui::GetContentRegionAvail().x).y;
 					ImGui::SetScrollY((std::max)(
 					    0.0f, ImGui::GetCursorPosY() + prefixHeight -
