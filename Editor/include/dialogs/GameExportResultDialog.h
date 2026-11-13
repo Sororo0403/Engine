@@ -56,7 +56,7 @@ class GameExportResultDialog {
 	/// <summary>
 	/// 起動したゲームの終了を確認する。異常終了した場合はログを開く
 	/// </summary>
-	bool UpdateGameProcess();
+	bool UpdateGameProcess(bool &jumpToLatest);
 
 	std::filesystem::path directory_;
 	std::map<std::filesystem::path, GameRun> runs_;

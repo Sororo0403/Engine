@@ -144,7 +144,7 @@ bool GameExportResultDialog::StartGame() {
 	return run.showLog;
 }
 
-bool GameExportResultDialog::UpdateGameProcess() {
+bool GameExportResultDialog::UpdateGameProcess(bool &jumpToLatest) {
 	auto &run = runs_.at(directory_);
 	if (!run.process.IsTracking())
 		return false;
@@ -164,7 +164,8 @@ bool GameExportResultDialog::UpdateGameProcess() {
 	const bool restart = std::exchange(run.restartRequested, false);
 	if (*exitCode == 0) {
 		if (restart) {
-			return StartGame();
+			jumpToLatest = StartGame();
+			return jumpToLatest;
 		}
 		run.status = "Game exited normally.";
 		if (run.showLog)
@@ -174,6 +175,7 @@ bool GameExportResultDialog::UpdateGameProcess() {
 	run.status = std::format("Game exited with code 0x{:08X}.", *exitCode);
 	run.showLog = true;
 	RefreshLog();
+	jumpToLatest = true;
 	return true;
 }
 
@@ -195,7 +197,8 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 	ImGui::TextWrapped("%s", PathUtils::ToUtf8(directory_).c_str());
 
 	auto &run = runs_.at(directory_);
-	bool refreshedLog = UpdateGameProcess();
+	bool jumpToLatest = false;
+	bool refreshedLog = UpdateGameProcess(jumpToLatest);
 	if (!run.status.empty())
 		ui.Text(run.status);
 
@@ -211,7 +214,7 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 
 	ui.BeginDisabled(run.process.IsTracking());
 	if (ui.Button("Run Game")) {
-		refreshedLog |= StartGame();
+		jumpToLatest |= StartGame();
 	}
 	ui.EndDisabled();
 
@@ -239,7 +242,7 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		run.showLog = !run.showLog;
 		if (run.showLog) {
 			RefreshLog();
-			refreshedLog = true;
+			jumpToLatest = true;
 		}
 	}
 
@@ -276,12 +279,12 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		if (run.logStart &&
 		    ImGui::Checkbox("Since Run Game", &run.sinceLaunchOnly)) {
 			RefreshLog();
-			refreshedLog = true;
+			jumpToLatest = true;
 		}
 		if (ui.Checkbox("Follow Log", run.followLog) && run.followLog) {
-			refreshedLog = true;
+			jumpToLatest = true;
 		}
-		ImGui::SetItemTooltip("Scroll to the latest messages as the log updates.");
+		ImGui::SetItemTooltip("Follow new messages while the log is at the bottom.");
 		if (ui.Button("Refresh Log")) {
 			RefreshLog();
 			refreshedLog = true;
@@ -307,6 +310,10 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		ui.EndDisabled();
 
 		const auto latestError = FindLatestError(log_);
+		ui.BeginDisabled(log_.empty());
+		jumpToLatest |= ui.Button("Jump to Latest");
+		ui.EndDisabled();
+		ui.SameLine();
 		ui.BeginDisabled(latestError == std::string_view::npos);
 		const bool jumpToError = ui.Button("Latest Log Error") &&
 		                         latestError != std::string_view::npos;
@@ -325,6 +332,8 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 			if (logTruncated_)
 				ui.Text("Showing the end of the game log.");
 			if (ui.BeginChild("GameLog", 570.0f, 210.0f)) {
+				const bool wasAtBottom =
+				    ImGui::GetScrollY() >= ImGui::GetScrollMaxY() - 1.0f;
 				if (jumpToError) {
 					const auto prefixHeight = latestError == 0 ? 0.0f
 					    : ImGui::CalcTextSize(log_.data(), log_.data() + latestError,
@@ -336,8 +345,10 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 				ImGui::PushTextWrapPos();
 				ui.Text(log_);
 				ImGui::PopTextWrapPos();
-				if (refreshedLog && run.followLog)
+				if (!jumpToError &&
+				    (jumpToLatest || (refreshedLog && run.followLog && wasAtBottom))) {
 					ImGui::SetScrollHereY(1.0f);
+				}
 			}
 			ui.EndChild();
 		}
