@@ -25,6 +25,8 @@ struct Reference {
 	SceneObjectId objectId = 0;
 	bool editingScene = false;
 	bool undoHistory = false;
+	// シーンとして開けないPrefabやモデルの参照元ファイル
+	std::filesystem::path sourcePath;
 };
 
 /// <summary>

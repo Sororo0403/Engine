@@ -232,7 +232,8 @@ std::vector<AssetUsage::Reference> Scan(
 	};
 
 	const auto inspect = [&](const Scene &document, const std::string &label,
-	                         const fs::path &source, const fs::path &openPath) {
+	                         const fs::path &source, const fs::path &openPath,
+	                         const fs::path &sourcePath = {}) {
 		for (const auto &[id, object] : document.GetObjects()) {
 			const auto reference = [&](const fs::path &path) {
 				if (matches(path)) {
@@ -240,7 +241,7 @@ std::vector<AssetUsage::Reference> Scan(
 						usages.push_back({
 						    std::format("{} / {} (ID {}) -> {}", label, object.name,
 						                id, PathUtils::ToUtf8(path)),
-						    openPath, id, source.empty()});
+						    openPath, id, source.empty(), false, sourcePath});
 					}
 				} else {
 					scheduleReference(path);
@@ -330,7 +331,8 @@ std::vector<AssetUsage::Reference> Scan(
 					if (matches(file) && !PathUtils::IsSameFile(path, file) &&
 					    (!recordEdge || !recordEdge(path, file))) {
 						usages.push_back({"Model: " + label + " -> " +
-						                  PathUtils::ToUtf8(file)});
+						                  PathUtils::ToUtf8(file), {}, 0, false,
+						                  false, path});
 					}
 				}
 
@@ -357,7 +359,8 @@ std::vector<AssetUsage::Reference> Scan(
 			const bool canOpen =
 			    !visit && source == Source::SCENE &&
 			    (scenePath.empty() || !PathUtils::IsSameFile(path, scenePath));
-			inspect(document, label, path, canOpen ? path : fs::path{});
+			inspect(document, label, path, canOpen ? path : fs::path{},
+			        source == Source::PREFAB ? path : fs::path{});
 
 			if (visit) {
 				visit(path, source, document, nextSourceId, std::move(original),

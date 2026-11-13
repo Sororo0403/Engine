@@ -4223,6 +4223,7 @@ void EditorScene::RestoreRecovery() {
 
 std::vector<std::filesystem::path>
 EditorScene::CheckAssetReferences(bool recycle) {
+	assetReferenceLocationError_.clear();
 	try {
 		const auto &assets = assets_.GetRootDirectory();
 
@@ -4306,6 +4307,15 @@ void EditorScene::DrawAssetReferences(bool recycle) {
 					}
 					ImGui::PopID();
 				}
+				if (!source.sourcePath.empty()) {
+					ImGui::PushID(static_cast<int>(i));
+					if (ui_.Button("Show Source in Explorer")) {
+						ShellUtils::RevealLocationInExplorer(source.sourcePath,
+						                                     assetReferenceLocationError_);
+					}
+					ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(source.sourcePath).c_str());
+					ImGui::PopID();
+				}
 			}
 		}
 
@@ -4340,6 +4350,9 @@ void EditorScene::DrawAssetReferences(bool recycle) {
 		}
 	} else if (!recycle) {
 		ui_.Text("No external references found.");
+	}
+	if (!assetReferenceLocationError_.empty()) {
+		ImGui::TextWrapped("%s", assetReferenceLocationError_.c_str());
 	}
 	const bool historyOnly = recycle && !assetReferences_.empty() &&
 	                         std::ranges::all_of(assetReferences_,
