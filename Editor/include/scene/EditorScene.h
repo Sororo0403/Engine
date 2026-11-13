@@ -409,7 +409,8 @@ class EditorScene final : public IScene {
 	/// <summary>
 	/// プロジェクトを作成または開き、読み込み成功後に編集対象を切り替える
 	/// </summary>
-	void SwitchProject(const std::filesystem::path &folder, bool create);
+	void SwitchProject(const std::filesystem::path &folder, bool create,
+	                   bool fromRecent = false);
 
 	/// <summary>
 	/// 現在のプロジェクト・シーンとSceneビューの視点をEditor設定に記録する

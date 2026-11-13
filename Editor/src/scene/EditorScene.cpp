@@ -58,6 +58,21 @@
 
 namespace {
 /// <summary>
+/// 指定先が存在しない場合に、選択画面で開ける最も近い親を探す
+/// </summary>
+std::filesystem::path FindExistingDirectory(std::filesystem::path directory) {
+	std::error_code error;
+	while (!directory.empty() && !std::filesystem::is_directory(directory, error)) {
+		auto parent = directory.parent_path();
+		if (parent == directory) {
+			return {};
+		}
+		directory = std::move(parent);
+	}
+	return directory;
+}
+
+/// <summary>
 /// 既存の配布版を起動・確認するためのファイルが揃っているか確認する
 /// </summary>
 bool IsGameExportDirectory(const std::filesystem::path &directory) {
@@ -2834,16 +2849,7 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 			if (!recent.empty())
 				directory = recent.front();
 		}
-		std::error_code error;
-		while (!directory.empty() &&
-		       !std::filesystem::is_directory(directory, error)) {
-			auto parent = directory.parent_path();
-			if (parent == directory) {
-				directory.clear();
-				break;
-			}
-			directory = std::move(parent);
-		}
+		directory = FindExistingDirectory(std::move(directory));
 		if (directory.empty())
 			directory = project_.GetRoot();
 		fileDialog_.Show(FileDialogMode::SELECT_DIRECTORY, directory);
@@ -3379,7 +3385,7 @@ void EditorScene::ExecutePendingAction() {
 		return;
 
 	case EditorAction::OPEN_PROJECT_PATH:
-		SwitchProject(pendingOpenPath_, false);
+		SwitchProject(pendingOpenPath_, false, true);
 		return;
 
 	case EditorAction::NEW_PROJECT:
@@ -5498,11 +5504,17 @@ void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject) {
 }
 
 void EditorScene::SwitchProject(const std::filesystem::path &folder,
-                                bool create) {
+                                bool create, bool fromRecent) {
 	const auto reportFailure = [&](std::string error) {
 		if (stage_ == DialogStage::CREATE_PROJECT ||
 		    stage_ == DialogStage::OPEN_PROJECT) {
 			fileDialog_.RetrySelection(std::move(error));
+		} else if (fromRecent) {
+			fileDialog_.Show(FileDialogMode::SELECT_DIRECTORY,
+			                 FindExistingDirectory(folder), FileDialogFilter::SCENE,
+			                 "Open Project###FileDialog");
+			fileDialog_.RetrySelection(std::move(error));
+			stage_ = DialogStage::OPEN_PROJECT;
 		} else {
 			ShowError(std::move(error));
 		}
