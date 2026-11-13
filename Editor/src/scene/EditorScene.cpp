@@ -4315,7 +4315,7 @@ void EditorScene::RestoreRecovery() {
 		                     project_.GetRoot().empty()
 		                         ? std::filesystem::path{}
 		                         : project_.GetScenesDirectory());
-		assets.Refresh();
+		const bool assetsReady = assets.Refresh();
 		auto restoredPath = pendingRecoveryPath_;
 		SaveEditorSession();
 		SceneLighting::MigrateLegacyDirectionalLight(
@@ -4345,6 +4345,12 @@ void EditorScene::RestoreRecovery() {
 		assetsPanel_.Clear();
 		stage_ = DialogStage::IDLE;
 		RecordRecovery();
+		if (!assetsReady) {
+			Logger::Warning("Scene restored, but the Assets list could not be loaded: " +
+			                    assets_.GetError(),
+			                assetSources_.GetDirectory());
+			consolePanel_.Show();
+		}
 	} catch (const std::exception &error) {
 		Logger::Error(
 		    std::format("EditorScene::RestoreRecovery: {}", error.what()));
