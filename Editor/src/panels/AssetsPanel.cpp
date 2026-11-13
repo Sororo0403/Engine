@@ -213,7 +213,9 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	std::filesystem::path requestedPath;
 
 	if (ui.Button("Refresh")) {
-		assets.Refresh();
+		if (assets.Refresh()) {
+			RestoreDirectory(currentDirectory_, assets);
+		}
 		revealMessage_.clear();
 	}
 
@@ -222,8 +224,10 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			if (SelectAsset(revealPath_, assets) ||
 			    (assets.Refresh() && SelectAsset(revealPath_, assets))) {
 				revealMessage_.clear();
-			} else {
+			} else if (assets.GetError().empty()) {
 				revealMessage_ = "Asset is not in the indexed Assets folder.";
+			} else {
+				revealMessage_ = "Could not locate the asset because Assets could not be refreshed.";
 			}
 		} catch (const std::exception &error) {
 			Logger::Error(
@@ -543,7 +547,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	};
 
 	if (!assets.GetError().empty()) {
-		ui.Text("Assets could not be updated. Try Refresh again.");
+		ui.Text("Assets could not be updated. Showing the last successful listing.");
 		ImGui::TextWrapped("%s", assets.GetError().c_str());
 	}
 
