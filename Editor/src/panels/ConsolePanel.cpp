@@ -68,7 +68,9 @@ bool ConsolePanel::MatchesFilter(const LogEntry &entry) const {
 		return false;
 	}
 
-	return filter_.empty() || entry.message.find(filter_) != std::string::npos;
+	return filter_.empty() || entry.message.find(filter_) != std::string::npos ||
+	       (!entry.sourcePath.empty() &&
+	        PathUtils::ToUtf8(entry.sourcePath).find(filter_) != std::string::npos);
 }
 
 std::string ConsolePanel::BuildFilteredText() const {
@@ -79,6 +81,10 @@ std::string ConsolePanel::BuildFilteredText() const {
 			text += std::format("[{}] {}: ", entry.timestamp,
 			                    LevelName(entry.level));
 			AppendClipboardMessage(text, entry.message);
+			if (!entry.sourcePath.empty()) {
+				text += "\nSource: ";
+				AppendClipboardMessage(text, PathUtils::ToUtf8(entry.sourcePath));
+			}
 			text += '\n';
 		}
 	}
@@ -130,6 +136,7 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 	ImGui::SetItemTooltip("Show messages since the most recent Play or Restart attempt.");
 	ui.EndDisabled();
 	ui.InputText("Search", filter_);
+	ImGui::SetItemTooltip("Search message text and source file paths.");
 	Logger::ReadEntries(revision_, entries_);
 	const auto matchingCount = std::count_if(
 	    entries_.begin(), entries_.end(),
@@ -243,6 +250,9 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 			ui.SameLine();
 			ui.Text(std::format("[{}] {}", selected->timestamp,
 			                    LevelName(selected->level)));
+			if (!selected->sourcePath.empty()) {
+				ui.Text("Source: " + PathUtils::ToUtf8(selected->sourcePath));
+			}
 			ui.Text(selected->message);
 		} else {
 			ui.Text("Select a message to read its full text.");
