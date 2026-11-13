@@ -308,7 +308,10 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 				                            ImGui::GetStyle().ItemSpacing.x * 2.0f;
 
 				if (ui.Selectable(label.c_str(), selected)) {
-					selectedId_ = entry.id;
+					// 同じログをまとめても、再試遊に対応する記録を選べるようにする。
+					selectedId_ = head.id <= retryPlayLogId && retryPlayLogId <= entry.id
+					                  ? retryPlayLogId
+					                  : entry.id;
 				}
 				if (jumpToSelection && selected) {
 					ImGui::SetScrollHereY(0.5f);
