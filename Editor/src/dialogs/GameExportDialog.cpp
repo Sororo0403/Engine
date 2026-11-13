@@ -149,6 +149,9 @@ void GameExportDialog::ForgetUntitledDraft() {
 void GameExportDialog::UpdateStartupScene(const std::filesystem::path &path,
                                           bool includesUnsavedEdits) {
 	startupScene_ = path.empty() ? "Untitled" : PathUtils::ToUtf8(path);
+	if (options_.startupScenePath != path) {
+		issueFilter_.clear();
+	}
 	options_.startupScenePath = path;
 	includesUnsavedEdits_ = includesUnsavedEdits;
 	ClearCheckResult();
@@ -308,8 +311,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 	if (!error_.empty()) {
 		ImGui::TextWrapped("%s", error_.c_str());
 	}
-	GameExportResult result = chooseStartup ? GameExportResult::CHOOSE_STARTUP_SCENE
-	                                        : GameExportResult::NONE;
+	GameExportResult result = GameExportResult::NONE;
 	if (!checkIssues_.empty()) {
 		const auto matches = [&](const GameExportIssue &issue) {
 			return MatchesIssue(issue, issueFilter_);
@@ -397,12 +399,22 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 		ui.SameLine();
 		saveAndCheckRequested = ui.Button("Save Scene and Check");
 	}
-	if (exportRequested || checkRequested || saveAndCheckRequested) {
+	if (chooseStartup || exportRequested || checkRequested || saveAndCheckRequested) {
 		error_.clear();
-		ClearCheckResult();
+		if (!chooseStartup) {
+			ClearCheckResult();
+		}
 		try {
 			auto selected = options_;
-			selected.destination = ReadDestination(output_);
+			try {
+				selected.destination = ReadDestination(output_);
+			} catch (const std::invalid_argument &) {
+				if (!chooseStartup) {
+					throw;
+				}
+				// 出力先の入力が無効でも、起動シーンを選び直せるようにする。
+				selected.destination.clear();
+			}
 			selected.config.title = title_;
 			selected.config.width = width_;
 			selected.config.height = height_;
@@ -424,7 +436,8 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 			}
 
 			options_ = std::move(selected);
-			result = exportRequested       ? GameExportResult::ACCEPTED
+			result = chooseStartup          ? GameExportResult::CHOOSE_STARTUP_SCENE
+			         : exportRequested      ? GameExportResult::ACCEPTED
 			         : saveAndCheckRequested ? GameExportResult::SAVE_AND_CHECK
 			                                 : GameExportResult::CHECK;
 		} catch (const std::exception &e) {

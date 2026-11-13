@@ -5085,6 +5085,7 @@ void EditorScene::UpdateDialogs() {
 				const auto startup = project_.GetStartupScene();
 				exportDialog_.UpdateStartupScene(
 				    startup, UsesEditingSceneForStartup(startup) && document_.IsModified());
+				CheckGameExport();
 			}
 		}
 		stage_ = DialogStage::IDLE;
