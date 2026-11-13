@@ -63,6 +63,7 @@ void FileDialog::Show(FileDialogMode mode,
 	projectScenes_.clear();
 	projectRoot_.clear();
 	searchProjectScenes_ = false;
+	projectSearchChange_.reset();
 	error_.clear();
 	fileName_.clear();
 	folderName_.clear();
@@ -221,6 +222,7 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 
 		if (!projectScenes_.empty() &&
 		    ImGui::Checkbox("Search Project Scenes", &searchProjectScenes_)) {
+			projectSearchChange_ = searchProjectScenes_;
 			fileName_.clear();
 			error_.clear();
 			ImGui::SetNextWindowScroll({-1.0f, 0.0f});
@@ -400,13 +402,21 @@ void FileDialog::Refresh() {
 
 void FileDialog::SetProjectScenes(
     const std::filesystem::path &root,
-    std::span<const std::filesystem::path> paths) {
+    std::span<const std::filesystem::path> paths, bool searchProject) {
 	projectRoot_ = root;
 	projectScenes_.clear();
 	projectScenes_.reserve(paths.size());
 	for (const auto &path : paths) {
 		projectScenes_.push_back({PathUtils::ResolveFromExecutable(path), false});
 	}
+	searchProjectScenes_ = searchProject && !projectScenes_.empty();
+	if (searchProjectScenes_ && !fileName_.empty()) {
+		fileName_ = PathUtils::ToUtf8(directory_ / PathUtils::FromUtf8(fileName_));
+	}
+}
+
+std::optional<bool> FileDialog::TakeProjectSearchChange() {
+	return std::exchange(projectSearchChange_, std::nullopt);
 }
 
 void FileDialog::ChangeDirectory(const std::filesystem::path &path) {

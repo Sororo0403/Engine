@@ -29,6 +29,7 @@ class EditorPreferences {
 	bool showMotionTrail = false;
 	bool maximizeGameOnPlay = false;
 	bool startPlayPaused = false;
+	bool searchProjectScenes = false;
 	bool showObjectMarkers = true;
 	bool showMeasurements = false;
 	ColliderBounds::Mode colliderDisplay = ColliderBounds::Mode::SELECTED;

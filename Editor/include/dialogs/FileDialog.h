@@ -1,6 +1,7 @@
 #pragma once
 
 #include <filesystem>
+#include <optional>
 #include <span>
 #include <string>
 #include <vector>
@@ -60,7 +61,13 @@ class FileDialog {
 	/// 開くダイアログで検索できるプロジェクト内のシーン一覧を設定する
 	/// </summary>
 	void SetProjectScenes(const std::filesystem::path &root,
-	                      std::span<const std::filesystem::path> paths);
+	                      std::span<const std::filesystem::path> paths,
+	                      bool searchProject = false);
+
+	/// <summary>
+	/// 検索範囲のチェックボックスで選んだ値を取得し、変更通知を消費する
+	/// </summary>
+	std::optional<bool> TakeProjectSearchChange();
 
 	/// <summary>
 	/// 選択したファイルやフォルダを使えなかったとき、同じ場所から選び直す
@@ -144,4 +151,5 @@ class FileDialog {
 	bool openRequested_ = false;
 	bool confirmOverwrite_ = false;
 	bool searchProjectScenes_ = false;
+	std::optional<bool> projectSearchChange_;
 };
