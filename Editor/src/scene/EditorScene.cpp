@@ -2758,7 +2758,8 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	case EditorAction::ASSETS_FOLDER:
 		try {
 			fileDialog_.Show(FileDialogMode::SELECT_DIRECTORY,
-			                 assets_.GetRootDirectory());
+			                 assets_.GetRootDirectory(), FileDialogFilter::SCENE,
+			                 "Choose Assets Folder###FileDialog");
 			stage_ = DialogStage::SELECT_ASSET_FOLDER;
 		} catch (const std::exception &error) {
 			Logger::Error(
@@ -4589,8 +4590,8 @@ void EditorScene::UpdateDialogs() {
 			} catch (const std::exception &error) {
 				Logger::Error(
 				    std::format("EditorScene::AssetsFolder: {}", error.what()));
-				ShowError("The current Assets folder was kept: " +
-				          std::string(error.what()));
+				fileDialog_.RetrySelection("The current Assets folder was kept: " +
+				                           std::string(error.what()));
 			}
 		}
 
