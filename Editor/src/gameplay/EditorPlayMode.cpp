@@ -381,17 +381,24 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
 }
 
 bool EditorPlayMode::Restart(std::string &error, bool currentScene,
-                             std::filesystem::path *failedScript) {
+                             std::filesystem::path *failedScript,
+                             SceneObjectId *invalidObject) {
+	if (invalidObject) {
+		*invalidObject = 0;
+	}
 	if (!session_.Restart(error, currentScene, failedScript)) {
 		return false;
 	}
 
 	actionReader_.Reset();
 
-	if (!renderer_.PrepareSceneModels(error) ||
+	if (!renderer_.PrepareSceneModels(error, invalidObject) ||
 	    !audioPlayer_.Start(session_.GetCameraPose(),
 	                        session_.IsPaused() || session_.IsGamePaused(),
-	                        error, nullptr, session_.GetAudioActions())) {
+	                        error, invalidObject, session_.GetAudioActions())) {
+		if (invalidObject && !session_.HasSourceObject(*invalidObject)) {
+			*invalidObject = 0;
+		}
 		Stop();
 		return false;
 	}

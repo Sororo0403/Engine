@@ -87,9 +87,12 @@ class EditorPlayMode {
 	/// </summary>
 	/// <param name="error">失敗理由。成功時は空</param>
 	/// <param name="currentScene">true:現在のシーン false:Play開始時のシーン</param>
+	/// <param name="failedScript">指定時は原因のLuaファイルを返す</param>
+	/// <param name="invalidObject">指定時はモデルや音声の準備に失敗した元の物体IDを返す</param>
 	/// <returns>true:再実行成功 false:未再生または初期化失敗</returns>
 	bool Restart(std::string &error, bool currentScene = false,
-	             std::filesystem::path *failedScript = nullptr);
+	             std::filesystem::path *failedScript = nullptr,
+	             SceneObjectId *invalidObject = nullptr);
 
 	/// <summary>
 	/// 再生中の一時停止と再開を切り替える

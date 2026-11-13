@@ -350,14 +350,24 @@ bool EditorScene::Update(float deltaTime) {
 		playFailureReplay_.reset();
 
 		std::filesystem::path failedScript;
-		if (!playMode_.Restart(error, restartCurrentScene, &failedScript)) {
-			ShowError(std::move(error), 0, std::move(failedScript));
+		SceneObjectId invalidObject = 0;
+		const bool retryLoaded = restartCurrentScene && loadedPlayScene;
+		const auto retryPath = retryLoaded ? playSource : playInitialScenePath_;
+		if (!playMode_.Restart(error, restartCurrentScene, &failedScript, &invalidObject)) {
+			const auto &current = document_.GetFilePath();
+			const bool isEditingScene = retryPath.empty() ||
+			    (!current.empty() && PathUtils::IsSameFile(current, retryPath));
+			if (!retryPath.empty()) {
+				error += "\nPlay scene: " + PathUtils::ToUtf8(retryPath);
+			}
+			ShowError(std::move(error), isEditingScene ? invalidObject : 0,
+			          std::move(failedScript));
 			errorHasPlayLog_ = true;
-			if (!errorScriptPath_.empty()) {
-				const auto *loaded = playMode_.GetSession().GetLoadedScenePath();
-				const bool retryLoaded = restartCurrentScene && loaded;
-				errorReplayPath_ = retryLoaded ? *loaded : playInitialScenePath_;
-				errorReplayCameraOverride_ = retryLoaded ? 0 : playInitialCameraOverride_;
+			errorReplayPath_ = retryPath;
+			errorReplayCameraOverride_ = retryLoaded ? 0 : playInitialCameraOverride_;
+			if (!isEditingScene && !playMode_.IsPlaying()) {
+				errorScenePath_ = retryPath;
+				errorObjectId_ = invalidObject;
 			}
 			LogPlayFailure();
 		}
