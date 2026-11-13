@@ -57,7 +57,8 @@ bool MatchesIssue(const GameExportIssue &issue, std::string_view filter) {
 	       issue.message.find(filter) != std::string::npos ||
 	       PathUtils::ToUtf8(issue.scenePath).find(filter) != std::string::npos ||
 	       PathUtils::ToUtf8(issue.scriptPath).find(filter) != std::string::npos ||
-	       PathUtils::ToUtf8(issue.assetPath).find(filter) != std::string::npos;
+	       PathUtils::ToUtf8(issue.assetPath).find(filter) != std::string::npos ||
+	       PathUtils::ToUtf8(issue.locationPath).find(filter) != std::string::npos;
 }
 
 } // namespace
@@ -144,6 +145,7 @@ void GameExportDialog::SetCheckResult(std::string message,
 			       issue.scenePath == previous.scenePath &&
 			       issue.scriptPath == previous.scriptPath &&
 			       issue.assetPath == previous.assetPath &&
+			       issue.locationPath == previous.locationPath &&
 			       issue.message == previous.message;
 		});
 		if (sameIssue != issues.end()) {
@@ -362,6 +364,17 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 					ui.SameLine();
 					if (ui.Button("Copy Asset Path")) {
 						ImGui::SetClipboardText(assetPath.c_str());
+					}
+				}
+				if (!issue.locationPath.empty()) {
+					const auto path = PathUtils::ToUtf8(issue.locationPath);
+					if (ui.Button("Show Location in Explorer")) {
+						ShellUtils::RevealLocationInExplorer(issue.locationPath, error_);
+					}
+					ImGui::SetItemTooltip("%s", path.c_str());
+					ui.SameLine();
+					if (ui.Button("Copy Path")) {
+						ImGui::SetClipboardText(path.c_str());
 					}
 				}
 				ImGui::PopID();

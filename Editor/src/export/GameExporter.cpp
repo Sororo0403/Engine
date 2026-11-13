@@ -532,14 +532,16 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 	const auto appendIssue = [&](std::string issue, const fs::path &scenePath,
 	                             SceneObjectId objectId,
 	                             const fs::path &scriptPath,
-	                             const fs::path &assetPath) {
+	                             const fs::path &assetPath,
+	                             const fs::path &locationPath = {}) {
 		if (!error.empty()) {
 			error += "\n\n";
 		}
 		error += issue;
 		if (issues) {
 			issues->push_back(
-			    {std::move(issue), scenePath, objectId, scriptPath, assetPath});
+			    {std::move(issue), scenePath, objectId, scriptPath, assetPath,
+			     locationPath});
 		}
 	};
 	// 出力前に、同じ検査で独立して直せる問題をまとめる。
@@ -584,11 +586,13 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 			       (!path.has_root_path() || path.is_absolute());
 		};
 		fs::path runtimeRoot;
+		fs::path runtimeLocation;
 		try {
 			if (!validDirectoryPath(options.runtimeDirectory)) {
 				throw std::invalid_argument("Choose a valid Runtime folder.");
 			}
 			std::error_code runtimeError;
+			runtimeLocation = fs::absolute(options.runtimeDirectory, runtimeError);
 			runtimeRoot = fs::canonical(options.runtimeDirectory, runtimeError);
 			if (runtimeError || !fs::is_directory(runtimeRoot, runtimeError)) {
 				throw std::runtime_error(
@@ -600,8 +604,9 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 				std::error_code status;
 				if (!fs::is_regular_file(path, status) ||
 				    (GetFileAttributesW(path.c_str()) & FILE_ATTRIBUTE_REPARSE_POINT)) {
-					reportIssue("A required Runtime file is missing, inaccessible, or linked: " +
-					            PathUtils::ToUtf8(path) + "\nRebuild Release Runtime.");
+					appendIssue("A required Runtime file is missing, inaccessible, or linked: " +
+					                PathUtils::ToUtf8(path) + "\nRebuild Release Runtime.",
+					            {}, 0, {}, {}, path);
 				}
 			};
 			checkRuntimeFile(runtimeRoot / L"Runtime.exe");
@@ -614,7 +619,7 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 		} catch (const std::bad_alloc &) {
 			throw;
 		} catch (const std::exception &issue) {
-			reportIssue(issue.what());
+			appendIssue(issue.what(), {}, 0, {}, {}, runtimeLocation);
 		}
 
 		if (!validDirectoryPath(options.resourceDirectory)) {

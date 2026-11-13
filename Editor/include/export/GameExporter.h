@@ -33,6 +33,7 @@ struct GameExportIssue {
 	SceneObjectId objectId = 0;
 	std::filesystem::path scriptPath;
 	std::filesystem::path assetPath;
+	std::filesystem::path locationPath;
 };
 
 namespace GameExporter {
