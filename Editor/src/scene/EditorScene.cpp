@@ -4932,8 +4932,8 @@ void EditorScene::UpdateDialogs() {
 				if (previousPath != document_.GetFilePath()) {
 					sceneCheckPanel_.OnSceneSavedAs(previousPath, document_.GetFilePath());
 				}
-				if (previousPath.empty() && playFailureReplay_ &&
-				    playFailureReplay_->path.empty()) {
+				if (playFailureReplay_ && playFailureReplay_->followsEditingScene &&
+				    playFailureReplay_->path == previousPath) {
 					playFailureReplay_->path = document_.GetFilePath();
 				}
 				if (startup.empty()) {
@@ -6006,8 +6006,12 @@ void EditorScene::LogPlayFailure() {
 	const auto &source = errorScriptPath_.empty() ? errorScenePath_ : errorScriptPath_;
 	const auto logId = Logger::Error(errorMessage_, source);
 	if (errorReplayPath_) {
+		const auto &editingPath = document_.GetFilePath();
+		const bool followsEditingScene = errorReplayPath_->empty() ||
+		    (!editingPath.empty() && PathUtils::IsSameFile(*errorReplayPath_, editingPath));
 		playFailureReplay_ = PlayFailureReplay{
-		    logId, *errorReplayPath_, errorReplayCameraOverride_};
+		    logId, followsEditingScene ? editingPath : *errorReplayPath_,
+		    errorReplayCameraOverride_, followsEditingScene};
 	}
 }
 
