@@ -46,6 +46,16 @@ struct GameConfig {
 	bool HasValidWindowSettings() const;
 
 	/// <summary>
+	/// ウィンドウのタイトルに使用できるUTF-8文字列か確認する
+	/// </summary>
+	bool HasValidWindowTitle() const;
+
+	/// <summary>
+	/// ウィンドウの幅または高さが有効な範囲内か確認する
+	/// </summary>
+	static bool IsValidWindowDimension(int value);
+
+	/// <summary>
 	/// シーン、カメラ、入力、照明、永続化の起動設定を検証する
 	/// </summary>
 	bool HasValidStartupSettings() const;

@@ -14,6 +14,25 @@ namespace {
 constexpr std::size_t kIssuesPerPage = 25;
 
 /// <summary>
+/// 配布前検査の結果から入力欄へ移動するボタンの表示名を返す
+/// </summary>
+const char *EditFieldLabel(GameExportField field) {
+	switch (field) {
+	case GameExportField::OUTPUT_FOLDER:
+		return "Edit Output Folder";
+	case GameExportField::TITLE:
+		return "Edit Game Title";
+	case GameExportField::WIDTH:
+		return "Edit Width";
+	case GameExportField::HEIGHT:
+		return "Edit Height";
+	case GameExportField::NONE:
+		return nullptr;
+	}
+	return nullptr;
+}
+
+/// <summary>
 /// 出力欄の入力を読み取り、ルート以外の末尾の区切りを取り除く
 /// </summary>
 std::filesystem::path ReadDestination(const std::string &input) {
@@ -104,7 +123,7 @@ bool GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits
 	}
 	error_.clear();
 	browsing_ = false;
-	focusOutput_ = false;
+	focusField_ = GameExportField::NONE;
 
 	if (!resume) {
 		issueFilter_.clear();
@@ -166,7 +185,7 @@ void GameExportDialog::SetCheckResult(std::string message,
 			       issue.scriptPath == previous.scriptPath &&
 			       issue.assetPath == previous.assetPath &&
 			       issue.locationPath == previous.locationPath &&
-			       issue.outputFolderIssue == previous.outputFolderIssue &&
+			       issue.field == previous.field &&
 			       issue.message == previous.message;
 		});
 		if (sameIssue != issues.end()) {
@@ -253,14 +272,20 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 		ImGui::SetItemTooltip("Change the startup scene saved in this project.");
 	}
 	ui.Text("Output Folder");
-	const bool focusOutput = std::exchange(focusOutput_, false);
-	if (focusOutput) {
-		ImGui::SetKeyboardFocusHere();
-	}
-	bool changed = ui.InputText("##OutputFolder", output_);
-	if (focusOutput) {
-		ImGui::SetScrollHereY(0.0f);
-	}
+	const auto focusField = std::exchange(focusField_, GameExportField::NONE);
+	const auto drawField = [&](GameExportField field, const auto &drawInput) {
+		if (focusField == field) {
+			ImGui::SetKeyboardFocusHere();
+		}
+		const bool changed = drawInput();
+		if (focusField == field) {
+			ImGui::SetScrollHereY(0.0f);
+		}
+		return changed;
+	};
+	bool changed = drawField(GameExportField::OUTPUT_FOLDER, [&] {
+		return ui.InputText("##OutputFolder", output_);
+	});
 	ui.SameLine();
 	if (ui.Button("Browse...")) {
 		auto output = options_.destination;
@@ -300,9 +325,15 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 		}
 	}
 	ui.EndDisabled();
-	changed |= ui.InputText("Game Title", title_);
-	changed |= ImGui::InputInt("Width", &width_);
-	changed |= ImGui::InputInt("Height", &height_);
+	changed |= drawField(GameExportField::TITLE, [&] {
+		return ui.InputText("Game Title", title_);
+	});
+	changed |= drawField(GameExportField::WIDTH, [&] {
+		return ImGui::InputInt("Width", &width_);
+	});
+	changed |= drawField(GameExportField::HEIGHT, [&] {
+		return ImGui::InputInt("Height", &height_);
+	});
 	if (lastSuccessfulWindow_) {
 		const auto &last = *lastSuccessfulWindow_;
 		ui.BeginDisabled(title_ == last.title && width_ == last.width && height_ == last.height);
@@ -467,9 +498,9 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 						ImGui::SetClipboardText(path.c_str());
 					}
 				}
-				if (issue.outputFolderIssue && ui.Button("Edit Output Folder")) {
+				if (const auto *label = EditFieldLabel(issue.field); label && ui.Button(label)) {
 					selectedIssue_ = i;
-					focusOutput_ = true;
+					focusField_ = issue.field;
 				}
 				ImGui::PopID();
 				ImGui::Spacing();

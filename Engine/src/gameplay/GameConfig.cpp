@@ -45,9 +45,17 @@ bool GameConfig::IsValid() const {
 }
 
 bool GameConfig::HasValidWindowSettings() const {
+	return HasValidWindowTitle() && IsValidWindowDimension(width) &&
+	       IsValidWindowDimension(height);
+}
+
+bool GameConfig::HasValidWindowTitle() const {
 	return !title.empty() && title.find('\0') == std::string::npos &&
-	       !StringConversion::Utf8ToWide(title).empty() && width >= 1 &&
-	       height >= 1 && width <= 8192 && height <= 8192;
+	       !StringConversion::Utf8ToWide(title).empty();
+}
+
+bool GameConfig::IsValidWindowDimension(int value) {
+	return value >= 1 && value <= 8192;
 }
 
 bool GameConfig::HasValidStartupSettings() const {

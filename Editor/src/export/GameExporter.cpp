@@ -610,7 +610,7 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 	                             const fs::path &scriptPath,
 	                             const fs::path &assetPath,
 	                             const fs::path &locationPath = {},
-	                             bool outputFolderIssue = false) {
+	                             GameExportField field = GameExportField::NONE) {
 		if (!error.empty()) {
 			error += "\n\n";
 		}
@@ -618,7 +618,7 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 		if (issues) {
 			issues->push_back(
 			    {std::move(issue), scenePath, objectId, scriptPath, assetPath,
-			     locationPath, outputFolderIssue});
+			     locationPath, field});
 		}
 	};
 	// 出力前に、同じ検査で独立して直せる問題をまとめる。
@@ -634,8 +634,16 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 		if (issues) {
 			issues->clear();
 		}
-		if (!options.config.HasValidWindowSettings()) {
-			reportIssue("Enter a title and a valid window size (1-8192).");
+		if (!options.config.HasValidWindowTitle()) {
+			appendIssue("Enter a valid game title.", {}, 0, {}, {}, {}, GameExportField::TITLE);
+		}
+		if (!GameConfig::IsValidWindowDimension(options.config.width)) {
+			appendIssue("Window width must be between 1 and 8192.", {}, 0, {}, {}, {},
+			            GameExportField::WIDTH);
+		}
+		if (!GameConfig::IsValidWindowDimension(options.config.height)) {
+			appendIssue("Window height must be between 1 and 8192.", {}, 0, {}, {}, {},
+			            GameExportField::HEIGHT);
 		}
 		const bool startupSettingsValid = options.config.HasValidStartupSettings();
 		if (!startupSettingsValid) {
@@ -659,7 +667,7 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 			const auto location =
 			    path.is_absolute() && path.native().find(L'\0') == std::wstring::npos
 			        ? path : fs::path{};
-			appendIssue(issue.what(), {}, 0, {}, {}, location, true);
+			appendIssue(issue.what(), {}, 0, {}, {}, location, GameExportField::OUTPUT_FOLDER);
 		}
 
 		const auto validDirectoryPath = [](const fs::path &path) {

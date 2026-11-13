@@ -25,6 +25,17 @@ struct GameExportOptions {
 };
 
 /// <summary>
+/// 配布前検査から直接修正できる出力設定の入力欄
+/// </summary>
+enum class GameExportField {
+	NONE,
+	OUTPUT_FOLDER,
+	TITLE,
+	WIDTH,
+	HEIGHT,
+};
+
+/// <summary>
 /// 配布前検査の不備と、特定できた場合の参照元・素材・Lua編集先
 /// </summary>
 struct GameExportIssue {
@@ -35,7 +46,7 @@ struct GameExportIssue {
 	std::filesystem::path assetPath;
 	// Explorerで確認するファイルまたはフォルダ
 	std::filesystem::path locationPath;
-	bool outputFolderIssue = false;
+	GameExportField field = GameExportField::NONE;
 };
 
 namespace GameExporter {
