@@ -5415,6 +5415,13 @@ void EditorScene::UpdateDialogs() {
 			}
 
 			if (!errorScenePath_.empty()) {
+				if (ui_.Button("Show Play Scene Location")) {
+					ShellUtils::RevealLocationInExplorer(errorScenePath_,
+					                                     errorActionMessage_);
+				}
+				ImGui::SetItemTooltip(
+				    "Show the scene file or its nearest existing folder in Explorer.");
+				ui_.SameLine();
 				if (ui_.Button("Open Play Scene")) {
 					pendingOpenPath_ = std::move(errorScenePath_);
 					const auto object =
@@ -5654,10 +5661,11 @@ void EditorScene::StartPlay(const std::filesystem::path &path,
 	if (!usesEditingScene && !startup.Open(path, &exportConfig_.lighting)) {
 		auto error = "Could not load the play scene: " + PathUtils::ToUtf8(path) +
 		             "\n" + startup.GetError();
-		Logger::Error(error);
 		ShowError(std::move(error));
+		errorScenePath_ = path;
 		errorReplayPath_ = path;
 		errorReplayCameraOverride_ = cameraOverride;
+		LogPlayFailure();
 		return;
 	}
 
@@ -5750,7 +5758,8 @@ void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject) {
 }
 
 void EditorScene::LogPlayFailure() {
-	const auto logId = Logger::Error(errorMessage_, errorScriptPath_);
+	const auto &source = errorScriptPath_.empty() ? errorScenePath_ : errorScriptPath_;
+	const auto logId = Logger::Error(errorMessage_, source);
 	if (errorReplayPath_ && !errorScriptPath_.empty()) {
 		playFailureReplay_ = PlayFailureReplay{
 		    logId, *errorReplayPath_, errorReplayCameraOverride_};
