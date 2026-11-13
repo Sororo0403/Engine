@@ -4407,6 +4407,9 @@ void EditorScene::RestoreRecovery() {
 		                                               : exportConfig_.lighting);
 		document_.GetScene().CopyFrom(snapshot.scene);
 		document_.SetUntitled();
+		if (playFailureReplay_ && playFailureReplay_->path.empty()) {
+			playFailureReplay_.reset();
+		}
 		exportDialog_.ForgetUntitledDraft();
 		ClearRecovery(pendingRecoveryPath_);
 		recoverySourceFile_ = std::move(snapshot.sourceFile);
@@ -5167,6 +5170,9 @@ void EditorScene::UpdateDialogs() {
 
 			SaveEditorSession();
 			document_.SetUntitled();
+			if (playFailureReplay_ && playFailureReplay_->path.empty()) {
+				playFailureReplay_.reset();
+			}
 			exportDialog_.ForgetUntitledDraft();
 			ClearRecovery();
 			sceneCheckPanel_.Reset();
