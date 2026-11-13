@@ -4279,6 +4279,10 @@ void EditorScene::DrawAssetReferences(bool recycle) {
 	}
 
 	ui_.Text(std::format("{} item(s) selected", pendingAssetPaths_.size()));
+	ui_.SameLine();
+	if (ui_.Button("Refresh References")) {
+		CheckAssetReferences(recycle);
+	}
 
 	if (ui_.BeginChild("RecycleSelection", 500.0f, 90.0f)) {
 		for (const auto &path : pendingAssetPaths_) {
