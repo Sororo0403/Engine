@@ -6,12 +6,35 @@
 #include <format>
 #include <fstream>
 #include <imgui.h>
+#include <string_view>
 #include <system_error>
 #include <utility>
 
 namespace {
 constexpr auto kGameLogPath = L"logs/Engine.log";
 constexpr auto kLogRefreshInterval = std::chrono::milliseconds{500};
+
+/// <summary>
+/// 表示中のログから、Loggerが出力した最後のエラー行の先頭を探す
+/// </summary>
+std::size_t FindLatestError(std::string_view log) {
+	std::size_t latest = std::string_view::npos;
+	for (std::size_t start = 0; start < log.size();) {
+		const auto end = log.find('\n', start);
+		const auto line = log.substr(start, end == std::string_view::npos
+		                                       ? end : end - start);
+		const auto timestampEnd = line.find(']');
+		if (line.starts_with('[') && timestampEnd != std::string_view::npos &&
+		    line.substr(timestampEnd + 1).starts_with(" [ERROR] ")) {
+			latest = start;
+		}
+		if (end == std::string_view::npos) {
+			break;
+		}
+		start = end + 1;
+	}
+	return latest;
+}
 }
 
 void GameExportResultDialog::Show(std::filesystem::path directory,
@@ -252,6 +275,16 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 			ShellUtils::RevealInExplorer(logPath, error_);
 		ui.EndDisabled();
 
+		const auto latestError = FindLatestError(log_);
+		ui.BeginDisabled(latestError == std::string_view::npos);
+		const bool jumpToError = ui.Button("Latest Log Error") &&
+		                         latestError != std::string_view::npos;
+		ui.EndDisabled();
+		ImGui::SetItemTooltip("Jump to the latest error in the displayed log.");
+		if (jumpToError) {
+			run.followLog = false;
+		}
+
 		if (!logError_.empty()) {
 			ui.Text(logError_);
 		} else if (log_.empty()) {
@@ -261,6 +294,14 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 			if (logTruncated_)
 				ui.Text("Showing the end of the game log.");
 			if (ui.BeginChild("GameLog", 570.0f, 210.0f)) {
+				if (jumpToError) {
+					const auto prefixHeight = latestError == 0 ? 0.0f
+					    : ImGui::CalcTextSize(log_.data(), log_.data() + latestError,
+					                          false, ImGui::GetContentRegionAvail().x).y;
+					ImGui::SetScrollY((std::max)(
+					    0.0f, ImGui::GetCursorPosY() + prefixHeight -
+					              ImGui::GetWindowHeight() * 0.5f));
+				}
 				ImGui::PushTextWrapPos();
 				ui.Text(log_);
 				ImGui::PopTextWrapPos();
