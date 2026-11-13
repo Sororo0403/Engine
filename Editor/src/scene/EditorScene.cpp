@@ -3283,7 +3283,7 @@ void EditorScene::ConfirmSceneChanges() {
 		    document_.GetFilePath().empty()
 		        ? std::string("Untitled")
 		        : PathUtils::ToUtf8(document_.GetFilePath().filename());
-		saveChangesDialog_.Show(name, exporting);
+		saveChangesDialog_.Show(name, exporting, pendingAction_ == EditorAction::OPEN);
 		stage_ = DialogStage::CONFIRM_SAVE;
 	} else {
 		ExecutePendingAction();
@@ -3293,7 +3293,10 @@ void EditorScene::ConfirmSceneChanges() {
 void EditorScene::CancelPendingAction() {
 	const auto action = std::exchange(pendingAction_, EditorAction::NONE);
 	stage_ = DialogStage::IDLE;
-	if (action == EditorAction::WRITE_GAME_EXPORT ||
+	if (action == EditorAction::OPEN) {
+		openSceneDialog_.RetrySelection();
+		stage_ = DialogStage::OPEN_FILE;
+	} else if (action == EditorAction::WRITE_GAME_EXPORT ||
 	    action == EditorAction::OPEN_EXPORT_ISSUE) {
 		exportDialog_.Reopen();
 		stage_ = DialogStage::EXPORT_GAME;

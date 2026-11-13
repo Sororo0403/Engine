@@ -24,7 +24,8 @@ class SaveChangesDialog {
 	/// </summary>
 	/// <param name="name">編集中のファイルの表示名</param>
 	/// <param name="beforeExport">出力前の確認として表示するか</param>
-	void Show(std::string name, bool beforeExport = false);
+	/// <param name="returnToOpenScene">取消でシーンの選択に戻るか</param>
+	void Show(std::string name, bool beforeExport, bool returnToOpenScene);
 
 	/// <summary>
 	/// 保存確認を描画する
@@ -37,4 +38,5 @@ class SaveChangesDialog {
 	std::string name_;
 	bool openRequested_ = false;
 	bool beforeExport_ = false;
+	bool returnToOpenScene_ = false;
 };

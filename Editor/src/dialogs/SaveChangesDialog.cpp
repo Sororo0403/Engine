@@ -4,9 +4,11 @@
 
 #include <utility>
 
-void SaveChangesDialog::Show(std::string name, bool beforeExport) {
+void SaveChangesDialog::Show(std::string name, bool beforeExport,
+                             bool returnToOpenScene) {
 	name_ = std::move(name);
 	beforeExport_ = beforeExport;
+	returnToOpenScene_ = returnToOpenScene;
 	openRequested_ = true;
 }
 
@@ -43,7 +45,7 @@ SaveChangesResult SaveChangesDialog::Draw(const ImGuiSystem &ui) {
 
 	ui.SameLine();
 
-	if (ui.Button("Cancel")) {
+	if (ui.Button(returnToOpenScene_ ? "Back to Open Scene" : "Cancel")) {
 		result = SaveChangesResult::CANCEL;
 	}
 

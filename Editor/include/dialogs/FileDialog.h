@@ -58,8 +58,8 @@ class FileDialog {
 	/// <summary>
 	/// 選択したファイルやフォルダを使えなかったとき、同じ場所から選び直す
 	/// </summary>
-	/// <param name="error">選択後の処理で発生したエラー</param>
-	void RetrySelection(std::string error);
+	/// <param name="error">選択画面に表示するエラー。選び直すだけなら空</param>
+	void RetrySelection(std::string error = {});
 
 	/// <summary>
 	/// ファイル選択を描画する。Escapeで選択を取り消す
