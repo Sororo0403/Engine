@@ -146,8 +146,15 @@ bool AssetDatabase::Refresh() {
 		std::vector<std::filesystem::path> projectScenes;
 
 		if (!sceneDirectory_.empty()) {
-			for (const auto &entry :
-			     std::filesystem::recursive_directory_iterator(sceneDirectory_)) {
+			std::error_code sceneError;
+			const auto sceneEntries = std::filesystem::recursive_directory_iterator(
+			    sceneDirectory_, sceneError);
+			if (sceneError && sceneError != std::errc::no_such_file_or_directory) {
+				throw std::filesystem::filesystem_error(
+				    "Could not read project scenes", sceneDirectory_, sceneError);
+			}
+
+			for (const auto &entry : sceneEntries) {
 				const auto &path = entry.path();
 
 				if (entry.is_regular_file() && PathUtils::HasExtension(path, ".json") &&
