@@ -320,6 +320,7 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 			if (ui.InputText("File name", fileName_)) {
 				error_.clear();
 			}
+			ImGui::SetItemTooltip("Enter a file name or paste the full save path.");
 		}
 
 		if (!error_.empty()) {
@@ -492,10 +493,8 @@ bool FileDialog::AcceptSelection() {
 			return true;
 		}
 
-		const auto input = mode_ == FileDialogMode::OPEN
-		                       ? PathUtils::FromPathInput(fileName_)
-		                       : PathUtils::FromUtf8(fileName_);
-		const bool absoluteInput = mode_ == FileDialogMode::OPEN && input.is_absolute();
+		const auto input = PathUtils::FromPathInput(fileName_);
+		const bool absoluteInput = input.is_absolute();
 		auto name = absoluteInput ? input.filename() : input;
 
 		if (!PathUtils::IsValidFileName(name)) {
@@ -554,6 +553,11 @@ bool FileDialog::AcceptSelection() {
 		selectedPath_.swap(candidate);
 
 		if (mode_ != FileDialogMode::OPEN && exists) {
+			if (absoluteInput) {
+				// 別名を提案するときも、貼り付けたパスの親フォルダを使う。
+				ChangeDirectory(selectedPath_.parent_path());
+				fileName_ = PathUtils::ToUtf8(selectedPath_.filename());
+			}
 			confirmOverwrite_ = true;
 			return false;
 		}
