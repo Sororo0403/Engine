@@ -400,6 +400,12 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 			      std::ranges::any_of(object->meshRenderer->textures.slots,
 			                          [&](const auto &slot) { return matchesAsset(slot.second); })));
 			std::error_code status;
+			const auto assetStatus = std::filesystem::status(
+			    validPath(issue.assetPath) ? PathUtils::ResolveFromExecutable(issue.assetPath)
+			                               : issue.assetPath,
+			    status);
+			const bool assetExists = std::filesystem::is_regular_file(assetStatus);
+			const bool missing = assetStatus.type() == std::filesystem::file_type::not_found;
 			const bool modelDependency =
 			    !isReferencedModel && object && object->HasMesh() &&
 			    validPath(issue.modelPath) && validPath(object->mesh->modelPath) &&
@@ -407,8 +413,7 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 			    std::filesystem::is_regular_file(
 			        PathUtils::ResolveFromExecutable(issue.modelPath), status);
 			const bool reloadModel = isReferencedModel || modelDependency;
-			if ((reloadModel || isReferencedTexture) &&
-			    std::filesystem::is_regular_file(issue.assetPath, status)) {
+			if ((reloadModel || isReferencedTexture) && assetExists) {
 				if (isReferencedModel)
 					ui.SameLine();
 				if (ui.Button(reloadModel ? "Reload Model" : "Reload Texture")) {
@@ -420,10 +425,16 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 						requested.textureReloadPath = issue.assetPath;
 				}
 			}
+			ui.BeginDisabled(missing);
 			if (ui.Button("Show in Assets")) {
 				lastIssue_ = i;
 				requested = {};
 				requested.assetPath = issue.assetPath;
+			}
+			ui.EndDisabled();
+			if (missing && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled |
+			                                    ImGuiHoveredFlags_ForTooltip)) {
+				ImGui::SetTooltip("The referenced file is missing.");
 			}
 			ui.SameLine();
 			if (ui.Button("Copy Asset Path")) {
@@ -431,7 +442,7 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 				ImGui::SetClipboardText(path.c_str());
 			}
 			ui.SameLine();
-			if (ui.Button("Show Location in Explorer")) {
+			if (ui.Button(missing ? "Open Folder in Explorer" : "Show Location in Explorer")) {
 				lastIssue_ = i;
 				ShellUtils::RevealLocationInExplorer(issue.assetPath, assetActionError_);
 			}
@@ -439,8 +450,7 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 			const bool script = PathUtils::HasExtension(issue.assetPath, ".lua");
 			const bool sceneFile = PathUtils::HasExtension(issue.assetPath, ".json") &&
 			                       PathUtils::HasExtension(issue.assetPath.stem(), ".scene");
-			if ((script || sceneFile) &&
-			    std::filesystem::is_regular_file(issue.assetPath, status)) {
+			if ((script || sceneFile) && assetExists) {
 				const char *label = script ? "Edit Script"
 				                    : issue.destinationObjectId != 0 ? "Show Destination Object"
 				                                                    : "Open Referenced Scene";
