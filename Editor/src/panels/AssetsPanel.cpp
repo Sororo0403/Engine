@@ -77,6 +77,7 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	}
 
 	type_ = type;
+	displayedResults_.clear();
 	previousSearch_.clear();
 	selectedPath_.clear();
 	selectedItems_.clear();
@@ -114,6 +115,7 @@ void AssetsPanel::SetAssetType(AssetType type) {
 }
 
 void AssetsPanel::OpenDirectory(std::filesystem::path directory) {
+	displayedResults_.clear();
 	currentDirectory_.swap(directory);
 	selectedPath_.clear();
 	selectedItems_.clear();
@@ -184,6 +186,7 @@ bool AssetsPanel::SelectAsset(const std::filesystem::path &path,
 		auto folder = selected.lexically_relative(assets.GetRootDirectory())
 		                  .parent_path();
 		SetAssetType(type);
+		displayedResults_.clear();
 		selectedPath_.swap(selected);
 		selectedItems_ = {selectedPath_};
 		selectionAnchor_ = selectedPath_;
@@ -311,6 +314,11 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			}
 		}
 		selectedItems_ = std::exchange(resultPaths_, {});
+		if (std::ranges::any_of(selectedItems_, [&](const auto &path) {
+			    return path.parent_path() != parent;
+		    })) {
+			displayedResults_ = selectedItems_;
+		}
 		selectionAnchor_ = selectedItems_.front();
 		scrollToSelected_ = true;
 	}
@@ -463,6 +471,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	}
 
 	if (ui.InputText("Search", filter_)) {
+		displayedResults_.clear();
 		previousSearch_.clear();
 		unavailableRevealPath_.clear();
 		scrollToTop_ = true;
@@ -495,7 +504,13 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		}
 	}
 
-	if (type_ != AssetType::AUDIO) {
+	if (!displayedResults_.empty()) {
+		ui.Text("Operation Results");
+		ui.SameLine();
+		if (ui.Button("Show Current Folder")) {
+			OpenDirectory(currentDirectory_);
+		}
+	} else if (type_ != AssetType::AUDIO) {
 		ImGui::TextDisabled("%s", filter_.empty() ? "Double-click a folder to open it."
 		                                          : "Searching all folders.");
 	}
@@ -511,29 +526,41 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	                          : assets.GetGameConfigurations();
 
 	const auto search = StringConversion::Utf8ToWide(filter_);
-	const auto visibleFile = [&](const std::filesystem::path &relative) {
+	const auto inResults = [&](const std::filesystem::path &path) {
+		return std::ranges::find(displayedResults_, path) != displayedResults_.end();
+	};
+	const auto visibleFile = [&](const std::filesystem::path &path) {
+		if (!displayedResults_.empty()) {
+			return inResults(path);
+		}
+		const auto relative = path.lexically_relative(assets.GetRootDirectory());
 		if (filter_.empty()) {
 			return relative.parent_path() == currentDirectory_;
 		}
-		const auto path = relative.generic_wstring();
+		const auto text = relative.generic_wstring();
 		return !search.empty() &&
-		       FindStringOrdinal(FIND_FROMSTART, path.c_str(),
-		                         static_cast<int>(path.size()), search.c_str(),
+		       FindStringOrdinal(FIND_FROMSTART, text.c_str(),
+		                         static_cast<int>(text.size()), search.c_str(),
 		                         static_cast<int>(search.size()), TRUE) >= 0;
+	};
+	const auto visibleFolder = [&](const std::filesystem::path &path) {
+		return !displayedResults_.empty()
+		           ? inResults(path)
+		           : path.lexically_relative(assets.GetRootDirectory()).parent_path() ==
+		                 currentDirectory_;
 	};
 	std::vector<std::filesystem::path> visible;
 
 	if (filter_.empty()) {
 		for (const auto &directory : directories) {
-			if (directory.lexically_relative(assets.GetRootDirectory()).parent_path() ==
-			    currentDirectory_) {
+			if (visibleFolder(directory)) {
 				visible.push_back(directory);
 			}
 		}
 	}
 
 	for (const auto &path : entries) {
-		if (visibleFile(path.lexically_relative(assets.GetRootDirectory()))) {
+		if (visibleFile(path)) {
 			visible.push_back(path);
 		}
 	}
@@ -701,13 +728,14 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				const auto relative =
 				    directory.lexically_relative(assets.GetRootDirectory());
 
-				if (relative.parent_path() != currentDirectory_) {
+				if (!visibleFolder(directory)) {
 					continue;
 				}
 
 				anyVisible = true;
 				const auto label = std::format(
-				    "[Folder] {}", PathUtils::ToUtf8(relative.filename()));
+				    "[Folder] {}", PathUtils::ToUtf8(
+				                      displayedResults_.empty() ? relative.filename() : relative));
 				ImGui::PushID(PathUtils::ToUtf8(directory).c_str());
 
 				if (ui.Selectable(label.c_str(), isSelected(directory))) {
@@ -774,14 +802,14 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			const auto displayPath =
 			    assetPath.lexically_relative(assets.GetRootDirectory());
 
-			if (!visibleFile(displayPath)) {
+			if (!visibleFile(assetPath)) {
 				continue;
 			}
 
 			anyVisible = true;
 
 			ui.PushID(static_cast<int>(i));
-			const auto label = filter_.empty()
+			const auto label = filter_.empty() && displayedResults_.empty()
 			                       ? PathUtils::ToUtf8(displayPath.filename())
 			                       : PathUtils::ToUtf8(displayPath);
 
@@ -818,7 +846,8 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 			if (ImGui::BeginPopupContextItem()) {
 				selectContext(assetPath);
-				if (!filter_.empty() && ui.MenuItem("Show in Containing Folder")) {
+				if ((!filter_.empty() || !displayedResults_.empty()) &&
+				    ui.MenuItem("Show in Containing Folder")) {
 					RequestReveal(assetPath);
 					previousSearch_ = filter_;
 					previousSearchDirectory_ = currentDirectory_;
@@ -1234,6 +1263,7 @@ void AssetsPanel::Clear() {
 	previousSearch_.clear();
 	revealPath_.clear();
 	resultPaths_.clear();
+	displayedResults_.clear();
 	unavailableRevealPath_.clear();
 	focusRequested_ = false;
 	revealMessage_.clear();

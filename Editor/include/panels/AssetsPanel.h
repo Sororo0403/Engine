@@ -33,7 +33,7 @@ class AssetsPanel {
 	void RequestReveal(const std::filesystem::path &path);
 
 	/// <summary>
-	/// 移動・複製の結果を、先頭の項目があるフォルダで選択する
+	/// 移動・複製の結果を選択する。複数フォルダにまたがる場合は結果の一覧を表示する
 	/// </summary>
 	void RequestSelectResults(std::vector<std::filesystem::path> paths);
 
@@ -326,6 +326,7 @@ class AssetsPanel {
 	std::filesystem::path previousSearchAsset_;
 	std::filesystem::path revealPath_;
 	std::vector<std::filesystem::path> resultPaths_;
+	std::vector<std::filesystem::path> displayedResults_;
 	std::filesystem::path unavailableRevealPath_;
 	bool focusRequested_ = false;
 	std::string revealMessage_;
