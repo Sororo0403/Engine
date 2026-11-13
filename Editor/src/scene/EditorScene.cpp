@@ -574,11 +574,11 @@ bool EditorScene::Update(float deltaTime) {
 	DrawGridSettings();
 
 	controlsPanel_.Draw();
+	const auto *replay = !IsBusy() && action == EditorAction::NONE && playFailureReplay_
+	                         ? &*playFailureReplay_ : nullptr;
 	const auto consoleScript = consolePanel_.Draw(
-	    ui_, !IsBusy(), false,
-	    !IsBusy() && action == EditorAction::NONE && playFailureReplay_
-	        ? playFailureReplay_->logId
-	        : 0);
+	    ui_, !IsBusy(), false, replay ? replay->logId : 0,
+	    replay ? replay->path : std::filesystem::path{});
 	if (consoleScript.retryPlay && playFailureReplay_ &&
 	    consoleScript.logId == playFailureReplay_->logId) {
 		const auto retry = *playFailureReplay_;
@@ -5838,7 +5838,10 @@ void EditorScene::UpdateDialogs() {
 					StartPlay(path, camera);
 					return;
 				}
-				ImGui::SetItemTooltip("Start a new Play session. A failed transition retries from the original Play scene.");
+				ImGui::SetItemTooltip("Start Play in %s.",
+				                      errorReplayPath_->empty()
+				                          ? "the editing scene"
+				                          : PathUtils::ToUtf8(*errorReplayPath_).c_str());
 				ui_.SameLine();
 			}
 			const bool canShowPlayLog = errorHasPlayLog_ || errorReplayPath_.has_value();

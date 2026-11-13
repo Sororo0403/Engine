@@ -42,9 +42,11 @@ class ConsolePanel {
 	/// <param name="canEditScript">ログに対応するLuaファイルを開けるか</param>
 	/// <param name="stopPlayToEdit">編集に移るときに試遊を停止するか</param>
 	/// <param name="retryPlayLogId">再試遊を許可するエラーログのID。0なら無効</param>
+	/// <param name="retryScene">再試遊の開始先。空なら編集中のシーン</param>
 	/// <returns>Luaの編集または再試遊の要求。操作がなければ空</returns>
 	Request Draw(const ImGuiSystem &ui, bool canEditScript = false,
-	             bool stopPlayToEdit = false, std::uint64_t retryPlayLogId = 0);
+	             bool stopPlayToEdit = false, std::uint64_t retryPlayLogId = 0,
+	             const std::filesystem::path &retryScene = {});
 
   private:
 	/// <summary>

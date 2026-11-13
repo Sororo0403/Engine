@@ -104,7 +104,8 @@ std::string ConsolePanel::BuildFilteredText() const {
 ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
                                          bool canEditScript,
                                          bool stopPlayToEdit,
-                                         std::uint64_t retryPlayLogId) {
+                                         std::uint64_t retryPlayLogId,
+                                         const std::filesystem::path &retryScene) {
 	if (!open_) {
 		return {};
 	}
@@ -377,6 +378,9 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 					request.logId = selected->id;
 					request.retryPlay = true;
 				}
+				ImGui::SetItemTooltip("Start Play in %s.",
+				                      retryScene.empty() ? "the editing scene"
+				                                         : PathUtils::ToUtf8(retryScene).c_str());
 			}
 
 			ui.SameLine();
