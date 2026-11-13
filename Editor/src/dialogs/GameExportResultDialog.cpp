@@ -245,10 +245,11 @@ bool GameExportResultDialog::OpenLogAtError(ErrorSearch search) {
 
 	error_.clear();
 	if (!run.showLogBeginning || run.logPageOffset != *match) {
-		if ((!previous && !nextError) || !run.beforeErrorJump) {
+		if (!run.beforeErrorJump) {
 			run.beforeErrorJump = LogPosition{std::move(run.earlierLogPages),
 			                                 run.logPageOffset, run.showLogBeginning,
-			                                 run.followLog};
+			                                 run.followLog, run.showErrorsOnly,
+			                                 run.logScrollY};
 		}
 		run.earlierLogPages.clear();
 		if (*match != 0)
@@ -432,6 +433,7 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 
 	if (run.showLog) {
 		bool jumpToBeginning = false;
+		std::optional<float> restoreScroll;
 		if (run.logStart &&
 		    ImGui::Checkbox("Since Run Game", &run.sinceLaunchOnly)) {
 			run.beforeErrorJump.reset();
@@ -538,11 +540,13 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 				run.logPageOffset = previous.offset;
 				run.showLogBeginning = previous.paged;
 				run.followLog = previous.follow;
+				run.showErrorsOnly = previous.errorsOnly;
 				RefreshLog();
-				jumpToBeginning = run.showLogBeginning;
-				jumpToLatest = !run.showLogBeginning;
+				restoreScroll = previous.scrollY;
+				jumpToBeginning = false;
+				jumpToLatest = false;
 			}
-			ImGui::SetItemTooltip("Return to the log page or tail shown before the error jump.");
+			ImGui::SetItemTooltip("Return to the log position shown before jumping to an error.");
 		}
 		const auto errors = CollectLogErrors(log_);
 		const std::string_view displayedLog = run.showErrorsOnly ? errors : log_;
@@ -575,12 +579,15 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 				ui.Text("Showing the end of the game log.");
 			}
 			if (ui.BeginChild("GameLog", 570.0f, 210.0f)) {
+				run.logScrollY = ImGui::GetScrollY();
 				const bool wasAtBottom =
 				    ImGui::GetScrollY() >= ImGui::GetScrollMaxY() - 1.0f;
 				ImGui::PushTextWrapPos();
 				ui.Text(displayedLog.empty() ? "No errors on this log page." : displayedLog);
 				ImGui::PopTextWrapPos();
-				if (jumpToBeginning || (changedFilter && !jumpToLatest)) {
+				if (restoreScroll) {
+					ImGui::SetScrollY(*restoreScroll);
+				} else if (jumpToBeginning || (changedFilter && !jumpToLatest)) {
 					ImGui::SetScrollY(0.0f);
 				} else if (!run.showLogBeginning &&
 				    (jumpToLatest || (refreshedLog && run.followLog && wasAtBottom))) {

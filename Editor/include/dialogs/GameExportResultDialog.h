@@ -43,6 +43,8 @@ class GameExportResultDialog {
 		std::uintmax_t offset;
 		bool paged;
 		bool follow;
+		bool errorsOnly;
+		float scrollY;
 	};
 
 	struct GameRun {
@@ -52,6 +54,7 @@ class GameExportResultDialog {
 		std::vector<std::uintmax_t> earlierLogPages;
 		std::optional<LogPosition> beforeErrorJump;
 		std::uintmax_t logPageOffset = 0;
+		float logScrollY = 0.0f;
 		bool sinceLaunchOnly = false;
 		bool showLog = false;
 		bool followLog = true;
