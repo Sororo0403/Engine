@@ -3420,7 +3420,8 @@ void EditorScene::ExecutePendingAction() {
 		return;
 
 	case EditorAction::OPEN:
-		fileDialog_.Show(FileDialogMode::OPEN, GetOpenScenePath());
+		fileDialog_.Show(FileDialogMode::OPEN,
+		                 GetSceneDialogDirectory(document_.GetFilePath()));
 
 		stage_ = DialogStage::OPEN_FILE;
 		return;
@@ -3477,12 +3478,11 @@ void EditorScene::StartSave(bool saveAs) {
 	}
 
 	const auto &current = document_.GetFilePath();
-	auto path = current.empty() ? GetNewScenePath(L"Untitled.scene.json")
-	            : !project_.GetRoot().empty() ? GetNewScenePath(current.filename())
-	                                         : current;
-	if (current.empty() && !recoverySourceFile_.empty()) {
-		path = GetRecoveredScenePath();
-	}
+	const auto path = current.empty() && !recoverySourceFile_.empty()
+	                      ? GetRecoveredScenePath()
+	                      : GetSceneDialogDirectory(current) /
+	                            (current.empty() ? L"Untitled.scene.json"
+	                                             : current.filename());
 	fileDialog_.Show(FileDialogMode::SAVE, path);
 
 	stage_ = DialogStage::SAVE_FILE;
@@ -3721,29 +3721,18 @@ void EditorScene::SetCameraView(CameraView view) {
 }
 
 std::filesystem::path
-EditorScene::GetNewScenePath(const std::filesystem::path &name) const {
-	if (!project_.GetRoot().empty()) {
-		return name.empty() ? project_.GetScenesDirectory()
-		                    : project_.GetScenesDirectory() / name;
-	}
-
-	const auto &directory = assetSources_.GetDirectory();
-
-	if (name.empty()) {
-		return directory.is_absolute() ? directory : std::filesystem::path{};
-	}
-
-	return directory.is_absolute() ? directory / name : name;
-}
-
-std::filesystem::path EditorScene::GetOpenScenePath() const {
-	const auto &current = document_.GetFilePath();
+EditorScene::GetSceneDialogDirectory(const std::filesystem::path &scene) const {
 	std::error_code error;
 	if (project_.GetRoot().empty()) {
-		return !current.empty() &&
-		               std::filesystem::is_directory(current.parent_path(), error)
-		           ? current
-		           : GetNewScenePath({});
+		const auto folder = scene.parent_path();
+		if (std::filesystem::is_directory(folder, error)) {
+			return folder;
+		}
+
+		const auto &assets = assetSources_.GetDirectory();
+		return assets.is_absolute() && std::filesystem::is_directory(assets, error)
+		           ? assets
+		           : std::filesystem::path{};
 	}
 
 	const auto scenes = project_.GetScenesDirectory();
@@ -3753,13 +3742,13 @@ std::filesystem::path EditorScene::GetOpenScenePath() const {
 		           : std::filesystem::path{};
 	}
 
-	if (current.empty()) {
+	if (scene.empty()) {
 		return scenes;
 	}
 
 	try {
 		const auto root = std::filesystem::canonical(scenes);
-		const auto folder = std::filesystem::weakly_canonical(current.parent_path());
+		const auto folder = std::filesystem::weakly_canonical(scene.parent_path());
 		for (auto relative = PathUtils::RelativeInside(root, folder);
 		     !relative.empty(); relative = relative.parent_path()) {
 			if (std::filesystem::is_directory(root / relative, error)) {
@@ -3778,6 +3767,7 @@ std::filesystem::path EditorScene::GetRecoveredScenePath() const {
 		stem = stem.stem();
 	}
 	const auto base = stem.native() + L".recovered";
+	const auto directory = GetSceneDialogDirectory(recoverySourceFile_);
 
 	for (std::size_t index = 1;; ++index) {
 		const auto suffix =
@@ -3786,7 +3776,7 @@ std::filesystem::path EditorScene::GetRecoveredScenePath() const {
 		if (!PathUtils::IsValidFileName(name)) {
 			name = L"Recovered" + suffix + L".scene.json";
 		}
-		const auto candidate = GetNewScenePath(name);
+		const auto candidate = directory / name;
 		std::error_code error;
 		const auto status = std::filesystem::symlink_status(
 		    PathUtils::ResolveFromExecutable(candidate), error);
@@ -3800,7 +3790,7 @@ std::filesystem::path EditorScene::GetSceneCopyPath() const {
 	const auto &currentPath = document_.GetFilePath();
 	if (currentPath.empty()) {
 		return recoverySourceFile_.empty()
-		           ? GetNewScenePath(L"Untitled.copy.scene.json")
+		           ? GetSceneDialogDirectory({}) / L"Untitled.copy.scene.json"
 		           : GetRecoveredScenePath();
 	}
 
@@ -3808,7 +3798,8 @@ std::filesystem::path EditorScene::GetSceneCopyPath() const {
 	if (PathUtils::HasExtension(stem, ".scene")) {
 		stem = stem.stem();
 	}
-	return currentPath.parent_path() / (stem.native() + L".copy.scene.json");
+	return GetSceneDialogDirectory(currentPath) /
+	       (stem.native() + L".copy.scene.json");
 }
 
 void EditorScene::StartSaveCopy() {

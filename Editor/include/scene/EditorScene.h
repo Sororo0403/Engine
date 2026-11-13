@@ -374,17 +374,12 @@ class EditorScene final : public IScene {
 	void StartSave(bool saveAs);
 
 	/// <summary>
-	/// 未保存シーンの初期ファイル名を、選択した外部Assetsフォルダへ揃える
+	/// シーンの場所に近い、開く・保存ダイアログの初期フォルダを取得する
 	/// </summary>
-	/// <param name="name">初期ファイル名。空は読み込み時の初期フォルダ</param>
-	/// <returns>外部Assets内の絶対パス、または従来の実行ファイル基準の指定</returns>
+	/// <param name="scene">編集中または復旧元のシーン。未保存なら空</param>
+	/// <returns>既存のフォルダ。実行ファイルの場所を使う場合は空</returns>
 	std::filesystem::path
-	GetNewScenePath(const std::filesystem::path &name) const;
-
-	/// <summary>
-	/// 編集中のシーンに近い、ファイル選択の初期位置を取得する
-	/// </summary>
-	std::filesystem::path GetOpenScenePath() const;
+	GetSceneDialogDirectory(const std::filesystem::path &scene) const;
 
 	/// <summary>
 	/// 復旧元の名前を使い、まだ存在しない保存先を提案する
