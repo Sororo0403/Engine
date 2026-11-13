@@ -4381,7 +4381,7 @@ void EditorScene::DrawAssetReferences(bool recycle) {
 
 	if (recycle && assetReferences_.empty() &&
 	    ui_.Button("Move to Recycle Bin")) {
-		const auto targets = CheckAssetReferences(true);
+		auto targets = CheckAssetReferences(true);
 
 		if (!targets.empty() && assetReferences_.empty()) {
 			std::size_t completed = 0;
@@ -4404,6 +4404,11 @@ void EditorScene::DrawAssetReferences(bool recycle) {
 			}
 
 			close = completed == targets.size();
+			if (!close && completed != 0) {
+				// 移動済みの項目は除き、残りだけを次の参照検査の対象にする。
+				targets.erase(targets.begin(), targets.begin() + completed);
+				pendingAssetPaths_ = std::move(targets);
+			}
 		}
 
 		ui_.SameLine();
