@@ -859,6 +859,13 @@ bool EditorScene::Update(float deltaTime) {
 		}
 
 		const auto &inspectorScene = inspectorPanel_.GetSceneOpenRequest();
+		const auto &playScene = assetsPanel_.GetScenePlayRequest();
+		if (!playScene.empty() && !IsBusy() &&
+		    action == EditorAction::NONE &&
+		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
+			pendingOpenPath_ = playScene;
+			action = EditorAction::PLAY_ASSET_SCENE;
+		}
 		const auto &requestedScene = !checkedRequest.scenePath.empty()
 		                                 ? checkedRequest.scenePath
 		                                 : inspectorScene.empty()
@@ -2847,6 +2854,7 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	      action == EditorAction::ASSETS_FOLDER ||
 	      action == EditorAction::OPEN_PATH ||
 	      action == EditorAction::OPEN_PREVIOUS_SCENE ||
+	      action == EditorAction::PLAY_ASSET_SCENE ||
 	      action == EditorAction::OPEN_EXPORT_ISSUE ||
 	      action == EditorAction::OPEN_PROJECT_PATH ||
 	      action == EditorAction::LOAD_GAME_SETTINGS ||
@@ -2881,6 +2889,9 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	FinishEdit();
 
 	switch (action) {
+	case EditorAction::PLAY_ASSET_SCENE:
+		StartPlay(std::exchange(pendingOpenPath_, std::filesystem::path{}), 0);
+		return;
 	case EditorAction::OPEN_PREVIOUS_SCENE:
 		if (const auto *path = FindPreviousScene()) {
 			pendingOpenPath_ = *path;
