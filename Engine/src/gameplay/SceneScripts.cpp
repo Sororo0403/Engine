@@ -198,7 +198,7 @@ bool SceneScripts::Run(
 			if (messages.size() > kMaximumLogs - logs_.size())
 				throw std::runtime_error("Script frame log limit exceeded.");
 			for (auto &line : messages)
-				logs_.emplace_back(id, std::move(line));
+				logs_.push_back({id, instance.settings.asset, std::move(line)});
 		};
 
 		for (auto &[id, instance] : instances_) {
@@ -333,7 +333,7 @@ std::optional<std::string_view> SceneScripts::GetState(SceneObjectId id) const {
 }
 
 void SceneScripts::FlushLogs() {
-	for (const auto &[id, message] : logs_)
-		Logger::Info(std::format("Script (ID {}): {}", id, message));
+	for (const auto &[id, sourcePath, message] : logs_)
+		Logger::Info(std::format("Script (ID {}): {}", id, message), sourcePath);
 	logs_.clear();
 }

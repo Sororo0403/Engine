@@ -31,6 +31,11 @@ class Logger {
 	static void Info(std::string_view message);
 
 	/// <summary>
+	/// 通常の情報と、その出力元のファイルを直近ログに記録する
+	/// </summary>
+	static void Info(std::string_view message, const std::filesystem::path &sourcePath);
+
+	/// <summary>
 	/// 警告を出力する
 	/// </summary>
 	/// <param name="message">UTF-8のメッセージ</param>

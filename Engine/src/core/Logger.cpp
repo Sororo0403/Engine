@@ -69,8 +69,12 @@ void Logger::Finalize() {
 }
 
 void Logger::Info(std::string_view message) {
+	Info(message, {});
+}
+
+void Logger::Info(std::string_view message, const std::filesystem::path &sourcePath) {
 	const std::scoped_lock lock(mutex_);
-	Write(LogLevel::LOG_INFO, message);
+	Write(LogLevel::LOG_INFO, message, sourcePath);
 }
 
 void Logger::Warning(std::string_view message) {

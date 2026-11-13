@@ -167,10 +167,16 @@ class SceneScripts {
 		bool started = false;
 	};
 
+	struct PendingLog {
+		SceneObjectId objectId;
+		std::filesystem::path sourcePath;
+		std::string message;
+	};
+
 	ScenePrefabs prefabs_;
 	ScriptMailbox mailbox_;
 	std::map<SceneObjectId, Instance> instances_;
 	std::map<std::filesystem::path, LuaScriptProgram> programs_;
 	std::vector<TriggerEvent> pending_;
-	std::vector<std::pair<SceneObjectId, std::string>> logs_;
+	std::vector<PendingLog> logs_;
 };

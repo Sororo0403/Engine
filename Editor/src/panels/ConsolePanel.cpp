@@ -304,6 +304,7 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 	if (drawDetails) {
 		if (selected) {
 			const bool isLua = PathUtils::HasExtension(selected->sourcePath, ".lua");
+			const bool hasLuaDiagnostic = isLua && selected->level == LogLevel::LOG_ERROR;
 			if (ui.Button("Copy Message")) {
 				std::string text;
 				AppendClipboardMessage(text, selected->message);
@@ -314,7 +315,10 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 				ui.SameLine();
 				ui.BeginDisabled(!canEditScript);
 				if (ui.Button(stopPlayToEdit ? "Stop and Edit Script" : "Edit Script")) {
-					script = {selected->sourcePath, selected->message};
+					script.path = selected->sourcePath;
+					if (hasLuaDiagnostic) {
+						script.diagnostic = selected->message;
+					}
 				}
 				ui.EndDisabled();
 				ImGui::SetItemTooltip("%s",
@@ -329,7 +333,7 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 			}
 			if (!selected->sourcePath.empty()) {
 				auto location = PathUtils::ToUtf8(selected->sourcePath);
-				if (isLua) {
+				if (hasLuaDiagnostic) {
 					auto absolute = PathUtils::ResolveFromExecutable(selected->sourcePath);
 					absolute.make_preferred();
 					const auto line = LuaScript::FindErrorLine(
