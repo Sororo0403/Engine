@@ -1893,12 +1893,25 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			action = EditorAction::IMPORT_SCENE;
 		}
 
-		ui_.BeginDisabled(!enabled || recentScenes_.GetPaths().empty());
+		const auto recent = recentScenes_.GetPaths();
+		const auto previous = std::ranges::find_if(recent, [&](const auto &path) {
+			return current.empty() || !PathUtils::IsSameFile(path, current);
+		});
+		if (ui_.MenuItem("Open Previous Scene", nullptr,
+		                 enabled && previous != recent.end())) {
+			pendingOpenPath_ = *previous;
+			action = EditorAction::OPEN_PATH;
+		}
+		if (previous != recent.end()) {
+			ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(*previous).c_str());
+		}
+
+		ui_.BeginDisabled(!enabled || recent.empty());
 
 		if (ui_.BeginMenu("Open Recent")) {
 			std::size_t index = 0;
 
-			for (const auto &path : recentScenes_.GetPaths()) {
+			for (const auto &path : recent) {
 				const auto label =
 				    std::format("{}###RecentScene{}",
 				                PathUtils::ToUtf8(path.filename()), index++);
