@@ -725,16 +725,17 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 			std::string error;
 
 			if (!pendingScene_.restart) {
+				failedDestination_.emplace();
 				if (!SceneSerializer::Load(destination, pendingScene_.path)) {
 					lastUpdateError_ = "Could not load destination scene: " +
 					                   PathUtils::ToUtf8(pendingScene_.path);
 					return false;
 				}
 
-				failedDestination_.emplace();
 				if (!PlaceSceneArrival(destination, pendingScene_.arrivalTag,
 				                       error, &failedDestination_->objectId)) {
-					lastUpdateError_ = std::move(error);
+					lastUpdateError_ = std::move(error) + "\nDestination scene: " +
+					                   PathUtils::ToUtf8(pendingScene_.path);
 					return false;
 				}
 			}
@@ -759,6 +760,10 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 					                                   error);
 				}
 				lastUpdateError_ = std::move(error);
+				if (failedDestination_) {
+					lastUpdateError_ += "\nDestination scene: " +
+					                    PathUtils::ToUtf8(pendingScene_.path);
+				}
 				return false;
 			}
 

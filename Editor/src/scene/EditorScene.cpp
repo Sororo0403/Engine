@@ -5557,16 +5557,19 @@ void EditorScene::UpdateDialogs() {
 				}
 				ImGui::SetItemTooltip(
 				    "Show the scene file or its nearest existing folder in Explorer.");
-				ui_.SameLine();
-				if (ui_.Button("Open Play Scene")) {
-					pendingOpenPath_ = std::move(errorScenePath_);
-					const auto object =
-					    std::exchange(errorObjectId_, SceneObjectId{0});
-					ui_.CloseCurrentPopup();
-					ui_.EndPopup();
-					stage_ = DialogStage::IDLE;
-					StartAction(EditorAction::OPEN_PATH, object);
-					return;
+				std::error_code status;
+				if (std::filesystem::is_regular_file(errorScenePath_, status)) {
+					ui_.SameLine();
+					if (ui_.Button("Open Play Scene")) {
+						pendingOpenPath_ = std::move(errorScenePath_);
+						const auto object =
+						    std::exchange(errorObjectId_, SceneObjectId{0});
+						ui_.CloseCurrentPopup();
+						ui_.EndPopup();
+						stage_ = DialogStage::IDLE;
+						StartAction(EditorAction::OPEN_PATH, object);
+						return;
+					}
 				}
 				ui_.SameLine();
 			}
@@ -5852,7 +5855,6 @@ void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject) {
 		const auto &current = document_.GetFilePath();
 		const bool isEditingScene =
 		    !current.empty() && PathUtils::IsSameFile(current, path);
-		message += "\nDestination scene: " + PathUtils::ToUtf8(path);
 		playMode_.Stop();
 		ShowError(std::move(message), isEditingScene ? object : 0,
 		          std::move(scriptPath));

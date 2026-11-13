@@ -379,9 +379,9 @@ class SceneSimulation {
 	};
 
 	/// <summary>
-	/// 読み込み後の到着処理や開始処理に失敗した遷移先を取得する。原因の物体が不明ならIDは0
+	/// 読み込み・到着処理・開始処理に失敗した遷移先を取得する。原因の物体が不明ならIDは0
 	/// </summary>
-	/// <returns>次の更新・再生開始・停止まで有効な遷移先。読み込めなかった場合はnullopt</returns>
+	/// <returns>次の更新・再生開始・停止まで有効な遷移先。遷移に失敗していなければnullopt</returns>
 	std::optional<FailedSceneDestination> GetFailedSceneDestination() const {
 		if (!failedDestination_) {
 			return std::nullopt;
@@ -655,7 +655,7 @@ class SceneSimulation {
 	};
 
 	SceneLoadRequest pendingScene_;
-	// 遷移先を読み込めた場合のみ値を持つ。原因の物体が不明な場合は0。
+	// 遷移先の読み込みから開始までの間に失敗したときに値を持つ。
 	struct DestinationFailure {
 		SceneObjectId objectId = 0;
 		std::filesystem::path scriptPath;
