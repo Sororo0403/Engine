@@ -30,15 +30,21 @@ void SceneCheckPanel::Reset() {
 void SceneCheckPanel::OnSceneOpened(const std::filesystem::path &previous,
                                    const std::filesystem::path &current) {
 	if (!previous.empty()) {
-		if (filter_.empty()) {
-			sceneFilters_.erase(previous);
+		auto issue = std::move(issueToRestore_);
+		if (lastIssue_ && *lastIssue_ < issues_.size()) {
+			issue = issues_[*lastIssue_];
+		}
+		if (filter_.empty() && !issue) {
+			scenePositions_.erase(previous);
 		} else {
-			sceneFilters_.insert_or_assign(previous, filter_);
+			scenePositions_.insert_or_assign(previous, SceneCheckPosition{filter_, std::move(issue)});
 		}
 	}
 	filter_.clear();
-	if (const auto found = sceneFilters_.find(current); found != sceneFilters_.end()) {
-		filter_ = found->second;
+	issueToRestore_.reset();
+	if (const auto found = scenePositions_.find(current); found != scenePositions_.end()) {
+		filter_ = found->second.filter;
+		issueToRestore_ = found->second.issue;
 	}
 
 	issues_.clear();
@@ -55,10 +61,15 @@ void SceneCheckPanel::OnSceneSavedAs(const std::filesystem::path &previous,
                                     const std::filesystem::path &current) {
 	for (const auto *path : {&previous, &current}) {
 		if (!path->empty()) {
-			if (filter_.empty()) {
-				sceneFilters_.erase(*path);
-			} else {
-				sceneFilters_.insert_or_assign(*path, filter_);
+			if (!filter_.empty()) {
+				scenePositions_[*path].filter = filter_;
+			} else if (const auto found = scenePositions_.find(*path);
+			           found != scenePositions_.end()) {
+				if (found->second.issue) {
+					found->second.filter.clear();
+				} else {
+					scenePositions_.erase(found);
+				}
 			}
 		}
 	}
@@ -67,19 +78,19 @@ void SceneCheckPanel::OnSceneSavedAs(const std::filesystem::path &previous,
 
 void SceneCheckPanel::OnAssetsMoved(
     std::span<const std::pair<std::filesystem::path, std::filesystem::path>> moves) {
-	// 移動先に過去の検索語があれば、実際に移動したシーンの検索語を優先する。
-	std::map<std::filesystem::path, std::string> movedFilters;
-	for (auto it = sceneFilters_.begin(); it != sceneFilters_.end();) {
+	// 移動先に過去の表示状態があれば、実際に移動したシーンの状態を優先する。
+	std::map<std::filesystem::path, SceneCheckPosition> movedPositions;
+	for (auto it = scenePositions_.begin(); it != scenePositions_.end();) {
 		auto destination = PathUtils::AfterMove(it->first, moves);
 		if (destination.native() == it->first.native()) {
 			++it;
 			continue;
 		}
-		movedFilters.insert_or_assign(std::move(destination), std::move(it->second));
-		it = sceneFilters_.erase(it);
+		movedPositions.insert_or_assign(std::move(destination), std::move(it->second));
+		it = scenePositions_.erase(it);
 	}
-	for (auto &[path, filter] : movedFilters) {
-		sceneFilters_.insert_or_assign(path, std::move(filter));
+	for (auto &[path, position] : movedPositions) {
+		scenePositions_.insert_or_assign(path, std::move(position));
 	}
 	RequestRecheckIfOpen();
 }
@@ -95,13 +106,15 @@ void SceneCheckPanel::Check(const Scene &scene, const CameraPose &fallback,
 	              std::make_move_iterator(assets.end()));
 
 	scrollToIssue_.reset();
-	if (lastIssue_ && *lastIssue_ < issues_.size()) {
-		const auto &previous = issues_[*lastIssue_];
+	const bool hadSelection = lastIssue_ && *lastIssue_ < issues_.size();
+	if (hadSelection || issueToRestore_) {
+		const auto &previous = hadSelection ? issues_[*lastIssue_] : *issueToRestore_;
 		const auto matches = [&](const SceneValidationIssue &issue) {
 			return MatchesFilter(issue, scene);
 		};
-		auto remaining = std::count_if(issues_.begin(),
-		                               issues_.begin() + *lastIssue_, matches);
+		auto remaining = hadSelection
+		                     ? std::count_if(issues_.begin(), issues_.begin() + *lastIssue_, matches)
+		                     : 0;
 		std::optional<std::size_t> sameSource;
 		bool ambiguousSource = false;
 		const bool hasSource = previous.objectId != 0 ||
@@ -124,7 +137,7 @@ void SceneCheckPanel::Check(const Scene &scene, const CameraPose &fallback,
 					sameSource = i;
 				}
 			}
-			if (remaining >= 0) {
+			if (hadSelection && remaining >= 0) {
 				scrollToIssue_ = i;
 				--remaining;
 			}
@@ -134,6 +147,7 @@ void SceneCheckPanel::Check(const Scene &scene, const CameraPose &fallback,
 			scrollToIssue_ = sameSource;
 		}
 	}
+	issueToRestore_.reset();
 	lastIssue_ = scrollToIssue_;
 	issues_.swap(issues);
 	error_.clear();
@@ -278,12 +292,14 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 	}
 
 	if (ui.InputText("Search Issues", filter_)) {
+		issueToRestore_.reset();
 		lastIssue_.reset();
 		scrollToIssue_.reset();
 	}
 	ui.SameLine();
 
 	if (ui.Button("Clear Search")) {
+		issueToRestore_.reset();
 		filter_.clear();
 		lastIssue_.reset();
 		scrollToIssue_.reset();

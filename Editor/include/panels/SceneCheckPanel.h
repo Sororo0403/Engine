@@ -122,7 +122,12 @@ class SceneCheckPanel {
 	std::string error_;
 	std::string assetActionError_;
 	std::string filter_;
-	std::map<std::filesystem::path, std::string> sceneFilters_;
+	struct SceneCheckPosition {
+		std::string filter;
+		std::optional<SceneValidationIssue> issue;
+	};
+	std::map<std::filesystem::path, SceneCheckPosition> scenePositions_;
+	std::optional<SceneValidationIssue> issueToRestore_;
 	bool open_ = false;
 	bool checkRequested_ = false;
 	bool focusRequested_ = false;
