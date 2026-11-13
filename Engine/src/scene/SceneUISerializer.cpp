@@ -413,16 +413,32 @@ bool AnimationClipAsset::Resolve(const AnimationClipComponent &player,
 	AnimationClipComponent loaded;
 	if (!Load(player.asset, loaded, error))
 		return false;
+	std::array<bool, AnimationClipComponent::kMaximumTracks + 1> missingSlots{};
 	for (auto &track : loaded.tracks) {
 		const auto binding = std::ranges::find_if(player.bindings, [&](const auto &entry) {
 			return entry.first == track.target;
 		});
 		if (binding == player.bindings.end() || binding->second == 0) {
-			error = "Assign an object to each Animation Player binding slot.";
-			return false;
+			missingSlots[track.target] = true;
+			continue;
 		}
 		track.target = binding->second;
 	}
+
+	std::string missingBindings;
+	for (std::size_t slot = 1; slot < missingSlots.size(); ++slot) {
+		if (!missingSlots[slot])
+			continue;
+		if (!missingBindings.empty())
+			missingBindings += ", ";
+		missingBindings += "Binding " + std::to_string(slot);
+	}
+	if (!missingBindings.empty()) {
+		error = "Assign objects under Animation Player > Clip Bindings (" +
+		        missingBindings + ").";
+		return false;
+	}
+
 	if (!loaded.IsValid()) {
 		error = "Animation Player bindings animate the same property more than once.";
 		return false;
