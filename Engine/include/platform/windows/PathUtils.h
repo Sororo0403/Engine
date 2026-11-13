@@ -48,6 +48,11 @@ std::string ToUtf8(const std::filesystem::path &path);
 std::filesystem::path FromUtf8(std::string_view text);
 
 /// <summary>
+/// 入力欄に貼り付けたパスを読み取る。パス全体を囲む引用符は除く
+/// </summary>
+std::filesystem::path FromPathInput(std::string_view text);
+
+/// <summary>
 /// ローカルの相対URIを復号してファイルパスへ変換する。+は空白へ変換しない
 /// </summary>
 /// <param name="uri">UTF-8とパーセント表記を使う相対URI。親フォルダへの参照も使用できる</param>

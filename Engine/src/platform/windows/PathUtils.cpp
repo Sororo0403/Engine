@@ -85,6 +85,16 @@ std::filesystem::path PathUtils::FromUtf8(std::string_view text) {
 	return std::filesystem::path(wide);
 }
 
+std::filesystem::path PathUtils::FromPathInput(std::string_view text) {
+	const auto first = text.find_first_not_of(" \t\r\n");
+	const auto last = text.find_last_not_of(" \t\r\n");
+	if (first != std::string_view::npos && first < last &&
+	    text[first] == '"' && text[last] == '"') {
+		text = text.substr(first + 1, last - first - 1);
+	}
+	return FromUtf8(text);
+}
+
 bool PathUtils::HasExtension(const std::filesystem::path &path,
                              std::string_view extension) {
 	const std::string actual = ToUtf8(path.extension());

@@ -15,7 +15,7 @@ namespace {
 /// 出力欄の入力を読み取り、通常の相対パスは実行ファイルを基準にする
 /// </summary>
 std::filesystem::path ReadDestination(const std::string &input) {
-	auto path = PathUtils::FromUtf8(input);
+	auto path = PathUtils::FromPathInput(input);
 	if (!path.empty() && !path.has_root_path()) {
 		path = PathUtils::ResolveFromExecutable(path);
 	}

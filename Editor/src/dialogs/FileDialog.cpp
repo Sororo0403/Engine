@@ -10,24 +10,8 @@
 #include <format>
 #include <imgui.h>
 #include <stdexcept>
-#include <string_view>
 #include <system_error>
 #include <utility>
-
-namespace {
-/// <summary>
-/// Explorerからコピーしたパスを囲む引用符を除く
-/// </summary>
-std::string_view UnquotePath(std::string_view input) {
-	const auto first = input.find_first_not_of(" \t\r\n");
-	const auto last = input.find_last_not_of(" \t\r\n");
-	if (first != std::string_view::npos && first < last &&
-	    input[first] == '"' && input[last] == '"') {
-		return input.substr(first + 1, last - first - 1);
-	}
-	return input;
-}
-} // namespace
 
 void FileDialog::Show(FileDialogMode mode,
                       const std::filesystem::path &initialPath,
@@ -397,8 +381,9 @@ bool FileDialog::AcceptSelection() {
 			return true;
 		}
 
-		const auto input = PathUtils::FromUtf8(
-		    mode_ == FileDialogMode::OPEN ? UnquotePath(fileName_) : fileName_);
+		const auto input = mode_ == FileDialogMode::OPEN
+		                       ? PathUtils::FromPathInput(fileName_)
+		                       : PathUtils::FromUtf8(fileName_);
 		const bool absoluteInput = mode_ == FileDialogMode::OPEN && input.is_absolute();
 		auto name = absoluteInput ? input.filename() : input;
 
@@ -487,7 +472,7 @@ std::filesystem::path FileDialog::ReadDirectory() const {
 }
 
 std::filesystem::path FileDialog::ReadFolderInput() const {
-	auto path = PathUtils::FromUtf8(UnquotePath(directoryText_));
+	auto path = PathUtils::FromPathInput(directoryText_);
 	if (filter_ == FileDialogFilter::PROJECT && path.is_absolute() &&
 	    CompareStringOrdinal(path.filename().c_str(), -1, L"project.json", -1,
 	                         TRUE) == CSTR_EQUAL &&
