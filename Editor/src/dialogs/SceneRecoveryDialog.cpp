@@ -1,6 +1,7 @@
 #include "dialogs/SceneRecoveryDialog.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "platform/windows/PathUtils.h"
+#include "platform/windows/ShellUtils.h"
 #include <algorithm>
 #include <format>
 #include <imgui.h>
@@ -10,6 +11,7 @@ void SceneRecoveryDialog::Show(std::vector<SceneRecovery::Entry> entries,
                                std::filesystem::path projectAssets,
                                std::string error) {
 	projectAssets_ = std::move(projectAssets);
+	entries_.clear();
 	SetEntries(std::move(entries));
 	error_ = std::move(error);
 	selectedPath_.clear();
@@ -18,11 +20,14 @@ void SceneRecoveryDialog::Show(std::vector<SceneRecovery::Entry> entries,
 }
 
 void SceneRecoveryDialog::SetEntries(std::vector<SceneRecovery::Entry> entries) {
+	const auto previous = selected_ < entries_.size() ? entries_[selected_].path
+	                                                  : std::filesystem::path{};
 	std::stable_partition(entries.begin(), entries.end(), [&](const auto &entry) {
 		return entry.CanRestore(projectAssets_);
 	});
+	const auto found = std::ranges::find(entries, previous, &SceneRecovery::Entry::path);
+	selected_ = found == entries.end() ? 0 : static_cast<std::size_t>(found - entries.begin());
 	entries_ = std::move(entries);
-	selected_ = 0;
 }
 
 SceneRecoveryDialog::Result
@@ -49,22 +54,19 @@ SceneRecoveryDialog::Draw(const ImGuiSystem &ui, SceneRecovery &recovery,
 		}
 	}
 
-	const bool selected = selected_ < entries_.size();
-	bool protectedEntry = false;
-
-	if (selected && !protectedFile.empty()) {
-		protectedEntry =
-		    PathUtils::IsSameFile(entries_[selected_].path, protectedFile);
-	}
+	const auto isProtected = [&](const auto &entry) {
+		return !protectedFile.empty() && PathUtils::IsSameFile(entry.path, protectedFile);
+	};
 
 	if (confirmingDelete_) {
+		const bool selected = selected_ < entries_.size();
 		ui.Text("Delete this recovery permanently?");
 
 		if (selected) {
 			ui.Text(PathUtils::ToUtf8(entries_[selected_].path));
 		}
 
-		ui.BeginDisabled(!selected || protectedEntry);
+		ui.BeginDisabled(!selected || isProtected(entries_[selected_]));
 
 		if (ui.Button("Delete Recovery")) {
 			if (recovery.Remove(entries_[selected_].path, error_)) {
@@ -112,6 +114,7 @@ SceneRecoveryDialog::Draw(const ImGuiSystem &ui, SceneRecovery &recovery,
 
 		ui.EndChild();
 
+		const bool selected = selected_ < entries_.size();
 		const bool canRestore =
 		    selected && entries_[selected_].CanRestore(projectAssets_);
 		if (selected) {
@@ -120,6 +123,17 @@ SceneRecoveryDialog::Draw(const ImGuiSystem &ui, SceneRecovery &recovery,
 				ImGui::TextWrapped("Assets: %s",
 				                   PathUtils::ToUtf8(entry.assetDirectory).c_str());
 			}
+			if (!entry.sourceFile.empty()) {
+				if (ui.Button("Show Original Location")) {
+					ShellUtils::RevealLocationInExplorer(entry.sourceFile, error_);
+				}
+				ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(entry.sourceFile).c_str());
+				ui.SameLine();
+			}
+			if (ui.Button("Show Recovery File")) {
+				ShellUtils::RevealLocationInExplorer(entry.path, error_);
+			}
+			ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(entry.path).c_str());
 			if (!entry.error.empty()) {
 				ImGui::TextWrapped("%s", entry.error.c_str());
 			} else if (!canRestore) {
@@ -140,7 +154,7 @@ SceneRecoveryDialog::Draw(const ImGuiSystem &ui, SceneRecovery &recovery,
 		}
 
 		ui.SameLine();
-		ui.BeginDisabled(!selected || protectedEntry);
+		ui.BeginDisabled(!selected || isProtected(entries_[selected_]));
 
 		if (ui.Button("Delete...")) {
 			confirmingDelete_ = true;

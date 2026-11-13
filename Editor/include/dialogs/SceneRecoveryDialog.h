@@ -40,7 +40,7 @@ class SceneRecoveryDialog {
 
   private:
 	/// <summary>
-	/// 復旧できる候補を先頭に並べ、最初の項目を選択する
+	/// 復旧できる候補を先頭に並べ、前の選択が残っていれば保持する
 	/// </summary>
 	void SetEntries(std::vector<SceneRecovery::Entry> entries);
 
