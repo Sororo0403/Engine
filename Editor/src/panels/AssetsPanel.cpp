@@ -23,6 +23,7 @@
 #include <utility>
 
 void AssetsPanel::RequestReveal(const std::filesystem::path &path) {
+	previousSearch_.clear();
 	revealPath_ = path;
 }
 
@@ -31,6 +32,7 @@ bool AssetsPanel::RevealIndexedAsset(const std::filesystem::path &path,
 	if (!SelectAsset(path, assets)) {
 		return false;
 	}
+	previousSearch_.clear();
 	focusRequested_ = true;
 	return true;
 }
@@ -65,6 +67,7 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	}
 
 	type_ = type;
+	previousSearch_.clear();
 	selectedPath_.clear();
 	selectedItems_.clear();
 	selectionAnchor_.clear();
@@ -106,6 +109,7 @@ void AssetsPanel::OpenDirectory(std::filesystem::path directory) {
 	selectedItems_.clear();
 	selectionAnchor_.clear();
 	filter_.clear();
+	previousSearch_.clear();
 	revealMessage_.clear();
 	scrollToSelected_ = false;
 	scrollToTop_ = true;
@@ -277,6 +281,9 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			    "Could not locate the asset. See the log for details.";
 		}
 
+		if (!revealMessage_.empty()) {
+			previousSearch_.clear();
+		}
 		revealPath_.clear();
 	}
 
@@ -430,6 +437,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	}
 
 	if (ui.InputText("Search", filter_)) {
+		previousSearch_.clear();
 		scrollToTop_ = true;
 		// 検索で隠れたアセットを誤って操作しないよう選択を解除する
 		selectedPath_.clear();
@@ -437,6 +445,27 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		selectionAnchor_.clear();
 		scrollToSelected_ = false;
 		revealMessage_.clear();
+	}
+
+	if (!previousSearch_.empty()) {
+		ui.SameLine();
+		if (ui.Button("Back to Search")) {
+			auto search = std::exchange(previousSearch_, std::string{});
+			RestoreDirectory(previousSearchDirectory_, assets);
+			filter_ = std::move(search);
+			std::error_code error;
+			if (std::filesystem::is_regular_file(
+			        PathUtils::ResolveFromExecutable(previousSearchAsset_), error)) {
+				selectedItems_ = {previousSearchAsset_};
+				selectionAnchor_ = previousSearchAsset_;
+				scrollToSelected_ = true;
+			} else {
+				selectedItems_.clear();
+				selectionAnchor_.clear();
+				scrollToSelected_ = false;
+			}
+			scrollToTop_ = !scrollToSelected_;
+		}
 	}
 
 	if (type_ != AssetType::AUDIO) {
@@ -745,6 +774,9 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				selectContext(assetPath);
 				if (!filter_.empty() && ui.MenuItem("Show in Containing Folder")) {
 					RequestReveal(assetPath);
+					previousSearch_ = filter_;
+					previousSearchDirectory_ = currentDirectory_;
+					previousSearchAsset_ = assetPath;
 				}
 				drawLocationMenu(assetPath);
 				ImGui::Separator();
@@ -1153,6 +1185,7 @@ void AssetsPanel::Clear() {
 	textureReloadPath_.clear();
 	currentDirectory_.clear();
 	filter_.clear();
+	previousSearch_.clear();
 	revealPath_.clear();
 	focusRequested_ = false;
 	revealMessage_.clear();

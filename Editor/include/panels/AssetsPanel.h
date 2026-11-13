@@ -314,6 +314,10 @@ class AssetsPanel {
 
 	std::filesystem::path currentDirectory_;
 	std::string filter_;
+	// 検索から素材の親フォルダを開いたときだけ、元の表示を保持する。
+	std::string previousSearch_;
+	std::filesystem::path previousSearchDirectory_;
+	std::filesystem::path previousSearchAsset_;
 	std::filesystem::path revealPath_;
 	bool focusRequested_ = false;
 	std::string revealMessage_;
