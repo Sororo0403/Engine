@@ -353,7 +353,7 @@ class EditorScene final : public IScene {
 	/// チェックや出力を実行する時点の起動シーンと素材の取得元を準備する
 	/// </summary>
 	const Scene *PrepareGameExport(SceneDocument &startup, GameExportOptions &options,
-	                               std::string &error);
+	                               std::string &error, std::vector<GameExportIssue> &issues);
 
 	/// <summary>
 	/// 保留中のNew・Open・Import・Exitに対してシーンの保存を確認し、変更がなければ操作を続ける

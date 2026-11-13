@@ -3233,7 +3233,8 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 
 const Scene *EditorScene::PrepareGameExport(SceneDocument &startup,
                                             GameExportOptions &options,
-                                            std::string &error) {
+                                            std::string &error,
+                                            std::vector<GameExportIssue> &issues) {
 	try {
 		const auto *scene = GetStartupSceneForRun(startup, false);
 		if (!scene) {
@@ -3241,6 +3242,7 @@ const Scene *EditorScene::PrepareGameExport(SceneDocument &startup,
 			    "Could not load the project startup scene: {}\n{}\n"
 			    "Choose a valid scene with Choose Startup Scene.",
 			    PathUtils::ToUtf8(project_.GetStartupScene()), startup.GetError());
+			issues.push_back({.message = error, .locationPath = project_.GetStartupScene()});
 			return nullptr;
 		}
 		options.assetDirectories = assetSources_.ForScene(*scene);
@@ -3261,9 +3263,8 @@ void EditorScene::WriteGameExport() {
 	SceneDocument startup;
 	auto options = exportDialog_.GetOptions();
 	std::string error;
-	const auto *scene = PrepareGameExport(startup, options, error);
-
 	std::vector<GameExportIssue> issues;
+	const auto *scene = PrepareGameExport(startup, options, error, issues);
 	if (!scene || !GameExporter::Export(*scene, options, error, &issues)) {
 		exportDialog_.ShowExportFailure("Export failed: " + error, std::move(issues));
 		stage_ = DialogStage::EXPORT_GAME;
@@ -3287,9 +3288,8 @@ void EditorScene::CheckGameExport(bool continueFromIssue) {
 	SceneDocument startup;
 	auto options = exportDialog_.GetOptions();
 	std::string error;
-	const auto *scene = PrepareGameExport(startup, options, error);
-
 	std::vector<GameExportIssue> issues;
+	const auto *scene = PrepareGameExport(startup, options, error, issues);
 	if (scene && GameExporter::Check(*scene, options, error, &issues)) {
 		exportDialog_.SetCheckResult("Export check passed. No files were written.");
 		return;
