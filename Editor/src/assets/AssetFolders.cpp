@@ -2,6 +2,29 @@
 #include "platform/windows/PathUtils.h"
 #include <stdexcept>
 
+std::string AssetFolders::SuggestImportName(
+    const std::filesystem::path &assetRoot, const std::filesystem::path &folder,
+    const std::string &name, bool keepExtension) {
+	const auto original = PathUtils::FromUtf8(name);
+	if (!PathUtils::IsValidFileName(original)) {
+		throw std::invalid_argument("Enter a valid import name.");
+	}
+
+	const auto directory = Resolve(assetRoot, folder);
+	const auto stem = keepExtension ? original.stem() : original;
+	const auto extension = keepExtension ? original.extension().native() : std::wstring{};
+	auto candidate = original;
+	for (std::size_t index = 2;
+	     std::filesystem::exists(std::filesystem::symlink_status(directory / candidate));
+	     ++index) {
+		candidate = stem.native() + L"-" + std::to_wstring(index) + extension;
+		if (!PathUtils::IsValidFileName(candidate)) {
+			throw std::invalid_argument("Shorten the import name to allow a numbered suffix.");
+		}
+	}
+	return PathUtils::ToUtf8(candidate);
+}
+
 std::filesystem::path
 AssetFolders::MakeReference(const std::filesystem::path &assetRoot,
                             const std::filesystem::path &absolutePath) {
