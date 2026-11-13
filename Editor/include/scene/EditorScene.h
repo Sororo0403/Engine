@@ -294,6 +294,7 @@ class EditorScene final : public IScene {
 		EXPORT_RESULT,
 		SELECT_GAME_EXPORT,
 		SELECT_STARTUP_SCENE,
+		SELECT_FAILED_STARTUP_SCENE,
 		SELECT_RECYCLE_STARTUP_SCENE,
 		SELECT_EXPORT_STARTUP_SCENE,
 		GAME_SETTINGS,
@@ -402,7 +403,7 @@ class EditorScene final : public IScene {
 	/// <summary>
 	/// 現在の起動シーンに近いフォルダで起動シーンの選択画面を開く
 	/// </summary>
-	void BrowseStartupScene();
+	void BrowseStartupScene(bool repairing = false);
 
 	/// <summary>
 	/// 保存を開始する。保存先がない場合は選択ダイアログを開く
@@ -1074,6 +1075,7 @@ class EditorScene final : public IScene {
 	std::string errorMessage_;
 	std::filesystem::path errorScriptPath_;
 	std::string errorInputAction_;
+	bool errorLoadingPlayScene_ = false;
 	std::filesystem::path errorScenePath_;
 	std::filesystem::path failedOpenScenePath_;
 	std::filesystem::path reloadBackupPath_;

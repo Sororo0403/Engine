@@ -3551,7 +3551,7 @@ void EditorScene::CheckGameExport(bool continueFromIssue) {
 	                             std::move(issues), continueFromIssue);
 }
 
-void EditorScene::BrowseStartupScene() {
+void EditorScene::BrowseStartupScene(bool repairing) {
 	const auto startup = project_.GetStartupScene();
 	auto initialPath = GetSceneDialogDirectory(startup);
 	std::error_code error;
@@ -3565,7 +3565,7 @@ void EditorScene::BrowseStartupScene() {
 	                 "Choose Startup Scene###FileDialog");
 	assets_.Refresh();
 	fileDialog_.SetProjectScenes(project_.GetRoot(), assets_.GetSceneTargets(),
-	                             preferences_.searchProjectScenes);
+	                             repairing || preferences_.searchProjectScenes);
 }
 
 bool EditorScene::SetStartupScene(const std::filesystem::path &path,
@@ -5458,10 +5458,12 @@ void EditorScene::UpdateDialogs() {
 	}
 
 	case DialogStage::SELECT_STARTUP_SCENE:
+	case DialogStage::SELECT_FAILED_STARTUP_SCENE:
 	case DialogStage::SELECT_RECYCLE_STARTUP_SCENE:
 	case DialogStage::SELECT_EXPORT_STARTUP_SCENE: {
 		const bool fromExport = stage_ == DialogStage::SELECT_EXPORT_STARTUP_SCENE;
 		const bool fromRecycle = stage_ == DialogStage::SELECT_RECYCLE_STARTUP_SCENE;
+		const bool fromFailure = stage_ == DialogStage::SELECT_FAILED_STARTUP_SCENE;
 		const auto result = fileDialog_.Draw(ui_);
 		if (const auto search = fileDialog_.TakeProjectSearchChange()) {
 			preferences_.searchProjectScenes = *search;
@@ -5490,6 +5492,16 @@ void EditorScene::UpdateDialogs() {
 		} else if (fromRecycle) {
 			CheckAssetReferences(true);
 			stage_ = DialogStage::RECYCLE_ASSET;
+		} else if (fromFailure) {
+			if (result == FileDialogResult::CANCELLED) {
+				errorOpenRequested_ = true;
+				stage_ = DialogStage::ERROR;
+			} else if (errorLoadingPlayScene_) {
+				StartPlay(project_.GetStartupScene(), errorReplayCameraOverride_);
+			} else {
+				pendingOpenPath_ = project_.GetStartupScene();
+				StartAction(EditorAction::OPEN_PATH);
+			}
 		}
 		return;
 	}
@@ -5703,6 +5715,22 @@ void EditorScene::UpdateDialogs() {
 
 		if (ui_.BeginPopupModal(kTitle)) {
 			ui_.Text(errorMessage_);
+
+			const auto startup = project_.GetStartupScene();
+			const auto &failedStartupCandidate =
+			    errorLoadingPlayScene_ ? errorScenePath_ : failedOpenScenePath_;
+			if (!startup.empty() && !failedStartupCandidate.empty() &&
+			    PathUtils::IsSameFile(startup, failedStartupCandidate) &&
+			    !playMode_.IsPlaying()) {
+				if (ui_.Button(errorLoadingPlayScene_ ? "Choose Startup Scene and Retry Play..."
+				                                     : "Choose Startup Scene and Open...")) {
+					ui_.CloseCurrentPopup();
+					ui_.EndPopup();
+					BrowseStartupScene(true);
+					stage_ = DialogStage::SELECT_FAILED_STARTUP_SCENE;
+					return;
+				}
+			}
 
 			if (!failedOpenScenePath_.empty()) {
 				if (ui_.Button("Show Scene Location")) {
@@ -6021,6 +6049,7 @@ void EditorScene::StartPlay(const std::filesystem::path &path,
 		             "\n" + startup.GetError();
 		ShowError(std::move(error));
 		errorScenePath_ = path;
+		errorLoadingPlayScene_ = true;
 		errorReplayPath_ = path;
 		errorReplayCameraOverride_ = cameraOverride;
 		LogPlayFailure();
@@ -6386,6 +6415,7 @@ void EditorScene::ShowError(std::string message, SceneObjectId objectId,
 	errorMessage_ = std::move(message);
 	errorScriptPath_ = std::move(scriptPath);
 	errorInputAction_.clear();
+	errorLoadingPlayScene_ = false;
 	errorScenePath_.clear();
 	failedOpenScenePath_.clear();
 	reloadBackupPath_.clear();
