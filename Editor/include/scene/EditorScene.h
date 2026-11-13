@@ -268,6 +268,7 @@ class EditorScene final : public IScene {
 		OPEN_FILE,
 		SAVE_FILE,
 		SAVE_COPY_FILE,
+		SAVE_COPY_AND_RELOAD,
 		IMPORT_TEXTURE,
 		IMPORT_AUDIO,
 		IMPORT_MODEL,
@@ -475,7 +476,7 @@ class EditorScene final : public IScene {
 	/// <summary>
 	/// 現在の保存先と保存地点を保持するコピーの保存先選択を開始する
 	/// </summary>
-	void StartSaveCopy();
+	void StartSaveCopy(bool reload = false);
 
 	/// <summary>
 	/// 選択物体を独立したシーンへ準備し、コピー先の選択を開始する

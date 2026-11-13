@@ -3889,10 +3889,11 @@ std::filesystem::path EditorScene::GetSceneCopyPath() const {
 	       (stem.native() + L".copy.scene.json");
 }
 
-void EditorScene::StartSaveCopy() {
+void EditorScene::StartSaveCopy(bool reload) {
 	try {
 		fileDialog_.Show(FileDialogMode::SAVE_COPY, GetSceneCopyPath());
-		stage_ = DialogStage::SAVE_COPY_FILE;
+		stage_ = reload ? DialogStage::SAVE_COPY_AND_RELOAD
+		                : DialogStage::SAVE_COPY_FILE;
 	} catch (const std::exception &error) {
 		Logger::Error(
 		    std::format("EditorScene::StartSaveCopy: {}", error.what()));
@@ -4673,16 +4674,25 @@ void EditorScene::UpdateDialogs() {
 		return;
 	}
 
-	case DialogStage::SAVE_COPY_FILE: {
+	case DialogStage::SAVE_COPY_FILE:
+	case DialogStage::SAVE_COPY_AND_RELOAD: {
+		const bool reload = stage_ == DialogStage::SAVE_COPY_AND_RELOAD;
 		const auto result = fileDialog_.Draw(ui_);
 
 		if (result == FileDialogResult::CANCELLED) {
 			stage_ = DialogStage::IDLE;
 		} else if (result == FileDialogResult::ACCEPTED) {
 			if (document_.SaveCopy(fileDialog_.GetSelectedPath())) {
-				recentScenes_.Add(fileDialog_.GetSelectedPath());
+				const auto &copy = fileDialog_.GetSelectedPath();
+				recentScenes_.Add(copy);
 				assets_.Refresh();
 				stage_ = DialogStage::IDLE;
+				if (reload && !OpenScene(document_.GetFilePath(), false)) {
+					ShowError(std::format(
+					    "Saved a copy to {}. Could not reload the original scene. "
+					    "The editing scene was kept.\n{}",
+					    PathUtils::ToUtf8(copy), document_.GetError()));
+				}
 			} else {
 				fileDialog_.RetrySelection(document_.GetError());
 			}
@@ -5271,6 +5281,16 @@ void EditorScene::UpdateDialogs() {
 				if (pendingAction_ != EditorAction::NONE) {
 					ui_.SameLine();
 				}
+				if (ui_.Button("Save Copy and Reload...")) {
+					ui_.CloseCurrentPopup();
+					ui_.EndPopup();
+					pendingAction_ = EditorAction::NONE;
+					StartSaveCopy(true);
+					return;
+				}
+				ImGui::SetItemTooltip(
+				    "Save your edits to a separate scene, then reload the original.");
+				ui_.SameLine();
 				EditorAction action = EditorAction::NONE;
 				if (ui_.Button("Save Copy...")) {
 					action = EditorAction::SAVE_COPY;
