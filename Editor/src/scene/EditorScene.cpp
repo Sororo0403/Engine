@@ -3406,7 +3406,8 @@ void EditorScene::ExecutePendingAction() {
 
 	case EditorAction::IMPORT_SCENE:
 		try {
-			sceneImportDialog_.Show(assets_, assetsPanel_.GetOpenDirectory());
+			sceneImportDialog_.Show(assets_, assetsPanel_.GetOpenDirectory(),
+			                        project_.GetRoot().empty());
 			stage_ = DialogStage::IMPORT_SCENE;
 		} catch (const std::exception &error) {
 			Logger::Error(
@@ -4691,9 +4692,7 @@ void EditorScene::UpdateDialogs() {
 				// パッケージのシーン参照・予備カメラは現在のEditor設定へ持ち込まない。
 				settings.scenePath = exportConfig_.scenePath;
 				settings.fallbackCamera = exportConfig_.fallbackCamera;
-				if (project_.GetRoot().empty()) {
-					exportConfig_ = std::move(settings);
-				}
+				exportConfig_ = std::move(settings);
 			}
 
 			SaveEditorSession();

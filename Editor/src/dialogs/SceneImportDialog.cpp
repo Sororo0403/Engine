@@ -6,9 +6,11 @@
 #include <imgui.h>
 
 void SceneImportDialog::Show(const AssetDatabase &assets,
-                             const std::filesystem::path &folder) {
+                             const std::filesystem::path &folder,
+                             bool allowSettingsImport) {
 	options_ = {};
 	settings_ = {};
+	allowSettingsImport_ = allowSettingsImport;
 	importSettings_ = false;
 	accepted_ = false;
 	options_.assetRoot = assets.GetRootDirectory();
@@ -64,7 +66,9 @@ SceneImportResult SceneImportDialog::Draw(const ImGuiSystem &ui, Scene &scene) {
 	}
 
 	ui.InputText("Scene Folder Name", name_);
-	ImGui::Checkbox("Import Game Settings", &importSettings_);
+	if (allowSettingsImport_) {
+		ImGui::Checkbox("Import Game Settings", &importSettings_);
+	}
 	ui.EndDisabled();
 
 	if (!error_.empty()) {

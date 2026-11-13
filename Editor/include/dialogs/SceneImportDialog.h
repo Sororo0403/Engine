@@ -21,7 +21,9 @@ class SceneImportDialog {
 	/// </summary>
 	/// <param name="assets">検索先と既存フォルダの一覧</param>
 	/// <param name="folder">検索先基準の作成先。空は検索先自身</param>
-	void Show(const AssetDatabase &assets, const std::filesystem::path &folder);
+	/// <param name="allowSettingsImport">ゲーム設定も取り込める場合はtrue</param>
+	void Show(const AssetDatabase &assets, const std::filesystem::path &folder,
+	          bool allowSettingsImport);
 
 	/// <summary>
 	/// 起動シーンと素材を取り込み、成功した場合だけ候補シーンを置き換える
@@ -46,6 +48,7 @@ class SceneImportDialog {
   private:
 	SceneImportOptions options_;
 	GameConfig settings_;
+	bool allowSettingsImport_ = false;
 	bool importSettings_ = false;
 	bool accepted_ = false;
 	FileDialog picker_;
