@@ -21,14 +21,18 @@
 std::vector<SceneValidationIssue>
 SceneAssetValidation::Inspect(const Scene &scene) {
 	std::vector<SceneValidationIssue> issues;
-	std::map<std::filesystem::path, std::vector<std::string>> models, textures,
+	struct AssetError {
+		std::string message;
+		std::filesystem::path path;
+	};
+	std::map<std::filesystem::path, std::vector<AssetError>> models, textures,
 	    monoAudio, stereoAudio, scenes, scripts, uiTextures, prefabs;
 	std::map<std::pair<std::filesystem::path, std::string>,
-	         std::vector<std::string>>
+	         std::vector<AssetError>>
 	    arrivals;
 
 	const auto inspect = [](const std::filesystem::path &path, auto &cache,
-	                        auto collect) -> const std::vector<std::string> & {
+	                        auto collect) -> const std::vector<AssetError> & {
 		auto [entry, inserted] = cache.try_emplace(path);
 
 		if (!inserted) {
@@ -36,8 +40,10 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 		}
 
 		auto &errors = entry->second;
+		std::filesystem::path source;
 
 		try {
+			source = PathUtils::ResolveFromExecutable(path);
 			const auto files = collect(path);
 			std::set<std::filesystem::path> seen;
 
@@ -47,15 +53,16 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 				}
 
 				if (!std::filesystem::is_regular_file(file)) {
-					errors.push_back("Missing asset file: " +
-					                 PathUtils::ToUtf8(file));
+					errors.push_back({"Missing asset file: " +
+					                  PathUtils::ToUtf8(file), file});
 				}
 			}
 		} catch (const std::bad_alloc &) {
 			throw;
 		} catch (const std::exception &error) {
 			errors.push_back(
-			    std::format("{}: {}", PathUtils::ToUtf8(path), error.what()));
+			    {std::format("{}: {}", PathUtils::ToUtf8(path), error.what()),
+			     std::move(source)});
 		}
 
 		return errors;
@@ -66,9 +73,9 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 			for (const auto &error : errors) {
 				issues.push_back(
 				    {id,
-				     std::format("{}: {} Object: \"{}\" (ID {}).", field, error,
+				     std::format("{}: {} Object: \"{}\" (ID {}).", field, error.message,
 				                 object.name.empty() ? "Object" : object.name,
-				                 id)});
+				                 id), error.path});
 			}
 		};
 
@@ -90,7 +97,7 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 							SceneSimulation::ValidateArrival(
 							    target, action.arrivalTag, error);
 						if (!error.empty())
-							entry->second.push_back(std::move(error));
+							entry->second.push_back({std::move(error), action.scenePath});
 					}
 
 					add("Load Scene", entry->second);

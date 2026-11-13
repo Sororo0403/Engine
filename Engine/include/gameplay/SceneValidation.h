@@ -2,6 +2,7 @@
 
 #include "graphics/camera/CameraPose.h"
 #include "scene/SceneObjectId.h"
+#include <filesystem>
 #include <span>
 #include <string>
 #include <vector>
@@ -16,6 +17,7 @@ struct GameActionBinding;
 struct SceneValidationIssue {
 	SceneObjectId objectId = 0;
 	std::string message;
+	std::filesystem::path assetPath;
 };
 
 namespace SceneValidation {

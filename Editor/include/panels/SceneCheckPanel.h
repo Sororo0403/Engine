@@ -59,7 +59,7 @@ class SceneCheckPanel {
 
   private:
 	/// <summary>
-	/// メッセージ・現在の物体名・IDのいずれかが検索文字列を含むか調べる
+	/// メッセージ・素材パス・現在の物体名・IDのいずれかが検索文字列を含むか調べる
 	/// </summary>
 	/// <param name="issue">最後の検証結果</param>
 	/// <param name="scene">現在の物体名を確認するシーン</param>
@@ -76,6 +76,7 @@ class SceneCheckPanel {
 
 	std::vector<SceneValidationIssue> issues_;
 	std::string error_;
+	std::string assetActionError_;
 	std::string filter_;
 	bool open_ = false;
 	bool checkRequested_ = false;

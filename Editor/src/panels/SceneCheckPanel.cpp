@@ -1,6 +1,8 @@
 #include "panels/SceneCheckPanel.h"
 #include "assets/SceneAssetValidation.h"
 #include "graphics/ui/ImGuiSystem.h"
+#include "platform/windows/PathUtils.h"
+#include "platform/windows/ShellUtils.h"
 #include "scene/Scene.h"
 #include <algorithm>
 #include <exception>
@@ -31,6 +33,7 @@ void SceneCheckPanel::Check(const Scene &scene, const CameraPose &fallback,
 	              std::make_move_iterator(assets.end()));
 	issues_.swap(issues);
 	error_.clear();
+	assetActionError_.clear();
 	checked_ = true;
 }
 
@@ -55,7 +58,9 @@ std::string SceneCheckPanel::GetReport() const {
 
 bool SceneCheckPanel::MatchesFilter(const SceneValidationIssue &issue,
                                     const Scene &scene) const {
-	if (filter_.empty() || issue.message.find(filter_) != std::string::npos) {
+	if (filter_.empty() || issue.message.find(filter_) != std::string::npos ||
+	    (!issue.assetPath.empty() &&
+	     PathUtils::ToUtf8(issue.assetPath).find(filter_) != std::string::npos)) {
 		return true;
 	}
 
@@ -132,6 +137,9 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 	} else if (checked_) {
 		ui.Text(std::format("Last check: {} issue(s)", issues_.size()));
 	}
+	if (!assetActionError_.empty()) {
+		ImGui::TextWrapped("%s", assetActionError_.c_str());
+	}
 
 	ui.InputText("Search Issues", filter_);
 	ui.SameLine();
@@ -198,6 +206,18 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 			}
 
 			ui.EndDisabled();
+		}
+
+		if (!issue.assetPath.empty()) {
+			const auto path = PathUtils::ToUtf8(issue.assetPath);
+			if (ui.Button("Copy Asset Path")) {
+				ImGui::SetClipboardText(path.c_str());
+			}
+			ui.SameLine();
+			if (ui.Button("Show Location in Explorer")) {
+				ShellUtils::RevealLocationInExplorer(issue.assetPath, assetActionError_);
+			}
+			ImGui::SetItemTooltip("%s", path.c_str());
 		}
 
 		ImGui::PopID();
