@@ -496,6 +496,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	}
 
 	const bool searchChanged = ui.InputText("Search", filter_);
+	ImGui::SetItemTooltip("Search by name or paste a file or folder path.");
 	bool scopeChanged = false;
 	if (!filter_.empty()) {
 		scopeChanged = ui.Checkbox("All Asset Types", searchAllTypes_);
@@ -545,7 +546,22 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		ImGui::TextDisabled("Double-click a folder to open it.");
 	}
 
-	const bool mixedTypes = !displayedResults_.empty() ||
+	auto search = StringConversion::Utf8ToWide(filter_);
+	if (search.size() >= 2 && search.front() == L'"' && search.back() == L'"') {
+		search = search.substr(1, search.size() - 2);
+	}
+	std::ranges::replace(search, L'\\', L'/');
+	auto searchPath = std::filesystem::path(search);
+	const bool absoluteSearch = searchPath.is_absolute();
+	if (absoluteSearch) {
+		searchPath = searchPath.lexically_normal();
+		if (!searchPath.has_filename() && searchPath.has_relative_path()) {
+			searchPath = searchPath.parent_path();
+		}
+		search = searchPath.generic_wstring();
+	}
+
+	const bool mixedTypes = !displayedResults_.empty() || absoluteSearch ||
 	                        (!filter_.empty() && searchAllTypes_);
 	const std::array filesByType{
 	    std::pair{AssetType::MODEL, &assets.GetModels()},
@@ -556,7 +572,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	    std::pair{AssetType::SCRIPT, &assets.GetScripts()},
 	    std::pair{AssetType::ANIMATION_CLIP, &assets.GetAnimationClips()},
 	    std::pair{AssetType::GAME_SETTINGS, &assets.GetGameConfigurations()}};
-	const auto search = StringConversion::Utf8ToWide(filter_);
 	const auto searchPrefix = searchCurrentFolderOnly_ && !currentDirectory_.empty()
 	                              ? currentDirectory_.generic_wstring() + L"/"
 	                              : std::wstring{};
@@ -578,6 +593,11 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		                          searchPrefix.data(), static_cast<int>(searchPrefix.size()),
 		                          TRUE) != CSTR_EQUAL)) {
 			return false;
+		}
+		if (absoluteSearch) {
+			const auto absolute = PathUtils::ResolveFromExecutable(path).generic_wstring();
+			return CompareStringOrdinal(absolute.c_str(), -1, search.c_str(), -1,
+			                            TRUE) == CSTR_EQUAL;
 		}
 		const auto queryPath = std::wstring_view(text).substr(searchPrefix.size());
 		return !search.empty() &&
