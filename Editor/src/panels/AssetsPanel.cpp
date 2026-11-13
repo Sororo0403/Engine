@@ -25,6 +25,8 @@
 void AssetsPanel::RequestReveal(const std::filesystem::path &path) {
 	resultPaths_.clear();
 	previousSearch_.clear();
+	previousResults_.clear();
+	previousResultSelection_.clear();
 	unavailableRevealPath_.clear();
 	revealPath_ = path;
 }
@@ -42,6 +44,8 @@ bool AssetsPanel::RevealIndexedAsset(const std::filesystem::path &path,
 	}
 	unavailableRevealPath_.clear();
 	previousSearch_.clear();
+	previousResults_.clear();
+	previousResultSelection_.clear();
 	focusRequested_ = true;
 	return true;
 }
@@ -79,6 +83,8 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	type_ = type;
 	displayedResults_.clear();
 	previousSearch_.clear();
+	previousResults_.clear();
+	previousResultSelection_.clear();
 	selectedPath_.clear();
 	selectedItems_.clear();
 	selectionAnchor_.clear();
@@ -122,6 +128,8 @@ void AssetsPanel::OpenDirectory(std::filesystem::path directory) {
 	selectionAnchor_.clear();
 	filter_.clear();
 	previousSearch_.clear();
+	previousResults_.clear();
+	previousResultSelection_.clear();
 	unavailableRevealPath_.clear();
 	revealMessage_.clear();
 	scrollToSelected_ = false;
@@ -297,7 +305,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		}
 
 		if (!revealMessage_.empty()) {
-			previousSearch_.clear();
 			unavailableRevealPath_ = revealPath_;
 		}
 		revealPath_.clear();
@@ -473,6 +480,8 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	if (ui.InputText("Search", filter_)) {
 		displayedResults_.clear();
 		previousSearch_.clear();
+		previousResults_.clear();
+		previousResultSelection_.clear();
 		unavailableRevealPath_.clear();
 		scrollToTop_ = true;
 		// 検索で隠れたアセットを誤って操作しないよう選択を解除する
@@ -483,7 +492,20 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		revealMessage_.clear();
 	}
 
-	if (!previousSearch_.empty()) {
+	if (!previousResults_.empty() && displayedResults_.empty() &&
+	    unavailableRevealPath_.empty()) {
+		ui.SameLine();
+		if (ui.Button("Back to Results")) {
+			auto results = std::exchange(previousResults_, {});
+			auto selection = std::exchange(previousResultSelection_, {});
+			RestoreDirectory(previousSearchDirectory_, assets);
+			displayedResults_ = std::move(results);
+			selectedItems_ = std::move(selection);
+			selectionAnchor_ = previousSearchAsset_;
+			scrollToSelected_ = true;
+			scrollToTop_ = false;
+		}
+	} else if (!previousSearch_.empty() && unavailableRevealPath_.empty()) {
 		ui.SameLine();
 		if (ui.Button("Back to Search")) {
 			auto search = std::exchange(previousSearch_, std::string{});
@@ -850,6 +872,8 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				    ui.MenuItem("Show in Containing Folder")) {
 					RequestReveal(assetPath);
 					previousSearch_ = filter_;
+					previousResults_ = displayedResults_;
+					previousResultSelection_ = selectedItems_;
 					previousSearchDirectory_ = currentDirectory_;
 					previousSearchAsset_ = assetPath;
 				}
@@ -1261,6 +1285,8 @@ void AssetsPanel::Clear() {
 	currentDirectory_.clear();
 	filter_.clear();
 	previousSearch_.clear();
+	previousResults_.clear();
+	previousResultSelection_.clear();
 	revealPath_.clear();
 	resultPaths_.clear();
 	displayedResults_.clear();
