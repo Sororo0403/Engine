@@ -686,35 +686,48 @@ AssetUsage::Paths AssetUsage::CopyTo(std::span<const fs::path> sources,
 			CopyAsset(source, target, *outputs.back(),
 			          [&](const fs::path &file, const fs::path &relative,
 			              OutputDirectory &output) {
-				          if (rebase) {
-					          const auto copiedFile = target.parent_path() / relative;
-
-					          if (PathUtils::IsModelFile(file)) {
+				          const auto copiedFile = target.parent_path() / relative;
+				          if (PathUtils::IsModelFile(file)) {
+					          if (rebase) {
 						          CheckModelRelocation(file, map, true);
-					          } else if (PrefabSerializer::IsPrefabPath(file)) {
-						          Scene prefab;
-						          SceneObjectId nextId = 0, prefabRoot = 0;
-						          std::string text, issue;
-						          if (!PrefabSerializer::Load(file, prefab, issue, &nextId) ||
-						              !PrefabSerializer::Validate(prefab, prefabRoot, issue) ||
+					          }
+				          } else if (PrefabSerializer::IsPrefabPath(file)) {
+					          Scene prefab;
+					          SceneObjectId nextId = 0, prefabRoot = 0;
+					          std::string text, issue;
+					          if (!PrefabSerializer::Load(file, prefab, issue, &nextId)) {
+						          if (!rebase) {
+							          output.Copy(file, relative);
+							          return;
+						          }
+						          throw std::runtime_error("Could not copy Prefab: " + issue);
+					          }
+					          if (Rewrite(prefab, map) || rebase) {
+						          if (!PrefabSerializer::Validate(prefab, prefabRoot, issue) ||
 						              !PrefabSerializer::Serialize(prefab, prefabRoot,
 						                                           copiedFile, text, issue, nextId)) {
 							          throw std::runtime_error("Could not copy Prefab: " + issue);
 						          }
-
 						          output.Text(relative, text);
 						          return;
-					          } else if (PathUtils::HasExtension(file, ".json") && IsSceneFile(file)) {
-						          Scene scene;
-						          fs::path savedRoot;
-						          std::string text;
-						          if (!SceneSerializer::Deserialize(scene, ReadText(file), file, &savedRoot) ||
-						              !SceneSerializer::SerializeForFile(
-						                  scene, text, copiedFile,
-						                  savedRoot.empty() ? projectRoot : savedRoot)) {
+					          }
+				          } else if (PathUtils::HasExtension(file, ".json") && IsSceneFile(file)) {
+					          Scene scene;
+					          fs::path savedRoot;
+					          std::string text;
+					          if (!SceneSerializer::Deserialize(scene, ReadText(file), file, &savedRoot)) {
+						          if (!rebase) {
+							          output.Copy(file, relative);
+							          return;
+						          }
+						          throw std::runtime_error("Could not copy scene: " + PathUtils::ToUtf8(file));
+					          }
+					          if (Rewrite(scene, map) || rebase) {
+						          if (!SceneSerializer::SerializeForFile(
+					                  scene, text, copiedFile,
+					                  savedRoot.empty() ? projectRoot : savedRoot)) {
 							          throw std::runtime_error("Could not copy scene: " + PathUtils::ToUtf8(file));
 						          }
-
 						          output.Text(relative, text);
 						          return;
 					          }
