@@ -948,6 +948,7 @@ class EditorScene final : public IScene {
 	RecentScenes recentScenes_;
 	std::filesystem::path pendingOpenPath_;
 	std::filesystem::path pendingGameExportReplacement_;
+	std::filesystem::path missingRecentProject_;
 	SceneObjectId pendingOpenObject_ = 0;
 	std::vector<std::filesystem::path> pendingAssetPaths_;
 	std::vector<AssetUsage::Reference> assetReferences_;

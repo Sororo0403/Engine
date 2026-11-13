@@ -4562,6 +4562,7 @@ void EditorScene::UpdateDialogs() {
 		const auto result = fileDialog_.Draw(ui_);
 
 		if (result == FileDialogResult::CANCELLED) {
+			missingRecentProject_.clear();
 			stage_ = DialogStage::IDLE;
 		} else if (result == FileDialogResult::ACCEPTED) {
 			SwitchProject(fileDialog_.GetSelectedPath(),
@@ -5510,6 +5511,11 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		    stage_ == DialogStage::OPEN_PROJECT) {
 			fileDialog_.RetrySelection(std::move(error));
 		} else if (fromRecent) {
+			std::error_code status;
+			if (std::filesystem::symlink_status(folder / L"project.json", status)
+			        .type() == std::filesystem::file_type::not_found) {
+				missingRecentProject_ = folder;
+			}
 			fileDialog_.Show(FileDialogMode::SELECT_DIRECTORY,
 			                 FindExistingDirectory(folder), FileDialogFilter::SCENE,
 			                 "Open Project###FileDialog");
@@ -5582,7 +5588,14 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		texturePreviewPanel_.Clear();
 		stage_ = DialogStage::IDLE;
 
-		SaveEditorSession();
+		const auto missing = std::exchange(missingRecentProject_, std::filesystem::path{});
+		std::error_code status;
+		const bool removedRecent =
+		    !missing.empty() &&
+		    std::filesystem::symlink_status(missing / L"project.json", status)
+		            .type() == std::filesystem::file_type::not_found &&
+		    std::erase(preferences_.recentProjects, missing) != 0;
+		SaveEditorSession(removedRecent);
 		if (!startupError.empty()) {
 			Logger::Warning(startupError);
 			consolePanel_.Show();
