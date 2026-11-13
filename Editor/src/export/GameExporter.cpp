@@ -835,7 +835,9 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 			for (const auto &[id, object] : entry.objects) {
 				if (!startupSettingsValid || !object.triggerActions)
 					continue;
-				for (const auto &action : object.triggerActions->actions) {
+				const auto &actions = object.triggerActions->actions;
+				for (std::size_t actionIndex = 0; actionIndex < actions.size(); ++actionIndex) {
+					const auto &action = actions[actionIndex];
 					if (action.operation !=
 					        TriggerAction::Operation::LOAD_SCENE ||
 					    action.scenePath.empty() || action.arrivalTag.empty())
@@ -868,10 +870,13 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 					}
 					if (!arrival.error.empty())
 						appendIssue(
-						    std::format("Load Scene on object ID {} to '{}' "
-						                "(Arrival Tag '{}'): {}",
-						                id, PathUtils::ToUtf8(found->source),
-							                action.arrivalTag, arrival.error),
+						    std::format("{} / {} (ID {}), Trigger Actions > Action {}: "
+						                "Load Scene to '{}' (Arrival Tag '{}'): {}",
+						                entry.source.empty() ? "Untitled scene"
+						                                     : PathUtils::ToUtf8(entry.source),
+						                object.name.empty() ? "Object" : object.name, id,
+						                actionIndex + 1, PathUtils::ToUtf8(found->source),
+						                action.arrivalTag, arrival.error),
 						    found->source, arrival.invalidObject, {}, {},
 						    entry.prefab ? entry.source : fs::path{},
 						    GameExportField::NONE,
