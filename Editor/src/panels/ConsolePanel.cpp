@@ -3,6 +3,7 @@
 #include "core/Logger.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "platform/windows/PathUtils.h"
+#include "scripting/LuaScript.h"
 
 #include <algorithm>
 #include <format>
@@ -302,13 +303,14 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 	ScriptEditRequest script;
 	if (drawDetails) {
 		if (selected) {
+			const bool isLua = PathUtils::HasExtension(selected->sourcePath, ".lua");
 			if (ui.Button("Copy Message")) {
 				std::string text;
 				AppendClipboardMessage(text, selected->message);
 				ImGui::SetClipboardText(text.c_str());
 			}
 
-			if (PathUtils::HasExtension(selected->sourcePath, ".lua")) {
+			if (isLua) {
 				ui.SameLine();
 				ui.BeginDisabled(!canEditScript);
 				if (ui.Button(stopPlayToEdit ? "Stop and Edit Script" : "Edit Script")) {
@@ -326,7 +328,21 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 				ui.Text("First Play Error (outside recent messages)");
 			}
 			if (!selected->sourcePath.empty()) {
-				ui.Text("Source: " + PathUtils::ToUtf8(selected->sourcePath));
+				auto location = PathUtils::ToUtf8(selected->sourcePath);
+				if (isLua) {
+					auto absolute = PathUtils::ResolveFromExecutable(selected->sourcePath);
+					absolute.make_preferred();
+					const auto line = LuaScript::FindErrorLine(
+					    PathUtils::ToUtf8(absolute), selected->message);
+					if (line > 0) {
+						location += std::format(":{}", line);
+					}
+				}
+				if (ui.Button("Copy Source Location")) {
+					ImGui::SetClipboardText(location.c_str());
+				}
+				ui.SameLine();
+				ui.Text(location);
 			}
 			ui.Text(selected->message);
 		} else {
