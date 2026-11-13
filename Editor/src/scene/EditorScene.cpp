@@ -4020,18 +4020,27 @@ std::filesystem::path EditorScene::GetRecoveredScenePath() const {
 
 std::filesystem::path EditorScene::GetSceneCopyPath() const {
 	const auto &currentPath = document_.GetFilePath();
-	if (currentPath.empty()) {
-		return recoverySourceFile_.empty()
-		           ? GetSceneDialogDirectory({}) / L"Untitled.copy.scene.json"
-		           : GetRecoveredScenePath();
+	if (currentPath.empty() && !recoverySourceFile_.empty()) {
+		return GetRecoveredScenePath();
 	}
 
-	auto stem = currentPath.stem();
+	auto stem = currentPath.empty() ? std::filesystem::path(L"Untitled")
+	                               : currentPath.stem();
 	if (PathUtils::HasExtension(stem, ".scene")) {
 		stem = stem.stem();
 	}
-	return GetSceneDialogDirectory(currentPath) /
-	       (stem.native() + L".copy.scene.json");
+	const auto directory = GetSceneDialogDirectory(currentPath);
+	const auto searchDirectory = directory.empty()
+	                                 ? PathUtils::GetExecutableDirectory()
+	                                 : directory;
+	auto copyStem = stem.native() + L".copy";
+	const std::wstring extension = L".scene.json";
+	if (!PathUtils::IsValidFileName(copyStem + extension)) {
+		copyStem = L"Scene.copy";
+	}
+
+	return searchDirectory / AssetFolders::SuggestAvailableName(
+	                             searchDirectory, std::move(copyStem), extension);
 }
 
 void EditorScene::StartSaveCopy(bool reload) {
@@ -5545,11 +5554,15 @@ void EditorScene::UpdateDialogs() {
 			if (sceneSaveConflict_) {
 				if (pendingAction_ != EditorAction::NONE &&
 				    ui_.Button("Save As and Continue...")) {
-					ui_.CloseCurrentPopup();
-					ui_.EndPopup();
-					fileDialog_.Show(FileDialogMode::SAVE, GetSceneCopyPath());
-					stage_ = DialogStage::SAVE_FILE;
-					return;
+					try {
+						fileDialog_.Show(FileDialogMode::SAVE, GetSceneCopyPath());
+						ui_.CloseCurrentPopup();
+						ui_.EndPopup();
+						stage_ = DialogStage::SAVE_FILE;
+						return;
+					} catch (const std::exception &error) {
+						errorActionMessage_ = error.what();
+					}
 				}
 				if (pendingAction_ != EditorAction::NONE) {
 					ui_.SameLine();
