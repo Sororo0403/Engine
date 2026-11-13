@@ -3,6 +3,7 @@
 #include "dialogs/FileDialog.h"
 #include "export/GameExporter.h"
 #include <cstddef>
+#include <optional>
 #include <string>
 
 class ImGuiSystem;
@@ -58,7 +59,9 @@ class GameExportDialog {
 	/// <summary>
 	/// 出力前検査の結果をダイアログに表示する
 	/// </summary>
-	void SetCheckResult(std::string message, std::vector<GameExportIssue> issues = {});
+	/// <param name="continueFromIssue">修正した項目の付近から確認を続けるか</param>
+	void SetCheckResult(std::string message, std::vector<GameExportIssue> issues = {},
+	                    bool continueFromIssue = false);
 
 	/// <summary>
 	/// OPEN_ISSUEまたはEDIT_ISSUE_SCRIPTで選択した不備を取得する
@@ -105,6 +108,6 @@ class GameExportDialog {
 	bool opening_ = false;
 	bool includesUnsavedEdits_ = false;
 	bool browsing_ = false;
-	bool scrollCheckResultToTop_ = false;
+	std::optional<std::size_t> issueToScrollTo_;
 	bool resumeDraft_ = false;
 };

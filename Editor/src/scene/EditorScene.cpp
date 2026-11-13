@@ -3287,7 +3287,7 @@ void EditorScene::WriteGameExport() {
 	stage_ = DialogStage::EXPORT_RESULT;
 }
 
-void EditorScene::CheckGameExport() {
+void EditorScene::CheckGameExport(bool continueFromIssue) {
 	SceneDocument startup;
 	auto options = exportDialog_.GetOptions();
 	std::string error;
@@ -3303,7 +3303,7 @@ void EditorScene::CheckGameExport() {
 		issues.push_back({error});
 	}
 	exportDialog_.SetCheckResult("Export check failed: " + error,
-	                             std::move(issues));
+	                             std::move(issues), continueFromIssue);
 }
 
 bool EditorScene::SetStartupScene(const std::filesystem::path &path,
@@ -4736,7 +4736,7 @@ void EditorScene::UpdateDialogs() {
 			if (result == ScriptEditorDialog::Result::SAVED) {
 				if (!assets_.Refresh())
 					error = assets_.GetError();
-				CheckGameExport();
+				CheckGameExport(true);
 			}
 			exportDialog_.Reopen(std::move(error));
 			stage_ = DialogStage::EXPORT_GAME;

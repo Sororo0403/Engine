@@ -2,6 +2,7 @@
 #include "graphics/ui/ImGuiSystem.h"
 #include "platform/windows/PathUtils.h"
 #include "platform/windows/ShellUtils.h"
+#include <algorithm>
 #include <imgui.h>
 #include <stdexcept>
 #include <utility>
@@ -141,10 +142,16 @@ void GameExportDialog::FollowSavedScene(
 }
 
 void GameExportDialog::SetCheckResult(std::string message,
-                                      std::vector<GameExportIssue> issues) {
+                                      std::vector<GameExportIssue> issues,
+                                      bool continueFromIssue) {
+	issueToScrollTo_.reset();
+	if (!issues.empty()) {
+		issueToScrollTo_ = continueFromIssue
+		                       ? (std::min)(selectedIssue_, issues.size() - 1)
+		                       : 0;
+	}
 	checkResult_ = std::move(message);
 	checkIssues_ = std::move(issues);
-	scrollCheckResultToTop_ = true;
 }
 
 const GameExportIssue &GameExportDialog::GetSelectedIssue() const {
@@ -154,6 +161,7 @@ const GameExportIssue &GameExportDialog::GetSelectedIssue() const {
 void GameExportDialog::ClearCheckResult() {
 	checkResult_.clear();
 	checkIssues_.clear();
+	issueToScrollTo_.reset();
 }
 
 void GameExportDialog::ShowExportFailure(std::string error,
@@ -251,7 +259,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 	                                        : GameExportResult::NONE;
 	if (!checkIssues_.empty()) {
 		ui.Text("Export issues");
-		if (scrollCheckResultToTop_) {
+		if (issueToScrollTo_ == 0) {
 			ImGui::SetNextWindowScroll({-1.0f, 0.0f});
 		}
 		const float height = 8.0f * ImGui::GetTextLineHeightWithSpacing();
@@ -260,6 +268,9 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 				const auto &issue = checkIssues_[i];
 				ImGui::PushID(static_cast<int>(i));
 				ImGui::TextWrapped("%s", issue.message.c_str());
+				if (issueToScrollTo_ == i && i != 0) {
+					ImGui::SetScrollHereY(0.0f);
+				}
 				const bool hasObject =
 				    issue.objectId != 0 || !issue.scenePath.empty();
 				if (hasObject &&
@@ -286,9 +297,9 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui) {
 				ImGui::PopID();
 				ImGui::Spacing();
 			}
+			issueToScrollTo_.reset();
 		}
 		ImGui::EndChild();
-		scrollCheckResultToTop_ = false;
 		if (ui.Button("Copy Details")) {
 			ImGui::SetClipboardText(checkResult_.c_str());
 		}
