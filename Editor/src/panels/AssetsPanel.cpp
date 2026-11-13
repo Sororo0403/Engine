@@ -108,6 +108,7 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	audioImportRequested_ = false;
 	modelImportRequested_ = false;
 	folderCreateRequested_ = false;
+	refreshed_ = false;
 	prefabCreateRequested_ = false;
 	scriptCreateRequested_ = false;
 	scriptEditPath_.clear();
@@ -228,6 +229,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
                   bool canSetTexture, bool canEditAssets, bool canReplaceMesh,
                   std::span<const TextureSlotChoice> textureSlots,
                   bool canCreatePrefab) {
+	refreshed_ = false;
 	sceneOpenPath_.clear();
 	gameSettingsPath_.clear();
 	sceneAppendPath_.clear();
@@ -282,6 +284,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		unavailableRevealPath_.clear();
 		revealMessage_.clear();
 		if (assets.Refresh()) {
+			refreshed_ = true;
 			RestoreDirectory(currentDirectory_, assets);
 			ValidateClipboard();
 		}

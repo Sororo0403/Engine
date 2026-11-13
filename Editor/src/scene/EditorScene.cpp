@@ -670,6 +670,9 @@ bool EditorScene::Update(float deltaTime) {
 		                                   object->mesh->IsValid();
 	                            }),
 	    textureSlots, selection_.GetCount() == 1);
+	if (!wasBusy && assetsPanel_.DidRefresh()) {
+		sceneCheckPanel_.RequestRecheckIfOpen();
+	}
 	if (!wasBusy && !assetsPanel_.GetTexturePreviewRequest().empty()) {
 		texturePreviewPanel_.Open(assetsPanel_.GetTexturePreviewRequest());
 	}

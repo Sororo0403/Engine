@@ -164,6 +164,11 @@ class AssetsPanel {
 	bool IsFolderCreateRequested() const;
 
 	/// <summary>
+	/// 今回の描画でRefreshを押し、素材一覧の再読み込みが成功したか確認する
+	/// </summary>
+	bool DidRefresh() const { return refreshed_; }
+
+	/// <summary>
 	/// 次の描画で既存のAssetsフォルダへ移動し、検索とアセット選択を解除する
 	/// </summary>
 	/// <param name="folder">検索先基準の相対フォルダ。空は検索先自身。呼び出し前に一覧を更新しておく</param>
@@ -347,6 +352,7 @@ class AssetsPanel {
 	bool audioImportRequested_ = false;
 	bool modelImportRequested_ = false;
 	bool folderCreateRequested_ = false;
+	bool refreshed_ = false;
 	bool scriptCreateRequested_ = false;
 	std::filesystem::path scriptEditPath_, clipEditPath_;
 	bool clipCreateRequested_ = false;
