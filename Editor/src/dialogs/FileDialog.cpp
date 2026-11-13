@@ -231,8 +231,16 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 		}
 		const bool choosingProject = filter_ == FileDialogFilter::PROJECT;
 		const bool searchFolders = choosingProject || filter_ == FileDialogFilter::GAME_EXPORT;
+		bool folderSearchSubmitted = false;
+		if (searchFolders) {
+			folderSearchSubmitted = ImGui::InputText(
+			    "Search Folders", &search_, ImGuiInputTextFlags_EnterReturnsTrue);
+			ImGui::SetItemTooltip("Press Enter when the search matches one project or game export.");
+		} else if (mode_ != FileDialogMode::SELECT_DIRECTORY) {
+			ui.InputText("Search Files", search_);
+		}
 		if ((searchFolders || mode_ != FileDialogMode::SELECT_DIRECTORY) &&
-		    ui.InputText(searchFolders ? "Search Folders" : "Search Files", search_)) {
+		    ImGui::IsItemEdited()) {
 			ImGui::SetNextWindowScroll({-1.0f, 0.0f});
 		}
 		const auto search = StringConversion::Utf8ToWide(search_);
@@ -244,6 +252,8 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 
 		if (drawEntries) {
 			bool matchingEntry = false;
+			const Entry *searchMatch = nullptr;
+			bool multipleMatches = false;
 			const auto &entries = searchProjectScenes_ ? projectScenes_ : entries_;
 			for (std::size_t i = 0; i < entries.size(); ++i) {
 				const Entry &entry = entries[i];
@@ -262,6 +272,10 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 						continue;
 					}
 					matchingEntry = true;
+				}
+				if (folderSearchSubmitted && entry.openableFolder) {
+					multipleMatches |= searchMatch != nullptr;
+					searchMatch = &entry;
 				}
 
 				const std::string name = PathUtils::ToUtf8(displayPath);
@@ -312,6 +326,14 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 			}
 			if (!search_.empty() && !matchingEntry) {
 				ui.Text(searchFolders ? "No matching folders." : "No matching files.");
+			}
+			if (folderSearchSubmitted && !search_.empty()) {
+				if (searchMatch && !multipleMatches) {
+					openFolder = searchMatch->path;
+				} else {
+					error_ = multipleMatches ? "Narrow the search to one result or select a folder."
+					                         : "No project or game export matches the search.";
+				}
 			}
 		}
 
