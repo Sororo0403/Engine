@@ -109,6 +109,7 @@ class GameExportDialog {
 	};
 
 	void ClearCheckResult();
+	bool SuggestOutputName();
 
 	GameExportOptions options_;
 	FileDialog folderDialog_;

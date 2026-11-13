@@ -257,6 +257,26 @@ void GameExportDialog::PreserveDraft() {
 	resumeDraft_ = true;
 }
 
+bool GameExportDialog::SuggestOutputName() {
+	try {
+		const auto output = ReadDestination(output_);
+		if (!output.is_absolute() ||
+		    !PathUtils::IsValidFileName(output.filename())) {
+			throw std::runtime_error("Enter a valid output folder name.");
+		}
+		const auto suggested = FindAvailableDestination(output);
+		error_.clear();
+		if (suggested != output) {
+			output_ = PathUtils::ToUtf8(suggested);
+			checkResultStale_ = !checkResult_.empty();
+			return true;
+		}
+	} catch (const std::exception &e) {
+		error_ = e.what();
+	}
+	return false;
+}
+
 GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
                                         bool canSaveAndCheck) {
 	constexpr const char *title = "Export Game###GameExportDialog";
@@ -322,21 +342,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 	ui.SameLine();
 	ui.BeginDisabled(output_.empty());
 	if (ui.Button("Suggest Name")) {
-		try {
-			const auto output = ReadDestination(output_);
-			if (!output.is_absolute() ||
-			    !PathUtils::IsValidFileName(output.filename())) {
-				throw std::runtime_error("Enter a valid output folder name.");
-			}
-			const auto suggested = FindAvailableDestination(output);
-			if (suggested != output) {
-				output_ = PathUtils::ToUtf8(suggested);
-				changed = true;
-			}
-			error_.clear();
-		} catch (const std::exception &e) {
-			error_ = e.what();
-		}
+		SuggestOutputName();
 	}
 	ui.EndDisabled();
 	changed |= drawField(GameExportField::TITLE, [&] {
@@ -524,6 +530,18 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 				if (const auto *label = EditFieldLabel(issue.field); label && ui.Button(label)) {
 					selectedIssue_ = i;
 					focusField_ = issue.field;
+				}
+				if (issue.field == GameExportField::OUTPUT_FOLDER &&
+				    !issue.locationPath.empty() && !checkResultStale_) {
+					std::error_code status;
+					if (std::filesystem::exists(
+					        std::filesystem::symlink_status(issue.locationPath, status))) {
+						ui.SameLine();
+						if (ui.Button("Use Next Available Name") && SuggestOutputName()) {
+							selectedIssue_ = i;
+							focusField_ = GameExportField::OUTPUT_FOLDER;
+						}
+					}
 				}
 				ImGui::PopID();
 				ImGui::Spacing();
