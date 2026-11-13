@@ -421,9 +421,12 @@ class EditorScene final : public IScene {
 	                   bool fromRecent = false);
 
 	/// <summary>
-	/// 現在のプロジェクト・シーンとSceneビューの視点をEditor設定に記録する
+	/// 現在のプロジェクト・シーンと、視点および選択状態をEditor設定に記録する
 	/// </summary>
-	void SaveEditorSession(bool force = false);
+	/// <param name="force">変更の有無にかかわらず保存するか</param>
+	/// <param name="sceneCopy">視点と選択状態を引き継ぐコピーの保存先</param>
+	void SaveEditorSession(bool force = false,
+	                       const std::filesystem::path &sceneCopy = {});
 
 	/// <summary>
 	/// 選択した素材の参照元を調べ、ごみ箱へ移すときは移動順も確認する

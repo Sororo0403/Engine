@@ -4885,6 +4885,7 @@ void EditorScene::UpdateDialogs() {
 			if (document_.SaveCopy(fileDialog_.GetSelectedPath())) {
 				const auto &copy = fileDialog_.GetSelectedPath();
 				recentScenes_.Add(copy);
+				SaveEditorSession(false, copy);
 				assets_.Refresh();
 				stage_ = DialogStage::IDLE;
 				if (reload && !OpenScene(document_.GetFilePath(), false)) {
@@ -5973,7 +5974,8 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 	}
 }
 
-void EditorScene::SaveEditorSession(bool force) {
+void EditorScene::SaveEditorSession(bool force,
+                                    const std::filesystem::path &sceneCopy) {
 	if (!canSavePreferences_) {
 		return;
 	}
@@ -5990,8 +5992,14 @@ void EditorScene::SaveEditorSession(bool force) {
 		                                  assetsPanel_.GetOpenDirectory());
 	}
 
-	current.RememberSceneView(document_.GetFilePath(), cameraController_.GetViewState());
-	current.RememberSceneSelection(document_.GetFilePath(), selection_.GetIds());
+	const auto view = cameraController_.GetViewState();
+	const auto selection = selection_.GetIds();
+	current.RememberSceneView(document_.GetFilePath(), view);
+	current.RememberSceneSelection(document_.GetFilePath(), selection);
+	if (!sceneCopy.empty()) {
+		current.RememberSceneView(sceneCopy, view);
+		current.RememberSceneSelection(sceneCopy, selection);
+	}
 
 	if ((force || !(current == preferences_)) && current.Save()) {
 		preferences_ = std::move(current);
