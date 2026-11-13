@@ -350,17 +350,30 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 					}
 				}
 				if (!issue.assetPath.empty()) {
-					if (hasObject || !issue.scriptPath.empty())
-						ui.SameLine();
+					const auto assetPath = PathUtils::ToUtf8(issue.assetPath);
+					std::error_code statusError;
+					const auto status = std::filesystem::symlink_status(
+					    issue.assetPath, statusError);
+					const bool missing =
+					    status.type() == std::filesystem::file_type::not_found;
+					ui.BeginDisabled(missing);
 					if (ui.Button("Show in Assets")) {
 						selectedIssue_ = i;
 						result = GameExportResult::REVEAL_ISSUE_ASSET;
 					}
+					ui.EndDisabled();
+					if (missing &&
+					    ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+						ImGui::SetTooltip("The referenced file is missing.");
+					}
 					ui.SameLine();
-					if (ui.Button("Show in Explorer"))
+					if (ui.Button(missing ? "Open Folder in Explorer" : "Show in Explorer"))
 						ShellUtils::RevealLocationInExplorer(issue.assetPath, error_);
-					ImGui::SetItemTooltip("%s",
-					                      PathUtils::ToUtf8(issue.assetPath).c_str());
+					ImGui::SetItemTooltip("%s", assetPath.c_str());
+					ui.SameLine();
+					if (ui.Button("Copy Asset Path")) {
+						ImGui::SetClipboardText(assetPath.c_str());
+					}
 				}
 				ImGui::PopID();
 				ImGui::Spacing();
