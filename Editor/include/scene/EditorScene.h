@@ -1030,6 +1030,8 @@ class EditorScene final : public IScene {
 	bool errorHasPlayLog_ = false;
 	SceneObjectId errorReplayCameraOverride_ = 0;
 	std::string errorActionMessage_;
+	AssetUsage::Moves failedAssetMoves_;
+	bool failedAssetMoveWasCutPaste_ = false;
 	bool sceneSaveFailed_ = false;
 	bool sceneSaveConflict_ = false;
 	SceneObjectId errorObjectId_ = 0;

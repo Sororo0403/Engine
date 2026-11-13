@@ -784,6 +784,8 @@ bool EditorScene::Update(float deltaTime) {
 
 			if (!moves.empty() && !RelocateAssets(moves, error)) {
 				ShowError(std::move(error));
+				failedAssetMoves_ = std::move(moves);
+				failedAssetMoveWasCutPaste_ = cutPaste;
 			} else if (cutPaste) {
 				assetsPanel_.FinishPaste();
 			}
@@ -5362,6 +5364,30 @@ void EditorScene::UpdateDialogs() {
 				ui_.SameLine();
 			}
 
+			if (!failedAssetMoves_.empty()) {
+				if (ui_.Button("Show Destination Folder")) {
+					ShellUtils::RevealLocationInExplorer(
+					    failedAssetMoves_.front().second.parent_path(), errorActionMessage_);
+				}
+				ui_.SameLine();
+				if (ui_.Button("Retry Move")) {
+					std::string error;
+					if (RelocateAssets(failedAssetMoves_, error)) {
+						if (failedAssetMoveWasCutPaste_) {
+							assetsPanel_.FinishPaste();
+						}
+						failedAssetMoves_.clear();
+						ui_.CloseCurrentPopup();
+						ui_.EndPopup();
+						stage_ = DialogStage::IDLE;
+						return;
+					}
+					errorMessage_ = std::move(error);
+					errorActionMessage_.clear();
+				}
+				ui_.SameLine();
+			}
+
 			if (sceneSaveFailed_) {
 				if (ui_.Button("Show Save Location")) {
 					ShellUtils::RevealLocationInExplorer(document_.GetFilePath(),
@@ -5512,6 +5538,7 @@ void EditorScene::UpdateDialogs() {
 				}
 				ui_.CloseCurrentPopup();
 				errorObjectId_ = 0;
+				failedAssetMoves_.clear();
 				CancelPendingAction();
 			}
 
@@ -5844,6 +5871,8 @@ void EditorScene::ShowError(std::string message, SceneObjectId objectId,
 	errorHasPlayLog_ = false;
 	errorReplayCameraOverride_ = 0;
 	errorActionMessage_.clear();
+	failedAssetMoves_.clear();
+	failedAssetMoveWasCutPaste_ = false;
 	sceneSaveFailed_ = false;
 	sceneSaveConflict_ = false;
 	errorObjectId_ = document_.GetScene().Contains(objectId) ? objectId : 0;
