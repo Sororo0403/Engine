@@ -18,6 +18,8 @@ struct SceneValidationIssue {
 	SceneObjectId objectId = 0;
 	std::string message;
 	std::filesystem::path assetPath;
+	// 遷移先のシーンにある問題物体。objectIdは参照元の物体。
+	SceneObjectId destinationObjectId = 0;
 };
 
 namespace SceneValidation {

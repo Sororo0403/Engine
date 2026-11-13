@@ -45,6 +45,7 @@ void SceneCheckPanel::Check(const Scene &scene, const CameraPose &fallback,
 			if (!matches(issue))
 				continue;
 			if (issue.objectId == previous.objectId &&
+			    issue.destinationObjectId == previous.destinationObjectId &&
 			    issue.assetPath == previous.assetPath &&
 			    issue.message == previous.message) {
 				scrollToIssue_ = i;
@@ -270,7 +271,10 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 			std::error_code status;
 			if ((script || sceneFile) &&
 			    std::filesystem::is_regular_file(issue.assetPath, status)) {
-				if (ui.Button(script ? "Edit Script" : "Open Referenced Scene")) {
+				const char *label = script ? "Edit Script"
+				                    : issue.destinationObjectId != 0 ? "Show Destination Object"
+				                                                    : "Open Referenced Scene";
+				if (ui.Button(label)) {
 					lastIssue_ = i;
 					requested = {};
 					if (script) {
@@ -278,6 +282,7 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 						requested.scriptDiagnostic = issue.message;
 					} else {
 						requested.scenePath = issue.assetPath;
+						requested.destinationObjectId = issue.destinationObjectId;
 					}
 				}
 			}

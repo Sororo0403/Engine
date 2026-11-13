@@ -23,6 +23,7 @@ class SceneCheckPanel {
 		std::filesystem::path scriptPath;
 		std::string scriptDiagnostic;
 		std::filesystem::path scenePath;
+		SceneObjectId destinationObjectId = 0;
 	};
 
 	/// <summary>

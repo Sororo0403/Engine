@@ -577,13 +577,14 @@ bool EditorScene::Update(float deltaTime) {
 
 	auto checkedRequest = sceneCheckPanel_.Draw(
 	    ui_, scene, cameraController_.GetPose(), exportConfig_.actions);
-	const bool hasCheckRequest = !checkedRequest.objectIds.empty();
+	const bool hasCheckRequest =
+	    !checkedRequest.objectIds.empty() || !checkedRequest.scenePath.empty();
 
 	if (!wasBusy && !checkedRequest.assetPath.empty()) {
 		assetsPanel_.RequestReveal(checkedRequest.assetPath);
 	}
 
-	if (!wasBusy && hasCheckRequest) {
+	if (!wasBusy && !checkedRequest.objectIds.empty()) {
 		FinishEdit();
 
 		if (selection_.Set(std::move(checkedRequest.objectIds))) {
@@ -858,13 +859,19 @@ bool EditorScene::Update(float deltaTime) {
 		                                       : inspectorScene;
 		if (!requestedScene.empty() && !IsBusy() &&
 		    action == EditorAction::NONE &&
-		    hierarchyRequest.action == HierarchyPanel::Action::NONE &&
-		    ((checkedRequest.scenePath.empty() && inspectorScene.empty()) ||
-		     document_.GetFilePath().empty() ||
-		     !PathUtils::IsSameFile(requestedScene, document_.GetFilePath()))) {
-			// 保存確認が終わるまで、表示中の選択が変わっても開く対象を保持する。
-			pendingOpenPath_ = requestedScene;
-			action = EditorAction::OPEN_PATH;
+		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
+			const bool sameScene =
+			    (!checkedRequest.scenePath.empty() || !inspectorScene.empty()) &&
+			    !document_.GetFilePath().empty() &&
+			    PathUtils::IsSameFile(requestedScene, document_.GetFilePath());
+			if (!sameScene) {
+				// 保存確認が終わるまで、表示中の選択が変わっても開く対象を保持する。
+				pendingOpenPath_ = requestedScene;
+				action = EditorAction::OPEN_PATH;
+			} else if (checkedRequest.destinationObjectId != 0) {
+				FinishEdit();
+				RevealReferenceObject(checkedRequest.destinationObjectId);
+			}
 		}
 
 		const auto &requestedSettings = assetsPanel_.GetGameSettingsRequest();
@@ -1270,7 +1277,8 @@ bool EditorScene::Update(float deltaTime) {
 			}
 
 			if (action != EditorAction::NONE) {
-				StartAction(action);
+				StartAction(action, action == EditorAction::OPEN_PATH
+				                        ? checkedRequest.destinationObjectId : 0);
 			}
 		}
 	}

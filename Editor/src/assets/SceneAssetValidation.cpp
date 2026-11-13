@@ -26,6 +26,7 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 	struct AssetError {
 		std::string message;
 		std::filesystem::path path;
+		SceneObjectId destinationObjectId = 0;
 	};
 	std::map<std::filesystem::path, std::vector<AssetError>> models, textures,
 	    monoAudio, stereoAudio, scenes, scripts, uiTextures, prefabs, clips;
@@ -77,7 +78,7 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 				    {id,
 				     std::format("{}: {} Object: \"{}\" (ID {}).", field, error.message,
 				                 object.name.empty() ? "Object" : object.name,
-				                 id), error.path});
+				                 id), error.path, error.destinationObjectId});
 			}
 		};
 
@@ -92,19 +93,22 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 					if (inserted) {
 						Scene target;
 						std::string error;
+						SceneObjectId invalidObject = 0;
 						if (!SceneSerializer::Load(target, action.scenePath))
 							error = "Could not read destination scene: " +
 							        PathUtils::ToUtf8(action.scenePath);
 						else
 							SceneSimulation::ValidateArrival(
-							    target, action.arrivalTag, error);
+							    target, action.arrivalTag, error, {}, &invalidObject);
 						if (!error.empty()) {
 							const auto &path = action.scenePath;
 							const auto location =
 							    path.is_absolute() || !path.has_root_path()
 							        ? PathUtils::ResolveFromExecutable(path)
 							        : std::filesystem::path{};
-							entry->second.push_back({std::move(error), location});
+							entry->second.push_back(
+							    {std::move(error), location,
+							     target.Contains(invalidObject) ? invalidObject : 0});
 						}
 					}
 
