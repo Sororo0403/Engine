@@ -1,5 +1,6 @@
 #include "dialogs/FileDialog.h"
 
+#include "assets/AssetFolders.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "platform/windows/PathUtils.h"
 #include "platform/windows/StringConversion.h"
@@ -26,17 +27,7 @@ std::filesystem::path SuggestSaveName(const std::filesystem::path &path) {
 		stem = stem.stem();
 	}
 
-	for (std::size_t number = 2;; ++number) {
-		const std::filesystem::path name =
-		    stem.native() + L"-" + std::to_wstring(number) + suffix;
-		if (!PathUtils::IsValidFileName(name)) {
-			throw std::runtime_error("Shorten the file name to allow a numbered suffix.");
-		}
-		if (!std::filesystem::exists(
-		        std::filesystem::symlink_status(path.parent_path() / name))) {
-			return name;
-		}
-	}
+	return AssetFolders::SuggestAvailableName(path.parent_path(), stem.native(), suffix);
 }
 } // namespace
 

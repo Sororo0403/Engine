@@ -4,23 +4,20 @@
 #include <limits>
 #include <stdexcept>
 
-std::string AssetFolders::SuggestImportName(
-    const std::filesystem::path &assetRoot, const std::filesystem::path &folder,
-    const std::string &name, bool keepExtension) {
-	const auto original = PathUtils::FromUtf8(name);
+std::filesystem::path AssetFolders::SuggestAvailableName(
+    const std::filesystem::path &directory, std::wstring stem,
+    const std::wstring &extension) {
+	const std::filesystem::path original = stem + extension;
 	if (!PathUtils::IsValidFileName(original)) {
-		throw std::invalid_argument("Enter a valid import name.");
+		throw std::invalid_argument("Enter a valid file or folder name.");
 	}
 
-	const auto directory = Resolve(assetRoot, folder);
-	auto stem = (keepExtension ? original.stem() : original).native();
-	const auto extension = keepExtension ? original.extension().native() : std::wstring{};
 	const auto occupied = [&](const std::filesystem::path &candidate) {
 		return std::filesystem::exists(
 		    std::filesystem::symlink_status(directory / candidate));
 	};
 	if (!occupied(original)) {
-		return name;
+		return original;
 	}
 
 	std::size_t index = 2;
@@ -45,15 +42,29 @@ std::string AssetFolders::SuggestImportName(
 	for (;; ++index) {
 		candidate = stem + L"-" + std::to_wstring(index) + extension;
 		if (!PathUtils::IsValidFileName(candidate)) {
-			throw std::invalid_argument("Shorten the import name to allow a numbered suffix.");
+			throw std::invalid_argument("Shorten the name to allow a numbered suffix.");
 		}
 		if (!occupied(candidate)) {
-			return PathUtils::ToUtf8(candidate);
+			return candidate;
 		}
 		if (index == (std::numeric_limits<std::size_t>::max)()) {
-			throw std::runtime_error("No numbered import name is available.");
+			throw std::runtime_error("No numbered name is available.");
 		}
 	}
+}
+
+std::string AssetFolders::SuggestImportName(
+    const std::filesystem::path &assetRoot, const std::filesystem::path &folder,
+    const std::string &name, bool keepExtension) {
+	const auto original = PathUtils::FromUtf8(name);
+	if (!PathUtils::IsValidFileName(original)) {
+		throw std::invalid_argument("Enter a valid import name.");
+	}
+
+	const auto stem = keepExtension ? original.stem() : original;
+	const auto extension = keepExtension ? original.extension().native() : std::wstring{};
+	return PathUtils::ToUtf8(
+	    SuggestAvailableName(Resolve(assetRoot, folder), stem.native(), extension));
 }
 
 std::filesystem::path

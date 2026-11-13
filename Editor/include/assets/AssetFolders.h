@@ -5,6 +5,13 @@
 
 namespace AssetFolders {
 /// <summary>
+/// 指定フォルダ内で空いている名前を探し、必要なら拡張子の前に連番を付ける
+/// </summary>
+std::filesystem::path SuggestAvailableName(
+    const std::filesystem::path &directory, std::wstring stem,
+    const std::wstring &extension);
+
+/// <summary>
 /// 既存の項目と重ならない名前を提案する。ファイルやフォルダは作成しない
 /// </summary>
 std::string SuggestImportName(const std::filesystem::path &assetRoot,
