@@ -195,6 +195,31 @@ void GameExportDialog::SwitchProject(const std::filesystem::path &projectRoot) {
 	}
 }
 
+std::optional<GameExportDraft> GameExportDialog::GetDraft() const {
+	if (!resumeDraft_ || projectRoot_.empty() || options_.startupScenePath.empty()) {
+		return std::nullopt;
+	}
+	return GameExportDraft{options_.startupScenePath, output_, title_, width_, height_};
+}
+
+void GameExportDialog::RestoreDraft(const GameExportDraft &draft) {
+	if (resumeDraft_ || projectRoot_.empty()) {
+		return;
+	}
+
+	options_.startupScenePath = draft.startupScenePath;
+	try {
+		options_.destination = ReadDestination(draft.output);
+	} catch (const std::invalid_argument &) {
+		options_.destination.clear();
+	}
+	output_ = draft.output;
+	title_ = draft.title;
+	width_ = draft.width;
+	height_ = draft.height;
+	resumeDraft_ = true;
+}
+
 void GameExportDialog::UpdateStartupScene(const std::filesystem::path &path,
                                           bool includesUnsavedEdits) {
 	startupScene_ = path.empty() ? "Untitled" : PathUtils::ToUtf8(path);
@@ -709,7 +734,9 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 	                             result == GameExportResult::REVEAL_ISSUE_ASSET;
 	ui.SameLine();
 	const bool keepDraft = ui.Button("Keep Draft and Close");
-	ImGui::SetItemTooltip("Restore these settings when reopening Export Game for the same startup scene.");
+	ImGui::SetItemTooltip(
+	    "Restore these settings when reopening Export Game for the same scene. "
+	    "Saved project scenes also keep the draft after restarting the Editor.");
 	if (chooseStartup || exportRequested || checkRequested || saveAndCheckRequested ||
 	    navigatingIssue || keepDraft) {
 		error_.clear();

@@ -2970,6 +2970,7 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 		} else if (!previous.empty()) {
 			exportDialog_.FollowStartupScene(project_.GetRoot(), previous,
 			                                 document_.GetFilePath());
+			SaveEditorSession();
 		}
 		return;
 	}
@@ -3530,6 +3531,7 @@ void EditorScene::WriteGameExport() {
 		exportConfig_ = options.config;
 	}
 	preferences_.RememberGameExport(project_.GetRoot(), directory);
+	preferences_.gameExportDrafts.erase(project_.GetRoot());
 	if (canSavePreferences_) {
 		preferences_.Save();
 	}
@@ -3595,6 +3597,7 @@ bool EditorScene::SetStartupScene(const std::filesystem::path &path,
 
 	exportDialog_.FollowStartupScene(project_.GetRoot(), previousSource,
 	                                 project_.GetStartupScene());
+	SaveEditorSession();
 	return true;
 }
 
@@ -5650,6 +5653,18 @@ void EditorScene::UpdateDialogs() {
 			return;
 		}
 		if (result == GameExportResult::CANCELLED) {
+			const auto &root = project_.GetRoot();
+			const auto draft = exportDialog_.GetDraft();
+			bool changed = false;
+			if (draft) {
+				preferences_.gameExportDrafts.insert_or_assign(root, *draft);
+				changed = true;
+			} else {
+				changed = preferences_.gameExportDrafts.erase(root) != 0;
+			}
+			if (changed && canSavePreferences_ && !preferences_.Save()) {
+				consolePanel_.Show();
+			}
 			stage_ = DialogStage::IDLE;
 			return;
 		}
@@ -6259,6 +6274,10 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		document_.SetProjectRoot(candidate.GetRoot());
 		project_ = std::move(candidate);
 		exportDialog_.SwitchProject(project_.GetRoot());
+		if (const auto found = preferences_.gameExportDrafts.find(project_.GetRoot());
+		    found != preferences_.gameExportDrafts.end()) {
+			exportDialog_.RestoreDraft(found->second);
+		}
 		failedRestoredScene_.clear();
 		lastPlayScenePath_.clear();
 		playFailureReplay_.reset();
@@ -6321,6 +6340,10 @@ void EditorScene::SaveEditorSession(bool force,
 
 	if (!project_.GetRoot().empty()) {
 		current.lastProject = project_.GetRoot();
+		if (auto draft = exportDialog_.GetDraft();
+		    draft && current.gameExportDrafts.contains(project_.GetRoot())) {
+			current.gameExportDrafts.insert_or_assign(project_.GetRoot(), std::move(*draft));
+		}
 		current.RememberProject(project_.GetRoot());
 		// 自動で開いた代替シーンで、修復待ちの復帰先を上書きしない。
 		if (failedRestoredScene_.empty()) {

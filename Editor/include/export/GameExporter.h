@@ -25,6 +25,16 @@ struct GameExportOptions {
 };
 
 /// <summary>
+/// Editorの再起動後も引き継ぐ配布画面の入力
+/// </summary>
+struct GameExportDraft {
+	std::filesystem::path startupScenePath;
+	std::string output, title;
+	int width, height;
+	bool operator==(const GameExportDraft &) const = default;
+};
+
+/// <summary>
 /// 配布前検査から直接修正できる設定
 /// </summary>
 enum class GameExportField {

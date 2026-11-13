@@ -8,6 +8,7 @@
 #include <json.hpp>
 
 #include <algorithm>
+#include <climits>
 #include <exception>
 #include <format>
 #include <fstream>
@@ -602,6 +603,45 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 			}
 		}
 
+		if (const auto drafts = json.find("gameExportDrafts");
+		    drafts != json.end() && drafts->is_object()) {
+			for (const auto &[key, value] : drafts->items()) {
+				if (key.find('\0') != std::string::npos || !value.is_object()) {
+					continue;
+				}
+				const auto root = PathUtils::FromUtf8(key);
+				const auto scene = value.find("scene");
+				const auto output = value.find("output");
+				const auto title = value.find("title");
+				const auto width = value.find("width");
+				const auto height = value.find("height");
+				if (!root.is_absolute() || scene == value.end() || !scene->is_string() ||
+				    output == value.end() || !output->is_string() ||
+				    title == value.end() || !title->is_string() ||
+				    width == value.end() || !width->is_number_integer() ||
+				    height == value.end() || !height->is_number_integer()) {
+					continue;
+				}
+				const auto draftWidth = width->get<double>();
+				const auto draftHeight = height->get<double>();
+				if (draftWidth < INT_MIN || draftWidth > INT_MAX ||
+				    draftHeight < INT_MIN || draftHeight > INT_MAX) {
+					continue;
+				}
+				const auto &sceneText = scene->get_ref<const std::string &>();
+				if (sceneText.find('\0') != std::string::npos) {
+					continue;
+				}
+				auto startupPath = PathUtils::FromUtf8(sceneText);
+				if (startupPath.is_absolute()) {
+					loaded.gameExportDrafts.emplace(
+					    root.lexically_normal(), GameExportDraft{std::move(startupPath),
+					        output->get<std::string>(), title->get<std::string>(),
+					        static_cast<int>(draftWidth), static_cast<int>(draftHeight)});
+				}
+			}
+		}
+
 		const auto recentExports = json.find("recentGameExports");
 		if (recentExports != json.end() && recentExports->is_object()) {
 			for (const auto &[key, values] : recentExports->items()) {
@@ -942,6 +982,13 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		for (const auto &[root, directory] : lastGameExports_) {
 			lastGameExportsJson[PathUtils::ToUtf8(root)] = PathUtils::ToUtf8(directory);
 		}
+		auto gameExportDraftsJson = nlohmann::json::object();
+		for (const auto &[root, draft] : gameExportDrafts) {
+			gameExportDraftsJson[PathUtils::ToUtf8(root)] = {
+			    {"scene", PathUtils::ToUtf8(draft.startupScenePath)},
+			    {"output", draft.output}, {"title", draft.title},
+			    {"width", draft.width}, {"height", draft.height}};
+		}
 		auto recentGameExportsJson = nlohmann::json::object();
 		for (const auto &[root, directories] : recentGameExports_) {
 			if (directories.empty()) {
@@ -1012,6 +1059,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		    {"recentProjects", std::move(recentProjectsJson)},
 		    {"projectScenes", std::move(projectScenesJson)},
 		    {"lastGameExports", std::move(lastGameExportsJson)},
+		    {"gameExportDrafts", std::move(gameExportDraftsJson)},
 		    {"recentGameExports", std::move(recentGameExportsJson)},
 		    {"projectAssetFolders", std::move(projectAssetFoldersJson)},
 		    {"sceneViews", std::move(sceneViewsJson)},
@@ -1052,6 +1100,7 @@ bool EditorPreferences::operator==(const EditorPreferences &other) const {
 	       recentScenes == other.recentScenes && lastProject == other.lastProject &&
 	       recentProjects == other.recentProjects &&
 	       lastGameExports_ == other.lastGameExports_ &&
+	       gameExportDrafts == other.gameExportDrafts &&
 	       recentGameExports_ == other.recentGameExports_ &&
 	       projectAssetFolders_ == other.projectAssetFolders_ &&
 	       projectScenes == other.projectScenes && sceneViews == other.sceneViews &&

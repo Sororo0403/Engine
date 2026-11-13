@@ -3,6 +3,7 @@
 #include "assets/AssetSources.h"
 #include "camera/EditorCameraBookmarks.h"
 #include "camera/EditorCameraController.h"
+#include "export/GameExporter.h"
 #include "gameplay/GameConfig.h"
 #include "gizmo/TransformGizmo.h"
 #include "graphics/camera/CameraSettings.h"
@@ -21,6 +22,8 @@
 /// </summary>
 class EditorPreferences {
   public:
+	// Editorのローカル設定に保存するプロジェクト別の配布下書き。
+	std::map<std::filesystem::path, GameExportDraft> gameExportDrafts;
 	bool showGrid = true;
 	bool showSelectionBounds = true;
 	bool showCameraGuides = true;

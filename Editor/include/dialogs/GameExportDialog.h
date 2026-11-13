@@ -55,6 +55,16 @@ class GameExportDialog {
 	void SwitchProject(const std::filesystem::path &projectRoot);
 
 	/// <summary>
+	/// 現在の保存済みシーンの下書きを取得する。保存対象がなければ空
+	/// </summary>
+	std::optional<GameExportDraft> GetDraft() const;
+
+	/// <summary>
+	/// プロジェクトを開いたとき、メモリ上に下書きがなければ設定から復元する
+	/// </summary>
+	void RestoreDraft(const GameExportDraft &draft);
+
+	/// <summary>
 	/// 編集中のシーンを別のパスへ保存したとき、その出力下書きを引き継ぐ
 	/// </summary>
 	void FollowSavedScene(const std::filesystem::path &projectRoot,
