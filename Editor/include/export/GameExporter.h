@@ -25,7 +25,7 @@ struct GameExportOptions {
 };
 
 /// <summary>
-/// 配布前検査から直接修正できる出力設定の入力欄
+/// 配布前検査から直接修正できる設定
 /// </summary>
 enum class GameExportField {
 	NONE,
@@ -33,6 +33,7 @@ enum class GameExportField {
 	TITLE,
 	WIDTH,
 	HEIGHT,
+	STARTUP_SCENE,
 };
 
 /// <summary>

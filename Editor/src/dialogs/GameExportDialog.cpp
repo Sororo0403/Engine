@@ -26,6 +26,7 @@ const char *EditFieldLabel(GameExportField field) {
 		return "Edit Width";
 	case GameExportField::HEIGHT:
 		return "Edit Height";
+	case GameExportField::STARTUP_SCENE:
 	case GameExportField::NONE:
 		return nullptr;
 	}
@@ -530,6 +531,10 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 				if (const auto *label = EditFieldLabel(issue.field); label && ui.Button(label)) {
 					selectedIssue_ = i;
 					focusField_ = issue.field;
+				}
+				if (issue.field == GameExportField::STARTUP_SCENE &&
+				    !projectRoot_.empty() && ui.Button("Choose Replacement Startup Scene...")) {
+					chooseStartup = true;
 				}
 				if (issue.field == GameExportField::OUTPUT_FOLDER &&
 				    !issue.locationPath.empty() && !checkResultStale_) {

@@ -3391,7 +3391,9 @@ const Scene *EditorScene::PrepareGameExport(SceneDocument &startup,
 			    "Could not load the project startup scene: {}\n{}\n"
 			    "Choose a valid scene with Choose Startup Scene.",
 			    PathUtils::ToUtf8(project_.GetStartupScene()), startup.GetError());
-			issues.push_back({.message = error, .locationPath = project_.GetStartupScene()});
+			issues.push_back({.message = error,
+			                  .locationPath = project_.GetStartupScene(),
+			                  .field = GameExportField::STARTUP_SCENE});
 			return nullptr;
 		}
 		options.assetDirectories = assetSources_.ForScene(*scene);
