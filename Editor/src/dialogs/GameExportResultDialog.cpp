@@ -27,6 +27,14 @@ std::string_view LogLevelPrefix(std::string_view line) {
 }
 
 /// <summary>
+/// ログ項目の開始を示すレベル表記か確認する
+/// </summary>
+bool IsLogHeader(std::string_view level) {
+	return level.starts_with(" [INFO] ") || level.starts_with(" [WARNING] ") ||
+	       level.starts_with(" [ERROR] ");
+}
+
+/// <summary>
 /// 表示中のログを行単位で走査する。行末の改行も範囲に含める
 /// </summary>
 void VisitLogLines(std::string_view log, const auto &visit) {
@@ -48,7 +56,7 @@ std::string CollectLogErrors(std::string_view log) {
 		const auto level = LogLevelPrefix(line);
 		if (level.starts_with(" [ERROR] ")) {
 			includeLine = true;
-		} else if (level.starts_with(" [INFO] ") || level.starts_with(" [WARNING] ")) {
+		} else if (IsLogHeader(level)) {
 			includeLine = false;
 		}
 		if (includeLine) {
@@ -56,6 +64,28 @@ std::string CollectLogErrors(std::string_view log) {
 		}
 	});
 	return errors;
+}
+
+/// <summary>
+/// 検索語を含むログ項目を、複数行の詳細を保ったまま取り出す
+/// </summary>
+std::string FilterLogEntries(std::string_view log, std::string_view filter) {
+	std::string result;
+	std::size_t start = 0;
+	const auto appendMatch = [&](std::size_t end) {
+		const auto entry = log.substr(start, end - start);
+		if (entry.find(filter) != std::string_view::npos) {
+			result.append(entry);
+		}
+	};
+	VisitLogLines(log, [&](std::size_t offset, std::string_view line) {
+		if (offset != 0 && IsLogHeader(LogLevelPrefix(line))) {
+			appendMatch(offset);
+			start = offset;
+		}
+	});
+	appendMatch(log.size());
+	return result;
 }
 
 /// <summary>
@@ -71,9 +101,7 @@ std::string_view LeadingLogError(std::string_view log) {
 		if (offset == 0 || end != log.size()) {
 			return;
 		}
-		const auto level = LogLevelPrefix(line);
-		if (level.starts_with(" [INFO] ") || level.starts_with(" [WARNING] ") ||
-		    level.starts_with(" [ERROR] ")) {
+		if (IsLogHeader(LogLevelPrefix(line))) {
 			end = offset;
 		}
 	});
@@ -249,7 +277,7 @@ bool GameExportResultDialog::OpenLogAtError(ErrorSearch search) {
 			run.beforeErrorJump = LogPosition{std::move(run.earlierLogPages),
 			                                 run.logPageOffset, run.showLogBeginning,
 			                                 run.followLog, run.showErrorsOnly,
-			                                 run.logScrollY};
+			                                 run.logScrollY, run.logFilter};
 		}
 		run.earlierLogPages.clear();
 		if (*match != 0)
@@ -258,6 +286,7 @@ bool GameExportResultDialog::OpenLogAtError(ErrorSearch search) {
 	}
 	run.followLog = false;
 	run.showLogBeginning = true;
+	run.logFilter.clear();
 	RefreshLog();
 	return true;
 }
@@ -471,6 +500,7 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		if (ui.Button("Copy Log"))
 			ImGui::SetClipboardText(log_.c_str());
 		ui.EndDisabled();
+		ImGui::SetItemTooltip("Copy the current page or tail before filtering.");
 
 		ui.SameLine();
 		const auto logPath = directory_ / kGameLogPath;
@@ -509,8 +539,10 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 			}
 			ui.EndDisabled();
 		}
-		const bool changedFilter = ui.Checkbox("Errors Only", run.showErrorsOnly);
+		bool changedFilter = ui.Checkbox("Errors Only", run.showErrorsOnly);
 		ImGui::SetItemTooltip("Show errors and their details on the current log page.");
+		changedFilter |= ui.InputText("Search Log Page", run.logFilter);
+		ImGui::SetItemTooltip("Filter entries on the current page or tail by text (case-sensitive).");
 		ui.BeginDisabled(log_.empty() || jumpToLatest);
 		if (ui.Button("First Log Error")) {
 			jumpToBeginning |= OpenLogAtError(ErrorSearch::FIRST);
@@ -541,6 +573,7 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 				run.showLogBeginning = previous.paged;
 				run.followLog = previous.follow;
 				run.showErrorsOnly = previous.errorsOnly;
+				run.logFilter = std::move(previous.filter);
 				RefreshLog();
 				restoreScroll = previous.scrollY;
 				jumpToBeginning = false;
@@ -548,8 +581,11 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 			}
 			ImGui::SetItemTooltip("Return to the log position shown before jumping to an error.");
 		}
-		const auto errors = CollectLogErrors(log_);
-		const std::string_view displayedLog = run.showErrorsOnly ? errors : log_;
+		const auto filtered = run.logFilter.empty() ? std::string{}
+		                                           : FilterLogEntries(log_, run.logFilter);
+		const auto &matching = run.logFilter.empty() ? log_ : filtered;
+		const auto errors = CollectLogErrors(matching);
+		const std::string_view displayedLog = run.showErrorsOnly ? errors : matching;
 		ui.BeginDisabled(errors.empty());
 		if (ui.Button("Copy Displayed Errors") && !errors.empty()) {
 			ImGui::SetClipboardText(errors.c_str());
@@ -558,7 +594,8 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		ImGui::SetItemTooltip("Copy errors and their details from the displayed log.");
 		if (run.showLogBeginning) {
 			const auto firstError = LeadingLogError(log_);
-			if (!firstError.empty()) {
+			if (!firstError.empty() &&
+			    (run.logFilter.empty() || firstError.find(run.logFilter) != std::string_view::npos)) {
 				ui.SameLine();
 				if (ui.Button("Copy First Error on Page")) {
 					ImGui::SetClipboardText(std::string(firstError).c_str());
@@ -583,7 +620,10 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 				const bool wasAtBottom =
 				    ImGui::GetScrollY() >= ImGui::GetScrollMaxY() - 1.0f;
 				ImGui::PushTextWrapPos();
-				ui.Text(displayedLog.empty() ? "No errors on this log page." : displayedLog);
+				ui.Text(displayedLog.empty()
+				            ? (run.logFilter.empty() ? "No errors on this log page."
+				                                      : "No matching entries on this log page.")
+				            : displayedLog);
 				ImGui::PopTextWrapPos();
 				if (restoreScroll) {
 					ImGui::SetScrollY(*restoreScroll);

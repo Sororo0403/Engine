@@ -45,6 +45,7 @@ class GameExportResultDialog {
 		bool follow;
 		bool errorsOnly;
 		float scrollY;
+		std::string filter;
 	};
 
 	struct GameRun {
@@ -55,6 +56,7 @@ class GameExportResultDialog {
 		std::optional<LogPosition> beforeErrorJump;
 		std::uintmax_t logPageOffset = 0;
 		float logScrollY = 0.0f;
+		std::string logFilter;
 		bool sinceLaunchOnly = false;
 		bool showLog = false;
 		bool followLog = true;
