@@ -9,6 +9,10 @@
 #include <system_error>
 #include <utility>
 
+namespace {
+constexpr auto kGameLogPath = L"logs/Engine.log";
+}
+
 void GameExportResultDialog::Show(std::filesystem::path directory,
                                   bool reopening) {
 	if (directory_ != directory) {
@@ -31,7 +35,7 @@ void GameExportResultDialog::RefreshLog() {
 	log_.clear();
 	logError_.clear();
 	logTruncated_ = false;
-	const auto path = directory_ / L"logs" / L"Engine.log";
+	const auto path = directory_ / kGameLogPath;
 	std::error_code status;
 	if (!std::filesystem::exists(path, status) && !status) {
 		if (logLaunchStart_)
@@ -152,7 +156,7 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		// 起動後すぐにログが追記されても、今回の行を落とさないよう先に記録する。
 		std::error_code status;
 		const auto size = std::filesystem::file_size(
-		    directory_ / L"logs" / L"Engine.log", status);
+		    directory_ / kGameLogPath, status);
 		if (process_.Start(directory_ / L"Game.exe", error_,
 		                   ShellUtils::WindowVisibility::NORMAL, L"--editor-launch")) {
 			processStatus_ = "Game process running.";
@@ -201,6 +205,14 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		ui.BeginDisabled(log_.empty());
 		if (ui.Button("Copy Log"))
 			ImGui::SetClipboardText(log_.c_str());
+		ui.EndDisabled();
+
+		ui.SameLine();
+		const auto logPath = directory_ / kGameLogPath;
+		std::error_code status;
+		ui.BeginDisabled(!std::filesystem::is_regular_file(logPath, status));
+		if (ui.Button("Show Log in Explorer"))
+			ShellUtils::RevealInExplorer(logPath, error_);
 		ui.EndDisabled();
 
 		if (!processStatus_.empty()) {
