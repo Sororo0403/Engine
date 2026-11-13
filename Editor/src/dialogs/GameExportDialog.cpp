@@ -82,6 +82,7 @@ bool MatchesIssue(const GameExportIssue &issue, std::string_view filter) {
 	       PathUtils::ToUtf8(issue.scenePath).find(filter) != std::string::npos ||
 	       PathUtils::ToUtf8(issue.scriptPath).find(filter) != std::string::npos ||
 	       PathUtils::ToUtf8(issue.assetPath).find(filter) != std::string::npos ||
+	       PathUtils::ToUtf8(issue.transitionScenePath).find(filter) != std::string::npos ||
 	       PathUtils::ToUtf8(issue.locationPath).find(filter) != std::string::npos;
 }
 
@@ -197,6 +198,8 @@ void GameExportDialog::SetCheckResult(std::string message,
 			       issue.assetPath == previous.assetPath &&
 			       issue.locationPath == previous.locationPath &&
 			       issue.field == previous.field &&
+			       issue.transitionScenePath == previous.transitionScenePath &&
+			       issue.transitionObjectId == previous.transitionObjectId &&
 			       issue.message == previous.message;
 		});
 		if (sameIssue != issues.end()) {
@@ -461,6 +464,15 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 					selectedIssue_ = i;
 					result = GameExportResult::OPEN_ISSUE;
 				}
+				if (issue.transitionObjectId != 0) {
+					if (hasObject) {
+						ui.SameLine();
+					}
+					if (ui.Button("Show Transition Source")) {
+						selectedIssue_ = i;
+						result = GameExportResult::OPEN_TRANSITION_SOURCE;
+					}
+				}
 				if (!issue.scriptPath.empty()) {
 					if (hasObject)
 						ui.SameLine();
@@ -552,6 +564,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 		saveAndCheckRequested = ui.Button("Save Scene and Check");
 	}
 	const bool navigatingIssue = result == GameExportResult::OPEN_ISSUE ||
+	                             result == GameExportResult::OPEN_TRANSITION_SOURCE ||
 	                             result == GameExportResult::EDIT_ISSUE_SCRIPT ||
 	                             result == GameExportResult::REVEAL_ISSUE_ASSET;
 	ui.SameLine();
@@ -639,9 +652,11 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 	    result == GameExportResult::SAVE_AND_CHECK ||
 	    result == GameExportResult::CHOOSE_STARTUP_SCENE ||
 	    result == GameExportResult::OPEN_ISSUE ||
+	    result == GameExportResult::OPEN_TRANSITION_SOURCE ||
 	    result == GameExportResult::REVEAL_ISSUE_ASSET ||
 	    result == GameExportResult::EDIT_ISSUE_SCRIPT) {
 		resumeDraft_ = keepDraft || result == GameExportResult::OPEN_ISSUE ||
+		               result == GameExportResult::OPEN_TRANSITION_SOURCE ||
 		               result == GameExportResult::REVEAL_ISSUE_ASSET ||
 		               result == GameExportResult::EDIT_ISSUE_SCRIPT;
 		ui.CloseCurrentPopup();

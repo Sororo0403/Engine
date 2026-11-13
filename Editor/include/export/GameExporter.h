@@ -47,6 +47,9 @@ struct GameExportIssue {
 	// Explorerで確認するファイルまたはフォルダ
 	std::filesystem::path locationPath;
 	GameExportField field = GameExportField::NONE;
+	// 遷移先の診断から、遷移を設定した物体へ戻るための参照
+	std::filesystem::path transitionScenePath;
+	SceneObjectId transitionObjectId = 0;
 };
 
 namespace GameExporter {

@@ -610,7 +610,9 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 	                             const fs::path &scriptPath,
 	                             const fs::path &assetPath,
 	                             const fs::path &locationPath = {},
-	                             GameExportField field = GameExportField::NONE) {
+	                             GameExportField field = GameExportField::NONE,
+	                             const fs::path &transitionScenePath = {},
+	                             SceneObjectId transitionObjectId = 0) {
 		if (!error.empty()) {
 			error += "\n\n";
 		}
@@ -618,7 +620,7 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 		if (issues) {
 			issues->push_back(
 			    {std::move(issue), scenePath, objectId, scriptPath, assetPath,
-			     locationPath, field});
+			     locationPath, field, transitionScenePath, transitionObjectId});
 		}
 	};
 	// 出力前に、同じ検査で独立して直せる問題をまとめる。
@@ -823,7 +825,11 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 		}
 
 		// アセット参照を出力先へ書き換える前に、遷移先の到着地点を検証する。
-		std::set<std::pair<std::size_t, std::string>> checkedArrivals;
+		struct ArrivalCheck {
+			std::string error;
+			SceneObjectId invalidObject = 0;
+		};
+		std::map<std::pair<std::size_t, std::string>, ArrivalCheck> checkedArrivals;
 
 		for (const auto &entry : graph) {
 			for (const auto &[id, object] : entry.objects) {
@@ -850,22 +856,27 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 					}
 					const auto index =
 					    static_cast<std::size_t>(found - graph.begin());
-					if (!checkedArrivals.emplace(index, action.arrivalTag)
-					         .second)
-						continue;
-					Scene candidate;
-					candidate.ReplaceObjects(found->objects);
-					std::string issue;
-					SceneObjectId invalidObject = 0;
-					if (!SceneSimulation::ValidateArrival(
-					        candidate, action.arrivalTag, issue,
-					        options.config.fallbackCamera, &invalidObject))
-						reportIssue(
+					auto [check, inserted] = checkedArrivals.try_emplace(
+					    std::pair{index, action.arrivalTag});
+					auto &arrival = check->second;
+					if (inserted) {
+						Scene candidate;
+						candidate.ReplaceObjects(found->objects);
+						SceneSimulation::ValidateArrival(
+						    candidate, action.arrivalTag, arrival.error,
+						    options.config.fallbackCamera, &arrival.invalidObject);
+					}
+					if (!arrival.error.empty())
+						appendIssue(
 						    std::format("Load Scene on object ID {} to '{}' "
 						                "(Arrival Tag '{}'): {}",
 						                id, PathUtils::ToUtf8(found->source),
-							                action.arrivalTag, issue),
-						    found->source, invalidObject);
+							                action.arrivalTag, arrival.error),
+						    found->source, arrival.invalidObject, {}, {},
+						    entry.prefab ? entry.source : fs::path{},
+						    GameExportField::NONE,
+						    entry.prefab ? fs::path{} : entry.source,
+						    entry.prefab ? 0 : id);
 				}
 			}
 		}

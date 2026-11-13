@@ -3224,7 +3224,6 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	case EditorAction::NEW_SAMPLE:
 	case EditorAction::RESTORE_RECOVERY:
 	case EditorAction::IMPORT_SCENE:
-	case EditorAction::OPEN_EXPORT_ISSUE:
 	case EditorAction::EXIT:
 		// 保存確認が終わるまで、実際の操作は保留する
 		pendingAction_ = action;
@@ -3234,6 +3233,7 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 		return;
 
 	case EditorAction::OPEN_PATH:
+	case EditorAction::OPEN_EXPORT_ISSUE:
 		pendingOpenObject_ = openObject;
 		pendingAction_ = action;
 		ConfirmSceneChanges();
@@ -3671,16 +3671,16 @@ void EditorScene::ExecutePendingAction() {
 		return;
 	}
 	case EditorAction::OPEN_EXPORT_ISSUE: {
-		const auto &issue = exportDialog_.GetSelectedIssue();
-		if (!OpenScene(issue.scenePath, false)) {
+		const auto object = std::exchange(pendingOpenObject_, SceneObjectId{0});
+		if (!OpenScene(pendingOpenPath_, false)) {
 			exportDialog_.Reopen("Could not open the referenced scene: " +
 			                     document_.GetError());
 			stage_ = DialogStage::EXPORT_GAME;
 			return;
 		}
 		SaveEditorSession();
-		if (issue.objectId != 0) {
-			RevealReferenceObject(issue.objectId);
+		if (object != 0) {
+			RevealReferenceObject(object);
 		}
 		return;
 	}
@@ -5447,20 +5447,25 @@ void EditorScene::UpdateDialogs() {
 			return;
 		}
 
-		if (result == GameExportResult::OPEN_ISSUE) {
+		if (result == GameExportResult::OPEN_ISSUE ||
+		    result == GameExportResult::OPEN_TRANSITION_SOURCE) {
 			const auto &issue = exportDialog_.GetSelectedIssue();
+			const bool source = result == GameExportResult::OPEN_TRANSITION_SOURCE;
+			const auto &scenePath = source ? issue.transitionScenePath : issue.scenePath;
+			const auto object = source ? issue.transitionObjectId : issue.objectId;
 			const auto &current = document_.GetFilePath();
-			if (issue.scenePath.empty() ||
-			    (!current.empty() && PathUtils::IsSameFile(current, issue.scenePath))) {
+			if (scenePath.empty() ||
+			    (!current.empty() && PathUtils::IsSameFile(current, scenePath))) {
 				stage_ = DialogStage::IDLE;
-				if (issue.objectId != 0) {
-					RevealReferenceObject(issue.objectId);
+				if (object != 0) {
+					RevealReferenceObject(object);
 				}
 			} else if (playMode_.IsPlaying()) {
 				exportDialog_.Reopen("Stop Play before opening the referenced scene.");
 			} else {
 				stage_ = DialogStage::IDLE;
-				StartAction(EditorAction::OPEN_EXPORT_ISSUE);
+				pendingOpenPath_ = scenePath;
+				StartAction(EditorAction::OPEN_EXPORT_ISSUE, object);
 			}
 			return;
 		}
