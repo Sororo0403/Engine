@@ -10,6 +10,7 @@ class ImGuiSystem;
 enum class SceneReloadResult {
 	NONE,
 	RELOAD,
+	SAVE_COPY_AND_RELOAD,
 	CANCELLED,
 };
 
@@ -22,7 +23,8 @@ class SceneReloadDialog {
 	/// 再読み込みの確認の表示を予約する
 	/// </summary>
 	/// <param name="name">現在のシーンファイルの表示名</param>
-	void Show(std::string name);
+	/// <param name="modified">未保存の編集があるか</param>
+	void Show(std::string name, bool modified);
 
 	/// <summary>
 	/// 再読み込みの確認を描画する。Escはキャンセルとして扱う
@@ -33,5 +35,6 @@ class SceneReloadDialog {
 
   private:
 	std::string name_;
+	bool modified_ = false;
 	bool openRequested_ = false;
 };

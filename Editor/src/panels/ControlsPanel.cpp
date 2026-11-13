@@ -1797,9 +1797,9 @@ void ControlsPanel::Draw() {
 	        {"Ctrl + S", "Save the scene."},
 	        {"Ctrl + Shift + S", "Save the scene under another name."},
 	        {"File > Reload Scene",
-	         "Confirm to reload the active file from disk. Success resets "
-	         "selection, camera and undo history; a failed load keeps the "
-	         "edited scene."},
+	         "Confirm to reload the active file from disk. Save Copy and Reload "
+	         "preserves unsaved edits in a separate file before reloading. "
+	         "Reload clears undo history; a failed load keeps the edited scene."},
 	        {"File > Game Settings > Camera Relative Movement",
 	         "Move forward along the rendered Game camera's horizontal look "
 	         "direction, and right perpendicular to it on world X/Z. Uses the "

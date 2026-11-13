@@ -3254,7 +3254,8 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 
 		if (!document_.GetFilePath().empty()) {
 			sceneReloadDialog_.Show(
-			    PathUtils::ToUtf8(document_.GetFilePath().filename()));
+			    PathUtils::ToUtf8(document_.GetFilePath().filename()),
+			    document_.IsModified());
 			stage_ = DialogStage::CONFIRM_RELOAD;
 		}
 
@@ -4836,6 +4837,8 @@ void EditorScene::UpdateDialogs() {
 			stage_ = DialogStage::IDLE;
 		} else if (result == SceneReloadResult::RELOAD) {
 			OpenScene(document_.GetFilePath());
+		} else if (result == SceneReloadResult::SAVE_COPY_AND_RELOAD) {
+			StartSaveCopy(true);
 		}
 
 		return;

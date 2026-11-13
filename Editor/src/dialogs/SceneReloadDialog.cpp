@@ -5,8 +5,9 @@
 #include <imgui.h>
 #include <utility>
 
-void SceneReloadDialog::Show(std::string name) {
+void SceneReloadDialog::Show(std::string name, bool modified) {
 	name_ = std::move(name);
+	modified_ = modified;
 	openRequested_ = true;
 }
 
@@ -32,11 +33,18 @@ SceneReloadResult SceneReloadDialog::Draw(const ImGuiSystem &ui) {
 	ui.Text("Reload the scene from disk:");
 	ImGui::TextWrapped("%s", name_.c_str());
 	ui.Separator();
-	ImGui::TextWrapped("Unsaved edits will be discarded. Reload resets the "
-	                   "current selection, Scene camera and undo history.");
+	ImGui::TextWrapped("Reload clears undo history.");
 	SceneReloadResult result = SceneReloadResult::NONE;
 
-	if (ui.Button("Reload Scene")) {
+	if (modified_) {
+		ImGui::TextWrapped("This scene has unsaved edits.");
+		if (ui.Button("Save Copy and Reload...")) {
+			result = SceneReloadResult::SAVE_COPY_AND_RELOAD;
+		}
+		ui.SameLine();
+	}
+
+	if (ui.Button(modified_ ? "Discard Edits and Reload" : "Reload Scene")) {
 		result = SceneReloadResult::RELOAD;
 	}
 
