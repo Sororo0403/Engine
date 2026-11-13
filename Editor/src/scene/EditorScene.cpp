@@ -1909,9 +1909,13 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			std::size_t index = 0;
 
 			for (const auto &path : recent) {
+				std::error_code status;
+				const bool missing = std::filesystem::status(path, status).type() ==
+				                     std::filesystem::file_type::not_found;
 				const auto label =
-				    std::format("{}###RecentScene{}",
-				                PathUtils::ToUtf8(path.filename()), index++);
+				    std::format("{}{}###RecentScene{}",
+				                PathUtils::ToUtf8(path.filename()),
+				                missing ? " (Missing)" : "", index++);
 
 				if (ui_.MenuItem(label.c_str(), nullptr, enabled)) {
 					// 保存確認中に一覧が更新されても、開くパスは変えない
@@ -2755,7 +2759,9 @@ EditorScene::ReadShortcut(bool objectPanelFocused) const {
 const std::filesystem::path *EditorScene::FindPreviousScene() const {
 	const auto &current = document_.GetFilePath();
 	for (const auto &path : recentScenes_.GetPaths()) {
-		if (current.empty() || !PathUtils::IsSameFile(path, current)) {
+		std::error_code status;
+		if ((current.empty() || !PathUtils::IsSameFile(path, current)) &&
+		    std::filesystem::is_regular_file(path, status)) {
 			return &path;
 		}
 	}

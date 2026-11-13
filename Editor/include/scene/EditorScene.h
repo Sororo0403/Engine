@@ -324,7 +324,7 @@ class EditorScene final : public IScene {
 	EditorAction ReadShortcut(bool objectPanelFocused) const;
 
 	/// <summary>
-	/// 現在のシーンを除いた直近のパスを取得する。候補がなければnullptr
+	/// 現在のシーンを除いた直近のシーンファイルを取得する。候補がなければnullptr
 	/// </summary>
 	const std::filesystem::path *FindPreviousScene() const;
 
