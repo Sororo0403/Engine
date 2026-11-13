@@ -3051,12 +3051,17 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 
 		return;
 
+	case EditorAction::OPEN:
+		openSceneDialog_.Show(FileDialogMode::OPEN,
+		                      GetSceneDialogDirectory(document_.GetFilePath()));
+		stage_ = DialogStage::OPEN_FILE;
+		return;
+
 	case EditorAction::NEW_PROJECT:
 	case EditorAction::OPEN_PROJECT:
 	case EditorAction::OPEN_PROJECT_PATH:
 	case EditorAction::NEW:
 	case EditorAction::NEW_SAMPLE:
-	case EditorAction::OPEN:
 	case EditorAction::RESTORE_RECOVERY:
 	case EditorAction::IMPORT_SCENE:
 	case EditorAction::OPEN_EXPORT_ISSUE:
@@ -3420,10 +3425,12 @@ void EditorScene::ExecutePendingAction() {
 		return;
 
 	case EditorAction::OPEN:
-		fileDialog_.Show(FileDialogMode::OPEN,
-		                 GetSceneDialogDirectory(document_.GetFilePath()));
-
-		stage_ = DialogStage::OPEN_FILE;
+		if (OpenScene(openSceneDialog_.GetSelectedPath(), false)) {
+			SaveEditorSession();
+		} else {
+			openSceneDialog_.RetrySelection(document_.GetError());
+			stage_ = DialogStage::OPEN_FILE;
+		}
 		return;
 	case EditorAction::OPEN_PATH: {
 		const auto object = std::exchange(pendingOpenObject_, SceneObjectId{0});
@@ -4479,7 +4486,7 @@ void EditorScene::UpdateDialogs() {
 	}
 
 	case DialogStage::OPEN_FILE: {
-		const auto result = fileDialog_.Draw(ui_);
+		const auto result = openSceneDialog_.Draw(ui_);
 
 		if (result == FileDialogResult::CANCELLED) {
 			stage_ = DialogStage::IDLE;
@@ -4487,11 +4494,8 @@ void EditorScene::UpdateDialogs() {
 		}
 
 		if (result == FileDialogResult::ACCEPTED) {
-			if (OpenScene(fileDialog_.GetSelectedPath(), false)) {
-				SaveEditorSession();
-			} else {
-				fileDialog_.RetrySelection(document_.GetError());
-			}
+			pendingAction_ = EditorAction::OPEN;
+			ConfirmSceneChanges();
 		}
 
 		return;
