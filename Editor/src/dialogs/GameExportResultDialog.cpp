@@ -200,9 +200,21 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		ui.CloseCurrentPopup();
 	}
 
-	if (run.launchFailed && ui.Button("Copy Run Report")) {
-		const auto report = "Output: " + PathUtils::ToUtf8(directory_) + "\n" +
-		                    run.status + "\n";
+	if (!run.status.empty() && ui.Button("Copy Run Report")) {
+		auto report = "Output: " + PathUtils::ToUtf8(directory_) + "\n" +
+		              run.status + "\n";
+		if (!run.launchFailed) {
+			RefreshLog();
+			refreshedLog = true;
+			if (!logError_.empty()) {
+				report += logError_ + "\n";
+			} else if (!log_.empty()) {
+				report += run.sinceLaunchOnly ? "\nGame log since Run Game"
+				                              : "\nGame log";
+				report += logTruncated_ ? " (tail):\n" : ":\n";
+				report += log_;
+			}
+		}
 		ImGui::SetClipboardText(report.c_str());
 	}
 
@@ -235,23 +247,6 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		if (ui.Button("Show Log in Explorer"))
 			ShellUtils::RevealInExplorer(logPath, error_);
 		ui.EndDisabled();
-
-		if (!run.status.empty() && !run.launchFailed) {
-			ui.SameLine();
-			if (ui.Button("Copy Run Report")) {
-				auto report = "Output: " + PathUtils::ToUtf8(directory_) + "\n";
-				report += run.status + "\n";
-				if (!logError_.empty()) {
-					report += logError_ + "\n";
-				} else if (!log_.empty()) {
-					report += run.sinceLaunchOnly ? "\nGame log since Run Game"
-					                           : "\nGame log";
-					report += logTruncated_ ? " (tail):\n" : ":\n";
-					report += log_;
-				}
-				ImGui::SetClipboardText(report.c_str());
-			}
-		}
 
 		if (!logError_.empty()) {
 			ui.Text(logError_);
