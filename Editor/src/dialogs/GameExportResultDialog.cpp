@@ -57,6 +57,28 @@ std::string CollectLogErrors(std::string_view log) {
 	});
 	return errors;
 }
+
+/// <summary>
+/// エラーから始まるページで、次のログ見出しまでの診断を返す
+/// </summary>
+std::string_view LeadingLogError(std::string_view log) {
+	if (!LogLevelPrefix(log.substr(0, log.find('\n'))).starts_with(" [ERROR] ")) {
+		return {};
+	}
+
+	auto end = log.size();
+	VisitLogLines(log, [&](std::size_t offset, std::string_view line) {
+		if (offset == 0 || end != log.size()) {
+			return;
+		}
+		const auto level = LogLevelPrefix(line);
+		if (level.starts_with(" [INFO] ") || level.starts_with(" [WARNING] ") ||
+		    level.starts_with(" [ERROR] ")) {
+			end = offset;
+		}
+	});
+	return log.substr(0, end);
+}
 }
 
 void GameExportResultDialog::Show(std::filesystem::path directory,
@@ -524,13 +546,22 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		}
 		const auto errors = CollectLogErrors(log_);
 		const std::string_view displayedLog = run.showErrorsOnly ? errors : log_;
-		ui.SameLine();
 		ui.BeginDisabled(errors.empty());
 		if (ui.Button("Copy Displayed Errors") && !errors.empty()) {
 			ImGui::SetClipboardText(errors.c_str());
 		}
 		ui.EndDisabled();
 		ImGui::SetItemTooltip("Copy errors and their details from the displayed log.");
+		if (run.showLogBeginning) {
+			const auto firstError = LeadingLogError(log_);
+			if (!firstError.empty()) {
+				ui.SameLine();
+				if (ui.Button("Copy First Error on Page")) {
+					ImGui::SetClipboardText(std::string(firstError).c_str());
+				}
+				ImGui::SetItemTooltip("Copy the error at the top of the page and its details.");
+			}
+		}
 
 		if (!logError_.empty()) {
 			ui.Text(logError_);
