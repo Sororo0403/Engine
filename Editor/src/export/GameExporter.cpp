@@ -632,9 +632,9 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 		                                   SceneObjectId id,
 		                                   const fs::path &scriptPath = {},
 		                                   const fs::path &assetPath = {}) {
-			reportIssue(std::move(issue), entry.prefab ? fs::path{} : entry.source,
+			appendIssue(std::move(issue), entry.prefab ? fs::path{} : entry.source,
 			            entry.prefab || !entry.objects.contains(id) ? 0 : id,
-			            scriptPath, assetPath);
+			            scriptPath, assetPath, entry.prefab ? entry.source : fs::path{});
 		};
 
 		bool startupIsTarget = false;

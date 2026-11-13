@@ -33,6 +33,7 @@ struct GameExportIssue {
 	SceneObjectId objectId = 0;
 	std::filesystem::path scriptPath;
 	std::filesystem::path assetPath;
+	// 問題の確認に使うRuntimeファイル、または参照元のPrefab
 	std::filesystem::path locationPath;
 };
 
