@@ -4289,6 +4289,7 @@ void EditorScene::DrawAssetReferences(bool recycle) {
 	ui_.EndChild();
 
 	std::optional<AssetUsage::Reference> destination;
+	std::vector<SceneObjectId> selectedReferences;
 	if (!assetReferences_.empty()) {
 		ui_.Text(recycle ? "The selection could not be moved. References or errors:"
 		                 : "External references or items that could not be checked:");
@@ -4318,6 +4319,25 @@ void EditorScene::DrawAssetReferences(bool recycle) {
 			ImGui::SetClipboardText(list.c_str());
 		}
 		ui_.SameLine();
+		if (!recycle) {
+			const auto &scene = document_.GetScene();
+			const auto inCurrentScene = [&](const AssetUsage::Reference &source) {
+				return source.editingScene && scene.Contains(source.objectId);
+			};
+			ui_.BeginDisabled(!std::ranges::any_of(assetReferences_, inCurrentScene));
+			if (ui_.Button("Select Objects in Current Scene")) {
+				for (const auto &source : assetReferences_) {
+					if (inCurrentScene(source)) {
+						selectedReferences.push_back(source.objectId);
+					}
+				}
+				std::ranges::sort(selectedReferences);
+				const auto duplicates = std::ranges::unique(selectedReferences);
+				selectedReferences.erase(duplicates.begin(), duplicates.end());
+			}
+			ui_.EndDisabled();
+			ui_.SameLine();
+		}
 	} else if (!recycle) {
 		ui_.Text("No external references found.");
 	}
@@ -4372,7 +4392,8 @@ void EditorScene::DrawAssetReferences(bool recycle) {
 
 	const bool canRecycle = recycle && assetReferences_.empty();
 	if (ui_.Button(canRecycle ? "Cancel" : "Close") ||
-	    ImGui::IsKeyPressed(ImGuiKey_Escape) || close || destination) {
+	    ImGui::IsKeyPressed(ImGuiKey_Escape) || close || destination ||
+	    !selectedReferences.empty()) {
 		ui_.CloseCurrentPopup();
 		pendingAssetPaths_.clear();
 		assetReferences_.clear();
@@ -4381,7 +4402,13 @@ void EditorScene::DrawAssetReferences(bool recycle) {
 
 	ui_.EndPopup();
 
-	if (destination) {
+	if (!selectedReferences.empty()) {
+		if (selection_.Set(std::move(selectedReferences))) {
+			inspectorPanel_.Clear();
+			inspectorPanel_.RequestInspect(selection_.GetActiveId());
+			hierarchyPanel_.RequestReveal(selection_.GetActiveId());
+		}
+	} else if (destination) {
 		if (destination->editingScene) {
 			RevealReferenceObject(destination->objectId);
 		} else {
