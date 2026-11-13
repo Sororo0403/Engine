@@ -61,6 +61,7 @@
 #include "settings/RecentScenes.h"
 
 #include <filesystem>
+#include <optional>
 #include <span>
 #include <string>
 #include <vector>
@@ -966,6 +967,9 @@ class EditorScene final : public IScene {
 	bool playUsesEditingScene_ = true;
 	std::filesystem::path playInitialScenePath_;
 	std::filesystem::path lastPlayScenePath_;
+	std::filesystem::path scriptReplayPath_;
+	SceneObjectId playInitialCameraOverride_ = 0;
+	SceneObjectId scriptReplayCameraOverride_ = 0;
 	bool followPlaySelection_ = false;
 	SceneObjectId followedPlayObject_ = 0;
 	DirectX::XMFLOAT3 followedPlayPosition_{};
@@ -1002,6 +1006,8 @@ class EditorScene final : public IScene {
 	std::string errorMessage_;
 	std::filesystem::path errorScriptPath_;
 	std::filesystem::path errorScenePath_;
+	std::optional<std::filesystem::path> errorReplayPath_;
+	SceneObjectId errorReplayCameraOverride_ = 0;
 	std::string errorScriptOpenMessage_;
 	bool sceneSaveConflict_ = false;
 	SceneObjectId errorObjectId_ = 0;

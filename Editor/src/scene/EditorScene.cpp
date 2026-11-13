@@ -403,6 +403,9 @@ bool EditorScene::Update(float deltaTime) {
 		if (!script.path.empty()) {
 			std::string error;
 			if (scriptEditorDialog_.ShowEdit(script.path, error, script.diagnostic)) {
+				scriptReplayPath_ = lastPlayScenePath_;
+				scriptReplayCameraOverride_ =
+				    loadedPlayScene ? 0 : playInitialCameraOverride_;
 				playMode_.Stop();
 				ClearPlaySelection();
 				stage_ = DialogStage::EDIT_PLAY_SCRIPT;
@@ -4739,7 +4742,7 @@ void EditorScene::UpdateDialogs() {
 			else {
 				assetsPanel_.RequestReveal(scriptEditorDialog_.GetSavedPath());
 				if (playAfterSave) {
-					StartPlay(lastPlayScenePath_, 0);
+					StartPlay(scriptReplayPath_, scriptReplayCameraOverride_);
 				}
 			}
 		} else if (result == ScriptEditorDialog::Result::CANCELLED)
@@ -5254,7 +5257,13 @@ void EditorScene::UpdateDialogs() {
 					if (scriptEditorDialog_.ShowEdit(errorScriptPath_, error,
 					                                 errorMessage_)) {
 						ui_.CloseCurrentPopup();
-						stage_ = DialogStage::EDIT_SCRIPT;
+						if (errorReplayPath_) {
+							scriptReplayPath_ = *errorReplayPath_;
+							scriptReplayCameraOverride_ = errorReplayCameraOverride_;
+							stage_ = DialogStage::EDIT_PLAY_SCRIPT;
+						} else {
+							stage_ = DialogStage::EDIT_SCRIPT;
+						}
 						ui_.EndPopup();
 						return;
 					}
@@ -5352,6 +5361,9 @@ void EditorScene::StartPlay(const std::filesystem::path &path,
 		auto scriptPath = SceneScripts::FindFailedScript(*scene, invalidObject, error);
 		ShowError(std::move(error), usesEditingScene ? invalidObject : 0,
 		          std::move(scriptPath));
+		errorReplayPath_ = usesEditingScene ? document_.GetFilePath()
+		                                   : startup.GetFilePath();
+		errorReplayCameraOverride_ = cameraOverride;
 		if (!usesEditingScene) {
 			errorScenePath_ = startup.GetFilePath();
 			errorMessage_ += "\nPlay scene: " + PathUtils::ToUtf8(errorScenePath_);
@@ -5366,6 +5378,7 @@ void EditorScene::StartPlay(const std::filesystem::path &path,
 	playInitialScenePath_ =
 	    usesEditingScene ? document_.GetFilePath() : startup.GetFilePath();
 	lastPlayScenePath_ = playInitialScenePath_;
+	playInitialCameraOverride_ = cameraOverride;
 }
 
 void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject) {
@@ -5386,6 +5399,7 @@ void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject) {
 		playMode_.Stop();
 		ShowError(std::move(message), isEditingScene ? object : 0,
 		          std::move(scriptPath));
+		errorReplayPath_ = path;
 		if (!isEditingScene) {
 			errorScenePath_ = std::move(path);
 			errorObjectId_ = object;
@@ -5396,6 +5410,8 @@ void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject) {
 	const auto *loaded = session.GetLoadedScenePath();
 	bool isEditingScene = playUsesEditingScene_ && !loaded;
 	auto scenePath = loaded ? *loaded : playInitialScenePath_;
+	const auto replayPath = scenePath;
+	const auto replayCamera = loaded ? SceneObjectId{0} : playInitialCameraOverride_;
 	if (!scenePath.empty()) {
 		message += "\nPlay scene: " + PathUtils::ToUtf8(scenePath);
 		const auto &current = document_.GetFilePath();
@@ -5413,6 +5429,8 @@ void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject) {
 	playMode_.Stop();
 	ShowError(std::move(message), isEditingScene ? sourceObject : 0,
 	          std::move(scriptPath));
+	errorReplayPath_ = replayPath;
+	errorReplayCameraOverride_ = replayCamera;
 	errorScenePath_ = std::move(scenePath);
 	if (!errorScenePath_.empty()) {
 		errorObjectId_ = sourceObject;
@@ -5581,6 +5599,8 @@ void EditorScene::ShowError(std::string message, SceneObjectId objectId,
 	errorMessage_ = std::move(message);
 	errorScriptPath_ = std::move(scriptPath);
 	errorScenePath_.clear();
+	errorReplayPath_.reset();
+	errorReplayCameraOverride_ = 0;
 	errorScriptOpenMessage_.clear();
 	sceneSaveConflict_ = false;
 	errorObjectId_ = document_.GetScene().Contains(objectId) ? objectId : 0;
