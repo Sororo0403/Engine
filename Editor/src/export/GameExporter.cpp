@@ -704,14 +704,16 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 					Scene candidate;
 					candidate.ReplaceObjects(found->objects);
 					std::string issue;
+					SceneObjectId invalidObject = 0;
 					if (!SceneSimulation::ValidateArrival(
 					        candidate, action.arrivalTag, issue,
-					        options.config.fallbackCamera))
+					        options.config.fallbackCamera, &invalidObject))
 						reportIssue(
 						    std::format("Load Scene on object ID {} to '{}' "
 						                "(Arrival Tag '{}'): {}",
 						                id, PathUtils::ToUtf8(found->source),
-							                action.arrivalTag, issue), found->source);
+							                action.arrivalTag, issue),
+						    found->source, invalidObject);
 				}
 			}
 		}

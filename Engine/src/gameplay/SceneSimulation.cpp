@@ -25,8 +25,12 @@ namespace {
 /// <param name="scene">読み込んだ直後の遷移先</param>
 /// <param name="tag">到着地点のタグ。空は元の配置を使う</param>
 /// <param name="error">失敗理由</param>
+/// <param name="invalidObject">特定できる場合は遷移先の問題物体を返す</param>
 /// <returns>true:準備成功 false:タグや主人公を一意に解決できない、または位置が無効</returns>
-bool PlaceSceneArrival(Scene &scene, std::string_view tag, std::string &error) {
+bool PlaceSceneArrival(Scene &scene, std::string_view tag, std::string &error,
+                       SceneObjectId *invalidObject = nullptr) {
+	if (invalidObject)
+		*invalidObject = 0;
 	if (tag.empty())
 		return true;
 	SceneObjectId arrival = 0, character = 0;
@@ -38,6 +42,8 @@ bool PlaceSceneArrival(Scene &scene, std::string_view tag, std::string &error) {
 			if (arrival) {
 				error = std::format(
 				    "Arrival Tag '{}' matches multiple active objects.", tag);
+				if (invalidObject)
+					*invalidObject = id;
 				return false;
 			}
 
@@ -48,6 +54,8 @@ bool PlaceSceneArrival(Scene &scene, std::string_view tag, std::string &error) {
 			if (character) {
 				error = "A tagged arrival requires exactly one active "
 				        "Character Controller.";
+				if (invalidObject)
+					*invalidObject = id;
 				return false;
 			}
 
@@ -69,11 +77,18 @@ bool PlaceSceneArrival(Scene &scene, std::string_view tag, std::string &error) {
 
 	SceneWorldTransform world;
 
-	if (!SceneHierarchy::GetWorldTransform(scene, arrival, world) ||
-	    !SceneHierarchy::SetWorldPosition(scene, character,
+	if (!SceneHierarchy::GetWorldTransform(scene, arrival, world)) {
+		error = "Could not resolve the world position of the Arrival Tag.";
+		if (invalidObject)
+			*invalidObject = arrival;
+		return false;
+	}
+	if (!SceneHierarchy::SetWorldPosition(scene, character,
 	                                      world.GetPosition())) {
 		error = "The destination Character Controller cannot be placed at the "
 		        "Arrival Tag.";
+		if (invalidObject)
+			*invalidObject = character;
 		return false;
 	}
 
@@ -134,11 +149,12 @@ bool SceneSimulation::Validate(const Scene &source, std::string &error,
 
 bool SceneSimulation::ValidateArrival(const Scene &source, std::string_view tag,
                                       std::string &error,
-                                      const CameraPose &fallbackPose) {
+                                      const CameraPose &fallbackPose,
+                                      SceneObjectId *invalidObject) {
 	Scene candidate;
 	candidate.CopyFrom(source);
-	return PlaceSceneArrival(candidate, tag, error) &&
-	       Validate(candidate, error, fallbackPose);
+	return PlaceSceneArrival(candidate, tag, error, invalidObject) &&
+	       Validate(candidate, error, fallbackPose, invalidObject);
 }
 
 bool SceneSimulation::StartScene(const Scene &source, std::string &error,
@@ -717,7 +733,7 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 
 				failedDestination_.emplace();
 				if (!PlaceSceneArrival(destination, pendingScene_.arrivalTag,
-				                       error)) {
+				                       error, &failedDestination_->objectId)) {
 					lastUpdateError_ = std::move(error);
 					return false;
 				}
