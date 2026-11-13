@@ -163,6 +163,38 @@ void GameExportDialog::ForgetUntitledDraft() {
 	}
 }
 
+void GameExportDialog::SwitchProject(const std::filesystem::path &projectRoot) {
+	if (projectRoot_ == projectRoot) {
+		return;
+	}
+
+	if (resumeDraft_ && !projectRoot_.empty() && !options_.startupScenePath.empty()) {
+		projectDrafts_.insert_or_assign(
+		    projectRoot_, Draft{std::move(options_.startupScenePath),
+		                       std::move(options_.destination), std::move(output_),
+		                       {std::move(title_), width_, height_}, std::move(checkResult_),
+		                       std::move(issueFilter_), std::move(checkIssues_), selectedIssue_});
+	}
+
+	projectRoot_ = projectRoot;
+	resumeDraft_ = false;
+	ClearCheckResult();
+	if (auto entry = projectDrafts_.extract(projectRoot_); !entry.empty()) {
+		auto &draft = entry.mapped();
+		options_.startupScenePath = std::move(draft.startupScene);
+		options_.destination = std::move(draft.destination);
+		output_ = std::move(draft.output);
+		title_ = std::move(draft.window.title);
+		width_ = draft.window.width;
+		height_ = draft.window.height;
+		checkResult_ = std::move(draft.checkResult);
+		issueFilter_ = std::move(draft.issueFilter);
+		checkIssues_ = std::move(draft.issues);
+		selectedIssue_ = draft.selectedIssue;
+		resumeDraft_ = true;
+	}
+}
+
 void GameExportDialog::UpdateStartupScene(const std::filesystem::path &path,
                                           bool includesUnsavedEdits) {
 	startupScene_ = path.empty() ? "Untitled" : PathUtils::ToUtf8(path);

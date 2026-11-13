@@ -3,6 +3,7 @@
 #include "dialogs/FileDialog.h"
 #include "export/GameExporter.h"
 #include <cstddef>
+#include <map>
 #include <optional>
 #include <span>
 #include <string>
@@ -47,6 +48,11 @@ class GameExportDialog {
 	/// 無題の起動シーンが置き換わるとき、その出力下書きを破棄する
 	/// </summary>
 	void ForgetUntitledDraft();
+
+	/// <summary>
+	/// プロジェクトを切り替え、保存済みシーンの配布下書きをプロジェクトごとに保持する
+	/// </summary>
+	void SwitchProject(const std::filesystem::path &projectRoot);
 
 	/// <summary>
 	/// 編集中のシーンを別のパスへ保存したとき、その出力下書きを引き継ぐ
@@ -124,6 +130,16 @@ class GameExportDialog {
 		int width;
 		int height;
 	};
+	struct Draft {
+		std::filesystem::path startupScene;
+		std::filesystem::path destination;
+		std::string output;
+		WindowSettings window;
+		std::string checkResult;
+		std::string issueFilter;
+		std::vector<GameExportIssue> issues;
+		std::optional<std::size_t> selectedIssue;
+	};
 
 	void ClearCheckResult();
 	bool SuggestOutputName();
@@ -148,4 +164,5 @@ class GameExportDialog {
 	std::optional<std::size_t> issueToScrollTo_;
 	std::size_t issuePage_ = 0;
 	bool resumeDraft_ = false;
+	std::map<std::filesystem::path, Draft> projectDrafts_;
 };

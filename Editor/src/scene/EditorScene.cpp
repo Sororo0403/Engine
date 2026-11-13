@@ -6258,6 +6258,7 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 
 		document_.SetProjectRoot(candidate.GetRoot());
 		project_ = std::move(candidate);
+		exportDialog_.SwitchProject(project_.GetRoot());
 		failedRestoredScene_.clear();
 		lastPlayScenePath_.clear();
 		playFailureReplay_.reset();
