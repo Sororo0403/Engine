@@ -264,14 +264,22 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 				ShellUtils::RevealLocationInExplorer(issue.assetPath, assetActionError_);
 			}
 			ImGui::SetItemTooltip("%s", path.c_str());
+			const bool script = PathUtils::HasExtension(issue.assetPath, ".lua");
+			const bool sceneFile = PathUtils::HasExtension(issue.assetPath, ".json") &&
+			                       PathUtils::HasExtension(issue.assetPath.stem(), ".scene");
 			std::error_code status;
-			if (PathUtils::HasExtension(issue.assetPath, ".lua") &&
-			    std::filesystem::is_regular_file(issue.assetPath, status) &&
-			    ui.Button("Edit Script")) {
-				lastIssue_ = i;
-				requested = {};
-				requested.scriptPath = issue.assetPath;
-				requested.scriptDiagnostic = issue.message;
+			if ((script || sceneFile) &&
+			    std::filesystem::is_regular_file(issue.assetPath, status)) {
+				if (ui.Button(script ? "Edit Script" : "Open Referenced Scene")) {
+					lastIssue_ = i;
+					requested = {};
+					if (script) {
+						requested.scriptPath = issue.assetPath;
+						requested.scriptDiagnostic = issue.message;
+					} else {
+						requested.scenePath = issue.assetPath;
+					}
+				}
 			}
 		}
 

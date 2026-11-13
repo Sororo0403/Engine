@@ -22,6 +22,7 @@ class SceneCheckPanel {
 		std::filesystem::path assetPath;
 		std::filesystem::path scriptPath;
 		std::string scriptDiagnostic;
+		std::filesystem::path scenePath;
 	};
 
 	/// <summary>

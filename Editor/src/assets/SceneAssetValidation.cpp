@@ -98,8 +98,14 @@ SceneAssetValidation::Inspect(const Scene &scene) {
 						else
 							SceneSimulation::ValidateArrival(
 							    target, action.arrivalTag, error);
-						if (!error.empty())
-							entry->second.push_back({std::move(error), action.scenePath});
+						if (!error.empty()) {
+							const auto &path = action.scenePath;
+							const auto location =
+							    path.is_absolute() || !path.has_root_path()
+							        ? PathUtils::ResolveFromExecutable(path)
+							        : std::filesystem::path{};
+							entry->second.push_back({std::move(error), location});
+						}
 					}
 
 					add("Load Scene", entry->second);

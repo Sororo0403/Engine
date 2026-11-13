@@ -851,14 +851,17 @@ bool EditorScene::Update(float deltaTime) {
 		}
 
 		const auto &inspectorScene = inspectorPanel_.GetSceneOpenRequest();
-		const auto &requestedScene = inspectorScene.empty()
-		                                 ? assetsPanel_.GetSceneOpenRequest()
-		                                 : inspectorScene;
+		const auto &requestedScene = !checkedRequest.scenePath.empty()
+		                                 ? checkedRequest.scenePath
+		                                 : inspectorScene.empty()
+		                                       ? assetsPanel_.GetSceneOpenRequest()
+		                                       : inspectorScene;
 		if (!requestedScene.empty() && !IsBusy() &&
 		    action == EditorAction::NONE &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE &&
-		    (inspectorScene.empty() || document_.GetFilePath().empty() ||
-		     !PathUtils::IsSameFile(inspectorScene, document_.GetFilePath()))) {
+		    ((checkedRequest.scenePath.empty() && inspectorScene.empty()) ||
+		     document_.GetFilePath().empty() ||
+		     !PathUtils::IsSameFile(requestedScene, document_.GetFilePath()))) {
 			// 保存確認が終わるまで、表示中の選択が変わっても開く対象を保持する。
 			pendingOpenPath_ = requestedScene;
 			action = EditorAction::OPEN_PATH;
