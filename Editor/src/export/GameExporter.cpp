@@ -30,6 +30,18 @@
 namespace {
 namespace fs = std::filesystem;
 
+constexpr std::array kRuntimeBinaries{
+    L"dxcompiler.dll", L"dxil.dll", L"GameInputRedist.dll",
+    L"GameInputRawInputProxy.exe"};
+constexpr std::array kRuntimeLibraries{
+    L"msvcp140.dll", L"vcruntime140.dll", L"vcruntime140_1.dll"};
+constexpr std::array kRuntimeShaders{
+    L"shaders/mesh/Mesh.VS.hlsl", L"shaders/mesh/Mesh.PS.hlsl",
+    L"shaders/mesh/Shadow.VS.hlsl", L"shaders/mesh/SkinnedMesh.VS.hlsl",
+    L"shaders/mesh/SkinnedShadow.VS.hlsl", L"shaders/mesh/Skinning.hlsli",
+    L"shaders/particles/Particle.VS.hlsl", L"shaders/particles/Particle.PS.hlsl",
+    L"shaders/debug/DebugLine.VS.hlsl", L"shaders/debug/DebugLine.PS.hlsl"};
+
 /// <summary>
 /// Windowsのパス文字列を大文字・小文字を区別せず順序付けする
 /// </summary>
@@ -584,6 +596,21 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 				    "Runtime before exporting.");
 			}
 			ValidateRuntimeBuild(runtimeRoot);
+			const auto checkRuntimeFile = [&](const fs::path &path) {
+				std::error_code status;
+				if (!fs::is_regular_file(path, status) ||
+				    (GetFileAttributesW(path.c_str()) & FILE_ATTRIBUTE_REPARSE_POINT)) {
+					reportIssue("A required Runtime file is missing, inaccessible, or linked: " +
+					            PathUtils::ToUtf8(path) + "\nRebuild Release Runtime.");
+				}
+			};
+			checkRuntimeFile(runtimeRoot / L"Runtime.exe");
+			for (const auto *name : kRuntimeBinaries)
+				checkRuntimeFile(runtimeRoot / name);
+			for (const auto *name : kRuntimeLibraries)
+				checkRuntimeFile(runtimeRoot / name);
+			for (const auto *shader : kRuntimeShaders)
+				checkRuntimeFile(runtimeRoot / L"resources/engine" / shader);
 		} catch (const std::bad_alloc &) {
 			throw;
 		} catch (const std::exception &issue) {
@@ -876,18 +903,8 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 		plan.Reserve(L"game.json");
 		plan.File(runtimeRoot / L"Runtime.exe", L"Game.exe");
 
-		for (const auto *name :
-		     {L"dxcompiler.dll", L"dxil.dll", L"GameInputRedist.dll",
-		      L"GameInputRawInputProxy.exe"}) {
+		for (const auto *name : kRuntimeBinaries) {
 			plan.File(runtimeRoot / name, name);
-		}
-
-		for (const auto *name :
-		     {L"msvcp140.dll", L"vcruntime140.dll", L"vcruntime140_1.dll"}) {
-			if (!fs::is_regular_file(runtimeRoot / name)) {
-				throw std::runtime_error("Runtime C++ libraries are missing. "
-				                         "Rebuild Release Runtime.");
-			}
 		}
 
 		for (const auto &entry : fs::directory_iterator(runtimeRoot)) {
@@ -898,23 +915,6 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 			     name.starts_with(L"vcruntime140") ||
 			     name == L"concrt140.dll" || name == L"vccorlib140.dll")) {
 				plan.File(entry.path(), entry.path().filename());
-			}
-		}
-
-		for (const auto *shader :
-		     {L"shaders/mesh/Mesh.VS.hlsl", L"shaders/mesh/Mesh.PS.hlsl",
-		      L"shaders/mesh/Shadow.VS.hlsl",
-		      L"shaders/mesh/SkinnedMesh.VS.hlsl",
-		      L"shaders/mesh/SkinnedShadow.VS.hlsl",
-		      L"shaders/mesh/Skinning.hlsli",
-		      L"shaders/particles/Particle.VS.hlsl",
-		      L"shaders/particles/Particle.PS.hlsl",
-		      L"shaders/debug/DebugLine.VS.hlsl",
-		      L"shaders/debug/DebugLine.PS.hlsl"}) {
-			if (!fs::is_regular_file(runtimeRoot / L"resources/engine" /
-			                         shader)) {
-				throw std::runtime_error(
-				    "Runtime shaders are missing. Rebuild Engine Release.");
 			}
 		}
 
