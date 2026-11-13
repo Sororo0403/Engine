@@ -170,7 +170,7 @@ void GameExportResultDialog::RefreshLog() {
 	}
 }
 
-bool GameExportResultDialog::OpenLogAtError(bool latest) {
+bool GameExportResultDialog::OpenLogAtError(ErrorSearch search) {
 	auto &run = runs_.at(directory_);
 	std::ifstream input(directory_ / kGameLogPath, std::ios::binary | std::ios::ate);
 	const auto end = static_cast<std::streamoff>(input.tellg());
@@ -181,11 +181,17 @@ bool GameExportResultDialog::OpenLogAtError(bool latest) {
 	const auto start = run.sinceLaunchOnly && run.logStart &&
 	                           *run.logStart <= static_cast<std::uintmax_t>(end)
 	                       ? static_cast<std::streamoff>(*run.logStart) : 0;
-	input.seekg(start);
+	const bool previous = search == ErrorSearch::PREVIOUS;
+	const bool nextError = search == ErrorSearch::NEXT;
+	const auto anchor = start + static_cast<std::streamoff>(
+	                                (std::min)(run.logPageOffset,
+	                                           static_cast<std::uintmax_t>(end - start)));
+	input.seekg(nextError ? anchor : start);
 	std::optional<std::uintmax_t> match;
 	// 見出しだけを読み取り、長い詳細行でもメモリ使用量を抑える。
 	std::array<char, 128> prefix{};
-	for (auto offset = start; offset < end;) {
+	for (auto offset = nextError ? anchor : start;
+	     offset < (previous ? anchor : end);) {
 		input.getline(prefix.data(), prefix.size());
 		if (input.bad())
 			break;
@@ -193,9 +199,10 @@ bool GameExportResultDialog::OpenLogAtError(bool latest) {
 			input.clear();
 			input.ignore((std::numeric_limits<std::streamsize>::max)(), '\n');
 		}
-		if (LogLevelPrefix(prefix.data()).starts_with(" [ERROR] ")) {
+		if ((!nextError || offset > anchor) &&
+		    LogLevelPrefix(prefix.data()).starts_with(" [ERROR] ")) {
 			match = static_cast<std::uintmax_t>(offset - start);
-			if (!latest)
+			if (search == ErrorSearch::FIRST || nextError)
 				break;
 		}
 		const auto next = static_cast<std::streamoff>(input.tellg());
@@ -208,16 +215,20 @@ bool GameExportResultDialog::OpenLogAtError(bool latest) {
 		return false;
 	}
 	if (!match) {
-		error_ = "No errors in the selected log range.";
+		error_ = previous ? "No earlier errors in the selected log range."
+		         : nextError ? "No later errors in the selected log range."
+		                     : "No errors in the selected log range.";
 		return false;
 	}
 
 	error_.clear();
 	if (!run.showLogBeginning || run.logPageOffset != *match) {
-		run.beforeErrorJump = LogPosition{std::move(run.earlierLogPages),
-		                                 run.logPageOffset, run.showLogBeginning,
-		                                 run.followLog};
-		run.earlierLogPages = {};
+		if ((!previous && !nextError) || !run.beforeErrorJump) {
+			run.beforeErrorJump = LogPosition{std::move(run.earlierLogPages),
+			                                 run.logPageOffset, run.showLogBeginning,
+			                                 run.followLog};
+		}
+		run.earlierLogPages.clear();
 		if (*match != 0)
 			run.earlierLogPages.push_back(0);
 		run.logPageOffset = *match;
@@ -476,15 +487,24 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		ImGui::SetItemTooltip("Show errors and their details on the current log page.");
 		ui.BeginDisabled(log_.empty() || jumpToLatest);
 		if (ui.Button("First Log Error")) {
-			jumpToBeginning |= OpenLogAtError(false);
+			jumpToBeginning |= OpenLogAtError(ErrorSearch::FIRST);
 		}
 		ImGui::SetItemTooltip("Find the first error across the selected log range.");
 		ui.SameLine();
 		if (ui.Button("Latest Log Error")) {
-			jumpToBeginning |= OpenLogAtError(true);
+			jumpToBeginning |= OpenLogAtError(ErrorSearch::LATEST);
 		}
 		ImGui::SetItemTooltip("Find the latest error across the selected log range.");
 		ui.EndDisabled();
+		if (run.showLogBeginning && !log_.empty()) {
+			if (ui.Button("Previous Log Error")) {
+				jumpToBeginning |= OpenLogAtError(ErrorSearch::PREVIOUS);
+			}
+			ui.SameLine();
+			if (ui.Button("Next Log Error")) {
+				jumpToBeginning |= OpenLogAtError(ErrorSearch::NEXT);
+			}
+		}
 		if (run.beforeErrorJump) {
 			ui.SameLine();
 			if (ui.Button("Back from Error")) {

@@ -66,10 +66,12 @@ class GameExportResultDialog {
 	/// </summary>
 	void RefreshLog();
 
+	enum class ErrorSearch { FIRST, PREVIOUS, NEXT, LATEST };
+
 	/// <summary>
-	/// 選択中の実行範囲を検索し、最初または最後のエラーから表示する
+	/// 選択中の実行範囲で、指定方向のエラーから表示する
 	/// </summary>
-	bool OpenLogAtError(bool latest);
+	bool OpenLogAtError(ErrorSearch search);
 
 	/// <summary>
 	/// 起動したゲームの終了を確認する。異常終了した場合はログを開く
