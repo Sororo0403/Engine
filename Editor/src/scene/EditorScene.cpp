@@ -4337,9 +4337,7 @@ void EditorScene::RestoreRecovery() {
 		frameObject_ = 0;
 		gizmo_.Cancel();
 		gizmoEditActive_ = false;
-		selection_.Clear();
-		cameraController_.Reset();
-		hierarchyPanel_.Clear();
+		RestoreSceneViewAndSelection(recoverySourceFile_);
 		pendingPlayCamera_ = 0;
 		playMode_.SetPreviewCamera(0);
 		inspectorPanel_.Clear();
@@ -6034,15 +6032,29 @@ bool EditorScene::OpenScene(const std::filesystem::path &path, bool reportError,
 	frameRequest_ = FrameRequest::NONE;
 	frameObject_ = 0;
 	FinishEdit();
+	RestoreSceneViewAndSelection(document_.GetFilePath());
+	pendingPlayCamera_ = 0;
+	playMode_.SetPreviewCamera(0);
+	inspectorPanel_.Clear();
+	recentScenes_.Add(document_.GetFilePath());
+	stage_ = DialogStage::IDLE;
+	return true;
+}
+
+void EditorScene::RestoreSceneViewAndSelection(const std::filesystem::path &source) {
 	selection_.Clear();
 	cameraController_.Reset();
+	hierarchyPanel_.Clear();
 
-	if (const auto *view = preferences_.FindSceneView(document_.GetFilePath())) {
+	if (source.empty()) {
+		return;
+	}
+
+	if (const auto *view = preferences_.FindSceneView(source)) {
 		cameraController_.SetViewState(*view);
 	}
 
-	hierarchyPanel_.Clear();
-	const auto lastSelection = preferences_.LastSceneSelection(document_.GetFilePath());
+	const auto lastSelection = preferences_.LastSceneSelection(source);
 	if (!lastSelection.empty()) {
 		selection_.Set({lastSelection.begin(), lastSelection.end()});
 		selection_.RemoveMissing(document_.GetScene());
@@ -6050,12 +6062,6 @@ bool EditorScene::OpenScene(const std::filesystem::path &path, bool reportError,
 			hierarchyPanel_.RequestReveal(active);
 		}
 	}
-	pendingPlayCamera_ = 0;
-	playMode_.SetPreviewCamera(0);
-	inspectorPanel_.Clear();
-	recentScenes_.Add(document_.GetFilePath());
-	stage_ = DialogStage::IDLE;
-	return true;
 }
 
 void EditorScene::ShowError(std::string message, SceneObjectId objectId,
