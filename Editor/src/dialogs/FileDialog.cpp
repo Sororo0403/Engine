@@ -13,6 +13,33 @@
 #include <system_error>
 #include <utility>
 
+namespace {
+/// <summary>
+/// 保存先と同じフォルダで、ファイル種別を保った空き名を探す
+/// </summary>
+std::filesystem::path SuggestSaveName(const std::filesystem::path &path) {
+	auto stem = path.stem();
+	auto suffix = path.extension().native();
+	if (PathUtils::HasExtension(stem, ".scene") ||
+	    PathUtils::HasExtension(stem, ".settings")) {
+		suffix = stem.extension().native() + suffix;
+		stem = stem.stem();
+	}
+
+	for (std::size_t number = 2;; ++number) {
+		const std::filesystem::path name =
+		    stem.native() + L"-" + std::to_wstring(number) + suffix;
+		if (!PathUtils::IsValidFileName(name)) {
+			throw std::runtime_error("Shorten the file name to allow a numbered suffix.");
+		}
+		if (!std::filesystem::exists(
+		        std::filesystem::symlink_status(path.parent_path() / name))) {
+			return name;
+		}
+	}
+}
+} // namespace
+
 void FileDialog::Show(FileDialogMode mode,
                       const std::filesystem::path &initialPath,
                       FileDialogFilter filter, std::string title) {
@@ -142,6 +169,19 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 
 		if (ui.Button("Back")) {
 			confirmOverwrite_ = false;
+		}
+		ui.SameLine();
+		if (ui.Button("Suggest Name")) {
+			try {
+				fileName_ = PathUtils::ToUtf8(SuggestSaveName(selectedPath_));
+				error_.clear();
+				confirmOverwrite_ = false;
+			} catch (const std::exception &error) {
+				error_ = error.what();
+			}
+		}
+		if (!error_.empty()) {
+			ImGui::TextWrapped("%s", error_.c_str());
 		}
 	} else {
 		ui.InputText("Folder", directoryText_);
