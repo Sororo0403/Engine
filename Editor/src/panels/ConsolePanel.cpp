@@ -55,14 +55,14 @@ void ConsolePanel::Show() {
 	scrollRequested_ = true;
 }
 
-void ConsolePanel::ShowLatestPlayError() {
+void ConsolePanel::ShowPlayError(std::uint64_t logId) {
 	Show();
-	latestPlayErrorRequested_ = true;
+	requestedPlayErrorId_ = logId;
 }
 
 void ConsolePanel::MarkPlayStart() {
 	playStartBoundary_ = Logger::BeginPlayLog();
-	latestPlayErrorRequested_ = false;
+	requestedPlayErrorId_ = 0;
 	if (latestPlayOnly_) {
 		selectedId_ = 0;
 		scrollRequested_ = true;
@@ -166,15 +166,27 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 	const bool clickedLatestPlayError = ui.Button("Latest Play Error");
 	ImGui::EndDisabled();
 	const LogEntry *jumpError = nullptr;
-	if (std::exchange(latestPlayErrorRequested_, false) || clickedLatestPlayError) {
-		if (latestPlayError) {
+	const auto requested = std::exchange(requestedPlayErrorId_, 0);
+	if (requested != 0) {
+		const auto found = std::ranges::find(entries_, requested, &LogEntry::id);
+		if (found != entries_.end()) {
+			jumpError = &*found;
+		} else if (firstPlayError && firstPlayError->id == requested) {
+			jumpError = &*firstPlayError;
+		} else if (latestPlayError && latestPlayError->id == requested) {
 			jumpError = &*latestPlayError;
 		}
+		if (!jumpError) {
+			selectedId_ = 0;
+			ui.Text("That play error is no longer in Console.");
+		}
+	} else if (clickedLatestPlayError && latestPlayError) {
+		jumpError = &*latestPlayError;
 	} else if (clickedFirstPlayError && firstPlayError) {
 		jumpError = &*firstPlayError;
 	}
 	if (jumpError) {
-		latestPlayOnly_ = true;
+		latestPlayOnly_ = jumpError->id > playStartBoundary_;
 		showErrors_ = true;
 		if (!MatchesFilter(*jumpError)) {
 			filter_.clear();

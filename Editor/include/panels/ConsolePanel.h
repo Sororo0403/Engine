@@ -26,9 +26,9 @@ class ConsolePanel {
 	void Show();
 
 	/// <summary>
-	/// Consoleを開き、直近の試遊エラーの選択を予約する
+	/// Consoleを開き、指定した試遊エラーの選択を予約する
 	/// </summary>
-	void ShowLatestPlayError();
+	void ShowPlayError(std::uint64_t logId);
 
 	/// <summary>
 	/// 試遊の開始または再開より前のログを区別するため、現在位置を記録する
@@ -64,7 +64,7 @@ class ConsolePanel {
 
 	bool open_ = false;
 	bool focusRequested_ = false;
-	bool latestPlayErrorRequested_ = false;
+	std::uint64_t requestedPlayErrorId_ = 0;
 	bool autoScroll_ = true;
 	bool scrollRequested_ = true;
 	bool showInfo_ = true;

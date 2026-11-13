@@ -1071,7 +1071,7 @@ class EditorScene final : public IScene {
 	std::filesystem::path errorReloadAssetPath_;
 	bool errorReloadIsTexture_ = false;
 	std::optional<std::filesystem::path> errorReplayPath_;
-	bool errorHasPlayLog_ = false;
+	std::uint64_t errorPlayLogId_ = 0;
 	SceneObjectId errorReplayCameraOverride_ = 0;
 	std::string errorActionMessage_;
 	AssetUsage::Moves failedAssetMoves_;

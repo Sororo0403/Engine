@@ -362,7 +362,6 @@ bool EditorScene::Update(float deltaTime) {
 			}
 			ShowError(std::move(error), isEditingScene ? invalidObject : 0,
 			          std::move(failedScript));
-			errorHasPlayLog_ = true;
 			errorReplayPath_ = retryPath;
 			errorReplayCameraOverride_ = retryLoaded ? 0 : playInitialCameraOverride_;
 			if (!isEditingScene) {
@@ -5844,14 +5843,14 @@ void EditorScene::UpdateDialogs() {
 				                          : PathUtils::ToUtf8(*errorReplayPath_).c_str());
 				ui_.SameLine();
 			}
-			const bool canShowPlayLog = errorHasPlayLog_ || errorReplayPath_.has_value();
+			const bool canShowPlayLog = errorPlayLogId_ != 0;
 			const bool showPlayError = canShowPlayLog && ui_.Button("Show in Console");
 			if (canShowPlayLog) {
 				ui_.SameLine();
 			}
 			if (ui_.Button("OK") || showPlayError) {
 				if (showPlayError) {
-					consolePanel_.ShowLatestPlayError();
+					consolePanel_.ShowPlayError(errorPlayLogId_);
 				}
 				ui_.CloseCurrentPopup();
 				errorObjectId_ = 0;
@@ -6008,6 +6007,7 @@ void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject,
 void EditorScene::LogPlayFailure() {
 	const auto &source = errorScriptPath_.empty() ? errorScenePath_ : errorScriptPath_;
 	const auto logId = Logger::Error(errorMessage_, source);
+	errorPlayLogId_ = logId;
 	if (errorReplayPath_) {
 		const auto &editingPath = document_.GetFilePath();
 		const bool followsEditingScene = errorReplayPath_->empty() ||
@@ -6263,7 +6263,7 @@ void EditorScene::ShowError(std::string message, SceneObjectId objectId,
 	failedOpenSceneObject_ = 0;
 	errorReloadAssetPath_.clear();
 	errorReplayPath_.reset();
-	errorHasPlayLog_ = false;
+	errorPlayLogId_ = 0;
 	errorReplayCameraOverride_ = 0;
 	errorActionMessage_.clear();
 	failedAssetMoves_.clear();
