@@ -1,5 +1,7 @@
 #include "assets/AssetFolders.h"
 #include "platform/windows/PathUtils.h"
+#include <charconv>
+#include <limits>
 #include <stdexcept>
 
 std::string AssetFolders::SuggestImportName(
@@ -11,18 +13,47 @@ std::string AssetFolders::SuggestImportName(
 	}
 
 	const auto directory = Resolve(assetRoot, folder);
-	const auto stem = keepExtension ? original.stem() : original;
+	auto stem = (keepExtension ? original.stem() : original).native();
 	const auto extension = keepExtension ? original.extension().native() : std::wstring{};
+	const auto occupied = [&](const std::filesystem::path &candidate) {
+		return std::filesystem::exists(
+		    std::filesystem::symlink_status(directory / candidate));
+	};
+	if (!occupied(original)) {
+		return name;
+	}
+
+	std::size_t index = 2;
+	const auto separator = stem.rfind(L'-');
+	if (separator != std::wstring::npos && separator != 0) {
+		const auto suffix = PathUtils::ToUtf8(stem.substr(separator + 1));
+		std::size_t number = 0;
+		const auto end = suffix.data() + suffix.size();
+		const auto parsed = std::from_chars(suffix.data(), end, number);
+		const std::filesystem::path base = stem.substr(0, separator) + extension;
+		// 元の名前も使用中なら、提案済みの連番として次の番号へ進める。
+		if (parsed.ec == std::errc{} && parsed.ptr == end && number >= 2 &&
+		    suffix.front() != '0' &&
+		    number < (std::numeric_limits<std::size_t>::max)() &&
+		    PathUtils::IsValidFileName(base) && occupied(base)) {
+			stem.resize(separator);
+			index = number + 1;
+		}
+	}
+
 	auto candidate = original;
-	for (std::size_t index = 2;
-	     std::filesystem::exists(std::filesystem::symlink_status(directory / candidate));
-	     ++index) {
-		candidate = stem.native() + L"-" + std::to_wstring(index) + extension;
+	for (;; ++index) {
+		candidate = stem + L"-" + std::to_wstring(index) + extension;
 		if (!PathUtils::IsValidFileName(candidate)) {
 			throw std::invalid_argument("Shorten the import name to allow a numbered suffix.");
 		}
+		if (!occupied(candidate)) {
+			return PathUtils::ToUtf8(candidate);
+		}
+		if (index == (std::numeric_limits<std::size_t>::max)()) {
+			throw std::runtime_error("No numbered import name is available.");
+		}
 	}
-	return PathUtils::ToUtf8(candidate);
 }
 
 std::filesystem::path
