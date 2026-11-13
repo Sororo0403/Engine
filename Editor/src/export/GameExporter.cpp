@@ -5,6 +5,7 @@
 #include "assets/SceneDependencyGraph.h"
 #include "audio/WaveReader.h"
 #include "files/OutputDirectory.h"
+#include "gameplay/SceneScripts.h"
 #include "gameplay/SceneSimulation.h"
 #include "gameplay/SceneValidation.h"
 #include "platform/windows/PathUtils.h"
@@ -790,9 +791,18 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 			                        &invalidObject)
 			          : SceneSimulation::Validate(
 			                candidate, issue, options.config.fallbackCamera,
-			                &invalidObject)))
+			                &invalidObject))) {
+				auto scriptPath = SceneScripts::FindFailedScript(candidate, invalidObject, issue);
+				std::error_code status;
+				if (!scriptPath.empty()) {
+					scriptPath = PathUtils::ResolveFromExecutable(scriptPath);
+					if (!fs::is_regular_file(scriptPath, status)) {
+						scriptPath.clear();
+					}
+				}
 				reportObjectIssue(describe(invalidObject) + "\n" + issue, entry,
-				                  invalidObject);
+				                  invalidObject, scriptPath);
+			}
 			auto &objects = entry.objects;
 
 			for (auto &[id, object] : objects) {
