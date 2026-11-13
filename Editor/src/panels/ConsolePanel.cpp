@@ -202,8 +202,12 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 
 	if (drawMessages) {
 		const bool wasAtBottom = ImGui::GetScrollY() >= ImGui::GetScrollMaxY() - 1.0f;
-		bool anyVisible = false;
-		std::uint64_t lastVisible = 0;
+		struct MessageRow {
+			const LogEntry *first;
+			const LogEntry *last;
+		};
+		std::vector<MessageRow> rows;
+		rows.reserve(static_cast<std::size_t>(matchingCount));
 
 		for (auto first = entries_.cbegin(); first != entries_.cend();) {
 			const auto &head = *first;
@@ -222,62 +226,79 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 				}
 				++last;
 			}
-			const auto count = last - first + 1;
+			rows.push_back({&head, &*last});
 			first = last + 1;
-			const auto &entry = *last;
-			const bool selected = head.id <= selectedId_ && selectedId_ <= entry.id;
-			anyVisible = true;
-			lastVisible = entry.id;
-			const bool colored = entry.level != LogLevel::LOG_INFO;
-
-			if (colored) {
-				ImGui::PushStyleColor(ImGuiCol_Text,
-				                      entry.level == LogLevel::LOG_ERROR
-				                          ? ImVec4{1.0f, 0.4f, 0.4f, 1.0f}
-				                          : ImVec4{1.0f, 0.8f, 0.3f, 1.0f});
-			}
-
-			auto title =
-			    std::format("[{}] {}", entry.timestamp, LevelName(entry.level));
-			if (count > 1) {
-				title += std::format(" (x{})", count);
-			}
-			const auto label =
-			    std::format("{}###ConsoleLog{}", title, head.id);
-			const float messageOffset = ImGui::GetCursorPosX() +
-			                            ImGui::CalcTextSize(title.c_str()).x +
-			                            ImGui::GetStyle().ItemSpacing.x * 2.0f;
-
-			if (ui.Selectable(label.c_str(), selected)) {
-				selectedId_ = entry.id;
-			}
-			if (jumpToError && selected) {
-				ImGui::SetScrollHereY(0.5f);
-			}
-
-			ImGui::SameLine(messageOffset);
-			ui.Text(std::string_view{entry.message}.substr(
-			    0, entry.message.find('\n')));
-
-			if (colored) {
-				ImGui::PopStyleColor();
-			}
 		}
 
-		if (!anyVisible) {
-			ui.Text("No matching messages.");
-		}
-
+		const auto lastVisible = rows.empty() ? 0 : rows.back().last->id;
 		const bool followLatest = autoScroll_ &&
 		                          (scrollRequested_ ||
 		                           (wasAtBottom && lastVisible != lastVisibleId_));
-		if (!jumpToError && (jumpToLatest || followLatest)) {
-			ImGui::SetScrollHereY(1.0f);
-			scrollRequested_ = false;
+		const bool scrollToLatest = !jumpToError && (jumpToLatest || followLatest);
+		if (rows.empty()) {
+			ui.Text("No matching messages.");
+		}
+
+		ImGuiListClipper clipper;
+		clipper.Begin(static_cast<int>(rows.size()), ImGui::GetTextLineHeightWithSpacing());
+		if (jumpToError) {
+			const auto row = std::ranges::lower_bound(
+			    rows, selectedId_, {}, [](const auto &value) { return value.last->id; });
+			if (row != rows.end() && row->first->id <= selectedId_) {
+				clipper.IncludeItemByIndex(static_cast<int>(row - rows.begin()));
+			}
+		} else if (scrollToLatest && !rows.empty()) {
+			clipper.IncludeItemByIndex(static_cast<int>(rows.size()) - 1);
+		}
+
+		while (clipper.Step()) {
+			for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; ++row) {
+				const auto &head = *rows[row].first;
+				const auto &entry = *rows[row].last;
+				const auto count = rows[row].last - rows[row].first + 1;
+				const bool selected = head.id <= selectedId_ && selectedId_ <= entry.id;
+				const bool colored = entry.level != LogLevel::LOG_INFO;
+
+				if (colored) {
+					ImGui::PushStyleColor(ImGuiCol_Text,
+					                      entry.level == LogLevel::LOG_ERROR
+					                          ? ImVec4{1.0f, 0.4f, 0.4f, 1.0f}
+					                          : ImVec4{1.0f, 0.8f, 0.3f, 1.0f});
+				}
+
+				auto title =
+				    std::format("[{}] {}", entry.timestamp, LevelName(entry.level));
+				if (count > 1) {
+					title += std::format(" (x{})", count);
+				}
+				const auto label =
+				    std::format("{}###ConsoleLog{}", title, head.id);
+				const float messageOffset = ImGui::GetCursorPosX() +
+				                            ImGui::CalcTextSize(title.c_str()).x +
+				                            ImGui::GetStyle().ItemSpacing.x * 2.0f;
+
+				if (ui.Selectable(label.c_str(), selected)) {
+					selectedId_ = entry.id;
+				}
+				if (jumpToError && selected) {
+					ImGui::SetScrollHereY(0.5f);
+				}
+
+				ImGui::SameLine(messageOffset);
+				ui.Text(std::string_view{entry.message}.substr(
+				    0, entry.message.find('\n')));
+				if (scrollToLatest && entry.id == lastVisible) {
+					ImGui::SetScrollHereY(1.0f);
+				}
+
+				if (colored) {
+					ImGui::PopStyleColor();
+				}
+			}
 		}
 
 		lastVisibleId_ = lastVisible;
-		if (jumpToError) {
+		if (jumpToError || scrollToLatest) {
 			scrollRequested_ = false;
 		}
 	}
