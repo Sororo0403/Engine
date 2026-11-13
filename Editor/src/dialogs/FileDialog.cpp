@@ -10,6 +10,7 @@
 #include <exception>
 #include <format>
 #include <imgui.h>
+#include <imgui_stdlib.h>
 #include <stdexcept>
 #include <system_error>
 #include <utility>
@@ -180,14 +181,16 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 			ImGui::TextWrapped("%s", error_.c_str());
 		}
 	} else {
-		ui.InputText("Folder", directoryText_);
+		const bool folderSubmitted = ImGui::InputText(
+		    "Folder", &directoryText_, ImGuiInputTextFlags_EnterReturnsTrue);
 		if (filter_ == FileDialogFilter::PROJECT) {
 			ImGui::SetItemTooltip("Paste the project folder or the full path to project.json.");
 		} else if (filter_ == FileDialogFilter::GAME_EXPORT) {
 			ImGui::SetItemTooltip("Paste the export folder or the full path to Game.exe or game.json.");
 		}
 
-		if (ui.Button("Go")) {
+		const bool goClicked = ui.Button("Go");
+		if (goClicked || (folderSubmitted && mode_ != FileDialogMode::SELECT_DIRECTORY)) {
 			try {
 				ChangeDirectory(ReadFolderInput());
 			} catch (const std::exception &error) {
@@ -293,18 +296,23 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 			ChangeDirectory(nextDirectory);
 		}
 
+		bool fileSubmitted = false;
 		if (mode_ == FileDialogMode::SELECT_DIRECTORY) {
 			ui.InputText("New Folder Name", folderName_);
 
 			if (ui.Button("Create Folder")) {
 				CreateFolder();
 			}
+		} else if (mode_ == FileDialogMode::OPEN) {
+			fileSubmitted = ImGui::InputText(
+			    "File name", &fileName_, ImGuiInputTextFlags_EnterReturnsTrue);
+			if (ImGui::IsItemEdited()) {
+				error_.clear();
+			}
+			ImGui::SetItemTooltip("Enter a file name or paste the full file path, then press Enter.");
 		} else {
 			if (ui.InputText("File name", fileName_)) {
 				error_.clear();
-			}
-			if (mode_ == FileDialogMode::OPEN) {
-				ImGui::SetItemTooltip("Enter a file name or paste the full file path.");
 			}
 		}
 
@@ -326,7 +334,9 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 		if (!openFile.empty()) {
 			fileName_ = PathUtils::ToUtf8(openFile);
 		}
-		if ((submitted || !openFile.empty()) && AcceptSelection()) {
+		if ((submitted || fileSubmitted || !openFile.empty() ||
+		     (folderSubmitted && mode_ == FileDialogMode::SELECT_DIRECTORY)) &&
+		    AcceptSelection()) {
 			result = FileDialogResult::ACCEPTED;
 		}
 	}
