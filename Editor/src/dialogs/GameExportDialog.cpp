@@ -277,6 +277,21 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 		checkResultStale_ = !checkResult_.empty();
 	}
 
+	ui.BeginDisabled(output_.empty());
+	if (ui.Button("Show Output Location")) {
+		try {
+			const auto output = ReadDestination(output_);
+			if (!output.is_absolute()) {
+				throw std::invalid_argument("Enter a valid output path.");
+			}
+			ShellUtils::RevealLocationInExplorer(output, error_);
+		} catch (const std::exception &error) {
+			error_ = error.what();
+		}
+	}
+	ui.EndDisabled();
+	ImGui::SetItemTooltip("Show the output path or its nearest existing folder in Explorer.");
+
 	if (!error_.empty()) {
 		ImGui::TextWrapped("%s", error_.c_str());
 	}
