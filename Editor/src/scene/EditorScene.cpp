@@ -4431,6 +4431,7 @@ void EditorScene::DrawAssetReferences(bool recycle) {
 	ui_.EndChild();
 
 	std::optional<AssetUsage::Reference> destination;
+	std::filesystem::path sourceToReveal;
 	std::vector<SceneObjectId> selectedReferences;
 	if (!assetReferences_.empty()) {
 		ui_.Text(recycle ? "The selection could not be moved. References or errors:"
@@ -4450,6 +4451,10 @@ void EditorScene::DrawAssetReferences(bool recycle) {
 				}
 				if (!source.sourcePath.empty()) {
 					ImGui::PushID(static_cast<int>(i));
+					if (ui_.Button("Show Source in Assets")) {
+						sourceToReveal = source.sourcePath;
+					}
+					ui_.SameLine();
 					if (ui_.Button("Show Source in Explorer")) {
 						ShellUtils::RevealLocationInExplorer(source.sourcePath,
 						                                     assetReferenceLocationError_);
@@ -4552,7 +4557,7 @@ void EditorScene::DrawAssetReferences(bool recycle) {
 	const bool canRecycle = recycle && assetReferences_.empty();
 	if (ui_.Button(canRecycle ? "Cancel" : "Close") ||
 	    ImGui::IsKeyPressed(ImGuiKey_Escape) || close || destination ||
-	    !selectedReferences.empty()) {
+	    !sourceToReveal.empty() || !selectedReferences.empty()) {
 		ui_.CloseCurrentPopup();
 		pendingAssetPaths_.clear();
 		assetReferences_.clear();
@@ -4561,7 +4566,9 @@ void EditorScene::DrawAssetReferences(bool recycle) {
 
 	ui_.EndPopup();
 
-	if (!selectedReferences.empty()) {
+	if (!sourceToReveal.empty()) {
+		assetsPanel_.RequestReveal(sourceToReveal);
+	} else if (!selectedReferences.empty()) {
 		if (selection_.Set(std::move(selectedReferences))) {
 			inspectorPanel_.Clear();
 			inspectorPanel_.RequestInspect(selection_.GetActiveId());
