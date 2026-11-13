@@ -495,8 +495,23 @@ fs::path ResolveDestination(const fs::path &path) {
 		throw std::runtime_error("Choose a new output folder.");
 	}
 
-	const auto absolute = fs::absolute(path);
-	const auto destination = fs::weakly_canonical(absolute);
+	// Windowsの絶対パス変換で末尾のドットなどが取り除かれる前に検査する。
+	for (const auto &part : path.relative_path()) {
+		if (!part.empty() && part != L"." && part != L".." &&
+		    !PathUtils::IsValidFileName(part)) {
+			throw std::runtime_error("Invalid output folder name: " +
+			                         PathUtils::ToUtf8(part));
+		}
+	}
+	auto absolute = fs::absolute(path);
+	// フォルダのパスを貼り付けたときに末尾の区切りがあっても同じ出力先として扱う。
+	if (!absolute.has_filename() && absolute.has_relative_path()) {
+		absolute = absolute.parent_path();
+	}
+	auto destination = fs::weakly_canonical(absolute);
+	if (!destination.has_filename() && destination.has_relative_path()) {
+		destination = destination.parent_path();
+	}
 	if (fs::exists(fs::symlink_status(absolute)) || fs::exists(destination)) {
 		throw std::runtime_error(
 		    "Output folder already exists. Choose a new folder.");
@@ -507,7 +522,8 @@ fs::path ResolveDestination(const fs::path &path) {
 			if (fs::is_directory(parent)) {
 				return destination;
 			}
-			break;
+			throw std::runtime_error("An output parent is a file: " +
+			                         PathUtils::ToUtf8(parent));
 		}
 		auto next = parent.parent_path();
 		if (next == parent) {
@@ -571,7 +587,11 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 		} catch (const std::bad_alloc &) {
 			throw;
 		} catch (const std::exception &issue) {
-			reportIssue(issue.what());
+			const auto &path = options.destination;
+			const auto location =
+			    path.is_absolute() && path.native().find(L'\0') == std::wstring::npos
+			        ? path : fs::path{};
+			appendIssue(issue.what(), {}, 0, {}, {}, location);
 		}
 
 		const auto validDirectoryPath = [](const fs::path &path) {
@@ -718,8 +738,10 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 
 		for (const auto &source : assets.Sources()) {
 			if (!destination.empty() && IsInside(source.directory, destination)) {
-				reportIssue(
-				    "Output must be outside all resource and asset folders.");
+				appendIssue(
+				    "Output must be outside all resource and asset folders: " +
+				        PathUtils::ToUtf8(source.directory),
+				    {}, 0, {}, {}, destination);
 				break;
 			}
 		}
