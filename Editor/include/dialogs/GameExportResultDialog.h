@@ -40,7 +40,13 @@ class GameExportResultDialog {
 		bool showLog = false;
 		bool followLog = true;
 		bool launchFailed = false;
+		bool restartRequested = false;
 	};
+
+	/// <summary>
+	/// ゲームを起動し、今回のログの開始位置を記録する。ログを更新した場合はtrue
+	/// </summary>
+	bool StartGame();
 
 	/// <summary>
 	/// 出力したゲームのログを末尾から読み直す

@@ -117,6 +117,33 @@ void GameExportResultDialog::RefreshLog() {
 	}
 }
 
+bool GameExportResultDialog::StartGame() {
+	auto &run = runs_.at(directory_);
+	// 起動後すぐにログが追記されても、今回の行を落とさないよう先に記録する。
+	std::error_code status;
+	const auto size = std::filesystem::file_size(directory_ / kGameLogPath, status);
+	std::string launchError;
+	error_.clear();
+	run.launchFailed = !run.process.Start(directory_ / L"Game.exe", launchError,
+	                                      ShellUtils::WindowVisibility::NORMAL,
+	                                      L"--editor-launch");
+	if (run.launchFailed) {
+		run.status = "Could not launch Game.exe: " + launchError;
+		return false;
+	}
+
+	run.status = "Game process running.";
+	run.logStart.reset();
+	if (!status)
+		run.logStart = size;
+	else if (status == std::errc::no_such_file_or_directory)
+		run.logStart = 0;
+	run.sinceLaunchOnly = run.logStart.has_value();
+	if (run.showLog)
+		RefreshLog();
+	return run.showLog;
+}
+
 bool GameExportResultDialog::UpdateGameProcess() {
 	auto &run = runs_.at(directory_);
 	if (!run.process.IsTracking())
@@ -126,6 +153,7 @@ bool GameExportResultDialog::UpdateGameProcess() {
 	std::string error;
 	if (!run.process.Poll(exitCode, error)) {
 		run.status = std::move(error);
+		run.restartRequested = false;
 		run.process.Reset();
 		return false;
 	}
@@ -133,7 +161,11 @@ bool GameExportResultDialog::UpdateGameProcess() {
 		return false;
 
 	run.process.Reset();
+	const bool restart = std::exchange(run.restartRequested, false);
 	if (*exitCode == 0) {
+		if (restart) {
+			return StartGame();
+		}
 		run.status = "Game exited normally.";
 		if (run.showLog)
 			RefreshLog();
@@ -179,30 +211,7 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 
 	ui.BeginDisabled(run.process.IsTracking());
 	if (ui.Button("Run Game")) {
-		// 起動後すぐにログが追記されても、今回の行を落とさないよう先に記録する。
-		std::error_code status;
-		const auto size = std::filesystem::file_size(
-		    directory_ / kGameLogPath, status);
-		std::string launchError;
-		error_.clear();
-		run.launchFailed = !run.process.Start(directory_ / L"Game.exe", launchError,
-		                                      ShellUtils::WindowVisibility::NORMAL,
-		                                      L"--editor-launch");
-		if (run.launchFailed) {
-			run.status = "Could not launch Game.exe: " + launchError;
-		} else {
-			run.status = "Game process running.";
-			run.logStart.reset();
-			if (!status)
-				run.logStart = size;
-			else if (status == std::errc::no_such_file_or_directory)
-				run.logStart = 0;
-			run.sinceLaunchOnly = run.logStart.has_value();
-			if (run.showLog) {
-				RefreshLog();
-				refreshedLog = true;
-			}
-		}
+		refreshedLog |= StartGame();
 	}
 	ui.EndDisabled();
 
@@ -213,8 +222,16 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		}
 		ui.SameLine();
 		if (ui.Button("Close Running Game") && run.process.RequestClose(error_)) {
+			run.restartRequested = false;
 			run.status = "Requested game exit. Waiting for the process to finish.";
 		}
+		ui.BeginDisabled(run.restartRequested);
+		if (ui.Button("Restart Game") && run.process.RequestClose(error_)) {
+			run.restartRequested = true;
+			run.status = "Waiting for the game to exit before restarting.";
+		}
+		ui.EndDisabled();
+		ImGui::SetItemTooltip("Start the game again after it exits normally.");
 	}
 
 	ui.SameLine();
@@ -230,6 +247,9 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 	GameExportResultAction action = GameExportResultAction::NONE;
 
 	if (ui.Button("Close") || ImGui::IsKeyPressed(ImGuiKey_Escape, false)) {
+		if (std::exchange(run.restartRequested, false)) {
+			run.status = "Requested game exit. Waiting for the process to finish.";
+		}
 		action = GameExportResultAction::CLOSE;
 		ui.CloseCurrentPopup();
 	}
