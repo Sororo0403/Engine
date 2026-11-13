@@ -3240,6 +3240,25 @@ void EditorScene::WriteGameExport() {
 	stage_ = DialogStage::EXPORT_RESULT;
 }
 
+void EditorScene::CheckGameExport() {
+	SceneDocument startup;
+	auto options = exportDialog_.GetOptions();
+	std::string error;
+	const auto *scene = PrepareGameExport(startup, options, error);
+
+	std::vector<GameExportIssue> issues;
+	if (scene && GameExporter::Check(*scene, options, error, &issues)) {
+		exportDialog_.SetCheckResult("Export check passed. No files were written.");
+		return;
+	}
+
+	if (issues.empty()) {
+		issues.push_back({error});
+	}
+	exportDialog_.SetCheckResult("Export check failed: " + error,
+	                             std::move(issues));
+}
+
 bool EditorScene::SetStartupScene(const std::filesystem::path &path,
                                   std::string &error) {
 	if (!project_.CanUseAsStartupScene(path)) {
@@ -4651,10 +4670,9 @@ void EditorScene::UpdateDialogs() {
 		if (fromExport && result != ScriptEditorDialog::Result::NONE) {
 			std::string error;
 			if (result == ScriptEditorDialog::Result::SAVED) {
-				exportDialog_.SetCheckResult(
-				    "Script saved. Run Check Export to refresh the results.");
 				if (!assets_.Refresh())
 					error = assets_.GetError();
+				CheckGameExport();
 			}
 			exportDialog_.Reopen(std::move(error));
 			stage_ = DialogStage::EXPORT_GAME;
@@ -5090,25 +5108,8 @@ void EditorScene::UpdateDialogs() {
 			StartAction(EditorAction::WRITE_GAME_EXPORT);
 			return;
 		}
-		if (result != GameExportResult::CHECK) {
-			return;
-		}
-
-		SceneDocument startup;
-		auto options = exportDialog_.GetOptions();
-		std::string error;
-		const auto *scene = PrepareGameExport(startup, options, error);
-
-		std::vector<GameExportIssue> issues;
-		if (scene && GameExporter::Check(*scene, options, error, &issues)) {
-			exportDialog_.SetCheckResult(
-			    "Export check passed. No files were written.");
-		} else {
-			if (issues.empty()) {
-				issues.push_back({error});
-			}
-			exportDialog_.SetCheckResult("Export check failed: " + error,
-			                             std::move(issues));
+		if (result == GameExportResult::CHECK) {
+			CheckGameExport();
 		}
 		return;
 	}

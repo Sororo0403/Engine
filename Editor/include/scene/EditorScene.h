@@ -339,6 +339,11 @@ class EditorScene final : public IScene {
 	void WriteGameExport();
 
 	/// <summary>
+	/// 現在の配布設定で出力前検査を実行し、結果を出力画面に表示する
+	/// </summary>
+	void CheckGameExport();
+
+	/// <summary>
 	/// チェックや出力を実行する時点の起動シーンと素材の取得元を準備する
 	/// </summary>
 	const Scene *PrepareGameExport(SceneDocument &startup, GameExportOptions &options,
