@@ -235,8 +235,10 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 			ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(startupScenePath).c_str());
 		}
 		if (!lastPlayScenePath.empty() &&
-		    !PathUtils::IsSameFile(lastPlayScenePath, editingScenePath) &&
-		    !PathUtils::IsSameFile(lastPlayScenePath, startupScenePath)) {
+		    (editingScenePath.empty() ||
+		     !PathUtils::IsSameFile(lastPlayScenePath, editingScenePath)) &&
+		    (startupScenePath.empty() ||
+		     !PathUtils::IsSameFile(lastPlayScenePath, startupScenePath))) {
 			if (ui.Button("Play Last Scene")) {
 				action = Action::PLAY_LAST_SCENE;
 			}
