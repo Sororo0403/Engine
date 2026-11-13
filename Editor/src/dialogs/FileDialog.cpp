@@ -229,20 +229,21 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 			error_.clear();
 			ImGui::SetNextWindowScroll({-1.0f, 0.0f});
 		}
-		if (mode_ != FileDialogMode::SELECT_DIRECTORY &&
-		    ui.InputText("Search Files", search_)) {
+		const bool choosingProject = filter_ == FileDialogFilter::PROJECT;
+		const bool searchFolders = choosingProject || filter_ == FileDialogFilter::GAME_EXPORT;
+		if ((searchFolders || mode_ != FileDialogMode::SELECT_DIRECTORY) &&
+		    ui.InputText(searchFolders ? "Search Folders" : "Search Files", search_)) {
 			ImGui::SetNextWindowScroll({-1.0f, 0.0f});
 		}
 		const auto search = StringConversion::Utf8ToWide(search_);
 		std::filesystem::path nextDirectory;
 		std::filesystem::path openFile;
 		std::filesystem::path openFolder;
-		const bool choosingProject = filter_ == FileDialogFilter::PROJECT;
 
 		const bool drawEntries = ui.BeginChild("Files", 600.0f, 240.0f);
 
 		if (drawEntries) {
-			bool matchingFile = false;
+			bool matchingEntry = false;
 			const auto &entries = searchProjectScenes_ ? projectScenes_ : entries_;
 			for (std::size_t i = 0; i < entries.size(); ++i) {
 				const Entry &entry = entries[i];
@@ -251,7 +252,7 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 					const auto relative = entry.path.lexically_relative(projectRoot_);
 					displayPath = relative.empty() ? entry.path : relative;
 				}
-				if (!entry.directory) {
+				if (searchFolders || !entry.directory) {
 					const auto native = displayPath.generic_wstring();
 					if (!search_.empty() &&
 					    (search.empty() ||
@@ -260,7 +261,7 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 					                       static_cast<int>(search.size()), TRUE) < 0)) {
 						continue;
 					}
-					matchingFile = true;
+					matchingEntry = true;
 				}
 
 				const std::string name = PathUtils::ToUtf8(displayPath);
@@ -309,8 +310,8 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 
 				ui.PopID();
 			}
-			if (!search_.empty() && !matchingFile) {
-				ui.Text("No matching files.");
+			if (!search_.empty() && !matchingEntry) {
+				ui.Text(searchFolders ? "No matching folders." : "No matching files.");
 			}
 		}
 
