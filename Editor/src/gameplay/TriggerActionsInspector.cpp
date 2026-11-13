@@ -8,12 +8,15 @@
 #include "graphics/ui/ImGuiSystem.h"
 #include "history/EditorHistory.h"
 #include "scene/Scene.h"
+#include "scene/SceneActivity.h"
 #include "scene/SceneSerializer.h"
 #include <Windows.h>
 #include <array>
+#include <cfloat>
 #include <format>
 #include <imgui.h>
 #include <imgui_stdlib.h>
+#include <map>
 #include <optional>
 #include <set>
 #include <string>
@@ -555,6 +558,52 @@ bool TriggerActionsInspector::Draw(
 				    ObjectTag::IsValid(tag) && tag != action.arrivalTag) {
 					action.arrivalTag = std::move(tag);
 					changed = true;
+				}
+				ui.BeginDisabled(action.scenePath.empty());
+				if (ui.Button("Choose Arrival Tag")) {
+					arrivalTags_.clear();
+					Scene destination;
+					arrivalTagsLoaded_ = SceneSerializer::Load(destination, action.scenePath);
+					if (arrivalTagsLoaded_) {
+						std::map<std::string, std::size_t> counts;
+						for (const auto &[targetId, target] : destination.GetObjects()) {
+							if (!target.tag.empty() && SceneActivity::IsActive(destination, targetId)) {
+								++counts[target.tag];
+							}
+						}
+						for (const auto &[candidate, count] : counts) {
+							if (count == 1) {
+								arrivalTags_.push_back(candidate);
+							}
+						}
+					}
+					ImGui::OpenPopup("Arrival Tags");
+				}
+				ui.EndDisabled();
+				ImGui::SetItemTooltip("List tags used by exactly one active object in the saved scene.");
+				ImGui::SetNextWindowSizeConstraints(
+				    {0.0f, 0.0f}, {FLT_MAX, 14.0f * ImGui::GetTextLineHeightWithSpacing()});
+				if (ImGui::BeginPopup("Arrival Tags")) {
+					if (!arrivalTagsLoaded_) {
+						ImGui::TextUnformatted("Could not read the destination scene.");
+					} else if (arrivalTags_.empty()) {
+						ImGui::TextUnformatted("No unique tags on active objects.");
+					} else {
+						for (const auto &candidate : arrivalTags_) {
+							ImGui::PushID(candidate.c_str());
+							const auto position = ImGui::GetCursorScreenPos();
+							const auto size = ImGui::CalcTextSize(candidate.c_str());
+							if (ImGui::Selectable("##ArrivalTag", candidate == action.arrivalTag,
+							                      ImGuiSelectableFlags_None, size)) {
+								changed |= action.arrivalTag != candidate;
+								action.arrivalTag = candidate;
+							}
+							ImGui::GetWindowDrawList()->AddText(
+							    position, ImGui::GetColorU32(ImGuiCol_Text), candidate.c_str());
+							ImGui::PopID();
+						}
+					}
+					ImGui::EndPopup();
 				}
 				ui.BeginDisabled(action.scenePath.empty() || action.arrivalTag.empty());
 				if (ui.Button("Check Arrival Tag")) {

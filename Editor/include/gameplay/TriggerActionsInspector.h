@@ -5,6 +5,7 @@
 #include <optional>
 #include <span>
 #include <string>
+#include <vector>
 
 class ImGuiSystem;
 class EditorHistory;
@@ -57,4 +58,6 @@ class TriggerActionsInspector {
 
 	std::string sceneSearch_;
 	std::optional<ArrivalCheck> arrivalCheck_;
+	std::vector<std::string> arrivalTags_;
+	bool arrivalTagsLoaded_ = false;
 };
