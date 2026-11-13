@@ -382,6 +382,11 @@ class EditorScene final : public IScene {
 	GetNewScenePath(const std::filesystem::path &name) const;
 
 	/// <summary>
+	/// 編集中のシーンに近い、ファイル選択の初期位置を取得する
+	/// </summary>
+	std::filesystem::path GetOpenScenePath() const;
+
+	/// <summary>
 	/// 復旧元の名前を使い、まだ存在しない保存先を提案する
 	/// </summary>
 	std::filesystem::path GetRecoveredScenePath() const;

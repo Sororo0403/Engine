@@ -3420,11 +3420,7 @@ void EditorScene::ExecutePendingAction() {
 		return;
 
 	case EditorAction::OPEN:
-		fileDialog_.Show(FileDialogMode::OPEN,
-		                 !project_.GetRoot().empty() ||
-		                         document_.GetFilePath().empty()
-		                     ? GetNewScenePath({})
-		                     : document_.GetFilePath());
+		fileDialog_.Show(FileDialogMode::OPEN, GetOpenScenePath());
 
 		stage_ = DialogStage::OPEN_FILE;
 		return;
@@ -3738,6 +3734,42 @@ EditorScene::GetNewScenePath(const std::filesystem::path &name) const {
 	}
 
 	return directory.is_absolute() ? directory / name : name;
+}
+
+std::filesystem::path EditorScene::GetOpenScenePath() const {
+	const auto &current = document_.GetFilePath();
+	std::error_code error;
+	if (project_.GetRoot().empty()) {
+		return !current.empty() &&
+		               std::filesystem::is_directory(current.parent_path(), error)
+		           ? current
+		           : GetNewScenePath({});
+	}
+
+	const auto scenes = project_.GetScenesDirectory();
+	if (!std::filesystem::is_directory(scenes, error)) {
+		return std::filesystem::is_directory(project_.GetRoot(), error)
+		           ? project_.GetRoot()
+		           : std::filesystem::path{};
+	}
+
+	if (current.empty()) {
+		return scenes;
+	}
+
+	try {
+		const auto root = std::filesystem::canonical(scenes);
+		const auto folder = std::filesystem::weakly_canonical(current.parent_path());
+		for (auto relative = PathUtils::RelativeInside(root, folder);
+		     !relative.empty(); relative = relative.parent_path()) {
+			if (std::filesystem::is_directory(root / relative, error)) {
+				return root / relative;
+			}
+		}
+	} catch (const std::runtime_error &) {
+		// プロジェクト外のシーンや解決できない場所では既定の一覧を開く。
+	}
+	return scenes;
 }
 
 std::filesystem::path EditorScene::GetRecoveredScenePath() const {
