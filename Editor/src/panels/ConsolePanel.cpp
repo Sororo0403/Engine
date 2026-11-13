@@ -101,9 +101,10 @@ std::string ConsolePanel::BuildFilteredText() const {
 	return text;
 }
 
-ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
-                                                   bool canEditScript,
-                                                   bool stopPlayToEdit) {
+ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
+                                         bool canEditScript,
+                                         bool stopPlayToEdit,
+                                         std::uint64_t retryPlayLogId) {
 	if (!open_) {
 		return {};
 	}
@@ -344,7 +345,7 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 	    "ConsoleDetails", {0.0f, 0.0f}, ImGuiChildFlags_Borders,
 	    ImGuiWindowFlags_HorizontalScrollbar);
 
-	ScriptEditRequest script;
+	Request request;
 	if (drawDetails) {
 		if (selected) {
 			const bool isLua = PathUtils::HasExtension(selected->sourcePath, ".lua");
@@ -359,15 +360,23 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 				ui.SameLine();
 				ui.BeginDisabled(!canEditScript);
 				if (ui.Button(stopPlayToEdit ? "Stop and Edit Script" : "Edit Script")) {
-					script.path = selected->sourcePath;
-					script.logId = selected->id;
+					request.path = selected->sourcePath;
+					request.logId = selected->id;
 					if (hasLuaDiagnostic) {
-						script.diagnostic = selected->message;
+						request.diagnostic = selected->message;
 					}
 				}
 				ui.EndDisabled();
 				ImGui::SetItemTooltip("%s",
 				                      PathUtils::ToUtf8(selected->sourcePath).c_str());
+			}
+
+			if (!stopPlayToEdit && selected->id == retryPlayLogId) {
+				ui.SameLine();
+				if (ui.Button("Play Scene Again")) {
+					request.logId = selected->id;
+					request.retryPlay = true;
+				}
 			}
 
 			ui.SameLine();
@@ -410,5 +419,5 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 
 	ImGui::EndChild();
 	ImGui::End();
-	return script;
+	return request;
 }

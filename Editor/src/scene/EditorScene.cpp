@@ -562,7 +562,18 @@ bool EditorScene::Update(float deltaTime) {
 	DrawGridSettings();
 
 	controlsPanel_.Draw();
-	const auto consoleScript = consolePanel_.Draw(ui_, !IsBusy());
+	const auto consoleScript = consolePanel_.Draw(
+	    ui_, !IsBusy(), false,
+	    !IsBusy() && action == EditorAction::NONE && playFailureReplay_
+	        ? playFailureReplay_->logId
+	        : 0);
+	if (consoleScript.retryPlay && playFailureReplay_ &&
+	    consoleScript.logId == playFailureReplay_->logId) {
+		const auto retry = *playFailureReplay_;
+		StartPlay(retry.path, retry.camera);
+		UpdateDialogs();
+		return true;
+	}
 	playStatePanel_.Draw(ui_, playMode_.GetSession(), playInitialScenePath_);
 
 	const bool wasBusy = IsBusy();
@@ -5902,7 +5913,7 @@ void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject) {
 void EditorScene::LogPlayFailure() {
 	const auto &source = errorScriptPath_.empty() ? errorScenePath_ : errorScriptPath_;
 	const auto logId = Logger::Error(errorMessage_, source);
-	if (errorReplayPath_ && !errorScriptPath_.empty()) {
+	if (errorReplayPath_) {
 		playFailureReplay_ = PlayFailureReplay{
 		    logId, *errorReplayPath_, errorReplayCameraOverride_};
 	}

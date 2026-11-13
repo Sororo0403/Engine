@@ -13,10 +13,11 @@ class ImGuiSystem;
 /// </summary>
 class ConsolePanel {
   public:
-	struct ScriptEditRequest {
+	struct Request {
 		std::filesystem::path path;
 		std::string diagnostic;
 		std::uint64_t logId = 0;
+		bool retryPlay = false;
 	};
 
 	/// <summary>
@@ -40,9 +41,10 @@ class ConsolePanel {
 	/// <param name="ui">フレーム開始済みのUI</param>
 	/// <param name="canEditScript">ログに対応するLuaファイルを開けるか</param>
 	/// <param name="stopPlayToEdit">編集に移るときに試遊を停止するか</param>
-	/// <returns>編集するLuaファイルと診断。操作がなければ空</returns>
-	ScriptEditRequest Draw(const ImGuiSystem &ui, bool canEditScript = false,
-	                       bool stopPlayToEdit = false);
+	/// <param name="retryPlayLogId">再試遊を許可するエラーログのID。0なら無効</param>
+	/// <returns>Luaの編集または再試遊の要求。操作がなければ空</returns>
+	Request Draw(const ImGuiSystem &ui, bool canEditScript = false,
+	             bool stopPlayToEdit = false, std::uint64_t retryPlayLogId = 0);
 
   private:
 	/// <summary>
