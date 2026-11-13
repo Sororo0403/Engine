@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <format>
 #include <imgui.h>
+#include <utility>
 
 namespace {
 /// <summary>
@@ -52,8 +53,14 @@ void ConsolePanel::Show() {
 	scrollRequested_ = true;
 }
 
+void ConsolePanel::ShowLatestPlayError() {
+	Show();
+	latestPlayErrorRequested_ = true;
+}
+
 void ConsolePanel::MarkPlayStart() {
 	playStartBoundary_ = Logger::GetEntryBoundary();
+	latestPlayErrorRequested_ = false;
 	if (latestPlayOnly_) {
 		selectedId_ = 0;
 		scrollRequested_ = true;
@@ -146,7 +153,9 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 	    });
 	ImGui::BeginDisabled(latestPlayError == entries_.rend());
 	bool jumpToError = false;
-	if (ui.Button("Latest Play Error") && latestPlayError != entries_.rend()) {
+	const bool clickedLatestPlayError = ui.Button("Latest Play Error");
+	if ((std::exchange(latestPlayErrorRequested_, false) || clickedLatestPlayError) &&
+	    latestPlayError != entries_.rend()) {
 		jumpToError = true;
 		latestPlayOnly_ = true;
 		showErrors_ = true;

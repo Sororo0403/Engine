@@ -5296,7 +5296,14 @@ void EditorScene::UpdateDialogs() {
 				ui_.SameLine();
 			}
 
-			if (ui_.Button("OK")) {
+			const bool showPlayError = errorReplayPath_ && ui_.Button("Show in Console");
+			if (errorReplayPath_) {
+				ui_.SameLine();
+			}
+			if (ui_.Button("OK") || showPlayError) {
+				if (showPlayError) {
+					consolePanel_.ShowLatestPlayError();
+				}
 				ui_.CloseCurrentPopup();
 				errorObjectId_ = 0;
 				CancelPendingAction();
