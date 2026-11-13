@@ -391,6 +391,13 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 				                                     failedProjectLocationError_);
 			}
 			ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(failedProject_).c_str());
+			if (choosingProject) {
+				ui.SameLine();
+				if (ui.Button("Retry Failed Project")) {
+					openFolder = failedProject_;
+					directoryText_ = PathUtils::ToUtf8(openFolder);
+				}
+			}
 			if (!failedProjectLocationError_.empty()) {
 				ImGui::TextWrapped("%s", failedProjectLocationError_.c_str());
 			}
