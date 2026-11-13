@@ -638,11 +638,18 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 	if (!revealMessage_.empty()) {
 		ImGui::TextWrapped("%s", revealMessage_.c_str());
-		if (!unavailableRevealPath_.empty() &&
-		    ui.Button("Show Location in Explorer")) {
-			std::string error;
-			if (!ShellUtils::RevealLocationInExplorer(unavailableRevealPath_, error)) {
-				revealMessage_ = std::move(error);
+		if (!unavailableRevealPath_.empty()) {
+			if (ui.Button("Show Location in Explorer")) {
+				std::string error;
+				if (!ShellUtils::RevealLocationInExplorer(unavailableRevealPath_, error)) {
+					revealMessage_ = std::move(error);
+				}
+			}
+			ui.SameLine();
+			if (ui.Button("Retry Show in Assets")) {
+				revealPath_ = std::move(unavailableRevealPath_);
+				unavailableRevealPath_.clear();
+				revealMessage_.clear();
 			}
 		}
 	}
