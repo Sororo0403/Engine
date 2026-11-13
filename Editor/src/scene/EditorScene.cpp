@@ -207,6 +207,7 @@ bool EditorScene::Initialize() {
 		SwitchProject(preferences_.lastProject, false, true);
 	}
 
+	startupProjectPicker_ = stage_ == DialogStage::OPEN_PROJECT;
 	if (recoveryReady && stage_ == DialogStage::IDLE &&
 	    project_.GetRoot().empty()) {
 		ShowRecovery(true);
@@ -4759,9 +4760,13 @@ void EditorScene::UpdateDialogs() {
 		if (result == FileDialogResult::CANCELLED) {
 			missingRecentProject_.clear();
 			stage_ = DialogStage::IDLE;
+			if (std::exchange(startupProjectPicker_, false) && recovery_.IsReady()) {
+				ShowRecovery(true);
+			}
 		} else if (result == FileDialogResult::ACCEPTED) {
 			SwitchProject(fileDialog_.GetSelectedPath(),
 			              stage_ == DialogStage::CREATE_PROJECT);
+			startupProjectPicker_ = startupProjectPicker_ && stage_ == DialogStage::OPEN_PROJECT;
 		}
 
 		return;
