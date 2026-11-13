@@ -8,6 +8,7 @@
 #include "graphics/camera/CameraSettings.h"
 #include "physics/ColliderBounds.h"
 #include "scene/SceneGrid.h"
+#include "scene/SceneObjectId.h"
 
 #include <filesystem>
 #include <map>
@@ -115,6 +116,18 @@ class EditorPreferences {
 	FindSceneView(const std::filesystem::path &scene) const;
 
 	/// <summary>
+	/// 保存済みシーンで選択していたオブジェクトを選択順に記憶する
+	/// </summary>
+	void RememberSceneSelection(const std::filesystem::path &scene,
+	                             std::span<const SceneObjectId> selection);
+
+	/// <summary>
+	/// シーンで最後に選択していたオブジェクトを選択順に取得する
+	/// </summary>
+	std::span<const SceneObjectId>
+	LastSceneSelection(const std::filesystem::path &scene) const;
+
+	/// <summary>
 	/// 設定を読み込む。ファイルがない場合は現在の値を保持する
 	/// </summary>
 	/// <param name="filePath">実行ファイル基準の設定ファイル</param>
@@ -140,4 +153,5 @@ class EditorPreferences {
 	std::map<std::filesystem::path, std::filesystem::path> lastGameExports_;
 	std::map<std::filesystem::path, std::vector<std::filesystem::path>> recentGameExports_;
 	std::map<std::filesystem::path, std::filesystem::path> projectAssetFolders_;
+	std::map<std::filesystem::path, std::vector<SceneObjectId>> sceneSelections_;
 };

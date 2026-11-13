@@ -13,6 +13,7 @@
 #include <fstream>
 #include <optional>
 #include <stdexcept>
+#include <unordered_set>
 #include <utility>
 
 namespace {
@@ -128,6 +129,28 @@ const ViewState *
 EditorPreferences::FindSceneView(const std::filesystem::path &scene) const {
 	const auto found = sceneViews.find(SceneViewKey(scene));
 	return found == sceneViews.end() ? nullptr : &found->second;
+}
+
+void EditorPreferences::RememberSceneSelection(
+    const std::filesystem::path &scene, std::span<const SceneObjectId> selection) {
+	const auto key = SceneViewKey(scene);
+	if (key.empty()) {
+		return;
+	}
+
+	if (selection.empty()) {
+		sceneSelections_.erase(key);
+	} else {
+		sceneSelections_.insert_or_assign(
+		    key, std::vector<SceneObjectId>(selection.begin(), selection.end()));
+	}
+}
+
+std::span<const SceneObjectId>
+EditorPreferences::LastSceneSelection(const std::filesystem::path &scene) const {
+	const auto found = sceneSelections_.find(SceneViewKey(scene));
+	return found == sceneSelections_.end() ? std::span<const SceneObjectId>{}
+	                                       : std::span<const SceneObjectId>{found->second};
 }
 
 void EditorPreferences::RememberProject(const std::filesystem::path &root) {
@@ -679,6 +702,32 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 			}
 		}
 
+		if (json.contains("sceneSelections") && json.at("sceneSelections").is_object()) {
+			for (const auto &[key, value] : json.at("sceneSelections").items()) {
+				const auto scene = PathUtils::FromUtf8(key);
+				if (!scene.is_absolute() || scene.native().find(L'\0') != std::wstring::npos ||
+				    !value.is_array()) {
+					continue;
+				}
+
+				std::vector<SceneObjectId> selection;
+				std::unordered_set<SceneObjectId> seen;
+				for (const auto &item : value) {
+					if (!item.is_number_unsigned()) {
+						continue;
+					}
+					const auto id = item.get<SceneObjectId>();
+					if (id != 0 && seen.insert(id).second) {
+						selection.push_back(id);
+					}
+				}
+				if (!selection.empty()) {
+					loaded.sceneSelections_.insert_or_assign(scene.lexically_normal(),
+					                                         std::move(selection));
+				}
+			}
+		}
+
 		*this = std::move(loaded);
 		return true;
 	} catch (const std::exception &error) {
@@ -801,6 +850,10 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		for (const auto &[scene, view] : sceneViews) {
 			sceneViewsJson[PathUtils::ToUtf8(scene)] = CameraViewJson(view);
 		}
+		auto sceneSelectionsJson = nlohmann::json::object();
+		for (const auto &[scene, selection] : sceneSelections_) {
+			sceneSelectionsJson[PathUtils::ToUtf8(scene)] = selection;
+		}
 
 		const nlohmann::json json{
 		    {"version", 1},
@@ -847,6 +900,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		    {"recentGameExports", std::move(recentGameExportsJson)},
 		    {"projectAssetFolders", std::move(projectAssetFoldersJson)},
 		    {"sceneViews", std::move(sceneViewsJson)},
+		    {"sceneSelections", std::move(sceneSelectionsJson)},
 		    {"grid",
 		     {{"spacing", grid.spacing},
 		      {"height", grid.height},
@@ -886,6 +940,7 @@ bool EditorPreferences::operator==(const EditorPreferences &other) const {
 	       recentGameExports_ == other.recentGameExports_ &&
 	       projectAssetFolders_ == other.projectAssetFolders_ &&
 	       projectScenes == other.projectScenes && sceneViews == other.sceneViews &&
+	       sceneSelections_ == other.sceneSelections_ &&
 	       assets == other.assets &&
 	       gameExport.title == other.gameExport.title &&
 	       gameExport.width == other.gameExport.width &&

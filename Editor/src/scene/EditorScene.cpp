@@ -1645,6 +1645,7 @@ void EditorScene::Finalize() {
 			                                  assetsPanel_.GetOpenDirectory());
 		}
 		current.RememberSceneView(document_.GetFilePath(), cameraController_.GetViewState());
+		current.RememberSceneSelection(document_.GetFilePath(), selection_.GetIds());
 		const auto recent = recentScenes_.GetPaths();
 		current.recentScenes.assign(recent.begin(), recent.end());
 
@@ -5471,6 +5472,7 @@ void EditorScene::SaveEditorSession() {
 	}
 
 	current.RememberSceneView(document_.GetFilePath(), cameraController_.GetViewState());
+	current.RememberSceneSelection(document_.GetFilePath(), selection_.GetIds());
 
 	if (!(current == preferences_) && current.Save()) {
 		preferences_ = std::move(current);
@@ -5505,6 +5507,14 @@ bool EditorScene::OpenScene(const std::filesystem::path &path, bool reportError,
 	}
 
 	hierarchyPanel_.Clear();
+	const auto lastSelection = preferences_.LastSceneSelection(document_.GetFilePath());
+	if (!lastSelection.empty()) {
+		selection_.Set({lastSelection.begin(), lastSelection.end()});
+		selection_.RemoveMissing(document_.GetScene());
+		if (const auto active = selection_.GetActiveId()) {
+			hierarchyPanel_.RequestReveal(active);
+		}
+	}
 	pendingPlayCamera_ = 0;
 	playMode_.SetPreviewCamera(0);
 	inspectorPanel_.Clear();
