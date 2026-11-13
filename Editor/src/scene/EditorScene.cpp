@@ -251,7 +251,7 @@ bool EditorScene::Update(float deltaTime) {
 	                                   &document_.GetScene(),
 	                                   document_.GetFilePath(),
 	                                   project_.GetStartupScene(), playSource,
-	                                   playSourceObject != 0);
+	                                   playSourceObject != 0, lastPlayScenePath_);
 	const bool playShortcutEnabled =
 	    input_.IsActive() && playInputWasActive_ && !exitQueued_ &&
 	    action == EditorAction::NONE && !cameraSettingsRequested_ &&
@@ -316,9 +316,15 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	if ((playAction == EditorPlayMode::Action::PLAY ||
-	     playAction == EditorPlayMode::Action::PLAY_STARTUP) &&
+	     playAction == EditorPlayMode::Action::PLAY_STARTUP ||
+	     playAction == EditorPlayMode::Action::PLAY_LAST_SCENE) &&
 	    !IsBusy()) {
-		StartPlay(playAction == EditorPlayMode::Action::PLAY_STARTUP,
+		const auto path = playAction == EditorPlayMode::Action::PLAY_STARTUP
+		                      ? project_.GetStartupScene()
+		                  : playAction == EditorPlayMode::Action::PLAY_LAST_SCENE
+		                      ? lastPlayScenePath_
+		                      : std::filesystem::path{};
+		StartPlay(path,
 		          useRequestedCamera ? requestedCamera : 0);
 	}
 
@@ -5300,7 +5306,8 @@ const Scene *EditorScene::GetStartupSceneForRun(SceneDocument &startup,
 	return &startup.GetScene();
 }
 
-void EditorScene::StartPlay(bool fromStartup, SceneObjectId cameraOverride) {
+void EditorScene::StartPlay(const std::filesystem::path &path,
+                            SceneObjectId cameraOverride) {
 	consolePanel_.MarkPlayStart();
 	audioPreviewPanel_.Stop();
 	frameRequest_ = FrameRequest::NONE;
@@ -5309,13 +5316,14 @@ void EditorScene::StartPlay(bool fromStartup, SceneObjectId cameraOverride) {
 	sceneViewPanel_.CancelSelection();
 
 	SceneDocument startup;
-	const auto *scene =
-	    fromStartup ? GetStartupSceneForRun(startup) : &document_.GetScene();
-	if (!scene) {
+	const bool usesEditingScene = UsesEditingSceneForStartup(path);
+	if (!usesEditingScene && !startup.Open(path, &exportConfig_.lighting)) {
+		ShowError("Could not load the play scene: " + PathUtils::ToUtf8(path) +
+		          "\n" + startup.GetError());
 		return;
 	}
 
-	const bool usesEditingScene = scene == &document_.GetScene();
+	const auto *scene = usesEditingScene ? &document_.GetScene() : &startup.GetScene();
 	const auto fallback = usesEditingScene ? cameraController_.GetPose()
 	                                       : exportConfig_.fallbackCamera;
 	std::string error;
@@ -5338,6 +5346,7 @@ void EditorScene::StartPlay(bool fromStartup, SceneObjectId cameraOverride) {
 	playUsesEditingScene_ = usesEditingScene;
 	playInitialScenePath_ =
 	    usesEditingScene ? document_.GetFilePath() : startup.GetFilePath();
+	lastPlayScenePath_ = playInitialScenePath_;
 }
 
 void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject) {
@@ -5454,6 +5463,7 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 
 		document_.SetProjectRoot(candidate.GetRoot());
 		project_ = std::move(candidate);
+		lastPlayScenePath_.clear();
 		exportConfig_ = std::move(config);
 		assetSources_ = std::move(sources);
 		assets_ = std::move(assets);
@@ -6917,6 +6927,8 @@ void EditorScene::SynchronizePlayScene() {
 	const auto revision = playMode_.GetSession().GetSceneRevision();
 
 	if (playSceneRevision_ != 0 && playSceneRevision_ != revision) {
+		const auto *loaded = playMode_.GetSession().GetLoadedScenePath();
+		lastPlayScenePath_ = loaded ? *loaded : playInitialScenePath_;
 		ClearPlaySelection();
 		playSelectionActive_ = true;
 	}

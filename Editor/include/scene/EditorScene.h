@@ -454,7 +454,8 @@ class EditorScene final : public IScene {
 	/// <summary>
 	/// 編集内容を保持したまま、指定されたシーンから再生を始める
 	/// </summary>
-	void StartPlay(bool fromStartup, SceneObjectId cameraOverride);
+	/// <param name="path">再生するシーン。空なら編集中のシーン</param>
+	void StartPlay(const std::filesystem::path &path, SceneObjectId cameraOverride);
 
 	/// <summary>
 	/// 再生を停止し、編集中のシーンと対応する場合はエラーの物体を表示できるようにする
@@ -963,6 +964,7 @@ class EditorScene final : public IScene {
 	bool playSelectionActive_ = false;
 	bool playUsesEditingScene_ = true;
 	std::filesystem::path playInitialScenePath_;
+	std::filesystem::path lastPlayScenePath_;
 	bool followPlaySelection_ = false;
 	SceneObjectId followedPlayObject_ = 0;
 	DirectX::XMFLOAT3 followedPlayPosition_{};

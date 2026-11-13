@@ -59,7 +59,8 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
                                               const std::filesystem::path &editingScenePath,
                                               const std::filesystem::path &startupScenePath,
                                               const std::filesystem::path &playSourcePath,
-                                              bool canRevealPlayObject) {
+                                              bool canRevealPlayObject,
+                                              const std::filesystem::path &lastPlayScenePath) {
 	visible_ = false;
 	ready_ = false;
 	viewport_ = {};
@@ -230,6 +231,15 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 				action = Action::PLAY_STARTUP;
 			}
 			ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(startupScenePath).c_str());
+		}
+		if (!lastPlayScenePath.empty() &&
+		    !PathUtils::IsSameFile(lastPlayScenePath, editingScenePath) &&
+		    !PathUtils::IsSameFile(lastPlayScenePath, startupScenePath)) {
+			if (ui.Button("Play Last Scene")) {
+				action = Action::PLAY_LAST_SCENE;
+			}
+			ImGui::SetItemTooltip("Start a new play session in %s.",
+			                      PathUtils::ToUtf8(lastPlayScenePath).c_str());
 		}
 
 		ui.EndDisabled();
