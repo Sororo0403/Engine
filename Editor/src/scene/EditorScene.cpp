@@ -1768,7 +1768,9 @@ void EditorScene::Finalize() {
 		} else {
 			current.lastProject = project_.GetRoot();
 			current.RememberProject(project_.GetRoot());
-			current.RememberProjectScene(project_.GetRoot(), document_.GetFilePath());
+			if (failedRestoredScene_.empty()) {
+				current.RememberProjectScene(project_.GetRoot(), document_.GetFilePath());
+			}
 			current.RememberProjectAssetFolder(project_.GetRoot(),
 			                                  assetsPanel_.GetOpenDirectory());
 		}
@@ -3785,7 +3787,12 @@ void EditorScene::ExecutePendingAction() {
 
 void EditorScene::StartSave(bool saveAs) {
 	if (!saveAs && !document_.GetFilePath().empty()) {
+		const bool edited = document_.IsModified();
 		if (document_.Save()) {
+			if (edited && !failedRestoredScene_.empty() &&
+			    project_.CanUseAsStartupScene(document_.GetFilePath())) {
+				failedRestoredScene_.clear();
+			}
 			recentScenes_.Add(document_.GetFilePath());
 			SaveEditorSession();
 			ClearRecovery();
@@ -4955,6 +4962,10 @@ void EditorScene::UpdateDialogs() {
 			const auto startup = project_.GetStartupScene();
 			SaveEditorSession();
 			if (document_.SaveAs(fileDialog_.GetSelectedPath())) {
+				if (!failedRestoredScene_.empty() &&
+				    project_.CanUseAsStartupScene(document_.GetFilePath())) {
+					failedRestoredScene_.clear();
+				}
 				if (previousPath != document_.GetFilePath()) {
 					sceneCheckPanel_.OnSceneSavedAs(previousPath, document_.GetFilePath());
 				}
@@ -6201,7 +6212,6 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		    std::filesystem::symlink_status(missing / L"project.json", status)
 		            .type() == std::filesystem::file_type::not_found &&
 		    std::erase(preferences_.recentProjects, missing) != 0;
-		SaveEditorSession(removedRecent);
 		if (!unavailableLast.empty() &&
 		    (startup.empty() || !PathUtils::IsSameFile(unavailableLast, startup))) {
 			failedRestoredScene_ = unavailableLast;
@@ -6216,6 +6226,7 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 			Logger::Warning(message, unavailableLast);
 			consolePanel_.Show();
 		}
+		SaveEditorSession(removedRecent);
 		if (!startupError.empty()) {
 			Logger::Warning(startupError, startup);
 			consolePanel_.Show();
@@ -6245,7 +6256,10 @@ void EditorScene::SaveEditorSession(bool force,
 	if (!project_.GetRoot().empty()) {
 		current.lastProject = project_.GetRoot();
 		current.RememberProject(project_.GetRoot());
-		current.RememberProjectScene(project_.GetRoot(), document_.GetFilePath());
+		// 自動で開いた代替シーンで、修復待ちの復帰先を上書きしない。
+		if (failedRestoredScene_.empty()) {
+			current.RememberProjectScene(project_.GetRoot(), document_.GetFilePath());
+		}
 		current.RememberProjectAssetFolder(project_.GetRoot(),
 		                                  assetsPanel_.GetOpenDirectory());
 	}
@@ -6279,8 +6293,8 @@ bool EditorScene::OpenScene(const std::filesystem::path &path, bool reportError,
 		return false;
 	}
 
-	if (!failedRestoredScene_.empty() &&
-	    PathUtils::IsSameFile(document_.GetFilePath(), failedRestoredScene_)) {
+	if (!projectLighting && !failedRestoredScene_.empty() &&
+	    project_.CanUseAsStartupScene(document_.GetFilePath())) {
 		failedRestoredScene_.clear();
 	}
 	if (playFailureReplay_ && playFailureReplay_->path.empty()) {
