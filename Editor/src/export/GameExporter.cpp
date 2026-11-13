@@ -17,6 +17,7 @@
 #include <Windows.h>
 #include <algorithm>
 #include <array>
+#include <exception>
 #include <format>
 #include <fstream>
 #include <json.hpp>
@@ -243,25 +244,19 @@ class Assets {
 		if (const auto found = models_.find(model); found != models_.end()) {
 			return found->second;
 		}
-
-		std::vector<ModelDependencyExportError::Failure> failures;
-		std::set<fs::path> failedPaths;
-		for (const auto &file : AssetDependencies::ModelFiles(model)) {
-			try {
-				AddFile(index, file);
-			} catch (const std::bad_alloc &) {
-				throw;
-			} catch (const std::exception &error) {
-				auto normalized = file.lexically_normal();
-				if (failedPaths.insert(normalized).second) {
-					auto reason = std::format("Could not include model dependency {}: {}",
-					                          PathUtils::ToUtf8(normalized), error.what());
-					failures.emplace_back(std::move(normalized), std::move(reason));
-				}
-			}
+		if (const auto failed = failedModels_.find(reference); failed != failedModels_.end()) {
+			std::rethrow_exception(failed->second);
 		}
-		if (!failures.empty())
-			throw ModelDependencyExportError(std::move(failures));
+
+		try {
+			AddModelDependencies(index, model);
+		} catch (const std::bad_alloc &) {
+			throw;
+		} catch (const std::exception &) {
+			// 同じ検査中は診断を再利用し、参照元ごとの報告は呼び出し側で行う。
+			failedModels_.emplace(reference, std::current_exception());
+			throw;
+		}
 
 		models_.emplace(model, reference);
 		return reference;
@@ -372,6 +367,27 @@ class Assets {
 	}
 
   private:
+	void AddModelDependencies(std::size_t index, const fs::path &model) {
+		std::vector<ModelDependencyExportError::Failure> failures;
+		std::set<fs::path> failedPaths;
+		for (const auto &file : AssetDependencies::ModelFiles(model)) {
+			try {
+				AddFile(index, file);
+			} catch (const std::bad_alloc &) {
+				throw;
+			} catch (const std::exception &error) {
+				auto normalized = file.lexically_normal();
+				if (failedPaths.insert(normalized).second) {
+					auto reason = std::format("Could not include model dependency {}: {}",
+					                          PathUtils::ToUtf8(normalized), error.what());
+					failures.emplace_back(std::move(normalized), std::move(reason));
+				}
+			}
+		}
+		if (!failures.empty())
+			throw ModelDependencyExportError(std::move(failures));
+	}
+
 	/// <summary>
 	/// 参照先を許可された取得元へ対応付ける。リンクや実体の範囲はResourceFileで検証する
 	/// </summary>
@@ -427,6 +443,7 @@ class Assets {
 
 	std::vector<AssetSource> sources_;
 	std::map<fs::path, fs::path, PathLess> files_, models_;
+	std::map<fs::path, std::exception_ptr, PathLess> failedModels_;
 	std::map<std::pair<std::size_t, fs::path::string_type>, fs::path> registeredFiles_;
 	std::map<fs::path, unsigned, PathLess> textures_;
 	std::set<fs::path, PathLess> scripts_;
