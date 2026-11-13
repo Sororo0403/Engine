@@ -10,6 +10,7 @@
 #include <imgui_internal.h>
 #include <imgui_stdlib.h>
 #include <stdexcept>
+#include <utility>
 
 namespace {
 constexpr const char *kDefaultScriptName = "New Script.lua";
@@ -33,13 +34,31 @@ std::filesystem::path FindScriptCopy(const std::filesystem::path &source) {
 		}
 	}
 }
+} // namespace
 
-/// <summary>
-/// Luaの行番号を入力欄のUTF-8バイト位置に変換し、キャレットを移す
-/// </summary>
-int JumpToLine(ImGuiInputTextCallbackData *data) {
-	auto &line = *static_cast<int *>(data->UserData);
+int ScriptEditorDialog::NavigateCode(ImGuiInputTextCallbackData *data) {
+	auto &editor = *static_cast<ScriptEditorDialog *>(data->UserData);
 	const std::string_view code(data->Buf, data->BufTextLen);
+	if (std::exchange(editor.findRequested_, false)) {
+		const auto &search = editor.search_;
+		auto match = code.find(search, static_cast<std::size_t>(
+		    (std::max)(data->CursorPos, data->SelectionEnd)));
+		if (match == std::string_view::npos) {
+			match = code.find(search);
+		}
+		editor.searchMissed_ = match == std::string_view::npos;
+		if (!editor.searchMissed_) {
+			data->SelectionStart = static_cast<int>(match);
+			data->CursorPos = data->SelectionEnd =
+			    static_cast<int>(match + search.size());
+		}
+		return 0;
+	}
+
+	auto &line = editor.pendingLine_;
+	if (line <= 0) {
+		return 0;
+	}
 	std::size_t start = 0;
 	for (; line > 1; --line) {
 		const auto newline = code.find_first_of("\r\n", start);
@@ -55,7 +74,6 @@ int JumpToLine(ImGuiInputTextCallbackData *data) {
 	line = 0;
 	return 0;
 }
-} // namespace
 
 bool ScriptEditorDialog::ShowCreate(const std::filesystem::path &assets,
                                     const std::filesystem::path &folder,
@@ -78,6 +96,8 @@ bool ScriptEditorDialog::ShowCreate(const std::filesystem::path &assets,
 		confirmation_ = Confirmation::NONE;
 		pendingLine_ = 0;
 		targetLine_ = 1;
+		search_.clear();
+		findRequested_ = searchMissed_ = false;
 		++inputRevision_;
 		opening_ = true;
 		error.clear();
@@ -110,6 +130,8 @@ bool ScriptEditorDialog::ShowEdit(const std::filesystem::path &path,
 		                                       diagnostic);
 	}
 	targetLine_ = (std::max)(1, pendingLine_);
+	search_.clear();
+	findRequested_ = searchMissed_ = false;
 	++inputRevision_;
 	opening_ = true;
 	error.clear();
@@ -187,17 +209,32 @@ ScriptEditorDialog::Result ScriptEditorDialog::Draw(const ImGuiSystem &ui,
 	if (!confirming && (jumpSubmitted || jumpClicked)) {
 		pendingLine_ = (std::max)(1, targetLine_);
 	}
+	if (ui.InputText("Find", search_)) {
+		searchMissed_ = false;
+	}
+	ui.SameLine();
+	ui.BeginDisabled(search_.empty());
+	if (ui.Button("Find Next") && !confirming && !search_.empty()) {
+		findRequested_ = true;
+		pendingLine_ = 0;
+	}
+	ui.EndDisabled();
+	if (searchMissed_) {
+		ui.SameLine();
+		ui.Text("No matches");
+	}
 	const float height =
 	    (std::max)(160.0f, ImGui::GetContentRegionAvail().y - 105.0f);
 	ImGuiInputTextFlags flags = ImGuiInputTextFlags_AllowTabInput;
-	if (pendingLine_ > 0 && !confirming) {
+	if ((pendingLine_ > 0 || findRequested_) && !confirming) {
 		ImGui::SetKeyboardFocusHere();
 		flags |= ImGuiInputTextFlags_CallbackAlways;
 	}
 	const auto codeId = ImGui::GetID("Code");
-	ImGui::InputTextMultiline("Code", &source_, {-1, height}, flags, JumpToLine,
-	                          &pendingLine_);
-	if ((flags & ImGuiInputTextFlags_CallbackAlways) && pendingLine_ == 0) {
+	ImGui::InputTextMultiline("Code", &source_, {-1, height}, flags, NavigateCode,
+	                          this);
+	if ((flags & ImGuiInputTextFlags_CallbackAlways) && pendingLine_ == 0 &&
+	    !findRequested_) {
 		if (auto *state = ImGui::GetInputTextState(codeId))
 			state->CursorFollow = true;
 	}

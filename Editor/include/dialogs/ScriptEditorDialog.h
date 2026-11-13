@@ -4,6 +4,7 @@
 #include <string>
 #include <string_view>
 class ImGuiSystem;
+struct ImGuiInputTextCallbackData;
 
 /// <summary>
 /// LuaアセットをEditor内で作成・構文確認・編集し、成功時だけ保存する
@@ -53,11 +54,19 @@ class ScriptEditorDialog {
 	/// </summary>
 	void ReloadFromDisk();
 
+	/// <summary>
+	/// コード欄で行移動または次の検索結果への移動を実行する
+	/// </summary>
+	static int NavigateCode(ImGuiInputTextCallbackData *data);
+
 	std::filesystem::path assets_, folder_, path_, saved_;
 	std::string name_, source_, original_, error_;
 	std::uint32_t inputRevision_ = 0;
 	int pendingLine_ = 0;
 	int targetLine_ = 1;
+	std::string search_;
+	bool findRequested_ = false;
+	bool searchMissed_ = false;
 	bool opening_ = false, creating_ = false;
 	bool saveConflict_ = false;
 	Confirmation confirmation_ = Confirmation::NONE;
