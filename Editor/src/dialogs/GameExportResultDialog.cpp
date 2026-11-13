@@ -16,22 +16,21 @@ constexpr auto kLogRefreshInterval = std::chrono::milliseconds{500};
 
 void GameExportResultDialog::Show(std::filesystem::path directory,
                                   bool reopening) {
-	if (directory_ != directory) {
-		logLaunchStart_.reset();
-		sinceLaunchOnly_ = false;
-		process_.Reset();
-		processStatus_.clear();
-	}
 	directory_ = std::move(directory);
+	runs_.try_emplace(directory_);
 	reopening_ = reopening;
 	error_.clear();
 	log_.clear();
 	logError_.clear();
-	showLog_ = logTruncated_ = false;
+	logTruncated_ = false;
+	if (runs_.at(directory_).showLog) {
+		RefreshLog();
+	}
 	opening_ = true;
 }
 
 void GameExportResultDialog::RefreshLog() {
+	auto &run = runs_.at(directory_);
 	nextLogRefresh_ = std::chrono::steady_clock::now() + kLogRefreshInterval;
 	constexpr std::streamoff maximumBytes = 64 * 1024;
 	log_.clear();
@@ -40,8 +39,8 @@ void GameExportResultDialog::RefreshLog() {
 	const auto path = directory_ / kGameLogPath;
 	std::error_code status;
 	if (!std::filesystem::exists(path, status) && !status) {
-		if (logLaunchStart_)
-			*logLaunchStart_ = 0;
+		if (run.logStart)
+			*run.logStart = 0;
 		logError_ = "Game log hasn't been created yet.";
 		return;
 	}
@@ -52,12 +51,12 @@ void GameExportResultDialog::RefreshLog() {
 		logError_ = "Could not read the game log.";
 		return;
 	}
-	if (logLaunchStart_ && *logLaunchStart_ > static_cast<std::uintmax_t>(end)) {
+	if (run.logStart && *run.logStart > static_cast<std::uintmax_t>(end)) {
 		// ログが切り詰められた場合は、新しいファイルの先頭から表示する。
-		*logLaunchStart_ = 0;
+		*run.logStart = 0;
 	}
-	const auto firstIncluded = sinceLaunchOnly_ && logLaunchStart_
-	                               ? static_cast<std::streamoff>(*logLaunchStart_)
+	const auto firstIncluded = run.sinceLaunchOnly && run.logStart
+	                               ? static_cast<std::streamoff>(*run.logStart)
 	                               : 0;
 	const auto size = (std::min)(end - firstIncluded, maximumBytes);
 	const auto start = end - size;
@@ -96,28 +95,29 @@ void GameExportResultDialog::RefreshLog() {
 }
 
 bool GameExportResultDialog::UpdateGameProcess() {
-	if (!process_.IsTracking())
+	auto &run = runs_.at(directory_);
+	if (!run.process.IsTracking())
 		return false;
 
 	std::optional<std::uint32_t> exitCode;
 	std::string error;
-	if (!process_.Poll(exitCode, error)) {
-		processStatus_ = std::move(error);
-		process_.Reset();
+	if (!run.process.Poll(exitCode, error)) {
+		run.status = std::move(error);
+		run.process.Reset();
 		return false;
 	}
 	if (!exitCode)
 		return false;
 
-	process_.Reset();
+	run.process.Reset();
 	if (*exitCode == 0) {
-		processStatus_ = "Game exited normally.";
-		if (showLog_)
+		run.status = "Game exited normally.";
+		if (run.showLog)
 			RefreshLog();
-		return showLog_;
+		return run.showLog;
 	}
-	processStatus_ = std::format("Game exited with code 0x{:08X}.", *exitCode);
-	showLog_ = true;
+	run.status = std::format("Game exited with code 0x{:08X}.", *exitCode);
+	run.showLog = true;
 	RefreshLog();
 	return true;
 }
@@ -139,9 +139,10 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 
 	ImGui::TextWrapped("%s", PathUtils::ToUtf8(directory_).c_str());
 
+	auto &run = runs_.at(directory_);
 	bool refreshedLog = UpdateGameProcess();
-	if (!processStatus_.empty())
-		ui.Text(processStatus_);
+	if (!run.status.empty())
+		ui.Text(run.status);
 
 	if (!error_.empty()) {
 		ImGui::TextWrapped("%s", error_.c_str());
@@ -153,22 +154,22 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 
 	ui.SameLine();
 
-	ui.BeginDisabled(process_.IsTracking());
+	ui.BeginDisabled(run.process.IsTracking());
 	if (ui.Button("Run Game")) {
 		// 起動後すぐにログが追記されても、今回の行を落とさないよう先に記録する。
 		std::error_code status;
 		const auto size = std::filesystem::file_size(
 		    directory_ / kGameLogPath, status);
-		if (process_.Start(directory_ / L"Game.exe", error_,
+		if (run.process.Start(directory_ / L"Game.exe", error_,
 		                   ShellUtils::WindowVisibility::NORMAL, L"--editor-launch")) {
-			processStatus_ = "Game process running.";
-			logLaunchStart_.reset();
+			run.status = "Game process running.";
+			run.logStart.reset();
 			if (!status)
-				logLaunchStart_ = size;
+				run.logStart = size;
 			else if (status == std::errc::no_such_file_or_directory)
-				logLaunchStart_ = 0;
-			sinceLaunchOnly_ = logLaunchStart_.has_value();
-			if (showLog_) {
+				run.logStart = 0;
+			run.sinceLaunchOnly = run.logStart.has_value();
+			if (run.showLog) {
 				RefreshLog();
 				refreshedLog = true;
 			}
@@ -177,9 +178,9 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 	ui.EndDisabled();
 
 	ui.SameLine();
-	if (ui.Button(showLog_ ? "Hide Game Log" : "View Game Log")) {
-		showLog_ = !showLog_;
-		if (showLog_) {
+	if (ui.Button(run.showLog ? "Hide Game Log" : "View Game Log")) {
+		run.showLog = !run.showLog;
+		if (run.showLog) {
 			RefreshLog();
 			refreshedLog = true;
 		}
@@ -193,9 +194,9 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		ui.CloseCurrentPopup();
 	}
 
-	if (showLog_) {
-		if (logLaunchStart_ &&
-		    ImGui::Checkbox("Since Run Game", &sinceLaunchOnly_)) {
+	if (run.showLog) {
+		if (run.logStart &&
+		    ImGui::Checkbox("Since Run Game", &run.sinceLaunchOnly)) {
 			RefreshLog();
 			refreshedLog = true;
 		}
@@ -203,7 +204,7 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 			RefreshLog();
 			refreshedLog = true;
 		}
-		if (process_.IsTracking() &&
+		if (run.process.IsTracking() &&
 		    std::chrono::steady_clock::now() >= nextLogRefresh_) {
 			const auto previous = std::move(log_);
 			RefreshLog();
@@ -223,15 +224,15 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 			ShellUtils::RevealInExplorer(logPath, error_);
 		ui.EndDisabled();
 
-		if (!processStatus_.empty()) {
+		if (!run.status.empty()) {
 			ui.SameLine();
 			if (ui.Button("Copy Run Report")) {
 				auto report = "Output: " + PathUtils::ToUtf8(directory_) + "\n";
-				report += processStatus_ + "\n";
+				report += run.status + "\n";
 				if (!logError_.empty()) {
 					report += logError_ + "\n";
 				} else if (!log_.empty()) {
-					report += sinceLaunchOnly_ ? "\nGame log since Run Game"
+					report += run.sinceLaunchOnly ? "\nGame log since Run Game"
 					                           : "\nGame log";
 					report += logTruncated_ ? " (tail):\n" : ":\n";
 					report += log_;
@@ -243,7 +244,7 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		if (!logError_.empty()) {
 			ui.Text(logError_);
 		} else if (log_.empty()) {
-			ui.Text(sinceLaunchOnly_ ? "No log messages since Run Game yet."
+			ui.Text(run.sinceLaunchOnly ? "No log messages since Run Game yet."
 			                         : "Game log is empty.");
 		} else {
 			if (logTruncated_)

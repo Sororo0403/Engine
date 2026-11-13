@@ -4,6 +4,7 @@
 #include <chrono>
 #include <cstdint>
 #include <filesystem>
+#include <map>
 #include <optional>
 #include <string>
 
@@ -31,6 +32,14 @@ class GameExportResultDialog {
 	GameExportResultAction Draw(const ImGuiSystem &ui);
 
   private:
+	struct GameRun {
+		ShellUtils::ExecutableProcess process;
+		std::string status;
+		std::optional<std::uintmax_t> logStart;
+		bool sinceLaunchOnly = false;
+		bool showLog = false;
+	};
+
 	/// <summary>
 	/// 出力したゲームのログを末尾から読み直す
 	/// </summary>
@@ -42,14 +51,11 @@ class GameExportResultDialog {
 	bool UpdateGameProcess();
 
 	std::filesystem::path directory_;
-	ShellUtils::ExecutableProcess process_;
-	std::string error_, processStatus_;
+	std::map<std::filesystem::path, GameRun> runs_;
+	std::string error_;
 	std::string log_, logError_;
-	std::optional<std::uintmax_t> logLaunchStart_;
 	std::chrono::steady_clock::time_point nextLogRefresh_;
 	bool opening_ = false;
 	bool reopening_ = false;
-	bool showLog_ = false;
 	bool logTruncated_ = false;
-	bool sinceLaunchOnly_ = false;
 };
