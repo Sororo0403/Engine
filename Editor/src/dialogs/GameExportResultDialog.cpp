@@ -271,24 +271,64 @@ bool GameExportResultDialog::OpenLogAtError(ErrorSearch search) {
 		return false;
 	}
 
-	error_.clear();
-	if (!run.showLogBeginning || run.logPageOffset != *match) {
-		if (!run.beforeErrorJump) {
-			run.beforeErrorJump = LogPosition{std::move(run.earlierLogPages),
-			                                 run.logPageOffset, run.showLogBeginning,
-			                                 run.followLog, run.showErrorsOnly,
-			                                 run.logScrollY, run.logFilter};
+	OpenLogAtOffset(*match);
+	return true;
+}
+
+bool GameExportResultDialog::FindFirstLogMatch() {
+	const auto &run = runs_.at(directory_);
+	std::ifstream input(directory_ / kGameLogPath, std::ios::binary | std::ios::ate);
+	const auto end = static_cast<std::streamoff>(input.tellg());
+	if (end < 0) {
+		error_ = "Could not read the game log.";
+		return false;
+	}
+
+	const auto start = run.sinceLaunchOnly && run.logStart &&
+	                           *run.logStart <= static_cast<std::uintmax_t>(end)
+	                       ? static_cast<std::streamoff>(*run.logStart) : 0;
+	input.seekg(start);
+	bool isError = false;
+	std::string line;
+	for (auto offset = start; offset < end && std::getline(input, line);
+	     offset = static_cast<std::streamoff>(input.tellg())) {
+		const auto level = LogLevelPrefix(line);
+		if (IsLogHeader(level)) {
+			isError = level.starts_with(" [ERROR] ");
 		}
+		if ((!run.showErrorsOnly || isError) && line.find(run.logFilter) != std::string::npos) {
+			OpenLogAtOffset(static_cast<std::uintmax_t>(offset - start));
+			// 詳細行から開いたページでは、見出しが前のページにある場合がある。
+			runs_.at(directory_).showErrorsOnly = false;
+			return true;
+		}
+		if (input.eof()) {
+			break;
+		}
+	}
+	error_ = input.bad() ? "Could not search the game log."
+	                     : "No matching lines in the selected log range.";
+	return false;
+}
+
+void GameExportResultDialog::OpenLogAtOffset(std::uintmax_t offset) {
+	auto &run = runs_.at(directory_);
+	error_.clear();
+	if (!run.beforeErrorJump) {
+		run.beforeErrorJump = LogPosition{run.earlierLogPages, run.logPageOffset,
+		                                 run.showLogBeginning, run.followLog,
+		                                 run.showErrorsOnly, run.logScrollY, run.logFilter};
+	}
+	if (!run.showLogBeginning || run.logPageOffset != offset) {
 		run.earlierLogPages.clear();
-		if (*match != 0)
+		if (offset != 0)
 			run.earlierLogPages.push_back(0);
-		run.logPageOffset = *match;
+		run.logPageOffset = offset;
 	}
 	run.followLog = false;
 	run.showLogBeginning = true;
 	run.logFilter.clear();
 	RefreshLog();
-	return true;
 }
 
 bool GameExportResultDialog::StartGame() {
@@ -543,6 +583,13 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		ImGui::SetItemTooltip("Show errors and their details on the current log page.");
 		changedFilter |= ui.InputText("Search Log Page", run.logFilter);
 		ImGui::SetItemTooltip("Filter entries on the current page or tail by text (case-sensitive).");
+		ui.SameLine();
+		ui.BeginDisabled(run.logFilter.empty());
+		if (ui.Button("Find First in Log") && !run.logFilter.empty()) {
+			jumpToBeginning |= FindFirstLogMatch();
+		}
+		ui.EndDisabled();
+		ImGui::SetItemTooltip("Find the first matching line across the selected log range.");
 		ui.BeginDisabled(log_.empty() || jumpToLatest);
 		if (ui.Button("First Log Error")) {
 			jumpToBeginning |= OpenLogAtError(ErrorSearch::FIRST);
@@ -565,7 +612,7 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		}
 		if (run.beforeErrorJump) {
 			ui.SameLine();
-			if (ui.Button("Back from Error")) {
+			if (ui.Button("Back to Log Position")) {
 				auto previous = std::move(*run.beforeErrorJump);
 				run.beforeErrorJump.reset();
 				run.earlierLogPages = std::move(previous.earlierPages);
@@ -579,7 +626,7 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 				jumpToBeginning = false;
 				jumpToLatest = false;
 			}
-			ImGui::SetItemTooltip("Return to the log position shown before jumping to an error.");
+			ImGui::SetItemTooltip("Return to the log position and filters from before the jump.");
 		}
 		const auto filtered = run.logFilter.empty() ? std::string{}
 		                                           : FilterLogEntries(log_, run.logFilter);

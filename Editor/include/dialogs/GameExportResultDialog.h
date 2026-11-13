@@ -84,6 +84,16 @@ class GameExportResultDialog {
 	bool OpenLogAtError(ErrorSearch search);
 
 	/// <summary>
+	/// 選択中の実行範囲全体から検索語を含む最初の行へ移動する
+	/// </summary>
+	bool FindFirstLogMatch();
+
+	/// <summary>
+	/// 元の閲覧位置を記録してから、指定のオフセットでページを開く
+	/// </summary>
+	void OpenLogAtOffset(std::uintmax_t offset);
+
+	/// <summary>
 	/// 起動したゲームの終了を確認する。異常終了した場合はログを開く
 	/// </summary>
 	bool UpdateGameProcess(bool &jumpToLatest);
