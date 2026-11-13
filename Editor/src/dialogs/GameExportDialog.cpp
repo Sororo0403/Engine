@@ -579,6 +579,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 				selected.destination = ReadDestination(output_);
 			} catch (const std::invalid_argument &) {
 				if (!chooseStartup && !navigatingIssue && !keepDraft) {
+					focusField_ = GameExportField::OUTPUT_FOLDER;
 					throw;
 				}
 				// 出力先の入力が無効でも、下書きの保持や修正箇所への移動を許可する。
@@ -588,13 +589,24 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 			selected.config.width = width_;
 			selected.config.height = height_;
 
-			if (exportRequested && !selected.config.HasValidWindowSettings()) {
-				throw std::runtime_error(
-				    "Enter a title and a valid window size (1-8192).");
-			}
-
 			if (exportRequested) {
-				if (!selected.destination.is_absolute()) {
+				if (!selected.config.HasValidWindowTitle()) {
+					focusField_ = GameExportField::TITLE;
+					throw std::runtime_error("Enter a valid game title.");
+				}
+				if (!GameConfig::IsValidWindowDimension(selected.config.width)) {
+					focusField_ = GameExportField::WIDTH;
+					throw std::runtime_error("Window width must be between 1 and 8192.");
+				}
+				if (!GameConfig::IsValidWindowDimension(selected.config.height)) {
+					focusField_ = GameExportField::HEIGHT;
+					throw std::runtime_error("Window height must be between 1 and 8192.");
+				}
+
+				// 出力先の検査で失敗した場合は入力欄に戻す。
+				focusField_ = GameExportField::OUTPUT_FOLDER;
+				if (!selected.destination.is_absolute() ||
+				    !PathUtils::IsValidFileName(selected.destination.filename())) {
 					throw std::runtime_error("Choose a new output folder.");
 				}
 				if (std::filesystem::exists(
@@ -602,6 +614,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 					throw std::runtime_error(
 					    "That output path already exists. Choose a new folder.");
 				}
+				focusField_ = GameExportField::NONE;
 			}
 
 			options_ = std::move(selected);
