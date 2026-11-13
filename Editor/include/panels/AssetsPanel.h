@@ -6,6 +6,7 @@
 #include <span>
 #include <string>
 #include <utility>
+#include <vector>
 
 class AssetDatabase;
 class ImGuiSystem;
@@ -30,6 +31,11 @@ class AssetsPanel {
 	/// </summary>
 	/// <param name="path">表示するアセットの相対パスまたは絶対パス</param>
 	void RequestReveal(const std::filesystem::path &path);
+
+	/// <summary>
+	/// 移動・複製の結果を、先頭の項目があるフォルダで選択する
+	/// </summary>
+	void RequestSelectResults(std::vector<std::filesystem::path> paths);
 
 	/// <summary>
 	/// 素材が現在の一覧にあれば選択し、Assetsパネルの表示を予約する
@@ -319,6 +325,7 @@ class AssetsPanel {
 	std::filesystem::path previousSearchDirectory_;
 	std::filesystem::path previousSearchAsset_;
 	std::filesystem::path revealPath_;
+	std::vector<std::filesystem::path> resultPaths_;
 	std::filesystem::path unavailableRevealPath_;
 	bool focusRequested_ = false;
 	std::string revealMessage_;

@@ -4464,7 +4464,7 @@ bool EditorScene::CopyAssets(std::span<const std::filesystem::path> sources,
                              const std::filesystem::path &directory,
                              std::string &error) {
 	const auto &root = assets_.GetRootDirectory();
-	const auto copies = directory.empty()
+	auto copies = directory.empty()
 	                        ? AssetUsage::Duplicate(sources, root, error)
 	                        : AssetUsage::CopyTo(sources, directory, root,
 	                                             project_.GetRoot(), error);
@@ -4474,15 +4474,7 @@ bool EditorScene::CopyAssets(std::span<const std::filesystem::path> sources,
 	}
 
 	assets_.Refresh();
-	const auto &copy = copies.front();
-	std::error_code typeError;
-
-	if (std::filesystem::is_directory(copy, typeError)) {
-		const auto &visibleDirectory = directory.empty() ? copy : directory;
-		assetsPanel_.RequestOpenDirectory(visibleDirectory.lexically_relative(root));
-	} else {
-		assetsPanel_.RequestReveal(copy);
-	}
+	assetsPanel_.RequestSelectResults(std::move(copies));
 
 	return true;
 }
@@ -4496,25 +4488,16 @@ bool EditorScene::RelocateAssets(const AssetUsage::Moves &moves,
 	assetsPanel_.RelocateClipboard(moves);
 	lastPlayScenePath_ = PathUtils::AfterMove(lastPlayScenePath_, moves);
 
-	const auto &destination = moves.front().second;
-	const auto &root = assets_.GetRootDirectory();
-
 	clipboard_.Clear();
 	texturePreviewPanel_.Clear();
 	audioPreviewPanel_.Clear();
-	const bool refreshed = assets_.Refresh();
-	std::error_code typeError;
-	const bool folder = std::filesystem::is_directory(destination, typeError);
-	const auto directory = folder ? destination : destination.parent_path();
-	if (refreshed) {
-		assetsPanel_.RestoreDirectory(directory.lexically_relative(root), assets_);
+	assets_.Refresh();
+	std::vector<std::filesystem::path> destinations;
+	destinations.reserve(moves.size());
+	for (const auto &move : moves) {
+		destinations.push_back(move.second);
 	}
-
-	if (!folder) {
-		assetsPanel_.RequestReveal(destination);
-	} else if (!refreshed) {
-		assetsPanel_.RequestOpenDirectory(directory.lexically_relative(root));
-	}
+	assetsPanel_.RequestSelectResults(std::move(destinations));
 
 	auto updatedPreferences = preferences_;
 	const auto recent = recentScenes_.GetPaths();

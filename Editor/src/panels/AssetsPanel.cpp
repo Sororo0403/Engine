@@ -23,9 +23,16 @@
 #include <utility>
 
 void AssetsPanel::RequestReveal(const std::filesystem::path &path) {
+	resultPaths_.clear();
 	previousSearch_.clear();
 	unavailableRevealPath_.clear();
 	revealPath_ = path;
+}
+
+void AssetsPanel::RequestSelectResults(std::vector<std::filesystem::path> paths) {
+	revealPath_.clear();
+	resultPaths_ = std::move(paths);
+	focusRequested_ = true;
 }
 
 bool AssetsPanel::RevealIndexedAsset(const std::filesystem::path &path,
@@ -294,6 +301,19 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	}
 
 	const auto &directories = assets.GetDirectories();
+	if (!resultPaths_.empty()) {
+		const auto parent = resultPaths_.front().parent_path();
+		OpenDirectory(parent.lexically_relative(assets.GetRootDirectory()));
+		// フォルダはどの種類でも表示される。ファイルがあればその種類を開く。
+		for (const auto &path : resultPaths_) {
+			if (path.parent_path() == parent && SelectAsset(path, assets)) {
+				break;
+			}
+		}
+		selectedItems_ = std::exchange(resultPaths_, {});
+		selectionAnchor_ = selectedItems_.front();
+		scrollToSelected_ = true;
+	}
 
 	if (directoryOpenRequested_) {
 		try {
@@ -693,6 +713,10 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				if (ui.Selectable(label.c_str(), isSelected(directory))) {
 					selectRow(directory, true);
 				}
+				if (scrollToSelected_ && selectionAnchor_ == directory) {
+					ImGui::SetScrollHereY(0.5f);
+					scrollToSelected_ = false;
+				}
 				if (ImGui::IsItemHovered() &&
 				    ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) &&
 				    !ImGui::GetIO().KeyCtrl && !ImGui::GetIO().KeyShift) {
@@ -884,7 +908,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				ImGui::EndPopup();
 			}
 
-			if (scrollToSelected_ && selectedPath_ == assetPath) {
+			if (scrollToSelected_ && selectionAnchor_ == assetPath) {
 				ImGui::SetScrollHereY(0.5f);
 				scrollToSelected_ = false;
 			}
@@ -1209,6 +1233,7 @@ void AssetsPanel::Clear() {
 	filter_.clear();
 	previousSearch_.clear();
 	revealPath_.clear();
+	resultPaths_.clear();
 	unavailableRevealPath_.clear();
 	focusRequested_ = false;
 	revealMessage_.clear();
