@@ -189,6 +189,15 @@ void GameExportDialog::FollowMovedScene(
     std::span<const std::pair<std::filesystem::path, std::filesystem::path>> moves) {
 	if (resumeDraft_ && projectRoot_ == projectRoot) {
 		options_.startupScenePath = PathUtils::AfterMove(options_.startupScenePath, moves);
+		for (auto &issue : checkIssues_) {
+			issue.scenePath = PathUtils::AfterMove(issue.scenePath, moves);
+			issue.scriptPath = PathUtils::AfterMove(issue.scriptPath, moves);
+			issue.assetPath = PathUtils::AfterMove(issue.assetPath, moves);
+			issue.transitionScenePath = PathUtils::AfterMove(issue.transitionScenePath, moves);
+			if (issue.field != GameExportField::OUTPUT_FOLDER) {
+				issue.locationPath = PathUtils::AfterMove(issue.locationPath, moves);
+			}
+		}
 
 		std::filesystem::path searchPath;
 		try {
@@ -220,7 +229,7 @@ void GameExportDialog::SetCheckResult(std::string message,
 		const auto matches = [&](const auto &issue) {
 			return MatchesIssue(issue, issueFilter_);
 		};
-		const auto sameIssue = std::ranges::find_if(issues, [&](const auto &issue) {
+		const auto sameSource = [&](const auto &issue) {
 			return matches(issue) && issue.objectId == previous.objectId &&
 			       issue.scenePath == previous.scenePath &&
 			       issue.scriptPath == previous.scriptPath &&
@@ -228,9 +237,25 @@ void GameExportDialog::SetCheckResult(std::string message,
 			       issue.locationPath == previous.locationPath &&
 			       issue.field == previous.field &&
 			       issue.transitionScenePath == previous.transitionScenePath &&
-			       issue.transitionObjectId == previous.transitionObjectId &&
-			       issue.message == previous.message;
+			       issue.transitionObjectId == previous.transitionObjectId;
+		};
+		auto sameIssue = std::ranges::find_if(issues, [&](const auto &issue) {
+			return sameSource(issue) && issue.message == previous.message;
 		});
+		const bool hasSource = previous.objectId != 0 ||
+		                       previous.field != GameExportField::NONE ||
+		                       !previous.scenePath.empty() || !previous.scriptPath.empty() ||
+		                       !previous.assetPath.empty() || !previous.locationPath.empty() ||
+		                       !previous.transitionScenePath.empty() ||
+		                       previous.transitionObjectId != 0;
+		if (sameIssue == issues.end() && hasSource) {
+			// 診断文が変わっても、参照元が一意なら同じ箇所へ戻る。
+			const auto candidate = std::ranges::find_if(issues, sameSource);
+			if (candidate != issues.end() &&
+			    std::find_if(candidate + 1, issues.end(), sameSource) == issues.end()) {
+				sameIssue = candidate;
+			}
+		}
 		if (sameIssue != issues.end()) {
 			issueToScrollTo_ = static_cast<std::size_t>(sameIssue - issues.begin());
 		} else {
