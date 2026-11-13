@@ -2786,8 +2786,7 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 		return;
 	}
 	case EditorAction::BROWSE_STARTUP_SCENE:
-		fileDialog_.Show(FileDialogMode::OPEN, project_.GetScenesDirectory(),
-		                 FileDialogFilter::SCENE, "Choose Startup Scene###FileDialog");
+		BrowseStartupScene();
 		stage_ = DialogStage::SELECT_STARTUP_SCENE;
 		return;
 
@@ -3304,6 +3303,20 @@ void EditorScene::CheckGameExport(bool continueFromIssue) {
 	}
 	exportDialog_.SetCheckResult("Export check failed: " + error,
 	                             std::move(issues), continueFromIssue);
+}
+
+void EditorScene::BrowseStartupScene() {
+	const auto startup = project_.GetStartupScene();
+	auto initialPath = GetSceneDialogDirectory(startup);
+	std::error_code error;
+	if (!startup.empty() &&
+	    std::filesystem::is_regular_file(startup, error) &&
+	    PathUtils::IsSameFile(initialPath, startup.parent_path())) {
+		initialPath /= startup.filename();
+	}
+
+	fileDialog_.Show(FileDialogMode::OPEN, initialPath, FileDialogFilter::SCENE,
+	                 "Choose Startup Scene###FileDialog");
 }
 
 bool EditorScene::SetStartupScene(const std::filesystem::path &path,
@@ -5154,8 +5167,7 @@ void EditorScene::UpdateDialogs() {
 	case DialogStage::EXPORT_GAME: {
 		const auto result = exportDialog_.Draw(ui_);
 		if (result == GameExportResult::CHOOSE_STARTUP_SCENE) {
-			fileDialog_.Show(FileDialogMode::OPEN, project_.GetScenesDirectory(),
-			                 FileDialogFilter::SCENE, "Choose Startup Scene###FileDialog");
+			BrowseStartupScene();
 			stage_ = DialogStage::SELECT_EXPORT_STARTUP_SCENE;
 			return;
 		}

@@ -376,6 +376,11 @@ class EditorScene final : public IScene {
 	bool SetStartupScene(const std::filesystem::path &path, std::string &error);
 
 	/// <summary>
+	/// 現在の起動シーンに近いフォルダで起動シーンの選択画面を開く
+	/// </summary>
+	void BrowseStartupScene();
+
+	/// <summary>
 	/// 保存を開始する。保存先がない場合は選択ダイアログを開く
 	/// </summary>
 	/// <param name="saveAs">保存先を必ず選択するか</param>
