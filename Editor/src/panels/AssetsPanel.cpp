@@ -22,13 +22,14 @@
 #include <system_error>
 #include <utility>
 
-void AssetsPanel::RequestReveal(const std::filesystem::path &path) {
+void AssetsPanel::RequestReveal(const std::filesystem::path &path, bool keepResults) {
 	resultPaths_.clear();
 	previousSearch_.clear();
 	previousResults_.clear();
 	previousResultSelection_.clear();
 	unavailableRevealPath_.clear();
 	revealPath_ = path;
+	keepRevealResults_ = keepResults;
 }
 
 void AssetsPanel::RequestSelectResults(std::vector<std::filesystem::path> paths) {
@@ -291,10 +292,26 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	}
 
 	if (!revealPath_.empty()) {
+		const bool keepResults = std::exchange(keepRevealResults_, false) &&
+		                         (!filter_.empty() || !displayedResults_.empty());
+		auto search = keepResults ? filter_ : std::string{};
+		auto results = keepResults ? displayedResults_ : std::vector<std::filesystem::path>{};
+		auto selection = keepResults ? selectedItems_ : std::vector<std::filesystem::path>{};
+		auto directory = keepResults ? currentDirectory_ : std::filesystem::path{};
+		auto anchor = keepResults ? selectionAnchor_ : std::filesystem::path{};
+		const auto type = type_;
 		try {
 			if (SelectAsset(revealPath_, assets) ||
 			    (assets.Refresh() && SelectAsset(revealPath_, assets))) {
 				revealMessage_.clear();
+				if (keepResults) {
+					previousSearch_ = std::move(search);
+					previousResults_ = std::move(results);
+					previousResultSelection_ = std::move(selection);
+					previousSearchDirectory_ = std::move(directory);
+					previousSearchAsset_ = std::move(anchor);
+					previousSearchType_ = type;
+				}
 			} else if (assets.GetError().empty()) {
 				revealMessage_ = "Asset is not in the indexed Assets folder.";
 			} else {
@@ -495,36 +512,20 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		revealMessage_.clear();
 	}
 
-	if (!previousResults_.empty() && displayedResults_.empty() &&
-	    unavailableRevealPath_.empty()) {
+	if ((!previousResults_.empty() || !previousSearch_.empty()) &&
+	    displayedResults_.empty() && unavailableRevealPath_.empty()) {
 		ui.SameLine();
-		if (ui.Button("Back to Results")) {
+		if (ui.Button(previousResults_.empty() ? "Back to Search" : "Back to Results")) {
+			auto search = std::exchange(previousSearch_, {});
 			auto results = std::exchange(previousResults_, {});
 			auto selection = std::exchange(previousResultSelection_, {});
+			SetAssetType(previousSearchType_);
 			RestoreDirectory(previousSearchDirectory_, assets);
+			filter_ = std::move(search);
 			displayedResults_ = std::move(results);
 			selectedItems_ = std::move(selection);
 			selectionAnchor_ = previousSearchAsset_;
-			scrollToSelected_ = true;
-			scrollToTop_ = false;
-		}
-	} else if (!previousSearch_.empty() && unavailableRevealPath_.empty()) {
-		ui.SameLine();
-		if (ui.Button("Back to Search")) {
-			auto search = std::exchange(previousSearch_, std::string{});
-			RestoreDirectory(previousSearchDirectory_, assets);
-			filter_ = std::move(search);
-			std::error_code error;
-			if (std::filesystem::is_regular_file(
-			        PathUtils::ResolveFromExecutable(previousSearchAsset_), error)) {
-				selectedItems_ = {previousSearchAsset_};
-				selectionAnchor_ = previousSearchAsset_;
-				scrollToSelected_ = true;
-			} else {
-				selectedItems_.clear();
-				selectionAnchor_.clear();
-				scrollToSelected_ = false;
-			}
+			scrollToSelected_ = !selectedItems_.empty();
 			scrollToTop_ = !scrollToSelected_;
 		}
 	}
@@ -873,12 +874,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				selectContext(assetPath);
 				if ((!filter_.empty() || !displayedResults_.empty()) &&
 				    ui.MenuItem("Show in Containing Folder")) {
-					RequestReveal(assetPath);
-					previousSearch_ = filter_;
-					previousResults_ = displayedResults_;
-					previousResultSelection_ = selectedItems_;
-					previousSearchDirectory_ = currentDirectory_;
-					previousSearchAsset_ = assetPath;
+					RequestReveal(assetPath, true);
 				}
 				drawLocationMenu(assetPath);
 				ImGui::Separator();

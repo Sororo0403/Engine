@@ -4583,7 +4583,7 @@ void EditorScene::DrawAssetReferences(bool recycle) {
 	ui_.EndPopup();
 
 	if (!sourceToReveal.empty()) {
-		assetsPanel_.RequestReveal(sourceToReveal);
+		assetsPanel_.RequestReveal(sourceToReveal, true);
 	} else if (!selectedReferences.empty()) {
 		if (selection_.Set(std::move(selectedReferences))) {
 			inspectorPanel_.Clear();

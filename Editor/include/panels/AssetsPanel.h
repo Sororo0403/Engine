@@ -30,7 +30,8 @@ class AssetsPanel {
 	/// モデル・画像・音声・シーン・ゲーム設定をAssets内で選択し、次の描画時に表示する
 	/// </summary>
 	/// <param name="path">表示するアセットの相対パスまたは絶対パス</param>
-	void RequestReveal(const std::filesystem::path &path);
+	/// <param name="keepResults">表示中の検索や操作結果へ戻れるようにするか</param>
+	void RequestReveal(const std::filesystem::path &path, bool keepResults = false);
 
 	/// <summary>
 	/// 移動・複製の結果を選択する。複数フォルダにまたがる場合は結果の一覧を表示する
@@ -325,13 +326,15 @@ class AssetsPanel {
 
 	std::filesystem::path currentDirectory_;
 	std::string filter_;
-	// 検索・操作結果から素材の親フォルダを開いたときだけ、元の表示を保持する。
+	// 検索・操作結果から別の素材表示へ移動したときに、元の表示を保持する。
 	std::string previousSearch_;
 	std::vector<std::filesystem::path> previousResults_;
 	std::vector<std::filesystem::path> previousResultSelection_;
 	std::filesystem::path previousSearchDirectory_;
 	std::filesystem::path previousSearchAsset_;
+	AssetType previousSearchType_ = AssetType::MODEL;
 	std::filesystem::path revealPath_;
+	bool keepRevealResults_ = false;
 	std::vector<std::filesystem::path> resultPaths_;
 	std::vector<std::filesystem::path> displayedResults_;
 	std::filesystem::path unavailableRevealPath_;
