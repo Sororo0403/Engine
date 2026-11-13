@@ -5942,6 +5942,7 @@ void EditorScene::SaveEditorSession(bool force) {
 
 bool EditorScene::OpenScene(const std::filesystem::path &path, bool reportError,
                             const LightingSettings *projectLighting) {
+	const auto previousPath = document_.GetFilePath();
 	SaveEditorSession();
 	const bool opened = document_.Open(
 	    path, projectLighting ? projectLighting : &exportConfig_.lighting);
@@ -5958,7 +5959,7 @@ bool EditorScene::OpenScene(const std::filesystem::path &path, bool reportError,
 		playFailureReplay_.reset();
 	}
 	ClearRecovery();
-	sceneCheckPanel_.OnSceneOpened();
+	sceneCheckPanel_.OnSceneOpened(previousPath, document_.GetFilePath());
 	clipboard_.DetachExternalReferences();
 	frameRequest_ = FrameRequest::NONE;
 	frameObject_ = 0;

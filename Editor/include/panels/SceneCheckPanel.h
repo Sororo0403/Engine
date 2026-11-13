@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gameplay/SceneValidation.h"
+#include <map>
 #include <optional>
 #include <string>
 #include <vector>
@@ -37,9 +38,12 @@ class SceneCheckPanel {
 	void Reset();
 
 	/// <summary>
-	/// シーン切り替え時に前の結果を破棄し、パネルを開いていれば再検査を予約する
+	/// 前の結果を破棄し、開いたシーンの検索語を復元する。パネルが開いていれば再検査を予約する
 	/// </summary>
-	void OnSceneOpened();
+	/// <param name="previous">切り替え前のシーン。未保存なら空</param>
+	/// <param name="current">開いたシーンのパス</param>
+	void OnSceneOpened(const std::filesystem::path &previous,
+	                   const std::filesystem::path &current);
 
 	/// <summary>
 	/// 現在の編集シーンの再生設定・モデル・材質・依存ファイルを検証し、全ての結果をまとめて置き換える
@@ -91,6 +95,7 @@ class SceneCheckPanel {
 	std::string error_;
 	std::string assetActionError_;
 	std::string filter_;
+	std::map<std::filesystem::path, std::string> sceneFilters_;
 	bool open_ = false;
 	bool checkRequested_ = false;
 	bool focusRequested_ = false;

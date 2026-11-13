@@ -22,11 +22,28 @@ void SceneCheckPanel::Reset() {
 	*this = SceneCheckPanel{};
 }
 
-void SceneCheckPanel::OnSceneOpened() {
-	const bool wasOpen = open_;
-	Reset();
-	open_ = wasOpen;
-	checkRequested_ = wasOpen;
+void SceneCheckPanel::OnSceneOpened(const std::filesystem::path &previous,
+                                   const std::filesystem::path &current) {
+	if (!previous.empty()) {
+		if (filter_.empty()) {
+			sceneFilters_.erase(previous);
+		} else {
+			sceneFilters_.insert_or_assign(previous, filter_);
+		}
+	}
+	filter_.clear();
+	if (const auto found = sceneFilters_.find(current); found != sceneFilters_.end()) {
+		filter_ = found->second;
+	}
+
+	issues_.clear();
+	lastIssue_.reset();
+	scrollToIssue_.reset();
+	error_.clear();
+	assetActionError_.clear();
+	focusRequested_ = false;
+	checked_ = false;
+	checkRequested_ = open_;
 }
 
 void SceneCheckPanel::Check(const Scene &scene, const CameraPose &fallback,
