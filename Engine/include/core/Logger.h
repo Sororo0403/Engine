@@ -42,6 +42,11 @@ class Logger {
 	static void Warning(std::string_view message);
 
 	/// <summary>
+	/// 警告と、その原因を確認できるファイルを直近ログに記録する
+	/// </summary>
+	static void Warning(std::string_view message, const std::filesystem::path &sourcePath);
+
+	/// <summary>
 	/// エラーを出力する
 	/// </summary>
 	/// <param name="message">UTF-8のメッセージ</param>

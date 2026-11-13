@@ -78,8 +78,12 @@ void Logger::Info(std::string_view message, const std::filesystem::path &sourceP
 }
 
 void Logger::Warning(std::string_view message) {
+	Warning(message, {});
+}
+
+void Logger::Warning(std::string_view message, const std::filesystem::path &sourcePath) {
 	const std::scoped_lock lock(mutex_);
-	Write(LogLevel::LOG_WARNING, message);
+	Write(LogLevel::LOG_WARNING, message, sourcePath);
 }
 
 void Logger::Error(std::string_view message) {

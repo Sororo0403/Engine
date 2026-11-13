@@ -68,8 +68,10 @@ class ConsolePanel {
 	bool latestPlayOnly_ = false;
 	bool collapseRepeated_ = true;
 	std::string filter_;
+	std::string sourceActionError_;
 	std::uint64_t revision_ = 0;
 	std::uint64_t selectedId_ = 0;
+	std::uint64_t sourceActionErrorId_ = 0;
 	std::uint64_t lastVisibleId_ = 0;
 	std::uint64_t playStartBoundary_ = 0;
 	std::vector<LogEntry> entries_;

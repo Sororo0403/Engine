@@ -5833,11 +5833,11 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 			message += needsScene
 			               ? "\nOpened an untitled scene."
 			               : "\nOpened the startup scene: " + PathUtils::ToUtf8(startup);
-			Logger::Warning(message);
+			Logger::Warning(message, unavailableLast);
 			consolePanel_.Show();
 		}
 		if (!startupError.empty()) {
-			Logger::Warning(startupError);
+			Logger::Warning(startupError, startup);
 			consolePanel_.Show();
 		}
 		if (recovery_.IsReady()) {

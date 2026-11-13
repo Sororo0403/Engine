@@ -3,6 +3,7 @@
 #include "core/Logger.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "platform/windows/PathUtils.h"
+#include "platform/windows/ShellUtils.h"
 #include "scripting/LuaScript.h"
 
 #include <algorithm>
@@ -298,6 +299,9 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 		selectedId_ = 0;
 		selected = nullptr;
 	}
+	if (sourceActionErrorId_ != selectedId_) {
+		sourceActionError_.clear();
+	}
 
 	const bool drawDetails = ImGui::BeginChild(
 	    "ConsoleDetails", {0.0f, 0.0f}, ImGuiChildFlags_Borders,
@@ -349,7 +353,16 @@ ConsolePanel::ScriptEditRequest ConsolePanel::Draw(const ImGuiSystem &ui,
 					ImGui::SetClipboardText(location.c_str());
 				}
 				ui.SameLine();
+				if (ui.Button("Show Source in Explorer")) {
+					sourceActionErrorId_ = selectedId_;
+					sourceActionError_.clear();
+					ShellUtils::RevealLocationInExplorer(selected->sourcePath,
+					                                    sourceActionError_);
+				}
 				ui.Text(location);
+				if (!sourceActionError_.empty()) {
+					ui.Text(sourceActionError_);
+				}
 			}
 			ui.Text(selected->message);
 		} else {
