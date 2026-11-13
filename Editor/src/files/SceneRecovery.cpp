@@ -206,7 +206,9 @@ bool SceneRecovery::Initialize(const std::filesystem::path &directory,
 bool SceneRecovery::Record(const Scene &scene,
                            const std::filesystem::path &sourceFile,
                            const AssetSources &assets, const GameConfig &game,
-                           std::string &error) {
+                           std::string &error,
+                           const EditorCameraController::ViewState *view,
+                           std::span<const SceneObjectId> selection) {
 	try {
 		if (!IsReady()) {
 			throw std::runtime_error("Recovery is not initialized.");
@@ -258,6 +260,11 @@ bool SceneRecovery::Record(const Scene &scene,
 		          {"game", Json::parse(gameText)},
 		          {"assetDirectory", PathUtils::ToUtf8(assets.GetDirectory())},
 		          {"assetDirectories", std::move(directories)}};
+		if (view) {
+			data["view"] = {view->position.x, view->position.y, view->position.z,
+			                view->yaw, view->pitch};
+			data["selection"] = std::vector<SceneObjectId>(selection.begin(), selection.end());
+		}
 		if (!FileUtils::WriteTextAtomically(impl_->path, data.dump(2), error)) {
 			return false;
 		}
@@ -370,11 +377,36 @@ bool SceneRecovery::Read(const std::filesystem::path &path, Snapshot &snapshot,
 
 		candidate.assets.Select(
 		    PathUtils::FromUtf8(data.at("assetDirectory").get<std::string>()));
+		if (const auto view = data.find("view");
+		    view != data.end() && view->is_array() && view->size() == 5 &&
+		    std::ranges::all_of(*view, [](const auto &value) { return value.is_number(); })) {
+			const EditorCameraController::ViewState state{
+			    {(*view)[0].get<float>(), (*view)[1].get<float>(), (*view)[2].get<float>()},
+			    (*view)[3].get<float>(), (*view)[4].get<float>()};
+			EditorCameraController validator;
+			if (validator.SetViewState(state)) {
+				candidate.view = state;
+			}
+		}
+		if (const auto selection = data.find("selection");
+		    selection != data.end() && selection->is_array()) {
+			auto &ids = candidate.selection.emplace();
+			for (const auto &value : *selection) {
+				if (value.is_number_unsigned()) {
+					const auto id = value.get<SceneObjectId>();
+					if (candidate.scene.Contains(id)) {
+						ids.push_back(id);
+					}
+				}
+			}
+		}
 		snapshot.scene.CopyFrom(candidate.scene);
 		snapshot.assets = std::move(candidate.assets);
 		snapshot.game = std::move(candidate.game);
 		snapshot.sourceFile.swap(candidate.sourceFile);
 		snapshot.capturedUtc.swap(candidate.capturedUtc);
+		snapshot.view = candidate.view;
+		snapshot.selection = std::move(candidate.selection);
 		error.clear();
 		return true;
 	} catch (const std::exception &e) {

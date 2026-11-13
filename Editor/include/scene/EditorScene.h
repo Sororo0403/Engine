@@ -432,7 +432,9 @@ class EditorScene final : public IScene {
 	/// シーンの視点と、読み込み後も存在する物体の選択を復元する
 	/// </summary>
 	/// <param name="source">編集状態を記録したシーンのパス</param>
-	void RestoreSceneViewAndSelection(const std::filesystem::path &source);
+	/// <param name="recovery">復旧時に優先する記録。通常の読み込みではnullptr</param>
+	void RestoreSceneViewAndSelection(const std::filesystem::path &source,
+	                                  const SceneRecovery::Snapshot *recovery = nullptr);
 
 	/// <summary>
 	/// 選択した素材の参照元を調べ、ごみ箱へ移すときは移動順も確認する

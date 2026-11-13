@@ -1,10 +1,13 @@
 #pragma once
 
 #include "assets/AssetSources.h"
+#include "camera/EditorCameraController.h"
 #include "gameplay/GameConfig.h"
 #include "scene/Scene.h"
 #include <filesystem>
 #include <memory>
+#include <optional>
+#include <span>
 #include <string>
 #include <vector>
 
@@ -40,6 +43,8 @@ class SceneRecovery {
 		GameConfig game;
 		std::filesystem::path sourceFile;
 		std::string capturedUtc;
+		std::optional<EditorCameraController::ViewState> view;
+		std::optional<std::vector<SceneObjectId>> selection;
 	};
 
 	SceneRecovery();
@@ -63,10 +68,14 @@ class SceneRecovery {
 	/// <param name="assets">制作時の素材の取得元</param>
 	/// <param name="game">制作時のゲーム起動設定</param>
 	/// <param name="error">失敗理由。保存失敗時は以前の復旧内容を保持する</param>
+	/// <param name="view">記録時のSceneビューの視点。指定なしはnullptr</param>
+	/// <param name="selection">記録時の選択順。空は未選択</param>
 	/// <returns>true:記録成功 false:未初期化、無効なデータ、保存先との競合、または書き込み失敗</returns>
 	bool Record(const Scene &scene, const std::filesystem::path &sourceFile,
 	            const AssetSources &assets, const GameConfig &game,
-	            std::string &error);
+	            std::string &error,
+	            const EditorCameraController::ViewState *view = nullptr,
+	            std::span<const SceneObjectId> selection = {});
 
 	/// <summary>
 	/// 他のEditorが使用していない復旧ファイルを、新しい順で取得する

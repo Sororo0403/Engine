@@ -4220,8 +4220,9 @@ void EditorScene::RecordRecovery() {
 
 	const auto &sourceFile = recoverySourceFile_.empty() ? document_.GetFilePath()
 	                                                     : recoverySourceFile_;
+	const auto view = cameraController_.GetViewState();
 	if (!recovery_.Record(document_.GetScene(), sourceFile,
-	                      assetSources_, exportConfig_, error)) {
+	                      assetSources_, exportConfig_, error, &view, selection_.GetIds())) {
 		Logger::Error("EditorScene::RecordRecovery: " + error);
 		return;
 	}
@@ -4337,7 +4338,7 @@ void EditorScene::RestoreRecovery() {
 		frameObject_ = 0;
 		gizmo_.Cancel();
 		gizmoEditActive_ = false;
-		RestoreSceneViewAndSelection(recoverySourceFile_);
+		RestoreSceneViewAndSelection(recoverySourceFile_, &snapshot);
 		pendingPlayCamera_ = 0;
 		playMode_.SetPreviewCamera(0);
 		inspectorPanel_.Clear();
@@ -6041,20 +6042,21 @@ bool EditorScene::OpenScene(const std::filesystem::path &path, bool reportError,
 	return true;
 }
 
-void EditorScene::RestoreSceneViewAndSelection(const std::filesystem::path &source) {
+void EditorScene::RestoreSceneViewAndSelection(const std::filesystem::path &source,
+                                                const SceneRecovery::Snapshot *recovery) {
 	selection_.Clear();
 	cameraController_.Reset();
 	hierarchyPanel_.Clear();
 
-	if (source.empty()) {
-		return;
-	}
-
-	if (const auto *view = preferences_.FindSceneView(source)) {
+	const auto *view = recovery && recovery->view ? &*recovery->view
+	                                              : preferences_.FindSceneView(source);
+	if (view) {
 		cameraController_.SetViewState(*view);
 	}
 
-	const auto lastSelection = preferences_.LastSceneSelection(source);
+	const auto lastSelection = recovery && recovery->selection
+	                               ? std::span<const SceneObjectId>(*recovery->selection)
+	                               : preferences_.LastSceneSelection(source);
 	if (!lastSelection.empty()) {
 		selection_.Set({lastSelection.begin(), lastSelection.end()});
 		selection_.RemoveMissing(document_.GetScene());
