@@ -1134,7 +1134,15 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 			return true;
 		}
 
-		output.Create(destination);
+		try {
+			output.Create(destination);
+		} catch (const std::bad_alloc &) {
+			throw;
+		} catch (const std::exception &issue) {
+			appendIssue(std::string(issue.what()) + output.Cleanup(), {}, 0, {}, {},
+			            destination, GameExportField::OUTPUT_FOLDER);
+			return false;
+		}
 
 		for (const auto &[relative, source] : plan.Files()) {
 			if (!source.empty() && relative != L"Game.exe") {
