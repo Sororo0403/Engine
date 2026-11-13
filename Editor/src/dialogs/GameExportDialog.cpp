@@ -104,6 +104,7 @@ bool GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits
 	}
 	error_.clear();
 	browsing_ = false;
+	focusOutput_ = false;
 
 	if (!resume) {
 		issueFilter_.clear();
@@ -165,6 +166,7 @@ void GameExportDialog::SetCheckResult(std::string message,
 			       issue.scriptPath == previous.scriptPath &&
 			       issue.assetPath == previous.assetPath &&
 			       issue.locationPath == previous.locationPath &&
+			       issue.outputFolderIssue == previous.outputFolderIssue &&
 			       issue.message == previous.message;
 		});
 		if (sameIssue != issues.end()) {
@@ -251,7 +253,14 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 		ImGui::SetItemTooltip("Change the startup scene saved in this project.");
 	}
 	ui.Text("Output Folder");
+	const bool focusOutput = std::exchange(focusOutput_, false);
+	if (focusOutput) {
+		ImGui::SetKeyboardFocusHere();
+	}
 	bool changed = ui.InputText("##OutputFolder", output_);
+	if (focusOutput) {
+		ImGui::SetScrollHereY(0.0f);
+	}
 	ui.SameLine();
 	if (ui.Button("Browse...")) {
 		auto output = options_.destination;
@@ -457,6 +466,10 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 					if (ui.Button("Copy Path")) {
 						ImGui::SetClipboardText(path.c_str());
 					}
+				}
+				if (issue.outputFolderIssue && ui.Button("Edit Output Folder")) {
+					selectedIssue_ = i;
+					focusOutput_ = true;
 				}
 				ImGui::PopID();
 				ImGui::Spacing();

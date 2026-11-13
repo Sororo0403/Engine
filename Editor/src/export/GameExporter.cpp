@@ -609,7 +609,8 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 	                             SceneObjectId objectId,
 	                             const fs::path &scriptPath,
 	                             const fs::path &assetPath,
-	                             const fs::path &locationPath = {}) {
+	                             const fs::path &locationPath = {},
+	                             bool outputFolderIssue = false) {
 		if (!error.empty()) {
 			error += "\n\n";
 		}
@@ -617,7 +618,7 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 		if (issues) {
 			issues->push_back(
 			    {std::move(issue), scenePath, objectId, scriptPath, assetPath,
-			     locationPath});
+			     locationPath, outputFolderIssue});
 		}
 	};
 	// 出力前に、同じ検査で独立して直せる問題をまとめる。
@@ -658,7 +659,7 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 			const auto location =
 			    path.is_absolute() && path.native().find(L'\0') == std::wstring::npos
 			        ? path : fs::path{};
-			appendIssue(issue.what(), {}, 0, {}, {}, location);
+			appendIssue(issue.what(), {}, 0, {}, {}, location, true);
 		}
 
 		const auto validDirectoryPath = [](const fs::path &path) {

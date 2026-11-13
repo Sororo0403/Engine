@@ -123,6 +123,7 @@ class GameExportDialog {
 	bool opening_ = false;
 	bool includesUnsavedEdits_ = false;
 	bool browsing_ = false;
+	bool focusOutput_ = false;
 	std::optional<std::size_t> issueToScrollTo_;
 	std::size_t issuePage_ = 0;
 	bool resumeDraft_ = false;

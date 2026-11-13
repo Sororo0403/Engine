@@ -35,6 +35,7 @@ struct GameExportIssue {
 	std::filesystem::path assetPath;
 	// Explorerで確認するファイルまたはフォルダ
 	std::filesystem::path locationPath;
+	bool outputFolderIssue = false;
 };
 
 namespace GameExporter {
