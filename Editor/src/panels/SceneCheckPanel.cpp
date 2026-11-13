@@ -82,6 +82,26 @@ void SceneCheckPanel::OnAssetsMoved(
 		issue.assetPath = PathUtils::AfterMove(issue.assetPath, moves);
 		issue.modelPath = PathUtils::AfterMove(issue.modelPath, moves);
 	};
+	const auto relocateFilter = [&](std::string &filter) {
+		std::filesystem::path path;
+		try {
+			path = PathUtils::FromPathInput(filter);
+		} catch (const std::invalid_argument &) {
+			return;
+		}
+		if (!path.is_absolute()) {
+			return;
+		}
+		path = path.lexically_normal();
+		if (!path.has_filename() && path.has_relative_path()) {
+			path = path.parent_path();
+		}
+		const auto relocated = PathUtils::AfterMove(path, moves);
+		if (relocated.native() != path.native()) {
+			filter = PathUtils::ToUtf8(relocated);
+		}
+	};
+	relocateFilter(filter_);
 	for (auto &issue : issues_) {
 		relocateIssue(issue);
 	}
@@ -92,6 +112,7 @@ void SceneCheckPanel::OnAssetsMoved(
 	// 移動先に過去の表示状態があれば、実際に移動したシーンの状態を優先する。
 	std::map<std::filesystem::path, SceneCheckPosition> movedPositions;
 	for (auto it = scenePositions_.begin(); it != scenePositions_.end();) {
+		relocateFilter(it->second.filter);
 		if (it->second.issue) {
 			relocateIssue(*it->second.issue);
 		}
@@ -210,10 +231,23 @@ std::string SceneCheckPanel::GetReport(const Scene *filteredScene) const {
 
 bool SceneCheckPanel::MatchesFilter(const SceneValidationIssue &issue,
                                     const Scene &scene) const {
-	if (filter_.empty() || issue.message.find(filter_) != std::string::npos ||
-	    (!issue.assetPath.empty() &&
-	     PathUtils::ToUtf8(issue.assetPath).find(filter_) != std::string::npos)) {
+	if (filter_.empty() || issue.message.find(filter_) != std::string::npos) {
 		return true;
+	}
+	if (!issue.assetPath.empty() || !issue.modelPath.empty()) {
+		auto query = std::string_view(filter_);
+		if (query.size() >= 2 && query.front() == '"' && query.back() == '"') {
+			query = query.substr(1, query.size() - 2);
+		}
+		std::string normalized(query);
+		std::ranges::replace(normalized, '\\', '/');
+		const auto matchesPath = [&](const std::filesystem::path &path) {
+			return !path.empty() &&
+			       PathUtils::ToUtf8(path.generic_wstring()).find(normalized) != std::string::npos;
+		};
+		if (!normalized.empty() && (matchesPath(issue.assetPath) || matchesPath(issue.modelPath))) {
+			return true;
+		}
 	}
 
 	if (issue.objectId == 0) {
