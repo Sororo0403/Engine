@@ -217,6 +217,8 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 		}
 
 		ui.Checkbox("Maximize on Play", maximizeOnPlay_);
+		ui.Checkbox("Start Paused", startPaused_);
+		ImGui::SetItemTooltip("Pause after initialization, before the first game update.");
 
 		if (ui.Button("Play")) {
 			action = Action::PLAY;
@@ -322,12 +324,13 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
 
 	session_.SetLegacyLighting(config.lighting);
 	if (!session_.Start(scene, error, fallbackPose, invalidObject,
-	                    cameraOverride)) {
+	                    cameraOverride, startPaused_)) {
 		return false;
 	}
 
 	if (!renderer_.PrepareSceneModels(error) ||
-	    !audioPlayer_.Start(session_.GetCameraPose(), session_.IsGamePaused(),
+	    !audioPlayer_.Start(session_.GetCameraPose(),
+	                        session_.IsPaused() || session_.IsGamePaused(),
 	                        error, invalidObject, session_.GetAudioActions())) {
 		Stop();
 		return false;

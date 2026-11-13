@@ -1357,6 +1357,11 @@ void ControlsPanel::Draw() {
 	         "Game is hidden but Scene is visible; hiding both or switching "
 	         "away from the application suspends simulation. Stop restores "
 	         "the unchanged editing scene; the Scene camera view is kept."},
+	        {"Game > Start Paused",
+	         "Start new Play sessions paused after scene initialization. "
+	         "Use Step to advance one frame or Resume to run normally. "
+	         "This choice is saved for the next Editor session. Restart "
+	         "keeps the current pause state."},
 	        {"Game > Maximize on Play",
 	         "While stopped, enable this option to expand Game automatically "
 	         "when a new Play session starts. The choice is saved for the "

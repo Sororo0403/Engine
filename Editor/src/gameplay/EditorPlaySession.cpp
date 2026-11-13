@@ -11,7 +11,7 @@
 bool EditorPlaySession::Start(const Scene &scene, std::string &error,
                               const CameraPose &fallbackPose,
                               SceneObjectId *invalidObject,
-                              SceneObjectId cameraOverride) {
+                              SceneObjectId cameraOverride, bool startPaused) {
 	if (invalidObject) {
 		*invalidObject = 0;
 	}
@@ -67,6 +67,9 @@ bool EditorPlaySession::Start(const Scene &scene, std::string &error,
 		initialSceneRevision_ = simulation_.GetSceneRevision();
 		initialFallback_ = fallbackPose;
 		clock_.Reset();
+		if (startPaused) {
+			clock_.TogglePause();
+		}
 		elapsedSeconds_ = 0.0;
 		simulationFrameCount_ = 0;
 		firstFrame_ = true;
@@ -178,7 +181,10 @@ bool EditorPlaySession::Update(float seconds, const CharacterInput &input,
 
 	if (firstFrame_) {
 		firstFrame_ = false;
-		return true;
+		// 通常再生では初期化にかかった時間を除外する。一時停止中のStepは固定時間で進める。
+		if (!clock_.IsPaused()) {
+			return true;
+		}
 	}
 
 	const auto time = clock_.Advance(seconds);

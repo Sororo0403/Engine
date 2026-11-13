@@ -216,6 +216,22 @@ class EditorPlayMode {
 	}
 
 	/// <summary>
+	/// 次の新規Playを初期化直後から一時停止するか設定する
+	/// </summary>
+	/// <param name="enabled">true:一時停止 false:通常再生</param>
+	void SetStartPaused(bool enabled) {
+		startPaused_ = enabled;
+	}
+
+	/// <summary>
+	/// 新規Playを一時停止で始める設定を取得する
+	/// </summary>
+	/// <returns>true:一時停止で開始 false:通常再生で開始</returns>
+	bool GetStartPaused() const {
+		return startPaused_;
+	}
+
+	/// <summary>
 	/// Gameだけを作業領域へ拡大して表示しているか取得する。描画解像度とドック配置は変更しない
 	/// </summary>
 	/// <returns>true:再生中の拡大表示 false:通常の配置</returns>
@@ -256,4 +272,5 @@ class EditorPlayMode {
 	bool maximized_ = false;
 	bool maximizeRequested_ = false;
 	bool maximizeOnPlay_ = false;
+	bool startPaused_ = false;
 };
