@@ -354,7 +354,7 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
 		return false;
 	}
 
-	if (!renderer_.PrepareSceneModels(error) ||
+	if (!renderer_.PrepareSceneModels(error, invalidObject) ||
 	    !audioPlayer_.Start(session_.GetCameraPose(),
 	                        session_.IsPaused() || session_.IsGamePaused(),
 	                        error, invalidObject, session_.GetAudioActions())) {
@@ -491,7 +491,7 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 	    (!sceneVisible && !viewport_.applicationFocused)) {
 		session_.CancelUIInput();
 		return audioPlayer_.Update(session_.GetCameraPose(), true,
-		                           lastUpdateError_, nullptr,
+		                           lastUpdateError_, invalidObject,
 		                           session_.GetAudioActions());
 	}
 
@@ -533,16 +533,16 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 	}
 
 	if (session_.GetSceneRevision() != revision) {
-		if (!renderer_.PrepareSceneModels(lastUpdateError_) ||
+		if (!renderer_.PrepareSceneModels(lastUpdateError_, invalidObject) ||
 		    !audioPlayer_.Start(session_.GetCameraPose(),
 		                        session_.IsPaused() || session_.IsGamePaused(),
-		                        lastUpdateError_, nullptr,
+		                        lastUpdateError_, invalidObject,
 		                        session_.GetAudioActions()))
 			return false;
 	} else {
 		if (!audioPlayer_.Update(session_.GetCameraPose(),
 		                         session_.IsPaused() || session_.IsGamePaused(),
-		                         lastUpdateError_, nullptr,
+		                         lastUpdateError_, invalidObject,
 		                         session_.GetAudioActions()))
 			return false;
 	}

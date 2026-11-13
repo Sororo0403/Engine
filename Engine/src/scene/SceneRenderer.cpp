@@ -63,13 +63,19 @@ bool SceneRenderer::Initialize() {
 	return bool(particles_);
 }
 
-bool SceneRenderer::PrepareSceneModels(std::string &error) {
+bool SceneRenderer::PrepareSceneModels(std::string &error, SceneObjectId *invalidObject) {
+	if (invalidObject) {
+		*invalidObject = 0;
+	}
 	std::set<std::filesystem::path> prepared;
 	for (const auto &[id, object] : scene_.GetObjects()) {
 		if (!object.HasMesh() || !object.mesh->preload ||
 		    !prepared.insert(object.mesh->modelPath).second)
 			continue;
 		if (!models_.Load(object.mesh->modelPath)) {
+			if (invalidObject) {
+				*invalidObject = id;
+			}
 			error = std::format("Could not preload the model for object \"{}\" "
 			                    "(ID {}).", object.name, id);
 			return false;
