@@ -33,11 +33,19 @@ class GameExportResultDialog {
 	GameExportResultAction Draw(const ImGuiSystem &ui);
 
   private:
+	struct LogPosition {
+		std::vector<std::uintmax_t> earlierPages;
+		std::uintmax_t offset;
+		bool paged;
+		bool follow;
+	};
+
 	struct GameRun {
 		ShellUtils::ExecutableProcess process;
 		std::string status;
 		std::optional<std::uintmax_t> logStart;
 		std::vector<std::uintmax_t> earlierLogPages;
+		std::optional<LogPosition> beforeErrorJump;
 		std::uintmax_t logPageOffset = 0;
 		bool sinceLaunchOnly = false;
 		bool showLog = false;

@@ -90,6 +90,7 @@ void GameExportResultDialog::RefreshLog() {
 			*run.logStart = 0;
 		run.earlierLogPages.clear();
 		run.logPageOffset = 0;
+		run.beforeErrorJump.reset();
 		logError_ = "Game log hasn't been created yet.";
 		return;
 	}
@@ -105,6 +106,7 @@ void GameExportResultDialog::RefreshLog() {
 		*run.logStart = 0;
 		run.earlierLogPages.clear();
 		run.logPageOffset = 0;
+		run.beforeErrorJump.reset();
 	}
 	const auto firstIncluded = run.sinceLaunchOnly && run.logStart
 	                               ? static_cast<std::streamoff>(*run.logStart)
@@ -211,14 +213,17 @@ bool GameExportResultDialog::OpenLogAtError(bool latest) {
 	}
 
 	error_.clear();
-	run.followLog = false;
-	run.showLogBeginning = true;
-	if (run.logPageOffset != *match) {
-		run.earlierLogPages.clear();
+	if (!run.showLogBeginning || run.logPageOffset != *match) {
+		run.beforeErrorJump = LogPosition{std::move(run.earlierLogPages),
+		                                 run.logPageOffset, run.showLogBeginning,
+		                                 run.followLog};
+		run.earlierLogPages = {};
 		if (*match != 0)
 			run.earlierLogPages.push_back(0);
 		run.logPageOffset = *match;
 	}
+	run.followLog = false;
+	run.showLogBeginning = true;
 	RefreshLog();
 	return true;
 }
@@ -248,6 +253,7 @@ bool GameExportResultDialog::StartGame() {
 	run.showLogBeginning = false;
 	run.earlierLogPages.clear();
 	run.logPageOffset = 0;
+	run.beforeErrorJump.reset();
 	if (run.showLog)
 		RefreshLog();
 	return run.showLog;
@@ -393,6 +399,7 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		bool jumpToBeginning = false;
 		if (run.logStart &&
 		    ImGui::Checkbox("Since Run Game", &run.sinceLaunchOnly)) {
+			run.beforeErrorJump.reset();
 			run.earlierLogPages.clear();
 			run.logPageOffset = 0;
 			RefreshLog();
@@ -478,6 +485,21 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		}
 		ImGui::SetItemTooltip("Find the latest error across the selected log range.");
 		ui.EndDisabled();
+		if (run.beforeErrorJump) {
+			ui.SameLine();
+			if (ui.Button("Back from Error")) {
+				auto previous = std::move(*run.beforeErrorJump);
+				run.beforeErrorJump.reset();
+				run.earlierLogPages = std::move(previous.earlierPages);
+				run.logPageOffset = previous.offset;
+				run.showLogBeginning = previous.paged;
+				run.followLog = previous.follow;
+				RefreshLog();
+				jumpToBeginning = run.showLogBeginning;
+				jumpToLatest = !run.showLogBeginning;
+			}
+			ImGui::SetItemTooltip("Return to the log page or tail shown before the error jump.");
+		}
 		const auto errors = CollectLogErrors(log_);
 		const std::string_view displayedLog = run.showErrorsOnly ? errors : log_;
 		ui.SameLine();
