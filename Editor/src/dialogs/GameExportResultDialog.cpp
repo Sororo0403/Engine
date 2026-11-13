@@ -160,8 +160,14 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		std::error_code status;
 		const auto size = std::filesystem::file_size(
 		    directory_ / kGameLogPath, status);
-		if (run.process.Start(directory_ / L"Game.exe", error_,
-		                   ShellUtils::WindowVisibility::NORMAL, L"--editor-launch")) {
+		std::string launchError;
+		error_.clear();
+		run.launchFailed = !run.process.Start(directory_ / L"Game.exe", launchError,
+		                                      ShellUtils::WindowVisibility::NORMAL,
+		                                      L"--editor-launch");
+		if (run.launchFailed) {
+			run.status = "Could not launch Game.exe: " + launchError;
+		} else {
 			run.status = "Game process running.";
 			run.logStart.reset();
 			if (!status)
@@ -194,6 +200,12 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		ui.CloseCurrentPopup();
 	}
 
+	if (run.launchFailed && ui.Button("Copy Run Report")) {
+		const auto report = "Output: " + PathUtils::ToUtf8(directory_) + "\n" +
+		                    run.status + "\n";
+		ImGui::SetClipboardText(report.c_str());
+	}
+
 	if (run.showLog) {
 		if (run.logStart &&
 		    ImGui::Checkbox("Since Run Game", &run.sinceLaunchOnly)) {
@@ -224,7 +236,7 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 			ShellUtils::RevealInExplorer(logPath, error_);
 		ui.EndDisabled();
 
-		if (!run.status.empty()) {
+		if (!run.status.empty() && !run.launchFailed) {
 			ui.SameLine();
 			if (ui.Button("Copy Run Report")) {
 				auto report = "Output: " + PathUtils::ToUtf8(directory_) + "\n";
