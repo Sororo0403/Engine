@@ -5895,6 +5895,18 @@ void EditorScene::UpdateDialogs() {
 					                                     errorActionMessage_);
 				}
 				ui_.SameLine();
+				if (!reloadBackupPath_.empty()) {
+					if (ui_.Button("Open Saved Copy")) {
+						pendingOpenPath_ = reloadBackupPath_;
+						ui_.CloseCurrentPopup();
+						ui_.EndPopup();
+						stage_ = DialogStage::IDLE;
+						StartAction(EditorAction::OPEN_PATH);
+						return;
+					}
+					ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(reloadBackupPath_).c_str());
+					ui_.SameLine();
+				}
 				if (!failedRestoredScene_.empty() && failedOpenScenePath_ == failedRestoredScene_) {
 					if (ui_.Button("Locate Last Edited Scene...")) {
 						ui_.CloseCurrentPopup();
