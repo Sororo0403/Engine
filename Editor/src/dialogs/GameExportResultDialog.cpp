@@ -676,7 +676,9 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		if (!run.launchFailed) {
 			RefreshLog();
 			refreshedLog = true;
-			if (!run.crashError.empty() && log_.find(run.crashError) == std::string::npos) {
+			// 全ログには過去の実行で出た同じ診断も含まれるため、今回のエラーを明示する。
+			if (!run.crashError.empty() &&
+			    (!run.sinceLaunchOnly || log_.find(run.crashError) == std::string::npos)) {
 				report += "\nLast error before abnormal exit:\n";
 				report += run.crashError + "\n";
 			}
