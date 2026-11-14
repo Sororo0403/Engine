@@ -53,6 +53,7 @@
     <ClCompile Include="src\graphics\render\MeshRenderer.cpp" />
     <ClCompile Include="src\platform\windows\StringConversion.cpp" />
     <ClCompile Include="src\platform\windows\WindowsInputBackend.cpp" />
+    <ClCompile Include="src\platform\windows\WindowsWiiRemote.cpp" />
     <ClCompile Include="src\graphics\material\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -101,8 +102,10 @@
     <ClInclude Include="include\input\Keyboard.h" />
     <ClInclude Include="include\input\Key.h" />
     <ClInclude Include="include\input\InputState.h" />
+    <ClInclude Include="include\input\WiiRemoteState.h" />
     <ClInclude Include="include\input\InputSystem.h" />
     <ClInclude Include="include\platform\windows\WindowsInputBackend.h" />
+    <ClInclude Include="include\platform\windows\WindowsWiiRemote.h" />
     <ClInclude Include="include\graphics\material\Texture.h" />
     <ClInclude Include="include\graphics\mesh\Mesh.h" />
     <ClInclude Include="include\graphics\mesh\MeshInstance.h" />

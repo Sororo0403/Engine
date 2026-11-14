@@ -34,6 +34,7 @@ bool InputSystem::Initialize(std::unique_ptr<IInputBackend> backend) {
 
 bool InputSystem::Update() {
 	active_ = false;
+	wiiRemote_ = {};
 
 	if (!backend_) {
 		Logger::Error("InputSystem::Update: 初期化されていません。");
@@ -60,12 +61,14 @@ bool InputSystem::Update() {
 	keyboard_.Update(state.keyboard);
 	mouse_.Update(state.mouse);
 	gamepad_.Update(state.gamepad);
+	wiiRemote_ = state.wiiRemote;
 
 	return true;
 }
 
 void InputSystem::Finalize() {
 	active_ = false;
+	wiiRemote_ = {};
 	keyboard_.Reset();
 	mouse_.Reset();
 	gamepad_.Reset();

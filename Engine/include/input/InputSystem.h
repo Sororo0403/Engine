@@ -55,6 +55,13 @@ class InputSystem {
 	/// <returns>この入力システムが所有するマウスへの読み取り専用参照</returns>
 	const Mouse &GetMouse() const;
 
+	/// <summary>
+	/// このフレームのWiiリモコン入力を返す。
+	/// </summary>
+	const WiiRemoteState &GetWiiRemote() const {
+		return wiiRemote_;
+	}
+
   private:
 	std::unique_ptr<IInputBackend> backend_;
 	bool active_ = false;
@@ -62,4 +69,5 @@ class InputSystem {
 	Keyboard keyboard_;
 	Mouse mouse_;
 	Gamepad gamepad_;
+	WiiRemoteState wiiRemote_{};
 };

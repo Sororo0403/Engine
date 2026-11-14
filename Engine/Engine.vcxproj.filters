@@ -170,6 +170,9 @@
     <ClCompile Include="src\platform\windows\WindowsInputBackend.cpp">
       <Filter>src\platform\windows</Filter>
     </ClCompile>
+    <ClCompile Include="src\platform\windows\WindowsWiiRemote.cpp">
+      <Filter>src\platform\windows</Filter>
+    </ClCompile>
     <ClCompile Include="src\input\Gamepad.cpp">
       <Filter>src\input</Filter>
     </ClCompile>
@@ -295,6 +298,9 @@
     <ClInclude Include="include\input\InputState.h">
       <Filter>include\input</Filter>
     </ClInclude>
+    <ClInclude Include="include\input\WiiRemoteState.h">
+      <Filter>include\input</Filter>
+    </ClInclude>
     <ClInclude Include="include\input\InputSystem.h">
       <Filter>include\input</Filter>
     </ClInclude>
@@ -302,6 +308,9 @@
       <Filter>include\input</Filter>
     </ClInclude>
     <ClInclude Include="include\platform\windows\WindowsInputBackend.h">
+      <Filter>include\platform\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="include\platform\windows\WindowsWiiRemote.h">
       <Filter>include\platform\windows</Filter>
     </ClInclude>
     <ClInclude Include="include\input\GamepadButton.h">

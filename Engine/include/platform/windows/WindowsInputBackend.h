@@ -1,6 +1,7 @@
 #pragma once
 
 #include "input/IInputBackend.h"
+#include "platform/windows/WindowsWiiRemote.h"
 
 #include <GameInput.h>
 #include <Windows.h>
@@ -70,6 +71,7 @@ class WindowsInputBackend final : public IInputBackend {
 
   private:
 	HWND hwnd_ = nullptr;
+	WindowsWiiRemote wiiRemote_;
 
 	Microsoft::WRL::ComPtr<GameInput::v4::IGameInput> gameInput_;
 

@@ -74,7 +74,9 @@ bool WindowsInputBackend::Update(InputState &state) {
 		return false;
 	}
 
-	if (GetForegroundWindow() != hwnd_) {
+	const bool focused = GetForegroundWindow() == hwnd_;
+	state.wiiRemote = wiiRemote_.Update(focused);
+	if (!focused) {
 		// 復帰時に非アクティブ中の移動量を反映しない
 		ResetMouseReading();
 		return true;
@@ -91,6 +93,7 @@ bool WindowsInputBackend::Update(InputState &state) {
 }
 
 void WindowsInputBackend::Finalize() {
+	wiiRemote_.Close();
 	ResetMouseReading();
 
 	keyboardDevice_.Reset();
