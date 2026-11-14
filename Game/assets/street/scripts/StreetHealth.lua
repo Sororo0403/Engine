@@ -314,6 +314,7 @@ local function update_attack(self, state, seconds, input)
     local radius = state.attackDistance * (0.42 + 0.58 * reach)
     local x, y, z = self:get_position()
     local struck = false
+    local hitSparks = self:reference("hitSparks")
     for _, enemy in ipairs(scene.find_all_by_tag("street_enemy")) do
         local ex, ey, ez = enemy:get_position()
         local dx, dy, dz = ex - x, ey - y, ez - z
@@ -325,6 +326,10 @@ local function update_attack(self, state, seconds, input)
                     distance, nil, false, self)
             end
             if not hit or hit.object == enemy then
+                if hitSparks then
+                    hitSparks:set_position(ex, ey, ez)
+                    hitSparks:emit_particles(12)
+                end
                 enemy:destroy()
                 struck = true
             end

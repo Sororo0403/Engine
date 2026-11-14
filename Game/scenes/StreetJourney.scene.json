@@ -141,6 +141,10 @@
             "target": 462
           },
           {
+            "name": "hitSparks",
+            "target": 585
+          },
+          {
             "name": "damageSound",
             "target": 463
           },
@@ -31885,6 +31889,75 @@
     },
     {
       "active": true,
+      "id": 585,
+      "name": "Street Enemy Hit Sparks",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "particleEmitter": {
+        "playOnStart": false,
+        "loop": false,
+        "localSpace": false,
+        "additive": true,
+        "texture": "",
+        "seed": 164,
+        "maxParticles": 48,
+        "burst": 0,
+        "duration": 0.45,
+        "rate": 0,
+        "lifetime": [
+          0.2,
+          0.38
+        ],
+        "speed": [
+          2.8,
+          5.2
+        ],
+        "radius": 0.16,
+        "coneDegrees": 88,
+        "size": [
+          0.18,
+          0.025
+        ],
+        "rotationSpeed": 150,
+        "gravity": [
+          0,
+          -5,
+          0
+        ],
+        "colorStart": [
+          0.74,
+          1,
+          1,
+          0.95
+        ],
+        "colorEnd": [
+          0.15,
+          0.72,
+          1,
+          0
+        ]
+      }
+    },
+    {
+      "active": true,
       "collider": {
         "center": [
           0,
@@ -34908,222 +34981,6 @@
           0.4
         ]
       },
-      "id": 666,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/street/textures/RoofTerracotta.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.32,
-          0.92
-        ],
-        "visible": true
-      },
-      "name": "Bell arcade rising stair 2",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          1.32,
-          0.34,
-          0.66
-        ],
-        "translation": [
-          18.8,
-          4.48,
-          104.35
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0,
-          0,
-          0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1,
-          1,
-          1
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.64,
-          0.54,
-          0.4
-        ]
-      },
-      "id": 667,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/street/textures/RoofTerracotta.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.32,
-          0.92
-        ],
-        "visible": true
-      },
-      "name": "Bell arcade rising stair 3",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          1.32,
-          0.34,
-          0.66
-        ],
-        "translation": [
-          18.8,
-          4.73,
-          105.64999999999999
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0,
-          0,
-          0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1,
-          1,
-          1
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.64,
-          0.54,
-          0.4
-        ]
-      },
-      "id": 668,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/street/textures/RoofTerracotta.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.32,
-          0.92
-        ],
-        "visible": true
-      },
-      "name": "Bell arcade rising stair 4",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          1.32,
-          0.34,
-          0.66
-        ],
-        "translation": [
-          18.8,
-          4.98,
-          106.95
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0,
-          0,
-          0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1,
-          1,
-          1
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.64,
-          0.54,
-          0.4
-        ]
-      },
       "id": 669,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -37315,78 +37172,6 @@
           0.4
         ]
       },
-      "id": 689,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/street/textures/RoofTerracotta.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.32,
-          0.92
-        ],
-        "visible": true
-      },
-      "name": "Bell arcade rising stair 5",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          1.32,
-          0.34,
-          0.66
-        ],
-        "translation": [
-          18.8,
-          5.23,
-          108.25
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0,
-          0,
-          0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1,
-          1,
-          1
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.64,
-          0.54,
-          0.4
-        ]
-      },
       "id": 690,
       "mesh": {
         "model": "@project/assets/models/box/box.glb"
@@ -38094,222 +37879,6 @@
           -8.46,
           9.31,
           140.9
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0,
-          0,
-          0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1,
-          1,
-          1
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.64,
-          0.54,
-          0.4
-        ]
-      },
-      "id": 704,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/street/textures/RoofTerracotta.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.22,
-          0.66
-        ],
-        "visible": true
-      },
-      "name": "Clockworks roof stair 2",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          1.22,
-          0.34,
-          0.66
-        ],
-        "translation": [
-          -8.46,
-          9.56,
-          142.20000000000002
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0,
-          0,
-          0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1,
-          1,
-          1
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.64,
-          0.54,
-          0.4
-        ]
-      },
-      "id": 705,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/street/textures/RoofTerracotta.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.22,
-          0.66
-        ],
-        "visible": true
-      },
-      "name": "Clockworks roof stair 3",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          1.22,
-          0.34,
-          0.66
-        ],
-        "translation": [
-          -8.46,
-          9.81,
-          143.5
-        ]
-      }
-    },
-    {
-      "active": true,
-      "collider": {
-        "center": [
-          0,
-          0,
-          0
-        ],
-        "filter": {
-          "layer": 0,
-          "mask": 4294967295
-        },
-        "halfExtents": [
-          1,
-          1,
-          1
-        ],
-        "halfHeight": 0.5,
-        "isTrigger": false,
-        "radius": 0.5,
-        "shape": "Box"
-      },
-      "colorTint": {
-        "color": [
-          0.64,
-          0.54,
-          0.4
-        ]
-      },
-      "id": 706,
-      "mesh": {
-        "model": "@project/assets/models/box/box.glb"
-      },
-      "meshRenderer": {
-        "textures": [
-          {
-            "path": "@project/assets/street/textures/RoofTerracotta.png",
-            "slot": 0
-          }
-        ],
-        "uvOffset": [
-          0.0,
-          0.0
-        ],
-        "uvScale": [
-          1.22,
-          0.66
-        ],
-        "visible": true
-      },
-      "name": "Clockworks roof stair 4",
-      "parent": 0,
-      "tag": "",
-      "transform": {
-        "rotation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "scale": [
-          1.22,
-          0.34,
-          0.66
-        ],
-        "translation": [
-          -8.46,
-          10.06,
-          144.8
         ]
       }
     },
@@ -39396,6 +38965,510 @@
         "uvOffset": [
           0,
           0
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 666,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.32,
+          0.92
+        ],
+        "visible": true
+      },
+      "name": "Bell arcade rising stair 2",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.32,
+          0.34,
+          0.66
+        ],
+        "translation": [
+          18.8,
+          4.48,
+          104.35
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 667,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.32,
+          0.92
+        ],
+        "visible": true
+      },
+      "name": "Bell arcade rising stair 3",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.32,
+          0.34,
+          0.66
+        ],
+        "translation": [
+          18.8,
+          4.73,
+          105.64999999999999
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 668,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.32,
+          0.92
+        ],
+        "visible": true
+      },
+      "name": "Bell arcade rising stair 4",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.32,
+          0.34,
+          0.66
+        ],
+        "translation": [
+          18.8,
+          4.98,
+          106.95
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 689,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.32,
+          0.92
+        ],
+        "visible": true
+      },
+      "name": "Bell arcade rising stair 5",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.32,
+          0.34,
+          0.66
+        ],
+        "translation": [
+          18.8,
+          5.23,
+          108.25
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 704,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.22,
+          0.66
+        ],
+        "visible": true
+      },
+      "name": "Clockworks roof stair 2",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.22,
+          0.34,
+          0.66
+        ],
+        "translation": [
+          -8.46,
+          9.56,
+          142.20000000000002
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 705,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.22,
+          0.66
+        ],
+        "visible": true
+      },
+      "name": "Clockworks roof stair 3",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.22,
+          0.34,
+          0.66
+        ],
+        "translation": [
+          -8.46,
+          9.81,
+          143.5
+        ]
+      }
+    },
+    {
+      "active": true,
+      "collider": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "filter": {
+          "layer": 0,
+          "mask": 4294967295
+        },
+        "halfExtents": [
+          1,
+          1,
+          1
+        ],
+        "halfHeight": 0.5,
+        "isTrigger": false,
+        "radius": 0.5,
+        "shape": "Box"
+      },
+      "colorTint": {
+        "color": [
+          0.64,
+          0.54,
+          0.4
+        ]
+      },
+      "id": 706,
+      "mesh": {
+        "model": "@project/assets/models/box/box.glb"
+      },
+      "meshRenderer": {
+        "textures": [
+          {
+            "path": "@project/assets/street/textures/RoofTerracotta.png",
+            "slot": 0
+          }
+        ],
+        "uvOffset": [
+          0.0,
+          0.0
+        ],
+        "uvScale": [
+          1.22,
+          0.66
+        ],
+        "visible": true
+      },
+      "name": "Clockworks roof stair 4",
+      "parent": 0,
+      "tag": "",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1.22,
+          0.34,
+          0.66
+        ],
+        "translation": [
+          -8.46,
+          10.06,
+          144.8
         ]
       }
     }
