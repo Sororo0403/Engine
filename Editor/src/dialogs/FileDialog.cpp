@@ -655,6 +655,11 @@ std::filesystem::path FileDialog::ReadFilePath() const {
 }
 
 bool FileDialog::AcceptSelection() {
+	const bool openingScene = mode_ == FileDialogMode::OPEN && filter_ == FileDialogFilter::SCENE;
+	if (openingScene) {
+		failedProject_.clear();
+		failedProjectLocationError_.clear();
+	}
 	try {
 		error_.clear();
 
@@ -665,6 +670,10 @@ bool FileDialog::AcceptSelection() {
 		}
 
 		const auto path = ReadFilePath();
+		if (openingScene) {
+			// 親フォルダが消えていても、入力パスから最寄りの場所を案内できるようにする。
+			failedProject_ = path;
+		}
 		const auto folder = std::filesystem::canonical(path.parent_path());
 		if (!std::filesystem::is_directory(folder)) {
 			throw std::invalid_argument("Choose an existing folder.");
@@ -691,6 +700,9 @@ bool FileDialog::AcceptSelection() {
 		}
 
 		selectedPath_.swap(candidate);
+		if (openingScene) {
+			failedProject_.clear();
+		}
 
 		if (mode_ != FileDialogMode::OPEN && exists) {
 			if (PathUtils::FromPathInput(fileName_).is_absolute()) {
