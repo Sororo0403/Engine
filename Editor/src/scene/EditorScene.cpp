@@ -3812,6 +3812,7 @@ void EditorScene::ExecutePendingAction() {
 			document_.New();
 			if (lastPlayScenePath_.empty()) {
 				lastPlayCameraOverride_ = 0;
+				lastPlayFollowedEditingScene_ = false;
 			}
 			if (playFailureReplay_ && playFailureReplay_->path.empty()) {
 				playFailureReplay_.reset();
@@ -4602,6 +4603,7 @@ void EditorScene::RestoreRecovery() {
 		document_.SetUntitled();
 		if (lastPlayScenePath_.empty()) {
 			lastPlayCameraOverride_ = 0;
+			lastPlayFollowedEditingScene_ = false;
 		}
 		if (playFailureReplay_ && playFailureReplay_->path.empty()) {
 			playFailureReplay_.reset();
@@ -5231,7 +5233,8 @@ void EditorScene::UpdateDialogs() {
 				    playFailureReplay_->path == previousPath) {
 					playFailureReplay_->path = document_.GetFilePath();
 				}
-				if (lastPlayCameraOverride_ != 0 && lastPlayScenePath_ == previousPath) {
+				if (lastPlayFollowedEditingScene_ &&
+				    lastPlayScenePath_ == previousPath) {
 					lastPlayScenePath_ = document_.GetFilePath();
 				}
 				if (startup.empty()) {
@@ -5548,6 +5551,7 @@ void EditorScene::UpdateDialogs() {
 			document_.SetUntitled();
 			if (lastPlayScenePath_.empty()) {
 				lastPlayCameraOverride_ = 0;
+				lastPlayFollowedEditingScene_ = false;
 			}
 			if (playFailureReplay_ && playFailureReplay_->path.empty()) {
 				playFailureReplay_.reset();
@@ -6487,6 +6491,7 @@ void EditorScene::StartPlay(const std::filesystem::path &path,
 	playInitialScenePath_ =
 	    usesEditingScene ? document_.GetFilePath() : startup.GetFilePath();
 	lastPlayScenePath_ = playInitialScenePath_;
+	lastPlayFollowedEditingScene_ = usesEditingScene;
 	lastPlayCameraOverride_ = cameraOverride;
 	playInitialCameraOverride_ = cameraOverride;
 }
@@ -6678,6 +6683,7 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		}
 		failedRestoredScene_.clear();
 		lastPlayScenePath_.clear();
+		lastPlayFollowedEditingScene_ = false;
 		lastPlayCameraOverride_ = 0;
 		playFailureReplay_.reset();
 		exportConfig_ = std::move(config);
@@ -6795,6 +6801,7 @@ bool EditorScene::OpenScene(const std::filesystem::path &path, bool reportError,
 	}
 	if (lastPlayScenePath_.empty()) {
 		lastPlayCameraOverride_ = 0;
+		lastPlayFollowedEditingScene_ = false;
 	}
 	if (playFailureReplay_ && playFailureReplay_->path.empty()) {
 		playFailureReplay_.reset();
@@ -8271,6 +8278,7 @@ void EditorScene::SynchronizePlayScene() {
 	if (playSceneRevision_ != 0 && playSceneRevision_ != revision) {
 		const auto *loaded = playMode_.GetSession().GetLoadedScenePath();
 		lastPlayScenePath_ = loaded ? *loaded : playInitialScenePath_;
+		lastPlayFollowedEditingScene_ = !loaded && playUsesEditingScene_;
 		lastPlayCameraOverride_ = loaded ? 0 : playInitialCameraOverride_;
 		ClearPlaySelection();
 		playSelectionActive_ = true;
