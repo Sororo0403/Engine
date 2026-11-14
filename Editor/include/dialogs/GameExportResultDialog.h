@@ -10,6 +10,7 @@
 #include <optional>
 #include <span>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -155,10 +156,10 @@ class GameExportResultDialog {
 	/// </summary>
 	bool OpenLogAtError(ErrorSearch search, bool reportMissing = true);
 
-	enum class MatchSearch { FIRST, PREVIOUS, NEXT };
+	enum class MatchSearch { FIRST, PREVIOUS, NEXT, LATEST };
 
 	/// <summary>
-	/// 選択中の実行範囲で最初の一致行、または前後の一致行へ移動する
+	/// 選択中の実行範囲で検索語またはシーンの準備完了に一致する行へ移動する
 	/// </summary>
 	bool FindLogMatch(MatchSearch direction);
 
