@@ -15,7 +15,7 @@
 class ImGuiSystem;
 struct GameConfig;
 
-enum class GameExportResultAction { NONE, CLOSE, NEW_EXPORT, OPEN_SOURCE_SCENE };
+enum class GameExportResultAction { NONE, CLOSE, NEW_EXPORT, OPEN_SOURCE_SCENE, RELOAD_EXPORT };
 
 /// <summary>
 /// ゲーム出力の完了後に、出力フォルダ・単独起動・起動ログの確認を表示する
@@ -62,7 +62,7 @@ class GameExportResultDialog {
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
 	/// <param name="projectRoot">現在のプロジェクト。プロジェクト未選択時は空</param>
-	/// <returns>閉じる、新しく出力する、または編集元シーンを開く要求</returns>
+	/// <returns>閉じる、新しく出力する、編集元シーンを開く、または配布版を読み直す要求</returns>
 	GameExportResultAction Draw(const ImGuiSystem &ui,
 	                            const std::filesystem::path &projectRoot = {});
 

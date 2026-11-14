@@ -5878,6 +5878,13 @@ void EditorScene::UpdateDialogs() {
 			stage_ = DialogStage::IDLE;
 			if (result == GameExportResultAction::NEW_EXPORT) {
 				ShowGameExport(exportResultDialog_.GetDirectory());
+			} else if (result == GameExportResultAction::RELOAD_EXPORT) {
+				const auto directory = exportResultDialog_.GetDirectory();
+				const auto &root = project_.GetRoot();
+				const auto id = GameExporter::ReadPackageId(directory);
+				exportResultDialog_.Show(directory, true);
+				exportResultDialog_.SetSceneSources(root, preferences_.ExportSceneSources(root, directory, id), id);
+				stage_ = DialogStage::EXPORT_RESULT;
 			} else if (result == GameExportResultAction::OPEN_SOURCE_SCENE) {
 				const auto &source = exportResultDialog_.GetRequestedSourceScene();
 				if (document_.GetFilePath().empty() ||

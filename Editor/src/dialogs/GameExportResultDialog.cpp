@@ -201,15 +201,19 @@ void GameExportResultDialog::Show(std::filesystem::path directory,
 void GameExportResultDialog::SetSceneSources(const std::filesystem::path &projectRoot,
                                              std::vector<GameExporter::SceneSource> sources,
                                              std::string packageId) {
-	auto &run = runs_.at(directory_);
-	if (run.sourcePackageId != packageId) {
-		run.launchFailurePath.clear();
-		run.destinationFailurePath.clear();
-		run.startupScenePath.clear();
+	auto *run = &runs_.at(directory_);
+	if (run->sourcePackageId != packageId && run->launchedPackageId != packageId &&
+	    !run->process.IsTracking()) {
+		runs_.erase(directory_);
+		run = &runs_.try_emplace(directory_).first->second;
+		log_.clear();
+		logError_.clear();
+		logTruncated_ = false;
+		nextLogPage_.reset();
 	}
-	run.sourceProjectRoot = projectRoot;
-	run.sceneSources = std::move(sources);
-	run.sourcePackageId = std::move(packageId);
+	run->sourceProjectRoot = projectRoot;
+	run->sceneSources = std::move(sources);
+	run->sourcePackageId = std::move(packageId);
 }
 
 void GameExportResultDialog::OnAssetsMoved(
@@ -673,15 +677,12 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 	if (!run.status.empty())
 		ImGui::TextWrapped("%s", run.status.c_str());
 
-	if (!packageSettingsError_.empty()) {
-		if (packageSettingsError_ != run.status) {
-			ImGui::TextWrapped("%s", packageSettingsError_.c_str());
-		}
-		if (ui.Button("Reload Game Settings")) {
-			GameConfig config;
-			ReloadGameSettings(config);
-		}
+	if (!packageSettingsError_.empty() && packageSettingsError_ != run.status) {
+		ImGui::TextWrapped("%s", packageSettingsError_.c_str());
 	}
+	ui.BeginDisabled(run.process.IsTracking());
+	const bool reload = ui.Button("Reload Export");
+	ui.EndDisabled();
 
 	if (!run.launchFailurePath.empty()) {
 		const auto path = PathUtils::ToUtf8(run.launchFailurePath);
@@ -728,7 +729,7 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 					if (GameExporter::ReadPackageId(directory_) == run.sourcePackageId) {
 						requestedSourceScene_ = sourcePath;
 					} else {
-						error_ = "The export has changed. Reopen the export to find its source scenes.";
+						error_ = "The export has changed. Use Reload Export to find its source scenes.";
 					}
 				}
 				ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(sourcePath).c_str());
@@ -789,13 +790,14 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 	ui.SameLine();
 	const bool close = ui.Button("Close") || ImGui::IsKeyPressed(ImGuiKey_Escape, false);
 	GameExportResultAction action = GameExportResultAction::NONE;
-	if (close || newExport || !requestedSourceScene_.empty()) {
+	if (close || newExport || !requestedSourceScene_.empty() || reload) {
 		if (std::exchange(run.restartRequested, false)) {
 			run.status = "Requested game exit. Waiting for the process to finish.";
 		}
 		action = close ? GameExportResultAction::CLOSE
 		               : newExport ? GameExportResultAction::NEW_EXPORT
-		                           : GameExportResultAction::OPEN_SOURCE_SCENE;
+		               : !requestedSourceScene_.empty() ? GameExportResultAction::OPEN_SOURCE_SCENE
+		                                               : GameExportResultAction::RELOAD_EXPORT;
 		ui.CloseCurrentPopup();
 	}
 
