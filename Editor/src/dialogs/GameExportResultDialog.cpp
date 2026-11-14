@@ -22,8 +22,7 @@ constexpr std::streamoff kLogPageBytes = 64 * 1024;
 /// 配布版そのものに保存されている画面設定と起動シーンを表示用に読み込む
 /// </summary>
 std::string ReadPackageSettings(const std::filesystem::path &directory,
-                                std::string &error) {
-	GameConfig config;
+                                GameConfig &config, std::string &error) {
 	const auto path = directory / L"game.json";
 	if (!config.Load(path, error)) {
 		error = std::format("Could not load {}: {}", PathUtils::ToUtf8(path), error);
@@ -133,8 +132,9 @@ void GameExportResultDialog::Show(std::filesystem::path directory,
 	runs_.try_emplace(directory_);
 	reopening_ = reopening;
 	error_.clear();
+	GameConfig config;
 	std::string settingsError;
-	packageSettings_ = ReadPackageSettings(directory_, settingsError);
+	packageSettings_ = ReadPackageSettings(directory_, config, settingsError);
 	log_.clear();
 	logError_.clear();
 	logTruncated_ = false;
@@ -381,11 +381,21 @@ void GameExportResultDialog::OpenLogAtOffset(std::uintmax_t offset) {
 
 bool GameExportResultDialog::StartGame() {
 	auto &run = runs_.at(directory_);
+	GameConfig config;
 	std::string launchError;
-	packageSettings_ = ReadPackageSettings(directory_, launchError);
+	packageSettings_ = ReadPackageSettings(directory_, config, launchError);
 	run.launchSettings = packageSettings_;
 	run.crashError.clear();
 	error_.clear();
+	if (launchError.empty()) {
+		const auto scenePath = directory_ / config.scenePath;
+		std::error_code status;
+		if (!std::filesystem::is_regular_file(scenePath, status)) {
+			launchError = std::format(
+			    "The startup scene is missing or unavailable: {}",
+			    PathUtils::ToUtf8(scenePath));
+		}
+	}
 	if (!launchError.empty()) {
 		run.launchFailed = true;
 		run.status = std::move(launchError);
