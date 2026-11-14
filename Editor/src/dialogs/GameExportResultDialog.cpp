@@ -328,14 +328,17 @@ bool GameExportResultDialog::OpenLogAtError(ErrorSearch search, bool reportMissi
 	return true;
 }
 
-bool GameExportResultDialog::FindLogMatch(bool next) {
+bool GameExportResultDialog::FindLogMatch(MatchSearch direction) {
+	const bool next = direction == MatchSearch::NEXT;
+	const bool previous = direction == MatchSearch::PREVIOUS;
+	const bool relativeSearch = next || previous;
 	auto &run = runs_.at(directory_);
-	if (next && !run.lastMatch) {
+	if (relativeSearch && !run.lastMatch) {
 		return false;
 	}
-	auto query = next ? run.lastMatch->query : run.logFilter;
+	auto query = relativeSearch ? run.lastMatch->query : run.logFilter;
 	const auto searchPath = PathUtils::FromPathSearch(query);
-	const bool errorsOnly = next ? run.lastMatch->errorsOnly : run.showErrorsOnly;
+	const bool errorsOnly = relativeSearch ? run.lastMatch->errorsOnly : run.showErrorsOnly;
 	std::ifstream input(directory_ / kGameLogPath, std::ios::binary | std::ios::ate);
 	const auto end = static_cast<std::streamoff>(input.tellg());
 	if (end < 0) {
@@ -346,18 +349,22 @@ bool GameExportResultDialog::FindLogMatch(bool next) {
 	const auto start = run.sinceLaunchOnly && run.logStart &&
 	                           *run.logStart <= static_cast<std::uintmax_t>(end)
 	                       ? static_cast<std::streamoff>(*run.logStart) : 0;
-	const auto anchor = next ? run.lastMatch->offset : 0;
-	if (next && anchor >= static_cast<std::uintmax_t>(end - start)) {
+	const auto anchor = relativeSearch ? run.lastMatch->offset : 0;
+	if (relativeSearch && anchor >= static_cast<std::uintmax_t>(end - start)) {
 		run.lastMatch.reset();
 		error_ = "The game log changed. Start the search again.";
 		return false;
 	}
-	const auto scanStart = start + static_cast<std::streamoff>(anchor);
+	const auto scanStart = start + static_cast<std::streamoff>(next ? anchor : 0);
 	input.seekg(scanStart);
 	bool isError = next && run.lastMatch->inError;
 	auto entryOffset = next ? run.lastMatch->entryOffset : std::uintmax_t{0};
+	std::optional<GameRun::LogMatch> found;
+	std::uintmax_t pageOffset = 0;
+	bool showErrorsOnly = false;
+	const auto scanEnd = previous ? start + static_cast<std::streamoff>(anchor) : end;
 	std::string line;
-	for (auto offset = scanStart; offset < end && std::getline(input, line);
+	for (auto offset = scanStart; offset < scanEnd && std::getline(input, line);
 	     offset = static_cast<std::streamoff>(input.tellg())) {
 		const auto level = LogLevelPrefix(line);
 		const auto relative = static_cast<std::uintmax_t>(offset - start);
@@ -371,7 +378,7 @@ bool GameExportResultDialog::FindLogMatch(bool next) {
 			const auto lineEnd = input.eof() ? end : static_cast<std::streamoff>(input.tellg());
 			const bool fits = lineEnd - start - static_cast<std::streamoff>(entryOffset) <=
 			                  kLogPageBytes;
-			auto pageOffset = fits ? entryOffset : relative;
+			pageOffset = fits ? entryOffset : relative;
 			if (!fits) {
 				// 長い1行では、一致した文字列を含む位置から開く。
 				const auto match = line.find(query);
@@ -384,17 +391,24 @@ bool GameExportResultDialog::FindLogMatch(bool next) {
 					pageOffset += first;
 				}
 			}
-			OpenLogAtOffset(pageOffset);
-			run.showErrorsOnly = errorsOnly && fits;
-			run.lastMatch = GameRun::LogMatch{
-			    std::move(query), relative, entryOffset, errorsOnly, isError};
-			return true;
+			showErrorsOnly = errorsOnly && fits;
+			found = GameRun::LogMatch{query, relative, entryOffset, errorsOnly, isError};
+			if (!previous) {
+				break;
+			}
 		}
 		if (input.eof()) {
 			break;
 		}
 	}
+	if (found && !input.bad()) {
+		OpenLogAtOffset(pageOffset);
+		run.showErrorsOnly = showErrorsOnly;
+		run.lastMatch = std::move(found);
+		return true;
+	}
 	error_ = input.bad() ? "Could not search the game log."
+	         : previous  ? "No earlier matching lines in the selected log range."
 	         : next      ? "No later matching lines in the selected log range."
 	                     : "No matching lines in the selected log range.";
 	return false;
@@ -758,14 +772,19 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		ui.SameLine();
 		ui.BeginDisabled(run.logFilter.empty());
 		if (ui.Button("Find First in Log") && !run.logFilter.empty()) {
-			jumpToBeginning |= FindLogMatch(false);
+			jumpToBeginning |= FindLogMatch(MatchSearch::FIRST);
 		}
 		ui.EndDisabled();
 		ImGui::SetItemTooltip("Find the first matching line across the selected log range.");
 		if (run.lastMatch) {
 			ui.SameLine();
+			if (ui.Button("Find Previous in Log")) {
+				jumpToBeginning |= FindLogMatch(MatchSearch::PREVIOUS);
+			}
+			ImGui::SetItemTooltip("Find the previous line matching the same search.");
+			ui.SameLine();
 			if (ui.Button("Find Next in Log")) {
-				jumpToBeginning |= FindLogMatch(true);
+				jumpToBeginning |= FindLogMatch(MatchSearch::NEXT);
 			}
 			ImGui::SetItemTooltip("Find the next line matching the same search.");
 		}

@@ -95,10 +95,12 @@ class GameExportResultDialog {
 	/// </summary>
 	bool OpenLogAtError(ErrorSearch search, bool reportMissing = true);
 
+	enum class MatchSearch { FIRST, PREVIOUS, NEXT };
+
 	/// <summary>
-	/// 選択中の実行範囲で最初の一致行、または直前の一致行の次へ移動する
+	/// 選択中の実行範囲で最初の一致行、または前後の一致行へ移動する
 	/// </summary>
-	bool FindLogMatch(bool next);
+	bool FindLogMatch(MatchSearch direction);
 
 	/// <summary>
 	/// 元の閲覧位置を記録してから、指定のオフセットでページを開く
