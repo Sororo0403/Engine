@@ -23,6 +23,17 @@ void AnimationClipEditor::DrawKeys(const Scene *scene, AnimationClipComponent &t
 	ImGui::DragFloat("Duration (s)", &timeline.duration, .05f, .01f,
 	                 AnimationClipComponent::kMaximumSeconds, "%.3f",
 	                 ImGuiSliderFlags_AlwaysClamp);
+	const auto pastEnd = [&](const AnimationClipKey &key) {
+		return key.seconds > timeline.duration;
+	};
+	std::size_t outsideCount = 0;
+	for (const auto &track : timeline.tracks) {
+		outsideCount += static_cast<std::size_t>(std::ranges::count_if(track.keys, pastEnd));
+	}
+	if (outsideCount != 0) {
+		ImGui::TextWrapped("%zu key(s) are past the clip end. Move or remove them, or extend the duration.",
+		                   outsideCount);
+	}
 	playhead = std::clamp(playhead, 0.f, timeline.duration);
 	ImGui::SliderFloat("Playhead", &playhead, 0.f, timeline.duration, "%.3f s");
 
@@ -31,9 +42,12 @@ void AnimationClipEditor::DrawKeys(const Scene *scene, AnimationClipComponent &t
 		auto &track = timeline.tracks[i];
 		ImGui::PushID(static_cast<int>(i));
 		const auto *target = scene ? scene->FindObject(track.target) : nullptr;
-		const auto title = std::format("Track {}  /  {}", i + 1,
+		auto title = std::format("Track {}  /  {}", i + 1,
 		                               scene ? (target ? target->name : "(No target)")
 		                               : std::format("Binding {}", track.target));
+		if (const auto count = std::ranges::count_if(track.keys, pastEnd); count != 0) {
+			title += std::format("  ({} past end)", count);
+		}
 		if (ImGui::TreeNodeEx("Track", ImGuiTreeNodeFlags_DefaultOpen, "%s",
 		                     title.c_str())) {
 			if (scene && ImGui::BeginCombo("Target", target ? target->name.c_str() : "(None)")) {
@@ -96,6 +110,7 @@ void AnimationClipEditor::DrawKeys(const Scene *scene, AnimationClipComponent &t
 				const auto closest = std::ranges::min_element(track.keys, {},
 				    [&](const auto &key) { return std::abs(key.seconds - time); });
 				playhead = closest != track.keys.end() &&
+				                   !pastEnd(*closest) &&
 				                   std::abs(closest->seconds - time) <= 7 * timeline.duration / width
 				               ? closest->seconds
 				               : time;
@@ -120,6 +135,9 @@ void AnimationClipEditor::DrawKeys(const Scene *scene, AnimationClipComponent &t
 				ImGui::SetNextItemWidth(105);
 				ImGui::DragFloat("Time", &key.seconds, .02f, 0.f, timeline.duration,
 				                 "%.3f", ImGuiSliderFlags_AlwaysClamp);
+				if (pastEnd(key)) {
+					ImGui::SetItemTooltip("This key is past the clip end (%.3f s).", timeline.duration);
+				}
 				ImGui::SameLine();
 				ImGui::SetNextItemWidth(160);
 				if (opacity)
