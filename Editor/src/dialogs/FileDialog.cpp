@@ -407,8 +407,9 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 			const char *label = filter_ == FileDialogFilter::GAME_EXPORT
 			                        ? "Show Previous Export Location"
 			                    : filter_ == FileDialogFilter::SCENE || filter_ == FileDialogFilter::GAME_CONFIG
-		                        ? (mode_ == FileDialogMode::OPEN ? "Show Failed Scene Location"
-		                                                        : "Show Failed Save Location")
+			                        ? (mode_ != FileDialogMode::OPEN ? "Show Failed Save Location"
+			                           : filter_ == FileDialogFilter::SCENE ? "Show Failed Scene Location"
+			                                                               : "Show Failed Configuration Location")
 			                        : "Show Failed Project Location";
 			if (ui.Button(label)) {
 				ShellUtils::RevealLocationInExplorer(failedProject_,
@@ -678,8 +679,9 @@ std::filesystem::path FileDialog::ReadFilePath() const {
 
 bool FileDialog::AcceptSelection() {
 	overwriteConfirmed_ = false;
-	const bool choosingScene = mode_ != FileDialogMode::SELECT_DIRECTORY && filter_ == FileDialogFilter::SCENE;
-	if (choosingScene) {
+	const bool choosingJson = mode_ != FileDialogMode::SELECT_DIRECTORY &&
+	                          (filter_ == FileDialogFilter::SCENE || filter_ == FileDialogFilter::GAME_CONFIG);
+	if (choosingJson) {
 		failedProject_.clear();
 		failedProjectLocationError_.clear();
 	}
@@ -693,7 +695,7 @@ bool FileDialog::AcceptSelection() {
 		}
 
 		const auto path = ReadFilePath();
-		if (choosingScene) {
+		if (choosingJson) {
 			// 親フォルダが消えていても、入力パスから最寄りの場所を案内できるようにする。
 			failedProject_ = path;
 		}
@@ -723,7 +725,7 @@ bool FileDialog::AcceptSelection() {
 		}
 
 		selectedPath_.swap(candidate);
-		if (choosingScene) {
+		if (choosingJson) {
 			failedProject_.clear();
 		}
 

@@ -305,7 +305,7 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui, bool retryPla
 
 	if (selecting_) {
 		const auto selected = picker_.Draw(ui);
-		bool retrySave = false;
+		bool retrySelection = false;
 
 		if (selected == FileDialogResult::ACCEPTED) {
 			if (saving_) {
@@ -316,15 +316,21 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui, bool retryPla
 				} else {
 					picker_.RetrySelection(std::move(error_), destination_);
 					error_.clear();
-					retrySave = true;
+					retrySelection = true;
 				}
 			} else {
-				source_ = picker_.GetSelectedPath();
-				LoadConfiguration(source_);
+				const auto path = picker_.GetSelectedPath();
+				if (LoadConfiguration(path)) {
+					source_ = path;
+				} else {
+					picker_.RetrySelection(std::move(error_), path);
+					error_.clear();
+					retrySelection = true;
+				}
 			}
 		}
 
-		if (selected != FileDialogResult::NONE && !retrySave) {
+		if (selected != FileDialogResult::NONE && !retrySelection) {
 			selecting_ = false;
 		}
 	}
