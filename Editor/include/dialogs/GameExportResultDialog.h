@@ -69,6 +69,11 @@ class GameExportResultDialog {
 	const std::filesystem::path &GetRequestedSourceScene() const { return requestedSourceScene_; }
 
 	/// <summary>
+	/// 切り替えを要求された配布フォルダを取得する
+	/// </summary>
+	const std::filesystem::path &GetRequestedExport() const { return requestedExport_; }
+
+	/// <summary>
 	/// 出力先を表示し、開く・起動・閉じる操作を受け付ける。失敗時は画面を保持する
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
@@ -169,6 +174,8 @@ class GameExportResultDialog {
 
 	std::filesystem::path directory_;
 	std::filesystem::path requestedSourceScene_;
+	std::filesystem::path requestedExport_;
+	std::filesystem::path saveConflictExport_;
 	std::map<std::filesystem::path, GameRun> runs_;
 	std::string error_;
 	std::string packageSettings_;

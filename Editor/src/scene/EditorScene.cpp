@@ -5988,12 +5988,13 @@ void EditorScene::UpdateDialogs() {
 				ShowGameExport(exportResultDialog_.GetDirectory());
 			} else if (result == GameExportResultAction::SWITCH_EXPORT) {
 				const auto current = exportResultDialog_.GetDirectory();
-				if (OpenGameExport(otherExportResult_)) {
+				const auto target = exportResultDialog_.GetRequestedExport();
+				if (OpenGameExport(target)) {
 					otherExportResult_ = current;
 				} else {
 					exportResultDialog_.ReopenWithError(std::format(
-					    "Could not open {}.\n{}", PathUtils::ToUtf8(otherExportResult_),
-					    FileDialog::GameExportOpenProblem(otherExportResult_)));
+					    "Could not open {}.\n{}", PathUtils::ToUtf8(target),
+					    FileDialog::GameExportOpenProblem(target)));
 					stage_ = DialogStage::EXPORT_RESULT;
 				}
 			} else if (result == GameExportResultAction::RELOAD_EXPORT) {

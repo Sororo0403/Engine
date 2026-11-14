@@ -192,6 +192,7 @@ void GameExportResultDialog::Show(std::filesystem::path directory,
 	runs_.try_emplace(directory_);
 	reopening_ = reopening;
 	error_.clear();
+	saveConflictExport_.clear();
 	GameConfig config;
 	ReloadGameSettings(config);
 	log_.clear();
@@ -538,6 +539,7 @@ void GameExportResultDialog::OpenLogAtOffset(std::uintmax_t offset) {
 
 bool GameExportResultDialog::StartGame(bool freshStart) {
 	auto &run = runs_.at(directory_);
+	saveConflictExport_.clear();
 	GameConfig config;
 	ReloadGameSettings(config);
 	if (freshStart && !supportsFreshStart_ && packageSettingsError_.empty()) {
@@ -561,6 +563,7 @@ bool GameExportResultDialog::StartGame(bool freshStart) {
 			std::optional<std::uint32_t> exitCode;
 			std::string processError;
 			if (!other.process.Poll(exitCode, processError) || !exitCode) {
+				saveConflictExport_ = directory;
 				error_ = "Another export is using this test save. Close it or choose Run Without Save Data.\n" +
 				         PathUtils::ToUtf8(directory);
 				return false;
@@ -725,10 +728,12 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 	ui.BeginDisabled(run.process.IsTracking());
 	const bool reload = ui.Button("Reload Export");
 	ui.EndDisabled();
-	bool switchExport = false;
+	requestedExport_.clear();
 	if (!otherExport.empty()) {
 		ui.SameLine();
-		switchExport = ui.Button("Switch Export");
+		if (ui.Button("Switch Export")) {
+			requestedExport_ = otherExport;
+		}
 		ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(otherExport).c_str());
 	}
 
@@ -815,6 +820,9 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 	if (!error_.empty()) {
 		ImGui::TextWrapped("%s", error_.c_str());
 	}
+	if (!saveConflictExport_.empty() && ui.Button("Open Export Using Test Save")) {
+		requestedExport_ = saveConflictExport_;
+	}
 
 	if (ui.Button("Open Output Folder")) {
 		ShellUtils::OpenDirectory(directory_, error_);
@@ -874,14 +882,14 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 	ui.SameLine();
 	const bool close = ui.Button("Close") || ImGui::IsKeyPressed(ImGuiKey_Escape, false);
 	GameExportResultAction action = GameExportResultAction::NONE;
-	if (close || newExport || !requestedSourceScene_.empty() || reload || switchExport) {
+	if (close || newExport || !requestedSourceScene_.empty() || reload || !requestedExport_.empty()) {
 		if (std::exchange(run.restartRequested, false)) {
 			run.status = "Requested game exit. Waiting for the process to finish.";
 		}
 		action = close ? GameExportResultAction::CLOSE
 		               : newExport ? GameExportResultAction::NEW_EXPORT
 		               : !requestedSourceScene_.empty() ? GameExportResultAction::OPEN_SOURCE_SCENE
-		               : switchExport ? GameExportResultAction::SWITCH_EXPORT
+		               : !requestedExport_.empty() ? GameExportResultAction::SWITCH_EXPORT
 		                                               : GameExportResultAction::RELOAD_EXPORT;
 		ui.CloseCurrentPopup();
 	}
