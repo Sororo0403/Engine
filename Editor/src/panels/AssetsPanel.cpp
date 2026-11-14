@@ -251,10 +251,28 @@ void AssetsPanel::OpenDirectory(std::filesystem::path directory) {
 void AssetsPanel::RestoreDirectory(std::filesystem::path folder,
                                    const AssetDatabase &assets) {
 	const auto &root = assets.GetRootDirectory();
-	while (!folder.empty() &&
-	       std::ranges::none_of(assets.GetDirectories(), [&](const auto &directory) {
-		       return directory.lexically_relative(root) == folder;
-	       })) {
+	const auto &directories = assets.GetDirectories();
+	folder.make_preferred();
+	while (!folder.empty()) {
+		const auto found = std::ranges::find_if(directories, [&](const auto &directory) {
+			const auto relative = directory.lexically_relative(root).make_preferred();
+			if (relative == folder) {
+				return true;
+			}
+			if (CompareStringOrdinal(relative.c_str(), -1, folder.c_str(), -1,
+			                         TRUE) != CSTR_EQUAL) {
+				return false;
+			}
+			std::error_code error;
+			return std::filesystem::equivalent(
+			    PathUtils::ResolveFromExecutable(directory),
+			    PathUtils::ResolveFromExecutable(root / folder), error);
+		});
+		if (found != directories.end()) {
+			folder = found->lexically_relative(root);
+			break;
+		}
+
 		auto parent = folder.parent_path();
 		if (parent == folder) {
 			folder.clear();
