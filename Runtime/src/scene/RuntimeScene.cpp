@@ -140,12 +140,17 @@ bool RuntimeScene::Initialize() {
 	scriptSettingsPath_.clear();
 	observedScriptData_.clear();
 	nextScriptSettingsWrite_ = {};
-	if (saveMode_ != SaveMode::SESSION_ONLY && !config_.settingsId.empty()) {
+	if (saveMode_ == SaveMode::SESSION_ONLY) {
+		Logger::Info("Save data is disabled for this run.");
+	} else if (!config_.settingsId.empty()) {
 		scriptSettingsPath_ = GetScriptSettingsPath(config_.settingsId, saveMode_ == SaveMode::EDITOR_TEST);
 		if (scriptSettingsPath_.empty())
 			Logger::Warning("Game script settings directory is unavailable.");
 		else if (auto loaded = LoadScriptSettings(scriptSettingsPath_, config_.persistentScriptKeys)) {
 			savedScriptSettings_ = std::move(*loaded);
+			const auto *label = saveMode_ == SaveMode::EDITOR_TEST ? "Editor test save file: "
+			                                                     : "Game save file: ";
+			Logger::Info(label + PathUtils::ToUtf8(scriptSettingsPath_), scriptSettingsPath_);
 		} else {
 			// 読めなかったデータを初期値で上書きしない。
 			scriptSettingsPath_.clear();
