@@ -5507,10 +5507,13 @@ void EditorScene::UpdateDialogs() {
 	case DialogStage::EDIT_SCRIPT:
 	case DialogStage::EDIT_SCENE_CHECK_SCRIPT:
 	case DialogStage::EDIT_PLAY_SCRIPT:
+	case DialogStage::EDIT_PLAY_ERROR_SCRIPT:
 	case DialogStage::EDIT_EXPORT_SCRIPT: {
 		const bool fromExport = stage_ == DialogStage::EDIT_EXPORT_SCRIPT;
 		const bool fromSceneCheck = stage_ == DialogStage::EDIT_SCENE_CHECK_SCRIPT;
-		const auto *playScene = stage_ == DialogStage::EDIT_PLAY_SCRIPT ? &scriptReplayPath_ : nullptr;
+		const bool fromPlayError = stage_ == DialogStage::EDIT_PLAY_ERROR_SCRIPT;
+		const auto *playScene = fromPlayError || stage_ == DialogStage::EDIT_PLAY_SCRIPT
+		                            ? &scriptReplayPath_ : nullptr;
 		const auto result = scriptEditorDialog_.Draw(ui_, playScene);
 		const bool playAfterSave = result == ScriptEditorDialog::Result::SAVED_AND_PLAY;
 		const bool saved = result == ScriptEditorDialog::Result::SAVED || playAfterSave;
@@ -5546,8 +5549,14 @@ void EditorScene::UpdateDialogs() {
 			if (playAfterSave) {
 				StartPlay(scriptReplayPath_, scriptReplayCameraOverride_, true);
 			}
-		} else if (result == ScriptEditorDialog::Result::CANCELLED)
-			stage_ = DialogStage::IDLE;
+		} else if (result == ScriptEditorDialog::Result::CANCELLED) {
+			if (fromPlayError) {
+				errorOpenRequested_ = true;
+				stage_ = DialogStage::ERROR;
+			} else {
+				stage_ = DialogStage::IDLE;
+			}
+		}
 		break;
 	}
 
@@ -6383,7 +6392,7 @@ void EditorScene::UpdateDialogs() {
 							}
 							scriptReplayPath_ = *errorReplayPath_;
 							scriptReplayCameraOverride_ = errorReplayCameraOverride_;
-							stage_ = DialogStage::EDIT_PLAY_SCRIPT;
+							stage_ = DialogStage::EDIT_PLAY_ERROR_SCRIPT;
 						} else {
 							stage_ = DialogStage::EDIT_SCRIPT;
 						}
