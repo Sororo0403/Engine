@@ -60,14 +60,16 @@ class ConsolePanel {
 	/// メッセージの重要度と本文が現在の絞り込みに一致するか確認する
 	/// </summary>
 	/// <param name="entry">確認するログ</param>
+	/// <param name="searchPath">区切りと引用符を揃えた検索パス</param>
 	/// <returns>true:表示する false:非表示</returns>
-	bool MatchesFilter(const LogEntry &entry) const;
+	bool MatchesFilter(const LogEntry &entry,
+	                   const std::filesystem::path &searchPath) const;
 
 	/// <summary>
 	/// 現在の絞り込みに一致するログを時刻・重要度付きでまとめる
 	/// </summary>
 	/// <returns>コピー用のUTF-8文字列。メッセージのNUL文字は\0へ変換する</returns>
-	std::string BuildFilteredText() const;
+	std::string BuildFilteredText(const std::filesystem::path &searchPath) const;
 
 	bool open_ = false;
 	bool focusRequested_ = false;

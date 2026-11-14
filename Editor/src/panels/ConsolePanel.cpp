@@ -69,7 +69,8 @@ void ConsolePanel::MarkPlayStart() {
 	}
 }
 
-bool ConsolePanel::MatchesFilter(const LogEntry &entry) const {
+bool ConsolePanel::MatchesFilter(const LogEntry &entry,
+                                 const std::filesystem::path &searchPath) const {
 	if ((latestPlayOnly_ && entry.id <= playStartBoundary_) ||
 	    (entry.level == LogLevel::LOG_INFO && !showInfo_) ||
 	    (entry.level == LogLevel::LOG_WARNING && !showWarnings_) ||
@@ -78,15 +79,14 @@ bool ConsolePanel::MatchesFilter(const LogEntry &entry) const {
 	}
 
 	return filter_.empty() || entry.message.find(filter_) != std::string::npos ||
-	       (!entry.sourcePath.empty() &&
-	        PathUtils::ToUtf8(entry.sourcePath).find(filter_) != std::string::npos);
+	       PathUtils::MatchesPathSearch(entry.sourcePath, searchPath);
 }
 
-std::string ConsolePanel::BuildFilteredText() const {
+std::string ConsolePanel::BuildFilteredText(const std::filesystem::path &searchPath) const {
 	std::string text;
 
 	for (const auto &entry : entries_) {
-		if (MatchesFilter(entry)) {
+		if (MatchesFilter(entry, searchPath)) {
 			text += std::format("[{}] {}: ", entry.timestamp,
 			                    LevelName(entry.level));
 			AppendClipboardMessage(text, entry.message);
@@ -156,7 +156,8 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 	ImGui::SetItemTooltip("Show messages since the most recent Play or Restart attempt.");
 	ui.EndDisabled();
 	ui.InputText("Search", filter_);
-	ImGui::SetItemTooltip("Search message text and source file paths.");
+	ImGui::SetItemTooltip("Search message text or paste a source file path.");
+	const auto searchPath = PathUtils::FromPathSearch(filter_);
 	Logger::ReadEntries(revision_, entries_);
 	const auto firstPlayError = Logger::GetFirstPlayError();
 	const auto latestPlayError = Logger::GetLatestPlayError();
@@ -201,7 +202,7 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 	if (jumpError) {
 		latestPlayOnly_ = jumpError->id > playStartBoundary_;
 		showErrors_ = true;
-		if (!MatchesFilter(*jumpError)) {
+		if (!MatchesFilter(*jumpError, searchPath)) {
 			filter_.clear();
 		}
 		selectedId_ = jumpError->id;
@@ -209,8 +210,8 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 
 	const bool canShowContext =
 	    (!filter_.empty() || !showInfo_ || !showWarnings_ || !showErrors_) &&
-	    std::ranges::any_of(entries_, [this](const auto &entry) {
-		    return entry.id == selectedId_ && MatchesFilter(entry);
+	    std::ranges::any_of(entries_, [&](const auto &entry) {
+		    return entry.id == selectedId_ && MatchesFilter(entry, searchPath);
 	    });
 	ui.SameLine();
 	ui.BeginDisabled(!canShowContext);
@@ -226,11 +227,11 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 	ImGui::SameLine();
 	const auto matchingCount = std::count_if(
 	    entries_.begin(), entries_.end(),
-	    [this](const auto &entry) { return MatchesFilter(entry); });
+	    [&](const auto &entry) { return MatchesFilter(entry, searchPath); });
 	ImGui::BeginDisabled(matchingCount == 0);
 
 	if (ui.Button("Copy Filtered Logs")) {
-		const auto text = BuildFilteredText();
+		const auto text = BuildFilteredText(searchPath);
 		ImGui::SetClipboardText(text.c_str());
 	}
 
@@ -254,7 +255,7 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 
 		for (auto first = entries_.cbegin(); first != entries_.cend();) {
 			const auto &head = *first;
-			if (!MatchesFilter(head)) {
+			if (!MatchesFilter(head, searchPath)) {
 				++first;
 				continue;
 			}
@@ -364,7 +365,7 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 	} else if (!selected && playFailure && playFailure->id == selectedId_) {
 		selected = &*playFailure;
 	}
-	if (!selected || !MatchesFilter(*selected)) {
+	if (!selected || !MatchesFilter(*selected, searchPath)) {
 		selectedId_ = 0;
 		selected = nullptr;
 	}
