@@ -129,6 +129,10 @@ class SceneCheckPanel {
 		std::string filter;
 		std::optional<SceneValidationIssue> issue;
 	};
+	/// <summary>
+	/// 現在の検索と選択中の指摘を、指定したシーンに記録する
+	/// </summary>
+	void RememberPosition(const std::filesystem::path &path);
 	std::map<std::filesystem::path, SceneCheckPosition> scenePositions_;
 	std::optional<SceneValidationIssue> issueToRestore_;
 	bool open_ = false;

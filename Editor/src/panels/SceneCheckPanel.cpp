@@ -27,19 +27,22 @@ void SceneCheckPanel::Reset() {
 	*this = SceneCheckPanel{};
 }
 
+void SceneCheckPanel::RememberPosition(const std::filesystem::path &path) {
+	if (path.empty()) {
+		return;
+	}
+	auto issue = lastIssue_ && *lastIssue_ < issues_.size()
+	                 ? std::optional{issues_[*lastIssue_]} : issueToRestore_;
+	if (filter_.empty() && !issue) {
+		scenePositions_.erase(path);
+	} else {
+		scenePositions_.insert_or_assign(path, SceneCheckPosition{filter_, std::move(issue)});
+	}
+}
+
 void SceneCheckPanel::OnSceneOpened(const std::filesystem::path &previous,
                                    const std::filesystem::path &current) {
-	if (!previous.empty()) {
-		auto issue = std::move(issueToRestore_);
-		if (lastIssue_ && *lastIssue_ < issues_.size()) {
-			issue = issues_[*lastIssue_];
-		}
-		if (filter_.empty() && !issue) {
-			scenePositions_.erase(previous);
-		} else {
-			scenePositions_.insert_or_assign(previous, SceneCheckPosition{filter_, std::move(issue)});
-		}
-	}
+	RememberPosition(previous);
 	filter_.clear();
 	issueToRestore_.reset();
 	if (const auto found = scenePositions_.find(current); found != scenePositions_.end()) {
@@ -59,20 +62,8 @@ void SceneCheckPanel::OnSceneOpened(const std::filesystem::path &previous,
 
 void SceneCheckPanel::OnSceneSavedAs(const std::filesystem::path &previous,
                                     const std::filesystem::path &current) {
-	for (const auto *path : {&previous, &current}) {
-		if (!path->empty()) {
-			if (!filter_.empty()) {
-				scenePositions_[*path].filter = filter_;
-			} else if (const auto found = scenePositions_.find(*path);
-			           found != scenePositions_.end()) {
-				if (found->second.issue) {
-					found->second.filter.clear();
-				} else {
-					scenePositions_.erase(found);
-				}
-			}
-		}
-	}
+	RememberPosition(previous);
+	RememberPosition(current);
 	RequestRecheckIfOpen();
 }
 
