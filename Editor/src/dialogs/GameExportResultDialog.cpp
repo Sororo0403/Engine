@@ -700,10 +700,12 @@ bool GameExportResultDialog::UpdateGameProcess(bool &jumpToBeginning,
 		// ログの先頭行が起動時に記録したシーンと一致する場合だけ、その場所を案内する。
 		const auto lineEnd = run.crashError.find_first_of("\r\n");
 		const auto heading = LogLevelPrefix(std::string_view(run.crashError).substr(0, lineEnd));
-		if (!run.startupScenePath.empty() &&
-		    heading == " [ERROR] Could not load startup scene: " +
-		                   PathUtils::ToUtf8(run.startupScenePath)) {
-			run.launchFailurePath = directory_ / run.startupScenePath;
+		if (!run.startupScenePath.empty()) {
+			const auto startup = PathUtils::ToUtf8(run.startupScenePath);
+			if (heading == " [ERROR] Could not load startup scene: " + startup ||
+			    heading == " [ERROR] Could not prepare startup scene: " + startup) {
+				run.launchFailurePath = ResolveLogScene(directory_, startup);
+			}
 		}
 		run.destinationFailurePath = FindFailedDestination(directory_, run.crashError);
 		jumpToBeginning = true;

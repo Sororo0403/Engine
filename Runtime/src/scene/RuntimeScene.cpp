@@ -40,6 +40,10 @@ bool RuntimeScene::Initialize() {
 	actionReader_.Reset();
 	Scene source;
 	std::string error;
+	const auto reportStartupError = [&](std::string_view reason) {
+		Logger::Error("Could not prepare startup scene: " + PathUtils::ToUtf8(config_.scenePath) +
+		              "\n" + std::string(reason), config_.scenePath);
+	};
 
 	if (!SceneSerializer::Load(source, config_.scenePath, &error)) {
 		Logger::Error("Could not load startup scene: " +
@@ -47,8 +51,10 @@ bool RuntimeScene::Initialize() {
 		return false;
 	}
 
-	if (!renderer_.Initialize())
+	if (!renderer_.Initialize()) {
+		reportStartupError("Could not initialize the scene renderer.");
 		return false;
+	}
 
 	savedScriptSettings_ = "{}";
 	scriptSettingsPath_.clear();
@@ -74,14 +80,14 @@ bool RuntimeScene::Initialize() {
 	if (!simulation_.Start(source, error, config_.fallbackCamera, nullptr,
 	                       savedScriptSettings_) ||
 	    !renderer_.PrepareSceneModels(error)) {
-		Logger::Error(error);
+		reportStartupError(error);
 		return false;
 	}
 
 	if (!audioPlayer_.Start(simulation_.GetCameraPose(),
 	                        simulation_.IsGamePaused(), error, nullptr,
 	                        simulation_.GetAudioActions())) {
-		Logger::Error(error);
+		reportStartupError(error);
 		return false;
 	}
 	Logger::Info("Startup scene ready: " + PathUtils::ToUtf8(config_.scenePath), config_.scenePath);
