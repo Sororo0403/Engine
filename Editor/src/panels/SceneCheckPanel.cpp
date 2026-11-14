@@ -42,6 +42,12 @@ void SceneCheckPanel::RememberPosition(const std::filesystem::path &path) {
 
 void SceneCheckPanel::OnSceneOpened(const std::filesystem::path &previous,
                                    const std::filesystem::path &current) {
+	if (!previous.empty() && !current.empty() && PathUtils::IsSameFile(previous, current)) {
+		// 同じシーンでは、修正済みの指摘から次の未解決箇所を探せるよう一覧を残す。
+		RequestRecheckIfOpen();
+		return;
+	}
+
 	RememberPosition(previous);
 	filter_.clear();
 	issueToRestore_.reset();
