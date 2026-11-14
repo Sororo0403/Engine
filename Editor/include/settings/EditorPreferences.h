@@ -155,6 +155,12 @@ class EditorPreferences {
 	LastSceneSelection(const std::filesystem::path &scene) const;
 
 	/// <summary>
+	/// 復元待ちのシーンに、移動前の視点と選択を引き継ぐ
+	/// </summary>
+	void CopySceneViewAndSelection(const std::filesystem::path &source,
+	                               const std::filesystem::path &destination);
+
+	/// <summary>
 	/// 移動に成功した素材の新しいパスをシーンの履歴と編集状態に反映する
 	/// </summary>
 	void RelocateScenes(std::span<const std::pair<std::filesystem::path,

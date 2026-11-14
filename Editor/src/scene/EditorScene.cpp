@@ -6753,6 +6753,10 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 			    previous != preferences_.projectScenes.end()) {
 				rememberedUnavailableScene = preferences_.projectScenes.try_emplace(
 				    project_.GetRoot(), previous->second).second;
+				if (rememberedUnavailableScene) {
+					preferences_.CopySceneViewAndSelection(previousRoot / previous->second,
+					                                       unavailableLast);
+				}
 			}
 			failedRestoredScene_ = unavailableLast;
 			auto message = "Could not restore the last edited scene: " +

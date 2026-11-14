@@ -159,6 +159,22 @@ EditorPreferences::LastSceneSelection(const std::filesystem::path &scene) const 
 	                                       : std::span<const SceneObjectId>{found->second};
 }
 
+void EditorPreferences::CopySceneViewAndSelection(
+    const std::filesystem::path &source, const std::filesystem::path &destination) {
+	const auto key = SceneViewKey(destination, true);
+	if (key.empty() || sceneViews.contains(key) || sceneSelections_.contains(key)) {
+		return;
+	}
+
+	if (const auto *view = FindSceneView(source)) {
+		sceneViews.try_emplace(key, *view);
+	}
+	const auto selection = LastSceneSelection(source);
+	if (!selection.empty()) {
+		sceneSelections_.try_emplace(key, selection.begin(), selection.end());
+	}
+}
+
 void EditorPreferences::RelocateScenes(
     std::span<const std::pair<std::filesystem::path, std::filesystem::path>> moves) {
 	namespace fs = std::filesystem;
