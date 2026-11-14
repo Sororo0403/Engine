@@ -1,4 +1,5 @@
 #include "dialogs/GameExportDialog.h"
+#include "animation/AnimationClipAsset.h"
 #include "assets/AssetFolders.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "platform/windows/PathUtils.h"
@@ -722,6 +723,12 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 					    issue.assetPath, statusError);
 					const bool missing =
 					    status.type() == std::filesystem::file_type::not_found;
+					if (AnimationClipAsset::IsPath(issue.assetPath) &&
+					    std::filesystem::is_regular_file(issue.assetPath, statusError) &&
+					    ui.Button("Edit Animation Clip")) {
+						selectedIssue_ = i;
+						result = GameExportResult::EDIT_ISSUE_CLIP;
+					}
 					ui.BeginDisabled(missing);
 					if (ui.Button("Show in Assets")) {
 						selectedIssue_ = i;
@@ -850,6 +857,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 	const bool navigatingIssue = result == GameExportResult::OPEN_ISSUE ||
 	                             result == GameExportResult::OPEN_TRANSITION_SOURCE ||
 	                             result == GameExportResult::EDIT_ISSUE_SCRIPT ||
+	                             result == GameExportResult::EDIT_ISSUE_CLIP ||
 	                             result == GameExportResult::EDIT_ISSUE_INPUT ||
 	                             result == GameExportResult::REVEAL_ISSUE_ASSET;
 	ui.SameLine();

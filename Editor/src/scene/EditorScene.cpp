@@ -5532,15 +5532,27 @@ void EditorScene::UpdateDialogs() {
 		return;
 	}
 
-	case DialogStage::EDIT_ANIMATION_CLIP: {
+	case DialogStage::EDIT_ANIMATION_CLIP:
+	case DialogStage::EDIT_EXPORT_ANIMATION_CLIP: {
+		const bool fromExport = stage_ == DialogStage::EDIT_EXPORT_ANIMATION_CLIP;
 		const auto result = animationClipEditor_.Draw(ui_);
+		std::string refreshError;
 		if (result == AnimationClipEditor::Result::SAVED) {
 			stage_ = DialogStage::IDLE;
-			assets_.Refresh();
+			if (!assets_.Refresh() && fromExport) {
+				refreshError = assets_.GetError();
+			}
 			assetsPanel_.RequestReveal(animationClipEditor_.GetSavedPath());
 			sceneCheckPanel_.RequestRecheckIfOpen();
+			if (fromExport) {
+				CheckGameExport(true);
+			}
 		} else if (result == AnimationClipEditor::Result::CANCELLED) {
 			stage_ = DialogStage::IDLE;
+		}
+		if (fromExport && result != AnimationClipEditor::Result::NONE) {
+			exportDialog_.Reopen(std::move(refreshError));
+			stage_ = DialogStage::EXPORT_GAME;
 		}
 		break;
 	}
@@ -6115,6 +6127,15 @@ void EditorScene::UpdateDialogs() {
 				stage_ = DialogStage::EDIT_EXPORT_SCRIPT;
 			} else {
 				exportDialog_.Reopen("Could not open the script: " + error);
+			}
+			return;
+		}
+		if (result == GameExportResult::EDIT_ISSUE_CLIP) {
+			std::string error;
+			if (animationClipEditor_.ShowEdit(exportDialog_.GetSelectedIssue().assetPath, error)) {
+				stage_ = DialogStage::EDIT_EXPORT_ANIMATION_CLIP;
+			} else {
+				exportDialog_.Reopen("Could not open the Animation Clip: " + error);
 			}
 			return;
 		}

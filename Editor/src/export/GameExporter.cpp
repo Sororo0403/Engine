@@ -960,8 +960,23 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 						scriptPath.clear();
 					}
 				}
+				fs::path assetPath;
+				if (const auto *object = candidate.FindObject(invalidObject);
+				    scriptPath.empty() && object && object->animationClip &&
+				    object->animationClip->usesAsset) {
+					// 再生用のクリップを展開する前の検査から、同じ指摘の編集元を取得する。
+					const auto diagnostics = SceneValidation::Inspect(
+					    candidate, options.config.fallbackCamera, false);
+					const auto match = std::ranges::find_if(diagnostics, [&](const auto &diagnostic) {
+						return diagnostic.objectId == invalidObject && diagnostic.message == issue &&
+						       !diagnostic.assetPath.empty();
+					});
+					if (match != diagnostics.end()) {
+						assetPath = PathUtils::ResolveFromExecutable(match->assetPath);
+					}
+				}
 				reportObjectIssue(describe(invalidObject) + "\n" + issue, entry,
-				                  invalidObject, scriptPath);
+				                  invalidObject, scriptPath, assetPath);
 			}
 			auto &objects = entry.objects;
 
