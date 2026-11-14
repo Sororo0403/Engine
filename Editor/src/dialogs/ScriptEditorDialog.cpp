@@ -120,7 +120,7 @@ bool ScriptEditorDialog::ShowEdit(const std::filesystem::path &path,
 	source_ = source;
 	original_ = std::move(source);
 	saved_.clear();
-	error_.clear();
+	error_ = diagnostic;
 	creating_ = false;
 	saveConflict_ = false;
 	confirmation_ = Confirmation::NONE;

@@ -420,7 +420,8 @@ bool EditorScene::Update(float deltaTime) {
 		const auto script = consolePanel_.Draw(ui_, !IsBusy(), true);
 		if (!script.path.empty()) {
 			std::string error;
-			if (scriptEditorDialog_.ShowEdit(script.path, error, script.diagnostic)) {
+			if (scriptEditorDialog_.ShowEdit(script.path, error, script.diagnostic,
+			                                 script.diagnosticPath)) {
 				if (playFailureReplay_ &&
 				    script.logId == playFailureReplay_->logId) {
 					scriptReplayPath_ = playFailureReplay_->path;
