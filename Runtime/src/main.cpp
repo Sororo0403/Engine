@@ -13,6 +13,7 @@
 
 namespace {
 GameConfig game;
+bool launchedFromEditor = false;
 
 /// <summary>
 /// 起動ウィンドウを作らず、実行ファイルと同じ場所へビルド構成と対応形式を記録する
@@ -51,7 +52,7 @@ int WriteBuildInfo() {
 /// <param name="context">共通機能</param>
 /// <returns>初期化前の実行シーン</returns>
 std::unique_ptr<IScene> CreateScene(const EngineContext &context) {
-	return std::make_unique<RuntimeScene>(context, game);
+	return std::make_unique<RuntimeScene>(context, game, launchedFromEditor);
 }
 } // namespace
 
@@ -60,7 +61,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR commandLine, int) {
 	if (arguments == "--write-build-info") {
 		return WriteBuildInfo();
 	}
-	const bool launchedFromEditor = arguments == "--editor-launch";
+	launchedFromEditor = arguments == "--editor-launch";
 
 	std::string error;
 	const auto executableDirectory = PathUtils::GetExecutableDirectory();

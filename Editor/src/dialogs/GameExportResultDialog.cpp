@@ -752,6 +752,7 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 	if (ui.Button("Run Game")) {
 		jumpToLatest |= StartGame();
 	}
+	ImGui::SetItemTooltip("Runs with separate Editor test save data.");
 	ui.EndDisabled();
 
 	if (run.process.IsTracking()) {

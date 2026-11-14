@@ -23,7 +23,8 @@ constexpr std::size_t kMaxScriptSettingsBytes = 32768;
 /// <summary>
 /// ゲームごとのユーザー設定ファイルの場所を取得する
 /// </summary>
-std::filesystem::path GetScriptSettingsPath(const std::string &settingsId) {
+std::filesystem::path GetScriptSettingsPath(const std::string &settingsId,
+                                            bool launchedFromEditor) {
 	wchar_t *localAppData = nullptr;
 	const auto result = _wdupenv_s(&localAppData, nullptr, L"LOCALAPPDATA");
 	const std::unique_ptr<wchar_t, decltype(&std::free)> directory(
@@ -33,7 +34,7 @@ std::filesystem::path GetScriptSettingsPath(const std::string &settingsId) {
 	const std::filesystem::path root(directory.get());
 	if (!root.is_absolute())
 		return {};
-	return root / L"Engine" / L"GameSettings" /
+	return root / L"Engine" / (launchedFromEditor ? L"EditorTestGameSettings" : L"GameSettings") /
 	       ("game-" + settingsId + ".json");
 }
 
@@ -97,9 +98,11 @@ std::optional<std::string> LoadScriptSettings(const std::filesystem::path &path,
 }
 } // namespace
 
-RuntimeScene::RuntimeScene(const EngineContext &context, GameConfig config)
+RuntimeScene::RuntimeScene(const EngineContext &context, GameConfig config,
+                           bool launchedFromEditor)
     : input_(context.input), render_(context.render),
       config_(std::move(config)),
+      launchedFromEditor_(launchedFromEditor),
       renderer_(simulation_.GetScene(), context.models, context.render),
       audioPlayer_(simulation_.GetScene(), context.audioClips, context.audio) {
 	simulation_.SetLegacyLighting(config_.lighting);
@@ -138,7 +141,7 @@ bool RuntimeScene::Initialize() {
 	observedScriptData_.clear();
 	nextScriptSettingsWrite_ = {};
 	if (!config_.settingsId.empty()) {
-		scriptSettingsPath_ = GetScriptSettingsPath(config_.settingsId);
+		scriptSettingsPath_ = GetScriptSettingsPath(config_.settingsId, launchedFromEditor_);
 		if (scriptSettingsPath_.empty())
 			Logger::Warning("Game script settings directory is unavailable.");
 		else if (auto loaded = LoadScriptSettings(scriptSettingsPath_, config_.persistentScriptKeys)) {

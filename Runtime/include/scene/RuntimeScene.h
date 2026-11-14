@@ -22,7 +22,8 @@ class RuntimeScene final : public IScene {
 	/// </summary>
 	/// <param name="context">初期化済みの共通機能</param>
 	/// <param name="config">検証済みのゲーム起動設定</param>
-	RuntimeScene(const EngineContext &context, GameConfig config);
+	/// <param name="launchedFromEditor">Editorの配布結果から試遊を開始したか</param>
+	RuntimeScene(const EngineContext &context, GameConfig config, bool launchedFromEditor);
 
 	/// <summary>
 	/// 出力されたシーンを読み込み、実行と描画を初期化する
@@ -62,6 +63,7 @@ class RuntimeScene final : public IScene {
 	const InputSystem &input_;
 	RenderSystem &render_;
 	GameConfig config_;
+	bool launchedFromEditor_ = false;
 	GameActionReader actionReader_;
 	SceneSimulation simulation_;
 	SceneRenderer renderer_;
