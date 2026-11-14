@@ -507,7 +507,10 @@ class EditorScene final : public IScene {
 	/// 編集内容を保持したまま、指定されたシーンから再生を始める
 	/// </summary>
 	/// <param name="path">再生するシーン。空なら編集中のシーン</param>
-	void StartPlay(const std::filesystem::path &path, SceneObjectId cameraOverride);
+	/// <param name="cameraOverride">再生に使うCamera。0なら通常の選択</param>
+	/// <param name="replayLastScene">前回のCameraが使えない場合は通常の選択で再生する</param>
+	void StartPlay(const std::filesystem::path &path, SceneObjectId cameraOverride,
+	               bool replayLastScene = false);
 
 	/// <summary>
 	/// 再生を停止し、編集中のシーンと対応する場合はエラーの物体を表示できるようにする

@@ -338,10 +338,10 @@ bool EditorScene::Update(float deltaTime) {
 		                  : playAction == EditorPlayMode::Action::PLAY_LAST_SCENE
 		                      ? lastPlayScenePath_
 		                      : std::filesystem::path{};
-		const auto camera = playAction == EditorPlayMode::Action::PLAY_LAST_SCENE
-		                        ? lastPlayCameraOverride_
-		                        : useRequestedCamera ? requestedCamera : 0;
-		StartPlay(path, camera);
+		const bool replayLastScene = playAction == EditorPlayMode::Action::PLAY_LAST_SCENE;
+		const auto camera = replayLastScene ? lastPlayCameraOverride_
+		                                    : useRequestedCamera ? requestedCamera : 0;
+		StartPlay(path, camera, replayLastScene);
 	}
 
 	const bool restartCurrentScene =
@@ -6197,7 +6197,7 @@ const Scene *EditorScene::GetStartupSceneForRun(SceneDocument &startup,
 }
 
 void EditorScene::StartPlay(const std::filesystem::path &path,
-                            SceneObjectId cameraOverride) {
+                            SceneObjectId cameraOverride, bool replayLastScene) {
 	consolePanel_.MarkPlayStart();
 	playFailureReplay_.reset();
 	audioPreviewPanel_.Stop();
@@ -6221,6 +6221,16 @@ void EditorScene::StartPlay(const std::filesystem::path &path,
 	}
 
 	const auto *scene = usesEditingScene ? &document_.GetScene() : &startup.GetScene();
+	if (replayLastScene && cameraOverride != 0) {
+		const auto *object = scene->FindObject(cameraOverride);
+		if (!object || !object->camera || !SceneActivity::IsActive(*scene, cameraOverride)) {
+			Logger::Warning(
+			    "The previous Play camera is unavailable. Using normal camera selection.",
+			    usesEditingScene ? document_.GetFilePath() : startup.GetFilePath());
+			consolePanel_.Show();
+			cameraOverride = 0;
+		}
+	}
 	const auto fallback = usesEditingScene ? cameraController_.GetPose()
 	                                       : exportConfig_.fallbackCamera;
 	std::string error;
