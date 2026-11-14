@@ -220,6 +220,11 @@ void EditorPreferences::RelocateScenes(
 			}
 		}
 	}
+	for (auto &[key, sources] : exportSceneSources_) {
+		for (auto &source : sources) {
+			source.sourcePath = PathUtils::AfterMove(source.sourcePath, moves);
+		}
+	}
 }
 
 void EditorPreferences::RememberProject(const std::filesystem::path &root) {
@@ -274,6 +279,46 @@ void EditorPreferences::RememberGameExport(
 	if (RememberOpenedGameExport(root, directory))
 		lastGameExports_.insert_or_assign(root.lexically_normal(),
 		                                  directory.lexically_normal());
+}
+
+void EditorPreferences::RememberExportSceneSources(
+    const std::filesystem::path &root, const std::filesystem::path &directory,
+    std::vector<GameExporter::SceneSource> sources) {
+	const auto key = std::pair(root.lexically_normal(), directory.lexically_normal());
+	const auto recent = RecentGameExports(root);
+	const auto last = LastGameExport(root);
+	if (!key.second.is_absolute() ||
+	    (std::ranges::find(recent, key.second) == recent.end() && last != key.second)) {
+		return;
+	}
+	std::erase_if(sources, [](const auto &source) {
+		return source.packagedPath.empty() || source.packagedPath.has_root_path() ||
+		       !PathUtils::HasExtension(source.packagedPath, ".json") ||
+		       !std::ranges::all_of(source.packagedPath, PathUtils::IsValidFileName) ||
+		       !source.sourcePath.is_absolute() || !PathUtils::HasExtension(source.sourcePath, ".json") ||
+		       source.sourcePath.native().find(L'\0') != std::wstring::npos;
+	});
+	for (auto &source : sources) {
+		source.packagedPath.make_preferred();
+		source.sourcePath.make_preferred();
+	}
+	std::ranges::sort(sources, {}, &GameExporter::SceneSource::packagedPath);
+	if (sources.empty()) {
+		exportSceneSources_.erase(key);
+	} else {
+		exportSceneSources_.insert_or_assign(key, std::move(sources));
+	}
+	std::erase_if(exportSceneSources_, [&](const auto &entry) {
+		const auto &[project, output] = entry.first;
+		return project == key.first && output != last &&
+		       std::ranges::find(recent, output) == recent.end();
+	});
+}
+
+std::vector<GameExporter::SceneSource> EditorPreferences::ExportSceneSources(
+    const std::filesystem::path &root, const std::filesystem::path &directory) const {
+	const auto found = exportSceneSources_.find({root.lexically_normal(), directory.lexically_normal()});
+	return found == exportSceneSources_.end() ? std::vector<GameExporter::SceneSource>{} : found->second;
 }
 
 bool EditorPreferences::RememberOpenedGameExport(
@@ -338,6 +383,9 @@ bool EditorPreferences::RemoveMissingGameExports(const std::filesystem::path &ro
 		lastGameExports_.erase(last);
 		changed = true;
 	}
+	changed |= std::erase_if(exportSceneSources_, [&](const auto &entry) {
+		return entry.first.first == key && missing(entry.first.second);
+	}) != 0;
 	return changed;
 }
 
@@ -676,6 +724,29 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 							loaded.RememberOpenedGameExport(root, PathUtils::FromUtf8(directory));
 						}
 					}
+				}
+			}
+		}
+
+		if (const auto savedSources = json.find("exportSceneSources");
+		    savedSources != json.end() && savedSources->is_object()) {
+			for (const auto &[project, outputs] : savedSources->items()) {
+				if (!outputs.is_object() || project.find('\0') != std::string::npos) {
+					continue;
+				}
+				const auto root = PathUtils::FromUtf8(project);
+				for (const auto &[directory, entries] : outputs.items()) {
+					if (!entries.is_object() || directory.find('\0') != std::string::npos) {
+						continue;
+					}
+					std::vector<GameExporter::SceneSource> sources;
+					for (const auto &[packaged, source] : entries.items()) {
+						if (source.is_string() && packaged.find('\0') == std::string::npos) {
+							sources.push_back({PathUtils::FromUtf8(packaged),
+							                   PathUtils::FromUtf8(source.get_ref<const std::string &>())});
+						}
+					}
+					loaded.RememberExportSceneSources(root, PathUtils::FromUtf8(directory), std::move(sources));
 				}
 			}
 		}
@@ -1022,6 +1093,14 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 			recentGameExportsJson[key] = std::move(entries);
 		}
 		auto projectAssetFoldersJson = nlohmann::json::object();
+		auto exportSceneSourcesJson = nlohmann::json::object();
+		for (const auto &[key, sources] : exportSceneSources_) {
+			const auto &[root, directory] = key;
+			auto &entries = exportSceneSourcesJson[PathUtils::ToUtf8(root)][PathUtils::ToUtf8(directory)];
+			for (const auto &[packaged, source] : sources) {
+				entries[PathUtils::ToUtf8(packaged)] = PathUtils::ToUtf8(source);
+			}
+		}
 		for (const auto &[root, folder] : projectAssetFolders_) {
 			projectAssetFoldersJson[PathUtils::ToUtf8(root)] = PathUtils::ToUtf8(folder);
 		}
@@ -1081,6 +1160,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		    {"lastGameExports", std::move(lastGameExportsJson)},
 		    {"gameExportDrafts", std::move(gameExportDraftsJson)},
 		    {"recentGameExports", std::move(recentGameExportsJson)},
+		    {"exportSceneSources", std::move(exportSceneSourcesJson)},
 		    {"projectAssetFolders", std::move(projectAssetFoldersJson)},
 		    {"sceneViews", std::move(sceneViewsJson)},
 		    {"sceneSelections", std::move(sceneSelectionsJson)},
@@ -1122,6 +1202,7 @@ bool EditorPreferences::operator==(const EditorPreferences &other) const {
 	       lastGameExports_ == other.lastGameExports_ &&
 	       gameExportDrafts == other.gameExportDrafts &&
 	       recentGameExports_ == other.recentGameExports_ &&
+	       exportSceneSources_ == other.exportSceneSources_ &&
 	       projectAssetFolders_ == other.projectAssetFolders_ &&
 	       projectScenes == other.projectScenes && sceneViews == other.sceneViews &&
 	       sceneSelections_ == other.sceneSelections_ &&

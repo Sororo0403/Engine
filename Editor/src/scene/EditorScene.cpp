@@ -3580,6 +3580,7 @@ void EditorScene::WriteGameExport() {
 		exportConfig_ = options.config;
 	}
 	preferences_.RememberGameExport(project_.GetRoot(), directory);
+	preferences_.RememberExportSceneSources(project_.GetRoot(), directory, sceneSources);
 	exportDialog_.CompleteExport();
 	preferences_.gameExportDrafts.erase(project_.GetRoot());
 	if (canSavePreferences_) {
@@ -3724,7 +3725,9 @@ bool EditorScene::OpenGameExport(std::filesystem::path directory) {
 		if (canSavePreferences_)
 			preferences_.Save();
 	}
+	auto sceneSources = preferences_.ExportSceneSources(root, directory);
 	exportResultDialog_.Show(std::move(directory), true);
+	exportResultDialog_.SetSceneSources(root, std::move(sceneSources));
 	stage_ = DialogStage::EXPORT_RESULT;
 	return true;
 }

@@ -81,6 +81,19 @@ class EditorPreferences {
 	                        const std::filesystem::path &directory);
 
 	/// <summary>
+	/// 配布版と編集元シーンの対応をプロジェクト別に保存する
+	/// </summary>
+	void RememberExportSceneSources(const std::filesystem::path &root,
+	                                const std::filesystem::path &directory,
+	                                std::vector<GameExporter::SceneSource> sources);
+
+	/// <summary>
+	/// 指定した配布版の編集元シーンを取得する
+	/// </summary>
+	std::vector<GameExporter::SceneSource> ExportSceneSources(
+	    const std::filesystem::path &root, const std::filesystem::path &directory) const;
+
+	/// <summary>
 	/// 開いた配布先を履歴へ追加する。最後の出力を移動した場合はその場所も更新する
 	/// </summary>
 	/// <param name="previousDirectory">移動前の出力先。指定した場合は履歴から除く</param>
@@ -191,6 +204,8 @@ class EditorPreferences {
   private:
 	std::map<std::filesystem::path, std::filesystem::path> lastGameExports_;
 	std::map<std::filesystem::path, std::vector<std::filesystem::path>> recentGameExports_;
+	std::map<std::pair<std::filesystem::path, std::filesystem::path>,
+	         std::vector<GameExporter::SceneSource>> exportSceneSources_;
 	std::map<std::filesystem::path, std::filesystem::path> projectAssetFolders_;
 	std::map<std::filesystem::path, std::vector<SceneObjectId>> sceneSelections_;
 };

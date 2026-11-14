@@ -76,6 +76,7 @@ namespace GameExporter {
 struct SceneSource {
 	std::filesystem::path packagedPath;
 	std::filesystem::path sourcePath;
+	bool operator==(const SceneSource &) const = default;
 };
 
 /// <summary>
