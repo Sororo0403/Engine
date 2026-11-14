@@ -26,6 +26,8 @@ void GameSettingsDialog::Show(const GameConfig &config,
 	cameraRelativeMovement_ = config.cameraRelativeMovement;
 	gamepadEnabled_ = config.gamepadEnabled;
 	lighting_ = config.lighting;
+	settingsId_ = config.settingsId;
+	persistentScriptKeys_ = config.persistentScriptKeys;
 	error_.clear();
 	failedProjectFile_.clear();
 	locationError_.clear();
@@ -358,6 +360,8 @@ bool GameSettingsDialog::LoadConfiguration(const std::filesystem::path &path) {
 	cameraRelativeMovement_ = loaded.cameraRelativeMovement;
 	gamepadEnabled_ = loaded.gamepadEnabled;
 	lighting_ = loaded.lighting;
+	settingsId_ = std::move(loaded.settingsId);
+	persistentScriptKeys_ = std::move(loaded.persistentScriptKeys);
 	return true;
 }
 
@@ -371,6 +375,8 @@ bool GameSettingsDialog::BuildConfiguration(GameConfig &candidate) {
 	value.cameraRelativeMovement = cameraRelativeMovement_;
 	value.gamepadEnabled = gamepadEnabled_;
 	value.lighting = lighting_;
+	value.settingsId = settingsId_;
+	value.persistentScriptKeys = persistentScriptKeys_;
 
 	if (!value.IsValid()) {
 		error_ =
