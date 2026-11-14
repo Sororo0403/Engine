@@ -820,9 +820,11 @@ bool EditorScene::Update(float deltaTime) {
 				}
 			}
 
-			if (!moves.empty() && !RelocateAssets(moves, error)) {
+			std::filesystem::path failurePath;
+			if (!moves.empty() && !RelocateAssets(moves, error, &failurePath)) {
 				ShowError(std::move(error));
 				failedAssetMoves_ = std::move(moves);
+				assetMoveFailurePath_ = std::move(failurePath);
 				failedAssetMoveWasCutPaste_ = cutPaste;
 			} else if (cutPaste) {
 				assetsPanel_.FinishPaste();
@@ -5027,9 +5029,10 @@ bool EditorScene::CopyAssets(std::span<const std::filesystem::path> sources,
 }
 
 bool EditorScene::RelocateAssets(const AssetUsage::Moves &moves,
-                                 std::string &error) {
+                                 std::string &error,
+                                 std::filesystem::path *failurePath) {
 	if (!AssetUsage::Relocate(moves, assets_.GetRootDirectory(), document_,
-	                          project_, error)) {
+	                          project_, error, failurePath)) {
 		return false;
 	}
 	assetsPanel_.RelocatePaths(moves, assets_.GetRootDirectory());
@@ -6191,6 +6194,14 @@ void EditorScene::UpdateDialogs() {
 			}
 
 			if (!failedAssetMoves_.empty()) {
+				if (!assetMoveFailurePath_.empty()) {
+					if (ui_.Button("Show Failed Move Location")) {
+						ShellUtils::RevealLocationInExplorer(assetMoveFailurePath_,
+						                                     errorActionMessage_);
+					}
+					ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(assetMoveFailurePath_).c_str());
+					ui_.SameLine();
+				}
 				if (ui_.Button("Show Destination Folder")) {
 					ShellUtils::RevealLocationInExplorer(
 					    failedAssetMoves_.front().second.parent_path(), errorActionMessage_);
@@ -6217,10 +6228,11 @@ void EditorScene::UpdateDialogs() {
 				ImGui::SetItemTooltip("Add a suffix to conflicting names and retry the move.");
 				if (retry || useAvailableNames) {
 					std::string error;
+					assetMoveFailurePath_.clear();
 					const auto moves = useAvailableNames
 					                       ? AssetUsage::FindAvailableMoveDestinations(failedAssetMoves_, error)
 					                       : failedAssetMoves_;
-					if (!moves.empty() && RelocateAssets(moves, error)) {
+					if (!moves.empty() && RelocateAssets(moves, error, &assetMoveFailurePath_)) {
 						if (failedAssetMoveWasCutPaste_) {
 							assetsPanel_.FinishPaste();
 						}
@@ -7002,6 +7014,7 @@ void EditorScene::ShowError(std::string message, SceneObjectId objectId,
 	errorReplayCameraOverride_ = 0;
 	errorActionMessage_.clear();
 	failedAssetMoves_.clear();
+	assetMoveFailurePath_.clear();
 	failedAssetMoveWasCutPaste_ = false;
 	failedAssetCopy_ = {};
 	sceneSaveFailed_ = false;

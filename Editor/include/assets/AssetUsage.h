@@ -71,7 +71,8 @@ Paths CopyTo(std::span<const std::filesystem::path> sources,
 /// <summary>
 /// Assets内で素材を移動または改名し、保存済みと編集中の参照を更新する
 /// </summary>
+/// <param name="failurePath">移動を妨げた項目の場所。場所を特定できない場合は空</param>
 bool Relocate(const Moves &moves, const std::filesystem::path &assetRoot,
               SceneDocument &document, ProjectDocument &project,
-              std::string &error);
+              std::string &error, std::filesystem::path *failurePath = nullptr);
 } // namespace AssetUsage

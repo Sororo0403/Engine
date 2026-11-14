@@ -490,7 +490,7 @@ class EditorScene final : public IScene {
 	/// </summary>
 	bool RelocateAssets(
 	    const std::vector<std::pair<std::filesystem::path, std::filesystem::path>> &moves,
-	    std::string &error);
+	    std::string &error, std::filesystem::path *failurePath = nullptr);
 
 	/// <summary>
 	/// 素材を複製または貼り付けし、成功時に一覧を更新する
@@ -1123,6 +1123,7 @@ class EditorScene final : public IScene {
 	SceneObjectId errorReplayCameraOverride_ = 0;
 	std::string errorActionMessage_;
 	AssetUsage::Moves failedAssetMoves_;
+	std::filesystem::path assetMoveFailurePath_;
 	bool failedAssetMoveWasCutPaste_ = false;
 	AssetsPanel::MoveRequest failedAssetCopy_;
 	bool sceneSaveFailed_ = false;

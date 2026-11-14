@@ -794,7 +794,11 @@ AssetUsage::Moves AssetUsage::FindAvailableMoveDestinations(const Moves &moves,
 
 bool AssetUsage::Relocate(const Moves &moves, const fs::path &assetRoot,
                           SceneDocument &document, ProjectDocument &project,
-                          std::string &error) {
+                          std::string &error, fs::path *failurePath) {
+	if (failurePath) {
+		failurePath->clear();
+	}
+
 	std::vector<Edit> edits;
 	std::vector<MoveEntry> items;
 	std::size_t applied = 0, moved = 0;
@@ -848,6 +852,9 @@ bool AssetUsage::Relocate(const Moves &moves, const fs::path &assetRoot,
 			    std::ranges::any_of(items, [&](const auto &item) {
 				    return PathUtils::IsSameFile(item.to, to);
 			    })) {
+				if (failurePath) {
+					*failurePath = to;
+				}
 				throw std::runtime_error("A file or folder already uses that name: " +
 				                         PathUtils::ToUtf8(to));
 			}
@@ -979,6 +986,11 @@ bool AssetUsage::Relocate(const Moves &moves, const fs::path &assetRoot,
 		for (const auto &item : items) {
 			if (!MoveFileW(item.from.c_str(), item.to.c_str())) {
 				const auto code = GetLastError();
+				if (failurePath) {
+					*failurePath = code == ERROR_ALREADY_EXISTS || code == ERROR_FILE_EXISTS
+					                   ? item.to
+					                   : item.from;
+				}
 				throw std::runtime_error(std::format(
 				    "Could not move {} to {} (Windows error {}).",
 				    PathUtils::ToUtf8(item.from), PathUtils::ToUtf8(item.to), code));
