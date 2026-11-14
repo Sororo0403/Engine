@@ -5935,7 +5935,9 @@ void EditorScene::UpdateDialogs() {
 		if (result == FileDialogResult::ACCEPTED) {
 			std::string error;
 			if (!SetStartupScene(fileDialog_.GetSelectedPath(), error)) {
-				fileDialog_.RetrySelection(std::move(error));
+				// RetrySelectionは選択済みパスをクリアするため、案内先を先に退避する。
+				const auto failedScene = fileDialog_.GetSelectedPath();
+				fileDialog_.RetrySelection(std::move(error), failedScene);
 				return;
 			}
 			if (fromExport) {

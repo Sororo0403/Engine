@@ -403,6 +403,8 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 		if (!failedProject_.empty()) {
 			const char *label = filter_ == FileDialogFilter::GAME_EXPORT
 			                        ? "Show Previous Export Location"
+			                    : filter_ == FileDialogFilter::SCENE
+			                        ? "Show Failed Scene Location"
 			                        : "Show Failed Project Location";
 			if (ui.Button(label)) {
 				ShellUtils::RevealLocationInExplorer(failedProject_,

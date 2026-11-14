@@ -99,7 +99,7 @@ class FileDialog {
 	/// 選択したファイルやフォルダを使えなかったとき、同じ場所から選び直す
 	/// </summary>
 	/// <param name="error">選択画面に表示するエラー。選び直すだけなら空</param>
-	/// <param name="failedProject">開けなかったプロジェクトのフォルダ。空なら場所を表示しない</param>
+	/// <param name="failedProject">確認に失敗したファイルまたはフォルダ。空なら場所を表示しない</param>
 	void RetrySelection(std::string error,
 	                    const std::filesystem::path &failedProject = {});
 
