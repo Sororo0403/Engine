@@ -915,7 +915,6 @@ bool EditorScene::Update(float deltaTime) {
 			                      ? checkedRequest.destinationObjectId
 			                      : inspectorPanel_.GetSceneOpenObject();
 			const bool sameScene =
-			    (!checkedRequest.scenePath.empty() || !inspectorScene.empty()) &&
 			    !document_.GetFilePath().empty() &&
 			    PathUtils::IsSameFile(requestedScene, document_.GetFilePath());
 			if (!sameScene) {
@@ -5148,6 +5147,12 @@ void EditorScene::UpdateDialogs() {
 		}
 
 		if (result == FileDialogResult::ACCEPTED) {
+			const auto &current = document_.GetFilePath();
+			if (locatedScenePreviousPath_.empty() && !current.empty() &&
+			    PathUtils::IsSameFile(openSceneDialog_.GetSelectedPath(), current)) {
+				stage_ = DialogStage::IDLE;
+				return;
+			}
 			pendingAction_ = EditorAction::OPEN;
 			ConfirmSceneChanges();
 		}
