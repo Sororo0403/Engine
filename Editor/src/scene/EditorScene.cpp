@@ -5089,12 +5089,19 @@ void EditorScene::UpdateDialogs() {
 	}
 
 	case DialogStage::SAVE_COPY_FILE:
-	case DialogStage::SAVE_COPY_AND_RELOAD: {
-		const bool reload = stage_ == DialogStage::SAVE_COPY_AND_RELOAD;
+	case DialogStage::SAVE_COPY_AND_RELOAD:
+	case DialogStage::SAVE_CONFLICT_COPY_AND_RELOAD: {
+		const bool fromConflict = stage_ == DialogStage::SAVE_CONFLICT_COPY_AND_RELOAD;
+		const bool reload = stage_ != DialogStage::SAVE_COPY_FILE;
 		const auto result = fileDialog_.Draw(ui_);
 
 		if (result == FileDialogResult::CANCELLED) {
-			stage_ = DialogStage::IDLE;
+			if (fromConflict) {
+				errorOpenRequested_ = true;
+				stage_ = DialogStage::ERROR;
+			} else {
+				stage_ = DialogStage::IDLE;
+			}
 		} else if (result == FileDialogResult::ACCEPTED) {
 			if (document_.SaveCopy(fileDialog_.GetSelectedPath())) {
 				const auto &copy = fileDialog_.GetSelectedPath();
@@ -5103,6 +5110,7 @@ void EditorScene::UpdateDialogs() {
 				assets_.Refresh();
 				stage_ = DialogStage::IDLE;
 				if (reload) {
+					pendingAction_ = EditorAction::NONE;
 					ReloadAfterSavingCopy(copy);
 				}
 			} else {
@@ -5958,8 +5966,10 @@ void EditorScene::UpdateDialogs() {
 				if (ui_.Button("Save Copy and Reload...")) {
 					ui_.CloseCurrentPopup();
 					ui_.EndPopup();
-					pendingAction_ = EditorAction::NONE;
 					StartSaveCopy(true);
+					if (stage_ == DialogStage::SAVE_COPY_AND_RELOAD) {
+						stage_ = DialogStage::SAVE_CONFLICT_COPY_AND_RELOAD;
+					}
 					return;
 				}
 				ImGui::SetItemTooltip(
