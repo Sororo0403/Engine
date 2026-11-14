@@ -5323,7 +5323,8 @@ void EditorScene::UpdateDialogs() {
 			const auto startup = project_.GetStartupScene();
 			SaveEditorSession();
 			if (document_.SaveAs(fileDialog_.GetSelectedPath(),
-			                     !retryingSave && !previousPath.empty())) {
+			                     !retryingSave && !previousPath.empty() &&
+			                         fileDialog_.IsOverwriteConfirmed())) {
 				if (!failedRestoredScene_.empty() &&
 				    project_.CanUseAsStartupScene(document_.GetFilePath())) {
 					failedRestoredScene_.clear();
@@ -5413,7 +5414,8 @@ void EditorScene::UpdateDialogs() {
 			stage_ = DialogStage::IDLE;
 		} else if (result == FileDialogResult::ACCEPTED) {
 			if (document_.SaveCopy(fileDialog_.GetSelectedPath(),
-			                       selectionSnapshot_, !recoverySourceFile_)) {
+			                       selectionSnapshot_, !recoverySourceFile_ &&
+			                                               fileDialog_.IsOverwriteConfirmed())) {
 				assets_.Refresh();
 				assetsPanel_.RequestReveal(fileDialog_.GetSelectedPath());
 				selectionSnapshot_.Clear();
@@ -5448,7 +5450,8 @@ void EditorScene::UpdateDialogs() {
 			}
 		} else if (result == FileDialogResult::ACCEPTED) {
 			if (document_.SaveCopy(fileDialog_.GetSelectedPath(),
-			                       !fromSaveError && !reload && !recoverySourceFile_)) {
+			                       !fromSaveError && !reload && !recoverySourceFile_ &&
+			                           fileDialog_.IsOverwriteConfirmed())) {
 				const auto &copy = fileDialog_.GetSelectedPath();
 				recentScenes_.Add(copy);
 				SaveEditorSession(false, copy);

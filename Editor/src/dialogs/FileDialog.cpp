@@ -70,6 +70,7 @@ void FileDialog::Show(FileDialogMode mode,
 	search_.clear();
 	destinationExists_ = false;
 	requireNewFile_ = false;
+	overwriteConfirmed_ = false;
 	openRequested_ = true;
 
 	try {
@@ -138,6 +139,7 @@ void FileDialog::RetrySelection(std::string error,
 	failedProject_ = std::move(failedLocation);
 	failedProjectLocationError_.clear();
 	destinationExists_ = false;
+	overwriteConfirmed_ = false;
 	openRequested_ = true;
 }
 
@@ -175,6 +177,7 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 
 		if (!requireNewFile_) {
 			if (ui.Button("Overwrite")) {
+				overwriteConfirmed_ = true;
 				result = FileDialogResult::ACCEPTED;
 			}
 			ui.SameLine();
@@ -673,6 +676,7 @@ std::filesystem::path FileDialog::ReadFilePath() const {
 }
 
 bool FileDialog::AcceptSelection() {
+	overwriteConfirmed_ = false;
 	const bool choosingScene = mode_ != FileDialogMode::SELECT_DIRECTORY && filter_ == FileDialogFilter::SCENE;
 	if (choosingScene) {
 		failedProject_.clear();

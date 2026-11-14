@@ -127,6 +127,11 @@ class FileDialog {
 	const std::filesystem::path &GetSelectedPath() const;
 
 	/// <summary>
+	/// 選択した保存先の上書きを確認したかを返す
+	/// </summary>
+	bool IsOverwriteConfirmed() const { return overwriteConfirmed_; }
+
+	/// <summary>
 	/// 配布版に必要なフォルダとファイルを確認し、開けない理由を返す
 	/// </summary>
 	static std::string_view GameExportOpenProblem(const std::filesystem::path &directory);
@@ -205,6 +210,7 @@ class FileDialog {
 	bool openRequested_ = false;
 	bool destinationExists_ = false;
 	bool requireNewFile_ = false;
+	bool overwriteConfirmed_ = false;
 	bool searchProjectScenes_ = false;
 	bool projectSceneRefreshRequested_ = false;
 	std::optional<bool> projectSearchChange_;
