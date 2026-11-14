@@ -5047,6 +5047,22 @@ void EditorScene::UpdateDialogs() {
 				SaveEditorSession();
 				ClearRecovery();
 				assets_.Refresh();
+				const bool continuingExport =
+				    pendingAction_ == EditorAction::WRITE_GAME_EXPORT ||
+				    pendingAction_ == EditorAction::SAVE_AND_CHECK_EXPORT;
+				if (continuingExport && !startup.empty() &&
+				    !PathUtils::IsSameFile(startup, document_.GetFilePath()) &&
+				    (previousPath.empty() ||
+				     !PathUtils::IsSameFile(previousPath, document_.GetFilePath()))) {
+					pendingAction_ = EditorAction::NONE;
+					CheckGameExport(true);
+					exportDialog_.Reopen(std::format(
+					    "Saved a separate scene to {}. Export still starts from {} "
+					    "and follows the saved scene links. Review the check before exporting.",
+					    PathUtils::ToUtf8(document_.GetFilePath()), PathUtils::ToUtf8(startup)));
+					stage_ = DialogStage::EXPORT_GAME;
+					return;
+				}
 				ExecutePendingAction();
 			} else {
 				fileDialog_.RetrySelection(
