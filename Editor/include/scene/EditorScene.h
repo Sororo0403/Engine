@@ -515,6 +515,12 @@ class EditorScene final : public IScene {
 	               bool allowCameraFallback = false);
 
 	/// <summary>
+	/// 試遊を再実行し、失敗したときは同じ操作を再試行できるようにする
+	/// </summary>
+	/// <param name="currentScene">遷移先のシーンから再実行するか</param>
+	void RestartPlay(bool currentScene);
+
+	/// <summary>
 	/// 再生を停止し、編集中のシーンと対応する場合はエラーの物体を表示できるようにする
 	/// </summary>
 	void ReportPlayUpdateFailure(SceneObjectId invalidObject,
@@ -1107,6 +1113,7 @@ class EditorScene final : public IScene {
 	std::filesystem::path errorReloadAssetPath_;
 	bool errorReloadIsTexture_ = false;
 	std::optional<std::filesystem::path> errorReplayPath_;
+	std::optional<bool> errorRestartCurrentScene_;
 	std::uint64_t errorPlayLogId_ = 0;
 	SceneObjectId errorReplayCameraOverride_ = 0;
 	std::string errorActionMessage_;
