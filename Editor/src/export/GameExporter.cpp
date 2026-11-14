@@ -826,13 +826,27 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 				                     std::format("Scene{}.scene.json", i));
 		}
 
-		for (const auto &source : assets.Sources()) {
-			if (!destination.empty() && IsInside(source.directory, destination)) {
+		if (!destination.empty()) {
+			const auto reportOverlap = [&](const fs::path &source) {
+				if (!IsInside(source, destination)) {
+					return false;
+				}
 				appendIssue(
 				    "Output must be outside all resource and asset folders: " +
-				        PathUtils::ToUtf8(source.directory),
-				    {}, 0, {}, {}, destination);
-				break;
+				        PathUtils::ToUtf8(source),
+				    {}, 0, {}, {}, destination, GameExportField::OUTPUT_FOLDER);
+				return true;
+			};
+			if (std::ranges::none_of(assets.Sources(), [&](const auto &source) {
+				    return reportOverlap(source.directory);
+			    }) && !runtimeRoot.empty()) {
+				for (const auto *relative : {L"resources/engine", L"licenses"}) {
+					std::error_code status;
+					const auto source = fs::canonical(runtimeRoot / relative, status);
+					if (!status && reportOverlap(source)) {
+						break;
+					}
+				}
 			}
 		}
 
