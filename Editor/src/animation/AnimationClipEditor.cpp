@@ -27,8 +27,12 @@ void AnimationClipEditor::DrawKeys(const ImGuiSystem &ui, const Scene *scene,
 		return key.seconds > timeline.duration;
 	};
 	std::size_t outsideCount = 0;
+	std::size_t tracksWithDuplicateTimes = 0;
 	float lastKeyTime = timeline.duration;
 	for (const auto &track : timeline.tracks) {
+		if (std::ranges::adjacent_find(track.keys, {}, &AnimationClipKey::seconds) != track.keys.end()) {
+			++tracksWithDuplicateTimes;
+		}
 		for (const auto &key : track.keys) {
 			if (pastEnd(key)) {
 				++outsideCount;
@@ -43,6 +47,10 @@ void AnimationClipEditor::DrawKeys(const ImGuiSystem &ui, const Scene *scene,
 			timeline.duration = lastKeyTime;
 		}
 	}
+	if (tracksWithDuplicateTimes != 0) {
+		ImGui::TextWrapped("%zu track(s) have keys with the same time. Set a distinct time for each key in a track.",
+		                   tracksWithDuplicateTimes);
+	}
 	playhead = std::clamp(playhead, 0.f, timeline.duration);
 	ImGui::SliderFloat("Playhead", &playhead, 0.f, timeline.duration, "%.3f s");
 
@@ -56,6 +64,9 @@ void AnimationClipEditor::DrawKeys(const ImGuiSystem &ui, const Scene *scene,
 		                               : std::format("Binding {}", track.target));
 		if (const auto count = std::ranges::count_if(track.keys, pastEnd); count != 0) {
 			title += std::format("  ({} past end)", count);
+		}
+		if (std::ranges::adjacent_find(track.keys, {}, &AnimationClipKey::seconds) != track.keys.end()) {
+			title += "  (duplicate key times)";
 		}
 		if (ImGui::TreeNodeEx("Track", ImGuiTreeNodeFlags_DefaultOpen, "%s",
 		                     title.c_str())) {
@@ -146,6 +157,9 @@ void AnimationClipEditor::DrawKeys(const ImGuiSystem &ui, const Scene *scene,
 				                 "%.3f", ImGuiSliderFlags_AlwaysClamp);
 				if (pastEnd(key)) {
 					ImGui::SetItemTooltip("This key is past the clip end (%.3f s).", timeline.duration);
+				} else if ((k > 0 && track.keys[k - 1].seconds == key.seconds) ||
+				           (k + 1 < track.keys.size() && track.keys[k + 1].seconds == key.seconds)) {
+					ImGui::SetItemTooltip("Another key on this track has the same time (%.3f s).", key.seconds);
 				}
 				ImGui::SameLine();
 				ImGui::SetNextItemWidth(160);
