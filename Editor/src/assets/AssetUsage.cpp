@@ -1,5 +1,6 @@
 #include "assets/AssetUsage.h"
 
+#include "animation/AnimationClipAsset.h"
 #include "assets/AssetDependencies.h"
 #include "files/OutputDirectory.h"
 #include "platform/windows/FileUtils.h"
@@ -211,7 +212,8 @@ std::vector<AssetUsage::Reference> Scan(
 	const auto scheduleReference = [&](const fs::path &path) {
 		if (PrefabSerializer::IsPrefabPath(path)) {
 			schedule(path, Source::PREFAB);
-		} else if (PathUtils::HasExtension(path, ".json")) {
+		} else if (PathUtils::HasExtension(path, ".json") &&
+		           !AnimationClipAsset::IsPath(path)) {
 			schedule(path, Source::SCENE);
 		} else if (PathUtils::IsModelFile(path)) {
 			schedule(path, Source::MODEL);
