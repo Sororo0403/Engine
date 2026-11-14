@@ -36,9 +36,9 @@ class ScriptEditorDialog {
 	/// 作成・編集ダイアログを表示する。構文エラーと外部変更時は元ファイルを保持する
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
-	/// <param name="canPlayAfterSave">保存後に試遊を開始できるか</param>
+	/// <param name="playScene">保存後の試遊先。空パスは編集中のシーン、nullptrは試遊なし</param>
 	/// <returns>確定した操作。表示中はNONE</returns>
-	Result Draw(const ImGuiSystem &ui, bool canPlayAfterSave = false);
+	Result Draw(const ImGuiSystem &ui, const std::filesystem::path *playScene = nullptr);
 
 	/// <summary>
 	/// 保存完了したファイルを取得する

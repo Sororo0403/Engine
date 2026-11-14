@@ -153,7 +153,7 @@ void ScriptEditorDialog::ReloadFromDisk() {
 }
 
 ScriptEditorDialog::Result ScriptEditorDialog::Draw(const ImGuiSystem &ui,
-                                                    bool canPlayAfterSave) {
+                                                    const std::filesystem::path *playScene) {
 	constexpr const char *title = "Lua Script###ScriptEditorDialog";
 
 	if (opening_) {
@@ -203,6 +203,11 @@ ScriptEditorDialog::Result ScriptEditorDialog::Draw(const ImGuiSystem &ui,
 		ui.InputText("Script Name", name_);
 	} else
 		ui.Text(PathUtils::ToUtf8(path_));
+	if (playScene) {
+		const auto scene = playScene->empty() ? "Current editing scene"
+		                                      : PathUtils::ToUtf8(*playScene);
+		ImGui::TextWrapped("Save and Play starts in: %s", scene.c_str());
+	}
 	ImGui::SetNextItemWidth(105.0f);
 	const bool jumpSubmitted = ImGui::InputInt(
 	    "Line", &targetLine_, 0, 0, ImGuiInputTextFlags_EnterReturnsTrue);
@@ -251,7 +256,7 @@ ScriptEditorDialog::Result ScriptEditorDialog::Draw(const ImGuiSystem &ui,
 	ui.SameLine();
 	const bool save = ui.Button("Save Script");
 	bool saveAndPlay = false;
-	if (canPlayAfterSave && !saveConflict_) {
+	if (playScene && !saveConflict_) {
 		ui.SameLine();
 		saveAndPlay = ui.Button("Save and Play");
 	}

@@ -5291,8 +5291,8 @@ void EditorScene::UpdateDialogs() {
 	case DialogStage::EDIT_EXPORT_SCRIPT: {
 		const bool fromExport = stage_ == DialogStage::EDIT_EXPORT_SCRIPT;
 		const bool fromSceneCheck = stage_ == DialogStage::EDIT_SCENE_CHECK_SCRIPT;
-		const auto result =
-		    scriptEditorDialog_.Draw(ui_, stage_ == DialogStage::EDIT_PLAY_SCRIPT);
+		const auto *playScene = stage_ == DialogStage::EDIT_PLAY_SCRIPT ? &scriptReplayPath_ : nullptr;
+		const auto result = scriptEditorDialog_.Draw(ui_, playScene);
 
 		if (fromExport && result != ScriptEditorDialog::Result::NONE) {
 			std::string error;
