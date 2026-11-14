@@ -165,7 +165,7 @@ std::optional<AssetsPanel::ResultView> AssetsPanel::CaptureResults(bool includeF
 }
 
 void AssetsPanel::RemoveMissingPaths() {
-	for (auto *paths : {&resultPaths_, &displayedResults_, &selectedItems_}) {
+	for (auto *paths : {&displayedResults_, &selectedItems_}) {
 		std::erase_if(*paths, IsMissingAsset);
 	}
 	if (IsMissingAsset(selectedPath_)) {
@@ -455,6 +455,13 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	}
 
 	const auto &directories = assets.GetDirectories();
+	if (!resultPaths_.empty() && assets.GetError().empty()) {
+		std::erase_if(resultPaths_, IsMissingAsset);
+		if (resultPaths_.empty()) {
+			revealMessage_ = "The files from the last operation are no longer available.";
+			unavailableRevealPath_.clear();
+		}
+	}
 	if (!resultPaths_.empty() && assets.GetError().empty()) {
 		const auto parent = resultPaths_.front().parent_path();
 		const auto directory = parent == assets.GetRootDirectory()
