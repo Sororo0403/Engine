@@ -5197,6 +5197,9 @@ bool EditorScene::RelocateAssets(const AssetUsage::Moves &moves,
 	exportDialog_.FollowMovedScene(project_.GetRoot(), moves);
 	exportResultDialog_.OnAssetsMoved(moves);
 	failedRestoredScene_ = PathUtils::AfterMove(failedRestoredScene_, moves);
+	if (recoverySourceFile_) {
+		*recoverySourceFile_ = PathUtils::AfterMove(*recoverySourceFile_, moves);
+	}
 	lastPlayScenePath_ = PathUtils::AfterMove(lastPlayScenePath_, moves);
 	if (playFailureReplay_) {
 		playFailureReplay_->path = PathUtils::AfterMove(playFailureReplay_->path, moves);
