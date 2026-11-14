@@ -870,9 +870,9 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 		if (folderResult == FileDialogResult::CANCELLED) {
 			browsing_ = false;
 		} else if (folderResult == FileDialogResult::ACCEPTED) {
+			const auto candidate =
+			    folderDialog_.GetSelectedPath() / browseOutputName_;
 			try {
-				const auto candidate =
-				    folderDialog_.GetSelectedPath() / browseOutputName_;
 				auto output = PathUtils::ToUtf8(FindAvailableDestination(candidate));
 				if (output != output_) {
 					checkResultStale_ = !checkResult_.empty();
@@ -881,6 +881,12 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 				error_.clear();
 				browsing_ = false;
 				checkRequested |= recheckAfterBrowse_;
+			} catch (const std::invalid_argument &e) {
+				output_ = PathUtils::ToUtf8(candidate);
+				checkResultStale_ = !checkResult_.empty();
+				error_ = e.what();
+				focusField_ = GameExportField::OUTPUT_FOLDER;
+				browsing_ = false;
 			} catch (const std::exception &e) {
 				folderDialog_.RetrySelection(e.what());
 			}
