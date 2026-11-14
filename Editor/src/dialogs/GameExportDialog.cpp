@@ -438,6 +438,10 @@ void GameExportDialog::PreserveDraft() {
 	resumeDraft_ = true;
 }
 
+void GameExportDialog::CompleteExport() {
+	resumeDraft_ = false;
+}
+
 bool GameExportDialog::SuggestOutputName() {
 	try {
 		const auto output = ReadDestination(output_);
@@ -920,7 +924,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 	    result == GameExportResult::OPEN_TRANSITION_SOURCE ||
 	    result == GameExportResult::REVEAL_ISSUE_ASSET ||
 	    navigatingIssue) {
-		resumeDraft_ = keepDraft || navigatingIssue;
+		resumeDraft_ = keepDraft || navigatingIssue || result == GameExportResult::ACCEPTED;
 		ui.CloseCurrentPopup();
 	}
 

@@ -3560,6 +3560,7 @@ void EditorScene::WriteGameExport() {
 		exportConfig_ = options.config;
 	}
 	preferences_.RememberGameExport(project_.GetRoot(), directory);
+	exportDialog_.CompleteExport();
 	preferences_.gameExportDrafts.erase(project_.GetRoot());
 	if (canSavePreferences_) {
 		preferences_.Save();

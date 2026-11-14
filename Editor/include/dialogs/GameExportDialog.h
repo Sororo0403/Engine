@@ -127,6 +127,11 @@ class GameExportDialog {
 	void PreserveDraft();
 
 	/// <summary>
+	/// 配布が成功したため、次回は今回の下書きを再開しない
+	/// </summary>
+	void CompleteExport();
+
+	/// <summary>
 	/// 確定した出力設定を取得する
 	/// </summary>
 	/// <returns>CHECKまたはACCEPTED後に使用する設定</returns>
