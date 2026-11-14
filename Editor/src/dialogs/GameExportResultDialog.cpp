@@ -199,10 +199,17 @@ void GameExportResultDialog::Show(std::filesystem::path directory,
 }
 
 void GameExportResultDialog::SetSceneSources(const std::filesystem::path &projectRoot,
-                                             std::vector<GameExporter::SceneSource> sources) {
+                                             std::vector<GameExporter::SceneSource> sources,
+                                             std::string packageId) {
 	auto &run = runs_.at(directory_);
+	if (run.sourcePackageId != packageId) {
+		run.launchFailurePath.clear();
+		run.destinationFailurePath.clear();
+		run.startupScenePath.clear();
+	}
 	run.sourceProjectRoot = projectRoot;
 	run.sceneSources = std::move(sources);
+	run.sourcePackageId = std::move(packageId);
 }
 
 void GameExportResultDialog::OnAssetsMoved(
@@ -520,6 +527,7 @@ void GameExportResultDialog::OpenLogAtOffset(std::uintmax_t offset) {
 
 bool GameExportResultDialog::StartGame() {
 	auto &run = runs_.at(directory_);
+	run.launchedPackageId = GameExporter::ReadPackageId(directory_);
 	GameConfig config;
 	ReloadGameSettings(config);
 	auto launchError = packageSettingsError_;
@@ -702,7 +710,8 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 	requestedSourceScene_.clear();
 	const auto &failedScene = run.destinationFailurePath.empty()
 	                              ? run.launchFailurePath : run.destinationFailurePath;
-	if (!failedScene.empty() && run.sourceProjectRoot == projectRoot && !run.sceneSources.empty()) {
+	if (!failedScene.empty() && run.sourceProjectRoot == projectRoot && !run.sceneSources.empty() &&
+	    run.launchedPackageId == run.sourcePackageId) {
 		std::error_code status;
 		const auto root = std::filesystem::canonical(directory_, status);
 		auto path = std::filesystem::weakly_canonical(failedScene, status);
@@ -716,7 +725,11 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 					continue;
 				}
 				if (ui.Button("Open Source Scene")) {
-					requestedSourceScene_ = sourcePath;
+					if (GameExporter::ReadPackageId(directory_) == run.sourcePackageId) {
+						requestedSourceScene_ = sourcePath;
+					} else {
+						error_ = "The export has changed. Reopen the export to find its source scenes.";
+					}
 				}
 				ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(sourcePath).c_str());
 				break;

@@ -33,7 +33,8 @@ class GameExportResultDialog {
 	/// 今回の出力と編集元シーンの対応を、Editorのセッション内で保持する
 	/// </summary>
 	void SetSceneSources(const std::filesystem::path &projectRoot,
-	                     std::vector<GameExporter::SceneSource> sources);
+	                     std::vector<GameExporter::SceneSource> sources,
+	                     std::string packageId = {});
 
 	/// <summary>
 	/// 素材の移動後に、元のシーンを開くためのパスを更新する
@@ -94,6 +95,8 @@ class GameExportResultDialog {
 		std::filesystem::path destinationFailurePath;
 		std::filesystem::path sourceProjectRoot;
 		std::vector<GameExporter::SceneSource> sceneSources;
+		std::string sourcePackageId;
+		std::string launchedPackageId;
 		std::optional<std::uintmax_t> logStart;
 		std::vector<std::uintmax_t> earlierLogPages;
 		std::optional<LogPosition> beforeErrorJump;

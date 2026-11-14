@@ -3583,15 +3583,16 @@ void EditorScene::WriteGameExport() {
 		exportConfig_ = options.config;
 	}
 	preferences_.RememberGameExport(project_.GetRoot(), directory);
+	const auto packageId = GameExporter::ReadPackageId(directory);
 	preferences_.RememberExportSceneSources(project_.GetRoot(), directory, sceneSources,
-	                                       GameExporter::ReadPackageId(directory));
+	                                       packageId);
 	exportDialog_.CompleteExport();
 	preferences_.gameExportDrafts.erase(project_.GetRoot());
 	if (canSavePreferences_) {
 		preferences_.Save();
 	}
 	exportResultDialog_.Show(directory);
-	exportResultDialog_.SetSceneSources(project_.GetRoot(), std::move(sceneSources));
+	exportResultDialog_.SetSceneSources(project_.GetRoot(), std::move(sceneSources), packageId);
 	returnToExportResult_ = false;
 	stage_ = DialogStage::EXPORT_RESULT;
 }
@@ -3737,7 +3738,7 @@ bool EditorScene::OpenGameExport(std::filesystem::path directory) {
 		preferences_.Save();
 	}
 	exportResultDialog_.Show(std::move(directory), true);
-	exportResultDialog_.SetSceneSources(root, std::move(sceneSources));
+	exportResultDialog_.SetSceneSources(root, std::move(sceneSources), packageId);
 	stage_ = DialogStage::EXPORT_RESULT;
 	return true;
 }
