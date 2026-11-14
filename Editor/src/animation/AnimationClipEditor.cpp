@@ -13,8 +13,8 @@
 /// <summary>
 /// タイムラインの時刻、対象、キーフレームを一時データ上で編集する
 /// </summary>
-void AnimationClipEditor::DrawKeys(const Scene *scene, AnimationClipComponent &timeline,
-                        float &playhead) {
+void AnimationClipEditor::DrawKeys(const ImGuiSystem &ui, const Scene *scene,
+                                   AnimationClipComponent &timeline, float &playhead) {
 	if (scene) {
 		ImGui::Checkbox("Play on Start", &timeline.playOnStart);
 		ImGui::SameLine();
@@ -27,12 +27,21 @@ void AnimationClipEditor::DrawKeys(const Scene *scene, AnimationClipComponent &t
 		return key.seconds > timeline.duration;
 	};
 	std::size_t outsideCount = 0;
+	float lastKeyTime = timeline.duration;
 	for (const auto &track : timeline.tracks) {
-		outsideCount += static_cast<std::size_t>(std::ranges::count_if(track.keys, pastEnd));
+		for (const auto &key : track.keys) {
+			if (pastEnd(key)) {
+				++outsideCount;
+				lastKeyTime = (std::max)(lastKeyTime, key.seconds);
+			}
+		}
 	}
 	if (outsideCount != 0) {
-		ImGui::TextWrapped("%zu key(s) are past the clip end. Move or remove them, or extend the duration.",
-		                   outsideCount);
+		ImGui::TextWrapped("%zu key(s) are past the clip end.", outsideCount);
+		if (lastKeyTime <= AnimationClipComponent::kMaximumSeconds &&
+		    ui.Button("Extend Duration to Last Key")) {
+			timeline.duration = lastKeyTime;
+		}
 	}
 	playhead = std::clamp(playhead, 0.f, timeline.duration);
 	ImGui::SliderFloat("Playhead", &playhead, 0.f, timeline.duration, "%.3f s");
@@ -293,7 +302,7 @@ AnimationClipEditor::Result AnimationClipEditor::Draw(const ImGuiSystem &ui) {
 
 	const float footerRows = markerTimes_.empty() ? 3.f : 5.f;
 	ImGui::BeginChild("Clip Tracks", {0, -ImGui::GetFrameHeightWithSpacing() * footerRows});
-	DrawKeys(nullptr, clip_, playhead_);
+	DrawKeys(ui, nullptr, clip_, playhead_);
 	ImGui::EndChild();
 	const auto affectedMarkers = std::ranges::count_if(markerTimes_, [&](float time) {
 		return time > clip_.duration && time <= original_.duration;

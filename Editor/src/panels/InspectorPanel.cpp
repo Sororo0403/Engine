@@ -727,7 +727,7 @@ bool InspectorPanel::Draw(
 		if (ImGui::BeginPopupModal("Animation Clip", nullptr,
 		                           ImGuiWindowFlags_NoSavedSettings)) {
 			ImGui::BeginChild("Timeline Tracks", {0, -ImGui::GetFrameHeightWithSpacing() * 2});
-			AnimationClipEditor::DrawKeys(&scene, animationClipDraft_, animationClipPlayhead_);
+			AnimationClipEditor::DrawKeys(ui, &scene, animationClipDraft_, animationClipPlayhead_);
 			ImGui::EndChild();
 			const bool valid = animationClipDraft_.IsValid();
 			if (!valid)

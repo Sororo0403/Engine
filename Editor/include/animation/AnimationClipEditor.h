@@ -23,7 +23,7 @@ class AnimationClipEditor {
 	/// <summary>
 	/// シーン内の旧クリップまたは、割り当て枠を使うアセットのキーを編集する
 	/// </summary>
-	static void DrawKeys(const Scene *scene, AnimationClipComponent &clip,
+	static void DrawKeys(const ImGuiSystem &ui, const Scene *scene, AnimationClipComponent &clip,
 	                     float &playhead);
 
   private:
