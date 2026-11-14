@@ -175,8 +175,17 @@ bool RuntimeScene::Update(float seconds) {
 		simulation_.CancelUIInput();
 	std::string audioError;
 	const bool sceneChanged = simulation_.GetSceneRevision() != revision;
+	const auto *destination = sceneChanged ? simulation_.GetLoadedScenePath() : nullptr;
+	const auto reportUpdateError = [&](std::string_view reason) {
+		if (destination) {
+			Logger::Error(std::string(reason) + "\nDestination scene: " +
+			              PathUtils::ToUtf8(*destination), *destination);
+		} else {
+			Logger::Error(reason);
+		}
+	};
 	if (sceneChanged && !renderer_.PrepareSceneModels(audioError)) {
-		Logger::Error(audioError);
+		reportUpdateError(audioError);
 		return false;
 	}
 	const bool audioReady =
@@ -190,7 +199,7 @@ bool RuntimeScene::Update(float seconds) {
 	              !input_.IsActive() || simulation_.IsGamePaused(), audioError,
 	              nullptr, simulation_.GetAudioActions());
 	if (!audioReady) {
-		Logger::Error(audioError);
+		reportUpdateError(audioError);
 		return false;
 	}
 
@@ -212,9 +221,11 @@ bool RuntimeScene::Update(float seconds) {
 	       renderer_.SetCameraPose(simulation_.GetCameraPose()) &&
 	       renderer_.SetCameraSettings(simulation_.GetCameraSettings()) &&
 	       renderer_.Update();
-	if (renderReady && sceneChanged) {
-		if (const auto *destination = simulation_.GetLoadedScenePath()) {
+	if (destination) {
+		if (renderReady) {
 			Logger::Info("Destination scene ready: " + PathUtils::ToUtf8(*destination), *destination);
+		} else {
+			reportUpdateError("Could not prepare the destination scene for rendering.");
 		}
 	}
 	return renderReady;
