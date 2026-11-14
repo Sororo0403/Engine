@@ -39,7 +39,8 @@ std::optional<std::size_t> HistoryPanel::Draw(const ImGuiSystem &ui,
 	}
 
 	std::optional<std::size_t> requested;
-	bool savedFound = false;
+	std::optional<std::size_t> savedIndex;
+	bool savedIsCurrent = false;
 	bool afterCurrent = false;
 	ImGui::BeginDisabled(!enabled || history.IsEditing());
 	const bool drawStates = ImGui::BeginChild(
@@ -54,7 +55,10 @@ std::optional<std::size_t> HistoryPanel::Draw(const ImGuiSystem &ui,
 				continue;
 			}
 
-			savedFound |= state->saved;
+			if (state->saved) {
+				savedIndex = i;
+				savedIsCurrent = state->current;
+			}
 
 			if (afterCurrent) {
 				ImGui::PushStyleColor(
@@ -98,7 +102,14 @@ std::optional<std::size_t> HistoryPanel::Draw(const ImGuiSystem &ui,
 	ImGui::EndChild();
 	ImGui::EndDisabled();
 
-	if (drawStates && !savedFound) {
+	if (savedIndex) {
+		ui.BeginDisabled(!enabled || history.IsEditing() || savedIsCurrent);
+		if (ui.Button("Go to Saved State")) {
+			requested = savedIndex;
+		}
+		ui.EndDisabled();
+		ImGui::SetItemTooltip("Undo or redo to the last saved state.");
+	} else if (drawStates) {
 		ImGui::TextDisabled("The saved state is outside this history.");
 	}
 
