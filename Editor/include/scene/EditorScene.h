@@ -308,6 +308,7 @@ class EditorScene final : public IScene {
 		GAME_SETTINGS,
 		SCENE_SETTINGS,
 		CONFIRM_RELOAD,
+		CONFIRM_CONFLICT_RELOAD,
 		BATCH_RENAME,
 		OBJECT_ARRAY,
 		BOX_CREATION,
@@ -537,7 +538,7 @@ class EditorScene final : public IScene {
 	/// <summary>
 	/// 現在の保存先と保存地点を保持するコピーの保存先選択を開始する
 	/// </summary>
-	void StartSaveCopy(bool reload = false);
+	void StartSaveCopy(bool reload = false, bool fromConflict = false);
 
 	/// <summary>
 	/// 保存済みのシーンを読み直し、失敗時は編集内容を保持して再試行できるようにする

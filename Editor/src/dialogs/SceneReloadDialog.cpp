@@ -5,9 +5,10 @@
 #include <imgui.h>
 #include <utility>
 
-void SceneReloadDialog::Show(std::string name, bool modified) {
+void SceneReloadDialog::Show(std::string name, bool modified, bool continuePending) {
 	name_ = std::move(name);
 	modified_ = modified;
+	continuePending_ = continuePending;
 	openRequested_ = true;
 }
 
@@ -38,13 +39,18 @@ SceneReloadResult SceneReloadDialog::Draw(const ImGuiSystem &ui) {
 
 	if (modified_) {
 		ImGui::TextWrapped("This scene has unsaved edits.");
-		if (ui.Button("Save Copy and Reload...")) {
+		if (ui.Button(continuePending_ ? "Save Copy, Reload and Continue..."
+		                               : "Save Copy and Reload...")) {
 			result = SceneReloadResult::SAVE_COPY_AND_RELOAD;
 		}
 		ui.SameLine();
 	}
 
-	if (ui.Button(modified_ ? "Discard Edits and Reload" : "Reload Scene")) {
+	const auto reloadLabel = modified_
+	                             ? (continuePending_ ? "Discard Edits, Reload and Continue"
+	                                                 : "Discard Edits and Reload")
+	                             : (continuePending_ ? "Reload and Continue" : "Reload Scene");
+	if (ui.Button(reloadLabel)) {
 		result = SceneReloadResult::RELOAD;
 	}
 

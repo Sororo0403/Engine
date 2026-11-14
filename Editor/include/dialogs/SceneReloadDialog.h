@@ -24,7 +24,8 @@ class SceneReloadDialog {
 	/// </summary>
 	/// <param name="name">現在のシーンファイルの表示名</param>
 	/// <param name="modified">未保存の編集があるか</param>
-	void Show(std::string name, bool modified);
+	/// <param name="continuePending">読み直したあとに保留中の操作を続けるか</param>
+	void Show(std::string name, bool modified, bool continuePending = false);
 
 	/// <summary>
 	/// 再読み込みの確認を描画する。Escはキャンセルとして扱う
@@ -36,5 +37,6 @@ class SceneReloadDialog {
   private:
 	std::string name_;
 	bool modified_ = false;
+	bool continuePending_ = false;
 	bool openRequested_ = false;
 };

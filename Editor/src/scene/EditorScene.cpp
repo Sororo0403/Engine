@@ -4298,19 +4298,26 @@ std::filesystem::path EditorScene::GetSceneCopyPath() const {
 	}
 }
 
-void EditorScene::StartSaveCopy(bool reload) {
+void EditorScene::StartSaveCopy(bool reload, bool fromConflict) {
 	try {
 		fileDialog_.Show(FileDialogMode::SAVE_COPY, GetSceneCopyPath());
 		if (reload || recoverySourceFile_) {
 			fileDialog_.RequireNewFile();
 		}
-		stage_ = reload ? DialogStage::SAVE_COPY_AND_RELOAD
-		                : DialogStage::SAVE_COPY_FILE;
+		stage_ = fromConflict ? DialogStage::SAVE_CONFLICT_COPY_AND_RELOAD
+		         : reload     ? DialogStage::SAVE_COPY_AND_RELOAD
+		                      : DialogStage::SAVE_COPY_FILE;
 	} catch (const std::exception &error) {
 		Logger::Error(
 		    std::format("EditorScene::StartSaveCopy: {}", error.what()));
-		ShowError(
-		    "Could not select a copy destination. See the log for details.");
+		if (fromConflict) {
+			errorActionMessage_ = error.what();
+			errorOpenRequested_ = true;
+			stage_ = DialogStage::ERROR;
+		} else {
+			ShowError(
+			    "Could not select a copy destination. See the log for details.");
+		}
 	}
 }
 
@@ -5306,15 +5313,18 @@ void EditorScene::UpdateDialogs() {
 		return;
 	}
 
-	case DialogStage::CONFIRM_RELOAD: {
+	case DialogStage::CONFIRM_RELOAD:
+	case DialogStage::CONFIRM_CONFLICT_RELOAD: {
+		const bool fromConflict = stage_ == DialogStage::CONFIRM_CONFLICT_RELOAD;
 		const auto result = sceneReloadDialog_.Draw(ui_);
 
 		if (result == SceneReloadResult::CANCELLED) {
-			stage_ = DialogStage::IDLE;
+			errorOpenRequested_ = fromConflict;
+			stage_ = fromConflict ? DialogStage::ERROR : DialogStage::IDLE;
 		} else if (result == SceneReloadResult::RELOAD) {
 			ReloadScene();
 		} else if (result == SceneReloadResult::SAVE_COPY_AND_RELOAD) {
-			StartSaveCopy(true);
+			StartSaveCopy(true, fromConflict);
 		}
 
 		return;
@@ -6279,16 +6289,12 @@ void EditorScene::UpdateDialogs() {
 				                   : "Save Copy, Reload and Continue...")) {
 					ui_.CloseCurrentPopup();
 					ui_.EndPopup();
-					StartSaveCopy(true);
-					if (stage_ == DialogStage::SAVE_COPY_AND_RELOAD) {
-						stage_ = DialogStage::SAVE_CONFLICT_COPY_AND_RELOAD;
-					}
+					StartSaveCopy(true, true);
 					return;
 				}
 				ImGui::SetItemTooltip(
 				    "Save your edits to a separate scene, then reload the original.");
 				ui_.SameLine();
-				EditorAction action = EditorAction::NONE;
 				if (ui_.Button("Save Copy...")) {
 					try {
 						fileDialog_.Show(FileDialogMode::SAVE_COPY, GetSceneCopyPath());
@@ -6303,16 +6309,15 @@ void EditorScene::UpdateDialogs() {
 				}
 				ui_.SameLine();
 				if (ui_.Button("Reload Scene...")) {
-					action = EditorAction::RELOAD_SCENE;
-				}
-				ui_.SameLine();
-				if (action != EditorAction::NONE) {
+					sceneReloadDialog_.Show(
+					    PathUtils::ToUtf8(document_.GetFilePath()), document_.IsModified(),
+					    pendingAction_ != EditorAction::NONE);
 					ui_.CloseCurrentPopup();
 					ui_.EndPopup();
-					stage_ = DialogStage::IDLE;
-					StartAction(action);
+					stage_ = DialogStage::CONFIRM_CONFLICT_RELOAD;
 					return;
 				}
+				ui_.SameLine();
 			}
 
 			if (!errorActionMessage_.empty()) {
