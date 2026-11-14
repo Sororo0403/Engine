@@ -767,10 +767,19 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 					}
 				}
 				if (issue.field == GameExportField::OUTPUT_FOLDER &&
-				    !issue.locationPath.empty() && !checkResultStale_) {
-					std::error_code status;
-					if (std::filesystem::exists(
-					        std::filesystem::symlink_status(issue.locationPath, status))) {
+				    !issue.locationPath.empty()) {
+					bool stillOccupied = false;
+					try {
+						const auto output = ReadDestination(output_);
+						std::error_code status;
+						stillOccupied = output.is_absolute() &&
+						                PathUtils::IsSameFile(output, issue.locationPath) &&
+						                std::filesystem::exists(
+						                    std::filesystem::symlink_status(output, status));
+					} catch (const std::invalid_argument &) {
+						// 出力先の入力が完了するまで連番の提案は表示しない。
+					}
+					if (stillOccupied) {
 						ui.SameLine();
 						if (ui.Button("Use Next Available Name") && SuggestOutputName()) {
 							selectedIssue_ = i;
