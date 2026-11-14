@@ -99,6 +99,8 @@ void AssetsPanel::RequestReveal(const std::filesystem::path &path, bool keepResu
 
 void AssetsPanel::RequestSelectResults(std::vector<std::filesystem::path> paths) {
 	revealPath_.clear();
+	unavailableRevealPath_.clear();
+	revealMessage_.clear();
 	resultPaths_ = std::move(paths);
 	focusRequested_ = true;
 }
@@ -108,6 +110,8 @@ bool AssetsPanel::RevealIndexedAsset(const std::filesystem::path &path,
 	if (!SelectAsset(path, assets)) {
 		return false;
 	}
+	resultPaths_.clear();
+	revealPath_.clear();
 	unavailableRevealPath_.clear();
 	revealMessage_.clear();
 	previousView_.reset();
