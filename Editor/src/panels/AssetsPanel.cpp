@@ -531,10 +531,12 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 	RestoreDirectory(currentDirectory_, assets);
 
+	const bool canWriteAssets = canEditAssets && assets.GetError().empty();
+	const bool canManageFiles = canWriteAssets && assets.GetRootDirectory().is_absolute();
 	std::filesystem::path draggedPath;
 	std::filesystem::path dropDirectory;
 	const auto acceptFolder = [&](const std::filesystem::path &directory) {
-		if (!canEditAssets || !assets.GetRootDirectory().is_absolute()) {
+		if (!canManageFiles) {
 			return;
 		}
 
@@ -566,14 +568,14 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 	ui.EndDisabled();
 	ui.SameLine();
-	ui.BeginDisabled(!canEditAssets);
+	ui.BeginDisabled(!canWriteAssets);
 
 	if (ui.Button("New Folder")) {
 		folderCreateRequested_ = true;
 	}
 
 	ui.EndDisabled();
-	ui.BeginDisabled(!canEditAssets);
+	ui.BeginDisabled(!canWriteAssets);
 
 	ui.BeginDisabled(!canCreatePrefab);
 
@@ -840,7 +842,6 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		}
 	};
 	const auto &root = assets.GetRootDirectory();
-	const bool clipboardEnabled = canEditAssets && root.is_absolute();
 
 	if (!clipboardItems_.empty() && clipboardRoot_ != root) {
 		clipboardItems_.clear();
@@ -863,12 +864,12 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		}
 	};
 	const auto drawPaste = [&](const char *label, const std::filesystem::path &folder) {
-		if (ui.MenuItem(label, "Ctrl+V", clipboardEnabled && !clipboardItems_.empty())) {
+		if (ui.MenuItem(label, "Ctrl+V", canManageFiles && !clipboardItems_.empty())) {
 			requestPaste(folder);
 		}
 	};
 	const auto drawClipboardMenu = [&] {
-		const bool enabled = clipboardEnabled && !selectedItems_.empty();
+		const bool enabled = canManageFiles && !selectedItems_.empty();
 
 		if (ui.MenuItem("Copy", "Ctrl+C", enabled)) {
 			storeClipboard(false);
@@ -879,7 +880,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		}
 	};
 	const auto drawBackgroundMenu = [&] {
-		if (clipboardEnabled &&
+		if (canManageFiles &&
 		    ImGui::BeginPopupContextWindow("AssetsBackground",
 		                                   ImGuiPopupFlags_MouseButtonRight |
 		                                       ImGuiPopupFlags_NoOpenOverItems)) {
@@ -906,6 +907,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 	if (!assets.GetError().empty()) {
 		ui.Text("Assets could not be updated. Showing the last successful listing.");
+		ui.Text("Refresh successfully to resume file operations.");
 		if (!resultPaths_.empty()) {
 			ui.Text("Refresh to show the files from the last operation.");
 		}
@@ -997,9 +999,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 			acceptFolder(directory);
 
-			const bool canMove = canEditAssets &&
-			                     assets.GetRootDirectory().is_absolute();
-			if (canMove) {
+			if (canManageFiles) {
 				if (AssetDragDrop::DrawSource(directory, AssetDragDrop::Kind::FOLDER)) {
 					selectContext(directory);
 				}
@@ -1008,7 +1008,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			if (ImGui::BeginPopupContextItem()) {
 				selectContext(directory);
 				drawLocationMenu(directory);
-				if (canMove) {
+				if (canManageFiles) {
 					ImGui::Separator();
 					drawClipboardMenu();
 					drawPaste("Paste into Folder", directory);
@@ -1022,14 +1022,14 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 						duplicatePaths_ = SelectedAssetRoots(selectedItems_);
 					}
 
-					if (ui.MenuItem("Find References...")) {
-						referencePaths_ = selectedItems_;
-					}
-
 					if (ui.MenuItem("Move to Recycle Bin...", "Delete")) {
 						recyclePaths_ = SelectedAssetRoots(selectedItems_);
 					}
 
+				}
+				if (ui.MenuItem("Find References...", nullptr,
+				                canEditAssets && root.is_absolute())) {
+					referencePaths_ = selectedItems_;
 				}
 				ImGui::EndPopup();
 			}
@@ -1095,14 +1095,12 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				ImGui::Separator();
 
 				if (ui.MenuItem("Rename...", "F2",
-				                selectedItems_.size() == 1 && canEditAssets &&
-				                    assets.GetRootDirectory().is_absolute())) {
+				                selectedItems_.size() == 1 && canManageFiles)) {
 					renamePath_ = assetPath;
 				}
 
 				if (ui.MenuItem("Duplicate", "Ctrl+D",
-				                canEditAssets &&
-				                    assets.GetRootDirectory().is_absolute())) {
+				                canManageFiles)) {
 					duplicatePaths_ = SelectedAssetRoots(selectedItems_);
 				}
 
@@ -1113,8 +1111,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				}
 
 				if (ui.MenuItem("Move to Recycle Bin...", "Delete",
-				                canEditAssets &&
-				                    assets.GetRootDirectory().is_absolute())) {
+				                canManageFiles)) {
 					recyclePaths_ = SelectedAssetRoots(selectedItems_);
 				}
 
@@ -1233,7 +1230,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			selectionAnchor_.clear();
 			scrollToSelected_ = false;
 			syncSingle();
-		} else if (clipboardEnabled && io.KeyCtrl) {
+		} else if (canManageFiles && io.KeyCtrl) {
 			const bool copy = ImGui::IsKeyPressed(ImGuiKey_C, false);
 			const bool cut = ImGui::IsKeyPressed(ImGuiKey_X, false);
 
@@ -1247,10 +1244,10 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			           ImGui::IsKeyPressed(ImGuiKey_D, false)) {
 				duplicatePaths_ = SelectedAssetRoots(selectedItems_);
 			}
-		} else if (clipboardEnabled && !io.KeyCtrl && selectedItems_.size() == 1 &&
+		} else if (canManageFiles && !io.KeyCtrl && selectedItems_.size() == 1 &&
 		           ImGui::IsKeyPressed(ImGuiKey_F2, false)) {
 			renamePath_ = selectedItems_.front();
-		} else if (clipboardEnabled && !io.KeyCtrl && !selectedItems_.empty() &&
+		} else if (canManageFiles && !io.KeyCtrl && !selectedItems_.empty() &&
 		           ImGui::IsKeyPressed(ImGuiKey_Delete, false)) {
 			recyclePaths_ = SelectedAssetRoots(selectedItems_);
 		}
