@@ -89,6 +89,35 @@ bool MatchesIssue(const GameExportIssue &issue, std::string_view filter) {
 	       matchesPath(issue.locationPath);
 }
 
+/// <summary>
+/// 指摘を共有できるよう、本文にない参照元と修正先を付ける
+/// </summary>
+void AppendIssueDetails(std::string &report, const GameExportIssue &issue) {
+	if (!report.empty()) {
+		report += "\n\n";
+	}
+	report += issue.message;
+	const auto appendPath = [&](const char *label, const std::filesystem::path &path) {
+		if (!path.empty()) {
+			const auto text = PathUtils::ToUtf8(path);
+			if (issue.message.find(text) == std::string::npos) {
+				report += std::format("\n{}: {}", label, text);
+			}
+		}
+	};
+	appendPath("Scene", issue.scenePath);
+	if (issue.objectId != 0) {
+		report += std::format("\nObject ID: {}", issue.objectId);
+	}
+	appendPath("Transition source", issue.transitionScenePath);
+	if (issue.transitionObjectId != 0) {
+		report += std::format("\nTransition source object ID: {}", issue.transitionObjectId);
+	}
+	appendPath("Script", issue.scriptPath);
+	appendPath("Asset", issue.assetPath);
+	appendPath("Location", issue.locationPath);
+}
+
 } // namespace
 
 bool GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits,
@@ -702,7 +731,11 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 		}
 		ImGui::EndChild();
 		if (ui.Button("Copy Details")) {
-			ImGui::SetClipboardText(checkResult_.c_str());
+			std::string report;
+			for (const auto &issue : checkIssues_) {
+				AppendIssueDetails(report, issue);
+			}
+			ImGui::SetClipboardText(report.c_str());
 		}
 		ImGui::SetItemTooltip("Copy all issues, including those hidden by search.");
 		if (!issueFilter_.empty()) {
@@ -711,10 +744,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 			if (ui.Button("Copy Matching Issues")) {
 				std::string report;
 				for (const auto i : matching) {
-					if (!report.empty()) {
-						report += "\n\n";
-					}
-					report += checkIssues_[i].message;
+					AppendIssueDetails(report, checkIssues_[i]);
 				}
 				ImGui::SetClipboardText(report.c_str());
 			}
