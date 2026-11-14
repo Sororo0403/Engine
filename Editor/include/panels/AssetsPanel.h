@@ -188,7 +188,7 @@ class AssetsPanel {
 	void RequestOpenDirectory(const std::filesystem::path &folder);
 
 	/// <summary>
-	/// Assets基準のフォルダを開く。消えていた場合は一覧に残る親へ戻る
+	/// Assets基準のフォルダを開く。一覧取得に成功し、フォルダが消えていれば親へ戻る
 	/// </summary>
 	void RestoreDirectory(std::filesystem::path folder, const AssetDatabase &assets);
 

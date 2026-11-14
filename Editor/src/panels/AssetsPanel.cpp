@@ -254,6 +254,14 @@ void AssetsPanel::OpenDirectory(std::filesystem::path directory) {
 
 void AssetsPanel::RestoreDirectory(std::filesystem::path folder,
                                    const AssetDatabase &assets) {
+	// 検索失敗中はフォルダの有無を確定できないため、次の更新まで場所を保つ。
+	if (!assets.GetError().empty()) {
+		if (folder != currentDirectory_) {
+			OpenDirectory(std::move(folder));
+		}
+		return;
+	}
+
 	const auto &root = assets.GetRootDirectory();
 	const auto &directories = assets.GetDirectories();
 	folder.make_preferred();
