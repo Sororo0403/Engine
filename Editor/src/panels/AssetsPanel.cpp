@@ -19,6 +19,7 @@
 #include <format>
 #include <imgui.h>
 #include <iterator>
+#include <set>
 #include <stdexcept>
 #include <string_view>
 #include <system_error>
@@ -58,6 +59,33 @@ bool IsMissingAsset(const std::filesystem::path &path) {
 	const auto status = std::filesystem::symlink_status(
 	    PathUtils::ResolveFromExecutable(path), error);
 	return status.type() == std::filesystem::file_type::not_found;
+}
+
+/// <summary>
+/// フォルダとその中身が同時に選ばれた場合は、操作対象にフォルダだけを残す
+/// </summary>
+std::vector<std::filesystem::path> SelectedAssetRoots(
+    const std::vector<std::filesystem::path> &selection) {
+	const auto less = [](const auto &a, const auto &b) {
+		return CompareStringOrdinal(a.c_str(), -1, b.c_str(), -1, TRUE) == CSTR_LESS_THAN;
+	};
+	std::set<std::filesystem::path, decltype(less)> selected(less);
+	for (const auto &path : selection) {
+		selected.insert(path.lexically_normal().make_preferred());
+	}
+
+	std::vector<std::filesystem::path> roots;
+	roots.reserve(selection.size());
+	for (const auto &path : selection) {
+		auto parent = path.lexically_normal().make_preferred().parent_path();
+		for (; parent.has_relative_path() && !selected.contains(parent);
+		     parent = parent.parent_path()) {
+		}
+		if (!parent.has_relative_path()) {
+			roots.push_back(path);
+		}
+	}
+	return roots;
 }
 } // namespace
 
@@ -784,7 +812,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		return currentDirectory_.empty() ? root : root / currentDirectory_;
 	};
 	const auto storeClipboard = [&](bool cut) {
-		clipboardItems_ = selectedItems_;
+		clipboardItems_ = SelectedAssetRoots(selectedItems_);
 		clipboardRoot_ = root;
 		clipboardCut_ = cut;
 		clipboardHasMissingItems_ = false;
@@ -948,7 +976,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 					}
 
 					if (ui.MenuItem("Duplicate", "Ctrl+D")) {
-						duplicatePaths_ = selectedItems_;
+						duplicatePaths_ = SelectedAssetRoots(selectedItems_);
 					}
 
 					if (ui.MenuItem("Find References...")) {
@@ -956,7 +984,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 					}
 
 					if (ui.MenuItem("Move to Recycle Bin...", "Delete")) {
-						recyclePaths_ = selectedItems_;
+						recyclePaths_ = SelectedAssetRoots(selectedItems_);
 					}
 
 				}
@@ -1032,7 +1060,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				if (ui.MenuItem("Duplicate", "Ctrl+D",
 				                canEditAssets &&
 				                    assets.GetRootDirectory().is_absolute())) {
-					duplicatePaths_ = selectedItems_;
+					duplicatePaths_ = SelectedAssetRoots(selectedItems_);
 				}
 
 				if (ui.MenuItem("Find References...", nullptr,
@@ -1044,7 +1072,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				if (ui.MenuItem("Move to Recycle Bin...", "Delete",
 				                canEditAssets &&
 				                    assets.GetRootDirectory().is_absolute())) {
-					recyclePaths_ = selectedItems_;
+					recyclePaths_ = SelectedAssetRoots(selectedItems_);
 				}
 
 				if (assetType == AssetType::PREFAB &&
@@ -1174,14 +1202,14 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				requestPaste(currentFolder());
 			} else if (!selectedItems_.empty() &&
 			           ImGui::IsKeyPressed(ImGuiKey_D, false)) {
-				duplicatePaths_ = selectedItems_;
+				duplicatePaths_ = SelectedAssetRoots(selectedItems_);
 			}
 		} else if (clipboardEnabled && !io.KeyCtrl && selectedItems_.size() == 1 &&
 		           ImGui::IsKeyPressed(ImGuiKey_F2, false)) {
 			renamePath_ = selectedItems_.front();
 		} else if (clipboardEnabled && !io.KeyCtrl && !selectedItems_.empty() &&
 		           ImGui::IsKeyPressed(ImGuiKey_Delete, false)) {
-			recyclePaths_ = selectedItems_;
+			recyclePaths_ = SelectedAssetRoots(selectedItems_);
 		}
 	}
 
@@ -1369,7 +1397,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	// 上部の移動先も、現在の一覧と選択を確定してから処理する。
 	if (!draggedPath.empty() && std::ranges::find(visible, draggedPath) != visible.end()) {
 		moveRequest_.sources = isSelected(draggedPath)
-		                           ? selectedItems_
+		                           ? SelectedAssetRoots(selectedItems_)
 		                           : std::vector<std::filesystem::path>{std::move(draggedPath)};
 		moveRequest_.directory = std::move(dropDirectory);
 	}
