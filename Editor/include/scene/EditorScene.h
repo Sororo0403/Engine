@@ -154,6 +154,7 @@ class EditorScene final : public IScene {
 		SAVE_COPY,
 		IMPORT_SCENE,
 		EXPORT_GAME,
+		RETURN_TO_EXPORT_CHECK,
 		WRITE_GAME_EXPORT,
 		SAVE_AND_CHECK_EXPORT,
 		OPEN_GAME_EXPORT,
@@ -380,6 +381,11 @@ class EditorScene final : public IScene {
 	/// 現在の配布設定で出力前検査を実行し、結果を出力画面に表示する
 	/// </summary>
 	void CheckGameExport(bool continueFromIssue = false);
+
+	/// <summary>
+	/// 問題箇所の確認で中断した配布前チェックに戻れるかを取得する
+	/// </summary>
+	bool CanReturnToExportCheck() const;
 
 	/// <summary>
 	/// 配布前チェックの物体を選択する。物体がなくなっていれば再検査へ戻る
@@ -1109,7 +1115,7 @@ class EditorScene final : public IScene {
 	GameExportDialog exportDialog_;
 	GameExportResultDialog exportResultDialog_;
 	bool returnToExportResult_ = false;
-	bool exportCheckFromAssets_ = false;
+	bool exportCheckInterrupted_ = false;
 	GameSettingsDialog gameSettingsDialog_;
 	float sceneAmbientDraft_ = 0.0f;
 	FogSettings sceneFogDraft_;

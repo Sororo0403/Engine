@@ -670,10 +670,6 @@ bool EditorScene::Update(float deltaTime) {
 		           object->meshRenderer->IsValid();
 	    });
 	const auto textureSlots = GetTextureSlotChoices();
-	const auto &startupScene = project_.GetStartupScene();
-	const bool canReturnToExport = exportCheckFromAssets_ && !playMode_.IsPlaying() &&
-	    exportDialog_.CanResumeCheck(project_.GetRoot(), UsesEditingSceneForStartup(startupScene)
-	                                                       ? document_.GetFilePath() : startupScene);
 	const auto requestedModelPath = assetsPanel_.Draw(
 	    ui_, assets_, canSetTexture,
 	    !gizmo_.IsUsing() && !gizmoEditActive_ &&
@@ -685,7 +681,7 @@ bool EditorScene::Update(float deltaTime) {
 		                            return object && object->mesh &&
 		                                   object->mesh->IsValid();
 	                            }),
-	    textureSlots, selection_.GetCount() == 1, canReturnToExport && !wasBusy);
+	    textureSlots, selection_.GetCount() == 1, !wasBusy && CanReturnToExportCheck());
 	if (!wasBusy && assetsPanel_.DidRefresh()) {
 		sceneCheckPanel_.RequestRecheckIfOpen();
 	}
@@ -1348,12 +1344,7 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	if (!IsBusy() && action == EditorAction::NONE && assetsPanel_.DidRequestExportCheck()) {
-		FinishEdit();
-		const bool returnToResult = returnToExportResult_;
-		ShowGameExport();
-		if (stage_ == DialogStage::EXPORT_GAME) {
-			returnToExportResult_ = returnToResult;
-		}
+		StartAction(EditorAction::RETURN_TO_EXPORT_CHECK);
 	}
 	UpdateDialogs();
 
@@ -2117,6 +2108,10 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 
 		if (ui_.MenuItem("Export Game...", nullptr, enabled)) {
 			action = EditorAction::EXPORT_GAME;
+		}
+		if (CanReturnToExportCheck() &&
+		    ui_.MenuItem("Return to Export Check", nullptr, enabled)) {
+			action = EditorAction::RETURN_TO_EXPORT_CHECK;
 		}
 
 		if (ui_.MenuItem("Open Existing Game Export...", nullptr, enabled)) {
@@ -3077,6 +3072,15 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 		pendingAction_ = action;
 		ExecutePendingAction();
 		return;
+	case EditorAction::RETURN_TO_EXPORT_CHECK:
+		if (CanReturnToExportCheck()) {
+			const bool returnToResult = returnToExportResult_;
+			ShowGameExport();
+			if (stage_ == DialogStage::EXPORT_GAME) {
+				returnToExportResult_ = returnToResult;
+			}
+		}
+		return;
 	case EditorAction::WRITE_GAME_EXPORT:
 		pendingAction_ = action;
 		ConfirmSceneChanges();
@@ -3536,7 +3540,7 @@ const Scene *EditorScene::PrepareGameExport(SceneDocument &startup,
 }
 
 void EditorScene::ShowGameExport(const std::filesystem::path &windowSource) {
-	exportCheckFromAssets_ = false;
+	exportCheckInterrupted_ = false;
 	returnToExportResult_ = false;
 	try {
 		GameExportOptions options;
@@ -3655,12 +3659,23 @@ void EditorScene::CheckGameExport(bool continueFromIssue) {
 	                             std::move(issues), continueFromIssue);
 }
 
+bool EditorScene::CanReturnToExportCheck() const {
+	if (!exportCheckInterrupted_ || playMode_.IsPlaying()) {
+		return false;
+	}
+	const auto &startup = project_.GetStartupScene();
+	const auto &source = UsesEditingSceneForStartup(startup) ? document_.GetFilePath() : startup;
+	return exportDialog_.CanResumeCheck(project_.GetRoot(), source);
+}
+
 void EditorScene::RevealGameExportObject(SceneObjectId object) {
 	if (object == 0) {
+		exportCheckInterrupted_ = true;
 		return;
 	}
 	if (document_.GetScene().Contains(object)) {
 		RevealReferenceObject(object);
+		exportCheckInterrupted_ = true;
 		return;
 	}
 
@@ -6199,7 +6214,7 @@ void EditorScene::UpdateDialogs() {
 				const auto &path = exportDialog_.GetSelectedIssue().assetPath;
 				if (assetsPanel_.RevealIndexedAsset(path, assets_) ||
 				    (assets_.Refresh() && assetsPanel_.RevealIndexedAsset(path, assets_))) {
-				exportCheckFromAssets_ = true;
+				exportCheckInterrupted_ = true;
 					stage_ = DialogStage::IDLE;
 				} else {
 					exportDialog_.Reopen("This file is unavailable in Assets. Use Show in Explorer to locate it.");
@@ -6995,7 +7010,7 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		document_.SetProjectRoot(candidate.GetRoot());
 		project_ = std::move(candidate);
 		returnToExportResult_ = false;
-		exportCheckFromAssets_ = false;
+		exportCheckInterrupted_ = false;
 		exportDialog_.SwitchProject(project_.GetRoot());
 		if (const auto found = preferences_.gameExportDrafts.find(project_.GetRoot());
 		    found != preferences_.gameExportDrafts.end()) {
