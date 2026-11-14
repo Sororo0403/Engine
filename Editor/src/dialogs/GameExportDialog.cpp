@@ -375,10 +375,11 @@ void GameExportDialog::SetCheckResult(std::string message,
 		}
 		if (sameIssue == issues.end()) {
 			// 上の行が増減しても、修正した指摘の次に確認していた行を探す。
-			const auto next = std::find_if(checkIssues_.begin() + *selectedIssue_ + 1,
-			                               checkIssues_.end(), matches);
-			if (next != checkIssues_.end()) {
-				sameIssue = findIssue(*next);
+			for (auto next = checkIssues_.begin() + *selectedIssue_ + 1;
+			     next != checkIssues_.end() && sameIssue == issues.end(); ++next) {
+				if (matches(*next)) {
+					sameIssue = findIssue(*next);
+				}
 			}
 		}
 		if (sameIssue != issues.end()) {
