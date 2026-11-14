@@ -115,6 +115,8 @@ void AssetsPanel::RelocatePaths(
 	relocateList(selectedItems_);
 	selectedPath_ = PathUtils::AfterMove(selectedPath_, moves);
 	selectionAnchor_ = PathUtils::AfterMove(selectionAnchor_, moves);
+	revealPath_ = PathUtils::AfterMove(revealPath_, moves);
+	unavailableRevealPath_ = PathUtils::AfterMove(unavailableRevealPath_, moves);
 	currentDirectory_ = relocateDirectory(currentDirectory_);
 	relocateSearch(filter_);
 	if (previousView_) {
@@ -388,14 +390,14 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	}
 
 	if (!revealPath_.empty()) {
-		auto previous = std::exchange(keepRevealResults_, false)
-		                    ? CaptureResults() : std::nullopt;
+		auto previous = keepRevealResults_ ? CaptureResults() : std::nullopt;
 		try {
 			if (SelectAsset(revealPath_, assets) ||
 			    (!refreshed_ && assets.Refresh() && SelectAsset(revealPath_, assets))) {
 				revealMessage_.clear();
 				unavailableRevealPath_.clear();
 				previousView_ = std::move(previous);
+				keepRevealResults_ = false;
 			} else if (assets.GetError().empty()) {
 				revealMessage_ = "Asset is not in the indexed Assets folder.";
 			} else {
