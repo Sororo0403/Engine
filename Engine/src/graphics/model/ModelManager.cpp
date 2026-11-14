@@ -83,6 +83,22 @@ struct ModelManager::Impl {
 		std::filesystem::file_time_type modified;
 		std::uintmax_t size;
 		std::vector<std::pair<std::filesystem::path, std::optional<FileStamp>>> dependencies;
+
+		void ReportMissingDependency(std::filesystem::path *failedPath,
+		                             std::filesystem::file_time_type currentModified,
+		                             std::uintmax_t currentSize) const {
+			if (!failedPath || modified != currentModified || size != currentSize) {
+				return;
+			}
+			for (const auto &dependency : dependencies) {
+				std::error_code error;
+				const auto status = std::filesystem::status(dependency.first, error);
+				if (dependency.second && status.type() == std::filesystem::file_type::not_found) {
+					*failedPath = dependency.first;
+					return;
+				}
+			}
+		}
 	};
 	std::map<std::filesystem::path, Entry, PathLess> cache;
 
@@ -103,8 +119,9 @@ ModelHandle ModelManager::Load(const std::filesystem::path &filePath) {
 	return LoadFile(filePath, LoadMode::CACHED);
 }
 
-ModelHandle ModelManager::LoadUpdated(const std::filesystem::path &filePath) {
-	return LoadFile(filePath, LoadMode::CHECK_FOR_CHANGES);
+ModelHandle ModelManager::LoadUpdated(const std::filesystem::path &filePath,
+                                      std::filesystem::path *failedPath) {
+	return LoadFile(filePath, LoadMode::CHECK_FOR_CHANGES, failedPath);
 }
 
 ModelHandle
@@ -146,7 +163,10 @@ std::uint64_t ModelManager::GetCacheRevision() const {
 }
 
 ModelHandle ModelManager::LoadFile(const std::filesystem::path &filePath,
-                                   LoadMode mode) {
+                                   LoadMode mode, std::filesystem::path *failedPath) {
+	if (failedPath) {
+		*failedPath = filePath;
+	}
 	if (impl_->finalized) {
 		Logger::Error("ModelManager::Load: 終了済みです。");
 		return {};
@@ -192,6 +212,9 @@ ModelHandle ModelManager::LoadFile(const std::filesystem::path &filePath,
 			ModelHandle handle;
 			handle.model_ = found->second.model;
 			handle.graphics_ = &impl_->graphics;
+			if (failedPath) {
+				failedPath->clear();
+			}
 			return handle;
 		}
 
@@ -210,6 +233,9 @@ ModelHandle ModelManager::LoadFile(const std::filesystem::path &filePath,
 
 		std::vector<std::filesystem::path> dependencies;
 		if (!ModelLoader::Load(key, data, &dependencies)) {
+			if (found != impl_->cache.end()) {
+				found->second.ReportMissingDependency(failedPath, modified, size);
+			}
 			return {};
 		}
 		Impl::Entry entry{nullptr, modified, size, {}};
@@ -224,6 +250,9 @@ ModelHandle ModelManager::LoadFile(const std::filesystem::path &filePath,
 
 		// GPU側の共有リソースを作成する
 		if (!model->Initialize(device, commandQueue, data)) {
+			if (found != impl_->cache.end()) {
+				found->second.ReportMissingDependency(failedPath, modified, size);
+			}
 			return {};
 		}
 
@@ -239,6 +268,9 @@ ModelHandle ModelManager::LoadFile(const std::filesystem::path &filePath,
 		ModelHandle handle;
 		handle.model_ = model;
 		handle.graphics_ = &impl_->graphics;
+		if (failedPath) {
+			failedPath->clear();
+		}
 		return handle;
 	} catch (const std::exception &error) {
 		Logger::Error(std::format(

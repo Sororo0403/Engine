@@ -38,8 +38,11 @@ class ModelManager {
 	/// <summary>
 	/// モデル本体または参照ファイルが変わった場合に読み直す。失敗時は既存キャッシュを保持する
 	/// </summary>
+	/// <param name="filePath">読み込むモデル</param>
+	/// <param name="failedPath">失敗時に見つからない既知の参照ファイル、またはモデル本体のパスを返す</param>
 	/// <remarks>GPU利用完了後、描画命令の記録前に呼び出す</remarks>
-	ModelHandle LoadUpdated(const std::filesystem::path &filePath);
+	ModelHandle LoadUpdated(const std::filesystem::path &filePath,
+	                        std::filesystem::path *failedPath = nullptr);
 
 	/// <summary>
 	/// 読み込み済みの共有参照だけを取得する。ファイル読み込み・GPUリソース作成・エラー出力は行わない
@@ -124,8 +127,10 @@ class ModelManager {
 	/// </summary>
 	/// <param name="filePath">読み込むモデル</param>
 	/// <param name="mode">キャッシュの利用、更新確認、強制再読み込みの指定</param>
+	/// <param name="failedPath">指定時は読み込みに失敗したファイルの場所を返す</param>
 	/// <returns>成功:共有参照 失敗:空</returns>
-	ModelHandle LoadFile(const std::filesystem::path &filePath, LoadMode mode);
+	ModelHandle LoadFile(const std::filesystem::path &filePath, LoadMode mode,
+	                     std::filesystem::path *failedPath = nullptr);
 
 	struct Impl;
 	std::unique_ptr<Impl> impl_;

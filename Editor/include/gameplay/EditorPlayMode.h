@@ -80,6 +80,7 @@ class EditorPlayMode {
 	/// <param name="cameraOverride">0は通常のPrimary選択。指定時は再生複製内だけ、そのCameraをPrimaryとして使用する</param>
 	/// <param name="invalidInputAction">指定時は修正が必要な名前付き入力を返す。該当しない場合は空</param>
 	/// <param name="failedTestSave">テスト用セーブの読み込みに失敗した場合の場所。場所が不明な場合は空のパス</param>
+	/// <param name="failedModelFile">モデルの読み込みエラーで確認するファイルの場所</param>
 	/// <returns>true:開始成功 false:設定が無効、または表示するモデルを読み込めない</returns>
 	bool Start(const Scene &scene, std::string &error,
 	           const CameraPose &fallbackPose = CameraPose{},
@@ -87,7 +88,8 @@ class EditorPlayMode {
 	           SceneObjectId *invalidObject = nullptr,
 	           SceneObjectId cameraOverride = 0,
 	           std::string *invalidInputAction = nullptr,
-	           std::optional<std::filesystem::path> *failedTestSave = nullptr);
+	           std::optional<std::filesystem::path> *failedTestSave = nullptr,
+	           std::filesystem::path *failedModelFile = nullptr);
 
 	/// <summary>
 	/// 指定したシーンから再実行し、Gameパネルへフォーカスを戻す。一時停止状態は保持する

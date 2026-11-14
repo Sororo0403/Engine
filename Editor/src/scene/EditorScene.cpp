@@ -6586,6 +6586,12 @@ void EditorScene::UpdateDialogs() {
 				ui_.SameLine();
 			}
 			if (errorReplayPath_ && !playMode_.IsPlaying()) {
+				if (!errorPlayModelFile_.empty()) {
+					if (ui_.Button("Show Model Error Location")) {
+						ShellUtils::RevealLocationInExplorer(errorPlayModelFile_, errorActionMessage_);
+					}
+					ui_.SameLine();
+				}
 				if (errorTestSave_ && !errorTestSave_->empty()) {
 					if (ui_.Button("Show Test Save Location")) {
 						ShellUtils::RevealLocationInExplorer(*errorTestSave_, errorActionMessage_);
@@ -6711,13 +6717,15 @@ void EditorScene::StartPlay(const std::filesystem::path &path,
 	SceneObjectId invalidObject = 0;
 	std::string invalidInputAction;
 	std::optional<std::filesystem::path> failedTestSave;
+	std::filesystem::path failedModelFile;
 	if (!playMode_.Start(*scene, error, fallback, exportConfig_, &invalidObject,
-	                     cameraOverride, &invalidInputAction, &failedTestSave)) {
+	                     cameraOverride, &invalidInputAction, &failedTestSave, &failedModelFile)) {
 		auto scriptPath = SceneScripts::FindFailedScript(*scene, invalidObject, error);
 		ShowError(std::move(error), usesEditingScene ? invalidObject : 0,
 		          std::move(scriptPath));
 		errorInputAction_ = std::move(invalidInputAction);
 		errorTestSave_ = std::move(failedTestSave);
+		errorPlayModelFile_ = std::move(failedModelFile);
 		errorReplayPath_ = usesEditingScene ? document_.GetFilePath()
 		                                   : startup.GetFilePath();
 		errorReplayCameraOverride_ = cameraOverride;
@@ -6835,7 +6843,9 @@ void EditorScene::ReportPlayUpdateFailure(SceneObjectId invalidObject,
 }
 
 void EditorScene::LogPlayFailure() {
-	const auto &source = errorScriptPath_.empty() ? errorScenePath_ : errorScriptPath_;
+	const auto &source = !errorScriptPath_.empty() ? errorScriptPath_
+	                     : !errorPlayModelFile_.empty() ? errorPlayModelFile_
+	                                                    : errorScenePath_;
 	const auto logId = Logger::PlayFailure(errorMessage_, source);
 	errorPlayLogId_ = logId;
 	if (errorReplayPath_) {
@@ -7187,6 +7197,7 @@ void EditorScene::ShowError(std::string message, SceneObjectId objectId,
 	failedSceneCheckReference_ = false;
 	failedAssetReloads_.clear();
 	errorTestSave_.reset();
+	errorPlayModelFile_.clear();
 	errorReplayPath_.reset();
 	errorRestartCurrentScene_.reset();
 	errorPlayLogId_ = 0;

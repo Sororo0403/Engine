@@ -313,7 +313,8 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
                            SceneObjectId *invalidObject,
                            SceneObjectId cameraOverride,
                            std::string *invalidInputAction,
-                           std::optional<std::filesystem::path> *failedTestSave) {
+                           std::optional<std::filesystem::path> *failedTestSave,
+                           std::filesystem::path *failedModelFile) {
 	if (invalidObject) {
 		*invalidObject = 0;
 	}
@@ -322,6 +323,9 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
 	}
 	if (failedTestSave) {
 		failedTestSave->reset();
+	}
+	if (failedModelFile) {
+		failedModelFile->clear();
 	}
 
 	if (config.width < 1 || config.width > 8192 || config.height < 1 ||
@@ -357,10 +361,13 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
 	for (const auto &[id, object] : scene.GetObjects()) {
 		if (object.HasMesh() && (object.IsRenderable() || object.mesh->preload) &&
 		    checkedModels.insert(object.mesh->modelPath).second &&
-		    !models_.LoadUpdated(object.mesh->modelPath)) {
+		    !models_.LoadUpdated(object.mesh->modelPath, failedModelFile)) {
 			error = std::format("Could not load the model for object \"{}\" "
 			                    "(ID {}). Repair its Mesh before Play.",
 			                    object.name, id);
+			if (failedModelFile && !failedModelFile->empty()) {
+				error += "\nFile to check: " + PathUtils::ToUtf8(*failedModelFile);
+			}
 			if (invalidObject) {
 				*invalidObject = id;
 			}

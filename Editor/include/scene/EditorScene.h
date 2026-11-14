@@ -1136,6 +1136,7 @@ class EditorScene final : public IScene {
 	};
 	std::vector<AssetReloadFailure> failedAssetReloads_;
 	std::optional<std::filesystem::path> errorTestSave_;
+	std::filesystem::path errorPlayModelFile_;
 	std::optional<std::filesystem::path> errorReplayPath_;
 	std::optional<bool> errorRestartCurrentScene_;
 	std::uint64_t errorPlayLogId_ = 0;
