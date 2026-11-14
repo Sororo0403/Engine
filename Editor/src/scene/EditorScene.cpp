@@ -5293,6 +5293,11 @@ void EditorScene::UpdateDialogs() {
 		const bool fromSceneCheck = stage_ == DialogStage::EDIT_SCENE_CHECK_SCRIPT;
 		const auto *playScene = stage_ == DialogStage::EDIT_PLAY_SCRIPT ? &scriptReplayPath_ : nullptr;
 		const auto result = scriptEditorDialog_.Draw(ui_, playScene);
+		const bool playAfterSave = result == ScriptEditorDialog::Result::SAVED_AND_PLAY;
+		const bool saved = result == ScriptEditorDialog::Result::SAVED || playAfterSave;
+		if (saved) {
+			sceneCheckPanel_.RequestRecheckIfOpen();
+		}
 
 		if (fromExport && result != ScriptEditorDialog::Result::NONE) {
 			std::string error;
@@ -5306,8 +5311,7 @@ void EditorScene::UpdateDialogs() {
 			break;
 		}
 
-		const bool playAfterSave = result == ScriptEditorDialog::Result::SAVED_AND_PLAY;
-		if (result == ScriptEditorDialog::Result::SAVED || playAfterSave) {
+		if (saved) {
 			stage_ = DialogStage::IDLE;
 			if (fromSceneCheck) {
 				sceneCheckPanel_.Show();
