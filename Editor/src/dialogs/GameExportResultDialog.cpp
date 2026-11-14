@@ -538,13 +538,36 @@ void GameExportResultDialog::OpenLogAtOffset(std::uintmax_t offset) {
 
 bool GameExportResultDialog::StartGame(bool freshStart) {
 	auto &run = runs_.at(directory_);
-	run.launchedPackageId = GameExporter::ReadPackageId(directory_);
 	GameConfig config;
 	ReloadGameSettings(config);
 	if (freshStart && !supportsFreshStart_ && packageSettingsError_.empty()) {
 		error_ = "This export does not support running without save data.";
 		return false;
 	}
+	auto testSavePath = !freshStart && supportsFreshStart_
+	                        ? config.GetScriptSettingsPath(true) : std::filesystem::path{};
+	if (!testSavePath.empty()) {
+		auto saveKey = testSavePath;
+		saveKey.make_preferred();
+		for (const auto &[directory, other] : runs_) {
+			if (directory == directory_ || !other.process.IsTracking() || other.testSavePath.empty()) {
+				continue;
+			}
+			auto otherKey = other.testSavePath;
+			otherKey.make_preferred();
+			if (CompareStringOrdinal(saveKey.c_str(), -1, otherKey.c_str(), -1, TRUE) != CSTR_EQUAL) {
+				continue;
+			}
+			std::optional<std::uint32_t> exitCode;
+			std::string processError;
+			if (!other.process.Poll(exitCode, processError) || !exitCode) {
+				error_ = "Another export is using this test save. Close it or choose Run Without Save Data.\n" +
+				         PathUtils::ToUtf8(directory);
+				return false;
+			}
+		}
+	}
+	run.launchedPackageId = GameExporter::ReadPackageId(directory_);
 	run.freshStart = freshStart;
 	auto launchError = packageSettingsError_;
 	run.launchSettings = packageSettings_;
@@ -589,9 +612,7 @@ bool GameExportResultDialog::StartGame(bool freshStart) {
 
 	run.status = "Game process running.";
 	// 起動時の設定を保持し、同じ出力先のgame.jsonを後から変更しても試遊時の保存先を案内する。
-	if (!freshStart && supportsFreshStart_) {
-		run.testSavePath = config.GetScriptSettingsPath(true);
-	}
+	run.testSavePath = std::move(testSavePath);
 	run.logStart.reset();
 	if (!status)
 		run.logStart = size;
