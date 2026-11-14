@@ -231,6 +231,21 @@ void GameExportResultDialog::RefreshLog() {
 		}
 	}
 	if (run.showLogBeginning && start + static_cast<std::streamoff>(text.size()) < end) {
+		// 次のページが詳細行から始まる場合は、見出しごと次へ送る。
+		input.seekg(start + static_cast<std::streamoff>(text.size()));
+		std::array<char, 128> prefix{};
+		input.getline(prefix.data(), prefix.size());
+		if (!IsLogHeader(LogLevelPrefix(prefix.data()))) {
+			std::size_t lastHeader = 0;
+			VisitLogLines(text, [&](std::size_t offset, std::string_view line) {
+				if (IsLogHeader(LogLevelPrefix(line))) {
+					lastHeader = offset;
+				}
+			});
+			if (lastHeader != 0) {
+				text.resize(lastHeader);
+			}
+		}
 		nextLogPage_ = run.logPageOffset + text.size();
 	}
 	if (partialLine) {
