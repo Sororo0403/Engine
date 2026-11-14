@@ -864,10 +864,10 @@ bool EditorScene::Update(float deltaTime) {
 		if (!duplicate.empty() && !IsBusy() && action == EditorAction::NONE &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 			std::string error;
-
-			if (!CopyAssets(duplicate, copyPaste ? paste.directory
-			                                     : std::filesystem::path{}, error)) {
+			const auto directory = copyPaste ? paste.directory : std::filesystem::path{};
+			if (!CopyAssets(duplicate, directory, error)) {
 				ShowError(std::move(error));
+				failedAssetCopy_ = {duplicate, directory};
 			}
 		}
 
@@ -5236,6 +5236,23 @@ void EditorScene::UpdateDialogs() {
 		return;
 	}
 
+	case DialogStage::SELECT_ASSET_COPY_DESTINATION: {
+		const auto result = fileDialog_.Draw(ui_);
+		if (result == FileDialogResult::CANCELLED) {
+			errorOpenRequested_ = true;
+			stage_ = DialogStage::ERROR;
+		} else if (result == FileDialogResult::ACCEPTED) {
+			std::string error;
+			if (!CopyAssets(failedAssetCopy_.sources, fileDialog_.GetSelectedPath(), error)) {
+				fileDialog_.RetrySelection(std::move(error));
+				return;
+			}
+			failedAssetCopy_ = {};
+			stage_ = DialogStage::IDLE;
+		}
+		return;
+	}
+
 	case DialogStage::EDIT_ANIMATION_CLIP: {
 		const auto result = animationClipEditor_.Draw(ui_);
 		if (result == AnimationClipEditor::Result::SAVED) {
@@ -5982,6 +5999,36 @@ void EditorScene::UpdateDialogs() {
 				ui_.SameLine();
 			}
 
+			if (!failedAssetCopy_.sources.empty()) {
+				if (ui_.Button("Choose Copy Destination...")) {
+					const auto &preferred = failedAssetCopy_.directory;
+					const auto initial = FindExistingDirectory(
+					    preferred.empty() ? failedAssetCopy_.sources.front().parent_path()
+					                      : preferred);
+					fileDialog_.Show(FileDialogMode::SELECT_DIRECTORY,
+					                 initial.empty() ? assets_.GetRootDirectory() : initial,
+					                 FileDialogFilter::SCENE,
+					                 "Choose Copy Destination###FileDialog");
+					ui_.CloseCurrentPopup();
+					ui_.EndPopup();
+					stage_ = DialogStage::SELECT_ASSET_COPY_DESTINATION;
+					return;
+				}
+				ui_.SameLine();
+				if (ui_.Button(failedAssetCopy_.directory.empty() ? "Retry Duplicate" : "Retry Copy")) {
+					std::string error;
+					if (CopyAssets(failedAssetCopy_.sources, failedAssetCopy_.directory, error)) {
+						failedAssetCopy_ = {};
+						ui_.CloseCurrentPopup();
+						ui_.EndPopup();
+						stage_ = DialogStage::IDLE;
+						return;
+					}
+					errorMessage_ = std::move(error);
+				}
+				ui_.SameLine();
+			}
+
 			if (sceneSaveFailed_) {
 				if (ui_.Button("Show Save Location")) {
 					ShellUtils::RevealLocationInExplorer(document_.GetFilePath(),
@@ -6160,6 +6207,7 @@ void EditorScene::UpdateDialogs() {
 				ui_.CloseCurrentPopup();
 				errorObjectId_ = 0;
 				failedAssetMoves_.clear();
+				failedAssetCopy_ = {};
 				CancelPendingAction();
 			}
 
@@ -6643,6 +6691,7 @@ void EditorScene::ShowError(std::string message, SceneObjectId objectId,
 	errorActionMessage_.clear();
 	failedAssetMoves_.clear();
 	failedAssetMoveWasCutPaste_ = false;
+	failedAssetCopy_ = {};
 	sceneSaveFailed_ = false;
 	sceneSaveConflict_ = false;
 	errorObjectId_ = document_.GetScene().Contains(objectId) ? objectId : 0;

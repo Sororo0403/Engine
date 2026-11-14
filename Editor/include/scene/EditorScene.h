@@ -290,6 +290,7 @@ class EditorScene final : public IScene {
 		EDIT_ANIMATION_CLIP,
 		SELECT_ASSET_FOLDER,
 		SELECT_ASSET_MOVE_DESTINATION,
+		SELECT_ASSET_COPY_DESTINATION,
 		RECYCLE_ASSET,
 		ASSET_REFERENCES,
 		RENAME_ASSET,
@@ -1100,6 +1101,7 @@ class EditorScene final : public IScene {
 	std::string errorActionMessage_;
 	AssetUsage::Moves failedAssetMoves_;
 	bool failedAssetMoveWasCutPaste_ = false;
+	AssetsPanel::MoveRequest failedAssetCopy_;
 	bool sceneSaveFailed_ = false;
 	bool sceneSaveConflict_ = false;
 	SceneObjectId errorObjectId_ = 0;
