@@ -6,12 +6,12 @@
 #include <utility>
 
 void SaveChangesDialog::Show(std::string name, bool beforeExport,
-                             bool returnToOpenScene, std::string destination,
+                             std::string cancelLabel, std::string destination,
                              bool recovered) {
 	name_ = std::move(name);
 	destination_ = std::move(destination);
 	beforeExport_ = beforeExport;
-	returnToOpenScene_ = returnToOpenScene;
+	cancelLabel_ = std::move(cancelLabel);
 	recovered_ = recovered;
 	openRequested_ = true;
 }
@@ -62,7 +62,7 @@ SaveChangesResult SaveChangesDialog::Draw(const ImGuiSystem &ui) {
 
 	ui.SameLine();
 
-	if (ui.Button(returnToOpenScene_ ? "Back to Open Scene" : "Cancel")) {
+	if (ui.Button(cancelLabel_.c_str()) || ImGui::IsKeyPressed(ImGuiKey_Escape, false)) {
 		result = SaveChangesResult::CANCEL;
 	}
 

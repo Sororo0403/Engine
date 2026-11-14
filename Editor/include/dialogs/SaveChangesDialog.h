@@ -24,10 +24,10 @@ class SaveChangesDialog {
 	/// </summary>
 	/// <param name="name">編集中のファイルの表示名</param>
 	/// <param name="beforeExport">出力前の確認として表示するか</param>
-	/// <param name="returnToOpenScene">取消でシーンの選択に戻るか</param>
+	/// <param name="cancelLabel">保存確認を取り消すボタンの表示名</param>
 	/// <param name="destination">次に開く場所の表示名。表示しない場合は空</param>
 	/// <param name="recovered">復旧したシーンの保存確認か</param>
-	void Show(std::string name, bool beforeExport, bool returnToOpenScene,
+	void Show(std::string name, bool beforeExport, std::string cancelLabel,
 	          std::string destination = {}, bool recovered = false);
 
 	/// <summary>
@@ -42,6 +42,6 @@ class SaveChangesDialog {
 	std::string destination_;
 	bool openRequested_ = false;
 	bool beforeExport_ = false;
-	bool returnToOpenScene_ = false;
+	std::string cancelLabel_ = "Cancel";
 	bool recovered_ = false;
 };

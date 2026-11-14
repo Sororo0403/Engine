@@ -3714,13 +3714,16 @@ void EditorScene::ConfirmSceneChanges() {
 			name = "Untitled";
 		}
 		std::string destination;
+		const char *cancelLabel = "Cancel";
 		switch (pendingAction_) {
 		case EditorAction::OPEN:
 			destination = PathUtils::ToUtf8(openSceneDialog_.GetSelectedPath());
+			cancelLabel = "Back to Open Scene";
 			break;
 		case EditorAction::NEW_PROJECT:
 		case EditorAction::OPEN_PROJECT:
 			destination = PathUtils::ToUtf8(projectDialog_.GetSelectedPath());
+			cancelLabel = "Back to Project Selection";
 			break;
 		case EditorAction::OPEN_PATH:
 		case EditorAction::OPEN_PROJECT_PATH:
@@ -3731,7 +3734,7 @@ void EditorScene::ConfirmSceneChanges() {
 			break;
 		}
 		saveChangesDialog_.Show(std::move(name), exporting,
-		                        pendingAction_ == EditorAction::OPEN,
+		                        cancelLabel,
 		                        std::move(destination), recoverySourceFile_.has_value());
 		stage_ = DialogStage::CONFIRM_SAVE;
 	} else {
