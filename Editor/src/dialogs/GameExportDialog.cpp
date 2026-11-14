@@ -84,6 +84,7 @@ bool MatchesIssue(const GameExportIssue &issue, std::string_view filter,
 	};
 	return filter.empty() ||
 	       issue.message.find(filter) != std::string::npos ||
+	       issue.inputAction.find(filter) != std::string::npos ||
 	       matchesPath(issue.scenePath) || matchesPath(issue.scriptPath) ||
 	       matchesPath(issue.assetPath) || matchesPath(issue.transitionScenePath) ||
 	       matchesPath(issue.locationPath);
@@ -112,6 +113,9 @@ void AppendIssueDetails(std::string &report, const GameExportIssue &issue) {
 	appendPath("Transition source", issue.transitionScenePath);
 	if (issue.transitionObjectId != 0) {
 		report += std::format("\nTransition source object ID: {}", issue.transitionObjectId);
+	}
+	if (!issue.inputAction.empty()) {
+		report += std::format("\nInput action: {}", issue.inputAction);
 	}
 	appendPath("Script", issue.scriptPath);
 	appendPath("Asset", issue.assetPath);
