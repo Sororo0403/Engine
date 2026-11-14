@@ -5338,9 +5338,12 @@ void EditorScene::UpdateDialogs() {
 
 	case DialogStage::SAVE_COPY_FILE:
 	case DialogStage::SAVE_COPY_AND_RELOAD:
+	case DialogStage::SAVE_CONFLICT_COPY:
 	case DialogStage::SAVE_CONFLICT_COPY_AND_RELOAD: {
-		const bool fromConflict = stage_ == DialogStage::SAVE_CONFLICT_COPY_AND_RELOAD;
-		const bool reload = stage_ != DialogStage::SAVE_COPY_FILE;
+		const bool conflictCopy = stage_ == DialogStage::SAVE_CONFLICT_COPY;
+		const bool fromConflict = conflictCopy || stage_ == DialogStage::SAVE_CONFLICT_COPY_AND_RELOAD;
+		const bool reload = stage_ == DialogStage::SAVE_COPY_AND_RELOAD ||
+		                    stage_ == DialogStage::SAVE_CONFLICT_COPY_AND_RELOAD;
 		const auto result = fileDialog_.Draw(ui_);
 
 		if (result == FileDialogResult::CANCELLED) {
@@ -5355,7 +5358,7 @@ void EditorScene::UpdateDialogs() {
 			}
 		} else if (result == FileDialogResult::ACCEPTED) {
 			if (document_.SaveCopy(fileDialog_.GetSelectedPath(),
-			                       !reload && !recoverySourceFile_)) {
+			                       !fromConflict && !reload && !recoverySourceFile_)) {
 				const auto &copy = fileDialog_.GetSelectedPath();
 				recentScenes_.Add(copy);
 				SaveEditorSession(false, copy);
@@ -5364,6 +5367,10 @@ void EditorScene::UpdateDialogs() {
 				if (reload) {
 					pendingAction_ = EditorAction::NONE;
 					ReloadScene(copy);
+				} else if (conflictCopy) {
+					errorActionMessage_ = "Saved a copy to " + PathUtils::ToUtf8(copy);
+					errorOpenRequested_ = true;
+					stage_ = DialogStage::ERROR;
 				}
 			} else {
 				fileDialog_.RetrySelection(document_.GetError());
@@ -6277,7 +6284,16 @@ void EditorScene::UpdateDialogs() {
 				ui_.SameLine();
 				EditorAction action = EditorAction::NONE;
 				if (ui_.Button("Save Copy...")) {
-					action = EditorAction::SAVE_COPY;
+					try {
+						fileDialog_.Show(FileDialogMode::SAVE_COPY, GetSceneCopyPath());
+						fileDialog_.RequireNewFile();
+						ui_.CloseCurrentPopup();
+						ui_.EndPopup();
+						stage_ = DialogStage::SAVE_CONFLICT_COPY;
+						return;
+					} catch (const std::exception &error) {
+						errorActionMessage_ = error.what();
+					}
 				}
 				ui_.SameLine();
 				if (ui_.Button("Reload Scene...")) {
