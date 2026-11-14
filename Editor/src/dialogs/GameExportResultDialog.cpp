@@ -371,7 +371,20 @@ bool GameExportResultDialog::FindLogMatch(bool next) {
 			const auto lineEnd = input.eof() ? end : static_cast<std::streamoff>(input.tellg());
 			const bool fits = lineEnd - start - static_cast<std::streamoff>(entryOffset) <=
 			                  kLogPageBytes;
-			OpenLogAtOffset(fits ? entryOffset : relative);
+			auto pageOffset = fits ? entryOffset : relative;
+			if (!fits) {
+				// 長い1行では、一致した文字列を含む位置から開く。
+				const auto match = line.find(query);
+				const auto context = static_cast<std::size_t>(kLogPageBytes / 4);
+				if (match != std::string::npos && match >= context) {
+					auto first = match - context;
+					while (first > 0 && (line[first] & 0xc0) == 0x80) {
+						--first;
+					}
+					pageOffset += first;
+				}
+			}
+			OpenLogAtOffset(pageOffset);
 			run.showErrorsOnly = errorsOnly && fits;
 			run.lastMatch = GameRun::LogMatch{
 			    std::move(query), relative, entryOffset, errorsOnly, isError};
@@ -787,7 +800,7 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 				run.showLogBeginning = previous.paged;
 				run.followLog = previous.follow;
 				run.showErrorsOnly = previous.errorsOnly;
-			run.sinceLaunchOnly = previous.sinceLaunchOnly;
+				run.sinceLaunchOnly = previous.sinceLaunchOnly;
 				run.logFilter = std::move(previous.filter);
 				RefreshLog();
 				restoreScroll = previous.scrollY;
