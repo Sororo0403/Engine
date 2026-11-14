@@ -3925,7 +3925,7 @@ void EditorScene::ExecutePendingAction() {
 			locatedScenePreviousPath_.clear();
 			SaveEditorSession();
 		} else {
-			openSceneDialog_.RetrySelection(document_.GetError());
+			openSceneDialog_.RetrySelection(document_.GetError(), openSceneDialog_.GetSelectedPath());
 			stage_ = DialogStage::OPEN_FILE;
 		}
 		return;
@@ -5281,7 +5281,7 @@ void EditorScene::UpdateDialogs() {
 			const bool locating = !locatedScenePreviousPath_.empty();
 			if (locating && !project_.CanUseAsStartupScene(selected)) {
 				openSceneDialog_.RetrySelection(
-				    "Choose a saved scene in the project's scenes folder.");
+				    "Choose a saved scene in the project's scenes folder.", selected);
 				return;
 			}
 
@@ -5935,9 +5935,7 @@ void EditorScene::UpdateDialogs() {
 		if (result == FileDialogResult::ACCEPTED) {
 			std::string error;
 			if (!SetStartupScene(fileDialog_.GetSelectedPath(), error)) {
-				// RetrySelectionは選択済みパスをクリアするため、案内先を先に退避する。
-				const auto failedScene = fileDialog_.GetSelectedPath();
-				fileDialog_.RetrySelection(std::move(error), failedScene);
+				fileDialog_.RetrySelection(std::move(error), fileDialog_.GetSelectedPath());
 				return;
 			}
 			if (fromExport) {

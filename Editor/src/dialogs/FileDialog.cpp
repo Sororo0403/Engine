@@ -123,7 +123,7 @@ void FileDialog::RetrySelection() {
 }
 
 void FileDialog::RetrySelection(std::string error,
-                                const std::filesystem::path &failedProject) {
+                                std::filesystem::path failedLocation) {
 	const bool selectingFolder = mode_ == FileDialogMode::SELECT_DIRECTORY;
 	const auto folder = selectingFolder ? selectedPath_ : selectedPath_.parent_path();
 	if (!searchProjectScenes_ && !folder.empty() && folder != directory_) {
@@ -135,7 +135,7 @@ void FileDialog::RetrySelection(std::string error,
 	}
 	selectedPath_.clear();
 	error_ = std::move(error);
-	failedProject_ = failedProject;
+	failedProject_ = std::move(failedLocation);
 	failedProjectLocationError_.clear();
 	destinationExists_ = false;
 	openRequested_ = true;
