@@ -353,6 +353,11 @@ class AssetsPanel {
 	/// </summary>
 	std::optional<ResultView> CaptureResults(bool includeFolder = false) const;
 
+	/// <summary>
+	/// 新しい表示先を受け付ける前に、古い表示と再試行の予約を取り消す
+	/// </summary>
+	void ClearNavigationRequests();
+
 	std::filesystem::path currentDirectory_;
 	std::string filter_;
 	bool searchAllTypes_ = false;

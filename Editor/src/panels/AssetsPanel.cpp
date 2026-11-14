@@ -89,18 +89,24 @@ std::vector<std::filesystem::path> SelectedAssetRoots(
 }
 } // namespace
 
-void AssetsPanel::RequestReveal(const std::filesystem::path &path, bool keepResults) {
+void AssetsPanel::ClearNavigationRequests() {
 	resultPaths_.clear();
-	previousView_.reset();
+	revealPath_.clear();
 	unavailableRevealPath_.clear();
+	requestedDirectory_.clear();
+	directoryOpenRequested_ = false;
+	revealMessage_.clear();
+}
+
+void AssetsPanel::RequestReveal(const std::filesystem::path &path, bool keepResults) {
+	ClearNavigationRequests();
+	previousView_.reset();
 	revealPath_ = path;
 	keepRevealResults_ = keepResults;
 }
 
 void AssetsPanel::RequestSelectResults(std::vector<std::filesystem::path> paths) {
-	revealPath_.clear();
-	unavailableRevealPath_.clear();
-	revealMessage_.clear();
+	ClearNavigationRequests();
 	resultPaths_ = std::move(paths);
 	focusRequested_ = true;
 }
@@ -110,10 +116,7 @@ bool AssetsPanel::RevealIndexedAsset(const std::filesystem::path &path,
 	if (!SelectAsset(path, assets)) {
 		return false;
 	}
-	resultPaths_.clear();
-	revealPath_.clear();
-	unavailableRevealPath_.clear();
-	revealMessage_.clear();
+	ClearNavigationRequests();
 	previousView_.reset();
 	focusRequested_ = true;
 	return true;
@@ -1574,6 +1577,7 @@ bool AssetsPanel::IsFolderCreateRequested() const {
 }
 
 void AssetsPanel::RequestOpenDirectory(const std::filesystem::path &folder) {
+	ClearNavigationRequests();
 	requestedDirectory_ = folder;
 	directoryOpenRequested_ = true;
 }
