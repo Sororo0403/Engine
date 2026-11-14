@@ -1176,6 +1176,18 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 		if (!config.Serialize(configText, problem)) {
 			throw std::runtime_error(problem);
 		}
+		GUID exportId{};
+		if (writeOutput && FAILED(CoCreateGuid(&exportId))) {
+			throw std::runtime_error("Could not create the export identifier.");
+		}
+		// 検査でも同じ文字数を計上する。識別子に制作環境のパスは含めない。
+		const auto packageId = std::format("{:08x}{:04x}{:04x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
+		                            exportId.Data1, exportId.Data2, exportId.Data3,
+		                            exportId.Data4[0], exportId.Data4[1], exportId.Data4[2], exportId.Data4[3],
+		                            exportId.Data4[4], exportId.Data4[5], exportId.Data4[6], exportId.Data4[7]);
+		auto configJson = nlohmann::json::parse(configText);
+		configJson["exportId"] = packageId;
+		configText = configJson.dump(2) + '\n';
 
 		GameExporter::CheckSummary result;
 		result.contentBytes = configText.size();
@@ -1306,6 +1318,27 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 	}
 }
 } // namespace
+
+std::string GameExporter::ReadPackageId(const std::filesystem::path &directory) {
+	if (!directory.is_absolute()) {
+		return {};
+	}
+	std::ifstream input(directory / L"game.json", std::ios::binary);
+	std::string text(64 * 1024, '\0');
+	input.read(text.data(), static_cast<std::streamsize>(text.size()));
+	if (!input.eof() || input.bad()) {
+		return {};
+	}
+	text.resize(static_cast<std::size_t>(input.gcount()));
+	const auto data = nlohmann::json::parse(text, nullptr, false);
+	if (const auto id = data.find("exportId"); id != data.end() && id->is_string()) {
+		const auto &value = id->get_ref<const std::string &>();
+		if (value.size() == 32 && value.find_first_not_of("0123456789abcdef") == std::string::npos) {
+			return value;
+		}
+	}
+	return {};
+}
 
 bool GameExporter::Check(const Scene &scene, const GameExportOptions &options,
                          std::string &error, std::vector<GameExportIssue> *issues,

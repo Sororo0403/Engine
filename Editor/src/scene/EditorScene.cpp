@@ -3583,7 +3583,8 @@ void EditorScene::WriteGameExport() {
 		exportConfig_ = options.config;
 	}
 	preferences_.RememberGameExport(project_.GetRoot(), directory);
-	preferences_.RememberExportSceneSources(project_.GetRoot(), directory, sceneSources);
+	preferences_.RememberExportSceneSources(project_.GetRoot(), directory, sceneSources,
+	                                       GameExporter::ReadPackageId(directory));
 	exportDialog_.CompleteExport();
 	preferences_.gameExportDrafts.erase(project_.GetRoot());
 	if (canSavePreferences_) {
@@ -3723,12 +3724,18 @@ bool EditorScene::OpenGameExport(std::filesystem::path directory) {
 	const auto previous =
 	    std::exchange(pendingGameExportReplacement_, std::filesystem::path{});
 	const auto recent = preferences_.RecentGameExports(root);
-	if (!previous.empty() || recent.empty() || recent.front() != directory) {
+	const bool historyChanged = !previous.empty() || recent.empty() || recent.front() != directory;
+	if (historyChanged) {
 		preferences_.RememberOpenedGameExport(root, directory, previous);
-		if (canSavePreferences_)
-			preferences_.Save();
 	}
-	auto sceneSources = preferences_.ExportSceneSources(root, directory);
+	const auto packageId = GameExporter::ReadPackageId(directory);
+	auto sceneSources = preferences_.ExportSceneSources(root, directory, packageId);
+	if (historyChanged && !packageId.empty() && !sceneSources.empty()) {
+		preferences_.RememberExportSceneSources(root, directory, sceneSources, packageId);
+	}
+	if (historyChanged && canSavePreferences_) {
+		preferences_.Save();
+	}
 	exportResultDialog_.Show(std::move(directory), true);
 	exportResultDialog_.SetSceneSources(root, std::move(sceneSources));
 	stage_ = DialogStage::EXPORT_RESULT;

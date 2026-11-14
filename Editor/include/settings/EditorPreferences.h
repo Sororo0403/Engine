@@ -14,6 +14,7 @@
 #include <filesystem>
 #include <map>
 #include <span>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -85,13 +86,15 @@ class EditorPreferences {
 	/// </summary>
 	void RememberExportSceneSources(const std::filesystem::path &root,
 	                                const std::filesystem::path &directory,
-	                                std::vector<GameExporter::SceneSource> sources);
+	                                std::vector<GameExporter::SceneSource> sources,
+	                                std::string packageId = {});
 
 	/// <summary>
 	/// 指定した配布版の編集元シーンを取得する
 	/// </summary>
 	std::vector<GameExporter::SceneSource> ExportSceneSources(
-	    const std::filesystem::path &root, const std::filesystem::path &directory) const;
+	    const std::filesystem::path &root, const std::filesystem::path &directory,
+	    std::string_view packageId = {}) const;
 
 	/// <summary>
 	/// 開いた配布先を履歴へ追加する。最後の出力を移動した場合はその場所も更新する
@@ -204,8 +207,13 @@ class EditorPreferences {
   private:
 	std::map<std::filesystem::path, std::filesystem::path> lastGameExports_;
 	std::map<std::filesystem::path, std::vector<std::filesystem::path>> recentGameExports_;
+	struct ExportSceneSourceRecord {
+		std::string packageId;
+		std::vector<GameExporter::SceneSource> scenes;
+		bool operator==(const ExportSceneSourceRecord &) const = default;
+	};
 	std::map<std::pair<std::filesystem::path, std::filesystem::path>,
-	         std::vector<GameExporter::SceneSource>> exportSceneSources_;
+	         ExportSceneSourceRecord> exportSceneSources_;
 	std::map<std::filesystem::path, std::filesystem::path> projectAssetFolders_;
 	std::map<std::filesystem::path, std::vector<SceneObjectId>> sceneSelections_;
 };

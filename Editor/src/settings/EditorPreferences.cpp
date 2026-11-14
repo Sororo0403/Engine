@@ -220,8 +220,8 @@ void EditorPreferences::RelocateScenes(
 			}
 		}
 	}
-	for (auto &[key, sources] : exportSceneSources_) {
-		for (auto &source : sources) {
+	for (auto &[key, record] : exportSceneSources_) {
+		for (auto &source : record.scenes) {
 			source.sourcePath = PathUtils::AfterMove(source.sourcePath, moves);
 		}
 	}
@@ -283,7 +283,7 @@ void EditorPreferences::RememberGameExport(
 
 void EditorPreferences::RememberExportSceneSources(
     const std::filesystem::path &root, const std::filesystem::path &directory,
-    std::vector<GameExporter::SceneSource> sources) {
+    std::vector<GameExporter::SceneSource> sources, std::string packageId) {
 	const auto key = std::pair(root.lexically_normal(), directory.lexically_normal());
 	const auto recent = RecentGameExports(root);
 	const auto last = LastGameExport(root);
@@ -306,7 +306,8 @@ void EditorPreferences::RememberExportSceneSources(
 	if (sources.empty()) {
 		exportSceneSources_.erase(key);
 	} else {
-		exportSceneSources_.insert_or_assign(key, std::move(sources));
+		exportSceneSources_.insert_or_assign(key, ExportSceneSourceRecord{
+		    std::move(packageId), std::move(sources)});
 	}
 	std::erase_if(exportSceneSources_, [&](const auto &entry) {
 		const auto &[project, output] = entry.first;
@@ -316,9 +317,21 @@ void EditorPreferences::RememberExportSceneSources(
 }
 
 std::vector<GameExporter::SceneSource> EditorPreferences::ExportSceneSources(
-    const std::filesystem::path &root, const std::filesystem::path &directory) const {
-	const auto found = exportSceneSources_.find({root.lexically_normal(), directory.lexically_normal()});
-	return found == exportSceneSources_.end() ? std::vector<GameExporter::SceneSource>{} : found->second;
+    const std::filesystem::path &root, const std::filesystem::path &directory,
+    std::string_view packageId) const {
+	const auto project = root.lexically_normal();
+	const auto found = exportSceneSources_.find({project, directory.lexically_normal()});
+	if (found != exportSceneSources_.end() && found->second.packageId == packageId) {
+		return found->second.scenes;
+	}
+	if (!packageId.empty()) {
+		for (const auto &[key, record] : exportSceneSources_) {
+			if (key.first == project && record.packageId == packageId) {
+				return record.scenes;
+			}
+		}
+	}
+	return {};
 }
 
 bool EditorPreferences::RememberOpenedGameExport(
@@ -746,7 +759,12 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 							                   PathUtils::FromUtf8(source.get_ref<const std::string &>())});
 						}
 					}
-					loaded.RememberExportSceneSources(root, PathUtils::FromUtf8(directory), std::move(sources));
+					std::string packageId;
+					if (const auto id = entries.find("exportId"); id != entries.end() && id->is_string()) {
+						packageId = id->get<std::string>();
+					}
+					loaded.RememberExportSceneSources(root, PathUtils::FromUtf8(directory),
+					                                  std::move(sources), std::move(packageId));
 				}
 			}
 		}
@@ -1094,10 +1112,13 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 		}
 		auto projectAssetFoldersJson = nlohmann::json::object();
 		auto exportSceneSourcesJson = nlohmann::json::object();
-		for (const auto &[key, sources] : exportSceneSources_) {
+		for (const auto &[key, record] : exportSceneSources_) {
 			const auto &[root, directory] = key;
 			auto &entries = exportSceneSourcesJson[PathUtils::ToUtf8(root)][PathUtils::ToUtf8(directory)];
-			for (const auto &[packaged, source] : sources) {
+			if (!record.packageId.empty()) {
+				entries["exportId"] = record.packageId;
+			}
+			for (const auto &[packaged, source] : record.scenes) {
 				entries[PathUtils::ToUtf8(packaged)] = PathUtils::ToUtf8(source);
 			}
 		}

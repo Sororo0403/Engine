@@ -71,6 +71,11 @@ struct GameExportIssue {
 
 namespace GameExporter {
 /// <summary>
+/// 配布時に付けた識別子を取得する。識別子のない旧配布版は空文字列を返す
+/// </summary>
+std::string ReadPackageId(const std::filesystem::path &directory);
+
+/// <summary>
 /// 配布パッケージ内の相対パスと、編集中のシーンの絶対パスの対応
 /// </summary>
 struct SceneSource {
