@@ -177,7 +177,7 @@ class AssetsPanel {
 	bool IsFolderCreateRequested() const;
 
 	/// <summary>
-	/// 今回の描画でRefreshを押し、素材一覧の再読み込みが成功したか確認する
+	/// 今回の描画中に素材一覧の再読み込みが成功したか確認する
 	/// </summary>
 	bool DidRefresh() const { return refreshed_; }
 

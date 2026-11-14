@@ -205,7 +205,6 @@ void AssetsPanel::SetAssetType(AssetType type) {
 	audioImportRequested_ = false;
 	modelImportRequested_ = false;
 	folderCreateRequested_ = false;
-	refreshed_ = false;
 	prefabCreateRequested_ = false;
 	scriptCreateRequested_ = false;
 	scriptEditPath_.clear();
@@ -392,8 +391,12 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	if (!revealPath_.empty()) {
 		auto previous = keepRevealResults_ ? CaptureResults() : std::nullopt;
 		try {
-			if (SelectAsset(revealPath_, assets) ||
-			    (!refreshed_ && assets.Refresh() && SelectAsset(revealPath_, assets))) {
+			bool selected = SelectAsset(revealPath_, assets);
+			if (!selected && !refreshed_ && assets.Refresh()) {
+				refreshed_ = true;
+				selected = SelectAsset(revealPath_, assets);
+			}
+			if (selected) {
 				revealMessage_.clear();
 				unavailableRevealPath_.clear();
 				previousView_ = std::move(previous);
