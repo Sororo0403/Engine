@@ -5847,9 +5847,16 @@ void EditorScene::UpdateDialogs() {
 					    failedAssetMoves_.front().second.parent_path(), errorActionMessage_);
 				}
 				ui_.SameLine();
-				if (ui_.Button("Retry Move")) {
+				const bool retry = ui_.Button("Retry Move");
+				ui_.SameLine();
+				const bool useAvailableNames = ui_.Button("Retry with Available Names");
+				ImGui::SetItemTooltip("Add a suffix to conflicting names and retry the move.");
+				if (retry || useAvailableNames) {
 					std::string error;
-					if (RelocateAssets(failedAssetMoves_, error)) {
+					const auto moves = useAvailableNames
+					                       ? AssetUsage::FindAvailableMoveDestinations(failedAssetMoves_, error)
+					                       : failedAssetMoves_;
+					if (!moves.empty() && RelocateAssets(moves, error)) {
 						if (failedAssetMoveWasCutPaste_) {
 							assetsPanel_.FinishPaste();
 						}

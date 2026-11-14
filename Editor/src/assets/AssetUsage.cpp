@@ -21,6 +21,7 @@
 #include <optional>
 #include <set>
 #include <stdexcept>
+#include <string_view>
 
 namespace {
 namespace fs = std::filesystem;
@@ -95,7 +96,8 @@ void ValidateFolderTree(const fs::path &folder) {
 /// </summary>
 fs::path DuplicateDestination(const fs::path &source, bool folder,
                               const fs::path &directory,
-                              const AssetUsage::Paths &reserved) {
+                              const AssetUsage::Paths &reserved,
+                              std::wstring_view nameSuffix = L" Copy") {
 	const auto parent = directory.empty() ? source.parent_path() : directory;
 	const auto available = [&](const fs::path &path) {
 		return !fs::exists(fs::symlink_status(path)) &&
@@ -122,7 +124,8 @@ fs::path DuplicateDestination(const fs::path &source, bool folder,
 	}
 
 	for (std::size_t index = 1;; ++index) {
-		auto name = stem.native() + L" Copy";
+		auto name = stem.native();
+		name += nameSuffix;
 
 		if (index > 1) {
 			name += L" " + std::to_wstring(index);
@@ -752,6 +755,39 @@ AssetUsage::Paths AssetUsage::CopyTo(std::span<const fs::path> sources,
 			error += (*it)->Cleanup();
 		}
 
+		return {};
+	}
+}
+
+AssetUsage::Moves AssetUsage::FindAvailableMoveDestinations(const Moves &moves,
+                                                           std::string &error) {
+	try {
+		Moves result;
+		Paths reserved;
+		// 衝突する名前に連番を付けるとき、別の移動で使う名前も避ける。
+		Paths requested;
+		result.reserve(moves.size());
+		requested.reserve(moves.size());
+		for (const auto &[source, destination] : moves) {
+			requested.push_back(destination);
+		}
+		for (const auto &[source, destination] : moves) {
+			auto target = destination;
+			if (fs::exists(fs::symlink_status(target)) ||
+			    std::ranges::any_of(reserved, [&](const auto &path) {
+				    return PathUtils::IsSameFile(path, target);
+			    })) {
+				target = DuplicateDestination(destination, fs::is_directory(source),
+				                              destination.parent_path(), requested, L" Moved");
+				requested.push_back(target);
+			}
+			reserved.push_back(target);
+			result.emplace_back(source, std::move(target));
+		}
+		error.clear();
+		return result;
+	} catch (const std::exception &failure) {
+		error = failure.what();
 		return {};
 	}
 }

@@ -17,6 +17,11 @@ using Paths = std::vector<std::filesystem::path>;
 using Moves = std::vector<std::pair<std::filesystem::path, std::filesystem::path>>;
 
 /// <summary>
+/// 移動先の衝突を避け、空いている名前を割り当てる。ファイルの移動は行わない
+/// </summary>
+Moves FindAvailableMoveDestinations(const Moves &moves, std::string &error);
+
+/// <summary>
 /// 参照元の表示と、シーン内で該当する物体を探すための情報
 /// </summary>
 struct Reference {
