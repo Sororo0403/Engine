@@ -2118,8 +2118,14 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			pendingOpenPath_.clear();
 			action = EditorAction::OPEN_GAME_EXPORT;
 		}
-		if (exportResultInterrupted_ && ui_.MenuItem("Return to Export Result", nullptr, enabled)) {
-			action = EditorAction::RETURN_TO_EXPORT_RESULT;
+		if (exportResultInterrupted_) {
+			if (ui_.MenuItem("Return to Export Result", nullptr, enabled)) {
+				action = EditorAction::RETURN_TO_EXPORT_RESULT;
+			}
+			if (ui_.MenuItem("New Export from Result...", nullptr, enabled)) {
+				action = EditorAction::NEW_EXPORT_FROM_RESULT;
+			}
+			ImGui::SetItemTooltip("Use the previous export's window settings and suggest an unused output folder.");
 		}
 
 		const auto lastExport = preferences_.LastGameExport(project_.GetRoot());
@@ -3123,6 +3129,11 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 		if (std::exchange(exportResultInterrupted_, false)) {
 			exportResultDialog_.Reopen();
 			stage_ = DialogStage::EXPORT_RESULT;
+		}
+		return;
+	case EditorAction::NEW_EXPORT_FROM_RESULT:
+		if (exportResultInterrupted_) {
+			ShowGameExport(exportResultDialog_.GetDirectory());
 		}
 		return;
 
@@ -6202,6 +6213,7 @@ void EditorScene::UpdateDialogs() {
 		}
 		if (result == GameExportResult::CANCELLED) {
 			if (std::exchange(returnToExportResult_, false)) {
+				exportResultInterrupted_ = false;
 				exportResultDialog_.Reopen();
 				stage_ = DialogStage::EXPORT_RESULT;
 			} else {
