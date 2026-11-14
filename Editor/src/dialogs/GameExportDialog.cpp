@@ -432,6 +432,9 @@ void GameExportDialog::ShowExportFailure(std::string error,
 
 void GameExportDialog::Reopen(std::string error) {
 	error_ = std::move(error);
+	if (!issueToScrollTo_ && selectedIssue_) {
+		issueToScrollTo_ = selectedIssue_;
+	}
 	opening_ = true;
 }
 
