@@ -228,6 +228,8 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 		ui.Checkbox("Maximize on Play", maximizeOnPlay_);
 		ui.Checkbox("Start Paused", startPaused_);
 		ImGui::SetItemTooltip("Pause after initialization, before the first game update.");
+		ui.Checkbox("Load Test Save", loadTestSave_);
+		ImGui::SetItemTooltip("Read the exported game's Editor test save at Play. Changes stay in memory.");
 
 		if (ui.Button("Play")) {
 			action = Action::PLAY;
@@ -359,9 +361,21 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
 		}
 	}
 
+	std::string initialScriptData = "{}";
+	if (loadTestSave_ && !config.settingsId.empty()) {
+		const auto path = config.GetScriptSettingsPath(true);
+		if (path.empty()) {
+			error = "The Editor test save location is unavailable.";
+			return false;
+		}
+		if (!config.LoadScriptSettings(path, initialScriptData, error)) {
+			return false;
+		}
+	}
+
 	session_.SetLegacyLighting(config.lighting);
 	if (!session_.Start(scene, error, fallbackPose, invalidObject,
-	                    cameraOverride, startPaused_)) {
+	                    cameraOverride, startPaused_, std::move(initialScriptData))) {
 		return false;
 	}
 

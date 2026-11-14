@@ -13,6 +13,27 @@
 #include <utility>
 
 namespace {
+/// <summary>
+/// 設定に登録されたキーから、保存可能な単一の値だけを取り出す
+/// </summary>
+std::string SelectPersistentValues(const nlohmann::json &data,
+                                 const std::vector<std::string> &keys) {
+	auto settings = nlohmann::json::object();
+	if (data.is_object()) {
+		for (const auto &key : keys) {
+			const auto value = data.find(key);
+			if (value == data.end())
+				continue;
+			if (value->is_boolean() || value->is_number() ||
+			    (value->is_string() &&
+			     value->get_ref<const std::string &>().size() <= 256)) {
+				settings[key] = *value;
+			}
+		}
+	}
+	return settings.dump();
+}
+
 bool IsSettingsName(std::string_view name) {
 	return !name.empty() && name.size() <= 64 &&
 	       std::ranges::all_of(name, [](char c) {
@@ -60,6 +81,49 @@ std::filesystem::path GameConfig::GetScriptSettingsPath(bool editorTest) const {
 	}
 	return root / L"Engine" / (editorTest ? L"EditorTestGameSettings" : L"GameSettings") /
 	       ("game-" + settingsId + ".json");
+}
+
+bool GameConfig::LoadScriptSettings(const std::filesystem::path &path, std::string &settings,
+                                    std::string &error) const {
+	constexpr std::size_t kMaxScriptSettingsBytes = 32768;
+	error.clear();
+	const auto fail = [&](std::string_view reason) {
+		error = "Could not load game script settings: " + PathUtils::ToUtf8(path) +
+		        "\n" + std::string(reason);
+		return false;
+	};
+
+	std::ifstream file(path, std::ios::binary);
+	if (!file) {
+		std::error_code status;
+		if (std::filesystem::symlink_status(path, status).type() == std::filesystem::file_type::not_found &&
+		    (!status || status == std::errc::no_such_file_or_directory)) {
+			settings = "{}";
+			return true;
+		}
+		return fail("The file could not be opened.");
+	}
+
+	std::string bytes(kMaxScriptSettingsBytes + 1, '\0');
+	file.read(bytes.data(), static_cast<std::streamsize>(bytes.size()));
+	if (file.bad() || (!file && !file.eof())) {
+		return fail("The file could not be read.");
+	}
+	if (file.gcount() > static_cast<std::streamsize>(kMaxScriptSettingsBytes)) {
+		return fail("The file exceeds the size limit.");
+	}
+	bytes.resize(static_cast<std::size_t>(file.gcount()));
+	const auto data = nlohmann::json::parse(bytes, nullptr, false);
+	if (!data.is_object()) {
+		return fail("The file must contain a valid JSON object.");
+	}
+
+	settings = SelectPersistentValues(data, persistentScriptKeys);
+	return true;
+}
+
+std::string GameConfig::SelectScriptSettings(std::string_view data) const {
+	return SelectPersistentValues(nlohmann::json::parse(data, nullptr, false), persistentScriptKeys);
 }
 
 bool GameConfig::IsValid() const {

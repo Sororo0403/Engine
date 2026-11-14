@@ -281,4 +281,5 @@ class EditorPlayMode {
 	bool maximizeRequested_ = false;
 	bool maximizeOnPlay_ = false;
 	bool startPaused_ = false;
+	bool loadTestSave_ = false;
 };

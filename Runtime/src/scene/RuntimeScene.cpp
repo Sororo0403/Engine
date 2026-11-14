@@ -10,73 +10,7 @@
 #include "platform/windows/PathUtils.h"
 #include "scene/SceneSerializer.h"
 #include "ui/UIInputReader.h"
-#include <fstream>
-#include <json.hpp>
-#include <optional>
 #include <utility>
-
-namespace {
-constexpr std::size_t kMaxScriptSettingsBytes = 32768;
-
-/// <summary>
-/// 設定に登録されたキーから、保存可能な単一の値だけを取り出す
-/// </summary>
-std::string SelectScriptSettings(const nlohmann::json &data,
-                                 const std::vector<std::string> &keys) {
-	auto settings = nlohmann::json::object();
-	if (data.is_object()) {
-		for (const auto &key : keys) {
-			const auto value = data.find(key);
-			if (value == data.end())
-				continue;
-			if (value->is_boolean() || value->is_number() ||
-			    (value->is_string() &&
-			     value->get_ref<const std::string &>().size() <= 256)) {
-				settings[key] = *value;
-			}
-		}
-	}
-	return settings.dump();
-}
-
-/// <summary>
-/// ユーザー設定を上限付きで読み込み、起動時の共有データを作る
-/// </summary>
-std::optional<std::string> LoadScriptSettings(const std::filesystem::path &path,
-                                              const std::vector<std::string> &keys) {
-	const auto warn = [&](std::string_view reason) {
-		Logger::Warning("Could not load game script settings: " + PathUtils::ToUtf8(path) +
-		                "\n" + std::string(reason) + " Game progress will not be saved during this run.", path);
-	};
-	std::ifstream file(path, std::ios::binary);
-	if (!file) {
-		std::error_code status;
-		if (std::filesystem::symlink_status(path, status).type() == std::filesystem::file_type::not_found &&
-		    (!status || status == std::errc::no_such_file_or_directory)) {
-			return "{}";
-		}
-		warn("The file could not be opened.");
-		return std::nullopt;
-	}
-	std::string text(kMaxScriptSettingsBytes + 1, '\0');
-	file.read(text.data(), static_cast<std::streamsize>(text.size()));
-	if (file.bad() || (!file && !file.eof())) {
-		warn("The file could not be read.");
-		return std::nullopt;
-	}
-	if (file.gcount() > static_cast<std::streamsize>(kMaxScriptSettingsBytes)) {
-		warn("The file exceeds the size limit.");
-		return std::nullopt;
-	}
-	text.resize(static_cast<std::size_t>(file.gcount()));
-	const auto data = nlohmann::json::parse(text, nullptr, false);
-	if (!data.is_object()) {
-		warn("The file must contain a valid JSON object.");
-		return std::nullopt;
-	}
-	return SelectScriptSettings(data, keys);
-}
-} // namespace
 
 RuntimeScene::RuntimeScene(const EngineContext &context, GameConfig config,
                            SaveMode saveMode)
@@ -124,15 +58,15 @@ bool RuntimeScene::Initialize() {
 		Logger::Info("Save data is disabled for this run.");
 	} else if (!config_.settingsId.empty()) {
 		scriptSettingsPath_ = config_.GetScriptSettingsPath(saveMode_ == SaveMode::EDITOR_TEST);
-		if (scriptSettingsPath_.empty())
+		if (scriptSettingsPath_.empty()) {
 			Logger::Warning("Game script settings directory is unavailable.");
-		else if (auto loaded = LoadScriptSettings(scriptSettingsPath_, config_.persistentScriptKeys)) {
-			savedScriptSettings_ = std::move(*loaded);
+		} else if (config_.LoadScriptSettings(scriptSettingsPath_, savedScriptSettings_, error)) {
 			const auto *label = saveMode_ == SaveMode::EDITOR_TEST ? "Editor test save file: "
 			                                                     : "Game save file: ";
 			Logger::Info(label + PathUtils::ToUtf8(scriptSettingsPath_), scriptSettingsPath_);
 		} else {
 			// 読めなかったデータを初期値で上書きしない。
+			Logger::Warning(error + " Game progress will not be saved during this run.", scriptSettingsPath_);
 			scriptSettingsPath_.clear();
 		}
 	}
@@ -160,8 +94,7 @@ void RuntimeScene::SaveScriptSettings() {
 	const auto now = std::chrono::steady_clock::now();
 	if (now < nextScriptSettingsWrite_)
 		return;
-	auto settings =
-	    SelectScriptSettings(nlohmann::json::parse(current, nullptr, false), config_.persistentScriptKeys);
+	auto settings = config_.SelectScriptSettings(current);
 	if (settings == savedScriptSettings_) {
 		observedScriptData_ = current;
 		// 保存前の値に戻った場合は保留していた再試行を取り消す。

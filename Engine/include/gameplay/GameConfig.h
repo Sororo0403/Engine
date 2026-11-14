@@ -41,6 +41,17 @@ struct GameConfig {
 	std::filesystem::path GetScriptSettingsPath(bool editorTest) const;
 
 	/// <summary>
+	/// セーブを読み、設定されたキーの値だけを取り出す。ファイルが未作成なら空のJSONを返す
+	/// </summary>
+	bool LoadScriptSettings(const std::filesystem::path &path, std::string &settings,
+	                        std::string &error) const;
+
+	/// <summary>
+	/// スクリプトの共有データから保存対象の値だけをJSONに変換する
+	/// </summary>
+	std::string SelectScriptSettings(std::string_view data) const;
+
+	/// <summary>
 	/// 起動値と、パッケージ内を指す相対シーンパスを確認する
 	/// </summary>
 	/// <returns>true:有効 false:範囲外またはパス・カメラ・照明が無効</returns>

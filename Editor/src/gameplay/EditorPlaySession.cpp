@@ -11,7 +11,8 @@
 bool EditorPlaySession::Start(const Scene &scene, std::string &error,
                               const CameraPose &fallbackPose,
                               SceneObjectId *invalidObject,
-                              SceneObjectId cameraOverride, bool startPaused) {
+                              SceneObjectId cameraOverride, bool startPaused,
+                              std::string initialScriptData) {
 	if (invalidObject) {
 		*invalidObject = 0;
 	}
@@ -59,13 +60,15 @@ bool EditorPlaySession::Start(const Scene &scene, std::string &error,
 			}
 		}
 
-		if (!simulation_.Start(*snapshot, error, fallbackPose, invalidObject)) {
+		if (!simulation_.Start(*snapshot, error, fallbackPose, invalidObject,
+		                       initialScriptData)) {
 			return false;
 		}
 
 		initialScene_ = std::move(snapshot);
 		initialSceneRevision_ = simulation_.GetSceneRevision();
 		initialFallback_ = fallbackPose;
+		initialScriptData_ = std::move(initialScriptData);
 		clock_.Reset();
 		if (startPaused) {
 			clock_.TogglePause();
@@ -101,7 +104,7 @@ bool EditorPlaySession::Restart(std::string &error, bool currentScene,
 	const bool restarted = currentScene
 	                           ? simulation_.RestartCurrentScene(error, failedScript, sourceObject)
 	                           : simulation_.Start(*initialScene_, error, initialFallback_,
-	                                               &invalidObject);
+	                                               &invalidObject, initialScriptData_);
 	if (!restarted) {
 		if (!currentScene && failedScript) {
 			*failedScript = SceneScripts::FindFailedScript(*initialScene_, invalidObject, error);
@@ -138,6 +141,7 @@ void EditorPlaySession::Stop() {
 	initialScene_.reset();
 	initialSceneRevision_ = 0;
 	initialFallback_ = {};
+	initialScriptData_.clear();
 	clock_.Reset();
 	elapsedSeconds_ = 0.0;
 	simulationFrameCount_ = 0;
