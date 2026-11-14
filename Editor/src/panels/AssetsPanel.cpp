@@ -81,6 +81,7 @@ bool AssetsPanel::RevealIndexedAsset(const std::filesystem::path &path,
 		return false;
 	}
 	unavailableRevealPath_.clear();
+	revealMessage_.clear();
 	previousView_.reset();
 	focusRequested_ = true;
 	return true;
@@ -374,12 +375,15 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	std::filesystem::path requestedPath;
 
 	if (ui.Button("Refresh")) {
-		unavailableRevealPath_.clear();
-		revealMessage_.clear();
 		if (assets.Refresh()) {
 			refreshed_ = true;
+			auto retry = std::exchange(unavailableRevealPath_, {});
+			revealMessage_.clear();
 			RestoreDirectory(currentDirectory_, assets);
 			RemoveMissingPaths();
+			if (!retry.empty()) {
+				revealPath_ = std::move(retry);
+			}
 		}
 	}
 
@@ -388,8 +392,9 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		                    ? CaptureResults() : std::nullopt;
 		try {
 			if (SelectAsset(revealPath_, assets) ||
-			    (assets.Refresh() && SelectAsset(revealPath_, assets))) {
+			    (!refreshed_ && assets.Refresh() && SelectAsset(revealPath_, assets))) {
 				revealMessage_.clear();
+				unavailableRevealPath_.clear();
 				previousView_ = std::move(previous);
 			} else if (assets.GetError().empty()) {
 				revealMessage_ = "Asset is not in the indexed Assets folder.";
