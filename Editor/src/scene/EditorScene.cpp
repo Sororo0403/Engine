@@ -4281,17 +4281,20 @@ void EditorScene::StartSaveCopy(bool reload) {
 	}
 }
 
-void EditorScene::ReloadAfterSavingCopy(const std::filesystem::path &copy) {
+void EditorScene::ReloadScene(const std::filesystem::path &copy) {
 	const auto original = document_.GetFilePath();
 	if (OpenScene(original, false)) {
+		stage_ = DialogStage::IDLE;
 		SaveEditorSession();
 	} else {
-		ShowError(std::format(
-		    "Saved a copy to {}. Could not reload the original scene. "
-		    "The editing scene was kept.\n{}",
-		    PathUtils::ToUtf8(copy), document_.GetError()));
+		auto message = copy.empty() ? std::string{}
+		                           : std::format("Saved a copy to {}. ", PathUtils::ToUtf8(copy));
+		message += std::format("Could not reload {}. The editing scene was kept.\n{}",
+		                       PathUtils::ToUtf8(original), document_.GetError());
+		ShowError(std::move(message));
 		failedOpenScenePath_ = original;
 		reloadBackupPath_ = copy;
+		sceneReloadFailed_ = true;
 	}
 }
 
@@ -5249,7 +5252,7 @@ void EditorScene::UpdateDialogs() {
 		if (result == SceneReloadResult::CANCELLED) {
 			stage_ = DialogStage::IDLE;
 		} else if (result == SceneReloadResult::RELOAD) {
-			OpenScene(document_.GetFilePath());
+			ReloadScene();
 		} else if (result == SceneReloadResult::SAVE_COPY_AND_RELOAD) {
 			StartSaveCopy(true);
 		}
@@ -5301,7 +5304,7 @@ void EditorScene::UpdateDialogs() {
 				stage_ = DialogStage::IDLE;
 				if (reload) {
 					pendingAction_ = EditorAction::NONE;
-					ReloadAfterSavingCopy(copy);
+					ReloadScene(copy);
 				}
 			} else {
 				fileDialog_.RetrySelection(document_.GetError());
@@ -6069,7 +6072,7 @@ void EditorScene::UpdateDialogs() {
 					}
 					ui_.SameLine();
 				}
-				if (ui_.Button(reloadBackupPath_.empty() ? "Retry Open Scene" : "Retry Reload")) {
+				if (ui_.Button(sceneReloadFailed_ ? "Retry Reload" : "Retry Open Scene")) {
 					auto backup = std::exchange(reloadBackupPath_, {});
 					auto path = std::exchange(failedOpenScenePath_, {});
 					const auto object =
@@ -6077,11 +6080,11 @@ void EditorScene::UpdateDialogs() {
 					ui_.CloseCurrentPopup();
 					ui_.EndPopup();
 					stage_ = DialogStage::IDLE;
-					if (backup.empty()) {
+					if (sceneReloadFailed_) {
+						ReloadScene(backup);
+					} else {
 						pendingOpenPath_ = std::move(path);
 						StartAction(EditorAction::OPEN_PATH, object);
-					} else {
-						ReloadAfterSavingCopy(backup);
 					}
 					return;
 				}
@@ -6851,6 +6854,7 @@ void EditorScene::ShowError(std::string message, SceneObjectId objectId,
 	errorScenePath_.clear();
 	failedOpenScenePath_.clear();
 	reloadBackupPath_.clear();
+	sceneReloadFailed_ = false;
 	failedOpenSceneObject_ = 0;
 	errorReloadAssetPath_.clear();
 	errorReplayPath_.reset();

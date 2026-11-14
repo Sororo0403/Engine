@@ -529,7 +529,11 @@ class EditorScene final : public IScene {
 	/// 現在の保存先と保存地点を保持するコピーの保存先選択を開始する
 	/// </summary>
 	void StartSaveCopy(bool reload = false);
-	void ReloadAfterSavingCopy(const std::filesystem::path &copy);
+
+	/// <summary>
+	/// 保存済みのシーンを読み直し、失敗時は編集内容を保持して再試行できるようにする
+	/// </summary>
+	void ReloadScene(const std::filesystem::path &copy = {});
 
 	/// <summary>
 	/// 選択物体を独立したシーンへ準備し、コピー先の選択を開始する
@@ -1096,6 +1100,7 @@ class EditorScene final : public IScene {
 	std::filesystem::path errorScenePath_;
 	std::filesystem::path failedOpenScenePath_;
 	std::filesystem::path reloadBackupPath_;
+	bool sceneReloadFailed_ = false;
 	SceneObjectId failedOpenSceneObject_ = 0;
 	std::filesystem::path errorReloadAssetPath_;
 	bool errorReloadIsTexture_ = false;
