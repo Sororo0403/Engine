@@ -767,7 +767,14 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 			ui.EndDisabled();
 		}
 	} else if (!checkResult_.empty() && !checkResultStale_) {
-		ImGui::TextWrapped("%s", checkResult_.c_str());
+		if (ImGui::BeginChild("ExportCheckSummary",
+		                      {0.0f, 8.0f * ImGui::GetTextLineHeightWithSpacing()})) {
+			ImGui::TextWrapped("%s", checkResult_.c_str());
+		}
+		ImGui::EndChild();
+		if (ui.Button("Copy Check Results")) {
+			ImGui::SetClipboardText(checkResult_.c_str());
+		}
 	}
 
 	const bool exportRequested = ui.Button("Export");

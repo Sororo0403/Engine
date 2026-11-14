@@ -606,7 +606,8 @@ fs::path ResolveDestination(const fs::path &path) {
 
 bool ProcessExport(const Scene &scene, const GameExportOptions &options,
                    std::string &error, bool writeOutput,
-                   std::vector<GameExportIssue> *issues) {
+                   std::vector<GameExportIssue> *issues,
+                   std::vector<fs::path> *includedScenes = nullptr) {
 	OutputDirectory output;
 	const auto appendIssue = [&](std::string issue, const fs::path &scenePath,
 	                             SceneObjectId objectId,
@@ -1140,6 +1141,15 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 		}
 
 		if (!writeOutput) {
+			if (includedScenes) {
+				std::vector<fs::path> sources;
+				for (const auto &entry : graph) {
+					if (!entry.prefab) {
+						sources.push_back(entry.source);
+					}
+				}
+				includedScenes->swap(sources);
+			}
 			return true;
 		}
 
@@ -1210,8 +1220,12 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 } // namespace
 
 bool GameExporter::Check(const Scene &scene, const GameExportOptions &options,
-                         std::string &error, std::vector<GameExportIssue> *issues) {
-	return ProcessExport(scene, options, error, false, issues);
+                         std::string &error, std::vector<GameExportIssue> *issues,
+                         std::vector<fs::path> *includedScenes) {
+	if (includedScenes) {
+		includedScenes->clear();
+	}
+	return ProcessExport(scene, options, error, false, issues, includedScenes);
 }
 
 bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,

@@ -3544,9 +3544,17 @@ void EditorScene::CheckGameExport(bool continueFromIssue) {
 	auto options = exportDialog_.GetOptions();
 	std::string error;
 	std::vector<GameExportIssue> issues;
+	std::vector<std::filesystem::path> includedScenes;
 	const auto *scene = PrepareGameExport(startup, options, error, issues);
-	if (scene && GameExporter::Check(*scene, options, error, &issues)) {
-		exportDialog_.SetCheckResult("Export check passed. No files were written.");
+	if (scene && GameExporter::Check(*scene, options, error, &issues, &includedScenes)) {
+		auto report = std::format("Export check passed. No files were written.\n\n"
+		                          "Included scenes ({}):", includedScenes.size());
+		for (std::size_t i = 0; i < includedScenes.size(); ++i) {
+			const auto &path = includedScenes[i];
+			report += std::format("\n{}{}", i == 0 ? "Startup: " : "",
+			                      path.empty() ? "Untitled" : PathUtils::ToUtf8(path));
+		}
+		exportDialog_.SetCheckResult(std::move(report));
 		return;
 	}
 
