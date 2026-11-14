@@ -243,11 +243,10 @@ bool SceneCheckPanel::MatchesFilter(const SceneValidationIssue &issue,
 		return true;
 	}
 
-	if (issue.objectId == 0) {
-		return false;
-	}
-
-	if (std::to_string(issue.objectId).find(filter_) != std::string::npos) {
+	const auto matchesId = [&](SceneObjectId id) {
+		return id != 0 && std::to_string(id).find(filter_) != std::string::npos;
+	};
+	if (matchesId(issue.objectId) || matchesId(issue.destinationObjectId)) {
 		return true;
 	}
 
