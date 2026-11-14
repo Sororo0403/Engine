@@ -12,6 +12,7 @@
 #include "scene/SceneSerializer.h"
 #include "ui/UIInputReader.h"
 #include <format>
+#include <json.hpp>
 #include <utility>
 
 RuntimeScene::RuntimeScene(const EngineContext &context, GameConfig config,
@@ -43,11 +44,14 @@ bool RuntimeScene::Initialize() {
 	Scene source;
 	std::string error;
 	SceneObjectId invalidObject = 0;
-	const auto reportStartupError = [&](std::string_view reason) {
+	const auto reportStartupError = [&](std::string_view reason, std::string_view inputAction = {}) {
 		auto message = "Could not prepare startup scene: " + PathUtils::ToUtf8(config_.scenePath) +
 		               "\n" + std::string(reason);
 		if (source.Contains(invalidObject)) {
 			message += std::format("\nSource object ID: {}", invalidObject);
+		}
+		if (!inputAction.empty()) {
+			message += "\nInput action: " + nlohmann::json(inputAction).dump();
 		}
 		Logger::Error(message, config_.scenePath);
 	};
@@ -61,7 +65,7 @@ bool RuntimeScene::Initialize() {
 	const auto inputIssues = SceneValidation::InspectInputs(source, config_.actions);
 	if (!inputIssues.empty()) {
 		invalidObject = inputIssues.front().objectId;
-		reportStartupError(inputIssues.front().message);
+		reportStartupError(inputIssues.front().message, inputIssues.front().inputAction);
 		return false;
 	}
 
@@ -198,6 +202,9 @@ bool RuntimeScene::Update(float seconds) {
 				auto error = simulation_.GetLastUpdateError();
 				if (failed->objectId != 0) {
 					error += std::format("\nSource object ID: {}", failed->objectId);
+				}
+				if (!failed->inputAction.empty()) {
+					error += "\nInput action: " + nlohmann::json(failed->inputAction).dump();
 				}
 				Logger::Error(error, failed->path);
 			} else {

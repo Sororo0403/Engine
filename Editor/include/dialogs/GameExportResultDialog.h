@@ -18,7 +18,7 @@ class ImGuiSystem;
 struct GameConfig;
 
 enum class GameExportResultAction {
-	NONE, CLOSE, NEW_EXPORT, OPEN_SOURCE_SCENE, RELOAD_EXPORT, SWITCH_EXPORT
+	NONE, CLOSE, NEW_EXPORT, OPEN_SOURCE_SCENE, EDIT_INPUT_BINDING, RELOAD_EXPORT, SWITCH_EXPORT
 };
 
 /// <summary>
@@ -71,6 +71,11 @@ class GameExportResultDialog {
 	SceneObjectId GetRequestedSourceObject() const { return requestedSourceObject_; }
 
 	/// <summary>
+	/// 編集を要求された名前付き入力を取得する
+	/// </summary>
+	const std::string &GetRequestedInputAction() const { return requestedInputAction_; }
+
+	/// <summary>
 	/// 切り替えを要求された配布フォルダを取得する
 	/// </summary>
 	const std::filesystem::path &GetRequestedExport() const { return requestedExport_; }
@@ -110,6 +115,7 @@ class GameExportResultDialog {
 		std::string status;
 		std::string launchSettings;
 		std::string crashError;
+		std::string failedInputAction;
 		std::filesystem::path startupScenePath;
 		std::filesystem::path launchFailurePath;
 		std::filesystem::path destinationFailurePath;
@@ -178,6 +184,7 @@ class GameExportResultDialog {
 	std::filesystem::path directory_;
 	std::filesystem::path requestedSourceScene_;
 	SceneObjectId requestedSourceObject_ = 0;
+	std::string requestedInputAction_;
 	std::filesystem::path requestedExport_;
 	std::filesystem::path saveConflictExport_;
 	std::map<std::filesystem::path, GameRun> runs_;

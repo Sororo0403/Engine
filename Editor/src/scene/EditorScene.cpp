@@ -6009,6 +6009,10 @@ void EditorScene::UpdateDialogs() {
 				exportResultDialog_.Show(directory, true);
 				exportResultDialog_.SetSceneSources(root, preferences_.ExportSceneSources(root, directory, id), id);
 				stage_ = DialogStage::EXPORT_RESULT;
+			} else if (result == GameExportResultAction::EDIT_INPUT_BINDING) {
+				gameSettingsDialog_.Show(exportConfig_, project_.GetRoot(), {},
+				                         exportResultDialog_.GetRequestedInputAction());
+				stage_ = DialogStage::EDIT_EXPORT_RESULT_INPUT;
 			} else if (result == GameExportResultAction::OPEN_SOURCE_SCENE) {
 				const auto &source = exportResultDialog_.GetRequestedSourceScene();
 				const auto object = exportResultDialog_.GetRequestedSourceObject();
@@ -6161,8 +6165,10 @@ void EditorScene::UpdateDialogs() {
 	case DialogStage::GAME_SETTINGS:
 	case DialogStage::EDIT_PLAY_INPUT:
 	case DialogStage::EDIT_CONSOLE_PLAY_INPUT:
+	case DialogStage::EDIT_EXPORT_RESULT_INPUT:
 	case DialogStage::EDIT_EXPORT_INPUT: {
 		const bool fromExport = stage_ == DialogStage::EDIT_EXPORT_INPUT;
+		const bool fromExportResult = stage_ == DialogStage::EDIT_EXPORT_RESULT_INPUT;
 		const bool fromPlayError = stage_ == DialogStage::EDIT_PLAY_INPUT;
 		const bool fromConsole = stage_ == DialogStage::EDIT_CONSOLE_PLAY_INPUT;
 		const bool fromPlay = fromPlayError || fromConsole;
@@ -6194,6 +6200,9 @@ void EditorScene::UpdateDialogs() {
 				}
 				exportDialog_.Reopen();
 				stage_ = DialogStage::EXPORT_GAME;
+			} else if (fromExportResult) {
+				exportResultDialog_.Reopen();
+				stage_ = DialogStage::EXPORT_RESULT;
 			} else if (fromConsole) {
 				stage_ = DialogStage::IDLE;
 				if (result == GameSettingsResult::ACCEPTED && playFailureReplay_) {

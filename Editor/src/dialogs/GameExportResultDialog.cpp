@@ -11,6 +11,7 @@
 #include <format>
 #include <fstream>
 #include <imgui.h>
+#include <json.hpp>
 #include <limits>
 #include <string_view>
 #include <system_error>
@@ -25,6 +26,7 @@ constexpr std::string_view kDestinationReady = " [INFO] Destination scene ready:
 constexpr std::string_view kStartupPrepareError = " [ERROR] Could not prepare startup scene: ";
 constexpr std::string_view kDestinationLoadError = " [ERROR] Could not load destination scene: ";
 constexpr std::string_view kSourceObjectPrefix = "Source object ID: ";
+constexpr std::string_view kInputActionPrefix = "Input action: ";
 
 /// <summary>
 /// 診断の末尾から詳細行を一つ取得する
@@ -648,6 +650,7 @@ bool GameExportResultDialog::StartGame(bool freshStart) {
 		run.launchSettings += "\nSave data: Disabled for this run";
 	}
 	run.crashError.clear();
+	run.failedInputAction.clear();
 	run.startupScenePath.clear();
 	run.launchFailurePath.clear();
 	run.destinationFailurePath.clear();
@@ -755,9 +758,22 @@ bool GameExportResultDialog::UpdateGameProcess(bool &jumpToBeginning,
 				run.launchFailurePath = ResolveLogScene(directory_, startup);
 			}
 		}
-		run.destinationFailurePath = FindFailedDestination(directory_, run.crashError);
+		auto diagnostic = std::string_view(run.crashError);
+		const auto detail = TakeLastDiagnosticDetail(diagnostic);
+		if (detail.starts_with(kInputActionPrefix)) {
+			const auto value = nlohmann::json::parse(detail.substr(kInputActionPrefix.size()), nullptr, false);
+			if (const auto *name = value.get_ptr<const std::string *>();
+			    name && GameActionBinding::IsValidName(*name) &&
+			    (heading.starts_with(kStartupPrepareError) ||
+			     !heading.starts_with(" [ERROR] Could not load "))) {
+				run.failedInputAction = *name;
+			}
+		} else {
+			diagnostic = run.crashError;
+		}
+		run.destinationFailurePath = FindFailedDestination(directory_, diagnostic);
 		if (run.launchFailurePath.empty() && run.destinationFailurePath.empty()) {
-			run.runningSceneFailurePath = FindFailedRunningScene(directory_, run.crashError);
+			run.runningSceneFailurePath = FindFailedRunningScene(directory_, diagnostic);
 		}
 		jumpToBeginning = true;
 		return true;
@@ -842,6 +858,7 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 
 	requestedSourceScene_.clear();
 	requestedSourceObject_ = 0;
+	requestedInputAction_.clear();
 	const bool canOpenSource = run.sourceProjectRoot == projectRoot && !run.sourcePackageId.empty() &&
 	                           !run.sceneSources.empty();
 	const auto openSource = [&](const std::filesystem::path &sourcePath) {
@@ -880,11 +897,27 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 						                                  ? heading.starts_with(kStartupPrepareError)
 						                                  : !heading.starts_with(kDestinationLoadError);
 						if (hasObjectDetails) {
-							requestedSourceObject_ = ReadSourceObjectId(TakeLastDiagnosticDetail(diagnostic));
+							auto detail = TakeLastDiagnosticDetail(diagnostic);
+							if (detail.starts_with(kInputActionPrefix)) {
+								detail = TakeLastDiagnosticDetail(diagnostic);
+							}
+							requestedSourceObject_ = ReadSourceObjectId(detail);
 						}
 					}
 				}
 				ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(sourcePath).c_str());
+				if (!run.failedInputAction.empty() &&
+				    (destinationFailed || (!run.launchFailurePath.empty() && failedRuntimeScene.empty()))) {
+					ui.SameLine();
+					if (ui.Button("Edit Input Binding")) {
+						if (GameExporter::ReadPackageId(directory_) == run.sourcePackageId) {
+							requestedInputAction_ = run.failedInputAction;
+						} else {
+							error_ = "The export has changed. Use Reload Export to find its source scenes.";
+						}
+					}
+					ImGui::SetItemTooltip("%s", run.failedInputAction.c_str());
+				}
 				break;
 			}
 		}
@@ -972,13 +1005,15 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 	ui.SameLine();
 	const bool close = ui.Button("Close") || ImGui::IsKeyPressed(ImGuiKey_Escape, false);
 	GameExportResultAction action = GameExportResultAction::NONE;
-	if (close || newExport || !requestedSourceScene_.empty() || reload || !requestedExport_.empty()) {
+	if (close || newExport || !requestedSourceScene_.empty() || reload ||
+	    !requestedExport_.empty() || !requestedInputAction_.empty()) {
 		if (std::exchange(run.restartRequested, false)) {
 			run.status = "Requested game exit. Waiting for the process to finish.";
 		}
 		action = close ? GameExportResultAction::CLOSE
 		               : newExport ? GameExportResultAction::NEW_EXPORT
 		               : !requestedSourceScene_.empty() ? GameExportResultAction::OPEN_SOURCE_SCENE
+		               : !requestedInputAction_.empty() ? GameExportResultAction::EDIT_INPUT_BINDING
 		               : !requestedExport_.empty() ? GameExportResultAction::SWITCH_EXPORT
 		                                               : GameExportResultAction::RELOAD_EXPORT;
 		ui.CloseCurrentPopup();
