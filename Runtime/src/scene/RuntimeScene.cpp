@@ -3,6 +3,7 @@
 #include "core/Logger.h"
 #include "gameplay/CharacterInputReader.h"
 #include "gameplay/OrbitCameraInputReader.h"
+#include "gameplay/SceneValidation.h"
 #include "graphics/model/ModelManager.h"
 #include "graphics/render/RenderSystem.h"
 #include "input/InputSystem.h"
@@ -54,6 +55,13 @@ bool RuntimeScene::Initialize() {
 	if (!SceneSerializer::Load(source, config_.scenePath, &error)) {
 		Logger::Error("Could not load startup scene: " +
 		              PathUtils::ToUtf8(config_.scenePath) + "\n" + error);
+		return false;
+	}
+
+	const auto inputIssues = SceneValidation::InspectInputs(source, config_.actions);
+	if (!inputIssues.empty()) {
+		invalidObject = inputIssues.front().objectId;
+		reportStartupError(inputIssues.front().message);
 		return false;
 	}
 
@@ -184,7 +192,8 @@ bool RuntimeScene::Update(float seconds) {
 		        OrbitCameraInputReader::Read(
 		            &input_.GetMouse(),
 		            config_.gamepadEnabled ? &input_.GetGamepad() : nullptr),
-		        uiInput, actions, &invalidObject)) {
+		        uiInput, actions, &invalidObject,
+		        std::span<const GameActionBinding>{config_.actions})) {
 			if (const auto failed = simulation_.GetFailedSceneDestination()) {
 				auto error = simulation_.GetLastUpdateError();
 				if (failed->objectId != 0) {
