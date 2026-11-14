@@ -7,7 +7,7 @@
 
 class ImGuiSystem;
 
-enum class GameSettingsResult { NONE, CANCELLED, ACCEPTED };
+enum class GameSettingsResult { NONE, CANCELLED, ACCEPTED, PREPARE_EXPORT };
 
 /// <summary>
 /// シーンを変更せず、ゲームのタイトル・画面サイズ・操作キー・ゲームパッド・移動基準・照明を編集する
@@ -31,8 +31,10 @@ class GameSettingsDialog {
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
 	/// <param name="retryPlay">設定適用後に呼び出し側が試遊をやり直すか</param>
-	/// <returns>適用・取り消し・編集中</returns>
-	GameSettingsResult Draw(const ImGuiSystem &ui, bool retryPlay = false);
+	/// <param name="canPrepareExport">設定を適用して再出力の準備に進めるか</param>
+	/// <returns>適用・再出力の準備・取り消し・編集中</returns>
+	GameSettingsResult Draw(const ImGuiSystem &ui, bool retryPlay = false,
+	                        bool canPrepareExport = false);
 
 	/// <summary>
 	/// 設定の保存に失敗した理由を表示し、編集内容を保持したまま開き直す

@@ -6172,9 +6172,10 @@ void EditorScene::UpdateDialogs() {
 		const bool fromPlayError = stage_ == DialogStage::EDIT_PLAY_INPUT;
 		const bool fromConsole = stage_ == DialogStage::EDIT_CONSOLE_PLAY_INPUT;
 		const bool fromPlay = fromPlayError || fromConsole;
-		const auto result = gameSettingsDialog_.Draw(ui_, fromPlay);
+		const auto result = gameSettingsDialog_.Draw(ui_, fromPlay, fromExportResult);
 
-		if (result == GameSettingsResult::ACCEPTED) {
+		if (result == GameSettingsResult::ACCEPTED ||
+		    result == GameSettingsResult::PREPARE_EXPORT) {
 			const auto &settings = gameSettingsDialog_.GetConfig();
 			std::string error;
 
@@ -6201,8 +6202,12 @@ void EditorScene::UpdateDialogs() {
 				exportDialog_.Reopen();
 				stage_ = DialogStage::EXPORT_GAME;
 			} else if (fromExportResult) {
-				exportResultDialog_.Reopen();
-				stage_ = DialogStage::EXPORT_RESULT;
+				if (result == GameSettingsResult::PREPARE_EXPORT) {
+					ShowGameExport(exportResultDialog_.GetDirectory());
+				} else {
+					exportResultDialog_.Reopen();
+					stage_ = DialogStage::EXPORT_RESULT;
+				}
 			} else if (fromConsole) {
 				stage_ = DialogStage::IDLE;
 				if (result == GameSettingsResult::ACCEPTED && playFailureReplay_) {

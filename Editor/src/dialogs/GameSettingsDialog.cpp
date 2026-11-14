@@ -56,7 +56,8 @@ void GameSettingsDialog::Reopen(std::string error, std::filesystem::path project
 	opening_ = true;
 }
 
-GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui, bool retryPlay) {
+GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui, bool retryPlay,
+                                            bool canPrepareExport) {
 	constexpr const char *title = "Game Settings###GameSettingsDialog";
 
 	if (wiiRemotePairing_.valid() &&
@@ -321,6 +322,11 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui, bool retryPla
 	}
 	const bool apply = ui.Button(retryPlay ? "Apply and Retry Play" : "Apply");
 	ui.SameLine();
+	bool prepareExport = false;
+	if (canPrepareExport) {
+		prepareExport = ui.Button("Apply and Prepare Export");
+		ui.SameLine();
+	}
 	const bool cancel =
 	    ui.Button("Cancel") ||
 	    (!selecting_ && ImGui::IsKeyPressed(ImGuiKey_Escape, false));
@@ -328,12 +334,13 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui, bool retryPla
 
 	if (cancel) {
 		result = GameSettingsResult::CANCELLED;
-	} else if (apply) {
+	} else if (apply || prepareExport) {
 		GameConfig candidate;
 
 		if (BuildConfiguration(candidate)) {
 			config_ = std::move(candidate);
-			result = GameSettingsResult::ACCEPTED;
+			result = prepareExport ? GameSettingsResult::PREPARE_EXPORT
+			                       : GameSettingsResult::ACCEPTED;
 		}
 	}
 
