@@ -76,11 +76,16 @@ class FileDialog {
 	std::optional<bool> TakeProjectSearchChange();
 
 	/// <summary>
+	/// 保存確認から選択画面へ戻り、プロジェクトの再試行情報を引き継ぐ
+	/// </summary>
+	void RetrySelection();
+
+	/// <summary>
 	/// 選択したファイルやフォルダを使えなかったとき、同じ場所から選び直す
 	/// </summary>
 	/// <param name="error">選択画面に表示するエラー。選び直すだけなら空</param>
 	/// <param name="failedProject">開けなかったプロジェクトのフォルダ。空なら場所を表示しない</param>
-	void RetrySelection(std::string error = {},
+	void RetrySelection(std::string error,
 	                    const std::filesystem::path &failedProject = {});
 
 	/// <summary>

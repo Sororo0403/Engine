@@ -116,6 +116,10 @@ void FileDialog::ShowImportSource(const std::filesystem::path &source,
 	Show(FileDialogMode::OPEN, folder, filter);
 }
 
+void FileDialog::RetrySelection() {
+	RetrySelection({}, failedProject_);
+}
+
 void FileDialog::RetrySelection(std::string error,
                                 const std::filesystem::path &failedProject) {
 	const bool selectingFolder = mode_ == FileDialogMode::SELECT_DIRECTORY;
