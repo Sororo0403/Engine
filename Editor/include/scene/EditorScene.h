@@ -969,7 +969,7 @@ class EditorScene final : public IScene {
 	SceneRecoveryDialog recoveryDialog_;
 	std::filesystem::path pendingRecoveryPath_;
 	std::filesystem::path restoredRecoveryPath_;
-	std::filesystem::path recoverySourceFile_;
+	std::optional<std::filesystem::path> recoverySourceFile_;
 	float recoveryElapsed_ = 0;
 	bool recoveryWasDirty_ = false;
 

@@ -6,11 +6,13 @@
 #include <utility>
 
 void SaveChangesDialog::Show(std::string name, bool beforeExport,
-                             bool returnToOpenScene, std::string destination) {
+                             bool returnToOpenScene, std::string destination,
+                             bool recovered) {
 	name_ = std::move(name);
 	destination_ = std::move(destination);
 	beforeExport_ = beforeExport;
 	returnToOpenScene_ = returnToOpenScene;
+	recovered_ = recovered;
 	openRequested_ = true;
 }
 
@@ -27,8 +29,16 @@ SaveChangesResult SaveChangesDialog::Draw(const ImGuiSystem &ui) {
 		return SaveChangesResult::NONE;
 	}
 
-	ui.Text(beforeExport_ ? "Unsaved scene changes:" : "Save changes to:");
-	ImGui::TextWrapped("%s", name_.c_str());
+	if (recovered_) {
+		ui.Text("Save recovered scene as a new file?");
+		if (!name_.empty()) {
+			ui.Text("Original scene:");
+			ImGui::TextWrapped("%s", name_.c_str());
+		}
+	} else {
+		ui.Text(beforeExport_ ? "Unsaved scene changes:" : "Save changes to:");
+		ImGui::TextWrapped("%s", name_.c_str());
+	}
 	if (!destination_.empty()) {
 		ui.Text("Next location:");
 		ImGui::TextWrapped("%s", destination_.c_str());

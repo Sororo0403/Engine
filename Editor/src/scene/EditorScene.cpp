@@ -193,7 +193,7 @@ bool EditorScene::Initialize() {
 	recoveryWasDirty_ = false;
 	pendingRecoveryPath_.clear();
 	restoredRecoveryPath_.clear();
-	recoverySourceFile_.clear();
+	recoverySourceFile_.reset();
 	std::string recoveryError;
 
 	const bool recoveryReady =
@@ -1842,10 +1842,16 @@ bool EditorScene::IsCloseApproved() const {
 }
 
 std::string EditorScene::GetWindowTitle() const {
-	const std::string name =
-	    document_.GetFilePath().empty()
-	        ? "Untitled"
-	        : PathUtils::ToUtf8(document_.GetFilePath().filename());
+	std::string name;
+	if (recoverySourceFile_) {
+		name = recoverySourceFile_->empty()
+		           ? "Recovered Scene"
+		           : "Recovered: " + PathUtils::ToUtf8(recoverySourceFile_->filename());
+	} else {
+		name = document_.GetFilePath().empty()
+		           ? "Untitled"
+		           : PathUtils::ToUtf8(document_.GetFilePath().filename());
+	}
 
 	if (!project_.GetRoot().empty()) {
 		return std::format("{}{} - {} - Editor", name,
@@ -3684,10 +3690,12 @@ void EditorScene::ConfirmSceneChanges() {
 	const bool exporting = pendingAction_ == EditorAction::WRITE_GAME_EXPORT;
 	if (document_.IsModified() &&
 	    (!exporting || !UsesEditingSceneForStartup(project_.GetStartupScene()))) {
-		const auto name =
-		    document_.GetFilePath().empty()
-		        ? std::string("Untitled")
-		        : PathUtils::ToUtf8(document_.GetFilePath());
+		const auto &sceneFile = recoverySourceFile_ ? *recoverySourceFile_
+		                                           : document_.GetFilePath();
+		auto name = PathUtils::ToUtf8(sceneFile);
+		if (name.empty() && !recoverySourceFile_) {
+			name = "Untitled";
+		}
 		std::string destination;
 		switch (pendingAction_) {
 		case EditorAction::OPEN:
@@ -3701,8 +3709,9 @@ void EditorScene::ConfirmSceneChanges() {
 		default:
 			break;
 		}
-		saveChangesDialog_.Show(name, exporting, pendingAction_ == EditorAction::OPEN,
-		                        std::move(destination));
+		saveChangesDialog_.Show(std::move(name), exporting,
+		                        pendingAction_ == EditorAction::OPEN,
+		                        std::move(destination), recoverySourceFile_.has_value());
 		stage_ = DialogStage::CONFIRM_SAVE;
 	} else {
 		ExecutePendingAction();
@@ -3910,7 +3919,7 @@ void EditorScene::StartSave(bool saveAs) {
 	}
 
 	const auto &current = document_.GetFilePath();
-	const auto path = current.empty() && !recoverySourceFile_.empty()
+	const auto path = current.empty() && recoverySourceFile_
 	                      ? GetRecoveredScenePath()
 	                      : GetSceneDialogDirectory(current) /
 	                            (current.empty() ? L"Untitled.scene.json"
@@ -4194,12 +4203,13 @@ EditorScene::GetSceneDialogDirectory(const std::filesystem::path &scene) const {
 }
 
 std::filesystem::path EditorScene::GetRecoveredScenePath() const {
-	auto stem = recoverySourceFile_.stem();
+	const auto &source = recoverySourceFile_.value();
+	auto stem = source.empty() ? std::filesystem::path(L"Untitled") : source.stem();
 	if (PathUtils::HasExtension(stem, ".scene")) {
 		stem = stem.stem();
 	}
 	const auto base = stem.native() + L".recovered";
-	const auto directory = GetSceneDialogDirectory(recoverySourceFile_);
+	const auto directory = GetSceneDialogDirectory(source);
 
 	for (std::size_t index = 1;; ++index) {
 		const auto suffix =
@@ -4220,7 +4230,7 @@ std::filesystem::path EditorScene::GetRecoveredScenePath() const {
 
 std::filesystem::path EditorScene::GetSceneCopyPath() const {
 	const auto &currentPath = document_.GetFilePath();
-	if (currentPath.empty() && !recoverySourceFile_.empty()) {
+	if (currentPath.empty() && recoverySourceFile_) {
 		return GetRecoveredScenePath();
 	}
 
@@ -4438,8 +4448,8 @@ void EditorScene::RecordRecovery() {
 
 	std::string error;
 
-	const auto &sourceFile = recoverySourceFile_.empty() ? document_.GetFilePath()
-	                                                     : recoverySourceFile_;
+	const auto &sourceFile = recoverySourceFile_ ? *recoverySourceFile_
+	                                             : document_.GetFilePath();
 	const auto view = cameraController_.GetViewState();
 	if (!recovery_.Record(document_.GetScene(), sourceFile,
 	                      assetSources_, exportConfig_, error, &view, selection_.GetIds())) {
@@ -4463,7 +4473,7 @@ void EditorScene::RecordRecovery() {
 void EditorScene::ClearRecovery(
     const std::filesystem::path &protectedRecovery) {
 	recoveryElapsed_ = 0;
-	recoverySourceFile_.clear();
+	recoverySourceFile_.reset();
 	std::string error;
 
 	if (!recovery_.Clear(document_.GetFilePath(), error)) {
@@ -4568,7 +4578,7 @@ void EditorScene::RestoreRecovery() {
 		frameObject_ = 0;
 		gizmo_.Cancel();
 		gizmoEditActive_ = false;
-		RestoreSceneViewAndSelection(recoverySourceFile_, &snapshot);
+		RestoreSceneViewAndSelection(*recoverySourceFile_, &snapshot);
 		pendingPlayCamera_ = 0;
 		playMode_.SetPreviewCamera(0);
 		inspectorPanel_.Clear();
