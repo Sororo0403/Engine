@@ -210,6 +210,9 @@ std::string SceneCheckPanel::GetReport(const Scene *filteredScene) const {
 		if (issue.objectId != 0) {
 			report += std::format("   Object ID: {}\n", issue.objectId);
 		}
+		if (!issue.inputAction.empty()) {
+			report += std::format("   Input action: {}\n", issue.inputAction);
+		}
 		if (!issue.assetPath.empty()) {
 			report += std::format("   Asset: {}\n", PathUtils::ToUtf8(issue.assetPath));
 		}
@@ -231,7 +234,8 @@ std::string SceneCheckPanel::GetReport(const Scene *filteredScene) const {
 bool SceneCheckPanel::MatchesFilter(const SceneValidationIssue &issue,
                                     const Scene &scene,
                                     const std::filesystem::path &searchPath) const {
-	if (filter_.empty() || issue.message.find(filter_) != std::string::npos) {
+	if (filter_.empty() || issue.message.find(filter_) != std::string::npos ||
+	    issue.inputAction.find(filter_) != std::string::npos) {
 		return true;
 	}
 	if (PathUtils::MatchesPathSearch(issue.assetPath, searchPath) ||
