@@ -584,6 +584,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 		ImGui::TextWrapped("%s", error_.c_str());
 	}
 	GameExportResult result = GameExportResult::NONE;
+	bool recheckIssue = false;
 	if (checkResultStale_) {
 		ui.Text("Settings changed. Run Check Export to update the results.");
 	}
@@ -729,6 +730,15 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 						ImGui::SetClipboardText(path.c_str());
 					}
 				}
+				if (!issue.assetPath.empty() || !issue.locationPath.empty()) {
+					ui.SameLine();
+					if (ui.Button("Recheck Here")) {
+						selectedIssue_ = i;
+						recheckIssue = true;
+					}
+					ImGui::SetItemTooltip(
+					    "Run Check Export and resume the list at this issue.");
+				}
 				if (const auto *label = EditFieldLabel(issue.field); label && ui.Button(label)) {
 					selectedIssue_ = i;
 					focusField_ = issue.field;
@@ -782,7 +792,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 
 	const bool exportRequested = ui.Button("Export");
 	ui.SameLine();
-	const bool checkRequested = ui.Button("Check Export");
+	const bool checkRequested = ui.Button("Check Export") || recheckIssue;
 	bool saveAndCheckRequested = false;
 	if (canSaveAndCheck) {
 		ui.SameLine();
