@@ -965,7 +965,9 @@ bool EditorScene::Update(float deltaTime) {
 			}
 		}
 
-		const auto &clipEdit = assetsPanel_.GetAnimationClipEditRequest();
+		const auto &clipEdit = checkedRequest.clipEditPath.empty()
+		                           ? assetsPanel_.GetAnimationClipEditRequest()
+		                           : checkedRequest.clipEditPath;
 		if ((assetsPanel_.IsAnimationClipCreateRequested() || !clipEdit.empty()) &&
 		    !IsBusy() && action == EditorAction::NONE &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {

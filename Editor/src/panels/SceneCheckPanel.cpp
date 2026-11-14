@@ -1,4 +1,5 @@
 #include "panels/SceneCheckPanel.h"
+#include "animation/AnimationClipAsset.h"
 #include "assets/ModelUsage.h"
 #include "assets/SceneAssetValidation.h"
 #include "graphics/ui/ImGuiSystem.h"
@@ -540,6 +541,17 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 				ShellUtils::RevealLocationInExplorer(issue.assetPath, assetActionError_);
 			}
 			ImGui::SetItemTooltip("%s", path.c_str());
+			if (assetExists && AnimationClipAsset::IsPath(issue.assetPath) &&
+			    object && object->animationClip && object->animationClip->usesAsset &&
+			    matchesAsset(object->animationClip->asset)) {
+				ui.BeginDisabled(resultsOutdated || !error_.empty());
+				if (ui.Button("Edit Animation Clip")) {
+					lastIssue_ = i;
+					requested = {};
+					requested.clipEditPath = issue.assetPath;
+				}
+				ui.EndDisabled();
+			}
 			const bool script = PathUtils::HasExtension(issue.assetPath, ".lua");
 			const bool sceneFile = PathUtils::HasExtension(issue.assetPath, ".json") &&
 			                       PathUtils::HasExtension(issue.assetPath.stem(), ".scene");

@@ -26,14 +26,16 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
                          bool resolveInitialPose,
                          const CollisionWorld *previousWorld) {
 	std::vector<SceneValidationIssue> issues;
-	const auto add = [&](SceneObjectId id, std::string_view reason) {
+	const auto add = [&](SceneObjectId id, std::string_view reason,
+	                     const std::filesystem::path &asset = {}) {
 		const auto *object = scene.FindObject(id);
 		issues.push_back(
 		    {id, object
 		             ? std::format(
 		                   "{} Object: \"{}\" (ID {}).", reason,
 		                   object->name.empty() ? "Object" : object->name, id)
-		             : std::string(reason)});
+		             : std::string(reason),
+		     asset});
 	};
 	SceneObjectId firstCharacter = 0, primary = 0;
 	SceneActivity::States active;
@@ -202,7 +204,9 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 					const bool marker = action.event == TriggerAction::Event::ANIMATION_CLIP_MARKER;
 					if ((marker || action.event == TriggerAction::Event::ANIMATION_CLIP_FINISHED) &&
 					    (!clip || (marker && action.clipTime > clip->duration))) {
-						add(id, "Animation Clip events require a clip and markers within its duration.");
+						add(id, "Animation Clip events require a clip and markers within its duration.",
+						    clip && object.animationClip->usesAsset
+						        ? object.animationClip->asset : std::filesystem::path{});
 						break;
 					}
 

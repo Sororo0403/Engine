@@ -31,6 +31,7 @@ class SceneCheckPanel {
 		std::filesystem::path modelReloadPath;
 		std::filesystem::path textureReloadPath;
 		std::string inputAction;
+		std::filesystem::path clipEditPath;
 	};
 
 	/// <summary>
