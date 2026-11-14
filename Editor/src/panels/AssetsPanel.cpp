@@ -161,16 +161,8 @@ void AssetsPanel::RemoveMissingPaths() {
 
 bool AssetsPanel::ValidateClipboard() {
 	const bool missing = std::ranges::any_of(clipboardItems_, IsMissingAsset);
-	if (!missing) {
-		return true;
-	}
-
-	clipboardItems_.clear();
-	clipboardRoot_.clear();
-	clipboardCut_ = false;
-	unavailableRevealPath_.clear();
-	revealMessage_ = "A copied or cut item is missing. Select the items again.";
-	return false;
+	clipboardHasMissingItems_ = missing;
+	return !missing;
 }
 
 void AssetsPanel::SetAssetType(AssetType type) {
@@ -777,6 +769,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	if (!clipboardItems_.empty() && clipboardRoot_ != root) {
 		clipboardItems_.clear();
 		clipboardCut_ = false;
+		clipboardHasMissingItems_ = false;
 	}
 
 	const auto currentFolder = [&] {
@@ -786,6 +779,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		clipboardItems_ = selectedItems_;
 		clipboardRoot_ = root;
 		clipboardCut_ = cut;
+		clipboardHasMissingItems_ = false;
 	};
 	const auto requestPaste = [&](const std::filesystem::path &folder) {
 		if (ValidateClipboard()) {
@@ -837,6 +831,19 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	if (!assets.GetError().empty()) {
 		ui.Text("Assets could not be updated. Showing the last successful listing.");
 		ImGui::TextWrapped("%s", assets.GetError().c_str());
+	}
+
+	if (clipboardHasMissingItems_) {
+		ImGui::TextWrapped("Some copied or cut items are missing. "
+		                   "Restore them or remove them from the clipboard.");
+		if (ui.Button("Remove Missing Clipboard Items")) {
+			std::erase_if(clipboardItems_, IsMissingAsset);
+			clipboardHasMissingItems_ = false;
+			if (clipboardItems_.empty()) {
+				clipboardRoot_.clear();
+				clipboardCut_ = false;
+			}
+		}
 	}
 
 	if (!revealMessage_.empty()) {
@@ -1389,6 +1396,7 @@ void AssetsPanel::Clear() {
 	clipboardItems_.clear();
 	clipboardRoot_.clear();
 	clipboardCut_ = false;
+	clipboardHasMissingItems_ = false;
 	directoryOpenRequested_ = false;
 	requestedDirectory_.clear();
 	type_ = AssetType::MODEL;

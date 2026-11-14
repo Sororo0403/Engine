@@ -333,7 +333,7 @@ class AssetsPanel {
 	std::filesystem::path meshReplacementPath_;
 	std::filesystem::path textureReloadPath_;
 	/// <summary>
-	/// コピー・切り取り元が消えていたら一括操作を解除する
+	/// コピー・切り取り元を検査し、欠損時は貼り付けを保留する
 	/// </summary>
 	bool ValidateClipboard();
 
@@ -375,6 +375,7 @@ class AssetsPanel {
 	std::vector<std::filesystem::path> clipboardItems_;
 	std::filesystem::path clipboardRoot_;
 	bool clipboardCut_ = false;
+	bool clipboardHasMissingItems_ = false;
 	bool textureClearRequested_ = false;
 	bool textureImportRequested_ = false;
 	bool audioImportRequested_ = false;
