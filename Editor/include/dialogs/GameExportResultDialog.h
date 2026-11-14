@@ -27,6 +27,11 @@ class GameExportResultDialog {
 	void Show(std::filesystem::path directory, bool reopening = false);
 
 	/// <summary>
+	/// 現在の配布版とログの表示位置を保持したまま結果画面に戻る
+	/// </summary>
+	void Reopen() { opening_ = true; }
+
+	/// <summary>
 	/// 表示中の配布版のフォルダを取得する
 	/// </summary>
 	const std::filesystem::path &GetDirectory() const { return directory_; }

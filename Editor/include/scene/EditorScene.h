@@ -1094,6 +1094,7 @@ class EditorScene final : public IScene {
 	AnimationClipEditor animationClipEditor_;
 	GameExportDialog exportDialog_;
 	GameExportResultDialog exportResultDialog_;
+	bool returnToExportResult_ = false;
 	GameSettingsDialog gameSettingsDialog_;
 	float sceneAmbientDraft_ = 0.0f;
 	FogSettings sceneFogDraft_;

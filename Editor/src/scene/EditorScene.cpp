@@ -3510,6 +3510,7 @@ const Scene *EditorScene::PrepareGameExport(SceneDocument &startup,
 }
 
 void EditorScene::ShowGameExport(const std::filesystem::path &windowSource) {
+	returnToExportResult_ = false;
 	try {
 		GameExportOptions options;
 		const auto root = PathUtils::GetExecutableDirectory();
@@ -3541,6 +3542,7 @@ void EditorScene::ShowGameExport(const std::filesystem::path &windowSource) {
 		                       project_.GetRoot(), lastExport, windowSource)) {
 			CheckGameExport(true);
 		}
+		returnToExportResult_ = !windowSource.empty();
 		stage_ = DialogStage::EXPORT_GAME;
 	} catch (const std::exception &error) {
 		Logger::Error(
@@ -3578,6 +3580,7 @@ void EditorScene::WriteGameExport() {
 		preferences_.Save();
 	}
 	exportResultDialog_.Show(directory);
+	returnToExportResult_ = false;
 	stage_ = DialogStage::EXPORT_RESULT;
 }
 
@@ -6002,7 +6005,12 @@ void EditorScene::UpdateDialogs() {
 			}
 		}
 		if (result == GameExportResult::CANCELLED) {
-			stage_ = DialogStage::IDLE;
+			if (std::exchange(returnToExportResult_, false)) {
+				exportResultDialog_.Reopen();
+				stage_ = DialogStage::EXPORT_RESULT;
+			} else {
+				stage_ = DialogStage::IDLE;
+			}
 			return;
 		}
 		if (result == GameExportResult::SAVE_AND_CHECK) {
@@ -6783,6 +6791,7 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 
 		document_.SetProjectRoot(candidate.GetRoot());
 		project_ = std::move(candidate);
+		returnToExportResult_ = false;
 		exportDialog_.SwitchProject(project_.GetRoot());
 		if (const auto found = preferences_.gameExportDrafts.find(project_.GetRoot());
 		    found != preferences_.gameExportDrafts.end()) {
