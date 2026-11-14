@@ -78,11 +78,16 @@ SceneRecoveryDialog::Draw(const ImGuiSystem &ui, SceneRecovery &recovery,
 		ui.BeginDisabled(!selected || isProtected(entries_[selected_]));
 
 		if (ui.Button("Delete Recovery")) {
-			if (recovery.Remove(entries_[selected_].path, error_)) {
+			std::string error;
+			if (recovery.Remove(entries_[selected_].path, error)) {
 				entries_.erase(entries_.begin() + selected_);
-				selected_ = 0;
-				confirmingDelete_ = false;
+				selected_ = entries_.empty() ? 0 : (std::min)(selected_, entries_.size() - 1);
+				error_.clear();
+			} else {
+				Refresh(recovery);
+				error_ = "Could not delete the recovery file: " + error;
 			}
+			confirmingDelete_ = false;
 		}
 
 		ui.EndDisabled();
