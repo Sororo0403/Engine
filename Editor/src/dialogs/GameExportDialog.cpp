@@ -3,6 +3,7 @@
 #include "graphics/ui/ImGuiSystem.h"
 #include "platform/windows/PathUtils.h"
 #include "platform/windows/ShellUtils.h"
+#include <Windows.h>
 #include <algorithm>
 #include <format>
 #include <imgui.h>
@@ -75,12 +76,31 @@ std::filesystem::path FindExistingParent(const std::filesystem::path &output) {
 }
 
 /// <summary>
+/// 検索語をWindowsのパス表記にそろえる。変換できない場合は本文だけを検索する
+/// </summary>
+std::filesystem::path IssueSearchPath(std::string_view filter) {
+	const auto first = filter.find_first_not_of(" \t\r\n");
+	if (first == std::string_view::npos) {
+		return {};
+	}
+	const auto last = filter.find_last_not_of(" \t\r\n");
+	try {
+		auto path = PathUtils::FromPathInput(filter.substr(first, last - first + 1));
+		return path.make_preferred();
+	} catch (const std::invalid_argument &) {
+		return {};
+	}
+}
+
+/// <summary>
 /// 検索語が問題の説明または参照先に含まれるか確認する
 /// </summary>
-bool MatchesIssue(const GameExportIssue &issue, std::string_view filter) {
+bool MatchesIssue(const GameExportIssue &issue, std::string_view filter,
+                  const std::filesystem::path &searchPath) {
 	const auto matchesPath = [&](std::filesystem::path path) {
-		return PathUtils::ToUtf8(path).find(filter) != std::string::npos ||
-		       PathUtils::ToUtf8(path.make_preferred()).find(filter) != std::string::npos;
+		return !searchPath.empty() && !path.empty() &&
+		       FindStringOrdinal(FIND_FROMSTART, path.make_preferred().c_str(), -1,
+		                         searchPath.c_str(), -1, TRUE) >= 0;
 	};
 	return filter.empty() ||
 	       issue.message.find(filter) != std::string::npos ||
@@ -310,13 +330,7 @@ void GameExportDialog::FollowMovedScene(
 			}
 		}
 
-		std::filesystem::path searchPath;
-		try {
-			searchPath = PathUtils::FromPathInput(issueFilter_);
-		} catch (const std::invalid_argument &) {
-			// パスに変換できない検索語はそのまま保持する。
-			return;
-		}
+		const auto searchPath = IssueSearchPath(issueFilter_);
 		if (searchPath.is_absolute()) {
 			auto normalized = searchPath.lexically_normal();
 			if (!normalized.has_filename() && normalized.has_relative_path()) {
@@ -337,8 +351,9 @@ void GameExportDialog::SetCheckResult(std::string message,
 	if (!issues.empty() && continueFromIssue && selectedIssue_ &&
 	    *selectedIssue_ < checkIssues_.size()) {
 		const auto &previous = checkIssues_[*selectedIssue_];
+		const auto searchPath = IssueSearchPath(issueFilter_);
 		const auto matches = [&](const auto &issue) {
-			return MatchesIssue(issue, issueFilter_);
+			return MatchesIssue(issue, issueFilter_, searchPath);
 		};
 		const auto sameSource = [&](const auto &issue) {
 			return matches(issue) && issue.objectId == previous.objectId &&
@@ -561,9 +576,6 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 		ui.Text("Settings changed. Run Check Export to update the results.");
 	}
 	if (!checkIssues_.empty()) {
-		const auto matches = [&](const GameExportIssue &issue) {
-			return MatchesIssue(issue, issueFilter_);
-		};
 		if (ui.InputText("Search Issues", issueFilter_)) {
 			selectedIssue_.reset();
 			issueToScrollTo_ = 0;
@@ -578,9 +590,10 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 			issuePage_ = 0;
 		}
 		ui.EndDisabled();
+		const auto searchPath = IssueSearchPath(issueFilter_);
 		std::vector<std::size_t> matching;
 		for (std::size_t i = 0; i < checkIssues_.size(); ++i) {
-			if (matches(checkIssues_[i])) {
+			if (MatchesIssue(checkIssues_[i], issueFilter_, searchPath)) {
 				matching.push_back(i);
 			}
 		}
@@ -590,7 +603,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 			const auto found = std::ranges::lower_bound(matching, *issueToScrollTo_);
 			issuePage_ = static_cast<std::size_t>(found - matching.begin()) / kIssuesPerPage;
 		}
-		issuePage_ = std::min(issuePage_, lastPage);
+		issuePage_ = (std::min)(issuePage_, lastPage);
 		bool resetScroll = issueToScrollTo_ == 0;
 		const auto goToPage = [&](std::size_t page) {
 			issuePage_ = page;
@@ -622,7 +635,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 				ui.Text("No issues match the search. Clear Search to see all issues.");
 			}
 			const auto first = issuePage_ * kIssuesPerPage;
-			const auto end = std::min(first + kIssuesPerPage, matching.size());
+			const auto end = (std::min)(first + kIssuesPerPage, matching.size());
 			for (auto row = first; row < end; ++row) {
 				const auto i = matching[row];
 				const auto &issue = checkIssues_[i];
