@@ -698,10 +698,19 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		bool changedFilter = ui.Checkbox("Errors Only", run.showErrorsOnly);
 		ImGui::SetItemTooltip("Show errors and their details on the current log page.");
 		changedFilter |= ui.InputText("Search Log Page", run.logFilter);
+		ImGui::SetItemTooltip("Filter the current page by text or paste an absolute file path.");
+		ui.SameLine();
+		const bool canClearSearch = !run.logFilter.empty() || run.lastMatch.has_value();
+		ui.BeginDisabled(!canClearSearch);
+		if (ui.Button("Clear Search") && canClearSearch) {
+			run.logFilter.clear();
+			run.lastMatch.reset();
+			error_.clear();
+		}
+		ui.EndDisabled();
 		if (changedFilter) {
 			run.lastMatch.reset();
 		}
-		ImGui::SetItemTooltip("Filter the current page by text or paste an absolute file path.");
 		ui.SameLine();
 		ui.BeginDisabled(run.logFilter.empty());
 		if (ui.Button("Find First in Log") && !run.logFilter.empty()) {
