@@ -191,6 +191,8 @@ bool TriggerActionsInspector::Draw(
 	bool changed = false;
 	std::optional<std::size_t> remove;
 	std::optional<std::pair<std::size_t, std::size_t>> move;
+	std::optional<float> clipDuration;
+	bool checkedClipDuration = false;
 
 	for (std::size_t i = 0; i < edited.actions.size(); ++i) {
 		ImGui::PushID(static_cast<int>(i));
@@ -234,18 +236,28 @@ bool TriggerActionsInspector::Draw(
 			}
 
 			if (action.event == TriggerAction::Event::ANIMATION_CLIP_MARKER) {
-				float duration = AnimationClipComponent::kMaximumSeconds;
-				if (object.animationClip && object.animationClip->usesAsset) {
-					AnimationClipComponent clip;
-					std::string error;
-					if (AnimationClipAsset::Load(object.animationClip->asset, clip, error))
-						duration = clip.duration;
-				} else if (object.animationClip) {
-					duration = object.animationClip->duration;
+				if (!checkedClipDuration && object.animationClip) {
+					checkedClipDuration = true;
+					if (object.animationClip->usesAsset) {
+						AnimationClipComponent clip;
+						std::string error;
+						if (AnimationClipAsset::Load(object.animationClip->asset, clip, error))
+							clipDuration = clip.duration;
+					} else {
+						clipDuration = object.animationClip->duration;
+					}
 				}
 				changed |= ImGui::DragFloat("Clip Time (s)", &action.clipTime,
-				                            .01f, 0.f, duration, "%.3f",
+				                            .01f, 0.f, clipDuration.value_or(AnimationClipComponent::kMaximumSeconds), "%.3f",
 				                            ImGuiSliderFlags_AlwaysClamp);
+				if (clipDuration && action.clipTime > *clipDuration) {
+					const auto warning = std::format("Marker is past the clip end ({} s).", *clipDuration);
+					ImGui::TextWrapped("%s", warning.c_str());
+					if (ui.Button("Move Marker to Clip End")) {
+						action.clipTime = *clipDuration;
+						changed = true;
+					}
+				}
 			}
 
 			const bool interact =
