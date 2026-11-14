@@ -7,6 +7,7 @@
 #include "graphics/render/RenderSystem.h"
 #include "input/InputSystem.h"
 #include "platform/windows/FileUtils.h"
+#include "platform/windows/PathUtils.h"
 #include "scene/SceneSerializer.h"
 #include "ui/UIInputReader.h"
 #include <cstdlib>
@@ -151,6 +152,8 @@ void RuntimeScene::SaveScriptSettings() {
 	    SelectScriptSettings(current, config_.persistentScriptKeys);
 	if (settings == savedScriptSettings_) {
 		observedScriptData_ = current;
+		// 保存前の値に戻った場合は保留していた再試行を取り消す。
+		nextScriptSettingsWrite_ = {};
 		return;
 	}
 
@@ -162,13 +165,19 @@ void RuntimeScene::SaveScriptSettings() {
 	    !FileUtils::WriteTextAtomically(scriptSettingsPath_, settings,
 	                                    writeError)) {
 		Logger::Warning("Could not save game script settings: " +
+		                PathUtils::ToUtf8(scriptSettingsPath_) + "\n" +
 		                (directoryError ? directoryError.message()
-		                                : writeError));
+		                                : writeError), scriptSettingsPath_);
 		nextScriptSettingsWrite_ = now + std::chrono::seconds(1);
 		return;
 	}
 	savedScriptSettings_ = std::move(settings);
 	observedScriptData_ = current;
+	if (nextScriptSettingsWrite_ != std::chrono::steady_clock::time_point{}) {
+		nextScriptSettingsWrite_ = {};
+		Logger::Info("Game script settings saved after retry: " +
+		             PathUtils::ToUtf8(scriptSettingsPath_), scriptSettingsPath_);
+	}
 }
 
 bool RuntimeScene::Update(float seconds) {
