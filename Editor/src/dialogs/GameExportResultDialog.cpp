@@ -4,6 +4,7 @@
 #include "platform/windows/PathUtils.h"
 #include "platform/windows/ShellUtils.h"
 #include "platform/windows/StringConversion.h"
+#include <Windows.h>
 #include <algorithm>
 #include <array>
 #include <format>
@@ -87,11 +88,25 @@ std::string CollectLogErrors(std::string_view log) {
 /// <summary>
 /// 本文はそのまま照合し、貼り付けた絶対パスは区切りや大文字小文字を揃えて照合する
 /// </summary>
-bool MatchesLogText(std::string_view text, std::string_view query,
-                    const std::filesystem::path &searchPath) {
-	return text.find(query) != std::string_view::npos ||
-	       (searchPath.is_absolute() &&
-	        PathUtils::MatchesPathSearch(StringConversion::Utf8ToWide(text), searchPath));
+std::size_t FindLogText(std::string_view text, std::string_view query,
+                        const std::filesystem::path &searchPath) {
+	const auto literal = text.find(query);
+	if (literal != std::string_view::npos || !searchPath.is_absolute()) {
+		return literal;
+	}
+
+	auto wide = StringConversion::Utf8ToWide(text);
+	std::ranges::replace(wide, L'/', L'\\');
+	const auto offset = FindStringOrdinal(FIND_FROMSTART, wide.c_str(), -1,
+	                                      searchPath.c_str(), -1, TRUE);
+	if (offset < 0) {
+		return std::string_view::npos;
+	}
+
+	// ページ移動には、UTF-16の文字位置ではなく元のUTF-8のバイト位置を使う。
+	return StringConversion::WideToUtf8(
+	           std::wstring_view(wide).substr(0, static_cast<std::size_t>(offset)))
+	    .size();
 }
 
 /// <summary>
@@ -103,7 +118,7 @@ std::string FilterLogEntries(std::string_view log, std::string_view filter) {
 	std::size_t start = 0;
 	const auto appendMatch = [&](std::size_t end) {
 		const auto entry = log.substr(start, end - start);
-		if (MatchesLogText(entry, filter, searchPath)) {
+		if (FindLogText(entry, filter, searchPath) != std::string_view::npos) {
 			result.append(entry);
 		}
 	};
@@ -372,8 +387,9 @@ bool GameExportResultDialog::FindLogMatch(MatchSearch direction) {
 			isError = level.starts_with(" [ERROR] ");
 			entryOffset = relative;
 		}
-		if ((!next || relative > anchor) && (!errorsOnly || isError) &&
-		    MatchesLogText(line, query, searchPath)) {
+				const auto match = (!next || relative > anchor) && (!errorsOnly || isError)
+		                       ? FindLogText(line, query, searchPath) : std::string_view::npos;
+		if (match != std::string_view::npos) {
 			// 見出しから開くと一致行がページ外になる場合は、一致行を優先する。
 			const auto lineEnd = input.eof() ? end : static_cast<std::streamoff>(input.tellg());
 			const bool fits = lineEnd - start - static_cast<std::streamoff>(entryOffset) <=
@@ -381,9 +397,8 @@ bool GameExportResultDialog::FindLogMatch(MatchSearch direction) {
 			pageOffset = fits ? entryOffset : relative;
 			if (!fits) {
 				// 長い1行では、一致した文字列を含む位置から開く。
-				const auto match = line.find(query);
 				const auto context = static_cast<std::size_t>(kLogPageBytes / 4);
-				if (match != std::string::npos && match >= context) {
+				if (match >= context) {
 					auto first = match - context;
 					while (first > 0 && (line[first] & 0xc0) == 0x80) {
 						--first;
@@ -851,7 +866,8 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		if (run.showLogBeginning) {
 			const auto firstError = LeadingLogError(log_);
 			if (!firstError.empty() &&
-			    MatchesLogText(firstError, run.logFilter, PathUtils::FromPathSearch(run.logFilter))) {
+			    FindLogText(firstError, run.logFilter, PathUtils::FromPathSearch(run.logFilter)) !=
+			        std::string_view::npos) {
 				ui.SameLine();
 				if (ui.Button("Copy First Error on Page")) {
 					ImGui::SetClipboardText(std::string(firstError).c_str());
