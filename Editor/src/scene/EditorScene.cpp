@@ -5293,6 +5293,9 @@ void EditorScene::UpdateDialogs() {
 			if (fromConflict) {
 				errorOpenRequested_ = true;
 				stage_ = DialogStage::ERROR;
+			} else if (reload) {
+				stage_ = DialogStage::IDLE;
+				StartAction(EditorAction::RELOAD_SCENE);
 			} else {
 				stage_ = DialogStage::IDLE;
 			}
