@@ -4268,7 +4268,7 @@ std::filesystem::path EditorScene::GetSceneCopyPath() const {
 void EditorScene::StartSaveCopy(bool reload) {
 	try {
 		fileDialog_.Show(FileDialogMode::SAVE_COPY, GetSceneCopyPath());
-		if (recoverySourceFile_) {
+		if (reload || recoverySourceFile_) {
 			fileDialog_.RequireNewFile();
 		}
 		stage_ = reload ? DialogStage::SAVE_COPY_AND_RELOAD
@@ -5183,7 +5183,8 @@ void EditorScene::UpdateDialogs() {
 			const auto previousPath = document_.GetFilePath();
 			const auto startup = project_.GetStartupScene();
 			SaveEditorSession();
-			if (document_.SaveAs(fileDialog_.GetSelectedPath(), !recoverySourceFile_)) {
+			if (document_.SaveAs(fileDialog_.GetSelectedPath(),
+			                     !retryingSave && !recoverySourceFile_)) {
 				if (!failedRestoredScene_.empty() &&
 				    project_.CanUseAsStartupScene(document_.GetFilePath())) {
 					failedRestoredScene_.clear();
@@ -5296,7 +5297,8 @@ void EditorScene::UpdateDialogs() {
 				stage_ = DialogStage::IDLE;
 			}
 		} else if (result == FileDialogResult::ACCEPTED) {
-			if (document_.SaveCopy(fileDialog_.GetSelectedPath(), !recoverySourceFile_)) {
+			if (document_.SaveCopy(fileDialog_.GetSelectedPath(),
+			                       !reload && !recoverySourceFile_)) {
 				const auto &copy = fileDialog_.GetSelectedPath();
 				recentScenes_.Add(copy);
 				SaveEditorSession(false, copy);
@@ -6219,6 +6221,7 @@ void EditorScene::UpdateDialogs() {
 				                   : "Save As and Continue...")) {
 					try {
 						fileDialog_.Show(FileDialogMode::SAVE, GetSceneCopyPath());
+						fileDialog_.RequireNewFile();
 						ui_.CloseCurrentPopup();
 						ui_.EndPopup();
 						stage_ = DialogStage::SAVE_FILE_AFTER_ERROR;
