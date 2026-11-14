@@ -534,6 +534,8 @@ bool GameExportResultDialog::UpdateGameProcess(bool &jumpToBeginning,
 	}
 	run.status = std::format("Game exited with code 0x{:08X}.", *exitCode);
 	run.showLog = true;
+	// 実行中にログが切り詰められた場合は、検索前に開始位置を更新する。
+	RefreshLog();
 	// 表示範囲に関わらず、異常終了の原因は今回の実行から探す。
 	const bool previousRange = run.sinceLaunchOnly;
 	const bool hadPreviousPosition = run.beforeErrorJump.has_value();
