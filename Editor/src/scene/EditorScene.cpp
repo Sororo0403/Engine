@@ -5536,6 +5536,7 @@ void EditorScene::UpdateDialogs() {
 			stage_ = DialogStage::IDLE;
 			assets_.Refresh();
 			assetsPanel_.RequestReveal(animationClipEditor_.GetSavedPath());
+			sceneCheckPanel_.RequestRecheckIfOpen();
 		} else if (result == AnimationClipEditor::Result::CANCELLED) {
 			stage_ = DialogStage::IDLE;
 		}
