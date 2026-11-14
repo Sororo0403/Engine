@@ -16,6 +16,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <format>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -23,13 +24,15 @@
 
 namespace {
 /// <summary>
-/// glTFの外部ファイルURIだけを復号し、実ファイルの読み書きはAssimpの標準I/Oへ委譲する
+/// 標準I/Oに委譲し、glTFの外部URIの復号とモデルが参照するファイルの記録を行う
 /// </summary>
-class GltfIOSystem final : public Assimp::IOSystem {
+class ModelIOSystem final : public Assimp::IOSystem {
   public:
-	explicit GltfIOSystem(const std::filesystem::path &model)
+	ModelIOSystem(const std::filesystem::path &model, bool decodeUri,
+	              std::set<std::filesystem::path> *dependencies)
 	    : model_(PathUtils::ToUtf8(model)), directory_(model.parent_path()),
-	      prefix_(PathUtils::ToUtf8(directory_)) {
+	      prefix_(PathUtils::ToUtf8(directory_)), decodeUri_(decodeUri),
+	      dependencies_(dependencies) {
 		if (!prefix_.ends_with('/')) {
 			prefix_ += '/';
 		}
@@ -49,7 +52,16 @@ class GltfIOSystem final : public Assimp::IOSystem {
 
 	Assimp::IOStream *Open(const char *file, const char *mode = "rb") override {
 		try {
-			return files_.Open(Resolve(file).c_str(), mode);
+			const auto resolved = Resolve(file);
+			const auto close = [this](Assimp::IOStream *stream) { files_.Close(stream); };
+			std::unique_ptr<Assimp::IOStream, decltype(close)> stream(
+			    files_.Open(resolved.c_str(), mode), close);
+			if (dependencies_ && resolved != model_ &&
+			    (stream || PathUtils::HasExtension(PathUtils::FromUtf8(resolved), ".mtl"))) {
+				dependencies_->insert(
+				    std::filesystem::absolute(PathUtils::FromUtf8(resolved)).lexically_normal());
+			}
+			return stream.release();
 		} catch (const std::invalid_argument &) {
 			return nullptr;
 		}
@@ -75,6 +87,9 @@ class GltfIOSystem final : public Assimp::IOSystem {
 	/// <returns>標準I/Oへ渡すUTF-8の実パス。無効な相対URIは例外</returns>
 	std::string Resolve(const char *file) const {
 		std::string path = file ? file : "";
+		if (!decodeUri_) {
+			return path;
+		}
 		std::replace(path.begin(), path.end(), '\\', '/');
 
 		// フォルダ名やモデル名にある%は、実パスの文字としてそのまま使用する。
@@ -101,11 +116,14 @@ class GltfIOSystem final : public Assimp::IOSystem {
 	std::string model_;
 	std::filesystem::path directory_;
 	std::string prefix_;
+	bool decodeUri_;
+	std::set<std::filesystem::path> *dependencies_;
 };
 } // namespace
 
 bool ModelLoader::Load(const std::filesystem::path &filePath,
-                       ModelData &modelData) {
+                       ModelData &modelData,
+                       std::vector<std::filesystem::path> *dependencies) {
 	if (filePath.empty()) {
 		Logger::Error("ModelLoader::Load: パスが空です。");
 		return false;
@@ -127,11 +145,11 @@ bool ModelLoader::Load(const std::filesystem::path &filePath,
 	}
 
 	Assimp::Importer importer;
-
-	if (PathUtils::HasExtension(filePath, ".gltf") ||
-	    PathUtils::HasExtension(filePath, ".glb")) {
+	std::set<std::filesystem::path> externalFiles;
+	if (gltf || dependencies) {
 		// ImporterがI/Oハンドラーを所有し、外部バッファのURIを読み込む際にも使用する。
-		importer.SetIOHandler(new GltfIOSystem(absolutePath));
+		importer.SetIOHandler(new ModelIOSystem(absolutePath, gltf,
+		                                       dependencies ? &externalFiles : nullptr));
 	}
 
 	const unsigned int flags = aiProcess_Triangulate | aiProcess_SortByPType |
@@ -300,6 +318,15 @@ bool ModelLoader::Load(const std::filesystem::path &filePath,
 	    std::format("モデルを読み込みました。ファイル={}、メッシュ数={}", path,
 	                result.meshes.size()));
 
+	if (dependencies) {
+		for (const auto &material : result.materials) {
+			if (material.baseColorTexture.source == TextureSource::FILE) {
+				externalFiles.insert(std::filesystem::absolute(
+				    material.baseColorTexture.filePath).lexically_normal());
+			}
+		}
+		dependencies->assign(externalFiles.begin(), externalFiles.end());
+	}
 	modelData = std::move(result);
 	return true;
 }

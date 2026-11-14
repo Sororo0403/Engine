@@ -3,6 +3,7 @@
 #include "graphics/model/ModelData.h"
 
 #include <filesystem>
+#include <vector>
 
 struct aiScene;
 struct aiMaterial;
@@ -17,9 +18,11 @@ class ModelLoader {
 	/// </summary>
 	/// <param name="filePath">読み込むモデルファイルのパス</param>
 	/// <param name="modelData">読み込み結果。失敗した場合は変更しない</param>
+	/// <param name="dependencies">指定時は読み込んだ外部ファイルと参照先の画像を返す</param>
 	/// <returns>true:成功 false:読み込み失敗、または形状が無効</returns>
 	static bool Load(const std::filesystem::path &filePath,
-	                 ModelData &modelData);
+	                 ModelData &modelData,
+	                 std::vector<std::filesystem::path> *dependencies = nullptr);
 
   private:
 	/// <summary>

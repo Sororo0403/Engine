@@ -36,7 +36,7 @@ class ModelManager {
 	ModelHandle Load(const std::filesystem::path &filePath);
 
 	/// <summary>
-	/// モデル本体の更新日時かサイズが変わった場合に読み直す。失敗時は既存キャッシュを保持する
+	/// モデル本体または参照ファイルが変わった場合に読み直す。失敗時は既存キャッシュを保持する
 	/// </summary>
 	/// <remarks>GPU利用完了後、描画命令の記録前に呼び出す</remarks>
 	ModelHandle LoadUpdated(const std::filesystem::path &filePath);

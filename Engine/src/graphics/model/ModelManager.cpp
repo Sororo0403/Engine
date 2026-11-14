@@ -8,10 +8,14 @@
 #include "platform/windows/PathUtils.h"
 
 #include <Windows.h>
+#include <algorithm>
 #include <exception>
 #include <format>
 #include <limits>
 #include <map>
+#include <optional>
+#include <utility>
+#include <vector>
 
 namespace {
 
@@ -26,6 +30,28 @@ void DestroyModel(Model *model) {
 
 	model->Finalize();
 	delete model;
+}
+
+struct FileStamp {
+	std::filesystem::file_time_type modified;
+	std::uintmax_t size;
+	bool operator==(const FileStamp &) const = default;
+};
+
+/// <summary>
+/// 参照ファイルの更新情報を取得する。未作成の材質ファイルも後から検出できるようにする
+/// </summary>
+std::optional<FileStamp> ReadFileStamp(const std::filesystem::path &path) {
+	std::error_code error;
+	const auto modified = std::filesystem::last_write_time(path, error);
+	if (error) {
+		return std::nullopt;
+	}
+	const auto size = std::filesystem::file_size(path, error);
+	if (error) {
+		return std::nullopt;
+	}
+	return FileStamp{modified, size};
 }
 
 } // namespace
@@ -56,6 +82,7 @@ struct ModelManager::Impl {
 		std::shared_ptr<const Model> model;
 		std::filesystem::file_time_type modified;
 		std::uintmax_t size;
+		std::vector<std::pair<std::filesystem::path, std::optional<FileStamp>>> dependencies;
 	};
 	std::map<std::filesystem::path, Entry, PathLess> cache;
 
@@ -156,7 +183,10 @@ ModelHandle ModelManager::LoadFile(const std::filesystem::path &filePath,
 		}
 		const bool reload = mode == LoadMode::FORCE_RELOAD ||
 		    (mode == LoadMode::CHECK_FOR_CHANGES && found != impl_->cache.end() &&
-		     (found->second.modified != modified || found->second.size != size));
+		     (found->second.modified != modified || found->second.size != size ||
+		      std::ranges::any_of(found->second.dependencies, [](const auto &dependency) {
+			      return ReadFileStamp(dependency.first) != dependency.second;
+		      })));
 
 		if (!reload && found != impl_->cache.end()) {
 			ModelHandle handle;
@@ -178,8 +208,15 @@ ModelHandle ModelManager::LoadFile(const std::filesystem::path &filePath,
 		// ファイルからCPU側のモデルデータを読み込む
 		ModelData data;
 
-		if (!ModelLoader::Load(key, data)) {
+		std::vector<std::filesystem::path> dependencies;
+		if (!ModelLoader::Load(key, data, &dependencies)) {
 			return {};
+		}
+		Impl::Entry entry{nullptr, modified, size, {}};
+		entry.dependencies.reserve(dependencies.size());
+		for (auto &path : dependencies) {
+			const auto stamp = ReadFileStamp(path);
+			entry.dependencies.emplace_back(std::move(path), stamp);
 		}
 
 		// 最後の共有参照がなくなったときにFinalizeを呼び出す
@@ -191,7 +228,8 @@ ModelHandle ModelManager::LoadFile(const std::filesystem::path &filePath,
 		}
 
 		// 初期化に成功したモデルだけをキャッシュへ登録する
-		impl_->cache.insert_or_assign(key, Impl::Entry{model, modified, size});
+		entry.model = model;
+		impl_->cache.insert_or_assign(key, std::move(entry));
 		++impl_->cacheRevision;
 
 		if (reload) {
