@@ -36,6 +36,12 @@ class ModelManager {
 	ModelHandle Load(const std::filesystem::path &filePath);
 
 	/// <summary>
+	/// モデル本体の更新日時かサイズが変わった場合に読み直す。失敗時は既存キャッシュを保持する
+	/// </summary>
+	/// <remarks>GPU利用完了後、描画命令の記録前に呼び出す</remarks>
+	ModelHandle LoadUpdated(const std::filesystem::path &filePath);
+
+	/// <summary>
 	/// 読み込み済みの共有参照だけを取得する。ファイル読み込み・GPUリソース作成・エラー出力は行わない
 	/// </summary>
 	/// <param name="filePath">モデルの絶対パスまたは実行ファイル基準の相対パス</param>
@@ -111,13 +117,15 @@ class ModelManager {
 	                    std::array<DirectX::XMFLOAT3, 8> &corners) const;
 
   private:
+	enum class LoadMode { CACHED, CHECK_FOR_CHANGES, FORCE_RELOAD };
+
 	/// <summary>
 	/// 共通の読み込みを行い、必要な場合だけ既存キャッシュを使用する
 	/// </summary>
 	/// <param name="filePath">読み込むモデル</param>
-	/// <param name="reload">true:キャッシュを使用せず読み直す false:読み込み済みなら共有する</param>
+	/// <param name="mode">キャッシュの利用、更新確認、強制再読み込みの指定</param>
 	/// <returns>成功:共有参照 失敗:空</returns>
-	ModelHandle LoadFile(const std::filesystem::path &filePath, bool reload);
+	ModelHandle LoadFile(const std::filesystem::path &filePath, LoadMode mode);
 
 	struct Impl;
 	std::unique_ptr<Impl> impl_;

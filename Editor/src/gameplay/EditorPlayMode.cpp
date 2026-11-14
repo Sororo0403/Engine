@@ -13,6 +13,7 @@
 #include <format>
 #include <imgui.h>
 #include <initializer_list>
+#include <set>
 
 EditorPlayMode::EditorPlayMode(ModelManager &models, RenderSystem &render,
                                AudioClipManager &clips, AudioSystem &audio)
@@ -352,8 +353,11 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
 		return false;
 	}
 
+	std::set<std::filesystem::path> checkedModels;
 	for (const auto &[id, object] : scene.GetObjects()) {
-		if (object.IsRenderable() && !models_.Load(object.mesh->modelPath)) {
+		if (object.HasMesh() && (object.IsRenderable() || object.mesh->preload) &&
+		    checkedModels.insert(object.mesh->modelPath).second &&
+		    !models_.LoadUpdated(object.mesh->modelPath)) {
 			error = std::format("Could not load the model for object \"{}\" "
 			                    "(ID {}). Repair its Mesh before Play.",
 			                    object.name, id);

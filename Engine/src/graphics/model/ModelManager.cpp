@@ -52,8 +52,12 @@ struct ModelManager::Impl {
 	D3D12Graphics &graphics;
 
 	// 正規化した絶対パスと、読み込み済みモデルの対応
-	std::map<std::filesystem::path, std::shared_ptr<const Model>, PathLess>
-	    cache;
+	struct Entry {
+		std::shared_ptr<const Model> model;
+		std::filesystem::file_time_type modified;
+		std::uintmax_t size;
+	};
+	std::map<std::filesystem::path, Entry, PathLess> cache;
 
 	bool finalized = false;
 	std::uint64_t reloadRevision = 0;
@@ -69,7 +73,11 @@ ModelManager::~ModelManager() {
 }
 
 ModelHandle ModelManager::Load(const std::filesystem::path &filePath) {
-	return LoadFile(filePath, false);
+	return LoadFile(filePath, LoadMode::CACHED);
+}
+
+ModelHandle ModelManager::LoadUpdated(const std::filesystem::path &filePath) {
+	return LoadFile(filePath, LoadMode::CHECK_FOR_CHANGES);
 }
 
 ModelHandle
@@ -90,7 +98,7 @@ ModelManager::FindLoaded(const std::filesystem::path &filePath) const {
 		}
 
 		ModelHandle handle;
-		handle.model_ = found->second;
+		handle.model_ = found->second.model;
 		handle.graphics_ = &impl_->graphics;
 		return handle;
 	} catch (const std::filesystem::filesystem_error &) {
@@ -99,7 +107,7 @@ ModelManager::FindLoaded(const std::filesystem::path &filePath) const {
 }
 
 ModelHandle ModelManager::Reload(const std::filesystem::path &filePath) {
-	return LoadFile(filePath, true);
+	return LoadFile(filePath, LoadMode::FORCE_RELOAD);
 }
 
 std::uint64_t ModelManager::GetReloadRevision() const {
@@ -111,7 +119,7 @@ std::uint64_t ModelManager::GetCacheRevision() const {
 }
 
 ModelHandle ModelManager::LoadFile(const std::filesystem::path &filePath,
-                                   bool reload) {
+                                   LoadMode mode) {
 	if (impl_->finalized) {
 		Logger::Error("ModelManager::Load: 終了済みです。");
 		return {};
@@ -139,12 +147,20 @@ ModelHandle ModelManager::LoadFile(const std::filesystem::path &filePath,
 		const std::filesystem::path key =
 		    std::filesystem::weakly_canonical(resolvedPath);
 
-		// 読み込み済みなら、同じモデルへの共有参照を返す
 		const auto found = impl_->cache.find(key);
+		std::filesystem::file_time_type modified{};
+		std::uintmax_t size = 0;
+		if (mode != LoadMode::CACHED || found == impl_->cache.end()) {
+			modified = std::filesystem::last_write_time(key);
+			size = std::filesystem::file_size(key);
+		}
+		const bool reload = mode == LoadMode::FORCE_RELOAD ||
+		    (mode == LoadMode::CHECK_FOR_CHANGES && found != impl_->cache.end() &&
+		     (found->second.modified != modified || found->second.size != size));
 
 		if (!reload && found != impl_->cache.end()) {
 			ModelHandle handle;
-			handle.model_ = found->second;
+			handle.model_ = found->second.model;
 			handle.graphics_ = &impl_->graphics;
 			return handle;
 		}
@@ -175,7 +191,7 @@ ModelHandle ModelManager::LoadFile(const std::filesystem::path &filePath,
 		}
 
 		// 初期化に成功したモデルだけをキャッシュへ登録する
-		impl_->cache.insert_or_assign(key, model);
+		impl_->cache.insert_or_assign(key, Impl::Entry{model, modified, size});
 		++impl_->cacheRevision;
 
 		if (reload) {
