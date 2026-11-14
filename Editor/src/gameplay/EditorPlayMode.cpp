@@ -60,7 +60,8 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
                                               const std::filesystem::path &startupScenePath,
                                               const std::filesystem::path &playSourcePath,
                                               bool canRevealPlayObject,
-                                              const std::filesystem::path &lastPlayScenePath) {
+                                              const std::filesystem::path &lastPlayScenePath,
+                                              SceneObjectId lastPlayCameraOverride) {
 	visible_ = false;
 	ready_ = false;
 	viewport_ = {};
@@ -237,7 +238,8 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 
 		const auto drawPlayScene = [&](const char *label, Action requested,
 		                               const std::filesystem::path &path,
-		                               bool usesEditingScene) {
+		                               bool usesEditingScene,
+		                               bool usesLastCamera = false) {
 			std::error_code status;
 			const bool available = usesEditingScene ||
 			                       std::filesystem::is_regular_file(
@@ -249,9 +251,11 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 			ui.EndDisabled();
 			if (ImGui::IsItemHovered(ImGuiHoveredFlags_ForTooltip |
 			                         ImGuiHoveredFlags_AllowWhenDisabled)) {
-				ImGui::SetTooltip(available ? "Start a new play session in %s."
-				                            : "Scene file is unavailable.\n%s",
-				                  PathUtils::ToUtf8(path).c_str());
+				const auto name = path.empty() ? "Untitled" : PathUtils::ToUtf8(path);
+				const auto *tooltip = !available ? "Scene file is unavailable.\n%s"
+				                      : usesLastCamera ? "Play %s with the same camera as last time."
+				                                       : "Start a new play session in %s.";
+				ImGui::SetTooltip(tooltip, name.c_str());
 			}
 		};
 
@@ -261,13 +265,14 @@ EditorPlayMode::Action EditorPlayMode::DrawUI(const ImGuiSystem &ui,
 			              !editingScenePath.empty() &&
 			                  PathUtils::IsSameFile(startupScenePath, editingScenePath));
 		}
-		if (!lastPlayScenePath.empty() &&
-		    (editingScenePath.empty() ||
-		     !PathUtils::IsSameFile(lastPlayScenePath, editingScenePath)) &&
-		    (startupScenePath.empty() ||
-		     !PathUtils::IsSameFile(lastPlayScenePath, startupScenePath))) {
+		const bool lastUsesEditingScene = lastPlayScenePath.empty() ||
+		    (!editingScenePath.empty() && PathUtils::IsSameFile(lastPlayScenePath, editingScenePath));
+		const bool lastUsesStartupScene = !lastPlayScenePath.empty() && !startupScenePath.empty() &&
+		    PathUtils::IsSameFile(lastPlayScenePath, startupScenePath);
+		if (lastPlayCameraOverride != 0 ||
+		    (!lastUsesEditingScene && !lastUsesStartupScene)) {
 			drawPlayScene("Play Last Scene", Action::PLAY_LAST_SCENE, lastPlayScenePath,
-			              false);
+			              lastUsesEditingScene, lastPlayCameraOverride != 0);
 		}
 
 		ui.EndDisabled();
