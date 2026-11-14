@@ -127,10 +127,11 @@ class EditorPlayMode {
 	/// <param name="inputBlocked">Sceneの操作など、別の画面へ入力を渡しているか</param>
 	/// <param name="sceneVisible">独立したSceneビューが表示されているか。Game非表示時も再生時間を進める</param>
 	/// <param name="invalidObject">指定時は更新に失敗したスクリプトの物体ID。特定できなければ0</param>
+	/// <param name="suspended">ダイアログを表示している間、試遊の時間を止めるか</param>
 	/// <returns>true:成功 false:更新失敗</returns>
 	bool Update(float seconds, const InputSystem &input,
 	            bool inputBlocked = false, bool sceneVisible = false,
-	            SceneObjectId *invalidObject = nullptr);
+	            SceneObjectId *invalidObject = nullptr, bool suspended = false);
 
 	/// <summary>
 	/// 編集中のGame画像を更新する。非表示時と再生中は何もせず、物理演算は実行しない

@@ -463,7 +463,7 @@ void EditorPlayMode::RestoreLayout() {
 
 bool EditorPlayMode::Update(float seconds, const InputSystem &input,
                             bool inputBlocked, bool sceneVisible,
-                            SceneObjectId *invalidObject) {
+                            SceneObjectId *invalidObject, bool suspended) {
 	if (invalidObject) {
 		*invalidObject = 0;
 	}
@@ -473,6 +473,7 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 	}
 
 	lastUpdateError_.clear();
+	inputBlocked = inputBlocked || suspended;
 	const bool actionsEnabled =
 	    !inputBlocked && visible_ && input.IsActive() &&
 	    viewport_.windowFocused && viewport_.applicationFocused &&
@@ -539,8 +540,10 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 	uiInput.pointerPressed = viewport_.leftPressed;
 	uiInput.pointerDown = viewport_.leftDown;
 
-	if (!session_.Update(seconds, controls, cameraControls, uiInput, actions,
-	                     invalidObject, std::span<const GameActionBinding>{actionBindings_})) {
+	if (suspended) {
+		session_.CancelUIInput();
+	} else if (!session_.Update(seconds, controls, cameraControls, uiInput, actions,
+	                            invalidObject, std::span<const GameActionBinding>{actionBindings_})) {
 		lastUpdateError_ = session_.GetLastUpdateError();
 		return false;
 	}
@@ -559,7 +562,7 @@ bool EditorPlayMode::Update(float seconds, const InputSystem &input,
 			return false;
 	} else {
 		if (!audioPlayer_.Update(session_.GetCameraPose(),
-		                         session_.IsPaused() || session_.IsGamePaused(),
+		                         suspended || session_.IsPaused() || session_.IsGamePaused(),
 		                         lastUpdateError_, invalidObject,
 		                         session_.GetAudioActions()))
 			return false;

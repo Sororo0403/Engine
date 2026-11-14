@@ -387,8 +387,8 @@ bool EditorScene::Update(float deltaTime) {
 		sceneViewPanel_.CancelSelection();
 
 		const auto previousRevision = playSession.GetSceneRevision();
-		if (!playMode_.Update(deltaTime, input_, IsBusy(), false,
-		                      &playErrorObject)) {
+		if (!playMode_.Update(deltaTime, input_, false, false,
+		                      &playErrorObject, IsBusy())) {
 			ReportPlayUpdateFailure(playErrorObject, previousRevision);
 		}
 
@@ -464,10 +464,10 @@ bool EditorScene::Update(float deltaTime) {
 			playMode_.Stop();
 			ShowError("Could not create or resize the Scene render target.");
 		} else if (!playMode_.Update(deltaTime, input_,
-		                             IsBusy() || sceneViewPanel_.GetInput().windowFocused ||
+		                             sceneViewPanel_.GetInput().windowFocused ||
 		                                 hierarchy.windowFocused,
 		                             sceneViewPanel_.GetRenderTexture() != nullptr,
-		                             &playErrorObject)) {
+		                             &playErrorObject, IsBusy())) {
 			ReportPlayUpdateFailure(playErrorObject, previousRevision);
 		}
 
