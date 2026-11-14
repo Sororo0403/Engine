@@ -6750,6 +6750,9 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 			if (!startup.empty() &&
 			    !OpenScene(startup, false, &config.lighting,
 			               lastIsStartup ? previousSceneLocation : std::filesystem::path{})) {
+				if (lastIsStartup) {
+					unavailableLast = last;
+				}
 				startupError = std::format(
 				    "Could not open the project startup scene: {}\n{}\n"
 				    "Open or save a scene in the project, then choose "
@@ -6799,7 +6802,8 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		    std::erase(preferences_.recentProjects, missing) != 0;
 		bool rememberedUnavailableScene = false;
 		if (!unavailableLast.empty() &&
-		    (startup.empty() || !PathUtils::IsSameFile(unavailableLast, startup))) {
+		    (!startupError.empty() || startup.empty() ||
+		     !PathUtils::IsSameFile(unavailableLast, startup))) {
 			if (const auto previous = preferences_.projectScenes.find(previousRoot);
 			    previous != preferences_.projectScenes.end()) {
 				rememberedUnavailableScene = preferences_.projectScenes.try_emplace(
@@ -6810,16 +6814,18 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 				}
 			}
 			failedRestoredScene_ = unavailableLast;
-			auto message = "Could not restore the last edited scene: " +
-			               PathUtils::ToUtf8(unavailableLast);
-			if (!lastError.empty()) {
-				message += "\n" + lastError;
+			if (!lastIsStartup) {
+				auto message = "Could not restore the last edited scene: " +
+				               PathUtils::ToUtf8(unavailableLast);
+				if (!lastError.empty()) {
+					message += "\n" + lastError;
+				}
+				message += needsScene
+				               ? "\nOpened an untitled scene."
+				               : "\nOpened the startup scene: " + PathUtils::ToUtf8(startup);
+				Logger::Warning(message, unavailableLast);
+				consolePanel_.Show();
 			}
-			message += needsScene
-			               ? "\nOpened an untitled scene."
-			               : "\nOpened the startup scene: " + PathUtils::ToUtf8(startup);
-			Logger::Warning(message, unavailableLast);
-			consolePanel_.Show();
 		}
 		SaveEditorSession(removedRecent || rememberedUnavailableScene);
 		if (!startupError.empty()) {
