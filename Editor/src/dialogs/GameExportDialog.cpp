@@ -955,10 +955,19 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 				if (outputOccupied) {
 					const std::string message =
 					    "That output path already exists. Choose a new folder.";
+					auto issues = std::move(checkIssues_);
+					std::erase_if(issues, [](const auto &issue) {
+						return issue.field == GameExportField::OUTPUT_FOLDER;
+					});
+					issues.insert(issues.begin(), {.message = message,
+					                               .locationPath = selected.destination,
+					                               .field = GameExportField::OUTPUT_FOLDER});
+					// 再検査まで直前の素材やシーンの指摘も確認できるようにする。
+					const bool wasStale = checkResultStale_;
 					issueFilter_.clear();
-					SetCheckResult(message, {{.message = message,
-					                          .locationPath = selected.destination,
-					                          .field = GameExportField::OUTPUT_FOLDER}});
+					SetCheckResult(message, std::move(issues));
+					checkResultStale_ = wasStale;
+					selectedIssue_ = 0;
 				} else {
 					focusField_ = GameExportField::NONE;
 				}
