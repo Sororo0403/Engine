@@ -364,19 +364,19 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 			ImGui::SetItemTooltip("Create a folder under the path in Folder and open it.");
 		}
 
-		if (mode_ == FileDialogMode::OPEN) {
-			fileSubmitted = ImGui::InputText(
-			    "File name", &fileName_, ImGuiInputTextFlags_EnterReturnsTrue);
+		if (mode_ != FileDialogMode::SELECT_DIRECTORY) {
+			const bool enterSubmits = mode_ == FileDialogMode::OPEN || requireNewFile_;
+			const bool submittedByEnter = ImGui::InputText(
+			    "File name", &fileName_, enterSubmits ? ImGuiInputTextFlags_EnterReturnsTrue
+			                                         : ImGuiInputTextFlags_None);
+			fileSubmitted = enterSubmits && submittedByEnter;
 			if (ImGui::IsItemEdited()) {
 				error_.clear();
 			}
-			ImGui::SetItemTooltip("Enter a file name or paste the full file path, then press Enter.");
-		} else if (mode_ != FileDialogMode::SELECT_DIRECTORY) {
-			if (ui.InputText("File name", fileName_)) {
-				error_.clear();
-			}
-			ImGui::SetItemTooltip("Enter a file name or paste the full save path.");
-			if (!fileName_.empty()) {
+			ImGui::SetItemTooltip(enterSubmits
+			                          ? "Enter a file name or paste the full file path, then press Enter."
+			                          : "Enter a file name or paste the full save path.");
+			if (mode_ != FileDialogMode::OPEN && !fileName_.empty()) {
 				try {
 					const auto path = PathUtils::ToUtf8(ReadFilePath());
 					ImGui::TextWrapped("Save to: %s", path.c_str());
