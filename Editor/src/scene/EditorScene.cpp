@@ -5380,7 +5380,8 @@ void EditorScene::UpdateDialogs() {
 				    document_.HasSaveConflict()
 				        ? "The scene changed outside the editor. Choose a different "
 				          "file name to preserve both versions."
-				        : document_.GetError());
+				        : document_.GetError(),
+				    fileDialog_.GetSelectedPath());
 			}
 		}
 
@@ -5418,7 +5419,7 @@ void EditorScene::UpdateDialogs() {
 				selectionSnapshot_.Clear();
 				stage_ = DialogStage::IDLE;
 			} else {
-				fileDialog_.RetrySelection(document_.GetError());
+				fileDialog_.RetrySelection(document_.GetError(), fileDialog_.GetSelectedPath());
 			}
 		}
 
@@ -5461,7 +5462,7 @@ void EditorScene::UpdateDialogs() {
 					stage_ = DialogStage::ERROR;
 				}
 			} else {
-				fileDialog_.RetrySelection(document_.GetError());
+				fileDialog_.RetrySelection(document_.GetError(), fileDialog_.GetSelectedPath());
 			}
 		}
 
