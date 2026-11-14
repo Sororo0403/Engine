@@ -82,9 +82,13 @@ bool MatchesIssue(const GameExportIssue &issue, std::string_view filter,
 	const auto matchesPath = [&](const std::filesystem::path &path) {
 		return PathUtils::MatchesPathSearch(path, searchPath);
 	};
+	const auto matchesId = [&](SceneObjectId id) {
+		return id != 0 && std::to_string(id).find(filter) != std::string::npos;
+	};
 	return filter.empty() ||
 	       issue.message.find(filter) != std::string::npos ||
 	       issue.inputAction.find(filter) != std::string::npos ||
+	       matchesId(issue.objectId) || matchesId(issue.transitionObjectId) ||
 	       matchesPath(issue.scenePath) || matchesPath(issue.scriptPath) ||
 	       matchesPath(issue.assetPath) || matchesPath(issue.transitionScenePath) ||
 	       matchesPath(issue.locationPath);
