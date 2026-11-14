@@ -729,6 +729,18 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 	}
 
 	requestedSourceScene_.clear();
+	const auto openSource = [&](const std::filesystem::path &sourcePath) {
+		if (GameExporter::ReadPackageId(directory_) != run.sourcePackageId) {
+			error_ = "The export has changed. Use Reload Export to find its source scenes.";
+			return;
+		}
+		std::error_code status;
+		if (!std::filesystem::is_regular_file(sourcePath, status)) {
+			error_ = "The source scene is unavailable: " + PathUtils::ToUtf8(sourcePath);
+			return;
+		}
+		requestedSourceScene_ = sourcePath;
+	};
 	const auto &failedScene = run.destinationFailurePath.empty()
 	                              ? run.launchFailurePath : run.destinationFailurePath;
 	if (!failedScene.empty() && run.sourceProjectRoot == projectRoot && !run.sceneSources.empty() &&
@@ -746,16 +758,30 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 					continue;
 				}
 				if (ui.Button("Open Source Scene")) {
-					if (GameExporter::ReadPackageId(directory_) == run.sourcePackageId) {
-						requestedSourceScene_ = sourcePath;
-					} else {
-						error_ = "The export has changed. Use Reload Export to find its source scenes.";
-					}
+					openSource(sourcePath);
 				}
 				ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(sourcePath).c_str());
 				break;
 			}
 		}
+	}
+
+	if (run.sourceProjectRoot == projectRoot && !run.sourcePackageId.empty() &&
+	    !run.sceneSources.empty() && ImGui::CollapsingHeader("Source Scenes")) {
+		if (ui.BeginChild("ExportSourceScenes", 570.0f, 145.0f)) {
+			for (const auto &[packagedPath, sourcePath] : run.sceneSources) {
+				const auto label = PathUtils::ToUtf8(packagedPath);
+				ImGui::PushID(label.c_str());
+				ui.Text(label);
+				ui.SameLine();
+				if (ui.Button("Open in Editor")) {
+					openSource(sourcePath);
+				}
+				ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(sourcePath).c_str());
+				ImGui::PopID();
+			}
+		}
+		ui.EndChild();
 	}
 
 	if (!error_.empty()) {
