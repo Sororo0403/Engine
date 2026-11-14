@@ -152,6 +152,12 @@ bool GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits
 		options.config.height = lastSuccessfulWindow_->height;
 	}
 	if (!windowSource.empty()) {
+		std::error_code status;
+		if (windowSource.is_absolute() &&
+		    PathUtils::IsValidFileName(windowSource.filename()) &&
+		    std::filesystem::is_directory(windowSource, status)) {
+			options.destination = windowSource;
+		}
 		lastSuccessfulWindow_.reset();
 	}
 	options_ = std::move(options);

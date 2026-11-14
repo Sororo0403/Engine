@@ -365,7 +365,7 @@ class EditorScene final : public IScene {
 	/// <summary>
 	/// 現在のシーンとプロジェクトの設定で配布画面を開く
 	/// </summary>
-	/// <param name="windowSource">ウィンドウ設定を引き継ぐ配布先。通常は空</param>
+	/// <param name="windowSource">出力先の候補とウィンドウ設定の基準にする配布版。通常は空</param>
 	void ShowGameExport(const std::filesystem::path &windowSource = {});
 
 	/// <summary>

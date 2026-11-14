@@ -37,7 +37,7 @@ class GameExportDialog {
 	/// <param name="includesUnsavedEdits">編集中の起動シーンの未保存変更を出力に含むか</param>
 	/// <param name="projectRoot">下書きの所属先。プロジェクトなしなら空</param>
 	/// <param name="lastExport">同じプロジェクトの最後の出力先。未記録なら空</param>
-	/// <param name="windowSource">次の出力に引き継ぐウィンドウ設定の取得元。通常は空</param>
+	/// <param name="windowSource">出力先の候補とウィンドウ設定の基準にする配布版。通常は空</param>
 	/// <returns>問題の修正から戻った場合はtrue。再検査できる設定を保持する</returns>
 	bool Show(GameExportOptions options, bool includesUnsavedEdits,
 	          const std::filesystem::path &projectRoot = {},
