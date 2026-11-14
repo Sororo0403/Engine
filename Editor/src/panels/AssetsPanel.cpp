@@ -610,17 +610,21 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	if (previousView_ && unavailableRevealPath_.empty()) {
 		ui.SameLine();
 		if (ui.Button(previousView_->results.empty() ? "Back to Search" : "Back to Results")) {
-			auto previous = std::exchange(previousView_, std::nullopt);
-			SetAssetType(previous->type);
-			RestoreDirectory(std::move(previous->directory), assets);
-			filter_ = std::move(previous->search);
-			searchAllTypes_ = previous->allTypes;
-			searchCurrentFolderOnly_ = previous->currentFolderOnly;
-			displayedResults_ = std::move(previous->results);
-			selectedItems_ = std::move(previous->selection);
-			selectionAnchor_ = std::move(previous->anchor);
-			scrollToSelected_ = !selectedItems_.empty();
-			scrollToTop_ = !scrollToSelected_;
+			if (assets.Refresh()) {
+				refreshed_ = true;
+				auto previous = std::exchange(previousView_, std::nullopt);
+				SetAssetType(previous->type);
+				RestoreDirectory(std::move(previous->directory), assets);
+				filter_ = std::move(previous->search);
+				searchAllTypes_ = previous->allTypes;
+				searchCurrentFolderOnly_ = previous->currentFolderOnly;
+				displayedResults_ = std::move(previous->results);
+				selectedItems_ = std::move(previous->selection);
+				selectionAnchor_ = std::move(previous->anchor);
+				RemoveMissingPaths();
+				scrollToSelected_ = !selectedItems_.empty();
+				scrollToTop_ = !scrollToSelected_;
+			}
 		}
 	}
 
