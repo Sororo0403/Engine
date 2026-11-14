@@ -5191,12 +5191,24 @@ void EditorScene::UpdateDialogs() {
 		}
 
 		if (result == FileDialogResult::ACCEPTED) {
-			const auto &current = document_.GetFilePath();
-			if (locatedScenePreviousPath_.empty() && !current.empty() &&
-			    PathUtils::IsSameFile(openSceneDialog_.GetSelectedPath(), current)) {
-				stage_ = DialogStage::IDLE;
+			const auto &selected = openSceneDialog_.GetSelectedPath();
+			const bool locating = !locatedScenePreviousPath_.empty();
+			if (locating && !project_.CanUseAsStartupScene(selected)) {
+				openSceneDialog_.RetrySelection(
+				    "Choose a saved scene in the project's scenes folder.");
 				return;
 			}
+
+			const auto &current = document_.GetFilePath();
+			if (!current.empty() && PathUtils::IsSameFile(selected, current)) {
+				locatedScenePreviousPath_.clear();
+				stage_ = DialogStage::IDLE;
+				if (locating) {
+					StartAction(EditorAction::RESUME_CURRENT_SCENE);
+				}
+				return;
+			}
+
 			pendingAction_ = EditorAction::OPEN;
 			ConfirmSceneChanges();
 		}
