@@ -5920,16 +5920,6 @@ void EditorScene::UpdateDialogs() {
 		    document_.IsModified() && !document_.GetFilePath().empty() &&
 		    !UsesEditingSceneForStartup(project_.GetStartupScene());
 		const auto result = exportDialog_.Draw(ui_, canSaveAndCheck);
-		if (result == GameExportResult::SAVE_AND_CHECK) {
-			pendingAction_ = EditorAction::SAVE_AND_CHECK_EXPORT;
-			StartSave(false);
-			return;
-		}
-		if (result == GameExportResult::CHOOSE_STARTUP_SCENE) {
-			BrowseStartupScene();
-			stage_ = DialogStage::SELECT_EXPORT_STARTUP_SCENE;
-			return;
-		}
 		const auto &root = project_.GetRoot();
 		if (result != GameExportResult::NONE) {
 			bool changed = false;
@@ -5945,6 +5935,16 @@ void EditorScene::UpdateDialogs() {
 		}
 		if (result == GameExportResult::CANCELLED) {
 			stage_ = DialogStage::IDLE;
+			return;
+		}
+		if (result == GameExportResult::SAVE_AND_CHECK) {
+			pendingAction_ = EditorAction::SAVE_AND_CHECK_EXPORT;
+			StartSave(false);
+			return;
+		}
+		if (result == GameExportResult::CHOOSE_STARTUP_SCENE) {
+			BrowseStartupScene();
+			stage_ = DialogStage::SELECT_EXPORT_STARTUP_SCENE;
 			return;
 		}
 

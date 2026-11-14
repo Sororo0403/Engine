@@ -924,7 +924,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 	    result == GameExportResult::OPEN_TRANSITION_SOURCE ||
 	    result == GameExportResult::REVEAL_ISSUE_ASSET ||
 	    navigatingIssue) {
-		resumeDraft_ = keepDraft || navigatingIssue || result == GameExportResult::ACCEPTED;
+		resumeDraft_ = result != GameExportResult::CANCELLED || keepDraft;
 		ui.CloseCurrentPopup();
 	}
 
