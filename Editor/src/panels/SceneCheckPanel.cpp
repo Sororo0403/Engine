@@ -525,6 +525,12 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 				ShellUtils::RevealLocationInExplorer(issue.assetPath, assetActionError_);
 			}
 			ImGui::SetItemTooltip("%s", path.c_str());
+			ui.SameLine();
+			if (ui.Button("Recheck Here")) {
+				lastIssue_ = i;
+				checkRequested_ = true;
+			}
+			ImGui::SetItemTooltip("Check the scene again and resume at this issue.");
 			const bool script = PathUtils::HasExtension(issue.assetPath, ".lua");
 			const bool sceneFile = PathUtils::HasExtension(issue.assetPath, ".json") &&
 			                       PathUtils::HasExtension(issue.assetPath.stem(), ".scene");
