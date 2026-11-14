@@ -6770,9 +6770,18 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		AssetDatabase assets(candidate.GetAssetsDirectory(),
 		                     candidate.GetScenesDirectory());
 
-		if (!assets.Refresh()) {
-			reportFailure(assets.GetError());
-			return;
+		const bool assetsReady = assets.Refresh();
+		if (!assetsReady) {
+			if (create) {
+				reportFailure(assets.GetError());
+				return;
+			}
+			// 素材一覧の検索に失敗しても、シーン選択に使う一覧は独立して読み込む。
+			std::string sceneListError;
+			if (!assets.RefreshProjectScenes(sceneListError)) {
+				Logger::Warning("Could not list project scenes: " + sceneListError,
+				                candidate.GetScenesDirectory());
+			}
 		}
 
 		AssetSources sources;
@@ -6893,6 +6902,12 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 			}
 		}
 		SaveEditorSession(removedRecent || rememberedUnavailableScene);
+		if (!assetsReady) {
+			Logger::Warning("Project opened, but the Assets list could not be loaded. "
+			                "Use Refresh in Assets to try again.\n" + assets_.GetError(),
+			                assetSources_.GetDirectory());
+			consolePanel_.Show();
+		}
 		if (!startupError.empty()) {
 			Logger::Warning(startupError, startup);
 			consolePanel_.Show();
