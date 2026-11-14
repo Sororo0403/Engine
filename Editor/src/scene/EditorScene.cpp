@@ -879,6 +879,9 @@ bool EditorScene::Update(float deltaTime) {
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
 			FinishEdit();
 			const bool moveToRecycleBin = !recycle.empty();
+			if (moveToRecycleBin) {
+				suspendedRecyclePaths_.clear();
+			}
 			pendingAssetPaths_ = moveToRecycleBin ? recycle : references;
 			assetReferenceFilter_.clear();
 			CheckAssetReferences(moveToRecycleBin);
@@ -2080,6 +2083,11 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 		                 enabled && project_.GetRoot().empty())) {
 			action = EditorAction::ASSETS_FOLDER;
 		}
+		if (!suspendedRecyclePaths_.empty() &&
+		    ui_.MenuItem("Resume Move to Recycle Bin...", nullptr,
+		                 enabled && !playMode_.IsPlaying())) {
+			action = EditorAction::RESUME_ASSET_RECYCLE;
+		}
 
 		if (ui_.MenuItem("Scene Settings...", nullptr, enabled)) {
 			action = EditorAction::SCENE_SETTINGS;
@@ -2908,6 +2916,7 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	    action == EditorAction::NONE ||
 	    ((action == EditorAction::IMPORT_SCENE ||
 	      action == EditorAction::ASSETS_FOLDER ||
+	      action == EditorAction::RESUME_ASSET_RECYCLE ||
 	      action == EditorAction::OPEN_PATH ||
 	      action == EditorAction::BROWSE_LAST_EDITED_SCENE ||
 	      action == EditorAction::OPEN_PREVIOUS_SCENE ||
@@ -2989,6 +2998,14 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 		StartSaveSelection();
 		return;
 
+	case EditorAction::RESUME_ASSET_RECYCLE:
+		if (!suspendedRecyclePaths_.empty()) {
+			pendingAssetPaths_ = std::exchange(suspendedRecyclePaths_, {});
+			assetReferenceFilter_.clear();
+			CheckAssetReferences(true);
+			stage_ = DialogStage::RECYCLE_ASSET;
+		}
+		return;
 	case EditorAction::ASSETS_FOLDER:
 		try {
 			fileDialog_.Show(FileDialogMode::SELECT_DIRECTORY,
@@ -4540,6 +4557,7 @@ void EditorScene::RestoreRecovery() {
 			exportConfig_ = std::move(snapshot.game);
 		}
 		assets_ = std::move(assets);
+		suspendedRecyclePaths_.clear();
 		restoredRecoveryPath_.swap(restoredPath);
 		sceneCheckPanel_.Reset();
 		clipboard_.DetachExternalReferences();
@@ -4795,10 +4813,14 @@ void EditorScene::DrawAssetReferences(bool recycle) {
 	}
 
 	const bool canRecycle = recycle && assetReferences_.empty();
+	const bool navigating = destination || !sourceToReveal.empty() ||
+	                        !selectedReferences.empty();
 	if (ui_.Button(canRecycle ? "Cancel" : "Close") ||
-	    ImGui::IsKeyPressed(ImGuiKey_Escape) || close || destination ||
-	    !sourceToReveal.empty() || !selectedReferences.empty()) {
+	    ImGui::IsKeyPressed(ImGuiKey_Escape) || close || navigating) {
 		ui_.CloseCurrentPopup();
+		if (recycle && navigating) {
+			suspendedRecyclePaths_ = std::move(pendingAssetPaths_);
+		}
 		pendingAssetPaths_.clear();
 		assetReferences_.clear();
 		stage_ = DialogStage::IDLE;
@@ -4868,6 +4890,9 @@ bool EditorScene::RelocateAssets(const AssetUsage::Moves &moves,
 		return false;
 	}
 	assetsPanel_.RelocatePaths(moves, assets_.GetRootDirectory());
+	for (auto &path : suspendedRecyclePaths_) {
+		path = PathUtils::AfterMove(path, moves);
+	}
 	sceneCheckPanel_.OnAssetsMoved(moves);
 	exportDialog_.FollowMovedScene(project_.GetRoot(), moves);
 	failedRestoredScene_ = PathUtils::AfterMove(failedRestoredScene_, moves);
@@ -5215,6 +5240,7 @@ void EditorScene::UpdateDialogs() {
 				auto sources = assetSources_;
 				sources.Select(candidate.GetRootDirectory());
 				assets_ = std::move(candidate);
+				suspendedRecyclePaths_.clear();
 				assetSources_ = std::move(sources);
 				assetsPanel_.Clear();
 				assetsPanel_.RequestOpenDirectory({});
@@ -6555,6 +6581,7 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		assetSources_ = std::move(sources);
 		assets_ = std::move(assets);
 		assetsPanel_.Clear();
+		suspendedRecyclePaths_.clear();
 		assetsPanel_.RestoreDirectory(
 		    preferences_.LastProjectAssetFolder(project_.GetRoot(), previousProjectRoot), assets_);
 		texturePreviewPanel_.Clear();

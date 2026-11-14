@@ -161,6 +161,7 @@ class EditorScene final : public IScene {
 		LOAD_GAME_SETTINGS,
 		SCENE_SETTINGS,
 		ASSETS_FOLDER,
+		RESUME_ASSET_RECYCLE,
 		RELOAD_SCENE,
 		EXIT,
 		UNDO,
@@ -1007,6 +1008,7 @@ class EditorScene final : public IScene {
 	bool startupProjectPicker_ = false;
 	SceneObjectId pendingOpenObject_ = 0;
 	std::vector<std::filesystem::path> pendingAssetPaths_;
+	std::vector<std::filesystem::path> suspendedRecyclePaths_;
 	std::vector<AssetUsage::Reference> assetReferences_;
 	std::string assetReferenceFilter_;
 	std::string assetReferenceLocationError_;
