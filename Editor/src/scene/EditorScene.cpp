@@ -5144,6 +5144,39 @@ void EditorScene::UpdateDialogs() {
 		return;
 	}
 
+	case DialogStage::SELECT_ASSET_MOVE_DESTINATION: {
+		const auto result = fileDialog_.Draw(ui_);
+		if (result == FileDialogResult::CANCELLED) {
+			errorOpenRequested_ = true;
+			stage_ = DialogStage::ERROR;
+		} else if (result == FileDialogResult::ACCEPTED) {
+			const auto &directory = fileDialog_.GetSelectedPath();
+			AssetUsage::Moves moves;
+			for (const auto &[source, destination] : failedAssetMoves_) {
+				if (!PathUtils::IsSameFile(source.parent_path(), directory)) {
+					moves.emplace_back(source, directory / destination.filename());
+				}
+			}
+			if (moves.empty()) {
+				fileDialog_.RetrySelection("Choose a folder other than the source folder.");
+				return;
+			}
+
+			std::string error;
+			if (!RelocateAssets(moves, error)) {
+				fileDialog_.RetrySelection(std::move(error));
+				return;
+			}
+
+			if (failedAssetMoveWasCutPaste_) {
+				assetsPanel_.FinishPaste();
+			}
+			failedAssetMoves_.clear();
+			stage_ = DialogStage::IDLE;
+		}
+		return;
+	}
+
 	case DialogStage::EDIT_ANIMATION_CLIP: {
 		const auto result = animationClipEditor_.Draw(ui_);
 		if (result == AnimationClipEditor::Result::SAVED) {
@@ -5845,6 +5878,21 @@ void EditorScene::UpdateDialogs() {
 				if (ui_.Button("Show Destination Folder")) {
 					ShellUtils::RevealLocationInExplorer(
 					    failedAssetMoves_.front().second.parent_path(), errorActionMessage_);
+				}
+				ui_.SameLine();
+				if (ui_.Button("Choose Another Destination...")) {
+					auto directory = FindExistingDirectory(
+					    failedAssetMoves_.front().second.parent_path());
+					if (directory.empty()) {
+						directory = assets_.GetRootDirectory();
+					}
+					fileDialog_.Show(FileDialogMode::SELECT_DIRECTORY, directory,
+					                 FileDialogFilter::SCENE,
+					                 "Choose Move Destination###FileDialog");
+					ui_.CloseCurrentPopup();
+					ui_.EndPopup();
+					stage_ = DialogStage::SELECT_ASSET_MOVE_DESTINATION;
+					return;
 				}
 				ui_.SameLine();
 				const bool retry = ui_.Button("Retry Move");
