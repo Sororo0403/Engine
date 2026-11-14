@@ -744,6 +744,16 @@ HierarchyPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 	return result;
 }
 
+void HierarchyPanel::OnSceneReloaded(const Scene &scene, SceneObjectId activeId) {
+	const auto missing = [&](SceneObjectId id) { return !scene.Contains(id); };
+	std::erase_if(collapsed_, missing);
+	std::erase_if(scenePickingDisabled_, missing);
+	rangeAnchorId_ = activeId;
+	lastActiveId_ = activeId;
+	scrollToId_ = activeId;
+	revealRequested_ = false;
+}
+
 void HierarchyPanel::Clear() {
 	filter_.Clear();
 	previousFilters_.reset();

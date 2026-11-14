@@ -109,6 +109,11 @@ class HierarchyPanel {
 	void Clear();
 
 	/// <summary>
+	/// 同じシーンの再読み込み後に、表示設定を保持して消えた物体の記録を除く
+	/// </summary>
+	void OnSceneReloaded(const Scene &scene, SceneObjectId activeId);
+
+	/// <summary>
 	/// Sceneビューのマウス選択から除く物体IDを取得する。描画やHierarchyの選択は制限しない
 	/// </summary>
 	/// <returns>次の選択可否変更・Clearまで有効なID一覧。削除後もUndoに備えて保持する</returns>

@@ -6912,11 +6912,8 @@ bool EditorScene::OpenScene(const std::filesystem::path &path, bool reportError,
 	if (!previousPath.empty() &&
 	    PathUtils::IsSameFile(previousPath, document_.GetFilePath())) {
 		// 同じシーンの再読み込みでは、設定の保存結果に関わらず現在の視点と選択を使う。
-		hierarchyPanel_.Clear();
 		selection_.RemoveMissing(document_.GetScene());
-		if (const auto active = selection_.GetActiveId()) {
-			hierarchyPanel_.RequestReveal(active);
-		}
+		hierarchyPanel_.OnSceneReloaded(document_.GetScene(), selection_.GetActiveId());
 	} else {
 		const auto &openedPath = document_.GetFilePath();
 		// 場所を選び直したシーンに表示状態がなければ、移動前の記録を使う。
