@@ -2947,6 +2947,7 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	      action == EditorAction::OPEN_EXPORT_ISSUE ||
 	      action == EditorAction::OPEN_EXPORTED_SOURCE_SCENE ||
 	      action == EditorAction::OPEN_PROJECT_PATH ||
+	      action == EditorAction::OPEN_RECOVERY_PROJECT ||
 	      action == EditorAction::LOAD_GAME_SETTINGS ||
 	      action == EditorAction::RECOVER_SCENE ||
 	      action == EditorAction::RESTORE_RECOVERY) &&
@@ -3390,6 +3391,7 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	}
 
 	case EditorAction::OPEN_PROJECT_PATH:
+	case EditorAction::OPEN_RECOVERY_PROJECT:
 	case EditorAction::NEW:
 	case EditorAction::NEW_SAMPLE:
 	case EditorAction::RESTORE_RECOVERY:
@@ -3853,6 +3855,10 @@ void EditorScene::ConfirmSceneChanges() {
 			destination = PathUtils::ToUtf8(pendingRecoveryPath_);
 			cancelLabel = "Back to Scene Recovery";
 			break;
+		case EditorAction::OPEN_RECOVERY_PROJECT:
+			destination = PathUtils::ToUtf8(recoveryDialog_.GetRequestedProject());
+			cancelLabel = "Back to Scene Recovery";
+			break;
 		case EditorAction::OPEN_PLAY_SOURCE:
 			destination = PathUtils::ToUtf8(pendingOpenPath_);
 			cancelLabel = "Back to Play";
@@ -3888,7 +3894,8 @@ void EditorScene::CancelPendingAction() {
 	if (action == EditorAction::OPEN) {
 		openSceneDialog_.RetrySelection();
 		stage_ = DialogStage::OPEN_FILE;
-	} else if (action == EditorAction::RESTORE_RECOVERY) {
+	} else if (action == EditorAction::RESTORE_RECOVERY ||
+	           action == EditorAction::OPEN_RECOVERY_PROJECT) {
 		pendingRecoveryPath_.clear();
 		recoveryDialog_.Reopen();
 		stage_ = DialogStage::RECOVERY;
@@ -3932,6 +3939,13 @@ void EditorScene::ExecutePendingAction() {
 	case EditorAction::OPEN_PROJECT_PATH:
 		SwitchProject(pendingOpenPath_, false, true);
 		return;
+
+	case EditorAction::OPEN_RECOVERY_PROJECT: {
+		const auto target = recoveryDialog_.GetRequestedProject();
+		const auto snapshot = recoveryDialog_.GetSelectedPath();
+		SwitchProject(target, false, false, snapshot);
+		return;
+	}
 
 	case EditorAction::NEW_PROJECT:
 	case EditorAction::OPEN_PROJECT: {
@@ -5318,6 +5332,9 @@ void EditorScene::UpdateDialogs() {
 			pendingRecoveryPath_ = recoveryDialog_.GetSelectedPath();
 			stage_ = DialogStage::IDLE;
 			StartAction(EditorAction::RESTORE_RECOVERY);
+		} else if (result == SceneRecoveryDialog::Result::OPEN_PROJECT) {
+			stage_ = DialogStage::IDLE;
+			StartAction(EditorAction::OPEN_RECOVERY_PROJECT);
 		}
 
 		return;
@@ -6998,10 +7015,15 @@ void EditorScene::LogPlayFailure() {
 }
 
 void EditorScene::SwitchProject(const std::filesystem::path &folder,
-                                bool create, bool reopenOnFailure) {
+                                bool create, bool reopenOnFailure,
+                                const std::filesystem::path &recoverySelection) {
 	const auto reportFailure = [&](std::string error) {
 		RecordRecovery();
-		if (stage_ == DialogStage::CREATE_PROJECT ||
+		if (!recoverySelection.empty()) {
+			recoveryDialog_.Reopen(std::format("Could not open {}.\n{}",
+			                                   PathUtils::ToUtf8(folder), error));
+			stage_ = DialogStage::RECOVERY;
+		} else if (stage_ == DialogStage::CREATE_PROJECT ||
 		    stage_ == DialogStage::OPEN_PROJECT) {
 			const auto &retryProject = missingRecentProject_.empty()
 			                               ? folder : missingRecentProject_;
@@ -7188,7 +7210,10 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 			Logger::Warning(startupError, startup);
 			consolePanel_.Show();
 		}
-		if (recovery_.IsReady()) {
+		if (!recoverySelection.empty()) {
+			ShowRecovery();
+			recoveryDialog_.Select(recoverySelection);
+		} else if (recovery_.IsReady()) {
 			ShowRecovery(true);
 		}
 		if (!create && needsScene && stage_ == DialogStage::IDLE) {

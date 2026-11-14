@@ -15,6 +15,7 @@ void SceneRecoveryDialog::Show(std::vector<SceneRecovery::Entry> entries,
 	SetEntries(std::move(entries));
 	error_ = std::move(error);
 	selectedPath_.clear();
+	requestedProject_.clear();
 	confirmingDelete_ = false;
 	openRequested_ = true;
 }
@@ -29,6 +30,13 @@ void SceneRecoveryDialog::Refresh(SceneRecovery &recovery) {
 	std::vector<SceneRecovery::Entry> refreshed;
 	if (recovery.Enumerate(refreshed, error_)) {
 		SetEntries(std::move(refreshed));
+	}
+}
+
+void SceneRecoveryDialog::Select(const std::filesystem::path &path) {
+	if (const auto entry = std::ranges::find(entries_, path, &SceneRecovery::Entry::path);
+	    entry != entries_.end()) {
+		selected_ = static_cast<std::size_t>(entry - entries_.begin());
 	}
 }
 
@@ -163,6 +171,21 @@ SceneRecoveryDialog::Draw(const ImGuiSystem &ui, SceneRecovery &recovery,
 			} else if (!canRestore) {
 				ImGui::TextWrapped(
 				    "Open the project for this Assets folder to restore this scene.");
+			}
+			if (entry.error.empty() && !entry.assetDirectory.empty() &&
+			    (projectAssets_.empty() || !canRestore)) {
+				std::error_code status;
+				const auto assets = PathUtils::ResolveFromExecutable(entry.assetDirectory);
+				const auto project = assets.parent_path();
+				if (PathUtils::IsSameFile(assets, project / L"assets") &&
+				    std::filesystem::is_regular_file(project / L"project.json", status) &&
+				    ui.Button("Open Recovery Project")) {
+					requestedProject_ = project;
+					selectedPath_ = entry.path;
+					ui.CloseCurrentPopup();
+					ui.EndPopup();
+					return Result::OPEN_PROJECT;
+				}
 			}
 		}
 

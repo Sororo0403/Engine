@@ -143,6 +143,7 @@ class EditorScene final : public IScene {
 		NEW_PROJECT,
 		OPEN_PROJECT,
 		OPEN_PROJECT_PATH,
+		OPEN_RECOVERY_PROJECT,
 		SET_STARTUP_SCENE,
 		CLEAR_STARTUP_SCENE,
 		BROWSE_STARTUP_SCENE,
@@ -472,7 +473,8 @@ class EditorScene final : public IScene {
 	/// プロジェクトを作成または開き、読み込み成功後に編集対象を切り替える
 	/// </summary>
 	void SwitchProject(const std::filesystem::path &folder, bool create,
-	                   bool reopenOnFailure = false);
+	                   bool reopenOnFailure = false,
+	                   const std::filesystem::path &recoverySelection = {});
 
 	/// <summary>
 	/// 現在のプロジェクト・シーンと、視点および選択状態をEditor設定に記録する

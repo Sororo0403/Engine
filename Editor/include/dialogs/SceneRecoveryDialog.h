@@ -11,7 +11,7 @@ class ImGuiSystem;
 /// </summary>
 class SceneRecoveryDialog {
   public:
-	enum class Result { NONE, CLOSED, RESTORE };
+	enum class Result { NONE, CLOSED, RESTORE, OPEN_PROJECT };
 
 	/// <summary>
 	/// 復旧候補の列挙結果を保持し、選択画面の表示を予約する
@@ -39,6 +39,16 @@ class SceneRecoveryDialog {
 	const std::filesystem::path &GetSelectedPath() const;
 
 	/// <summary>
+	/// 復旧候補が属するプロジェクトを取得する
+	/// </summary>
+	const std::filesystem::path &GetRequestedProject() const { return requestedProject_; }
+
+	/// <summary>
+	/// 一覧内に候補が残っていれば選択する
+	/// </summary>
+	void Select(const std::filesystem::path &path);
+
+	/// <summary>
 	/// 復旧候補と選択を保持したまま一覧を開き直す
 	/// </summary>
 	void Reopen(std::string error = {});
@@ -57,6 +67,7 @@ class SceneRecoveryDialog {
 	std::vector<SceneRecovery::Entry> entries_;
 	std::filesystem::path projectAssets_;
 	std::filesystem::path selectedPath_;
+	std::filesystem::path requestedProject_;
 	std::string error_;
 	std::size_t selected_ = 0;
 	bool openRequested_ = false;
