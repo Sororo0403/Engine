@@ -4748,15 +4748,35 @@ void EditorScene::DrawAssetReferences(bool recycle) {
 		}
 
 		ui_.EndChild();
-		if (ui_.Button("Copy List")) {
+		const auto copyReferences = [&](bool matchingOnly) {
 			std::string list;
 			for (const auto &source : assetReferences_) {
+				if (matchingOnly && !matches(source)) {
+					continue;
+				}
 				list += source.message;
 				list += '\n';
+				const auto &path = source.editingScene ? document_.GetFilePath()
+				                   : source.scenePath.empty() ? source.sourcePath
+				                                              : source.scenePath;
+				if (!path.empty()) {
+					list += std::format("Source: {}\n", PathUtils::ToUtf8(path));
+				}
 			}
 			ImGui::SetClipboardText(list.c_str());
+		};
+		if (ui_.Button("Copy List")) {
+			copyReferences(false);
 		}
 		ImGui::SetItemTooltip("Copy the full reference list, including entries hidden by search.");
+		if (!assetReferenceFilter_.empty()) {
+			ui_.SameLine();
+			ui_.BeginDisabled(matchingCount == 0);
+			if (ui_.Button("Copy Matching References") && matchingCount != 0) {
+				copyReferences(true);
+			}
+			ui_.EndDisabled();
+		}
 		ui_.SameLine();
 		const auto &scene = document_.GetScene();
 		const auto inCurrentScene = [&](const AssetUsage::Reference &source) {
