@@ -5440,10 +5440,8 @@ void EditorScene::UpdateDialogs() {
 		const auto result = animationClipEditor_.Draw(ui_);
 		if (result == AnimationClipEditor::Result::SAVED) {
 			stage_ = DialogStage::IDLE;
-			if (!assets_.Refresh())
-				ShowError(assets_.GetError());
-			else
-				assetsPanel_.RequestReveal(animationClipEditor_.GetSavedPath());
+			assets_.Refresh();
+			assetsPanel_.RequestReveal(animationClipEditor_.GetSavedPath());
 		} else if (result == AnimationClipEditor::Result::CANCELLED) {
 			stage_ = DialogStage::IDLE;
 		}
@@ -5508,14 +5506,8 @@ void EditorScene::UpdateDialogs() {
 		if (result == PrefabCreateResult::ACCEPTED) {
 			stage_ = DialogStage::IDLE;
 
-			if (!assets_.Refresh()) {
-				ShowError(
-				    "The Prefab was created, but Assets could not refresh: " +
-				    assets_.GetError());
-			} else {
-				assetsPanel_.RequestReveal(
-				    prefabCreateDialog_.GetCreatedPath());
-			}
+			assets_.Refresh();
+			assetsPanel_.RequestReveal(prefabCreateDialog_.GetCreatedPath());
 		} else if (result == PrefabCreateResult::CANCELLED) {
 			stage_ = DialogStage::IDLE;
 		}
