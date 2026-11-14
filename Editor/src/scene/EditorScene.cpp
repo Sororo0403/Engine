@@ -4316,9 +4316,13 @@ void EditorScene::StartSaveCopy(bool reload) {
 
 void EditorScene::ReloadScene(const std::filesystem::path &copy) {
 	const auto original = document_.GetFilePath();
+	const auto action = pendingAction_;
 	if (OpenScene(original, false)) {
 		stage_ = DialogStage::IDLE;
 		SaveEditorSession();
+		if (action != EditorAction::NONE) {
+			ExecutePendingAction();
+		}
 	} else {
 		auto message = copy.empty() ? std::string{}
 		                           : std::format("Saved a copy to {}. ", PathUtils::ToUtf8(copy));
@@ -4328,6 +4332,7 @@ void EditorScene::ReloadScene(const std::filesystem::path &copy) {
 		failedOpenScenePath_ = original;
 		reloadBackupPath_ = copy;
 		sceneReloadFailed_ = true;
+		pendingAction_ = action;
 	}
 }
 
@@ -5365,7 +5370,6 @@ void EditorScene::UpdateDialogs() {
 				assets_.Refresh();
 				stage_ = DialogStage::IDLE;
 				if (reload) {
-					pendingAction_ = EditorAction::NONE;
 					ReloadScene(copy);
 				} else if (conflictCopy) {
 					errorActionMessage_ = "Saved a copy to " + PathUtils::ToUtf8(copy);
@@ -6270,7 +6274,9 @@ void EditorScene::UpdateDialogs() {
 			}
 
 			if (sceneSaveConflict_) {
-				if (ui_.Button("Save Copy and Reload...")) {
+				if (ui_.Button(pendingAction_ == EditorAction::NONE
+				                   ? "Save Copy and Reload..."
+				                   : "Save Copy, Reload and Continue...")) {
 					ui_.CloseCurrentPopup();
 					ui_.EndPopup();
 					StartSaveCopy(true);
