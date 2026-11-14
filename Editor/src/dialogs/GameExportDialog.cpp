@@ -926,6 +926,10 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 	    navigatingIssue) {
 		resumeDraft_ = result != GameExportResult::CANCELLED || keepDraft;
 		ui.CloseCurrentPopup();
+	} else if (result == GameExportResult::CHECK) {
+		// 検査が中断された場合に備えて、再開時にも検査する。
+		resumeDraft_ = true;
+		recheckRestoredDraft_ = true;
 	}
 
 	ui.EndPopup();
