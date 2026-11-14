@@ -99,10 +99,10 @@ std::optional<std::string> LoadScriptSettings(const std::filesystem::path &path,
 } // namespace
 
 RuntimeScene::RuntimeScene(const EngineContext &context, GameConfig config,
-                           bool launchedFromEditor)
+                           SaveMode saveMode)
     : input_(context.input), render_(context.render),
       config_(std::move(config)),
-      launchedFromEditor_(launchedFromEditor),
+      saveMode_(saveMode),
       renderer_(simulation_.GetScene(), context.models, context.render),
       audioPlayer_(simulation_.GetScene(), context.audioClips, context.audio) {
 	simulation_.SetLegacyLighting(config_.lighting);
@@ -140,8 +140,8 @@ bool RuntimeScene::Initialize() {
 	scriptSettingsPath_.clear();
 	observedScriptData_.clear();
 	nextScriptSettingsWrite_ = {};
-	if (!config_.settingsId.empty()) {
-		scriptSettingsPath_ = GetScriptSettingsPath(config_.settingsId, launchedFromEditor_);
+	if (saveMode_ != SaveMode::SESSION_ONLY && !config_.settingsId.empty()) {
+		scriptSettingsPath_ = GetScriptSettingsPath(config_.settingsId, saveMode_ == SaveMode::EDITOR_TEST);
 		if (scriptSettingsPath_.empty())
 			Logger::Warning("Game script settings directory is unavailable.");
 		else if (auto loaded = LoadScriptSettings(scriptSettingsPath_, config_.persistentScriptKeys)) {

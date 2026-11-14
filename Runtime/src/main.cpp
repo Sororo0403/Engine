@@ -13,7 +13,7 @@
 
 namespace {
 GameConfig game;
-bool launchedFromEditor = false;
+RuntimeScene::SaveMode saveMode = RuntimeScene::SaveMode::NORMAL;
 
 /// <summary>
 /// 起動ウィンドウを作らず、実行ファイルと同じ場所へビルド構成と対応形式を記録する
@@ -38,7 +38,8 @@ int WriteBuildInfo() {
 		     << "\",\"architecture\":\"" << architecture
 		     << "\",\"gameConfigVersion\":" << GameConfig::kCurrentVersion
 		     << ",\"sceneVersion\":" << SceneSerializer::kCurrentVersion
-		     << ",\"scriptApiVersion\":" << LuaScript::kApiVersion << "}\n";
+		     << ",\"scriptApiVersion\":" << LuaScript::kApiVersion
+		     << ",\"supportsFreshStart\":true}\n";
 		file.close();
 		return file ? 0 : 1;
 	} catch (const std::exception &) {
@@ -52,7 +53,7 @@ int WriteBuildInfo() {
 /// <param name="context">共通機能</param>
 /// <returns>初期化前の実行シーン</returns>
 std::unique_ptr<IScene> CreateScene(const EngineContext &context) {
-	return std::make_unique<RuntimeScene>(context, game, launchedFromEditor);
+	return std::make_unique<RuntimeScene>(context, game, saveMode);
 }
 } // namespace
 
@@ -61,7 +62,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR commandLine, int) {
 	if (arguments == "--write-build-info") {
 		return WriteBuildInfo();
 	}
-	launchedFromEditor = arguments == "--editor-launch";
+	const bool freshStart = arguments == "--editor-launch-fresh";
+	const bool launchedFromEditor = freshStart || arguments == "--editor-launch";
+	saveMode = freshStart ? RuntimeScene::SaveMode::SESSION_ONLY
+	                      : launchedFromEditor ? RuntimeScene::SaveMode::EDITOR_TEST
+	                                           : RuntimeScene::SaveMode::NORMAL;
 
 	std::string error;
 	const auto executableDirectory = PathUtils::GetExecutableDirectory();

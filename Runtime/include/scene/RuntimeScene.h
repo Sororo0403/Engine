@@ -17,13 +17,14 @@ class RenderSystem;
 /// </summary>
 class RuntimeScene final : public IScene {
   public:
+	enum class SaveMode { NORMAL, EDITOR_TEST, SESSION_ONLY };
 	/// <summary>
 	/// 共通機能と起動設定を保持する
 	/// </summary>
 	/// <param name="context">初期化済みの共通機能</param>
 	/// <param name="config">検証済みのゲーム起動設定</param>
-	/// <param name="launchedFromEditor">Editorの配布結果から試遊を開始したか</param>
-	RuntimeScene(const EngineContext &context, GameConfig config, bool launchedFromEditor);
+	/// <param name="saveMode">通常の保存先、試遊用の保存先、または今回だけの実行</param>
+	RuntimeScene(const EngineContext &context, GameConfig config, SaveMode saveMode);
 
 	/// <summary>
 	/// 出力されたシーンを読み込み、実行と描画を初期化する
@@ -63,7 +64,7 @@ class RuntimeScene final : public IScene {
 	const InputSystem &input_;
 	RenderSystem &render_;
 	GameConfig config_;
-	bool launchedFromEditor_ = false;
+	SaveMode saveMode_;
 	GameActionReader actionReader_;
 	SceneSimulation simulation_;
 	SceneRenderer renderer_;

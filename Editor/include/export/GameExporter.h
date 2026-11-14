@@ -76,6 +76,11 @@ namespace GameExporter {
 std::string ReadPackageId(const std::filesystem::path &directory);
 
 /// <summary>
+/// 配布版がセーブを読み書きしない試遊に対応しているか確認する
+/// </summary>
+bool SupportsFreshStart(const std::filesystem::path &directory);
+
+/// <summary>
 /// 配布パッケージ内の相対パスと、編集中のシーンの絶対パスの対応
 /// </summary>
 struct SceneSource {

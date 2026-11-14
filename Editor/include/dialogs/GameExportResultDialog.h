@@ -111,12 +111,13 @@ class GameExportResultDialog {
 		bool showLogBeginning = false;
 		bool launchFailed = false;
 		bool restartRequested = false;
+		bool freshStart = false;
 	};
 
 	/// <summary>
 	/// ゲームを起動し、今回のログの開始位置を記録する。ログを更新した場合はtrue
 	/// </summary>
-	bool StartGame();
+	bool StartGame(bool freshStart = false);
 
 	/// <summary>
 	/// 配布版の画面設定と起動シーンを読み直し、表示内容と読み込みエラーを更新する
@@ -158,6 +159,7 @@ class GameExportResultDialog {
 	std::string error_;
 	std::string packageSettings_;
 	std::string packageSettingsError_;
+	bool supportsFreshStart_ = false;
 	std::string log_, logError_;
 	std::chrono::steady_clock::time_point nextLogRefresh_;
 	bool opening_ = false;

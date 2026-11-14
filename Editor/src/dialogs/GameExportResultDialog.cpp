@@ -226,6 +226,7 @@ void GameExportResultDialog::OnAssetsMoved(
 }
 
 void GameExportResultDialog::ReloadGameSettings(GameConfig &config) {
+	supportsFreshStart_ = false;
 	const auto path = directory_ / L"game.json";
 	if (!config.Load(path, packageSettingsError_)) {
 		packageSettingsError_ = std::format("Could not load {}: {}",
@@ -237,6 +238,7 @@ void GameExportResultDialog::ReloadGameSettings(GameConfig &config) {
 	packageSettings_ = std::format("Game window: {} ({} × {})\nStartup scene: {}",
 	                               config.title, config.width, config.height,
 	                               PathUtils::ToUtf8(config.scenePath));
+	supportsFreshStart_ = !config.settingsId.empty() && GameExporter::SupportsFreshStart(directory_);
 }
 
 void GameExportResultDialog::RefreshLog() {
@@ -529,13 +531,21 @@ void GameExportResultDialog::OpenLogAtOffset(std::uintmax_t offset) {
 	RefreshLog();
 }
 
-bool GameExportResultDialog::StartGame() {
+bool GameExportResultDialog::StartGame(bool freshStart) {
 	auto &run = runs_.at(directory_);
 	run.launchedPackageId = GameExporter::ReadPackageId(directory_);
 	GameConfig config;
 	ReloadGameSettings(config);
+	if (freshStart && !supportsFreshStart_ && packageSettingsError_.empty()) {
+		error_ = "This export does not support running without save data.";
+		return false;
+	}
+	run.freshStart = freshStart;
 	auto launchError = packageSettingsError_;
 	run.launchSettings = packageSettings_;
+	if (freshStart) {
+		run.launchSettings += "\nSave data: Disabled for this run";
+	}
 	run.crashError.clear();
 	run.startupScenePath.clear();
 	run.launchFailurePath.clear();
@@ -564,7 +574,7 @@ bool GameExportResultDialog::StartGame() {
 	const auto size = std::filesystem::file_size(directory_ / kGameLogPath, status);
 	run.launchFailed = !run.process.Start(directory_ / L"Game.exe", launchError,
 	                                      ShellUtils::WindowVisibility::NORMAL,
-	                                      L"--editor-launch");
+	                                      freshStart ? L"--editor-launch-fresh" : L"--editor-launch");
 	if (run.launchFailed) {
 		run.launchFailurePath = directory_ / L"Game.exe";
 		run.status = "Could not launch Game.exe: " + launchError;
@@ -609,7 +619,7 @@ bool GameExportResultDialog::UpdateGameProcess(bool &jumpToBeginning,
 	const bool restart = std::exchange(run.restartRequested, false);
 	if (*exitCode == 0) {
 		if (restart) {
-			jumpToLatest = StartGame();
+			jumpToLatest = StartGame(run.freshStart);
 			return jumpToLatest;
 		}
 		run.status = "Game exited normally.";
@@ -753,6 +763,15 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 		jumpToLatest |= StartGame();
 	}
 	ImGui::SetItemTooltip("Runs with separate Editor test save data.");
+	if (supportsFreshStart_) {
+		ui.SameLine();
+		ui.BeginDisabled(run.process.IsTracking());
+		if (ui.Button("Run Without Save Data")) {
+			jumpToLatest |= StartGame(true);
+		}
+		ui.EndDisabled();
+		ImGui::SetItemTooltip("Start with default progress. This run will not read or write save data.");
+	}
 	ui.EndDisabled();
 
 	if (run.process.IsTracking()) {

@@ -131,7 +131,7 @@ void CheckAnimationBindings(AnimationClipComponent player, const fs::path &path,
 /// Runtimeの確認情報を厳密に読み、構成と対応形式を照合する。不正な場合は再ビルドの案内を含む例外
 /// </summary>
 /// <param name="directory">正規化済みのRuntime取得元</param>
-void ValidateRuntimeBuild(const fs::path &directory) {
+bool ValidateRuntimeBuild(const fs::path &directory) {
 	std::ifstream file(directory / L"Runtime.build.json", std::ios::binary);
 
 	if (!file) {
@@ -170,6 +170,8 @@ void ValidateRuntimeBuild(const fs::path &directory) {
 			    "Runtime versions do not match the Editor." + mismatch +
 			    "\nRebuild Release x64 Runtime before exporting.");
 		}
+		const auto support = build.find("supportsFreshStart");
+		return support != build.end() && support->is_boolean() && support->get<bool>();
 	} catch (const nlohmann::json::exception &) {
 		throw std::runtime_error(
 		    "Runtime build information is invalid. Rebuild Release Runtime "
@@ -690,6 +692,7 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 			       (!path.has_root_path() || path.is_absolute());
 		};
 		fs::path runtimeRoot;
+		bool supportsFreshStart = false;
 		fs::path runtimeLocation;
 		try {
 			if (!validDirectoryPath(options.runtimeDirectory)) {
@@ -704,7 +707,7 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 				    "Runtime before exporting.");
 			}
 			runtimeLocation = runtimeRoot / L"Runtime.build.json";
-			ValidateRuntimeBuild(runtimeRoot);
+			supportsFreshStart = ValidateRuntimeBuild(runtimeRoot);
 			runtimeLocation = runtimeRoot;
 			const auto checkRuntimeFile = [&](const fs::path &path) {
 				std::error_code status;
@@ -1187,6 +1190,7 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 		                            exportId.Data4[4], exportId.Data4[5], exportId.Data4[6], exportId.Data4[7]);
 		auto configJson = nlohmann::json::parse(configText);
 		configJson["exportId"] = packageId;
+		configJson["supportsFreshStart"] = supportsFreshStart;
 		configText = configJson.dump(2) + '\n';
 
 		GameExporter::CheckSummary result;
@@ -1319,7 +1323,8 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 }
 } // namespace
 
-std::string GameExporter::ReadPackageId(const std::filesystem::path &directory) {
+namespace {
+nlohmann::json ReadPackageSettings(const std::filesystem::path &directory) {
 	if (!directory.is_absolute()) {
 		return {};
 	}
@@ -1330,7 +1335,12 @@ std::string GameExporter::ReadPackageId(const std::filesystem::path &directory) 
 		return {};
 	}
 	text.resize(static_cast<std::size_t>(input.gcount()));
-	const auto data = nlohmann::json::parse(text, nullptr, false);
+	return nlohmann::json::parse(text, nullptr, false);
+}
+} // namespace
+
+std::string GameExporter::ReadPackageId(const std::filesystem::path &directory) {
+	const auto data = ReadPackageSettings(directory);
 	if (const auto id = data.find("exportId"); id != data.end() && id->is_string()) {
 		const auto &value = id->get_ref<const std::string &>();
 		if (value.size() == 32 && value.find_first_not_of("0123456789abcdef") == std::string::npos) {
@@ -1338,6 +1348,12 @@ std::string GameExporter::ReadPackageId(const std::filesystem::path &directory) 
 		}
 	}
 	return {};
+}
+
+bool GameExporter::SupportsFreshStart(const std::filesystem::path &directory) {
+	const auto data = ReadPackageSettings(directory);
+	const auto support = data.find("supportsFreshStart");
+	return support != data.end() && support->is_boolean() && support->get<bool>();
 }
 
 bool GameExporter::Check(const Scene &scene, const GameExportOptions &options,
