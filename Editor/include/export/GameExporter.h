@@ -4,6 +4,7 @@
 #include "scene/SceneObjectId.h"
 #include <cstdint>
 #include <filesystem>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -76,6 +77,7 @@ struct CheckSummary {
 	std::vector<std::filesystem::path> includedScenes;
 	std::size_t fileCount = 0;
 	std::uintmax_t contentBytes = 0;
+	std::optional<std::uintmax_t> availableBytes;
 };
 
 /// <summary>

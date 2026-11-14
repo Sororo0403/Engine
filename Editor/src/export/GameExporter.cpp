@@ -559,7 +559,7 @@ class CopyPlan {
 /// <summary>
 /// 既存の項目と重ならない出力先を取得する
 /// </summary>
-fs::path ResolveDestination(const fs::path &path) {
+fs::path ResolveDestination(const fs::path &path, fs::path &existingParent) {
 	if (path.empty() || path.native().find(L'\0') != std::wstring::npos ||
 	    (path.has_root_path() && !path.is_absolute())) {
 		throw std::runtime_error("Choose a new output folder.");
@@ -590,6 +590,7 @@ fs::path ResolveDestination(const fs::path &path) {
 	for (auto parent = destination.parent_path(); !parent.empty();) {
 		if (fs::exists(parent)) {
 			if (fs::is_directory(parent)) {
+				existingParent = std::move(parent);
 				return destination;
 			}
 			throw std::runtime_error("An output parent is a file: " +
@@ -665,9 +666,9 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 			}
 		}
 
-		fs::path destination;
+		fs::path destination, existingOutputParent;
 		try {
-			destination = ResolveDestination(options.destination);
+			destination = ResolveDestination(options.destination, existingOutputParent);
 		} catch (const std::bad_alloc &) {
 			throw;
 		} catch (const std::exception &issue) {
@@ -1140,24 +1141,38 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 			throw std::runtime_error(problem);
 		}
 
+		GameExporter::CheckSummary result;
+		result.contentBytes = configText.size();
+		for (const auto &text : sceneTexts) {
+			result.contentBytes += text.size();
+		}
+		for (const auto &[relative, source] : plan.Files()) {
+			if (!source.empty()) {
+				result.contentBytes += fs::file_size(source);
+			}
+		}
+
+		std::error_code spaceError;
+		const auto space = fs::space(existingOutputParent, spaceError);
+		if (!spaceError && space.available != static_cast<std::uintmax_t>(-1)) {
+			result.availableBytes = space.available;
+			if (space.available < result.contentBytes) {
+				appendIssue(std::format(
+				                "Not enough space for export: {} bytes needed, {} bytes available.",
+				                result.contentBytes, space.available),
+				            {}, 0, {}, {}, destination, GameExportField::OUTPUT_FOLDER);
+				return false;
+			}
+		}
+
 		if (!writeOutput) {
 			if (summary) {
-				GameExporter::CheckSummary result;
 				for (const auto &entry : graph) {
 					if (!entry.prefab) {
 						result.includedScenes.push_back(entry.source);
 					}
 				}
 				result.fileCount = plan.Files().size();
-				result.contentBytes = configText.size();
-				for (const auto &text : sceneTexts) {
-					result.contentBytes += text.size();
-				}
-				for (const auto &[relative, source] : plan.Files()) {
-					if (!source.empty()) {
-						result.contentBytes += fs::file_size(source);
-					}
-				}
 				*summary = std::move(result);
 			}
 			return true;

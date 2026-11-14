@@ -3550,10 +3550,14 @@ void EditorScene::CheckGameExport(bool continueFromIssue) {
 		constexpr double kBytesPerMiB = 1024.0 * 1024.0;
 		const auto &includedScenes = summary.includedScenes;
 		auto report = std::format("Export check passed. No files were written.\n\n"
-		                          "Estimated output: {:.1f} MiB ({} files)\n\n"
-		                          "Included scenes ({}):",
+		                          "Estimated output: {:.1f} MiB ({} files)",
 		                          static_cast<double>(summary.contentBytes) / kBytesPerMiB,
-		                          summary.fileCount, includedScenes.size());
+		                          summary.fileCount);
+		if (summary.availableBytes) {
+			report += std::format("\nAvailable at destination: {:.1f} MiB",
+			                      static_cast<double>(*summary.availableBytes) / kBytesPerMiB);
+		}
+		report += std::format("\n\nIncluded scenes ({}):", includedScenes.size());
 		for (std::size_t i = 0; i < includedScenes.size(); ++i) {
 			const auto &path = includedScenes[i];
 			report += std::format("\n{}{}", i == 0 ? "Startup: " : "",
