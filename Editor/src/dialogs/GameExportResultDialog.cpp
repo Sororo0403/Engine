@@ -34,20 +34,36 @@ std::string_view LogLevelPrefix(std::string_view line) {
 /// 遷移エラーから配布フォルダ内のシーンファイルを特定する
 /// </summary>
 std::filesystem::path FindFailedDestination(const std::filesystem::path &directory,
-                                            std::string_view heading) {
-	constexpr std::string_view prefix = " [ERROR] Could not load destination scene: ";
-	if (!heading.starts_with(prefix)) {
+                                            std::string_view diagnostic) {
+	constexpr std::string_view loadPrefix = " [ERROR] Could not load destination scene: ";
+	constexpr std::string_view detailPrefix = "Destination scene: ";
+	const auto heading = LogLevelPrefix(diagnostic.substr(0, diagnostic.find_first_of("\r\n")));
+	std::string_view scenePath;
+	if (heading.starts_with(loadPrefix)) {
+		scenePath = heading.substr(loadPrefix.size());
+	} else if (const auto end = diagnostic.find_last_not_of("\r\n"); end != std::string_view::npos) {
+		// 遷移先の検証・初期化で失敗した場合は、診断の最終行にシーンの場所が付く。
+		const auto newline = diagnostic.rfind('\n', end);
+		if (newline != std::string_view::npos) {
+			const auto detail = diagnostic.substr(newline + 1, end - newline);
+			if (detail.starts_with(detailPrefix)) {
+				scenePath = detail.substr(detailPrefix.size());
+			}
+		}
+	}
+	if (scenePath.empty()) {
 		return {};
 	}
 	try {
-		const auto path = PathUtils::FromUtf8(heading.substr(prefix.size()));
+		const auto path = PathUtils::FromUtf8(scenePath);
 		if (path.empty() || (path.has_root_path() && !path.is_absolute()) ||
 		    !PathUtils::HasExtension(path, ".json")) {
 			return {};
 		}
 		const auto root = std::filesystem::canonical(directory);
 		const auto target = std::filesystem::weakly_canonical(directory / path);
-		if (PathUtils::RelativeInside(root, target).empty()) {
+		const auto relative = PathUtils::RelativeInside(root, target);
+		if (relative.empty() || !std::ranges::all_of(relative, PathUtils::IsValidFileName)) {
 			return {};
 		}
 		return target;
@@ -594,7 +610,7 @@ bool GameExportResultDialog::UpdateGameProcess(bool &jumpToBeginning,
 		                   PathUtils::ToUtf8(run.startupScenePath)) {
 			run.launchFailurePath = directory_ / run.startupScenePath;
 		}
-		run.destinationFailurePath = FindFailedDestination(directory_, heading);
+		run.destinationFailurePath = FindFailedDestination(directory_, run.crashError);
 		jumpToBeginning = true;
 		return true;
 	}
