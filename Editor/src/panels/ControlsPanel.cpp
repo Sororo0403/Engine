@@ -578,6 +578,11 @@ void ControlsPanel::Draw() {
 	         "only updates the Assets list. Reload is blocked during Play, "
 	         "modal "
 	         "operations and Scene gestures."},
+	        {"Assets > Reload Selected Models and Textures",
+	         "Select several files or select a folder. Refresh the Assets list "
+	         "and reload the models and textures, including those in selected "
+	         "subfolders. If some files fail, use the error list to find them "
+	         "and Retry Failed Reloads after fixing them."},
 	        {"Assets > Import Model",
 	         "Choose a GLB, glTF or OBJ model, an Assets destination and a new "
 	         "model folder name. Import copies the model and referenced "
@@ -1370,6 +1375,11 @@ void ControlsPanel::Draw() {
 	         "Use Step to advance one frame or Resume to run normally. "
 	         "This choice is saved for the next Editor session. Restart "
 	         "keeps the current pause state."},
+	        {"Game > Load Test Save",
+	         "Start Play with the test save written by Run Game in the export "
+	         "result. In-Editor Play keeps changes in memory. Restart Play "
+	         "returns to the data loaded when Play began. If the save cannot "
+	         "be read, fix the file and retry, or choose Play Without Test Save."},
 	        {"Game > Maximize on Play",
 	         "While stopped, enable this option to expand Game automatically "
 	         "when a new Play session starts. The choice is saved for the "
@@ -1879,6 +1889,20 @@ void ControlsPanel::Draw() {
 	         "Game.exe independently. Close returns to editing. Failed open "
 	         "or launch requests keep the result screen available for retry. "
 	         "The exported game can also run directly from its folder."},
+	        {"File > Return to Export Check",
+	         "After opening a reported scene or asset, return to the same "
+	         "export settings and check again. Use Save Scene and Check to "
+	         "include unsaved changes to a linked scene."},
+	        {"Export Result > Source Scenes",
+	         "Open a scene from the current project's export in the Editor. "
+	         "Use File > Return to Export Result to see the same logs, or "
+	         "File > New Export from Result to prepare a new output folder "
+	         "with the previous window settings."},
+	        {"Export Result > Switch Export",
+	         "After exporting again from a result, switch between the two "
+	         "output folders. Each keeps its own log view. Use Run Without "
+	         "Save Data to try a fresh run or to compare while the other "
+	         "export is using the same test save."},
 	        {"File > Save Copy", "Save a separate scene file and keep the "
 	                             "active file and saved state."},
 	        {"Ctrl + Z", "Undo the last edit."},
