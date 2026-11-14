@@ -95,6 +95,7 @@ bool ScriptEditorDialog::ShowCreate(const std::filesystem::path &assets,
 		saveConflict_ = false;
 		confirmation_ = Confirmation::NONE;
 		pendingLine_ = 0;
+		lastErrorLine_ = 0;
 		targetLine_ = 1;
 		search_.clear();
 		findRequested_ = searchMissed_ = false;
@@ -131,6 +132,7 @@ bool ScriptEditorDialog::ShowEdit(const std::filesystem::path &path,
 		pendingLine_ = LuaScript::FindErrorLine(PathUtils::ToUtf8(absolute),
 		                                       diagnostic);
 	}
+	lastErrorLine_ = pendingLine_;
 	targetLine_ = (std::max)(1, pendingLine_);
 	search_.clear();
 	findRequested_ = searchMissed_ = false;
@@ -149,6 +151,7 @@ void ScriptEditorDialog::ReloadFromDisk() {
 	original_ = std::move(current);
 	saveConflict_ = false;
 	pendingLine_ = 0;
+	lastErrorLine_ = 0;
 	++inputRevision_;
 }
 
@@ -216,6 +219,14 @@ ScriptEditorDialog::Result ScriptEditorDialog::Draw(const ImGuiSystem &ui,
 	if (!confirming && (jumpSubmitted || jumpClicked)) {
 		pendingLine_ = (std::max)(1, targetLine_);
 	}
+	if (lastErrorLine_ > 0) {
+		ui.SameLine();
+		if (ui.Button("Go to Last Error") && !confirming) {
+			pendingLine_ = targetLine_ = lastErrorLine_;
+			findRequested_ = false;
+		}
+		ImGui::SetItemTooltip("Jump to line %d from the last Lua error.", lastErrorLine_);
+	}
 	if (ui.InputText("Find", search_)) {
 		searchMissed_ = false;
 	}
@@ -252,6 +263,7 @@ ScriptEditorDialog::Result ScriptEditorDialog::Draw(const ImGuiSystem &ui,
 		}
 		pendingLine_ = LuaScript::FindErrorLine("Script", error_);
 		if (pendingLine_ > 0) {
+			lastErrorLine_ = pendingLine_;
 			targetLine_ = pendingLine_;
 			findRequested_ = false;
 		}

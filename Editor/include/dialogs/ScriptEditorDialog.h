@@ -65,6 +65,7 @@ class ScriptEditorDialog {
 	std::string name_, source_, original_, error_;
 	std::uint32_t inputRevision_ = 0;
 	int pendingLine_ = 0;
+	int lastErrorLine_ = 0;
 	int targetLine_ = 1;
 	std::string search_;
 	bool findRequested_ = false;
