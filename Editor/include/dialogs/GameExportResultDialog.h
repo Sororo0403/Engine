@@ -89,7 +89,7 @@ class GameExportResultDialog {
 	/// <summary>
 	/// 選択中の実行範囲で、指定方向のエラーから表示する
 	/// </summary>
-	bool OpenLogAtError(ErrorSearch search);
+	bool OpenLogAtError(ErrorSearch search, bool reportMissing = true);
 
 	/// <summary>
 	/// 選択中の実行範囲で最初の一致行、または直前の一致行の次へ移動する
@@ -104,7 +104,7 @@ class GameExportResultDialog {
 	/// <summary>
 	/// 起動したゲームの終了を確認する。異常終了した場合はログを開く
 	/// </summary>
-	bool UpdateGameProcess(bool &jumpToLatest);
+	bool UpdateGameProcess(bool &jumpToBeginning, bool &jumpToLatest);
 
 	std::filesystem::path directory_;
 	std::map<std::filesystem::path, GameRun> runs_;

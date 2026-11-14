@@ -222,12 +222,13 @@ void GameExportResultDialog::RefreshLog() {
 	}
 }
 
-bool GameExportResultDialog::OpenLogAtError(ErrorSearch search) {
+bool GameExportResultDialog::OpenLogAtError(ErrorSearch search, bool reportMissing) {
 	auto &run = runs_.at(directory_);
 	std::ifstream input(directory_ / kGameLogPath, std::ios::binary | std::ios::ate);
 	const auto end = static_cast<std::streamoff>(input.tellg());
 	if (end < 0) {
-		error_ = "Could not read the game log.";
+		if (reportMissing)
+			error_ = "Could not read the game log.";
 		return false;
 	}
 	const auto start = run.sinceLaunchOnly && run.logStart &&
@@ -263,13 +264,16 @@ bool GameExportResultDialog::OpenLogAtError(ErrorSearch search) {
 		offset = next;
 	}
 	if (input.bad()) {
-		error_ = "Could not search the game log.";
+		if (reportMissing)
+			error_ = "Could not search the game log.";
 		return false;
 	}
 	if (!match) {
-		error_ = previous ? "No earlier errors in the selected log range."
-		         : nextError ? "No later errors in the selected log range."
-		                     : "No errors in the selected log range.";
+		if (reportMissing) {
+			error_ = previous ? "No earlier errors in the selected log range."
+			         : nextError ? "No later errors in the selected log range."
+			                     : "No errors in the selected log range.";
+		}
 		return false;
 	}
 
@@ -388,7 +392,8 @@ bool GameExportResultDialog::StartGame() {
 	return run.showLog;
 }
 
-bool GameExportResultDialog::UpdateGameProcess(bool &jumpToLatest) {
+bool GameExportResultDialog::UpdateGameProcess(bool &jumpToBeginning,
+                                               bool &jumpToLatest) {
 	auto &run = runs_.at(directory_);
 	if (!run.process.IsTracking())
 		return false;
@@ -418,6 +423,11 @@ bool GameExportResultDialog::UpdateGameProcess(bool &jumpToLatest) {
 	}
 	run.status = std::format("Game exited with code 0x{:08X}.", *exitCode);
 	run.showLog = true;
+	// 今回の実行範囲が分かるときだけ、異常終了に関連するエラーを探す。
+	if (run.sinceLaunchOnly && OpenLogAtError(ErrorSearch::LATEST, false)) {
+		jumpToBeginning = true;
+		return true;
+	}
 	run.showLogBeginning = false;
 	RefreshLog();
 	jumpToLatest = true;
@@ -442,8 +452,9 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 	ImGui::TextWrapped("%s", PathUtils::ToUtf8(directory_).c_str());
 
 	auto &run = runs_.at(directory_);
+	bool jumpToBeginning = false;
 	bool jumpToLatest = false;
-	bool refreshedLog = UpdateGameProcess(jumpToLatest);
+	bool refreshedLog = UpdateGameProcess(jumpToBeginning, jumpToLatest);
 	if (!run.status.empty())
 		ui.Text(run.status);
 
@@ -527,7 +538,6 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 	}
 
 	if (run.showLog) {
-		bool jumpToBeginning = false;
 		std::optional<float> restoreScroll;
 		if (run.logStart &&
 		    ImGui::Checkbox("Since Run Game", &run.sinceLaunchOnly)) {
