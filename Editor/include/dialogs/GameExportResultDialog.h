@@ -44,6 +44,7 @@ class GameExportResultDialog {
 		bool paged;
 		bool follow;
 		bool errorsOnly;
+		bool sinceLaunchOnly;
 		float scrollY;
 		std::string filter;
 	};

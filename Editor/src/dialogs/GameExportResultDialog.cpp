@@ -378,7 +378,8 @@ void GameExportResultDialog::OpenLogAtOffset(std::uintmax_t offset) {
 	if (!run.beforeErrorJump) {
 		run.beforeErrorJump = LogPosition{run.earlierLogPages, run.logPageOffset,
 		                                 run.showLogBeginning, run.followLog,
-		                                 run.showErrorsOnly, run.logScrollY, run.logFilter};
+		                                 run.showErrorsOnly, run.sinceLaunchOnly,
+		                                 run.logScrollY, run.logFilter};
 	}
 	if (!run.showLogBeginning || run.logPageOffset != offset) {
 		run.earlierLogPages.clear();
@@ -478,12 +479,19 @@ bool GameExportResultDialog::UpdateGameProcess(bool &jumpToBeginning,
 	}
 	run.status = std::format("Game exited with code 0x{:08X}.", *exitCode);
 	run.showLog = true;
-	// 今回の実行範囲が分かるときだけ、異常終了に関連するエラーを探す。
+	// 表示範囲に関わらず、異常終了の原因は今回の実行から探す。
+	const bool previousRange = run.sinceLaunchOnly;
+	const bool hadPreviousPosition = run.beforeErrorJump.has_value();
+	run.sinceLaunchOnly = run.logStart.has_value();
 	if (run.sinceLaunchOnly && OpenLogAtError(ErrorSearch::LATEST, false)) {
+		if (!hadPreviousPosition && run.beforeErrorJump) {
+			run.beforeErrorJump->sinceLaunchOnly = previousRange;
+		}
 		run.crashError = LeadingLogError(log_);
 		jumpToBeginning = true;
 		return true;
 	}
+	run.sinceLaunchOnly = previousRange;
 	run.showLogBeginning = false;
 	RefreshLog();
 	jumpToLatest = true;
@@ -764,6 +772,7 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 				run.showLogBeginning = previous.paged;
 				run.followLog = previous.follow;
 				run.showErrorsOnly = previous.errorsOnly;
+			run.sinceLaunchOnly = previous.sinceLaunchOnly;
 				run.logFilter = std::move(previous.filter);
 				RefreshLog();
 				restoreScroll = previous.scrollY;
