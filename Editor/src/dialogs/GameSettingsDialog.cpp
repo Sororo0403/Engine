@@ -279,6 +279,40 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui, bool retryPla
 	GameSettingsResult result = GameSettingsResult::NONE;
 
 	ui.BeginDisabled(selecting_);
+	const auto hasKey = [](const auto &keys, const auto &key) {
+		return std::ranges::find(keys, key) != keys.end();
+	};
+	const auto removed = [&](const auto &key) { return !hasKey(persistentScriptKeys_, key); };
+	const auto added = [&](const auto &key) { return !hasKey(config_.persistentScriptKeys, key); };
+	const bool keysChanged = std::ranges::any_of(config_.persistentScriptKeys, removed) ||
+	                         std::ranges::any_of(persistentScriptKeys_, added);
+	if (settingsId_ != config_.settingsId || keysChanged) {
+		ImGui::TextWrapped("The loaded configuration changes the script save settings.");
+		if (settingsId_ != config_.settingsId) {
+			ImGui::TextWrapped("Save data ID: %s -> %s",
+			                   config_.settingsId.empty() ? "Disabled" : config_.settingsId.c_str(),
+			                   settingsId_.empty() ? "Disabled" : settingsId_.c_str());
+		}
+		if (keysChanged && ui.CollapsingHeader("Saved Script Variables")) {
+			if (ui.BeginChild("ScriptSaveChanges", 0.f, ImGui::GetTextLineHeightWithSpacing() * 4)) {
+				for (const auto &key : config_.persistentScriptKeys) {
+					if (removed(key)) {
+						ImGui::BulletText("Remove from save: %s", key.c_str());
+					}
+				}
+				for (const auto &key : persistentScriptKeys_) {
+					if (added(key)) {
+						ImGui::BulletText("Add to save: %s", key.c_str());
+					}
+				}
+			}
+			ui.EndChild();
+		}
+		if (ui.Button("Keep Current Script Save Settings")) {
+			settingsId_ = config_.settingsId;
+			persistentScriptKeys_ = config_.persistentScriptKeys;
+		}
+	}
 	if (!failedProjectFile_.empty() && ui.Button("Show Project Location")) {
 		ShellUtils::RevealLocationInExplorer(failedProjectFile_, locationError_);
 	}
