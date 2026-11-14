@@ -76,6 +76,11 @@ class FileDialog {
 	void UpdateProjectScenes(std::span<const std::filesystem::path> paths);
 
 	/// <summary>
+	/// 前回の一覧を保持し、プロジェクトのシーン一覧を更新できなかった理由を表示する
+	/// </summary>
+	void SetProjectSceneRefreshError(std::string error);
+
+	/// <summary>
 	/// プロジェクトのシーン一覧の更新要求を取得し、消費する
 	/// </summary>
 	bool TakeProjectSceneRefreshRequest();
@@ -190,6 +195,7 @@ class FileDialog {
 	std::string folderName_;
 	std::string error_;
 	std::string failedProjectLocationError_;
+	std::string projectSceneRefreshError_;
 	std::string title_;
 
 	std::vector<Entry> entries_;

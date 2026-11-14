@@ -421,6 +421,11 @@ class EditorScene final : public IScene {
 	void BrowseStartupScene(bool repairing = false);
 
 	/// <summary>
+	/// シーン選択画面からの更新要求を処理し、失敗時は前回の一覧を残す
+	/// </summary>
+	void RefreshScenePicker(FileDialog &dialog);
+
+	/// <summary>
 	/// 保存を開始する。保存先がない場合は選択ダイアログを開く
 	/// </summary>
 	/// <param name="saveAs">保存先を必ず選択するか</param>

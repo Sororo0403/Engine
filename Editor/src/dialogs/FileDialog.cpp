@@ -61,6 +61,7 @@ void FileDialog::Show(FileDialogMode mode,
 	projectRoot_.clear();
 	searchProjectScenes_ = false;
 	projectSceneRefreshRequested_ = false;
+	projectSceneRefreshError_.clear();
 	projectSearchChange_.reset();
 	error_.clear();
 	fileName_.clear();
@@ -240,6 +241,10 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 			ImGui::SetNextWindowScroll({-1.0f, 0.0f});
 		}
 		const bool choosingProject = filter_ == FileDialogFilter::PROJECT;
+		if (!projectSceneRefreshError_.empty()) {
+			ImGui::TextWrapped("Could not refresh project scenes. Showing the previous list.\n%s",
+			                   projectSceneRefreshError_.c_str());
+		}
 		const bool searchFolders = choosingProject || filter_ == FileDialogFilter::GAME_EXPORT;
 		bool folderSearchSubmitted = false;
 		if (searchFolders) {
@@ -558,11 +563,16 @@ void FileDialog::SetProjectScenes(
 }
 
 void FileDialog::UpdateProjectScenes(std::span<const std::filesystem::path> paths) {
+	projectSceneRefreshError_.clear();
 	projectScenes_.clear();
 	projectScenes_.reserve(paths.size());
 	for (const auto &path : paths) {
 		projectScenes_.push_back({PathUtils::ResolveFromExecutable(path), false});
 	}
+}
+
+void FileDialog::SetProjectSceneRefreshError(std::string error) {
+	projectSceneRefreshError_ = std::move(error);
 }
 
 bool FileDialog::TakeProjectSceneRefreshRequest() {
