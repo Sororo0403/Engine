@@ -3,8 +3,10 @@
 #include "graphics/ui/ImGuiSystem.h"
 #include "platform/windows/PathUtils.h"
 #include "platform/windows/ShellUtils.h"
+#include "platform/windows/WiiRemotePairing.h"
 
 #include <algorithm>
+#include <chrono>
 #include <exception>
 #include <imgui.h>
 #include <utility>
@@ -55,6 +57,17 @@ void GameSettingsDialog::Reopen(std::string error, std::filesystem::path project
 GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui, bool retryPlay) {
 	constexpr const char *title = "Game Settings###GameSettingsDialog";
 
+	if (wiiRemotePairing_.valid() &&
+	    wiiRemotePairing_.wait_for(std::chrono::seconds(0)) ==
+	        std::future_status::ready) {
+		try {
+			wiiRemotePairingStatus_ = wiiRemotePairing_.get();
+		} catch (const std::exception &error) {
+			wiiRemotePairingStatus_ = std::string("Wii Remote pairing failed. ") +
+			                          error.what();
+		}
+	}
+
 	if (opening_) {
 		ui.OpenPopup(title);
 		opening_ = false;
@@ -86,6 +99,23 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui, bool retryPla
 	    {0, (std::max)(120.0f,
 	                   (std::min)(550.0f, ImGui::GetMainViewport()->WorkSize.y -
 	                                          200.0f))});
+	ImGui::SeparatorText("Wii Remote");
+	ImGui::TextWrapped("Start pairing, then press the red SYNC button on the Wii Remote.");
+	ui.BeginDisabled(wiiRemotePairing_.valid());
+	if (ui.Button("Pair Wii Remote")) {
+		try {
+			wiiRemotePairing_ =
+			    std::async(std::launch::async, WiiRemotePairing::Pair);
+			wiiRemotePairingStatus_ = "Searching for Wii Remote...";
+		} catch (const std::exception &error) {
+			wiiRemotePairingStatus_ = std::string("Could not start pairing. ") +
+			                          error.what();
+		}
+	}
+	ui.EndDisabled();
+	if (!wiiRemotePairingStatus_.empty())
+		ImGui::TextWrapped("%s", wiiRemotePairingStatus_.c_str());
+	ImGui::SeparatorText("Game");
 	ui.InputText("Game Title", title_);
 	ImGui::InputInt("Width", &width_);
 	ImGui::InputInt("Height", &height_);
