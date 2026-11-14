@@ -188,7 +188,8 @@ std::vector<AssetUsage::Reference> Scan(
 		try {
 			operation();
 		} catch (const std::exception &error) {
-			usages.push_back({"Could not check " + label + "\n" + error.what()});
+			usages.push_back({.message = "Could not check " + label + "\n" + error.what(),
+			                  .sourcePath = location});
 			if (failurePath && failurePath->empty() && !location.empty()) {
 				*failurePath = location;
 			}
@@ -281,7 +282,7 @@ std::vector<AssetUsage::Reference> Scan(
 	const auto openLabel = scenePath.empty()
 	                           ? "Open scene (unsaved)"
 	                           : "Open scene: " + PathUtils::ToUtf8(scenePath);
-	check(openLabel, [&] { inspect(scene, openLabel, {}, {}); });
+	check(openLabel, [&] { inspect(scene, openLabel, {}, {}); }, scenePath);
 	if (history) {
 		const std::string label = "Undo / Redo history";
 		check(label, [&] {
@@ -303,7 +304,7 @@ std::vector<AssetUsage::Reference> Scan(
 	}
 
 	if (!scenePath.empty()) {
-		check(openLabel, [&] { schedule(scenePath, Source::SCENE); });
+		check(openLabel, [&] { schedule(scenePath, Source::SCENE); }, scenePath);
 	}
 
 	check(PathUtils::ToUtf8(searchRoot), [&] {

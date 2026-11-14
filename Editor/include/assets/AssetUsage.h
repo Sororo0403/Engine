@@ -30,7 +30,7 @@ struct Reference {
 	SceneObjectId objectId = 0;
 	bool editingScene = false;
 	bool undoHistory = false;
-	// シーンとして開けないPrefabやモデルの参照元ファイル
+	// Prefab・モデルの参照元、または検査に失敗したファイルやフォルダ
 	std::filesystem::path sourcePath;
 	bool startupScene = false;
 };
