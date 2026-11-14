@@ -1130,7 +1130,11 @@ class EditorScene final : public IScene {
 	bool sceneReloadFailed_ = false;
 	SceneObjectId failedOpenSceneObject_ = 0;
 	bool failedSceneCheckReference_ = false;
-	std::vector<std::filesystem::path> failedAssetReloads_;
+	struct AssetReloadFailure {
+		std::filesystem::path path;
+		std::string reason;
+	};
+	std::vector<AssetReloadFailure> failedAssetReloads_;
 	std::optional<std::filesystem::path> errorTestSave_;
 	std::optional<std::filesystem::path> errorReplayPath_;
 	std::optional<bool> errorRestartCurrentScene_;

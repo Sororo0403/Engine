@@ -6216,6 +6216,27 @@ void EditorScene::UpdateDialogs() {
 		if (ui_.BeginPopupModal(kTitle)) {
 			ui_.Text(errorMessage_);
 
+			if (!failedAssetReloads_.empty()) {
+				if (ui_.BeginChild("FailedAssetReloads", 500.0f, 160.0f)) {
+					ImGui::PushTextWrapPos();
+					for (const auto &failure : failedAssetReloads_) {
+						const auto path = PathUtils::ToUtf8(failure.path);
+						ImGui::PushID(path.c_str());
+						ui_.Text(path);
+						if (!failure.reason.empty()) {
+							ui_.Text(failure.reason);
+						}
+						if (ui_.Button("Show in Explorer")) {
+							ShellUtils::RevealLocationInExplorer(failure.path, errorActionMessage_);
+						}
+						ui_.Separator();
+						ImGui::PopID();
+					}
+					ImGui::PopTextWrapPos();
+				}
+				ui_.EndChild();
+			}
+
 			const auto startup = project_.GetStartupScene();
 			const auto &failedStartupCandidate =
 			    errorLoadingPlayScene_ ? errorScenePath_ : failedOpenScenePath_;
@@ -6539,14 +6560,12 @@ void EditorScene::UpdateDialogs() {
 			}
 
 			if (!failedAssetReloads_.empty()) {
-				if (ui_.Button("Show in Explorer")) {
-					ShellUtils::RevealLocationInExplorer(failedAssetReloads_.front(),
-					                                     errorActionMessage_);
-				}
-				ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(failedAssetReloads_.front()).c_str());
-				ui_.SameLine();
 				if (ui_.Button("Retry Failed Reloads")) {
-					auto paths = std::move(failedAssetReloads_);
+					std::vector<std::filesystem::path> paths;
+					for (auto &failure : failedAssetReloads_) {
+						paths.push_back(std::move(failure.path));
+					}
+					failedAssetReloads_.clear();
 					ui_.CloseCurrentPopup();
 					ui_.EndPopup();
 					stage_ = DialogStage::IDLE;
@@ -7844,12 +7863,13 @@ void EditorScene::ReloadAssets(std::span<const std::filesystem::path> paths) {
 		FinishEdit();
 	} catch (const std::exception &failure) {
 		ShowError(failure.what());
-		failedAssetReloads_.assign(paths.begin(), paths.end());
+		for (const auto &path : paths) {
+			failedAssetReloads_.push_back({path, {}});
+		}
 		return;
 	}
 
-	std::vector<std::filesystem::path> failed;
-	std::string details;
+	std::vector<AssetReloadFailure> failed;
 	for (const auto &path : paths) {
 		std::string error;
 		try {
@@ -7868,15 +7888,13 @@ void EditorScene::ReloadAssets(std::span<const std::filesystem::path> paths) {
 			error = failure.what();
 			Logger::Error(error, path);
 		}
-		failed.push_back(path);
-		details += "\n" + PathUtils::ToUtf8(path) + "\n" +
-		           (error.empty() ? "See the log for details." : error);
+		failed.push_back({path, error.empty() ? "See the log for details." : std::move(error)});
 	}
 
 	sceneCheckPanel_.RequestRecheckIfOpen();
 	if (!failed.empty()) {
-		ShowError(std::format("Reloaded {} of {} assets. Could not reload:\n{}",
-		                      paths.size() - failed.size(), paths.size(), details));
+		ShowError(std::format("Reloaded {} of {} assets.", paths.size() - failed.size(),
+		                      paths.size()));
 		failedAssetReloads_ = std::move(failed);
 	}
 }
