@@ -390,6 +390,7 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 			ImGui::TextWrapped("%s", error_.c_str());
 		}
 
+		std::optional<std::string> folderBeforeRetry;
 		if (!failedProject_.empty()) {
 			const char *label = filter_ == FileDialogFilter::GAME_EXPORT
 			                        ? "Show Previous Export Location"
@@ -402,6 +403,7 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 			if (choosingProject) {
 				ui.SameLine();
 				if (ui.Button("Retry Failed Project")) {
+					folderBeforeRetry = directoryText_;
 					openFolder = failedProject_;
 					directoryText_ = PathUtils::ToUtf8(openFolder);
 				}
@@ -434,6 +436,8 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 		     (folderSubmitted && mode_ == FileDialogMode::SELECT_DIRECTORY)) &&
 		    AcceptSelection()) {
 			result = FileDialogResult::ACCEPTED;
+		} else if (folderBeforeRetry) {
+			directoryText_.swap(*folderBeforeRetry);
 		}
 	}
 
