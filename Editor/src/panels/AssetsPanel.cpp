@@ -437,7 +437,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	}
 
 	const auto &directories = assets.GetDirectories();
-	if (!resultPaths_.empty()) {
+	if (!resultPaths_.empty() && assets.GetError().empty()) {
 		const auto parent = resultPaths_.front().parent_path();
 		const auto directory = parent == assets.GetRootDirectory()
 		                           ? std::filesystem::path{}
@@ -869,6 +869,9 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 	if (!assets.GetError().empty()) {
 		ui.Text("Assets could not be updated. Showing the last successful listing.");
+		if (!resultPaths_.empty()) {
+			ui.Text("Refresh to show the files from the last operation.");
+		}
 		ImGui::TextWrapped("%s", assets.GetError().c_str());
 	}
 
