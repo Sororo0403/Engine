@@ -59,6 +59,7 @@ class GameExportResultDialog {
 		ShellUtils::ExecutableProcess process;
 		std::string status;
 		std::string launchSettings;
+		std::string crashError;
 		std::optional<std::uintmax_t> logStart;
 		std::vector<std::uintmax_t> earlierLogPages;
 		std::optional<LogPosition> beforeErrorJump;

@@ -380,6 +380,7 @@ bool GameExportResultDialog::StartGame() {
 	auto &run = runs_.at(directory_);
 	packageSettings_ = ReadPackageSettings(directory_);
 	run.launchSettings = packageSettings_;
+	run.crashError.clear();
 	// 起動後すぐにログが追記されても、今回の行を落とさないよう先に記録する。
 	std::error_code status;
 	const auto size = std::filesystem::file_size(directory_ / kGameLogPath, status);
@@ -443,6 +444,7 @@ bool GameExportResultDialog::UpdateGameProcess(bool &jumpToBeginning,
 	run.showLog = true;
 	// 今回の実行範囲が分かるときだけ、異常終了に関連するエラーを探す。
 	if (run.sinceLaunchOnly && OpenLogAtError(ErrorSearch::LATEST, false)) {
+		run.crashError = LeadingLogError(log_);
 		jumpToBeginning = true;
 		return true;
 	}
@@ -545,6 +547,10 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		if (!run.launchFailed) {
 			RefreshLog();
 			refreshedLog = true;
+			if (!run.crashError.empty() && log_.find(run.crashError) == std::string::npos) {
+				report += "\nLast error before abnormal exit:\n";
+				report += run.crashError + "\n";
+			}
 			if (!logError_.empty()) {
 				report += logError_ + "\n";
 			} else if (!log_.empty()) {
