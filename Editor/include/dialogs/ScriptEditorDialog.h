@@ -72,5 +72,6 @@ class ScriptEditorDialog {
 	bool searchMissed_ = false;
 	bool opening_ = false, creating_ = false;
 	bool saveConflict_ = false;
+	bool saveWriteFailed_ = false;
 	Confirmation confirmation_ = Confirmation::NONE;
 };

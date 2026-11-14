@@ -93,6 +93,7 @@ bool ScriptEditorDialog::ShowCreate(const std::filesystem::path &assets,
 		error_.clear();
 		creating_ = true;
 		saveConflict_ = false;
+		saveWriteFailed_ = false;
 		confirmation_ = Confirmation::NONE;
 		pendingLine_ = 0;
 		lastErrorLine_ = 0;
@@ -123,6 +124,7 @@ bool ScriptEditorDialog::ShowEdit(const std::filesystem::path &path,
 	error_ = diagnostic;
 	creating_ = false;
 	saveConflict_ = false;
+	saveWriteFailed_ = false;
 	confirmation_ = Confirmation::NONE;
 	pendingLine_ = 0;
 	if (!diagnostic.empty()) {
@@ -150,6 +152,7 @@ void ScriptEditorDialog::ReloadFromDisk() {
 	source_ = current;
 	original_ = std::move(current);
 	saveConflict_ = false;
+	saveWriteFailed_ = false;
 	pendingLine_ = 0;
 	lastErrorLine_ = 0;
 	++inputRevision_;
@@ -285,9 +288,11 @@ ScriptEditorDialog::Result ScriptEditorDialog::Draw(const ImGuiSystem &ui,
 		}
 	}
 	bool saveCopy = false;
-	if (saveConflict_) {
+	if (saveConflict_ || saveWriteFailed_) {
 		ui.SameLine();
 		saveCopy = ui.Button("Save Copy");
+	}
+	if (saveConflict_) {
 		ui.SameLine();
 		if (ui.Button("Reload from Disk")) {
 			if (source_ != original_)
@@ -329,8 +334,12 @@ ScriptEditorDialog::Result ScriptEditorDialog::Draw(const ImGuiSystem &ui,
 			}
 
 			if (!FileUtils::WriteTextAtomically(destination, source_, error_,
-			                                    !creating_ && !saveCopy))
+			                                    !creating_ && !saveCopy)) {
+				if (!creating_ && !saveCopy) {
+					saveWriteFailed_ = true;
+				}
 				throw std::runtime_error(error_);
+			}
 			saved_.swap(reference);
 			result = saveAndPlay ? Result::SAVED_AND_PLAY : Result::SAVED;
 		} catch (const std::exception &exception) {
