@@ -752,7 +752,9 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 						if (ui.Button("Use Next Available Name") && SuggestOutputName()) {
 							selectedIssue_ = i;
 							focusField_ = GameExportField::OUTPUT_FOLDER;
+							recheckIssue = true;
 						}
+						ImGui::SetItemTooltip("Choose an unused output name and check again.");
 					}
 				}
 				ImGui::PopID();
