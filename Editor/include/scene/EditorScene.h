@@ -1109,6 +1109,7 @@ class EditorScene final : public IScene {
 	GameExportDialog exportDialog_;
 	GameExportResultDialog exportResultDialog_;
 	bool returnToExportResult_ = false;
+	bool exportCheckFromAssets_ = false;
 	GameSettingsDialog gameSettingsDialog_;
 	float sceneAmbientDraft_ = 0.0f;
 	FogSettings sceneFogDraft_;

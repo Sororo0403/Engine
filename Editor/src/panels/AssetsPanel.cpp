@@ -372,8 +372,9 @@ std::filesystem::path
 AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
                   bool canSetTexture, bool canEditAssets, bool canReplaceMesh,
                   std::span<const TextureSlotChoice> textureSlots,
-                  bool canCreatePrefab) {
+                  bool canCreatePrefab, bool canReturnToExport) {
 	refreshed_ = false;
+	exportCheckRequested_ = false;
 	batchReloadPaths_.clear();
 	sceneOpenPath_.clear();
 	scenePlayPath_.clear();
@@ -442,6 +443,13 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	};
 	if (ui.Button("Refresh")) {
 		refresh();
+	}
+	if (canReturnToExport) {
+		ui.SameLine();
+		if (ui.Button("Return to Export Check")) {
+			exportCheckRequested_ = true;
+		}
+		ImGui::SetItemTooltip("Run the check again with the current export draft.");
 	}
 
 	if (!revealPath_.empty()) {
@@ -1534,6 +1542,7 @@ const std::filesystem::path &AssetsPanel::GetTexturePreviewRequest() const {
 }
 
 void AssetsPanel::Clear() {
+	exportCheckRequested_ = false;
 	batchReloadPaths_.clear();
 	recyclePaths_.clear();
 	referencePaths_.clear();

@@ -670,6 +670,10 @@ bool EditorScene::Update(float deltaTime) {
 		           object->meshRenderer->IsValid();
 	    });
 	const auto textureSlots = GetTextureSlotChoices();
+	const auto &startupScene = project_.GetStartupScene();
+	const bool canReturnToExport = exportCheckFromAssets_ && !playMode_.IsPlaying() &&
+	    exportDialog_.CanResumeCheck(project_.GetRoot(), UsesEditingSceneForStartup(startupScene)
+	                                                       ? document_.GetFilePath() : startupScene);
 	const auto requestedModelPath = assetsPanel_.Draw(
 	    ui_, assets_, canSetTexture,
 	    !gizmo_.IsUsing() && !gizmoEditActive_ &&
@@ -681,7 +685,7 @@ bool EditorScene::Update(float deltaTime) {
 		                            return object && object->mesh &&
 		                                   object->mesh->IsValid();
 	                            }),
-	    textureSlots, selection_.GetCount() == 1);
+	    textureSlots, selection_.GetCount() == 1, canReturnToExport && !wasBusy);
 	if (!wasBusy && assetsPanel_.DidRefresh()) {
 		sceneCheckPanel_.RequestRecheckIfOpen();
 	}
@@ -1343,6 +1347,14 @@ bool EditorScene::Update(float deltaTime) {
 		}
 	}
 
+	if (!IsBusy() && action == EditorAction::NONE && assetsPanel_.DidRequestExportCheck()) {
+		FinishEdit();
+		const bool returnToResult = returnToExportResult_;
+		ShowGameExport();
+		if (stage_ == DialogStage::EXPORT_GAME) {
+			returnToExportResult_ = returnToResult;
+		}
+	}
 	UpdateDialogs();
 
 	// 消えた物体だけを除き、残っている選択は維持する
@@ -3524,6 +3536,7 @@ const Scene *EditorScene::PrepareGameExport(SceneDocument &startup,
 }
 
 void EditorScene::ShowGameExport(const std::filesystem::path &windowSource) {
+	exportCheckFromAssets_ = false;
 	returnToExportResult_ = false;
 	try {
 		GameExportOptions options;
@@ -6186,6 +6199,7 @@ void EditorScene::UpdateDialogs() {
 				const auto &path = exportDialog_.GetSelectedIssue().assetPath;
 				if (assetsPanel_.RevealIndexedAsset(path, assets_) ||
 				    (assets_.Refresh() && assetsPanel_.RevealIndexedAsset(path, assets_))) {
+				exportCheckFromAssets_ = true;
 					stage_ = DialogStage::IDLE;
 				} else {
 					exportDialog_.Reopen("This file is unavailable in Assets. Use Show in Explorer to locate it.");
@@ -6981,6 +6995,7 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		document_.SetProjectRoot(candidate.GetRoot());
 		project_ = std::move(candidate);
 		returnToExportResult_ = false;
+		exportCheckFromAssets_ = false;
 		exportDialog_.SwitchProject(project_.GetRoot());
 		if (const auto found = preferences_.gameExportDrafts.find(project_.GetRoot());
 		    found != preferences_.gameExportDrafts.end()) {

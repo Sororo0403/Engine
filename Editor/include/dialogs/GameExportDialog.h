@@ -61,6 +61,12 @@ class GameExportDialog {
 	std::optional<GameExportDraft> GetDraft() const;
 
 	/// <summary>
+	/// 現在のプロジェクトと起動シーンで中断した配布チェックを再開できるか確認する
+	/// </summary>
+	bool CanResumeCheck(const std::filesystem::path &projectRoot,
+	                    const std::filesystem::path &startupScene) const;
+
+	/// <summary>
 	/// プロジェクトを開いたとき、メモリ上に下書きがなければ設定から復元する
 	/// </summary>
 	void RestoreDraft(const GameExportDraft &draft);

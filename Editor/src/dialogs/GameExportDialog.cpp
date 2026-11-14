@@ -249,6 +249,13 @@ std::optional<GameExportDraft> GameExportDialog::GetDraft() const {
 	                       !checkResult_.empty() || recheckRestoredDraft_};
 }
 
+bool GameExportDialog::CanResumeCheck(const std::filesystem::path &projectRoot,
+                                      const std::filesystem::path &startupScene) const {
+	return resumeDraft_ && projectRoot_ == projectRoot &&
+	       options_.startupScenePath == startupScene &&
+	       (!checkResult_.empty() || recheckRestoredDraft_);
+}
+
 void GameExportDialog::RestoreDraft(const GameExportDraft &draft) {
 	if (resumeDraft_ || projectRoot_.empty()) {
 		return;
