@@ -5864,7 +5864,11 @@ void EditorScene::UpdateDialogs() {
 				errorOpenRequested_ = true;
 				stage_ = DialogStage::ERROR;
 			} else if (errorLoadingPlayScene_) {
-				StartPlay(project_.GetStartupScene(), errorReplayCameraOverride_);
+				// カメラIDは元のシーン内の指定なので、差し替え先では通常選択を使う。
+				const auto path = project_.GetStartupScene();
+				const auto camera = PathUtils::IsSameFile(path, errorScenePath_)
+				                        ? errorReplayCameraOverride_ : SceneObjectId{0};
+				StartPlay(path, camera, true);
 			} else {
 				pendingOpenPath_ = project_.GetStartupScene();
 				StartAction(EditorAction::OPEN_PATH);
