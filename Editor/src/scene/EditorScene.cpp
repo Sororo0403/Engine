@@ -5480,18 +5480,13 @@ void EditorScene::UpdateDialogs() {
 				sceneCheckPanel_.Show();
 			}
 			const auto &savedScript = scriptEditorDialog_.GetSavedPath();
-			if (!assets_.Refresh()) {
-				if (playAfterSave) {
-					Logger::Warning("The script was saved, but Assets could not refresh: " +
-					                    assets_.GetError(),
-					                savedScript);
-					consolePanel_.Show();
-				} else {
-					ShowError(assets_.GetError());
-				}
-			} else {
-				assetsPanel_.RequestReveal(savedScript);
+			if (!assets_.Refresh() && playAfterSave) {
+				Logger::Warning("The script was saved, but Assets could not refresh: " +
+				                    assets_.GetError(),
+				                savedScript);
+				consolePanel_.Show();
 			}
+			assetsPanel_.RequestReveal(savedScript);
 			if (playAfterSave) {
 				StartPlay(scriptReplayPath_, scriptReplayCameraOverride_);
 			}
