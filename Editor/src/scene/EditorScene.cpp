@@ -6615,7 +6615,12 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 	const auto reportFailure = [&](std::string error) {
 		if (stage_ == DialogStage::CREATE_PROJECT ||
 		    stage_ == DialogStage::OPEN_PROJECT) {
-			projectDialog_.RetrySelection(std::move(error), folder);
+			const auto &retryProject = missingRecentProject_.empty()
+			                               ? folder : missingRecentProject_;
+			if (retryProject != folder) {
+				error = std::format("Could not open {}.\n{}", PathUtils::ToUtf8(folder), error);
+			}
+			projectDialog_.RetrySelection(std::move(error), retryProject);
 		} else if (reopenOnFailure) {
 			Logger::Error("Could not reopen project: " + error, folder / L"project.json");
 			std::error_code status;
