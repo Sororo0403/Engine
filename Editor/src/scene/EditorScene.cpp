@@ -3319,9 +3319,7 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 		                      FileDialogFilter::SCENE,
 		                      locating ? "Locate Last Edited Scene###FileDialog" : "");
 		if (!project_.GetRoot().empty()) {
-			assets_.Refresh();
-			openSceneDialog_.SetProjectScenes(project_.GetRoot(), assets_.GetSceneTargets(),
-			                                  locating || preferences_.searchProjectScenes);
+			InitializeScenePicker(openSceneDialog_, locating || preferences_.searchProjectScenes);
 		}
 		stage_ = DialogStage::OPEN_FILE;
 		return;
@@ -3647,10 +3645,15 @@ void EditorScene::RevealGameExportObject(SceneObjectId object) {
 	stage_ = DialogStage::EXPORT_GAME;
 }
 
-void EditorScene::RefreshScenePicker(FileDialog &dialog) {
-	if (!dialog.TakeProjectSceneRefreshRequest()) {
-		return;
+void EditorScene::InitializeScenePicker(FileDialog &dialog, bool searchProject) {
+	const bool refreshed = assets_.Refresh();
+	dialog.SetProjectScenes(project_.GetRoot(), assets_.GetSceneTargets(), searchProject);
+	if (!refreshed) {
+		dialog.SetProjectSceneRefreshError(assets_.GetError());
 	}
+}
+
+void EditorScene::RefreshScenePicker(FileDialog &dialog) {
 	if (assets_.Refresh()) {
 		dialog.UpdateProjectScenes(assets_.GetSceneTargets());
 	} else {
@@ -3670,9 +3673,7 @@ void EditorScene::BrowseStartupScene(bool repairing) {
 
 	fileDialog_.Show(FileDialogMode::OPEN, initialPath, FileDialogFilter::SCENE,
 	                 "Choose Startup Scene###FileDialog");
-	assets_.Refresh();
-	fileDialog_.SetProjectScenes(project_.GetRoot(), assets_.GetSceneTargets(),
-	                             repairing || preferences_.searchProjectScenes);
+	InitializeScenePicker(fileDialog_, repairing || preferences_.searchProjectScenes);
 }
 
 bool EditorScene::SetStartupScene(const std::filesystem::path &path,
@@ -5219,7 +5220,9 @@ void EditorScene::UpdateDialogs() {
 
 	case DialogStage::OPEN_FILE: {
 		const auto result = openSceneDialog_.Draw(ui_);
-		RefreshScenePicker(openSceneDialog_);
+		if (result == FileDialogResult::NONE && openSceneDialog_.TakeProjectSceneRefreshRequest()) {
+			RefreshScenePicker(openSceneDialog_);
+		}
 		if (const auto search = openSceneDialog_.TakeProjectSearchChange()) {
 			preferences_.searchProjectScenes = *search;
 			SaveEditorSession(true);
@@ -5854,7 +5857,9 @@ void EditorScene::UpdateDialogs() {
 		const bool fromRecycle = stage_ == DialogStage::SELECT_RECYCLE_STARTUP_SCENE;
 		const bool fromFailure = stage_ == DialogStage::SELECT_FAILED_STARTUP_SCENE;
 		const auto result = fileDialog_.Draw(ui_);
-		RefreshScenePicker(fileDialog_);
+		if (result == FileDialogResult::NONE && fileDialog_.TakeProjectSceneRefreshRequest()) {
+			RefreshScenePicker(fileDialog_);
+		}
 		if (const auto search = fileDialog_.TakeProjectSearchChange()) {
 			preferences_.searchProjectScenes = *search;
 			SaveEditorSession(true);

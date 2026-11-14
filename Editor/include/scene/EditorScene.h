@@ -421,7 +421,12 @@ class EditorScene final : public IScene {
 	void BrowseStartupScene(bool repairing = false);
 
 	/// <summary>
-	/// シーン選択画面からの更新要求を処理し、失敗時は前回の一覧を残す
+	/// プロジェクトのシーン選択を初期化し、一覧の読み込み結果を表示する
+	/// </summary>
+	void InitializeScenePicker(FileDialog &dialog, bool searchProject);
+
+	/// <summary>
+	/// プロジェクトのシーン一覧を読み直し、失敗時は前回の一覧を残す
 	/// </summary>
 	void RefreshScenePicker(FileDialog &dialog);
 

@@ -242,7 +242,9 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 		}
 		const bool choosingProject = filter_ == FileDialogFilter::PROJECT;
 		if (!projectSceneRefreshError_.empty()) {
-			ImGui::TextWrapped("Could not refresh project scenes. Showing the previous list.\n%s",
+			ImGui::TextWrapped("%s\n%s", projectScenes_.empty()
+			                                  ? "Could not load the project scene list."
+			                                  : "Could not refresh project scenes. Showing the previous list.",
 			                   projectSceneRefreshError_.c_str());
 		}
 		const bool searchFolders = choosingProject || filter_ == FileDialogFilter::GAME_EXPORT;
