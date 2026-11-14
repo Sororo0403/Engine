@@ -11,6 +11,7 @@ local config_rows = {
 }
 
 local home_buttons = {
+    title_focus_ring = "ringButton",
     title_focus_start = "startButton",
     title_focus_config = "configButton",
     title_focus_quit = "quitButton",
@@ -46,7 +47,7 @@ local function show_volume(self, state)
 end
 
 local function set_menu_interactable(self, enabled)
-    for _, name in ipairs({"startButton", "configButton", "quitButton", "parkButton", "sunriseButton"}) do
+    for _, name in ipairs({"startButton", "configButton", "quitButton", "parkButton", "sunriseButton", "ringButton"}) do
         local button = self:reference(name)
         if button then
             button:set_interactable(enabled)
