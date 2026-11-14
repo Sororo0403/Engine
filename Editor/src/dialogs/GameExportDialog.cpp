@@ -539,8 +539,17 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 		} catch (const std::exception &) {
 			// 入力途中のパスを読めない場合は初期の出力先から探す。
 		}
-		folderDialog_.Show(FileDialogMode::SELECT_DIRECTORY,
-		                   FindExistingParent(output));
+		auto parent = FindExistingParent(output);
+		if (parent.empty() && output != options_.destination) {
+			parent = FindExistingParent(options_.destination);
+		}
+		if (parent.empty() && !projectRoot_.empty()) {
+			std::error_code status;
+			if (std::filesystem::is_directory(projectRoot_, status)) {
+				parent = projectRoot_;
+			}
+		}
+		folderDialog_.Show(FileDialogMode::SELECT_DIRECTORY, parent);
 		browsing_ = true;
 		recheckAfterBrowse_ = recheck;
 	};
