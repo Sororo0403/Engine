@@ -7,6 +7,7 @@
 #include <Windows.h>
 #include <algorithm>
 #include <array>
+#include <charconv>
 #include <format>
 #include <fstream>
 #include <imgui.h>
@@ -787,6 +788,7 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 	}
 
 	requestedSourceScene_.clear();
+	requestedSourceObject_ = 0;
 	const bool canOpenSource = run.sourceProjectRoot == projectRoot && !run.sourcePackageId.empty() &&
 	                           !run.sceneSources.empty();
 	const auto openSource = [&](const std::filesystem::path &sourcePath) {
@@ -819,6 +821,21 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 				}
 				if (ui.Button("Open Source Scene")) {
 					openSource(sourcePath);
+					if (!requestedSourceScene_.empty() && run.destinationFailurePath.empty()) {
+						constexpr std::string_view marker = "\nSource object ID: ";
+						const auto diagnostic = std::string_view(run.crashError);
+						const auto offset = diagnostic.rfind(marker);
+						if (offset != std::string_view::npos) {
+							auto value = diagnostic.substr(offset + marker.size());
+							value = value.substr(0, value.find_first_of("\r\n"));
+							SceneObjectId id = 0;
+							const auto end = value.data() + value.size();
+							const auto result = std::from_chars(value.data(), end, id);
+							if (result.ec == std::errc{} && result.ptr == end) {
+								requestedSourceObject_ = id;
+							}
+						}
+					}
 				}
 				ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(sourcePath).c_str());
 				break;

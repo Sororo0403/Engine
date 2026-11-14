@@ -68,6 +68,7 @@ class GameExportResultDialog {
 	/// 開くよう要求された編集元シーンを取得する
 	/// </summary>
 	const std::filesystem::path &GetRequestedSourceScene() const { return requestedSourceScene_; }
+	SceneObjectId GetRequestedSourceObject() const { return requestedSourceObject_; }
 
 	/// <summary>
 	/// 切り替えを要求された配布フォルダを取得する
@@ -175,6 +176,7 @@ class GameExportResultDialog {
 
 	std::filesystem::path directory_;
 	std::filesystem::path requestedSourceScene_;
+	SceneObjectId requestedSourceObject_ = 0;
 	std::filesystem::path requestedExport_;
 	std::filesystem::path saveConflictExport_;
 	std::map<std::filesystem::path, GameRun> runs_;

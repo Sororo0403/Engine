@@ -3898,6 +3898,7 @@ void EditorScene::CancelPendingAction() {
 		sceneCheckPanel_.Show();
 	} else if (action == EditorAction::OPEN_EXPORTED_SOURCE_SCENE) {
 		pendingOpenPath_.clear();
+		pendingOpenObject_ = 0;
 		exportResultDialog_.Reopen();
 		stage_ = DialogStage::EXPORT_RESULT;
 	} else if (action == EditorAction::NEW_PROJECT || action == EditorAction::OPEN_PROJECT) {
@@ -4057,6 +4058,7 @@ void EditorScene::ExecutePendingAction() {
 		return;
 	}
 	case EditorAction::OPEN_EXPORTED_SOURCE_SCENE: {
+		const auto object = std::exchange(pendingOpenObject_, SceneObjectId{0});
 		const auto path = std::exchange(pendingOpenPath_, std::filesystem::path{});
 		if (!OpenScene(path, false)) {
 			exportResultDialog_.ReopenWithError(std::format(
@@ -4066,6 +4068,9 @@ void EditorScene::ExecutePendingAction() {
 		}
 		exportResultInterrupted_ = true;
 		SaveEditorSession();
+		if (document_.GetScene().Contains(object)) {
+			RevealReferenceObject(object);
+		}
 		return;
 	}
 	case EditorAction::OPEN_EXPORT_ISSUE: {
@@ -6006,12 +6011,16 @@ void EditorScene::UpdateDialogs() {
 				stage_ = DialogStage::EXPORT_RESULT;
 			} else if (result == GameExportResultAction::OPEN_SOURCE_SCENE) {
 				const auto &source = exportResultDialog_.GetRequestedSourceScene();
+				const auto object = exportResultDialog_.GetRequestedSourceObject();
 				if (document_.GetFilePath().empty() ||
 				    !PathUtils::IsSameFile(source, document_.GetFilePath())) {
 					pendingOpenPath_ = source;
-					StartAction(EditorAction::OPEN_EXPORTED_SOURCE_SCENE);
+					StartAction(EditorAction::OPEN_EXPORTED_SOURCE_SCENE, object);
 				} else {
 					exportResultInterrupted_ = true;
+					if (document_.GetScene().Contains(object)) {
+						RevealReferenceObject(object);
+					}
 				}
 			}
 		}

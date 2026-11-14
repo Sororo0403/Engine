@@ -10,6 +10,7 @@
 #include "platform/windows/PathUtils.h"
 #include "scene/SceneSerializer.h"
 #include "ui/UIInputReader.h"
+#include <format>
 #include <utility>
 
 RuntimeScene::RuntimeScene(const EngineContext &context, GameConfig config,
@@ -40,9 +41,14 @@ bool RuntimeScene::Initialize() {
 	actionReader_.Reset();
 	Scene source;
 	std::string error;
+	SceneObjectId invalidObject = 0;
 	const auto reportStartupError = [&](std::string_view reason) {
-		Logger::Error("Could not prepare startup scene: " + PathUtils::ToUtf8(config_.scenePath) +
-		              "\n" + std::string(reason), config_.scenePath);
+		auto message = "Could not prepare startup scene: " + PathUtils::ToUtf8(config_.scenePath) +
+		               "\n" + std::string(reason);
+		if (source.Contains(invalidObject)) {
+			message += std::format("\nSource object ID: {}", invalidObject);
+		}
+		Logger::Error(message, config_.scenePath);
 	};
 
 	if (!SceneSerializer::Load(source, config_.scenePath, &error)) {
@@ -77,15 +83,15 @@ bool RuntimeScene::Initialize() {
 		}
 	}
 
-	if (!simulation_.Start(source, error, config_.fallbackCamera, nullptr,
+	if (!simulation_.Start(source, error, config_.fallbackCamera, &invalidObject,
 	                       savedScriptSettings_) ||
-	    !renderer_.PrepareSceneModels(error)) {
+	    !renderer_.PrepareSceneModels(error, &invalidObject)) {
 		reportStartupError(error);
 		return false;
 	}
 
 	if (!audioPlayer_.Start(simulation_.GetCameraPose(),
-	                        simulation_.IsGamePaused(), error, nullptr,
+	                        simulation_.IsGamePaused(), error, &invalidObject,
 	                        simulation_.GetAudioActions())) {
 		reportStartupError(error);
 		return false;
