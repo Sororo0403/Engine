@@ -3519,15 +3519,15 @@ void EditorScene::WriteGameExport() {
 	SceneDocument startup;
 	auto options = exportDialog_.GetOptions();
 	std::string error;
+	std::filesystem::path directory;
 	std::vector<GameExportIssue> issues;
 	const auto *scene = PrepareGameExport(startup, options, error, issues);
-	if (!scene || !GameExporter::Export(*scene, options, error, &issues)) {
+	if (!scene || !GameExporter::Export(*scene, options, error, &issues, &directory)) {
 		exportDialog_.ShowExportFailure("Export failed: " + error, std::move(issues));
 		stage_ = DialogStage::EXPORT_GAME;
 		return;
 	}
 
-	const auto &directory = options.destination;
 	Logger::Info("Game exported to " + PathUtils::ToUtf8(directory));
 	if (project_.GetRoot().empty()) {
 		exportConfig_ = options.config;
@@ -3552,7 +3552,11 @@ void EditorScene::CheckGameExport(bool continueFromIssue) {
 		constexpr double kBytesPerMiB = 1024.0 * 1024.0;
 		const auto &includedScenes = summary.includedScenes;
 		auto report = std::format("Export check passed. No files were written.\n\n"
+		                          "Output folder: {}\n"
+		                          "Game window: {} ({} × {})\n"
 		                          "Estimated output: {:.1f} MiB ({} files)",
+		                          PathUtils::ToUtf8(summary.destination), options.config.title,
+		                          options.config.width, options.config.height,
 		                          static_cast<double>(summary.contentBytes) / kBytesPerMiB,
 		                          summary.fileCount);
 		if (summary.availableBytes) {

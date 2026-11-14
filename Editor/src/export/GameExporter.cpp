@@ -608,7 +608,8 @@ fs::path ResolveDestination(const fs::path &path, fs::path &existingParent) {
 bool ProcessExport(const Scene &scene, const GameExportOptions &options,
                    std::string &error, bool writeOutput,
                    std::vector<GameExportIssue> *issues,
-                   GameExporter::CheckSummary *summary = nullptr) {
+                   GameExporter::CheckSummary *summary,
+                   fs::path *writtenDirectory) {
 	OutputDirectory output;
 	const auto appendIssue = [&](std::string issue, const fs::path &scenePath,
 	                             SceneObjectId objectId,
@@ -1180,6 +1181,7 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 					}
 				}
 				result.fileCount = plan.Files().size();
+				result.destination = std::move(destination);
 				*summary = std::move(result);
 			}
 			return true;
@@ -1239,6 +1241,9 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 		output.Text(L"game.json", configText);
 		output.Copy(runtimeRoot / L"Runtime.exe", L"Game.exe");
 		output.Complete();
+		if (writtenDirectory) {
+			*writtenDirectory = std::move(destination);
+		}
 		return true;
 	} catch (const OutputFileError &e) {
 		appendIssue(std::string(e.what()) + output.Cleanup(), {}, 0, {}, {},
@@ -1262,10 +1267,14 @@ bool GameExporter::Check(const Scene &scene, const GameExportOptions &options,
 	if (summary) {
 		*summary = {};
 	}
-	return ProcessExport(scene, options, error, false, issues, summary);
+	return ProcessExport(scene, options, error, false, issues, summary, nullptr);
 }
 
 bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
-                          std::string &error, std::vector<GameExportIssue> *issues) {
-	return ProcessExport(scene, options, error, true, issues);
+                          std::string &error, std::vector<GameExportIssue> *issues,
+                          std::filesystem::path *writtenDirectory) {
+	if (writtenDirectory) {
+		writtenDirectory->clear();
+	}
+	return ProcessExport(scene, options, error, true, issues, nullptr, writtenDirectory);
 }

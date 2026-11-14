@@ -78,6 +78,7 @@ struct CheckSummary {
 	std::size_t fileCount = 0;
 	std::uintmax_t contentBytes = 0;
 	std::optional<std::uintmax_t> availableBytes;
+	std::filesystem::path destination;
 };
 
 /// <summary>
@@ -98,8 +99,10 @@ bool Check(const Scene &scene, const GameExportOptions &options,
 /// <param name="options">出力先・取得元・ゲーム設定</param>
 /// <param name="error">不足ファイルや設定の失敗理由。後片付けできない場合は残った場所も含む。成功時は空</param>
 /// <param name="issues">指定時は失敗理由と、特定できた参照元や素材を返す</param>
+/// <param name="writtenDirectory">指定時は実際に作成した絶対パスを返す。失敗時は空</param>
 /// <returns>true:出力成功 false:失敗。今回作成したものだけを片付け、編集シーンと既存出力は保持する</returns>
 /// <remarks>COM初期化後に呼び出す。RuntimeはRelease x64で、ゲーム設定とシーンの保存形式がEditorと一致するものを使用する。明示割り当て画像とWAVは取得元とコピー後の両方を復号検証する。空間音源にはモノラルWAVが必要。外部素材はフォルダごとの名前空間へ構成を保ってコピーする。モデルの依存先は同じ取得元内に収まる必要がある</remarks>
 bool Export(const Scene &scene, const GameExportOptions &options,
-            std::string &error, std::vector<GameExportIssue> *issues = nullptr);
+            std::string &error, std::vector<GameExportIssue> *issues = nullptr,
+            std::filesystem::path *writtenDirectory = nullptr);
 } // namespace GameExporter
