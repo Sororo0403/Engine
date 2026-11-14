@@ -114,6 +114,7 @@ bool RuntimeScene::Initialize() {
 
 	savedScriptSettings_ = "{}";
 	observedScriptData_.clear();
+	nextScriptSettingsWrite_ = {};
 	if (!config_.settingsId.empty()) {
 		scriptSettingsPath_ = GetScriptSettingsPath(config_.settingsId);
 		if (scriptSettingsPath_.empty())
@@ -143,11 +144,15 @@ void RuntimeScene::SaveScriptSettings() {
 	const auto current = simulation_.GetSharedScriptData();
 	if (scriptSettingsPath_.empty() || current == observedScriptData_)
 		return;
-	observedScriptData_ = current;
+	const auto now = std::chrono::steady_clock::now();
+	if (now < nextScriptSettingsWrite_)
+		return;
 	auto settings =
 	    SelectScriptSettings(current, config_.persistentScriptKeys);
-	if (settings == savedScriptSettings_)
+	if (settings == savedScriptSettings_) {
+		observedScriptData_ = current;
 		return;
+	}
 
 	std::error_code directoryError;
 	std::filesystem::create_directories(scriptSettingsPath_.parent_path(),
@@ -159,9 +164,11 @@ void RuntimeScene::SaveScriptSettings() {
 		Logger::Warning("Could not save game script settings: " +
 		                (directoryError ? directoryError.message()
 		                                : writeError));
+		nextScriptSettingsWrite_ = now + std::chrono::seconds(1);
 		return;
 	}
 	savedScriptSettings_ = std::move(settings);
+	observedScriptData_ = current;
 }
 
 bool RuntimeScene::Update(float seconds) {

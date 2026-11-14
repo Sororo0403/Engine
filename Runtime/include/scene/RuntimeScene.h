@@ -6,6 +6,7 @@
 #include "scene/IScene.h"
 #include "scene/SceneAudioPlayer.h"
 #include "scene/SceneRenderer.h"
+#include <chrono>
 
 struct EngineContext;
 class InputSystem;
@@ -68,5 +69,6 @@ class RuntimeScene final : public IScene {
 	std::filesystem::path scriptSettingsPath_;
 	std::string observedScriptData_;
 	std::string savedScriptSettings_;
+	std::chrono::steady_clock::time_point nextScriptSettingsWrite_{};
 	bool close_ = false;
 };
