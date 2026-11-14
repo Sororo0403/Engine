@@ -340,10 +340,10 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 	ui.SameLine();
 
 	if (ui.Button("Clear Search")) {
-		issueToRestore_.reset();
 		filter_.clear();
-		lastIssue_.reset();
-		scrollToIssue_.reset();
+		if (lastIssue_) {
+			scrollToIssue_ = lastIssue_;
+		}
 	}
 
 	const auto searchPath = PathUtils::FromPathSearch(filter_);
