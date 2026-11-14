@@ -49,6 +49,14 @@ class GameExportResultDialog {
 	void Reopen() { opening_ = true; }
 
 	/// <summary>
+	/// 元の配布結果へ戻り、編集用シーンを開けなかった理由を表示する
+	/// </summary>
+	void ReopenWithError(std::string error) {
+		error_ = std::move(error);
+		Reopen();
+	}
+
+	/// <summary>
 	/// 表示中の配布版のフォルダを取得する
 	/// </summary>
 	const std::filesystem::path &GetDirectory() const { return directory_; }

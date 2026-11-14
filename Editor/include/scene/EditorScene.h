@@ -158,6 +158,8 @@ class EditorScene final : public IScene {
 		WRITE_GAME_EXPORT,
 		SAVE_AND_CHECK_EXPORT,
 		OPEN_GAME_EXPORT,
+		OPEN_EXPORTED_SOURCE_SCENE,
+		RETURN_TO_EXPORT_RESULT,
 		GAME_SETTINGS,
 		LOAD_GAME_SETTINGS,
 		SCENE_SETTINGS,
@@ -1117,6 +1119,7 @@ class EditorScene final : public IScene {
 	GameExportDialog exportDialog_;
 	GameExportResultDialog exportResultDialog_;
 	bool returnToExportResult_ = false;
+	bool exportResultInterrupted_ = false;
 	bool exportCheckInterrupted_ = false;
 	GameSettingsDialog gameSettingsDialog_;
 	float sceneAmbientDraft_ = 0.0f;

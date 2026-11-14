@@ -2118,6 +2118,9 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			pendingOpenPath_.clear();
 			action = EditorAction::OPEN_GAME_EXPORT;
 		}
+		if (exportResultInterrupted_ && ui_.MenuItem("Return to Export Result", nullptr, enabled)) {
+			action = EditorAction::RETURN_TO_EXPORT_RESULT;
+		}
 
 		const auto lastExport = preferences_.LastGameExport(project_.GetRoot());
 		if (ui_.MenuItem("Open Last Game Export", nullptr, enabled && !lastExport.empty())) {
@@ -2936,6 +2939,7 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	      action == EditorAction::OPEN_PREVIOUS_SCENE ||
 	      action == EditorAction::PLAY_ASSET_SCENE ||
 	      action == EditorAction::OPEN_EXPORT_ISSUE ||
+	      action == EditorAction::OPEN_EXPORTED_SOURCE_SCENE ||
 	      action == EditorAction::OPEN_PROJECT_PATH ||
 	      action == EditorAction::LOAD_GAME_SETTINGS ||
 	      action == EditorAction::RECOVER_SCENE ||
@@ -3115,6 +3119,12 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 		stage_ = DialogStage::SELECT_GAME_EXPORT;
 		return;
 	}
+	case EditorAction::RETURN_TO_EXPORT_RESULT:
+		if (std::exchange(exportResultInterrupted_, false)) {
+			exportResultDialog_.Reopen();
+			stage_ = DialogStage::EXPORT_RESULT;
+		}
+		return;
 
 	case EditorAction::RENAME_OBJECT:
 		if (HasSingleSelection()) {
@@ -3385,6 +3395,7 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	case EditorAction::OPEN_SCENE_CHECK_REFERENCE:
 	case EditorAction::OPEN_PLAY_SOURCE:
 	case EditorAction::OPEN_EXPORT_ISSUE:
+	case EditorAction::OPEN_EXPORTED_SOURCE_SCENE:
 		pendingOpenObject_ = openObject;
 		pendingAction_ = action;
 		ConfirmSceneChanges();
@@ -3617,6 +3628,7 @@ void EditorScene::WriteGameExport() {
 	preferences_.RememberExportSceneSources(project_.GetRoot(), directory, sceneSources,
 	                                       packageId);
 	exportDialog_.CompleteExport();
+	exportResultInterrupted_ = false;
 	preferences_.gameExportDrafts.erase(project_.GetRoot());
 	if (canSavePreferences_) {
 		preferences_.Save();
@@ -3795,6 +3807,7 @@ bool EditorScene::OpenGameExport(std::filesystem::path directory) {
 		preferences_.Save();
 	}
 	exportResultDialog_.Show(std::move(directory), true);
+	exportResultInterrupted_ = false;
 	exportResultDialog_.SetSceneSources(root, std::move(sceneSources), packageId);
 	stage_ = DialogStage::EXPORT_RESULT;
 	return true;
@@ -3829,6 +3842,10 @@ void EditorScene::ConfirmSceneChanges() {
 		case EditorAction::OPEN_PLAY_SOURCE:
 			destination = PathUtils::ToUtf8(pendingOpenPath_);
 			cancelLabel = "Back to Play";
+			break;
+		case EditorAction::OPEN_EXPORTED_SOURCE_SCENE:
+			destination = PathUtils::ToUtf8(pendingOpenPath_);
+			cancelLabel = "Back to Export Result";
 			break;
 		case EditorAction::OPEN_SCENE_CHECK_REFERENCE:
 			destination = PathUtils::ToUtf8(pendingOpenPath_);
@@ -3865,6 +3882,10 @@ void EditorScene::CancelPendingAction() {
 		pendingOpenPath_.clear();
 		pendingOpenObject_ = 0;
 		sceneCheckPanel_.Show();
+	} else if (action == EditorAction::OPEN_EXPORTED_SOURCE_SCENE) {
+		pendingOpenPath_.clear();
+		exportResultDialog_.Reopen();
+		stage_ = DialogStage::EXPORT_RESULT;
 	} else if (action == EditorAction::NEW_PROJECT || action == EditorAction::OPEN_PROJECT) {
 		projectDialog_.RetrySelection();
 		stage_ = action == EditorAction::NEW_PROJECT ? DialogStage::CREATE_PROJECT
@@ -4019,6 +4040,18 @@ void EditorScene::ExecutePendingAction() {
 			failedOpenSceneObject_ = object;
 			failedSceneCheckReference_ = action == EditorAction::OPEN_SCENE_CHECK_REFERENCE;
 		}
+		return;
+	}
+	case EditorAction::OPEN_EXPORTED_SOURCE_SCENE: {
+		const auto path = std::exchange(pendingOpenPath_, std::filesystem::path{});
+		if (!OpenScene(path, false)) {
+			exportResultDialog_.ReopenWithError(std::format(
+			    "Could not open the source scene: {}\n{}", PathUtils::ToUtf8(path), document_.GetError()));
+			stage_ = DialogStage::EXPORT_RESULT;
+			return;
+		}
+		exportResultInterrupted_ = true;
+		SaveEditorSession();
 		return;
 	}
 	case EditorAction::OPEN_EXPORT_ISSUE: {
@@ -5951,7 +5984,9 @@ void EditorScene::UpdateDialogs() {
 				if (document_.GetFilePath().empty() ||
 				    !PathUtils::IsSameFile(source, document_.GetFilePath())) {
 					pendingOpenPath_ = source;
-					StartAction(EditorAction::OPEN_PATH);
+					StartAction(EditorAction::OPEN_EXPORTED_SOURCE_SCENE);
+				} else {
+					exportResultInterrupted_ = true;
 				}
 			}
 		}
@@ -7032,6 +7067,7 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 
 		document_.SetProjectRoot(candidate.GetRoot());
 		project_ = std::move(candidate);
+		exportResultInterrupted_ = false;
 		returnToExportResult_ = false;
 		exportCheckInterrupted_ = false;
 		exportDialog_.SwitchProject(project_.GetRoot());
