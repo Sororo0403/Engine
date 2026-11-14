@@ -426,7 +426,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 	std::filesystem::path requestedPath;
 
-	if (ui.Button("Refresh")) {
+	const auto refresh = [&] {
 		if (assets.Refresh()) {
 			refreshed_ = true;
 			auto retry = std::exchange(unavailableRevealPath_, {});
@@ -436,7 +436,12 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			if (!retry.empty()) {
 				revealPath_ = std::move(retry);
 			}
+			return true;
 		}
+		return false;
+	};
+	if (ui.Button("Refresh")) {
+		refresh();
 	}
 
 	if (!revealPath_.empty()) {
@@ -802,32 +807,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			        return PathUtils::IsModelFile(path) || PathUtils::IsImageFile(path);
 		        }));
 	};
-	const auto requestSelectedReload = [&] {
-		revealMessage_.clear();
-		batchReloadPaths_.clear();
-		const std::set<std::filesystem::path> selected(selectedItems_.begin(), selectedItems_.end());
-		const auto collect = [&](const auto &paths) {
-			for (const auto &path : paths) {
-				auto candidate = path;
-				while (!candidate.empty() && candidate != assets.GetRootDirectory()) {
-					if (selected.contains(candidate)) {
-						batchReloadPaths_.push_back(path);
-						break;
-					}
-					const auto parent = candidate.parent_path();
-					if (parent == candidate) {
-						break;
-					}
-					candidate = parent;
-				}
-			}
-		};
-		collect(assets.GetModels());
-		collect(assets.GetTextures());
-		if (batchReloadPaths_.empty()) {
-			revealMessage_ = "The selected folders contain no indexed models or textures.";
-		}
-	};
+	bool batchReloadRequested = false;
 	auto selectedType = type_;
 	const auto syncSingle = [&] {
 		selectedPath_.clear();
@@ -1054,7 +1034,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				selectContext(directory);
 				drawLocationMenu(directory);
 				if (ui.MenuItem("Reload Selected Models and Textures", nullptr, canEditAssets)) {
-					requestSelectedReload();
+					batchReloadRequested = true;
 				}
 				if (canManageFiles) {
 					ImGui::Separator();
@@ -1190,7 +1170,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 				if (canBatchReload() &&
 				    ui.MenuItem("Reload Selected Models and Textures", nullptr, canEditAssets)) {
-					requestSelectedReload();
+					batchReloadRequested = true;
 				}
 
 				if (assetType == AssetType::TEXTURE &&
@@ -1314,10 +1294,10 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	if (canBatchReload()) {
 		ui.BeginDisabled(!canEditAssets);
 		if (ui.Button("Reload Selected Models and Textures")) {
-			requestSelectedReload();
+			batchReloadRequested = true;
 		}
 		ui.EndDisabled();
-		ImGui::SetItemTooltip("Includes indexed models and textures in selected folders and their subfolders.");
+		ImGui::SetItemTooltip("Refresh Assets before reloading models and textures, including selected subfolders.");
 	}
 
 	if (!selectedPath_.empty() && selectedType != AssetType::AUDIO) {
@@ -1503,6 +1483,34 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		                           ? SelectedAssetRoots(selectedItems_)
 		                           : std::vector<std::filesystem::path>{std::move(draggedPath)};
 		moveRequest_.directory = std::move(dropDirectory);
+	}
+	if (batchReloadRequested) {
+		const std::set<std::filesystem::path> selected(selectedItems_.begin(), selectedItems_.end());
+		// 素材一覧への参照を使い終えてから、外部で追加・削除されたファイルを反映する。
+		if (refresh()) {
+			const auto collect = [&](const auto &paths) {
+				for (const auto &path : paths) {
+					for (auto candidate = path; candidate != assets.GetRootDirectory();) {
+						if (selected.contains(candidate)) {
+							batchReloadPaths_.push_back(path);
+							break;
+						}
+						auto parent = candidate.parent_path();
+						if (parent.empty() || parent == candidate) {
+							break;
+						}
+						candidate = std::move(parent);
+					}
+				}
+			};
+			collect(assets.GetModels());
+			collect(assets.GetTextures());
+			if (batchReloadPaths_.empty()) {
+				revealMessage_ = "No models or textures remain in the selection.";
+			}
+		} else {
+			revealMessage_ = "Could not refresh Assets. The selected files were not reloaded.";
+		}
 	}
 	ui.EndWindow();
 	return requestedPath;
