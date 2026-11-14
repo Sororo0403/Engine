@@ -355,17 +355,15 @@ void EditorPreferences::RememberProjectAssetFolder(
 		return;
 	}
 
-	auto key = root.lexically_normal();
-	if (folder.empty()) {
-		projectAssetFolders_.erase(key);
-	} else {
-		projectAssetFolders_.insert_or_assign(std::move(key), folder);
-	}
+	projectAssetFolders_.insert_or_assign(root.lexically_normal(), folder);
 }
 
 std::filesystem::path EditorPreferences::LastProjectAssetFolder(
-    const std::filesystem::path &root) const {
-	const auto found = projectAssetFolders_.find(root.lexically_normal());
+    const std::filesystem::path &root, const std::filesystem::path &previousRoot) const {
+	auto found = projectAssetFolders_.find(root.lexically_normal());
+	if (found == projectAssetFolders_.end() && !previousRoot.empty()) {
+		found = projectAssetFolders_.find(previousRoot.lexically_normal());
+	}
 	return found == projectAssetFolders_.end() ? std::filesystem::path{}
 	                                           : found->second;
 }

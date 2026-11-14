@@ -124,9 +124,11 @@ class EditorPreferences {
 	                                const std::filesystem::path &folder);
 
 	/// <summary>
-	/// プロジェクトで最後に開いたAssetsフォルダを取得する。未記録なら空
+	/// 最後に開いたAssetsフォルダを取得する。選択したルートに記録がなければ移動前の記録を使う
 	/// </summary>
-	std::filesystem::path LastProjectAssetFolder(const std::filesystem::path &root) const;
+	std::filesystem::path LastProjectAssetFolder(
+	    const std::filesystem::path &root,
+	    const std::filesystem::path &previousRoot = {}) const;
 
 	/// <summary>
 	/// 保存済みシーンに対して、Sceneビューの位置と向きを記憶する

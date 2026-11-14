@@ -79,14 +79,14 @@ class FileDialog {
 	                    const std::filesystem::path &failedProject = {});
 
 	/// <summary>
-	/// 移動したプロジェクトを選ぶときに、以前の編集シーンを開く選択肢を表示する
+	/// 移動したプロジェクトを選ぶときに、以前の作業状態を復元する選択肢を表示する
 	/// </summary>
-	void OfferPreviousProjectScene() { offerPreviousProjectScene_ = true; }
+	void OfferPreviousProjectSession() { offerPreviousProjectSession_ = true; }
 
 	/// <summary>
-	/// 以前のプロジェクトで最後に編集したシーンを開くか取得する
+	/// 以前のプロジェクトの作業状態を復元するか取得する
 	/// </summary>
-	bool ShouldOpenPreviousProjectScene() const { return openPreviousProjectScene_; }
+	bool ShouldRestorePreviousProjectSession() const { return restorePreviousProjectSession_; }
 
 	/// <summary>
 	/// ファイル選択を描画する。Escapeで選択を取り消す
@@ -161,8 +161,8 @@ class FileDialog {
 	std::filesystem::path directory_;
 	std::filesystem::path selectedPath_;
 	std::filesystem::path failedProject_;
-	bool offerPreviousProjectScene_ = false;
-	bool openPreviousProjectScene_ = false;
+	bool offerPreviousProjectSession_ = false;
+	bool restorePreviousProjectSession_ = false;
 
 	std::string directoryText_;
 	std::string search_;

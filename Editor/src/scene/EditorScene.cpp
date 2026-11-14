@@ -6357,8 +6357,9 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 			                 "Open Project###FileDialog");
 			fileDialog_.RetrySelection(std::move(error), folder);
 			if (!missingRecentProject_.empty() &&
-			    preferences_.projectScenes.contains(missingRecentProject_)) {
-				fileDialog_.OfferPreviousProjectScene();
+			    (preferences_.projectScenes.contains(missingRecentProject_) ||
+			     !preferences_.LastProjectAssetFolder(missingRecentProject_).empty())) {
+				fileDialog_.OfferPreviousProjectSession();
 			}
 			stage_ = DialogStage::OPEN_PROJECT;
 		} else {
@@ -6389,10 +6390,11 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		auto config = candidate.GetGameConfig();
 		const auto startup = candidate.GetStartupScene();
 		std::filesystem::path unavailableLast;
-		const auto previousRoot = !create && stage_ == DialogStage::OPEN_PROJECT &&
-		                                  fileDialog_.ShouldOpenPreviousProjectScene() &&
-		                                  !preferences_.projectScenes.contains(candidate.GetRoot())
-		                              ? missingRecentProject_ : std::filesystem::path{};
+		const auto previousProjectRoot = !create && stage_ == DialogStage::OPEN_PROJECT &&
+		                                         fileDialog_.ShouldRestorePreviousProjectSession()
+		                                     ? missingRecentProject_ : std::filesystem::path{};
+		const auto previousRoot = preferences_.projectScenes.contains(candidate.GetRoot())
+		                              ? std::filesystem::path{} : previousProjectRoot;
 		const auto last = create ? std::filesystem::path{}
 		                         : preferences_.LastProjectScene(candidate.GetRoot(), &unavailableLast,
 		                                                         previousRoot);
@@ -6455,7 +6457,7 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		assets_ = std::move(assets);
 		assetsPanel_.Clear();
 		assetsPanel_.RestoreDirectory(
-		    preferences_.LastProjectAssetFolder(project_.GetRoot()), assets_);
+		    preferences_.LastProjectAssetFolder(project_.GetRoot(), previousProjectRoot), assets_);
 		texturePreviewPanel_.Clear();
 		stage_ = DialogStage::IDLE;
 
