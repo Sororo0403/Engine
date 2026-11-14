@@ -978,9 +978,10 @@ bool AssetUsage::Relocate(const Moves &moves, const fs::path &assetRoot,
 
 		for (const auto &item : items) {
 			if (!MoveFileW(item.from.c_str(), item.to.c_str())) {
+				const auto code = GetLastError();
 				throw std::runtime_error(std::format(
-				    "Could not move {} (Windows error {}).",
-				    PathUtils::ToUtf8(item.from), GetLastError()));
+				    "Could not move {} to {} (Windows error {}).",
+				    PathUtils::ToUtf8(item.from), PathUtils::ToUtf8(item.to), code));
 			}
 
 			++moved;
@@ -1014,21 +1015,25 @@ bool AssetUsage::Relocate(const Moves &moves, const fs::path &assetRoot,
 		const auto &edit = edits[--applied];
 		try {
 			std::string issue;
-			if (ReadText(edit.path) != edit.after ||
-			    !FileUtils::WriteTextAtomically(edit.path, edit.before, issue)) {
-				error += "\nCould not restore " + PathUtils::ToUtf8(edit.path) +
-				         " " + issue;
+			if (ReadText(edit.path) != edit.after) {
+				error += "\nCould not restore references in " + PathUtils::ToUtf8(edit.path) +
+				         ": the file changed after the references were updated.";
+			} else if (!FileUtils::WriteTextAtomically(edit.path, edit.before, issue)) {
+				error += "\nCould not restore references in " + PathUtils::ToUtf8(edit.path) +
+				         ": " + issue;
 			}
 		} catch (const std::exception &failure) {
-			error += "\n" + std::string(failure.what());
+			error += "\nCould not restore references in " + PathUtils::ToUtf8(edit.path) +
+			         ": " + failure.what();
 		}
 	}
 
 	while (moved != 0) {
 		const auto &item = items[--moved];
 		if (!MoveFileW(item.to.c_str(), item.from.c_str())) {
-			error += "\nCould not restore the original path. Item is at " +
-			         PathUtils::ToUtf8(item.to);
+			const auto code = GetLastError();
+			error += std::format("\nCould not move {} back to {} (Windows error {}).",
+			                     PathUtils::ToUtf8(item.to), PathUtils::ToUtf8(item.from), code);
 		}
 	}
 
