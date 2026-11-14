@@ -765,10 +765,11 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 			    return resolved;
 		    },
 		    [&](const auto &path, Scene &loaded) {
-			    if (!SceneSerializer::Load(loaded, path))
+			    std::string loadError;
+			    if (!SceneSerializer::Load(loaded, path, &loadError))
 				    throw std::runtime_error(
 				        "Could not read destination scene: " +
-				        PathUtils::ToUtf8(path));
+				        PathUtils::ToUtf8(path) + "\n" + loadError);
 		    },
 		    [&](const auto &path, Scene &loaded, SceneObjectId &counter) {
 			    std::string issue;

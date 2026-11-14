@@ -2117,7 +2117,11 @@ bool SceneSerializer::Deserialize(Scene &scene, std::string_view text,
 }
 
 bool SceneSerializer::Load(Scene &scene,
-                           const std::filesystem::path &filePath) {
+                           const std::filesystem::path &filePath,
+                           std::string *error) {
+	if (error) {
+		error->clear();
+	}
 	try {
 		std::ifstream input(PathUtils::ResolveFromExecutable(filePath),
 		                    std::ios::binary);
@@ -2129,9 +2133,12 @@ bool SceneSerializer::Load(Scene &scene,
 		input.exceptions(std::ios::badbit);
 		const auto document = Json::parse(input);
 		return ApplySceneDocument(scene, document, true,
-		                          ReadProjectRoot(document, filePath));
-	} catch (const std::exception &error) {
-		Logger::Error(std::format("SceneSerializer::Load: {}", error.what()));
+		                          ReadProjectRoot(document, filePath), error);
+	} catch (const std::exception &failure) {
+		if (error) {
+			*error = failure.what();
+		}
+		Logger::Error(std::format("SceneSerializer::Load: {}", failure.what()));
 		return false;
 	}
 }

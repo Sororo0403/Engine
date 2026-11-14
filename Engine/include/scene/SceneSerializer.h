@@ -73,6 +73,8 @@ class SceneSerializer {
 	/// </summary>
 	/// <param name="scene">読み込み結果を反映するシーン</param>
 	/// <param name="filePath">読み込むファイルのパス。相対パスは実行ファイル基準</param>
+	/// <param name="error">指定した場合は失敗理由を返す。成功時は空</param>
 	/// <returns>true:成功 false:読み込み失敗</returns>
-	static bool Load(Scene &scene, const std::filesystem::path &filePath);
+	static bool Load(Scene &scene, const std::filesystem::path &filePath,
+	                 std::string *error = nullptr);
 };

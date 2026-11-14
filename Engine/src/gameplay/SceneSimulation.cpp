@@ -734,9 +734,9 @@ bool SceneSimulation::Update(float seconds, const CharacterInput &input,
 
 			if (!pendingScene_.restart) {
 				failedDestination_.emplace();
-				if (!SceneSerializer::Load(destination, pendingScene_.path)) {
+				if (!SceneSerializer::Load(destination, pendingScene_.path, &error)) {
 					lastUpdateError_ = "Could not load destination scene: " +
-					                   PathUtils::ToUtf8(pendingScene_.path);
+					                   PathUtils::ToUtf8(pendingScene_.path) + "\n" + error;
 					return false;
 				}
 
