@@ -6663,6 +6663,7 @@ void EditorScene::LogPlayFailure() {
 void EditorScene::SwitchProject(const std::filesystem::path &folder,
                                 bool create, bool reopenOnFailure) {
 	const auto reportFailure = [&](std::string error) {
+		RecordRecovery();
 		if (stage_ == DialogStage::CREATE_PROJECT ||
 		    stage_ == DialogStage::OPEN_PROJECT) {
 			const auto &retryProject = missingRecentProject_.empty()
@@ -6885,6 +6886,8 @@ bool EditorScene::OpenScene(const std::filesystem::path &path, bool reportError,
 	    path, projectLighting ? projectLighting : &exportConfig_.lighting);
 
 	if (!opened) {
+		// 選び直しの画面では定期記録が止まるため、残った編集を記録する。
+		RecordRecovery();
 		if (reportError) {
 			ShowError("Could not open the scene. The current scene was kept. See "
 			          "the log for details.");
