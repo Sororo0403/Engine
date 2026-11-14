@@ -1,6 +1,5 @@
 #include "assets/AssetUsage.h"
 
-#include "animation/AnimationClipAsset.h"
 #include "assets/AssetDependencies.h"
 #include "files/OutputDirectory.h"
 #include "platform/windows/FileUtils.h"
@@ -182,7 +181,7 @@ std::vector<AssetUsage::Reference> Scan(
     const ModelVisitor &visitModel = {}, const ReferenceEdge &recordEdge = {},
     const EditorHistory *history = nullptr) {
 	std::vector<AssetUsage::Reference> usages;
-	std::set<fs::path> scheduled;
+	std::set<std::pair<fs::path, Source>> scheduled;
 	std::vector<std::pair<fs::path, Source>> pending;
 	const auto check = [&](const std::string &label, const auto &operation) {
 		try {
@@ -205,18 +204,26 @@ std::vector<AssetUsage::Reference> Scan(
 
 		auto file = fs::canonical(absolute);
 
-		if (scheduled.insert(file).second) {
+		if (scheduled.emplace(file, source).second) {
 			pending.emplace_back(std::move(file), source);
 		}
 	};
-	const auto scheduleReference = [&](const fs::path &path) {
-		if (PrefabSerializer::IsPrefabPath(path)) {
+	using Kind = SceneAssetReferences::Kind;
+	const auto scheduleReference = [&](const fs::path &path, Kind kind) {
+		switch (kind) {
+		case Kind::PREFAB:
 			schedule(path, Source::PREFAB);
-		} else if (PathUtils::HasExtension(path, ".json") &&
-		           !AnimationClipAsset::IsPath(path)) {
+			break;
+		case Kind::SCENE:
 			schedule(path, Source::SCENE);
-		} else if (PathUtils::IsModelFile(path)) {
-			schedule(path, Source::MODEL);
+			break;
+		case Kind::MODEL:
+			if (PathUtils::IsModelFile(path)) {
+				schedule(path, Source::MODEL);
+			}
+			break;
+		case Kind::ASSET:
+			break;
 		}
 	};
 
@@ -224,7 +231,7 @@ std::vector<AssetUsage::Reference> Scan(
 	                              const auto &reference) {
 		SceneAssetReferences::Visit(object, reference);
 		if (object.prefabLink && !object.prefabLink->asset.empty()) {
-			reference(object.prefabLink->asset);
+			reference(object.prefabLink->asset, Kind::PREFAB);
 			Scene baseline;
 			if (!SceneSerializer::Deserialize(baseline, object.prefabLink->baseline)) {
 				throw std::runtime_error("Could not read Prefab baseline in " + label);
@@ -240,7 +247,7 @@ std::vector<AssetUsage::Reference> Scan(
 	                         const fs::path &source, const fs::path &openPath,
 	                         const fs::path &sourcePath = {}) {
 		for (const auto &[id, object] : document.GetObjects()) {
-			const auto reference = [&](const fs::path &path) {
+			const auto reference = [&](const fs::path &path, Kind kind) {
 				if (matches(path)) {
 					if (!visit && (!recordEdge || !recordEdge(source, path))) {
 						usages.push_back({
@@ -249,7 +256,7 @@ std::vector<AssetUsage::Reference> Scan(
 						    openPath, id, source.empty(), false, sourcePath});
 					}
 				} else {
-					scheduleReference(path);
+					scheduleReference(path, kind);
 				}
 			};
 			inspectObject(object, label, reference);
@@ -274,17 +281,17 @@ std::vector<AssetUsage::Reference> Scan(
 	if (history) {
 		const std::string label = "Undo / Redo history";
 		check(label, [&] {
-			std::set<fs::path> seen;
+			std::set<std::pair<fs::path, Kind>> seen;
 			history->VisitStoredObjects([&](const SceneObject &object) {
-				inspectObject(object, label, [&](const auto &path) {
-					if (!seen.insert(path).second) {
+				inspectObject(object, label, [&](const auto &path, Kind kind) {
+					if (!seen.emplace(path, kind).second) {
 						return;
 					}
 					if (matches(path)) {
 						usages.push_back({label + " -> " + PathUtils::ToUtf8(path),
 						                  {}, 0, false, true});
 					} else {
-						scheduleReference(path);
+						scheduleReference(path, kind);
 					}
 				});
 			});

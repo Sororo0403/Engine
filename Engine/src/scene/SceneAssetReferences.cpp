@@ -3,47 +3,57 @@
 #include <stdexcept>
 
 namespace {
+using SceneAssetReferences::Kind;
+
 template <class Object, class Apply>
 void ForEach(Object &object, const Apply &apply) {
 	if (object.triggerActions)
 		for (auto &action : object.triggerActions->actions)
 			if (action.operation == TriggerAction::Operation::LOAD_SCENE)
-				apply(action.scenePath);
+				apply(action.scenePath, Kind::SCENE);
 	if (object.script) {
-		apply(object.script->asset);
-		for (auto *bindings :
-		     {&object.script->prefabs, &object.script->scenes})
-			for (auto &[name, path] : *bindings) {
-				(void)name;
-				apply(path);
-			}
+		apply(object.script->asset, Kind::ASSET);
+		for (auto &[name, path] : object.script->prefabs) {
+			(void)name;
+			apply(path, Kind::PREFAB);
+		}
+		for (auto &[name, path] : object.script->scenes) {
+			(void)name;
+			apply(path, Kind::SCENE);
+		}
 	}
 
 	if (object.animationClip && object.animationClip->usesAsset)
-		apply(object.animationClip->asset);
+		apply(object.animationClip->asset, Kind::ASSET);
 
 	if (object.particleEmitter)
-		apply(object.particleEmitter->texture);
+		apply(object.particleEmitter->texture, Kind::ASSET);
 	if (object.image)
-		apply(object.image->texture);
+		apply(object.image->texture, Kind::ASSET);
 	if (object.mesh)
-		apply(object.mesh->modelPath);
+		apply(object.mesh->modelPath, Kind::MODEL);
 	if (object.meshRenderer)
 		for (auto &[slot, path] : object.meshRenderer->textures.slots) {
 			(void)slot;
-			apply(path);
+			apply(path, Kind::ASSET);
 		}
 	if (object.audioSource)
-		apply(object.audioSource->clipPath);
+		apply(object.audioSource->clipPath, Kind::ASSET);
 }
 } // namespace
 
 void SceneAssetReferences::Visit(
     const SceneObject &object,
     const std::function<void(const std::filesystem::path &)> &visit) {
-	ForEach(object, [&](const auto &path) {
+	Visit(object, [&](const auto &path, Kind) { visit(path); });
+}
+
+void SceneAssetReferences::Visit(
+    const SceneObject &object,
+    const std::function<void(const std::filesystem::path &, Kind)> &visit) {
+	ForEach(object, [&](const auto &path, Kind kind) {
 		if (!path.empty()) {
-			visit(path);
+			visit(path, kind);
 		}
 	});
 }
@@ -54,7 +64,7 @@ void SceneAssetReferences::Rewrite(
         &rewrite) {
 	if (!rewrite)
 		throw std::invalid_argument("An asset reference resolver is required.");
-	ForEach(object, [&](auto &path) {
+	ForEach(object, [&](auto &path, Kind) {
 		if (!path.empty())
 			path = rewrite(path);
 	});

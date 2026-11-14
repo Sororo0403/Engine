@@ -8,10 +8,21 @@ namespace SceneAssetReferences {
 using ObjectRewrite = std::function<void(SceneObject &)>;
 
 /// <summary>
+/// 参照元の設定から分かる、依存先をたどるときのファイル種別
+/// </summary>
+enum class Kind { ASSET, SCENE, PREFAB, MODEL };
+
+/// <summary>
 /// 物体が直接参照する空でない素材・Prefab・遷移先を列挙する
 /// </summary>
 void Visit(const SceneObject &object,
            const std::function<void(const std::filesystem::path &)> &visit);
+
+/// <summary>
+/// 参照先のパスと、素材かシーン・Prefab・モデルの依存先かを列挙する
+/// </summary>
+void Visit(const SceneObject &object,
+           const std::function<void(const std::filesystem::path &, Kind)> &visit);
 
 /// <summary>
 /// 各物体の素材・Prefab・遷移先のパスを共通の規則で変換する
