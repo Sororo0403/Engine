@@ -401,7 +401,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	audioPreviewPath_.clear();
 
 	const bool focusWindow = focusRequested_ || !revealPath_.empty() ||
-	                         directoryOpenRequested_;
+	                         (directoryOpenRequested_ && assets.GetError().empty());
 
 	if (focusWindow) {
 		ImGui::SetNextWindowCollapsed(false);
@@ -496,7 +496,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		previousView_ = std::move(previous);
 	}
 
-	if (directoryOpenRequested_) {
+	if (directoryOpenRequested_ && assets.GetError().empty()) {
 		try {
 			const auto target = AssetFolders::Resolve(assets.GetRootDirectory(),
 			                                          requestedDirectory_);
@@ -910,6 +910,9 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		ui.Text("Refresh successfully to resume file operations.");
 		if (!resultPaths_.empty()) {
 			ui.Text("Refresh to show the files from the last operation.");
+		}
+		if (directoryOpenRequested_) {
+			ui.Text("Refresh to open the folder from the last operation.");
 		}
 		ImGui::TextWrapped("%s", assets.GetError().c_str());
 	}

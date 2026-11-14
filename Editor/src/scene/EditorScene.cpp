@@ -5599,13 +5599,11 @@ void EditorScene::UpdateDialogs() {
 		if (result == AssetFolderResult::ACCEPTED) {
 			stage_ = DialogStage::IDLE;
 
+			assetsPanel_.RequestOpenDirectory(assetFolderDialog_.GetCreatedDirectory());
 			if (!assets_.Refresh()) {
 				ShowError(
 				    "The folder was created, but Assets could not refresh: " +
 				    assets_.GetError());
-			} else {
-				assetsPanel_.RequestOpenDirectory(
-				    assetFolderDialog_.GetCreatedDirectory());
 			}
 		} else if (result == AssetFolderResult::CANCELLED) {
 			stage_ = DialogStage::IDLE;
@@ -5652,13 +5650,11 @@ void EditorScene::UpdateDialogs() {
 			inspectorPanel_.Clear();
 			stage_ = DialogStage::IDLE;
 
+			assetsPanel_.RequestOpenDirectory(sceneImportDialog_.GetCreatedDirectory());
 			if (!assets_.Refresh()) {
 				ShowError(
 				    "The scene was imported, but Assets could not refresh: " +
 				    assets_.GetError());
-			} else {
-				assetsPanel_.RequestOpenDirectory(
-				    sceneImportDialog_.GetCreatedDirectory());
 			}
 		} else if (result == SceneImportResult::CANCELLED) {
 			stage_ = DialogStage::IDLE;
