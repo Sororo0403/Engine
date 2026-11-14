@@ -313,13 +313,15 @@ bool EditorScene::Update(float deltaTime) {
 
 	if (playAction == EditorPlayMode::Action::STOP_AND_OPEN_SCENE && !IsBusy()) {
 		if (!playSource.empty()) {
-			playMode_.Stop();
 			const auto &current = document_.GetFilePath();
 			if (current.empty() || !PathUtils::IsSameFile(current, playSource)) {
 				pendingOpenPath_ = playSource;
-				StartAction(EditorAction::OPEN_PATH, playSourceObject);
-			} else if (playSourceObject != 0) {
-				RevealReferenceObject(playSourceObject);
+				StartAction(EditorAction::OPEN_PLAY_SOURCE, playSourceObject);
+			} else {
+				playMode_.Stop();
+				if (playSourceObject != 0) {
+					RevealReferenceObject(playSourceObject);
+				}
 			}
 		}
 	}
@@ -462,7 +464,7 @@ bool EditorScene::Update(float deltaTime) {
 			playMode_.Stop();
 			ShowError("Could not create or resize the Scene render target.");
 		} else if (!playMode_.Update(deltaTime, input_,
-		                             sceneViewPanel_.GetInput().windowFocused ||
+		                             IsBusy() || sceneViewPanel_.GetInput().windowFocused ||
 		                                 hierarchy.windowFocused,
 		                             sceneViewPanel_.GetRenderTexture() != nullptr,
 		                             &playErrorObject)) {
@@ -3330,6 +3332,7 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 		return;
 
 	case EditorAction::OPEN_PATH:
+	case EditorAction::OPEN_PLAY_SOURCE:
 	case EditorAction::OPEN_EXPORT_ISSUE:
 		pendingOpenObject_ = openObject;
 		pendingAction_ = action;
@@ -3701,6 +3704,10 @@ void EditorScene::ConfirmSceneChanges() {
 			destination = PathUtils::ToUtf8(projectDialog_.GetSelectedPath());
 			cancelLabel = "Back to Project Selection";
 			break;
+		case EditorAction::OPEN_PLAY_SOURCE:
+			destination = PathUtils::ToUtf8(pendingOpenPath_);
+			cancelLabel = "Back to Play";
+			break;
 		case EditorAction::OPEN_PATH:
 		case EditorAction::OPEN_PROJECT_PATH:
 		case EditorAction::OPEN_EXPORT_ISSUE:
@@ -3845,7 +3852,8 @@ void EditorScene::ExecutePendingAction() {
 			stage_ = DialogStage::OPEN_FILE;
 		}
 		return;
-	case EditorAction::OPEN_PATH: {
+	case EditorAction::OPEN_PATH:
+	case EditorAction::OPEN_PLAY_SOURCE: {
 		const auto object = std::exchange(pendingOpenObject_, SceneObjectId{0});
 		if (!failedRestoredScene_.empty() && pendingOpenPath_ == failedRestoredScene_) {
 			std::error_code status;
@@ -3860,6 +3868,10 @@ void EditorScene::ExecutePendingAction() {
 			}
 		}
 		if (OpenScene(pendingOpenPath_, false)) {
+			if (action == EditorAction::OPEN_PLAY_SOURCE) {
+				playMode_.Stop();
+				ClearPlaySelection();
+			}
 			SaveEditorSession();
 			if (object != 0) {
 				RevealReferenceObject(object);
@@ -6073,7 +6085,9 @@ void EditorScene::UpdateDialogs() {
 						ReloadScene(backup);
 					} else {
 						pendingOpenPath_ = std::move(path);
-						StartAction(EditorAction::OPEN_PATH, object);
+						StartAction(playMode_.IsPlaying() ? EditorAction::OPEN_PLAY_SOURCE
+						                                  : EditorAction::OPEN_PATH,
+						            object);
 					}
 					return;
 				}
