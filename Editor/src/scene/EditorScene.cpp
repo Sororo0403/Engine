@@ -3562,13 +3562,14 @@ void EditorScene::WriteGameExport() {
 	auto options = exportDialog_.GetOptions();
 	std::string error;
 	std::filesystem::path directory;
+	std::vector<GameExporter::SceneSource> sceneSources;
 	std::vector<GameExportIssue> issues;
 	const auto *scene = PrepareGameExport(startup, options, error, issues);
 	if (scene) {
 		// 配布出力中は定期記録が進まないため、未保存の編集を先に記録する。
 		RecordRecovery();
 	}
-	if (!scene || !GameExporter::Export(*scene, options, error, &issues, &directory)) {
+	if (!scene || !GameExporter::Export(*scene, options, error, &issues, &directory, &sceneSources)) {
 		exportDialog_.ShowExportFailure("Export failed: " + error, std::move(issues));
 		stage_ = DialogStage::EXPORT_GAME;
 		return;
@@ -3585,6 +3586,7 @@ void EditorScene::WriteGameExport() {
 		preferences_.Save();
 	}
 	exportResultDialog_.Show(directory);
+	exportResultDialog_.SetSceneSources(project_.GetRoot(), std::move(sceneSources));
 	returnToExportResult_ = false;
 	stage_ = DialogStage::EXPORT_RESULT;
 }
@@ -5070,6 +5072,7 @@ bool EditorScene::RelocateAssets(const AssetUsage::Moves &moves,
 	}
 	sceneCheckPanel_.OnAssetsMoved(moves);
 	exportDialog_.FollowMovedScene(project_.GetRoot(), moves);
+	exportResultDialog_.OnAssetsMoved(moves);
 	failedRestoredScene_ = PathUtils::AfterMove(failedRestoredScene_, moves);
 	lastPlayScenePath_ = PathUtils::AfterMove(lastPlayScenePath_, moves);
 	if (playFailureReplay_) {
@@ -5834,11 +5837,18 @@ void EditorScene::UpdateDialogs() {
 	}
 
 	case DialogStage::EXPORT_RESULT: {
-		const auto result = exportResultDialog_.Draw(ui_);
+		const auto result = exportResultDialog_.Draw(ui_, project_.GetRoot());
 		if (result != GameExportResultAction::NONE) {
 			stage_ = DialogStage::IDLE;
 			if (result == GameExportResultAction::NEW_EXPORT) {
 				ShowGameExport(exportResultDialog_.GetDirectory());
+			} else if (result == GameExportResultAction::OPEN_SOURCE_SCENE) {
+				const auto &source = exportResultDialog_.GetRequestedSourceScene();
+				if (document_.GetFilePath().empty() ||
+				    !PathUtils::IsSameFile(source, document_.GetFilePath())) {
+					pendingOpenPath_ = source;
+					StartAction(EditorAction::OPEN_PATH);
+				}
 			}
 		}
 

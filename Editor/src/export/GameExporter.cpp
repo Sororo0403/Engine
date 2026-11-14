@@ -610,7 +610,8 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
                    std::string &error, bool writeOutput,
                    std::vector<GameExportIssue> *issues,
                    GameExporter::CheckSummary *summary,
-                   fs::path *writtenDirectory) {
+                   fs::path *writtenDirectory,
+                   std::vector<GameExporter::SceneSource> *sceneSources) {
 	OutputDirectory output;
 	const auto appendIssue = [&](std::string issue, const fs::path &scenePath,
 	                             SceneObjectId objectId,
@@ -1259,9 +1260,20 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 			output.Text(scenePaths[i], sceneTexts[i]);
 		output.Text(L"game.json", configText);
 		output.Copy(runtimeRoot / L"Runtime.exe", L"Game.exe");
+		std::vector<GameExporter::SceneSource> sources;
+		if (sceneSources) {
+			for (std::size_t i = 0; i < scenePaths.size(); ++i) {
+				if (!graph[i].prefab && !graph[i].source.empty()) {
+					sources.push_back({scenePaths[i], graph[i].source});
+				}
+			}
+		}
 		output.Complete();
 		if (writtenDirectory) {
 			*writtenDirectory = std::move(destination);
+		}
+		if (sceneSources) {
+			*sceneSources = std::move(sources);
 		}
 		return true;
 	} catch (const OutputFileError &e) {
@@ -1286,14 +1298,19 @@ bool GameExporter::Check(const Scene &scene, const GameExportOptions &options,
 	if (summary) {
 		*summary = {};
 	}
-	return ProcessExport(scene, options, error, false, issues, summary, nullptr);
+	return ProcessExport(scene, options, error, false, issues, summary, nullptr, nullptr);
 }
 
 bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
                           std::string &error, std::vector<GameExportIssue> *issues,
-                          std::filesystem::path *writtenDirectory) {
+                          std::filesystem::path *writtenDirectory,
+                          std::vector<SceneSource> *sceneSources) {
 	if (writtenDirectory) {
 		writtenDirectory->clear();
 	}
-	return ProcessExport(scene, options, error, true, issues, nullptr, writtenDirectory);
+	if (sceneSources) {
+		sceneSources->clear();
+	}
+	return ProcessExport(scene, options, error, true, issues, nullptr,
+	                     writtenDirectory, sceneSources);
 }

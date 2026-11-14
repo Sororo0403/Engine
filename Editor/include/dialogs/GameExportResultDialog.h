@@ -1,18 +1,21 @@
 #pragma once
 
+#include "export/GameExporter.h"
 #include "platform/windows/ShellUtils.h"
 #include <chrono>
 #include <cstdint>
 #include <filesystem>
 #include <map>
 #include <optional>
+#include <span>
 #include <string>
+#include <utility>
 #include <vector>
 
 class ImGuiSystem;
 struct GameConfig;
 
-enum class GameExportResultAction { NONE, CLOSE, NEW_EXPORT };
+enum class GameExportResultAction { NONE, CLOSE, NEW_EXPORT, OPEN_SOURCE_SCENE };
 
 /// <summary>
 /// ゲーム出力の完了後に、出力フォルダ・単独起動・起動ログの確認を表示する
@@ -27,6 +30,18 @@ class GameExportResultDialog {
 	void Show(std::filesystem::path directory, bool reopening = false);
 
 	/// <summary>
+	/// 今回の出力と編集元シーンの対応を、Editorのセッション内で保持する
+	/// </summary>
+	void SetSceneSources(const std::filesystem::path &projectRoot,
+	                     std::vector<GameExporter::SceneSource> sources);
+
+	/// <summary>
+	/// 素材の移動後に、元のシーンを開くためのパスを更新する
+	/// </summary>
+	void OnAssetsMoved(std::span<const std::pair<std::filesystem::path,
+	                                            std::filesystem::path>> moves);
+
+	/// <summary>
 	/// 現在の配布版とログの表示位置を保持したまま結果画面に戻る
 	/// </summary>
 	void Reopen() { opening_ = true; }
@@ -37,11 +52,18 @@ class GameExportResultDialog {
 	const std::filesystem::path &GetDirectory() const { return directory_; }
 
 	/// <summary>
+	/// 開くよう要求された編集元シーンを取得する
+	/// </summary>
+	const std::filesystem::path &GetRequestedSourceScene() const { return requestedSourceScene_; }
+
+	/// <summary>
 	/// 出力先を表示し、開く・起動・閉じる操作を受け付ける。失敗時は画面を保持する
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
-	/// <returns>閉じるか新しい出力へ進む要求。開く・起動操作の後はNONE</returns>
-	GameExportResultAction Draw(const ImGuiSystem &ui);
+	/// <param name="projectRoot">現在のプロジェクト。プロジェクト未選択時は空</param>
+	/// <returns>閉じる、新しく出力する、または編集元シーンを開く要求</returns>
+	GameExportResultAction Draw(const ImGuiSystem &ui,
+	                            const std::filesystem::path &projectRoot = {});
 
   private:
 	struct LogPosition {
@@ -70,6 +92,8 @@ class GameExportResultDialog {
 		std::filesystem::path startupScenePath;
 		std::filesystem::path launchFailurePath;
 		std::filesystem::path destinationFailurePath;
+		std::filesystem::path sourceProjectRoot;
+		std::vector<GameExporter::SceneSource> sceneSources;
 		std::optional<std::uintmax_t> logStart;
 		std::vector<std::uintmax_t> earlierLogPages;
 		std::optional<LogPosition> beforeErrorJump;
@@ -126,6 +150,7 @@ class GameExportResultDialog {
 	bool UpdateGameProcess(bool &jumpToBeginning, bool &jumpToLatest);
 
 	std::filesystem::path directory_;
+	std::filesystem::path requestedSourceScene_;
 	std::map<std::filesystem::path, GameRun> runs_;
 	std::string error_;
 	std::string packageSettings_;
