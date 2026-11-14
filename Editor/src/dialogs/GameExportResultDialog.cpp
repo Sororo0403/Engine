@@ -467,12 +467,14 @@ bool GameExportResultDialog::StartGame() {
 	auto launchError = packageSettingsError_;
 	run.launchSettings = packageSettings_;
 	run.crashError.clear();
+	run.startupScenePath.clear();
 	run.launchFailurePath.clear();
 	error_.clear();
 	if (!launchError.empty()) {
 		run.launchFailurePath = directory_ / L"game.json";
 	} else {
 		const auto scenePath = directory_ / config.scenePath;
+		run.startupScenePath = config.scenePath;
 		std::error_code status;
 		if (!std::filesystem::is_regular_file(scenePath, status)) {
 			run.launchFailurePath = scenePath;
@@ -557,6 +559,14 @@ bool GameExportResultDialog::UpdateGameProcess(bool &jumpToBeginning,
 			run.beforeErrorJump->sinceLaunchOnly = previousRange;
 		}
 		run.crashError = LeadingLogError(log_);
+		// ログの先頭行が起動時に記録したシーンと一致する場合だけ、その場所を案内する。
+		const auto lineEnd = run.crashError.find_first_of("\r\n");
+		const auto heading = LogLevelPrefix(std::string_view(run.crashError).substr(0, lineEnd));
+		if (!run.startupScenePath.empty() &&
+		    heading == " [ERROR] Could not load startup scene: " +
+		                   PathUtils::ToUtf8(run.startupScenePath)) {
+			run.launchFailurePath = directory_ / run.startupScenePath;
+		}
 		jumpToBeginning = true;
 		return true;
 	}
