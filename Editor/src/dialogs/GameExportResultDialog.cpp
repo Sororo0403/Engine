@@ -785,13 +785,22 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		                                           : FilterLogEntries(log_, run.logFilter);
 		const auto &matching = run.logFilter.empty() ? log_ : filtered;
 		const auto errors = CollectLogErrors(matching);
-		const std::string_view displayedLog = run.showErrorsOnly ? errors : matching;
+		const auto &displayedLog = run.showErrorsOnly ? errors : matching;
 		ui.BeginDisabled(errors.empty());
 		if (ui.Button("Copy Displayed Errors") && !errors.empty()) {
 			ImGui::SetClipboardText(errors.c_str());
 		}
 		ui.EndDisabled();
 		ImGui::SetItemTooltip("Copy errors and their details from the displayed log.");
+		if (!run.logFilter.empty() || run.showErrorsOnly) {
+			ui.SameLine();
+			ui.BeginDisabled(displayedLog.empty());
+			if (ui.Button("Copy Filtered Log") && !displayedLog.empty()) {
+				ImGui::SetClipboardText(displayedLog.c_str());
+			}
+			ui.EndDisabled();
+			ImGui::SetItemTooltip("Copy entries on this page that match the current filters.");
+		}
 		if (run.showLogBeginning) {
 			const auto firstError = LeadingLogError(log_);
 			if (!firstError.empty() &&
@@ -823,7 +832,7 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 				ui.Text(displayedLog.empty()
 				            ? (run.logFilter.empty() ? "No errors on this log page."
 				                                      : "No matching entries on this log page.")
-				            : displayedLog);
+				            : std::string_view(displayedLog));
 				ImGui::PopTextWrapPos();
 				if (restoreScroll) {
 					ImGui::SetScrollY(*restoreScroll);
