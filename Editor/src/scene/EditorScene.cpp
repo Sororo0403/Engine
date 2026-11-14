@@ -4536,6 +4536,9 @@ void EditorScene::RestoreRecovery() {
 		                         ? std::filesystem::path{}
 		                         : project_.GetScenesDirectory());
 		const bool assetsReady = assets.Refresh();
+		const auto previousAssetFolder =
+		    PathUtils::IsSameFile(assets_.GetRootDirectory(), assets.GetRootDirectory())
+		        ? assetsPanel_.GetOpenDirectory() : std::filesystem::path{};
 		auto restoredPath = pendingRecoveryPath_;
 		SaveEditorSession();
 		SceneLighting::MigrateLegacyDirectionalLight(
@@ -4570,6 +4573,7 @@ void EditorScene::RestoreRecovery() {
 		playMode_.SetPreviewCamera(0);
 		inspectorPanel_.Clear();
 		assetsPanel_.Clear();
+		assetsPanel_.RestoreDirectory(previousAssetFolder, assets_);
 		stage_ = DialogStage::IDLE;
 		RecordRecovery();
 		if (!assetsReady) {
