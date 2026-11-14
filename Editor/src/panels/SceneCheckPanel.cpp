@@ -135,7 +135,7 @@ void SceneCheckPanel::Check(const Scene &scene, const CameraPose &fallback,
 	issues.insert(issues.end(), std::make_move_iterator(assets.begin()),
 	              std::make_move_iterator(assets.end()));
 
-	const auto searchPath = PathUtils::FromPathSearch(filter_);
+	auto searchPath = PathUtils::FromPathSearch(filter_);
 	const auto matches = [&](const SceneValidationIssue &issue) {
 		return MatchesFilter(issue, scene, searchPath);
 	};
@@ -145,6 +145,7 @@ void SceneCheckPanel::Check(const Scene &scene, const CameraPose &fallback,
 	    (hadSelection || std::ranges::any_of(issues_, matches)) &&
 	    std::ranges::none_of(issues, matches)) {
 		filter_.clear();
+		searchPath.clear();
 	}
 
 	if (hadSelection || issueToRestore_) {
@@ -154,20 +155,24 @@ void SceneCheckPanel::Check(const Scene &scene, const CameraPose &fallback,
 		                     : 0;
 		std::optional<std::size_t> sameSource;
 		bool ambiguousSource = false;
+		bool matchedPrevious = false;
+		const auto sharesSource = [](const SceneValidationIssue &a, const SceneValidationIssue &b) {
+			return a.objectId == b.objectId &&
+			       a.destinationObjectId == b.destinationObjectId &&
+			       a.modelPath == b.modelPath && a.assetPath == b.assetPath &&
+			       a.inputAction == b.inputAction;
+		};
 		const bool hasSource = previous.objectId != 0 ||
-		                       !previous.assetPath.empty() || !previous.modelPath.empty();
+		                       !previous.assetPath.empty() || !previous.modelPath.empty() ||
+		                       !previous.inputAction.empty();
 		for (std::size_t i = 0; i < issues.size(); ++i) {
 			const auto &issue = issues[i];
 			if (!matches(issue))
 				continue;
-			if (issue.objectId == previous.objectId &&
-			    issue.destinationObjectId == previous.destinationObjectId &&
-			    issue.modelPath == previous.modelPath &&
-			    issue.assetPath == previous.assetPath &&
-			    issue.inputAction == previous.inputAction) {
+			if (sharesSource(issue, previous)) {
 				if (issue.message == previous.message) {
 					scrollToIssue_ = i;
-					sameSource.reset();
+					matchedPrevious = true;
 					break;
 				}
 				if (hasSource) {
@@ -181,8 +186,23 @@ void SceneCheckPanel::Check(const Scene &scene, const CameraPose &fallback,
 			}
 		}
 		// 診断文が変わったときも、同じ参照元が一件ならその行に戻る。
-		if (sameSource && !ambiguousSource) {
+		if (!matchedPrevious && sameSource && !ambiguousSource) {
 			scrollToIssue_ = sameSource;
+		} else if (!matchedPrevious && hadSelection) {
+			// 上の行が減っても、以前の一覧で次に確認する予定だった指摘を探す。
+			for (auto next = issues_.begin() + *lastIssue_ + 1; next != issues_.end(); ++next) {
+				if (!matches(*next)) {
+					continue;
+				}
+				const auto found = std::ranges::find_if(issues, [&](const auto &issue) {
+					return matches(issue) && sharesSource(issue, *next) &&
+					       issue.message == next->message;
+				});
+				if (found != issues.end()) {
+					scrollToIssue_ = static_cast<std::size_t>(found - issues.begin());
+					break;
+				}
+			}
 		}
 	}
 	issueToRestore_.reset();
