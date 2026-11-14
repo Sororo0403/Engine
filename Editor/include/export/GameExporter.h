@@ -2,6 +2,7 @@
 
 #include "gameplay/GameConfig.h"
 #include "scene/SceneObjectId.h"
+#include <cstdint>
 #include <filesystem>
 #include <string>
 #include <vector>
@@ -69,15 +70,24 @@ struct GameExportIssue {
 
 namespace GameExporter {
 /// <summary>
+/// 配布予定のシーンと、出力ファイルの件数および内容の合計サイズ
+/// </summary>
+struct CheckSummary {
+	std::vector<std::filesystem::path> includedScenes;
+	std::size_t fileCount = 0;
+	std::uintmax_t contentBytes = 0;
+};
+
+/// <summary>
 /// 出力予定のシーン・依存ファイル・Runtimeを検査する。出力先には書き込まない
 /// </summary>
 /// <param name="error">検査で見つかった不備。複数の場合は空行区切り</param>
 /// <param name="issues">指定時は表示する不備とシーン・物体への移動先を返す</param>
-/// <param name="includedScenes">指定時は成功した検査で配布対象となるシーンの元パスを返す。未保存の起動シーンは空のパス</param>
+/// <param name="summary">指定時は成功した検査で出力内容を返す。未保存の起動シーンは空のパス</param>
 /// <remarks>COM初期化後に呼び出す。コピー後の検証は実際の出力時に行う</remarks>
 bool Check(const Scene &scene, const GameExportOptions &options,
            std::string &error, std::vector<GameExportIssue> *issues = nullptr,
-           std::vector<std::filesystem::path> *includedScenes = nullptr);
+           CheckSummary *summary = nullptr);
 
 /// <summary>
 /// シーンと依存ファイルを新規フォルダへ直接出力する。既存フォルダには書き込まない

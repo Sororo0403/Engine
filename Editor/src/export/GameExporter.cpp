@@ -607,7 +607,7 @@ fs::path ResolveDestination(const fs::path &path) {
 bool ProcessExport(const Scene &scene, const GameExportOptions &options,
                    std::string &error, bool writeOutput,
                    std::vector<GameExportIssue> *issues,
-                   std::vector<fs::path> *includedScenes = nullptr) {
+                   GameExporter::CheckSummary *summary = nullptr) {
 	OutputDirectory output;
 	const auto appendIssue = [&](std::string issue, const fs::path &scenePath,
 	                             SceneObjectId objectId,
@@ -1141,14 +1141,24 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 		}
 
 		if (!writeOutput) {
-			if (includedScenes) {
-				std::vector<fs::path> sources;
+			if (summary) {
+				GameExporter::CheckSummary result;
 				for (const auto &entry : graph) {
 					if (!entry.prefab) {
-						sources.push_back(entry.source);
+						result.includedScenes.push_back(entry.source);
 					}
 				}
-				includedScenes->swap(sources);
+				result.fileCount = plan.Files().size();
+				result.contentBytes = configText.size();
+				for (const auto &text : sceneTexts) {
+					result.contentBytes += text.size();
+				}
+				for (const auto &[relative, source] : plan.Files()) {
+					if (!source.empty()) {
+						result.contentBytes += fs::file_size(source);
+					}
+				}
+				*summary = std::move(result);
 			}
 			return true;
 		}
@@ -1221,11 +1231,11 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 
 bool GameExporter::Check(const Scene &scene, const GameExportOptions &options,
                          std::string &error, std::vector<GameExportIssue> *issues,
-                         std::vector<fs::path> *includedScenes) {
-	if (includedScenes) {
-		includedScenes->clear();
+                         CheckSummary *summary) {
+	if (summary) {
+		*summary = {};
 	}
-	return ProcessExport(scene, options, error, false, issues, includedScenes);
+	return ProcessExport(scene, options, error, false, issues, summary);
 }
 
 bool GameExporter::Export(const Scene &scene, const GameExportOptions &options,
