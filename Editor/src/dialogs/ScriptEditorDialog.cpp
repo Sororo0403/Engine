@@ -246,11 +246,20 @@ ScriptEditorDialog::Result ScriptEditorDialog::Draw(const ImGuiSystem &ui,
 			state->CursorFollow = true;
 	}
 	ImGui::PopID();
+	const auto validateSyntax = [&] {
+		if (LuaScript::Validate(source_, error_)) {
+			return true;
+		}
+		pendingLine_ = LuaScript::FindErrorLine("Script", error_);
+		if (pendingLine_ > 0) {
+			targetLine_ = pendingLine_;
+			findRequested_ = false;
+		}
+		return false;
+	};
 	if (ui.Button("Check Syntax")) {
-		if (LuaScript::Validate(source_, error_))
+		if (validateSyntax())
 			error_ = "Syntax OK";
-		else
-			pendingLine_ = LuaScript::FindErrorLine("Script", error_);
 	}
 
 	ui.SameLine();
@@ -275,7 +284,7 @@ ScriptEditorDialog::Result ScriptEditorDialog::Draw(const ImGuiSystem &ui,
 
 	if (save || saveCopy || saveAndPlay) {
 		try {
-			if (!LuaScript::Validate(source_, error_))
+			if (!validateSyntax())
 				throw std::runtime_error(error_);
 			auto destination = path_;
 			auto reference = path_;
