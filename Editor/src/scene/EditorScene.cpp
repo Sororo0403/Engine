@@ -1912,6 +1912,10 @@ EditorScene::EditorAction EditorScene::DrawMenuBar() {
 			if (ui_.MenuItem("Locate Last Edited Scene...", nullptr, enabled)) {
 				action = EditorAction::BROWSE_LAST_EDITED_SCENE;
 			}
+			if (ui_.MenuItem("Resume Current Scene Next Time", nullptr,
+			                 enabled && project_.CanUseAsStartupScene(current))) {
+				action = EditorAction::RESUME_CURRENT_SCENE;
+			}
 		}
 
 		const bool canSetCurrentStartup =
@@ -2954,6 +2958,18 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 			ConfirmSceneChanges();
 		}
 		return;
+	case EditorAction::RESUME_CURRENT_SCENE:
+		if (!failedRestoredScene_.empty() &&
+		    project_.CanUseAsStartupScene(document_.GetFilePath())) {
+			auto previous = std::exchange(failedRestoredScene_, {});
+			SaveEditorSession();
+			const auto saved = preferences_.LastProjectScene(project_.GetRoot());
+			if (saved.empty() || !PathUtils::IsSameFile(saved, document_.GetFilePath())) {
+				failedRestoredScene_ = std::move(previous);
+				ShowError("Could not save the scene to resume next time.");
+			}
+		}
+		return;
 	case EditorAction::SET_STARTUP_SCENE: {
 		const auto path = std::exchange(pendingOpenPath_, std::filesystem::path{});
 		std::string error;
@@ -3917,12 +3933,7 @@ void EditorScene::ExecutePendingAction() {
 
 void EditorScene::StartSave(bool saveAs) {
 	if (!saveAs && !document_.GetFilePath().empty()) {
-		const bool edited = document_.IsModified();
 		if (document_.Save()) {
-			if (edited && !failedRestoredScene_.empty() &&
-			    project_.CanUseAsStartupScene(document_.GetFilePath())) {
-				failedRestoredScene_.clear();
-			}
 			recentScenes_.Add(document_.GetFilePath());
 			SaveEditorSession();
 			ClearRecovery();
