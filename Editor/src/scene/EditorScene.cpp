@@ -6422,6 +6422,9 @@ void EditorScene::StartPlay(const std::filesystem::path &path,
 		return;
 	}
 
+	// 試遊中は定期記録が止まるため、実行前に未保存の編集を記録する。
+	RecordRecovery();
+
 	const auto *scene = usesEditingScene ? &document_.GetScene() : &startup.GetScene();
 	if (replayLastScene && cameraOverride != 0) {
 		const auto *object = scene->FindObject(cameraOverride);
