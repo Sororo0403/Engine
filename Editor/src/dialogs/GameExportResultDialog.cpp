@@ -3,6 +3,7 @@
 #include "graphics/ui/ImGuiSystem.h"
 #include "platform/windows/PathUtils.h"
 #include "platform/windows/ShellUtils.h"
+#include "platform/windows/StringConversion.h"
 #include <algorithm>
 #include <array>
 #include <format>
@@ -84,14 +85,25 @@ std::string CollectLogErrors(std::string_view log) {
 }
 
 /// <summary>
+/// 本文はそのまま照合し、貼り付けた絶対パスは区切りや大文字小文字を揃えて照合する
+/// </summary>
+bool MatchesLogText(std::string_view text, std::string_view query,
+                    const std::filesystem::path &searchPath) {
+	return text.find(query) != std::string_view::npos ||
+	       (searchPath.is_absolute() &&
+	        PathUtils::MatchesPathSearch(StringConversion::Utf8ToWide(text), searchPath));
+}
+
+/// <summary>
 /// 検索語を含むログ項目を、複数行の詳細を保ったまま取り出す
 /// </summary>
 std::string FilterLogEntries(std::string_view log, std::string_view filter) {
 	std::string result;
+	const auto searchPath = PathUtils::FromPathSearch(filter);
 	std::size_t start = 0;
 	const auto appendMatch = [&](std::size_t end) {
 		const auto entry = log.substr(start, end - start);
-		if (entry.find(filter) != std::string_view::npos) {
+		if (MatchesLogText(entry, filter, searchPath)) {
 			result.append(entry);
 		}
 	};
@@ -307,6 +319,7 @@ bool GameExportResultDialog::FindLogMatch(bool next) {
 		return false;
 	}
 	auto query = next ? run.lastMatch->query : run.logFilter;
+	const auto searchPath = PathUtils::FromPathSearch(query);
 	const bool errorsOnly = next ? run.lastMatch->errorsOnly : run.showErrorsOnly;
 	std::ifstream input(directory_ / kGameLogPath, std::ios::binary | std::ios::ate);
 	const auto end = static_cast<std::streamoff>(input.tellg());
@@ -338,7 +351,7 @@ bool GameExportResultDialog::FindLogMatch(bool next) {
 			entryOffset = relative;
 		}
 		if ((!next || relative > anchor) && (!errorsOnly || isError) &&
-		    line.find(query) != std::string::npos) {
+		    MatchesLogText(line, query, searchPath)) {
 			// 見出しから開くと一致行がページ外になる場合は、一致行を優先する。
 			const auto lineEnd = input.eof() ? end : static_cast<std::streamoff>(input.tellg());
 			const bool fits = lineEnd - start - static_cast<std::streamoff>(entryOffset) <=
@@ -688,7 +701,7 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		if (changedFilter) {
 			run.lastMatch.reset();
 		}
-		ImGui::SetItemTooltip("Filter entries on the current page or tail by text (case-sensitive).");
+		ImGui::SetItemTooltip("Filter the current page by text or paste an absolute file path.");
 		ui.SameLine();
 		ui.BeginDisabled(run.logFilter.empty());
 		if (ui.Button("Find First in Log") && !run.logFilter.empty()) {
@@ -756,7 +769,7 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		if (run.showLogBeginning) {
 			const auto firstError = LeadingLogError(log_);
 			if (!firstError.empty() &&
-			    (run.logFilter.empty() || firstError.find(run.logFilter) != std::string_view::npos)) {
+			    MatchesLogText(firstError, run.logFilter, PathUtils::FromPathSearch(run.logFilter))) {
 				ui.SameLine();
 				if (ui.Button("Copy First Error on Page")) {
 					ImGui::SetClipboardText(std::string(firstError).c_str());
