@@ -790,14 +790,43 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	const auto isSelected = [&](const std::filesystem::path &path) {
 		return std::ranges::find(selectedItems_, path) != selectedItems_.end();
 	};
-	const auto selectedReloadPaths = [&] {
-		std::vector<std::filesystem::path> paths;
-		for (const auto &[type, path] : visibleFiles) {
-			if ((type == AssetType::MODEL || type == AssetType::TEXTURE) && isSelected(*path)) {
-				paths.push_back(*path);
+	const auto hasSelectedFolder = [&] {
+		return std::ranges::any_of(selectedItems_, [&](const auto &path) {
+			return std::ranges::binary_search(directories, path);
+		});
+	};
+	const auto canBatchReload = [&] {
+		return hasSelectedFolder() ||
+		       (selectedItems_.size() > 1 &&
+		        std::ranges::any_of(selectedItems_, [](const auto &path) {
+			        return PathUtils::IsModelFile(path) || PathUtils::IsImageFile(path);
+		        }));
+	};
+	const auto requestSelectedReload = [&] {
+		revealMessage_.clear();
+		batchReloadPaths_.clear();
+		const std::set<std::filesystem::path> selected(selectedItems_.begin(), selectedItems_.end());
+		const auto collect = [&](const auto &paths) {
+			for (const auto &path : paths) {
+				auto candidate = path;
+				while (!candidate.empty() && candidate != assets.GetRootDirectory()) {
+					if (selected.contains(candidate)) {
+						batchReloadPaths_.push_back(path);
+						break;
+					}
+					const auto parent = candidate.parent_path();
+					if (parent == candidate) {
+						break;
+					}
+					candidate = parent;
+				}
 			}
+		};
+		collect(assets.GetModels());
+		collect(assets.GetTextures());
+		if (batchReloadPaths_.empty()) {
+			revealMessage_ = "The selected folders contain no indexed models or textures.";
 		}
-		return paths;
 	};
 	auto selectedType = type_;
 	const auto syncSingle = [&] {
@@ -1024,6 +1053,9 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 			if (ImGui::BeginPopupContextItem()) {
 				selectContext(directory);
 				drawLocationMenu(directory);
+				if (ui.MenuItem("Reload Selected Models and Textures", nullptr, canEditAssets)) {
+					requestSelectedReload();
+				}
 				if (canManageFiles) {
 					ImGui::Separator();
 					drawClipboardMenu();
@@ -1156,12 +1188,9 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 					textureSelectionPath_ = assetPath;
 				}
 
-				if (selectedItems_.size() > 1) {
-					auto paths = selectedReloadPaths();
-					if (!paths.empty() &&
-					    ui.MenuItem("Reload Selected Models and Textures", nullptr, canEditAssets)) {
-						batchReloadPaths_ = std::move(paths);
-					}
+				if (canBatchReload() &&
+				    ui.MenuItem("Reload Selected Models and Textures", nullptr, canEditAssets)) {
+					requestSelectedReload();
 				}
 
 				if (assetType == AssetType::TEXTURE &&
@@ -1281,14 +1310,14 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 	if (selectedItems_.size() > 1) {
 		ui.Text(std::format("{} items selected", selectedItems_.size()));
-		auto paths = selectedReloadPaths();
-		if (!paths.empty()) {
-			ui.BeginDisabled(!canEditAssets);
-			if (ui.Button("Reload Selected Models and Textures")) {
-				batchReloadPaths_ = std::move(paths);
-			}
-			ui.EndDisabled();
+	}
+	if (canBatchReload()) {
+		ui.BeginDisabled(!canEditAssets);
+		if (ui.Button("Reload Selected Models and Textures")) {
+			requestSelectedReload();
 		}
+		ui.EndDisabled();
+		ImGui::SetItemTooltip("Includes indexed models and textures in selected folders and their subfolders.");
 	}
 
 	if (!selectedPath_.empty() && selectedType != AssetType::AUDIO) {
