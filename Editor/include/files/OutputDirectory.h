@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <filesystem>
 #include <memory>
 #include <stdexcept>
@@ -48,6 +49,11 @@ class OutputDirectory {
 	/// 出力先に新しいサブフォルダを作成する。既存フォルダは拒否する
 	/// </summary>
 	void CreateSubdirectory(const std::filesystem::path &relative);
+
+	/// <summary>
+	/// コピーと同じ条件で素材を開き、通常ファイルのサイズを取得する
+	/// </summary>
+	static std::uintmax_t GetSourceSize(const std::filesystem::path &source);
 
 	/// <summary>
 	/// 通常ファイルを新規出力へコピーする。既存項目や参照元は変更しない

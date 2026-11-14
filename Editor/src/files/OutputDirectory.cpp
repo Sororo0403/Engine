@@ -91,7 +91,8 @@ struct OutputDirectory::Impl {
 		CreateOwnedDirectory(path, true);
 	}
 
-	void Copy(const fs::path &source, const fs::path &relative) {
+	static FileHandle OpenSource(const fs::path &source,
+	                             BY_HANDLE_FILE_INFORMATION &info) {
 		FileHandle input(CreateFileW(
 		    source.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_DELETE,
 		    nullptr, OPEN_EXISTING, FILE_FLAG_OPEN_REPARSE_POINT, nullptr));
@@ -99,8 +100,6 @@ struct OutputDirectory::Impl {
 		if (input.Get() == INVALID_HANDLE_VALUE) {
 			FileError("Could not read resource", source, GetLastError(), true);
 		}
-
-		BY_HANDLE_FILE_INFORMATION info{};
 
 		if (!GetFileInformationByHandle(input.Get(), &info)) {
 			FileError("Could not inspect resource", source, GetLastError(), true);
@@ -113,6 +112,12 @@ struct OutputDirectory::Impl {
 			    PathUtils::ToUtf8(source), source, true);
 		}
 
+		return FileHandle(input.Release());
+	}
+
+	void Copy(const fs::path &source, const fs::path &relative) {
+		BY_HANDLE_FILE_INFORMATION info{};
+		auto input = OpenSource(source, info);
 		FileHandle output(OpenNewFile(relative));
 		std::array<char, 65536> buffer{};
 
@@ -365,6 +370,12 @@ void OutputDirectory::CreateSubdirectory(
 	}
 
 	impl_->CreateSubdirectory(relative);
+}
+
+std::uintmax_t OutputDirectory::GetSourceSize(const std::filesystem::path &source) {
+	BY_HANDLE_FILE_INFORMATION info{};
+	auto input = Impl::OpenSource(source, info);
+	return (std::uintmax_t{info.nFileSizeHigh} << 32) | info.nFileSizeLow;
 }
 
 void OutputDirectory::Copy(const std::filesystem::path &source,

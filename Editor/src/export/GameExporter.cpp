@@ -1148,8 +1148,15 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 		}
 		for (const auto &[relative, source] : plan.Files()) {
 			if (!source.empty()) {
-				result.contentBytes += fs::file_size(source);
+				try {
+					result.contentBytes += OutputDirectory::GetSourceSize(source);
+				} catch (const OutputFileError &issue) {
+					appendIssue(issue.what(), {}, 0, {}, {}, issue.GetPath());
+				}
 			}
+		}
+		if (!error.empty()) {
+			return false;
 		}
 
 		std::error_code spaceError;
