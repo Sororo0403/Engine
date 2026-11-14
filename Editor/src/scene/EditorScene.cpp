@@ -3944,6 +3944,7 @@ void EditorScene::ExecutePendingAction() {
 			                      document_.GetError()));
 			failedOpenScenePath_ = pendingOpenPath_;
 			failedOpenSceneObject_ = object;
+			failedSceneCheckReference_ = action == EditorAction::OPEN_SCENE_CHECK_REFERENCE;
 		}
 		return;
 	}
@@ -6198,9 +6199,11 @@ void EditorScene::UpdateDialogs() {
 						ReloadScene(backup);
 					} else {
 						pendingOpenPath_ = std::move(path);
-						StartAction(playMode_.IsPlaying() ? EditorAction::OPEN_PLAY_SOURCE
-						                                  : EditorAction::OPEN_PATH,
-						            object);
+						const auto retry = std::exchange(failedSceneCheckReference_, false)
+						                       ? EditorAction::OPEN_SCENE_CHECK_REFERENCE
+						                       : playMode_.IsPlaying() ? EditorAction::OPEN_PLAY_SOURCE
+						                                               : EditorAction::OPEN_PATH;
+						StartAction(retry, object);
 					}
 					return;
 				}
@@ -6510,7 +6513,8 @@ void EditorScene::UpdateDialogs() {
 			if (canShowPlayLog) {
 				ui_.SameLine();
 			}
-			if (ui_.Button("OK") || showPlayError) {
+			if (ui_.Button(failedSceneCheckReference_ ? "Back to Scene Check" : "OK") ||
+			    showPlayError) {
 				if (showPlayError) {
 					consolePanel_.ShowPlayError(errorPlayLogId_);
 				}
@@ -6519,6 +6523,9 @@ void EditorScene::UpdateDialogs() {
 				failedAssetMoves_.clear();
 				failedAssetCopy_ = {};
 				CancelPendingAction();
+				if (std::exchange(failedSceneCheckReference_, false)) {
+					sceneCheckPanel_.Show();
+				}
 			}
 
 			ui_.EndPopup();
@@ -7065,6 +7072,7 @@ void EditorScene::ShowError(std::string message, SceneObjectId objectId,
 	reloadBackupPath_.clear();
 	sceneReloadFailed_ = false;
 	failedOpenSceneObject_ = 0;
+	failedSceneCheckReference_ = false;
 	errorReloadAssetPath_.clear();
 	errorReplayPath_.reset();
 	errorRestartCurrentScene_.reset();

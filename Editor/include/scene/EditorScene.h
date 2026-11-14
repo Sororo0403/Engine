@@ -1127,6 +1127,7 @@ class EditorScene final : public IScene {
 	std::filesystem::path reloadBackupPath_;
 	bool sceneReloadFailed_ = false;
 	SceneObjectId failedOpenSceneObject_ = 0;
+	bool failedSceneCheckReference_ = false;
 	std::filesystem::path errorReloadAssetPath_;
 	bool errorReloadIsTexture_ = false;
 	std::optional<std::filesystem::path> errorReplayPath_;
