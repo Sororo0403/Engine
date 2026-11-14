@@ -81,11 +81,14 @@ std::vector<SceneDependencyGraph::Entry> SceneDependencyGraph::Read(
 		}
 
 		for (const auto &[path, referringId] : targets) {
-			if (std::ranges::any_of(entries, [&](const auto &entry) {
+			const auto existing = std::ranges::find_if(entries, [&](const auto &entry) {
 				    return !entry.source.empty() &&
 				           PathUtils::IsSameFile(entry.source, path);
-			    }))
+			    });
+			if (existing != entries.end()) {
+				existing->references.push_back({i, referringId});
 				continue;
+			}
 			if (entries.size() >= kMaximumScenes)
 				throw std::runtime_error(
 				    "The scene/Prefab dependency graph exceeds 256 assets.");
@@ -110,7 +113,7 @@ std::vector<SceneDependencyGraph::Entry> SceneDependencyGraph::Read(
 			}
 			entries.push_back({path, target.GetObjects(), prefab, counter,
 			                   target.GetLighting(), target.UsesLegacyDirectionalLight(),
-			                   target.GetFog()});
+			                   target.GetFog(), {{i, referringId}}});
 		}
 		entries[i].objects = std::move(objects);
 	}

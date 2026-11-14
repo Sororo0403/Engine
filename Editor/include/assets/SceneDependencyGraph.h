@@ -16,6 +16,11 @@ class Scene;
 /// </summary>
 class SceneDependencyGraph {
   public:
+	struct Reference {
+		std::size_t sourceIndex;
+		SceneObjectId objectId;
+	};
+
 	struct Entry {
 		std::filesystem::path source;
 		std::map<SceneObjectId, SceneObject> objects;
@@ -24,6 +29,7 @@ class SceneDependencyGraph {
 		std::optional<LightingSettings> lighting;
 		bool legacyDirectionalLight = false;
 		FogSettings fog;
+		std::vector<Reference> references;
 	};
 
 	using Resolve =

@@ -1229,6 +1229,16 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 				for (const auto &entry : graph) {
 					if (!entry.prefab) {
 						result.includedScenes.push_back(entry.source);
+						std::set<std::pair<std::size_t, SceneObjectId>> reported;
+						for (const auto &reference : entry.references) {
+							if (!reported.emplace(reference.sourceIndex, reference.objectId).second) {
+								continue;
+							}
+							const auto &source = graph[reference.sourceIndex];
+							const auto &object = source.objects.at(reference.objectId);
+							result.sceneReferences.push_back(
+							    {source.source, entry.source, object.name, reference.objectId});
+						}
 					}
 				}
 				result.fileCount = plan.Files().size();

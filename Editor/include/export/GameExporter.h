@@ -93,7 +93,15 @@ struct SceneSource {
 /// 配布予定のシーンと、出力ファイルの件数および内容の合計サイズ
 /// </summary>
 struct CheckSummary {
+	struct SceneReference {
+		std::filesystem::path source;
+		std::filesystem::path destination;
+		std::string objectName;
+		SceneObjectId objectId;
+	};
+
 	std::vector<std::filesystem::path> includedScenes;
+	std::vector<SceneReference> sceneReferences;
 	std::size_t fileCount = 0;
 	std::uintmax_t contentBytes = 0;
 	std::optional<std::uintmax_t> availableBytes;

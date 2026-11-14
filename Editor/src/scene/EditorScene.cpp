@@ -3659,6 +3659,16 @@ void EditorScene::CheckGameExport(bool continueFromIssue) {
 			report += std::format("\n{}{}", i == 0 ? "Startup: " : "",
 			                      path.empty() ? "Untitled" : PathUtils::ToUtf8(path));
 		}
+		if (!summary.sceneReferences.empty()) {
+			report += "\n\nScene references:";
+			for (const auto &reference : summary.sceneReferences) {
+				report += std::format("\n{} / {} (ID {}) → {}",
+				                      reference.source.empty() ? "Startup scene"
+				                                               : PathUtils::ToUtf8(reference.source),
+				                      reference.objectName, reference.objectId,
+				                      PathUtils::ToUtf8(reference.destination));
+			}
+		}
 		exportDialog_.SetCheckResult(std::move(report));
 		return;
 	}
