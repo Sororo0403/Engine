@@ -2,11 +2,13 @@
 
 #include "graphics/ui/ImGuiSystem.h"
 
+#include <imgui.h>
 #include <utility>
 
 void SaveChangesDialog::Show(std::string name, bool beforeExport,
-                             bool returnToOpenScene) {
+                             bool returnToOpenScene, std::string destination) {
 	name_ = std::move(name);
+	destination_ = std::move(destination);
 	beforeExport_ = beforeExport;
 	returnToOpenScene_ = returnToOpenScene;
 	openRequested_ = true;
@@ -20,12 +22,17 @@ SaveChangesResult SaveChangesDialog::Draw(const ImGuiSystem &ui) {
 		openRequested_ = false;
 	}
 
+	ImGui::SetNextWindowSize({540.0f, 0.0f}, ImGuiCond_Appearing);
 	if (!ui.BeginPopupModal(kTitle)) {
 		return SaveChangesResult::NONE;
 	}
 
 	ui.Text(beforeExport_ ? "Unsaved scene changes:" : "Save changes to:");
-	ui.Text(name_);
+	ImGui::TextWrapped("%s", name_.c_str());
+	if (!destination_.empty()) {
+		ui.Text("Next location:");
+		ImGui::TextWrapped("%s", destination_.c_str());
+	}
 	if (beforeExport_) {
 		ui.Text("Export reads linked scenes from disk. Save changes to include them.");
 	}

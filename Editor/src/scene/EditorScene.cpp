@@ -3666,8 +3666,22 @@ void EditorScene::ConfirmSceneChanges() {
 		const auto name =
 		    document_.GetFilePath().empty()
 		        ? std::string("Untitled")
-		        : PathUtils::ToUtf8(document_.GetFilePath().filename());
-		saveChangesDialog_.Show(name, exporting, pendingAction_ == EditorAction::OPEN);
+		        : PathUtils::ToUtf8(document_.GetFilePath());
+		std::string destination;
+		switch (pendingAction_) {
+		case EditorAction::OPEN:
+			destination = PathUtils::ToUtf8(openSceneDialog_.GetSelectedPath());
+			break;
+		case EditorAction::OPEN_PATH:
+		case EditorAction::OPEN_PROJECT_PATH:
+		case EditorAction::OPEN_EXPORT_ISSUE:
+			destination = PathUtils::ToUtf8(pendingOpenPath_);
+			break;
+		default:
+			break;
+		}
+		saveChangesDialog_.Show(name, exporting, pendingAction_ == EditorAction::OPEN,
+		                        std::move(destination));
 		stage_ = DialogStage::CONFIRM_SAVE;
 	} else {
 		ExecutePendingAction();
