@@ -3362,7 +3362,7 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 
 		if (!document_.GetFilePath().empty()) {
 			sceneReloadDialog_.Show(
-			    PathUtils::ToUtf8(document_.GetFilePath().filename()),
+			    PathUtils::ToUtf8(document_.GetFilePath()),
 			    document_.IsModified());
 			stage_ = DialogStage::CONFIRM_RELOAD;
 		}
