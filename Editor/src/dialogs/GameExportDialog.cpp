@@ -823,13 +823,15 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 		}
 		ImGui::EndChild();
 		if (ui.Button("Copy Details")) {
-			std::string report;
+			auto report = checkResultStale_ ? "Previous results. Run a new check to update them.\n\n" +
+			                                      checkResult_
+			                                : checkResult_;
 			for (const auto &issue : checkIssues_) {
 				AppendIssueDetails(report, issue);
 			}
 			ImGui::SetClipboardText(report.c_str());
 		}
-		ImGui::SetItemTooltip("Copy all issues, including those hidden by search.");
+		ImGui::SetItemTooltip("Copy the result summary and all issues, including those hidden by search.");
 		if (!issueFilter_.empty()) {
 			ui.SameLine();
 			ui.BeginDisabled(matching.empty());

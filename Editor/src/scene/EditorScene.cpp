@@ -3634,15 +3634,19 @@ void EditorScene::CheckGameExport(bool continueFromIssue) {
 	std::vector<GameExportIssue> issues;
 	GameExporter::CheckSummary summary;
 	const auto *scene = PrepareGameExport(startup, options, error, issues);
+	const auto describeSettings = [&](const std::filesystem::path &destination) {
+		return std::format("Output folder: {}\nGame window: {} ({} × {})\nStartup scene: {}",
+		                   destination.empty() ? "(unspecified)" : PathUtils::ToUtf8(destination),
+		                   options.config.title, options.config.width, options.config.height,
+		                   options.startupScenePath.empty() ? "Untitled"
+		                                                    : PathUtils::ToUtf8(options.startupScenePath));
+	};
 	if (scene && GameExporter::Check(*scene, options, error, &issues, &summary)) {
 		constexpr double kBytesPerMiB = 1024.0 * 1024.0;
 		const auto &includedScenes = summary.includedScenes;
-		auto report = std::format("Export check passed. No files were written.\n\n"
-		                          "Output folder: {}\n"
-		                          "Game window: {} ({} × {})\n"
+		auto report = std::format("Export check passed. No files were written.\n\n{}\n"
 		                          "Estimated output: {:.1f} MiB ({} files)",
-		                          PathUtils::ToUtf8(summary.destination), options.config.title,
-		                          options.config.width, options.config.height,
+		                          describeSettings(summary.destination),
 		                          static_cast<double>(summary.contentBytes) / kBytesPerMiB,
 		                          summary.fileCount);
 		if (summary.availableBytes) {
@@ -3662,7 +3666,9 @@ void EditorScene::CheckGameExport(bool continueFromIssue) {
 	if (issues.empty()) {
 		issues.push_back({error});
 	}
-	exportDialog_.SetCheckResult("Export check failed: " + error,
+	auto report = std::format("Export check failed ({} issues). No files were written.\n\n{}",
+	                          issues.size(), describeSettings(options.destination));
+	exportDialog_.SetCheckResult(std::move(report),
 	                             std::move(issues), continueFromIssue);
 }
 
