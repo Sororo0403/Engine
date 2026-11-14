@@ -6389,16 +6389,26 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		auto config = candidate.GetGameConfig();
 		const auto startup = candidate.GetStartupScene();
 		std::filesystem::path unavailableLast;
-		const auto previousRoot = stage_ == DialogStage::OPEN_PROJECT &&
-		                                  fileDialog_.ShouldOpenPreviousProjectScene()
+		const auto previousRoot = !create && stage_ == DialogStage::OPEN_PROJECT &&
+		                                  fileDialog_.ShouldOpenPreviousProjectScene() &&
+		                                  !preferences_.projectScenes.contains(candidate.GetRoot())
 		                              ? missingRecentProject_ : std::filesystem::path{};
 		const auto last = create ? std::filesystem::path{}
 		                         : preferences_.LastProjectScene(candidate.GetRoot(), &unavailableLast,
 		                                                         previousRoot);
+		std::filesystem::path previousSceneLocation;
+		if (!last.empty()) {
+			if (const auto previous = preferences_.projectScenes.find(previousRoot);
+			    previous != preferences_.projectScenes.end()) {
+				previousSceneLocation = previousRoot / previous->second;
+			}
+		}
+		const bool lastIsStartup = !last.empty() && !startup.empty() &&
+		                           PathUtils::IsSameFile(last, startup);
 		bool restored = false;
 		std::string lastError;
-		if (!last.empty() && (startup.empty() || !PathUtils::IsSameFile(last, startup))) {
-			restored = OpenScene(last, false, &config.lighting);
+		if (!last.empty() && !lastIsStartup) {
+			restored = OpenScene(last, false, &config.lighting, previousSceneLocation);
 			if (!restored) {
 				unavailableLast = last;
 				lastError = document_.GetError();
@@ -6408,7 +6418,9 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		bool needsScene = false;
 
 		if (!restored) {
-			if (!startup.empty() && !OpenScene(startup, false, &config.lighting)) {
+			if (!startup.empty() &&
+			    !OpenScene(startup, false, &config.lighting,
+			               lastIsStartup ? previousSceneLocation : std::filesystem::path{})) {
 				startupError = std::format(
 				    "Could not open the project startup scene: {}\n{}\n"
 				    "Open or save a scene in the project, then choose "
@@ -6575,7 +6587,7 @@ bool EditorScene::OpenScene(const std::filesystem::path &path, bool reportError,
 		// 場所を選び直したシーンに表示状態がなければ、移動前の記録を使う。
 		const bool usePreviousLocation =
 		    !previousLocation.empty() &&
-		    project_.CanUseAsStartupScene(openedPath) &&
+		    (projectLighting || project_.CanUseAsStartupScene(openedPath)) &&
 		    !preferences_.FindSceneView(openedPath) &&
 		    preferences_.LastSceneSelection(openedPath).empty();
 		RestoreSceneViewAndSelection(usePreviousLocation ? previousLocation : openedPath);
