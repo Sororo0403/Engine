@@ -495,8 +495,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 	bool changed = drawField(GameExportField::OUTPUT_FOLDER, [&] {
 		return ui.InputText("##OutputFolder", output_);
 	});
-	ui.SameLine();
-	if (ui.Button("Browse...")) {
+	const auto browseForOutput = [&](bool recheck) {
 		auto output = options_.destination;
 		browseOutputName_ = defaultOutputName_;
 		try {
@@ -513,6 +512,11 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 		folderDialog_.Show(FileDialogMode::SELECT_DIRECTORY,
 		                   FindExistingParent(output));
 		browsing_ = true;
+		recheckAfterBrowse_ = recheck;
+	};
+	ui.SameLine();
+	if (ui.Button("Browse...")) {
+		browseForOutput(false);
 	}
 	ui.SameLine();
 	ui.BeginDisabled(output_.empty());
@@ -727,6 +731,12 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 				    !projectRoot_.empty() && ui.Button("Choose Replacement Startup Scene...")) {
 					chooseStartup = true;
 				}
+				if (issue.field == GameExportField::OUTPUT_FOLDER) {
+					if (ui.Button("Choose Output Folder and Recheck...")) {
+						selectedIssue_ = i;
+						browseForOutput(true);
+					}
+				}
 				if (issue.field == GameExportField::OUTPUT_FOLDER &&
 				    !issue.locationPath.empty() && !checkResultStale_) {
 					std::error_code status;
@@ -779,7 +789,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 
 	const bool exportRequested = ui.Button("Export");
 	ui.SameLine();
-	const bool checkRequested = ui.Button("Check Export") || recheckIssue;
+	bool checkRequested = ui.Button("Check Export") || recheckIssue;
 	bool saveAndCheckRequested = false;
 	if (canSaveAndCheck) {
 		ui.SameLine();
@@ -795,8 +805,39 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 	ImGui::SetItemTooltip(
 	    "Restore these settings when reopening Export Game for the same scene. "
 	    "Saved project scenes also keep the draft after restarting the Editor.");
-	if (chooseStartup || exportRequested || checkRequested || saveAndCheckRequested ||
-	    navigatingIssue || keepDraft) {
+	ui.SameLine();
+	if (ui.Button("Cancel") ||
+	    (!browsing_ && !wasBrowsing && ImGui::IsKeyPressed(ImGuiKey_Escape, false))) {
+		result = GameExportResult::CANCELLED;
+	}
+	ImGui::SetItemDefaultFocus();
+	ui.EndDisabled();
+
+	if (browsing_ && result == GameExportResult::NONE) {
+		const auto folderResult = folderDialog_.Draw(ui);
+		if (folderResult == FileDialogResult::CANCELLED) {
+			browsing_ = false;
+		} else if (folderResult == FileDialogResult::ACCEPTED) {
+			try {
+				const auto candidate =
+				    folderDialog_.GetSelectedPath() / browseOutputName_;
+				auto output = PathUtils::ToUtf8(FindAvailableDestination(candidate));
+				if (output != output_) {
+					checkResultStale_ = !checkResult_.empty();
+					output_ = std::move(output);
+				}
+				error_.clear();
+				browsing_ = false;
+				checkRequested |= recheckAfterBrowse_;
+			} catch (const std::exception &e) {
+				folderDialog_.RetrySelection(e.what());
+			}
+		}
+	}
+
+	if (result != GameExportResult::CANCELLED &&
+	    (chooseStartup || exportRequested || checkRequested || saveAndCheckRequested ||
+	     navigatingIssue || keepDraft)) {
 		error_.clear();
 		try {
 			auto selected = options_;
@@ -860,37 +901,6 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 			}
 		} catch (const std::exception &e) {
 			error_ = e.what();
-		}
-	}
-
-	ui.SameLine();
-
-	if (ui.Button("Cancel") ||
-	    (!wasBrowsing && ImGui::IsKeyPressed(ImGuiKey_Escape, false))) {
-		result = GameExportResult::CANCELLED;
-	}
-
-	ImGui::SetItemDefaultFocus();
-	ui.EndDisabled();
-
-	if (browsing_ && result == GameExportResult::NONE) {
-		const auto folderResult = folderDialog_.Draw(ui);
-		if (folderResult != FileDialogResult::NONE) {
-			browsing_ = false;
-		}
-		if (folderResult == FileDialogResult::ACCEPTED) {
-			try {
-				const auto candidate =
-				    folderDialog_.GetSelectedPath() / browseOutputName_;
-				auto output = PathUtils::ToUtf8(FindAvailableDestination(candidate));
-				if (output != output_) {
-					checkResultStale_ = !checkResult_.empty();
-					output_ = std::move(output);
-				}
-				error_.clear();
-			} catch (const std::exception &e) {
-				error_ = e.what();
-			}
 		}
 	}
 
