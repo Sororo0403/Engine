@@ -200,14 +200,22 @@ SceneValidation::Inspect(const Scene &scene, const CameraPose &fallbackPose,
 				if (requiresButton && !object.button)
 					add(id,
 					    "Button Trigger Actions require a UI Button.");
-				for (const auto &action : object.triggerActions->actions) {
+				const auto &actions = object.triggerActions->actions;
+				for (std::size_t index = 0; index < actions.size(); ++index) {
+					const auto &action = actions[index];
 					const bool marker = action.event == TriggerAction::Event::ANIMATION_CLIP_MARKER;
-					if ((marker || action.event == TriggerAction::Event::ANIMATION_CLIP_FINISHED) &&
-					    (!clip || (marker && action.clipTime > clip->duration))) {
-						add(id, "Animation Clip events require a clip and markers within its duration.",
-						    clip && object.animationClip->usesAsset
-						        ? object.animationClip->asset : std::filesystem::path{});
-						break;
+					const bool finished = action.event == TriggerAction::Event::ANIMATION_CLIP_FINISHED;
+					if ((marker || finished) && !clip) {
+						add(id, std::format("Trigger Action {} requires an Animation Clip.", index + 1));
+						continue;
+					}
+					if (marker && action.clipTime > clip->duration) {
+						add(id, std::format("Trigger Action {} sets its Animation Clip marker at {} s, "
+						                    "past the clip duration of {} s.",
+						                    index + 1, action.clipTime, clip->duration),
+						    object.animationClip->usesAsset ? object.animationClip->asset
+						                                    : std::filesystem::path{});
+						continue;
 					}
 
 					if (action.event == TriggerAction::Event::INPUT_PRESSED &&
