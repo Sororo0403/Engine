@@ -4597,6 +4597,7 @@ void EditorScene::RestoreRecovery() {
 		std::string error;
 
 		if (!recovery_.Read(pendingRecoveryPath_, snapshot, error)) {
+			recoveryDialog_.Refresh(recovery_);
 			recoveryDialog_.Reopen("Could not read the recovery file: " + error);
 			stage_ = DialogStage::RECOVERY;
 			return;
@@ -4605,6 +4606,7 @@ void EditorScene::RestoreRecovery() {
 		if (!project_.GetRoot().empty() &&
 		    !PathUtils::IsSameFile(project_.GetAssetsDirectory(),
 		                           snapshot.assets.GetDirectory())) {
+			recoveryDialog_.Refresh(recovery_);
 			recoveryDialog_.Reopen("This recovery belongs to a different Assets folder.");
 			stage_ = DialogStage::RECOVERY;
 			return;

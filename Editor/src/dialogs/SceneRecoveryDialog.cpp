@@ -25,6 +25,13 @@ void SceneRecoveryDialog::Reopen(std::string error) {
 	openRequested_ = true;
 }
 
+void SceneRecoveryDialog::Refresh(SceneRecovery &recovery) {
+	std::vector<SceneRecovery::Entry> refreshed;
+	if (recovery.Enumerate(refreshed, error_)) {
+		SetEntries(std::move(refreshed));
+	}
+}
+
 void SceneRecoveryDialog::SetEntries(std::vector<SceneRecovery::Entry> entries) {
 	const auto previous = selected_ < entries_.size() ? entries_[selected_].path
 	                                                  : std::filesystem::path{};
@@ -53,11 +60,7 @@ SceneRecoveryDialog::Draw(const ImGuiSystem &ui, SceneRecovery &recovery,
 	}
 
 	if (!confirmingDelete_ && ui.Button("Refresh")) {
-		std::vector<SceneRecovery::Entry> refreshed;
-
-		if (recovery.Enumerate(refreshed, error_)) {
-			SetEntries(std::move(refreshed));
-		}
+		Refresh(recovery);
 	}
 
 	const auto isProtected = [&](const auto &entry) {

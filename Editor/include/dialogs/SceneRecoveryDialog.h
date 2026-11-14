@@ -43,6 +43,11 @@ class SceneRecoveryDialog {
 	/// </summary>
 	void Reopen(std::string error = {});
 
+	/// <summary>
+	/// 復旧候補を再取得する。失敗時は現在の一覧を保持する
+	/// </summary>
+	void Refresh(SceneRecovery &recovery);
+
   private:
 	/// <summary>
 	/// 復旧できる候補を先頭に並べ、前の選択が残っていれば保持する
