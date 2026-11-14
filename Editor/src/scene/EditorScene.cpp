@@ -3001,7 +3001,7 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	case EditorAction::RESUME_ASSET_RECYCLE:
 		if (!suspendedRecyclePaths_.empty()) {
 			pendingAssetPaths_ = std::exchange(suspendedRecyclePaths_, {});
-			assetReferenceFilter_.clear();
+			assetReferenceFilter_ = std::exchange(suspendedRecycleFilter_, {});
 			CheckAssetReferences(true);
 			stage_ = DialogStage::RECYCLE_ASSET;
 		}
@@ -4853,6 +4853,7 @@ void EditorScene::DrawAssetReferences(bool recycle) {
 		ui_.CloseCurrentPopup();
 		if (recycle && navigating) {
 			suspendedRecyclePaths_ = std::move(pendingAssetPaths_);
+			suspendedRecycleFilter_ = std::move(assetReferenceFilter_);
 		}
 		pendingAssetPaths_.clear();
 		assetReferences_.clear();

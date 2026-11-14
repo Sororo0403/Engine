@@ -1009,6 +1009,7 @@ class EditorScene final : public IScene {
 	SceneObjectId pendingOpenObject_ = 0;
 	std::vector<std::filesystem::path> pendingAssetPaths_;
 	std::vector<std::filesystem::path> suspendedRecyclePaths_;
+	std::string suspendedRecycleFilter_;
 	std::vector<AssetUsage::Reference> assetReferences_;
 	std::string assetReferenceFilter_;
 	std::string assetReferenceLocationError_;
