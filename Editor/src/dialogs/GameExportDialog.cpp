@@ -596,6 +596,9 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 
 	if (!error_.empty()) {
 		ImGui::TextWrapped("%s", error_.c_str());
+		if (ui.Button("Copy Error")) {
+			ImGui::SetClipboardText(error_.c_str());
+		}
 	}
 	GameExportResult result = GameExportResult::NONE;
 	bool recheckIssue = false;
