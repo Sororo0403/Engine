@@ -22,6 +22,40 @@ constexpr auto kLogRefreshInterval = std::chrono::milliseconds{500};
 constexpr std::streamoff kLogPageBytes = 64 * 1024;
 constexpr std::string_view kStartupReady = " [INFO] Startup scene ready: ";
 constexpr std::string_view kDestinationReady = " [INFO] Destination scene ready: ";
+constexpr std::string_view kStartupPrepareError = " [ERROR] Could not prepare startup scene: ";
+constexpr std::string_view kDestinationLoadError = " [ERROR] Could not load destination scene: ";
+constexpr std::string_view kSourceObjectPrefix = "Source object ID: ";
+
+/// <summary>
+/// 診断の末尾から詳細行を一つ取得する
+/// </summary>
+std::string_view TakeLastDiagnosticDetail(std::string_view &diagnostic) {
+	const auto end = diagnostic.find_last_not_of("\r\n");
+	if (end == std::string_view::npos) {
+		return {};
+	}
+	const auto newline = diagnostic.rfind('\n', end);
+	if (newline == std::string_view::npos) {
+		return {};
+	}
+	const auto detail = diagnostic.substr(newline + 1, end - newline);
+	diagnostic = diagnostic.substr(0, newline);
+	return detail;
+}
+
+/// <summary>
+/// 診断の末尾に記録された編集元オブジェクトIDを取得する
+/// </summary>
+SceneObjectId ReadSourceObjectId(std::string_view detail) {
+	if (!detail.starts_with(kSourceObjectPrefix)) {
+		return 0;
+	}
+	const auto value = detail.substr(kSourceObjectPrefix.size());
+	const auto end = value.data() + value.size();
+	SceneObjectId id = 0;
+	const auto result = std::from_chars(value.data(), end, id);
+	return result.ec == std::errc{} && result.ptr == end ? id : 0;
+}
 
 /// <summary>
 /// Loggerのヘッダーを持つ行からログレベルを取得する
@@ -64,20 +98,18 @@ std::filesystem::path ResolveLogScene(const std::filesystem::path &directory,
 /// </summary>
 std::filesystem::path FindFailedDestination(const std::filesystem::path &directory,
                                             std::string_view diagnostic) {
-	constexpr std::string_view loadPrefix = " [ERROR] Could not load destination scene: ";
 	constexpr std::string_view detailPrefix = "Destination scene: ";
 	const auto heading = LogLevelPrefix(diagnostic.substr(0, diagnostic.find_first_of("\r\n")));
 	std::string_view scenePath;
-	if (heading.starts_with(loadPrefix)) {
-		scenePath = heading.substr(loadPrefix.size());
-	} else if (const auto end = diagnostic.find_last_not_of("\r\n"); end != std::string_view::npos) {
-		// 遷移先の検証・初期化で失敗した場合は、診断の最終行にシーンの場所が付く。
-		const auto newline = diagnostic.rfind('\n', end);
-		if (newline != std::string_view::npos) {
-			const auto detail = diagnostic.substr(newline + 1, end - newline);
-			if (detail.starts_with(detailPrefix)) {
-				scenePath = detail.substr(detailPrefix.size());
-			}
+	if (heading.starts_with(kDestinationLoadError)) {
+		scenePath = heading.substr(kDestinationLoadError.size());
+	} else {
+		auto detail = TakeLastDiagnosticDetail(diagnostic);
+		if (detail.starts_with(kSourceObjectPrefix)) {
+			detail = TakeLastDiagnosticDetail(diagnostic);
+		}
+		if (detail.starts_with(detailPrefix)) {
+			scenePath = detail.substr(detailPrefix.size());
 		}
 	}
 	return ResolveLogScene(directory, scenePath);
@@ -704,7 +736,7 @@ bool GameExportResultDialog::UpdateGameProcess(bool &jumpToBeginning,
 		if (!run.startupScenePath.empty()) {
 			const auto startup = PathUtils::ToUtf8(run.startupScenePath);
 			if (heading == " [ERROR] Could not load startup scene: " + startup ||
-			    heading == " [ERROR] Could not prepare startup scene: " + startup) {
+			    heading == std::string(kStartupPrepareError) + startup) {
 				run.launchFailurePath = ResolveLogScene(directory_, startup);
 			}
 		}
@@ -821,19 +853,14 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 				}
 				if (ui.Button("Open Source Scene")) {
 					openSource(sourcePath);
-					if (!requestedSourceScene_.empty() && run.destinationFailurePath.empty()) {
-						constexpr std::string_view marker = "\nSource object ID: ";
-						const auto diagnostic = std::string_view(run.crashError);
-						const auto offset = diagnostic.rfind(marker);
-						if (offset != std::string_view::npos) {
-							auto value = diagnostic.substr(offset + marker.size());
-							value = value.substr(0, value.find_first_of("\r\n"));
-							SceneObjectId id = 0;
-							const auto end = value.data() + value.size();
-							const auto result = std::from_chars(value.data(), end, id);
-							if (result.ec == std::errc{} && result.ptr == end) {
-								requestedSourceObject_ = id;
-							}
+					if (!requestedSourceScene_.empty()) {
+						auto diagnostic = std::string_view(run.crashError);
+						const auto heading = LogLevelPrefix(diagnostic.substr(0, diagnostic.find_first_of("\r\n")));
+						const bool hasObjectDetails = run.destinationFailurePath.empty()
+						                                  ? heading.starts_with(kStartupPrepareError)
+						                                  : !heading.starts_with(kDestinationLoadError);
+						if (hasObjectDetails) {
+							requestedSourceObject_ = ReadSourceObjectId(TakeLastDiagnosticDetail(diagnostic));
 						}
 					}
 				}

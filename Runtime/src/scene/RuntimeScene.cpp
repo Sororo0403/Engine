@@ -172,7 +172,12 @@ bool RuntimeScene::Update(float seconds) {
 		            &input_.GetMouse(),
 		            config_.gamepadEnabled ? &input_.GetGamepad() : nullptr),
 		        uiInput, actions)) {
-			Logger::Error(simulation_.GetLastUpdateError());
+			auto error = simulation_.GetLastUpdateError();
+			if (const auto failed = simulation_.GetFailedSceneDestination();
+			    failed && failed->objectId != 0) {
+				error += std::format("\nSource object ID: {}", failed->objectId);
+			}
+			Logger::Error(error);
 			return false;
 		}
 		SaveScriptSettings();
@@ -186,17 +191,22 @@ bool RuntimeScene::Update(float seconds) {
 	if (!input_.IsActive())
 		simulation_.CancelUIInput();
 	std::string audioError;
+	SceneObjectId invalidObject = 0;
 	const bool sceneChanged = simulation_.GetSceneRevision() != revision;
 	const auto *destination = sceneChanged ? simulation_.GetLoadedScenePath() : nullptr;
 	const auto reportUpdateError = [&](std::string_view reason) {
 		if (destination) {
-			Logger::Error(std::string(reason) + "\nDestination scene: " +
-			              PathUtils::ToUtf8(*destination), *destination);
+			auto message = std::string(reason) + "\nDestination scene: " +
+			               PathUtils::ToUtf8(*destination);
+			if (simulation_.HasSourceObject(invalidObject)) {
+				message += std::format("\nSource object ID: {}", invalidObject);
+			}
+			Logger::Error(message, *destination);
 		} else {
 			Logger::Error(reason);
 		}
 	};
-	if (sceneChanged && !renderer_.PrepareSceneModels(audioError)) {
+	if (sceneChanged && !renderer_.PrepareSceneModels(audioError, &invalidObject)) {
 		reportUpdateError(audioError);
 		return false;
 	}
@@ -205,7 +215,7 @@ bool RuntimeScene::Update(float seconds) {
 	        ? audioPlayer_.Start(
 	              simulation_.GetCameraPose(),
 	              !input_.IsActive() || simulation_.IsGamePaused(), audioError,
-	              nullptr, simulation_.GetAudioActions())
+	              &invalidObject, simulation_.GetAudioActions())
 	        : audioPlayer_.Update(
 	              simulation_.GetCameraPose(),
 	              !input_.IsActive() || simulation_.IsGamePaused(), audioError,
