@@ -59,6 +59,11 @@ class FileDialog {
 	                      FileDialogFilter filter);
 
 	/// <summary>
+	/// 保存先に未使用のファイル名を要求する。Showのあとに指定する
+	/// </summary>
+	void RequireNewFile() { requireNewFile_ = true; }
+
+	/// <summary>
 	/// 開くダイアログで検索できるプロジェクト内のシーン一覧を設定する
 	/// </summary>
 	void SetProjectScenes(const std::filesystem::path &root,
@@ -177,7 +182,8 @@ class FileDialog {
 	std::filesystem::path projectRoot_;
 
 	bool openRequested_ = false;
-	bool confirmOverwrite_ = false;
+	bool destinationExists_ = false;
+	bool requireNewFile_ = false;
 	bool searchProjectScenes_ = false;
 	std::optional<bool> projectSearchChange_;
 };

@@ -58,10 +58,11 @@ class SceneSerializer {
 	/// <param name="filePath">保存先のファイルパス</param>
 	/// <param name="projectRoot">プロジェクトの絶対ルート。保存先がその配下なら内部参照を相対パスにする</param>
 	/// <param name="savedText">成功時に実際に書き込んだ内容を返す。外部変更の検出に使用する</param>
+	/// <param name="overwrite">保存先に既存ファイルがある場合に置き換えるか</param>
 	/// <returns>true:成功 false:保存失敗</returns>
 	static bool Save(const Scene &scene, const std::filesystem::path &filePath,
 	                 const std::filesystem::path &projectRoot = {},
-	                 std::string *savedText = nullptr);
+	                 std::string *savedText = nullptr, bool overwrite = true);
 
 	/// <summary>
 	/// シーンを読み込む。失敗時は現在のシーンを保持する

@@ -66,7 +66,8 @@ void FileDialog::Show(FileDialogMode mode,
 	folderName_.clear();
 	directoryText_.clear();
 	search_.clear();
-	confirmOverwrite_ = false;
+	destinationExists_ = false;
+	requireNewFile_ = false;
 	openRequested_ = true;
 
 	try {
@@ -130,7 +131,7 @@ void FileDialog::RetrySelection(std::string error,
 	error_ = std::move(error);
 	failedProject_ = failedProject;
 	failedProjectLocationError_.clear();
-	confirmOverwrite_ = false;
+	destinationExists_ = false;
 	openRequested_ = true;
 }
 
@@ -160,27 +161,28 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 
 	FileDialogResult result = FileDialogResult::NONE;
 
-	if (confirmOverwrite_) {
+	if (destinationExists_) {
 		ui.Text("This file already exists:");
 		ui.Text(PathUtils::ToUtf8(selectedPath_));
-		ui.Text("Overwrite it?");
+		ui.Text(requireNewFile_ ? "Choose a new filename." : "Overwrite it?");
 		ui.Separator();
 
-		if (ui.Button("Overwrite")) {
-			result = FileDialogResult::ACCEPTED;
+		if (!requireNewFile_) {
+			if (ui.Button("Overwrite")) {
+				result = FileDialogResult::ACCEPTED;
+			}
+			ui.SameLine();
 		}
 
-		ui.SameLine();
-
 		if (ui.Button("Back")) {
-			confirmOverwrite_ = false;
+			destinationExists_ = false;
 		}
 		ui.SameLine();
 		if (ui.Button("Suggest Name")) {
 			try {
 				fileName_ = PathUtils::ToUtf8(SuggestSaveName(selectedPath_));
 				error_.clear();
-				confirmOverwrite_ = false;
+				destinationExists_ = false;
 			} catch (const std::exception &error) {
 				error_ = error.what();
 			}
@@ -664,7 +666,7 @@ bool FileDialog::AcceptSelection() {
 				ChangeDirectory(selectedPath_.parent_path());
 				fileName_ = PathUtils::ToUtf8(selectedPath_.filename());
 			}
-			confirmOverwrite_ = true;
+			destinationExists_ = true;
 			return false;
 		}
 

@@ -994,7 +994,7 @@ bool SceneSerializer::SerializeForFile(
 bool SceneSerializer::Save(const Scene &scene,
                            const std::filesystem::path &filePath,
                            const std::filesystem::path &projectRoot,
-                           std::string *savedText) {
+                           std::string *savedText, bool overwrite) {
 	try {
 		std::string text;
 		const auto targetPath = PathUtils::ResolveFromExecutable(filePath);
@@ -1007,7 +1007,7 @@ bool SceneSerializer::Save(const Scene &scene,
 
 		std::string error;
 
-		if (!FileUtils::WriteTextAtomically(targetPath, text, error)) {
+		if (!FileUtils::WriteTextAtomically(targetPath, text, error, overwrite)) {
 			Logger::Error(std::format("SceneSerializer::Save: {}", error));
 			return false;
 		}

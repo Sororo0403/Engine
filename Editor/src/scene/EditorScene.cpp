@@ -3925,6 +3925,9 @@ void EditorScene::StartSave(bool saveAs) {
 	                            (current.empty() ? L"Untitled.scene.json"
 	                                             : current.filename());
 	fileDialog_.Show(FileDialogMode::SAVE, path);
+	if (recoverySourceFile_) {
+		fileDialog_.RequireNewFile();
+	}
 
 	stage_ = DialogStage::SAVE_FILE;
 }
@@ -4261,6 +4264,9 @@ std::filesystem::path EditorScene::GetSceneCopyPath() const {
 void EditorScene::StartSaveCopy(bool reload) {
 	try {
 		fileDialog_.Show(FileDialogMode::SAVE_COPY, GetSceneCopyPath());
+		if (recoverySourceFile_) {
+			fileDialog_.RequireNewFile();
+		}
 		stage_ = reload ? DialogStage::SAVE_COPY_AND_RELOAD
 		                : DialogStage::SAVE_COPY_FILE;
 	} catch (const std::exception &error) {
@@ -4298,6 +4304,9 @@ void EditorScene::StartSaveSelection() {
 		    assets_.GetRootDirectory(), assetsPanel_.GetOpenDirectory());
 		fileDialog_.Show(FileDialogMode::SAVE_COPY,
 		                 folder / L"Selection.scene.json");
+		if (recoverySourceFile_) {
+			fileDialog_.RequireNewFile();
+		}
 		stage_ = DialogStage::SAVE_SELECTION_FILE;
 	} catch (const std::exception &error) {
 		Logger::Error(
@@ -5161,7 +5170,7 @@ void EditorScene::UpdateDialogs() {
 			const auto previousPath = document_.GetFilePath();
 			const auto startup = project_.GetStartupScene();
 			SaveEditorSession();
-			if (document_.SaveAs(fileDialog_.GetSelectedPath())) {
+			if (document_.SaveAs(fileDialog_.GetSelectedPath(), !recoverySourceFile_)) {
 				if (!failedRestoredScene_.empty() &&
 				    project_.CanUseAsStartupScene(document_.GetFilePath())) {
 					failedRestoredScene_.clear();
@@ -5246,7 +5255,7 @@ void EditorScene::UpdateDialogs() {
 			stage_ = DialogStage::IDLE;
 		} else if (result == FileDialogResult::ACCEPTED) {
 			if (document_.SaveCopy(fileDialog_.GetSelectedPath(),
-			                       selectionSnapshot_)) {
+			                       selectionSnapshot_, !recoverySourceFile_)) {
 				assets_.Refresh();
 				assetsPanel_.RequestReveal(fileDialog_.GetSelectedPath());
 				selectionSnapshot_.Clear();
@@ -5274,7 +5283,7 @@ void EditorScene::UpdateDialogs() {
 				stage_ = DialogStage::IDLE;
 			}
 		} else if (result == FileDialogResult::ACCEPTED) {
-			if (document_.SaveCopy(fileDialog_.GetSelectedPath())) {
+			if (document_.SaveCopy(fileDialog_.GetSelectedPath(), !recoverySourceFile_)) {
 				const auto &copy = fileDialog_.GetSelectedPath();
 				recentScenes_.Add(copy);
 				SaveEditorSession(false, copy);

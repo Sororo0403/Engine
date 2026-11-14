@@ -106,23 +106,27 @@ class SceneDocument {
 	/// 指定先へ保存する。現在の保存先と同じファイルは外部変更を確認し、成功時だけ保存先を変更する
 	/// </summary>
 	/// <param name="filePath">保存先のファイルパス</param>
+	/// <param name="overwrite">保存先に既存ファイルがある場合に置き換えるか</param>
 	/// <returns>true:成功 false:保存失敗</returns>
-	bool SaveAs(const std::filesystem::path &filePath);
+	bool SaveAs(const std::filesystem::path &filePath, bool overwrite = true);
 
 	/// <summary>
 	/// 編集を確定し、現在の保存先と保存地点を保持したまま別ファイルへ保存する
 	/// </summary>
 	/// <param name="filePath">コピー先のファイルパス。現在の保存先の別名は使用できない</param>
+	/// <param name="overwrite">保存先に既存ファイルがある場合に置き換えるか</param>
 	/// <returns>true:成功 false:コピー先が無効、または保存失敗</returns>
-	bool SaveCopy(const std::filesystem::path &filePath);
+	bool SaveCopy(const std::filesystem::path &filePath, bool overwrite = true);
 
 	/// <summary>
 	/// 編集を確定し、指定スナップショットを別ファイルへ保存する。編集中のシーンと保存地点は保持する
 	/// </summary>
 	/// <param name="filePath">コピー先。現在の保存先や、その一時ファイルの別名は使用できない</param>
 	/// <param name="snapshot">選択物体などを準備した独立したシーン。素材ファイルはコピーしない</param>
+	/// <param name="overwrite">保存先に既存ファイルがある場合に置き換えるか</param>
 	/// <returns>true:成功 false:コピー先・データが無効、または書き込み失敗</returns>
-	bool SaveCopy(const std::filesystem::path &filePath, const Scene &snapshot);
+	bool SaveCopy(const std::filesystem::path &filePath, const Scene &snapshot,
+	              bool overwrite = true);
 
 	/// <summary>
 	/// 編集中のシーンに対応する履歴を取得する

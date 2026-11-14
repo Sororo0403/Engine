@@ -168,12 +168,12 @@ bool SceneDocument::Save() {
 	return SaveAs(filePath_);
 }
 
-bool SceneDocument::SaveCopy(const std::filesystem::path &filePath) {
-	return SaveCopy(filePath, scene_);
+bool SceneDocument::SaveCopy(const std::filesystem::path &filePath, bool overwrite) {
+	return SaveCopy(filePath, scene_, overwrite);
 }
 
 bool SceneDocument::SaveCopy(const std::filesystem::path &filePath,
-                             const Scene &snapshot) {
+                             const Scene &snapshot, bool overwrite) {
 	try {
 		const auto resolvedPath = PathUtils::ResolveFromExecutable(filePath);
 		// 書き込み用の一時ファイルも、現在の保存先と別のファイルであることを確認する
@@ -196,7 +196,7 @@ bool SceneDocument::SaveCopy(const std::filesystem::path &filePath,
 		const auto &root =
 		    projectRoot_.empty() ? fileProjectRoot_ : projectRoot_;
 
-		if (!SceneSerializer::Save(snapshot, resolvedPath, root)) {
+		if (!SceneSerializer::Save(snapshot, resolvedPath, root, nullptr, overwrite)) {
 			error_ = "Could not save a scene copy. See the log for details.";
 			return false;
 		}
@@ -210,7 +210,7 @@ bool SceneDocument::SaveCopy(const std::filesystem::path &filePath,
 	}
 }
 
-bool SceneDocument::SaveAs(const std::filesystem::path &filePath) {
+bool SceneDocument::SaveAs(const std::filesystem::path &filePath, bool overwrite) {
 	saveConflict_ = false;
 	try {
 		auto resolvedPath = PathUtils::ResolveFromExecutable(filePath);
@@ -248,7 +248,7 @@ bool SceneDocument::SaveAs(const std::filesystem::path &filePath) {
 		const auto &root =
 		    projectRoot_.empty() ? fileProjectRoot_ : projectRoot_;
 
-		if (!SceneSerializer::Save(scene_, resolvedPath, root, &savedText)) {
+		if (!SceneSerializer::Save(scene_, resolvedPath, root, &savedText, overwrite)) {
 			error_ = "Could not save the scene. See the log for details.";
 			return false;
 		}
