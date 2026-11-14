@@ -4648,6 +4648,27 @@ void EditorScene::DrawAssetReferences(bool recycle) {
 	if (ui_.Button("Refresh References")) {
 		CheckAssetReferences(recycle);
 	}
+	if (recycle && !assetReferences_.empty()) {
+		const auto missing = [](const auto &path) {
+			std::error_code status;
+			return std::filesystem::symlink_status(path, status).type() ==
+			       std::filesystem::file_type::not_found;
+		};
+		if (std::ranges::any_of(pendingAssetPaths_, missing)) {
+			ui_.SameLine();
+			if (ui_.Button("Remove Missing Items and Recheck")) {
+				std::erase_if(pendingAssetPaths_, missing);
+				if (pendingAssetPaths_.empty()) {
+					assetReferences_.clear();
+					ui_.CloseCurrentPopup();
+					ui_.EndPopup();
+					stage_ = DialogStage::IDLE;
+					return;
+				}
+				CheckAssetReferences(true);
+			}
+		}
+	}
 
 	if (ui_.BeginChild("RecycleSelection", 500.0f, 90.0f)) {
 		for (const auto &path : pendingAssetPaths_) {
