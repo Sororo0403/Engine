@@ -11,6 +11,9 @@ extern "C" {
 #pragma comment(lib, "hid.lib")
 
 namespace {
+// 書き込み完了までバッファを保持する。
+constexpr std::array<BYTE, 3> kReportMode{0x12, 0x04, 0x31};
+constexpr std::array<BYTE, 2> kPlayerOneLED{0x11, 0x10};
 constexpr USHORT kNintendoVendor = 0x057e;
 constexpr USHORT kWiiRemoteProduct = 0x0306;
 constexpr USHORT kWiiRemotePlusProduct = 0x0330;
@@ -74,18 +77,24 @@ bool WindowsWiiRemote::Open() {
 			Close();
 			return false;
 		}
-		io_ = {};
-		io_.hEvent = event_;
 		inputSize_ = caps.InputReportByteLength;
+		outputSize_ = caps.OutputReportByteLength;
 		lastReport_ = GetTickCount64();
-		writing_ = true;
-		// WindowsのHID APIでは転送ヘッダー(A2)を付けずに送る。
-		if (WriteFile(device_, mode_.data(), static_cast<DWORD>(mode_.size()),
-		              nullptr, &io_) || GetLastError() == ERROR_IO_PENDING)
+		transfer_ = Transfer::MODE;
+		if (BeginWrite(kReportMode.data(), static_cast<DWORD>(kReportMode.size())))
 			return true;
 		Close();
 	}
 	return false;
+}
+
+bool WindowsWiiRemote::BeginWrite(const BYTE *report, DWORD size) {
+	io_ = {};
+	io_.hEvent = event_;
+	ResetEvent(event_);
+	// WindowsのHID APIでは転送ヘッダー(A2)を付けずに送る。
+	return WriteFile(device_, report, size, nullptr, &io_) ||
+	       GetLastError() == ERROR_IO_PENDING;
 }
 
 bool WindowsWiiRemote::BeginRead() {
@@ -138,13 +147,23 @@ bool WindowsWiiRemote::ReadReports(bool active) {
 			return GetLastError() == ERROR_IO_INCOMPLETE &&
 			       now - lastReport_ < kReportTimeoutMs;
 
-		if (writing_) {
-			writing_ = false;
-			if (size != mode_.size())
-				return false;
-		} else {
+		if (transfer_ == Transfer::INPUT) {
+			const bool firstReport = !state_.connected;
 			ReadReport(active, size, now);
+			if (firstReport && state_.connected &&
+			    BeginWrite(kPlayerOneLED.data(),
+			               static_cast<DWORD>(kPlayerOneLED.size()))) {
+				transfer_ = Transfer::LED;
+				continue;
+			}
+		} else if (transfer_ == Transfer::MODE) {
+			// WindowsのBluetooth HIDは送信した3バイトに対し、
+			// HID記述子の出力レポート長（通常22バイト）を返すことがある。
+			if (size != kReportMode.size() && (size == 0 || size != outputSize_))
+				return false;
 		}
+
+		transfer_ = Transfer::INPUT;
 		if (!BeginRead())
 			return false;
 	}

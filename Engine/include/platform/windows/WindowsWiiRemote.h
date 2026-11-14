@@ -21,14 +21,16 @@ class WindowsWiiRemote {
   private:
 	bool Open();
 	bool BeginRead();
+	bool BeginWrite(const BYTE *report, DWORD size);
 	bool ReadReports(bool active);
 	void ReadReport(bool active, DWORD size, ULONGLONG now);
 
 	HANDLE device_ = INVALID_HANDLE_VALUE;
 	HANDLE event_ = nullptr;
 	OVERLAPPED io_{};
-	bool writing_ = false;
-	std::array<BYTE, 3> mode_{0x12, 0x04, 0x31};
+	enum class Transfer { MODE, LED, INPUT };
+	Transfer transfer_ = Transfer::MODE;
+	DWORD outputSize_ = 0;
 	std::array<BYTE, 64> report_{};
 	DWORD inputSize_ = 0;
 	ULONGLONG nextScan_ = 0;
