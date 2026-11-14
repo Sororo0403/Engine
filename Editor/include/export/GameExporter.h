@@ -31,6 +31,7 @@ struct GameExportDraft {
 	std::filesystem::path startupScenePath;
 	std::string output, title;
 	int width, height;
+	bool recheck = false;
 	bool operator==(const GameExportDraft &) const = default;
 };
 

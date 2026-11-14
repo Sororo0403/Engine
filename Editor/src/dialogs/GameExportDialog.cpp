@@ -99,7 +99,7 @@ bool GameExportDialog::Show(GameExportOptions options, bool includesUnsavedEdits
 	                    windowSource.empty() &&
 	                    projectRoot_ == projectRoot &&
 	                    options_.startupScenePath == options.startupScenePath;
-	const bool recheck = resume && !checkResult_.empty();
+	const bool recheck = resume && (!checkResult_.empty() || recheckRestoredDraft_);
 	if (resume) {
 		options.destination = options_.destination;
 		options.config.title = title_;
@@ -173,7 +173,8 @@ void GameExportDialog::SwitchProject(const std::filesystem::path &projectRoot) {
 		    projectRoot_, Draft{std::move(options_.startupScenePath),
 		                       std::move(options_.destination), std::move(output_),
 		                       {std::move(title_), width_, height_}, std::move(checkResult_),
-		                       std::move(issueFilter_), std::move(checkIssues_), selectedIssue_});
+		                       std::move(issueFilter_), std::move(checkIssues_), selectedIssue_,
+		                       recheckRestoredDraft_});
 	}
 
 	projectRoot_ = projectRoot;
@@ -191,6 +192,7 @@ void GameExportDialog::SwitchProject(const std::filesystem::path &projectRoot) {
 		issueFilter_ = std::move(draft.issueFilter);
 		checkIssues_ = std::move(draft.issues);
 		selectedIssue_ = draft.selectedIssue;
+		recheckRestoredDraft_ = draft.recheck;
 		resumeDraft_ = true;
 	}
 }
@@ -199,7 +201,8 @@ std::optional<GameExportDraft> GameExportDialog::GetDraft() const {
 	if (!resumeDraft_ || projectRoot_.empty() || options_.startupScenePath.empty()) {
 		return std::nullopt;
 	}
-	return GameExportDraft{options_.startupScenePath, output_, title_, width_, height_};
+	return GameExportDraft{options_.startupScenePath, output_, title_, width_, height_,
+	                       !checkResult_.empty() || recheckRestoredDraft_};
 }
 
 void GameExportDialog::RestoreDraft(const GameExportDraft &draft) {
@@ -217,6 +220,7 @@ void GameExportDialog::RestoreDraft(const GameExportDraft &draft) {
 	title_ = draft.title;
 	width_ = draft.width;
 	height_ = draft.height;
+	recheckRestoredDraft_ = draft.recheck;
 	resumeDraft_ = true;
 }
 
@@ -358,6 +362,7 @@ void GameExportDialog::SetCheckResult(std::string message,
 		issueToScrollTo_ = 0;
 	}
 	checkResult_ = std::move(message);
+	recheckRestoredDraft_ = false;
 	checkResultStale_ = false;
 	checkIssues_ = std::move(issues);
 }
@@ -368,6 +373,7 @@ const GameExportIssue &GameExportDialog::GetSelectedIssue() const {
 
 void GameExportDialog::ClearCheckResult() {
 	checkResult_.clear();
+	recheckRestoredDraft_ = false;
 	checkResultStale_ = false;
 	checkIssues_.clear();
 	selectedIssue_.reset();

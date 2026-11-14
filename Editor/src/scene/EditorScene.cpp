@@ -5652,19 +5652,20 @@ void EditorScene::UpdateDialogs() {
 			stage_ = DialogStage::SELECT_EXPORT_STARTUP_SCENE;
 			return;
 		}
-		if (result == GameExportResult::CANCELLED) {
-			const auto &root = project_.GetRoot();
-			const auto draft = exportDialog_.GetDraft();
+		const auto &root = project_.GetRoot();
+		if (result != GameExportResult::NONE) {
 			bool changed = false;
-			if (draft) {
-				preferences_.gameExportDrafts.insert_or_assign(root, *draft);
+			if (auto draft = exportDialog_.GetDraft()) {
+				preferences_.gameExportDrafts.insert_or_assign(root, std::move(*draft));
 				changed = true;
-			} else {
+			} else if (result == GameExportResult::CANCELLED) {
 				changed = preferences_.gameExportDrafts.erase(root) != 0;
 			}
 			if (changed && canSavePreferences_ && !preferences_.Save()) {
 				consolePanel_.Show();
 			}
+		}
+		if (result == GameExportResult::CANCELLED) {
 			stage_ = DialogStage::IDLE;
 			return;
 		}

@@ -149,6 +149,7 @@ class GameExportDialog {
 		std::string issueFilter;
 		std::vector<GameExportIssue> issues;
 		std::optional<std::size_t> selectedIssue;
+		bool recheck;
 	};
 
 	void ClearCheckResult();
@@ -174,5 +175,6 @@ class GameExportDialog {
 	std::optional<std::size_t> issueToScrollTo_;
 	std::size_t issuePage_ = 0;
 	bool resumeDraft_ = false;
+	bool recheckRestoredDraft_ = false;
 	std::map<std::filesystem::path, Draft> projectDrafts_;
 };

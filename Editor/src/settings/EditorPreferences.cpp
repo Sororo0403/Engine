@@ -615,6 +615,7 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 				const auto title = value.find("title");
 				const auto width = value.find("width");
 				const auto height = value.find("height");
+				const auto recheck = value.find("recheck");
 				if (!root.is_absolute() || scene == value.end() || !scene->is_string() ||
 				    output == value.end() || !output->is_string() ||
 				    title == value.end() || !title->is_string() ||
@@ -637,7 +638,8 @@ bool EditorPreferences::Load(const std::filesystem::path &filePath) {
 					loaded.gameExportDrafts.emplace(
 					    root.lexically_normal(), GameExportDraft{std::move(startupPath),
 					        output->get<std::string>(), title->get<std::string>(),
-					        static_cast<int>(draftWidth), static_cast<int>(draftHeight)});
+					        static_cast<int>(draftWidth), static_cast<int>(draftHeight),
+					        recheck != value.end() && recheck->is_boolean() && recheck->get<bool>()});
 				}
 			}
 		}
@@ -987,7 +989,7 @@ bool EditorPreferences::Save(const std::filesystem::path &filePath) const {
 			gameExportDraftsJson[PathUtils::ToUtf8(root)] = {
 			    {"scene", PathUtils::ToUtf8(draft.startupScenePath)},
 			    {"output", draft.output}, {"title", draft.title},
-			    {"width", draft.width}, {"height", draft.height}};
+			    {"width", draft.width}, {"height", draft.height}, {"recheck", draft.recheck}};
 		}
 		auto recentGameExportsJson = nlohmann::json::object();
 		for (const auto &[root, directories] : recentGameExports_) {
