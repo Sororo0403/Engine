@@ -251,20 +251,26 @@ bool EditorScene::Update(float deltaTime) {
 	                        : playMode_.IsPlaying() && !playUsesEditingScene_
 	                            ? playInitialScenePath_
 	                            : std::filesystem::path{};
+	const auto &editingScenePath = document_.GetFilePath();
+	const bool playSourceIsEditingScene =
+	    !playSource.empty() && !editingScenePath.empty() &&
+	    PathUtils::IsSameFile(editingScenePath, playSource);
 	const auto activePlayObject = playSelection_.GetActiveId();
-	const auto playSourceObject = playSelectionActive_ &&
-	                                      playSession.GetScene().Contains(activePlayObject) &&
-	                                      playSession.HasSourceObject(activePlayObject)
-	                                  ? activePlayObject
-	                                  : SceneObjectId{0};
+	const bool canRevealPlayObject =
+	    playSelectionActive_ && playSession.GetScene().Contains(activePlayObject) &&
+	    playSession.HasSourceObject(activePlayObject) &&
+	    (!playSourceIsEditingScene || document_.GetScene().Contains(activePlayObject));
+	const auto playSourceObject = canRevealPlayObject ? activePlayObject : SceneObjectId{0};
+	const auto sourceToOpen = playSourceIsEditingScene && !canRevealPlayObject
+	                              ? std::filesystem::path{} : playSource;
 	auto playAction = playMode_.DrawUI(ui_, !IsBusy(), exportConfig_,
 	                                   !IsBusy() && playUsesEditingScene_ &&
 	                                       playSelectionActive_ &&
 	                                       playSelection_.GetCount() != 0,
 	                                   &document_.GetScene(),
 	                                   document_.GetFilePath(),
-	                                   project_.GetStartupScene(), playSource,
-	                                   playSourceObject != 0, lastPlayScenePath_,
+	                                   project_.GetStartupScene(), sourceToOpen,
+	                                   canRevealPlayObject, lastPlayScenePath_,
 	                                   lastPlayCameraOverride_);
 	const bool playShortcutEnabled =
 	    input_.IsActive() && playInputWasActive_ && !exitQueued_ &&
@@ -312,9 +318,8 @@ bool EditorScene::Update(float deltaTime) {
 	}
 
 	if (playAction == EditorPlayMode::Action::STOP_AND_OPEN_SCENE && !IsBusy()) {
-		if (!playSource.empty()) {
-			const auto &current = document_.GetFilePath();
-			if (current.empty() || !PathUtils::IsSameFile(current, playSource)) {
+		if (!sourceToOpen.empty()) {
+			if (!playSourceIsEditingScene) {
 				pendingOpenPath_ = playSource;
 				StartAction(EditorAction::OPEN_PLAY_SOURCE, playSourceObject);
 			} else {
