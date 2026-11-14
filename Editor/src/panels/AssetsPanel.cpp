@@ -156,8 +156,8 @@ void AssetsPanel::RelocatePaths(
 	}
 }
 
-std::optional<AssetsPanel::ResultView> AssetsPanel::CaptureResults() const {
-	if (filter_.empty() && displayedResults_.empty()) {
+std::optional<AssetsPanel::ResultView> AssetsPanel::CaptureResults(bool includeFolder) const {
+	if (!includeFolder && filter_.empty() && displayedResults_.empty()) {
 		return std::nullopt;
 	}
 	return ResultView{filter_, displayedResults_, selectedItems_, currentDirectory_,
@@ -179,9 +179,6 @@ void AssetsPanel::RemoveMissingPaths() {
 		std::erase_if(previousView_->selection, IsMissingAsset);
 		if (IsMissingAsset(previousView_->anchor)) {
 			previousView_->anchor.clear();
-		}
-		if (previousView_->results.empty() && previousView_->search.empty()) {
-			previousView_.reset();
 		}
 	}
 	ValidateClipboard();
@@ -441,9 +438,12 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 	const auto &directories = assets.GetDirectories();
 	if (!resultPaths_.empty()) {
-		auto previous = CaptureResults();
 		const auto parent = resultPaths_.front().parent_path();
-		OpenDirectory(parent.lexically_relative(assets.GetRootDirectory()));
+		const auto directory = parent == assets.GetRootDirectory()
+		                           ? std::filesystem::path{}
+		                           : parent.lexically_relative(assets.GetRootDirectory());
+		auto previous = CaptureResults(directory != currentDirectory_);
+		OpenDirectory(directory);
 		// フォルダはどの種類でも表示される。ファイルがあればその種類を開く。
 		for (const auto &path : resultPaths_) {
 			if (path.parent_path() == parent && SelectAsset(path, assets)) {
@@ -632,7 +632,10 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 	if (previousView_ && unavailableRevealPath_.empty()) {
 		ui.SameLine();
-		if (ui.Button(previousView_->results.empty() ? "Back to Search" : "Back to Results")) {
+		const auto *label = !previousView_->results.empty() ? "Back to Results"
+		                  : !previousView_->search.empty() ? "Back to Search"
+		                                                   : "Back to Folder";
+		if (ui.Button(label)) {
 			if (assets.Refresh()) {
 				refreshed_ = true;
 				auto previous = std::exchange(previousView_, std::nullopt);

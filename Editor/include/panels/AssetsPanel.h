@@ -349,9 +349,9 @@ class AssetsPanel {
 	};
 
 	/// <summary>
-	/// 表示中の検索または操作結果を、あとで戻るために記録する
+	/// 表示中の検索や操作結果を記録する。必要な場合は通常のフォルダ表示も記録する
 	/// </summary>
-	std::optional<ResultView> CaptureResults() const;
+	std::optional<ResultView> CaptureResults(bool includeFolder = false) const;
 
 	std::filesystem::path currentDirectory_;
 	std::string filter_;
