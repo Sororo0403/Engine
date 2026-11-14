@@ -5208,6 +5208,9 @@ void EditorScene::UpdateDialogs() {
 
 	case DialogStage::OPEN_FILE: {
 		const auto result = openSceneDialog_.Draw(ui_);
+		if (openSceneDialog_.TakeProjectSceneRefreshRequest() && assets_.Refresh()) {
+			openSceneDialog_.UpdateProjectScenes(assets_.GetSceneTargets());
+		}
 		if (const auto search = openSceneDialog_.TakeProjectSearchChange()) {
 			preferences_.searchProjectScenes = *search;
 			SaveEditorSession(true);
@@ -5842,6 +5845,9 @@ void EditorScene::UpdateDialogs() {
 		const bool fromRecycle = stage_ == DialogStage::SELECT_RECYCLE_STARTUP_SCENE;
 		const bool fromFailure = stage_ == DialogStage::SELECT_FAILED_STARTUP_SCENE;
 		const auto result = fileDialog_.Draw(ui_);
+		if (fileDialog_.TakeProjectSceneRefreshRequest() && assets_.Refresh()) {
+			fileDialog_.UpdateProjectScenes(assets_.GetSceneTargets());
+		}
 		if (const auto search = fileDialog_.TakeProjectSearchChange()) {
 			preferences_.searchProjectScenes = *search;
 			SaveEditorSession(true);

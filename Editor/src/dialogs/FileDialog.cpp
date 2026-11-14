@@ -60,6 +60,7 @@ void FileDialog::Show(FileDialogMode mode,
 	projectScenes_.clear();
 	projectRoot_.clear();
 	searchProjectScenes_ = false;
+	projectSceneRefreshRequested_ = false;
 	projectSearchChange_.reset();
 	error_.clear();
 	fileName_.clear();
@@ -226,11 +227,12 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 
 		if (ui.Button("Refresh")) {
 			Refresh();
+			projectSceneRefreshRequested_ = !projectRoot_.empty();
 		}
 
 		ui.Text(PathUtils::ToUtf8(directory_));
 
-		if (!projectScenes_.empty() &&
+		if (!projectRoot_.empty() &&
 		    ImGui::Checkbox("Search Project Scenes", &searchProjectScenes_)) {
 			projectSearchChange_ = searchProjectScenes_;
 			fileName_.clear();
@@ -548,15 +550,23 @@ void FileDialog::SetProjectScenes(
     const std::filesystem::path &root,
     std::span<const std::filesystem::path> paths, bool searchProject) {
 	projectRoot_ = root;
+	UpdateProjectScenes(paths);
+	searchProjectScenes_ = searchProject && !projectRoot_.empty();
+	if (searchProjectScenes_ && !fileName_.empty()) {
+		fileName_ = PathUtils::ToUtf8(directory_ / PathUtils::FromUtf8(fileName_));
+	}
+}
+
+void FileDialog::UpdateProjectScenes(std::span<const std::filesystem::path> paths) {
 	projectScenes_.clear();
 	projectScenes_.reserve(paths.size());
 	for (const auto &path : paths) {
 		projectScenes_.push_back({PathUtils::ResolveFromExecutable(path), false});
 	}
-	searchProjectScenes_ = searchProject && !projectScenes_.empty();
-	if (searchProjectScenes_ && !fileName_.empty()) {
-		fileName_ = PathUtils::ToUtf8(directory_ / PathUtils::FromUtf8(fileName_));
-	}
+}
+
+bool FileDialog::TakeProjectSceneRefreshRequest() {
+	return std::exchange(projectSceneRefreshRequested_, false);
 }
 
 std::optional<bool> FileDialog::TakeProjectSearchChange() {

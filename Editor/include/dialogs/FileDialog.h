@@ -71,6 +71,16 @@ class FileDialog {
 	                      bool searchProject = false);
 
 	/// <summary>
+	/// 検索範囲と入力内容を保ったまま、プロジェクトのシーン一覧を差し替える
+	/// </summary>
+	void UpdateProjectScenes(std::span<const std::filesystem::path> paths);
+
+	/// <summary>
+	/// プロジェクトのシーン一覧の更新要求を取得し、消費する
+	/// </summary>
+	bool TakeProjectSceneRefreshRequest();
+
+	/// <summary>
 	/// 検索範囲のチェックボックスで選んだ値を取得し、変更通知を消費する
 	/// </summary>
 	std::optional<bool> TakeProjectSearchChange();
@@ -190,5 +200,6 @@ class FileDialog {
 	bool destinationExists_ = false;
 	bool requireNewFile_ = false;
 	bool searchProjectScenes_ = false;
+	bool projectSceneRefreshRequested_ = false;
 	std::optional<bool> projectSearchChange_;
 };
