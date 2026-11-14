@@ -1010,6 +1010,7 @@ class EditorScene final : public IScene {
 	std::vector<AssetUsage::Reference> assetReferences_;
 	std::string assetReferenceFilter_;
 	std::string assetReferenceLocationError_;
+	bool confirmClearAssetUndoHistory_ = false;
 	std::filesystem::path pendingRenamePath_;
 	std::string assetRenameName_, assetRenameError_;
 	FrameRequest frameRequest_ = FrameRequest::NONE;

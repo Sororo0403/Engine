@@ -4570,6 +4570,7 @@ void EditorScene::RestoreRecovery() {
 std::vector<std::filesystem::path>
 EditorScene::CheckAssetReferences(bool recycle) {
 	assetReferenceLocationError_.clear();
+	confirmClearAssetUndoHistory_ = false;
 	try {
 		const auto &assets = assets_.GetRootDirectory();
 
@@ -4733,17 +4734,25 @@ void EditorScene::DrawAssetReferences(bool recycle) {
 	const bool historyOnly = recycle && !assetReferences_.empty() &&
 	                         std::ranges::all_of(assetReferences_,
 	                                             &AssetUsage::Reference::undoHistory);
-	if (historyOnly && ui_.Button("Clear Scene Undo History")) {
-		auto &history = document_.GetHistory();
-		const bool modified = history.IsModified();
-		history.Reset();
-		if (modified) {
-			history.Invalidate();
-		}
-		CheckAssetReferences(true);
-	}
 	if (historyOnly) {
-		ImGui::SetItemTooltip("Discards all Undo and Redo operations for the current scene.");
+		if (confirmClearAssetUndoHistory_) {
+			ui_.Text("Discard all Undo and Redo operations for the current scene?");
+			if (ui_.Button("Discard Undo and Redo History")) {
+				auto &history = document_.GetHistory();
+				const bool modified = history.IsModified();
+				history.Reset();
+				if (modified) {
+					history.Invalidate();
+				}
+				CheckAssetReferences(true);
+			}
+			ui_.SameLine();
+			if (ui_.Button("Keep History")) {
+				confirmClearAssetUndoHistory_ = false;
+			}
+		} else if (ui_.Button("Clear Scene Undo History...")) {
+			confirmClearAssetUndoHistory_ = true;
+		}
 		ui_.SameLine();
 	}
 
