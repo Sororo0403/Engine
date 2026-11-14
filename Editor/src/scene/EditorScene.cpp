@@ -5602,14 +5602,8 @@ void EditorScene::UpdateDialogs() {
 		if (result == ModelImportResult::ACCEPTED) {
 			stage_ = DialogStage::IDLE;
 
-			if (!assets_.Refresh()) {
-				ShowError(
-				    "The model was imported, but Assets could not refresh: " +
-				    assets_.GetError());
-			} else {
-				assetsPanel_.RequestReveal(
-				    modelImportDialog_.GetImportedPath());
-			}
+			assets_.Refresh();
+			assetsPanel_.RequestReveal(modelImportDialog_.GetImportedPath());
 		} else if (result == ModelImportResult::CANCELLED) {
 			stage_ = DialogStage::IDLE;
 		}
@@ -5623,14 +5617,8 @@ void EditorScene::UpdateDialogs() {
 		if (result == TextureImportResult::ACCEPTED) {
 			stage_ = DialogStage::IDLE;
 
-			if (!assets_.Refresh()) {
-				ShowError(
-				    "The image was imported, but Assets could not refresh: " +
-				    assets_.GetError());
-			} else {
-				assetsPanel_.RequestReveal(
-				    textureImportDialog_.GetImportedPath());
-			}
+			assets_.Refresh();
+			assetsPanel_.RequestReveal(textureImportDialog_.GetImportedPath());
 		} else if (result == TextureImportResult::CANCELLED) {
 			stage_ = DialogStage::IDLE;
 		}
@@ -5644,14 +5632,8 @@ void EditorScene::UpdateDialogs() {
 		if (result == AudioImportResult::ACCEPTED) {
 			stage_ = DialogStage::IDLE;
 
-			if (!assets_.Refresh()) {
-				ShowError(
-				    "The audio was imported, but Assets could not refresh: " +
-				    assets_.GetError());
-			} else {
-				assetsPanel_.RequestReveal(
-				    audioImportDialog_.GetImportedPath());
-			}
+			assets_.Refresh();
+			assetsPanel_.RequestReveal(audioImportDialog_.GetImportedPath());
 		} else if (result == AudioImportResult::CANCELLED) {
 			stage_ = DialogStage::IDLE;
 		}
