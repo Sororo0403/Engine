@@ -69,6 +69,7 @@ class GameExportResultDialog {
 		std::string crashError;
 		std::filesystem::path startupScenePath;
 		std::filesystem::path launchFailurePath;
+		std::filesystem::path destinationFailurePath;
 		std::optional<std::uintmax_t> logStart;
 		std::vector<std::uintmax_t> earlierLogPages;
 		std::optional<LogPosition> beforeErrorJump;

@@ -31,6 +31,32 @@ std::string_view LogLevelPrefix(std::string_view line) {
 }
 
 /// <summary>
+/// 遷移エラーから配布フォルダ内のシーンファイルを特定する
+/// </summary>
+std::filesystem::path FindFailedDestination(const std::filesystem::path &directory,
+                                            std::string_view heading) {
+	constexpr std::string_view prefix = " [ERROR] Could not load destination scene: ";
+	if (!heading.starts_with(prefix)) {
+		return {};
+	}
+	try {
+		const auto path = PathUtils::FromUtf8(heading.substr(prefix.size()));
+		if (path.empty() || (path.has_root_path() && !path.is_absolute()) ||
+		    !PathUtils::HasExtension(path, ".json")) {
+			return {};
+		}
+		const auto root = std::filesystem::canonical(directory);
+		const auto target = std::filesystem::weakly_canonical(directory / path);
+		if (PathUtils::RelativeInside(root, target).empty()) {
+			return {};
+		}
+		return target;
+	} catch (const std::exception &) {
+		return {};
+	}
+}
+
+/// <summary>
 /// ログ項目の開始を示すレベル表記か確認する
 /// </summary>
 bool IsLogHeader(std::string_view level) {
@@ -469,6 +495,7 @@ bool GameExportResultDialog::StartGame() {
 	run.crashError.clear();
 	run.startupScenePath.clear();
 	run.launchFailurePath.clear();
+	run.destinationFailurePath.clear();
 	error_.clear();
 	if (!launchError.empty()) {
 		run.launchFailurePath = directory_ / L"game.json";
@@ -567,6 +594,7 @@ bool GameExportResultDialog::UpdateGameProcess(bool &jumpToBeginning,
 		                   PathUtils::ToUtf8(run.startupScenePath)) {
 			run.launchFailurePath = directory_ / run.startupScenePath;
 		}
+		run.destinationFailurePath = FindFailedDestination(directory_, heading);
 		jumpToBeginning = true;
 		return true;
 	}
@@ -622,6 +650,18 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		ImGui::SetItemTooltip("%s", path.c_str());
 		ui.SameLine();
 		if (ui.Button("Copy Startup Error Path")) {
+			ImGui::SetClipboardText(path.c_str());
+		}
+	}
+
+	if (!run.destinationFailurePath.empty()) {
+		const auto path = PathUtils::ToUtf8(run.destinationFailurePath);
+		if (ui.Button("Show Destination Scene Location")) {
+			ShellUtils::RevealLocationInExplorer(run.destinationFailurePath, error_);
+		}
+		ImGui::SetItemTooltip("%s", path.c_str());
+		ui.SameLine();
+		if (ui.Button("Copy Destination Scene Path")) {
 			ImGui::SetClipboardText(path.c_str());
 		}
 	}
@@ -694,6 +734,9 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		report += run.status + "\n";
 		if (!run.launchFailurePath.empty()) {
 			report += "Startup error path: " + PathUtils::ToUtf8(run.launchFailurePath) + "\n";
+		}
+		if (!run.destinationFailurePath.empty()) {
+			report += "Destination scene error path: " + PathUtils::ToUtf8(run.destinationFailurePath) + "\n";
 		}
 		if (!run.launchFailed) {
 			RefreshLog();
