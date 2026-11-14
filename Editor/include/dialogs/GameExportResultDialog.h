@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/LogEntry.h"
 #include "export/GameExporter.h"
 #include "platform/windows/ShellUtils.h"
 #include <chrono>
@@ -72,7 +73,7 @@ class GameExportResultDialog {
 		std::uintmax_t offset;
 		bool paged;
 		bool follow;
-		bool errorsOnly;
+		LogLevel minimumLogLevel;
 		bool sinceLaunchOnly;
 		float scrollY;
 		std::string filter;
@@ -83,8 +84,8 @@ class GameExportResultDialog {
 			std::string query;
 			std::uintmax_t offset;
 			std::uintmax_t entryOffset;
-			bool errorsOnly;
-			bool inError;
+			LogLevel minimumLevel;
+			LogLevel entryLevel;
 		};
 		ShellUtils::ExecutableProcess process;
 		std::string status;
@@ -107,7 +108,7 @@ class GameExportResultDialog {
 		bool sinceLaunchOnly = false;
 		bool showLog = false;
 		bool followLog = true;
-		bool showErrorsOnly = false;
+		LogLevel minimumLogLevel = LogLevel::LOG_INFO;
 		bool showLogBeginning = false;
 		bool launchFailed = false;
 		bool restartRequested = false;
