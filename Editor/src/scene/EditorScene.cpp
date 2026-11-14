@@ -840,6 +840,7 @@ bool EditorScene::Update(float deltaTime) {
 			pendingRenamePath_ = rename;
 			assetRenameName_ = PathUtils::ToUtf8(rename.filename());
 			assetRenameError_.clear();
+			assetRenameFailurePath_.clear();
 			stage_ = DialogStage::RENAME_ASSET;
 		}
 
@@ -5136,10 +5137,17 @@ void EditorScene::DrawAssetRename() {
 	if (!assetRenameError_.empty()) {
 		ui_.EndChild();
 	}
+	if (!assetRenameFailurePath_.empty() && ui_.Button("Show Failed Rename Location")) {
+		std::string error;
+		if (!ShellUtils::RevealLocationInExplorer(assetRenameFailurePath_, error)) {
+			assetRenameError_ += "\n" + error;
+		}
+	}
 
 	bool close = false;
 
 	if (ui_.Button("Rename")) {
+		assetRenameFailurePath_.clear();
 		try {
 			const auto name = PathUtils::FromUtf8(assetRenameName_);
 
@@ -5148,7 +5156,8 @@ void EditorScene::DrawAssetRename() {
 			}
 
 			const auto target = pendingRenamePath_.parent_path() / name;
-			close = RelocateAssets({{pendingRenamePath_, target}}, assetRenameError_);
+			close = RelocateAssets({{pendingRenamePath_, target}}, assetRenameError_,
+			                       &assetRenameFailurePath_);
 		} catch (const std::exception &error) {
 			assetRenameError_ = error.what();
 		}
@@ -5159,6 +5168,7 @@ void EditorScene::DrawAssetRename() {
 	if (ui_.Button("Cancel") || ImGui::IsKeyPressed(ImGuiKey_Escape) || close) {
 		ui_.CloseCurrentPopup();
 		pendingRenamePath_.clear();
+		assetRenameFailurePath_.clear();
 		stage_ = DialogStage::IDLE;
 	}
 

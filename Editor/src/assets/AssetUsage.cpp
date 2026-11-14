@@ -179,15 +179,19 @@ std::vector<AssetUsage::Reference> Scan(
     const Scene &scene, const std::filesystem::path &scenePath,
     const std::filesystem::path &startup, const DocumentVisitor &visit = {},
     const ModelVisitor &visitModel = {}, const ReferenceEdge &recordEdge = {},
-    const EditorHistory *history = nullptr) {
+    const EditorHistory *history = nullptr, fs::path *failurePath = nullptr) {
 	std::vector<AssetUsage::Reference> usages;
 	std::set<std::pair<fs::path, Source>> scheduled;
 	std::vector<std::pair<fs::path, Source>> pending;
-	const auto check = [&](const std::string &label, const auto &operation) {
+	const auto check = [&](const std::string &label, const auto &operation,
+	                       const fs::path &location = {}) {
 		try {
 			operation();
 		} catch (const std::exception &error) {
 			usages.push_back({"Could not check " + label + "\n" + error.what()});
+			if (failurePath && failurePath->empty() && !location.empty()) {
+				*failurePath = location;
+			}
 		}
 	};
 
@@ -326,9 +330,9 @@ std::vector<AssetUsage::Reference> Scan(
 				           IsSceneFile(path)) {
 					schedule(path, Source::SCENE);
 				}
-			});
+			}, path);
 		}
-	});
+	}, searchRoot);
 
 	for (std::size_t i = 0; i < pending.size(); ++i) {
 		const auto [path, source] = pending[i];
@@ -363,7 +367,7 @@ std::vector<AssetUsage::Reference> Scan(
 			                              original, path, document, error,
 			                              &nextSourceId)
 			                        : SceneSerializer::Deserialize(
-			                              document, original, path, &projectRoot);
+			                              document, original, path, &projectRoot, &error);
 
 			if (!loaded) {
 				throw std::runtime_error(
@@ -380,7 +384,7 @@ std::vector<AssetUsage::Reference> Scan(
 				visit(path, source, document, nextSourceId, std::move(original),
 				      projectRoot);
 			}
-		});
+		}, path);
 	}
 
 	std::ranges::sort(usages, {}, &AssetUsage::Reference::message);
@@ -968,7 +972,7 @@ bool AssetUsage::Relocate(const Moves &moves, const fs::path &assetRoot,
 			    }
 
 			    edits.push_back({path, std::move(original), std::move(updated)});
-		    }, checkModel);
+		    }, checkModel, {}, nullptr, failurePath);
 
 		if (!issues.empty()) {
 			error = "Could not move or rename the asset.";
