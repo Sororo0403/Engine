@@ -29,6 +29,11 @@ class AssetDatabase {
 	bool Refresh();
 
 	/// <summary>
+	/// プロジェクトのシーン一覧だけを更新する。失敗時は以前の一覧を保持する
+	/// </summary>
+	bool RefreshProjectScenes(std::string &error);
+
+	/// <summary>
 	/// 新しい検索先の読み込み成功後だけ、検索先と一覧を切り替える
 	/// </summary>
 	/// <param name="rootDirectory">絶対パス、または実行ファイル基準の相対パス</param>

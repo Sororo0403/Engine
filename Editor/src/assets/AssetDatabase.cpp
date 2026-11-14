@@ -13,6 +13,34 @@
 #include <system_error>
 #include <utility>
 
+namespace {
+/// <summary>
+/// プロジェクトのシーンフォルダから標準のシーンファイル名を持つ候補を集める
+/// </summary>
+std::vector<std::filesystem::path> ReadProjectScenes(const std::filesystem::path &directory) {
+	std::vector<std::filesystem::path> scenes;
+	if (directory.empty()) {
+		return scenes;
+	}
+
+	std::error_code error;
+	const auto entries = std::filesystem::recursive_directory_iterator(directory, error);
+	if (error && error != std::errc::no_such_file_or_directory) {
+		throw std::filesystem::filesystem_error("Could not read project scenes", directory, error);
+	}
+
+	for (const auto &entry : entries) {
+		const auto &path = entry.path();
+		if (entry.is_regular_file() && PathUtils::HasExtension(path, ".json") &&
+		    PathUtils::HasExtension(path.stem(), ".scene")) {
+			scenes.push_back(path);
+		}
+	}
+	std::sort(scenes.begin(), scenes.end());
+	return scenes;
+}
+} // namespace
+
 AssetDatabase::AssetDatabase(std::filesystem::path rootDirectory,
                              std::filesystem::path sceneDirectory)
     : rootDirectory_(rootDirectory.lexically_normal()),
@@ -143,32 +171,12 @@ bool AssetDatabase::Refresh() {
 			throw std::system_error(error, "アセットの検索に失敗しました。");
 		}
 
-		std::vector<std::filesystem::path> projectScenes;
-
-		if (!sceneDirectory_.empty()) {
-			std::error_code sceneError;
-			const auto sceneEntries = std::filesystem::recursive_directory_iterator(
-			    sceneDirectory_, sceneError);
-			if (sceneError && sceneError != std::errc::no_such_file_or_directory) {
-				throw std::filesystem::filesystem_error(
-				    "Could not read project scenes", sceneDirectory_, sceneError);
-			}
-
-			for (const auto &entry : sceneEntries) {
-				const auto &path = entry.path();
-
-				if (entry.is_regular_file() && PathUtils::HasExtension(path, ".json") &&
-				    PathUtils::HasExtension(path.stem(), ".scene")) {
-					projectScenes.push_back(path);
-				}
-			}
-		}
+		auto projectScenes = ReadProjectScenes(sceneDirectory_);
 
 		std::sort(models.begin(), models.end());
 		std::sort(textures.begin(), textures.end());
 		std::sort(audioClips.begin(), audioClips.end());
 		std::sort(scenes.begin(), scenes.end());
-		std::sort(projectScenes.begin(), projectScenes.end());
 		std::sort(scripts.begin(), scripts.end());
 		std::sort(animationClips.begin(), animationClips.end());
 		std::sort(prefabs.begin(), prefabs.end());
@@ -192,6 +200,17 @@ bool AssetDatabase::Refresh() {
 		error_ = error.what();
 
 		Logger::Error(std::format("AssetDatabase::Refresh: {}", error_));
+		return false;
+	}
+}
+
+bool AssetDatabase::RefreshProjectScenes(std::string &error) {
+	try {
+		projectScenes_ = ReadProjectScenes(sceneDirectory_);
+		error.clear();
+		return true;
+	} catch (const std::exception &failure) {
+		error = failure.what();
 		return false;
 	}
 }

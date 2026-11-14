@@ -3646,18 +3646,20 @@ void EditorScene::RevealGameExportObject(SceneObjectId object) {
 }
 
 void EditorScene::InitializeScenePicker(FileDialog &dialog, bool searchProject) {
-	const bool refreshed = assets_.Refresh();
+	std::string error;
+	const bool refreshed = assets_.RefreshProjectScenes(error);
 	dialog.SetProjectScenes(project_.GetRoot(), assets_.GetSceneTargets(), searchProject);
 	if (!refreshed) {
-		dialog.SetProjectSceneRefreshError(assets_.GetError());
+		dialog.SetProjectSceneRefreshError(std::move(error));
 	}
 }
 
 void EditorScene::RefreshScenePicker(FileDialog &dialog) {
-	if (assets_.Refresh()) {
+	std::string error;
+	if (assets_.RefreshProjectScenes(error)) {
 		dialog.UpdateProjectScenes(assets_.GetSceneTargets());
 	} else {
-		dialog.SetProjectSceneRefreshError(assets_.GetError());
+		dialog.SetProjectSceneRefreshError(std::move(error));
 	}
 }
 
