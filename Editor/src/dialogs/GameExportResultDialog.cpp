@@ -21,10 +21,12 @@ constexpr std::streamoff kLogPageBytes = 64 * 1024;
 /// <summary>
 /// 配布版そのものに保存されている画面設定と起動シーンを表示用に読み込む
 /// </summary>
-std::string ReadPackageSettings(const std::filesystem::path &directory) {
+std::string ReadPackageSettings(const std::filesystem::path &directory,
+                                std::string &error) {
 	GameConfig config;
-	std::string error;
-	if (!config.Load(directory / L"game.json", error)) {
+	const auto path = directory / L"game.json";
+	if (!config.Load(path, error)) {
+		error = std::format("Could not load {}: {}", PathUtils::ToUtf8(path), error);
 		return {};
 	}
 	return std::format("Game window: {} ({} × {})\nStartup scene: {}",
@@ -131,7 +133,8 @@ void GameExportResultDialog::Show(std::filesystem::path directory,
 	runs_.try_emplace(directory_);
 	reopening_ = reopening;
 	error_.clear();
-	packageSettings_ = ReadPackageSettings(directory_);
+	std::string settingsError;
+	packageSettings_ = ReadPackageSettings(directory_, settingsError);
 	log_.clear();
 	logError_.clear();
 	logTruncated_ = false;
@@ -378,14 +381,19 @@ void GameExportResultDialog::OpenLogAtOffset(std::uintmax_t offset) {
 
 bool GameExportResultDialog::StartGame() {
 	auto &run = runs_.at(directory_);
-	packageSettings_ = ReadPackageSettings(directory_);
+	std::string launchError;
+	packageSettings_ = ReadPackageSettings(directory_, launchError);
 	run.launchSettings = packageSettings_;
 	run.crashError.clear();
+	error_.clear();
+	if (!launchError.empty()) {
+		run.launchFailed = true;
+		run.status = std::move(launchError);
+		return false;
+	}
 	// 起動後すぐにログが追記されても、今回の行を落とさないよう先に記録する。
 	std::error_code status;
 	const auto size = std::filesystem::file_size(directory_ / kGameLogPath, status);
-	std::string launchError;
-	error_.clear();
 	run.launchFailed = !run.process.Start(directory_ / L"Game.exe", launchError,
 	                                      ShellUtils::WindowVisibility::NORMAL,
 	                                      L"--editor-launch");
@@ -479,7 +487,7 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 	bool jumpToLatest = false;
 	bool refreshedLog = UpdateGameProcess(jumpToBeginning, jumpToLatest);
 	if (!run.status.empty())
-		ui.Text(run.status);
+		ImGui::TextWrapped("%s", run.status.c_str());
 
 	if (!error_.empty()) {
 		ImGui::TextWrapped("%s", error_.c_str());
