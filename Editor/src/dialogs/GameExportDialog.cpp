@@ -592,8 +592,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 		ui.BeginDisabled(issueFilter_.empty());
 		if (ui.Button("Clear Search")) {
 			issueFilter_.clear();
-			selectedIssue_.reset();
-			issueToScrollTo_ = 0;
+			issueToScrollTo_ = selectedIssue_.value_or(0);
 			issuePage_ = 0;
 		}
 		ui.EndDisabled();
