@@ -4242,23 +4242,24 @@ std::filesystem::path EditorScene::GetRecoveredScenePath() const {
 	if (PathUtils::HasExtension(stem, ".scene")) {
 		stem = stem.stem();
 	}
-	const auto base = stem.native() + L".recovered";
 	const auto directory = GetSceneDialogDirectory(source);
+	auto base = stem.native() + L".recovered";
+	const std::wstring extension = L".scene.json";
+	if (!PathUtils::IsValidFileName(base + extension)) {
+		base = L"Recovered";
+	}
 
-	for (std::size_t index = 1;; ++index) {
-		const auto suffix =
-		    index == 1 ? std::wstring{} : L"-" + std::to_wstring(index);
-		auto name = std::filesystem::path(base + suffix + L".scene.json");
-		if (!PathUtils::IsValidFileName(name)) {
-			name = L"Recovered" + suffix + L".scene.json";
+	try {
+		const auto parent = PathUtils::ResolveFromExecutable(directory / (base + extension)).parent_path();
+		try {
+			return parent / AssetFolders::SuggestAvailableName(parent, base, extension);
+		} catch (const std::invalid_argument &) {
+			// 元の名前では連番を付けられない場合、短い名前で探す。
+			return parent / AssetFolders::SuggestAvailableName(parent, L"Recovered", extension);
 		}
-		const auto candidate = directory / name;
-		std::error_code error;
-		const auto status = std::filesystem::symlink_status(
-		    PathUtils::ResolveFromExecutable(candidate), error);
-		if (!std::filesystem::exists(status)) {
-			return candidate;
-		}
+	} catch (const std::filesystem::filesystem_error &) {
+		// フォルダを検査できない場合は、保存画面で別の場所を選べるようにする。
+		return directory / (base + extension);
 	}
 }
 
