@@ -169,7 +169,7 @@ bool RuntimeScene::Update(float seconds) {
 	const auto actions = actionReader_.Read(
 	    config_.actions, input_.GetKeyboard(), &input_.GetMouse(),
 	    config_.gamepadEnabled ? &input_.GetGamepad() : nullptr,
-	    input_.IsActive());
+	    input_.IsActive(), true, &input_.GetWiiRemote());
 	const auto revision = simulation_.GetSceneRevision();
 
 	if (input_.IsActive()) {

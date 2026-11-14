@@ -196,6 +196,8 @@ GameSettingsResult GameSettingsDialog::Draw(const ImGuiSystem &ui, bool retryPla
 			        GameActionBinding::kGamepadOptions);
 			buttons("Gamepad Axis", action.gamepadAxis,
 			        GameActionBinding::kGamepadAxisOptions);
+			buttons("Wii Remote", action.wiiRemote,
+			        GameActionBinding::kWiiRemoteOptions);
 			const bool remove = ui.Button("Remove Action");
 			ImGui::Separator();
 			ImGui::PopID();

@@ -32,6 +32,9 @@ struct GameActionBinding {
 	};
 	std::optional<GamepadAxis> gamepadAxis;
 
+	enum class WiiRemoteInput { A, SHAKE };
+	std::optional<WiiRemoteInput> wiiRemote;
+
 	static constexpr std::array<GameInputBindings::Option, 2>
 	    kAdditionalKeyboardOptions{{{Key::ESCAPE, "Escape"}, {Key::ENTER, "Enter"}}};
 
@@ -39,6 +42,9 @@ struct GameActionBinding {
 		T button;
 		const char *name;
 	};
+
+	static constexpr std::array<Option<WiiRemoteInput>, 2> kWiiRemoteOptions{
+	    {{WiiRemoteInput::A, "A"}, {WiiRemoteInput::SHAKE, "Shake"}}};
 
 	static constexpr std::array<Option<MouseButton>, 5> kMouseOptions{
 	    {{MouseButton::LEFT, "Left"},

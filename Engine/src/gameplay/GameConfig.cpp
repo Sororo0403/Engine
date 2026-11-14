@@ -109,7 +109,8 @@ bool GameConfig::Serialize(std::string &text, std::string &error) const {
 			                     {"keyboard", nullptr},
 			                     {"mouse", nullptr},
 			                     {"gamepad", nullptr},
-			                     {"gamepadAxis", nullptr}};
+			                     {"gamepadAxis", nullptr},
+			                     {"wiiRemote", nullptr}};
 			if (action.keyboard)
 				entry["keyboard"] =
 				    GameActionBinding::GetKeyName(*action.keyboard);
@@ -127,6 +128,11 @@ bool GameConfig::Serialize(std::string &text, std::string &error) const {
 				entry["gamepadAxis"] =
 				    GameActionBinding::kGamepadAxisOptions
 				        [static_cast<std::size_t>(*action.gamepadAxis)]
+				            .name;
+			if (action.wiiRemote)
+				entry["wiiRemote"] =
+				    GameActionBinding::kWiiRemoteOptions
+				        [static_cast<std::size_t>(*action.wiiRemote)]
 				            .name;
 			actionsJson.push_back(std::move(entry));
 		}
@@ -352,6 +358,10 @@ bool GameConfig::Deserialize(std::string_view text, std::string &error) {
 					readButton(entry.at("gamepadAxis"),
 					           GameActionBinding::kGamepadAxisOptions,
 					           action.gamepadAxis);
+				if (data.at("version") >= 12 && entry.contains("wiiRemote"))
+					readButton(entry.at("wiiRemote"),
+					           GameActionBinding::kWiiRemoteOptions,
+					           action.wiiRemote);
 				candidate.actions.push_back(std::move(action));
 			}
 		}

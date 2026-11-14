@@ -27,7 +27,9 @@ bool GameActionBinding::IsValid(std::span<const GameActionBinding> bindings) {
 		    (b.gamepad &&
 		     static_cast<std::size_t>(*b.gamepad) >= kGamepadOptions.size()) ||
 		    (b.gamepadAxis && static_cast<std::size_t>(*b.gamepadAxis) >=
-		                          kGamepadAxisOptions.size()))
+		                          kGamepadAxisOptions.size()) ||
+		    (b.wiiRemote && static_cast<std::size_t>(*b.wiiRemote) >=
+		                        kWiiRemoteOptions.size()))
 			return false;
 		for (std::size_t j = 0; j < i; ++j) {
 			if (b.name == bindings[j].name)

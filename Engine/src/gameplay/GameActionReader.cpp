@@ -2,6 +2,7 @@
 #include "input/Gamepad.h"
 #include "input/Keyboard.h"
 #include "input/Mouse.h"
+#include "input/WiiRemoteState.h"
 #include <algorithm>
 
 namespace {
@@ -43,7 +44,7 @@ std::span<const GameActionState>
 GameActionReader::Read(std::span<const GameActionBinding> bindings,
                        const Keyboard &keyboard, const Mouse *mouse,
                        const Gamepad *gamepad, bool enabled,
-                       bool pointerEnabled) {
+                       bool pointerEnabled, const WiiRemoteState *wiiRemote) {
 	if (!GameActionBinding::IsValid(bindings)) {
 		Reset();
 		return {};
@@ -67,9 +68,12 @@ GameActionReader::Read(std::span<const GameActionBinding> bindings,
 			states_.push_back({binding.name});
 		} else {
 			const bool padConnected = gamepad && gamepad->IsConnected();
-			const std::array<bool, 4> allowed{
+			using WiiInput = GameActionBinding::WiiRemoteInput;
+			constexpr std::size_t axisIndex = 3;
+			const bool remoteConnected = wiiRemote && wiiRemote->connected;
+			const std::array<bool, 5> allowed{
 			    true, pointerEnabled && mouse && mouse->IsConnected(),
-			    padConnected, padConnected};
+			    padConnected, padConnected, remoteConnected};
 			// 押下と解放で閾値を分け、復帰時も解放側の閾値まで戻るのを待つ。
 			constexpr float pressThreshold = .6f;
 			constexpr float releaseThreshold = .4f;
@@ -77,14 +81,17 @@ GameActionReader::Read(std::span<const GameActionBinding> bindings,
 			    binding.gamepadAxis && padConnected
 			        ? AxisValue(*binding.gamepadAxis, gamepad->GetState())
 			        : 0.f;
-			const bool axisDown = h.held.back() || h.blocked.back()
+			const bool axisDown = h.held[axisIndex] || h.blocked[axisIndex]
 			                          ? strength > releaseThreshold
 			                          : strength >= pressThreshold;
-			const std::array<bool, 4> raw{
+			const std::array<bool, 5> raw{
 			    binding.keyboard && keyboard.IsDown(*binding.keyboard),
 			    binding.mouse && mouse && mouse->IsDown(*binding.mouse),
 			    binding.gamepad && gamepad && gamepad->IsDown(*binding.gamepad),
-			    axisDown};
+			    axisDown,
+			    remoteConnected &&
+			        ((binding.wiiRemote == WiiInput::A && wiiRemote->aDown) ||
+			         (binding.wiiRemote == WiiInput::SHAKE && wiiRemote->shake))};
 			bool down = false;
 			bool cancelled = false;
 			float value = 0.f;
@@ -103,7 +110,7 @@ GameActionReader::Read(std::span<const GameActionBinding> bindings,
 
 				if (allowed[i] && !h.blocked[i]) {
 					const float strengthForDevice =
-					    i == raw.size() - 1 ? (std::max)(0.f, strength)
+					    i == axisIndex ? (std::max)(0.f, strength)
 					                        : (h.held[i] ? 1.f : 0.f);
 					value = (std::max)(value, strengthForDevice);
 				}

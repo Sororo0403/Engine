@@ -487,12 +487,12 @@ SceneValidation::InspectInputs(const Scene &scene,
 			    std::ranges::find(bindings, name, &GameActionBinding::name);
 			if (binding != bindings.end() &&
 			    (binding->keyboard || binding->mouse || binding->gamepad ||
-			     binding->gamepadAxis))
+			     binding->gamepadAxis || binding->wiiRemote))
 				continue;
 			const char *problem =
 			    binding == bindings.end()
 			        ? "does not exist in Game Settings"
-			        : "has no keyboard, mouse or gamepad binding";
+			        : "has no input binding";
 			issues.push_back(
 			    {.objectId = id,
 			     .message = std::format("Named input '{}' {}. Object {} (ID {}), "
