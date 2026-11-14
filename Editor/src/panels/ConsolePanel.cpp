@@ -157,7 +157,14 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 	ui.EndDisabled();
 	ui.InputText("Search", filter_);
 	ImGui::SetItemTooltip("Search message text or paste a source file path.");
-	const auto searchPath = PathUtils::FromPathSearch(filter_);
+	ui.SameLine();
+	ui.BeginDisabled(filter_.empty());
+	const bool clearedSearch = ui.Button("Clear Search");
+	ui.EndDisabled();
+	if (clearedSearch) {
+		filter_.clear();
+	}
+	auto searchPath = PathUtils::FromPathSearch(filter_);
 	Logger::ReadEntries(revision_, entries_);
 	const auto firstPlayError = Logger::GetFirstPlayError();
 	const auto latestPlayError = Logger::GetLatestPlayError();
@@ -204,6 +211,7 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 		showErrors_ = true;
 		if (!MatchesFilter(*jumpError, searchPath)) {
 			filter_.clear();
+			searchPath.clear();
 		}
 		selectedId_ = jumpError->id;
 	}
@@ -220,9 +228,11 @@ ConsolePanel::Request ConsolePanel::Draw(const ImGuiSystem &ui,
 	ImGui::SetItemTooltip("Clear text and level filters and return to the selected message.");
 	if (showContext) {
 		filter_.clear();
+		searchPath.clear();
 		showInfo_ = showWarnings_ = showErrors_ = true;
 	}
-	const bool jumpToSelection = jumpError || showContext;
+	const bool jumpToSelection = jumpError || showContext ||
+	                             (clearedSearch && selectedId_ != 0);
 
 	ImGui::SameLine();
 	const auto matchingCount = std::count_if(
