@@ -287,8 +287,13 @@ void EditorPreferences::RememberExportSceneSources(
 	const auto key = std::pair(root.lexically_normal(), directory.lexically_normal());
 	const auto recent = RecentGameExports(root);
 	const auto last = LastGameExport(root);
-	if (!key.second.is_absolute() ||
-	    (std::ranges::find(recent, key.second) == recent.end() && last != key.second)) {
+	if ((!key.first.empty() && !key.first.is_absolute()) ||
+	    key.first.native().find(L'\0') != std::wstring::npos ||
+	    !key.second.is_absolute() || key.second.native().find(L'\0') != std::wstring::npos) {
+		return;
+	}
+	if (packageId.empty() && std::ranges::find(recent, key.second) == recent.end() &&
+	    last != key.second) {
 		return;
 	}
 	std::erase_if(sources, [](const auto &source) {
@@ -306,12 +311,17 @@ void EditorPreferences::RememberExportSceneSources(
 	if (sources.empty()) {
 		exportSceneSources_.erase(key);
 	} else {
+		if (!packageId.empty()) {
+			std::erase_if(exportSceneSources_, [&](const auto &entry) {
+				return entry.first.first == key.first && entry.second.packageId == packageId;
+			});
+		}
 		exportSceneSources_.insert_or_assign(key, ExportSceneSourceRecord{
 		    std::move(packageId), std::move(sources)});
 	}
 	std::erase_if(exportSceneSources_, [&](const auto &entry) {
 		const auto &[project, output] = entry.first;
-		return project == key.first && output != last &&
+		return entry.second.packageId.empty() && project == key.first && output != last &&
 		       std::ranges::find(recent, output) == recent.end();
 	});
 }
@@ -397,7 +407,8 @@ bool EditorPreferences::RemoveMissingGameExports(const std::filesystem::path &ro
 		changed = true;
 	}
 	changed |= std::erase_if(exportSceneSources_, [&](const auto &entry) {
-		return entry.first.first == key && missing(entry.first.second);
+		// 識別子があれば、履歴から消えた配布版も移動先で照合できる。
+		return entry.second.packageId.empty() && entry.first.first == key && missing(entry.first.second);
 	}) != 0;
 	return changed;
 }
