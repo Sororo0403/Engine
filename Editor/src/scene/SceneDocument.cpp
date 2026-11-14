@@ -116,11 +116,12 @@ bool SceneDocument::Open(const std::filesystem::path &filePath,
 
 		auto sourceText = ReadSceneText(resolvedPath);
 		std::filesystem::path projectRoot;
+		std::string loadError;
 
 		// 読み込みと事前確認は一時シーンで実行し、両方成功した場合だけ置き換える
 		const bool loaded = scene_.ApplyTransaction([&](Scene &candidate) {
 			if (!SceneSerializer::Deserialize(candidate, sourceText, resolvedPath,
-			                                  &projectRoot)) {
+			                                  &projectRoot, &loadError)) {
 				return false;
 			}
 
@@ -129,6 +130,7 @@ bool SceneDocument::Open(const std::filesystem::path &filePath,
 			}
 
 			if (validate && !validate(candidate)) {
+				loadError = "The scene did not pass validation.";
 				Logger::Error(
 				    "SceneDocument::Open: シーンの事前確認に失敗しました。");
 				return false;
@@ -138,8 +140,8 @@ bool SceneDocument::Open(const std::filesystem::path &filePath,
 		});
 
 		if (!loaded) {
-			error_ = "Could not load or validate the scene. See the log for "
-			         "details.";
+			error_ = loadError.empty() ? "The scene hierarchy did not pass validation."
+			                          : std::move(loadError);
 			return false;
 		}
 

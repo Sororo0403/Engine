@@ -46,10 +46,12 @@ class SceneSerializer {
 	/// <param name="text">ファイルから取得したJSON。参照する間だけ保持すればよい</param>
 	/// <param name="filePath">読み込んだファイルのパス。プロジェクト参照の解決に使用する</param>
 	/// <param name="projectRoot">成功時に読み込んだプロジェクトの絶対ルートを返す。指定がないシーンでは空になる</param>
+	/// <param name="error">指定した場合は失敗理由を返す。成功時は空</param>
 	/// <returns>true:成功 false:形式や設定が無効</returns>
 	static bool Deserialize(Scene &scene, std::string_view text,
 	                        const std::filesystem::path &filePath = {},
-	                        std::filesystem::path *projectRoot = nullptr);
+	                        std::filesystem::path *projectRoot = nullptr,
+	                        std::string *error = nullptr);
 
 	/// <summary>
 	/// Audio Source・Audio Listener・Point Light・Spot Light・Trigger Actions・有効状態・親子関係・衝突レイヤー・Trigger・画像割り当て・ゲーム用コンポーネントを保存する。相対パスは実行ファイル基準

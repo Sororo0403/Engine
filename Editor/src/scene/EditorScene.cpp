@@ -6991,8 +6991,8 @@ bool EditorScene::OpenScene(const std::filesystem::path &path, bool reportError,
 		// 選び直しの画面では定期記録が止まるため、残った編集を記録する。
 		RecordRecovery();
 		if (reportError) {
-			ShowError("Could not open the scene. The current scene was kept. See "
-			          "the log for details.");
+			ShowError(std::format("Could not open {}. The current scene was kept.\n{}",
+			                      PathUtils::ToUtf8(path), document_.GetError()));
 		}
 		return false;
 	}

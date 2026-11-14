@@ -242,7 +242,8 @@ TextureBindings ReadBindings(const Json &bindings, int version) {
 /// <returns>true:成功 false:形式や設定が無効</returns>
 bool ApplySceneDocument(Scene &scene, const Json &document,
                         bool logSuccess = true,
-                        const std::filesystem::path &projectRoot = {});
+                        const std::filesystem::path &projectRoot = {},
+                        std::string *error = nullptr);
 
 constexpr std::wstring_view kProjectReference = L"@project";
 
@@ -1050,7 +1051,7 @@ namespace {
 /// <param name="document">version 1から22のJSON</param>
 /// <returns>true:成功 false:内容が無効</returns>
 bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
-                        const std::filesystem::path &projectRoot) {
+                        const std::filesystem::path &projectRoot, std::string *error) {
 	try {
 		if (!document.is_object() || document.at("format") != "EngineScene" ||
 		    !document.at("version").is_number_integer() ||
@@ -2075,6 +2076,9 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 
 		return true;
 	} catch (const std::exception &exception) {
+		if (error) {
+			*error = exception.what();
+		}
 		Logger::Error(std::format("SceneSerializer: {}", exception.what()));
 		return false;
 	}
@@ -2084,12 +2088,16 @@ bool ApplySceneDocument(Scene &scene, const Json &document, bool logSuccess,
 
 bool SceneSerializer::Deserialize(Scene &scene, std::string_view text,
                                   const std::filesystem::path &filePath,
-                                  std::filesystem::path *projectRoot) {
+                                  std::filesystem::path *projectRoot,
+                                  std::string *error) {
+	if (error) {
+		error->clear();
+	}
 	try {
 		const auto document = Json::parse(text);
 		auto root = ReadProjectRoot(document, filePath);
 
-		if (!ApplySceneDocument(scene, document, true, root)) {
+		if (!ApplySceneDocument(scene, document, true, root, error)) {
 			return false;
 		}
 
@@ -2098,9 +2106,12 @@ bool SceneSerializer::Deserialize(Scene &scene, std::string_view text,
 		}
 
 		return true;
-	} catch (const std::exception &error) {
+	} catch (const std::exception &failure) {
+		if (error) {
+			*error = failure.what();
+		}
 		Logger::Error(
-		    std::format("SceneSerializer::Deserialize: {}", error.what()));
+		    std::format("SceneSerializer::Deserialize: {}", failure.what()));
 		return false;
 	}
 }
