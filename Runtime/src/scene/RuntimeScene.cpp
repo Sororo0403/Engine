@@ -84,6 +84,7 @@ bool RuntimeScene::Initialize() {
 		Logger::Error(error);
 		return false;
 	}
+	Logger::Info("Startup scene ready: " + PathUtils::ToUtf8(config_.scenePath), config_.scenePath);
 	return true;
 }
 
@@ -205,11 +206,18 @@ bool RuntimeScene::Update(float seconds) {
 	}
 
 	renderer_.SetParticles(std::move(particles));
-	return renderer_.SetUIButtonVisuals(simulation_.GetUI().GetVisuals()) &&
+	const bool renderReady =
+	       renderer_.SetUIButtonVisuals(simulation_.GetUI().GetVisuals()) &&
 	       renderer_.SetLighting(config_.lighting) &&
 	       renderer_.SetCameraPose(simulation_.GetCameraPose()) &&
 	       renderer_.SetCameraSettings(simulation_.GetCameraSettings()) &&
 	       renderer_.Update();
+	if (renderReady && sceneChanged) {
+		if (const auto *destination = simulation_.GetLoadedScenePath()) {
+			Logger::Info("Destination scene ready: " + PathUtils::ToUtf8(*destination), *destination);
+		}
+	}
+	return renderReady;
 }
 
 void RuntimeScene::Draw() const {
