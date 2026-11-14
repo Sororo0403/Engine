@@ -106,14 +106,16 @@ class SceneCheckPanel {
 	/// <param name="scene">現在の物体名を確認するシーン</param>
 	/// <returns>true:部分一致、または検索が空 false:一致しない。英字の大文字と小文字は区別する</returns>
 	bool MatchesFilter(const SceneValidationIssue &issue,
-	                   const Scene &scene) const;
+	                   const Scene &scene,
+	                   const std::filesystem::path &searchPath) const;
 
 	/// <summary>
 	/// 検索に一致する検証結果から、現在も存在する物体を重複せず列挙する
 	/// </summary>
 	/// <param name="scene">削除済みの物体を除くための現在のシーン</param>
 	/// <returns>検証結果に現れる順の物体ID。物体を指さない問題は除く</returns>
-	std::vector<SceneObjectId> GetIssueObjects(const Scene &scene) const;
+	std::vector<SceneObjectId> GetIssueObjects(
+	    const Scene &scene, const std::filesystem::path &searchPath) const;
 
 	std::vector<SceneValidationIssue> issues_;
 	std::vector<GameActionBinding> checkedBindings_;

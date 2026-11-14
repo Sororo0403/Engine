@@ -95,6 +95,27 @@ std::filesystem::path PathUtils::FromPathInput(std::string_view text) {
 	return FromUtf8(text);
 }
 
+std::filesystem::path PathUtils::FromPathSearch(std::string_view text) {
+	const auto first = text.find_first_not_of(" \t\r\n");
+	if (first == std::string_view::npos) {
+		return {};
+	}
+	const auto last = text.find_last_not_of(" \t\r\n");
+	try {
+		auto path = FromPathInput(text.substr(first, last - first + 1));
+		return path.make_preferred();
+	} catch (const std::invalid_argument &) {
+		return {};
+	}
+}
+
+bool PathUtils::MatchesPathSearch(std::filesystem::path path,
+                                 const std::filesystem::path &searchPath) {
+	return !searchPath.empty() && !path.empty() &&
+	       FindStringOrdinal(FIND_FROMSTART, path.make_preferred().c_str(), -1,
+	                         searchPath.c_str(), -1, TRUE) >= 0;
+}
+
 bool PathUtils::HasExtension(const std::filesystem::path &path,
                              std::string_view extension) {
 	const std::string actual = ToUtf8(path.extension());

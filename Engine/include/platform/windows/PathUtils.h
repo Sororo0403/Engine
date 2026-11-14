@@ -55,6 +55,17 @@ std::filesystem::path FromUtf8(std::string_view text);
 std::filesystem::path FromPathInput(std::string_view text);
 
 /// <summary>
+/// 検索欄の前後の空白と引用符を除き、Windowsの区切りにそろえる。変換できなければ空を返す
+/// </summary>
+std::filesystem::path FromPathSearch(std::string_view text);
+
+/// <summary>
+/// パスに検索語が含まれるかを大文字小文字と区切りの違いを無視して調べる
+/// </summary>
+bool MatchesPathSearch(std::filesystem::path path,
+                       const std::filesystem::path &searchPath);
+
+/// <summary>
 /// ローカルの相対URIを復号してファイルパスへ変換する。+は空白へ変換しない
 /// </summary>
 /// <param name="uri">UTF-8とパーセント表記を使う相対URI。親フォルダへの参照も使用できる</param>

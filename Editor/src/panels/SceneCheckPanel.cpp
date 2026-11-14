@@ -83,12 +83,7 @@ void SceneCheckPanel::OnAssetsMoved(
 		issue.modelPath = PathUtils::AfterMove(issue.modelPath, moves);
 	};
 	const auto relocateFilter = [&](std::string &filter) {
-		std::filesystem::path path;
-		try {
-			path = PathUtils::FromPathInput(filter);
-		} catch (const std::invalid_argument &) {
-			return;
-		}
+		auto path = PathUtils::FromPathSearch(filter);
 		if (!path.is_absolute()) {
 			return;
 		}
@@ -144,8 +139,9 @@ void SceneCheckPanel::Check(const Scene &scene, const CameraPose &fallback,
 	const bool hadSelection = lastIssue_ && *lastIssue_ < issues_.size();
 	if (hadSelection || issueToRestore_) {
 		const auto &previous = hadSelection ? issues_[*lastIssue_] : *issueToRestore_;
+		const auto searchPath = PathUtils::FromPathSearch(filter_);
 		const auto matches = [&](const SceneValidationIssue &issue) {
-			return MatchesFilter(issue, scene);
+			return MatchesFilter(issue, scene, searchPath);
 		};
 		auto remaining = hadSelection
 		                     ? std::count_if(issues_.begin(), issues_.begin() + *lastIssue_, matches)
@@ -201,10 +197,12 @@ std::string SceneCheckPanel::GetReport(const Scene *filteredScene) const {
 	}
 
 	std::string report;
+	const auto searchPath = filteredScene ? PathUtils::FromPathSearch(filter_)
+	                                      : std::filesystem::path{};
 	std::size_t count = 0;
 	for (std::size_t i = 0; i < issues_.size(); ++i) {
 		const auto &issue = issues_[i];
-		if (filteredScene && !MatchesFilter(issue, *filteredScene)) {
+		if (filteredScene && !MatchesFilter(issue, *filteredScene, searchPath)) {
 			continue;
 		}
 		++count;
@@ -231,24 +229,14 @@ std::string SceneCheckPanel::GetReport(const Scene *filteredScene) const {
 }
 
 bool SceneCheckPanel::MatchesFilter(const SceneValidationIssue &issue,
-                                    const Scene &scene) const {
+                                    const Scene &scene,
+                                    const std::filesystem::path &searchPath) const {
 	if (filter_.empty() || issue.message.find(filter_) != std::string::npos) {
 		return true;
 	}
-	if (!issue.assetPath.empty() || !issue.modelPath.empty()) {
-		auto query = std::string_view(filter_);
-		if (query.size() >= 2 && query.front() == '"' && query.back() == '"') {
-			query = query.substr(1, query.size() - 2);
-		}
-		std::string normalized(query);
-		std::ranges::replace(normalized, '\\', '/');
-		const auto matchesPath = [&](const std::filesystem::path &path) {
-			return !path.empty() &&
-			       PathUtils::ToUtf8(path.generic_wstring()).find(normalized) != std::string::npos;
-		};
-		if (!normalized.empty() && (matchesPath(issue.assetPath) || matchesPath(issue.modelPath))) {
-			return true;
-		}
+	if (PathUtils::MatchesPathSearch(issue.assetPath, searchPath) ||
+	    PathUtils::MatchesPathSearch(issue.modelPath, searchPath)) {
+		return true;
 	}
 
 	if (issue.objectId == 0) {
@@ -354,9 +342,10 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 		scrollToIssue_.reset();
 	}
 
+	const auto searchPath = PathUtils::FromPathSearch(filter_);
 	const auto matchingCount =
 	    std::count_if(issues_.begin(), issues_.end(), [&](const auto &issue) {
-		    return MatchesFilter(issue, scene);
+		    return MatchesFilter(issue, scene, searchPath);
 	    });
 	ui.Text(std::format("Showing {} of {} issue(s)", matchingCount,
 	                    issues_.size()));
@@ -375,7 +364,7 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 	}
 
 	Request requested;
-	const auto objects = GetIssueObjects(scene);
+	const auto objects = GetIssueObjects(scene, searchPath);
 	ui.BeginDisabled(objects.empty());
 
 	if (ui.Button("Select Listed Issue Objects")) {
@@ -393,7 +382,7 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 	for (std::size_t i = 0; i < issues_.size(); ++i) {
 		const auto &issue = issues_[i];
 
-		if (!MatchesFilter(issue, scene)) {
+		if (!MatchesFilter(issue, scene, searchPath)) {
 			continue;
 		}
 
@@ -560,12 +549,13 @@ SceneCheckPanel::Draw(const ImGuiSystem &ui, const Scene &scene,
 }
 
 std::vector<SceneObjectId>
-SceneCheckPanel::GetIssueObjects(const Scene &scene) const {
+SceneCheckPanel::GetIssueObjects(const Scene &scene,
+                                const std::filesystem::path &searchPath) const {
 	std::vector<SceneObjectId> ids;
 	std::set<SceneObjectId> seen;
 
 	for (const auto &issue : issues_) {
-		if (MatchesFilter(issue, scene) && scene.Contains(issue.objectId) &&
+		if (MatchesFilter(issue, scene, searchPath) && scene.Contains(issue.objectId) &&
 		    seen.insert(issue.objectId).second) {
 			ids.push_back(issue.objectId);
 		}
