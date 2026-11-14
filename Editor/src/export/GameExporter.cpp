@@ -151,22 +151,25 @@ void ValidateRuntimeBuild(const fs::path &directory) {
 			    "Runtime before exporting.");
 		}
 
-		if (!build.contains("gameConfigVersion") ||
-		    !build.at("gameConfigVersion").is_number_integer() ||
-		    build.at("gameConfigVersion") != GameConfig::kCurrentVersion ||
-		    !build.contains("sceneVersion") ||
-		    !build.at("sceneVersion").is_number_integer() ||
-		    build.at("sceneVersion") != SceneSerializer::kCurrentVersion) {
+		std::string mismatch;
+		const auto compareVersion = [&](const char *field, const char *label, int expected) {
+			const auto version = build.find(field);
+			if (version != build.end() && version->is_number_integer() &&
+			    *version == expected) {
+				return;
+			}
+			const auto actual = version == build.end() ? "missing"
+			                    : version->is_number_integer() ? version->dump() : "invalid";
+			mismatch += std::format("\n{}: Runtime {}, Editor {}.", label, actual, expected);
+		};
+		compareVersion("gameConfigVersion", "Game settings", GameConfig::kCurrentVersion);
+		compareVersion("sceneVersion", "Scene format", SceneSerializer::kCurrentVersion);
+		compareVersion("scriptApiVersion", "Lua API", LuaScript::kApiVersion);
+		if (!mismatch.empty()) {
 			throw std::runtime_error(
-			    "Runtime format versions do not match the Editor. Rebuild "
-			    "Release Runtime before exporting.");
+			    "Runtime versions do not match the Editor." + mismatch +
+			    "\nRebuild Release x64 Runtime before exporting.");
 		}
-		if (!build.contains("scriptApiVersion") ||
-		    !build.at("scriptApiVersion").is_number_integer() ||
-		    build.at("scriptApiVersion") != LuaScript::kApiVersion)
-			throw std::runtime_error(
-			    "Runtime script API version does not match the Editor. Rebuild "
-			    "Release Runtime before exporting.");
 	} catch (const nlohmann::json::exception &) {
 		throw std::runtime_error(
 		    "Runtime build information is invalid. Rebuild Release Runtime "
@@ -692,7 +695,9 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 				    "Release Runtime output folder is unavailable. Build Release "
 				    "Runtime before exporting.");
 			}
+			runtimeLocation = runtimeRoot / L"Runtime.build.json";
 			ValidateRuntimeBuild(runtimeRoot);
+			runtimeLocation = runtimeRoot;
 			const auto checkRuntimeFile = [&](const fs::path &path) {
 				std::error_code status;
 				if (!fs::is_regular_file(path, status) ||
