@@ -593,8 +593,9 @@ fs::path ResolveDestination(const fs::path &path, fs::path &existingParent) {
 				existingParent = std::move(parent);
 				return destination;
 			}
-			throw std::runtime_error("An output parent is a file: " +
-			                         PathUtils::ToUtf8(parent));
+			throw OutputFileError("An output parent is a file: " +
+			                          PathUtils::ToUtf8(parent),
+			                      parent, false);
 		}
 		auto next = parent.parent_path();
 		if (next == parent) {
@@ -670,6 +671,9 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 		fs::path destination, existingOutputParent;
 		try {
 			destination = ResolveDestination(options.destination, existingOutputParent);
+		} catch (const OutputFileError &issue) {
+			appendIssue(issue.what(), {}, 0, {}, {}, issue.GetPath(),
+			            GameExportField::OUTPUT_FOLDER);
 		} catch (const std::bad_alloc &) {
 			throw;
 		} catch (const std::exception &issue) {
