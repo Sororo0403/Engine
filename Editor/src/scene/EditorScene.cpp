@@ -6560,9 +6560,22 @@ void EditorScene::UpdateDialogs() {
 				ui_.SameLine();
 			}
 			if (errorReplayPath_ && !playMode_.IsPlaying()) {
-				if (ui_.Button("Play Scene Again")) {
+				if (errorTestSave_ && !errorTestSave_->empty()) {
+					if (ui_.Button("Show Test Save Location")) {
+						ShellUtils::RevealLocationInExplorer(*errorTestSave_, errorActionMessage_);
+					}
+					ui_.SameLine();
+				}
+				const bool withoutSave = errorTestSave_ && ui_.Button("Play Without Test Save");
+				if (errorTestSave_) {
+					ui_.SameLine();
+				}
+				if (ui_.Button("Play Scene Again") || withoutSave) {
 					auto path = *errorReplayPath_;
 					const auto camera = errorReplayCameraOverride_;
+					if (withoutSave) {
+						playMode_.SetLoadTestSave(false);
+					}
 					ui_.CloseCurrentPopup();
 					ui_.EndPopup();
 					CancelPendingAction();
@@ -6671,12 +6684,14 @@ void EditorScene::StartPlay(const std::filesystem::path &path,
 	std::string error;
 	SceneObjectId invalidObject = 0;
 	std::string invalidInputAction;
+	std::optional<std::filesystem::path> failedTestSave;
 	if (!playMode_.Start(*scene, error, fallback, exportConfig_, &invalidObject,
-	                     cameraOverride, &invalidInputAction)) {
+	                     cameraOverride, &invalidInputAction, &failedTestSave)) {
 		auto scriptPath = SceneScripts::FindFailedScript(*scene, invalidObject, error);
 		ShowError(std::move(error), usesEditingScene ? invalidObject : 0,
 		          std::move(scriptPath));
 		errorInputAction_ = std::move(invalidInputAction);
+		errorTestSave_ = std::move(failedTestSave);
 		errorReplayPath_ = usesEditingScene ? document_.GetFilePath()
 		                                   : startup.GetFilePath();
 		errorReplayCameraOverride_ = cameraOverride;
@@ -7145,6 +7160,7 @@ void EditorScene::ShowError(std::string message, SceneObjectId objectId,
 	failedOpenSceneObject_ = 0;
 	failedSceneCheckReference_ = false;
 	errorReloadAssetPath_.clear();
+	errorTestSave_.reset();
 	errorReplayPath_.reset();
 	errorRestartCurrentScene_.reset();
 	errorPlayLogId_ = 0;

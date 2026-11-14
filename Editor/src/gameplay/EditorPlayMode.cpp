@@ -311,12 +311,16 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
                            const GameConfig &config,
                            SceneObjectId *invalidObject,
                            SceneObjectId cameraOverride,
-                           std::string *invalidInputAction) {
+                           std::string *invalidInputAction,
+                           std::optional<std::filesystem::path> *failedTestSave) {
 	if (invalidObject) {
 		*invalidObject = 0;
 	}
 	if (invalidInputAction) {
 		invalidInputAction->clear();
+	}
+	if (failedTestSave) {
+		failedTestSave->reset();
 	}
 
 	if (config.width < 1 || config.width > 8192 || config.height < 1 ||
@@ -366,9 +370,11 @@ bool EditorPlayMode::Start(const Scene &scene, std::string &error,
 		const auto path = config.GetScriptSettingsPath(true);
 		if (path.empty()) {
 			error = "The Editor test save location is unavailable.";
-			return false;
 		}
-		if (!config.LoadScriptSettings(path, initialScriptData, error)) {
+		if (path.empty() || !config.LoadScriptSettings(path, initialScriptData, error)) {
+			if (failedTestSave) {
+				*failedTestSave = path;
+			}
 			return false;
 		}
 	}

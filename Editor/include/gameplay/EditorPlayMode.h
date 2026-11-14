@@ -9,6 +9,7 @@
 #include "scene/SceneAudioPlayer.h"
 #include "scene/SceneRenderer.h"
 #include <memory>
+#include <optional>
 
 class RenderTexture;
 class RenderSystem;
@@ -78,13 +79,15 @@ class EditorPlayMode {
 	/// <param name="invalidObject">指定時は設定やモデル読み込みに問題がある物体IDを設定する。成功時や描画サイズ・操作キーの失敗では0</param>
 	/// <param name="cameraOverride">0は通常のPrimary選択。指定時は再生複製内だけ、そのCameraをPrimaryとして使用する</param>
 	/// <param name="invalidInputAction">指定時は修正が必要な名前付き入力を返す。該当しない場合は空</param>
+	/// <param name="failedTestSave">テスト用セーブの読み込みに失敗した場合の場所。場所が不明な場合は空のパス</param>
 	/// <returns>true:開始成功 false:設定が無効、または表示するモデルを読み込めない</returns>
 	bool Start(const Scene &scene, std::string &error,
 	           const CameraPose &fallbackPose = CameraPose{},
 	           const GameConfig &config = GameConfig{},
 	           SceneObjectId *invalidObject = nullptr,
 	           SceneObjectId cameraOverride = 0,
-	           std::string *invalidInputAction = nullptr);
+	           std::string *invalidInputAction = nullptr,
+	           std::optional<std::filesystem::path> *failedTestSave = nullptr);
 
 	/// <summary>
 	/// 指定したシーンから再実行し、Gameパネルへフォーカスを戻す。一時停止状態は保持する
@@ -237,6 +240,13 @@ class EditorPlayMode {
 	/// <returns>true:一時停止で開始 false:通常再生で開始</returns>
 	bool GetStartPaused() const {
 		return startPaused_;
+	}
+
+	/// <summary>
+	/// 次のPlayでテスト用セーブを読み込むか設定する
+	/// </summary>
+	void SetLoadTestSave(bool enabled) {
+		loadTestSave_ = enabled;
 	}
 
 	/// <summary>
