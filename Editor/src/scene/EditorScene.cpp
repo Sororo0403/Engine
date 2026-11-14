@@ -6994,9 +6994,13 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		if (recovery_.IsReady()) {
 			ShowRecovery(true);
 		}
-		if (!create && needsScene && stage_ == DialogStage::IDLE &&
-		    !assets_.GetSceneTargets().empty()) {
-			StartAction(EditorAction::OPEN);
+		if (!create && needsScene && stage_ == DialogStage::IDLE) {
+			if (!startupError.empty()) {
+				ShowError(std::move(startupError));
+				failedOpenScenePath_ = startup;
+			} else if (!assets_.GetSceneTargets().empty()) {
+				StartAction(EditorAction::OPEN);
+			}
 		}
 	} catch (const std::exception &error) {
 		reportFailure(error.what());
