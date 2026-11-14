@@ -375,7 +375,9 @@ class EditorScene final : public IScene {
 	/// 現在のシーンとプロジェクトの設定で配布画面を開く
 	/// </summary>
 	/// <param name="windowSource">出力先の候補とウィンドウ設定の基準にする配布版。通常は空</param>
-	void ShowGameExport(const std::filesystem::path &windowSource = {});
+	/// <param name="returningToCheck">問題箇所の確認後に戻るときはtrue</param>
+	void ShowGameExport(const std::filesystem::path &windowSource = {},
+	                    bool returningToCheck = false);
 
 	/// <summary>
 	/// 現在の配布設定で出力前検査を実行し、結果を出力画面に表示する

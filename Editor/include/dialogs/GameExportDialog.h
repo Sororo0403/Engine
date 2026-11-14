@@ -129,6 +129,11 @@ class GameExportDialog {
 	void Reopen(std::string error = {});
 
 	/// <summary>
+	/// 指摘を保持しつつ、前回の検査結果を再検査が必要な状態にする
+	/// </summary>
+	void MarkCheckStale() { checkResultStale_ = true; }
+
+	/// <summary>
 	/// 次に同じ起動シーンの出力画面を開くとき、現在の入力を引き継ぐ
 	/// </summary>
 	void PreserveDraft();

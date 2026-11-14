@@ -509,7 +509,8 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 	if (includesUnsavedEdits_) {
 		ui.Text("Includes unsaved changes to the startup scene.");
 	} else if (canSaveAndCheck) {
-		ui.Text("Check Export reads the saved version of linked scenes.");
+		ImGui::TextWrapped("The editing scene has unsaved changes. Use Save Scene and Check "
+		                   "to include them, or Check Export to use the saved files.");
 	}
 	const bool wasBrowsing = browsing_;
 	ui.BeginDisabled(wasBrowsing);
@@ -620,7 +621,7 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 	GameExportResult result = GameExportResult::NONE;
 	bool recheckIssue = false;
 	if (checkResultStale_) {
-		ui.Text("Settings changed. Run Check Export to update the results.");
+		ui.Text("Run a new check to update these results.");
 	}
 	if (!checkIssues_.empty()) {
 		if (ui.InputText("Search Issues", issueFilter_)) {

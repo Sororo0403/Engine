@@ -3075,7 +3075,7 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	case EditorAction::RETURN_TO_EXPORT_CHECK:
 		if (CanReturnToExportCheck()) {
 			const bool returnToResult = returnToExportResult_;
-			ShowGameExport();
+			ShowGameExport({}, true);
 			if (stage_ == DialogStage::EXPORT_GAME) {
 				returnToExportResult_ = returnToResult;
 			}
@@ -3539,7 +3539,8 @@ const Scene *EditorScene::PrepareGameExport(SceneDocument &startup,
 	}
 }
 
-void EditorScene::ShowGameExport(const std::filesystem::path &windowSource) {
+void EditorScene::ShowGameExport(const std::filesystem::path &windowSource,
+                                 bool returningToCheck) {
 	exportCheckInterrupted_ = false;
 	returnToExportResult_ = false;
 	try {
@@ -3571,7 +3572,13 @@ void EditorScene::ShowGameExport(const std::filesystem::path &windowSource) {
 		if (exportDialog_.Show(std::move(options),
 		                       isCurrentScene && document_.IsModified(),
 		                       project_.GetRoot(), lastExport, windowSource)) {
-			CheckGameExport(true);
+			if (returningToCheck && !isCurrentScene && document_.IsModified() &&
+			    !document_.GetFilePath().empty()) {
+				// 参照先シーンは保存済みの内容を検査するので、保存の選択を先に表示する。
+				exportDialog_.MarkCheckStale();
+			} else {
+				CheckGameExport(true);
+			}
 		}
 		returnToExportResult_ = !windowSource.empty();
 		stage_ = DialogStage::EXPORT_GAME;
