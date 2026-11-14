@@ -555,6 +555,7 @@ bool GameExportResultDialog::StartGame(bool freshStart) {
 	run.startupScenePath.clear();
 	run.launchFailurePath.clear();
 	run.destinationFailurePath.clear();
+	run.testSavePath.clear();
 	error_.clear();
 	if (!launchError.empty()) {
 		run.launchFailurePath = directory_ / L"game.json";
@@ -587,6 +588,10 @@ bool GameExportResultDialog::StartGame(bool freshStart) {
 	}
 
 	run.status = "Game process running.";
+	// 起動時の設定を保持し、同じ出力先のgame.jsonを後から変更しても試遊時の保存先を案内する。
+	if (!freshStart && supportsFreshStart_) {
+		run.testSavePath = config.GetScriptSettingsPath(true);
+	}
 	run.logStart.reset();
 	if (!status)
 		run.logStart = size;
@@ -826,6 +831,18 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 		ui.CloseCurrentPopup();
 	}
 
+	if (!run.testSavePath.empty()) {
+		const auto path = PathUtils::ToUtf8(run.testSavePath);
+		if (ui.Button("Show Test Save Location")) {
+			ShellUtils::RevealLocationInExplorer(run.testSavePath, error_);
+		}
+		ImGui::SetItemTooltip("%s", path.c_str());
+		ui.SameLine();
+		if (ui.Button("Copy Test Save Path")) {
+			ImGui::SetClipboardText(path.c_str());
+		}
+	}
+
 	if (!run.status.empty() && ui.Button("Copy Run Report")) {
 		auto report = "Output: " + PathUtils::ToUtf8(directory_) + "\n";
 		if (!run.launchSettings.empty()) {
@@ -837,6 +854,9 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 		}
 		if (!run.destinationFailurePath.empty()) {
 			report += "Destination scene error path: " + PathUtils::ToUtf8(run.destinationFailurePath) + "\n";
+		}
+		if (!run.testSavePath.empty()) {
+			report += "Editor test save path: " + PathUtils::ToUtf8(run.testSavePath) + "\n";
 		}
 		if (!run.launchFailed) {
 			RefreshLog();

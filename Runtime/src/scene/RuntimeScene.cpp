@@ -10,33 +10,13 @@
 #include "platform/windows/PathUtils.h"
 #include "scene/SceneSerializer.h"
 #include "ui/UIInputReader.h"
-#include <cstdlib>
 #include <fstream>
 #include <json.hpp>
-#include <memory>
 #include <optional>
 #include <utility>
 
 namespace {
 constexpr std::size_t kMaxScriptSettingsBytes = 32768;
-
-/// <summary>
-/// ゲームごとのユーザー設定ファイルの場所を取得する
-/// </summary>
-std::filesystem::path GetScriptSettingsPath(const std::string &settingsId,
-                                            bool launchedFromEditor) {
-	wchar_t *localAppData = nullptr;
-	const auto result = _wdupenv_s(&localAppData, nullptr, L"LOCALAPPDATA");
-	const std::unique_ptr<wchar_t, decltype(&std::free)> directory(
-	    localAppData, &std::free);
-	if (result != 0 || !directory)
-		return {};
-	const std::filesystem::path root(directory.get());
-	if (!root.is_absolute())
-		return {};
-	return root / L"Engine" / (launchedFromEditor ? L"EditorTestGameSettings" : L"GameSettings") /
-	       ("game-" + settingsId + ".json");
-}
 
 /// <summary>
 /// 設定に登録されたキーから、保存可能な単一の値だけを取り出す
@@ -143,7 +123,7 @@ bool RuntimeScene::Initialize() {
 	if (saveMode_ == SaveMode::SESSION_ONLY) {
 		Logger::Info("Save data is disabled for this run.");
 	} else if (!config_.settingsId.empty()) {
-		scriptSettingsPath_ = GetScriptSettingsPath(config_.settingsId, saveMode_ == SaveMode::EDITOR_TEST);
+		scriptSettingsPath_ = config_.GetScriptSettingsPath(saveMode_ == SaveMode::EDITOR_TEST);
 		if (scriptSettingsPath_.empty())
 			Logger::Warning("Game script settings directory is unavailable.");
 		else if (auto loaded = LoadScriptSettings(scriptSettingsPath_, config_.persistentScriptKeys)) {

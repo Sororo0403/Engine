@@ -4,9 +4,11 @@
 #include "platform/windows/PathUtils.h"
 #include "platform/windows/StringConversion.h"
 #include <algorithm>
+#include <cstdlib>
 #include <fstream>
 #include <iterator>
 #include <json.hpp>
+#include <memory>
 #include <stdexcept>
 #include <utility>
 
@@ -39,6 +41,26 @@ DirectX::XMFLOAT3 ReadVector(const nlohmann::json &value) {
 	        value[2].get<float>()};
 }
 } // namespace
+
+std::filesystem::path GameConfig::GetScriptSettingsPath(bool editorTest) const {
+	if (!IsSettingsName(settingsId)) {
+		return {};
+	}
+
+	wchar_t *localAppData = nullptr;
+	const auto result = _wdupenv_s(&localAppData, nullptr, L"LOCALAPPDATA");
+	const std::unique_ptr<wchar_t, decltype(&std::free)> directory(localAppData, &std::free);
+	if (result != 0 || !directory) {
+		return {};
+	}
+
+	const std::filesystem::path root(directory.get());
+	if (!root.is_absolute()) {
+		return {};
+	}
+	return root / L"Engine" / (editorTest ? L"EditorTestGameSettings" : L"GameSettings") /
+	       ("game-" + settingsId + ".json");
+}
 
 bool GameConfig::IsValid() const {
 	return HasValidWindowSettings() && HasValidStartupSettings();

@@ -35,6 +35,12 @@ struct GameConfig {
 	std::vector<std::string> persistentScriptKeys;
 
 	/// <summary>
+	/// ゲームのセーブ先を取得する。保存が未設定、または保存先が取得できないときは空
+	/// </summary>
+	/// <param name="editorTest">Editorから試遊する場合はtrue</param>
+	std::filesystem::path GetScriptSettingsPath(bool editorTest) const;
+
+	/// <summary>
 	/// 起動値と、パッケージ内を指す相対シーンパスを確認する
 	/// </summary>
 	/// <returns>true:有効 false:範囲外またはパス・カメラ・照明が無効</returns>
