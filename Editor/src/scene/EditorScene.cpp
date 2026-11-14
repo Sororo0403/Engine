@@ -3942,13 +3942,21 @@ void EditorScene::StartSave(bool saveAs) {
 	}
 
 	const auto &current = document_.GetFilePath();
-	const auto path = current.empty() && recoverySourceFile_
-	                      ? GetRecoveredScenePath()
-	                      : GetSceneDialogDirectory(current) /
-	                            (current.empty() ? L"Untitled.scene.json"
-	                                             : current.filename());
-	fileDialog_.Show(FileDialogMode::SAVE, path);
+	const auto directory = GetSceneDialogDirectory(current);
+	auto path = directory / current.filename();
 	if (recoverySourceFile_) {
+		path = GetRecoveredScenePath();
+	} else if (current.empty()) {
+		path = directory / L"Untitled.scene.json";
+		try {
+			const auto parent = PathUtils::ResolveFromExecutable(path).parent_path();
+			path = parent / AssetFolders::SuggestAvailableName(parent, L"Untitled", L".scene.json");
+		} catch (const std::filesystem::filesystem_error &) {
+			// 初期フォルダを確認できない場合も、保存先を手動で選べるようにする。
+		}
+	}
+	fileDialog_.Show(FileDialogMode::SAVE, path);
+	if (current.empty()) {
 		fileDialog_.RequireNewFile();
 	}
 
@@ -5210,7 +5218,7 @@ void EditorScene::UpdateDialogs() {
 			const auto startup = project_.GetStartupScene();
 			SaveEditorSession();
 			if (document_.SaveAs(fileDialog_.GetSelectedPath(),
-			                     !retryingSave && !recoverySourceFile_)) {
+			                     !retryingSave && !previousPath.empty())) {
 				if (!failedRestoredScene_.empty() &&
 				    project_.CanUseAsStartupScene(document_.GetFilePath())) {
 					failedRestoredScene_.clear();
