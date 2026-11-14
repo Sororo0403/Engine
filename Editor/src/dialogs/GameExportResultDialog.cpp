@@ -547,7 +547,10 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 	}
 
 	ui.SameLine();
-	if (ui.Button(run.showLog ? "Hide Game Log" : "View Game Log")) {
+	const auto *logButton = run.showLog ? "Hide Game Log"
+	                       : run.launchFailed ? "View Previous Game Log"
+	                                          : "View Game Log";
+	if (ui.Button(logButton)) {
 		run.showLog = !run.showLog;
 		if (run.showLog) {
 			RefreshLog();
@@ -598,6 +601,9 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 	}
 
 	if (run.showLog) {
+		if (run.launchFailed) {
+			ui.Text("Previous game log. The latest attempt did not start.");
+		}
 		std::optional<float> restoreScroll;
 		if (run.logStart &&
 		    ImGui::Checkbox("Since Run Game", &run.sinceLaunchOnly)) {
