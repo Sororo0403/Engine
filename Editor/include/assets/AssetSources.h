@@ -36,10 +36,10 @@ class AssetSources {
 	const std::vector<std::filesystem::path> &GetDirectories() const;
 
 	/// <summary>
-	/// 直接参照する取得元と、シーン遷移先の素材を検索できる接続済みの取得元を列挙する
+	/// 直接参照する取得元と、遷移先のシーンやPrefabの素材を検索できる取得元を列挙する
 	/// </summary>
 	/// <param name="scene">非表示・Meshのみの物体や未使用画像スロットも含む編集シーン</param>
-	/// <returns>出力時に検証する取得元。遷移がある場合は間接参照用に存在する登録先も含める</returns>
+	/// <returns>出力時に検証する取得元。シーンやPrefabへの参照があれば既存の登録先も含める</returns>
 	std::vector<std::filesystem::path> ForScene(const Scene &scene) const;
 
 	bool operator==(const AssetSources &other) const = default;

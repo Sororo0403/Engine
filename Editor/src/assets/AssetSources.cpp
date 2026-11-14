@@ -1,6 +1,7 @@
 #include "assets/AssetSources.h"
 #include "platform/windows/PathUtils.h"
 #include "scene/Scene.h"
+#include "scene/SceneAssetReferences.h"
 #include <algorithm>
 #include <stdexcept>
 #include <utility>
@@ -95,11 +96,19 @@ const std::vector<std::filesystem::path> &AssetSources::GetDirectories() const {
 std::vector<std::filesystem::path>
 AssetSources::ForScene(const Scene &scene) const {
 	std::vector<std::filesystem::path> result;
-	const bool transitions =
+	const bool hasDependencies =
 	    std::ranges::any_of(scene.GetObjects(), [](const auto &entry) {
-		    return entry.second.triggerActions &&
+		    const auto &object = entry.second;
+		    if (object.script) {
+			    const auto hasPath = [](const auto &binding) { return !binding.second.empty(); };
+			    if (std::ranges::any_of(object.script->prefabs, hasPath) ||
+			        std::ranges::any_of(object.script->scenes, hasPath)) {
+				    return true;
+			    }
+		    }
+		    return object.triggerActions &&
 		           std::ranges::any_of(
-		               entry.second.triggerActions->actions,
+		               object.triggerActions->actions,
 		               [](const auto &action) {
 			               return action.operation ==
 			                          TriggerAction::Operation::LOAD_SCENE &&
@@ -109,61 +118,15 @@ AssetSources::ForScene(const Scene &scene) const {
 	for (const auto &directory : directories_) {
 		const bool used =
 		    std::ranges::any_of(scene.GetObjects(), [&](const auto &entry) {
-			    const auto &object = entry.second;
-			    if (object.triggerActions &&
-			        std::ranges::any_of(
-			            object.triggerActions->actions,
-			            [&](const auto &action) {
-				            return action.operation ==
-				                       TriggerAction::Operation::LOAD_SCENE &&
-				                   !action.scenePath.empty() &&
-				                   Contains(directory, action.scenePath);
-			            }))
-				    return true;
-			    if (object.image && !object.image->texture.empty() &&
-			        Contains(directory, object.image->texture))
-				    return true;
-			    if (object.particleEmitter &&
-			        !object.particleEmitter->texture.empty() &&
-			        Contains(directory, object.particleEmitter->texture))
-				    return true;
-			    if (object.script &&
-			        std::ranges::any_of(
-			            object.script->scenes, [&](const auto &entry) {
-				            return !entry.second.empty() &&
-				                   Contains(directory, entry.second);
-			            }))
-				    return true;
-			    if (object.script &&
-			        std::ranges::any_of(
-			            object.script->prefabs, [&](const auto &entry) {
-				            return !entry.second.empty() &&
-				                   Contains(directory, entry.second);
-			            }))
-				    return true;
-			    if (object.script && !object.script->asset.empty() &&
-			        Contains(directory, object.script->asset))
-				    return true;
-			    if (object.audioSource &&
-			        !object.audioSource->clipPath.empty() &&
-			        Contains(directory, object.audioSource->clipPath)) {
-				    return true;
-			    }
-			    if (object.HasMesh() &&
-			        Contains(directory, object.mesh->modelPath)) {
-				    return true;
-			    }
-
-			    return object.meshRenderer &&
-			           std::ranges::any_of(object.meshRenderer->textures.slots,
-			                               [&](const auto &binding) {
-				                               return Contains(directory,
-				                                               binding.second);
-			                               });
+			    bool found = false;
+			    SceneAssetReferences::Visit(entry.second, [&](const auto &path) {
+				    found = found || Contains(directory, path);
+			    });
+			    return found;
 		    });
 		std::error_code directoryError;
 
-		if (used || (transitions && std::filesystem::is_directory(
+		if (used || (hasDependencies && std::filesystem::is_directory(
 		                                directory, directoryError))) {
 			result.push_back(directory);
 		}
