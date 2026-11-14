@@ -518,10 +518,15 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 		ImGui::TextWrapped("%s", run.status.c_str());
 
 	if (!run.launchFailurePath.empty()) {
+		const auto path = PathUtils::ToUtf8(run.launchFailurePath);
 		if (ui.Button("Show Startup Error Location")) {
 			ShellUtils::RevealLocationInExplorer(run.launchFailurePath, error_);
 		}
-		ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(run.launchFailurePath).c_str());
+		ImGui::SetItemTooltip("%s", path.c_str());
+		ui.SameLine();
+		if (ui.Button("Copy Startup Error Path")) {
+			ImGui::SetClipboardText(path.c_str());
+		}
 	}
 
 	if (!error_.empty()) {
@@ -590,6 +595,9 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 			report += run.launchSettings + "\n";
 		}
 		report += run.status + "\n";
+		if (!run.launchFailurePath.empty()) {
+			report += "Startup error path: " + PathUtils::ToUtf8(run.launchFailurePath) + "\n";
+		}
 		if (!run.launchFailed) {
 			RefreshLog();
 			refreshedLog = true;
