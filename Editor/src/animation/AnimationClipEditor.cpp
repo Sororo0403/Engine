@@ -209,6 +209,7 @@ void AnimationClipEditor::DrawKeys(const Scene *scene, AnimationClipComponent &t
 void AnimationClipEditor::ShowCreate(const std::filesystem::path &directory) {
 	directory_ = directory;
 	path_.clear();
+	markerTimes_.clear();
 	name_ = "New Animation Clip";
 	clip_ = {};
 	original_ = {};
@@ -218,10 +219,29 @@ void AnimationClipEditor::ShowCreate(const std::filesystem::path &directory) {
 }
 
 bool AnimationClipEditor::ShowEdit(const std::filesystem::path &path,
+                                  const Scene &editingScene,
                                   std::string &error) {
 	AnimationClipComponent loaded;
 	if (!AnimationClipAsset::Load(path, loaded, error))
 		return false;
+
+	markerTimes_.clear();
+	for (const auto &[id, object] : editingScene.GetObjects()) {
+		if (!object.triggerActions || !object.animationClip || !object.animationClip->usesAsset) {
+			continue;
+		}
+		const auto &reference = object.animationClip->asset;
+		if (reference.empty() || (reference.has_root_path() && !reference.is_absolute()) ||
+		    reference.native().find(L'\0') != std::wstring::npos ||
+		    !PathUtils::IsSameFile(path, reference)) {
+			continue;
+		}
+		for (const auto &action : object.triggerActions->actions) {
+			if (action.event == TriggerAction::Event::ANIMATION_CLIP_MARKER) {
+				markerTimes_.push_back(action.clipTime);
+			}
+		}
+	}
 
 	original_ = loaded;
 	clip_ = std::move(loaded);
@@ -253,9 +273,18 @@ AnimationClipEditor::Result AnimationClipEditor::Draw(const ImGuiSystem &ui) {
 	else
 		ui.Text(PathUtils::ToUtf8(path_.filename()));
 
-	ImGui::BeginChild("Clip Tracks", {0, -ImGui::GetFrameHeightWithSpacing() * 3});
+	const float footerRows = markerTimes_.empty() ? 3.f : 5.f;
+	ImGui::BeginChild("Clip Tracks", {0, -ImGui::GetFrameHeightWithSpacing() * footerRows});
 	DrawKeys(nullptr, clip_, playhead_);
 	ImGui::EndChild();
+	const auto affectedMarkers = std::ranges::count_if(markerTimes_, [&](float time) {
+		return time > clip_.duration && time <= original_.duration;
+	});
+	if (affectedMarkers != 0) {
+		const auto warning = std::format(
+		    "Shortening this clip puts {} marker(s) past the end in the current scene.", affectedMarkers);
+		ImGui::TextWrapped("%s", warning.c_str());
+	}
 	if (!error_.empty())
 		ui.Text(error_);
 	Result result = Result::NONE;

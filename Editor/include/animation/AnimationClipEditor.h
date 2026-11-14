@@ -2,6 +2,7 @@
 
 #include "animation/AnimationClipComponent.h"
 #include <string>
+#include <vector>
 
 class ImGuiSystem;
 class Scene;
@@ -14,7 +15,8 @@ class AnimationClipEditor {
 	enum class Result { NONE, SAVED, CANCELLED };
 
 	void ShowCreate(const std::filesystem::path &directory);
-	bool ShowEdit(const std::filesystem::path &path, std::string &error);
+	bool ShowEdit(const std::filesystem::path &path, const Scene &editingScene,
+	              std::string &error);
 	Result Draw(const ImGuiSystem &ui);
 	const std::filesystem::path &GetSavedPath() const { return path_; }
 
@@ -27,6 +29,7 @@ class AnimationClipEditor {
   private:
 	AnimationClipComponent clip_, original_;
 	std::filesystem::path path_, directory_;
+	std::vector<float> markerTimes_;
 	std::string name_, error_;
 	float playhead_ = 0;
 	bool openRequested_ = false;

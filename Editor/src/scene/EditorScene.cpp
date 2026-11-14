@@ -978,7 +978,7 @@ bool EditorScene::Update(float deltaTime) {
 					animationClipEditor_.ShowCreate(AssetFolders::Resolve(
 					    assets_.GetRootDirectory(), assetsPanel_.GetOpenDirectory()));
 					stage_ = DialogStage::EDIT_ANIMATION_CLIP;
-				} else if (animationClipEditor_.ShowEdit(clipEdit, error)) {
+				} else if (animationClipEditor_.ShowEdit(clipEdit, document_.GetScene(), error)) {
 					stage_ = DialogStage::EDIT_ANIMATION_CLIP;
 				} else {
 					ShowError(std::move(error));
@@ -6132,7 +6132,8 @@ void EditorScene::UpdateDialogs() {
 		}
 		if (result == GameExportResult::EDIT_ISSUE_CLIP) {
 			std::string error;
-			if (animationClipEditor_.ShowEdit(exportDialog_.GetSelectedIssue().assetPath, error)) {
+			if (animationClipEditor_.ShowEdit(exportDialog_.GetSelectedIssue().assetPath,
+			                                  document_.GetScene(), error)) {
 				stage_ = DialogStage::EDIT_EXPORT_ANIMATION_CLIP;
 			} else {
 				exportDialog_.Reopen("Could not open the Animation Clip: " + error);
