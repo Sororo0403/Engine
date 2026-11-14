@@ -4686,8 +4686,20 @@ void EditorScene::DrawAssetReferences(bool recycle) {
 		ui_.Text(recycle ? "The selection could not be moved. References or errors:"
 		                 : "External references or items that could not be checked:");
 		ui_.InputText("Search References", assetReferenceFilter_);
+		ImGui::SetItemTooltip("Search reference details or paste a source path.");
+		ui_.SameLine();
+		ui_.BeginDisabled(assetReferenceFilter_.empty());
+		if (ui_.Button("Clear Search")) {
+			assetReferenceFilter_.clear();
+		}
+		ui_.EndDisabled();
+		const auto searchPath = PathUtils::FromPathSearch(assetReferenceFilter_);
 		const auto matches = [&](const AssetUsage::Reference &source) {
-			return source.message.find(assetReferenceFilter_) != std::string::npos;
+			return source.message.find(assetReferenceFilter_) != std::string::npos ||
+			       PathUtils::MatchesPathSearch(source.scenePath, searchPath) ||
+			       PathUtils::MatchesPathSearch(source.sourcePath, searchPath) ||
+			       (source.editingScene &&
+			        PathUtils::MatchesPathSearch(document_.GetFilePath(), searchPath));
 		};
 		const auto matchingCount = std::ranges::count_if(assetReferences_, matches);
 		ui_.Text(std::format("Matching references: {} / {}", matchingCount,
