@@ -386,11 +386,15 @@ bool GameExportResultDialog::StartGame() {
 	packageSettings_ = ReadPackageSettings(directory_, config, launchError);
 	run.launchSettings = packageSettings_;
 	run.crashError.clear();
+	run.launchFailurePath.clear();
 	error_.clear();
-	if (launchError.empty()) {
+	if (!launchError.empty()) {
+		run.launchFailurePath = directory_ / L"game.json";
+	} else {
 		const auto scenePath = directory_ / config.scenePath;
 		std::error_code status;
 		if (!std::filesystem::is_regular_file(scenePath, status)) {
+			run.launchFailurePath = scenePath;
 			launchError = std::format(
 			    "The startup scene is missing or unavailable: {}",
 			    PathUtils::ToUtf8(scenePath));
@@ -408,6 +412,7 @@ bool GameExportResultDialog::StartGame() {
 	                                      ShellUtils::WindowVisibility::NORMAL,
 	                                      L"--editor-launch");
 	if (run.launchFailed) {
+		run.launchFailurePath = directory_ / L"Game.exe";
 		run.status = "Could not launch Game.exe: " + launchError;
 		return false;
 	}
@@ -498,6 +503,13 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 	bool refreshedLog = UpdateGameProcess(jumpToBeginning, jumpToLatest);
 	if (!run.status.empty())
 		ImGui::TextWrapped("%s", run.status.c_str());
+
+	if (!run.launchFailurePath.empty()) {
+		if (ui.Button("Show Startup Error Location")) {
+			ShellUtils::RevealLocationInExplorer(run.launchFailurePath, error_);
+		}
+		ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(run.launchFailurePath).c_str());
+	}
 
 	if (!error_.empty()) {
 		ImGui::TextWrapped("%s", error_.c_str());
