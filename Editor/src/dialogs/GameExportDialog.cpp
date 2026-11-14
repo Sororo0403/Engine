@@ -355,20 +355,21 @@ void GameExportDialog::SetCheckResult(std::string message,
 		const auto matches = [&](const auto &issue) {
 			return MatchesIssue(issue, issueFilter_, searchPath);
 		};
-		const auto sameSource = [&](const auto &issue) {
-			return matches(issue) && issue.objectId == previous.objectId &&
-			       issue.scenePath == previous.scenePath &&
-			       issue.scriptPath == previous.scriptPath &&
-			       issue.assetPath == previous.assetPath &&
-			       issue.locationPath == previous.locationPath &&
-			       issue.field == previous.field &&
-			       issue.inputAction == previous.inputAction &&
-			       issue.transitionScenePath == previous.transitionScenePath &&
-			       issue.transitionObjectId == previous.transitionObjectId;
+		const auto sameSource = [](const GameExportIssue &a, const GameExportIssue &b) {
+			return a.objectId == b.objectId && a.scenePath == b.scenePath &&
+			       a.scriptPath == b.scriptPath && a.assetPath == b.assetPath &&
+			       a.locationPath == b.locationPath && a.field == b.field &&
+			       a.inputAction == b.inputAction &&
+			       a.transitionScenePath == b.transitionScenePath &&
+			       a.transitionObjectId == b.transitionObjectId;
 		};
-		auto sameIssue = std::ranges::find_if(issues, [&](const auto &issue) {
-			return sameSource(issue) && issue.message == previous.message;
-		});
+		const auto findIssue = [&](const GameExportIssue &target) {
+			return std::ranges::find_if(issues, [&](const auto &issue) {
+				return matches(issue) && sameSource(issue, target) &&
+				       issue.message == target.message;
+			});
+		};
+		auto sameIssue = findIssue(previous);
 		const bool hasSource = previous.objectId != 0 ||
 		                       previous.field != GameExportField::NONE ||
 		                       !previous.scenePath.empty() || !previous.scriptPath.empty() ||
@@ -377,10 +378,21 @@ void GameExportDialog::SetCheckResult(std::string message,
 		                       previous.transitionObjectId != 0;
 		if (sameIssue == issues.end() && hasSource) {
 			// 診断文が変わっても、参照元が一意なら同じ箇所へ戻る。
-			const auto candidate = std::ranges::find_if(issues, sameSource);
+			const auto fromPreviousSource = [&](const auto &issue) {
+				return matches(issue) && sameSource(issue, previous);
+			};
+			const auto candidate = std::ranges::find_if(issues, fromPreviousSource);
 			if (candidate != issues.end() &&
-			    std::find_if(candidate + 1, issues.end(), sameSource) == issues.end()) {
+			    std::find_if(candidate + 1, issues.end(), fromPreviousSource) == issues.end()) {
 				sameIssue = candidate;
+			}
+		}
+		if (sameIssue == issues.end()) {
+			// 上の行が増減しても、修正した指摘の次に確認していた行を探す。
+			const auto next = std::find_if(checkIssues_.begin() + *selectedIssue_ + 1,
+			                               checkIssues_.end(), matches);
+			if (next != checkIssues_.end()) {
+				sameIssue = findIssue(*next);
 			}
 		}
 		if (sameIssue != issues.end()) {
