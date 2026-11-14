@@ -757,13 +757,13 @@ GameExportResult GameExportDialog::Draw(const ImGuiSystem &ui,
 				}
 				if (!issue.assetPath.empty() || !issue.locationPath.empty()) {
 					ui.SameLine();
-					if (ui.Button("Recheck Here")) {
-						selectedIssue_ = i;
-						recheckIssue = true;
-					}
-					ImGui::SetItemTooltip(
-					    "Run Check Export and resume the list at this issue.");
 				}
+				if (ui.Button("Recheck Here")) {
+					selectedIssue_ = i;
+					recheckIssue = true;
+				}
+				ImGui::SetItemTooltip(
+				    "Run Check Export and resume the list at this issue.");
 				if (const auto *label = EditFieldLabel(issue.field); label && ui.Button(label)) {
 					selectedIssue_ = i;
 					focusField_ = issue.field;
