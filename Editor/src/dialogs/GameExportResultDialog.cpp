@@ -116,6 +116,20 @@ std::filesystem::path FindFailedDestination(const std::filesystem::path &directo
 }
 
 /// <summary>
+/// 実行中のエラーから配布フォルダ内のシーンファイルを特定する
+/// </summary>
+std::filesystem::path FindFailedRunningScene(const std::filesystem::path &directory,
+                                             std::string_view diagnostic) {
+	constexpr std::string_view prefix = "Running scene: ";
+	auto detail = TakeLastDiagnosticDetail(diagnostic);
+	if (detail.starts_with(kSourceObjectPrefix)) {
+		detail = TakeLastDiagnosticDetail(diagnostic);
+	}
+	return detail.starts_with(prefix) ? ResolveLogScene(directory, detail.substr(prefix.size()))
+	                                  : std::filesystem::path{};
+}
+
+/// <summary>
 /// ログ項目の見出しから重要度を取得する
 /// </summary>
 std::optional<LogLevel> ParseLogLevel(std::string_view line) {
@@ -637,6 +651,7 @@ bool GameExportResultDialog::StartGame(bool freshStart) {
 	run.startupScenePath.clear();
 	run.launchFailurePath.clear();
 	run.destinationFailurePath.clear();
+	run.runningSceneFailurePath.clear();
 	run.testSavePath.clear();
 	error_.clear();
 	if (!launchError.empty()) {
@@ -741,6 +756,9 @@ bool GameExportResultDialog::UpdateGameProcess(bool &jumpToBeginning,
 			}
 		}
 		run.destinationFailurePath = FindFailedDestination(directory_, run.crashError);
+		if (run.launchFailurePath.empty() && run.destinationFailurePath.empty()) {
+			run.runningSceneFailurePath = FindFailedRunningScene(directory_, run.crashError);
+		}
 		jumpToBeginning = true;
 		return true;
 	}
@@ -807,14 +825,17 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 		}
 	}
 
-	if (!run.destinationFailurePath.empty()) {
-		const auto path = PathUtils::ToUtf8(run.destinationFailurePath);
-		if (ui.Button("Show Destination Scene Location")) {
-			ShellUtils::RevealLocationInExplorer(run.destinationFailurePath, error_);
+	const bool destinationFailed = !run.destinationFailurePath.empty();
+	const auto &failedRuntimeScene = destinationFailed ? run.destinationFailurePath
+	                                                  : run.runningSceneFailurePath;
+	if (!failedRuntimeScene.empty()) {
+		const auto path = PathUtils::ToUtf8(failedRuntimeScene);
+		if (ui.Button(destinationFailed ? "Show Destination Scene Location" : "Show Running Scene Location")) {
+			ShellUtils::RevealLocationInExplorer(failedRuntimeScene, error_);
 		}
 		ImGui::SetItemTooltip("%s", path.c_str());
 		ui.SameLine();
-		if (ui.Button("Copy Destination Scene Path")) {
+		if (ui.Button(destinationFailed ? "Copy Destination Scene Path" : "Copy Running Scene Path")) {
 			ImGui::SetClipboardText(path.c_str());
 		}
 	}
@@ -835,8 +856,7 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 		}
 		requestedSourceScene_ = sourcePath;
 	};
-	const auto &failedScene = run.destinationFailurePath.empty()
-	                              ? run.launchFailurePath : run.destinationFailurePath;
+	const auto &failedScene = failedRuntimeScene.empty() ? run.launchFailurePath : failedRuntimeScene;
 	if (!failedScene.empty() && canOpenSource &&
 	    run.launchedPackageId == run.sourcePackageId) {
 		std::error_code status;
@@ -856,7 +876,7 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 					if (!requestedSourceScene_.empty()) {
 						auto diagnostic = std::string_view(run.crashError);
 						const auto heading = LogLevelPrefix(diagnostic.substr(0, diagnostic.find_first_of("\r\n")));
-						const bool hasObjectDetails = run.destinationFailurePath.empty()
+						const bool hasObjectDetails = failedRuntimeScene.empty()
 						                                  ? heading.starts_with(kStartupPrepareError)
 						                                  : !heading.starts_with(kDestinationLoadError);
 						if (hasObjectDetails) {
@@ -987,6 +1007,9 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 		}
 		if (!run.destinationFailurePath.empty()) {
 			report += "Destination scene error path: " + PathUtils::ToUtf8(run.destinationFailurePath) + "\n";
+		}
+		if (!run.runningSceneFailurePath.empty()) {
+			report += "Running scene error path: " + PathUtils::ToUtf8(run.runningSceneFailurePath) + "\n";
 		}
 		if (!run.testSavePath.empty()) {
 			report += "Editor test save path: " + PathUtils::ToUtf8(run.testSavePath) + "\n";

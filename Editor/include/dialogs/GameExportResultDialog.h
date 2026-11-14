@@ -113,6 +113,7 @@ class GameExportResultDialog {
 		std::filesystem::path startupScenePath;
 		std::filesystem::path launchFailurePath;
 		std::filesystem::path destinationFailurePath;
+		std::filesystem::path runningSceneFailurePath;
 		std::filesystem::path testSavePath;
 		std::filesystem::path sourceProjectRoot;
 		std::vector<GameExporter::SceneSource> sceneSources;

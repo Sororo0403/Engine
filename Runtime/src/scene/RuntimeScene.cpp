@@ -145,6 +145,19 @@ bool RuntimeScene::Update(float seconds) {
 	    config_.gamepadEnabled ? &input_.GetGamepad() : nullptr,
 	    input_.IsActive(), true, &input_.GetWiiRemote());
 	const auto revision = simulation_.GetSceneRevision();
+	SceneObjectId invalidObject = 0;
+	const auto reportSceneError = [&](std::string_view reason) {
+		const auto *loaded = simulation_.GetLoadedScenePath();
+		const auto &path = loaded ? *loaded : config_.scenePath;
+		const bool changed = simulation_.GetSceneRevision() != revision && loaded;
+		auto message = std::string(reason) +
+		               (changed ? "\nDestination scene: " : "\nRunning scene: ") +
+		               PathUtils::ToUtf8(path);
+		if (simulation_.HasSourceObject(invalidObject)) {
+			message += std::format("\nSource object ID: {}", invalidObject);
+		}
+		Logger::Error(message, path);
+	};
 
 	if (input_.IsActive()) {
 		const auto &keys = input_.GetKeyboard();
@@ -171,13 +184,16 @@ bool RuntimeScene::Update(float seconds) {
 		        OrbitCameraInputReader::Read(
 		            &input_.GetMouse(),
 		            config_.gamepadEnabled ? &input_.GetGamepad() : nullptr),
-		        uiInput, actions)) {
-			auto error = simulation_.GetLastUpdateError();
-			if (const auto failed = simulation_.GetFailedSceneDestination();
-			    failed && failed->objectId != 0) {
-				error += std::format("\nSource object ID: {}", failed->objectId);
+		        uiInput, actions, &invalidObject)) {
+			if (const auto failed = simulation_.GetFailedSceneDestination()) {
+				auto error = simulation_.GetLastUpdateError();
+				if (failed->objectId != 0) {
+					error += std::format("\nSource object ID: {}", failed->objectId);
+				}
+				Logger::Error(error, failed->path);
+			} else {
+				reportSceneError(simulation_.GetLastUpdateError());
 			}
-			Logger::Error(error);
 			return false;
 		}
 		SaveScriptSettings();
@@ -191,23 +207,10 @@ bool RuntimeScene::Update(float seconds) {
 	if (!input_.IsActive())
 		simulation_.CancelUIInput();
 	std::string audioError;
-	SceneObjectId invalidObject = 0;
 	const bool sceneChanged = simulation_.GetSceneRevision() != revision;
 	const auto *destination = sceneChanged ? simulation_.GetLoadedScenePath() : nullptr;
-	const auto reportUpdateError = [&](std::string_view reason) {
-		if (destination) {
-			auto message = std::string(reason) + "\nDestination scene: " +
-			               PathUtils::ToUtf8(*destination);
-			if (simulation_.HasSourceObject(invalidObject)) {
-				message += std::format("\nSource object ID: {}", invalidObject);
-			}
-			Logger::Error(message, *destination);
-		} else {
-			Logger::Error(reason);
-		}
-	};
 	if (sceneChanged && !renderer_.PrepareSceneModels(audioError, &invalidObject)) {
-		reportUpdateError(audioError);
+		reportSceneError(audioError);
 		return false;
 	}
 	const bool audioReady =
@@ -219,20 +222,25 @@ bool RuntimeScene::Update(float seconds) {
 	        : audioPlayer_.Update(
 	              simulation_.GetCameraPose(),
 	              !input_.IsActive() || simulation_.IsGamePaused(), audioError,
-	              nullptr, simulation_.GetAudioActions());
+	              &invalidObject, simulation_.GetAudioActions());
 	if (!audioReady) {
-		reportUpdateError(audioError);
+		reportSceneError(audioError);
 		return false;
 	}
 
 	std::vector<AnimatorDrawPose> poses;
-	if (!simulation_.GetAnimatorPoses(poses, audioError) ||
-	    !renderer_.SetAnimatorPoses(std::move(poses)))
+	if (!simulation_.GetAnimatorPoses(poses, audioError)) {
+		reportSceneError(audioError);
 		return false;
+	}
+	if (!renderer_.SetAnimatorPoses(std::move(poses))) {
+		reportSceneError("Could not apply animator poses for rendering.");
+		return false;
+	}
 	std::vector<ParticleDrawBatch> particles;
 
 	if (!simulation_.GetParticles(particles, audioError)) {
-		Logger::Error(audioError);
+		reportSceneError(audioError);
 		return false;
 	}
 
@@ -243,12 +251,10 @@ bool RuntimeScene::Update(float seconds) {
 	       renderer_.SetCameraPose(simulation_.GetCameraPose()) &&
 	       renderer_.SetCameraSettings(simulation_.GetCameraSettings()) &&
 	       renderer_.Update();
-	if (destination) {
-		if (renderReady) {
-			Logger::Info("Destination scene ready: " + PathUtils::ToUtf8(*destination), *destination);
-		} else {
-			reportUpdateError("Could not prepare the destination scene for rendering.");
-		}
+	if (!renderReady) {
+		reportSceneError("Could not prepare the scene for rendering.");
+	} else if (destination) {
+		Logger::Info("Destination scene ready: " + PathUtils::ToUtf8(*destination), *destination);
 	}
 	return renderReady;
 }
