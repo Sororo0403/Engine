@@ -1072,6 +1072,7 @@ class EditorScene final : public IScene {
 	BoxCreationDialog boxCreationDialog_;
 	FileDialog fileDialog_;
 	FileDialog openSceneDialog_;
+	FileDialog projectDialog_;
 	TextureImportDialog textureImportDialog_;
 	AudioImportDialog audioImportDialog_;
 	ModelImportDialog modelImportDialog_;

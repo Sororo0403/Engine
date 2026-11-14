@@ -3326,7 +3326,20 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	}
 
 	case EditorAction::NEW_PROJECT:
-	case EditorAction::OPEN_PROJECT:
+	case EditorAction::OPEN_PROJECT: {
+		const auto directory = project_.GetRoot().empty()
+		                           ? document_.GetFilePath().parent_path()
+		                           : project_.GetRoot();
+		const bool creating = action == EditorAction::NEW_PROJECT;
+		projectDialog_.Show(FileDialogMode::SELECT_DIRECTORY, directory,
+		                 creating ? FileDialogFilter::SCENE : FileDialogFilter::PROJECT,
+		                 creating ? "New Project###FileDialog" : "Open Project###FileDialog");
+		stage_ = creating
+		             ? DialogStage::CREATE_PROJECT
+		             : DialogStage::OPEN_PROJECT;
+		return;
+	}
+
 	case EditorAction::OPEN_PROJECT_PATH:
 	case EditorAction::NEW:
 	case EditorAction::NEW_SAMPLE:
@@ -3705,6 +3718,10 @@ void EditorScene::ConfirmSceneChanges() {
 		case EditorAction::OPEN:
 			destination = PathUtils::ToUtf8(openSceneDialog_.GetSelectedPath());
 			break;
+		case EditorAction::NEW_PROJECT:
+		case EditorAction::OPEN_PROJECT:
+			destination = PathUtils::ToUtf8(projectDialog_.GetSelectedPath());
+			break;
 		case EditorAction::OPEN_PATH:
 		case EditorAction::OPEN_PROJECT_PATH:
 		case EditorAction::OPEN_EXPORT_ISSUE:
@@ -3728,6 +3745,10 @@ void EditorScene::CancelPendingAction() {
 	if (action == EditorAction::OPEN) {
 		openSceneDialog_.RetrySelection();
 		stage_ = DialogStage::OPEN_FILE;
+	} else if (action == EditorAction::NEW_PROJECT || action == EditorAction::OPEN_PROJECT) {
+		projectDialog_.RetrySelection();
+		stage_ = action == EditorAction::NEW_PROJECT ? DialogStage::CREATE_PROJECT
+		                                            : DialogStage::OPEN_PROJECT;
 	} else if (action == EditorAction::WRITE_GAME_EXPORT ||
 	    action == EditorAction::SAVE_AND_CHECK_EXPORT ||
 	    action == EditorAction::OPEN_EXPORT_ISSUE) {
@@ -3758,16 +3779,11 @@ void EditorScene::ExecutePendingAction() {
 
 	case EditorAction::NEW_PROJECT:
 	case EditorAction::OPEN_PROJECT: {
-		const auto directory = project_.GetRoot().empty()
-		                           ? document_.GetFilePath().parent_path()
-		                           : project_.GetRoot();
-		const bool creating = action == EditorAction::NEW_PROJECT;
-		fileDialog_.Show(FileDialogMode::SELECT_DIRECTORY, directory,
-		                 creating ? FileDialogFilter::SCENE : FileDialogFilter::PROJECT,
-		                 creating ? "New Project###FileDialog" : "Open Project###FileDialog");
-		stage_ = creating
-		             ? DialogStage::CREATE_PROJECT
-		             : DialogStage::OPEN_PROJECT;
+		stage_ = action == EditorAction::NEW_PROJECT ? DialogStage::CREATE_PROJECT
+		                                            : DialogStage::OPEN_PROJECT;
+		const auto folder = projectDialog_.GetSelectedPath();
+		SwitchProject(folder, action == EditorAction::NEW_PROJECT);
+		startupProjectPicker_ = startupProjectPicker_ && stage_ == DialogStage::OPEN_PROJECT;
 		return;
 	}
 
@@ -5119,7 +5135,7 @@ void EditorScene::UpdateDialogs() {
 
 	case DialogStage::CREATE_PROJECT:
 	case DialogStage::OPEN_PROJECT: {
-		const auto result = fileDialog_.Draw(ui_);
+		const auto result = projectDialog_.Draw(ui_);
 
 		if (result == FileDialogResult::CANCELLED) {
 			missingRecentProject_.clear();
@@ -5128,9 +5144,16 @@ void EditorScene::UpdateDialogs() {
 				ShowRecovery(true);
 			}
 		} else if (result == FileDialogResult::ACCEPTED) {
-			SwitchProject(fileDialog_.GetSelectedPath(),
-			              stage_ == DialogStage::CREATE_PROJECT);
-			startupProjectPicker_ = startupProjectPicker_ && stage_ == DialogStage::OPEN_PROJECT;
+			const bool creating = stage_ == DialogStage::CREATE_PROJECT;
+			const auto &current = project_.GetRoot();
+			if (!creating && !current.empty() &&
+			    PathUtils::IsSameFile(current, projectDialog_.GetSelectedPath())) {
+				missingRecentProject_.clear();
+				stage_ = DialogStage::IDLE;
+				return;
+			}
+			pendingAction_ = creating ? EditorAction::NEW_PROJECT : EditorAction::OPEN_PROJECT;
+			ConfirmSceneChanges();
 		}
 
 		return;
@@ -6568,7 +6591,7 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 	const auto reportFailure = [&](std::string error) {
 		if (stage_ == DialogStage::CREATE_PROJECT ||
 		    stage_ == DialogStage::OPEN_PROJECT) {
-			fileDialog_.RetrySelection(std::move(error), folder);
+			projectDialog_.RetrySelection(std::move(error), folder);
 		} else if (reopenOnFailure) {
 			Logger::Error("Could not reopen project: " + error, folder / L"project.json");
 			std::error_code status;
@@ -6576,14 +6599,14 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 			        .type() == std::filesystem::file_type::not_found) {
 				missingRecentProject_ = folder;
 			}
-			fileDialog_.Show(FileDialogMode::SELECT_DIRECTORY,
+			projectDialog_.Show(FileDialogMode::SELECT_DIRECTORY,
 			                 FindExistingDirectory(folder), FileDialogFilter::PROJECT,
 			                 "Open Project###FileDialog");
-			fileDialog_.RetrySelection(std::move(error), folder);
+			projectDialog_.RetrySelection(std::move(error), folder);
 			if (!missingRecentProject_.empty() &&
 			    (preferences_.projectScenes.contains(missingRecentProject_) ||
 			     !preferences_.LastProjectAssetFolder(missingRecentProject_).empty())) {
-				fileDialog_.OfferPreviousProjectSession();
+				projectDialog_.OfferPreviousProjectSession();
 			}
 			stage_ = DialogStage::OPEN_PROJECT;
 		} else {
@@ -6615,7 +6638,7 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		const auto startup = candidate.GetStartupScene();
 		std::filesystem::path unavailableLast;
 		const auto previousProjectRoot = !create && stage_ == DialogStage::OPEN_PROJECT &&
-		                                         fileDialog_.ShouldRestorePreviousProjectSession()
+		                                         projectDialog_.ShouldRestorePreviousProjectSession()
 		                                     ? missingRecentProject_ : std::filesystem::path{};
 		const auto previousRoot = preferences_.projectScenes.contains(candidate.GetRoot())
 		                              ? std::filesystem::path{} : previousProjectRoot;
