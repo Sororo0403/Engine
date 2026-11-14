@@ -3557,6 +3557,27 @@ void EditorScene::CheckGameExport(bool continueFromIssue) {
 	                             std::move(issues), continueFromIssue);
 }
 
+void EditorScene::RevealGameExportObject(SceneObjectId object) {
+	if (object == 0) {
+		return;
+	}
+	if (document_.GetScene().Contains(object)) {
+		RevealReferenceObject(object);
+		return;
+	}
+
+	const bool canSaveAndCheck =
+	    document_.IsModified() && !document_.GetFilePath().empty() &&
+	    !UsesEditingSceneForStartup(project_.GetStartupScene());
+	CheckGameExport(true);
+	exportDialog_.Reopen(
+	    canSaveAndCheck
+	        ? "This object is absent from the editing scene. Use Save Scene and Check "
+	          "to include your edits."
+	        : "The reported object is no longer in the scene. The results were refreshed.");
+	stage_ = DialogStage::EXPORT_GAME;
+}
+
 void EditorScene::BrowseStartupScene(bool repairing) {
 	const auto startup = project_.GetStartupScene();
 	auto initialPath = GetSceneDialogDirectory(startup);
@@ -3795,9 +3816,7 @@ void EditorScene::ExecutePendingAction() {
 			return;
 		}
 		SaveEditorSession();
-		if (object != 0) {
-			RevealReferenceObject(object);
-		}
+		RevealGameExportObject(object);
 		return;
 	}
 	case EditorAction::RESTORE_RECOVERY:
@@ -5680,9 +5699,7 @@ void EditorScene::UpdateDialogs() {
 			if (scenePath.empty() ||
 			    (!current.empty() && PathUtils::IsSameFile(current, scenePath))) {
 				stage_ = DialogStage::IDLE;
-				if (object != 0) {
-					RevealReferenceObject(object);
-				}
+				RevealGameExportObject(object);
 			} else if (playMode_.IsPlaying()) {
 				exportDialog_.Reopen("Stop Play before opening the referenced scene.");
 			} else {

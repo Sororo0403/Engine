@@ -370,6 +370,11 @@ class EditorScene final : public IScene {
 	void CheckGameExport(bool continueFromIssue = false);
 
 	/// <summary>
+	/// 配布前チェックの物体を選択する。物体がなくなっていれば再検査へ戻る
+	/// </summary>
+	void RevealGameExportObject(SceneObjectId object);
+
+	/// <summary>
 	/// チェックや出力を実行する時点の起動シーンと素材の取得元を準備する
 	/// </summary>
 	const Scene *PrepareGameExport(SceneDocument &startup, GameExportOptions &options,
