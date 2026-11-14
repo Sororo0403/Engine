@@ -412,6 +412,23 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 				                                     failedProjectLocationError_);
 			}
 			ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(failedProject_).c_str());
+			std::error_code saveStatus;
+			if (filter_ == FileDialogFilter::SCENE && mode_ != FileDialogMode::OPEN &&
+			    mode_ != FileDialogMode::SELECT_DIRECTORY &&
+			    std::filesystem::exists(std::filesystem::symlink_status(failedProject_, saveStatus))) {
+				ui.SameLine();
+				if (ui.Button("Suggest Name")) {
+					try {
+						const auto path = failedProject_.parent_path() / SuggestSaveName(failedProject_);
+						fileName_ = PathUtils::ToUtf8(path);
+						failedProject_.clear();
+						failedProjectLocationError_.clear();
+						error_.clear();
+					} catch (const std::exception &error) {
+						failedProjectLocationError_ = error.what();
+					}
+				}
+			}
 			if (choosingProject) {
 				ui.SameLine();
 				if (ui.Button("Retry Failed Project")) {
