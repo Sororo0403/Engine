@@ -19,6 +19,8 @@ namespace {
 constexpr auto kGameLogPath = L"logs/Engine.log";
 constexpr auto kLogRefreshInterval = std::chrono::milliseconds{500};
 constexpr std::streamoff kLogPageBytes = 64 * 1024;
+constexpr std::string_view kStartupReady = " [INFO] Startup scene ready: ";
+constexpr std::string_view kDestinationReady = " [INFO] Destination scene ready: ";
 
 /// <summary>
 /// Loggerのヘッダーを持つ行からログレベルを取得する
@@ -28,6 +30,32 @@ std::string_view LogLevelPrefix(std::string_view line) {
 	return line.starts_with('[') && timestampEnd != std::string_view::npos
 	           ? line.substr(timestampEnd + 1)
 	           : std::string_view{};
+}
+
+/// <summary>
+/// ログに記録されたシーンのパスを配布フォルダ内に限定して解決する
+/// </summary>
+std::filesystem::path ResolveLogScene(const std::filesystem::path &directory,
+                                      std::string_view scenePath) {
+	if (scenePath.empty()) {
+		return {};
+	}
+	try {
+		const auto path = PathUtils::FromUtf8(scenePath);
+		if (path.empty() || (path.has_root_path() && !path.is_absolute()) ||
+		    !PathUtils::HasExtension(path, ".json")) {
+			return {};
+		}
+		const auto root = std::filesystem::canonical(directory);
+		const auto target = std::filesystem::weakly_canonical(directory / path);
+		const auto relative = PathUtils::RelativeInside(root, target);
+		if (relative.empty() || !std::ranges::all_of(relative, PathUtils::IsValidFileName)) {
+			return {};
+		}
+		return target;
+	} catch (const std::exception &) {
+		return {};
+	}
 }
 
 /// <summary>
@@ -51,25 +79,7 @@ std::filesystem::path FindFailedDestination(const std::filesystem::path &directo
 			}
 		}
 	}
-	if (scenePath.empty()) {
-		return {};
-	}
-	try {
-		const auto path = PathUtils::FromUtf8(scenePath);
-		if (path.empty() || (path.has_root_path() && !path.is_absolute()) ||
-		    !PathUtils::HasExtension(path, ".json")) {
-			return {};
-		}
-		const auto root = std::filesystem::canonical(directory);
-		const auto target = std::filesystem::weakly_canonical(directory / path);
-		const auto relative = PathUtils::RelativeInside(root, target);
-		if (relative.empty() || !std::ranges::all_of(relative, PathUtils::IsValidFileName)) {
-			return {};
-		}
-		return target;
-	} catch (const std::exception &) {
-		return {};
-	}
+	return ResolveLogScene(directory, scenePath);
 }
 
 /// <summary>
@@ -481,8 +491,7 @@ bool GameExportResultDialog::FindLogMatch(MatchSearch direction) {
 		if ((!next || relative > anchor) && entryLevel >= minimumLevel) {
 			if (sceneLoad) {
 				const auto prefix = LogLevelPrefix(line);
-				if (prefix.starts_with(" [INFO] Startup scene ready: ") ||
-				    prefix.starts_with(" [INFO] Destination scene ready: ")) {
+				if (prefix.starts_with(kStartupReady) || prefix.starts_with(kDestinationReady)) {
 					match = 0;
 				}
 			} else {
@@ -776,6 +785,8 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 	}
 
 	requestedSourceScene_.clear();
+	const bool canOpenSource = run.sourceProjectRoot == projectRoot && !run.sourcePackageId.empty() &&
+	                           !run.sceneSources.empty();
 	const auto openSource = [&](const std::filesystem::path &sourcePath) {
 		if (GameExporter::ReadPackageId(directory_) != run.sourcePackageId) {
 			error_ = "The export has changed. Use Reload Export to find its source scenes.";
@@ -790,7 +801,7 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 	};
 	const auto &failedScene = run.destinationFailurePath.empty()
 	                              ? run.launchFailurePath : run.destinationFailurePath;
-	if (!failedScene.empty() && run.sourceProjectRoot == projectRoot && !run.sceneSources.empty() &&
+	if (!failedScene.empty() && canOpenSource &&
 	    run.launchedPackageId == run.sourcePackageId) {
 		std::error_code status;
 		const auto root = std::filesystem::canonical(directory_, status);
@@ -813,8 +824,7 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 		}
 	}
 
-	if (run.sourceProjectRoot == projectRoot && !run.sourcePackageId.empty() &&
-	    !run.sceneSources.empty() && ImGui::CollapsingHeader("Source Scenes")) {
+	if (canOpenSource && ImGui::CollapsingHeader("Source Scenes")) {
 		if (ui.BeginChild("ExportSourceScenes", 570.0f, 145.0f)) {
 			for (const auto &[packagedPath, sourcePath] : run.sceneSources) {
 				const auto label = PathUtils::ToUtf8(packagedPath);
@@ -1131,6 +1141,31 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 			}
 			ImGui::SetItemTooltip("Return to the log position and filters from before the jump.");
 		}
+		if (run.showLogBeginning) {
+			if (canOpenSource && run.sinceLaunchOnly && run.logStart &&
+			    run.launchedPackageId == run.sourcePackageId && run.lastMatch &&
+			    run.lastMatch->query.empty() && run.lastMatch->entryOffset == run.logPageOffset) {
+				const auto heading = LogLevelPrefix(std::string_view(log_).substr(0, log_.find_first_of("\r\n")));
+				for (const auto prefix : {kStartupReady, kDestinationReady}) {
+					if (!heading.starts_with(prefix)) {
+						continue;
+					}
+					const auto target = ResolveLogScene(directory_, heading.substr(prefix.size()));
+					std::error_code rootError;
+					const auto root = std::filesystem::canonical(directory_, rootError);
+					if (target.empty() || rootError) {
+						break;
+					}
+					const auto source = std::ranges::find_if(run.sceneSources, [&](const auto &scene) {
+						return PathUtils::IsSameFile(root / scene.packagedPath, target);
+					});
+					if (source != run.sceneSources.end() && ui.Button("Open Logged Scene in Editor")) {
+						openSource(source->sourcePath);
+					}
+					break;
+				}
+			}
+		}
 		const auto filtered = run.logFilter.empty() ? std::string{}
 		                                           : FilterLogEntries(log_, run.logFilter);
 		const auto &matching = run.logFilter.empty() ? log_ : filtered;
@@ -1202,6 +1237,10 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 		}
 	}
 
+	if (action == GameExportResultAction::NONE && !requestedSourceScene_.empty()) {
+		action = GameExportResultAction::OPEN_SOURCE_SCENE;
+		ui.CloseCurrentPopup();
+	}
 	ui.EndPopup();
 	return action;
 }
