@@ -1,4 +1,5 @@
 #include "dialogs/GameExportResultDialog.h"
+#include "gameplay/GameConfig.h"
 #include "graphics/ui/ImGuiSystem.h"
 #include "platform/windows/PathUtils.h"
 #include "platform/windows/ShellUtils.h"
@@ -16,6 +17,20 @@ namespace {
 constexpr auto kGameLogPath = L"logs/Engine.log";
 constexpr auto kLogRefreshInterval = std::chrono::milliseconds{500};
 constexpr std::streamoff kLogPageBytes = 64 * 1024;
+
+/// <summary>
+/// 配布版そのものに保存されている画面設定と起動シーンを表示用に読み込む
+/// </summary>
+std::string ReadPackageSettings(const std::filesystem::path &directory) {
+	GameConfig config;
+	std::string error;
+	if (!config.Load(directory / L"game.json", error)) {
+		return {};
+	}
+	return std::format("Game window: {} ({} × {})\nStartup scene: {}",
+	                   config.title, config.width, config.height,
+	                   PathUtils::ToUtf8(config.scenePath));
+}
 
 /// <summary>
 /// Loggerのヘッダーを持つ行からログレベルを取得する
@@ -116,6 +131,7 @@ void GameExportResultDialog::Show(std::filesystem::path directory,
 	runs_.try_emplace(directory_);
 	reopening_ = reopening;
 	error_.clear();
+	packageSettings_ = ReadPackageSettings(directory_);
 	log_.clear();
 	logError_.clear();
 	logTruncated_ = false;
@@ -362,6 +378,8 @@ void GameExportResultDialog::OpenLogAtOffset(std::uintmax_t offset) {
 
 bool GameExportResultDialog::StartGame() {
 	auto &run = runs_.at(directory_);
+	packageSettings_ = ReadPackageSettings(directory_);
+	run.launchSettings = packageSettings_;
 	// 起動後すぐにログが追記されても、今回の行を落とさないよう先に記録する。
 	std::error_code status;
 	const auto size = std::filesystem::file_size(directory_ / kGameLogPath, status);
@@ -450,6 +468,9 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 	}
 
 	ImGui::TextWrapped("%s", PathUtils::ToUtf8(directory_).c_str());
+	if (!packageSettings_.empty()) {
+		ImGui::TextWrapped("%s", packageSettings_.c_str());
+	}
 
 	auto &run = runs_.at(directory_);
 	bool jumpToBeginning = false;
@@ -516,8 +537,11 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 	}
 
 	if (!run.status.empty() && ui.Button("Copy Run Report")) {
-		auto report = "Output: " + PathUtils::ToUtf8(directory_) + "\n" +
-		              run.status + "\n";
+		auto report = "Output: " + PathUtils::ToUtf8(directory_) + "\n";
+		if (!run.launchSettings.empty()) {
+			report += run.launchSettings + "\n";
+		}
+		report += run.status + "\n";
 		if (!run.launchFailed) {
 			RefreshLog();
 			refreshedLog = true;

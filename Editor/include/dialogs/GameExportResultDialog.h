@@ -58,6 +58,7 @@ class GameExportResultDialog {
 		};
 		ShellUtils::ExecutableProcess process;
 		std::string status;
+		std::string launchSettings;
 		std::optional<std::uintmax_t> logStart;
 		std::vector<std::uintmax_t> earlierLogPages;
 		std::optional<LogPosition> beforeErrorJump;
@@ -109,6 +110,7 @@ class GameExportResultDialog {
 	std::filesystem::path directory_;
 	std::map<std::filesystem::path, GameRun> runs_;
 	std::string error_;
+	std::string packageSettings_;
 	std::string log_, logError_;
 	std::chrono::steady_clock::time_point nextLogRefresh_;
 	bool opening_ = false;
