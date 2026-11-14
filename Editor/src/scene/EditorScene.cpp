@@ -3725,6 +3725,10 @@ void EditorScene::ConfirmSceneChanges() {
 			destination = PathUtils::ToUtf8(projectDialog_.GetSelectedPath());
 			cancelLabel = "Back to Project Selection";
 			break;
+		case EditorAction::RESTORE_RECOVERY:
+			destination = PathUtils::ToUtf8(pendingRecoveryPath_);
+			cancelLabel = "Back to Scene Recovery";
+			break;
 		case EditorAction::OPEN_PLAY_SOURCE:
 			destination = PathUtils::ToUtf8(pendingOpenPath_);
 			cancelLabel = "Back to Play";
@@ -3752,6 +3756,10 @@ void EditorScene::CancelPendingAction() {
 	if (action == EditorAction::OPEN) {
 		openSceneDialog_.RetrySelection();
 		stage_ = DialogStage::OPEN_FILE;
+	} else if (action == EditorAction::RESTORE_RECOVERY) {
+		pendingRecoveryPath_.clear();
+		recoveryDialog_.Reopen();
+		stage_ = DialogStage::RECOVERY;
 	} else if (action == EditorAction::NEW_PROJECT || action == EditorAction::OPEN_PROJECT) {
 		projectDialog_.RetrySelection();
 		stage_ = action == EditorAction::NEW_PROJECT ? DialogStage::CREATE_PROJECT
@@ -4589,16 +4597,16 @@ void EditorScene::RestoreRecovery() {
 		std::string error;
 
 		if (!recovery_.Read(pendingRecoveryPath_, snapshot, error)) {
-			ShowError(
-			    "Could not restore the scene. The current scene was kept: " +
-			    error);
+			recoveryDialog_.Reopen("Could not read the recovery file: " + error);
+			stage_ = DialogStage::RECOVERY;
 			return;
 		}
 
 		if (!project_.GetRoot().empty() &&
 		    !PathUtils::IsSameFile(project_.GetAssetsDirectory(),
 		                           snapshot.assets.GetDirectory())) {
-			ShowError("This recovery belongs to a different Assets folder.");
+			recoveryDialog_.Reopen("This recovery belongs to a different Assets folder.");
+			stage_ = DialogStage::RECOVERY;
 			return;
 		}
 

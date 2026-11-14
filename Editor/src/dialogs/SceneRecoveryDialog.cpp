@@ -19,6 +19,12 @@ void SceneRecoveryDialog::Show(std::vector<SceneRecovery::Entry> entries,
 	openRequested_ = true;
 }
 
+void SceneRecoveryDialog::Reopen(std::string error) {
+	error_ = std::move(error);
+	selectedPath_.clear();
+	openRequested_ = true;
+}
+
 void SceneRecoveryDialog::SetEntries(std::vector<SceneRecovery::Entry> entries) {
 	const auto previous = selected_ < entries_.size() ? entries_[selected_].path
 	                                                  : std::filesystem::path{};

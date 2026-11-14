@@ -38,6 +38,11 @@ class SceneRecoveryDialog {
 	/// </summary>
 	const std::filesystem::path &GetSelectedPath() const;
 
+	/// <summary>
+	/// 復旧候補と選択を保持したまま一覧を開き直す
+	/// </summary>
+	void Reopen(std::string error = {});
+
   private:
 	/// <summary>
 	/// 復旧できる候補を先頭に並べ、前の選択が残っていれば保持する
