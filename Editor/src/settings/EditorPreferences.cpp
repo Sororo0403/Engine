@@ -371,11 +371,15 @@ std::filesystem::path EditorPreferences::LastProjectAssetFolder(
 }
 
 std::filesystem::path EditorPreferences::LastProjectScene(
-    const std::filesystem::path &root, std::filesystem::path *unavailable) const {
+    const std::filesystem::path &root, std::filesystem::path *unavailable,
+    const std::filesystem::path &previousRoot) const {
 	if (unavailable) {
 		unavailable->clear();
 	}
-	const auto saved = projectScenes.find(root);
+	auto saved = projectScenes.find(root);
+	if (saved == projectScenes.end() && !previousRoot.empty()) {
+		saved = projectScenes.find(previousRoot);
+	}
 
 	if (saved == projectScenes.end() || !IsProjectScenePath(saved->second)) {
 		return {};

@@ -53,6 +53,8 @@ void FileDialog::Show(FileDialogMode mode,
 	mode_ = mode;
 	selectedPath_.clear();
 	failedProject_.clear();
+	offerPreviousProjectScene_ = false;
+	openPreviousProjectScene_ = false;
 	failedProjectLocationError_.clear();
 	entries_.clear();
 	projectScenes_.clear();
@@ -401,6 +403,11 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 			if (!failedProjectLocationError_.empty()) {
 				ImGui::TextWrapped("%s", failedProjectLocationError_.c_str());
 			}
+		}
+
+		if (choosingProject && offerPreviousProjectScene_) {
+			ui.Checkbox("Open the last edited scene from the previous location",
+			            openPreviousProjectScene_);
 		}
 
 		ui.Separator();

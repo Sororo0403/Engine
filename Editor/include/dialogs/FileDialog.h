@@ -79,6 +79,16 @@ class FileDialog {
 	                    const std::filesystem::path &failedProject = {});
 
 	/// <summary>
+	/// 移動したプロジェクトを選ぶときに、以前の編集シーンを開く選択肢を表示する
+	/// </summary>
+	void OfferPreviousProjectScene() { offerPreviousProjectScene_ = true; }
+
+	/// <summary>
+	/// 以前のプロジェクトで最後に編集したシーンを開くか取得する
+	/// </summary>
+	bool ShouldOpenPreviousProjectScene() const { return openPreviousProjectScene_; }
+
+	/// <summary>
 	/// ファイル選択を描画する。Escapeで選択を取り消す
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
@@ -151,6 +161,8 @@ class FileDialog {
 	std::filesystem::path directory_;
 	std::filesystem::path selectedPath_;
 	std::filesystem::path failedProject_;
+	bool offerPreviousProjectScene_ = false;
+	bool openPreviousProjectScene_ = false;
 
 	std::string directoryText_;
 	std::string search_;

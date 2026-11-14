@@ -6356,6 +6356,10 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 			                 FindExistingDirectory(folder), FileDialogFilter::PROJECT,
 			                 "Open Project###FileDialog");
 			fileDialog_.RetrySelection(std::move(error), folder);
+			if (!missingRecentProject_.empty() &&
+			    preferences_.projectScenes.contains(missingRecentProject_)) {
+				fileDialog_.OfferPreviousProjectScene();
+			}
 			stage_ = DialogStage::OPEN_PROJECT;
 		} else {
 			ShowError(std::move(error));
@@ -6385,8 +6389,12 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		auto config = candidate.GetGameConfig();
 		const auto startup = candidate.GetStartupScene();
 		std::filesystem::path unavailableLast;
+		const auto previousRoot = stage_ == DialogStage::OPEN_PROJECT &&
+		                                  fileDialog_.ShouldOpenPreviousProjectScene()
+		                              ? missingRecentProject_ : std::filesystem::path{};
 		const auto last = create ? std::filesystem::path{}
-		                         : preferences_.LastProjectScene(candidate.GetRoot(), &unavailableLast);
+		                         : preferences_.LastProjectScene(candidate.GetRoot(), &unavailableLast,
+		                                                         previousRoot);
 		bool restored = false;
 		std::string lastError;
 		if (!last.empty() && (startup.empty() || !PathUtils::IsSameFile(last, startup))) {
@@ -6446,8 +6454,14 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		    std::filesystem::symlink_status(missing / L"project.json", status)
 		            .type() == std::filesystem::file_type::not_found &&
 		    std::erase(preferences_.recentProjects, missing) != 0;
+		bool rememberedUnavailableScene = false;
 		if (!unavailableLast.empty() &&
 		    (startup.empty() || !PathUtils::IsSameFile(unavailableLast, startup))) {
+			if (const auto previous = preferences_.projectScenes.find(previousRoot);
+			    previous != preferences_.projectScenes.end()) {
+				rememberedUnavailableScene = preferences_.projectScenes.try_emplace(
+				    project_.GetRoot(), previous->second).second;
+			}
 			failedRestoredScene_ = unavailableLast;
 			auto message = "Could not restore the last edited scene: " +
 			               PathUtils::ToUtf8(unavailableLast);
@@ -6460,7 +6474,7 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 			Logger::Warning(message, unavailableLast);
 			consolePanel_.Show();
 		}
-		SaveEditorSession(removedRecent);
+		SaveEditorSession(removedRecent || rememberedUnavailableScene);
 		if (!startupError.empty()) {
 			Logger::Warning(startupError, startup);
 			consolePanel_.Show();
