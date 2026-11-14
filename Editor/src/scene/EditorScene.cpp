@@ -585,7 +585,7 @@ bool EditorScene::Update(float deltaTime) {
 	if (consoleScript.retryPlay && playFailureReplay_ &&
 	    consoleScript.logId == playFailureReplay_->logId) {
 		const auto retry = *playFailureReplay_;
-		StartPlay(retry.path, retry.camera);
+		StartPlay(retry.path, retry.camera, true);
 		UpdateDialogs();
 		return true;
 	}
@@ -5488,7 +5488,7 @@ void EditorScene::UpdateDialogs() {
 			}
 			assetsPanel_.RequestReveal(savedScript);
 			if (playAfterSave) {
-				StartPlay(scriptReplayPath_, scriptReplayCameraOverride_);
+				StartPlay(scriptReplayPath_, scriptReplayCameraOverride_, true);
 			}
 		} else if (result == ScriptEditorDialog::Result::CANCELLED)
 			stage_ = DialogStage::IDLE;
@@ -5914,13 +5914,13 @@ void EditorScene::UpdateDialogs() {
 				stage_ = DialogStage::IDLE;
 				if (result == GameSettingsResult::ACCEPTED && playFailureReplay_) {
 					const auto retry = *playFailureReplay_;
-					StartPlay(retry.path, retry.camera);
+					StartPlay(retry.path, retry.camera, true);
 				}
 			} else if (fromPlayError) {
 				if (result == GameSettingsResult::ACCEPTED && errorReplayPath_) {
 					const auto path = *errorReplayPath_;
 					stage_ = DialogStage::IDLE;
-					StartPlay(path, errorReplayCameraOverride_);
+					StartPlay(path, errorReplayCameraOverride_, true);
 				} else {
 					errorOpenRequested_ = true;
 					stage_ = DialogStage::ERROR;
@@ -6363,7 +6363,7 @@ void EditorScene::UpdateDialogs() {
 					ui_.CloseCurrentPopup();
 					ui_.EndPopup();
 					CancelPendingAction();
-					StartPlay(path, camera);
+					StartPlay(path, camera, true);
 					return;
 				}
 				ImGui::SetItemTooltip("Start Play in %s.",
@@ -6422,7 +6422,7 @@ const Scene *EditorScene::GetStartupSceneForRun(SceneDocument &startup,
 }
 
 void EditorScene::StartPlay(const std::filesystem::path &path,
-                            SceneObjectId cameraOverride, bool replayLastScene) {
+                            SceneObjectId cameraOverride, bool allowCameraFallback) {
 	consolePanel_.MarkPlayStart();
 	playFailureReplay_.reset();
 	audioPreviewPanel_.Stop();
@@ -6449,7 +6449,7 @@ void EditorScene::StartPlay(const std::filesystem::path &path,
 	RecordRecovery();
 
 	const auto *scene = usesEditingScene ? &document_.GetScene() : &startup.GetScene();
-	if (replayLastScene && cameraOverride != 0) {
+	if (allowCameraFallback && cameraOverride != 0) {
 		const auto *object = scene->FindObject(cameraOverride);
 		if (!object || !object->camera || !SceneActivity::IsActive(*scene, cameraOverride)) {
 			Logger::Warning(
