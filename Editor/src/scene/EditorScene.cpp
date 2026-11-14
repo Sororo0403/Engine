@@ -906,7 +906,8 @@ bool EditorScene::Update(float deltaTime) {
 			if (!sameScene) {
 				// 保存確認が終わるまで、表示中の選択が変わっても開く対象を保持する。
 				pendingOpenPath_ = requestedScene;
-				action = EditorAction::OPEN_PATH;
+				action = checkedRequest.scenePath.empty() ? EditorAction::OPEN_PATH
+				                                          : EditorAction::OPEN_SCENE_CHECK_REFERENCE;
 			} else if (sceneOpenObject != 0) {
 				FinishEdit();
 				RevealReferenceObject(sceneOpenObject);
@@ -1326,7 +1327,8 @@ bool EditorScene::Update(float deltaTime) {
 			}
 
 			if (action != EditorAction::NONE) {
-				StartAction(action, action == EditorAction::OPEN_PATH
+				StartAction(action, action == EditorAction::OPEN_PATH ||
+				                            action == EditorAction::OPEN_SCENE_CHECK_REFERENCE
 				                        ? sceneOpenObject : 0);
 			}
 		}
@@ -2913,6 +2915,7 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 	      action == EditorAction::ASSETS_FOLDER ||
 	      action == EditorAction::RESUME_ASSET_RECYCLE ||
 	      action == EditorAction::OPEN_PATH ||
+	      action == EditorAction::OPEN_SCENE_CHECK_REFERENCE ||
 	      action == EditorAction::BROWSE_LAST_EDITED_SCENE ||
 	      action == EditorAction::OPEN_PREVIOUS_SCENE ||
 	      action == EditorAction::PLAY_ASSET_SCENE ||
@@ -3354,6 +3357,7 @@ void EditorScene::StartAction(EditorAction action, SceneObjectId openObject) {
 		return;
 
 	case EditorAction::OPEN_PATH:
+	case EditorAction::OPEN_SCENE_CHECK_REFERENCE:
 	case EditorAction::OPEN_PLAY_SOURCE:
 	case EditorAction::OPEN_EXPORT_ISSUE:
 		pendingOpenObject_ = openObject;
@@ -3753,6 +3757,10 @@ void EditorScene::ConfirmSceneChanges() {
 			destination = PathUtils::ToUtf8(pendingOpenPath_);
 			cancelLabel = "Back to Play";
 			break;
+		case EditorAction::OPEN_SCENE_CHECK_REFERENCE:
+			destination = PathUtils::ToUtf8(pendingOpenPath_);
+			cancelLabel = "Back to Scene Check";
+			break;
 		case EditorAction::OPEN_PATH:
 		case EditorAction::OPEN_PROJECT_PATH:
 		case EditorAction::OPEN_EXPORT_ISSUE:
@@ -3780,6 +3788,10 @@ void EditorScene::CancelPendingAction() {
 		pendingRecoveryPath_.clear();
 		recoveryDialog_.Reopen();
 		stage_ = DialogStage::RECOVERY;
+	} else if (action == EditorAction::OPEN_SCENE_CHECK_REFERENCE) {
+		pendingOpenPath_.clear();
+		pendingOpenObject_ = 0;
+		sceneCheckPanel_.Show();
 	} else if (action == EditorAction::NEW_PROJECT || action == EditorAction::OPEN_PROJECT) {
 		projectDialog_.RetrySelection();
 		stage_ = action == EditorAction::NEW_PROJECT ? DialogStage::CREATE_PROJECT
@@ -3902,6 +3914,7 @@ void EditorScene::ExecutePendingAction() {
 		}
 		return;
 	case EditorAction::OPEN_PATH:
+	case EditorAction::OPEN_SCENE_CHECK_REFERENCE:
 	case EditorAction::OPEN_PLAY_SOURCE: {
 		const auto object = std::exchange(pendingOpenObject_, SceneObjectId{0});
 		if (!failedRestoredScene_.empty() && pendingOpenPath_ == failedRestoredScene_) {
