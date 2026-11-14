@@ -3545,6 +3545,10 @@ void EditorScene::WriteGameExport() {
 	std::filesystem::path directory;
 	std::vector<GameExportIssue> issues;
 	const auto *scene = PrepareGameExport(startup, options, error, issues);
+	if (scene) {
+		// 配布出力中は定期記録が進まないため、未保存の編集を先に記録する。
+		RecordRecovery();
+	}
 	if (!scene || !GameExporter::Export(*scene, options, error, &issues, &directory)) {
 		exportDialog_.ShowExportFailure("Export failed: " + error, std::move(issues));
 		stage_ = DialogStage::EXPORT_GAME;
