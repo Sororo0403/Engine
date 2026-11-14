@@ -21,21 +21,6 @@ constexpr auto kLogRefreshInterval = std::chrono::milliseconds{500};
 constexpr std::streamoff kLogPageBytes = 64 * 1024;
 
 /// <summary>
-/// 配布版そのものに保存されている画面設定と起動シーンを表示用に読み込む
-/// </summary>
-std::string ReadPackageSettings(const std::filesystem::path &directory,
-                                GameConfig &config, std::string &error) {
-	const auto path = directory / L"game.json";
-	if (!config.Load(path, error)) {
-		error = std::format("Could not load {}: {}", PathUtils::ToUtf8(path), error);
-		return {};
-	}
-	return std::format("Game window: {} ({} × {})\nStartup scene: {}",
-	                   config.title, config.width, config.height,
-	                   PathUtils::ToUtf8(config.scenePath));
-}
-
-/// <summary>
 /// Loggerのヘッダーを持つ行からログレベルを取得する
 /// </summary>
 std::string_view LogLevelPrefix(std::string_view line) {
@@ -160,8 +145,7 @@ void GameExportResultDialog::Show(std::filesystem::path directory,
 	reopening_ = reopening;
 	error_.clear();
 	GameConfig config;
-	std::string settingsError;
-	packageSettings_ = ReadPackageSettings(directory_, config, settingsError);
+	ReloadGameSettings(config);
 	log_.clear();
 	logError_.clear();
 	logTruncated_ = false;
@@ -170,6 +154,20 @@ void GameExportResultDialog::Show(std::filesystem::path directory,
 		RefreshLog();
 	}
 	opening_ = true;
+}
+
+void GameExportResultDialog::ReloadGameSettings(GameConfig &config) {
+	const auto path = directory_ / L"game.json";
+	if (!config.Load(path, packageSettingsError_)) {
+		packageSettingsError_ = std::format("Could not load {}: {}",
+		                                    PathUtils::ToUtf8(path), packageSettingsError_);
+		packageSettings_.clear();
+		return;
+	}
+
+	packageSettings_ = std::format("Game window: {} ({} × {})\nStartup scene: {}",
+	                               config.title, config.width, config.height,
+	                               PathUtils::ToUtf8(config.scenePath));
 }
 
 void GameExportResultDialog::RefreshLog() {
@@ -453,8 +451,8 @@ void GameExportResultDialog::OpenLogAtOffset(std::uintmax_t offset) {
 bool GameExportResultDialog::StartGame() {
 	auto &run = runs_.at(directory_);
 	GameConfig config;
-	std::string launchError;
-	packageSettings_ = ReadPackageSettings(directory_, config, launchError);
+	ReloadGameSettings(config);
+	auto launchError = packageSettingsError_;
 	run.launchSettings = packageSettings_;
 	run.crashError.clear();
 	run.launchFailurePath.clear();
@@ -581,6 +579,16 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui) {
 	bool refreshedLog = UpdateGameProcess(jumpToBeginning, jumpToLatest);
 	if (!run.status.empty())
 		ImGui::TextWrapped("%s", run.status.c_str());
+
+	if (!packageSettingsError_.empty()) {
+		if (packageSettingsError_ != run.status) {
+			ImGui::TextWrapped("%s", packageSettingsError_.c_str());
+		}
+		if (ui.Button("Reload Game Settings")) {
+			GameConfig config;
+			ReloadGameSettings(config);
+		}
+	}
 
 	if (!run.launchFailurePath.empty()) {
 		const auto path = PathUtils::ToUtf8(run.launchFailurePath);

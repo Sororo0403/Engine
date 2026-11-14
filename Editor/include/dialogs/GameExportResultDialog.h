@@ -10,6 +10,7 @@
 #include <vector>
 
 class ImGuiSystem;
+struct GameConfig;
 
 enum class GameExportResultAction { NONE, CLOSE, NEW_EXPORT };
 
@@ -84,6 +85,11 @@ class GameExportResultDialog {
 	bool StartGame();
 
 	/// <summary>
+	/// 配布版の画面設定と起動シーンを読み直し、表示内容と読み込みエラーを更新する
+	/// </summary>
+	void ReloadGameSettings(GameConfig &config);
+
+	/// <summary>
 	/// 出力したゲームのログの指定ページまたは末尾を読み直す
 	/// </summary>
 	void RefreshLog();
@@ -116,6 +122,7 @@ class GameExportResultDialog {
 	std::map<std::filesystem::path, GameRun> runs_;
 	std::string error_;
 	std::string packageSettings_;
+	std::string packageSettingsError_;
 	std::string log_, logError_;
 	std::chrono::steady_clock::time_point nextLogRefresh_;
 	bool opening_ = false;
