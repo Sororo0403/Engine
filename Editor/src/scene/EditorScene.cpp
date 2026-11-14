@@ -4996,12 +4996,19 @@ void EditorScene::UpdateDialogs() {
 		return;
 	}
 
-	case DialogStage::SAVE_FILE: {
+	case DialogStage::SAVE_FILE:
+	case DialogStage::SAVE_FILE_AFTER_ERROR: {
+		const bool retryingSave = stage_ == DialogStage::SAVE_FILE_AFTER_ERROR;
 		const auto result = fileDialog_.Draw(ui_);
 
 		if (result == FileDialogResult::CANCELLED) {
-			// 保存先選択を取り消した場合は、NewやExitも取り消す
-			CancelPendingAction();
+			if (retryingSave) {
+				errorOpenRequested_ = true;
+				stage_ = DialogStage::ERROR;
+			} else {
+				// 通常の保存先選択を取り消した場合は、NewやExitも取り消す。
+				CancelPendingAction();
+			}
 			return;
 		}
 
@@ -5953,7 +5960,7 @@ void EditorScene::UpdateDialogs() {
 						fileDialog_.Show(FileDialogMode::SAVE, GetSceneCopyPath());
 						ui_.CloseCurrentPopup();
 						ui_.EndPopup();
-						stage_ = DialogStage::SAVE_FILE;
+						stage_ = DialogStage::SAVE_FILE_AFTER_ERROR;
 						return;
 					} catch (const std::exception &error) {
 						errorActionMessage_ = error.what();
