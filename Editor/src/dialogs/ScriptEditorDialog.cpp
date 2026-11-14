@@ -265,9 +265,12 @@ ScriptEditorDialog::Result ScriptEditorDialog::Draw(const ImGuiSystem &ui,
 	ui.SameLine();
 	const bool save = ui.Button("Save Script");
 	bool saveAndPlay = false;
-	if (playScene && !saveConflict_) {
+	if (playScene) {
 		ui.SameLine();
 		saveAndPlay = ui.Button("Save and Play");
+		if (saveConflict_) {
+			ImGui::SetItemTooltip("Retry after restoring the file to the version opened in the editor.");
+		}
 	}
 	bool saveCopy = false;
 	if (saveConflict_) {
