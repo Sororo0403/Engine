@@ -59,11 +59,13 @@ class FileHandle {
 /// <param name="operation">失敗した操作</param>
 /// <param name="path">対象の絶対パス</param>
 /// <param name="code">失敗直後に取得したWindowsエラー番号</param>
+/// <param name="readingSource">コピー元を読んでいるときはtrue</param>
 [[noreturn]] void FileError(const char *operation, const fs::path &path,
-                            DWORD code) {
-	throw std::runtime_error(std::string(operation) + ": " +
-	                         PathUtils::ToUtf8(path) + " (Windows error " +
-	                         std::to_string(code) + ").");
+                            DWORD code, bool readingSource = false) {
+	throw OutputFileError(std::string(operation) + ": " +
+	                          PathUtils::ToUtf8(path) + " (Windows error " +
+	                          std::to_string(code) + ").",
+	                      path, readingSource);
 }
 
 } // namespace
@@ -95,20 +97,20 @@ struct OutputDirectory::Impl {
 		    nullptr, OPEN_EXISTING, FILE_FLAG_OPEN_REPARSE_POINT, nullptr));
 
 		if (input.Get() == INVALID_HANDLE_VALUE) {
-			FileError("Could not read resource", source, GetLastError());
+			FileError("Could not read resource", source, GetLastError(), true);
 		}
 
 		BY_HANDLE_FILE_INFORMATION info{};
 
 		if (!GetFileInformationByHandle(input.Get(), &info)) {
-			FileError("Could not inspect resource", source, GetLastError());
+			FileError("Could not inspect resource", source, GetLastError(), true);
 		}
 
 		if (info.dwFileAttributes &
 		    (FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_DIRECTORY)) {
-			throw std::runtime_error(
+			throw OutputFileError(
 			    "A resource is no longer a regular file: " +
-			    PathUtils::ToUtf8(source));
+			    PathUtils::ToUtf8(source), source, true);
 		}
 
 		FileHandle output(OpenNewFile(relative));
@@ -119,7 +121,7 @@ struct OutputDirectory::Impl {
 
 			if (!ReadFile(input.Get(), buffer.data(), DWORD(buffer.size()),
 			              &count, nullptr)) {
-				FileError("Could not read resource", source, GetLastError());
+				FileError("Could not read resource", source, GetLastError(), true);
 			}
 
 			if (count == 0) {

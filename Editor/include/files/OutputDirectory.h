@@ -2,7 +2,25 @@
 
 #include <filesystem>
 #include <memory>
+#include <stdexcept>
 #include <string>
+#include <utility>
+
+/// <summary>
+/// 出力中のファイル操作の失敗と、その操作が対象にしたパスを保持する
+/// </summary>
+class OutputFileError : public std::runtime_error {
+  public:
+	OutputFileError(std::string message, std::filesystem::path path, bool readingSource)
+	    : std::runtime_error(message), path_(std::move(path)), readingSource_(readingSource) {}
+
+	const std::filesystem::path &GetPath() const { return path_; }
+	bool IsReadingSource() const { return readingSource_; }
+
+  private:
+	std::filesystem::path path_;
+	bool readingSource_;
+};
 
 /// <summary>
 /// 新規フォルダへ直接出力し、失敗時は識別情報が一致する作成物だけを片付ける

@@ -1233,6 +1233,11 @@ bool ProcessExport(const Scene &scene, const GameExportOptions &options,
 		output.Copy(runtimeRoot / L"Runtime.exe", L"Game.exe");
 		output.Complete();
 		return true;
+	} catch (const OutputFileError &e) {
+		appendIssue(std::string(e.what()) + output.Cleanup(), {}, 0, {}, {},
+		            e.GetPath(), e.IsReadingSource() ? GameExportField::NONE
+		                                            : GameExportField::OUTPUT_FOLDER);
+		return false;
 	} catch (const std::exception &e) {
 		appendIssue(std::string(e.what()) + output.Cleanup(), {}, 0, {}, {});
 		return false;
