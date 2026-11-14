@@ -196,8 +196,9 @@ bool SceneDocument::SaveCopy(const std::filesystem::path &filePath,
 		const auto &root =
 		    projectRoot_.empty() ? fileProjectRoot_ : projectRoot_;
 
-		if (!SceneSerializer::Save(snapshot, resolvedPath, root, nullptr, overwrite)) {
-			error_ = "Could not save a scene copy. See the log for details.";
+		if (!SceneSerializer::Save(snapshot, resolvedPath, root, nullptr, overwrite, &error_)) {
+			error_ = std::format("Could not save a scene copy to {}.\n{}",
+			                     PathUtils::ToUtf8(resolvedPath), error_);
 			return false;
 		}
 
@@ -248,8 +249,9 @@ bool SceneDocument::SaveAs(const std::filesystem::path &filePath, bool overwrite
 		const auto &root =
 		    projectRoot_.empty() ? fileProjectRoot_ : projectRoot_;
 
-		if (!SceneSerializer::Save(scene_, resolvedPath, root, &savedText, overwrite)) {
-			error_ = "Could not save the scene. See the log for details.";
+		if (!SceneSerializer::Save(scene_, resolvedPath, root, &savedText, overwrite, &error_)) {
+			error_ = std::format("Could not save the scene to {}.\n{}",
+			                     PathUtils::ToUtf8(resolvedPath), error_);
 			return false;
 		}
 

@@ -320,14 +320,18 @@ void RewriteProjectReferences(
 	}
 }
 
+bool SerializeScene(const Scene &scene, std::string &text,
+                    const Scene *validated, std::string *error = nullptr);
+
 /// <summary>
 /// プロジェクト内の保存では、プロジェクト内の素材だけを相対パスに変換する
 /// </summary>
 bool SerializeSceneFile(const Scene &scene, std::string &text,
                         const std::filesystem::path &file,
-                        const std::filesystem::path &projectRoot) {
+                        const std::filesystem::path &projectRoot,
+                        std::string *error = nullptr) {
 	if (projectRoot.empty()) {
-		return SceneSerializer::Serialize(scene, text);
+		return SerializeScene(scene, text, nullptr, error);
 	}
 
 	const auto root = std::filesystem::weakly_canonical(projectRoot);
@@ -335,7 +339,7 @@ bool SerializeSceneFile(const Scene &scene, std::string &text,
 	const auto target = parent / file.filename();
 
 	if (RelativeProjectPath(root, target).empty()) {
-		return SceneSerializer::Serialize(scene, text);
+		return SerializeScene(scene, text, nullptr, error);
 	}
 
 	Scene snapshot;
@@ -352,7 +356,7 @@ bool SerializeSceneFile(const Scene &scene, std::string &text,
 		return *path.begin() == kProjectReference ? absolute : path;
 	});
 
-	if (!SceneSerializer::Serialize(snapshot, text)) {
+	if (!SerializeScene(snapshot, text, nullptr, error)) {
 		return false;
 	}
 
@@ -448,7 +452,7 @@ void ValidatePrefabLinks(const Scene &scene) {
 
 namespace {
 bool SerializeScene(const Scene &scene, std::string &text,
-                    const Scene *validated) {
+                    const Scene *validated, std::string *error) {
 	try {
 		SceneHierarchy::WorldTransforms transforms;
 
@@ -960,6 +964,9 @@ bool SerializeScene(const Scene &scene, std::string &text,
 
 		return true;
 	} catch (const std::exception &exception) {
+		if (error) {
+			*error = exception.what();
+		}
 		Logger::Error(
 		    std::format("SceneSerializer::Serialize: {}", exception.what()));
 		return false;
@@ -994,21 +1001,28 @@ bool SceneSerializer::SerializeForFile(
 bool SceneSerializer::Save(const Scene &scene,
                            const std::filesystem::path &filePath,
                            const std::filesystem::path &projectRoot,
-                           std::string *savedText, bool overwrite) {
+                           std::string *savedText, bool overwrite,
+                           std::string *error) {
+	if (error) {
+		error->clear();
+	}
 	try {
 		std::string text;
 		const auto targetPath = PathUtils::ResolveFromExecutable(filePath);
 
-		if (!SerializeSceneFile(scene, text, targetPath, projectRoot)) {
+		if (!SerializeSceneFile(scene, text, targetPath, projectRoot, error)) {
 			return false;
 		}
 
 		std::filesystem::create_directories(targetPath.parent_path());
 
-		std::string error;
+		std::string writeError;
 
-		if (!FileUtils::WriteTextAtomically(targetPath, text, error, overwrite)) {
-			Logger::Error(std::format("SceneSerializer::Save: {}", error));
+		if (!FileUtils::WriteTextAtomically(targetPath, text, writeError, overwrite)) {
+			Logger::Error(std::format("SceneSerializer::Save: {}", writeError));
+			if (error) {
+				*error = std::move(writeError);
+			}
 			return false;
 		}
 
@@ -1019,6 +1033,9 @@ bool SceneSerializer::Save(const Scene &scene,
 		Logger::Info("シーンを保存しました。");
 		return true;
 	} catch (const std::exception &exception) {
+		if (error) {
+			*error = exception.what();
+		}
 		Logger::Error(
 		    std::format("SceneSerializer::Save: {}", exception.what()));
 		return false;
