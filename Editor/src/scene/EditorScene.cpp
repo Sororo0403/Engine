@@ -1247,13 +1247,19 @@ bool EditorScene::Update(float deltaTime) {
 		if (!IsBusy() && action == EditorAction::NONE &&
 		    !requestedModelReload.empty() &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
-			ReloadAsset(requestedModelReload, false);
+			ReloadAssets(std::span(&requestedModelReload, 1));
 		}
 
 		if (!IsBusy() && action == EditorAction::NONE &&
 		    !requestedTextureReload.empty() &&
 		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
-			ReloadAsset(requestedTextureReload, true);
+			ReloadAssets(std::span(&requestedTextureReload, 1));
+		}
+
+		if (!IsBusy() && action == EditorAction::NONE &&
+		    !assetsPanel_.GetBatchReloadRequest().empty() &&
+		    hierarchyRequest.action == HierarchyPanel::Action::NONE) {
+			ReloadAssets(assetsPanel_.GetBatchReloadRequest());
 		}
 
 		if (!IsBusy() && action == EditorAction::NONE && textureAssignment &&
@@ -6532,18 +6538,19 @@ void EditorScene::UpdateDialogs() {
 				ui_.SameLine();
 			}
 
-			if (!errorReloadAssetPath_.empty()) {
+			if (!failedAssetReloads_.empty()) {
 				if (ui_.Button("Show in Explorer")) {
-					ShellUtils::RevealLocationInExplorer(errorReloadAssetPath_,
+					ShellUtils::RevealLocationInExplorer(failedAssetReloads_.front(),
 					                                     errorActionMessage_);
 				}
+				ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(failedAssetReloads_.front()).c_str());
 				ui_.SameLine();
-				if (ui_.Button("Retry Reload")) {
-					auto path = std::exchange(errorReloadAssetPath_, std::filesystem::path{});
+				if (ui_.Button("Retry Failed Reloads")) {
+					auto paths = std::move(failedAssetReloads_);
 					ui_.CloseCurrentPopup();
 					ui_.EndPopup();
 					stage_ = DialogStage::IDLE;
-					ReloadAsset(path, errorReloadIsTexture_);
+					ReloadAssets(paths);
 					return;
 				}
 				ui_.SameLine();
@@ -7159,7 +7166,7 @@ void EditorScene::ShowError(std::string message, SceneObjectId objectId,
 	sceneReloadFailed_ = false;
 	failedOpenSceneObject_ = 0;
 	failedSceneCheckReference_ = false;
-	errorReloadAssetPath_.clear();
+	failedAssetReloads_.clear();
 	errorTestSave_.reset();
 	errorReplayPath_.reset();
 	errorRestartCurrentScene_.reset();
@@ -7832,32 +7839,46 @@ bool EditorScene::AssignModel(SceneObjectId objectId,
 	}
 }
 
-void EditorScene::ReloadAsset(const std::filesystem::path &path, bool texture) {
-	std::string error;
+void EditorScene::ReloadAssets(std::span<const std::filesystem::path> paths) {
 	try {
 		FinishEdit();
-		const bool reloaded = texture ? !!materials_.ReloadTexture(path)
-		                              : !!models_.Reload(path);
-		if (reloaded && texture) {
-			texturePreviewPanel_.RequestReload(path);
-		}
-		if (reloaded &&
-		    (!texture || (renderer_.ReloadCanvasImage(path, error) &&
-		                  playMode_.ReloadCanvasImage(path, error)))) {
-			sceneCheckPanel_.RequestRecheckIfOpen();
-			return;
-		}
-		if (!reloaded) {
-			error = "See the log for details.";
-		}
 	} catch (const std::exception &failure) {
-		error = failure.what();
-		Logger::Error(error, path);
+		ShowError(failure.what());
+		failedAssetReloads_.assign(paths.begin(), paths.end());
+		return;
 	}
-	ShowError(std::format("Could not reload {}:\n{}\n{}", texture ? "texture" : "model",
-	                      PathUtils::ToUtf8(path), error));
-	errorReloadAssetPath_ = path;
-	errorReloadIsTexture_ = texture;
+
+	std::vector<std::filesystem::path> failed;
+	std::string details;
+	for (const auto &path : paths) {
+		std::string error;
+		try {
+			if (PathUtils::IsImageFile(path)) {
+				if (materials_.ReloadTexture(path)) {
+					texturePreviewPanel_.RequestReload(path);
+					if (renderer_.ReloadCanvasImage(path, error) &&
+					    playMode_.ReloadCanvasImage(path, error)) {
+						continue;
+					}
+				}
+			} else if (models_.Reload(path)) {
+				continue;
+			}
+		} catch (const std::exception &failure) {
+			error = failure.what();
+			Logger::Error(error, path);
+		}
+		failed.push_back(path);
+		details += "\n" + PathUtils::ToUtf8(path) + "\n" +
+		           (error.empty() ? "See the log for details." : error);
+	}
+
+	sceneCheckPanel_.RequestRecheckIfOpen();
+	if (!failed.empty()) {
+		ShowError(std::format("Reloaded {} of {} assets. Could not reload:\n{}",
+		                      paths.size() - failed.size(), paths.size(), details));
+		failedAssetReloads_ = std::move(failed);
+	}
 }
 
 bool EditorScene::ReplaceSelectedMeshes(

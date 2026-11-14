@@ -374,6 +374,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
                   std::span<const TextureSlotChoice> textureSlots,
                   bool canCreatePrefab) {
 	refreshed_ = false;
+	batchReloadPaths_.clear();
 	sceneOpenPath_.clear();
 	scenePlayPath_.clear();
 	gameSettingsPath_.clear();
@@ -789,6 +790,15 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 	const auto isSelected = [&](const std::filesystem::path &path) {
 		return std::ranges::find(selectedItems_, path) != selectedItems_.end();
 	};
+	const auto selectedReloadPaths = [&] {
+		std::vector<std::filesystem::path> paths;
+		for (const auto &[type, path] : visibleFiles) {
+			if ((type == AssetType::MODEL || type == AssetType::TEXTURE) && isSelected(*path)) {
+				paths.push_back(*path);
+			}
+		}
+		return paths;
+	};
 	auto selectedType = type_;
 	const auto syncSingle = [&] {
 		selectedPath_.clear();
@@ -1146,7 +1156,16 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 					textureSelectionPath_ = assetPath;
 				}
 
+				if (selectedItems_.size() > 1) {
+					auto paths = selectedReloadPaths();
+					if (!paths.empty() &&
+					    ui.MenuItem("Reload Selected Models and Textures", nullptr, canEditAssets)) {
+						batchReloadPaths_ = std::move(paths);
+					}
+				}
+
 				if (assetType == AssetType::TEXTURE &&
+				    selectedItems_.size() == 1 &&
 				    ui.MenuItem("Reload Texture", nullptr, canEditAssets)) {
 					textureReloadPath_ = assetPath;
 				}
@@ -1158,6 +1177,7 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 				}
 
 				if (assetType == AssetType::MODEL &&
+				    selectedItems_.size() == 1 &&
 				    ui.MenuItem("Reload Model", nullptr, canEditAssets)) {
 					modelReloadPath_ = assetPath;
 				}
@@ -1261,6 +1281,14 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 
 	if (selectedItems_.size() > 1) {
 		ui.Text(std::format("{} items selected", selectedItems_.size()));
+		auto paths = selectedReloadPaths();
+		if (!paths.empty()) {
+			ui.BeginDisabled(!canEditAssets);
+			if (ui.Button("Reload Selected Models and Textures")) {
+				batchReloadPaths_ = std::move(paths);
+			}
+			ui.EndDisabled();
+		}
 	}
 
 	if (!selectedPath_.empty() && selectedType != AssetType::AUDIO) {
@@ -1469,6 +1497,7 @@ const std::filesystem::path &AssetsPanel::GetTexturePreviewRequest() const {
 }
 
 void AssetsPanel::Clear() {
+	batchReloadPaths_.clear();
 	recyclePaths_.clear();
 	referencePaths_.clear();
 	renamePath_.clear();

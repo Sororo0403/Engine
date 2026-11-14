@@ -753,9 +753,9 @@ class EditorScene final : public IScene {
 	bool ReplaceSelectedMeshes(const std::filesystem::path &modelPath);
 
 	/// <summary>
-	/// 素材を再読み込みし、失敗した場合は同じ素材を再試行できるようにする
+	/// モデルと画像を再読み込みし、失敗した素材だけを再試行できるようにする
 	/// </summary>
-	void ReloadAsset(const std::filesystem::path &path, bool texture);
+	void ReloadAssets(std::span<const std::filesystem::path> paths);
 
 	/// <summary>
 	/// モデルが読み込めない場合も、編集用の表示状態をまとめて変更する
@@ -1130,9 +1130,8 @@ class EditorScene final : public IScene {
 	bool sceneReloadFailed_ = false;
 	SceneObjectId failedOpenSceneObject_ = 0;
 	bool failedSceneCheckReference_ = false;
-	std::filesystem::path errorReloadAssetPath_;
+	std::vector<std::filesystem::path> failedAssetReloads_;
 	std::optional<std::filesystem::path> errorTestSave_;
-	bool errorReloadIsTexture_ = false;
 	std::optional<std::filesystem::path> errorReplayPath_;
 	std::optional<bool> errorRestartCurrentScene_;
 	std::uint64_t errorPlayLogId_ = 0;

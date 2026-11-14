@@ -135,6 +135,13 @@ class AssetsPanel {
 	const std::filesystem::path &GetTextureReloadRequest() const;
 
 	/// <summary>
+	/// このフレームに一括再読み込みを要求したモデルと画像を取得する
+	/// </summary>
+	const std::vector<std::filesystem::path> &GetBatchReloadRequest() const {
+		return batchReloadPaths_;
+	}
+
+	/// <summary>
 	/// このフレームに使用物体の選択を要求した画像を取得する
 	/// </summary>
 	/// <returns>画像の相対パス。要求なしは空。次のDrawまたはClearまで有効</returns>
@@ -332,6 +339,7 @@ class AssetsPanel {
 	std::filesystem::path modelReloadPath_;
 	std::filesystem::path meshReplacementPath_;
 	std::filesystem::path textureReloadPath_;
+	std::vector<std::filesystem::path> batchReloadPaths_;
 	/// <summary>
 	/// コピー・切り取り元を検査し、欠損時は貼り付けを保留する
 	/// </summary>
