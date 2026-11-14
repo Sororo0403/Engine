@@ -16,7 +16,9 @@
 class ImGuiSystem;
 struct GameConfig;
 
-enum class GameExportResultAction { NONE, CLOSE, NEW_EXPORT, OPEN_SOURCE_SCENE, RELOAD_EXPORT };
+enum class GameExportResultAction {
+	NONE, CLOSE, NEW_EXPORT, OPEN_SOURCE_SCENE, RELOAD_EXPORT, SWITCH_EXPORT
+};
 
 /// <summary>
 /// ゲーム出力の完了後に、出力フォルダ・単独起動・起動ログの確認を表示する
@@ -71,9 +73,11 @@ class GameExportResultDialog {
 	/// </summary>
 	/// <param name="ui">フレーム開始済みのUI</param>
 	/// <param name="projectRoot">現在のプロジェクト。プロジェクト未選択時は空</param>
-	/// <returns>閉じる、新しく出力する、編集元シーンを開く、または配布版を読み直す要求</returns>
+	/// <param name="otherExport">切り替え先の配布フォルダ。比較する配布版がなければ空</param>
+	/// <returns>閉じる、出力する、元シーンを開く、配布版を読み直す、または切り替える要求</returns>
 	GameExportResultAction Draw(const ImGuiSystem &ui,
-	                            const std::filesystem::path &projectRoot = {});
+	                            const std::filesystem::path &projectRoot = {},
+	                            const std::filesystem::path &otherExport = {});
 
   private:
 	struct LogPosition {

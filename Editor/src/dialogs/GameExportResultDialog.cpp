@@ -670,7 +670,8 @@ bool GameExportResultDialog::UpdateGameProcess(bool &jumpToBeginning,
 }
 
 GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
-                                                    const std::filesystem::path &projectRoot) {
+                                                     const std::filesystem::path &projectRoot,
+                                                     const std::filesystem::path &otherExport) {
 	const char *title = reopening_ ? "Game Export###GameExportResultDialog"
 	                              : "Game Exported###GameExportResultDialog";
 
@@ -703,6 +704,12 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 	ui.BeginDisabled(run.process.IsTracking());
 	const bool reload = ui.Button("Reload Export");
 	ui.EndDisabled();
+	bool switchExport = false;
+	if (!otherExport.empty()) {
+		ui.SameLine();
+		switchExport = ui.Button("Switch Export");
+		ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(otherExport).c_str());
+	}
 
 	if (!run.launchFailurePath.empty()) {
 		const auto path = PathUtils::ToUtf8(run.launchFailurePath);
@@ -846,13 +853,14 @@ GameExportResultAction GameExportResultDialog::Draw(const ImGuiSystem &ui,
 	ui.SameLine();
 	const bool close = ui.Button("Close") || ImGui::IsKeyPressed(ImGuiKey_Escape, false);
 	GameExportResultAction action = GameExportResultAction::NONE;
-	if (close || newExport || !requestedSourceScene_.empty() || reload) {
+	if (close || newExport || !requestedSourceScene_.empty() || reload || switchExport) {
 		if (std::exchange(run.restartRequested, false)) {
 			run.status = "Requested game exit. Waiting for the process to finish.";
 		}
 		action = close ? GameExportResultAction::CLOSE
 		               : newExport ? GameExportResultAction::NEW_EXPORT
 		               : !requestedSourceScene_.empty() ? GameExportResultAction::OPEN_SOURCE_SCENE
+		               : switchExport ? GameExportResultAction::SWITCH_EXPORT
 		                                               : GameExportResultAction::RELOAD_EXPORT;
 		ui.CloseCurrentPopup();
 	}

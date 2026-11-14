@@ -1121,6 +1121,7 @@ class EditorScene final : public IScene {
 	GameExportResultDialog exportResultDialog_;
 	bool returnToExportResult_ = false;
 	bool exportResultInterrupted_ = false;
+	std::filesystem::path otherExportResult_;
 	bool exportCheckInterrupted_ = false;
 	GameSettingsDialog gameSettingsDialog_;
 	float sceneAmbientDraft_ = 0.0f;

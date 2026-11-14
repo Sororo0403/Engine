@@ -3644,6 +3644,8 @@ void EditorScene::WriteGameExport() {
 	if (canSavePreferences_) {
 		preferences_.Save();
 	}
+	otherExportResult_ = returnToExportResult_ ? exportResultDialog_.GetDirectory()
+	                                           : std::filesystem::path{};
 	exportResultDialog_.Show(directory);
 	exportResultDialog_.SetSceneSources(project_.GetRoot(), std::move(sceneSources), packageId);
 	returnToExportResult_ = false;
@@ -3819,6 +3821,7 @@ bool EditorScene::OpenGameExport(std::filesystem::path directory) {
 	}
 	exportResultDialog_.Show(std::move(directory), true);
 	exportResultInterrupted_ = false;
+	otherExportResult_.clear();
 	exportResultDialog_.SetSceneSources(root, std::move(sceneSources), packageId);
 	stage_ = DialogStage::EXPORT_RESULT;
 	return true;
@@ -5978,11 +5981,21 @@ void EditorScene::UpdateDialogs() {
 	}
 
 	case DialogStage::EXPORT_RESULT: {
-		const auto result = exportResultDialog_.Draw(ui_, project_.GetRoot());
+		const auto result = exportResultDialog_.Draw(ui_, project_.GetRoot(), otherExportResult_);
 		if (result != GameExportResultAction::NONE) {
 			stage_ = DialogStage::IDLE;
 			if (result == GameExportResultAction::NEW_EXPORT) {
 				ShowGameExport(exportResultDialog_.GetDirectory());
+			} else if (result == GameExportResultAction::SWITCH_EXPORT) {
+				const auto current = exportResultDialog_.GetDirectory();
+				if (OpenGameExport(otherExportResult_)) {
+					otherExportResult_ = current;
+				} else {
+					exportResultDialog_.ReopenWithError(std::format(
+					    "Could not open {}.\n{}", PathUtils::ToUtf8(otherExportResult_),
+					    FileDialog::GameExportOpenProblem(otherExportResult_)));
+					stage_ = DialogStage::EXPORT_RESULT;
+				}
 			} else if (result == GameExportResultAction::RELOAD_EXPORT) {
 				const auto directory = exportResultDialog_.GetDirectory();
 				const auto &root = project_.GetRoot();
@@ -7080,6 +7093,7 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		document_.SetProjectRoot(candidate.GetRoot());
 		project_ = std::move(candidate);
 		exportResultInterrupted_ = false;
+		otherExportResult_.clear();
 		returnToExportResult_ = false;
 		exportCheckInterrupted_ = false;
 		exportDialog_.SwitchProject(project_.GetRoot());
