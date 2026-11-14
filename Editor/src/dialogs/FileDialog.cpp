@@ -406,7 +406,7 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 		if (!failedProject_.empty()) {
 			const char *label = filter_ == FileDialogFilter::GAME_EXPORT
 			                        ? "Show Previous Export Location"
-			                    : filter_ == FileDialogFilter::SCENE
+			                    : filter_ == FileDialogFilter::SCENE || filter_ == FileDialogFilter::GAME_CONFIG
 		                        ? (mode_ == FileDialogMode::OPEN ? "Show Failed Scene Location"
 		                                                        : "Show Failed Save Location")
 			                        : "Show Failed Project Location";
@@ -416,7 +416,8 @@ FileDialogResult FileDialog::Draw(const ImGuiSystem &ui) {
 			}
 			ImGui::SetItemTooltip("%s", PathUtils::ToUtf8(failedProject_).c_str());
 			std::error_code saveStatus;
-			if (filter_ == FileDialogFilter::SCENE && mode_ != FileDialogMode::OPEN &&
+			if ((filter_ == FileDialogFilter::SCENE || filter_ == FileDialogFilter::GAME_CONFIG) &&
+			    mode_ != FileDialogMode::OPEN &&
 			    mode_ != FileDialogMode::SELECT_DIRECTORY &&
 			    std::filesystem::exists(std::filesystem::symlink_status(failedProject_, saveStatus))) {
 				ui.SameLine();

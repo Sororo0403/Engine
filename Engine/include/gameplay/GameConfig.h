@@ -73,8 +73,10 @@ struct GameConfig {
 	/// </summary>
 	/// <param name="path">書き込み先。相対パスは作業ディレクトリ基準。親フォルダは事前に作成する</param>
 	/// <param name="error">失敗理由。成功時は空</param>
+	/// <param name="overwrite">既存の保存先を置き換えるか</param>
 	/// <returns>true:成功 false:設定またはファイル操作が無効</returns>
-	bool Save(const std::filesystem::path &path, std::string &error) const;
+	bool Save(const std::filesystem::path &path, std::string &error,
+	          bool overwrite = true) const;
 
 	/// <summary>
 	/// 旧形式にも対応し、全設定の検証成功後だけ現在値を置き換える。version 1の操作キーはWASDとSpace、version 1・2の移動はワールド基準、version 1から3の照明は従来の初期値、version 1から4のゲームパッドは有効。version 1から5の操作キーはEを優先し、既存の割り当てと重複しないキーを選ぶ。version 1から6の名前付き操作は空。version 1から7の影は無効。version 1から8のゲームパッド軸は未割り当て。version 10以前ではスクリプトの設定を永続化しない

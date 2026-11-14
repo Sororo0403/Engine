@@ -177,7 +177,7 @@ bool GameConfig::Serialize(std::string &text, std::string &error) const {
 }
 
 bool GameConfig::Save(const std::filesystem::path &path,
-                      std::string &error) const {
+                      std::string &error, bool overwrite) const {
 	try {
 		std::string text;
 
@@ -192,7 +192,7 @@ bool GameConfig::Save(const std::filesystem::path &path,
 
 		// 起動設定の相対パスは、Loadと同じ作業ディレクトリ基準を保持する。
 		return FileUtils::WriteTextAtomically(std::filesystem::absolute(path),
-		                                      text, error);
+		                                      text, error, overwrite);
 	} catch (const std::exception &e) {
 		error = e.what();
 		return false;
