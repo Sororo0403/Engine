@@ -434,6 +434,14 @@ void GameExportDialog::ClearCheckResult() {
 
 void GameExportDialog::ShowExportFailure(std::string error,
                                          std::vector<GameExportIssue> issues) {
+	if (!issueFilter_.empty() && !issues.empty()) {
+		const auto searchPath = PathUtils::FromPathSearch(issueFilter_);
+		if (std::ranges::none_of(issues, [&](const auto &issue) {
+			    return MatchesIssue(issue, issueFilter_, searchPath);
+		    })) {
+			issueFilter_.clear();
+		}
+	}
 	SetCheckResult(std::move(error), std::move(issues));
 	Reopen();
 }
