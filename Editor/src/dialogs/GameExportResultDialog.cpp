@@ -300,6 +300,7 @@ bool GameExportResultDialog::OpenLogAtError(ErrorSearch search, bool reportMissi
 	                                           static_cast<std::uintmax_t>(end - start)));
 	input.seekg(nextError ? anchor : start);
 	std::optional<std::uintmax_t> match;
+	std::optional<std::uintmax_t> summary;
 	// 見出しだけを読み取り、長い詳細行でもメモリ使用量を抑える。
 	std::array<char, 128> prefix{};
 	for (auto offset = nextError ? anchor : start;
@@ -311,9 +312,17 @@ bool GameExportResultDialog::OpenLogAtError(ErrorSearch search, bool reportMissi
 			input.clear();
 			input.ignore((std::numeric_limits<std::streamsize>::max)(), '\n');
 		}
-		if ((!nextError || offset > anchor) &&
-		    LogLevelPrefix(prefix.data()).starts_with(" [ERROR] ")) {
-			match = static_cast<std::uintmax_t>(offset - start);
+		const auto level = LogLevelPrefix(prefix.data());
+		if ((!nextError || offset > anchor) && level.starts_with(" [ERROR] ")) {
+			const auto position = static_cast<std::uintmax_t>(offset - start);
+			// 異常終了時の自動表示では、原因がある場合に終了・初期化の通知を優先しない。
+			if (search == ErrorSearch::CRASH_CAUSE &&
+			    (level.starts_with(" [ERROR] Engineを異常終了しました。") ||
+			     level.starts_with(" [ERROR] 次のシーンの初期化に失敗しました。"))) {
+				summary = position;
+			} else {
+				match = position;
+			}
 			if (search == ErrorSearch::FIRST || nextError)
 				break;
 		}
@@ -326,6 +335,9 @@ bool GameExportResultDialog::OpenLogAtError(ErrorSearch search, bool reportMissi
 		if (reportMissing)
 			error_ = "Could not search the game log.";
 		return false;
+	}
+	if (!match) {
+		match = summary;
 	}
 	if (!match) {
 		if (reportMissing) {
@@ -540,7 +552,7 @@ bool GameExportResultDialog::UpdateGameProcess(bool &jumpToBeginning,
 	const bool previousRange = run.sinceLaunchOnly;
 	const bool hadPreviousPosition = run.beforeErrorJump.has_value();
 	run.sinceLaunchOnly = run.logStart.has_value();
-	if (run.sinceLaunchOnly && OpenLogAtError(ErrorSearch::LATEST, false)) {
+	if (run.sinceLaunchOnly && OpenLogAtError(ErrorSearch::CRASH_CAUSE, false)) {
 		if (!hadPreviousPosition && run.beforeErrorJump) {
 			run.beforeErrorJump->sinceLaunchOnly = previousRange;
 		}
