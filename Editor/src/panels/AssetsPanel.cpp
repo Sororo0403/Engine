@@ -627,7 +627,15 @@ AssetsPanel::Draw(const ImGuiSystem &ui, AssetDatabase &assets,
 		ui.Text("Operation Results");
 		ui.SameLine();
 		if (ui.Button("Show Current Folder")) {
+			auto previous = CaptureResults();
+			auto selection = std::move(selectedItems_);
+			auto anchor = std::move(selectionAnchor_);
 			OpenDirectory(currentDirectory_);
+			// 表示するフォルダに残る選択は、この後の表示項目との照合で保持する。
+			selectedItems_ = std::move(selection);
+			selectionAnchor_ = std::move(anchor);
+			scrollToSelected_ = !selectedItems_.empty();
+			previousView_ = std::move(previous);
 		}
 	} else if (filter_.empty() && type_ != AssetType::AUDIO) {
 		ImGui::TextDisabled("Double-click a folder to open it.");
