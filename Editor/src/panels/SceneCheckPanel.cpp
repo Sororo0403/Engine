@@ -135,14 +135,20 @@ void SceneCheckPanel::Check(const Scene &scene, const CameraPose &fallback,
 	issues.insert(issues.end(), std::make_move_iterator(assets.begin()),
 	              std::make_move_iterator(assets.end()));
 
+	const auto searchPath = PathUtils::FromPathSearch(filter_);
+	const auto matches = [&](const SceneValidationIssue &issue) {
+		return MatchesFilter(issue, scene, searchPath);
+	};
 	scrollToIssue_.reset();
 	const bool hadSelection = lastIssue_ && *lastIssue_ < issues_.size();
+	if (!filter_.empty() && !issues.empty() &&
+	    (hadSelection || std::ranges::any_of(issues_, matches)) &&
+	    std::ranges::none_of(issues, matches)) {
+		filter_.clear();
+	}
+
 	if (hadSelection || issueToRestore_) {
 		const auto &previous = hadSelection ? issues_[*lastIssue_] : *issueToRestore_;
-		const auto searchPath = PathUtils::FromPathSearch(filter_);
-		const auto matches = [&](const SceneValidationIssue &issue) {
-			return MatchesFilter(issue, scene, searchPath);
-		};
 		auto remaining = hadSelection
 		                     ? std::count_if(issues_.begin(), issues_.begin() + *lastIssue_, matches)
 		                     : 0;
