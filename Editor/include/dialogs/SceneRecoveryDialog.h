@@ -44,9 +44,9 @@ class SceneRecoveryDialog {
 	const std::filesystem::path &GetRequestedProject() const { return requestedProject_; }
 
 	/// <summary>
-	/// 一覧内に候補が残っていれば選択する
+	/// 一覧内に候補が残っていれば選択する。見つからない場合は選択を解除する
 	/// </summary>
-	void Select(const std::filesystem::path &path);
+	bool Select(const std::filesystem::path &path);
 
 	/// <summary>
 	/// 復旧候補と選択を保持したまま一覧を開き直す

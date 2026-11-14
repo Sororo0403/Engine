@@ -7212,7 +7212,10 @@ void EditorScene::SwitchProject(const std::filesystem::path &folder,
 		}
 		if (!recoverySelection.empty()) {
 			ShowRecovery();
-			recoveryDialog_.Select(recoverySelection);
+			if (!recoveryDialog_.Select(recoverySelection)) {
+				recoveryDialog_.Reopen("The selected recovery is no longer available. "
+				                      "Choose a recovery from the list.");
+			}
 		} else if (recovery_.IsReady()) {
 			ShowRecovery(true);
 		}

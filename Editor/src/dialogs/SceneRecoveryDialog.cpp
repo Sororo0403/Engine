@@ -33,11 +33,10 @@ void SceneRecoveryDialog::Refresh(SceneRecovery &recovery) {
 	}
 }
 
-void SceneRecoveryDialog::Select(const std::filesystem::path &path) {
-	if (const auto entry = std::ranges::find(entries_, path, &SceneRecovery::Entry::path);
-	    entry != entries_.end()) {
-		selected_ = static_cast<std::size_t>(entry - entries_.begin());
-	}
+bool SceneRecoveryDialog::Select(const std::filesystem::path &path) {
+	const auto entry = std::ranges::find(entries_, path, &SceneRecovery::Entry::path);
+	selected_ = static_cast<std::size_t>(entry - entries_.begin());
+	return entry != entries_.end();
 }
 
 void SceneRecoveryDialog::SetEntries(std::vector<SceneRecovery::Entry> entries) {
@@ -46,9 +45,13 @@ void SceneRecoveryDialog::SetEntries(std::vector<SceneRecovery::Entry> entries) 
 	std::stable_partition(entries.begin(), entries.end(), [&](const auto &entry) {
 		return entry.CanRestore(projectAssets_);
 	});
-	const auto found = std::ranges::find(entries, previous, &SceneRecovery::Entry::path);
-	selected_ = found == entries.end() ? 0 : static_cast<std::size_t>(found - entries.begin());
+	const bool chooseFirst = entries_.empty();
 	entries_ = std::move(entries);
+	if (chooseFirst) {
+		selected_ = 0;
+	} else {
+		Select(previous);
+	}
 }
 
 SceneRecoveryDialog::Result
@@ -193,7 +196,7 @@ SceneRecoveryDialog::Draw(const ImGuiSystem &ui, SceneRecovery &recovery,
 		const bool restore = ui.Button("Restore");
 		ui.EndDisabled();
 
-		if (restore) {
+		if (restore && canRestore) {
 			selectedPath_ = entries_[selected_].path;
 			ui.CloseCurrentPopup();
 			ui.EndPopup();
