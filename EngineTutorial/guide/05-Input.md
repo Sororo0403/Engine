@@ -2,6 +2,8 @@
 
 目次で **第5章 入力とアクション** を開きます。キーの長押し、フォーカス喪失、Wiiリモコンの割り当て、軸の閾値、アクションの押下が題材です。
 
+**実装索引を開く** から、デバイスの状態、Windows側の取得、名前付きアクションとゲーム操作に関わる33ファイルを確認できます。教材の目次からは **実装索引 → 第5章** を選びます。
+
 ## デバイスの状態を受け取る
 
 [WindowsInputBackend.cpp](../../Engine/src/platform/windows/WindowsInputBackend.cpp) は Microsoft GameInput の集約デバイスからキーボードとマウスを読み、ゲームパッドのボタン・軸も共通の表現に変換します。Wiiリモコンは [WindowsWiiRemote.cpp](../../Engine/src/platform/windows/WindowsWiiRemote.cpp) で取得し、接続、Aボタン、振りを `InputState` に渡します。[InputSystem.cpp](../../Engine/src/input/InputSystem.cpp) はバックエンドを所有し、非アクティブ時に各デバイスの状態をクリアします。取得に失敗した場合は状態をクリアして失敗を返します。
@@ -14,4 +16,4 @@
 
 軸は0.6で押下し、押下後は0.4以下で解放します。フォーカスを取り戻した直後は、その間押されていた入力が一度離されるまで新しい押下を受け付けません。接続が切れた入力も取り消しとして扱います。
 
-移動・ジャンプなどの固定操作は [CharacterInputReader.cpp](../../Engine/src/gameplay/CharacterInputReader.cpp)、Canvasの決定・移動は [UIInputReader.cpp](../../Engine/src/ui/UIInputReader.cpp) で、それぞれの処理が必要とする形に変換します。
+移動・ジャンプなどの固定操作は [CharacterInputReader.h](../../Engine/include/gameplay/CharacterInputReader.h)、Canvasの決定・移動は [UIInputReader.cpp](../../Engine/src/ui/UIInputReader.cpp) で、それぞれの処理が必要とする形に変換します。
